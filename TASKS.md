@@ -42,7 +42,8 @@
 | GOV-025 | Stakeholder and actor map | Review | Issue #4; PR #5 menunggu review dan persetujuan Product Owner |
 | GOV-026 | Current process and user journeys | Review | Issue #6; draft document prepared for Product Owner review |
 | GOV-027 | Domain event storming | Review | Issue #8 dan PR #9 merged; GD-007 tetap Proposed |
-| GOV-028 | Correct approved Domain Event Storming review findings | Review | Issue #10; lima koreksi disetujui Product Owner dan correction draft disiapkan untuk review |
+| GOV-028 | Correct approved Domain Event Storming review findings | Review | Issue #10 dan PR #11 merged tanpa approval substantif; audit lanjutan tercatat pada PR #11 |
+| GOV-029 | Correct approved PR #11 Domain Event Storming audit findings | Review | Issue #12; empat koreksi disetujui Product Owner dan correction draft disiapkan untuk review |
 
 ## Decisions required before source code
 
@@ -68,7 +69,7 @@
 |---|---|---|---|
 | DSC-000 | Product vision and decision-rights workshop | P0 | Handbook approval; Issue #2 |
 | DSC-001 | Stakeholder and actor map | P0 | Handbook approval; Issue #4 |
-| DSC-002 | POS/ERP domain event storming | P0 | Stakeholder availability; Issue #8; correction Issue #10 |
+| DSC-002 | POS/ERP domain event storming | P0 | Stakeholder availability; Issue #8; correction Issue #10 dan Issue #12 |
 | DSC-003 | Current process, user journeys, and service blueprint | P0 | DSC-001; Issue #6 |
 | DSC-004 | Data inventory and classification | P0 | DSC-002 |
 | DSC-005 | Threat model critical flows | P0 | DSC-002/004 |
