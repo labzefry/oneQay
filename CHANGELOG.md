@@ -35,6 +35,8 @@ Semua perubahan penting OneQay dicatat di dokumen ini. Format mengikuti Keep a C
 - Started Phase 0 Stakeholder and Actor Map under GitHub Issue #4 without promoting Product Vision and Decision Rights from Proposed.
 - Started Phase 0 Current Process and User Journeys under GitHub Issue #6 without promoting upstream discovery hypotheses.
 - Started Phase 0 Domain Event Storming under GitHub Issue #8 while preserving unresolved JRN-003/JRN-013 review findings as blockers.
+- Corrected the Proposed Domain Event Storming under Issue #10 after Product Owner approval of five PR #9 review findings: payment finality, goods-receipt/stock causation, support-access revocation, sale cancellation, and subscription/entitlement coverage.
+- Kept GD-007, all domain hypotheses, JRN-003, JRN-013, technology decisions, and application implementation gates unchanged by the correction approval.
 
 ### Security
 
