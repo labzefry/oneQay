@@ -16,33 +16,35 @@
 | ID | Task | Status | Evidence / next action |
 |---|---|---|---|
 | GOV-001 | README project orientation | Done | `README.md` |
-| GOV-002 | Project manifest | Review | Draft siap dipublikasikan dan direview |
-| GOV-003 | AI constitution | Review | Draft siap dipublikasikan dan direview |
-| GOV-004 | Architecture baseline | Review | Draft siap dipublikasikan dan direview |
-| GOV-005 | Product/engineering roadmap | Review | Draft siap dipublikasikan dan direview |
-| GOV-006 | Coding standards | Review | Draft siap dipublikasikan dan direview |
-| GOV-007 | Database handbook | Review | Draft siap dipublikasikan dan direview |
-| GOV-008 | API governance | Review | Draft siap dipublikasikan dan direview |
-| GOV-009 | Security handbook | Review | Draft siap dipublikasikan dan direview |
-| GOV-010 | Deployment handbook | Review | Draft siap dipublikasikan dan direview |
-| GOV-011 | Testing strategy | Review | Draft siap dipublikasikan dan direview |
-| GOV-012 | UI/UX guideline | Review | Draft siap dipublikasikan dan direview |
-| GOV-013 | Installer specification | Review | Draft siap dipublikasikan dan direview |
-| GOV-014 | Updater specification | Review | Draft siap dipublikasikan dan direview |
-| GOV-015 | Contribution workflow | Review | Draft siap dipublikasikan dan direview |
-| GOV-016 | Release management | Review | Draft siap dipublikasikan dan direview |
-| GOV-017 | Task governance | Review | Draft siap dipublikasikan dan direview |
-| GOV-018 | Changelog baseline | Review | Draft siap dipublikasikan dan direview |
-| GOV-019 | Markdown/link/security consistency validation | In Progress | Jalankan local quality checks |
-| GOV-020 | Publish handbook branch and draft PR | Blocked | GitHub App membutuhkan Contents: Read and write |
-| GOV-021 | Product Owner handbook review | Blocked | Menunggu GOV-020 |
-| GOV-022 | Phase 0 governance and discovery kickoff pack | Review | `docs/handbook/PHASE_0_KICKOFF.md` |
-| GOV-023 | Standardize engineering collaboration to ChatGPT + GitHub only | Review | Remove external and third-party AI workflow references |
+| GOV-002 | Project manifest | Done | `PROJECT_MANIFEST.md`; PR #1 |
+| GOV-003 | AI constitution | Done | `AI_CONSTITUTION.md`; PR #1 |
+| GOV-004 | Architecture baseline | Done | `ARCHITECTURE.md`; handbook baseline approval |
+| GOV-005 | Product/engineering roadmap | Done | `ROADMAP.md`; handbook baseline approval |
+| GOV-006 | Coding standards | Done | `CODING_STANDARDS.md`; handbook baseline approval |
+| GOV-007 | Database handbook | Done | `DATABASE.md`; handbook baseline approval |
+| GOV-008 | API governance | Done | `API_SPEC.md`; handbook baseline approval |
+| GOV-009 | Security handbook | Done | `SECURITY.md`; handbook baseline approval |
+| GOV-010 | Deployment handbook | Done | `DEPLOYMENT.md`; handbook baseline approval |
+| GOV-011 | Testing strategy | Done | `TESTING.md`; handbook baseline approval |
+| GOV-012 | UI/UX guideline | Done | `UI_GUIDELINE.md`; handbook baseline approval |
+| GOV-013 | Installer specification | Done | `INSTALLER.md`; handbook baseline approval |
+| GOV-014 | Updater specification | Done | `UPDATER.md`; handbook baseline approval |
+| GOV-015 | Contribution workflow | Done | `CONTRIBUTING.md`; PR #1 |
+| GOV-016 | Release management | Done | `RELEASE.md`; handbook baseline approval |
+| GOV-017 | Task governance | Done | `TASKS.md`; PR #1 |
+| GOV-018 | Changelog baseline | Done | `CHANGELOG.md`; PR #1 |
+| GOV-019 | Markdown/link/security consistency validation | Done | 35 Markdown files linted; links and secret scan passed on PR #1 |
+| GOV-020 | Publish handbook branch and draft PR | Done | PR #1 merged as `642437b` |
+| GOV-021 | Product Owner handbook review | Done | Product Owner approved and merged PR #1 |
+| GOV-022 | Phase 0 governance and discovery kickoff pack | Done | `docs/handbook/PHASE_0_KICKOFF.md`; PR #1 |
+| GOV-023 | Standardize engineering collaboration to ChatGPT + GitHub only | Done | `AI_CONSTITUTION.md`; PR #1 |
+| GOV-024 | Product vision and decision rights | In Progress | Issue #2; draft document prepared for Product Owner review |
 
 ## Decisions required before source code
 
 | ID | Decision | Status | Required output |
 |---|---|---|---|
+| DEC-000 | Product Owner, delegates, and decision rights | In Progress | Approved Product Vision and Decision Rights document |
 | DEC-001 | MVP scope and non-scope | Ready | Approved product brief |
 | DEC-002 | Backend language/framework | Ready | ADR-001 |
 | DEC-003 | Frontend/PWA stack | Ready | ADR-002 |
@@ -60,6 +62,7 @@
 
 | ID | Task | Priority | Dependency |
 |---|---|---|---|
+| DSC-000 | Product vision and decision-rights workshop | P0 | Handbook approval; Issue #2 |
 | DSC-001 | Stakeholder and actor map | P0 | Handbook approval |
 | DSC-002 | POS/ERP domain event storming | P0 | Stakeholder availability |
 | DSC-003 | User journeys and service blueprint | P0 | DSC-001 |
