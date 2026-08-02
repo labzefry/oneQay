@@ -39,6 +39,7 @@
 | GOV-022 | Phase 0 governance and discovery kickoff pack | Done | `docs/handbook/PHASE_0_KICKOFF.md`; PR #1 |
 | GOV-023 | Standardize engineering collaboration to ChatGPT + GitHub only | Done | `AI_CONSTITUTION.md`; PR #1 |
 | GOV-024 | Product vision and decision rights | In Progress | Issue #2; draft document prepared for Product Owner review |
+| GOV-025 | Stakeholder and actor map | In Progress | Issue #4; draft document prepared for Product Owner review |
 
 ## Decisions required before source code
 
@@ -63,7 +64,7 @@
 | ID | Task | Priority | Dependency |
 |---|---|---|---|
 | DSC-000 | Product vision and decision-rights workshop | P0 | Handbook approval; Issue #2 |
-| DSC-001 | Stakeholder and actor map | P0 | Handbook approval |
+| DSC-001 | Stakeholder and actor map | P0 | Handbook approval; Issue #4 |
 | DSC-002 | POS/ERP domain event storming | P0 | Stakeholder availability |
 | DSC-003 | User journeys and service blueprint | P0 | DSC-001 |
 | DSC-004 | Data inventory and classification | P0 | DSC-002 |
