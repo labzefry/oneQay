@@ -28,7 +28,7 @@ Setiap perubahan memiliki issue/task dengan:
 | `hotfix/*` | Production critical fix |
 | `release/*` | Release stabilization |
 | `experiment/*` | Time-boxed, non-production experiment |
-| `agent/*` | AI-assisted scoped work |
+| `agent/*` | ChatGPT-assisted scoped work |
 
 Branch berasal dari approved base terbaru. Jangan commit langsung ke branch terlindungi atau force-push shared branch.
 

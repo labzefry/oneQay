@@ -19,6 +19,13 @@ Semua perubahan penting OneQay dicatat di dokumen ini. Format mengikuti Keep a C
 - GitHub issue and pull-request templates.
 - ADR template and documentation-area guidance.
 - Per-document completion report and continuation/review prompts.
+- Phase 0 governance and discovery kickoff plan with explicit no-code gate.
+
+### Changed
+
+- Standardized the OneQay engineering workflow to ChatGPT and GitHub only.
+- Replaced external-AI review prompts with independent ChatGPT review prompts.
+- Clarified that product AI Assistant decisions remain separate from the engineering collaboration model.
 
 ### Security
 
