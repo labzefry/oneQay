@@ -41,6 +41,7 @@
 | GOV-024 | Product vision and decision rights | In Progress | Issue #2; draft document prepared for Product Owner review |
 | GOV-025 | Stakeholder and actor map | Review | Issue #4; PR #5 menunggu review dan persetujuan Product Owner |
 | GOV-026 | Current process and user journeys | Review | Issue #6; draft document prepared for Product Owner review |
+| GOV-027 | Domain event storming | Review | Issue #8; draft document prepared for Product Owner review |
 
 ## Decisions required before source code
 
@@ -66,7 +67,7 @@
 |---|---|---|---|
 | DSC-000 | Product vision and decision-rights workshop | P0 | Handbook approval; Issue #2 |
 | DSC-001 | Stakeholder and actor map | P0 | Handbook approval; Issue #4 |
-| DSC-002 | POS/ERP domain event storming | P0 | Stakeholder availability |
+| DSC-002 | POS/ERP domain event storming | P0 | Stakeholder availability; Issue #8 |
 | DSC-003 | Current process, user journeys, and service blueprint | P0 | DSC-001; Issue #6 |
 | DSC-004 | Data inventory and classification | P0 | DSC-002 |
 | DSC-005 | Threat model critical flows | P0 | DSC-002/004 |
