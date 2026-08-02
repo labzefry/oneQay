@@ -23,6 +23,7 @@ Semua perubahan penting OneQay dicatat di dokumen ini. Format mengikuti Keep a C
 - Proposed Product Vision and Decision Rights for Phase 0, including human approval boundaries, decision lifecycle, escalation rules, measurable outcome directions, and workshop acceptance gate.
 - Proposed Stakeholder and Actor Map covering platform/tenant boundaries, human and system actors, separation of duties, engagement hypotheses, validation methods, and downstream discovery handoff.
 - Proposed Current Process and User Journeys covering discovery evidence, critical operational journeys, actor/system handoffs, pain-point hypotheses, invariants, exception/recovery needs, and validation backlog.
+- Proposed Domain Event Storming covering event/command hypotheses, business policies, tenant-safe envelopes, critical invariants, aggregate/context candidates, consistency questions, hotspots, and workshop validation.
 
 ### Changed
 
@@ -33,6 +34,7 @@ Semua perubahan penting OneQay dicatat di dokumen ini. Format mengikuti Keep a C
 - Started Phase 0 Product Vision and Decision Rights under GitHub Issue #2 while keeping application implementation blocked.
 - Started Phase 0 Stakeholder and Actor Map under GitHub Issue #4 without promoting Product Vision and Decision Rights from Proposed.
 - Started Phase 0 Current Process and User Journeys under GitHub Issue #6 without promoting upstream discovery hypotheses.
+- Started Phase 0 Domain Event Storming under GitHub Issue #8 while preserving unresolved JRN-003/JRN-013 review findings as blockers.
 
 ### Security
 
