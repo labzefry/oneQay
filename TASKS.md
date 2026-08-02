@@ -39,7 +39,7 @@
 | GOV-022 | Phase 0 governance and discovery kickoff pack | Done | `docs/handbook/PHASE_0_KICKOFF.md`; PR #1 |
 | GOV-023 | Standardize engineering collaboration to ChatGPT + GitHub only | Done | `AI_CONSTITUTION.md`; PR #1 |
 | GOV-024 | Product vision and decision rights | In Progress | Issue #2; draft document prepared for Product Owner review |
-| GOV-025 | Stakeholder and actor map | In Progress | Issue #4; draft document prepared for Product Owner review |
+| GOV-025 | Stakeholder and actor map | Review | Issue #4; PR #5 menunggu review dan persetujuan Product Owner |
 
 ## Decisions required before source code
 
