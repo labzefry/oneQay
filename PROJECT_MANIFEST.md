@@ -39,11 +39,22 @@ OneQay menyatukan fungsi POS, ERP, administrasi tenant, integrasi, marketplace, 
 
 | Item | Status | Gate |
 |---|---|---|
-| Handbook 1.0 authoring | Review | Publikasi branch dan review lintas fungsi |
-| Phase 0 governance and discovery | Ready | Dimulai tanpa source code melalui kickoff plan |
+| Handbook 1.0 governance baseline | Approved | PR #1 disetujui dan di-merge ke `main` |
+| Phase 0 governance and discovery | In Progress | Issue #2 dan deliverable discovery direview melalui PR terpisah |
 | Application implementation | Blocked | Menunggu exit criteria Phase 0 dan Accepted ADR minimum |
 
 Rencana kickoff berada di `docs/handbook/PHASE_0_KICKOFF.md`.
+
+## Governance decision register
+
+| ID | Keputusan | Status | Dokumen pemilik |
+|---|---|---|---|
+| GD-001 | GitHub sebagai Single Source of Truth | Approved | `AI_CONSTITUTION.md` |
+| GD-002 | ChatGPT + GitHub sebagai collaboration model eksklusif | Approved | `AI_CONSTITUTION.md` |
+| GD-003 | Product vision dan decision rights | Proposed | `docs/handbook/PRODUCT_VISION_AND_DECISION_RIGHTS.md` |
+| GD-004 | Application source code tetap diblokir sampai exit criteria Phase 0 | Approved | `docs/handbook/PHASE_0_KICKOFF.md` |
+
+GD-003 hanya dapat berubah menjadi Approved setelah Product Owner menyetujui head pull request terkait. Merge teknis tanpa decision statement tidak boleh dianggap sebagai approval substantif.
 
 ## Target platforms
 
@@ -184,4 +195,4 @@ Setiap perubahan resmi minimal memperbarui manifest, task, dan changelog bila st
 
 ## Approval
 
-Manifest ini menjadi baseline **Proposed** sampai Product Owner menyetujui pull request handbook. Setelah merge, item berstatus Approved mengikat seluruh pekerjaan berikutnya.
+Baseline governance Handbook 1.0 disetujui melalui PR #1. Item berstatus Approved mengikat seluruh pekerjaan berikutnya; item Proposed, Under Review, dan Deferred tidak boleh diperlakukan sebagai keputusan final.

@@ -20,12 +20,15 @@ Semua perubahan penting OneQay dicatat di dokumen ini. Format mengikuti Keep a C
 - ADR template and documentation-area guidance.
 - Per-document completion report and continuation/review prompts.
 - Phase 0 governance and discovery kickoff plan with explicit no-code gate.
+- Proposed Product Vision and Decision Rights for Phase 0, including human approval boundaries, decision lifecycle, escalation rules, measurable outcome directions, and workshop acceptance gate.
 
 ### Changed
 
 - Standardized the OneQay engineering workflow to ChatGPT and GitHub only.
 - Replaced external-AI review prompts with independent ChatGPT review prompts.
 - Clarified that product AI Assistant decisions remain separate from the engineering collaboration model.
+- Reconciled Handbook 1.0 task and delivery-gate statuses with the approved and merged PR #1 evidence.
+- Started Phase 0 Product Vision and Decision Rights under GitHub Issue #2 while keeping application implementation blocked.
 
 ### Security
 
