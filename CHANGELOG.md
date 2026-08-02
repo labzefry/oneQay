@@ -21,6 +21,7 @@ Semua perubahan penting OneQay dicatat di dokumen ini. Format mengikuti Keep a C
 - Per-document completion report and continuation/review prompts.
 - Phase 0 governance and discovery kickoff plan with explicit no-code gate.
 - Proposed Product Vision and Decision Rights for Phase 0, including human approval boundaries, decision lifecycle, escalation rules, measurable outcome directions, and workshop acceptance gate.
+- Proposed Stakeholder and Actor Map covering platform/tenant boundaries, human and system actors, separation of duties, engagement hypotheses, validation methods, and downstream discovery handoff.
 
 ### Changed
 
@@ -29,6 +30,7 @@ Semua perubahan penting OneQay dicatat di dokumen ini. Format mengikuti Keep a C
 - Clarified that product AI Assistant decisions remain separate from the engineering collaboration model.
 - Reconciled Handbook 1.0 task and delivery-gate statuses with the approved and merged PR #1 evidence.
 - Started Phase 0 Product Vision and Decision Rights under GitHub Issue #2 while keeping application implementation blocked.
+- Started Phase 0 Stakeholder and Actor Map under GitHub Issue #4 without promoting Product Vision and Decision Rights from Proposed.
 
 ### Security
 
