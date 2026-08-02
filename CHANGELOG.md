@@ -22,6 +22,7 @@ Semua perubahan penting OneQay dicatat di dokumen ini. Format mengikuti Keep a C
 - Phase 0 governance and discovery kickoff plan with explicit no-code gate.
 - Proposed Product Vision and Decision Rights for Phase 0, including human approval boundaries, decision lifecycle, escalation rules, measurable outcome directions, and workshop acceptance gate.
 - Proposed Stakeholder and Actor Map covering platform/tenant boundaries, human and system actors, separation of duties, engagement hypotheses, validation methods, and downstream discovery handoff.
+- Proposed Current Process and User Journeys covering discovery evidence, critical operational journeys, actor/system handoffs, pain-point hypotheses, invariants, exception/recovery needs, and validation backlog.
 
 ### Changed
 
@@ -31,6 +32,7 @@ Semua perubahan penting OneQay dicatat di dokumen ini. Format mengikuti Keep a C
 - Reconciled Handbook 1.0 task and delivery-gate statuses with the approved and merged PR #1 evidence.
 - Started Phase 0 Product Vision and Decision Rights under GitHub Issue #2 while keeping application implementation blocked.
 - Started Phase 0 Stakeholder and Actor Map under GitHub Issue #4 without promoting Product Vision and Decision Rights from Proposed.
+- Started Phase 0 Current Process and User Journeys under GitHub Issue #6 without promoting upstream discovery hypotheses.
 
 ### Security
 

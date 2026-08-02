@@ -40,7 +40,7 @@ OneQay menyatukan fungsi POS, ERP, administrasi tenant, integrasi, marketplace, 
 | Item | Status | Gate |
 |---|---|---|
 | Handbook 1.0 governance baseline | Approved | PR #1 disetujui dan di-merge ke `main` |
-| Phase 0 governance and discovery | In Progress | Deliverable discovery dikelola melalui Issue #2, Issue #4, dan PR terpisah |
+| Phase 0 governance and discovery | In Progress | Deliverable discovery dikelola melalui Issue #2, Issue #4, Issue #6, dan PR terpisah |
 | Application implementation | Blocked | Menunggu exit criteria Phase 0 dan Accepted ADR minimum |
 
 Rencana kickoff berada di `docs/handbook/PHASE_0_KICKOFF.md`.
@@ -54,6 +54,7 @@ Rencana kickoff berada di `docs/handbook/PHASE_0_KICKOFF.md`.
 | GD-003 | Product vision dan decision rights | Proposed | `docs/handbook/PRODUCT_VISION_AND_DECISION_RIGHTS.md` |
 | GD-004 | Application source code tetap diblokir sampai exit criteria Phase 0 | Approved | `docs/handbook/PHASE_0_KICKOFF.md` |
 | GD-005 | Stakeholder and actor map | Proposed | `docs/handbook/STAKEHOLDER_AND_ACTOR_MAP.md` |
+| GD-006 | Current process and user journeys | Proposed | `docs/handbook/CURRENT_PROCESS_AND_USER_JOURNEYS.md` |
 
 GD-003 hanya dapat berubah menjadi Approved setelah Product Owner menyetujui head pull request terkait. Merge teknis tanpa decision statement tidak boleh dianggap sebagai approval substantif.
 
