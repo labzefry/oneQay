@@ -12,6 +12,9 @@
 | Category | Enterprise SaaS POS & ERP Platform | Approved |
 | Repository | `labzefry/oneQay` | Approved |
 | Source of Truth | GitHub | Approved |
+| Engineering collaborator | ChatGPT | Approved |
+| Collaboration model | ChatGPT + GitHub only | Approved |
+| External generative-AI workflow | Tidak digunakan | Approved |
 | Delivery model | Multi-tenant SaaS | Approved |
 | Architecture baseline | Modular Monolith, Clean Architecture | Approved |
 | Handbook version | 1.0 | Approved |
@@ -31,6 +34,16 @@
 ## Product intent
 
 OneQay menyatukan fungsi POS, ERP, administrasi tenant, integrasi, marketplace, plugin, dan AI assistant dalam satu platform yang aman serta dapat berkembang dari shared hosting menuju Kubernetes tanpa mengubah business logic.
+
+## Current delivery gate
+
+| Item | Status | Gate |
+|---|---|---|
+| Handbook 1.0 authoring | Review | Publikasi branch dan review lintas fungsi |
+| Phase 0 governance and discovery | Ready | Dimulai tanpa source code melalui kickoff plan |
+| Application implementation | Blocked | Menunggu exit criteria Phase 0 dan Accepted ADR minimum |
+
+Rencana kickoff berada di `docs/handbook/PHASE_0_KICKOFF.md`.
 
 ## Target platforms
 
@@ -143,7 +156,7 @@ Tidak ada framework atau vendor yang dianggap dipilih sebelum ADR berstatus Acce
 |---|---|
 | README.md | Orientasi proyek |
 | PROJECT_MANIFEST.md | Identitas dan status keputusan |
-| AI_CONSTITUTION.md | Aturan permanen AI agent |
+| AI_CONSTITUTION.md | Aturan permanen ChatGPT pada proyek |
 | ARCHITECTURE.md | Arsitektur dan boundary |
 | ROADMAP.md | Urutan delivery |
 | TASKS.md | Backlog operasional |

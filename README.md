@@ -10,6 +10,8 @@
 | Kategori | Enterprise SaaS POS & ERP Platform |
 | Author | Lab \| Zefry |
 | Repository | GitHub sebagai Single Source of Truth |
+| Engineering collaborator | ChatGPT |
+| Collaboration model | ChatGPT + GitHub only |
 | Status | Handbook 1.0 draft complete / menunggu review dan publikasi |
 | Versi handbook | 1.0 |
 
@@ -25,7 +27,7 @@ Tujuan utamanya adalah menghadirkan platform yang:
 - dapat dikembangkan tanpa ketergantungan berlebihan pada infrastruktur;
 - siap diintegrasikan melalui API;
 - dapat diobservasi, diuji, dipulihkan, dan diperbarui secara terkendali;
-- memiliki tata kelola pengembangan yang dapat dipahami manusia maupun AI coding agent.
+- memiliki tata kelola pengembangan yang dapat dipahami manusia dan dijalankan secara konsisten bersama ChatGPT melalui GitHub.
 
 ## Target platform
 
@@ -191,7 +193,7 @@ Handbook dikembangkan secara bertahap dan diperlakukan sebagai living documentat
 |---:|---|---|---|
 | 1 | `README.md` | Orientasi, visi, ruang lingkup, dan navigasi proyek | Selesai |
 | 2 | `PROJECT_MANIFEST.md` | Identitas teknis dan inventaris kapabilitas proyek | Draft selesai |
-| 3 | `AI_CONSTITUTION.md` | Aturan permanen untuk AI engineering agent | Draft selesai |
+| 3 | `AI_CONSTITUTION.md` | Aturan permanen untuk ChatGPT pada proyek | Draft selesai |
 | 4 | `ARCHITECTURE.md` | Arsitektur logis, deployment, dan batas modul | Draft selesai |
 | 5 | `ROADMAP.md` | Tahapan produk dan engineering | Draft selesai |
 | 6 | `CODING_STANDARDS.md` | Standar implementasi lintas platform | Draft selesai |
