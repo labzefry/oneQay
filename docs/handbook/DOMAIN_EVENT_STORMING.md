@@ -3,7 +3,7 @@
 > **Status:** Proposed — workshop hypothesis, bukan domain model final  
 > **Phase:** 0 — Governance & Discovery  
 > **Owner:** Product Owner OneQay  
-> **Tracking:** GitHub Issue #8; approved corrections tracked in Issue #10  
+> **Tracking:** GitHub Issue #8; approved corrections tracked in Issue #10 and Issue #12  
 > **Dependencies:** Upstream discovery documents berstatus Proposed; temuan JRN-003 dan JRN-013 masih terbuka
 
 ## Purpose
@@ -154,6 +154,7 @@ JRN-003 belum memiliki journey detail yang disetujui. Event recovery tidak memil
 | `RecordPaymentDecline` | `PaymentDeclined` | Verified payment boundary/system | Decline berbeda dari technical failure dan uncertainty |
 | `RecordPaymentFailure` | `PaymentFailed` | Payment boundary/system | Technical failure tidak boleh disamakan dengan provider decline atau customer-visible final outcome |
 | `MarkPaymentUncertain` | `PaymentStatusBecameUncertain` | Payment boundary/system | Timeout bukan otomatis gagal; operator harus melihat uncertainty |
+| `EvaluateSalePaymentRequirement` | `SalePaymentRequirementSatisfied` atau `SalePaymentRequirementNotSatisfied` | Authorized Sales/Payment policy | Outcome menyatakan apakah seluruh eligible payment pada satu tenant/sale/currency memenuhi total serta treatment partial/split dan uncertainty obligation |
 | `CompleteSale` | `SaleCompleted` | Cashier/sales policy | Sale completed sekali; money dan stock effect tidak ambigu |
 | `IssueReceipt` | `ReceiptIssued` | Sales system | Receipt merepresentasikan final state dan tidak membocorkan data berlebih |
 | `CloseShift` | `ShiftClosed` | Cashier/Manager policy | Close membutuhkan reconciliation state sesuai policy |
@@ -166,7 +167,10 @@ Critical hotspot: completion criterion per payment method serta hubungan atomici
 
 | Command hypothesis | Event hypothesis | Actor/system | Invariant or hotspot |
 |---|---|---|---|
-| `CancelSale` | `SaleCancelled` | Cashier/authorized sales policy | Hanya sebelum completion; reason, actor, idempotency, active/uncertain payment, dan stock reservation effect harus eksplisit |
+| `RequestSaleCancellation` | `SaleCancellationRequested` | Cashier/authorized sales policy | Hanya sebelum completion; reason, actor, idempotency, active/uncertain payment, dan stock reservation obligation harus eksplisit |
+| `EvaluateCancelledSalePayment` | `CancelledSalePaymentResolutionRequired` atau `CancelledSalePaymentResolutionNotRequired` | Authorized Sales/Payment policy | Authorization, uncertainty, late success, amount/currency/tenant/sale binding, dan required recovery path diklasifikasikan |
+| `ResolveCancelledSalePayment` | `CancelledSalePaymentResolved` | Verified payment/reconciliation policy | Outcome, source evidence, actor/system, correlation, dan reconciliation reference dapat diaudit; provider semantics belum diputuskan |
+| `CompleteSaleCancellation` | `SaleCancelled` | Authorized Sales policy | Hanya setelah reservation dan payment obligations terselesaikan atau dibuktikan tidak ada |
 | `RequestSaleVoid` | `SaleVoidRequested` | Cashier/Manager | Void hanya pada lifecycle state yang diperbolehkan |
 | `ApproveSaleVoid` | `SaleVoidApproved` | Independent/authorized approver | Threshold dan separation of duties belum final |
 | `VoidSale` | `SaleVoided` | Sales policy | Original sale tidak dihapus; effect dan reason dapat ditelusuri |
@@ -179,7 +183,9 @@ Critical hotspot: completion criterion per payment method serta hubungan atomici
 | `ConfirmRefund` | `RefundCompleted` | Provider/cash evidence | Repeated refund dan partial result dicegah/direkonsiliasi |
 | `RecordRefundFailure` | `RefundFailed` | Provider/system | Retry/compensation/operator action eksplisit |
 
-Cancellation menghentikan sale sebelum completion dan tidak boleh digunakan untuk mengubah completed sale. Reservation release dan active/uncertain payment resolution tetap memerlukan policy, causation, serta observable outcome yang terpisah.
+Proses cancellation hanya berlaku sebelum completion dan tidak boleh digunakan untuk mengubah completed sale.
+
+`SaleCancellationRequested` bukan final state. Reservation release dan active/uncertain/late payment resolution memerlukan policy, causation, serta observable outcome terpisah sebelum `SaleCancelled` dapat terjadi.
 
 Void, cancellation, return, dan refund adalah semantics berbeda. Kesamaan UI atau workflow tidak boleh menyatukan domain event secara prematur.
 
@@ -187,7 +193,8 @@ Void, cancellation, return, dan refund adalah semantics berbeda. Kesamaan UI ata
 
 | Command hypothesis | Event hypothesis | Actor/system | Invariant or hotspot |
 |---|---|---|---|
-| `PostReceiptStockMovement` | `ReceiptStockMovementPosted` | Authorized Inventory policy | Tenant, goods-receipt/line identity, receipt version, item, accepted quantity/unit, location, dan causation mencegah receipt yang sama diposting dua kali |
+| `PostReceiptStockMovement` | `ReceiptStockMovementPosted` | Authorized Inventory policy | Stable tenant + goods-receipt-line identity menjadi causation/idempotency boundary; expected receipt version hanya concurrency evidence; cumulative effect mengikuti accepted quantity |
+| `CorrectReceiptStockMovement` | `ReceiptStockMovementCorrected` | Authorized Inventory policy | Explicit delta/reversal mereferensikan prior movement, stable receipt-line identity, reason, actor, expected version, dan resulting cumulative quantity |
 | `ReserveStock` | `StockReserved` | Sales/Inventory policy | Reservation need dan oversell policy belum diputuskan |
 | `ReleaseStockReservation` | `StockReservationReleased` | Sales/Inventory policy | Release idempotent dan terkait reservation yang benar |
 | `CommitSaleStockMovement` | `SaleStockCommitted` | Sales/Inventory policy | Satu completed sale tidak double-decrement stock |
@@ -208,7 +215,8 @@ Void, cancellation, return, dan refund adalah semantics berbeda. Kesamaan UI ata
 | `SubmitPurchaseRequest` | `PurchaseRequested` | Requesting/Purchasing role | Need, item, quantity, location, budget context dapat ditelusuri |
 | `ApprovePurchaseRequest` | `PurchaseApproved` | Manager/authorized approver | Threshold dan conflict-of-interest control |
 | `IssuePurchaseOrder` | `PurchaseOrderIssued` | Purchasing role | Terms/version dan supplier acknowledgement hotspot |
-| `ReceiveGoods` | `GoodsReceived` | Inventory role | Delivery/receipt evidence mencatat partial, over, damaged, dan wrong-unit discrepancy; event ini sendiri tidak menyatakan on-hand stock telah berubah |
+| `ReceiveGoods` | `GoodsReceived` | Inventory role | Stable receipt-line identity dan delivery evidence mencatat partial, over, damaged, serta wrong-unit discrepancy; event ini sendiri tidak menyatakan on-hand stock telah berubah |
+| `CorrectGoodsReceipt` | `GoodsReceiptCorrected` | Authorized Inventory role | Stable receipt-line identity dipertahankan; accepted quantity/unit, reason, actor, expected version, dan prior receipt evidence dapat ditelusuri |
 | `RecordSupplierInvoice` | `SupplierInvoiceRecorded` | Finance/Purchasing | Duplicate invoice dan supplier identity diverifikasi |
 | `MatchPurchaseEvidence` | `PurchaseMatchCompleted` | Finance policy | Order, receipt, invoice, variance policy belum final |
 | `RecordPurchaseMismatch` | `PurchaseMismatchDetected` | Finance policy | Mismatch tidak boleh auto-paid atau disembunyikan |
@@ -240,8 +248,11 @@ Read models seperti sales summary, stock position, payment status, shift varianc
 | `RequestSupportAccess` | `SupportAccessRequested` | Support | Access purpose, scope, duration, consent/approval sesuai policy |
 | `GrantSupportAccess` | `SupportAccessGranted` | Authorized human/policy | Time-bound, least privilege, actor attribution, no silent impersonation |
 | `RevokeSupportAccess` | `SupportAccessRevoked` | Authorized human/security policy | Manual revocation, consent/approval withdrawal, atau containment memiliki reason, actor, time, scope, dan observable result |
-| `ExpireSupportAccess` | `SupportAccessExpired` | System policy | Expiry/revocation dapat dibuktikan |
-| `CloseSupportCase` | `SupportCaseClosed` | Support/authorized case owner | Closure membutuhkan outcome, requester communication, active-access check, dan unresolved follow-up visibility |
+| `ExpireSupportAccess` | `SupportAccessExpired` | System policy | Grant terbukti tidak lagi efektif setelah approved duration berakhir |
+| `RequestSupportCaseClosure` | `SupportCaseClosureRequested` | Support/authorized case owner | Closure criteria, outcome, requester communication, active-access inventory, dan unresolved follow-up diverifikasi |
+| `RecordSupportAccessRevocationFailure` | `SupportAccessRevocationFailed` | Security/system policy | Access tetap dianggap efektif; failure, retry/escalation, tenant, case, scope, dan operator visibility dicatat |
+| `MarkSupportCaseClosureBlocked` | `SupportCaseClosureBlocked` | Support/Security policy | Case tidak closed saat effective access atau revocation failure masih ada |
+| `CloseSupportCase` | `SupportCaseClosed` | Authorized case policy | Hanya setelah seluruh support access untuk case terbukti revoked/expired dan tidak ada unresolved closure blocker |
 | `DeclareIncident` | `IncidentDeclared` | Operations/Security | Severity, affected tenants, commander, communication owner |
 | `ContainIncident` | `IncidentContained` | Incident responder | Containment tidak menghapus evidence atau memperluas exposure |
 | `RestoreService` | `ServiceRestored` | Operations | Health, data integrity, tenant isolation, reconciliation diverifikasi |
@@ -258,18 +269,26 @@ Read models seperti sales summary, stock position, payment status, shift varianc
 | `ProviderPaymentAuthorized` | Further method-specific confirmation required | `VerifyPaymentOutcome` | Authorization tidak boleh otomatis menyelesaikan sale; capture/settlement semantics belum diputuskan |
 | `CashPaymentRecorded` | Approved cash evidence tersedia untuk dinilai | `VerifyPaymentOutcome` | Cash count, correction, fraud, shift close, dan reconciliation tetap terpisah |
 | `PaymentStatusBecameUncertain` | Outcome dapat diverifikasi atau direkonsiliasi | `VerifyPaymentOutcome` | Verification menghasilkan success, decline, failure, atau tetap uncertain; timeout, retry budget, escalation, dan customer communication belum diputuskan |
-| `PaymentSucceeded` | Sale eligible for completion under approved method policy | `CompleteSale` | Atomicity dengan inventory dan late callback adalah hotspot |
+| `PaymentSucceeded`, `PaymentDeclined`, `PaymentFailed`, atau `PaymentStatusBecameUncertain` | Sale-level payment state berubah | `EvaluateSalePaymentRequirement` | Partial/split tender, remaining amount, late callback, dan disallowed uncertain attempt harus dievaluasi bersama |
+| `SalePaymentRequirementSatisfied` | Sale completion eligibility verified at sale level | `CompleteSale` | Atomicity dengan inventory, duplicate outcome, dan late callback tetap hotspot |
 | `SaleCompleted` | Receipt required | `IssueReceipt` | Printer/delivery failure tidak boleh membatalkan sale secara diam-diam |
 | `SaleCompleted` | Stock-tracked items exist | `CommitSaleStockMovement` | Exactly-once effect dicapai secara semantik, bukan klaim transport |
-| `SaleCancelled` | Active stock reservation exists | `ReleaseStockReservation` | Payment authorization/uncertainty tidak boleh diselesaikan atau di-refund secara diam-diam |
+| `SaleCancellationRequested` | Active stock reservation exists | `ReleaseStockReservation` | Release harus idempotent dan menghasilkan observable outcome untuk reservation yang benar |
+| `SaleCancellationRequested` atau payment outcome baru pada sale yang sedang dibatalkan | Payment obligation mungkin ada | `EvaluateCancelledSalePayment` | Authorization, uncertainty, late success, expiry, refund/reversal, dan reconciliation semantics belum final |
+| `CancelledSalePaymentResolutionRequired` | Approved recovery action and evidence available | `ResolveCancelledSalePayment` | Resolution tidak boleh mengarang provider success/failure atau menggandakan financial effect |
+| Reservation released atau terbukti not applicable, serta `CancelledSalePaymentResolved` atau `CancelledSalePaymentResolutionNotRequired` | Cancellation obligations satisfied | `CompleteSaleCancellation` | Completion mempertahankan tenant/sale binding, causation, idempotency, audit, dan recovery evidence |
 | `ReturnAccepted` | Refund eligible | `RequestRefund` | Return tanpa refund atau refund tanpa stock return mungkin valid sesuai policy |
-| `GoodsReceived` | Accepted quantity requires stock effect | `PostReceiptStockMovement` | Tenant + receipt/line identity/version harus mencegah duplicate posting dan menyediakan correction path |
+| `GoodsReceived` | Accepted quantity requires stock effect | `PostReceiptStockMovement` | Stable tenant + receipt-line identity mencegah duplicate posting lintas version; expected version hanya concurrency evidence |
+| `GoodsReceiptCorrected` | Prior receipt stock movement exists | `CorrectReceiptStockMovement` | Correction memakai explicit delta/reversal dan prior-movement reference; full quantity tidak diposting ulang |
 | `StockCountCompleted` | Variance exceeds zero/policy | `ProposeStockAdjustment` | Concurrent movement dan snapshot semantics |
 | `GoodsReceived` + `SupplierInvoiceRecorded` | Match evidence sufficient | `MatchPurchaseEvidence` | Partial receipt/invoice dan tolerance policy |
 | `ReconciliationVarianceDetected` | Human explanation required | `ExplainVariance` | Unresolved variance dan shift/period close behavior |
 | `SupportAccessGranted` | Consent/approval withdrawn atau incident containment requires removal | `RevokeSupportAccess` | Bagaimana revocation failure, active session, dan evidence ditangani? |
 | `SupportAccessGranted` | Approved duration elapsed | `ExpireSupportAccess` | Emergency extension membutuhkan approval baru dan review pasca-kejadian |
-| `SupportCaseClosed` | Active support access remains | `RevokeSupportAccess` | Closure harus gagal atau tetap visible bila access belum berakhir |
+| `SupportCaseClosureRequested` | Effective support access remains | `RevokeSupportAccess` | Case tetap open/closing sampai revocation atau expiry terbukti |
+| `SupportCaseClosureRequested` | Tidak ada effective support access dan tidak ada closure blocker | `CloseSupportCase` | Scope access harus diperiksa ulang secara tenant/case-safe sebelum closure |
+| `SupportAccessRevoked` atau `SupportAccessExpired` | Closure requested dan tidak ada effective support access lain | `CloseSupportCase` | Recheck scope mencegah satu access grant lain tertinggal |
+| `SupportAccessRevocationFailed` | Closure requested atau purpose telah berakhir | `MarkSupportCaseClosureBlocked` | Retry/escalation, incident handling, dan operator visibility wajib; case tidak closed |
 | `IncidentContained` | Recovery criteria met | `RestoreService` | Data integrity dan tenant-specific recovery proof |
 
 Policy table tidak menentukan synchronous/asynchronous implementation, queue, transaction, retry library, atau workflow engine.
@@ -288,12 +307,13 @@ Policy table tidak menentukan synchronous/asynchronous implementation, queue, tr
 | Shift | Register/cashier operational period dan close state | Final cash-management policy |
 | Sale | Sale lines, calculation, lifecycle, correction eligibility | Payment provider atau stock ledger ownership |
 | Payment Attempt | Method-scoped attempt, amount, state, idempotency, dan outcome evidence | Authorization, success, settlement, dan reconciliation sebagai fakta yang sama |
+| Sale Payment Requirement | Sale total, eligible payment outcomes, remaining amount, uncertainty obligations, dan satisfaction state | Satu successful payment attempt otomatis berarti seluruh sale telah dibayar |
 | Cash Payment Evidence | Cash amount, shift, actor, correction, dan reconciliation reference | Cash evidence sebagai provider authorization atau settlement |
 | Return/Refund | Eligibility, approval, provider/cash outcome | Return dan refund sebagai event yang sama |
 | Stock Movement | Immutable movement source, location, quantity/unit | Cached stock position sebagai source of truth |
 | Stock Count | Count session, evidence, variance proposal | Count langsung mengubah stock tanpa approval |
 | Purchase Order | Approved supplier commitment dan version | Supplier invoice/payment ownership otomatis |
-| Goods Receipt | Delivery evidence dan discrepancy | Purchase order selalu fully received |
+| Goods Receipt | Stable receipt-line identity, versioned delivery evidence, accepted quantity, discrepancy, dan correction history | Version baru menjadi identity baru yang mengizinkan full stock effect diposting ulang |
 | Reconciliation | Scope, expected/actual evidence, variance, completion | Reporting projection sebagai financial ledger |
 | Support Case | Requester, purpose, diagnostic/access lifecycle | Unbounded support access |
 
@@ -347,9 +367,10 @@ Context candidate tidak mengizinkan akses tabel lintas context. Komunikasi hanya
 11. Event evolution mempertahankan backward compatibility atau versioned migration/deprecation path.
 12. Destructive tenant/data lifecycle action membutuhkan human authority, data policy, evidence, dan recovery limitation yang jelas.
 13. Provider authorization tidak menjadi payment success tanpa method-specific verification dan amount/currency/tenant/sale binding.
-14. Satu goods-receipt line/version tidak dapat menghasilkan lebih dari satu stock effect tanpa explicit correction event.
-15. Support access berakhir melalui revocation atau expiry yang observable ketika purpose, approval, atau duration berakhir.
-16. Cancellation sebelum sale completion tidak digunakan sebagai void, return, atau refund atas completed sale.
+14. Sale hanya completed setelah sale-level payment requirement satisfied; satu successful attempt tidak cukup bila total, currency, split/partial tender, atau uncertainty obligation belum memenuhi policy.
+15. Stable goods-receipt-line identity menjadi idempotency boundary lintas version; cumulative stock effect sama dengan accepted quantity dan setiap correction berupa explicit delta/reversal.
+16. Support access berakhir melalui revocation atau expiry yang observable ketika purpose, approval, atau duration berakhir; support case tidak closed selama effective access atau revocation failure masih ada.
+17. Cancellation sebelum sale completion tidak digunakan sebagai void, return, atau refund atas completed sale dan baru final setelah reservation/payment obligations memiliki explicit resolved-or-not-applicable evidence.
 
 ## Hotspot register
 
@@ -404,9 +425,10 @@ Workshop tidak boleh menggunakan data produksi. Gunakan scenario sintetis dan ar
 - [ ] Tenant, actor, context, causation, money, stock, payment, refund, reconciliation, access, lifecycle, dan recovery tercakup.
 - [ ] Critical flow memiliki duplicate, concurrency, timeout, partial failure, correction, dan recovery analysis.
 - [ ] Provider authorization, cash evidence, payment success, settlement, dan reconciliation tidak disamakan.
-- [ ] Goods receipt menyebabkan paling banyak satu stock effect per receipt line/version kecuali melalui explicit correction.
-- [ ] Support case closure, manual access revocation, dan timed expiry memiliki lifecycle terpisah.
-- [ ] Cancellation sebelum completion dibedakan dari void, return, dan refund.
+- [ ] Sale-level payment sufficiency mencakup total, currency, partial/split tender, duplicate, dan disallowed uncertain attempt sebelum completion.
+- [ ] Goods receipt menggunakan stable receipt-line idempotency lintas version; correction memakai explicit delta/reversal reference.
+- [ ] Support case closure hanya terjadi setelah semua effective access revoked/expired; failure menghasilkan explicit blocked/closing state.
+- [ ] Cancellation sebelum completion dibedakan dari void, return, dan refund serta baru final setelah stock/payment obligations resolved atau not applicable.
 - [ ] Subscription/entitlement dependency minimum dicatat tanpa memfinalkan commercial policy atau provider.
 - [ ] JRN-003 dan JRN-013 diselesaikan melalui correction/approval terpisah atau tetap dinyatakan blocker.
 - [ ] Aggregate/context candidate memiliki trade-off dan tidak dianggap final.
@@ -416,7 +438,7 @@ Workshop tidak boleh menggunakan data produksi. Gunakan scenario sintetis dan ar
 
 ## ChatGPT — Lanjutan
 
-Gunakan repository `labzefry/oneQay` sebagai SSOT. Review Issue #8, correction Issue #10, dan draft PR Domain Event Storming pada head terbaru. Terapkan hanya koreksi yang disetujui Product Owner. Jangan mengubah event hypothesis menjadi observed fact, memfinalkan aggregate/bounded context, memilih technology/provider, mempromosikan status Proposed, atau membuat source code tanpa evidence dan approval eksplisit. Setelah correction PR disetujui dan workshop evidence direview, siapkan Ubiquitous Language and Context Map sebagai issue dan draft PR terpisah.
+Gunakan repository `labzefry/oneQay` sebagai SSOT. Review Issue #8, correction Issue #10, correction Issue #12, dan draft PR Domain Event Storming pada head terbaru. Terapkan hanya koreksi yang disetujui Product Owner. Jangan mengubah event hypothesis menjadi observed fact, memfinalkan aggregate/bounded context, memilih technology/provider, mempromosikan status Proposed, atau membuat source code tanpa evidence dan approval eksplisit. Setelah correction PR disetujui dan workshop evidence direview, siapkan Ubiquitous Language and Context Map sebagai issue dan draft PR terpisah.
 
 ## ChatGPT — Review Independen
 
