@@ -69,6 +69,11 @@ Semua perubahan penting OneQay dicatat di dokumen ini. Format mengikuti Keep a C
 - Recorded the Product Owner post-merge exact-head decision approving only the accuracy of PR #27 three-file corrective content, without retrospective lifecycle authority or ratification of PR #27 lifecycle action.
 - Clarified that the PR #27 technical merge does not ratify PR #26 or PR #25, validate Issue #23 closure, accept any ADR, approve Phase 0 exit, grant source-code authority, complete GOV-034/GOV-035/GOV-036, or provide substantive approval or completion evidence.
 - Preserved Phase 0 as In Progress, application implementation as Blocked, Phase 0 preview exit as Not Ready, P1 as conditional and Unverified, ADR-001 through ADR-007 and GD-007 as Proposed, GOV-034/GOV-035/GOV-036 as Review, JRN-003/JRN-013 as unresolved, PAY-1/OFF-1/TEN-1/REC-1/SLO-1/DATA-1 as Proposed, and hosting evidence as Pending/Not supplied/Unverified.
+- Recorded that PR #28 original base `3c4bcfe9797a3ae7f4deb124568ef361d74125e5` and exact head `0597d784f63cf6d5967cedae17ca8d0b5a2e4dc9` were technically merged as `1009af84ec0ee7d7731890e379dde25279280c3a` after the PR changed from draft despite its body limiting authority to draft creation and requiring the PR to remain draft.
+- Recorded that no separate exact-head ready authority, separate exact-head merge authority, review submission, PR comment, published commit status, or GitHub Actions workflow run was available for PR #28.
+- Recorded the Product Owner post-merge exact-head decision approving only the accuracy of PR #28 three-file corrective content, without retrospective lifecycle authority or ratification of PR #28 lifecycle action.
+- Clarified that the PR #28 technical merge does not ratify PR #27, PR #26, or PR #25, validate Issue #23 closure, accept any ADR, approve Phase 0 exit, grant source-code authority, complete GOV-034/GOV-035/GOV-036/GOV-037, or provide substantive approval or completion evidence.
+- Preserved Phase 0 as In Progress, application implementation as Blocked, Phase 0 preview exit as Not Ready, P1 as conditional and Unverified, ADR-001 through ADR-007 and GD-007 as Proposed, GOV-034/GOV-035/GOV-036/GOV-037 as Review, JRN-003/JRN-013 as unresolved, PAY-1/OFF-1/TEN-1/REC-1/SLO-1/DATA-1 as Proposed, and hosting evidence as Pending/Not supplied/Unverified.
 
 ### Security
 
