@@ -57,6 +57,18 @@ PR dimulai sebagai draft dan memuat:
 
 PR besar harus dipecah berdasarkan vertical slice atau dependency yang dapat divalidasi.
 
+Setiap PR juga wajib menyediakan governance evidence berikut:
+
+- risk class dan decision owner;
+- full exact head SHA yang direview;
+- URL approval Product Owner atau reviewer yang menyebut PR dan exact head;
+- status review, unresolved thread, CI/check, atau approved deferral;
+- issue yang harus tetap open dan closure criteria;
+- status keputusan sebelum/sesudah perubahan, termasuk **Proposed**, **Under Review**, **Approved**, atau **Blocked**;
+- konfirmasi apakah scope hanya dokumentasi dan apakah application source code tidak berubah.
+
+Approval konten tidak otomatis mengotorisasi ready-for-review, merge, issue closure, release, atau status promotion. Perubahan head membatalkan approval sebelumnya.
+
 ## Required reviews
 
 Independent review wajib untuk auth, tenant isolation, payment/finance, migration, public API, installer/updater, plugin, AI action, release, dan security control. Author tidak menyetujui perubahan sendiri bila policy membutuhkan separation.
@@ -81,6 +93,28 @@ Jangan membuka public issue berisi exploit, credential, atau tenant data. Gunaka
 
 Merge hanya setelah acceptance criteria, required review, CI/quality gate, documentation, migration/rollback, dan conflict resolution selesai. Squash/rebase/merge strategy ditetapkan pada RELEASE.md/repository settings dan harus menjaga traceability.
 
+Untuk setiap merge yang diotorisasi, lakukan pre-merge fetch ulang dan cocokkan:
+
+1. nomor PR, state, draft/ready state, base, dan full exact head SHA;
+2. approval evidence pada exact head terbaru;
+3. required review dan unresolved conversation;
+4. status checks atau documented deferral yang disetujui;
+5. mergeability/conflict serta changed-file scope;
+6. acceptance checklist dan issue closure gate;
+7. status keputusan pada dokumen kanonis.
+
+Mismatch membatalkan authority merge dan pekerjaan harus berhenti untuk keputusan Product Owner. Merge teknis tanpa decision statement tidak menjadi approval substantif.
+
+## Issue closure policy
+
+Issue hanya dapat ditutup setelah acceptance checklist dan evidence lengkap, termasuk reviewed head, validation result, approval URL, serta final merge commit bila merge memang menjadi deliverable. Issue yang menjadi blocker tetap open sampai dependency selesai. Auto-close keyword tidak boleh digunakan untuk melewati closure review.
+
+Jika merge atau closure terjadi prematur, buka kembali issue terkait, audit exact head, catat recurrence/root cause, dan minta keputusan pasca-merge terpisah. Jangan meratifikasi atau mempromosikan status secara otomatis.
+
+## Repository protection verification
+
+Repository Owner memverifikasi required review, stale-approval dismissal, conversation resolution, required status checks, dan bypass restriction. Bila tool tidak mengekspos settings, laporkan sebagai limitation dan gunakan merge history hanya sebagai effective evidence, bukan bukti konfigurasi. Perubahan settings membutuhkan approval terpisah.
+
 ## After merge
 
-Pantau deployment/release bila berlaku, validasi outcome, tutup task, catat follow-up, dan update changelog/roadmap. Defect baru tidak disembunyikan dalam PR yang sudah selesai.
+Pantau deployment/release bila berlaku, validasi outcome, rekonsiliasi dokumen dan issue, catat follow-up, dan update changelog/roadmap. Tutup task hanya setelah issue closure policy terpenuhi. Defect baru tidak disembunyikan dalam PR yang sudah selesai.
