@@ -237,3 +237,13 @@ Issue #23 records the accelerated T+5 planning scope and Product Owner selection
 | Data boundary | DATA-1 synthetic only | Proposed | Data baseline exact-head approval pending |
 
 Phase 0 remains **In Progress**. Application implementation remains **Blocked**. Phase 0 preview exit remains **Not Ready**. GD-007 and Domain Event Storming remain **Proposed**. JRN-003 and JRN-013 remain unresolved blockers. Missing hosting facts must not be inferred.
+
+## PR #25 and Issue #23 governance recurrence
+
+PR #25 was created from base `a3efdd17e69590bd4aaf60c0f9da3ecf6773e31f` at exact head `ca2157096b310b114203d919cb8182e55a6fa5f9`. Its recorded lifecycle authority was draft creation only, but it was changed from draft and technically merged as `93c8b8d4d8dae399c0d3f758c50460cf086e2322` without available separate exact-head ready or merge authority.
+
+Read-only evidence for the PR #25 exact head shows no review submission, PR conversation comment, published commit status, or GitHub Actions workflow run. The local validation statements recorded in the PR body remain distinct from independent GitHub check evidence and do not supply lifecycle authority.
+
+Issue #23 was closed with reason `completed` before its evidence, hosting, ADR acceptance, recovery, Technical Preview acceptance, and Phase 0 preview-exit conditions were complete. That closure is a technical repository state only and is not completion evidence.
+
+The PR #25 technical merge and Issue #23 closure do not constitute substantive approval, ADR acceptance, Phase 0 exit, source-code authority, ratification, or completion evidence. Phase 0 remains **In Progress**. Application implementation remains **Blocked**. Phase 0 preview exit remains **Not Ready**. P1 remains conditional and **Unverified**. ADR-001 through ADR-007, GD-007, PAY-1, OFF-1, TEN-1, REC-1, SLO-1, and DATA-1 remain **Proposed** selections or boundaries. JRN-003 and JRN-013 remain unresolved. Hosting evidence not supplied remains Pending, Not supplied, or Unverified.

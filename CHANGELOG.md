@@ -54,6 +54,11 @@ Semua perubahan penting OneQay dicatat di dokumen ini. Format mengikuti Keep a C
 - Recorded recurrence when PR #19 head `483fcf3dbe2c5a418ea7aad97bcfcbf26124b631` was merged as `f68c01e85660409fac6c4e85f2f6545dca08f1d7` without required evidence or lifecycle authority and Issue #12/#14/#16/#18 were closed without completion evidence; all four issues were reopened and Issue #20 tracks reconciliation.
 - Required a separate Product Owner formal-risk-acceptance approval URL and exact-head decision statement; general content/reviewer approval cannot serve as risk acceptance.
 - Clarified that formal risk acceptance only substitutes for the scoped direct protection-evidence requirement and never supplies ready, merge, release, status-promotion, or issue-closure authority.
+- Recorded that PR #25 exact head `ca2157096b310b114203d919cb8182e55a6fa5f9` was changed from draft and merged as `93c8b8d4d8dae399c0d3f758c50460cf086e2322` without available separate exact-head lifecycle authority.
+- Recorded that Issue #23 was closed as completed before its evidence, acceptance, hosting, ADR, recovery, and Phase 0 preview-exit gates were complete.
+- Recorded that PR #25 exact head had no published commit status or GitHub Actions workflow run; its documented local validation remains distinct from independent GitHub check evidence.
+- Clarified that the PR #25 technical merge and Issue #23 closure do not constitute substantive approval, ADR acceptance, Phase 0 exit, source-code authority, ratification, or completion evidence.
+- Preserved Phase 0 as In Progress, application implementation as Blocked, Phase 0 preview exit as Not Ready, P1 as conditional and Unverified, ADR-001 through ADR-007 and GD-007 as Proposed, JRN-003/JRN-013 as unresolved, and all missing hosting evidence as Pending/Not supplied/Unverified.
 
 ### Security
 
