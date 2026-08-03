@@ -49,6 +49,7 @@
 | GOV-032 | Reconcile PR #17 recurrence and enforce protection gate | Review | Issue #18 dibuka kembali; PR #19 merged tanpa required evidence/authority; completion diblokir Issue #20 |
 | GOV-033 | Reconcile PR #19 recurrence and separate formal risk acceptance | Review | Issue #20; exact-head post-merge decision, protection evidence/risk acceptance, dan enforcement evidence masih pending |
 | GOV-034 | Reconcile PR #25 recurrence and premature Issue #23 closure | Review | PR #25 head `ca2157096b310b114203d919cb8182e55a6fa5f9` merged as `93c8b8d4d8dae399c0d3f758c50460cf086e2322` without available separate exact-head lifecycle authority or published checks; Issue #23 closure is not completion evidence |
+| GOV-035 | Reconcile PR #26 post-merge recurrence | Review | PR #26 head `63223b9b856bd67e739651a1e23cc071971998c3` merged as `294fe24381e88b61701868567cda4be532640ab0`; Product Owner approved content accuracy only, while lifecycle authority, protection disposition, independent review, and Issue #23 state alignment remain pending |
 
 ## Decisions required before source code
 
@@ -119,4 +120,4 @@ Items ini belum boleh diimplementasikan sebelum entry criteria ROADMAP Phase 0 t
 | P0-TP-008 | Authorize application skeleton | Blocked | Separate source-code authority after P0-TP-007 |
 | P0-TP-009 | Execute T+5 Technical Preview | Blocked | Source-code authority and Day 1 gates |
 
-PR #24 technical merge, PR #25 technical merge, and Issue #23 closure do not set any task above to Done, accept an ADR, approve Phase 0 exit, grant source-code authority, ratify prior lifecycle actions, or provide completion evidence. Phase 0 remains In Progress; application implementation remains Blocked; P1 remains conditional and Unverified; ADR-001 through ADR-007 and GD-007 remain Proposed; JRN-003 and JRN-013 remain unresolved.
+PR #24, PR #25, and PR #26 technical merges and Issue #23 closure do not set any task above to Done, accept an ADR, approve Phase 0 exit, grant source-code authority, ratify prior lifecycle actions, complete GOV-034/GOV-035, or provide completion evidence. Phase 0 remains In Progress; application implementation remains Blocked; Phase 0 preview exit remains Not Ready; P1 remains conditional and Unverified; ADR-001 through ADR-007 and GD-007 remain Proposed; JRN-003 and JRN-013 remain unresolved; hosting evidence remains Pending, Not supplied, or Unverified.
