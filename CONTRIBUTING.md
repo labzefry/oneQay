@@ -115,6 +115,12 @@ Jika merge atau closure terjadi prematur, buka kembali issue terkait, audit exac
 
 Repository Owner memverifikasi required review, stale-approval dismissal, conversation resolution, required status checks, dan bypass restriction. Bila tool tidak mengekspos settings, laporkan sebagai limitation dan gunakan merge history hanya sebagai effective evidence, bukan bukti konfigurasi. Perubahan settings membutuhkan approval terpisah.
 
+Untuk perubahan governance berisiko **High** atau **Critical**, direct repository-protection/ruleset evidence merupakan blocking precondition sebelum ready transition dan merge. Evidence harus menyediakan URL atau rekaman GitHub yang dapat diaudit untuk required PR review, stale-approval dismissal, conversation resolution, required status checks, dan bypass restriction.
+
+Jika direct evidence tidak tersedia atau tidak dapat diverifikasi, lifecycle action tetap diblokir kecuali terdapat formal risk acceptance dari Product Owner. Risk acceptance wajib mencantumkan owner, scope, alasan, compensating controls, evidence URL, masa berlaku, nomor PR, dan full exact head SHA. Evidence atau acceptance yang pending, tidak lengkap, kedaluwarsa, atau tidak mengikat head terbaru membatalkan authority. Perubahan head membatalkan approval dan risk acceptance sebelumnya kecuali keputusan baru secara eksplisit mengikat head terbaru.
+
+Direct protection evidence atau formal risk acceptance yang valid juga diperlukan sebelum issue governance terkait ditutup. Effective merge history tidak membuktikan configured protection. PR yang sudah merged tidak dapat memperoleh merge authority secara retrospektif dan hanya dapat diproses melalui audit exact-head serta keputusan pasca-merge terpisah tanpa automatic ratification.
+
 ## After merge
 
 Pantau deployment/release bila berlaku, validasi outcome, rekonsiliasi dokumen dan issue, catat follow-up, dan update changelog/roadmap. Tutup task hanya setelah issue closure policy terpenuhi. Defect baru tidak disembunyikan dalam PR yang sudah selesai.
