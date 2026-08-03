@@ -1,0 +1,37 @@
+name: Governance Validation
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  governance-validation:
+    name: governance-validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify sentinel scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f docs/governance/SENTINEL_MAIN_RULESET_TEST.md
+          git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" > changed-files.txt
+          grep -Fxq 'docs/governance/SENTINEL_MAIN_RULESET_TEST.md' changed-files.txt
+          grep -Fxq '.github/workflows/governance-validation.yml' changed-files.txt
+          unexpected="$(grep -Fvx -e 'docs/governance/SENTINEL_MAIN_RULESET_TEST.md' -e '.github/workflows/governance-validation.yml' changed-files.txt || true)"
+          test -z "$unexpected"
+
+      - name: Basic secret-pattern guard
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -RInE --exclude-dir=.git '(BEGIN (RSA|OPENSSH|EC) PRIVATE KEY|ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,})' docs/governance .github/workflows; then
+            echo 'Potential secret pattern detected.' >&2
+            exit 1
+          fi
