@@ -3,7 +3,7 @@
 ## Status legend
 
 | Status | Meaning |
-|---|---|
+| --- | --- |
 | Backlog | Belum diprioritaskan |
 | Ready | Scope dan acceptance criteria siap |
 | In Progress | Sedang dikerjakan |
@@ -14,7 +14,7 @@
 ## Handbook 1.0
 
 | ID | Task | Status | Evidence / next action |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | GOV-001 | README project orientation | Done | `README.md` |
 | GOV-002 | Project manifest | Done | `PROJECT_MANIFEST.md`; PR #1 |
 | GOV-003 | AI constitution | Done | `AI_CONSTITUTION.md`; PR #1 |
@@ -52,7 +52,7 @@
 ## Decisions required before source code
 
 | ID | Decision | Status | Required output |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | DEC-000 | Product Owner, delegates, and decision rights | In Progress | Approved Product Vision and Decision Rights document |
 | DEC-001 | MVP scope and non-scope | Ready | Approved product brief |
 | DEC-002 | Backend language/framework | Ready | ADR-001 |
@@ -70,7 +70,7 @@
 ## Phase 0 discovery backlog
 
 | ID | Task | Priority | Dependency |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | DSC-000 | Product vision and decision-rights workshop | P0 | Handbook approval; Issue #2 |
 | DSC-001 | Stakeholder and actor map | P0 | Handbook approval; Issue #4 |
 | DSC-002 | POS/ERP domain event storming | P0 | Stakeholder availability; Issue #8; correction Issue #10/#12; governance Issue #14/#16/#18/#20 |

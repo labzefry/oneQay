@@ -19,7 +19,7 @@ flowchart TD
 ## Logical layers
 
 | Layer | Responsibility | Allowed dependency |
-|---|---|---|
+| --- | --- | --- |
 | Domain | Entity, value object, invariant, domain service/event | Domain only |
 | Application | Use case, orchestration, port, transaction boundary | Domain |
 | Interface | HTTP, CLI, jobs, UI adapter, serialization | Application |

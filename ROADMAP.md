@@ -132,7 +132,7 @@ Scope candidate:
 ## Infrastructure evolution track
 
 | Stage | Trigger | Required readiness |
-|---|---|---|
+| --- | --- | --- |
 | Shared Hosting | Initial controlled launch | scheduler, backup, secure config, monitoring baseline |
 | VPS | Resource/control limit reached | automated deploy, externalized state, hardening |
 | Dedicated | Sustained workload/isolation need | capacity model, HA/DR decision |
