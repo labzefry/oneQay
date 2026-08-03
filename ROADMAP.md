@@ -151,3 +151,19 @@ Gunakan urutan: legal/security necessity, tenant/data integrity, revenue/operati
 ## Roadmap change control
 
 Perubahan fase harus memperbarui PROJECT_MANIFEST.md, ROADMAP.md, TASKS.md, CHANGELOG.md, serta ADR/dokumen domain yang terdampak. Tanggal hanya ditambahkan setelah kapasitas, dependency, dan risk buffer tersedia.
+
+## Accelerated Technical Preview track
+
+Technical Preview v0.0.1 is a gated T+5 workstream tracked by Issue #23. It is a synthetic sandbox preview, not a production or pilot release.
+
+| Working day | Planned outcome | Entry gate |
+| ---: | --- | --- |
+| 1 | Exact-head review of ADR, data, threat, hosting, recovery, and exit evidence | Product Owner decision package recorded |
+| 2 | Application skeleton, configuration boundary, CI, tenant context | Phase 0 preview exit and source-code authority explicitly approved |
+| 3 | Identity, organization/outlet/device, catalog/cart, cash-sale vertical slice | Day 2 quality and isolation gates pass |
+| 4 | Migration/seeder, installer, deployment, backup/restore/rollback rehearsal | Target environment capability verified |
+| 5 | Security, isolation, smoke, recovery, and staging acceptance | No unresolved Critical/High preview defect |
+
+The calendar target begins only after Day 1 exit evidence is approved. P1 remains Unverified until hosting evidence is complete. A missed mandatory gate moves the target; quality, tenant isolation, audit, or recovery controls must not be removed to preserve the date.
+
+This track does not promote GD-007, resolve JRN-003/JRN-013, authorize production data or real payment, or change Phase 0 from In Progress before an explicit exact-head exit decision.

@@ -217,3 +217,23 @@ Setiap perubahan resmi minimal memperbarui manifest, task, dan changelog bila st
 ## Approval
 
 Baseline governance Handbook 1.0 disetujui melalui PR #1. Item berstatus Approved mengikat seluruh pekerjaan berikutnya; item Proposed, Under Review, dan Deferred tidak boleh diperlakukan sebagai keputusan final.
+
+## Technical Preview v0.0.1 decision package
+
+Issue #23 records the accelerated T+5 planning scope and Product Owner selections. PR #24 was technically merged before this canonical synchronization; that merge does not accept an ADR, approve Phase 0 exit, or grant source-code authority.
+
+| Decision package item | Candidate selection | Status | Evidence/gate |
+| --- | --- | --- | --- |
+| Backend | B1 Laravel/PHP modular monolith | Proposed | ADR-001; exact-head approval pending |
+| Frontend/PWA | F1 Vue 3 + Inertia + Vite | Proposed | ADR-002; exact-head approval pending |
+| Database/tenancy | D1 MySQL-compatible shared schema | Proposed | ADR-003; engine/version evidence pending |
+| Authentication | A1 first-party session and privileged TOTP | Proposed | ADR-004; JRN-003 remains unresolved |
+| Payment preview | PAY-1 synthetic cash-only | Proposed | ADR-005; no provider or real money |
+| Offline preview | OFF-1 online-only | Proposed | ADR-006; offline mutation deferred |
+| Deployment | P1 cPanel conditional; P2 fallback hypothesis | Proposed / Unverified | ADR-007; hosting assessment incomplete |
+| Tenant boundary | TEN-1 two synthetic tenants | Proposed | Isolation evidence pending |
+| Recovery | REC-1 provisional RPO 24h/RTO 4h | Proposed | Capability and rehearsal pending |
+| Preview SLO | SLO-1 | Proposed | Measurement evidence pending |
+| Data boundary | DATA-1 synthetic only | Proposed | Data baseline exact-head approval pending |
+
+Phase 0 remains **In Progress**. Application implementation remains **Blocked**. Phase 0 preview exit remains **Not Ready**. GD-007 and Domain Event Storming remain **Proposed**. JRN-003 and JRN-013 remain unresolved blockers. Missing hosting facts must not be inferred.

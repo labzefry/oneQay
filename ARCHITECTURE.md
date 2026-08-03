@@ -224,3 +224,21 @@ Keputusan signifikan dicatat di `docs/adr/ADR-NNN-title.md` dengan status Propos
 - recovery objectives
 - plugin trust model
 - AI data and provider policy
+
+## Technical Preview candidate architecture
+
+The following profile is a **Proposed** Technical Preview candidate recorded through Issue #23. It does not replace Accepted architecture decisions and does not grant implementation authority.
+
+- Delivery shape: Laravel/PHP modular monolith with domain/application boundaries independent of framework and infrastructure.
+- Web client: Vue 3, Inertia, and Vite in one preview deployment unit.
+- Data: MySQL-compatible shared schema with mandatory validated tenant identity and composite integrity strategy.
+- Identity: first-party revocable session, CSRF protection, and privileged-role TOTP baseline.
+- Payment: synthetic cash-only; no provider, callback, settlement, refund, or real-money processing.
+- Connectivity: online-only transactional mutation.
+- Deployment: P1 cPanel only if every mandatory capability passes; P2 hardened VPS remains an undecided fallback.
+- Recovery: provisional RPO 24 hours and RTO 4 hours for synthetic sandbox data.
+- SLO: zero cross-tenant exposure, 99% scheduled demo-window availability, and proposed p95 server response at or below 750 ms for the agreed preview load.
+
+Architectural fitness for this preview requires two-tenant negative isolation tests, server-side deny-by-default authorization, integer minor-unit money, idempotent retry boundaries, tenant-aware cache/job/file/audit behavior, deterministic migration/seeder rehearsal, secret isolation, versioned deployment, and backup/restore/rollback evidence.
+
+All ADR-001 through ADR-007 remain **Proposed**. Hosting engine/version, worker, HTTPS, storage, backup, restore, rollback, and quota remain unverified. JRN-003 and JRN-013 are not resolved by this candidate profile.
