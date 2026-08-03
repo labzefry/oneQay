@@ -79,6 +79,11 @@ Semua perubahan penting OneQay dicatat di dokumen ini. Format mengikuti Keep a C
 - Recorded that no separate exact-head ready authority, separate exact-head merge authority, review submission, published commit status, or GitHub Actions workflow run was available for PR #29.
 - Recorded the Product Owner post-merge exact-head decision approving only the accuracy of PR #29 three-file corrective content, without retrospective lifecycle authority or ratification of PR #29 lifecycle action.
 - Clarified that the PR #29 technical merge does not ratify PR #28, PR #27, PR #26, or PR #25, validate Issue #23 closure, accept any ADR, approve Phase 0 exit, grant source-code authority, complete GOV-034/GOV-035/GOV-036/GOV-037/GOV-038, or provide substantive approval or completion evidence; all substantive governance statuses remain unchanged.
+- Recorded that PR #30 original base `f55d86f1a3d89a6bcbbbcf7800851b9c61f8c047` and exact head `f3703650f98e5d6abfdb21d9b67ac7c5567ea9f6` were technically merged as `54bc51a7a150394748dcc5f6a2fb8e376206feba` after the PR changed from draft despite its body requiring the PR to remain draft.
+- Recorded that the repository-native operational authority comment for PR #30 explicitly excluded draft-to-ready, merge, auto-merge, approval review, ADR acceptance, Phase 0 exit, source-code implementation, Issue #23 state change, governance-task completion, release, deployment, and status promotion.
+- Recorded that no separate exact-head ready authority, separate exact-head merge authority, review submission, review thread, published commit status, or GitHub Actions workflow run was available for PR #30.
+- Recorded the Product Owner post-merge exact-head decision approving only the accuracy of PR #30 three-file corrective content, without retrospective lifecycle authority or ratification of PR #30 lifecycle action.
+- Clarified that the PR #30 technical merge does not ratify PR #29, PR #28, PR #27, PR #26, or PR #25, validate Issue #23 closure, accept any ADR, approve Phase 0 exit, grant source-code authority, complete GOV-034/GOV-035/GOV-036/GOV-037/GOV-038/GOV-039, or provide substantive approval or completion evidence; all substantive governance statuses remain unchanged.
 
 ### Security
 
