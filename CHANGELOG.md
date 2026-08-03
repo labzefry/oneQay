@@ -43,6 +43,9 @@ Semua perubahan penting OneQay dicatat di dokumen ini. Format mengikuti Keep a C
 - Opened governance reconciliation under Issue #14 after PR #13 was merged and Issue #12 was closed before approval evidence was recorded; Issue #12 was reopened and Phase 0/application gates remain unchanged.
 - Recorded recurrence when PR #15 head `4ad28a4e8ad5740e6f55f4563a32d09e7bba631a` was merged as `b34f99ea3c5471cfcd6ae82bc6abeb9a3e78441a` and Issue #12/#14 were closed before exact-head approval and completion evidence; both issues were reopened.
 - Proposed governance-control hardening under Issue #16: exact-head approval evidence, changed-head invalidation, separate merge authority, pre-merge state re-fetch, issue closure gates, PR checklist, and repository-protection verification without changing GD-007 or application gates.
+- Recorded the PR #17 recurrence at exact head `aaa7510759925c0c62ba5424c93e2356d18c9d3d`, merged as `82b45820a67c274bd96866bb048f3f320d6cbe70` without exact-head approval, review, checks/deferral, protection evidence/risk acceptance, or separate merge authority; Issue #12/#14/#16 were reopened and Issue #18 now tracks reconciliation.
+- Made direct repository-protection/ruleset evidence a blocking precondition before ready transition, merge, and governance issue closure for High/Critical governance changes, with a fully specified formal risk-acceptance path when direct evidence is unavailable.
+- Preserved PR #17 as unratified, GOV-029/GOV-030/GOV-031 as Review, GD-007 and all Domain Event Storming hypotheses as Proposed, Phase 0 as In Progress, application implementation as Blocked, and JRN-003/JRN-013 as unresolved blockers.
 
 ### Security
 
