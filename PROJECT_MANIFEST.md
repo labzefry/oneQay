@@ -40,7 +40,7 @@ OneQay menyatukan fungsi POS, ERP, administrasi tenant, integrasi, marketplace, 
 | Item | Status | Gate |
 |---|---|---|
 | Handbook 1.0 governance baseline | Approved | PR #1 disetujui dan di-merge ke `main` |
-| Phase 0 governance and discovery | In Progress | Deliverable discovery dikelola melalui Issue #2, Issue #4, Issue #6, Issue #8, Issue #10, Issue #12, Issue #14, dan PR terpisah |
+| Phase 0 governance and discovery | In Progress | Deliverable discovery dikelola melalui Issue #2, Issue #4, Issue #6, Issue #8, Issue #10, Issue #12, Issue #14, Issue #16, dan PR terpisah |
 | Application implementation | Blocked | Menunggu exit criteria Phase 0 dan Accepted ADR minimum |
 
 Rencana kickoff berada di `docs/handbook/PHASE_0_KICKOFF.md`.
@@ -55,7 +55,7 @@ Rencana kickoff berada di `docs/handbook/PHASE_0_KICKOFF.md`.
 | GD-004 | Application source code tetap diblokir sampai exit criteria Phase 0 | Approved | `docs/handbook/PHASE_0_KICKOFF.md` |
 | GD-005 | Stakeholder and actor map | Proposed | `docs/handbook/STAKEHOLDER_AND_ACTOR_MAP.md` |
 | GD-006 | Current process and user journeys | Proposed | `docs/handbook/CURRENT_PROCESS_AND_USER_JOURNEYS.md` |
-| GD-007 | Domain event storming | Proposed | `docs/handbook/DOMAIN_EVENT_STORMING.md`; approved corrections tracked in Issue #10 dan Issue #12; governance reconciliation in Issue #14 |
+| GD-007 | Domain event storming | Proposed | `docs/handbook/DOMAIN_EVENT_STORMING.md`; corrections tracked in Issue #10/#12; governance controls tracked in Issue #14/#16 |
 
 GD-003 hanya dapat berubah menjadi Approved setelah Product Owner menyetujui head pull request terkait. Merge teknis tanpa decision statement tidak boleh dianggap sebagai approval substantif.
 
@@ -63,7 +63,11 @@ Persetujuan Product Owner atas lima koreksi review PR #9 hanya mengotorisasi cor
 
 Persetujuan Product Owner atas empat koreksi audit PR #11 hanya mengotorisasi correction scope pada Issue #12. Merge PR #11 dan penutupan Issue #10 tidak dianggap sebagai approval substantif GD-007.
 
-Product Owner meratifikasi empat koreksi tersebut pada exact head PR #13 `e4a3b7ba9f94b429b6e50e2856a11b953a336ac0` setelah audit pasca-merge. Merge commit `66865c3c79fc46e7ec67b0576097143288a73ed5` terjadi sebelum approval tercatat dan direkonsiliasi melalui Issue #14. Ratifikasi terbatas ini tidak mempromosikan GD-007, event, policy, aggregate candidate, atau bounded-context candidate dari **Proposed**.
+Product Owner meratifikasi empat koreksi tersebut pada exact head PR #13 `e4a3b7ba9f94b429b6e50e2856a11b953a336ac0` setelah audit pasca-merge. Merge commit `66865c3c79fc46e7ec67b0576097143288a73ed5` terjadi sebelum approval tercatat dan dilacak melalui Issue #14. Ratifikasi terbatas ini tidak mempromosikan GD-007, event, policy, aggregate candidate, atau bounded-context candidate dari **Proposed**.
+
+PR #15 pada exact head `4ad28a4e8ad5740e6f55f4563a32d09e7bba631a` juga di-merge sebelum approval melalui merge commit `b34f99ea3c5471cfcd6ae82bc6abeb9a3e78441a`; Issue #12 dan Issue #14 kembali ditutup tanpa completion evidence lalu dibuka kembali. Recurrence dan hardening exact-head approval, pre-merge verification, serta issue closure gate dilacak melalui Issue #16. Tidak ada ratifikasi substantif PR #15 dan seluruh status Phase 0/application/domain tetap tidak berubah.
+
+Audit read-only menunjukkan required review dan required status checks tidak efektif atau dapat dibypass pada PR #13/#15. Stale-approval dismissal dan conversation-resolution settings tidak dapat diverifikasi karena tidak ada approval/thread serta GitHub App tidak mengekspos konfigurasi protection. Repository Owner harus memberi direct settings evidence atau formal risk acceptance sebelum Issue #16 ditutup.
 
 ## Target platforms
 

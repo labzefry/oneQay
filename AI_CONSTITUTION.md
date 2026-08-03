@@ -149,6 +149,19 @@ Dokumen arsitektur/API/database/security/deployment/testing/UI harus ikut beruba
 - Review wajib independen untuk auth, payment, tenant isolation, migration, installer, updater, plugin, dan release.
 - Commit harus atomik dan mengikuti Conventional Commits.
 
+## Exact-head approval and lifecycle gates
+
+- Approval perubahan hanya valid bila decision statement menyebut nomor PR dan full 40-character head SHA yang direview.
+- Approval Product Owner harus disimpan sebagai evidence pada PR atau issue GitHub sebelum merge. Persetujuan di luar GitHub dicatat ke SSOT sebelum tindakan irreversible.
+- Setiap perubahan head setelah approval membatalkan approval sebelumnya. Review dan approval harus diulang pada head terbaru.
+- Approval konten tidak otomatis memberi authority untuk mengubah draft menjadi ready, merge, menutup issue, atau mempromosikan status keputusan.
+- AI dilarang mengubah draft menjadi ready atau melakukan merge tanpa instruksi eksplisit Product Owner yang menyebut nomor PR, exact head terbaru, dan tindakan yang diotorisasi.
+- Sesaat sebelum tindakan merge yang telah diotorisasi, AI wajib fetch ulang state PR, exact head, base, review/approval evidence, checks atau approved deferral, unresolved thread, conflict/mergeability, serta issue gate. Perbedaan apa pun adalah stop condition.
+- Merge teknis tidak pernah menjadi approval substantif. Status **Proposed**, **Under Review**, atau **Blocked** hanya berubah melalui decision statement eksplisit dan pembaruan dokumen kanonis.
+- Issue tidak boleh ditutup sebelum acceptance checklist, validation evidence, reviewed head, approval evidence, merge evidence, dan status dokumentasi konsisten. Auto-close keyword tidak menggantikan pemeriksaan ini.
+- Bila PR terlanjur merged sebelum approval, AI wajib melakukan audit exact head dan meminta keputusan pasca-merge terpisah; ratifikasi, status promotion, dan issue closure tidak boleh diasumsikan.
+- Repository protection atau ruleset tidak boleh dinonaktifkan atau diubah tanpa persetujuan terpisah. Bila konfigurasi tidak dapat dibaca, AI melaporkan keterbatasan dan membedakan configured control dari effective evidence.
+
 ## Stop conditions
 
 AI wajib berhenti dan meminta keputusan bila:
