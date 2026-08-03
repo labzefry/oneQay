@@ -6,6 +6,11 @@ Semua perubahan penting OneQay dicatat di dokumen ini. Format mengikuti Keep a C
 
 ### Added
 
+- Added seven **Proposed** Technical Preview ADRs for B1 Laravel/PHP, F1 Vue/Inertia/Vite, D1 MySQL-compatible shared tenancy, A1 first-party session/TOTP, PAY-1 synthetic cash-only, OFF-1 online-only, and conditional P1 deployment with P2 fallback hypothesis.
+- Added Proposed synthetic-data classification, threat model, recovery plan, incomplete shared-hosting capability assessment, and Not Ready Phase 0 preview exit evidence under Issue #23.
+- Recorded TEN-1, REC-1, SLO-1, and DATA-1 as Technical Preview selections without accepting ADRs or granting source-code authority.
+- Preserved Phase 0 as In Progress, application implementation as Blocked, P1 as Unverified, GD-007 as Proposed, and JRN-003/JRN-013 as unresolved.
+- Recorded that PR #24 technical merge and Issue #23 closure do not constitute substantive approval, ADR acceptance, Phase 0 exit, or application-skeleton authority.
 - AI Engineering Handbook version 1.0 baseline.
 - Project orientation, identity, target platforms, and GitHub SSOT governance.
 - Canonical project manifest with decision states and initial risk register.

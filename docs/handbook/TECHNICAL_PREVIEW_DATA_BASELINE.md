@@ -12,7 +12,7 @@ Technical Preview hanya menggunakan synthetic data. Data tidak boleh berasal dar
 ## Classification
 
 | Class | Preview examples | Handling |
-|---|---|---|
+| --- | --- | --- |
 | Public | Product name, generic documentation | May be published after review |
 | Internal | Synthetic catalog, synthetic outlet configuration | Authenticated preview only |
 | Confidential | Synthetic user identity, audit and error-correlation records | Least privilege, encrypted transport, controlled retention |
@@ -22,7 +22,7 @@ Technical Preview hanya menggunakan synthetic data. Data tidak boleh berasal dar
 ## Minimum inventory
 
 | Data object | Tenant-owned | Classification | Preview retention | Required controls |
-|---|---:|---|---|---|
+| --- | ---: | --- | --- | --- |
 | Tenant and organization | Yes | Internal | Sprint plus 14 days | Synthetic marker, tenant enforcement |
 | Outlet and device | Yes | Internal | Sprint plus 14 days | Tenant scope, audit |
 | User account | Yes | Confidential | Sprint plus 14 days | Synthetic identity, password hash, MFA controls |

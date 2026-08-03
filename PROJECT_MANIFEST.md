@@ -5,7 +5,7 @@
 ## Metadata
 
 | Atribut | Nilai | Status |
-|---|---|---|
+| --- | --- | --- |
 | Product | OneQay | Approved |
 | Tagline | The Future of Intelligent Business Management | Approved |
 | Author | Lab \| Zefry | Approved |
@@ -24,7 +24,7 @@
 ## Status definitions
 
 | Status | Arti |
-|---|---|
+| --- | --- |
 | Approved | Telah disetujui dan mengikat implementasi |
 | Proposed | Usulan siap direview, belum mengikat |
 | Under Review | Sedang dianalisis atau membutuhkan keputusan |
@@ -38,7 +38,7 @@ OneQay menyatukan fungsi POS, ERP, administrasi tenant, integrasi, marketplace, 
 ## Current delivery gate
 
 | Item | Status | Gate |
-|---|---|---|
+| --- | --- | --- |
 | Handbook 1.0 governance baseline | Approved | PR #1 disetujui dan di-merge ke `main` |
 | Phase 0 governance and discovery | In Progress | Deliverable discovery dikelola melalui Issue #2, Issue #4, Issue #6, Issue #8, Issue #10, Issue #12, Issue #14, Issue #16, Issue #18, Issue #20, dan PR terpisah |
 | Application implementation | Blocked | Menunggu exit criteria Phase 0 dan Accepted ADR minimum |
@@ -48,7 +48,7 @@ Rencana kickoff berada di `docs/handbook/PHASE_0_KICKOFF.md`.
 ## Governance decision register
 
 | ID | Keputusan | Status | Dokumen pemilik |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | GD-001 | GitHub sebagai Single Source of Truth | Approved | `AI_CONSTITUTION.md` |
 | GD-002 | ChatGPT + GitHub sebagai collaboration model eksklusif | Approved | `AI_CONSTITUTION.md` |
 | GD-003 | Product vision dan decision rights | Proposed | `docs/handbook/PRODUCT_VISION_AND_DECISION_RIGHTS.md` |
@@ -80,7 +80,7 @@ Audit read-only PR #19 kembali menunjukkan tidak adanya review submission, appro
 ## Target platforms
 
 | Platform | Target | Status awal |
-|---|---|---|
+| --- | --- | --- |
 | Web Application | Operasional utama | Approved |
 | Progressive Web App | Akses mobile dan offline-terkendali | Approved |
 | Android Native | Kapabilitas perangkat dan pengalaman native | Proposed |
@@ -128,7 +128,7 @@ Status seluruh bounded context: **Proposed**.
 ## Multi-tenant baseline
 
 | Keputusan | Nilai | Status |
-|---|---|---|
+| --- | --- | --- |
 | Isolation key | Immutable Tenant ID | Approved |
 | Access hostname | Domain/subdomain sebagai routing, bukan otorisasi | Approved |
 | Default isolation model | Shared application dengan tenant-scoped data | Proposed |
@@ -139,7 +139,7 @@ Status seluruh bounded context: **Proposed**.
 ## Deployment evolution
 
 | Stage | Environment | Status | Exit criteria utama |
-|---:|---|---|---|
+| ---: | --- | --- | --- |
 | 1 | Shared Hosting / cPanel | Approved target awal | Operasional stabil, backup dan restore teruji |
 | 2 | VPS | Planned | Kebutuhan resource atau kontrol melebihi shared hosting |
 | 3 | Dedicated Server | Planned | Beban dan isolasi memerlukan host khusus |
@@ -152,7 +152,7 @@ Perpindahan stage tidak boleh mengubah domain atau business logic.
 ## Technology decision register
 
 | ID | Keputusan | Status | Dokumen pemilik |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | TD-001 | Bahasa dan framework backend | Under Review | ADR |
 | TD-002 | Framework web frontend | Under Review | ADR |
 | TD-003 | Android native stack | Under Review | ADR |
@@ -168,7 +168,7 @@ Tidak ada framework atau vendor yang dianggap dipilih sebelum ADR berstatus Acce
 ## Environment classes
 
 | Environment | Data policy | Deployment source | Approval |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | Local | Synthetic only | Developer branch | Tidak untuk produksi |
 | Test | Synthetic/masked | CI artifact | Otomatis sesuai quality gate |
 | Staging | Masked; production-like | Release candidate | Release Manager |
@@ -185,7 +185,7 @@ Tidak ada framework atau vendor yang dianggap dipilih sebelum ADR berstatus Acce
 ## Canonical documents
 
 | Dokumen | Otoritas |
-|---|---|
+| --- | --- |
 | README.md | Orientasi proyek |
 | PROJECT_MANIFEST.md | Identitas dan status keputusan |
 | AI_CONSTITUTION.md | Aturan permanen ChatGPT pada proyek |
@@ -202,7 +202,7 @@ Tidak ada framework atau vendor yang dianggap dipilih sebelum ADR berstatus Acce
 ## Initial risks
 
 | ID | Risiko | Severity | Mitigasi awal |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | R-001 | Kebocoran data lintas tenant | Critical | Tenant context enforcement dan isolation tests |
 | R-002 | Scope POS/ERP terlalu luas | High | MVP boundary dan phased roadmap |
 | R-003 | Ketergantungan shared hosting | High | Infrastructure abstraction dan migration criteria |
@@ -217,3 +217,23 @@ Setiap perubahan resmi minimal memperbarui manifest, task, dan changelog bila st
 ## Approval
 
 Baseline governance Handbook 1.0 disetujui melalui PR #1. Item berstatus Approved mengikat seluruh pekerjaan berikutnya; item Proposed, Under Review, dan Deferred tidak boleh diperlakukan sebagai keputusan final.
+
+## Technical Preview v0.0.1 decision package
+
+Issue #23 records the accelerated T+5 planning scope and Product Owner selections. PR #24 was technically merged before this canonical synchronization; that merge does not accept an ADR, approve Phase 0 exit, or grant source-code authority.
+
+| Decision package item | Candidate selection | Status | Evidence/gate |
+| --- | --- | --- | --- |
+| Backend | B1 Laravel/PHP modular monolith | Proposed | ADR-001; exact-head approval pending |
+| Frontend/PWA | F1 Vue 3 + Inertia + Vite | Proposed | ADR-002; exact-head approval pending |
+| Database/tenancy | D1 MySQL-compatible shared schema | Proposed | ADR-003; engine/version evidence pending |
+| Authentication | A1 first-party session and privileged TOTP | Proposed | ADR-004; JRN-003 remains unresolved |
+| Payment preview | PAY-1 synthetic cash-only | Proposed | ADR-005; no provider or real money |
+| Offline preview | OFF-1 online-only | Proposed | ADR-006; offline mutation deferred |
+| Deployment | P1 cPanel conditional; P2 fallback hypothesis | Proposed / Unverified | ADR-007; hosting assessment incomplete |
+| Tenant boundary | TEN-1 two synthetic tenants | Proposed | Isolation evidence pending |
+| Recovery | REC-1 provisional RPO 24h/RTO 4h | Proposed | Capability and rehearsal pending |
+| Preview SLO | SLO-1 | Proposed | Measurement evidence pending |
+| Data boundary | DATA-1 synthetic only | Proposed | Data baseline exact-head approval pending |
+
+Phase 0 remains **In Progress**. Application implementation remains **Blocked**. Phase 0 preview exit remains **Not Ready**. GD-007 and Domain Event Storming remain **Proposed**. JRN-003 and JRN-013 remain unresolved blockers. Missing hosting facts must not be inferred.

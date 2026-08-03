@@ -3,7 +3,7 @@
 ## Status legend
 
 | Status | Meaning |
-|---|---|
+| --- | --- |
 | Backlog | Belum diprioritaskan |
 | Ready | Scope dan acceptance criteria siap |
 | In Progress | Sedang dikerjakan |
@@ -14,7 +14,7 @@
 ## Handbook 1.0
 
 | ID | Task | Status | Evidence / next action |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | GOV-001 | README project orientation | Done | `README.md` |
 | GOV-002 | Project manifest | Done | `PROJECT_MANIFEST.md`; PR #1 |
 | GOV-003 | AI constitution | Done | `AI_CONSTITUTION.md`; PR #1 |
@@ -52,7 +52,7 @@
 ## Decisions required before source code
 
 | ID | Decision | Status | Required output |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | DEC-000 | Product Owner, delegates, and decision rights | In Progress | Approved Product Vision and Decision Rights document |
 | DEC-001 | MVP scope and non-scope | Ready | Approved product brief |
 | DEC-002 | Backend language/framework | Ready | ADR-001 |
@@ -70,7 +70,7 @@
 ## Phase 0 discovery backlog
 
 | ID | Task | Priority | Dependency |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | DSC-000 | Product vision and decision-rights workshop | P0 | Handbook approval; Issue #2 |
 | DSC-001 | Stakeholder and actor map | P0 | Handbook approval; Issue #4 |
 | DSC-002 | POS/ERP domain event storming | P0 | Stakeholder availability; Issue #8; correction Issue #10/#12; governance Issue #14/#16/#18/#20 |
@@ -103,3 +103,19 @@ Items ini belum boleh diimplementasikan sebelum entry criteria ROADMAP Phase 0 t
 - Done membutuhkan evidence, bukan hanya implementasi.
 - Scope baru tidak disisipkan diam-diam; buat task/issue baru.
 - Perubahan status capability/decision memperbarui PROJECT_MANIFEST dan CHANGELOG.
+
+## Phase 0 Accelerated Technical Preview
+
+| ID | Task | Status | Dependency/evidence |
+| --- | --- | --- | --- |
+| P0-TP-001 | Record B1/F1/D1/A1 and PAY-1/OFF-1/TEN-1/REC-1/SLO-1/DATA-1 | Review | Issue #23; ADR exact-head approval pending |
+| P0-TP-002 | Complete P1 shared-hosting capability assessment | Blocked | PHP, DB, SSH/Git, cron, worker, HTTPS, backup/restore, rollback, and quota evidence missing |
+| P0-TP-003 | Review ADR-001 through ADR-007 | Review | All ADRs remain Proposed |
+| P0-TP-004 | Review data inventory/classification baseline | Review | Product Owner and security exact-head review |
+| P0-TP-005 | Review Technical Preview threat model | Review | Critical/High threats require mapped verification |
+| P0-TP-006 | Review REC-1 recovery plan | Review | Target-environment capability and rehearsal pending |
+| P0-TP-007 | Approve Phase 0 preview exit | Blocked | P0-TP-002 through P0-TP-006 and explicit exact-head decision |
+| P0-TP-008 | Authorize application skeleton | Blocked | Separate source-code authority after P0-TP-007 |
+| P0-TP-009 | Execute T+5 Technical Preview | Blocked | Source-code authority and Day 1 gates |
+
+PR #24 technical merge and Issue #23 closure do not set any task above to Done, accept an ADR, or approve Phase 0 exit. Phase 0 remains In Progress; application implementation remains Blocked; GD-007 remains Proposed; JRN-003 and JRN-013 remain unresolved.
