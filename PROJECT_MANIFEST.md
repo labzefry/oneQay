@@ -247,3 +247,13 @@ Read-only evidence for the PR #25 exact head shows no review submission, PR conv
 Issue #23 was closed with reason `completed` before its evidence, hosting, ADR acceptance, recovery, Technical Preview acceptance, and Phase 0 preview-exit conditions were complete. That closure is a technical repository state only and is not completion evidence.
 
 The PR #25 technical merge and Issue #23 closure do not constitute substantive approval, ADR acceptance, Phase 0 exit, source-code authority, ratification, or completion evidence. Phase 0 remains **In Progress**. Application implementation remains **Blocked**. Phase 0 preview exit remains **Not Ready**. P1 remains conditional and **Unverified**. ADR-001 through ADR-007, GD-007, PAY-1, OFF-1, TEN-1, REC-1, SLO-1, and DATA-1 remain **Proposed** selections or boundaries. JRN-003 and JRN-013 remain unresolved. Hosting evidence not supplied remains Pending, Not supplied, or Unverified.
+
+## PR #26 post-merge governance recurrence
+
+PR #26 was created from original base `93c8b8d4d8dae399c0d3f758c50460cf086e2322` at exact head `63223b9b856bd67e739651a1e23cc071971998c3`. Its body limited lifecycle authority to draft creation and required the PR to remain draft, but it was changed from draft and technically merged as `294fe24381e88b61701868567cda4be532640ab0` without available separate exact-head ready or merge authority.
+
+Read-only evidence for the PR #26 exact head shows no review submission, PR conversation comment, published commit status, or GitHub Actions workflow run. The local and static validation statements in the PR body remain distinct from independent GitHub check evidence and do not supply lifecycle authority.
+
+The Product Owner issued a post-merge content decision approving only the accuracy of the three-file corrective content on PR #26 exact head. That decision does not provide retrospective lifecycle authority and does not ratify the draft-to-ready transition or merge of PR #26.
+
+The PR #26 technical merge does not ratify PR #25, validate or complete the closure of Issue #23, accept ADR-001 through ADR-007, approve Phase 0 preview exit, grant source-code authority, complete GOV-034 or GOV-035, or provide completion evidence. Phase 0 remains **In Progress**. Application implementation remains **Blocked**. Phase 0 preview exit remains **Not Ready**. P1 remains conditional and **Unverified**. ADR-001 through ADR-007, GD-007, PAY-1, OFF-1, TEN-1, REC-1, SLO-1, and DATA-1 remain **Proposed** selections or boundaries. JRN-003 and JRN-013 remain unresolved. Hosting evidence remains Pending, Not supplied, or Unverified.

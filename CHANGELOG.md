@@ -59,6 +59,11 @@ Semua perubahan penting OneQay dicatat di dokumen ini. Format mengikuti Keep a C
 - Recorded that PR #25 exact head had no published commit status or GitHub Actions workflow run; its documented local validation remains distinct from independent GitHub check evidence.
 - Clarified that the PR #25 technical merge and Issue #23 closure do not constitute substantive approval, ADR acceptance, Phase 0 exit, source-code authority, ratification, or completion evidence.
 - Preserved Phase 0 as In Progress, application implementation as Blocked, Phase 0 preview exit as Not Ready, P1 as conditional and Unverified, ADR-001 through ADR-007 and GD-007 as Proposed, JRN-003/JRN-013 as unresolved, and all missing hosting evidence as Pending/Not supplied/Unverified.
+- Recorded that PR #26 original base `93c8b8d4d8dae399c0d3f758c50460cf086e2322` and exact head `63223b9b856bd67e739651a1e23cc071971998c3` were technically merged as `294fe24381e88b61701868567cda4be532640ab0` after the PR changed from draft despite its body limiting authority to draft creation.
+- Recorded that no separate exact-head ready or merge authority, review submission, PR comment, published commit status, or GitHub Actions workflow run was available for PR #26.
+- Recorded the Product Owner post-merge decision approving only the accuracy of PR #26 corrective content, without retrospective lifecycle authority or ratification of PR #26 lifecycle action.
+- Clarified that the PR #26 technical merge does not ratify PR #25, validate Issue #23 closure, accept any ADR, approve Phase 0 exit, grant source-code authority, complete GOV-034/GOV-035, or provide completion evidence.
+- Preserved Phase 0 as In Progress, application implementation as Blocked, Phase 0 preview exit as Not Ready, P1 as conditional and Unverified, ADR-001 through ADR-007 and GD-007 as Proposed, JRN-003/JRN-013 as unresolved, PAY-1/OFF-1/TEN-1/REC-1/SLO-1/DATA-1 as Proposed, and hosting evidence as Pending/Not supplied/Unverified.
 
 ### Security
 
