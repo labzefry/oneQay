@@ -13,7 +13,7 @@ P1 remains conditional. Any mandatory control marked Fail or Unverifiable blocks
 ## Evidence matrix
 
 | Capability | Requirement | Current evidence | Status |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | PHP runtime | Supported version and required extensions | Not supplied | Pending |
 | Database | Engine/version, transaction and constraint support | Not supplied | Pending |
 | SSH/Git | Controlled artifact deployment | Not supplied | Pending |

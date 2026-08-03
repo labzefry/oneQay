@@ -14,7 +14,7 @@ Trust boundaries exist between browser and application, request and tenant resol
 ## Priority threats and controls
 
 | Threat | Severity | Required preventive controls | Verification |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | Cross-tenant data access | Critical | Validated tenant context, deny-by-default, scoped repository/query layer, composite integrity | Negative isolation suite |
 | Broken authorization | Critical | Server-side policy, least privilege, role matrix | Authorization matrix tests |
 | Session theft/fixation | High | Secure cookie, rotation, expiry, CSRF, TLS, revocation | Session lifecycle tests |

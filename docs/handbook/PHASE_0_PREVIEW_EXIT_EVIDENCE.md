@@ -8,7 +8,7 @@
 ## Product Owner selections recorded
 
 | Item | Selection | Evidence state |
-|---|---|---|
+| --- | --- | --- |
 | Backend | B1 Laravel/PHP | Selected; ADR Proposed |
 | Frontend | F1 Vue 3 + Inertia + Vite | Selected; ADR Proposed |
 | Database/tenancy | D1 MySQL-compatible shared schema | Selected; engine/version Pending |
