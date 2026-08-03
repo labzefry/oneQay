@@ -43,9 +43,10 @@
 | GOV-026 | Current process and user journeys | Review | Issue #6; draft document prepared for Product Owner review |
 | GOV-027 | Domain event storming | Review | Issue #8 dan PR #9 merged; GD-007 tetap Proposed |
 | GOV-028 | Correct approved Domain Event Storming review findings | Review | Issue #10 dan PR #11 merged tanpa approval substantif; audit lanjutan tercatat pada PR #11 |
-| GOV-029 | Correct approved PR #11 Domain Event Storming audit findings | Review | Issue #12 dibuka kembali; empat koreksi pada head PR #13 `e4a3b7b` diratifikasi setelah merge; closure diblokir Issue #16 |
-| GOV-030 | Reconcile PR #13 merge-before-approval | Review | Issue #14 dibuka kembali; PR #15 merged sebelum approval; completion diblokir control hardening Issue #16 |
-| GOV-031 | Harden exact-head approval and issue closure controls | Review | Issue #16; aturan kanonis, PR checklist, protection evidence, dan draft correction menunggu review Product Owner |
+| GOV-029 | Correct approved PR #11 Domain Event Storming audit findings | Review | Issue #12 dibuka kembali; empat koreksi pada head PR #13 `e4a3b7b` diratifikasi setelah merge; closure diblokir Issue #16/#18 |
+| GOV-030 | Reconcile PR #13 merge-before-approval | Review | Issue #14 dibuka kembali; recurrence berlanjut pada PR #15/#17; completion diblokir Issue #16/#18 |
+| GOV-031 | Harden exact-head approval and issue closure controls | Review | Issue #16 dibuka kembali; PR #17 merged sebelum approval; effectiveness dan protection evidence diblokir Issue #18 |
+| GOV-032 | Reconcile PR #17 recurrence and enforce protection gate | Review | Issue #18; audit pasca-merge, direct protection evidence/formal risk acceptance, dan separate Product Owner decision masih pending |
 
 ## Decisions required before source code
 
@@ -71,7 +72,7 @@
 |---|---|---|---|
 | DSC-000 | Product vision and decision-rights workshop | P0 | Handbook approval; Issue #2 |
 | DSC-001 | Stakeholder and actor map | P0 | Handbook approval; Issue #4 |
-| DSC-002 | POS/ERP domain event storming | P0 | Stakeholder availability; Issue #8; correction Issue #10/#12; governance Issue #14/#16 |
+| DSC-002 | POS/ERP domain event storming | P0 | Stakeholder availability; Issue #8; correction Issue #10/#12; governance Issue #14/#16/#18 |
 | DSC-003 | Current process, user journeys, and service blueprint | P0 | DSC-001; Issue #6 |
 | DSC-004 | Data inventory and classification | P0 | DSC-002 |
 | DSC-005 | Threat model critical flows | P0 | DSC-002/004 |

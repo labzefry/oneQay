@@ -161,6 +161,11 @@ Dokumen arsitektur/API/database/security/deployment/testing/UI harus ikut beruba
 - Issue tidak boleh ditutup sebelum acceptance checklist, validation evidence, reviewed head, approval evidence, merge evidence, dan status dokumentasi konsisten. Auto-close keyword tidak menggantikan pemeriksaan ini.
 - Bila PR terlanjur merged sebelum approval, AI wajib melakukan audit exact head dan meminta keputusan pasca-merge terpisah; ratifikasi, status promotion, dan issue closure tidak boleh diasumsikan.
 - Repository protection atau ruleset tidak boleh dinonaktifkan atau diubah tanpa persetujuan terpisah. Bila konfigurasi tidak dapat dibaca, AI melaporkan keterbatasan dan membedakan configured control dari effective evidence.
+- Untuk perubahan governance berisiko **High** atau **Critical**, direct repository-protection/ruleset evidence adalah blocking precondition sebelum draft diubah menjadi ready dan sebelum merge. Evidence harus mencakup required PR review, stale-approval dismissal, conversation resolution, required status checks, dan bypass restriction.
+- Bila direct evidence tidak tersedia atau tidak dapat diverifikasi, ready transition dan merge tetap diblokir kecuali Product Owner memberikan formal risk acceptance yang mencantumkan owner, scope, alasan, compensating controls, evidence URL, masa berlaku, nomor PR, dan full exact head SHA.
+- Protection evidence atau formal risk acceptance yang pending, tidak lengkap, kedaluwarsa, atau tidak mengikat exact head terbaru membatalkan lifecycle authority dan menjadi stop condition. Perubahan head membatalkan approval serta risk acceptance sebelumnya kecuali decision statement baru secara eksplisit mengikat head terbaru.
+- Direct protection evidence atau formal risk acceptance yang valid juga menjadi syarat issue closure untuk temuan governance terkait. Effective merge history tidak boleh digunakan sebagai bukti configured protection.
+- PR yang sudah merged tidak dapat diberi ready/merge authority secara retrospektif. PR tersebut hanya dapat menjalani audit exact-head dan keputusan pasca-merge terpisah tanpa automatic ratification.
 
 ## Stop conditions
 

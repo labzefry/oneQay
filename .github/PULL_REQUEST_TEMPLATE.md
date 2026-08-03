@@ -18,6 +18,9 @@
 - Product Owner/reviewer approval URL:
 - Required review status:
 - CI/status checks or approved deferral:
+- Repository-protection gate status:
+- Direct protection/ruleset evidence URL:
+- Formal risk acceptance URL, owner, scope, compensating controls, and expiry:
 - Issues that must remain open:
 - Decision status before/after:
 
@@ -74,7 +77,13 @@
 - [ ] Any head change after approval invalidates the previous approval
 - [ ] Draft/ready transition and merge require separate explicit authority
 - [ ] Review threads and required checks are complete or deferral is approved
+- [ ] For High/Critical governance scope, direct protection evidence covers required review, stale-approval dismissal, conversation resolution, required status checks, and bypass restriction
+- [ ] If direct protection evidence is unavailable, formal risk acceptance records owner, scope, rationale, compensating controls, evidence URL, expiry, PR number, and current exact head
+- [ ] Pending, unverifiable, expired, or head-mismatched protection evidence/risk acceptance blocks ready transition and merge
+- [ ] Any head change invalidates prior risk acceptance unless a new decision explicitly binds the new head
 - [ ] Issue closure gate and acceptance evidence have been verified
+- [ ] Protection evidence or valid formal risk acceptance is complete before governance issue closure
 - [ ] Merge is not interpreted as substantive status approval
+- [ ] An already merged PR receives only a separate post-merge decision, never retrospective merge authority or automatic ratification
 - [ ] Proposed/Under Review/Approved/Blocked status remains explicit
 - [ ] No application source code is included, or source-code scope is explicitly approved
