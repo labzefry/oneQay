@@ -20,7 +20,11 @@
 - CI/status checks or approved deferral:
 - Repository-protection gate status:
 - Direct protection/ruleset evidence URL:
-- Formal risk acceptance URL, owner, scope, compensating controls, and expiry:
+- Product Owner formal-risk-acceptance approval URL:
+- Formal risk-acceptance decision statement naming PR and exact head:
+- Formal risk-acceptance scope and owner:
+- Formal risk-acceptance rationale and compensating controls:
+- Formal risk-acceptance evidence URL and finite expiry:
 - Issues that must remain open:
 - Decision status before/after:
 
@@ -79,6 +83,9 @@
 - [ ] Review threads and required checks are complete or deferral is approved
 - [ ] For High/Critical governance scope, direct protection evidence covers required review, stale-approval dismissal, conversation resolution, required status checks, and bypass restriction
 - [ ] If direct protection evidence is unavailable, formal risk acceptance records owner, scope, rationale, compensating controls, evidence URL, expiry, PR number, and current exact head
+- [ ] Formal risk acceptance has separate Product Owner approval evidence explicitly bound to this PR, current exact head, and stated risk scope
+- [ ] General content/reviewer approval is not treated as formal risk acceptance
+- [ ] Risk acceptance substitutes only for the stated direct protection-evidence requirement and does not authorize ready, merge, status promotion, release, or issue closure
 - [ ] Pending, unverifiable, expired, or head-mismatched protection evidence/risk acceptance blocks ready transition and merge
 - [ ] Any head change invalidates prior risk acceptance unless a new decision explicitly binds the new head
 - [ ] Issue closure gate and acceptance evidence have been verified
