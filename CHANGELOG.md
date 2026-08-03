@@ -46,6 +46,9 @@ Semua perubahan penting OneQay dicatat di dokumen ini. Format mengikuti Keep a C
 - Recorded the PR #17 recurrence at exact head `aaa7510759925c0c62ba5424c93e2356d18c9d3d`, merged as `82b45820a67c274bd96866bb048f3f320d6cbe70` without exact-head approval, review, checks/deferral, protection evidence/risk acceptance, or separate merge authority; Issue #12/#14/#16 were reopened and Issue #18 now tracks reconciliation.
 - Made direct repository-protection/ruleset evidence a blocking precondition before ready transition, merge, and governance issue closure for High/Critical governance changes, with a fully specified formal risk-acceptance path when direct evidence is unavailable.
 - Preserved PR #17 as unratified, GOV-029/GOV-030/GOV-031 as Review, GD-007 and all Domain Event Storming hypotheses as Proposed, Phase 0 as In Progress, application implementation as Blocked, and JRN-003/JRN-013 as unresolved blockers.
+- Recorded recurrence when PR #19 head `483fcf3dbe2c5a418ea7aad97bcfcbf26124b631` was merged as `f68c01e85660409fac6c4e85f2f6545dca08f1d7` without required evidence or lifecycle authority and Issue #12/#14/#16/#18 were closed without completion evidence; all four issues were reopened and Issue #20 tracks reconciliation.
+- Required a separate Product Owner formal-risk-acceptance approval URL and exact-head decision statement; general content/reviewer approval cannot serve as risk acceptance.
+- Clarified that formal risk acceptance only substitutes for the scoped direct protection-evidence requirement and never supplies ready, merge, release, status-promotion, or issue-closure authority.
 
 ### Security
 

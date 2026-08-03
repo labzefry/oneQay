@@ -119,6 +119,8 @@ Untuk perubahan governance berisiko **High** atau **Critical**, direct repositor
 
 Jika direct evidence tidak tersedia atau tidak dapat diverifikasi, lifecycle action tetap diblokir kecuali terdapat formal risk acceptance dari Product Owner. Risk acceptance wajib mencantumkan owner, scope, alasan, compensating controls, evidence URL, masa berlaku, nomor PR, dan full exact head SHA. Evidence atau acceptance yang pending, tidak lengkap, kedaluwarsa, atau tidak mengikat head terbaru membatalkan authority. Perubahan head membatalkan approval dan risk acceptance sebelumnya kecuali keputusan baru secara eksplisit mengikat head terbaru.
 
+Formal risk acceptance wajib memiliki Product Owner approval URL tersendiri dan decision statement yang mengikat risk scope, nomor PR, serta full exact head SHA. General content approval atau reviewer approval bukan formal risk acceptance. Risk acceptance hanya menggantikan direct protection-evidence requirement yang disebut dalam scope; ready transition, merge, status promotion, release, dan issue closure tetap membutuhkan evidence, gate, serta authority masing-masing.
+
 Direct protection evidence atau formal risk acceptance yang valid juga diperlukan sebelum issue governance terkait ditutup. Effective merge history tidak membuktikan configured protection. PR yang sudah merged tidak dapat memperoleh merge authority secara retrospektif dan hanya dapat diproses melalui audit exact-head serta keputusan pasca-merge terpisah tanpa automatic ratification.
 
 ## After merge
