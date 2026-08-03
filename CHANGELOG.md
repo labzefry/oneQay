@@ -41,6 +41,8 @@ Semua perubahan penting OneQay dicatat di dokumen ini. Format mengikuti Keep a C
 - Recorded that PR #11 merge and Issue #10 closure do not constitute substantive approval; GD-007 and application implementation remain Proposed/Blocked respectively.
 - Recorded the Product Owner's limited post-merge ratification of the four corrections at exact PR #13 head `e4a3b7ba9f94b429b6e50e2856a11b953a336ac0` without approving GD-007.
 - Opened governance reconciliation under Issue #14 after PR #13 was merged and Issue #12 was closed before approval evidence was recorded; Issue #12 was reopened and Phase 0/application gates remain unchanged.
+- Recorded recurrence when PR #15 head `4ad28a4e8ad5740e6f55f4563a32d09e7bba631a` was merged as `b34f99ea3c5471cfcd6ae82bc6abeb9a3e78441a` and Issue #12/#14 were closed before exact-head approval and completion evidence; both issues were reopened.
+- Proposed governance-control hardening under Issue #16: exact-head approval evidence, changed-head invalidation, separate merge authority, pre-merge state re-fetch, issue closure gates, PR checklist, and repository-protection verification without changing GD-007 or application gates.
 
 ### Security
 
