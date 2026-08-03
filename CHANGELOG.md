@@ -39,6 +39,8 @@ Semua perubahan penting OneQay dicatat di dokumen ini. Format mengikuti Keep a C
 - Kept GD-007, all domain hypotheses, JRN-003, JRN-013, technology decisions, and application implementation gates unchanged by the correction approval.
 - Corrected four approved PR #11 audit findings under Issue #12: sale-level payment sufficiency, stable receipt-line idempotency across versions, support closure after proven access termination, and cancelled-sale payment recovery.
 - Recorded that PR #11 merge and Issue #10 closure do not constitute substantive approval; GD-007 and application implementation remain Proposed/Blocked respectively.
+- Recorded the Product Owner's limited post-merge ratification of the four corrections at exact PR #13 head `e4a3b7ba9f94b429b6e50e2856a11b953a336ac0` without approving GD-007.
+- Opened governance reconciliation under Issue #14 after PR #13 was merged and Issue #12 was closed before approval evidence was recorded; Issue #12 was reopened and Phase 0/application gates remain unchanged.
 
 ### Security
 
