@@ -74,6 +74,11 @@ Semua perubahan penting OneQay dicatat di dokumen ini. Format mengikuti Keep a C
 - Recorded the Product Owner post-merge exact-head decision approving only the accuracy of PR #28 three-file corrective content, without retrospective lifecycle authority or ratification of PR #28 lifecycle action.
 - Clarified that the PR #28 technical merge does not ratify PR #27, PR #26, or PR #25, validate Issue #23 closure, accept any ADR, approve Phase 0 exit, grant source-code authority, complete GOV-034/GOV-035/GOV-036/GOV-037, or provide substantive approval or completion evidence.
 - Preserved Phase 0 as In Progress, application implementation as Blocked, Phase 0 preview exit as Not Ready, P1 as conditional and Unverified, ADR-001 through ADR-007 and GD-007 as Proposed, GOV-034/GOV-035/GOV-036/GOV-037 as Review, JRN-003/JRN-013 as unresolved, PAY-1/OFF-1/TEN-1/REC-1/SLO-1/DATA-1 as Proposed, and hosting evidence as Pending/Not supplied/Unverified.
+- Recorded that PR #29 original base `1009af84ec0ee7d7731890e379dde25279280c3a` and exact head `54a5773c3ab65a33e35ef2646089727490a0ff8d` were technically merged as `f55d86f1a3d89a6bcbbbcf7800851b9c61f8c047` after the PR changed from draft despite its body requiring the PR to remain draft.
+- Recorded that the repository-native operational authority comment for PR #29 explicitly excluded draft-to-ready, merge, auto-merge, ADR acceptance, Phase 0 exit, source-code implementation, release, deployment, and status promotion.
+- Recorded that no separate exact-head ready authority, separate exact-head merge authority, review submission, published commit status, or GitHub Actions workflow run was available for PR #29.
+- Recorded the Product Owner post-merge exact-head decision approving only the accuracy of PR #29 three-file corrective content, without retrospective lifecycle authority or ratification of PR #29 lifecycle action.
+- Clarified that the PR #29 technical merge does not ratify PR #28, PR #27, PR #26, or PR #25, validate Issue #23 closure, accept any ADR, approve Phase 0 exit, grant source-code authority, complete GOV-034/GOV-035/GOV-036/GOV-037/GOV-038, or provide substantive approval or completion evidence; all substantive governance statuses remain unchanged.
 
 ### Security
 
