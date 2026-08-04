@@ -67,6 +67,24 @@ jobs:
               'app/Modules/Platform/Tenancy/Interface/Http/Middleware/ResolveTenantContext.php'
           )
           middleware_text = middleware.read_text()
+          old_set = '        $this->store->set($context);\n'
+          new_set = (
+              "        if ($request->attributes->get('tenant_context_resolved') === true) {\n"
+              "            return $this->failure(\n"
+              "                $request,\n"
+              "                'tenant_context_already_resolved',\n"
+              "                'Tenant context has already been resolved for this request.',\n"
+              "                409,\n"
+              "            );\n"
+              "        }\n\n"
+              "        $this->store->clear();\n"
+              "        $this->store->set($context);\n"
+              "        $request->attributes->set('tenant_context_resolved', true);\n"
+          )
+          if old_set not in middleware_text:
+              raise SystemExit('Tenant middleware set marker not found.')
+          middleware_text = middleware_text.replace(old_set, new_set, 1)
+
           old_return = '        return $next($request);\n'
           new_return = (
               '        try {\n'
