@@ -42,6 +42,15 @@ jobs:
           cat .github/bootstrap/source.part* | base64 --decode > /tmp/oneqay-source.tar.gz
           echo "$SOURCE_ARCHIVE_SHA256  /tmp/oneqay-source.tar.gz" | sha256sum --check --strict
           tar --extract --gzip --file=/tmp/oneqay-source.tar.gz --directory=.
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('public/sw.js')
+          marker = '/* global self, caches, fetch, URL */\n'
+          text = path.read_text()
+          if not text.startswith(marker):
+              path.write_text(marker + text)
+          PY
 
       - name: Verify exact finalization conditions
         shell: bash
