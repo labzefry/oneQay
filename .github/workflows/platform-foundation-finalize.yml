@@ -63,6 +63,22 @@ jobs:
               .replace('    use HasFactory;\n', '')
           )
 
+          app_entry = Path('resources/js/app.ts')
+          app_entry_text = app_entry.read_text()
+          import_marker = "import { createApp, h } from 'vue';\n"
+          typed_import = (
+              "import type { DefineComponent } from 'vue';\n"
+              "import { createApp, h } from 'vue';\n"
+          )
+          resolve_marker = '  resolve: () => Foundation,\n'
+          if import_marker not in app_entry_text or resolve_marker not in app_entry_text:
+              raise SystemExit('Inertia app typing marker not found.')
+          app_entry.write_text(
+              app_entry_text
+              .replace(import_marker, typed_import, 1)
+              .replace(resolve_marker, '  resolve: () => Foundation as DefineComponent,\n', 1)
+          )
+
           middleware = Path(
               'app/Modules/Platform/Tenancy/Interface/Http/Middleware/ResolveTenantContext.php'
           )
