@@ -55,6 +55,13 @@ jobs:
           phpstan.write_text(
               phpstan.read_text().replace('    checkMissingIterableValueType: false\n', '')
           )
+
+          user_model = Path('app/Models/User.php')
+          user_model.write_text(
+              user_model.read_text()
+              .replace('use Illuminate\\Database\\Eloquent\\Factories\\HasFactory;\n', '')
+              .replace('    use HasFactory;\n', '')
+          )
           PY
 
       - name: Verify exact finalization conditions
