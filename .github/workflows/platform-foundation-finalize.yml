@@ -1,0 +1,121 @@
+name: Platform Foundation Controlled Finalization
+
+"on":
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - reopened
+      - synchronize
+
+permissions:
+  contents: write
+
+concurrency:
+  group: platform-foundation-controlled-finalization
+  cancel-in-progress: false
+
+jobs:
+  finalize:
+    name: finalize-platform-foundation
+    if: >-
+      github.event.pull_request.draft == true &&
+      github.event.pull_request.head.ref == 'agent/platform-foundation-skeleton' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout exact authorized head
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Materialize exact source archive
+        shell: bash
+        env:
+          SOURCE_ARCHIVE_SHA256: 1b4f996f433022aded5f27a5e1f8dc799646174ef16ebc5219b4e3faf7a2c731
+        run: |
+          set -euo pipefail
+          cat .github/bootstrap/source.part* | base64 --decode > /tmp/oneqay-source.tar.gz
+          echo "$SOURCE_ARCHIVE_SHA256  /tmp/oneqay-source.tar.gz" | sha256sum --check --strict
+          tar --extract --gzip --file=/tmp/oneqay-source.tar.gz --directory=.
+
+      - name: Verify exact finalization conditions
+        shell: bash
+        env:
+          EXPECTED_BASE: 68df196efdf38919d73a6b6345b973d2c3698b29
+          EXPECTED_BRANCH: agent/platform-foundation-skeleton
+        run: |
+          set -euo pipefail
+          test "${{ github.event.pull_request.base.sha }}" = "$EXPECTED_BASE"
+          test "${{ github.event.pull_request.head.ref }}" = "$EXPECTED_BRANCH"
+          test "${{ github.event.pull_request.head.repo.full_name }}" = "$GITHUB_REPOSITORY"
+          git merge-base --is-ancestor "$EXPECTED_BASE" HEAD
+          test -f composer.json
+          test -f package.json
+          test -f scripts/quality/finalize_ssot.py
+          test ! -f composer.lock
+          test ! -f package-lock.json
+
+      - name: Synchronize canonical SSOT documents
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/quality/finalize_ssot.py
+
+      - name: Resolve and lock dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          php --version
+          composer --version
+          node --version
+          npm --version
+          composer update --no-interaction --prefer-dist --no-progress
+          npm install --no-audit --no-fund
+
+      - name: Normalize source formatting
+        shell: bash
+        run: |
+          set -euo pipefail
+          ./vendor/bin/pint --parallel
+          npx prettier --write resources/js resources/css
+          npx eslint . --fix
+
+      - name: Validate executable foundation
+        shell: bash
+        run: |
+          set -euo pipefail
+          composer validate --strict
+          composer audit --no-interaction
+          composer check
+          npm audit --audit-level=high
+          npm run check
+          npm run build
+          python3 scripts/quality/scan_repository.py
+          git diff --check
+
+      - name: Remove temporary write-capable finalizer
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf .github/bootstrap
+          rm -f .github/workflows/platform-foundation-finalize.yml
+          rm -f scripts/quality/finalize_ssot.py
+          test ! -e .github/workflows/platform-foundation-finalize.yml
+          test ! -e scripts/quality/finalize_ssot.py
+
+      - name: Commit validated final tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'Lab | zefry'
+          git config user.email 'labzefry@users.noreply.github.com'
+          git add -A
+          git diff --cached --check
+          test -n "$(git diff --cached --name-only)"
+          git commit -m 'feat(platform): finalize technical preview foundation'
+          git push origin HEAD:agent/platform-foundation-skeleton
