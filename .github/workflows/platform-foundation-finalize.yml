@@ -62,6 +62,22 @@ jobs:
               .replace('use Illuminate\\Database\\Eloquent\\Factories\\HasFactory;\n', '')
               .replace('    use HasFactory;\n', '')
           )
+
+          middleware = Path(
+              'app/Modules/Platform/Tenancy/Interface/Http/Middleware/ResolveTenantContext.php'
+          )
+          middleware_text = middleware.read_text()
+          old_return = '        return $next($request);\n'
+          new_return = (
+              '        try {\n'
+              '            return $next($request);\n'
+              '        } finally {\n'
+              '            $this->store->clear();\n'
+              '        }\n'
+          )
+          if old_return not in middleware_text:
+              raise SystemExit('Tenant middleware return marker not found.')
+          middleware.write_text(middleware_text.replace(old_return, new_return, 1))
           PY
 
       - name: Verify exact finalization conditions
