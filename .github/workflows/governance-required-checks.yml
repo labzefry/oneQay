@@ -18,11 +18,13 @@ jobs:
   governance-validation:
     name: governance-validation
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout pull request
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Validate governance scope and semantics
         shell: bash
@@ -32,66 +34,216 @@ jobs:
         run: |
           set -euo pipefail
 
-          git diff --name-only --diff-filter=ACMR "$BASE_SHA" "$HEAD_SHA" > changed-files.txt
-          test -s changed-files.txt
-
-          if git diff --numstat "$BASE_SHA" "$HEAD_SHA" | awk '$1 == "-" || $2 == "-" { found=1 } END { exit !found }'; then
-            echo "Binary artifacts are not allowed in governance changes." >&2
-            exit 1
-          fi
-
-          if grep -E '(^|/)(node_modules|vendor|dist|build|coverage|target|out)/|\.(min\.(js|css)|map|pyc|class|jar|war|zip|tar|tgz|gz|7z|exe|dll|so|dylib)$' changed-files.txt >/dev/null; then
-            echo "Generated or packaged artifacts are not allowed in governance changes." >&2
-            exit 1
-          fi
-
           python3 - "$BASE_SHA" "$HEAD_SHA" <<'PY'
+          from __future__ import annotations
+
+          from dataclasses import dataclass
+          from pathlib import Path
           import re
           import subprocess
           import sys
+          from typing import Iterable
 
           base, head = sys.argv[1:3]
-          diff = subprocess.run(
-              ["git", "diff", "--unified=0", "--no-color", base, head, "--", "*.md"],
-              check=True,
-              text=True,
-              capture_output=True,
-          ).stdout
+          repo_root = Path.cwd().resolve()
 
-          added = []
-          current = None
-          for line in diff.splitlines():
-              if line.startswith("+++ b/"):
-                  current = line[6:]
-              elif line.startswith("+") and not line.startswith("+++"):
-                  added.append((current, line[1:]))
+          @dataclass(frozen=True)
+          class Change:
+              status: str
+              old_path: str | None
+              new_path: str | None
 
-          short_sha = re.compile(r"`[0-9a-fA-F]{7,39}`")
-          invalid_sha = [(path, text) for path, text in added if short_sha.search(text)]
-          if invalid_sha:
-              print("New SHA-like references must use full 40-character hexadecimal SHAs.", file=sys.stderr)
-              for path, _ in invalid_sha:
-                  print(f"- {path}", file=sys.stderr)
-              raise SystemExit(1)
+              @property
+              def current_path(self) -> str | None:
+                  return None if self.status == "D" else self.new_path
 
-          sensitive = re.compile(
-              r"(?:^|/)(PROJECT_MANIFEST\.md|TASKS\.md|ROADMAP\.md|ARCHITECTURE\.md|docs/adr/.*\.md)$",
+              def all_paths(self) -> tuple[str, ...]:
+                  return tuple(path for path in (self.old_path, self.new_path) if path)
+
+          def parse_name_status(raw: bytes) -> list[Change]:
+              tokens = raw.split(b"\0")
+              if tokens and tokens[-1] == b"":
+                  tokens.pop()
+              changes: list[Change] = []
+              index = 0
+              while index < len(tokens):
+                  status_token = tokens[index].decode("utf-8", "strict")
+                  index += 1
+                  if not status_token:
+                      raise ValueError("Empty git change status.")
+                  status = status_token[0]
+                  if status in {"R", "C"}:
+                      if index + 1 >= len(tokens):
+                          raise ValueError("Incomplete rename/copy record.")
+                      old_path = tokens[index].decode("utf-8", "strict")
+                      new_path = tokens[index + 1].decode("utf-8", "strict")
+                      index += 2
+                  else:
+                      if index >= len(tokens):
+                          raise ValueError("Incomplete path record.")
+                      path = tokens[index].decode("utf-8", "strict")
+                      index += 1
+                      old_path = path if status == "D" else None
+                      new_path = None if status == "D" else path
+                  if status not in {"A", "C", "M", "R", "D", "T"}:
+                      raise ValueError(f"Unsupported git change status: {status_token}")
+                  changes.append(Change(status, old_path, new_path))
+              return changes
+
+          canonical_files = {
+              "AI_CONSTITUTION.md",
+              "PROJECT_MANIFEST.md",
+              "ARCHITECTURE.md",
+              "ROADMAP.md",
+              "TASKS.md",
+              "CHANGELOG.md",
+              "SECURITY.md",
+              "DATABASE.md",
+              "API_SPEC.md",
+              "DEPLOYMENT.md",
+              "TESTING.md",
+              "CONTRIBUTING.md",
+              "RELEASE.md",
+          }
+          canonical_prefixes = ("docs/adr/", ".github/workflows/")
+
+          def is_canonical(path: str) -> bool:
+              normalized = path.replace("\\", "/")
+              return normalized in canonical_files or normalized.startswith(canonical_prefixes)
+
+          generated_path = re.compile(
+              r"(^|/)(node_modules|vendor|dist|build|coverage|target|out)/"
+              r"|(\.min\.(js|css)|\.map|\.pyc|\.class|\.jar|\.war|\.zip|"
+              r"\.tar|\.tgz|\.gz|\.7z|\.exe|\.dll|\.so|\.dylib)$",
               re.IGNORECASE,
           )
-          promotion = re.compile(
-              r"(?:\|\s*(?:Done|Accepted|Approved)\s*\||"
-              r"Phase\s*0[^\n]*(?:Ready|Complete|Completed|Approved)|"
-              r"preview\s+exit[^\n]*(?:Ready|Approved)|"
-              r"application\s+implementation[^\n]*(?:Unblocked|Authorized|Ready)|"
-              r"ADR-\d{3}[^\n]*(?:Accepted|Approved))",
-              re.IGNORECASE,
+
+          def governance_path_failures(changes: Iterable[Change]) -> list[str]:
+              failures: list[str] = []
+              for change in changes:
+                  if change.status == "D" and change.old_path and is_canonical(change.old_path):
+                      failures.append(f"canonical deletion: {change.old_path}")
+                  if (
+                      change.status == "R"
+                      and change.old_path
+                      and change.new_path
+                      and is_canonical(change.old_path)
+                      and change.old_path != change.new_path
+                  ):
+                      failures.append(f"canonical rename-away: {change.old_path}")
+                  if change.status != "D":
+                      for path in change.all_paths():
+                          if generated_path.search(path):
+                              failures.append(f"generated or packaged artifact: {path}")
+              return failures
+
+          backticked_short_sha = re.compile(r"`[0-9a-fA-F]{7,39}`")
+          plain_short_sha = re.compile(
+              r"(?<![#0-9A-Fa-f])"
+              r"(?=[0-9A-Fa-f]{7,39}(?![0-9A-Fa-f]))"
+              r"(?=[0-9A-Fa-f]*[A-Fa-f])"
+              r"(?=[0-9A-Fa-f]*[0-9])"
+              r"[0-9A-Fa-f]{7,39}"
+              r"(?![0-9A-Fa-f])"
           )
-          promoted = [path for path, text in added if path and sensitive.search(path) and promotion.search(text)]
-          if promoted:
-              print("Potential substantive governance status promotion detected.", file=sys.stderr)
-              for path in sorted(set(promoted)):
-                  print(f"- {path}", file=sys.stderr)
-              raise SystemExit(1)
+
+          def contains_short_sha(text: str) -> bool:
+              without_full_sha = re.sub(r"(?<![0-9A-Fa-f])[0-9A-Fa-f]{40}(?![0-9A-Fa-f])", "", text)
+              return bool(
+                  backticked_short_sha.search(without_full_sha)
+                  or plain_short_sha.search(without_full_sha)
+              )
+
+          promotion_states = {
+              "accepted",
+              "approved",
+              "authorized",
+              "complete",
+              "completed",
+              "done",
+              "ready",
+              "unblocked",
+          }
+
+          def split_table_row(line: str) -> list[str]:
+              stripped = line.strip()
+              if not (stripped.startswith("|") and stripped.endswith("|")):
+                  return []
+              return [cell.strip().strip("*_`") for cell in stripped[1:-1].split("|")]
+
+          separator_cell = re.compile(r"^:?-{3,}:?$")
+
+          def markdown_status_rows(text: str) -> dict[tuple[str, str], str]:
+              lines = text.splitlines()
+              rows: dict[tuple[str, str], str] = {}
+              index = 0
+              while index + 1 < len(lines):
+                  header = split_table_row(lines[index])
+                  separator = split_table_row(lines[index + 1])
+                  if (
+                      header
+                      and separator
+                      and len(header) == len(separator)
+                      and all(separator_cell.fullmatch(cell.replace(" ", "")) for cell in separator)
+                  ):
+                      normalized_headers = [cell.casefold() for cell in header]
+                      status_indexes = [
+                          position
+                          for position, name in enumerate(normalized_headers)
+                          if name in {"status", "state", "status awal"}
+                      ]
+                      if status_indexes:
+                          status_index = status_indexes[0]
+                          row_index = index + 2
+                          while row_index < len(lines):
+                              cells = split_table_row(lines[row_index])
+                              if not cells or len(cells) != len(header):
+                                  break
+                              identity = cells[0].strip()
+                              if identity:
+                                  rows[(header[0].casefold(), identity)] = cells[status_index].casefold()
+                              row_index += 1
+                          index = row_index
+                          continue
+                  index += 1
+              return rows
+
+          adr_status_line = re.compile(
+              r"^\s*(?:[-*]\s*)?(?:\*\*)?status(?:\*\*)?\s*[:|]\s*"
+              r"(proposed|accepted|approved|authorized|ready|done|complete|completed|"
+              r"rejected|superseded|deprecated|blocked|review|in progress|unblocked)\s*$",
+              re.IGNORECASE | re.MULTILINE,
+          )
+
+          def explicit_adr_state(text: str) -> str | None:
+              match = adr_status_line.search(text)
+              return match.group(1).casefold() if match else None
+
+          def status_promotions(path: str, before: str, after: str) -> list[str]:
+              normalized = path.replace("\\", "/")
+              sensitive = normalized in {
+                  "PROJECT_MANIFEST.md",
+                  "TASKS.md",
+                  "ROADMAP.md",
+                  "ARCHITECTURE.md",
+              } or normalized.startswith("docs/adr/")
+              if not sensitive:
+                  return []
+
+              failures: list[str] = []
+              before_rows = markdown_status_rows(before)
+              after_rows = markdown_status_rows(after)
+              for key, new_state in after_rows.items():
+                  old_state = before_rows.get(key)
+                  if old_state != new_state and new_state in promotion_states:
+                      failures.append(f"status promotion in {path}: {key[1]}")
+
+              if normalized.startswith("docs/adr/"):
+                  old_state = explicit_adr_state(before)
+                  new_state = explicit_adr_state(after)
+                  if old_state != new_state and new_state in promotion_states:
+                      failures.append(f"ADR status promotion in {path}")
+              return failures
 
           local_approval_claim = re.compile(
               r"(?:local|static)[^\n]{0,80}(?:validation|check)[^\n]{0,80}"
@@ -99,22 +251,124 @@ jobs:
               r"(?:product owner )?(?:approval|authority)",
               re.IGNORECASE,
           )
-          claimed = [path for path, text in added if path and local_approval_claim.search(text)]
-          if claimed:
-              print("Local/static validation must not be represented as Product Owner approval or authority.", file=sys.stderr)
-              for path in sorted(set(claimed)):
-                  print(f"- {path}", file=sys.stderr)
+
+          def run_regression_suite() -> None:
+              harmless = [Change("M", None, "README.md")]
+              assert not governance_path_failures(harmless)
+              assert governance_path_failures([Change("D", "TASKS.md", None)])
+              assert governance_path_failures(harmless + [Change("D", "TASKS.md", None)])
+              assert governance_path_failures([Change("R", "TASKS.md", "TASKS-OLD.md")])
+              assert governance_path_failures([Change("A", None, "dist/app.min.js")])
+              assert contains_short_sha("Reference `e4a3b7b`.")
+              assert contains_short_sha("Reference e4a3b7b.")
+              assert not contains_short_sha("Reference 12345678.")
+              assert not contains_short_sha("Reference 0123456789abcdef0123456789abcdef01234567.")
+              assert not status_promotions(
+                  "TASKS.md",
+                  "# Tasks\n\nA historical note.",
+                  "# Tasks\n\nA historical note mentions Accepted without changing a status field.",
+              )
+              before_adr = "# ADR\n\nStatus: Proposed\n"
+              after_adr = "# ADR\n\nStatus: Accepted\n"
+              assert status_promotions("docs/adr/ADR-001.md", before_adr, after_adr)
+              before_phase = (
+                  "# Manifest\n\n"
+                  "| Item | Status |\n"
+                  "| --- | --- |\n"
+                  "| Phase 0 preview exit | Not Ready |\n"
+              )
+              after_phase = before_phase.replace("Not Ready", "Ready")
+              assert status_promotions("PROJECT_MANIFEST.md", before_phase, after_phase)
+              deleted_markdown = parse_name_status(b"D\0docs/notes.md\0")
+              assert deleted_markdown[0].status == "D"
+              mixed = parse_name_status(b"M\0README.md\0D\0TASKS.md\0")
+              assert len(mixed) == 2 and mixed[1].status == "D"
+              renamed = parse_name_status(b"R100\0TASKS.md\0TASKS-OLD.md\0")
+              assert renamed[0].old_path == "TASKS.md" and renamed[0].new_path == "TASKS-OLD.md"
+
+          run_regression_suite()
+
+          raw_changes = subprocess.run(
+              ["git", "diff", "--name-status", "-z", "--find-renames", "--find-copies", base, head],
+              check=True,
+              capture_output=True,
+          ).stdout
+          changes = parse_name_status(raw_changes)
+          if not changes:
+              raise SystemExit("Pull request has no changed files.")
+
+          failures = governance_path_failures(changes)
+
+          numstat = subprocess.run(
+              ["git", "diff", "--numstat", base, head],
+              check=True,
+              text=True,
+              capture_output=True,
+          ).stdout.splitlines()
+          if any(line.startswith("-\t-\t") for line in numstat):
+              failures.append("binary artifact detected")
+
+          markdown_diff = subprocess.run(
+              ["git", "diff", "--unified=0", "--no-color", base, head, "--", "*.md"],
+              check=True,
+              text=True,
+              capture_output=True,
+          ).stdout
+          added_lines: list[tuple[str | None, str]] = []
+          current_path: str | None = None
+          for line in markdown_diff.splitlines():
+              if line.startswith("+++ b/"):
+                  current_path = line[6:]
+              elif line.startswith("+") and not line.startswith("+++"):
+                  added_lines.append((current_path, line[1:]))
+
+          for path, text in added_lines:
+              if contains_short_sha(text):
+                  failures.append(f"short SHA-like reference in {path or 'Markdown'}")
+              if local_approval_claim.search(text):
+                  failures.append(f"local/static approval claim in {path or 'Markdown'}")
+
+          for change in changes:
+              current = change.current_path
+              if not current or not current.endswith(".md"):
+                  continue
+              before = subprocess.run(
+                  ["git", "show", f"{base}:{current}"],
+                  text=True,
+                  capture_output=True,
+              )
+              after = subprocess.run(
+                  ["git", "show", f"{head}:{current}"],
+                  text=True,
+                  capture_output=True,
+              )
+              before_text = before.stdout if before.returncode == 0 else ""
+              after_text = after.stdout if after.returncode == 0 else ""
+              failures.extend(status_promotions(current, before_text, after_text))
+
+          if failures:
+              print("Governance validation failed:", file=sys.stderr)
+              for failure in sorted(set(failures)):
+                  print(f"- {failure}", file=sys.stderr)
               raise SystemExit(1)
+
+          counts: dict[str, int] = {}
+          for change in changes:
+              counts[change.status] = counts.get(change.status, 0) + 1
+          summary = ", ".join(f"{status}={count}" for status, count in sorted(counts.items()))
+          print(f"Governance validation passed. Change inventory: {summary}.")
           PY
 
   markdown-lint:
     name: markdown-lint
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout pull request
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Validate changed Markdown files
         shell: bash
@@ -124,29 +378,85 @@ jobs:
         run: |
           set -euo pipefail
 
-          git diff --name-only --diff-filter=ACMR "$BASE_SHA" "$HEAD_SHA" -- '*.md' > changed-markdown.txt
-          if [[ ! -s changed-markdown.txt ]]; then
-            echo "No changed Markdown files; markdown-lint passes."
-            exit 0
-          fi
-
           python3 - "$BASE_SHA" "$HEAD_SHA" <<'PY'
+          from __future__ import annotations
+
           from pathlib import Path
           import re
           import subprocess
           import sys
+          from urllib.parse import unquote
 
           base, head = sys.argv[1:3]
-          files = subprocess.run(
-              ["git", "diff", "--name-only", "--diff-filter=ACMR", base, head, "--", "*.md"],
-              check=True,
-              text=True,
-              capture_output=True,
-          ).stdout.splitlines()
+          repo_root = Path.cwd().resolve()
 
-          failures = []
-          table_separator = re.compile(r"^\|(?:\s*:?-{3,}:?\s*\|)+$")
+          def parse_name_status(raw: bytes) -> list[tuple[str, str | None, str | None]]:
+              tokens = raw.split(b"\0")
+              if tokens and tokens[-1] == b"":
+                  tokens.pop()
+              records: list[tuple[str, str | None, str | None]] = []
+              index = 0
+              while index < len(tokens):
+                  status_token = tokens[index].decode("utf-8", "strict")
+                  index += 1
+                  status = status_token[0]
+                  if status in {"R", "C"}:
+                      old_path = tokens[index].decode("utf-8", "strict")
+                      new_path = tokens[index + 1].decode("utf-8", "strict")
+                      index += 2
+                  else:
+                      path = tokens[index].decode("utf-8", "strict")
+                      index += 1
+                      old_path = path if status == "D" else None
+                      new_path = None if status == "D" else path
+                  records.append((status, old_path, new_path))
+              return records
+
+          valid_separator = re.compile(r"^\|(?: :?-{3,}:? \|)+$")
+          separator_candidate = re.compile(r"^\|[|:\-\s]+\|$")
           link_pattern = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
+
+          def markdown_failures(name: str, text: str, raw: bytes) -> list[str]:
+              failures: list[str] = []
+              lines = text.splitlines()
+              if not raw:
+                  return [f"{name}: file is empty"]
+              if not raw.endswith(b"\n"):
+                  failures.append(f"{name}: missing final newline")
+              first = next((line for line in lines if line.strip()), "")
+              if not first.startswith("# "):
+                  failures.append(f"{name}: first non-empty line must be an H1 heading")
+              for number, line in enumerate(lines, start=1):
+                  if line.rstrip(" \t") != line:
+                      failures.append(f"{name}:{number}: trailing whitespace")
+                  if separator_candidate.fullmatch(line) and not valid_separator.fullmatch(line):
+                      failures.append(f"{name}:{number}: malformed Markdown table separator")
+              return failures
+
+          assert not markdown_failures(
+              "valid.md",
+              "# Valid\n\n| Item | Status |\n| --- | --- |\n| A | Review |\n",
+              b"# Valid\n\n| Item | Status |\n| --- | --- |\n| A | Review |\n",
+          )
+          assert markdown_failures(
+              "invalid.md",
+              "# Invalid\n\n| Item | Status |\n|--|--|\n| A | Review |\n",
+              b"# Invalid\n\n| Item | Status |\n|--|--|\n| A | Review |\n",
+          )
+
+          raw_changes = subprocess.run(
+              ["git", "diff", "--name-status", "-z", "--find-renames", "--find-copies", base, head, "--", "*.md"],
+              check=True,
+              capture_output=True,
+          ).stdout
+          records = parse_name_status(raw_changes)
+          current_files = sorted(
+              {
+                  new_path
+                  for status, _, new_path in records
+                  if status != "D" and new_path and new_path.endswith(".md")
+              }
+          )
 
           diff = subprocess.run(
               ["git", "diff", "--unified=0", "--no-color", base, head, "--", "*.md"],
@@ -154,8 +464,8 @@ jobs:
               text=True,
               capture_output=True,
           ).stdout
-          added_by_file = {}
-          current = None
+          added_by_file: dict[str, list[str]] = {}
+          current: str | None = None
           for line in diff.splitlines():
               if line.startswith("+++ b/"):
                   current = line[6:]
@@ -163,59 +473,64 @@ jobs:
               elif current and line.startswith("+") and not line.startswith("+++"):
                   added_by_file[current].append(line[1:])
 
-          for name in files:
+          failures: list[str] = []
+          for name in current_files:
               path = Path(name)
-              data = path.read_bytes()
-              text = data.decode("utf-8")
-              lines = text.splitlines()
-
-              if not data:
-                  failures.append(f"{name}: file is empty")
-                  continue
-              if not data.endswith(b"\n"):
-                  failures.append(f"{name}: missing final newline")
-              for number, line in enumerate(lines, start=1):
-                  if line.rstrip(" \t") != line:
-                      failures.append(f"{name}:{number}: trailing whitespace")
-                  if table_separator.fullmatch(line) and not re.fullmatch(r"\|(?: :?-{3,}:? \|)+", line):
-                      failures.append(f"{name}:{number}: table separators require surrounding spaces")
-
-              first = next((line for line in lines if line.strip()), "")
-              if not first.startswith("# "):
-                  failures.append(f"{name}: first non-empty line must be an H1 heading")
+              raw = path.read_bytes()
+              text = raw.decode("utf-8")
+              failures.extend(markdown_failures(name, text, raw))
 
               for added in added_by_file.get(name, []):
                   for raw_target in link_pattern.findall(added):
-                      target = raw_target.strip().split(maxsplit=1)[0].strip("<>")
-                      if not target or target.startswith(("#", "http://", "https://", "mailto:")):
+                      target = raw_target.strip()
+                      if " " in target and not target.startswith("<"):
+                          target = target.split(" ", 1)[0]
+                      target = unquote(target.strip("<>"))
+                      if not target or target.startswith(("#", "http://", "https://", "mailto:", "tel:")):
                           continue
                       target_path = target.split("#", 1)[0]
                       if not target_path:
                           continue
                       resolved = (path.parent / target_path).resolve()
                       try:
-                          resolved.relative_to(Path.cwd().resolve())
+                          resolved.relative_to(repo_root)
                       except ValueError:
-                          failures.append(f"{name}: introduced link escapes repository: {target_path}")
+                          failures.append(f"{name}: introduced link escapes repository")
                           continue
                       if not resolved.exists():
-                          failures.append(f"{name}: introduced local link target not found: {target_path}")
+                          failures.append(f"{name}: introduced local link target not found")
+
+          outside = (repo_root / ".." / "outside.md").resolve()
+          try:
+              outside.relative_to(repo_root)
+              raise AssertionError("Outside-repository path test did not escape.")
+          except ValueError:
+              pass
+          assert not (repo_root / "__definitely_missing_link_target__").exists()
 
           if failures:
               print("Markdown validation failed:", file=sys.stderr)
-              for failure in failures:
+              for failure in sorted(set(failures)):
                   print(f"- {failure}", file=sys.stderr)
               raise SystemExit(1)
+
+          deleted_count = sum(1 for status, _, _ in records if status == "D")
+          print(
+              f"Markdown validation passed for {len(current_files)} current file(s); "
+              f"{deleted_count} deleted Markdown file(s) inventoried."
+          )
           PY
 
   secret-scan:
     name: secret-scan
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout pull request
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Scan changed and governance-relevant files
         shell: bash
@@ -226,36 +541,76 @@ jobs:
           set -euo pipefail
 
           python3 - "$BASE_SHA" "$HEAD_SHA" <<'PY'
+          from __future__ import annotations
+
           from pathlib import Path
           import re
           import subprocess
           import sys
 
           base, head = sys.argv[1:3]
-          changed = subprocess.run(
-              ["git", "diff", "--name-only", "--diff-filter=ACMR", base, head],
+
+          def parse_current_paths(raw: bytes) -> set[str]:
+              tokens = raw.split(b"\0")
+              if tokens and tokens[-1] == b"":
+                  tokens.pop()
+              paths: set[str] = set()
+              index = 0
+              while index < len(tokens):
+                  status_token = tokens[index].decode("utf-8", "strict")
+                  index += 1
+                  status = status_token[0]
+                  if status in {"R", "C"}:
+                      index += 1
+                      new_path = tokens[index].decode("utf-8", "strict")
+                      index += 1
+                      paths.add(new_path)
+                  else:
+                      path = tokens[index].decode("utf-8", "strict")
+                      index += 1
+                      if status != "D":
+                          paths.add(path)
+              return paths
+
+          high_confidence = {
+              "private key": re.compile(rb"-----BEGIN (?:RSA |OPENSSH |EC |DSA )?PRIVATE KEY-----"),
+              "GitHub token": re.compile(
+                  rb"(?:ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9]{20,}|"
+                  rb"github_pat_[A-Za-z0-9_]{20,}"
+              ),
+              "AWS access key": re.compile(rb"(?:AKIA|ASIA)[A-Z0-9]{16}"),
+              "Google API key": re.compile(rb"AIza[A-Za-z0-9_-]{30,}"),
+              "Slack token": re.compile(rb"xox[baprs]-[A-Za-z0-9-]{20,}"),
+          }
+          generic = re.compile(
+              rb"(?i)(?:password|passwd|secret|api[_-]?key|access[_-]?token)"
+              rb"\s*[:=]\s*['\"]?[A-Za-z0-9+/=_-]{12,}"
+          )
+
+          def labels_for(data: bytes, include_generic: bool) -> set[str]:
+              labels = {
+                  label for label, pattern in high_confidence.items() if pattern.search(data)
+              }
+              if include_generic and generic.search(data):
+                  labels.add("generic credential assignment")
+              return labels
+
+          synthetic_secret = b"password=" + b"ThisIsAnObviousSyntheticSecret123"
+          assert labels_for(synthetic_secret, True) == {"generic credential assignment"}
+
+          raw_changes = subprocess.run(
+              ["git", "diff", "--name-status", "-z", "--find-renames", "--find-copies", base, head],
               check=True,
-              text=True,
               capture_output=True,
-          ).stdout.splitlines()
+          ).stdout
+          changed = parse_current_paths(raw_changes)
 
           relevant = set(changed)
           for root in (Path(".github/workflows"), Path("docs"), Path("scripts")):
               if root.exists():
                   relevant.update(str(path) for path in root.rglob("*") if path.is_file())
 
-          high_confidence = {
-              "private key": re.compile(rb"-----BEGIN (?:RSA |OPENSSH |EC |DSA )?PRIVATE KEY-----"),
-              "GitHub token": re.compile(rb"(?:ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}"),
-              "AWS access key": re.compile(rb"(?:AKIA|ASIA)[A-Z0-9]{16}"),
-              "Slack token": re.compile(rb"xox[baprs]-[A-Za-z0-9-]{20,}"),
-          }
-          generic = re.compile(
-              rb"(?i)(?:password|passwd|secret|api[_-]?key|access[_-]?token)\s*[:=]\s*['\"]?[A-Za-z0-9+/=_-]{12,}"
-          )
-
-          findings = []
-          changed_set = set(changed)
+          findings: list[tuple[str, str]] = []
           for name in sorted(relevant):
               path = Path(name)
               if not path.is_file() or path.stat().st_size > 2_000_000:
@@ -263,15 +618,17 @@ jobs:
               data = path.read_bytes()
               if b"\x00" in data:
                   continue
-              for label, pattern in high_confidence.items():
-                  if pattern.search(data):
-                      findings.append((name, label))
-              if name in changed_set and generic.search(data):
-                  findings.append((name, "generic credential assignment"))
+              for label in sorted(labels_for(data, name in changed)):
+                  findings.append((name, label))
 
           if findings:
-              print("Potential secret material detected; values are intentionally suppressed.", file=sys.stderr)
+              print(
+                  "Potential secret material detected; values are intentionally suppressed.",
+                  file=sys.stderr,
+              )
               for name, label in findings:
                   print(f"- {name}: {label}", file=sys.stderr)
               raise SystemExit(1)
+
+          print(f"Secret scan passed across {len(relevant)} relevant file(s).")
           PY
