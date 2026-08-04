@@ -45,11 +45,16 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
 
-          path = Path('public/sw.js')
+          service_worker = Path('public/sw.js')
           marker = '/* global self, caches, fetch, URL */\n'
-          text = path.read_text()
-          if not text.startswith(marker):
-              path.write_text(marker + text)
+          service_worker_text = service_worker.read_text()
+          if not service_worker_text.startswith(marker):
+              service_worker.write_text(marker + service_worker_text)
+
+          phpstan = Path('phpstan.neon')
+          phpstan.write_text(
+              phpstan.read_text().replace('    checkMissingIterableValueType: false\n', '')
+          )
           PY
 
       - name: Verify exact finalization conditions
