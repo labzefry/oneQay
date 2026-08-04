@@ -1,0 +1,277 @@
+name: Governance Required Checks
+
+"on":
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+      - converted_to_draft
+
+permissions:
+  contents: read
+
+jobs:
+  governance-validation:
+    name: governance-validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pull request
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate governance scope and semantics
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+
+          git diff --name-only --diff-filter=ACMR "$BASE_SHA" "$HEAD_SHA" > changed-files.txt
+          test -s changed-files.txt
+
+          if git diff --numstat "$BASE_SHA" "$HEAD_SHA" | awk '$1 == "-" || $2 == "-" { found=1 } END { exit !found }'; then
+            echo "Binary artifacts are not allowed in governance changes." >&2
+            exit 1
+          fi
+
+          if grep -E '(^|/)(node_modules|vendor|dist|build|coverage|target|out)/|\.(min\.(js|css)|map|pyc|class|jar|war|zip|tar|tgz|gz|7z|exe|dll|so|dylib)$' changed-files.txt >/dev/null; then
+            echo "Generated or packaged artifacts are not allowed in governance changes." >&2
+            exit 1
+          fi
+
+          python3 - "$BASE_SHA" "$HEAD_SHA" <<'PY'
+          import re
+          import subprocess
+          import sys
+
+          base, head = sys.argv[1:3]
+          diff = subprocess.run(
+              ["git", "diff", "--unified=0", "--no-color", base, head, "--", "*.md"],
+              check=True,
+              text=True,
+              capture_output=True,
+          ).stdout
+
+          added = []
+          current = None
+          for line in diff.splitlines():
+              if line.startswith("+++ b/"):
+                  current = line[6:]
+              elif line.startswith("+") and not line.startswith("+++"):
+                  added.append((current, line[1:]))
+
+          short_sha = re.compile(r"`[0-9a-fA-F]{7,39}`")
+          invalid_sha = [(path, text) for path, text in added if short_sha.search(text)]
+          if invalid_sha:
+              print("New SHA-like references must use full 40-character hexadecimal SHAs.", file=sys.stderr)
+              for path, _ in invalid_sha:
+                  print(f"- {path}", file=sys.stderr)
+              raise SystemExit(1)
+
+          sensitive = re.compile(
+              r"(?:^|/)(PROJECT_MANIFEST\.md|TASKS\.md|ROADMAP\.md|ARCHITECTURE\.md|docs/adr/.*\.md)$",
+              re.IGNORECASE,
+          )
+          promotion = re.compile(
+              r"(?:\|\s*(?:Done|Accepted|Approved)\s*\||"
+              r"Phase\s*0[^\n]*(?:Ready|Complete|Completed|Approved)|"
+              r"preview\s+exit[^\n]*(?:Ready|Approved)|"
+              r"application\s+implementation[^\n]*(?:Unblocked|Authorized|Ready)|"
+              r"ADR-\d{3}[^\n]*(?:Accepted|Approved))",
+              re.IGNORECASE,
+          )
+          promoted = [path for path, text in added if path and sensitive.search(path) and promotion.search(text)]
+          if promoted:
+              print("Potential substantive governance status promotion detected.", file=sys.stderr)
+              for path in sorted(set(promoted)):
+                  print(f"- {path}", file=sys.stderr)
+              raise SystemExit(1)
+
+          local_approval_claim = re.compile(
+              r"(?:local|static)[^\n]{0,80}(?:validation|check)[^\n]{0,80}"
+              r"(?:constitutes|provides|grants|equals|is)[^\n]{0,40}"
+              r"(?:product owner )?(?:approval|authority)",
+              re.IGNORECASE,
+          )
+          claimed = [path for path, text in added if path and local_approval_claim.search(text)]
+          if claimed:
+              print("Local/static validation must not be represented as Product Owner approval or authority.", file=sys.stderr)
+              for path in sorted(set(claimed)):
+                  print(f"- {path}", file=sys.stderr)
+              raise SystemExit(1)
+          PY
+
+  markdown-lint:
+    name: markdown-lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pull request
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate changed Markdown files
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+
+          git diff --name-only --diff-filter=ACMR "$BASE_SHA" "$HEAD_SHA" -- '*.md' > changed-markdown.txt
+          if [[ ! -s changed-markdown.txt ]]; then
+            echo "No changed Markdown files; markdown-lint passes."
+            exit 0
+          fi
+
+          python3 - "$BASE_SHA" "$HEAD_SHA" <<'PY'
+          from pathlib import Path
+          import re
+          import subprocess
+          import sys
+
+          base, head = sys.argv[1:3]
+          files = subprocess.run(
+              ["git", "diff", "--name-only", "--diff-filter=ACMR", base, head, "--", "*.md"],
+              check=True,
+              text=True,
+              capture_output=True,
+          ).stdout.splitlines()
+
+          failures = []
+          table_separator = re.compile(r"^\|(?:\s*:?-{3,}:?\s*\|)+$")
+          link_pattern = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
+
+          diff = subprocess.run(
+              ["git", "diff", "--unified=0", "--no-color", base, head, "--", "*.md"],
+              check=True,
+              text=True,
+              capture_output=True,
+          ).stdout
+          added_by_file = {}
+          current = None
+          for line in diff.splitlines():
+              if line.startswith("+++ b/"):
+                  current = line[6:]
+                  added_by_file.setdefault(current, [])
+              elif current and line.startswith("+") and not line.startswith("+++"):
+                  added_by_file[current].append(line[1:])
+
+          for name in files:
+              path = Path(name)
+              data = path.read_bytes()
+              text = data.decode("utf-8")
+              lines = text.splitlines()
+
+              if not data:
+                  failures.append(f"{name}: file is empty")
+                  continue
+              if not data.endswith(b"\n"):
+                  failures.append(f"{name}: missing final newline")
+              for number, line in enumerate(lines, start=1):
+                  if line.rstrip(" \t") != line:
+                      failures.append(f"{name}:{number}: trailing whitespace")
+                  if table_separator.fullmatch(line) and not re.fullmatch(r"\|(?: :?-{3,}:? \|)+", line):
+                      failures.append(f"{name}:{number}: table separators require surrounding spaces")
+
+              first = next((line for line in lines if line.strip()), "")
+              if not first.startswith("# "):
+                  failures.append(f"{name}: first non-empty line must be an H1 heading")
+
+              for added in added_by_file.get(name, []):
+                  for raw_target in link_pattern.findall(added):
+                      target = raw_target.strip().split(maxsplit=1)[0].strip("<>")
+                      if not target or target.startswith(("#", "http://", "https://", "mailto:")):
+                          continue
+                      target_path = target.split("#", 1)[0]
+                      if not target_path:
+                          continue
+                      resolved = (path.parent / target_path).resolve()
+                      try:
+                          resolved.relative_to(Path.cwd().resolve())
+                      except ValueError:
+                          failures.append(f"{name}: introduced link escapes repository: {target_path}")
+                          continue
+                      if not resolved.exists():
+                          failures.append(f"{name}: introduced local link target not found: {target_path}")
+
+          if failures:
+              print("Markdown validation failed:", file=sys.stderr)
+              for failure in failures:
+                  print(f"- {failure}", file=sys.stderr)
+              raise SystemExit(1)
+          PY
+
+  secret-scan:
+    name: secret-scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pull request
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Scan changed and governance-relevant files
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+
+          python3 - "$BASE_SHA" "$HEAD_SHA" <<'PY'
+          from pathlib import Path
+          import re
+          import subprocess
+          import sys
+
+          base, head = sys.argv[1:3]
+          changed = subprocess.run(
+              ["git", "diff", "--name-only", "--diff-filter=ACMR", base, head],
+              check=True,
+              text=True,
+              capture_output=True,
+          ).stdout.splitlines()
+
+          relevant = set(changed)
+          for root in (Path(".github/workflows"), Path("docs"), Path("scripts")):
+              if root.exists():
+                  relevant.update(str(path) for path in root.rglob("*") if path.is_file())
+
+          high_confidence = {
+              "private key": re.compile(rb"-----BEGIN (?:RSA |OPENSSH |EC |DSA )?PRIVATE KEY-----"),
+              "GitHub token": re.compile(rb"(?:ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}"),
+              "AWS access key": re.compile(rb"(?:AKIA|ASIA)[A-Z0-9]{16}"),
+              "Slack token": re.compile(rb"xox[baprs]-[A-Za-z0-9-]{20,}"),
+          }
+          generic = re.compile(
+              rb"(?i)(?:password|passwd|secret|api[_-]?key|access[_-]?token)\s*[:=]\s*['\"]?[A-Za-z0-9+/=_-]{12,}"
+          )
+
+          findings = []
+          changed_set = set(changed)
+          for name in sorted(relevant):
+              path = Path(name)
+              if not path.is_file() or path.stat().st_size > 2_000_000:
+                  continue
+              data = path.read_bytes()
+              if b"\x00" in data:
+                  continue
+              for label, pattern in high_confidence.items():
+                  if pattern.search(data):
+                      findings.append((name, label))
+              if name in changed_set and generic.search(data):
+                  findings.append((name, "generic credential assignment"))
+
+          if findings:
+              print("Potential secret material detected; values are intentionally suppressed.", file=sys.stderr)
+              for name, label in findings:
+                  print(f"- {name}: {label}", file=sys.stderr)
+              raise SystemExit(1)
+          PY
