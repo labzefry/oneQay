@@ -76,7 +76,11 @@ jobs:
           app_entry.write_text(
               app_entry_text
               .replace(import_marker, typed_import, 1)
-              .replace(resolve_marker, '  resolve: () => Foundation as DefineComponent,\n', 1)
+              .replace(
+                  resolve_marker,
+                  '  resolve: () => Foundation as unknown as DefineComponent,\n',
+                  1,
+              )
           )
 
           middleware = Path(
