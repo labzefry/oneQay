@@ -25,9 +25,18 @@ final readonly class PermissionIdentifier
     public function __construct(string $value)
     {
         $normalized = strtolower(trim($value));
-        if (preg_match('/^[a-z][a-z0-9_-]*(?:\.[a-z][a-z0-9_-]*)+$/', $normalized) !== 1 || strlen($normalized) > 96) {
+        $segments = explode('.', $normalized);
+
+        $isValidFormat = preg_match('/^[a-z][a-z0-9_-]*(?:\.[a-z][a-z0-9_-]*)+$/', $normalized) === 1;
+        $containsIdentitySegment = array_any(
+            $segments,
+            static fn (string $segment): bool => str_starts_with($segment, 'tenant_') || str_starts_with($segment, 'user_'),
+        );
+
+        if (!$isValidFormat || $containsIdentitySegment || strlen($normalized) > 96) {
             throw new \InvalidArgumentException('Permission identifier is invalid.');
         }
+
         $this->value = $normalized;
     }
 }
