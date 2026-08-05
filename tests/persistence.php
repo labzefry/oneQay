@@ -76,6 +76,9 @@ $assert(!str_contains(var_export($configuration, true), $syntheticPassword), 'Da
 foreach ([
     ['DB_DRIVER' => 'mysqli'],
     ['DB_HOST' => 'https://database.example.test'],
+    ['DB_HOST' => 'localhost;port=3307'],
+    ['DB_HOST' => 'localhost;charset=latin1'],
+    ['DB_HOST' => 'localhost=unexpected'],
     ['DB_PORT' => '70000'],
     ['DB_NAME' => 'invalid-name'],
     ['DB_USER' => 'invalid user'],
