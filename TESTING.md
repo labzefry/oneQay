@@ -95,6 +95,57 @@ Flaky test adalah defect. Quarantine hanya sementara dengan issue, owner, reason
 
 Simpan version/commit, environment, suite, result, duration, failure, artifact/log aman, approver, dan exception. Jangan menyimpan secret atau data Restricted.
 
+## Governance required-check validation
+
+The workflow
+`.github/workflows/governance-required-checks.yml` provides three stable
+job-level checks for pull requests targeting `main`:
+
+- `governance-validation`;
+- `markdown-lint`;
+- `secret-scan`.
+
+### Governance validation
+
+`governance-validation` inspects the pull-request changed-file set and fails
+when restricted environment or private-key filenames, committed dependency
+directories, or an empty validation scope are detected.
+
+### Markdown validation
+
+`markdown-lint` validates changed Markdown files for:
+
+- non-empty file content;
+- trailing-whitespace absence;
+- final newline presence.
+
+This is a structural Markdown guard. It does not replace a future
+standards-based Markdown linter selected through the relevant quality-tool ADR.
+
+### Secret-pattern validation
+
+`secret-scan` scans tracked repository content for high-risk private-key,
+GitHub-token, and AWS access-key patterns.
+
+This regex-based guard is a baseline control. It does not replace a future
+dedicated secret-scanning platform or incident-response process.
+
+### Acceptance criteria
+
+A governance workflow run is acceptable when:
+
+- all three job-level checks complete successfully;
+- the results are attached to the exact pull-request head commit;
+- no workflow job accesses repository secrets;
+- no build, migration, release, publish, or deployment action executes;
+- the pull request remains subject to independent review and repository
+  protection rules.
+
+Passing these checks does not approve application implementation, merge,
+deployment, release, Phase 0 exit, ADR acceptance, or source-code authority.
+
+Attribution: Lab | zefry
+
 ## Definition of Done
 
 Acceptance criteria teruji, suites sesuai risk lulus, negative/abuse/boundary cases tersedia, test deterministic, evidence tersimpan, defect ditangani, dan TESTING/TASKS/CHANGELOG diperbarui.
