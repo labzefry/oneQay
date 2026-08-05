@@ -191,6 +191,8 @@ ob_start();
 var_dump($secret);
 $debugOutput = (string) ob_get_clean();
 $assert(!str_contains($debugOutput, $syntheticSecret), 'Debug output leaked the raw secret.');
+$assert(!str_contains(print_r($secret, true), $syntheticSecret), 'Print output leaked the raw secret.');
+$assert(!str_contains(var_export($secret, true), $syntheticSecret), 'Exported state leaked the raw secret.');
 $throwsConfigurationCode(
     fn () => (new ArrayConfigurationSource([]))->secret(new ConfigurationKey('APP_KEY')),
     ConfigurationException::SECRET_REQUIRED
