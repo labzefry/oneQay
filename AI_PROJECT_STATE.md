@@ -8,6 +8,16 @@ Developer and Product Engineering Entity: Lab | zefry
 
 GitHub repository `labzefry/oneQay` is the Single Source of Truth.
 
+## Current repository state
+
+- Current `main`: `fb9d6d2671a948b0923d8b6fc2fdc82368431356`.
+- PR #38 is merged from original exact head `10f95db4bef812757902af2b180bcc41f2c28798` and published as `a59521ad31d8153198bb80dd7985142cb21e3775`.
+- PR #38 required-check recovery is complete.
+- PR #35 is merged from final exact head `7dc9ff77e84912f9bf497b44d7a091684d914a1a` and published as `fb9d6d2671a948b0923d8b6fc2fdc82368431356`.
+- PR #35 conflict recovery is complete.
+- PR #35 required checks passed and independent exact-head approval was recorded before publication.
+- No deployment or release was performed.
+
 ## Governance state
 
 - Phase 0: In Progress
@@ -17,7 +27,7 @@ GitHub repository `labzefry/oneQay` is the Single Source of Truth.
 - ADR-001 through ADR-007: Proposed
 - GD-007: Proposed
 - JRN-003 and JRN-013: unresolved
-- Hosting evidence: Pending / Not supplied / Unverified
+- Hosting evidence: Unverified
 - No Technical Preview task is Done
 - No application source-code authority exists
 
@@ -35,37 +45,32 @@ Ruleset `main-protected-governance` is active for the default branch with:
 - non-fast-forward protection;
 - empty bypass list.
 
-Required checks are aligned to:
+Required checks are stable and aligned to:
 
 - `governance-validation`;
 - `markdown-lint`;
 - `secret-scan`.
 
-## Active recovery work
+## Active checkpoint work
 
-Draft PR #38 restores the workflow producers for those three required checks on branch `agent/restore-required-check-workflows`.
+Post-Publication Checkpoint Reconciliation is isolated on branch `agent/post-publication-checkpoint-reconciliation` from exact current main `fb9d6d2671a948b0923d8b6fc2fdc82368431356`.
 
-Current documented scope includes:
+The authorized scope is exactly:
 
-- `.github/workflows/governance-required-checks.yml`;
-- `.github/workflows/README.md`;
-- `DEPLOYMENT.md`;
-- `TESTING.md`;
-- `TASKS.md`;
-- AI checkpoint files created during the recovery session.
+- `AI_SESSION_STATE.md`;
+- `AI_PROJECT_STATE.md`;
+- `AI_NEXT_TASK.md`.
 
-`CHANGELOG.md` remains pending before recovery completion.
-
-## Related pull request
-
-Draft PR #35 remains isolated and must not be modified, marked ready, merged, or deployed during the workflow recovery.
+This reconciliation records completed publication state only. It does not alter Issue #23, ADR states, Phase 0 states, hosting evidence, unresolved journals, application authority, deployment state, or release state.
 
 ## Authority boundaries
 
 Authorized:
 
-- commit files directly to `agent/restore-required-check-workflows` within the required-check recovery scope;
-- update PR #38 metadata for accurate recovery documentation;
+- update exactly the three AI checkpoint files on the reconciliation branch;
+- create a Draft PR;
+- run and verify the three required checks;
+- request independent exact-head review only after the final commit;
 - perform read-only Delta Verification.
 
 Not authorized:
@@ -74,9 +79,16 @@ Not authorized:
 - deploy or release;
 - force push;
 - enable auto-merge;
-- mark PR #38 or PR #35 ready;
+- mark the Draft PR ready;
+- modify PR #35 or PR #38;
+- change Issue #23;
 - accept ADRs;
 - approve Phase 0 exit;
+- begin Authentication Foundation;
 - create application source code.
+
+## Next lifecycle boundary
+
+After checkpoint reconciliation and independent final exact-head review, the next task is Product Owner milestone selection through a separate lifecycle decision.
 
 Attribution: Lab | zefry
