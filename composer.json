@@ -1,0 +1,20 @@
+{
+  "name": "labzefry/oneqay-auth-foundation",
+  "description": "Framework-agnostic Authentication Foundation for OneQay Technical Preview.",
+  "type": "library",
+  "license": "proprietary",
+  "require": {
+    "php": ">=8.2"
+  },
+  "autoload": {
+    "files": [
+      "src/Auth/Foundation.php"
+    ],
+    "psr-4": {
+      "OneQay\\Http\\": "src/Http/"
+    }
+  },
+  "scripts": {
+    "test": "php tests/run.php"
+  }
+}
