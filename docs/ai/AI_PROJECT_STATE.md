@@ -2,16 +2,17 @@
 
 ## Current engineering state
 
-- Current Sprint: Sprint 06 — Configuration and Secret Boundary Foundation
+- Current Sprint: Sprint 07 — Platform Application Bootstrap and Runtime Capability Foundation
 - Current Phase: Phase 1 — Platform Foundation
 - Current Milestone: Platform Runtime Foundation
-- Current Module: Configuration and Secret Boundary Foundation
-- Exact Base: `ca03f82a5578792f7d99f935424b8722a409382d`
-- Branch: `agent/sprint06-configuration-secret-boundary`
+- Current Module: Application Bootstrap and Runtime Capability
+- Exact Base: `416dcc7160a6197b561d8a41b0210e33c0f05974`
+- Branch: `agent/sprint07-platform-bootstrap-runtime-capability`
 - Authentication Foundation: Published.
 - Tenant Context Foundation: Published.
 - Authorization Boundary Foundation: Published.
-- Configuration and Secret Boundary Foundation: Implemented on branch.
+- Configuration and Secret Boundary Foundation: Published.
+- Runtime Foundation: Implemented on branch.
 - Persistence: Not Started.
 - POS: Not Started.
 - Deployment: None.
@@ -19,34 +20,28 @@
 
 ## Implemented capability
 
-- Canonical Environment Identifier for local, test, preview, and production.
-- Canonical uppercase-snake Configuration Key.
-- Configuration Source interface.
-- Array test adapter and trusted environment-variable adapter.
-- Missing, empty, invalid, and secret-required distinction.
-- Required and optional string/boolean access.
-- Protected Secret Value with explicit reveal and redacted output.
-- Safe startup validation for environment, debug, secure session, and application secret.
-- Stable configuration error codes and Error Envelope compatibility.
-- Authentication, Tenant Context, and Authorization regression coverage.
-- Secret-leakage negative test.
+- framework-agnostic Application Bootstrap;
+- immutable Bootstrap Result;
+- canonical Runtime Capability Identifier;
+- immutable Runtime Capability Report;
+- native and synthetic runtime providers;
+- PHP >=8.2 and required-extension validation;
+- document-root public validation;
+- environment and configuration startup integration;
+- correlation ID, health, readiness, and safe failure;
+- stable runtime error codes;
+- leakage-negative and explicit non-persistence/non-POS tests.
+
+## Hosting status
+
+Verified hosting capability: PHP 8.3.26, required PHP extensions, Apache 2.4.63, cPanel cron/log/backup interfaces, SSL, resource limits, dan no SSH.
+
+Unknown hosting capability: Composer executable, effective rewrite, exact target document root to `public`, minimum cron interval, long-running worker, Redis/cache, symlink policy, dan final deployment method.
+
+cPanel compatibility: Conditional. Runtime architecture sesuai shared hosting tanpa SSH, tetapi runtime GO memerlukan document-root safety dan target configuration verification.
 
 ## Deferred capability
 
-- persistent configuration and database connection;
-- schema and migration;
-- managed secret service and rotation;
-- runtime hosting integration;
-- queue, scheduler, cache, storage, and mail;
-- backup, restore, deployment, and rollback;
-- POS and all business modules.
-
-## cPanel requirement status
-
-Spesifikasi cPanel belum diperlukan untuk Sprint 06. Capability information mulai diperlukan sebelum platform runtime integration dan seluruh infrastructure-dependent foundation. Credential cPanel tidak boleh disimpan di repository atau checkpoint.
-
-## Repository health
-
-Scope tetap bounded, framework-agnostic, deterministic, tanpa network, production credential, production data, production database, workflow/ruleset change, deployment, atau release. Final candidate lulus PHP syntax validation dan 49 assertions.
+Persistence, schema, migration, cache integration, queue, scheduler integration, background worker, mail, storage, deployment, rollback, POS, dan semua business modules.
 
 Attribution: Lab | zefry

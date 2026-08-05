@@ -2,31 +2,30 @@
 
 ## Current checkpoint
 
-- Sprint 06 Configuration and Secret Boundary Foundation: Implemented on branch.
-- Authentication Foundation: Published.
-- Tenant Context Foundation: Published.
-- Authorization Boundary Foundation: Published.
-- Configuration Boundary tests: Passed.
-- Secret-leakage negative test: Passed.
-- PHP syntax validation: Passed.
-- Total assertions: 49.
-- Documentation: Completed.
-- Checkpoint: Completed.
+- Sprint 07 Platform Application Bootstrap and Runtime Capability Foundation: Implemented on branch.
+- Authentication, Tenant Context, Authorization, dan Configuration foundations: Published.
+- Runtime Capability and Bootstrap tests: Added.
+- Hosting capability evidence: Recorded without credential.
 - Persistence: Not Started.
 - POS: Not Started.
 - Deployment: None.
 - Release: None.
 
-## Stop condition
+## Remaining Sprint 07 lifecycle
 
-Berhenti setelah Draft PR, PHP syntax validation, regression tests, secret-leakage validation, required checks, independent review request, dan laporan. Jangan melanjutkan persistence, POS Foundation, atau business module.
+1. Jalankan PHP syntax validation pada final tree.
+2. Jalankan Authentication, Tenant Context, Authorization, Configuration, Runtime Capability, dan Bootstrap tests.
+3. Jalankan secret-leakage dan path-leakage negative tests.
+4. Buat Draft PR dan tunggu required checks.
+5. Request independent review pada latest exact head.
+6. Jangan mark Ready atau merge tanpa authority Product Owner terpisah.
 
-## cPanel requirement status
+## Runtime GO dependency
 
-Spesifikasi cPanel belum diperlukan untuk menyelesaikan Sprint 06. Sebelum platform runtime integration dimulai, Product Owner perlu memberikan capability information tanpa credential, minimal versi PHP, extension, Composer/SSH, document root, cron, worker/background process, database version, cache, storage, mail, backup, log access, dan deployment constraints.
+Sebelum runtime target dinyatakan GO, buktikan bahwa document root `oneqay.n07.my.id` menunjuk tepat ke folder `public`, configuration environment aman, dan halaman capability `phpinfo()` telah dihapus atau dibatasi.
 
-## Sprint 07 candidate
+## Sprint 08 candidate
 
-Sprint 07 memerlukan Product Owner authority terpisah. Rekomendasi bounded scope adalah Platform Application Bootstrap and Runtime Capability Foundation. Sprint tersebut harus melakukan capability verification terhadap target cPanel sebelum menetapkan integration yang bergantung pada hosting. Jangan meminta password, token, API key, atau secret hosting.
+Sprint 08 belum berwenang dimulai. Kandidat bounded berikutnya adalah Persistence Capability and Database Connection Boundary Foundation hanya setelah Sprint 07 dipublikasikan, exact-head regression berhasil, hosting database capability diverifikasi tanpa credential, dan Product Owner memberi authorization terpisah.
 
 Attribution: Lab | zefry
