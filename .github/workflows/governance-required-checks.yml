@@ -1,0 +1,124 @@
+name: Governance Required Checks
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: governance-required-checks-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  governance-validation:
+    name: governance-validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+
+      - name: Validate changed-file governance
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            base_sha="${{ github.event.pull_request.base.sha }}"
+            head_sha="${{ github.event.pull_request.head.sha }}"
+            git diff --name-only "$base_sha" "$head_sha" > changed-files.txt
+          else
+            git ls-files > changed-files.txt
+          fi
+
+          test -s changed-files.txt
+
+          if grep -nE '(^|/)\.env($|\.)|(^|/)(id_rsa|id_ed25519)$' changed-files.txt; then
+            echo "Restricted file detected." >&2
+            exit 1
+          fi
+
+          if grep -nE '(^|/)(vendor|node_modules)/' changed-files.txt; then
+            echo "Generated dependency directory detected." >&2
+            exit 1
+          fi
+
+          echo "Governance validation passed."
+
+  markdown-lint:
+    name: markdown-lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+
+      - name: Validate Markdown structure
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            base_sha="${{ github.event.pull_request.base.sha }}"
+            head_sha="${{ github.event.pull_request.head.sha }}"
+            mapfile -t markdown_files < <(
+              git diff --name-only --diff-filter=ACMR "$base_sha" "$head_sha" |
+              grep -E '\.md$' || true
+            )
+          else
+            mapfile -t markdown_files < <(git ls-files '*.md')
+          fi
+
+          if [[ "${#markdown_files[@]}" -eq 0 ]]; then
+            echo "No Markdown files require validation."
+            exit 0
+          fi
+
+          for file in "${markdown_files[@]}"; do
+            test -f "$file"
+            test -s "$file"
+
+            if grep -nE '[[:blank:]]+$' "$file"; then
+              echo "Trailing whitespace detected in $file." >&2
+              exit 1
+            fi
+
+            final_byte="$(tail -c 1 "$file" | od -An -t x1 | tr -d '[:space:]')"
+            if [[ "$final_byte" != "0a" ]]; then
+              echo "Missing final newline in $file." >&2
+              exit 1
+            fi
+          done
+
+          echo "Markdown validation passed."
+
+  secret-scan:
+    name: secret-scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+
+      - name: Scan tracked content for high-risk secret patterns
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if grep -RInE \
+            --exclude-dir=.git \
+            --exclude='*.lock' \
+            '(BEGIN (RSA|OPENSSH|EC|DSA) PRIVATE KEY|ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|AKIA[0-9A-Z]{16})' \
+            .; then
+            echo "Potential secret pattern detected." >&2
+            exit 1
+          fi
+
+          echo "Secret scan passed."
