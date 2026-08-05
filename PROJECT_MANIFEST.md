@@ -325,3 +325,19 @@ Read-only evidence for the PR #32 exact head shows no separate exact-head ready 
 The Product Owner issued a post-merge exact-head content decision approving only the accuracy of the three-file corrective content on PR #32 exact head. That decision does not provide retrospective lifecycle authority and does not ratify the draft-to-ready transition or merge of PR #32.
 
 The PR #32 technical merge does not ratify PR #31, PR #30, PR #29, PR #28, PR #27, PR #26, or PR #25, validate or complete the closure of Issue #23, accept ADR-001 through ADR-007, approve Phase 0 preview exit, grant source-code authority, complete GOV-034, GOV-035, GOV-036, GOV-037, GOV-038, GOV-039, GOV-040, or GOV-041, or provide substantive approval or completion evidence. Phase 0 remains **In Progress**. Application implementation remains **Blocked**. Phase 0 preview exit remains **Not Ready**. P1 remains conditional and **Unverified**. ADR-001 through ADR-007, GD-007, PAY-1, OFF-1, TEN-1, REC-1, SLO-1, and DATA-1 remain **Proposed** selections or boundaries. GOV-034, GOV-035, GOV-036, GOV-037, GOV-038, GOV-039, GOV-040, and GOV-041 remain **Review**. JRN-003 and JRN-013 remain unresolved. Hosting evidence remains Pending, Not supplied, or Unverified.
+
+## PR #33 post-merge governance recurrence and containment
+
+PR #33 was created from original base `d1a6160b37250bda691e906fc4ee06e37dd0c847` at exact head `28c776abf6ab7832dbdf61ea49203c6e9c13a55c`. Its body required the PR to remain draft, but it was changed from draft and technically merged as `68df196efdf38919d73a6b6345b973d2c3698b29`.
+
+The Product Owner issued a post-merge exact-head content decision approving only the accuracy of the three-file corrective content on PR #33. That decision does not provide retrospective lifecycle authority and does not ratify the draft-to-ready transition or merge of PR #33.
+
+A read-only repository-control incident investigation attributed the PR #25 through PR #33 merge commits to Git author `labzefry` with GitHub-hosted committer `web-flow`, while account security-log, token, OAuth, session, IP, and user-agent evidence remained unavailable through the connector. The recurrence mechanism was assessed as a GitHub web/API path operating with repository-owner authority rather than a GitHub Actions workflow.
+
+Repository Owner containment established the active `main-protected-governance` ruleset on the public repository with an empty bypass list, required pull request, one independent approval, stale-approval dismissal, latest-reviewable-push approval, conversation resolution, required status checks, deletion restriction, and force-push blocking.
+
+Sentinel PR #34 used exact head `be4182a7f918da043e71fe9af3626a1bb027372b`. Its first approval by `@zefriansyah` was automatically **DISMISSED** after a new push. A new independent latest-head approval was then recorded as **APPROVED**. Required checks `governance-validation`, `markdown-lint`, and `secret-scan` completed successfully. PR #34 was closed without merge, and `main` remained at `68df196efdf38919d73a6b6345b973d2c3698b29`.
+
+This effectiveness evidence contains the corrective PR workflow but does not ratify PR #25 through PR #33, validate Issue #23 closure, accept ADR-001 through ADR-007, approve Phase 0 preview exit, grant source-code authority, complete GOV-034 through GOV-042, release, deploy, or promote any status.
+
+Phase 0 remains **In Progress**. Application implementation remains **Blocked**. Phase 0 preview exit remains **Not Ready**. P1 remains conditional and **Unverified**. ADR-001 through ADR-007, GD-007, PAY-1, OFF-1, TEN-1, REC-1, SLO-1, and DATA-1 remain **Proposed** selections or boundaries. GOV-034 through GOV-042 remain **Review**. JRN-003 and JRN-013 remain unresolved. Hosting evidence remains Pending, Not supplied, or Unverified.

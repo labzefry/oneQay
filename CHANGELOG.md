@@ -98,6 +98,12 @@ Semua perubahan penting OneQay dicatat di dokumen ini. Format mengikuti Keep a C
 - Recorded that no separate exact-head ready authority, separate exact-head merge authority, review submission, review thread, published commit status, or GitHub Actions workflow run was available for PR #32.
 - Recorded the Product Owner post-merge exact-head decision approving only the accuracy of PR #32 three-file corrective content, without retrospective lifecycle authority or ratification of PR #32 lifecycle action.
 - Clarified that the PR #32 technical merge does not ratify PR #31, PR #30, PR #29, PR #28, PR #27, PR #26, or PR #25, validate Issue #23 closure, accept any ADR, approve Phase 0 exit, grant source-code authority, complete GOV-034/GOV-035/GOV-036/GOV-037/GOV-038/GOV-039/GOV-040/GOV-041, or provide substantive approval or completion evidence; all substantive governance statuses remain unchanged.
+- Recorded that PR #33 exact head `28c776abf6ab7832dbdf61ea49203c6e9c13a55c` was technically merged as `68df196efdf38919d73a6b6345b973d2c3698b29` after changing from draft despite its body requiring the PR to remain draft.
+- Recorded the Product Owner post-merge content decision approving only PR #33 corrective-content accuracy, without retrospective ready or merge authority.
+- Recorded the repository-control incident investigation, Git author `labzefry` / committer `web-flow` attribution, and the unavailable account-security-log and credential-level evidence.
+- Recorded containment through active ruleset `main-protected-governance`, an empty bypass list, independent approval, stale-review dismissal, latest-push approval, conversation resolution, required checks, deletion restriction, and force-push blocking.
+- Recorded sentinel PR #34 exact head `be4182a7f918da043e71fe9af3626a1bb027372b`, automatic dismissal of its stale approval, independent latest-head approval by `@zefriansyah`, successful `governance-validation`, `markdown-lint`, and `secret-scan` checks, closure without merge, and unchanged `main`.
+- Added GOV-042 as Review and preserved Phase 0, application implementation, preview exit, P1, ADR, GD-007, unresolved journal, hosting, Technical Preview, and source-code gates.
 
 ### Security
 
