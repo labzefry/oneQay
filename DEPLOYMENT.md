@@ -108,3 +108,37 @@ DNS/SSL/wildcard/cache operation menggunakan scoped token, validation, idempoten
 ## Deployment Definition of Done
 
 Artifact terversi, quality gate lulus, migration dan backup direhearsal, approval tersedia, deployment tercatat, health/business checks lulus, monitoring normal, rollback siap, dan changelog/release record diperbarui.
+
+## Governance required-check workflow
+
+The repository uses
+`.github/workflows/governance-required-checks.yml` as a narrowly scoped
+repository-governance control.
+
+It produces the following protected-branch checks:
+
+- `governance-validation`;
+- `markdown-lint`;
+- `secret-scan`.
+
+This workflow:
+
+- runs for pull requests targeting `main`;
+- may be started manually through `workflow_dispatch` for diagnostics;
+- uses read-only repository-content permission;
+- does not use deployment environments;
+- does not access deployment credentials or repository secrets;
+- does not build application artifacts;
+- does not publish packages or container images;
+- does not execute database migrations;
+- does not release or deploy OneQay.
+
+A successful workflow run is governance evidence only. It is not deployment
+approval, release authority, Phase 0 exit approval, application source-code
+authority, or merge authority.
+
+Application deployment remains unavailable until the relevant architecture,
+technology, security, testing, hosting, and deployment decisions receive
+separate Product Owner approval.
+
+Attribution: Lab | zefry
