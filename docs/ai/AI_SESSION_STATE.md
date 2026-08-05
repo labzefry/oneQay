@@ -3,7 +3,6 @@
 ## Identitas checkpoint
 
 - Project: oneQay
-- Tagline: The Future of Intelligent Business Management
 - Developer and Product Engineering Entity: Lab | zefry
 - Repository: `labzefry/oneQay`
 - Repository role: Single Source of Truth
@@ -11,35 +10,34 @@
 
 ## Engineering checkpoint
 
-- Current Sprint: Sprint 03 — Authentication Foundation
+- Current Sprint: Sprint 04 — Tenant Context Foundation
 - Current Milestone: Technical Preview Foundation
-- Current Module: Authentication Foundation
-- Authorized base: `4f9ee1870e36d7041763ac9924fabc40191a7400`
-- Current Branch: `agent/sprint03-authentication-foundation`
-- Current Task: Implementasi session authentication terbatas.
-- Completed Scope: Session Authentication, Login, Logout, Password Hash, Session Protection, Error Envelope, dan Basic Authentication Test.
-- Next Task: Sprint 04 hanya setelah Product Owner meninjau hasil Sprint 03.
-
-## Scope boundary
-
-Tidak diimplementasikan:
-
-- Tenant Foundation;
-- Authorization;
-- POS;
-- MFA, invitation, recovery, atau password reset;
-- database persistence;
-- deployment atau release.
+- Current Module: Tenant Context Foundation
+- Exact Base: `dee7979e7ee73436fb2f646a9567cf3c660996a2`
+- Current Branch: `agent/sprint04-tenant-context-foundation`
+- Current Task: Implementasi tenant context terbatas pada authenticated session.
+- Implemented Scope: Tenant Identifier, Tenant Context, resolver interface, session-backed resolver, validation, rejection, session regeneration, tenant session key, tests, documentation, dan checkpoint.
+- Exact Head: Pending final content commit.
+- Current PR: Pending Draft PR.
 
 ## Validation
 
-- Basic authentication test: Passed.
-- Assertions: 15.
+- Authentication test: Included.
+- Tenant-context test: Included.
 - Network dependency: None.
-- Production credential: None.
+- Production credential/data: None.
+
+## Scope status
+
+- Tenant Context Foundation: Implemented on branch.
+- Authorization: Not Started.
+- POS: Not Started.
+- Persistent tenant repository: Not Started.
+- Deployment: None.
+- Release: None.
 
 ## Session status
 
-Authentication Foundation selesai pada branch dan harus berhenti setelah testing, documentation, checkpoint, dan Draft PR. Jangan melanjutkan Tenant Foundation.
+Berhenti setelah testing, documentation, checkpoint, Draft PR, required checks, independent review request, dan laporan. Jangan melanjutkan Authorization Foundation atau POS Foundation.
 
 Attribution: Lab | zefry

@@ -2,13 +2,13 @@
 
 ## Current engineering state
 
-- Current Sprint: Sprint 03 — Authentication Foundation
+- Current Sprint: Sprint 04 — Tenant Context Foundation
 - Current Milestone: Technical Preview Foundation
-- Current Module: Authentication Foundation
-- Base commit: `4f9ee1870e36d7041763ac9924fabc40191a7400`
-- Branch: `agent/sprint03-authentication-foundation`
-- Application implementation: Terbatas pada Authentication Foundation.
-- Tenant Foundation: Not Started.
+- Current Module: Tenant Context Foundation
+- Exact Base: `dee7979e7ee73436fb2f646a9567cf3c660996a2`
+- Branch: `agent/sprint04-tenant-context-foundation`
+- Authentication Foundation: Published through PR #42.
+- Tenant Context Foundation: Implemented on branch.
 - Authorization: Not Started.
 - POS: Not Started.
 - Deployment: None.
@@ -16,27 +16,27 @@
 
 ## Implemented capability
 
-- Password hashing abstraction dan native PHP adapter.
-- User provider boundary dan in-memory test adapter.
-- Session store boundary dan in-memory test adapter.
-- Login/logout application service.
-- Session ID regeneration.
-- Session fingerprint protection.
-- CSRF token issuance dan validation.
-- Stable error envelope dengan correlation ID.
-- Basic deterministic test runner.
+- Immutable normalized Tenant Identifier.
+- Immutable Tenant Context.
+- Resolver interface dan session-backed adapter.
+- Authenticated-session requirement.
+- Missing, invalid, dan unavailable rejection.
+- Session regeneration pada tenant change.
+- Tenant-aware session key boundary.
+- Safe tenant error envelope.
+- Deterministic tests.
 
 ## Deferred capability
 
-- Persistent user/session storage.
-- MFA dan privileged-role protection.
-- Invitation, password reset, account recovery, dan session inventory.
-- Tenant context.
-- Role dan permission authorization.
-- Application business modules.
+- Membership dan entitlement verification.
+- Role, permission, policy, RBAC, dan ABAC.
+- Persistent tenant repository.
+- Tenant lifecycle dan custom domain.
+- POS dan business modules.
+- Deployment dan release.
 
 ## Repository health
 
-Scope implementasi tetap bounded dan tidak mengubah workflow, ruleset, Issue #23, Tenant, Authorization, POS, deployment, atau release.
+Scope tetap bounded. Tidak ada workflow, ruleset, Issue #23, database bisnis, Authorization, atau POS yang diubah.
 
 Attribution: Lab | zefry
