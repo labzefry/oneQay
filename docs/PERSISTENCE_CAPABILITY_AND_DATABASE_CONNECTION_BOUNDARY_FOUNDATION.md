@@ -70,7 +70,7 @@ Aturan:
 - port harus 1 sampai 65535;
 - database name dan username harus mengikuti format terbatas;
 - charset wajib `utf8mb4`;
-- host tidak menerima URL, path, control character, atau whitespace;
+- host hanya menerima karakter hostname/IP canonical dan menolak URL, path, whitespace, control character, serta delimiter DSN seperti `;` dan `=`;
 - password wajib menggunakan `SecretValue` dari Configuration Boundary;
 - result tidak memuat host, username, password, DSN, socket path, atau raw exception.
 
@@ -128,10 +128,10 @@ Bounded persistence test menggunakan synthetic configuration, password, capabili
 Local bounded candidate result:
 
 ```text
-Persistence Capability and Database Connection Boundary tests passed: 36 assertions.
+Persistence Capability and Database Connection Boundary tests passed: 39 assertions.
 ```
 
-Tests mencakup capability `UNKNOWN`, immutable report, configuration validation, secret leakage, safe connection result, non-persistent PDO policy, connector failure mapping, serta explicit no-schema/no-business behavior.
+Tests mencakup capability `UNKNOWN`, immutable report, configuration validation, DSN delimiter injection rejection, secret leakage, safe connection result, non-persistent PDO policy, connector failure mapping, serta explicit no-schema/no-business behavior.
 
 ## Security limitations
 
