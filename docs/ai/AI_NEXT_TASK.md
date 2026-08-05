@@ -4,7 +4,8 @@
 
 - Sprint 08 Persistence Capability and Database Connection Boundary Foundation: Implemented on branch.
 - Authentication, Tenant Context, Authorization, Configuration, dan Runtime foundations: Published.
-- Persistence bounded tests: Passed locally — 36 assertions.
+- Persistence bounded tests: Passed locally — 39 assertions.
+- DSN delimiter injection regression: Included.
 - Production database connection: Not Performed.
 - Schema and migration: Not Started.
 - POS: Not Started.
@@ -15,7 +16,7 @@
 
 1. Jalankan PHP syntax validation pada final exact head.
 2. Jalankan Authentication, Tenant Context, Authorization, Configuration, Runtime, Bootstrap, dan Persistence tests.
-3. Jalankan secret-leakage dan connection-result leakage negative tests.
+3. Jalankan secret-leakage, connection-result leakage, dan DSN injection negative tests.
 4. Verifikasi tidak ada schema, migration, business query, persistent PDO connection, atau POS behavior.
 5. Tunggu required checks pada Draft PR.
 6. Request independent review pada latest exact head.
