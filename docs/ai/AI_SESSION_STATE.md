@@ -17,7 +17,7 @@
 - Exact Base: `7420539c17be0758c8393f16e6f4232666a2bb2c`
 - Current Branch: `agent/sprint08-persistence-database-connection-boundary`
 - Exact Head: authoritative pada PR metadata setelah final content commit.
-- Implemented Scope: persistence capability identifier/status/provider/report/validator, database driver and configuration boundary, safe PDO policy, connector interfaces, PDO MySQL adapter, synthetic adapter, safe connection result/service, tests, documentation, dan checkpoint.
+- Implemented Scope: persistence capability identifier/status/provider/report/validator, database driver and configuration boundary, safe PDO policy, connector interfaces, PDO MySQL adapter, synthetic adapter, safe connection result/service, DSN delimiter injection hardening, tests, documentation, dan checkpoint.
 
 ## Published foundations
 
@@ -36,7 +36,8 @@ Unknown: production database credential, application connection, database TLS, p
 ## Validation
 
 - Sprint 08 bounded PHP syntax validation: Passed.
-- Sprint 08 bounded persistence tests: Passed — 36 assertions.
+- Sprint 08 bounded persistence tests: Passed — 39 assertions.
+- DSN delimiter injection regression: Included.
 - Network dependency: None.
 - Production credential/data/database: None.
 - Authentication regression: required on final exact head.
