@@ -2,30 +2,33 @@
 
 ## Current checkpoint
 
-- Sprint 07 Platform Application Bootstrap and Runtime Capability Foundation: Implemented on branch.
-- Authentication, Tenant Context, Authorization, dan Configuration foundations: Published.
-- Runtime Capability and Bootstrap tests: Added.
-- Hosting capability evidence: Recorded without credential.
-- Persistence: Not Started.
+- Sprint 08 Persistence Capability and Database Connection Boundary Foundation: Implemented on branch.
+- Authentication, Tenant Context, Authorization, Configuration, dan Runtime foundations: Published.
+- Persistence bounded tests: Passed locally — 36 assertions.
+- Production database connection: Not Performed.
+- Schema and migration: Not Started.
 - POS: Not Started.
 - Deployment: None.
 - Release: None.
 
-## Remaining Sprint 07 lifecycle
+## Remaining Sprint 08 lifecycle
 
-1. Jalankan PHP syntax validation pada final tree.
-2. Jalankan Authentication, Tenant Context, Authorization, Configuration, Runtime Capability, dan Bootstrap tests.
-3. Jalankan secret-leakage dan path-leakage negative tests.
-4. Buat Draft PR dan tunggu required checks.
-5. Request independent review pada latest exact head.
-6. Jangan mark Ready atau merge tanpa authority Product Owner terpisah.
+1. Jalankan PHP syntax validation pada final exact head.
+2. Jalankan Authentication, Tenant Context, Authorization, Configuration, Runtime, Bootstrap, dan Persistence tests.
+3. Jalankan secret-leakage dan connection-result leakage negative tests.
+4. Verifikasi tidak ada schema, migration, business query, persistent PDO connection, atau POS behavior.
+5. Tunggu required checks pada Draft PR.
+6. Request independent review pada latest exact head.
+7. Jangan mark Ready atau merge tanpa Product Owner authority terpisah.
 
-## Runtime GO dependency
+## Production persistence dependency
 
-Sebelum runtime target dinyatakan GO, buktikan bahwa document root `oneqay.n07.my.id` menunjuk tepat ke folder `public`, configuration environment aman, dan halaman capability `phpinfo()` telah dihapus atau dibatasi.
+Production database connection tetap NO-GO sampai credential dikelola di luar repository, least-privilege account tersedia, connection limits diketahui, backup/restore dibuktikan, dan Product Owner memberi authorization terpisah. Jangan mengirim password database melalui chat atau menyimpannya di GitHub.
 
-## Sprint 08 candidate
+## Sprint 09 candidate
 
-Sprint 08 belum berwenang dimulai. Kandidat bounded berikutnya adalah Persistence Capability and Database Connection Boundary Foundation hanya setelah Sprint 07 dipublikasikan, exact-head regression berhasil, hosting database capability diverifikasi tanpa credential, dan Product Owner memberi authorization terpisah.
+Sprint 09 belum berwenang dimulai. Kandidat bounded berikutnya adalah Database Schema Governance and Migration Safety Foundation, hanya setelah Sprint 08 dipublikasikan, exact-head regressions berhasil, independent approval tercatat, dan Product Owner memberi authorization terpisah.
+
+Sprint 09 tidak otomatis memberikan authority untuk business schema, tenant data model final, POS, deployment, atau production migration.
 
 Attribution: Lab | zefry
