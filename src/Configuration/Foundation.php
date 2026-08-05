@@ -68,19 +68,30 @@ final class SecretValue implements \JsonSerializable
 {
     private const REDACTED = '[REDACTED]';
 
-    public function __construct(private readonly string $value)
+    /** @var \WeakMap<object, string>|null */
+    private static ?\WeakMap $vault = null;
+
+    public function __construct(string $value)
     {
-        if ($this->value === '') {
+        if ($value === '') {
             throw new ConfigurationException(
                 ConfigurationException::SECRET_REQUIRED,
                 'Required secret configuration is unavailable.'
             );
         }
+
+        self::vault()[$this] = $value;
     }
 
     public function reveal(): string
     {
-        return $this->value;
+        $value = self::vault()[$this] ?? null;
+
+        if (!is_string($value)) {
+            throw new \LogicException('Secret value is unavailable.');
+        }
+
+        return $value;
     }
 
     public function redacted(): string
@@ -114,6 +125,22 @@ final class SecretValue implements \JsonSerializable
     public function __unserialize(array $data): void
     {
         throw new \LogicException('Secret values cannot be unserialized.');
+    }
+
+    /** @param array<string, mixed> $properties */
+    public static function __set_state(array $properties): self
+    {
+        throw new \LogicException('Secret values cannot be restored from exported state.');
+    }
+
+    private function __clone(): void
+    {
+    }
+
+    /** @return \WeakMap<object, string> */
+    private static function vault(): \WeakMap
+    {
+        return self::$vault ??= new \WeakMap();
     }
 }
 
