@@ -179,8 +179,10 @@ jobs:
           set -euo pipefail
           rm -rf .github/bootstrap
           rm -f .github/workflows/platform-foundation-finalize.yml
+          rm -f .github/workflows/platform-foundation-ci.yml
           rm -f scripts/quality/finalize_ssot.py
           test ! -e .github/workflows/platform-foundation-finalize.yml
+          test ! -e .github/workflows/platform-foundation-ci.yml
           test ! -e scripts/quality/finalize_ssot.py
 
       - name: Commit validated final tree
