@@ -1,6 +1,6 @@
 {
   "name": "labzefry/oneqay-foundation",
-  "description": "Framework-agnostic Authentication, Tenant Context, Authorization, and Configuration foundations for OneQay Technical Preview.",
+  "description": "Framework-agnostic Authentication, Tenant Context, Authorization, Configuration, Bootstrap, and Runtime Capability foundations for OneQay Technical Preview.",
   "type": "library",
   "license": "proprietary",
   "require": {
@@ -11,13 +11,17 @@
       "src/Auth/Foundation.php",
       "src/Tenant/Foundation.php",
       "src/Authorization/Foundation.php",
-      "src/Configuration/Foundation.php"
+      "src/Configuration/Foundation.php",
+      "src/Runtime/Foundation.php"
     ],
     "psr-4": {
       "OneQay\\Http\\": "src/Http/"
     }
   },
   "scripts": {
-    "test": "php tests/run.php"
+    "test": [
+      "php tests/run.php",
+      "php tests/runtime.php"
+    ]
   }
 }

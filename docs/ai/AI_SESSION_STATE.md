@@ -10,65 +10,47 @@
 
 ## Engineering checkpoint
 
-- Current Sprint: Sprint 06 — Configuration and Secret Boundary Foundation
+- Current Sprint: Sprint 07 — Platform Application Bootstrap and Runtime Capability Foundation
 - Current Phase: Phase 1 — Platform Foundation
 - Current Milestone: Platform Runtime Foundation
-- Current Module: Configuration and Secret Boundary Foundation
-- Exact Base: `ca03f82a5578792f7d99f935424b8722a409382d`
-- Current Branch: `agent/sprint06-configuration-secret-boundary`
-- Implemented Scope: Environment Identifier, Configuration Key, Configuration Source, array and environment-variable adapters, required/optional validation, hardened Secret Value redaction, startup validation, stable errors, regression tests, documentation, dan checkpoint.
-- Exact Head: authoritative pada PR #45 metadata; SHA commit tidak dapat self-embedded di dalam tree yang menentukan SHA tersebut.
-- Current PR: #45 — Draft sampai exact-head checks dan independent approval selesai.
+- Current Module: Application Bootstrap and Runtime Capability
+- Exact Base: `416dcc7160a6197b561d8a41b0210e33c0f05974`
+- Current Branch: `agent/sprint07-platform-bootstrap-runtime-capability`
+- Exact Head: authoritative pada PR metadata setelah final content commit.
+- Implemented Scope: bootstrap interface/result, runtime identifiers/report/provider/validator, safe public entry, correlation ID, health/readiness, stable errors, synthetic tests, documentation, dan checkpoint.
+
+## Hosting capability
+
+Verified: PHP 8.3.26; required extensions; Apache 2.4.63; MariaDB 11.4.8 deferred; cron UI; log/metrics UI; backup UI; SSL; memory 512M; max execution 300; upload 32M; post 32M; tanpa SSH.
+
+Unknown: Composer executable, rewrite efektif, document root target ke `public`, minimum cron interval, long-running worker, Redis/cache service, symlink policy, dan deployment method final.
 
 ## Validation
 
-- Authentication regression test: Passed.
-- Tenant Context regression test: Passed.
-- Authorization Boundary regression test: Passed.
-- Configuration Boundary test: Passed.
-- Secret-leakage negative test: Passed, termasuk string conversion, JSON, PHP serialization, `var_dump()`, `print_r()`, dan `var_export()`.
-- Total assertions: 51.
-- PHP syntax validation: Passed untuk seluruh source dan test terkait.
-- Network dependency: None.
-- Production credential/data: None.
-
-## Changed files
-
-Tepat tujuh file:
-
-- `composer.json`;
-- `src/Configuration/Foundation.php`;
-- `tests/run.php`;
-- `docs/CONFIGURATION_AND_SECRET_BOUNDARY_FOUNDATION.md`;
-- `docs/ai/AI_SESSION_STATE.md`;
-- `docs/ai/AI_PROJECT_STATE.md`;
-- `docs/ai/AI_NEXT_TASK.md`.
+- Authentication regression: required.
+- Tenant Context regression: required.
+- Authorization regression: required.
+- Configuration regression: required.
+- Runtime Capability test: added.
+- Bootstrap test: added.
+- PHP syntax validation: required on final tree.
+- Secret-leakage and path-leakage negative tests: included.
+- Network, production credential, production data, dan production database: none.
 
 ## Scope status
 
-- Authentication Foundation: Published.
-- Tenant Context Foundation: Published.
-- Authorization Boundary Foundation: Published.
-- Configuration and Secret Boundary Foundation: Implemented on branch.
+- Authentication: Published.
+- Tenant Context: Published.
+- Authorization: Published.
+- Configuration: Published.
+- Runtime: Implemented on branch.
 - Persistence: Not Started.
-- Database schema and migration: Not Started.
-- POS and business modules: Not Started.
-- cPanel requirement: Not required for Sprint 06; capability information required before runtime, persistence, queue/scheduler, cache, storage, mail, backup/restore, deployment, atau rollback decisions.
+- POS: Not Started.
 - Deployment: None.
 - Release: None.
 
-## Deferred capability
+## Stop condition
 
-- persistent configuration;
-- database connection and migration;
-- managed secret service;
-- platform runtime integration;
-- queue, scheduler, cache, storage, and mail;
-- deployment and rollback;
-- POS and business modules.
-
-## Session status
-
-Berhenti setelah testing, PHP syntax validation, secret-leakage validation, documentation, checkpoint, Draft PR, required checks, independent review request, dan laporan. Jangan melanjutkan persistence, POS Foundation, atau business module.
+Berhenti setelah final content commit, Draft PR, required checks, independent exact-head review request, dan laporan. Jangan melanjutkan persistence, database foundation, POS, deployment, atau release.
 
 Attribution: Lab | zefry
