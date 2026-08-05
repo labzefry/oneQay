@@ -72,11 +72,14 @@ Boolean canonical yang diterima:
 
 `SecretValue`:
 
-- menyimpan secret secara private;
+- tidak menyimpan raw secret sebagai object property yang dapat diekspor;
+- menyimpan raw value pada process-local `WeakMap` yang terikat pada instance;
 - hanya membuka raw value melalui method `reveal()` yang eksplisit;
 - mengembalikan `[REDACTED]` untuk string conversion;
-- mengembalikan `[REDACTED]` untuk debug output;
+- mengembalikan `[REDACTED]` untuk `var_dump()` dan `print_r()`;
+- tidak mengekspos raw value melalui `var_export()`;
 - mengembalikan `[REDACTED]` untuk JSON dan PHP serialization;
+- menolak unserialization dan exported-state restoration;
 - tidak memasukkan raw secret ke exception atau validation result.
 
 Foundation tidak menganggap wrapper ini sebagai external secret manager. Rotation, vault integration, encryption at rest, dan managed secret service tetap deferred.
@@ -126,10 +129,10 @@ php tests/run.php
 Expected result pada final content candidate:
 
 ```text
-Authentication, Tenant Context, Authorization, and Configuration Boundary tests passed: 49 assertions.
+Authentication, Tenant Context, Authorization, and Configuration Boundary tests passed: 51 assertions.
 ```
 
-Test menggunakan synthetic user, tenant, permission, configuration, dan secret. Test tidak menggunakan network, production credential, production data, atau production database.
+Test menggunakan synthetic user, tenant, permission, configuration, dan secret. Secret-leakage negative test mencakup string conversion, JSON, PHP serialization, `var_dump()`, `print_r()`, dan `var_export()`. Test tidak menggunakan network, production credential, production data, atau production database.
 
 ## Explicit boundaries
 
@@ -147,6 +150,7 @@ Foundation ini bukan:
 ## Security limitations
 
 - Environment variable tetap bergantung pada keamanan process host.
+- Process-local `WeakMap` mengurangi accidental debug/export leakage, tetapi bukan cryptographic vault atau isolation boundary terhadap code yang sudah memiliki process-level execution.
 - `reveal()` harus digunakan hanya pada integration boundary yang membutuhkan raw secret.
 - Secret wrapper tidak menggantikan rotation, access control, encryption at rest, atau managed vault.
 - Startup validation belum melakukan deployment atau infrastructure verification.
