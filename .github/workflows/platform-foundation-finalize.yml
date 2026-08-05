@@ -173,14 +173,15 @@ jobs:
           python3 scripts/quality/scan_repository.py
           git diff --check
 
-      - name: Remove temporary bootstrap payload
+      - name: Prepare source-only publication
         shell: bash
         run: |
           set -euo pipefail
           rm -rf .github/bootstrap
           rm -f .github/workflows/platform-foundation-ci.yml
           rm -f scripts/quality/finalize_ssot.py
-          test -e .github/workflows/platform-foundation-finalize.yml
+          git checkout HEAD -- .github/workflows/platform-foundation-finalize.yml
+          test -f .github/workflows/platform-foundation-finalize.yml
           test ! -e .github/workflows/platform-foundation-ci.yml
           test ! -e scripts/quality/finalize_ssot.py
 
@@ -190,7 +191,8 @@ jobs:
           set -euo pipefail
           git config user.name 'Lab | zefry'
           git config user.email 'labzefry@users.noreply.github.com'
-          git add -A
+          git add -A -- . ':(exclude).github/workflows/**'
+          test -z "$(git diff --cached --name-only -- .github/workflows)"
           git diff --cached --check
           test -n "$(git diff --cached --name-only)"
           git commit -m 'feat(platform): finalize technical preview foundation'
