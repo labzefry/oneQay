@@ -2,22 +2,31 @@
 
 ## Current checkpoint
 
-- Sprint 05 Authorization Boundary Foundation: Implemented on branch.
+- Sprint 06 Configuration and Secret Boundary Foundation: Implemented on branch.
 - Authentication Foundation: Published.
 - Tenant Context Foundation: Published.
-- Authorization test: Included.
+- Authorization Boundary Foundation: Published.
+- Configuration Boundary tests: Passed.
+- Secret-leakage negative test: Passed.
+- PHP syntax validation: Passed.
+- Total assertions: 49.
 - Documentation: Completed.
 - Checkpoint: Completed.
+- Persistence: Not Started.
 - POS: Not Started.
 - Deployment: None.
 - Release: None.
 
 ## Stop condition
 
-Berhenti setelah Draft PR, PHP syntax validation, regression tests, required checks, independent review request, dan laporan. Jangan melanjutkan POS Foundation atau business module.
+Berhenti setelah Draft PR, PHP syntax validation, regression tests, secret-leakage validation, required checks, independent review request, dan laporan. Jangan melanjutkan persistence, POS Foundation, atau business module.
 
-## Sprint 06 candidate
+## cPanel requirement status
 
-Sprint 06 memerlukan Product Owner authority terpisah. Rekomendasi bounded scope adalah Configuration and Secret Boundary Foundation sebelum persistence atau business module. Spesifikasi hosting cPanel belum wajib untuk Authorization Boundary, tetapi mulai diperlukan sebelum runtime, persistence, queue/scheduler, storage, dan deployment decisions.
+Spesifikasi cPanel belum diperlukan untuk menyelesaikan Sprint 06. Sebelum platform runtime integration dimulai, Product Owner perlu memberikan capability information tanpa credential, minimal versi PHP, extension, Composer/SSH, document root, cron, worker/background process, database version, cache, storage, mail, backup, log access, dan deployment constraints.
+
+## Sprint 07 candidate
+
+Sprint 07 memerlukan Product Owner authority terpisah. Rekomendasi bounded scope adalah Platform Application Bootstrap and Runtime Capability Foundation. Sprint tersebut harus melakukan capability verification terhadap target cPanel sebelum menetapkan integration yang bergantung pada hosting. Jangan meminta password, token, API key, atau secret hosting.
 
 Attribution: Lab | zefry
