@@ -10,47 +10,56 @@
 
 ## Current task
 
-Restore stable GitHub Actions producers for the protected-branch required checks through Draft PR #38.
+Complete Post-Publication Checkpoint Reconciliation only.
 
 ## Current branch and pull request
 
-- Branch: `agent/restore-required-check-workflows`
-- Pull request: Draft PR #38
+- Branch: `agent/post-publication-checkpoint-reconciliation`
+- Pull request: Draft PR pending creation
 - Base: `main`
-- Authorized base SHA: `68df196efdf38919d73a6b6345b973d2c3698b29`
+- Authorized exact base SHA: `fb9d6d2671a948b0923d8b6fc2fdc82368431356`
 - Merge authority: Not granted
 - Deployment authority: Not granted
+- Release authority: Not granted
 
-## Completed in this session
+## Verified publication state
 
-- Restored `.github/workflows/governance-required-checks.yml`.
-- Produced stable job-level checks:
-  - `governance-validation`;
-  - `markdown-lint`;
-  - `secret-scan`.
-- Verified all three checks execute successfully on PR #38.
-- Aligned `main-protected-governance` required-check contexts to those three job names.
-- Removed obsolete contexts `actions/checkout-v4` and `pull_request` from the ruleset.
-- Documented the governance-only workflow in:
-  - `.github/workflows/README.md`;
-  - `DEPLOYMENT.md`;
-  - `TESTING.md`;
-  - `TASKS.md` as GOV-043.
+- PR #38 is merged.
+- PR #38 original exact head: `10f95db4bef812757902af2b180bcc41f2c28798`.
+- PR #38 published commit: `a59521ad31d8153198bb80dd7985142cb21e3775`.
+- Required-check recovery is complete.
+- PR #35 is merged.
+- PR #35 final exact head: `7dc9ff77e84912f9bf497b44d7a091684d914a1a`.
+- PR #35 published commit and current `main`: `fb9d6d2671a948b0923d8b6fc2fdc82368431356`.
+- PR #35 conflict recovery is complete.
+- PR #35 required checks passed and independent exact-head approval was recorded before publication.
+- No deployment or release was performed.
 
-## Preserved restrictions
+## Repository protection state
 
-- PR #38 remains Draft.
-- PR #35 remains Draft.
-- No merge, deploy, release, auto-merge, force push, ADR acceptance, Phase 0 exit, or application source-code authority.
+Ruleset `main-protected-governance` is active for the default branch. Its required contexts are:
+
+- `governance-validation`;
+- `markdown-lint`;
+- `secret-scan`.
+
+The ruleset uses a strict required-status-check policy, requires one approving review, dismisses stale approvals after push, requires approval of the latest reviewable push, requires review-thread resolution, blocks deletion and non-fast-forward updates, and has an empty bypass list.
+
+## Preserved project state
+
 - Phase 0 remains In Progress.
 - Application implementation remains Blocked.
 - Phase 0 preview exit remains Not Ready.
+- ADR-001 through ADR-007 remain Proposed.
+- GD-007 remains Proposed.
+- JRN-003 and JRN-013 remain unresolved.
+- Hosting evidence remains Unverified.
+- No application source-code authority exists.
 
-## Pending before task closure
+## Session stop point
 
-- Update `CHANGELOG.md` for GOV-043 recovery.
-- Refresh PR #38 body to the final exact head and full changed-file scope.
-- Verify latest exact-head checks, changed files, ruleset contexts, and Draft states of PR #38 and PR #35.
-- Obtain independent exact-head review only after the final content commit.
+After this checkpoint reconciliation is committed, validated, opened as a Draft PR with exactly three changed files, and independently reviewed on the final exact head, the next task is Product Owner milestone selection through a separate lifecycle decision.
+
+Do not begin Authentication Foundation, create application source code, change ADR or Phase 0 states, deploy, release, mark Ready, enable auto-merge, or merge.
 
 Attribution: Lab | zefry
