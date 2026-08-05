@@ -173,15 +173,14 @@ jobs:
           python3 scripts/quality/scan_repository.py
           git diff --check
 
-      - name: Remove temporary write-capable finalizer
+      - name: Remove temporary bootstrap payload
         shell: bash
         run: |
           set -euo pipefail
           rm -rf .github/bootstrap
-          rm -f .github/workflows/platform-foundation-finalize.yml
           rm -f .github/workflows/platform-foundation-ci.yml
           rm -f scripts/quality/finalize_ssot.py
-          test ! -e .github/workflows/platform-foundation-finalize.yml
+          test -e .github/workflows/platform-foundation-finalize.yml
           test ! -e .github/workflows/platform-foundation-ci.yml
           test ! -e scripts/quality/finalize_ssot.py
 
