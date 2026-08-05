@@ -6,6 +6,10 @@ Semua perubahan penting OneQay dicatat di dokumen ini. Format mengikuti Keep a C
 
 ### Added
 
+- Added `.github/workflows/governance-required-checks.yml` as the narrowly scoped producer for the stable `governance-validation`, `markdown-lint`, and `secret-scan` protected-branch checks.
+- Recorded GOV-043 as Review through Draft PR #38, with workflow, deployment, testing, task, and AI checkpoint documentation.
+- Recorded the active `main-protected-governance` ruleset alignment to the three stable job-level checks and removal of obsolete `actions/checkout-v4` and `pull_request` contexts.
+- Preserved PR #38 and PR #35 as Draft, with no merge, deployment, release, ADR acceptance, Phase 0 exit, application source-code authority, or status promotion.
 - Added seven **Proposed** Technical Preview ADRs for B1 Laravel/PHP, F1 Vue/Inertia/Vite, D1 MySQL-compatible shared tenancy, A1 first-party session/TOTP, PAY-1 synthetic cash-only, OFF-1 online-only, and conditional P1 deployment with P2 fallback hypothesis.
 - Added Proposed synthetic-data classification, threat model, recovery plan, incomplete shared-hosting capability assessment, and Not Ready Phase 0 preview exit evidence under Issue #23.
 - Recorded TEN-1, REC-1, SLO-1, and DATA-1 as Technical Preview selections without accepting ADRs or granting source-code authority.
