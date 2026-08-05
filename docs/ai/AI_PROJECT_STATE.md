@@ -2,40 +2,51 @@
 
 ## Current engineering state
 
-- Current Sprint: Sprint 05 — Authorization Boundary Foundation
-- Current Milestone: Technical Preview Foundation
-- Current Module: Authorization Boundary Foundation
-- Exact Base: `4656630bdccd9cf4aa257b0c1f257d044c19c9d1`
-- Branch: `agent/sprint05-authorization-boundary`
+- Current Sprint: Sprint 06 — Configuration and Secret Boundary Foundation
+- Current Phase: Phase 1 — Platform Foundation
+- Current Milestone: Platform Runtime Foundation
+- Current Module: Configuration and Secret Boundary Foundation
+- Exact Base: `ca03f82a5578792f7d99f935424b8722a409382d`
+- Branch: `agent/sprint06-configuration-secret-boundary`
 - Authentication Foundation: Published.
 - Tenant Context Foundation: Published.
-- Authorization Boundary Foundation: Implemented on branch.
+- Authorization Boundary Foundation: Published.
+- Configuration and Secret Boundary Foundation: Implemented on branch.
+- Persistence: Not Started.
 - POS: Not Started.
 - Deployment: None.
 - Release: None.
 
 ## Implemented capability
 
-- Authorization Subject bound to authenticated user and active tenant.
-- Canonical Permission Identifier.
-- Immutable Authorization Context and Decision.
-- Authorization Policy interface.
-- Deny-by-default policy.
-- Explicit synthetic tenant-bound grants for tests.
-- Authentication-required, tenant-required, invalid-context, cross-tenant, and permission-denied errors.
-- Authentication and Tenant Context regression coverage.
+- Canonical Environment Identifier for local, test, preview, and production.
+- Canonical uppercase-snake Configuration Key.
+- Configuration Source interface.
+- Array test adapter and trusted environment-variable adapter.
+- Missing, empty, invalid, and secret-required distinction.
+- Required and optional string/boolean access.
+- Protected Secret Value with explicit reveal and redacted output.
+- Safe startup validation for environment, debug, secure session, and application secret.
+- Stable configuration error codes and Error Envelope compatibility.
+- Authentication, Tenant Context, and Authorization regression coverage.
+- Secret-leakage negative test.
 
 ## Deferred capability
 
-- Persistent user-tenant membership.
-- Persistent role and permission repositories.
-- Final RBAC or ABAC model.
-- Policy administration UI.
-- Superadmin bypass, support access, and impersonation.
+- persistent configuration and database connection;
+- schema and migration;
+- managed secret service and rotation;
+- runtime hosting integration;
+- queue, scheduler, cache, storage, and mail;
+- backup, restore, deployment, and rollback;
 - POS and all business modules.
+
+## cPanel requirement status
+
+Spesifikasi cPanel belum diperlukan untuk Sprint 06. Capability information mulai diperlukan sebelum platform runtime integration dan seluruh infrastructure-dependent foundation. Credential cPanel tidak boleh disimpan di repository atau checkpoint.
 
 ## Repository health
 
-Scope tetap bounded, framework-agnostic, deterministic, tanpa network, production credential, production data, database production, workflow/ruleset change, deployment, atau release.
+Scope tetap bounded, framework-agnostic, deterministic, tanpa network, production credential, production data, production database, workflow/ruleset change, deployment, atau release. Final candidate lulus PHP syntax validation dan 49 assertions.
 
 Attribution: Lab | zefry
