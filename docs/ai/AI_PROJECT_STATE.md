@@ -2,41 +2,40 @@
 
 ## Current engineering state
 
-- Current Sprint: Sprint 04 — Tenant Context Foundation
+- Current Sprint: Sprint 05 — Authorization Boundary Foundation
 - Current Milestone: Technical Preview Foundation
-- Current Module: Tenant Context Foundation
-- Exact Base: `dee7979e7ee73436fb2f646a9567cf3c660996a2`
-- Branch: `agent/sprint04-tenant-context-foundation`
-- Authentication Foundation: Published through PR #42.
-- Tenant Context Foundation: Implemented on branch.
-- Authorization: Not Started.
+- Current Module: Authorization Boundary Foundation
+- Exact Base: `4656630bdccd9cf4aa257b0c1f257d044c19c9d1`
+- Branch: `agent/sprint05-authorization-boundary`
+- Authentication Foundation: Published.
+- Tenant Context Foundation: Published.
+- Authorization Boundary Foundation: Implemented on branch.
 - POS: Not Started.
 - Deployment: None.
 - Release: None.
 
 ## Implemented capability
 
-- Immutable normalized Tenant Identifier.
-- Immutable Tenant Context.
-- Resolver interface dan session-backed adapter.
-- Authenticated-session requirement.
-- Missing, invalid, dan unavailable rejection.
-- Session regeneration pada tenant change.
-- Tenant-aware session key boundary.
-- Safe tenant error envelope.
-- Deterministic tests.
+- Authorization Subject bound to authenticated user and active tenant.
+- Canonical Permission Identifier.
+- Immutable Authorization Context and Decision.
+- Authorization Policy interface.
+- Deny-by-default policy.
+- Explicit synthetic tenant-bound grants for tests.
+- Authentication-required, tenant-required, invalid-context, cross-tenant, and permission-denied errors.
+- Authentication and Tenant Context regression coverage.
 
 ## Deferred capability
 
-- Membership dan entitlement verification.
-- Role, permission, policy, RBAC, dan ABAC.
-- Persistent tenant repository.
-- Tenant lifecycle dan custom domain.
-- POS dan business modules.
-- Deployment dan release.
+- Persistent user-tenant membership.
+- Persistent role and permission repositories.
+- Final RBAC or ABAC model.
+- Policy administration UI.
+- Superadmin bypass, support access, and impersonation.
+- POS and all business modules.
 
 ## Repository health
 
-Scope tetap bounded. Tidak ada workflow, ruleset, Issue #23, database bisnis, Authorization, atau POS yang diubah.
+Scope tetap bounded, framework-agnostic, deterministic, tanpa network, production credential, production data, database production, workflow/ruleset change, deployment, atau release.
 
 Attribution: Lab | zefry
