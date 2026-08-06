@@ -9,34 +9,33 @@
 - Canonical Phase 0 status: In Progress
 - Final application implementation: Blocked
 - Active bounded engineering workstream: Platform Foundation Capability
-- Latest published technical capability sprint: Sprint 11
-- Sprint 12 Entry Gate and publication closure: Published
-- Sprint 12 source implementation: Authorized; candidate prepared for Draft PR review
+- Latest published technical capability sprint: Sprint 12
+- Latest published capability: Physical Schema Plan Representation and Change Classification Foundation
 - Production readiness: NO-GO
 
-## Sprint 12 implementation base
+## Sprint 12 published identity
 
 - Entry-gate PR: #52
-- Entry-gate approved source head: `f9c74ce798ef1095e03164ad1424cefbdabc9474`
-- Entry-gate approved and published tree: `4f6d49c4dcf894f78f40764940da21b821ffb315`
+- Entry-gate published commit: `7d0ab5db991d75ba6a83bebc6a681988f3d8d26b`
 - Publication-closure PR: #53
-- Publication-closure approved source head: `0e3b94c5c32e5bf9033941a622ebfdcbea882dda`
-- Publication-closure approved and published tree: `c42b211f32b4bde152bf79745290fff8d360fae5`
-- Implementation base commit: `15999b34fa223fe8e7fcc33cab7427de316f76c2`
-- Implementation branch: `agent/sprint12-schema-plan-change-classification`
+- Implementation base: `15999b34fa223fe8e7fcc33cab7427de316f76c2`
+- Implementation PR: #54
+- Approved source head: `34beecac1f302c9f2ff6bc57e018ba52ceb6c790`
+- Approved and published tree: `3f9a9d562b7a3e3aba5644b8989ea24c97d4c650`
+- Published commit: `e7451069513ecac77e2ec8b870028153bc90c4dd`
+- Published parent: `15999b34fa223fe8e7fcc33cab7427de316f76c2`
+- Changed files: 10, all within authorized scope
 
-## Candidate capability
+## Published capability
 
-**Physical Schema Plan Representation and Change Classification Foundation**
+Sprint 12 provides:
 
-The candidate provides:
-
-- canonical physical-manifest representation independent of entity, attribute, index-list, reference-list, and reference-map input ordering;
+- canonical physical-manifest representation independent of non-semantic collection input ordering;
 - deterministic SHA-256 baseline and target fingerprints;
 - immutable physical schema plan and change objects;
 - stable change identifiers and ordering;
 - conservative change classification;
-- safe correlation ID and JSON report;
+- validated correlation ID and safe JSON report;
 - published vendor compatibility validation before planning.
 
 ## Required dispositions
@@ -55,14 +54,20 @@ The candidate provides:
 
 - Changed PHP syntax validation: Passed.
 - Sprint 12 synthetic tests: Passed, 55 assertions.
-- Full historical foundation regressions: Pending execution evidence.
-- GitHub required checks: Pending Draft PR.
-- Independent review: Pending Draft PR.
-- Ready and merge authority: Not granted.
+- Required checks run #46: Passed.
+- Independent review by `zefriansyah`: APPROVED on exact source head.
+- Unresolved review threads: None.
+- Full historical foundation regressions on exact source head: Not executed or not evidenced before publication.
+
+## Lifecycle exception
+
+The implementation PR and independent review explicitly treated full historical `composer test` evidence as a blocking pre-Ready requirement. PR #54 was published without that evidence. No separate explicit pre-merge Product Owner authorization artifact overriding the gate was identified in the reviewed PR timeline.
+
+The repository now contains the Sprint 12 capability as published source. This does not convert the missing historical regression evidence into a pass. The gap remains a residual validation risk and governance lifecycle exception.
 
 ## Safety boundary
 
-The candidate does not generate SQL, create migration artifacts, connect to a database, inspect production metadata, create production tables, establish final tenant/business schemas, implement deployment behavior, or start a business module.
+The published capability does not generate executable SQL, create migration artifacts, connect to a database, inspect production metadata, create production tables, establish final tenant or business schemas, implement deployment behavior, or start a business module.
 
 ## Governance state
 
@@ -79,13 +84,24 @@ The candidate does not generate SQL, create migration artifacts, connect to a da
 - POS and business modules: Not Started.
 - Sprint 13: Not Authorized.
 
+## Current engineering action
+
+Documentation-only reconciliation is being prepared on branch `agent/sprint12-publication-state-reconciliation` from exact base `e7451069513ecac77e2ec8b870028153bc90c4dd`.
+
+Only these files may change:
+
+- `docs/ai/AI_SESSION_STATE.md`;
+- `docs/ai/AI_PROJECT_STATE.md`;
+- `docs/ai/AI_NEXT_TASK.md`.
+
 ## Engineering health
 
-- Published Sprint 12 planning identity: Healthy.
-- Implementation scope control: Healthy.
-- Deterministic planning candidate: Implemented.
-- Local candidate syntax and Sprint 12 tests: Healthy.
-- Historical regression evidence on candidate head: Incomplete.
+- Sprint 12 implementation publication identity: Verified.
+- Scope control: Healthy.
+- Required GitHub checks: Healthy.
+- Independent exact-head implementation review: Healthy.
+- Historical regression evidence before publication: Incomplete.
+- Checkpoint accuracy before this reconciliation: Stale.
 - Production readiness: NO-GO.
 
 Attribution: Lab | zefry
