@@ -10,14 +10,14 @@
 
 ## Engineering checkpoint
 
-- Current Sprint: Sprint 09 — Database Schema Governance and Migration Safety Foundation
+- Current Sprint: Sprint 10 — Generic Data Definition Contract and Tenant Isolation Schema Policy Foundation
 - Current Phase: Phase 1 — Platform Foundation
-- Current Milestone: Migration Governance Foundation
-- Current Module: Schema Governance and Migration Safety
-- Exact Base: `5e620f7e1975450d7538e2d04c0b098c2ead962f`
-- Current Branch: `agent/sprint09-database-schema-governance-migration-safety`
+- Current Milestone: Data Definition and Tenant Isolation Policy Foundation
+- Current Module: Generic Data Definition and Tenant Isolation Schema Policy
+- Exact Base: `227290c10b26d7f310f669526f3722c82489050e`
+- Current Branch: `agent/sprint10-generic-data-definition-tenant-isolation-policy`
 - Exact Head: authoritative pada PR metadata setelah final content commit.
-- Implemented Scope: migration identifier, checksum, ordered manifest, duplicate and dependency validation, safety and rollback classification, dry-run plan, lock boundary, synthetic executor, stable errors, deterministic tests, documentation, dan checkpoint.
+- Implemented Scope: canonical identifiers, portable scalar vocabulary, value constraints, nullability and default policy, primary and unique key policy, generic references, tenant scope, deny-by-default tenant isolation, immutable manifest, deterministic validator, safe report, stable errors, tests, documentation, dan checkpoint.
 
 ## Published foundations
 
@@ -26,58 +26,52 @@
 - Authorization Boundary Foundation: Published.
 - Configuration and Secret Boundary Foundation: Published.
 - Runtime Capability and Application Bootstrap Foundation: Published.
-- Persistence Capability and Database Connection Boundary Foundation: Published at `5e620f7e1975450d7538e2d04c0b098c2ead962f` through PR #47.
-- Approved Sprint 08 exact head: `1f2305359f3353fe40a24dc6629ee34987498efb`.
+- Persistence Capability and Database Connection Boundary Foundation: Published.
+- Migration Governance and Safety Foundation: Published at `227290c10b26d7f310f669526f3722c82489050e` through PR #48.
+- Approved Sprint 09 exact head: `9173a238cb012819cba7355e46cf902a8e347d31`.
 
-## Migration capability
+## Historical residual risk
 
-Implemented on branch without production adapter:
+Authentication, Tenant Context, Authorization, Configuration, Runtime, Bootstrap, dan Persistence regressions tidak dieksekusi ulang sebelum Sprint 09 merge. Fakta ini tetap dicatat dan tidak diubah menjadi klaim Passed pada lifecycle sebelum merge.
 
-- canonical Migration Identifier;
-- SHA-256 checksum and tamper detection;
-- ordered immutable manifest;
-- duplicate and dependency validation;
-- destructive deny-by-default;
-- reversible and forward-only classification;
-- immutable dry-run plan and result;
-- lock abstraction;
-- synthetic executor;
-- safe error mapping.
+Sprint 10 menjalankan regression tersebut setelah publication terhadap source exact published base yang Git blob SHA-nya diverifikasi. Evidence ini berlaku untuk Sprint 10 dan tidak berlaku retroaktif untuk pre-merge Sprint 09.
 
 ## Validation
 
-- Migration Foundation PHP syntax: Passed.
-- Migration test PHP syntax: Passed.
-- Migration Governance and Safety tests: Passed — 47 assertions.
-- Secret, path, SQL, and credential leakage-negative tests: Included and passed in bounded migration test.
-- No-business-schema and no-POS checks: Included and passed.
-- Network dependency: None.
+- Authentication, Tenant Context, Authorization, dan Configuration regressions: Passed — 51 assertions.
+- Runtime and Bootstrap regression: Passed — 17 assertions.
+- Persistence regression: Passed — 39 assertions.
+- Migration Governance regression: Passed — 47 assertions.
+- Data Definition and Tenant Isolation Policy tests: Passed — 70 assertions.
+- PHP syntax validation: Passed untuk seluruh foundation dan test yang dijalankan.
+- Invalid identifier dan reserved namespace tests: Passed.
+- Invalid scalar type dan constraint tests: Passed.
+- Missing and unsafe tenant-key tests: Passed.
+- Cross-tenant reference rejection tests: Passed.
+- Secret, path, SQL, credential, dan data leakage-negative tests: Passed.
+- No-production-table, no-business-schema, dan no-POS checks: Passed.
+- Network dependency during tests: None.
 - Production credential/data/database: None.
-- Authentication regression: required on final exact head.
-- Tenant Context regression: required on final exact head.
-- Authorization regression: required on final exact head.
-- Configuration regression: required on final exact head.
-- Runtime and Bootstrap regression: required on final exact head.
-- Persistence regression: required on final exact head.
 
 ## Capability gap
 
-Unknown: production migration account and grants, advisory lock support, transaction semantics, online schema change capability, connection limits, backup retention, restore verification, RTO/RPO, deployment method, migration window, dan rollback execution authority.
+Unknown: final tenant data model, physical table naming, MariaDB type mapping, collation and index limits, physical foreign-key policy, online schema change capability, production migration account and grants, advisory lock strategy, backup retention, restore verification, RTO/RPO, deployment method, rollback authority, dan production connection limits.
 
 ## Scope status
 
-- Sprint 08 publication checkpoint: Reconciled as Published.
-- Migration governance foundation: Implemented on branch.
-- Production SQL: None.
+- Sprint 09 publication checkpoint: Reconciled as Published.
+- Generic Data Definition contract: Implemented on branch.
+- Tenant Isolation Schema Policy: Implemented on branch.
+- Executable SQL: None.
+- Production table: None.
+- Final tenant data model: Not Started.
 - Production migration: Not Performed.
-- Business schema: Not Started.
-- Tenant data model final: Not Started.
 - POS: Not Started.
 - Deployment: None.
 - Release: None.
 
 ## Stop condition
 
-Berhenti setelah satu final content commit, Draft PR, exact-head validation report, required checks, independent review request, dan laporan. Jangan mark Ready, merge, membuat business schema, menjalankan production migration, memulai POS, deployment, release, atau Sprint 10.
+Berhenti setelah satu final content commit, Draft PR, exact-head validation, required checks, independent review request, dan laporan. Jangan mark Ready, merge, membuat physical schema, menjalankan production migration, memulai POS, deployment, release, atau Sprint 11.
 
 Attribution: Lab | zefry
