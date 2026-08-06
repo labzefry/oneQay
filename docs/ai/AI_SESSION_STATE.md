@@ -14,47 +14,37 @@
 - Canonical Phase 0 status: In Progress
 - Final application implementation: Blocked pending canonical Phase 0 exit and accepted decisions
 - Active bounded engineering workstream: Platform Foundation Capability
-- Latest published technical capability sprint: Sprint 11
-- Latest published planning checkpoint: Sprint 12 Entry Gate
-- Sprint 12 source implementation: Authorized and implemented as a review candidate
+- Latest published technical capability sprint: Sprint 12
+- Latest published capability: Physical Schema Plan Representation and Change Classification Foundation
 - Production readiness: NO-GO
 
-## Published authorization identity
+## Sprint 12 publication identity
 
-- Sprint 12 Entry Gate PR: #52
-- PR #52 approved source head: `f9c74ce798ef1095e03164ad1424cefbdabc9474`
-- PR #52 approved and published tree: `4f6d49c4dcf894f78f40764940da21b821ffb315`
-- PR #52 published commit: `7d0ab5db991d75ba6a83bebc6a681988f3d8d26b`
-- Publication closure PR: #53
-- PR #53 approved source head: `0e3b94c5c32e5bf9033941a622ebfdcbea882dda`
-- PR #53 approved and published tree: `c42b211f32b4bde152bf79745290fff8d360fae5`
-- PR #53 published commit and implementation base: `15999b34fa223fe8e7fcc33cab7427de316f76c2`
-- Product Owner source authorization: Explicitly recorded on 2026-08-06
+- Entry-gate PR: #52
+- Entry-gate approved source head: `f9c74ce798ef1095e03164ad1424cefbdabc9474`
+- Entry-gate published commit: `7d0ab5db991d75ba6a83bebc6a681988f3d8d26b`
+- Publication-closure PR: #53
+- Publication-closure published commit and implementation base: `15999b34fa223fe8e7fcc33cab7427de316f76c2`
+- Implementation PR: #54
+- Implementation branch: `agent/sprint12-schema-plan-change-classification`
+- Approved source head: `34beecac1f302c9f2ff6bc57e018ba52ceb6c790`
+- Approved and published tree: `3f9a9d562b7a3e3aba5644b8989ea24c97d4c650`
+- Published commit: `e7451069513ecac77e2ec8b870028153bc90c4dd`
+- Published parent: `15999b34fa223fe8e7fcc33cab7427de316f76c2`
+- Changed files: 10, all within the authorized Sprint 12 implementation scope
 
-## Current implementation candidate
+## Review and required-check evidence
 
-Capability:
+- Independent reviewer: `zefriansyah`
+- Independent review state: APPROVED on exact source head `34beecac1f302c9f2ff6bc57e018ba52ceb6c790`
+- Governance Required Checks run: #46
+- `governance-validation`: Success
+- `markdown-lint`: Success
+- `secret-scan`: Success
+- Unresolved review threads: None
+- Push after the recorded final approval: None identified before publication
 
-**Physical Schema Plan Representation and Change Classification Foundation**
-
-Branch:
-
-`agent/sprint12-schema-plan-change-classification`
-
-Authorized files:
-
-- `src/SchemaPlanning/Foundation.php`;
-- `src/SchemaPlanning/ValueObjects.php`;
-- `src/SchemaPlanning/Contracts.php`;
-- `src/SchemaPlanning/Planning.php`;
-- `tests/schema-planning.php`;
-- `composer.json` only for module loading and test execution;
-- `docs/PHYSICAL_SCHEMA_PLAN_REPRESENTATION_AND_CHANGE_CLASSIFICATION_FOUNDATION.md`;
-- `docs/ai/AI_SESSION_STATE.md`;
-- `docs/ai/AI_PROJECT_STATE.md`;
-- `docs/ai/AI_NEXT_TASK.md`.
-
-## Candidate behavior
+## Published capability behavior
 
 - deterministic baseline and target fingerprints;
 - immutable plan and change representation;
@@ -62,20 +52,20 @@ Authorized files:
 - vendor compatibility validation before comparison;
 - `NO_CHANGES` for identical manifests;
 - `REVIEW_REQUIRED` for additive changes;
-- `BLOCKED` for destructive, tenant-boundary, primary-index, and vendor changes;
+- `BLOCKED` for destructive, physical or scalar mapping, tenant-boundary, primary-index, and vendor changes;
 - validated correlation ID;
 - safe JSON output;
-- no network, database, SQL, or migration dependency.
+- no network, database, executable SQL, or migration dependency.
 
-## Candidate evidence
+## Validation evidence and lifecycle exception
 
-- PHP syntax validation: Passed for five changed PHP files.
+- PHP syntax validation: Passed for the five changed PHP files.
 - Sprint 12 synthetic tests: Passed, 55 assertions.
-- Full historical `composer test`: Not executed in the bounded no-clone workspace.
-- GitHub required checks: Pending candidate Draft PR.
-- Independent review: Pending candidate Draft PR.
+- Full historical `composer test`: No execution evidence exists on the exact source head before publication.
 
-Full historical regressions remain a pre-Ready gate and must not be represented as passed without execution evidence.
+The PR description and independent review both recorded full historical regression execution as a blocking pre-Ready gate. PR #54 was nevertheless published through merge commit `e7451069513ecac77e2ec8b870028153bc90c4dd`. No separate explicit pre-merge Product Owner authorization artifact overriding that gate was identified in the reviewed PR timeline.
+
+This is retained as a lifecycle exception and residual validation risk. Publication is a repository fact, but missing regression evidence must not be rewritten as Passed or treated as retroactive procedural compliance.
 
 ## Governance preservation
 
@@ -92,8 +82,18 @@ Full historical regressions remain a pre-Ready gate and must not be represented 
 - Release: None.
 - Sprint 13: Not Authorized.
 
+## Current reconciliation candidate
+
+- Branch: `agent/sprint12-publication-state-reconciliation`
+- Base commit: `e7451069513ecac77e2ec8b870028153bc90c4dd`
+- Scope: documentation-only state reconciliation
+- Authorized changed files:
+  - `docs/ai/AI_SESSION_STATE.md`;
+  - `docs/ai/AI_PROJECT_STATE.md`;
+  - `docs/ai/AI_NEXT_TASK.md`.
+
 ## Stop condition
 
-Open one Draft PR from the exact implementation candidate, wait for required checks, request independent review from `zefriansyah`, and stop. Do not mark Ready, merge, generate SQL or migration artifacts, connect to a database, deploy, release, or begin Sprint 13 without separate Product Owner authority.
+Open one Draft PR for the three-file reconciliation, wait for required checks, request independent review from `zefriansyah`, and stop. Do not mark Ready, merge, begin Sprint 13, generate SQL or migration artifacts, connect to a production database, deploy, release, or start a business module without separate Product Owner authority.
 
 Attribution: Lab | zefry

@@ -5,67 +5,69 @@
 - Canonical delivery phase: Phase 0 — Governance and Discovery
 - Canonical Phase 0 status: In Progress
 - Active bounded workstream: Platform Foundation Capability
-- Sprint 12 Entry Gate: Published through PR #52
-- Sprint 12 publication closure: Published through PR #53
-- Implementation base: `15999b34fa223fe8e7fcc33cab7427de316f76c2`
-- Sprint 12 source implementation: Authorized and implemented as a candidate
-- Branch: `agent/sprint12-schema-plan-change-classification`
+- Latest published technical capability sprint: Sprint 12
+- Sprint 12 implementation PR: #54
+- Approved source head: `34beecac1f302c9f2ff6bc57e018ba52ceb6c790`
+- Approved and published tree: `3f9a9d562b7a3e3aba5644b8989ea24c97d4c650`
+- Published commit: `e7451069513ecac77e2ec8b870028153bc90c4dd`
 - Production readiness: NO-GO
+- Sprint 13: Not Authorized
 
 ## Current task
 
-Complete the Draft PR review lifecycle for:
+Complete the documentation-only publication state reconciliation for Sprint 12.
 
-**Sprint 12 — Physical Schema Plan Representation and Change Classification Foundation**
+## Exact reconciliation identity
 
-## Expected changed files
+- Base commit: `e7451069513ecac77e2ec8b870028153bc90c4dd`
+- Base tree: `3f9a9d562b7a3e3aba5644b8989ea24c97d4c650`
+- Branch: `agent/sprint12-publication-state-reconciliation`
+- Expected changed files: exactly three
 
-1. `src/SchemaPlanning/Foundation.php`;
-2. `src/SchemaPlanning/ValueObjects.php`;
-3. `src/SchemaPlanning/Contracts.php`;
-4. `src/SchemaPlanning/Planning.php`;
-5. `tests/schema-planning.php`;
-6. `composer.json`;
-7. `docs/PHYSICAL_SCHEMA_PLAN_REPRESENTATION_AND_CHANGE_CLASSIFICATION_FOUNDATION.md`;
-8. `docs/ai/AI_SESSION_STATE.md`;
-9. `docs/ai/AI_PROJECT_STATE.md`;
-10. `docs/ai/AI_NEXT_TASK.md`.
+## Authorized changed files
+
+1. `docs/ai/AI_SESSION_STATE.md`;
+2. `docs/ai/AI_PROJECT_STATE.md`;
+3. `docs/ai/AI_NEXT_TASK.md`.
 
 Any additional file is blocking unless separately authorized and explained.
 
-## Candidate evidence
+## Required reconciliation content
 
-- PHP syntax validation: Passed for all changed PHP files.
-- Sprint 12 synthetic tests: Passed, 55 assertions.
-- Full historical `composer test`: Pending; no pass claim is permitted without execution evidence.
+The three checkpoint files must accurately record:
+
+- Sprint 12 as Published;
+- PR #54 exact base, source head, tree, and published commit;
+- exactly ten implementation files within scope;
+- required-check run #46 success;
+- independent APPROVED review by `zefriansyah` on the exact source head;
+- no unresolved review thread;
+- full historical `composer test` not executed or not evidenced before publication;
+- publication despite the recorded pre-Ready evidence gate as a lifecycle exception;
+- no retroactive pass claim;
+- Canonical Phase 0 remains In Progress;
+- Sprint 13 remains Not Authorized;
+- production readiness remains NO-GO.
 
 ## Required Draft PR lifecycle
 
-1. Verify the candidate commit parent is exactly `15999b34fa223fe8e7fcc33cab7427de316f76c2`.
-2. Verify exactly ten changed files and no out-of-scope path.
+1. Create one atomic documentation-only commit from the exact base.
+2. Verify exactly three changed files and no out-of-scope path.
 3. Open one Draft PR targeting `main`.
-4. Wait for `governance-validation`, `markdown-lint`, and `secret-scan`.
+4. Wait for `governance-validation`, `markdown-lint`, and `secret-scan` on the final exact head.
 5. Request independent review from `zefriansyah` on the final exact head.
 6. Verify no unresolved review thread.
-7. Obtain complete historical regression evidence before recommending Ready.
-8. Stop and report exact base, head, tree, changed files, tests, checks, review state, and open risks.
+7. Stop and report exact base, head, tree, changed files, checks, review state, and residual risk.
+8. Do not mark Ready or merge without separate Product Owner authority.
 
-## Reviewer focus
+## Next decision after reconciliation publication
 
-The reviewer must verify:
+After this reconciliation is independently approved and published, obtain one explicit Product Owner decision before preparing any Sprint 13 entry gate.
 
-- canonicalization is deterministic and respects semantic index ordering;
-- fingerprints and stable change IDs do not depend on runtime state;
-- additive changes remain `REVIEW_REQUIRED`;
-- destructive, physical/scalar, primary-index, tenant-boundary, and vendor changes are `BLOCKED`;
-- invalid vendor compatibility reports cannot produce a plan;
-- output contains safe identifiers and fingerprints only;
-- no executable SQL, migration, network, database, production path, tenant data, POS, or business behavior exists;
-- all governance states remain preserved;
-- missing full historical regression evidence remains an explicit pre-Ready risk.
+A future Sprint 13 decision must define a bounded outcome, acceptance criteria, changed-file boundary, safety constraints, test plan, and explicit exclusions. It must not silently authorize executable SQL, migration execution, production database access, final schema creation, deployment, release, POS, or business modules.
 
 ## Prohibited
 
-Do not mark Ready, merge, generate SQL, create a migration artifact, connect to a database, create a production table, establish a final schema, deploy, release, start POS or a business module, or begin Sprint 13 without separate Product Owner authority.
+Do not modify source code, tests, `composer.json`, workflows, rulesets, schema, database, SQL, migration artifacts, deployment files, or business modules during this reconciliation. Do not begin Sprint 13 without separate Product Owner authority.
 
 Attribution: Lab | zefry
