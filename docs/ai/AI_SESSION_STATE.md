@@ -12,68 +12,70 @@
 
 - Canonical delivery phase: Phase 0 — Governance and Discovery
 - Canonical Phase 0 status: In Progress
-- Final application implementation: Blocked pending canonical Phase 0 exit and required accepted decisions
+- Final application implementation: Blocked pending canonical Phase 0 exit and accepted decisions
 - Active bounded engineering workstream: Platform Foundation Capability
-- Latest published technical capability sprint: Sprint 11 — Physical Schema Mapping Capability and Vendor Compatibility Policy Foundation
+- Latest published technical capability sprint: Sprint 11
 - Latest published planning checkpoint: Sprint 12 Entry Gate
-- Sprint 12 source implementation: Not Authorized
+- Sprint 12 source implementation: Authorized and implemented as a review candidate
 - Production readiness: NO-GO
 
-## Sprint 12 entry-gate publication identity
+## Published authorization identity
 
-- Entry-gate PR: #52
-- Entry-gate title: `docs(sprint12): define schema planning entry gate`
-- Approved source head: `f9c74ce798ef1095e03164ad1424cefbdabc9474`
-- Approved and published tree: `4f6d49c4dcf894f78f40764940da21b821ffb315`
-- Published commit: `7d0ab5db991d75ba6a83bebc6a681988f3d8d26b`
-- Published parent: `dcb60b6879f4427032d2df528f2a2dde17e5a537`
-- Merge method: Squash and Merge
-- Independent reviewer: `zefriansyah`
-- Review state: APPROVED on the exact source head
-- Required workflow: Governance Required Checks run #43
-- Required checks: `governance-validation`, `markdown-lint`, and `secret-scan` succeeded
-- Review threads: none
-- Push after approval: none identified
+- Sprint 12 Entry Gate PR: #52
+- PR #52 approved source head: `f9c74ce798ef1095e03164ad1424cefbdabc9474`
+- PR #52 approved and published tree: `4f6d49c4dcf894f78f40764940da21b821ffb315`
+- PR #52 published commit: `7d0ab5db991d75ba6a83bebc6a681988f3d8d26b`
+- Publication closure PR: #53
+- PR #53 approved source head: `0e3b94c5c32e5bf9033941a622ebfdcbea882dda`
+- PR #53 approved and published tree: `c42b211f32b4bde152bf79745290fff8d360fae5`
+- PR #53 published commit and implementation base: `15999b34fa223fe8e7fcc33cab7427de316f76c2`
+- Product Owner source authorization: Explicitly recorded on 2026-08-06
 
-## Publication conclusion
+## Current implementation candidate
 
-The Sprint 12 Entry Gate is Published. The approved source tree is identical to the tree published on `main`, the required checks succeeded on the approved exact head, the independent approval is anchored to that head, and no unresolved review thread or later push was identified.
+Capability:
 
-Publication of the entry gate does not by itself authorize Sprint 12 source implementation, accept an ADR, approve Phase 0 exit, establish a final tenant or business schema, authorize executable SQL, authorize a migration, or authorize deployment.
+**Physical Schema Plan Representation and Change Classification Foundation**
 
-## Proposed Sprint 12 implementation boundary
+Branch:
 
-The published entry gate proposes only:
+`agent/sprint12-schema-plan-change-classification`
+
+Authorized files:
 
 - `src/SchemaPlanning/Foundation.php`;
 - `src/SchemaPlanning/ValueObjects.php`;
 - `src/SchemaPlanning/Contracts.php`;
 - `src/SchemaPlanning/Planning.php`;
 - `tests/schema-planning.php`;
-- `composer.json` only for foundation loading and test execution;
-- one Sprint 12 capability document;
-- three AI checkpoint documents.
+- `composer.json` only for module loading and test execution;
+- `docs/PHYSICAL_SCHEMA_PLAN_REPRESENTATION_AND_CHANGE_CLASSIFICATION_FOUNDATION.md`;
+- `docs/ai/AI_SESSION_STATE.md`;
+- `docs/ai/AI_PROJECT_STATE.md`;
+- `docs/ai/AI_NEXT_TASK.md`.
 
-Any additional file requires an explicit explanation and remains subject to exact-head review.
-
-## Required behavior
+## Candidate behavior
 
 - deterministic baseline and target fingerprints;
-- immutable physical schema plan representation;
+- immutable plan and change representation;
 - stable change identifiers and ordering;
+- vendor compatibility validation before comparison;
 - `NO_CHANGES` for identical manifests;
 - `REVIEW_REQUIRED` for additive changes;
-- `BLOCKED` for destructive changes;
-- `BLOCKED` for tenant-boundary changes;
-- `BLOCKED` for primary-index changes;
-- `BLOCKED` for vendor changes;
-- safe JSON review artifact;
-- required correlation ID;
-- synthetic test data only;
-- no network dependency;
-- no database connection;
-- no executable SQL;
-- no migration artifact.
+- `BLOCKED` for destructive, tenant-boundary, primary-index, and vendor changes;
+- validated correlation ID;
+- safe JSON output;
+- no network, database, SQL, or migration dependency.
+
+## Candidate evidence
+
+- PHP syntax validation: Passed for five changed PHP files.
+- Sprint 12 synthetic tests: Passed, 55 assertions.
+- Full historical `composer test`: Not executed in the bounded no-clone workspace.
+- GitHub required checks: Pending candidate Draft PR.
+- Independent review: Pending candidate Draft PR.
+
+Full historical regressions remain a pre-Ready gate and must not be represented as passed without execution evidence.
 
 ## Governance preservation
 
@@ -90,18 +92,8 @@ Any additional file requires an explicit explanation and remains subject to exac
 - Release: None.
 - Sprint 13: Not Authorized.
 
-## Historical residual risk
-
-Authentication, Tenant Context, Authorization, Configuration, Runtime, Bootstrap, and Persistence regressions were not re-run before the Sprint 09 merge. Later evidence does not rewrite that historical pre-merge lifecycle fact.
-
-## Current decision gate
-
-Before any Sprint 12 implementation branch or source file is created, the Product Owner must explicitly state:
-
-> Product Owner mengotorisasi Sprint 12 source implementation pada scope yang telah dipublikasikan melalui PR #52.
-
 ## Stop condition
 
-Complete only this documentation-only publication closure through one commit, exact-head verification, required checks, one Draft PR, and independent review. Do not mark Ready, merge, create Sprint 12 source code, generate SQL or migration artifacts, connect to a database, deploy, or begin Sprint 13 without separate Product Owner authority.
+Open one Draft PR from the exact implementation candidate, wait for required checks, request independent review from `zefriansyah`, and stop. Do not mark Ready, merge, generate SQL or migration artifacts, connect to a database, deploy, release, or begin Sprint 13 without separate Product Owner authority.
 
 Attribution: Lab | zefry

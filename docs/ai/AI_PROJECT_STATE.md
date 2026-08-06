@@ -10,122 +10,82 @@
 - Final application implementation: Blocked
 - Active bounded engineering workstream: Platform Foundation Capability
 - Latest published technical capability sprint: Sprint 11
-- Latest published planning checkpoint: Sprint 12 Entry Gate
-- Sprint 12 source implementation: Not Authorized
+- Sprint 12 Entry Gate and publication closure: Published
+- Sprint 12 source implementation: Authorized; candidate prepared for Draft PR review
 - Production readiness: NO-GO
 
-## Published checkpoints
-
-### Sprint 11 technical capability
-
-- Capability: Physical Schema Mapping Capability and Vendor Compatibility Policy Foundation
-- Publication PR: #50
-- Approved source head: `58e12195e0ca2a5138c33e7bedf29719dcf5c54e`
-- Published commit: `2ffe14e8fef09e0c31105d98cb6ad47ae543ec17`
-- Published tree: `b029a9c81bda60b742c79cc4173218c2d7b5933a`
-
-### Sprint 11 state reconciliation
-
-- Reconciliation PR: #51
-- Approved source head: `9c40a34bade7bbe6cf64ea9a0308faf3e7c84cf5`
-- Published commit: `dcb60b6879f4427032d2df528f2a2dde17e5a537`
-- Published tree: `501d2f56c8899259679bc79c4923bc5dfdd4bc48`
-
-### Sprint 12 entry gate
+## Sprint 12 implementation base
 
 - Entry-gate PR: #52
-- Approved source head: `f9c74ce798ef1095e03164ad1424cefbdabc9474`
-- Approved and published tree: `4f6d49c4dcf894f78f40764940da21b821ffb315`
-- Published commit: `7d0ab5db991d75ba6a83bebc6a681988f3d8d26b`
-- Published parent: `dcb60b6879f4427032d2df528f2a2dde17e5a537`
-- Independent reviewer: `zefriansyah`
-- Review state: APPROVED on the exact source head
-- Governance Required Checks run #43: Success
-- Review threads: none
-- Push after approval: none identified
+- Entry-gate approved source head: `f9c74ce798ef1095e03164ad1424cefbdabc9474`
+- Entry-gate approved and published tree: `4f6d49c4dcf894f78f40764940da21b821ffb315`
+- Publication-closure PR: #53
+- Publication-closure approved source head: `0e3b94c5c32e5bf9033941a622ebfdcbea882dda`
+- Publication-closure approved and published tree: `c42b211f32b4bde152bf79745290fff8d360fae5`
+- Implementation base commit: `15999b34fa223fe8e7fcc33cab7427de316f76c2`
+- Implementation branch: `agent/sprint12-schema-plan-change-classification`
 
-## Delivery-state interpretation
-
-Published framework-agnostic foundation capabilities and the Sprint 12 Entry Gate are bounded engineering evidence. They do not automatically:
-
-- approve Phase 0 exit;
-- accept ADR-001 through ADR-007;
-- approve GD-007;
-- resolve JRN-003 or JRN-013;
-- authorize the final application skeleton;
-- establish the final tenant data model;
-- establish the final business schema;
-- authorize executable SQL or production migration;
-- authorize deployment or release;
-- establish production readiness.
-
-## Published Sprint 12 entry-gate scope
+## Candidate capability
 
 **Physical Schema Plan Representation and Change Classification Foundation**
 
-The published scope proposes:
+The candidate provides:
 
-- comparison of two validated physical mapping manifests;
-- deterministic baseline and target fingerprints;
-- immutable change representation;
+- canonical physical-manifest representation independent of entity, attribute, index-list, reference-list, and reference-map input ordering;
+- deterministic SHA-256 baseline and target fingerprints;
+- immutable physical schema plan and change objects;
 - stable change identifiers and ordering;
-- conservative change-risk classification;
-- safe JSON review output;
-- no SQL generation or execution.
+- conservative change classification;
+- safe correlation ID and JSON report;
+- published vendor compatibility validation before planning.
 
-Required dispositions:
+## Required dispositions
 
-- `NO_CHANGES` for identical manifests;
-- `REVIEW_REQUIRED` for additive changes;
-- `BLOCKED` for destructive, tenant-boundary, primary-index, and vendor changes.
+- Identical manifests: `NO_CHANGES`.
+- Entity, attribute, unique-index, or reference additions: `REVIEW_REQUIRED`.
+- Destructive changes: `BLOCKED`.
+- Physical or scalar mapping changes: `BLOCKED`.
+- Primary-index changes: `BLOCKED`.
+- Tenant-scope or tenant-key changes: `BLOCKED`.
+- Vendor changes: `BLOCKED`.
 
-## Proposed implementation boundary
+`REVIEW_REQUIRED` does not authorize migration or execution.
 
-- `src/SchemaPlanning/Foundation.php`;
-- `src/SchemaPlanning/ValueObjects.php`;
-- `src/SchemaPlanning/Contracts.php`;
-- `src/SchemaPlanning/Planning.php`;
-- `tests/schema-planning.php`;
-- `composer.json` only for foundation loading and test execution;
-- one Sprint 12 capability document;
-- three AI checkpoint documents.
+## Evidence state
 
-No implementation file may be created until separate Product Owner authorization is recorded.
+- Changed PHP syntax validation: Passed.
+- Sprint 12 synthetic tests: Passed, 55 assertions.
+- Full historical foundation regressions: Pending execution evidence.
+- GitHub required checks: Pending Draft PR.
+- Independent review: Pending Draft PR.
+- Ready and merge authority: Not granted.
 
-## Required safety boundary
+## Safety boundary
 
-Sprint 12 must not create executable SQL, migration artifacts, production tables, database connections, final schemas, deployment behavior, POS behavior, or business-module behavior.
+The candidate does not generate SQL, create migration artifacts, connect to a database, inspect production metadata, create production tables, establish final tenant/business schemas, implement deployment behavior, or start a business module.
 
-Additive changes remain `REVIEW_REQUIRED` because nullability, defaults, existing data, locking, backfill, and operational capacity are outside this foundation.
+## Governance state
 
-## Historical residual risk
+- ADR-001 through ADR-007: Proposed.
+- GD-007: Proposed.
+- JRN-003 and JRN-013: Unresolved.
+- Final tenant data model: Not Started.
+- Final business schema: Not Started.
+- Production migration: Not Performed.
+- Production database usage: None.
+- Production table: None.
+- Deployment: None.
+- Release: None.
+- POS and business modules: Not Started.
+- Sprint 13: Not Authorized.
 
-Legacy regressions were not re-run before the Sprint 09 merge. Later evidence does not become retroactive pre-merge Sprint 09 evidence.
+## Engineering health
 
-## Capability gaps
-
-Unknown or unapproved:
-
-- final tenant data model;
-- final business schema;
-- accepted technology ADRs;
-- live MariaDB compatibility and configuration;
-- storage-engine and collation availability;
-- production migration grants;
-- online schema change strategy;
-- backup and restore evidence;
-- RTO and RPO;
-- deployment method;
-- rollback authority;
-- production connection limits.
-
-## Repository health
-
-- Sprint 11 publication integrity: Healthy.
-- PR #51 publication identity: Verified.
-- Sprint 12 Entry Gate publication identity: Verified.
-- AI checkpoint publication alignment: Reconciled by this documentation-only closure.
-- Sprint 12 implementation readiness: Conditional GO only after explicit Product Owner source authority.
+- Published Sprint 12 planning identity: Healthy.
+- Implementation scope control: Healthy.
+- Deterministic planning candidate: Implemented.
+- Local candidate syntax and Sprint 12 tests: Healthy.
+- Historical regression evidence on candidate head: Incomplete.
 - Production readiness: NO-GO.
 
 Attribution: Lab | zefry
