@@ -2,34 +2,35 @@
 
 ## Current checkpoint
 
-- Sprint 08 Persistence Capability and Database Connection Boundary Foundation: Implemented on branch.
-- Authentication, Tenant Context, Authorization, Configuration, dan Runtime foundations: Published.
-- Persistence bounded tests: Passed locally — 39 assertions.
-- DSN delimiter injection regression: Included.
-- Production database connection: Not Performed.
-- Schema and migration: Not Started.
+- Sprint 08 Persistence Capability and Database Connection Boundary Foundation: Published at `5e620f7e1975450d7538e2d04c0b098c2ead962f`.
+- Sprint 09 Database Schema Governance and Migration Safety Foundation: Implemented on branch.
+- Migration bounded tests: Passed — 47 assertions.
+- Production SQL and production migration: None.
+- Business schema and tenant data model final: Not Started.
 - POS: Not Started.
 - Deployment: None.
 - Release: None.
 
-## Remaining Sprint 08 lifecycle
+## Remaining Sprint 09 lifecycle
 
-1. Jalankan PHP syntax validation pada final exact head.
-2. Jalankan Authentication, Tenant Context, Authorization, Configuration, Runtime, Bootstrap, dan Persistence tests.
-3. Jalankan secret-leakage, connection-result leakage, dan DSN injection negative tests.
-4. Verifikasi tidak ada schema, migration, business query, persistent PDO connection, atau POS behavior.
-5. Tunggu required checks pada Draft PR.
-6. Request independent review pada latest exact head.
-7. Jangan mark Ready atau merge tanpa Product Owner authority terpisah.
+1. Verify exact head after final content commit.
+2. Run PHP syntax validation on the final exact tree.
+3. Run Authentication, Tenant Context, Authorization, Configuration, Runtime, Bootstrap, Persistence, and Migration regressions.
+4. Run duplicate, checksum mismatch, dependency ordering, destructive rejection, and rollback classification negative tests.
+5. Run secret, path, SQL, and credential leakage-negative tests.
+6. Verify no business schema, no POS behavior, no production SQL, and no production database connection.
+7. Wait for required checks on the Draft PR.
+8. Obtain independent approval from `zefriansyah` on the latest exact head.
+9. Do not mark Ready or merge without separate Product Owner authority.
 
-## Production persistence dependency
+## Production migration dependency
 
-Production database connection tetap NO-GO sampai credential dikelola di luar repository, least-privilege account tersedia, connection limits diketahui, backup/restore dibuktikan, dan Product Owner memberi authorization terpisah. Jangan mengirim password database melalui chat atau menyimpannya di GitHub.
+Production migration remains NO-GO until a least-privilege migration account, approved grants, lock strategy, transaction behavior, backup and restore evidence, RTO/RPO, migration window, connection limits, deployment method, and rollback authority are verified outside the repository. Do not provide credentials through chat or GitHub.
 
-## Sprint 09 candidate
+## Sprint 10 candidate
 
-Sprint 09 belum berwenang dimulai. Kandidat bounded berikutnya adalah Database Schema Governance and Migration Safety Foundation, hanya setelah Sprint 08 dipublikasikan, exact-head regressions berhasil, independent approval tercatat, dan Product Owner memberi authorization terpisah.
+Sprint 10 is not authorized. A bounded candidate may be Generic Data Definition Contract and Tenant Isolation Schema Policy Foundation only after Sprint 09 is published, all exact-head regressions pass, independent approval is recorded, and Product Owner provides separate authorization.
 
-Sprint 09 tidak otomatis memberikan authority untuk business schema, tenant data model final, POS, deployment, atau production migration.
+Sprint 10 must not automatically create production tables, final tenant data model, POS schema, production SQL, deployment, or migration execution.
 
 Attribution: Lab | zefry
