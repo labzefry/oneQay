@@ -2,54 +2,83 @@
 
 ## Current checkpoint
 
-- Sprint 10 Generic Data Definition Contract and Tenant Isolation Schema Policy Foundation: Published at `302c9957bcda55fe8265fc0a0449003d59f23620`.
-- Sprint 11 Physical Schema Mapping Capability and Vendor Compatibility Policy Foundation: Published at `2ffe14e8fef09e0c31105d98cb6ad47ae543ec17` through PR #50.
-- Approved Sprint 11 source head: `58e12195e0ca2a5138c33e7bedf29719dcf5c54e`.
-- Approved and published Sprint 11 tree: `b029a9c81bda60b742c79cc4173218c2d7b5933a`.
-- Independent review: APPROVED by `zefriansyah` on the exact source head.
-- Governance Required Checks run #41: Success.
-- Documentation state reconciliation: Implemented on branch `agent/sprint11-state-reconciliation`.
-- Executable SQL and production table: None.
-- Final tenant data model: Not Started.
-- Final business schema: Not Started.
-- Production migration: Not Performed.
-- POS: Not Started.
-- Deployment: None.
-- Release: None.
-- Sprint 12: Not Authorized.
+- Canonical delivery phase: Phase 0 — Governance and Discovery
+- Canonical Phase 0 status: In Progress
+- Active bounded workstream: Platform Foundation Capability
+- Latest published technical sprint: Sprint 11
+- Sprint 11 technical publication PR: #50
+- Sprint 11 published commit: `2ffe14e8fef09e0c31105d98cb6ad47ae543ec17`
+- Sprint 11 published tree: `b029a9c81bda60b742c79cc4173218c2d7b5933a`
+- State reconciliation PR: #51
+- Reconciliation published commit: `dcb60b6879f4427032d2df528f2a2dde17e5a537`
+- Reconciliation published tree: `501d2f56c8899259679bc79c4923bc5dfdd4bc48`
+- Sprint 12 implementation: Not Authorized
+- Sprint 12 entry-gate planning: Authorized
 
-## Publication reconciliation basis
+## Current task
 
-Sprint 11 is reconciled as Published because the approved source tree is identical to the tree published on `main`, all required checks succeeded on the exact approved head, the approval is anchored to that head, no later push was identified, and no unresolved review thread exists.
+Prepare and publish a Draft PR containing the documentation-only entry gate for:
 
-A separate GitHub artifact explicitly recording Product Owner merge authorization before PR #50 was merged was not identified. Retain this as a lifecycle exception and do not rewrite it as full procedural compliance.
+**Sprint 12 — Physical Schema Plan Representation and Change Classification Foundation**
 
-## Historical residual risk
+Branch:
 
-Authentication, Tenant Context, Authorization, Configuration, Runtime, Bootstrap, and Persistence regressions were not re-run before the Sprint 09 merge. Sprint 10 and Sprint 11 execution does not convert later evidence into pre-merge Sprint 09 evidence.
+`agent/sprint12-entry-gate-schema-plan-change-classification`
 
-## Remaining reconciliation lifecycle
+Exact base:
 
-1. Verify the documentation-only exact head and tree after the single commit.
-2. Verify the branch remains based on `2ffe14e8fef09e0c31105d98cb6ad47ae543ec17`.
-3. Verify exactly three changed files:
-   - `docs/ai/AI_SESSION_STATE.md`;
-   - `docs/ai/AI_PROJECT_STATE.md`;
-   - `docs/ai/AI_NEXT_TASK.md`.
-4. Open one Draft PR targeting `main`.
-5. Wait for `governance-validation`, `markdown-lint`, and `secret-scan` on the exact reconciliation head.
-6. Request independent review from `zefriansyah` on that exact head.
-7. Stop after reporting the Draft PR, exact head, exact tree, changed files, checks, and review status.
-8. Do not mark Ready or merge without separate Product Owner authority.
+`dcb60b6879f4427032d2df528f2a2dde17e5a537`
 
-## Production schema dependency
+## Required changed files
 
-Production table and production migration remain NO-GO until the final tenant data model, final business schema, live MariaDB compatibility, SQL mode, storage-engine policy, actual index and collation constraints, physical foreign-key policy, least-privilege migration grants, lock strategy, transaction behavior, backup and restore evidence, RTO and RPO, migration window, connection limits, deployment method, and rollback authority are verified outside the repository.
+The entry-gate commit must change exactly these files:
 
-## Sprint 12 boundary
+1. `docs/SPRINT_12_PHYSICAL_SCHEMA_PLAN_AND_CHANGE_CLASSIFICATION_ENTRY_GATE.md`;
+2. `docs/ai/AI_SESSION_STATE.md`;
+3. `docs/ai/AI_PROJECT_STATE.md`;
+4. `docs/ai/AI_NEXT_TASK.md`.
 
-Sprint 12 is not authorized. Do not create a Sprint 12 branch, source code, schema, migration artifact, issue, or implementation plan that changes the authorized engineering scope.
+## Required lifecycle
 
-After the reconciliation PR lifecycle is complete, stop and wait for a separate Product Owner decision before proposing or beginning the next sprint.
+1. Create one atomic documentation-only commit.
+2. Verify the exact parent is `dcb60b6879f4427032d2df528f2a2dde17e5a537`.
+3. Verify exactly four changed files.
+4. Verify no source code, tests, composer configuration, workflow, ruleset, schema, database, deployment, or release file changed.
+5. Open one Draft PR targeting `main`.
+6. Wait for:
+   - `governance-validation`;
+   - `markdown-lint`;
+   - `secret-scan`.
+7. Request independent review from `zefriansyah` on the final exact head.
+8. Stop and report exact base, head, tree, changed files, checks, review status, and unresolved threads.
+
+## Review focus
+
+The reviewer must verify that:
+
+- canonical Phase 0 status remains In Progress;
+- published foundation evidence is preserved;
+- Sprint 12 scope is deterministic and bounded;
+- no ADR is promoted;
+- no Phase 0 exit is approved;
+- no final schema is established;
+- no executable SQL or migration is authorized;
+- destructive, tenant-boundary, primary-index, and vendor changes are classified `BLOCKED`;
+- additive changes remain `REVIEW_REQUIRED`;
+- Sprint 12 source implementation remains blocked pending separate Product Owner authority.
+
+## Decision required after review
+
+After required checks and independent approval succeed, the Product Owner must make a separate exact-head decision:
+
+- approve or reject the Sprint 12 scope;
+- authorize or withhold Sprint 12 source implementation;
+- authorize or withhold Ready transition and merge of the entry-gate PR.
+
+No implementation branch, PHP source file, test file, composer update, SQL, migration, database connection, deployment, or Sprint 13 work may be created before that decision.
+
+## Production boundary
+
+Production schema, production table, executable SQL, migration execution, deployment, release, POS, and all business modules remain NO-GO.
 
 Attribution: Lab | zefry

@@ -1,93 +1,112 @@
 # AI Project State
 
-## Current engineering state
+## Canonical state
 
-- Current Phase: Phase 1 — Platform Foundation
-- Current Sprint: Sprint 11 — Physical Schema Mapping Capability and Vendor Compatibility Policy Foundation
-- Sprint 11 lifecycle: Published
-- Current Milestone: Physical Mapping and Vendor Compatibility Policy Foundation
-- Current Module: Physical Mapping and Vendor Compatibility Policy
-- Published commit: `2ffe14e8fef09e0c31105d98cb6ad47ae543ec17`
-- Published tree: `b029a9c81bda60b742c79cc4173218c2d7b5933a`
-- Published parent: `302c9957bcda55fe8265fc0a0449003d59f23620`
-- Approved source head: `58e12195e0ca2a5138c33e7bedf29719dcf5c54e`
-- Published through PR: #50
-- Current reconciliation branch: `agent/sprint11-state-reconciliation`
-- Reconciliation status: Documentation-only checkpoint update implemented on branch
+- Project: OneQay
+- Developer and Product Engineering Entity: Lab | zefry
+- Repository: `labzefry/oneQay`
+- Canonical delivery phase: Phase 0 — Governance and Discovery
+- Canonical Phase 0 status: In Progress
+- Final application implementation: Blocked
+- Active bounded engineering workstream: Platform Foundation Capability
+- Latest published sprint: Sprint 11
+- Current activity: Sprint 12 documentation entry-gate planning
+- Sprint 12 source implementation: Not Authorized
 
-## Published foundations
+## Published checkpoint
 
-- Authentication Foundation: Published.
-- Tenant Context Foundation: Published.
-- Authorization Boundary Foundation: Published.
-- Configuration and Secret Boundary Foundation: Published.
-- Runtime Capability and Application Bootstrap Foundation: Published.
-- Persistence Capability and Database Connection Boundary Foundation: Published.
-- Migration Governance and Safety Foundation: Published.
-- Generic Data Definition and Tenant Isolation Policy Foundation: Published.
-- Physical Schema Mapping and Vendor Compatibility Policy Foundation: Published.
+- Sprint 11 capability: Physical Schema Mapping Capability and Vendor Compatibility Policy Foundation
+- Sprint 11 publication PR: #50
+- Sprint 11 approved source head: `58e12195e0ca2a5138c33e7bedf29719dcf5c54e`
+- Sprint 11 published commit: `2ffe14e8fef09e0c31105d98cb6ad47ae543ec17`
+- Sprint 11 published tree: `b029a9c81bda60b742c79cc4173218c2d7b5933a`
+- State reconciliation PR: #51
+- Reconciliation source head: `9c40a34bade7bbe6cf64ea9a0308faf3e7c84cf5`
+- Reconciliation published commit: `dcb60b6879f4427032d2df528f2a2dde17e5a537`
+- Reconciliation published tree: `501d2f56c8899259679bc79c4923bc5dfdd4bc48`
 
-## Implemented capability
+## Delivery-state interpretation
 
-- canonical Physical Identifier;
-- reserved physical namespace rejection;
-- bounded MariaDB vendor identifier;
-- `UTF8MB4` charset policy;
-- Unicode and binary collation compatibility classifications;
-- portable logical-to-physical scalar mapping vocabulary;
-- deterministic string length and decimal precision and scale validation;
-- UUID fixed mapping policy;
-- primary-index mapping contract;
-- unique-index mapping contract;
-- deterministic index-key byte budget;
-- foreign-key `COMPATIBLE` and `INCOMPATIBLE` classification;
-- eligible target-index policy;
-- tenant-key physical mapping requirements;
-- global-to-tenant reference denial;
-- immutable Physical Mapping Manifest;
-- deterministic Vendor Compatibility Validator;
-- safe compatibility report;
-- stable physical-mapping error codes;
-- deterministic no-network and no-production-database tests.
+Published framework-agnostic foundation capabilities are bounded technical evidence. They do not automatically:
 
-## Publication evidence
+- approve Phase 0 exit;
+- accept ADR-001 through ADR-007;
+- approve GD-007;
+- resolve JRN-003 or JRN-013;
+- authorize the final application skeleton;
+- establish the final tenant or business schema;
+- authorize executable SQL or production migration;
+- establish production readiness.
 
-- Independent reviewer: `zefriansyah`.
-- Review state: APPROVED on exact source head `58e12195e0ca2a5138c33e7bedf29719dcf5c54e`.
-- Governance Required Checks run #41: Success.
-- `governance-validation`: Success.
-- `markdown-lint`: Success.
-- `secret-scan`: Success.
-- Changed files in PR #50: 12.
-- Commits in PR #50: 1.
-- Review threads: none.
-- Push after approval: none identified.
-- Approved tree and published tree: identical.
+This interpretation preserves both the canonical governance state and the published technical evidence.
 
-## Lifecycle exception
+## Published foundation capabilities
 
-PR #50 was moved to Ready for Review and merged by the repository owner on 2026-08-06 after the exact-head approval and successful required checks. A separate GitHub artifact explicitly recording Product Owner merge authorization before the merge was not identified. The exception remains part of the project record and must not be rewritten as full procedural compliance.
+- Authentication Foundation.
+- Tenant Context Foundation.
+- Authorization Boundary Foundation.
+- Configuration and Secret Boundary Foundation.
+- Runtime Capability and Application Bootstrap Foundation.
+- Persistence Capability and Database Connection Boundary Foundation.
+- Migration Governance and Safety Foundation.
+- Generic Data Definition and Tenant Isolation Policy Foundation.
+- Physical Schema Mapping and Vendor Compatibility Policy Foundation.
+
+## Proposed Sprint 12 capability
+
+**Physical Schema Plan Representation and Change Classification Foundation**
+
+Proposed outcome:
+
+- compare two validated physical mapping manifests;
+- produce deterministic baseline and target fingerprints;
+- represent changes immutably;
+- classify change risk conservatively;
+- produce a safe review report;
+- never generate or execute SQL.
+
+Proposed disposition values:
+
+- `NO_CHANGES`;
+- `REVIEW_REQUIRED`;
+- `BLOCKED`.
+
+## Required safety boundary
+
+The Sprint 12 implementation must not create executable SQL, migration artifacts, production tables, database connections, final schemas, deployment behavior, POS behavior, or business-module behavior.
+
+Destructive changes, tenant-boundary changes, primary-index changes, and vendor changes must be classified `BLOCKED`.
+
+Additive changes must remain `REVIEW_REQUIRED` because nullability, defaults, existing data, locking, backfill, and operational capacity are outside this foundation.
 
 ## Historical residual risk
 
-Legacy regressions were not re-run before the Sprint 09 merge. Sprint 10 and Sprint 11 executed those regressions later against verified exact-base blobs, but this does not rewrite the historical pre-merge lifecycle fact.
+Legacy regressions were not re-run before the Sprint 09 merge. Later evidence does not become retroactive pre-merge Sprint 09 evidence.
 
-## Capability status
+## Capability gaps
 
-Verified foundation capability: PHP `>=8.2` contract, local PHP 8.4.16 syntax and regression execution, framework-agnostic physical mapping representation, deterministic synthetic MariaDB compatibility policy, and no executable or production adapter.
+Unknown or unapproved:
 
-Unknown: live MariaDB patch compatibility, production SQL mode, storage-engine settings, actual index-prefix limits, live collation availability, physical foreign-key enforcement, online schema change support, final tenant data model, final business schema, production migration grants, advisory lock policy, backup and restore objectives, deployment method, rollback execution authority, and production connection limits.
-
-## Deferred capability
-
-Production table, executable SQL, final tenant data model, final business schema, migration artifact generation, production migration adapter, business repositories, transaction persistence, idempotency persistence, audit persistence, persistent session, cache, queue, scheduler, mail, storage, deployment, rollback execution, POS, and all business modules remain deferred.
+- final tenant data model;
+- final business schema;
+- accepted technology ADRs;
+- live MariaDB compatibility and configuration;
+- storage-engine and collation availability;
+- production migration grants;
+- online schema change strategy;
+- backup and restore evidence;
+- RTO and RPO;
+- deployment method;
+- rollback authority;
+- production connection limits.
 
 ## Repository health
 
-- Sprint 11 technical publication integrity: Healthy.
-- Exact approved and published tree consistency: Verified.
-- Documentation checkpoint consistency: Reconciliation in progress.
+- Sprint 11 publication integrity: Healthy.
+- PR #51 publication identity: Verified.
+- AI checkpoint alignment with canonical delivery phase: Reconciled in current branch.
+- Sprint 12 scope: Proposed for review.
+- Sprint 12 implementation readiness: NO-GO pending exact-head approval and separate authority.
 - Production readiness: NO-GO.
-- Sprint 12: Not Authorized.
 
 Attribution: Lab | zefry
