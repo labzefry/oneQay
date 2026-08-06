@@ -33,16 +33,29 @@
 - Published parent: `15999b34fa223fe8e7fcc33cab7427de316f76c2`
 - Changed files: 10, all within the authorized Sprint 12 implementation scope
 
-## Review and required-check evidence
+## PR #55 publication identity
+
+- Publication-state reconciliation PR: #55
+- Reconciliation branch: `agent/sprint12-publication-state-reconciliation`
+- Base before merge: `e7451069513ecac77e2ec8b870028153bc90c4dd`
+- Approved source head: `825afe3de3ad999fdfe7b0f7151623fcec50fbdb`
+- Approved source tree: `c3d85af31fe7b2563ad38e9696e3b68431ba8dba`
+- Published commit: `ab8c250c043783d36a2fcb0231832e8a18b2604c`
+- Published parent: `e7451069513ecac77e2ec8b870028153bc90c4dd`
+- Published tree: `c3d85af31fe7b2563ad38e9696e3b68431ba8dba`
+- Published tree matches the approved source tree: Yes
+- Changed files: exactly three checkpoint documents
+
+## PR #55 review and required-check evidence
 
 - Independent reviewer: `zefriansyah`
-- Independent review state: APPROVED on exact source head `34beecac1f302c9f2ff6bc57e018ba52ceb6c790`
-- Governance Required Checks run: #46
+- Independent review state: APPROVED on exact source head `825afe3de3ad999fdfe7b0f7151623fcec50fbdb`
+- Governance Required Checks run: #47
 - `governance-validation`: Success
 - `markdown-lint`: Success
 - `secret-scan`: Success
 - Unresolved review threads: None
-- Push after the recorded final approval: None identified before publication
+- Push after the recorded final approval before merge: None identified
 
 ## Published capability behavior
 
@@ -61,11 +74,11 @@
 
 - PHP syntax validation: Passed for the five changed PHP files.
 - Sprint 12 synthetic tests: Passed, 55 assertions.
-- Full historical `composer test`: No execution evidence exists on the exact source head before publication.
+- Full historical `composer test`: No execution evidence exists on the exact Sprint 12 source head before publication.
 
-The PR description and independent review both recorded full historical regression execution as a blocking pre-Ready gate. PR #54 was nevertheless published through merge commit `e7451069513ecac77e2ec8b870028153bc90c4dd`. No separate explicit pre-merge Product Owner authorization artifact overriding that gate was identified in the reviewed PR timeline.
+The PR #54 description and independent review both recorded full historical regression execution as a blocking pre-Ready gate. PR #54 was nevertheless published through commit `e7451069513ecac77e2ec8b870028153bc90c4dd`. No separate explicit pre-merge Product Owner authorization artifact overriding that gate was identified in the reviewed PR timeline.
 
-This is retained as a lifecycle exception and residual validation risk. Publication is a repository fact, but missing regression evidence must not be rewritten as Passed or treated as retroactive procedural compliance.
+This remains a lifecycle exception and residual validation risk. Publication is a repository fact, but missing regression evidence must not be rewritten as Passed or treated as retroactive procedural compliance.
 
 ## Governance preservation
 
@@ -82,11 +95,12 @@ This is retained as a lifecycle exception and residual validation risk. Publicat
 - Release: None.
 - Sprint 13: Not Authorized.
 
-## Current reconciliation candidate
+## Current bounded closure
 
-- Branch: `agent/sprint12-publication-state-reconciliation`
-- Base commit: `e7451069513ecac77e2ec8b870028153bc90c4dd`
-- Scope: documentation-only state reconciliation
+- Branch: `agent/pr55-post-publication-closure`
+- Exact base commit: `ab8c250c043783d36a2fcb0231832e8a18b2604c`
+- Exact base tree: `c3d85af31fe7b2563ad38e9696e3b68431ba8dba`
+- Purpose: close the stale post-publication instructions after PR #55 and record its exact published identity
 - Authorized changed files:
   - `docs/ai/AI_SESSION_STATE.md`;
   - `docs/ai/AI_PROJECT_STATE.md`;
@@ -94,6 +108,6 @@ This is retained as a lifecycle exception and residual validation risk. Publicat
 
 ## Stop condition
 
-Open one Draft PR for the three-file reconciliation, wait for required checks, request independent review from `zefriansyah`, and stop. Do not mark Ready, merge, begin Sprint 13, generate SQL or migration artifacts, connect to a production database, deploy, release, or start a business module without separate Product Owner authority.
+Open one Draft PR for this three-file post-publication closure, wait for required checks on the exact final head, request independent review from `zefriansyah`, and stop. Do not mark Ready, merge, begin Sprint 13, generate SQL or migration artifacts, connect to a production database, deploy, release, or start a business module without separate Product Owner authority.
 
 Attribution: Lab | zefry
