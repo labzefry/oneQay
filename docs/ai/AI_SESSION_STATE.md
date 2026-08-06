@@ -10,47 +10,58 @@
 
 ## Engineering checkpoint
 
-- Current Sprint: Sprint 07 — Platform Application Bootstrap and Runtime Capability Foundation
+- Current Sprint: Sprint 08 — Persistence Capability and Database Connection Boundary Foundation
 - Current Phase: Phase 1 — Platform Foundation
-- Current Milestone: Platform Runtime Foundation
-- Current Module: Application Bootstrap and Runtime Capability
-- Exact Base: `416dcc7160a6197b561d8a41b0210e33c0f05974`
-- Current Branch: `agent/sprint07-platform-bootstrap-runtime-capability`
+- Current Milestone: Persistence Foundation
+- Current Module: Persistence Capability and Database Connection Boundary
+- Exact Base: `7420539c17be0758c8393f16e6f4232666a2bb2c`
+- Current Branch: `agent/sprint08-persistence-database-connection-boundary`
 - Exact Head: authoritative pada PR metadata setelah final content commit.
-- Implemented Scope: bootstrap interface/result, runtime identifiers/report/provider/validator, safe public entry, correlation ID, health/readiness, stable errors, synthetic tests, documentation, dan checkpoint.
+- Implemented Scope: persistence capability identifier/status/provider/report/validator, database driver and configuration boundary, safe PDO policy, connector interfaces, PDO MySQL adapter, synthetic adapter, safe connection result/service, DSN delimiter injection hardening, tests, documentation, dan checkpoint.
+
+## Published foundations
+
+- Authentication Foundation: Published.
+- Tenant Context Foundation: Published.
+- Authorization Boundary Foundation: Published.
+- Configuration and Secret Boundary Foundation: Published.
+- Runtime Capability and Application Bootstrap Foundation: Published at `7420539c17be0758c8393f16e6f4232666a2bb2c`.
 
 ## Hosting capability
 
-Verified: PHP 8.3.26; required extensions; Apache 2.4.63; MariaDB 11.4.8 deferred; cron UI; log/metrics UI; backup UI; SSL; memory 512M; max execution 300; upload 32M; post 32M; tanpa SSH.
+Verified tanpa credential: PHP 8.3.26, PDO, PDO MySQL, MariaDB 11.4.8, localhost/UNIX-socket server evidence, phpMyAdmin, database management UI, backup UI, dan no SSH.
 
-Unknown: Composer executable, rewrite efektif, document root target ke `public`, minimum cron interval, long-running worker, Redis/cache service, symlink policy, dan deployment method final.
+Unknown: production database credential, application connection, database TLS, permitted socket path, account connection limits, backup retention/restore objective, dan deployment method final.
 
 ## Validation
 
-- Authentication regression: required.
-- Tenant Context regression: required.
-- Authorization regression: required.
-- Configuration regression: required.
-- Runtime Capability test: added.
-- Bootstrap test: added.
-- PHP syntax validation: required on final tree.
-- Secret-leakage and path-leakage negative tests: included.
-- Network, production credential, production data, dan production database: none.
+- Sprint 08 bounded PHP syntax validation: Passed.
+- Sprint 08 bounded persistence tests: Passed — 39 assertions.
+- DSN delimiter injection regression: Included.
+- Network dependency: None.
+- Production credential/data/database: None.
+- Authentication regression: required on final exact head.
+- Tenant Context regression: required on final exact head.
+- Authorization regression: required on final exact head.
+- Configuration regression: required on final exact head.
+- Runtime and Bootstrap regression: required on final exact head.
+- Secret-leakage negative test: included.
+- Connection-result leakage negative test: included.
+- No-schema/no-migration/no-business checks: included.
 
 ## Scope status
 
-- Authentication: Published.
-- Tenant Context: Published.
-- Authorization: Published.
-- Configuration: Published.
-- Runtime: Implemented on branch.
-- Persistence: Not Started.
+- Persistence capability boundary: Implemented on branch.
+- Database connection boundary: Implemented on branch.
+- Production database connection: Not Performed.
+- Schema and migration: Not Started.
+- Business persistence: Not Started.
 - POS: Not Started.
 - Deployment: None.
 - Release: None.
 
 ## Stop condition
 
-Berhenti setelah final content commit, Draft PR, required checks, independent exact-head review request, dan laporan. Jangan melanjutkan persistence, database foundation, POS, deployment, atau release.
+Berhenti setelah final content commit, Draft PR, required checks, exact-head validation, independent review request, dan laporan. Jangan membuat schema, migration, tenant persistence, POS, deployment, atau release.
 
 Attribution: Lab | zefry
