@@ -1,6 +1,6 @@
 {
   "name": "labzefry/oneqay-foundation",
-  "description": "Framework-agnostic Authentication, Tenant Context, Authorization, Configuration, Runtime, Persistence Connection, and Migration Governance foundations for OneQay Technical Preview.",
+  "description": "Framework-agnostic Authentication, Tenant Context, Authorization, Configuration, Runtime, Persistence, Migration Governance, Data Definition, and Tenant Isolation Policy foundations for OneQay Technical Preview.",
   "type": "library",
   "license": "proprietary",
   "require": {
@@ -14,7 +14,8 @@
       "src/Configuration/Foundation.php",
       "src/Runtime/Foundation.php",
       "src/Persistence/Foundation.php",
-      "src/Migration/Foundation.php"
+      "src/Migration/Foundation.php",
+      "src/DataDefinition/Foundation.php"
     ],
     "psr-4": {
       "OneQay\\Http\\": "src/Http/"
@@ -25,7 +26,8 @@
       "php tests/run.php",
       "php tests/runtime.php",
       "php tests/persistence.php",
-      "php tests/migration.php"
+      "php tests/migration.php",
+      "php tests/data-definition.php"
     ]
   }
 }
