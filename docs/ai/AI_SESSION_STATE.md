@@ -10,14 +10,14 @@
 
 ## Engineering checkpoint
 
-- Current Sprint: Sprint 08 — Persistence Capability and Database Connection Boundary Foundation
+- Current Sprint: Sprint 09 — Database Schema Governance and Migration Safety Foundation
 - Current Phase: Phase 1 — Platform Foundation
-- Current Milestone: Persistence Foundation
-- Current Module: Persistence Capability and Database Connection Boundary
-- Exact Base: `7420539c17be0758c8393f16e6f4232666a2bb2c`
-- Current Branch: `agent/sprint08-persistence-database-connection-boundary`
+- Current Milestone: Migration Governance Foundation
+- Current Module: Schema Governance and Migration Safety
+- Exact Base: `5e620f7e1975450d7538e2d04c0b098c2ead962f`
+- Current Branch: `agent/sprint09-database-schema-governance-migration-safety`
 - Exact Head: authoritative pada PR metadata setelah final content commit.
-- Implemented Scope: persistence capability identifier/status/provider/report/validator, database driver and configuration boundary, safe PDO policy, connector interfaces, PDO MySQL adapter, synthetic adapter, safe connection result/service, DSN delimiter injection hardening, tests, documentation, dan checkpoint.
+- Implemented Scope: migration identifier, checksum, ordered manifest, duplicate and dependency validation, safety and rollback classification, dry-run plan, lock boundary, synthetic executor, stable errors, deterministic tests, documentation, dan checkpoint.
 
 ## Published foundations
 
@@ -25,19 +25,32 @@
 - Tenant Context Foundation: Published.
 - Authorization Boundary Foundation: Published.
 - Configuration and Secret Boundary Foundation: Published.
-- Runtime Capability and Application Bootstrap Foundation: Published at `7420539c17be0758c8393f16e6f4232666a2bb2c`.
+- Runtime Capability and Application Bootstrap Foundation: Published.
+- Persistence Capability and Database Connection Boundary Foundation: Published at `5e620f7e1975450d7538e2d04c0b098c2ead962f` through PR #47.
+- Approved Sprint 08 exact head: `1f2305359f3353fe40a24dc6629ee34987498efb`.
 
-## Hosting capability
+## Migration capability
 
-Verified tanpa credential: PHP 8.3.26, PDO, PDO MySQL, MariaDB 11.4.8, localhost/UNIX-socket server evidence, phpMyAdmin, database management UI, backup UI, dan no SSH.
+Implemented on branch without production adapter:
 
-Unknown: production database credential, application connection, database TLS, permitted socket path, account connection limits, backup retention/restore objective, dan deployment method final.
+- canonical Migration Identifier;
+- SHA-256 checksum and tamper detection;
+- ordered immutable manifest;
+- duplicate and dependency validation;
+- destructive deny-by-default;
+- reversible and forward-only classification;
+- immutable dry-run plan and result;
+- lock abstraction;
+- synthetic executor;
+- safe error mapping.
 
 ## Validation
 
-- Sprint 08 bounded PHP syntax validation: Passed.
-- Sprint 08 bounded persistence tests: Passed — 39 assertions.
-- DSN delimiter injection regression: Included.
+- Migration Foundation PHP syntax: Passed.
+- Migration test PHP syntax: Passed.
+- Migration Governance and Safety tests: Passed — 47 assertions.
+- Secret, path, SQL, and credential leakage-negative tests: Included and passed in bounded migration test.
+- No-business-schema and no-POS checks: Included and passed.
 - Network dependency: None.
 - Production credential/data/database: None.
 - Authentication regression: required on final exact head.
@@ -45,23 +58,26 @@ Unknown: production database credential, application connection, database TLS, p
 - Authorization regression: required on final exact head.
 - Configuration regression: required on final exact head.
 - Runtime and Bootstrap regression: required on final exact head.
-- Secret-leakage negative test: included.
-- Connection-result leakage negative test: included.
-- No-schema/no-migration/no-business checks: included.
+- Persistence regression: required on final exact head.
+
+## Capability gap
+
+Unknown: production migration account and grants, advisory lock support, transaction semantics, online schema change capability, connection limits, backup retention, restore verification, RTO/RPO, deployment method, migration window, dan rollback execution authority.
 
 ## Scope status
 
-- Persistence capability boundary: Implemented on branch.
-- Database connection boundary: Implemented on branch.
-- Production database connection: Not Performed.
-- Schema and migration: Not Started.
-- Business persistence: Not Started.
+- Sprint 08 publication checkpoint: Reconciled as Published.
+- Migration governance foundation: Implemented on branch.
+- Production SQL: None.
+- Production migration: Not Performed.
+- Business schema: Not Started.
+- Tenant data model final: Not Started.
 - POS: Not Started.
 - Deployment: None.
 - Release: None.
 
 ## Stop condition
 
-Berhenti setelah final content commit, Draft PR, required checks, exact-head validation, independent review request, dan laporan. Jangan membuat schema, migration, tenant persistence, POS, deployment, atau release.
+Berhenti setelah satu final content commit, Draft PR, exact-head validation report, required checks, independent review request, dan laporan. Jangan mark Ready, merge, membuat business schema, menjalankan production migration, memulai POS, deployment, release, atau Sprint 10.
 
 Attribution: Lab | zefry
