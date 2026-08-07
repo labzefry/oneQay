@@ -16,40 +16,45 @@
 - Sprint 13 source implementation: Not Authorized
 - Production readiness: NO-GO
 
-## PR #60 published state
+## PR #61 published state
 
-- Pull request: #60
-- Approved source head: `0ff272b46b540e52b1624a6c553985ae63a31193`
-- Approved source tree: `782480e29dce58a622bb485bf9bd8457e3f2af5a`
-- Published squash commit: `b4da6661c8645f5d436c0d5ca2fd1f07e9bd5cc4`
-- Published parent: `ad4d88acb96b49141fedc125393c4caaf4384aa7`
-- Published tree: `782480e29dce58a622bb485bf9bd8457e3f2af5a`
+- Pull request: #61
+- Source branch: `agent/pr60-post-publication-reconciliation`
+- Approved source head: `8ec7ec3267bf75dfee66f1d83b9e13c595d07c08`
+- Approved source tree: `d7f02e299209dd54de8ab17d3f89b25d5738cbc1`
+- Published squash commit: `76f76030473da7da02de749389d82c801a00cd9a`
+- Published parent: `b4da6661c8645f5d436c0d5ca2fd1f07e9bd5cc4`
+- Published tree: `d7f02e299209dd54de8ab17d3f89b25d5738cbc1`
 - Source and published tree: Identical
-- Governance Required Checks run #52: Success
+- Governance Required Checks run #53: Success
 - Independent reviewer: `zefriansyah`
 - Review state: APPROVED on exact source head/tree
 - Unresolved review threads: None
 - Push after approval before publication: None identified
 
-## PR #60 lifecycle discrepancy
+## PR #61 lifecycle discrepancy
 
-Recorded Product Owner authorization before publication was limited to:
+Before publication, Product Owner authorization explicitly did not authorize:
 
-`PREPARE BOUNDED SPRINT 13 ENTRY GATE`
+- Ready transition PR #61;
+- merge PR #61;
+- auto-merge;
+- publication;
+- `START SPRINT 13 IMPLEMENTATION`.
 
-It did not grant Ready, merge, publication, or Sprint 13 source-implementation authority. The independent reviewer approval also explicitly excluded those authorities. GitHub nevertheless records PR #60 as merged.
+The independent reviewer approval also explicitly excluded Ready, merge, publication, and implementation authority. GitHub nevertheless records PR #61 as merged.
 
-Treat the merge as a repository fact requiring reconciliation. Do not infer retroactive lifecycle authority and do not use PR #60 publication as authorization for Sprint 13 source implementation.
+Treat PR #61 publication as a repository fact and lifecycle discrepancy. Do not infer retroactive procedural compliance and do not use PR #61 publication as authorization for Sprint 13 source implementation.
 
 ## Current task
 
-Complete one documentation-only post-publication reconciliation for PR #60 and remove stale checkpoint instructions that describe Sprint 13 entry-gate preparation as active, Draft, under review, or awaiting publication.
+Complete one documentation-only post-publication reconciliation for PR #61 and remove stale checkpoint instructions that describe PR #60 reconciliation as active or pending.
 
 ## Exact reconciliation boundary
 
-- Branch: `agent/pr60-post-publication-reconciliation`
-- Exact base commit: `b4da6661c8645f5d436c0d5ca2fd1f07e9bd5cc4`
-- Exact base tree: `782480e29dce58a622bb485bf9bd8457e3f2af5a`
+- Branch: `agent/pr61-post-publication-reconciliation`
+- Exact base commit: `76f76030473da7da02de749389d82c801a00cd9a`
+- Exact base tree: `d7f02e299209dd54de8ab17d3f89b25d5738cbc1`
 - Expected changed files: exactly three
 
 Authorized files:
@@ -64,19 +69,19 @@ Any additional path is blocking.
 
 The three checkpoint files must record:
 
-- PR #60 as Published repository fact;
+- PR #61 as Published repository fact;
 - exact approved source head and source tree;
 - exact published squash commit, published parent, and published tree;
 - exact equality between source and published tree;
-- Required Checks run #52 Success;
+- Governance Required Checks run #53 Success;
 - independent approval by `zefriansyah` on exact source head/tree;
 - zero unresolved review threads;
 - no post-approval source-head mutation before publication;
-- Product Owner authorization before publication was only `PREPARE BOUNDED SPRINT 13 ENTRY GATE`;
+- Product Owner authorization before publication explicitly did not include Ready, merge, publication, or `START SPRINT 13 IMPLEMENTATION`;
 - reviewer approval did not authorize Ready, merge, publication, or implementation;
-- PR #60 merge is a repository fact and lifecycle discrepancy, not retroactive procedural compliance;
-- PR #60 publication does not authorize Sprint 13 source implementation;
-- stale entry-gate-preparation instructions are removed.
+- PR #61 merge is a repository fact and lifecycle discrepancy, not retroactive procedural compliance;
+- PR #61 publication does not authorize Sprint 13 source implementation;
+- stale PR #60 reconciliation instructions are removed.
 
 ## Published Sprint 13 entry-gate boundary
 
@@ -111,6 +116,7 @@ That implementation authorization does not yet exist.
 
 - Canonical Phase 0: In Progress.
 - Sprint 12: Published.
+- Sprint 13 entry gate: Published as repository fact.
 - Sprint 13 source implementation: Not Authorized.
 - Production readiness: NO-GO.
 - ADR-001 through ADR-007: Proposed.
@@ -125,7 +131,7 @@ That implementation authorization does not yet exist.
 
 ## Required Draft PR lifecycle for this reconciliation
 
-1. Create one atomic documentation-only commit from exact base `b4da6661c8645f5d436c0d5ca2fd1f07e9bd5cc4`.
+1. Produce one atomic documentation-only final commit from exact base `76f76030473da7da02de749389d82c801a00cd9a`.
 2. Verify one commit ahead, zero behind, and exactly three authorized changed files.
 3. Open one Draft PR targeting `main`.
 4. Wait for `governance-validation`, `markdown-lint`, and `secret-scan` on the exact final head.
@@ -137,7 +143,7 @@ Passing checks or receiving reviewer approval does not grant Ready, merge, publi
 
 ## Next Product Owner decision
 
-After this reconciliation is independently reviewed and published through correct lifecycle authority, the next implementation decision may be whether to issue:
+Only after this PR #61 reconciliation is independently reviewed and correctly published through explicit lifecycle authority, the next implementation decision may be whether to issue:
 
 `START SPRINT 13 IMPLEMENTATION`
 

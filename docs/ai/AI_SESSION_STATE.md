@@ -25,51 +25,51 @@
 - Deployment: None
 - Release: None
 
-## PR #60 publication identity
+## PR #61 publication identity
 
-- Pull request: #60
-- Source branch: `agent/sprint13-entry-gate`
-- Base before publication: `ad4d88acb96b49141fedc125393c4caaf4384aa7`
-- Approved source head: `0ff272b46b540e52b1624a6c553985ae63a31193`
-- Approved source tree: `782480e29dce58a622bb485bf9bd8457e3f2af5a`
-- Published squash commit: `b4da6661c8645f5d436c0d5ca2fd1f07e9bd5cc4`
-- Published parent: `ad4d88acb96b49141fedc125393c4caaf4384aa7`
-- Published tree: `782480e29dce58a622bb485bf9bd8457e3f2af5a`
+- Pull request: #61
+- Source branch: `agent/pr60-post-publication-reconciliation`
+- Base before publication: `b4da6661c8645f5d436c0d5ca2fd1f07e9bd5cc4`
+- Base tree: `782480e29dce58a622bb485bf9bd8457e3f2af5a`
+- Approved source head: `8ec7ec3267bf75dfee66f1d83b9e13c595d07c08`
+- Approved source tree: `d7f02e299209dd54de8ab17d3f89b25d5738cbc1`
+- Published squash commit: `76f76030473da7da02de749389d82c801a00cd9a`
+- Published parent: `b4da6661c8645f5d436c0d5ca2fd1f07e9bd5cc4`
+- Published tree: `d7f02e299209dd54de8ab17d3f89b25d5738cbc1`
 - Approved source tree and published tree: Identical
-- Published changed files: exactly four documentation files
+- Published changed files: exactly three AI checkpoint documents
 
-## PR #60 review and check evidence
+## PR #61 review and check evidence
 
-- Governance Required Checks run: #52
+- Governance Required Checks run: #53
 - `governance-validation`: Success
 - `markdown-lint`: Success
 - `secret-scan`: Success
 - Independent reviewer: `zefriansyah`
 - Review state: APPROVED
-- Approved exact head: `0ff272b46b540e52b1624a6c553985ae63a31193`
-- Approved exact tree: `782480e29dce58a622bb485bf9bd8457e3f2af5a`
+- Approved exact head: `8ec7ec3267bf75dfee66f1d83b9e13c595d07c08`
+- Approved exact tree: `d7f02e299209dd54de8ab17d3f89b25d5738cbc1`
 - Unresolved review threads: None
 - Push after approval before publication: None identified
 
-## PR #60 lifecycle discrepancy
+## PR #61 lifecycle discrepancy
 
-Before PR #60 publication, the recorded Product Owner authorization was limited to:
+Before PR #61 publication, the recorded Product Owner authorization explicitly did not authorize Ready transition, merge, auto-merge, publication, or `START SPRINT 13 IMPLEMENTATION`.
 
-`PREPARE BOUNDED SPRINT 13 ENTRY GATE`
+The independent reviewer approval also explicitly did not grant Ready, merge, publication, or implementation authority. GitHub nevertheless records PR #61 as merged.
 
-The independent reviewer approval explicitly did not grant Ready transition, merge, publication, or Sprint 13 source-implementation authority. GitHub nevertheless records PR #60 as merged.
+PR #61 publication is therefore preserved as a repository fact and lifecycle discrepancy. It is not retroactive procedural compliance and must not be used as authority to implement Sprint 13.
 
-The merge is therefore preserved as a repository fact and lifecycle discrepancy. It is not retroactive Ready/merge authorization and must not be used as authority to implement Sprint 13.
-
-## Preserved lifecycle exceptions
+## Preserved lifecycle exceptions and discrepancies
 
 - Sprint 12 historical full `composer test` evidence on the exact Sprint 12 source head remains missing and is not retroactively Passed.
 - PR #56 and PR #57 retain their previously recorded merge-authority lifecycle exceptions.
-- PR #60 now has a separately recorded publication lifecycle discrepancy because publication occurred without explicit Product Owner Ready/merge authority in the recorded pre-publication authorization.
+- PR #60 retains its publication lifecycle discrepancy.
+- PR #61 now also has a publication lifecycle discrepancy because publication occurred without recorded explicit Product Owner Ready/merge/publication authority.
 
 ## Published Sprint 13 entry gate
 
-The published entry gate defines the candidate capability:
+Candidate capability:
 
 **Schema Change Review and Approval Envelope Foundation**
 
@@ -104,10 +104,10 @@ Canonical gate document:
 
 ## Current bounded reconciliation
 
-- Purpose: reconcile the PR #60 publication fact and remove stale instructions that describe Sprint 13 entry-gate preparation as active.
-- Branch: `agent/pr60-post-publication-reconciliation`
-- Exact base commit: `b4da6661c8645f5d436c0d5ca2fd1f07e9bd5cc4`
-- Exact base tree: `782480e29dce58a622bb485bf9bd8457e3f2af5a`
+- Purpose: reconcile the PR #61 publication fact and remove stale instructions that describe PR #60 reconciliation as active or pending.
+- Branch: `agent/pr61-post-publication-reconciliation`
+- Exact base commit: `76f76030473da7da02de749389d82c801a00cd9a`
+- Exact base tree: `d7f02e299209dd54de8ab17d3f89b25d5738cbc1`
 - Authorized changed files:
   - `docs/ai/AI_SESSION_STATE.md`;
   - `docs/ai/AI_PROJECT_STATE.md`;
@@ -115,8 +115,8 @@ Canonical gate document:
 
 ## Stop condition
 
-Create one atomic documentation-only commit, open one Draft PR, wait for `governance-validation`, `markdown-lint`, and `secret-scan` on the exact final head, request independent review from `zefriansyah`, verify no unresolved thread or out-of-scope file, and stop before Ready or merge.
+Create one atomic documentation-only final commit, open one Draft PR, wait for `governance-validation`, `markdown-lint`, and `secret-scan` on the exact final head, request independent review from `zefriansyah`, verify no unresolved thread or out-of-scope file, and stop before Ready or merge.
 
-After this reconciliation is correctly published, the next Product Owner decision may be whether to issue `START SPRINT 13 IMPLEMENTATION`. That implementation authority does not yet exist.
+After this reconciliation is correctly published through explicit lifecycle authority, the next Product Owner decision may be whether to issue `START SPRINT 13 IMPLEMENTATION`. That implementation authority does not yet exist.
 
 Attribution: Lab | zefry
