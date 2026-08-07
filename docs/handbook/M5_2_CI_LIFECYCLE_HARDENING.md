@@ -29,11 +29,12 @@ Protected check target:
 
 The check performs:
 
-1. PHP version visibility and minimum PHP 8.2 enforcement.
-2. Composer version visibility.
-3. `composer validate --strict --no-check-publish`.
-4. PHP syntax validation for PHP files under `src/` and `tests/`.
-5. Full `composer test`.
+1. Exact pull-request source-head checkout.
+2. PHP version visibility and minimum PHP 8.2 enforcement.
+3. Composer version visibility.
+4. `composer validate --strict --no-check-publish`.
+5. PHP syntax validation for PHP files under `src/` and `tests/`.
+6. Full `composer test`.
 
 The workflow uses the GitHub-hosted runner toolchain and the same immutable
 `actions/checkout` commit already used by repository governance checks. It does
@@ -74,11 +75,25 @@ If the exact head changes, an authority record naming the previous SHA no longer
 matches. The new head therefore has no successful authority evidence until a
 new exact-head Product Owner authorization is recorded and evaluated.
 
-Editing or deleting the matching authority comment also causes reevaluation once
-the workflow is present on the default branch.
+Editing or deleting the matching authority comment also causes reevaluation.
 
-The evaluator does not check out or execute pull-request code. Its permissions
-are limited to metadata reads and `statuses: write`.
+### Trusted execution boundary
+
+The authority evaluator uses `pull_request_target` and `issue_comment`, so the
+workflow definition is loaded from the trusted default branch. It never checks
+out or executes pull-request code.
+
+This prevents a pull-request author from changing the evaluator in the same PR
+and using that modified workflow to self-authorize merge.
+
+Permissions are limited to:
+
+- repository content read;
+- issue metadata read;
+- pull-request metadata read;
+- commit-status write.
+
+No repository secret is read.
 
 ## Ruleset activation requirement
 
@@ -114,17 +129,25 @@ read-only from GitHub.
 
 ## Bootstrap behavior for the M5.2 pull request
 
-The PHP regression workflow can run on the M5.2 candidate PR immediately.
+`php-foundation-regression` runs on the candidate PR and validates its exact
+source head.
 
-For the same-repository M5.2 candidate PR, the authority evaluator also runs on
-pull-request events and initially writes `product-owner-merge-authority` as
-failure because merge authority has not yet been granted. This is expected
-fail-closed behavior, not a technical defect.
+The trusted authority evaluator is intentionally loaded from the default branch.
+Because it does not yet exist on `main`, the new `product-owner-merge-authority`
+status is not relied on to authorize publication of the M5.2 bootstrap PR.
 
-After an explicit Product Owner merge-authorization comment is recorded for the
-exact candidate head, rerunning the evaluator can produce the success status.
-After publication, `issue_comment` events automatically reevaluate authority
-comments for subsequent pull requests.
+The M5.2 PR therefore remains governed by the pre-existing repository rules and
+the explicit Product Owner lifecycle process. This bootstrap exception must not
+be generalized to later pull requests.
+
+After M5.2 publication:
+
+1. the trusted evaluator becomes available from `main`;
+2. the Product Owner adds `php-foundation-regression` and
+   `product-owner-merge-authority` to the active ruleset;
+3. the ruleset is verified read-only from GitHub;
+4. subsequent pull requests fail closed unless current exact-head Product Owner
+   merge authority is recorded.
 
 ## Lifecycle boundary
 
@@ -133,7 +156,8 @@ Implementation and technical validation do not grant Ready or Merge authority.
 M5.2 must follow:
 
 implementation → validation → Draft PR → checks → independent review → Product
-Owner lifecycle decision → publication → ruleset verification.
+Owner lifecycle decision → publication → ruleset activation → ruleset
+verification.
 
 Do not start M5.3 or Sprint 14 merely because the candidate checks pass.
 

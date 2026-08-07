@@ -31,6 +31,8 @@ OneQay.
 
 The check:
 
+- checks out the exact pull-request source head rather than the synthetic merge
+  ref;
 - exposes the PHP version and rejects PHP versions below 8.2;
 - exposes the Composer version;
 - runs `composer validate --strict --no-check-publish`;
@@ -60,14 +62,13 @@ MERGE AUTHORITY: GRANTED
 
 The evaluator fails closed when no matching authority exists. A new push changes
 the exact head, so an authority comment bound to the previous head cannot satisfy
-the new commit. Editing or deleting authority comments triggers reevaluation
-after this workflow is present on the default branch.
+the new commit. Editing or deleting authority comments triggers reevaluation.
 
-The workflow does not check out pull-request code and uses only read access to
-repository and pull-request metadata plus `statuses: write`. For same-repository
-pull requests, the pull-request event evaluates the candidate head directly.
-For fork pull requests, the required status remains absent until a safe
-default-branch `issue_comment` evaluation occurs.
+The evaluator runs only from the trusted default-branch workflow through
+`pull_request_target` and `issue_comment`. It never checks out or executes
+pull-request code. Its permissions are limited to metadata reads and
+`statuses: write`, preventing an untrusted PR-head workflow edit from
+self-authorizing merge.
 
 ## Required ruleset activation
 
@@ -87,6 +88,12 @@ Ruleset activation is a repository-administration action and must preserve
 strict required-status-check policy, independent review, stale-review dismissal,
 latest-push approval, review-thread resolution, squash-only merge, deletion and
 non-fast-forward protection, and an empty bypass list.
+
+Because the Product Owner authority evaluator is intentionally trusted from the
+default branch, its automatic status production begins only after the workflow
+is published. The M5.2 publication is therefore the bootstrap change; ruleset
+activation and read-only verification follow publication before M5.2 can be
+declared enforcement-complete.
 
 ## Scope boundary
 
