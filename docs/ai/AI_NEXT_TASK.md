@@ -14,30 +14,31 @@
 - Sprint 13: Not Authorized
 - Production readiness: NO-GO
 
-## PR #57 published state
+## PR #58 published state
 
-- Pull request: #57
-- Approved source head: `97e6548bd960b0bbf56616ab919221602aa446dc`
-- Approved source tree: `0699ba16ce86e0f983a49436182d4905b7a6ff82`
-- Published commit: `48d194c4c0988af4c76e5d4ea4410fcfc002324f`
-- Published parent: `231f78eb8ed137943dc9e04eb2defed829f61d1d`
-- Published tree: `0699ba16ce86e0f983a49436182d4905b7a6ff82`
+- Pull request: #58
+- Approved source head: `c5177fad25f40bc8a7af7ca7ced84d7dc059464d`
+- Approved source tree: `3fbd452c207ef6ad5fb08e70e8839a32519a0286`
+- Published commit: `158ca307f54dc28e1bc927e3f79b2dd93ed088cd`
+- Published parent: `48d194c4c0988af4c76e5d4ea4410fcfc002324f`
+- Published tree: `3fbd452c207ef6ad5fb08e70e8839a32519a0286`
 - Source and published tree: Identical
-- Governance Required Checks run #49: Success
+- Governance Required Checks run #50: Success
 - Independent reviewer: `zefriansyah`
 - Review state: APPROVED on exact source head
 - Unresolved review threads: None
 - Push after approval before publication: None identified
+- Publication path: Product Owner authorized Ready transition and stated that the Product Owner would perform Squash and Merge manually.
 
 ## Current task
 
-Complete one documentation-only post-publication closure for PR #57 and remove stale checkpoint instructions that described PR #57 reconciliation as active, Draft, under review, or awaiting publication.
+Complete one documentation-only post-publication reconciliation for PR #58 and align the three engineering checkpoints with the published PR #58 identity.
 
-## Exact closure boundary
+## Exact reconciliation boundary
 
-- Branch: `agent/pr57-post-publication-closure`
-- Exact base commit: `48d194c4c0988af4c76e5d4ea4410fcfc002324f`
-- Exact base tree: `0699ba16ce86e0f983a49436182d4905b7a6ff82`
+- Branch: `agent/pr58-post-publication-reconciliation`
+- Exact base commit: `158ca307f54dc28e1bc927e3f79b2dd93ed088cd`
+- Exact base tree: `3fbd452c207ef6ad5fb08e70e8839a32519a0286`
 - Expected changed files: exactly three
 
 Authorized files:
@@ -48,44 +49,30 @@ Authorized files:
 
 Any additional path is blocking.
 
-## Required closure content
+## Required reconciliation content
 
 The three checkpoint files must record:
 
-- PR #57 as Published;
+- PR #58 as Published;
 - exact approved source head, source tree, published commit, published parent, and published tree;
 - exact equality between source and published tree;
-- Required Checks run #49 Success;
-- independent approval by `zefriansyah` on exact source head `97e6548bd960b0bbf56616ab919221602aa446dc`;
+- Required Checks run #50 Success;
+- independent approval by `zefriansyah` on exact source head `c5177fad25f40bc8a7af7ca7ced84d7dc059464d`;
 - no unresolved review thread;
 - no push after approval before publication;
-- the Sprint 12 historical `composer test` evidence gap as an unresolved lifecycle exception;
-- that the missing evidence is not Passed and is not retroactive procedural compliance;
-- that Product Owner authorization covered PR #57 Ready transition but not merge or auto-merge;
-- that GitHub nevertheless records PR #57 as merged;
-- that the merge event is a repository fact and governance lifecycle exception, not retroactive procedural compliance;
-- preservation of the prior PR #56 merge-authority lifecycle exception;
-- removal of stale instructions that described PR #57 reconciliation as active, Draft, under review, or awaiting publication.
+- Product Owner authorization of the PR #58 Ready transition and owner-performed Squash and Merge path;
+- PR #58 must not be classified as a new merge-authority lifecycle exception;
+- preservation of the existing Sprint 12 historical `composer test` evidence gap;
+- preservation of the prior PR #56 and PR #57 merge-authority lifecycle exceptions;
+- removal of stale instructions that describe the PR #57 closure as active.
 
 ## Enterprise Vision rule
 
 - `PROJECT_MANIFEST.md` remains the binding authority for Approved decisions and canonical status.
-- `docs/handbook/PRODUCT_VISION_AND_DECISION_RIGHTS.md` is the primary long-term Enterprise Vision reference and remains Proposed.
+- `docs/handbook/PRODUCT_VISION_AND_DECISION_RIGHTS.md` remains the primary long-term Enterprise Vision reference and remains Proposed.
 - Stakeholder Map, Current Process and User Journeys, Domain Event Storming, business-process hypotheses, and future-product direction remain supporting Proposed evidence.
-- OneQay is directed toward an Enterprise Business Operating System while retaining the Approved Enterprise SaaS POS and ERP identity.
+- OneQay remains directed toward an Enterprise Business Operating System while retaining the Approved Enterprise SaaS POS and ERP identity.
 - This long-term direction is Architecture Planning Only and provides no implementation authority.
-
-## Platform compatibility direction
-
-Preserve conceptual compatibility with Web, PWA, Windows Desktop, Android, Android Tablet, Android TV, iPhone, iPad, and HarmonyOS. Preserve macOS and Linux Desktop as architecture-readiness directions only.
-
-Do not implement any platform in this task. Binding platform status remains controlled by `PROJECT_MANIFEST.md`, Accepted ADRs, and explicit Product Owner decisions.
-
-## Big Idea Backlog rule
-
-Retail, Food and Beverage, ERP, CRM, Warehouse, Distribution, Logistics, Fleet Management, Transportation Ticketing, Education, School, Course, Boarding School, Clinic, Veterinary, Workshop, Rental, Property, Hospitality, Manufacturing, Creator Economy, Marketplace, Plugin SDK, AI Recommendation, Business Intelligence, Offline Synchronization, Business Network, Franchise, Holding Company, and Multi Company remain Architecture Planning Only.
-
-Do not create a module, source code, final bounded context, final schema, migration, executable SQL, deployment, installer, updater, or release for any listed item.
 
 ## Governance preservation
 
@@ -111,13 +98,13 @@ Do not create a module, source code, final bounded context, final schema, migrat
 4. Wait for `governance-validation`, `markdown-lint`, and `secret-scan` on the exact final head.
 5. Request independent review from `zefriansyah` on the exact final head.
 6. Verify PR remains Draft and no out-of-scope file exists.
-7. Stop and report exact base, head, tree, changed files, check state, review request, lifecycle exceptions, architecture impact, and roadmap impact.
+7. Stop and report exact base, head, tree, changed files, check state, review request, architecture impact, roadmap impact, and next decision.
 
 Do not mark Ready or merge. Passing checks or receiving review does not grant lifecycle authority.
 
 ## Next decision
 
-After this closure is independently reviewed and published through separate Product Owner authority, Product Owner may decide whether to prepare a bounded Sprint 13 entry gate. Sprint 13 source implementation remains prohibited until a later explicit authorization.
+After this reconciliation is independently reviewed and published through separate Product Owner authority, Product Owner may authorize preparation of a bounded Sprint 13 entry gate. Sprint 13 source implementation remains prohibited until a later explicit authorization.
 
 ## Prohibited
 
