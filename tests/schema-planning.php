@@ -275,7 +275,6 @@ $throwsPlanningCode(
     SchemaPlanningException::CORRELATION_ID_INVALID,
 );
 
-
 $manualBefore = new ManifestFingerprint(str_repeat('1', 64));
 $manualAfter = new ManifestFingerprint(str_repeat('2', 64));
 $manualChange = new PhysicalSchemaChange(
@@ -342,5 +341,117 @@ $assert(!str_contains($source, 'new PDO('), 'Database connection was introduced.
 $assert(!preg_match('/\b(curl_|fsockopen|stream_socket_client)\b/i', $source), 'Network dependency was introduced.');
 $assert(str_contains($source, 'SchemaChangeKind::VENDOR_CHANGED') && str_contains($source, 'ChangeRisk::BLOCKED'), 'Vendor change deny path is missing.');
 $assert(!preg_match('/\b(pos|sale|payment|inventory)\b/i', $source), 'Business-module behavior was introduced.');
+
+$throwsReviewCode = static function (callable $callback, string $code) use ($assert): void {
+    try {
+        $callback();
+        $assert(false, "Expected {$code}.");
+    } catch (\OneQay\SchemaPlanning\SchemaReviewException $exception) {
+        $assert($exception->errorCode === $code, "Unexpected {$exception->errorCode}.");
+    }
+};
+$reviewer = new \OneQay\SchemaPlanning\DeterministicSchemaChangeReviewer();
+$notRequired = $reviewer->review(
+    $noChanges,
+    'reviewer.system',
+    'corr-review-001',
+    \OneQay\SchemaPlanning\ReviewDecision::NOT_REQUIRED,
+    \OneQay\SchemaPlanning\ReviewReasonCode::NO_CHANGES,
+);
+$assert($notRequired->decision === \OneQay\SchemaPlanning\ReviewDecision::NOT_REQUIRED, 'NO_CHANGES did not produce NOT_REQUIRED.');
+$assert($notRequired->sourceDisposition === PlanDisposition::NO_CHANGES, 'NO_CHANGES source disposition was not preserved.');
+
+$approvedReview = $reviewer->review(
+    $entityAdded,
+    'zefriansyah',
+    'corr-review-002',
+    \OneQay\SchemaPlanning\ReviewDecision::APPROVED_FOR_MIGRATION_PLANNING,
+    \OneQay\SchemaPlanning\ReviewReasonCode::REVIEW_APPROVED,
+);
+$assert($approvedReview->decision === \OneQay\SchemaPlanning\ReviewDecision::APPROVED_FOR_MIGRATION_PLANNING, 'REVIEW_REQUIRED plan was not approved for migration planning.');
+$assert($approvedReview->sourceDisposition === PlanDisposition::REVIEW_REQUIRED, 'REVIEW_REQUIRED source disposition was not preserved.');
+$assert($approvedReview->sourceCorrelationId->value === $entityAdded->correlationId->value, 'Source correlation ID was not preserved.');
+$expectedPlanFingerprint = hash(
+    'sha256',
+    json_encode($entityAdded, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_PRESERVE_ZERO_FRACTION),
+);
+$assert($approvedReview->sourcePlanFingerprint->value === $expectedPlanFingerprint, 'Source plan fingerprint was not preserved.');
+$approvedAgain = $reviewer->review(
+    $entityAdded,
+    'zefriansyah',
+    'corr-review-002',
+    'APPROVED_FOR_MIGRATION_PLANNING',
+    'REVIEW_APPROVED',
+);
+$assert(json_encode($approvedReview, JSON_THROW_ON_ERROR) === json_encode($approvedAgain, JSON_THROW_ON_ERROR), 'Equivalent review input is not deterministic.');
+$assert((new ReflectionClass($approvedReview))->isReadOnly(), 'Review envelope is not immutable.');
+
+$rejectedReview = $reviewer->review(
+    $attributeAdded,
+    'zefriansyah',
+    'corr-review-003',
+    \OneQay\SchemaPlanning\ReviewDecision::REJECTED,
+    \OneQay\SchemaPlanning\ReviewReasonCode::REVIEW_REJECTED,
+);
+$assert($rejectedReview->decision === \OneQay\SchemaPlanning\ReviewDecision::REJECTED, 'REVIEW_REQUIRED rejection failed.');
+
+$blockedRejected = $reviewer->review(
+    $entityRemoved,
+    'zefriansyah',
+    'corr-review-004',
+    \OneQay\SchemaPlanning\ReviewDecision::REJECTED,
+    \OneQay\SchemaPlanning\ReviewReasonCode::PLAN_BLOCKED,
+);
+$assert($blockedRejected->decision === \OneQay\SchemaPlanning\ReviewDecision::REJECTED, 'BLOCKED plan did not remain rejected.');
+$throwsReviewCode(
+    fn () => $reviewer->review($entityRemoved, 'zefriansyah', 'corr-review-005', 'APPROVED_FOR_MIGRATION_PLANNING', 'REVIEW_APPROVED'),
+    \OneQay\SchemaPlanning\SchemaReviewException::BLOCKED_APPROVAL_DENIED,
+);
+$throwsReviewCode(
+    fn () => $reviewer->review($scopeChanged, 'zefriansyah', 'corr-review-006', 'APPROVED_FOR_MIGRATION_PLANNING', 'REVIEW_APPROVED'),
+    \OneQay\SchemaPlanning\SchemaReviewException::BLOCKED_APPROVAL_DENIED,
+);
+$throwsReviewCode(
+    fn () => $reviewer->review($tenantKeyChanged, 'zefriansyah', 'corr-review-007', 'APPROVED_FOR_MIGRATION_PLANNING', 'REVIEW_APPROVED'),
+    \OneQay\SchemaPlanning\SchemaReviewException::BLOCKED_APPROVAL_DENIED,
+);
+$throwsReviewCode(
+    fn () => $reviewer->review($noChanges, 'zefriansyah', 'corr-review-008', 'APPROVED_FOR_MIGRATION_PLANNING', 'REVIEW_APPROVED'),
+    \OneQay\SchemaPlanning\SchemaReviewException::DECISION_NOT_ALLOWED,
+);
+$throwsReviewCode(
+    fn () => $reviewer->review($entityAdded, 'zefriansyah', 'corr-review-009', 'NOT_REQUIRED', 'NO_CHANGES'),
+    \OneQay\SchemaPlanning\SchemaReviewException::DECISION_NOT_ALLOWED,
+);
+$throwsReviewCode(
+    fn () => $reviewer->review($entityAdded, 'zefriansyah', 'corr-review-010', 'APPROVED_FOR_MIGRATION_PLANNING', 'REVIEW_REJECTED'),
+    \OneQay\SchemaPlanning\SchemaReviewException::REASON_CODE_NOT_ALLOWED,
+);
+$throwsReviewCode(
+    fn () => $reviewer->review($entityAdded, 'unsafe/reviewer', 'corr-review-011', 'REJECTED', 'REVIEW_REJECTED'),
+    \OneQay\SchemaPlanning\SchemaReviewException::REVIEWER_REFERENCE_INVALID,
+);
+$throwsReviewCode(
+    fn () => $reviewer->review($entityAdded, 'zefriansyah', 'corr-review-012', 'APPROVE', 'REVIEW_APPROVED'),
+    \OneQay\SchemaPlanning\SchemaReviewException::DECISION_INVALID,
+);
+$throwsReviewCode(
+    fn () => $reviewer->review($entityAdded, 'zefriansyah', 'corr-review-013', 'REJECTED', 'free form'),
+    \OneQay\SchemaPlanning\SchemaReviewException::REASON_CODE_INVALID,
+);
+$throwsPlanningCode(
+    fn () => $reviewer->review($entityAdded, 'zefriansyah', 'unsafe/path', 'REJECTED', 'REVIEW_REJECTED'),
+    SchemaPlanningException::CORRELATION_ID_INVALID,
+);
+
+$reviewEncoded = json_encode($approvedReview, JSON_THROW_ON_ERROR);
+foreach (['DB_PASSWORD', 'DB_USER', 'DB_HOST', 'jdbc:', 'mysql:host=', 'CREATE TABLE', 'ALTER TABLE', 'DROP TABLE', '/var/', 'tenant_record', 'reference_catalog'] as $forbidden) {
+    $assert(!str_contains($reviewEncoded, $forbidden), 'Review output contains forbidden material.');
+}
+$reviewSource = (string) file_get_contents(__DIR__ . '/../src/SchemaPlanning/Review.php');
+$assert(!preg_match('/\b(CREATE\s+TABLE|ALTER\s+TABLE|DROP\s+TABLE|INSERT\s+INTO|DELETE\s+FROM)\b/i', $reviewSource), 'Review foundation contains executable SQL.');
+$assert(!str_contains($reviewSource, 'new PDO('), 'Review foundation introduced a database connection.');
+$assert(!preg_match('/\b(curl_|fsockopen|stream_socket_client)\b/i', $reviewSource), 'Review foundation introduced a network dependency.');
+$assert(!preg_match('/\b(file_put_contents|fopen|unlink|mkdir|rename)\b/i', $reviewSource), 'Review foundation introduced a filesystem side effect.');
 
 fwrite(STDOUT, sprintf("Schema Planning tests passed: %d assertions.\n", $assertions));
