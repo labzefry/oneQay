@@ -3,107 +3,91 @@
 ## Stable checkpoint
 
 - Project: OneQay
-- Tagline: The Future of Intelligent Business Management
-- Developer and Product Engineering Entity: Lab | zefry
 - Repository: `labzefry/oneQay`
-- Canonical delivery phase: Phase 0 — Governance and Discovery
+- Developer and Product Engineering Entity: Lab | zefry
+- Canonical checkpoint path: `docs/ai/`
 - Canonical Phase 0 status: In Progress
-- Latest published technical capability sprint: Sprint 12
-- Latest published capability: Physical Schema Plan Representation and Change Classification Foundation
-- Sprint 12: Published
-- Sprint 13 entry gate: Published as repository fact through PR #60
-- Sprint 13 candidate: Schema Change Review and Approval Envelope Foundation
-- Sprint 13 source implementation: Not Authorized
+- Active program: M5 — Engineering State, CI & Governance Stabilization
+- Active micro-milestone: M5.1 — Canonical State Reconciliation
+- Current `main`: `7a9def560466fc8bf81529c2b5125c6ac19a96b5`
+- Current `main` tree: `d27dae3c8cc9be77a590187cabd49ac469a6943f`
+- Sprint 13: Published
+- Sprint 14: Not Authorized
 - Production readiness: NO-GO
-- Deployment: None
-- Release: None
 
-## PR #62 publication identity
+## Canonical Sprint 13 facts to preserve
 
-- Pull request: #62
-- Source branch: `agent/pr61-post-publication-reconciliation`
-- Exact source base: `76f76030473da7da02de749389d82c801a00cd9a`
-- Source base tree: `d7f02e299209dd54de8ab17d3f89b25d5738cbc1`
-- Approved source head: `08fc88a5ce242254806b0b4ba2d1000db9b003f2`
-- Approved source tree: `79eb4c1cd5f7fd965f50d9ce711bc5a002958788`
-- Source commits: exactly one
-- Changed files: exactly three AI checkpoint documents
-- Out-of-scope paths: None
-- Published squash commit: `0821b469687356ca81e00c65433eb36949425550`
-- Published parent: `76f76030473da7da02de749389d82c801a00cd9a`
-- Published tree: `79eb4c1cd5f7fd965f50d9ce711bc5a002958788`
-- Approved source tree and published tree: Identical
-- Governance Required Checks run #54: Success
-- Independent reviewer: `zefriansyah`
-- Review state: APPROVED on exact source head/tree
-- Unresolved review threads: None
-- Post-approval source mutation: None identified
+- Canonical PR: #64
+- Canonical source head: `4a2e44cc31361954b126e8857de65fcccca30445`
+- Canonical source tree: `5a0adb0d2ce80338f9f9d782f0871fb2115afd5d`
+- Canonical published commit: `ebe6abcf77263bf644565ca2fbe2b2844416d49b`
+- Canonical published tree: `5a0adb0d2ce80338f9f9d782f0871fb2115afd5d`
+- PR #65 reconciliation published commit: `7a9def560466fc8bf81529c2b5125c6ac19a96b5`
+- Product Owner local `composer test`: PASS, 402 assertions, exit code `0`
+- Regression evidence classification: POST-PUBLICATION
+- Canonical reviewer: `zefriansyah`
+- Canonical reviewed exact head: `4a2e44cc31361954b126e8857de65fcccca30445`
+- Alternate head `ba312fa9095d434c204f01e3dac9870e9eaa4d6d`: NON-CANONICAL
+- Historical alternate-head review references: preserved as historical contamination, not canonical evidence
 
-## PR #62 lifecycle discrepancy
+## Immediate authorized task
 
-Before publication, Product Owner authorization explicitly did not authorize:
+Complete only M5.1 lifecycle processing for the bounded canonical-state correction:
 
-- Ready transition PR #62;
-- merge PR #62;
-- auto-merge;
-- publication PR #62;
-- `START SPRINT 13 IMPLEMENTATION`.
+1. maintain exactly one atomic M5.1 content commit;
+2. keep the change set limited to the three canonical `docs/ai/` checkpoint files plus the three root deprecation/pointer stubs;
+3. open and keep the pull request as Draft;
+4. run proportionate documentation/governance validation;
+5. verify GitHub checks on the exact head;
+6. request independent review from `zefriansyah` only at the proper technical gate;
+7. report exact base, head, tree, commit count, changed files, checks, review state, unresolved threads, and lifecycle boundary;
+8. stop before Ready or Merge unless separate Product Owner authority is provided.
 
-Reviewer approval was also not authority for Ready, merge, publication, or implementation. GitHub nevertheless records PR #62 as merged.
+## Root checkpoint rule
 
-Treat PR #62 publication as a repository fact and lifecycle discrepancy. Do not infer retroactive procedural compliance. Do not infer Sprint 13 implementation authority.
+The root files:
 
-## Anti-recursive checkpoint rule
+- `AI_SESSION_STATE.md`
+- `AI_PROJECT_STATE.md`
+- `AI_NEXT_TASK.md`
 
-The checkpoint stabilization removes stale PR #61 reconciliation instructions and records PR #62 as the already-published repository fact.
+are deprecated pointer stubs only. They are not authoritative and must not be used as active checkpoints.
 
-This stabilization must not create another future reconciliation requirement solely to record itself, its review, its merge, or its publication. Publication of this stabilization alone is not a trigger for another post-publication reconciliation.
+Canonical state lives under `docs/ai/`.
 
-A future reconciliation requires either a new material repository/lifecycle fact or a new explicit Product Owner instruction.
+## Lifecycle facts that must not be rewritten
 
-## Stable next task
+- PR #64 has a historical lifecycle sequencing discrepancy.
+- PR #65 has a historical lifecycle discrepancy.
+- The 402-assertion Composer PASS is post-publication evidence and does not retroactively change historical sequencing.
+- GitHub review history must not be rewritten.
 
-**AWAIT PRODUCT OWNER DECISION: START SPRINT 13 IMPLEMENTATION**
+## Explicit exclusions
 
-Until the Product Owner explicitly issues that decision:
+M5.1 does not authorize:
 
-- Sprint 13 source implementation remains Not Authorized;
-- do not modify source code;
-- do not modify tests or `composer.json`;
-- do not create database/schema/migration artifacts or executable SQL;
-- do not modify workflow or ruleset configuration;
-- do not deploy or release;
-- do not start POS, ERP, or industry vertical implementation;
-- do not promote ADR-001 through ADR-007 or GD-007;
-- do not resolve JRN-003 or JRN-013.
+- Ready transition;
+- merge or auto-merge;
+- M5.2 implementation before M5.1 publication;
+- Sprint 14 implementation;
+- executable SQL;
+- migration execution;
+- production database modification;
+- production table creation;
+- deployment;
+- release;
+- POS, ERP, WMS, CRM, or other business-module implementation;
+- Enterprise Vision implementation;
+- ADR/GD promotion;
+- JRN resolution;
+- production readiness promotion.
 
-## Stabilization authorization boundary
+## Next milestone after M5.1 publication
 
-The documentation-only checkpoint stabilization was authorized only for:
+Only after M5.1 is properly published, the next bounded micro-milestone is:
 
-1. `docs/ai/AI_SESSION_STATE.md`
-2. `docs/ai/AI_PROJECT_STATE.md`
-3. `docs/ai/AI_NEXT_TASK.md`
+**M5.2 — CI & Lifecycle Control Hardening**
 
-That authorization is not Ready, merge, auto-merge, publication, or Sprint 13 implementation authority. Passing required checks or receiving independent reviewer approval does not change that boundary.
-
-## Governance preservation
-
-- Canonical Phase 0: In Progress.
-- Sprint 12: Published.
-- Sprint 13 entry gate: Published as repository fact.
-- Sprint 13 source implementation: Not Authorized.
-- Production readiness: NO-GO.
-- ADR-001 through ADR-007: Proposed.
-- GD-007: Proposed.
-- JRN-003 and JRN-013: Unresolved.
-- Final tenant data model: Not Started.
-- Final business schema: Not Started.
-- Production migration: Not Performed.
-- Deployment: None.
-- Release: None.
-- POS, ERP, and industry verticals: Not Started.
-
-No stale PR #61 reconciliation instruction remains active. No follow-up reconciliation is required solely because this stabilization is reviewed, merged, or published.
+M5.2 still requires the proper lifecycle start boundary. It is not started by this checkpoint.
 
 Attribution: Lab | zefry

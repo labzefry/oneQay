@@ -1,129 +1,145 @@
 # AI Project State
 
-## Canonical state
+## Project identity
 
 - Project: OneQay
 - Tagline: The Future of Intelligent Business Management
 - Developer and Product Engineering Entity: Lab | zefry
 - Repository: `labzefry/oneQay`
+- GitHub repository role: Single Source of Truth
+
+## Canonical delivery state
+
 - Canonical delivery phase: Phase 0 — Governance and Discovery
 - Canonical Phase 0 status: In Progress
-- Current milestone: Platform Foundation Capability — Await Product Owner Sprint 13 implementation decision
-- Latest published technical capability sprint: Sprint 12
-- Latest published capability: Physical Schema Plan Representation and Change Classification Foundation
+- Active program: M5 — Engineering State, CI & Governance Stabilization
+- Active micro-milestone: M5.1 — Canonical State Reconciliation
+- Current `main`: `7a9def560466fc8bf81529c2b5125c6ac19a96b5`
+- Current `main` tree: `d27dae3c8cc9be77a590187cabd49ac469a6943f`
+- Latest published technical capability sprint: Sprint 13
 - Sprint 12: Published
-- Sprint 13 entry gate: Published as repository fact through PR #60
-- Sprint 13 candidate: Schema Change Review and Approval Envelope Foundation
-- Sprint 13 source implementation: Not Authorized
-- Stable next checkpoint: AWAIT PRODUCT OWNER DECISION: START SPRINT 13 IMPLEMENTATION
-- Final application implementation: Blocked
+- Sprint 13: Published
+- Sprint 14: Not Authorized
 - Production readiness: NO-GO
 - Deployment: None
 - Release: None
+- Production migration: Not Performed
 
-## PR #62 publication identity
+## Published Platform Foundation through Sprint 13
 
-- Pull request: #62
-- Source branch: `agent/pr61-post-publication-reconciliation`
-- Exact source base: `76f76030473da7da02de749389d82c801a00cd9a`
-- Source base tree: `d7f02e299209dd54de8ab17d3f89b25d5738cbc1`
-- Approved source head: `08fc88a5ce242254806b0b4ba2d1000db9b003f2`
-- Approved source tree: `79eb4c1cd5f7fd965f50d9ce711bc5a002958788`
-- Source commits: exactly one
-- Changed files: exactly three AI checkpoint documents
-- Out-of-scope paths: None
-- Published squash commit: `0821b469687356ca81e00c65433eb36949425550`
-- Published parent: `76f76030473da7da02de749389d82c801a00cd9a`
-- Published tree: `79eb4c1cd5f7fd965f50d9ce711bc5a002958788`
-- Approved source tree and published tree: Identical
-- Governance Required Checks run #54: Success
-- Independent reviewer `zefriansyah`: APPROVED on exact source head/tree
-- Unresolved review threads: None
-- Post-approval source mutation: None identified
+The repository contains bounded Platform Foundation implementation that has been published through Sprint 13. This must be distinguished from final business application implementation.
 
-## PR #62 lifecycle discrepancy
+Canonical Sprint 13 capability:
 
-The Product Owner authorization recorded before PR #62 publication explicitly did not authorize Ready transition, merge, auto-merge, publication, or `START SPRINT 13 IMPLEMENTATION`.
+**Schema Change Review and Approval Envelope Foundation**
 
-The independent reviewer approval also explicitly excluded Ready, merge, publication, and implementation authority. GitHub nevertheless records PR #62 as merged.
+Canonical identity:
 
-PR #62 publication is therefore preserved as a repository fact and lifecycle discrepancy. It is not retroactive procedural compliance and cannot authorize Sprint 13 source implementation.
+- PR: #64
+- Base: `de3c8c73c0002915c735dc1dfa29828e1781e71d`
+- Source head: `4a2e44cc31361954b126e8857de65fcccca30445`
+- Source tree: `5a0adb0d2ce80338f9f9d782f0871fb2115afd5d`
+- Published commit: `ebe6abcf77263bf644565ca2fbe2b2844416d49b`
+- Published tree: `5a0adb0d2ce80338f9f9d782f0871fb2115afd5d`
+- Source tree equals published tree: Yes
 
-## Checkpoint stabilization authority
+PR #65 reconciled the canonical Sprint 13 publication state and was published as `7a9def560466fc8bf81529c2b5125c6ac19a96b5`.
 
-The Product Owner authorized a documentation-only PR #62 post-publication checkpoint stabilization limited to:
+## Regression evidence
+
+Canonical Sprint 13 has Product Owner local post-publication regression evidence:
+
+- PHP `8.2.12 CLI`
+- Composer `2.9.3`
+- `composer test`: PASS
+- 402 assertions PASS
+- Exit code `0`
+- Tested HEAD `ebe6abcf77263bf644565ca2fbe2b2844416d49b`
+- Tested tree `5a0adb0d2ce80338f9f9d782f0871fb2115afd5d`
+- Working tree clean
+
+This evidence is explicitly POST-PUBLICATION evidence and must not be represented as pre-publication lifecycle evidence.
+
+## Review identity and historical contamination
+
+Canonical independent review evidence:
+
+- Reviewer: `zefriansyah`
+- State: APPROVED
+- Reviewed exact head: `4a2e44cc31361954b126e8857de65fcccca30445`
+- Unresolved review threads identified: 0
+
+Alternate Sprint 13 implementation:
+
+- Head: `ba312fa9095d434c204f01e3dac9870e9eaa4d6d`
+- Status: NON-CANONICAL
+
+Historical review text that later referenced the alternate implementation is preserved as historical contamination only. Do not rewrite GitHub history and do not treat `ba312f...` as canonical approval evidence.
+
+## Lifecycle discrepancy register
+
+- PR #64: historical sequencing discrepancy exists because the bounded lifecycle text required Draft/no merge without separate Product Owner authority, and canonical reviewer approval arrived before the mandatory full Composer regression was complete. The later 402-assertion PASS is post-publication evidence only.
+- PR #65: historical lifecycle discrepancy exists because the PR body required Keep Draft and excluded Ready/merge/publication authority, while GitHub records the PR as merged.
+
+Current remediation must improve the control plane prospectively. It must not falsify or rewrite historical records.
+
+## Canonical checkpoint authority
+
+Canonical mutable AI checkpoint files are located only under:
+
+`docs/ai/`
+
+The authoritative files are:
 
 1. `docs/ai/AI_SESSION_STATE.md`
 2. `docs/ai/AI_PROJECT_STATE.md`
 3. `docs/ai/AI_NEXT_TASK.md`
 
-Any additional changed path is blocking.
+The root files with matching names are deprecated pointer stubs only. They are not active state authority and must not contain independently mutable project state.
 
-The authorization does not include Ready transition, merge, auto-merge, publication, Sprint 13 source implementation, tests changes, `composer.json` changes, database/schema/migration work, executable SQL, workflow/ruleset changes, deployment, release, POS/ERP/industry vertical implementation, ADR/GD promotion, or JRN resolution.
+Future checkpoint updates should occur only for material repository or lifecycle state changes.
 
-## Published Sprint 13 entry-gate candidate
+## Current product implementation boundary
 
-Candidate:
+Bounded Platform Foundation implementation is published through Sprint 13 according to repository evidence.
 
-**Schema Change Review and Approval Envelope Foundation**
+Final Business Application, POS, ERP, production implementation, business modules, executable migrations, production database modification, deployment, and release remain blocked or not authorized according to the current Phase 0 and Product Owner gates.
 
-The published gate remains a non-executable review boundary over the Sprint 12 `PhysicalSchemaPlan`:
+The project must not be described as having all application source blocked; the correct distinction is between published bounded Platform Foundation source and blocked final/business/production implementation.
 
-- `NO_CHANGES` becomes `NOT_REQUIRED`;
-- `REVIEW_REQUIRED` may become `APPROVED_FOR_MIGRATION_PLANNING` or `REJECTED`;
-- `BLOCKED` is never approvable;
-- approval never authorizes migration execution;
-- tenant-boundary and tenant-key changes remain blocked without override.
+## Governance preservation
 
-No SQL, migration artifact, database connection, final schema, production data, deployment, release, or business-module behavior is authorized.
+- Phase 0: In Progress
+- ADR-001 through ADR-007: Proposed
+- GD-007: Proposed
+- JRN-003 and JRN-013: Unresolved
+- Final tenant data model: Not Started
+- Final business schema: Not Started
+- Production migration: Not Performed
+- Production database usage: None
+- Production table: None
+- POS module: Not Started
+- ERP module: Not Started
+- Industry vertical implementation: Not Started
 
-## Anti-recursive checkpoint semantics
+## M5 anomaly status
 
-The stabilization removes stale instructions that treated PR #61 post-publication reconciliation as active work.
+Verified active anomalies entering M5:
 
-The stabilized checkpoint must not create another future reconciliation requirement solely to record this stabilization, its review, its merge, or its publication. Publication of this stabilization alone is not a material state change requiring another checkpoint PR.
+- A-01 stale canonical AI checkpoint: being corrected by M5.1
+- A-02 duplicate root AI checkpoint: being corrected by M5.1 using pointer stubs
+- A-03 lifecycle authority not technically enforced: remains for M5.2
+- A-04 review history contamination: canonical disposition recorded; historical evidence preserved
+- A-05 PHP regression not in GitHub CI: remains for M5.2
+- A-06 Phase 0 semantic ambiguity: remains for M5.3
+- A-07 ROADMAP / TASKS synchronization: remains for M5.3
+- A-08 attribution/collaboration metadata supersession: remains for M5.4 or bounded M5.3 combination if reviewable
+- A-09 Enterprise Vision canonicalization: planning gap reserved for M6 after M5
 
-A later reconciliation may be created only when a new material repository/lifecycle fact requires it or the Product Owner explicitly authorizes it.
+## Next engineering boundary
 
-Stable next Product Owner checkpoint:
+Complete M5.1 lifecycle gates only. Do not start M5.2 until M5.1 is properly published.
 
-**AWAIT PRODUCT OWNER DECISION: START SPRINT 13 IMPLEMENTATION**
-
-Sprint 13 source implementation remains **NOT AUTHORIZED**.
-
-## Governance state
-
-- ADR-001 through ADR-007: Proposed.
-- GD-007: Proposed.
-- JRN-003 and JRN-013: Unresolved.
-- Final tenant data model: Not Started.
-- Final business schema: Not Started.
-- Production migration: Not Performed.
-- Production database usage: None.
-- Production table: None.
-- POS module: Not Started.
-- ERP module: Not Started.
-- Industry vertical implementation: Not Started.
-- Workflow change: None.
-- Ruleset change: None.
-
-## Technical debt and open risks
-
-- Sprint 12 historical full `composer test` evidence remains missing on the exact Sprint 12 source head and is not retroactively Passed.
-- PR #56 and PR #57 retain previously recorded merge-authority lifecycle exceptions.
-- PR #60 retains its publication lifecycle discrepancy.
-- PR #61 retains its publication lifecycle discrepancy.
-- PR #62 publication occurred without recorded explicit Product Owner Ready/merge/publication authority and remains a lifecycle discrepancy.
-- Sprint 13 approval semantics must not be misread as migration-execution authority.
-- ADR-001 through ADR-007 and GD-007 remain Proposed; JRN-003 and JRN-013 remain unresolved.
-- Final tenant model, final business schema, production migration, deployment, and release remain incomplete.
-
-## Engineering next step
-
-No source engineering action is authorized.
-
-**AWAIT PRODUCT OWNER DECISION: START SPRINT 13 IMPLEMENTATION**
-
-Do not create another reconciliation solely to record this stabilization, its review, its merge, or its publication.
+No Sprint 14 implementation authority exists.
 
 Attribution: Lab | zefry
