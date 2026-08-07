@@ -17,68 +17,72 @@
 - Latest published technical capability sprint: Sprint 12
 - Latest published capability: Physical Schema Plan Representation and Change Classification Foundation
 - Sprint 12 status: Published
-- Sprint 13 status: Not Authorized
+- Sprint 13 source implementation: Not Authorized
+- Sprint 13 entry-gate preparation: Authorized by Product Owner
 - Final application implementation: Blocked pending canonical Phase 0 exit and accepted decisions
 - Production readiness: NO-GO
 - Deployment: None
 - Release: None
 
-## PR #58 published identity
+## PR #59 published identity
 
-- Pull request: #58
-- Source branch: `agent/pr57-post-publication-closure`
-- Base before publication: `48d194c4c0988af4c76e5d4ea4410fcfc002324f`
-- Approved source head: `c5177fad25f40bc8a7af7ca7ced84d7dc059464d`
-- Approved source tree: `3fbd452c207ef6ad5fb08e70e8839a32519a0286`
-- Published commit: `158ca307f54dc28e1bc927e3f79b2dd93ed088cd`
-- Published parent: `48d194c4c0988af4c76e5d4ea4410fcfc002324f`
-- Published tree: `3fbd452c207ef6ad5fb08e70e8839a32519a0286`
+- Pull request: #59
+- Source branch: `agent/pr58-post-publication-reconciliation`
+- Base before publication: `158ca307f54dc28e1bc927e3f79b2dd93ed088cd`
+- Approved source head: `61d05c1c9e31f41e24534f909ad106fb17a01dc4`
+- Approved source tree: `3ff4e4aefbf2b0064283a29e53a144797f03ee3c`
+- Published commit: `ad4d88acb96b49141fedc125393c4caaf4384aa7`
+- Published parent: `158ca307f54dc28e1bc927e3f79b2dd93ed088cd`
+- Published tree: `3ff4e4aefbf2b0064283a29e53a144797f03ee3c`
 - Approved source tree and published tree: Identical
 - Published changed files: exactly three checkpoint documents
 
-## PR #58 review and check evidence
+## PR #59 review and check evidence
 
-- Governance Required Checks run: #50
+- Governance Required Checks run: #51
 - `governance-validation`: Success
 - `markdown-lint`: Success
 - `secret-scan`: Success
 - Independent reviewer: `zefriansyah`
 - Review state: APPROVED
-- Approved exact head: `c5177fad25f40bc8a7af7ca7ced84d7dc059464d`
+- Approved exact head: `61d05c1c9e31f41e24534f909ad106fb17a01dc4`
 - Unresolved review threads: None
 - Push after approval before publication: None identified
-
-## Publication authority
-
-Product Owner explicitly authorized transition of PR #58 to Ready for Review after successful gate verification and stated that the Product Owner would perform Squash and Merge manually. GitHub subsequently records PR #58 as merged into published commit `158ca307f54dc28e1bc927e3f79b2dd93ed088cd`.
-
-The PR #58 publication therefore follows the explicit owner-directed publication path. It is not added to the prior merge-authority lifecycle exceptions for PR #56 and PR #57.
+- Product Owner performed the separately stated manual Squash and Merge publication path.
 
 ## Preserved lifecycle exceptions
 
-### Sprint 12 historical regression evidence
+- Sprint 12 historical full `composer test` evidence on the exact Sprint 12 source head remains missing and is not retroactively Passed.
+- PR #56 and PR #57 retain their previously recorded merge-authority lifecycle exceptions.
+- PR #58 and PR #59 followed owner-directed publication paths and are not added as new merge-authority exceptions.
 
-- PHP syntax validation for changed Sprint 12 PHP files: Passed.
-- Sprint 12 synthetic tests: Passed, 55 assertions.
-- Full historical `composer test`: no execution evidence exists on the exact Sprint 12 source head before publication.
+## Product Owner authorization
 
-The missing historical regression evidence remains a lifecycle exception and residual validation risk. Publication does not convert the missing evidence into Passed and does not establish retroactive procedural compliance.
+Product Owner has explicitly authorized only:
 
-### PR #56 merge authority
+`PREPARE BOUNDED SPRINT 13 ENTRY GATE`
 
-Product Owner authorization moved PR #56 from Draft to Ready for Review and explicitly did not grant merge authority. GitHub subsequently recorded PR #56 as merged. That merge remains a repository fact and governance lifecycle exception, not retroactive procedural compliance.
+This authorization does not authorize Sprint 13 source implementation, database implementation, schema migration, executable SQL, production database connection, deployment, release, POS, ERP, industry vertical implementation, ADR/GD promotion, or resolution of JRN-003/JRN-013.
 
-### PR #57 merge authority
+## Sprint 13 entry-gate candidate
 
-Product Owner authorization moved PR #57 from Draft to Ready for Review and explicitly did not grant merge or auto-merge authority. GitHub subsequently recorded PR #57 as merged. That merge remains a repository fact and governance lifecycle exception, not retroactive procedural compliance.
+Candidate capability:
 
-## Enterprise Vision authority
+**Schema Change Review and Approval Envelope Foundation**
 
-- `PROJECT_MANIFEST.md` remains the binding authority for Approved identity, decision status, architecture baseline, delivery gates, and canonical document ownership.
-- `docs/handbook/PRODUCT_VISION_AND_DECISION_RIGHTS.md` remains the primary long-term Enterprise Vision reference and remains Proposed.
-- Stakeholder Map, Current Process and User Journeys, Domain Event Storming, business-process hypotheses, and future-product direction remain supporting Proposed evidence unless separately approved.
-- OneQay long-term direction remains an Enterprise Business Operating System compatible with the Approved Enterprise SaaS POS and ERP platform identity.
-- This direction is Architecture Planning Only and does not authorize source, schema, migration, deployment, release, POS, ERP, or industry-vertical implementation.
+Purpose: place an immutable, deterministic, safe review boundary above the published Sprint 12 `PhysicalSchemaPlan` before any future migration-planning capability.
+
+Core rules:
+
+- `NO_CHANGES` -> `NOT_REQUIRED`;
+- `REVIEW_REQUIRED` -> may become `APPROVED_FOR_MIGRATION_PLANNING` or `REJECTED`;
+- `BLOCKED` -> can never be approved;
+- approval is migration-planning authority only and never migration execution authority;
+- no SQL, migration artifact, database connection, final schema, production data, deployment, release, or business-module behavior.
+
+Canonical gate document:
+
+`docs/SPRINT_13_ENTRY_GATE.md`
 
 ## Governance preservation
 
@@ -93,24 +97,29 @@ Product Owner authorization moved PR #57 from Draft to Ready for Review and expl
 - POS module: Not Started.
 - ERP module: Not Started.
 - Industry vertical implementation: Not Started.
-- Installer change: None.
-- Updater change: None.
 - Workflow change: None.
 - Ruleset change: None.
 
-## Current bounded reconciliation
+## Current bounded entry-gate preparation
 
-- Purpose: reconcile the PR #58 published identity and remove stale instructions that describe PR #58 predecessor work as active.
-- Branch: `agent/pr58-post-publication-reconciliation`
-- Exact base commit: `158ca307f54dc28e1bc927e3f79b2dd93ed088cd`
-- Exact base tree: `3fbd452c207ef6ad5fb08e70e8839a32519a0286`
-- Authorized changed files:
-  - `docs/ai/AI_SESSION_STATE.md`;
-  - `docs/ai/AI_PROJECT_STATE.md`;
-  - `docs/ai/AI_NEXT_TASK.md`.
+- Branch: `agent/sprint13-entry-gate`
+- Exact base commit: `ad4d88acb96b49141fedc125393c4caaf4384aa7`
+- Exact base tree: `3ff4e4aefbf2b0064283a29e53a144797f03ee3c`
+- Expected changed files: exactly four documentation files
+
+Authorized files:
+
+1. `docs/SPRINT_13_ENTRY_GATE.md`
+2. `docs/ai/AI_SESSION_STATE.md`
+3. `docs/ai/AI_PROJECT_STATE.md`
+4. `docs/ai/AI_NEXT_TASK.md`
+
+Any additional path is blocking.
 
 ## Stop condition
 
-Create one atomic documentation-only commit, open one Draft PR, wait for required checks on the exact final head, request independent review from `zefriansyah`, and stop. Do not mark Ready, merge, deploy, release, or begin Sprint 13 implementation without separate Product Owner authority.
+Create one atomic documentation-only commit, open one Draft PR, wait for `governance-validation`, `markdown-lint`, and `secret-scan` on the exact final head, request independent review from `zefriansyah`, verify no unresolved thread or out-of-scope file, and stop before Ready.
+
+Do not implement Sprint 13 until the Product Owner separately authorizes `START SPRINT 13 IMPLEMENTATION` after the entry gate is reviewed and published.
 
 Attribution: Lab | zefry
