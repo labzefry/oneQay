@@ -8,89 +8,88 @@
 - Repository: `labzefry/oneQay`
 - Canonical delivery phase: Phase 0 — Governance and Discovery
 - Canonical Phase 0 status: In Progress
-- Current milestone: Platform Foundation Capability — Sprint 12 publication reconciliation complete candidate
+- Current milestone: Platform Foundation Capability — Sprint 13 entry-gate preparation
 - Latest published technical capability sprint: Sprint 12
 - Latest published capability: Physical Schema Plan Representation and Change Classification Foundation
 - Sprint 12: Published
-- Sprint 13: Not Authorized
+- Sprint 13 source implementation: Not Authorized
+- Sprint 13 entry-gate preparation: Authorized
 - Final application implementation: Blocked
 - Production readiness: NO-GO
 - Deployment: None
 - Release: None
 
-## PR #58 publication identity
+## Current publication identity
 
-- Pull request: #58
-- Approved source head: `c5177fad25f40bc8a7af7ca7ced84d7dc059464d`
-- Approved source tree: `3fbd452c207ef6ad5fb08e70e8839a32519a0286`
-- Published commit: `158ca307f54dc28e1bc927e3f79b2dd93ed088cd`
-- Published parent: `48d194c4c0988af4c76e5d4ea4410fcfc002324f`
-- Published tree: `3fbd452c207ef6ad5fb08e70e8839a32519a0286`
-- Published tree matches approved source tree: Yes
-- Changed files: exactly three checkpoint documents
-- Governance Required Checks run #50: Success
-- Independent review by `zefriansyah`: APPROVED on the exact source head
+PR #59 is Published.
+
+- Approved source head: `61d05c1c9e31f41e24534f909ad106fb17a01dc4`
+- Approved source tree: `3ff4e4aefbf2b0064283a29e53a144797f03ee3c`
+- Published commit: `ad4d88acb96b49141fedc125393c4caaf4384aa7`
+- Published parent: `158ca307f54dc28e1bc927e3f79b2dd93ed088cd`
+- Published tree: `3ff4e4aefbf2b0064283a29e53a144797f03ee3c`
+- Source and published tree: Identical
+- Required Checks run #51: Success
+- Independent reviewer `zefriansyah`: APPROVED on exact source head
 - Unresolved review threads: None
-- Push after approval before publication: None identified
+- No post-approval head mutation identified before publication
 
 ## Published Sprint 12 capability
 
-Sprint 12 provides a deterministic and immutable physical-schema planning representation with conservative change classification:
+Sprint 12 provides deterministic and immutable physical-schema planning with conservative classification:
 
-- identical manifests produce `NO_CHANGES`;
-- additive entity, attribute, unique-index, or reference changes produce `REVIEW_REQUIRED`;
-- destructive, physical-mapping, scalar-mapping, primary-index, tenant-boundary, tenant-key, and vendor changes produce `BLOCKED`;
-- safe identifiers, fingerprints, stable ordering, correlation validation, and safe JSON are preserved;
-- no executable SQL, database connection, migration execution, production metadata inspection, deployment behavior, or business-module behavior exists in the capability.
+- identical manifests -> `NO_CHANGES`;
+- additive entity, attribute, unique-index, or reference changes -> `REVIEW_REQUIRED`;
+- destructive, physical-mapping, scalar-mapping, primary-index, tenant-boundary, tenant-key, referential mutation, and vendor changes -> `BLOCKED`.
 
-`REVIEW_REQUIRED` does not authorize migration or execution.
+Sprint 12 does not generate executable SQL, migration artifacts, database connections, final schema, deployment, release, or business-module behavior.
 
-## Evidence and lifecycle state
+## Sprint 13 entry-gate candidate
 
-- Changed Sprint 12 PHP syntax validation: Passed.
-- Sprint 12 synthetic tests: Passed, 55 assertions.
-- Full historical `composer test` on the exact Sprint 12 source head before publication: Not executed or not evidenced.
+Candidate:
 
-This evidence gap remains a lifecycle exception and residual validation risk. It is not a Passed result and cannot be used as retroactive pre-Ready evidence.
+**Schema Change Review and Approval Envelope Foundation**
 
-PR #56 and PR #57 retain their previously recorded merge-authority lifecycle exceptions. They remain repository facts and must not be rewritten as retroactive procedural compliance.
+The candidate adds only a non-executable review boundary over the published `PhysicalSchemaPlan`:
 
-For PR #58, Product Owner explicitly authorized the Ready transition after gate verification and stated that the Product Owner would perform Squash and Merge manually. GitHub records PR #58 as merged into `158ca307f54dc28e1bc927e3f79b2dd93ed088cd`. This publication is consistent with that owner-directed path and does not create a new merge-authority exception.
+- `NO_CHANGES` deterministically becomes `NOT_REQUIRED`;
+- `REVIEW_REQUIRED` may be `APPROVED_FOR_MIGRATION_PLANNING` or `REJECTED`;
+- `BLOCKED` is never approvable;
+- approval never authorizes migration execution.
 
-## Enterprise Vision alignment
+This is foundation-only and does not start application skeleton, business modules, database implementation, migration execution, or deployment.
 
-### Authority hierarchy
-
-1. `PROJECT_MANIFEST.md` governs Approved identity, architecture baseline, status, and delivery gates.
-2. `docs/handbook/PRODUCT_VISION_AND_DECISION_RIGHTS.md` is the primary long-term Enterprise Vision reference and remains Proposed.
-3. Stakeholder Map, Current Process and User Journeys, Domain Event Storming, business-process material, and future-product direction are supporting evidence and remain Proposed.
-4. Accepted ADRs and explicit Product Owner decisions are required before Proposed architecture or product hypotheses become binding implementation decisions.
-
-### Long-term direction
-
-OneQay remains directed toward an Enterprise Business Operating System while preserving its Approved Enterprise SaaS POS and ERP platform identity. This direction is Architecture Planning Only and does not authorize source implementation or promote any Proposed decision.
-
-## Architecture health
+## Architecture impact
 
 - Modular Monolith and Clean Architecture baseline: Preserved.
-- Domain and application independence from platform, framework, database, and vendor: Preserved.
-- Multi-tenant safety: Preserved at schema-planning governance level; tenant-boundary and tenant-key changes remain `BLOCKED`.
-- Cross-platform compatibility: Preserved conceptually; no client implementation exists.
-- Offline synchronization readiness: Not designed or implemented.
-- Business Network readiness: Long-term planning only.
-- Industry vertical readiness: Long-term planning only.
-- Marketplace and plugin readiness: Deferred or planning-only according to canonical authority.
-- Production architecture readiness: NO-GO.
+- Domain/application independence from framework, database, transport, filesystem, cloud, UI, and vendor: Preserved.
+- Deterministic behavior: Strengthened through immutable review envelopes and stable decision vocabulary.
+- Auditability: Strengthened through safe reviewer reference, plan fingerprint preservation, stable reason codes, and correlation IDs.
+- Security-by-default: Strengthened because blocked plans cannot be overridden and outputs remain safe/minimal.
+- Multi-tenant safety: Preserved; tenant-boundary and tenant-key changes remain blocked with no review override path.
+- Cross-platform/API compatibility: Preserved because no platform-specific or transport-specific implementation is introduced.
 
-## Roadmap health
+## Database and migration boundary
 
-- Current phase: Phase 0 — Governance and Discovery.
-- Current milestone: reconcile PR #58 publication and clear the stale Sprint 12 closure checkpoint.
-- Current sprint: Sprint 12 — Published.
-- Next sprint: Sprint 13 — Not Authorized.
-- Next milestone candidate: bounded Sprint 13 entry-gate preparation after this reconciliation is independently reviewed and published through separate Product Owner authority.
-- Overall product progress: foundation-stage only; production product, POS, ERP, verticals, deployment, installer/updater changes, and release remain unstarted or unauthorized.
-- Roadmap readiness: ready for a Product Owner decision on whether to prepare the Sprint 13 entry gate after this reconciliation publication; not ready for Phase 0 exit or production execution.
+Sprint 13 entry-gate candidate excludes SQL, DDL/DML, migration files, schema renderer, database adapter, database connection, metadata introspection, production tables, final tenant/business schema, backfill, online schema change, rollback execution, deployment, and release.
+
+The maximum positive outcome is approval for a future separately authorized migration-planning capability.
+
+## Testing/evidence boundary for future implementation
+
+Required on the exact implementation candidate head:
+
+- PHP syntax checks for all changed PHP files;
+- `php tests/schema-planning.php`;
+- full `composer test` regression evidence;
+- safe-output negative tests;
+- no-network/no-database evidence;
+- required GitHub checks: `governance-validation`, `markdown-lint`, `secret-scan`;
+- independent exact-head approval by `zefriansyah`;
+- zero unresolved review threads;
+- no push after approval without re-review.
+
+The historical Sprint 12 full-`composer test` evidence gap remains a lifecycle exception and is not retroactively repaired.
 
 ## Governance state
 
@@ -107,30 +106,33 @@ OneQay remains directed toward an Enterprise Business Operating System while pre
 - Industry vertical implementation: Not Started.
 - Workflow change: None.
 - Ruleset change: None.
-- Installer change: None.
-- Updater change: None.
 
-## Technical debt and open risks
+## Risks
 
-- Missing full historical `composer test` evidence on the exact Sprint 12 source head before publication.
-- PR #56 merge occurred without the separately required merge authorization artifact.
-- PR #57 merge occurred without the separately required merge authorization artifact.
-- Enterprise Vision and supporting discovery documents remain Proposed and cannot be treated as final requirements.
-- JRN-003 and JRN-013 remain unresolved.
-- ADR-001 through ADR-007 remain Proposed.
-- Final tenant model, business schema, migration execution, deployment, recovery evidence, and release readiness remain incomplete.
-- The broad Big Idea Backlog creates scope-expansion risk unless future work remains bounded by explicit entry gates.
+- Review approval could be misinterpreted as migration execution authority; mitigated by explicit `APPROVED_FOR_MIGRATION_PLANNING` semantics and negative tests.
+- A review layer could accidentally bypass Sprint 12 `BLOCKED` classification; mitigated by deny-by-default invariants and tenant-boundary/tenant-key non-override tests.
+- Review payload could leak sensitive/internal material; mitigated by stable codes, fingerprints, safe identifiers, and no free-form payload requirement.
+- Scope could expand into SQL/migration generation; mitigated by exact allowed-path and explicit-exclusion gates.
+
+## Roadmap impact
+
+- Phase remains Phase 0 — In Progress.
+- Sprint 12 remains Published.
+- Sprint 13 remains Not Authorized for implementation.
+- The only active next step is entry-gate documentation and review.
+- Application skeleton and Phase 1 business-facing platform work remain blocked by canonical Phase 0/preview decisions.
 
 ## Current engineering action
 
-A documentation-only PR #58 post-publication reconciliation is active on branch `agent/pr58-post-publication-reconciliation` from exact base `158ca307f54dc28e1bc927e3f79b2dd93ed088cd` and base tree `3fbd452c207ef6ad5fb08e70e8839a32519a0286`.
+Prepare the Sprint 13 entry gate on branch `agent/sprint13-entry-gate` from exact base `ad4d88acb96b49141fedc125393c4caaf4384aa7` and base tree `3ff4e4aefbf2b0064283a29e53a144797f03ee3c`.
 
-Only these files may change:
+Authorized changed files are exactly:
 
-- `docs/ai/AI_SESSION_STATE.md`;
-- `docs/ai/AI_PROJECT_STATE.md`;
-- `docs/ai/AI_NEXT_TASK.md`.
+1. `docs/SPRINT_13_ENTRY_GATE.md`
+2. `docs/ai/AI_SESSION_STATE.md`
+3. `docs/ai/AI_PROJECT_STATE.md`
+4. `docs/ai/AI_NEXT_TASK.md`
 
-The required lifecycle is one atomic commit, one Draft PR, required checks on the exact final head, an independent review request to `zefriansyah`, and a stop before Ready or merge.
+The required lifecycle is one atomic documentation-only commit, one Draft PR, required checks on the exact final head, independent review request to `zefriansyah`, and a stop before Ready or merge.
 
 Attribution: Lab | zefry
