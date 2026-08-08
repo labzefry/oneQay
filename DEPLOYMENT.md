@@ -1,4 +1,4 @@
-# OneQay Deployment Handbook
+# oneQay Deployment Handbook
 
 ## Goals
 
@@ -131,7 +131,7 @@ This workflow:
 - does not build application artifacts;
 - does not publish packages or container images;
 - does not execute database migrations;
-- does not release or deploy OneQay.
+- does not release or deploy oneQay.
 
 A successful workflow run is governance evidence only. It is not deployment
 approval, release authority, Phase 0 exit approval, application source-code
