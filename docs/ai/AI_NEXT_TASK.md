@@ -2,18 +2,23 @@
 
 ## Stable checkpoint
 
-- Project: OneQay
+- Project: oneQay
 - Repository: `labzefry/oneQay`
 - Developer and Product Engineering Entity: Lab | zefry
 - Canonical product attribution: Lab | zefry
+- Canonical product name: `oneQay`
 - Canonical checkpoint path: `docs/ai/`
 - Canonical Phase 0 status: In Progress
-- Active program: M5 — Engineering State, CI & Governance Stabilization
-- Active micro-milestone: M5.3 — Governance & Program State Synchronization
-- Current `main`: `512344d0497787c729242cb1fd2d7d02ecfc40c2`
-- Current `main` tree: `0f0af1c1acab208c704fbdf05b19014127abddbb`
+- Active program: M6 — Enterprise Vision Canonicalization
+- Active micro-milestone: M6 — Enterprise Vision Canonicalization
+- Current `main`: `e45f5b4c0f143abc6e255e4e8550bf3504348aae`
+- Current `main` tree: `e2bc0505f5abd98a7283b3cd3cd2c4c02ef23ece`
 - M5.1: PUBLISHED / COMPLETE through PR #66
 - M5.2: PUBLISHED / ENFORCEMENT COMPLETE through PR #67
+- M5.3: PUBLISHED / COMPLETE through PR #68
+- M5.3 source head: `aa799e657070a7d3283110a73a411f54a73b972c`
+- M5.3 published commit: `e45f5b4c0f143abc6e255e4e8550bf3504348aae`
+- M5.3 source/published tree: `e2bc0505f5abd98a7283b3cd3cd2c4c02ef23ece`
 - Sprint 12: Published
 - Sprint 13: Published
 - Sprint 14: Not Authorized
@@ -21,42 +26,76 @@
 
 ## Immediate authorized task
 
-Complete only M5.3 lifecycle processing for the bounded Governance & Program State Synchronization change:
+Complete only M6 — Enterprise Vision Canonicalization under the Product Owner START authority supplied on 2026-08-08.
 
-1. preserve the verified exact base `512344d0497787c729242cb1fd2d7d02ecfc40c2` and base tree `0f0af1c1acab208c704fbdf05b19014127abddbb`;
-2. use bounded branch `agent/m5-3-governance-program-state-synchronization`;
-3. reconcile A-06 Phase 0 semantics, A-07 ROADMAP/TASKS synchronization, and A-08 product metadata/attribution only;
-4. preserve Sprint 12 and Sprint 13 publication facts, M5.1 and M5.2 publication facts, and historical lifecycle discrepancies;
-5. open and keep the pull request as Draft;
-6. verify the final changed-file set and GitHub checks on the exact final head;
-7. request independent review on the final exact head;
-8. report exact base, head, tree, commit count, changed files, checks, review state, unresolved threads, and lifecycle boundary;
-9. stop before Ready or Merge unless separate Product Owner lifecycle authority is provided for the exact current head.
+Verified base:
 
-## Canonical semantic boundary
+- base branch: `main`;
+- exact base: `e45f5b4c0f143abc6e255e4e8550bf3504348aae`;
+- exact base tree: `e2bc0505f5abd98a7283b3cd3cd2c4c02ef23ece`;
+- bounded branch: `agent/m6-enterprise-vision-canonicalization`.
 
-Phase 0 remains **In Progress** as a governance/discovery program state.
+Authorized M6 work:
 
-Published bounded Platform Foundation source through Sprint 12 and Sprint 13 remains a repository fact. The canonical blocked boundary is **final/business/production application implementation**. This semantic reconciliation does not create new source-code authority.
+1. canonicalize the Enterprise Vision as **Enterprise Intelligent Business Management Platform**;
+2. establish a high-level Enterprise Capability Map;
+3. establish staged conceptual product evolution without converting it into implementation commitment;
+4. preserve the separation among Product Vision, Capability Map, Architecture Direction, Delivery Roadmap, and Implementation Authority;
+5. reconcile A-09 as an M6 candidate without claiming closure before proper lifecycle publication;
+6. normalize current canonical product naming to **oneQay**;
+7. synchronize only materially affected canonical program/state documents;
+8. create and keep a bounded Draft PR;
+9. obtain independent review on the final exact head;
+10. stop before Ready or Merge unless separate exact-head Product Owner lifecycle authority is supplied.
+
+## Canonical naming rule
+
+The canonical product name is **oneQay**.
+
+Current/future product identity must not use `OneQay`, `ONEQAY`, `Oneqay`, or `oneqay` as the brand name. Repository identifier `labzefry/oneQay`, immutable GitHub URLs, SHAs, branch names, commit messages, and historical quoted evidence are not rewritten merely for brand normalization.
+
+## M5 publication facts to preserve
+
+- M5.1 — Canonical State Reconciliation: PUBLISHED / COMPLETE through PR #66.
+- M5.2 — CI & Lifecycle Control Hardening: PUBLISHED / ENFORCEMENT COMPLETE through PR #67.
+- M5.3 — Governance & Program State Synchronization: PUBLISHED / COMPLETE through PR #68.
+- A-03 — Lifecycle Authority Not Enforced: Resolved.
+- A-05 — PHP Regression Not in GitHub CI: Resolved.
+- A-06 — Phase 0 semantic ambiguity: resolved through M5.3 publication.
+- A-07 — ROADMAP / TASKS synchronization: resolved through M5.3 publication.
+- A-08 — product metadata / attribution reconciliation: resolved through M5.3 publication.
+- A-09 — Enterprise Vision canonicalization: active M6 scope; not yet publication-complete.
 
 ## M5.2 enforcement facts to preserve
 
-- A-03 — Lifecycle Authority Not Enforced: Resolved.
-- A-05 — PHP Regression Not in GitHub CI: Resolved.
-- Required protected contexts:
-  - `governance-validation`;
-  - `markdown-lint`;
-  - `secret-scan`;
-  - `php-foundation-regression`;
-  - `product-owner-merge-authority`.
-- Ruleset protections remain strict, require one approving review and latest-push approval, dismiss stale reviews, require review-thread resolution, allow squash-only, block deletion/non-fast-forward updates, and have an empty bypass list.
+Required protected contexts:
 
-## M5.3 anomaly scope
+- `governance-validation`;
+- `markdown-lint`;
+- `secret-scan`;
+- `php-foundation-regression`;
+- `product-owner-merge-authority`.
 
-- A-06 — Phase 0 semantic ambiguity: reconcile in M5.3.
-- A-07 — ROADMAP / TASKS out of sync: reconcile in M5.3.
-- A-08 — AI-specific product metadata / attribution: reconcile in M5.3 by keeping canonical product/development attribution as **Lab | zefry** and treating AI collaboration identity as engineering-tooling governance metadata rather than product authorship.
-- A-09 — Enterprise Vision Not Yet Canonical: reserved for M6 and excluded from M5.3.
+Ruleset protections remain strict, require one approving review and latest-push approval, dismiss stale reviews, require review-thread resolution, allow squash-only, block deletion/non-fast-forward updates, and have an empty bypass list according to the published M5.2 verification record.
+
+## M6 product boundary
+
+M6 is documentation/program-state canonicalization only. It does not authorize:
+
+- Sprint 14 implementation;
+- final/business/production application implementation;
+- new application source-code implementation;
+- database/schema implementation;
+- executable SQL;
+- migration execution;
+- production database modification;
+- deployment;
+- release;
+- production-readiness promotion;
+- ADR/GD promotion;
+- JRN resolution.
+
+Capability-map presence does not imply implementation authority.
 
 ## Root checkpoint rule
 
@@ -74,31 +113,24 @@ Canonical state lives under `docs/ai/`.
 
 - Published Sprint 12 and Sprint 13 repository facts remain intact.
 - PR #64 and PR #65 retain their historical lifecycle discrepancies.
-- Sprint 13 Product Owner local 402-assertion Composer PASS remains classified as post-publication evidence.
+- Sprint 13 Product Owner local 402-assertion Composer PASS remains post-publication evidence.
 - Historical alternate-head review references remain contamination only and do not replace canonical reviewer evidence.
-- M5.1 and M5.2 publication facts remain intact.
+- Historical lifecycle discrepancies are not retroactively normalized by M6.
 
-## Explicit exclusions
+## Lifecycle stop condition
 
-M5.3 does not authorize:
+M6 START authority permits bounded branch work, Draft PR creation, validation, and independent review preparation only.
 
-- Ready transition;
-- merge or auto-merge;
-- Sprint 14 implementation;
-- Enterprise Vision implementation or canonicalization;
-- final/business/production application implementation;
-- executable SQL;
-- migration execution;
-- production database modification;
-- production table creation;
-- deployment;
-- release;
-- ADR/GD promotion;
-- JRN resolution;
-- production readiness promotion.
+Do not mark the M6 PR Ready without separate:
 
-## Anti-recursive checkpoint rule
+`PRODUCT OWNER READY AUTHORIZATION`
 
-PR number assignment, checks, review, Ready transition, merge, or publication of a change already accurately represented by this checkpoint does not by itself require another checkpoint reconciliation. Update the canonical checkpoint again only when a material repository, program, lifecycle, or authority state changes and the existing checkpoint would otherwise become materially inaccurate.
+bound to the PR number and exact current head.
+
+Do not merge without separate:
+
+`PRODUCT OWNER MERGE AUTHORIZATION`
+
+bound to the PR number and exact current head, recorded repository-native so `product-owner-merge-authority` can pass.
 
 Attribution: Lab | zefry
