@@ -1,9 +1,9 @@
 # oneQay Domain Event Storming
 
-> **Status:** Proposed — workshop hypothesis, bukan domain model final  
-> **Phase:** 0 — Governance & Discovery  
-> **Owner:** Product Owner oneQay  
-> **Tracking:** GitHub Issue #8; approved corrections tracked in Issue #10 and Issue #12  
+> **Status:** Proposed — workshop hypothesis, bukan domain model final
+> **Phase:** 0 — Governance & Discovery
+> **Owner:** Product Owner oneQay
+> **Tracking:** GitHub Issue #8; approved corrections tracked in Issue #10 and Issue #12
 > **Dependencies:** Upstream discovery documents berstatus Proposed; temuan JRN-003 dan JRN-013 masih terbuka
 
 ## Purpose
