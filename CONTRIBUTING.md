@@ -1,4 +1,4 @@
-# Contributing to OneQay
+# Contributing to oneQay
 
 ## Before starting
 
