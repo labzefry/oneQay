@@ -5,43 +5,58 @@
 - Project: OneQay
 - Repository: `labzefry/oneQay`
 - Developer and Product Engineering Entity: Lab | zefry
+- Canonical product attribution: Lab | zefry
 - Canonical checkpoint path: `docs/ai/`
 - Canonical Phase 0 status: In Progress
 - Active program: M5 — Engineering State, CI & Governance Stabilization
-- Active micro-milestone: M5.1 — Canonical State Reconciliation
-- Current `main`: `7a9def560466fc8bf81529c2b5125c6ac19a96b5`
-- Current `main` tree: `d27dae3c8cc9be77a590187cabd49ac469a6943f`
+- Active micro-milestone: M5.3 — Governance & Program State Synchronization
+- Current `main`: `512344d0497787c729242cb1fd2d7d02ecfc40c2`
+- Current `main` tree: `0f0af1c1acab208c704fbdf05b19014127abddbb`
+- M5.1: PUBLISHED / COMPLETE through PR #66
+- M5.2: PUBLISHED / ENFORCEMENT COMPLETE through PR #67
+- Sprint 12: Published
 - Sprint 13: Published
 - Sprint 14: Not Authorized
 - Production readiness: NO-GO
 
-## Canonical Sprint 13 facts to preserve
-
-- Canonical PR: #64
-- Canonical source head: `4a2e44cc31361954b126e8857de65fcccca30445`
-- Canonical source tree: `5a0adb0d2ce80338f9f9d782f0871fb2115afd5d`
-- Canonical published commit: `ebe6abcf77263bf644565ca2fbe2b2844416d49b`
-- Canonical published tree: `5a0adb0d2ce80338f9f9d782f0871fb2115afd5d`
-- PR #65 reconciliation published commit: `7a9def560466fc8bf81529c2b5125c6ac19a96b5`
-- Product Owner local `composer test`: PASS, 402 assertions, exit code `0`
-- Regression evidence classification: POST-PUBLICATION
-- Canonical reviewer: `zefriansyah`
-- Canonical reviewed exact head: `4a2e44cc31361954b126e8857de65fcccca30445`
-- Alternate head `ba312fa9095d434c204f01e3dac9870e9eaa4d6d`: NON-CANONICAL
-- Historical alternate-head review references: preserved as historical contamination, not canonical evidence
-
 ## Immediate authorized task
 
-Complete only M5.1 lifecycle processing for the bounded canonical-state correction:
+Complete only M5.3 lifecycle processing for the bounded Governance & Program State Synchronization change:
 
-1. maintain exactly one atomic M5.1 content commit;
-2. keep the change set limited to the three canonical `docs/ai/` checkpoint files plus the three root deprecation/pointer stubs;
-3. open and keep the pull request as Draft;
-4. run proportionate documentation/governance validation;
-5. verify GitHub checks on the exact head;
-6. request independent review from `zefriansyah` only at the proper technical gate;
-7. report exact base, head, tree, commit count, changed files, checks, review state, unresolved threads, and lifecycle boundary;
-8. stop before Ready or Merge unless separate Product Owner authority is provided.
+1. preserve the verified exact base `512344d0497787c729242cb1fd2d7d02ecfc40c2` and base tree `0f0af1c1acab208c704fbdf05b19014127abddbb`;
+2. use bounded branch `agent/m5-3-governance-program-state-synchronization`;
+3. reconcile A-06 Phase 0 semantics, A-07 ROADMAP/TASKS synchronization, and A-08 product metadata/attribution only;
+4. preserve Sprint 12 and Sprint 13 publication facts, M5.1 and M5.2 publication facts, and historical lifecycle discrepancies;
+5. open and keep the pull request as Draft;
+6. verify the final changed-file set and GitHub checks on the exact final head;
+7. request independent review on the final exact head;
+8. report exact base, head, tree, commit count, changed files, checks, review state, unresolved threads, and lifecycle boundary;
+9. stop before Ready or Merge unless separate Product Owner lifecycle authority is provided for the exact current head.
+
+## Canonical semantic boundary
+
+Phase 0 remains **In Progress** as a governance/discovery program state.
+
+Published bounded Platform Foundation source through Sprint 12 and Sprint 13 remains a repository fact. The canonical blocked boundary is **final/business/production application implementation**. This semantic reconciliation does not create new source-code authority.
+
+## M5.2 enforcement facts to preserve
+
+- A-03 — Lifecycle Authority Not Enforced: Resolved.
+- A-05 — PHP Regression Not in GitHub CI: Resolved.
+- Required protected contexts:
+  - `governance-validation`;
+  - `markdown-lint`;
+  - `secret-scan`;
+  - `php-foundation-regression`;
+  - `product-owner-merge-authority`.
+- Ruleset protections remain strict, require one approving review and latest-push approval, dismiss stale reviews, require review-thread resolution, allow squash-only, block deletion/non-fast-forward updates, and have an empty bypass list.
+
+## M5.3 anomaly scope
+
+- A-06 — Phase 0 semantic ambiguity: reconcile in M5.3.
+- A-07 — ROADMAP / TASKS out of sync: reconcile in M5.3.
+- A-08 — AI-specific product metadata / attribution: reconcile in M5.3 by keeping canonical product/development attribution as **Lab | zefry** and treating AI collaboration identity as engineering-tooling governance metadata rather than product authorship.
+- A-09 — Enterprise Vision Not Yet Canonical: reserved for M6 and excluded from M5.3.
 
 ## Root checkpoint rule
 
@@ -55,39 +70,35 @@ are deprecated pointer stubs only. They are not authoritative and must not be us
 
 Canonical state lives under `docs/ai/`.
 
-## Lifecycle facts that must not be rewritten
+## Historical facts that must not be rewritten
 
-- PR #64 has a historical lifecycle sequencing discrepancy.
-- PR #65 has a historical lifecycle discrepancy.
-- The 402-assertion Composer PASS is post-publication evidence and does not retroactively change historical sequencing.
-- GitHub review history must not be rewritten.
+- Published Sprint 12 and Sprint 13 repository facts remain intact.
+- PR #64 and PR #65 retain their historical lifecycle discrepancies.
+- Sprint 13 Product Owner local 402-assertion Composer PASS remains classified as post-publication evidence.
+- Historical alternate-head review references remain contamination only and do not replace canonical reviewer evidence.
+- M5.1 and M5.2 publication facts remain intact.
 
 ## Explicit exclusions
 
-M5.1 does not authorize:
+M5.3 does not authorize:
 
 - Ready transition;
 - merge or auto-merge;
-- M5.2 implementation before M5.1 publication;
 - Sprint 14 implementation;
+- Enterprise Vision implementation or canonicalization;
+- final/business/production application implementation;
 - executable SQL;
 - migration execution;
 - production database modification;
 - production table creation;
 - deployment;
 - release;
-- POS, ERP, WMS, CRM, or other business-module implementation;
-- Enterprise Vision implementation;
 - ADR/GD promotion;
 - JRN resolution;
 - production readiness promotion.
 
-## Next milestone after M5.1 publication
+## Anti-recursive checkpoint rule
 
-Only after M5.1 is properly published, the next bounded micro-milestone is:
-
-**M5.2 — CI & Lifecycle Control Hardening**
-
-M5.2 still requires the proper lifecycle start boundary. It is not started by this checkpoint.
+PR number assignment, checks, review, Ready transition, merge, or publication of a change already accurately represented by this checkpoint does not by itself require another checkpoint reconciliation. Update the canonical checkpoint again only when a material repository, program, lifecycle, or authority state changes and the existing checkpoint would otherwise become materially inaccurate.
 
 Attribution: Lab | zefry
