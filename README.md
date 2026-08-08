@@ -7,6 +7,7 @@
 | Informasi | Nilai |
 | --- | --- |
 | Produk | oneQay |
+| Kategori | Enterprise SaaS POS & ERP Platform |
 | Enterprise Vision | Enterprise Intelligent Business Management Platform — Proposed M6 candidate |
 | Developer & Product Engineering Entity | Lab \| zefry |
 | Repository | `labzefry/oneQay` |
@@ -27,22 +28,31 @@ Bentuk `OneQay`, `ONEQAY`, `Oneqay`, dan `oneqay` bukan canonical current produc
 
 ## Visi
 
-oneQay diarahkan menjadi **Enterprise Intelligent Business Management Platform** yang dapat berkembang bertahap dari fondasi transaksi dan operasional menjadi business management, enterprise management, intelligence, dan ecosystem platform.
+oneQay diarahkan menjadi **Enterprise Intelligent Business Management Platform** yang dapat digunakan mulai dari usaha tunggal hingga organisasi multi-cabang dan multi-tenant, lalu berkembang bertahap dari fondasi transaksi dan operasional menjadi business management, enterprise management, intelligence, dan ecosystem platform tanpa mengganti fondasi business logic ketika infrastruktur bertumbuh.
 
-Arah capability tingkat tinggi meliputi:
+Tujuan arah produk adalah menghadirkan platform yang:
 
-- POS / Commerce;
-- Inventory dan Procurement;
-- Finance / Accounting;
-- CRM;
-- HRM;
-- Reporting & Business Intelligence;
-- Workflow, Notification, Audit, Search, File/Document, API, Integration, Configuration, Localization, Observability, dan Recovery;
-- Public API, Partner Integration, Marketplace, serta Plugin / Extension;
-- AI Assistant, AI Insight, AI Recommendation, AI Analytics, dan bounded AI Automation;
-- Web Application, PWA, Mobile / Android, Admin Platform, dan public/customer-facing surfaces.
+- mudah digunakan untuk operasional harian;
+- aman untuk data bisnis dan transaksi;
+- modular tanpa kehilangan konsistensi domain;
+- dapat dikembangkan tanpa ketergantungan berlebihan pada infrastruktur;
+- API-first dan integration-ready;
+- dapat diobservasi, diuji, dipulihkan, dan diperbarui secara terkendali;
+- extensible melalui boundary yang disetujui;
+- AI-ready dengan deterministic controls dan human accountability;
+- memiliki tata kelola pengembangan yang dapat dibuktikan melalui GitHub.
 
-Detail canonical candidate berada di `docs/handbook/ENTERPRISE_VISION.md`.
+Detail canonical Enterprise Vision candidate berada di `docs/handbook/ENTERPRISE_VISION.md`.
+
+## Enterprise Capability Map direction
+
+M6 mengelompokkan capability directional ke dalam:
+
+- **Core Business Platform:** Tenant & Organization, Identity & Access, Master Data, POS / Commerce, Inventory, Procurement, Finance / Accounting, CRM, HRM, Reporting & Business Intelligence;
+- **Platform Capabilities:** Workflow, Notification, Audit, File / Document, Search, API, Integration, Webhook / Event Integration, Configuration, Localization, Observability, Recovery & Operational Control;
+- **Extensibility:** Marketplace, Plugin / Extension, Public API, Partner Integration;
+- **AI Platform:** AI Assistant, AI Insight, AI Automation, AI Recommendation, AI Analytics, AI Gateway / Policy Boundary;
+- **Channels:** Web Application, PWA, Mobile / Android, Admin Platform, public/customer-facing surfaces, dan API/partner consumers.
 
 Capability-map presence tidak memberikan implementation authority.
 
@@ -59,7 +69,7 @@ M6 menggunakan enam evolution stages konseptual:
 
 Stage tersebut bukan release commitment. Setiap bounded implementation tetap memerlukan Product Owner authority dan gate yang berlaku.
 
-## Target platform direction
+## Target platform
 
 oneQay diarahkan untuk mendukung secara bertahap:
 
@@ -75,7 +85,7 @@ oneQay diarahkan untuk mendukung secara bertahap:
 - Plugin / Extension System
 - AI Platform capabilities
 
-Status masing-masing capability mengikuti `PROJECT_MANIFEST.md`, ADR, roadmap, dan lifecycle authority; daftar di atas bukan bukti implementation readiness.
+Status masing-masing capability mengikuti `PROJECT_MANIFEST.md`, ADR, roadmap, dan lifecycle authority; daftar tersebut bukan bukti implementation readiness atau janji seluruh platform tersedia pada rilis pertama.
 
 ## Status proyek
 
@@ -95,6 +105,8 @@ Current canonical state:
 
 Published bounded foundation source must not be erased by older blanket no-source-code wording. Conversely, existing foundation publication does not imply Phase 0 exit or authority for Sprint 14/business application implementation.
 
+Broader final/business application implementation tetap memerlukan keputusan minimum yang relevan untuk scope-nya, termasuk MVP boundary, domain/architecture decisions, multi-tenant/data controls, security baseline, database/migration governance, API contracts, testing/quality gates, deployment environment, dan release/recovery controls.
+
 ## Prinsip arsitektur
 
 Pengembangan oneQay mengikuti prinsip berikut:
@@ -111,7 +123,7 @@ Pengembangan oneQay mengikuti prinsip berikut:
 - **Event-Driven Ready** — modul dapat menerbitkan dan mengonsumsi domain event tanpa mewajibkan microservices pada fase awal.
 - **Human Accountable AI** — AI tidak boleh menjadi sumber otorisasi atau mutation irreversible tanpa deterministic controls dan human accountability.
 
-Detail dan keputusan yang mengikat berada di `ARCHITECTURE.md`, `PROJECT_MANIFEST.md`, dan Architecture Decision Records di `docs/adr/`.
+Detail dan keputusan yang mengikat berada di `ARCHITECTURE.md`, `PROJECT_MANIFEST.md`, serta Architecture Decision Records di `docs/adr/`.
 
 ## Multi-tenant
 
@@ -148,6 +160,44 @@ Seluruh artefak resmi dikelola melalui GitHub, termasuk:
 
 Perubahan yang tidak terlacak di GitHub tidak dianggap sebagai bagian resmi proyek.
 
+### Branch strategy
+
+| Branch | Kegunaan |
+| --- | --- |
+| `main` | Kondisi stabil dan dapat dirilis sesuai gate |
+| `develop` | Integrasi bila diaktifkan oleh release policy |
+| `feature/*` | Pengembangan fitur yang diotorisasi |
+| `release/*` | Stabilisasi kandidat rilis |
+| `hotfix/*` | Perbaikan kritis dari versi produksi |
+| `bugfix/*` | Perbaikan defect non-darurat |
+| `experiment/*` | Eksperimen yang belum menjadi komitmen produk |
+| `agent/*` | Bounded ChatGPT-assisted work |
+
+Protection rules, kebutuhan `develop`, dan release flow mengikuti `CONTRIBUTING.md`, `RELEASE.md`, serta repository ruleset yang aktif.
+
+### Conventional Commits
+
+Commit menggunakan format:
+
+```text
+<type>(optional-scope): deskripsi singkat
+```
+
+Type yang diizinkan:
+
+- `feat:`
+- `fix:`
+- `docs:`
+- `refactor:`
+- `perf:`
+- `test:`
+- `build:`
+- `ci:`
+- `security:`
+- `chore:`
+
+Setiap commit harus atomik, dapat ditinjau, dan menjelaskan satu tujuan perubahan yang koheren.
+
 ## Governance lifecycle
 
 Perubahan material mengikuti bounded lifecycle:
@@ -174,7 +224,7 @@ Current protected contexts published through M5.2:
 4. `php-foundation-regression`
 5. `product-owner-merge-authority`
 
-## Canonical documents
+## Tata kelola perubahan
 
 Sebelum perubahan material, gunakan dokumen sesuai scope:
 
@@ -189,9 +239,55 @@ Sebelum perubahan material, gunakan dokumen sesuai scope:
 
 Root `AI_SESSION_STATE.md`, `AI_PROJECT_STATE.md`, dan `AI_NEXT_TASK.md` adalah deprecated pointer stubs; canonical mutable state berada di `docs/ai/`.
 
+Setiap perubahan wajib memperbarui dokumentasi yang terdampak. Minimal manifest, tasks, dan changelog diperiksa; dokumen architecture/API/database/security/deployment/testing/UI/installer/updater/release diperbarui sesuai dampak.
+
+Breaking change, penghapusan modul, perubahan skema tanpa migration, perubahan API tanpa versioning, hardcoded secret, dan pengabaian dokumentasi tidak diperbolehkan.
+
+## Engineering handbook
+
+Handbook tetap living documentation. Daftar berikut adalah baseline document set yang telah menjadi bagian governance repository; status delivery/proyek aktual harus dibaca dari manifest, roadmap, tasks, changelog, dan `docs/ai/`.
+
+| Urutan | Dokumen | Tujuan |
+| ---: | --- | --- |
+| 1 | `README.md` | Orientasi, visi, ruang lingkup, dan navigasi proyek |
+| 2 | `PROJECT_MANIFEST.md` | Identitas teknis dan inventaris kapabilitas proyek |
+| 3 | `AI_CONSTITUTION.md` | Aturan permanen untuk ChatGPT pada proyek |
+| 4 | `ARCHITECTURE.md` | Arsitektur logis, deployment, dan batas modul |
+| 5 | `ROADMAP.md` | Tahapan produk dan engineering |
+| 6 | `CODING_STANDARDS.md` | Standar implementasi lintas platform |
+| 7 | `DATABASE.md` | Model data, tenancy, migration, dan integritas |
+| 8 | `API_SPEC.md` | Kontrak, versioning, error, dan governance API |
+| 9 | `SECURITY.md` | Baseline keamanan dan respons insiden |
+| 10 | `DEPLOYMENT.md` | Environment, CI/CD, backup, dan rollback |
+| 11 | `TESTING.md` | Strategi testing dan quality gate |
+| 12 | `UI_GUIDELINE.md` | Design system, aksesibilitas, dan UX |
+| 13 | `INSTALLER.md` | Spesifikasi Installer Wizard |
+| 14 | `UPDATER.md` | Spesifikasi Auto Updater yang aman |
+| 15 | `CONTRIBUTING.md` | Workflow kontribusi dan pull request |
+| 16 | `RELEASE.md` | Versioning, release, rollback, dan EOL |
+| 17 | `TASKS.md` | Backlog dan status pekerjaan terkontrol |
+| 18 | `CHANGELOG.md` | Riwayat perubahan berbasis versi |
+| 19 | `docs/handbook/ENTERPRISE_VISION.md` | M6 Enterprise Vision, capability map, dan conceptual evolution candidate |
+
+Struktur dokumentasi lanjutan:
+
+```text
+docs/
+├── architecture/
+├── diagrams/
+├── database/
+├── api/
+├── deployment/
+├── uiux/
+├── adr/
+└── handbook/
+```
+
+File kosong dan placeholder tanpa nilai informasi harus dihindari.
+
 ## Deployment evolution
 
-Business logic harus dapat berevolusi tanpa rewrite domain melalui tahapan:
+oneQay harus dapat berevolusi melalui tahapan berikut tanpa mengubah business logic:
 
 ```text
 Shared Hosting (cPanel)
@@ -207,11 +303,36 @@ Cloud
 Kubernetes
 ```
 
-Perpindahan stage membutuhkan evidence dan authority yang sesuai. M6 tidak memberikan deployment authority.
+Setiap tahap harus memiliki entry criteria, exit criteria, backup, rollback, observability, security controls, dan perkiraan beban operasional. Perpindahan stage membutuhkan evidence serta authority yang sesuai. M6 tidak memberikan deployment authority.
+
+## Integrasi Cloudflare
+
+Arsitektur dapat menyediakan controlled Cloudflare integration apabila scope dan decision yang berlaku mengotorisasinya, misalnya untuk DNS record tenant, wildcard DNS, SSL, cache purge, zone validation, serta audit operation.
+
+API token dan secret wajib disimpan melalui environment variable atau secret manager. Secret dilarang disimpan di source code, repository, log, database tanpa proteksi yang disetujui, atau response API. M6 tidak memilih atau mengotorisasi implementasi provider tertentu.
 
 ## Installer dan updater
 
-oneQay mempertahankan spesifikasi Installer dan Updater sebagai arah operasional terkontrol. Executable migration, production deployment, release, dan production database modification tetap mengikuti gate terpisah dan tidak diotorisasi oleh M6.
+oneQay mempertahankan spesifikasi:
+
+- **Installer Wizard** untuk pemeriksaan environment, konfigurasi database, pembuatan administrator, environment generation, migration, seeding, optimization, dan installation report;
+- **Auto Updater** untuk version check, release download, backup, integrity verification, maintenance mode, installation, migration, optimization, health verification, serta recovery/rollback.
+
+Executable migration, production deployment, release, dan production database modification tetap mengikuti gate terpisah dan tidak diotorisasi oleh M6.
+
+## Cara berkontribusi
+
+1. pilih satu issue/task dengan scope dan authority yang jelas;
+2. gunakan bounded branch sesuai jenis pekerjaan;
+3. pertahankan exact-head review dan lifecycle evidence;
+4. ubah hanya file yang diperlukan oleh scope;
+5. sertakan alasan, dampak, risiko, dan validasi pada pull request;
+6. pastikan tautan, istilah, dan canonical brand `oneQay` konsisten;
+7. minta independent review sesuai risk;
+8. jangan mark Ready atau merge tanpa Product Owner lifecycle authority yang berlaku;
+9. perbarui living documentation yang terdampak.
+
+Detail final berada di `CONTRIBUTING.md`.
 
 ## Definition of Done untuk dokumentasi
 
@@ -231,6 +352,6 @@ Dokumen dianggap selesai apabila:
 
 ## Lisensi
 
-Lisensi produk tetap mengikuti status pada `PROJECT_MANIFEST.md` dan file `LICENSE`. Seluruh dependency dan aset pihak ketiga wajib mematuhi lisensi asalnya serta kebutuhan kepatuhan proyek.
+Lisensi produk mengikuti status pada `PROJECT_MANIFEST.md` dan file `LICENSE`. Seluruh dependency dan aset pihak ketiga wajib mematuhi lisensi asalnya serta kebutuhan kepatuhan proyek.
 
 Attribution: Lab | zefry
