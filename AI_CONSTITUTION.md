@@ -1,16 +1,16 @@
-# OneQay AI Constitution
+# oneQay AI Constitution
 
 ## Purpose
 
-Dokumen ini adalah aturan permanen bagi ChatGPT, termasuk kemampuan coding/agentic yang digunakan melalui ChatGPT, saat bekerja pada OneQay. Instruksi task tidak boleh menurunkan standar keamanan, kualitas, dokumentasi, atau persetujuan yang ditetapkan di sini.
+Dokumen ini adalah aturan permanen bagi ChatGPT, termasuk kemampuan coding/agentic yang digunakan melalui ChatGPT, saat bekerja pada oneQay. Instruksi task tidak boleh menurunkan standar keamanan, kualitas, dokumentasi, atau persetujuan yang ditetapkan di sini.
 
 ## Exclusive collaboration model
 
-- ChatGPT adalah satu-satunya AI engineering collaborator untuk OneQay.
+- ChatGPT adalah satu-satunya AI engineering collaborator untuk oneQay.
 - GitHub adalah satu-satunya Source of Truth untuk source code, dokumentasi, keputusan, task, review, dan release.
 - Prompt, review, keputusan, atau status proyek tidak disalin ke platform AI generatif lain.
 - Review independen tetap diwajibkan untuk perubahan berisiko, tetapi dilakukan melalui sesi/role review ChatGPT yang terpisah dan pull request GitHub.
-- Fitur AI Assistant yang mungkin menjadi bagian produk OneQay adalah domain produk tersendiri dan tidak mengubah model kolaborasi engineering ini.
+- Fitur AI Assistant yang mungkin menjadi bagian produk oneQay adalah domain produk tersendiri dan tidak mengubah model kolaborasi engineering ini.
 
 ## Rule hierarchy
 

@@ -1,15 +1,16 @@
-# OneQay Project Manifest
+# oneQay Project Manifest
 
-> Dokumen identitas teknis kanonis OneQay. Bila informasi di dokumen lain bertentangan, keputusan berstatus **Approved** di manifest ini berlaku sampai digantikan melalui ADR atau pull request yang disetujui.
+> Dokumen identitas teknis kanonis oneQay. Bila informasi di dokumen lain bertentangan, keputusan berstatus **Approved** di manifest ini berlaku sampai digantikan melalui ADR atau pull request yang disetujui.
 
 ## Metadata
 
 | Atribut | Nilai | Status |
 | --- | --- | --- |
-| Product | OneQay | Approved |
+| Product | oneQay | Approved |
 | Tagline | The Future of Intelligent Business Management | Approved |
 | Developer & Product Engineering Entity | Lab \| zefry | Approved |
 | Category | Enterprise SaaS POS & ERP Platform | Approved |
+| Enterprise Vision | Enterprise Intelligent Business Management Platform | Proposed — M6 candidate |
 | Repository | `labzefry/oneQay` | Approved |
 | Source of Truth | GitHub | Approved |
 | Delivery model | Multi-tenant SaaS | Approved |
@@ -19,6 +20,14 @@
 | License | Proprietary / All Rights Reserved | Proposed |
 
 Engineering collaboration tooling is governed separately by `AI_CONSTITUTION.md` and is not product authorship or product attribution metadata. Canonical product/development attribution is **Lab | zefry**.
+
+## Canonical product naming
+
+The canonical product name is **oneQay**.
+
+Current and future canonical references must use `oneQay`. Non-canonical current-brand forms include `OneQay`, `ONEQAY`, `Oneqay`, and `oneqay`.
+
+Repository identifier `labzefry/oneQay`, immutable GitHub URLs, SHAs, commit messages, branch names, and quoted historical evidence are preserved as recorded and are not rewritten merely for brand normalization.
 
 ## Status definitions
 
@@ -32,7 +41,9 @@ Engineering collaboration tooling is governed separately by `AI_CONSTITUTION.md`
 
 ## Product intent
 
-OneQay menyatukan fungsi POS, ERP, administrasi tenant, integrasi, marketplace, plugin, dan AI assistant dalam satu platform yang aman serta dapat berkembang dari shared hosting menuju Kubernetes tanpa mengubah business logic.
+oneQay diarahkan menjadi platform intelligent business management yang menyatukan fungsi transaksi, POS, ERP, administrasi tenant, integrasi, marketplace, plugin, insight, dan AI-assisted capabilities dalam fondasi yang aman serta dapat berkembang dari shared hosting menuju Kubernetes tanpa mengubah business logic.
+
+M6 mengusulkan Enterprise Vision **Enterprise Intelligent Business Management Platform** sebagai arah canonical jangka panjang. Arah tersebut bersifat directional dan tidak menyatakan bahwa seluruh capability telah Approved, terimplementasi, production-ready, atau memperoleh Sprint 14 authority.
 
 ## Current delivery gate
 
@@ -41,6 +52,10 @@ OneQay menyatukan fungsi POS, ERP, administrasi tenant, integrasi, marketplace, 
 | Handbook 1.0 governance baseline | Approved | PR #1 disetujui dan di-merge ke `main` |
 | Phase 0 governance and discovery | In Progress | Phase 0 exit belum disetujui secara eksplisit |
 | Bounded Platform Foundation through Sprint 13 | Published | Sprint 12 dan Sprint 13 adalah fakta repository yang telah dipublikasikan melalui authority terpisah |
+| M5.1 Canonical State Reconciliation | Published / Complete | PR #66 |
+| M5.2 CI & Lifecycle Control Hardening | Published / Enforcement Complete | PR #67 |
+| M5.3 Governance & Program State Synchronization | Published / Complete | PR #68; published commit `e45f5b4c0f143abc6e255e4e8550bf3504348aae` |
+| M6 Enterprise Vision Canonicalization | In Progress | Bounded candidate; Draft PR, checks, independent review, and separate Product Owner lifecycle authority required |
 | Final/business application implementation | Blocked | Tidak ada authority untuk implementasi business/final/production application baru |
 | Sprint 14 | Not Authorized | Memerlukan Product Owner authority terpisah |
 | Production readiness | NO-GO | Tidak ada deployment, release, atau production-migration authority |
@@ -57,13 +72,32 @@ Mulai M5.3, frasa **application implementation Blocked** harus dibaca sebagai **
 
 Historical Phase 0 no-code language dan lifecycle discrepancies tetap dipertahankan sebagai fakta historis. M5.3 hanya menyelaraskan makna kanonik saat ini; M5.3 tidak menulis ulang approval, merge, review, atau sequencing masa lalu.
 
+## M6 Enterprise Vision boundary
+
+M6 memisahkan secara tegas:
+
+1. Product Vision;
+2. Product Capability Map;
+3. Product Architecture Direction;
+4. Delivery Roadmap;
+5. Implementation Authority.
+
+Enterprise Vision candidate oneQay adalah:
+
+**Enterprise Intelligent Business Management Platform**.
+
+High-level capability families mencakup Core Business Platform, Platform Capabilities, Extensibility, AI Platform, dan Channels. Detail canonical candidate berada di `docs/handbook/ENTERPRISE_VISION.md`.
+
+Capability-map presence tidak memberikan implementation authority. M6 tidak mempromosikan bounded context Proposed, ADR, GD-007, JRN, Sprint 14, final/business application implementation, deployment, release, SQL/migration, production database modification, atau production readiness.
+
 ## Product identity and engineering-tooling boundary
 
 - Canonical product attribution: **Lab | zefry**.
+- Canonical product name: **oneQay**.
 - Nama alat atau model AI yang dipakai dalam engineering adalah governance/tooling metadata, bukan identitas produk, bukan author produk, dan bukan attribution source code.
 - Collaboration model tetap diatur melalui `AI_CONSTITUTION.md` dan GD-002.
 - Tidak boleh menambahkan attribution yang menyatakan source code atau produk dibuat oleh AI.
-- AI Assistant sebagai capability produk tetap merupakan domain produk tersendiri dan statusnya tidak dipromosikan oleh M5.3.
+- AI Assistant sebagai capability produk tetap merupakan domain produk tersendiri dan statusnya tidak dipromosikan hanya karena M6 memetakan AI Platform secara directional.
 
 ## Governance decision register
 
@@ -213,6 +247,7 @@ Tidak ada framework atau vendor yang dianggap dipilih sebelum ADR berstatus Acce
 | ROADMAP.md | Urutan delivery |
 | TASKS.md | Backlog operasional |
 | CHANGELOG.md | Riwayat perubahan versi |
+| `docs/handbook/ENTERPRISE_VISION.md` | Enterprise Vision, capability map, dan conceptual product evolution candidate under M6 |
 | API_SPEC.md | Governance API |
 | DATABASE.md | Governance data dan skema |
 | SECURITY.md | Security baseline |
@@ -224,11 +259,13 @@ Tidak ada framework atau vendor yang dianggap dipilih sebelum ADR berstatus Acce
 | ID | Risiko | Severity | Mitigasi awal |
 | --- | --- | --- | --- |
 | R-001 | Kebocoran data lintas tenant | Critical | Tenant context enforcement dan isolation tests |
-| R-002 | Scope POS/ERP terlalu luas | High | MVP boundary dan phased roadmap |
+| R-002 | Scope POS/ERP terlalu luas | High | MVP boundary, capability-map semantics, dan phased roadmap |
 | R-003 | Ketergantungan shared hosting | High | Infrastructure abstraction dan migration criteria |
 | R-004 | Plugin merusak keamanan/stabilitas | High | Signed package, capability policy, sandbox strategy |
 | R-005 | Update gagal dan merusak tenant | Critical | Backup, integrity check, health gate, rollback |
 | R-006 | AI memproses data sensitif | High | Data classification, redaction, consent, provider policy |
+| R-007 | Enterprise Vision disalahartikan sebagai implementation authority | High | Pisahkan Vision, Capability Map, Architecture Direction, Roadmap, dan explicit Product Owner implementation authority |
+| R-008 | Inconsistent product capitalization creates identity drift | Medium | Canonical form `oneQay`; normalize current canonical docs without rewriting immutable history |
 
 ## Mandatory update rule
 
@@ -237,6 +274,8 @@ Setiap perubahan resmi minimal memperbarui manifest, task, dan changelog bila st
 ## Approval
 
 Baseline governance Handbook 1.0 disetujui melalui PR #1. Item berstatus Approved mengikat seluruh pekerjaan berikutnya; item Proposed, Under Review, dan Deferred tidak boleh diperlakukan sebagai keputusan final.
+
+M6 START authority mengizinkan penyusunan candidate Enterprise Vision dan sinkronisasi dokumentasi, tetapi tidak dengan sendirinya mempromosikan Enterprise Vision dari Proposed menjadi Approved. Status promotion memerlukan keputusan Product Owner yang eksplisit pada exact head sesuai lifecycle governance.
 
 ## Technical Preview v0.0.1 decision package
 
@@ -364,17 +403,22 @@ This effectiveness evidence contains the corrective PR workflow but does not rat
 
 Phase 0 remains **In Progress**. Final/business application implementation remains **Blocked**. Phase 0 preview exit remains **Not Ready**. P1 remains conditional and **Unverified**. ADR-001 through ADR-007, GD-007, PAY-1, OFF-1, TEN-1, REC-1, SLO-1, and DATA-1 remain **Proposed** selections or boundaries. GOV-034 through GOV-042 remain **Review**. JRN-003 and JRN-013 remain unresolved. Hosting evidence remains Pending, Not supplied, or Unverified.
 
-## M5 canonical stabilization state
+## M5/M6 canonical stabilization state
 
 - M5.1 — Canonical State Reconciliation: **PUBLISHED / COMPLETE** through PR #66, published commit `153a33a4a2b5edb4a31285eca7d3491f9589b778`.
 - M5.2 — CI & Lifecycle Control Hardening: **PUBLISHED / ENFORCEMENT COMPLETE** through PR #67, published commit `512344d0497787c729242cb1fd2d7d02ecfc40c2`, published tree `0f0af1c1acab208c704fbdf05b19014127abddbb`.
+- M5.3 — Governance & Program State Synchronization: **PUBLISHED / COMPLETE** through PR #68, source head `aa799e657070a7d3283110a73a411f54a73b972c`, published commit `e45f5b4c0f143abc6e255e4e8550bf3504348aae`, source/published tree `e2bc0505f5abd98a7283b3cd3cd2c4c02ef23ece`.
 - A-03 — Lifecycle Authority Not Enforced: **Resolved**.
 - A-05 — PHP Regression Not in GitHub CI: **Resolved**.
+- A-06 — Phase 0 Semantic Ambiguity: **Resolved through M5.3 publication**.
+- A-07 — ROADMAP / TASKS Out of Sync: **Resolved through M5.3 publication**.
+- A-08 — AI-specific Product Metadata / Attribution: **Resolved through M5.3 publication**.
 - Active protected contexts: `governance-validation`, `markdown-lint`, `secret-scan`, `php-foundation-regression`, and `product-owner-merge-authority`.
-- M5.3 — Governance & Program State Synchronization: authorized to reconcile A-06, A-07, and A-08 only through bounded branch, Draft PR, checks, and independent review.
-- A-09 — Enterprise Vision Not Yet Canonical: reserved for M6; M5.3 does not implement or canonicalize Enterprise Vision.
+- M6 — Enterprise Vision Canonicalization: **In Progress / bounded candidate**.
+- A-09 — Enterprise Vision Not Yet Canonical: **In Progress under M6; not publication-complete**.
+- A-10 — Product-name capitalization inconsistency: **In Progress under M6; canonical form `oneQay`**.
 - Sprint 14 remains **Not Authorized**.
 - Production readiness remains **NO-GO**.
-- No deployment, release, SQL execution, migration execution, or production database modification is authorized by M5.3.
+- No deployment, release, SQL execution, migration execution, or production database modification is authorized by M6.
 
 Attribution: Lab | zefry

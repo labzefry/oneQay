@@ -1,8 +1,8 @@
-# OneQay Security Handbook
+# oneQay Security Handbook
 
 ## Security objectives
 
-OneQay melindungi confidentiality, integrity, availability, privacy, tenant isolation, financial correctness, dan auditability. Security berlaku sepanjang design, coding, testing, deployment, operation, update, dan decommission.
+oneQay melindungi confidentiality, integrity, availability, privacy, tenant isolation, financial correctness, dan auditability. Security berlaku sepanjang design, coding, testing, deployment, operation, update, dan decommission.
 
 ## Security governance
 
@@ -67,7 +67,7 @@ API menerapkan authenticated identity, object/function/property authorization, t
 
 ## Payment and financial controls
 
-Provider integration harus meminimalkan payment data yang diproses OneQay. Callback diverifikasi signature, amount, currency, merchant/tenant, status, timestamp, dan replay. Reconciliation tidak bergantung pada redirect browser. Refund/void memiliki authorization, reason, audit, dan idempotency.
+Provider integration harus meminimalkan payment data yang diproses oneQay. Callback diverifikasi signature, amount, currency, merchant/tenant, status, timestamp, dan replay. Reconciliation tidak bergantung pada redirect browser. Refund/void memiliki authorization, reason, audit, dan idempotency.
 
 ## Supply-chain security
 

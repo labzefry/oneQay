@@ -2,7 +2,7 @@
 
 - Status: Proposed
 - Owner: Security Owner
-- Scope: OneQay Technical Preview v0.0.1
+- Scope: oneQay Technical Preview v0.0.1
 - Source: Issue #23
 
 ## Assets and trust boundaries

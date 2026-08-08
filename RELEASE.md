@@ -1,4 +1,4 @@
-# OneQay Release Management
+# oneQay Release Management
 
 ## Release principles
 

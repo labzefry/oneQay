@@ -1,4 +1,4 @@
-# OneQay Coding Standards
+# oneQay Coding Standards
 
 ## Scope
 

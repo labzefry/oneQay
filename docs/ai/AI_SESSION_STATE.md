@@ -2,52 +2,108 @@
 
 ## Identity
 
-- Project: OneQay
+- Project: oneQay
 - Tagline: The Future of Intelligent Business Management
 - Developer and Product Engineering Entity: Lab | zefry
 - Repository: `labzefry/oneQay`
 - Repository role: Single Source of Truth
 - Checkpoint date: 2026-08-08
 - Canonical product attribution: Lab | zefry
+- Canonical product name: `oneQay`
 
 ## Canonical repository state
 
 - Canonical delivery phase: Phase 0 — Governance and Discovery
 - Canonical Phase 0 status: In Progress
-- Active engineering program: M5 — Engineering State, CI & Governance Stabilization
-- Active micro-milestone: M5.3 — Governance & Program State Synchronization
-- Current `main`: `512344d0497787c729242cb1fd2d7d02ecfc40c2`
-- Current `main` tree: `0f0af1c1acab208c704fbdf05b19014127abddbb`
+- Active engineering program: M6 — Enterprise Vision Canonicalization
+- Active micro-milestone: M6 — Enterprise Vision Canonicalization
+- Current `main`: `e45f5b4c0f143abc6e255e4e8550bf3504348aae`
+- Current `main` tree: `e2bc0505f5abd98a7283b3cd3cd2c4c02ef23ece`
 - M5.1: PUBLISHED / COMPLETE through PR #66
-- M5.1 published commit: `153a33a4a2b5edb4a31285eca7d3491f9589b778`
 - M5.2: PUBLISHED / ENFORCEMENT COMPLETE through PR #67
-- M5.2 published commit: `512344d0497787c729242cb1fd2d7d02ecfc40c2`
-- M5.2 published tree: `0f0af1c1acab208c704fbdf05b19014127abddbb`
+- M5.3: PUBLISHED / COMPLETE through PR #68
+- M5.3 source head: `aa799e657070a7d3283110a73a411f54a73b972c`
+- M5.3 published commit: `e45f5b4c0f143abc6e255e4e8550bf3504348aae`
+- M5.3 source tree: `e2bc0505f5abd98a7283b3cd3cd2c4c02ef23ece`
+- M5.3 published tree: `e2bc0505f5abd98a7283b3cd3cd2c4c02ef23ece`
 - Sprint 12: Published
 - Sprint 13: Published
 - Sprint 14: Not Authorized
 - Production readiness: NO-GO
-- Deployment: None
-- Release: None
+- Deployment: None / Not Authorized
+- Release: None / Not Authorized
 - Migration execution: Not Authorized / Not Performed
 
-## Active M5.3 work
+## Active M6 work
 
 Product Owner explicitly authorized:
 
-**START M5.3 — GOVERNANCE & PROGRAM STATE SYNCHRONIZATION**
+**START M6 — ENTERPRISE VISION CANONICALIZATION**
 
 Bounded branch:
 
-`agent/m5-3-governance-program-state-synchronization`
+`agent/m6-enterprise-vision-canonicalization`
 
-Authorized reconciliation scope:
+Verified M6 base:
 
-1. A-06 — Phase 0 semantic ambiguity.
-2. A-07 — ROADMAP / TASKS out of sync.
-3. A-08 — AI-specific product metadata / attribution.
+- exact base: `e45f5b4c0f143abc6e255e4e8550bf3504348aae`;
+- exact base tree: `e2bc0505f5abd98a7283b3cd3cd2c4c02ef23ece`.
 
-A-09 — Enterprise Vision Not Yet Canonical remains reserved for M6 and is excluded from M5.3.
+M6 scope:
+
+1. Enterprise Vision canonicalization candidate.
+2. Enterprise Capability Map.
+3. Conceptual staged product evolution.
+4. Clear separation of Vision, Capability Map, Architecture Direction, Delivery Roadmap, and Implementation Authority.
+5. A-09 reconciliation candidate.
+6. Canonical brand normalization to `oneQay` in current canonical material.
+7. Program-state synchronization required by this material state change.
+
+M6 START authority does not grant Ready or Merge authority.
+
+## Canonical Enterprise Vision candidate
+
+The M6 candidate defines oneQay as:
+
+**Enterprise Intelligent Business Management Platform**
+
+The vision may evolve through capability families including POS SaaS, ERP, CRM, HRM, Business Intelligence, AI Business Platform, Marketplace, API Platform, Integration Platform, Web/PWA/Mobile/Admin channels, CMS, and Plugin/Extension capabilities.
+
+This is directional product scope. It is not evidence that all capabilities are implemented, Approved for delivery, production-ready, or authorized for Sprint 14.
+
+The canonical M6 vision artifact is:
+
+`docs/handbook/ENTERPRISE_VISION.md`
+
+until publication it remains an M6 candidate requiring independent review and Product Owner lifecycle approval.
+
+## Canonical naming rule
+
+The product brand must be written exactly as **oneQay** in current and future canonical product references.
+
+Non-canonical active forms include `OneQay`, `ONEQAY`, `Oneqay`, and `oneqay`.
+
+Do not rewrite immutable GitHub identifiers, repository path `labzefry/oneQay`, SHAs, historical commit messages, branch names, or quoted historical evidence merely for brand normalization.
+
+## M5.3 publication outcome
+
+M5.3 — Governance & Program State Synchronization was published through PR #68.
+
+Publication identity:
+
+- source head: `aa799e657070a7d3283110a73a411f54a73b972c`;
+- source tree: `e2bc0505f5abd98a7283b3cd3cd2c4c02ef23ece`;
+- published commit: `e45f5b4c0f143abc6e255e4e8550bf3504348aae`;
+- published tree: `e2bc0505f5abd98a7283b3cd3cd2c4c02ef23ece`;
+- source tree equals published tree: Yes.
+
+M5.3 resolved the current-program anomalies:
+
+- A-06 — Phase 0 semantic ambiguity;
+- A-07 — ROADMAP / TASKS synchronization;
+- A-08 — product metadata / attribution reconciliation.
+
+A-09 is the active M6 anomaly.
 
 ## Canonical Phase 0 interpretation
 
@@ -55,11 +111,9 @@ Phase 0 remains **In Progress** as a governance/discovery program state.
 
 Published bounded Platform Foundation through Sprint 12 and Sprint 13 remains a repository fact. This does not mean Phase 0 has exited, does not authorize Sprint 14, and does not authorize final/business/production application implementation.
 
-The canonical blocked boundary is:
+The canonical blocked boundary remains:
 
 **Final/business/production application implementation: Blocked.**
-
-The older blanket wording that could be read as “all source code is blocked” is superseded by this semantic clarification without rewriting historical documents or lifecycle facts.
 
 ## M5.2 enforcement posture to preserve
 
@@ -73,17 +127,7 @@ Required protected contexts:
 4. `php-foundation-regression`
 5. `product-owner-merge-authority`
 
-Ruleset protections verified for the default branch:
-
-- strict status checks;
-- one approving review;
-- stale reviews dismissed on push;
-- latest-push approval required;
-- review-thread resolution required;
-- squash-only;
-- deletion protection;
-- non-fast-forward protection;
-- bypass list empty.
+Published M5.2 protection evidence records strict status checks, one approving review, stale-review dismissal after push, latest-push approval, review-thread resolution, squash-only merge, deletion protection, non-fast-forward protection, and an empty bypass list.
 
 ## Canonical Sprint 13 identity
 
@@ -101,46 +145,59 @@ Ruleset protections verified for the default branch:
 
 ## Post-publication regression evidence
 
-Product Owner local CLI evidence was executed after canonical Sprint 13 publication.
+Product Owner local CLI evidence for canonical Sprint 13 remains classified as POST-PUBLICATION:
 
 - PHP: `8.2.12 CLI`
 - Composer: `2.9.3`
-- Command: `composer test`
-- Result: PASS
-- Total assertions: 402 PASS
-- Exit code: `0`
-- Exact tested HEAD: `ebe6abcf77263bf644565ca2fbe2b2844416d49b`
-- Exact tested tree: `5a0adb0d2ce80338f9f9d782f0871fb2115afd5d`
-- Working tree after test: Clean
-
-This evidence is POST-PUBLICATION Sprint 13 evidence. It must not be rewritten as pre-Ready, pre-Merge, or pre-publication evidence.
+- `composer test`: PASS
+- 402 assertions PASS
+- exit code: `0`
+- tested HEAD: `ebe6abcf77263bf644565ca2fbe2b2844416d49b`
+- tested tree: `5a0adb0d2ce80338f9f9d782f0871fb2115afd5d`
+- working tree: Clean
 
 ## Historical lifecycle discrepancies
 
-PR #64 and PR #65 lifecycle discrepancies remain historical facts. M5.3 does not retroactively normalize them.
+PR #64 and PR #65 lifecycle discrepancies remain historical facts. M6 does not retroactively normalize them.
 
 Historical review contamination involving alternate Sprint 13 head `ba312fa9095d434c204f01e3dac9870e9eaa4d6d` remains historical only. Canonical reviewed head remains `4a2e44cc31361954b126e8857de65fcccca30445`.
 
 ## Product attribution boundary
 
 - Product/development attribution: Lab | zefry.
-- ChatGPT/AI collaboration identity belongs to engineering governance and tooling documentation, not product metadata or source authorship attribution.
-- Product AI Assistant remains a distinct Proposed product capability and is not promoted by M5.3.
+- Product name: oneQay.
+- ChatGPT/AI collaboration identity belongs to engineering governance/tooling metadata, not product metadata or source authorship attribution.
+- Product AI capabilities remain subject to their own product, security, data, and implementation gates.
 
-## M5.3 lifecycle boundary
+## Governance preservation
 
-M5.3 must remain on the bounded branch and be submitted as a Draft PR.
+- Phase 0: In Progress
+- ADR-001 through ADR-007: Proposed
+- GD-007: Proposed
+- JRN-003 and JRN-013: Unresolved
+- Final tenant data model: Not Started
+- Final business schema: Not Started
+- Production migration: Not Performed
+- Production database usage: None
+- Production table: None
+- POS module: Not Started as final/business application module
+- ERP module: Not Started as final/business application module
+- Industry vertical implementation: Not Started
+- Sprint 14: Not Authorized
+- Production readiness: NO-GO
 
-Independent review is required.
+## M6 lifecycle boundary
 
-No Ready or Merge is authorized without separate Product Owner lifecycle authority bound to the applicable exact head.
+M6 is limited to Enterprise Vision and related canonical documentation/program-state synchronization.
 
-M5.3 does not authorize:
+M6 does not authorize:
 
+- Ready transition without separate exact-head Product Owner authority;
+- merge or auto-merge without separate exact-head Product Owner authority;
 - Sprint 14 implementation;
-- Enterprise Vision implementation or canonicalization;
 - final/business application implementation;
-- SQL execution;
+- database/schema implementation;
+- executable SQL;
 - migration execution;
 - production database modification;
 - deployment;

@@ -1,8 +1,8 @@
-# OneQay Auto Updater Specification
+# oneQay Auto Updater Specification
 
 ## Purpose
 
-Auto Updater memperbarui OneQay melalui release resmi dengan compatibility check, backup, integrity verification, maintenance/rollout control, migration, health verification, audit, dan recovery.
+Auto Updater memperbarui oneQay melalui release resmi dengan compatibility check, backup, integrity verification, maintenance/rollout control, migration, health verification, audit, dan recovery.
 
 ## Non-negotiable rules
 

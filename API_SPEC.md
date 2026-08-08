@@ -1,4 +1,4 @@
-# OneQay API Specification and Governance
+# oneQay API Specification and Governance
 
 ## Scope
 

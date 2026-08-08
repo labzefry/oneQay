@@ -1,14 +1,14 @@
-# OneQay Stakeholder and Actor Map
+# oneQay Stakeholder and Actor Map
 
-> **Status:** Proposed — menunggu discovery dan persetujuan Product Owner  
-> **Phase:** 0 — Governance & Discovery  
-> **Owner:** Product Owner OneQay  
-> **Tracking:** GitHub Issue #4  
+> **Status:** Proposed — menunggu discovery dan persetujuan Product Owner
+> **Phase:** 0 — Governance & Discovery
+> **Owner:** Product Owner oneQay
+> **Tracking:** GitHub Issue #4
 > **Dependency:** Product Vision and Decision Rights berstatus Proposed
 
 ## Purpose
 
-Dokumen ini memetakan pihak yang memengaruhi atau dipengaruhi OneQay serta actor yang berinteraksi dengan produk. Peta ini menjadi hipotesis kerja untuk user journey, event storming, MVP slicing, data classification, threat modeling, permission design, dan operational readiness.
+Dokumen ini memetakan pihak yang memengaruhi atau dipengaruhi oneQay serta actor yang berinteraksi dengan produk. Peta ini menjadi hipotesis kerja untuk user journey, event storming, MVP slicing, data classification, threat modeling, permission design, dan operational readiness.
 
 Tidak ada stakeholder, actor, kebutuhan, atau workflow di dokumen ini yang dianggap tervalidasi hanya karena ditulis atau di-merge. Validasi membutuhkan evidence discovery dan persetujuan manusia yang berwenang.
 
@@ -36,8 +36,8 @@ Dokumen ini tidak mencakup:
 
 | Istilah | Definisi |
 |---|---|
-| Stakeholder | Manusia, kelompok, organisasi, atau otoritas yang memengaruhi keputusan atau menerima dampak OneQay, meski tidak menggunakan aplikasi secara langsung. |
-| Human actor | Peran manusia yang berinteraksi dengan OneQay untuk mencapai tujuan tertentu. Satu manusia dapat memegang beberapa actor role sesuai authorization. |
+| Stakeholder | Manusia, kelompok, organisasi, atau otoritas yang memengaruhi keputusan atau menerima dampak oneQay, meski tidak menggunakan aplikasi secara langsung. |
+| Human actor | Peran manusia yang berinteraksi dengan oneQay untuk mencapai tujuan tertentu. Satu manusia dapat memegang beberapa actor role sesuai authorization. |
 | System actor | Sistem eksternal atau proses otomatis yang berinteraksi melalui kontrak; bukan manusia dan tidak memiliki decision authority. |
 | Persona | Representasi berbasis riset mengenai pola kebutuhan dan perilaku pengguna; belum ditetapkan pada tahap ini. |
 | Role | Kumpulan tanggung jawab dan kewenangan bisnis; tidak otomatis sama dengan role/permission teknis. |
@@ -59,7 +59,7 @@ Semua actor baru pada dokumen ini berstatus **Proposed** kecuali fakta identitas
 
 ### Project governance boundary
 
-Mencakup Product Owner, decision owner, reviewer, implementer, dan release authority yang mengelola pengembangan OneQay melalui GitHub. Peran ini tidak otomatis memperoleh akses ke data tenant atau production.
+Mencakup Product Owner, decision owner, reviewer, implementer, dan release authority yang mengelola pengembangan oneQay melalui GitHub. Peran ini tidak otomatis memperoleh akses ke data tenant atau production.
 
 ### Platform boundary
 

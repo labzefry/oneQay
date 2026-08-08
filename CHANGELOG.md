@@ -1,11 +1,15 @@
 # Changelog
 
-Semua perubahan penting OneQay dicatat di dokumen ini. Format mengikuti Keep a Changelog dan versioning produk akan mengikuti Semantic Versioning setelah release baseline disetujui.
+Semua perubahan penting oneQay dicatat di dokumen ini. Format mengikuti Keep a Changelog dan versioning produk akan mengikuti Semantic Versioning setelah release baseline disetujui.
 
 ## [Unreleased]
 
 ### Added
 
+- Added M6 canonical Enterprise Vision candidate at `docs/handbook/ENTERPRISE_VISION.md`, defining oneQay directionally as an **Enterprise Intelligent Business Management Platform** while explicitly separating Product Vision, Capability Map, Architecture Direction, Delivery Roadmap, and Implementation Authority.
+- Added the high-level Enterprise Capability Map covering Core Business Platform, Platform Capabilities, Extensibility, AI Platform, and Channels without promoting any capability to implementation authority.
+- Added conceptual product evolution stages E0 Foundation, E1 Core Transaction Platform, E2 Business Management, E3 Enterprise Management, E4 Intelligence, and E5 Ecosystem; these are directional stages, not release commitments.
+- Added canonical brand rule requiring current/future product identity to use exactly **oneQay**, while preserving immutable repository identifiers and historical evidence.
 - Added `.github/workflows/governance-required-checks.yml` as the narrowly scoped producer for the stable `governance-validation`, `markdown-lint`, and `secret-scan` protected-branch checks; recovery was later published through PR #38 as `a59521ad31d8153198bb80dd7985142cb21e3775`.
 - Recorded GOV-043 as Done after required-check recovery publication and subsequent protected-branch use.
 - Recorded the active `main-protected-governance` ruleset alignment to the three stable job-level checks and removal of obsolete `actions/checkout-v4` and `pull_request` contexts.
@@ -36,15 +40,19 @@ Semua perubahan penting OneQay dicatat di dokumen ini. Format mengikuti Keep a C
 
 ### Changed
 
+- Recorded M5.3 — Governance & Program State Synchronization as **PUBLISHED / COMPLETE** through PR #68, source head `aa799e657070a7d3283110a73a411f54a73b972c`, published commit `e45f5b4c0f143abc6e255e4e8550bf3504348aae`, and identical source/published tree `e2bc0505f5abd98a7283b3cd3cd2c4c02ef23ece`.
+- Recorded A-06, A-07, and A-08 as reconciled through M5.3 publication and advanced the active program to M6 — Enterprise Vision Canonicalization.
+- Started A-09 Enterprise Vision canonicalization under M6 as a bounded candidate; it is not publication-complete and no Proposed decision is promoted merely by candidate creation.
+- Started A-10 current product-name capitalization reconciliation; canonical form is `oneQay`, while immutable GitHub identifiers and historical quoted evidence are preserved.
 - Recorded M5.1 — Canonical State Reconciliation as **PUBLISHED / COMPLETE** through PR #66 and published commit `153a33a4a2b5edb4a31285eca7d3491f9589b778`.
 - Recorded M5.2 — CI & Lifecycle Control Hardening as **PUBLISHED / ENFORCEMENT COMPLETE** through PR #67, published commit `512344d0497787c729242cb1fd2d7d02ecfc40c2`, and published tree `0f0af1c1acab208c704fbdf05b19014127abddbb`.
 - Recorded A-03 and A-05 as resolved and the protected default-branch required contexts as `governance-validation`, `markdown-lint`, `secret-scan`, `php-foundation-regression`, and `product-owner-merge-authority`.
-- Started M5.3 — Governance & Program State Synchronization to reconcile A-06 Phase 0 semantics, A-07 ROADMAP/TASKS state, and A-08 product metadata/attribution only; A-09 Enterprise Vision remains reserved for M6.
+- Started M5.3 — Governance & Program State Synchronization to reconcile A-06 Phase 0 semantics, A-07 ROADMAP/TASKS state, and A-08 product metadata/attribution only; A-09 Enterprise Vision remained reserved for M6 at that historical point.
 - Clarified that **Phase 0 — In Progress** is a governance/discovery program state and does not negate published bounded Platform Foundation source through Sprint 12 and Sprint 13.
 - Clarified that **application implementation Blocked** now means final/business/production application implementation; the clarification grants no new source-code authority and Sprint 14 remains Not Authorized.
 - Separated canonical product/development attribution **Lab | zefry** from AI engineering-tooling metadata; collaboration tooling remains governed by `AI_CONSTITUTION.md` and is not product authorship attribution.
 - Preserved historical lifecycle discrepancies without retroactive normalization, while keeping production readiness NO-GO and prohibiting M5.3 deployment, release, SQL execution, migration execution, or production database modification.
-- Standardized the OneQay engineering workflow to ChatGPT and GitHub only.
+- Standardized the oneQay engineering workflow to ChatGPT and GitHub only.
 - Replaced external-AI review prompts with independent ChatGPT review prompts.
 - Clarified that product AI Assistant decisions remain separate from the engineering collaboration model.
 - Reconciled Handbook 1.0 task and delivery-gate statuses with the approved and merged PR #1 evidence.
@@ -102,7 +110,7 @@ Semua perubahan penting OneQay dicatat di dokumen ini. Format mengikuti Keep a C
 - Recorded the Product Owner post-merge exact-head decision approving only the accuracy of PR #31 three-file corrective content, without retrospective lifecycle authority or ratification of PR #31 lifecycle action.
 - Clarified that the PR #31 technical merge does not ratify PR #30, PR #29, PR #28, PR #27, PR #26, or PR #25, validate Issue #23 closure, accept any ADR, approve Phase 0 exit, grant source-code authority, complete GOV-034/GOV-035/GOV-036/GOV-037/GOV-038/GOV-039/GOV-040, or provide substantive approval or completion evidence; all substantive governance statuses remain unchanged.
 - Recorded that PR #32 original base `67059e563de26cee26cefd64cf9e7d5c4436ffc6` and exact head `beb7b35aa718a746ad5dad9d5574c2293bd0ab40` were technically merged as `d1a6160b37250bda691e906fc4ee06e37dd0c847` after the PR changed from draft despite its body requiring the PR to remain draft.
-- Recorded that the repository-native operational authority comment for PR #32 explicitly excluded draft-to-ready, merge, auto-merge, approval review, branch-protection or ruleset changes, ADR acceptance, Phase 0 exit, source-code implementation, Issue #23 state change, hosting-evidence completion, governance-task completion, ratification, release, deployment, and status promotion.
+- Recorded that the repository-native operational authority comment for PR #32 explicitly excluded draft-to-ready, merge, auto-merge, approval review and branch-protection/ruleset changes, ADR acceptance, Phase 0 exit, source-code implementation, Issue #23 state change, hosting-evidence completion, governance-task completion, ratification, release, deployment, and status promotion.
 - Recorded that no separate exact-head ready authority, separate exact-head merge authority, review submission, review thread, published commit status, or GitHub Actions workflow run was available for PR #32.
 - Recorded the Product Owner post-merge exact-head decision approving only the accuracy of PR #32 three-file corrective content, without retrospective lifecycle authority or ratification of PR #32 lifecycle action.
 - Clarified that the PR #32 technical merge does not ratify PR #31, PR #30, PR #29, PR #28, PR #27, PR #26, or PR #25, validate Issue #23 closure, accept any ADR, approve Phase 0 exit, grant source-code authority, complete GOV-034/GOV-035/GOV-036/GOV-037/GOV-038/GOV-039/GOV-040/GOV-041, or provide substantive approval or completion evidence; all substantive governance statuses remain unchanged.
@@ -123,6 +131,6 @@ Semua perubahan penting OneQay dicatat di dokumen ini. Format mengikuti Keep a C
 
 ## Release policy note
 
-No product release exists yet. This changelog entry describes the handbook baseline and subsequent governance/foundation stabilization work only. A dated/tagged product version will be added after review and merge through the approved release process.
+No product release exists yet. This changelog entry describes the handbook baseline and subsequent governance/foundation/vision-canonicalization work only. A dated/tagged product version will be added after review and merge through the approved release process.
 
 Attribution: Lab | zefry

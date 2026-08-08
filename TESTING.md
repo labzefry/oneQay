@@ -1,8 +1,8 @@
-# OneQay Testing Strategy
+# oneQay Testing Strategy
 
 ## Objectives
 
-Testing memberi evidence bahwa OneQay benar, aman, terisolasi antar tenant, kompatibel, cepat, accessible, dapat diinstal/diupdate, dan dapat dipulihkan. Coverage percentage bukan satu-satunya ukuran kualitas.
+Testing memberi evidence bahwa oneQay benar, aman, terisolasi antar tenant, kompatibel, cepat, accessible, dapat diinstal/diupdate, dan dapat dipulihkan. Coverage percentage bukan satu-satunya ukuran kualitas.
 
 ## Test layers
 

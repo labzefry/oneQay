@@ -1,4 +1,4 @@
-# OneQay Database Handbook
+# oneQay Database Handbook
 
 ## Goals
 

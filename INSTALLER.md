@@ -1,8 +1,8 @@
-# OneQay Installer Specification
+# oneQay Installer Specification
 
 ## Purpose
 
-Installer Wizard menyediakan pemasangan OneQay yang repeatable, secure, auditable, recoverable, dan dapat digunakan pada shared hosting/cPanel tanpa mengunci arsitektur pada lingkungan tersebut.
+Installer Wizard menyediakan pemasangan oneQay yang repeatable, secure, auditable, recoverable, dan dapat digunakan pada shared hosting/cPanel tanpa mengunci arsitektur pada lingkungan tersebut.
 
 ## Trust boundary
 

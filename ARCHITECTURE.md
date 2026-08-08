@@ -1,20 +1,40 @@
-# OneQay Architecture
+# oneQay Architecture
 
 ## Architecture goals
 
-OneQay menggunakan **Modular Monolith First** dengan Clean Architecture dan Domain-Driven Design. Tujuannya adalah menyediakan sistem yang sederhana untuk dioperasikan pada tahap awal, namun memiliki boundary yang cukup kuat untuk berkembang tanpa menulis ulang business logic.
+oneQay menggunakan **Modular Monolith First** dengan Clean Architecture dan Domain-Driven Design. Tujuannya adalah menyediakan sistem yang sederhana untuk dioperasikan pada tahap awal, namun memiliki boundary yang cukup kuat untuk berkembang tanpa menulis ulang business logic.
+
+M6 Enterprise Vision mengarahkan oneQay menuju **Enterprise Intelligent Business Management Platform**, tetapi arah tersebut tidak mengubah status Proposed/Approved dari bounded context, ADR, provider, physical schema, maupun capability implementation.
+
+## Canonical product naming
+
+Nama produk canonical adalah **oneQay**. Current/future-facing architecture text menggunakan `oneQay`; repository identifier `labzefry/oneQay`, immutable GitHub URLs, SHAs, historical commit messages, branch names, dan quoted historical evidence tidak ditulis ulang hanya untuk brand normalization.
 
 ## Context
 
 ```mermaid
 flowchart TD
-    U["Business Users"] --> C["Web, PWA, Android"]
+    U["Business Users"] --> C["Web, PWA, Mobile"]
     A["Platform & Tenant Admin"] --> C
-    C --> P["OneQay Platform"]
-    P --> X["Payment, Cloudflare, Messaging"]
+    C --> P["oneQay Platform"]
+    P --> X["External Services & Integrations"]
     P --> D["Tenant Data & Files"]
     P --> O["Observability & Audit"]
 ```
+
+## Enterprise Vision relationship
+
+Architecture Direction adalah salah satu lapisan di bawah Enterprise Vision, bukan pengganti Product Vision atau Implementation Authority.
+
+M6 memisahkan:
+
+1. Product Vision;
+2. Product Capability Map;
+3. Product Architecture Direction;
+4. Delivery Roadmap;
+5. Implementation Authority.
+
+Capability yang muncul pada `docs/handbook/ENTERPRISE_VISION.md` tidak otomatis menjadi module implementation atau Accepted bounded context.
 
 ## Logical layers
 
@@ -40,7 +60,7 @@ flowchart TD
     P --> I
 ```
 
-### Core commerce modules
+### Core commerce module candidates
 
 - Organization, Outlet & Device
 - Catalog & Pricing
@@ -49,13 +69,13 @@ flowchart TD
 - Purchasing & Supplier
 - Customer & Loyalty
 
-### Business management modules
+### Business management module candidates
 
 - Finance & Accounting
 - Reporting & Analytics
 - Content Management
 
-### Platform modules
+### Platform module candidates
 
 - Tenant & Subscription
 - Identity & Access Management
@@ -64,11 +84,23 @@ flowchart TD
 - Marketplace & Plugin Management
 - AI Assistance
 
-Daftar ini berstatus Proposed sampai domain discovery dan ADR menyetujuinya.
+Daftar module candidate di atas tetap **Proposed** sampai domain discovery dan ADR/decision yang berlaku menyetujuinya. M6 Enterprise Capability Map tidak mempromosikan daftar tersebut.
+
+## Enterprise capability projection
+
+Untuk menjaga hubungan dengan Enterprise Vision tanpa mengubah bounded-context status, architecture mengakui capability families berikut sebagai directional projection:
+
+- **Core Business Platform:** Tenant & Organization, Identity & Access, Master Data, POS / Commerce, Inventory, Procurement, Finance / Accounting, CRM, HRM, Reporting & Business Intelligence.
+- **Platform Capabilities:** Workflow, Notification, Audit, File / Document, Search, API, Integration, Webhook/Event Integration, Configuration, Localization, Observability, Recovery & Operational Control.
+- **Extensibility:** Marketplace, Plugin / Extension, Public API, Partner Integration.
+- **AI Platform:** AI Assistant, AI Insight, AI Automation, AI Recommendation, AI Analytics, AI Gateway / Policy Boundary.
+- **Channels:** Web Application, PWA, Mobile / Android, Admin Platform, public/customer-facing surfaces, API/partner consumers.
+
+These capability families are not physical module declarations and do not authorize implementation.
 
 ## Module contract
 
-Setiap modul harus memiliki:
+Setiap modul yang diotorisasi harus memiliki:
 
 - bounded context dan ubiquitous language;
 - public application interface;
@@ -126,6 +158,8 @@ Cross-tenant operation hanya tersedia pada platform administration yang eksplisi
 - File/object storage menggunakan generated identifier, content validation, malware scanning, dan signed access.
 - Analytics workload dipisahkan saat beban membenarkan; OLTP tidak boleh menjadi reporting warehouse tanpa kontrol.
 
+M6 tidak memilih physical database engine, physical tenancy model, final business schema, atau executable migration.
+
 ## API architecture
 
 - REST API menggunakan versioned contract.
@@ -134,6 +168,8 @@ Cross-tenant operation hanya tersedia pada platform administration yang eksplisi
 - Operasi finansial menggunakan idempotency key.
 - Pagination wajib cursor-based untuk collection besar.
 - Webhook ditandatangani, replay-protected, retryable, dan dapat diaudit.
+
+Public API dan partner ecosystem tetap mengikuti capability/decision gate terpisah.
 
 ## Event-driven readiness
 
@@ -145,7 +181,7 @@ Event bus eksternal belum diwajibkan pada shared hosting. Implementasi awal dapa
 
 Semua vendor ditempatkan di adapter melalui port. Adapter wajib memiliki timeout, bounded retry, circuit breaker bila tersedia, idempotency, rate limit awareness, audit, metric, dan failure mapping.
 
-Cloudflare integration mencakup DNS create/update/delete, wildcard, SSL support, cache purge, dan zone validation. Token hanya melalui environment/secret manager dan tidak boleh tampil pada log.
+Provider atau vendor spesifik tidak menjadi keputusan Accepted hanya karena muncul dalam historical planning atau integration examples.
 
 ## Plugin architecture
 
@@ -164,9 +200,11 @@ Plugin tidak boleh memperoleh akses database langsung.
 
 ## AI architecture
 
-AI Assistant wajib melalui AI Gateway internal yang menangani provider abstraction, policy, redaction, tenant isolation, prompt/version registry, retrieval authorization, budget, rate limit, observability, human confirmation, dan safe fallback.
+AI capabilities wajib melalui controlled internal policy boundary yang menangani provider abstraction, data policy, redaction, tenant isolation, prompt/version registry, retrieval authorization, budget, rate limit, observability, human confirmation, evaluation, dan safe fallback sesuai capability yang diotorisasi.
 
-AI tidak boleh menjadi source of truth untuk transaksi, otorisasi, accounting posting, inventory mutation, atau keputusan irreversible. Output berisiko tinggi memerlukan deterministic validation dan human approval.
+AI tidak boleh menjadi source of truth untuk transaksi, otorisasi, accounting posting, inventory mutation, tenant-boundary decision, atau tindakan irreversible. Output berisiko tinggi memerlukan deterministic validation dan human approval.
+
+M6 tidak memilih AI provider dan tidak mengotorisasi AI automation implementation.
 
 ## Deployment architecture
 
@@ -180,6 +218,8 @@ Business logic dan module contract harus identik pada seluruh stage:
 6. Kubernetes
 
 Perbedaan stage ditangani oleh configuration dan infrastructure adapter. Session, cache, file, job, dan scheduler harus dapat dieksternalisasi tanpa mengubah use case.
+
+M6 tidak mengotorisasi perpindahan deployment stage, deployment execution, atau production release.
 
 ## Reliability
 
@@ -202,11 +242,13 @@ Gunakan deny-by-default authorization, least privilege, MFA untuk privileged rol
 
 - Domain layer bebas import infrastructure/framework.
 - Tidak ada query data tenant tanpa enforced tenant scope.
-- Tidak ada akses tabel lintas module.
+- Tidak ada akses tabel lintas module tanpa keputusan arsitektur.
 - Public contract memiliki version dan test.
-- Semua migration terurut serta tervalidasi.
+- Semua migration yang diotorisasi harus terurut serta tervalidasi.
 - Dependency cycle memblokir build.
 - Secret scan dan high-severity security gate memblokir release.
+- Capability map tidak boleh digunakan sebagai pengganti implementation authority.
+- Current/future-facing brand reference harus menggunakan `oneQay`.
 
 ## Decision process
 
@@ -242,3 +284,17 @@ The following profile is a **Proposed** Technical Preview candidate recorded thr
 Architectural fitness for this preview requires two-tenant negative isolation tests, server-side deny-by-default authorization, integer minor-unit money, idempotent retry boundaries, tenant-aware cache/job/file/audit behavior, deterministic migration/seeder rehearsal, secret isolation, versioned deployment, and backup/restore/rollback evidence.
 
 All ADR-001 through ADR-007 remain **Proposed**. Hosting engine/version, worker, HTTPS, storage, backup, restore, rollback, and quota remain unverified. JRN-003 and JRN-013 are not resolved by this candidate profile.
+
+## Current authority boundary
+
+- Phase 0: In Progress.
+- Sprint 12: Published.
+- Sprint 13: Published.
+- Sprint 14: Not Authorized.
+- Final/business/production application implementation: Blocked unless separately authorized.
+- SQL/migration execution: Not Authorized.
+- Production database modification: Not Authorized.
+- Deployment/release: Not Authorized.
+- Production readiness: NO-GO.
+
+Attribution: Lab | zefry

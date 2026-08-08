@@ -1,4 +1,4 @@
-# OneQay Tasks
+# oneQay Tasks
 
 ## Status legend
 
@@ -10,6 +10,10 @@
 | Blocked | Menunggu dependency/decision/authority |
 | Review | Menunggu review/approval |
 | Done | Evidence dan Definition of Done lengkap |
+
+## Canonical naming rule
+
+Nama produk canonical adalah **oneQay**. Current/future-facing task text harus menggunakan `oneQay`; immutable GitHub identifiers, repository path `labzefry/oneQay`, SHAs, historical commit messages, branch names, dan quoted historical evidence tidak ditulis ulang hanya untuk brand normalization.
 
 ## Handbook 1.0
 
@@ -67,9 +71,18 @@ Historical GOV-029 through GOV-042 items remain Review where their historical li
 | --- | --- | --- | --- |
 | GOV-044 | M5.1 — Canonical State Reconciliation | Done | PR #66 published as `153a33a4a2b5edb4a31285eca7d3491f9589b778`; canonical mutable AI checkpoints live under `docs/ai/`; root duplicates are pointer stubs |
 | GOV-045 | M5.2 — CI & Lifecycle Control Hardening | Done | PR #67 published as `512344d0497787c729242cb1fd2d7d02ecfc40c2`; A-03 and A-05 resolved; five required contexts active on protected `main` |
-| GOV-046 | M5.3 — Governance & Program State Synchronization | In Progress | Reconcile A-06 Phase 0 semantics, A-07 ROADMAP/TASKS program state, and A-08 product metadata/attribution; bounded branch and Draft PR only; independent review required |
+| GOV-046 | M5.3 — Governance & Program State Synchronization | Done | PR #68 source head `aa799e657070a7d3283110a73a411f54a73b972c` published as `e45f5b4c0f143abc6e255e4e8550bf3504348aae`; source/published tree `e2bc0505f5abd98a7283b3cd3cd2c4c02ef23ece`; A-06/A-07/A-08 reconciled |
 
-M5.3 does not authorize Enterprise Vision. A-09 remains reserved for M6. Sprint 14 remains Not Authorized, final/business application implementation remains Blocked, and production readiness remains NO-GO.
+## M6 — Enterprise Vision Canonicalization
+
+| ID | Task | Status | Evidence / next action |
+| --- | --- | --- | --- |
+| GOV-047 | M6 Enterprise Vision canonicalization | In Progress | Product Owner START authority; bounded branch `agent/m6-enterprise-vision-canonicalization`; canonical candidate `docs/handbook/ENTERPRISE_VISION.md`; Draft PR and independent review required |
+| GOV-048 | Normalize canonical product name to `oneQay` | In Progress | Correct current/future-facing canonical material; preserve immutable identifiers and historical quoted evidence |
+| GOV-049 | Synchronize Enterprise Capability Map and conceptual evolution | In Progress | Core Business Platform, Platform Capabilities, Extensibility, AI Platform, Channels; evolution E0–E5; no implementation authority implied |
+| GOV-050 | Reconcile A-09 Enterprise Vision anomaly | In Progress | Addressed by M6 candidate; may be Resolved only after approved lifecycle publication |
+
+M6 does not authorize Sprint 14, final/business/production application implementation, new business source code, database/schema implementation, SQL/migration execution, production database modification, deployment, release, ADR/GD promotion, JRN resolution, or production-readiness transition.
 
 ## Decisions required before final/business application implementation
 
@@ -107,7 +120,7 @@ Published bounded Platform Foundation source through Sprint 13 is an existing re
 
 ## Phase 1 candidate backlog
 
-Items ini tidak memperoleh authority baru dari M5.3. Published bounded Platform Foundation through Sprint 13 must be preserved, tetapi pekerjaan baru untuk final/business application atau Sprint 14 tetap membutuhkan Product Owner authority dan gate yang berlaku.
+Items ini tidak memperoleh authority baru dari M6. Published bounded Platform Foundation through Sprint 13 must be preserved, tetapi pekerjaan baru untuk final/business application atau Sprint 14 tetap membutuhkan Product Owner authority dan gate yang berlaku.
 
 - PLT-001 repository/application skeleton;
 - PLT-002 tenant context and isolation enforcement;

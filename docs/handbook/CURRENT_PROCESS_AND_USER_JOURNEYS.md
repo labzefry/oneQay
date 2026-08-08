@@ -1,16 +1,16 @@
-# OneQay Current Process and User Journeys
+# oneQay Current Process and User Journeys
 
-> **Status:** Proposed — current-state hypotheses menunggu discovery dan persetujuan Product Owner  
-> **Phase:** 0 — Governance & Discovery  
-> **Owner:** Product Owner OneQay  
-> **Tracking:** GitHub Issue #6  
+> **Status:** Proposed — current-state hypotheses menunggu discovery dan persetujuan Product Owner
+> **Phase:** 0 — Governance & Discovery
+> **Owner:** Product Owner oneQay
+> **Tracking:** GitHub Issue #6
 > **Dependencies:** Product Vision and Decision Rights serta Stakeholder and Actor Map berstatus Proposed
 
 ## Purpose
 
 Dokumen ini membentuk baseline untuk memahami bagaimana target actor kemungkinan menjalankan pekerjaan saat ini, masalah yang mereka alami, handoff antarperan, exception, control, serta outcome yang dibutuhkan. Baseline ini digunakan untuk merencanakan discovery, bukan untuk mengklaim bahwa proses bisnis telah tervalidasi.
 
-Hasilnya menjadi input bagi domain event storming, MVP slicing, data classification, threat modeling, architecture options, permission design, API contracts, dan testing strategy. Dokumen ini tidak memberi izin membuat source code.
+Hasilnya menjadi input bagi domain event storming, MVP slicing, data classification, threat modeling, architecture options, permission design, API contracts, dan testing strategy. Dokumen ini tidak memberi izin membuat source code baru.
 
 ## Evidence semantics
 
@@ -27,14 +27,14 @@ Saat dokumen ini pertama kali dibuat, seluruh current process dan journey di baw
 
 ## Approved constraints
 
-- GitHub adalah Single Source of Truth untuk pengembangan OneQay.
+- GitHub adalah Single Source of Truth untuk pengembangan oneQay.
 - Engineering collaboration menggunakan ChatGPT + GitHub saja.
-- OneQay adalah platform multi-tenant; Tenant ID merupakan batas isolasi utama.
+- oneQay adalah platform multi-tenant; Tenant ID merupakan batas isolasi utama.
 - Domain/subdomain hanya media akses dan bukan bukti authorization.
 - Business logic tidak bergantung pada framework, database, UI, atau provider infrastruktur.
 - Tindakan finansial, inventory, privileged access, support, release, dan cross-tenant operation harus dapat diaudit.
 - Keputusan framework, database, payment, offline semantics, provider, dan deployment detail membutuhkan evidence serta ADR/policy terkait.
-- Application source code tetap Blocked sampai exit criteria Phase 0 terpenuhi.
+- Final/business/production application implementation baru tetap Blocked sampai authority dan gate yang berlaku dipenuhi; bounded Platform Foundation yang telah dipublikasikan melalui Sprint 13 tetap merupakan fakta repository.
 
 ## Discovery objectives
 
@@ -308,11 +308,11 @@ Keputusan tersebut harus memiliki owner manusia, evidence, option analysis, sert
 - [ ] Pain point divalidasi, ditolak, atau tetap ditandai assumption.
 - [ ] Offline, payment, fiscal, privacy, retention, permission, dan technology decision tidak disetujui tersirat.
 - [ ] Tidak ada data sensitif atau production data pada evidence repository.
-- [ ] Application source code tetap Blocked.
+- [ ] Final/business/production application implementation baru tetap Blocked tanpa authority dan gate yang berlaku.
 
 ## ChatGPT — Lanjutan
 
-Gunakan repository `labzefry/oneQay` sebagai SSOT. Review Issue #6 dan draft PR Current Process and User Journeys pada head terbaru. Terapkan hanya koreksi yang disetujui Product Owner. Jangan mengubah journey hypothesis menjadi observed fact, menetapkan MVP/permission/technology, mempromosikan status Proposed, atau membuat source code tanpa evidence dan approval eksplisit. Setelah dokumen direview, siapkan Domain Event Storming sebagai issue dan draft PR terpisah.
+Gunakan repository `labzefry/oneQay` sebagai SSOT. Review Issue #6 dan draft PR Current Process and User Journeys pada head terbaru. Terapkan hanya koreksi yang disetujui Product Owner. Jangan mengubah journey hypothesis menjadi observed fact, menetapkan MVP/permission/technology, mempromosikan status Proposed, atau membuat source code baru tanpa evidence dan approval eksplisit. Setelah dokumen direview, siapkan Domain Event Storming sebagai issue dan draft PR terpisah.
 
 ## ChatGPT — Review Independen
 

@@ -1,4 +1,4 @@
-# OneQay UI/UX Guideline
+# oneQay UI/UX Guideline
 
 ## Experience principles
 
