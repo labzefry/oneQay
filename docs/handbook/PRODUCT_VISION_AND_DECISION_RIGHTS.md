@@ -11,7 +11,7 @@ Dokumen ini menetapkan arah product/discovery oneQay dan batas kewenangan pengam
 
 Dokumen ini tidak menyetujui source code baru, framework, vendor, rancangan database fisik, kontrak API, atau tanggal rilis.
 
-M6 menambahkan `docs/handbook/ENTERPRISE_VISION.md` sebagai Enterprise Vision candidate tingkat tinggi. Dokumen ini tetap menjadi artifact Phase 0 untuk product/discovery direction dan decision rights; status Proposed di sini tidak dipromosikan hanya karena Enterprise Vision candidate dibuat.
+M6 mempublikasikan `docs/handbook/ENTERPRISE_VISION.md` sebagai canonical Enterprise Vision tingkat tinggi, dan GOV-051 kemudian secara terpisah mengesahkan Enterprise Vision tersebut sebagai binding long-term product direction. Dokumen ini tetap menjadi artifact Phase 0 untuk product/discovery direction dan decision rights; status Proposed/GD-003 di sini tidak dipromosikan oleh GOV-051.
 
 ## Canonical product naming
 
@@ -26,7 +26,7 @@ Current/future-facing product identity harus menggunakan `oneQay`. Repository id
 | Product | oneQay | Approved |
 | Tagline | The Future of Intelligent Business Management | Approved |
 | Category | Enterprise SaaS POS & ERP Platform | Approved |
-| Enterprise Vision | Enterprise Intelligent Business Management Platform | Proposed — M6 candidate |
+| Enterprise Vision | Enterprise Intelligent Business Management Platform | Approved — GOV-051 substantive Product Owner decision |
 | Developer & Product Engineering Entity | Lab \| zefry | Approved |
 | Source of Truth | GitHub | Approved |
 | Delivery model | Multi-tenant SaaS | Approved |
@@ -37,7 +37,7 @@ Engineering collaboration tooling is governed separately through `AI_CONSTITUTIO
 
 oneQay menjadi platform intelligent business management yang membantu bisnis menjalankan transaksi dan operasional secara terpadu, akurat, aman, serta mudah dikembangkan dari satu toko menuju organisasi multi-cabang dan multi-tenant tanpa mengganti fondasi business logic ketika infrastruktur bertumbuh.
 
-M6 memperluas horizon directional tersebut melalui Enterprise Vision candidate **Enterprise Intelligent Business Management Platform**. Candidate ini tidak menyatakan bahwa seluruh POS/ERP/CRM/HRM/BI/AI/ecosystem capability telah Approved untuk implementasi.
+The Approved Enterprise Vision **Enterprise Intelligent Business Management Platform** memperluas horizon directional tersebut. Approval GOV-051 tidak menyatakan bahwa seluruh POS/ERP/CRM/HRM/BI/AI/ecosystem capability telah Approved untuk implementasi.
 
 ## Enterprise Vision relationship
 
@@ -50,6 +50,8 @@ M6 memisahkan secara eksplisit:
 5. Implementation Authority.
 
 Enterprise Capability Map adalah peta arah, bukan MVP scope dan bukan implementation grant. Detailnya berada di `docs/handbook/ENTERPRISE_VISION.md`.
+
+GOV-051 hanya mengesahkan substantive Enterprise Vision. GOV-051 tidak menyetujui decision-rights matrix, open decisions, acceptance gate, atau GD-003 pada dokumen ini.
 
 ## Mission
 
@@ -203,7 +205,7 @@ Sampai delegate manusia tercatat, Product Owner tetap menjadi approver. ChatGPT 
 
 Merge bukan selalu bukti approval substantif. PR harus menyatakan decision items yang disetujui; approval harus merujuk versi/head yang direview. Perubahan setelah approval membutuhkan review ulang.
 
-Enterprise Vision publication juga tidak otomatis mempromosikan decision items pada dokumen ini dari Proposed menjadi Approved kecuali Product Owner menyatakan keputusan substantif tersebut secara eksplisit untuk exact head.
+Enterprise Vision publication tidak otomatis mempromosikan decision items pada dokumen ini dari Proposed menjadi Approved. GOV-051 adalah explicit Product Owner substantive approval hanya untuk Enterprise Vision dan tidak mempromosikan GD-003 atau item lain pada dokumen ini.
 
 ## Escalation and stop conditions
 
@@ -254,23 +256,25 @@ Dokumen dapat berubah dari Proposed menjadi Approved hanya bila Product Owner:
 4. menerima daftar open decisions tanpa menganggapnya telah selesai;
 5. menegaskan implementation boundary dan authority yang berlaku pada exact head.
 
-M6 START authority sendiri tidak memenuhi acceptance gate di atas.
+M6 START authority maupun GOV-051 Enterprise Vision approval sendiri tidak memenuhi acceptance gate dokumen/GD-003 di atas.
 
 ## Current program boundary
 
 - Phase 0: In Progress.
+- Enterprise Vision: Approved through GOV-051 as binding long-term product direction; not implementation authority.
 - Sprint 12: Published.
 - Sprint 13: Published.
 - Sprint 14: Not Authorized.
 - Final/business/production application implementation: Blocked unless separately authorized.
 - Production readiness: NO-GO.
 - Deployment, release, SQL/migration execution, and production database modification: Not Authorized.
+- GD-003: Proposed.
 - GD-007: Proposed.
 - JRN-003/JRN-013: Unresolved.
 
 ## ChatGPT — Lanjutan
 
-Gunakan repository `labzefry/oneQay` sebagai SSOT. Terapkan hanya koreksi yang memiliki authority sesuai lifecycle pada `PRODUCT_VISION_AND_DECISION_RIGHTS.md`, `PROJECT_MANIFEST.md`, `TASKS.md`, `CHANGELOG.md`, dan dokumen canonical terkait. Jangan mempromosikan status Proposed menjadi Approved tanpa approval manusia yang eksplisit pada exact head. Published bounded Platform Foundation history tidak boleh dihapus atau ditulis ulang. Final/business implementation baru tetap membutuhkan authority terpisah.
+Gunakan repository `labzefry/oneQay` sebagai SSOT. Terapkan hanya koreksi yang memiliki authority sesuai lifecycle pada `PRODUCT_VISION_AND_DECISION_RIGHTS.md`, `PROJECT_MANIFEST.md`, `TASKS.md`, `CHANGELOG.md`, dan dokumen canonical terkait. Jangan mempromosikan status Proposed menjadi Approved tanpa approval manusia yang eksplisit pada exact head. GOV-051 hanya merupakan approval Enterprise Vision dan bukan approval GD-003. Published bounded Platform Foundation history tidak boleh dihapus atau ditulis ulang. Final/business implementation baru tetap membutuhkan authority terpisah.
 
 ## ChatGPT — Review Independen
 
