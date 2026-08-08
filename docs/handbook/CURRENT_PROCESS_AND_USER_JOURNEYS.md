@@ -1,9 +1,9 @@
 # oneQay Current Process and User Journeys
 
-> **Status:** Proposed — current-state hypotheses menunggu discovery dan persetujuan Product Owner  
-> **Phase:** 0 — Governance & Discovery  
-> **Owner:** Product Owner oneQay  
-> **Tracking:** GitHub Issue #6  
+> **Status:** Proposed — current-state hypotheses menunggu discovery dan persetujuan Product Owner
+> **Phase:** 0 — Governance & Discovery
+> **Owner:** Product Owner oneQay
+> **Tracking:** GitHub Issue #6
 > **Dependencies:** Product Vision and Decision Rights serta Stakeholder and Actor Map berstatus Proposed
 
 ## Purpose
