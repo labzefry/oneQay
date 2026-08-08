@@ -1,4 +1,4 @@
-# OneQay Roadmap
+# oneQay Roadmap
 
 ## Roadmap principles
 
@@ -6,6 +6,14 @@
 - Security, tenant isolation, migration, observability, backup, dan rollback adalah bagian fitur.
 - Setiap fase memiliki entry/exit criteria dan tidak otomatis terikat tanggal sebelum kapasitas disetujui.
 - Marketplace, plugin, AI automation, cloud, dan Kubernetes tidak dipercepat sebelum fondasi siap.
+- Product Vision, Capability Map, Architecture Direction, Delivery Roadmap, dan Implementation Authority harus tetap dibedakan.
+- Keberadaan capability pada roadmap atau Enterprise Capability Map tidak memberikan implementation authority.
+
+## Canonical product identity
+
+Nama produk canonical adalah **oneQay**.
+
+Dokumen current-state dan future-facing harus menggunakan `oneQay`. Immutable GitHub identifiers, repository path `labzefry/oneQay`, SHAs, historical commit messages, branch names, dan quoted historical evidence tidak ditulis ulang hanya untuk normalisasi branding.
 
 ## Phase 0 — Governance and discovery
 
@@ -104,7 +112,7 @@ Exit criteria meliputi reconciliation, migration safety, permission separation, 
 
 ## Phase 4 — SaaS commercial platform
 
-**Outcome:** OneQay dapat mengelola subscription dan tenant lifecycle secara komersial.
+**Outcome:** oneQay dapat mengelola subscription dan tenant lifecycle secara komersial.
 
 Scope candidate:
 
@@ -140,6 +148,21 @@ Scope candidate:
 - assisted workflow dengan human confirmation;
 - evaluation suite, red-team, cost and latency budget;
 - prompt/model versioning dan safe fallback.
+
+## Enterprise product evolution
+
+M6 menambahkan peta evolusi konseptual yang melengkapi phase delivery di atas. Ini bukan release commitment dan tidak mengubah authority phase/sprint.
+
+| Evolution stage | Directional purpose | Authority implication |
+| --- | --- | --- |
+| E0 — Foundation | Governance, tenancy, identity, configuration, audit, data safety, quality, recovery | Existing Sprint 12/13 publication preserved; no new source authority |
+| E1 — Core Transaction Platform | Controlled business transactions and approved POS/commerce slice | Requires separate Product Owner implementation authority |
+| E2 — Business Management | Inventory, procurement, CRM, finance/accounting foundation, reporting, workflow | Directional only until separately authorized |
+| E3 — Enterprise Management | Multi-unit governance, advanced administration, configurable process and control | Directional only until separately authorized |
+| E4 — Intelligence | Business Intelligence, AI insight, recommendation, bounded automation | Directional only; AI/data/security gates remain mandatory |
+| E5 — Ecosystem | Public API, partner integration, marketplace, plugin/extension ecosystem | Directional only; trust/compatibility/security gates remain mandatory |
+
+Canonical detail resides in `docs/handbook/ENTERPRISE_VISION.md` once M6 is published through the approved lifecycle.
 
 ## Infrastructure evolution track
 
@@ -184,15 +207,33 @@ Historical Technical Preview planning language is preserved as planning history.
 
 ## M5 — Engineering State, CI & Governance Stabilization
 
-M5 is a control-plane and canonical-state stabilization track. It does not authorize Enterprise Vision, Sprint 14, production deployment, release, SQL execution, migration execution, or production database modification.
+M5 was a control-plane and canonical-state stabilization track. It did not authorize Enterprise Vision, Sprint 14, production deployment, release, SQL execution, migration execution, or production database modification.
 
 | Micro-milestone | Canonical state | Result |
 | --- | --- | --- |
 | M5.1 — Canonical State Reconciliation | PUBLISHED / COMPLETE | Canonical `docs/ai/` checkpoint location established and stale duplicate root state reduced to pointer stubs; published through PR #66 |
 | M5.2 — CI & Lifecycle Control Hardening | PUBLISHED / ENFORCEMENT COMPLETE | A-03 and A-05 resolved; protected contexts include PHP foundation regression and exact-head Product Owner merge authority; published through PR #67 |
-| M5.3 — Governance & Program State Synchronization | In Progress | Reconcile A-06 Phase 0 semantics, A-07 ROADMAP/TASKS state, and A-08 product metadata/attribution without rewriting history |
-| M6 — Enterprise Vision canonicalization | Reserved / Not Started | A-09 remains reserved; no Enterprise Vision implementation in M5 |
+| M5.3 — Governance & Program State Synchronization | PUBLISHED / COMPLETE | A-06, A-07, and A-08 reconciled; published through PR #68 as `e45f5b4c0f143abc6e255e4e8550bf3504348aae` |
 
-M5.3 must preserve Sprint 12 and Sprint 13 publication facts, preserve historical lifecycle discrepancies as historical facts, keep final/business application implementation blocked, keep Sprint 14 Not Authorized, and keep production readiness NO-GO.
+M5 publication facts remain immutable repository history.
+
+## M6 — Enterprise Vision Canonicalization
+
+**State:** In Progress / bounded candidate.
+
+M6 is authorized for Enterprise Vision analysis/documentation, capability-map and conceptual evolution definition, current program-state synchronization, brand normalization to `oneQay`, bounded branch/Draft PR creation, validation, and independent review preparation.
+
+M6 must preserve:
+
+- Phase 0: In Progress;
+- Sprint 12: Published;
+- Sprint 13: Published;
+- Sprint 14: Not Authorized;
+- final/business/production application implementation: Blocked unless separately authorized;
+- production readiness: NO-GO;
+- ADR/GD/JRN statuses unless separately decided;
+- historical lifecycle discrepancies as historical facts.
+
+M6 does not authorize Ready, Merge, deployment, release, SQL/migration execution, production database modification, Sprint 14, or new business/application source implementation.
 
 Attribution: Lab | zefry
