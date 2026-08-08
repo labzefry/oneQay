@@ -1,9 +1,9 @@
 # oneQay Stakeholder and Actor Map
 
-> **Status:** Proposed — menunggu discovery dan persetujuan Product Owner  
-> **Phase:** 0 — Governance & Discovery  
-> **Owner:** Product Owner oneQay  
-> **Tracking:** GitHub Issue #4  
+> **Status:** Proposed — menunggu discovery dan persetujuan Product Owner
+> **Phase:** 0 — Governance & Discovery
+> **Owner:** Product Owner oneQay
+> **Tracking:** GitHub Issue #4
 > **Dependency:** Product Vision and Decision Rights berstatus Proposed
 
 ## Purpose
