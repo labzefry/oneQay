@@ -45,6 +45,8 @@ oneQay diarahkan menjadi platform intelligent business management yang menyatuka
 
 M6 telah mempublikasikan representasi canonical Enterprise Vision **Enterprise Intelligent Business Management Platform** melalui PR #69. Publication tersebut tidak dengan sendirinya mempromosikan substantive Enterprise Vision decision; Product Owner kemudian memberikan keputusan substantif terpisah GOV-051 yang **APPROVED** pada verified repository baseline `762149757e4bc1fa79cc16bc4761f4147be0f7ea` dan canonical artifact blob `bb1cace72a6fdb359e15e22467443d9f3916c336`. Approval tersebut menetapkan long-term product direction, tetapi tidak menyatakan bahwa seluruh capability telah terimplementasi atau production-ready dan tidak memberikan Sprint 14 atau implementation authority.
 
+Product Owner kemudian memberikan substantive DEC-000 Product Vision and Decision Rights decision yang **APPROVED** pada decision baseline `792b2dc30636bc53baa7d66b43cf2dab4a348dd4`, tree `08f03b895d5e2ae7ca402e9866384990e126add3`, canonical owner artifact blob `843544b9e31dd4c47638b88dd204f4e594295df4`, dan readiness artifact blob `b493a5d66edc1bbffab0126bdacf2ca1ce14fa8f`. DEC-000 mengesahkan GD-003 dalam boundary product/discovery governance saja dan tidak memberikan implementation authority.
+
 ## Current delivery gate
 
 | Item | Status | Gate |
@@ -57,6 +59,7 @@ M6 telah mempublikasikan representasi canonical Enterprise Vision **Enterprise I
 | M5.3 Governance & Program State Synchronization | Published / Complete | PR #68; published commit `e45f5b4c0f143abc6e255e4e8550bf3504348aae` |
 | M6 Enterprise Vision Canonicalization | Published / Publication Complete | PR #69; source head `e6a3345b09a6b270ac7e09abd78c6356f426e363`; published commit `0b7b28028966ac38af0f32960054210c3a083916`; source/published tree `567df997bae70090b19465c75e4cc3b1e23b6579` |
 | GOV-051 Enterprise Vision substantive decision | Approved / Decision Complete | Product Owner APPROVED `Enterprise Intelligent Business Management Platform` on verified baseline `762149757e4bc1fa79cc16bc4761f4147be0f7ea`; approval is product direction only, not implementation authority |
+| DEC-000 Product Vision and Decision Rights | Approved / Decision Complete | Product Owner APPROVED D-000-01 through D-000-06 on baseline `792b2dc30636bc53baa7d66b43cf2dab4a348dd4`; `docs/handbook/DEC_000_DECISION_RECORD.md`; GD-003 Approved within DEC-000 boundary only |
 | Final/business application implementation | Blocked | Tidak ada authority untuk implementasi business/final/production application baru |
 | Sprint 14 | Not Authorized | Memerlukan Product Owner authority terpisah |
 | Production readiness | NO-GO | Tidak ada deployment, release, atau production-migration authority |
@@ -89,7 +92,7 @@ Published canonical Enterprise Vision representation oneQay adalah:
 
 High-level capability families mencakup Core Business Platform, Platform Capabilities, Extensibility, AI Platform, dan Channels. Detail canonical representation berada di `docs/handbook/ENTERPRISE_VISION.md`. PR #69 mengesahkan representasi dan provenance; GOV-051 kemudian secara terpisah mengesahkan substantive Enterprise Vision sebagai binding long-term product direction.
 
-Capability-map presence tidak memberikan implementation authority. GOV-051 tidak mempromosikan bounded context Proposed, ADR, GD-003, GD-007, JRN, Sprint 14, final/business application implementation, deployment, release, SQL/migration, production database modification, atau production readiness.
+Capability-map presence tidak memberikan implementation authority. GOV-051 sendiri tidak mempromosikan bounded context Proposed, ADR, GD-003, GD-007, JRN, Sprint 14, final/business application implementation, deployment, release, SQL/migration, production database modification, atau production readiness. GD-003 kemudian secara terpisah **Approved** melalui substantive DEC-000, tetap tanpa implementation authority.
 
 ## Product identity and engineering-tooling boundary
 
@@ -106,13 +109,13 @@ Capability-map presence tidak memberikan implementation authority. GOV-051 tidak
 | --- | --- | --- | --- |
 | GD-001 | GitHub sebagai Single Source of Truth | Approved | `AI_CONSTITUTION.md` |
 | GD-002 | ChatGPT + GitHub sebagai collaboration model eksklusif | Approved | `AI_CONSTITUTION.md` |
-| GD-003 | Product vision dan decision rights | Proposed | `docs/handbook/PRODUCT_VISION_AND_DECISION_RIGHTS.md` |
+| GD-003 | Product vision dan decision rights | **Approved — DEC-000** | `docs/handbook/PRODUCT_VISION_AND_DECISION_RIGHTS.md`; `docs/handbook/DEC_000_DECISION_RECORD.md` |
 | GD-004 | Final/business application implementation tetap diblokir sampai gate yang berlaku disetujui | Approved | `docs/handbook/PHASE_0_KICKOFF.md` |
 | GD-005 | Stakeholder and actor map | Proposed | `docs/handbook/STAKEHOLDER_AND_ACTOR_MAP.md` |
 | GD-006 | Current process and user journeys | Proposed | `docs/handbook/CURRENT_PROCESS_AND_USER_JOURNEYS.md` |
 | GD-007 | Domain event storming | Proposed | `docs/handbook/DOMAIN_EVENT_STORMING.md`; corrections tracked in Issue #10/#12; governance controls tracked in Issue #14/#16/#18/#20 |
 
-GD-003 hanya dapat berubah menjadi Approved setelah Product Owner menyetujui head pull request terkait. GOV-051 tidak mengubah status GD-003. Merge teknis tanpa decision statement tidak boleh dianggap sebagai approval substantif.
+GD-003 is Approved only through the explicit Product Owner substantive DEC-000 decision on baseline `792b2dc30636bc53baa7d66b43cf2dab4a348dd4` and the corresponding bounded decision record. The approval governs Product Vision and Decision Rights only. It does not approve DEC-001 through DEC-012, accept an ADR, promote GD-007, resolve JRN-003/JRN-013, start Sprint 14, or grant final/business/production implementation, SQL/migration, production DB, deployment, release, or production-readiness authority.
 
 Persetujuan Product Owner atas lima koreksi review PR #9 hanya mengotorisasi correction scope pada Issue #10. Persetujuan tersebut tidak mempromosikan GD-007 atau event, aggregate, bounded context, dan policy hypothesis dari **Proposed**.
 
@@ -249,6 +252,8 @@ Tidak ada framework atau vendor yang dianggap dipilih sebelum ADR berstatus Acce
 | TASKS.md | Backlog operasional |
 | CHANGELOG.md | Riwayat perubahan versi |
 | `docs/handbook/ENTERPRISE_VISION.md` | Published canonical Enterprise Vision representation, capability map, dan conceptual product evolution; substantive status Approved through GOV-051; no implementation authority implied |
+| `docs/handbook/PRODUCT_VISION_AND_DECISION_RIGHTS.md` | Approved Product Vision and Decision Rights through DEC-000; no implementation authority implied |
+| `docs/handbook/DEC_000_DECISION_RECORD.md` | DEC-000 substantive Product Owner decision provenance, dispositions, and boundaries |
 | API_SPEC.md | Governance API |
 | DATABASE.md | Governance data dan skema |
 | SECURITY.md | Security baseline |
@@ -277,6 +282,8 @@ Setiap perubahan resmi minimal memperbarui manifest, task, dan changelog bila st
 Baseline governance Handbook 1.0 disetujui melalui PR #1. Item berstatus Approved mengikat seluruh pekerjaan berikutnya hanya sesuai scope keputusan masing-masing; item Proposed, Under Review, dan Deferred tidak boleh diperlakukan sebagai keputusan final.
 
 M6 publication lifecycle selesai melalui PR #69. Publication tersebut mengesahkan representasi canonical dan provenance M6, tetapi tidak dengan sendirinya mempromosikan Enterprise Vision dari Proposed menjadi Approved. Product Owner kemudian memberikan keputusan substantif terpisah GOV-051 yang **APPROVED** pada verified repository baseline `762149757e4bc1fa79cc16bc4761f4147be0f7ea` dan canonical artifact blob `bb1cace72a6fdb359e15e22467443d9f3916c336`. Keputusan tersebut mengikat long-term product direction dan tidak memberi Sprint 14, implementation, deployment, release, SQL/migration, production DB, ADR/GD/JRN, atau production-readiness authority.
+
+Product Owner kemudian memberikan substantive DEC-000 Product Vision and Decision Rights decision yang **APPROVED** pada baseline `792b2dc30636bc53baa7d66b43cf2dab4a348dd4`, tree `08f03b895d5e2ae7ca402e9866384990e126add3`, canonical artifact blob `843544b9e31dd4c47638b88dd204f4e594295df4`, dan readiness artifact blob `b493a5d66edc1bbffab0126bdacf2ca1ce14fa8f`. Keputusan tersebut mengesahkan GD-003 hanya dalam boundary Product Vision and Decision Rights, mempertahankan PV-002 melalui PV-006 sebagai Open / Not Resolved, dan tidak memberi Sprint 14, final/business/production implementation, ADR acceptance, GD-007/JRN resolution, SQL/migration, production DB, deployment, release, atau production-readiness authority.
 
 ## Technical Preview v0.0.1 decision package
 
@@ -336,7 +343,7 @@ PR #28 was created from original base `3c4bcfe9797a3ae7f4deb124568ef361d74125e5`
 
 Read-only evidence for the PR #28 exact head shows no review submission, PR conversation comment, published commit status, or GitHub Actions workflow run. The local and static validation statements in the PR body remain distinct from independent GitHub check evidence and do not supply lifecycle authority.
 
-The Product Owner issued a post-merge exact-head content decision approving only the accuracy of the three-file corrective content on PR #28 exact head. That decision does not provide retrospective lifecycle authority and does not ratify the draft-to-ready transition or merge of PR #28.
+The Product Owner issued a post-merge exact-head decision approving only the accuracy of the three-file corrective content on PR #28 exact head. That decision does not provide retrospective lifecycle authority and does not ratify the draft-to-ready transition or merge of PR #28.
 
 The PR #28 technical merge does not ratify PR #27, PR #26, or PR #25, validate or complete the closure of Issue #23, accept ADR-001 through ADR-007, approve Phase 0 preview exit, grant source-code authority, complete GOV-034, GOV-035, GOV-036, or GOV-037, or provide substantive approval or completion evidence. Phase 0 remains **In Progress**. Final/business application implementation remains **Blocked**. Phase 0 preview exit remains **Not Ready**. P1 remains conditional and **Unverified**. ADR-001 through ADR-007, GD-007, PAY-1, OFF-1, TEN-1, REC-1, SLO-1, and DATA-1 remain **Proposed** selections or boundaries. GOV-034, GOV-035, GOV-036, and GOV-037 remain **Review**. JRN-003 and JRN-013 remain unresolved. Hosting evidence remains Pending, Not supplied, or Unverified.
 
@@ -378,7 +385,7 @@ The PR #31 technical merge does not ratify PR #30, PR #29, PR #28, PR #27, PR #2
 
 ## PR #32 post-merge governance recurrence
 
-PR #32 was created from original base `67059e563de26cee26cefd64cf9e7d5c4436ffc6` at exact head `beb7b35aa718a746ad5dad9d5574c2293bd0ab40`. Its body required the PR to remain draft, but it was changed from draft and technically merged as `d1a6160b37250bda691e906fc4ee06e37dd0c847`.
+PR #32 was created from original base `67059e563de26cee26fd64cf9e7d5c4436ffc6` at exact head `beb7b35aa718a746ad5dad9d5574c2293bd0ab40`. Its body required the PR to remain draft, but it was changed from draft and technically merged as `d1a6160b37250bda691e906fc4ee06e37dd0c847`.
 
 A repository-native operational authority comment was present on PR #32 and explicitly authorized current-main verification, corrective branch creation, the three corrective Markdown changes, adding GOV-040 as Review, draft PR creation, the authority comment, and read-only checks. That authority explicitly excluded draft-to-ready transition, merge or auto-merge, approval review, branch-protection or ruleset changes, ADR acceptance, Phase 0 exit, source-code implementation, Issue #23 state change, hosting-evidence completion, governance-task completion, ratification, release, deployment, and status promotion.
 
@@ -418,8 +425,10 @@ Phase 0 remains **In Progress**. Final/business application implementation remai
 - M6 — Enterprise Vision Canonicalization: **PUBLISHED / PUBLICATION COMPLETE** through PR #69; substantive Enterprise Vision decision is **APPROVED** through GOV-051.
 - A-09 — Enterprise Vision Not Yet Canonical: **Resolved at canonical representation/publication level through PR #69**; separate substantive Enterprise Vision decision **APPROVED** through GOV-051.
 - A-10 — Product-name capitalization inconsistency: **Resolved for current/future-facing canonical material through PR #69**; canonical form is `oneQay` and immutable historical evidence remains preserved.
+- DEC-000 — Product Vision and Decision Rights: **APPROVED / DECISION COMPLETE**; GD-003 Approved within DEC-000 boundary; PV-002 through PV-006 remain Open / Not Resolved.
+- Phase 0 remains **In Progress**.
 - Sprint 14 remains **Not Authorized**.
 - Production readiness remains **NO-GO**.
-- No deployment, release, SQL execution, migration execution, or production database modification is authorized by M6 or GOV-051.
+- No final/business/production implementation, deployment, release, SQL execution, migration execution, or production database modification is authorized by GOV-051 or DEC-000.
 
 Attribution: Lab | zefry

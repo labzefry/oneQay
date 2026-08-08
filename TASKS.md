@@ -42,7 +42,7 @@ Nama produk canonical adalah **oneQay**. Current/future-facing task text harus m
 | GOV-021 | Product Owner handbook review | Done | Product Owner approved and merged PR #1 |
 | GOV-022 | Phase 0 governance and discovery kickoff pack | Done | `docs/handbook/PHASE_0_KICKOFF.md`; PR #1 |
 | GOV-023 | Standardize engineering collaboration to ChatGPT + GitHub only | Done | `AI_CONSTITUTION.md`; PR #1 |
-| GOV-024 | Product vision and decision rights | In Progress | Issue #2; draft document prepared for Product Owner review |
+| GOV-024 | Product vision and decision rights | Done | DEC-000 substantive Product Owner decision APPROVED on baseline `792b2dc30636bc53baa7d66b43cf2dab4a348dd4`; `docs/handbook/PRODUCT_VISION_AND_DECISION_RIGHTS.md`; `docs/handbook/DEC_000_DECISION_RECORD.md`; GD-003 Approved within DEC-000 boundary only |
 | GOV-025 | Stakeholder and actor map | Review | Issue #4; PR #5 menunggu review dan persetujuan Product Owner |
 | GOV-026 | Current process and user journeys | Review | Issue #6; draft document prepared for Product Owner review |
 | GOV-027 | Domain event storming | Review | Issue #8 dan PR #9 merged; GD-007 tetap Proposed |
@@ -91,7 +91,7 @@ Published bounded Platform Foundation source through Sprint 13 is an existing re
 
 | ID | Decision | Status | Required output |
 | --- | --- | --- | --- |
-| DEC-000 | Product Owner, delegates, and decision rights | In Progress | Approved Product Vision and Decision Rights document |
+| DEC-000 | Product Owner, delegates, and decision rights | Done | Product Owner substantive decision APPROVED; Approved `docs/handbook/PRODUCT_VISION_AND_DECISION_RIGHTS.md`; `docs/handbook/DEC_000_DECISION_RECORD.md`; GD-003 Approved only within DEC-000 boundary |
 | DEC-001 | MVP scope and non-scope | Ready | Approved product brief |
 | DEC-002 | Backend language/framework | Ready | ADR-001 |
 | DEC-003 | Frontend/PWA stack | Ready | ADR-002 |
@@ -104,6 +104,8 @@ Published bounded Platform Foundation source through Sprint 13 is an existing re
 | DEC-010 | Product license and third-party notice policy | Ready | Legal decision |
 | DEC-011 | Data retention, privacy, and jurisdiction | Ready | Policy/ADR |
 | DEC-012 | RPO/RTO and support objectives | Backlog | Operational policy |
+
+DEC-000 completion does not approve, accept, start, or implement DEC-001 through DEC-012. Each remains independently gated by its required evidence and Product Owner authority.
 
 ## Phase 0 discovery backlog
 
@@ -121,7 +123,7 @@ Published bounded Platform Foundation source through Sprint 13 is an existing re
 
 ## Phase 1 candidate backlog
 
-Items ini tidak memperoleh authority baru dari M6 or GOV-051. Published bounded Platform Foundation through Sprint 13 must be preserved, tetapi pekerjaan baru untuk final/business application atau Sprint 14 tetap membutuhkan Product Owner authority dan gate yang berlaku.
+Items ini tidak memperoleh authority baru dari M6, GOV-051, atau DEC-000. Published bounded Platform Foundation through Sprint 13 must be preserved, tetapi pekerjaan baru untuk final/business application atau Sprint 14 tetap membutuhkan Product Owner authority dan gate yang berlaku.
 
 - PLT-001 repository/application skeleton;
 - PLT-002 tenant context and isolation enforcement;
