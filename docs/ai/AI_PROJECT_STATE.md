@@ -16,10 +16,10 @@ Engineering AI/tooling identity is governance metadata only and is not product a
 
 - Canonical delivery phase: Phase 0 — Governance and Discovery
 - Canonical Phase 0 status: In Progress
-- Active program: M6 — Enterprise Vision Canonicalization
-- Active micro-milestone: M6 — Enterprise Vision Canonicalization
-- Current `main`: `e45f5b4c0f143abc6e255e4e8550bf3504348aae`
-- Current `main` tree: `e2bc0505f5abd98a7283b3cd3cd2c4c02ef23ece`
+- Active program: M6 — Post-Publication State Reconciliation
+- Active micro-milestone: M6 — Publication State Reconciliation
+- Current `main`: `0b7b28028966ac38af0f32960054210c3a083916`
+- Current `main` tree: `567df997bae70090b19465c75e4cc3b1e23b6579`
 - M5.1: PUBLISHED / COMPLETE through PR #66
 - M5.1 published commit: `153a33a4a2b5edb4a31285eca7d3491f9589b778`
 - M5.2: PUBLISHED / ENFORCEMENT COMPLETE through PR #67
@@ -30,6 +30,13 @@ Engineering AI/tooling identity is governance metadata only and is not product a
 - M5.3 source tree: `e2bc0505f5abd98a7283b3cd3cd2c4c02ef23ece`
 - M5.3 published commit: `e45f5b4c0f143abc6e255e4e8550bf3504348aae`
 - M5.3 published tree: `e2bc0505f5abd98a7283b3cd3cd2c4c02ef23ece`
+- M6 lifecycle: PUBLISHED / PUBLICATION COMPLETE through PR #69
+- M6 source head: `e6a3345b09a6b270ac7e09abd78c6356f426e363`
+- M6 source tree: `567df997bae70090b19465c75e4cc3b1e23b6579`
+- M6 published commit: `0b7b28028966ac38af0f32960054210c3a083916`
+- M6 published tree: `567df997bae70090b19465c75e4cc3b1e23b6579`
+- M6 source tree equals published tree: Yes
+- Enterprise Vision decision status: Proposed; publication does not promote it to Approved
 - Latest published technical capability sprint: Sprint 13
 - Sprint 12: Published
 - Sprint 13: Published
@@ -47,27 +54,36 @@ Current and future canonical product identity must use exactly `oneQay`. Non-can
 
 Repository identifier `labzefry/oneQay`, immutable GitHub URLs, SHAs, historical commit messages, historical branch names, and quoted historical evidence are preserved as recorded.
 
-## M6 Enterprise Vision candidate
+## M6 Enterprise Vision publication
 
 Product Owner authorized M6 with:
 
 **START M6 — ENTERPRISE VISION CANONICALIZATION**
 
-Verified M6 base:
+M6 publication lifecycle completed through PR #69.
 
-- `main`: `e45f5b4c0f143abc6e255e4e8550bf3504348aae`;
-- tree: `e2bc0505f5abd98a7283b3cd3cd2c4c02ef23ece`;
-- branch: `agent/m6-enterprise-vision-canonicalization`.
+Publication identity:
 
-The Enterprise Vision candidate defines oneQay as:
+- base: `e45f5b4c0f143abc6e255e4e8550bf3504348aae`;
+- base tree: `e2bc0505f5abd98a7283b3cd3cd2c4c02ef23ece`;
+- source branch: `agent/m6-enterprise-vision-canonicalization`;
+- source head: `e6a3345b09a6b270ac7e09abd78c6356f426e363`;
+- source tree: `567df997bae70090b19465c75e4cc3b1e23b6579`;
+- published commit: `0b7b28028966ac38af0f32960054210c3a083916`;
+- published tree: `567df997bae70090b19465c75e4cc3b1e23b6579`;
+- source tree equals published tree: Yes.
+
+Independent review on the exact source head was APPROVED by `zefriansyah`, required technical checks passed, READY and MERGE authorities were separately recorded, and `product-owner-merge-authority` passed before squash merge.
+
+The published canonical Enterprise Vision representation defines oneQay as:
 
 **Enterprise Intelligent Business Management Platform**
 
-The canonical M6 candidate document is:
+The canonical M6 document is:
 
 `docs/handbook/ENTERPRISE_VISION.md`
 
-The vision is directional and does not imply implementation authority, production readiness, Sprint 14 authority, ADR acceptance, or completion of any capability family.
+Publication canonicalizes the representation and location of the Enterprise Vision. It does **not** promote the Enterprise Vision decision status from Proposed to Approved, does not authorize implementation, and does not imply production readiness.
 
 ## Enterprise capability direction
 
@@ -158,7 +174,7 @@ Historical review text that later referenced the alternate implementation remain
 - PR #64 retains its historical sequencing discrepancy; later 402-assertion PASS remains post-publication evidence only.
 - PR #65 retains its historical lifecycle discrepancy because the recorded body constrained the lifecycle differently from the merged GitHub state.
 
-M6 must not falsify or rewrite historical records.
+M6 reconciliation must not falsify or rewrite historical records.
 
 ## M5 publication facts
 
@@ -218,11 +234,12 @@ Bounded Platform Foundation implementation through Sprint 13 is published accord
 
 Final Business Application, POS, ERP, CRM, HRM, production implementation, new business modules, executable migrations, production database modification, deployment, and release remain blocked or not authorized according to the current Phase 0 and Product Owner gates.
 
-Enterprise Vision canonicalization must not be described as implementation of those capabilities.
+Enterprise Vision publication must not be described as implementation of those capabilities.
 
 ## Governance preservation
 
 - Phase 0: In Progress
+- Enterprise Vision decision status: Proposed
 - ADR-001 through ADR-007: Proposed
 - GD-007: Proposed
 - JRN-003 and JRN-013: Unresolved
@@ -244,17 +261,15 @@ Enterprise Vision canonicalization must not be described as implementation of th
 - A-06 Phase 0 semantic ambiguity: Resolved through M5.3 publication.
 - A-07 ROADMAP / TASKS synchronization: Resolved through M5.3 publication.
 - A-08 attribution/collaboration metadata supersession: Resolved through M5.3 publication; canonical product attribution is Lab | zefry.
-- A-09 Enterprise Vision canonicalization: In Progress under M6; candidate artifact created, not publication-complete.
-- A-10 product-name capitalization inconsistency: In Progress under M6; canonical form is `oneQay`, with current canonical material to be normalized without rewriting immutable history.
+- A-09 Enterprise Vision canonicalization: Resolved at representation/publication level through PR #69; Enterprise Vision decision status remains Proposed until separately approved.
+- A-10 product-name capitalization inconsistency: Resolved for current/future-facing canonical material through PR #69; immutable historical evidence remains preserved.
 
-## M6 lifecycle boundary
+## M6 publication and reconciliation boundary
 
-M6 START authority permits Delta Verification, Enterprise Vision analysis/documentation, program-state synchronization, bounded branch work, Draft PR creation, validation, and independent review preparation.
+M6 publication is complete through PR #69. This post-publication reconciliation only aligns canonical mutable state with that published fact.
 
-M6 does not authorize:
+This reconciliation does not authorize:
 
-- Ready transition without separate Product Owner authority;
-- merge or auto-merge without separate Product Owner authority;
 - Sprint 14 implementation;
 - final/business application implementation;
 - database/schema implementation;
@@ -263,8 +278,11 @@ M6 does not authorize:
 - production database modification;
 - deployment;
 - release;
+- Enterprise Vision promotion from Proposed to Approved;
 - ADR/GD promotion;
 - JRN resolution;
 - production readiness promotion.
+
+Any Ready or Merge transition for the reconciliation PR requires separate exact-head Product Owner authority.
 
 Attribution: Lab | zefry

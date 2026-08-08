@@ -77,12 +77,13 @@ Historical GOV-029 through GOV-042 items remain Review where their historical li
 
 | ID | Task | Status | Evidence / next action |
 | --- | --- | --- | --- |
-| GOV-047 | M6 Enterprise Vision canonicalization | In Progress | Product Owner START authority; bounded branch `agent/m6-enterprise-vision-canonicalization`; canonical candidate `docs/handbook/ENTERPRISE_VISION.md`; Draft PR and independent review required |
-| GOV-048 | Normalize canonical product name to `oneQay` | In Progress | Correct current/future-facing canonical material; preserve immutable identifiers and historical quoted evidence |
-| GOV-049 | Synchronize Enterprise Capability Map and conceptual evolution | In Progress | Core Business Platform, Platform Capabilities, Extensibility, AI Platform, Channels; evolution E0–E5; no implementation authority implied |
-| GOV-050 | Reconcile A-09 Enterprise Vision anomaly | In Progress | Addressed by M6 candidate; may be Resolved only after approved lifecycle publication |
+| GOV-047 | M6 Enterprise Vision canonicalization publication | Done | PR #69 source head `e6a3345b09a6b270ac7e09abd78c6356f426e363` published as `0b7b28028966ac38af0f32960054210c3a083916`; source/published tree `567df997bae70090b19465c75e4cc3b1e23b6579`; substantive Enterprise Vision decision remains Proposed |
+| GOV-048 | Normalize canonical product name to `oneQay` | Done | Current/future-facing canonical product identity normalized through PR #69; immutable identifiers and historical quoted evidence preserved |
+| GOV-049 | Synchronize Enterprise Capability Map and conceptual evolution representation | Done | Published through PR #69: Core Business Platform, Platform Capabilities, Extensibility, AI Platform, Channels; evolution E0–E5; no implementation authority implied |
+| GOV-050 | Reconcile A-09 Enterprise Vision anomaly at representation/publication level | Done | PR #69 publication verified; A-09 resolved only at canonical representation/publication level; substantive Enterprise Vision decision remains Proposed |
+| GOV-051 | Enterprise Vision substantive Product Owner decision | Review | Published representation exists through PR #69; substantive decision remains Proposed and requires separate explicit Product Owner approval before any status promotion |
 
-M6 does not authorize Sprint 14, final/business/production application implementation, new business source code, database/schema implementation, SQL/migration execution, production database modification, deployment, release, ADR/GD promotion, JRN resolution, or production-readiness transition.
+M6 publication does not authorize Sprint 14, final/business/production application implementation, new business source code, database/schema implementation, SQL/migration execution, production database modification, deployment, release, ADR/GD promotion, JRN resolution, Enterprise Vision substantive approval, or production-readiness transition.
 
 ## Decisions required before final/business application implementation
 
