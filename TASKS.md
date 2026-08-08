@@ -93,7 +93,7 @@ Published bounded Platform Foundation source through Sprint 13 is an existing re
 | --- | --- | --- | --- |
 | DEC-000 | Product Owner, delegates, and decision rights | Done | Product Owner substantive decision APPROVED; Approved `docs/handbook/PRODUCT_VISION_AND_DECISION_RIGHTS.md`; `docs/handbook/DEC_000_DECISION_RECORD.md`; GD-003 Approved only within DEC-000 boundary |
 | DEC-001 | MVP scope and non-scope | Done | Product Owner substantive decision APPROVED on baseline `17f156b9861972b4924a5ed01bfabd5a1a79461a`; `docs/handbook/DEC_001_DECISION_RECORD.md`; implementation authority NOT GRANTED |
-| DEC-002 | Backend language/framework | Ready | ADR-001 |
+| DEC-002 | Backend language/framework | Done | Product Owner substantive decision APPROVED on baseline `504b10be44d45dfcfec9b6cfed4f72ed5748b564`; PHP + Laravel; `docs/handbook/DEC_002_DECISION_RECORD.md`; ADR-001 Accepted after reconciliation; implementation/dependency authority NOT GRANTED |
 | DEC-003 | Frontend/PWA stack | Ready | ADR-002 |
 | DEC-004 | Android approach | Backlog | ADR |
 | DEC-005 | Database engine and physical tenancy model | Ready | ADR-003 |
@@ -105,7 +105,7 @@ Published bounded Platform Foundation source through Sprint 13 is an existing re
 | DEC-011 | Data retention, privacy, and jurisdiction | Ready | Policy/ADR |
 | DEC-012 | RPO/RTO and support objectives | Backlog | Operational policy |
 
-DEC-000 and DEC-001 completion do not approve, accept, start, or implement DEC-002 through DEC-012. DEC-001 approves only the bounded MVP product scope and non-scope recorded in `docs/handbook/DEC_001_DECISION_RECORD.md`; it does not start Sprint 14 or grant application/business implementation authority.
+DEC-000, DEC-001, and DEC-002 completion do not approve, accept, start, or implement DEC-003 through DEC-012. DEC-002 approves only the backend language/application framework and architecture/framework-independence boundary recorded in its decision record; it does not start Sprint 14, install Laravel, change dependencies, or grant application/business implementation authority.
 
 ## Phase 0 discovery backlog
 
@@ -123,7 +123,7 @@ DEC-000 and DEC-001 completion do not approve, accept, start, or implement DEC-0
 
 ## Phase 1 candidate backlog
 
-Items ini tidak memperoleh source-code authority baru dari M6, GOV-051, DEC-000, atau DEC-001. Published bounded Platform Foundation through Sprint 13 must be preserved, tetapi pekerjaan baru untuk final/business application atau Sprint 14 tetap membutuhkan Product Owner authority dan gate yang berlaku.
+Items ini tidak memperoleh source-code authority baru dari M6, GOV-051, DEC-000, DEC-001, atau DEC-002. Published bounded Platform Foundation through Sprint 13 must be preserved, tetapi pekerjaan baru untuk final/business application atau Sprint 14 tetap membutuhkan Product Owner authority dan gate yang berlaku.
 
 - PLT-001 repository/application skeleton;
 - PLT-002 tenant context and isolation enforcement;
@@ -148,9 +148,9 @@ Items ini tidak memperoleh source-code authority baru dari M6, GOV-051, DEC-000,
 
 | ID | Task | Status | Dependency/evidence |
 | --- | --- | --- | --- |
-| P0-TP-001 | Record B1/F1/D1/A1 and PAY-1/OFF-1/TEN-1/REC-1/SLO-1/DATA-1 | Review | Issue #23; ADR exact-head approval pending |
+| P0-TP-001 | Record B1/F1/D1/A1 and PAY-1/OFF-1/TEN-1/REC-1/SLO-1/DATA-1 | Review | Issue #23; backend B1 later approved through DEC-002/ADR-001; remaining ADR exact-head approvals pending |
 | P0-TP-002 | Complete P1 shared-hosting capability assessment | Blocked | PHP, DB, SSH/Git, cron, worker, HTTPS, backup/restore, rollback, and quota evidence missing |
-| P0-TP-003 | Review ADR-001 through ADR-007 | Review | All ADRs remain Proposed |
+| P0-TP-003 | Review ADR-001 through ADR-007 | Review | ADR-001 Accepted via DEC-002; ADR-002 through ADR-007 remain Proposed |
 | P0-TP-004 | Review data inventory/classification baseline | Review | Product Owner and security exact-head review |
 | P0-TP-005 | Review Technical Preview threat model | Review | Critical/High threats require mapped verification |
 | P0-TP-006 | Review REC-1 recovery plan | Review | Target-environment capability and rehearsal pending |
@@ -158,4 +158,4 @@ Items ini tidak memperoleh source-code authority baru dari M6, GOV-051, DEC-000,
 | P0-TP-008 | Authorize application skeleton | Blocked | Separate source-code authority after P0-TP-007 |
 | P0-TP-009 | Execute T+5 Technical Preview | Blocked | Source-code authority and Day 1 gates |
 
-PR #24 through PR #33 technical merges and Issue #23 closure do not set any task above to Done, accept an ADR, approve Phase 0 exit, grant general application source-code authority, ratify prior lifecycle actions, complete GOV-034 through GOV-042, or provide substantive approval or completion evidence. Phase 0 remains In Progress; final/business application implementation remains Blocked; Phase 0 preview exit remains Not Ready; P1 remains conditional and Unverified; ADR-001 through ADR-007 and GD-007 remain Proposed; JRN-003 and JRN-013 remain unresolved; hosting evidence remains Pending, Not supplied, or Unverified.
+PR #24 through PR #33 technical merges and Issue #23 closure do not themselves set any task above to Done, accept an ADR, approve Phase 0 exit, grant general application source-code authority, ratify prior lifecycle actions, complete GOV-034 through GOV-042, or provide substantive approval or completion evidence. A later independent Product Owner DEC-002 decision separately Accepts ADR-001 only. Phase 0 remains In Progress; final/business application implementation remains Blocked; Phase 0 preview exit remains Not Ready; P1 remains conditional and Unverified; ADR-002 through ADR-007 and GD-007 remain Proposed; JRN-003 and JRN-013 remain unresolved; hosting evidence remains Pending, Not supplied, or Unverified.
