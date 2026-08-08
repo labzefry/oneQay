@@ -57,9 +57,23 @@
 | GOV-040 | Reconcile PR #31 post-merge recurrence | Review | PR #31 head `10b5179b16c104e1877153b066e96a937ece9c9b` merged as `67059e563de26cee26cefd64cf9e7d5c4436ffc6`; repository-native operational authority explicitly excluded ready/merge/auto-merge/approval review, while repository-control disposition, direct protection evidence or formal scoped risk acceptance, independent exact-head review, actor or bypass identification, root-cause analysis, corrective/preventive action, effectiveness evidence, and Issue #23 state alignment remain pending |
 | GOV-041 | Reconcile PR #32 post-merge recurrence | Review | PR #32 head `beb7b35aa718a746ad5dad9d5574c2293bd0ab40` merged as `d1a6160b37250bda691e906fc4ee06e37dd0c847`; repository-native operational authority explicitly excluded ready/merge/auto-merge/approval review and branch-protection/ruleset changes, while repository-control disposition, direct protection evidence or formal scoped risk acceptance, independent exact-head review, actor or bypass identification, root-cause analysis, corrective/preventive action, effectiveness evidence, and Issue #23 state alignment remain pending |
 | GOV-042 | Reconcile PR #33 post-merge recurrence | Review | PR #33 head `28c776abf6ab7832dbdf61ea49203c6e9c13a55c` merged as `68df196efdf38919d73a6b6345b973d2c3698b29` without retrospective lifecycle authority; repository-control investigation completed, `main-protected-governance` containment and sentinel PR #34 effectiveness evidence are available, while GOV-042 remains Review and Issue #23 state alignment remains pending |
-| GOV-043 | Restore stable required-check producers | Review | Draft PR #38; `governance-validation`, `markdown-lint`, and `secret-scan` passed on the recovery branch; ruleset contexts aligned; documentation and exact-head review remain pending; no merge or deployment authority |
+| GOV-043 | Restore stable required-check producers | Done | PR #38 published as `a59521ad31d8153198bb80dd7985142cb21e3775`; stable `governance-validation`, `markdown-lint`, and `secret-scan` contexts restored before M5 |
 
-## Decisions required before source code
+Historical GOV-029 through GOV-042 items remain Review where their historical lifecycle discrepancies have not been substantively closed. Current prospective enforcement improvements must not rewrite those historical records.
+
+## M5 — Engineering State, CI & Governance Stabilization
+
+| ID | Task | Status | Evidence / next action |
+| --- | --- | --- | --- |
+| GOV-044 | M5.1 — Canonical State Reconciliation | Done | PR #66 published as `153a33a4a2b5edb4a31285eca7d3491f9589b778`; canonical mutable AI checkpoints live under `docs/ai/`; root duplicates are pointer stubs |
+| GOV-045 | M5.2 — CI & Lifecycle Control Hardening | Done | PR #67 published as `512344d0497787c729242cb1fd2d7d02ecfc40c2`; A-03 and A-05 resolved; five required contexts active on protected `main` |
+| GOV-046 | M5.3 — Governance & Program State Synchronization | In Progress | Reconcile A-06 Phase 0 semantics, A-07 ROADMAP/TASKS program state, and A-08 product metadata/attribution; bounded branch and Draft PR only; independent review required |
+
+M5.3 does not authorize Enterprise Vision. A-09 remains reserved for M6. Sprint 14 remains Not Authorized, final/business application implementation remains Blocked, and production readiness remains NO-GO.
+
+## Decisions required before final/business application implementation
+
+Published bounded Platform Foundation source through Sprint 13 is an existing repository fact. The decisions below remain gates for broader final/business/production application implementation and must not be read as retroactively invalidating published Sprint 12 or Sprint 13 foundation work.
 
 | ID | Decision | Status | Required output |
 | --- | --- | --- | --- |
@@ -93,7 +107,7 @@
 
 ## Phase 1 candidate backlog
 
-Items ini belum boleh diimplementasikan sebelum entry criteria ROADMAP Phase 0 terpenuhi:
+Items ini tidak memperoleh authority baru dari M5.3. Published bounded Platform Foundation through Sprint 13 must be preserved, tetapi pekerjaan baru untuk final/business application atau Sprint 14 tetap membutuhkan Product Owner authority dan gate yang berlaku.
 
 - PLT-001 repository/application skeleton;
 - PLT-002 tenant context and isolation enforcement;
@@ -128,4 +142,8 @@ Items ini belum boleh diimplementasikan sebelum entry criteria ROADMAP Phase 0 t
 | P0-TP-008 | Authorize application skeleton | Blocked | Separate source-code authority after P0-TP-007 |
 | P0-TP-009 | Execute T+5 Technical Preview | Blocked | Source-code authority and Day 1 gates |
 
-PR #24 through PR #33 technical merges and Issue #23 closure do not set any task above to Done, accept an ADR, approve Phase 0 exit, grant source-code authority, ratify prior lifecycle actions, complete GOV-034 through GOV-042, or provide substantive approval or completion evidence. Phase 0 remains In Progress; application implementation remains Blocked; Phase 0 preview exit remains Not Ready; P1 remains conditional and Unverified; ADR-001 through ADR-007 and GD-007 remain Proposed; JRN-003 and JRN-013 remain unresolved; hosting evidence remains Pending, Not supplied, or Unverified.
+PR #24 through PR #33 technical merges and Issue #23 closure do not set any task above to Done, accept an ADR, approve Phase 0 exit, grant general application source-code authority, ratify prior lifecycle actions, complete GOV-034 through GOV-042, or provide substantive approval or completion evidence. Phase 0 remains In Progress; final/business application implementation remains Blocked; Phase 0 preview exit remains Not Ready; P1 remains conditional and Unverified; ADR-001 through ADR-007 and GD-007 remain Proposed; JRN-003 and JRN-013 remain unresolved; hosting evidence remains Pending, Not supplied, or Unverified.
+
+Separately authorized and published bounded Platform Foundation work through Sprint 12 and Sprint 13 remains a repository fact. That publication does not promote any Technical Preview task above to Done and does not create authority for Sprint 14 or final/business application implementation.
+
+Attribution: Lab | zefry

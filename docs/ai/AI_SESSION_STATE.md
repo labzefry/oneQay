@@ -8,16 +8,21 @@
 - Repository: `labzefry/oneQay`
 - Repository role: Single Source of Truth
 - Checkpoint date: 2026-08-08
+- Canonical product attribution: Lab | zefry
 
 ## Canonical repository state
 
 - Canonical delivery phase: Phase 0 — Governance and Discovery
 - Canonical Phase 0 status: In Progress
 - Active engineering program: M5 — Engineering State, CI & Governance Stabilization
-- Active micro-milestone: M5.1 — Canonical State Reconciliation
-- Current `main`: `7a9def560466fc8bf81529c2b5125c6ac19a96b5`
-- Current `main` tree: `d27dae3c8cc9be77a590187cabd49ac469a6943f`
-- Latest published technical capability sprint: Sprint 13
+- Active micro-milestone: M5.3 — Governance & Program State Synchronization
+- Current `main`: `512344d0497787c729242cb1fd2d7d02ecfc40c2`
+- Current `main` tree: `0f0af1c1acab208c704fbdf05b19014127abddbb`
+- M5.1: PUBLISHED / COMPLETE through PR #66
+- M5.1 published commit: `153a33a4a2b5edb4a31285eca7d3491f9589b778`
+- M5.2: PUBLISHED / ENFORCEMENT COMPLETE through PR #67
+- M5.2 published commit: `512344d0497787c729242cb1fd2d7d02ecfc40c2`
+- M5.2 published tree: `0f0af1c1acab208c704fbdf05b19014127abddbb`
 - Sprint 12: Published
 - Sprint 13: Published
 - Sprint 14: Not Authorized
@@ -25,6 +30,60 @@
 - Deployment: None
 - Release: None
 - Migration execution: Not Authorized / Not Performed
+
+## Active M5.3 work
+
+Product Owner explicitly authorized:
+
+**START M5.3 — GOVERNANCE & PROGRAM STATE SYNCHRONIZATION**
+
+Bounded branch:
+
+`agent/m5-3-governance-program-state-synchronization`
+
+Authorized reconciliation scope:
+
+1. A-06 — Phase 0 semantic ambiguity.
+2. A-07 — ROADMAP / TASKS out of sync.
+3. A-08 — AI-specific product metadata / attribution.
+
+A-09 — Enterprise Vision Not Yet Canonical remains reserved for M6 and is excluded from M5.3.
+
+## Canonical Phase 0 interpretation
+
+Phase 0 remains **In Progress** as a governance/discovery program state.
+
+Published bounded Platform Foundation through Sprint 12 and Sprint 13 remains a repository fact. This does not mean Phase 0 has exited, does not authorize Sprint 14, and does not authorize final/business/production application implementation.
+
+The canonical blocked boundary is:
+
+**Final/business/production application implementation: Blocked.**
+
+The older blanket wording that could be read as “all source code is blocked” is superseded by this semantic clarification without rewriting historical documents or lifecycle facts.
+
+## M5.2 enforcement posture to preserve
+
+A-03 and A-05 are Resolved.
+
+Required protected contexts:
+
+1. `governance-validation`
+2. `markdown-lint`
+3. `secret-scan`
+4. `php-foundation-regression`
+5. `product-owner-merge-authority`
+
+Ruleset protections verified for the default branch:
+
+- strict status checks;
+- one approving review;
+- stale reviews dismissed on push;
+- latest-push approval required;
+- review-thread resolution required;
+- squash-only;
+- deletion protection;
+- non-fast-forward protection;
+- bypass list empty.
 
 ## Canonical Sprint 13 identity
 
@@ -56,51 +115,38 @@ Product Owner local CLI evidence was executed after canonical Sprint 13 publicat
 
 This evidence is POST-PUBLICATION Sprint 13 evidence. It must not be rewritten as pre-Ready, pre-Merge, or pre-publication evidence.
 
-## Canonical and non-canonical review identity
+## Historical lifecycle discrepancies
 
-Canonical independent reviewer evidence for Sprint 13:
+PR #64 and PR #65 lifecycle discrepancies remain historical facts. M5.3 does not retroactively normalize them.
 
-- Reviewer: `zefriansyah`
-- State: APPROVED
-- Reviewed exact head: `4a2e44cc31361954b126e8857de65fcccca30445`
-- Unresolved review threads identified: 0
+Historical review contamination involving alternate Sprint 13 head `ba312fa9095d434c204f01e3dac9870e9eaa4d6d` remains historical only. Canonical reviewed head remains `4a2e44cc31361954b126e8857de65fcccca30445`.
 
-Alternate implementation:
+## Product attribution boundary
 
-- Alternate head: `ba312fa9095d434c204f01e3dac9870e9eaa4d6d`
-- Status: NON-CANONICAL
+- Product/development attribution: Lab | zefry.
+- ChatGPT/AI collaboration identity belongs to engineering governance and tooling documentation, not product metadata or source authorship attribution.
+- Product AI Assistant remains a distinct Proposed product capability and is not promoted by M5.3.
 
-Later historical review text that referenced the alternate implementation is preserved as historical review contamination. GitHub history must not be rewritten, and the alternate implementation must not be promoted as canonical without separate Product Owner authority.
+## M5.3 lifecycle boundary
 
-## Lifecycle discrepancies
+M5.3 must remain on the bounded branch and be submitted as a Draft PR.
 
-PR #64 records a lifecycle sequencing discrepancy: its bounded instruction required the PR to remain Draft and the independent approval preceded completion of the mandatory full Composer regression evidence. The later 402-assertion PASS is post-publication corroborating evidence and does not retroactively normalize that sequence.
+Independent review is required.
 
-PR #65 records a separate lifecycle discrepancy: its body required the reconciliation PR to remain Draft and explicitly excluded Ready, merge, auto-merge, and publication authority, while GitHub records it as merged and published.
+No Ready or Merge is authorized without separate Product Owner lifecycle authority bound to the applicable exact head.
 
-These are historical facts. Correct current state; do not rewrite immutable history and do not represent historical discrepancy as retroactive compliance.
+M5.3 does not authorize:
 
-## Current implementation boundary
-
-Bounded Platform Foundation implementation through Sprint 13 is published according to repository evidence.
-
-Final Business Application / POS / ERP / production implementation remains blocked and not authorized pending the applicable Phase 0 and Product Owner gates.
-
-No business module, executable migration, production database change, deployment, or release is authorized by this checkpoint.
-
-## M5.1 authority and stop condition
-
-M5.1 is authorized to reconcile the canonical checkpoint only:
-
-1. `docs/ai/AI_SESSION_STATE.md`
-2. `docs/ai/AI_PROJECT_STATE.md`
-3. `docs/ai/AI_NEXT_TASK.md`
-4. root checkpoint files only as deprecation/pointer stubs to the corresponding canonical `docs/ai/` files
-
-Canonical checkpoint location is `docs/ai/`. Root checkpoint files are deprecated and are not active state authority.
-
-After one atomic M5.1 commit, Draft PR creation, proportionate checks, and independent review gate, stop before Ready or Merge unless separate Product Owner authority is provided.
-
-M5.2 — CI & Lifecycle Control Hardening must not start until M5.1 is properly published.
+- Sprint 14 implementation;
+- Enterprise Vision implementation or canonicalization;
+- final/business application implementation;
+- SQL execution;
+- migration execution;
+- production database modification;
+- deployment;
+- release;
+- ADR/GD promotion;
+- JRN resolution;
+- production readiness promotion.
 
 Attribution: Lab | zefry

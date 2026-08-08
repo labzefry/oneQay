@@ -4,6 +4,22 @@
 
 Phase 0 mengubah visi OneQay dan Handbook 1.0 menjadi keputusan produk serta engineering yang dapat dibuktikan. Fase ini tidak membuat source code aplikasi. Output utamanya adalah scope MVP, domain model, risk baseline, architecture decisions, dan executable backlog yang telah disetujui.
 
+## M5.3 canonical interpretation
+
+Bagian **Mission** di atas dipertahankan sebagai baseline kickoff historis Phase 0. Setelah baseline tersebut, repository menerima authority terpisah untuk bounded Platform Foundation work yang kemudian dipublikasikan melalui Sprint 12 dan Sprint 13.
+
+Karena itu, status **Phase 0 — In Progress** tidak boleh lagi ditafsirkan sebagai klaim bahwa repository tidak memiliki source code teknis. Makna kanonik saat ini adalah:
+
+- Phase 0 governance/discovery belum memperoleh explicit exit approval;
+- bounded Platform Foundation through Sprint 13 tetap merupakan fakta repository yang telah dipublikasikan;
+- publikasi Sprint 12/13 tidak secara retroaktif mengubah baseline kickoff, tidak berarti semua Phase 0 exit criteria terpenuhi, dan tidak memulai seluruh Phase 1;
+- **application implementation Blocked** berarti final/business/production application implementation baru tetap diblokir;
+- Sprint 14 tetap **Not Authorized**;
+- production readiness tetap **NO-GO**;
+- tidak ada authority baru untuk SQL, migration execution, production database modification, deployment, atau release.
+
+Klarifikasi ini tidak meratifikasi lifecycle discrepancy historis dan tidak mengubah status ADR-001 sampai ADR-007, GD-007, JRN-003, atau JRN-013.
+
 ## Entry conditions
 
 - Handbook 1.0 draft tersedia untuk review.
@@ -16,7 +32,7 @@ Publikasi handbook ke branch dan review tetap menjadi gate approval; discovery n
 
 ## Non-goals
 
-- Membuat application skeleton atau production code.
+- Membuat application skeleton atau production code tanpa authority yang berlaku.
 - Memilih framework/vendor tanpa evidence dan ADR.
 - Mendesain seluruh ERP hingga detail final.
 - Mengaktifkan public API, plugin marketplace, AI automation, cloud, atau Kubernetes.
@@ -104,7 +120,7 @@ Workshop dapat digabung untuk tim kecil, tetapi output dan decision ownership ti
 
 ## Minimum decision package
 
-Sebelum source code, sekurang-kurangnya diperlukan:
+Baseline berikut tetap menjadi decision package Phase 0 untuk broader final/business application implementation. Published bounded Platform Foundation work through Sprint 13 tidak dianggap memenuhi atau membatalkan item berikut secara otomatis.
 
 1. Approved MVP scope and non-scope.
 2. ADR backend language/framework.
@@ -150,7 +166,7 @@ Setiap option dinilai terhadap:
 - Data classification, privacy/compliance questions, dan threat models tersedia.
 - Tenant isolation, payment, offline, installer/updater, backup, dan recovery requirements dapat diuji.
 - Phase 1 backlog memiliki acceptance criteria, dependencies, risk class, dan evidence plan.
-- No Critical unresolved decision untuk memulai platform foundation.
+- No Critical unresolved decision untuk memulai platform foundation secara lebih luas.
 - PROJECT_MANIFEST, ROADMAP, ARCHITECTURE, TASKS, CHANGELOG, dan dokumen domain diperbarui.
 
 ## Stop conditions
@@ -159,6 +175,8 @@ Phase 0 tidak boleh dinyatakan selesai bila MVP masih ambigu, compliance/payment
 
 ## First actionable queue
 
+Queue berikut adalah baseline kickoff historis dan dipertahankan sebagai provenance. Status aktual pekerjaan harus dibaca dari `PROJECT_MANIFEST.md`, `ROADMAP.md`, `TASKS.md`, dan canonical checkpoint di `docs/ai/`.
+
 1. Publikasikan handbook melalui draft PR.
 2. Tetapkan Product Owner dan decision owners.
 3. Jalankan workshop Product Vision and Decision Rights.
@@ -166,4 +184,6 @@ Phase 0 tidak boleh dinyatakan selesai bila MVP masih ambigu, compliance/payment
 5. Jalankan domain event storming.
 6. Susun MVP decision package.
 7. Buat ADR proposals berurutan dari dependency paling fundamental.
-8. Review Phase 0 exit evidence sebelum mengizinkan source code.
+8. Review Phase 0 exit evidence sebelum mengizinkan broader final/business application implementation.
+
+Attribution: Lab | zefry

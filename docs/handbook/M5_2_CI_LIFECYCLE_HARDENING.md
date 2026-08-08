@@ -10,6 +10,41 @@
 - Implementation base: `153a33a4a2b5edb4a31285eca7d3491f9589b778`
 - Implementation base tree: `e41b1b8cad32997d073c20fb5960d17376f16043`
 
+## Published enforcement state
+
+M5.2 is now **PUBLISHED / ENFORCEMENT COMPLETE**.
+
+Published identity:
+
+- Pull request: #67
+- Published commit: `512344d0497787c729242cb1fd2d7d02ecfc40c2`
+- Published tree: `0f0af1c1acab208c704fbdf05b19014127abddbb`
+
+Resolved anomalies:
+
+- A-03 — Lifecycle Authority Not Enforced: **Resolved**.
+- A-05 — PHP Regression Not in GitHub CI: **Resolved**.
+
+The active protected default-branch contexts are:
+
+1. `governance-validation`
+2. `markdown-lint`
+3. `secret-scan`
+4. `php-foundation-regression`
+5. `product-owner-merge-authority`
+
+The verified ruleset posture includes strict status checks, one approving review,
+stale-review dismissal after push, latest-push approval, review-thread
+resolution, squash-only merge, deletion protection, non-fast-forward protection,
+and an empty bypass list.
+
+The remaining sections preserve the M5.2 implementation, bootstrap, activation,
+and lifecycle design as historical provenance. Language below that describes a
+"candidate", "manual action required", or a condition that had to be satisfied
+before declaring enforcement complete refers to the pre-publication/pre-activation
+sequence. Those activation conditions are now satisfied by the published and
+verified state above; they are not current pending actions.
+
 ## Objective
 
 M5.2 closes two remaining high-priority stabilization gaps without starting

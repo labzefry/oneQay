@@ -7,15 +7,25 @@
 - Developer and Product Engineering Entity: Lab | zefry
 - Repository: `labzefry/oneQay`
 - GitHub repository role: Single Source of Truth
+- Product attribution: Lab | zefry
+
+Engineering AI/tooling identity is governance metadata only and is not product authorship attribution.
 
 ## Canonical delivery state
 
 - Canonical delivery phase: Phase 0 — Governance and Discovery
 - Canonical Phase 0 status: In Progress
 - Active program: M5 — Engineering State, CI & Governance Stabilization
-- Active micro-milestone: M5.1 — Canonical State Reconciliation
-- Current `main`: `7a9def560466fc8bf81529c2b5125c6ac19a96b5`
-- Current `main` tree: `d27dae3c8cc9be77a590187cabd49ac469a6943f`
+- Active micro-milestone: M5.3 — Governance & Program State Synchronization
+- Current `main`: `512344d0497787c729242cb1fd2d7d02ecfc40c2`
+- Current `main` tree: `0f0af1c1acab208c704fbdf05b19014127abddbb`
+- M5.1: PUBLISHED / COMPLETE
+- M5.1 published commit: `153a33a4a2b5edb4a31285eca7d3491f9589b778`
+- M5.1 publication PR: #66
+- M5.2: PUBLISHED / ENFORCEMENT COMPLETE
+- M5.2 published commit: `512344d0497787c729242cb1fd2d7d02ecfc40c2`
+- M5.2 published tree: `0f0af1c1acab208c704fbdf05b19014127abddbb`
+- M5.2 publication PR: #67
 - Latest published technical capability sprint: Sprint 13
 - Sprint 12: Published
 - Sprint 13: Published
@@ -24,6 +34,18 @@
 - Deployment: None
 - Release: None
 - Production migration: Not Performed
+
+## Canonical Phase 0 semantics
+
+Phase 0 **In Progress** describes the governance/discovery program state. It does not mean that the repository contains no technical source code.
+
+Bounded Platform Foundation implementation has been published through Sprint 13. This publication is separate from Phase 0 exit and must not be interpreted as final/business application approval, automatic Phase 1 completion, Sprint 14 authority, production readiness, deployment authority, release authority, or migration authority.
+
+The canonical blocked boundary is now:
+
+**Final/business/production application implementation: Blocked.**
+
+This clarification preserves published Sprint 12 and Sprint 13 facts while preventing the older blanket phrase “application source code blocked” from contradicting repository reality.
 
 ## Published Platform Foundation through Sprint 13
 
@@ -83,6 +105,40 @@ Historical review text that later referenced the alternate implementation is pre
 
 Current remediation must improve the control plane prospectively. It must not falsify or rewrite historical records.
 
+## M5.1 publication facts
+
+M5.1 — Canonical State Reconciliation is PUBLISHED / COMPLETE through PR #66 and published commit `153a33a4a2b5edb4a31285eca7d3491f9589b778`.
+
+M5.1 established:
+
+- canonical mutable AI checkpoints under `docs/ai/`;
+- root checkpoint files as deprecated pointer stubs only;
+- explicit separation of current canonical checkpoint state from immutable historical lifecycle evidence.
+
+## M5.2 publication and enforcement facts
+
+M5.2 — CI & Lifecycle Control Hardening is PUBLISHED / ENFORCEMENT COMPLETE through PR #67.
+
+Published identity:
+
+- commit: `512344d0497787c729242cb1fd2d7d02ecfc40c2`;
+- tree: `0f0af1c1acab208c704fbdf05b19014127abddbb`.
+
+Resolved anomalies:
+
+- A-03 — Lifecycle Authority Not Enforced: Resolved.
+- A-05 — PHP Regression Not in GitHub CI: Resolved.
+
+Required protected contexts on `main-protected-governance`:
+
+1. `governance-validation`
+2. `markdown-lint`
+3. `secret-scan`
+4. `php-foundation-regression`
+5. `product-owner-merge-authority`
+
+Verified protection posture includes strict status checks, one approving review, stale-review dismissal, latest-push approval, review-thread resolution, squash-only merge, deletion protection, non-fast-forward protection, and an empty bypass list.
+
 ## Canonical checkpoint authority
 
 Canonical mutable AI checkpoint files are located only under:
@@ -97,13 +153,13 @@ The authoritative files are:
 
 The root files with matching names are deprecated pointer stubs only. They are not active state authority and must not contain independently mutable project state.
 
-Future checkpoint updates should occur only for material repository or lifecycle state changes.
+Future checkpoint updates should occur only for material repository or lifecycle state changes. PR number assignment, check completion, review completion, Ready transition, or merge of a change already described by the checkpoint does not by itself require recursive checkpoint churn unless it changes material program state.
 
 ## Current product implementation boundary
 
-Bounded Platform Foundation implementation is published through Sprint 13 according to repository evidence.
+Bounded Platform Foundation implementation through Sprint 13 is published according to repository evidence.
 
-Final Business Application, POS, ERP, production implementation, business modules, executable migrations, production database modification, deployment, and release remain blocked or not authorized according to the current Phase 0 and Product Owner gates.
+Final Business Application, POS, ERP, production implementation, new business modules, executable migrations, production database modification, deployment, and release remain blocked or not authorized according to the current Phase 0 and Product Owner gates.
 
 The project must not be described as having all application source blocked; the correct distinction is between published bounded Platform Foundation source and blocked final/business/production implementation.
 
@@ -121,25 +177,43 @@ The project must not be described as having all application source blocked; the 
 - POS module: Not Started
 - ERP module: Not Started
 - Industry vertical implementation: Not Started
+- Sprint 14: Not Authorized
+- Production readiness: NO-GO
 
 ## M5 anomaly status
 
-Verified active anomalies entering M5:
+Canonical anomaly disposition during M5:
 
-- A-01 stale canonical AI checkpoint: being corrected by M5.1
-- A-02 duplicate root AI checkpoint: being corrected by M5.1 using pointer stubs
-- A-03 lifecycle authority not technically enforced: remains for M5.2
-- A-04 review history contamination: canonical disposition recorded; historical evidence preserved
-- A-05 PHP regression not in GitHub CI: remains for M5.2
-- A-06 Phase 0 semantic ambiguity: remains for M5.3
-- A-07 ROADMAP / TASKS synchronization: remains for M5.3
-- A-08 attribution/collaboration metadata supersession: remains for M5.4 or bounded M5.3 combination if reviewable
-- A-09 Enterprise Vision canonicalization: planning gap reserved for M6 after M5
+- A-01 stale canonical AI checkpoint: Resolved by M5.1 and updated again by M5.3 for current program state.
+- A-02 duplicate root AI checkpoint: Resolved by M5.1 using pointer stubs.
+- A-03 lifecycle authority not technically enforced: Resolved by M5.2 enforcement.
+- A-04 review history contamination: canonical disposition recorded; historical evidence preserved.
+- A-05 PHP regression not in GitHub CI: Resolved by M5.2 enforcement.
+- A-06 Phase 0 semantic ambiguity: In Progress under M5.3.
+- A-07 ROADMAP / TASKS synchronization: In Progress under M5.3.
+- A-08 attribution/collaboration metadata supersession: In Progress under M5.3; canonical product attribution is Lab | zefry and AI/tooling identity is separated from product metadata.
+- A-09 Enterprise Vision canonicalization: Reserved for M6 after M5; not implemented by M5.3.
 
-## Next engineering boundary
+## M5.3 lifecycle boundary
 
-Complete M5.1 lifecycle gates only. Do not start M5.2 until M5.1 is properly published.
+Authorized scope is Governance & Program State Synchronization only.
 
-No Sprint 14 implementation authority exists.
+M5.3 may update canonical program/governance documents needed to reconcile A-06, A-07, and A-08. It must use a bounded branch and Draft PR and requires independent review.
+
+M5.3 does not authorize:
+
+- Ready transition without separate Product Owner authority;
+- merge or auto-merge without separate Product Owner authority;
+- Sprint 14 implementation;
+- Enterprise Vision implementation or canonicalization;
+- final/business application implementation;
+- executable SQL;
+- migration execution;
+- production database modification;
+- deployment;
+- release;
+- ADR/GD promotion;
+- JRN resolution;
+- production readiness promotion.
 
 Attribution: Lab | zefry
