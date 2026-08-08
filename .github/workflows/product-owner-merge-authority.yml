@@ -1,0 +1,149 @@
+name: Product Owner Merge Authority
+
+on:
+  pull_request_target:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+  issue_comment:
+    types:
+      - created
+      - edited
+      - deleted
+
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
+  statuses: write
+
+jobs:
+  evaluate-product-owner-merge-authority:
+    name: evaluate-product-owner-merge-authority
+    if: >-
+      github.event_name == 'pull_request_target' ||
+      (github.event_name == 'issue_comment' &&
+       github.event.issue.pull_request != null)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Evaluate exact-head Product Owner authority
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          REPOSITORY_OWNER: ${{ github.repository_owner }}
+          EVENT_PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
+          EVENT_HEAD_SHA: ${{ github.event.pull_request.head.sha || '' }}
+          API_URL: ${{ github.api_url }}
+          SERVER_URL: ${{ github.server_url }}
+        run: |
+          set -euo pipefail
+
+          pr_number="$EVENT_PR_NUMBER"
+          head_sha="$EVENT_HEAD_SHA"
+
+          if [[ -z "$pr_number" ]]; then
+            echo "No pull request number is available for this event." >&2
+            exit 1
+          fi
+
+          if [[ -z "$head_sha" ]]; then
+            pr_json="$(
+              curl --fail-with-body --silent --show-error \
+                --header "Accept: application/vnd.github+json" \
+                --header "Authorization: Bearer $GH_TOKEN" \
+                --header "X-GitHub-Api-Version: 2022-11-28" \
+                "$API_URL/repos/$REPOSITORY/pulls/$pr_number"
+            )"
+            head_sha="$(jq -r '.head.sha' <<<"$pr_json")"
+          fi
+
+          if [[ ! "$head_sha" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "Invalid pull request head SHA: $head_sha" >&2
+            exit 1
+          fi
+
+          comments_file="$(mktemp)"
+          trap 'rm -f "$comments_file"' EXIT
+
+          page=1
+          while :; do
+            page_json="$(
+              curl --fail-with-body --silent --show-error \
+                --header "Accept: application/vnd.github+json" \
+                --header "Authorization: Bearer $GH_TOKEN" \
+                --header "X-GitHub-Api-Version: 2022-11-28" \
+                "$API_URL/repos/$REPOSITORY/issues/$pr_number/comments?per_page=100&page=$page"
+            )"
+
+            count="$(jq 'length' <<<"$page_json")"
+            jq -c '.[]' <<<"$page_json" >>"$comments_file"
+
+            if [[ "$count" -lt 100 ]]; then
+              break
+            fi
+
+            page=$((page + 1))
+          done
+
+          export PO_LOGIN="$REPOSITORY_OWNER"
+          export PR_NUMBER="$pr_number"
+          export HEAD_SHA="$head_sha"
+
+          valid_count="$(
+            jq -s '
+              [
+                .[]
+                | select(.user.login == env.PO_LOGIN)
+                | select(.body | test("(?m)^PRODUCT OWNER MERGE AUTHORIZATION\\s*$"))
+                | select(.body | test("(?m)^PR: #" + env.PR_NUMBER + "\\s*$"))
+                | select(.body | test("(?m)^EXACT HEAD: " + env.HEAD_SHA + "\\s*$"))
+                | select(.body | test("(?m)^MERGE AUTHORITY: GRANTED\\s*$"))
+              ]
+              | length
+            ' "$comments_file"
+          )"
+
+          state="failure"
+          description="Exact-head Product Owner merge authority is absent."
+
+          if [[ "$valid_count" -gt 0 ]]; then
+            state="success"
+            description="Exact-head Product Owner merge authority verified."
+          fi
+
+          status_payload="$(
+            jq -n \
+              --arg state "$state" \
+              --arg context "product-owner-merge-authority" \
+              --arg description "$description" \
+              --arg target_url "$SERVER_URL/$REPOSITORY/pull/$pr_number" \
+              '{
+                state: $state,
+                context: $context,
+                description: $description,
+                target_url: $target_url
+              }'
+          )"
+
+          curl --fail-with-body --silent --show-error \
+            --request POST \
+            --header "Accept: application/vnd.github+json" \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header "X-GitHub-Api-Version: 2022-11-28" \
+            "$API_URL/repos/$REPOSITORY/statuses/$head_sha" \
+            --data "$status_payload"
+
+          echo
+          echo "Product Owner authority status: $state"
+          echo "PR: #$pr_number"
+          echo "Exact head: $head_sha"
+          echo "Required Product Owner login: $REPOSITORY_OWNER"
+
+          if [[ "$state" != "success" ]]; then
+            echo "Merge remains blocked until a valid exact-head Product Owner authorization comment exists."
+          fi
