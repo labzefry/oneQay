@@ -12,30 +12,36 @@
 
 Engineering AI/tooling identity is governance metadata only and is not product authorship attribution.
 
+## Canonical checkpoint semantics
+
+This tracked checkpoint does **not** store a hard-coded SHA as the permanently current live GitHub `main` or live tree.
+
+Stable provenance fields in this document describe published milestone identity or the verified baseline that existed before the checkpoint work began. They are historical evidence, not a claim that the referenced SHA remains the live repository head forever.
+
+Before any lifecycle mutation, branch creation, implementation decision, Ready transition, or Merge transition, the live repository state MUST be obtained by Minimal Delta Verification from GitHub because GitHub is the Single Source of Truth.
+
+The required live verification includes, as applicable:
+
+- default-branch head;
+- default-branch tree;
+- active PR state;
+- active PR exact head and tree;
+- required checks;
+- reviewer state;
+- unresolved review threads.
+
+A checkpoint update must not be created merely to replace a stored `current main` SHA after every publication.
+
 ## Canonical delivery state
 
 - Canonical delivery phase: Phase 0 — Governance and Discovery
 - Canonical Phase 0 status: In Progress
-- Active program: M6 — Post-Publication State Reconciliation
-- Active micro-milestone: M6 — Publication State Reconciliation
-- Current `main`: `0b7b28028966ac38af0f32960054210c3a083916`
-- Current `main` tree: `567df997bae70090b19465c75e4cc3b1e23b6579`
 - M5.1: PUBLISHED / COMPLETE through PR #66
-- M5.1 published commit: `153a33a4a2b5edb4a31285eca7d3491f9589b778`
 - M5.2: PUBLISHED / ENFORCEMENT COMPLETE through PR #67
-- M5.2 published commit: `512344d0497787c729242cb1fd2d7d02ecfc40c2`
-- M5.2 published tree: `0f0af1c1acab208c704fbdf05b19014127abddbb`
 - M5.3: PUBLISHED / COMPLETE through PR #68
-- M5.3 source head: `aa799e657070a7d3283110a73a411f54a73b972c`
-- M5.3 source tree: `e2bc0505f5abd98a7283b3cd3cd2c4c02ef23ece`
-- M5.3 published commit: `e45f5b4c0f143abc6e255e4e8550bf3504348aae`
-- M5.3 published tree: `e2bc0505f5abd98a7283b3cd3cd2c4c02ef23ece`
-- M6 lifecycle: PUBLISHED / PUBLICATION COMPLETE through PR #69
-- M6 source head: `e6a3345b09a6b270ac7e09abd78c6356f426e363`
-- M6 source tree: `567df997bae70090b19465c75e4cc3b1e23b6579`
-- M6 published commit: `0b7b28028966ac38af0f32960054210c3a083916`
-- M6 published tree: `567df997bae70090b19465c75e4cc3b1e23b6579`
-- M6 source tree equals published tree: Yes
+- M6 Enterprise Vision Canonicalization: PUBLISHED / PUBLICATION COMPLETE through PR #69
+- M6 Post-Publication State Reconciliation: PUBLISHED through PR #70
+- M6 Closure — Checkpoint Semantics Correction: authorized bounded closure work; no later milestone implied
 - Enterprise Vision decision status: Proposed; publication does not promote it to Approved
 - Latest published technical capability sprint: Sprint 13
 - Sprint 12: Published
@@ -45,6 +51,27 @@ Engineering AI/tooling identity is governance metadata only and is not product a
 - Deployment: None / Not Authorized
 - Release: None / Not Authorized
 - Production migration: Not Performed
+
+## Verified baseline before M6 closure semantics correction
+
+The bounded closure branch was authorized and created only after GitHub Delta Verification confirmed this published baseline:
+
+- published PR: #70;
+- PR #70 state: CLOSED / MERGED;
+- PR #70 source head: `e7eded8d6c661cb5485527d0f1937fb839a3617f`;
+- PR #70 source tree: `58e84138173b1e6e5ca2dc7649dbeb89d79e9af0`;
+- PR #70 published commit: `b26c4690d68db61118ee1c4cecbb87e9418d791f`;
+- PR #70 published tree: `58e84138173b1e6e5ca2dc7649dbeb89d79e9af0`;
+- PR #70 published parent: `0b7b28028966ac38af0f32960054210c3a083916`;
+- source tree equals published tree: Yes;
+- independent reviewer: `zefriansyah`;
+- exact-head review: APPROVED;
+- required technical checks: SUCCESS;
+- Product Owner READY authority: separately recorded and executed;
+- Product Owner MERGE authority: separately recorded and executed;
+- `product-owner-merge-authority`: SUCCESS before squash merge.
+
+This is a **publication baseline**, not a permanently current-live-head declaration.
 
 ## Canonical naming
 
@@ -73,8 +100,6 @@ Publication identity:
 - published tree: `567df997bae70090b19465c75e4cc3b1e23b6579`;
 - source tree equals published tree: Yes.
 
-Independent review on the exact source head was APPROVED by `zefriansyah`, required technical checks passed, READY and MERGE authorities were separately recorded, and `product-owner-merge-authority` passed before squash merge.
-
 The published canonical Enterprise Vision representation defines oneQay as:
 
 **Enterprise Intelligent Business Management Platform**
@@ -84,6 +109,22 @@ The canonical M6 document is:
 `docs/handbook/ENTERPRISE_VISION.md`
 
 Publication canonicalizes the representation and location of the Enterprise Vision. It does **not** promote the Enterprise Vision decision status from Proposed to Approved, does not authorize implementation, and does not imply production readiness.
+
+## M6 post-publication reconciliation publication
+
+PR #70 published the bounded reconciliation of mutable program-state documentation after PR #69.
+
+PR #70 publication establishes that:
+
+- M6 Enterprise Vision publication is complete;
+- A-09 is resolved at canonical representation/publication level only;
+- A-10 is resolved for current/future-facing canonical product naming;
+- Enterprise Vision substantive decision remains Proposed;
+- GOV-047 through GOV-050 represent completed publication/reconciliation work;
+- GOV-051 remains the separate substantive Enterprise Vision Product Owner decision;
+- Phase 0 remains In Progress;
+- Sprint 14 remains Not Authorized;
+- production readiness remains NO-GO.
 
 ## Enterprise capability direction
 
@@ -138,44 +179,6 @@ Canonical identity:
 
 PR #65 reconciled the canonical Sprint 13 publication state and was published as `7a9def560466fc8bf81529c2b5125c6ac19a96b5`.
 
-## Regression evidence
-
-Canonical Sprint 13 has Product Owner local post-publication regression evidence:
-
-- PHP `8.2.12 CLI`
-- Composer `2.9.3`
-- `composer test`: PASS
-- 402 assertions PASS
-- Exit code `0`
-- Tested HEAD `ebe6abcf77263bf644565ca2fbe2b2844416d49b`
-- Tested tree `5a0adb0d2ce80338f9f9d782f0871fb2115afd5d`
-- Working tree clean
-
-This evidence remains explicitly POST-PUBLICATION evidence.
-
-## Review identity and historical contamination
-
-Canonical independent review evidence for Sprint 13:
-
-- Reviewer: `zefriansyah`
-- State: APPROVED
-- Reviewed exact head: `4a2e44cc31361954b126e8857de65fcccca30445`
-- Unresolved review threads identified: 0
-
-Alternate Sprint 13 implementation:
-
-- Head: `ba312fa9095d434c204f01e3dac9870e9eaa4d6d`
-- Status: NON-CANONICAL
-
-Historical review text that later referenced the alternate implementation remains historical contamination only.
-
-## Lifecycle discrepancy register
-
-- PR #64 retains its historical sequencing discrepancy; later 402-assertion PASS remains post-publication evidence only.
-- PR #65 retains its historical lifecycle discrepancy because the recorded body constrained the lifecycle differently from the merged GitHub state.
-
-M6 reconciliation must not falsify or rewrite historical records.
-
 ## M5 publication facts
 
 ### M5.1
@@ -190,11 +193,6 @@ Published identity:
 
 - commit: `512344d0497787c729242cb1fd2d7d02ecfc40c2`;
 - tree: `0f0af1c1acab208c704fbdf05b19014127abddbb`.
-
-Resolved anomalies:
-
-- A-03 — Lifecycle Authority Not Enforced: Resolved.
-- A-05 — PHP Regression Not in GitHub CI: Resolved.
 
 Required protected contexts:
 
@@ -228,14 +226,6 @@ Canonical mutable AI checkpoint files are located only under `docs/ai/`:
 
 Root files with matching names remain deprecated pointer stubs only.
 
-## Current product implementation boundary
-
-Bounded Platform Foundation implementation through Sprint 13 is published according to repository evidence.
-
-Final Business Application, POS, ERP, CRM, HRM, production implementation, new business modules, executable migrations, production database modification, deployment, and release remain blocked or not authorized according to the current Phase 0 and Product Owner gates.
-
-Enterprise Vision publication must not be described as implementation of those capabilities.
-
 ## Governance preservation
 
 - Phase 0: In Progress
@@ -264,11 +254,13 @@ Enterprise Vision publication must not be described as implementation of those c
 - A-09 Enterprise Vision canonicalization: Resolved at representation/publication level through PR #69; Enterprise Vision decision status remains Proposed until separately approved.
 - A-10 product-name capitalization inconsistency: Resolved for current/future-facing canonical material through PR #69; immutable historical evidence remains preserved.
 
-## M6 publication and reconciliation boundary
+## M6 closure boundary
 
-M6 publication is complete through PR #69. This post-publication reconciliation only aligns canonical mutable state with that published fact.
+M6 Enterprise Vision publication and M6 post-publication reconciliation are already published through PR #69 and PR #70 respectively.
 
-This reconciliation does not authorize:
+The bounded M6 Closure — Checkpoint Semantics Correction exists only to remove self-referential live-head semantics and to prevent an infinite reconciliation cycle.
+
+It does not authorize:
 
 - Sprint 14 implementation;
 - final/business application implementation;
@@ -283,6 +275,6 @@ This reconciliation does not authorize:
 - JRN resolution;
 - production readiness promotion.
 
-Any Ready or Merge transition for the reconciliation PR requires separate exact-head Product Owner authority.
+Any Ready or Merge transition for the closure PR requires separate exact-head Product Owner authority.
 
 Attribution: Lab | zefry

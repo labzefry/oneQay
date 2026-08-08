@@ -11,23 +11,26 @@
 - Canonical product attribution: Lab | zefry
 - Canonical product name: `oneQay`
 
+## Checkpoint semantics
+
+This file is a stable session checkpoint, not a substitute for querying live GitHub state.
+
+A hard-coded SHA in a tracked checkpoint MUST be interpreted only as published milestone identity or as a verified baseline before a bounded work item began. It MUST NOT be interpreted as the permanently current live `main` or live tree.
+
+Live repository state must be obtained by Minimal Delta Verification from GitHub before branch creation, lifecycle transitions, implementation decisions, Ready, or Merge.
+
+Do not create recurring reconciliation commits solely to replace a previously stored `current main` SHA. Such a pattern is self-referential because publishing the replacement itself creates a new SHA.
+
 ## Canonical repository state
 
 - Canonical delivery phase: Phase 0 — Governance and Discovery
 - Canonical Phase 0 status: In Progress
-- Active engineering program: M6 — Post-Publication State Reconciliation
-- Active micro-milestone: M6 — Publication State Reconciliation
-- Current `main`: `0b7b28028966ac38af0f32960054210c3a083916`
-- Current `main` tree: `567df997bae70090b19465c75e4cc3b1e23b6579`
 - M5.1: PUBLISHED / COMPLETE through PR #66
 - M5.2: PUBLISHED / ENFORCEMENT COMPLETE through PR #67
 - M5.3: PUBLISHED / COMPLETE through PR #68
-- M6 lifecycle: PUBLISHED / PUBLICATION COMPLETE through PR #69
-- M6 source head: `e6a3345b09a6b270ac7e09abd78c6356f426e363`
-- M6 source tree: `567df997bae70090b19465c75e4cc3b1e23b6579`
-- M6 published commit: `0b7b28028966ac38af0f32960054210c3a083916`
-- M6 published tree: `567df997bae70090b19465c75e4cc3b1e23b6579`
-- M6 source tree equals published tree: Yes
+- M6 Enterprise Vision Canonicalization: PUBLISHED / PUBLICATION COMPLETE through PR #69
+- M6 Post-Publication State Reconciliation: PUBLISHED through PR #70
+- M6 Closure — Checkpoint Semantics Correction: bounded closure work authorized; no new milestone implied
 - Enterprise Vision decision status: Proposed
 - Sprint 12: Published
 - Sprint 13: Published
@@ -37,7 +40,27 @@
 - Release: None / Not Authorized
 - Migration execution: Not Authorized / Not Performed
 
-## M6 publication outcome
+## Verified publication baseline before closure work
+
+GitHub Delta Verification before creation of the M6 closure branch confirmed:
+
+- PR #70: CLOSED / MERGED;
+- PR #70 source head: `e7eded8d6c661cb5485527d0f1937fb839a3617f`;
+- PR #70 source tree: `58e84138173b1e6e5ca2dc7649dbeb89d79e9af0`;
+- PR #70 published commit: `b26c4690d68db61118ee1c4cecbb87e9418d791f`;
+- PR #70 published tree: `58e84138173b1e6e5ca2dc7649dbeb89d79e9af0`;
+- PR #70 published parent: `0b7b28028966ac38af0f32960054210c3a083916`;
+- source tree equals published tree: Yes;
+- independent reviewer: `zefriansyah`;
+- exact-head review: APPROVED;
+- required checks: SUCCESS;
+- Product Owner READY authority: GRANTED / EXECUTED;
+- Product Owner MERGE authority: GRANTED / EXECUTED;
+- `product-owner-merge-authority`: SUCCESS before squash merge.
+
+The values above are stable publication provenance. To determine the live repository head after this checkpoint, query GitHub.
+
+## M6 Enterprise Vision publication outcome
 
 PR #69 published the M6 Enterprise Vision canonical representation through a separately authorized lifecycle.
 
@@ -52,10 +75,6 @@ Publication identity:
 - published tree: `567df997bae70090b19465c75e4cc3b1e23b6579`;
 - source tree equals published tree: Yes.
 
-Independent reviewer `zefriansyah` APPROVED the exact source head. Required technical checks passed, Product Owner READY authority was recorded separately, Product Owner MERGE authority was recorded separately, and `product-owner-merge-authority` reached SUCCESS before squash merge.
-
-## Canonical Enterprise Vision
-
 The published canonical representation defines oneQay as:
 
 **Enterprise Intelligent Business Management Platform**
@@ -64,7 +83,23 @@ The canonical artifact is:
 
 `docs/handbook/ENTERPRISE_VISION.md`
 
-Publication makes the representation canonical for repository state and resolves the missing-canonical-representation anomaly. It does **not** promote the Enterprise Vision decision status from Proposed to Approved and does not create implementation authority.
+Publication makes the representation canonical for repository state. It does **not** promote the Enterprise Vision decision status from Proposed to Approved and does not create implementation authority.
+
+## M6 post-publication reconciliation outcome
+
+PR #70 published the state reconciliation after PR #69.
+
+That publication confirms:
+
+- M6 publication lifecycle is complete;
+- Enterprise Vision substantive decision remains Proposed;
+- A-09 is resolved only at canonical representation/publication level;
+- A-10 is resolved for current/future-facing canonical product naming;
+- GOV-047 through GOV-050 reflect completed publication/reconciliation work;
+- GOV-051 remains a separate substantive Product Owner decision;
+- Phase 0 remains In Progress;
+- Sprint 14 remains Not Authorized;
+- production readiness remains NO-GO.
 
 ## Canonical naming rule
 
@@ -73,8 +108,6 @@ The product brand must be written exactly as **oneQay** in current and future ca
 Non-canonical active forms include `OneQay`, `ONEQAY`, `Oneqay`, and `oneqay`.
 
 Do not rewrite immutable GitHub identifiers, repository path `labzefry/oneQay`, SHAs, historical commit messages, branch names, or quoted historical evidence merely for brand normalization.
-
-A-10 is resolved for current/future-facing canonical material through PR #69 while immutable historical evidence remains preserved.
 
 ## Canonical Phase 0 interpretation
 
@@ -87,8 +120,6 @@ The canonical blocked boundary remains:
 **Final/business/production application implementation: Blocked.**
 
 ## M5.2 enforcement posture to preserve
-
-A-03 and A-05 are Resolved.
 
 Required protected contexts:
 
@@ -104,8 +135,6 @@ Published M5.2 protection evidence records strict status checks, one approving r
 
 - Capability: Schema Change Review and Approval Envelope Foundation
 - Canonical PR: #64
-- Canonical implementation base: `de3c8c73c0002915c735dc1dfa29828e1781e71d`
-- Canonical source branch: `agent/sprint13-schema-change-review-approval-envelope`
 - Canonical source head: `4a2e44cc31361954b126e8857de65fcccca30445`
 - Canonical source tree: `5a0adb0d2ce80338f9f9d782f0871fb2115afd5d`
 - Canonical published commit: `ebe6abcf77263bf644565ca2fbe2b2844416d49b`
@@ -114,31 +143,11 @@ Published M5.2 protection evidence records strict status checks, one approving r
 - Publication reconciliation PR: #65
 - PR #65 published commit: `7a9def560466fc8bf81529c2b5125c6ac19a96b5`
 
-## Post-publication regression evidence
-
-Product Owner local CLI evidence for canonical Sprint 13 remains classified as POST-PUBLICATION:
-
-- PHP: `8.2.12 CLI`
-- Composer: `2.9.3`
-- `composer test`: PASS
-- 402 assertions PASS
-- exit code: `0`
-- tested HEAD: `ebe6abcf77263bf644565ca2fbe2b2844416d49b`
-- tested tree: `5a0adb0d2ce80338f9f9d782f0871fb2115afd5d`
-- working tree: Clean
-
-## Historical lifecycle discrepancies
+## Historical lifecycle preservation
 
 PR #64 and PR #65 lifecycle discrepancies remain historical facts. M6 does not retroactively normalize them.
 
 Historical review contamination involving alternate Sprint 13 head `ba312fa9095d434c204f01e3dac9870e9eaa4d6d` remains historical only. Canonical reviewed head remains `4a2e44cc31361954b126e8857de65fcccca30445`.
-
-## Product attribution boundary
-
-- Product/development attribution: Lab | zefry.
-- Product name: oneQay.
-- ChatGPT/AI collaboration identity belongs to engineering governance/tooling metadata, not product metadata or source authorship attribution.
-- Product AI capabilities remain subject to their own product, security, data, and implementation gates.
 
 ## Governance preservation
 
@@ -158,15 +167,15 @@ Historical review contamination involving alternate Sprint 13 head `ba312fa9095d
 - Sprint 14: Not Authorized
 - Production readiness: NO-GO
 
-## Current reconciliation boundary
+## M6 closure boundary
 
-The active branch is:
+The active bounded closure work is only:
 
-`agent/m6-post-publication-state-reconciliation`
+**M6 Closure — Checkpoint Semantics Correction**
 
-Its purpose is only to align mutable canonical state with the verified PR #69 publication.
+Its purpose is to remove self-referential `current main/current tree` semantics from canonical tracked checkpoints, record PR #70 publication provenance, and close the reconciliation state cleanly.
 
-This reconciliation does not authorize:
+It does not authorize:
 
 - Enterprise Vision promotion from Proposed to Approved;
 - Sprint 14 implementation;
@@ -181,6 +190,6 @@ This reconciliation does not authorize:
 - JRN resolution;
 - production readiness promotion.
 
-Any Ready or Merge transition for the reconciliation PR requires separate exact-head Product Owner authority.
+Any Ready or Merge transition for the closure PR requires separate exact-head Product Owner authority.
 
 Attribution: Lab | zefry
