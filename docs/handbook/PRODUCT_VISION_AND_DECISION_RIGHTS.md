@@ -165,7 +165,7 @@ Published bounded Platform Foundation through Sprint 13 remains a repository fac
 **A** = Accountable/approver manusia, **R** = Responsible menyiapkan keputusan, **C** = Consulted, **I** = Informed.
 
 | Decision domain | A | R | C | Required evidence |
-| --- | --- | --- | --- | --- |
+| --- | --- | --- | --- |
 | Product vision, outcomes, dan priorities | Product Owner | Product/Business Analysis role | Architecture, UX, Finance/Commercial | Product brief, issue, PR approval |
 | MVP scope dan non-scope | Product Owner | Product Owner atau delegate | Architecture, Security, Data, UX, QA, Operations | Journey evidence, success metrics, dependency/risk analysis |
 | Architecture dan technology | Product Owner | Architecture Decision Owner | Security, Data, Operations, QA, affected implementers | Accepted ADR dan option comparison |
