@@ -1,14 +1,14 @@
-# OneQay Domain Event Storming
+# oneQay Domain Event Storming
 
 > **Status:** Proposed — workshop hypothesis, bukan domain model final  
 > **Phase:** 0 — Governance & Discovery  
-> **Owner:** Product Owner OneQay  
+> **Owner:** Product Owner oneQay  
 > **Tracking:** GitHub Issue #8; approved corrections tracked in Issue #10 and Issue #12  
 > **Dependencies:** Upstream discovery documents berstatus Proposed; temuan JRN-003 dan JRN-013 masih terbuka
 
 ## Purpose
 
-Dokumen ini menyediakan event-storming hypothesis untuk menemukan bahasa domain, alur sebab-akibat, actor, command, policy, invariant, ownership candidate, system boundary, dan hotspot OneQay. Peta ini digunakan untuk workshop dan validasi sebelum MVP slicing, context map, data classification, threat modeling, API design, atau ADR teknologi.
+Dokumen ini menyediakan event-storming hypothesis untuk menemukan bahasa domain, alur sebab-akibat, actor, command, policy, invariant, ownership candidate, system boundary, dan hotspot oneQay. Peta ini digunakan untuk workshop dan validasi sebelum MVP slicing, context map, data classification, threat modeling, API design, atau ADR teknologi.
 
 Event, command, aggregate candidate, dan bounded-context candidate di dokumen ini belum menjadi kontrak implementasi. Tidak ada message schema, database schema, API, framework, atau source code yang disetujui melalui dokumen ini.
 
@@ -434,11 +434,11 @@ Workshop tidak boleh menggunakan data produksi. Gunakan scenario sintetis dan ar
 - [ ] Aggregate/context candidate memiliki trade-off dan tidak dianggap final.
 - [ ] Cross-context interaction tidak mengizinkan shared mutable ownership atau direct table access.
 - [ ] Tidak ada schema, API implementation, framework, vendor, atau runtime choice tersirat.
-- [ ] Application source code tetap Blocked.
+- [ ] Final/business/production application implementation baru tetap Blocked tanpa authority dan gate yang berlaku.
 
 ## ChatGPT — Lanjutan
 
-Gunakan repository `labzefry/oneQay` sebagai SSOT. Review Issue #8, correction Issue #10, correction Issue #12, dan draft PR Domain Event Storming pada head terbaru. Terapkan hanya koreksi yang disetujui Product Owner. Jangan mengubah event hypothesis menjadi observed fact, memfinalkan aggregate/bounded context, memilih technology/provider, mempromosikan status Proposed, atau membuat source code tanpa evidence dan approval eksplisit. Setelah correction PR disetujui dan workshop evidence direview, siapkan Ubiquitous Language and Context Map sebagai issue dan draft PR terpisah.
+Gunakan repository `labzefry/oneQay` sebagai SSOT. Review Issue #8, correction Issue #10, correction Issue #12, dan draft PR Domain Event Storming pada head terbaru. Terapkan hanya koreksi yang disetujui Product Owner. Jangan mengubah event hypothesis menjadi observed fact, memfinalkan aggregate/bounded context, memilih technology/provider, mempromosikan status Proposed, atau membuat source code baru tanpa evidence dan approval eksplisit. Setelah correction PR disetujui dan workshop evidence direview, siapkan Ubiquitous Language and Context Map sebagai issue dan draft PR terpisah.
 
 ## ChatGPT — Review Independen
 
