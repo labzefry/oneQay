@@ -343,7 +343,7 @@ PR #28 was created from original base `3c4bcfe9797a3ae7f4deb124568ef361d74125e5`
 
 Read-only evidence for the PR #28 exact head shows no review submission, PR conversation comment, published commit status, or GitHub Actions workflow run. The local and static validation statements in the PR body remain distinct from independent GitHub check evidence and do not supply lifecycle authority.
 
-The Product Owner issued a post-merge exact-head content decision approving only the accuracy of the three-file corrective content on PR #28 exact head. That decision does not provide retrospective lifecycle authority and does not ratify the draft-to-ready transition or merge of PR #28.
+The Product Owner issued a post-merge exact-head decision approving only the accuracy of the three-file corrective content on PR #28 exact head. That decision does not provide retrospective lifecycle authority and does not ratify the draft-to-ready transition or merge of PR #28.
 
 The PR #28 technical merge does not ratify PR #27, PR #26, or PR #25, validate or complete the closure of Issue #23, accept ADR-001 through ADR-007, approve Phase 0 preview exit, grant source-code authority, complete GOV-034, GOV-035, GOV-036, or GOV-037, or provide substantive approval or completion evidence. Phase 0 remains **In Progress**. Final/business application implementation remains **Blocked**. Phase 0 preview exit remains **Not Ready**. P1 remains conditional and **Unverified**. ADR-001 through ADR-007, GD-007, PAY-1, OFF-1, TEN-1, REC-1, SLO-1, and DATA-1 remain **Proposed** selections or boundaries. GOV-034, GOV-035, GOV-036, and GOV-037 remain **Review**. JRN-003 and JRN-013 remain unresolved. Hosting evidence remains Pending, Not supplied, or Unverified.
 
@@ -385,7 +385,7 @@ The PR #31 technical merge does not ratify PR #30, PR #29, PR #28, PR #27, PR #2
 
 ## PR #32 post-merge governance recurrence
 
-PR #32 was created from original base `67059e563de26cee26cefd64cf9e7d5c4436ffc6` at exact head `beb7b35aa718a746ad5dad9d5574c2293bd0ab40`. Its body required the PR to remain draft, but it was changed from draft and technically merged as `d1a6160b37250bda691e906fc4ee06e37dd0c847`.
+PR #32 was created from original base `67059e563de26cee26fd64cf9e7d5c4436ffc6` at exact head `beb7b35aa718a746ad5dad9d5574c2293bd0ab40`. Its body required the PR to remain draft, but it was changed from draft and technically merged as `d1a6160b37250bda691e906fc4ee06e37dd0c847`.
 
 A repository-native operational authority comment was present on PR #32 and explicitly authorized current-main verification, corrective branch creation, the three corrective Markdown changes, adding GOV-040 as Review, draft PR creation, the authority comment, and read-only checks. That authority explicitly excluded draft-to-ready transition, merge or auto-merge, approval review, branch-protection or ruleset changes, ADR acceptance, Phase 0 exit, source-code implementation, Issue #23 state change, hosting-evidence completion, governance-task completion, ratification, release, deployment, and status promotion.
 
