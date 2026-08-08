@@ -47,6 +47,8 @@ M6 telah mempublikasikan representasi canonical Enterprise Vision **Enterprise I
 
 Product Owner kemudian memberikan substantive DEC-000 Product Vision and Decision Rights decision yang **APPROVED** pada decision baseline `792b2dc30636bc53baa7d66b43cf2dab4a348dd4`, tree `08f03b895d5e2ae7ca402e9866384990e126add3`, canonical owner artifact blob `843544b9e31dd4c47638b88dd204f4e594295df4`, dan readiness artifact blob `b493a5d66edc1bbffab0126bdacf2ca1ce14fa8f`. DEC-000 mengesahkan GD-003 dalam boundary product/discovery governance saja dan tidak memberikan implementation authority.
 
+Product Owner kemudian memberikan substantive DEC-001 MVP Scope and Non-Scope decision yang **APPROVED** pada decision baseline `17f156b9861972b4924a5ed01bfabd5a1a79461a` dan verified tree `33241c18a1b7da2efc7dd2889c13c25c6e8526d5`. DEC-001 menetapkan **POS CORE TRANSACTION & OUTLET OPERATIONS** sebagai first bounded MVP delivery slice dengan actor, journey, dependency, explicit non-scope, outcome, guardrail, dan open-item boundary yang direkam di `docs/handbook/DEC_001_DECISION_RECORD.md`. DEC-001 tidak memberi Sprint 14, application/business implementation, SQL/schema/migration, production database, deployment, release, ADR acceptance, JRN resolution, atau production-readiness authority.
+
 ## Current delivery gate
 
 | Item | Status | Gate |
@@ -60,6 +62,7 @@ Product Owner kemudian memberikan substantive DEC-000 Product Vision and Decisio
 | M6 Enterprise Vision Canonicalization | Published / Publication Complete | PR #69; source head `e6a3345b09a6b270ac7e09abd78c6356f426e363`; published commit `0b7b28028966ac38af0f32960054210c3a083916`; source/published tree `567df997bae70090b19465c75e4cc3b1e23b6579` |
 | GOV-051 Enterprise Vision substantive decision | Approved / Decision Complete | Product Owner APPROVED `Enterprise Intelligent Business Management Platform` on verified baseline `762149757e4bc1fa79cc16bc4761f4147be0f7ea`; approval is product direction only, not implementation authority |
 | DEC-000 Product Vision and Decision Rights | Approved / Decision Complete | Product Owner APPROVED D-000-01 through D-000-06 on baseline `792b2dc30636bc53baa7d66b43cf2dab4a348dd4`; `docs/handbook/DEC_000_DECISION_RECORD.md`; GD-003 Approved within DEC-000 boundary only |
+| DEC-001 MVP Scope and Non-Scope | Approved / Decision Complete | Product Owner APPROVED **POS CORE TRANSACTION & OUTLET OPERATIONS** on baseline `17f156b9861972b4924a5ed01bfabd5a1a79461a`; `docs/handbook/DEC_001_DECISION_RECORD.md`; no implementation authority |
 | Final/business application implementation | Blocked | Tidak ada authority untuk implementasi business/final/production application baru |
 | Sprint 14 | Not Authorized | Memerlukan Product Owner authority terpisah |
 | Production readiness | NO-GO | Tidak ada deployment, release, atau production-migration authority |
@@ -254,6 +257,7 @@ Tidak ada framework atau vendor yang dianggap dipilih sebelum ADR berstatus Acce
 | `docs/handbook/ENTERPRISE_VISION.md` | Published canonical Enterprise Vision representation, capability map, dan conceptual product evolution; substantive status Approved through GOV-051; no implementation authority implied |
 | `docs/handbook/PRODUCT_VISION_AND_DECISION_RIGHTS.md` | Approved Product Vision and Decision Rights through DEC-000; no implementation authority implied |
 | `docs/handbook/DEC_000_DECISION_RECORD.md` | DEC-000 substantive Product Owner decision provenance, dispositions, and boundaries |
+| `docs/handbook/DEC_001_DECISION_RECORD.md` | DEC-001 substantive Product Owner MVP scope/non-scope decision provenance, approved bounded slice, deferred boundaries, and no-implementation authority |
 | API_SPEC.md | Governance API |
 | DATABASE.md | Governance data dan skema |
 | SECURITY.md | Security baseline |
@@ -284,6 +288,8 @@ Baseline governance Handbook 1.0 disetujui melalui PR #1. Item berstatus Approve
 M6 publication lifecycle selesai melalui PR #69. Publication tersebut mengesahkan representasi canonical dan provenance M6, tetapi tidak dengan sendirinya mempromosikan Enterprise Vision dari Proposed menjadi Approved. Product Owner kemudian memberikan keputusan substantif terpisah GOV-051 yang **APPROVED** pada verified repository baseline `762149757e4bc1fa79cc16bc4761f4147be0f7ea` dan canonical artifact blob `bb1cace72a6fdb359e15e22467443d9f3916c336`. Keputusan tersebut mengikat long-term product direction dan tidak memberi Sprint 14, implementation, deployment, release, SQL/migration, production DB, ADR/GD/JRN, atau production-readiness authority.
 
 Product Owner kemudian memberikan substantive DEC-000 Product Vision and Decision Rights decision yang **APPROVED** pada baseline `792b2dc30636bc53baa7d66b43cf2dab4a348dd4`, tree `08f03b895d5e2ae7ca402e9866384990e126add3`, canonical artifact blob `843544b9e31dd4c47638b88dd204f4e594295df4`, dan readiness artifact blob `b493a5d66edc1bbffab0126bdacf2ca1ce14fa8f`. Keputusan tersebut mengesahkan GD-003 hanya dalam boundary Product Vision and Decision Rights, mempertahankan PV-002 melalui PV-006 sebagai Open / Not Resolved, dan tidak memberi Sprint 14, final/business/production implementation, ADR acceptance, GD-007/JRN resolution, SQL/migration, production DB, deployment, release, atau production-readiness authority.
+
+Product Owner kemudian memberikan substantive DEC-001 MVP Scope and Non-Scope decision yang **APPROVED** pada baseline `17f156b9861972b4924a5ed01bfabd5a1a79461a` dan verified tree `33241c18a1b7da2efc7dd2889c13c25c6e8526d5`. Keputusan tersebut menyetujui first bounded MVP slice **POS CORE TRANSACTION & OUTLET OPERATIONS** dan seluruh actor/journey/dependency/non-scope/outcome boundary pada `docs/handbook/DEC_001_DECISION_RECORD.md`, sambil mempertahankan GD-005/GD-006/GD-007 Proposed, JRN-003/JRN-013 Unresolved, Phase 0 In Progress, Sprint 14 Not Authorized, production readiness NO-GO, dan tanpa application/business implementation, SQL/schema/migration, production database, deployment, release, ADR acceptance, atau DEC-002 through DEC-012 approval authority.
 
 ## Technical Preview v0.0.1 decision package
 
@@ -426,9 +432,10 @@ Phase 0 remains **In Progress**. Final/business application implementation remai
 - A-09 — Enterprise Vision Not Yet Canonical: **Resolved at canonical representation/publication level through PR #69**; separate substantive Enterprise Vision decision **APPROVED** through GOV-051.
 - A-10 — Product-name capitalization inconsistency: **Resolved for current/future-facing canonical material through PR #69**; canonical form is `oneQay` and immutable historical evidence remains preserved.
 - DEC-000 — Product Vision and Decision Rights: **APPROVED / DECISION COMPLETE**; GD-003 Approved within DEC-000 boundary; PV-002 through PV-006 remain Open / Not Resolved.
+- DEC-001 — MVP Scope and Non-Scope: **APPROVED / DECISION COMPLETE**; first bounded delivery slice is **POS CORE TRANSACTION & OUTLET OPERATIONS**; no implementation authority granted.
 - Phase 0 remains **In Progress**.
 - Sprint 14 remains **Not Authorized**.
 - Production readiness remains **NO-GO**.
-- No final/business/production implementation, deployment, release, SQL execution, migration execution, or production database modification is authorized by GOV-051 or DEC-000.
+- No final/business/production implementation, deployment, release, SQL execution, migration execution, or production database modification is authorized by GOV-051, DEC-000, or DEC-001.
 
 Attribution: Lab | zefry
