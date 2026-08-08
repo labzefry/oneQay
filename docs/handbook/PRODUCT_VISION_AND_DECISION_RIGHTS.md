@@ -1,9 +1,9 @@
 # oneQay Product Vision and Decision Rights
 
-> **Status:** Proposed — menunggu persetujuan Product Owner melalui pull request
+> **Status:** Approved — DEC-000 substantive Product Owner decision
 > **Phase:** 0 — Governance & Discovery
-> **Owner:** Product Owner oneQay
-> **Tracking:** GitHub Issue #2
+> **Owner:** Product Owner oneQay (`labzefry`)
+> **Tracking:** GitHub Issue #2; `docs/handbook/DEC_000_DECISION_RECORD.md`
 
 ## Purpose
 
@@ -11,7 +11,7 @@ Dokumen ini menetapkan arah product/discovery oneQay dan batas kewenangan pengam
 
 Dokumen ini tidak menyetujui source code baru, framework, vendor, rancangan database fisik, kontrak API, atau tanggal rilis.
 
-M6 mempublikasikan `docs/handbook/ENTERPRISE_VISION.md` sebagai canonical Enterprise Vision tingkat tinggi, dan GOV-051 kemudian secara terpisah mengesahkan Enterprise Vision tersebut sebagai binding long-term product direction. Dokumen ini tetap menjadi artifact Phase 0 untuk product/discovery direction dan decision rights; status Proposed/GD-003 di sini tidak dipromosikan oleh GOV-051.
+M6 mempublikasikan `docs/handbook/ENTERPRISE_VISION.md` sebagai canonical Enterprise Vision tingkat tinggi, dan GOV-051 kemudian secara terpisah mengesahkan Enterprise Vision tersebut sebagai binding long-term product direction. GOV-051 tidak mempromosikan Product Vision and Decision Rights/GD-003. Product Owner kemudian secara terpisah mengesahkan DEC-000 pada decision baseline `792b2dc30636bc53baa7d66b43cf2dab4a348dd4`, sehingga dokumen ini sekarang **Approved** sebagai governing Phase 0 product/discovery direction dan decision-rights boundary tanpa memberikan implementation authority.
 
 ## Canonical product naming
 
@@ -51,7 +51,7 @@ M6 memisahkan secara eksplisit:
 
 Enterprise Capability Map adalah peta arah, bukan MVP scope dan bukan implementation grant. Detailnya berada di `docs/handbook/ENTERPRISE_VISION.md`.
 
-GOV-051 hanya mengesahkan substantive Enterprise Vision. GOV-051 tidak menyetujui decision-rights matrix, open decisions, acceptance gate, atau GD-003 pada dokumen ini.
+GOV-051 hanya mengesahkan substantive Enterprise Vision. GOV-051 tidak menyetujui decision-rights matrix, open decisions, acceptance gate, atau GD-003 pada dokumen ini. DEC-000 kemudian secara terpisah mengesahkan Product Vision and Decision Rights dan mengotorisasi GD-003 untuk direkam sebagai Approved; DEC-000 tetap bukan implementation grant.
 
 ## Mission
 
@@ -205,7 +205,7 @@ Sampai delegate manusia tercatat, Product Owner tetap menjadi approver. ChatGPT 
 
 Merge bukan selalu bukti approval substantif. PR harus menyatakan decision items yang disetujui; approval harus merujuk versi/head yang direview. Perubahan setelah approval membutuhkan review ulang.
 
-Enterprise Vision publication tidak otomatis mempromosikan decision items pada dokumen ini dari Proposed menjadi Approved. GOV-051 adalah explicit Product Owner substantive approval hanya untuk Enterprise Vision dan tidak mempromosikan GD-003 atau item lain pada dokumen ini.
+Enterprise Vision publication tidak otomatis mempromosikan decision items pada dokumen ini dari Proposed menjadi Approved. GOV-051 adalah explicit Product Owner substantive approval hanya untuk Enterprise Vision dan tidak mempromosikan GD-003 atau item lain pada dokumen ini. GD-003 memperoleh approval hanya melalui substantive Product Owner DEC-000 yang terpisah.
 
 ## Escalation and stop conditions
 
@@ -225,26 +225,26 @@ Eskalasi dicatat pada issue dengan pilihan, dampak, rekomendasi, owner keputusan
 
 ## Workshop output checklist
 
-- [ ] Product Owner atau delegate manusia teridentifikasi di GitHub.
-- [ ] Visi, misi, prinsip, dan product outcomes direview.
-- [ ] Segmen, actor, masalah, dan asumsi yang perlu divalidasi disepakati.
-- [ ] Arah scope, deferred items, dan non-goals dipahami.
-- [ ] Decision-rights matrix disetujui atau koreksinya dicatat.
-- [ ] Open questions memiliki owner dan next action.
-- [ ] Tidak ada pilihan framework, vendor, database, API, atau deployment baru yang disetujui secara tersirat.
-- [ ] Enterprise Vision tidak diperlakukan sebagai implementation authority.
-- [ ] Keputusan final serta dissent dicatat pada PR.
+- [x] Product Owner atau delegate manusia teridentifikasi di GitHub: accountable Product Owner `labzefry`; belum ada delegate tercatat.
+- [x] Visi, misi, prinsip, dan product outcomes direview dan disetujui melalui DEC-000.
+- [x] Segmen, actor, masalah, dan asumsi yang perlu divalidasi diterima sebagai Phase 0 discovery hypotheses and constraints.
+- [x] Arah scope, deferred items, dan non-goals dipahami dan diterima dalam boundary DEC-000.
+- [x] Decision-rights matrix dikonfirmasi melalui DEC-000.
+- [x] Open questions memiliki owner dan next action; PV-002 sampai PV-006 tetap OPEN / NOT RESOLVED.
+- [x] Tidak ada pilihan framework, vendor, database, API, atau deployment baru yang disetujui secara tersirat.
+- [x] Enterprise Vision tidak diperlakukan sebagai implementation authority.
+- [x] Keputusan final dicatat melalui `docs/handbook/DEC_000_DECISION_RECORD.md`; tidak ada dissent yang dicatat pada substantive decision.
 
 ## Open decisions and next discovery
 
 | ID | Open decision | Owner | Next evidence |
 | --- | --- | --- | --- |
-| PV-001 | Identitas manusia Product Owner dan delegate per domain | Product Owner | GitHub approval dan assignment |
-| PV-002 | Segmen pelanggan awal dan prioritas industri | Product Owner | Stakeholder interviews dan problem evidence |
-| PV-003 | MVP scope/non-scope | Product Owner | Actor map, journeys, event storming, MVP slicing |
-| PV-004 | Definisi serta target product outcomes | Product Owner | Baseline, data feasibility, anti-gaming review |
-| PV-005 | Batas legal, fiscal, payment, privacy, dan jurisdiction | Product Owner | Qualified legal/compliance evidence |
-| PV-006 | Delegate untuk release dan incident authority | Product Owner | Named responsibility dan escalation coverage |
+| PV-001 | Accountable Product Owner identification | Product Owner | **Satisfied for DEC-000:** `labzefry`; future delegates require explicit GitHub assignment, bounded scope, and supersession/revocation path |
+| PV-002 | **OPEN — NOT RESOLVED:** Segmen pelanggan awal dan prioritas industri | Product Owner | Stakeholder interviews dan problem evidence |
+| PV-003 | **OPEN — NOT RESOLVED:** MVP scope/non-scope | Product Owner | DEC-001 actor map, journeys, event storming, MVP slicing |
+| PV-004 | **OPEN — NOT RESOLVED:** Definisi serta target product outcomes | Product Owner | Baseline, data feasibility, metric definition, owner, target period, anti-gaming review |
+| PV-005 | **OPEN — NOT RESOLVED:** Batas legal, fiscal, payment, privacy, dan jurisdiction | Product Owner | Qualified legal/compliance evidence |
+| PV-006 | **OPEN — NOT RESOLVED:** Delegate untuk release dan incident authority | Product Owner | Named responsibility dan escalation coverage; until then Product Owner authority remains applicable where required |
 
 ## Acceptance gate
 
@@ -256,25 +256,39 @@ Dokumen dapat berubah dari Proposed menjadi Approved hanya bila Product Owner:
 4. menerima daftar open decisions tanpa menganggapnya telah selesai;
 5. menegaskan implementation boundary dan authority yang berlaku pada exact head.
 
-M6 START authority maupun GOV-051 Enterprise Vision approval sendiri tidak memenuhi acceptance gate dokumen/GD-003 di atas.
+Acceptance gate tersebut dipenuhi oleh substantive Product Owner DEC-000 decision pada baseline `792b2dc30636bc53baa7d66b43cf2dab4a348dd4`, baseline tree `08f03b895d5e2ae7ca402e9866384990e126add3`, canonical artifact blob `843544b9e31dd4c47638b88dd204f4e594295df4`, dan readiness artifact blob `b493a5d66edc1bbffab0126bdacf2ca1ce14fa8f`. Detail decision record berada di `docs/handbook/DEC_000_DECISION_RECORD.md`.
+
+M6 START authority maupun GOV-051 Enterprise Vision approval sendiri tidak memenuhi acceptance gate dokumen/GD-003; approval tersebut diberikan terpisah melalui DEC-000.
+
+## DEC-000 substantive decision record
+
+- D-000-01 — Product Vision and Mission: **APPROVED**.
+- D-000-02 — Product Principles and Outcome Direction: **APPROVED**.
+- D-000-03 — Segment, actor, problem, scope, deferred, and non-goal hypotheses: **ACCEPTED AS PHASE 0 DISCOVERY HYPOTHESES AND CONSTRAINTS**.
+- D-000-04 — Decision-rights matrix: **CONFIRMED**.
+- D-000-05 — Open decision disposition: **APPROVED**; PV-001 satisfied for DEC-000 identity, PV-002 through PV-006 remain OPEN / NOT RESOLVED.
+- D-000-06 — Implementation-authority boundary: **CONFIRMED**.
+- Issue #2 closure remains historical workflow state and is not substantive approval evidence.
+- GD-003 substantive Product Vision and Decision Rights: **APPROVED through DEC-000**.
+- DEC-000 does not grant Sprint 14, implementation, SQL/migration, production DB, deployment, release, ADR acceptance, GD-007 promotion, JRN resolution, or production-readiness authority.
 
 ## Current program boundary
 
 - Phase 0: In Progress.
 - Enterprise Vision: Approved through GOV-051 as binding long-term product direction; not implementation authority.
+- Product Vision and Decision Rights / GD-003: Approved through DEC-000; not implementation authority.
 - Sprint 12: Published.
 - Sprint 13: Published.
 - Sprint 14: Not Authorized.
 - Final/business/production application implementation: Blocked unless separately authorized.
 - Production readiness: NO-GO.
 - Deployment, release, SQL/migration execution, and production database modification: Not Authorized.
-- GD-003: Proposed.
 - GD-007: Proposed.
 - JRN-003/JRN-013: Unresolved.
 
 ## ChatGPT — Lanjutan
 
-Gunakan repository `labzefry/oneQay` sebagai SSOT. Terapkan hanya koreksi yang memiliki authority sesuai lifecycle pada `PRODUCT_VISION_AND_DECISION_RIGHTS.md`, `PROJECT_MANIFEST.md`, `TASKS.md`, `CHANGELOG.md`, dan dokumen canonical terkait. Jangan mempromosikan status Proposed menjadi Approved tanpa approval manusia yang eksplisit pada exact head. GOV-051 hanya merupakan approval Enterprise Vision dan bukan approval GD-003. Published bounded Platform Foundation history tidak boleh dihapus atau ditulis ulang. Final/business implementation baru tetap membutuhkan authority terpisah.
+Gunakan repository `labzefry/oneQay` sebagai SSOT. Terapkan hanya koreksi yang memiliki authority sesuai lifecycle pada `PRODUCT_VISION_AND_DECISION_RIGHTS.md`, `PROJECT_MANIFEST.md`, `TASKS.md`, `CHANGELOG.md`, dan dokumen canonical terkait. GD-003 sekarang Approved hanya dalam boundary DEC-000 dan tidak boleh diperluas menjadi implementation authority. Jangan mempromosikan item Proposed lain menjadi Approved tanpa approval manusia yang eksplisit pada exact head. Published bounded Platform Foundation history tidak boleh dihapus atau ditulis ulang. Final/business implementation baru tetap membutuhkan authority terpisah.
 
 ## ChatGPT — Review Independen
 
