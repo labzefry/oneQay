@@ -1,47 +1,71 @@
-# OneQay Product Vision and Decision Rights
+# oneQay Product Vision and Decision Rights
 
 > **Status:** Proposed — menunggu persetujuan Product Owner melalui pull request  
 > **Phase:** 0 — Governance & Discovery  
-> **Owner:** Product Owner OneQay  
+> **Owner:** Product Owner oneQay  
 > **Tracking:** GitHub Issue #2
 
 ## Purpose
 
-Dokumen ini menetapkan arah produk OneQay dan batas kewenangan pengambilan keputusan. Dokumen ini mencegah asumsi berubah menjadi keputusan, memastikan setiap keputusan material memiliki pemilik manusia, serta menjaga ChatGPT sebagai engineering collaborator tanpa mengambil alih otoritas bisnis, hukum, keamanan, atau release.
+Dokumen ini menetapkan arah product/discovery oneQay dan batas kewenangan pengambilan keputusan. Dokumen ini mencegah asumsi berubah menjadi keputusan, memastikan setiap keputusan material memiliki pemilik manusia, serta menjaga ChatGPT sebagai engineering collaborator tanpa mengambil alih otoritas bisnis, hukum, keamanan, atau release.
 
-Dokumen ini tidak menyetujui source code, framework, vendor, rancangan database fisik, kontrak API, atau tanggal rilis.
+Dokumen ini tidak menyetujui source code baru, framework, vendor, rancangan database fisik, kontrak API, atau tanggal rilis.
+
+M6 menambahkan `docs/handbook/ENTERPRISE_VISION.md` sebagai Enterprise Vision candidate tingkat tinggi. Dokumen ini tetap menjadi artifact Phase 0 untuk product/discovery direction dan decision rights; status Proposed di sini tidak dipromosikan hanya karena Enterprise Vision candidate dibuat.
+
+## Canonical product naming
+
+Nama produk canonical adalah **oneQay**.
+
+Current/future-facing product identity harus menggunakan `oneQay`. Repository identifier `labzefry/oneQay`, immutable GitHub URLs, SHAs, commit messages, branch names, dan quoted historical evidence tidak ditulis ulang hanya untuk brand normalization.
 
 ## Product identity
 
 | Atribut | Keputusan | Status |
-|---|---|---|
-| Product | OneQay | Approved |
+| --- | --- | --- |
+| Product | oneQay | Approved |
 | Tagline | The Future of Intelligent Business Management | Approved |
 | Category | Enterprise SaaS POS & ERP Platform | Approved |
-| Author | Lab \| Zefry | Approved |
+| Enterprise Vision | Enterprise Intelligent Business Management Platform | Proposed — M6 candidate |
+| Developer & Product Engineering Entity | Lab \| zefry | Approved |
 | Source of Truth | GitHub | Approved |
-| Engineering collaboration | ChatGPT + GitHub only | Approved |
 | Delivery model | Multi-tenant SaaS | Approved |
+
+Engineering collaboration tooling is governed separately through `AI_CONSTITUTION.md`; it is not product authorship metadata.
 
 ## Product vision
 
-OneQay menjadi platform intelligent business management yang membantu bisnis menjalankan transaksi dan operasional secara terpadu, akurat, aman, serta mudah dikembangkan dari satu toko menuju organisasi multi-cabang dan multi-tenant tanpa mengganti fondasi business logic ketika infrastruktur bertumbuh.
+oneQay menjadi platform intelligent business management yang membantu bisnis menjalankan transaksi dan operasional secara terpadu, akurat, aman, serta mudah dikembangkan dari satu toko menuju organisasi multi-cabang dan multi-tenant tanpa mengganti fondasi business logic ketika infrastruktur bertumbuh.
+
+M6 memperluas horizon directional tersebut melalui Enterprise Vision candidate **Enterprise Intelligent Business Management Platform**. Candidate ini tidak menyatakan bahwa seluruh POS/ERP/CRM/HRM/BI/AI/ecosystem capability telah Approved untuk implementasi.
+
+## Enterprise Vision relationship
+
+M6 memisahkan secara eksplisit:
+
+1. Product Vision;
+2. Product Capability Map;
+3. Product Architecture Direction;
+4. Delivery Roadmap;
+5. Implementation Authority.
+
+Enterprise Capability Map adalah peta arah, bukan MVP scope dan bukan implementation grant. Detailnya berada di `docs/handbook/ENTERPRISE_VISION.md`.
 
 ## Mission
 
-OneQay menjalankan visi tersebut dengan:
+oneQay menjalankan visi tersebut dengan:
 
 1. menyederhanakan pekerjaan operasional melalui pengalaman yang cepat, konsisten, dan dapat dipahami;
-2. menyatukan transaksi, persediaan, pelanggan, pembelian, keuangan, dan pelaporan melalui batas domain yang jelas;
+2. menyatukan transaksi, persediaan, pelanggan, pembelian, keuangan, pelaporan, dan capability business management lain hanya ketika scope-nya disetujui;
 3. menjaga integritas uang, stok, identitas, tenant context, dan audit trail pada setiap alur kritis;
 4. menyediakan kontrak integrasi yang terversi dan tidak mengikat business logic pada vendor infrastruktur;
 5. mendukung pertumbuhan bertahap dari shared hosting menuju cloud dan Kubernetes berdasarkan kebutuhan yang terbukti;
-6. menghadirkan insight dan bantuan cerdas dengan kontrol manusia, batas data, serta keamanan yang dapat diaudit.
+6. menghadirkan insight dan bantuan cerdas dengan kontrol manusia, batas data, evaluasi, serta keamanan yang dapat diaudit.
 
 ## Product principles
 
 | Prinsip | Implikasi keputusan |
-|---|---|
+| --- | --- |
 | Trust before speed | Keamanan, akurasi finansial, isolasi tenant, dan recovery tidak dikorbankan demi percepatan rilis. |
 | Operational simplicity | Alur inti meminimalkan langkah, ambiguitas, dan ketergantungan pada dukungan teknis. |
 | Modular growth | Fitur baru mengikuti batas domain dan tidak membuat duplicate business logic. |
@@ -50,13 +74,14 @@ OneQay menjalankan visi tersebut dengan:
 | Human accountability | Keputusan dan tindakan berisiko selalu memiliki approver manusia yang teridentifikasi. |
 | Infrastructure independence | Perpindahan environment tidak mengubah aturan bisnis. |
 | Inclusive by design | Aksesibilitas, locale, currency, timezone, perangkat, dan konektivitas dipertimbangkan sejak discovery. |
+| Vision is not authority | Capability map dan roadmap tidak boleh digunakan sebagai substitusi Product Owner implementation authority. |
 
 ## Target users and business problems
 
 Segmen berikut adalah hipotesis discovery, bukan komitmen MVP final.
 
 | Segmen kandidat | Kebutuhan utama | Masalah yang perlu divalidasi |
-|---|---|---|
+| --- | --- | --- |
 | Pemilik bisnis satu atau beberapa outlet | Kendali operasional dan ringkasan kinerja | Data tersebar, laporan terlambat, dan keputusan bergantung pada rekonsiliasi manual. |
 | Manajer outlet/operasional | Visibilitas transaksi, stok, tim, dan pengecualian | Status antar-outlet tidak konsisten dan masalah diketahui setelah berdampak. |
 | Kasir/frontline | Transaksi yang cepat dan tahan kesalahan | Proses lambat, status pembayaran ambigu, dan koreksi tidak memiliki kontrol yang cukup. |
@@ -71,7 +96,7 @@ Validasi segmen, actor, workflow, dan jobs-to-be-done dilakukan pada workshop be
 Outcome berikut menjadi arah pengukuran. Nilai target dan periode pengukuran ditetapkan saat MVP slicing setelah baseline tersedia.
 
 | Outcome | Indikator kandidat | Guardrail |
-|---|---|---|
+| --- | --- | --- |
 | Operasional lebih efisien | waktu menyelesaikan alur inti, langkah manual, time-to-first-value | tidak meningkatkan error atau beban dukungan |
 | Transaksi dapat dipercaya | success rate, duplicate/replay rate, waktu rekonsiliasi | tidak ada kehilangan atau penggandaan nilai finansial |
 | Persediaan lebih akurat | inventory variance, adjustment rate, traceability | setiap perubahan stok memiliki sumber dan audit trail |
@@ -92,36 +117,40 @@ Indikator tidak boleh digunakan sebagai target numerik sebelum definisi, sumber 
 - finance/accounting foundation yang ditentukan melalui discovery;
 - Web Application, PWA, REST API, dan Admin Dashboard sebagai target yang telah disetujui;
 - installer, updater, auditability, observability, backup, dan recovery;
-- jalur evolusi menuju integrasi, CMS, public API, marketplace, plugin, dan AI Assistant setelah gate masing-masing terpenuhi.
+- jalur evolusi menuju CRM, HRM, Business Intelligence, integration platform, CMS, public API, marketplace, plugin, dan AI capabilities setelah gate masing-masing terpenuhi.
 
 Daftar ini adalah arah produk keseluruhan. MVP pertama akan menjadi irisan yang lebih kecil dan harus disetujui melalui DEC-001.
 
 ### Deferred or subject to discovery
 
-- Android Native;
+- Android Native / broader mobile implementation;
 - CMS;
 - Public API;
 - marketplace dan plugin runtime;
-- AI Assistant dan provider boundary;
-- deployment cloud dan Kubernetes;
+- AI Assistant/AI Platform provider dan data boundary;
+- cloud dan Kubernetes deployment;
 - mode offline POS dan resolusi konflik;
 - provider pembayaran serta batas kepatuhan;
-- model fisik isolasi tenant.
+- model fisik isolasi tenant;
+- final CRM/HRM/BI scope dan bounded contexts.
 
 ### Non-goals for the initial delivery
 
-- membangun seluruh kapabilitas ERP untuk semua industri sekaligus;
+- membangun seluruh kapabilitas ERP/CRM/HRM/BI untuk semua industri sekaligus;
+- menganggap Enterprise Capability Map sebagai backlog yang otomatis Approved;
 - memulai dengan microservices atau Kubernetes tanpa kebutuhan terukur;
 - memilih framework/vendor berdasarkan preferensi tanpa ADR;
 - menyimpan atau memproses data pembayaran yang memerlukan kepatuhan di luar batas yang disetujui;
 - menjalankan tindakan finansial, administratif, atau lintas tenant secara otonom oleh AI;
 - menjanjikan tanggal rilis sebelum scope, kapasitas, dependency, dan risk buffer tersedia;
-- membuat source code sebelum exit criteria Phase 0 terpenuhi.
+- memulai final/business/production application implementation baru tanpa authority dan gate yang berlaku.
+
+Published bounded Platform Foundation through Sprint 13 remains a repository fact and is not invalidated by this non-goal boundary.
 
 ## Decision roles
 
 | Role | Authority and responsibility |
-|---|---|
+| --- | --- |
 | Product Owner | Pemegang keputusan akhir untuk visi, prioritas, scope, risiko yang diterima, pendanaan, release, dan perubahan yang berdampak bisnis. |
 | Decision Owner | Manusia yang ditunjuk Product Owner untuk menyiapkan dan mempertanggungjawabkan keputusan pada domain tertentu. Penunjukan wajib tercatat di GitHub. |
 | Subject Matter Reviewer | Menilai bukti dan risiko pada Product, Architecture, Security, Data, UX, QA, Operations, Legal, atau Compliance. Tidak otomatis menjadi approver. |
@@ -134,7 +163,7 @@ Daftar ini adalah arah produk keseluruhan. MVP pertama akan menjadi irisan yang 
 **A** = Accountable/approver manusia, **R** = Responsible menyiapkan keputusan, **C** = Consulted, **I** = Informed.
 
 | Decision domain | A | R | C | Required evidence |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | Product vision, outcomes, dan priorities | Product Owner | Product/Business Analysis role | Architecture, UX, Finance/Commercial | Product brief, issue, PR approval |
 | MVP scope dan non-scope | Product Owner | Product Owner atau delegate | Architecture, Security, Data, UX, QA, Operations | Journey evidence, success metrics, dependency/risk analysis |
 | Architecture dan technology | Product Owner | Architecture Decision Owner | Security, Data, Operations, QA, affected implementers | Accepted ADR dan option comparison |
@@ -163,7 +192,7 @@ Sampai delegate manusia tercatat, Product Owner tetap menjadi approver. ChatGPT 
 ## Status and approval semantics
 
 | Status | Makna |
-|---|---|
+| --- | --- |
 | Draft | Belum siap untuk keputusan. |
 | Proposed | Siap direview tetapi belum mengikat. |
 | Under Review | Review aktif; temuan atau pertanyaan masih terbuka. |
@@ -173,6 +202,8 @@ Sampai delegate manusia tercatat, Product Owner tetap menjadi approver. ChatGPT 
 | Superseded | Digantikan keputusan baru tanpa menghapus sejarah. |
 
 Merge bukan selalu bukti approval substantif. PR harus menyatakan decision items yang disetujui; approval harus merujuk versi/head yang direview. Perubahan setelah approval membutuhkan review ulang.
+
+Enterprise Vision publication juga tidak otomatis mempromosikan decision items pada dokumen ini dari Proposed menjadi Approved kecuali Product Owner menyatakan keputusan substantif tersebut secara eksplisit untuk exact head.
 
 ## Escalation and stop conditions
 
@@ -186,7 +217,7 @@ Pekerjaan dihentikan dan dieskalasikan kepada Product Owner bila:
 - scope melebar melampaui issue/PR;
 - reviewer dan implementer tidak dapat memisahkan konflik kepentingan pada perubahan berisiko;
 - keputusan teknologi diminta tanpa option analysis dan ADR;
-- source code diminta sebelum gate Phase 0 disetujui.
+- final/business/production source implementation diminta tanpa authority dan gate yang berlaku.
 
 Eskalasi dicatat pada issue dengan pilihan, dampak, rekomendasi, owner keputusan, dan kebutuhan bukti. ChatGPT tidak boleh memilih diam-diam untuk melewati blocker.
 
@@ -199,12 +230,13 @@ Eskalasi dicatat pada issue dengan pilihan, dampak, rekomendasi, owner keputusan
 - [ ] Decision-rights matrix disetujui atau koreksinya dicatat.
 - [ ] Open questions memiliki owner dan next action.
 - [ ] Tidak ada pilihan framework, vendor, database, API, atau deployment baru yang disetujui secara tersirat.
+- [ ] Enterprise Vision tidak diperlakukan sebagai implementation authority.
 - [ ] Keputusan final serta dissent dicatat pada PR.
 
 ## Open decisions and next discovery
 
 | ID | Open decision | Owner | Next evidence |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | PV-001 | Identitas manusia Product Owner dan delegate per domain | Product Owner | GitHub approval dan assignment |
 | PV-002 | Segmen pelanggan awal dan prioritas industri | Product Owner | Stakeholder interviews dan problem evidence |
 | PV-003 | MVP scope/non-scope | Product Owner | Actor map, journeys, event storming, MVP slicing |
@@ -220,12 +252,28 @@ Dokumen dapat berubah dari Proposed menjadi Approved hanya bila Product Owner:
 2. mengonfirmasi atau memperbaiki decision-rights matrix;
 3. mengidentifikasi Product Owner/delegate manusia pada GitHub;
 4. menerima daftar open decisions tanpa menganggapnya telah selesai;
-5. menegaskan kembali bahwa application source code tetap Blocked sampai exit criteria Phase 0 terpenuhi.
+5. menegaskan implementation boundary dan authority yang berlaku pada exact head.
+
+M6 START authority sendiri tidak memenuhi acceptance gate di atas.
+
+## Current program boundary
+
+- Phase 0: In Progress.
+- Sprint 12: Published.
+- Sprint 13: Published.
+- Sprint 14: Not Authorized.
+- Final/business/production application implementation: Blocked unless separately authorized.
+- Production readiness: NO-GO.
+- Deployment, release, SQL/migration execution, and production database modification: Not Authorized.
+- GD-007: Proposed.
+- JRN-003/JRN-013: Unresolved.
 
 ## ChatGPT — Lanjutan
 
-Gunakan repository `labzefry/oneQay` sebagai SSOT. Setelah Product Owner mereview Issue #2 dan pull request terkait, terapkan hanya koreksi yang disetujui pada `PRODUCT_VISION_AND_DECISION_RIGHTS.md`, `PROJECT_MANIFEST.md`, `TASKS.md`, dan `CHANGELOG.md`. Jangan mempromosikan status Proposed menjadi Approved tanpa approval manusia yang eksplisit pada head terbaru. Jangan membuat source code. Setelah dokumen disetujui, lanjutkan ke stakeholder and actor map sebagai issue dan draft PR terpisah.
+Gunakan repository `labzefry/oneQay` sebagai SSOT. Terapkan hanya koreksi yang memiliki authority sesuai lifecycle pada `PRODUCT_VISION_AND_DECISION_RIGHTS.md`, `PROJECT_MANIFEST.md`, `TASKS.md`, `CHANGELOG.md`, dan dokumen canonical terkait. Jangan mempromosikan status Proposed menjadi Approved tanpa approval manusia yang eksplisit pada exact head. Published bounded Platform Foundation history tidak boleh dihapus atau ditulis ulang. Final/business implementation baru tetap membutuhkan authority terpisah.
 
 ## ChatGPT — Review Independen
 
-Audit `PRODUCT_VISION_AND_DECISION_RIGHTS.md` terhadap `README.md`, `PROJECT_MANIFEST.md`, `AI_CONSTITUTION.md`, `ARCHITECTURE.md`, `ROADMAP.md`, `TASKS.md`, dan `docs/handbook/PHASE_0_KICKOFF.md`. Cari konflik otoritas, approval implisit, scope MVP yang terlalu dini, outcome yang tidak dapat diukur, peran manusia yang hilang, loophole bagi ChatGPT untuk self-approve, serta pelanggaran no-source-code gate. Klasifikasikan temuan Critical/High/Medium/Low dan berikan perbaikan minimal.
+Audit `PRODUCT_VISION_AND_DECISION_RIGHTS.md` terhadap `docs/handbook/ENTERPRISE_VISION.md`, `README.md`, `PROJECT_MANIFEST.md`, `AI_CONSTITUTION.md`, `ARCHITECTURE.md`, `ROADMAP.md`, `TASKS.md`, dan `docs/handbook/PHASE_0_KICKOFF.md`. Cari konflik otoritas, approval implisit, conflation antara vision dan implementation authority, scope MVP yang terlalu dini, outcome yang tidak dapat diukur, peran manusia yang hilang, loophole bagi ChatGPT untuk self-approve, serta pelanggaran current implementation boundary. Klasifikasikan temuan Critical/High/Medium/Low dan berikan perbaikan minimal.
+
+Attribution: Lab | zefry
