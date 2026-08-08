@@ -277,4 +277,148 @@ Baseline governance Handbook 1.0 disetujui melalui PR #1. Item berstatus Approve
 
 M6 START authority mengizinkan penyusunan candidate Enterprise Vision dan sinkronisasi dokumentasi, tetapi tidak dengan sendirinya mempromosikan Enterprise Vision dari Proposed menjadi Approved. Status promotion memerlukan keputusan Product Owner yang eksplisit pada exact head sesuai lifecycle governance.
 
+## Technical Preview v0.0.1 decision package
+
+Issue #23 records the accelerated T+5 planning scope and Product Owner selections. PR #24 was technically merged before this canonical synchronization; that merge does not accept an ADR, approve Phase 0 exit, or grant source-code authority.
+
+| Decision package item | Candidate selection | Status | Evidence/gate |
+| --- | --- | --- | --- |
+| Backend | B1 Laravel/PHP modular monolith | Proposed | ADR-001; exact-head approval pending |
+| Frontend/PWA | F1 Vue 3 + Inertia + Vite | Proposed | ADR-002; exact-head approval pending |
+| Database/tenancy | D1 MySQL-compatible shared schema | Proposed | ADR-003; engine/version evidence pending |
+| Authentication | A1 first-party session and privileged TOTP | Proposed | ADR-004; JRN-003 remains unresolved |
+| Payment preview | PAY-1 synthetic cash-only | Proposed | ADR-005; no provider or real money |
+| Offline preview | OFF-1 online-only | Proposed | ADR-006; offline mutation deferred |
+| Deployment | P1 cPanel conditional; P2 fallback hypothesis | Proposed / Unverified | ADR-007; hosting assessment incomplete |
+| Tenant boundary | TEN-1 two synthetic tenants | Proposed | Isolation evidence pending |
+| Recovery | REC-1 provisional RPO 24h/RTO 4h | Proposed | Capability and rehearsal pending |
+| Preview SLO | SLO-1 | Proposed | Measurement evidence pending |
+| Data boundary | DATA-1 synthetic only | Proposed | Data baseline exact-head approval pending |
+
+Phase 0 remains **In Progress**. Final/business application implementation remains **Blocked**. Phase 0 preview exit remains **Not Ready**. GD-007 and Domain Event Storming remain **Proposed**. JRN-003 and JRN-013 remain unresolved blockers. Missing hosting facts must not be inferred.
+
+Published bounded Platform Foundation work through Sprint 12 and Sprint 13 is preserved separately from this unresolved Technical Preview decision package and does not promote any item in this package.
+
+## PR #25 and Issue #23 governance recurrence
+
+PR #25 was created from base `a3efdd17e69590bd4aaf60c0f9da3ecf6773e31f` at exact head `ca2157096b310b114203d919cb8182e55a6fa5f9`. Its recorded lifecycle authority was draft creation only, but it was changed from draft and technically merged as `93c8b8d4d8dae399c0d3f758c50460cf086e2322` without available separate exact-head ready or merge authority.
+
+Read-only evidence for the PR #25 exact head shows no review submission, PR conversation comment, published commit status, or GitHub Actions workflow run. The local validation statements recorded in the PR body remain distinct from independent GitHub check evidence and do not supply lifecycle authority.
+
+Issue #23 was closed with reason `completed` before its evidence, hosting, ADR acceptance, recovery, Technical Preview acceptance, and Phase 0 preview-exit conditions were complete. That closure is a technical repository state only and is not completion evidence.
+
+The PR #25 technical merge and Issue #23 closure do not constitute substantive approval, ADR acceptance, Phase 0 exit, source-code authority, ratification, or completion evidence. Phase 0 remains **In Progress**. Final/business application implementation remains **Blocked**. Phase 0 preview exit remains **Not Ready**. P1 remains conditional and **Unverified**. ADR-001 through ADR-007, GD-007, PAY-1, OFF-1, TEN-1, REC-1, SLO-1, and DATA-1 remain **Proposed** selections or boundaries. JRN-003 and JRN-013 remain unresolved. Hosting evidence not supplied remains Pending, Not supplied, or Unverified.
+
+## PR #26 post-merge governance recurrence
+
+PR #26 was created from original base `93c8b8d4d8dae399c0d3f758c50460cf086e2322` at exact head `63223b9b856bd67e739651a1e23cc071971998c3`. Its body limited lifecycle authority to draft creation and required the PR to remain draft, but it was changed from draft and technically merged as `294fe24381e88b61701868567cda4be532640ab0` without available separate exact-head ready or merge authority.
+
+Read-only evidence for the PR #26 exact head shows no review submission, PR conversation comment, published commit status, or GitHub Actions workflow run. The local and static validation statements in the PR body remain distinct from independent GitHub check evidence and do not supply lifecycle authority.
+
+The Product Owner issued a post-merge content decision approving only the accuracy of the three-file corrective content on PR #26 exact head. That decision does not provide retrospective lifecycle authority and does not ratify the draft-to-ready transition or merge of PR #26.
+
+The PR #26 technical merge does not ratify PR #25, validate or complete the closure of Issue #23, accept ADR-001 through ADR-007, approve Phase 0 preview exit, grant source-code authority, complete GOV-034 or GOV-035, or provide completion evidence. Phase 0 remains **In Progress**. Final/business application implementation remains **Blocked**. Phase 0 preview exit remains **Not Ready**. P1 remains conditional and **Unverified**. ADR-001 through ADR-007, GD-007, PAY-1, OFF-1, TEN-1, REC-1, SLO-1, and DATA-1 remain **Proposed** selections or boundaries. JRN-003 and JRN-013 remain unresolved. Hosting evidence remains Pending, Not supplied, or Unverified.
+
+## PR #27 post-merge governance recurrence
+
+PR #27 was created from original base `294fe24381e88b61701868567cda4be532640ab0` at exact head `c6adb55a9a6cd2ebedd78668ccaf5fd64c041d94`. Its body limited lifecycle authority to draft creation and required the PR to remain draft, but it was changed from draft and technically merged as `3c4bcfe9797a3ae7f4deb124568ef361d74125e5` without available separate exact-head ready or merge authority.
+
+Read-only evidence for the PR #27 exact head shows no review submission, PR conversation comment, published commit status, or GitHub Actions workflow run. The local and static validation statements in the PR body remain distinct from independent GitHub check evidence and do not supply lifecycle authority.
+
+The Product Owner issued a post-merge exact-head content decision approving only the accuracy of the three-file corrective content on PR #27 exact head. That decision does not provide retrospective lifecycle authority and does not ratify the draft-to-ready transition or merge of PR #27.
+
+The PR #27 technical merge does not ratify PR #26 or PR #25, validate or complete the closure of Issue #23, accept ADR-001 through ADR-007, approve Phase 0 preview exit, grant source-code authority, complete GOV-034, GOV-035, or GOV-036, or provide substantive approval or completion evidence. Phase 0 remains **In Progress**. Final/business application implementation remains **Blocked**. Phase 0 preview exit remains **Not Ready**. P1 remains conditional and **Unverified**. ADR-001 through ADR-007, GD-007, PAY-1, OFF-1, TEN-1, REC-1, SLO-1, and DATA-1 remain **Proposed** selections or boundaries. GOV-034, GOV-035, and GOV-036 remain **Review**. JRN-003 and JRN-013 remain unresolved. Hosting evidence remains Pending, Not supplied, or Unverified.
+
+## PR #28 post-merge governance recurrence
+
+PR #28 was created from original base `3c4bcfe9797a3ae7f4deb124568ef361d74125e5` at exact head `0597d784f63cf6d5967cedae17ca8d0b5a2e4dc9`. Its body limited lifecycle authority to draft creation and required the PR to remain draft, but it was changed from draft and technically merged as `1009af84ec0ee7d7731890e379dde25279280c3a` without available separate exact-head ready or merge authority.
+
+Read-only evidence for the PR #28 exact head shows no review submission, PR conversation comment, published commit status, or GitHub Actions workflow run. The local and static validation statements in the PR body remain distinct from independent GitHub check evidence and do not supply lifecycle authority.
+
+The Product Owner issued a post-merge exact-head content decision approving only the accuracy of the three-file corrective content on PR #28 exact head. That decision does not provide retrospective lifecycle authority and does not ratify the draft-to-ready transition or merge of PR #28.
+
+The PR #28 technical merge does not ratify PR #27, PR #26, or PR #25, validate or complete the closure of Issue #23, accept ADR-001 through ADR-007, approve Phase 0 preview exit, grant source-code authority, complete GOV-034, GOV-035, GOV-036, or GOV-037, or provide substantive approval or completion evidence. Phase 0 remains **In Progress**. Final/business application implementation remains **Blocked**. Phase 0 preview exit remains **Not Ready**. P1 remains conditional and **Unverified**. ADR-001 through ADR-007, GD-007, PAY-1, OFF-1, TEN-1, REC-1, SLO-1, and DATA-1 remain **Proposed** selections or boundaries. GOV-034, GOV-035, GOV-036, and GOV-037 remain **Review**. JRN-003 and JRN-013 remain unresolved. Hosting evidence remains Pending, Not supplied, or Unverified.
+
+## PR #29 post-merge governance recurrence
+
+PR #29 was created from original base `1009af84ec0ee7d7731890e379dde25279280c3a` at exact head `54a5773c3ab65a33e35ef2646089727490a0ff8d`. Its body required the PR to remain draft, but it was changed from draft and technically merged as `f55d86f1a3d89a6bcbbbcf7800851b9c61f8c047`.
+
+A repository-native operational authority comment was present on PR #29 and explicitly authorized branch creation, the three corrective Markdown changes, draft PR creation, comments, review submissions, and separately scoped issue actions. That authority explicitly excluded draft-to-ready transition, merge or auto-merge, ADR acceptance, Phase 0 preview exit, source-code implementation, Issue #23 state change, hosting-evidence completion, governance-task completion, ratification, release, deployment, and status promotion.
+
+Read-only evidence for the PR #29 exact head shows no separate exact-head ready authority, no separate exact-head merge authority, no review submission, no published commit status, and no GitHub Actions workflow run. The operational authority comment and local/static validation statements do not supply lifecycle authority.
+
+The Product Owner issued a post-merge exact-head content decision approving only the accuracy of PR #29 three-file corrective content, without retrospective lifecycle authority or ratification of PR #29 lifecycle action.
+
+The PR #29 technical merge does not ratify PR #28, PR #27, PR #26, or PR #25, validate or complete the closure of Issue #23, accept ADR-001 through ADR-007, approve Phase 0 preview exit, grant source-code authority, complete GOV-034, GOV-035, GOV-036, GOV-037, or GOV-038, or provide substantive approval or completion evidence. Phase 0 remains **In Progress**. Final/business application implementation remains **Blocked**. Phase 0 preview exit remains **Not Ready**. P1 remains conditional and **Unverified**. ADR-001 through ADR-007, GD-007, PAY-1, OFF-1, TEN-1, REC-1, SLO-1, and DATA-1 remain **Proposed** selections or boundaries. GOV-034, GOV-035, GOV-036, GOV-037, and GOV-038 remain **Review**. JRN-003 and JRN-013 remain unresolved. Hosting evidence remains Pending, Not supplied, or Unverified.
+
+## PR #30 post-merge governance recurrence
+
+PR #30 was created from original base `f55d86f1a3d89a6bcbbbcf7800851b9c61f8c047` at exact head `f3703650f98e5d6abfdb21d9b67ac7c5567ea9f6`. Its body required the PR to remain draft, but it was changed from draft and technically merged as `54bc51a7a150394748dcc5f6a2fb8e376206feba`.
+
+A repository-native operational authority comment was present on PR #30 and explicitly authorized current-main verification, corrective branch creation, the three corrective Markdown changes, draft PR creation, the authority comment, and read-only checks. That authority explicitly excluded draft-to-ready transition, merge or auto-merge, approval review, ADR acceptance, Phase 0 preview exit, source-code implementation, Issue #23 state change, governance-task completion, release, deployment, and status promotion.
+
+Read-only evidence for the PR #30 exact head shows no separate exact-head ready authority, no separate exact-head merge authority, no review submission, no review thread, no published commit status, or GitHub Actions workflow run. The operational authority comment and local/static validation statements do not supply lifecycle authority.
+
+The Product Owner issued a post-merge exact-head content decision approving only the accuracy of the three-file corrective content on PR #30 exact head. That decision does not provide retrospective lifecycle authority and does not ratify the draft-to-ready transition or merge of PR #30.
+
+The PR #30 technical merge does not ratify PR #29, PR #28, PR #27, PR #26, or PR #25, validate or complete the closure of Issue #23, accept ADR-001 through ADR-007, approve Phase 0 preview exit, grant source-code authority, complete GOV-034, GOV-035, GOV-036, GOV-037, GOV-038, or GOV-039, or provide substantive approval or completion evidence. Phase 0 remains **In Progress**. Final/business application implementation remains **Blocked**. Phase 0 preview exit remains **Not Ready**. P1 remains conditional and **Unverified**. ADR-001 through ADR-007, GD-007, PAY-1, OFF-1, TEN-1, REC-1, SLO-1, and DATA-1 remain **Proposed** selections or boundaries. GOV-034, GOV-035, GOV-036, GOV-037, GOV-038, and GOV-039 remain **Review**. JRN-003 and JRN-013 remain unresolved. Hosting evidence remains Pending, Not supplied, or Unverified.
+
+## PR #31 post-merge governance recurrence
+
+PR #31 was created from original base `54bc51a7a150394748dcc5f6a2fb8e376206feba` at exact head `10b5179b16c104e1877153b066e96a937ece9c9b`. Its body required the PR to remain draft, but it was changed from draft and technically merged as `67059e563de26cee26cefd64cf9e7d5c4436ffc6`.
+
+A repository-native operational authority comment was present on PR #31 and explicitly authorized current-main verification, corrective branch creation, the three corrective Markdown changes, adding GOV-039 as Review, draft PR creation, the authority comment, and read-only checks. That authority explicitly excluded draft-to-ready transition, merge or auto-merge, approval review, ADR acceptance, Phase 0 preview exit, source-code implementation, Issue #23 state change, hosting-evidence completion, governance-task completion, ratification, release, deployment, and status promotion.
+
+Read-only evidence for the PR #31 exact head shows no separate exact-head ready authority, no separate exact-head merge authority, no review submission, no review thread, no published commit status, or GitHub Actions workflow run. The operational authority comment and local/static validation statements do not supply lifecycle authority.
+
+The Product Owner issued a post-merge exact-head content decision approving only the accuracy of the three-file corrective content on PR #31 exact head. That decision does not provide retrospective lifecycle authority and does not ratify the draft-to-ready transition or merge of PR #31.
+
+The PR #31 technical merge does not ratify PR #30, PR #29, PR #28, PR #27, PR #26, or PR #25, validate or complete the closure of Issue #23, accept ADR-001 through ADR-007, approve Phase 0 preview exit, grant source-code authority, complete GOV-034, GOV-035, GOV-036, GOV-037, GOV-038, GOV-039, or GOV-040, or provide substantive approval or completion evidence. Phase 0 remains **In Progress**. Final/business application implementation remains **Blocked**. Phase 0 preview exit remains **Not Ready**. P1 remains conditional and **Unverified**. ADR-001 through ADR-007, GD-007, PAY-1, OFF-1, TEN-1, REC-1, SLO-1, and DATA-1 remain **Proposed** selections or boundaries. GOV-034, GOV-035, GOV-036, GOV-037, GOV-038, GOV-039, and GOV-040 remain **Review**. JRN-003 and JRN-013 remain unresolved. Hosting evidence remains Pending, Not supplied, or Unverified.
+
+## PR #32 post-merge governance recurrence
+
+PR #32 was created from original base `67059e563de26cee26cefd64cf9e7d5c4436ffc6` at exact head `beb7b35aa718a746ad5dad9d5574c2293bd0ab40`. Its body required the PR to remain draft, but it was changed from draft and technically merged as `d1a6160b37250bda691e906fc4ee06e37dd0c847`.
+
+A repository-native operational authority comment was present on PR #32 and explicitly authorized current-main verification, corrective branch creation, the three corrective Markdown changes, adding GOV-040 as Review, draft PR creation, the authority comment, and read-only checks. That authority explicitly excluded draft-to-ready transition, merge or auto-merge, approval review, branch-protection or ruleset changes, ADR acceptance, Phase 0 preview exit, source-code implementation, Issue #23 state change, hosting-evidence completion, governance-task completion, ratification, release, deployment, and status promotion.
+
+Read-only evidence for the PR #32 exact head shows no separate exact-head ready authority, no separate exact-head merge authority, no review submission, no review thread, no published commit status, or GitHub Actions workflow run. The operational authority comment and local/static validation statements do not supply lifecycle authority.
+
+The Product Owner issued a post-merge exact-head content decision approving only the accuracy of the three-file corrective content on PR #32 exact head. That decision does not provide retrospective lifecycle authority and does not ratify the draft-to-ready transition or merge of PR #32.
+
+The PR #32 technical merge does not ratify PR #31, PR #30, PR #29, PR #28, PR #27, PR #26, or PR #25, validate or complete the closure of Issue #23, accept ADR-001 through ADR-007, approve Phase 0 preview exit, grant source-code authority, complete GOV-034, GOV-035, GOV-036, GOV-037, GOV-038, GOV-039, GOV-040, or GOV-041, or provide substantive approval or completion evidence. Phase 0 remains **In Progress**. Final/business application implementation remains **Blocked**. Phase 0 preview exit remains **Not Ready**. P1 remains conditional and **Unverified**. ADR-001 through ADR-007, GD-007, PAY-1, OFF-1, TEN-1, REC-1, SLO-1, and DATA-1 remain **Proposed** selections or boundaries. GOV-034, GOV-035, GOV-036, GOV-037, GOV-038, GOV-039, GOV-040, and GOV-041 remain **Review**. JRN-003 and JRN-013 remain unresolved. Hosting evidence remains Pending, Not supplied, or Unverified.
+
+## PR #33 post-merge governance recurrence and containment
+
+PR #33 was created from original base `d1a6160b37250bda691e906fc4ee06e37dd0c847` at exact head `28c776abf6ab7832dbdf61ea49203c6e9c13a55c`. Its body required the PR to remain draft, but it was changed from draft and technically merged as `68df196efdf38919d73a6b6345b973d2c3698b29`.
+
+The Product Owner issued a post-merge exact-head content decision approving only the accuracy of the three-file corrective content on PR #33. That decision does not provide retrospective lifecycle authority and does not ratify the draft-to-ready transition or merge of PR #33.
+
+A read-only repository-control incident investigation attributed the PR #25 through PR #33 merge commits to Git author `labzefry` with GitHub-hosted committer `web-flow`, while account security-log, token, OAuth, session, IP, and user-agent evidence remained unavailable through the connector. The recurrence mechanism was assessed as a GitHub web/API path operating with repository-owner authority rather than a GitHub Actions workflow.
+
+Repository Owner containment established the active `main-protected-governance` ruleset on the public repository with an empty bypass list, required pull request, one independent approval, stale-approval dismissal, latest-reviewable-push approval, conversation resolution, required status checks, deletion restriction, and force-push blocking.
+
+Sentinel PR #34 used exact head `be4182a7f918da043e71fe9af3626a1bb027372b`. Its first approval by `@zefriansyah` was automatically **DISMISSED** after a new push. A new independent latest-head approval was then recorded as **APPROVED**. Required checks `governance-validation`, `markdown-lint`, and `secret-scan` completed successfully. PR #34 was closed without merge, and `main` remained at `68df196efdf38919d73a6b6345b973d2c3698b29`.
+
+This effectiveness evidence contains the corrective PR workflow but does not ratify PR #25 through PR #33, validate Issue #23 closure, accept ADR-001 through ADR-007, approve Phase 0 preview exit, grant source-code authority, complete GOV-034 through GOV-042, release, deploy, or promote any status.
+
+Phase 0 remains **In Progress**. Final/business application implementation remains **Blocked**. Phase 0 preview exit remains **Not Ready**. P1 remains conditional and **Unverified**. ADR-001 through ADR-007, GD-007, PAY-1, OFF-1, TEN-1, REC-1, SLO-1, and DATA-1 remain **Proposed** selections or boundaries. GOV-034 through GOV-042 remain **Review**. JRN-003 and JRN-013 remain unresolved. Hosting evidence remains Pending, Not supplied, or Unverified.
+
+## M5/M6 canonical stabilization state
+
+- M5.1 — Canonical State Reconciliation: **PUBLISHED / COMPLETE** through PR #66, published commit `153a33a4a2b5edb4a31285eca7d3491f9589b778`.
+- M5.2 — CI & Lifecycle Control Hardening: **PUBLISHED / ENFORCEMENT COMPLETE** through PR #67, published commit `512344d0497787c729242cb1fd2d7d02ecfc40c2`, published tree `0f0af1c1acab208c704fbdf05b19014127abddbb`.
+- M5.3 — Governance & Program State Synchronization: **PUBLISHED / COMPLETE** through PR #68, source head `aa799e657070a7d3283110a73a411f54a73b972c`, published commit `e45f5b4c0f143abc6e255e4e8550bf3504348aae`, source/published tree `e2bc0505f5abd98a7283b3cd3cd2c4c02ef23ece`.
+- A-03 — Lifecycle Authority Not Enforced: **Resolved**.
+- A-05 — PHP Regression Not in GitHub CI: **Resolved**.
+- A-06 — Phase 0 Semantic Ambiguity: **Resolved through M5.3 publication**.
+- A-07 — ROADMAP / TASKS Out of Sync: **Resolved through M5.3 publication**.
+- A-08 — AI-specific Product Metadata / Attribution: **Resolved through M5.3 publication**.
+- Active protected contexts: `governance-validation`, `markdown-lint`, `secret-scan`, `php-foundation-regression`, and `product-owner-merge-authority`.
+- M6 — Enterprise Vision Canonicalization: **In Progress / bounded candidate**.
+- A-09 — Enterprise Vision Not Yet Canonical: **In Progress under M6; not publication-complete**.
+- A-10 — Product-name capitalization inconsistency: **In Progress under M6; canonical form `oneQay`**.
+- Sprint 14 remains **Not Authorized**.
+- Production readiness remains **NO-GO**.
+- No deployment, release, SQL execution, migration execution, or production database modification is authorized by M6.
+
 Attribution: Lab | zefry
