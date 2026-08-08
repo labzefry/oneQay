@@ -1,4 +1,4 @@
-# OneQay Documentation Areas
+# oneQay Documentation Areas
 
 Folder `docs/` menampung dokumentasi mendalam yang mendukung dokumen kanonis di root repository.
 
