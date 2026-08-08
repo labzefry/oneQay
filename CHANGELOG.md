@@ -6,15 +6,15 @@ Semua perubahan penting OneQay dicatat di dokumen ini. Format mengikuti Keep a C
 
 ### Added
 
-- Added `.github/workflows/governance-required-checks.yml` as the narrowly scoped producer for the stable `governance-validation`, `markdown-lint`, and `secret-scan` protected-branch checks.
-- Recorded GOV-043 as Review through Draft PR #38, with workflow, deployment, testing, task, and AI checkpoint documentation.
+- Added `.github/workflows/governance-required-checks.yml` as the narrowly scoped producer for the stable `governance-validation`, `markdown-lint`, and `secret-scan` protected-branch checks; recovery was later published through PR #38 as `a59521ad31d8153198bb80dd7985142cb21e3775`.
+- Recorded GOV-043 as Done after required-check recovery publication and subsequent protected-branch use.
 - Recorded the active `main-protected-governance` ruleset alignment to the three stable job-level checks and removal of obsolete `actions/checkout-v4` and `pull_request` contexts.
-- Preserved PR #38 and PR #35 as Draft, with no merge, deployment, release, ADR acceptance, Phase 0 exit, application source-code authority, or status promotion.
+- Recorded PR #38 required-check recovery and PR #35 conflict recovery as published repository facts; neither publication grants ADR acceptance, Phase 0 exit, final/business application authority, deployment, or release authority.
 - Added seven **Proposed** Technical Preview ADRs for B1 Laravel/PHP, F1 Vue/Inertia/Vite, D1 MySQL-compatible shared tenancy, A1 first-party session/TOTP, PAY-1 synthetic cash-only, OFF-1 online-only, and conditional P1 deployment with P2 fallback hypothesis.
 - Added Proposed synthetic-data classification, threat model, recovery plan, incomplete shared-hosting capability assessment, and Not Ready Phase 0 preview exit evidence under Issue #23.
 - Recorded TEN-1, REC-1, SLO-1, and DATA-1 as Technical Preview selections without accepting ADRs or granting source-code authority.
-- Preserved Phase 0 as In Progress, application implementation as Blocked, P1 as Unverified, GD-007 as Proposed, and JRN-003/JRN-013 as unresolved.
-- Recorded that PR #24 technical merge and Issue #23 closure do not constitute substantive approval, ADR acceptance, Phase 0 exit, or application-skeleton authority.
+- Preserved Phase 0 as In Progress, final/business application implementation as Blocked, P1 as Unverified, GD-007 as Proposed, and JRN-003/JRN-013 as unresolved.
+- Recorded that PR #24 technical merge and Issue #23 closure do not constitute substantive approval, ADR acceptance, Phase 0 exit, or general application-skeleton authority.
 - AI Engineering Handbook version 1.0 baseline.
 - Project orientation, identity, target platforms, and GitHub SSOT governance.
 - Canonical project manifest with decision states and initial risk register.
@@ -36,6 +36,14 @@ Semua perubahan penting OneQay dicatat di dokumen ini. Format mengikuti Keep a C
 
 ### Changed
 
+- Recorded M5.1 — Canonical State Reconciliation as **PUBLISHED / COMPLETE** through PR #66 and published commit `153a33a4a2b5edb4a31285eca7d3491f9589b778`.
+- Recorded M5.2 — CI & Lifecycle Control Hardening as **PUBLISHED / ENFORCEMENT COMPLETE** through PR #67, published commit `512344d0497787c729242cb1fd2d7d02ecfc40c2`, and published tree `0f0af1c1acab208c704fbdf05b19014127abddbb`.
+- Recorded A-03 and A-05 as resolved and the protected default-branch required contexts as `governance-validation`, `markdown-lint`, `secret-scan`, `php-foundation-regression`, and `product-owner-merge-authority`.
+- Started M5.3 — Governance & Program State Synchronization to reconcile A-06 Phase 0 semantics, A-07 ROADMAP/TASKS state, and A-08 product metadata/attribution only; A-09 Enterprise Vision remains reserved for M6.
+- Clarified that **Phase 0 — In Progress** is a governance/discovery program state and does not negate published bounded Platform Foundation source through Sprint 12 and Sprint 13.
+- Clarified that **application implementation Blocked** now means final/business/production application implementation; the clarification grants no new source-code authority and Sprint 14 remains Not Authorized.
+- Separated canonical product/development attribution **Lab | zefry** from AI engineering-tooling metadata; collaboration tooling remains governed by `AI_CONSTITUTION.md` and is not product authorship attribution.
+- Preserved historical lifecycle discrepancies without retroactive normalization, while keeping production readiness NO-GO and prohibiting M5.3 deployment, release, SQL execution, migration execution, or production database modification.
 - Standardized the OneQay engineering workflow to ChatGPT and GitHub only.
 - Replaced external-AI review prompts with independent ChatGPT review prompts.
 - Clarified that product AI Assistant decisions remain separate from the engineering collaboration model.
@@ -115,4 +123,6 @@ Semua perubahan penting OneQay dicatat di dokumen ini. Format mengikuti Keep a C
 
 ## Release policy note
 
-No product release exists yet. This changelog entry describes the handbook baseline only. A dated/tagged version will be added after review and merge through the approved release process.
+No product release exists yet. This changelog entry describes the handbook baseline and subsequent governance/foundation stabilization work only. A dated/tagged product version will be added after review and merge through the approved release process.
+
+Attribution: Lab | zefry
