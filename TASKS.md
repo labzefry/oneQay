@@ -77,13 +77,13 @@ Historical GOV-029 through GOV-042 items remain Review where their historical li
 
 | ID | Task | Status | Evidence / next action |
 | --- | --- | --- | --- |
-| GOV-047 | M6 Enterprise Vision canonicalization publication | Done | PR #69 source head `e6a3345b09a6b270ac7e09abd78c6356f426e363` published as `0b7b28028966ac38af0f32960054210c3a083916`; source/published tree `567df997bae70090b19465c75e4cc3b1e23b6579`; substantive Enterprise Vision decision remains Proposed |
+| GOV-047 | M6 Enterprise Vision canonicalization publication | Done | PR #69 source head `e6a3345b09a6b270ac7e09abd78c6356f426e363` published as `0b7b28028966ac38af0f32960054210c3a083916`; source/published tree `567df997bae70090b19465c75e4cc3b1e23b6579`; publication itself did not grant substantive approval; GOV-051 later approved the Enterprise Vision separately |
 | GOV-048 | Normalize canonical product name to `oneQay` | Done | Current/future-facing canonical product identity normalized through PR #69; immutable identifiers and historical quoted evidence preserved |
 | GOV-049 | Synchronize Enterprise Capability Map and conceptual evolution representation | Done | Published through PR #69: Core Business Platform, Platform Capabilities, Extensibility, AI Platform, Channels; evolution E0–E5; no implementation authority implied |
-| GOV-050 | Reconcile A-09 Enterprise Vision anomaly at representation/publication level | Done | PR #69 publication verified; A-09 resolved only at canonical representation/publication level; substantive Enterprise Vision decision remains Proposed |
-| GOV-051 | Enterprise Vision substantive Product Owner decision | Review | Published representation exists through PR #69; substantive decision remains Proposed and requires separate explicit Product Owner approval before any status promotion |
+| GOV-050 | Reconcile A-09 Enterprise Vision anomaly at representation/publication level | Done | PR #69 publication verified; A-09 resolved at canonical representation/publication level; GOV-051 later completed the separate substantive decision |
+| GOV-051 | Enterprise Vision substantive Product Owner decision | Done | Product Owner explicitly APPROVED `Enterprise Intelligent Business Management Platform` on verified baseline `762149757e4bc1fa79cc16bc4761f4147be0f7ea` and canonical artifact blob `bb1cace72a6fdb359e15e22467443d9f3916c336`; approval is product direction only and grants no implementation authority |
 
-M6 publication does not authorize Sprint 14, final/business/production application implementation, new business source code, database/schema implementation, SQL/migration execution, production database modification, deployment, release, ADR/GD promotion, JRN resolution, Enterprise Vision substantive approval, or production-readiness transition.
+M6 publication itself did not grant substantive Enterprise Vision approval. GOV-051 separately approved the Enterprise Vision as binding long-term product direction, but does not authorize Sprint 14, final/business/production application implementation, new business source code, database/schema implementation, SQL/migration execution, production database modification, deployment, release, ADR/GD promotion, JRN resolution, or production-readiness transition.
 
 ## Decisions required before final/business application implementation
 
@@ -121,7 +121,7 @@ Published bounded Platform Foundation source through Sprint 13 is an existing re
 
 ## Phase 1 candidate backlog
 
-Items ini tidak memperoleh authority baru dari M6. Published bounded Platform Foundation through Sprint 13 must be preserved, tetapi pekerjaan baru untuk final/business application atau Sprint 14 tetap membutuhkan Product Owner authority dan gate yang berlaku.
+Items ini tidak memperoleh authority baru dari M6 or GOV-051. Published bounded Platform Foundation through Sprint 13 must be preserved, tetapi pekerjaan baru untuk final/business application atau Sprint 14 tetap membutuhkan Product Owner authority dan gate yang berlaku.
 
 - PLT-001 repository/application skeleton;
 - PLT-002 tenant context and isolation enforcement;
@@ -157,7 +157,3 @@ Items ini tidak memperoleh authority baru dari M6. Published bounded Platform Fo
 | P0-TP-009 | Execute T+5 Technical Preview | Blocked | Source-code authority and Day 1 gates |
 
 PR #24 through PR #33 technical merges and Issue #23 closure do not set any task above to Done, accept an ADR, approve Phase 0 exit, grant general application source-code authority, ratify prior lifecycle actions, complete GOV-034 through GOV-042, or provide substantive approval or completion evidence. Phase 0 remains In Progress; final/business application implementation remains Blocked; Phase 0 preview exit remains Not Ready; P1 remains conditional and Unverified; ADR-001 through ADR-007 and GD-007 remain Proposed; JRN-003 and JRN-013 remain unresolved; hosting evidence remains Pending, Not supplied, or Unverified.
-
-Separately authorized and published bounded Platform Foundation work through Sprint 12 and Sprint 13 remains a repository fact. That publication does not promote any Technical Preview task above to Done and does not create authority for Sprint 14 or final/business application implementation.
-
-Attribution: Lab | zefry

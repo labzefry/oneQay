@@ -41,8 +41,9 @@ A checkpoint update must not be created merely to replace a stored `current main
 - M5.3: PUBLISHED / COMPLETE through PR #68
 - M6 Enterprise Vision Canonicalization: PUBLISHED / PUBLICATION COMPLETE through PR #69
 - M6 Post-Publication State Reconciliation: PUBLISHED through PR #70
-- M6 Closure — Checkpoint Semantics Correction: authorized bounded closure work; no later milestone implied
-- Enterprise Vision decision status: Proposed; publication does not promote it to Approved
+- M6 Closure — Checkpoint Semantics Correction: PUBLISHED / COMPLETE through PR #71
+- GOV-051 Enterprise Vision substantive decision: APPROVED / decision record in progress
+- Enterprise Vision decision status: Approved
 - Latest published technical capability sprint: Sprint 13
 - Sprint 12: Published
 - Sprint 13: Published
@@ -52,26 +53,24 @@ A checkpoint update must not be created merely to replace a stored `current main
 - Release: None / Not Authorized
 - Production migration: Not Performed
 
-## Verified baseline before M6 closure semantics correction
+## Verified baseline before GOV-051 decision record
 
-The bounded closure branch was authorized and created only after GitHub Delta Verification confirmed this published baseline:
+Fresh Minimal Delta Verification before the bounded GOV-051 decision-record branch confirmed:
 
-- published PR: #70;
-- PR #70 state: CLOSED / MERGED;
-- PR #70 source head: `e7eded8d6c661cb5485527d0f1937fb839a3617f`;
-- PR #70 source tree: `58e84138173b1e6e5ca2dc7649dbeb89d79e9af0`;
-- PR #70 published commit: `b26c4690d68db61118ee1c4cecbb87e9418d791f`;
-- PR #70 published tree: `58e84138173b1e6e5ca2dc7649dbeb89d79e9af0`;
-- PR #70 published parent: `0b7b28028966ac38af0f32960054210c3a083916`;
+- verified repository baseline: `762149757e4bc1fa79cc16bc4761f4147be0f7ea`;
+- verified baseline tree: `4d16f322b1bc8f2b666eef87ce4a1caaa6755e4f`;
+- publication PR: #71;
+- PR #71 state: CLOSED / MERGED;
+- PR #71 source head: `19c723f32c62c982a80e1d8a520ab6ff5a189e2c`;
+- PR #71 source tree: `4d16f322b1bc8f2b666eef87ce4a1caaa6755e4f`;
+- PR #71 published commit: `762149757e4bc1fa79cc16bc4761f4147be0f7ea`;
+- PR #71 published tree: `4d16f322b1bc8f2b666eef87ce4a1caaa6755e4f`;
+- PR #71 published parent: `b26c4690d68db61118ee1c4cecbb87e9418d791f`;
 - source tree equals published tree: Yes;
-- independent reviewer: `zefriansyah`;
-- exact-head review: APPROVED;
-- required technical checks: SUCCESS;
-- Product Owner READY authority: separately recorded and executed;
-- Product Owner MERGE authority: separately recorded and executed;
-- `product-owner-merge-authority`: SUCCESS before squash merge.
+- canonical Enterprise Vision artifact: `docs/handbook/ENTERPRISE_VISION.md`;
+- approved artifact blob: `bb1cace72a6fdb359e15e22467443d9f3916c336`.
 
-This is a **publication baseline**, not a permanently current-live-head declaration.
+These values are stable publication and decision provenance, not permanently current-live-head declarations.
 
 ## Canonical naming
 
@@ -108,27 +107,48 @@ The canonical M6 document is:
 
 `docs/handbook/ENTERPRISE_VISION.md`
 
-Publication canonicalizes the representation and location of the Enterprise Vision. It does **not** promote the Enterprise Vision decision status from Proposed to Approved, does not authorize implementation, and does not imply production readiness.
+Publication canonicalized the representation and location of the Enterprise Vision. PR #69 did **not** by itself promote the Enterprise Vision decision status from Proposed to Approved; GOV-051 later provided that separate substantive Product Owner approval. Neither publication nor GOV-051 creates implementation authority or implies production readiness.
 
 ## M6 post-publication reconciliation publication
 
 PR #70 published the bounded reconciliation of mutable program-state documentation after PR #69.
 
-PR #70 publication establishes that:
+PR #70 publication established at that point that:
 
-- M6 Enterprise Vision publication is complete;
-- A-09 is resolved at canonical representation/publication level only;
-- A-10 is resolved for current/future-facing canonical product naming;
-- Enterprise Vision substantive decision remains Proposed;
-- GOV-047 through GOV-050 represent completed publication/reconciliation work;
-- GOV-051 remains the separate substantive Enterprise Vision Product Owner decision;
-- Phase 0 remains In Progress;
-- Sprint 14 remains Not Authorized;
-- production readiness remains NO-GO.
+- M6 Enterprise Vision publication was complete;
+- A-09 was resolved at canonical representation/publication level only;
+- A-10 was resolved for current/future-facing canonical product naming;
+- Enterprise Vision substantive decision remained Proposed at the time of PR #70;
+- GOV-047 through GOV-050 represented completed publication/reconciliation work;
+- GOV-051 remained the separate substantive Enterprise Vision Product Owner decision;
+- Phase 0 remained In Progress;
+- Sprint 14 remained Not Authorized;
+- production readiness remained NO-GO.
+
+PR #71 subsequently published M6 Closure — Checkpoint Semantics Correction and removed the self-referential live-head reconciliation pattern.
+
+## GOV-051 substantive Enterprise Vision decision
+
+The Product Owner explicitly approved GOV-051 after review of the canonical artifact on the verified PR #71 publication baseline.
+
+Decision facts:
+
+- decision: GOV-051 — Enterprise Vision substantive Product Owner decision;
+- result: **APPROVED**;
+- approved Enterprise Vision: **Enterprise Intelligent Business Management Platform**;
+- approved statement: **oneQay is an Enterprise Intelligent Business Management Platform.**;
+- verified baseline: `762149757e4bc1fa79cc16bc4761f4147be0f7ea`;
+- verified baseline tree: `4d16f322b1bc8f2b666eef87ce4a1caaa6755e4f`;
+- canonical artifact: `docs/handbook/ENTERPRISE_VISION.md`;
+- approved artifact blob: `bb1cace72a6fdb359e15e22467443d9f3916c336`.
+
+GOV-051 establishes the Enterprise Vision boundary, enterprise design qualities, directional Enterprise Capability Map, and conceptual E0–E5 evolution as binding long-term product direction.
+
+GOV-051 does not approve MVP scope, Sprint 14, implementation, bounded contexts, GD-003, GD-007, ADR-001 through ADR-007, framework/provider choices, SQL/migration, production database changes, deployment, release, JRN resolution, or production-readiness promotion.
 
 ## Enterprise capability direction
 
-M6 groups the directional capability map into:
+The Approved Enterprise Vision groups the directional capability map into:
 
 1. Core Business Platform — Tenant & Organization, Identity & Access, Master Data, POS / Commerce, Inventory, Procurement, Finance / Accounting, CRM, HRM, Reporting & Business Intelligence.
 2. Platform Capabilities — Workflow, Notification, Audit, File / Document, Search, API, Integration, Webhook / Event Integration, Configuration, Localization, Observability, Recovery & Operational Control.
@@ -140,7 +160,7 @@ Capability-map presence is not implementation authority.
 
 ## Staged product evolution
 
-M6 defines conceptual stages only:
+The Approved Enterprise Vision defines conceptual stages only:
 
 - E0 — Foundation
 - E1 — Core Transaction Platform
@@ -229,8 +249,9 @@ Root files with matching names remain deprecated pointer stubs only.
 ## Governance preservation
 
 - Phase 0: In Progress
-- Enterprise Vision decision status: Proposed
+- Enterprise Vision decision status: Approved through GOV-051
 - ADR-001 through ADR-007: Proposed
+- GD-003: Proposed
 - GD-007: Proposed
 - JRN-003 and JRN-013: Unresolved
 - Final tenant data model: Not Started
@@ -251,30 +272,33 @@ Root files with matching names remain deprecated pointer stubs only.
 - A-06 Phase 0 semantic ambiguity: Resolved through M5.3 publication.
 - A-07 ROADMAP / TASKS synchronization: Resolved through M5.3 publication.
 - A-08 attribution/collaboration metadata supersession: Resolved through M5.3 publication; canonical product attribution is Lab | zefry.
-- A-09 Enterprise Vision canonicalization: Resolved at representation/publication level through PR #69; Enterprise Vision decision status remains Proposed until separately approved.
+- A-09 Enterprise Vision canonicalization: Resolved at representation/publication level through PR #69; separate substantive Enterprise Vision decision Approved through GOV-051.
 - A-10 product-name capitalization inconsistency: Resolved for current/future-facing canonical material through PR #69; immutable historical evidence remains preserved.
 
-## M6 closure boundary
+## Current decision-record boundary
 
-M6 Enterprise Vision publication and M6 post-publication reconciliation are already published through PR #69 and PR #70 respectively.
+The active bounded work is only:
 
-The bounded M6 Closure — Checkpoint Semantics Correction exists only to remove self-referential live-head semantics and to prevent an infinite reconciliation cycle.
+**GOV-051 — Enterprise Vision Decision Record**
+
+Its purpose is to record the already-given Product Owner substantive decision and synchronize necessary canonical state surfaces.
 
 It does not authorize:
 
 - Sprint 14 implementation;
 - final/business application implementation;
+- MVP approval;
 - database/schema implementation;
 - executable SQL;
 - migration execution;
 - production database modification;
 - deployment;
 - release;
-- Enterprise Vision promotion from Proposed to Approved;
-- ADR/GD promotion;
+- GD-003 or GD-007 promotion;
+- ADR-001 through ADR-007 acceptance;
 - JRN resolution;
 - production readiness promotion.
 
-Any Ready or Merge transition for the closure PR requires separate exact-head Product Owner authority.
+The decision-record PR must remain Draft until separate exact-head Product Owner READY authority is supplied, and merge remains separately gated by exact-head Product Owner MERGE authority.
 
 Attribution: Lab | zefry

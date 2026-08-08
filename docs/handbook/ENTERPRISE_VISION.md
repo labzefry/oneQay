@@ -1,6 +1,6 @@
 # oneQay Enterprise Vision
 
-> **Status:** Published canonical representation — Enterprise Vision decision remains Proposed pending explicit Product Owner substantive approval
+> **Status:** Approved Enterprise Vision — substantive Product Owner decision GOV-051 approved; PR #69 remains the canonical representation publication
 > **Program:** M6 — Enterprise Vision Canonicalization
 > **Developer & Product Engineering Entity:** Lab | zefry
 > **Repository:** `labzefry/oneQay`
@@ -35,7 +35,7 @@ M6 separates five concepts that must not be conflated:
 4. **Delivery Roadmap** — the staged ordering used to reduce risk and sequence value.
 5. **Implementation Authority** — explicit Product Owner authority for a bounded piece of work at a specific lifecycle stage.
 
-Vision canonicalization does **not** create implementation authority.
+Enterprise Vision approval does **not** create implementation authority.
 
 ## Enterprise design qualities
 
@@ -166,7 +166,7 @@ Capability-map presence is never sufficient evidence of implementation authority
 
 ## Current governance boundary
 
-The following state remains in force during M6:
+The following state remains in force:
 
 - Phase 0 — Governance and Discovery: **In Progress**.
 - Sprint 12: **Published**.
@@ -179,8 +179,9 @@ The following state remains in force during M6:
 - SQL execution: **Not Authorized**.
 - Migration execution: **Not Authorized**.
 - Production database modification: **Not Authorized**.
-- Enterprise Vision decision status: **Proposed** pending explicit Product Owner substantive approval.
+- Enterprise Vision decision status: **Approved** through the explicit GOV-051 Product Owner substantive decision.
 - ADR-001 through ADR-007: remain **Proposed** unless separately approved.
+- GD-003: remains **Proposed** as the separate Product Vision and Decision Rights decision.
 - GD-007: remains **Proposed**.
 - JRN-003 and JRN-013: remain unresolved.
 
@@ -200,37 +201,48 @@ M6 publication lifecycle completed through PR #69.
 - Product Owner MERGE authority: separately recorded and executed
 - `product-owner-merge-authority`: SUCCESS before squash merge
 
-This publication establishes this file as the canonical Enterprise Vision representation in the repository. It does not by itself convert the Enterprise Vision decision from Proposed to Approved.
+This publication established this file as the canonical Enterprise Vision representation. PR #69 did not by itself convert the Enterprise Vision decision from Proposed to Approved; that substantive promotion occurred later through the separate GOV-051 Product Owner decision below.
+
+## GOV-051 substantive decision record
+
+The Product Owner separately reviewed and approved the substantive Enterprise Vision after M6 publication and closure.
+
+Decision identity:
+
+- decision: GOV-051 — Enterprise Vision substantive Product Owner decision;
+- decision: **APPROVED**;
+- approved statement: **oneQay is an Enterprise Intelligent Business Management Platform.**;
+- verified repository baseline reviewed for the decision: `762149757e4bc1fa79cc16bc4761f4147be0f7ea`;
+- verified baseline tree: `4d16f322b1bc8f2b666eef87ce4a1caaa6755e4f`;
+- canonical artifact: `docs/handbook/ENTERPRISE_VISION.md`;
+- approved canonical artifact blob: `bb1cace72a6fdb359e15e22467443d9f3916c336`.
+
+The approval establishes the Enterprise Vision boundary, enterprise design qualities, directional Enterprise Capability Map, and conceptual E0–E5 evolution as binding long-term product direction.
+
+The approval does **not** start Sprint 14 or another implementation milestone, does not approve MVP scope, bounded contexts, GD-003, GD-007, ADR-001 through ADR-007, any framework or provider, SQL/migration execution, production database modification, deployment, release, JRN resolution, or production-readiness promotion.
+
+Capability-map presence remains directional and is not implementation authority. E0–E5 remain conceptual evolution stages and are not release commitments or automatic milestone authorization.
 
 ## Canonical document relationship
 
-- `docs/handbook/ENTERPRISE_VISION.md` — canonical Enterprise Vision representation and high-level capability/evolution map published through the M6 lifecycle; substantive Enterprise Vision decision status remains Proposed until explicitly approved.
-- `docs/handbook/PRODUCT_VISION_AND_DECISION_RIGHTS.md` — Phase 0 product/discovery and decision-rights artifact; its independent decision statuses are not automatically promoted by M6.
+- `docs/handbook/ENTERPRISE_VISION.md` — canonical Enterprise Vision representation and high-level capability/evolution map published through M6; substantive Enterprise Vision status is Approved through GOV-051.
+- `docs/handbook/PRODUCT_VISION_AND_DECISION_RIGHTS.md` — Phase 0 product/discovery and decision-rights artifact; GD-003 and the document's independent decision statuses remain Proposed until separately approved.
 - `PROJECT_MANIFEST.md` — canonical product identity and decision-status register.
 - `ARCHITECTURE.md` — architecture constraints and technical boundaries.
 - `ROADMAP.md` — staged delivery sequencing.
 - `TASKS.md` — operational backlog and lifecycle state.
 - `docs/ai/` — current canonical AI checkpoint state.
 
-If these documents conflict after M6 publication, explicit Approved decisions and later superseding lifecycle evidence take precedence; discrepancies must be reconciled through a bounded PR rather than silently interpreted.
+If these documents conflict after this recordation, explicit Approved decisions and later superseding lifecycle evidence take precedence; discrepancies must be reconciled through a bounded PR rather than silently interpreted.
 
-## M6 exit criteria
+## M6 exit and closure record
 
-M6 publication lifecycle is complete only when:
+PR #69 satisfied the Enterprise Vision representation publication lifecycle, review, check, and tree-verification conditions.
 
-1. this Enterprise Vision has completed independent review;
-2. Product Owner lifecycle decisions are explicit for the exact head;
-3. canonical program documents are synchronized with publication facts;
-4. brand identity is normalized to **oneQay** in current canonical material;
-5. capability map and staged evolution are internally consistent;
-6. vision remains separated from implementation authority;
-7. required checks pass on the exact head;
-8. unresolved review threads are zero;
-9. publication to `main` is explicitly authorized and verified;
-10. source tree and published tree are verified.
+PR #70 subsequently published the bounded post-publication state reconciliation. PR #71 then published the M6 Closure — Checkpoint Semantics Correction, establishing stable checkpoint provenance semantics and eliminating the self-referential live-head reconciliation cycle.
 
-PR #69 satisfied the publication lifecycle, review, check, and tree-verification conditions. Post-publication state reconciliation is still required to synchronize stale mutable state surfaces. Separately, the Enterprise Vision decision remains **Proposed** until explicit Product Owner substantive approval is recorded; publication must not be treated as that approval.
+GOV-051 was later approved as a separate substantive Product Owner decision on the verified PR #71 publication baseline and the unchanged canonical Enterprise Vision artifact blob identified above.
 
-A-09 is resolved only at the canonical-representation/publication level. Substantive approval of the Enterprise Vision remains a separate open decision.
+A-09 remains resolved at canonical representation/publication level through PR #69, and its separate substantive Enterprise Vision decision is now **Approved** through GOV-051. This approval does not create implementation authority.
 
 Attribution: Lab | zefry
