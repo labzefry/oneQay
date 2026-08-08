@@ -1,8 +1,8 @@
 # oneQay Enterprise Vision
 
-> **Status:** Proposed — M6 canonicalization candidate; requires independent review and explicit Product Owner lifecycle approval before publication  
-> **Program:** M6 — Enterprise Vision Canonicalization  
-> **Developer & Product Engineering Entity:** Lab | zefry  
+> **Status:** Proposed — M6 canonicalization candidate; requires independent review and explicit Product Owner lifecycle approval before publication
+> **Program:** M6 — Enterprise Vision Canonicalization
+> **Developer & Product Engineering Entity:** Lab | zefry
 > **Repository:** `labzefry/oneQay`
 
 ## Canonical product naming
