@@ -6,13 +6,13 @@ Before using any prompt, provide the latest repository context and require the a
 
 ## 1. README.md
 
-**ChatGPT - Lanjutan:** Review the latest OneQay repository and improve README.md as the project orientation without inventing technology choices. Preserve product identity, GitHub SSOT, handbook-first status, and links. Update manifest/tasks/changelog if status changes.
+**ChatGPT - Lanjutan:** Review the latest oneQay repository and improve README.md as the project orientation without inventing technology choices. Preserve product identity, GitHub SSOT, current lifecycle state, and links. Update manifest/tasks/changelog if status changes.
 
 **ChatGPT - Review Independen:** Audit README.md for contradictions, missing stakeholder orientation, broken governance links, ambiguous commitments, and drift from the canonical manifest. Classify findings Critical/High/Medium/Low.
 
 ## 2. PROJECT_MANIFEST.md
 
-**ChatGPT - Lanjutan:** Update OneQay PROJECT_MANIFEST.md from accepted evidence and ADRs. Maintain explicit Approved, Proposed, Under Review, Deferred, and Deprecated states; do not silently promote decisions.
+**ChatGPT - Lanjutan:** Update oneQay PROJECT_MANIFEST.md from accepted evidence and ADRs. Maintain explicit Approved, Proposed, Under Review, Deferred, and Deprecated states; do not silently promote decisions.
 
 **ChatGPT - Review Independen:** Review the manifest for hidden assumptions, inconsistent statuses, missing risks/owners, stale capability states, and conflicts with ADRs or root documents.
 
@@ -24,7 +24,7 @@ Before using any prompt, provide the latest repository context and require the a
 
 ## 4. ARCHITECTURE.md
 
-**ChatGPT - Lanjutan:** Refine OneQay architecture after domain discovery. Preserve inward dependencies, module ownership, tenant isolation, infrastructure independence, and Accepted ADRs; create new ADRs for consequential decisions.
+**ChatGPT - Lanjutan:** Refine oneQay architecture after domain discovery. Preserve inward dependencies, module ownership, tenant isolation, infrastructure independence, and Accepted ADRs; create new ADRs for consequential decisions.
 
 **ChatGPT - Review Independen:** Review architecture for coupling, distributed-monolith risk, cross-module data access, tenant leakage, failure semantics, operational gaps, and unjustified complexity.
 
@@ -72,7 +72,7 @@ Before using any prompt, provide the latest repository context and require the a
 
 ## 12. UI_GUIDELINE.md
 
-**ChatGPT - Lanjutan:** Develop the OneQay design system from validated research and brand decisions. Preserve accessibility, locale, POS speed, context visibility, error/offline states, privacy, and performance.
+**ChatGPT - Lanjutan:** Develop the oneQay design system from validated research and brand decisions. Preserve accessibility, locale, POS speed, context visibility, error/offline states, privacy, and performance.
 
 **ChatGPT - Review Independen:** Review UX for ambiguous tenant/outlet context, unsafe financial actions, inaccessible controls, misleading states/charts, mobile gaps, and localization failures.
 
@@ -96,7 +96,7 @@ Before using any prompt, provide the latest repository context and require the a
 
 ## 16. RELEASE.md
 
-**ChatGPT - Lanjutan:** Prepare the next OneQay release process from approved scope and evidence. Include version, artifact, compatibility, migration, rollout, monitoring, recovery, and communication.
+**ChatGPT - Lanjutan:** Prepare the next oneQay release process from approved scope and evidence. Include version, artifact, compatibility, migration, rollout, monitoring, recovery, and communication.
 
 **ChatGPT - Review Independen:** Audit release readiness for missing evidence, unsupported upgrade paths, unresolved severe risks, weak stop conditions, mutable artifacts, and poor EOL planning.
 
@@ -104,7 +104,7 @@ Before using any prompt, provide the latest repository context and require the a
 
 **ChatGPT - Lanjutan:** Reconcile TASKS.md against issues, PRs, ADRs, roadmap, manifest, and changelog. Every active task needs scope, dependency, owner, risk, acceptance evidence, and honest status.
 
-**ChatGPT - Review Independen:** Find stale, duplicated, orphaned, blocked-without-action, done-without-evidence, or source-code tasks that violate Phase 0 entry criteria.
+**ChatGPT - Review Independen:** Find stale, duplicated, orphaned, blocked-without-action, done-without-evidence, or source-code tasks that violate the current program gate.
 
 ## 18. CHANGELOG.md
 
@@ -114,4 +114,4 @@ Before using any prompt, provide the latest repository context and require the a
 
 ## Master cross-document review prompt
 
-Review all OneQay handbook documents as one enterprise governance system. Build a contradiction matrix across identity, status, architecture, tenancy, API, database, security, deployment, testing, UI, installer, updater, contribution, release, tasks, and changelog. Report severity, evidence, affected files, recommended correction, and whether the handbook is ready for Product Owner approval. Do not create application source code or approve unresolved technology/vendor decisions.
+Review all oneQay handbook documents as one enterprise governance system. Build a contradiction matrix across identity, status, Enterprise Vision, architecture, tenancy, API, database, security, deployment, testing, UI, installer, updater, contribution, release, tasks, and changelog. Report severity, evidence, affected files, recommended correction, and whether the handbook is ready for Product Owner approval. Do not create application source code or approve unresolved technology/vendor decisions.
