@@ -1,8 +1,8 @@
-# OneQay Phase 0 Governance and Discovery Kickoff
+# oneQay Phase 0 Governance and Discovery Kickoff
 
 ## Mission
 
-Phase 0 mengubah visi OneQay dan Handbook 1.0 menjadi keputusan produk serta engineering yang dapat dibuktikan. Fase ini tidak membuat source code aplikasi. Output utamanya adalah scope MVP, domain model, risk baseline, architecture decisions, dan executable backlog yang telah disetujui.
+Phase 0 mengubah visi oneQay dan Handbook 1.0 menjadi keputusan produk serta engineering yang dapat dibuktikan. Fase ini pada baseline kickoff historis tidak membuat source code aplikasi. Output utamanya adalah scope MVP, domain model, risk baseline, architecture decisions, dan executable backlog yang telah disetujui.
 
 ## M5.3 canonical interpretation
 
