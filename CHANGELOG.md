@@ -40,10 +40,15 @@ Semua perubahan penting oneQay dicatat di dokumen ini. Format mengikuti Keep a C
 
 ### Changed
 
+- Recorded M6 — Enterprise Vision Canonicalization as **PUBLISHED / PUBLICATION COMPLETE** through PR #69: exact source head `e6a3345b09a6b270ac7e09abd78c6356f426e363`, source tree `567df997bae70090b19465c75e4cc3b1e23b6579`, published commit `0b7b28028966ac38af0f32960054210c3a083916`, published tree `567df997bae70090b19465c75e4cc3b1e23b6579`, with source tree equal to published tree.
+- Recorded PR #69 lifecycle evidence: independent reviewer `zefriansyah` APPROVED the exact source head; required technical checks passed; Product Owner READY and MERGE authorities were separately recorded; `product-owner-merge-authority` passed before squash merge.
+- Reconciled A-09 at the canonical representation/publication level through PR #69 while preserving the substantive Enterprise Vision decision as **Proposed** pending separate explicit Product Owner approval.
+- Reconciled A-10 for current/future-facing product identity: canonical product name is **oneQay**; immutable GitHub identifiers and historical quoted evidence remain preserved.
+- Clarified that M6 publication does not authorize Sprint 14, application/business source implementation, database/schema implementation, SQL/migration execution, deployment, release, ADR/GD promotion, JRN resolution, or production-readiness transition.
 - Recorded M5.3 — Governance & Program State Synchronization as **PUBLISHED / COMPLETE** through PR #68, source head `aa799e657070a7d3283110a73a411f54a73b972c`, published commit `e45f5b4c0f143abc6e255e4e8550bf3504348aae`, and identical source/published tree `e2bc0505f5abd98a7283b3cd3cd2c4c02ef23ece`.
 - Recorded A-06, A-07, and A-08 as reconciled through M5.3 publication and advanced the active program to M6 — Enterprise Vision Canonicalization.
-- Started A-09 Enterprise Vision canonicalization under M6 as a bounded candidate; it is not publication-complete and no Proposed decision is promoted merely by candidate creation.
-- Started A-10 current product-name capitalization reconciliation; canonical form is `oneQay`, while immutable GitHub identifiers and historical quoted evidence are preserved.
+- Historical pre-publication state recorded that A-09 began as an M6 bounded candidate; PR #69 later completed the representation/publication lifecycle without promoting the substantive Enterprise Vision decision from Proposed to Approved.
+- Historical pre-publication state recorded A-10 product-name capitalization reconciliation; PR #69 later completed current/future-facing canonical normalization to `oneQay` while preserving immutable historical evidence.
 - Recorded M5.1 — Canonical State Reconciliation as **PUBLISHED / COMPLETE** through PR #66 and published commit `153a33a4a2b5edb4a31285eca7d3491f9589b778`.
 - Recorded M5.2 — CI & Lifecycle Control Hardening as **PUBLISHED / ENFORCEMENT COMPLETE** through PR #67, published commit `512344d0497787c729242cb1fd2d7d02ecfc40c2`, and published tree `0f0af1c1acab208c704fbdf05b19014127abddbb`.
 - Recorded A-03 and A-05 as resolved and the protected default-branch required contexts as `governance-validation`, `markdown-lint`, `secret-scan`, `php-foundation-regression`, and `product-owner-merge-authority`.
