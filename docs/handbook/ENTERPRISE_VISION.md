@@ -1,6 +1,6 @@
 # oneQay Enterprise Vision
 
-> **Status:** Proposed — M6 canonicalization candidate; requires independent review and explicit Product Owner lifecycle approval before publication
+> **Status:** Published canonical representation — Enterprise Vision decision remains Proposed pending explicit Product Owner substantive approval
 > **Program:** M6 — Enterprise Vision Canonicalization
 > **Developer & Product Engineering Entity:** Lab | zefry
 > **Repository:** `labzefry/oneQay`
@@ -179,13 +179,32 @@ The following state remains in force during M6:
 - SQL execution: **Not Authorized**.
 - Migration execution: **Not Authorized**.
 - Production database modification: **Not Authorized**.
+- Enterprise Vision decision status: **Proposed** pending explicit Product Owner substantive approval.
 - ADR-001 through ADR-007: remain **Proposed** unless separately approved.
 - GD-007: remains **Proposed**.
 - JRN-003 and JRN-013: remain unresolved.
 
+## Publication record
+
+M6 publication lifecycle completed through PR #69.
+
+- Source head: `e6a3345b09a6b270ac7e09abd78c6356f426e363`
+- Source tree: `567df997bae70090b19465c75e4cc3b1e23b6579`
+- Published commit: `0b7b28028966ac38af0f32960054210c3a083916`
+- Published tree: `567df997bae70090b19465c75e4cc3b1e23b6579`
+- Source tree equals published tree: Yes
+- Independent reviewer: `zefriansyah`
+- Exact-head review: APPROVED
+- Required technical checks: SUCCESS
+- Product Owner READY authority: separately recorded and executed
+- Product Owner MERGE authority: separately recorded and executed
+- `product-owner-merge-authority`: SUCCESS before squash merge
+
+This publication establishes this file as the canonical Enterprise Vision representation in the repository. It does not by itself convert the Enterprise Vision decision from Proposed to Approved.
+
 ## Canonical document relationship
 
-- `docs/handbook/ENTERPRISE_VISION.md` — canonical Enterprise Vision and high-level capability/evolution map once published through the approved M6 lifecycle.
+- `docs/handbook/ENTERPRISE_VISION.md` — canonical Enterprise Vision representation and high-level capability/evolution map published through the M6 lifecycle; substantive Enterprise Vision decision status remains Proposed until explicitly approved.
 - `docs/handbook/PRODUCT_VISION_AND_DECISION_RIGHTS.md` — Phase 0 product/discovery and decision-rights artifact; its independent decision statuses are not automatically promoted by M6.
 - `PROJECT_MANIFEST.md` — canonical product identity and decision-status register.
 - `ARCHITECTURE.md` — architecture constraints and technical boundaries.
@@ -197,11 +216,11 @@ If these documents conflict after M6 publication, explicit Approved decisions an
 
 ## M6 exit criteria
 
-M6 is complete only when:
+M6 publication lifecycle is complete only when:
 
 1. this Enterprise Vision has completed independent review;
-2. Product Owner content/lifecycle decisions are explicit for the exact head;
-3. canonical program documents are synchronized;
+2. Product Owner lifecycle decisions are explicit for the exact head;
+3. canonical program documents are synchronized with publication facts;
 4. brand identity is normalized to **oneQay** in current canonical material;
 5. capability map and staged evolution are internally consistent;
 6. vision remains separated from implementation authority;
@@ -210,6 +229,8 @@ M6 is complete only when:
 9. publication to `main` is explicitly authorized and verified;
 10. source tree and published tree are verified.
 
-Until those conditions are satisfied, A-09 is **In Progress / addressed by M6 candidate**, not yet closed by publication.
+PR #69 satisfied the publication lifecycle, review, check, and tree-verification conditions. Post-publication state reconciliation is still required to synchronize stale mutable state surfaces. Separately, the Enterprise Vision decision remains **Proposed** until explicit Product Owner substantive approval is recorded; publication must not be treated as that approval.
+
+A-09 is resolved only at the canonical-representation/publication level. Substantive approval of the Enterprise Vision remains a separate open decision.
 
 Attribution: Lab | zefry
