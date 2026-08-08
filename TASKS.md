@@ -92,7 +92,7 @@ Published bounded Platform Foundation source through Sprint 13 is an existing re
 | ID | Decision | Status | Required output |
 | --- | --- | --- | --- |
 | DEC-000 | Product Owner, delegates, and decision rights | Done | Product Owner substantive decision APPROVED; Approved `docs/handbook/PRODUCT_VISION_AND_DECISION_RIGHTS.md`; `docs/handbook/DEC_000_DECISION_RECORD.md`; GD-003 Approved only within DEC-000 boundary |
-| DEC-001 | MVP scope and non-scope | Ready | Approved product brief |
+| DEC-001 | MVP scope and non-scope | Done | Product Owner substantive decision APPROVED on baseline `17f156b9861972b4924a5ed01bfabd5a1a79461a`; `docs/handbook/DEC_001_DECISION_RECORD.md`; implementation authority NOT GRANTED |
 | DEC-002 | Backend language/framework | Ready | ADR-001 |
 | DEC-003 | Frontend/PWA stack | Ready | ADR-002 |
 | DEC-004 | Android approach | Backlog | ADR |
@@ -105,7 +105,7 @@ Published bounded Platform Foundation source through Sprint 13 is an existing re
 | DEC-011 | Data retention, privacy, and jurisdiction | Ready | Policy/ADR |
 | DEC-012 | RPO/RTO and support objectives | Backlog | Operational policy |
 
-DEC-000 completion does not approve, accept, start, or implement DEC-001 through DEC-012. Each remains independently gated by its required evidence and Product Owner authority.
+DEC-000 and DEC-001 completion do not approve, accept, start, or implement DEC-002 through DEC-012. DEC-001 approves only the bounded MVP product scope and non-scope recorded in `docs/handbook/DEC_001_DECISION_RECORD.md`; it does not start Sprint 14 or grant application/business implementation authority.
 
 ## Phase 0 discovery backlog
 
@@ -123,7 +123,7 @@ DEC-000 completion does not approve, accept, start, or implement DEC-001 through
 
 ## Phase 1 candidate backlog
 
-Items ini tidak memperoleh authority baru dari M6, GOV-051, atau DEC-000. Published bounded Platform Foundation through Sprint 13 must be preserved, tetapi pekerjaan baru untuk final/business application atau Sprint 14 tetap membutuhkan Product Owner authority dan gate yang berlaku.
+Items ini tidak memperoleh source-code authority baru dari M6, GOV-051, DEC-000, atau DEC-001. Published bounded Platform Foundation through Sprint 13 must be preserved, tetapi pekerjaan baru untuk final/business application atau Sprint 14 tetap membutuhkan Product Owner authority dan gate yang berlaku.
 
 - PLT-001 repository/application skeleton;
 - PLT-002 tenant context and isolation enforcement;

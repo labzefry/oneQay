@@ -6,6 +6,7 @@ Semua perubahan penting oneQay dicatat di dokumen ini. Format mengikuti Keep a C
 
 ### Added
 
+- Added `docs/handbook/DEC_001_DECISION_RECORD.md` as the bounded repository record for the Product Owner substantive DEC-001 MVP Scope and Non-Scope decision, including the approved POS Core Transaction & Outlet Operations slice, actors, journeys, bounded dependencies, explicit non-scope, outcomes, open items, and no-implementation authority boundary.
 - Added `docs/handbook/DEC_000_DECISION_RECORD.md` as the bounded repository record for the Product Owner substantive DEC-000 Product Vision and Decision Rights decision, including D-000-01 through D-000-06 dispositions, Product Owner identity, PV-001 through PV-006 disposition, Issue #2 closure semantics, provenance, supersession path, and explicit no-implementation boundary.
 - Added M6 canonical Enterprise Vision candidate at `docs/handbook/ENTERPRISE_VISION.md`, defining oneQay directionally as an **Enterprise Intelligent Business Management Platform** while explicitly separating Product Vision, Capability Map, Architecture Direction, Delivery Roadmap, and Implementation Authority.
 - Added the high-level Enterprise Capability Map covering Core Business Platform, Platform Capabilities, Extensibility, AI Platform, and Channels without promoting any capability to implementation authority.
@@ -41,6 +42,9 @@ Semua perubahan penting oneQay dicatat di dokumen ini. Format mengikuti Keep a C
 
 ### Changed
 
+- Recorded Product Owner substantive **DEC-001 — MVP Scope and Non-Scope: APPROVED** on baseline `17f156b9861972b4924a5ed01bfabd5a1a79461a`, verified tree `33241c18a1b7da2efc7dd2889c13c25c6e8526d5`, with the first bounded delivery slice **POS CORE TRANSACTION & OUTLET OPERATIONS**.
+- Recorded DEC-001 actors, MVP journeys JRN-004/JRN-005/JRN-006/JRN-007/JRN-010, bounded dependencies JRN-001/JRN-002/JRN-003/JRN-008/JRN-011/JRN-012, explicit deferred/non-scope items, outcomes Transaction Trust / Operational Efficiency / Inventory Accuracy, Secure Tenant Isolation guardrail, and Recoverability release/reliability gate.
+- Preserved JRN-003 and JRN-013 as unresolved, GD-005/GD-006/GD-007 as Proposed, Phase 0 as In Progress, Sprint 14 as Not Authorized, production readiness as NO-GO, DEC-002 through DEC-012 as independently gated, ADR-001 through ADR-007 as unaccepted, and all application/business implementation, SQL/schema/migration, production-DB, deployment, and release authority as NOT GRANTED by DEC-001.
 - Recorded Product Owner substantive **DEC-000 — Product Vision and Decision Rights: APPROVED** on baseline `792b2dc30636bc53baa7d66b43cf2dab4a348dd4`, tree `08f03b895d5e2ae7ca402e9866384990e126add3`, canonical owner artifact blob `843544b9e31dd4c47638b88dd204f4e594295df4`, and readiness artifact blob `b493a5d66edc1bbffab0126bdacf2ca1ce14fa8f`.
 - Promoted **GD-003 Product vision and decision rights** from Proposed to Approved only as the repository representation of DEC-000; this approval is product/discovery governance and not implementation authority.
 - Recorded D-000-01 Product Vision and Mission as Approved, D-000-02 Product Principles and Outcome Direction as Approved, D-000-03 segment/actor/problem/scope/deferred/non-goal hypotheses as accepted Phase 0 discovery hypotheses and constraints, D-000-04 decision-rights matrix as Confirmed, D-000-05 open-decision disposition as Approved, and D-000-06 implementation-authority boundary as Confirmed.
