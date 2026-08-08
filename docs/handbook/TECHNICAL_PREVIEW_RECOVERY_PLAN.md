@@ -1,7 +1,7 @@
 # Technical Preview Recovery Plan
 
 - Status: Proposed
-- Scope: OneQay Technical Preview v0.0.1
+- Scope: oneQay Technical Preview v0.0.1
 - Source: Issue #23, REC-1
 
 ## Objectives
