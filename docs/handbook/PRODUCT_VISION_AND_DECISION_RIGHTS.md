@@ -1,8 +1,8 @@
 # oneQay Product Vision and Decision Rights
 
-> **Status:** Proposed — menunggu persetujuan Product Owner melalui pull request  
-> **Phase:** 0 — Governance & Discovery  
-> **Owner:** Product Owner oneQay  
+> **Status:** Proposed — menunggu persetujuan Product Owner melalui pull request
+> **Phase:** 0 — Governance & Discovery
+> **Owner:** Product Owner oneQay
 > **Tracking:** GitHub Issue #2
 
 ## Purpose
