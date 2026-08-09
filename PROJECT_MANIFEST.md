@@ -55,6 +55,8 @@ Product Owner kemudian memberikan substantive DEC-003 Frontend / PWA Stack decis
 
 Product Owner kemudian memberikan substantive DEC-004 Android Approach decision yang **APPROVED** pada decision baseline `97b2e5066118af2b3e9467afc71e84dce228eb38` dan verified tree `2f979948184f475b52cf87b2d105c56364ebe883`. DEC-004 menetapkan **Hybrid Staged Approach**, Native Android menggunakan Kotlin, Jetpack Compose, PWA sebagai preferred general mobile-capable channel, explicit API/mobile boundary, bounded native device adapters, DEC-006 authentication boundary, DEC-008 offline boundary, minimal tenant/session-scoped local state, dan distribution compatibility direction. Keputusan direkam di `docs/handbook/DEC_004_DECISION_RECORD.md` dan direpresentasikan melalui ADR-008 tanpa memberi Android project/source, Gradle/dependency, API implementation, Sprint 14, deployment, release, atau production authority.
 
+Product Owner kemudian memberikan substantive DEC-005 Database Engine and Physical Tenancy Model decision yang **APPROVED** pada decision baseline `63646e1cccc611a1911c452397059983030dfe66` dan verified tree `80cd3bbf1a0c1d454e73c89f17d8896941f369cd`. DEC-005 menetapkan **MySQL Server** sebagai canonical relational database engine family, supported MySQL LTS-family boundary dengan exact version deferred, shared database/shared schema sebagai default physical tenancy dengan immutable tenant isolation key, bounded future hybrid isolation path, Application-authoritative tenant authorization with database defense-in-depth, database/vendor behavior sebagai Infrastructure concern, compatible/recoverable schema-evolution principle, dan verified-restoration recoverability principle. Keputusan direkam di `docs/handbook/DEC_005_DECISION_RECORD.md` dan direpresentasikan melalui reconciled ADR-003 tanpa memberi schema/SQL/migration/database implementation, dependency, Sprint 14, deployment, release, atau production authority.
+
 ## Current delivery gate
 
 | Item | Status | Gate |
@@ -72,6 +74,7 @@ Product Owner kemudian memberikan substantive DEC-004 Android Approach decision 
 | DEC-002 Backend Language / Application Framework | Approved / Decision Complete | Product Owner APPROVED PHP + Laravel on baseline `504b10be44d45dfcfec9b6cfed4f72ed5748b564`; `docs/handbook/DEC_002_DECISION_RECORD.md`; ADR-001 Accepted after reconciliation; no implementation authority |
 | DEC-003 Frontend / PWA Stack | Approved / Decision Complete | Product Owner APPROVED Vue 3 + Inertia + Vite with TypeScript-first, explicit API/mobile boundaries, local-first state, and bounded PWA direction on baseline `dcb7e3f8de890530a00a0dd4fd310bc10762c72f`; `docs/handbook/DEC_003_DECISION_RECORD.md`; ADR-002 Accepted after reconciliation; no implementation authority |
 | DEC-004 Android Approach | Approved / Decision Complete | Product Owner APPROVED Hybrid Staged Approach with Kotlin + Jetpack Compose on baseline `97b2e5066118af2b3e9467afc71e84dce228eb38`; `docs/handbook/DEC_004_DECISION_RECORD.md`; ADR-008; no implementation authority |
+| DEC-005 Database Engine and Physical Tenancy Model | Approved / Decision Complete | Product Owner APPROVED MySQL Server + shared database/shared schema default on baseline `63646e1cccc611a1911c452397059983030dfe66`; `docs/handbook/DEC_005_DECISION_RECORD.md`; reconciled ADR-003; no database/schema/SQL/migration implementation authority |
 | Final/business application implementation | Blocked | Tidak ada authority untuk implementasi business/final/production application baru |
 | Sprint 14 | Not Authorized | Memerlukan Product Owner authority terpisah |
 | Production readiness | NO-GO | Tidak ada deployment, release, atau production-migration authority |
@@ -201,8 +204,8 @@ Status seluruh bounded context: **Proposed**.
 | --- | --- | --- |
 | Isolation key | Immutable Tenant ID | Approved |
 | Access hostname | Domain/subdomain sebagai routing, bukan otorisasi | Approved |
-| Default isolation model | Shared application dengan tenant-scoped data | Proposed |
-| Dedicated deployment option | Dapat ditambahkan untuk tenant enterprise | Deferred |
+| Default isolation model | Shared database + shared schema dengan tenant-scoped data | Approved — DEC-005; no schema/implementation authority |
+| Dedicated deployment option | Bounded future dedicated database/storage isolation untuk justified tenant | Approved direction — DEC-005; implementation separately gated |
 | Tenant timezone/currency/locale | Wajib tersimpan sebagai konfigurasi tenant | Approved |
 | Cross-tenant query | Deny by default; hanya platform operation terotorisasi | Approved |
 
@@ -226,14 +229,14 @@ Perpindahan stage tidak boleh mengubah domain atau business logic.
 | TD-001 | Bahasa dan framework backend | Approved — DEC-002 | `docs/handbook/DEC_002_DECISION_RECORD.md`; `docs/adr/ADR-001-technical-preview-backend.md` |
 | TD-002 | Framework web frontend | Approved — DEC-003 | `docs/handbook/DEC_003_DECISION_RECORD.md`; `docs/adr/ADR-002-technical-preview-frontend-pwa.md` |
 | TD-003 | Android native stack | Approved — DEC-004 | `docs/handbook/DEC_004_DECISION_RECORD.md`; `docs/adr/ADR-008-android-delivery-approach.md` |
-| TD-004 | Relational database engine | Under Review | ADR / DATABASE.md |
+| TD-004 | Relational database engine | Approved — DEC-005 | `docs/handbook/DEC_005_DECISION_RECORD.md`; `docs/adr/ADR-003-technical-preview-database-tenancy.md`; `DATABASE.md` |
 | TD-005 | Cache dan queue technology | Deferred | ADR |
 | TD-006 | Authentication protocol/provider | Under Review | SECURITY.md / ADR |
 | TD-007 | Observability stack | Deferred | DEPLOYMENT.md / ADR |
 | TD-008 | Payment gateway strategy | Under Review | ADR |
 | TD-009 | AI provider and data boundary | Under Review | SECURITY.md / ADR |
 
-No framework or vendor is selected merely because it appears in historical candidate material. PHP/Laravel is binding only through the explicit Product Owner substantive DEC-002 decision and Accepted ADR-001 within that exact boundary. Vue 3/Inertia/Vite is binding only through the explicit Product Owner substantive DEC-003 decision and Accepted ADR-002 within that exact boundary. Kotlin/Jetpack Compose and the Hybrid Staged Android direction are binding only through the explicit Product Owner substantive DEC-004 decision and ADR-008 within that exact boundary; this does not create Android implementation authority.
+No framework or vendor is selected merely because it appears in historical candidate material. PHP/Laravel is binding only through the explicit Product Owner substantive DEC-002 decision and Accepted ADR-001 within that exact boundary. Vue 3/Inertia/Vite is binding only through the explicit Product Owner substantive DEC-003 decision and Accepted ADR-002 within that exact boundary. Kotlin/Jetpack Compose and the Hybrid Staged Android direction are binding only through the explicit Product Owner substantive DEC-004 decision and ADR-008 within that exact boundary; this does not create Android implementation authority. MySQL Server and the shared-database/shared-schema default are binding only through the explicit Product Owner substantive DEC-005 decision and reconciled ADR-003 within that exact boundary; this does not create schema/SQL/migration/database implementation authority.
 
 ## Environment classes
 
@@ -270,11 +273,13 @@ No framework or vendor is selected merely because it appears in historical candi
 | `docs/handbook/DEC_002_DECISION_RECORD.md` | DEC-002 substantive Product Owner backend language/application framework decision provenance, approved PHP/Laravel boundary, and no-implementation authority |
 | `docs/handbook/DEC_003_DECISION_RECORD.md` | DEC-003 substantive Product Owner frontend/Web-PWA decision provenance, approved Vue/Inertia/Vite boundary, explicit API/mobile independence, PWA guardrails, and no-implementation authority |
 | `docs/handbook/DEC_004_DECISION_RECORD.md` | DEC-004 substantive Product Owner Android delivery decision provenance, Hybrid Staged Approach, Kotlin/Jetpack Compose direction, explicit API/device/offline boundaries, and no-implementation authority |
+| `docs/handbook/DEC_005_DECISION_RECORD.md` | DEC-005 substantive Product Owner database-engine/physical-tenancy decision provenance, MySQL Server, shared-schema default, tenant-isolation/recoverability boundaries, and no-implementation authority |
 | `docs/adr/ADR-001-technical-preview-backend.md` | Accepted representation of DEC-002 with preserved Technical Preview provenance and framework-independence guardrails |
 | `docs/adr/ADR-002-technical-preview-frontend-pwa.md` | Accepted representation of DEC-003 with preserved F1 Technical Preview provenance, explicit API/mobile boundaries, PWA/offline guardrails, and implementation-authority separation |
+| `docs/adr/ADR-003-technical-preview-database-tenancy.md` | Accepted representation of DEC-005 after publication; preserves D1 Technical Preview provenance while establishing MySQL Server + shared database/shared schema default and no schema/SQL/migration authority |
 | `docs/adr/ADR-008-android-delivery-approach.md` | Accepted representation of DEC-004 after successful publication; Hybrid Staged Android direction with Kotlin/Jetpack Compose, PWA complementarity, DEC-006/DEC-008 boundaries, and no-implementation authority |
 | API_SPEC.md | Governance API |
-| DATABASE.md | Governance data dan skema |
+| DATABASE.md | Governance data dan skema; canonical MySQL Server/tenancy direction owned by DEC-005 |
 | SECURITY.md | Security baseline |
 | DEPLOYMENT.md | Operasi dan deployment |
 | TESTING.md | Quality strategy |
@@ -312,6 +317,8 @@ Product Owner kemudian memberikan substantive DEC-003 Frontend / PWA Stack decis
 
 Product Owner kemudian memberikan substantive DEC-004 Android Approach decision yang **APPROVED** pada baseline `97b2e5066118af2b3e9467afc71e84dce228eb38` dan verified tree `2f979948184f475b52cf87b2d105c56364ebe883`. Keputusan tersebut menyetujui Hybrid Staged Approach, Native Android dengan Kotlin, Jetpack Compose, PWA complementarity, explicit application/API contracts, native device adapters sebagai Interface/Infrastructure concern, DEC-006 ownership untuk authentication/session, DEC-008 ownership untuk offline semantics, tenant/session-scoped non-authoritative local state, dan Play/enterprise distribution compatibility direction. DEC-004 direkam di `docs/handbook/DEC_004_DECISION_RECORD.md` dan direpresentasikan melalui `docs/adr/ADR-008-android-delivery-approach.md`, sementara Android project/source, Gradle/dependency installation, exact API/auth/storage details, Sprint 14, deployment, release, dan production authority tetap tidak diotorisasi.
 
+Product Owner kemudian memberikan substantive DEC-005 Database Engine and Physical Tenancy Model decision yang **APPROVED** pada baseline `63646e1cccc611a1911c452397059983030dfe66` dan verified tree `80cd3bbf1a0c1d454e73c89f17d8896941f369cd`. Keputusan tersebut menyetujui MySQL Server sebagai canonical relational database engine family, supported MySQL LTS-family boundary dengan exact version deferred, shared database/shared schema sebagai default physical tenancy, immutable tenant isolation key, bounded hybrid evolution path, Application-authoritative tenant authorization dengan database defense-in-depth, database/vendor-specific behavior sebagai Infrastructure concern, compatible/recoverable schema evolution, dan recoverability berbasis verified restoration. DEC-005 direkam di `docs/handbook/DEC_005_DECISION_RECORD.md` dan direpresentasikan melalui reconciled `docs/adr/ADR-003-technical-preview-database-tenancy.md`, sementara schema/SQL/DDL/migration, database implementation, exact runtime/provider/version, Sprint 14, deployment, release, dan production authority tetap tidak diotorisasi.
+
 ## Technical Preview v0.0.1 decision package
 
 Issue #23 records the accelerated T+5 planning scope and Product Owner selections. PR #24 was technically merged before this canonical synchronization; that merge does not accept an ADR, approve Phase 0 exit, or grant source-code authority.
@@ -320,7 +327,7 @@ Issue #23 records the accelerated T+5 planning scope and Product Owner selection
 | --- | --- | --- | --- |
 | Backend | B1 Laravel/PHP modular monolith | Accepted via DEC-002 | Historical Technical Preview provenance; substantive authority is DEC-002 and reconciled ADR-001 |
 | Frontend/PWA | F1 Vue 3 + Inertia + Vite | Accepted via DEC-003 | Historical Technical Preview provenance; substantive authority is DEC-003 and reconciled ADR-002; TypeScript-first, explicit API/mobile boundaries, and bounded PWA direction apply |
-| Database/tenancy | D1 MySQL-compatible shared schema | Proposed | ADR-003; engine/version evidence pending |
+| Database/tenancy | D1 MySQL-compatible shared schema | Accepted via DEC-005 | Historical D1 provenance retained; current canonical decision is MySQL Server + shared database/shared schema default through substantive DEC-005 and reconciled ADR-003; exact runtime/version remains separately gated |
 | Authentication | A1 first-party session and privileged TOTP | Proposed | ADR-004; JRN-003 remains unresolved |
 | Payment preview | PAY-1 synthetic cash-only | Proposed | ADR-005; no provider or real money |
 | Offline preview | OFF-1 online-only | Proposed | ADR-006; offline mutation deferred |
@@ -332,7 +339,7 @@ Issue #23 records the accelerated T+5 planning scope and Product Owner selection
 
 Phase 0 remains **In Progress**. Final/business application implementation remains **Blocked**. Phase 0 preview exit remains **Not Ready**. GD-007 and Domain Event Storming remain **Proposed**. JRN-003 and JRN-013 remain unresolved blockers. Missing hosting facts must not be inferred.
 
-Published bounded Platform Foundation work through Sprint 12 and Sprint 13 is preserved separately from this unresolved Technical Preview decision package and does not promote any item in this package except where a later explicit substantive decision, such as DEC-002 or DEC-003, independently changes that item's status.
+Published bounded Platform Foundation work through Sprint 12 and Sprint 13 is preserved separately from this unresolved Technical Preview decision package and does not promote any item in this package except where a later explicit substantive decision, such as DEC-002, DEC-003, or DEC-005, independently changes that item's status.
 
 ## PR #25 and Issue #23 governance recurrence
 
@@ -457,9 +464,10 @@ Phase 0 remains **In Progress**. Final/business application implementation remai
 - DEC-002 — Backend Language / Application Framework: **APPROVED / DECISION COMPLETE**; PHP + Laravel with Modular Monolith First + Clean Architecture and framework-independent Domain/Application; ADR-001 Accepted after reconciliation; no implementation authority granted.
 - DEC-003 — Frontend / PWA Stack: **APPROVED / DECISION COMPLETE**; Vue 3 + Inertia + Vite with TypeScript-first, Modern Monolith Web Delivery + Explicit API Boundaries, local-first state, and bounded PWA direction; ADR-002 Accepted after reconciliation; no implementation authority granted.
 - DEC-004 — Android Approach: **APPROVED / DECISION COMPLETE**; Hybrid Staged Approach with Native Android using Kotlin + Jetpack Compose, PWA complementarity, explicit API/device boundaries, DEC-006 authentication boundary, DEC-008 offline boundary, and no implementation authority granted.
+- DEC-005 — Database Engine and Physical Tenancy Model: **APPROVED / DECISION COMPLETE**; MySQL Server, supported LTS-family boundary, shared database/shared schema default, bounded hybrid evolution, Application-authoritative tenant authorization, reconciled ADR-003, and no database/schema/SQL/migration implementation authority granted.
 - Phase 0 remains **In Progress**.
 - Sprint 14 remains **Not Authorized**.
 - Production readiness remains **NO-GO**.
-- No final/business/production implementation, Android project/source, package/dependency installation, deployment, release, SQL execution, migration execution, or production database modification is authorized by GOV-051, DEC-000, DEC-001, DEC-002, DEC-003, or DEC-004.
+- No final/business/production implementation, Android project/source, database/schema/SQL/migration implementation, package/dependency installation, deployment, release, SQL execution, migration execution, or production database modification is authorized by GOV-051, DEC-000, DEC-001, DEC-002, DEC-003, DEC-004, or DEC-005.
 
 Attribution: Lab | zefry
