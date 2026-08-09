@@ -428,7 +428,7 @@ The PR #30 technical merge does not ratify PR #29, PR #28, PR #27, PR #26, or PR
 
 ## PR #31 post-merge governance recurrence
 
-PR #31 was created from original base `54bc51a7a150394748dcc5f6a2fb8e376206feba` at exact head `10b5179b16c104e1877153b066e96a937ece9c9b`. Its body required the PR to remain draft, but it was changed from draft and technically merged as `67059e563de26cee26fd64cf9e7d5c4436ffc6`.
+PR #31 was created from original base `54bc51a7a150394748dcc5f6a2fb8e376206feba` at exact head `10b5179b16c104e1877153b066e96a937ece9c9b`. Its body required the PR to remain draft, but it was changed from draft and technically merged as `67059e563de26cee26cefd64cf9e7d5c4436ffc6`.
 
 A repository-native operational authority comment was present on PR #31 and explicitly authorized current-main verification, corrective branch creation, the three corrective Markdown changes, adding GOV-039 as Review, draft PR creation, the authority comment, and read-only checks. That authority explicitly excluded draft-to-ready transition, merge or auto-merge, approval review, ADR acceptance, Phase 0 preview exit, source-code implementation, Issue #23 state change, hosting-evidence completion, governance-task completion, ratification, release, deployment, and status promotion.
 
