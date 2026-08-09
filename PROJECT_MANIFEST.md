@@ -49,6 +49,8 @@ Product Owner kemudian memberikan substantive DEC-000 Product Vision and Decisio
 
 Product Owner kemudian memberikan substantive DEC-001 MVP Scope and Non-Scope decision yang **APPROVED** pada decision baseline `17f156b9861972b4924a5ed01bfabd5a1a79461a` dan verified tree `33241c18a1b7da2efc7dd2889c13c25c6e8526d5`. DEC-001 menetapkan **POS CORE TRANSACTION & OUTLET OPERATIONS** sebagai first bounded MVP delivery slice dengan actor, journey, dependency, explicit non-scope, outcome, guardrail, dan open-item boundary yang direkam di `docs/handbook/DEC_001_DECISION_RECORD.md`. DEC-001 tidak memberi Sprint 14, application/business implementation, SQL/schema/migration, production database, deployment, release, ADR acceptance, JRN resolution, atau production-readiness authority.
 
+Product Owner kemudian memberikan substantive DEC-002 Backend Language / Application Framework decision yang **APPROVED** pada decision baseline `504b10be44d45dfcfec9b6cfed4f72ed5748b564` dan verified tree `e4622a45f9f298b95358b3d662be3cd48607e4d9`. DEC-002 menetapkan PHP sebagai backend language, Laravel sebagai application framework, Modular Monolith First + Clean Architecture sebagai architecture direction, Domain/Application tetap framework-independent, dan framework berperan sebagai delivery/composition/infrastructure. Keputusan direkam di `docs/handbook/DEC_002_DECISION_RECORD.md` dan direkonsiliasi melalui ADR-001 tanpa memberi implementation, dependency-change, Sprint 14, deployment, release, atau production-readiness authority.
+
 ## Current delivery gate
 
 | Item | Status | Gate |
@@ -63,6 +65,7 @@ Product Owner kemudian memberikan substantive DEC-001 MVP Scope and Non-Scope de
 | GOV-051 Enterprise Vision substantive decision | Approved / Decision Complete | Product Owner APPROVED `Enterprise Intelligent Business Management Platform` on verified baseline `762149757e4bc1fa79cc16bc4761f4147be0f7ea`; approval is product direction only, not implementation authority |
 | DEC-000 Product Vision and Decision Rights | Approved / Decision Complete | Product Owner APPROVED D-000-01 through D-000-06 on baseline `792b2dc30636bc53baa7d66b43cf2dab4a348dd4`; `docs/handbook/DEC_000_DECISION_RECORD.md`; GD-003 Approved within DEC-000 boundary only |
 | DEC-001 MVP Scope and Non-Scope | Approved / Decision Complete | Product Owner APPROVED **POS CORE TRANSACTION & OUTLET OPERATIONS** on baseline `17f156b9861972b4924a5ed01bfabd5a1a79461a`; `docs/handbook/DEC_001_DECISION_RECORD.md`; no implementation authority |
+| DEC-002 Backend Language / Application Framework | Approved / Decision Complete | Product Owner APPROVED PHP + Laravel on baseline `504b10be44d45dfcfec9b6cfed4f72ed5748b564`; `docs/handbook/DEC_002_DECISION_RECORD.md`; ADR-001 Accepted after reconciliation; no implementation authority |
 | Final/business application implementation | Blocked | Tidak ada authority untuk implementasi business/final/production application baru |
 | Sprint 14 | Not Authorized | Memerlukan Product Owner authority terpisah |
 | Production readiness | NO-GO | Tidak ada deployment, release, atau production-migration authority |
@@ -214,7 +217,7 @@ Perpindahan stage tidak boleh mengubah domain atau business logic.
 
 | ID | Keputusan | Status | Dokumen pemilik |
 | --- | --- | --- | --- |
-| TD-001 | Bahasa dan framework backend | Under Review | ADR |
+| TD-001 | Bahasa dan framework backend | Approved — DEC-002 | `docs/handbook/DEC_002_DECISION_RECORD.md`; `docs/adr/ADR-001-technical-preview-backend.md` |
 | TD-002 | Framework web frontend | Under Review | ADR |
 | TD-003 | Android native stack | Under Review | ADR |
 | TD-004 | Relational database engine | Under Review | ADR / DATABASE.md |
@@ -224,7 +227,7 @@ Perpindahan stage tidak boleh mengubah domain atau business logic.
 | TD-008 | Payment gateway strategy | Under Review | ADR |
 | TD-009 | AI provider and data boundary | Under Review | SECURITY.md / ADR |
 
-Tidak ada framework atau vendor yang dianggap dipilih sebelum ADR berstatus Accepted.
+No framework or vendor is selected merely because it appears in historical candidate material. PHP/Laravel is binding only through the explicit Product Owner substantive DEC-002 decision and Accepted ADR-001 within that exact boundary.
 
 ## Environment classes
 
@@ -258,6 +261,8 @@ Tidak ada framework atau vendor yang dianggap dipilih sebelum ADR berstatus Acce
 | `docs/handbook/PRODUCT_VISION_AND_DECISION_RIGHTS.md` | Approved Product Vision and Decision Rights through DEC-000; no implementation authority implied |
 | `docs/handbook/DEC_000_DECISION_RECORD.md` | DEC-000 substantive Product Owner decision provenance, dispositions, and boundaries |
 | `docs/handbook/DEC_001_DECISION_RECORD.md` | DEC-001 substantive Product Owner MVP scope/non-scope decision provenance, approved bounded slice, deferred boundaries, and no-implementation authority |
+| `docs/handbook/DEC_002_DECISION_RECORD.md` | DEC-002 substantive Product Owner backend language/application framework decision provenance, approved PHP/Laravel boundary, and no-implementation authority |
+| `docs/adr/ADR-001-technical-preview-backend.md` | Accepted representation of DEC-002 with preserved Technical Preview provenance and framework-independence guardrails |
 | API_SPEC.md | Governance API |
 | DATABASE.md | Governance data dan skema |
 | SECURITY.md | Security baseline |
@@ -291,13 +296,15 @@ Product Owner kemudian memberikan substantive DEC-000 Product Vision and Decisio
 
 Product Owner kemudian memberikan substantive DEC-001 MVP Scope and Non-Scope decision yang **APPROVED** pada baseline `17f156b9861972b4924a5ed01bfabd5a1a79461a` dan verified tree `33241c18a1b7da2efc7dd2889c13c25c6e8526d5`. Keputusan tersebut menyetujui first bounded MVP slice **POS CORE TRANSACTION & OUTLET OPERATIONS** dan seluruh actor/journey/dependency/non-scope/outcome boundary pada `docs/handbook/DEC_001_DECISION_RECORD.md`, sambil mempertahankan GD-005/GD-006/GD-007 Proposed, JRN-003/JRN-013 Unresolved, Phase 0 In Progress, Sprint 14 Not Authorized, production readiness NO-GO, dan tanpa application/business implementation, SQL/schema/migration, production database, deployment, release, ADR acceptance, atau DEC-002 through DEC-012 approval authority.
 
+Product Owner kemudian memberikan substantive DEC-002 Backend Language / Application Framework decision yang **APPROVED** pada baseline `504b10be44d45dfcfec9b6cfed4f72ed5748b564` dan verified tree `e4622a45f9f298b95358b3d662be3cd48607e4d9`. Keputusan tersebut menyetujui PHP, Laravel, Modular Monolith First + Clean Architecture, framework-independent Domain/Application, dan framework role delivery/composition/infrastructure. DEC-002 direkam di `docs/handbook/DEC_002_DECISION_RECORD.md`, ADR-001 direframe dan Accepted sebagai representasinya, sementara exact runtime/framework version, dependency installation, DEC-003 through DEC-012, Sprint 14, application/business implementation, SQL/schema/migration, production database, deployment, release, dan production readiness tetap tidak diotorisasi.
+
 ## Technical Preview v0.0.1 decision package
 
 Issue #23 records the accelerated T+5 planning scope and Product Owner selections. PR #24 was technically merged before this canonical synchronization; that merge does not accept an ADR, approve Phase 0 exit, or grant source-code authority.
 
 | Decision package item | Candidate selection | Status | Evidence/gate |
 | --- | --- | --- | --- |
-| Backend | B1 Laravel/PHP modular monolith | Proposed | ADR-001; exact-head approval pending |
+| Backend | B1 Laravel/PHP modular monolith | Accepted via DEC-002 | Historical Technical Preview provenance; substantive authority is DEC-002 and reconciled ADR-001 |
 | Frontend/PWA | F1 Vue 3 + Inertia + Vite | Proposed | ADR-002; exact-head approval pending |
 | Database/tenancy | D1 MySQL-compatible shared schema | Proposed | ADR-003; engine/version evidence pending |
 | Authentication | A1 first-party session and privileged TOTP | Proposed | ADR-004; JRN-003 remains unresolved |
@@ -311,7 +318,7 @@ Issue #23 records the accelerated T+5 planning scope and Product Owner selection
 
 Phase 0 remains **In Progress**. Final/business application implementation remains **Blocked**. Phase 0 preview exit remains **Not Ready**. GD-007 and Domain Event Storming remain **Proposed**. JRN-003 and JRN-013 remain unresolved blockers. Missing hosting facts must not be inferred.
 
-Published bounded Platform Foundation work through Sprint 12 and Sprint 13 is preserved separately from this unresolved Technical Preview decision package and does not promote any item in this package.
+Published bounded Platform Foundation work through Sprint 12 and Sprint 13 is preserved separately from this unresolved Technical Preview decision package and does not promote any item in this package except where a later explicit substantive decision, such as DEC-002, independently changes that item's status.
 
 ## PR #25 and Issue #23 governance recurrence
 
@@ -373,7 +380,7 @@ A repository-native operational authority comment was present on PR #30 and expl
 
 Read-only evidence for the PR #30 exact head shows no separate exact-head ready authority, no separate exact-head merge authority, no review submission, no review thread, no published commit status, or GitHub Actions workflow run. The operational authority comment and local/static validation statements do not supply lifecycle authority.
 
-The Product Owner issued a post-merge exact-head content decision approving only the accuracy of the three-file corrective content on PR #30 exact head. That decision does not provide retrospective lifecycle authority and does not ratify the draft-to-ready transition or merge of PR #30.
+The Product Owner issued a post-merge exact-head decision approving only the accuracy of the three-file corrective content on PR #30 exact head. That decision does not provide retrospective lifecycle authority and does not ratify the draft-to-ready transition or merge of PR #30.
 
 The PR #30 technical merge does not ratify PR #29, PR #28, PR #27, PR #26, or PR #25, validate or complete the closure of Issue #23, accept ADR-001 through ADR-007, approve Phase 0 preview exit, grant source-code authority, complete GOV-034, GOV-035, GOV-036, GOV-037, GOV-038, or GOV-039, or provide substantive approval or completion evidence. Phase 0 remains **In Progress**. Final/business application implementation remains **Blocked**. Phase 0 preview exit remains **Not Ready**. P1 remains conditional and **Unverified**. ADR-001 through ADR-007, GD-007, PAY-1, OFF-1, TEN-1, REC-1, SLO-1, and DATA-1 remain **Proposed** selections or boundaries. GOV-034, GOV-035, GOV-036, GOV-037, GOV-038, and GOV-039 remain **Review**. JRN-003 and JRN-013 remain unresolved. Hosting evidence remains Pending, Not supplied, or Unverified.
 
@@ -385,7 +392,7 @@ A repository-native operational authority comment was present on PR #31 and expl
 
 Read-only evidence for the PR #31 exact head shows no separate exact-head ready authority, no separate exact-head merge authority, no review submission, no review thread, no published commit status, or GitHub Actions workflow run. The operational authority comment and local/static validation statements do not supply lifecycle authority.
 
-The Product Owner issued a post-merge exact-head content decision approving only the accuracy of the three-file corrective content on PR #31 exact head. That decision does not provide retrospective lifecycle authority and does not ratify the draft-to-ready transition or merge of PR #31.
+The Product Owner issued a post-merge exact-head decision approving only the accuracy of the three-file corrective content on PR #31 exact head. That decision does not provide retrospective lifecycle authority and does not ratify the draft-to-ready transition or merge of PR #31.
 
 The PR #31 technical merge does not ratify PR #30, PR #29, PR #28, PR #27, PR #26, or PR #25, validate or complete the closure of Issue #23, accept ADR-001 through ADR-007, approve Phase 0 preview exit, grant source-code authority, complete GOV-034, GOV-035, GOV-036, GOV-037, GOV-038, GOV-039, or GOV-040, or provide substantive approval or completion evidence. Phase 0 remains **In Progress**. Final/business application implementation remains **Blocked**. Phase 0 preview exit remains **Not Ready**. P1 remains conditional and **Unverified**. ADR-001 through ADR-007, GD-007, PAY-1, OFF-1, TEN-1, REC-1, SLO-1, and DATA-1 remain **Proposed** selections or boundaries. GOV-034, GOV-035, GOV-036, GOV-037, GOV-038, GOV-039, and GOV-040 remain **Review**. JRN-003 and JRN-013 remain unresolved. Hosting evidence remains Pending, Not supplied, or Unverified.
 
@@ -393,11 +400,11 @@ The PR #31 technical merge does not ratify PR #30, PR #29, PR #28, PR #27, PR #2
 
 PR #32 was created from original base `67059e563de26cee26fd64cf9e7d5c4436ffc6` at exact head `beb7b35aa718a746ad5dad9d5574c2293bd0ab40`. Its body required the PR to remain draft, but it was changed from draft and technically merged as `d1a6160b37250bda691e906fc4ee06e37dd0c847`.
 
-A repository-native operational authority comment was present on PR #32 and explicitly authorized current-main verification, corrective branch creation, the three corrective Markdown changes, adding GOV-040 as Review, draft PR creation, the authority comment, and read-only checks. That authority explicitly excluded draft-to-ready transition, merge or auto-merge, approval review, branch-protection or ruleset changes, ADR acceptance, Phase 0 exit, source-code implementation, Issue #23 state change, hosting-evidence completion, governance-task completion, ratification, release, deployment, and status promotion.
+A repository-native operational authority comment was present on PR #32 and explicitly authorized current-main verification, corrective branch creation, the three corrective Markdown changes, adding GOV-040 as Review, draft PR creation, the authority comment, and read-only checks. That authority explicitly excluded draft-to-ready transition, merge or auto-merge, approval review and branch-protection/ruleset changes, ADR acceptance, Phase 0 exit, source-code implementation, Issue #23 state change, hosting-evidence completion, governance-task completion, ratification, release, deployment, and status promotion.
 
 Read-only evidence for the PR #32 exact head shows no separate exact-head ready authority, no separate exact-head merge authority, no review submission, no review thread, no published commit status, or GitHub Actions workflow run. The operational authority comment and local/static validation statements do not supply lifecycle authority.
 
-The Product Owner issued a post-merge exact-head content decision approving only the accuracy of the three-file corrective content on PR #32 exact head. That decision does not provide retrospective lifecycle authority and does not ratify the draft-to-ready transition or merge of PR #32.
+The Product Owner issued a post-merge exact-head decision approving only the accuracy of the three-file corrective content on PR #32 exact head. That decision does not provide retrospective lifecycle authority and does not ratify the draft-to-ready transition or merge of PR #32.
 
 The PR #32 technical merge does not ratify PR #31, PR #30, PR #29, PR #28, PR #27, PR #26, or PR #25, validate or complete the closure of Issue #23, accept ADR-001 through ADR-007, approve Phase 0 preview exit, grant source-code authority, complete GOV-034, GOV-035, GOV-036, GOV-037, GOV-038, GOV-039, GOV-040, or GOV-041, or provide substantive approval or completion evidence. Phase 0 remains **In Progress**. Final/business application implementation remains **Blocked**. Phase 0 preview exit remains **Not Ready**. P1 remains conditional and **Unverified**. ADR-001 through ADR-007, GD-007, PAY-1, OFF-1, TEN-1, REC-1, SLO-1, and DATA-1 remain **Proposed** selections or boundaries. GOV-034, GOV-035, GOV-036, GOV-037, GOV-038, GOV-039, GOV-040, and GOV-041 remain **Review**. JRN-003 and JRN-013 remain unresolved. Hosting evidence remains Pending, Not supplied, or Unverified.
 
@@ -433,9 +440,10 @@ Phase 0 remains **In Progress**. Final/business application implementation remai
 - A-10 — Product-name capitalization inconsistency: **Resolved for current/future-facing canonical material through PR #69**; canonical form is `oneQay` and immutable historical evidence remains preserved.
 - DEC-000 — Product Vision and Decision Rights: **APPROVED / DECISION COMPLETE**; GD-003 Approved within DEC-000 boundary; PV-002 through PV-006 remain Open / Not Resolved.
 - DEC-001 — MVP Scope and Non-Scope: **APPROVED / DECISION COMPLETE**; first bounded delivery slice is **POS CORE TRANSACTION & OUTLET OPERATIONS**; no implementation authority granted.
+- DEC-002 — Backend Language / Application Framework: **APPROVED / DECISION COMPLETE**; PHP + Laravel with Modular Monolith First + Clean Architecture and framework-independent Domain/Application; ADR-001 Accepted after reconciliation; no implementation authority granted.
 - Phase 0 remains **In Progress**.
 - Sprint 14 remains **Not Authorized**.
 - Production readiness remains **NO-GO**.
-- No final/business/production implementation, deployment, release, SQL execution, migration execution, or production database modification is authorized by GOV-051, DEC-000, or DEC-001.
+- No final/business/production implementation, deployment, release, SQL execution, migration execution, or production database modification is authorized by GOV-051, DEC-000, DEC-001, or DEC-002.
 
 Attribution: Lab | zefry
