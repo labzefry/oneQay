@@ -53,6 +53,8 @@ Product Owner kemudian memberikan substantive DEC-002 Backend Language / Applica
 
 Product Owner kemudian memberikan substantive DEC-003 Frontend / PWA Stack decision yang **APPROVED** pada decision baseline `dcb7e3f8de890530a00a0dd4fd310bc10762c72f` dan verified tree `b78d1f1452469a8ba856092e647bef92410f2517`. DEC-003 menetapkan Vue 3, Vue Composition API, TypeScript-first, Inertia untuk first-party authenticated Web/PWA delivery, Vite, local-first state dengan Pinia secara bounded, Modern Monolith Web Delivery + Explicit API Boundaries, dan PWA foundation dengan service-worker/cache security boundary. Keputusan direkam di `docs/handbook/DEC_003_DECISION_RECORD.md` dan direkonsiliasi melalui ADR-002 tanpa memberi package/dependency installation, frontend/backend implementation, Sprint 14, deployment, release, atau production-readiness authority.
 
+Product Owner kemudian memberikan substantive DEC-004 Android Approach decision yang **APPROVED** pada decision baseline `97b2e5066118af2b3e9467afc71e84dce228eb38` dan verified tree `2f979948184f475b52cf87b2d105c56364ebe883`. DEC-004 menetapkan **Hybrid Staged Approach**, Native Android menggunakan Kotlin, Jetpack Compose, PWA sebagai preferred general mobile-capable channel, explicit API/mobile boundary, bounded native device adapters, DEC-006 authentication boundary, DEC-008 offline boundary, minimal tenant/session-scoped local state, dan distribution compatibility direction. Keputusan direkam di `docs/handbook/DEC_004_DECISION_RECORD.md` dan direpresentasikan melalui ADR-008 tanpa memberi Android project/source, Gradle/dependency, API implementation, Sprint 14, deployment, release, atau production authority.
+
 ## Current delivery gate
 
 | Item | Status | Gate |
@@ -69,6 +71,7 @@ Product Owner kemudian memberikan substantive DEC-003 Frontend / PWA Stack decis
 | DEC-001 MVP Scope and Non-Scope | Approved / Decision Complete | Product Owner APPROVED **POS CORE TRANSACTION & OUTLET OPERATIONS** on baseline `17f156b9861972b4924a5ed01bfabd5a1a79461a`; `docs/handbook/DEC_001_DECISION_RECORD.md`; no implementation authority |
 | DEC-002 Backend Language / Application Framework | Approved / Decision Complete | Product Owner APPROVED PHP + Laravel on baseline `504b10be44d45dfcfec9b6cfed4f72ed5748b564`; `docs/handbook/DEC_002_DECISION_RECORD.md`; ADR-001 Accepted after reconciliation; no implementation authority |
 | DEC-003 Frontend / PWA Stack | Approved / Decision Complete | Product Owner APPROVED Vue 3 + Inertia + Vite with TypeScript-first, explicit API/mobile boundaries, local-first state, and bounded PWA direction on baseline `dcb7e3f8de890530a00a0dd4fd310bc10762c72f`; `docs/handbook/DEC_003_DECISION_RECORD.md`; ADR-002 Accepted after reconciliation; no implementation authority |
+| DEC-004 Android Approach | Approved / Decision Complete | Product Owner APPROVED Hybrid Staged Approach with Kotlin + Jetpack Compose on baseline `97b2e5066118af2b3e9467afc71e84dce228eb38`; `docs/handbook/DEC_004_DECISION_RECORD.md`; ADR-008; no implementation authority |
 | Final/business application implementation | Blocked | Tidak ada authority untuk implementasi business/final/production application baru |
 | Sprint 14 | Not Authorized | Memerlukan Product Owner authority terpisah |
 | Production readiness | NO-GO | Tidak ada deployment, release, atau production-migration authority |
@@ -150,7 +153,7 @@ Audit read-only PR #19 kembali menunjukkan tidak adanya review submission, appro
 | --- | --- | --- |
 | Web Application | Operasional utama | Approved |
 | Progressive Web App | Akses mobile dan offline-terkendali | Approved |
-| Android Native | Kapabilitas perangkat dan pengalaman native | Proposed |
+| Android Native | Kapabilitas perangkat dan pengalaman native | Approved — DEC-004 bounded complementary delivery direction; implementation not authorized |
 | REST API | Kontrak internal dan integrasi | Approved |
 | Public API | Ekosistem eksternal | Deferred |
 | Admin Dashboard | Administrasi platform dan tenant | Approved |
@@ -222,7 +225,7 @@ Perpindahan stage tidak boleh mengubah domain atau business logic.
 | --- | --- | --- | --- |
 | TD-001 | Bahasa dan framework backend | Approved — DEC-002 | `docs/handbook/DEC_002_DECISION_RECORD.md`; `docs/adr/ADR-001-technical-preview-backend.md` |
 | TD-002 | Framework web frontend | Approved — DEC-003 | `docs/handbook/DEC_003_DECISION_RECORD.md`; `docs/adr/ADR-002-technical-preview-frontend-pwa.md` |
-| TD-003 | Android native stack | Under Review | ADR |
+| TD-003 | Android native stack | Approved — DEC-004 | `docs/handbook/DEC_004_DECISION_RECORD.md`; `docs/adr/ADR-008-android-delivery-approach.md` |
 | TD-004 | Relational database engine | Under Review | ADR / DATABASE.md |
 | TD-005 | Cache dan queue technology | Deferred | ADR |
 | TD-006 | Authentication protocol/provider | Under Review | SECURITY.md / ADR |
@@ -230,7 +233,7 @@ Perpindahan stage tidak boleh mengubah domain atau business logic.
 | TD-008 | Payment gateway strategy | Under Review | ADR |
 | TD-009 | AI provider and data boundary | Under Review | SECURITY.md / ADR |
 
-No framework or vendor is selected merely because it appears in historical candidate material. PHP/Laravel is binding only through the explicit Product Owner substantive DEC-002 decision and Accepted ADR-001 within that exact boundary. Vue 3/Inertia/Vite is binding only through the explicit Product Owner substantive DEC-003 decision and Accepted ADR-002 within that exact boundary.
+No framework or vendor is selected merely because it appears in historical candidate material. PHP/Laravel is binding only through the explicit Product Owner substantive DEC-002 decision and Accepted ADR-001 within that exact boundary. Vue 3/Inertia/Vite is binding only through the explicit Product Owner substantive DEC-003 decision and Accepted ADR-002 within that exact boundary. Kotlin/Jetpack Compose and the Hybrid Staged Android direction are binding only through the explicit Product Owner substantive DEC-004 decision and ADR-008 within that exact boundary; this does not create Android implementation authority.
 
 ## Environment classes
 
@@ -266,8 +269,10 @@ No framework or vendor is selected merely because it appears in historical candi
 | `docs/handbook/DEC_001_DECISION_RECORD.md` | DEC-001 substantive Product Owner MVP scope/non-scope decision provenance, approved bounded slice, deferred boundaries, and no-implementation authority |
 | `docs/handbook/DEC_002_DECISION_RECORD.md` | DEC-002 substantive Product Owner backend language/application framework decision provenance, approved PHP/Laravel boundary, and no-implementation authority |
 | `docs/handbook/DEC_003_DECISION_RECORD.md` | DEC-003 substantive Product Owner frontend/Web-PWA decision provenance, approved Vue/Inertia/Vite boundary, explicit API/mobile independence, PWA guardrails, and no-implementation authority |
+| `docs/handbook/DEC_004_DECISION_RECORD.md` | DEC-004 substantive Product Owner Android delivery decision provenance, Hybrid Staged Approach, Kotlin/Jetpack Compose direction, explicit API/device/offline boundaries, and no-implementation authority |
 | `docs/adr/ADR-001-technical-preview-backend.md` | Accepted representation of DEC-002 with preserved Technical Preview provenance and framework-independence guardrails |
 | `docs/adr/ADR-002-technical-preview-frontend-pwa.md` | Accepted representation of DEC-003 with preserved F1 Technical Preview provenance, explicit API/mobile boundaries, PWA/offline guardrails, and implementation-authority separation |
+| `docs/adr/ADR-008-android-delivery-approach.md` | Accepted representation of DEC-004 after successful publication; Hybrid Staged Android direction with Kotlin/Jetpack Compose, PWA complementarity, DEC-006/DEC-008 boundaries, and no-implementation authority |
 | API_SPEC.md | Governance API |
 | DATABASE.md | Governance data dan skema |
 | SECURITY.md | Security baseline |
@@ -304,6 +309,8 @@ Product Owner kemudian memberikan substantive DEC-001 MVP Scope and Non-Scope de
 Product Owner kemudian memberikan substantive DEC-002 Backend Language / Application Framework decision yang **APPROVED** pada baseline `504b10be44d45dfcfec9b6cfed4f72ed5748b564` dan verified tree `e4622a45f9f298b95358b3d662be3cd48607e4d9`. Keputusan tersebut menyetujui PHP, Laravel, Modular Monolith First + Clean Architecture, framework-independent Domain/Application, dan framework role delivery/composition/infrastructure. DEC-002 direkam di `docs/handbook/DEC_002_DECISION_RECORD.md`, ADR-001 direframe dan Accepted sebagai representasinya, sementara exact runtime/framework version, dependency installation, DEC-003 through DEC-012, Sprint 14, application/business implementation, SQL/schema/migration, production database, deployment, release, dan production readiness tetap tidak diotorisasi.
 
 Product Owner kemudian memberikan substantive DEC-003 Frontend / PWA Stack decision yang **APPROVED** pada baseline `dcb7e3f8de890530a00a0dd4fd310bc10762c72f` dan verified tree `b78d1f1452469a8ba856092e647bef92410f2517`. Keputusan tersebut menyetujui Vue 3, Vue Composition API, TypeScript-first, Inertia sebagai first-party authenticated Web/PWA delivery integration, Vite, local-first state dengan Pinia secara bounded, Modern Monolith Web Delivery + Explicit API Boundaries, UI token-first/accessibility/locale/tenant direction, dan PWA foundation dengan explicit service-worker/cache security boundary. DEC-003 direkam di `docs/handbook/DEC_003_DECISION_RECORD.md`, ADR-002 direframe dan Accepted sebagai representasinya, sementara exact package versions, package manager, `package.json`, lockfile, dependency installation, frontend/backend implementation, offline transaction semantics (DEC-008), Sprint 14, deployment, release, dan production readiness tetap tidak diotorisasi.
+
+Product Owner kemudian memberikan substantive DEC-004 Android Approach decision yang **APPROVED** pada baseline `97b2e5066118af2b3e9467afc71e84dce228eb38` dan verified tree `2f979948184f475b52cf87b2d105c56364ebe883`. Keputusan tersebut menyetujui Hybrid Staged Approach, Native Android dengan Kotlin, Jetpack Compose, PWA complementarity, explicit application/API contracts, native device adapters sebagai Interface/Infrastructure concern, DEC-006 ownership untuk authentication/session, DEC-008 ownership untuk offline semantics, tenant/session-scoped non-authoritative local state, dan Play/enterprise distribution compatibility direction. DEC-004 direkam di `docs/handbook/DEC_004_DECISION_RECORD.md` dan direpresentasikan melalui `docs/adr/ADR-008-android-delivery-approach.md`, sementara Android project/source, Gradle/dependency installation, exact API/auth/storage details, Sprint 14, deployment, release, dan production authority tetap tidak diotorisasi.
 
 ## Technical Preview v0.0.1 decision package
 
@@ -449,9 +456,10 @@ Phase 0 remains **In Progress**. Final/business application implementation remai
 - DEC-001 — MVP Scope and Non-Scope: **APPROVED / DECISION COMPLETE**; first bounded delivery slice is **POS CORE TRANSACTION & OUTLET OPERATIONS**; no implementation authority granted.
 - DEC-002 — Backend Language / Application Framework: **APPROVED / DECISION COMPLETE**; PHP + Laravel with Modular Monolith First + Clean Architecture and framework-independent Domain/Application; ADR-001 Accepted after reconciliation; no implementation authority granted.
 - DEC-003 — Frontend / PWA Stack: **APPROVED / DECISION COMPLETE**; Vue 3 + Inertia + Vite with TypeScript-first, Modern Monolith Web Delivery + Explicit API Boundaries, local-first state, and bounded PWA direction; ADR-002 Accepted after reconciliation; no implementation authority granted.
+- DEC-004 — Android Approach: **APPROVED / DECISION COMPLETE**; Hybrid Staged Approach with Native Android using Kotlin + Jetpack Compose, PWA complementarity, explicit API/device boundaries, DEC-006 authentication boundary, DEC-008 offline boundary, and no implementation authority granted.
 - Phase 0 remains **In Progress**.
 - Sprint 14 remains **Not Authorized**.
 - Production readiness remains **NO-GO**.
-- No final/business/production implementation, package/dependency installation, deployment, release, SQL execution, migration execution, or production database modification is authorized by GOV-051, DEC-000, DEC-001, DEC-002, or DEC-003.
+- No final/business/production implementation, Android project/source, package/dependency installation, deployment, release, SQL execution, migration execution, or production database modification is authorized by GOV-051, DEC-000, DEC-001, DEC-002, DEC-003, or DEC-004.
 
 Attribution: Lab | zefry
