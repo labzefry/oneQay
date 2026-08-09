@@ -95,7 +95,7 @@ Published bounded Platform Foundation source through Sprint 13 is an existing re
 | DEC-001 | MVP scope and non-scope | Done | Product Owner substantive decision APPROVED on baseline `17f156b9861972b4924a5ed01bfabd5a1a79461a`; `docs/handbook/DEC_001_DECISION_RECORD.md`; implementation authority NOT GRANTED |
 | DEC-002 | Backend language/framework | Done | Product Owner substantive decision APPROVED on baseline `504b10be44d45dfcfec9b6cfed4f72ed5748b564`; PHP + Laravel; `docs/handbook/DEC_002_DECISION_RECORD.md`; ADR-001 Accepted after reconciliation; implementation/dependency authority NOT GRANTED |
 | DEC-003 | Frontend/PWA stack | Done | Product Owner substantive decision APPROVED on baseline `dcb7e3f8de890530a00a0dd4fd310bc10762c72f`; Vue 3 + Inertia + Vite with TypeScript-first, explicit API/mobile boundaries, bounded PWA direction; `docs/handbook/DEC_003_DECISION_RECORD.md`; ADR-002 Accepted after reconciliation; implementation/dependency authority NOT GRANTED |
-| DEC-004 | Android approach | Backlog | ADR |
+| DEC-004 | Android approach | Done | Product Owner substantive DEC-004 decision APPROVED on baseline `97b2e5066118af2b3e9467afc71e84dce228eb38`; Hybrid Staged Approach; Native Android with Kotlin + Jetpack Compose; `docs/handbook/DEC_004_DECISION_RECORD.md`; `docs/adr/ADR-008-android-delivery-approach.md`; implementation/dependency authority NOT GRANTED |
 | DEC-005 | Database engine and physical tenancy model | Ready | ADR-003 |
 | DEC-006 | Authentication/MFA/session architecture | Ready | ADR-004 |
 | DEC-007 | Payment provider and compliance boundary | Ready | ADR-005 |
@@ -105,7 +105,7 @@ Published bounded Platform Foundation source through Sprint 13 is an existing re
 | DEC-011 | Data retention, privacy, and jurisdiction | Ready | Policy/ADR |
 | DEC-012 | RPO/RTO and support objectives | Backlog | Operational policy |
 
-DEC-000 through DEC-003 completion do not approve, accept, start, or implement DEC-004 through DEC-012. DEC-003 approves only the frontend/Web-PWA technology boundary recorded in its decision record; it does not install packages, create `package.json` or a lockfile, implement Vue/Inertia/Vite/Pinia/PWA/service-worker source, start Sprint 14, or grant application/business implementation authority.
+DEC-000 through DEC-004 completion do not approve, accept, start, or implement DEC-005 through DEC-012. DEC-004 approves only the bounded Android delivery architecture direction recorded in its decision record; it does not create Android project files, Kotlin/Compose source, Gradle configuration, package/dependency installation, backend/API implementation, offline transaction semantics, Sprint 14, deployment, release, or production authority.
 
 ## Phase 0 discovery backlog
 
@@ -123,7 +123,7 @@ DEC-000 through DEC-003 completion do not approve, accept, start, or implement D
 
 ## Phase 1 candidate backlog
 
-Items ini tidak memperoleh source-code authority baru dari M6, GOV-051, DEC-000, DEC-001, DEC-002, atau DEC-003. Published bounded Platform Foundation through Sprint 13 must be preserved, tetapi pekerjaan baru untuk final/business application atau Sprint 14 tetap membutuhkan Product Owner authority dan gate yang berlaku.
+Items ini tidak memperoleh source-code authority baru dari M6, GOV-051, DEC-000, DEC-001, DEC-002, DEC-003, atau DEC-004. Published bounded Platform Foundation through Sprint 13 must be preserved, tetapi pekerjaan baru untuk final/business application atau Sprint 14 tetap membutuhkan Product Owner authority dan gate yang berlaku.
 
 - PLT-001 repository/application skeleton;
 - PLT-002 tenant context and isolation enforcement;
