@@ -2,7 +2,22 @@
 
 ## Goals
 
-Database harus menjaga integritas transaksi, isolasi tenant, auditability, compatibility migration, backup/restore, dan performance predictable. Database engine belum dipilih; aturan ini bersifat vendor-neutral sampai ADR diterima.
+Database harus menjaga integritas transaksi, isolasi tenant, auditability, compatibility migration, backup/restore, dan performance predictable. **MySQL Server** adalah canonical relational database engine family melalui substantive DEC-005. Exact MySQL LTS series, minor, patch, runtime, provider, dan configuration tetap separately gated.
+
+## Canonical engine and physical tenancy direction
+
+Substantive DEC-005 menetapkan:
+
+- canonical relational database engine family: **MySQL Server**;
+- version boundary: **supported MySQL LTS family**, dengan exact series/minor/patch deferred;
+- default physical tenancy: **shared database + shared schema + mandatory immutable tenant isolation key**;
+- future stronger physical isolation: bounded hybrid evolution path hanya melalui separate authority dan material evidence;
+- tenant authorization: **Application-authoritative** dengan database integrity/security sebagai defense-in-depth;
+- database/vendor-specific behavior: **Infrastructure concern**;
+- migration/schema evolution: versioned, deterministic, compatible, recoverable, dan reconcilable;
+- recoverability: backup success bukan bukti recoverability tanpa successful restore evidence.
+
+Keputusan ini tidak menetapkan actual schema, SQL, DDL, migration, database configuration, provider, replication topology, atau production implementation.
 
 ## Data ownership
 
@@ -20,7 +35,9 @@ Baseline yang disetujui:
 - query enforcement berada pada repository/data-access boundary;
 - privileged cross-tenant access menggunakan interface terpisah dan audit.
 
-Pilihan physical isolation—shared schema, schema per tenant, atau database per tenant—ditetapkan melalui ADR setelah analisis skala, operasional, compliance, backup/restore, dan biaya.
+Default physical isolation melalui DEC-005 adalah **shared database + shared schema** dengan mandatory tenant identity. Dedicated database atau stronger physical storage boundary hanya merupakan bounded future evolution path untuk requirement enterprise/regulatory/jurisdiction/scale/recovery/security yang separately verified dan separately authorized.
+
+Tenant authorization tetap Application-authoritative. Database constraint dan database-native security mechanism berfungsi sebagai integrity enforcement dan defense-in-depth, bukan pengganti Application authorization ownership.
 
 ## Identifier strategy
 
@@ -46,6 +63,7 @@ Pilihan physical isolation—shared schema, schema per tenant, atau database per
 - Soft delete bukan default; gunakan bila retention dan restore semantics jelas.
 - Status transition dijaga application/domain invariant dan audit.
 - Index dibuat berdasarkan access pattern dan diverifikasi dengan execution plan.
+- MySQL-specific behavior atau optimization tidak boleh menjadi dependency Domain/Application; detail vendor ditempatkan pada Infrastructure boundary.
 
 ## Migration policy
 
@@ -88,7 +106,8 @@ Audit minimum mencatat actor, tenant, action, resource, before/after yang aman, 
 - Backup tenant harus dapat ditemukan dan dipulihkan sesuai isolation model.
 - Restore test dilakukan berkala pada environment terisolasi.
 - Keberhasilan job backup bukan bukti recoverability; hanya restore rehearsal yang lulus.
-- RPO/RTO ditetapkan per capability sebelum production.
+- Shared-schema physical backup tidak otomatis membuktikan tenant-scoped recoverability; tenant recovery memerlukan separately designed and verified procedure.
+- RPO/RTO ditetapkan per capability sebelum production melalui DEC-012.
 
 ## Performance
 
