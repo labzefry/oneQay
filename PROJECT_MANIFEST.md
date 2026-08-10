@@ -512,4 +512,15 @@ Phase 0 remains **In Progress**. Final/business application implementation remai
 - Production readiness remains **NO-GO**.
 - No final/business/production implementation, Android project/source, PWA transactional-offline implementation, database/schema/SQL/migration implementation, authentication implementation, payment/provider/manual-tender implementation, offline transaction/synchronization implementation, local database/queue technology, package/dependency installation, real-money processing, production/customer-data processing, jurisdiction/provider/hosting-region selection, infrastructure provisioning, hosting procurement, deployment, release, SQL execution, migration execution, or production database modification is authorized by GOV-051, DEC-000, DEC-001, DEC-002, DEC-003, DEC-004, DEC-005, DEC-006, DEC-007, DEC-008, DEC-009, or DEC-011.
 
+## DEC-012 canonical recovery and support state
+
+- Status: **APPROVED / DECISION COMPLETE**.
+- Decision baseline: `a7821517a03cf868adf56bfa7d91c878d8c364ac`; verified baseline tree: `aa81d2f071725abc91f2cf9f71a2498832e47cd2`.
+- Direction: **CAPABILITY-TIERED / EVIDENCE-BASED RECOVERY & SUPPORT POLICY**.
+- Final numerical Production RPO, final numerical Production RTO, final numerical Production SLO, and customer-contractual SLA remain **NOT APPROVED / DEFERRED**.
+- Recovery verification remains **EVIDENCE-GATED**; backup success alone is not verified recoverability.
+- Historical REC-1 RPO 24h/RTO 4h and SLO-1 remain Technical Preview provenance only and are not promoted into Production commitments.
+- Canonical record: `docs/handbook/DEC_012_DECISION_RECORD.md`.
+- DEC-012 grants no backup/restore/DR implementation, provider/cloud/region/HA selection, infrastructure provisioning, source/schema/SQL/migration implementation, deployment, release, Production, Phase 0 exit, or Sprint 14 authority; JRN-003/JRN-013 remain unresolved and GD-007 remains Proposed.
+
 Attribution: Lab | zefry
