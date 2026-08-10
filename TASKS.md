@@ -101,11 +101,11 @@ Published bounded Platform Foundation source through Sprint 13 is an existing re
 | DEC-007 | Payment provider and compliance boundary | Done | Product Owner substantive DEC-007 APPROVED on baseline `50955d101c455c6af7356197d9e06d6d76e753bb`; cash-first + configurable manual/external recorded tenders; operator-recorded versus provider-verified evidence separation; provider-abstracted future electronic architecture; provider selection deferred; sale-level payment sufficiency; idempotency/refund/settlement/PCI/jurisdiction boundaries; `docs/handbook/DEC_007_DECISION_RECORD.md`; materially reconciled ADR-005; no payment/provider/schema/SQL/implementation authority |
 | DEC-008 | Offline POS semantics and conflict resolution | Done | Product Owner substantive DEC-008 APPROVED on baseline `21f1b2e938d9f6a42b1dd2ff717c4e049b5119d7`; Staged / Hybrid Offline Architecture; first-MVP online-authoritative transactions; future provisional server-validated offline operations; bounded replay/idempotency/conflict/security/reconciliation semantics; `docs/handbook/DEC_008_DECISION_RECORD.md`; materially reconciled ADR-006; no offline/source/schema/package/implementation authority |
 | DEC-009 | Deployment stage 1 runtime requirements | Done | Product Owner substantive DEC-009 APPROVED on baseline `0fdc0a53403f16fbc6908630ea350af2c0de466b`; Capability-Based Staged / Hybrid Portability Model; P1 cPanel conditional/not selected; P2 managed/hardened VPS/server fallback class; MySQL Server mandatory under DEC-005; Stage-1 Preview environment; `docs/handbook/DEC_009_DECISION_RECORD.md`; materially reconciled ADR-007; no deployment/implementation authority |
-| DEC-010 | Product license and third-party notice policy | Ready | Legal decision |
+| DEC-010 | Product license and third-party notice policy | Done | Product Owner substantive DEC-010 APPROVED on baseline `5cc572675dd7871a3ca841cedf06fbc8ea74f839`; Proprietary / All Rights Reserved product policy; repository visibility/rights separation; external contributions legally gated; dependency-license pre-adoption matrix; NOTICE/SBOM/trademark/plugin/AI/asset boundaries; `docs/handbook/DEC_010_DECISION_RECORD.md`; final legal text remains Legal Review Required; no dependency adoption/implementation/distribution/deployment authority |
 | DEC-011 | Data retention, privacy, and jurisdiction | Ready | Policy/ADR |
 | DEC-012 | RPO/RTO and support objectives | Backlog | Operational policy |
 
-DEC-000 through DEC-009 completion do not approve, accept, start, or implement DEC-010 through DEC-012. DEC-009 approves only the bounded Stage-1 runtime architecture and capability requirements; no infrastructure provisioning, hosting procurement, source/dependency/schema/SQL/migration implementation, deployment, release, Sprint 14, or production authority is created.
+DEC-000 through DEC-010 completion do not approve, accept, start, or implement DEC-011 through DEC-012. DEC-010 approves only bounded product/license governance policy; it does not authorize final lawyer-grade legal text, repository visibility changes, dependency/package adoption, implementation, external distribution, marketplace/plugin launch, deployment, release, Sprint 14, or production.
 
 ## Phase 0 discovery backlog
 
@@ -119,11 +119,11 @@ DEC-000 through DEC-009 completion do not approve, accept, start, or implement D
 | DSC-005 | Threat model critical flows | P0 | DSC-002/004 |
 | DSC-006 | MVP success metrics and SLO proposal | P0 | DEC-001 |
 | DSC-007 | Shared-hosting capability assessment | P0 | Hosting facts |
-| DSC-008 | Vendor and dependency evaluation rubric | P1 | Security/licensing policy |
+| DSC-008 | Vendor and dependency evaluation rubric | P1 | Security/licensing policy; DEC-010 |
 
 ## Phase 1 candidate backlog
 
-Items ini tidak memperoleh source-code authority baru dari M6, GOV-051, DEC-000, DEC-001, DEC-002, DEC-003, DEC-004, DEC-005, DEC-006, DEC-007, DEC-008, atau DEC-009. Published bounded Platform Foundation through Sprint 13 must be preserved, tetapi pekerjaan baru untuk final/business application atau Sprint 14 tetap membutuhkan Product Owner authority dan gate yang berlaku.
+Items ini tidak memperoleh source-code authority baru dari M6, GOV-051, DEC-000, DEC-001, DEC-002, DEC-003, DEC-004, DEC-005, DEC-006, DEC-007, DEC-008, DEC-009, atau DEC-010. Published bounded Platform Foundation through Sprint 13 must be preserved, tetapi pekerjaan baru untuk final/business application atau Sprint 14 tetap membutuhkan Product Owner authority dan gate yang berlaku.
 
 - PLT-001 repository/application skeleton;
 - PLT-002 tenant context and isolation enforcement;
