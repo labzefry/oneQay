@@ -4,6 +4,14 @@
 
 Semua kontributor—manusia maupun AI—wajib membaca README, PROJECT_MANIFEST, AI_CONSTITUTION, ARCHITECTURE, ROADMAP, TASKS, dan CHANGELOG, lalu dokumen domain terkait. Jangan mulai implementasi jika scope, acceptance criteria, tenant/security impact, atau decision owner belum jelas.
 
+## Contributor rights
+
+External contributions are legally gated by DEC-010 until an adequate contributor-rights framework is separately approved. The preferred future direction is a lawyer-approved Contributor Agreement / CLA suitable for a proprietary commercial product. DCO/sign-off may supplement provenance evidence but is not the sole proprietary contributor-right mechanism approved by DEC-010.
+
+Internal employee or contractor contributions require an applicable employment, contract, IP-assignment, or equivalent rights basis. A pull request, commit, or technical approval must not be treated by itself as creating rights beyond the applicable agreement or binding terms.
+
+This section records policy only. It does not create CLA/DCO legal text, contributor warranties, external distribution authority, or qualified legal advice.
+
 ## Work item
 
 Setiap perubahan memiliki issue/task dengan:
