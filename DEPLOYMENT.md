@@ -9,11 +9,13 @@ Deployment harus reproducible, auditable, secure, recoverable, dan tidak menguba
 | Environment | Purpose | Data |
 |---|---|---|
 | Local | Development | Synthetic |
-| Test / CI | Automated validation | Synthetic/masked |
-| Preview | Production-like rehearsal | Masked |
-| Production | Tenant operation | Real, classified |
+| Test / CI | Automated validation | Synthetic by default |
+| Preview | Production-like rehearsal | Synthetic or separately approved masked data |
+| Production | Tenant operation | Real, classified; only after separate production authority |
 
 Historical documentation may use `Staging` as a human-facing label. Under substantive DEC-009, the canonical Stage-1 runtime classification is `Preview`; `Staging` must be explicitly mapped to `Preview` rather than treated as an additional environment class.
+
+Masked data requires an approved process and residual-risk review. Raw production/customer/credential/payment-sensitive data must not be copied into non-production merely for convenience. DEC-011 governs this privacy/data-handling boundary; it does not itself authorize production data processing.
 
 Production access menggunakan least privilege, MFA, approval, audit, dan break-glass procedure.
 
@@ -119,6 +121,7 @@ Rollback decision memiliki owner dan threshold. Application rollback hanya dilak
 - Encrypted offsite backup dan retention where appropriate.
 - Restore runbook serta periodic rehearsal.
 - Backup success alone is not recoverability evidence; successful restore evidence is required.
+- Privacy retention/deletion semantics for backup data remain governed by DEC-011.
 - RPO/RTO per capability remain separately governed by DEC-012.
 - Dependency inventory dan contact tree.
 - DR exercise menghasilkan evidence dan task perbaikan.
