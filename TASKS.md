@@ -102,15 +102,15 @@ Published bounded Platform Foundation source through Sprint 13 is an existing re
 | DEC-008 | Offline POS semantics and conflict resolution | Done | Product Owner substantive DEC-008 APPROVED on baseline `21f1b2e938d9f6a42b1dd2ff717c4e049b5119d7`; Staged / Hybrid Offline Architecture; first-MVP online-authoritative transactions; future provisional server-validated offline operations; bounded replay/idempotency/conflict/security/reconciliation semantics; `docs/handbook/DEC_008_DECISION_RECORD.md`; materially reconciled ADR-006; no offline/source/schema/package/implementation authority |
 | DEC-009 | Deployment stage 1 runtime requirements | Done | Product Owner substantive DEC-009 APPROVED on baseline `0fdc0a53403f16fbc6908630ea350af2c0de466b`; Capability-Based Staged / Hybrid Portability Model; P1 cPanel conditional/not selected; P2 managed/hardened VPS/server fallback class; MySQL Server mandatory under DEC-005; Stage-1 Preview environment; `docs/handbook/DEC_009_DECISION_RECORD.md`; materially reconciled ADR-007; no deployment/implementation authority |
 | DEC-010 | Product license and third-party notice policy | Done | Product Owner substantive DEC-010 APPROVED on baseline `5cc572675dd7871a3ca841cedf06fbc8ea74f839`; Proprietary / All Rights Reserved product policy; repository visibility/rights separation; external contributions legally gated; dependency-license pre-adoption matrix; NOTICE/SBOM/trademark/plugin/AI/asset boundaries; `docs/handbook/DEC_010_DECISION_RECORD.md`; final legal text remains Legal Review Required; no dependency adoption/implementation/distribution/deployment authority |
-| DEC-011 | Data retention, privacy, and jurisdiction | Ready | Policy/ADR |
+| DEC-011 | Data retention, privacy, and jurisdiction | Done | Product Owner substantive DEC-011 APPROVED on baseline `6c6af7f99d25f177c91f92cdd163a277affc5153`; Bounded Privacy-by-Design + Hybrid Bounded Retention + Jurisdiction-Profile Architecture; initial jurisdiction NOT YET CANONICALLY SELECTED; qualified legal review required for jurisdiction-specific implementation; `docs/handbook/DEC_011_DECISION_RECORD.md`; no implementation/schema/provider/jurisdiction/deployment authority |
 | DEC-012 | RPO/RTO and support objectives | Backlog | Operational policy |
 
-DEC-000 through DEC-010 completion do not approve, accept, start, or implement DEC-011 through DEC-012. DEC-010 approves only bounded product/license governance policy; it does not authorize final lawyer-grade legal text, repository visibility changes, dependency/package adoption, implementation, external distribution, marketplace/plugin launch, deployment, release, Sprint 14, or production.
+DEC-000 through DEC-011 completion do not authorize DEC-012 or implementation. DEC-011 approves only bounded product/privacy architecture policy; it does not select a jurisdiction/provider/hosting region, finalize statutory retention/legal roles, authorize production/customer data, resolve JRN-003/JRN-013, or grant schema/SQL/migration, implementation, deployment, release, Sprint 14, or production authority.
 
 ## Phase 0 discovery backlog
 
 | ID | Task | Priority | Dependency |
-| --- | --- | --- | --- |
+| --- | --- | --- |
 | DSC-000 | Product vision and decision-rights workshop | P0 | Handbook approval; Issue #2 |
 | DSC-001 | Stakeholder and actor map | P0 | Handbook approval; Issue #4 |
 | DSC-002 | POS/ERP domain event storming | P0 | Stakeholder availability; Issue #8; correction Issue #10/#12; governance Issue #14/#16/#18/#20 |
@@ -123,7 +123,7 @@ DEC-000 through DEC-010 completion do not approve, accept, start, or implement D
 
 ## Phase 1 candidate backlog
 
-Items ini tidak memperoleh source-code authority baru dari M6, GOV-051, DEC-000, DEC-001, DEC-002, DEC-003, DEC-004, DEC-005, DEC-006, DEC-007, DEC-008, DEC-009, atau DEC-010. Published bounded Platform Foundation through Sprint 13 must be preserved, tetapi pekerjaan baru untuk final/business application atau Sprint 14 tetap membutuhkan Product Owner authority dan gate yang berlaku.
+Items ini tidak memperoleh source-code authority baru dari M6, GOV-051, DEC-000, DEC-001, DEC-002, DEC-003, DEC-004, DEC-005, DEC-006, DEC-007, DEC-008, DEC-009, DEC-010, atau DEC-011. Published bounded Platform Foundation through Sprint 13 must be preserved, tetapi pekerjaan baru untuk final/business application atau Sprint 14 tetap membutuhkan Product Owner authority dan gate yang berlaku.
 
 - PLT-001 repository/application skeleton;
 - PLT-002 tenant context and isolation enforcement;
