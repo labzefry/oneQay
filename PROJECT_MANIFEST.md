@@ -17,7 +17,7 @@
 | Architecture baseline | Modular Monolith, Clean Architecture | Approved |
 | Handbook version | 1.0 | Approved |
 | Product version | Belum ditetapkan | Under Review |
-| License | Proprietary / All Rights Reserved | Proposed |
+| License | Proprietary / All Rights Reserved | Approved — DEC-010 product policy; final legal text remains Legal Review Required |
 
 Engineering collaboration tooling is governed separately by `AI_CONSTITUTION.md` and is not product authorship or product attribution metadata. Canonical product/development attribution is **Lab | zefry**.
 
@@ -80,7 +80,7 @@ Product Owner kemudian memberikan substantive DEC-009 Deployment Stage 1 Runtime
 | DEC-000 Product Vision and Decision Rights | Approved / Decision Complete | Product Owner APPROVED D-000-01 through D-000-06 on baseline `792b2dc30636bc53baa7d66b43cf2dab4a348dd4`; `docs/handbook/DEC_000_DECISION_RECORD.md`; GD-003 Approved within DEC-000 boundary only |
 | DEC-001 MVP Scope and Non-Scope | Approved / Decision Complete | Product Owner APPROVED **POS CORE TRANSACTION & OUTLET OPERATIONS** on baseline `17f156b9861972b4924a5ed01bfabd5a1a79461a`; `docs/handbook/DEC_001_DECISION_RECORD.md`; no implementation authority |
 | DEC-002 Backend Language / Application Framework | Approved / Decision Complete | Product Owner APPROVED PHP + Laravel on baseline `504b10be44d45dfcfec9b6cfed4f72ed5748b564`; `docs/handbook/DEC_002_DECISION_RECORD.md`; ADR-001 Accepted after reconciliation; no implementation authority |
-| DEC-003 Frontend / PWA Stack | Approved / Decision Complete | Product Owner APPROVED Vue 3 + Inertia + Vite with TypeScript-first, explicit API/mobile boundaries, local-first state, and bounded PWA direction on baseline `dcb7e3f8de890530a00a0dd4fd310bc10762c72f`; `docs/handbook/DEC_003_DECISION_RECORD.md`; ADR-002 Accepted after reconciliation; no implementation authority |
+| DEC-003 Frontend / PWA Stack | Approved / Decision Complete | Product Owner APPROVED Vue 3 + Inertia + Vite with TypeScript-first, explicit API/mobile boundaries, local-first state, and PWA direction on baseline `dcb7e3f8de890530a00a0dd4fd310bc10762c72f`; `docs/handbook/DEC_003_DECISION_RECORD.md`; ADR-002 Accepted after reconciliation; no implementation authority |
 | DEC-004 Android Approach | Approved / Decision Complete | Product Owner APPROVED Hybrid Staged Approach with Kotlin + Jetpack Compose on baseline `97b2e5066118af2b3e9467afc71e84dce228eb38`; `docs/handbook/DEC_004_DECISION_RECORD.md`; ADR-008; no implementation authority |
 | DEC-005 Database Engine and Physical Tenancy Model | Approved / Decision Complete | Product Owner APPROVED MySQL Server + shared database/shared schema default on baseline `63646e1cccc611a1911c452397059983030dfe66`; `docs/handbook/DEC_005_DECISION_RECORD.md`; reconciled ADR-003; no database/schema/SQL/migration implementation authority |
 | DEC-006 Authentication / MFA / Session Architecture | Approved / Decision Complete | Product Owner APPROVED first-party identity + Web/PWA session + Android/API token boundary on baseline `c495f1b1f6e4e624bf3669ee94a786a1d7e865ce`; `docs/handbook/DEC_006_DECISION_RECORD.md`; reconciled ADR-004; JRN-003 unresolved; no implementation/package/schema/migration authority |
@@ -450,7 +450,7 @@ The PR #31 technical merge does not ratify PR #30, PR #29, PR #28, PR #27, PR #2
 
 ## PR #32 post-merge governance recurrence
 
-PR #32 was created from original base `67059e563de26fd64cf9e7d5c4436ffc6` at exact head `beb7b35aa718a746ad5dad9d5574c2293bd0ab40`. Its body required the PR to remain draft, but it was changed from draft and technically merged as `d1a6160b37250bda691e906fc4ee06e37dd0c847`.
+PR #32 was created from original base `67059e563de26cee26fd64cf9e7d5c4436ffc6` at exact head `beb7b35aa718a746ad5dad9d5574c2293bd0ab40`. Its body required the PR to remain draft, but it was changed from draft and technically merged as `d1a6160b37250bda691e906fc4ee06e37dd0c847`.
 
 A repository-native operational authority comment was present on PR #32 and explicitly authorized current-main verification, corrective branch creation, the three corrective Markdown changes, adding GOV-040 as Review, draft PR creation, the authority comment, and read-only checks. That authority explicitly excluded draft-to-ready transition, merge or auto-merge, approval review and branch-protection/ruleset changes, ADR acceptance, Phase 0 exit, source-code implementation, Issue #23 state change, hosting-evidence completion, governance-task completion, ratification, release, deployment, and status promotion.
 
