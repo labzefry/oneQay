@@ -110,7 +110,7 @@ DEC-000 through DEC-011 completion do not authorize DEC-012 or implementation. D
 ## Phase 0 discovery backlog
 
 | ID | Task | Priority | Dependency |
-| --- | --- | --- |
+| --- | --- | --- | --- |
 | DSC-000 | Product vision and decision-rights workshop | P0 | Handbook approval; Issue #2 |
 | DSC-001 | Stakeholder and actor map | P0 | Handbook approval; Issue #4 |
 | DSC-002 | POS/ERP domain event storming | P0 | Stakeholder availability; Issue #8; correction Issue #10/#12; governance Issue #14/#16/#18/#20 |
