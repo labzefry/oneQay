@@ -159,3 +159,13 @@ Items ini tidak memperoleh source-code authority baru dari M6, GOV-051, DEC-000,
 | P0-TP-009 | Execute T+5 Technical Preview | Blocked | Source-code authority and Day 1 gates |
 
 PR #24 through PR #33 technical merges and Issue #23 closure do not themselves set any task above to Done, accept an ADR, approve Phase 0 exit, grant general application source-code authority, ratify prior lifecycle actions, complete GOV-034 through GOV-042, or provide substantive approval or completion evidence. Later independent Product Owner decisions separately Accept ADR-001 via DEC-002, ADR-002 via DEC-003, ADR-003 via DEC-005, ADR-004 via DEC-006, ADR-005 via DEC-007, ADR-006 via DEC-008, and ADR-007 via DEC-009 only through their respective governed publication lifecycles. DEC-012 recovery/support policy does not promote REC-1 or SLO-1 Technical Preview values or create successful rehearsal evidence. Phase 0 remains In Progress; final/business application implementation remains Blocked; Phase 0 preview exit remains Not Ready; P1 remains conditional and Not Selected; GD-007 remains Proposed; JRN-003 and JRN-013 remain unresolved; TEN-1, REC-1, SLO-1, and DATA-1 remain Proposed; hosting evidence is partially verified but mandatory P1 blockers remain.
+
+## DEC-010 Supplement publication state
+
+- Status: **Done** as the intended successfully published state for the approved substantive supplement.
+- Decision record: `docs/handbook/DEC_010_SUPPLEMENT_DECISION_RECORD.md`.
+- D10S-01: **ZERO MANDATORY COMMERCIAL SOFTWARE-LICENSE COST — CORE BASELINE**.
+- D10S-02: **FREE / OPEN-SOURCE FIRST PREFERENCE — NOT FOSS-ONLY**.
+- D10S-03: **APACHE ECHARTS — DEFAULT WEB/PWA VISUALIZATION TECHNOLOGY CANDIDATE / APPROVED TECHNOLOGY DIRECTION**.
+- D10S-04 preserves **Technology Policy Approval != Dependency Adoption Authority != Implementation Authority**.
+- No package/version, package manager, frontend lockfile, ECharts/Vue wrapper, source implementation, deployment, release, Production, Phase 0 exit, or Sprint 14 authority is created.

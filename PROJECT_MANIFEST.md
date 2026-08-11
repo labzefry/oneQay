@@ -524,3 +524,14 @@ Phase 0 remains **In Progress**. Final/business application implementation remai
 - DEC-012 grants no backup/restore/DR implementation, provider/cloud/region/HA selection, infrastructure provisioning, source/schema/SQL/migration implementation, deployment, release, Production, Phase 0 exit, or Sprint 14 authority; JRN-003/JRN-013 remain unresolved and GD-007 remains Proposed.
 
 Attribution: Lab | zefry
+
+## DEC-010 Supplement canonical dependency and visualization state
+
+- Status: **APPROVED / DECISION COMPLETE**.
+- Decision baseline: `4a56cad359ab5e4e59b7a5b3e342869339c8f6a8`; verified baseline tree: `205bcbdbb746e9959a3d18b90b5992c303033192`.
+- D10S-01: **ZERO MANDATORY COMMERCIAL SOFTWARE-LICENSE COST — CORE BASELINE**; this is not a zero-total-cost claim.
+- D10S-02: **FREE / OPEN-SOURCE FIRST PREFERENCE — NOT FOSS-ONLY**; DEC-010 license classes remain binding and commercial/proprietary exceptions remain separately gated.
+- D10S-03: **APACHE ECHARTS — DEFAULT WEB/PWA VISUALIZATION TECHNOLOGY CANDIDATE / APPROVED TECHNOLOGY DIRECTION**; not mandatory/exclusive and no exact package/version is adopted.
+- D10S-04 preserves **Technology Policy Approval ≠ Dependency Adoption Authority ≠ Implementation Authority**.
+- Canonical supplement record: `docs/handbook/DEC_010_SUPPLEMENT_DECISION_RECORD.md`.
+- oneQay product/source remains **PROPRIETARY / ALL RIGHTS RESERVED**; DEC-003 frontend boundaries remain preserved; no package manager, `package.json`, frontend lockfile, dependency installation, chart/dashboard/source implementation, deployment, release, Production, Phase 0 exit, or Sprint 14 authority is created.
