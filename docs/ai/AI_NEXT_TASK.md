@@ -15,7 +15,7 @@
 - M6 Enterprise Vision Canonicalization: PUBLISHED / PUBLICATION COMPLETE through PR #69
 - M6 Post-Publication State Reconciliation: PUBLISHED through PR #70
 - M6 Closure — Checkpoint Semantics Correction: PUBLISHED / COMPLETE through PR #71
-- GOV-051 Enterprise Vision substantive decision: APPROVED
+- GOV-051 Enterprise Vision substantive decision: APPROVED / DECISION COMPLETE
 - Enterprise Vision decision status: Approved
 - Sprint 12: Published
 - Sprint 13: Published
@@ -32,7 +32,7 @@ Before any new branch, lifecycle mutation, Ready, Merge, implementation decision
 
 Do not create repetitive state-reconciliation commits merely to replace a stored `current main` SHA after publication. Publishing that replacement creates another SHA and causes an infinite self-referential cycle.
 
-## Verified publication baseline before this decision-record work
+## Verified publication baseline before this historical decision-record work
 
 Fresh GitHub Delta Verification before starting the authorized GOV-051 decision record confirmed:
 
@@ -48,17 +48,41 @@ Fresh GitHub Delta Verification before starting the authorized GOV-051 decision 
 
 These values are stable publication and decision evidence, not permanently current live-head declarations.
 
-## Immediate authorized task
+## Current next-work authority
 
-Complete only:
+**NO STANDING IMPLEMENTATION OR MILESTONE AUTHORITY.**
 
-**GOV-051 — Enterprise Vision Decision Record**
+The next governed work item must be explicitly authorized by the Product Owner after fresh GitHub Minimal Delta Verification.
 
-Product Owner START authority:
+This checkpoint does not automatically designate Phase 0 exit, Sprint 14, implementation, deployment, release, Production, or another milestone as the next authorized work item.
+
+Substantive decision authority, preparation authority, independent exact-head review, Product Owner READY authority, and Product Owner MERGE authority remain separate whenever applicable.
+
+## Current canonical decision state
+
+- DEC-000 Product Vision and Decision Rights: **APPROVED / DECISION COMPLETE**; GD-003 is Approved through DEC-000.
+- DEC-001 MVP Scope and Non-Scope: **APPROVED / DECISION COMPLETE**; first bounded MVP delivery slice is **POS CORE TRANSACTION & OUTLET OPERATIONS**.
+- DEC-002 through DEC-009: **APPROVED / DECISION COMPLETE** according to their respective bounded records; ADR-001 through ADR-007 are Accepted through their separately governed DEC reconciliations.
+- DEC-004 additionally owns ADR-008 as its Accepted Android-delivery representation.
+- DEC-010 Product License and Third-Party Notice Policy: **APPROVED / DECISION COMPLETE**; oneQay remains **PROPRIETARY / ALL RIGHTS RESERVED**.
+- DEC-011 Data Retention, Privacy, and Jurisdiction: **APPROVED / DECISION COMPLETE**; initial jurisdiction remains not yet canonically selected.
+- DEC-012 RPO/RTO and Support Objectives: **APPROVED / DECISION COMPLETE**; final numerical Production RPO/RTO/SLO and customer-contractual SLA remain deferred.
+- DEC-010 Supplement: **APPROVED / DECISION COMPLETE / PUBLISHED through PR #87**; Apache ECharts remains a default Web/PWA visualization technology candidate / approved technology direction only; package/dependency adoption and implementation remain separately gated.
+- GD-007 remains Proposed.
+- JRN-003 and JRN-013 remain Unresolved.
+- Phase 0 remains In Progress.
+- Sprint 14 remains Not Authorized.
+- Production readiness remains NO-GO.
+
+## Historical GOV-051 decision-record work
+
+The GOV-051 decision-record lifecycle below is preserved as historical evidence and is not an active task.
+
+Historical Product Owner START authority:
 
 **START GOV-051 — ENTERPRISE VISION DECISION RECORD**
 
-Authorized scope:
+Historical authorized scope:
 
 1. record the already-given GOV-051 Product Owner substantive decision as Approved;
 2. record the Approved Enterprise Vision as **Enterprise Intelligent Business Management Platform**;
@@ -67,19 +91,19 @@ Authorized scope:
 5. correct stale wording that says PR #70 post-publication reconciliation remains pending;
 6. record M6 Closure through PR #71 as already PUBLISHED / COMPLETE;
 7. normalize stale `M6 candidate` wording only where it refers to the Enterprise Vision that is now published and substantively Approved;
-8. keep `docs/handbook/PRODUCT_VISION_AND_DECISION_RIGHTS.md` and GD-003 Proposed as a separate decision;
+8. keep `docs/handbook/PRODUCT_VISION_AND_DECISION_RIGHTS.md` and GD-003 Proposed as a separate decision at that historical point;
 9. preserve Phase 0 In Progress;
 10. preserve Sprint 14 Not Authorized;
 11. preserve production readiness NO-GO;
-12. preserve ADR/GD/JRN existing states outside GOV-051;
+12. preserve ADR/GD/JRN existing states outside GOV-051 at that historical point;
 13. create only a bounded Draft PR for this decision record;
 14. run required checks;
 15. obtain independent exact-head review from `zefriansyah`;
 16. stop before Ready or Merge unless separate exact-head Product Owner lifecycle authority is supplied.
 
-This is decision record synchronization only. It is not Sprint 14 and is not a new implementation milestone.
+This was decision record synchronization only. It was not Sprint 14 and was not a new implementation milestone.
 
-## Product Owner substantive decision to record
+## Historical Product Owner substantive decision recorded by GOV-051
 
 Decision:
 
@@ -167,7 +191,7 @@ Ruleset protections remain strict according to the published M5.2 verification r
 
 ## Product boundary
 
-GOV-051 Enterprise Vision approval and this decision-record work do not authorize:
+GOV-051 Enterprise Vision approval and the historical decision-record work did not authorize:
 
 - Sprint 14 implementation;
 - final/business/production application implementation;
@@ -180,19 +204,20 @@ GOV-051 Enterprise Vision approval and this decision-record work do not authoriz
 - deployment;
 - release;
 - production-readiness promotion;
-- GD-003 or GD-007 promotion;
-- ADR-001 through ADR-007 acceptance;
+- GD-003 or GD-007 promotion by GOV-051 itself;
+- ADR-001 through ADR-007 acceptance by GOV-051 itself;
 - JRN resolution;
 - framework, database, tenancy-model, authentication, payment, or AI-provider selection.
 
-Capability-map presence does not imply implementation authority.
+Capability-map presence does not imply implementation authority. Later separately governed decisions remain authoritative for their own bounded scopes.
 
 ## Governance preservation
 
 - Phase 0: In Progress
 - Enterprise Vision decision status: Approved through GOV-051
-- ADR-001 through ADR-007: Proposed
-- GD-003: Proposed
+- ADR-001 through ADR-007: Accepted through their separately governed DEC reconciliations
+- ADR-008: Accepted representation of DEC-004
+- GD-003: Approved through DEC-000
 - GD-007: Proposed
 - JRN-003 and JRN-013: Unresolved
 - Final tenant data model: Not Started
@@ -215,22 +240,12 @@ are deprecated pointer stubs only. They are not authoritative and must not be us
 
 Canonical state lives under `docs/ai/`.
 
-## Decision-record stop condition
+## Lifecycle rule
 
-Prepare the bounded GOV-051 decision-record change as a Draft PR and obtain independent review from `zefriansyah` on the final exact head.
+No standing Ready or Merge authority is stored in this checkpoint.
 
-Do not mark the decision-record PR Ready without separate:
+For any future governed PR, applicable substantive authority, preparation authority, independent exact-head review, Product Owner READY authority, and Product Owner MERGE authority remain separate. A source-head change after review invalidates exact-head review binding and requires fresh verification/review before later lifecycle authority.
 
-`PRODUCT OWNER READY AUTHORIZATION`
-
-bound to the PR number and exact final head.
-
-Do not merge without separate:
-
-`PRODUCT OWNER MERGE AUTHORIZATION`
-
-bound to the PR number and exact final head, recorded repository-native so `product-owner-merge-authority` can pass.
-
-After GOV-051 decision record is published, do not infer or start Sprint 14 or any new milestone. The next program action must come from separate explicit Product Owner authority after live GitHub Delta Verification.
+No future milestone, Phase 0 exit, Sprint 14, source implementation, dependency adoption, deployment, release, or Production action may be inferred from this file.
 
 Attribution: Lab | zefry

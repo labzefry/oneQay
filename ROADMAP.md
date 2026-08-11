@@ -162,7 +162,7 @@ M6 menambahkan peta evolusi konseptual yang melengkapi phase delivery di atas. I
 | E4 — Intelligence | Business Intelligence, AI insight, recommendation, bounded automation | Directional only; AI/data/security gates remain mandatory |
 | E5 — Ecosystem | Public API, partner integration, marketplace, plugin/extension ecosystem | Directional only; trust/compatibility/security gates remain mandatory |
 
-Canonical detail resides in `docs/handbook/ENTERPRISE_VISION.md` once M6 is published through the approved lifecycle.
+Canonical detail resides in `docs/handbook/ENTERPRISE_VISION.md`. M6 representation/publication completed through PR #69, M6 closure completed through PR #71, and the substantive Enterprise Vision was separately Approved through GOV-051.
 
 ## Infrastructure evolution track
 
@@ -219,11 +219,11 @@ M5 publication facts remain immutable repository history.
 
 ## M6 — Enterprise Vision Canonicalization
 
-**State:** In Progress / bounded candidate.
+**State:** PUBLISHED / PUBLICATION COMPLETE.
 
-M6 is authorized for Enterprise Vision analysis/documentation, capability-map and conceptual evolution definition, current program-state synchronization, brand normalization to `oneQay`, bounded branch/Draft PR creation, validation, and independent review preparation.
+M6 publication scope covered Enterprise Vision analysis/documentation, capability-map and conceptual evolution definition, current program-state synchronization, brand normalization to `oneQay`, bounded publication preparation, validation, and independent review. The canonical representation was published through PR #69; M6 closure was completed through PR #71; substantive Enterprise Vision approval was separately granted through GOV-051.
 
-M6 must preserve:
+M6 publication outcome preserved:
 
 - Phase 0: In Progress;
 - Sprint 12: Published;
@@ -234,6 +234,6 @@ M6 must preserve:
 - ADR/GD/JRN statuses unless separately decided;
 - historical lifecycle discrepancies as historical facts.
 
-M6 does not authorize Ready, Merge, deployment, release, SQL/migration execution, production database modification, Sprint 14, or new business/application source implementation.
+M6 publication did not and does not create Ready, Merge, deployment, release, SQL/migration execution, production database modification, Sprint 14, or new business/application source implementation authority.
 
 Attribution: Lab | zefry
