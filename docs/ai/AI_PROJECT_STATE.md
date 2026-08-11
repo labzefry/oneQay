@@ -42,7 +42,7 @@ A checkpoint update must not be created merely to replace a stored `current main
 - M6 Enterprise Vision Canonicalization: PUBLISHED / PUBLICATION COMPLETE through PR #69
 - M6 Post-Publication State Reconciliation: PUBLISHED through PR #70
 - M6 Closure — Checkpoint Semantics Correction: PUBLISHED / COMPLETE through PR #71
-- GOV-051 Enterprise Vision substantive decision: APPROVED / decision record in progress
+- GOV-051 Enterprise Vision substantive decision: APPROVED / DECISION COMPLETE
 - Enterprise Vision decision status: Approved
 - Latest published technical capability sprint: Sprint 13
 - Sprint 12: Published
@@ -52,6 +52,23 @@ A checkpoint update must not be created merely to replace a stored `current main
 - Deployment: None / Not Authorized
 - Release: None / Not Authorized
 - Production migration: Not Performed
+
+## Current canonical decision state
+
+- DEC-000 Product Vision and Decision Rights: **APPROVED / DECISION COMPLETE**; GD-003 is Approved through DEC-000; no implementation authority.
+- DEC-001 MVP Scope and Non-Scope: **APPROVED / DECISION COMPLETE**; first bounded MVP delivery slice is **POS CORE TRANSACTION & OUTLET OPERATIONS**; no implementation authority.
+- DEC-002 Backend Language / Application Framework: **APPROVED / DECISION COMPLETE**; ADR-001 Accepted through its governed reconciliation.
+- DEC-003 Frontend / PWA Stack: **APPROVED / DECISION COMPLETE**; ADR-002 Accepted through its governed reconciliation.
+- DEC-004 Android Approach: **APPROVED / DECISION COMPLETE**; ADR-008 is the Accepted representation of DEC-004.
+- DEC-005 Database Engine and Physical Tenancy Model: **APPROVED / DECISION COMPLETE**; ADR-003 Accepted through its governed reconciliation.
+- DEC-006 Authentication / MFA / Session Architecture: **APPROVED / DECISION COMPLETE**; ADR-004 Accepted through its governed reconciliation; JRN-003 remains Unresolved.
+- DEC-007 Payment Provider and Compliance Boundary: **APPROVED / DECISION COMPLETE**; ADR-005 Accepted through its governed reconciliation.
+- DEC-008 Offline POS Semantics and Conflict Resolution: **APPROVED / DECISION COMPLETE**; ADR-006 Accepted through its governed reconciliation.
+- DEC-009 Deployment Stage 1 Runtime Requirements: **APPROVED / DECISION COMPLETE**; ADR-007 Accepted through its governed reconciliation.
+- DEC-010 Product License and Third-Party Notice Policy: **APPROVED / DECISION COMPLETE**; oneQay remains **PROPRIETARY / ALL RIGHTS RESERVED**.
+- DEC-011 Data Retention, Privacy, and Jurisdiction: **APPROVED / DECISION COMPLETE**; initial commercial/launch jurisdiction remains not yet canonically selected.
+- DEC-012 RPO/RTO and Support Objectives: **APPROVED / DECISION COMPLETE**; final numerical Production RPO/RTO/SLO and customer-contractual SLA remain deferred.
+- DEC-010 Supplement — Dependency Cost Baseline, Open-Source Preference, and Visualization Technology Direction: **APPROVED / DECISION COMPLETE / PUBLISHED through PR #87**; Apache ECharts remains a default Web/PWA visualization technology candidate / approved technology direction only; dependency/package adoption and implementation remain separately gated.
 
 ## Verified baseline before GOV-051 decision record
 
@@ -250,8 +267,9 @@ Root files with matching names remain deprecated pointer stubs only.
 
 - Phase 0: In Progress
 - Enterprise Vision decision status: Approved through GOV-051
-- ADR-001 through ADR-007: Proposed
-- GD-003: Proposed
+- ADR-001 through ADR-007: Accepted through their separately governed DEC reconciliations
+- ADR-008: Accepted representation of DEC-004
+- GD-003: Approved through DEC-000
 - GD-007: Proposed
 - JRN-003 and JRN-013: Unresolved
 - Final tenant data model: Not Started
@@ -275,30 +293,12 @@ Root files with matching names remain deprecated pointer stubs only.
 - A-09 Enterprise Vision canonicalization: Resolved at representation/publication level through PR #69; separate substantive Enterprise Vision decision Approved through GOV-051.
 - A-10 product-name capitalization inconsistency: Resolved for current/future-facing canonical material through PR #69; immutable historical evidence remains preserved.
 
-## Current decision-record boundary
+## Current authority boundary
 
-The active bounded work is only:
+No standing next milestone, implementation, Phase 0 exit, Sprint 14, deployment, release, or Production authority is stored in this checkpoint.
 
-**GOV-051 — Enterprise Vision Decision Record**
+Any next governed work requires fresh GitHub Minimal Delta Verification and separate explicit Product Owner authority. Substantive decision authority, preparation authority, independent exact-head review, Product Owner READY authority, and Product Owner MERGE authority remain separate whenever applicable.
 
-Its purpose is to record the already-given Product Owner substantive decision and synchronize necessary canonical state surfaces.
-
-It does not authorize:
-
-- Sprint 14 implementation;
-- final/business application implementation;
-- MVP approval;
-- database/schema implementation;
-- executable SQL;
-- migration execution;
-- production database modification;
-- deployment;
-- release;
-- GD-003 or GD-007 promotion;
-- ADR-001 through ADR-007 acceptance;
-- JRN resolution;
-- production readiness promotion.
-
-The decision-record PR must remain Draft until separate exact-head Product Owner READY authority is supplied, and merge remains separately gated by exact-head Product Owner MERGE authority.
+This checkpoint creates no source/application implementation, dependency/package adoption, database/schema/SQL/migration, infrastructure, deployment, release, Production, Phase 0 exit, or Sprint 14 authority.
 
 Attribution: Lab | zefry
