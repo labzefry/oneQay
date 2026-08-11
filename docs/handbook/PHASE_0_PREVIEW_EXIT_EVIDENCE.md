@@ -1,66 +1,105 @@
 # Phase 0 Technical Preview Exit Evidence
 
 - Status: Not Ready
-- Target: authorize application skeleton for Technical Preview v0.0.1
+- Readiness preparation: In Progress through reopened Issue #23
+- Target: prepare a bounded Product Owner decision package for possible application-skeleton authority
 - Tracking: Issue #23
 - Source-code authority: Not granted
+- Phase 0 exit authority: Not granted
+- Sprint 14 authority: Not granted
 
-## Product Owner selections recorded
+## Current governed decision state
 
-| Item | Selection | Evidence state |
+The original Issue #23 Technical Preview selections are historical provenance where later governed decisions supersede or refine them. Current decision state must follow the separately published DEC/ADR records.
+
+| Item | Current governed state | Readiness implication |
 | --- | --- | --- |
-| Backend | B1 Laravel/PHP | Selected; ADR Proposed |
-| Frontend | F1 Vue 3 + Inertia + Vite | Selected; ADR Proposed |
-| Database/tenancy | D1 MySQL-compatible shared schema | Selected; engine/version Pending |
-| Authentication | A1 first-party session + privileged TOTP | Selected; ADR Proposed |
-| Deployment | P1 conditional, P2 fallback | Hosting evidence Pending |
-| Payment | PAY-1 synthetic cash-only | Selected; ADR Proposed |
-| Offline | OFF-1 online-only | Selected; ADR Proposed |
-| Tenant isolation | TEN-1 two synthetic tenants | Selected; verification Pending |
-| Recovery | REC-1 RPO 24h/RTO 4h | Selected; capability/rehearsal Pending |
-| SLO | SLO-1 | Selected; measurement plan Pending |
-| Data | DATA-1 synthetic only | Selected; baseline Proposed |
-
-The Product Owner decision is recorded on Issue #23. The user-provided decision date and hosting fields were blank; missing evidence is not inferred.
+| Backend | DEC-002 Approved; ADR-001 Accepted; PHP + Laravel direction | Decision satisfied; dependency/implementation remains separately gated |
+| Frontend | DEC-003 Approved; ADR-002 Accepted; Vue 3 + Inertia + Vite, TypeScript-first direction | Decision satisfied; dependency/implementation remains separately gated |
+| Database/tenancy | DEC-005 Approved; ADR-003 Accepted; MySQL Server, shared database/shared schema default | Decision satisfied; target-host MySQL capability still required |
+| Authentication | DEC-006 Approved; ADR-004 Accepted; first-party identity/session with privileged TOTP baseline | Decision satisfied; JRN-003 remains Unresolved |
+| Deployment | DEC-009 Approved; ADR-007 Accepted; capability-based Stage-1 Preview model | P1 remains Conditional / Not Selected; P2 is fallback execution class |
+| Payment | DEC-007 Approved; ADR-005 Accepted | Technical Preview PAY-1 remains synthetic cash-only provenance; no provider/real-money authority |
+| Offline | DEC-008 Approved; ADR-006 Accepted | Historical OFF-1 provenance is governed by DEC-008; no new offline implementation authority |
+| Tenant isolation | TEN-1 two synthetic tenants remains preview provenance | Verification/acceptance evidence still pending |
+| Recovery | DEC-012 Approved recovery policy; REC-1 24h/4h remains Technical Preview proposal only | Successful restore/rollback rehearsal and measured achieved RPO/RTO still pending |
+| SLO | DEC-012 Approved SLO/SLA taxonomy; SLO-1 remains Technical Preview provenance only | No final numerical Production SLO/SLA is approved |
+| Data | DEC-011 Approved privacy/data-classification policy and Synthetic-by-Default preview direction | Preview-specific DATA-1 inventory/retention baseline remains Proposed and needs exact-state review |
 
 ## Exit checklist
 
-- [ ] Exact-head content approval for all required ADRs.
-- [ ] ADR-001 through ADR-007 moved from Proposed to Accepted by explicit decision.
-- [ ] MVP preview scope/non-scope and success metrics approved.
-- [ ] Data inventory/classification approved.
-- [ ] Threat model reviewed with no unresolved Critical skeleton blocker.
-- [ ] P1 capability assessment passes, or P2 option is separately decided.
-- [ ] Backup/restore/rollback approach is feasible against target environment.
-- [ ] Supported environment and quality-gate matrix approved.
-- [ ] Tenant-isolation acceptance plan approved.
-- [ ] JRN-003 and JRN-013 remain visible and do not become implicitly resolved.
-- [ ] Repository lifecycle risk is documented for High/Critical ready/merge actions.
-- [ ] PROJECT_MANIFEST, ARCHITECTURE, ROADMAP, TASKS, and CHANGELOG are consistent.
-- [ ] Product Owner issues an explicit Phase 0 preview exit statement tied to the latest exact head.
+- [x] ADR-001 through ADR-007 have Accepted current representations through their separately governed DEC reconciliations.
+- [x] Backend, frontend, database/tenancy, authentication, payment, offline, and Stage-1 runtime directions have separately Approved Product Owner decisions.
+- [ ] Technical Preview scope/non-scope and measurable preview success criteria receive current exact-state Product Owner approval.
+- [ ] Preview-specific data inventory/classification/retention baseline receives exact-state Product Owner and security review.
+- [ ] Technical Preview threat model receives security review with no unresolved Critical skeleton blocker.
+- [ ] A target Preview environment is selected from the DEC-009 capability model: P1 passes all mandatory evidence, or P2/another compliant class is separately selected.
+- [ ] Backup/restore/rollback capability is verified against the selected target environment.
+- [ ] At least one isolated restore and one recoverable deployment rollback rehearsal pass before any recovery claim is represented as verified.
+- [ ] Tenant-isolation acceptance plan for two deterministic synthetic tenants receives exact-state approval; implementation evidence remains a later source-authorized gate.
+- [x] JRN-003 and JRN-013 remain explicitly Unresolved and are not implicitly resolved by readiness work.
+- [x] Repository lifecycle control requires independent exact-head review plus separate Product Owner READY and MERGE authority for governed PR publication.
+- [ ] Canonical current-state documents are reconciled for the final readiness candidate without creating standing implementation authority.
+- [ ] Product Owner issues a separate explicit Phase 0 Technical Preview exit decision tied to the final exact state.
 
-## Explicit blockers
+## Current deployment blocker
 
-1. Hosting runtime, database, worker, HTTPS, backup, restore, rollback, and quota evidence is missing.
-2. All ADRs remain Proposed.
-3. Threat, data, recovery, and isolation artifacts have not received exact-head approval.
-4. No application-skeleton authority has been granted.
+DEC-009 makes environment selection capability-based rather than category-based.
 
-## Exit decision template
+P1 Shared Hosting / cPanel is currently **CONDITIONAL / NOT SELECTED**. Existing repository evidence is meaningful but does not constitute a Pass. Material blockers include:
 
-```text
-I act as Product Owner OneQay.
+- canonical MySQL Server capability/connectivity on the target;
+- safe public-only document-root mapping;
+- effective rewrite/front-controller routing;
+- required scheduler cadence;
+- safe worker/background execution model where required;
+- target secret and private-storage isolation;
+- actual application database security/connection-limit evidence;
+- backup coverage plus successful isolated restore evidence;
+- versioned/recoverable deployment and rollback;
+- complete resource/quota visibility;
+- outbound DNS/HTTPS capability according to the execution model.
 
-For PR #[number] at exact head [40-character SHA], I approve the Phase 0
-Technical Preview decision package and move ADR-001 through ADR-007 to
-Accepted. I approve Phase 0 preview exit for application skeleton only.
+MariaDB evidence is retained as factual hosting evidence but does not satisfy the canonical DEC-005 MySQL Server requirement.
 
-Target environment: [P1/P2 with evidence URL]
-Decision timestamp: [ISO-8601 +07:00]
+P2 managed/hardened VPS/server remains the fallback execution class. No provider, server, hosting plan, domain, runtime host, or deployment execution is authorized by this readiness package.
 
-This does not approve production/pilot release, real payment, offline
-transaction processing, GD-007, JRN-003, or JRN-013. Ready transition and
-merge require separate exact-head authority.
-```
+## Preview data readiness
 
-Until that statement exists, application implementation remains Blocked.
+DEC-011 has already Approved the policy-level data inventory/classification direction and Synthetic-by-Default handling for Preview. The preview-specific `TECHNICAL_PREVIEW_DATA_BASELINE.md` remains a Proposed bounded artifact because its exact inventory, preview retention values, generator specification, and tenant-isolation acceptance plan still require current exact-state review.
+
+No production/customer/payment/personal/credential data may be introduced into the Technical Preview by implication.
+
+## Threat-model readiness
+
+`TECHNICAL_PREVIEW_THREAT_MODEL.md` exists as a Proposed bounded artifact. It identifies Critical/High threats including cross-tenant access, broken authorization, secret exposure, session/MFA abuse, transaction/idempotency integrity, backup disclosure/restore failure, supply-chain risk, and deployment rollback failure.
+
+Before skeleton authority, each Critical threat required for the skeleton must map to a verification or explicit blocker, and the threat model must receive current security review. Readiness documentation alone does not claim that those controls are implemented.
+
+## Recovery readiness
+
+DEC-012 has already Approved an evidence-gated recovery policy. Historical REC-1 values remain Technical Preview proposals only:
+
+- RPO 24 hours — proposal/provenance only;
+- RTO 4 hours — proposal/provenance only.
+
+These values are not verified objectives until measured successful restoration evidence exists. Backup success alone is not recoverability. The Technical Preview recovery candidate must capture isolated restore, integrity, tenant isolation, application health, applicable business invariants, achieved RPO/RTO, operator/date/result, and remediation/re-test evidence where needed.
+
+## Explicit remaining blockers
+
+1. No compliant target Preview environment is selected; P1 remains Conditional / Not Selected and P2 remains an unselected fallback execution class.
+2. Preview-specific data, threat-model, and recovery artifacts have not received the required current exact-state approvals/reviews.
+3. Successful restore, rollback, and tenant-isolation execution evidence does not yet exist for the future source-authorized preview.
+4. A current exact-state Technical Preview scope/success-criteria approval package is not yet complete.
+5. No explicit Product Owner Phase 0 Technical Preview exit decision exists on the final readiness state.
+6. No application-skeleton or broader source-code authority has been granted.
+
+## Readiness decision rule
+
+The next decision is not a re-approval of ADR-001 through ADR-007. Those current representations are already Accepted through their separately governed decisions.
+
+The next Product Owner decision package must instead decide whether the remaining Preview-specific evidence is sufficient to grant a **bounded Phase 0 Technical Preview exit for application-skeleton preparation only**. If any mandatory blocker remains, the correct outcome is `NOT READY` or a bounded corrective action; implementation must not be inferred.
+
+Any future Phase 0 exit authorization must be tied to the exact final reviewed state and remain separate from Product Owner READY authority, Product Owner MERGE authority, Sprint 14, deployment, release, and Production authority.
+
+Attribution: Lab | zefry
