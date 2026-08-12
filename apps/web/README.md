@@ -8,6 +8,13 @@ Foundation. It contains no POS business capability, database business schema,
 real payment integration, Production data, deployment automation, or Production
 authority.
 
+## Configuration template
+
+`environment.example` is the tracked placeholder-only equivalent of a Laravel
+`.env.example`. Copy it to an untracked local `.env` only in an authorized
+Local/Test/CI environment and replace placeholders with local/test values. Real
+credentials and Production secrets must never be committed.
+
 ## Runtime baseline
 
 - PHP: `>=8.2` within the governed runtime boundary.
@@ -31,8 +38,7 @@ authority.
 | `vue-tsc` | `3.3.8` | MIT | Vue/TypeScript static checking |
 | `@types/node` | `24.13.3` | MIT | Node 24 toolchain types required by Vite configuration |
 
-Exact dependency locks are generated and then committed before the Draft PR is
-eligible for independent review. CI fails on unresolved High/Critical dependency
-advisories.
+Exact dependency locks are committed before the Draft PR is eligible for
+independent review. CI fails on unresolved High/Critical dependency advisories.
 
 Attribution: Lab | zefry
