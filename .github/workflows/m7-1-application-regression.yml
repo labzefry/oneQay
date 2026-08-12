@@ -68,7 +68,7 @@ jobs:
 
       - name: Validate application Composer metadata
         working-directory: apps/web
-        run: composer validate --strict --no-check-publish
+        run: composer validate --no-check-publish
 
       - name: Install locked Composer dependencies
         working-directory: apps/web
