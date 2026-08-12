@@ -1,11 +1,11 @@
 import '../css/app.css'
 
 import { createInertiaApp } from '@inertiajs/vue3'
-import { createApp, h } from 'vue'
+import { createApp, h, type DefineComponent } from 'vue'
 
 createInertiaApp({
   resolve: (name) => {
-    const pages = import.meta.glob('./pages/**/*.vue', { eager: true })
+    const pages = import.meta.glob<{ default: DefineComponent }>('./pages/**/*.vue', { eager: true })
     const page = pages[`./pages/${name}.vue`]
 
     if (!page) {

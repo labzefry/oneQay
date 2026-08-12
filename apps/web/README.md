@@ -23,11 +23,13 @@ authority.
 | `inertiajs/inertia-laravel` | `3.3.1` | MIT | First-party Web delivery integration |
 | `vue` | `3.5.40` | MIT | Approved Web frontend framework |
 | `@inertiajs/vue3` | `3.6.1` | MIT | Vue/Inertia delivery adapter |
+| `axios` | `1.18.1` | MIT | Required HTTP/type dependency exposed by the Inertia client stack |
 | `vite` | `8.1.5` | MIT | Approved frontend build tool |
 | `laravel-vite-plugin` | `3.1.3` | MIT | Laravel/Vite integration |
 | `@vitejs/plugin-vue` | `6.0.8` | MIT | Vue SFC integration |
 | `typescript` | `5.9.3` | Apache-2.0 | Stable TypeScript compiler compatible with the M7.1 Vue type-checker |
 | `vue-tsc` | `3.3.8` | MIT | Vue/TypeScript static checking |
+| `@types/node` | `24.13.3` | MIT | Node 24 toolchain types required by Vite configuration |
 
 Exact dependency locks are generated and then committed before the Draft PR is
 eligible for independent review. CI fails on unresolved High/Critical dependency
