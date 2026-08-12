@@ -1,0 +1,15 @@
+/.env
+/.env.*
+!/.env.example
+/vendor/
+/node_modules/
+/public/build/
+/bootstrap/cache/*.php
+/storage/framework/cache/*
+!/storage/framework/cache/.gitignore
+/storage/framework/sessions/*
+!/storage/framework/sessions/.gitignore
+/storage/framework/views/*
+!/storage/framework/views/.gitignore
+/storage/logs/*
+!/storage/logs/.gitignore
