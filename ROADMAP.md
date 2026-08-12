@@ -44,6 +44,8 @@ Repository telah mempublikasikan bounded Platform Foundation melalui Sprint 12 d
 
 Mulai M5.3, istilah **application implementation Blocked** berarti final/business/production application implementation yang belum diotorisasi. Istilah tersebut tidak membatalkan atau menghapus bounded Platform Foundation source yang telah dipublikasikan melalui Sprint 13.
 
+Phase 0 Controlled Implementation Bridge menegaskan bahwa final Phase 0 Exit bukan prerequisite untuk setiap bounded Local/Test/CI source file. Bounded Technical Preview source preparation dapat berlangsung sebelum final Phase 0 Exit hanya setelah bridge dipublikasikan dan Product Owner memberikan source authority yang terpisah. Preview runtime/deployment tetap memerlukan actual target qualification sesuai DEC-009 dan authority deployment terpisah.
+
 Sprint 14 tetap **Not Authorized** dan production readiness tetap **NO-GO**.
 
 ## Phase 1 — Platform foundation
@@ -194,16 +196,33 @@ Technical Preview v0.0.1 is a gated T+5 workstream tracked by Issue #23. It is a
 | Working day | Planned outcome | Entry gate |
 | ---: | --- | --- |
 | 1 | Exact-head review of ADR, data, threat, hosting, recovery, and exit evidence | Product Owner decision package recorded |
-| 2 | Application skeleton, configuration boundary, CI, tenant context | Phase 0 preview exit and source-code authority explicitly approved |
-| 3 | Identity, organization/outlet/device, catalog/cart, cash-sale vertical slice | Day 2 quality and isolation gates pass |
-| 4 | Migration/seeder, installer, deployment, backup/restore/rollback rehearsal | Target environment capability verified |
-| 5 | Security, isolation, smoke, recovery, and staging acceptance | No unresolved Critical/High preview defect |
+| 2 | Application skeleton, configuration boundary, CI, tenant context | M7.0 bridge published and separate Product Owner M7.1 source-code authority explicitly granted; final Phase 0 Exit and actual P2 qualification are not prerequisites for bounded Local/Test/CI preparation |
+| 3 | Identity, organization/outlet/device, catalog/cart, cash-sale vertical slice | Separate bounded authority plus applicable Day 2 quality and isolation gates |
+| 4 | Migration/seeder, installer, deployment, backup/restore/rollback rehearsal | Actual target environment capability verified and separate deployment/rehearsal authority granted where required |
+| 5 | Security, isolation, smoke, recovery, and staging acceptance | Combined source/security/runtime/recovery gates pass with no unresolved Critical/High Preview defect |
 
-The calendar target begins only after Day 1 exit evidence is approved. P1 remains Unverified until hosting evidence is complete. A missed mandatory gate moves the target; quality, tenant isolation, audit, or recovery controls must not be removed to preserve the date.
+The source-engineering clock may begin only after the applicable bounded source authority is granted. Preview deployment/operational acceptance may not begin until the actual target is identified and DEC-009 mandatory capability evidence is sufficient. P1 remains conditional/not selected and P2 actual target evidence must not be invented. A missed mandatory gate moves the target; quality, tenant isolation, audit, security, or recovery controls must not be removed to preserve the date.
 
 This track does not promote GD-007, resolve JRN-003/JRN-013, authorize production data or real payment, or change Phase 0 from In Progress before an explicit exact-head exit decision.
 
-Historical Technical Preview planning language is preserved as planning history. Later bounded Platform Foundation publications through Sprint 13 are repository facts but do not retroactively rewrite the entry gates recorded above.
+Historical Technical Preview planning language is preserved as planning history. Later bounded Platform Foundation publications through Sprint 13 are repository facts but do not retroactively rewrite historical lifecycle events.
+
+## M7 — Technical Preview Implementation Enablement
+
+M7 is a bounded Technical Preview workstream. Its labels describe sequencing and do not independently grant implementation authority or convert M7 into Sprint 14.
+
+| Micro-milestone | Controlled outcome | Gate |
+| --- | --- | --- |
+| M7.0 — Controlled Implementation Bridge | Separate Local/Test/CI source readiness from Preview runtime/deployment readiness | Product Owner substantive bridge decision plus governed publication lifecycle |
+| M7.1 — Application Skeleton & Configuration Boundary | Laravel/Vue/Inertia/Vite/TypeScript-first skeleton, config/secret boundary, health/readiness/correlation foundations, Local/Test/CI baseline | Separate exact bounded Product Owner source-code authority; exact dependency review before adoption |
+| M7.2 — Tenant Kernel & Isolation Foundation | Tenant context and isolation primitives with negative verification | Separate bounded authority and applicable M7.1 evidence |
+| M7.3 — Identity / Organization / Outlet / Device Minimum | Minimum first-party identity and organizational context | Separate bounded authority and applicable security gates |
+| M7.4 — POS Core Synthetic Vertical Slice | Synthetic bounded POS core flow | Separate bounded authority and transaction/security gates |
+| M7.5 — Preview Runtime Qualification | Qualify the actual P2 target under DEC-009 | Actual sanitized target evidence |
+| M7.6 — Preview Deployment / Recovery Rehearsal | Deploy/recover/rollback on qualified target | Qualified target plus separate deployment authority |
+| M7.7 — Technical Preview Acceptance | Combined technical acceptance | Required source, security, runtime, recovery, and operational evidence |
+
+Track A (Controlled Application Engineering) and Track B (Preview Runtime Qualification) may progress in parallel when their dependencies are independent. Both tracks converge before Technical Preview deployment/acceptance.
 
 ## M5 — Engineering State, CI & Governance Stabilization
 
