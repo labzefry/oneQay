@@ -1,14 +1,16 @@
 # Workflow Directory
 
-Application build, release, and deployment workflows remain deferred until the
-relevant Product Owner authority and delivery gates are available.
+Application release and deployment workflows remain deferred until the relevant
+Product Owner authority and delivery gates are available. M7.1 separately
+authorizes one bounded Local/Test/CI application-regression workflow only.
 
-The repository currently permits narrowly scoped governance and foundation
-validation workflows:
+The repository currently permits narrowly scoped governance, foundation, and
+M7.1 Local/Test/CI validation workflows:
 
 - `.github/workflows/governance-required-checks.yml`;
 - `.github/workflows/php-foundation-regression.yml`;
-- `.github/workflows/product-owner-merge-authority.yml`.
+- `.github/workflows/product-owner-merge-authority.yml`;
+- `.github/workflows/m7-1-application-regression.yml`.
 
 ## Stable governance checks
 
@@ -21,7 +23,7 @@ validation workflows:
 It runs for pull requests targeting `main`, uses least-privilege
 `contents: read`, pins `actions/checkout` to a full commit SHA, does not access
 repository secrets, and does not build, publish, release, migrate, or deploy
-OneQay.
+oneQay.
 
 ## PHP foundation regression
 
@@ -40,8 +42,39 @@ The check:
 - runs the full `composer test` foundation regression;
 - uses the GitHub-hosted runner's preinstalled PHP and Composer toolchain;
 - adds no third-party setup action;
-- accesses no production credential, production database, or production data;
+- accesses no Production credential, Production database, or Production data;
 - performs no migration, release, publish, or deployment action.
+
+## M7.1 application regression
+
+`m7-1-application-regression.yml` produces:
+
+- `m7-1-application-regression`.
+
+The check is bounded to the separately authorized M7.1 application skeleton. It:
+
+- checks out the exact pull-request source head;
+- preserves the root Platform Foundation regression;
+- enforces the governed PHP 8.2-8.5 compatibility boundary;
+- uses Node.js `24.19.0` for the Local/Test/CI frontend toolchain;
+- requires committed `composer.lock` and `package-lock.json` files;
+- validates and installs Composer dependencies from the lockfile;
+- rejects unresolved High/Critical Composer advisories;
+- validates application PHP syntax;
+- installs npm dependencies with `npm ci`;
+- rejects npm advisories at High or Critical severity;
+- type-checks Vue/TypeScript source;
+- builds Vite assets;
+- runs the M7.1 application regression covering configuration fail-closed,
+  health/readiness, correlation/error, tenant-context fail-closed, and
+  architecture-boundary behavior;
+- uses `contents: read` and receives no repository or Production secret;
+- performs no SQL, migration, infrastructure mutation, deployment, release, or
+  Production action.
+
+This M7.1 check is source-lifecycle evidence. Its existence does not modify the
+protected-branch required-status-check set and does not authorize M7.2 or later
+work.
 
 ## Product Owner merge authority
 
@@ -72,47 +105,38 @@ self-authorizing merge.
 
 ## Required ruleset activation
 
-M5.2 is not enforcement-complete until the active default-branch ruleset
-requires both additional contexts:
-
-- `php-foundation-regression`;
-- `product-owner-merge-authority`.
-
-The existing required contexts remain:
+The active default-branch lifecycle requires:
 
 - `governance-validation`;
 - `markdown-lint`;
-- `secret-scan`.
+- `secret-scan`;
+- `php-foundation-regression`;
+- `product-owner-merge-authority`.
 
-Ruleset activation is a repository-administration action and must preserve
-strict required-status-check policy, independent review, stale-review dismissal,
-latest-push approval, review-thread resolution, squash-only merge, deletion and
-non-fast-forward protection, and an empty bypass list.
+The M7.1 source authority does not grant repository-ruleset mutation. The new
+`m7-1-application-regression` check remains mandatory M7.1 lifecycle evidence
+for its Draft PR even though it is not silently added to the protected required
+status set.
 
-Because the Product Owner authority evaluator is intentionally trusted from the
-default branch, its automatic status production begins only after the workflow
-is published. The M5.2 publication is therefore the bootstrap change; ruleset
-activation and read-only verification follow publication before M5.2 can be
-declared enforcement-complete.
+Repository protection must preserve strict required-status-check policy,
+independent review, stale-review dismissal, latest-push approval, review-thread
+resolution, squash-only merge, deletion and non-fast-forward protection, and an
+empty bypass list.
 
 ## Scope boundary
 
-These workflows are control-plane and foundation-validation mechanisms. They do
-not authorize Sprint 14, application business source, migration execution,
-production database changes, deployment, release, ADR/GD promotion, JRN
-resolution, or production readiness.
-
-The detailed M5.2 implementation and activation record is maintained in
-`docs/handbook/M5_2_CI_LIFECYCLE_HARDENING.md`. Broader ROADMAP/TASKS/CHANGELOG
-synchronization remains a separate M5.3 concern and is not silently folded into
-this remediation.
+These workflows are control-plane, foundation-validation, or bounded M7.1
+Local/Test/CI mechanisms. They do not authorize Sprint 14, broader application
+business source, SQL/migration execution, Production database changes,
+deployment, release, ADR/GD promotion, JRN resolution, Phase 0 Exit, or
+Production readiness.
 
 Any workflow added here must:
 
 - use least-privilege `permissions`;
 - pin reusable actions to immutable commits;
 - avoid untrusted-code secret exposure;
-- avoid production credentials and production data unless separately
+- avoid Production credentials and Production data unless separately
   authorized;
 - produce traceable results bound to a commit;
 - document its authority boundary and operational activation requirements.
