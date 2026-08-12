@@ -26,7 +26,7 @@ authority.
 | `vite` | `8.1.5` | MIT | Approved frontend build tool |
 | `laravel-vite-plugin` | `3.1.3` | MIT | Laravel/Vite integration |
 | `@vitejs/plugin-vue` | `6.0.8` | MIT | Vue SFC integration |
-| `typescript` | `7.0.2` | Apache-2.0 | TypeScript-first frontend |
+| `typescript` | `5.9.3` | Apache-2.0 | Stable TypeScript compiler compatible with the M7.1 Vue type-checker |
 | `vue-tsc` | `3.3.8` | MIT | Vue/TypeScript static checking |
 
 Exact dependency locks are generated and then committed before the Draft PR is
