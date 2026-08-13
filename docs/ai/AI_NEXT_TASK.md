@@ -22,11 +22,12 @@
 - M7.1 Application Skeleton & Configuration Boundary: DONE / PUBLISHED through PR #92
 - M7.2 Tenant Kernel & Isolation Foundation: DONE / PUBLISHED through PR #93
 - M7.3 Identity / Organization / Outlet / Device Minimum: DONE / PUBLISHED through PR #94
-- Canonical next roadmap milestone: M7.4 — POS Core Synthetic Vertical Slice
-- M7.4: NOT AUTHORIZED / requires separate Product Owner source authority
-- M7.5: BLOCKED / actual sanitized P2 target evidence required
-- M7.6: BLOCKED
-- M7.7: BLOCKED
+- M7.4 POS Core Synthetic Vertical Slice: DONE / PUBLISHED through PR #96
+- M7.4A Technical Preview Interaction Layer: DONE / PUBLISHED through PR #98
+- Canonical next gated roadmap milestone: M7.5 — Preview Runtime Qualification
+- M7.5: BLOCKED / NOT AUTHORIZED; actual sanitized P2 target evidence and DEC-009 capability verification required
+- M7.6: BLOCKED / NOT AUTHORIZED
+- M7.7: BLOCKED / NOT AUTHORIZED
 - Sprint 12: Published
 - Sprint 13: Published
 - Sprint 14: Not Authorized
@@ -46,19 +47,19 @@ Do not create repetitive state-reconciliation commits merely to replace a stored
 
 **NO STANDING IMPLEMENTATION OR MILESTONE AUTHORITY.**
 
-The canonical next roadmap micro-milestone is:
+The canonical next gated roadmap micro-milestone is:
 
-**M7.4 — POS Core Synthetic Vertical Slice**
+**M7.5 — Preview Runtime Qualification**
 
 Its authority state is:
 
-**NOT AUTHORIZED.**
+**BLOCKED / NOT AUTHORIZED.**
 
-M7.4 may begin only after fresh GitHub Minimal Delta Verification and separate explicit Product Owner source authority. This checkpoint does not create that authority.
+M7.5 may begin only after actual sanitized P2 target evidence is supplied, the target is verified against DEC-009 mandatory capability requirements, fresh GitHub Minimal Delta Verification is performed, and separate explicit Product Owner M7.5 authority is granted. This checkpoint does not create evidence, qualification, or authority.
 
-The next governed engineering direction after successful publication of the one-time post-M7.3 reconciliation is therefore **M7.4 source-authority preparation**, not automatic M7.4 implementation and not another broad repository-wide state reconciliation.
+The next governed direction is therefore **M7.5 evidence/authority preparation**, not automatic M7.5 implementation, not Preview deployment, and not another application-source milestone.
 
-Track A Controlled Application Engineering and Track B Preview Runtime Qualification may progress in parallel only where separately authorized and dependency-independent. P2 qualification is not a prerequisite for separately authorized M7.4 Local/Test/CI work. Both tracks converge before Preview deployment/acceptance.
+Track A Controlled Application Engineering has published M7.4 and M7.4A. Track B Preview Runtime Qualification remains blocked until its external evidence and authority gates are satisfied. Both tracks converge before Preview deployment/acceptance.
 
 Substantive decision authority, preparation authority, independent exact-head review, Product Owner READY authority, and Product Owner MERGE authority remain separate whenever applicable.
 
@@ -68,12 +69,13 @@ Substantive decision authority, preparation authority, independent exact-head re
 - M7.1 — Application Skeleton & Configuration Boundary: **DONE / PUBLISHED** through PR #92.
 - M7.2 — Tenant Kernel & Isolation Foundation: **DONE / PUBLISHED** through PR #93.
 - M7.3 — Identity / Organization / Outlet / Device Minimum: **DONE / PUBLISHED** through PR #94.
-- M7.4 — POS Core Synthetic Vertical Slice: **NEXT / NOT AUTHORIZED**.
-- M7.5 — Preview Runtime Qualification: **BLOCKED / ACTUAL P2 TARGET EVIDENCE REQUIRED**.
-- M7.6 — Preview Deployment / Recovery Rehearsal: **BLOCKED**.
-- M7.7 — Technical Preview Acceptance: **BLOCKED**.
+- M7.4 — POS Core Synthetic Vertical Slice: **DONE / PUBLISHED** through PR #96.
+- M7.4A — Technical Preview Interaction Layer: **DONE / PUBLISHED** through PR #98.
+- M7.5 — Preview Runtime Qualification: **BLOCKED / NOT AUTHORIZED — ACTUAL SANITIZED P2 TARGET EVIDENCE AND DEC-009 CAPABILITY VERIFICATION REQUIRED**.
+- M7.6 — Preview Deployment / Recovery Rehearsal: **BLOCKED / NOT AUTHORIZED**.
+- M7.7 — Technical Preview Acceptance: **BLOCKED / NOT AUTHORIZED**.
 
-M7.1 preserves the application/configuration foundation. M7.2 preserves tenant-context and isolation controls. M7.3 preserves first-party identity separation, server-verified tenant membership, and server-controlled organization/outlet/device authority. None of those completion facts grants M7.4 source authority.
+M7.1 preserves the application/configuration foundation. M7.2 preserves tenant-context and isolation controls. M7.3 preserves first-party identity separation, server-verified tenant membership, and server-controlled organization/outlet/device authority. M7.4 preserves server-authoritative synthetic POS transaction behavior. M7.4A adds the bounded synthetic interaction layer while reusing the existing M7.4 `CompleteSyntheticSale` authority. None of those completion facts grants M7.5 runtime qualification, deployment, release, Phase 0 Exit, Sprint 14, or Production authority.
 
 ## M7 publication provenance
 
@@ -82,6 +84,8 @@ The following values are historical publication provenance only and must not be 
 - M7.1 PR #92: CLOSED / MERGED; resulting main `82b2bffb3b087aa818c2a229d2b7e0c07ea158ec`.
 - M7.2 PR #93: CLOSED / MERGED; resulting main `ba95f745869092d251230fb5a3db2c08e42f4941`.
 - M7.3 PR #94: CLOSED / MERGED; source head `67d7b890fe95db9c32d4e2dbc432be193bb064a9`; source tree `3cb925e9234bc28b64aec3a1f6efd1a03756221c`; resulting main `9b43f6be520b64e47bfa9a66be577dab20f69bd9`.
+- M7.4 PR #96: CLOSED / MERGED; source head `0659e0e3c2ab7f8ec9f12653b773aaa4391e931b`; source tree `f67f9b75a11b2710b58a9928f5b73f876cba2cef`; resulting main `4981fca92e7de028ca55e746b36af6afe0d3e7f2`.
+- M7.4A PR #98: CLOSED / MERGED; source head `893b73b8f20b2ede0d3a8896b3a015df5370dbed`; source tree `cdc140e5061481bec4b6b691b02b2b234181c2fb`; published commit `c0bdf8ad7539a5c83de2e5183fbf2eda9f17f02b`; published tree `cdc140e5061481bec4b6b691b02b2b234181c2fb`; source tree equals published tree: Yes.
 
 Before using any of those values for a new action, fetch live GitHub state again.
 
@@ -112,26 +116,24 @@ Issue #23 contains historical pre-M7.0 planning language, including older assump
 
 Issue #23 remains **KNOWN OPEN ISSUE SEMANTIC DRIFT / HISTORICAL PLANNING LANGUAGE**. Its historical wording must not override later canonical M7.0 bridge authority. This checkpoint does not authorize editing, commenting on, or closing Issue #23.
 
-## M7.4 preparation boundary
+## M7.5 qualification gate
 
-A future Product Owner M7.4 source-authority prompt must perform fresh Minimal Delta Verification and preserve at minimum:
+M7.5 is **not authorized** by publication of M7.4 or M7.4A.
 
-- M7.0–M7.3 governed completion facts;
-- Modular Monolith First, Clean Architecture, DDD, inward dependency, and framework-independent Domain/Application;
-- tenant isolation and verified organizational context;
-- synthetic-only Technical Preview data;
-- exact money representation and transaction correctness;
-- sale-level payment sufficiency;
-- cash-first + configurable manual/external recorded tender boundary under DEC-007;
-- idempotency and replay protection;
-- stock causation/integrity boundaries;
-- audit/correlation;
-- no real payment provider;
+Before any future M7.5 activity, the required gate includes at minimum:
+
+- fresh GitHub Minimal Delta Verification;
+- actual sanitized P2 target evidence supplied from the real target rather than invented or assumed capability;
+- DEC-009 mandatory capability verification against that target;
+- explicit separation of runtime qualification from deployment/release authority;
+- preservation of M7.1–M7.4A source and security boundaries;
+- synthetic-only Technical Preview data unless a separately approved masked-data process exists;
 - no Production/customer data;
+- no real payment provider processing;
 - no Production deployment or release;
-- separate exact-head independent review once a future M7.4 Draft PR exists.
+- separate explicit Product Owner M7.5 authority before qualification work begins.
 
-The future M7.4 authority must not silently introduce database schema, SQL, migrations, seeders, dependencies, deployment, or Production work unless separately and explicitly authorized.
+A future M7.5 authority must not silently introduce application source changes, database schema, SQL, migrations, seeders, dependencies, deployment, release, or Production work unless separately and explicitly authorized.
 
 ## Historical GOV-051 decision-record work
 
@@ -250,11 +252,11 @@ Ruleset protections remain strict according to the published M5.2 verification r
 
 ## Product boundary
 
-Historical decisions and M7.0–M7.3 completion do not authorize:
+Historical decisions and M7.0–M7.4A completion do not authorize:
 
 - Sprint 14 implementation;
 - final/business/production application implementation beyond separately bounded authority;
-- M7.4 source implementation;
+- M7.5 runtime qualification;
 - database/schema implementation;
 - executable SQL;
 - migration execution;
