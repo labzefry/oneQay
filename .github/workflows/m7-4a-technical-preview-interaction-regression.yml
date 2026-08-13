@@ -1,0 +1,183 @@
+name: M7.4A Technical Preview Interaction Regression
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'apps/web/app/Application/Preview/**'
+      - 'apps/web/app/Infrastructure/Preview/**'
+      - 'apps/web/app/Delivery/Preview/**'
+      - 'apps/web/app/Providers/TechnicalPreviewServiceProvider.php'
+      - 'apps/web/bootstrap/providers.php'
+      - 'apps/web/config/technical-preview.php'
+      - 'apps/web/routes/web.php'
+      - 'apps/web/resources/js/pages/Preview/**'
+      - 'apps/web/resources/js/components/Preview/**'
+      - 'apps/web/tests/technical-preview-interaction.php'
+      - '.github/workflows/m7-4a-technical-preview-interaction-regression.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: m7-4a-technical-preview-interaction-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  m7-4a-technical-preview-interaction-regression:
+    name: m7-4a-technical-preview-interaction-regression
+    runs-on: ubuntu-latest
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHQ=
+      APP_DEBUG: 'false'
+      APP_URL: http://localhost
+      ONEQAY_RUNTIME_CLASS: ci
+      ONEQAY_TECHNICAL_PREVIEW_ENABLED: 'true'
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Enforce bounded M7.4A source envelope
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "${{ github.base_ref }}"
+          git diff --name-only "origin/${{ github.base_ref }}...HEAD" > /tmp/m74a-changed-files.txt
+          test -s /tmp/m74a-changed-files.txt
+          while IFS= read -r file; do
+            case "$file" in
+              apps/web/app/Application/Preview/*|\
+              apps/web/app/Infrastructure/Preview/*|\
+              apps/web/app/Delivery/Preview/*|\
+              apps/web/app/Providers/TechnicalPreviewServiceProvider.php|\
+              apps/web/bootstrap/providers.php|\
+              apps/web/config/technical-preview.php|\
+              apps/web/routes/web.php|\
+              apps/web/resources/js/pages/Preview/*|\
+              apps/web/resources/js/components/Preview/*|\
+              apps/web/tests/technical-preview-interaction.php|\
+              .github/workflows/m7-4a-technical-preview-interaction-regression.yml|\
+              .github/workflows/README.md|\
+              ARCHITECTURE.md|README.md|ROADMAP.md|TASKS.md|docs/ai/AI_SESSION_STATE.md)
+                ;;
+              *)
+                echo "M7.4A unauthorized changed path: $file" >&2
+                exit 1
+                ;;
+            esac
+          done < /tmp/m74a-changed-files.txt
+
+      - name: Preserve root Platform Foundation regression
+        run: |
+          composer validate --strict --no-check-publish
+          composer test
+
+      - name: Setup exact Node LTS
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: 24.19.0
+
+      - name: Require unchanged dependency manifests and locks
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f apps/web/composer.lock
+          test -f apps/web/package-lock.json
+          if git diff --name-only "origin/${{ github.base_ref }}...HEAD" | grep -Eq '(^|/)(composer\.(json|lock)|package(-lock)?\.json)$'; then
+            echo 'M7.4A does not authorize dependency manifest or lockfile changes.' >&2
+            exit 1
+          fi
+
+      - name: Validate locked Composer dependencies
+        working-directory: apps/web
+        run: |
+          composer validate --no-check-publish
+          composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Reject High or Critical Composer advisories
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          composer audit --locked --format=json > /tmp/oneqay-composer-audit.json || true
+          php -r '$data=json_decode(file_get_contents("/tmp/oneqay-composer-audit.json"),true,512,JSON_THROW_ON_ERROR); foreach (($data["advisories"] ?? []) as $package=>$items) { foreach ($items as $item) { if (in_array(strtolower((string)($item["severity"] ?? "")), ["high","critical"], true)) { fwrite(STDERR,"Blocking Composer advisory for {$package}.\n"); exit(1); } } }'
+
+      - name: Validate PHP syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          find apps/web/app apps/web/bootstrap apps/web/config apps/web/routes apps/web/tests -type f -name '*.php' -print0 |
+            while IFS= read -r -d '' file; do php -l "$file"; done
+
+      - name: Preserve preview Application framework independence
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -R -n -F -e 'Illuminate\' -e 'Inertia\' -e 'Vue' apps/web/app/Application/Preview; then
+            echo 'M7.4A Application/Preview must remain framework independent.' >&2
+            exit 1
+          fi
+
+      - name: Reject database or production-secret implementation
+        shell: bash
+        run: |
+          set -euo pipefail
+          test ! -d apps/web/database/migrations
+          if grep -R -n -E 'Illuminate\\Database|Schema::|DB::|new PDO|mysqli_' \
+            apps/web/app/Application/Preview apps/web/app/Infrastructure/Preview apps/web/app/Delivery/Preview 2>/dev/null; then
+            echo 'M7.4A SQL/database implementation is not authorized.' >&2
+            exit 1
+          fi
+          if grep -R -n -E 'BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|AKIA[0-9A-Z]{16}' \
+            apps/web/app/Application/Preview apps/web/app/Infrastructure/Preview apps/web/app/Delivery/Preview 2>/dev/null; then
+            echo 'M7.4A source contains forbidden credential material.' >&2
+            exit 1
+          fi
+
+      - name: Install locked npm dependencies
+        working-directory: apps/web
+        run: npm ci --ignore-scripts --no-fund
+
+      - name: Reject High or Critical npm advisories
+        working-directory: apps/web
+        run: npm audit --audit-level=high
+
+      - name: Type-check Vue and TypeScript
+        working-directory: apps/web
+        run: npm run type-check
+
+      - name: Build Vite assets
+        working-directory: apps/web
+        run: npm run build
+
+      - name: Preserve M7.1 application regression
+        working-directory: apps/web
+        run: composer test
+
+      - name: Preserve M7.2 tenant isolation regression
+        working-directory: apps/web
+        run: php tests/tenant-isolation.php
+
+      - name: Preserve M7.3 identity organizational context regression
+        working-directory: apps/web
+        run: php tests/identity-org-context.php
+
+      - name: Preserve M7.4 POS core synthetic regression
+        working-directory: apps/web
+        run: php tests/pos-core-synthetic.php
+
+      - name: Run M7.4A Technical Preview interaction regression
+        working-directory: apps/web
+        run: php tests/technical-preview-interaction.php
