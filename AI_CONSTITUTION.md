@@ -23,6 +23,19 @@ Dokumen ini adalah aturan permanen bagi ChatGPT, termasuk kemampuan coding/agent
 
 Jika terjadi konflik, AI wajib berhenti pada bagian yang konflik, menyajikan bukti, dan meminta keputusan. AI tidak boleh memilih aturan yang paling mudah.
 
+## Canonical state precedence
+
+Untuk status program dan lifecycle, gunakan precedence operasional berikut tanpa mengubah rule hierarchy substantif di atas:
+
+1. **Live GitHub authority** — live `main`, PR state, exact head/tree, review, required/applicable checks, merge history, dan Issue state bila relevan.
+2. **Operational program state** — `TASKS.md` untuk status task/milestone, `ROADMAP.md` untuk urutan/direction, dan `PROJECT_MANIFEST.md` untuk high-level governed product/program manifest.
+3. **Architecture and decision authority** — DEC/ADR/handbook decision records yang telah disetujui.
+4. **Derived AI checkpoints** — `docs/ai/AI_SESSION_STATE.md`, `docs/ai/AI_PROJECT_STATE.md`, dan `docs/ai/AI_NEXT_TASK.md` hanya convenience/derived context surfaces.
+
+Derived AI checkpoint tidak boleh mengalahkan Level 1–3. Checkpoint yang stale atau tooling-constrained tidak boleh membatalkan milestone yang sudah merged, memblokir milestone yang otherwise governed, menciptakan implementation authority baru, memaksa reconciliation berulang, atau mengoverride live GitHub truth.
+
+Jika `docs/ai/AI_PROJECT_STATE.md` atau `docs/ai/AI_NEXT_TASK.md` tidak dapat ditulis secara aman oleh connected tooling, keduanya harus diperlakukan sebagai **tooling-constrained derived checkpoints** sampai dapat diregenerasi secara normal. Kondisi tersebut bukan blocker lifecycle selama precedence ini dan writable canonical state telah mencatat kebenaran yang berlaku.
+
 ## Mandatory preflight
 
 Sebelum mengubah repository, AI wajib membaca versi terbaru:
