@@ -1,19 +1,20 @@
 # Workflow Directory
 
 Application release and deployment workflows remain deferred until the relevant
-Product Owner authority and delivery gates are available. M7.1, M7.2, and M7.3
-each permit only their separately authorized bounded Local/Test/CI validation
-workflows.
+Product Owner authority and delivery gates are available. M7.1, M7.2, M7.3, and
+M7.4 each permit only their separately authorized bounded Local/Test/CI
+validation workflows.
 
 The repository currently permits narrowly scoped governance, foundation, M7.1,
-M7.2, and M7.3 Local/Test/CI validation workflows:
+M7.2, M7.3, and M7.4 Local/Test/CI validation workflows:
 
 - `.github/workflows/governance-required-checks.yml`;
 - `.github/workflows/php-foundation-regression.yml`;
 - `.github/workflows/product-owner-merge-authority.yml`;
 - `.github/workflows/m7-1-application-regression.yml`;
 - `.github/workflows/m7-2-tenant-isolation-regression.yml`;
-- `.github/workflows/m7-3-identity-org-context-regression.yml`.
+- `.github/workflows/m7-3-identity-org-context-regression.yml`;
+- `.github/workflows/m7-4-pos-core-synthetic-regression.yml`.
 
 ## Stable governance checks
 
@@ -47,6 +48,28 @@ The check:
 - adds no third-party setup action;
 - accesses no Production credential, Production database, or Production data;
 - performs no migration, release, publish, or deployment action.
+
+## Milestone workflow applicability
+
+Standalone M7.2, M7.3, and M7.4 workflows are applicable only when their owned
+source envelope or their own workflow definition is changed. Unrelated
+documentation-only pull requests must not create milestone regression failures.
+
+Workflow applicability and regression preservation are separate controls:
+
+- a non-applicable predecessor workflow may be **NOT RUN**;
+- an applicable successor workflow must continue executing predecessor
+  behavioral regressions that are part of its governed verification chain;
+- path filtering does not authorize modification of predecessor source and does
+  not disable tenant, identity/organizational, money, idempotency, audit, or
+  other preserved regressions;
+- a pull request that changes a milestone workflow remains applicable to that
+  workflow so the workflow correction itself is validated.
+
+The bounded post-M7.4 lifecycle-stabilization envelope permits only the
+explicit governance/documentation and M7.2/M7.3/M7.4 workflow files needed to
+validate that corrective PR. It does not broaden application business-source
+authority.
 
 ## M7.1 application regression
 
@@ -85,20 +108,20 @@ work.
 
 - `m7-2-tenant-isolation-regression`.
 
-The check preserves the separately authorized M7.2 Tenant Kernel & Isolation
-Foundation while remaining active for the bounded M7.3 successor source. It:
+The standalone check is bounded to the M7.2 Tenant Kernel & Isolation Foundation
+and runs only when the M7.2-owned source envelope or the M7.2 workflow itself is
+touched. It:
 
 - checks out the exact pull-request source head;
-- permits only the governed M7.2 source envelope plus the separately authorized
-  bounded M7.3 identity/organization/outlet/device successor envelope;
+- enforces the governed M7.2 source envelope plus the explicit lifecycle-
+  stabilization governance envelope when the workflow itself is under review;
 - preserves the root Platform Foundation regression;
 - preserves the M7.1 application regression;
 - rejects dependency-manifest or lockfile changes;
 - validates and installs the already locked Composer dependencies;
 - rejects unresolved High/Critical Composer advisories;
 - validates application PHP syntax;
-- rejects database/schema/migration/SQL implementation across the bounded M7.2
-  and M7.3 source;
+- rejects database/schema/migration/SQL implementation across the bounded source;
 - installs already locked npm dependencies with `npm ci`;
 - rejects npm advisories at High or Critical severity;
 - preserves Vue/TypeScript type-check and Vite build evidence;
@@ -109,9 +132,10 @@ Foundation while remaining active for the bounded M7.3 successor source. It:
 - performs no SQL, migration, infrastructure mutation, deployment, release,
   publish, or Production action.
 
-The M7.3 successor allowlist does not disable, skip, or weaken the M7.2 tenant
-isolation regression. It only allows the separately authorized bounded M7.3
-source to coexist while the M7.2 regression continues to execute.
+M7.3 or M7.4 successor source does not need this standalone predecessor workflow
+to run merely because successor paths changed. The M7.3 and M7.4 workflows
+preserve the M7.2 tenant-isolation behavioral regression when those successor
+workflows are applicable.
 
 The synthetic tenant verifier is Local/Test/CI evidence only and is not
 registered as a Production identity or membership implementation.
@@ -122,12 +146,13 @@ registered as a Production identity or membership implementation.
 
 - `m7-3-identity-org-context-regression`.
 
-The check is bounded to the separately authorized M7.3 Identity / Organization /
-Outlet / Device Minimum. It:
+The standalone check is bounded to the M7.3 Identity / Organization / Outlet /
+Device Minimum and runs only when the M7.3-owned source envelope or the M7.3
+workflow itself is touched. It:
 
 - checks out the exact pull-request source head;
-- rejects changed paths outside the Product Owner-authorized M7.3 source
-  envelope;
+- rejects changed paths outside the Product Owner-authorized M7.3 source or
+  lifecycle-stabilization envelope;
 - rejects modification of the root Tenant/Auth Platform Foundation;
 - preserves the root Platform Foundation regression;
 - preserves the M7.1 application regression;
@@ -152,9 +177,46 @@ Outlet / Device Minimum. It:
 - performs no authentication implementation, SQL, migration, infrastructure
   mutation, deployment, release, publish, or Production action.
 
+M7.4 successor source does not need this standalone predecessor workflow to run
+merely because M7.4 paths changed. The applicable M7.4 workflow preserves the
+full M7.3 identity/organizational-context behavioral regression.
+
 M7.3 does not implement password login, MFA/TOTP, WebAuthn, token authentication,
 OAuth/OIDC/SAML, real tenant membership persistence, or Production organizational
 repositories. It does not authorize M7.4 or later work.
+
+## M7.4 POS core synthetic regression
+
+`m7-4-pos-core-synthetic-regression.yml` produces:
+
+- `m7-4-pos-core-synthetic-regression`.
+
+The standalone check is bounded to the M7.4 POS Core Synthetic Vertical Slice and
+runs only when the M7.4-owned source envelope or the M7.4 workflow itself is
+touched. It:
+
+- checks out the exact pull-request source head;
+- enforces the bounded POS source envelope plus the explicit lifecycle-
+  stabilization governance envelope when the workflow itself is under review;
+- preserves the root Platform Foundation and M7.1 application regressions;
+- preserves the full M7.2 tenant-isolation regression;
+- preserves the full M7.3 identity/organizational-context regression;
+- rejects dependency-manifest or lockfile changes;
+- validates locked Composer/npm dependencies and rejects unresolved
+  High/Critical advisories;
+- validates PHP syntax and Vue/TypeScript/Vite build evidence;
+- preserves Domain/Application framework independence;
+- rejects database/schema/migration/SQL implementation;
+- executes deterministic M7.4 POS core synthetic regression for exact-money,
+  idempotency/replay, payment sufficiency, stock causation, tenant/context, and
+  audit/correlation behavior;
+- uses `contents: read`, receives no Production secret, and performs no
+  migration, deployment, release, publish, or Production action.
+
+M7.4 workflow success is regression evidence for the bounded synthetic POS slice;
+it is not evidence that a complete end-user POS UI, Production authentication,
+durable business persistence, deployment, release, or Production readiness
+exists.
 
 ## Product Owner merge authority
 
@@ -193,11 +255,12 @@ The active default-branch lifecycle requires:
 - `php-foundation-regression`;
 - `product-owner-merge-authority`.
 
-M7.1, M7.2, and M7.3 source authority do not grant repository-ruleset mutation.
-`m7-1-application-regression`, `m7-2-tenant-isolation-regression`, and
-`m7-3-identity-org-context-regression` remain mandatory milestone-specific
-lifecycle evidence for their applicable Draft PRs even though they are not
-silently added to the protected required-status set.
+M7.1, M7.2, M7.3, and M7.4 source authority do not grant repository-ruleset
+mutation. `m7-1-application-regression`, `m7-2-tenant-isolation-regression`,
+`m7-3-identity-org-context-regression`, and `m7-4-pos-core-synthetic-regression`
+remain mandatory milestone-specific lifecycle evidence for their applicable
+Draft PRs even though they are not silently added to the protected required-
+status set.
 
 Repository protection must preserve strict required-status-check policy,
 independent review, stale-review dismissal, latest-push approval, review-thread
@@ -207,10 +270,10 @@ empty bypass list.
 ## Scope boundary
 
 These workflows are control-plane, foundation-validation, or bounded
-M7.1/M7.2/M7.3 Local/Test/CI mechanisms. They do not authorize Sprint 14, M7.4+,
-broader application business source, real authentication, SQL/migration
-execution, Production database changes, deployment, release, ADR/GD promotion,
-JRN resolution, Phase 0 Exit, or Production readiness.
+M7.1/M7.2/M7.3/M7.4 Local/Test/CI mechanisms. They do not authorize Sprint 14,
+M7.5+, broader application business source, real Production authentication,
+SQL/migration execution, Production database changes, deployment, release,
+ADR/GD promotion, JRN resolution, Phase 0 Exit, or Production readiness.
 
 Any workflow added here must:
 

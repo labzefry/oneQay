@@ -14,8 +14,8 @@
 | Source of Truth | GitHub |
 | Current delivery phase | Phase 0 — Governance and Discovery: In Progress |
 | Current engineering workstream | M7 — Technical Preview Implementation Enablement |
-| Latest completed micro-milestone | M7.3 — Identity / Organization / Outlet / Device Minimum |
-| Next roadmap micro-milestone | M7.4 — POS Core Synthetic Vertical Slice — Not Authorized |
+| Latest completed micro-milestone | M7.4 — POS Core Synthetic Vertical Slice |
+| Next gated micro-milestone | M7.5 — Preview Runtime Qualification — Blocked pending actual sanitized P2 target evidence and DEC-009 capability verification |
 | Sprint 14 | Not Authorized |
 | Production readiness | NO-GO |
 
@@ -104,13 +104,16 @@ Current canonical state:
 - M7.1 — Application Skeleton & Configuration Boundary: **DONE / PUBLISHED** through PR #92;
 - M7.2 — Tenant Kernel & Isolation Foundation: **DONE / PUBLISHED** through PR #93;
 - M7.3 — Identity / Organization / Outlet / Device Minimum: **DONE / PUBLISHED** through PR #94;
-- M7.4 — POS Core Synthetic Vertical Slice: **NEXT / NOT AUTHORIZED**;
+- M7.4 — POS Core Synthetic Vertical Slice: **DONE / PUBLISHED** through PR #96;
+- M7.5 — Preview Runtime Qualification: **BLOCKED / NOT AUTHORIZED** pending actual sanitized P2 target evidence and DEC-009 capability verification;
+- M7.6 — Preview Deployment / Recovery Rehearsal: **BLOCKED**;
+- M7.7 — Technical Preview Acceptance: **BLOCKED**;
 - Sprint 14: **Not Authorized**;
 - final/business/production application implementation: **Blocked unless separately authorized**;
 - deployment/release/production migration: **Not Authorized**;
 - production readiness: **NO-GO**.
 
-M7.0–M7.3 publication facts do not imply Phase 0 exit, Sprint 14 authority, M7.4 source authority, deployment, release, or Production authority. M7.4 requires fresh Minimal Delta Verification and separate Product Owner source authority.
+M7.0–M7.4 publication facts do not imply Phase 0 exit, Sprint 14 authority, M7.5 runtime-qualification authority, deployment, release, or Production authority. M7.5 remains gated by actual sanitized P2 target evidence and DEC-009 capability verification.
 
 Broader final/business application implementation tetap memerlukan keputusan minimum yang relevan untuk scope-nya, termasuk MVP boundary, domain/architecture decisions, multi-tenant/data controls, security baseline, database/migration governance, API contracts, testing/quality gates, deployment environment, dan release/recovery controls.
 
@@ -310,7 +313,7 @@ Cloud
 Kubernetes
 ```
 
-Setiap tahap harus memiliki entry criteria, exit criteria, backup, rollback, observability, security controls, dan perkiraan beban operasional. Perpindahan stage membutuhkan evidence serta authority yang sesuai. Historical M6 work tidak memberikan deployment authority, dan M7.0–M7.3 publication juga tidak memberikan deployment authority.
+Setiap tahap harus memiliki entry criteria, exit criteria, backup, rollback, observability, security controls, dan perkiraan beban operasional. Perpindahan stage membutuhkan evidence serta authority yang sesuai. Historical M6 work tidak memberikan deployment authority, dan M7.0–M7.4 publication juga tidak memberikan deployment authority.
 
 ## Integrasi Cloudflare
 
@@ -325,7 +328,7 @@ oneQay mempertahankan spesifikasi:
 - **Installer Wizard** untuk pemeriksaan environment, konfigurasi database, pembuatan administrator, environment generation, migration, seeding, optimization, dan installation report;
 - **Auto Updater** untuk version check, release download, backup, integrity verification, maintenance mode, installation, migration, optimization, health verification, serta recovery/rollback.
 
-Executable migration, production deployment, release, dan production database modification tetap mengikuti gate terpisah dan tidak diotorisasi oleh M7.0–M7.3 publication.
+Executable migration, production deployment, release, dan production database modification tetap mengikuti gate terpisah dan tidak diotorisasi oleh M7.0–M7.4 publication.
 
 ## Cara berkontribusi
 

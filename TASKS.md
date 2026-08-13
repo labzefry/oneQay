@@ -172,12 +172,12 @@ M7 is the current bounded Technical Preview engineering workstream created by th
 | M7.1 | Application Skeleton & Configuration Boundary | Done | Governed publication completed through PR #92; no standing successor authority |
 | M7.2 | Tenant Kernel & Isolation Foundation | Done | Governed publication completed through PR #93; M7.1 foundation preserved |
 | M7.3 | Identity / Organization / Outlet / Device Minimum | Done | Governed publication completed through PR #94; M7.2 tenant isolation and server-controlled identity/organizational boundaries preserved |
-| M7.4 | POS Core Synthetic Vertical Slice | Blocked | **NEXT / NOT AUTHORIZED**; requires separate Product Owner M7.4 source authority plus transaction, money, idempotency, synthetic-data, tenant-isolation, organizational-context, authorization, and security gates |
+| M7.4 | POS Core Synthetic Vertical Slice | Done | Governed publication completed through PR #96; bounded synthetic Local/Test/CI POS transaction evidence published; no standing M7.5, deployment, release, or Production authority |
 | M7.5 | Preview Runtime Qualification | Blocked | Actual sanitized P2 target evidence and DEC-009 capability verification required |
 | M7.6 | Preview Deployment / Recovery Rehearsal | Blocked | Qualified target, applicable source/security evidence, and separate deployment authority required |
 | M7.7 | Technical Preview Acceptance | Blocked | Combined source, security, runtime, recovery, and operational evidence required |
 
-Track A Local/Test/CI engineering and Track B P2 runtime qualification may proceed in parallel only where separately authorized and dependency-independent. P2 qualification is not a prerequisite for separately authorized M7.4 Local/Test/CI work. Both tracks converge before Technical Preview deployment/acceptance.
+Track A Local/Test/CI engineering has published M7.4. Track B P2 runtime qualification remains blocked until actual sanitized P2 target evidence is available and verified under DEC-009. Both tracks converge before Technical Preview deployment/acceptance.
 
 ## DEC-010 Supplement publication state
 

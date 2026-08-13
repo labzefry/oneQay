@@ -4,6 +4,12 @@ on:
   pull_request:
     branches:
       - main
+    paths:
+      - 'apps/web/app/Domain/Pos/**'
+      - 'apps/web/app/Application/Pos/**'
+      - 'apps/web/app/Infrastructure/Pos/**'
+      - 'apps/web/tests/pos-core-synthetic.php'
+      - '.github/workflows/m7-4-pos-core-synthetic-regression.yml'
   workflow_dispatch:
 
 permissions:
@@ -33,7 +39,7 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: Enforce bounded M7.4 source envelope
+      - name: Enforce bounded M7.4 source and lifecycle-stabilization envelope
         if: github.event_name == 'pull_request'
         shell: bash
         run: |
@@ -47,7 +53,16 @@ jobs:
               apps/web/app/Application/Pos/*|\
               apps/web/app/Infrastructure/Pos/*|\
               apps/web/tests/pos-core-synthetic.php|\
-              .github/workflows/m7-4-pos-core-synthetic-regression.yml)
+              .github/workflows/m7-2-tenant-isolation-regression.yml|\
+              .github/workflows/m7-3-identity-org-context-regression.yml|\
+              .github/workflows/m7-4-pos-core-synthetic-regression.yml|\
+              .github/workflows/README.md|\
+              AI_CONSTITUTION.md|\
+              ARCHITECTURE.md|\
+              README.md|\
+              ROADMAP.md|\
+              TASKS.md|\
+              docs/ai/AI_SESSION_STATE.md)
                 ;;
               *)
                 echo "M7.4 unauthorized changed path: $file" >&2

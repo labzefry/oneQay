@@ -211,14 +211,15 @@ Historical Technical Preview planning language is preserved as planning history.
 
 M7 is the current bounded Technical Preview engineering workstream. Its labels describe sequencing and do not independently grant implementation authority or convert M7 into Sprint 14.
 
-Current progression after governed publication through PR #94:
+Current progression after governed publication through PR #96:
 
 - M7.0: **DONE / PUBLISHED**;
 - M7.1: **DONE / PUBLISHED** through PR #92;
 - M7.2: **DONE / PUBLISHED** through PR #93;
 - M7.3: **DONE / PUBLISHED** through PR #94;
-- M7.4: **CANONICAL NEXT ROADMAP MICRO-MILESTONE / NOT AUTHORIZED**;
-- M7.5–M7.7: **BLOCKED** according to their separate evidence and authority gates.
+- M7.4: **DONE / PUBLISHED** through PR #96;
+- M7.5: **BLOCKED / ACTUAL SANITIZED P2 TARGET EVIDENCE AND DEC-009 CAPABILITY VERIFICATION REQUIRED**;
+- M7.6–M7.7: **BLOCKED** according to their separate evidence and authority gates.
 
 | Micro-milestone | Controlled outcome | Canonical state / gate |
 | --- | --- | --- |
@@ -226,12 +227,12 @@ Current progression after governed publication through PR #94:
 | M7.1 — Application Skeleton & Configuration Boundary | Laravel/Vue/Inertia/Vite/TypeScript-first skeleton, config/secret boundary, health/readiness/correlation foundations, Local/Test/CI baseline | **DONE / PUBLISHED** through PR #92 |
 | M7.2 — Tenant Kernel & Isolation Foundation | Tenant context and isolation primitives with negative verification | **DONE / PUBLISHED** through PR #93 |
 | M7.3 — Identity / Organization / Outlet / Device Minimum | Minimum first-party identity and organizational context | **DONE / PUBLISHED** through PR #94 |
-| M7.4 — POS Core Synthetic Vertical Slice | Synthetic bounded POS core flow | **NEXT / NOT AUTHORIZED**; requires separate Product Owner source authority plus transaction, money, idempotency, synthetic-data, tenant-isolation, organizational-context, authorization, and security gates |
-| M7.5 — Preview Runtime Qualification | Qualify the actual P2 target under DEC-009 | **BLOCKED**; actual sanitized P2 target evidence required |
+| M7.4 — POS Core Synthetic Vertical Slice | Synthetic bounded POS core flow | **DONE / PUBLISHED** through PR #96; publication does not grant M7.5, deployment, release, or Production authority |
+| M7.5 — Preview Runtime Qualification | Qualify the actual P2 target under DEC-009 | **BLOCKED**; actual sanitized P2 target evidence and DEC-009 capability verification required |
 | M7.6 — Preview Deployment / Recovery Rehearsal | Deploy/recover/rollback on qualified target | **BLOCKED**; qualified target plus separate deployment authority required |
 | M7.7 — Technical Preview Acceptance | Combined technical acceptance | **BLOCKED**; combined source, security, runtime, recovery, and operational evidence required |
 
-Track A (Controlled Application Engineering) and Track B (Preview Runtime Qualification) may progress in parallel when their dependencies are independent and each has separate applicable authority. P2 qualification is not a false prerequisite for separately authorized M7.4 Local/Test/CI source work. Both tracks converge before Technical Preview deployment/acceptance.
+Track A Controlled Application Engineering has published the bounded M7.4 Local/Test/CI synthetic POS slice. Track B Preview Runtime Qualification remains separately gated: M7.5 cannot begin until actual sanitized P2 target evidence is supplied and verified against DEC-009. Both tracks still converge before Technical Preview deployment/acceptance.
 
 ## M5 — Engineering State, CI & Governance Stabilization
 
