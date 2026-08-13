@@ -7,7 +7,7 @@
 - Developer and Product Engineering Entity: Lab | zefry
 - Repository: `labzefry/oneQay`
 - Repository role: Single Source of Truth
-- Checkpoint date: 2026-08-11
+- Checkpoint date: 2026-08-13
 - Canonical product attribution: Lab | zefry
 - Canonical product name: `oneQay`
 
@@ -25,6 +25,7 @@ Do not create recurring reconciliation commits solely to replace a previously st
 
 - Canonical delivery phase: Phase 0 — Governance and Discovery
 - Canonical Phase 0 status: In Progress
+- Current engineering workstream: M7 — Technical Preview Implementation Enablement
 - M5.1: PUBLISHED / COMPLETE through PR #66
 - M5.2: PUBLISHED / ENFORCEMENT COMPLETE through PR #67
 - M5.3: PUBLISHED / COMPLETE through PR #68
@@ -33,6 +34,15 @@ Do not create recurring reconciliation commits solely to replace a previously st
 - M6 Closure — Checkpoint Semantics Correction: PUBLISHED / COMPLETE through PR #71
 - GOV-051 Enterprise Vision substantive decision: APPROVED / DECISION COMPLETE
 - Enterprise Vision decision status: Approved
+- M7.0 Controlled Implementation Bridge: DONE / PUBLISHED
+- M7.1 Application Skeleton & Configuration Boundary: DONE / PUBLISHED through PR #92
+- M7.2 Tenant Kernel & Isolation Foundation: DONE / PUBLISHED through PR #93
+- M7.3 Identity / Organization / Outlet / Device Minimum: DONE / PUBLISHED through PR #94
+- Canonical next roadmap micro-milestone: M7.4 — POS Core Synthetic Vertical Slice
+- M7.4 authority: NOT AUTHORIZED / requires fresh Minimal Delta Verification plus separate Product Owner source authority
+- M7.5 Preview Runtime Qualification: BLOCKED / actual sanitized P2 target evidence required
+- M7.6 Preview Deployment / Recovery Rehearsal: BLOCKED
+- M7.7 Technical Preview Acceptance: BLOCKED
 - Sprint 12: Published
 - Sprint 13: Published
 - Sprint 14: Not Authorized
@@ -40,6 +50,10 @@ Do not create recurring reconciliation commits solely to replace a previously st
 - Deployment: None / Not Authorized
 - Release: None / Not Authorized
 - Migration execution: Not Authorized / Not Performed
+
+Track A Controlled Application Engineering and Track B Preview Runtime Qualification may progress in parallel only where separately authorized and dependency-independent. P2 qualification is not a prerequisite for separately authorized M7.4 Local/Test/CI source work; both tracks converge before Preview deployment/acceptance.
+
+Issue #23 contains historical pre-M7.0 planning language. That historical wording must not override the later governed Phase 0 Controlled Implementation Bridge for bounded Local/Test/CI source preparation. Issue #23 mutation is outside this checkpoint reconciliation.
 
 ## Current canonical decision state
 
@@ -57,6 +71,19 @@ Do not create recurring reconciliation commits solely to replace a previously st
 - DEC-011 Data Retention, Privacy, and Jurisdiction: **APPROVED / DECISION COMPLETE**; initial commercial/launch jurisdiction remains not yet canonically selected.
 - DEC-012 RPO/RTO and Support Objectives: **APPROVED / DECISION COMPLETE**; final numerical Production RPO/RTO/SLO and customer-contractual SLA remain deferred.
 - DEC-010 Supplement — Dependency Cost Baseline, Open-Source Preference, and Visualization Technology Direction: **APPROVED / DECISION COMPLETE / PUBLISHED through PR #87**; Apache ECharts remains a default Web/PWA visualization technology candidate / approved technology direction only; dependency/package adoption and implementation remain separately gated.
+
+## M7 publication facts
+
+The M7.0–M7.3 facts below are publication provenance, not standing authority:
+
+- M7.0 — Controlled Implementation Bridge: governed publication complete before M7.1 source work.
+- M7.1 — Application Skeleton & Configuration Boundary: PR #92 CLOSED / MERGED; resulting main `82b2bffb3b087aa818c2a229d2b7e0c07ea158ec`.
+- M7.2 — Tenant Kernel & Isolation Foundation: PR #93 CLOSED / MERGED; resulting main `ba95f745869092d251230fb5a3db2c08e42f4941`.
+- M7.3 — Identity / Organization / Outlet / Device Minimum: PR #94 CLOSED / MERGED; source head `67d7b890fe95db9c32d4e2dbc432be193bb064a9`; source tree `3cb925e9234bc28b64aec3a1f6efd1a03756221c`; resulting main `9b43f6be520b64e47bfa9a66be577dab20f69bd9`.
+
+The M7.3 identifiers above are stable publication provenance only. They MUST NOT be treated as permanently current live-main state after later repository changes.
+
+M7.1 preserves the application/configuration foundation. M7.2 preserves tenant-context and isolation primitives. M7.3 preserves first-party identity separation, tenant membership separation, and server-controlled organization/outlet/device context. None of M7.0–M7.3 grants M7.4, deployment, release, Production, Phase 0 Exit, or Sprint 14 authority.
 
 ## Verified publication baseline before GOV-051 decision-record work
 
@@ -145,11 +172,11 @@ Do not rewrite immutable GitHub identifiers, repository path `labzefry/oneQay`, 
 
 Phase 0 remains **In Progress** as a governance/discovery program state.
 
-Published bounded Platform Foundation through Sprint 12 and Sprint 13 remains a repository fact. Enterprise Vision approval does not mean Phase 0 has exited, does not authorize Sprint 14, and does not authorize final/business/production application implementation.
+Published bounded Platform Foundation through Sprint 12 and Sprint 13 and the separately governed M7.0–M7.3 Technical Preview work remain repository facts. These publications do not mean Phase 0 has exited, do not authorize Sprint 14, and do not authorize final/business/production application implementation beyond separately bounded source authority.
 
 The canonical blocked boundary remains:
 
-**Final/business/production application implementation: Blocked.**
+**Final/business/production application implementation: Blocked unless separately authorized.**
 
 ## M5.2 enforcement posture to preserve
 
@@ -177,35 +204,42 @@ Published M5.2 protection evidence records strict status checks, one approving r
 
 ## Historical lifecycle preservation
 
-PR #64 and PR #65 lifecycle discrepancies remain historical facts. M6 and GOV-051 do not retroactively normalize them.
+PR #64 and PR #65 lifecycle discrepancies remain historical facts. M6, GOV-051, and M7 do not retroactively normalize them.
 
 Historical review contamination involving alternate Sprint 13 head `ba312fa9095d434c204f01e3dac9870e9eaa4d6d` remains historical only. Canonical reviewed head remains `4a2e44cc31361954b126e8857de65fcccca30445`.
 
 ## Governance preservation
 
 - Phase 0: In Progress
+- Phase 0 Exit: Not Approved
 - Enterprise Vision decision status: Approved through GOV-051
 - ADR-001 through ADR-007: Accepted through their separately governed DEC reconciliations
 - ADR-008: Accepted representation of DEC-004
 - GD-003: Approved through DEC-000
 - GD-007: Proposed
 - JRN-003 and JRN-013: Unresolved
+- Actual P2 target: Pending external input unless fresh evidence proves otherwise
 - Final tenant data model: Not Started
 - Final business schema: Not Started
 - Production migration: Not Performed
 - Production database usage: None
 - Production table: None
-- POS module: Not Started as final/business application module
+- POS module: Not Started as final/business application module; M7.4 synthetic slice remains Not Authorized
 - ERP module: Not Started as final/business application module
 - Industry vertical implementation: Not Started
 - Sprint 14: Not Authorized
+- Deployment: Not Authorized
+- Release: Not Authorized
+- Production: Not Authorized
 - Production readiness: NO-GO
 
 ## Current authority boundary
 
-No standing next milestone, implementation, Phase 0 exit, Sprint 14, deployment, release, or Production authority is stored in this checkpoint.
+**NO STANDING IMPLEMENTATION OR MILESTONE AUTHORITY.**
 
-Any next governed work requires fresh GitHub Minimal Delta Verification and separate explicit Product Owner authority. Substantive decision authority, preparation authority, independent exact-head review, Product Owner READY authority, and Product Owner MERGE authority remain separate whenever applicable.
+M7.4 is the canonical next roadmap micro-milestone, but it is **NOT AUTHORIZED** by this checkpoint. Any M7.4 source preparation requires fresh GitHub Minimal Delta Verification and separate explicit Product Owner source authority.
+
+No standing Phase 0 exit, Sprint 14, deployment, release, or Production authority is stored in this checkpoint. Substantive decision authority, preparation authority, independent exact-head review, Product Owner READY authority, and Product Owner MERGE authority remain separate whenever applicable.
 
 This checkpoint creates no source/application implementation, dependency/package adoption, database/schema/SQL/migration, infrastructure, deployment, release, Production, Phase 0 exit, or Sprint 14 authority.
 
