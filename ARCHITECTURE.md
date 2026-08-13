@@ -162,7 +162,7 @@ M7.2 telah mempublikasikan bounded Tenant Kernel & Isolation Foundation untuk Lo
 - File/object storage menggunakan generated identifier, content validation, malware scanning, dan signed access.
 - Analytics workload dipisahkan saat beban membenarkan; OLTP tidak boleh menjadi reporting warehouse tanpa kontrol.
 
-DEC-005 tidak memberi final business schema, executable SQL/migration, Production database, provider, atau database-configuration authority. M7.0–M7.3 juga tidak mengotorisasi physical schema coupling.
+DEC-005 tidak memberi final business schema, executable SQL/migration, Production database, provider, atau database-configuration authority. M7.0–M7.4 juga tidak mengotorisasi physical schema coupling.
 
 ## API architecture
 
@@ -223,7 +223,7 @@ Business logic dan module contract harus identik pada seluruh stage:
 
 Perbedaan stage ditangani oleh configuration dan infrastructure adapter. Session, cache, file, job, dan scheduler harus dapat dieksternalisasi tanpa mengubah use case.
 
-DEC-009 defines the capability-based Stage-1 Preview runtime requirements. P1 Shared Hosting/cPanel remains conditional/not selected; P2 Managed/Hardened VPS or Server remains the fallback execution class. Actual P2 target evidence is pending external input unless fresh evidence proves otherwise. Neither DEC-009 nor M7.0–M7.3 authorizes deployment execution or production release.
+DEC-009 defines the capability-based Stage-1 Preview runtime requirements. P1 Shared Hosting/cPanel remains conditional/not selected; P2 Managed/Hardened VPS or Server remains the fallback execution class. Actual P2 target evidence is pending external input unless fresh evidence proves otherwise. Neither DEC-009 nor M7.0–M7.4 authorizes deployment execution or production release.
 
 ## Reliability
 
@@ -298,12 +298,12 @@ Historical Issue #23 text that described ADR-001 through ADR-007 as Proposed is 
 - M7.1 — Application Skeleton & Configuration Boundary: DONE / PUBLISHED through PR #92.
 - M7.2 — Tenant Kernel & Isolation Foundation: DONE / PUBLISHED through PR #93.
 - M7.3 — Identity / Organization / Outlet / Device Minimum: DONE / PUBLISHED through PR #94.
-- M7.4 — POS Core Synthetic Vertical Slice: canonical next roadmap micro-milestone, **NOT AUTHORIZED**.
-- M7.5 — Preview Runtime Qualification: BLOCKED pending actual sanitized P2 target evidence.
+- M7.4 — POS Core Synthetic Vertical Slice: DONE / PUBLISHED through PR #96.
+- M7.5 — Preview Runtime Qualification: BLOCKED pending actual sanitized P2 target evidence and DEC-009 capability verification.
 - M7.6 — Preview Deployment / Recovery Rehearsal: BLOCKED.
 - M7.7 — Technical Preview Acceptance: BLOCKED.
 
-Track A Controlled Application Engineering and Track B Preview Runtime Qualification may proceed in parallel where separately authorized and dependency-independent. P2 qualification is not a prerequisite for separately authorized M7.4 Local/Test/CI source work; both tracks converge before Preview deployment/acceptance.
+Track A Controlled Application Engineering has published M7.4. Track B Preview Runtime Qualification remains separately gated and cannot begin until actual sanitized P2 target evidence is available for DEC-009 verification. Both tracks converge before Preview deployment/acceptance.
 
 No new architecture decision is created by this state reconciliation.
 
@@ -314,7 +314,8 @@ No new architecture decision is created by this state reconciliation.
 - Sprint 12: Published.
 - Sprint 13: Published.
 - Sprint 14: Not Authorized.
-- M7.4 source implementation: Not Authorized.
+- M7.4 source implementation: DONE / PUBLISHED through PR #96; no standing successor authority.
+- M7.5 Preview Runtime Qualification: BLOCKED / Not Authorized pending actual sanitized P2 target evidence and DEC-009 capability verification.
 - Final/business/production application implementation: Blocked unless separately authorized.
 - SQL/migration execution: Not Authorized.
 - Production database modification: Not Authorized.
