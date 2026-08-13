@@ -155,27 +155,29 @@ Items ini tidak memperoleh source-code authority baru dari M6, GOV-051, DEC-000,
 | P0-TP-005 | Review Technical Preview threat model | Review | Critical/High threats require mapped verification |
 | P0-TP-006 | Review REC-1 recovery plan | Review | Target-environment capability and rehearsal pending |
 | P0-TP-007 | Approve Phase 0 preview exit | Blocked | P0-TP-002 through P0-TP-006 and explicit exact-head decision; remains separately gated and is not a prerequisite for separately authorized bounded Local/Test/CI source preparation |
-| P0-TP-008 | Authorize application skeleton | Blocked | Requires separate Product Owner M7.1 source-code authority after M7.0 publication; no longer depends on P0-TP-007 completion |
+| P0-TP-008 | Authorize application skeleton | Done | M7.1 source authority was separately granted and the governed Application Skeleton & Configuration Boundary was published through PR #92; this historical task completion does not grant further source authority |
 | P0-TP-009 | Execute T+5 Technical Preview | Blocked | Requires applicable source, security, runtime, recovery, and deployment gates; P2 qualification remains mandatory before Preview deployment |
 
 PR #24 through PR #33 technical merges and Issue #23 closure do not themselves set any task above to Done, accept an ADR, approve Phase 0 exit, grant general application source-code authority, ratify prior lifecycle actions, complete GOV-034 through GOV-042, or provide substantive approval or completion evidence. Later independent Product Owner decisions separately Accept ADR-001 via DEC-002, ADR-002 via DEC-003, ADR-003 via DEC-005, ADR-004 via DEC-006, ADR-005 via DEC-007, ADR-006 via DEC-008, and ADR-007 via DEC-009 only through their respective governed publication lifecycles. DEC-012 recovery/support policy does not promote REC-1 or SLO-1 Technical Preview values or create successful rehearsal evidence. Phase 0 remains In Progress; final/business/production application implementation remains Blocked; Phase 0 preview exit remains Not Approved; bounded Local/Test/CI source preparation may occur only under separate Product Owner source authority; P1 remains conditional and Not Selected; P2 actual target remains pending external input unless fresh evidence proves otherwise; GD-007 remains Proposed; JRN-003 and JRN-013 remain unresolved; TEN-1, REC-1, SLO-1, and DATA-1 remain Proposed.
 
+Issue #23 remains an open source of historical pre-M7.0 planning language. That historical wording must not override the later governed Phase 0 Controlled Implementation Bridge for bounded Local/Test/CI source preparation. Issue #23 mutation is outside this reconciliation authority.
+
 ## M7 — Technical Preview Implementation Enablement
 
-M7 is a bounded Technical Preview engineering workstream created by the Product Owner-approved Phase 0 Controlled Implementation Bridge. These labels sequence work; they do not independently grant source, deployment, release, or Production authority and do not authorize Sprint 14.
+M7 is the current bounded Technical Preview engineering workstream created by the Product Owner-approved Phase 0 Controlled Implementation Bridge. These labels sequence work; they do not independently grant source, deployment, release, or Production authority and do not authorize Sprint 14.
 
 | ID | Task | Status | Dependency/evidence |
 | --- | --- | --- | --- |
-| M7.0 | Controlled Implementation Bridge | Review | Product Owner substantive bridge decision APPROVED; canonical publication requires Draft PR checks, independent exact-head review, separate Ready authority, and separate Merge authority |
-| M7.1 | Application Skeleton & Configuration Boundary | Blocked | Separate Product Owner source-code authority after M7.0 publication; actual P2 target verification is not a prerequisite for bounded Local/Test/CI preparation |
-| M7.2 | Tenant Kernel & Isolation Foundation | Blocked | Separate bounded authority plus applicable M7.1 evidence and security design gates |
-| M7.3 | Identity / Organization / Outlet / Device Minimum | Blocked | Separate bounded authority plus tenant/authorization security gates |
-| M7.4 | POS Core Synthetic Vertical Slice | Blocked | Separate bounded authority plus transaction, money, idempotency, and synthetic-data gates |
-| M7.5 | Preview Runtime Qualification | Blocked | Actual sanitized P2 target evidence and DEC-009 capability verification |
-| M7.6 | Preview Deployment / Recovery Rehearsal | Blocked | Qualified target, applicable source/security evidence, and separate deployment authority |
-| M7.7 | Technical Preview Acceptance | Blocked | Combined source, security, runtime, recovery, and operational evidence |
+| M7.0 | Controlled Implementation Bridge | Done | Product Owner substantive bridge decision and governed publication completed; historical bridge authority does not grant standing future source authority |
+| M7.1 | Application Skeleton & Configuration Boundary | Done | Governed publication completed through PR #92; no standing successor authority |
+| M7.2 | Tenant Kernel & Isolation Foundation | Done | Governed publication completed through PR #93; M7.1 foundation preserved |
+| M7.3 | Identity / Organization / Outlet / Device Minimum | Done | Governed publication completed through PR #94; M7.2 tenant isolation and server-controlled identity/organizational boundaries preserved |
+| M7.4 | POS Core Synthetic Vertical Slice | Blocked | **NEXT / NOT AUTHORIZED**; requires separate Product Owner M7.4 source authority plus transaction, money, idempotency, synthetic-data, tenant-isolation, organizational-context, authorization, and security gates |
+| M7.5 | Preview Runtime Qualification | Blocked | Actual sanitized P2 target evidence and DEC-009 capability verification required |
+| M7.6 | Preview Deployment / Recovery Rehearsal | Blocked | Qualified target, applicable source/security evidence, and separate deployment authority required |
+| M7.7 | Technical Preview Acceptance | Blocked | Combined source, security, runtime, recovery, and operational evidence required |
 
-Track A Local/Test/CI engineering and Track B P2 runtime qualification may proceed in parallel only where separately authorized and dependency-independent. They converge before Technical Preview deployment/acceptance.
+Track A Local/Test/CI engineering and Track B P2 runtime qualification may proceed in parallel only where separately authorized and dependency-independent. P2 qualification is not a prerequisite for separately authorized M7.4 Local/Test/CI work. Both tracks converge before Technical Preview deployment/acceptance.
 
 ## DEC-010 Supplement publication state
 
