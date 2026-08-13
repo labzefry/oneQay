@@ -1,12 +1,12 @@
 # Workflow Directory
 
 Application release and deployment workflows remain deferred until the relevant
-Product Owner authority and delivery gates are available. M7.1, M7.2, M7.3, and
-M7.4 each permit only their separately authorized bounded Local/Test/CI
-validation workflows.
+Product Owner authority and delivery gates are available. M7.1, M7.2, M7.3,
+M7.4, and M7.4A each permit only their separately authorized bounded
+Local/Test/CI or explicit-Preview validation workflows.
 
 The repository currently permits narrowly scoped governance, foundation, M7.1,
-M7.2, M7.3, and M7.4 Local/Test/CI validation workflows:
+M7.2, M7.3, M7.4, and M7.4A validation workflows:
 
 - `.github/workflows/governance-required-checks.yml`;
 - `.github/workflows/php-foundation-regression.yml`;
@@ -14,7 +14,8 @@ M7.2, M7.3, and M7.4 Local/Test/CI validation workflows:
 - `.github/workflows/m7-1-application-regression.yml`;
 - `.github/workflows/m7-2-tenant-isolation-regression.yml`;
 - `.github/workflows/m7-3-identity-org-context-regression.yml`;
-- `.github/workflows/m7-4-pos-core-synthetic-regression.yml`.
+- `.github/workflows/m7-4-pos-core-synthetic-regression.yml`;
+- `.github/workflows/m7-4a-technical-preview-interaction-regression.yml`.
 
 ## Stable governance checks
 
@@ -51,8 +52,8 @@ The check:
 
 ## Milestone workflow applicability
 
-Standalone M7.2, M7.3, and M7.4 workflows are applicable only when their owned
-source envelope or their own workflow definition is changed. Unrelated
+Standalone M7.2, M7.3, M7.4, and M7.4A workflows are applicable only when their
+owned source envelope or their own workflow definition is changed. Unrelated
 documentation-only pull requests must not create milestone regression failures.
 
 Workflow applicability and regression preservation are separate controls:
@@ -66,10 +67,10 @@ Workflow applicability and regression preservation are separate controls:
 - a pull request that changes a milestone workflow remains applicable to that
   workflow so the workflow correction itself is validated.
 
-The bounded post-M7.4 lifecycle-stabilization envelope permits only the
-explicit governance/documentation and M7.2/M7.3/M7.4 workflow files needed to
-validate that corrective PR. It does not broaden application business-source
-authority.
+The historical bounded post-M7.4 lifecycle-stabilization envelope permitted only
+the explicit governance/documentation and M7.2/M7.3/M7.4 workflow files needed
+to validate that corrective PR. It did not broaden application business-source
+authority and is preserved as historical control-plane provenance.
 
 ## M7.1 application regression
 
@@ -132,10 +133,9 @@ touched. It:
 - performs no SQL, migration, infrastructure mutation, deployment, release,
   publish, or Production action.
 
-M7.3 or M7.4 successor source does not need this standalone predecessor workflow
-to run merely because successor paths changed. The M7.3 and M7.4 workflows
-preserve the M7.2 tenant-isolation behavioral regression when those successor
-workflows are applicable.
+M7.3, M7.4, or M7.4A successor source does not need this standalone predecessor
+workflow to run merely because successor paths changed. The applicable successor
+workflow preserves the M7.2 tenant-isolation behavioral regression.
 
 The synthetic tenant verifier is Local/Test/CI evidence only and is not
 registered as a Production identity or membership implementation.
@@ -177,9 +177,10 @@ workflow itself is touched. It:
 - performs no authentication implementation, SQL, migration, infrastructure
   mutation, deployment, release, publish, or Production action.
 
-M7.4 successor source does not need this standalone predecessor workflow to run
-merely because M7.4 paths changed. The applicable M7.4 workflow preserves the
-full M7.3 identity/organizational-context behavioral regression.
+M7.4 or M7.4A successor source does not need this standalone predecessor
+workflow to run merely because successor paths changed. The applicable successor
+workflow preserves the full M7.3 identity/organizational-context behavioral
+regression.
 
 M7.3 does not implement password login, MFA/TOTP, WebAuthn, token authentication,
 OAuth/OIDC/SAML, real tenant membership persistence, or Production organizational
@@ -216,7 +217,41 @@ touched. It:
 M7.4 workflow success is regression evidence for the bounded synthetic POS slice;
 it is not evidence that a complete end-user POS UI, Production authentication,
 durable business persistence, deployment, release, or Production readiness
-exists.
+exists. M7.4A successor paths do not require this standalone predecessor workflow
+to run because the applicable M7.4A workflow preserves the M7.4 behavioral
+regression.
+
+## M7.4A Technical Preview interaction regression
+
+`m7-4a-technical-preview-interaction-regression.yml` produces:
+
+- `m7-4a-technical-preview-interaction-regression`.
+
+The check is bounded to the M7.4A Technical Preview Interaction Layer. It:
+
+- checks out the exact pull-request source head;
+- enforces the bounded M7.4A Preview Application/Infrastructure/Delivery,
+  provider/routes/UI/test, and workflow source envelope;
+- runs the root Platform Foundation regression and M7.1 application regression;
+- preserves the full M7.2 tenant-isolation, M7.3 identity/organizational-context,
+  and M7.4 POS-core behavioral regressions;
+- requires unchanged Composer/npm manifests and lockfiles;
+- validates and installs only already locked dependencies and rejects unresolved
+  High/Critical Composer/npm advisories;
+- validates PHP syntax, Vue/TypeScript type checking, and Vite build evidence;
+- preserves Preview Application framework independence;
+- rejects database/SQL/migration implementation and obvious credential material
+  within the bounded Preview implementation envelope;
+- exercises the synthetic sign-in → server-verified context → catalog → cart →
+  `CASH` / `MANUAL_EXTERNAL` → existing M7.4 `CompleteSyntheticSale` → receipt
+  journey;
+- uses explicit CI Preview configuration with synthetic data only;
+- performs no migration, deployment, release, publish, or Production action.
+
+M7.4A workflow success is lifecycle evidence for the already published PR #98
+interaction layer. It does not grant M7.5 runtime qualification, durable
+Production persistence, deployment, release, Phase 0 Exit, Sprint 14, or
+Production authority.
 
 ## Product Owner merge authority
 
@@ -255,12 +290,13 @@ The active default-branch lifecycle requires:
 - `php-foundation-regression`;
 - `product-owner-merge-authority`.
 
-M7.1, M7.2, M7.3, and M7.4 source authority do not grant repository-ruleset
-mutation. `m7-1-application-regression`, `m7-2-tenant-isolation-regression`,
-`m7-3-identity-org-context-regression`, and `m7-4-pos-core-synthetic-regression`
-remain mandatory milestone-specific lifecycle evidence for their applicable
-Draft PRs even though they are not silently added to the protected required-
-status set.
+M7.1, M7.2, M7.3, M7.4, and M7.4A source authority do not grant repository-
+ruleset mutation. `m7-1-application-regression`,
+`m7-2-tenant-isolation-regression`, `m7-3-identity-org-context-regression`,
+`m7-4-pos-core-synthetic-regression`, and
+`m7-4a-technical-preview-interaction-regression` remain mandatory milestone-
+specific lifecycle evidence for their applicable Draft PRs even though they are
+not silently added to the protected required-status set.
 
 Repository protection must preserve strict required-status-check policy,
 independent review, stale-review dismissal, latest-push approval, review-thread
@@ -270,10 +306,11 @@ empty bypass list.
 ## Scope boundary
 
 These workflows are control-plane, foundation-validation, or bounded
-M7.1/M7.2/M7.3/M7.4 Local/Test/CI mechanisms. They do not authorize Sprint 14,
-M7.5+, broader application business source, real Production authentication,
-SQL/migration execution, Production database changes, deployment, release,
-ADR/GD promotion, JRN resolution, Phase 0 Exit, or Production readiness.
+M7.1/M7.2/M7.3/M7.4/M7.4A Local/Test/CI/explicit-Preview mechanisms. They do not
+authorize Sprint 14, M7.5+, broader application business source, real Production
+authentication, SQL/migration execution, Production database changes,
+deployment, release, ADR/GD promotion, JRN resolution, Phase 0 Exit, or
+Production readiness.
 
 Any workflow added here must:
 
