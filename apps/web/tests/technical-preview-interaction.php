@@ -15,6 +15,8 @@ use App\Infrastructure\Organization\SyntheticOrganizationalRelationshipVerifier;
 use App\Infrastructure\Preview\DeterministicPreviewFixture;
 use App\Infrastructure\Tenancy\RequestTenantContextStore;
 use App\Infrastructure\Tenancy\SyntheticTenantMembershipVerifier;
+use Illuminate\Contracts\Http\Kernel as HttpKernel;
+use Illuminate\Http\Request as HttpRequest;
 
 require_once __DIR__.'/../vendor/autoload.php';
 
@@ -182,5 +184,111 @@ $expect(
 
 $assert($tenantContexts->current() === null, 'M74A-CTX-005 tenant context cleared after sale');
 $assert($organizationalContexts->current() === null, 'M74A-CTX-006 org context cleared after sale');
+
+/** @var Illuminate\Foundation\Application $app */
+$app = require __DIR__.'/../bootstrap/app.php';
+/** @var HttpKernel $kernel */
+$kernel = $app->make(HttpKernel::class);
+
+/** @var array<string, string> $cookies */
+$cookies = [];
+$csrfToken = null;
+
+$sendHttp = static function (
+    string $method,
+    string $uri,
+    array $parameters = [],
+) use ($kernel, &$cookies, &$csrfToken): array {
+    $method = strtoupper($method);
+    if ($method !== 'GET' && $csrfToken !== null && ! array_key_exists('_token', $parameters)) {
+        $parameters['_token'] = $csrfToken;
+    }
+
+    $request = HttpRequest::create(
+        $uri,
+        $method,
+        $parameters,
+        $cookies,
+        [],
+        [
+            'HTTP_HOST' => 'oneqay.test',
+            'HTTP_ACCEPT' => 'text/html,application/xhtml+xml',
+        ],
+    );
+
+    $response = $kernel->handle($request);
+
+    foreach ($response->headers->getCookies() as $cookie) {
+        if ($cookie->getExpiresTime() !== 0 && $cookie->getExpiresTime() < time()) {
+            unset($cookies[$cookie->getName()]);
+            continue;
+        }
+        $cookies[$cookie->getName()] = $cookie->getValue();
+    }
+
+    if ($request->hasSession()) {
+        $csrfToken = $request->session()->token();
+    }
+
+    $kernel->terminate($request, $response);
+
+    return [$response, $request];
+};
+
+[$signInPage] = $sendHttp('GET', '/technical-preview');
+$assert($signInPage->getStatusCode() === 200, 'M74A-HTTP-001 sign-in page is reachable in explicit CI preview');
+$assert(str_contains((string) $signInPage->getContent(), 'Synthetic Technical Preview'), 'M74A-HTTP-002 sign-in page labels preview');
+
+[$invalidSignIn] = $sendHttp('POST', '/technical-preview/sign-in', [
+    'principal' => 'attacker-controlled',
+]);
+$assert($invalidSignIn->getStatusCode() === 302, 'M74A-HTTP-003 invalid identity safely redirects');
+
+[$validSignIn] = $sendHttp('POST', '/technical-preview/sign-in', [
+    'principal' => 'synthetic-principal-a',
+]);
+$assert($validSignIn->getStatusCode() === 302, 'M74A-HTTP-004 allowlisted synthetic sign-in redirects');
+$assert(str_ends_with((string) $validSignIn->headers->get('Location'), '/technical-preview/context'), 'M74A-HTTP-005 sign-in advances to context');
+
+[$contextPage] = $sendHttp('GET', '/technical-preview/context');
+$assert($contextPage->getStatusCode() === 200, 'M74A-HTTP-006 context page requires valid preview session');
+$assert(str_contains((string) $contextPage->getContent(), 'tenant-alpha'), 'M74A-HTTP-007 context is server-derived alpha context');
+
+[$selectContext] = $sendHttp('POST', '/technical-preview/context', [
+    'selection' => 'primary',
+    'tenant_id' => 'tenant-beta',
+    'outlet_id' => 'outlet-beta',
+]);
+$assert($selectContext->getStatusCode() === 302, 'M74A-HTTP-008 context selection redirects');
+$assert(str_ends_with((string) $selectContext->headers->get('Location'), '/technical-preview/pos'), 'M74A-HTTP-009 context advances to POS');
+
+[$posPage] = $sendHttp('GET', '/technical-preview/pos');
+$assert($posPage->getStatusCode() === 200, 'M74A-HTTP-010 POS page is reachable after verified context');
+$assert(str_contains((string) $posPage->getContent(), 'Synthetic Alpha Product'), 'M74A-HTTP-011 alpha catalog appears');
+$assert(! str_contains((string) $posPage->getContent(), 'Synthetic Beta Product'), 'M74A-HTTP-012 beta catalog is not disclosed');
+
+[$sale] = $sendHttp('POST', '/technical-preview/sale', [
+    'lines' => [
+        ['product_id' => 'synthetic-product-alpha', 'quantity' => 2],
+        ['product_id' => 'synthetic-product-secondary', 'quantity' => 2],
+    ],
+    'tender_category' => 'CASH',
+    'tendered_atomic_units' => 6000,
+    'operation_id' => 'preview-http-alpha-0001',
+]);
+$assert($sale->getStatusCode() === 302, 'M74A-HTTP-013 synthetic sale redirects');
+$assert(str_ends_with((string) $sale->headers->get('Location'), '/technical-preview/receipt'), 'M74A-HTTP-014 sale advances to receipt');
+
+[$receiptPage] = $sendHttp('GET', '/technical-preview/receipt');
+$assert($receiptPage->getStatusCode() === 200, 'M74A-HTTP-015 receipt preview is reachable');
+$assert(str_contains((string) $receiptPage->getContent(), 'CASH_COUNTED'), 'M74A-HTTP-016 receipt preserves cash evidence mode');
+$assert(str_contains((string) $receiptPage->getContent(), 'Not Production Ready'), 'M74A-HTTP-017 receipt labels non-production boundary');
+
+[$logout] = $sendHttp('POST', '/technical-preview/logout');
+$assert($logout->getStatusCode() === 302, 'M74A-HTTP-018 logout redirects');
+
+[$postLogoutPos] = $sendHttp('GET', '/technical-preview/pos');
+$assert($postLogoutPos->getStatusCode() === 302, 'M74A-HTTP-019 post-logout POS access is denied');
+$assert(str_ends_with((string) $postLogoutPos->headers->get('Location'), '/technical-preview'), 'M74A-HTTP-020 post-logout returns to sign-in');
 
 echo "M7.4A Technical Preview interaction regression passed.\n";
