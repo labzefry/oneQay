@@ -4,6 +4,16 @@ on:
   pull_request:
     branches:
       - main
+    paths:
+      - 'apps/web/app/Domain/Tenancy/**'
+      - 'apps/web/app/Application/Tenancy/**'
+      - 'apps/web/app/Infrastructure/Tenancy/**'
+      - 'apps/web/app/Delivery/Http/Middleware/**'
+      - 'apps/web/app/Providers/AppServiceProvider.php'
+      - 'apps/web/bootstrap/app.php'
+      - 'apps/web/tests/tenant-isolation.php'
+      - 'apps/web/tests/run.php'
+      - '.github/workflows/m7-2-tenant-isolation-regression.yml'
   workflow_dispatch:
 
 permissions:
@@ -33,7 +43,7 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: Enforce bounded M7.2 and M7.3 successor source envelope
+      - name: Enforce bounded M7.2 source and lifecycle-stabilization envelope
         if: github.event_name == 'pull_request'
         shell: bash
         run: |
@@ -51,24 +61,19 @@ jobs:
               apps/web/bootstrap/app.php|\
               apps/web/tests/tenant-isolation.php|\
               apps/web/tests/run.php|\
-              apps/web/README.md|\
-              apps/web/app/Domain/Identity/*|\
-              apps/web/app/Domain/Organization/*|\
-              apps/web/app/Domain/Outlet/*|\
-              apps/web/app/Domain/Device/*|\
-              apps/web/app/Application/Identity/*|\
-              apps/web/app/Application/Organization/*|\
-              apps/web/app/Infrastructure/Identity/*|\
-              apps/web/app/Infrastructure/Organization/*|\
-              apps/web/tests/identity-org-context.php|\
               .github/workflows/m7-2-tenant-isolation-regression.yml|\
               .github/workflows/m7-3-identity-org-context-regression.yml|\
+              .github/workflows/m7-4-pos-core-synthetic-regression.yml|\
               .github/workflows/README.md|\
+              AI_CONSTITUTION.md|\
+              ARCHITECTURE.md|\
+              README.md|\
+              ROADMAP.md|\
               TASKS.md|\
-              CHANGELOG.md)
+              docs/ai/AI_SESSION_STATE.md)
                 ;;
               *)
-                echo "M7.2/M7.3 unauthorized changed path: $file" >&2
+                echo "M7.2 unauthorized changed path: $file" >&2
                 exit 1
                 ;;
             esac
