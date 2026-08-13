@@ -39,10 +39,11 @@ Do not create recurring reconciliation commits solely to replace a previously st
 - M7.2 Tenant Kernel & Isolation Foundation: DONE / PUBLISHED through PR #93
 - M7.3 Identity / Organization / Outlet / Device Minimum: DONE / PUBLISHED through PR #94
 - M7.4 POS Core Synthetic Vertical Slice: DONE / PUBLISHED through PR #96
+- M7.4A Technical Preview Interaction Layer: DONE / PUBLISHED through PR #98
 - Canonical next gated micro-milestone: M7.5 — Preview Runtime Qualification
-- M7.5 Preview Runtime Qualification: BLOCKED / actual sanitized P2 target evidence and DEC-009 capability verification required
-- M7.6 Preview Deployment / Recovery Rehearsal: BLOCKED
-- M7.7 Technical Preview Acceptance: BLOCKED
+- M7.5 Preview Runtime Qualification: BLOCKED / NOT AUTHORIZED; actual sanitized P2 target evidence and DEC-009 capability verification required
+- M7.6 Preview Deployment / Recovery Rehearsal: BLOCKED / NOT AUTHORIZED
+- M7.7 Technical Preview Acceptance: BLOCKED / NOT AUTHORIZED
 - Sprint 12: Published
 - Sprint 13: Published
 - Sprint 14: Not Authorized
@@ -51,7 +52,7 @@ Do not create recurring reconciliation commits solely to replace a previously st
 - Release: None / Not Authorized
 - Migration execution: Not Authorized / Not Performed
 
-Track A Controlled Application Engineering has published the bounded M7.4 Local/Test/CI synthetic POS slice. Track B Preview Runtime Qualification remains separately gated; M7.5 cannot begin until actual sanitized P2 target evidence is supplied and verified against DEC-009. Both tracks converge before Preview deployment/acceptance.
+Track A Controlled Application Engineering has published the bounded M7.4 Local/Test/CI synthetic POS slice and the M7.4A Technical Preview interaction layer. M7.4A connects synthetic sign-in → server-verified tenant/outlet context → synthetic catalog → cart → `CASH` / `MANUAL_EXTERNAL` → existing M7.4 `CompleteSyntheticSale` → receipt preview within synthetic-only Local/Test/CI/explicit Preview boundaries. Track B Preview Runtime Qualification remains separately gated; M7.5 cannot begin until actual sanitized P2 target evidence is supplied and verified against DEC-009 and separate Product Owner authority is granted. Both tracks converge before Preview deployment/acceptance.
 
 Issue #23 contains historical pre-M7.0 planning language. That historical wording must not override the later governed Phase 0 Controlled Implementation Bridge for bounded Local/Test/CI source preparation. Issue #23 mutation is outside this checkpoint reconciliation.
 
@@ -74,17 +75,18 @@ Issue #23 contains historical pre-M7.0 planning language. That historical wordin
 
 ## M7 publication facts
 
-The M7.0–M7.4 facts below are publication provenance, not standing authority:
+The M7.0–M7.4A facts below are publication provenance, not standing authority:
 
 - M7.0 — Controlled Implementation Bridge: governed publication complete before M7.1 source work.
 - M7.1 — Application Skeleton & Configuration Boundary: PR #92 CLOSED / MERGED; resulting main `82b2bffb3b087aa818c2a229d2b7e0c07ea158ec`.
 - M7.2 — Tenant Kernel & Isolation Foundation: PR #93 CLOSED / MERGED; resulting main `ba95f745869092d251230fb5a3db2c08e42f4941`.
 - M7.3 — Identity / Organization / Outlet / Device Minimum: PR #94 CLOSED / MERGED; source head `67d7b890fe95db9c32d4e2dbc432be193bb064a9`; source tree `3cb925e9234bc28b64aec3a1f6efd1a03756221c`; resulting main `9b43f6be520b64e47bfa9a66be577dab20f69bd9`.
 - M7.4 — POS Core Synthetic Vertical Slice: PR #96 CLOSED / MERGED; source head `0659e0e3c2ab7f8ec9f12653b773aaa4391e931b`; source tree `f67f9b75a11b2710b58a9928f5b73f876cba2cef`; resulting main `4981fca92e7de028ca55e746b36af6afe0d3e7f2`.
+- M7.4A — Technical Preview Interaction Layer: PR #98 CLOSED / MERGED; source head `893b73b8f20b2ede0d3a8896b3a015df5370dbed`; source tree `cdc140e5061481bec4b6b691b02b2b234181c2fb`; published commit `c0bdf8ad7539a5c83de2e5183fbf2eda9f17f02b`; published tree `cdc140e5061481bec4b6b691b02b2b234181c2fb`; source tree equals published tree: Yes.
 
 The M7 identifiers above are stable publication provenance only. They MUST NOT be treated as permanently current live-main state after later repository changes.
 
-M7.1 preserves the application/configuration foundation. M7.2 preserves tenant-context and isolation primitives. M7.3 preserves first-party identity separation, tenant membership separation, and server-controlled organization/outlet/device context. M7.4 preserves bounded synthetic POS transaction correctness, exact-money, idempotency/replay, payment-sufficiency, stock-causation, tenant/organizational isolation, and audit/correlation evidence. None of M7.0–M7.4 grants M7.5, deployment, release, Production, Phase 0 Exit, or Sprint 14 authority.
+M7.1 preserves the application/configuration foundation. M7.2 preserves tenant-context and isolation primitives. M7.3 preserves first-party identity separation, tenant membership separation, and server-controlled organization/outlet/device context. M7.4 preserves bounded synthetic POS transaction correctness, exact-money, idempotency/replay, payment-sufficiency, stock-causation, tenant/organizational isolation, and audit/correlation evidence. M7.4A preserves the synthetic interaction journey while reusing M7.4 `CompleteSyntheticSale`, server-authoritative pricing/exact-money, `CASH_COUNTED`, `OPERATOR_RECORDED`, fail-closed Preview runtime gating, and tenant/context verification. None of M7.0–M7.4A grants M7.5, deployment, release, Production, Phase 0 Exit, or Sprint 14 authority.
 
 ## Verified publication baseline before GOV-051 decision-record work
 
@@ -173,7 +175,7 @@ Do not rewrite immutable GitHub identifiers, repository path `labzefry/oneQay`, 
 
 Phase 0 remains **In Progress** as a governance/discovery program state.
 
-Published bounded Platform Foundation through Sprint 12 and Sprint 13 and the separately governed M7.0–M7.4 Technical Preview work remain repository facts. These publications do not mean Phase 0 has exited, do not authorize Sprint 14, and do not authorize final/business/production application implementation beyond separately bounded source authority.
+Published bounded Platform Foundation through Sprint 12 and Sprint 13 and the separately governed M7.0–M7.4A Technical Preview work remain repository facts. These publications do not mean Phase 0 has exited, do not authorize Sprint 14, and do not authorize final/business/production application implementation beyond separately bounded source authority.
 
 The canonical blocked boundary remains:
 
@@ -225,7 +227,7 @@ Historical review contamination involving alternate Sprint 13 head `ba312fa9095d
 - Production migration: Not Performed
 - Production database usage: None
 - Production table: None
-- POS module: Not Started as final/business application module; bounded M7.4 synthetic POS slice is DONE / PUBLISHED through PR #96
+- POS module: Not Started as final/business application module; bounded M7.4 synthetic POS slice is DONE / PUBLISHED through PR #96 and M7.4A Technical Preview interaction layer is DONE / PUBLISHED through PR #98
 - ERP module: Not Started as final/business application module
 - Industry vertical implementation: Not Started
 - Sprint 14: Not Authorized
@@ -238,7 +240,7 @@ Historical review contamination involving alternate Sprint 13 head `ba312fa9095d
 
 **NO STANDING IMPLEMENTATION OR MILESTONE AUTHORITY.**
 
-M7.4 is **DONE / PUBLISHED** through PR #96. The next gated activity is M7.5 — Preview Runtime Qualification, but it is **BLOCKED / NOT AUTHORIZED** until actual sanitized P2 target evidence is supplied and verified against DEC-009. This checkpoint does not create that evidence or authority.
+M7.4A is **DONE / PUBLISHED** through PR #98. The next gated activity is M7.5 — Preview Runtime Qualification, but it is **BLOCKED / NOT AUTHORIZED** until actual sanitized P2 target evidence is supplied and verified against DEC-009 and separate Product Owner authority is granted. This checkpoint does not create that evidence or authority.
 
 No standing Phase 0 exit, Sprint 14, deployment, release, or Production authority is stored in this checkpoint. Substantive decision authority, preparation authority, independent exact-head review, Product Owner READY authority, and Product Owner MERGE authority remain separate whenever applicable.
 
