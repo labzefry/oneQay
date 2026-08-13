@@ -49,11 +49,12 @@ A checkpoint update must not be created merely to replace a stored `current main
 - M7.1 Application Skeleton & Configuration Boundary: DONE / PUBLISHED through PR #92
 - M7.2 Tenant Kernel & Isolation Foundation: DONE / PUBLISHED through PR #93
 - M7.3 Identity / Organization / Outlet / Device Minimum: DONE / PUBLISHED through PR #94
-- Canonical next roadmap micro-milestone: M7.4 — POS Core Synthetic Vertical Slice
-- M7.4 authority: NOT AUTHORIZED / requires separate Product Owner source authority
-- M7.5 Preview Runtime Qualification: BLOCKED / actual sanitized P2 target evidence required
-- M7.6 Preview Deployment / Recovery Rehearsal: BLOCKED
-- M7.7 Technical Preview Acceptance: BLOCKED
+- M7.4 POS Core Synthetic Vertical Slice: DONE / PUBLISHED through PR #96
+- M7.4A Technical Preview Interaction Layer: DONE / PUBLISHED through PR #98
+- Canonical next gated micro-milestone: M7.5 — Preview Runtime Qualification
+- M7.5 Preview Runtime Qualification: BLOCKED / NOT AUTHORIZED; actual sanitized P2 target evidence and DEC-009 capability verification required
+- M7.6 Preview Deployment / Recovery Rehearsal: BLOCKED / NOT AUTHORIZED
+- M7.7 Technical Preview Acceptance: BLOCKED / NOT AUTHORIZED
 - Sprint 12: Published
 - Sprint 13: Published
 - Sprint 14: Not Authorized
@@ -62,7 +63,7 @@ A checkpoint update must not be created merely to replace a stored `current main
 - Release: None / Not Authorized
 - Production migration: Not Performed
 
-Track A Controlled Application Engineering and Track B Preview Runtime Qualification may progress in parallel only where separately authorized and dependency-independent. P2 qualification is not a prerequisite for separately authorized M7.4 Local/Test/CI source work. Both tracks converge before Technical Preview deployment/acceptance.
+Track A Controlled Application Engineering has published the bounded M7.4 POS core and M7.4A Technical Preview interaction layer. Track B Preview Runtime Qualification remains separately gated; M7.5 cannot begin until actual sanitized P2 target evidence is supplied and verified against DEC-009 and separate Product Owner authority is granted. Both tracks converge before Technical Preview deployment/acceptance.
 
 Issue #23 contains historical pre-M7.0 planning language. That historical wording is not current authority and must not override the later governed Phase 0 Controlled Implementation Bridge. Issue #23 mutation remains separately gated.
 
@@ -85,16 +86,18 @@ Issue #23 contains historical pre-M7.0 planning language. That historical wordin
 
 ## M7 publication facts
 
-M7.0–M7.3 are governed repository facts and do not create standing future authority:
+M7.0–M7.4A are governed repository facts and do not create standing future authority:
 
 - M7.0 — Controlled Implementation Bridge: governed publication complete before M7.1 source work.
 - M7.1 — Application Skeleton & Configuration Boundary: PR #92 CLOSED / MERGED; resulting main `82b2bffb3b087aa818c2a229d2b7e0c07ea158ec`.
 - M7.2 — Tenant Kernel & Isolation Foundation: PR #93 CLOSED / MERGED; resulting main `ba95f745869092d251230fb5a3db2c08e42f4941`.
 - M7.3 — Identity / Organization / Outlet / Device Minimum: PR #94 CLOSED / MERGED; source head `67d7b890fe95db9c32d4e2dbc432be193bb064a9`; source tree `3cb925e9234bc28b64aec3a1f6efd1a03756221c`; resulting main `9b43f6be520b64e47bfa9a66be577dab20f69bd9`.
+- M7.4 — POS Core Synthetic Vertical Slice: PR #96 CLOSED / MERGED; source head `0659e0e3c2ab7f8ec9f12653b773aaa4391e931b`; source tree `f67f9b75a11b2710b58a9928f5b73f876cba2cef`; resulting main `4981fca92e7de028ca55e746b36af6afe0d3e7f2`.
+- M7.4A — Technical Preview Interaction Layer: PR #98 CLOSED / MERGED; source head `893b73b8f20b2ede0d3a8896b3a015df5370dbed`; source tree `cdc140e5061481bec4b6b691b02b2b234181c2fb`; published commit `c0bdf8ad7539a5c83de2e5183fbf2eda9f17f02b`; published tree `cdc140e5061481bec4b6b691b02b2b234181c2fb`; source tree equals published tree: Yes.
 
 Those SHAs are stable publication provenance only and are never substitutes for fresh live GitHub verification.
 
-M7.1 preserves the application/configuration foundation. M7.2 preserves tenant context, server-verified membership, and cross-tenant isolation controls. M7.3 preserves first-party identity separation, tenant membership separation, server-controlled organization/outlet/device authority, and deny-by-default organizational context. No M7.4 implementation is implied.
+M7.1 preserves the application/configuration foundation. M7.2 preserves tenant context, server-verified membership, and cross-tenant isolation controls. M7.3 preserves first-party identity separation, tenant membership separation, server-controlled organization/outlet/device authority, and deny-by-default organizational context. M7.4 preserves server-authoritative bounded POS transaction behavior. M7.4A preserves the synthetic interaction journey while reusing M7.4 `CompleteSyntheticSale`; it does not authorize M7.5, durable Production persistence, deployment, release, Phase 0 Exit, Sprint 14, or Production.
 
 ## Verified baseline before GOV-051 decision record
 
@@ -218,7 +221,7 @@ These stages are not release commitments and do not start without separate Produ
 
 Phase 0 **In Progress** describes the governance/discovery program state. It does not mean that the repository contains no technical source code.
 
-Bounded Platform Foundation implementation has been published through Sprint 13, followed by separately governed bounded M7.0–M7.3 Technical Preview work. These publications are separate from Phase 0 exit and must not be interpreted as final/business application approval, automatic Phase 1 completion, Sprint 14 authority, production readiness, deployment authority, release authority, or migration authority.
+Bounded Platform Foundation implementation has been published through Sprint 13, followed by separately governed bounded M7.0–M7.4A Technical Preview work. These publications are separate from Phase 0 exit and must not be interpreted as final/business application approval, automatic Phase 1 completion, Sprint 14 authority, production readiness, deployment authority, release authority, or migration authority.
 
 The canonical blocked boundary remains:
 
@@ -328,10 +331,10 @@ Root files with matching names remain deprecated pointer stubs only.
 
 **NO STANDING IMPLEMENTATION OR MILESTONE AUTHORITY.**
 
-M7.4 is the canonical next roadmap micro-milestone, but it is **NOT AUTHORIZED**. Any M7.4 source work requires fresh GitHub Minimal Delta Verification and separate explicit Product Owner source authority.
+M7.4A is **DONE / PUBLISHED** through PR #98. The canonical next gated micro-milestone is M7.5 — Preview Runtime Qualification, but it is **BLOCKED / NOT AUTHORIZED**. It requires actual sanitized P2 target evidence, DEC-009 capability verification, fresh GitHub Minimal Delta Verification, and separate explicit Product Owner authority before any M7.5 work can begin.
 
 No standing Phase 0 exit, Sprint 14, deployment, release, or Production authority is stored in this checkpoint. Substantive decision authority, preparation authority, independent exact-head review, Product Owner READY authority, and Product Owner MERGE authority remain separate whenever applicable.
 
-This checkpoint creates no source/application implementation, dependency/package adoption, database/schema/SQL/migration, infrastructure, deployment, release, Production, Phase 0 exit, or Sprint 14 authority.
+This checkpoint creates no source/application implementation, dependency/package adoption, database/schema/SQL/migration, infrastructure, runtime qualification, deployment, release, Production, Phase 0 exit, or Sprint 14 authority.
 
 Attribution: Lab | zefry
