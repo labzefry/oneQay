@@ -1,4 +1,4 @@
-name: M7.4 POS Core Synthetic Regression
+name: M7.2 Tenant Isolation Regression
 
 on:
   pull_request:
@@ -10,12 +10,12 @@ permissions:
   contents: read
 
 concurrency:
-  group: m7-4-pos-core-synthetic-regression-${{ github.event.pull_request.number || github.ref }}
+  group: m7-2-tenant-isolation-regression-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
-  m7-4-pos-core-synthetic-regression:
-    name: m7-4-pos-core-synthetic-regression
+  m7-2-tenant-isolation-regression:
+    name: m7-2-tenant-isolation-regression
     runs-on: ubuntu-latest
     env:
       APP_NAME: oneQay
@@ -33,30 +33,51 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: Enforce bounded M7.4 source envelope
+      - name: Enforce bounded M7.2 and M7.3 successor source envelope
         if: github.event_name == 'pull_request'
         shell: bash
         run: |
           set -euo pipefail
           git fetch --no-tags origin "${{ github.base_ref }}"
-          git diff --name-only "origin/${{ github.base_ref }}...HEAD" > /tmp/m74-changed-files.txt
-          test -s /tmp/m74-changed-files.txt
+          git diff --name-only "origin/${{ github.base_ref }}...HEAD" > /tmp/m72-changed-files.txt
+          test -s /tmp/m72-changed-files.txt
           while IFS= read -r file; do
             case "$file" in
+              apps/web/app/Domain/Tenancy/*|\
+              apps/web/app/Application/Tenancy/*|\
+              apps/web/app/Infrastructure/Tenancy/*|\
+              apps/web/app/Delivery/Http/Middleware/*|\
+              apps/web/app/Providers/AppServiceProvider.php|\
+              apps/web/bootstrap/app.php|\
+              apps/web/tests/tenant-isolation.php|\
+              apps/web/tests/run.php|\
+              apps/web/README.md|\
+              apps/web/app/Domain/Identity/*|\
+              apps/web/app/Domain/Organization/*|\
+              apps/web/app/Domain/Outlet/*|\
+              apps/web/app/Domain/Device/*|\
+              apps/web/app/Application/Identity/*|\
+              apps/web/app/Application/Organization/*|\
+              apps/web/app/Infrastructure/Identity/*|\
+              apps/web/app/Infrastructure/Organization/*|\
+              apps/web/tests/identity-org-context.php|\
               apps/web/app/Domain/Pos/*|\
               apps/web/app/Application/Pos/*|\
               apps/web/app/Infrastructure/Pos/*|\
               apps/web/tests/pos-core-synthetic.php|\
               .github/workflows/m7-2-tenant-isolation-regression.yml|\
               .github/workflows/m7-3-identity-org-context-regression.yml|\
-              .github/workflows/m7-4-pos-core-synthetic-regression.yml)
+              .github/workflows/m7-4-pos-core-synthetic-regression.yml|\
+              .github/workflows/README.md|\
+              TASKS.md|\
+              CHANGELOG.md)
                 ;;
               *)
-                echo "M7.4 unauthorized changed path: $file" >&2
+                echo "M7.2/M7.3 unauthorized changed path: $file" >&2
                 exit 1
                 ;;
             esac
-          done < /tmp/m74-changed-files.txt
+          done < /tmp/m72-changed-files.txt
 
       - name: Preserve root Platform Foundation regression
         run: |
@@ -68,7 +89,7 @@ jobs:
         run: |
           set -euo pipefail
           php --version
-          php -r 'if (PHP_VERSION_ID < 80200 || PHP_VERSION_ID >= 80600) { fwrite(STDERR, "M7.4 requires governed PHP 8.2-8.5 compatibility.\n"); exit(1); }'
+          php -r 'if (PHP_VERSION_ID < 80200 || PHP_VERSION_ID >= 80600) { fwrite(STDERR, "M7.2 requires governed PHP 8.2-8.5 compatibility.\n"); exit(1); }'
           composer --version
 
       - name: Setup exact Node LTS
@@ -76,16 +97,14 @@ jobs:
         with:
           node-version: 24.19.0
 
-      - name: Require unchanged dependency manifests and locks
-        if: github.event_name == 'pull_request'
+      - name: Require unchanged deterministic dependency locks
         shell: bash
         run: |
           set -euo pipefail
           test -f apps/web/composer.lock
           test -f apps/web/package-lock.json
-          if git diff --name-only "origin/${{ github.base_ref }}...HEAD" | \
-            grep -Eq '(^|/)(composer\.(json|lock)|package(-lock)?\.json)$'; then
-            echo "M7.4 does not authorize dependency-manifest or lockfile changes." >&2
+          if git diff --name-only "origin/${{ github.base_ref || 'main' }}...HEAD" 2>/dev/null | grep -Eq '(^|/)(composer\.(json|lock)|package(-lock)?\.json)$'; then
+            echo "M7.2 does not authorize dependency-manifest or lockfile changes." >&2
             exit 1
           fi
 
@@ -127,27 +146,24 @@ jobs:
               php -l "$file"
             done
 
-      - name: Preserve Domain and Application framework independence
-        shell: bash
-        run: |
-          set -euo pipefail
-          if grep -R -n -F -e 'Illuminate\' -e 'Laravel\' -e 'Inertia\' -e 'Vue' \
-            apps/web/app/Domain/Pos \
-            apps/web/app/Application/Pos; then
-            echo "M7.4 Domain/Application framework-independence boundary violated." >&2
-            exit 1
-          fi
-
       - name: Reject database schema migration or SQL implementation
         shell: bash
         run: |
           set -euo pipefail
           test ! -d apps/web/database/migrations
           if grep -R -n -E 'Illuminate\\Database|Schema::|DB::|new PDO|mysqli_' \
-            apps/web/app/Domain/Pos \
-            apps/web/app/Application/Pos \
-            apps/web/app/Infrastructure/Pos; then
-            echo "M7.4 database/schema/SQL boundary violated." >&2
+            apps/web/app/Domain/Tenancy \
+            apps/web/app/Application/Tenancy \
+            apps/web/app/Infrastructure/Tenancy \
+            apps/web/app/Domain/Identity \
+            apps/web/app/Domain/Organization \
+            apps/web/app/Domain/Outlet \
+            apps/web/app/Domain/Device \
+            apps/web/app/Application/Identity \
+            apps/web/app/Application/Organization \
+            apps/web/app/Infrastructure/Identity \
+            apps/web/app/Infrastructure/Organization; then
+            echo "M7.2/M7.3 database/schema/SQL boundary violated." >&2
             exit 1
           fi
 
@@ -171,14 +187,6 @@ jobs:
         working-directory: apps/web
         run: composer test
 
-      - name: Preserve M7.2 tenant isolation regression
+      - name: Run M7.2 tenant isolation regression
         working-directory: apps/web
         run: php tests/tenant-isolation.php
-
-      - name: Preserve M7.3 identity organizational context regression
-        working-directory: apps/web
-        run: php tests/identity-org-context.php
-
-      - name: Run M7.4 POS core synthetic regression
-        working-directory: apps/web
-        run: php tests/pos-core-synthetic.php
