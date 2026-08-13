@@ -2,19 +2,20 @@
 
 > **The Future of Intelligent Business Management**
 
-**oneQay** adalah platform business management multi-tenant yang sedang dikembangkan menuju visi **Enterprise Intelligent Business Management Platform**. Visi M6 tersebut bersifat directional dan tidak berarti seluruh capability telah diimplementasikan, disetujui untuk delivery, atau production-ready.
+**oneQay** adalah platform business management multi-tenant dengan Enterprise Vision **Enterprise Intelligent Business Management Platform** yang telah disetujui melalui GOV-051. Persetujuan visi tersebut tidak berarti seluruh capability telah diimplementasikan, disetujui untuk delivery, atau production-ready.
 
 | Informasi | Nilai |
 | --- | --- |
 | Produk | oneQay |
 | Kategori | Enterprise SaaS POS & ERP Platform |
-| Enterprise Vision | Enterprise Intelligent Business Management Platform — Proposed M6 candidate |
+| Enterprise Vision | Approved — Enterprise Intelligent Business Management Platform |
 | Developer & Product Engineering Entity | Lab \| zefry |
 | Repository | `labzefry/oneQay` |
 | Source of Truth | GitHub |
 | Current delivery phase | Phase 0 — Governance and Discovery: In Progress |
-| Active program | M6 — Enterprise Vision Canonicalization |
-| Latest published technical capability | Sprint 13 |
+| Current engineering workstream | M7 — Technical Preview Implementation Enablement |
+| Latest completed micro-milestone | M7.3 — Identity / Organization / Outlet / Device Minimum |
+| Next roadmap micro-milestone | M7.4 — POS Core Synthetic Vertical Slice — Not Authorized |
 | Sprint 14 | Not Authorized |
 | Production readiness | NO-GO |
 
@@ -28,7 +29,7 @@ Bentuk `OneQay`, `ONEQAY`, `Oneqay`, dan `oneqay` bukan canonical current produc
 
 ## Visi
 
-oneQay diarahkan menjadi **Enterprise Intelligent Business Management Platform** yang dapat digunakan mulai dari usaha tunggal hingga organisasi multi-cabang dan multi-tenant, lalu berkembang bertahap dari fondasi transaksi dan operasional menjadi business management, enterprise management, intelligence, dan ecosystem platform tanpa mengganti fondasi business logic ketika infrastruktur bertumbuh.
+oneQay adalah **Enterprise Intelligent Business Management Platform** yang dapat digunakan mulai dari usaha tunggal hingga organisasi multi-cabang dan multi-tenant, lalu berkembang bertahap dari fondasi transaksi dan operasional menjadi business management, enterprise management, intelligence, dan ecosystem platform tanpa mengganti fondasi business logic ketika infrastruktur bertumbuh.
 
 Tujuan arah produk adalah menghadirkan platform yang:
 
@@ -42,7 +43,7 @@ Tujuan arah produk adalah menghadirkan platform yang:
 - AI-ready dengan deterministic controls dan human accountability;
 - memiliki tata kelola pengembangan yang dapat dibuktikan melalui GitHub.
 
-Detail canonical Enterprise Vision candidate berada di `docs/handbook/ENTERPRISE_VISION.md`.
+Detail canonical Enterprise Vision berada di `docs/handbook/ENTERPRISE_VISION.md`. M6 adalah historical completed work; substantive Enterprise Vision kemudian Approved melalui GOV-051.
 
 ## Enterprise Capability Map direction
 
@@ -58,7 +59,7 @@ Capability-map presence tidak memberikan implementation authority.
 
 ## Product evolution
 
-M6 menggunakan enam evolution stages konseptual:
+M6 menetapkan enam evolution stages konseptual:
 
 1. **E0 — Foundation**
 2. **E1 — Core Transaction Platform**
@@ -97,13 +98,19 @@ Current canonical state:
 - M5.1: **PUBLISHED / COMPLETE**;
 - M5.2: **PUBLISHED / ENFORCEMENT COMPLETE**;
 - M5.3: **PUBLISHED / COMPLETE** through PR #68;
-- M6: **In Progress / bounded Enterprise Vision candidate**;
+- M6: **PUBLISHED / COMPLETE** as historical Enterprise Vision canonicalization work;
+- GOV-051 Enterprise Vision: **APPROVED / DECISION COMPLETE**;
+- M7.0 — Controlled Implementation Bridge: **DONE / PUBLISHED**;
+- M7.1 — Application Skeleton & Configuration Boundary: **DONE / PUBLISHED** through PR #92;
+- M7.2 — Tenant Kernel & Isolation Foundation: **DONE / PUBLISHED** through PR #93;
+- M7.3 — Identity / Organization / Outlet / Device Minimum: **DONE / PUBLISHED** through PR #94;
+- M7.4 — POS Core Synthetic Vertical Slice: **NEXT / NOT AUTHORIZED**;
 - Sprint 14: **Not Authorized**;
 - final/business/production application implementation: **Blocked unless separately authorized**;
 - deployment/release/production migration: **Not Authorized**;
 - production readiness: **NO-GO**.
 
-Published bounded foundation source must not be erased by older blanket no-source-code wording. Conversely, existing foundation publication does not imply Phase 0 exit or authority for Sprint 14/business application implementation.
+M7.0–M7.3 publication facts do not imply Phase 0 exit, Sprint 14 authority, M7.4 source authority, deployment, release, or Production authority. M7.4 requires fresh Minimal Delta Verification and separate Product Owner source authority.
 
 Broader final/business application implementation tetap memerlukan keputusan minimum yang relevan untuk scope-nya, termasuk MVP boundary, domain/architecture decisions, multi-tenant/data controls, security baseline, database/migration governance, API contracts, testing/quality gates, deployment environment, dan release/recovery controls.
 
@@ -234,7 +241,7 @@ Sebelum perubahan material, gunakan dokumen sesuai scope:
 4. `ROADMAP.md`
 5. `TASKS.md`
 6. `CHANGELOG.md`
-7. `docs/handbook/ENTERPRISE_VISION.md` untuk M6 Enterprise Vision
+7. `docs/handbook/ENTERPRISE_VISION.md` untuk canonical Enterprise Vision
 8. canonical current-state files di `docs/ai/`
 
 Root `AI_SESSION_STATE.md`, `AI_PROJECT_STATE.md`, dan `AI_NEXT_TASK.md` adalah deprecated pointer stubs; canonical mutable state berada di `docs/ai/`.
@@ -267,7 +274,7 @@ Handbook tetap living documentation. Daftar berikut adalah baseline document set
 | 16 | `RELEASE.md` | Versioning, release, rollback, dan EOL |
 | 17 | `TASKS.md` | Backlog dan status pekerjaan terkontrol |
 | 18 | `CHANGELOG.md` | Riwayat perubahan berbasis versi |
-| 19 | `docs/handbook/ENTERPRISE_VISION.md` | M6 Enterprise Vision, capability map, dan conceptual evolution candidate |
+| 19 | `docs/handbook/ENTERPRISE_VISION.md` | Approved Enterprise Vision, capability map, dan conceptual evolution |
 
 Struktur dokumentasi lanjutan:
 
@@ -303,13 +310,13 @@ Cloud
 Kubernetes
 ```
 
-Setiap tahap harus memiliki entry criteria, exit criteria, backup, rollback, observability, security controls, dan perkiraan beban operasional. Perpindahan stage membutuhkan evidence serta authority yang sesuai. M6 tidak memberikan deployment authority.
+Setiap tahap harus memiliki entry criteria, exit criteria, backup, rollback, observability, security controls, dan perkiraan beban operasional. Perpindahan stage membutuhkan evidence serta authority yang sesuai. Historical M6 work tidak memberikan deployment authority, dan M7.0–M7.3 publication juga tidak memberikan deployment authority.
 
 ## Integrasi Cloudflare
 
 Arsitektur dapat menyediakan controlled Cloudflare integration apabila scope dan decision yang berlaku mengotorisasinya, misalnya untuk DNS record tenant, wildcard DNS, SSL, cache purge, zone validation, serta audit operation.
 
-API token dan secret wajib disimpan melalui environment variable atau secret manager. Secret dilarang disimpan di source code, repository, log, database tanpa proteksi yang disetujui, atau response API. M6 tidak memilih atau mengotorisasi implementasi provider tertentu.
+API token dan secret wajib disimpan melalui environment variable atau secret manager. Secret dilarang disimpan di source code, repository, log, database tanpa proteksi yang disetujui, atau response API. Tidak ada authority implementasi provider baru dari reconciliation ini.
 
 ## Installer dan updater
 
@@ -318,7 +325,7 @@ oneQay mempertahankan spesifikasi:
 - **Installer Wizard** untuk pemeriksaan environment, konfigurasi database, pembuatan administrator, environment generation, migration, seeding, optimization, dan installation report;
 - **Auto Updater** untuk version check, release download, backup, integrity verification, maintenance mode, installation, migration, optimization, health verification, serta recovery/rollback.
 
-Executable migration, production deployment, release, dan production database modification tetap mengikuti gate terpisah dan tidak diotorisasi oleh M6.
+Executable migration, production deployment, release, dan production database modification tetap mengikuti gate terpisah dan tidak diotorisasi oleh M7.0–M7.3 publication.
 
 ## Cara berkontribusi
 
