@@ -4,7 +4,7 @@
 
 oneQay menggunakan **Modular Monolith First** dengan Clean Architecture dan Domain-Driven Design. Tujuannya adalah menyediakan sistem yang sederhana untuk dioperasikan pada tahap awal, namun memiliki boundary yang cukup kuat untuk berkembang tanpa menulis ulang business logic.
 
-M6 Enterprise Vision mengarahkan oneQay menuju **Enterprise Intelligent Business Management Platform**, tetapi arah tersebut tidak mengubah status Proposed/Approved dari bounded context, ADR, provider, physical schema, maupun capability implementation.
+Enterprise Vision oneQay adalah **Enterprise Intelligent Business Management Platform** dan telah Approved melalui GOV-051. Enterprise Vision tidak mengubah implementation authority secara otomatis; bounded context, provider, physical schema, dan capability implementation tetap mengikuti keputusan dan authority masing-masing.
 
 ## Canonical product naming
 
@@ -84,7 +84,7 @@ flowchart TD
 - Marketplace & Plugin Management
 - AI Assistance
 
-Daftar module candidate di atas tetap **Proposed** sampai domain discovery dan ADR/decision yang berlaku menyetujuinya. M6 Enterprise Capability Map tidak mempromosikan daftar tersebut.
+Daftar module candidate di atas tetap **Proposed** sampai domain discovery dan ADR/decision yang berlaku menyetujuinya. Enterprise Capability Map tidak mempromosikan daftar tersebut menjadi physical modules.
 
 ## Enterprise capability projection
 
@@ -149,16 +149,20 @@ Enforcement wajib terjadi pada:
 
 Cross-tenant operation hanya tersedia pada platform administration yang eksplisit, diaudit, menggunakan step-up authentication, dan memiliki purpose limitation.
 
+M7.2 telah mempublikasikan bounded Tenant Kernel & Isolation Foundation untuk Local/Test/CI. M7.3 kemudian mempublikasikan bounded first-party identity dan organization/outlet/device context minimum dengan identity tetap terpisah dari tenant membership dan relationship authority tetap server-controlled. Publication facts tersebut tidak mengubah final persistence/schema authority.
+
 ## Data architecture
 
-- Relational database adalah default system of record yang diusulkan.
+- **MySQL Server** adalah canonical relational database engine family melalui DEC-005.
+- Default physical tenancy adalah shared database/shared schema dengan mandatory immutable tenant isolation key melalui DEC-005.
+- Tenant authorization tetap Application-authoritative; database integrity/security adalah defense-in-depth.
 - Transaksi tidak boleh melintasi boundary secara implisit.
 - Outbox pattern disiapkan untuk reliable domain event publication.
 - Cache bukan source of truth dan harus tenant-aware.
 - File/object storage menggunakan generated identifier, content validation, malware scanning, dan signed access.
 - Analytics workload dipisahkan saat beban membenarkan; OLTP tidak boleh menjadi reporting warehouse tanpa kontrol.
 
-M6 tidak memilih physical database engine, physical tenancy model, final business schema, atau executable migration.
+DEC-005 tidak memberi final business schema, executable SQL/migration, Production database, provider, atau database-configuration authority. M7.0–M7.3 juga tidak mengotorisasi physical schema coupling.
 
 ## API architecture
 
@@ -204,7 +208,7 @@ AI capabilities wajib melalui controlled internal policy boundary yang menangani
 
 AI tidak boleh menjadi source of truth untuk transaksi, otorisasi, accounting posting, inventory mutation, tenant-boundary decision, atau tindakan irreversible. Output berisiko tinggi memerlukan deterministic validation dan human approval.
 
-M6 tidak memilih AI provider dan tidak mengotorisasi AI automation implementation.
+No AI provider or AI automation implementation is authorized merely by Enterprise Vision or M7 progression.
 
 ## Deployment architecture
 
@@ -219,7 +223,7 @@ Business logic dan module contract harus identik pada seluruh stage:
 
 Perbedaan stage ditangani oleh configuration dan infrastructure adapter. Session, cache, file, job, dan scheduler harus dapat dieksternalisasi tanpa mengubah use case.
 
-M6 tidak mengotorisasi perpindahan deployment stage, deployment execution, atau production release.
+DEC-009 defines the capability-based Stage-1 Preview runtime requirements. P1 Shared Hosting/cPanel remains conditional/not selected; P2 Managed/Hardened VPS or Server remains the fallback execution class. Actual P2 target evidence is pending external input unless fresh evidence proves otherwise. Neither DEC-009 nor M7.0–M7.3 authorizes deployment execution or production release.
 
 ## Reliability
 
@@ -238,6 +242,8 @@ Log terstruktur tidak boleh memuat secret atau payload sensitif. Metrics minimum
 
 Gunakan deny-by-default authorization, least privilege, MFA untuk privileged roles, secure session, CSRF protection, input validation, output encoding, encryption in transit/at rest, secret rotation, audit log immutable, dependency scanning, dan threat modeling untuk flow kritis.
 
+M7.1 application/configuration foundation, M7.2 tenant isolation foundation, dan M7.3 identity/organizational-context foundation harus dipertahankan oleh successor work. Identity tidak boleh disamakan dengan tenant membership; tenant membership dan organization/outlet/device relationship harus tetap server-controlled.
+
 ## Architecture fitness functions
 
 - Domain layer bebas import infrastructure/framework.
@@ -249,52 +255,71 @@ Gunakan deny-by-default authorization, least privilege, MFA untuk privileged rol
 - Secret scan dan high-severity security gate memblokir release.
 - Capability map tidak boleh digunakan sebagai pengganti implementation authority.
 - Current/future-facing brand reference harus menggunakan `oneQay`.
+- Identity, tenant membership, and organizational authority remain separate server-controlled boundaries.
 
 ## Decision process
 
 Keputusan signifikan dicatat di `docs/adr/ADR-NNN-title.md` dengan status Proposed, Accepted, Superseded, atau Rejected. ADR wajib untuk technology stack, tenancy model, auth, database, payment, event transport, plugin isolation, AI provider, dan perubahan deployment architecture.
 
-## Open decisions
+## Current decision posture
 
-- MVP bounded contexts dan feature scope
-- backend/frontend/mobile stack
-- database engine dan tenancy physical model
-- authentication provider/protocol
-- payment and fiscal requirements
-- offline POS conflict model
-- audit retention dan regulatory boundary
-- recovery objectives
-- plugin trust model
-- AI data and provider policy
+Current canonical state reflects the separately governed decisions already published:
 
-## Technical Preview candidate architecture
+- ADR-001 through ADR-007: **Accepted** through DEC-002, DEC-003, DEC-005, DEC-006, DEC-007, DEC-008, and DEC-009 reconciliations respectively;
+- ADR-008: **Accepted** representation of DEC-004;
+- GD-007: Proposed;
+- JRN-003 and JRN-013: Unresolved;
+- final business schema and executable migrations: not authorized;
+- provider-specific Production implementation: not authorized.
 
-The following profile is a **Proposed** Technical Preview candidate recorded through Issue #23. It does not replace Accepted architecture decisions and does not grant implementation authority.
+Open future architecture work includes plugin trust model, AI provider/data policy, final business schema details, target-specific runtime qualification, and other capability decisions only when their entry criteria and separate authority are available.
+
+## Historical Technical Preview candidate architecture
+
+The following profile is preserved as a **historical Proposed Technical Preview candidate recorded through Issue #23**. It must not override later Accepted decisions or the governed M7.0 Controlled Implementation Bridge.
 
 - Delivery shape: Laravel/PHP modular monolith with domain/application boundaries independent of framework and infrastructure.
 - Web client: Vue 3, Inertia, and Vite in one preview deployment unit.
-- Data: MySQL-compatible shared schema with mandatory validated tenant identity and composite integrity strategy.
-- Identity: first-party revocable session, CSRF protection, and privileged-role TOTP baseline.
-- Payment: synthetic cash-only; no provider, callback, settlement, refund, or real-money processing.
-- Connectivity: online-only transactional mutation.
-- Deployment: P1 cPanel only if every mandatory capability passes; P2 hardened VPS remains an undecided fallback.
-- Recovery: provisional RPO 24 hours and RTO 4 hours for synthetic sandbox data.
-- SLO: zero cross-tenant exposure, 99% scheduled demo-window availability, and proposed p95 server response at or below 750 ms for the agreed preview load.
+- Historical data wording: MySQL-compatible shared schema with mandatory validated tenant identity and composite integrity strategy; DEC-005 later established canonical MySQL Server and shared database/shared schema direction.
+- Historical identity wording: first-party revocable session, CSRF protection, and privileged-role TOTP baseline; DEC-006 later established the canonical auth/session direction.
+- Payment: synthetic cash-only historical Preview boundary; DEC-007 later established cash-first + configurable manual/external recorded tender architecture while real provider processing remains outside current Preview authority.
+- Connectivity: online-authoritative transactional mutation, consistent with DEC-008 first-MVP direction.
+- Deployment: historical P1/P2 planning; DEC-009 later established capability-based Stage-1 Preview requirements with P1 conditional/not selected and P2 fallback execution class.
+- Recovery: provisional RPO 24 hours and RTO 4 hours for synthetic sandbox data remain historical Technical Preview provenance, not Production commitments.
+- SLO: zero cross-tenant exposure, 99% scheduled demo-window availability, and proposed p95 server response at or below 750 ms for the agreed preview load remain historical/proposed Preview provenance.
 
-Architectural fitness for this preview requires two-tenant negative isolation tests, server-side deny-by-default authorization, integer minor-unit money, idempotent retry boundaries, tenant-aware cache/job/file/audit behavior, deterministic migration/seeder rehearsal, secret isolation, versioned deployment, and backup/restore/rollback evidence.
+Architectural fitness for this preview requires two-tenant negative isolation tests, server-side deny-by-default authorization, exact money representation, idempotent retry boundaries, tenant-aware cache/job/file/audit behavior, deterministic migration/seeder rehearsal when separately authorized, secret isolation, versioned deployment, and backup/restore/rollback evidence before applicable runtime acceptance.
 
-All ADR-001 through ADR-007 remain **Proposed**. Hosting engine/version, worker, HTTPS, storage, backup, restore, rollback, and quota remain unverified. JRN-003 and JRN-013 are not resolved by this candidate profile.
+Historical Issue #23 text that described ADR-001 through ADR-007 as Proposed is preserved only as planning history. Current canonical ADR-001 through ADR-007 state is Accepted through their separately governed decision reconciliations. JRN-003 and JRN-013 remain unresolved.
+
+## M7 current architecture position
+
+- M7.0 — Controlled Implementation Bridge: DONE / PUBLISHED.
+- M7.1 — Application Skeleton & Configuration Boundary: DONE / PUBLISHED through PR #92.
+- M7.2 — Tenant Kernel & Isolation Foundation: DONE / PUBLISHED through PR #93.
+- M7.3 — Identity / Organization / Outlet / Device Minimum: DONE / PUBLISHED through PR #94.
+- M7.4 — POS Core Synthetic Vertical Slice: canonical next roadmap micro-milestone, **NOT AUTHORIZED**.
+- M7.5 — Preview Runtime Qualification: BLOCKED pending actual sanitized P2 target evidence.
+- M7.6 — Preview Deployment / Recovery Rehearsal: BLOCKED.
+- M7.7 — Technical Preview Acceptance: BLOCKED.
+
+Track A Controlled Application Engineering and Track B Preview Runtime Qualification may proceed in parallel where separately authorized and dependency-independent. P2 qualification is not a prerequisite for separately authorized M7.4 Local/Test/CI source work; both tracks converge before Preview deployment/acceptance.
+
+No new architecture decision is created by this state reconciliation.
 
 ## Current authority boundary
 
 - Phase 0: In Progress.
+- Phase 0 Exit: Not Approved.
 - Sprint 12: Published.
 - Sprint 13: Published.
 - Sprint 14: Not Authorized.
+- M7.4 source implementation: Not Authorized.
 - Final/business/production application implementation: Blocked unless separately authorized.
 - SQL/migration execution: Not Authorized.
 - Production database modification: Not Authorized.
 - Deployment/release: Not Authorized.
+- Production: Not Authorized.
 - Production readiness: NO-GO.
 
 Attribution: Lab | zefry
