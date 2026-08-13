@@ -209,20 +209,29 @@ Historical Technical Preview planning language is preserved as planning history.
 
 ## M7 — Technical Preview Implementation Enablement
 
-M7 is a bounded Technical Preview workstream. Its labels describe sequencing and do not independently grant implementation authority or convert M7 into Sprint 14.
+M7 is the current bounded Technical Preview engineering workstream. Its labels describe sequencing and do not independently grant implementation authority or convert M7 into Sprint 14.
 
-| Micro-milestone | Controlled outcome | Gate |
+Current progression after governed publication through PR #94:
+
+- M7.0: **DONE / PUBLISHED**;
+- M7.1: **DONE / PUBLISHED** through PR #92;
+- M7.2: **DONE / PUBLISHED** through PR #93;
+- M7.3: **DONE / PUBLISHED** through PR #94;
+- M7.4: **CANONICAL NEXT ROADMAP MICRO-MILESTONE / NOT AUTHORIZED**;
+- M7.5–M7.7: **BLOCKED** according to their separate evidence and authority gates.
+
+| Micro-milestone | Controlled outcome | Canonical state / gate |
 | --- | --- | --- |
-| M7.0 — Controlled Implementation Bridge | Separate Local/Test/CI source readiness from Preview runtime/deployment readiness | Product Owner substantive bridge decision plus governed publication lifecycle |
-| M7.1 — Application Skeleton & Configuration Boundary | Laravel/Vue/Inertia/Vite/TypeScript-first skeleton, config/secret boundary, health/readiness/correlation foundations, Local/Test/CI baseline | Separate exact bounded Product Owner source-code authority; exact dependency review before adoption |
-| M7.2 — Tenant Kernel & Isolation Foundation | Tenant context and isolation primitives with negative verification | Separate bounded authority and applicable M7.1 evidence |
-| M7.3 — Identity / Organization / Outlet / Device Minimum | Minimum first-party identity and organizational context | Separate bounded authority and applicable security gates |
-| M7.4 — POS Core Synthetic Vertical Slice | Synthetic bounded POS core flow | Separate bounded authority and transaction/security gates |
-| M7.5 — Preview Runtime Qualification | Qualify the actual P2 target under DEC-009 | Actual sanitized target evidence |
-| M7.6 — Preview Deployment / Recovery Rehearsal | Deploy/recover/rollback on qualified target | Qualified target plus separate deployment authority |
-| M7.7 — Technical Preview Acceptance | Combined technical acceptance | Required source, security, runtime, recovery, and operational evidence |
+| M7.0 — Controlled Implementation Bridge | Separate Local/Test/CI source readiness from Preview runtime/deployment readiness | **DONE / PUBLISHED**; bridge publication completed through its governed lifecycle |
+| M7.1 — Application Skeleton & Configuration Boundary | Laravel/Vue/Inertia/Vite/TypeScript-first skeleton, config/secret boundary, health/readiness/correlation foundations, Local/Test/CI baseline | **DONE / PUBLISHED** through PR #92 |
+| M7.2 — Tenant Kernel & Isolation Foundation | Tenant context and isolation primitives with negative verification | **DONE / PUBLISHED** through PR #93 |
+| M7.3 — Identity / Organization / Outlet / Device Minimum | Minimum first-party identity and organizational context | **DONE / PUBLISHED** through PR #94 |
+| M7.4 — POS Core Synthetic Vertical Slice | Synthetic bounded POS core flow | **NEXT / NOT AUTHORIZED**; requires separate Product Owner source authority plus transaction, money, idempotency, synthetic-data, tenant-isolation, organizational-context, authorization, and security gates |
+| M7.5 — Preview Runtime Qualification | Qualify the actual P2 target under DEC-009 | **BLOCKED**; actual sanitized P2 target evidence required |
+| M7.6 — Preview Deployment / Recovery Rehearsal | Deploy/recover/rollback on qualified target | **BLOCKED**; qualified target plus separate deployment authority required |
+| M7.7 — Technical Preview Acceptance | Combined technical acceptance | **BLOCKED**; combined source, security, runtime, recovery, and operational evidence required |
 
-Track A (Controlled Application Engineering) and Track B (Preview Runtime Qualification) may progress in parallel when their dependencies are independent. Both tracks converge before Technical Preview deployment/acceptance.
+Track A (Controlled Application Engineering) and Track B (Preview Runtime Qualification) may progress in parallel when their dependencies are independent and each has separate applicable authority. P2 qualification is not a false prerequisite for separately authorized M7.4 Local/Test/CI source work. Both tracks converge before Technical Preview deployment/acceptance.
 
 ## M5 — Engineering State, CI & Governance Stabilization
 
