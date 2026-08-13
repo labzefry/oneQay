@@ -1,18 +1,19 @@
 # Workflow Directory
 
 Application release and deployment workflows remain deferred until the relevant
-Product Owner authority and delivery gates are available. M7.1 and M7.2 each
-permit only their separately authorized bounded Local/Test/CI validation
+Product Owner authority and delivery gates are available. M7.1, M7.2, and M7.3
+each permit only their separately authorized bounded Local/Test/CI validation
 workflows.
 
 The repository currently permits narrowly scoped governance, foundation, M7.1,
-and M7.2 Local/Test/CI validation workflows:
+M7.2, and M7.3 Local/Test/CI validation workflows:
 
 - `.github/workflows/governance-required-checks.yml`;
 - `.github/workflows/php-foundation-regression.yml`;
 - `.github/workflows/product-owner-merge-authority.yml`;
 - `.github/workflows/m7-1-application-regression.yml`;
-- `.github/workflows/m7-2-tenant-isolation-regression.yml`.
+- `.github/workflows/m7-2-tenant-isolation-regression.yml`;
+- `.github/workflows/m7-3-identity-org-context-regression.yml`.
 
 ## Stable governance checks
 
@@ -84,20 +85,20 @@ work.
 
 - `m7-2-tenant-isolation-regression`.
 
-The check is bounded to the separately authorized M7.2 Tenant Kernel & Isolation
-Foundation. It:
+The check preserves the separately authorized M7.2 Tenant Kernel & Isolation
+Foundation while remaining active for the bounded M7.3 successor source. It:
 
 - checks out the exact pull-request source head;
-- rejects changed paths outside the Product Owner-authorized M7.2 source
-  envelope;
+- permits only the governed M7.2 source envelope plus the separately authorized
+  bounded M7.3 identity/organization/outlet/device successor envelope;
 - preserves the root Platform Foundation regression;
 - preserves the M7.1 application regression;
 - rejects dependency-manifest or lockfile changes;
 - validates and installs the already locked Composer dependencies;
 - rejects unresolved High/Critical Composer advisories;
 - validates application PHP syntax;
-- rejects database/schema/migration/SQL implementation in the bounded M7.2
-  tenancy source;
+- rejects database/schema/migration/SQL implementation across the bounded M7.2
+  and M7.3 source;
 - installs already locked npm dependencies with `npm ci`;
 - rejects npm advisories at High or Critical severity;
 - preserves Vue/TypeScript type-check and Vite build evidence;
@@ -108,9 +109,52 @@ Foundation. It:
 - performs no SQL, migration, infrastructure mutation, deployment, release,
   publish, or Production action.
 
-The synthetic verifier is Local/Test/CI evidence only and is not registered as a
-Production identity or membership implementation. The workflow does not mutate
-repository rulesets and does not authorize M7.3 or later work.
+The M7.3 successor allowlist does not disable, skip, or weaken the M7.2 tenant
+isolation regression. It only allows the separately authorized bounded M7.3
+source to coexist while the M7.2 regression continues to execute.
+
+The synthetic tenant verifier is Local/Test/CI evidence only and is not
+registered as a Production identity or membership implementation.
+
+## M7.3 identity organizational context regression
+
+`m7-3-identity-org-context-regression.yml` produces:
+
+- `m7-3-identity-org-context-regression`.
+
+The check is bounded to the separately authorized M7.3 Identity / Organization /
+Outlet / Device Minimum. It:
+
+- checks out the exact pull-request source head;
+- rejects changed paths outside the Product Owner-authorized M7.3 source
+  envelope;
+- rejects modification of the root Tenant/Auth Platform Foundation;
+- preserves the root Platform Foundation regression;
+- preserves the M7.1 application regression;
+- preserves the full M7.2 tenant isolation regression;
+- rejects Composer/npm manifest or lockfile changes;
+- validates and installs only the already locked application dependencies;
+- rejects unresolved High/Critical Composer and npm advisories;
+- validates application PHP syntax;
+- rejects database/schema/migration/SQL implementation;
+- preserves Vue/TypeScript type-check and Vite build evidence;
+- runs deterministic positive controls for verified identity, organization,
+  outlet, and device context;
+- runs deny-by-default negative controls for missing/malformed identity,
+  missing tenant context, missing membership, cross-tenant identity,
+  foreign organization/outlet/device relationships, global identifier
+  collisions, raw untrusted organizational hints, and stale request context;
+- verifies generic denial behavior without foreign-context payload leakage;
+- verifies Domain/Application framework independence;
+- constrains relationship evidence to deterministic Local/Test/CI synthetic
+  principals;
+- uses `contents: read` and receives no repository or Production secret;
+- performs no authentication implementation, SQL, migration, infrastructure
+  mutation, deployment, release, publish, or Production action.
+
+M7.3 does not implement password login, MFA/TOTP, WebAuthn, token authentication,
+OAuth/OIDC/SAML, real tenant membership persistence, or Production organizational
+repositories. It does not authorize M7.4 or later work.
 
 ## Product Owner merge authority
 
@@ -149,10 +193,11 @@ The active default-branch lifecycle requires:
 - `php-foundation-regression`;
 - `product-owner-merge-authority`.
 
-M7.1 and M7.2 source authority do not grant repository-ruleset mutation.
-`m7-1-application-regression` and `m7-2-tenant-isolation-regression` remain
-mandatory milestone-specific lifecycle evidence for their applicable Draft PRs
-even though neither is silently added to the protected required-status set.
+M7.1, M7.2, and M7.3 source authority do not grant repository-ruleset mutation.
+`m7-1-application-regression`, `m7-2-tenant-isolation-regression`, and
+`m7-3-identity-org-context-regression` remain mandatory milestone-specific
+lifecycle evidence for their applicable Draft PRs even though they are not
+silently added to the protected required-status set.
 
 Repository protection must preserve strict required-status-check policy,
 independent review, stale-review dismissal, latest-push approval, review-thread
@@ -161,11 +206,11 @@ empty bypass list.
 
 ## Scope boundary
 
-These workflows are control-plane, foundation-validation, or bounded M7.1/M7.2
-Local/Test/CI mechanisms. They do not authorize Sprint 14, M7.3+, broader
-application business source, SQL/migration execution, Production database
-changes, deployment, release, ADR/GD promotion, JRN resolution, Phase 0 Exit, or
-Production readiness.
+These workflows are control-plane, foundation-validation, or bounded
+M7.1/M7.2/M7.3 Local/Test/CI mechanisms. They do not authorize Sprint 14, M7.4+,
+broader application business source, real authentication, SQL/migration
+execution, Production database changes, deployment, release, ADR/GD promotion,
+JRN resolution, Phase 0 Exit, or Production readiness.
 
 Any workflow added here must:
 
