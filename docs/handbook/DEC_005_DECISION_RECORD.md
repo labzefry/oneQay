@@ -1,11 +1,28 @@
 # DEC-005 — Database Engine and Physical Tenancy Model Decision Record
 
-> **Status:** Approved — substantive Product Owner decision
+> **Status:** Approved Historical Decision — Partially Superseded by DEC-005R
 > **Phase:** 0 — Governance & Discovery
 > **Canonical product:** oneQay
 > **Developer & Product Engineering Entity:** Lab | zefry
 > **Repository:** `labzefry/oneQay`
 > **Product Owner:** `labzefry`
+
+## Current precedence after DEC-005R
+
+DEC-005 remains the approved historical record of the database decision made on 2026-08-09. The later substantive **DEC-005R — Portable Relational Persistence Architecture** partially supersedes only the applicable engine-selection and portability portions. Historical DEC-005 wording below is intentionally preserved as evidence of what was approved at that time.
+
+- D-005-01: **SUPERSEDED**.
+- D-005-02: **SUPERSEDED**.
+- D-005-03: **PRESERVED**.
+- D-005-04: **PRESERVED**.
+- D-005-05: **PRESERVED**.
+- D-005-06: **PRESERVED AND EXPANDED**.
+- D-005-07: **PRESERVED AND EXPANDED**.
+- D-005-08: **PRESERVED**.
+- D-005-09: **PARTIALLY SUPERSEDED / MATERIALLY EXPANDED**.
+- D-005-10: **PRESERVED AS HISTORICAL FACT**.
+
+For current-facing relational-engine architecture, `docs/handbook/DEC_005R_DECISION_RECORD.md` governs the superseded portions. This supersession notice does not grant source, schema, SQL, migration, DBME, M7.5, deployment, release, or Production authority.
 
 ## Decision provenance
 

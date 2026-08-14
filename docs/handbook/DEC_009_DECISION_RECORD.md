@@ -9,6 +9,10 @@
 - Published predecessor: DEC-008 / PR #82
 - Publication authority: documentation representation only; no deployment or implementation authority
 
+## Current database-decision reconciliation
+
+DEC-009 remains the owner of Stage-1 Preview runtime capability requirements. The later substantive **DEC-005R — Portable Relational Persistence Architecture** partially supersedes DEC-005's sole-MySQL engine selection. Accordingly, only the database-engine dependency in D-009-05 and directly dependent P1 evidence is reconciled; all other DEC-009 runtime, security, recovery, observability, deployment, and authority requirements remain unchanged.
+
 ## Decision
 
 DEC-009 establishes a **Capability-Based Staged / Hybrid Portability Model** for the first governed deployment stage. Environment selection is based on verified capability compliance rather than hosting category.
@@ -39,7 +43,7 @@ Approved provider-neutral requirements: HTTPS, secure front-controller routing, 
 
 ### D-009-05 — Database connectivity
 
-Approved: DEC-005 remains binding. Canonical Stage-1 relational engine requirement is **MySQL Server** within the supported MySQL LTS-family boundary. MariaDB must not silently substitute for MySQL Server. Least-privilege credentials, externalized secrets, connection-limit visibility, topology-appropriate TLS, backup/export, restore capability, controlled migration boundary, and tenant isolation are required. No schema, SQL, DDL, or migration execution is authorized.
+Approved as reconciled by DEC-005R: Stage 1 requires an **authorized and qualified relational engine profile under DEC-005R**. MariaDB, MySQL, or PostgreSQL profile identity alone does not constitute runtime qualification. MariaDB 11.4 family is the current Stage-1 profile direction because repository evidence already observes that family, but actual application connectivity, least-privilege credentials, externalized secrets, connection-limit visibility, topology-appropriate TLS, backup/export, verified restore, controlled migration boundary, transaction semantics, and tenant isolation must still be qualified. No schema, SQL, DDL, migration execution, live database connection, or data movement is authorized.
 
 ### D-009-06 — Queue / background work
 
@@ -99,15 +103,15 @@ Approved canonical operational classes: **Local**, **Test / CI**, **Preview**, a
 
 ### D-009-20 — Portability / hosting lock-in
 
-Approved: Domain/Application remain independent from cPanel, shared-hosting APIs, VPS vendors, specific web servers, cache/queue providers, and container/cloud providers. Environment differences remain Configuration/Infrastructure concerns.
+Approved: Domain/Application remain independent from cPanel, shared-hosting APIs, VPS vendors, specific web servers, cache/queue providers, container/cloud providers, and relational engine vendor identity. Environment and engine differences remain Configuration/Infrastructure concerns. DEC-005R establishes a zero-business-code-change target between officially qualified relational engine profiles; this does not mean Infrastructure adapters/configuration are identical between engines.
 
 ### D-009-21 — P1 shared-hosting / cPanel hypothesis
 
-Approved current disposition: **P1 CONDITIONAL / NOT SELECTED**. Existing cPanel evidence is partial and does not constitute a Pass. Current blockers materially include canonical MySQL Server evidence, safe document-root mapping, effective rewrite, cron cadence, worker/process model, atomic/versioned deployment, rollback, restore rehearsal, actual application DB connection/security/limits, and complete resource/quota/outbound evidence. SSH absence alone is not automatic failure if an equivalent controlled recoverable deployment mechanism is independently proven.
+Approved current disposition: **P1 CONDITIONAL / NOT SELECTED**. Existing cPanel evidence is partial and does not constitute a Pass. DEC-005R removes the former sole-MySQL-family incompatibility as an architecture blocker: observed MariaDB 11.4.8 is now **verified engine-family/version evidence**, not runtime qualification. Current blockers still materially include safe document-root mapping, effective rewrite, cron cadence, worker/process model, atomic/versioned deployment, rollback, restore rehearsal, actual application DB connection/security/limits, engine-profile runtime qualification, and complete resource/quota/outbound evidence. SSH absence alone is not automatic failure if an equivalent controlled recoverable deployment mechanism is independently proven.
 
 ### D-009-22 — Explicit non-scope
 
-DEC-009 does not authorize hosting procurement, server purchase, provisioning, domain purchase, DNS mutation, certificate installation, production secrets or `.env`, source/Laravel/Vue/PWA/Android implementation, dependency installation, schema/SQL/DDL/migration, payment-provider work, real-money processing, transactional-offline implementation, deployment execution, release, production promotion, Sprint 14, final RPO/RTO, DEC-010 license policy, DEC-011 privacy/retention/jurisdiction policy, or DEC-012 support/recovery objectives.
+DEC-009 does not authorize hosting procurement, server purchase, provisioning, domain purchase, DNS mutation, certificate installation, production secrets or `.env`, source/Laravel/Vue/PWA/Android implementation, dependency installation, schema/SQL/DDL/migration, engine adapter implementation, DBME implementation, payment-provider work, real-money processing, transactional-offline implementation, deployment execution, release, production promotion, Sprint 14, final RPO/RTO, DEC-010 license policy, DEC-011 privacy/retention/jurisdiction policy, or DEC-012 support/recovery objectives.
 
 ## Current cPanel evidence
 
@@ -123,18 +127,18 @@ Published Sprint 07/08 evidence demonstrates, without credentials:
 - MariaDB 11.4.8;
 - no SSH.
 
-This evidence does **not** establish a complete P1 Pass. MariaDB 11.4.8 is verified but does not satisfy DEC-005's canonical MySQL Server requirement. Other mandatory capabilities remain unverified or not supplied as recorded in the shared-hosting assessment.
+This evidence does **not** establish a complete P1 Pass. Under DEC-005R, MariaDB 11.4.8 is valid **engine-family/version evidence** and is no longer rejected solely because it is not MySQL Server. It remains **NOT YET RUNTIME QUALIFIED** until the required application/runtime/security/recovery evidence is established. Other mandatory capabilities remain unverified or not supplied as recorded in the shared-hosting assessment.
 
 ## ADR-007 disposition
 
-ADR-007 is materially revised as the representation of substantive DEC-009 while preserving Issue #23, historical P1 conditional cPanel/shared-hosting planning, P2 hardened VPS fallback, and Technical Preview v0.0.1 provenance. It becomes canonical only through the governed publication lifecycle.
+ADR-007 remains the Accepted representation of substantive DEC-009 while preserving Issue #23, historical P1 conditional cPanel/shared-hosting planning, P2 hardened VPS fallback, and Technical Preview v0.0.1 provenance. DEC-005R requires only a bounded reconciliation of its database/runtime dependency; no DEC-009R is created.
 
 ## Portability and authority boundary
 
-DEC-009 defines runtime capability requirements, not deployment execution. Moving from P1 to P2 or later infrastructure stages must not require rewriting Domain/Application business logic.
+DEC-009 defines runtime capability requirements, not deployment execution. Moving from P1 to P2, between qualified relational engine profiles, or to later infrastructure stages must not require rewriting Domain/Application business logic.
 
-This decision grants no application/source implementation, dependency installation, infrastructure provisioning, hosting procurement, DNS/certificate mutation, production secret, database schema/SQL/migration, deployment, release, Sprint 14, or production authority.
+This decision grants no application/source implementation, dependency installation, infrastructure provisioning, hosting procurement, DNS/certificate mutation, production secret, database schema/SQL/migration, engine adapter/DBME implementation, deployment, release, Sprint 14, or production authority.
 
-Phase 0 remains **IN PROGRESS**. Sprint 14 remains **NOT AUTHORIZED**. Final/business/production implementation remains **BLOCKED / SEPARATELY GATED**. Production readiness remains **NO-GO**. DEC-010 and DEC-011 remain separately gated; DEC-012 remains backlog.
+Phase 0 remains **IN PROGRESS**. Sprint 14 remains **NOT AUTHORIZED**. M7.5 remains **BLOCKED / NOT AUTHORIZED** pending actual sanitized target evidence, DEC-009 capability verification including relational engine-profile qualification, and separate Product Owner authority. Production readiness remains **NO-GO**.
 
 Attribution: Lab | zefry
