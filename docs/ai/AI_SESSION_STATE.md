@@ -7,7 +7,7 @@
 - Developer and Product Engineering Entity: Lab | zefry
 - Repository: `labzefry/oneQay`
 - Repository role: Single Source of Truth
-- Checkpoint date: 2026-08-13
+- Checkpoint date: 2026-08-14
 - Canonical product attribution: Lab | zefry
 - Canonical product name: `oneQay`
 
@@ -40,8 +40,9 @@ Do not create recurring reconciliation commits solely to replace a previously st
 - M7.3 Identity / Organization / Outlet / Device Minimum: DONE / PUBLISHED through PR #94
 - M7.4 POS Core Synthetic Vertical Slice: DONE / PUBLISHED through PR #96
 - M7.4A Technical Preview Interaction Layer: DONE / PUBLISHED through PR #98
+- DEC-005R Portable Relational Persistence Architecture: APPROVED / DECISION COMPLETE / PUBLISHED through PR #100
 - Canonical next gated micro-milestone: M7.5 — Preview Runtime Qualification
-- M7.5 Preview Runtime Qualification: BLOCKED / NOT AUTHORIZED; actual sanitized P2 target evidence and DEC-009 capability verification required
+- M7.5 Preview Runtime Qualification: BLOCKED / NOT AUTHORIZED; actual sanitized P2 target evidence, DEC-009 capability verification, and selected relational engine-profile qualification under DEC-005R required
 - M7.6 Preview Deployment / Recovery Rehearsal: BLOCKED / NOT AUTHORIZED
 - M7.7 Technical Preview Acceptance: BLOCKED / NOT AUTHORIZED
 - Sprint 12: Published
@@ -52,7 +53,7 @@ Do not create recurring reconciliation commits solely to replace a previously st
 - Release: None / Not Authorized
 - Migration execution: Not Authorized / Not Performed
 
-Track A Controlled Application Engineering has published the bounded M7.4 Local/Test/CI synthetic POS slice and the M7.4A Technical Preview interaction layer. M7.4A connects synthetic sign-in → server-verified tenant/outlet context → synthetic catalog → cart → `CASH` / `MANUAL_EXTERNAL` → existing M7.4 `CompleteSyntheticSale` → receipt preview within synthetic-only Local/Test/CI/explicit Preview boundaries. Track B Preview Runtime Qualification remains separately gated; M7.5 cannot begin until actual sanitized P2 target evidence is supplied and verified against DEC-009 and separate Product Owner authority is granted. Both tracks converge before Preview deployment/acceptance.
+Track A Controlled Application Engineering has published the bounded M7.4 Local/Test/CI synthetic POS slice and the M7.4A Technical Preview interaction layer. M7.4A connects synthetic sign-in → server-verified tenant/outlet context → synthetic catalog → cart → `CASH` / `MANUAL_EXTERNAL` → existing M7.4 `CompleteSyntheticSale` → receipt preview within synthetic-only Local/Test/CI/explicit Preview boundaries. Track B Preview Runtime Qualification remains separately gated; M7.5 cannot begin until actual sanitized P2 target evidence is supplied, verified against DEC-009 mandatory capabilities, and the selected relational engine profile is qualified under DEC-005R, followed by separate Product Owner authority. Both tracks converge before Preview deployment/acceptance.
 
 Issue #23 contains historical pre-M7.0 planning language. That historical wording must not override the later governed Phase 0 Controlled Implementation Bridge for bounded Local/Test/CI source preparation. Issue #23 mutation is outside this checkpoint reconciliation.
 
@@ -63,11 +64,12 @@ Issue #23 contains historical pre-M7.0 planning language. That historical wordin
 - DEC-002 Backend Language / Application Framework: **APPROVED / DECISION COMPLETE**; ADR-001 Accepted through its governed reconciliation.
 - DEC-003 Frontend / PWA Stack: **APPROVED / DECISION COMPLETE**; ADR-002 Accepted through its governed reconciliation.
 - DEC-004 Android Approach: **APPROVED / DECISION COMPLETE**; ADR-008 is the Accepted representation of DEC-004.
-- DEC-005 Database Engine and Physical Tenancy Model: **APPROVED / DECISION COMPLETE**; ADR-003 Accepted through its governed reconciliation.
+- DEC-005 Database Engine and Physical Tenancy Model: **APPROVED HISTORICAL DECISION / PARTIALLY SUPERSEDED BY DEC-005R**; historical MySQL Server selection remains preserved while shared database/shared schema, tenant-isolation, Infrastructure ownership of vendor-specific behavior, schema-evolution, and recoverability principles remain preserved according to DEC-005R dispositions.
+- DEC-005R Portable Relational Persistence Architecture: **APPROVED / DECISION COMPLETE / PUBLISHED through PR #100**; current architecture requires database-engine-neutral Domain/Application, zero database-vendor dependency in business rules, qualified MariaDB/MySQL/PostgreSQL engine-profile direction, Database Portability Contract direction, and no implementation authority.
 - DEC-006 Authentication / MFA / Session Architecture: **APPROVED / DECISION COMPLETE**; ADR-004 Accepted through its governed reconciliation; JRN-003 remains Unresolved.
 - DEC-007 Payment Provider and Compliance Boundary: **APPROVED / DECISION COMPLETE**; ADR-005 Accepted through its governed reconciliation.
 - DEC-008 Offline POS Semantics and Conflict Resolution: **APPROVED / DECISION COMPLETE**; ADR-006 Accepted through its governed reconciliation.
-- DEC-009 Deployment Stage 1 Runtime Requirements: **APPROVED / DECISION COMPLETE**; ADR-007 Accepted through its governed reconciliation.
+- DEC-009 Deployment Stage 1 Runtime Requirements: **APPROVED / DECISION COMPLETE**; ADR-007 Accepted through its governed reconciliation; current database dependency requires an authorized and runtime-qualified relational engine profile under DEC-005R rather than sole canonical MySQL Server.
 - DEC-010 Product License and Third-Party Notice Policy: **APPROVED / DECISION COMPLETE**; oneQay remains **PROPRIETARY / ALL RIGHTS RESERVED**.
 - DEC-011 Data Retention, Privacy, and Jurisdiction: **APPROVED / DECISION COMPLETE**; initial commercial/launch jurisdiction remains not yet canonically selected.
 - DEC-012 RPO/RTO and Support Objectives: **APPROVED / DECISION COMPLETE**; final numerical Production RPO/RTO/SLO and customer-contractual SLA remain deferred.
@@ -87,6 +89,20 @@ The M7.0–M7.4A facts below are publication provenance, not standing authority:
 The M7 identifiers above are stable publication provenance only. They MUST NOT be treated as permanently current live-main state after later repository changes.
 
 M7.1 preserves the application/configuration foundation. M7.2 preserves tenant-context and isolation primitives. M7.3 preserves first-party identity separation, tenant membership separation, and server-controlled organization/outlet/device context. M7.4 preserves bounded synthetic POS transaction correctness, exact-money, idempotency/replay, payment-sufficiency, stock-causation, tenant/organizational isolation, and audit/correlation evidence. M7.4A preserves the synthetic interaction journey while reusing M7.4 `CompleteSyntheticSale`, server-authoritative pricing/exact-money, `CASH_COUNTED`, `OPERATOR_RECORDED`, fail-closed Preview runtime gating, and tenant/context verification. None of M7.0–M7.4A grants M7.5, deployment, release, Production, Phase 0 Exit, or Sprint 14 authority.
+
+## DEC-005R publication provenance
+
+DEC-005R publication is stable historical provenance and not a permanently current live-head claim:
+
+- publication PR: #100 CLOSED / MERGED;
+- source head: `8ec7069b08c9127e402fa80e5e79ca26be2b63d6`;
+- source tree: `0862c851d30c11c37c39d13aa5660d042da91989`;
+- published squash commit: `b5cbdeb6ea45d4f159f3d1cd39cadc561605c5ff`;
+- published tree: `0862c851d30c11c37c39d13aa5660d042da91989`;
+- source tree equals published tree: Yes;
+- current decision: **DEC-005R — Portable Relational Persistence Architecture — APPROVED / DECISION COMPLETE**;
+- DEC-005 remains an approved historical decision and is partially superseded only as recorded by DEC-005R;
+- no source, schema, SQL, migration, cross-engine CI, DBME implementation, M7.5, deployment, release, or Production authority was created by publication.
 
 ## Verified publication baseline before GOV-051 decision-record work
 
@@ -240,7 +256,7 @@ Historical review contamination involving alternate Sprint 13 head `ba312fa9095d
 
 **NO STANDING IMPLEMENTATION OR MILESTONE AUTHORITY.**
 
-M7.4A is **DONE / PUBLISHED** through PR #98. The next gated activity is M7.5 — Preview Runtime Qualification, but it is **BLOCKED / NOT AUTHORIZED** until actual sanitized P2 target evidence is supplied and verified against DEC-009 and separate Product Owner authority is granted. This checkpoint does not create that evidence or authority.
+M7.4A is **DONE / PUBLISHED** through PR #98. The next gated activity is M7.5 — Preview Runtime Qualification, but it is **BLOCKED / NOT AUTHORIZED** until actual sanitized P2 target evidence is supplied, verified against DEC-009 mandatory capabilities, and the selected relational engine profile is qualified under DEC-005R, followed by separate Product Owner authority. This checkpoint does not create that evidence or authority.
 
 No standing Phase 0 exit, Sprint 14, deployment, release, or Production authority is stored in this checkpoint. Substantive decision authority, preparation authority, independent exact-head review, Product Owner READY authority, and Product Owner MERGE authority remain separate whenever applicable.
 
