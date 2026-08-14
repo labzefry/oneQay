@@ -93,7 +93,7 @@ M7.0–M7.4A are governed repository facts and do not create standing future aut
 - M7.0 — Controlled Implementation Bridge: governed publication complete before M7.1 source work.
 - M7.1 — Application Skeleton & Configuration Boundary: PR #92 CLOSED / MERGED; resulting main `82b2bffb3b087aa818c2a229d2b7e0c07ea158ec`.
 - M7.2 — Tenant Kernel & Isolation Foundation: PR #93 CLOSED / MERGED; resulting main `ba95f745869092d251230fb5a3db2c08e42f4941`.
-- M7.3 — Identity / Organization / Outlet / Device Minimum: PR #94 CLOSED / MERGED; source head `67d7b890fe95db9c32d4e2dbc432be193bb064a9`; source tree `3cb925e9234bc28b64aec3a1f6efd1a03756221c`; resulting main `9b43f6be520b64aec3a1f6efd1a03756221c`.
+- M7.3 — Identity / Organization / Outlet / Device Minimum: PR #94 CLOSED / MERGED; source head `67d7b890fe95db9c32d4e2dbc432be193bb064a9`; source tree `3cb925e9234bc28b64aec3a1f6efd1a03756221c`; resulting main `9b43f6be520b64e47bfa9a66be577dab20f69bd9`.
 - M7.4 — POS Core Synthetic Vertical Slice: PR #96 CLOSED / MERGED; source head `0659e0e3c2ab7f8ec9f12653b773aaa4391e931b`; source tree `f67f9b75a11b2710b58a9928f5b73f876cba2cef`; resulting main `4981fca92e7de028ca55e746b36af6afe0d3e7f2`.
 - M7.4A — Technical Preview Interaction Layer: PR #98 CLOSED / MERGED; source head `893b73b8f20b2ede0d3a8896b3a015df5370dbed`; source tree `cdc140e5061481bec4b6b691b02b2b234181c2fb`; published commit `c0bdf8ad7539a5c83de2e5183fbf2eda9f17f02b`; published tree `cdc140e5061481bec4b6b691b02b2b234181c2fb`; source tree equals published tree: Yes.
 
