@@ -1,0 +1,128 @@
+{
+  "target_id": "p1-cpanel-historical",
+  "observed_at": "2026-08-15T01:47:00+07:00",
+  "engine": {
+    "family": "MARIADB",
+    "version": "11.4.8"
+  },
+  "capabilities": {
+    "PHP_RUNTIME": {
+      "status": "VERIFIED",
+      "reference": "docs/handbook/SHARED_HOSTING_CAPABILITY_ASSESSMENT.md#php-runtime"
+    },
+    "PHP_CLI": {
+      "status": "UNVERIFIED",
+      "reference": "docs/handbook/SHARED_HOSTING_CAPABILITY_ASSESSMENT.md#evidence-matrix"
+    },
+    "WEB_SERVER_REQUEST_RUNTIME": {
+      "status": "PARTIAL",
+      "reference": "docs/PLATFORM_APPLICATION_BOOTSTRAP_AND_RUNTIME_CAPABILITY_FOUNDATION.md#hosting-capability-evidence"
+    },
+    "SAFE_DOCUMENT_ROOT": {
+      "status": "UNVERIFIED",
+      "reference": "docs/handbook/SHARED_HOSTING_CAPABILITY_ASSESSMENT.md#evidence-matrix"
+    },
+    "URL_REWRITE": {
+      "status": "UNVERIFIED",
+      "reference": "docs/handbook/SHARED_HOSTING_CAPABILITY_ASSESSMENT.md#evidence-matrix"
+    },
+    "BACKGROUND_EXECUTION": {
+      "status": "UNVERIFIED",
+      "reference": "docs/handbook/SHARED_HOSTING_CAPABILITY_ASSESSMENT.md#evidence-matrix"
+    },
+    "QUEUE_EXECUTION": {
+      "status": "UNVERIFIED",
+      "reference": "docs/handbook/DEC_009_DECISION_RECORD.md#d-009-06-queue-background-work"
+    },
+    "SCHEDULER_CRON": {
+      "status": "PARTIAL",
+      "reference": "docs/handbook/SHARED_HOSTING_CAPABILITY_ASSESSMENT.md#evidence-matrix"
+    },
+    "FILESYSTEM_STORAGE": {
+      "status": "PARTIAL",
+      "reference": "docs/handbook/SHARED_HOSTING_CAPABILITY_ASSESSMENT.md#evidence-matrix"
+    },
+    "ENVIRONMENT_SECRETS": {
+      "status": "UNVERIFIED",
+      "reference": "docs/handbook/SHARED_HOSTING_CAPABILITY_ASSESSMENT.md#evidence-matrix"
+    },
+    "TLS_HTTPS": {
+      "status": "PARTIAL",
+      "reference": "docs/handbook/SHARED_HOSTING_CAPABILITY_ASSESSMENT.md#evidence-matrix"
+    },
+    "DATABASE_CONNECTIVITY": {
+      "status": "UNVERIFIED",
+      "reference": "docs/handbook/SHARED_HOSTING_CAPABILITY_ASSESSMENT.md#relational-engine-profile-qualification"
+    },
+    "BACKUP_RESTORE": {
+      "status": "PARTIAL",
+      "reference": "docs/handbook/SHARED_HOSTING_CAPABILITY_ASSESSMENT.md#evidence-matrix"
+    },
+    "OBSERVABILITY_LOGGING": {
+      "status": "PARTIAL",
+      "reference": "docs/handbook/SHARED_HOSTING_CAPABILITY_ASSESSMENT.md#evidence-matrix"
+    },
+    "RESOURCE_LIMITS": {
+      "status": "PARTIAL",
+      "reference": "docs/handbook/SHARED_HOSTING_CAPABILITY_ASSESSMENT.md#current-known-resource-facts"
+    },
+    "DEPLOYMENT_RECOVERY": {
+      "status": "UNVERIFIED",
+      "reference": "docs/handbook/SHARED_HOSTING_CAPABILITY_ASSESSMENT.md#deployment-model-interpretation"
+    },
+    "ROLLBACK": {
+      "status": "NOT_SUPPLIED",
+      "reference": "docs/handbook/SHARED_HOSTING_CAPABILITY_ASSESSMENT.md#evidence-matrix"
+    },
+    "SECURITY_BOUNDARY": {
+      "status": "PARTIAL",
+      "reference": "docs/handbook/DEC_009_DECISION_RECORD.md#d-009-13-secrets-configuration"
+    },
+    "PREVIEW_ISOLATION": {
+      "status": "UNVERIFIED",
+      "reference": "docs/handbook/DEC_009_DECISION_RECORD.md#d-009-19-environment-classes"
+    },
+    "OUTBOUND_DNS_HTTPS": {
+      "status": "NOT_SUPPLIED",
+      "reference": "docs/handbook/SHARED_HOSTING_CAPABILITY_ASSESSMENT.md#evidence-matrix"
+    }
+  },
+  "engine_checks": {
+    "APPLICATION_CONNECTIVITY": {
+      "status": "UNVERIFIED",
+      "reference": "docs/handbook/SHARED_HOSTING_CAPABILITY_ASSESSMENT.md#relational-engine-profile-qualification"
+    },
+    "LEAST_PRIVILEGE": {
+      "status": "UNVERIFIED",
+      "reference": "docs/handbook/DEC_009_DECISION_RECORD.md#d-009-05-database-connectivity"
+    },
+    "CONNECTION_LIMIT_VISIBILITY": {
+      "status": "UNVERIFIED",
+      "reference": "docs/handbook/SHARED_HOSTING_CAPABILITY_ASSESSMENT.md#relational-engine-profile-qualification"
+    },
+    "TRANSACTION_SEMANTICS": {
+      "status": "UNVERIFIED",
+      "reference": "docs/handbook/DEC_005R_DECISION_RECORD.md#cross-engine-qualification-direction"
+    },
+    "TENANT_ISOLATION": {
+      "status": "UNVERIFIED",
+      "reference": "docs/handbook/DEC_005R_DECISION_RECORD.md#database-portability-contract"
+    },
+    "BACKUP_EXPORT": {
+      "status": "PARTIAL",
+      "reference": "docs/handbook/SHARED_HOSTING_CAPABILITY_ASSESSMENT.md#evidence-matrix"
+    },
+    "RESTORE_VERIFIED": {
+      "status": "NOT_SUPPLIED",
+      "reference": "docs/handbook/SHARED_HOSTING_CAPABILITY_ASSESSMENT.md#evidence-matrix"
+    },
+    "MIGRATION_BOUNDARY": {
+      "status": "UNVERIFIED",
+      "reference": "docs/handbook/DEC_005R_DECISION_RECORD.md#database-portability-contract"
+    },
+    "PORTABILITY_CONTRACT": {
+      "status": "UNVERIFIED",
+      "reference": "docs/handbook/DEC_005R_DECISION_RECORD.md#database-portability-contract"
+    }
+  }
+}
