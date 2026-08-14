@@ -153,8 +153,14 @@ M7.2 telah mempublikasikan bounded Tenant Kernel & Isolation Foundation untuk Lo
 
 ## Data architecture
 
-- **MySQL Server** adalah canonical relational database engine family melalui DEC-005.
-- Default physical tenancy adalah shared database/shared schema dengan mandatory immutable tenant isolation key melalui DEC-005.
+- **Portable Relational Persistence Architecture** adalah current canonical relational architecture melalui DEC-005R.
+- Domain dan Application harus database-engine-neutral; business rules tidak boleh bergantung pada vendor database.
+- Target perpindahan antar officially qualified relational engine profiles adalah **ZERO BUSINESS-CODE CHANGE**; perbedaan engine tetap menjadi concern Configuration/Infrastructure.
+- MariaDB, MySQL, dan PostgreSQL adalah authorized engine-profile directions; engine/profile identity sendiri bukan runtime qualification.
+- MariaDB 11.4 family adalah Stage-1 profile direction subject to DEC-009/M7.5 runtime qualification.
+- Canonical logical schema/contract dipisahkan dari engine-specific physical mapping.
+- Formal Database Portability Contract, cross-engine qualification, dan oneQay Database Mobility & Migration Engine — DBME adalah approved architecture directions tetapi belum diimplementasikan.
+- Default physical tenancy tetap shared database/shared schema dengan mandatory immutable tenant isolation key, dipertahankan dari DEC-005 oleh DEC-005R.
 - Tenant authorization tetap Application-authoritative; database integrity/security adalah defense-in-depth.
 - Transaksi tidak boleh melintasi boundary secara implisit.
 - Outbox pattern disiapkan untuk reliable domain event publication.
@@ -162,7 +168,7 @@ M7.2 telah mempublikasikan bounded Tenant Kernel & Isolation Foundation untuk Lo
 - File/object storage menggunakan generated identifier, content validation, malware scanning, dan signed access.
 - Analytics workload dipisahkan saat beban membenarkan; OLTP tidak boleh menjadi reporting warehouse tanpa kontrol.
 
-DEC-005 tidak memberi final business schema, executable SQL/migration, Production database, provider, atau database-configuration authority. M7.0–M7.4A juga tidak mengotorisasi physical schema coupling.
+DEC-005 tetap historical Approved decision dan **PARTIALLY SUPERSEDED BY DEC-005R**: D-005-01/D-005-02 superseded, D-005-03/D-005-04/D-005-05/D-005-08 preserved, D-005-06/D-005-07 preserved and expanded, dan D-005-09 materially expanded. DEC-005R tidak memberi final business schema, executable SQL/migration, engine adapter, DBME implementation, Production database, provider, atau database-configuration authority. M7.0–M7.4A juga tidak mengotorisasi physical schema coupling.
 
 ## API architecture
 
@@ -221,9 +227,9 @@ Business logic dan module contract harus identik pada seluruh stage:
 5. Cloud
 6. Kubernetes
 
-Perbedaan stage ditangani oleh configuration dan infrastructure adapter. Session, cache, file, job, dan scheduler harus dapat dieksternalisasi tanpa mengubah use case.
+Perbedaan stage ditangani oleh configuration dan infrastructure adapter. Session, cache, file, job, scheduler, dan relational engine profile harus dapat berubah melalui Infrastructure/Configuration tanpa menulis ulang use case/business rules.
 
-DEC-009 defines the capability-based Stage-1 Preview runtime requirements. P1 Shared Hosting/cPanel remains conditional/not selected; P2 Managed/Hardened VPS or Server remains the fallback execution class. Actual P2 target evidence is pending external input unless fresh evidence proves otherwise. Neither DEC-009 nor M7.0–M7.4A authorizes deployment execution or production release.
+DEC-009 defines the capability-based Stage-1 Preview runtime requirements. Its database dependency is reconciled by DEC-005R: Stage 1 requires an authorized **and runtime-qualified** relational engine profile rather than sole canonical MySQL Server. P1 Shared Hosting/cPanel remains conditional/not selected; observed MariaDB 11.4 is engine-family/version evidence only, not runtime qualification. P2 Managed/Hardened VPS or Server remains the fallback execution class. Actual P2 target evidence is pending external input unless fresh evidence proves otherwise. Neither DEC-009, DEC-005R, nor M7.0–M7.4A authorizes deployment execution or production release.
 
 ## Reliability
 
@@ -247,10 +253,13 @@ M7.1 application/configuration foundation, M7.2 tenant isolation foundation, M7.
 ## Architecture fitness functions
 
 - Domain layer bebas import infrastructure/framework.
+- Domain/Application tidak boleh mengimpor database-vendor details.
 - Tidak ada query data tenant tanpa enforced tenant scope.
 - Tidak ada akses tabel lintas module tanpa keputusan arsitektur.
 - Public contract memiliki version dan test.
 - Semua migration yang diotorisasi harus terurut serta tervalidasi.
+- Future engine-profile qualification harus membuktikan Database Portability Contract tanpa mengubah business code.
+- Unsafe/lossy cross-engine conversion harus fail closed.
 - Dependency cycle memblokir build.
 - Secret scan dan high-severity security gate memblokir release.
 - Capability map tidak boleh digunakan sebagai pengganti implementation authority.
@@ -265,14 +274,18 @@ Keputusan signifikan dicatat di `docs/adr/ADR-NNN-title.md` dengan status Propos
 
 Current canonical state reflects the separately governed decisions already published:
 
-- ADR-001 through ADR-007: **Accepted** through DEC-002, DEC-003, DEC-005, DEC-006, DEC-007, DEC-008, and DEC-009 reconciliations respectively;
-- ADR-008: **Accepted** representation of DEC-004;
+- DEC-005: **Approved Historical Decision / Partially Superseded by DEC-005R**;
+- DEC-005R: **Approved / Decision Complete** — current Portable Relational Persistence Architecture;
+- ADR-003: **Accepted**, current representation reconciled to DEC-005R while historical D1 and DEC-005 provenance remain preserved;
+- DEC-009 / ADR-007: **Approved / Accepted**, database runtime dependency reconciled to DEC-005R;
+- ADR-001, ADR-002, ADR-004, ADR-005, ADR-006, and ADR-008 retain their separately governed Accepted state;
 - GD-007: Proposed;
 - JRN-003 and JRN-013: Unresolved;
 - final business schema and executable migrations: not authorized;
+- engine-profile runtime implementation, cross-engine CI, and DBME implementation: not authorized;
 - provider-specific Production implementation: not authorized.
 
-Open future architecture work includes plugin trust model, AI provider/data policy, final business schema details, target-specific runtime qualification, and other capability decisions only when their entry criteria and separate authority are available.
+Open future architecture work includes plugin trust model, AI provider/data policy, final business schema details, relational engine-profile/runtime qualification, portable Infrastructure adapter implementation, cross-engine qualification/CI, DBME implementation, and other capability decisions only when their entry criteria and separate authority are available.
 
 ## Historical Technical Preview candidate architecture
 
@@ -280,17 +293,17 @@ The following profile is preserved as a **historical Proposed Technical Preview 
 
 - Delivery shape: Laravel/PHP modular monolith with domain/application boundaries independent of framework and infrastructure.
 - Web client: Vue 3, Inertia, and Vite in one preview deployment unit.
-- Historical data wording: MySQL-compatible shared schema with mandatory validated tenant identity and composite integrity strategy; DEC-005 later established canonical MySQL Server and shared database/shared schema direction.
+- Historical data wording: MySQL-compatible shared schema with mandatory validated tenant identity and composite integrity strategy; DEC-005 later established canonical MySQL Server and shared database/shared schema direction; DEC-005R subsequently supersedes sole-MySQL status with Portable Relational Persistence Architecture while preserving the shared-schema/tenant-isolation direction.
 - Historical identity wording: first-party revocable session, CSRF protection, and privileged-role TOTP baseline; DEC-006 later established the canonical auth/session direction.
 - Payment: synthetic cash-only historical Preview boundary; DEC-007 later established cash-first + configurable manual/external recorded tender architecture while real provider processing remains outside current Preview authority.
 - Connectivity: online-authoritative transactional mutation, consistent with DEC-008 first-MVP direction.
-- Deployment: historical P1/P2 planning; DEC-009 later established capability-based Stage-1 Preview requirements with P1 conditional/not selected and P2 fallback execution class.
+- Deployment: historical P1/P2 planning; DEC-009 later established capability-based Stage-1 Preview requirements with P1 conditional/not selected and P2 fallback execution class; DEC-005R later reconciled its database dependency to qualified relational engine profiles.
 - Recovery: provisional RPO 24 hours and RTO 4 hours for synthetic sandbox data remain historical Technical Preview provenance, not Production commitments.
 - SLO: zero cross-tenant exposure, 99% scheduled demo-window availability, and proposed p95 server response at or below 750 ms for the agreed preview load remain historical/proposed Preview provenance.
 
 Architectural fitness for this preview requires two-tenant negative isolation tests, server-side deny-by-default authorization, exact money representation, idempotent retry boundaries, tenant-aware cache/job/file/audit behavior, deterministic migration/seeder rehearsal when separately authorized, secret isolation, versioned deployment, and backup/restore/rollback evidence before applicable runtime acceptance.
 
-Historical Issue #23 text that described ADR-001 through ADR-007 as Proposed is preserved only as planning history. Current canonical ADR-001 through ADR-007 state is Accepted through their separately governed decision reconciliations. JRN-003 and JRN-013 remain unresolved.
+Historical Issue #23 text that described ADR-001 through ADR-007 as Proposed is preserved only as planning history. Current canonical ADR state follows their separately governed decision reconciliations. JRN-003 and JRN-013 remain unresolved.
 
 ## M7 current architecture position
 
@@ -300,13 +313,13 @@ Historical Issue #23 text that described ADR-001 through ADR-007 as Proposed is 
 - M7.3 — Identity / Organization / Outlet / Device Minimum: DONE / PUBLISHED through PR #94.
 - M7.4 — POS Core Synthetic Vertical Slice: DONE / PUBLISHED through PR #96.
 - M7.4A — Technical Preview Interaction Layer: DONE / PUBLISHED through PR #98.
-- M7.5 — Preview Runtime Qualification: BLOCKED / NOT AUTHORIZED pending actual sanitized P2 target evidence and DEC-009 capability verification.
+- M7.5 — Preview Runtime Qualification: BLOCKED / NOT AUTHORIZED pending actual sanitized P2 target evidence and DEC-009 capability verification, including selected relational engine-profile qualification under DEC-005R.
 - M7.6 — Preview Deployment / Recovery Rehearsal: BLOCKED / NOT AUTHORIZED.
 - M7.7 — Technical Preview Acceptance: BLOCKED / NOT AUTHORIZED.
 
 Track A Controlled Application Engineering has published M7.4 and the bounded M7.4A interaction layer. M7.4A connects synthetic sign-in → server-verified tenant/outlet context → synthetic catalog → cart → `CASH` / `MANUAL_EXTERNAL` → existing M7.4 `CompleteSyntheticSale` → receipt preview, within synthetic-only Local/Test/CI/explicit Preview boundaries. Track B Preview Runtime Qualification remains separately gated and cannot begin until actual sanitized P2 target evidence is available for DEC-009 verification and separate Product Owner authority is granted. Both tracks converge before Preview deployment/acceptance.
 
-No new architecture decision is created by this state reconciliation.
+DEC-005R publication changes database architecture governance only; it does not promote any M7 lifecycle state.
 
 ## Current authority boundary
 
@@ -321,6 +334,7 @@ No new architecture decision is created by this state reconciliation.
 - Final/business/production application implementation: Blocked unless separately authorized.
 - SQL/migration execution: Not Authorized.
 - Production database modification: Not Authorized.
+- DBME/cross-engine CI implementation: Not Authorized.
 - Deployment/release: Not Authorized.
 - Production: Not Authorized.
 - Production readiness: NO-GO.
