@@ -78,6 +78,15 @@ Product Owner kemudian memberikan substantive DEC-011 Data Retention, Privacy, a
 | M5.2 CI & Lifecycle Control Hardening | Published / Enforcement Complete | PR #67 |
 | M5.3 Governance & Program State Synchronization | Published / Complete | PR #68; published commit `e45f5b4c0f143abc6e255e4e8550bf3504348aae` |
 | M6 Enterprise Vision Canonicalization | Published / Publication Complete | PR #69; source head `e6a3345b09a6b270ac7e09abd78c6356f426e363`; published commit `0b7b28028966ac38af0f32960054210c3a083916`; source/published tree `567df997bae70090b19465c75e4cc3b1e23b6579` |
+| M7.0 Controlled Implementation Bridge | Done / Published | Governed publication complete; no standing later-milestone authority |
+| M7.1 Application Skeleton & Configuration Boundary | Done / Published | PR #92 |
+| M7.2 Tenant Kernel & Isolation Foundation | Done / Published | PR #93 |
+| M7.3 Identity / Organization / Outlet / Device Minimum | Done / Published | PR #94 |
+| M7.4 POS Core Synthetic Vertical Slice | Done / Published | PR #96 |
+| M7.4A Technical Preview Interaction Layer | Done / Published | PR #98; source head `893b73b8f20b2ede0d3a8896b3a015df5370dbed`; source/published tree `cdc140e5061481bec4b6b691b02b2b234181c2fb`; published commit `c0bdf8ad7539a5c83de2e5183fbf2eda9f17f02b` |
+| M7.5 Preview Runtime Qualification | Blocked / Not Authorized | Actual sanitized P2 target evidence and DEC-009 capability verification required before separate Product Owner authority |
+| M7.6 Preview Deployment / Recovery Rehearsal | Blocked / Not Authorized | Qualified runtime target plus separate deployment authority required |
+| M7.7 Technical Preview Acceptance | Blocked / Not Authorized | Combined source, security, runtime, recovery, and operational evidence required |
 | GOV-051 Enterprise Vision substantive decision | Approved / Decision Complete | Product Owner APPROVED `Enterprise Intelligent Business Management Platform` on verified baseline `762149757e4bc1fa79cc16bc4761f4147be0f7ea`; approval is product direction only, not implementation authority |
 | DEC-000 Product Vision and Decision Rights | Approved / Decision Complete | Product Owner APPROVED D-000-01 through D-000-06 on baseline `792b2dc30636bc53baa7d66b43cf2dab4a348dd4`; `docs/handbook/DEC_000_DECISION_RECORD.md`; GD-003 Approved within DEC-000 boundary only |
 | DEC-001 MVP Scope and Non-Scope | Approved / Decision Complete | Product Owner APPROVED **POS CORE TRANSACTION & OUTLET OPERATIONS** on baseline `17f156b9861972b4924a5ed01bfabd5a1a79461a`; `docs/handbook/DEC_001_DECISION_RECORD.md`; no implementation authority |
@@ -100,7 +109,7 @@ Rencana kickoff berada di `docs/handbook/PHASE_0_KICKOFF.md`.
 
 **Phase 0 — Governance and Discovery: In Progress** adalah status program governance/discovery. Status tersebut tidak berarti repository tidak memiliki source code teknis dan tidak menghapus source yang telah dipublikasikan secara sah sebagai bounded Platform Foundation.
 
-Published Sprint 12 dan Sprint 13 tetap merupakan fakta repository. Publikasi itu tidak berarti Phase 0 telah selesai, tidak otomatis memulai Phase 1 secara penuh, tidak menyetujui final business application, dan tidak memberi authority untuk Sprint 14.
+Published Sprint 12 dan Sprint 13 serta governed M7.0–M7.4A publication tetap merupakan fakta repository. Publikasi itu tidak berarti Phase 0 telah selesai, tidak otomatis memulai Phase 1 secara penuh, tidak menyetujui final business application, tidak memberi authority untuk Sprint 14, dan tidak memberi M7.5/deployment/release/Production authority.
 
 Mulai M5.3, frasa **application implementation Blocked** harus dibaca sebagai **final/business/production application implementation Blocked**. Tidak ada source authority baru yang diberikan oleh klarifikasi ini.
 

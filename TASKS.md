@@ -173,11 +173,12 @@ M7 is the current bounded Technical Preview engineering workstream created by th
 | M7.2 | Tenant Kernel & Isolation Foundation | Done | Governed publication completed through PR #93; M7.1 foundation preserved |
 | M7.3 | Identity / Organization / Outlet / Device Minimum | Done | Governed publication completed through PR #94; M7.2 tenant isolation and server-controlled identity/organizational boundaries preserved |
 | M7.4 | POS Core Synthetic Vertical Slice | Done | Governed publication completed through PR #96; bounded synthetic Local/Test/CI POS transaction evidence published; no standing M7.5, deployment, release, or Production authority |
-| M7.5 | Preview Runtime Qualification | Blocked | Actual sanitized P2 target evidence and DEC-009 capability verification required |
-| M7.6 | Preview Deployment / Recovery Rehearsal | Blocked | Qualified target, applicable source/security evidence, and separate deployment authority required |
-| M7.7 | Technical Preview Acceptance | Blocked | Combined source, security, runtime, recovery, and operational evidence required |
+| M7.4A | Technical Preview Interaction Layer | Done | Governed publication completed through PR #98; source head `893b73b8f20b2ede0d3a8896b3a015df5370dbed`, source/published tree `cdc140e5061481bec4b6b691b02b2b234181c2fb`, published commit `c0bdf8ad7539a5c83de2e5183fbf2eda9f17f02b`; synthetic-only interaction journey reuses M7.4 `CompleteSyntheticSale`; no standing M7.5, deployment, release, or Production authority |
+| M7.5 | Preview Runtime Qualification | Blocked | NOT AUTHORIZED; actual sanitized P2 target evidence and DEC-009 capability verification required before separate Product Owner M7.5 authority |
+| M7.6 | Preview Deployment / Recovery Rehearsal | Blocked | NOT AUTHORIZED; qualified target, applicable source/security evidence, and separate deployment authority required |
+| M7.7 | Technical Preview Acceptance | Blocked | NOT AUTHORIZED; combined source, security, runtime, recovery, and operational evidence required |
 
-Track A Local/Test/CI engineering has published M7.4. Track B P2 runtime qualification remains blocked until actual sanitized P2 target evidence is available and verified under DEC-009. Both tracks converge before Technical Preview deployment/acceptance.
+Track A Local/Test/CI engineering has published M7.4 and M7.4A. Track B P2 runtime qualification remains blocked until actual sanitized P2 target evidence is available, verified under DEC-009, and separately authorized. Both tracks converge before Technical Preview deployment/acceptance.
 
 ## DEC-010 Supplement publication state
 
