@@ -3,247 +3,69 @@
 ## Identity
 
 - Project: oneQay
-- Tagline: The Future of Intelligent Business Management
 - Developer and Product Engineering Entity: Lab | zefry
 - Repository: `labzefry/oneQay`
 - Repository role: Single Source of Truth
-- Checkpoint date: 2026-08-13
+- Checkpoint date: 2026-08-14
 - Canonical product attribution: Lab | zefry
 - Canonical product name: `oneQay`
 
 ## Checkpoint semantics
 
-This file is a stable session checkpoint, not a substitute for querying live GitHub state.
+This file is a stable session checkpoint, not a substitute for live GitHub verification. Hard-coded SHAs are provenance only. Perform Minimal Delta Verification before every branch, lifecycle transition, implementation decision, Ready, or Merge.
 
-A hard-coded SHA in a tracked checkpoint MUST be interpreted only as published milestone identity or as a verified baseline before a bounded work item began. It MUST NOT be interpreted as the permanently current live `main` or live tree.
+## DEC-005R session result
 
-Live repository state must be obtained by Minimal Delta Verification from GitHub before branch creation, lifecycle transitions, implementation decisions, Ready, or Merge.
+Product Owner substantively approved:
 
-Do not create recurring reconciliation commits solely to replace a previously stored `current main` SHA. Such a pattern is self-referential because publishing the replacement itself creates a new SHA.
+**DEC-005R — OPTION C — PORTABLE RELATIONAL PERSISTENCE ARCHITECTURE**.
 
-## Canonical repository state
+Canonical architecture after this decision:
 
-- Canonical delivery phase: Phase 0 — Governance and Discovery
-- Canonical Phase 0 status: In Progress
-- Current engineering workstream: M7 — Technical Preview Implementation Enablement
-- M5.1: PUBLISHED / COMPLETE through PR #66
-- M5.2: PUBLISHED / ENFORCEMENT COMPLETE through PR #67
-- M5.3: PUBLISHED / COMPLETE through PR #68
-- M6 Enterprise Vision Canonicalization: PUBLISHED / PUBLICATION COMPLETE through PR #69
-- M6 Post-Publication State Reconciliation: PUBLISHED through PR #70
-- M6 Closure — Checkpoint Semantics Correction: PUBLISHED / COMPLETE through PR #71
-- GOV-051 Enterprise Vision substantive decision: APPROVED / DECISION COMPLETE
-- Enterprise Vision decision status: Approved
-- M7.0 Controlled Implementation Bridge: DONE / PUBLISHED
-- M7.1 Application Skeleton & Configuration Boundary: DONE / PUBLISHED through PR #92
-- M7.2 Tenant Kernel & Isolation Foundation: DONE / PUBLISHED through PR #93
-- M7.3 Identity / Organization / Outlet / Device Minimum: DONE / PUBLISHED through PR #94
-- M7.4 POS Core Synthetic Vertical Slice: DONE / PUBLISHED through PR #96
-- M7.4A Technical Preview Interaction Layer: DONE / PUBLISHED through PR #98
-- Canonical next gated micro-milestone: M7.5 — Preview Runtime Qualification
-- M7.5 Preview Runtime Qualification: BLOCKED / NOT AUTHORIZED; actual sanitized P2 target evidence and DEC-009 capability verification required
-- M7.6 Preview Deployment / Recovery Rehearsal: BLOCKED / NOT AUTHORIZED
-- M7.7 Technical Preview Acceptance: BLOCKED / NOT AUTHORIZED
-- Sprint 12: Published
-- Sprint 13: Published
-- Sprint 14: Not Authorized
-- Production readiness: NO-GO
-- Deployment: None / Not Authorized
-- Release: None / Not Authorized
-- Migration execution: Not Authorized / Not Performed
+- Domain and Application are database-engine-neutral;
+- business rules have zero database-vendor dependency;
+- target between officially qualified relational engine profiles is **ZERO BUSINESS-CODE CHANGE**;
+- engine-specific behavior remains Infrastructure/Configuration concern;
+- canonical logical schema/contract is vendor-neutral;
+- MariaDB, MySQL, and PostgreSQL are authorized engine-profile directions;
+- MariaDB 11.4 family is Stage-1 profile direction subject to runtime qualification;
+- formal Database Portability Contract is approved direction;
+- cross-engine qualification/CI is approved direction, **not implemented**;
+- oneQay Database Mobility & Migration Engine — DBME is approved architecture direction, **not implemented**;
+- unsafe/lossy/ambiguous conversion fails closed;
+- future mobility uses controlled preflight, reconciliation, cutover, source retention, and rollback only when safe.
 
-Track A Controlled Application Engineering has published the bounded M7.4 Local/Test/CI synthetic POS slice and the M7.4A Technical Preview interaction layer. M7.4A connects synthetic sign-in → server-verified tenant/outlet context → synthetic catalog → cart → `CASH` / `MANUAL_EXTERNAL` → existing M7.4 `CompleteSyntheticSale` → receipt preview within synthetic-only Local/Test/CI/explicit Preview boundaries. Track B Preview Runtime Qualification remains separately gated; M7.5 cannot begin until actual sanitized P2 target evidence is supplied and verified against DEC-009 and separate Product Owner authority is granted. Both tracks converge before Preview deployment/acceptance.
+DEC-005 is preserved as an **APPROVED HISTORICAL DECISION / PARTIALLY SUPERSEDED BY DEC-005R**. DEC-009 remains owner of Stage-1 runtime requirements and now requires an authorized and runtime-qualified relational engine profile under DEC-005R.
 
-Issue #23 contains historical pre-M7.0 planning language. That historical wording must not override the later governed Phase 0 Controlled Implementation Bridge for bounded Local/Test/CI source preparation. Issue #23 mutation is outside this checkpoint reconciliation.
+## Current Stage-1 evidence state
 
-## Current canonical decision state
+Observed MariaDB 11.4 family is **engine-family/version evidence only**. It does not prove oneQay runtime qualification. P1 Shared Hosting/cPanel remains **CONDITIONAL / NOT SELECTED**; P2 Managed/Hardened VPS or Server remains fallback execution class.
 
-- DEC-000 Product Vision and Decision Rights: **APPROVED / DECISION COMPLETE**; GD-003 is Approved through DEC-000; no implementation authority.
-- DEC-001 MVP Scope and Non-Scope: **APPROVED / DECISION COMPLETE**; first bounded MVP delivery slice is **POS CORE TRANSACTION & OUTLET OPERATIONS**; no implementation authority.
-- DEC-002 Backend Language / Application Framework: **APPROVED / DECISION COMPLETE**; ADR-001 Accepted through its governed reconciliation.
-- DEC-003 Frontend / PWA Stack: **APPROVED / DECISION COMPLETE**; ADR-002 Accepted through its governed reconciliation.
-- DEC-004 Android Approach: **APPROVED / DECISION COMPLETE**; ADR-008 is the Accepted representation of DEC-004.
-- DEC-005 Database Engine and Physical Tenancy Model: **APPROVED / DECISION COMPLETE**; ADR-003 Accepted through its governed reconciliation.
-- DEC-006 Authentication / MFA / Session Architecture: **APPROVED / DECISION COMPLETE**; ADR-004 Accepted through its governed reconciliation; JRN-003 remains Unresolved.
-- DEC-007 Payment Provider and Compliance Boundary: **APPROVED / DECISION COMPLETE**; ADR-005 Accepted through its governed reconciliation.
-- DEC-008 Offline POS Semantics and Conflict Resolution: **APPROVED / DECISION COMPLETE**; ADR-006 Accepted through its governed reconciliation.
-- DEC-009 Deployment Stage 1 Runtime Requirements: **APPROVED / DECISION COMPLETE**; ADR-007 Accepted through its governed reconciliation.
-- DEC-010 Product License and Third-Party Notice Policy: **APPROVED / DECISION COMPLETE**; oneQay remains **PROPRIETARY / ALL RIGHTS RESERVED**.
-- DEC-011 Data Retention, Privacy, and Jurisdiction: **APPROVED / DECISION COMPLETE**; initial commercial/launch jurisdiction remains not yet canonically selected.
-- DEC-012 RPO/RTO and Support Objectives: **APPROVED / DECISION COMPLETE**; final numerical Production RPO/RTO/SLO and customer-contractual SLA remain deferred.
-- DEC-010 Supplement — Dependency Cost Baseline, Open-Source Preference, and Visualization Technology Direction: **APPROVED / DECISION COMPLETE / PUBLISHED through PR #87**; Apache ECharts remains a default Web/PWA visualization technology candidate / approved technology direction only; dependency/package adoption and implementation remain separately gated.
+## Implementation boundary
 
-## M7 publication facts
+DEC-005R publication does not authorize source refactoring, durable relational business persistence, physical schema, SQL/DDL, migrations, seeders, live database connectivity, credentials, engine adapters, cross-engine CI implementation, DBME implementation, data movement, infrastructure provisioning, deployment, release, or Production.
 
-The M7.0–M7.4A facts below are publication provenance, not standing authority:
+## Lifecycle preserved
 
-- M7.0 — Controlled Implementation Bridge: governed publication complete before M7.1 source work.
-- M7.1 — Application Skeleton & Configuration Boundary: PR #92 CLOSED / MERGED; resulting main `82b2bffb3b087aa818c2a229d2b7e0c07ea158ec`.
-- M7.2 — Tenant Kernel & Isolation Foundation: PR #93 CLOSED / MERGED; resulting main `ba95f745869092d251230fb5a3db2c08e42f4941`.
-- M7.3 — Identity / Organization / Outlet / Device Minimum: PR #94 CLOSED / MERGED; source head `67d7b890fe95db9c32d4e2dbc432be193bb064a9`; source tree `3cb925e9234bc28b64aec3a1f6efd1a03756221c`; resulting main `9b43f6be520b64e47bfa9a66be577dab20f69bd9`.
-- M7.4 — POS Core Synthetic Vertical Slice: PR #96 CLOSED / MERGED; source head `0659e0e3c2ab7f8ec9f12653b773aaa4391e931b`; source tree `f67f9b75a11b2710b58a9928f5b73f876cba2cef`; resulting main `4981fca92e7de028ca55e746b36af6afe0d3e7f2`.
-- M7.4A — Technical Preview Interaction Layer: PR #98 CLOSED / MERGED; source head `893b73b8f20b2ede0d3a8896b3a015df5370dbed`; source tree `cdc140e5061481bec4b6b691b02b2b234181c2fb`; published commit `c0bdf8ad7539a5c83de2e5183fbf2eda9f17f02b`; published tree `cdc140e5061481bec4b6b691b02b2b234181c2fb`; source tree equals published tree: Yes.
+- M7.0 — DONE / PUBLISHED
+- M7.1 — DONE / PUBLISHED
+- M7.2 — DONE / PUBLISHED
+- M7.3 — DONE / PUBLISHED
+- M7.4 — DONE / PUBLISHED
+- M7.4A — DONE / PUBLISHED
+- M7.5 — BLOCKED / NOT AUTHORIZED
+- M7.6 — BLOCKED / NOT AUTHORIZED
+- M7.7 — BLOCKED / NOT AUTHORIZED
+- Phase 0 — IN PROGRESS
+- Phase 0 Exit — NOT APPROVED
+- Sprint 14 — NOT AUTHORIZED
+- Deployment — NOT AUTHORIZED
+- Release — NOT AUTHORIZED
+- Production — NOT AUTHORIZED
+- Production readiness — NO-GO
 
-The M7 identifiers above are stable publication provenance only. They MUST NOT be treated as permanently current live-main state after later repository changes.
+## Exact next gate
 
-M7.1 preserves the application/configuration foundation. M7.2 preserves tenant-context and isolation primitives. M7.3 preserves first-party identity separation, tenant membership separation, and server-controlled organization/outlet/device context. M7.4 preserves bounded synthetic POS transaction correctness, exact-money, idempotency/replay, payment-sufficiency, stock-causation, tenant/organizational isolation, and audit/correlation evidence. M7.4A preserves the synthetic interaction journey while reusing M7.4 `CompleteSyntheticSale`, server-authoritative pricing/exact-money, `CASH_COUNTED`, `OPERATOR_RECORDED`, fail-closed Preview runtime gating, and tenant/context verification. None of M7.0–M7.4A grants M7.5, deployment, release, Production, Phase 0 Exit, or Sprint 14 authority.
-
-## Verified publication baseline before GOV-051 decision-record work
-
-Fresh GitHub Delta Verification before creation of the bounded GOV-051 decision-record branch confirmed:
-
-- PR #71: CLOSED / MERGED;
-- PR #71 source head: `19c723f32c62c982a80e1d8a520ab6ff5a189e2c`;
-- PR #71 source tree: `4d16f322b1bc8f2b666eef87ce4a1caaa6755e4f`;
-- PR #71 published commit / verified baseline: `762149757e4bc1fa79cc16bc4761f4147be0f7ea`;
-- PR #71 published tree / verified baseline tree: `4d16f322b1bc8f2b666eef87ce4a1caaa6755e4f`;
-- PR #71 published parent: `b26c4690d68db61118ee1c4cecbb87e9418d791f`;
-- source tree equals published tree: Yes;
-- canonical Enterprise Vision artifact: `docs/handbook/ENTERPRISE_VISION.md`;
-- approved canonical artifact blob: `bb1cace72a6fdb359e15e22467443d9f3916c336`.
-
-The values above are stable publication and decision provenance. To determine the live repository head after this checkpoint, query GitHub.
-
-## M6 Enterprise Vision publication outcome
-
-PR #69 published the M6 Enterprise Vision canonical representation through a separately authorized lifecycle.
-
-Publication identity:
-
-- exact base: `e45f5b4c0f143abc6e255e4e8550bf3504348aae`;
-- exact base tree: `e2bc0505f5abd98a7283b3cd3cd2c4c02ef23ece`;
-- source branch: `agent/m6-enterprise-vision-canonicalization`;
-- source head: `e6a3345b09a6b270ac7e09abd78c6356f426e363`;
-- source tree: `567df997bae70090b19465c75e4cc3b1e23b6579`;
-- published commit: `0b7b28028966ac38af0f32960054210c3a083916`;
-- published tree: `567df997bae70090b19465c75e4cc3b1e23b6579`;
-- source tree equals published tree: Yes.
-
-The published canonical representation defines oneQay as:
-
-**Enterprise Intelligent Business Management Platform**
-
-The canonical artifact is:
-
-`docs/handbook/ENTERPRISE_VISION.md`
-
-Publication made the representation canonical for repository state. PR #69 did **not** by itself promote the Enterprise Vision decision status from Proposed to Approved. GOV-051 later supplied that separate substantive Product Owner approval, without creating implementation authority.
-
-## M6 post-publication reconciliation outcome
-
-PR #70 published the state reconciliation after PR #69.
-
-That publication confirmed at the time:
-
-- M6 publication lifecycle was complete;
-- Enterprise Vision substantive decision remained Proposed at the time of PR #70;
-- A-09 was resolved only at canonical representation/publication level;
-- A-10 was resolved for current/future-facing canonical product naming;
-- GOV-047 through GOV-050 reflected completed publication/reconciliation work;
-- GOV-051 remained a separate substantive Product Owner decision;
-- Phase 0 remained In Progress;
-- Sprint 14 remained Not Authorized;
-- production readiness remained NO-GO.
-
-PR #71 subsequently published M6 Closure — Checkpoint Semantics Correction and established stable checkpoint provenance semantics.
-
-## GOV-051 substantive decision outcome
-
-The Product Owner explicitly approved the substantive Enterprise Vision after reviewing the unchanged canonical artifact on the verified PR #71 publication baseline.
-
-Decision facts:
-
-- GOV-051: **APPROVED**;
-- Approved Enterprise Vision: **Enterprise Intelligent Business Management Platform**;
-- Approved statement: **oneQay is an Enterprise Intelligent Business Management Platform.**;
-- verified repository baseline: `762149757e4bc1fa79cc16bc4761f4147be0f7ea`;
-- verified baseline tree: `4d16f322b1bc8f2b666eef87ce4a1caaa6755e4f`;
-- canonical artifact: `docs/handbook/ENTERPRISE_VISION.md`;
-- approved artifact blob: `bb1cace72a6fdb359e15e22467443d9f3916c336`.
-
-The approval establishes long-term product direction only. It does not approve MVP scope, Sprint 14, implementation, bounded contexts, GD-003, GD-007, ADR-001 through ADR-007, framework/provider selections, SQL/migration, production database changes, deployment, release, JRN resolution, or production-readiness promotion.
-
-## Canonical naming rule
-
-The product brand must be written exactly as **oneQay** in current and future canonical product references.
-
-Non-canonical active forms include `OneQay`, `ONEQAY`, `Oneqay`, and `oneqay`.
-
-Do not rewrite immutable GitHub identifiers, repository path `labzefry/oneQay`, SHAs, historical commit messages, branch names, or quoted historical evidence merely for brand normalization.
-
-## Canonical Phase 0 interpretation
-
-Phase 0 remains **In Progress** as a governance/discovery program state.
-
-Published bounded Platform Foundation through Sprint 12 and Sprint 13 and the separately governed M7.0–M7.4A Technical Preview work remain repository facts. These publications do not mean Phase 0 has exited, do not authorize Sprint 14, and do not authorize final/business/production application implementation beyond separately bounded source authority.
-
-The canonical blocked boundary remains:
-
-**Final/business/production application implementation: Blocked unless separately authorized.**
-
-## M5.2 enforcement posture to preserve
-
-Required protected contexts:
-
-1. `governance-validation`
-2. `markdown-lint`
-3. `secret-scan`
-4. `php-foundation-regression`
-5. `product-owner-merge-authority`
-
-Published M5.2 protection evidence records strict status checks, one approving review, stale-review dismissal after push, latest-push approval, review-thread resolution, squash-only merge, deletion protection, non-fast-forward protection, and an empty bypass list.
-
-## Canonical Sprint 13 identity
-
-- Capability: Schema Change Review and Approval Envelope Foundation
-- Canonical PR: #64
-- Canonical source head: `4a2e44cc31361954b126e8857de65fcccca30445`
-- Canonical source tree: `5a0adb0d2ce80338f9f9d782f0871fb2115afd5d`
-- Canonical published commit: `ebe6abcf77263bf644565ca2fbe2b2844416d49b`
-- Canonical published tree: `5a0adb0d2ce80338f9f9d782f0871fb2115afd5d`
-- Canonical source tree and published tree: Identical
-- Publication reconciliation PR: #65
-- PR #65 published commit: `7a9def560466fc8bf81529c2b5125c6ac19a96b5`
-
-## Historical lifecycle preservation
-
-PR #64 and PR #65 lifecycle discrepancies remain historical facts. M6, GOV-051, and M7 do not retroactively normalize them.
-
-Historical review contamination involving alternate Sprint 13 head `ba312fa9095d434c204f01e3dac9870e9eaa4d6d` remains historical only. Canonical reviewed head remains `4a2e44cc31361954b126e8857de65fcccca30445`.
-
-## Governance preservation
-
-- Phase 0: In Progress
-- Phase 0 Exit: Not Approved
-- Enterprise Vision decision status: Approved through GOV-051
-- ADR-001 through ADR-007: Accepted through their separately governed DEC reconciliations
-- ADR-008: Accepted representation of DEC-004
-- GD-003: Approved through DEC-000
-- GD-007: Proposed
-- JRN-003 and JRN-013: Unresolved
-- Actual P2 target: Pending external input unless fresh evidence proves otherwise
-- Final tenant data model: Not Started
-- Final business schema: Not Started
-- Production migration: Not Performed
-- Production database usage: None
-- Production table: None
-- POS module: Not Started as final/business application module; bounded M7.4 synthetic POS slice is DONE / PUBLISHED through PR #96 and M7.4A Technical Preview interaction layer is DONE / PUBLISHED through PR #98
-- ERP module: Not Started as final/business application module
-- Industry vertical implementation: Not Started
-- Sprint 14: Not Authorized
-- Deployment: Not Authorized
-- Release: Not Authorized
-- Production: Not Authorized
-- Production readiness: NO-GO
-
-## Current authority boundary
-
-**NO STANDING IMPLEMENTATION OR MILESTONE AUTHORITY.**
-
-M7.4A is **DONE / PUBLISHED** through PR #98. The next gated activity is M7.5 — Preview Runtime Qualification, but it is **BLOCKED / NOT AUTHORIZED** until actual sanitized P2 target evidence is supplied and verified against DEC-009 and separate Product Owner authority is granted. This checkpoint does not create that evidence or authority.
-
-No standing Phase 0 exit, Sprint 14, deployment, release, or Production authority is stored in this checkpoint. Substantive decision authority, preparation authority, independent exact-head review, Product Owner READY authority, and Product Owner MERGE authority remain separate whenever applicable.
-
-This checkpoint creates no source/application implementation, dependency/package adoption, database/schema/SQL/migration, infrastructure provisioning, runtime qualification, deployment, release, Production, Phase 0 exit, or Sprint 14 authority.
+The next roadmap gate remains **M7.5 — Preview Runtime Qualification**, but it cannot begin without actual sanitized target evidence, DEC-009 capability verification including relational engine-profile qualification, fresh GitHub verification, and separate explicit Product Owner M7.5 authority.
 
 Attribution: Lab | zefry
