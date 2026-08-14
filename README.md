@@ -331,7 +331,7 @@ oneQay mempertahankan spesifikasi:
 
 Executable migration, production deployment, release, dan production database modification tetap mengikuti gate terpisah dan tidak diotorisasi oleh M7.0–M7.4A publication.
 
-## cara berkontribusi
+## Cara berkontribusi
 
 1. pilih satu issue/task dengan scope dan authority yang jelas;
 2. gunakan bounded branch sesuai jenis pekerjaan;
