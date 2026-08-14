@@ -6,6 +6,7 @@
 - Owner: Repository and Operations Owner
 - Historical source: Issue #23
 - Current architecture owner: DEC-009 — Deployment Stage 1 Runtime Requirements
+- Current database architecture dependency: DEC-005R — Portable Relational Persistence Architecture
 
 ## Decision rule
 
@@ -19,7 +20,8 @@ Published bounded Platform Foundation evidence materially relevant to the curren
 
 - `docs/PLATFORM_APPLICATION_BOOTSTRAP_AND_RUNTIME_CAPABILITY_FOUNDATION.md`;
 - `docs/PERSISTENCE_CAPABILITY_AND_DATABASE_CONNECTION_BOUNDARY_FOUNDATION.md`;
-- DEC-005 canonical MySQL Server decision;
+- historical DEC-005 MySQL Server decision;
+- current DEC-005R Portable Relational Persistence Architecture;
 - substantive DEC-009 capability requirements.
 
 No credential, token, password, or production secret is required or recorded here.
@@ -30,7 +32,7 @@ No credential, token, password, or production secret is required or recorded her
 | --- | --- | --- | --- |
 | PHP runtime | Supported runtime and release-required extensions | PHP 8.3.26 observed; current foundation extensions JSON, OpenSSL, Mbstring, PDO, PDO MySQL, Filter, Session, Ctype observed | VERIFIED |
 | PHP CLI | CLI capability for authorized operational commands | Runtime foundation/CI require PHP CLI semantics; exact target-host CLI execution not independently recorded | UNVERIFIED |
-| Database engine | Canonical DEC-005 MySQL Server within supported LTS-family boundary | MariaDB 11.4.8 observed on cPanel; no compliant MySQL Server capability evidenced | VERIFIED BUT NON-COMPLIANT |
+| Database engine | Authorized relational engine profile under DEC-005R; selected profile still requires runtime qualification | MariaDB 11.4.8 observed on cPanel | VERIFIED ENGINE-FAMILY / VERSION EVIDENCE — NOT RUNTIME QUALIFIED |
 | Database connectivity | Least-privilege app connection, limits, topology/TLS as required | PDO/PDO MySQL and DB UI observed; actual oneQay connection, credential, TLS, connection limits remain unknown | UNVERIFIED |
 | SSH | Controlled shell access where selected deployment model requires it | Account has no SSH | VERIFIED — UNAVAILABLE |
 | Git UI | Controlled repository/artifact capability | cPanel Git Version Control UI observed | VERIFIED PARTIAL |
@@ -79,11 +81,13 @@ Repository evidence currently records:
 
 These facts do not constitute a complete P1 Pass.
 
-## MySQL Server blocker
+## Relational engine-profile qualification
 
-DEC-005 makes **MySQL Server** the canonical relational engine family. MariaDB 11.4.8 evidence is retained as a factual hosting capability but is **non-compliant** with that canonical engine decision and cannot silently substitute for MySQL Server.
+Historical DEC-005 made **MySQL Server** the sole canonical relational engine family, causing the observed MariaDB 11.4.8 capability to be classified as non-compliant. DEC-005R supersedes that sole-engine restriction with qualified relational engine profiles.
 
-P1 may become eligible if a compliant MySQL Server connection is independently evidenced, including the required security, latency/availability, credential, connection-limit, backup, restore, and operational boundaries.
+MariaDB 11.4.8 is therefore retained as **verified engine-family/version evidence** and is no longer an architecture-family blocker merely because it is not MySQL Server. It is still **NOT YET RUNTIME QUALIFIED**.
+
+P1 database capability can pass only after the selected Stage-1 relational profile is independently qualified for the actual oneQay runtime, including required application connectivity, security, transaction semantics, tenant isolation, connection limits, backup, verified restore, migration boundary, operational characteristics, and portability-contract requirements. Engine name or PDO driver availability alone is insufficient.
 
 ## Deployment-model interpretation
 
@@ -95,8 +99,7 @@ No such complete mechanism is currently proven.
 
 At minimum, P1 remains blocked pending evidence for:
 
-- canonical MySQL Server connectivity;
-- actual application database connectivity/security/limits;
+- selected relational engine-profile runtime qualification and actual oneQay database connectivity/security/limits;
 - safe document root exactly to the public application surface;
 - effective URL rewrite/front-controller routing;
 - scheduler cadence adequate for authorized workloads;
@@ -125,15 +128,15 @@ Additionally:
 - backup must be accompanied by successful restore evidence;
 - deployment must not overwrite live files without a recoverable release boundary;
 - rollback/recovery must be rehearsable;
-- the database capability must comply with DEC-005;
+- the selected database profile must be authorized by DEC-005R and actually runtime-qualified under DEC-009;
 - Product Owner deployment-execution authority remains separately required even after capability Pass.
 
 ## Current conclusion
 
 **P1 SHARED HOSTING / CPANEL IS CONDITIONAL / NOT SELECTED.**
 
-The repository contains meaningful partial capability evidence, so the historical all-`Not supplied` matrix is no longer accurate. However mandatory blockers remain, including the canonical MySQL Server requirement and multiple deployment/recovery/process controls.
+The repository contains meaningful partial capability evidence, so the historical all-`Not supplied` matrix is no longer accurate. DEC-005R removes the former sole-MySQL architecture-family blocker, but it does **not** convert MariaDB evidence into runtime qualification and does not remove the remaining deployment/recovery/process/security capability blockers.
 
-P2 managed/hardened VPS/server remains the fallback execution class under DEC-009. No provider or runtime host is selected by this assessment, and no deployment authority is created.
+P2 managed/hardened VPS/server remains the fallback execution class under DEC-009. No provider or runtime host is selected by this assessment, M7.5 remains **BLOCKED / NOT AUTHORIZED**, and no deployment authority is created.
 
 Attribution: Lab | zefry
