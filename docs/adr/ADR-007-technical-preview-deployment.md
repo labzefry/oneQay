@@ -1,10 +1,11 @@
 # ADR-007: Stage-1 Deployment Runtime Requirements
 
-- Status: Accepted — substantive DEC-009 representation, canonical after governed publication
+- Status: Accepted — substantive DEC-009 representation; database dependency reconciled to DEC-005R
 - Date: 2026-08-03
 - Decision owner: Product Owner oneQay
 - Historical evidence: Issue #23 / P1 conditional cPanel/shared hosting / P2 hardened VPS fallback
 - Current substantive owner: DEC-009 — Deployment Stage 1 Runtime Requirements
+- Database architecture dependency: DEC-005R — Portable Relational Persistence Architecture
 - Current scope: Stage-1 Preview runtime architecture only; no deployment execution authority
 
 ## Historical Technical Preview provenance
@@ -28,7 +29,9 @@ Current disposition:
 - P2 Managed / Hardened VPS or Server: **FALLBACK EXECUTION CLASS**;
 - Stage 1 governs **Preview**, not Production;
 - no hosting provider is selected;
-- Domain/Application business logic remains independent from hosting and infrastructure vendors.
+- Domain/Application business logic remains independent from hosting, infrastructure, and relational-engine vendors.
+
+DEC-005R later supersedes DEC-005's sole-MySQL engine requirement. This ADR therefore changes only its database/runtime dependency; all other DEC-009 capability and authority boundaries remain intact.
 
 ## Decision
 
@@ -48,9 +51,11 @@ Stage 1 requires HTTPS, secure front-controller routing, a public-only document 
 
 ### Database
 
-DEC-005 remains binding. The canonical Stage-1 relational engine is **MySQL Server** within the supported MySQL LTS-family boundary. MariaDB must not silently substitute for the approved MySQL Server decision.
+DEC-005R is the current database-architecture dependency. Stage 1 requires an **authorized and qualified relational engine profile under DEC-005R**, not sole canonical MySQL Server.
 
-Stage 1 requires least-privilege application credentials, externalized secrets, topology-appropriate TLS, known connection limits, controlled migration execution boundary, backup/export and restore capability, and tenant-isolation enforcement. This ADR does not create schema, SQL, DDL, migration, or production database authority.
+MariaDB, MySQL, and PostgreSQL are authorized profile directions; profile identity or driver connectivity alone is not qualification. MariaDB 11.4 family is the Stage-1 profile direction because repository evidence already observes that family, but it remains **NOT YET RUNTIME QUALIFIED**.
+
+Stage 1 requires least-privilege application credentials, externalized secrets, topology-appropriate TLS, known connection limits, controlled migration execution boundary, backup/export and verified restore capability, tenant-isolation enforcement, and evidence that the selected engine profile satisfies oneQay's portability and transactional requirements. This ADR does not create schema, SQL, DDL, migration, DBME, live-database, or production-database authority.
 
 ### Queue and scheduler
 
@@ -95,15 +100,19 @@ DEC-009 Stage 1 governs **Preview**. Existing human-facing `Staging` terminology
 
 ### Portability
 
-Domain/Application layers must remain independent from cPanel, shared-hosting APIs, specific VPS vendors, specific web servers, cache/queue vendors, containers, and cloud providers. Environment differences remain Configuration/Infrastructure concerns.
+Domain/Application layers must remain independent from cPanel, shared-hosting APIs, specific VPS vendors, specific web servers, cache/queue vendors, containers, cloud providers, and relational engine vendor identity. Environment/engine differences remain Configuration/Infrastructure concerns.
+
+DEC-005R establishes a **ZERO BUSINESS-CODE CHANGE** target between officially qualified relational engine profiles. That target does not mean engine-specific Infrastructure adapters or configuration are identical.
 
 ## Current P1 evidence and blockers
 
 Published Sprint 07/08 evidence demonstrates PHP 8.3.26, Apache 2.4.63 on Linux x86_64, the current required foundation PHP extensions, 512M memory limit, 300-second execution limit, 32M upload/post limits, cPanel Cron/backup/SSL/Git/log/metrics tooling, MariaDB 11.4.8, and no SSH.
 
-This is partial evidence only. P1 remains **CONDITIONAL / NOT SELECTED** because mandatory capability evidence remains absent or unverified, including materially:
+Under DEC-005R, observed MariaDB 11.4.8 is **verified engine-family/version evidence** and is no longer rejected solely because it is not MySQL Server. It remains **NOT YET RUNTIME QUALIFIED**.
 
-- canonical MySQL Server connectivity;
+P1 remains **CONDITIONAL / NOT SELECTED** because mandatory capability evidence remains absent or unverified, including materially:
+
+- relational engine-profile runtime qualification and actual application connectivity;
 - safe document-root mapping to `public`;
 - effective URL rewrite;
 - minimum cron cadence;
@@ -119,14 +128,15 @@ SSH absence alone is not automatic failure if an equivalent controlled, recovera
 ## Consequences
 
 - Hosting limitations cannot silently redefine business architecture or correctness requirements.
-- Shared hosting remains cost-efficient only when mandatory controls are proven.
+- Relational engine availability cannot silently become runtime qualification.
+- Shared hosting remains cost-efficient only when all mandatory controls are proven.
 - P2 adds operational ownership but provides stronger process/runtime control when P1 cannot satisfy mandatory capabilities.
-- Later infrastructure evolution may move beyond P2 without rewriting Domain/Application logic.
+- Later infrastructure or qualified relational-engine evolution must not require rewriting Domain/Application business logic.
 
 ## Explicit non-scope
 
-This ADR does not authorize hosting/provider procurement, server provisioning, domain/DNS/certificate mutation, production secrets, source implementation, dependency installation, Laravel/Vue/PWA/Android implementation, schema/SQL/DDL/migrations, payment-provider work, offline implementation, deployment execution, release, production promotion, Sprint 14, final RPO/RTO, DEC-010, DEC-011, or DEC-012 decisions.
+This ADR does not authorize hosting/provider procurement, server provisioning, domain/DNS/certificate mutation, production secrets, source implementation, dependency installation, Laravel/Vue/PWA/Android implementation, schema/SQL/DDL/migrations, database adapter implementation, cross-engine CI implementation, DBME implementation, payment-provider work, offline implementation, M7.5 execution, deployment execution, release, production promotion, Sprint 14, final RPO/RTO, DEC-010, DEC-011, or DEC-012 decisions.
 
-Phase 0 remains **IN PROGRESS**. Sprint 14 remains **NOT AUTHORIZED**. Final/business/production implementation remains **BLOCKED / SEPARATELY GATED**. Production readiness remains **NO-GO**.
+Phase 0 remains **IN PROGRESS**. M7.5 remains **BLOCKED / NOT AUTHORIZED**. Sprint 14 remains **NOT AUTHORIZED**. Deployment, Release, and Production remain **NOT AUTHORIZED**. Production readiness remains **NO-GO**.
 
 Attribution: Lab | zefry
