@@ -24,8 +24,9 @@
 - M7.3 Identity / Organization / Outlet / Device Minimum: DONE / PUBLISHED through PR #94
 - M7.4 POS Core Synthetic Vertical Slice: DONE / PUBLISHED through PR #96
 - M7.4A Technical Preview Interaction Layer: DONE / PUBLISHED through PR #98
+- DEC-005R Portable Relational Persistence Architecture: APPROVED / DECISION COMPLETE / PUBLISHED through PR #100
 - Canonical next gated roadmap milestone: M7.5 — Preview Runtime Qualification
-- M7.5: BLOCKED / NOT AUTHORIZED; actual sanitized P2 target evidence and DEC-009 capability verification required
+- M7.5: BLOCKED / NOT AUTHORIZED; actual sanitized P2 target evidence, DEC-009 capability verification, and selected relational engine-profile qualification under DEC-005R required
 - M7.6: BLOCKED / NOT AUTHORIZED
 - M7.7: BLOCKED / NOT AUTHORIZED
 - Sprint 12: Published
@@ -55,11 +56,11 @@ Its authority state is:
 
 **BLOCKED / NOT AUTHORIZED.**
 
-M7.5 may begin only after actual sanitized P2 target evidence is supplied, the target is verified against DEC-009 mandatory capability requirements, fresh GitHub Minimal Delta Verification is performed, and separate explicit Product Owner M7.5 authority is granted. This checkpoint does not create evidence, qualification, or authority.
+M7.5 may begin only after actual sanitized P2 target evidence is supplied, the target is verified against DEC-009 mandatory capability requirements, the selected relational engine profile is qualified under DEC-005R, fresh GitHub Minimal Delta Verification is performed, and separate explicit Product Owner M7.5 authority is granted. This checkpoint does not create evidence, qualification, or authority.
 
 The next governed direction is therefore **M7.5 evidence/authority preparation**, not automatic M7.5 implementation, not Preview deployment, and not another application-source milestone.
 
-Track A Controlled Application Engineering has published M7.4 and M7.4A. Track B Preview Runtime Qualification remains blocked until its external evidence and authority gates are satisfied. Both tracks converge before Preview deployment/acceptance.
+Track A Controlled Application Engineering has published M7.4 and M7.4A. Track B Preview Runtime Qualification remains blocked until its external target evidence, DEC-009 capability verification, DEC-005R selected-engine-profile qualification, and separate authority gates are satisfied. Both tracks converge before Preview deployment/acceptance.
 
 Substantive decision authority, preparation authority, independent exact-head review, Product Owner READY authority, and Product Owner MERGE authority remain separate whenever applicable.
 
@@ -71,7 +72,7 @@ Substantive decision authority, preparation authority, independent exact-head re
 - M7.3 — Identity / Organization / Outlet / Device Minimum: **DONE / PUBLISHED** through PR #94.
 - M7.4 — POS Core Synthetic Vertical Slice: **DONE / PUBLISHED** through PR #96.
 - M7.4A — Technical Preview Interaction Layer: **DONE / PUBLISHED** through PR #98.
-- M7.5 — Preview Runtime Qualification: **BLOCKED / NOT AUTHORIZED — ACTUAL SANITIZED P2 TARGET EVIDENCE AND DEC-009 CAPABILITY VERIFICATION REQUIRED**.
+- M7.5 — Preview Runtime Qualification: **BLOCKED / NOT AUTHORIZED — ACTUAL SANITIZED P2 TARGET EVIDENCE, DEC-009 CAPABILITY VERIFICATION, AND SELECTED RELATIONAL ENGINE-PROFILE QUALIFICATION UNDER DEC-005R REQUIRED**.
 - M7.6 — Preview Deployment / Recovery Rehearsal: **BLOCKED / NOT AUTHORIZED**.
 - M7.7 — Technical Preview Acceptance: **BLOCKED / NOT AUTHORIZED**.
 
@@ -89,12 +90,28 @@ The following values are historical publication provenance only and must not be 
 
 Before using any of those values for a new action, fetch live GitHub state again.
 
+## DEC-005R publication provenance
+
+DEC-005R publication is stable historical provenance, not a permanently current live-head claim:
+
+- publication PR: #100 CLOSED / MERGED;
+- source head: `8ec7069b08c9127e402fa80e5e79ca26be2b63d6`;
+- source tree: `0862c851d30c11c37c39d13aa5660d042da91989`;
+- published squash commit: `b5cbdeb6ea45d4f159f3d1cd39cadc561605c5ff`;
+- published tree: `0862c851d30c11c37c39d13aa5660d042da91989`;
+- source tree equals published tree: Yes;
+- decision: **DEC-005R — Portable Relational Persistence Architecture — APPROVED / DECISION COMPLETE**;
+- no source, schema, SQL, migration, cross-engine CI, DBME implementation, M7.5, deployment, release, or Production authority was created.
+
 ## Current canonical decision state
 
 - DEC-000 Product Vision and Decision Rights: **APPROVED / DECISION COMPLETE**; GD-003 is Approved through DEC-000.
 - DEC-001 MVP Scope and Non-Scope: **APPROVED / DECISION COMPLETE**; first bounded MVP delivery slice is **POS CORE TRANSACTION & OUTLET OPERATIONS**.
-- DEC-002 through DEC-009: **APPROVED / DECISION COMPLETE** according to their respective bounded records; ADR-001 through ADR-007 are Accepted through their separately governed DEC reconciliations.
-- DEC-004 additionally owns ADR-008 as its Accepted Android-delivery representation.
+- DEC-002, DEC-003, and DEC-004: **APPROVED / DECISION COMPLETE** according to their respective bounded records; ADR-001, ADR-002, and ADR-008 retain their governed Accepted state.
+- DEC-005 Database Engine and Physical Tenancy Model: **APPROVED HISTORICAL DECISION / PARTIALLY SUPERSEDED BY DEC-005R**; historical MySQL Server selection remains preserved and applicable shared-tenancy/isolation/recovery principles remain preserved according to DEC-005R dispositions.
+- DEC-005R Portable Relational Persistence Architecture: **APPROVED / DECISION COMPLETE / PUBLISHED through PR #100**; current relational architecture is engine-neutral at Domain/Application level with qualified MariaDB/MySQL/PostgreSQL engine-profile direction, Database Portability Contract direction, and DBME/cross-engine qualification directions not yet implemented.
+- DEC-006, DEC-007, and DEC-008: **APPROVED / DECISION COMPLETE**; ADR-004, ADR-005, and ADR-006 retain their separately governed Accepted state.
+- DEC-009 Deployment Stage 1 Runtime Requirements: **APPROVED / DECISION COMPLETE**; ADR-007 remains Accepted and the database dependency is reconciled to require an authorized and runtime-qualified relational engine profile under DEC-005R rather than sole canonical MySQL Server.
 - DEC-010 Product License and Third-Party Notice Policy: **APPROVED / DECISION COMPLETE**; oneQay remains **PROPRIETARY / ALL RIGHTS RESERVED**.
 - DEC-011 Data Retention, Privacy, and Jurisdiction: **APPROVED / DECISION COMPLETE**; initial jurisdiction remains not yet canonically selected.
 - DEC-012 RPO/RTO and Support Objectives: **APPROVED / DECISION COMPLETE**; final numerical Production RPO/RTO/SLO and customer-contractual SLA remain deferred.
@@ -118,13 +135,14 @@ Issue #23 remains **KNOWN OPEN ISSUE SEMANTIC DRIFT / HISTORICAL PLANNING LANGUA
 
 ## M7.5 qualification gate
 
-M7.5 is **not authorized** by publication of M7.4 or M7.4A.
+M7.5 is **not authorized** by publication of M7.4, M7.4A, or DEC-005R.
 
 Before any future M7.5 activity, the required gate includes at minimum:
 
 - fresh GitHub Minimal Delta Verification;
 - actual sanitized P2 target evidence supplied from the real target rather than invented or assumed capability;
 - DEC-009 mandatory capability verification against that target;
+- selected relational engine-profile qualification under DEC-005R, including Database Portability Contract evidence appropriate to the authorized scope;
 - explicit separation of runtime qualification from deployment/release authority;
 - preservation of M7.1–M7.4A source and security boundaries;
 - synthetic-only Technical Preview data unless a separately approved masked-data process exists;
@@ -133,7 +151,7 @@ Before any future M7.5 activity, the required gate includes at minimum:
 - no Production deployment or release;
 - separate explicit Product Owner M7.5 authority before qualification work begins.
 
-A future M7.5 authority must not silently introduce application source changes, database schema, SQL, migrations, seeders, dependencies, deployment, release, or Production work unless separately and explicitly authorized.
+A future M7.5 authority must not silently introduce application source changes, database schema, SQL, migrations, seeders, dependencies, cross-engine CI implementation, DBME implementation, deployment, release, or Production work unless separately and explicitly authorized.
 
 ## Historical GOV-051 decision-record work
 
@@ -261,6 +279,8 @@ Historical decisions and M7.0–M7.4A completion do not authorize:
 - executable SQL;
 - migration execution;
 - production database modification;
+- cross-engine CI implementation;
+- DBME implementation;
 - deployment;
 - release;
 - production-readiness promotion;
