@@ -59,14 +59,22 @@ $assert($response->getStatusCode() === 200, 'readiness must return 200 for valid
 $assert(($payload['status'] ?? null) === 'ready', 'readiness status must be ready');
 $kernel->terminate($request, $response);
 
+$previewViolations = CriticalConfiguration::violations([
+    'app_key' => $testKey,
+    'runtime_class' => 'preview',
+    'app_debug' => false,
+    'app_env' => 'production',
+]);
+$assert($previewViolations === [], 'preview runtime class must satisfy readiness with a valid non-debug configuration');
+
 $violations = CriticalConfiguration::violations([
     'app_key' => 'base64:REPLACE_WITH_A_LOCAL_OR_TEST_KEY',
-    'runtime_class' => 'preview',
+    'runtime_class' => 'production',
     'app_debug' => true,
     'app_env' => 'production',
 ]);
 $assert(in_array('app_key', $violations, true), 'placeholder APP_KEY must fail validation');
-$assert(in_array('runtime_class', $violations, true), 'non-M7.1 runtime class must fail validation');
+$assert(in_array('runtime_class', $violations, true), 'unsupported runtime class must fail validation');
 $assert(in_array('app_debug', $violations, true), 'unsafe debug mode must fail validation');
 
 $validId = CorrelationId::resolve('M71-Valid_0001');
