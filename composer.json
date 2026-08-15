@@ -30,6 +30,7 @@
       "php tests/runtime.php",
       "php tests/runtime-qualification.php",
       "php tests/runtime-evidence-p1.php",
+      "php tests/runtime-evidence-p1-actual-20260815.php",
       "php tests/persistence.php",
       "php tests/migration.php",
       "php tests/data-definition.php",
