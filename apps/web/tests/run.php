@@ -50,6 +50,24 @@ $assert(($payload['status'] ?? null) === 'ok', 'liveness status must be ok');
 $assert(($payload['correlation_id'] ?? null) === 'M71-Test_1234', 'valid correlation id must propagate');
 $assert($response->headers->get('X-Correlation-ID') === 'M71-Test_1234', 'correlation response header must propagate');
 $assert(! str_contains((string) $response->getContent(), $testKey), 'health response must not leak APP_KEY');
+$assert($response->headers->get('Strict-Transport-Security') === null, 'HSTS must not be emitted for a non-HTTPS request');
+$kernel->terminate($request, $response);
+
+$request = Request::create('https://localhost/health/live', 'GET', server: [
+    'HTTP_X_CORRELATION_ID' => 'M75-Security_0001',
+]);
+$response = $kernel->handle($request);
+$csp = (string) $response->headers->get('Content-Security-Policy');
+$assert($response->getStatusCode() === 200, 'HTTPS liveness must return 200');
+$assert($response->headers->get('Strict-Transport-Security') === 'max-age=31536000', 'HTTPS responses must emit bounded HSTS');
+$assert(str_contains($csp, "default-src 'self'"), 'CSP must default to same-origin');
+$assert(str_contains($csp, "frame-ancestors 'none'"), 'CSP must deny framing');
+$assert(str_contains($csp, "object-src 'none'"), 'CSP must deny plugin/object content');
+$assert($response->headers->get('X-Content-Type-Options') === 'nosniff', 'responses must disable MIME sniffing');
+$assert($response->headers->get('X-Frame-Options') === 'DENY', 'responses must deny framing');
+$assert($response->headers->get('Referrer-Policy') === 'strict-origin-when-cross-origin', 'responses must use bounded referrer policy');
+$assert($response->headers->get('Permissions-Policy') === 'camera=(self), geolocation=(self), microphone=(), payment=(self), usb=()', 'responses must emit bounded permissions policy');
+$assert(! str_contains($csp, $testKey), 'security headers must not leak APP_KEY');
 $kernel->terminate($request, $response);
 
 $request = Request::create('/health/ready', 'GET');
