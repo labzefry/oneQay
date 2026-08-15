@@ -285,8 +285,14 @@ $assert(str_ends_with((string) $sale->headers->get('Location'), '/technical-prev
 $assert($receiptPage->getStatusCode() === 200, 'M74A-HTTP-015 receipt preview is reachable');
 $assert(str_contains((string) $receiptPage->getContent(), 'CASH_COUNTED'), 'M74A-HTTP-016 receipt preserves cash evidence mode');
 
+$manifestPath = __DIR__.'/../public/build/manifest.json';
+$assert(is_file($manifestPath), 'M74A-HTTP-017 Vite manifest exists for Inertia versioning');
+$inertiaVersion = hash_file('xxh128', $manifestPath);
+$assert(is_string($inertiaVersion) && $inertiaVersion !== '', 'M74A-HTTP-017 Inertia asset version is deterministic');
+
 [$receiptInertia] = $sendHttp('GET', '/technical-preview/receipt', [], [
     'HTTP_X_INERTIA' => 'true',
+    'HTTP_X_INERTIA_VERSION' => $inertiaVersion,
     'HTTP_X_REQUESTED_WITH' => 'XMLHttpRequest',
     'HTTP_ACCEPT' => 'application/json',
 ]);
