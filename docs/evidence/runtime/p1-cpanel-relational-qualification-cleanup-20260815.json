@@ -39,13 +39,20 @@
     "screenshot_recorded": false,
     "customer_or_production_data_recorded": false
   },
+  "cleanup_time_interpretation": {
+    "m7_5_complete_evaluator_outcome": "BLOCKED",
+    "verified_mandatory_controls_snapshot": 13,
+    "blocking_mandatory_controls_snapshot": 16
+  },
   "current_interpretation": {
+    "current_canonical_main_sha": "a185d1264a0dde632e47d60a8d2e06f999ef224a",
+    "current_snapshot_source": "docs/evidence/runtime/p1-cpanel-live-runtime-reconciled-20260815.report.json",
     "qualification_probe_retired": true,
     "live_probe_expected_available": false,
     "historical_qualification_evidence_invalidated": false,
     "m7_5_complete_evaluator_outcome": "BLOCKED",
-    "verified_mandatory_controls_snapshot": 13,
-    "blocking_mandatory_controls_snapshot": 16,
+    "verified_mandatory_controls_snapshot": 15,
+    "blocking_mandatory_controls_snapshot": 14,
     "m7_6_authorized": false,
     "m7_7_authorized": false,
     "production_ready": false,
