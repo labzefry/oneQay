@@ -10,9 +10,6 @@ ONEQAY_TECHNICAL_PREVIEW_ENABLED=false
 SESSION_DRIVER=array
 CACHE_STORE=array
 LOG_CHANNEL=stderr
-LOG_LEVEL=warning
-ONEQAY_OBSERVABILITY_LOG_LEVEL=info
-ONEQAY_OBSERVABILITY_LOG_DAYS=14
 
 # Technical Preview relational qualification only. Never commit real credentials.
 ONEQAY_PREVIEW_DB_QUALIFICATION_ENABLED=false
