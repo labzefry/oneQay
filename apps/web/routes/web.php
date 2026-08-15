@@ -2,6 +2,7 @@
 
 use App\Delivery\Http\HealthController;
 use App\Delivery\Preview\TechnicalPreviewController;
+use App\Delivery\Preview\TechnicalPreviewDatabaseQualificationController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -23,3 +24,8 @@ Route::prefix('technical-preview')->controller(TechnicalPreviewController::class
     Route::get('/receipt', 'receipt')->name('preview.receipt');
     Route::post('/logout', 'logout')->name('preview.logout');
 });
+
+Route::get(
+    '/technical-preview/database-qualification',
+    TechnicalPreviewDatabaseQualificationController::class,
+)->name('preview.database-qualification');
