@@ -1,0 +1,157 @@
+name: M7.5 Technical Preview Release Artifact
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'apps/web/**'
+      - 'tools/build-m7-5-preview-release.sh'
+      - '.github/workflows/m7-5-preview-release-artifact.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/web/**'
+      - 'tools/build-m7-5-preview-release.sh'
+      - '.github/workflows/m7-5-preview-release-artifact.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: m7-5-preview-release-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  preview-release-artifact:
+    name: m7-5-preview-release-artifact
+    runs-on: ubuntu-latest
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHQ=
+      APP_DEBUG: 'false'
+      APP_URL: http://localhost
+      ONEQAY_RUNTIME_CLASS: ci
+      ONEQAY_TECHNICAL_PREVIEW_ENABLED: 'true'
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+      LOG_CHANNEL: stderr
+
+    steps:
+      - name: Checkout exact governed source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Setup PHP 8.3 build runtime
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        with:
+          php-version: '8.3'
+          tools: composer:v2
+          coverage: none
+
+      - name: Setup exact Node LTS
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: 24.19.0
+
+      - name: Verify release source identity
+        id: source
+        shell: bash
+        run: |
+          set -euo pipefail
+          source_sha="${{ github.event.pull_request.head.sha || github.sha }}"
+          test "$(git rev-parse HEAD)" = "$source_sha"
+          test "$(git status --porcelain)" = ""
+          echo "source_sha=$source_sha" >> "$GITHUB_OUTPUT"
+
+      - name: Preserve root Platform Foundation regression
+        run: |
+          composer validate --strict --no-check-publish
+          composer test
+
+      - name: Install locked production PHP dependencies
+        working-directory: apps/web
+        run: |
+          composer validate --no-check-publish
+          composer install \
+            --no-dev \
+            --no-interaction \
+            --no-progress \
+            --prefer-dist \
+            --optimize-autoloader \
+            --classmap-authoritative
+
+      - name: Reject High or Critical Composer advisories
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          composer audit --locked --format=json > /tmp/oneqay-composer-audit.json || true
+          php -r '$data=json_decode(file_get_contents("/tmp/oneqay-composer-audit.json"),true,512,JSON_THROW_ON_ERROR); foreach (($data["advisories"] ?? []) as $package=>$items) { foreach ($items as $item) { if (in_array(strtolower((string)($item["severity"] ?? "")), ["high","critical"], true)) { fwrite(STDERR,"Blocking Composer advisory for {$package}.\n"); exit(1); } } }'
+
+      - name: Install locked frontend build dependencies
+        working-directory: apps/web
+        run: npm ci --ignore-scripts --no-fund
+
+      - name: Reject High or Critical npm advisories
+        working-directory: apps/web
+        run: npm audit --audit-level=high
+
+      - name: Type-check Vue and TypeScript
+        working-directory: apps/web
+        run: npm run type-check
+
+      - name: Build Vite assets
+        working-directory: apps/web
+        run: npm run build
+
+      - name: Run first-party Web regressions
+        working-directory: apps/web
+        run: |
+          composer test
+          php tests/tenant-isolation.php
+          php tests/identity-org-context.php
+          php tests/pos-core-synthetic.php
+          php tests/technical-preview-interaction.php
+
+      - name: Package deterministic Technical Preview release
+        id: package
+        shell: bash
+        run: bash tools/build-m7-5-preview-release.sh "${{ steps.source.outputs.source_sha }}"
+
+      - name: Verify package checksum and public/private boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          (
+            cd dist
+            sha256sum -c "$(basename "${{ steps.package.outputs.checksum_path }}")"
+          )
+          tar -tzf "${{ steps.package.outputs.archive_path }}" > /tmp/oneqay-release-list.txt
+          grep -F "${{ steps.package.outputs.release_id }}/public-surface/index.php" /tmp/oneqay-release-list.txt
+          grep -F "${{ steps.package.outputs.release_id }}/apps/web/vendor/autoload.php" /tmp/oneqay-release-list.txt
+          grep -F "${{ steps.package.outputs.release_id }}/apps/web/public/build/manifest.json" /tmp/oneqay-release-list.txt
+          if grep -E '(^|/)(\.env|\.git)(/|$)|(^|/)(node_modules)(/|$)' /tmp/oneqay-release-list.txt; then
+            echo 'Forbidden path found in release artifact.' >&2
+            exit 1
+          fi
+
+      - name: Upload Technical Preview runtime package
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: oneqay-${{ steps.package.outputs.release_id }}
+          path: |
+            ${{ steps.package.outputs.archive_path }}
+            ${{ steps.package.outputs.checksum_path }}
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0
+
+      - name: Confirm source tree remains clean
+        shell: bash
+        run: test "$(git status --porcelain)" = ""
