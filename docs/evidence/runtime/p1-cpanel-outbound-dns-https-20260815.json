@@ -1,0 +1,48 @@
+{
+  "schema": "oneqay.m7_5.outbound-dns-https-evidence.v1",
+  "observed_at": "2026-08-15T15:59:01+00:00",
+  "environment": "technical-preview",
+  "runtime_class": "preview",
+  "source_main_sha": "c25760a832d265ac30e8b0bbecdb59f44837bcc3",
+  "source_tree": "c96f78fd24087ffaad6e6f7ba46d82514e434447",
+  "active_release_id": "m75-preview-0edea8cdcc0c",
+  "scope": "bounded-read-only-outbound-dns-https-qualification",
+  "execution": {
+    "executor": "php-cli-through-temporary-cpanel-cron",
+    "php_major_minor": "8.3",
+    "target_host": "example.com",
+    "dns_resolution": "OK",
+    "https_request": "OK",
+    "http_status": 200,
+    "curl_errno": 0,
+    "tls_peer_verification_enabled": true,
+    "tls_hostname_verification_enabled": true,
+    "response_body_persisted": false,
+    "credential_used": false,
+    "timeout_seconds_max": 10
+  },
+  "cleanup": {
+    "temporary_cron_removed": true,
+    "private_sanitized_result_file_retained": true
+  },
+  "privacy": {
+    "raw_screenshot_committed": false,
+    "control_panel_account_identifier_recorded": false,
+    "credential_recorded": false,
+    "token_or_api_key_recorded": false,
+    "customer_or_bpjs_data_recorded": false,
+    "production_data_recorded": false
+  },
+  "safety": {
+    "database_touched": false,
+    "migration_executed": false,
+    "permanent_schema_created": false,
+    "runtime_configuration_changed": false,
+    "production_touched": false
+  },
+  "control_reconciliation": {
+    "RUNTIME:OUTBOUND_DNS_HTTPS": "VERIFIED"
+  },
+  "lifecycle_authority_created": false,
+  "attribution": "Lab | zefry"
+}
