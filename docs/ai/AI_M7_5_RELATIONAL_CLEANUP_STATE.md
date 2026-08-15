@@ -27,8 +27,8 @@ Historical bounded relational evidence remains:
 - MariaDB profile: `11.4.8`;
 - `persistent_schema_created = false`;
 - `production_ready = false`;
-- deterministic M7.5 snapshot: **13 VERIFIED / 16 BLOCKED**;
-- complete evaluator outcome: **BLOCKED**.
+- cleanup-time deterministic M7.5 snapshot: **13 VERIFIED / 16 BLOCKED**;
+- cleanup-time complete evaluator outcome: **BLOCKED**.
 
 ## Current secure-retirement state — 2026-08-15
 
@@ -51,6 +51,26 @@ Sanitized manually observed closure facts:
 
 No database identity, username, password, raw `.env`, cPanel account identifier, screenshot, customer data, BPJS data, or Production data is recorded here.
 
+## Post-cleanup canonical reconciliation
+
+After this cleanup was completed, PR #114 — `docs(m7.5): reconcile PHP CLI and scheduler evidence` — was separately published to `main` as:
+
+`a185d1264a0dde632e47d60a8d2e06f999ef224a`
+
+That later governed evidence promoted only:
+
+- `RUNTIME:PHP_CLI`: **PARTIAL -> VERIFIED**;
+- `RUNTIME:SCHEDULER_CRON`: **PARTIAL -> VERIFIED**.
+
+Therefore the current canonical deterministic M7.5 snapshot is now:
+
+- verified mandatory controls: **15**;
+- blocking mandatory controls: **14**;
+- outcome: **BLOCKED**;
+- lifecycle authority created: **false**.
+
+This later 15/14 state does not alter the cleanup facts and does not imply that the cleanup itself promoted any evaluator control.
+
 ## Interpretation rule
 
 The historical `QUALIFIED` relational result and the current `404` endpoint state are not contradictory.
@@ -67,7 +87,7 @@ Any future reactivation, new qualification account/database, persistent schema, 
 - M7.5 P1 live web-runtime evidence: **VERIFIED / MATERIAL PROGRESS**;
 - M7.5 bounded MariaDB relational probe historical evidence: **QUALIFIED / VERIFIED**;
 - M7.5 relational probe current runtime lifecycle: **RETIRED / FAIL-CLOSED**;
-- M7.5 complete 29-control evaluator: **BLOCKED / INCOMPLETE — 16 blockers remain**;
+- M7.5 complete 29-control evaluator: **BLOCKED / INCOMPLETE — 14 blockers remain**;
 - M7.6: **BLOCKED / NOT AUTHORIZED**;
 - M7.7: **BLOCKED / NOT AUTHORIZED**;
 - Phase 0 Exit: **NOT APPROVED**;
@@ -84,5 +104,7 @@ This closure creates no lifecycle authority.
 - `docs/handbook/M7_5_P1_RELATIONAL_QUALIFICATION_EVIDENCE_20260815.md`
 - `docs/evidence/runtime/p1-cpanel-relational-qualification-cleanup-20260815.json`
 - `docs/handbook/M7_5_P1_RELATIONAL_QUALIFICATION_CLEANUP_20260815.md`
+- `docs/evidence/runtime/p1-cpanel-live-runtime-reconciled-20260815.report.json`
+- `docs/ai/AI_M7_5_PHP_CLI_SCHEDULER_STATE.md`
 
 Attribution: **Lab | zefry**
