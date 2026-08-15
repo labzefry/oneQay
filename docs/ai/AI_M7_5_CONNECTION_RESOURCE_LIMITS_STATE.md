@@ -10,20 +10,23 @@ It does not replace historical M7.5 evidence and does not alter the secure-retir
 
 ## Governed baseline
 
-Published `main` before this reconciliation:
+Published `main` before this reconciled PR state:
 
-`c25760a832d265ac30e8b0bbecdb59f44837bcc3`
+`62ff17969a13dfc74ae0b0d790a354559bccc653`
 
 Published tree:
 
-`c96f78fd24087ffaad6e6f7ba46d82514e434447`
+`0d32336f37fdadd50ade8a49bdedcf3567041572`
 
-Previous canonical M7.5 snapshot:
+Current canonical M7.5 snapshot after published PR #116:
 
-- **15 VERIFIED**;
-- **14 BLOCKED**;
+- **16 VERIFIED**;
+- **13 BLOCKED**;
+- `RUNTIME:OUTBOUND_DNS_HTTPS`: **VERIFIED**;
 - outcome: **BLOCKED**;
 - lifecycle authority created: **false**.
+
+The connection/resource observations themselves were captured earlier against `c25760a832d265ac30e8b0bbecdb59f44837bcc3`; that observation provenance remains historical and unchanged.
 
 ## New bounded evidence
 
@@ -53,17 +56,17 @@ No load, saturation, Production capacity, or p95 performance claim is created by
 
 ## Control reconciliation
 
-Only these controls are promoted:
+Relative to current canonical `main`, only these controls are promoted by this PR:
 
 - `ENGINE:CONNECTION_LIMIT_VISIBILITY`: **VERIFIED**;
 - `RUNTIME:RESOURCE_LIMITS`: **VERIFIED**.
 
-No other control changes.
+Published `RUNTIME:OUTBOUND_DNS_HTTPS = VERIFIED` from PR #116 is preserved as baseline and is not re-promoted by this PR.
 
 Reconciled deterministic snapshot:
 
-- **17 VERIFIED**;
-- **12 BLOCKED**;
+- **18 VERIFIED**;
+- **11 BLOCKED**;
 - outcome: **BLOCKED**;
 - lifecycle authority created: **false**.
 
@@ -87,5 +90,6 @@ This reconciliation creates no standing authority for database creation, databas
 - `docs/evidence/runtime/p1-cpanel-live-runtime-reconciled-20260815-v2.json`
 - `docs/evidence/runtime/p1-cpanel-live-runtime-reconciled-20260815-v2.report.json`
 - `docs/handbook/M7_5_P1_CONNECTION_RESOURCE_LIMITS_EVIDENCE_20260815.md`
+- published outbound baseline: `docs/evidence/runtime/p1-cpanel-live-runtime-reconciled-20260815-outbound.report.json`
 
 Attribution: **Lab | zefry**
