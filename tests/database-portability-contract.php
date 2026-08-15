@@ -129,13 +129,26 @@ $vendorLeak = $contract->evaluate([
     new PortabilitySourceUnit(
         PortabilityLayer::LOGICAL_BUSINESS,
         'synthetic/application/VendorBranch.php',
-        "<?php final class VendorBranch { private string \$driver = 'mysql'; }",
+        "<?php final class VendorBranch { private string \$driver = 'pdo_mysql'; }",
     ),
 ], 'corr-portability-003');
-$assert(!$vendorLeak->isConformant, 'Vendor dependency leaked into logical business code.');
+$assert(!$vendorLeak->isConformant, 'Concrete vendor dependency leaked into logical business code.');
 $assert(
     in_array(PortabilityContractException::VENDOR_DEPENDENCY_IN_LOGICAL_BUSINESS, $vendorLeak->errorCodes, true),
-    'Vendor leakage did not fail closed.',
+    'Concrete vendor leakage did not fail closed.',
+);
+
+$vendorBranch = $contract->evaluate([
+    new PortabilitySourceUnit(
+        PortabilityLayer::LOGICAL_BUSINESS,
+        'synthetic/application/VendorCondition.php',
+        "<?php if (\$engine === 'mysql') { throw new RuntimeException('vendor branch'); }",
+    ),
+], 'corr-portability-004');
+$assert(!$vendorBranch->isConformant, 'Vendor-identity branching leaked into logical business code.');
+$assert(
+    in_array(PortabilityContractException::VENDOR_DEPENDENCY_IN_LOGICAL_BUSINESS, $vendorBranch->errorCodes, true),
+    'Vendor-identity branch did not fail closed.',
 );
 
 $sqlLeak = $contract->evaluate([
@@ -144,7 +157,7 @@ $sqlLeak = $contract->evaluate([
         'synthetic/domain/RawSqlRule.php',
         "<?php final class RawSqlRule { private string \$query = 'SELECT id FROM sales'; }",
     ),
-], 'corr-portability-004');
+], 'corr-portability-005');
 $assert(!$sqlLeak->isConformant, 'Raw SQL leaked into logical business code.');
 $assert(
     in_array(PortabilityContractException::RAW_SQL_IN_LOGICAL_BUSINESS, $sqlLeak->errorCodes, true),
@@ -157,7 +170,7 @@ $noBusinessEvidence = $contract->evaluate([
         'synthetic/infrastructure/OnlyAdapter.php',
         "<?php final class OnlyAdapter {}",
     ),
-], 'corr-portability-005');
+], 'corr-portability-006');
 $assert(!$noBusinessEvidence->isConformant, 'Missing logical business evidence was accepted.');
 $assert(
     in_array(PortabilityContractException::NO_LOGICAL_BUSINESS_EVIDENCE, $noBusinessEvidence->errorCodes, true),
