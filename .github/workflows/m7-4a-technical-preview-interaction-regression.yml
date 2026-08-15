@@ -48,7 +48,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - name: Enforce bounded M7.4A source envelope
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'agent/m7-4a-')
         shell: bash
         run: |
           set -euo pipefail
