@@ -145,3 +145,87 @@ The next bounded M7.5 work is to convert the newly observed live P1 web-runtime 
 Unknown or missing runtime capabilities must remain `PARTIAL`, `UNVERIFIED`, `NOT_SUPPLIED`, or `UNAVAILABLE`; they must never be promoted to `VERIFIED` by inference.
 
 A deterministic `BLOCKED` qualification result remains valid evidence while the required relational and recovery controls are incomplete.
+
+## Relational qualification reconciliation — 2026-08-15
+
+This section is the current minimum-delta reconciliation layer for relational qualification and supersedes the earlier `RELATIONAL ENGINE PROFILE QUALIFICATION: BLOCKED / NOT SUPPLIED` wording above for current-state interpretation. The earlier text is retained as historical pre-PR-#111 evidence state.
+
+PR #111 — `feat(m7.5): add bounded Preview relational qualification probe` is **CLOSED / MERGED / PUBLISHED**. Its authorized source head was:
+
+`93598d20bb44de74b8918a543140394be133dd0e`
+
+Current published `main` after the squash merge is:
+
+`0edea8cdcc0cb7f16c8e8758aa626e79b4096cf8`
+
+with tree:
+
+`effa878587f0175b928f92f91dc9612411c4f24c`
+
+The active non-Production Preview release for this evidence is:
+
+`m75-preview-0edea8cdcc0c`
+
+Sanitized live evidence from the protected Technical Preview relational probe verifies:
+
+- MariaDB `11.4.8` engine profile;
+- application database connectivity;
+- dedicated least-privilege qualification behavior;
+- transaction rollback semantics;
+- connection-scoped temporary-table capability;
+- tenant-scoped relational query behavior within the bounded probe;
+- permanent-schema mutation denied by the qualification privilege boundary;
+- `persistent_schema_created = false`;
+- `production_ready = false`.
+
+The bounded endpoint result is **QUALIFIED** for `technical-preview-relational-probe`. This does not mean the complete DEC-005R engine-profile evidence package or the overall M7.5 29-control evaluator is complete.
+
+The current machine-readable reconciliation is recorded in:
+
+- `docs/evidence/runtime/p1-cpanel-live-relational-20260815.json`;
+- `docs/evidence/runtime/p1-cpanel-live-relational-20260815.report.json`;
+- `docs/handbook/M7_5_P1_RELATIONAL_QUALIFICATION_EVIDENCE_20260815.md`.
+
+The deterministic current classification is:
+
+- verified mandatory controls: **13**;
+- blocking mandatory controls: **16**;
+- complete evaluator outcome: **BLOCKED**;
+- lifecycle authority created: **false**.
+
+The remaining engine-profile blockers are:
+
+- `ENGINE:CONNECTION_LIMIT_VISIBILITY:UNVERIFIED`;
+- `ENGINE:PORTABILITY_CONTRACT:UNVERIFIED`;
+- `ENGINE:RESTORE_VERIFIED:NOT_SUPPLIED`;
+- `ENGINE:TENANT_ISOLATION:PARTIAL`.
+
+The tenant-scoped temporary relational query is real bounded evidence, but it is not promoted to complete durable two-tenant negative-isolation evidence because no permanent relational business schema exists. The qualification account's lack of permanent DDL privileges plus `persistent_schema_created = false` is recorded as a verified deny-by-capability migration boundary, not as authorization for future migrations.
+
+The remaining runtime blockers are:
+
+- `RUNTIME:BACKGROUND_EXECUTION:PARTIAL`;
+- `RUNTIME:BACKUP_RESTORE:PARTIAL`;
+- `RUNTIME:DEPLOYMENT_RECOVERY:PARTIAL`;
+- `RUNTIME:ENVIRONMENT_SECRETS:PARTIAL`;
+- `RUNTIME:OBSERVABILITY_LOGGING:PARTIAL`;
+- `RUNTIME:OUTBOUND_DNS_HTTPS:PARTIAL`;
+- `RUNTIME:PHP_CLI:PARTIAL`;
+- `RUNTIME:QUEUE_EXECUTION:UNVERIFIED`;
+- `RUNTIME:RESOURCE_LIMITS:PARTIAL`;
+- `RUNTIME:ROLLBACK:NOT_SUPPLIED`;
+- `RUNTIME:SCHEDULER_CRON:PARTIAL`;
+- `RUNTIME:SECURITY_BOUNDARY:PARTIAL`.
+
+Therefore the current distinction is:
+
+- M7.5 preparation: **DONE / PUBLISHED**;
+- M7.5 live web-runtime evidence: **VERIFIED / MATERIAL PROGRESS**;
+- M7.5 bounded MariaDB relational probe: **QUALIFIED / VERIFIED**;
+- M7.5 complete 29-control evidence package: **BLOCKED / INCOMPLETE**;
+- M7.6: **BLOCKED / NOT AUTHORIZED**;
+- M7.7: **BLOCKED / NOT AUTHORIZED**;
+- Production readiness: **NO-GO**;
+- Production authority: **NONE**.
+
+No credential, raw `.env`, database identity, database username, password, screenshot, Production data, or permanent relational schema is introduced by this reconciliation.
