@@ -1,12 +1,12 @@
 {
   "schema": "oneqay.m7_5.runtime-qualification.v1",
+  "outcome": "BLOCKED",
   "target_id": "p1-cpanel-live-runtime-reconciled-20260815",
   "observed_at": "2026-08-15",
-  "engine": {
+  "engine_profile": {
     "family": "MARIADB",
     "version": "11.4.8"
   },
-  "outcome": "BLOCKED",
   "verified": [
     "ENGINE:APPLICATION_CONNECTIVITY",
     "ENGINE:BACKUP_EXPORT",
@@ -24,7 +24,7 @@
     "RUNTIME:URL_REWRITE",
     "RUNTIME:WEB_SERVER_REQUEST_RUNTIME"
   ],
-  "blockers": [
+  "blocking": [
     "ENGINE:CONNECTION_LIMIT_VISIBILITY:UNVERIFIED",
     "ENGINE:PORTABILITY_CONTRACT:UNVERIFIED",
     "ENGINE:RESTORE_VERIFIED:NOT_SUPPLIED",
@@ -40,7 +40,5 @@
     "RUNTIME:ROLLBACK:NOT_SUPPLIED",
     "RUNTIME:SECURITY_BOUNDARY:PARTIAL"
   ],
-  "verified_count": 15,
-  "blocker_count": 14,
   "lifecycle_authority_created": false
 }
