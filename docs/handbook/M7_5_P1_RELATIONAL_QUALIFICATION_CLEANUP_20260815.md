@@ -106,22 +106,35 @@ It records the secure-retirement facts without database identity, database usern
 
 This secure retirement closes the temporary relational-probe lifecycle only. It does **not** complete the broader deterministic M7.5 evaluator.
 
-The last governed evaluator snapshot remains:
+At the time the cleanup was completed, the governed evaluator snapshot was:
 
 - verified mandatory controls: **13**;
 - blocking mandatory controls: **16**;
 - complete evaluator outcome: **BLOCKED**;
 - lifecycle authority created: **false**.
 
-The cleanup itself does not promote any of the 16 remaining controls to `VERIFIED` by inference.
+The cleanup itself did not promote any of those 16 remaining controls to `VERIFIED` by inference.
 
-Therefore the current distinction remains:
+After this cleanup, PR #114 — `docs(m7.5): reconcile PHP CLI and scheduler evidence` — was separately published to `main` as:
+
+`a185d1264a0dde632e47d60a8d2e06f999ef224a`
+
+That later evidence promoted only `RUNTIME:PHP_CLI` and `RUNTIME:SCHEDULER_CRON`. Therefore the current canonical evaluator snapshot is now:
+
+- verified mandatory controls: **15**;
+- blocking mandatory controls: **14**;
+- complete evaluator outcome: **BLOCKED**;
+- lifecycle authority created: **false**.
+
+This later state change does not alter the relational cleanup facts and must not be interpreted as if the cleanup itself promoted those controls.
+
+Therefore the current distinction is:
 
 - M7.5 preparation: **DONE / PUBLISHED**;
 - M7.5 live web-runtime evidence: **VERIFIED / MATERIAL PROGRESS**;
 - M7.5 bounded MariaDB relational probe historical evidence: **QUALIFIED / VERIFIED**;
 - M7.5 relational probe current runtime lifecycle: **RETIRED / FAIL-CLOSED**;
-- M7.5 complete 29-control evidence package: **BLOCKED / INCOMPLETE**;
+- M7.5 complete 29-control evidence package: **BLOCKED / INCOMPLETE — 14 blockers remain**;
 - M7.6: **BLOCKED / NOT AUTHORIZED**;
 - M7.7: **BLOCKED / NOT AUTHORIZED**;
 - Phase 0 Exit: **NOT APPROVED**;
