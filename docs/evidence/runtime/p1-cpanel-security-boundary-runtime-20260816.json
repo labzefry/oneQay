@@ -1,0 +1,66 @@
+{
+  "schema": "oneqay.m7_5.security-boundary-runtime-evidence.v1",
+  "observed_at": "2026-08-16",
+  "environment": "technical-preview",
+  "runtime_class": "preview",
+  "published_main_sha": "c9d2d45c4c11f48aea6e37538f8d99cf76432f7d",
+  "published_tree": "e6818f66a04f962937d19d3fb009f56c11275fe5",
+  "active_release_id": "m75-preview-c9d2d45c4c11",
+  "scope": "bounded-post-deployment-security-boundary-runtime-verification",
+  "deployment_preflight": {
+    "private_env_present": true,
+    "private_env_mode": "0600",
+    "env_contents_viewed_or_recorded": false,
+    "artisan_boot_verified": true,
+    "artisan_version": "Laravel Framework 12.64.0",
+    "temporary_cron_removed": true
+  },
+  "activation": {
+    "public_release_pointer_updated": true,
+    "hosting_managed_htaccess_preserved": true,
+    "previous_release_retained": true,
+    "database_changed": false,
+    "migration_executed": false,
+    "permanent_schema_changed": false,
+    "production_touched": false
+  },
+  "browser_health": {
+    "technical_preview_loaded": true,
+    "document_status": 200,
+    "visible_500": false,
+    "visible_503": false,
+    "visible_framework_error": false,
+    "blank_page": false
+  },
+  "response_headers_present": {
+    "strict_transport_security": true,
+    "content_security_policy": true,
+    "x_content_type_options": true,
+    "x_frame_options": true,
+    "referrer_policy": true,
+    "permissions_policy": true,
+    "x_correlation_id": true
+  },
+  "sensitive_values_recorded": {
+    "response_header_values": false,
+    "cookie_values": false,
+    "set_cookie_values": false,
+    "session_ids": false,
+    "tokens": false,
+    "passwords": false,
+    "raw_env": false,
+    "runtime_app_key": false,
+    "account_identifiers": false
+  },
+  "control_reconciliation": {
+    "RUNTIME:SECURITY_BOUNDARY": "VERIFIED"
+  },
+  "claim_boundary": {
+    "technical_preview_only": true,
+    "production_security_readiness_claimed": false,
+    "penetration_test_claimed": false,
+    "full_threat_model_claimed": false,
+    "lifecycle_authority_created": false
+  },
+  "attribution": "Lab | zefry"
+}

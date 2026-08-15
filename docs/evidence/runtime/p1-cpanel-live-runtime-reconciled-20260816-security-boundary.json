@@ -1,0 +1,43 @@
+{
+  "target_id": "p1-cpanel-live-runtime-reconciled-20260816-security-boundary",
+  "observed_at": "2026-08-16",
+  "engine": {
+    "family": "MARIADB",
+    "version": "11.4.8"
+  },
+  "active_release_id": "m75-preview-c9d2d45c4c11",
+  "published_main_sha": "c9d2d45c4c11f48aea6e37538f8d99cf76432f7d",
+  "capabilities": {
+    "PHP_RUNTIME": {"status": "VERIFIED"},
+    "PHP_CLI": {"status": "VERIFIED"},
+    "WEB_SERVER_REQUEST_RUNTIME": {"status": "VERIFIED"},
+    "SAFE_DOCUMENT_ROOT": {"status": "VERIFIED"},
+    "URL_REWRITE": {"status": "VERIFIED"},
+    "BACKGROUND_EXECUTION": {"status": "PARTIAL"},
+    "QUEUE_EXECUTION": {"status": "UNVERIFIED"},
+    "SCHEDULER_CRON": {"status": "VERIFIED"},
+    "FILESYSTEM_STORAGE": {"status": "VERIFIED"},
+    "ENVIRONMENT_SECRETS": {"status": "VERIFIED"},
+    "TLS_HTTPS": {"status": "VERIFIED"},
+    "OUTBOUND_DNS_HTTPS": {"status": "VERIFIED"},
+    "PREVIEW_ISOLATION": {"status": "VERIFIED"},
+    "RESOURCE_LIMITS": {"status": "VERIFIED"},
+    "DATABASE_CONNECTIVITY": {"status": "VERIFIED"},
+    "OBSERVABILITY_LOGGING": {"status": "PARTIAL"},
+    "DEPLOYMENT_RECOVERY": {"status": "PARTIAL"},
+    "BACKUP_RESTORE": {"status": "PARTIAL"},
+    "ROLLBACK": {"status": "NOT_SUPPLIED"},
+    "SECURITY_BOUNDARY": {
+      "status": "VERIFIED",
+      "basis": "post-deployment Technical Preview browser verification confirmed the bounded security-header set and correlation response header while previously published session/context/private-public controls remain applicable"
+    }
+  },
+  "runtime_verification": {
+    "technical_preview_document_status": 200,
+    "security_headers_present": true,
+    "correlation_header_present": true,
+    "raw_sensitive_values_recorded": false
+  },
+  "lifecycle_authority_created": false,
+  "attribution": "Lab | zefry"
+}
