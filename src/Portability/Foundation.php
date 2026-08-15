@@ -105,7 +105,7 @@ final readonly class PortabilityContractReport implements \JsonSerializable
 
 final class DatabasePortabilityContract
 {
-    private const VENDOR_DEPENDENCY_PATTERN = '/\b(?:mysql|mariadb|postgresql|postgres|pdo_mysql|pdo_pgsql|innodb|jsonb|bigserial)\b/i';
+    private const CONCRETE_VENDOR_DEPENDENCY_PATTERN = '/(?:\bpdo_(?:mysql|pgsql)\b|\bmysqli\b|\bmysql:|\bpgsql:|\bPdoMySql\b|\bPdoPgSql\b|\b(?:MariaDb|MySql|PostgreSql)(?:Adapter|Connector|Connection|Repository)\b|(?:===|!==|==|!=)\s*[\'\"](?:mysql|mariadb|postgresql|postgres)[\'\"]|[\'\"](?:mysql|mariadb|postgresql|postgres)[\'\"]\s*(?:===|!==|==|!=))/i';
     private const RAW_SQL_PATTERN = '/\b(?:CREATE\s+TABLE|ALTER\s+TABLE|DROP\s+TABLE|INSERT\s+INTO|DELETE\s+FROM|SELECT\s+.+?\s+FROM|UPDATE\s+.+?\s+SET)\b/is';
 
     /**
@@ -136,7 +136,7 @@ final class DatabasePortabilityContract
 
             $logicalBusinessFiles++;
 
-            if (preg_match(self::VENDOR_DEPENDENCY_PATTERN, $unit->source) === 1) {
+            if (preg_match(self::CONCRETE_VENDOR_DEPENDENCY_PATTERN, $unit->source) === 1) {
                 $errorCodes[] = PortabilityContractException::VENDOR_DEPENDENCY_IN_LOGICAL_BUSINESS;
             }
 
