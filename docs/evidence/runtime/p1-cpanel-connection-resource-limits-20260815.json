@@ -1,0 +1,73 @@
+{
+  "schema": "oneqay.m7_5.connection-resource-limits-evidence.v1",
+  "observed_at": "2026-08-15",
+  "environment": "technical-preview",
+  "runtime_class": "preview",
+  "source_main_sha": "c25760a832d265ac30e8b0bbecdb59f44837bcc3",
+  "source_tree": "c96f78fd24087ffaad6e6f7ba46d82514e434447",
+  "active_release_id": "m75-preview-0edea8cdcc0c",
+  "scope": "bounded-read-only-connection-and-resource-limit-visibility",
+  "database_connection_limits": {
+    "status": "verified",
+    "engine_family": "mariadb",
+    "engine_version": "11.4.8",
+    "server_max_connections": 1024,
+    "global_max_user_connections": 0,
+    "extra_max_connections": 1,
+    "observed_max_concurrent_connections": 481,
+    "server_connection_statistics_visible": true,
+    "account_specific_database_user_override_asserted": false,
+    "new_database_or_user_created": false,
+    "sql_mutation_executed": false
+  },
+  "resource_limits": {
+    "status": "verified",
+    "scope": "cpanel-account-resource-envelope-hosting-technical-preview",
+    "speed_limit_percent": 100,
+    "physical_memory_limit_bytes": 1073741824,
+    "nproc_limit": 30,
+    "entry_process_limit": 15,
+    "inode_limit": 250000,
+    "current_observation": {
+      "speed_usage_percent": 0,
+      "nproc_usage": 1,
+      "entry_process_usage": 0,
+      "physical_memory_usage_mb_observed_range": [17.16, 17.63],
+      "inode_usage_observed_range": [40103, 40129],
+      "faults_observed": 0
+    },
+    "hourly_observation": {
+      "speed_average_percent_observed_range": [1, 2],
+      "physical_memory_average_mb_observed_range": [17.91, 23.57],
+      "entry_process_average": 0,
+      "nproc_average_observed_range": [1, 2],
+      "fault_columns_observed_zero": true,
+      "dashboard_reported_no_issues_past_24_hours": true
+    },
+    "io_limit_platform_value": 0,
+    "iops_limit_platform_value": 0,
+    "zero_io_values_interpreted_as_unlimited": false,
+    "synthetic_load_test_executed": false,
+    "saturation_test_executed": false
+  },
+  "privacy": {
+    "raw_screenshot_committed": false,
+    "raw_pdf_capture_committed": false,
+    "control_panel_account_identifier_recorded": false,
+    "database_identity_recorded": false,
+    "database_username_recorded": false,
+    "password_or_token_recorded": false,
+    "customer_or_bpjs_data_recorded": false,
+    "production_data_recorded": false
+  },
+  "safety": {
+    "read_only_observation": true,
+    "database_created": false,
+    "database_user_created": false,
+    "migration_executed": false,
+    "permanent_schema_created": false,
+    "runtime_configuration_changed": false,
+    "production_touched": false
+  },
+  "attribution": "Lab | zefry"
+}
