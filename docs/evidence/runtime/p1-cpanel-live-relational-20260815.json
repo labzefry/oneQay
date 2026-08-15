@@ -1,0 +1,128 @@
+{
+  "target_id": "p1-cpanel-live-relational-20260815",
+  "observed_at": "2026-08-15",
+  "engine": {
+    "family": "MARIADB",
+    "version": "11.4.8"
+  },
+  "capabilities": {
+    "PHP_RUNTIME": {
+      "status": "VERIFIED",
+      "reference": "docs/handbook/M7_5_P1_LIVE_RUNTIME_EVIDENCE_20260815.md#php-runtime"
+    },
+    "PHP_CLI": {
+      "status": "PARTIAL",
+      "reference": "docs/handbook/M7_5_P1_ACTUAL_EVIDENCE_20260815.md#php-cli"
+    },
+    "WEB_SERVER_REQUEST_RUNTIME": {
+      "status": "VERIFIED",
+      "reference": "docs/handbook/M7_5_P1_LIVE_RUNTIME_EVIDENCE_20260815.md#web-runtime"
+    },
+    "SAFE_DOCUMENT_ROOT": {
+      "status": "VERIFIED",
+      "reference": "docs/handbook/M7_5_P1_LIVE_RUNTIME_EVIDENCE_20260815.md#filesystem-and-privatepublic-boundary"
+    },
+    "URL_REWRITE": {
+      "status": "VERIFIED",
+      "reference": "docs/handbook/M7_5_P1_LIVE_RUNTIME_EVIDENCE_20260815.md#url-rewrite"
+    },
+    "BACKGROUND_EXECUTION": {
+      "status": "PARTIAL",
+      "reference": "docs/handbook/M7_5_P1_ACTUAL_EVIDENCE_20260815.md#background-execution"
+    },
+    "QUEUE_EXECUTION": {
+      "status": "UNVERIFIED",
+      "reference": "docs/handbook/M7_5_P1_LIVE_RUNTIME_EVIDENCE_20260815.md#queue--scheduler--background-execution"
+    },
+    "SCHEDULER_CRON": {
+      "status": "PARTIAL",
+      "reference": "docs/handbook/M7_5_P1_ACTUAL_EVIDENCE_20260815.md#scheduler-cron"
+    },
+    "FILESYSTEM_STORAGE": {
+      "status": "VERIFIED",
+      "reference": "docs/handbook/M7_5_P1_LIVE_RUNTIME_EVIDENCE_20260815.md#filesystem-and-privatepublic-boundary"
+    },
+    "ENVIRONMENT_SECRETS": {
+      "status": "PARTIAL",
+      "reference": "docs/handbook/M7_5_P1_LIVE_RUNTIME_EVIDENCE_20260815.md#environment-secrets"
+    },
+    "TLS_HTTPS": {
+      "status": "VERIFIED",
+      "reference": "docs/handbook/M7_5_P1_LIVE_RUNTIME_EVIDENCE_20260815.md#tls--https"
+    },
+    "DATABASE_CONNECTIVITY": {
+      "status": "VERIFIED",
+      "reference": "docs/handbook/M7_5_P1_RELATIONAL_QUALIFICATION_EVIDENCE_20260815.md#database-connectivity"
+    },
+    "BACKUP_RESTORE": {
+      "status": "PARTIAL",
+      "reference": "docs/handbook/M7_5_P1_LIVE_RUNTIME_EVIDENCE_20260815.md#backup--restore"
+    },
+    "OBSERVABILITY_LOGGING": {
+      "status": "PARTIAL",
+      "reference": "docs/handbook/M7_5_P1_LIVE_RUNTIME_EVIDENCE_20260815.md#observability"
+    },
+    "RESOURCE_LIMITS": {
+      "status": "PARTIAL",
+      "reference": "docs/handbook/M7_5_P1_LIVE_RUNTIME_EVIDENCE_20260815.md#resource-qualification"
+    },
+    "DEPLOYMENT_RECOVERY": {
+      "status": "PARTIAL",
+      "reference": "docs/handbook/M7_5_P1_RELATIONAL_QUALIFICATION_EVIDENCE_20260815.md#release-and-recovery-boundary"
+    },
+    "ROLLBACK": {
+      "status": "NOT_SUPPLIED",
+      "reference": "docs/handbook/M7_5_P1_LIVE_RUNTIME_EVIDENCE_20260815.md#rollback--recovery-rehearsal"
+    },
+    "SECURITY_BOUNDARY": {
+      "status": "PARTIAL",
+      "reference": "docs/handbook/M7_5_P1_RELATIONAL_QUALIFICATION_EVIDENCE_20260815.md#security-boundary"
+    },
+    "PREVIEW_ISOLATION": {
+      "status": "VERIFIED",
+      "reference": "docs/handbook/M7_5_P1_LIVE_RUNTIME_EVIDENCE_20260815.md#preview-isolation"
+    },
+    "OUTBOUND_DNS_HTTPS": {
+      "status": "PARTIAL",
+      "reference": "docs/handbook/M7_5_P1_ACTUAL_EVIDENCE_20260815.md#outbound-dns-https"
+    }
+  },
+  "engine_checks": {
+    "APPLICATION_CONNECTIVITY": {
+      "status": "VERIFIED",
+      "reference": "docs/handbook/M7_5_P1_RELATIONAL_QUALIFICATION_EVIDENCE_20260815.md#application-connectivity"
+    },
+    "LEAST_PRIVILEGE": {
+      "status": "VERIFIED",
+      "reference": "docs/handbook/M7_5_P1_RELATIONAL_QUALIFICATION_EVIDENCE_20260815.md#least-privilege"
+    },
+    "CONNECTION_LIMIT_VISIBILITY": {
+      "status": "UNVERIFIED",
+      "reference": "docs/handbook/M7_5_P1_RELATIONAL_QUALIFICATION_EVIDENCE_20260815.md#connection-limit-visibility"
+    },
+    "TRANSACTION_SEMANTICS": {
+      "status": "VERIFIED",
+      "reference": "docs/handbook/M7_5_P1_RELATIONAL_QUALIFICATION_EVIDENCE_20260815.md#transaction-semantics"
+    },
+    "TENANT_ISOLATION": {
+      "status": "PARTIAL",
+      "reference": "docs/handbook/M7_5_P1_RELATIONAL_QUALIFICATION_EVIDENCE_20260815.md#tenant-isolation"
+    },
+    "BACKUP_EXPORT": {
+      "status": "VERIFIED",
+      "reference": "docs/handbook/M7_5_P1_ACTUAL_EVIDENCE_20260815.md#backup-export"
+    },
+    "RESTORE_VERIFIED": {
+      "status": "NOT_SUPPLIED",
+      "reference": "docs/handbook/M7_5_P1_LIVE_RUNTIME_EVIDENCE_20260815.md#backup--restore"
+    },
+    "MIGRATION_BOUNDARY": {
+      "status": "VERIFIED",
+      "reference": "docs/handbook/M7_5_P1_RELATIONAL_QUALIFICATION_EVIDENCE_20260815.md#migration-boundary"
+    },
+    "PORTABILITY_CONTRACT": {
+      "status": "UNVERIFIED",
+      "reference": "docs/handbook/M7_5_P1_RELATIONAL_QUALIFICATION_EVIDENCE_20260815.md#portability-contract"
+    }
+  }
+}
