@@ -3,6 +3,7 @@
 use App\Delivery\Http\Middleware\CorrelationIdMiddleware;
 use App\Delivery\Http\Middleware\HandleInertiaRequests;
 use App\Delivery\Http\Middleware\RequireVerifiedTenantContextMiddleware;
+use App\Delivery\Http\Middleware\SafeRequestObservationMiddleware;
 use App\Delivery\Http\Middleware\SecurityHeadersMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -18,12 +19,13 @@ return Application::configure(basePath: dirname(__DIR__))
             'tenant.verified' => RequireVerifiedTenantContextMiddleware::class,
         ]);
         $middleware->append(CorrelationIdMiddleware::class);
+        $middleware->append(SafeRequestObservationMiddleware::class);
         $middleware->append(SecurityHeadersMiddleware::class);
         $middleware->web(append: [
             HandleInertiaRequests::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        // Exception detail remains framework-internal; safe request logging records class only.
     })
     ->create();
