@@ -12,24 +12,27 @@ Raw screenshots and the raw cPanel capture are intentionally not committed becau
 
 ## Governed baseline
 
-Published `main` at the start of this reconciliation:
+Current published `main` before this reconciled PR state:
 
-`c25760a832d265ac30e8b0bbecdb59f44837bcc3`
+`62ff17969a13dfc74ae0b0d790a354559bccc653`
 
 Published tree:
 
-`c96f78fd24087ffaad6e6f7ba46d82514e434447`
+`0d32336f37fdadd50ade8a49bdedcf3567041572`
 
 Active non-Production Preview release:
 
 `m75-preview-0edea8cdcc0c`
 
-Canonical evaluator before this reconciliation:
+Canonical evaluator after published PR #116 and before this reconciliation:
 
-- verified mandatory controls: **15**;
-- blocking mandatory controls: **14**;
+- verified mandatory controls: **16**;
+- blocking mandatory controls: **13**;
+- `RUNTIME:OUTBOUND_DNS_HTTPS`: **VERIFIED**;
 - outcome: **BLOCKED**;
 - lifecycle authority created: **false**.
+
+The connection/resource observations themselves were captured earlier while `main` was `c25760a832d265ac30e8b0bbecdb59f44837bcc3`; that historical observation provenance is intentionally preserved in the raw sanitized observation file.
 
 ## Database connection-limit visibility
 
@@ -100,17 +103,17 @@ No synthetic load test, deliberate saturation test, stress test, or fault-induct
 
 ## Control reconciliation
 
-Only these two mandatory controls are promoted by this evidence:
+Relative to current canonical `main`, only these two mandatory controls are promoted by this PR:
 
 - `ENGINE:CONNECTION_LIMIT_VISIBILITY`: `UNVERIFIED -> VERIFIED`;
 - `RUNTIME:RESOURCE_LIMITS`: `PARTIAL -> VERIFIED`.
 
-No other control is promoted by inference.
+Published `RUNTIME:OUTBOUND_DNS_HTTPS = VERIFIED` from PR #116 is preserved as baseline and is not re-promoted by this evidence.
 
 The resulting evaluator-shaped snapshot is therefore:
 
-- verified mandatory controls: **17**;
-- blocking mandatory controls: **12**;
+- verified mandatory controls: **18**;
+- blocking mandatory controls: **11**;
 - outcome: **BLOCKED**;
 - lifecycle authority created: **false**.
 
@@ -124,7 +127,6 @@ The remaining blockers are:
 - `RUNTIME:DEPLOYMENT_RECOVERY:PARTIAL`;
 - `RUNTIME:ENVIRONMENT_SECRETS:PARTIAL`;
 - `RUNTIME:OBSERVABILITY_LOGGING:PARTIAL`;
-- `RUNTIME:OUTBOUND_DNS_HTTPS:PARTIAL`;
 - `RUNTIME:QUEUE_EXECUTION:UNVERIFIED`;
 - `RUNTIME:ROLLBACK:NOT_SUPPLIED`;
 - `RUNTIME:SECURITY_BOUNDARY:PARTIAL`.
@@ -143,6 +145,10 @@ Evaluator-shaped report:
 
 `docs/evidence/runtime/p1-cpanel-live-runtime-reconciled-20260815-v2.report.json`
 
+Published outbound baseline evidence:
+
+`docs/evidence/runtime/p1-cpanel-live-runtime-reconciled-20260815-outbound.report.json`
+
 ## Security and privacy
 
 The repository evidence does not contain:
@@ -158,7 +164,7 @@ The repository evidence does not contain:
 
 This evidence does not complete M7.5 and creates no new lifecycle authority.
 
-- M7.5: **BLOCKED / INCOMPLETE — 17 VERIFIED / 12 BLOCKED**;
+- M7.5: **BLOCKED / INCOMPLETE — 18 VERIFIED / 11 BLOCKED**;
 - historical relational probe: **QUALIFIED / VERIFIED**;
 - current relational probe lifecycle: **RETIRED / FAIL-CLOSED**;
 - M7.6: **BLOCKED / NOT AUTHORIZED**;
