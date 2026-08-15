@@ -1,0 +1,56 @@
+{
+  "schema": "oneqay.m7_5.relational-qualification-cleanup.v1",
+  "observed_at": "2026-08-15",
+  "environment": "technical-preview",
+  "runtime_class": "preview",
+  "source_main_sha_before_closure_record": "3e2a310144fd73504b662cabae6a32a0073c592d",
+  "source_tree_before_closure_record": "70de762f254950abdaa6ee519ecd4d88869337eb",
+  "active_release_id": "m75-preview-0edea8cdcc0c",
+  "scope": "post-qualification-secure-retirement",
+  "historical_relational_probe": {
+    "qualification_status": "qualified",
+    "engine_profile": "mariadb",
+    "engine_version": "11.4.8",
+    "persistent_schema_created": false,
+    "production_ready": false,
+    "evidence_preserved": true
+  },
+  "cleanup": {
+    "qualification_switch_disabled": true,
+    "qualification_endpoint_fail_closed_404": true,
+    "qualification_database_user_detached": true,
+    "technical_preview_healthy_after_user_detach": true,
+    "qualification_database_user_deleted": true,
+    "qualification_database_verified_empty_before_delete": true,
+    "qualification_database_deleted": true,
+    "qualification_database_name_cleared_from_private_runtime_env": true,
+    "qualification_username_cleared_from_private_runtime_env": true,
+    "qualification_password_cleared_from_private_runtime_env": true,
+    "qualification_endpoint_fail_closed_404_after_credential_cleanup": true,
+    "technical_preview_healthy_after_full_cleanup": true,
+    "other_control_panel_databases_modified": false
+  },
+  "privacy": {
+    "database_identity_recorded": false,
+    "database_username_recorded": false,
+    "password_recorded": false,
+    "raw_env_recorded": false,
+    "control_panel_account_identifier_recorded": false,
+    "screenshot_recorded": false,
+    "customer_or_production_data_recorded": false
+  },
+  "current_interpretation": {
+    "qualification_probe_retired": true,
+    "live_probe_expected_available": false,
+    "historical_qualification_evidence_invalidated": false,
+    "m7_5_complete_evaluator_outcome": "BLOCKED",
+    "verified_mandatory_controls_snapshot": 13,
+    "blocking_mandatory_controls_snapshot": 16,
+    "m7_6_authorized": false,
+    "m7_7_authorized": false,
+    "production_ready": false,
+    "production_authority": "NONE",
+    "lifecycle_authority_created": false
+  },
+  "attribution": "Lab | zefry"
+}
