@@ -88,7 +88,23 @@ foreach ($infrastructureRoots as $root) {
 
 $contract = new DatabasePortabilityContract();
 $report = $contract->evaluate($units, 'corr-portability-001');
-$assert($report->isConformant, 'Canonical logical business code violates the Database Portability Contract.');
+$canonicalViolations = [];
+if (!$report->isConformant) {
+    foreach ($units as $unit) {
+        if ($unit->layer !== PortabilityLayer::LOGICAL_BUSINESS) {
+            continue;
+        }
+
+        $unitReport = $contract->evaluate([$unit], 'corr-portability-diagnostic');
+        foreach ($unitReport->errorCodes as $errorCode) {
+            $canonicalViolations[] = $unit->path . ':' . $errorCode;
+        }
+    }
+}
+$assert(
+    $report->isConformant,
+    'Canonical logical business code violates the Database Portability Contract: ' . implode(', ', $canonicalViolations),
+);
 $assert($report->errorCodes === [], 'Conformant portability report contains errors.');
 $assert($report->logicalBusinessFiles > 0, 'No logical business files were inspected.');
 $assert($report->infrastructureFiles > 0, 'No bounded Infrastructure files were inspected.');
