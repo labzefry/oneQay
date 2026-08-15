@@ -21,7 +21,7 @@ final class CriticalConfiguration
             ? strtolower(trim($values['runtime_class']))
             : '';
 
-        if (! in_array($runtimeClass, ['local', 'test', 'ci'], true)) {
+        if (! in_array($runtimeClass, ['local', 'test', 'ci', 'preview'], true)) {
             $violations[] = 'runtime_class';
         }
 
