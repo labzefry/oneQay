@@ -23,7 +23,8 @@ require_once __DIR__.'/../vendor/autoload.php';
 // Author by Lab | zefry
 $assert = static function (bool $condition, string $case): void {
     if (! $condition) {
-        throw new RuntimeException("M7.4A regression failed: {$case}");
+        fwrite(STDERR, "M7.4A regression failed: {$case}\n");
+        exit(1);
     }
 };
 
@@ -198,6 +199,7 @@ $sendHttp = static function (
     string $method,
     string $uri,
     array $parameters = [],
+    array $server = [],
 ) use ($kernel, &$cookies, &$csrfToken): array {
     $method = strtoupper($method);
     if ($method !== 'GET' && $csrfToken !== null && ! array_key_exists('_token', $parameters)) {
@@ -210,10 +212,10 @@ $sendHttp = static function (
         $parameters,
         $cookies,
         [],
-        [
+        array_replace([
             'HTTP_HOST' => 'oneqay.test',
             'HTTP_ACCEPT' => 'text/html,application/xhtml+xml',
-        ],
+        ], $server),
     );
 
     $response = $kernel->handle($request);
@@ -282,7 +284,19 @@ $assert(str_ends_with((string) $sale->headers->get('Location'), '/technical-prev
 [$receiptPage] = $sendHttp('GET', '/technical-preview/receipt');
 $assert($receiptPage->getStatusCode() === 200, 'M74A-HTTP-015 receipt preview is reachable');
 $assert(str_contains((string) $receiptPage->getContent(), 'CASH_COUNTED'), 'M74A-HTTP-016 receipt preserves cash evidence mode');
-$assert(str_contains((string) $receiptPage->getContent(), 'Not Production Ready'), 'M74A-HTTP-017 receipt labels non-production boundary');
+
+[$receiptInertia] = $sendHttp('GET', '/technical-preview/receipt', [], [
+    'HTTP_X_INERTIA' => 'true',
+    'HTTP_X_REQUESTED_WITH' => 'XMLHttpRequest',
+    'HTTP_ACCEPT' => 'application/json',
+]);
+$assert($receiptInertia->getStatusCode() === 200, 'M74A-HTTP-017 receipt Inertia boundary is reachable');
+$receiptPayload = json_decode((string) $receiptInertia->getContent(), true, 512, JSON_THROW_ON_ERROR);
+$assert(
+    array_key_exists('productionReady', $receiptPayload['props'] ?? [])
+        && $receiptPayload['props']['productionReady'] === false,
+    'M74A-HTTP-017 receipt labels non-production boundary',
+);
 
 [$logout] = $sendHttp('POST', '/technical-preview/logout');
 $assert($logout->getStatusCode() === 302, 'M74A-HTTP-018 logout redirects');
