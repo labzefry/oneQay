@@ -152,6 +152,6 @@ jobs:
           retention-days: 14
           compression-level: 0
 
-      - name: Confirm source tree remains clean
+      - name: Confirm tracked source remains unchanged
         shell: bash
-        run: test "$(git status --porcelain)" = ""
+        run: git diff --exit-code
