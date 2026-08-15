@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Application\Observability\CorrelationId;
 use App\Application\Tenancy\MissingTenantContext;
 use App\Application\Tenancy\RequireVerifiedTenantContext;
+use App\Delivery\Http\Middleware\SafeRequestObservationMiddleware;
 use App\Delivery\Http\SafeErrorEnvelope;
 use App\Infrastructure\Configuration\CriticalConfiguration;
 use Illuminate\Contracts\Http\Kernel;
@@ -109,6 +110,90 @@ try {
     $assert(false, 'missing tenant context must fail closed');
 } catch (MissingTenantContext) {
     // Expected.
+}
+
+// M7.5 safe observability regression. Runtime logging is active only for the governed Preview class.
+$policy = SafeRequestObservationMiddleware::policy();
+$assert($policy['path'] === storage_path('logs/oneqay-observation.log'), 'observation log must live in private application storage');
+$assert(! str_starts_with($policy['path'], public_path()), 'observation log must never be under the public document root');
+$assert($policy['level'] === 'info', 'observation log must use bounded info level');
+$assert($policy['days'] === 14, 'observation retention must be bounded to 14 days');
+
+$logBasePath = sys_get_temp_dir().'/oneqay-observation-'.bin2hex(random_bytes(8)).'.log';
+$app->instance(SafeRequestObservationMiddleware::class, new SafeRequestObservationMiddleware($logBasePath));
+$app['config']->set('oneqay.runtime_class', 'preview');
+
+$querySecret = 'QUERY_SECRET_M75_4f0b';
+$bodySecret = 'BODY_SECRET_M75_5a1c';
+$cookieSecret = 'COOKIE_SECRET_M75_6b2d';
+$authorizationSecret = 'AUTH_SECRET_M75_7c3e';
+
+$request = Request::create(
+    '/health/live?token='.$querySecret,
+    'GET',
+    cookies: ['oneqay-session' => $cookieSecret],
+    server: [
+        'HTTP_AUTHORIZATION' => 'Bearer '.$authorizationSecret,
+        'HTTP_X_CORRELATION_ID' => 'M75-ObsSafe_0001',
+        'CONTENT_TYPE' => 'application/json',
+    ],
+    content: json_encode(['password' => $bodySecret], JSON_THROW_ON_ERROR),
+);
+$response = $kernel->handle($request);
+$assert($response->getStatusCode() === 200, 'synthetic observation request must remain healthy');
+$kernel->terminate($request, $response);
+
+$exceptionSecret = 'EXCEPTION_SECRET_M75_8d4f';
+$exceptionRequest = Request::create('/synthetic-observation-exception', 'GET');
+$exceptionRequest->attributes->set('oneqay.correlation_id', 'M75-ObsSafe_0002');
+
+try {
+    (new SafeRequestObservationMiddleware($logBasePath))->handle(
+        $exceptionRequest,
+        static function () use ($exceptionSecret): never {
+            throw new RuntimeException($exceptionSecret);
+        },
+    );
+    $assert(false, 'synthetic exception path must rethrow');
+} catch (RuntimeException $exception) {
+    $assert($exception->getMessage() === $exceptionSecret, 'middleware must preserve exception semantics');
+}
+
+$rotatedPattern = preg_replace('/\.log\z/', '-*.log', $logBasePath);
+$logFiles = [];
+if (is_file($logBasePath)) {
+    $logFiles[] = $logBasePath;
+}
+if (is_string($rotatedPattern)) {
+    foreach (glob($rotatedPattern) ?: [] as $candidate) {
+        $logFiles[] = $candidate;
+    }
+}
+$logFiles = array_values(array_unique($logFiles));
+$assert($logFiles !== [], 'safe observation log must be written');
+$logContent = '';
+foreach ($logFiles as $logFile) {
+    $logContent .= (string) file_get_contents($logFile)."\n";
+}
+
+$assert(str_contains($logContent, 'oneqay.http.request'), 'safe observation event name must be present');
+$assert(str_contains($logContent, 'M75-ObsSafe_0001'), 'request correlation id must be searchable in the log');
+$assert(str_contains($logContent, 'health.live'), 'named route must be searchable in the log');
+$assert(str_contains($logContent, 'M75-ObsSafe_0002'), 'exception correlation id must be searchable in the log');
+$assert(str_contains($logContent, 'RuntimeException'), 'exception class may be recorded as bounded metadata');
+
+foreach ([$querySecret, $bodySecret, $cookieSecret, $authorizationSecret, $exceptionSecret, $testKey] as $secret) {
+    $assert(! str_contains($logContent, $secret), 'safe observation log must not leak synthetic sensitive values');
+}
+
+foreach (['Authorization', 'oneqay-session', 'password', 'token='] as $sensitiveLabel) {
+    $assert(! str_contains($logContent, $sensitiveLabel), 'safe observation log must not copy sensitive request surfaces');
+}
+
+$app['config']->set('oneqay.runtime_class', 'ci');
+$app->forgetInstance(SafeRequestObservationMiddleware::class);
+foreach ($logFiles as $logFile) {
+    @unlink($logFile);
 }
 
 $forbidden = [
