@@ -1,0 +1,60 @@
+{
+  "schema": "oneqay.m7_5.php-cli-scheduler-evidence.v1",
+  "observed_at": "2026-08-15",
+  "environment": "technical-preview",
+  "runtime_class": "preview",
+  "source_main_sha": "3e2a310144fd73504b662cabae6a32a0073c592d",
+  "source_tree": "70de762f254950abdaa6ee519ecd4d88869337eb",
+  "active_release_id": "m75-preview-0edea8cdcc0c",
+  "scope": "bounded-php-cli-and-scheduler-cron-qualification",
+  "observations": {
+    "php_cli": {
+      "status": "verified",
+      "php_version": "8.3.26",
+      "sapi": "cli",
+      "execution_surface": "cpanel-cron",
+      "oneqay_artisan_boot_verified": true,
+      "artisan_framework_version": "12.64.0"
+    },
+    "scheduler_cron": {
+      "status": "verified",
+      "execution_surface": "cpanel-cron",
+      "command_class": "artisan-schedule-run",
+      "result": "no-scheduled-commands-ready",
+      "source_schedule_definition_empty": true,
+      "business_command_executed": false
+    },
+    "background_execution": {
+      "status": "partial",
+      "reason": "bounded scheduled CLI execution is verified, but persistent/background worker lifecycle, concurrency, restart behavior, and broader background execution semantics remain unqualified"
+    }
+  },
+  "safety": {
+    "database_access_intentionally_exercised": false,
+    "migration_executed": false,
+    "permanent_schema_created": false,
+    "business_persistence_created": false,
+    "production_touched": false,
+    "temporary_cron_entries_removed_after_observation": true
+  },
+  "privacy": {
+    "credential_recorded": false,
+    "raw_env_recorded": false,
+    "cpanel_account_identifier_recorded": false,
+    "home_directory_identifier_recorded": false,
+    "screenshot_recorded": false,
+    "customer_or_production_data_recorded": false
+  },
+  "control_reconciliation": {
+    "RUNTIME:PHP_CLI": "VERIFIED",
+    "RUNTIME:SCHEDULER_CRON": "VERIFIED",
+    "RUNTIME:BACKGROUND_EXECUTION": "PARTIAL"
+  },
+  "projected_complete_evaluator_snapshot": {
+    "verified_mandatory_controls": 15,
+    "blocking_mandatory_controls": 14,
+    "outcome": "BLOCKED",
+    "lifecycle_authority_created": false
+  },
+  "attribution": "Lab | zefry"
+}
