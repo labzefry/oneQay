@@ -8,6 +8,7 @@ on:
       - 'apps/web/app/Domain/Tenancy/**'
       - 'apps/web/app/Application/Tenancy/**'
       - 'apps/web/app/Infrastructure/Tenancy/**'
+      - 'apps/web/app/Infrastructure/Configuration/CriticalConfiguration.php'
       - 'apps/web/app/Delivery/Http/Middleware/**'
       - 'apps/web/app/Providers/AppServiceProvider.php'
       - 'apps/web/bootstrap/app.php'
@@ -56,6 +57,7 @@ jobs:
               apps/web/app/Domain/Tenancy/*|\
               apps/web/app/Application/Tenancy/*|\
               apps/web/app/Infrastructure/Tenancy/*|\
+              apps/web/app/Infrastructure/Configuration/CriticalConfiguration.php|\
               apps/web/app/Delivery/Http/Middleware/*|\
               apps/web/app/Providers/AppServiceProvider.php|\
               apps/web/bootstrap/app.php|\
