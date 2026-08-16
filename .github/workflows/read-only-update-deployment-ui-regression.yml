@@ -175,11 +175,21 @@ jobs:
           php <<'PHP'
           <?php
           $html = file_get_contents('/tmp/oneqay-update-ui.html');
-          if (! preg_match('/data-page="([^"]+)"/', $html, $match)) {
-              fwrite(STDERR, "Initial Inertia data-page payload not found.\n");
+          $previous = libxml_use_internal_errors(true);
+          $dom = new DOMDocument();
+          if (! $dom->loadHTML($html, LIBXML_NOERROR | LIBXML_NOWARNING)) {
+              fwrite(STDERR, "Unable to parse initial Inertia HTML.\n");
               exit(1);
           }
-          $encoded = html_entity_decode($match[1], ENT_QUOTES | ENT_HTML5, 'UTF-8');
+          libxml_clear_errors();
+          libxml_use_internal_errors($previous);
+          $xpath = new DOMXPath($dom);
+          $nodes = $xpath->query('//*[@data-page]');
+          if ($nodes === false || $nodes->length !== 1) {
+              fwrite(STDERR, "Expected exactly one Inertia data-page root.\n");
+              exit(1);
+          }
+          $encoded = $nodes->item(0)?->getAttribute('data-page') ?? '';
           $page = json_decode($encoded, true, 512, JSON_THROW_ON_ERROR);
           if (($page['component'] ?? null) !== 'System/UpdateDeployment') {
               fwrite(STDERR, "Unexpected Inertia component.\n");
