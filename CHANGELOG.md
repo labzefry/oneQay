@@ -1,5 +1,13 @@
 # Changelog
 
+## Canonical M7.5 consolidation — 2026-08-16
+
+The current `[Unreleased]` program state includes the governed M7.5 publication/evidence sequence through PR #124. In aggregate, PR #102–#124 established the fail-closed qualification harness, governed Technical Preview release-artifact path, live cPanel web-runtime evidence, bounded MariaDB relational qualification and retirement, PHP CLI/scheduler evidence, connection/resource visibility, outbound DNS/HTTPS, environment-secret and security-boundary hardening/evidence, Database Portability Contract conformance, safe observability, bounded application rollback/deployment recovery, and short-lived Preview background/queue execution.
+
+Canonical evaluator after PR #124: **26 VERIFIED / 3 BLOCKED**, outcome **BLOCKED / INCOMPLETE**, `lifecycle_authority_created=false`. Only `ENGINE:RESTORE_VERIFIED:NOT_SUPPLIED`, `ENGINE:TENANT_ISOLATION:PARTIAL`, and `RUNTIME:BACKUP_RESTORE:PARTIAL` remain blocking. This consolidation records program-state progress only; it is not a product release and creates no M7.6, M7.7, Phase 0 Exit, Sprint 14, Release, Production, restore, database/schema/migration, or deployment authority.
+
+Historical `[Unreleased]` entries below remain preserved as publication and governance provenance. Older current-facing statements are interpreted according to the newer consolidation above where superseded by PR #102–#124 evidence.
+
 Semua perubahan penting oneQay dicatat di dokumen ini. Format mengikuti Keep a Changelog dan versioning produk akan mengikuti Semantic Versioning setelah release baseline disetujui.
 
 ## [Unreleased]
