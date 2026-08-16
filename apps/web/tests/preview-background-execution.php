@@ -3,8 +3,6 @@
 declare(strict_types=1);
 
 use App\Infrastructure\Background\PreviewFilesystemQueue;
-use InvalidArgumentException;
-use RuntimeException;
 
 require __DIR__.'/../vendor/autoload.php';
 
@@ -21,7 +19,7 @@ $expectException = static function (callable $callback, string $class, string $m
     try {
         $callback();
         $assert(false, $message);
-    } catch (Throwable $exception) {
+    } catch (\Throwable $exception) {
         $assert($exception instanceof $class, $message.' (unexpected exception class)');
     }
 };
@@ -65,7 +63,7 @@ try {
 
     $expectException(
         fn () => new PreviewFilesystemQueue($public.'/queue', 'preview', $public),
-        RuntimeException::class,
+        \RuntimeException::class,
         'queue path under public root must fail closed',
     );
 
@@ -73,7 +71,7 @@ try {
     $denied = new PreviewFilesystemQueue($deniedPath, 'production', $public);
     $expectException(
         fn () => $denied->enqueue('M75-BG-Denied_0001'),
-        RuntimeException::class,
+        \RuntimeException::class,
         'non-Preview runtime must deny enqueue',
     );
     $assert(! is_dir($deniedPath), 'denied runtime must not create queue storage');
@@ -82,12 +80,12 @@ try {
 
     $expectException(
         fn () => $queue->enqueue('bad!'),
-        InvalidArgumentException::class,
+        \InvalidArgumentException::class,
         'unsafe job id must be rejected',
     );
     $expectException(
         fn () => $queue->enqueue('M75-BG-Type_0001', 'business.order'),
-        InvalidArgumentException::class,
+        \InvalidArgumentException::class,
         'non-qualification job type must be rejected',
     );
 

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use App\Infrastructure\Background\PreviewFilesystemQueue;
 use Illuminate\Support\Facades\Artisan;
-use Throwable;
 
 // Attribution: Lab | zefry
 
@@ -34,7 +33,7 @@ Artisan::command('oneqay:preview-queue:enqueue {job_id} {--scenario=noop}', func
         ));
 
         return 0;
-    } catch (Throwable) {
+    } catch (\Throwable) {
         $this->error('ONEQAY_PREVIEW_QUEUE_ENQUEUE_FAILED');
 
         return 1;
@@ -58,7 +57,7 @@ Artisan::command('oneqay:preview-queue:work-one', function (): int {
         ));
 
         return in_array($result['state'], ['done', 'retry', 'idle', 'busy'], true) ? 0 : 1;
-    } catch (Throwable) {
+    } catch (\Throwable) {
         $this->error('ONEQAY_PREVIEW_QUEUE_WORK_FAILED');
 
         return 1;
@@ -79,7 +78,7 @@ Artisan::command('oneqay:preview-queue:status {job_id}', function (): int {
         ));
 
         return $result['state'] === 'conflict' ? 1 : 0;
-    } catch (Throwable) {
+    } catch (\Throwable) {
         $this->error('ONEQAY_PREVIEW_QUEUE_STATUS_FAILED');
 
         return 1;
