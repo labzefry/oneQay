@@ -1,0 +1,129 @@
+name: M7.6 Preview Deployment Recovery Rehearsal Regression
+
+on:
+  pull_request:
+    paths:
+      - 'apps/web/app/Application/SystemUpdate/Rehearsal/**'
+      - 'apps/web/app/Infrastructure/SystemUpdate/Rehearsal/**'
+      - 'apps/web/tests/m7-6-preview-deployment-recovery-rehearsal.php'
+      - 'docs/operations/M7_6_PREVIEW_DEPLOYMENT_RECOVERY_REHEARSAL.md'
+      - 'docs/ai/AI_M7_6_REHEARSAL_PREPARATION_STATE.md'
+      - '.github/workflows/m7-6-preview-deployment-recovery-rehearsal-regression.yml'
+      - 'apps/web/config/oneqay.php'
+      - 'apps/web/app/Providers/SystemUpdateServiceProvider.php'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: m7-6-preview-rehearsal-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  m7-6-preview-deployment-recovery-rehearsal-regression:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHQ=
+      APP_DEBUG: 'false'
+      APP_URL: http://127.0.0.1
+      ONEQAY_RUNTIME_CLASS: ci
+      ONEQAY_SYSTEM_UPDATE_CONTROL_PLANE_ENABLED: 'false'
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Validate PHP runtime boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          php --version
+          php -r 'if (PHP_VERSION_ID < 80200 || PHP_VERSION_ID >= 80600) { fwrite(STDERR, "M7.6 rehearsal foundation requires governed PHP 8.2-8.5 compatibility.\n"); exit(1); }'
+          composer --version
+
+      - name: Preserve root Platform Foundation regression
+        run: |
+          composer validate --strict --no-check-publish
+          composer test
+
+      - name: Install locked Web dependencies
+        working-directory: apps/web
+        run: |
+          composer validate --no-check-publish
+          composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Reject High or Critical Composer advisories
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          composer audit --locked --format=json > /tmp/oneqay-m76-composer-audit.json || true
+          php -r '
+            $data = json_decode(file_get_contents("/tmp/oneqay-m76-composer-audit.json"), true, 512, JSON_THROW_ON_ERROR);
+            foreach (($data["advisories"] ?? []) as $package => $items) {
+                foreach ($items as $item) {
+                    if (in_array(strtolower((string) ($item["severity"] ?? "")), ["high", "critical"], true)) {
+                        fwrite(STDERR, "Blocking Composer advisory for {$package}.\n");
+                        exit(1);
+                    }
+                }
+            }
+          '
+
+      - name: Validate M7.6 PHP syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          find \
+            apps/web/app/Application/SystemUpdate/Rehearsal \
+            apps/web/app/Infrastructure/SystemUpdate/Rehearsal \
+            apps/web/tests/m7-6-preview-deployment-recovery-rehearsal.php \
+            -type f -name '*.php' -print0 |
+            while IFS= read -r -d '' file; do php -l "$file"; done
+
+      - name: Prove updater runtime remains hard disabled and rehearsal unwired
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq "'install_enabled' => false" apps/web/config/oneqay.php
+          ! grep -Eq 'ONEQAY_SYSTEM_UPDATE_INSTALL|env\([^)]*INSTALL' apps/web/config/oneqay.php
+          ! grep -Fq 'SystemUpdatePreviewRehearsalRunner' apps/web/app/Providers/SystemUpdateServiceProvider.php
+          ! grep -R -n 'implements SystemUpdatePreviewRehearsalDriver' apps/web/app/Infrastructure
+
+      - name: Enforce no live-host mutation adapter or secret surface
+        shell: bash
+        run: |
+          set -euo pipefail
+          rehearsal_paths=(
+            apps/web/app/Application/SystemUpdate/Rehearsal
+            apps/web/app/Infrastructure/SystemUpdate/Rehearsal
+          )
+          if grep -R -n -E 'curl_|Http::|Guzzle|proc_open|shell_exec|passthru|exec\(|system\(|ssh|scp|sftp|ftp_|cPanel|public_html|DB_PASSWORD|DB_USERNAME|MAIL_PASSWORD|API_TOKEN|access_token|secret_value|rawSecret|env\(|getenv\(|\$_ENV|\$_SERVER' "${rehearsal_paths[@]}"; then
+            echo 'M7.6 preparation must not contain live-host/network/shell/credential execution primitives.' >&2
+            exit 1
+          fi
+
+      - name: Run M7.6 Preview deployment recovery rehearsal foundation regression
+        working-directory: apps/web
+        run: php tests/m7-6-preview-deployment-recovery-rehearsal.php
+
+      - name: Preserve updater foundation regressions
+        working-directory: apps/web
+        run: |
+          php tests/backend-updater-control-plane.php
+          php tests/privileged-update-security.php
+          php tests/safe-staging-activation-health-rollback.php
+          php tests/shared-runtime-configuration-boundary.php
+
+      - name: Confirm tracked source remains unchanged
+        shell: bash
+        run: git diff --exit-code
