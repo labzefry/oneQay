@@ -1,0 +1,152 @@
+name: Shared Runtime Configuration Boundary Regression
+
+# Attribution: Lab | zefry
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'apps/web/app/Application/SystemUpdate/SharedConfiguration/**'
+      - 'apps/web/app/Infrastructure/SystemUpdate/SharedConfiguration/**'
+      - 'apps/web/tests/shared-runtime-configuration-boundary.php'
+      - '.github/workflows/shared-runtime-configuration-boundary-regression.yml'
+      - 'apps/web/app/Application/SystemUpdate/SystemUpdateActivationCoordinator.php'
+      - 'apps/web/app/Infrastructure/SystemUpdate/Activation/**'
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/web/app/Application/SystemUpdate/SharedConfiguration/**'
+      - 'apps/web/app/Infrastructure/SystemUpdate/SharedConfiguration/**'
+      - 'apps/web/tests/shared-runtime-configuration-boundary.php'
+      - '.github/workflows/shared-runtime-configuration-boundary-regression.yml'
+      - 'apps/web/app/Application/SystemUpdate/SystemUpdateActivationCoordinator.php'
+      - 'apps/web/app/Infrastructure/SystemUpdate/Activation/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: shared-runtime-configuration-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  shared-runtime-configuration-boundary-regression:
+    name: shared-runtime-configuration-boundary-regression
+    runs-on: ubuntu-latest
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHQ=
+      APP_DEBUG: 'false'
+      APP_URL: http://127.0.0.1
+      ONEQAY_RUNTIME_CLASS: ci
+      ONEQAY_SYSTEM_UPDATE_CONTROL_PLANE_ENABLED: 'false'
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Validate PHP runtime boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          php --version
+          php -r 'if (PHP_VERSION_ID < 80200 || PHP_VERSION_ID >= 80600) { fwrite(STDERR, "Shared runtime configuration boundary requires governed PHP 8.2-8.5 compatibility.\n"); exit(1); }'
+          composer --version
+
+      - name: Preserve root Platform Foundation regression
+        run: |
+          composer validate --strict --no-check-publish
+          composer test
+
+      - name: Validate and install locked application dependencies
+        working-directory: apps/web
+        run: |
+          composer validate --no-check-publish
+          composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Reject High or Critical Composer advisories
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          composer audit --locked --format=json > /tmp/oneqay-shared-config-audit.json || true
+          php -r '
+            $data = json_decode(file_get_contents("/tmp/oneqay-shared-config-audit.json"), true, 512, JSON_THROW_ON_ERROR);
+            foreach (($data["advisories"] ?? []) as $package => $items) {
+                foreach ($items as $item) {
+                    if (in_array(strtolower((string) ($item["severity"] ?? "")), ["high", "critical"], true)) {
+                        fwrite(STDERR, "Blocking Composer advisory for {$package}.\n");
+                        exit(1);
+                    }
+                }
+            }
+          '
+
+      - name: Validate shared configuration PHP syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          find \
+            apps/web/app/Application/SystemUpdate/SharedConfiguration \
+            apps/web/app/Infrastructure/SystemUpdate/SharedConfiguration \
+            apps/web/tests/shared-runtime-configuration-boundary.php \
+            -type f -name '*.php' -print0 |
+            while IFS= read -r -d '' file; do php -l "$file"; done
+
+      - name: Prove install remains hard disabled and runtime unwired
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq "'install_enabled' => false" apps/web/config/oneqay.php
+          ! grep -Eq 'ONEQAY_SYSTEM_UPDATE_INSTALL|env\([^)]*INSTALL' apps/web/config/oneqay.php
+          grep -Fq 'requestInstall(null)' apps/web/app/Delivery/Http/SystemUpdate/SystemUpdateControlPlaneController.php
+          ! grep -Fq 'SystemUpdateSharedConfigurationActivationCoordinator' apps/web/app/Providers/SystemUpdateServiceProvider.php
+
+      - name: Enforce secret and database boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          shared_paths=(
+            apps/web/app/Application/SystemUpdate/SharedConfiguration
+            apps/web/app/Infrastructure/SystemUpdate/SharedConfiguration
+          )
+          if grep -R -n -E 'env\(|getenv\(|_ENV|_SERVER|DB_PASSWORD|DB_USERNAME|DB_DATABASE|MAIL_PASSWORD|API_TOKEN|access_token|secret_value|rawSecret' "${shared_paths[@]}"; then
+            echo 'Shared configuration boundary must not expose generic env, database credentials, tokens, or raw secret values.' >&2
+            exit 1
+          fi
+          if grep -R -n -E 'file_put_contents\([^)]*\.env|rename\([^)]*\.env|unlink\([^)]*\.env|fopen\([^)]*\.env' "${shared_paths[@]}"; then
+            echo 'Shared configuration boundary must never mutate raw .env.' >&2
+            exit 1
+          fi
+          ! grep -R -n -E 'Illuminate\\Database|Schema::|DB::|new PDO|mysqli_' "${shared_paths[@]}"
+
+      - name: Prove safe secret-reference allowlist
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq "public const APP_KEY = 'APP_KEY'" apps/web/app/Application/SystemUpdate/SharedConfiguration/SystemUpdateSecretReference.php
+          grep -Fq "shared_secret_reference_forbidden" apps/web/app/Application/SystemUpdate/SharedConfiguration/SystemUpdateSecretReference.php
+          ! grep -Eq 'DB_PASSWORD|API_TOKEN|MAIL_PASSWORD' apps/web/app/Application/SystemUpdate/SharedConfiguration/SystemUpdateSecretReference.php
+
+      - name: Run shared runtime configuration boundary regression
+        working-directory: apps/web
+        run: php tests/shared-runtime-configuration-boundary.php
+
+      - name: Preserve activation and security regressions
+        working-directory: apps/web
+        run: |
+          php tests/safe-staging-activation-health-rollback.php
+          php tests/backend-updater-control-plane.php
+          php tests/privileged-update-security.php
+
+      - name: Confirm tracked source remains unchanged
+        shell: bash
+        run: git diff --exit-code
