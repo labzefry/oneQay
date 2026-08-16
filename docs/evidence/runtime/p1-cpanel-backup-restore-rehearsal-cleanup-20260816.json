@@ -1,0 +1,50 @@
+{
+  "schema": "oneqay.m7_5.backup-restore-rehearsal-cleanup.v1",
+  "observed_at": "2026-08-16",
+  "environment": "technical-preview",
+  "runtime_class": "preview",
+  "canonical_main_after_restore_evidence_publication": "1755262a38e4637b1678cb359f3ab7a9cf73bfb4",
+  "scope": "post-backup-restore-rehearsal-secure-retirement",
+  "historical_restore_qualification": {
+    "engine_restore_verified": "VERIFIED",
+    "runtime_backup_restore": "VERIFIED",
+    "record_reconciliation": "2/2",
+    "post_restore_health": "ready"
+  },
+  "cleanup": {
+    "rehearsal_fixture_table_dropped": true,
+    "database_empty_after_fixture_retirement": true,
+    "disposable_rehearsal_database_deleted": true,
+    "post_cleanup_health": "ready",
+    "service": "oneqay-web"
+  },
+  "evaluator": {
+    "verified": 29,
+    "blocked": 0,
+    "outcome": "EVIDENCE_COMPLETE",
+    "lifecycle_authority_created": false
+  },
+  "boundaries": {
+    "production_data_used": false,
+    "permanent_business_schema_created": false,
+    "production_sla_claimed": false,
+    "m7_6_authorized": false,
+    "m7_7_authorized": false,
+    "phase_0_exit_approved": false,
+    "release_authorized": false,
+    "production_authorized": false,
+    "production_ready": false
+  },
+  "redactions": [
+    "database/account names and prefixes",
+    "database usernames/passwords",
+    "raw environment configuration and APP_KEY",
+    "cPanel account identifiers and filesystem paths",
+    "raw backup archives",
+    "raw screenshots",
+    "cookies/session identifiers",
+    "correlation identifiers",
+    "customer/BPJS/payment-provider/Production data"
+  ],
+  "attribution": "Lab | zefry"
+}
