@@ -1,5 +1,7 @@
 name: M7.5 Technical Preview Release Artifact
 
+# Attribution: Lab | zefry
+
 on:
   pull_request:
     branches:
@@ -118,6 +120,17 @@ jobs:
           php tests/identity-org-context.php
           php tests/pos-core-synthetic.php
           php tests/technical-preview-interaction.php
+          php tests/preview-background-execution.php
+
+      - name: Verify bounded Preview background commands are registered
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          php artisan list --raw > /tmp/oneqay-artisan-list.txt
+          grep -F 'oneqay:preview-queue:enqueue' /tmp/oneqay-artisan-list.txt
+          grep -F 'oneqay:preview-queue:work-one' /tmp/oneqay-artisan-list.txt
+          grep -F 'oneqay:preview-queue:status' /tmp/oneqay-artisan-list.txt
 
       - name: Package deterministic Technical Preview release
         id: package
