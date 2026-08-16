@@ -1,5 +1,19 @@
 # oneQay Tasks
 
+## Canonical program-state consolidation — 2026-08-16
+
+For current task-state interpretation, this section supersedes older current-facing M7.5/P0-TP blocker lists and evaluator counts retained below as historical task snapshots.
+
+- M7.5: **IN PROGRESS / QUALIFICATION MATERIAL PROGRESS**.
+- Canonical evaluator after PR #124: **26 VERIFIED / 3 BLOCKED**; overall **BLOCKED / INCOMPLETE**; `lifecycle_authority_created=false`.
+- Only three blockers remain: `ENGINE:RESTORE_VERIFIED:NOT_SUPPLIED`, `ENGINE:TENANT_ISOLATION:PARTIAL`, and `RUNTIME:BACKUP_RESTORE:PARTIAL`.
+- `P0-TP-002` current capability assessment must be interpreted against this 26/3 evidence state rather than the older blocker list below.
+- M7.6 and M7.7 remain **NOT AUTHORIZED**.
+- Phase 0 remains **IN PROGRESS**; Phase 0 Exit remains **NOT APPROVED**.
+- Sprint 14, Release, and Production remain **NOT AUTHORIZED**; production readiness remains **NO-GO**.
+
+Preferred next bounded work after this documentation consolidation is a fresh read-only gap analysis of `ENGINE:TENANT_ISOLATION`, followed only later by separately authorized restore/backup-restore qualification design. Historical task rows, governance recurrences, SHAs, and earlier evaluator snapshots below are preserved as provenance and must not override this consolidation.
+
 ## Status legend
 
 | Status | Meaning |
