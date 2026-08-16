@@ -1,5 +1,21 @@
 # AI Session State
 
+## Canonical program-state consolidation — 2026-08-16
+
+Canonical checkpoint date for current interpretation: **2026-08-16**. The older `Checkpoint date: 2026-08-14` and pre-M7.5-execution wording below are retained as historical session-checkpoint provenance and are superseded for current-state interpretation by this section.
+
+- M7.5: **IN PROGRESS / QUALIFICATION MATERIAL PROGRESS**.
+- Canonical evaluator after PR #124: **26 VERIFIED / 3 BLOCKED**; overall **BLOCKED / INCOMPLETE**; `lifecycle_authority_created=false`.
+- Only three blockers remain: `ENGINE:RESTORE_VERIFIED:NOT_SUPPLIED`, `ENGINE:TENANT_ISOLATION:PARTIAL`, and `RUNTIME:BACKUP_RESTORE:PARTIAL`.
+- Controls already governed as `VERIFIED` through later M7.5 publications must not be regressed by older session wording.
+- Existing bounded tenant-context/cross-tenant and relational scoping evidence does not yet complete durable database-backed tenant-isolation qualification.
+- Backup/export and application-release rollback evidence do not prove successful database restore.
+- M7.6 and M7.7 remain **NOT AUTHORIZED**.
+- Phase 0 remains **IN PROGRESS**; Phase 0 Exit remains **NOT APPROVED**.
+- Sprint 14, Release, and Production remain **NOT AUTHORIZED**; Production readiness remains **NO-GO**.
+
+This session-state consolidation changes semantic checkpoint representation only. It stores no new hard-coded SHA as permanently current GitHub state and creates no source, dependency, database, SQL, migration, schema, restore, deployment, Release, Production, or later-milestone authority.
+
 ## Identity
 
 - Project: oneQay
