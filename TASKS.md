@@ -1,5 +1,24 @@
 # oneQay Tasks
 
+## Canonical M7.5 lifecycle closure — 2026-08-17
+
+For current task-state interpretation, this section supersedes older current-facing M7.5/P0-TP blocker lists and evaluator counts retained below as historical task snapshots.
+
+- M7.5 Preview Runtime Qualification: **CLOSED / EVIDENCE_COMPLETE / PUBLISHED**.
+- Canonical evaluator after PR #129 and cleanup PR #130: **29 VERIFIED / 0 BLOCKED**; `lifecycle_authority_created=false`.
+- Mandatory M7.5 blockers: **NONE**.
+- `ENGINE:TENANT_ISOLATION`, `ENGINE:RESTORE_VERIFIED`, and `RUNTIME:BACKUP_RESTORE` are **VERIFIED** within the bounded non-Production Technical Preview evidence catalog.
+- `P0-TP-002` current capability interpretation must use the completed 29/0 M7.5 evidence state; older blocker rows below are historical snapshots only and do not authorize Phase 0 Exit or Production.
+- M7.6 and M7.7 remain **NOT AUTHORIZED**.
+- Phase 0 remains **IN PROGRESS**; Phase 0 Exit remains **NOT APPROVED**.
+- Sprint 14, Release, and Production remain **NOT AUTHORIZED**; production readiness remains **NO-GO**.
+
+Current bounded task is this canonical lifecycle-closure publication. After closure publication, the preferred next engineering direction is separately gated Secure Web Updater architecture/release-control-plane design. No updater source, workflow mutation, deployment, cPanel/database action, M7.6, or later lifecycle authority is created here.
+
+Historical task rows, governance recurrences, SHAs, and earlier evaluator snapshots below remain preserved as provenance.
+
+Attribution: **Lab | zefry**
+
 ## Canonical program-state consolidation — 2026-08-16
 
 For current task-state interpretation, this section supersedes older current-facing M7.5/P0-TP blocker lists and evaluator counts retained below as historical task snapshots.
