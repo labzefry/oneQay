@@ -1,5 +1,28 @@
 # oneQay
 
+## Canonical program-state consolidation — 2026-08-16
+
+For current M7/lifecycle interpretation, this section supersedes older current-facing wording retained below as historical checkpoint/provenance.
+
+- M7.0: **DONE / PUBLISHED**.
+- M7.1: **DONE / PUBLISHED** through PR #92.
+- M7.2: **DONE / PUBLISHED** through PR #93.
+- M7.3: **DONE / PUBLISHED** through PR #94.
+- M7.4: **DONE / PUBLISHED** through PR #96.
+- M7.4A: **DONE / PUBLISHED** through PR #98.
+- M7.5: **IN PROGRESS / QUALIFICATION MATERIAL PROGRESS**.
+- Canonical M7.5 evaluator after PR #124: **26 VERIFIED / 3 BLOCKED**.
+- M7.5 overall qualification: **BLOCKED / INCOMPLETE**.
+- Remaining blockers: `ENGINE:RESTORE_VERIFIED:NOT_SUPPLIED`, `ENGINE:TENANT_ISOLATION:PARTIAL`, and `RUNTIME:BACKUP_RESTORE:PARTIAL`.
+- `lifecycle_authority_created=false`.
+- M7.6: **NOT AUTHORIZED**.
+- M7.7: **NOT AUTHORIZED**.
+- Phase 0: **IN PROGRESS**; Phase 0 Exit: **NOT APPROVED**.
+- Sprint 14, Release, and Production: **NOT AUTHORIZED**.
+- Production readiness: **NO-GO**.
+
+Historical SHAs, PRs, evidence snapshots, and prior checkpoint wording below remain preserved and must not be reinterpreted as newer than this consolidation.
+
 > **The Future of Intelligent Business Management**
 
 **oneQay** adalah platform business management multi-tenant dengan Enterprise Vision **Enterprise Intelligent Business Management Platform** yang telah disetujui melalui GOV-051. Persetujuan visi tersebut tidak berarti seluruh capability telah diimplementasikan, disetujui untuk delivery, atau production-ready.
