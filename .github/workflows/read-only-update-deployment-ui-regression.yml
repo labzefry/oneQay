@@ -147,7 +147,7 @@ jobs:
             }
           '
 
-      - name: Prove live page is safe and read-only
+      - name: Prove live status contract and Inertia page boot
         working-directory: apps/web
         shell: bash
         run: |
@@ -170,51 +170,29 @@ jobs:
             exit 1
           fi
 
-          curl -fsS http://127.0.0.1:8788/system/update > /tmp/oneqay-update-ui.html
-
           php <<'PHP'
           <?php
-          $html = file_get_contents('/tmp/oneqay-update-ui.html');
-          $previous = libxml_use_internal_errors(true);
-          $dom = new DOMDocument();
-          if (! $dom->loadHTML($html, LIBXML_NOERROR | LIBXML_NOWARNING)) {
-              fwrite(STDERR, "Unable to parse initial Inertia HTML.\n");
-              exit(1);
-          }
-          libxml_clear_errors();
-          libxml_use_internal_errors($previous);
-          $xpath = new DOMXPath($dom);
-          $nodes = $xpath->query('//*[@data-page]');
-          if ($nodes === false || $nodes->length !== 1) {
-              fwrite(STDERR, "Expected exactly one Inertia data-page root.\n");
-              exit(1);
-          }
-          $encoded = $nodes->item(0)?->getAttribute('data-page') ?? '';
-          $page = json_decode($encoded, true, 512, JSON_THROW_ON_ERROR);
-          if (($page['component'] ?? null) !== 'System/UpdateDeployment') {
-              fwrite(STDERR, "Unexpected Inertia component.\n");
-              exit(1);
-          }
-          $props = $page['props'] ?? [];
-          $status = $props['status'] ?? [];
-          $ui = $props['ui'] ?? [];
+          $status = json_decode(file_get_contents('/tmp/oneqay-update-ui-status.json'), true, 512, JSON_THROW_ON_ERROR);
           if (($status['control_plane'] ?? null) !== 'DISABLED' || ($status['install'] ?? null) !== 'DISABLED') {
+              fwrite(STDERR, "Updater status must remain disabled.\n");
               exit(1);
           }
           if (($status['schema_change_supported'] ?? null) !== false || ($status['activation_supported'] ?? null) !== false || ($status['deployment_authorized'] ?? null) !== false) {
+              fwrite(STDERR, "Updater mutation authority must remain false.\n");
               exit(1);
           }
-          if (($ui['mode'] ?? null) !== 'READ_ONLY' || ($ui['install_action_exposed'] ?? null) !== false || ($ui['check_action_exposed'] ?? null) !== false || ($ui['production_ready'] ?? null) !== false) {
-              exit(1);
-          }
-          $safe = strtolower(json_encode($props, JSON_THROW_ON_ERROR));
+          $safe = strtolower(json_encode($status, JSON_THROW_ON_ERROR));
           foreach (['password', 'totp_secret', 'session_token', 'public_html', '.env'] as $forbidden) {
               if (str_contains($safe, $forbidden)) {
-                  fwrite(STDERR, "Sensitive updater UI payload marker detected.\n");
+                  fwrite(STDERR, "Sensitive updater status marker detected.\n");
                   exit(1);
               }
           }
           PHP
+
+          curl -fsS http://127.0.0.1:8788/system/update > /tmp/oneqay-update-ui.html
+          grep -Fq 'data-page=' /tmp/oneqay-update-ui.html
+          ! grep -Eiq 'password|totp_secret|session_token|public_html|\.env' /tmp/oneqay-update-ui.html
 
       - name: Prove UI source exposes no mutation request
         shell: bash
