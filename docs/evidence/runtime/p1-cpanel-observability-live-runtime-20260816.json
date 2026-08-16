@@ -1,0 +1,74 @@
+{
+  "schema": "oneqay.m7_5.observability-live-runtime-evidence.v1",
+  "observed_at": "2026-08-16",
+  "environment": "technical-preview",
+  "runtime_class": "preview",
+  "published_main_sha": "c7159770381e5ade7d88a00d57bd4346c9e73637",
+  "published_tree_sha": "ec506371f6b5454fc4987f8a4c35f41641356d9b",
+  "active_release_id": "m75-preview-c7159770381e",
+  "deployment_preflight": {
+    "artisan_version": "Laravel Framework 12.64.0",
+    "private_env_present": true,
+    "private_env_permission": "0600",
+    "raw_env_viewed_or_recorded": false
+  },
+  "live_verification": {
+    "technical_preview_healthy": true,
+    "runtime_class_preview_confirmed": true,
+    "synthetic_request_status": 200,
+    "synthetic_correlation_id": "oneqay-observe-c715-20260816-0253",
+    "response_correlation_id_matched": true,
+    "private_observation_log_present": true,
+    "matching_daily_log_file": "oneqay-observation-2026-08-15.log",
+    "matching_log_channel_level": "preview.INFO",
+    "matching_event_name": "oneqay.http.request",
+    "matching_metadata": {
+      "event": "http.request",
+      "correlation_id": "oneqay-observe-c715-20260816-0253",
+      "method": "GET",
+      "route": "preview.index",
+      "status": 200,
+      "duration_ms": 48.541,
+      "exception_class": null
+    },
+    "matching_line_contains_only_allowlisted_context": true,
+    "allowlisted_context_fields": [
+      "event",
+      "correlation_id",
+      "method",
+      "route",
+      "status",
+      "duration_ms",
+      "exception_class"
+    ],
+    "source_regression_rejects_sensitive_request_surfaces": true,
+    "temporary_verification_crons_removed": true
+  },
+  "privacy": {
+    "raw_browser_capture_committed": false,
+    "raw_cpanel_capture_committed": false,
+    "cookie_or_session_value_committed": false,
+    "authorization_value_committed": false,
+    "app_key_or_raw_env_committed": false,
+    "database_identity_committed": false,
+    "hosting_account_identifier_committed": false,
+    "production_or_customer_data_committed": false
+  },
+  "qualification": {
+    "control": "RUNTIME:OBSERVABILITY_LOGGING",
+    "candidate_status": "VERIFIED",
+    "prior_status": "PARTIAL",
+    "canonical_before_publication": {
+      "verified_count": 21,
+      "blocked_count": 8,
+      "outcome": "BLOCKED"
+    },
+    "proposed_after_publication": {
+      "verified_count": 22,
+      "blocked_count": 7,
+      "outcome": "BLOCKED"
+    }
+  },
+  "lifecycle_authority_created": false,
+  "attribution": "Lab | zefry"
+}
