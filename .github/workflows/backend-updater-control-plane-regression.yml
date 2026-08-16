@@ -1,0 +1,185 @@
+name: Backend Updater Control Plane Regression
+
+# Attribution: Lab | zefry
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'apps/web/app/Application/SystemUpdate/**'
+      - 'apps/web/app/Infrastructure/SystemUpdate/**'
+      - 'apps/web/app/Delivery/Http/SystemUpdate/**'
+      - 'apps/web/app/Providers/SystemUpdateServiceProvider.php'
+      - 'apps/web/bootstrap/providers.php'
+      - 'apps/web/config/oneqay.php'
+      - 'apps/web/routes/web.php'
+      - 'apps/web/tests/backend-updater-control-plane.php'
+      - '.github/workflows/backend-updater-control-plane-regression.yml'
+      - '.github/workflows/privileged-update-security-regression.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/web/app/Application/SystemUpdate/**'
+      - 'apps/web/app/Infrastructure/SystemUpdate/**'
+      - 'apps/web/app/Delivery/Http/SystemUpdate/**'
+      - 'apps/web/app/Providers/SystemUpdateServiceProvider.php'
+      - 'apps/web/bootstrap/providers.php'
+      - 'apps/web/config/oneqay.php'
+      - 'apps/web/routes/web.php'
+      - 'apps/web/tests/backend-updater-control-plane.php'
+      - '.github/workflows/backend-updater-control-plane-regression.yml'
+      - '.github/workflows/privileged-update-security-regression.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backend-updater-control-plane-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend-updater-control-plane-regression:
+    name: backend-updater-control-plane-regression
+    runs-on: ubuntu-latest
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHQ=
+      APP_DEBUG: 'false'
+      APP_URL: http://127.0.0.1:8787
+      ONEQAY_RUNTIME_CLASS: ci
+      ONEQAY_SYSTEM_UPDATE_CONTROL_PLANE_ENABLED: 'false'
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Validate PHP runtime boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          php --version
+          php -r 'if (PHP_VERSION_ID < 80200 || PHP_VERSION_ID >= 80600) { fwrite(STDERR, "Backend updater control plane requires governed PHP 8.2-8.5 compatibility.\n"); exit(1); }'
+          composer --version
+
+      - name: Preserve root Platform Foundation regression
+        run: |
+          composer validate --strict --no-check-publish
+          composer test
+
+      - name: Validate and install locked application dependencies
+        working-directory: apps/web
+        run: |
+          composer validate --no-check-publish
+          composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Reject High or Critical Composer advisories
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          composer audit --locked --format=json > /tmp/oneqay-updater-control-plane-audit.json || true
+          php -r '
+            $data = json_decode(file_get_contents("/tmp/oneqay-updater-control-plane-audit.json"), true, 512, JSON_THROW_ON_ERROR);
+            foreach (($data["advisories"] ?? []) as $package => $items) {
+                foreach ($items as $item) {
+                    if (in_array(strtolower((string) ($item["severity"] ?? "")), ["high", "critical"], true)) {
+                        fwrite(STDERR, "Blocking Composer advisory for {$package}.\n");
+                        exit(1);
+                    }
+                }
+            }
+          '
+
+      - name: Validate updater control-plane PHP syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          find \
+            apps/web/app/Application/SystemUpdate \
+            apps/web/app/Infrastructure/SystemUpdate \
+            apps/web/app/Delivery/Http/SystemUpdate \
+            apps/web/app/Providers/SystemUpdateServiceProvider.php \
+            apps/web/tests/backend-updater-control-plane.php \
+            -type f -name '*.php' -print0 |
+            while IFS= read -r -d '' file; do php -l "$file"; done
+          php -l apps/web/config/oneqay.php
+          php -l apps/web/routes/web.php
+          php -l apps/web/bootstrap/providers.php
+
+      - name: Prove install remains hard disabled
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq "'install_enabled' => false" apps/web/config/oneqay.php
+          ! grep -Eq 'ONEQAY_SYSTEM_UPDATE_INSTALL|env\([^)]*INSTALL' apps/web/config/oneqay.php
+
+      - name: Reject activation and filesystem mutation implementation
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -R -n -E 'PharData|ZipArchive|file_put_contents|rename\(|unlink\(|symlink\(|hardlink|curl_|Http::|Guzzle|shell_exec|proc_open|exec\(' \
+            apps/web/app/Application/SystemUpdate \
+            apps/web/app/Infrastructure/SystemUpdate \
+            apps/web/app/Delivery/Http/SystemUpdate \
+            --exclude-dir=Security; then
+            echo 'Backend control-plane stage must not implement download/extraction/filesystem activation.' >&2
+            exit 1
+          fi
+
+      - name: Run backend updater control-plane regression
+        working-directory: apps/web
+        run: php tests/backend-updater-control-plane.php
+
+      - name: Validate HTTP route contract and throttling
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          php artisan route:list --path=system/update --json > /tmp/oneqay-system-update-routes.json
+          php -r '
+            $routes = json_decode(file_get_contents("/tmp/oneqay-system-update-routes.json"), true, 512, JSON_THROW_ON_ERROR);
+            $names = array_column($routes, "name");
+            foreach (["system-update.status", "system-update.check", "system-update.install"] as $required) {
+                if (! in_array($required, $names, true)) { fwrite(STDERR, "Missing updater route {$required}.\n"); exit(1); }
+            }
+          '
+          grep -Fq "Route::middleware(['throttle:5,1', 'throttle:20,60'])" routes/web.php
+
+      - name: Prove default disabled response and CSRF rejection
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          php artisan serve --host=127.0.0.1 --port=8787 > /tmp/oneqay-updater-http.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 20); do
+            if curl -fsS http://127.0.0.1:8787/system/update/status > /tmp/oneqay-updater-status.json; then break; fi
+            sleep 1
+          done
+          php -r '
+            $body = json_decode(file_get_contents("/tmp/oneqay-updater-status.json"), true, 512, JSON_THROW_ON_ERROR);
+            $data = $body["data"] ?? [];
+            if (($data["control_plane"] ?? null) !== "DISABLED" || ($data["install"] ?? null) !== "DISABLED") { exit(1); }
+            if (($data["activation_supported"] ?? null) !== false || ($data["deployment_authorized"] ?? null) !== false) { exit(1); }
+          '
+          csrf_status=$(curl -sS -o /tmp/oneqay-updater-csrf.json -w '%{http_code}' -H 'Accept: application/json' -X POST http://127.0.0.1:8787/system/update/install)
+          test "$csrf_status" = '419'
+
+      - name: Confirm no CSRF exclusion for updater routes
+        shell: bash
+        run: |
+          set -euo pipefail
+          ! grep -R -n -E 'validateCsrfTokens.*system/update|system/update.*validateCsrfTokens' apps/web/bootstrap apps/web/app
+
+      - name: Confirm tracked source remains unchanged
+        shell: bash
+        run: git diff --exit-code

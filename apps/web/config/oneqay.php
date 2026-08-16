@@ -4,6 +4,18 @@ return [
     'runtime_class' => env('ONEQAY_RUNTIME_CLASS'),
 
     // Author by Lab | zefry
+    'system_update' => [
+        // Backend control-plane visibility/checking may only be enabled explicitly.
+        'control_plane_enabled' => filter_var(
+            env('ONEQAY_SYSTEM_UPDATE_CONTROL_PLANE_ENABLED', false),
+            FILTER_VALIDATE_BOOL,
+        ),
+
+        // Install/activation is intentionally hard-disabled in this milestone.
+        // A later separately authorized implementation must change source and pass security gates.
+        'install_enabled' => false,
+    ],
+
     // Technical Preview qualification only. This is not Production/business persistence.
     'preview_database_qualification' => [
         'enabled' => filter_var(env('ONEQAY_PREVIEW_DB_QUALIFICATION_ENABLED', false), FILTER_VALIDATE_BOOL),
