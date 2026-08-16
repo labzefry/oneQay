@@ -1,5 +1,23 @@
 # oneQay Security Handbook
 
+## Secure Web Updater threat-model baseline — 2026-08-17
+
+ADR-009 defines the updater/release-control-plane security architecture. The updater is treated as a high-risk remote-code/deployment surface and must remain **DISABLED** until the required privileged identity, verification, extraction, state-machine, activation, rollback, audit, and recovery controls are separately implemented and qualified.
+
+Minimum privileged mutation controls are platform superadmin capability, fresh privileged session, explicit re-authentication, verified TOTP/step-up, CSRF protection, rate limiting, operation/version confirmation, deny-by-default authorization, and sanitized immutable audit. Tenant context alone never authorizes platform release activation.
+
+The updater threat model must explicitly cover unauthorized deployment, session theft, CSRF, arbitrary source/repository/branch input, downgrade/replay, artifact tampering, SSRF/redirect abuse, archive path traversal, symlink/hardlink escape, archive bombs, disk exhaustion, forbidden secret/config overwrite, concurrent installation, stale locks, browser/request interruption, atomic-pointer failure, post-switch health failure, rollback failure, audit bypass, and secret/private-host-path leakage.
+
+Download endpoints and redirects are allowlisted to the governed canonical release source. The updater is not a generic HTTP fetcher. Extraction is isolated and fail-closed; absolute paths, `..` traversal, destination escape, symlink/hardlink escape, special files, duplicate normalized paths, unexpected `.env`/key material, unsupported entries, and excessive extraction size/count/ratio are rejected.
+
+Live `.env`, passwords, database credentials, API tokens, session tokens, TOTP secrets/codes, private account-home paths, and private backup contents must never appear in release artifacts, updater API responses, operation history, audit details, logs, screenshots, or diagnostics.
+
+Updater v1 supports **NO_SCHEMA_CHANGE** only. Database/schema migration support is a separately gated high-risk capability and database rollback must never be inferred from application release rollback.
+
+This security baseline does not authorize implementation, workflow YAML mutation, deployment, cPanel mutation, database/schema/migration work, restore execution, M7.6, M7.7, Phase 0 Exit, Sprint 14, Release, or Production. Production readiness remains **NO-GO**.
+
+Attribution: **Lab | zefry**
+
 ## Security objectives
 
 oneQay melindungi confidentiality, integrity, availability, privacy, tenant isolation, financial correctness, dan auditability. Security berlaku sepanjang design, coding, testing, deployment, operation, update, dan decommission.
