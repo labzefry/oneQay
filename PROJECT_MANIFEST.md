@@ -1,5 +1,33 @@
 # oneQay Project Manifest
 
+## Canonical M7.5 lifecycle closure — 2026-08-17
+
+For current delivery-state interpretation, this section supersedes older current-facing M7.5/P1/P2 assertions retained below as historical checkpoints and governance provenance.
+
+| Item | Canonical state |
+| --- | --- |
+| M7.0–M7.4A | **DONE / PUBLISHED** |
+| M7.5 Preview Runtime Qualification | **CLOSED / EVIDENCE_COMPLETE / PUBLISHED** |
+| M7.5 evaluator after PR #129 / cleanup PR #130 | **29 VERIFIED / 0 BLOCKED** |
+| Mandatory M7.5 blockers | **NONE** |
+| Lifecycle authority created by M7.5 evidence | `false` |
+| M7.6 | **NOT AUTHORIZED** |
+| M7.7 | **NOT AUTHORIZED** |
+| Phase 0 | **IN PROGRESS** |
+| Phase 0 Exit | **NOT APPROVED** |
+| Sprint 14 | **NOT AUTHORIZED** |
+| Release | **NOT AUTHORIZED** |
+| Production | **NOT AUTHORIZED** |
+| Production readiness | **NO-GO** |
+
+PR #129 published the final successful isolated backup/restore evidence and promoted `ENGINE:RESTORE_VERIFIED` and `RUNTIME:BACKUP_RESTORE` to `VERIFIED`. PR #130 published secure cleanup of the disposable rehearsal environment. Together with the already-published database-backed tenant-isolation evidence, M7.5 mandatory runtime/engine evidence is complete at **29 VERIFIED / 0 BLOCKED** with no remaining blocker.
+
+This closure is canonical state synchronization only. It creates no application source, test source, dependency, workflow YAML, database/schema/migration, cPanel, deployment, restore, M7.6, M7.7, Phase 0 Exit, Release, or Production authority. The next candidate engineering direction is separately gated Secure Web Updater architecture/release-control-plane work.
+
+Historical SHAs, PRs, decision records, governance recurrence evidence, and prior evaluator snapshots below remain preserved as provenance.
+
+Attribution: **Lab | zefry**
+
 ## Canonical program-state consolidation — 2026-08-16
 
 For current delivery-state interpretation, this section supersedes older current-facing M7.5/P1/P2 assertions retained below as historical checkpoints and governance provenance.
