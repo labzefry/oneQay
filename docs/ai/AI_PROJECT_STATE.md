@@ -1,5 +1,21 @@
 # AI Project State
 
+## Canonical program-state consolidation — 2026-08-16
+
+For current project-state interpretation, this section supersedes older current-facing M7.5/P1/P2 assertions below while preserving all historical publication and decision provenance.
+
+- M7.5: **IN PROGRESS / QUALIFICATION MATERIAL PROGRESS**.
+- Canonical evaluator after PR #124: **26 VERIFIED / 3 BLOCKED**; overall qualification **BLOCKED / INCOMPLETE**; `lifecycle_authority_created=false`.
+- Only three blockers remain: `ENGINE:RESTORE_VERIFIED:NOT_SUPPLIED`, `ENGINE:TENANT_ISOLATION:PARTIAL`, and `RUNTIME:BACKUP_RESTORE:PARTIAL`.
+- Bounded P1/cPanel Technical Preview evidence materially verifies the web/runtime, relational, security, observability, resource, scheduler, rollback/deployment-recovery, background-execution, and Preview queue controls already governed as `VERIFIED`; older snapshots below must not regress them.
+- Existing application-level and bounded relational tenant-scoping evidence remains material, but complete durable database-backed tenant-isolation semantics are not yet proven.
+- Backup/export evidence and application-release rollback evidence do not prove successful database restore.
+- M7.6 and M7.7 remain **NOT AUTHORIZED**.
+- Phase 0 remains **IN PROGRESS**; Phase 0 Exit remains **NOT APPROVED**.
+- Sprint 14, Release, and Production remain **NOT AUTHORIZED**; Production readiness remains **NO-GO**.
+
+This is a semantic state consolidation only. It does not store a new hard-coded SHA as permanently current GitHub state and creates no application source, dependency, database, schema, SQL, migration, restore, deployment, Release, Production, or later-milestone authority.
+
 ## Project identity
 
 - Project: oneQay
