@@ -53,7 +53,7 @@ $removeTree = static function (string $path) use (&$removeTree): void {
 $identity = static function (string $hex, string $digest): SystemUpdateReleaseIdentity {
     $source = str_repeat($hex, 40);
     return new SystemUpdateReleaseIdentity(
-        'm76-preview-'.substr($source, 0, 12),
+        'm75-preview-'.substr($source, 0, 12),
         $source,
         str_repeat($digest, 64),
     );
