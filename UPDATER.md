@@ -1,5 +1,21 @@
 # oneQay Auto Updater Specification
 
+## Secure Web Updater architecture foundation — 2026-08-17
+
+ADR-009 is the authoritative architecture contract for the future Secure Web Updater and release control plane.
+
+The selected model is **governed immutable release artifact + private active-release pointer**, not direct live overwrite and not runtime `git pull`/Composer/npm build. The initial trusted source is restricted to the canonical `labzefry/oneQay` release identity and approved immutable release assets. Arbitrary URL, arbitrary repository, arbitrary branch, and user-supplied artifact source are prohibited.
+
+Updater execution must use a persisted operation state machine and global deployment lock so correctness does not depend on one browser request remaining connected. Releases are staged into isolated private directories, become immutable after staging/activation, and are activated only by an atomic/equivalently recoverable pointer update. A stable public bootstrap resolves the private active release. Post-switch `/health/ready` failure requires automatic application-pointer rollback to the previous stable release when compatible.
+
+Updater v1 is explicitly **NO_SCHEMA_CHANGE**. A manifest declaring database/schema migration must fail closed until a separate migration-safe updater decision and authority exist. Database rollback must never be inferred from application release rollback.
+
+Install-changing actions are platform-scoped privileged operations requiring authenticated superadmin capability, fresh privileged session, explicit re-authentication, verified TOTP/step-up, CSRF protection, rate limiting, and sanitized audit. Tenant context alone does not grant updater authority.
+
+The updater feature flag defaults to **DISABLED**. This architecture publication does not authorize updater implementation, workflow YAML changes, artifact publication changes, cPanel mutation, deployment, database/schema/migration work, restore execution, M7.6, M7.7, Phase 0 Exit, Sprint 14, Release, or Production. Production readiness remains **NO-GO**.
+
+Attribution: **Lab | zefry**
+
 ## Purpose
 
 Auto Updater memperbarui oneQay melalui release resmi dengan compatibility check, backup, integrity verification, maintenance/rollout control, migration, health verification, audit, dan recovery.
