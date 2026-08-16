@@ -1,0 +1,75 @@
+{
+  "schema": "oneqay.m7_5.rollback-deployment-recovery-live-runtime-evidence.v1",
+  "observed_at": "2026-08-16",
+  "environment": "technical-preview",
+  "canonical_main_sha": "de859fa310af7e14f58a8f891171784b92163814",
+  "canonical_main_tree_sha": "3e01b900a8afcdacd3d1235e52d7cfae3db89650",
+  "runtime_release_before_rehearsal": "m75-preview-c7159770381e",
+  "rollback_target_release": "m75-preview-c9d2d45c4c11",
+  "runtime_release_after_rehearsal": "m75-preview-c7159770381e",
+  "rehearsal": {
+    "initial_pointer_verified": true,
+    "rollback_pointer_switch_saved": true,
+    "rollback_preview_surface_healthy": true,
+    "rollback_readiness_status": "ready",
+    "rollback_readiness_service": "oneqay-web",
+    "forward_recovery_pointer_switch_saved": true,
+    "forward_recovery_preview_surface_healthy": true,
+    "forward_recovery_readiness_status": "ready",
+    "forward_recovery_readiness_service": "oneqay-web",
+    "final_pointer_restored_to_initial_release": true,
+    "previous_release_retained": true,
+    "hosting_managed_htaccess_changed": false,
+    "runtime_env_opened_or_edited": false,
+    "database_action_performed": false,
+    "migration_or_schema_action_performed": false,
+    "queue_action_performed": false,
+    "restore_action_performed": false,
+    "cleanup_action_performed": false,
+    "production_action_performed": false
+  },
+  "evidence_handling": {
+    "raw_browser_screenshot_committed": false,
+    "raw_cpanel_screenshot_committed": false,
+    "hosting_account_identifier_committed": false,
+    "readiness_correlation_id_committed": false,
+    "cookie_or_session_value_committed": false,
+    "credential_or_token_committed": false,
+    "raw_env_or_app_key_committed": false,
+    "database_identity_committed": false,
+    "customer_or_production_data_committed": false
+  },
+  "qualification": {
+    "promotions": [
+      {
+        "control": "RUNTIME:DEPLOYMENT_RECOVERY",
+        "prior_status": "PARTIAL",
+        "candidate_status": "VERIFIED"
+      },
+      {
+        "control": "RUNTIME:ROLLBACK",
+        "prior_status": "NOT_SUPPLIED",
+        "candidate_status": "VERIFIED"
+      }
+    ],
+    "canonical_before_publication": {
+      "verified_count": 22,
+      "blocked_count": 7,
+      "outcome": "BLOCKED"
+    },
+    "proposed_after_publication": {
+      "verified_count": 24,
+      "blocked_count": 5,
+      "outcome": "BLOCKED"
+    }
+  },
+  "scope_limits": {
+    "qualification_applies_only_to_this_non_production_release_pair_and_rehearsal": true,
+    "production_rollback_claimed": false,
+    "database_restore_claimed": false,
+    "backup_restore_claimed": false,
+    "schema_compatibility_beyond_this_no_schema_change_rehearsal_claimed": false
+  },
+  "lifecycle_authority_created": false,
+  "attribution": "Lab | zefry"
+}
