@@ -1,0 +1,208 @@
+name: Read-Only Update Deployment UI Regression
+
+# Attribution: Lab | zefry
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'apps/web/app/Application/SystemUpdate/SystemUpdateControlPlaneStatus.php'
+      - 'apps/web/app/Delivery/Http/SystemUpdate/SystemUpdatePageController.php'
+      - 'apps/web/resources/js/pages/System/UpdateDeployment.vue'
+      - 'apps/web/routes/web.php'
+      - 'apps/web/config/oneqay.php'
+      - 'apps/web/tests/read-only-update-deployment-ui.php'
+      - '.github/workflows/read-only-update-deployment-ui-regression.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/web/app/Application/SystemUpdate/SystemUpdateControlPlaneStatus.php'
+      - 'apps/web/app/Delivery/Http/SystemUpdate/SystemUpdatePageController.php'
+      - 'apps/web/resources/js/pages/System/UpdateDeployment.vue'
+      - 'apps/web/routes/web.php'
+      - 'apps/web/config/oneqay.php'
+      - 'apps/web/tests/read-only-update-deployment-ui.php'
+      - '.github/workflows/read-only-update-deployment-ui-regression.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: read-only-update-deployment-ui-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  read-only-update-deployment-ui-regression:
+    name: read-only-update-deployment-ui-regression
+    runs-on: ubuntu-latest
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHQ=
+      APP_DEBUG: 'false'
+      APP_URL: http://127.0.0.1:8788
+      ONEQAY_RUNTIME_CLASS: ci
+      ONEQAY_SYSTEM_UPDATE_CONTROL_PLANE_ENABLED: 'false'
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Validate PHP runtime boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          php --version
+          php -r 'if (PHP_VERSION_ID < 80200 || PHP_VERSION_ID >= 80600) { fwrite(STDERR, "Read-only updater UI requires governed PHP 8.2-8.5 compatibility.\n"); exit(1); }'
+          composer --version
+
+      - name: Preserve root Platform Foundation regression
+        run: |
+          composer validate --strict --no-check-publish
+          composer test
+
+      - name: Setup exact Node LTS
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: 24.19.0
+
+      - name: Require deterministic dependency locks
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f apps/web/composer.lock
+          test -f apps/web/package-lock.json
+
+      - name: Validate and install locked application dependencies
+        working-directory: apps/web
+        run: |
+          composer validate --no-check-publish
+          composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Reject High or Critical Composer advisories
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          composer audit --locked --format=json > /tmp/oneqay-update-ui-composer-audit.json || true
+          php -r '
+            $data = json_decode(file_get_contents("/tmp/oneqay-update-ui-composer-audit.json"), true, 512, JSON_THROW_ON_ERROR);
+            foreach (($data["advisories"] ?? []) as $package => $items) {
+                foreach ($items as $item) {
+                    if (in_array(strtolower((string) ($item["severity"] ?? "")), ["high", "critical"], true)) {
+                        fwrite(STDERR, "Blocking Composer advisory for {$package}.\n");
+                        exit(1);
+                    }
+                }
+            }
+          '
+
+      - name: Validate updater UI PHP syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l apps/web/app/Delivery/Http/SystemUpdate/SystemUpdatePageController.php
+          php -l apps/web/tests/read-only-update-deployment-ui.php
+          php -l apps/web/routes/web.php
+          php -l apps/web/config/oneqay.php
+
+      - name: Run read-only UI boundary regression
+        working-directory: apps/web
+        run: php tests/read-only-update-deployment-ui.php
+
+      - name: Install locked frontend dependencies
+        working-directory: apps/web
+        run: npm ci --ignore-scripts --no-fund
+
+      - name: Reject High or Critical npm advisories
+        working-directory: apps/web
+        run: npm audit --audit-level=high
+
+      - name: Type-check Vue and TypeScript
+        working-directory: apps/web
+        run: npm run type-check
+
+      - name: Build Vite assets
+        working-directory: apps/web
+        run: npm run build
+
+      - name: Validate read-only route registration
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          php artisan route:list --path=system/update --json > /tmp/oneqay-update-ui-routes.json
+          php -r '
+            $routes = json_decode(file_get_contents("/tmp/oneqay-update-ui-routes.json"), true, 512, JSON_THROW_ON_ERROR);
+            $names = array_column($routes, "name");
+            foreach (["system-update.page", "system-update.status", "system-update.check", "system-update.install"] as $required) {
+                if (! in_array($required, $names, true)) { fwrite(STDERR, "Missing updater route {$required}.\n"); exit(1); }
+            }
+          '
+
+      - name: Prove live status contract and Inertia page boot
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          php artisan serve --host=127.0.0.1 --port=8788 > /tmp/oneqay-update-ui-http.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+
+          ready=false
+          for attempt in $(seq 1 20); do
+            if curl -fsS http://127.0.0.1:8788/system/update/status > /tmp/oneqay-update-ui-status.json; then
+              ready=true
+              break
+            fi
+            sleep 1
+          done
+
+          if [ "$ready" != 'true' ]; then
+            cat /tmp/oneqay-update-ui-http.log >&2 || true
+            exit 1
+          fi
+
+          php <<'PHP'
+          <?php
+          $payload = json_decode(file_get_contents('/tmp/oneqay-update-ui-status.json'), true, 512, JSON_THROW_ON_ERROR);
+          $status = $payload['data'] ?? [];
+          if (($status['control_plane'] ?? null) !== 'DISABLED' || ($status['install'] ?? null) !== 'DISABLED') {
+              fwrite(STDERR, "Updater status must remain disabled.\n");
+              exit(1);
+          }
+          if (($status['schema_change_supported'] ?? null) !== false || ($status['activation_supported'] ?? null) !== false || ($status['deployment_authorized'] ?? null) !== false) {
+              fwrite(STDERR, "Updater mutation authority must remain false.\n");
+              exit(1);
+          }
+          $safe = strtolower(json_encode($status, JSON_THROW_ON_ERROR));
+          foreach (['password', 'totp_secret', 'session_token', 'public_html', '.env'] as $forbidden) {
+              if (str_contains($safe, $forbidden)) {
+                  fwrite(STDERR, "Sensitive updater status marker detected.\n");
+                  exit(1);
+              }
+          }
+          PHP
+
+          curl -fsS http://127.0.0.1:8788/system/update > /tmp/oneqay-update-ui.html
+          grep -Fq 'data-page=' /tmp/oneqay-update-ui.html
+          ! grep -Eiq 'password|totp_secret|session_token|public_html|\.env' /tmp/oneqay-update-ui.html
+
+      - name: Prove UI source exposes no mutation request
+        shell: bash
+        run: |
+          set -euo pipefail
+          ui=apps/web/resources/js/pages/System/UpdateDeployment.vue
+          ! grep -n -E 'useForm\(|axios|fetch\(|@click|<form|\.post\(|\.put\(|\.patch\(|\.delete\(|/system/update/(check|install)' "$ui"
+          test "$(grep -c 'disabled' "$ui")" -ge 2
+
+      - name: Confirm tracked source remains unchanged
+        shell: bash
+        run: git diff --exit-code

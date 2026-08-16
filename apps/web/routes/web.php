@@ -2,6 +2,7 @@
 
 use App\Delivery\Http\HealthController;
 use App\Delivery\Http\SystemUpdate\SystemUpdateControlPlaneController;
+use App\Delivery\Http\SystemUpdate\SystemUpdatePageController;
 use App\Delivery\Preview\TechnicalPreviewController;
 use App\Delivery\Preview\TechnicalPreviewDatabaseQualificationController;
 use Illuminate\Support\Facades\Route;
@@ -15,6 +16,8 @@ Route::get('/', static fn () => Inertia::render('Foundation', [
 ]))->name('foundation');
 
 // Author by Lab | zefry
+Route::get('/system/update', SystemUpdatePageController::class)->name('system-update.page');
+
 Route::prefix('system/update')->controller(SystemUpdateControlPlaneController::class)->group(function (): void {
     Route::get('/status', 'status')->name('system-update.status');
 
