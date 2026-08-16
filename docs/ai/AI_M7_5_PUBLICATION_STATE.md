@@ -1,5 +1,43 @@
 # AI M7.5 Publication State
 
+## Canonical lifecycle closure — after PR #130
+
+This section is the current canonical M7.5 publication layer and supersedes every earlier `current`, `remaining blockers`, evaluator-count, and next-work assertion below where those statements describe an older M7.5 evidence snapshot. Older sections remain intentionally preserved as historical publication provenance.
+
+Canonical governed state after PR #129 and cleanup PR #130:
+
+- M7.5 Preview Runtime Qualification: **CLOSED / EVIDENCE_COMPLETE / PUBLISHED**;
+- verified mandatory controls: **29**;
+- blocking mandatory controls: **0**;
+- complete evaluator outcome: **EVIDENCE_COMPLETE**;
+- `lifecycle_authority_created=false`.
+
+The final governed evidence sequence is:
+
+- PR #127: database-backed two-tenant negative-isolation evidence published; `ENGINE:TENANT_ISOLATION = VERIFIED`;
+- PR #128: tenant-isolation qualification environment securely retired without regressing evidence;
+- PR #129: isolated backup/restore rehearsal evidence published; `ENGINE:RESTORE_VERIFIED = VERIFIED` and `RUNTIME:BACKUP_RESTORE = VERIFIED`, producing **29 VERIFIED / 0 BLOCKED**;
+- PR #130: disposable backup/restore rehearsal environment securely retired; evaluator remains **29 VERIFIED / 0 BLOCKED / EVIDENCE_COMPLETE**.
+
+No mandatory M7.5 runtime/engine blocker remains. Exact numerical Production RPO/RTO, Production SLA, and general Production disaster-recovery maturity are not claimed by this bounded Technical Preview evidence.
+
+Lifecycle remains:
+
+- M7.0–M7.4A: **DONE / PUBLISHED**;
+- M7.5: **CLOSED / EVIDENCE_COMPLETE / PUBLISHED**;
+- M7.6: **NOT AUTHORIZED**;
+- M7.7: **NOT AUTHORIZED**;
+- Phase 0: **IN PROGRESS**;
+- Phase 0 Exit: **NOT APPROVED**;
+- Sprint 14: **NOT AUTHORIZED**;
+- Release: **NOT AUTHORIZED**;
+- Production: **NOT AUTHORIZED**;
+- Production readiness: **NO-GO**.
+
+The next candidate engineering direction after this closure is the separately gated Secure Web Updater architecture/release-control-plane foundation. This state record creates no updater source, workflow YAML, database/schema/migration, cPanel, deployment, restore, M7.6, M7.7, Release, or Production authority.
+
+Attribution: **Lab | zefry**
+
 ## Periodic canonical consolidation — after PR #124
 
 This section is the current periodic consolidation layer and supersedes every earlier `current`, `remaining blockers`, evaluator-count, and next-work assertion below where those statements describe an older M7.5 evidence snapshot. The older sections remain intentionally preserved as historical publication provenance.

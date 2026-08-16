@@ -1,5 +1,17 @@
 # Workflow Directory
 
+## Canonical M7.5 lifecycle closure — 2026-08-17
+
+For current workflow/lifecycle interpretation, this section supersedes the older current-facing M7.5 consolidation retained below as historical control-plane provenance.
+
+M7.5 mandatory runtime/engine evidence is now **CLOSED / EVIDENCE_COMPLETE / PUBLISHED** with **29 VERIFIED / 0 BLOCKED** after PR #129, with secure rehearsal cleanup published through PR #130. `lifecycle_authority_created=false` remains true for the evidence package.
+
+The existing bounded M7.5 workflow mechanisms remain historical/current technical mechanisms only. This closure changes no workflow YAML, protected status-check producer, ruleset, deployment mechanism, or merge authority. It does not authorize M7.6, M7.7, Phase 0 Exit, Sprint 14, Release, Production, database/schema/migration, restore, cPanel mutation, or deployment.
+
+The next candidate engineering direction is separately gated Secure Web Updater architecture/release-control-plane work. Any workflow expansion for that capability requires separate authority.
+
+Attribution: **Lab | zefry**
+
 ## Canonical program-state consolidation — 2026-08-16
 
 For current workflow-directory interpretation, this section supersedes older statements below that stop at M7.4A or describe all `M7.5+` workflow activity as future/nonexistent. Those statements are retained as historical control-plane provenance.

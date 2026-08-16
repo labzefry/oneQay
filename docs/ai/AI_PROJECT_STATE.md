@@ -1,5 +1,22 @@
 # AI Project State
 
+## Canonical M7.5 lifecycle closure — 2026-08-17
+
+For current project-state interpretation, this section supersedes older current-facing M7.5/P1/P2 assertions below while preserving all historical publication and decision provenance.
+
+- M7.5 Preview Runtime Qualification: **CLOSED / EVIDENCE_COMPLETE / PUBLISHED**.
+- Canonical evaluator after PR #129 and cleanup PR #130: **29 VERIFIED / 0 BLOCKED**; `lifecycle_authority_created=false`.
+- Mandatory M7.5 blockers: **NONE**.
+- `ENGINE:TENANT_ISOLATION`, `ENGINE:RESTORE_VERIFIED`, and `RUNTIME:BACKUP_RESTORE` are **VERIFIED** within the bounded non-Production Technical Preview evidence catalog.
+- M7.6 and M7.7 remain **NOT AUTHORIZED**.
+- Phase 0 remains **IN PROGRESS**; Phase 0 Exit remains **NOT APPROVED**.
+- Sprint 14, Release, and Production remain **NOT AUTHORIZED**; Production readiness remains **NO-GO**.
+- The next candidate engineering direction is separately gated Secure Web Updater architecture/release-control-plane foundation.
+
+This is semantic state consolidation only. It creates no application source, dependency, workflow YAML, database/schema/SQL/migration, cPanel, deployment, restore, Release, Production, or later-milestone authority.
+
+Attribution: **Lab | zefry**
+
 ## Canonical program-state consolidation — 2026-08-16
 
 For current project-state interpretation, this section supersedes older current-facing M7.5/P1/P2 assertions below while preserving all historical publication and decision provenance.

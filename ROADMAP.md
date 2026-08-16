@@ -1,5 +1,24 @@
 # oneQay Roadmap
 
+## Canonical M7.5 lifecycle closure — 2026-08-17
+
+For current roadmap interpretation, this section supersedes older current-facing M7.5 wording retained below as historical planning/provenance.
+
+- M7.0–M7.4A: **DONE / PUBLISHED**.
+- M7.5 Preview Runtime Qualification: **CLOSED / EVIDENCE_COMPLETE / PUBLISHED**.
+- Canonical evaluator after PR #129 and cleanup PR #130: **29 VERIFIED / 0 BLOCKED**; `lifecycle_authority_created=false`.
+- Mandatory M7.5 blockers: **NONE**.
+- M7.6 and M7.7: **NOT AUTHORIZED**.
+- Phase 0: **IN PROGRESS**; Phase 0 Exit: **NOT APPROVED**.
+- Sprint 14, Release, and Production: **NOT AUTHORIZED**.
+- Production readiness: **NO-GO**.
+
+The preferred next bounded engineering direction after this closure is the separately gated **Secure Web Updater architecture foundation / release control plane**. Architecture and design may proceed only under the relevant authority; this closure does not authorize updater source implementation, workflow mutation, deployment, cPanel/database action, M7.6, or any later lifecycle stage.
+
+Historical roadmap language, SHAs, PRs, and evidence snapshots below remain preserved as provenance.
+
+Attribution: **Lab | zefry**
+
 ## Canonical program-state consolidation — 2026-08-16
 
 For current roadmap interpretation, this section supersedes older current-facing M7.5 wording retained below as historical planning/provenance.

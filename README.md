@@ -1,5 +1,26 @@
 # oneQay
 
+## Canonical M7.5 lifecycle closure — 2026-08-17
+
+For current M7/lifecycle interpretation, this section supersedes the older current-facing consolidation retained below as historical checkpoint/provenance.
+
+- M7.0–M7.4A: **DONE / PUBLISHED**.
+- M7.5 Preview Runtime Qualification: **CLOSED / EVIDENCE_COMPLETE / PUBLISHED**.
+- Canonical M7.5 evaluator after PR #129 and cleanup publication PR #130: **29 VERIFIED / 0 BLOCKED**.
+- `lifecycle_authority_created=false` remains true for the M7.5 evidence package; this documentation closure does not authorize any later lifecycle stage.
+- `ENGINE:TENANT_ISOLATION`, `ENGINE:RESTORE_VERIFIED`, and `RUNTIME:BACKUP_RESTORE` are **VERIFIED** within the bounded non-Production Technical Preview evidence catalog.
+- M7.6: **NOT AUTHORIZED**.
+- M7.7: **NOT AUTHORIZED**.
+- Phase 0: **IN PROGRESS**; Phase 0 Exit: **NOT APPROVED**.
+- Sprint 14, Release, and Production: **NOT AUTHORIZED**.
+- Production readiness: **NO-GO**.
+
+The next engineering direction after this closure is the separately gated Secure Web Updater architecture foundation and release-control-plane design. No source, workflow, deployment, cPanel, database/schema/migration, restore, M7.6, M7.7, Release, or Production authority is created by this closure.
+
+Historical SHAs, PRs, evidence snapshots, and prior checkpoint wording below remain preserved and must be interpreted as historical where superseded by this closure.
+
+Attribution: **Lab | zefry**
+
 ## Canonical program-state consolidation — 2026-08-16
 
 For current M7/lifecycle interpretation, this section supersedes older current-facing wording retained below as historical checkpoint/provenance.

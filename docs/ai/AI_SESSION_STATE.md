@@ -1,5 +1,19 @@
 # AI Session State
 
+## Canonical M7.5 lifecycle closure handoff — 2026-08-17
+
+- Repository: `labzefry/oneQay`.
+- Authorized baseline for this bounded closure: main `2054402ea3769d5c852d7a17ab6b0a64b8f21155`, tree `f95cee634f11077038e69fcbed9d65b4a19965ce`.
+- M7.5 Preview Runtime Qualification: **CLOSED / EVIDENCE_COMPLETE / PUBLISHED** for current canonical state interpretation.
+- Canonical evaluator: **29 VERIFIED / 0 BLOCKED**; `lifecycle_authority_created=false`.
+- Current bounded session work: documentation-only M7.5 canonical lifecycle closure on branch `agent/m75-canonical-lifecycle-closure-20260817`, targeting one Draft PR only.
+- No Ready or Merge authority is stored in this checkpoint.
+- M7.6, M7.7, Phase 0 Exit, Sprint 14, Release, and Production remain **NOT AUTHORIZED**; Production readiness remains **NO-GO**.
+- After closure publication, the next candidate direction is separately gated read-only/architecture foundation work for the Secure Web Updater / release control plane.
+- No updater source, workflow YAML, database/schema/migration, cPanel, deployment, restore, or later-lifecycle authority is created here.
+
+Attribution: **Lab | zefry**
+
 ## Canonical program-state consolidation — 2026-08-16
 
 Canonical checkpoint date for current interpretation: **2026-08-16**. The older `Checkpoint date: 2026-08-14` and pre-M7.5-execution wording below are retained as historical session-checkpoint provenance and are superseded for current-state interpretation by this section.

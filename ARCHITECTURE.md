@@ -1,5 +1,22 @@
 # oneQay Architecture
 
+## Canonical M7.5 lifecycle closure — 2026-08-17
+
+For current architecture/runtime-state interpretation, this section supersedes the older current-facing consolidation retained below as historical planning/checkpoint text.
+
+- M7.5 Preview Runtime Qualification is **CLOSED / EVIDENCE_COMPLETE / PUBLISHED**.
+- The governed mandatory evaluator is **29 VERIFIED / 0 BLOCKED** after PR #129; PR #130 publishes secure cleanup without changing the evaluator.
+- `ENGINE:TENANT_ISOLATION`, `ENGINE:RESTORE_VERIFIED`, and `RUNTIME:BACKUP_RESTORE` are **VERIFIED** within the bounded non-Production Technical Preview evidence catalog.
+- The closure does not convert bounded Technical Preview qualification into Production infrastructure capability or Production recoverability.
+- `lifecycle_authority_created=false` remains true for the M7.5 evidence package.
+- M7.6, M7.7, Phase 0 Exit, Sprint 14, Release, and Production remain **NOT AUTHORIZED**; production readiness remains **NO-GO**.
+
+The next candidate architecture workstream is a separately gated Secure Web Updater / release control plane that reuses existing updater, release, deployment, identity, configuration, health, and artifact foundations. No implementation, workflow, deployment, cPanel, database/schema/migration, restore, or later-lifecycle authority is created by this documentation closure.
+
+Historical DEC-005R, DEC-009, architecture decisions, SHAs/PRs, and earlier M7.5 checkpoints below remain preserved.
+
+Attribution: **Lab | zefry**
+
 ## Canonical program-state consolidation — 2026-08-16
 
 For current architecture/runtime-state interpretation, this section supersedes older M7.5 and P1/P2 current-facing wording retained below as historical planning/checkpoint text.

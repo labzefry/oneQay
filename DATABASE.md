@@ -1,5 +1,23 @@
 # oneQay Database Handbook
 
+## Canonical M7.5 lifecycle closure — 2026-08-17
+
+For current database/runtime interpretation, this section supersedes the older current-facing M7.5 consolidation retained below as historical architecture/checkpoint text.
+
+The bounded non-Production Technical Preview database qualification is now **CLOSED / EVIDENCE_COMPLETE / PUBLISHED**. The mandatory evaluator is **29 VERIFIED / 0 BLOCKED** after PR #129, and PR #130 records secure retirement of the disposable restore-rehearsal database without changing that evaluator.
+
+Current bounded evidence therefore includes verified application connectivity, least privilege, transaction semantics, migration boundary, connection/resource visibility, Database Portability Contract conformance, database-backed tenant isolation, and successful isolated backup/restore rehearsal. Specifically:
+
+- `ENGINE:TENANT_ISOLATION = VERIFIED`;
+- `ENGINE:RESTORE_VERIFIED = VERIFIED`;
+- `RUNTIME:BACKUP_RESTORE = VERIFIED`.
+
+These Technical Preview facts do **not** establish a permanent Production business schema, Production disaster-recovery SLA, tenant-selective Production restore capability, general Production readiness, or permission to execute new database/schema/migration work. Exact numerical Production RPO/RTO remain outside this evidence claim.
+
+`lifecycle_authority_created=false` remains true for the M7.5 evidence package. M7.6, M7.7, Phase 0 Exit, Sprint 14, Release, and Production remain separately gated and **NOT AUTHORIZED**; production readiness remains **NO-GO**.
+
+Attribution: **Lab | zefry**
+
 ## Canonical program-state consolidation — 2026-08-16
 
 For current database/runtime interpretation, this section supersedes older M7.5 qualification wording retained below as historical architecture/checkpoint text.

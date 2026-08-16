@@ -1,5 +1,23 @@
 # AI Next Task
 
+## Canonical M7.5 lifecycle closure — 2026-08-17
+
+For current next-work and lifecycle interpretation, this section supersedes older current-facing M7.5 gate/next-task wording retained below as historical checkpoint provenance.
+
+- M7.5 Preview Runtime Qualification: **CLOSED / EVIDENCE_COMPLETE / PUBLISHED**.
+- Canonical evaluator after PR #129 and cleanup PR #130: **29 VERIFIED / 0 BLOCKED**; `lifecycle_authority_created=false`.
+- Mandatory M7.5 blockers: **NONE**.
+- Current bounded work is publication of this **M7.5 Closure / Canonical Lifecycle Reconciliation** documentation-only Draft PR.
+- After this closure is published, the preferred next engineering activity is a **minimum read-only Secure Web Updater architecture-foundation inspection/design**, reusing existing updater/release/deployment/artifact/security foundations and defining the exact bounded implementation gate before any source mutation.
+- No updater source, workflow YAML, database/schema/migration, cPanel, deployment, restore, M7.6, M7.7, Phase 0 Exit, Release, or Production authority is created by this checkpoint.
+- M7.6 and M7.7 remain **NOT AUTHORIZED**.
+- Phase 0 remains **IN PROGRESS**; Phase 0 Exit remains **NOT APPROVED**.
+- Sprint 14, Release, and Production remain **NOT AUTHORIZED**; Production readiness remains **NO-GO**.
+
+This checkpoint does not store a new hard-coded SHA as permanently current GitHub state. Fresh Minimal Delta Verification remains mandatory before any future branch or lifecycle mutation.
+
+Attribution: **Lab | zefry**
+
 ## Canonical program-state consolidation — 2026-08-16
 
 For current next-work and lifecycle interpretation, this section supersedes older current-facing M7.5 gate/next-task wording retained below as historical checkpoint provenance.

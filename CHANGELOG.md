@@ -1,5 +1,17 @@
 # Changelog
 
+## Canonical M7.5 lifecycle closure — 2026-08-17
+
+The current `[Unreleased]` program state now includes the governed M7.5 publication/evidence sequence through PR #130. PR #127 published database-backed tenant-isolation qualification, PR #128 published its secure cleanup, PR #129 published the final isolated backup/restore evidence and promoted the last two mandatory controls, and PR #130 published secure cleanup of the disposable restore-rehearsal environment.
+
+Canonical M7.5 evaluator: **29 VERIFIED / 0 BLOCKED**, outcome **EVIDENCE_COMPLETE**, with `lifecycle_authority_created=false`. M7.5 Preview Runtime Qualification is therefore **CLOSED / EVIDENCE_COMPLETE / PUBLISHED** for current program-state interpretation.
+
+This closure is documentation/current-state reconciliation only. It is not a product release and creates no application source, workflow YAML, database/schema/migration, cPanel, deployment, restore, M7.6, M7.7, Phase 0 Exit, Sprint 14, Release, or Production authority. Production readiness remains **NO-GO**. The next candidate engineering direction is separately gated Secure Web Updater architecture/release-control-plane work.
+
+Historical `[Unreleased]` entries and earlier evaluator snapshots below remain preserved as publication and governance provenance.
+
+Attribution: **Lab | zefry**
+
 ## Canonical M7.5 consolidation — 2026-08-16
 
 The current `[Unreleased]` program state includes the governed M7.5 publication/evidence sequence through PR #124. In aggregate, PR #102–#124 established the fail-closed qualification harness, governed Technical Preview release-artifact path, live cPanel web-runtime evidence, bounded MariaDB relational qualification and retirement, PHP CLI/scheduler evidence, connection/resource visibility, outbound DNS/HTTPS, environment-secret and security-boundary hardening/evidence, Database Portability Contract conformance, safe observability, bounded application rollback/deployment recovery, and short-lived Preview background/queue execution.
