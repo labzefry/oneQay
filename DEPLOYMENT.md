@@ -1,5 +1,21 @@
 # oneQay Deployment Handbook
 
+## Canonical M7.5 lifecycle closure — 2026-08-17
+
+For current Preview/runtime interpretation, this section supersedes the older current-facing M7.5 consolidation retained below as historical planning and pre-qualification state.
+
+The bounded non-Production Technical Preview runtime qualification is now **CLOSED / EVIDENCE_COMPLETE / PUBLISHED** with **29 VERIFIED / 0 BLOCKED**. PR #129 published the final restore and backup/restore evidence; PR #130 published secure retirement of the disposable rehearsal environment without changing the evaluator.
+
+The M7.5 evidence package verifies the bounded runtime, database connectivity/least privilege/transaction/migration boundary, connection/resource visibility, outbound DNS/HTTPS, environment-secret isolation, security boundary, Database Portability Contract conformance, observability logging, PHP CLI, scheduler/cron, rollback/deployment recovery, background/queue execution, database-backed tenant isolation, and isolated backup/restore rehearsal needed by the M7.5 mandatory catalog.
+
+This closure does **not** authorize a new deployment or upgrade runtime. It does not create Production recoverability, universal migration rollback safety, Production Release authority, M7.6 authority, or Production readiness. `lifecycle_authority_created=false` remains true for the M7.5 evidence package.
+
+M7.6, M7.7, Phase 0 Exit, Sprint 14, Release, and Production remain **NOT AUTHORIZED**; production readiness remains **NO-GO**.
+
+The next candidate engineering direction is separately gated Secure Web Updater / release-control-plane architecture using trusted governed artifacts, immutable release directories, stable public bootstrap, private active-release pointer, shared runtime configuration, health gates, and rollback. No such implementation is authorized by this closure.
+
+Attribution: **Lab | zefry**
+
 ## Canonical program-state consolidation — 2026-08-16
 
 For current Preview/runtime interpretation, this section supersedes older M7.5/current-target wording retained below as historical planning and pre-qualification state.
