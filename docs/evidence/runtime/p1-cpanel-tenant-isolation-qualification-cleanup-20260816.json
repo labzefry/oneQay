@@ -1,0 +1,78 @@
+{
+  "schema": "oneqay.m7_5.tenant-isolation-qualification-cleanup.v1",
+  "observed_at": "2026-08-16",
+  "environment": "technical-preview",
+  "runtime_class": "preview",
+  "canonical_main_after_evidence_publication": "390a0a446f392ca364aae81684edbc90d69a8249",
+  "active_release_id": "m75-preview-dab951519e67",
+  "scope": "post-tenant-isolation-qualification-secure-retirement",
+  "historical_qualification": {
+    "status": "qualified",
+    "engine_family": "MARIADB",
+    "engine_version": "11.4.8",
+    "persistent_schema_created": false,
+    "production_ready": false,
+    "tenant_isolation_control_published_verified": true,
+    "evidence_preserved": true
+  },
+  "cleanup": {
+    "qualification_switch_disabled": true,
+    "qualification_endpoint_fail_closed_404_before_database_cleanup": true,
+    "qualification_database_user_detached": true,
+    "technical_preview_healthy_after_user_detach": true,
+    "qualification_database_user_deleted": true,
+    "qualification_database_verified_without_permanent_tables_before_delete": true,
+    "qualification_database_deleted": true,
+    "qualification_database_identity_cleared_from_private_runtime_env": true,
+    "qualification_username_cleared_from_private_runtime_env": true,
+    "qualification_password_cleared_from_private_runtime_env": true,
+    "qualification_endpoint_fail_closed_404_after_credential_cleanup": true,
+    "technical_preview_healthy_after_full_cleanup": true,
+    "other_databases_intentionally_modified": false
+  },
+  "final_runtime": {
+    "qualification_endpoint_available": false,
+    "qualification_endpoint_expected_behavior": "404_fail_closed",
+    "qualification_database_user_exists": false,
+    "qualification_database_exists": false,
+    "qualification_runtime_credentials_present": false,
+    "health_status": "ready",
+    "health_service": "oneqay-web"
+  },
+  "privacy": {
+    "database_identity_recorded": false,
+    "database_username_recorded": false,
+    "password_recorded": false,
+    "raw_env_recorded": false,
+    "app_key_recorded": false,
+    "control_panel_account_identifier_recorded": false,
+    "control_panel_path_recorded": false,
+    "cookie_or_session_value_recorded": false,
+    "correlation_id_recorded": false,
+    "raw_screenshot_recorded": false,
+    "token_or_private_key_recorded": false,
+    "customer_bpjs_or_production_data_recorded": false
+  },
+  "evaluator": {
+    "outcome": "BLOCKED",
+    "verified_controls": 27,
+    "blocking_controls": 2,
+    "blocking": [
+      "ENGINE:RESTORE_VERIFIED:NOT_SUPPLIED",
+      "RUNTIME:BACKUP_RESTORE:PARTIAL"
+    ],
+    "tenant_isolation_status": "VERIFIED",
+    "cleanup_promoted_control": false,
+    "lifecycle_authority_created": false
+  },
+  "lifecycle": {
+    "m7_5": "IN_PROGRESS_BLOCKED_INCOMPLETE",
+    "m7_6_authorized": false,
+    "m7_7_authorized": false,
+    "phase_0_exit_approved": false,
+    "release_authorized": false,
+    "production_authorized": false,
+    "production_ready": false
+  },
+  "attribution": "Lab | zefry"
+}
