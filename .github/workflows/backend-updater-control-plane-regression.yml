@@ -121,17 +121,32 @@ jobs:
           grep -Fq "'install_enabled' => false" apps/web/config/oneqay.php
           ! grep -Eq 'ONEQAY_SYSTEM_UPDATE_INSTALL|env\([^)]*INSTALL' apps/web/config/oneqay.php
 
-      - name: Reject activation and filesystem mutation implementation
+      - name: Reject remote download extraction and unsafe mutation placement
         shell: bash
         run: |
           set -euo pipefail
-          if grep -R -n -E 'PharData|ZipArchive|file_put_contents|rename\(|unlink\(|symlink\(|hardlink|curl_|Http::|Guzzle|shell_exec|proc_open|exec\(' \
+          if grep -R -n -E 'PharData|ZipArchive|curl_|Http::|Guzzle|shell_exec|proc_open|exec\(' \
             apps/web/app/Application/SystemUpdate \
             apps/web/app/Infrastructure/SystemUpdate \
             apps/web/app/Delivery/Http/SystemUpdate \
             --exclude-dir=Security; then
-            echo 'Backend control-plane stage must not implement download/extraction/filesystem activation.' >&2
+            echo 'Backend updater must not add remote download, archive extraction, or shell execution in this stage.' >&2
             exit 1
+          fi
+
+          mutation_matches="$(grep -R -n -E 'file_put_contents|rename\(|unlink\(|symlink\(|link\(' \
+            apps/web/app/Application/SystemUpdate \
+            apps/web/app/Infrastructure/SystemUpdate \
+            apps/web/app/Delivery/Http/SystemUpdate \
+            --exclude-dir=Security || true)"
+
+          if [ -n "$mutation_matches" ]; then
+            unexpected="$(printf '%s\n' "$mutation_matches" | grep -v '^apps/web/app/Infrastructure/SystemUpdate/Activation/' || true)"
+            if [ -n "$unexpected" ]; then
+              printf '%s\n' "$unexpected" >&2
+              echo 'Filesystem mutation is allowed only inside the separately tested Activation infrastructure boundary.' >&2
+              exit 1
+            fi
           fi
 
       - name: Run backend updater control-plane regression
