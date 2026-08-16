@@ -12,8 +12,8 @@ use App\Application\SystemUpdate\Security\PrivilegedUpdateSecurityPolicy;
 use App\Application\SystemUpdate\Security\RequirePrivilegedUpdateAuthorization;
 use App\Application\SystemUpdate\Security\VerifyPrivilegedUpdateStepUp;
 use App\Domain\Identity\PlatformIdentityId;
-use App\Infrastructure\Identity\ServerVerifiedPrivilegedPlatformIdentity;
 use App\Infrastructure\SystemUpdate\Security\Rfc6238PrivilegedTotpVerifier;
+use App\Infrastructure\SystemUpdate\Security\ServerVerifiedPrivilegedPlatformIdentity;
 
 require_once __DIR__.'/../vendor/autoload.php';
 
