@@ -19,7 +19,10 @@
       "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
       "@php artisan package:discover --ansi"
     ],
-    "test": "php tests/run.php"
+    "test": [
+      "php tests/run.php",
+      "php tests/privileged-update-security.php"
+    ]
   },
   "extra": {
     "laravel": {
