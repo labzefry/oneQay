@@ -1,5 +1,21 @@
 # oneQay Release Management
 
+## Secure updater release-contract alignment — 2026-08-17
+
+ADR-009 defines the future updater-facing release-control-plane contract. Release packaging for that path follows **Build Once / Deploy Trusted Artifact** and must not require runtime Git checkout, Composer install, npm install, or frontend build on the target host.
+
+The durable updater source must be an approved immutable release asset associated with the canonical `labzefry/oneQay` release identity. Existing short-retention GitHub Actions artifacts remain predecessor Technical Preview evidence and must not be silently treated as the final durable updater channel. Any workflow/release-asset publication change requires separate authority.
+
+Governed Release Manifest v1 must bind product/repository identity, release ID/version/channel, immutable source commit, build/provenance reference, artifact filename/type/size, artifact SHA-256, runtime requirements, supported current-version range, deployment compatibility, migration classification, rollback compatibility, public-bootstrap/layout compatibility, release notes/reference, and attribution `Lab | zefry`.
+
+The initial updater contract accepts only releases classified **NO_SCHEMA_CHANGE**. Schema-changing artifacts fail closed until a separate migration-safe updater architecture, recovery contract, regression evidence, and Product Owner authority exist.
+
+Artifact trust is not established by transport alone. Manifest schema, governed source/release identity, immutable commit identity, artifact digest, compatibility policy, and later signature/provenance maturity must be verified before staging or activation.
+
+This alignment does not create Release authority, Production authority, artifact-publication workflow authority, deployment authority, M7.6 authority, database/schema/migration authority, or cPanel mutation authority. The updater remains default **DISABLED** until separately implemented and qualified.
+
+Attribution: **Lab | zefry**
+
 ## Release principles
 
 Release harus reproducible, traceable, signed/verified sesuai maturity, backward-aware, recoverable, dan didukung evidence. `main` mencerminkan kondisi stabil; tag dan release record tidak boleh dipindahkan diam-diam.
