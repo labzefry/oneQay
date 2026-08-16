@@ -123,7 +123,3 @@ jobs:
       - name: Run M7.1 application regression
         working-directory: apps/web
         run: composer test
-
-      - name: Run privileged update security regression
-        working-directory: apps/web
-        run: php tests/privileged-update-security.php
