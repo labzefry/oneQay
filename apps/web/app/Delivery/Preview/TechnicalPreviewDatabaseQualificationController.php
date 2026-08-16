@@ -8,6 +8,7 @@ use App\Application\Identity\IdentityContextViolation;
 use App\Application\Organization\OrganizationalAccessViolation;
 use App\Application\Preview\TechnicalPreviewJourney;
 use App\Application\Tenancy\MissingTenantContext;
+use App\Application\Tenancy\VerifiedTenantContext;
 use App\Infrastructure\Persistence\PreviewDatabaseQualification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -36,17 +37,22 @@ final class TechnicalPreviewDatabaseQualificationController
             return redirect()->route('preview.context');
         }
 
+        $config = config('oneqay.preview_database_qualification', []);
+        abort_unless(is_array($config) && ($config['enabled'] ?? false) === true, 404);
+
         try {
-            $journey->catalog($profile);
+            $result = $journey->withinVerifiedContext(
+                $profile,
+                static fn (VerifiedTenantContext $tenantContext): array => $qualification->qualify(
+                    $config,
+                    $tenantContext,
+                ),
+            );
         } catch (IdentityContextViolation|MissingTenantContext|OrganizationalAccessViolation) {
             $request->session()->forget(self::CONTEXT_SESSION);
             return redirect()->route('preview.context');
         }
 
-        $config = config('oneqay.preview_database_qualification', []);
-        abort_unless(is_array($config) && ($config['enabled'] ?? false) === true, 404);
-
-        $result = $qualification->qualify($config);
         $result['correlation_id'] = (string) $request->attributes->get(
             'oneqay.correlation_id',
             'preview-correlation-missing',
