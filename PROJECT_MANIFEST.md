@@ -1,5 +1,28 @@
 # oneQay Project Manifest
 
+## Canonical program-state consolidation — 2026-08-16
+
+For current delivery-state interpretation, this section supersedes older current-facing M7.5/P1/P2 assertions retained below as historical checkpoints and governance provenance.
+
+| Item | Canonical state |
+| --- | --- |
+| M7.0–M7.4A | **DONE / PUBLISHED** |
+| M7.5 Preview Runtime Qualification | **IN PROGRESS / QUALIFICATION MATERIAL PROGRESS** |
+| M7.5 evaluator after PR #124 | **26 VERIFIED / 3 BLOCKED** |
+| M7.5 overall | **BLOCKED / INCOMPLETE** |
+| Remaining blockers | `ENGINE:RESTORE_VERIFIED:NOT_SUPPLIED`; `ENGINE:TENANT_ISOLATION:PARTIAL`; `RUNTIME:BACKUP_RESTORE:PARTIAL` |
+| Lifecycle authority created | `false` |
+| M7.6 | **NOT AUTHORIZED** |
+| M7.7 | **NOT AUTHORIZED** |
+| Phase 0 | **IN PROGRESS** |
+| Phase 0 Exit | **NOT APPROVED** |
+| Sprint 14 | **NOT AUTHORIZED** |
+| Release | **NOT AUTHORIZED** |
+| Production | **NOT AUTHORIZED** |
+| Production readiness | **NO-GO** |
+
+Published PR #102–#124 and sanitized evidence supersede older current-state statements that M7.5 had not begun or that controls later promoted to `VERIFIED` remained partial/unverified. Historical SHAs, PRs, decision records, governance recurrence evidence, and prior evaluator snapshots below are preserved and remain historical provenance. This consolidation creates no application, database, migration, schema, restore, deployment, Release, Production, or later-milestone authority.
+
 > Dokumen identitas teknis kanonis oneQay. Bila informasi di dokumen lain bertentangan, keputusan berstatus **Approved** di manifest ini berlaku sampai digantikan melalui ADR atau pull request yang disetujui.
 
 ## Metadata

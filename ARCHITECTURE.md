@@ -1,5 +1,19 @@
 # oneQay Architecture
 
+## Canonical program-state consolidation — 2026-08-16
+
+For current architecture/runtime-state interpretation, this section supersedes older M7.5 and P1/P2 current-facing wording retained below as historical planning/checkpoint text.
+
+- M7.5 is **IN PROGRESS / QUALIFICATION MATERIAL PROGRESS**.
+- The governed evaluator after PR #124 is **26 VERIFIED / 3 BLOCKED**, overall **BLOCKED / INCOMPLETE**, with `lifecycle_authority_created=false`.
+- The only remaining blockers are `ENGINE:RESTORE_VERIFIED:NOT_SUPPLIED`, `ENGINE:TENANT_ISOLATION:PARTIAL`, and `RUNTIME:BACKUP_RESTORE:PARTIAL`.
+- Bounded P1/cPanel runtime evidence now verifies material web/runtime, relational, security, observability, rollback/recovery, scheduler, resource, background-execution, and Preview queue controls; this does not create general Production infrastructure capability.
+- Existing application-level tenant isolation evidence remains material but does not yet prove the complete durable database-backed isolation semantics required for `ENGINE:TENANT_ISOLATION`.
+- Backup/export and application release rollback evidence must not be conflated with successful database restore.
+- M7.6, M7.7, Phase 0 Exit, Sprint 14, Release, and Production remain **NOT AUTHORIZED**; production readiness remains **NO-GO**.
+
+This consolidation changes current-state representation only. DEC-005R, DEC-009, architecture decisions, historical SHAs/PRs, and additive evidence remain unchanged.
+
 ## Architecture goals
 
 oneQay menggunakan **Modular Monolith First** dengan Clean Architecture dan Domain-Driven Design. Tujuannya adalah menyediakan sistem yang sederhana untuk dioperasikan pada tahap awal, namun memiliki boundary yang cukup kuat untuk berkembang tanpa menulis ulang business logic.

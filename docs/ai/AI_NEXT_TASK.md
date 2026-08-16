@@ -1,5 +1,21 @@
 # AI Next Task
 
+## Canonical program-state consolidation — 2026-08-16
+
+For current next-work and lifecycle interpretation, this section supersedes older current-facing M7.5 gate/next-task wording retained below as historical checkpoint provenance.
+
+- M7.5: **IN PROGRESS / QUALIFICATION MATERIAL PROGRESS**.
+- Canonical evaluator after PR #124: **26 VERIFIED / 3 BLOCKED**; overall **BLOCKED / INCOMPLETE**; `lifecycle_authority_created=false`.
+- Only three blockers remain: `ENGINE:RESTORE_VERIFIED:NOT_SUPPLIED`, `ENGINE:TENANT_ISOLATION:PARTIAL`, and `RUNTIME:BACKUP_RESTORE:PARTIAL`.
+- The next preferred bounded engineering activity after this documentation consolidation is a **fresh read-only gap analysis of `ENGINE:TENANT_ISOLATION`** against the existing tenant kernel, negative cross-tenant tests, relational evidence, DEC-005R, database/security handbooks, and evaluator semantics.
+- No permanent schema, migration, database mutation, live tenant-isolation probe, or runtime mutation is authorized by this checkpoint.
+- After tenant-isolation analysis, the next preferred design activity is a **read-only joint restore + backup/restore qualification design**. Any actual restore/rehearsal requires separate explicit Product Owner authority and must remain isolated/non-Production.
+- M7.6 and M7.7 remain **NOT AUTHORIZED**.
+- Phase 0 remains **IN PROGRESS**; Phase 0 Exit remains **NOT APPROVED**.
+- Sprint 14, Release, and Production remain **NOT AUTHORIZED**; Production readiness remains **NO-GO**.
+
+This checkpoint does not store a new hard-coded SHA as permanently current GitHub state. Fresh Minimal Delta Verification remains mandatory before any future branch or lifecycle mutation.
+
 ## Stable checkpoint
 
 - Project: oneQay

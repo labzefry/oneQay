@@ -1,5 +1,21 @@
 # oneQay Database Handbook
 
+## Canonical program-state consolidation — 2026-08-16
+
+For current database/runtime interpretation, this section supersedes older M7.5 qualification wording retained below as historical architecture/checkpoint text.
+
+The bounded non-Production P1/cPanel MariaDB qualification has materially progressed: application connectivity, least privilege, transaction semantics, migration boundary, connection-limit visibility, backup export, and Database Portability Contract controls are now governed `VERIFIED` evidence. The complete M7.5 evaluator is **26 VERIFIED / 3 BLOCKED**, outcome **BLOCKED / INCOMPLETE**, with `lifecycle_authority_created=false`.
+
+The three remaining blockers are:
+
+- `ENGINE:RESTORE_VERIFIED:NOT_SUPPLIED`;
+- `ENGINE:TENANT_ISOLATION:PARTIAL`;
+- `RUNTIME:BACKUP_RESTORE:PARTIAL`.
+
+This does **not** establish durable Production business persistence, a permanent business schema, full durable two-tenant database-backed isolation, successful restore, Production recoverability, or Production readiness. Existing backup/export evidence must not be interpreted as verified restore. M7.6, M7.7, Phase 0 Exit, Sprint 14, Release, and Production remain not authorized.
+
+Historical DEC-005/DEC-005R provenance and prior qualification snapshots below remain preserved.
+
 ## Goals
 
 Database harus menjaga integritas transaksi, isolasi tenant, auditability, compatibility migration, backup/restore, portability, dan performance predictable. Current canonical direction melalui substantive **DEC-005R — Portable Relational Persistence Architecture** adalah engine-neutral Domain/Application dengan qualified relational engine profiles dan target **ZERO BUSINESS-CODE CHANGE** antar profile yang resmi dikualifikasi.

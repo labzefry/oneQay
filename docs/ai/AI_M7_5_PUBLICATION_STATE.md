@@ -1,5 +1,43 @@
 # AI M7.5 Publication State
 
+## Periodic canonical consolidation — after PR #124
+
+This section is the current periodic consolidation layer and supersedes every earlier `current`, `remaining blockers`, evaluator-count, and next-work assertion below where those statements describe an older M7.5 evidence snapshot. The older sections remain intentionally preserved as historical publication provenance.
+
+Canonical governed state after PR #124:
+
+- M7.5: **IN PROGRESS / QUALIFICATION MATERIAL PROGRESS**;
+- verified mandatory controls: **26**;
+- blocking mandatory controls: **3**;
+- complete evaluator outcome: **BLOCKED**;
+- M7.5 overall qualification: **BLOCKED / INCOMPLETE**;
+- `lifecycle_authority_created=false`.
+
+Only three blockers remain:
+
+- `ENGINE:RESTORE_VERIFIED:NOT_SUPPLIED`;
+- `ENGINE:TENANT_ISOLATION:PARTIAL`;
+- `RUNTIME:BACKUP_RESTORE:PARTIAL`.
+
+Controls previously shown below as PARTIAL/UNVERIFIED/NOT_SUPPLIED but subsequently governed as VERIFIED through PR #114–#124 must not be regressed by historical wording. This includes PHP CLI/scheduler, connection/resource visibility, outbound DNS/HTTPS, environment-secret isolation, security boundary, Database Portability Contract conformance, safe observability logging, application rollback/deployment recovery, and bounded Preview background/queue execution.
+
+The current evidence does **not** prove successful isolated restore or complete durable database-backed two-tenant isolation. Backup/export evidence and application-release rollback are not substitutes for database restore evidence.
+
+Lifecycle remains:
+
+- M7.0–M7.4A: **DONE / PUBLISHED**;
+- M7.5: **IN PROGRESS / BLOCKED / INCOMPLETE**;
+- M7.6: **NOT AUTHORIZED**;
+- M7.7: **NOT AUTHORIZED**;
+- Phase 0: **IN PROGRESS**;
+- Phase 0 Exit: **NOT APPROVED**;
+- Sprint 14: **NOT AUTHORIZED**;
+- Release: **NOT AUTHORIZED**;
+- Production: **NOT AUTHORIZED**;
+- Production readiness: **NO-GO**.
+
+The next preferred bounded analysis after current-state consolidation is a fresh read-only gap analysis of `ENGINE:TENANT_ISOLATION`, followed by joint restore/backup-restore qualification design. No restore, schema, migration, database mutation, cleanup, M7.6, M7.7, Release, or Production authority is created by this state record.
+
 Attribution: **Lab | zefry**
 
 ## Purpose
