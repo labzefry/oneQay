@@ -16,11 +16,14 @@ fi
 
 release_id="m75-preview-${source_sha:0:12}"
 source_epoch="$(git show -s --format=%ct "$source_sha")"
+build_provenance="${ONEQAY_BUILD_PROVENANCE:-local://source/${source_sha}}"
 stage_root="dist/stage/${release_id}"
 private_app_root="${stage_root}/apps/web"
 public_surface="${stage_root}/public-surface"
 archive_name="${release_id}.tar.gz"
 archive_path="dist/${archive_name}"
+checksum_path="${archive_path}.sha256"
+manifest_path="dist/${release_id}.manifest.json"
 
 required_files=(
   "apps/web/artisan"
@@ -30,6 +33,8 @@ required_files=(
   "apps/web/public/.htaccess"
   "apps/web/public/build/manifest.json"
   "apps/web/vendor/autoload.php"
+  "release/manifest-v1.schema.json"
+  "tools/validate-release-manifest.php"
 )
 
 for required_file in "${required_files[@]}"; do
@@ -44,7 +49,7 @@ if [[ -e apps/web/.env ]]; then
   exit 1
 fi
 
-rm -rf dist/stage "$archive_path" "${archive_path}.sha256"
+rm -rf dist/stage "$archive_path" "$checksum_path" "$manifest_path"
 mkdir -p "${stage_root}/apps" "$public_surface"
 
 cp -a apps/web "$private_app_root"
@@ -92,12 +97,16 @@ PHP
 
 cat > "${stage_root}/RELEASE.json" <<JSON
 {
+  "payload_metadata_version": 1,
   "product": "oneQay",
   "environment": "TECHNICAL_PREVIEW",
   "production": false,
   "synthetic_data_only": true,
   "source_commit": "${source_sha}",
   "release_id": "${release_id}",
+  "governed_manifest_sidecar": "${release_id}.manifest.json",
+  "migration_classification": "NO_SCHEMA_CHANGE",
+  "updater_activation": "DISABLED",
   "private_application_relative_path": "oneqay-preview/releases/${release_id}/apps/web",
   "public_surface_source": "public-surface",
   "attribution": "Lab | zefry"
@@ -120,10 +129,62 @@ tar \
   -C dist/stage \
   -cf - "$release_id" | gzip -n > "$archive_path"
 
-(
-  cd dist
-  sha256sum "$archive_name" > "${archive_name}.sha256"
-)
+artifact_sha256="$(sha256sum "$archive_path" | awk '{print $1}')"
+artifact_size="$(wc -c < "$archive_path" | tr -d '[:space:]')"
+printf '%s  %s\n' "$artifact_sha256" "$archive_name" > "$checksum_path"
+
+cat > "$manifest_path" <<JSON
+{
+  "manifest_version": 1,
+  "schema_id": "oneqay.release-manifest.v1",
+  "product": {
+    "name": "oneQay",
+    "repository": "labzefry/oneQay"
+  },
+  "release": {
+    "id": "${release_id}",
+    "version": null,
+    "channel": "PREVIEW",
+    "environment": "TECHNICAL_PREVIEW",
+    "production": false,
+    "synthetic_data_only": true
+  },
+  "source": {
+    "commit_sha": "${source_sha}"
+  },
+  "build": {
+    "provider": "GITHUB_ACTIONS_OR_EQUIVALENT_TRUSTED_CI",
+    "source_date_epoch": ${source_epoch},
+    "provenance_reference": "${build_provenance}"
+  },
+  "artifact": {
+    "filename": "${archive_name}",
+    "format": "tar.gz",
+    "media_type": "application/gzip",
+    "size_bytes": ${artifact_size},
+    "sha256": "${artifact_sha256}"
+  },
+  "runtime": {
+    "php_constraint": "^8.2",
+    "build_php": "8.3",
+    "build_node": "24.19.0",
+    "runtime_build_tools_required": false
+  },
+  "compatibility": {
+    "supported_current_release_policy": "GOVERNED_PREVIEW_NO_SCHEMA_CHANGE",
+    "allow_downgrade": false,
+    "migration_classification": "NO_SCHEMA_CHANGE",
+    "rollback_compatibility": "APPLICATION_POINTER_ROLLBACK_COMPATIBLE",
+    "public_surface_compatibility": "M7_5_PREVIEW_PUBLIC_SURFACE_V1",
+    "private_storage_layout_version": 1,
+    "updater_activation": "DISABLED"
+  },
+  "release_notes_reference": "UPDATER.md#release-manifest-v1",
+  "attribution": "Lab | zefry"
+}
+JSON
+
+php tools/validate-release-manifest.php "$manifest_path" "$archive_path"
 
 tar -tzf "$archive_path" > /tmp/oneqay-preview-release-contents.txt
 
@@ -136,10 +197,14 @@ if [[ -n "${GITHUB_OUTPUT:-}" ]]; then
   {
     echo "release_id=$release_id"
     echo "archive_path=$archive_path"
-    echo "checksum_path=${archive_path}.sha256"
+    echo "checksum_path=$checksum_path"
+    echo "manifest_path=$manifest_path"
+    echo "artifact_sha256=$artifact_sha256"
+    echo "artifact_size=$artifact_size"
   } >> "$GITHUB_OUTPUT"
 fi
 
-printf 'Prepared %s from %s\n' "$release_id" "$source_sha"
+printf 'Prepared governed release bundle %s from %s (%s bytes, sha256 %s)\n' \
+  "$release_id" "$source_sha" "$artifact_size" "$artifact_sha256"
 
 # Author by Lab | zefry

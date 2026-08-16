@@ -8,14 +8,18 @@ on:
       - main
     paths:
       - 'apps/web/**'
+      - 'release/manifest-v1.schema.json'
       - 'tools/build-m7-5-preview-release.sh'
+      - 'tools/validate-release-manifest.php'
       - '.github/workflows/m7-5-preview-release-artifact.yml'
   push:
     branches:
       - main
     paths:
       - 'apps/web/**'
+      - 'release/manifest-v1.schema.json'
       - 'tools/build-m7-5-preview-release.sh'
+      - 'tools/validate-release-manifest.php'
       - '.github/workflows/m7-5-preview-release-artifact.yml'
   workflow_dispatch:
 
@@ -70,6 +74,9 @@ jobs:
           test "$(git rev-parse HEAD)" = "$source_sha"
           test "$(git status --porcelain)" = ""
           echo "source_sha=$source_sha" >> "$GITHUB_OUTPUT"
+
+      - name: Validate Release Manifest v1 contract and negative cases
+        run: php tools/validate-release-manifest.php --self-test
 
       - name: Preserve root Platform Foundation regression
         run: |
@@ -132,12 +139,14 @@ jobs:
           grep -F 'oneqay:preview-queue:work-one' /tmp/oneqay-artisan-list.txt
           grep -F 'oneqay:preview-queue:status' /tmp/oneqay-artisan-list.txt
 
-      - name: Package deterministic Technical Preview release
+      - name: Package deterministic governed Technical Preview release
         id: package
         shell: bash
+        env:
+          ONEQAY_BUILD_PROVENANCE: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}
         run: bash tools/build-m7-5-preview-release.sh "${{ steps.source.outputs.source_sha }}"
 
-      - name: Verify package checksum and public/private boundary
+      - name: Verify manifest binding, checksum, and public/private boundary
         shell: bash
         run: |
           set -euo pipefail
@@ -145,7 +154,11 @@ jobs:
             cd dist
             sha256sum -c "$(basename "${{ steps.package.outputs.checksum_path }}")"
           )
+          php tools/validate-release-manifest.php \
+            "${{ steps.package.outputs.manifest_path }}" \
+            "${{ steps.package.outputs.archive_path }}"
           tar -tzf "${{ steps.package.outputs.archive_path }}" > /tmp/oneqay-release-list.txt
+          grep -F "${{ steps.package.outputs.release_id }}/RELEASE.json" /tmp/oneqay-release-list.txt
           grep -F "${{ steps.package.outputs.release_id }}/public-surface/index.php" /tmp/oneqay-release-list.txt
           grep -F "${{ steps.package.outputs.release_id }}/apps/web/vendor/autoload.php" /tmp/oneqay-release-list.txt
           grep -F "${{ steps.package.outputs.release_id }}/apps/web/public/build/manifest.json" /tmp/oneqay-release-list.txt
@@ -154,12 +167,30 @@ jobs:
             exit 1
           fi
 
-      - name: Upload Technical Preview runtime package
+      - name: Prove deterministic runtime archive reproduction
+        shell: bash
+        env:
+          ONEQAY_BUILD_PROVENANCE: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}
+        run: |
+          set -euo pipefail
+          first_sha="${{ steps.package.outputs.artifact_sha256 }}"
+          first_size="${{ steps.package.outputs.artifact_size }}"
+          bash tools/build-m7-5-preview-release.sh "${{ steps.source.outputs.source_sha }}"
+          second_sha="$(sha256sum "${{ steps.package.outputs.archive_path }}" | awk '{print $1}')"
+          second_size="$(wc -c < "${{ steps.package.outputs.archive_path }}" | tr -d '[:space:]')"
+          test "$second_sha" = "$first_sha"
+          test "$second_size" = "$first_size"
+          php tools/validate-release-manifest.php \
+            "${{ steps.package.outputs.manifest_path }}" \
+            "${{ steps.package.outputs.archive_path }}"
+
+      - name: Upload governed Technical Preview release bundle
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: oneqay-${{ steps.package.outputs.release_id }}
           path: |
             ${{ steps.package.outputs.archive_path }}
+            ${{ steps.package.outputs.manifest_path }}
             ${{ steps.package.outputs.checksum_path }}
           if-no-files-found: error
           retention-days: 14

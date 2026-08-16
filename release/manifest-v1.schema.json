@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oneqay.invalid/contracts/release-manifest-v1.schema.json",
+  "title": "oneQay Governed Release Manifest v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "manifest_version",
+    "schema_id",
+    "product",
+    "release",
+    "source",
+    "build",
+    "artifact",
+    "runtime",
+    "compatibility",
+    "release_notes_reference",
+    "attribution"
+  ],
+  "properties": {
+    "manifest_version": {"type": "integer", "const": 1},
+    "schema_id": {"type": "string", "const": "oneqay.release-manifest.v1"},
+    "product": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "repository"],
+      "properties": {
+        "name": {"type": "string", "const": "oneQay"},
+        "repository": {"type": "string", "const": "labzefry/oneQay"}
+      }
+    },
+    "release": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version", "channel", "environment", "production", "synthetic_data_only"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^m75-preview-[0-9a-f]{12}$"},
+        "version": {
+          "oneOf": [
+            {"type": "null"},
+            {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?$"}
+          ]
+        },
+        "channel": {"type": "string", "const": "PREVIEW"},
+        "environment": {"type": "string", "const": "TECHNICAL_PREVIEW"},
+        "production": {"type": "boolean", "const": false},
+        "synthetic_data_only": {"type": "boolean", "const": true}
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["commit_sha"],
+      "properties": {
+        "commit_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"}
+      }
+    },
+    "build": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider", "source_date_epoch", "provenance_reference"],
+      "properties": {
+        "provider": {"type": "string", "const": "GITHUB_ACTIONS_OR_EQUIVALENT_TRUSTED_CI"},
+        "source_date_epoch": {"type": "integer", "minimum": 1},
+        "provenance_reference": {"type": "string", "minLength": 1, "maxLength": 1024}
+      }
+    },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["filename", "format", "media_type", "size_bytes", "sha256"],
+      "properties": {
+        "filename": {"type": "string", "pattern": "^m75-preview-[0-9a-f]{12}\\.tar\\.gz$"},
+        "format": {"type": "string", "const": "tar.gz"},
+        "media_type": {"type": "string", "const": "application/gzip"},
+        "size_bytes": {"type": "integer", "minimum": 1},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "runtime": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["php_constraint", "build_php", "build_node", "runtime_build_tools_required"],
+      "properties": {
+        "php_constraint": {"type": "string", "const": "^8.2"},
+        "build_php": {"type": "string", "const": "8.3"},
+        "build_node": {"type": "string", "const": "24.19.0"},
+        "runtime_build_tools_required": {"type": "boolean", "const": false}
+      }
+    },
+    "compatibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "supported_current_release_policy",
+        "allow_downgrade",
+        "migration_classification",
+        "rollback_compatibility",
+        "public_surface_compatibility",
+        "private_storage_layout_version",
+        "updater_activation"
+      ],
+      "properties": {
+        "supported_current_release_policy": {"type": "string", "const": "GOVERNED_PREVIEW_NO_SCHEMA_CHANGE"},
+        "allow_downgrade": {"type": "boolean", "const": false},
+        "migration_classification": {"type": "string", "const": "NO_SCHEMA_CHANGE"},
+        "rollback_compatibility": {"type": "string", "const": "APPLICATION_POINTER_ROLLBACK_COMPATIBLE"},
+        "public_surface_compatibility": {"type": "string", "const": "M7_5_PREVIEW_PUBLIC_SURFACE_V1"},
+        "private_storage_layout_version": {"type": "integer", "const": 1},
+        "updater_activation": {"type": "string", "const": "DISABLED"}
+      }
+    },
+    "release_notes_reference": {"type": "string", "const": "UPDATER.md#release-manifest-v1"},
+    "attribution": {"type": "string", "const": "Lab | zefry"}
+  }
+}
