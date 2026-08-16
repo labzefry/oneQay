@@ -172,32 +172,39 @@ jobs:
 
           curl -fsS http://127.0.0.1:8788/system/update > /tmp/oneqay-update-ui.html
 
-          php -r '
-            $html = file_get_contents("/tmp/oneqay-update-ui.html");
-            if (! preg_match('/data-page="([^"]+)"/', $html, $match)) {
-                fwrite(STDERR, "Initial Inertia data-page payload not found.\n");
-                exit(1);
-            }
-            $encoded = html_entity_decode($match[1], ENT_QUOTES | ENT_HTML5, "UTF-8");
-            $page = json_decode($encoded, true, 512, JSON_THROW_ON_ERROR);
-            if (($page["component"] ?? null) !== "System/UpdateDeployment") {
-                fwrite(STDERR, "Unexpected Inertia component.\n");
-                exit(1);
-            }
-            $props = $page["props"] ?? [];
-            $status = $props["status"] ?? [];
-            $ui = $props["ui"] ?? [];
-            if (($status["control_plane"] ?? null) !== "DISABLED" || ($status["install"] ?? null) !== "DISABLED") { exit(1); }
-            if (($status["schema_change_supported"] ?? null) !== false || ($status["activation_supported"] ?? null) !== false || ($status["deployment_authorized"] ?? null) !== false) { exit(1); }
-            if (($ui["mode"] ?? null) !== "READ_ONLY" || ($ui["install_action_exposed"] ?? null) !== false || ($ui["check_action_exposed"] ?? null) !== false || ($ui["production_ready"] ?? null) !== false) { exit(1); }
-            $safe = strtolower(json_encode($props, JSON_THROW_ON_ERROR));
-            foreach (["password", "totp_secret", "session_token", "public_html", ".env"] as $forbidden) {
-                if (str_contains($safe, $forbidden)) {
-                    fwrite(STDERR, "Sensitive updater UI payload marker detected.\n");
-                    exit(1);
-                }
-            }
-          '
+          php <<'PHP'
+          <?php
+          $html = file_get_contents('/tmp/oneqay-update-ui.html');
+          if (! preg_match('/data-page="([^"]+)"/', $html, $match)) {
+              fwrite(STDERR, "Initial Inertia data-page payload not found.\n");
+              exit(1);
+          }
+          $encoded = html_entity_decode($match[1], ENT_QUOTES | ENT_HTML5, 'UTF-8');
+          $page = json_decode($encoded, true, 512, JSON_THROW_ON_ERROR);
+          if (($page['component'] ?? null) !== 'System/UpdateDeployment') {
+              fwrite(STDERR, "Unexpected Inertia component.\n");
+              exit(1);
+          }
+          $props = $page['props'] ?? [];
+          $status = $props['status'] ?? [];
+          $ui = $props['ui'] ?? [];
+          if (($status['control_plane'] ?? null) !== 'DISABLED' || ($status['install'] ?? null) !== 'DISABLED') {
+              exit(1);
+          }
+          if (($status['schema_change_supported'] ?? null) !== false || ($status['activation_supported'] ?? null) !== false || ($status['deployment_authorized'] ?? null) !== false) {
+              exit(1);
+          }
+          if (($ui['mode'] ?? null) !== 'READ_ONLY' || ($ui['install_action_exposed'] ?? null) !== false || ($ui['check_action_exposed'] ?? null) !== false || ($ui['production_ready'] ?? null) !== false) {
+              exit(1);
+          }
+          $safe = strtolower(json_encode($props, JSON_THROW_ON_ERROR));
+          foreach (['password', 'totp_secret', 'session_token', 'public_html', '.env'] as $forbidden) {
+              if (str_contains($safe, $forbidden)) {
+                  fwrite(STDERR, "Sensitive updater UI payload marker detected.\n");
+                  exit(1);
+              }
+          }
+          PHP
 
       - name: Prove UI source exposes no mutation request
         shell: bash
