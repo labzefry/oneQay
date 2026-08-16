@@ -1,6 +1,7 @@
 <?php
 
 use App\Delivery\Http\HealthController;
+use App\Delivery\Http\SystemUpdate\SystemUpdateControlPlaneController;
 use App\Delivery\Preview\TechnicalPreviewController;
 use App\Delivery\Preview\TechnicalPreviewDatabaseQualificationController;
 use Illuminate\Support\Facades\Route;
@@ -14,6 +15,15 @@ Route::get('/', static fn () => Inertia::render('Foundation', [
 ]))->name('foundation');
 
 // Author by Lab | zefry
+Route::prefix('system/update')->controller(SystemUpdateControlPlaneController::class)->group(function (): void {
+    Route::get('/status', 'status')->name('system-update.status');
+
+    Route::middleware(['throttle:5,1', 'throttle:20,60'])->group(function (): void {
+        Route::post('/check', 'check')->name('system-update.check');
+        Route::post('/install', 'install')->name('system-update.install');
+    });
+});
+
 Route::prefix('technical-preview')->controller(TechnicalPreviewController::class)->group(function (): void {
     Route::get('/', 'index')->name('preview.index');
     Route::post('/sign-in', 'signIn')->name('preview.sign-in');
