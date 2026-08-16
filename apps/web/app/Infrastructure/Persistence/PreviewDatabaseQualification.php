@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Persistence;
 
+use App\Application\Tenancy\MissingTenantContext;
+use App\Application\Tenancy\RequireVerifiedTenantContext;
+use App\Application\Tenancy\VerifiedTenantContext;
+use App\Domain\Tenancy\TenantId;
 use PDO;
 use Throwable;
 
@@ -50,47 +54,44 @@ final class PreviewDatabaseQualification
      * Execute a bounded, non-persistent Technical Preview relational qualification.
      *
      * The probe creates one connection-scoped TEMPORARY TABLE only. No migration,
-     * permanent table, business record, or Production data is created.
+     * permanent table, business record, or Production data is created. Every
+     * tenant-scoped application operation derives its tenant predicate from the
+     * server-verified context supplied by the Preview journey.
      *
      * @param array<string, mixed> $config
      * @return array<string, mixed>
      */
-    public function qualify(array $config): array
+    public function qualify(array $config, ?VerifiedTenantContext $tenantContext = null): array
     {
+        $checks = $this->initialChecks();
+
         $violations = self::configurationViolations($config);
         if ($violations !== []) {
-            return $this->blocked('configuration', [
-                'configuration' => 'blocked',
-                'pdo_mysql_driver' => 'not_checked',
-                'connection' => 'not_checked',
-                'engine_family' => 'not_checked',
-                'temporary_table' => 'not_checked',
-                'transaction_rollback' => 'not_checked',
-                'tenant_scoped_query' => 'not_checked',
-            ]);
+            return $this->blocked('configuration', $checks);
         }
+        $checks['configuration'] = 'verified';
+
+        try {
+            $verifiedTenant = (new RequireVerifiedTenantContext())->require($tenantContext);
+            $tenantId = TenantId::fromString($verifiedTenant->tenantId())->value();
+        } catch (MissingTenantContext) {
+            return $this->blocked('tenant_context', $checks);
+        }
+
+        $foreignTenantId = match ($tenantId) {
+            'tenant-alpha' => 'tenant-beta',
+            'tenant-beta' => 'tenant-alpha',
+            default => null,
+        };
+        if ($foreignTenantId === null) {
+            return $this->blocked('tenant_context', $checks);
+        }
+        $checks['tenant_context'] = 'verified';
 
         if (! in_array('mysql', PDO::getAvailableDrivers(), true)) {
-            return $this->blocked('pdo_mysql_driver', [
-                'configuration' => 'verified',
-                'pdo_mysql_driver' => 'blocked',
-                'connection' => 'not_checked',
-                'engine_family' => 'not_checked',
-                'temporary_table' => 'not_checked',
-                'transaction_rollback' => 'not_checked',
-                'tenant_scoped_query' => 'not_checked',
-            ]);
+            return $this->blocked('pdo_mysql_driver', $checks);
         }
-
-        $checks = [
-            'configuration' => 'verified',
-            'pdo_mysql_driver' => 'verified',
-            'connection' => 'not_checked',
-            'engine_family' => 'not_checked',
-            'temporary_table' => 'not_checked',
-            'transaction_rollback' => 'not_checked',
-            'tenant_scoped_query' => 'not_checked',
-        ];
+        $checks['pdo_mysql_driver'] = 'verified';
 
         $phase = 'connection';
         $pdo = null;
@@ -126,7 +127,9 @@ final class PreviewDatabaseQualification
                 'CREATE TEMPORARY TABLE %s ('
                 .'id INT NOT NULL PRIMARY KEY, '
                 .'tenant_id VARCHAR(64) NOT NULL, '
-                .'value_text VARCHAR(64) NOT NULL'
+                .'business_id VARCHAR(64) NOT NULL, '
+                .'value_text VARCHAR(64) NOT NULL, '
+                .'UNIQUE KEY uq_preview_tenant_business (tenant_id, business_id)'
                 .') ENGINE=InnoDB',
                 self::TABLE,
             ));
@@ -134,11 +137,11 @@ final class PreviewDatabaseQualification
 
             $phase = 'transaction_rollback';
             $pdo->beginTransaction();
-            $statement = $pdo->prepare(sprintf(
-                'INSERT INTO %s (id, tenant_id, value_text) VALUES (?, ?, ?)',
+            $insert = $pdo->prepare(sprintf(
+                'INSERT INTO %s (id, tenant_id, business_id, value_text) VALUES (?, ?, ?, ?)',
                 self::TABLE,
             ));
-            $statement->execute([1, 'tenant-alpha', 'rollback-probe']);
+            $insert->execute([1, $tenantId, 'rollback-probe', 'rollback-probe']);
             $pdo->rollBack();
 
             $countAfterRollback = (int) $pdo->query(sprintf(
@@ -150,25 +153,114 @@ final class PreviewDatabaseQualification
             }
             $checks['transaction_rollback'] = 'verified';
 
-            $phase = 'tenant_scoped_query';
             $pdo->beginTransaction();
-            $statement->execute([11, 'tenant-alpha', 'alpha-synthetic']);
-            $statement->execute([12, 'tenant-beta', 'beta-synthetic']);
 
-            $tenantStatement = $pdo->prepare(sprintf(
+            $phase = 'tenant_owned_insert';
+            $insert->execute([11, $tenantId, 'shared-resource', 'current-synthetic']);
+            $insert->execute([12, $foreignTenantId, 'shared-resource', 'foreign-synthetic']);
+            $insert->execute([13, $tenantId, 'current-only', 'current-only-synthetic']);
+            $insert->execute([14, $tenantId, 'delete-control', 'delete-control-synthetic']);
+
+            $ownedCountStatement = $pdo->prepare(sprintf(
+                'SELECT COUNT(*) FROM %s WHERE tenant_id = ? AND id IN (11, 13, 14)',
+                self::TABLE,
+            ));
+            $ownedCountStatement->execute([$tenantId]);
+            if ((int) $ownedCountStatement->fetchColumn() !== 3) {
+                return $this->blocked($phase, $checks);
+            }
+            $checks['tenant_owned_insert'] = 'verified';
+
+            $phase = 'tenant_scoped_query';
+            $tenantCountStatement = $pdo->prepare(sprintf(
                 'SELECT COUNT(*) FROM %s WHERE tenant_id = ?',
                 self::TABLE,
             ));
-            $tenantStatement->execute(['tenant-alpha']);
-            $alphaCount = (int) $tenantStatement->fetchColumn();
-            $tenantStatement->execute(['tenant-gamma']);
-            $unknownCount = (int) $tenantStatement->fetchColumn();
-            $pdo->rollBack();
-
-            if ($alphaCount !== 1 || $unknownCount !== 0) {
+            $tenantCountStatement->execute([$tenantId]);
+            if ((int) $tenantCountStatement->fetchColumn() !== 3) {
                 return $this->blocked($phase, $checks);
             }
             $checks['tenant_scoped_query'] = 'verified';
+
+            $phase = 'tenant_isolation_read';
+            $readStatement = $pdo->prepare(sprintf(
+                'SELECT value_text FROM %s WHERE tenant_id = ? AND id = ?',
+                self::TABLE,
+            ));
+            $readStatement->execute([$tenantId, 11]);
+            $currentValue = $readStatement->fetchColumn();
+            $readStatement->execute([$tenantId, 12]);
+            $foreignValueThroughCurrentScope = $readStatement->fetchColumn();
+            if ($currentValue !== 'current-synthetic' || $foreignValueThroughCurrentScope !== false) {
+                return $this->blocked($phase, $checks);
+            }
+            $checks['tenant_isolation_read'] = 'verified';
+
+            $phase = 'tenant_identity_collision';
+            $collisionStatement = $pdo->prepare(sprintf(
+                'SELECT value_text FROM %s WHERE tenant_id = ? AND business_id = ?',
+                self::TABLE,
+            ));
+            $collisionStatement->execute([$tenantId, 'shared-resource']);
+            if ($collisionStatement->fetchColumn() !== 'current-synthetic') {
+                return $this->blocked($phase, $checks);
+            }
+            $checks['tenant_identity_collision'] = 'verified';
+
+            $phase = 'tenant_isolation_enumeration';
+            $enumerationStatement = $pdo->prepare(sprintf(
+                'SELECT tenant_id, business_id FROM %s WHERE tenant_id = ? ORDER BY id',
+                self::TABLE,
+            ));
+            $enumerationStatement->execute([$tenantId]);
+            $rows = $enumerationStatement->fetchAll();
+            if (count($rows) !== 3) {
+                return $this->blocked($phase, $checks);
+            }
+            foreach ($rows as $row) {
+                if (($row['tenant_id'] ?? null) !== $tenantId) {
+                    return $this->blocked($phase, $checks);
+                }
+            }
+            $checks['tenant_isolation_enumeration'] = 'verified';
+
+            $phase = 'tenant_isolation_update';
+            $updateStatement = $pdo->prepare(sprintf(
+                'UPDATE %s SET value_text = ? WHERE tenant_id = ? AND id = ?',
+                self::TABLE,
+            ));
+            $updateStatement->execute(['current-updated', $tenantId, 13]);
+            $currentUpdated = $updateStatement->rowCount();
+            $updateStatement->execute(['foreign-blocked', $tenantId, 12]);
+            $foreignUpdated = $updateStatement->rowCount();
+            if ($currentUpdated !== 1 || $foreignUpdated !== 0) {
+                return $this->blocked($phase, $checks);
+            }
+            $checks['tenant_isolation_update'] = 'verified';
+
+            $phase = 'tenant_isolation_delete';
+            $deleteStatement = $pdo->prepare(sprintf(
+                'DELETE FROM %s WHERE tenant_id = ? AND id = ?',
+                self::TABLE,
+            ));
+            $deleteStatement->execute([$tenantId, 14]);
+            $currentDeleted = $deleteStatement->rowCount();
+            $deleteStatement->execute([$tenantId, 12]);
+            $foreignDeleted = $deleteStatement->rowCount();
+            if ($currentDeleted !== 1 || $foreignDeleted !== 0) {
+                return $this->blocked($phase, $checks);
+            }
+            $checks['tenant_isolation_delete'] = 'verified';
+
+            $phase = 'transaction_rollback';
+            $pdo->rollBack();
+            $countAfterIsolationRollback = (int) $pdo->query(sprintf(
+                'SELECT COUNT(*) FROM %s',
+                self::TABLE,
+            ))->fetchColumn();
+            if ($countAfterIsolationRollback !== 0) {
+                return $this->blocked($phase, $checks);
+            }
 
             return [
                 'status' => 'qualified',
@@ -190,6 +282,27 @@ final class PreviewDatabaseQualification
 
             return $this->blocked($phase, $checks);
         }
+    }
+
+    /** @return array<string, string> */
+    private function initialChecks(): array
+    {
+        return [
+            'configuration' => 'not_checked',
+            'tenant_context' => 'not_checked',
+            'pdo_mysql_driver' => 'not_checked',
+            'connection' => 'not_checked',
+            'engine_family' => 'not_checked',
+            'temporary_table' => 'not_checked',
+            'transaction_rollback' => 'not_checked',
+            'tenant_owned_insert' => 'not_checked',
+            'tenant_scoped_query' => 'not_checked',
+            'tenant_isolation_read' => 'not_checked',
+            'tenant_identity_collision' => 'not_checked',
+            'tenant_isolation_enumeration' => 'not_checked',
+            'tenant_isolation_update' => 'not_checked',
+            'tenant_isolation_delete' => 'not_checked',
+        ];
     }
 
     /** @param array<string, string> $checks */
