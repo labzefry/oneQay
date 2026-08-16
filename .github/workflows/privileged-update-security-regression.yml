@@ -7,18 +7,32 @@ on:
     branches:
       - main
     paths:
-      - 'apps/web/app/Application/SystemUpdate/Security/**'
-      - 'apps/web/app/Infrastructure/SystemUpdate/Security/**'
+      - 'apps/web/app/Application/SystemUpdate/**'
+      - 'apps/web/app/Infrastructure/SystemUpdate/**'
+      - 'apps/web/app/Delivery/Http/SystemUpdate/**'
+      - 'apps/web/app/Providers/SystemUpdateServiceProvider.php'
+      - 'apps/web/bootstrap/providers.php'
+      - 'apps/web/config/oneqay.php'
+      - 'apps/web/routes/web.php'
       - 'apps/web/tests/privileged-update-security.php'
+      - 'apps/web/tests/backend-updater-control-plane.php'
       - '.github/workflows/privileged-update-security-regression.yml'
+      - '.github/workflows/backend-updater-control-plane-regression.yml'
   push:
     branches:
       - main
     paths:
-      - 'apps/web/app/Application/SystemUpdate/Security/**'
-      - 'apps/web/app/Infrastructure/SystemUpdate/Security/**'
+      - 'apps/web/app/Application/SystemUpdate/**'
+      - 'apps/web/app/Infrastructure/SystemUpdate/**'
+      - 'apps/web/app/Delivery/Http/SystemUpdate/**'
+      - 'apps/web/app/Providers/SystemUpdateServiceProvider.php'
+      - 'apps/web/bootstrap/providers.php'
+      - 'apps/web/config/oneqay.php'
+      - 'apps/web/routes/web.php'
       - 'apps/web/tests/privileged-update-security.php'
+      - 'apps/web/tests/backend-updater-control-plane.php'
       - '.github/workflows/privileged-update-security-regression.yml'
+      - '.github/workflows/backend-updater-control-plane-regression.yml'
   workflow_dispatch:
 
 permissions:
@@ -39,6 +53,7 @@ jobs:
       APP_DEBUG: 'false'
       APP_URL: http://localhost
       ONEQAY_RUNTIME_CLASS: ci
+      ONEQAY_SYSTEM_UPDATE_CONTROL_PLANE_ENABLED: 'false'
       SESSION_DRIVER: array
       CACHE_STORE: array
     steps:
@@ -97,18 +112,16 @@ jobs:
             apps/web/app/Infrastructure/SystemUpdate/Security \
             apps/web/tests/privileged-update-security.php \
             -type f -name '*.php' -print0 |
-            while IFS= read -r -d '' file; do
-              php -l "$file"
-            done
+            while IFS= read -r -d '' file; do php -l "$file"; done
 
       - name: Reject database or schema coupling
         shell: bash
         run: |
           set -euo pipefail
           if grep -R -n -E 'Illuminate\\Database|Schema::|DB::|new PDO|mysqli_' \
-            apps/web/app/Application/SystemUpdate/Security \
-            apps/web/app/Infrastructure/SystemUpdate/Security; then
-            echo 'Privileged update security foundation must remain database/schema independent.' >&2
+            apps/web/app/Application/SystemUpdate \
+            apps/web/app/Infrastructure/SystemUpdate; then
+            echo 'Updater security/control-plane must remain database/schema independent.' >&2
             exit 1
           fi
 
@@ -116,15 +129,26 @@ jobs:
         working-directory: apps/web
         run: php tests/privileged-update-security.php
 
-      - name: Confirm no updater HTTP activation surface exists
+      - name: Prove HTTP control plane cannot activate install
         shell: bash
         run: |
           set -euo pipefail
-          test ! -d apps/web/app/Delivery/Http/SystemUpdate
-          if grep -R -n -E 'system-update|system_update|privileged-update' apps/web/routes; then
-            echo 'Updater HTTP activation surface is not authorized in this foundation.' >&2
+          grep -Fq "'install_enabled' => false" apps/web/config/oneqay.php
+          ! grep -Eq 'ONEQAY_SYSTEM_UPDATE_INSTALL|env\([^)]*INSTALL' apps/web/config/oneqay.php
+          grep -Fq "Route::post('/install', 'install')" apps/web/routes/web.php
+          grep -Fq 'requestInstall(null)' apps/web/app/Delivery/Http/SystemUpdate/SystemUpdateControlPlaneController.php
+          if grep -R -n -E 'PharData|ZipArchive|file_put_contents|rename\(|unlink\(|symlink\(|curl_|Http::|Guzzle|shell_exec|proc_open|exec\(' \
+            apps/web/app/Application/SystemUpdate \
+            apps/web/app/Infrastructure/SystemUpdate \
+            apps/web/app/Delivery/Http/SystemUpdate \
+            --exclude-dir=Security; then
+            echo 'Privileged security gate detected unauthorized activation/download/filesystem implementation.' >&2
             exit 1
           fi
+
+      - name: Run backend control-plane fail-closed regression
+        working-directory: apps/web
+        run: php tests/backend-updater-control-plane.php
 
       - name: Confirm tracked source remains unchanged
         shell: bash
