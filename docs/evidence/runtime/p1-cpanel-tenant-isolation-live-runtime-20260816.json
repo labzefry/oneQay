@@ -1,0 +1,108 @@
+{
+  "schema": "oneqay.m7_5.tenant-isolation-live-runtime.v1",
+  "observed_at": "2026-08-16",
+  "environment": "technical-preview",
+  "runtime_class": "preview",
+  "source_main_sha": "dab951519e6747ac43653abfdd9fc24762f125b0",
+  "source_tree": "3f388b527553012e0f43343db36232a76887165f",
+  "active_release_id": "m75-preview-dab951519e67",
+  "hostname": "oneqay.n07.my.id",
+  "scope": "technical-preview-relational-probe",
+  "engine": {
+    "family": "MARIADB",
+    "version": "11.4.8"
+  },
+  "qualification": {
+    "status": "qualified",
+    "production_ready": false,
+    "persistent_schema_created": false,
+    "checks": {
+      "configuration": "verified",
+      "tenant_context": "verified",
+      "pdo_mysql_driver": "verified",
+      "connection": "verified",
+      "engine_family": "verified",
+      "temporary_table": "verified",
+      "transaction_rollback": "verified",
+      "tenant_owned_insert": "verified",
+      "tenant_scoped_query": "verified",
+      "tenant_isolation_read": "verified",
+      "tenant_identity_collision": "verified",
+      "tenant_isolation_enumeration": "verified",
+      "tenant_isolation_update": "verified",
+      "tenant_isolation_delete": "verified"
+    }
+  },
+  "verified_context_chain": {
+    "synthetic_identity": true,
+    "server_verified_tenant_context": true,
+    "tenant_id": "tenant-alpha",
+    "foreign_tenant_fixture": "tenant-beta",
+    "client_tenant_hint_used_as_authority": false
+  },
+  "least_privilege_boundary": {
+    "dedicated_non_production_database": true,
+    "dedicated_non_production_user": true,
+    "granted": [
+      "SELECT",
+      "INSERT",
+      "UPDATE",
+      "DELETE",
+      "CREATE TEMPORARY TABLES"
+    ],
+    "all_privileges_granted": false,
+    "permanent_create_granted": false,
+    "alter_granted": false,
+    "drop_granted": false,
+    "index_granted": false,
+    "lock_tables_granted": false,
+    "trigger_event_routine_view_admin_granted": false
+  },
+  "data_boundary": {
+    "synthetic_only": true,
+    "temporary_table_only": true,
+    "transaction_rollback_verified": true,
+    "permanent_schema_created": false,
+    "migration_executed": false,
+    "business_persistence_created": false,
+    "customer_data_used": false,
+    "bpjs_data_used": false,
+    "production_data_used": false
+  },
+  "post_qualification_health": {
+    "status": "ready",
+    "service": "oneqay-web"
+  },
+  "sanitization": {
+    "raw_screenshots_committed": false,
+    "database_identity_recorded": false,
+    "database_username_recorded": false,
+    "password_recorded": false,
+    "raw_env_recorded": false,
+    "app_key_recorded": false,
+    "control_panel_account_identifier_recorded": false,
+    "cookie_or_session_value_recorded": false,
+    "correlation_id_recorded": false,
+    "token_or_private_key_recorded": false
+  },
+  "control_reconciliation": {
+    "ENGINE:TENANT_ISOLATION": {
+      "before": "PARTIAL",
+      "candidate_after_publication": "VERIFIED",
+      "reference": "docs/handbook/M7_5_P1_TENANT_ISOLATION_RUNTIME_EVIDENCE_20260816.md#control-decision"
+    }
+  },
+  "lifecycle": {
+    "m7_5_outcome_after_candidate_reconciliation": "BLOCKED",
+    "verified_controls_after_candidate_reconciliation": 27,
+    "blocking_controls_after_candidate_reconciliation": 2,
+    "m7_6_authorized": false,
+    "m7_7_authorized": false,
+    "phase_0_exit_approved": false,
+    "release_authorized": false,
+    "production_authorized": false,
+    "production_ready": false,
+    "lifecycle_authority_created": false
+  },
+  "attribution": "Lab | zefry"
+}
