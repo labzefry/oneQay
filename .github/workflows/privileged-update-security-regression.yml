@@ -129,7 +129,7 @@ jobs:
         working-directory: apps/web
         run: php tests/privileged-update-security.php
 
-      - name: Prove HTTP control plane cannot activate install
+      - name: Prove HTTP install remains disabled and activation is isolated
         shell: bash
         run: |
           set -euo pipefail
@@ -137,13 +137,29 @@ jobs:
           ! grep -Eq 'ONEQAY_SYSTEM_UPDATE_INSTALL|env\([^)]*INSTALL' apps/web/config/oneqay.php
           grep -Fq "Route::post('/install', 'install')" apps/web/routes/web.php
           grep -Fq 'requestInstall(null)' apps/web/app/Delivery/Http/SystemUpdate/SystemUpdateControlPlaneController.php
-          if grep -R -n -E 'PharData|ZipArchive|file_put_contents|rename\(|unlink\(|symlink\(|curl_|Http::|Guzzle|shell_exec|proc_open|exec\(' \
+
+          if grep -R -n -E 'PharData|ZipArchive|curl_|Http::|Guzzle|shell_exec|proc_open|exec\(' \
             apps/web/app/Application/SystemUpdate \
             apps/web/app/Infrastructure/SystemUpdate \
             apps/web/app/Delivery/Http/SystemUpdate \
             --exclude-dir=Security; then
-            echo 'Privileged security gate detected unauthorized activation/download/filesystem implementation.' >&2
+            echo 'Privileged security gate detected unauthorized remote download/archive/shell implementation.' >&2
             exit 1
+          fi
+
+          mutation_matches="$(grep -R -n -E 'file_put_contents|rename\(|unlink\(|symlink\(|link\(' \
+            apps/web/app/Application/SystemUpdate \
+            apps/web/app/Infrastructure/SystemUpdate \
+            apps/web/app/Delivery/Http/SystemUpdate \
+            --exclude-dir=Security || true)"
+
+          if [ -n "$mutation_matches" ]; then
+            unexpected="$(printf '%s\n' "$mutation_matches" | grep -v '^apps/web/app/Infrastructure/SystemUpdate/Activation/' || true)"
+            if [ -n "$unexpected" ]; then
+              printf '%s\n' "$unexpected" >&2
+              echo 'Updater filesystem mutation escaped the separately tested Activation infrastructure boundary.' >&2
+              exit 1
+            fi
           fi
 
       - name: Run backend control-plane fail-closed regression
