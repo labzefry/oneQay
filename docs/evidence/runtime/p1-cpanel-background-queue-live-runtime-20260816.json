@@ -1,0 +1,144 @@
+{
+  "schema": "oneqay.m7_5.background-queue-live-runtime-evidence.v1",
+  "observed_at": "2026-08-16",
+  "environment": "technical-preview",
+  "canonical_main_sha": "e4db61bf478f756edaae1e877d3cfafaa6638021",
+  "canonical_main_tree_sha": "db99a2f1b14868371070274783d80660f3b337f0",
+  "published_source_sha": "e4db61bf478f756edaae1e877d3cfafaa6638021",
+  "runtime_release_before_deployment": "m75-preview-c7159770381e",
+  "runtime_release_qualified": "m75-preview-e4db61bf478f",
+  "release_artifact": {
+    "name": "oneqay-m75-preview-e4db61bf478f",
+    "digest": "sha256:5af88c452e5e66bf1d2d7a1dbeff270a9dab0b89c6fedb4fd8f8ebcb7607563d"
+  },
+  "deployment_and_health": {
+    "release_extracted_under_private_versioned_boundary": true,
+    "previous_release_retained": true,
+    "runtime_env_copied_without_opening_or_editing": true,
+    "runtime_env_permission": "0600",
+    "hosting_managed_htaccess_changed": false,
+    "preflight_artisan_version": "Laravel Framework 12.64.0",
+    "live_pointer_switched_to_qualified_release": true,
+    "preview_surface_healthy": true,
+    "preview_non_production_boundary_visible": true,
+    "readiness_status": "ready",
+    "readiness_service": "oneqay-web"
+  },
+  "execution_model": {
+    "trigger": "temporary-cpanel-cron",
+    "worker_lifecycle": "short-lived-one-shot",
+    "persistent_daemon_used": false,
+    "supervisor_used": false,
+    "redis_worker_used": false,
+    "database_backed_queue_used": false,
+    "storage": "private-filesystem",
+    "synthetic_jobs_only": true,
+    "max_jobs_per_worker_invocation": 1
+  },
+  "noop_rehearsal": {
+    "job_id": "M75-BG-NOOP-20260816-01",
+    "enqueue": {
+      "state": "pending",
+      "created": true,
+      "attempts": 0,
+      "scenario": "noop"
+    },
+    "worker": {
+      "state": "done",
+      "attempts": 1,
+      "recovered": 0,
+      "error_code": null
+    },
+    "final_status": {
+      "state": "done",
+      "attempts": 1,
+      "error_code": null
+    }
+  },
+  "retry_rehearsal": {
+    "job_id": "M75-BG-RETRY-20260816-01",
+    "enqueue": {
+      "state": "pending",
+      "created": true,
+      "attempts": 0,
+      "scenario": "fail-once"
+    },
+    "first_worker": {
+      "state": "retry",
+      "attempts": 1,
+      "recovered": 0,
+      "error_code": "ONEQAY_PREVIEW_QUEUE_SYNTHETIC_FAILURE"
+    },
+    "final_status": {
+      "state": "done",
+      "attempts": 2,
+      "error_code": null
+    },
+    "later_guarded_worker_observation": {
+      "state": "idle",
+      "job": null,
+      "used_as_success_proof": false,
+      "interpretation": "queue was already empty when this guarded invocation ran"
+    }
+  },
+  "temporary_cron_lifecycle": {
+    "preflight_cron_removed": true,
+    "noop_enqueue_cron_removed": true,
+    "noop_worker_cron_removed": true,
+    "noop_status_cron_removed": true,
+    "retry_enqueue_cron_removed": true,
+    "retry_first_worker_cron_removed": true,
+    "retry_guarded_worker_cron_removed": true,
+    "retry_final_status_cron_removed": true,
+    "persistent_oneqay_worker_intentionally_left_active": false
+  },
+  "evidence_handling": {
+    "raw_browser_screenshot_committed": false,
+    "raw_cpanel_screenshot_committed": false,
+    "hosting_account_identifier_committed": false,
+    "unrelated_cron_credential_or_key_committed": false,
+    "readiness_correlation_id_committed": false,
+    "cookie_or_session_value_committed": false,
+    "credential_or_token_committed": false,
+    "raw_env_or_app_key_committed": false,
+    "database_identity_committed": false,
+    "customer_or_production_data_committed": false
+  },
+  "qualification": {
+    "promotions": [
+      {
+        "control": "RUNTIME:BACKGROUND_EXECUTION",
+        "prior_status": "PARTIAL",
+        "candidate_status": "VERIFIED"
+      },
+      {
+        "control": "RUNTIME:QUEUE_EXECUTION",
+        "prior_status": "UNVERIFIED",
+        "candidate_status": "VERIFIED"
+      }
+    ],
+    "canonical_before_publication": {
+      "verified_count": 24,
+      "blocked_count": 5,
+      "outcome": "BLOCKED"
+    },
+    "proposed_after_publication": {
+      "verified_count": 26,
+      "blocked_count": 3,
+      "outcome": "BLOCKED"
+    }
+  },
+  "scope_limits": {
+    "background_execution_claim_applies_only_to_observed_short_lived_preview_cron_model": true,
+    "queue_claim_applies_only_to_observed_preview_private_filesystem_synthetic_queue": true,
+    "persistent_daemon_capability_claimed": false,
+    "production_queue_capability_claimed": false,
+    "database_backed_queue_capability_claimed": false,
+    "redis_queue_capability_claimed": false,
+    "business_workload_qualification_claimed": false,
+    "database_restore_claimed": false,
+    "backup_restore_claimed": false
+  },
+  "lifecycle_authority_created": false,
+  "attribution": "Lab | zefry"
+}
