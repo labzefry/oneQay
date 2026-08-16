@@ -1,0 +1,107 @@
+{
+  "schema": "oneqay.m7_5.backup-restore-rehearsal.v1",
+  "observed_at": "2026-08-16",
+  "environment": "technical-preview",
+  "runtime_class": "preview",
+  "canonical_main_before_reconciliation": "fb046717af894ac6508bc3a92ec375cf407f6bcd",
+  "active_release_id": "m75-preview-dab951519e67",
+  "scope": "isolated-disposable-database-backup-restore-rehearsal",
+  "authority": "product-owner-authorized-bounded-non-production-rehearsal",
+  "isolation": {
+    "target": "disposable-technical-preview-rehearsal-database",
+    "production_target_used": false,
+    "customer_data_used": false,
+    "business_schema_used": false
+  },
+  "fixture_baseline": {
+    "table": "m75_restore_probe",
+    "engine": "InnoDB",
+    "schema_marker": "m75-v1",
+    "expected_row_count": 2,
+    "records": [
+      {
+        "tenant_id": "tenant-alpha",
+        "sentinel_value": "M75-RESTORE-ALPHA",
+        "schema_marker": "m75-v1"
+      },
+      {
+        "tenant_id": "tenant-beta",
+        "sentinel_value": "M75-RESTORE-BETA",
+        "schema_marker": "m75-v1"
+      }
+    ]
+  },
+  "backup": {
+    "mechanism": "cpanel-database-backup",
+    "known_rehearsal_backup_acquired": true,
+    "artifact_checksum_independently_recorded": false,
+    "raw_artifact_committed": false
+  },
+  "controlled_loss": {
+    "method": "drop-rehearsal-table-only",
+    "fixture_table_removed": true,
+    "other_database_mutation_claimed": false
+  },
+  "restore": {
+    "mechanism": "cpanel-database-backup-restore",
+    "cpanel_reported_success": true,
+    "isolated_rehearsal_target": true,
+    "production_restore": false
+  },
+  "integrity_after_restore": {
+    "fixture_table_restored": true,
+    "expected_row_count": 2,
+    "actual_row_count": 2,
+    "record_reconciliation": "2/2",
+    "tenant_alpha_match": true,
+    "tenant_beta_match": true,
+    "sentinel_values_match": true,
+    "schema_markers_match": true,
+    "foreign_or_unexpected_rows_observed": false
+  },
+  "post_restore_health": {
+    "endpoint": "/health/ready",
+    "status": "ready",
+    "service": "oneqay-web"
+  },
+  "recovery_metrics": {
+    "rpo_numeric": "not_precisely_measured",
+    "rto_numeric": "not_precisely_measured",
+    "rpo_interpretation": "known rehearsal backup restored all 2/2 synthetic records included in the backup",
+    "rto_interpretation": "bounded interactive restore completed successfully; numerical duration was not captured",
+    "production_sla_claimed": false
+  },
+  "control_decisions": {
+    "ENGINE:RESTORE_VERIFIED": "VERIFIED",
+    "RUNTIME:BACKUP_RESTORE": "VERIFIED"
+  },
+  "non_qualifying_precursor": {
+    "empty_database_restore_observation": "not_used_for_integrity-control-decision"
+  },
+  "security_exclusions": [
+    "database-name",
+    "account-prefix",
+    "database-username",
+    "database-password",
+    "raw-env",
+    "app-key",
+    "cpanel-account-identifier",
+    "filesystem-home-path",
+    "raw-backup-artifact",
+    "cookie-or-session-value",
+    "correlation-id",
+    "raw-screenshot",
+    "customer-data",
+    "bpjs-data",
+    "payment-provider-data",
+    "production-data"
+  ],
+  "lifecycle": {
+    "lifecycle_authority_created": false,
+    "m7_6_authorized": false,
+    "m7_7_authorized": false,
+    "release_authorized": false,
+    "production_authorized": false,
+    "production_ready": false
+  }
+}
