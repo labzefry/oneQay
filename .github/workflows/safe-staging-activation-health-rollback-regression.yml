@@ -1,0 +1,170 @@
+name: Safe Staging Activation Health Rollback Regression
+
+# Attribution: Lab | zefry
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'apps/web/app/Application/SystemUpdate/**'
+      - 'apps/web/app/Infrastructure/SystemUpdate/Activation/**'
+      - 'apps/web/tests/safe-staging-activation-health-rollback.php'
+      - '.github/workflows/safe-staging-activation-health-rollback-regression.yml'
+      - '.github/workflows/backend-updater-control-plane-regression.yml'
+      - '.github/workflows/privileged-update-security-regression.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/web/app/Application/SystemUpdate/**'
+      - 'apps/web/app/Infrastructure/SystemUpdate/Activation/**'
+      - 'apps/web/tests/safe-staging-activation-health-rollback.php'
+      - '.github/workflows/safe-staging-activation-health-rollback-regression.yml'
+      - '.github/workflows/backend-updater-control-plane-regression.yml'
+      - '.github/workflows/privileged-update-security-regression.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: safe-staging-activation-health-rollback-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  safe-staging-activation-health-rollback-regression:
+    name: safe-staging-activation-health-rollback-regression
+    runs-on: ubuntu-latest
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHQ=
+      APP_DEBUG: 'false'
+      APP_URL: http://localhost
+      ONEQAY_RUNTIME_CLASS: ci
+      ONEQAY_SYSTEM_UPDATE_CONTROL_PLANE_ENABLED: 'false'
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Validate PHP runtime boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          php --version
+          php -r 'if (PHP_VERSION_ID < 80200 || PHP_VERSION_ID >= 80600) { fwrite(STDERR, "Updater activation foundation requires governed PHP 8.2-8.5 compatibility.\n"); exit(1); }'
+          composer --version
+
+      - name: Preserve root Platform Foundation regression
+        run: |
+          composer validate --strict --no-check-publish
+          composer test
+
+      - name: Install locked application dependencies
+        working-directory: apps/web
+        run: |
+          composer validate --no-check-publish
+          composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Reject High or Critical Composer advisories
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          composer audit --locked --format=json > /tmp/oneqay-activation-composer-audit.json || true
+          php -r '
+            $data = json_decode(file_get_contents("/tmp/oneqay-activation-composer-audit.json"), true, 512, JSON_THROW_ON_ERROR);
+            foreach (($data["advisories"] ?? []) as $package => $items) {
+                foreach ($items as $item) {
+                    if (in_array(strtolower((string) ($item["severity"] ?? "")), ["high", "critical"], true)) {
+                        fwrite(STDERR, "Blocking Composer advisory for {$package}.\n");
+                        exit(1);
+                    }
+                }
+            }
+          '
+
+      - name: Validate updater activation PHP syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          find \
+            apps/web/app/Application/SystemUpdate \
+            apps/web/app/Infrastructure/SystemUpdate/Activation \
+            apps/web/tests/safe-staging-activation-health-rollback.php \
+            -type f -name '*.php' -print0 |
+            while IFS= read -r -d '' file; do php -l "$file"; done
+
+      - name: Prove runtime install remains hard disabled and unwired
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq "'install_enabled' => false" apps/web/config/oneqay.php
+          ! grep -Eq 'ONEQAY_SYSTEM_UPDATE_INSTALL|env\([^)]*INSTALL' apps/web/config/oneqay.php
+          grep -Fq 'requestInstall(null)' apps/web/app/Delivery/Http/SystemUpdate/SystemUpdateControlPlaneController.php
+
+          if [ "${{ github.event_name }}" = 'pull_request' ]; then
+            changed="$(git diff --name-only origin/main...HEAD)"
+            if printf '%s\n' "$changed" | grep -E '^apps/web/(routes/web\.php|config/oneqay\.php|app/Providers/SystemUpdateServiceProvider\.php|app/Delivery/Http/SystemUpdate/)'; then
+              echo 'Activation foundation must not wire runtime HTTP/config/provider mutation.' >&2
+              exit 1
+            fi
+          fi
+
+      - name: Reject database schema remote download and archive extraction coupling
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -R -n -E 'Illuminate\\Database|Schema::|DB::|new PDO|mysqli_' \
+            apps/web/app/Application/SystemUpdate \
+            apps/web/app/Infrastructure/SystemUpdate/Activation; then
+            echo 'Activation foundation must remain database/schema independent.' >&2
+            exit 1
+          fi
+
+          if grep -R -n -E 'PharData|ZipArchive|curl_|Http::|Guzzle|shell_exec|proc_open|exec\(' \
+            apps/web/app/Application/SystemUpdate \
+            apps/web/app/Infrastructure/SystemUpdate/Activation; then
+            echo 'Activation foundation must not download releases, extract archives, or execute shell commands.' >&2
+            exit 1
+          fi
+
+      - name: Prove staging and rollback guards are present
+        shell: bash
+        run: |
+          set -euo pipefail
+          store=apps/web/app/Infrastructure/SystemUpdate/Activation/FilesystemSystemUpdateReleaseStore.php
+          coordinator=apps/web/app/Application/SystemUpdate/SystemUpdateActivationCoordinator.php
+          lock=apps/web/app/Infrastructure/SystemUpdate/Activation/FilesystemSystemUpdateDeploymentLockManager.php
+          pointer=apps/web/app/Infrastructure/SystemUpdate/Activation/FilesystemSystemUpdateActiveReleasePointerStore.php
+
+          grep -Fq 'staging_link_forbidden' "$store"
+          grep -Fq 'staging_hardlink_forbidden' "$store"
+          grep -Fq 'staging_secret_file_forbidden' "$store"
+          grep -Fq 'staging_limits_exceeded' "$store"
+          grep -Fq 'NO_SCHEMA_CHANGE' apps/web/app/Application/SystemUpdate/SystemUpdatePreparedRelease.php
+          grep -Fq 'deployment_lock_stale_reconciliation_required' "$lock"
+          grep -Fq 'active_pointer_compare_failed' "$pointer"
+          grep -Fq 'VERIFYING_HEALTH' "$coordinator"
+          grep -Fq 'ROLLING_BACK' "$coordinator"
+          grep -Fq 'rollback_health_failed' "$coordinator"
+
+      - name: Preserve privileged and backend fail-closed regressions
+        working-directory: apps/web
+        run: |
+          php tests/privileged-update-security.php
+          php tests/backend-updater-control-plane.php
+
+      - name: Run safe staging activation health rollback regression
+        working-directory: apps/web
+        run: php tests/safe-staging-activation-health-rollback.php
+
+      - name: Confirm tracked source remains unchanged
+        shell: bash
+        run: git diff --exit-code
