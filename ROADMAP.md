@@ -1,5 +1,22 @@
 # oneQay Roadmap
 
+## Canonical program-state consolidation — 2026-08-16
+
+For current roadmap interpretation, this section supersedes older current-facing M7.5 wording retained below as historical planning/provenance.
+
+- M7.0–M7.4A: **DONE / PUBLISHED**.
+- M7.5: **IN PROGRESS / QUALIFICATION MATERIAL PROGRESS**.
+- Canonical evaluator after PR #124: **26 VERIFIED / 3 BLOCKED**; overall outcome **BLOCKED / INCOMPLETE**; `lifecycle_authority_created=false`.
+- Remaining blockers: `ENGINE:RESTORE_VERIFIED:NOT_SUPPLIED`, `ENGINE:TENANT_ISOLATION:PARTIAL`, and `RUNTIME:BACKUP_RESTORE:PARTIAL`.
+- M7.6 and M7.7: **NOT AUTHORIZED**.
+- Phase 0: **IN PROGRESS**; Phase 0 Exit: **NOT APPROVED**.
+- Sprint 14, Release, and Production: **NOT AUTHORIZED**.
+- Production readiness: **NO-GO**.
+
+The preferred next analysis after this state consolidation is a fresh read-only gap analysis of the three remaining M7.5 blockers, with tenant isolation investigated before restore because restore activity is higher-risk and separately authorized.
+
+Historical roadmap language, SHAs, PRs, and evidence snapshots below remain preserved and must not override this consolidation.
+
 ## Roadmap principles
 
 - Outcome lebih penting daripada jumlah fitur.
