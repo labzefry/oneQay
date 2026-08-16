@@ -1,5 +1,18 @@
 # Workflow Directory
 
+## Canonical program-state consolidation — 2026-08-16
+
+For current workflow-directory interpretation, this section supersedes older statements below that stop at M7.4A or describe all `M7.5+` workflow activity as future/nonexistent. Those statements are retained as historical control-plane provenance.
+
+Current repository workflow inventory also includes bounded M7.5 mechanisms, including:
+
+- `.github/workflows/m7-5-preview-db-qualification-regression.yml`;
+- `.github/workflows/m7-5-preview-release-artifact.yml`.
+
+Their existence and prior governed use do not create general deployment, Release, Production, database/schema/migration, restore, M7.6, M7.7, Phase 0 Exit, or Sprint 14 authority. Canonical M7.5 after PR #124 is **26 VERIFIED / 3 BLOCKED**, overall **BLOCKED / INCOMPLETE**, with `lifecycle_authority_created=false`.
+
+This documentation-only consolidation changes no workflow YAML, status-check producer, ruleset, or merge authority.
+
 Application release and deployment workflows remain deferred until the relevant
 Product Owner authority and delivery gates are available. M7.1, M7.2, M7.3,
 M7.4, and M7.4A each permit only their separately authorized bounded
