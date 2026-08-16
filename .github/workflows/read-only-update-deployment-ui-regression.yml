@@ -172,7 +172,8 @@ jobs:
 
           php <<'PHP'
           <?php
-          $status = json_decode(file_get_contents('/tmp/oneqay-update-ui-status.json'), true, 512, JSON_THROW_ON_ERROR);
+          $payload = json_decode(file_get_contents('/tmp/oneqay-update-ui-status.json'), true, 512, JSON_THROW_ON_ERROR);
+          $status = $payload['data'] ?? [];
           if (($status['control_plane'] ?? null) !== 'DISABLED' || ($status['install'] ?? null) !== 'DISABLED') {
               fwrite(STDERR, "Updater status must remain disabled.\n");
               exit(1);
