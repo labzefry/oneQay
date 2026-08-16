@@ -35,7 +35,7 @@ final class FilesystemSystemUpdateReleaseStore implements SystemUpdateReleaseSto
         $this->assertOperationId($operationId);
 
         $workspace = $this->stagingRoot().'/'.$operationId;
-        if (file_exists($workspace)) {
+        if (file_exists($workspace) || is_link($workspace)) {
             throw new SystemUpdateControlPlaneViolation('staging_workspace_exists');
         }
 
@@ -55,11 +55,11 @@ final class FilesystemSystemUpdateReleaseStore implements SystemUpdateReleaseSto
         $candidate = $workspace.'/'.$releaseId;
         $destination = $this->releasesRoot().'/'.$releaseId;
 
-        if (! is_dir($candidate)) {
+        if (! is_dir($candidate) || is_link($candidate)) {
             throw new SystemUpdateControlPlaneViolation('staged_release_missing');
         }
 
-        if (file_exists($destination)) {
+        if (file_exists($destination) || is_link($destination)) {
             throw new SystemUpdateControlPlaneViolation('release_already_staged');
         }
 
@@ -81,7 +81,7 @@ final class FilesystemSystemUpdateReleaseStore implements SystemUpdateReleaseSto
         $this->assertReleaseId($release->releaseId());
         $path = $this->releasesRoot().'/'.$release->releaseId();
 
-        if (! is_dir($path)) {
+        if (! is_dir($path) || is_link($path)) {
             throw new SystemUpdateControlPlaneViolation('release_not_ready');
         }
 
@@ -103,8 +103,9 @@ final class FilesystemSystemUpdateReleaseStore implements SystemUpdateReleaseSto
     public function releaseExists(string $releaseId): bool
     {
         $this->assertReleaseId($releaseId);
+        $path = $this->releasesRoot().'/'.$releaseId;
 
-        return is_dir($this->releasesRoot().'/'.$releaseId);
+        return is_dir($path) && ! is_link($path);
     }
 
     private function validateTree(string $candidate): void
@@ -129,6 +130,10 @@ final class FilesystemSystemUpdateReleaseStore implements SystemUpdateReleaseSto
             foreach (explode(DIRECTORY_SEPARATOR, $relative) as $segment) {
                 if ($segment === '' || $segment === '.' || $segment === '..') {
                     throw new SystemUpdateControlPlaneViolation('staging_path_invalid');
+                }
+
+                if (in_array(strtolower($segment), ['.git', '.svn'], true)) {
+                    throw new SystemUpdateControlPlaneViolation('staging_repository_metadata_forbidden');
                 }
             }
 
@@ -210,8 +215,16 @@ final class FilesystemSystemUpdateReleaseStore implements SystemUpdateReleaseSto
 
     private function ensureDirectory(string $path): void
     {
+        if (is_link($path)) {
+            throw new SystemUpdateControlPlaneViolation('private_release_root_symlink_forbidden');
+        }
+
         if (! is_dir($path) && ! mkdir($path, 0700, true) && ! is_dir($path)) {
             throw new SystemUpdateControlPlaneViolation('private_release_root_unavailable');
+        }
+
+        if (is_link($path)) {
+            throw new SystemUpdateControlPlaneViolation('private_release_root_symlink_forbidden');
         }
     }
 
