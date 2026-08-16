@@ -1,5 +1,23 @@
 # oneQay Deployment Handbook
 
+## Canonical program-state consolidation — 2026-08-16
+
+For current Preview/runtime interpretation, this section supersedes older M7.5/current-target wording retained below as historical planning and pre-qualification state.
+
+The bounded non-Production Technical Preview on P1/cPanel has been materially exercised through governed publication/evidence up to PR #124. The canonical M7.5 evaluator is **26 VERIFIED / 3 BLOCKED**, outcome **BLOCKED / INCOMPLETE**, with `lifecycle_authority_created=false`.
+
+Verified runtime evidence now includes the bounded web runtime, database connectivity/least privilege/transaction/migration boundary, connection/resource visibility, outbound DNS/HTTPS, environment-secret isolation, security boundary, Database Portability Contract conformance, safe observability logging, PHP CLI, scheduler/cron, bounded release rollback/deployment recovery, and short-lived Preview background/queue execution.
+
+The remaining blockers are only:
+
+- `ENGINE:RESTORE_VERIFIED:NOT_SUPPLIED`;
+- `ENGINE:TENANT_ISOLATION:PARTIAL`;
+- `RUNTIME:BACKUP_RESTORE:PARTIAL`.
+
+The observed rollback/recovery evidence is limited to the governed no-schema-change Technical Preview release rehearsal and must not be interpreted as database restore, universal rollback safety, Release, or Production readiness. Backup/export evidence is not successful restore evidence. M7.6, M7.7, Phase 0 Exit, Sprint 14, Release, and Production remain **NOT AUTHORIZED**; production readiness remains **NO-GO**.
+
+Historical DEC-009/P1/P2 wording and prior qualification snapshots below remain preserved.
+
 ## Goals
 
 Deployment harus reproducible, auditable, secure, recoverable, portable, dan tidak mengubah business logic antar environment atau antar officially qualified relational engine profile. Artifact yang sama dipromosikan; konfigurasi, secret, Infrastructure adapter, dan qualified engine profile membedakan environment tanpa mengubah Domain/Application business rules.
