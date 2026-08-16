@@ -1,5 +1,17 @@
 # Changelog
 
+## Canonical M7.5 lifecycle closure — 2026-08-17
+
+The current `[Unreleased]` program state now includes the governed M7.5 publication/evidence sequence through PR #130. PR #127 published database-backed tenant-isolation qualification, PR #128 published its secure cleanup, PR #129 published the final isolated backup/restore evidence and promoted the last two mandatory controls, and PR #130 published secure cleanup of the disposable restore-rehearsal environment.
+
+Canonical M7.5 evaluator: **29 VERIFIED / 0 BLOCKED**, outcome **EVIDENCE_COMPLETE**, with `lifecycle_authority_created=false`. M7.5 Preview Runtime Qualification is therefore **CLOSED / EVIDENCE_COMPLETE / PUBLISHED** for current program-state interpretation.
+
+This closure is documentation/current-state reconciliation only. It is not a product release and creates no application source, workflow YAML, database/schema/migration, cPanel, deployment, restore, M7.6, M7.7, Phase 0 Exit, Sprint 14, Release, or Production authority. Production readiness remains **NO-GO**. The next candidate engineering direction is separately gated Secure Web Updater architecture/release-control-plane work.
+
+Historical `[Unreleased]` entries and earlier evaluator snapshots below remain preserved as publication and governance provenance.
+
+Attribution: **Lab | zefry**
+
 ## Canonical M7.5 consolidation — 2026-08-16
 
 The current `[Unreleased]` program state includes the governed M7.5 publication/evidence sequence through PR #124. In aggregate, PR #102–#124 established the fail-closed qualification harness, governed Technical Preview release-artifact path, live cPanel web-runtime evidence, bounded MariaDB relational qualification and retirement, PHP CLI/scheduler evidence, connection/resource visibility, outbound DNS/HTTPS, environment-secret and security-boundary hardening/evidence, Database Portability Contract conformance, safe observability, bounded application rollback/deployment recovery, and short-lived Preview background/queue execution.
@@ -164,7 +176,7 @@ Semua perubahan penting oneQay dicatat di dokumen ini. Format mengikuti Keep a C
 - Recorded that no separate exact-head ready authority, separate exact-head merge authority, review submission, PR comment, published commit status, or GitHub Actions workflow run was available for PR #27.
 - Recorded the Product Owner post-merge exact-head decision approving only the accuracy of PR #27 three-file corrective content, without retrospective lifecycle authority or ratification of PR #27 lifecycle action.
 - Clarified that the PR #27 technical merge does not ratify PR #26 or PR #25, validate Issue #23 closure, accept any ADR, approve Phase 0 exit, grant source-code authority, complete GOV-034/GOV-035/GOV-036, or provide substantive approval or completion evidence.
-- Preserved Phase 0 as In Progress, application implementation as Blocked, Phase 0 preview exit as Not Ready, P1 as conditional and Unverified, ADR-001 through ADR-007 and GD-007 as Proposed, GOV-034/GOV-035/GOV-036 as Review, JRN-003/JRN-013 as unresolved, PAY-1/OFF-1/TEN-1/REC-1/SLO-1/DATA-1 as Proposed, and hosting evidence as Pending/Not supplied/Unverified.
+- Preserved Phase 0 as In Progress, application implementation as Blocked, Phase 0 preview exit as Not Ready, P1 as conditional dan **Unverified**. ADR-001 through ADR-007, GD-007, PAY-1, OFF-1, TEN-1, REC-1, SLO-1, and DATA-1 remain **Proposed** selections or boundaries. GOV-034, GOV-035, and GOV-036 remain **Review**. JRN-003 and JRN-013 remain unresolved. Hosting evidence remains Pending, Not supplied, or Unverified.
 - Recorded that PR #28 original base `3c4bcfe9797a3ae7f4deb124568ef361d74125e5` and exact head `0597d784f63cf6d5967cedae17ca8d0b5a2e4dc9` were technically merged as `1009af84ec0ee7d7731890e379dde25279280c3a` after the PR changed from draft despite its body limiting authority to draft creation and requiring the PR to remain draft.
 - Recorded that no separate exact-head ready authority, separate exact-head merge authority, review submission, PR comment, published commit status, or GitHub Actions workflow run was available for PR #28.
 - Recorded the Product Owner post-merge exact-head decision approving only the accuracy of PR #28 three-file corrective content, without retrospective lifecycle authority or ratification of PR #28 lifecycle action.
