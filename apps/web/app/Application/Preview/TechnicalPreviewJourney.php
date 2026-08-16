@@ -8,8 +8,10 @@ use App\Application\Organization\EnterOrganizationalContext;
 use App\Application\Organization\OrganizationalAccessViolation;
 use App\Application\Pos\CompleteSyntheticSale;
 use App\Application\Pos\SaleCommand;
+use App\Application\Tenancy\MissingTenantContext;
 use App\Application\Tenancy\TenantContextStore;
 use App\Application\Tenancy\TenantMembershipVerifier;
+use App\Application\Tenancy\VerifiedTenantContext;
 use App\Domain\Pos\Cart;
 use App\Domain\Pos\CartLine;
 use App\Domain\Pos\CatalogItem;
@@ -40,6 +42,31 @@ final readonly class TechnicalPreviewJourney
     public function profile(string $principalId): ?PreviewProfile
     {
         return $this->fixtures->profile($principalId);
+    }
+
+    /**
+     * Execute one bounded operation while the server-verified Preview tenant and
+     * organizational context remain active. The callback receives only the
+     * verified tenant context; raw tenant hints never become authority here.
+     *
+     * @template T
+     * @param callable(VerifiedTenantContext): T $operation
+     * @return T
+     */
+    public function withinVerifiedContext(PreviewProfile $profile, callable $operation): mixed
+    {
+        $this->enterVerifiedContext($profile);
+
+        try {
+            $context = $this->tenantContexts->current();
+            if (! $context instanceof VerifiedTenantContext) {
+                throw new MissingTenantContext('Verified tenant context is required.');
+            }
+
+            return $operation($context);
+        } finally {
+            $this->clearContext();
+        }
     }
 
     /** @return list<CatalogItem> */
