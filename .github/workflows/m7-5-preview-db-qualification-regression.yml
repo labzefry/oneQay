@@ -5,6 +5,7 @@ on:
     branches:
       - main
     paths:
+      - 'apps/web/app/Application/Preview/TechnicalPreviewJourney.php'
       - 'apps/web/app/Delivery/Preview/TechnicalPreviewDatabaseQualificationController.php'
       - 'apps/web/app/Infrastructure/Persistence/PreviewDatabaseQualification.php'
       - 'apps/web/config/oneqay.php'
@@ -54,6 +55,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          php -l apps/web/app/Application/Preview/TechnicalPreviewJourney.php
           php -l apps/web/app/Delivery/Preview/TechnicalPreviewDatabaseQualificationController.php
           php -l apps/web/app/Infrastructure/Persistence/PreviewDatabaseQualification.php
           php -l apps/web/config/oneqay.php
@@ -71,6 +73,7 @@ jobs:
             exit 1
           fi
           if grep -R -n -E 'BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|AKIA[0-9A-Z]{16}' \
+            apps/web/app/Application/Preview/TechnicalPreviewJourney.php \
             apps/web/app/Delivery/Preview/TechnicalPreviewDatabaseQualificationController.php \
             apps/web/app/Infrastructure/Persistence/PreviewDatabaseQualification.php \
             apps/web/config/oneqay.php \
@@ -78,6 +81,14 @@ jobs:
             echo 'Preview DB qualification source contains forbidden credential material.' >&2
             exit 1
           fi
+
+      - name: Enforce verified-context tenant isolation source boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq 'withinVerifiedContext' apps/web/app/Application/Preview/TechnicalPreviewJourney.php
+          grep -Fq 'VerifiedTenantContext $tenantContext' apps/web/app/Infrastructure/Persistence/PreviewDatabaseQualification.php
+          grep -Fq '$journey->withinVerifiedContext' apps/web/app/Delivery/Preview/TechnicalPreviewDatabaseQualificationController.php
 
       - name: Run Preview database qualification regression
         working-directory: apps/web
