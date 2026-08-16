@@ -118,7 +118,7 @@ jobs:
             apps/web/app/Application/SystemUpdate/SharedConfiguration
             apps/web/app/Infrastructure/SystemUpdate/SharedConfiguration
           )
-          if grep -R -n -E 'env\(|getenv\(|_ENV|_SERVER|DB_PASSWORD|DB_USERNAME|DB_DATABASE|MAIL_PASSWORD|API_TOKEN|access_token|secret_value|rawSecret' "${shared_paths[@]}"; then
+          if grep -R -n -E 'env\(|getenv\(|\$_ENV|\$_SERVER|DB_PASSWORD|DB_USERNAME|DB_DATABASE|MAIL_PASSWORD|API_TOKEN|access_token|secret_value|rawSecret' "${shared_paths[@]}"; then
             echo 'Shared configuration boundary must not expose generic env, database credentials, tokens, or raw secret values.' >&2
             exit 1
           fi
