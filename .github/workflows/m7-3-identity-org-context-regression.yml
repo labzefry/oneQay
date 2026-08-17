@@ -12,16 +12,26 @@ on:
       - 'apps/web/app/Application/Identity/**'
       - 'apps/web/app/Application/Organization/**'
       - 'apps/web/app/Application/Persistence/**'
+      - 'apps/web/app/Application/Access/**'
       - 'apps/web/app/Infrastructure/Identity/**'
       - 'apps/web/app/Infrastructure/Organization/**'
+      - 'apps/web/app/Infrastructure/Tenancy/LaravelTenantMembershipVerifier.php'
+      - 'apps/web/app/Infrastructure/Access/**'
       - 'apps/web/app/Infrastructure/Persistence/LaravelDurableContextGraphRepository.php'
       - 'apps/web/app/Infrastructure/Persistence/LaravelPersistenceTransaction.php'
       - 'apps/web/app/Providers/AppServiceProvider.php'
       - 'apps/web/config/database.php'
       - 'apps/web/database/migrations/0000_00_00_000001_create_foundational_context_graph.php'
+      - 'apps/web/database/migrations/0000_00_00_000002_create_organizational_access_grants.php'
       - 'apps/web/tests/persistence.php'
+      - 'apps/web/tests/access-persistence.php'
+      - 'apps/web/tests/tenant-isolation.php'
       - 'apps/web/tests/identity-org-context.php'
+      - 'apps/web/tests/run.php'
+      - 'docs/DURABLE_IDENTITY_ORGANIZATIONAL_ACCESS_PERSISTENCE_FOUNDATION.md'
+      - '.github/workflows/m7-2-tenant-isolation-regression.yml'
       - '.github/workflows/m7-3-identity-org-context-regression.yml'
+      - '.github/workflows/m7-5-preview-db-qualification-regression.yml'
   workflow_dispatch:
 
 permissions:
@@ -51,7 +61,7 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: Enforce bounded M7.3 and Sprint 19 preservation envelope
+      - name: Enforce bounded M7.3 and Sprint 20 durable-access envelope
         if: github.event_name == 'pull_request'
         shell: bash
         run: |
@@ -61,25 +71,31 @@ jobs:
           test -s /tmp/m73-changed-files.txt
           while IFS= read -r file; do
             case "$file" in
-              apps/web/config/database.php|\
-              apps/web/environment.example|\
-              apps/web/app/Application/Persistence/DurablePersistenceViolation.php|\
-              apps/web/app/Application/Persistence/DurableContextGraph.php|\
-              apps/web/app/Application/Persistence/DurableContextGraphRepository.php|\
-              apps/web/app/Application/Persistence/PersistenceTransaction.php|\
-              apps/web/app/Application/Persistence/DurableContextGraphService.php|\
-              apps/web/app/Infrastructure/Persistence/LaravelDurableContextGraphRepository.php|\
-              apps/web/app/Infrastructure/Persistence/LaravelPersistenceTransaction.php|\
+              apps/web/app/Application/Access/DurableOrganizationalAccessGrant.php|\
+              apps/web/app/Application/Access/DurableOrganizationalAccessRepository.php|\
+              apps/web/app/Application/Access/DurableOrganizationalAccessService.php|\
+              apps/web/app/Application/Access/DurableOrganizationalAccessViolation.php|\
+              apps/web/app/Infrastructure/Access/LaravelDurableOrganizationalAccessRepository.php|\
+              apps/web/app/Infrastructure/Tenancy/LaravelTenantMembershipVerifier.php|\
+              apps/web/app/Infrastructure/Organization/LaravelOrganizationalRelationshipVerifier.php|\
               apps/web/app/Providers/AppServiceProvider.php|\
-              apps/web/database/migrations/0000_00_00_000001_create_foundational_context_graph.php|\
-              apps/web/tests/persistence.php|\
+              apps/web/database/migrations/0000_00_00_000002_create_organizational_access_grants.php|\
+              apps/web/tests/access-persistence.php|\
               apps/web/tests/run.php|\
               apps/web/tests/tenant-isolation.php|\
-              .github/workflows/m7-2-tenant-isolation-regression.yml|\
-              docs/DURABLE_APPLICATION_PERSISTENCE_FOUNDATION.md|\
               apps/web/tests/identity-org-context.php|\
+              .github/workflows/m7-2-tenant-isolation-regression.yml|\
               .github/workflows/m7-3-identity-org-context-regression.yml|\
               .github/workflows/m7-5-preview-db-qualification-regression.yml|\
+              docs/DURABLE_IDENTITY_ORGANIZATIONAL_ACCESS_PERSISTENCE_FOUNDATION.md|\
+              apps/web/config/database.php|\
+              apps/web/environment.example|\
+              apps/web/app/Application/Persistence/*|\
+              apps/web/app/Infrastructure/Persistence/LaravelDurableContextGraphRepository.php|\
+              apps/web/app/Infrastructure/Persistence/LaravelPersistenceTransaction.php|\
+              apps/web/database/migrations/0000_00_00_000001_create_foundational_context_graph.php|\
+              apps/web/tests/persistence.php|\
+              docs/DURABLE_APPLICATION_PERSISTENCE_FOUNDATION.md|\
               tools/build-m7-5-preview-release.sh|\
               .github/workflows/m7-5-preview-release-artifact.yml)
                 ;;
@@ -97,7 +113,7 @@ jobs:
           set -euo pipefail
           if git diff --name-only "origin/${{ github.base_ref }}...HEAD" | \
             grep -Eq '^(src/Tenant/Foundation\.php|src/Auth/|composer\.json$)'; then
-            echo "M7.3 does not authorize root Platform Foundation modification." >&2
+            echo "M7.3/Sprint20 does not authorize root Platform Foundation modification." >&2
             exit 1
           fi
 
@@ -128,7 +144,7 @@ jobs:
           test -f apps/web/package-lock.json
           if git diff --name-only "origin/${{ github.base_ref }}...HEAD" | \
             grep -Eq '(^|/)(composer\.(json|lock)|package(-lock)?\.json)$'; then
-            echo "M7.3/Sprint19 does not authorize dependency-manifest or lockfile changes." >&2
+            echo "M7.3/Sprint20 does not authorize dependency-manifest or lockfile changes." >&2
             exit 1
           fi
 
@@ -170,17 +186,31 @@ jobs:
               php -l "$file"
             done
 
-      - name: Preserve identity and organizational persistence boundary
+      - name: Preserve identity organizational policy and durable-access boundaries
         shell: bash
         run: |
           set -euo pipefail
-          migration='apps/web/database/migrations/0000_00_00_000001_create_foundational_context_graph.php'
-          test -f "$migration"
+          s19='apps/web/database/migrations/0000_00_00_000001_create_foundational_context_graph.php'
+          s20='apps/web/database/migrations/0000_00_00_000002_create_organizational_access_grants.php'
+          access='apps/web/app/Infrastructure/Access/LaravelDurableOrganizationalAccessRepository.php'
+          tenant_verifier='apps/web/app/Infrastructure/Tenancy/LaravelTenantMembershipVerifier.php'
+          relationship_verifier='apps/web/app/Infrastructure/Organization/LaravelOrganizationalRelationshipVerifier.php'
+          test -f "$s19"
+          test -f "$s20"
+          test -f "$access"
+          test -f "$tenant_verifier"
+          test -f "$relationship_verifier"
+
           mapfile -t migrations < <(find apps/web/database/migrations -maxdepth 1 -type f -name '*.php' -printf '%f\n' | sort)
-          if [ "${#migrations[@]}" -ne 1 ] || [ "${migrations[0]}" != "0000_00_00_000001_create_foundational_context_graph.php" ]; then
-            printf 'Unexpected M7.3/Sprint19 migration set:\n%s\n' "${migrations[*]:-<empty>}" >&2
+          expected=(
+            '0000_00_00_000001_create_foundational_context_graph.php'
+            '0000_00_00_000002_create_organizational_access_grants.php'
+          )
+          if [ "${migrations[*]}" != "${expected[*]}" ]; then
+            printf 'Unexpected M7.3/Sprint20 migration set:\n%s\n' "${migrations[*]:-<empty>}" >&2
             exit 1
           fi
+
           if grep -R -n -E 'Illuminate\\Database|Schema::|DB::|new PDO|mysqli_' \
             apps/web/app/Domain/Identity \
             apps/web/app/Domain/Organization \
@@ -188,9 +218,19 @@ jobs:
             apps/web/app/Domain/Device \
             apps/web/app/Application/Identity \
             apps/web/app/Application/Organization \
-            apps/web/app/Infrastructure/Identity \
-            apps/web/app/Infrastructure/Organization; then
-            echo "M7.3 identity/organization persistence boundary violated." >&2
+            apps/web/app/Application/Access \
+            apps/web/app/Infrastructure/Identity; then
+            echo "M7.3 identity/organization/Application-access persistence boundary violated." >&2
+            exit 1
+          fi
+
+          grep -Fq 'oneqay_identity_organizations' "$access"
+          grep -Fq -- "->where('tenant_id'," "$access"
+          grep -Fq 'hasTenantMembership' "$tenant_verifier"
+          grep -Fq 'DurableOrganizationalAccessGrant' "$relationship_verifier"
+          grep -Fq "in_array(\$runtime, ['local', 'test', 'ci'], true)" "$access"
+          if grep -Eq '\b(updateOrInsert|upsert)\s*\(' "$access"; then
+            echo "Sprint 20 durable access verifier source must not introduce ownership-rewriting upsert." >&2
             exit 1
           fi
 
@@ -210,7 +250,7 @@ jobs:
         working-directory: apps/web
         run: npm run build
 
-      - name: Preserve M7.1 application and Sprint 19 persistence regression
+      - name: Preserve M7.1 and run Sprint 19/20 durable regressions
         working-directory: apps/web
         run: composer test
 
