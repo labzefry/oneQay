@@ -735,7 +735,225 @@ for ($i = 0, $tokenCount = count($tokens); $i < $tokenCount; $i++) {
     $assert($j >= $tokenCount || $tokens[$j] !== '(', 'Sprint 17 materializer introduced a forbidden process or network call.');
 }
 
+$throwsLaravelExecution = static function (callable $callback, string $code) use ($assert): void {
+    try {
+        $callback();
+        $assert(false, "Expected {$code}.");
+    } catch (\OneQay\SchemaPlanning\LaravelMigrationExecutionException $exception) {
+        $assert($exception->errorCode === $code, "Unexpected {$exception->errorCode}.");
+    }
+};
+
+$s18Executor = new \OneQay\SchemaPlanning\GovernedLaravelMigrationExecutor();
+$s18Target = new class implements \OneQay\SchemaPlanning\LaravelMigrationExecutionTargetAdapter {
+    public int $executeCalls = 0;
+    /** @var list<string> */
+    public array $executed = [];
+
+    public function targetKind(): string
+    {
+        return self::DISPOSABLE_SQLITE_TEST;
+    }
+
+    public function preflight(): string
+    {
+        return hash('sha256', 's18-root-baseline');
+    }
+
+    public function execute(\OneQay\SchemaPlanning\LaravelMigrationFileArtifact $file, string $absoluteStagedPath): void
+    {
+        $this->executeCalls++;
+        if (!is_file($absoluteStagedPath)
+            || hash_file('sha256', $absoluteStagedPath) !== $file->sourceFingerprint) {
+            throw new RuntimeException('Synthetic Sprint 18 staged artifact mismatch.');
+        }
+        $this->executed[] = $file->migrationIdentifier->value;
+    }
+
+    public function verify(): string
+    {
+        return hash('sha256', 's18-root-target:' . implode('|', $this->executed));
+    }
+};
+
+$s18Report = $s18Executor->execute(
+    $s16Generated,
+    $s17Report,
+    $s17Composer,
+    $s17Parent,
+    $s18Target,
+    'corr-execution-s18',
+);
+$s18ExpectedIdentifiers = array_map(static fn ($file): string => $file->migrationIdentifier->value, $s16Generated->files());
+$s18ExpectedWorkspace = '.oneqay-migration-execution/' . substr($s17ArtifactFingerprint, 0, 24);
+$assert((new ReflectionClass($s18Report))->isReadOnly(), 'Sprint 18 execution report is not immutable.');
+$assert($s18Report->generationArtifactFingerprint->value === $s17ArtifactFingerprint, 'Sprint 18 generation artifact fingerprint changed.');
+$assert($s18Report->targetManifestFingerprint->value === $s16Generated->targetManifestFingerprint->value, 'Sprint 18 canonical target manifest fingerprint changed.');
+$assert($s18Report->framework === \OneQay\SchemaPlanning\LaravelMigrationGenerationArtifact::FRAMEWORK, 'Sprint 18 framework identity changed.');
+$assert($s18Report->frameworkVersion === \OneQay\SchemaPlanning\LaravelMigrationGenerationArtifact::FRAMEWORK_VERSION, 'Sprint 18 framework version changed.');
+$assert($s18Report->executionWorkspaceRelativePath === $s18ExpectedWorkspace, 'Sprint 18 deterministic execution workspace changed.');
+$assert($s18Report->targetKind === \OneQay\SchemaPlanning\LaravelMigrationExecutionTargetAdapter::DISPOSABLE_SQLITE_TEST, 'Sprint 18 target kind changed.');
+$assert($s18Report->executedMigrationIdentifiers() === $s18ExpectedIdentifiers, 'Sprint 18 governed execution ordering changed.');
+$assert($s18Target->executed === $s18ExpectedIdentifiers, 'Sprint 18 synthetic adapter execution order changed.');
+$assert($s18Target->executeCalls === 4, 'Sprint 18 synthetic adapter execution count changed.');
+$assert(!$s18Report->alreadyComplete, 'Sprint 18 first execution incorrectly reported already complete.');
+$assert($s18Report->finalState === 'COMPLETE', 'Sprint 18 final state changed.');
+$assert($s18Report->baselineWitness !== $s18Report->targetWitness, 'Sprint 18 runtime witnesses did not change.');
+
+$s18Second = $s18Executor->execute(
+    $s16Generated,
+    $s17Report,
+    $s17Composer,
+    $s17Parent,
+    $s18Target,
+    'corr-execution-s18-idempotent',
+);
+$assert($s18Second->alreadyComplete, 'Sprint 18 completed execution was not idempotently verified.');
+$assert($s18Target->executeCalls === 4, 'Sprint 18 idempotent verification re-executed migrations.');
+$assert($s18Second->targetWitness === $s18Report->targetWitness, 'Sprint 18 idempotent target witness changed.');
+
+$s18MismatchTarget = new class implements \OneQay\SchemaPlanning\LaravelMigrationExecutionTargetAdapter {
+    public function targetKind(): string { return self::DISPOSABLE_SQLITE_TEST; }
+    public function preflight(): string { return hash('sha256', 'unused'); }
+    public function execute(\OneQay\SchemaPlanning\LaravelMigrationFileArtifact $file, string $absoluteStagedPath): void { throw new RuntimeException('must not execute'); }
+    public function verify(): string { return hash('sha256', 'different-complete-target'); }
+};
+$throwsLaravelExecution(
+    fn () => $s18Executor->execute($s16Generated, $s17Report, $s17Composer, $s17Parent, $s18MismatchTarget, 'corr-execution-s18-witness-mismatch'),
+    \OneQay\SchemaPlanning\LaravelMigrationExecutionException::COMPLETE_STATE_MISMATCH,
+);
+
+$s18UnsupportedTarget = new class implements \OneQay\SchemaPlanning\LaravelMigrationExecutionTargetAdapter {
+    public function targetKind(): string { return 'REMOTE_DATABASE'; }
+    public function preflight(): string { return hash('sha256', 'unused'); }
+    public function execute(\OneQay\SchemaPlanning\LaravelMigrationFileArtifact $file, string $absoluteStagedPath): void {}
+    public function verify(): string { return hash('sha256', 'unused'); }
+};
+$throwsLaravelExecution(
+    fn () => $s18Executor->execute($s16Generated, $s17Report, $s17Composer, $s17Parent, $s18UnsupportedTarget, 'corr-execution-s18-unsupported'),
+    \OneQay\SchemaPlanning\LaravelMigrationExecutionException::UNSUPPORTED_TARGET,
+);
+
+$assert(file_put_contents($firstDestination, $firstGenerated->source . "\n// deliberate-s18-tamper\n", LOCK_EX) !== false, 'Sprint 18 staged tamper fixture could not be created.');
+$throwsLaravelExecution(
+    fn () => $s18Executor->execute($s16Generated, $s17Report, $s17Composer, $s17Parent, $s18Target, 'corr-execution-s18-tampered'),
+    \OneQay\SchemaPlanning\LaravelMigrationExecutionException::MATERIALIZATION_VALIDATION_FAILED,
+);
+$assert(file_put_contents($firstDestination, $firstGenerated->source, LOCK_EX) === strlen($firstGenerated->source), 'Sprint 18 staged tamper fixture could not be restored.');
+$s17Materializer->validate($s16Generated, $s17Composer, $s17Parent, 'corr-validation-s18-restored');
+
+$s18JournalPath = $s17Parent . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $s18ExpectedWorkspace) . DIRECTORY_SEPARATOR . 'journal.json';
+$s18Journal = json_decode((string) file_get_contents($s18JournalPath), true, flags: JSON_THROW_ON_ERROR);
+$assert(($s18Journal['state'] ?? null) === 'COMPLETE', 'Sprint 18 journal did not reach COMPLETE.');
+$assert(($s18Journal['applied_identifiers'] ?? null) === $s18ExpectedIdentifiers, 'Sprint 18 journal applied ordering changed.');
+$assert(($s18Journal['target_witness'] ?? null) === $s18Report->targetWitness, 'Sprint 18 journal target witness changed.');
+$s18JournalEncoded = json_encode($s18Journal, JSON_THROW_ON_ERROR);
+foreach ([$s17Parent, 'DB_PASSWORD', 'DB_USER', 'DB_HOST', 'mysql:host=', 'jdbc:', 'Schema::create', $firstGenerated->source] as $forbidden) {
+    $assert(!str_contains($s18JournalEncoded, $forbidden), 'Sprint 18 journal leaked a forbidden execution surface.');
+}
+$s18ReportEncoded = json_encode($s18Report, JSON_THROW_ON_ERROR);
+foreach ([$s17Parent, 'DB_PASSWORD', 'DB_USER', 'DB_HOST', 'mysql:host=', 'jdbc:', $firstGenerated->source] as $forbidden) {
+    $assert(!str_contains($s18ReportEncoded, $forbidden), 'Sprint 18 report leaked sensitive or private execution material.');
+}
+
+$s18FailParent = rtrim(sys_get_temp_dir(), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'oneqay-s18-fail-' . getmypid();
+$removeTree($s18FailParent);
+$assert(@mkdir($s18FailParent, 0700, false), 'Sprint 18 failure staging parent could not be created.');
+$s18FailMaterialization = $s17Materializer->materialize($s16Generated, $s17Composer, $s18FailParent, 'corr-materialization-s18-fail');
+$s18FailTarget = new class implements \OneQay\SchemaPlanning\LaravelMigrationExecutionTargetAdapter {
+    public int $executeCalls = 0;
+    /** @var list<string> */
+    public array $executed = [];
+    public function targetKind(): string { return self::DISPOSABLE_SQLITE_TEST; }
+    public function preflight(): string { return hash('sha256', 's18-fail-baseline'); }
+    public function execute(\OneQay\SchemaPlanning\LaravelMigrationFileArtifact $file, string $absoluteStagedPath): void
+    {
+        $this->executeCalls++;
+        if ($this->executeCalls === 2) {
+            throw new RuntimeException('deliberate Sprint 18 execution failure');
+        }
+        $this->executed[] = $file->migrationIdentifier->value;
+    }
+    public function verify(): string { return hash('sha256', 's18-fail-target'); }
+};
+$throwsLaravelExecution(
+    fn () => $s18Executor->execute($s16Generated, $s18FailMaterialization, $s17Composer, $s18FailParent, $s18FailTarget, 'corr-execution-s18-fail'),
+    \OneQay\SchemaPlanning\LaravelMigrationExecutionException::MIGRATION_EXECUTION_FAILED,
+);
+$assert($s18FailTarget->executeCalls === 2, 'Sprint 18 fail-stop adapter call count changed.');
+$assert($s18FailTarget->executed === [$s18ExpectedIdentifiers[0]], 'Sprint 18 executed beyond the failing step.');
+$s18FailJournalPath = $s18FailParent . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $s18ExpectedWorkspace) . DIRECTORY_SEPARATOR . 'journal.json';
+$s18FailJournal = json_decode((string) file_get_contents($s18FailJournalPath), true, flags: JSON_THROW_ON_ERROR);
+$assert(($s18FailJournal['state'] ?? null) === 'FAILED', 'Sprint 18 failed execution journal state changed.');
+$assert(($s18FailJournal['applied_identifiers'] ?? null) === [$s18ExpectedIdentifiers[0]], 'Sprint 18 failed journal applied prefix changed.');
+$assert(($s18FailJournal['error_code'] ?? null) === \OneQay\SchemaPlanning\LaravelMigrationExecutionException::MIGRATION_EXECUTION_FAILED, 'Sprint 18 failed journal error code changed.');
+
+$s18ResumeTarget = new class implements \OneQay\SchemaPlanning\LaravelMigrationExecutionTargetAdapter {
+    public int $executeCalls = 0;
+    public function targetKind(): string { return self::DISPOSABLE_SQLITE_TEST; }
+    public function preflight(): string { return hash('sha256', 's18-resume-baseline'); }
+    public function execute(\OneQay\SchemaPlanning\LaravelMigrationFileArtifact $file, string $absoluteStagedPath): void { $this->executeCalls++; }
+    public function verify(): string { return hash('sha256', 's18-resume-target'); }
+};
+$throwsLaravelExecution(
+    fn () => $s18Executor->execute($s16Generated, $s18FailMaterialization, $s17Composer, $s18FailParent, $s18ResumeTarget, 'corr-execution-s18-resume'),
+    \OneQay\SchemaPlanning\LaravelMigrationExecutionException::JOURNAL_STATE_INVALID,
+);
+$assert($s18ResumeTarget->executeCalls === 0, 'Sprint 18 resumed a FAILED journal.');
+
+$s18LockParent = rtrim(sys_get_temp_dir(), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'oneqay-s18-lock-' . getmypid();
+$removeTree($s18LockParent);
+$assert(@mkdir($s18LockParent, 0700, false), 'Sprint 18 lock staging parent could not be created.');
+$s18LockMaterialization = $s17Materializer->materialize($s16Generated, $s17Composer, $s18LockParent, 'corr-materialization-s18-lock');
+$s18LockRoot = $s18LockParent . DIRECTORY_SEPARATOR . '.oneqay-migration-execution';
+$s18LockWorkspace = $s18LockRoot . DIRECTORY_SEPARATOR . substr($s17ArtifactFingerprint, 0, 24);
+$assert(@mkdir($s18LockRoot, 0700, false), 'Sprint 18 lock root could not be created.');
+$assert(@mkdir($s18LockWorkspace, 0700, false), 'Sprint 18 lock workspace could not be created.');
+$s18HeldLock = fopen($s18LockWorkspace . DIRECTORY_SEPARATOR . 'execution.lock', 'c+');
+$assert(is_resource($s18HeldLock) && flock($s18HeldLock, LOCK_EX | LOCK_NB), 'Sprint 18 lock fixture could not be acquired.');
+$s18LockTarget = new class implements \OneQay\SchemaPlanning\LaravelMigrationExecutionTargetAdapter {
+    public int $executeCalls = 0;
+    public function targetKind(): string { return self::DISPOSABLE_SQLITE_TEST; }
+    public function preflight(): string { return hash('sha256', 's18-lock-baseline'); }
+    public function execute(\OneQay\SchemaPlanning\LaravelMigrationFileArtifact $file, string $absoluteStagedPath): void { $this->executeCalls++; }
+    public function verify(): string { return hash('sha256', 's18-lock-target'); }
+};
+$throwsLaravelExecution(
+    fn () => $s18Executor->execute($s16Generated, $s18LockMaterialization, $s17Composer, $s18LockParent, $s18LockTarget, 'corr-execution-s18-lock'),
+    \OneQay\SchemaPlanning\LaravelMigrationExecutionException::LOCK_UNAVAILABLE,
+);
+$assert($s18LockTarget->executeCalls === 0, 'Sprint 18 executed while the execution lock was held.');
+flock($s18HeldLock, LOCK_UN);
+fclose($s18HeldLock);
+
+$s18Source = (string) file_get_contents(__DIR__ . '/../src/SchemaPlanning/LaravelMigrationExecution.php');
+$assert(str_contains($s18Source, 'DISPOSABLE_SQLITE_TEST'), 'Sprint 18 disposable target boundary is missing.');
+$assert(str_contains($s18Source, "'PREPARED'"), 'Sprint 18 PREPARED journal state is missing.');
+$assert(str_contains($s18Source, "'RUNNING'"), 'Sprint 18 RUNNING journal state is missing.');
+$assert(str_contains($s18Source, "'COMPLETE'"), 'Sprint 18 COMPLETE journal state is missing.');
+$assert(str_contains($s18Source, "'FAILED'"), 'Sprint 18 FAILED journal state is missing.');
+$assert(!str_contains($s18Source, 'MigrationExecutionService'), 'Sprint 18 weakened the existing dry-run Migration Foundation boundary.');
+$assert(!str_contains($s18Source, 'apps/web/database/migrations'), 'Sprint 18 introduced direct application migration publication.');
+$assert(!str_contains($s18Source, 'artisan migrate'), 'Sprint 18 introduced Artisan migration subprocess execution.');
+$assert(!str_contains($s18Source, 'PHP_BINARY'), 'Sprint 18 introduced child PHP execution.');
+$s18Tokens = token_get_all($s18Source);
+for ($i = 0, $tokenCount = count($s18Tokens); $i < $tokenCount; $i++) {
+    $token = $s18Tokens[$i];
+    if (!is_array($token) || $token[0] !== T_STRING || !in_array(strtolower($token[1]), $forbiddenCalls, true)) {
+        continue;
+    }
+    $j = $i + 1;
+    while ($j < $tokenCount && is_array($s18Tokens[$j]) && in_array($s18Tokens[$j][0], [T_WHITESPACE, T_COMMENT, T_DOC_COMMENT], true)) {
+        $j++;
+    }
+    $assert($j >= $tokenCount || $s18Tokens[$j] !== '(', 'Sprint 18 introduced a forbidden process or network call.');
+}
+
+$removeTree($s18FailParent);
+$removeTree($s18LockParent);
 $removeTree($s17Parent);
-$assert(!file_exists($s17Parent), 'Sprint 17 temporary staging workspace cleanup failed.');
+$assert(!file_exists($s18FailParent), 'Sprint 18 failed execution workspace cleanup failed.');
+$assert(!file_exists($s18LockParent), 'Sprint 18 lock execution workspace cleanup failed.');
+$assert(!file_exists($s17Parent), 'Sprint 17/Sprint 18 temporary staging workspace cleanup failed.');
 
 fwrite(STDOUT, sprintf("Migration Governance and Safety tests passed: %d assertions.\n", $assertions));
