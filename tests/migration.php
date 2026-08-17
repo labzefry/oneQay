@@ -322,4 +322,222 @@ $assert(!str_contains($bridgeSource, 'MigrationExecutionService'), 'Governed mig
 $assert(str_contains($bridgeSource, 'MigrationSafetyClassification::CAUTION'), 'Governed migration bridge CAUTION classification is missing.');
 $assert(str_contains($bridgeSource, 'MigrationRollbackClassification::FORWARD_ONLY'), 'Governed migration bridge FORWARD_ONLY classification is missing.');
 
+$throwsLaravelGeneration = static function (callable $callback, string $code) use ($assert): void {
+    try {
+        $callback();
+        $assert(false, "Expected {$code}.");
+    } catch (\OneQay\SchemaPlanning\LaravelMigrationGenerationException $exception) {
+        $assert($exception->errorCode === $code, "Unexpected {$exception->errorCode}.");
+    }
+};
+
+$ddId = static fn (string $value) => new \OneQay\DataDefinition\DataDefinitionIdentifier($value);
+$physicalId = static fn (string $value) => new \OneQay\PhysicalMapping\PhysicalIdentifier($value);
+$required = \OneQay\DataDefinition\NullabilityPolicy::REQUIRED;
+$nullable = \OneQay\DataDefinition\NullabilityPolicy::NULLABLE;
+$global = \OneQay\DataDefinition\TenantScope::GLOBAL;
+$none = static fn () => \OneQay\DataDefinition\DefaultValueDefinition::none();
+$nullDefault = static fn () => \OneQay\DataDefinition\DefaultValueDefinition::nullValue();
+$constraint = static fn (string $type, ?int $length = null) => new \OneQay\DataDefinition\ValueConstraint(new \OneQay\DataDefinition\PortableScalarType($type), $length);
+$definitionAttribute = static fn (string $id, string $type, $nullability, $default, ?int $length = null) => new \OneQay\DataDefinition\AttributeDefinition($ddId($id), $constraint($type, $length), $nullability, $default);
+
+$charset = new \OneQay\PhysicalMapping\CharsetPolicy(\OneQay\PhysicalMapping\CharsetPolicy::UTF8MB4);
+$unicode = new \OneQay\PhysicalMapping\CollationPolicy(\OneQay\PhysicalMapping\CollationPolicy::UNICODE_CI);
+$binary = new \OneQay\PhysicalMapping\CollationPolicy(\OneQay\PhysicalMapping\CollationPolicy::BINARY);
+$uuidScalar = static fn () => new \OneQay\PhysicalMapping\PhysicalScalarMapping(
+    new \OneQay\DataDefinition\PortableScalarType(\OneQay\DataDefinition\PortableScalarType::UUID),
+    new \OneQay\PhysicalMapping\PhysicalTypeIdentifier(\OneQay\PhysicalMapping\PhysicalTypeIdentifier::CHAR_UUID),
+    36, null, null, $charset, $binary,
+);
+$stringScalar = static fn (int $length) => new \OneQay\PhysicalMapping\PhysicalScalarMapping(
+    new \OneQay\DataDefinition\PortableScalarType(\OneQay\DataDefinition\PortableScalarType::STRING),
+    new \OneQay\PhysicalMapping\PhysicalTypeIdentifier(\OneQay\PhysicalMapping\PhysicalTypeIdentifier::VARCHAR),
+    $length, null, null, $charset, $unicode,
+);
+$physicalAttribute = static fn (string $logical, string $physical, $scalar) => new \OneQay\PhysicalMapping\PhysicalAttributeMapping($ddId($logical), $physicalId($physical), $scalar);
+$physicalIndex = static fn (string $name, $kind, array $attributes) => new \OneQay\PhysicalMapping\PhysicalIndexMapping($physicalId($name), $kind, $attributes);
+
+$parentPhysical = new \OneQay\PhysicalMapping\PhysicalEntityMapping(
+    $ddId('PARENT_ENTITY'), $physicalId('parent_entity'), $global,
+    [$physicalAttribute('ID', 'id', $uuidScalar())],
+    $physicalIndex('pk_parent_entity', \OneQay\PhysicalMapping\IndexKind::PRIMARY, ['ID']),
+);
+$recordReference = new \OneQay\PhysicalMapping\PhysicalReferenceMapping($physicalId('fk_record_parent'), $ddId('PARENT_ENTITY'), ['PARENT_ID' => 'ID']);
+$recordUnique = $physicalIndex('uq_record_code', \OneQay\PhysicalMapping\IndexKind::UNIQUE, ['CODE']);
+$recordPhysical = new \OneQay\PhysicalMapping\PhysicalEntityMapping(
+    $ddId('RECORD_ENTITY'), $physicalId('record_entity'), $global,
+    [
+        $physicalAttribute('ID', 'id', $uuidScalar()),
+        $physicalAttribute('CODE', 'code', $stringScalar(64)),
+        $physicalAttribute('PARENT_ID', 'parent_id', $uuidScalar()),
+        $physicalAttribute('DESCRIPTION', 'description', $stringScalar(256)),
+    ],
+    $physicalIndex('pk_record_entity', \OneQay\PhysicalMapping\IndexKind::PRIMARY, ['ID']),
+    [$recordUnique], [$recordReference],
+);
+$newPhysical = new \OneQay\PhysicalMapping\PhysicalEntityMapping(
+    $ddId('NEW_ENTITY'), $physicalId('new_entity'), $global,
+    [$physicalAttribute('ID', 'id', $uuidScalar()), $physicalAttribute('NAME', 'name', $stringScalar(128))],
+    $physicalIndex('pk_new_entity', \OneQay\PhysicalMapping\IndexKind::PRIMARY, ['ID']),
+);
+$targetPhysical = new \OneQay\PhysicalMapping\PhysicalMappingManifest(
+    new \OneQay\PhysicalMapping\VendorIdentifier(\OneQay\PhysicalMapping\VendorIdentifier::MARIADB_11),
+    [$parentPhysical, $recordPhysical, $newPhysical],
+);
+$canonicalizer = new \OneQay\SchemaPlanning\PhysicalManifestCanonicalizer();
+$targetCanonical = $canonicalizer->canonicalize($targetPhysical);
+$targetFingerprint = $canonicalizer->fingerprint($targetCanonical);
+
+$parentDefinition = new \OneQay\DataDefinition\EntityDefinition(
+    $ddId('PARENT_ENTITY'), $global,
+    [$definitionAttribute('ID', \OneQay\DataDefinition\PortableScalarType::UUID, $required, $none())],
+    new \OneQay\DataDefinition\PrimaryKeyDefinition(['ID']),
+);
+$recordDefinition = new \OneQay\DataDefinition\EntityDefinition(
+    $ddId('RECORD_ENTITY'), $global,
+    [
+        $definitionAttribute('ID', \OneQay\DataDefinition\PortableScalarType::UUID, $required, $none()),
+        $definitionAttribute('CODE', \OneQay\DataDefinition\PortableScalarType::STRING, $required, $none(), 64),
+        $definitionAttribute('PARENT_ID', \OneQay\DataDefinition\PortableScalarType::UUID, $required, $none()),
+        $definitionAttribute('DESCRIPTION', \OneQay\DataDefinition\PortableScalarType::STRING, $nullable, $nullDefault(), 256),
+    ],
+    new \OneQay\DataDefinition\PrimaryKeyDefinition(['ID']),
+    [new \OneQay\DataDefinition\UniqueConstraintDefinition($ddId('RECORD_CODE_UNIQUE'), ['CODE'])],
+    [new \OneQay\DataDefinition\ReferenceDefinition($ddId('RECORD_PARENT_REF'), $ddId('PARENT_ENTITY'), ['PARENT_ID' => 'ID'])],
+);
+$newDefinition = new \OneQay\DataDefinition\EntityDefinition(
+    $ddId('NEW_ENTITY'), $global,
+    [
+        $definitionAttribute('ID', \OneQay\DataDefinition\PortableScalarType::UUID, $required, $none()),
+        $definitionAttribute('NAME', \OneQay\DataDefinition\PortableScalarType::STRING, $required, $none(), 128),
+    ],
+    new \OneQay\DataDefinition\PrimaryKeyDefinition(['ID']),
+);
+$targetDefinitions = new \OneQay\DataDefinition\DataDefinitionManifest([$parentDefinition, $recordDefinition, $newDefinition]);
+
+$step = static fn (string $idChar, $kind, string $entity, ?string $component, mixed $canonical) => new \OneQay\SchemaPlanning\MigrationPlanningStep(
+    new \OneQay\SchemaPlanning\StableChangeIdentifier(str_repeat($idChar, 64)),
+    $kind, $entity, $component, null, $canonicalizer->fingerprint($canonical),
+);
+$s16Steps = [
+    $step('5', \OneQay\SchemaPlanning\SchemaChangeKind::ENTITY_CREATED, 'NEW_ENTITY', null, $targetCanonical['entities']['NEW_ENTITY']),
+    $step('6', \OneQay\SchemaPlanning\SchemaChangeKind::ATTRIBUTE_ADDED, 'RECORD_ENTITY', 'DESCRIPTION', $targetCanonical['entities']['RECORD_ENTITY']['attributes']['DESCRIPTION']),
+    $step('7', \OneQay\SchemaPlanning\SchemaChangeKind::UNIQUE_INDEX_ADDED, 'RECORD_ENTITY', 'uq_record_code', $targetCanonical['entities']['RECORD_ENTITY']['unique_indexes']['uq_record_code']),
+    $step('8', \OneQay\SchemaPlanning\SchemaChangeKind::REFERENCE_ADDED, 'RECORD_ENTITY', 'fk_record_parent', $targetCanonical['entities']['RECORD_ENTITY']['references']['fk_record_parent']),
+];
+$s16Planning = new \OneQay\SchemaPlanning\MigrationPlanningArtifact(
+    new \OneQay\SchemaPlanning\PlanFingerprint(str_repeat('9', 64)),
+    new \OneQay\SchemaPlanning\CorrelationId('corr-review-s16'),
+    new \OneQay\SchemaPlanning\CorrelationId('corr-planning-s16'),
+    new \OneQay\SchemaPlanning\ReviewerReference('zefriansyah'),
+    new \OneQay\SchemaPlanning\ManifestFingerprint(str_repeat('a', 64)),
+    $targetFingerprint,
+    $s16Steps,
+);
+$s16Governed = $bridge->build($s16Planning, 'corr-bridge-s16');
+$s16Generator = new \OneQay\SchemaPlanning\DeterministicLaravelMigrationGenerator();
+$s16Generated = $s16Generator->generate($s16Planning, $s16Governed, $targetDefinitions, $targetPhysical, 'corr-generation-s16');
+$s16GeneratedAgain = $s16Generator->generate($s16Planning, $s16Governed, $targetDefinitions, $targetPhysical, 'corr-generation-s16');
+$assert(json_encode($s16Generated, JSON_THROW_ON_ERROR) === json_encode($s16GeneratedAgain, JSON_THROW_ON_ERROR), 'Sprint 16 generation is not deterministic.');
+$assert((new ReflectionClass($s16Generated))->isReadOnly(), 'Sprint 16 generation artifact is not immutable.');
+$assert(count($s16Generated->files()) === 4, 'Sprint 16 generated file count changed.');
+$assert($s16Generated->targetManifestFingerprint->value === $targetFingerprint->value, 'Sprint 16 target mapping fingerprint changed.');
+$assert(strlen($s16Generated->targetDefinitionFingerprint->value) === 64, 'Sprint 16 target definition fingerprint is invalid.');
+
+$generatedPaths = array_map(static fn ($file): string => $file->relativePath, $s16Generated->files());
+$sortedGeneratedPaths = $generatedPaths;
+sort($sortedGeneratedPaths, SORT_STRING);
+$assert($generatedPaths === $sortedGeneratedPaths, 'Sprint 16 generated paths are not ordered.');
+$assert(count(array_unique($generatedPaths)) === 4, 'Sprint 16 generated paths are not unique.');
+$allGeneratedSource = '';
+foreach ($s16Generated->files() as $index => $file) {
+    $assert((new ReflectionClass($file))->isReadOnly(), 'Sprint 16 file artifact is not immutable.');
+    $assert(hash('sha256', $file->source) === $file->sourceFingerprint, 'Sprint 16 source fingerprint changed.');
+    $assert($file->sourceChangeIdentifier->value === $s16Steps[$index]->sourceChangeIdentifier->value, 'Sprint 16 source change traceability changed.');
+    $assert($file->migrationIdentifier->value === $s16Governed->bindings()[$index]->migrationIdentifier->value, 'Sprint 16 governed migration traceability changed.');
+    $assert(str_contains($file->source, "throw new \\LogicException('Forward-only generated migration; rollback is not authorized.');"), 'Sprint 16 forward-only down boundary is missing.');
+    $allGeneratedSource .= "\n" . $file->source;
+}
+$assert(str_contains($allGeneratedSource, "Schema::create('new_entity'"), 'Sprint 16 entity creation rendering missing.');
+$assert(str_contains($allGeneratedSource, "\$table->primary(['id'], 'pk_new_entity')"), 'Sprint 16 primary index rendering missing.');
+$assert(str_contains($allGeneratedSource, "\$table->string('description', 256)->charset('utf8mb4')->collation('utf8mb4_unicode_ci')->nullable()->default(null)"), 'Sprint 16 nullable/default rendering missing.');
+$assert(str_contains($allGeneratedSource, "\$table->unique(['code'], 'uq_record_code')"), 'Sprint 16 unique rendering missing.');
+$assert(str_contains($allGeneratedSource, "\$table->foreign(['parent_id'], 'fk_record_parent')->references(['id'])->on('parent_entity')"), 'Sprint 16 reference rendering missing.');
+foreach (['Schema::drop', 'dropColumn', 'dropForeign', 'dropUnique', 'DB::statement', 'DB::unprepared', 'new PDO(', 'artisan migrate', 'CREATE TABLE', 'ALTER TABLE', 'DROP TABLE'] as $forbidden) {
+    $assert(!str_contains($allGeneratedSource, $forbidden), 'Sprint 16 generated source contains forbidden executable or destructive material.');
+}
+
+$alternateRecordPhysical = new \OneQay\PhysicalMapping\PhysicalEntityMapping(
+    $ddId('RECORD_ENTITY'), $physicalId('record_entity'), $global,
+    [
+        $physicalAttribute('ID', 'id', $uuidScalar()),
+        $physicalAttribute('CODE', 'code', $stringScalar(64)),
+        $physicalAttribute('PARENT_ID', 'parent_id', $uuidScalar()),
+        $physicalAttribute('DESCRIPTION', 'description', $stringScalar(128)),
+    ],
+    $physicalIndex('pk_record_entity', \OneQay\PhysicalMapping\IndexKind::PRIMARY, ['ID']), [$recordUnique], [$recordReference],
+);
+$alternatePhysical = new \OneQay\PhysicalMapping\PhysicalMappingManifest(new \OneQay\PhysicalMapping\VendorIdentifier(\OneQay\PhysicalMapping\VendorIdentifier::MARIADB_11), [$parentPhysical, $alternateRecordPhysical, $newPhysical]);
+$throwsLaravelGeneration(
+    fn () => $s16Generator->generate($s16Planning, $s16Governed, $targetDefinitions, $alternatePhysical, 'corr-generation-s16-mismatch'),
+    \OneQay\SchemaPlanning\LaravelMigrationGenerationException::TARGET_MANIFEST_MISMATCH,
+);
+
+$definitionWithDescription = static function ($nullability, $default) use ($ddId, $global, $definitionAttribute, $required, $none): \OneQay\DataDefinition\EntityDefinition {
+    return new \OneQay\DataDefinition\EntityDefinition(
+        $ddId('RECORD_ENTITY'), $global,
+        [
+            $definitionAttribute('ID', \OneQay\DataDefinition\PortableScalarType::UUID, $required, $none()),
+            $definitionAttribute('CODE', \OneQay\DataDefinition\PortableScalarType::STRING, $required, $none(), 64),
+            $definitionAttribute('PARENT_ID', \OneQay\DataDefinition\PortableScalarType::UUID, $required, $none()),
+            $definitionAttribute('DESCRIPTION', \OneQay\DataDefinition\PortableScalarType::STRING, $nullability, $default, 256),
+        ],
+        new \OneQay\DataDefinition\PrimaryKeyDefinition(['ID']),
+        [new \OneQay\DataDefinition\UniqueConstraintDefinition($ddId('RECORD_CODE_UNIQUE'), ['CODE'])],
+        [new \OneQay\DataDefinition\ReferenceDefinition($ddId('RECORD_PARENT_REF'), $ddId('PARENT_ENTITY'), ['PARENT_ID' => 'ID'])],
+    );
+};
+$literalDefinitions = new \OneQay\DataDefinition\DataDefinitionManifest([$parentDefinition, $definitionWithDescription($nullable, \OneQay\DataDefinition\DefaultValueDefinition::literal('x')), $newDefinition]);
+$throwsLaravelGeneration(
+    fn () => $s16Generator->generate($s16Planning, $s16Governed, $literalDefinitions, $targetPhysical, 'corr-generation-s16-literal'),
+    \OneQay\SchemaPlanning\LaravelMigrationGenerationException::DEFAULT_POLICY_UNSUPPORTED,
+);
+$requiredDefinitions = new \OneQay\DataDefinition\DataDefinitionManifest([$parentDefinition, $definitionWithDescription($required, $none()), $newDefinition]);
+$throwsLaravelGeneration(
+    fn () => $s16Generator->generate($s16Planning, $s16Governed, $requiredDefinitions, $targetPhysical, 'corr-generation-s16-required'),
+    \OneQay\SchemaPlanning\LaravelMigrationGenerationException::REQUIRED_ATTRIBUTE_UNSAFE,
+);
+
+$badSteps = $s16Steps;
+$badSteps[1] = new \OneQay\SchemaPlanning\MigrationPlanningStep(
+    $s16Steps[1]->sourceChangeIdentifier,
+    $s16Steps[1]->kind,
+    $s16Steps[1]->entityIdentifier,
+    $s16Steps[1]->componentIdentifier,
+    null,
+    new \OneQay\SchemaPlanning\ManifestFingerprint(str_repeat('b', 64)),
+);
+$badPlanning = new \OneQay\SchemaPlanning\MigrationPlanningArtifact(
+    $s16Planning->sourcePlanFingerprint,
+    $s16Planning->sourceReviewCorrelationId,
+    $s16Planning->planningCorrelationId,
+    $s16Planning->reviewerReference,
+    $s16Planning->baselineFingerprint,
+    $s16Planning->targetFingerprint,
+    $badSteps,
+);
+$badGoverned = $bridge->build($badPlanning, 'corr-bridge-s16-bad-after');
+$throwsLaravelGeneration(
+    fn () => $s16Generator->generate($badPlanning, $badGoverned, $targetDefinitions, $targetPhysical, 'corr-generation-s16-bad-after'),
+    \OneQay\SchemaPlanning\LaravelMigrationGenerationException::AFTER_FINGERPRINT_MISMATCH,
+);
+
+$s16GeneratorSource = (string) file_get_contents(__DIR__ . '/../src/SchemaPlanning/LaravelMigrationGeneration.php');
+$assert(!str_contains($s16GeneratorSource, 'new PDO('), 'Sprint 16 generator introduced a database connection.');
+$assert(!preg_match('/\b(curl_|fsockopen|stream_socket_client)\b/i', $s16GeneratorSource), 'Sprint 16 generator introduced a network dependency.');
+$assert(!preg_match('/\b(file_put_contents|fopen|unlink|mkdir|rename|copy)\b/i', $s16GeneratorSource), 'Sprint 16 generator introduced a filesystem side effect.');
+$assert(!preg_match('/\b(exec|shell_exec|system|passthru|proc_open)\s*\(/i', $s16GeneratorSource), 'Sprint 16 generator introduced process execution.');
+$assert(!str_contains($s16GeneratorSource, 'MigrationExecutionService'), 'Sprint 16 generator introduced migration execution coupling.');
+$assert(!str_contains($s16GeneratorSource, 'apps/web/database'), 'Sprint 16 generator introduced application migration materialization.');
+
 fwrite(STDOUT, sprintf("Migration Governance and Safety tests passed: %d assertions.\n", $assertions));

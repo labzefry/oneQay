@@ -10,3 +10,4 @@ require_once __DIR__ . '/Planning.php';
 require_once __DIR__ . '/Review.php';
 require_once __DIR__ . '/MigrationPlanning.php';
 require_once __DIR__ . '/MigrationArtifactBridge.php';
+require_once __DIR__ . '/LaravelMigrationGeneration.php';
