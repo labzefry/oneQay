@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 require __DIR__ . '/../src/Migration/Foundation.php';
+require __DIR__ . '/../src/SchemaPlanning/Foundation.php';
 
 use OneQay\Migration\MigrationChecksum;
 use OneQay\Migration\MigrationDefinition;
@@ -220,5 +221,105 @@ $assert(!preg_match('/\b(pos|sale|payment|inventory|catalog)\b/i', $source), 'Bu
 $assert(!preg_match('/(?:\/home\/|\/var\/|[A-Z]:\\\\)/', $source), 'Internal path introduced.');
 $assert(!preg_match('/\b(password|credential|api[_-]?key|token)\s*[:=]\s*[\'\"][^\'\"]+/i', $source), 'Credential-like value introduced.');
 $assert(!str_contains($source, 'new PDO('), 'Production database connection introduced.');
+
+$bridgeSteps = [
+    new \OneQay\SchemaPlanning\MigrationPlanningStep(
+        new \OneQay\SchemaPlanning\StableChangeIdentifier(str_repeat('1', 64)),
+        \OneQay\SchemaPlanning\SchemaChangeKind::ENTITY_CREATED,
+        'ENTITY_ALPHA',
+        null,
+        null,
+        new \OneQay\SchemaPlanning\ManifestFingerprint(str_repeat('a', 64)),
+    ),
+    new \OneQay\SchemaPlanning\MigrationPlanningStep(
+        new \OneQay\SchemaPlanning\StableChangeIdentifier(str_repeat('2', 64)),
+        \OneQay\SchemaPlanning\SchemaChangeKind::ATTRIBUTE_ADDED,
+        'ENTITY_ALPHA',
+        'ATTRIBUTE_ALPHA',
+        null,
+        new \OneQay\SchemaPlanning\ManifestFingerprint(str_repeat('b', 64)),
+    ),
+    new \OneQay\SchemaPlanning\MigrationPlanningStep(
+        new \OneQay\SchemaPlanning\StableChangeIdentifier(str_repeat('3', 64)),
+        \OneQay\SchemaPlanning\SchemaChangeKind::UNIQUE_INDEX_ADDED,
+        'ENTITY_ALPHA',
+        'UNIQUE_ALPHA',
+        null,
+        new \OneQay\SchemaPlanning\ManifestFingerprint(str_repeat('c', 64)),
+    ),
+    new \OneQay\SchemaPlanning\MigrationPlanningStep(
+        new \OneQay\SchemaPlanning\StableChangeIdentifier(str_repeat('4', 64)),
+        \OneQay\SchemaPlanning\SchemaChangeKind::REFERENCE_ADDED,
+        'ENTITY_ALPHA',
+        'REFERENCE_ALPHA',
+        null,
+        new \OneQay\SchemaPlanning\ManifestFingerprint(str_repeat('d', 64)),
+    ),
+];
+$planningArtifact = new \OneQay\SchemaPlanning\MigrationPlanningArtifact(
+    new \OneQay\SchemaPlanning\PlanFingerprint(str_repeat('e', 64)),
+    new \OneQay\SchemaPlanning\CorrelationId('corr-review-bridge-001'),
+    new \OneQay\SchemaPlanning\CorrelationId('corr-planning-bridge-001'),
+    new \OneQay\SchemaPlanning\ReviewerReference('zefriansyah'),
+    new \OneQay\SchemaPlanning\ManifestFingerprint(str_repeat('f', 64)),
+    new \OneQay\SchemaPlanning\ManifestFingerprint(str_repeat('0', 64)),
+    $bridgeSteps,
+);
+$bridge = new \OneQay\SchemaPlanning\DeterministicGovernedMigrationArtifactBridge();
+$governed = $bridge->build($planningArtifact, 'corr-bridge-001');
+$governedAgain = $bridge->build($planningArtifact, 'corr-bridge-001');
+$assert(json_encode($governed, JSON_THROW_ON_ERROR) === json_encode($governedAgain, JSON_THROW_ON_ERROR), 'Governed migration bridge output is not deterministic.');
+$assert((new ReflectionClass($governed))->isReadOnly(), 'Governed migration manifest artifact is not immutable.');
+$assert(count($governed->bindings()) === 4, 'Governed migration binding count changed.');
+$assert((new ReflectionClass($governed->bindings()[0]))->isReadOnly(), 'Governed migration binding is not immutable.');
+
+$expectedArtifactFingerprint = hash(
+    'sha256',
+    json_encode($planningArtifact, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_PRESERVE_ZERO_FRACTION),
+);
+$assert($governed->sourcePlanningArtifactFingerprint->value === $expectedArtifactFingerprint, 'Sprint 14 planning artifact fingerprint was not preserved.');
+$assert($governed->sourcePlanningCorrelationId->value === 'corr-planning-bridge-001', 'Source planning correlation ID was not preserved.');
+$assert($governed->sourceReviewCorrelationId->value === 'corr-review-bridge-001', 'Source review correlation ID was not preserved.');
+$assert($governed->bridgeCorrelationId->value === 'corr-bridge-001', 'Bridge correlation ID was not preserved.');
+$assert($governed->reviewerReference->value === 'zefriansyah', 'Reviewer reference was not preserved through bridge generation.');
+$assert($governed->baselineFingerprint->value === str_repeat('f', 64), 'Baseline fingerprint was not preserved through bridge generation.');
+$assert($governed->targetFingerprint->value === str_repeat('0', 64), 'Target fingerprint was not preserved through bridge generation.');
+
+$bridgeEntries = $governed->manifest->entries();
+$bridgeIdentifiers = $governed->manifest->identifiers();
+$assert(count($bridgeEntries) === 4, 'Governed migration manifest entry count changed.');
+$sortedBridgeIdentifiers = $bridgeIdentifiers;
+sort($sortedBridgeIdentifiers, SORT_STRING);
+$assert($bridgeIdentifiers === $sortedBridgeIdentifiers, 'Governed migration identifiers are not deterministically ordered.');
+$assert(count(array_unique($bridgeIdentifiers)) === 4, 'Governed migration identifiers are not unique.');
+
+foreach ($bridgeEntries as $index => $entry) {
+    $assert($entry->safety === MigrationSafetyClassification::CAUTION, 'Bridge generated a non-CAUTION migration definition.');
+    $assert($entry->rollback === MigrationRollbackClassification::FORWARD_ONLY, 'Bridge generated a reversible migration claim.');
+    $assert($entry->hasValidChecksum(), 'Bridge generated a checksum mismatch.');
+    $expectedDependencies = $index === 0 ? [] : [$bridgeEntries[$index - 1]->identifier->value];
+    $assert($entry->dependencies === $expectedDependencies, 'Bridge serial dependency chain changed.');
+    $assert($governed->bindings()[$index]->migrationIdentifier->equals($entry->identifier), 'Bridge binding order does not match manifest order.');
+    $assert($governed->bindings()[$index]->sourceChangeIdentifier->value === $bridgeSteps[$index]->sourceChangeIdentifier->value, 'Bridge source change identity was not preserved.');
+}
+
+$bridgePlan = $planner->plan($governed->manifest);
+$assert($bridgePlan->isDryRun, 'Governed bridge manifest did not remain dry-run under the existing planner.');
+$assert($bridgePlan->identifiers() === $bridgeIdentifiers, 'Existing migration planner changed governed bridge ordering.');
+$assert(!\OneQay\SchemaPlanning\MigrationPlanningStep::isAllowedKind(\OneQay\SchemaPlanning\SchemaChangeKind::TENANT_SCOPE_CHANGED), 'Tenant-scope mutation became bridge-eligible.');
+$assert(!\OneQay\SchemaPlanning\MigrationPlanningStep::isAllowedKind(\OneQay\SchemaPlanning\SchemaChangeKind::TENANT_KEY_CHANGED), 'Tenant-key mutation became bridge-eligible.');
+
+$governedEncoded = json_encode($governed, JSON_THROW_ON_ERROR);
+foreach (['ENTITY_ALPHA', 'ATTRIBUTE_ALPHA', 'UNIQUE_ALPHA', 'REFERENCE_ALPHA', 'DB_PASSWORD', 'DB_USER', 'DB_HOST', 'jdbc:', 'mysql:host=', 'CREATE TABLE', 'ALTER TABLE', 'DROP TABLE', 'INSERT INTO', 'DELETE FROM', '/var/', '/home/'] as $forbidden) {
+    $assert(!str_contains($governedEncoded, $forbidden), 'Governed bridge output contains forbidden or raw planning material.');
+}
+$bridgeSource = (string) file_get_contents(__DIR__ . '/../src/SchemaPlanning/MigrationArtifactBridge.php');
+$assert(!preg_match('/\b(CREATE\s+TABLE|ALTER\s+TABLE|DROP\s+TABLE|INSERT\s+INTO|DELETE\s+FROM)\b/i', $bridgeSource), 'Governed migration bridge contains executable SQL.');
+$assert(!str_contains($bridgeSource, 'new PDO('), 'Governed migration bridge introduced a database connection.');
+$assert(!preg_match('/\b(curl_|fsockopen|stream_socket_client)\b/i', $bridgeSource), 'Governed migration bridge introduced a network dependency.');
+$assert(!preg_match('/\b(file_put_contents|fopen|unlink|mkdir|rename)\b/i', $bridgeSource), 'Governed migration bridge introduced a filesystem side effect.');
+$assert(!str_contains($bridgeSource, 'MigrationExecutionService'), 'Governed migration bridge introduced migration execution coupling.');
+$assert(str_contains($bridgeSource, 'MigrationSafetyClassification::CAUTION'), 'Governed migration bridge CAUTION classification is missing.');
+$assert(str_contains($bridgeSource, 'MigrationRollbackClassification::FORWARD_ONLY'), 'Governed migration bridge FORWARD_ONLY classification is missing.');
 
 fwrite(STDOUT, sprintf("Migration Governance and Safety tests passed: %d assertions.\n", $assertions));
