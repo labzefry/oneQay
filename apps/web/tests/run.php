@@ -198,7 +198,9 @@ foreach ($logFiles as $logFile) {
 }
 
 // Sprint 18: actual in-process Laravel migration execution against a disposable SQLite test target only.
-$assert(! is_file(__DIR__.'/../config/database.php'), 'Sprint 18 must not publish application runtime database configuration.');
+// Sprint 19 now publishes guarded database configuration, but keeps persistence disabled by default.
+$assert(is_file(__DIR__.'/../config/database.php'), 'Sprint 19 guarded application database configuration is missing.');
+$assert(config('database.oneqay_persistence_enabled') === false, 'Sprint 19 persistence must remain disabled during ordinary application regression boot.');
 $assert(extension_loaded('pdo_sqlite'), 'Sprint 18 disposable SQLite proof requires pdo_sqlite in CI.');
 
 $removeS18Tree = null;
@@ -411,7 +413,9 @@ $app['config']->set('database.connections.s18_sqlite', null);
 @unlink($s18DatabasePath);
 $removeS18Tree($s18Parent);
 $assert(! file_exists($s18Parent), 'Sprint 18 disposable SQLite execution workspace cleanup failed.');
-$assert(! is_file(__DIR__.'/../config/database.php'), 'Sprint 18 application regression introduced runtime database configuration.');
+
+// Sprint 19: durable application persistence remains Local/Test/CI-only and uses its own disposable regression database.
+require __DIR__.'/persistence.php';
 
 $forbidden = [
     'Illuminate\\',

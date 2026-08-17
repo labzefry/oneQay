@@ -11,8 +11,15 @@ on:
       - 'apps/web/app/Domain/Device/**'
       - 'apps/web/app/Application/Identity/**'
       - 'apps/web/app/Application/Organization/**'
+      - 'apps/web/app/Application/Persistence/**'
       - 'apps/web/app/Infrastructure/Identity/**'
       - 'apps/web/app/Infrastructure/Organization/**'
+      - 'apps/web/app/Infrastructure/Persistence/LaravelDurableContextGraphRepository.php'
+      - 'apps/web/app/Infrastructure/Persistence/LaravelPersistenceTransaction.php'
+      - 'apps/web/app/Providers/AppServiceProvider.php'
+      - 'apps/web/config/database.php'
+      - 'apps/web/database/migrations/0000_00_00_000001_create_foundational_context_graph.php'
+      - 'apps/web/tests/persistence.php'
       - 'apps/web/tests/identity-org-context.php'
       - '.github/workflows/m7-3-identity-org-context-regression.yml'
   workflow_dispatch:
@@ -44,7 +51,7 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: Enforce bounded M7.3 source and lifecycle-stabilization envelope
+      - name: Enforce bounded M7.3 and Sprint 19 preservation envelope
         if: github.event_name == 'pull_request'
         shell: bash
         run: |
@@ -54,25 +61,27 @@ jobs:
           test -s /tmp/m73-changed-files.txt
           while IFS= read -r file; do
             case "$file" in
-              apps/web/app/Domain/Identity/*|\
-              apps/web/app/Domain/Organization/*|\
-              apps/web/app/Domain/Outlet/*|\
-              apps/web/app/Domain/Device/*|\
-              apps/web/app/Application/Identity/*|\
-              apps/web/app/Application/Organization/*|\
-              apps/web/app/Infrastructure/Identity/*|\
-              apps/web/app/Infrastructure/Organization/*|\
-              apps/web/tests/identity-org-context.php|\
+              apps/web/config/database.php|\
+              apps/web/environment.example|\
+              apps/web/app/Application/Persistence/DurablePersistenceViolation.php|\
+              apps/web/app/Application/Persistence/DurableContextGraph.php|\
+              apps/web/app/Application/Persistence/DurableContextGraphRepository.php|\
+              apps/web/app/Application/Persistence/PersistenceTransaction.php|\
+              apps/web/app/Application/Persistence/DurableContextGraphService.php|\
+              apps/web/app/Infrastructure/Persistence/LaravelDurableContextGraphRepository.php|\
+              apps/web/app/Infrastructure/Persistence/LaravelPersistenceTransaction.php|\
+              apps/web/app/Providers/AppServiceProvider.php|\
+              apps/web/database/migrations/0000_00_00_000001_create_foundational_context_graph.php|\
+              apps/web/tests/persistence.php|\
+              apps/web/tests/run.php|\
+              apps/web/tests/tenant-isolation.php|\
               .github/workflows/m7-2-tenant-isolation-regression.yml|\
+              docs/DURABLE_APPLICATION_PERSISTENCE_FOUNDATION.md|\
+              apps/web/tests/identity-org-context.php|\
               .github/workflows/m7-3-identity-org-context-regression.yml|\
-              .github/workflows/m7-4-pos-core-synthetic-regression.yml|\
-              .github/workflows/README.md|\
-              AI_CONSTITUTION.md|\
-              ARCHITECTURE.md|\
-              README.md|\
-              ROADMAP.md|\
-              TASKS.md|\
-              docs/ai/AI_SESSION_STATE.md)
+              .github/workflows/m7-5-preview-db-qualification-regression.yml|\
+              tools/build-m7-5-preview-release.sh|\
+              .github/workflows/m7-5-preview-release-artifact.yml)
                 ;;
               *)
                 echo "M7.3 unauthorized changed path: $file" >&2
@@ -119,7 +128,7 @@ jobs:
           test -f apps/web/package-lock.json
           if git diff --name-only "origin/${{ github.base_ref }}...HEAD" | \
             grep -Eq '(^|/)(composer\.(json|lock)|package(-lock)?\.json)$'; then
-            echo "M7.3 does not authorize dependency-manifest or lockfile changes." >&2
+            echo "M7.3/Sprint19 does not authorize dependency-manifest or lockfile changes." >&2
             exit 1
           fi
 
@@ -155,17 +164,23 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          find apps/web/app apps/web/bootstrap apps/web/config apps/web/public apps/web/routes apps/web/tests \
+          find apps/web/app apps/web/bootstrap apps/web/config apps/web/database apps/web/public apps/web/routes apps/web/tests \
             -type f -name '*.php' -print0 |
             while IFS= read -r -d '' file; do
               php -l "$file"
             done
 
-      - name: Reject database schema migration or SQL implementation
+      - name: Preserve identity and organizational persistence boundary
         shell: bash
         run: |
           set -euo pipefail
-          test ! -d apps/web/database/migrations
+          migration='apps/web/database/migrations/0000_00_00_000001_create_foundational_context_graph.php'
+          test -f "$migration"
+          mapfile -t migrations < <(find apps/web/database/migrations -maxdepth 1 -type f -name '*.php' -printf '%f\n' | sort)
+          if [ "${#migrations[@]}" -ne 1 ] || [ "${migrations[0]}" != "0000_00_00_000001_create_foundational_context_graph.php" ]; then
+            printf 'Unexpected M7.3/Sprint19 migration set:\n%s\n' "${migrations[*]:-<empty>}" >&2
+            exit 1
+          fi
           if grep -R -n -E 'Illuminate\\Database|Schema::|DB::|new PDO|mysqli_' \
             apps/web/app/Domain/Identity \
             apps/web/app/Domain/Organization \
@@ -175,7 +190,7 @@ jobs:
             apps/web/app/Application/Organization \
             apps/web/app/Infrastructure/Identity \
             apps/web/app/Infrastructure/Organization; then
-            echo "M7.3 database/schema/SQL boundary violated." >&2
+            echo "M7.3 identity/organization persistence boundary violated." >&2
             exit 1
           fi
 
@@ -195,7 +210,7 @@ jobs:
         working-directory: apps/web
         run: npm run build
 
-      - name: Preserve M7.1 application regression
+      - name: Preserve M7.1 application and Sprint 19 persistence regression
         working-directory: apps/web
         run: composer test
 

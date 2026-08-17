@@ -11,6 +11,18 @@ SESSION_DRIVER=array
 CACHE_STORE=array
 LOG_CHANNEL=stderr
 
+# Sprint 19 durable application persistence foundation.
+# Disabled by default. Only Local/Test/CI use is authorized in Sprint 19.
+# Never commit real credentials.
+ONEQAY_PERSISTENCE_ENABLED=false
+ONEQAY_DB_DRIVER=mysql
+ONEQAY_DB_HOST=127.0.0.1
+ONEQAY_DB_PORT=3306
+ONEQAY_DB_DATABASE=REPLACE_WITH_LOCAL_TEST_DATABASE
+ONEQAY_DB_USERNAME=REPLACE_WITH_LOCAL_TEST_USER
+ONEQAY_DB_PASSWORD=REPLACE_WITH_LOCAL_TEST_PASSWORD
+ONEQAY_DB_SOCKET=
+
 # Technical Preview relational qualification only. Never commit real credentials.
 ONEQAY_PREVIEW_DB_QUALIFICATION_ENABLED=false
 ONEQAY_PREVIEW_DB_PROFILE=mariadb

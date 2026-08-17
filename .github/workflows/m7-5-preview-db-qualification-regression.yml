@@ -8,9 +8,14 @@ on:
       - 'apps/web/app/Application/Preview/TechnicalPreviewJourney.php'
       - 'apps/web/app/Delivery/Preview/TechnicalPreviewDatabaseQualificationController.php'
       - 'apps/web/app/Infrastructure/Persistence/PreviewDatabaseQualification.php'
+      - 'apps/web/app/Infrastructure/Persistence/LaravelDurableContextGraphRepository.php'
+      - 'apps/web/app/Infrastructure/Persistence/LaravelPersistenceTransaction.php'
       - 'apps/web/config/oneqay.php'
+      - 'apps/web/config/database.php'
       - 'apps/web/environment.example'
+      - 'apps/web/database/migrations/0000_00_00_000001_create_foundational_context_graph.php'
       - 'apps/web/routes/web.php'
+      - 'apps/web/tests/persistence.php'
       - 'apps/web/tests/preview-database-qualification.php'
       - '.github/workflows/m7-5-preview-db-qualification-regression.yml'
   workflow_dispatch:
@@ -58,16 +63,24 @@ jobs:
           php -l apps/web/app/Application/Preview/TechnicalPreviewJourney.php
           php -l apps/web/app/Delivery/Preview/TechnicalPreviewDatabaseQualificationController.php
           php -l apps/web/app/Infrastructure/Persistence/PreviewDatabaseQualification.php
+          php -l apps/web/app/Infrastructure/Persistence/LaravelDurableContextGraphRepository.php
+          php -l apps/web/app/Infrastructure/Persistence/LaravelPersistenceTransaction.php
           php -l apps/web/config/oneqay.php
+          php -l apps/web/config/database.php
+          php -l apps/web/database/migrations/0000_00_00_000001_create_foundational_context_graph.php
           php -l apps/web/routes/web.php
+          php -l apps/web/tests/persistence.php
           php -l apps/web/tests/preview-database-qualification.php
 
-      - name: Reject permanent schema or credential material
+      - name: Preserve non-mutating Preview qualification and durable-persistence denial
         shell: bash
         run: |
           set -euo pipefail
-          test ! -d apps/web/database/migrations
-          if grep -R -n -E 'CREATE[[:space:]]+TABLE|ALTER[[:space:]]+TABLE|DROP[[:space:]]+TABLE' \
+          test -f apps/web/database/migrations/0000_00_00_000001_create_foundational_context_graph.php
+          grep -Fq 'ONEQAY_PERSISTENCE_ENABLED=false' apps/web/environment.example
+          grep -Fq "in_array(\$runtime, ['local', 'test', 'ci'], true)" apps/web/app/Infrastructure/Persistence/LaravelDurableContextGraphRepository.php
+          grep -Fq "in_array(\$runtime, ['local', 'test', 'ci'], true)" apps/web/app/Infrastructure/Persistence/LaravelPersistenceTransaction.php
+          if grep -R -n -E 'CREATE[[:space:]]+TABLE|ALTER[[:space:]]+TABLE|DROP[[:space:]]+TABLE|Schema::create|Schema::table' \
             apps/web/app/Infrastructure/Persistence/PreviewDatabaseQualification.php; then
             echo 'Preview DB qualification must not create or mutate permanent schema.' >&2
             exit 1
@@ -76,9 +89,12 @@ jobs:
             apps/web/app/Application/Preview/TechnicalPreviewJourney.php \
             apps/web/app/Delivery/Preview/TechnicalPreviewDatabaseQualificationController.php \
             apps/web/app/Infrastructure/Persistence/PreviewDatabaseQualification.php \
+            apps/web/app/Infrastructure/Persistence/LaravelDurableContextGraphRepository.php \
+            apps/web/app/Infrastructure/Persistence/LaravelPersistenceTransaction.php \
             apps/web/config/oneqay.php \
+            apps/web/config/database.php \
             apps/web/environment.example; then
-            echo 'Preview DB qualification source contains forbidden credential material.' >&2
+            echo 'Preview DB qualification or durable persistence source contains forbidden credential material.' >&2
             exit 1
           fi
 
@@ -94,7 +110,7 @@ jobs:
         working-directory: apps/web
         run: php tests/preview-database-qualification.php
 
-      - name: Preserve established application regressions
+      - name: Preserve established application regressions without Preview migration execution
         working-directory: apps/web
         run: |
           php tests/run.php
