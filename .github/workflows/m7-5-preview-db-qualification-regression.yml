@@ -10,12 +10,18 @@ on:
       - 'apps/web/app/Infrastructure/Persistence/PreviewDatabaseQualification.php'
       - 'apps/web/app/Infrastructure/Persistence/LaravelDurableContextGraphRepository.php'
       - 'apps/web/app/Infrastructure/Persistence/LaravelPersistenceTransaction.php'
+      - 'apps/web/app/Application/Access/**'
+      - 'apps/web/app/Infrastructure/Access/**'
+      - 'apps/web/app/Infrastructure/Tenancy/LaravelTenantMembershipVerifier.php'
+      - 'apps/web/app/Infrastructure/Organization/LaravelOrganizationalRelationshipVerifier.php'
       - 'apps/web/config/oneqay.php'
       - 'apps/web/config/database.php'
       - 'apps/web/environment.example'
       - 'apps/web/database/migrations/0000_00_00_000001_create_foundational_context_graph.php'
+      - 'apps/web/database/migrations/0000_00_00_000002_create_organizational_access_grants.php'
       - 'apps/web/routes/web.php'
       - 'apps/web/tests/persistence.php'
+      - 'apps/web/tests/access-persistence.php'
       - 'apps/web/tests/preview-database-qualification.php'
       - '.github/workflows/m7-5-preview-db-qualification-regression.yml'
   workflow_dispatch:
@@ -65,36 +71,54 @@ jobs:
           php -l apps/web/app/Infrastructure/Persistence/PreviewDatabaseQualification.php
           php -l apps/web/app/Infrastructure/Persistence/LaravelDurableContextGraphRepository.php
           php -l apps/web/app/Infrastructure/Persistence/LaravelPersistenceTransaction.php
+          php -l apps/web/app/Application/Access/DurableOrganizationalAccessGrant.php
+          php -l apps/web/app/Application/Access/DurableOrganizationalAccessRepository.php
+          php -l apps/web/app/Application/Access/DurableOrganizationalAccessService.php
+          php -l apps/web/app/Application/Access/DurableOrganizationalAccessViolation.php
+          php -l apps/web/app/Infrastructure/Access/LaravelDurableOrganizationalAccessRepository.php
+          php -l apps/web/app/Infrastructure/Tenancy/LaravelTenantMembershipVerifier.php
+          php -l apps/web/app/Infrastructure/Organization/LaravelOrganizationalRelationshipVerifier.php
           php -l apps/web/config/oneqay.php
           php -l apps/web/config/database.php
           php -l apps/web/database/migrations/0000_00_00_000001_create_foundational_context_graph.php
+          php -l apps/web/database/migrations/0000_00_00_000002_create_organizational_access_grants.php
           php -l apps/web/routes/web.php
           php -l apps/web/tests/persistence.php
+          php -l apps/web/tests/access-persistence.php
           php -l apps/web/tests/preview-database-qualification.php
 
-      - name: Preserve non-mutating Preview qualification and durable-persistence denial
+      - name: Preserve non-mutating Preview qualification and durable-access denial
         shell: bash
         run: |
           set -euo pipefail
           test -f apps/web/database/migrations/0000_00_00_000001_create_foundational_context_graph.php
+          test -f apps/web/database/migrations/0000_00_00_000002_create_organizational_access_grants.php
           grep -Fq 'ONEQAY_PERSISTENCE_ENABLED=false' apps/web/environment.example
           grep -Fq "in_array(\$runtime, ['local', 'test', 'ci'], true)" apps/web/app/Infrastructure/Persistence/LaravelDurableContextGraphRepository.php
           grep -Fq "in_array(\$runtime, ['local', 'test', 'ci'], true)" apps/web/app/Infrastructure/Persistence/LaravelPersistenceTransaction.php
+          grep -Fq "in_array(\$runtime, ['local', 'test', 'ci'], true)" apps/web/app/Infrastructure/Access/LaravelDurableOrganizationalAccessRepository.php
+          grep -Fq 'DurableOrganizationalAccessRepository' apps/web/app/Infrastructure/Tenancy/LaravelTenantMembershipVerifier.php
+          grep -Fq 'DurableOrganizationalAccessRepository' apps/web/app/Infrastructure/Organization/LaravelOrganizationalRelationshipVerifier.php
+
           if grep -R -n -E 'CREATE[[:space:]]+TABLE|ALTER[[:space:]]+TABLE|DROP[[:space:]]+TABLE|Schema::create|Schema::table' \
             apps/web/app/Infrastructure/Persistence/PreviewDatabaseQualification.php; then
             echo 'Preview DB qualification must not create or mutate permanent schema.' >&2
             exit 1
           fi
+
           if grep -R -n -E 'BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|AKIA[0-9A-Z]{16}' \
             apps/web/app/Application/Preview/TechnicalPreviewJourney.php \
             apps/web/app/Delivery/Preview/TechnicalPreviewDatabaseQualificationController.php \
             apps/web/app/Infrastructure/Persistence/PreviewDatabaseQualification.php \
             apps/web/app/Infrastructure/Persistence/LaravelDurableContextGraphRepository.php \
             apps/web/app/Infrastructure/Persistence/LaravelPersistenceTransaction.php \
+            apps/web/app/Infrastructure/Access/LaravelDurableOrganizationalAccessRepository.php \
+            apps/web/app/Infrastructure/Tenancy/LaravelTenantMembershipVerifier.php \
+            apps/web/app/Infrastructure/Organization/LaravelOrganizationalRelationshipVerifier.php \
             apps/web/config/oneqay.php \
             apps/web/config/database.php \
             apps/web/environment.example; then
-            echo 'Preview DB qualification or durable persistence source contains forbidden credential material.' >&2
+            echo 'Preview DB qualification or durable access source contains forbidden credential material.' >&2
             exit 1
           fi
 
@@ -105,6 +129,14 @@ jobs:
           grep -Fq 'withinVerifiedContext' apps/web/app/Application/Preview/TechnicalPreviewJourney.php
           grep -Fq 'VerifiedTenantContext $tenantContext' apps/web/app/Infrastructure/Persistence/PreviewDatabaseQualification.php
           grep -Fq '$journey->withinVerifiedContext' apps/web/app/Delivery/Preview/TechnicalPreviewDatabaseQualificationController.php
+          if grep -Fq 'LaravelTenantMembershipVerifier' apps/web/app/Application/Preview/TechnicalPreviewJourney.php; then
+            echo 'Technical Preview must not switch to durable tenant membership in Sprint 20.' >&2
+            exit 1
+          fi
+          if grep -Fq 'LaravelOrganizationalRelationshipVerifier' apps/web/app/Application/Preview/TechnicalPreviewJourney.php; then
+            echo 'Technical Preview must not switch to durable organizational access in Sprint 20.' >&2
+            exit 1
+          fi
 
       - name: Run Preview database qualification regression
         working-directory: apps/web

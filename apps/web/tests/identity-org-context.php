@@ -8,6 +8,7 @@ use App\Application\Identity\VerifiedPlatformIdentity;
 use App\Application\Organization\EnterOrganizationalContext;
 use App\Application\Organization\OrganizationalAccessViolation;
 use App\Application\Tenancy\MissingTenantContext;
+use App\Application\Tenancy\RequireVerifiedTenantContext;
 use App\Domain\Identity\PlatformIdentityId;
 use App\Infrastructure\Identity\ServerVerifiedPlatformIdentity;
 use App\Infrastructure\Organization\RequestOrganizationalContextStore;
@@ -80,26 +81,19 @@ $betaTenant = $memberships->verify('synthetic-principal-b', 'tenant-beta');
 $assertM73($alphaTenant !== null, 'M73-CTRL-001 alpha tenant membership positive control');
 $assertM73($betaTenant !== null, 'M73-CTRL-002 beta tenant membership positive control');
 
-$identityA = new ServerVerifiedPlatformIdentity(
-    PlatformIdentityId::fromString('synthetic-principal-a'),
-);
-$identityB = new ServerVerifiedPlatformIdentity(
-    PlatformIdentityId::fromString('synthetic-principal-b'),
-);
-$identityC = new ServerVerifiedPlatformIdentity(
-    PlatformIdentityId::fromString('synthetic-principal-c'),
-);
+$identityA = new ServerVerifiedPlatformIdentity(PlatformIdentityId::fromString('synthetic-principal-a'));
+$identityB = new ServerVerifiedPlatformIdentity(PlatformIdentityId::fromString('synthetic-principal-b'));
+$identityC = new ServerVerifiedPlatformIdentity(PlatformIdentityId::fromString('synthetic-principal-c'));
 
 $store = new RequestOrganizationalContextStore();
 $enter = new EnterOrganizationalContext(
     new RequireVerifiedPlatformIdentity(),
-    new App\Application\Tenancy\RequireVerifiedTenantContext(),
+    new RequireVerifiedTenantContext(),
     $memberships,
     $relationships,
     $store,
 );
 
-// M73-ID-001 canonical immutable identity primitive.
 $canonicalIdentity = PlatformIdentityId::fromString('  SYNTHETIC-PRINCIPAL-A  ');
 $assertM73(
     $canonicalIdentity->value() === 'synthetic-principal-a',
@@ -112,7 +106,6 @@ try {
     // Expected.
 }
 
-// M73-ID-003 missing verified identity denied.
 try {
     $enter->enter(null, $alphaTenant, 'organization-alpha');
     $assertM73(false, 'M73-ID-003 missing identity denied');
@@ -120,7 +113,6 @@ try {
     $assertM73($store->current() === null, 'missing identity leaves no organizational context');
 }
 
-// M73-ID-004 malformed verified identity denied.
 $malformedIdentity = new class implements VerifiedPlatformIdentity {
     public function identityId(): string
     {
@@ -134,7 +126,6 @@ try {
     $assertM73($store->current() === null, 'malformed identity leaves no organizational context');
 }
 
-// M73-TEN-001 missing tenant context denied by M7.2 fail-closed boundary.
 try {
     $enter->enter($identityA, null, 'organization-alpha');
     $assertM73(false, 'M73-TEN-001 missing verified tenant context denied');
@@ -142,37 +133,17 @@ try {
     $assertM73($store->current() === null, 'missing tenant leaves no organizational context');
 }
 
-// M73-CTRL-003 positive organization-only context.
 $organizationOnly = $enter->enter($identityA, $alphaTenant, 'organization-alpha');
-$assertM73(
-    $organizationOnly->identityId()->value() === 'synthetic-principal-a',
-    'verified organizational context preserves identity without making it tenant authority',
-);
-$assertM73(
-    $organizationOnly->tenantId()->value() === 'tenant-alpha',
-    'verified organizational context derives tenant from verified tenant context',
-);
-$assertM73(
-    $organizationOnly->organizationId()->value() === 'organization-alpha',
-    'organization positive control',
-);
+$assertM73($organizationOnly->identityId()->value() === 'synthetic-principal-a', 'M73-CTRL-003 identity control');
+$assertM73($organizationOnly->tenantId()->value() === 'tenant-alpha', 'M73-CTRL-003 tenant control');
+$assertM73($organizationOnly->organizationId()->value() === 'organization-alpha', 'M73-CTRL-003 organization control');
 $assertM73($organizationOnly->outletId() === null, 'organization-only context has no implicit outlet');
 $assertM73($organizationOnly->deviceId() === null, 'organization-only context has no implicit device');
 
-// M73-CTRL-004 positive outlet context.
-$outletContext = $enter->enter(
-    $identityA,
-    $alphaTenant,
-    'organization-alpha',
-    'outlet-alpha',
-);
-$assertM73(
-    $outletContext->outletId()?->value() === 'outlet-alpha',
-    'outlet positive control requires server relationship',
-);
+$outletContext = $enter->enter($identityA, $alphaTenant, 'organization-alpha', 'outlet-alpha');
+$assertM73($outletContext->outletId()?->value() === 'outlet-alpha', 'M73-CTRL-004 outlet positive control');
 $assertM73($outletContext->deviceId() === null, 'outlet context has no implicit device');
 
-// M73-CTRL-005 positive device context.
 $deviceContext = $enter->enter(
     $identityA,
     $alphaTenant,
@@ -180,31 +151,22 @@ $deviceContext = $enter->enter(
     'outlet-alpha',
     'device-alpha',
 );
-$assertM73(
-    $deviceContext->deviceId()?->value() === 'device-alpha',
-    'device positive control requires server relationship',
-);
+$assertM73($deviceContext->deviceId()?->value() === 'device-alpha', 'M73-CTRL-005 device positive control');
 
-// M73-AUTHZ-001 identity without tenant membership denied even with a synthetic org relationship.
 try {
     $enter->enter($identityC, $alphaTenant, 'organization-alpha');
     $assertM73(false, 'M73-AUTHZ-001 identity without tenant membership denied');
 } catch (OrganizationalAccessViolation $exception) {
-    $assertM73(
-        $exception->getMessage() === 'Organizational context denied.',
-        'denial remains generic',
-    );
+    $assertM73($exception->getMessage() === 'Organizational context denied.', 'M73-AUTHZ denial remains generic');
 }
 
-// M73-AUTHZ-002 identity belonging to another tenant denied.
 try {
     $enter->enter($identityB, $alphaTenant, 'organization-alpha');
-    $assertM73(false, 'M73-AUTHZ-002 foreign tenant identity denied');
+    $assertM73(false, 'M73-AUTHZ-002 identity belonging to another tenant denied');
 } catch (OrganizationalAccessViolation) {
     // Expected.
 }
 
-// M73-AUTHZ-003 organization from another tenant denied.
 try {
     $enter->enter(
         $identityA,
@@ -213,18 +175,17 @@ try {
         'outlet-collision',
         'device-collision',
     );
-    $assertM73(false, 'M73-AUTHZ-003 foreign tenant organization denied');
+    $assertM73(false, 'M73-AUTHZ-003 foreign organization denied');
 } catch (OrganizationalAccessViolation $exception) {
     $assertM73(
         ! str_contains($exception->getMessage(), 'tenant-beta')
         && ! str_contains($exception->getMessage(), 'organization-collision')
         && ! str_contains($exception->getMessage(), 'outlet-collision')
         && ! str_contains($exception->getMessage(), 'device-collision'),
-        'foreign context denial does not leak foreign payload',
+        'M73-AUTHZ-003 denial does not leak foreign payload',
     );
 }
 
-// M73-AUTHZ-004 same global org/outlet/device identifiers do not bypass tenant scope.
 $betaCollision = $enter->enter(
     $identityB,
     $betaTenant,
@@ -232,10 +193,7 @@ $betaCollision = $enter->enter(
     'outlet-collision',
     'device-collision',
 );
-$assertM73(
-    $betaCollision->tenantId()->value() === 'tenant-beta',
-    'collision positive control belongs only to beta verified tenant',
-);
+$assertM73($betaCollision->tenantId()->value() === 'tenant-beta', 'M73-AUTHZ-004 collision positive control');
 try {
     $enter->enter(
         $identityA,
@@ -244,12 +202,11 @@ try {
         'outlet-collision',
         'device-collision',
     );
-    $assertM73(false, 'M73-AUTHZ-004 global identifier collision must not bypass tenant scope');
+    $assertM73(false, 'M73-AUTHZ-004 same identifiers cannot bypass tenant scope');
 } catch (OrganizationalAccessViolation) {
     // Expected.
 }
 
-// M73-AUTHZ-005 outlet from another organization denied.
 try {
     $enter->enter(
         $identityA,
@@ -263,7 +220,6 @@ try {
     // Expected.
 }
 
-// M73-AUTHZ-006 device from another outlet denied.
 try {
     $enter->enter(
         $identityA,
@@ -277,7 +233,6 @@ try {
     // Expected.
 }
 
-// M73-AUTHZ-007 client organization/outlet/device hints select only; they never grant access.
 foreach ([
     ['organization-alpha', 'outlet-not-granted', null],
     ['organization-not-granted', null, null],
@@ -291,7 +246,6 @@ foreach ([
     }
 }
 
-// M73-AUTHZ-008 device cannot exist without an outlet.
 try {
     $enter->enter($identityA, $alphaTenant, 'organization-alpha', null, 'device-alpha');
     $assertM73(false, 'M73-AUTHZ-008 device without outlet denied');
@@ -299,50 +253,32 @@ try {
     // Expected.
 }
 
-// M73-AUTHZ-009 raw tenant hint cannot override server-verified membership.
 $assertM73(
     $memberships->verify('synthetic-principal-a', 'tenant-beta') === null,
     'M73-AUTHZ-009 raw tenant hint cannot create membership',
 );
 
-// M73-CTX-001 no default organizational context.
 $enter->clear();
 $assertM73($store->current() === null, 'M73-CTX-001 no default organizational context');
-
-// M73-CTX-002 request context can be explicitly established then cleared.
-$enter->enter(
-    $identityA,
-    $alphaTenant,
-    'organization-alpha',
-    'outlet-alpha',
-    'device-alpha',
-);
+$enter->enter($identityA, $alphaTenant, 'organization-alpha', 'outlet-alpha', 'device-alpha');
 $assertM73($store->current() !== null, 'M73-CTX-002 verified context stored for bounded request scope');
 $enter->clear();
 $assertM73($store->current() === null, 'M73-CTX-002 request context clears');
-
-// M73-CTX-003 failed next request cannot inherit stale context.
 $enter->enter($identityA, $alphaTenant, 'organization-alpha');
-$assertM73($store->current() !== null, 'M73-CTX-003 stale-context positive setup');
 try {
     $enter->enter($identityA, $alphaTenant, 'organization-not-granted');
     $assertM73(false, 'M73-CTX-003 failed request must deny');
 } catch (OrganizationalAccessViolation) {
-    $assertM73($store->current() === null, 'M73-CTX-003 failed request clears previous context before evaluation');
+    $assertM73($store->current() === null, 'M73-CTX-003 failed request clears previous context');
 }
 
-// M73-ARCH-001 Domain/Application remain framework-independent.
 $forbiddenFrameworkReferences = ['Illuminate\\', 'Laravel\\', 'Inertia\\', 'Vue'];
-foreach ([
-    __DIR__.'/../app/Domain',
-    __DIR__.'/../app/Application',
-] as $directory) {
+foreach ([__DIR__.'/../app/Domain', __DIR__.'/../app/Application'] as $directory) {
     $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($directory));
     foreach ($iterator as $file) {
         if (! $file->isFile() || $file->getExtension() !== 'php') {
             continue;
         }
-
         $content = (string) file_get_contents($file->getPathname());
         foreach ($forbiddenFrameworkReferences as $needle) {
             $assertM73(
@@ -353,14 +289,7 @@ foreach ([
     }
 }
 
-// M73-GOV-001 identity/organization layers remain free of physical persistence mechanics.
-$forbiddenPersistenceReferences = [
-    'Illuminate\\Database',
-    'Schema::',
-    'DB::',
-    'new PDO',
-    'mysqli_',
-];
+$forbiddenPersistenceReferences = ['Illuminate\\Database', 'Schema::', 'DB::', 'new PDO', 'mysqli_'];
 foreach ([
     __DIR__.'/../app/Domain/Identity',
     __DIR__.'/../app/Domain/Organization',
@@ -368,15 +297,14 @@ foreach ([
     __DIR__.'/../app/Domain/Device',
     __DIR__.'/../app/Application/Identity',
     __DIR__.'/../app/Application/Organization',
+    __DIR__.'/../app/Application/Access',
     __DIR__.'/../app/Infrastructure/Identity',
-    __DIR__.'/../app/Infrastructure/Organization',
 ] as $directory) {
     $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($directory));
     foreach ($iterator as $file) {
         if (! $file->isFile() || $file->getExtension() !== 'php') {
             continue;
         }
-
         $content = (string) file_get_contents($file->getPathname());
         foreach ($forbiddenPersistenceReferences as $needle) {
             $assertM73(
@@ -388,25 +316,37 @@ foreach ([
 }
 
 $migrationDirectory = __DIR__.'/../database/migrations';
-$canonicalMigration = $migrationDirectory.'/0000_00_00_000001_create_foundational_context_graph.php';
-$assertM73(is_dir($migrationDirectory), 'M73-GOV-001 canonical migration directory missing');
-$assertM73(is_file($canonicalMigration), 'M73-GOV-001 canonical foundational migration missing');
+$s19Migration = $migrationDirectory.'/0000_00_00_000001_create_foundational_context_graph.php';
+$s20Migration = $migrationDirectory.'/0000_00_00_000002_create_organizational_access_grants.php';
+$assertM73(is_file($s19Migration), 'M73-GOV-001 Sprint 19 migration missing');
+$assertM73(is_file($s20Migration), 'M73-GOV-001 Sprint 20 migration missing');
 $migrationFiles = glob($migrationDirectory.'/*.php') ?: [];
 sort($migrationFiles, SORT_STRING);
 $assertM73(
-    $migrationFiles === [$canonicalMigration],
-    'M73-GOV-001 migration set must remain exactly the Sprint 19 foundational migration',
+    $migrationFiles === [$s19Migration, $s20Migration],
+    'M73-GOV-001 migration set must remain exactly Sprint 19 plus Sprint 20',
 );
 
-// M73-GOV-002 synthetic relationship evidence cannot be initialized with a real principal identifier.
+$accessRepositorySource = (string) file_get_contents(
+    __DIR__.'/../app/Infrastructure/Access/LaravelDurableOrganizationalAccessRepository.php',
+);
+$durableTenantVerifierSource = (string) file_get_contents(
+    __DIR__.'/../app/Infrastructure/Tenancy/LaravelTenantMembershipVerifier.php',
+);
+$durableRelationshipVerifierSource = (string) file_get_contents(
+    __DIR__.'/../app/Infrastructure/Organization/LaravelOrganizationalRelationshipVerifier.php',
+);
+$assertM73(substr_count($accessRepositorySource, "->where('tenant_id',") >= 4, 'M73-GOV-003 durable access lost tenant predicates');
+$assertM73(! preg_match('/\b(updateOrInsert|upsert)\s*\(/', $accessRepositorySource), 'M73-GOV-003 durable access introduced unrestricted upsert');
+$assertM73(str_contains($durableTenantVerifierSource, 'hasTenantMembership'), 'M73-GOV-003 durable tenant verifier lost membership proof');
+$assertM73(str_contains($durableRelationshipVerifierSource, 'DurableOrganizationalAccessGrant'), 'M73-GOV-003 durable relationship verifier lost scoped grant proof');
+
 try {
     new SyntheticOrganizationalRelationshipVerifier([
-        'principal-real' => [
-            [
-                'tenant' => 'tenant-alpha',
-                'organization' => 'organization-alpha',
-            ],
-        ],
+        'principal-real' => [[
+            'tenant' => 'tenant-alpha',
+            'organization' => 'organization-alpha',
+        ]],
     ]);
     $assertM73(false, 'M73-GOV-002 synthetic-data-only');
 } catch (InvalidArgumentException) {

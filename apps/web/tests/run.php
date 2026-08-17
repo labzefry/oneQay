@@ -417,6 +417,9 @@ $assert(! file_exists($s18Parent), 'Sprint 18 disposable SQLite execution worksp
 // Sprint 19: durable application persistence remains Local/Test/CI-only and uses its own disposable regression database.
 require __DIR__.'/persistence.php';
 
+// Sprint 20: durable organizational access remains Local/Test/CI-only and records only already verified contexts.
+require __DIR__.'/access-persistence.php';
+
 $forbidden = [
     'Illuminate\\',
     'Inertia\\',
