@@ -1,0 +1,342 @@
+{
+  "schema": "oneqay.m7_7.technical-preview-acceptance.v1",
+  "observed_at": "2026-08-17",
+  "repository": "labzefry/oneQay",
+  "base": {
+    "sha": "2b0bfb4d276299943755e738b852d205f72db0e0",
+    "tree": "e513b96b4ddc1e07e064ff0c41078fcbd3c50ef2",
+    "signature": "verified/valid",
+    "open_pull_requests": [],
+    "latest_merged_pull_request": 143
+  },
+  "authority": {
+    "stage": "M7.7 — Technical Preview Acceptance",
+    "bounded_start_authorized": true,
+    "ready_authorized": false,
+    "merge_authorized": false,
+    "release_authorized": false,
+    "production_authorized": false,
+    "phase_0_exit_approved": false,
+    "sprint_14_authorized": false
+  },
+  "acceptance": {
+    "controlled_outcome": "COMBINED TECHNICAL ACCEPTANCE",
+    "mandatory_domains": 20,
+    "verified": 20,
+    "partial": 0,
+    "blocked": 0,
+    "not_applicable": 0,
+    "outcome": "PASS",
+    "publication_state": "DRAFT_PR_CANDIDATE",
+    "live_target_action_required": false
+  },
+  "fresh_repository_observations": {
+    "pr_143_merged": true,
+    "m7_5_outcome": "EVIDENCE_COMPLETE",
+    "m7_5_verified": 29,
+    "m7_5_blocked": 0,
+    "m7_6_real_qualified_target_execution": "PASS",
+    "m7_6_final_active_release": "m75-preview-dab951519e67",
+    "m7_6_corrected_candidate_release": "m75-preview-ab5fe31ef0ef",
+    "m7_6_corrected_candidate_finally_active": false,
+    "open_issue_inventory": [
+      23
+    ],
+    "open_issue_23_classification": "historical Technical Preview planning/acceptance tracker; not recorded as a Critical/High Preview defect"
+  },
+  "domains": [
+    {
+      "id": 1,
+      "domain": "Source/Application",
+      "required_evidence": "Published M7.1 skeleton/config boundary plus successor source regressions.",
+      "canonical_evidence_found": "PR #92; .github/workflows/m7-1-application-regression.yml; M7.4A preserves predecessor regressions.",
+      "status": "VERIFIED",
+      "blocker": null,
+      "exact_repository_source": [
+        "PR #92",
+        ".github/workflows/m7-1-application-regression.yml",
+        "PR #98"
+      ],
+      "live_target_action_required": false
+    },
+    {
+      "id": 2,
+      "domain": "Tenant Isolation",
+      "required_evidence": "Negative cross-tenant evidence at application and qualified relational/runtime levels.",
+      "canonical_evidence_found": "PR #93 tenant isolation regression; M7.5 ENGINE:TENANT_ISOLATION VERIFIED; M7.4/M7.4A preserve cross-tenant denials.",
+      "status": "VERIFIED",
+      "blocker": null,
+      "exact_repository_source": [
+        "PR #93",
+        ".github/workflows/m7-2-tenant-isolation-regression.yml",
+        "docs/evidence/runtime/p1-cpanel-live-runtime-reconciled-20260816-backup-restore.report.json",
+        "PR #96",
+        "PR #98"
+      ],
+      "live_target_action_required": false
+    },
+    {
+      "id": 3,
+      "domain": "Identity / Organization / Outlet / Device",
+      "required_evidence": "Deny-by-default verified identity and organizational context evidence.",
+      "canonical_evidence_found": "PR #94 merged with dedicated regression and negative foreign-context controls.",
+      "status": "VERIFIED",
+      "blocker": null,
+      "exact_repository_source": [
+        "PR #94",
+        ".github/workflows/m7-3-identity-org-context-regression.yml"
+      ],
+      "live_target_action_required": false
+    },
+    {
+      "id": 4,
+      "domain": "Synthetic POS Vertical Slice",
+      "required_evidence": "Traceable synthetic POS path with exact money, idempotency, stock, audit/correlation and no real payment.",
+      "canonical_evidence_found": "PR #96 merged; PR #98 interaction layer reuses CompleteSyntheticSale.",
+      "status": "VERIFIED",
+      "blocker": null,
+      "exact_repository_source": [
+        "PR #96",
+        ".github/workflows/m7-4-pos-core-synthetic-regression.yml",
+        "PR #98"
+      ],
+      "live_target_action_required": false
+    },
+    {
+      "id": 5,
+      "domain": "Security",
+      "required_evidence": "Secret/dependency gates, deny-by-default authorization, Preview security boundary and privileged controls.",
+      "canonical_evidence_found": "M7.1-M7.4A High/Critical advisory gates; M7.5 RUNTIME:SECURITY_BOUNDARY VERIFIED; privileged updater security PR #134 published.",
+      "status": "VERIFIED",
+      "blocker": null,
+      "exact_repository_source": [
+        "TESTING.md",
+        "docs/evidence/runtime/p1-cpanel-live-runtime-reconciled-20260816-backup-restore.report.json",
+        "PR #134",
+        ".github/workflows/privileged-update-security-regression.yml"
+      ],
+      "live_target_action_required": false
+    },
+    {
+      "id": 6,
+      "domain": "Configuration / Secret Boundary",
+      "required_evidence": "No raw secrets in release/evidence and safe private shared runtime environment binding.",
+      "canonical_evidence_found": "M7.1 configuration fail-closed; PR #138 shared runtime boundary; PR #140/#142 corrected private shared dotenv binding; M7.6 confirms no embedded secret values.",
+      "status": "VERIFIED",
+      "blocker": null,
+      "exact_repository_source": [
+        "PR #92",
+        "PR #138",
+        "PR #140",
+        "PR #142",
+        "docs/evidence/runtime/m76-preview-deployment-recovery-rehearsal-passed-20260817.json"
+      ],
+      "live_target_action_required": false
+    },
+    {
+      "id": 7,
+      "domain": "Runtime Qualification",
+      "required_evidence": "Qualified Preview target must satisfy DEC-009 runtime catalog.",
+      "canonical_evidence_found": "M7.5 final evaluator EVIDENCE_COMPLETE with 29 VERIFIED / 0 BLOCKED.",
+      "status": "VERIFIED",
+      "blocker": null,
+      "exact_repository_source": [
+        "docs/evidence/runtime/p1-cpanel-live-runtime-reconciled-20260816-backup-restore.report.json",
+        "docs/ai/AI_PROJECT_STATE.md"
+      ],
+      "live_target_action_required": false
+    },
+    {
+      "id": 8,
+      "domain": "Database / Relational Engine Qualification",
+      "required_evidence": "Selected relational engine profile and portability/transaction/connectivity/isolation evidence.",
+      "canonical_evidence_found": "M7.5 verifies MariaDB 11.4.8 engine profile including portability contract, transaction semantics, least privilege and tenant isolation.",
+      "status": "VERIFIED",
+      "blocker": null,
+      "exact_repository_source": [
+        "docs/evidence/runtime/p1-cpanel-live-runtime-reconciled-20260816-backup-restore.report.json"
+      ],
+      "live_target_action_required": false
+    },
+    {
+      "id": 9,
+      "domain": "Backup / Restore",
+      "required_evidence": "Successful backup/export and verified isolated restore evidence.",
+      "canonical_evidence_found": "M7.5 verifies ENGINE:BACKUP_EXPORT, ENGINE:RESTORE_VERIFIED and RUNTIME:BACKUP_RESTORE.",
+      "status": "VERIFIED",
+      "blocker": null,
+      "exact_repository_source": [
+        "docs/evidence/runtime/p1-cpanel-live-runtime-reconciled-20260816-backup-restore.report.json"
+      ],
+      "live_target_action_required": false
+    },
+    {
+      "id": 10,
+      "domain": "Deployment",
+      "required_evidence": "Governed Preview candidate staging/activation evidence on qualified target.",
+      "canonical_evidence_found": "M7.6 candidate staged, promoted immutable and activated via authorized manual cPanel operator path.",
+      "status": "VERIFIED",
+      "blocker": null,
+      "exact_repository_source": [
+        "docs/evidence/runtime/m76-preview-deployment-recovery-rehearsal-passed-20260817.json",
+        "docs/ai/AI_M7_6_REHEARSAL_EXECUTION_STATE.md"
+      ],
+      "live_target_action_required": false
+    },
+    {
+      "id": 11,
+      "domain": "Candidate Health",
+      "required_evidence": "Post-activation liveness/readiness must pass.",
+      "canonical_evidence_found": "M7.6 candidate /health/live=ok and /health/ready=ready.",
+      "status": "VERIFIED",
+      "blocker": null,
+      "exact_repository_source": [
+        "docs/evidence/runtime/m76-preview-deployment-recovery-rehearsal-passed-20260817.json"
+      ],
+      "live_target_action_required": false
+    },
+    {
+      "id": 12,
+      "domain": "Recovery / Rollback",
+      "required_evidence": "Deliberate rollback and restored-baseline health evidence.",
+      "canonical_evidence_found": "M7.6 deliberate rollback PASS; exact baseline identity restored; liveness/readiness healthy after rollback.",
+      "status": "VERIFIED",
+      "blocker": null,
+      "exact_repository_source": [
+        "docs/evidence/runtime/m76-preview-deployment-recovery-rehearsal-passed-20260817.json"
+      ],
+      "live_target_action_required": false
+    },
+    {
+      "id": 13,
+      "domain": "Observability / Correlation",
+      "required_evidence": "Correlation/error reference at source plus runtime observability/logging evidence.",
+      "canonical_evidence_found": "M7.1 correlation/error foundation; M7.4 audit/correlation evidence; M7.5 RUNTIME:OBSERVABILITY_LOGGING VERIFIED.",
+      "status": "VERIFIED",
+      "blocker": null,
+      "exact_repository_source": [
+        "PR #92",
+        "PR #96",
+        "docs/evidence/runtime/p1-cpanel-live-runtime-reconciled-20260816-backup-restore.report.json"
+      ],
+      "live_target_action_required": false
+    },
+    {
+      "id": 14,
+      "domain": "Privileged Updater Security Foundation",
+      "required_evidence": "Privileged install-changing actions require bounded platform-superadmin security controls.",
+      "canonical_evidence_found": "PR #134 publishes re-auth, TOTP, freshness/replay, audit-redaction and fail-closed security foundation.",
+      "status": "VERIFIED",
+      "blocker": null,
+      "exact_repository_source": [
+        "PR #134",
+        ".github/workflows/privileged-update-security-regression.yml"
+      ],
+      "live_target_action_required": false
+    },
+    {
+      "id": 15,
+      "domain": "Updater Runtime Wiring Boundary",
+      "required_evidence": "M7.7 must distinguish published updater foundations from intentionally disabled/unwired live installation.",
+      "canonical_evidence_found": "PR #135-#138 and M7.6 evidence confirm install remains DISABLED; no live adapter/current-release pointer authority is claimed.",
+      "status": "VERIFIED",
+      "blocker": null,
+      "exact_repository_source": [
+        "PR #135",
+        "PR #136",
+        "PR #137",
+        "PR #138",
+        "docs/evidence/runtime/m76-preview-deployment-recovery-rehearsal-passed-20260817.json"
+      ],
+      "live_target_action_required": false
+    },
+    {
+      "id": 16,
+      "domain": "Operational Acceptance",
+      "required_evidence": "Qualified-target operational path, recovery checkpoint, health gates and evidence-safe operator semantics.",
+      "canonical_evidence_found": "M7.5 runtime qualification plus M7.6 successful real qualified-target rehearsal provide bounded Preview operational evidence.",
+      "status": "VERIFIED",
+      "blocker": null,
+      "exact_repository_source": [
+        "docs/evidence/runtime/p1-cpanel-live-runtime-reconciled-20260816-backup-restore.report.json",
+        "docs/evidence/runtime/m76-preview-deployment-recovery-rehearsal-passed-20260817.json"
+      ],
+      "live_target_action_required": false
+    },
+    {
+      "id": 17,
+      "domain": "Preview Data Boundary",
+      "required_evidence": "Synthetic-only; no Production/customer data and no real payment provider.",
+      "canonical_evidence_found": "PR #96/#98 synthetic-only; M7.6 candidate synthetic_data_only=true and production=false; TESTING.md defaults test data to synthetic.",
+      "status": "VERIFIED",
+      "blocker": null,
+      "exact_repository_source": [
+        "PR #96",
+        "PR #98",
+        "TESTING.md",
+        "docs/evidence/runtime/m76-preview-deployment-recovery-rehearsal-passed-20260817.json"
+      ],
+      "live_target_action_required": false
+    },
+    {
+      "id": 18,
+      "domain": "Critical/High Preview Defects",
+      "required_evidence": "No unresolved Critical/High defect within bounded Preview scope.",
+      "canonical_evidence_found": "Current open-issue inventory contains only Issue #23, a Technical Preview planning/acceptance tracker; predecessor workflows enforce High/Critical dependency advisory gates and no separate open Critical/High Preview defect is recorded.",
+      "status": "VERIFIED",
+      "blocker": null,
+      "exact_repository_source": [
+        "Issue #23",
+        "TESTING.md",
+        "PR #92",
+        "PR #93",
+        "PR #94",
+        "PR #96",
+        "PR #98"
+      ],
+      "live_target_action_required": false
+    },
+    {
+      "id": 19,
+      "domain": "Production Boundary",
+      "required_evidence": "Technical Preview acceptance must not imply Production/pilot readiness or Production SLA/data/payment authority.",
+      "canonical_evidence_found": "M7.6 evidence production_authority=false, production=false; roadmap/testing preserve Preview-only and Production NO-GO semantics.",
+      "status": "VERIFIED",
+      "blocker": null,
+      "exact_repository_source": [
+        "docs/evidence/runtime/m76-preview-deployment-recovery-rehearsal-passed-20260817.json",
+        "ROADMAP.md",
+        "TESTING.md"
+      ],
+      "live_target_action_required": false
+    },
+    {
+      "id": 20,
+      "domain": "Lifecycle Authority Boundary",
+      "required_evidence": "Acceptance evidence must not create Phase 0 Exit, Sprint 14, Release, Production, Ready or Merge authority.",
+      "canonical_evidence_found": "M7.5/M7.6 evidence lifecycle_authority_created=false; current M7.7 authority stops at bounded Draft PR.",
+      "status": "VERIFIED",
+      "blocker": null,
+      "exact_repository_source": [
+        "docs/evidence/runtime/p1-cpanel-live-runtime-reconciled-20260816-backup-restore.report.json",
+        "docs/evidence/runtime/m76-preview-deployment-recovery-rehearsal-passed-20260817.json",
+        "docs/ai/AI_M7_6_REHEARSAL_EXECUTION_STATE.md"
+      ],
+      "live_target_action_required": false
+    }
+  ],
+  "known_limitations": [
+    "Technical Preview remains synthetic-only and is not Production/pilot ready.",
+    "Updater installation remains DISABLED/UNWIRED; published updater components are foundations, not a live self-update claim.",
+    "current-release.json is not established as live cPanel target authority; the real target uses the public front-controller binding model.",
+    "The final active release after M7.6 deliberate rollback remains m75-preview-dab951519e67; the healthy corrected candidate is not silently reactivated.",
+    "NO_SCHEMA_CHANGE remains the governing migration classification for the accepted rehearsal evidence.",
+    "No Production SLA, Production RPO/RTO, real payment provider, or customer/Production data authority is created."
+  ],
+  "canonical_supersession": {
+    "purpose": "When this acceptance record and its companion state document are merged to canonical main, they supersede older current-facing statements that M7.6 or M7.7 are NOT AUTHORIZED, while preserving those older sections as historical provenance.",
+    "does_not_rewrite_history": true
+  },
+  "lifecycle_authority_created": false,
+  "attribution": "Lab | zefry"
+}
