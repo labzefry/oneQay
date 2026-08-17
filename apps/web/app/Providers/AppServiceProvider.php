@@ -3,11 +3,14 @@
 namespace App\Providers;
 
 use App\Application\Access\DurableOrganizationalAccessRepository;
+use App\Application\Authorization\DurablePolicyAdministrationRepository;
 use App\Application\Authorization\DurableRolePermissionRepository;
+use App\Application\Authorization\PolicyAdministrationClock;
 use App\Application\Persistence\DurableContextGraphRepository;
 use App\Application\Persistence\PersistenceTransaction;
 use App\Application\Tenancy\TenantContextStore;
 use App\Infrastructure\Access\LaravelDurableOrganizationalAccessRepository;
+use App\Infrastructure\Authorization\LaravelDurablePolicyAdministrationRepository;
 use App\Infrastructure\Authorization\LaravelDurableRolePermissionRepository;
 use App\Infrastructure\Persistence\LaravelDurableContextGraphRepository;
 use App\Infrastructure\Persistence\LaravelPersistenceTransaction;
@@ -64,6 +67,30 @@ final class AppServiceProvider extends ServiceProvider
                     (bool) config('database.oneqay_persistence_enabled', false),
                     (string) config('oneqay.runtime_class', ''),
                 );
+            },
+        );
+
+        $this->app->scoped(
+            DurablePolicyAdministrationRepository::class,
+            function ($app): DurablePolicyAdministrationRepository {
+                /** @var Connection $connection */
+                $connection = $app->make('db')->connection();
+
+                return new LaravelDurablePolicyAdministrationRepository(
+                    $connection,
+                    (bool) config('database.oneqay_persistence_enabled', false),
+                    (string) config('oneqay.runtime_class', ''),
+                );
+            },
+        );
+
+        $this->app->scoped(
+            PolicyAdministrationClock::class,
+            static fn (): PolicyAdministrationClock => new class implements PolicyAdministrationClock {
+                public function nowUnix(): int
+                {
+                    return time();
+                }
             },
         );
 
