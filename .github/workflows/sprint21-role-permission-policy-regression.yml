@@ -161,6 +161,13 @@ jobs:
           php -r '
             require "vendor/autoload.php";
             $app = require "bootstrap/app.php";
+            $kernel = $app->make(\Illuminate\Contracts\Http\Kernel::class);
+            $request = \Illuminate\Http\Request::create("/health/live", "GET");
+            $response = $kernel->handle($request);
+            if ($response->getStatusCode() !== 200) {
+              throw new RuntimeException("Sprint 21 application harness bootstrap failed.");
+            }
+            $kernel->terminate($request, $response);
             $assert = static function (bool $condition, string $message): void {
               if (! $condition) { throw new RuntimeException($message); }
             };
