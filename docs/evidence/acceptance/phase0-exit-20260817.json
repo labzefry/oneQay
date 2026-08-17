@@ -1,0 +1,139 @@
+{
+  "schema": "oneqay.phase0.exit.v1",
+  "observed_at": "2026-08-17",
+  "repository": "labzefry/oneQay",
+  "base": {
+    "sha": "549e450666b6888711439c17e657494a452b4152",
+    "tree": "e7bd0222cf6b7720642ed1d3aeb6c1d547032114",
+    "signature": "verified/valid",
+    "m7_7_pull_request": 144,
+    "m7_7_published": true
+  },
+  "decision": {
+    "phase": "Phase 0 — Governance and Discovery",
+    "outcome": "APPROVE_PHASE_0_EXIT",
+    "canonical_state_after_publication": "COMPLETE_EXIT_APPROVED_PUBLISHED",
+    "technical_preview_state": "COMPLETE_ACCEPTED",
+    "product_owner_exit_authority": true,
+    "sprint_14_authorized": false,
+    "release_authorized": false,
+    "production_authorized": false,
+    "production_readiness": "NO-GO"
+  },
+  "technical_preview_evidence": {
+    "m7_5": {
+      "state": "CLOSED_EVIDENCE_COMPLETE_PUBLISHED",
+      "verified": 29,
+      "blocked": 0,
+      "source": "docs/evidence/runtime/p1-cpanel-live-runtime-reconciled-20260816-backup-restore.report.json"
+    },
+    "m7_6": {
+      "state": "PASS_PUBLISHED",
+      "candidate_release": "m75-preview-ab5fe31ef0ef",
+      "candidate_health": "PASS",
+      "deliberate_rollback": "PASS",
+      "restored_baseline_health": "PASS",
+      "final_active_release": "m75-preview-dab951519e67",
+      "migration_classification": "NO_SCHEMA_CHANGE",
+      "source": "docs/evidence/runtime/m76-preview-deployment-recovery-rehearsal-passed-20260817.json"
+    },
+    "m7_7": {
+      "state": "TECHNICAL_ACCEPTANCE_PASS_PUBLISHED",
+      "mandatory_domains": 20,
+      "verified": 20,
+      "partial": 0,
+      "blocked": 0,
+      "not_applicable": 0,
+      "live_target_action_required": false,
+      "source": "docs/evidence/acceptance/m77-technical-preview-acceptance-20260817.json"
+    }
+  },
+  "exit_criteria": [
+    {
+      "criterion": "handbook_and_governance_foundation",
+      "status": "VERIFIED",
+      "basis": "Published handbook/governance baseline and governed M5/M6 stabilization sequence."
+    },
+    {
+      "criterion": "no_unresolved_critical_decision_required_for_exit",
+      "status": "VERIFIED",
+      "basis": "Required DEC-000 through DEC-012 bounded decisions are governed; GD-007 and JRN-003/JRN-013 remain explicitly outside this exit decision."
+    },
+    {
+      "criterion": "mvp_scope_and_non_scope",
+      "status": "VERIFIED",
+      "basis": "DEC-001 approved the bounded POS Core Transaction & Outlet Operations direction and Preview non-scope remains explicit."
+    },
+    {
+      "criterion": "technical_preview_success",
+      "status": "VERIFIED",
+      "basis": "M7.7 published 20 VERIFIED / 0 BLOCKED."
+    },
+    {
+      "criterion": "tenant_isolation",
+      "status": "VERIFIED",
+      "basis": "Published application negative isolation plus bounded relational/runtime qualification evidence."
+    },
+    {
+      "criterion": "security_and_critical_high_preview_defects",
+      "status": "VERIFIED",
+      "basis": "M7.7 records no unresolved Critical/High Preview defect and preserves dependency, secret, authorization and privileged-security gates."
+    },
+    {
+      "criterion": "runtime_qualification",
+      "status": "VERIFIED",
+      "basis": "M7.5 is 29 VERIFIED / 0 BLOCKED."
+    },
+    {
+      "criterion": "backup_restore",
+      "status": "VERIFIED",
+      "basis": "Successful isolated backup/restore evidence is published."
+    },
+    {
+      "criterion": "deployment_rollback_health",
+      "status": "VERIFIED",
+      "basis": "M7.6 candidate health, deliberate rollback and restored-baseline health passed."
+    },
+    {
+      "criterion": "synthetic_only_data_boundary",
+      "status": "VERIFIED",
+      "basis": "Technical Preview remains synthetic-only with no Production/customer data or real payment authority."
+    },
+    {
+      "criterion": "known_limitations",
+      "status": "VERIFIED",
+      "basis": "Updater remains disabled/unwired, live deployment model remains bounded, NO_SCHEMA_CHANGE is preserved and Production readiness remains NO-GO."
+    },
+    {
+      "criterion": "product_owner_phase0_exit_authority",
+      "status": "GRANTED",
+      "basis": "Product Owner directed continuation to the next lifecycle stage after M7.7 publication on the freshly verified canonical state."
+    }
+  ],
+  "issue_23": {
+    "open_at_evaluation": true,
+    "classification": "historical Technical Preview planning and acceptance tracker",
+    "eligible_for_close_after_publication": true,
+    "close_reason": "M7.7 published acceptance and Phase 0 exit decision complete its remaining lifecycle purpose"
+  },
+  "supersession": {
+    "historical_current_facing_phase0_wording_may_be_stale": true,
+    "newest_specific_publication_controls_current_interpretation": true,
+    "historical_provenance_preserved": true
+  },
+  "non_authority": {
+    "sprint_14_implementation": false,
+    "new_application_source": false,
+    "dependency_adoption": false,
+    "database_schema_sql_migration_mutation": false,
+    "new_cpanel_runtime_mutation": false,
+    "updater_runtime_installation": false,
+    "github_release_publication": false,
+    "production_customer_data": false,
+    "real_payment": false,
+    "production_deployment": false,
+    "production_readiness": false
+  },
+  "next_gate": "SEPARATE_SPRINT_14_PLANNING_AUTHORITY_DECISION",
+  "attribution": "Lab | zefry"
+}
