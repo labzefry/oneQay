@@ -33,7 +33,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: cpanel-shared-runtime-environment-${{ github.event.pull_request.number || github.ref }}-${{ matrix.php }}
+  group: cpanel-shared-runtime-environment-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
