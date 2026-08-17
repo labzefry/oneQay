@@ -80,7 +80,11 @@ jobs:
               apps/web/tests/run.php|\
               docs/DURABLE_APPLICATION_PERSISTENCE_FOUNDATION.md|\
               .github/workflows/m7-2-tenant-isolation-regression.yml|\
+              apps/web/tests/identity-org-context.php|\
               .github/workflows/m7-3-identity-org-context-regression.yml|\
+              .github/workflows/m7-5-preview-db-qualification-regression.yml|\
+              tools/build-m7-5-preview-release.sh|\
+              .github/workflows/m7-5-preview-release-artifact.yml|\
               .github/workflows/m7-4-pos-core-synthetic-regression.yml|\
               .github/workflows/README.md|\
               AI_CONSTITUTION.md|\
