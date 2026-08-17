@@ -12,6 +12,7 @@ use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Http\Request;
 
 require __DIR__.'/../vendor/autoload.php';
+require_once dirname(__DIR__, 3).'/src/SchemaPlanning/Foundation.php';
 
 $testKey = 'base64:'.base64_encode(str_repeat('t', 32));
 foreach ([
@@ -195,6 +196,222 @@ $app->forgetInstance(SafeRequestObservationMiddleware::class);
 foreach ($logFiles as $logFile) {
     @unlink($logFile);
 }
+
+// Sprint 18: actual in-process Laravel migration execution against a disposable SQLite test target only.
+$assert(! is_file(__DIR__.'/../config/database.php'), 'Sprint 18 must not publish application runtime database configuration.');
+$assert(extension_loaded('pdo_sqlite'), 'Sprint 18 disposable SQLite proof requires pdo_sqlite in CI.');
+
+$removeS18Tree = null;
+$removeS18Tree = static function (string $path) use (&$removeS18Tree): void {
+    if (is_link($path) || is_file($path)) {
+        @unlink($path);
+        return;
+    }
+    if (! is_dir($path)) {
+        return;
+    }
+    $iterator = new FilesystemIterator($path, FilesystemIterator::SKIP_DOTS);
+    foreach ($iterator as $item) {
+        $removeS18Tree($item->getPathname());
+    }
+    @rmdir($path);
+};
+
+$s18Parent = rtrim(sys_get_temp_dir(), DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR.'oneqay-s18-app-'.getmypid();
+$removeS18Tree($s18Parent);
+$assert(@mkdir($s18Parent, 0700, false), 'Sprint 18 application staging parent could not be created.');
+
+$s18MigrationSource = <<<'PHP'
+<?php
+
+declare(strict_types=1);
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('s18_execution_probe', function (Blueprint $table): void {
+            $table->char('id', 36);
+            $table->string('name', 128);
+            $table->primary(['id'], 'pk_s18_execution_probe');
+        });
+    }
+
+    public function down(): void
+    {
+        throw new \LogicException('Forward-only generated migration; rollback is not authorized.');
+    }
+};
+PHP;
+$s18GenerationCorrelation = new \OneQay\SchemaPlanning\CorrelationId('corr-generation-s18-app');
+$s18File = new \OneQay\SchemaPlanning\LaravelMigrationFileArtifact(
+    new \OneQay\SchemaPlanning\StableChangeIdentifier(str_repeat('a', 64)),
+    new \OneQay\Migration\MigrationIdentifier('MIG_00000000_000001_ENTITY_CREATED_AAAAAAAAAAAA'),
+    $s18GenerationCorrelation,
+    'database/migrations/0000_00_00_000001_entity_created_aaaaaaaaaaaa.php',
+    $s18MigrationSource,
+);
+$s18Artifact = new \OneQay\SchemaPlanning\LaravelMigrationGenerationArtifact(
+    new \OneQay\SchemaPlanning\ManifestFingerprint(str_repeat('b', 64)),
+    new \OneQay\SchemaPlanning\ManifestFingerprint(str_repeat('c', 64)),
+    new \OneQay\SchemaPlanning\ManifestFingerprint(str_repeat('d', 64)),
+    $s18GenerationCorrelation,
+    [$s18File],
+);
+$s18Composer = (string) file_get_contents(__DIR__.'/../composer.json');
+$s18Materializer = new \OneQay\SchemaPlanning\GovernedLaravelMigrationMaterializer();
+$s18Materialized = $s18Materializer->materialize(
+    $s18Artifact,
+    $s18Composer,
+    $s18Parent,
+    'corr-materialization-s18-app',
+);
+
+$s18DatabasePath = $s18Parent.DIRECTORY_SEPARATOR.'execution.sqlite';
+$assert(touch($s18DatabasePath), 'Sprint 18 disposable SQLite file could not be created.');
+$app['config']->set('database.default', 's18_sqlite');
+$app['config']->set('database.connections.s18_sqlite', [
+    'driver' => 'sqlite',
+    'url' => null,
+    'database' => $s18DatabasePath,
+    'prefix' => '',
+    'foreign_key_constraints' => true,
+    'busy_timeout' => null,
+    'journal_mode' => null,
+    'synchronous' => null,
+]);
+/** @var \Illuminate\Database\DatabaseManager $s18DatabaseManager */
+$s18DatabaseManager = $app->make('db');
+$s18DatabaseManager->purge('s18_sqlite');
+$s18DatabaseManager->setDefaultConnection('s18_sqlite');
+$s18Connection = $s18DatabaseManager->connection('s18_sqlite');
+$s18Connection->getPdo();
+
+$s18Target = new class($s18Connection) implements \OneQay\SchemaPlanning\LaravelMigrationExecutionTargetAdapter {
+    public int $executeCalls = 0;
+
+    public function __construct(private readonly \Illuminate\Database\Connection $connection) {}
+
+    public function targetKind(): string
+    {
+        return self::DISPOSABLE_SQLITE_TEST;
+    }
+
+    public function preflight(): string
+    {
+        $schema = $this->connection->getSchemaBuilder();
+        if ($schema->hasTable('s18_execution_probe')) {
+            throw new RuntimeException('Disposable Sprint 18 baseline is not clean.');
+        }
+        return hash('sha256', json_encode([
+            'driver' => $this->connection->getDriverName(),
+            'probe_table' => false,
+        ], JSON_THROW_ON_ERROR));
+    }
+
+    public function execute(\OneQay\SchemaPlanning\LaravelMigrationFileArtifact $file, string $absoluteStagedPath): void
+    {
+        if (! is_file($absoluteStagedPath) || hash_file('sha256', $absoluteStagedPath) !== $file->sourceFingerprint) {
+            throw new RuntimeException('Sprint 18 staged migration bytes changed before Laravel execution.');
+        }
+        $migration = require $absoluteStagedPath;
+        if (! $migration instanceof \Illuminate\Database\Migrations\Migration) {
+            throw new RuntimeException('Sprint 18 staged file did not return a Laravel migration object.');
+        }
+        $migration->up();
+        $this->executeCalls++;
+    }
+
+    public function verify(): string
+    {
+        $schema = $this->connection->getSchemaBuilder();
+        $table = $schema->hasTable('s18_execution_probe');
+        $id = $table && $schema->hasColumn('s18_execution_probe', 'id');
+        $name = $table && $schema->hasColumn('s18_execution_probe', 'name');
+        if (! $table || ! $id || ! $name) {
+            throw new RuntimeException('Sprint 18 disposable SQLite target shape is incomplete.');
+        }
+        return hash('sha256', json_encode([
+            'driver' => $this->connection->getDriverName(),
+            'probe_table' => true,
+            'id' => true,
+            'name' => true,
+        ], JSON_THROW_ON_ERROR));
+    }
+};
+
+$s18Executor = new \OneQay\SchemaPlanning\GovernedLaravelMigrationExecutor();
+$s18Execution = $s18Executor->execute(
+    $s18Artifact,
+    $s18Materialized,
+    $s18Composer,
+    $s18Parent,
+    $s18Target,
+    'corr-execution-s18-app',
+);
+$assert($s18Execution->finalState === 'COMPLETE', 'Sprint 18 disposable SQLite execution did not complete.');
+$assert(! $s18Execution->alreadyComplete, 'Sprint 18 first SQLite execution incorrectly reported idempotent completion.');
+$assert($s18Execution->targetKind === \OneQay\SchemaPlanning\LaravelMigrationExecutionTargetAdapter::DISPOSABLE_SQLITE_TEST, 'Sprint 18 execution target kind changed.');
+$assert($s18Execution->executedMigrationIdentifiers() === [$s18File->migrationIdentifier->value], 'Sprint 18 executed migration identity changed.');
+$assert($s18Target->executeCalls === 1, 'Sprint 18 Laravel migration did not execute exactly once.');
+$assert($s18Connection->getSchemaBuilder()->hasTable('s18_execution_probe'), 'Sprint 18 migration did not create the synthetic probe table.');
+$assert($s18Connection->getSchemaBuilder()->hasColumn('s18_execution_probe', 'id'), 'Sprint 18 synthetic id column is missing.');
+$assert($s18Connection->getSchemaBuilder()->hasColumn('s18_execution_probe', 'name'), 'Sprint 18 synthetic name column is missing.');
+
+$s18Idempotent = $s18Executor->execute(
+    $s18Artifact,
+    $s18Materialized,
+    $s18Composer,
+    $s18Parent,
+    $s18Target,
+    'corr-execution-s18-app-idempotent',
+);
+$assert($s18Idempotent->alreadyComplete, 'Sprint 18 completed SQLite execution was not idempotently verified.');
+$assert($s18Target->executeCalls === 1, 'Sprint 18 idempotent verification re-executed the Laravel migration.');
+$assert($s18Idempotent->targetWitness === $s18Execution->targetWitness, 'Sprint 18 idempotent SQLite target witness changed.');
+
+$s18Workspace = $s18Parent.DIRECTORY_SEPARATOR.str_replace('/', DIRECTORY_SEPARATOR, $s18Materialized->workspaceRelativePath);
+$s18StagedPath = $s18Workspace.DIRECTORY_SEPARATOR.str_replace('/', DIRECTORY_SEPARATOR, $s18File->relativePath);
+$assert(file_put_contents($s18StagedPath, $s18File->source."\n// deliberate-s18-app-tamper\n", LOCK_EX) !== false, 'Sprint 18 application tamper fixture could not be created.');
+try {
+    $s18Executor->execute(
+        $s18Artifact,
+        $s18Materialized,
+        $s18Composer,
+        $s18Parent,
+        $s18Target,
+        'corr-execution-s18-app-tamper',
+    );
+    $assert(false, 'Sprint 18 accepted a tampered staged migration before execution.');
+} catch (\OneQay\SchemaPlanning\LaravelMigrationExecutionException $exception) {
+    $assert(
+        $exception->errorCode === \OneQay\SchemaPlanning\LaravelMigrationExecutionException::MATERIALIZATION_VALIDATION_FAILED,
+        'Sprint 18 staged tamper returned an unexpected bounded error.',
+    );
+}
+$assert(file_put_contents($s18StagedPath, $s18File->source, LOCK_EX) === strlen($s18File->source), 'Sprint 18 application tamper fixture could not be restored.');
+$s18Materializer->validate($s18Artifact, $s18Composer, $s18Parent, 'corr-validation-s18-app-restored');
+
+$s18ExecutionWorkspace = $s18Parent.DIRECTORY_SEPARATOR.str_replace('/', DIRECTORY_SEPARATOR, $s18Execution->executionWorkspaceRelativePath);
+$s18JournalPath = $s18ExecutionWorkspace.DIRECTORY_SEPARATOR.'journal.json';
+$s18JournalContent = (string) file_get_contents($s18JournalPath);
+$s18ReportContent = json_encode($s18Execution, JSON_THROW_ON_ERROR);
+foreach ([$s18DatabasePath, $s18Parent, $s18MigrationSource, 'DB_PASSWORD', 'DB_USER', 'DB_HOST', 'mysql:host=', 'jdbc:'] as $forbiddenExecutionMaterial) {
+    $assert(! str_contains($s18JournalContent, $forbiddenExecutionMaterial), 'Sprint 18 journal leaked private or sensitive execution material.');
+    $assert(! str_contains($s18ReportContent, $forbiddenExecutionMaterial), 'Sprint 18 report leaked private or sensitive execution material.');
+}
+
+$s18DatabaseManager->disconnect('s18_sqlite');
+$s18DatabaseManager->purge('s18_sqlite');
+$app['config']->set('database.connections.s18_sqlite', null);
+@unlink($s18DatabasePath);
+$removeS18Tree($s18Parent);
+$assert(! file_exists($s18Parent), 'Sprint 18 disposable SQLite execution workspace cleanup failed.');
+$assert(! is_file(__DIR__.'/../config/database.php'), 'Sprint 18 application regression introduced runtime database configuration.');
 
 $forbidden = [
     'Illuminate\\',

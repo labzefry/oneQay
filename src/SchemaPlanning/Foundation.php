@@ -12,3 +12,4 @@ require_once __DIR__ . '/MigrationPlanning.php';
 require_once __DIR__ . '/MigrationArtifactBridge.php';
 require_once __DIR__ . '/LaravelMigrationGeneration.php';
 require_once __DIR__ . '/LaravelMigrationMaterialization.php';
+require_once __DIR__ . '/LaravelMigrationExecution.php';
