@@ -1,0 +1,74 @@
+{
+  "schema": "oneqay.m7_6.preview-deployment-recovery-rehearsal.v1",
+  "observed_at": "2026-08-17",
+  "environment": "technical-preview",
+  "target_id": "preview-target-oneqay-n07",
+  "qualification": {
+    "evidence_id": "m75-evidence-db64e46e5ca786b3",
+    "fingerprint": "db64e46e5ca786b33c875be184bed5b831436e17fe13bbb0a922146755a78aba"
+  },
+  "operation_id": "op-768ade56b83d2bd2",
+  "execution_authority": {
+    "fresh_target_execution_authority_confirmed": true,
+    "runtime_class": "preview",
+    "production_authority": false
+  },
+  "baseline": {
+    "release_id": "m75-preview-dab951519e67",
+    "source_commit": "dab951519e6747ac43653abfdd9fc24762f125b0",
+    "recovery_material_available": true
+  },
+  "candidate": {
+    "release_id": "m75-preview-ab5fe31ef0ef",
+    "source_commit": "ab5fe31ef0ef89c61ffd45d1e413143c7c07e239",
+    "github_artifact_id": 9278456639,
+    "github_artifact_name": "oneqay-m75-preview-ab5fe31ef0ef",
+    "github_artifact_container_sha256": "1d72074fe96a330ea170a764536d7b4d2ef330bcd80fa214dbf2ecdffd8ca9ea",
+    "runtime_artifact_sha256": "5d8b0256ff78d4b95179ceaa75ea322427160b683720098af4db8987108c8846",
+    "migration_classification": "NO_SCHEMA_CHANGE",
+    "shared_runtime_environment_profile": "PRIVATE_SHARED_DOTENV_V1",
+    "shared_runtime_secret_values_embedded": false,
+    "production": false,
+    "synthetic_data_only": true
+  },
+  "rehearsal": {
+    "recovery_checkpoint_verified_before_activation": true,
+    "candidate_staged": true,
+    "candidate_promoted_immutable": true,
+    "candidate_activated": true,
+    "candidate_liveness_status": "ok",
+    "candidate_readiness_status": "ready",
+    "candidate_health_verified": true,
+    "deliberate_rollback_exercised": true,
+    "baseline_identity_restored": true,
+    "baseline_liveness_status": "ok",
+    "baseline_readiness_status": "ready",
+    "baseline_health_verified_after_rollback": true,
+    "final_active_release_id": "m75-preview-dab951519e67",
+    "outcome": "passed_with_deliberate_rollback"
+  },
+  "execution_path": {
+    "manual_cpanel_operator_path": true,
+    "live_deployment_adapter_used": false,
+    "current_release_pointer_runtime_used": false,
+    "public_front_controller_copy_used": true,
+    "database_or_schema_mutated": false,
+    "environment_file_copied_into_release": false
+  },
+  "evidence_handling": {
+    "raw_environment_committed": false,
+    "application_key_committed": false,
+    "database_credentials_committed": false,
+    "hosting_account_identifier_committed": false,
+    "correlation_id_committed": false,
+    "session_or_cookie_material_committed": false,
+    "production_data_committed": false
+  },
+  "historical_recovered_failure_evidence": "docs/evidence/runtime/m76-preview-candidate-unhealthy-recovered-shared-runtime-20260817.json",
+  "m7_6_execution_complete": true,
+  "lifecycle_authority_created": false,
+  "m7_7_authorized": false,
+  "release_authorized": false,
+  "production_authorized": false,
+  "attribution": "Lab | zefry"
+}
