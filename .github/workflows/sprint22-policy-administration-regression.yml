@@ -96,7 +96,7 @@ jobs:
           grep -Fq 'Forward-only generated migration; rollback is not authorized.' "$migration"
           grep -Fq "in_array(\$runtime, ['local', 'test', 'ci'], true)" "$repo"
           grep -Fq -- "->where('tenant_id'," "$repo"
-          grep -Fq "->where('permission_id', AdministrationPermission::MANAGE)" "$repo"
+          grep -Fq -- "->where('permission_id', AdministrationPermission::MANAGE)" "$repo"
           grep -Fq 'oneqay_identity_organizations' "$repo"
           grep -Fq 'oneqay_outlet_access_grants' "$repo"
           grep -Fq 'oneqay_device_access_grants' "$repo"
