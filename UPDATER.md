@@ -16,6 +16,23 @@ The updater feature flag defaults to **DISABLED**. This architecture publication
 
 Attribution: **Lab | zefry**
 
+## Shared runtime environment corrective contract — 2026-08-17
+
+A real M7.6 Preview rehearsal proved that a governed candidate with no embedded `.env` can fail before health verification if runtime secrets are not bound to the candidate. The sanitized failure class was `Illuminate\Encryption\MissingAppKeyException`; rollback restored the known-good baseline and both liveness and readiness returned healthy.
+
+The corrective contract is **`PRIVATE_SHARED_DOTENV_V1`**:
+
+- runtime secret state lives outside immutable releases under the stable private relative location `oneqay-preview/shared/runtime/.env`;
+- governed release archives continue to reject `.env`, private keys, and secret-bearing payload files;
+- the generated public bootstrap selects the shared environment before Laravel handles the request;
+- the shared environment file is presence-inspected only for required `APP_KEY`; its value is never returned, persisted, or logged by updater controls;
+- shared/runtime directories must be private and non-symlink; the environment file must be private, non-symlink, readable by the account, and bounded in size;
+- cached `bootstrap/cache/config.php` is rejected from governed release input so shared environment loading cannot be bypassed by a stale cached configuration;
+- missing or unsafe shared environment state fails closed before candidate activation;
+- the same shared environment is reused across immutable candidate releases, while previous release directories remain unchanged for application rollback.
+
+This corrective contract does not create a cPanel API adapter, does not expose or edit raw secrets through the updater UI, and does not authorize Production, schema migration, M7.7, Release, or runtime installer enablement.
+
 ## Purpose
 
 Auto Updater memperbarui oneQay melalui release resmi dengan compatibility check, backup, integrity verification, maintenance/rollout control, migration, health verification, audit, dan recovery.
@@ -28,6 +45,7 @@ Auto Updater memperbarui oneQay melalui release resmi dengan compatibility check
 - Compatibility matrix dan migration path wajib.
 - Updater menggunakan lock global dan tenant-aware operational communication.
 - Update tidak dinyatakan selesai sebelum health/business verification lulus.
+- Runtime secrets tidak boleh tertanam pada immutable release artifact; candidate wajib membuktikan private shared-runtime binding sebelum activation.
 
 ## Workflow
 
@@ -70,7 +88,7 @@ Aktifkan hanya bila diperlukan. Tampilkan safe status, pertahankan authorized by
 
 ### Install
 
-Gunakan atomic extraction/swap; lindungi config, uploads, dan state. Tolak path traversal, symlink escape, unexpected executable, dan file yang tidak ada pada manifest. Simpan previous artifact untuk recovery.
+Gunakan atomic extraction/swap; lindungi config, uploads, dan state. Tolak path traversal, symlink escape, unexpected executable, dan file yang tidak ada pada manifest. Simpan previous artifact untuk recovery. Shared runtime configuration tetap berada di private shared boundary dan tidak disalin ke immutable release payload.
 
 ### Migration
 
@@ -90,6 +108,7 @@ Jalankan technical dan business health checks, verifikasi version/schema/job/sch
 |---|---|
 | Download/signature | Hapus/quarantine package, no mutation |
 | Backup | Stop, preserve current system |
+| Shared runtime binding | Stop before activation; preserve baseline |
 | File install before migration | Atomic revert |
 | Migration | Stop, preserve evidence, use rehearsed recovery/forward fix |
 | Health verification | Re-enter maintenance or controlled rollback |
@@ -107,8 +126,8 @@ Update permission privileged dan membutuhkan MFA/step-up. Signing key dipisahkan
 
 ## Required tests
 
-Supported upgrade paths, skipped versions, incompatible runtime/database, corrupt/tampered package, expired/revoked key, insufficient disk/permission, concurrent update, interrupted download/install/migration, backup failure, health failure, rollback/recovery, maintenance bypass, dan report redaction.
+Supported upgrade paths, skipped versions, incompatible runtime/database, corrupt/tampered package, expired/revoked key, insufficient disk/permission, concurrent update, interrupted download/install/migration, backup failure, shared-runtime secret absence, shared-runtime symlink/permission failure, health failure, rollback/recovery, maintenance bypass, dan report redaction.
 
 ## Definition of Done
 
-Release manifest valid, signature trusted, all supported paths diuji, backup/restore dan recovery direhearsal, monitoring/kill switch tersedia, documentation/changelog lengkap, dan update report auditable.
+Release manifest valid, signature trusted, all supported paths diuji, backup/restore dan recovery direhearsal, shared runtime environment binding terbukti sebelum activation, monitoring/kill switch tersedia, documentation/changelog lengkap, dan update report auditable.

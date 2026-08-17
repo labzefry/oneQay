@@ -49,6 +49,11 @@ if [[ -e apps/web/.env ]]; then
   exit 1
 fi
 
+if [[ -e apps/web/bootstrap/cache/config.php ]]; then
+  echo "Cached Laravel configuration is forbidden in the governed release input." >&2
+  exit 1
+fi
+
 rm -rf dist/stage "$archive_path" "$checksum_path" "$manifest_path"
 mkdir -p "${stage_root}/apps" "$public_surface"
 
@@ -73,8 +78,26 @@ define('LARAVEL_START', microtime(true));
 \$releaseId = '${release_id}';
 \$accountHome = dirname(__DIR__, 2);
 \$appRoot = \$accountHome.'/oneqay-preview/releases/'.\$releaseId.'/apps/web';
+\$sharedRoot = \$accountHome.'/oneqay-preview/shared';
+\$sharedEnvironmentRoot = \$sharedRoot.'/runtime';
+\$sharedEnvironmentFile = \$sharedEnvironmentRoot.'/.env';
 
 if (!is_file(\$appRoot.'/vendor/autoload.php') || !is_file(\$appRoot.'/bootstrap/app.php')) {
+    http_response_code(503);
+    header('Content-Type: text/plain; charset=UTF-8');
+    echo 'oneQay Technical Preview unavailable';
+    exit;
+}
+
+if (
+    !is_dir(\$sharedRoot)
+    || is_link(\$sharedRoot)
+    || !is_dir(\$sharedEnvironmentRoot)
+    || is_link(\$sharedEnvironmentRoot)
+    || !is_file(\$sharedEnvironmentFile)
+    || is_link(\$sharedEnvironmentFile)
+    || !is_readable(\$sharedEnvironmentFile)
+) {
     http_response_code(503);
     header('Content-Type: text/plain; charset=UTF-8');
     echo 'oneQay Technical Preview unavailable';
@@ -89,6 +112,8 @@ require \$appRoot.'/vendor/autoload.php';
 
 /** @var Application \$app */
 \$app = require_once \$appRoot.'/bootstrap/app.php';
+\$app->useEnvironmentPath(\$sharedEnvironmentRoot);
+\$app->useEnvironmentFile('.env');
 
 \$app->handleRequest(Request::capture());
 
@@ -109,6 +134,9 @@ cat > "${stage_root}/RELEASE.json" <<JSON
   "updater_activation": "DISABLED",
   "private_application_relative_path": "oneqay-preview/releases/${release_id}/apps/web",
   "public_surface_source": "public-surface",
+  "shared_runtime_environment_profile": "PRIVATE_SHARED_DOTENV_V1",
+  "shared_runtime_environment_relative_path": "oneqay-preview/shared/runtime/.env",
+  "shared_runtime_secret_values_embedded": false,
   "attribution": "Lab | zefry"
 }
 JSON

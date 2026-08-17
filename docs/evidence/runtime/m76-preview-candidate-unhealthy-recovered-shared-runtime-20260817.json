@@ -1,0 +1,62 @@
+{
+  "schema": "oneqay.m7_6.preview-candidate-unhealthy-recovered.v1",
+  "observed_at": "2026-08-17",
+  "environment": "technical-preview",
+  "target_id": "preview-target-oneqay-n07",
+  "qualification": {
+    "evidence_id": "m75-evidence-db64e46e5ca786b3",
+    "fingerprint": "db64e46e5ca786b33c875be184bed5b831436e17fe13bbb0a922146755a78aba"
+  },
+  "operation_id": "op-aa6f353cc69fc0cc",
+  "baseline": {
+    "release_id": "m75-preview-dab951519e67",
+    "source_commit": "dab951519e6747ac43653abfdd9fc24762f125b0",
+    "recovery_material_available": true
+  },
+  "candidate": {
+    "release_id": "m75-preview-9761ad293e9a",
+    "source_commit": "9761ad293e9a89780680accf74b067546a3e515e",
+    "artifact_sha256": "53f3f1a3b742abe6aabe880887a5483fc8136d260376b933f408576548758584",
+    "migration_classification": "NO_SCHEMA_CHANGE",
+    "production": false,
+    "synthetic_data_only": true
+  },
+  "rehearsal": {
+    "recovery_checkpoint_verified_before_activation": true,
+    "candidate_staged": true,
+    "candidate_activated": true,
+    "candidate_liveness_http_status": 500,
+    "candidate_health_verified": false,
+    "rollback_exercised": true,
+    "baseline_identity_restored": true,
+    "baseline_liveness_status": "ok",
+    "baseline_readiness_status": "ready",
+    "outcome": "candidate_unhealthy_recovered"
+  },
+  "root_cause": {
+    "safe_code": "SHARED_RUNTIME_APP_KEY_NOT_BOUND",
+    "exception_class": "Illuminate\\Encryption\\MissingAppKeyException",
+    "message_code": "no_application_encryption_key_specified",
+    "baseline_private_environment_present": true,
+    "candidate_embedded_environment_present": false,
+    "secret_values_inspected_or_recorded": false
+  },
+  "corrective_requirement": {
+    "profile": "PRIVATE_SHARED_DOTENV_V1",
+    "secret_values_embedded_in_release": false,
+    "candidate_binding_required_before_activation": true,
+    "cached_configuration_allowed": false
+  },
+  "evidence_handling": {
+    "raw_environment_committed": false,
+    "application_key_committed": false,
+    "database_credentials_committed": false,
+    "hosting_account_identifier_committed": false,
+    "correlation_id_committed": false,
+    "session_or_cookie_material_committed": false,
+    "production_data_committed": false
+  },
+  "m7_6_closed": false,
+  "lifecycle_authority_created": false,
+  "attribution": "Lab | zefry"
+}
