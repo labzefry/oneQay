@@ -3,10 +3,12 @@
 namespace App\Providers;
 
 use App\Application\Access\DurableOrganizationalAccessRepository;
+use App\Application\Authorization\DurableRolePermissionRepository;
 use App\Application\Persistence\DurableContextGraphRepository;
 use App\Application\Persistence\PersistenceTransaction;
 use App\Application\Tenancy\TenantContextStore;
 use App\Infrastructure\Access\LaravelDurableOrganizationalAccessRepository;
+use App\Infrastructure\Authorization\LaravelDurableRolePermissionRepository;
 use App\Infrastructure\Persistence\LaravelDurableContextGraphRepository;
 use App\Infrastructure\Persistence\LaravelPersistenceTransaction;
 use App\Infrastructure\Tenancy\RequestTenantContextStore;
@@ -44,6 +46,20 @@ final class AppServiceProvider extends ServiceProvider
                 $connection = $app->make('db')->connection();
 
                 return new LaravelDurableOrganizationalAccessRepository(
+                    $connection,
+                    (bool) config('database.oneqay_persistence_enabled', false),
+                    (string) config('oneqay.runtime_class', ''),
+                );
+            },
+        );
+
+        $this->app->scoped(
+            DurableRolePermissionRepository::class,
+            function ($app): DurableRolePermissionRepository {
+                /** @var Connection $connection */
+                $connection = $app->make('db')->connection();
+
+                return new LaravelDurableRolePermissionRepository(
                     $connection,
                     (bool) config('database.oneqay_persistence_enabled', false),
                     (string) config('oneqay.runtime_class', ''),
