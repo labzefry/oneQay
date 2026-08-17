@@ -113,7 +113,7 @@ require \$appRoot.'/vendor/autoload.php';
 /** @var Application \$app */
 \$app = require_once \$appRoot.'/bootstrap/app.php';
 \$app->useEnvironmentPath(\$sharedEnvironmentRoot);
-\$app->useEnvironmentFile('.env');
+\$app->loadEnvironmentFrom('.env');
 
 \$app->handleRequest(Request::capture());
 

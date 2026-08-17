@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Application\SystemUpdate\SharedConfiguration\SystemUpdateSharedRuntimeEnvironmentStatus;
 use App\Application\SystemUpdate\SystemUpdateControlPlaneViolation;
 use App\Infrastructure\SystemUpdate\SharedConfiguration\FilesystemSystemUpdateSharedRuntimeEnvironmentGuard;
+use Illuminate\Foundation\Application;
 
 require_once __DIR__.'/../vendor/autoload.php';
 
@@ -179,15 +180,20 @@ try {
         $assert(! str_contains($serialized, $forbidden), 'SAFE-001 safe status excludes '.$forbidden);
     }
 
+    $assert(method_exists(Application::class, 'useEnvironmentPath'), 'FRAMEWORK-001 locked Laravel exposes useEnvironmentPath');
+    $assert(method_exists(Application::class, 'loadEnvironmentFrom'), 'FRAMEWORK-002 locked Laravel exposes loadEnvironmentFrom');
+    $assert(! method_exists(Application::class, 'useEnvironmentFile'), 'FRAMEWORK-003 unsupported useEnvironmentFile remains absent');
+
     $repositoryRoot = dirname(__DIR__, 3);
     $builder = file_get_contents($repositoryRoot.'/tools/build-m7-5-preview-release.sh');
     $assert(is_string($builder) && $builder !== '', 'BUILD-001 release builder readable');
     $assert(str_contains($builder, "oneqay-preview/shared/runtime"), 'BUILD-002 stable private shared runtime path');
     $assert(str_contains($builder, 'useEnvironmentPath'), 'BUILD-003 public bootstrap selects shared environment path');
-    $assert(str_contains($builder, 'useEnvironmentFile'), 'BUILD-004 public bootstrap selects environment file');
-    $assert(str_contains($builder, 'PRIVATE_SHARED_DOTENV_V1'), 'BUILD-005 release metadata advertises shared environment profile');
-    $assert(str_contains($builder, 'Tracked or generated .env is forbidden in the release input.'), 'BUILD-006 release payload still forbids embedded env');
-    $assert(str_contains($builder, 'bootstrap/cache/config.php'), 'BUILD-007 cached configuration is rejected at build time');
+    $assert(str_contains($builder, "loadEnvironmentFrom('.env')"), 'BUILD-004 public bootstrap selects shared environment file with supported Laravel API');
+    $assert(! str_contains($builder, '->useEnvironmentFile('), 'BUILD-005 unsupported Laravel environment API is absent');
+    $assert(str_contains($builder, 'PRIVATE_SHARED_DOTENV_V1'), 'BUILD-006 release metadata advertises shared environment profile');
+    $assert(str_contains($builder, 'Tracked or generated .env is forbidden in the release input.'), 'BUILD-007 release payload still forbids embedded env');
+    $assert(str_contains($builder, 'bootstrap/cache/config.php'), 'BUILD-008 cached configuration is rejected at build time');
 
     fwrite(STDOUT, "cPanel shared runtime environment binding regression passed.\n");
 } finally {

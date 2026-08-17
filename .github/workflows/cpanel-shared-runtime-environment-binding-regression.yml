@@ -151,7 +151,11 @@ jobs:
           set -euo pipefail
           grep -Fq 'oneqay-preview/shared/runtime' tools/build-m7-5-preview-release.sh
           grep -Fq 'useEnvironmentPath' tools/build-m7-5-preview-release.sh
-          grep -Fq 'useEnvironmentFile' tools/build-m7-5-preview-release.sh
+          grep -Fq "loadEnvironmentFrom('.env')" tools/build-m7-5-preview-release.sh
+          if grep -Fq -- '->useEnvironmentFile(' tools/build-m7-5-preview-release.sh; then
+            echo 'Governed public bootstrap uses unsupported Laravel environment-file API.' >&2
+            exit 1
+          fi
           grep -Fq 'PRIVATE_SHARED_DOTENV_V1' tools/build-m7-5-preview-release.sh
           grep -Fq 'bootstrap/cache/config.php' tools/build-m7-5-preview-release.sh
           grep -Fq 'Tracked or generated .env is forbidden in the release input.' tools/build-m7-5-preview-release.sh
