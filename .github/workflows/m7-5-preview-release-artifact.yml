@@ -146,7 +146,7 @@ jobs:
           ONEQAY_BUILD_PROVENANCE: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}
         run: bash tools/build-m7-5-preview-release.sh "${{ steps.source.outputs.source_sha }}"
 
-      - name: Verify manifest binding, checksum, and public/private boundary
+      - name: Verify manifest binding, checksum, public/private, and no-schema-change boundaries
         shell: bash
         run: |
           set -euo pipefail
@@ -166,6 +166,17 @@ jobs:
             echo 'Forbidden path found in release artifact.' >&2
             exit 1
           fi
+          if grep -F '/apps/web/database/migrations/' /tmp/oneqay-release-list.txt; then
+            echo 'Technical Preview artifact must not contain Sprint 19 durable migrations.' >&2
+            exit 1
+          fi
+          if tar -xOzf "${{ steps.package.outputs.archive_path }}" "${{ steps.package.outputs.release_id }}/RELEASE.json" | \
+            grep -Fq '"migration_classification": "NO_SCHEMA_CHANGE"'; then
+            :
+          else
+            echo 'Technical Preview RELEASE.json lost NO_SCHEMA_CHANGE classification.' >&2
+            exit 1
+          fi
 
       - name: Prove deterministic runtime archive reproduction
         shell: bash
@@ -183,6 +194,11 @@ jobs:
           php tools/validate-release-manifest.php \
             "${{ steps.package.outputs.manifest_path }}" \
             "${{ steps.package.outputs.archive_path }}"
+          tar -tzf "${{ steps.package.outputs.archive_path }}" > /tmp/oneqay-release-list-reproduced.txt
+          if grep -F '/apps/web/database/migrations/' /tmp/oneqay-release-list-reproduced.txt; then
+            echo 'Reproduced Technical Preview artifact unexpectedly contains durable migrations.' >&2
+            exit 1
+          fi
 
       - name: Upload governed Technical Preview release bundle
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

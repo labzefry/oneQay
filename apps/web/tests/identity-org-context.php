@@ -353,7 +353,7 @@ foreach ([
     }
 }
 
-// M73-GOV-001 no database/schema/migration/SQL implementation.
+// M73-GOV-001 identity/organization layers remain free of physical persistence mechanics.
 $forbiddenPersistenceReferences = [
     'Illuminate\\Database',
     'Schema::',
@@ -386,7 +386,17 @@ foreach ([
         }
     }
 }
-$assertM73(! is_dir(__DIR__.'/../database/migrations'), 'M73-GOV-001 no migration directory introduced');
+
+$migrationDirectory = __DIR__.'/../database/migrations';
+$canonicalMigration = $migrationDirectory.'/0000_00_00_000001_create_foundational_context_graph.php';
+$assertM73(is_dir($migrationDirectory), 'M73-GOV-001 canonical migration directory missing');
+$assertM73(is_file($canonicalMigration), 'M73-GOV-001 canonical foundational migration missing');
+$migrationFiles = glob($migrationDirectory.'/*.php') ?: [];
+sort($migrationFiles, SORT_STRING);
+$assertM73(
+    $migrationFiles === [$canonicalMigration],
+    'M73-GOV-001 migration set must remain exactly the Sprint 19 foundational migration',
+);
 
 // M73-GOV-002 synthetic relationship evidence cannot be initialized with a real principal identifier.
 try {

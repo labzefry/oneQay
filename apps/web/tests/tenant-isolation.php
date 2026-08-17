@@ -193,7 +193,7 @@ $expectMissing(
     'M72-ISO-014 correlation-id-is-not-tenant-proof',
 );
 
-// M72-ARCH-001 domain-application-framework-independent.
+// M72-ARCH-001 Domain/Application remain framework-independent even after durable persistence contracts.
 $forbiddenFrameworkReferences = ['Illuminate\\', 'Laravel\\', 'Inertia\\', 'Vue'];
 foreach ([
     __DIR__.'/../app/Domain',
@@ -215,7 +215,7 @@ foreach ([
     }
 }
 
-// M72-GOV-001 no-database-migration-or-sql.
+// M72-GOV-001 tenancy core remains persistence-framework independent.
 $forbiddenPersistenceReferences = ['Illuminate\\Database', 'Schema::', 'DB::', 'new PDO', 'mysqli_'];
 foreach ([
     __DIR__.'/../app/Domain/Tenancy',
@@ -232,14 +232,72 @@ foreach ([
         foreach ($forbiddenPersistenceReferences as $needle) {
             $assertM72(
                 ! str_contains($content, $needle),
-                'M72-GOV-001 no-database-migration-or-sql: '.$file->getPathname().' contains '.$needle,
+                'M72-GOV-001 tenancy core persistence boundary: '.$file->getPathname().' contains '.$needle,
             );
         }
     }
 }
-$assertM72(! is_dir(__DIR__.'/../database/migrations'), 'M72-GOV-001 no migration directory introduced');
 
-// M72-GOV-002 synthetic-data-only.
+// M72-PERSIST-001 canonical migration set is bounded and tenant-aware.
+$migrationDirectory = __DIR__.'/../database/migrations';
+$canonicalMigration = $migrationDirectory.'/0000_00_00_000001_create_foundational_context_graph.php';
+$assertM72(is_dir($migrationDirectory), 'M72-PERSIST-001 canonical migration directory missing');
+$assertM72(is_file($canonicalMigration), 'M72-PERSIST-001 canonical foundational migration missing');
+$migrationFiles = glob($migrationDirectory.'/*.php') ?: [];
+sort($migrationFiles, SORT_STRING);
+$assertM72(
+    $migrationFiles === [$canonicalMigration],
+    'M72-PERSIST-001 migration set must remain exactly the Sprint 19 foundational migration',
+);
+$migrationSource = (string) file_get_contents($canonicalMigration);
+foreach ([
+    "primary(['tenant_id', 'id']",
+    "foreign(['tenant_id', 'identity_id']",
+    "foreign(['tenant_id', 'organization_id']",
+    "foreign(['tenant_id', 'outlet_id']",
+    "Forward-only generated migration; rollback is not authorized.",
+] as $requiredBoundary) {
+    $assertM72(
+        str_contains($migrationSource, $requiredBoundary),
+        'M72-PERSIST-001 tenant-aware migration boundary missing: '.$requiredBoundary,
+    );
+}
+
+// M72-PERSIST-002 Application persistence contracts contain no DB/framework mechanics.
+$applicationPersistenceDirectory = __DIR__.'/../app/Application/Persistence';
+$assertM72(is_dir($applicationPersistenceDirectory), 'M72-PERSIST-002 Application persistence contracts missing');
+foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($applicationPersistenceDirectory)) as $file) {
+    if (! $file->isFile() || $file->getExtension() !== 'php') {
+        continue;
+    }
+
+    $content = (string) file_get_contents($file->getPathname());
+    foreach (['Illuminate\\', 'Laravel\\', 'Schema::', 'DB::', 'new PDO', 'mysqli_'] as $needle) {
+        $assertM72(
+            ! str_contains($content, $needle),
+            'M72-PERSIST-002 Application persistence leaked Infrastructure dependency: '.$needle,
+        );
+    }
+}
+
+// M72-PERSIST-003 Infrastructure reads remain explicitly tenant scoped and cannot silently rewrite ownership.
+$repositoryPath = __DIR__.'/../app/Infrastructure/Persistence/LaravelDurableContextGraphRepository.php';
+$assertM72(is_file($repositoryPath), 'M72-PERSIST-003 durable repository missing');
+$repositorySource = (string) file_get_contents($repositoryPath);
+$assertM72(
+    substr_count($repositorySource, "->where('tenant_id', \$tenant)") >= 4,
+    'M72-PERSIST-003 explicit tenant-scoped repository predicates missing',
+);
+$assertM72(
+    ! preg_match('/\b(updateOrInsert|upsert)\s*\(/', $repositorySource),
+    'M72-PERSIST-003 unrestricted relationship-rewriting upsert introduced',
+);
+$assertM72(
+    str_contains($repositorySource, "in_array(\$runtime, ['local', 'test', 'ci'], true)"),
+    'M72-PERSIST-003 Local/Test/CI runtime gate missing from repository',
+);
+
+// M72-GOV-002 synthetic-data-only remains enforced for membership fixtures.
 try {
     new SyntheticTenantMembershipVerifier(['principal-real' => ['tenant-alpha']]);
     $assertM72(false, 'M72-GOV-002 synthetic-data-only');

@@ -60,6 +60,14 @@ mkdir -p "${stage_root}/apps" "$public_surface"
 cp -a apps/web "$private_app_root"
 rm -rf "${private_app_root}/node_modules"
 
+# Sprint 19 durable migrations are canonical Local/Test/CI source, but Technical Preview
+# remains NO_SCHEMA_CHANGE until a separate Preview persistence gate exists.
+rm -rf "${private_app_root}/database/migrations"
+if [[ -d "${private_app_root}/database/migrations" ]]; then
+  echo "Durable migration directory must not enter the Technical Preview release payload." >&2
+  exit 1
+fi
+
 if find "$private_app_root" -type f \( -name '.env' -o -name '*.pem' -o -name '*.key' \) -print -quit | grep -q .; then
   echo "Forbidden secret-bearing file shape found in private release payload." >&2
   exit 1
@@ -218,6 +226,11 @@ tar -tzf "$archive_path" > /tmp/oneqay-preview-release-contents.txt
 
 if grep -E '(^|/)(\.env|\.git)(/|$)|(^|/)(node_modules)(/|$)' /tmp/oneqay-preview-release-contents.txt; then
   echo "Forbidden path found in packaged release." >&2
+  exit 1
+fi
+
+if grep -F '/apps/web/database/migrations/' /tmp/oneqay-preview-release-contents.txt; then
+  echo "Technical Preview release unexpectedly contains durable migration source." >&2
   exit 1
 fi
 
