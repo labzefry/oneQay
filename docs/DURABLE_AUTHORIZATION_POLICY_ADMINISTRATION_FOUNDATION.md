@@ -39,13 +39,26 @@ A role carrying `authorization.policy.manage` is a **protected control role**. S
 
 This prevents the administration service from manufacturing, transferring, weakening, or removing its own authority.
 
+## Control-authority scope containment
+
+A successful exact permission evaluation is necessary but not sufficient for policy mutation. The control-role assignment that provides `authorization.policy.manage` must also be at the mutation scope or an ancestor of that scope.
+
+Containment is exact:
+
+- tenant mutation requires tenant-scoped control authority;
+- organization mutation accepts tenant or the exact organization-scoped control authority;
+- outlet mutation accepts tenant, exact organization, or exact outlet-scoped control authority;
+- device mutation accepts tenant, exact organization, exact outlet, or exact device-scoped control authority.
+
+A narrower control role can never authorize a broader mutation. In particular, device-scoped control authority cannot create tenant roles, mutate tenant-wide role permissions, or assign roles at tenant/organization/outlet scope. This containment is checked before idempotent replay and repeated inside the transaction as defense in depth.
+
 ## Bootstrap boundary
 
 Sprint 22 deliberately does not solve first-administrator provisioning.
 
 No implicit Owner/Admin/Superadmin role, first-user elevation, environment superuser, updater privilege reuse, bootstrap token/header, or allow-if-no-admin shortcut exists.
 
-Disposable tests directly pre-provision a synthetic control principal and synthetic protected role as fixture data. That fixture is not runtime behavior and creates no Production authority.
+Disposable tests directly pre-provision synthetic control principals and protected roles as fixture data. Fixtures include both tenant-scoped and narrow device-scoped control authority so scope-containment behavior is exercised. Fixture state is not runtime behavior and creates no Production authority.
 
 ## Trust and scope model
 
@@ -76,6 +89,8 @@ Sprint 22 adds framework-independent Application authorization administration co
 - `DurablePolicyAdministrationViolation`;
 - `PolicyAdministrationClock`.
 
+The administration repository contract exposes a bounded control-authority containment query so the Application service can reject wider mutations before entering the transaction.
+
 The existing Sprint 21 `DurableRolePermissionRepository` remains read-only.
 
 ## Mutation identity and replay
@@ -90,6 +105,8 @@ Semantics:
 - same tenant + mutation ID + different fingerprint fails closed as a mutation conflict;
 - the same textual mutation ID may independently exist under another tenant.
 
+Current authorization, control-scope containment, protected-role checks, and target eligibility are evaluated before returning a prior replay outcome. A historical replay record therefore cannot bypass authority that is no longer valid.
+
 The fingerprint contains no password, TOTP material, token, credential, request header, or arbitrary request body.
 
 ## Durable mutation repository
@@ -102,6 +119,7 @@ It independently enforces:
 - runtime exactly in `local`, `test`, `ci`;
 - tenant predicates;
 - verified actor scope match;
+- control-authority scope containment;
 - protected control role/permission checks;
 - target membership/access eligibility;
 - idempotency journal conflict detection;
@@ -118,7 +136,7 @@ The service reuses the existing `PersistenceTransaction` boundary.
 
 Business mutation and durable mutation journal state are committed atomically. Transaction failure must leave neither a partial business change nor a false successful journal record.
 
-Policy-specific preflight checks are performed before entering the generic transaction so bounded policy errors remain classifiable; critical checks are repeated in Infrastructure as defense in depth inside the transaction.
+Policy-specific preflight checks are performed before entering the generic transaction so bounded policy errors remain classifiable; critical checks, including control-scope containment, are repeated in Infrastructure as defense in depth inside the transaction.
 
 ## Migration #4
 
@@ -193,6 +211,8 @@ Application administration failures use bounded non-sensitive codes for:
 - storage failure;
 - transaction failure.
 
+Control-scope containment denial uses the generic authorization-denied classification so narrower authority does not leak policy-layout details.
+
 Raw SQL/database exceptions, DSNs, credentials, secret values, and filesystem paths are not surfaced to delivery code.
 
 ## Regression model
@@ -202,7 +222,11 @@ The dedicated Sprint 22 disposable SQLite regression proves:
 - disabled/Preview/Production denial before mutation schema use;
 - exact four-migration execution;
 - journal creation;
-- synthetic control principal authorization;
+- synthetic tenant control principal authorization;
+- synthetic device-scoped control principal recognition only at the exact device context;
+- narrower device authority denied for tenant role creation, permission mutation, and tenant/organization/outlet assignments;
+- exact device-scoped assignment and revocation still allowed for device control authority;
+- denied scope-escape attempts leave no mutation journal row;
 - deny without exact control permission;
 - role create;
 - exact grant/revoke;

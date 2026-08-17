@@ -79,8 +79,10 @@ jobs:
           grep -Fq 'authorization.policy.manage' apps/web/app/Application/Authorization/AdministrationPermission.php
           grep -Fq 'VerifiedOrganizationalContext' apps/web/app/Application/Authorization/DurablePolicyAdministrationService.php
           grep -Fq 'PersistenceTransaction' apps/web/app/Application/Authorization/DurablePolicyAdministrationService.php
+          grep -Fq 'hasControlAuthorityForScope' apps/web/app/Application/Authorization/DurablePolicyAdministrationRepository.php
+          grep -Fq 'hasControlAuthorityForScope' apps/web/app/Application/Authorization/DurablePolicyAdministrationService.php
 
-      - name: Enforce four-migration journal and protected-control boundary
+      - name: Enforce four-migration journal protected-control and scope-containment boundaries
         shell: bash
         run: |
           set -euo pipefail
@@ -97,9 +99,16 @@ jobs:
           grep -Fq "in_array(\$runtime, ['local', 'test', 'ci'], true)" "$repo"
           grep -Fq -- "->where('tenant_id'," "$repo"
           grep -Fq -- "->where('permission_id', AdministrationPermission::MANAGE)" "$repo"
+          grep -Fq 'controlAuthorityExistsForScope' "$repo"
+          grep -Fq 'oneqay_tenant_role_assignments' "$repo"
+          grep -Fq 'oneqay_organization_role_assignments' "$repo"
+          grep -Fq 'oneqay_outlet_role_assignments' "$repo"
+          grep -Fq 'oneqay_device_role_assignments' "$repo"
           grep -Fq 'oneqay_identity_organizations' "$repo"
           grep -Fq 'oneqay_outlet_access_grants' "$repo"
           grep -Fq 'oneqay_device_access_grants' "$repo"
+          grep -Fq 'scope-escape-tenant' apps/web/tests/authorization-administration-persistence.php
+          grep -Fq 'device-control-assign' apps/web/tests/authorization-administration-persistence.php
           if grep -Eq '\b(updateOrInsert|upsert)\s*\(' "$repo"; then exit 1; fi
           if grep -Eq '\b(insert|insertOrIgnore|update|updateOrInsert|upsert|delete|truncate)\s*\(' "$read_repo"; then exit 1; fi
 

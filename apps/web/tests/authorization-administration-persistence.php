@@ -10,11 +10,11 @@ use App\Application\Authorization\DurablePolicyMutation;
 use App\Application\Authorization\DurableScopedAuthorizationPolicy;
 use App\Application\Authorization\PermissionIdentifier;
 use App\Application\Authorization\PolicyAdministrationClock;
+use App\Application\Authorization\PolicyAssignmentScope;
 use App\Application\Authorization\PolicyMutationId;
 use App\Application\Authorization\PolicyMutationOperation;
 use App\Application\Authorization\RoleIdentifier;
 use App\Application\Organization\VerifiedOrganizationalContext;
-use App\Application\Persistence\PersistenceTransaction;
 use App\Domain\Device\DeviceId;
 use App\Domain\Identity\PlatformIdentityId;
 use App\Domain\Organization\OrganizationId;
@@ -85,6 +85,7 @@ $assert($s22Connection->getSchemaBuilder()->hasTable('oneqay_policy_mutations'),
 $s22Connection->table('oneqay_tenants')->insert([['id' => 'tenant-alpha'], ['id' => 'tenant-beta']]);
 $s22Connection->table('oneqay_identities')->insert([
     ['tenant_id' => 'tenant-alpha', 'id' => 'synthetic-admin-alpha'],
+    ['tenant_id' => 'tenant-alpha', 'id' => 'synthetic-device-admin-alpha'],
     ['tenant_id' => 'tenant-alpha', 'id' => 'synthetic-target-alpha'],
     ['tenant_id' => 'tenant-alpha', 'id' => 'synthetic-no-membership-alpha'],
     ['tenant_id' => 'tenant-beta', 'id' => 'synthetic-admin-beta'],
@@ -96,6 +97,7 @@ $s22Connection->table('oneqay_organizations')->insert([
 ]);
 $s22Connection->table('oneqay_identity_organizations')->insert([
     ['tenant_id' => 'tenant-alpha', 'identity_id' => 'synthetic-admin-alpha', 'organization_id' => 'organization-shared'],
+    ['tenant_id' => 'tenant-alpha', 'identity_id' => 'synthetic-device-admin-alpha', 'organization_id' => 'organization-shared'],
     ['tenant_id' => 'tenant-alpha', 'identity_id' => 'synthetic-target-alpha', 'organization_id' => 'organization-shared'],
     ['tenant_id' => 'tenant-beta', 'identity_id' => 'synthetic-admin-beta', 'organization_id' => 'organization-shared'],
     ['tenant_id' => 'tenant-beta', 'identity_id' => 'synthetic-target-beta', 'organization_id' => 'organization-shared'],
@@ -108,7 +110,13 @@ $s22Connection->table('oneqay_devices')->insert([
     ['tenant_id' => 'tenant-alpha', 'id' => 'device-shared', 'organization_id' => 'organization-shared', 'outlet_id' => 'outlet-shared'],
     ['tenant_id' => 'tenant-beta', 'id' => 'device-shared', 'organization_id' => 'organization-shared', 'outlet_id' => 'outlet-shared'],
 ]);
-foreach ([['tenant-alpha', 'synthetic-admin-alpha'], ['tenant-alpha', 'synthetic-target-alpha'], ['tenant-beta', 'synthetic-admin-beta'], ['tenant-beta', 'synthetic-target-beta']] as [$tenant, $identity]) {
+foreach ([
+    ['tenant-alpha', 'synthetic-admin-alpha'],
+    ['tenant-alpha', 'synthetic-device-admin-alpha'],
+    ['tenant-alpha', 'synthetic-target-alpha'],
+    ['tenant-beta', 'synthetic-admin-beta'],
+    ['tenant-beta', 'synthetic-target-beta'],
+] as [$tenant, $identity]) {
     $s22Connection->table('oneqay_outlet_access_grants')->insert(['tenant_id' => $tenant, 'identity_id' => $identity, 'organization_id' => 'organization-shared', 'outlet_id' => 'outlet-shared']);
     $s22Connection->table('oneqay_device_access_grants')->insert(['tenant_id' => $tenant, 'identity_id' => $identity, 'organization_id' => 'organization-shared', 'outlet_id' => 'outlet-shared', 'device_id' => 'device-shared']);
 }
@@ -117,6 +125,16 @@ foreach ([['tenant-alpha', 'synthetic-admin-alpha'], ['tenant-beta', 'synthetic-
     $s22Connection->table('oneqay_role_permissions')->insert(['tenant_id' => $tenant, 'role_id' => 'synthetic-control-role', 'permission_id' => AdministrationPermission::MANAGE]);
     $s22Connection->table('oneqay_tenant_role_assignments')->insert(['tenant_id' => $tenant, 'identity_id' => $identity, 'role_id' => 'synthetic-control-role']);
 }
+$s22Connection->table('oneqay_roles')->insert(['tenant_id' => 'tenant-alpha', 'id' => 'synthetic-device-control-role']);
+$s22Connection->table('oneqay_role_permissions')->insert(['tenant_id' => 'tenant-alpha', 'role_id' => 'synthetic-device-control-role', 'permission_id' => AdministrationPermission::MANAGE]);
+$s22Connection->table('oneqay_device_role_assignments')->insert([
+    'tenant_id' => 'tenant-alpha',
+    'identity_id' => 'synthetic-device-admin-alpha',
+    'organization_id' => 'organization-shared',
+    'outlet_id' => 'outlet-shared',
+    'device_id' => 'device-shared',
+    'role_id' => 'synthetic-device-control-role',
+]);
 
 $s22Read = new LaravelDurableRolePermissionRepository($s22Connection, true, 'ci');
 $s22Policy = new DurableScopedAuthorizationPolicy($s22Read);
@@ -130,6 +148,11 @@ $s22BetaActor = new VerifiedOrganizationalContext(
     OrganizationId::fromString('organization-shared'), OutletId::fromString('outlet-shared'), DeviceId::fromString('device-shared'),
 );
 $s22BetaService = new DurablePolicyAdministrationService($s22Policy, $s22AdminRepo, $s22Transaction, $s22Clock);
+$s22DeviceAdminActor = new VerifiedOrganizationalContext(
+    PlatformIdentityId::fromString('synthetic-device-admin-alpha'), TenantId::fromString('tenant-alpha'),
+    OrganizationId::fromString('organization-shared'), OutletId::fromString('outlet-shared'), DeviceId::fromString('device-shared'),
+);
+$s22DeviceAdminService = new DurablePolicyAdministrationService($s22Policy, $s22AdminRepo, $s22Transaction, $s22Clock);
 $s22TargetAlpha = PlatformIdentityId::fromString('synthetic-target-alpha');
 $s22TargetContext = new VerifiedOrganizationalContext($s22TargetAlpha, TenantId::fromString('tenant-alpha'), OrganizationId::fromString('organization-shared'), OutletId::fromString('outlet-shared'), DeviceId::fromString('device-shared'));
 $s22Operator = RoleIdentifier::fromString('synthetic-operator');
@@ -149,6 +172,31 @@ try {
 
 $s22Grant = DurablePolicyMutation::permissionGrant(PolicyMutationId::fromString('mutation-grant'), $s22AlphaActor, $s22Operator, $s22Execute);
 $assert($s22Service->apply($s22AlphaActor, $s22Grant) === 'applied', 'Sprint 22 permission grant failed.');
+
+$assert($s22Policy->allows($s22DeviceAdminActor, AdministrationPermission::manage()), 'Sprint 22 device-scoped control fixture was not recognized at its exact device context.');
+foreach ([
+    DurablePolicyMutation::roleCreate(PolicyMutationId::fromString('scope-escape-role-create'), $s22DeviceAdminActor, RoleIdentifier::fromString('synthetic-scope-escape-role')),
+    DurablePolicyMutation::permissionGrant(PolicyMutationId::fromString('scope-escape-permission'), $s22DeviceAdminActor, $s22Operator, PermissionIdentifier::fromString('synthetic.resource.scope-test')),
+    DurablePolicyMutation::roleAssignment(PolicyMutationId::fromString('scope-escape-tenant'), $s22DeviceAdminActor, PolicyMutationOperation::ROLE_ASSIGN_TENANT, $s22TargetAlpha, $s22Operator),
+    DurablePolicyMutation::roleAssignment(PolicyMutationId::fromString('scope-escape-organization'), $s22DeviceAdminActor, PolicyMutationOperation::ROLE_ASSIGN_ORGANIZATION, $s22TargetAlpha, $s22Operator),
+    DurablePolicyMutation::roleAssignment(PolicyMutationId::fromString('scope-escape-outlet'), $s22DeviceAdminActor, PolicyMutationOperation::ROLE_ASSIGN_OUTLET, $s22TargetAlpha, $s22Operator),
+] as $scopeEscapeMutation) {
+    try {
+        $s22DeviceAdminService->apply($s22DeviceAdminActor, $scopeEscapeMutation);
+        $assert(false, 'Sprint 22 narrower device control authority escaped to a broader policy scope.');
+    } catch (DurablePolicyAdministrationViolation $exception) {
+        $assert($exception->errorCode === DurablePolicyAdministrationViolation::AUTHORIZATION_DENIED, 'Sprint 22 scope-containment denial returned wrong code.');
+    }
+}
+$assert($s22Connection->table('oneqay_policy_mutations')->where('tenant_id', 'tenant-alpha')->whereIn('mutation_id', ['scope-escape-role-create', 'scope-escape-permission', 'scope-escape-tenant', 'scope-escape-organization', 'scope-escape-outlet'])->doesntExist(), 'Sprint 22 scope-containment denial wrote mutation journal state.');
+
+$s22DeviceAssign = DurablePolicyMutation::roleAssignment(PolicyMutationId::fromString('device-control-assign'), $s22DeviceAdminActor, PolicyMutationOperation::ROLE_ASSIGN_DEVICE, $s22TargetAlpha, $s22Operator);
+$assert($s22DeviceAdminService->apply($s22DeviceAdminActor, $s22DeviceAssign) === 'applied', 'Sprint 22 exact device-scoped administration was denied.');
+$assert($s22Policy->allows($s22TargetContext, $s22Execute), 'Sprint 22 exact device-scoped administration did not apply target permission.');
+$s22DeviceRevoke = DurablePolicyMutation::roleAssignment(PolicyMutationId::fromString('device-control-revoke'), $s22DeviceAdminActor, PolicyMutationOperation::ROLE_REVOKE_DEVICE, $s22TargetAlpha, $s22Operator);
+$assert($s22DeviceAdminService->apply($s22DeviceAdminActor, $s22DeviceRevoke) === 'applied', 'Sprint 22 exact device-scoped revocation was denied.');
+$assert(! $s22Policy->allows($s22TargetContext, $s22Execute), 'Sprint 22 exact device-scoped revocation left permission active.');
+
 $s22AssignTenant = DurablePolicyMutation::roleAssignment(PolicyMutationId::fromString('mutation-assign-tenant'), $s22AlphaActor, PolicyMutationOperation::ROLE_ASSIGN_TENANT, $s22TargetAlpha, $s22Operator);
 $assert($s22Service->apply($s22AlphaActor, $s22AssignTenant) === 'applied', 'Sprint 22 tenant assignment failed.');
 $assert($s22Policy->allows($s22TargetContext, $s22Execute), 'Sprint 22 assigned target did not gain exact permission.');
@@ -208,6 +256,7 @@ try {
 $s22FailRepo = new class($s22Connection) implements DurablePolicyAdministrationRepository {
     public function __construct(private \Illuminate\Database\Connection $connection) {}
     public function replayOutcome(VerifiedOrganizationalContext $actor, DurablePolicyMutation $mutation): ?string { return null; }
+    public function hasControlAuthorityForScope(VerifiedOrganizationalContext $actor, PolicyAssignmentScope $scope): bool { return true; }
     public function isProtectedControlRole(VerifiedOrganizationalContext $actor, RoleIdentifier $role): bool { return false; }
     public function assertTargetEligible(VerifiedOrganizationalContext $actor, DurablePolicyMutation $mutation): void {}
     public function applyFresh(VerifiedOrganizationalContext $actor, DurablePolicyMutation $mutation, int $occurredAtUnix): string {
@@ -232,6 +281,7 @@ $s22RepoSource = (string) file_get_contents(__DIR__.'/../app/Infrastructure/Auth
 $assert(! preg_match('/\b(updateOrInsert|upsert)\s*\(/', $s22RepoSource), 'Sprint 22 repository introduced ownership-rewriting upsert.');
 $assert(substr_count($s22RepoSource, "->where('tenant_id',") >= 8, 'Sprint 22 repository lost tenant-scoped predicates.');
 $assert(str_contains($s22RepoSource, "in_array(\$runtime, ['local', 'test', 'ci'], true)"), 'Sprint 22 runtime allowlist changed.');
+$assert(str_contains($s22RepoSource, 'controlAuthorityExistsForScope'), 'Sprint 22 repository lost control-authority scope containment.');
 $assert($s22Connection->table('oneqay_policy_mutations')->where('tenant_id', 'tenant-alpha')->count() > 0, 'Sprint 22 mutation journal remained empty.');
 
 $s22Manager->disconnect('s22_admin');

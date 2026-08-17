@@ -40,13 +40,12 @@ final readonly class DurablePolicyAdministrationService
             $this->fail($code, 'Policy administration authorization denied.');
         }
 
-        if ($mutation->permission() !== null && AdministrationPermission::isControl($mutation->permission())) {
-            $this->fail(DurablePolicyAdministrationViolation::PROTECTED_CONTROL_AUTHORITY, 'Protected policy control authority cannot be mutated.');
+        if (! $this->repository->hasControlAuthorityForScope($actor, $mutation->scope())) {
+            $this->fail(DurablePolicyAdministrationViolation::AUTHORIZATION_DENIED, 'Policy administration authorization denied.');
         }
 
-        $prior = $this->repository->replayOutcome($actor, $mutation);
-        if ($prior !== null) {
-            return $prior;
+        if ($mutation->permission() !== null && AdministrationPermission::isControl($mutation->permission())) {
+            $this->fail(DurablePolicyAdministrationViolation::PROTECTED_CONTROL_AUTHORITY, 'Protected policy control authority cannot be mutated.');
         }
 
         if (($mutation->operation()->isPermissionMutation() || $mutation->operation()->isAssignmentMutation())
@@ -56,6 +55,11 @@ final readonly class DurablePolicyAdministrationService
 
         if ($mutation->operation()->isAssignmentMutation()) {
             $this->repository->assertTargetEligible($actor, $mutation);
+        }
+
+        $prior = $this->repository->replayOutcome($actor, $mutation);
+        if ($prior !== null) {
+            return $prior;
         }
 
         $occurredAtUnix = $this->clock->nowUnix();

@@ -8,6 +8,7 @@ use App\Application\Authorization\AdministrationPermission;
 use App\Application\Authorization\DurablePolicyAdministrationRepository;
 use App\Application\Authorization\DurablePolicyAdministrationViolation;
 use App\Application\Authorization\DurablePolicyMutation;
+use App\Application\Authorization\PolicyAssignmentScope;
 use App\Application\Authorization\PolicyMutationOperation;
 use App\Application\Authorization\RoleIdentifier;
 use App\Application\Organization\VerifiedOrganizationalContext;
@@ -51,6 +52,23 @@ final readonly class LaravelDurablePolicyAdministrationRepository implements Dur
             return $outcome;
         } catch (DurablePolicyAdministrationViolation $exception) {
             throw $exception;
+        } catch (Throwable) {
+            throw new DurablePolicyAdministrationViolation(
+                DurablePolicyAdministrationViolation::STORAGE_FAILURE,
+                'Policy administration storage operation failed.',
+            );
+        }
+    }
+
+    public function hasControlAuthorityForScope(
+        VerifiedOrganizationalContext $actor,
+        PolicyAssignmentScope $scope,
+    ): bool {
+        $this->assertRuntimeAllowedForAdministration();
+        if (! $scope->matchesActor($actor)) { return false; }
+
+        try {
+            return $this->controlAuthorityExistsForScope($actor, $scope);
         } catch (Throwable) {
             throw new DurablePolicyAdministrationViolation(
                 DurablePolicyAdministrationViolation::STORAGE_FAILURE,
@@ -115,6 +133,10 @@ final readonly class LaravelDurablePolicyAdministrationRepository implements Dur
         $permission = $mutation->permission()?->value();
 
         try {
+            if (! $this->controlAuthorityExistsForScope($actor, $mutation->scope())) {
+                $this->relationshipConflict();
+            }
+
             if ($permission !== null && hash_equals(AdministrationPermission::MANAGE, $permission)) {
                 $this->relationshipConflict();
             }
@@ -182,6 +204,70 @@ final readonly class LaravelDurablePolicyAdministrationRepository implements Dur
         } catch (Throwable) {
             $this->storageFailure();
         }
+    }
+
+    private function controlAuthorityExistsForScope(
+        VerifiedOrganizationalContext $actor,
+        PolicyAssignmentScope $scope,
+    ): bool {
+        $tenant = $actor->tenantId()->value();
+        $identity = $actor->identityId()->value();
+
+        if ($this->assignmentHasControlRole('oneqay_tenant_role_assignments', [
+            'tenant_id' => $tenant,
+            'identity_id' => $identity,
+        ])) {
+            return true;
+        }
+
+        if ($scope->type() === 'tenant') { return false; }
+
+        if ($this->assignmentHasControlRole('oneqay_organization_role_assignments', [
+            'tenant_id' => $tenant,
+            'identity_id' => $identity,
+            'organization_id' => $scope->organizationId()?->value(),
+        ])) {
+            return true;
+        }
+
+        if ($scope->type() === 'organization') { return false; }
+
+        if ($this->assignmentHasControlRole('oneqay_outlet_role_assignments', [
+            'tenant_id' => $tenant,
+            'identity_id' => $identity,
+            'organization_id' => $scope->organizationId()?->value(),
+            'outlet_id' => $scope->outletId()?->value(),
+        ])) {
+            return true;
+        }
+
+        if ($scope->type() === 'outlet') { return false; }
+
+        return $this->assignmentHasControlRole('oneqay_device_role_assignments', [
+            'tenant_id' => $tenant,
+            'identity_id' => $identity,
+            'organization_id' => $scope->organizationId()?->value(),
+            'outlet_id' => $scope->outletId()?->value(),
+            'device_id' => $scope->deviceId()?->value(),
+        ]);
+    }
+
+    /** @param array<string, string|null> $predicates */
+    private function assignmentHasControlRole(string $table, array $predicates): bool
+    {
+        $query = $this->connection->table($table);
+        foreach ($predicates as $column => $value) {
+            if ($value === null) { return false; }
+            $query->where($column, $value);
+        }
+
+        foreach ($query->pluck('role_id')->all() as $roleId) {
+            if (is_string($roleId) && $this->protectedRoleExists((string) $predicates['tenant_id'], $roleId)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function plannedOutcome(VerifiedOrganizationalContext $actor, DurablePolicyMutation $mutation): string
