@@ -147,7 +147,7 @@ jobs:
             exit 1
           fi
 
-          mutation_matches="$(grep -R -n -E 'file_put_contents|rename\(|unlink\(|symlink\(|link\(' \
+          mutation_matches="$(grep -R -n -E 'file_put_contents|rename\(|unlink\(|(^|[^[:alnum:]_])(symlink|link)\(' \
             apps/web/app/Application/SystemUpdate \
             apps/web/app/Infrastructure/SystemUpdate \
             apps/web/app/Delivery/Http/SystemUpdate \

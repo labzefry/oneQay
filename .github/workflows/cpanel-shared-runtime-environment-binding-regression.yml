@@ -1,0 +1,195 @@
+name: cPanel Shared Runtime Environment Binding Regression
+
+# Attribution: Lab | zefry
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'apps/web/app/Application/SystemUpdate/SharedConfiguration/**'
+      - 'apps/web/app/Infrastructure/SystemUpdate/SharedConfiguration/**'
+      - 'apps/web/tests/cpanel-shared-runtime-environment-binding.php'
+      - 'tools/build-m7-5-preview-release.sh'
+      - 'docs/operations/M7_6_PREVIEW_DEPLOYMENT_RECOVERY_REHEARSAL.md'
+      - 'docs/evidence/runtime/m76-preview-candidate-unhealthy-recovered-shared-runtime-20260817.json'
+      - 'UPDATER.md'
+      - '.github/workflows/cpanel-shared-runtime-environment-binding-regression.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/web/app/Application/SystemUpdate/SharedConfiguration/**'
+      - 'apps/web/app/Infrastructure/SystemUpdate/SharedConfiguration/**'
+      - 'apps/web/tests/cpanel-shared-runtime-environment-binding.php'
+      - 'tools/build-m7-5-preview-release.sh'
+      - 'docs/operations/M7_6_PREVIEW_DEPLOYMENT_RECOVERY_REHEARSAL.md'
+      - 'docs/evidence/runtime/m76-preview-candidate-unhealthy-recovered-shared-runtime-20260817.json'
+      - 'UPDATER.md'
+      - '.github/workflows/cpanel-shared-runtime-environment-binding-regression.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cpanel-shared-runtime-environment-${{ github.event.pull_request.number || github.ref }}-${{ matrix.php }}
+  cancel-in-progress: true
+
+jobs:
+  cpanel-shared-runtime-environment-binding-regression:
+    name: cpanel-shared-runtime-environment-binding-php-${{ matrix.php }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.2', '8.3', '8.4', '8.5']
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHQ=
+      APP_DEBUG: 'false'
+      APP_URL: http://127.0.0.1
+      ONEQAY_RUNTIME_CLASS: ci
+      ONEQAY_SYSTEM_UPDATE_CONTROL_PLANE_ENABLED: 'false'
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+      LOG_CHANNEL: stderr
+
+    steps:
+      - name: Checkout exact corrective source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Setup governed PHP runtime
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        with:
+          php-version: ${{ matrix.php }}
+          tools: composer:v2
+          coverage: none
+
+      - name: Verify exact source and PHP boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha || github.sha }}"
+          php -r 'if (PHP_VERSION_ID < 80200 || PHP_VERSION_ID >= 80600) { fwrite(STDERR, "Shared runtime environment binding requires PHP 8.2-8.5.\n"); exit(1); }'
+          test "$(git status --porcelain)" = ""
+
+      - name: Preserve root Platform Foundation regression
+        run: |
+          composer validate --strict --no-check-publish
+          composer test
+
+      - name: Install locked Web dependencies
+        working-directory: apps/web
+        run: |
+          composer validate --no-check-publish
+          composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Reject High or Critical Composer advisories
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          composer audit --locked --format=json > /tmp/oneqay-shared-env-audit.json || true
+          php -r '
+            $data = json_decode(file_get_contents("/tmp/oneqay-shared-env-audit.json"), true, 512, JSON_THROW_ON_ERROR);
+            foreach (($data["advisories"] ?? []) as $package => $items) {
+                foreach ($items as $item) {
+                    if (in_array(strtolower((string) ($item["severity"] ?? "")), ["high", "critical"], true)) {
+                        fwrite(STDERR, "Blocking Composer advisory for {$package}.\n");
+                        exit(1);
+                    }
+                }
+            }
+          '
+
+      - name: Validate corrective PHP syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l apps/web/app/Application/SystemUpdate/SharedConfiguration/SystemUpdateSharedRuntimeEnvironmentGuard.php
+          php -l apps/web/app/Application/SystemUpdate/SharedConfiguration/SystemUpdateSharedRuntimeEnvironmentStatus.php
+          php -l apps/web/app/Application/SystemUpdate/SharedConfiguration/SystemUpdateSharedRuntimeEnvironmentActivationCoordinator.php
+          php -l apps/web/app/Infrastructure/SystemUpdate/SharedConfiguration/FilesystemSystemUpdateSharedRuntimeEnvironmentGuard.php
+          php -l apps/web/tests/cpanel-shared-runtime-environment-binding.php
+
+      - name: Preserve hard-disabled and unwired updater posture
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq "'install_enabled' => false" apps/web/config/oneqay.php
+          ! grep -Eq 'ONEQAY_SYSTEM_UPDATE_INSTALL|env\([^)]*INSTALL' apps/web/config/oneqay.php
+          ! grep -Fq 'SystemUpdateSharedRuntimeEnvironmentActivationCoordinator' apps/web/app/Providers/SystemUpdateServiceProvider.php
+          ! grep -Fq 'FilesystemSystemUpdateSharedRuntimeEnvironmentGuard' apps/web/app/Providers/SystemUpdateServiceProvider.php
+
+      - name: Enforce secret-value and filesystem-mutation boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          shared_paths=(
+            apps/web/app/Application/SystemUpdate/SharedConfiguration
+            apps/web/app/Infrastructure/SystemUpdate/SharedConfiguration
+          )
+          if grep -R -n -E 'getenv\(|\$_ENV|\$_SERVER|DB_PASSWORD|DB_USERNAME|DB_DATABASE|MAIL_PASSWORD|API_TOKEN|access_token|secret_value|rawSecret' "${shared_paths[@]}"; then
+            echo 'Corrective shared-runtime implementation must not expose generic environment values or credential names.' >&2
+            exit 1
+          fi
+          if grep -R -n -E 'file_put_contents\(|rename\(|unlink\(|copy\(' apps/web/app/Infrastructure/SystemUpdate/SharedConfiguration/FilesystemSystemUpdateSharedRuntimeEnvironmentGuard.php; then
+            echo 'Shared runtime environment guard must be read-only.' >&2
+            exit 1
+          fi
+          ! grep -R -n -E 'Illuminate\\Database|Schema::|DB::|new PDO|mysqli_' "${shared_paths[@]}"
+
+      - name: Prove governed public bootstrap shared-environment binding
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq 'oneqay-preview/shared/runtime' tools/build-m7-5-preview-release.sh
+          grep -Fq 'useEnvironmentPath' tools/build-m7-5-preview-release.sh
+          grep -Fq 'useEnvironmentFile' tools/build-m7-5-preview-release.sh
+          grep -Fq 'PRIVATE_SHARED_DOTENV_V1' tools/build-m7-5-preview-release.sh
+          grep -Fq 'bootstrap/cache/config.php' tools/build-m7-5-preview-release.sh
+          grep -Fq 'Tracked or generated .env is forbidden in the release input.' tools/build-m7-5-preview-release.sh
+          if grep -E '(^|[[:space:]])(cp|mv)[[:space:]].*\.env' tools/build-m7-5-preview-release.sh; then
+            echo 'Governed release builder must never copy a secret-bearing environment file into the release.' >&2
+            exit 1
+          fi
+
+      - name: Run cPanel shared runtime environment binding regression
+        working-directory: apps/web
+        run: php tests/cpanel-shared-runtime-environment-binding.php
+
+      - name: Preserve shared configuration and recovery regressions
+        working-directory: apps/web
+        run: |
+          php tests/shared-runtime-configuration-boundary.php
+          php tests/safe-staging-activation-health-rollback.php
+          php tests/m7-6-preview-deployment-recovery-rehearsal.php
+          php tests/backend-updater-control-plane.php
+          php tests/privileged-update-security.php
+
+      - name: Validate sanitized real-rehearsal evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -r '
+            $path = "docs/evidence/runtime/m76-preview-candidate-unhealthy-recovered-shared-runtime-20260817.json";
+            $data = json_decode(file_get_contents($path), true, 512, JSON_THROW_ON_ERROR);
+            if (($data["rehearsal"]["outcome"] ?? null) !== "candidate_unhealthy_recovered") { exit(1); }
+            if (($data["root_cause"]["safe_code"] ?? null) !== "SHARED_RUNTIME_APP_KEY_NOT_BOUND") { exit(1); }
+            if (($data["corrective_requirement"]["profile"] ?? null) !== "PRIVATE_SHARED_DOTENV_V1") { exit(1); }
+            if (($data["m7_6_closed"] ?? true) !== false || ($data["lifecycle_authority_created"] ?? true) !== false) { exit(1); }
+          '
+          if grep -E -i 'APP_KEY=|DB_PASSWORD=|DB_USERNAME=|MAIL_PASSWORD=|access[_-]?token[=:]|/home/|public_html|correlation_id"[[:space:]]*:' docs/evidence/runtime/m76-preview-candidate-unhealthy-recovered-shared-runtime-20260817.json; then
+            echo 'Sanitized M7.6 evidence contains a forbidden sensitive value shape.' >&2
+            exit 1
+          fi
+
+      - name: Confirm tracked source remains unchanged
+        shell: bash
+        run: git diff --exit-code

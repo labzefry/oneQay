@@ -10,6 +10,8 @@ on:
       - 'apps/web/app/Application/SystemUpdate/SharedConfiguration/**'
       - 'apps/web/app/Infrastructure/SystemUpdate/SharedConfiguration/**'
       - 'apps/web/tests/shared-runtime-configuration-boundary.php'
+      - 'apps/web/tests/cpanel-shared-runtime-environment-binding.php'
+      - 'tools/build-m7-5-preview-release.sh'
       - '.github/workflows/shared-runtime-configuration-boundary-regression.yml'
       - 'apps/web/app/Application/SystemUpdate/SystemUpdateActivationCoordinator.php'
       - 'apps/web/app/Infrastructure/SystemUpdate/Activation/**'
@@ -20,6 +22,8 @@ on:
       - 'apps/web/app/Application/SystemUpdate/SharedConfiguration/**'
       - 'apps/web/app/Infrastructure/SystemUpdate/SharedConfiguration/**'
       - 'apps/web/tests/shared-runtime-configuration-boundary.php'
+      - 'apps/web/tests/cpanel-shared-runtime-environment-binding.php'
+      - 'tools/build-m7-5-preview-release.sh'
       - '.github/workflows/shared-runtime-configuration-boundary-regression.yml'
       - 'apps/web/app/Application/SystemUpdate/SystemUpdateActivationCoordinator.php'
       - 'apps/web/app/Infrastructure/SystemUpdate/Activation/**'
@@ -98,6 +102,7 @@ jobs:
             apps/web/app/Application/SystemUpdate/SharedConfiguration \
             apps/web/app/Infrastructure/SystemUpdate/SharedConfiguration \
             apps/web/tests/shared-runtime-configuration-boundary.php \
+            apps/web/tests/cpanel-shared-runtime-environment-binding.php \
             -type f -name '*.php' -print0 |
             while IFS= read -r -d '' file; do php -l "$file"; done
 
@@ -109,6 +114,8 @@ jobs:
           ! grep -Eq 'ONEQAY_SYSTEM_UPDATE_INSTALL|env\([^)]*INSTALL' apps/web/config/oneqay.php
           grep -Fq 'requestInstall(null)' apps/web/app/Delivery/Http/SystemUpdate/SystemUpdateControlPlaneController.php
           ! grep -Fq 'SystemUpdateSharedConfigurationActivationCoordinator' apps/web/app/Providers/SystemUpdateServiceProvider.php
+          ! grep -Fq 'SystemUpdateSharedRuntimeEnvironmentActivationCoordinator' apps/web/app/Providers/SystemUpdateServiceProvider.php
+          ! grep -Fq 'FilesystemSystemUpdateSharedRuntimeEnvironmentGuard' apps/web/app/Providers/SystemUpdateServiceProvider.php
 
       - name: Enforce secret and database boundary
         shell: bash
@@ -136,9 +143,26 @@ jobs:
           grep -Fq "shared_secret_reference_forbidden" apps/web/app/Application/SystemUpdate/SharedConfiguration/SystemUpdateSecretReference.php
           ! grep -Eq 'DB_PASSWORD|API_TOKEN|MAIL_PASSWORD' apps/web/app/Application/SystemUpdate/SharedConfiguration/SystemUpdateSecretReference.php
 
-      - name: Run shared runtime configuration boundary regression
+      - name: Prove governed public bootstrap shared-environment binding
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq 'oneqay-preview/shared/runtime' tools/build-m7-5-preview-release.sh
+          grep -Fq 'useEnvironmentPath' tools/build-m7-5-preview-release.sh
+          grep -Fq 'useEnvironmentFile' tools/build-m7-5-preview-release.sh
+          grep -Fq 'PRIVATE_SHARED_DOTENV_V1' tools/build-m7-5-preview-release.sh
+          grep -Fq 'bootstrap/cache/config.php' tools/build-m7-5-preview-release.sh
+          grep -Fq 'Tracked or generated .env is forbidden in the release input.' tools/build-m7-5-preview-release.sh
+          if grep -E '(^|[[:space:]])(cp|mv)[[:space:]].*\.env' tools/build-m7-5-preview-release.sh; then
+            echo 'Governed release builder must never copy a secret-bearing environment file into the release.' >&2
+            exit 1
+          fi
+
+      - name: Run shared runtime configuration boundary regressions
         working-directory: apps/web
-        run: php tests/shared-runtime-configuration-boundary.php
+        run: |
+          php tests/shared-runtime-configuration-boundary.php
+          php tests/cpanel-shared-runtime-environment-binding.php
 
       - name: Preserve activation and security regressions
         working-directory: apps/web
