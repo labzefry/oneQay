@@ -540,4 +540,202 @@ $assert(!preg_match('/\b(exec|shell_exec|system|passthru|proc_open)\s*\(/i', $s1
 $assert(!str_contains($s16GeneratorSource, 'MigrationExecutionService'), 'Sprint 16 generator introduced migration execution coupling.');
 $assert(!str_contains($s16GeneratorSource, 'apps/web/database'), 'Sprint 16 generator introduced application migration materialization.');
 
+$throwsLaravelMaterialization = static function (callable $callback, string $code) use ($assert): void {
+    try {
+        $callback();
+        $assert(false, "Expected {$code}.");
+    } catch (\OneQay\SchemaPlanning\LaravelMigrationMaterializationException $exception) {
+        $assert($exception->errorCode === $code, "Unexpected {$exception->errorCode}.");
+    }
+};
+
+$removeTree = null;
+$removeTree = static function (string $path) use (&$removeTree): void {
+    if (is_link($path) || is_file($path)) {
+        @unlink($path);
+        return;
+    }
+    if (!is_dir($path)) {
+        return;
+    }
+    $iterator = new FilesystemIterator($path, FilesystemIterator::SKIP_DOTS);
+    foreach ($iterator as $item) {
+        $removeTree($item->getPathname());
+    }
+    @rmdir($path);
+};
+
+$s17Composer = (string) file_get_contents(__DIR__ . '/../apps/web/composer.json');
+$s17Parent = rtrim(sys_get_temp_dir(), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'oneqay-s17-' . getmypid();
+$removeTree($s17Parent);
+$assert(@mkdir($s17Parent, 0700, false), 'Sprint 17 staging parent could not be created.');
+
+$s17Materializer = new \OneQay\SchemaPlanning\GovernedLaravelMigrationMaterializer();
+$s17Report = $s17Materializer->materialize($s16Generated, $s17Composer, $s17Parent, 'corr-materialization-s17');
+$s17ArtifactFingerprint = hash(
+    'sha256',
+    json_encode($s16Generated, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_PRESERVE_ZERO_FRACTION),
+);
+$assert((new ReflectionClass($s17Report))->isReadOnly(), 'Sprint 17 materialization report is not immutable.');
+$assert($s17Report->generationArtifactFingerprint->value === $s17ArtifactFingerprint, 'Sprint 17 generation artifact fingerprint changed.');
+$assert($s17Report->framework === \OneQay\SchemaPlanning\LaravelMigrationGenerationArtifact::FRAMEWORK, 'Sprint 17 framework identity changed.');
+$assert($s17Report->frameworkVersion === \OneQay\SchemaPlanning\LaravelMigrationGenerationArtifact::FRAMEWORK_VERSION, 'Sprint 17 framework version changed.');
+$expectedWorkspace = '.oneqay-migration-materialization/' . substr($s17ArtifactFingerprint, 0, 24);
+$assert($s17Report->workspaceRelativePath === $expectedWorkspace, 'Sprint 17 deterministic workspace identity changed.');
+$assert(count($s17Report->files()) === count($s16Generated->files()), 'Sprint 17 persisted file count changed.');
+
+$s17Workspace = $s17Parent . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $s17Report->workspaceRelativePath);
+$s17MigrationDirectory = $s17Workspace . DIRECTORY_SEPARATOR . 'database' . DIRECTORY_SEPARATOR . 'migrations';
+foreach ($s17Report->files() as $index => $persisted) {
+    $generated = $s16Generated->files()[$index];
+    $assert((new ReflectionClass($persisted))->isReadOnly(), 'Sprint 17 persisted file evidence is not immutable.');
+    $assert(!$persisted->alreadyIdentical, 'Sprint 17 first materialization unexpectedly reported an existing identical file.');
+    $assert($persisted->relativePath === $generated->relativePath, 'Sprint 17 persisted relative path changed.');
+    $assert($persisted->expectedSourceFingerprint === $generated->sourceFingerprint, 'Sprint 17 expected fingerprint changed.');
+    $assert($persisted->persistedSourceFingerprint === $generated->sourceFingerprint, 'Sprint 17 persisted fingerprint changed.');
+    $assert($persisted->persistedBytes === strlen($generated->source), 'Sprint 17 persisted byte count changed.');
+    $destination = $s17Workspace . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $generated->relativePath);
+    $assert(is_file($destination), 'Sprint 17 expected staged migration file is missing.');
+    $contents = (string) file_get_contents($destination);
+    $assert(hash('sha256', $contents) === $generated->sourceFingerprint, 'Sprint 17 staged source fingerprint changed.');
+    token_get_all($contents, TOKEN_PARSE);
+    $assert(true, 'Sprint 17 staged migration PHP syntax validation failed.');
+}
+
+$s17Second = $s17Materializer->materialize($s16Generated, $s17Composer, $s17Parent, 'corr-materialization-s17-idempotent');
+$assert($s17Second->workspaceRelativePath === $s17Report->workspaceRelativePath, 'Sprint 17 idempotent workspace identity changed.');
+foreach ($s17Second->files() as $persisted) {
+    $assert($persisted->alreadyIdentical, 'Sprint 17 second materialization was not idempotent.');
+}
+
+$s17Validated = $s17Materializer->validate($s16Generated, $s17Composer, $s17Parent, 'corr-validation-s17');
+$assert($s17Validated->generationArtifactFingerprint->value === $s17ArtifactFingerprint, 'Sprint 17 validation artifact fingerprint changed.');
+$assert($s17Validated->workspaceRelativePath === $expectedWorkspace, 'Sprint 17 validation workspace changed.');
+$assert(count($s17Validated->files()) === 4, 'Sprint 17 validation file count changed.');
+
+$throwsLaravelMaterialization(
+    fn () => $s17Materializer->materialize($s16Generated, '{bad-json', $s17Parent, 'corr-materialization-s17-bad-json'),
+    \OneQay\SchemaPlanning\LaravelMigrationMaterializationException::FRAMEWORK_TARGET_MISMATCH,
+);
+$wrongComposer = json_encode(['require' => ['php' => '^8.2', 'laravel/framework' => '13.0.0']], JSON_THROW_ON_ERROR);
+$throwsLaravelMaterialization(
+    fn () => $s17Materializer->materialize($s16Generated, $wrongComposer, $s17Parent, 'corr-materialization-s17-wrong-framework'),
+    \OneQay\SchemaPlanning\LaravelMigrationMaterializationException::FRAMEWORK_TARGET_MISMATCH,
+);
+$throwsLaravelMaterialization(
+    fn () => $s17Materializer->materialize($s16Generated, $s17Composer, __DIR__ . '/../apps/web', 'corr-materialization-s17-app-root'),
+    \OneQay\SchemaPlanning\LaravelMigrationMaterializationException::STAGING_PARENT_INVALID,
+);
+
+$unexpected = $s17MigrationDirectory . DIRECTORY_SEPARATOR . 'unexpected.php';
+$assert(file_put_contents($unexpected, "<?php\n") !== false, 'Sprint 17 unexpected-file fixture could not be created.');
+$throwsLaravelMaterialization(
+    fn () => $s17Materializer->validate($s16Generated, $s17Composer, $s17Parent, 'corr-validation-s17-unexpected'),
+    \OneQay\SchemaPlanning\LaravelMigrationMaterializationException::UNEXPECTED_FILE,
+);
+@unlink($unexpected);
+
+$firstGenerated = $s16Generated->files()[0];
+$firstDestination = $s17Workspace . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $firstGenerated->relativePath);
+$assert(file_put_contents($firstDestination, $firstGenerated->source . "\n// deliberate-s17-tamper\n", LOCK_EX) !== false, 'Sprint 17 tamper fixture could not be created.');
+$throwsLaravelMaterialization(
+    fn () => $s17Materializer->validate($s16Generated, $s17Composer, $s17Parent, 'corr-validation-s17-tampered'),
+    \OneQay\SchemaPlanning\LaravelMigrationMaterializationException::PERSISTED_VALIDATION_MISMATCH,
+);
+$throwsLaravelMaterialization(
+    fn () => $s17Materializer->materialize($s16Generated, $s17Composer, $s17Parent, 'corr-materialization-s17-tampered'),
+    \OneQay\SchemaPlanning\LaravelMigrationMaterializationException::EXISTING_CONTENT_MISMATCH,
+);
+$assert(file_put_contents($firstDestination, $firstGenerated->source, LOCK_EX) === strlen($firstGenerated->source), 'Sprint 17 tamper fixture could not be restored.');
+$s17Materializer->validate($s16Generated, $s17Composer, $s17Parent, 'corr-validation-s17-restored');
+$assert(true, 'Sprint 17 restored workspace failed validation.');
+
+$assert(@unlink($firstDestination), 'Sprint 17 missing-file fixture could not be created.');
+$throwsLaravelMaterialization(
+    fn () => $s17Materializer->validate($s16Generated, $s17Composer, $s17Parent, 'corr-validation-s17-missing'),
+    \OneQay\SchemaPlanning\LaravelMigrationMaterializationException::MISSING_FILE,
+);
+$s17Rematerialized = $s17Materializer->materialize($s16Generated, $s17Composer, $s17Parent, 'corr-materialization-s17-rematerialize');
+$assert(count($s17Rematerialized->files()) === 4, 'Sprint 17 governed re-materialization did not restore the expected file set.');
+$assert(hash_file('sha256', $firstDestination) === $firstGenerated->sourceFingerprint, 'Sprint 17 re-materialized file fingerprint changed.');
+
+if (function_exists('symlink')) {
+    $linkPath = $s17MigrationDirectory . DIRECTORY_SEPARATOR . 'unexpected-link.php';
+    if (@symlink($firstDestination, $linkPath)) {
+        $throwsLaravelMaterialization(
+            fn () => $s17Materializer->validate($s16Generated, $s17Composer, $s17Parent, 'corr-validation-s17-symlink'),
+            \OneQay\SchemaPlanning\LaravelMigrationMaterializationException::SYMLINK_DENIED,
+        );
+        @unlink($linkPath);
+    } else {
+        $assert(true, 'Sprint 17 symlink fixture is unavailable on this runtime.');
+    }
+}
+
+$syntaxFile = new \OneQay\SchemaPlanning\LaravelMigrationFileArtifact(
+    $firstGenerated->sourceChangeIdentifier,
+    $firstGenerated->migrationIdentifier,
+    $s16Generated->generationCorrelationId,
+    'database/migrations/0000_00_00_000001_entity_created_555555555555.php',
+    "<?php\nreturn new class extends;\n",
+);
+$syntaxArtifact = new \OneQay\SchemaPlanning\LaravelMigrationGenerationArtifact(
+    $s16Generated->sourcePlanningArtifactFingerprint,
+    $s16Generated->targetDefinitionFingerprint,
+    $s16Generated->targetManifestFingerprint,
+    $s16Generated->generationCorrelationId,
+    [$syntaxFile],
+);
+$throwsLaravelMaterialization(
+    fn () => $s17Materializer->materialize($syntaxArtifact, $s17Composer, $s17Parent, 'corr-materialization-s17-syntax'),
+    \OneQay\SchemaPlanning\LaravelMigrationMaterializationException::SYNTAX_INVALID,
+);
+
+$shapeSource = str_replace(
+    'use Illuminate\\Support\\Facades\\Schema;',
+    'use Illuminate\\Support\\Facades\\DB;',
+    $firstGenerated->source,
+);
+$shapeFile = new \OneQay\SchemaPlanning\LaravelMigrationFileArtifact(
+    $firstGenerated->sourceChangeIdentifier,
+    $firstGenerated->migrationIdentifier,
+    $s16Generated->generationCorrelationId,
+    $firstGenerated->relativePath,
+    $shapeSource,
+);
+$shapeArtifact = new \OneQay\SchemaPlanning\LaravelMigrationGenerationArtifact(
+    $s16Generated->sourcePlanningArtifactFingerprint,
+    $s16Generated->targetDefinitionFingerprint,
+    $s16Generated->targetManifestFingerprint,
+    $s16Generated->generationCorrelationId,
+    [$shapeFile],
+);
+$throwsLaravelMaterialization(
+    fn () => $s17Materializer->materialize($shapeArtifact, $s17Composer, $s17Parent, 'corr-materialization-s17-shape'),
+    \OneQay\SchemaPlanning\LaravelMigrationMaterializationException::SOURCE_SHAPE_INVALID,
+);
+
+$s17MaterializerSource = (string) file_get_contents(__DIR__ . '/../src/SchemaPlanning/LaravelMigrationMaterialization.php');
+$assert(str_contains($s17MaterializerSource, 'token_get_all($source, TOKEN_PARSE)'), 'Sprint 17 in-process PHP parser boundary is missing.');
+$assert(str_contains($s17MaterializerSource, 'file_put_contents($destination, $file->source, LOCK_EX)'), 'Sprint 17 exact local materialization boundary is missing.');
+$assert(!str_contains($s17MaterializerSource, 'MigrationExecutionService'), 'Sprint 17 materializer introduced migration execution coupling.');
+$assert(!str_contains($s17MaterializerSource, 'apps/web/database/migrations'), 'Sprint 17 materializer introduced direct application migration installation.');
+$assert(!str_contains($s17MaterializerSource, 'PHP_BINARY'), 'Sprint 17 materializer introduced subprocess PHP execution.');
+$tokens = token_get_all($s17MaterializerSource);
+$forbiddenCalls = ['exec', 'shell_exec', 'system', 'passthru', 'proc_open', 'popen', 'curl_init', 'fsockopen', 'stream_socket_client'];
+for ($i = 0, $tokenCount = count($tokens); $i < $tokenCount; $i++) {
+    $token = $tokens[$i];
+    if (!is_array($token) || $token[0] !== T_STRING || !in_array(strtolower($token[1]), $forbiddenCalls, true)) {
+        continue;
+    }
+    $j = $i + 1;
+    while ($j < $tokenCount && is_array($tokens[$j]) && in_array($tokens[$j][0], [T_WHITESPACE, T_COMMENT, T_DOC_COMMENT], true)) {
+        $j++;
+    }
+    $assert($j >= $tokenCount || $tokens[$j] !== '(', 'Sprint 17 materializer introduced a forbidden process or network call.');
+}
+
+$removeTree($s17Parent);
+$assert(!file_exists($s17Parent), 'Sprint 17 temporary staging workspace cleanup failed.');
+
 fwrite(STDOUT, sprintf("Migration Governance and Safety tests passed: %d assertions.\n", $assertions));
