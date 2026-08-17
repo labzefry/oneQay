@@ -7,3 +7,4 @@ require_once __DIR__ . '/ValueObjects.php';
 require_once __DIR__ . '/Contracts.php';
 require_once __DIR__ . '/Planning.php';
 require_once __DIR__ . '/Review.php';
+require_once __DIR__ . '/MigrationPlanning.php';

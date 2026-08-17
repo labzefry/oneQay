@@ -454,4 +454,156 @@ $assert(!str_contains($reviewSource, 'new PDO('), 'Review foundation introduced 
 $assert(!preg_match('/\b(curl_|fsockopen|stream_socket_client)\b/i', $reviewSource), 'Review foundation introduced a network dependency.');
 $assert(!preg_match('/\b(file_put_contents|fopen|unlink|mkdir|rename)\b/i', $reviewSource), 'Review foundation introduced a filesystem side effect.');
 
+$throwsMigrationPlanningCode = static function (callable $callback, string $code) use ($assert): void {
+    try {
+        $callback();
+        $assert(false, "Expected {$code}.");
+    } catch (\OneQay\SchemaPlanning\MigrationPlanningException $exception) {
+        $assert($exception->errorCode === $code, "Unexpected {$exception->errorCode}.");
+    }
+};
+
+$migrationBuilder = new \OneQay\SchemaPlanning\DeterministicMigrationPlanningArtifactBuilder();
+$entityMigration = $migrationBuilder->build($entityAdded, $approvedReview, 'corr-migration-001');
+$entityMigrationAgain = $migrationBuilder->build($entityAdded, $approvedReview, 'corr-migration-001');
+$assert(json_encode($entityMigration, JSON_THROW_ON_ERROR) === json_encode($entityMigrationAgain, JSON_THROW_ON_ERROR), 'Migration planning output is not deterministic.');
+$assert((new ReflectionClass($entityMigration))->isReadOnly(), 'Migration planning artifact is not immutable.');
+$assert(count($entityMigration->steps()) === 1, 'Entity-add planning step count is invalid.');
+$entityStep = $entityMigration->steps()[0];
+$assert((new ReflectionClass($entityStep))->isReadOnly(), 'Migration planning step is not immutable.');
+$assert($entityStep->kind === SchemaChangeKind::ENTITY_CREATED, 'Entity-add planning kind is invalid.');
+$assert($entityStep->sourceChangeIdentifier->value === $entityAdded->changes()[0]->identifier->value, 'Source change identifier was not preserved.');
+$assert($entityMigration->sourcePlanFingerprint->value === $approvedReview->sourcePlanFingerprint->value, 'Source plan fingerprint was not preserved in migration planning.');
+$assert($entityMigration->sourceReviewCorrelationId->value === $approvedReview->correlationId->value, 'Source review correlation was not preserved.');
+$assert($entityMigration->reviewerReference->value === $approvedReview->reviewerReference->value, 'Reviewer reference was not preserved.');
+
+$approvedAttributeReview = $reviewer->review($attributeAdded, 'zefriansyah', 'corr-review-migration-attribute', 'APPROVED_FOR_MIGRATION_PLANNING', 'REVIEW_APPROVED');
+$attributeMigration = $migrationBuilder->build($attributeAdded, $approvedAttributeReview, 'corr-migration-002');
+$assert($attributeMigration->steps()[0]->kind === SchemaChangeKind::ATTRIBUTE_ADDED, 'Attribute-add planning kind is invalid.');
+
+$approvedUniqueReview = $reviewer->review($uniqueAdded, 'zefriansyah', 'corr-review-migration-unique', 'APPROVED_FOR_MIGRATION_PLANNING', 'REVIEW_APPROVED');
+$uniqueMigration = $migrationBuilder->build($uniqueAdded, $approvedUniqueReview, 'corr-migration-003');
+$assert($uniqueMigration->steps()[0]->kind === SchemaChangeKind::UNIQUE_INDEX_ADDED, 'Unique-index-add planning kind is invalid.');
+
+$approvedReferenceReview = $reviewer->review($referenceAdded, 'zefriansyah', 'corr-review-migration-reference', 'APPROVED_FOR_MIGRATION_PLANNING', 'REVIEW_APPROVED');
+$referenceMigration = $migrationBuilder->build($referenceAdded, $approvedReferenceReview, 'corr-migration-004');
+$assert($referenceMigration->steps()[0]->kind === SchemaChangeKind::REFERENCE_ADDED, 'Reference-add planning kind is invalid.');
+
+$throwsMigrationPlanningCode(
+    fn () => $migrationBuilder->build($attributeAdded, $rejectedReview, 'corr-migration-rejected'),
+    \OneQay\SchemaPlanning\MigrationPlanningException::REVIEW_NOT_APPROVED,
+);
+$throwsMigrationPlanningCode(
+    fn () => $migrationBuilder->build($noChanges, $notRequired, 'corr-migration-not-required'),
+    \OneQay\SchemaPlanning\MigrationPlanningException::PLAN_DISPOSITION_INVALID,
+);
+$throwsMigrationPlanningCode(
+    fn () => $migrationBuilder->build($entityRemoved, $blockedRejected, 'corr-migration-blocked'),
+    \OneQay\SchemaPlanning\MigrationPlanningException::PLAN_DISPOSITION_INVALID,
+);
+
+$fingerprintMismatchReview = new \OneQay\SchemaPlanning\SchemaChangeReviewEnvelope(
+    new \OneQay\SchemaPlanning\PlanFingerprint(str_repeat('f', 64)),
+    PlanDisposition::REVIEW_REQUIRED,
+    $entityAdded->correlationId,
+    new CorrelationId('corr-review-migration-fingerprint'),
+    new \OneQay\SchemaPlanning\ReviewerReference('zefriansyah'),
+    \OneQay\SchemaPlanning\ReviewDecision::APPROVED_FOR_MIGRATION_PLANNING,
+    \OneQay\SchemaPlanning\ReviewReasonCode::REVIEW_APPROVED,
+);
+$throwsMigrationPlanningCode(
+    fn () => $migrationBuilder->build($entityAdded, $fingerprintMismatchReview, 'corr-migration-fingerprint'),
+    \OneQay\SchemaPlanning\MigrationPlanningException::SOURCE_PLAN_FINGERPRINT_MISMATCH,
+);
+
+$correlationMismatchReview = new \OneQay\SchemaPlanning\SchemaChangeReviewEnvelope(
+    $approvedReview->sourcePlanFingerprint,
+    PlanDisposition::REVIEW_REQUIRED,
+    new CorrelationId('corr-schema-mismatch'),
+    new CorrelationId('corr-review-migration-correlation'),
+    new \OneQay\SchemaPlanning\ReviewerReference('zefriansyah'),
+    \OneQay\SchemaPlanning\ReviewDecision::APPROVED_FOR_MIGRATION_PLANNING,
+    \OneQay\SchemaPlanning\ReviewReasonCode::REVIEW_APPROVED,
+);
+$throwsMigrationPlanningCode(
+    fn () => $migrationBuilder->build($entityAdded, $correlationMismatchReview, 'corr-migration-correlation'),
+    \OneQay\SchemaPlanning\MigrationPlanningException::SOURCE_CORRELATION_MISMATCH,
+);
+
+$maliciousTenantScopeChange = new PhysicalSchemaChange(
+    new StableChangeIdentifier(str_repeat('4', 64)),
+    SchemaChangeKind::TENANT_SCOPE_CHANGED,
+    ChangeRisk::REVIEW_REQUIRED,
+    'MANUAL_ENTITY',
+    null,
+    null,
+    new ManifestFingerprint(str_repeat('5', 64)),
+);
+$maliciousTenantScopePlan = new PhysicalSchemaPlan(
+    $manualBefore,
+    $manualAfter,
+    PlanDisposition::REVIEW_REQUIRED,
+    new CorrelationId('corr-schema-malicious-scope'),
+    [$maliciousTenantScopeChange],
+);
+$maliciousTenantScopeReview = $reviewer->review($maliciousTenantScopePlan, 'zefriansyah', 'corr-review-malicious-scope', 'APPROVED_FOR_MIGRATION_PLANNING', 'REVIEW_APPROVED');
+$throwsMigrationPlanningCode(
+    fn () => $migrationBuilder->build($maliciousTenantScopePlan, $maliciousTenantScopeReview, 'corr-migration-malicious-scope'),
+    \OneQay\SchemaPlanning\MigrationPlanningException::CHANGE_KIND_NOT_ALLOWED,
+);
+
+$maliciousTenantKeyChange = new PhysicalSchemaChange(
+    new StableChangeIdentifier(str_repeat('6', 64)),
+    SchemaChangeKind::TENANT_KEY_CHANGED,
+    ChangeRisk::REVIEW_REQUIRED,
+    'MANUAL_ENTITY',
+    'TENANT_ID',
+    null,
+    new ManifestFingerprint(str_repeat('7', 64)),
+);
+$maliciousTenantKeyPlan = new PhysicalSchemaPlan(
+    $manualBefore,
+    $manualAfter,
+    PlanDisposition::REVIEW_REQUIRED,
+    new CorrelationId('corr-schema-malicious-key'),
+    [$maliciousTenantKeyChange],
+);
+$maliciousTenantKeyReview = $reviewer->review($maliciousTenantKeyPlan, 'zefriansyah', 'corr-review-malicious-key', 'APPROVED_FOR_MIGRATION_PLANNING', 'REVIEW_APPROVED');
+$throwsMigrationPlanningCode(
+    fn () => $migrationBuilder->build($maliciousTenantKeyPlan, $maliciousTenantKeyReview, 'corr-migration-malicious-key'),
+    \OneQay\SchemaPlanning\MigrationPlanningException::CHANGE_KIND_NOT_ALLOWED,
+);
+
+$malformedAdditiveChange = new PhysicalSchemaChange(
+    new StableChangeIdentifier(str_repeat('8', 64)),
+    SchemaChangeKind::ATTRIBUTE_ADDED,
+    ChangeRisk::REVIEW_REQUIRED,
+    'MANUAL_ENTITY',
+    'MANUAL_ATTRIBUTE',
+    new ManifestFingerprint(str_repeat('9', 64)),
+    new ManifestFingerprint(str_repeat('a', 64)),
+);
+$malformedAdditivePlan = new PhysicalSchemaPlan(
+    $manualBefore,
+    $manualAfter,
+    PlanDisposition::REVIEW_REQUIRED,
+    new CorrelationId('corr-schema-malformed-additive'),
+    [$malformedAdditiveChange],
+);
+$malformedAdditiveReview = $reviewer->review($malformedAdditivePlan, 'zefriansyah', 'corr-review-malformed-additive', 'APPROVED_FOR_MIGRATION_PLANNING', 'REVIEW_APPROVED');
+$throwsMigrationPlanningCode(
+    fn () => $migrationBuilder->build($malformedAdditivePlan, $malformedAdditiveReview, 'corr-migration-malformed-additive'),
+    \OneQay\SchemaPlanning\MigrationPlanningException::CHANGE_FINGERPRINT_INVALID,
+);
+
+$migrationEncoded = json_encode($entityMigration, JSON_THROW_ON_ERROR);
+foreach (['DB_PASSWORD', 'DB_USER', 'DB_HOST', 'jdbc:', 'mysql:host=', 'CREATE TABLE', 'ALTER TABLE', 'DROP TABLE', 'INSERT INTO', 'DELETE FROM', '/var/', 'tenant_record', 'reference_catalog'] as $forbidden) {
+    $assert(!str_contains($migrationEncoded, $forbidden), 'Migration planning output contains forbidden material.');
+}
+$migrationSource = (string) file_get_contents(__DIR__ . '/../src/SchemaPlanning/MigrationPlanning.php');
+$assert(!preg_match('/\b(CREATE\s+TABLE|ALTER\s+TABLE|DROP\s+TABLE|INSERT\s+INTO|DELETE\s+FROM)\b/i', $migrationSource), 'Migration planning foundation contains executable SQL.');
+$assert(!str_contains($migrationSource, 'new PDO('), 'Migration planning foundation introduced a database connection.');
+$assert(!preg_match('/\b(curl_|fsockopen|stream_socket_client)\b/i', $migrationSource), 'Migration planning foundation introduced a network dependency.');
+$assert(!preg_match('/\b(file_put_contents|fopen|unlink|mkdir|rename)\b/i', $migrationSource), 'Migration planning foundation introduced a filesystem side effect.');
+
 fwrite(STDOUT, sprintf("Schema Planning tests passed: %d assertions.\n", $assertions));
