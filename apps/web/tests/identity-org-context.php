@@ -120,10 +120,11 @@ $expectedNames = [
     '0000_00_00_000004_create_policy_mutation_journal.php',
     '0000_00_00_000005_create_initial_tenant_administrator_provisioning_journal.php',
     '0000_00_00_000006_create_protected_control_administrator_mutation_journal.php',
+    '0000_00_00_000007_create_identity_password_credentials.php',
 ];
 $actual = array_values(array_filter(scandir($migrationDir) ?: [], static fn (string $file): bool => str_ends_with($file, '.php')));
 sort($actual);
-$assertM73($actual === $expectedNames, 'migration set must remain exact Sprint 19/20/21/22/23/24');
+$assertM73($actual === $expectedNames, 'migration set must remain exact through Sprint 26');
 
 $accessSource = (string) file_get_contents(__DIR__.'/../app/Infrastructure/Access/LaravelDurableOrganizationalAccessRepository.php');
 $tenantVerifier = (string) file_get_contents(__DIR__.'/../app/Infrastructure/Tenancy/LaravelTenantMembershipVerifier.php');
@@ -135,6 +136,7 @@ $s21Migration = (string) file_get_contents($migrationDir.'/'.$expectedNames[2]);
 $s22Migration = (string) file_get_contents($migrationDir.'/'.$expectedNames[3]);
 $s23Migration = (string) file_get_contents($migrationDir.'/'.$expectedNames[4]);
 $s24Migration = (string) file_get_contents($migrationDir.'/'.$expectedNames[5]);
+$s26Migration = (string) file_get_contents($migrationDir.'/'.$expectedNames[6]);
 
 $assertM73(substr_count($accessSource, "->where('tenant_id',") >= 4, 'durable access lost tenant predicates');
 $assertM73(! preg_match('/\b(updateOrInsert|upsert)\s*\(/', $accessSource), 'durable access introduced unrestricted upsert');
@@ -147,6 +149,7 @@ $assertM73(str_contains($s21Migration, 'fk_organization_role_membership') && str
 $assertM73(str_contains($s22Migration, 'fk_policy_mutation_actor') && str_contains($s22Migration, "primary(['tenant_id', 'mutation_id']"), 'Sprint 22 journal tenant/actor constraints missing');
 $assertM73(str_contains($s23Migration, 'oneqay_initial_tenant_admin_provisionings') && str_contains($s23Migration, 'fk_initial_tenant_admin_identity') && str_contains($s23Migration, 'fk_initial_tenant_admin_permission'), 'Sprint 23 provisioning journal constraints missing');
 $assertM73(str_contains($s24Migration, 'oneqay_protected_control_admin_mutations') && str_contains($s24Migration, 'fk_protected_control_admin_actor') && str_contains($s24Migration, 'fk_protected_control_admin_target') && str_contains($s24Migration, 'fk_protected_control_admin_permission'), 'Sprint 24 protected-control lifecycle journal constraints missing');
+$assertM73(str_contains($s26Migration, 'oneqay_identity_password_credentials') && str_contains($s26Migration, "string('identity_id', 96)") && str_contains($s26Migration, "references(['tenant_id', 'id'])"), 'Sprint 26 credential same-tenant schema boundary changed');
 $assertM73(str_contains($lifecycleRepo, 'oneqay_tenant_role_assignments as a') && str_contains($lifecycleRepo, 'tenantControlPrincipalCount'), 'Sprint 24 protected-control lifecycle tenant authority boundary changed');
 $assertM73(! preg_match('/\b(updateOrInsert|upsert)\s*\(/', $lifecycleRepo), 'Sprint 24 lifecycle repository introduced unrestricted upsert');
 
@@ -158,4 +161,4 @@ try { RoleIdentifier::fromString('platform-superadmin'); $assertM73(false, 'tena
 try { PermissionIdentifier::fromString('platform.system-update.install'); $assertM73(false, 'tenant permission accepted updater capability'); } catch (InvalidArgumentException) {}
 try { new SyntheticOrganizationalRelationshipVerifier(['principal-real' => [['tenant' => 'tenant-alpha', 'organization' => 'organization-alpha']]]); $assertM73(false, 'synthetic-data-only'); } catch (InvalidArgumentException) {}
 
-fwrite(STDOUT, "M7.3 identity and organizational context regression passed with Sprint 24 preservation.\n");
+fwrite(STDOUT, "M7.3 identity and organizational context regression passed with Sprint 26 preservation.\n");
