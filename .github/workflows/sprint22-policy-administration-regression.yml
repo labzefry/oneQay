@@ -8,8 +8,12 @@ on:
     paths:
       - 'apps/web/app/Application/Authorization/**'
       - 'apps/web/app/Infrastructure/Authorization/**'
+      - 'apps/web/app/Delivery/Http/Authorization/**'
+      - 'apps/web/app/Delivery/Http/Middleware/RequirePolicyAdministrationSessionContextMiddleware.php'
       - 'apps/web/app/Providers/AppServiceProvider.php'
+      - 'apps/web/routes/web.php'
       - 'apps/web/database/migrations/**'
+      - 'apps/web/tests/policy-administration-delivery.php'
       - 'apps/web/tests/protected-control-administrator-lifecycle.php'
       - 'apps/web/tests/initial-tenant-administrator-provisioning.php'
       - 'apps/web/tests/authorization-administration-persistence.php'
@@ -23,7 +27,8 @@ on:
       - '.github/workflows/sprint22-policy-administration-regression.yml'
       - '.github/workflows/sprint23-initial-tenant-admin-provisioning-regression.yml'
       - '.github/workflows/sprint24-protected-control-admin-lifecycle-regression.yml'
-      - 'docs/PROTECTED_CONTROL_ADMINISTRATOR_DELEGATION_FOUNDATION.md'
+      - '.github/workflows/sprint25-policy-administration-delivery-regression.yml'
+      - 'docs/ORDINARY_POLICY_ADMINISTRATION_DELIVERY_FOUNDATION.md'
   workflow_dispatch:
 
 permissions:
@@ -54,7 +59,7 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: Preserve dependency manifests and root foundations
+      - name: Preserve dependency manifests root foundations and migrations
         if: github.event_name == 'pull_request'
         shell: bash
         run: |
@@ -62,6 +67,7 @@ jobs:
           git fetch --no-tags origin "${{ github.base_ref }}"
           if git diff --name-only "origin/${{ github.base_ref }}...HEAD" | grep -Eq '(^|/)(composer\.(json|lock)|package(-lock)?\.json)$'; then exit 1; fi
           if git diff --name-only "origin/${{ github.base_ref }}...HEAD" | grep -Eq '^(src/Auth/|src/Persistence/|src/Authorization/Foundation\.php)'; then exit 1; fi
+          if git diff --name-only "origin/${{ github.base_ref }}...HEAD" | grep -Eq '^apps/web/database/migrations/'; then exit 1; fi
 
       - name: Preserve root Platform Foundation regression
         run: |
@@ -74,11 +80,11 @@ jobs:
           composer validate --no-check-publish
           composer install --no-interaction --no-progress --prefer-dist
 
-      - name: Validate Sprint 22 through Sprint 24 Application boundaries
+      - name: Validate Sprint 22 through Sprint 25 Application boundaries
         shell: bash
         run: |
           set -euo pipefail
-          find apps/web/app/Application/Authorization apps/web/app/Infrastructure/Authorization apps/web/database/migrations apps/web/tests -type f -name '*.php' -print0 | while IFS= read -r -d '' file; do php -l "$file"; done
+          find apps/web/app apps/web/database/migrations apps/web/routes apps/web/tests -type f -name '*.php' -print0 | while IFS= read -r -d '' file; do php -l "$file"; done
           if grep -R -n -E 'Illuminate\\|Schema::|DB::|new PDO|mysqli_' apps/web/app/Application/Authorization; then exit 1; fi
           grep -Fq 'authorization.policy.manage' apps/web/app/Application/Authorization/AdministrationPermission.php
           grep -Fq 'VerifiedOrganizationalContext' apps/web/app/Application/Authorization/DurablePolicyAdministrationService.php
@@ -87,6 +93,8 @@ jobs:
           grep -Fq 'VerifiedPlatformIdentity' apps/web/app/Application/Authorization/InitialTenantAdministratorProvisioningService.php
           grep -Fq 'ProtectedControlAdministratorLifecycleRepository' apps/web/app/Application/Authorization/ProtectedControlAdministratorLifecycleService.php
           grep -Fq 'PersistenceTransaction' apps/web/app/Application/Authorization/ProtectedControlAdministratorLifecycleService.php
+          grep -Fq 'DurablePolicyAdministrationService' apps/web/app/Application/Authorization/PolicyAdministrationDeliveryService.php
+          grep -Fq 'PolicyMutationOperation::fromString' apps/web/app/Application/Authorization/PolicyAdministrationDeliveryCommand.php
 
       - name: Enforce six-migration protected-control and scope-containment boundaries
         shell: bash
@@ -118,14 +126,20 @@ jobs:
           grep -Fq 'device-scope-escape' apps/web/tests/protected-control-administrator-lifecycle.php
           if grep -Eq '\b(updateOrInsert|upsert)\s*\(' "$repo" "$provision_repo" "$lifecycle_repo"; then exit 1; fi
           if grep -Eq '\b(insert|insertOrIgnore|update|updateOrInsert|upsert|delete|truncate)\s*\(' "$read_repo"; then exit 1; fi
+          if grep -R -n -E 'InitialTenantAdministratorProvisioning(Service|Authority)|ProtectedControlAdministratorLifecycle(Service|Repository)|control\.administrator\.(delegate|revoke)' \
+            apps/web/app/Application/Authorization/PolicyAdministrationDeliveryCommand.php \
+            apps/web/app/Application/Authorization/PolicyAdministrationDeliveryService.php \
+            apps/web/app/Delivery/Http/Authorization/PolicyAdministrationController.php \
+            apps/web/app/Delivery/Http/Middleware/RequirePolicyAdministrationSessionContextMiddleware.php; then exit 1; fi
 
-      - name: Run Sprint 21 through Sprint 24 disposable policy regressions
+      - name: Run Sprint 21 through Sprint 25 disposable policy regressions
         working-directory: apps/web
         shell: bash
         run: |
           set -euo pipefail
           composer test
           php -r 'require "vendor/autoload.php"; $app=require "bootstrap/app.php"; $app->make(Illuminate\Contracts\Http\Kernel::class)->bootstrap(); $assert=static function(bool $c,string $m):void{if(!$c)throw new RuntimeException($m);}; require "tests/authorization-persistence.php"; require "tests/authorization-administration-persistence.php"; require "tests/initial-tenant-administrator-provisioning.php"; require "tests/protected-control-administrator-lifecycle.php";'
+          php tests/policy-administration-delivery.php
 
       - name: Preserve isolation and privileged updater security
         working-directory: apps/web
@@ -139,6 +153,6 @@ jobs:
         run: |
           set -euo pipefail
           grep -Fq 'ONEQAY_PERSISTENCE_ENABLED=false' apps/web/environment.example
-          if grep -R -n -E 'LaravelDurablePolicyAdministrationRepository|DurablePolicyAdministrationService|LaravelInitialTenantAdministratorProvisioningRepository|InitialTenantAdministratorProvisioningService|InitialTenantAdministratorProvisioningAuthority|LaravelProtectedControlAdministratorLifecycleRepository|ProtectedControlAdministratorLifecycleService' apps/web/app/Application/Preview apps/web/app/Delivery/Preview 2>/dev/null; then exit 1; fi
+          if grep -R -n -E 'LaravelDurablePolicyAdministrationRepository|DurablePolicyAdministrationService|LaravelInitialTenantAdministratorProvisioningRepository|InitialTenantAdministratorProvisioningService|InitialTenantAdministratorProvisioningAuthority|LaravelProtectedControlAdministratorLifecycleRepository|ProtectedControlAdministratorLifecycleService|PolicyAdministrationDelivery|PolicyAdministrationController|RequirePolicyAdministrationSessionContextMiddleware' apps/web/app/Application/Preview apps/web/app/Delivery/Preview 2>/dev/null; then exit 1; fi
           if grep -Fq 'InitialTenantAdministratorProvisioningAuthority::class' apps/web/app/Providers/AppServiceProvider.php; then exit 1; fi
           git diff --exit-code
