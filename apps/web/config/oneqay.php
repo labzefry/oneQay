@@ -4,6 +4,14 @@ return [
     'runtime_class' => env('ONEQAY_RUNTIME_CLASS'),
 
     // Author by Lab | zefry
+    'first_control_principal_credential_bootstrap' => [
+        // Local/Test/CI console bootstrap is denied unless explicitly armed.
+        'enabled' => filter_var(
+            env('ONEQAY_FIRST_CONTROL_CREDENTIAL_BOOTSTRAP_ENABLED', false),
+            FILTER_VALIDATE_BOOL,
+        ),
+    ],
+
     'system_update' => [
         // Backend control-plane visibility/checking may only be enabled explicitly.
         'control_plane_enabled' => filter_var(
