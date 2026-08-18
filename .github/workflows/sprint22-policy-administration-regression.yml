@@ -10,6 +10,8 @@ on:
       - 'apps/web/app/Infrastructure/Authorization/**'
       - 'apps/web/app/Providers/AppServiceProvider.php'
       - 'apps/web/database/migrations/0000_00_00_000004_create_policy_mutation_journal.php'
+      - 'apps/web/database/migrations/0000_00_00_000005_create_initial_tenant_administrator_provisioning_journal.php'
+      - 'apps/web/tests/initial-tenant-administrator-provisioning.php'
       - 'apps/web/tests/authorization-administration-persistence.php'
       - 'apps/web/tests/authorization-persistence.php'
       - 'apps/web/tests/tenant-isolation.php'
@@ -19,7 +21,9 @@ on:
       - '.github/workflows/m7-5-preview-db-qualification-regression.yml'
       - '.github/workflows/sprint21-role-permission-policy-regression.yml'
       - '.github/workflows/sprint22-policy-administration-regression.yml'
+      - '.github/workflows/sprint23-initial-tenant-admin-provisioning-regression.yml'
       - 'docs/DURABLE_AUTHORIZATION_POLICY_ADMINISTRATION_FOUNDATION.md'
+      - 'docs/INITIAL_TENANT_ADMINISTRATOR_PROVISIONING_FOUNDATION.md'
   workflow_dispatch:
 
 permissions:
@@ -70,32 +74,42 @@ jobs:
           composer validate --no-check-publish
           composer install --no-interaction --no-progress --prefer-dist
 
-      - name: Validate Sprint 22 PHP and Application boundaries
+      - name: Validate Sprint 22 and Sprint 23 PHP/Application boundaries
         shell: bash
         run: |
           set -euo pipefail
-          find apps/web/app/Application/Authorization apps/web/app/Infrastructure/Authorization apps/web/database/migrations/0000_00_00_000004_create_policy_mutation_journal.php apps/web/tests/authorization-administration-persistence.php -type f -name '*.php' -print0 | while IFS= read -r -d '' file; do php -l "$file"; done
+          find apps/web/app/Application/Authorization apps/web/app/Infrastructure/Authorization apps/web/database/migrations/0000_00_00_000004_create_policy_mutation_journal.php apps/web/database/migrations/0000_00_00_000005_create_initial_tenant_administrator_provisioning_journal.php apps/web/tests/authorization-administration-persistence.php apps/web/tests/initial-tenant-administrator-provisioning.php -type f -name '*.php' -print0 | while IFS= read -r -d '' file; do php -l "$file"; done
           if grep -R -n -E 'Illuminate\\|Schema::|DB::|new PDO|mysqli_' apps/web/app/Application/Authorization; then exit 1; fi
           grep -Fq 'authorization.policy.manage' apps/web/app/Application/Authorization/AdministrationPermission.php
           grep -Fq 'VerifiedOrganizationalContext' apps/web/app/Application/Authorization/DurablePolicyAdministrationService.php
           grep -Fq 'PersistenceTransaction' apps/web/app/Application/Authorization/DurablePolicyAdministrationService.php
           grep -Fq 'hasControlAuthorityForScope' apps/web/app/Application/Authorization/DurablePolicyAdministrationRepository.php
           grep -Fq 'hasControlAuthorityForScope' apps/web/app/Application/Authorization/DurablePolicyAdministrationService.php
+          grep -Fq 'VerifiedPlatformIdentity' apps/web/app/Application/Authorization/InitialTenantAdministratorProvisioningService.php
+          grep -Fq 'InitialTenantAdministratorProvisioningAuthority' apps/web/app/Application/Authorization/InitialTenantAdministratorProvisioningService.php
+          grep -Fq 'PersistenceTransaction' apps/web/app/Application/Authorization/InitialTenantAdministratorProvisioningService.php
 
-      - name: Enforce four-migration journal protected-control and scope-containment boundaries
+      - name: Enforce five-migration journal protected-control and scope-containment boundaries
         shell: bash
         run: |
           set -euo pipefail
           mapfile -t migrations < <(find apps/web/database/migrations -maxdepth 1 -type f -name '*.php' -printf '%f\n' | sort)
-          expected=('0000_00_00_000001_create_foundational_context_graph.php' '0000_00_00_000002_create_organizational_access_grants.php' '0000_00_00_000003_create_scoped_role_permission_policy.php' '0000_00_00_000004_create_policy_mutation_journal.php')
+          expected=('0000_00_00_000001_create_foundational_context_graph.php' '0000_00_00_000002_create_organizational_access_grants.php' '0000_00_00_000003_create_scoped_role_permission_policy.php' '0000_00_00_000004_create_policy_mutation_journal.php' '0000_00_00_000005_create_initial_tenant_administrator_provisioning_journal.php')
           test "${migrations[*]}" = "${expected[*]}"
           migration='apps/web/database/migrations/0000_00_00_000004_create_policy_mutation_journal.php'
+          provision_migration='apps/web/database/migrations/0000_00_00_000005_create_initial_tenant_administrator_provisioning_journal.php'
           repo='apps/web/app/Infrastructure/Authorization/LaravelDurablePolicyAdministrationRepository.php'
+          provision_repo='apps/web/app/Infrastructure/Authorization/LaravelInitialTenantAdministratorProvisioningRepository.php'
           read_repo='apps/web/app/Infrastructure/Authorization/LaravelDurableRolePermissionRepository.php'
           grep -Fq 'oneqay_policy_mutations' "$migration"
           grep -Fq "primary(['tenant_id', 'mutation_id']" "$migration"
           grep -Fq 'fk_policy_mutation_actor' "$migration"
           grep -Fq 'Forward-only generated migration; rollback is not authorized.' "$migration"
+          grep -Fq 'oneqay_initial_tenant_admin_provisionings' "$provision_migration"
+          grep -Fq "primary('tenant_id'" "$provision_migration"
+          grep -Fq 'fk_initial_tenant_admin_identity' "$provision_migration"
+          grep -Fq 'fk_initial_tenant_admin_permission' "$provision_migration"
+          grep -Fq 'Forward-only generated migration; rollback is not authorized.' "$provision_migration"
           grep -Fq "in_array(\$runtime, ['local', 'test', 'ci'], true)" "$repo"
           grep -Fq -- "->where('tenant_id'," "$repo"
           grep -Fq -- "->where('permission_id', AdministrationPermission::MANAGE)" "$repo"
@@ -109,16 +123,19 @@ jobs:
           grep -Fq 'oneqay_device_access_grants' "$repo"
           grep -Fq 'scope-escape-tenant' apps/web/tests/authorization-administration-persistence.php
           grep -Fq 'device-control-assign' apps/web/tests/authorization-administration-persistence.php
+          grep -Fq -- "->where('tenant_id'," "$provision_repo"
+          grep -Fq 'CONTROL_PERMISSION' "$provision_repo"
           if grep -Eq '\b(updateOrInsert|upsert)\s*\(' "$repo"; then exit 1; fi
+          if grep -Eq '\b(updateOrInsert|upsert)\s*\(' "$provision_repo"; then exit 1; fi
           if grep -Eq '\b(insert|insertOrIgnore|update|updateOrInsert|upsert|delete|truncate)\s*\(' "$read_repo"; then exit 1; fi
 
-      - name: Run Sprint 21 and Sprint 22 disposable policy regressions
+      - name: Run Sprint 21 Sprint 22 and Sprint 23 disposable policy regressions
         working-directory: apps/web
         shell: bash
         run: |
           set -euo pipefail
           composer test
-          php -r 'require "vendor/autoload.php"; $app=require "bootstrap/app.php"; $app->make(Illuminate\Contracts\Http\Kernel::class)->bootstrap(); $assert=static function(bool $c,string $m):void{if(!$c)throw new RuntimeException($m);}; require "tests/authorization-persistence.php"; require "tests/authorization-administration-persistence.php";'
+          php -r 'require "vendor/autoload.php"; $app=require "bootstrap/app.php"; $app->make(Illuminate\Contracts\Http\Kernel::class)->bootstrap(); $assert=static function(bool $c,string $m):void{if(!$c)throw new RuntimeException($m);}; require "tests/authorization-persistence.php"; require "tests/authorization-administration-persistence.php"; require "tests/initial-tenant-administrator-provisioning.php";'
 
       - name: Preserve isolation and privileged updater security
         working-directory: apps/web
@@ -132,5 +149,6 @@ jobs:
         run: |
           set -euo pipefail
           grep -Fq 'ONEQAY_PERSISTENCE_ENABLED=false' apps/web/environment.example
-          if grep -R -n -E 'LaravelDurablePolicyAdministrationRepository|DurablePolicyAdministrationService' apps/web/app/Application/Preview apps/web/app/Delivery/Preview 2>/dev/null; then exit 1; fi
+          if grep -R -n -E 'LaravelDurablePolicyAdministrationRepository|DurablePolicyAdministrationService|LaravelInitialTenantAdministratorProvisioningRepository|InitialTenantAdministratorProvisioningService|InitialTenantAdministratorProvisioningAuthority' apps/web/app/Application/Preview apps/web/app/Delivery/Preview 2>/dev/null; then exit 1; fi
+          if grep -Fq 'InitialTenantAdministratorProvisioningAuthority::class' apps/web/app/Providers/AppServiceProvider.php; then exit 1; fi
           git diff --exit-code

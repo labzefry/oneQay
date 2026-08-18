@@ -10,14 +10,19 @@ on:
       - 'apps/web/app/Infrastructure/Authorization/**'
       - 'apps/web/app/Providers/AppServiceProvider.php'
       - 'apps/web/database/migrations/**'
+      - 'apps/web/tests/initial-tenant-administrator-provisioning.php'
       - 'apps/web/tests/authorization-administration-persistence.php'
       - 'apps/web/tests/authorization-persistence.php'
       - 'apps/web/tests/tenant-isolation.php'
       - 'apps/web/tests/identity-org-context.php'
+      - '.github/workflows/m7-2-tenant-isolation-regression.yml'
+      - '.github/workflows/m7-3-identity-org-context-regression.yml'
       - '.github/workflows/m7-5-preview-db-qualification-regression.yml'
       - '.github/workflows/sprint21-role-permission-policy-regression.yml'
       - '.github/workflows/sprint22-policy-administration-regression.yml'
+      - '.github/workflows/sprint23-initial-tenant-admin-provisioning-regression.yml'
       - 'docs/DURABLE_AUTHORIZATION_POLICY_ADMINISTRATION_FOUNDATION.md'
+      - 'docs/INITIAL_TENANT_ADMINISTRATOR_PROVISIONING_FOUNDATION.md'
   workflow_dispatch:
 
 permissions:
@@ -52,20 +57,25 @@ jobs:
           composer validate --no-check-publish
           composer install --no-interaction --no-progress --prefer-dist
 
-      - name: Validate Preview and Sprint 22 boundaries
+      - name: Validate Preview and Sprint 23 boundaries
         shell: bash
         run: |
           set -euo pipefail
           find apps/web/app/Application/Authorization apps/web/app/Infrastructure/Authorization apps/web/database/migrations apps/web/tests -type f -name '*.php' -print0 | while IFS= read -r -d '' file; do php -l "$file"; done
           mapfile -t migrations < <(find apps/web/database/migrations -maxdepth 1 -type f -name '*.php' -printf '%f\n' | sort)
-          expected=('0000_00_00_000001_create_foundational_context_graph.php' '0000_00_00_000002_create_organizational_access_grants.php' '0000_00_00_000003_create_scoped_role_permission_policy.php' '0000_00_00_000004_create_policy_mutation_journal.php')
+          expected=('0000_00_00_000001_create_foundational_context_graph.php' '0000_00_00_000002_create_organizational_access_grants.php' '0000_00_00_000003_create_scoped_role_permission_policy.php' '0000_00_00_000004_create_policy_mutation_journal.php' '0000_00_00_000005_create_initial_tenant_administrator_provisioning_journal.php')
           test "${migrations[*]}" = "${expected[*]}"
           grep -Fq 'ONEQAY_PERSISTENCE_ENABLED=false' apps/web/environment.example
-          for repo in apps/web/app/Infrastructure/Persistence/LaravelDurableContextGraphRepository.php apps/web/app/Infrastructure/Persistence/LaravelPersistenceTransaction.php apps/web/app/Infrastructure/Access/LaravelDurableOrganizationalAccessRepository.php apps/web/app/Infrastructure/Authorization/LaravelDurableRolePermissionRepository.php apps/web/app/Infrastructure/Authorization/LaravelDurablePolicyAdministrationRepository.php; do grep -Fq "in_array(\$runtime, ['local', 'test', 'ci'], true)" "$repo"; done
+          for repo in apps/web/app/Infrastructure/Persistence/LaravelDurableContextGraphRepository.php apps/web/app/Infrastructure/Persistence/LaravelPersistenceTransaction.php apps/web/app/Infrastructure/Access/LaravelDurableOrganizationalAccessRepository.php apps/web/app/Infrastructure/Authorization/LaravelDurableRolePermissionRepository.php apps/web/app/Infrastructure/Authorization/LaravelDurablePolicyAdministrationRepository.php apps/web/app/Infrastructure/Authorization/LaravelInitialTenantAdministratorProvisioningRepository.php; do
+            grep -Fq "['local', 'test', 'ci']" "$repo"
+          done
           if grep -R -n -E 'CREATE[[:space:]]+TABLE|ALTER[[:space:]]+TABLE|DROP[[:space:]]+TABLE|Schema::create|Schema::table' apps/web/app/Infrastructure/Persistence/PreviewDatabaseQualification.php; then exit 1; fi
-          for forbidden in LaravelTenantMembershipVerifier LaravelOrganizationalRelationshipVerifier LaravelDurableRolePermissionRepository DurableScopedAuthorizationPolicy LaravelDurablePolicyAdministrationRepository DurablePolicyAdministrationService; do
+          for forbidden in LaravelTenantMembershipVerifier LaravelOrganizationalRelationshipVerifier LaravelDurableRolePermissionRepository DurableScopedAuthorizationPolicy LaravelDurablePolicyAdministrationRepository DurablePolicyAdministrationService LaravelInitialTenantAdministratorProvisioningRepository InitialTenantAdministratorProvisioningService InitialTenantAdministratorProvisioningAuthority PreauthorizedInitialTenantAdministratorProvisioningAuthority; do
             if grep -R -n -F "$forbidden" apps/web/app/Application/Preview apps/web/app/Delivery/Preview; then exit 1; fi
           done
+          if grep -Fq 'InitialTenantAdministratorProvisioningAuthority::class' apps/web/app/Providers/AppServiceProvider.php; then
+            echo 'Sprint 23 must not bind a default provisioning authority.' >&2; exit 1
+          fi
           grep -Fq 'withinVerifiedContext' apps/web/app/Application/Preview/TechnicalPreviewJourney.php
           grep -Fq 'VerifiedTenantContext $tenantContext' apps/web/app/Infrastructure/Persistence/PreviewDatabaseQualification.php
           grep -Fq '$journey->withinVerifiedContext' apps/web/app/Delivery/Preview/TechnicalPreviewDatabaseQualificationController.php
@@ -75,6 +85,7 @@ jobs:
         run: |
           php tests/preview-database-qualification.php
           php tests/run.php
+          php -r 'require "vendor/autoload.php"; $app=require "bootstrap/app.php"; $app->make(Illuminate\Contracts\Http\Kernel::class)->bootstrap(); $assert=static function(bool $c,string $m):void{if(!$c)throw new RuntimeException($m);}; require "tests/authorization-persistence.php"; require "tests/authorization-administration-persistence.php"; require "tests/initial-tenant-administrator-provisioning.php";'
           php tests/tenant-isolation.php
           php tests/identity-org-context.php
           php tests/pos-core-synthetic.php

@@ -1,0 +1,192 @@
+name: Sprint 23 Initial Tenant Administrator Provisioning Regression
+
+# Attribution: Lab | zefry
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/web/app/Application/Authorization/**'
+      - 'apps/web/app/Infrastructure/Authorization/**'
+      - 'apps/web/app/Providers/AppServiceProvider.php'
+      - 'apps/web/database/migrations/**'
+      - 'apps/web/tests/initial-tenant-administrator-provisioning.php'
+      - 'apps/web/tests/authorization-administration-persistence.php'
+      - 'apps/web/tests/authorization-persistence.php'
+      - 'apps/web/tests/tenant-isolation.php'
+      - 'apps/web/tests/identity-org-context.php'
+      - '.github/workflows/m7-2-tenant-isolation-regression.yml'
+      - '.github/workflows/m7-3-identity-org-context-regression.yml'
+      - '.github/workflows/m7-5-preview-db-qualification-regression.yml'
+      - '.github/workflows/sprint21-role-permission-policy-regression.yml'
+      - '.github/workflows/sprint22-policy-administration-regression.yml'
+      - '.github/workflows/sprint23-initial-tenant-admin-provisioning-regression.yml'
+      - 'docs/INITIAL_TENANT_ADMINISTRATOR_PROVISIONING_FOUNDATION.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint23-initial-tenant-admin-provisioning-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sprint23-initial-tenant-admin-provisioning-regression:
+    name: sprint23-initial-tenant-admin-provisioning-regression
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHQ=
+      APP_DEBUG: 'false'
+      APP_URL: http://localhost
+      ONEQAY_RUNTIME_CLASS: ci
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Enforce exact authorized Sprint 23 envelope
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "${{ github.base_ref }}"
+          git diff --name-only "origin/${{ github.base_ref }}...HEAD" > /tmp/sprint23-files.txt
+          test -s /tmp/sprint23-files.txt
+          while IFS= read -r file; do
+            case "$file" in
+              apps/web/app/Application/Authorization/InitialTenantAdministratorProvisioningId.php|\
+              apps/web/app/Application/Authorization/InitialTenantAdministratorProvisioningAuthority.php|\
+              apps/web/app/Application/Authorization/InitialTenantAdministratorProvisioningRepository.php|\
+              apps/web/app/Application/Authorization/InitialTenantAdministratorProvisioningService.php|\
+              apps/web/app/Application/Authorization/InitialTenantAdministratorProvisioningViolation.php|\
+              apps/web/app/Infrastructure/Authorization/PreauthorizedInitialTenantAdministratorProvisioningAuthority.php|\
+              apps/web/app/Infrastructure/Authorization/LaravelInitialTenantAdministratorProvisioningRepository.php|\
+              apps/web/app/Providers/AppServiceProvider.php|\
+              apps/web/database/migrations/0000_00_00_000005_create_initial_tenant_administrator_provisioning_journal.php|\
+              apps/web/tests/initial-tenant-administrator-provisioning.php|\
+              apps/web/tests/authorization-administration-persistence.php|\
+              apps/web/tests/authorization-persistence.php|\
+              apps/web/tests/tenant-isolation.php|\
+              apps/web/tests/identity-org-context.php|\
+              .github/workflows/m7-2-tenant-isolation-regression.yml|\
+              .github/workflows/m7-3-identity-org-context-regression.yml|\
+              .github/workflows/m7-5-preview-db-qualification-regression.yml|\
+              .github/workflows/sprint21-role-permission-policy-regression.yml|\
+              .github/workflows/sprint22-policy-administration-regression.yml|\
+              .github/workflows/sprint23-initial-tenant-admin-provisioning-regression.yml|\
+              docs/INITIAL_TENANT_ADMINISTRATOR_PROVISIONING_FOUNDATION.md)
+                ;;
+              *) echo "Unauthorized Sprint 23 changed path: $file" >&2; exit 1 ;;
+            esac
+          done < /tmp/sprint23-files.txt
+          test "$(wc -l < /tmp/sprint23-files.txt)" -eq 21
+          if grep -Eq '(^|/)(composer\.(json|lock)|package(-lock)?\.json)$' /tmp/sprint23-files.txt; then exit 1; fi
+          if grep -Eq '^(src/Auth/|src/Persistence/|src/Migration/|src/Authorization/Foundation\.php)' /tmp/sprint23-files.txt; then exit 1; fi
+
+      - name: Preserve root Platform Foundation regression
+        run: |
+          composer validate --strict --no-check-publish
+          composer test
+
+      - name: Install locked application dependencies
+        working-directory: apps/web
+        run: |
+          composer validate --no-check-publish
+          composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Validate Sprint 23 PHP and framework boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          find apps/web/app/Application/Authorization apps/web/app/Infrastructure/Authorization apps/web/app/Providers/AppServiceProvider.php apps/web/database/migrations apps/web/tests -type f -name '*.php' -print0 | while IFS= read -r -d '' file; do php -l "$file"; done
+          if grep -R -n -E 'Illuminate\\|Schema::|DB::|new PDO|mysqli_' apps/web/app/Application/Authorization; then
+            echo 'Sprint 23 Application boundary gained framework/database mechanics.' >&2; exit 1
+          fi
+          grep -Fq 'VerifiedPlatformIdentity' apps/web/app/Application/Authorization/InitialTenantAdministratorProvisioningService.php
+          grep -Fq 'InitialTenantAdministratorProvisioningAuthority' apps/web/app/Application/Authorization/InitialTenantAdministratorProvisioningService.php
+          grep -Fq 'PersistenceTransaction' apps/web/app/Application/Authorization/InitialTenantAdministratorProvisioningService.php
+          grep -Fq "CONTROL_ROLE = 'authorization-policy-administrator'" apps/web/app/Application/Authorization/InitialTenantAdministratorProvisioningRepository.php
+          grep -Fq 'CONTROL_PERMISSION = AdministrationPermission::MANAGE' apps/web/app/Application/Authorization/InitialTenantAdministratorProvisioningRepository.php
+          grep -Fq 'authorization.policy.manage' apps/web/app/Application/Authorization/AdministrationPermission.php
+
+      - name: Enforce five-migration one-time journal boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t migrations < <(find apps/web/database/migrations -maxdepth 1 -type f -name '*.php' -printf '%f\n' | sort)
+          expected=(
+            '0000_00_00_000001_create_foundational_context_graph.php'
+            '0000_00_00_000002_create_organizational_access_grants.php'
+            '0000_00_00_000003_create_scoped_role_permission_policy.php'
+            '0000_00_00_000004_create_policy_mutation_journal.php'
+            '0000_00_00_000005_create_initial_tenant_administrator_provisioning_journal.php'
+          )
+          test "${migrations[*]}" = "${expected[*]}"
+          migration='apps/web/database/migrations/0000_00_00_000005_create_initial_tenant_administrator_provisioning_journal.php'
+          repo='apps/web/app/Infrastructure/Authorization/LaravelInitialTenantAdministratorProvisioningRepository.php'
+          authority='apps/web/app/Infrastructure/Authorization/PreauthorizedInitialTenantAdministratorProvisioningAuthority.php'
+          provider='apps/web/app/Providers/AppServiceProvider.php'
+          grep -Fq 'oneqay_initial_tenant_admin_provisionings' "$migration"
+          grep -Fq "primary('tenant_id'" "$migration"
+          grep -Fq 'fk_initial_tenant_admin_identity' "$migration"
+          grep -Fq 'fk_initial_tenant_admin_role' "$migration"
+          grep -Fq 'fk_initial_tenant_admin_permission' "$migration"
+          grep -Fq 'Forward-only generated migration; rollback is not authorized.' "$migration"
+          grep -Fq -- "->where('tenant_id'," "$repo"
+          grep -Fq "['local', 'test', 'ci']" "$repo"
+          grep -Fq 'hasAnyControlRole' "$repo"
+          grep -Fq 'controlRoleStateCompatible' "$repo"
+          grep -Fq 'assertDesiredState' "$repo"
+          grep -Fq 'InitialTenantAdministratorProvisioningAuthority $authority' "$repo"
+          if grep -Eq '\b(updateOrInsert|upsert)\s*\(' "$repo"; then exit 1; fi
+          if grep -Eq '\b(request|header|getenv)\s*\(' "$authority"; then
+            echo 'Preauthorized authority adapter must not read request/environment authority.' >&2; exit 1
+          fi
+          if grep -Fq 'InitialTenantAdministratorProvisioningAuthority::class' "$provider"; then
+            echo 'No default provisioning authority may be bound by composition.' >&2; exit 1
+          fi
+
+      - name: Preserve Sprint 21 and Sprint 22 control-plane invariants
+        shell: bash
+        run: |
+          set -euo pipefail
+          read_repo='apps/web/app/Infrastructure/Authorization/LaravelDurableRolePermissionRepository.php'
+          write_repo='apps/web/app/Infrastructure/Authorization/LaravelDurablePolicyAdministrationRepository.php'
+          if grep -Eq '\b(insert|insertOrIgnore|update|updateOrInsert|upsert|delete|truncate)\s*\(' "$read_repo"; then exit 1; fi
+          grep -Fq 'controlAuthorityExistsForScope' "$write_repo"
+          grep -Fq -- "->where('permission_id', AdministrationPermission::MANAGE)" "$write_repo"
+          grep -Fq 'scope-escape-tenant' apps/web/tests/authorization-administration-persistence.php
+          grep -Fq 'device-control-assign' apps/web/tests/authorization-administration-persistence.php
+          grep -Fq 'PROTECTED_CONTROL_AUTHORITY' apps/web/tests/initial-tenant-administrator-provisioning.php
+
+      - name: Run Sprint 21 Sprint 22 and Sprint 23 disposable regressions
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          composer test
+          php -r 'require "vendor/autoload.php"; $app=require "bootstrap/app.php"; $app->make(Illuminate\Contracts\Http\Kernel::class)->bootstrap(); $assert=static function(bool $c,string $m):void{if(!$c)throw new RuntimeException($m);}; require "tests/authorization-persistence.php"; require "tests/authorization-administration-persistence.php"; require "tests/initial-tenant-administrator-provisioning.php";'
+          php tests/tenant-isolation.php
+          php tests/identity-org-context.php
+          php tests/privileged-update-security.php
+
+      - name: Preserve Preview Production updater and release boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq 'ONEQAY_PERSISTENCE_ENABLED=false' apps/web/environment.example
+          if grep -R -n -E 'LaravelInitialTenantAdministratorProvisioningRepository|InitialTenantAdministratorProvisioningService|InitialTenantAdministratorProvisioningAuthority|PreauthorizedInitialTenantAdministratorProvisioningAuthority' apps/web/app/Application/Preview apps/web/app/Delivery/Preview 2>/dev/null; then exit 1; fi
+          release_workflow='.github/workflows/m7-5-preview-release-artifact.yml'
+          grep -Fq '/apps/web/database/migrations/' "$release_workflow"
+          grep -Fq 'NO_SCHEMA_CHANGE' "$release_workflow"
+          grep -Fq 'php tests/privileged-update-security.php' .github/workflows/sprint22-policy-administration-regression.yml
+          git diff --exit-code

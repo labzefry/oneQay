@@ -52,11 +52,16 @@ $expected = [
     '0000_00_00_000002_create_organizational_access_grants.php',
     '0000_00_00_000003_create_scoped_role_permission_policy.php',
     '0000_00_00_000004_create_policy_mutation_journal.php',
+    '0000_00_00_000005_create_initial_tenant_administrator_provisioning_journal.php',
 ];
-$assertM72($migrations === $expected, 'exact four-migration set changed');
+$assertM72($migrations === $expected, 'exact five-migration set changed');
 $mutationMigration = (string) file_get_contents($migrationDir.'/'.$expected[3]);
 foreach (['oneqay_policy_mutations', "primary(['tenant_id', 'mutation_id']", 'fk_policy_mutation_actor', 'Forward-only generated migration; rollback is not authorized.'] as $marker) {
     $assertM72(str_contains($mutationMigration, $marker), 'Sprint 22 migration boundary missing: '.$marker);
+}
+$provisioningMigration = (string) file_get_contents($migrationDir.'/'.$expected[4]);
+foreach (['oneqay_initial_tenant_admin_provisionings', "primary('tenant_id'", 'fk_initial_tenant_admin_identity', 'fk_initial_tenant_admin_permission', 'Forward-only generated migration; rollback is not authorized.'] as $marker) {
+    $assertM72(str_contains($provisioningMigration, $marker), 'Sprint 23 migration boundary missing: '.$marker);
 }
 
 $appAuthorizationDir = __DIR__.'/../app/Application/Authorization';
@@ -75,4 +80,4 @@ $assertM72(str_contains($writeRepo, "in_array(\$runtime, ['local', 'test', 'ci']
 $assertM72(str_contains($writeRepo, 'oneqay_outlet_access_grants') && str_contains($writeRepo, 'oneqay_device_access_grants'), 'Sprint 22 assignment validation lost durable access boundary');
 $assertM72(str_contains($writeRepo, "->where('permission_id', AdministrationPermission::MANAGE)"), 'Sprint 22 protected control role check missing');
 
-echo "M7.2 tenant isolation regression passed with Sprint 22 policy administration preservation.\n";
+echo "M7.2 tenant isolation regression passed with Sprint 23 provisioning preservation.\n";
