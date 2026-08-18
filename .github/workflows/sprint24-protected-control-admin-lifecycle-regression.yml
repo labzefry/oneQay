@@ -8,11 +8,15 @@ on:
     paths:
       - 'apps/web/app/Application/Authorization/**'
       - 'apps/web/app/Infrastructure/Authorization/**'
+      - 'apps/web/app/Application/Identity/FirstPartyIdentityCredentialVerifier.php'
+      - 'apps/web/app/Application/Identity/VerifyFirstPartyIdentityCredential.php'
+      - 'apps/web/app/Infrastructure/Identity/LaravelFirstPartyIdentityCredentialVerifier.php'
       - 'apps/web/app/Delivery/Http/Authorization/**'
       - 'apps/web/app/Delivery/Http/Middleware/RequirePolicyAdministrationSessionContextMiddleware.php'
       - 'apps/web/app/Providers/AppServiceProvider.php'
       - 'apps/web/routes/web.php'
       - 'apps/web/database/migrations/**'
+      - 'apps/web/tests/identity-credential-verification.php'
       - 'apps/web/tests/policy-administration-delivery.php'
       - 'apps/web/tests/protected-control-administrator-lifecycle.php'
       - 'apps/web/tests/initial-tenant-administrator-provisioning.php'
@@ -29,7 +33,8 @@ on:
       - '.github/workflows/sprint23-initial-tenant-admin-provisioning-regression.yml'
       - '.github/workflows/sprint24-protected-control-admin-lifecycle-regression.yml'
       - '.github/workflows/sprint25-policy-administration-delivery-regression.yml'
-      - 'docs/ORDINARY_POLICY_ADMINISTRATION_DELIVERY_FOUNDATION.md'
+      - '.github/workflows/sprint26-identity-credential-verification-regression.yml'
+      - 'docs/FIRST_PARTY_IDENTITY_CREDENTIAL_VERIFICATION_FOUNDATION.md'
   workflow_dispatch:
 
 permissions:
@@ -61,23 +66,30 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: Enforce exact authorized Sprint 25 envelope
+      - name: Enforce exact authorized Sprint 26 envelope
         if: github.event_name == 'pull_request'
         shell: bash
         run: |
           set -euo pipefail
           git fetch --no-tags origin "${{ github.base_ref }}"
-          git diff --name-only "origin/${{ github.base_ref }}...HEAD" > /tmp/sprint25-files.txt
-          test -s /tmp/sprint25-files.txt
+          git diff --name-only "origin/${{ github.base_ref }}...HEAD" > /tmp/sprint26-files.txt
+          test -s /tmp/sprint26-files.txt
           while IFS= read -r file; do
             case "$file" in
-              apps/web/app/Application/Authorization/PolicyAdministrationDeliveryCommand.php|\
-              apps/web/app/Application/Authorization/PolicyAdministrationDeliveryService.php|\
-              apps/web/app/Application/Authorization/PolicyAdministrationDeliveryViolation.php|\
-              apps/web/app/Delivery/Http/Authorization/PolicyAdministrationController.php|\
-              apps/web/app/Delivery/Http/Middleware/RequirePolicyAdministrationSessionContextMiddleware.php|\
+              apps/web/app/Application/Identity/FirstPartyIdentityCredentialVerifier.php|\
+              apps/web/app/Application/Identity/VerifyFirstPartyIdentityCredential.php|\
+              apps/web/app/Infrastructure/Identity/LaravelFirstPartyIdentityCredentialVerifier.php|\
               apps/web/app/Providers/AppServiceProvider.php|\
-              apps/web/routes/web.php|\
+              apps/web/database/migrations/0000_00_00_000007_create_identity_password_credentials.php|\
+              apps/web/tests/identity-credential-verification.php|\
+              .github/workflows/sprint26-identity-credential-verification-regression.yml|\
+              docs/FIRST_PARTY_IDENTITY_CREDENTIAL_VERIFICATION_FOUNDATION.md|\
+              apps/web/tests/authorization-persistence.php|\
+              apps/web/tests/authorization-administration-persistence.php|\
+              apps/web/tests/initial-tenant-administrator-provisioning.php|\
+              apps/web/tests/protected-control-administrator-lifecycle.php|\
+              apps/web/tests/tenant-isolation.php|\
+              apps/web/tests/identity-org-context.php|\
               apps/web/tests/policy-administration-delivery.php|\
               .github/workflows/m7-2-tenant-isolation-regression.yml|\
               .github/workflows/m7-3-identity-org-context-regression.yml|\
@@ -87,16 +99,14 @@ jobs:
               .github/workflows/sprint22-policy-administration-regression.yml|\
               .github/workflows/sprint23-initial-tenant-admin-provisioning-regression.yml|\
               .github/workflows/sprint24-protected-control-admin-lifecycle-regression.yml|\
-              .github/workflows/sprint25-policy-administration-delivery-regression.yml|\
-              docs/ORDINARY_POLICY_ADMINISTRATION_DELIVERY_FOUNDATION.md)
+              .github/workflows/sprint25-policy-administration-delivery-regression.yml)
                 ;;
-              *) echo "Unauthorized Sprint 25 changed path: $file" >&2; exit 1 ;;
+              *) echo "Unauthorized Sprint 26 changed path: $file" >&2; exit 1 ;;
             esac
-          done < /tmp/sprint25-files.txt
-          test "$(wc -l < /tmp/sprint25-files.txt)" -eq 18
-          if grep -Eq '(^|/)(composer\.(json|lock)|package(-lock)?\.json)$' /tmp/sprint25-files.txt; then exit 1; fi
-          if grep -Eq '^apps/web/database/migrations/' /tmp/sprint25-files.txt; then exit 1; fi
-          if grep -Eq '^(src/Auth/|src/Persistence/|src/Migration/|src/Authorization/Foundation\.php)' /tmp/sprint25-files.txt; then exit 1; fi
+          done < /tmp/sprint26-files.txt
+          test "$(wc -l < /tmp/sprint26-files.txt)" -eq 24
+          if grep -Eq '(^|/)(composer\.(json|lock)|package(-lock)?\.json)$' /tmp/sprint26-files.txt; then exit 1; fi
+          if grep -Eq '^(src/Auth/|src/Persistence/|src/Migration/|src/Authorization/Foundation\.php)' /tmp/sprint26-files.txt; then exit 1; fi
 
       - name: Preserve root Platform Foundation regression
         run: |
@@ -129,7 +139,7 @@ jobs:
           grep -Fq 'PersistenceTransaction' "$service"
           grep -Fq 'assertOperationAllowed' "$service"
 
-      - name: Enforce six-migration protected-control lifecycle journal
+      - name: Enforce seven-migration protected-control lifecycle journal
         shell: bash
         run: |
           set -euo pipefail
@@ -141,9 +151,11 @@ jobs:
             '0000_00_00_000004_create_policy_mutation_journal.php'
             '0000_00_00_000005_create_initial_tenant_administrator_provisioning_journal.php'
             '0000_00_00_000006_create_protected_control_administrator_mutation_journal.php'
+            '0000_00_00_000007_create_identity_password_credentials.php'
           )
           test "${migrations[*]}" = "${expected[*]}"
           migration='apps/web/database/migrations/0000_00_00_000006_create_protected_control_administrator_mutation_journal.php'
+          credential_migration='apps/web/database/migrations/0000_00_00_000007_create_identity_password_credentials.php'
           grep -Fq 'oneqay_protected_control_admin_mutations' "$migration"
           grep -Fq "primary(['tenant_id', 'mutation_id']" "$migration"
           grep -Fq 'fk_protected_control_admin_actor' "$migration"
@@ -151,6 +163,10 @@ jobs:
           grep -Fq 'fk_protected_control_admin_role' "$migration"
           grep -Fq 'fk_protected_control_admin_permission' "$migration"
           grep -Fq 'Forward-only generated migration; rollback is not authorized.' "$migration"
+          grep -Fq 'oneqay_identity_password_credentials' "$credential_migration"
+          grep -Fq "string('identity_id', 96)" "$credential_migration"
+          grep -Fq "primary(['tenant_id', 'identity_id']" "$credential_migration"
+          grep -Fq "references(['tenant_id', 'id'])" "$credential_migration"
 
       - name: Enforce actor authority last-principal and protected-role invariants
         shell: bash
@@ -194,7 +210,7 @@ jobs:
           )
           if grep -n -E 'ProtectedControlAdministratorLifecycle(Service|Repository)|control\.administrator\.(delegate|revoke)|InitialTenantAdministratorProvisioning(Service|Authority)' "${delivery_files[@]}"; then exit 1; fi
 
-      - name: Run Sprint 21 through Sprint 25 disposable regressions
+      - name: Run Sprint 21 through Sprint 26 disposable regressions
         working-directory: apps/web
         shell: bash
         run: |
@@ -205,13 +221,14 @@ jobs:
           php tests/tenant-isolation.php
           php tests/identity-org-context.php
           php tests/privileged-update-security.php
+          php tests/identity-credential-verification.php
 
       - name: Preserve Preview Production updater and release boundaries
         shell: bash
         run: |
           set -euo pipefail
           grep -Fq 'ONEQAY_PERSISTENCE_ENABLED=false' apps/web/environment.example
-          if grep -R -n -E 'LaravelProtectedControlAdministratorLifecycleRepository|ProtectedControlAdministratorLifecycleService|ProtectedControlAdministratorLifecycleRepository|PolicyAdministrationDelivery|PolicyAdministrationController|RequirePolicyAdministrationSessionContextMiddleware' apps/web/app/Application/Preview apps/web/app/Delivery/Preview 2>/dev/null; then exit 1; fi
+          if grep -R -n -E 'LaravelProtectedControlAdministratorLifecycleRepository|ProtectedControlAdministratorLifecycleService|ProtectedControlAdministratorLifecycleRepository|PolicyAdministrationDelivery|PolicyAdministrationController|RequirePolicyAdministrationSessionContextMiddleware|FirstPartyIdentityCredentialVerifier|VerifyFirstPartyIdentityCredential|LaravelFirstPartyIdentityCredentialVerifier' apps/web/app/Application/Preview apps/web/app/Delivery/Preview 2>/dev/null; then exit 1; fi
           if grep -Fq 'InitialTenantAdministratorProvisioningAuthority::class' apps/web/app/Providers/AppServiceProvider.php; then exit 1; fi
           release_workflow='.github/workflows/m7-5-preview-release-artifact.yml'
           grep -Fq '/apps/web/database/migrations/' "$release_workflow"

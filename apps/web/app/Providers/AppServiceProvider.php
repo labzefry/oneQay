@@ -8,6 +8,7 @@ use App\Application\Authorization\DurableRolePermissionRepository;
 use App\Application\Authorization\InitialTenantAdministratorProvisioningRepository;
 use App\Application\Authorization\PolicyAdministrationClock;
 use App\Application\Authorization\ProtectedControlAdministratorLifecycleRepository;
+use App\Application\Identity\FirstPartyIdentityCredentialVerifier;
 use App\Application\Organization\OrganizationalContextStore;
 use App\Application\Organization\OrganizationalRelationshipVerifier;
 use App\Application\Persistence\DurableContextGraphRepository;
@@ -19,6 +20,7 @@ use App\Infrastructure\Authorization\LaravelDurablePolicyAdministrationRepositor
 use App\Infrastructure\Authorization\LaravelDurableRolePermissionRepository;
 use App\Infrastructure\Authorization\LaravelInitialTenantAdministratorProvisioningRepository;
 use App\Infrastructure\Authorization\LaravelProtectedControlAdministratorLifecycleRepository;
+use App\Infrastructure\Identity\LaravelFirstPartyIdentityCredentialVerifier;
 use App\Infrastructure\Organization\LaravelOrganizationalRelationshipVerifier;
 use App\Infrastructure\Organization\RequestOrganizationalContextStore;
 use App\Infrastructure\Persistence\LaravelDurableContextGraphRepository;
@@ -134,6 +136,20 @@ final class AppServiceProvider extends ServiceProvider
                 $connection = $app->make('db')->connection();
 
                 return new LaravelProtectedControlAdministratorLifecycleRepository(
+                    $connection,
+                    (bool) config('database.oneqay_persistence_enabled', false),
+                    (string) config('oneqay.runtime_class', ''),
+                );
+            },
+        );
+
+        $this->app->scoped(
+            FirstPartyIdentityCredentialVerifier::class,
+            function ($app): FirstPartyIdentityCredentialVerifier {
+                /** @var Connection $connection */
+                $connection = $app->make('db')->connection();
+
+                return new LaravelFirstPartyIdentityCredentialVerifier(
                     $connection,
                     (bool) config('database.oneqay_persistence_enabled', false),
                     (string) config('oneqay.runtime_class', ''),

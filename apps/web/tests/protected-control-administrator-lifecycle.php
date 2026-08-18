@@ -88,12 +88,14 @@ $s24Migrations = [
     '0000_00_00_000004_create_policy_mutation_journal.php',
     '0000_00_00_000005_create_initial_tenant_administrator_provisioning_journal.php',
     '0000_00_00_000006_create_protected_control_administrator_mutation_journal.php',
+    '0000_00_00_000007_create_identity_password_credentials.php',
 ];
 $s24Actual = array_values(array_filter(scandir(__DIR__.'/../database/migrations') ?: [], static fn (string $file): bool => str_ends_with($file, '.php')));
 sort($s24Actual);
-$assert($s24Actual === $s24Migrations, 'Sprint 24 migration set is not exact.');
+$assert($s24Actual === $s24Migrations, 'Sprint 24 preservation requires exact seven-migration set through Sprint 26.');
 foreach ($s24Migrations as $migration) { (require __DIR__.'/../database/migrations/'.$migration)->up(); }
 $assert($s24Connection->getSchemaBuilder()->hasTable('oneqay_protected_control_admin_mutations'), 'Sprint 24 lifecycle journal missing.');
+$assert($s24Connection->getSchemaBuilder()->hasTable('oneqay_identity_password_credentials'), 'Sprint 26 credential table missing during Sprint 24 preservation.');
 $s24JournalColumns = $s24Connection->getSchemaBuilder()->getColumnListing('oneqay_protected_control_admin_mutations');
 sort($s24JournalColumns);
 $s24ExpectedJournalColumns = ['actor_identity_id', 'mutation_id', 'occurred_at_unix', 'operation', 'outcome', 'payload_fingerprint', 'permission_id', 'role_id', 'target_identity_id', 'tenant_id'];

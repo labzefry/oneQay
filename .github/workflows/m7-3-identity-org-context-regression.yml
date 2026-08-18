@@ -8,11 +8,15 @@ on:
     paths:
       - 'apps/web/app/Application/Authorization/**'
       - 'apps/web/app/Infrastructure/Authorization/**'
+      - 'apps/web/app/Application/Identity/FirstPartyIdentityCredentialVerifier.php'
+      - 'apps/web/app/Application/Identity/VerifyFirstPartyIdentityCredential.php'
+      - 'apps/web/app/Infrastructure/Identity/LaravelFirstPartyIdentityCredentialVerifier.php'
       - 'apps/web/app/Delivery/Http/Authorization/**'
       - 'apps/web/app/Delivery/Http/Middleware/RequirePolicyAdministrationSessionContextMiddleware.php'
       - 'apps/web/app/Providers/AppServiceProvider.php'
       - 'apps/web/routes/web.php'
       - 'apps/web/database/migrations/**'
+      - 'apps/web/tests/identity-credential-verification.php'
       - 'apps/web/tests/policy-administration-delivery.php'
       - 'apps/web/tests/protected-control-administrator-lifecycle.php'
       - 'apps/web/tests/initial-tenant-administrator-provisioning.php'
@@ -22,13 +26,15 @@ on:
       - 'apps/web/tests/identity-org-context.php'
       - '.github/workflows/m7-2-tenant-isolation-regression.yml'
       - '.github/workflows/m7-3-identity-org-context-regression.yml'
+      - '.github/workflows/m7-4a-technical-preview-interaction-regression.yml'
       - '.github/workflows/m7-5-preview-db-qualification-regression.yml'
       - '.github/workflows/sprint21-role-permission-policy-regression.yml'
       - '.github/workflows/sprint22-policy-administration-regression.yml'
       - '.github/workflows/sprint23-initial-tenant-admin-provisioning-regression.yml'
       - '.github/workflows/sprint24-protected-control-admin-lifecycle-regression.yml'
       - '.github/workflows/sprint25-policy-administration-delivery-regression.yml'
-      - 'docs/ORDINARY_POLICY_ADMINISTRATION_DELIVERY_FOUNDATION.md'
+      - '.github/workflows/sprint26-identity-credential-verification-regression.yml'
+      - 'docs/FIRST_PARTY_IDENTITY_CREDENTIAL_VERIFICATION_FOUNDATION.md'
   workflow_dispatch:
 
 permissions:
@@ -59,15 +65,27 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: Preserve root foundations and dependency locks
+      - name: Preserve root foundations dependency locks and Sprint 26 migration boundary
         if: github.event_name == 'pull_request'
         shell: bash
         run: |
           set -euo pipefail
           git fetch --no-tags origin "${{ github.base_ref }}"
-          if git diff --name-only "origin/${{ github.base_ref }}...HEAD" | grep -Eq '^(src/Tenant/Foundation\.php|src/Auth/|src/Authorization/Foundation\.php|src/Persistence/|composer\.json$)'; then exit 1; fi
-          if git diff --name-only "origin/${{ github.base_ref }}...HEAD" | grep -Eq '(^|/)(composer\.(json|lock)|package(-lock)?\.json)$'; then exit 1; fi
-          if git diff --name-only "origin/${{ github.base_ref }}...HEAD" | grep -Eq '^apps/web/database/migrations/'; then exit 1; fi
+          base="origin/${{ github.base_ref }}"
+          if git diff --name-only "$base...HEAD" | grep -Eq '^(src/Tenant/Foundation\.php|src/Auth/|src/Authorization/Foundation\.php|src/Persistence/|composer\.json$)'; then exit 1; fi
+          if git diff --name-only "$base...HEAD" | grep -Eq '(^|/)(composer\.(json|lock)|package(-lock)?\.json)$'; then exit 1; fi
+          immutable=(
+            apps/web/database/migrations/0000_00_00_000001_create_foundational_context_graph.php
+            apps/web/database/migrations/0000_00_00_000002_create_organizational_access_grants.php
+            apps/web/database/migrations/0000_00_00_000003_create_scoped_role_permission_policy.php
+            apps/web/database/migrations/0000_00_00_000004_create_policy_mutation_journal.php
+            apps/web/database/migrations/0000_00_00_000005_create_initial_tenant_administrator_provisioning_journal.php
+            apps/web/database/migrations/0000_00_00_000006_create_protected_control_administrator_mutation_journal.php
+          )
+          git diff --exit-code "$base...HEAD" -- "${immutable[@]}"
+          mapfile -t migration_diff < <(git diff --name-status "$base...HEAD" -- apps/web/database/migrations)
+          test "${#migration_diff[@]}" -eq 1
+          test "${migration_diff[0]}" = $'A\tapps/web/database/migrations/0000_00_00_000007_create_identity_password_credentials.php'
 
       - name: Preserve root Platform Foundation regression
         run: |
@@ -85,7 +103,7 @@ jobs:
           composer validate --no-check-publish
           composer install --no-interaction --no-progress --prefer-dist
 
-      - name: Validate identity organization and six-migration boundary
+      - name: Validate identity organization and seven-migration boundary
         shell: bash
         run: |
           set -euo pipefail
@@ -98,6 +116,7 @@ jobs:
             '0000_00_00_000004_create_policy_mutation_journal.php'
             '0000_00_00_000005_create_initial_tenant_administrator_provisioning_journal.php'
             '0000_00_00_000006_create_protected_control_administrator_mutation_journal.php'
+            '0000_00_00_000007_create_identity_password_credentials.php'
           )
           test "${migrations[*]}" = "${expected[*]}"
           if grep -R -n -E 'Illuminate\\Database|Schema::|DB::|new PDO|mysqli_' apps/web/app/Domain/Identity apps/web/app/Domain/Organization apps/web/app/Domain/Outlet apps/web/app/Domain/Device apps/web/app/Application/Identity apps/web/app/Application/Organization apps/web/app/Application/Access apps/web/app/Application/Authorization; then exit 1; fi
@@ -112,6 +131,8 @@ jobs:
           grep -Fq 'fk_device_role_access' apps/web/database/migrations/0000_00_00_000003_create_scoped_role_permission_policy.php
           grep -Fq 'fk_initial_tenant_admin_identity' apps/web/database/migrations/0000_00_00_000005_create_initial_tenant_administrator_provisioning_journal.php
           grep -Fq 'fk_protected_control_admin_target' apps/web/database/migrations/0000_00_00_000006_create_protected_control_administrator_mutation_journal.php
+          grep -Fq 'fk_identity_password_credential_identity' apps/web/database/migrations/0000_00_00_000007_create_identity_password_credentials.php
+          grep -Fq "string('identity_id', 96)" apps/web/database/migrations/0000_00_00_000007_create_identity_password_credentials.php
           grep -Fq 'authorization.policy.manage' apps/web/app/Application/Authorization/AdministrationPermission.php
           provider='apps/web/app/Providers/AppServiceProvider.php'
           grep -Fq 'TenantMembershipVerifier::class' "$provider"
@@ -120,6 +141,8 @@ jobs:
           grep -Fq 'LaravelOrganizationalRelationshipVerifier' "$provider"
           grep -Fq 'OrganizationalContextStore::class' "$provider"
           grep -Fq 'RequestOrganizationalContextStore' "$provider"
+          grep -Fq 'FirstPartyIdentityCredentialVerifier::class' "$provider"
+          grep -Fq 'LaravelFirstPartyIdentityCredentialVerifier' "$provider"
 
       - name: Install and validate frontend dependencies
         working-directory: apps/web
@@ -129,7 +152,7 @@ jobs:
           npm run type-check
           npm run build
 
-      - name: Run established and Sprint 21-25 durable regressions
+      - name: Run established and Sprint 21-26 durable regressions
         working-directory: apps/web
         run: |
           composer test
@@ -137,3 +160,4 @@ jobs:
           php tests/policy-administration-delivery.php
           php tests/tenant-isolation.php
           php tests/identity-org-context.php
+          php tests/identity-credential-verification.php

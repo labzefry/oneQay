@@ -82,13 +82,15 @@ $migrationNames = [
     '0000_00_00_000004_create_policy_mutation_journal.php',
     '0000_00_00_000005_create_initial_tenant_administrator_provisioning_journal.php',
     '0000_00_00_000006_create_protected_control_administrator_mutation_journal.php',
+    '0000_00_00_000007_create_identity_password_credentials.php',
 ];
 $actualMigrations = array_values(array_filter(scandir(__DIR__.'/../database/migrations') ?: [], static fn (string $file): bool => str_ends_with($file, '.php')));
 sort($actualMigrations);
-$assert($actualMigrations === $migrationNames, 'canonical six-migration set changed');
+$assert($actualMigrations === $migrationNames, 'canonical seven-migration set through Sprint 26 changed');
 foreach ($migrationNames as $migration) {
     (require __DIR__.'/../database/migrations/'.$migration)->up();
 }
+$assert($connection->getSchemaBuilder()->hasTable('oneqay_identity_password_credentials'), 'Sprint 26 credential table missing during Sprint 25 delivery preservation');
 
 foreach (['tenant-alpha', 'tenant-beta'] as $tenant) {
     $connection->table('oneqay_tenants')->insert(['id' => $tenant]);
@@ -410,4 +412,4 @@ $app['config']->set('database.connections.s25_policy_delivery', null);
 $removeTree($workspace);
 $assert(! file_exists($workspace), 'workspace cleanup');
 
-fwrite(STDOUT, "Sprint 25 ordinary policy administration delivery regression passed.\n");
+fwrite(STDOUT, "Sprint 25 ordinary policy administration delivery regression passed with Sprint 26 schema preservation.\n");
