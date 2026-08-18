@@ -11,7 +11,7 @@ return new class extends Migration
     {
         Schema::create('oneqay_identity_password_credentials', function (Blueprint $table): void {
             $table->string('tenant_id', 64);
-            $table->string('identity_id', 128);
+            $table->string('identity_id', 96);
             $table->string('password_hash', 255);
 
             $table->primary(['tenant_id', 'identity_id'], 'pk_identity_password_credentials');
