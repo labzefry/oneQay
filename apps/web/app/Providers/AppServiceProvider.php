@@ -9,6 +9,7 @@ use App\Application\Authorization\InitialTenantAdministratorProvisioningReposito
 use App\Application\Authorization\PolicyAdministrationClock;
 use App\Application\Authorization\ProtectedControlAdministratorLifecycleRepository;
 use App\Application\Identity\FirstPartyIdentityCredentialVerifier;
+use App\Application\Identity\InitialPasswordEnrollmentRepository;
 use App\Application\Organization\OrganizationalContextStore;
 use App\Application\Organization\OrganizationalRelationshipVerifier;
 use App\Application\Persistence\DurableContextGraphRepository;
@@ -21,6 +22,7 @@ use App\Infrastructure\Authorization\LaravelDurableRolePermissionRepository;
 use App\Infrastructure\Authorization\LaravelInitialTenantAdministratorProvisioningRepository;
 use App\Infrastructure\Authorization\LaravelProtectedControlAdministratorLifecycleRepository;
 use App\Infrastructure\Identity\LaravelFirstPartyIdentityCredentialVerifier;
+use App\Infrastructure\Identity\LaravelInitialPasswordEnrollmentRepository;
 use App\Infrastructure\Organization\LaravelOrganizationalRelationshipVerifier;
 use App\Infrastructure\Organization\RequestOrganizationalContextStore;
 use App\Infrastructure\Persistence\LaravelDurableContextGraphRepository;
@@ -150,6 +152,20 @@ final class AppServiceProvider extends ServiceProvider
                 $connection = $app->make('db')->connection();
 
                 return new LaravelFirstPartyIdentityCredentialVerifier(
+                    $connection,
+                    (bool) config('database.oneqay_persistence_enabled', false),
+                    (string) config('oneqay.runtime_class', ''),
+                );
+            },
+        );
+
+        $this->app->scoped(
+            InitialPasswordEnrollmentRepository::class,
+            function ($app): InitialPasswordEnrollmentRepository {
+                /** @var Connection $connection */
+                $connection = $app->make('db')->connection();
+
+                return new LaravelInitialPasswordEnrollmentRepository(
                     $connection,
                     (bool) config('database.oneqay_persistence_enabled', false),
                     (string) config('oneqay.runtime_class', ''),

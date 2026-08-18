@@ -3,6 +3,7 @@
 use App\Delivery\Http\Authorization\PolicyAdministrationController;
 use App\Delivery\Http\HealthController;
 use App\Delivery\Http\Identity\FirstPartySessionController;
+use App\Delivery\Http\Identity\InitialPasswordEnrollmentController;
 use App\Delivery\Http\Middleware\RequirePolicyAdministrationSessionContextMiddleware;
 use App\Delivery\Http\SystemUpdate\SystemUpdateControlPlaneController;
 use App\Delivery\Http\SystemUpdate\SystemUpdatePageController;
@@ -27,6 +28,14 @@ if (in_array($firstPartyAuthRuntime, ['local', 'test', 'ci'], true)) {
 
     Route::post('/auth/logout', [FirstPartySessionController::class, 'logout'])
         ->name('auth.first-party.logout');
+
+    Route::post('/auth/password-enrollment', [InitialPasswordEnrollmentController::class, 'redeem'])
+        ->middleware(['throttle:5,1', 'throttle:20,60'])
+        ->name('auth.initial-password-enrollment.redeem');
+
+    Route::post('/administration/identity/password-enrollments', [InitialPasswordEnrollmentController::class, 'issue'])
+        ->middleware(['throttle:5,1', RequirePolicyAdministrationSessionContextMiddleware::class])
+        ->name('identity.initial-password-enrollment.issue');
 }
 
 Route::post('/administration/policy/mutations', PolicyAdministrationController::class)
