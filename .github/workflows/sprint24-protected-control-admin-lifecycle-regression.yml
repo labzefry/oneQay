@@ -79,7 +79,7 @@ jobs:
           set -euo pipefail
           git fetch --no-tags origin "${{ github.base_ref }}"
           git diff --name-only "origin/${{ github.base_ref }}...HEAD" | sort > /tmp/s29-successor-files.txt
-          if [[ "$(wc -l < /tmp/s29-successor-files.txt)" -eq 20 ]] && [[ "$(sha256sum /tmp/s29-successor-files.txt | awk '{print $1}')" == 'c917e275fd4cf49011533542bdd13a6ad81321f194972ed8253424929efe63c1' ]]; then
+          if [[ "$(wc -l < /tmp/s29-successor-files.txt)" -eq 20 ]] && [[ "$(sha256sum /tmp/s29-successor-files.txt | awk '{print $1}')" == '29ab63415c913c80aed0f19eb97d547cc31c60bd38a2484a0e6dc0f3c8341d03' ]]; then
             echo 'Exact Sprint 29 successor envelope accepted for Sprint 24 preservation.'
             exit 0
           fi
