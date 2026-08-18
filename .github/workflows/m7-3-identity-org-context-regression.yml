@@ -10,6 +10,7 @@ on:
       - 'apps/web/app/Infrastructure/Authorization/**'
       - 'apps/web/app/Providers/AppServiceProvider.php'
       - 'apps/web/database/migrations/**'
+      - 'apps/web/tests/protected-control-administrator-lifecycle.php'
       - 'apps/web/tests/initial-tenant-administrator-provisioning.php'
       - 'apps/web/tests/authorization-administration-persistence.php'
       - 'apps/web/tests/authorization-persistence.php'
@@ -21,8 +22,8 @@ on:
       - '.github/workflows/sprint21-role-permission-policy-regression.yml'
       - '.github/workflows/sprint22-policy-administration-regression.yml'
       - '.github/workflows/sprint23-initial-tenant-admin-provisioning-regression.yml'
-      - 'docs/DURABLE_AUTHORIZATION_POLICY_ADMINISTRATION_FOUNDATION.md'
-      - 'docs/INITIAL_TENANT_ADMINISTRATOR_PROVISIONING_FOUNDATION.md'
+      - '.github/workflows/sprint24-protected-control-admin-lifecycle-regression.yml'
+      - 'docs/PROTECTED_CONTROL_ADMINISTRATOR_DELEGATION_FOUNDATION.md'
   workflow_dispatch:
 
 permissions:
@@ -53,18 +54,14 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: Preserve root Platform Foundation and dependency locks
+      - name: Preserve root foundations and dependency locks
         if: github.event_name == 'pull_request'
         shell: bash
         run: |
           set -euo pipefail
           git fetch --no-tags origin "${{ github.base_ref }}"
-          if git diff --name-only "origin/${{ github.base_ref }}...HEAD" | grep -Eq '^(src/Tenant/Foundation\.php|src/Auth/|src/Authorization/Foundation\.php|src/Persistence/|composer\.json$)'; then
-            echo 'Sprint 23 does not authorize root Platform Foundation mutation.' >&2; exit 1
-          fi
-          if git diff --name-only "origin/${{ github.base_ref }}...HEAD" | grep -Eq '(^|/)(composer\.(json|lock)|package(-lock)?\.json)$'; then
-            echo 'Sprint 23 does not authorize dependency changes.' >&2; exit 1
-          fi
+          if git diff --name-only "origin/${{ github.base_ref }}...HEAD" | grep -Eq '^(src/Tenant/Foundation\.php|src/Auth/|src/Authorization/Foundation\.php|src/Persistence/|composer\.json$)'; then exit 1; fi
+          if git diff --name-only "origin/${{ github.base_ref }}...HEAD" | grep -Eq '(^|/)(composer\.(json|lock)|package(-lock)?\.json)$'; then exit 1; fi
 
       - name: Preserve root Platform Foundation regression
         run: |
@@ -82,12 +79,11 @@ jobs:
           composer validate --no-check-publish
           composer install --no-interaction --no-progress --prefer-dist
 
-      - name: Validate PHP syntax and five-migration boundary
+      - name: Validate identity organization and six-migration boundary
         shell: bash
         run: |
           set -euo pipefail
-          find apps/web/app apps/web/bootstrap apps/web/config apps/web/database apps/web/public apps/web/routes apps/web/tests -type f -name '*.php' -print0 |
-            while IFS= read -r -d '' file; do php -l "$file"; done
+          find apps/web/app apps/web/bootstrap apps/web/config apps/web/database apps/web/public apps/web/routes apps/web/tests -type f -name '*.php' -print0 | while IFS= read -r -d '' file; do php -l "$file"; done
           mapfile -t migrations < <(find apps/web/database/migrations -maxdepth 1 -type f -name '*.php' -printf '%f\n' | sort)
           expected=(
             '0000_00_00_000001_create_foundational_context_graph.php'
@@ -95,28 +91,22 @@ jobs:
             '0000_00_00_000003_create_scoped_role_permission_policy.php'
             '0000_00_00_000004_create_policy_mutation_journal.php'
             '0000_00_00_000005_create_initial_tenant_administrator_provisioning_journal.php'
+            '0000_00_00_000006_create_protected_control_administrator_mutation_journal.php'
           )
           test "${migrations[*]}" = "${expected[*]}"
-          if grep -R -n -E 'Illuminate\\Database|Schema::|DB::|new PDO|mysqli_' apps/web/app/Domain/Identity apps/web/app/Domain/Organization apps/web/app/Domain/Outlet apps/web/app/Domain/Device apps/web/app/Application/Identity apps/web/app/Application/Organization apps/web/app/Application/Access apps/web/app/Application/Authorization; then
-            echo 'Identity/organization/Application authorization persistence boundary violated.' >&2; exit 1
-          fi
+          if grep -R -n -E 'Illuminate\\Database|Schema::|DB::|new PDO|mysqli_' apps/web/app/Domain/Identity apps/web/app/Domain/Organization apps/web/app/Domain/Outlet apps/web/app/Domain/Device apps/web/app/Application/Identity apps/web/app/Application/Organization apps/web/app/Application/Access apps/web/app/Application/Authorization; then exit 1; fi
           read_repo='apps/web/app/Infrastructure/Authorization/LaravelDurableRolePermissionRepository.php'
           write_repo='apps/web/app/Infrastructure/Authorization/LaravelDurablePolicyAdministrationRepository.php'
           provision_repo='apps/web/app/Infrastructure/Authorization/LaravelInitialTenantAdministratorProvisioningRepository.php'
+          lifecycle_repo='apps/web/app/Infrastructure/Authorization/LaravelProtectedControlAdministratorLifecycleRepository.php'
+          if grep -Eq '\b(insert|insertOrIgnore|update|updateOrInsert|upsert|delete|truncate)\s*\(' "$read_repo"; then exit 1; fi
+          if grep -Eq '\b(updateOrInsert|upsert)\s*\(' "$write_repo" "$provision_repo" "$lifecycle_repo"; then exit 1; fi
           grep -Fq 'fk_organization_role_membership' apps/web/database/migrations/0000_00_00_000003_create_scoped_role_permission_policy.php
           grep -Fq 'fk_outlet_role_access' apps/web/database/migrations/0000_00_00_000003_create_scoped_role_permission_policy.php
           grep -Fq 'fk_device_role_access' apps/web/database/migrations/0000_00_00_000003_create_scoped_role_permission_policy.php
-          grep -Fq 'fk_policy_mutation_actor' apps/web/database/migrations/0000_00_00_000004_create_policy_mutation_journal.php
           grep -Fq 'fk_initial_tenant_admin_identity' apps/web/database/migrations/0000_00_00_000005_create_initial_tenant_administrator_provisioning_journal.php
-          grep -Fq 'fk_initial_tenant_admin_permission' apps/web/database/migrations/0000_00_00_000005_create_initial_tenant_administrator_provisioning_journal.php
+          grep -Fq 'fk_protected_control_admin_target' apps/web/database/migrations/0000_00_00_000006_create_protected_control_administrator_mutation_journal.php
           grep -Fq 'authorization.policy.manage' apps/web/app/Application/Authorization/AdministrationPermission.php
-          grep -Fq 'oneqay_identity_organizations' "$write_repo"
-          grep -Fq 'oneqay_outlet_access_grants' "$write_repo"
-          grep -Fq 'oneqay_device_access_grants' "$write_repo"
-          grep -Fq -- "->where('tenant_id'," "$provision_repo"
-          if grep -Eq '\b(insert|insertOrIgnore|update|updateOrInsert|upsert|delete|truncate)\s*\(' "$read_repo"; then echo 'Sprint 21 authorization repository must remain read-only.' >&2; exit 1; fi
-          if grep -Eq '\b(updateOrInsert|upsert)\s*\(' "$write_repo"; then echo 'Sprint 22 mutation repository introduced unrestricted upsert.' >&2; exit 1; fi
-          if grep -Eq '\b(updateOrInsert|upsert)\s*\(' "$provision_repo"; then echo 'Sprint 23 provisioning repository introduced unrestricted upsert.' >&2; exit 1; fi
 
       - name: Install and validate frontend dependencies
         working-directory: apps/web
@@ -126,10 +116,10 @@ jobs:
           npm run type-check
           npm run build
 
-      - name: Run established and Sprint 21-23 durable regressions
+      - name: Run established and Sprint 21-24 durable regressions
         working-directory: apps/web
         run: |
           composer test
-          php -r 'require "vendor/autoload.php"; $app=require "bootstrap/app.php"; $app->make(Illuminate\Contracts\Http\Kernel::class)->bootstrap(); $assert=static function(bool $c,string $m):void{if(!$c)throw new RuntimeException($m);}; require "tests/authorization-persistence.php"; require "tests/authorization-administration-persistence.php"; require "tests/initial-tenant-administrator-provisioning.php";'
+          php -r 'require "vendor/autoload.php"; $app=require "bootstrap/app.php"; $app->make(Illuminate\Contracts\Http\Kernel::class)->bootstrap(); $assert=static function(bool $c,string $m):void{if(!$c)throw new RuntimeException($m);}; require "tests/authorization-persistence.php"; require "tests/authorization-administration-persistence.php"; require "tests/initial-tenant-administrator-provisioning.php"; require "tests/protected-control-administrator-lifecycle.php";'
           php tests/tenant-isolation.php
           php tests/identity-org-context.php

@@ -76,13 +76,15 @@ $s22Migrations = [
     '0000_00_00_000003_create_scoped_role_permission_policy.php',
     '0000_00_00_000004_create_policy_mutation_journal.php',
     '0000_00_00_000005_create_initial_tenant_administrator_provisioning_journal.php',
+    '0000_00_00_000006_create_protected_control_administrator_mutation_journal.php',
 ];
 $s22Actual = array_values(array_filter(scandir(__DIR__.'/../database/migrations') ?: [], static fn (string $file): bool => str_ends_with($file, '.php')));
 sort($s22Actual);
-$assert($s22Actual === $s22Migrations, 'Sprint 22 preservation requires the exact five-migration set after Sprint 23.');
+$assert($s22Actual === $s22Migrations, 'Sprint 22 preservation requires the exact six-migration set after Sprint 24.');
 foreach ($s22Migrations as $migration) { (require __DIR__.'/../database/migrations/'.$migration)->up(); }
 $assert($s22Connection->getSchemaBuilder()->hasTable('oneqay_policy_mutations'), 'Sprint 22 mutation journal missing.');
 $assert($s22Connection->getSchemaBuilder()->hasTable('oneqay_initial_tenant_admin_provisionings'), 'Sprint 23 provisioning journal missing during Sprint 22 preservation.');
+$assert($s22Connection->getSchemaBuilder()->hasTable('oneqay_protected_control_admin_mutations'), 'Sprint 24 lifecycle journal missing during Sprint 22 preservation.');
 
 $s22Connection->table('oneqay_tenants')->insert([['id' => 'tenant-alpha'], ['id' => 'tenant-beta']]);
 $s22Connection->table('oneqay_identities')->insert([
