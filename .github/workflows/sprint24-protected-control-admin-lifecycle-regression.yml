@@ -156,12 +156,12 @@ jobs:
           set -euo pipefail
           repo='apps/web/app/Infrastructure/Authorization/LaravelProtectedControlAdministratorLifecycleRepository.php'
           grep -Fq 'oneqay_tenant_role_assignments as a' "$repo"
-          grep -Fq "->where('a.identity_id', \$identityId)" "$repo"
-          grep -Fq "->where('p.permission_id', AdministrationPermission::MANAGE)" "$repo"
+          grep -Fq -- "->where('a.identity_id', \$identityId)" "$repo"
+          grep -Fq -- "->where('p.permission_id', AdministrationPermission::MANAGE)" "$repo"
           grep -Fq 'tenantControlPrincipalCount' "$repo"
           grep -Fq 'protectedRoleStateCompatible' "$repo"
-          grep -Fq "->where('role_id', self::CONTROL_ROLE)" "$repo"
-          grep -Fq "->where('permission_id', self::CONTROL_PERMISSION)" "$repo"
+          grep -Fq -- "->where('role_id', self::CONTROL_ROLE)" "$repo"
+          grep -Fq -- "->where('permission_id', self::CONTROL_PERMISSION)" "$repo"
           grep -Fq 'oneqay_protected_control_admin_mutations' "$repo"
           if grep -Eq '\b(updateOrInsert|upsert)\s*\(' "$repo"; then
             echo 'Sprint 24 lifecycle repository introduced unrestricted ownership rewrite.' >&2; exit 1
