@@ -12,10 +12,12 @@ on:
       - 'apps/web/app/Application/Identity/VerifyFirstPartyIdentityCredential.php'
       - 'apps/web/app/Infrastructure/Identity/LaravelFirstPartyIdentityCredentialVerifier.php'
       - 'apps/web/app/Delivery/Http/Authorization/**'
+      - 'apps/web/app/Delivery/Http/Identity/**'
       - 'apps/web/app/Delivery/Http/Middleware/RequirePolicyAdministrationSessionContextMiddleware.php'
       - 'apps/web/app/Providers/AppServiceProvider.php'
       - 'apps/web/routes/web.php'
       - 'apps/web/database/migrations/**'
+      - 'apps/web/tests/first-party-session-establishment.php'
       - 'apps/web/tests/identity-credential-verification.php'
       - 'apps/web/tests/policy-administration-delivery.php'
       - 'apps/web/tests/protected-control-administrator-lifecycle.php'
@@ -34,7 +36,9 @@ on:
       - '.github/workflows/sprint24-protected-control-admin-lifecycle-regression.yml'
       - '.github/workflows/sprint25-policy-administration-delivery-regression.yml'
       - '.github/workflows/sprint26-identity-credential-verification-regression.yml'
+      - '.github/workflows/sprint27-first-party-session-establishment-regression.yml'
       - 'docs/FIRST_PARTY_IDENTITY_CREDENTIAL_VERIFICATION_FOUNDATION.md'
+      - 'docs/FIRST_PARTY_LOGIN_SESSION_ESTABLISHMENT_FOUNDATION.md'
   workflow_dispatch:
 
 permissions:
@@ -73,7 +77,7 @@ jobs:
           composer validate --no-check-publish
           composer install --no-interaction --no-progress --prefer-dist
 
-      - name: Preserve Sprint 21 read-only authorization through Sprint 26
+      - name: Preserve Sprint 21 read-only authorization through Sprint 27
         shell: bash
         run: |
           set -euo pipefail
@@ -106,7 +110,7 @@ jobs:
             apps/web/app/Delivery/Http/Authorization/PolicyAdministrationController.php \
             apps/web/app/Delivery/Http/Middleware/RequirePolicyAdministrationSessionContextMiddleware.php; then exit 1; fi
 
-      - name: Run Sprint 21 through Sprint 26 authorization regressions
+      - name: Run Sprint 21 through Sprint 27 authorization regressions
         working-directory: apps/web
         shell: bash
         run: |
@@ -114,6 +118,7 @@ jobs:
           php -r 'require "vendor/autoload.php"; $app=require "bootstrap/app.php"; $app->make(Illuminate\Contracts\Http\Kernel::class)->bootstrap(); $assert=static function(bool $c,string $m):void{if(!$c)throw new RuntimeException($m);}; require "tests/authorization-persistence.php"; require "tests/authorization-administration-persistence.php"; require "tests/initial-tenant-administrator-provisioning.php"; require "tests/protected-control-administrator-lifecycle.php";'
           php tests/policy-administration-delivery.php
           php tests/identity-credential-verification.php
+          php tests/first-party-session-establishment.php
 
       - name: Preserve isolation and privileged updater security
         working-directory: apps/web
@@ -127,6 +132,6 @@ jobs:
         run: |
           set -euo pipefail
           grep -Fq 'ONEQAY_PERSISTENCE_ENABLED=false' apps/web/environment.example
-          if grep -R -n -E 'LaravelDurableRolePermissionRepository|DurableScopedAuthorizationPolicy|LaravelDurablePolicyAdministrationRepository|DurablePolicyAdministrationService|LaravelInitialTenantAdministratorProvisioningRepository|InitialTenantAdministratorProvisioningService|InitialTenantAdministratorProvisioningAuthority|LaravelProtectedControlAdministratorLifecycleRepository|ProtectedControlAdministratorLifecycleService|PolicyAdministrationDelivery|PolicyAdministrationController|RequirePolicyAdministrationSessionContextMiddleware|FirstPartyIdentityCredentialVerifier|VerifyFirstPartyIdentityCredential|LaravelFirstPartyIdentityCredentialVerifier' apps/web/app/Application/Preview apps/web/app/Delivery/Preview 2>/dev/null; then exit 1; fi
+          if grep -R -n -E 'LaravelDurableRolePermissionRepository|DurableScopedAuthorizationPolicy|LaravelDurablePolicyAdministrationRepository|DurablePolicyAdministrationService|LaravelInitialTenantAdministratorProvisioningRepository|InitialTenantAdministratorProvisioningService|InitialTenantAdministratorProvisioningAuthority|LaravelProtectedControlAdministratorLifecycleRepository|ProtectedControlAdministratorLifecycleService|PolicyAdministrationDelivery|PolicyAdministrationController|RequirePolicyAdministrationSessionContextMiddleware|FirstPartyIdentityCredentialVerifier|VerifyFirstPartyIdentityCredential|LaravelFirstPartyIdentityCredentialVerifier|FirstPartySessionController|FirstPartySessionKeys' apps/web/app/Application/Preview apps/web/app/Delivery/Preview 2>/dev/null; then exit 1; fi
           if grep -Fq 'InitialTenantAdministratorProvisioningAuthority::class' apps/web/app/Providers/AppServiceProvider.php; then exit 1; fi
           git diff --exit-code
