@@ -56,14 +56,15 @@ $s21Migrations = [
     '0000_00_00_000004_create_policy_mutation_journal.php',
     '0000_00_00_000005_create_initial_tenant_administrator_provisioning_journal.php',
     '0000_00_00_000006_create_protected_control_administrator_mutation_journal.php',
+    '0000_00_00_000007_create_identity_password_credentials.php',
 ];
 $s21Actual = array_values(array_filter(scandir(__DIR__.'/../database/migrations') ?: [], static fn (string $file): bool => str_ends_with($file, '.php')));
 sort($s21Actual);
-$assert($s21Actual === $s21Migrations, 'Sprint 21 preservation requires exact six-migration set after Sprint 24.');
+$assert($s21Actual === $s21Migrations, 'Sprint 21 preservation requires exact seven-migration set through Sprint 26.');
 foreach ($s21Migrations as $migration) { (require __DIR__.'/../database/migrations/'.$migration)->up(); }
 
-foreach (['oneqay_roles', 'oneqay_role_permissions', 'oneqay_tenant_role_assignments', 'oneqay_organization_role_assignments', 'oneqay_outlet_role_assignments', 'oneqay_device_role_assignments', 'oneqay_policy_mutations', 'oneqay_initial_tenant_admin_provisionings', 'oneqay_protected_control_admin_mutations'] as $table) {
-    $assert($s21Connection->getSchemaBuilder()->hasTable($table), 'Sprint 21/Sprint 22/Sprint 23/Sprint 24 policy table missing: '.$table);
+foreach (['oneqay_roles', 'oneqay_role_permissions', 'oneqay_tenant_role_assignments', 'oneqay_organization_role_assignments', 'oneqay_outlet_role_assignments', 'oneqay_device_role_assignments', 'oneqay_policy_mutations', 'oneqay_initial_tenant_admin_provisionings', 'oneqay_protected_control_admin_mutations', 'oneqay_identity_password_credentials'] as $table) {
+    $assert($s21Connection->getSchemaBuilder()->hasTable($table), 'Sprint 21-Sprint 26 preserved table missing: '.$table);
 }
 
 $s21Connection->table('oneqay_tenants')->insert([['id' => 'tenant-alpha'], ['id' => 'tenant-beta']]);
