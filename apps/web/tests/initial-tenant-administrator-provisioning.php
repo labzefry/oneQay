@@ -80,13 +80,15 @@ $s23Migrations = [
     '0000_00_00_000004_create_policy_mutation_journal.php',
     '0000_00_00_000005_create_initial_tenant_administrator_provisioning_journal.php',
     '0000_00_00_000006_create_protected_control_administrator_mutation_journal.php',
+    '0000_00_00_000007_create_identity_password_credentials.php',
 ];
 $s23Actual = array_values(array_filter(scandir(__DIR__.'/../database/migrations') ?: [], static fn (string $file): bool => str_ends_with($file, '.php')));
 sort($s23Actual);
-$assert($s23Actual === $s23Migrations, 'Sprint 23 preservation requires exact six-migration set after Sprint 24.');
+$assert($s23Actual === $s23Migrations, 'Sprint 23 preservation requires exact seven-migration set through Sprint 26.');
 foreach ($s23Migrations as $migration) { (require __DIR__.'/../database/migrations/'.$migration)->up(); }
 $assert($s23Connection->getSchemaBuilder()->hasTable('oneqay_initial_tenant_admin_provisionings'), 'Sprint 23 provisioning journal missing.');
 $assert($s23Connection->getSchemaBuilder()->hasTable('oneqay_protected_control_admin_mutations'), 'Sprint 24 lifecycle journal missing during Sprint 23 preservation.');
+$assert($s23Connection->getSchemaBuilder()->hasTable('oneqay_identity_password_credentials'), 'Sprint 26 credential table missing during Sprint 23 preservation.');
 
 $journalColumns = $s23Connection->getSchemaBuilder()->getColumnListing('oneqay_initial_tenant_admin_provisionings');
 sort($journalColumns);
