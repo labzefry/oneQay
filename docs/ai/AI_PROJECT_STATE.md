@@ -1,5 +1,25 @@
 # AI Project State
 
+## Canonical post-Sprint 28 project state — 2026-08-18
+
+For current project-state interpretation, this section supersedes all older current-facing M7.5/updater-next-work assertions retained below as historical publication provenance.
+
+- Sprint 21 through Sprint 28 governed foundations are **COMPLETE / IMPLEMENTED / PUBLISHED** within their bounded authorities.
+- Sprint 28 source publication PR #188 was squash-published as `b012262b0028c21c7662d5a9edec3cbf249bba5e`; post-Sprint28 reconciliation PR #189 was squash-published as `68a9b5736a3fc169b50984857954322b169bc42e`.
+- Current published control/identity chain includes durable role/permission policy, policy administration, initial tenant-admin provisioning, protected-control admin lifecycle, policy-administration delivery, tenant-scoped credential verification, first-party login/session establishment, and two-step initial password enrollment.
+- Canonical migrations are exactly **#1–#8**. Migrations #1–#7 remain immutable; migration #8 is additive and forward-only.
+- Sprint 26–28 credential verification/login/enrollment remain bounded to **Local/Test/CI** and do not activate in Preview or Production.
+- Technical Preview remains **`NO_SCHEMA_CHANGE`**.
+- Production remains **`NO-GO / NOT AUTHORIZED`**.
+- Updater remains **`DISABLED / UNWIRED`**.
+- Durable application persistence remains default-disabled with `ONEQAY_PERSISTENCE_ENABLED=false`.
+- First-control-principal bootstrap credential creation remains **UNRESOLVED / NOT AUTHORIZED** and is the next logical separately governed identity concern.
+- Password change/reset/recovery/rotation/revocation, Production authentication/enrollment activation, and updater activation remain separately governed.
+
+Canonical detailed publication evidence is `docs/ai/AI_POST_SPRINT_28_CANONICAL_STATE.md`. This checkpoint does not claim a permanently current live SHA; fresh GitHub verification remains mandatory before any future lifecycle mutation.
+
+Attribution: **Lab | zefry**
+
 ## Canonical M7.5 lifecycle closure — 2026-08-17
 
 For current project-state interpretation, this section supersedes older current-facing M7.5/P1/P2 assertions below while preserving all historical publication and decision provenance.

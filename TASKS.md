@@ -1,5 +1,27 @@
 # oneQay Tasks
 
+## Canonical post-Sprint 28 task-state reconciliation — 2026-08-18
+
+For current task-state and next-work interpretation, this section supersedes older current-facing M7.5/updater task statements retained below as historical task snapshots.
+
+- Sprint 21 through Sprint 28 governed foundations are **Done / COMPLETE / IMPLEMENTED / PUBLISHED** within their bounded authorities.
+- Sprint 28 source publication PR #188 and post-Sprint28 reconciliation PR #189 are published.
+- Canonical migrations are exactly **#1–#8**; migrations #1–#7 remain immutable and migration #8 is additive/forward-only.
+- Technical Preview remains **`NO_SCHEMA_CHANGE`**.
+- Production remains **`NO-GO / NOT AUTHORIZED`**.
+- Updater remains **`DISABLED / UNWIRED`**.
+- Persistence remains default-disabled with `ONEQAY_PERSISTENCE_ENABLED=false`.
+
+Current bounded task is this documentation-only post-Sprint28 program-state synchronization. It changes no application source, workflow YAML, migration, schema, dependency, route, runtime, Preview, Production, updater, or credential behavior.
+
+After this documentation synchronization is published, the next logical task is **not implementation**. It is to establish a separately governed entry gate for **First-Control-Principal Bootstrap Credential Foundation**. That concern remains **Blocked / Not Authorized** until the gate defines authority, threat/security boundary, exact file envelope, regression requirements, and any schema decision. **Migration #9 is not authorized or assumed.**
+
+Password change/reset/recovery/rotation/revocation, MFA/passkey/federation delivery, Production authentication/enrollment activation, updater activation, deployment, Release, and Production remain separately governed.
+
+Detailed factual Sprint 28 state is recorded in `docs/ai/AI_POST_SPRINT_28_CANONICAL_STATE.md`. Historical task rows below remain provenance and must not override this section for current task interpretation.
+
+Attribution: **Lab | zefry**
+
 ## Canonical M7.5 lifecycle closure — 2026-08-17
 
 For current task-state interpretation, this section supersedes older current-facing M7.5/P0-TP blocker lists and evaluator counts retained below as historical task snapshots.
@@ -124,7 +146,7 @@ Published bounded Platform Foundation source through Sprint 13 is an existing re
 
 | ID | Decision | Status | Required output |
 | --- | --- | --- | --- |
-| DEC-000 | Product Owner, delegates, and decision rights | Done | Product Owner substantive decision APPROVED; Approved `docs/handbook/PRODUCT_VISION_AND_DECISION_RIGHTS.md`; `docs/handbook/DEC_000_DECISION_RECORD.md`; GD-003 Approved only within DEC-000 boundary |
+| DEC-000 | Product Owner, delegates, and decision rights | Done | Product Owner substantive decision APPROVED on baseline `792b2dc30636bc53baa7d66b43cf2dab4a348dd4`; Approved `docs/handbook/PRODUCT_VISION_AND_DECISION_RIGHTS.md`; `docs/handbook/DEC_000_DECISION_RECORD.md`; GD-003 Approved only within DEC-000 boundary |
 | DEC-001 | MVP scope and non-scope | Done | Product Owner substantive decision APPROVED on baseline `17f156b9861972b4924a5ed01bfabd5a1a79461a`; `docs/handbook/DEC_001_DECISION_RECORD.md`; implementation authority NOT GRANTED |
 | DEC-002 | Backend language/framework | Done | Product Owner substantive decision APPROVED on baseline `504b10be44d45dfcfec9b6cfed4f72ed5748b564`; PHP + Laravel; `docs/handbook/DEC_002_DECISION_RECORD.md`; ADR-001 Accepted after reconciliation; implementation/dependency authority NOT GRANTED |
 | DEC-003 | Frontend/PWA stack | Done | Product Owner substantive decision APPROVED on baseline `dcb7e3f8de890530a00a0dd4fd310bc10762c72f`; Vue 3 + Inertia + Vite with TypeScript-first, explicit API/mobile boundaries, bounded PWA direction; `docs/handbook/DEC_003_DECISION_RECORD.md`; ADR-002 Accepted after reconciliation; implementation/dependency authority NOT GRANTED |

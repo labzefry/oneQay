@@ -1,5 +1,23 @@
 # AI Session State
 
+## Canonical post-Sprint 28 session handoff — 2026-08-18
+
+- Repository: `labzefry/oneQay`.
+- The verified pre-consolidation canonical publication is post-Sprint28 reconciliation PR #189, with Sprint 28 already **COMPLETE / IMPLEMENTED / PUBLISHED**.
+- Sprint 21–28 governed foundations are published and preserved; Sprint 28 adds two-step initial password enrollment on top of Sprint 26 credential verification and Sprint 27 login/session establishment.
+- Canonical migrations are exactly **#1–#8**; migrations #1–#7 remain immutable and migration #8 is additive/forward-only.
+- Technical Preview remains **`NO_SCHEMA_CHANGE`**.
+- Production remains **`NO-GO / NOT AUTHORIZED`**.
+- Updater remains **`DISABLED / UNWIRED`**.
+- Persistence remains default-disabled with `ONEQAY_PERSISTENCE_ENABLED=false`.
+- Password change/reset/recovery/rotation/revocation and Production authentication/enrollment activation remain separately governed.
+- The next logical governed identity concern is **First-Control-Principal Bootstrap Credential Foundation**. It requires a separate bounded entry gate before source implementation and is **NOT AUTHORIZED** by this checkpoint.
+- Fresh GitHub Minimal Delta Verification remains mandatory before any future branch, implementation, Ready, or Merge action; SHAs recorded in checkpoint material are publication provenance, not permanently live state.
+
+Detailed canonical Sprint 28 publication evidence is `docs/ai/AI_POST_SPRINT_28_CANONICAL_STATE.md`. Older M7.5/updater session handoff sections below are historical provenance and must not override this section.
+
+Attribution: **Lab | zefry**
+
 ## Canonical M7.5 lifecycle closure handoff — 2026-08-17
 
 - Repository: `labzefry/oneQay`.

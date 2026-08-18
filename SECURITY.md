@@ -1,5 +1,31 @@
 # oneQay Security Handbook
 
+## Canonical post-Sprint 28 identity/security reconciliation — 2026-08-18
+
+For current identity/authentication/security-state interpretation, this section supersedes older current-facing updater-first framing retained below while preserving that updater threat model as a valid separate security contract.
+
+Published identity/control security foundations now include Sprint 21–28: durable role/permission policy, governed policy administration, initial tenant-administrator provisioning, protected-control administrator lifecycle, policy-administration delivery, tenant-scoped password credential verification, first-party login/session establishment, and two-step initial password enrollment.
+
+Current credential/session security guarantees include:
+
+- credential ownership is exact `(tenant_id, identity_id)`;
+- credential verification is generic/fail-closed and anti-enumeration hardened;
+- login rotates/invalidate-regenerates the session and CSRF token before authenticated facts become authoritative;
+- session authority stores only verified identity/tenant/organization/outlet/device facts, not passwords, roles, permissions, or updater authority;
+- initial password enrollment separates administrator authorization from target password selection;
+- enrollment tokens use `random_bytes(32)`, are returned once, persisted only as SHA-256 digests, and expire after 900 seconds;
+- password enrollment is insert-only and uses `PASSWORD_DEFAULT`; no password update/upsert/delete lifecycle is published;
+- Sprint 26–28 credential/login/enrollment routes remain Local/Test/CI-only and are absent from Preview/Production;
+- password reset/change/recovery/rotation/revocation, MFA/passkey/federation delivery, first-control-principal bootstrap, and Production authentication remain separately governed.
+
+Technical Preview remains **`NO_SCHEMA_CHANGE`**. Production remains **`NO-GO / NOT AUTHORIZED`**. The updater remains **`DISABLED / UNWIRED`** and retains the threat model below. Durable persistence remains default-disabled with `ONEQAY_PERSISTENCE_ENABLED=false`.
+
+The next logical governed identity concern is **First-Control-Principal Bootstrap Credential Foundation**; this documentation synchronization does not authorize that implementation.
+
+Detailed publication evidence is recorded in `docs/ai/AI_POST_SPRINT_28_CANONICAL_STATE.md` and the Sprint 26–28 foundation documents under `docs/`.
+
+Attribution: **Lab | zefry**
+
 ## Secure Web Updater threat-model baseline — 2026-08-17
 
 ADR-009 defines the updater/release-control-plane security architecture. The updater is treated as a high-risk remote-code/deployment surface and must remain **DISABLED** until the required privileged identity, verification, extraction, state-machine, activation, rollback, audit, and recovery controls are separately implemented and qualified.

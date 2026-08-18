@@ -1,5 +1,24 @@
 # oneQay
 
+## Canonical post-Sprint 28 program-state consolidation — 2026-08-18
+
+For current project, lifecycle, and next-work interpretation, this section supersedes every older current-facing milestone/status/next-work statement retained below as historical provenance.
+
+- Sprint 21 through Sprint 28 governed foundations are **COMPLETE / IMPLEMENTED / PUBLISHED** within their bounded authorities.
+- Sprint 28 source publication PR #188 was squash-published as `b012262b0028c21c7662d5a9edec3cbf249bba5e`; post-Sprint28 canonical reconciliation PR #189 was squash-published as `68a9b5736a3fc169b50984857954322b169bc42e`.
+- Published identity/control progression now includes durable role/permission policy, policy administration, initial tenant-administrator provisioning, protected-control administrator lifecycle, policy-administration delivery, first-party credential verification, first-party login/session establishment, and first-party initial password enrollment.
+- Canonical source migrations are exactly **#1 through #8**; migrations #1–#7 remain immutable and migration #8 is the additive forward-only initial-password-enrollment migration.
+- First-party credential verification, login/session establishment, and initial password enrollment remain bounded to **Local/Test/CI** under their published runtime and persistence gates.
+- Technical Preview remains **`NO_SCHEMA_CHANGE`** and does not receive Sprint 26–28 credential/login/enrollment authority.
+- Production remains **`NO-GO / NOT AUTHORIZED`**.
+- Updater remains **`DISABLED / UNWIRED`**.
+- Durable application persistence remains default-disabled with **`ONEQAY_PERSISTENCE_ENABLED=false`**.
+- The next logical governed identity concern is **First-Control-Principal Bootstrap Credential Foundation**. It requires a new bounded entry gate before any source implementation and is **NOT AUTHORIZED** by this documentation consolidation.
+
+The authoritative detailed post-Sprint28 publication record is `docs/ai/AI_POST_SPRINT_28_CANONICAL_STATE.md`. Historical M7.5/updater and earlier milestone sections below remain preserved as provenance but must not override this section for current-state interpretation.
+
+Attribution: **Lab | zefry**
+
 ## Canonical M7.5 lifecycle closure — 2026-08-17
 
 For current M7/lifecycle interpretation, this section supersedes the older current-facing consolidation retained below as historical checkpoint/provenance.

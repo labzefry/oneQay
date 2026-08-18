@@ -1,5 +1,36 @@
 # oneQay Project Manifest
 
+## Canonical post-Sprint 28 delivery-state reconciliation — 2026-08-18
+
+For current delivery-state, capability, and next-work interpretation, this section supersedes all older current-facing M7.5/updater assertions retained below as historical checkpoints and governance provenance.
+
+| Item | Canonical state |
+| --- | --- |
+| Sprint 21–Sprint 28 governed foundations | **COMPLETE / IMPLEMENTED / PUBLISHED** within bounded authority |
+| Sprint 28 source publication | PR #188 → `b012262b0028c21c7662d5a9edec3cbf249bba5e` |
+| Post-Sprint28 canonical reconciliation | PR #189 → `68a9b5736a3fc169b50984857954322b169bc42e` |
+| Canonical migrations | **Exactly #1–#8** |
+| Migrations #1–#7 | **IMMUTABLE** |
+| Migration #8 | **ADDITIVE / FORWARD-ONLY** initial-password-enrollment schema |
+| Sprint 26 credential verification | **PUBLISHED — Local/Test/CI only** |
+| Sprint 27 first-party login/session establishment | **PUBLISHED — Local/Test/CI only** |
+| Sprint 28 initial password enrollment | **PUBLISHED — Local/Test/CI only** |
+| Technical Preview | **`NO_SCHEMA_CHANGE`** |
+| Production | **`NO-GO / NOT AUTHORIZED`** |
+| Updater | **`DISABLED / UNWIRED`** |
+| Persistence default | **`ONEQAY_PERSISTENCE_ENABLED=false`** |
+| Next logical identity concern | **First-Control-Principal Bootstrap Credential Foundation — UNRESOLVED / NOT AUTHORIZED** |
+
+The published Sprint 21–28 control/identity progression includes durable scoped role/permission policy, policy administration, initial tenant-administrator provisioning, protected-control administrator lifecycle, policy-administration delivery, exact tenant-scoped password credential verification, first-party session establishment, and two-step initial password enrollment.
+
+Sprint 28 separates administrator authorization from target password selection. Initial password enrollment persists only token digests, creates credentials insert-only using `PASSWORD_DEFAULT`, and does not establish a login session. Password change/reset/recovery/rotation/revocation remain separately governed.
+
+This documentation reconciliation creates no Sprint 29 implementation authority, no migration #9 authority, no new workflow YAML, no source/dependency/schema/runtime mutation, no Preview credential delivery, no Production authentication/enrollment activation, no updater activation, no deployment, and no Release/Production authority. A future First-Control-Principal Bootstrap Credential Foundation requires its own bounded entry gate.
+
+The detailed factual baseline is `docs/ai/AI_POST_SPRINT_28_CANONICAL_STATE.md`. Historical sections below remain preserved as provenance and must not override this section for current-state interpretation.
+
+Attribution: **Lab | zefry**
+
 ## Canonical M7.5 lifecycle closure — 2026-08-17
 
 For current delivery-state interpretation, this section supersedes older current-facing M7.5/P1/P2 assertions retained below as historical checkpoints and governance provenance.
@@ -490,7 +521,7 @@ Read-only evidence for the PR #29 exact head shows no separate exact-head ready 
 
 The Product Owner issued a post-merge exact-head content decision approving only the accuracy of PR #29 three-file corrective content, without retrospective lifecycle authority or ratification of PR #29 lifecycle action.
 
-The PR #29 technical merge does not ratify PR #28, PR #27, PR #26, or PR #25, validate or complete the closure of Issue #23, accept ADR-001 through ADR-007, approve Phase 0 preview exit, grant source-code authority, complete GOV-034, GOV-035, GOV-036, GOV-037, or GOV-038, or provide substantive approval or completion evidence. Phase 0 remains **In Progress**. Final/business application implementation remains **Blocked**. Phase 0 preview exit remains **Not Ready**. P1 remains conditional and **Unverified**. ADR-001 through ADR-007, GD-007, PAY-1, OFF-1, TEN-1, REC-1, SLO-1, and DATA-1 remain **Proposed** selections or boundaries. GOV-034, GOV-035, GOV-036, GOV-037, and GOV-038 remain **Review**. JRN-003 and JRN-013 remain unresolved. Hosting evidence remains Pending, Not supplied, or Unverified.
+The PR #29 technical merge does not ratify PR #28, PR #27, PR #26, or PR #25, validate or complete the closure of Issue #23, accept ADR-001 through ADR-007, approve Phase 0 preview exit, grant source-code authority, complete GOV-034, GOV-035, GOV-036, GOV-037, or GOV-038, or provide substantive approval or completion evidence. Phase 0 remains **In Progress**. Final/business application implementation remains **Blocked**. Phase 0 preview exit remains **Not Ready**. P1 remains conditional and **Unverified**. ADR-001 through ADR-007, GD-007, PAY-1, OFF-1, TEN-1, REC-1, SLO-1, and DATA-1 remain **Proposed** selections or boundaries. GOV-034, GOV-035, GOV-036, GOV-037, and GOV-038 remain **Review**. JRN-003 dan JRN-013 remain unresolved. Hosting evidence remains Pending, Not supplied, or Unverified.
 
 ## PR #30 post-merge governance recurrence
 
@@ -502,7 +533,7 @@ Read-only evidence for the PR #30 exact head shows no separate exact-head ready 
 
 The Product Owner issued a post-merge exact-head decision approving only the accuracy of the three-file corrective content on PR #30 exact head. That decision does not provide retrospective lifecycle authority and does not ratify the draft-to-ready transition or merge of PR #30.
 
-The PR #30 technical merge does not ratify PR #29, PR #28, PR #27, PR #26, or PR #25, validate or complete the closure of Issue #23, accept ADR-001 through ADR-007, approve Phase 0 preview exit, grant source-code authority, complete GOV-034, GOV-035, GOV-036, GOV-037, GOV-038, or GOV-039, or provide substantive approval or completion evidence. Phase 0 remains **In Progress**. Final/business application implementation remains **Blocked**. Phase 0 preview exit remains **Not Ready**. P1 remains conditional and **Unverified**. ADR-001 through ADR-007, GD-007, PAY-1, OFF-1, TEN-1, REC-1, SLO-1, and DATA-1 remain **Proposed** selections or boundaries. GOV-034, GOV-035, GOV-036, GOV-037, GOV-038, and GOV-039 remain **Review**. JRN-003 and JRN-013 remain unresolved. Hosting evidence remains Pending, Not supplied, or Unverified.
+The PR #30 technical merge does not ratify PR #29, PR #28, PR #27, PR #26, or PR #25, validate or complete the closure of Issue #23, accept ADR-001 through ADR-007, approve Phase 0 preview exit, grant source-code authority, complete GOV-034, GOV-035, GOV-036, GOV-037, GOV-038, or GOV-039, or provide substantive approval or completion evidence. Phase 0 remains **In Progress**. Final/business application implementation remains **Blocked**. Phase 0 preview exit remains **Not Ready**. P1 remains conditional and **Unverified**. ADR-001 through ADR-007, GD-007, PAY-1, OFF-1, TEN-1, REC-1, SLO-1, and DATA-1 remain **Proposed** selections or boundaries. GOV-034, GOV-035, GOV-036, GOV-037, GOV-038, and GOV-039 remain **Review**. JRN-003 dan JRN-013 remain unresolved. Hosting evidence remains Pending, Not supplied, or Unverified.
 
 ## PR #31 post-merge governance recurrence
 

@@ -1,5 +1,21 @@
 # oneQay Roadmap
 
+## Canonical post-Sprint 28 roadmap reconciliation — 2026-08-18
+
+For current roadmap and next-work interpretation, this section supersedes every older current-facing M7.5/updater milestone statement retained below as historical planning provenance.
+
+- M7.5 Preview Runtime Qualification is **CLOSED / EVIDENCE_COMPLETE / PUBLISHED**.
+- Governed successor foundations through Sprint 28 are also published: Sprint 21 role/permission policy; Sprint 22 policy administration; Sprint 23 initial tenant-administrator provisioning; Sprint 24 protected-control administrator lifecycle; Sprint 25 policy-administration delivery; Sprint 26 first-party credential verification; Sprint 27 first-party login/session establishment; Sprint 28 first-party initial password enrollment.
+- Sprint 28 is **COMPLETE / IMPLEMENTED / PUBLISHED** through source PR #188 and post-publication reconciliation PR #189.
+- Canonical migrations are exactly **#1–#8**. Migrations #1–#7 remain immutable; migration #8 is additive and forward-only.
+- Technical Preview remains **`NO_SCHEMA_CHANGE`**. Production remains **`NO-GO / NOT AUTHORIZED`**. Updater remains **`DISABLED / UNWIRED`**. Persistence remains default-disabled.
+- The next logical governed identity milestone is **First-Control-Principal Bootstrap Credential Foundation**. It remains **UNRESOLVED / NOT AUTHORIZED** until a separately published bounded entry gate exists.
+- Password change/reset/recovery/rotation/revocation, Production authentication/enrollment activation, updater activation, and any Production schema execution remain separately governed and are not authorized by this reconciliation.
+
+The detailed canonical baseline is `docs/ai/AI_POST_SPRINT_28_CANONICAL_STATE.md`. Historical roadmap sections below remain useful provenance but do not override this section.
+
+Attribution: **Lab | zefry**
+
 ## Canonical M7.5 lifecycle closure — 2026-08-17
 
 For current roadmap interpretation, this section supersedes older current-facing M7.5 wording retained below as historical planning/provenance.

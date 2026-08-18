@@ -1,5 +1,28 @@
 # Workflow Directory
 
+## Canonical post-Sprint 28 workflow inventory — 2026-08-18
+
+For current workflow/lifecycle interpretation, this section supersedes older inventory text below that stops at M7.4A/M7.5 or treats later governed identity/control regressions as nonexistent.
+
+Current repository workflow evidence includes the established governance/foundation/M7 workflows plus the governed Sprint 21–28 regression chain, including:
+
+- `.github/workflows/sprint21-role-permission-policy-regression.yml`;
+- `.github/workflows/sprint22-policy-administration-regression.yml`;
+- `.github/workflows/sprint23-initial-tenant-admin-provisioning-regression.yml`;
+- `.github/workflows/sprint24-protected-control-admin-lifecycle-regression.yml`;
+- `.github/workflows/sprint25-policy-administration-delivery-regression.yml`;
+- `.github/workflows/sprint26-identity-credential-verification-regression.yml`;
+- `.github/workflows/sprint27-first-party-session-establishment-regression.yml`;
+- `.github/workflows/sprint28-initial-password-enrollment-regression.yml`.
+
+Sprint 28 exact-head qualification completed **19/19 triggered workflows successfully** before Product Owner merge authority. The Sprint 28 dedicated workflow enforced the exact 33-path source envelope, migrations #1–#7 immutability plus additive migration #8, Local/Test/CI route boundaries, secret-minimal enrollment state, disposable enrollment regression, Sprint 21–27 preservation, Preview/Production/updater separation, and tracked-source cleanliness.
+
+Current workflow existence does not broaden runtime authority: Technical Preview remains **`NO_SCHEMA_CHANGE`**, Production remains **`NO-GO / NOT AUTHORIZED`**, updater remains **`DISABLED / UNWIRED`**, and persistence remains default-disabled. The next logical concern, First-Control-Principal Bootstrap Credential Foundation, requires its own future workflow only after a separately published bounded entry gate; this synchronization does not authorize such workflow/source work.
+
+The detailed post-Sprint28 qualification record is `docs/ai/AI_POST_SPRINT_28_CANONICAL_STATE.md`. Historical workflow descriptions below remain provenance and continue to describe their own bounded mechanisms unless superseded here for current inventory interpretation.
+
+Attribution: **Lab | zefry**
+
 ## Canonical M7.5 lifecycle closure — 2026-08-17
 
 For current workflow/lifecycle interpretation, this section supersedes the older current-facing M7.5 consolidation retained below as historical control-plane provenance.
