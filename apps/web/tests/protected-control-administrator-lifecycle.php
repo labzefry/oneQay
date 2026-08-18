@@ -204,6 +204,8 @@ try {
 } catch (Throwable $exception) {
     $assert(false, 'Sprint 24 same textual target ID was not tenant-bound to actor tenant: '.$exception::class);
 }
+$assert($s24Service->apply($s24AlphaActor, $s24VerifiedIdentity('synthetic-shared-id'), ProtectedControlAdministratorMutationId::fromString('revoke-shared-fixture'), ProtectedControlAdministratorOperation::revoke()) === 'applied', 'Sprint 24 same-textual-ID fixture cleanup failed.');
+$assert($s24Connection->table('oneqay_tenant_role_assignments')->where('tenant_id', 'tenant-alpha')->where('identity_id', 'synthetic-shared-id')->where('role_id', ProtectedControlAdministratorLifecycleRepository::CONTROL_ROLE)->doesntExist(), 'Sprint 24 same-textual-ID fixture remained a control principal.');
 try {
     $s24Service->apply($s24AlphaActor, $s24VerifiedIdentity('synthetic-delegate-beta'), ProtectedControlAdministratorMutationId::fromString('delegate-cross-tenant'), ProtectedControlAdministratorOperation::delegate());
     $assert(false, 'Sprint 24 foreign-tenant target was accepted.');
