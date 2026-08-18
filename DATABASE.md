@@ -1,5 +1,32 @@
 # oneQay Database Handbook
 
+## Canonical post-Sprint 28 database-state reconciliation — 2026-08-18
+
+For current database/schema interpretation, this section supersedes older current-facing M7.5 database-state wording retained below as historical qualification provenance.
+
+Canonical source now contains exactly migrations **#1 through #8**. Migrations #1–#7 remain immutable; migration #8, `0000_00_00_000008_create_initial_password_enrollments.php`, is the only Sprint 28 schema addition and is additive/forward-only.
+
+Current published credential/control schema progression includes:
+
+1. foundational context graph;
+2. organizational access grants;
+3. scoped role/permission policy;
+4. policy mutation journal;
+5. initial tenant-administrator provisioning journal;
+6. protected-control administrator mutation journal;
+7. identity password credentials; and
+8. initial password enrollments.
+
+Migration #7 stores exact tenant-scoped password credential ownership `(tenant_id, identity_id)` using one-way hashes. Migration #8 stores secret-minimal enrollment lifecycle evidence and persists only the enrollment token digest, never plaintext enrollment tokens or plaintext passwords.
+
+Sprint 28 does not authorize credential update/upsert/delete, password reset/change/recovery/rotation/revocation, Production schema execution, or Technical Preview schema application. Technical Preview remains **`NO_SCHEMA_CHANGE`**, Production remains **`NO-GO / NOT AUTHORIZED`**, updater remains **`DISABLED / UNWIRED`**, and `ONEQAY_PERSISTENCE_ENABLED=false` remains the repository default.
+
+The next logical identity concern, First-Control-Principal Bootstrap Credential Foundation, is separately governed and does not gain schema or migration authority from this documentation reconciliation.
+
+The detailed canonical publication record is `docs/ai/AI_POST_SPRINT_28_CANONICAL_STATE.md`. Earlier M7.5 and pre-schema current-state statements below remain historical provenance.
+
+Attribution: **Lab | zefry**
+
 ## Canonical M7.5 lifecycle closure — 2026-08-17
 
 For current database/runtime interpretation, this section supersedes the older current-facing M7.5 consolidation retained below as historical architecture/checkpoint text.

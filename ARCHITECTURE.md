@@ -1,5 +1,30 @@
 # oneQay Architecture
 
+## Canonical post-Sprint 28 architecture reconciliation — 2026-08-18
+
+For current architecture and identity/control-plane interpretation, this section supersedes older current-facing M7.5/updater-next-work wording retained below as historical provenance.
+
+The published architecture now includes the bounded Sprint 21–28 chain in addition to the earlier M7 foundations:
+
+- Sprint 21 — durable tenant-scoped role/permission policy;
+- Sprint 22 — governed policy administration;
+- Sprint 23 — initial tenant-administrator provisioning;
+- Sprint 24 — protected-control administrator lifecycle;
+- Sprint 25 — policy-administration delivery through durably re-verified session context;
+- Sprint 26 — exact tenant + identity password credential verification;
+- Sprint 27 — first-party login/logout and server-side session establishment;
+- Sprint 28 — two-step initial password enrollment separating administrator authorization from target password selection.
+
+The first-party credential/session/enrollment architecture is deliberately bounded to Local/Test/CI. Credential verification remains exact `(tenant_id, identity_id)`; session authority contains only verified identity/tenant/organization/outlet/device facts; role/permission authority is re-derived from durable policy; initial enrollment is insert-only and uses one-time digest-only tokens. No session, credential, or enrollment path grants updater authority.
+
+Canonical migrations are exactly **#1 through #8**. Technical Preview remains **`NO_SCHEMA_CHANGE`** and does not wire Sprint 26–28 credential/login/enrollment delivery. Production remains **`NO-GO / NOT AUTHORIZED`**. Updater remains **`DISABLED / UNWIRED`**. Persistence remains default-disabled.
+
+The next logical governed identity architecture concern is **First-Control-Principal Bootstrap Credential Foundation**. A new bounded entry gate is required before any implementation; this documentation synchronization creates no such authority.
+
+The detailed canonical record is `docs/ai/AI_POST_SPRINT_28_CANONICAL_STATE.md`. Older M7.5/current architecture sections below remain historical provenance and must not override this section.
+
+Attribution: **Lab | zefry**
+
 ## Canonical M7.5 lifecycle closure — 2026-08-17
 
 For current architecture/runtime-state interpretation, this section supersedes the older current-facing consolidation retained below as historical planning/checkpoint text.

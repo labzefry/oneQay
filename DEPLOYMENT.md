@@ -1,5 +1,19 @@
 # oneQay Deployment Handbook
 
+## Canonical post-Sprint 28 deployment/runtime reconciliation — 2026-08-18
+
+For current deployment/runtime interpretation, this section supersedes older current-facing M7.5/updater-next-work wording retained below as historical qualification provenance.
+
+Sprint 28 is **COMPLETE / IMPLEMENTED / PUBLISHED** and adds canonical source schema/identity capability without changing deployment authority. Canonical migrations are exactly #1–#8, but Technical Preview remains **`NO_SCHEMA_CHANGE`** and continues excluding application migrations from its governed release artifact. Sprint 26–28 credential verification, login/session establishment, and initial-password-enrollment routes are absent from Preview and Production and remain Local/Test/CI-only.
+
+Production remains **`NO-GO / NOT AUTHORIZED`**. No Production migration execution, authentication activation, session activation, enrollment activation, real-user rollout, or persistence activation is authorized. Updater remains **`DISABLED / UNWIRED`** and the updater/release-control-plane contracts below remain separate from identity credential work. Durable persistence remains default-disabled with `ONEQAY_PERSISTENCE_ENABLED=false`.
+
+The next logical governed identity concern is **First-Control-Principal Bootstrap Credential Foundation**. It requires a separately published bounded entry gate and does not grant deployment, schema, Preview, Production, updater, or release authority.
+
+The authoritative detailed post-Sprint28 state is `docs/ai/AI_POST_SPRINT_28_CANONICAL_STATE.md`. Historical M7.5 and earlier deployment sections below remain provenance and must not override this section.
+
+Attribution: **Lab | zefry**
+
 ## Canonical M7.5 lifecycle closure — 2026-08-17
 
 For current Preview/runtime interpretation, this section supersedes the older current-facing M7.5 consolidation retained below as historical planning and pre-qualification state.
