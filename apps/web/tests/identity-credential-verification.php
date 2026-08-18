@@ -74,19 +74,21 @@ $migrations = [
     '0000_00_00_000005_create_initial_tenant_administrator_provisioning_journal.php',
     '0000_00_00_000006_create_protected_control_administrator_mutation_journal.php',
     '0000_00_00_000007_create_identity_password_credentials.php',
+    '0000_00_00_000008_create_initial_password_enrollments.php',
 ];
 $actualMigrations = array_values(array_filter(
     scandir(__DIR__.'/../database/migrations') ?: [],
     static fn (string $file): bool => str_ends_with($file, '.php'),
 ));
 sort($actualMigrations);
-$assertS26($actualMigrations === $migrations, 'canonical migration set must be exactly #1-#7');
+$assertS26($actualMigrations === $migrations, 'canonical migration set must be exactly #1-#8');
 foreach ($migrations as $migration) {
     (require __DIR__.'/../database/migrations/'.$migration)->up();
 }
 
 $schema = $connection->getSchemaBuilder();
 $assertS26($schema->hasTable('oneqay_identity_password_credentials'), 'credential table missing');
+$assertS26($schema->hasTable('oneqay_initial_password_enrollments'), 'Sprint 28 enrollment table missing during Sprint 26 preservation');
 foreach (['tenant_id', 'identity_id', 'password_hash'] as $column) {
     $assertS26($schema->hasColumn('oneqay_identity_password_credentials', $column), 'credential column missing: '.$column);
 }
