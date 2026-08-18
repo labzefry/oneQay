@@ -10,6 +10,7 @@ use App\Application\Organization\OrganizationalAccessViolation;
 use App\Application\Organization\OrganizationalContextStore;
 use App\Application\Tenancy\MissingTenantContext;
 use App\Application\Tenancy\TenantContextStore;
+use App\Delivery\Http\Identity\FirstPartySessionKeys;
 use App\Domain\Identity\PlatformIdentityId;
 use App\Domain\Tenancy\TenantId;
 use App\Infrastructure\Identity\ServerVerifiedPlatformIdentity;
@@ -22,11 +23,11 @@ use Symfony\Component\HttpFoundation\Response;
 // Author by Lab | zefry
 final class RequirePolicyAdministrationSessionContextMiddleware
 {
-    public const IDENTITY_SESSION = 'oneqay.auth.identity_id';
-    public const TENANT_SESSION = 'oneqay.auth.tenant_id';
-    public const ORGANIZATION_SESSION = 'oneqay.auth.organization_id';
-    public const OUTLET_SESSION = 'oneqay.auth.outlet_id';
-    public const DEVICE_SESSION = 'oneqay.auth.device_id';
+    public const IDENTITY_SESSION = FirstPartySessionKeys::IDENTITY;
+    public const TENANT_SESSION = FirstPartySessionKeys::TENANT;
+    public const ORGANIZATION_SESSION = FirstPartySessionKeys::ORGANIZATION;
+    public const OUTLET_SESSION = FirstPartySessionKeys::OUTLET;
+    public const DEVICE_SESSION = FirstPartySessionKeys::DEVICE;
 
     public function __construct(
         private readonly TenantContextStore $tenantContexts,
