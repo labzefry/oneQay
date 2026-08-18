@@ -12,10 +12,12 @@ on:
       - 'apps/web/app/Application/Identity/VerifyFirstPartyIdentityCredential.php'
       - 'apps/web/app/Infrastructure/Identity/LaravelFirstPartyIdentityCredentialVerifier.php'
       - 'apps/web/app/Delivery/Http/Authorization/**'
+      - 'apps/web/app/Delivery/Http/Identity/**'
       - 'apps/web/app/Delivery/Http/Middleware/RequirePolicyAdministrationSessionContextMiddleware.php'
       - 'apps/web/app/Providers/AppServiceProvider.php'
       - 'apps/web/routes/web.php'
       - 'apps/web/database/migrations/**'
+      - 'apps/web/tests/first-party-session-establishment.php'
       - 'apps/web/tests/identity-credential-verification.php'
       - 'apps/web/tests/policy-administration-delivery.php'
       - 'apps/web/tests/protected-control-administrator-lifecycle.php'
@@ -34,7 +36,9 @@ on:
       - '.github/workflows/sprint24-protected-control-admin-lifecycle-regression.yml'
       - '.github/workflows/sprint25-policy-administration-delivery-regression.yml'
       - '.github/workflows/sprint26-identity-credential-verification-regression.yml'
+      - '.github/workflows/sprint27-first-party-session-establishment-regression.yml'
       - 'docs/FIRST_PARTY_IDENTITY_CREDENTIAL_VERIFICATION_FOUNDATION.md'
+      - 'docs/FIRST_PARTY_LOGIN_SESSION_ESTABLISHMENT_FOUNDATION.md'
   workflow_dispatch:
 
 permissions:
@@ -66,7 +70,7 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: Preserve root Platform Foundation dependency locks and Sprint 26 migration boundary
+      - name: Preserve root Platform Foundation dependency locks and Sprint 27 migration boundary
         if: github.event_name == 'pull_request'
         shell: bash
         run: |
@@ -75,18 +79,7 @@ jobs:
           base="origin/${{ github.base_ref }}"
           if git diff --name-only "$base...HEAD" | grep -Eq '(^|/)(composer\.(json|lock)|package(-lock)?\.json)$'; then exit 1; fi
           if git diff --name-only "$base...HEAD" | grep -Eq '^(src/Auth/|src/Persistence/|src/Migration/|src/Authorization/Foundation\.php)'; then exit 1; fi
-          immutable=(
-            apps/web/database/migrations/0000_00_00_000001_create_foundational_context_graph.php
-            apps/web/database/migrations/0000_00_00_000002_create_organizational_access_grants.php
-            apps/web/database/migrations/0000_00_00_000003_create_scoped_role_permission_policy.php
-            apps/web/database/migrations/0000_00_00_000004_create_policy_mutation_journal.php
-            apps/web/database/migrations/0000_00_00_000005_create_initial_tenant_administrator_provisioning_journal.php
-            apps/web/database/migrations/0000_00_00_000006_create_protected_control_administrator_mutation_journal.php
-          )
-          git diff --exit-code "$base...HEAD" -- "${immutable[@]}"
-          mapfile -t migration_diff < <(git diff --name-status "$base...HEAD" -- apps/web/database/migrations)
-          test "${#migration_diff[@]}" -eq 1
-          test "${migration_diff[0]}" = $'A\tapps/web/database/migrations/0000_00_00_000007_create_identity_password_credentials.php'
+          git diff --exit-code "$base...HEAD" -- apps/web/database/migrations
 
       - name: Preserve root Platform Foundation regression
         run: |
@@ -173,7 +166,7 @@ jobs:
           grep -Fq 'protected-permission-attempt' apps/web/tests/policy-administration-delivery.php
           grep -Fq 'protected-role-attempt' apps/web/tests/policy-administration-delivery.php
 
-      - name: Run Sprint 21 through Sprint 26 disposable regressions
+      - name: Run Sprint 21 through Sprint 27 disposable regressions
         working-directory: apps/web
         shell: bash
         run: |
@@ -185,13 +178,14 @@ jobs:
           php tests/identity-org-context.php
           php tests/privileged-update-security.php
           php tests/identity-credential-verification.php
+          php tests/first-party-session-establishment.php
 
       - name: Preserve Preview Production updater and release boundaries
         shell: bash
         run: |
           set -euo pipefail
           grep -Fq 'ONEQAY_PERSISTENCE_ENABLED=false' apps/web/environment.example
-          if grep -R -n -E 'LaravelInitialTenantAdministratorProvisioningRepository|InitialTenantAdministratorProvisioningService|InitialTenantAdministratorProvisioningAuthority|PreauthorizedInitialTenantAdministratorProvisioningAuthority|LaravelProtectedControlAdministratorLifecycleRepository|ProtectedControlAdministratorLifecycleService|PolicyAdministrationDelivery|PolicyAdministrationController|RequirePolicyAdministrationSessionContextMiddleware|FirstPartyIdentityCredentialVerifier|VerifyFirstPartyIdentityCredential|LaravelFirstPartyIdentityCredentialVerifier' apps/web/app/Application/Preview apps/web/app/Delivery/Preview 2>/dev/null; then exit 1; fi
+          if grep -R -n -E 'LaravelInitialTenantAdministratorProvisioningRepository|InitialTenantAdministratorProvisioningService|InitialTenantAdministratorProvisioningAuthority|PreauthorizedInitialTenantAdministratorProvisioningAuthority|LaravelProtectedControlAdministratorLifecycleRepository|ProtectedControlAdministratorLifecycleService|PolicyAdministrationDelivery|PolicyAdministrationController|RequirePolicyAdministrationSessionContextMiddleware|FirstPartyIdentityCredentialVerifier|VerifyFirstPartyIdentityCredential|LaravelFirstPartyIdentityCredentialVerifier|FirstPartySessionController|FirstPartySessionKeys' apps/web/app/Application/Preview apps/web/app/Delivery/Preview 2>/dev/null; then exit 1; fi
           release_workflow='.github/workflows/m7-5-preview-release-artifact.yml'
           grep -Fq '/apps/web/database/migrations/' "$release_workflow"
           grep -Fq 'NO_SCHEMA_CHANGE' "$release_workflow"

@@ -2,6 +2,7 @@
 
 use App\Delivery\Http\Authorization\PolicyAdministrationController;
 use App\Delivery\Http\HealthController;
+use App\Delivery\Http\Identity\FirstPartySessionController;
 use App\Delivery\Http\Middleware\RequirePolicyAdministrationSessionContextMiddleware;
 use App\Delivery\Http\SystemUpdate\SystemUpdateControlPlaneController;
 use App\Delivery\Http\SystemUpdate\SystemUpdatePageController;
@@ -18,6 +19,16 @@ Route::get('/', static fn () => Inertia::render('Foundation', [
 ]))->name('foundation');
 
 // Author by Lab | zefry
+$firstPartyAuthRuntime = strtolower(trim((string) config('oneqay.runtime_class', '')));
+if (in_array($firstPartyAuthRuntime, ['local', 'test', 'ci'], true)) {
+    Route::post('/auth/login', [FirstPartySessionController::class, 'login'])
+        ->middleware(['throttle:5,1', 'throttle:20,60'])
+        ->name('auth.first-party.login');
+
+    Route::post('/auth/logout', [FirstPartySessionController::class, 'logout'])
+        ->name('auth.first-party.logout');
+}
+
 Route::post('/administration/policy/mutations', PolicyAdministrationController::class)
     ->middleware(RequirePolicyAdministrationSessionContextMiddleware::class)
     ->name('policy-administration.mutate');
