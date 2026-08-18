@@ -2,10 +2,52 @@
 
 declare(strict_types=1);
 
+use App\Application\Identity\FirstControlPrincipalCredentialBootstrapRepository;
+use App\Application\Identity\FirstControlPrincipalCredentialBootstrapService;
+use App\Domain\Tenancy\TenantId;
 use App\Infrastructure\Background\PreviewFilesystemQueue;
 use Illuminate\Support\Facades\Artisan;
 
 // Attribution: Lab | zefry
+
+$bootstrapRuntime = strtolower(trim((string) config('oneqay.runtime_class', '')));
+$bootstrapArmed = (bool) config('oneqay.first_control_principal_credential_bootstrap.enabled', false);
+
+if (in_array($bootstrapRuntime, ['local', 'test', 'ci'], true) && $bootstrapArmed) {
+    Artisan::command('oneqay:identity:first-control-credential-bootstrap {tenant_id}', function (): int {
+        try {
+            $tenantId = TenantId::fromString((string) $this->argument('tenant_id'));
+            $password = $this->secret('New first-control-principal password');
+            $confirmation = $this->secret('Confirm first-control-principal password');
+
+            if (! is_string($password)
+                || ! is_string($confirmation)
+                || ! hash_equals($password, $confirmation)) {
+                $this->error('ONEQAY_FIRST_CONTROL_CREDENTIAL_BOOTSTRAP_FAILED');
+
+                return 1;
+            }
+
+            /** @var FirstControlPrincipalCredentialBootstrapService $service */
+            $service = app(FirstControlPrincipalCredentialBootstrapService::class);
+            $outcome = $service->bootstrap($tenantId, $password);
+
+            if ($outcome !== FirstControlPrincipalCredentialBootstrapRepository::OUTCOME_APPLIED) {
+                $this->error('ONEQAY_FIRST_CONTROL_CREDENTIAL_BOOTSTRAP_FAILED');
+
+                return 1;
+            }
+
+            $this->line('ONEQAY_FIRST_CONTROL_CREDENTIAL_BOOTSTRAP|STATE=applied');
+
+            return 0;
+        } catch (\Throwable) {
+            $this->error('ONEQAY_FIRST_CONTROL_CREDENTIAL_BOOTSTRAP_FAILED');
+
+            return 1;
+        }
+    })->purpose('Establish the first credential for the exact Sprint 23 control principal in an explicitly armed Local/Test/CI runtime.');
+}
 
 Artisan::command('oneqay:preview-queue:enqueue {job_id} {--scenario=noop}', function (): int {
     $jobId = (string) $this->argument('job_id');
