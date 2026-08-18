@@ -28,7 +28,9 @@ final class PolicyAdministrationController
         }
 
         try {
-            $outcome = $this->delivery->apply($actor, $request->all());
+            /** @var array<string, mixed> $payload */
+            $payload = $request->except('_token');
+            $outcome = $this->delivery->apply($actor, $payload);
 
             return response()->json([
                 'status' => 'ok',
