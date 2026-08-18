@@ -8,8 +8,12 @@ on:
     paths:
       - 'apps/web/app/Application/Authorization/**'
       - 'apps/web/app/Infrastructure/Authorization/**'
+      - 'apps/web/app/Delivery/Http/Authorization/**'
+      - 'apps/web/app/Delivery/Http/Middleware/RequirePolicyAdministrationSessionContextMiddleware.php'
       - 'apps/web/app/Providers/AppServiceProvider.php'
+      - 'apps/web/routes/web.php'
       - 'apps/web/database/migrations/**'
+      - 'apps/web/tests/policy-administration-delivery.php'
       - 'apps/web/tests/protected-control-administrator-lifecycle.php'
       - 'apps/web/tests/initial-tenant-administrator-provisioning.php'
       - 'apps/web/tests/authorization-persistence.php'
@@ -23,7 +27,8 @@ on:
       - '.github/workflows/sprint22-policy-administration-regression.yml'
       - '.github/workflows/sprint23-initial-tenant-admin-provisioning-regression.yml'
       - '.github/workflows/sprint24-protected-control-admin-lifecycle-regression.yml'
-      - 'docs/PROTECTED_CONTROL_ADMINISTRATOR_DELEGATION_FOUNDATION.md'
+      - '.github/workflows/sprint25-policy-administration-delivery-regression.yml'
+      - 'docs/ORDINARY_POLICY_ADMINISTRATION_DELIVERY_FOUNDATION.md'
   workflow_dispatch:
 
 permissions:
@@ -54,7 +59,7 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: Preserve dependencies and root regression
+      - name: Preserve dependencies root regression and migrations
         run: |
           composer validate --strict --no-check-publish
           composer test
@@ -62,11 +67,11 @@ jobs:
           composer validate --no-check-publish
           composer install --no-interaction --no-progress --prefer-dist
 
-      - name: Preserve Sprint 21 read-only authorization through Sprint 24
+      - name: Preserve Sprint 21 read-only authorization through Sprint 25
         shell: bash
         run: |
           set -euo pipefail
-          find apps/web/app/Application/Authorization apps/web/app/Infrastructure/Authorization apps/web/database/migrations apps/web/tests -type f -name '*.php' -print0 | while IFS= read -r -d '' file; do php -l "$file"; done
+          find apps/web/app apps/web/database/migrations apps/web/routes apps/web/tests -type f -name '*.php' -print0 | while IFS= read -r -d '' file; do php -l "$file"; done
           mapfile -t migrations < <(find apps/web/database/migrations -maxdepth 1 -type f -name '*.php' -printf '%f\n' | sort)
           expected=(
             '0000_00_00_000001_create_foundational_context_graph.php'
@@ -86,13 +91,20 @@ jobs:
           if grep -R -n -F 'platform.system-update.install' apps/web/app/Application/Authorization apps/web/app/Infrastructure/Authorization; then exit 1; fi
           grep -Fq 'fk_initial_tenant_admin_identity' apps/web/database/migrations/0000_00_00_000005_create_initial_tenant_administrator_provisioning_journal.php
           grep -Fq 'fk_protected_control_admin_target' apps/web/database/migrations/0000_00_00_000006_create_protected_control_administrator_mutation_journal.php
+          grep -Fq 'DurablePolicyAdministrationService' apps/web/app/Application/Authorization/PolicyAdministrationDeliveryService.php
+          if grep -R -n -E 'InitialTenantAdministratorProvisioning(Service|Authority)|ProtectedControlAdministratorLifecycle(Service|Repository)|control\.administrator\.(delegate|revoke)' \
+            apps/web/app/Application/Authorization/PolicyAdministrationDeliveryCommand.php \
+            apps/web/app/Application/Authorization/PolicyAdministrationDeliveryService.php \
+            apps/web/app/Delivery/Http/Authorization/PolicyAdministrationController.php \
+            apps/web/app/Delivery/Http/Middleware/RequirePolicyAdministrationSessionContextMiddleware.php; then exit 1; fi
 
-      - name: Run Sprint 21 through Sprint 24 authorization regressions
+      - name: Run Sprint 21 through Sprint 25 authorization regressions
         working-directory: apps/web
         shell: bash
         run: |
           set -euo pipefail
           php -r 'require "vendor/autoload.php"; $app=require "bootstrap/app.php"; $app->make(Illuminate\Contracts\Http\Kernel::class)->bootstrap(); $assert=static function(bool $c,string $m):void{if(!$c)throw new RuntimeException($m);}; require "tests/authorization-persistence.php"; require "tests/authorization-administration-persistence.php"; require "tests/initial-tenant-administrator-provisioning.php"; require "tests/protected-control-administrator-lifecycle.php";'
+          php tests/policy-administration-delivery.php
 
       - name: Preserve isolation and privileged updater security
         working-directory: apps/web
@@ -106,6 +118,6 @@ jobs:
         run: |
           set -euo pipefail
           grep -Fq 'ONEQAY_PERSISTENCE_ENABLED=false' apps/web/environment.example
-          if grep -R -n -E 'LaravelDurableRolePermissionRepository|DurableScopedAuthorizationPolicy|LaravelDurablePolicyAdministrationRepository|DurablePolicyAdministrationService|LaravelInitialTenantAdministratorProvisioningRepository|InitialTenantAdministratorProvisioningService|InitialTenantAdministratorProvisioningAuthority|LaravelProtectedControlAdministratorLifecycleRepository|ProtectedControlAdministratorLifecycleService' apps/web/app/Application/Preview apps/web/app/Delivery/Preview 2>/dev/null; then exit 1; fi
+          if grep -R -n -E 'LaravelDurableRolePermissionRepository|DurableScopedAuthorizationPolicy|LaravelDurablePolicyAdministrationRepository|DurablePolicyAdministrationService|LaravelInitialTenantAdministratorProvisioningRepository|InitialTenantAdministratorProvisioningService|InitialTenantAdministratorProvisioningAuthority|LaravelProtectedControlAdministratorLifecycleRepository|ProtectedControlAdministratorLifecycleService|PolicyAdministrationDelivery|PolicyAdministrationController|RequirePolicyAdministrationSessionContextMiddleware' apps/web/app/Application/Preview apps/web/app/Delivery/Preview 2>/dev/null; then exit 1; fi
           if grep -Fq 'InitialTenantAdministratorProvisioningAuthority::class' apps/web/app/Providers/AppServiceProvider.php; then exit 1; fi
           git diff --exit-code

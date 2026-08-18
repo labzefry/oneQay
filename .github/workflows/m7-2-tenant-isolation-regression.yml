@@ -8,8 +8,12 @@ on:
     paths:
       - 'apps/web/app/Application/Authorization/**'
       - 'apps/web/app/Infrastructure/Authorization/**'
+      - 'apps/web/app/Delivery/Http/Authorization/**'
+      - 'apps/web/app/Delivery/Http/Middleware/RequirePolicyAdministrationSessionContextMiddleware.php'
       - 'apps/web/app/Providers/AppServiceProvider.php'
+      - 'apps/web/routes/web.php'
       - 'apps/web/database/migrations/**'
+      - 'apps/web/tests/policy-administration-delivery.php'
       - 'apps/web/tests/protected-control-administrator-lifecycle.php'
       - 'apps/web/tests/initial-tenant-administrator-provisioning.php'
       - 'apps/web/tests/authorization-administration-persistence.php'
@@ -18,12 +22,14 @@ on:
       - 'apps/web/tests/identity-org-context.php'
       - '.github/workflows/m7-2-tenant-isolation-regression.yml'
       - '.github/workflows/m7-3-identity-org-context-regression.yml'
+      - '.github/workflows/m7-4a-technical-preview-interaction-regression.yml'
       - '.github/workflows/m7-5-preview-db-qualification-regression.yml'
       - '.github/workflows/sprint21-role-permission-policy-regression.yml'
       - '.github/workflows/sprint22-policy-administration-regression.yml'
       - '.github/workflows/sprint23-initial-tenant-admin-provisioning-regression.yml'
       - '.github/workflows/sprint24-protected-control-admin-lifecycle-regression.yml'
-      - 'docs/PROTECTED_CONTROL_ADMINISTRATOR_DELEGATION_FOUNDATION.md'
+      - '.github/workflows/sprint25-policy-administration-delivery-regression.yml'
+      - 'docs/ORDINARY_POLICY_ADMINISTRATION_DELIVERY_FOUNDATION.md'
   workflow_dispatch:
 
 permissions:
@@ -54,45 +60,41 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: Enforce exact Sprint 24 source envelope
+      - name: Enforce exact Sprint 25 source envelope
         if: github.event_name == 'pull_request'
         shell: bash
         run: |
           set -euo pipefail
           git fetch --no-tags origin "${{ github.base_ref }}"
-          git diff --name-only "origin/${{ github.base_ref }}...HEAD" > /tmp/s24-files.txt
-          test -s /tmp/s24-files.txt
+          git diff --name-only "origin/${{ github.base_ref }}...HEAD" > /tmp/s25-files.txt
+          test -s /tmp/s25-files.txt
           while IFS= read -r file; do
             case "$file" in
-              apps/web/app/Application/Authorization/ProtectedControlAdministratorMutationId.php|\
-              apps/web/app/Application/Authorization/ProtectedControlAdministratorOperation.php|\
-              apps/web/app/Application/Authorization/ProtectedControlAdministratorMutation.php|\
-              apps/web/app/Application/Authorization/ProtectedControlAdministratorLifecycleRepository.php|\
-              apps/web/app/Application/Authorization/ProtectedControlAdministratorLifecycleService.php|\
-              apps/web/app/Application/Authorization/ProtectedControlAdministratorLifecycleViolation.php|\
-              apps/web/app/Infrastructure/Authorization/LaravelProtectedControlAdministratorLifecycleRepository.php|\
+              apps/web/app/Application/Authorization/PolicyAdministrationDeliveryCommand.php|\
+              apps/web/app/Application/Authorization/PolicyAdministrationDeliveryService.php|\
+              apps/web/app/Application/Authorization/PolicyAdministrationDeliveryViolation.php|\
+              apps/web/app/Delivery/Http/Authorization/PolicyAdministrationController.php|\
+              apps/web/app/Delivery/Http/Middleware/RequirePolicyAdministrationSessionContextMiddleware.php|\
               apps/web/app/Providers/AppServiceProvider.php|\
-              apps/web/database/migrations/0000_00_00_000006_create_protected_control_administrator_mutation_journal.php|\
-              apps/web/tests/protected-control-administrator-lifecycle.php|\
-              apps/web/tests/initial-tenant-administrator-provisioning.php|\
-              apps/web/tests/authorization-administration-persistence.php|\
-              apps/web/tests/authorization-persistence.php|\
-              apps/web/tests/identity-org-context.php|\
-              apps/web/tests/tenant-isolation.php|\
+              apps/web/routes/web.php|\
+              apps/web/tests/policy-administration-delivery.php|\
               .github/workflows/m7-2-tenant-isolation-regression.yml|\
               .github/workflows/m7-3-identity-org-context-regression.yml|\
+              .github/workflows/m7-4a-technical-preview-interaction-regression.yml|\
               .github/workflows/m7-5-preview-db-qualification-regression.yml|\
               .github/workflows/sprint21-role-permission-policy-regression.yml|\
               .github/workflows/sprint22-policy-administration-regression.yml|\
               .github/workflows/sprint23-initial-tenant-admin-provisioning-regression.yml|\
               .github/workflows/sprint24-protected-control-admin-lifecycle-regression.yml|\
-              docs/PROTECTED_CONTROL_ADMINISTRATOR_DELEGATION_FOUNDATION.md)
+              .github/workflows/sprint25-policy-administration-delivery-regression.yml|\
+              docs/ORDINARY_POLICY_ADMINISTRATION_DELIVERY_FOUNDATION.md)
                 ;;
-              *) echo "Sprint 24 unauthorized changed path: $file" >&2; exit 1 ;;
+              *) echo "Sprint 25 unauthorized changed path: $file" >&2; exit 1 ;;
             esac
-          done < /tmp/s24-files.txt
-          test "$(wc -l < /tmp/s24-files.txt)" -eq 23
-          if grep -Eq '(^|/)(composer\.(json|lock)|package(-lock)?\.json)$' /tmp/s24-files.txt; then exit 1; fi
+          done < /tmp/s25-files.txt
+          test "$(wc -l < /tmp/s25-files.txt)" -eq 18
+          if grep -Eq '(^|/)(composer\.(json|lock)|package(-lock)?\.json)$' /tmp/s25-files.txt; then exit 1; fi
+          if grep -Eq '^apps/web/database/migrations/' /tmp/s25-files.txt; then exit 1; fi
 
       - name: Preserve root Platform Foundation regression
         run: |
@@ -177,11 +179,12 @@ jobs:
         working-directory: apps/web
         run: npm run build
 
-      - name: Preserve application and durable regressions through Sprint 24
+      - name: Preserve application and durable regressions through Sprint 25
         working-directory: apps/web
         run: |
           composer test
           php -r 'require "vendor/autoload.php"; $app=require "bootstrap/app.php"; $app->make(Illuminate\Contracts\Http\Kernel::class)->bootstrap(); $assert=static function(bool $c,string $m):void{if(!$c)throw new RuntimeException($m);}; require "tests/authorization-persistence.php"; require "tests/authorization-administration-persistence.php"; require "tests/initial-tenant-administrator-provisioning.php"; require "tests/protected-control-administrator-lifecycle.php";'
+          php tests/policy-administration-delivery.php
 
       - name: Run M7.2 tenant isolation regression
         working-directory: apps/web

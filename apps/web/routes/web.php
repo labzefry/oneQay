@@ -1,6 +1,8 @@
 <?php
 
+use App\Delivery\Http\Authorization\PolicyAdministrationController;
 use App\Delivery\Http\HealthController;
+use App\Delivery\Http\Middleware\RequirePolicyAdministrationSessionContextMiddleware;
 use App\Delivery\Http\SystemUpdate\SystemUpdateControlPlaneController;
 use App\Delivery\Http\SystemUpdate\SystemUpdatePageController;
 use App\Delivery\Preview\TechnicalPreviewController;
@@ -16,6 +18,10 @@ Route::get('/', static fn () => Inertia::render('Foundation', [
 ]))->name('foundation');
 
 // Author by Lab | zefry
+Route::post('/administration/policy/mutations', PolicyAdministrationController::class)
+    ->middleware(RequirePolicyAdministrationSessionContextMiddleware::class)
+    ->name('policy-administration.mutate');
+
 Route::get('/system/update', SystemUpdatePageController::class)->name('system-update.page');
 
 Route::prefix('system/update')->controller(SystemUpdateControlPlaneController::class)->group(function (): void {

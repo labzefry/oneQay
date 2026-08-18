@@ -8,16 +8,22 @@ use App\Application\Authorization\DurableRolePermissionRepository;
 use App\Application\Authorization\InitialTenantAdministratorProvisioningRepository;
 use App\Application\Authorization\PolicyAdministrationClock;
 use App\Application\Authorization\ProtectedControlAdministratorLifecycleRepository;
+use App\Application\Organization\OrganizationalContextStore;
+use App\Application\Organization\OrganizationalRelationshipVerifier;
 use App\Application\Persistence\DurableContextGraphRepository;
 use App\Application\Persistence\PersistenceTransaction;
 use App\Application\Tenancy\TenantContextStore;
+use App\Application\Tenancy\TenantMembershipVerifier;
 use App\Infrastructure\Access\LaravelDurableOrganizationalAccessRepository;
 use App\Infrastructure\Authorization\LaravelDurablePolicyAdministrationRepository;
 use App\Infrastructure\Authorization\LaravelDurableRolePermissionRepository;
 use App\Infrastructure\Authorization\LaravelInitialTenantAdministratorProvisioningRepository;
 use App\Infrastructure\Authorization\LaravelProtectedControlAdministratorLifecycleRepository;
+use App\Infrastructure\Organization\LaravelOrganizationalRelationshipVerifier;
+use App\Infrastructure\Organization\RequestOrganizationalContextStore;
 use App\Infrastructure\Persistence\LaravelDurableContextGraphRepository;
 use App\Infrastructure\Persistence\LaravelPersistenceTransaction;
+use App\Infrastructure\Tenancy\LaravelTenantMembershipVerifier;
 use App\Infrastructure\Tenancy\RequestTenantContextStore;
 use Illuminate\Database\Connection;
 use Illuminate\Support\ServiceProvider;
@@ -30,6 +36,11 @@ final class AppServiceProvider extends ServiceProvider
         $this->app->scoped(
             TenantContextStore::class,
             static fn (): TenantContextStore => new RequestTenantContextStore(),
+        );
+
+        $this->app->scoped(
+            OrganizationalContextStore::class,
+            static fn (): OrganizationalContextStore => new RequestOrganizationalContextStore(),
         );
 
         $this->app->scoped(
@@ -58,6 +69,20 @@ final class AppServiceProvider extends ServiceProvider
                     (string) config('oneqay.runtime_class', ''),
                 );
             },
+        );
+
+        $this->app->scoped(
+            TenantMembershipVerifier::class,
+            fn ($app): TenantMembershipVerifier => new LaravelTenantMembershipVerifier(
+                $app->make(DurableOrganizationalAccessRepository::class),
+            ),
+        );
+
+        $this->app->scoped(
+            OrganizationalRelationshipVerifier::class,
+            fn ($app): OrganizationalRelationshipVerifier => new LaravelOrganizationalRelationshipVerifier(
+                $app->make(DurableOrganizationalAccessRepository::class),
+            ),
         );
 
         $this->app->scoped(

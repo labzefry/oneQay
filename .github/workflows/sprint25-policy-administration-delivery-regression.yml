@@ -1,0 +1,206 @@
+name: Sprint 25 Policy Administration Delivery Regression
+
+# Attribution: Lab | zefry
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/web/app/Application/Authorization/PolicyAdministrationDeliveryCommand.php'
+      - 'apps/web/app/Application/Authorization/PolicyAdministrationDeliveryService.php'
+      - 'apps/web/app/Application/Authorization/PolicyAdministrationDeliveryViolation.php'
+      - 'apps/web/app/Delivery/Http/Authorization/PolicyAdministrationController.php'
+      - 'apps/web/app/Delivery/Http/Middleware/RequirePolicyAdministrationSessionContextMiddleware.php'
+      - 'apps/web/app/Providers/AppServiceProvider.php'
+      - 'apps/web/routes/web.php'
+      - 'apps/web/tests/policy-administration-delivery.php'
+      - '.github/workflows/m7-2-tenant-isolation-regression.yml'
+      - '.github/workflows/m7-3-identity-org-context-regression.yml'
+      - '.github/workflows/m7-4a-technical-preview-interaction-regression.yml'
+      - '.github/workflows/m7-5-preview-db-qualification-regression.yml'
+      - '.github/workflows/sprint21-role-permission-policy-regression.yml'
+      - '.github/workflows/sprint22-policy-administration-regression.yml'
+      - '.github/workflows/sprint23-initial-tenant-admin-provisioning-regression.yml'
+      - '.github/workflows/sprint24-protected-control-admin-lifecycle-regression.yml'
+      - '.github/workflows/sprint25-policy-administration-delivery-regression.yml'
+      - 'docs/ORDINARY_POLICY_ADMINISTRATION_DELIVERY_FOUNDATION.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint25-policy-administration-delivery-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sprint25-policy-administration-delivery-regression:
+    name: sprint25-policy-administration-delivery-regression
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHQ=
+      APP_DEBUG: 'false'
+      APP_URL: http://localhost
+      ONEQAY_RUNTIME_CLASS: ci
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Enforce exact authorized Sprint 25 envelope
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "${{ github.base_ref }}"
+          git diff --name-only "origin/${{ github.base_ref }}...HEAD" > /tmp/sprint25-files.txt
+          test -s /tmp/sprint25-files.txt
+          while IFS= read -r file; do
+            case "$file" in
+              apps/web/app/Application/Authorization/PolicyAdministrationDeliveryCommand.php|\
+              apps/web/app/Application/Authorization/PolicyAdministrationDeliveryService.php|\
+              apps/web/app/Application/Authorization/PolicyAdministrationDeliveryViolation.php|\
+              apps/web/app/Delivery/Http/Authorization/PolicyAdministrationController.php|\
+              apps/web/app/Delivery/Http/Middleware/RequirePolicyAdministrationSessionContextMiddleware.php|\
+              apps/web/app/Providers/AppServiceProvider.php|\
+              apps/web/routes/web.php|\
+              apps/web/tests/policy-administration-delivery.php|\
+              .github/workflows/m7-2-tenant-isolation-regression.yml|\
+              .github/workflows/m7-3-identity-org-context-regression.yml|\
+              .github/workflows/m7-4a-technical-preview-interaction-regression.yml|\
+              .github/workflows/m7-5-preview-db-qualification-regression.yml|\
+              .github/workflows/sprint21-role-permission-policy-regression.yml|\
+              .github/workflows/sprint22-policy-administration-regression.yml|\
+              .github/workflows/sprint23-initial-tenant-admin-provisioning-regression.yml|\
+              .github/workflows/sprint24-protected-control-admin-lifecycle-regression.yml|\
+              .github/workflows/sprint25-policy-administration-delivery-regression.yml|\
+              docs/ORDINARY_POLICY_ADMINISTRATION_DELIVERY_FOUNDATION.md)
+                ;;
+              *) echo "Unauthorized Sprint 25 changed path: $file" >&2; exit 1 ;;
+            esac
+          done < /tmp/sprint25-files.txt
+          test "$(wc -l < /tmp/sprint25-files.txt)" -eq 18
+          if grep -Eq '(^|/)(composer\.(json|lock)|package(-lock)?\.json)$' /tmp/sprint25-files.txt; then exit 1; fi
+          if grep -Eq '^apps/web/database/migrations/' /tmp/sprint25-files.txt; then
+            echo 'Sprint 25 authorizes zero migration changes.' >&2; exit 1
+          fi
+
+      - name: Preserve root Platform Foundation regression
+        run: |
+          composer validate --strict --no-check-publish
+          composer test
+
+      - name: Install locked application dependencies
+        working-directory: apps/web
+        run: |
+          composer validate --no-check-publish
+          composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Validate PHP syntax and Application boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          find apps/web/app apps/web/bootstrap apps/web/config apps/web/database apps/web/public apps/web/routes apps/web/tests -type f -name '*.php' -print0 | while IFS= read -r -d '' file; do php -l "$file"; done
+          if grep -R -n -E 'Illuminate\\|Schema::|DB::|new PDO|mysqli_' \
+            apps/web/app/Application/Authorization/PolicyAdministrationDeliveryCommand.php \
+            apps/web/app/Application/Authorization/PolicyAdministrationDeliveryService.php \
+            apps/web/app/Application/Authorization/PolicyAdministrationDeliveryViolation.php; then
+            echo 'Sprint 25 Application delivery boundary gained framework/database mechanics.' >&2; exit 1
+          fi
+          grep -Fq 'DurablePolicyAdministrationService' apps/web/app/Application/Authorization/PolicyAdministrationDeliveryService.php
+          grep -Fq 'PolicyMutationOperation::fromString' apps/web/app/Application/Authorization/PolicyAdministrationDeliveryCommand.php
+          grep -Fq 'DurablePolicyMutation::roleCreate' apps/web/app/Application/Authorization/PolicyAdministrationDeliveryCommand.php
+          grep -Fq 'DurablePolicyMutation::roleAssignment' apps/web/app/Application/Authorization/PolicyAdministrationDeliveryCommand.php
+
+      - name: Enforce exact six-migration preservation
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t migrations < <(find apps/web/database/migrations -maxdepth 1 -type f -name '*.php' -printf '%f\n' | sort)
+          expected=(
+            '0000_00_00_000001_create_foundational_context_graph.php'
+            '0000_00_00_000002_create_organizational_access_grants.php'
+            '0000_00_00_000003_create_scoped_role_permission_policy.php'
+            '0000_00_00_000004_create_policy_mutation_journal.php'
+            '0000_00_00_000005_create_initial_tenant_administrator_provisioning_journal.php'
+            '0000_00_00_000006_create_protected_control_administrator_mutation_journal.php'
+          )
+          test "${migrations[*]}" = "${expected[*]}"
+
+      - name: Enforce single route session CSRF and verification boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          routes='apps/web/routes/web.php'
+          middleware='apps/web/app/Delivery/Http/Middleware/RequirePolicyAdministrationSessionContextMiddleware.php'
+          controller='apps/web/app/Delivery/Http/Authorization/PolicyAdministrationController.php'
+          provider='apps/web/app/Providers/AppServiceProvider.php'
+          test "$(grep -Fc "Route::post('/administration/policy/mutations'" "$routes")" -eq 1
+          if grep -Fq "Route::get('/administration/policy" "$routes"; then exit 1; fi
+          if grep -Ei 'technical-preview.*administration/policy|administration/policy.*technical-preview' "$routes"; then exit 1; fi
+          grep -Fq "['local', 'test', 'ci']" "$middleware"
+          grep -Fq "oneqay.auth.identity_id" "$middleware"
+          grep -Fq 'ServerVerifiedPlatformIdentity' "$middleware"
+          grep -Fq 'ServerVerifiedTenantContext' "$middleware"
+          grep -Fq 'EnterOrganizationalContext' "$middleware"
+          grep -Fq 'finally' "$middleware"
+          if grep -Eq '\$request->(input|query|header)\(' "$middleware"; then
+            echo 'Session context middleware reads authority from request input/query/header.' >&2; exit 1
+          fi
+          grep -Fq "except('_token')" "$controller"
+          grep -Fq 'TenantMembershipVerifier::class' "$provider"
+          grep -Fq 'LaravelTenantMembershipVerifier' "$provider"
+          grep -Fq 'OrganizationalRelationshipVerifier::class' "$provider"
+          grep -Fq 'LaravelOrganizationalRelationshipVerifier' "$provider"
+          grep -Fq 'OrganizationalContextStore::class' "$provider"
+          grep -Fq 'RequestOrganizationalContextStore' "$provider"
+          if grep -Fq 'InitialTenantAdministratorProvisioningAuthority::class' "$provider"; then exit 1; fi
+          if grep -R -n -E 'ValidateCsrfToken.*except|withoutMiddleware|csrf.*except' \
+            apps/web/routes/web.php \
+            apps/web/app/Delivery/Http/Authorization/PolicyAdministrationController.php \
+            apps/web/app/Delivery/Http/Middleware/RequirePolicyAdministrationSessionContextMiddleware.php; then
+            echo 'Sprint 25 introduced a CSRF bypass.' >&2; exit 1
+          fi
+
+      - name: Enforce protected-control Preview Production and updater separation
+        shell: bash
+        run: |
+          set -euo pipefail
+          delivery_files=(
+            apps/web/app/Application/Authorization/PolicyAdministrationDeliveryCommand.php
+            apps/web/app/Application/Authorization/PolicyAdministrationDeliveryService.php
+            apps/web/app/Delivery/Http/Authorization/PolicyAdministrationController.php
+            apps/web/app/Delivery/Http/Middleware/RequirePolicyAdministrationSessionContextMiddleware.php
+          )
+          if grep -n -E 'InitialTenantAdministratorProvisioning(Service|Authority)|PreauthorizedInitialTenantAdministratorProvisioningAuthority|ProtectedControlAdministratorLifecycle(Service|Repository)|control\.administrator\.(delegate|revoke)' "${delivery_files[@]}"; then exit 1; fi
+          if grep -R -n -E 'PolicyAdministrationDelivery|PolicyAdministrationController|RequirePolicyAdministrationSessionContextMiddleware' apps/web/app/Application/Preview apps/web/app/Delivery/Preview; then exit 1; fi
+          grep -Fq 'ONEQAY_PERSISTENCE_ENABLED=false' apps/web/environment.example
+          grep -Fq '/apps/web/database/migrations/' .github/workflows/m7-5-preview-release-artifact.yml
+          grep -Fq 'NO_SCHEMA_CHANGE' .github/workflows/m7-5-preview-release-artifact.yml
+          grep -Fq 'php tests/privileged-update-security.php' .github/workflows/sprint22-policy-administration-regression.yml
+
+      - name: Run Sprint 25 disposable HTTP delivery regression
+        working-directory: apps/web
+        run: php tests/policy-administration-delivery.php
+
+      - name: Preserve Sprint 21 through Sprint 24 regressions
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          composer test
+          php -r 'require "vendor/autoload.php"; $app=require "bootstrap/app.php"; $app->make(Illuminate\Contracts\Http\Kernel::class)->bootstrap(); $assert=static function(bool $c,string $m):void{if(!$c)throw new RuntimeException($m);}; require "tests/authorization-persistence.php"; require "tests/authorization-administration-persistence.php"; require "tests/initial-tenant-administrator-provisioning.php"; require "tests/protected-control-administrator-lifecycle.php";'
+          php tests/tenant-isolation.php
+          php tests/identity-org-context.php
+          php tests/privileged-update-security.php
+
+      - name: Preserve tracked source
+        run: git diff --exit-code
