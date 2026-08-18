@@ -8,6 +8,7 @@ use App\Application\Authorization\DurableRolePermissionRepository;
 use App\Application\Authorization\InitialTenantAdministratorProvisioningRepository;
 use App\Application\Authorization\PolicyAdministrationClock;
 use App\Application\Authorization\ProtectedControlAdministratorLifecycleRepository;
+use App\Application\Identity\FirstControlPrincipalCredentialBootstrapRepository;
 use App\Application\Identity\FirstPartyIdentityCredentialVerifier;
 use App\Application\Identity\InitialPasswordEnrollmentRepository;
 use App\Application\Organization\OrganizationalContextStore;
@@ -21,6 +22,7 @@ use App\Infrastructure\Authorization\LaravelDurablePolicyAdministrationRepositor
 use App\Infrastructure\Authorization\LaravelDurableRolePermissionRepository;
 use App\Infrastructure\Authorization\LaravelInitialTenantAdministratorProvisioningRepository;
 use App\Infrastructure\Authorization\LaravelProtectedControlAdministratorLifecycleRepository;
+use App\Infrastructure\Identity\LaravelFirstControlPrincipalCredentialBootstrapRepository;
 use App\Infrastructure\Identity\LaravelFirstPartyIdentityCredentialVerifier;
 use App\Infrastructure\Identity\LaravelInitialPasswordEnrollmentRepository;
 use App\Infrastructure\Organization\LaravelOrganizationalRelationshipVerifier;
@@ -169,6 +171,21 @@ final class AppServiceProvider extends ServiceProvider
                     $connection,
                     (bool) config('database.oneqay_persistence_enabled', false),
                     (string) config('oneqay.runtime_class', ''),
+                );
+            },
+        );
+
+        $this->app->scoped(
+            FirstControlPrincipalCredentialBootstrapRepository::class,
+            function ($app): FirstControlPrincipalCredentialBootstrapRepository {
+                /** @var Connection $connection */
+                $connection = $app->make('db')->connection();
+
+                return new LaravelFirstControlPrincipalCredentialBootstrapRepository(
+                    $connection,
+                    (bool) config('database.oneqay_persistence_enabled', false),
+                    (string) config('oneqay.runtime_class', ''),
+                    (bool) config('oneqay.first_control_principal_credential_bootstrap.enabled', false),
                 );
             },
         );
