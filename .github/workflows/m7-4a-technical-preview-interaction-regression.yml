@@ -8,14 +8,22 @@ on:
       - 'apps/web/app/Application/Preview/**'
       - 'apps/web/app/Infrastructure/Preview/**'
       - 'apps/web/app/Delivery/Preview/**'
+      - 'apps/web/app/Application/Identity/FirstPartyIdentityCredentialVerifier.php'
+      - 'apps/web/app/Application/Identity/VerifyFirstPartyIdentityCredential.php'
+      - 'apps/web/app/Infrastructure/Identity/LaravelFirstPartyIdentityCredentialVerifier.php'
+      - 'apps/web/app/Providers/AppServiceProvider.php'
       - 'apps/web/app/Providers/TechnicalPreviewServiceProvider.php'
       - 'apps/web/bootstrap/providers.php'
       - 'apps/web/config/technical-preview.php'
+      - 'apps/web/database/migrations/0000_00_00_000007_create_identity_password_credentials.php'
       - 'apps/web/routes/web.php'
       - 'apps/web/resources/js/pages/Preview/**'
       - 'apps/web/resources/js/components/Preview/**'
+      - 'apps/web/tests/identity-credential-verification.php'
       - 'apps/web/tests/technical-preview-interaction.php'
       - '.github/workflows/m7-4a-technical-preview-interaction-regression.yml'
+      - '.github/workflows/sprint26-identity-credential-verification-regression.yml'
+      - 'docs/FIRST_PARTY_IDENTITY_CREDENTIAL_VERIFICATION_FOUNDATION.md'
   workflow_dispatch:
 
 permissions:
@@ -97,7 +105,7 @@ jobs:
           test -f apps/web/composer.lock
           test -f apps/web/package-lock.json
           if git diff --name-only "origin/${{ github.base_ref }}...HEAD" | grep -Eq '(^|/)(composer\.(json|lock)|package(-lock)?\.json)$'; then
-            echo 'M7.4A does not authorize dependency manifest or lockfile changes.' >&2
+            echo 'M7.4A/Sprint 26 does not authorize dependency manifest or lockfile changes.' >&2
             exit 1
           fi
 
@@ -136,8 +144,22 @@ jobs:
         run: |
           set -euo pipefail
           git fetch --no-tags origin "${{ github.base_ref }}"
-          if git diff --name-only "origin/${{ github.base_ref }}...HEAD" | grep -Eq '^apps/web/database/migrations/'; then
-            echo 'M7.4A/Sprint 25 does not authorize migration changes.' >&2
+          base="origin/${{ github.base_ref }}"
+          if [[ "${{ github.head_ref }}" == agent/sprint26-identity-credential-verification ]]; then
+            immutable=(
+              apps/web/database/migrations/0000_00_00_000001_create_foundational_context_graph.php
+              apps/web/database/migrations/0000_00_00_000002_create_organizational_access_grants.php
+              apps/web/database/migrations/0000_00_00_000003_create_scoped_role_permission_policy.php
+              apps/web/database/migrations/0000_00_00_000004_create_policy_mutation_journal.php
+              apps/web/database/migrations/0000_00_00_000005_create_initial_tenant_administrator_provisioning_journal.php
+              apps/web/database/migrations/0000_00_00_000006_create_protected_control_administrator_mutation_journal.php
+            )
+            git diff --exit-code "$base...HEAD" -- "${immutable[@]}"
+            mapfile -t migration_diff < <(git diff --name-status "$base...HEAD" -- apps/web/database/migrations)
+            test "${#migration_diff[@]}" -eq 1
+            test "${migration_diff[0]}" = $'A\tapps/web/database/migrations/0000_00_00_000007_create_identity_password_credentials.php'
+          elif git diff --name-only "$base...HEAD" | grep -Eq '^apps/web/database/migrations/'; then
+            echo 'M7.4A does not independently authorize migration changes.' >&2
             exit 1
           fi
           mapfile -t migrations < <(find apps/web/database/migrations -maxdepth 1 -type f -name '*.php' -printf '%f\n' | sort)
@@ -148,6 +170,7 @@ jobs:
             '0000_00_00_000004_create_policy_mutation_journal.php'
             '0000_00_00_000005_create_initial_tenant_administrator_provisioning_journal.php'
             '0000_00_00_000006_create_protected_control_administrator_mutation_journal.php'
+            '0000_00_00_000007_create_identity_password_credentials.php'
           )
           test "${migrations[*]}" = "${expected[*]}"
           if grep -R -n -E 'Illuminate\\Database|Schema::|DB::|new PDO|mysqli_' \
@@ -158,6 +181,11 @@ jobs:
           if grep -R -n -E 'BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|AKIA[0-9A-Z]{16}' \
             apps/web/app/Application/Preview apps/web/app/Infrastructure/Preview apps/web/app/Delivery/Preview 2>/dev/null; then
             echo 'M7.4A source contains forbidden credential material.' >&2
+            exit 1
+          fi
+          if grep -R -n -E 'FirstPartyIdentityCredentialVerifier|VerifyFirstPartyIdentityCredential|LaravelFirstPartyIdentityCredentialVerifier' \
+            apps/web/app/Application/Preview apps/web/app/Infrastructure/Preview apps/web/app/Delivery/Preview 2>/dev/null; then
+            echo 'Sprint 26 credential verifier must remain outside Technical Preview delivery.' >&2
             exit 1
           fi
 
@@ -192,6 +220,10 @@ jobs:
       - name: Preserve M7.4 POS core synthetic regression
         working-directory: apps/web
         run: php tests/pos-core-synthetic.php
+
+      - name: Preserve Sprint 26 credential verification regression
+        working-directory: apps/web
+        run: php tests/identity-credential-verification.php
 
       - name: Run M7.4A Technical Preview interaction regression
         working-directory: apps/web
