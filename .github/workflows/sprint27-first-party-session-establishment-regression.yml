@@ -1,0 +1,267 @@
+name: Sprint 27 First-Party Session Establishment Regression
+
+# Attribution: Lab | zefry
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/web/app/Delivery/Http/Identity/FirstPartySessionKeys.php'
+      - 'apps/web/app/Delivery/Http/Identity/FirstPartySessionController.php'
+      - 'apps/web/app/Delivery/Http/Middleware/RequirePolicyAdministrationSessionContextMiddleware.php'
+      - 'apps/web/routes/web.php'
+      - 'apps/web/tests/first-party-session-establishment.php'
+      - '.github/workflows/sprint27-first-party-session-establishment-regression.yml'
+      - 'docs/FIRST_PARTY_LOGIN_SESSION_ESTABLISHMENT_FOUNDATION.md'
+      - '.github/workflows/m7-2-tenant-isolation-regression.yml'
+      - '.github/workflows/m7-3-identity-org-context-regression.yml'
+      - '.github/workflows/m7-4a-technical-preview-interaction-regression.yml'
+      - '.github/workflows/m7-5-preview-db-qualification-regression.yml'
+      - '.github/workflows/sprint21-role-permission-policy-regression.yml'
+      - '.github/workflows/sprint22-policy-administration-regression.yml'
+      - '.github/workflows/sprint23-initial-tenant-admin-provisioning-regression.yml'
+      - '.github/workflows/sprint24-protected-control-admin-lifecycle-regression.yml'
+      - '.github/workflows/sprint25-policy-administration-delivery-regression.yml'
+      - '.github/workflows/sprint26-identity-credential-verification-regression.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint27-first-party-session-establishment-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sprint27-first-party-session-establishment-regression:
+    name: sprint27-first-party-session-establishment-regression
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHQ=
+      APP_DEBUG: 'false'
+      APP_URL: http://localhost
+      ONEQAY_RUNTIME_CLASS: ci
+      ONEQAY_PERSISTENCE_ENABLED: 'false'
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Enforce exact Sprint 27 source envelope
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "${{ github.base_ref }}"
+          git diff --name-only "origin/${{ github.base_ref }}...HEAD" > /tmp/sprint27-files.txt
+          test -s /tmp/sprint27-files.txt
+          while IFS= read -r file; do
+            case "$file" in
+              apps/web/app/Delivery/Http/Identity/FirstPartySessionKeys.php|\
+              apps/web/app/Delivery/Http/Identity/FirstPartySessionController.php|\
+              apps/web/app/Delivery/Http/Middleware/RequirePolicyAdministrationSessionContextMiddleware.php|\
+              apps/web/routes/web.php|\
+              apps/web/tests/first-party-session-establishment.php|\
+              .github/workflows/sprint27-first-party-session-establishment-regression.yml|\
+              docs/FIRST_PARTY_LOGIN_SESSION_ESTABLISHMENT_FOUNDATION.md|\
+              .github/workflows/m7-2-tenant-isolation-regression.yml|\
+              .github/workflows/m7-3-identity-org-context-regression.yml|\
+              .github/workflows/m7-4a-technical-preview-interaction-regression.yml|\
+              .github/workflows/m7-5-preview-db-qualification-regression.yml|\
+              .github/workflows/sprint21-role-permission-policy-regression.yml|\
+              .github/workflows/sprint22-policy-administration-regression.yml|\
+              .github/workflows/sprint23-initial-tenant-admin-provisioning-regression.yml|\
+              .github/workflows/sprint24-protected-control-admin-lifecycle-regression.yml|\
+              .github/workflows/sprint25-policy-administration-delivery-regression.yml|\
+              .github/workflows/sprint26-identity-credential-verification-regression.yml)
+                ;;
+              *) echo "Unauthorized Sprint 27 changed path: $file" >&2; exit 1 ;;
+            esac
+          done < /tmp/sprint27-files.txt
+          test "$(wc -l < /tmp/sprint27-files.txt)" -eq 17
+          if grep -Eq '(^|/)(composer\.(json|lock)|package(-lock)?\.json)$' /tmp/sprint27-files.txt; then
+            echo 'Sprint 27 authorizes zero dependency manifest or lock changes.' >&2
+            exit 1
+          fi
+
+      - name: Enforce zero migration changes and exact canonical migration set
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${{ github.event_name }}" == 'pull_request' ]]; then
+            git diff --exit-code "origin/${{ github.base_ref }}...HEAD" -- apps/web/database/migrations
+          fi
+          mapfile -t migrations < <(find apps/web/database/migrations -maxdepth 1 -type f -name '*.php' -printf '%f\n' | sort)
+          expected=(
+            '0000_00_00_000001_create_foundational_context_graph.php'
+            '0000_00_00_000002_create_organizational_access_grants.php'
+            '0000_00_00_000003_create_scoped_role_permission_policy.php'
+            '0000_00_00_000004_create_policy_mutation_journal.php'
+            '0000_00_00_000005_create_initial_tenant_administrator_provisioning_journal.php'
+            '0000_00_00_000006_create_protected_control_administrator_mutation_journal.php'
+            '0000_00_00_000007_create_identity_password_credentials.php'
+          )
+          test "${migrations[*]}" = "${expected[*]}"
+
+      - name: Preserve root Platform Foundation regression
+        run: |
+          composer validate --strict --no-check-publish
+          composer test
+
+      - name: Install locked application dependencies
+        working-directory: apps/web
+        run: |
+          composer validate --no-check-publish
+          composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Validate PHP syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          find apps/web/app apps/web/bootstrap apps/web/config apps/web/database apps/web/public apps/web/routes apps/web/tests \
+            -type f -name '*.php' -print0 |
+            while IFS= read -r -d '' file; do php -l "$file"; done
+
+      - name: Enforce exact first-party session key vocabulary
+        shell: bash
+        run: |
+          set -euo pipefail
+          keys='apps/web/app/Delivery/Http/Identity/FirstPartySessionKeys.php'
+          middleware='apps/web/app/Delivery/Http/Middleware/RequirePolicyAdministrationSessionContextMiddleware.php'
+          test "$(grep -Fc "oneqay.auth." "$keys")" -eq 5
+          grep -Fq "IDENTITY = 'oneqay.auth.identity_id'" "$keys"
+          grep -Fq "TENANT = 'oneqay.auth.tenant_id'" "$keys"
+          grep -Fq "ORGANIZATION = 'oneqay.auth.organization_id'" "$keys"
+          grep -Fq "OUTLET = 'oneqay.auth.outlet_id'" "$keys"
+          grep -Fq "DEVICE = 'oneqay.auth.device_id'" "$keys"
+          grep -Fq 'FirstPartySessionKeys::IDENTITY' "$middleware"
+          grep -Fq 'FirstPartySessionKeys::TENANT' "$middleware"
+          grep -Fq 'FirstPartySessionKeys::ORGANIZATION' "$middleware"
+          grep -Fq 'FirstPartySessionKeys::OUTLET' "$middleware"
+          grep -Fq 'FirstPartySessionKeys::DEVICE' "$middleware"
+
+      - name: Enforce bounded credential-to-session controller
+        shell: bash
+        run: |
+          set -euo pipefail
+          controller='apps/web/app/Delivery/Http/Identity/FirstPartySessionController.php'
+          grep -Fq 'VerifyFirstPartyIdentityCredential' "$controller"
+          grep -Fq 'EnterOrganizationalContext' "$controller"
+          grep -Fq "['local', 'test', 'ci']" "$controller"
+          grep -Fq 'AUTHENTICATION_FAILED' "$controller"
+          grep -Fq -- '->invalidate()' "$controller"
+          grep -Fq -- '->regenerateToken()' "$controller"
+          grep -Fq 'FirstPartySessionKeys::IDENTITY' "$controller"
+          grep -Fq 'FirstPartySessionKeys::TENANT' "$controller"
+          grep -Fq 'FirstPartySessionKeys::ORGANIZATION' "$controller"
+          if grep -n -E 'password_(verify|hash)\s*\(|Schema::|DB::|new PDO|mysqli_|ConnectionInterface|Query\\|->table\(' "$controller"; then
+            echo 'Sprint 27 controller gained credential/database mechanics instead of composing published boundaries.' >&2
+            exit 1
+          fi
+          if grep -Ei '\b(log|logger|debug|info|warning|error)\s*\(' "$controller"; then
+            echo 'Sprint 27 controller gained logging mechanics.' >&2
+            exit 1
+          fi
+          if grep -Ei 'authorization\.policy\.manage|control\.administrator|system.?update|updater|superadmin' "$controller"; then
+            echo 'Sprint 27 controller gained protected-control or updater authority.' >&2
+            exit 1
+          fi
+
+      - name: Enforce exact two-route authority CSRF stack and login throttling
+        shell: bash
+        run: |
+          set -euo pipefail
+          routes='apps/web/routes/web.php'
+          test "$(grep -Fc "Route::post('/auth/" "$routes")" -eq 2
+          grep -Fq "Route::post('/auth/login'" "$routes"
+          grep -Fq "Route::post('/auth/logout'" "$routes"
+          grep -Fq "name('auth.first-party.login')" "$routes"
+          grep -Fq "name('auth.first-party.logout')" "$routes"
+          grep -Fq "['local', 'test', 'ci']" "$routes"
+          grep -Fq "throttle:5,1" "$routes"
+          grep -Fq "throttle:20,60" "$routes"
+          if grep -Eq "Route::(get|put|patch|delete|options|match|any)\('/auth/" "$routes"; then
+            echo 'Sprint 27 gained an unauthorized auth route method.' >&2
+            exit 1
+          fi
+          if grep -R -n -E 'FirstPartySessionController|FirstPartySessionKeys' apps/web/app/Application/Preview apps/web/app/Delivery/Preview; then
+            echo 'Sprint 27 first-party authentication was wired into Technical Preview source.' >&2
+            exit 1
+          fi
+
+      - name: Prove runtime-scoped route registration
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          ci_routes="$(ONEQAY_RUNTIME_CLASS=ci php artisan route:list 2>&1)"
+          grep -Fq 'auth.first-party.login' <<<"$ci_routes"
+          grep -Fq 'auth.first-party.logout' <<<"$ci_routes"
+          preview_routes="$(ONEQAY_RUNTIME_CLASS=preview php artisan route:list 2>&1)"
+          if grep -Fq 'auth.first-party.login' <<<"$preview_routes" || grep -Fq 'auth.first-party.logout' <<<"$preview_routes"; then
+            echo 'Sprint 27 auth routes are active in Preview runtime.' >&2
+            exit 1
+          fi
+          production_routes="$(ONEQAY_RUNTIME_CLASS=production php artisan route:list 2>&1)"
+          if grep -Fq 'auth.first-party.login' <<<"$production_routes" || grep -Fq 'auth.first-party.logout' <<<"$production_routes"; then
+            echo 'Sprint 27 auth routes are active in Production runtime.' >&2
+            exit 1
+          fi
+
+      - name: Preserve credential read-only and persistence defaults
+        shell: bash
+        run: |
+          set -euo pipefail
+          verifier='apps/web/app/Infrastructure/Identity/LaravelFirstPartyIdentityCredentialVerifier.php'
+          grep -Fq 'password_verify(' "$verifier"
+          grep -Fq 'DUMMY_HASH' "$verifier"
+          if grep -Eq '\b(insert|insertOrIgnore|update|updateOrInsert|upsert|delete|truncate)\s*\(' "$verifier"; then
+            echo 'Published Sprint 26 verifier became writable.' >&2
+            exit 1
+          fi
+          grep -Fq 'ONEQAY_PERSISTENCE_ENABLED=false' apps/web/environment.example
+          if grep -R -n -E 'ONEQAY_PERSISTENCE_ENABLED=true|runtime_class.*production.*credential|credential.*runtime_class.*production' \
+            apps/web/environment.example apps/web/config apps/web/app/Infrastructure/Identity; then
+            echo 'Sprint 27 weakened Production or persistence default boundary.' >&2
+            exit 1
+          fi
+
+      - name: Preserve Technical Preview Production and updater separation
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq '/apps/web/database/migrations/' .github/workflows/m7-5-preview-release-artifact.yml
+          grep -Fq 'NO_SCHEMA_CHANGE' .github/workflows/m7-5-preview-release-artifact.yml
+          grep -Fq 'php tests/privileged-update-security.php' .github/workflows/sprint22-policy-administration-regression.yml
+          if grep -R -n -E '/auth/login|auth\.first-party|FirstPartySessionController' apps/web/app/Application/Preview apps/web/app/Delivery/Preview; then
+            echo 'Technical Preview source gained first-party credential login wiring.' >&2
+            exit 1
+          fi
+
+      - name: Run Sprint 27 disposable session regression
+        working-directory: apps/web
+        run: php tests/first-party-session-establishment.php
+
+      - name: Preserve Sprint 21 through Sprint 26 regressions
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          composer test
+          php -r 'require "vendor/autoload.php"; $app=require "bootstrap/app.php"; $app->make(Illuminate\Contracts\Http\Kernel::class)->bootstrap(); $assert=static function(bool $c,string $m):void{if(!$c)throw new RuntimeException($m);}; require "tests/authorization-persistence.php"; require "tests/authorization-administration-persistence.php"; require "tests/initial-tenant-administrator-provisioning.php"; require "tests/protected-control-administrator-lifecycle.php";'
+          php tests/tenant-isolation.php
+          php tests/identity-org-context.php
+          php tests/policy-administration-delivery.php
+          php tests/identity-credential-verification.php
+          php tests/privileged-update-security.php
+
+      - name: Preserve tracked source
+        run: git diff --exit-code
