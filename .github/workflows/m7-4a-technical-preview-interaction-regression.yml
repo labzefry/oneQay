@@ -135,7 +135,6 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if: github.event_name == 'pull_request'
           git fetch --no-tags origin "${{ github.base_ref }}"
           if git diff --name-only "origin/${{ github.base_ref }}...HEAD" | grep -Eq '^apps/web/database/migrations/'; then
             echo 'M7.4A/Sprint 25 does not authorize migration changes.' >&2
