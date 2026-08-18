@@ -16,6 +16,7 @@ on:
       - 'apps/web/tests/policy-administration-delivery.php'
       - '.github/workflows/m7-2-tenant-isolation-regression.yml'
       - '.github/workflows/m7-3-identity-org-context-regression.yml'
+      - '.github/workflows/m7-4a-technical-preview-interaction-regression.yml'
       - '.github/workflows/m7-5-preview-db-qualification-regression.yml'
       - '.github/workflows/sprint21-role-permission-policy-regression.yml'
       - '.github/workflows/sprint22-policy-administration-regression.yml'
@@ -74,6 +75,7 @@ jobs:
               apps/web/tests/policy-administration-delivery.php|\
               .github/workflows/m7-2-tenant-isolation-regression.yml|\
               .github/workflows/m7-3-identity-org-context-regression.yml|\
+              .github/workflows/m7-4a-technical-preview-interaction-regression.yml|\
               .github/workflows/m7-5-preview-db-qualification-regression.yml|\
               .github/workflows/sprint21-role-permission-policy-regression.yml|\
               .github/workflows/sprint22-policy-administration-regression.yml|\
@@ -85,7 +87,7 @@ jobs:
               *) echo "Unauthorized Sprint 25 changed path: $file" >&2; exit 1 ;;
             esac
           done < /tmp/sprint25-files.txt
-          test "$(wc -l < /tmp/sprint25-files.txt)" -eq 17
+          test "$(wc -l < /tmp/sprint25-files.txt)" -eq 18
           if grep -Eq '(^|/)(composer\.(json|lock)|package(-lock)?\.json)$' /tmp/sprint25-files.txt; then exit 1; fi
           if grep -Eq '^apps/web/database/migrations/' /tmp/sprint25-files.txt; then
             echo 'Sprint 25 authorizes zero migration changes.' >&2; exit 1
