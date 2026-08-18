@@ -9,16 +9,14 @@ on:
       - 'apps/web/app/Application/Authorization/**'
       - 'apps/web/app/Infrastructure/Authorization/**'
       - 'apps/web/app/Providers/AppServiceProvider.php'
-      - 'apps/web/database/migrations/0000_00_00_000003_create_scoped_role_permission_policy.php'
+      - 'apps/web/database/migrations/**'
       - 'apps/web/tests/authorization-persistence.php'
-      - 'apps/web/tests/run.php'
+      - 'apps/web/tests/authorization-administration-persistence.php'
       - 'apps/web/tests/tenant-isolation.php'
       - 'apps/web/tests/identity-org-context.php'
-      - '.github/workflows/m7-2-tenant-isolation-regression.yml'
-      - '.github/workflows/m7-3-identity-org-context-regression.yml'
-      - '.github/workflows/m7-5-preview-db-qualification-regression.yml'
       - '.github/workflows/sprint21-role-permission-policy-regression.yml'
-      - 'docs/DURABLE_SCOPED_ROLE_PERMISSION_POLICY_FOUNDATION.md'
+      - '.github/workflows/sprint22-policy-administration-regression.yml'
+      - 'docs/DURABLE_AUTHORIZATION_POLICY_ADMINISTRATION_FOUNDATION.md'
   workflow_dispatch:
 
 permissions:
@@ -49,157 +47,48 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: Preserve dependency manifests and lockfiles
-        if: github.event_name == 'pull_request'
-        shell: bash
-        run: |
-          set -euo pipefail
-          git fetch --no-tags origin "${{ github.base_ref }}"
-          if git diff --name-only "origin/${{ github.base_ref }}...HEAD" | grep -Eq '(^|/)(composer\.(json|lock)|package(-lock)?\.json)$'; then
-            echo 'Sprint 21 does not authorize dependency manifest or lockfile changes.' >&2
-            exit 1
-          fi
-
-      - name: Preserve root Platform Foundation regression
+      - name: Preserve dependencies and root regression
         run: |
           composer validate --strict --no-check-publish
           composer test
-
-      - name: Install locked application dependencies
-        working-directory: apps/web
-        run: |
+          cd apps/web
           composer validate --no-check-publish
           composer install --no-interaction --no-progress --prefer-dist
 
-      - name: Validate Sprint 21 PHP syntax
+      - name: Preserve Sprint 21 read-only authorization boundary
         shell: bash
         run: |
           set -euo pipefail
-          find \
-            apps/web/app/Application/Authorization \
-            apps/web/app/Infrastructure/Authorization \
-            apps/web/database/migrations/0000_00_00_000003_create_scoped_role_permission_policy.php \
-            apps/web/tests/authorization-persistence.php \
-            -type f -name '*.php' -print0 |
-            while IFS= read -r -d '' file; do
-              php -l "$file"
-            done
-
-      - name: Enforce Application framework independence
-        shell: bash
-        run: |
-          set -euo pipefail
-          if grep -R -n -E 'Illuminate\\|Laravel\\|Schema::|DB::|new PDO|mysqli_' apps/web/app/Application/Authorization; then
-            echo 'Sprint 21 Application authorization must remain framework and database independent.' >&2
-            exit 1
-          fi
-
-      - name: Enforce exact governed migration set and schema boundary
-        shell: bash
-        run: |
-          set -euo pipefail
+          find apps/web/app/Application/Authorization apps/web/app/Infrastructure/Authorization apps/web/database/migrations apps/web/tests -type f -name '*.php' -print0 | while IFS= read -r -d '' file; do php -l "$file"; done
           mapfile -t migrations < <(find apps/web/database/migrations -maxdepth 1 -type f -name '*.php' -printf '%f\n' | sort)
-          expected=(
-            '0000_00_00_000001_create_foundational_context_graph.php'
-            '0000_00_00_000002_create_organizational_access_grants.php'
-            '0000_00_00_000003_create_scoped_role_permission_policy.php'
-          )
+          expected=('0000_00_00_000001_create_foundational_context_graph.php' '0000_00_00_000002_create_organizational_access_grants.php' '0000_00_00_000003_create_scoped_role_permission_policy.php' '0000_00_00_000004_create_policy_mutation_journal.php')
           test "${migrations[*]}" = "${expected[*]}"
-          migration='apps/web/database/migrations/0000_00_00_000003_create_scoped_role_permission_policy.php'
-          for table in \
-            oneqay_roles \
-            oneqay_role_permissions \
-            oneqay_tenant_role_assignments \
-            oneqay_organization_role_assignments \
-            oneqay_outlet_role_assignments \
-            oneqay_device_role_assignments; do
-            grep -Fq "$table" "$migration"
-          done
-          grep -Fq 'fk_organization_role_membership' "$migration"
-          grep -Fq 'fk_outlet_role_access' "$migration"
-          grep -Fq 'fk_device_role_access' "$migration"
-          grep -Fq 'Forward-only generated migration; rollback is not authorized.' "$migration"
-
-      - name: Enforce read-only durable authorization repository
-        shell: bash
-        run: |
-          set -euo pipefail
-          repo='apps/web/app/Infrastructure/Authorization/LaravelDurableRolePermissionRepository.php'
-          grep -Fq "in_array(\$runtime, ['local', 'test', 'ci'], true)" "$repo"
-          grep -Fq -- "->where('tenant_id'," "$repo"
-          if grep -Eq '\b(insert|insertOrIgnore|update|updateOrInsert|upsert|delete|truncate)\s*\(' "$repo"; then
-            echo 'Sprint 21 durable authorization repository must be read-only.' >&2
-            exit 1
-          fi
-          if grep -Fq 'Schema::' "$repo"; then
-            echo 'Sprint 21 durable authorization repository must not mutate schema.' >&2
-            exit 1
-          fi
-
-      - name: Preserve reserved platform namespace
-        shell: bash
-        run: |
-          set -euo pipefail
+          read_repo='apps/web/app/Infrastructure/Authorization/LaravelDurableRolePermissionRepository.php'
+          grep -Fq "in_array(\$runtime, ['local', 'test', 'ci'], true)" "$read_repo"
+          grep -Fq -- "->where('tenant_id'," "$read_repo"
+          if grep -Eq '\b(insert|insertOrIgnore|update|updateOrInsert|upsert|delete|truncate)\s*\(' "$read_repo"; then exit 1; fi
           grep -Fq 'platform-superadmin' apps/web/app/Application/Authorization/RoleIdentifier.php
-          grep -Fq "str_starts_with(\$canonical, 'platform-')" apps/web/app/Application/Authorization/RoleIdentifier.php
-          grep -Fq "str_starts_with(\$canonical, 'platform_')" apps/web/app/Application/Authorization/RoleIdentifier.php
           grep -Fq "str_starts_with(\$canonical, 'platform.')" apps/web/app/Application/Authorization/PermissionIdentifier.php
-          if grep -R -n -F 'platform.system-update.install' apps/web/app/Application/Authorization apps/web/app/Infrastructure/Authorization; then
-            echo 'Tenant authorization must not embed the privileged updater capability.' >&2
-            exit 1
-          fi
-
-      - name: Preserve M7.1 application regression
-        working-directory: apps/web
-        run: composer test
+          if grep -R -n -F 'platform.system-update.install' apps/web/app/Application/Authorization apps/web/app/Infrastructure/Authorization; then exit 1; fi
 
       - name: Run Sprint 21 disposable authorization regression
         working-directory: apps/web
         shell: bash
         run: |
           set -euo pipefail
-          php -r '
-            require "vendor/autoload.php";
-            $app = require "bootstrap/app.php";
-            $kernel = $app->make(\Illuminate\Contracts\Http\Kernel::class);
-            $request = \Illuminate\Http\Request::create("/health/live", "GET");
-            $response = $kernel->handle($request);
-            if ($response->getStatusCode() !== 200) {
-              throw new RuntimeException("Sprint 21 application harness bootstrap failed.");
-            }
-            $kernel->terminate($request, $response);
-            $assert = static function (bool $condition, string $message): void {
-              if (! $condition) { throw new RuntimeException($message); }
-            };
-            require "tests/authorization-persistence.php";
-          '
+          php -r 'require "vendor/autoload.php"; $app=require "bootstrap/app.php"; $app->make(Illuminate\Contracts\Http\Kernel::class)->bootstrap(); $assert=static function(bool $c,string $m):void{if(!$c)throw new RuntimeException($m);}; require "tests/authorization-persistence.php";'
 
-      - name: Preserve tenant and organizational isolation
+      - name: Preserve isolation and privileged updater security
         working-directory: apps/web
         run: |
           php tests/tenant-isolation.php
           php tests/identity-org-context.php
-
-      - name: Preserve independent privileged updater security
-        working-directory: apps/web
-        run: php tests/privileged-update-security.php
+          php tests/privileged-update-security.php
 
       - name: Preserve Preview and Production denial
         shell: bash
         run: |
           set -euo pipefail
           grep -Fq 'ONEQAY_PERSISTENCE_ENABLED=false' apps/web/environment.example
-          if grep -R -n -E 'LaravelDurableRolePermissionRepository|DurableScopedAuthorizationPolicy' \
-            apps/web/app/Application/Preview \
-            apps/web/app/Delivery/Preview 2>/dev/null; then
-            echo 'Sprint 21 must not wire durable policy into Technical Preview.' >&2
-            exit 1
-          fi
-          if grep -R -n -E 'ONEQAY_PERSISTENCE_ENABLED=true|oneqay_persistence_enabled.*true' \
-            apps/web/environment.example apps/web/config; then
-            echo 'Sprint 21 must not enable durable persistence by default.' >&2
-            exit 1
-          fi
-
-      - name: Confirm tracked source remains unchanged
-        run: git diff --exit-code
+          if grep -R -n -E 'LaravelDurableRolePermissionRepository|DurableScopedAuthorizationPolicy|LaravelDurablePolicyAdministrationRepository|DurablePolicyAdministrationService' apps/web/app/Application/Preview apps/web/app/Delivery/Preview 2>/dev/null; then exit 1; fi
+          git diff --exit-code

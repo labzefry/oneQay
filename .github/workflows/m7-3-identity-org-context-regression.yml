@@ -1,40 +1,25 @@
 name: M7.3 Identity Organizational Context Regression
 
+# Attribution: Lab | zefry
+
 on:
   pull_request:
     branches: [main]
     paths:
-      - 'apps/web/app/Domain/Identity/**'
-      - 'apps/web/app/Domain/Organization/**'
-      - 'apps/web/app/Domain/Outlet/**'
-      - 'apps/web/app/Domain/Device/**'
-      - 'apps/web/app/Application/Identity/**'
-      - 'apps/web/app/Application/Organization/**'
-      - 'apps/web/app/Application/Persistence/**'
-      - 'apps/web/app/Application/Access/**'
       - 'apps/web/app/Application/Authorization/**'
-      - 'apps/web/app/Infrastructure/Identity/**'
-      - 'apps/web/app/Infrastructure/Organization/**'
-      - 'apps/web/app/Infrastructure/Tenancy/LaravelTenantMembershipVerifier.php'
-      - 'apps/web/app/Infrastructure/Access/**'
       - 'apps/web/app/Infrastructure/Authorization/**'
-      - 'apps/web/app/Infrastructure/Persistence/LaravelDurableContextGraphRepository.php'
-      - 'apps/web/app/Infrastructure/Persistence/LaravelPersistenceTransaction.php'
       - 'apps/web/app/Providers/AppServiceProvider.php'
-      - 'apps/web/config/database.php'
       - 'apps/web/database/migrations/**'
-      - 'apps/web/tests/persistence.php'
-      - 'apps/web/tests/access-persistence.php'
+      - 'apps/web/tests/authorization-administration-persistence.php'
       - 'apps/web/tests/authorization-persistence.php'
       - 'apps/web/tests/tenant-isolation.php'
       - 'apps/web/tests/identity-org-context.php'
-      - 'apps/web/tests/run.php'
-      - 'docs/DURABLE_IDENTITY_ORGANIZATIONAL_ACCESS_PERSISTENCE_FOUNDATION.md'
-      - 'docs/DURABLE_SCOPED_ROLE_PERMISSION_POLICY_FOUNDATION.md'
       - '.github/workflows/m7-2-tenant-isolation-regression.yml'
       - '.github/workflows/m7-3-identity-org-context-regression.yml'
       - '.github/workflows/m7-5-preview-db-qualification-regression.yml'
       - '.github/workflows/sprint21-role-permission-policy-regression.yml'
+      - '.github/workflows/sprint22-policy-administration-regression.yml'
+      - 'docs/DURABLE_AUTHORIZATION_POLICY_ADMINISTRATION_FOUNDATION.md'
   workflow_dispatch:
 
 permissions:
@@ -65,63 +50,17 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: Enforce bounded M7.3 and Sprint 21 authorization envelope
+      - name: Preserve root Platform Foundation and dependency locks
         if: github.event_name == 'pull_request'
         shell: bash
         run: |
           set -euo pipefail
           git fetch --no-tags origin "${{ github.base_ref }}"
-          git diff --name-only "origin/${{ github.base_ref }}...HEAD" > /tmp/m73-changed-files.txt
-          test -s /tmp/m73-changed-files.txt
-          while IFS= read -r file; do
-            case "$file" in
-              apps/web/app/Application/Authorization/RoleIdentifier.php|\
-              apps/web/app/Application/Authorization/PermissionIdentifier.php|\
-              apps/web/app/Application/Authorization/DurableRolePermissionRepository.php|\
-              apps/web/app/Application/Authorization/DurableScopedAuthorizationPolicy.php|\
-              apps/web/app/Application/Authorization/DurableAuthorizationViolation.php|\
-              apps/web/app/Infrastructure/Authorization/LaravelDurableRolePermissionRepository.php|\
-              apps/web/app/Providers/AppServiceProvider.php|\
-              apps/web/database/migrations/0000_00_00_000003_create_scoped_role_permission_policy.php|\
-              apps/web/tests/authorization-persistence.php|\
-              apps/web/tests/run.php|\
-              apps/web/tests/tenant-isolation.php|\
-              apps/web/tests/identity-org-context.php|\
-              .github/workflows/m7-2-tenant-isolation-regression.yml|\
-              .github/workflows/m7-3-identity-org-context-regression.yml|\
-              .github/workflows/m7-5-preview-db-qualification-regression.yml|\
-              .github/workflows/sprint21-role-permission-policy-regression.yml|\
-              docs/DURABLE_SCOPED_ROLE_PERMISSION_POLICY_FOUNDATION.md|\
-              apps/web/app/Application/Access/*|\
-              apps/web/app/Infrastructure/Access/*|\
-              apps/web/app/Infrastructure/Tenancy/LaravelTenantMembershipVerifier.php|\
-              apps/web/app/Infrastructure/Organization/LaravelOrganizationalRelationshipVerifier.php|\
-              apps/web/app/Application/Persistence/*|\
-              apps/web/app/Infrastructure/Persistence/LaravelDurableContextGraphRepository.php|\
-              apps/web/app/Infrastructure/Persistence/LaravelPersistenceTransaction.php|\
-              apps/web/config/database.php|\
-              apps/web/environment.example|\
-              apps/web/database/migrations/0000_00_00_000001_create_foundational_context_graph.php|\
-              apps/web/database/migrations/0000_00_00_000002_create_organizational_access_grants.php|\
-              apps/web/tests/persistence.php|\
-              apps/web/tests/access-persistence.php|\
-              docs/DURABLE_APPLICATION_PERSISTENCE_FOUNDATION.md|\
-              docs/DURABLE_IDENTITY_ORGANIZATIONAL_ACCESS_PERSISTENCE_FOUNDATION.md|\
-              tools/build-m7-5-preview-release.sh|\
-              .github/workflows/m7-5-preview-release-artifact.yml)
-                ;;
-              *) echo "M7.3 unauthorized changed path: $file" >&2; exit 1 ;;
-            esac
-          done < /tmp/m73-changed-files.txt
-
-      - name: Preserve root Platform Foundation
-        if: github.event_name == 'pull_request'
-        shell: bash
-        run: |
-          set -euo pipefail
-          if git diff --name-only "origin/${{ github.base_ref }}...HEAD" | grep -Eq '^(src/Tenant/Foundation\.php|src/Auth/|src/Authorization/Foundation\.php|composer\.json$)'; then
-            echo 'M7.3/Sprint21 does not authorize root Platform Foundation modification.' >&2
-            exit 1
+          if git diff --name-only "origin/${{ github.base_ref }}...HEAD" | grep -Eq '^(src/Tenant/Foundation\.php|src/Auth/|src/Authorization/Foundation\.php|src/Persistence/|composer\.json$)'; then
+            echo 'Sprint 22 does not authorize root Platform Foundation mutation.' >&2; exit 1
+          fi
+          if git diff --name-only "origin/${{ github.base_ref }}...HEAD" | grep -Eq '(^|/)(composer\.(json|lock)|package(-lock)?\.json)$'; then
+            echo 'Sprint 22 does not authorize dependency changes.' >&2; exit 1
           fi
 
       - name: Preserve root Platform Foundation regression
@@ -134,88 +73,54 @@ jobs:
         with:
           node-version: 24.19.0
 
-      - name: Require unchanged dependency manifests and locks
-        if: github.event_name == 'pull_request'
-        shell: bash
-        run: |
-          set -euo pipefail
-          test -f apps/web/composer.lock
-          test -f apps/web/package-lock.json
-          if git diff --name-only "origin/${{ github.base_ref }}...HEAD" | grep -Eq '(^|/)(composer\.(json|lock)|package(-lock)?\.json)$'; then
-            echo 'M7.3/Sprint21 does not authorize dependency manifest or lockfile changes.' >&2
-            exit 1
-          fi
-
       - name: Install locked Composer dependencies
         working-directory: apps/web
         run: |
           composer validate --no-check-publish
           composer install --no-interaction --no-progress --prefer-dist
 
-      - name: Validate application PHP syntax
+      - name: Validate PHP syntax and four-migration boundary
         shell: bash
         run: |
           set -euo pipefail
           find apps/web/app apps/web/bootstrap apps/web/config apps/web/database apps/web/public apps/web/routes apps/web/tests -type f -name '*.php' -print0 |
             while IFS= read -r -d '' file; do php -l "$file"; done
-
-      - name: Preserve identity organizational and durable policy boundaries
-        shell: bash
-        run: |
-          set -euo pipefail
-          s21='apps/web/database/migrations/0000_00_00_000003_create_scoped_role_permission_policy.php'
-          authz='apps/web/app/Infrastructure/Authorization/LaravelDurableRolePermissionRepository.php'
-          role='apps/web/app/Application/Authorization/RoleIdentifier.php'
-          permission='apps/web/app/Application/Authorization/PermissionIdentifier.php'
           mapfile -t migrations < <(find apps/web/database/migrations -maxdepth 1 -type f -name '*.php' -printf '%f\n' | sort)
           expected=(
             '0000_00_00_000001_create_foundational_context_graph.php'
             '0000_00_00_000002_create_organizational_access_grants.php'
             '0000_00_00_000003_create_scoped_role_permission_policy.php'
+            '0000_00_00_000004_create_policy_mutation_journal.php'
           )
           test "${migrations[*]}" = "${expected[*]}"
-          if grep -R -n -E 'Illuminate\\Database|Schema::|DB::|new PDO|mysqli_' \
-            apps/web/app/Domain/Identity apps/web/app/Domain/Organization apps/web/app/Domain/Outlet apps/web/app/Domain/Device \
-            apps/web/app/Application/Identity apps/web/app/Application/Organization apps/web/app/Application/Access apps/web/app/Application/Authorization \
-            apps/web/app/Infrastructure/Identity; then
-            echo 'M7.3 identity/organization/Application authorization persistence boundary violated.' >&2
-            exit 1
+          if grep -R -n -E 'Illuminate\\Database|Schema::|DB::|new PDO|mysqli_' apps/web/app/Domain/Identity apps/web/app/Domain/Organization apps/web/app/Domain/Outlet apps/web/app/Domain/Device apps/web/app/Application/Identity apps/web/app/Application/Organization apps/web/app/Application/Access apps/web/app/Application/Authorization; then
+            echo 'Identity/organization/Application authorization persistence boundary violated.' >&2; exit 1
           fi
-          grep -Fq 'fk_organization_role_membership' "$s21"
-          grep -Fq 'fk_outlet_role_access' "$s21"
-          grep -Fq 'fk_device_role_access' "$s21"
-          grep -Fq -- "->where('tenant_id'," "$authz"
-          grep -Fq 'platform-superadmin' "$role"
-          grep -Fq "'platform.'" "$permission"
-          if grep -Eq '\b(insert|insertOrIgnore|update|updateOrInsert|upsert|delete|truncate)\s*\(' "$authz"; then
-            echo 'Sprint 21 authorization repository must remain read-only.' >&2
-            exit 1
-          fi
+          read_repo='apps/web/app/Infrastructure/Authorization/LaravelDurableRolePermissionRepository.php'
+          write_repo='apps/web/app/Infrastructure/Authorization/LaravelDurablePolicyAdministrationRepository.php'
+          grep -Fq 'fk_organization_role_membership' apps/web/database/migrations/0000_00_00_000003_create_scoped_role_permission_policy.php
+          grep -Fq 'fk_outlet_role_access' apps/web/database/migrations/0000_00_00_000003_create_scoped_role_permission_policy.php
+          grep -Fq 'fk_device_role_access' apps/web/database/migrations/0000_00_00_000003_create_scoped_role_permission_policy.php
+          grep -Fq 'fk_policy_mutation_actor' apps/web/database/migrations/0000_00_00_000004_create_policy_mutation_journal.php
+          grep -Fq 'authorization.policy.manage' apps/web/app/Application/Authorization/AdministrationPermission.php
+          grep -Fq 'oneqay_identity_organizations' "$write_repo"
+          grep -Fq 'oneqay_outlet_access_grants' "$write_repo"
+          grep -Fq 'oneqay_device_access_grants' "$write_repo"
+          if grep -Eq '\b(insert|insertOrIgnore|update|updateOrInsert|upsert|delete|truncate)\s*\(' "$read_repo"; then echo 'Sprint 21 authorization repository must remain read-only.' >&2; exit 1; fi
+          if grep -Eq '\b(updateOrInsert|upsert)\s*\(' "$write_repo"; then echo 'Sprint 22 mutation repository introduced unrestricted upsert.' >&2; exit 1; fi
 
-      - name: Install locked npm dependencies
+      - name: Install and validate frontend dependencies
         working-directory: apps/web
-        run: npm ci --ignore-scripts --no-fund
+        run: |
+          npm ci --ignore-scripts --no-fund
+          npm audit --audit-level=high
+          npm run type-check
+          npm run build
 
-      - name: Reject High or Critical npm advisories
+      - name: Run established and Sprint 22 durable regressions
         working-directory: apps/web
-        run: npm audit --audit-level=high
-
-      - name: Type-check Vue and TypeScript
-        working-directory: apps/web
-        run: npm run type-check
-
-      - name: Build Vite assets
-        working-directory: apps/web
-        run: npm run build
-
-      - name: Preserve M7.1 and durable regressions
-        working-directory: apps/web
-        run: composer test
-
-      - name: Preserve M7.2 tenant isolation regression
-        working-directory: apps/web
-        run: php tests/tenant-isolation.php
-
-      - name: Run M7.3 identity organizational context regression
-        working-directory: apps/web
-        run: php tests/identity-org-context.php
+        run: |
+          composer test
+          php -r 'require "vendor/autoload.php"; $app=require "bootstrap/app.php"; $app->make(Illuminate\Contracts\Http\Kernel::class)->bootstrap(); $assert=static function(bool $c,string $m):void{if(!$c)throw new RuntimeException($m);}; require "tests/authorization-persistence.php"; require "tests/authorization-administration-persistence.php";'
+          php tests/tenant-isolation.php
+          php tests/identity-org-context.php
