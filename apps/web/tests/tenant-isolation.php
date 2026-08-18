@@ -54,8 +54,9 @@ $expected = [
     '0000_00_00_000004_create_policy_mutation_journal.php',
     '0000_00_00_000005_create_initial_tenant_administrator_provisioning_journal.php',
     '0000_00_00_000006_create_protected_control_administrator_mutation_journal.php',
+    '0000_00_00_000007_create_identity_password_credentials.php',
 ];
-$assertM72($migrations === $expected, 'exact six-migration set changed');
+$assertM72($migrations === $expected, 'exact seven-migration set through Sprint 26 changed');
 $mutationMigration = (string) file_get_contents($migrationDir.'/'.$expected[3]);
 foreach (['oneqay_policy_mutations', "primary(['tenant_id', 'mutation_id']", 'fk_policy_mutation_actor', 'Forward-only generated migration; rollback is not authorized.'] as $marker) {
     $assertM72(str_contains($mutationMigration, $marker), 'Sprint 22 migration boundary missing: '.$marker);
@@ -67,6 +68,10 @@ foreach (['oneqay_initial_tenant_admin_provisionings', "primary('tenant_id'", 'f
 $lifecycleMigration = (string) file_get_contents($migrationDir.'/'.$expected[5]);
 foreach (['oneqay_protected_control_admin_mutations', "primary(['tenant_id', 'mutation_id']", 'fk_protected_control_admin_actor', 'fk_protected_control_admin_target', 'fk_protected_control_admin_permission', 'Forward-only generated migration; rollback is not authorized.'] as $marker) {
     $assertM72(str_contains($lifecycleMigration, $marker), 'Sprint 24 migration boundary missing: '.$marker);
+}
+$credentialMigration = (string) file_get_contents($migrationDir.'/'.$expected[6]);
+foreach (['oneqay_identity_password_credentials', "string('identity_id', 96)", "primary(['tenant_id', 'identity_id']", 'fk_identity_password_credential_identity', "references(['tenant_id', 'id'])", 'Forward-only generated migration; rollback is not authorized.'] as $marker) {
+    $assertM72(str_contains($credentialMigration, $marker), 'Sprint 26 credential migration boundary missing: '.$marker);
 }
 
 $appAuthorizationDir = __DIR__.'/../app/Application/Authorization';
@@ -89,4 +94,4 @@ $assertM72(str_contains($lifecycleRepo, 'oneqay_tenant_role_assignments as a'), 
 $assertM72(str_contains($lifecycleRepo, 'tenantControlPrincipalCount'), 'Sprint 24 last-principal safety check missing');
 $assertM72(! preg_match('/\b(updateOrInsert|upsert)\s*\(/', $lifecycleRepo), 'Sprint 24 lifecycle repository introduced unrestricted upsert');
 
-echo "M7.2 tenant isolation regression passed with Sprint 24 protected-control preservation.\n";
+echo "M7.2 tenant isolation regression passed with Sprint 26 credential-schema preservation.\n";
