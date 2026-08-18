@@ -8,15 +8,15 @@ on:
     paths:
       - 'apps/web/app/Application/Authorization/**'
       - 'apps/web/app/Infrastructure/Authorization/**'
-      - 'apps/web/app/Application/Identity/FirstPartyIdentityCredentialVerifier.php'
-      - 'apps/web/app/Application/Identity/VerifyFirstPartyIdentityCredential.php'
-      - 'apps/web/app/Infrastructure/Identity/LaravelFirstPartyIdentityCredentialVerifier.php'
+      - 'apps/web/app/Application/Identity/**'
+      - 'apps/web/app/Infrastructure/Identity/**'
       - 'apps/web/app/Delivery/Http/Authorization/**'
       - 'apps/web/app/Delivery/Http/Identity/**'
       - 'apps/web/app/Delivery/Http/Middleware/RequirePolicyAdministrationSessionContextMiddleware.php'
       - 'apps/web/app/Providers/AppServiceProvider.php'
       - 'apps/web/routes/web.php'
       - 'apps/web/database/migrations/**'
+      - 'apps/web/tests/initial-password-enrollment.php'
       - 'apps/web/tests/first-party-session-establishment.php'
       - 'apps/web/tests/identity-credential-verification.php'
       - 'apps/web/tests/policy-administration-delivery.php'
@@ -37,8 +37,10 @@ on:
       - '.github/workflows/sprint25-policy-administration-delivery-regression.yml'
       - '.github/workflows/sprint26-identity-credential-verification-regression.yml'
       - '.github/workflows/sprint27-first-party-session-establishment-regression.yml'
+      - '.github/workflows/sprint28-initial-password-enrollment-regression.yml'
       - 'docs/FIRST_PARTY_IDENTITY_CREDENTIAL_VERIFICATION_FOUNDATION.md'
       - 'docs/FIRST_PARTY_LOGIN_SESSION_ESTABLISHMENT_FOUNDATION.md'
+      - 'docs/FIRST_PARTY_INITIAL_PASSWORD_ENROLLMENT_FOUNDATION.md'
   workflow_dispatch:
 
 permissions:
@@ -77,7 +79,7 @@ jobs:
           composer validate --no-check-publish
           composer install --no-interaction --no-progress --prefer-dist
 
-      - name: Preserve Sprint 21 read-only authorization through Sprint 27
+      - name: Preserve Sprint 21 read-only authorization through Sprint 28
         shell: bash
         run: |
           set -euo pipefail
@@ -91,6 +93,7 @@ jobs:
             '0000_00_00_000005_create_initial_tenant_administrator_provisioning_journal.php'
             '0000_00_00_000006_create_protected_control_administrator_mutation_journal.php'
             '0000_00_00_000007_create_identity_password_credentials.php'
+            '0000_00_00_000008_create_initial_password_enrollments.php'
           )
           test "${migrations[*]}" = "${expected[*]}"
           read_repo='apps/web/app/Infrastructure/Authorization/LaravelDurableRolePermissionRepository.php'
@@ -103,6 +106,7 @@ jobs:
           grep -Fq 'fk_initial_tenant_admin_identity' apps/web/database/migrations/0000_00_00_000005_create_initial_tenant_administrator_provisioning_journal.php
           grep -Fq 'fk_protected_control_admin_target' apps/web/database/migrations/0000_00_00_000006_create_protected_control_administrator_mutation_journal.php
           grep -Fq 'fk_identity_password_credential_identity' apps/web/database/migrations/0000_00_00_000007_create_identity_password_credentials.php
+          grep -Fq 'fk_initial_password_enrollment_target' apps/web/database/migrations/0000_00_00_000008_create_initial_password_enrollments.php
           grep -Fq 'DurablePolicyAdministrationService' apps/web/app/Application/Authorization/PolicyAdministrationDeliveryService.php
           if grep -R -n -E 'InitialTenantAdministratorProvisioning(Service|Authority)|ProtectedControlAdministratorLifecycle(Service|Repository)|control\.administrator\.(delegate|revoke)' \
             apps/web/app/Application/Authorization/PolicyAdministrationDeliveryCommand.php \
@@ -110,7 +114,7 @@ jobs:
             apps/web/app/Delivery/Http/Authorization/PolicyAdministrationController.php \
             apps/web/app/Delivery/Http/Middleware/RequirePolicyAdministrationSessionContextMiddleware.php; then exit 1; fi
 
-      - name: Run Sprint 21 through Sprint 27 authorization regressions
+      - name: Run Sprint 21 through Sprint 28 authorization regressions
         working-directory: apps/web
         shell: bash
         run: |
@@ -119,6 +123,7 @@ jobs:
           php tests/policy-administration-delivery.php
           php tests/identity-credential-verification.php
           php tests/first-party-session-establishment.php
+          php tests/initial-password-enrollment.php
 
       - name: Preserve isolation and privileged updater security
         working-directory: apps/web
@@ -132,6 +137,6 @@ jobs:
         run: |
           set -euo pipefail
           grep -Fq 'ONEQAY_PERSISTENCE_ENABLED=false' apps/web/environment.example
-          if grep -R -n -E 'LaravelDurableRolePermissionRepository|DurableScopedAuthorizationPolicy|LaravelDurablePolicyAdministrationRepository|DurablePolicyAdministrationService|LaravelInitialTenantAdministratorProvisioningRepository|InitialTenantAdministratorProvisioningService|InitialTenantAdministratorProvisioningAuthority|LaravelProtectedControlAdministratorLifecycleRepository|ProtectedControlAdministratorLifecycleService|PolicyAdministrationDelivery|PolicyAdministrationController|RequirePolicyAdministrationSessionContextMiddleware|FirstPartyIdentityCredentialVerifier|VerifyFirstPartyIdentityCredential|LaravelFirstPartyIdentityCredentialVerifier|FirstPartySessionController|FirstPartySessionKeys' apps/web/app/Application/Preview apps/web/app/Delivery/Preview 2>/dev/null; then exit 1; fi
+          if grep -R -n -E 'LaravelDurableRolePermissionRepository|DurableScopedAuthorizationPolicy|LaravelDurablePolicyAdministrationRepository|DurablePolicyAdministrationService|LaravelInitialTenantAdministratorProvisioningRepository|InitialTenantAdministratorProvisioningService|InitialTenantAdministratorProvisioningAuthority|LaravelProtectedControlAdministratorLifecycleRepository|ProtectedControlAdministratorLifecycleService|PolicyAdministrationDelivery|PolicyAdministrationController|RequirePolicyAdministrationSessionContextMiddleware|FirstPartyIdentityCredentialVerifier|VerifyFirstPartyIdentityCredential|LaravelFirstPartyIdentityCredentialVerifier|FirstPartySessionController|FirstPartySessionKeys|InitialPasswordEnrollment|password-enrollment' apps/web/app/Application/Preview apps/web/app/Delivery/Preview 2>/dev/null; then exit 1; fi
           if grep -Fq 'InitialTenantAdministratorProvisioningAuthority::class' apps/web/app/Providers/AppServiceProvider.php; then exit 1; fi
           git diff --exit-code
