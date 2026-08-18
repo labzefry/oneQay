@@ -16,7 +16,7 @@ require __DIR__.'/../vendor/autoload.php';
 $testKey = 'base64:'.base64_encode(str_repeat('s', 32));
 foreach ([
     'APP_NAME' => 'oneQay',
-    'APP_ENV' => 'testing',
+    'APP_ENV' => 'local',
     'APP_KEY' => $testKey,
     'APP_DEBUG' => 'false',
     'APP_URL' => 'http://localhost',
@@ -33,6 +33,8 @@ foreach ([
 $app = require __DIR__.'/../bootstrap/app.php';
 /** @var Kernel $kernel */
 $kernel = $app->make(Kernel::class);
+$kernel->bootstrap();
+
 $assert = static function (bool $condition, string $message): void {
     if (! $condition) {
         throw new RuntimeException('Sprint 25 policy administration delivery regression failed: '.$message);
@@ -156,59 +158,85 @@ $connection->table('oneqay_device_role_assignments')->insert([
 $cookieName = (string) config('session.cookie');
 $assert($cookieName !== '', 'session cookie name missing');
 
-// Establish a framework-owned first-party session and capture its encrypted session cookie.
-$sessionBootstrapRequest = Request::create('/health/live', 'GET', server: ['HTTP_ACCEPT' => 'application/json']);
-$sessionBootstrapResponse = $kernel->handle($sessionBootstrapRequest);
-$kernel->terminate($sessionBootstrapRequest, $sessionBootstrapResponse);
-$sessionCookie = null;
-foreach ($sessionBootstrapResponse->headers->getCookies() as $cookie) {
-    if ($cookie->getName() === $cookieName) {
-        $sessionCookie = $cookie->getValue();
-        break;
+// Test-only server-side session establishment emulates an already-authenticated first-party flow.
+$seedState = [
+    'identity' => null,
+    'tenant' => null,
+    'organization' => null,
+    'outlet' => null,
+    'device' => null,
+];
+$app['router']->get('/__s25/session-seed', function (Request $request) use (&$seedState) {
+    $keys = [
+        RequirePolicyAdministrationSessionContextMiddleware::IDENTITY_SESSION => $seedState['identity'],
+        RequirePolicyAdministrationSessionContextMiddleware::TENANT_SESSION => $seedState['tenant'],
+        RequirePolicyAdministrationSessionContextMiddleware::ORGANIZATION_SESSION => $seedState['organization'],
+        RequirePolicyAdministrationSessionContextMiddleware::OUTLET_SESSION => $seedState['outlet'],
+        RequirePolicyAdministrationSessionContextMiddleware::DEVICE_SESSION => $seedState['device'],
+    ];
+    foreach ($keys as $key => $value) {
+        if ($value === null) {
+            $request->session()->forget($key);
+        } else {
+            $request->session()->put($key, $value);
+        }
     }
-}
-$assert(is_string($sessionCookie) && $sessionCookie !== '', 'framework session cookie was not issued');
-/** @var \Illuminate\Session\Store $session */
-$session = $app->make('session')->driver();
-$assert(is_string($session->token()) && $session->token() !== '', 'framework CSRF token missing');
+    return response()->json(['csrf_token' => $request->session()->token()]);
+})->middleware('web');
 
-$setAuthSession = static function (\Illuminate\Session\Store $session, string $identity, string $tenant = 'tenant-alpha', string $organization = 'organization-alpha', ?string $outlet = 'outlet-alpha', ?string $device = 'device-alpha'): void {
-    $session->put(RequirePolicyAdministrationSessionContextMiddleware::IDENTITY_SESSION, $identity);
-    $session->put(RequirePolicyAdministrationSessionContextMiddleware::TENANT_SESSION, $tenant);
-    $session->put(RequirePolicyAdministrationSessionContextMiddleware::ORGANIZATION_SESSION, $organization);
-    if ($outlet === null) { $session->forget(RequirePolicyAdministrationSessionContextMiddleware::OUTLET_SESSION); }
-    else { $session->put(RequirePolicyAdministrationSessionContextMiddleware::OUTLET_SESSION, $outlet); }
-    if ($device === null) { $session->forget(RequirePolicyAdministrationSessionContextMiddleware::DEVICE_SESSION); }
-    else { $session->put(RequirePolicyAdministrationSessionContextMiddleware::DEVICE_SESSION, $device); }
-    $session->save();
+$cookie = null;
+$csrfToken = null;
+$refreshCookie = static function (\Symfony\Component\HttpFoundation\Response $response, string $cookieName, ?string &$cookie): void {
+    foreach ($response->headers->getCookies() as $responseCookie) {
+        if ($responseCookie->getName() === $cookieName) {
+            $cookie = $responseCookie->getValue();
+        }
+    }
 };
-$clearAuthSession = static function (\Illuminate\Session\Store $session): void {
-    $session->forget([
-        RequirePolicyAdministrationSessionContextMiddleware::IDENTITY_SESSION,
-        RequirePolicyAdministrationSessionContextMiddleware::TENANT_SESSION,
-        RequirePolicyAdministrationSessionContextMiddleware::ORGANIZATION_SESSION,
-        RequirePolicyAdministrationSessionContextMiddleware::OUTLET_SESSION,
-        RequirePolicyAdministrationSessionContextMiddleware::DEVICE_SESSION,
-    ]);
-    $session->save();
+$seedSession = static function (
+    Kernel $kernel,
+    string $cookieName,
+    ?string &$cookie,
+    ?string &$csrfToken,
+    array &$seedState,
+    ?string $identity,
+    ?string $tenant = 'tenant-alpha',
+    ?string $organization = 'organization-alpha',
+    ?string $outlet = 'outlet-alpha',
+    ?string $device = 'device-alpha',
+) use ($refreshCookie, $assert): void {
+    $seedState = compact('identity', 'tenant', 'organization', 'outlet', 'device');
+    $request = Request::create(
+        '/__s25/session-seed',
+        'GET',
+        cookies: $cookie === null ? [] : [$cookieName => $cookie],
+        server: ['HTTP_ACCEPT' => 'application/json'],
+    );
+    $response = $kernel->handle($request);
+    $kernel->terminate($request, $response);
+    $assert($response->getStatusCode() === 200, 'test-only server session establishment failed');
+    $refreshCookie($response, $cookieName, $cookie);
+    $decoded = json_decode((string) $response->getContent(), true, flags: JSON_THROW_ON_ERROR);
+    $csrfToken = $decoded['csrf_token'] ?? null;
+    $assert(is_string($cookie) && $cookie !== '', 'framework session cookie was not issued');
+    $assert(is_string($csrfToken) && $csrfToken !== '', 'framework CSRF token missing');
 };
-
 $send = static function (
     Kernel $kernel,
-    \Illuminate\Session\Store $session,
     string $cookieName,
-    string $sessionCookie,
+    ?string &$cookie,
+    ?string $csrfToken,
     array $payload,
-    bool $csrf = true,
-): \Symfony\Component\HttpFoundation\Response {
-    if ($csrf) {
-        $payload['_token'] = $session->token();
+    bool $includeCsrf = true,
+) use ($refreshCookie): \Symfony\Component\HttpFoundation\Response {
+    if ($includeCsrf && $csrfToken !== null) {
+        $payload['_token'] = $csrfToken;
     }
     $request = Request::create(
         '/administration/policy/mutations',
         'POST',
         $payload,
-        cookies: [$cookieName => $sessionCookie],
+        cookies: $cookie === null ? [] : [$cookieName => $cookie],
         server: [
             'HTTP_ACCEPT' => 'application/json',
             'HTTP_X_CORRELATION_ID' => 'S25-Delivery_0001',
@@ -216,46 +244,46 @@ $send = static function (
     );
     $response = $kernel->handle($request);
     $kernel->terminate($request, $response);
+    $refreshCookie($response, $cookieName, $cookie);
     return $response;
 };
-
 $basePayload = static fn (string $id, string $operation, string $role): array => [
     'mutation_id' => $id,
     'operation' => $operation,
     'role' => $role,
 ];
 
-$setAuthSession($session, 'synthetic-admin-alpha');
+$seedSession($kernel, $cookieName, $cookie, $csrfToken, $seedState, 'synthetic-admin-alpha');
 
 // Actual web middleware CSRF proof: authenticated context alone cannot mutate without CSRF.
 $beforeCsrfCount = $connection->table('oneqay_policy_mutations')->count();
-$response = $send($kernel, $session, $cookieName, $sessionCookie, $basePayload('csrf-missing', 'role.create', 'synthetic-csrf-role'), false);
+$response = $send($kernel, $cookieName, $cookie, $csrfToken, $basePayload('csrf-missing', 'role.create', 'synthetic-csrf-role'), false);
 $assert($response->getStatusCode() === 419, 'missing CSRF token was not rejected by web middleware');
 $assert($connection->table('oneqay_policy_mutations')->count() === $beforeCsrfCount, 'CSRF denial wrote mutation evidence');
 
 // Ordinary positive-control matrix.
-$response = $send($kernel, $session, $cookieName, $sessionCookie, $basePayload('ordinary-role-create', 'role.create', 'synthetic-operator'));
+$response = $send($kernel, $cookieName, $cookie, $csrfToken, $basePayload('ordinary-role-create', 'role.create', 'synthetic-operator'));
 $assert($response->getStatusCode() === 200, 'ordinary role create HTTP status');
-$payload = json_decode((string) $response->getContent(), true, flags: JSON_THROW_ON_ERROR);
-$assert(($payload['outcome'] ?? null) === 'applied', 'ordinary role create outcome');
-$assert(($payload['correlation_id'] ?? null) === 'S25-Delivery_0001', 'correlation id not preserved');
+$decoded = json_decode((string) $response->getContent(), true, flags: JSON_THROW_ON_ERROR);
+$assert(($decoded['outcome'] ?? null) === 'applied', 'ordinary role create outcome');
+$assert(($decoded['correlation_id'] ?? null) === 'S25-Delivery_0001', 'correlation id not preserved');
 $assert($connection->table('oneqay_roles')->where('tenant_id', 'tenant-alpha')->where('id', 'synthetic-operator')->exists(), 'ordinary role not created');
 
-$response = $send($kernel, $session, $cookieName, $sessionCookie, [
+$response = $send($kernel, $cookieName, $cookie, $csrfToken, [
     ...$basePayload('ordinary-permission-grant', 'permission.grant', 'synthetic-operator'),
     'permission' => 'synthetic.resource.execute',
 ]);
 $assert($response->getStatusCode() === 200, 'ordinary permission grant HTTP status');
 $assert($connection->table('oneqay_role_permissions')->where('tenant_id', 'tenant-alpha')->where('role_id', 'synthetic-operator')->where('permission_id', 'synthetic.resource.execute')->exists(), 'ordinary permission not granted');
 
-$response = $send($kernel, $session, $cookieName, $sessionCookie, [
+$response = $send($kernel, $cookieName, $cookie, $csrfToken, [
     ...$basePayload('ordinary-device-assign', 'role.assign.device', 'synthetic-operator'),
     'target_identity' => 'synthetic-target-alpha',
 ]);
 $assert($response->getStatusCode() === 200, 'ordinary device assignment HTTP status');
 $assert($connection->table('oneqay_device_role_assignments')->where('tenant_id', 'tenant-alpha')->where('identity_id', 'synthetic-target-alpha')->where('role_id', 'synthetic-operator')->exists(), 'ordinary device assignment missing');
 
-$response = $send($kernel, $session, $cookieName, $sessionCookie, [
+$response = $send($kernel, $cookieName, $cookie, $csrfToken, [
     ...$basePayload('ordinary-device-revoke', 'role.revoke.device', 'synthetic-operator'),
     'target_identity' => 'synthetic-target-alpha',
 ]);
@@ -263,15 +291,15 @@ $assert($response->getStatusCode() === 200, 'ordinary device revocation HTTP sta
 $assert($connection->table('oneqay_device_role_assignments')->where('tenant_id', 'tenant-alpha')->where('identity_id', 'synthetic-target-alpha')->where('role_id', 'synthetic-operator')->doesntExist(), 'ordinary device revocation left assignment');
 
 // Exact replay remains deterministic; conflicting replay remains rejected.
-$response = $send($kernel, $session, $cookieName, $sessionCookie, $basePayload('ordinary-role-create', 'role.create', 'synthetic-operator'));
+$response = $send($kernel, $cookieName, $cookie, $csrfToken, $basePayload('ordinary-role-create', 'role.create', 'synthetic-operator'));
 $assert($response->getStatusCode() === 200, 'exact replay HTTP status');
-$payload = json_decode((string) $response->getContent(), true, flags: JSON_THROW_ON_ERROR);
-$assert(($payload['outcome'] ?? null) === 'applied', 'exact replay did not return prior outcome');
-$response = $send($kernel, $session, $cookieName, $sessionCookie, $basePayload('ordinary-role-create', 'role.create', 'synthetic-other-role'));
+$decoded = json_decode((string) $response->getContent(), true, flags: JSON_THROW_ON_ERROR);
+$assert(($decoded['outcome'] ?? null) === 'applied', 'exact replay did not return prior outcome');
+$response = $send($kernel, $cookieName, $cookie, $csrfToken, $basePayload('ordinary-role-create', 'role.create', 'synthetic-other-role'));
 $assert($response->getStatusCode() === 409, 'conflicting replay not rejected');
 
 // Strict payload vocabulary: actor/tenant/scope authority cannot come from request data.
-$response = $send($kernel, $session, $cookieName, $sessionCookie, [
+$response = $send($kernel, $cookieName, $cookie, $csrfToken, [
     ...$basePayload('payload-authority-attempt', 'role.create', 'synthetic-payload-role'),
     'tenant_id' => 'tenant-beta',
     'actor_identity' => 'synthetic-target-beta',
@@ -280,65 +308,77 @@ $assert($response->getStatusCode() === 422, 'request-supplied authority fields w
 $assert($connection->table('oneqay_roles')->where('tenant_id', 'tenant-beta')->where('id', 'synthetic-payload-role')->doesntExist(), 'request payload crossed tenant authority');
 
 // Protected control remains unreachable through ordinary Sprint 22 delivery.
-$response = $send($kernel, $session, $cookieName, $sessionCookie, [
+$response = $send($kernel, $cookieName, $cookie, $csrfToken, [
     ...$basePayload('protected-permission-attempt', 'permission.grant', 'synthetic-operator'),
     'permission' => AdministrationPermission::MANAGE,
 ]);
 $assert($response->getStatusCode() === 403, 'protected control permission mutation was accepted');
-$response = $send($kernel, $session, $cookieName, $sessionCookie, [
+$response = $send($kernel, $cookieName, $cookie, $csrfToken, [
     ...$basePayload('protected-role-attempt', 'role.assign.tenant', InitialTenantAdministratorProvisioningRepository::CONTROL_ROLE),
     'target_identity' => 'synthetic-target-alpha',
 ]);
 $assert($response->getStatusCode() === 403, 'protected control role assignment was accepted');
 
 // Sprint 24 and unknown operation strings are outside the closed Sprint 22 vocabulary.
+$invalidOperationIds = [];
 foreach (['control.administrator.delegate', 'synthetic.freeform.operation'] as $operation) {
-    $response = $send($kernel, $session, $cookieName, $sessionCookie, $basePayload('invalid-operation-'.substr(hash('sha256', $operation), 0, 10), $operation, 'synthetic-operator'));
+    $id = 'invalid-operation-'.substr(hash('sha256', $operation), 0, 10);
+    $invalidOperationIds[] = $id;
+    $response = $send($kernel, $cookieName, $cookie, $csrfToken, $basePayload($id, $operation, 'synthetic-operator'));
     $assert($response->getStatusCode() === 422, 'non-Sprint22 operation was accepted: '.$operation);
 }
 
 // Foreign-tenant targets remain denied by durable target eligibility.
-$response = $send($kernel, $session, $cookieName, $sessionCookie, [
+$response = $send($kernel, $cookieName, $cookie, $csrfToken, [
     ...$basePayload('foreign-target-attempt', 'role.assign.tenant', 'synthetic-operator'),
     'target_identity' => 'synthetic-target-beta',
 ]);
 $assert($response->getStatusCode() === 403, 'foreign-tenant target was accepted');
 
 // Valid member without policy administration authority is denied.
-$setAuthSession($session, 'synthetic-no-authority-alpha');
-$response = $send($kernel, $session, $cookieName, $sessionCookie, $basePayload('no-authority-attempt', 'role.create', 'synthetic-denied-role'));
+$seedSession($kernel, $cookieName, $cookie, $csrfToken, $seedState, 'synthetic-no-authority-alpha');
+$response = $send($kernel, $cookieName, $cookie, $csrfToken, $basePayload('no-authority-attempt', 'role.create', 'synthetic-denied-role'));
 $assert($response->getStatusCode() === 403, 'actor without policy.manage was accepted');
 
 // A device-scoped control actor cannot mutate broader tenant scope.
-$setAuthSession($session, 'synthetic-device-admin-alpha');
-$response = $send($kernel, $session, $cookieName, $sessionCookie, $basePayload('scope-escape-attempt', 'role.create', 'synthetic-scope-escape-role'));
+$seedSession($kernel, $cookieName, $cookie, $csrfToken, $seedState, 'synthetic-device-admin-alpha');
+$response = $send($kernel, $cookieName, $cookie, $csrfToken, $basePayload('scope-escape-attempt', 'role.create', 'synthetic-scope-escape-role'));
 $assert($response->getStatusCode() === 403, 'narrower control actor escaped to tenant scope');
 
 // Valid framework CSRF but missing authentication context is denied by Sprint 25 middleware.
-$clearAuthSession($session);
-$response = $send($kernel, $session, $cookieName, $sessionCookie, $basePayload('missing-session-attempt', 'role.create', 'synthetic-missing-session'));
+$seedSession($kernel, $cookieName, $cookie, $csrfToken, $seedState, null, null, null, null, null);
+$response = $send($kernel, $cookieName, $cookie, $csrfToken, $basePayload('missing-session-attempt', 'role.create', 'synthetic-missing-session'));
 $assert($response->getStatusCode() === 403, 'missing authenticated session context was accepted');
 
 // Syntactically valid session values still require durable membership/relationship proof.
-$setAuthSession($session, 'synthetic-admin-alpha', 'tenant-beta', 'organization-beta', 'outlet-beta', 'device-beta');
-$response = $send($kernel, $session, $cookieName, $sessionCookie, $basePayload('invalid-membership-attempt', 'role.create', 'synthetic-invalid-membership'));
+$seedSession($kernel, $cookieName, $cookie, $csrfToken, $seedState, 'synthetic-admin-alpha', 'tenant-beta', 'organization-beta', 'outlet-beta', 'device-beta');
+$response = $send($kernel, $cookieName, $cookie, $csrfToken, $basePayload('invalid-membership-attempt', 'role.create', 'synthetic-invalid-membership'));
 $assert($response->getStatusCode() === 403, 'session context without durable tenant membership was accepted');
 
 // Preview and Production runtime classes have no active Sprint 25 delivery surface.
-$setAuthSession($session, 'synthetic-admin-alpha');
+$seedSession($kernel, $cookieName, $cookie, $csrfToken, $seedState, 'synthetic-admin-alpha');
 foreach (['preview', 'production'] as $runtime) {
     $app['config']->set('oneqay.runtime_class', $runtime);
-    $response = $send($kernel, $session, $cookieName, $sessionCookie, $basePayload('runtime-denied-'.$runtime, 'role.create', 'synthetic-runtime-'.$runtime));
+    $response = $send($kernel, $cookieName, $cookie, $csrfToken, $basePayload('runtime-denied-'.$runtime, 'role.create', 'synthetic-runtime-'.$runtime));
     $assert($response->getStatusCode() === 404, 'Sprint 25 route active in '.$runtime.' runtime');
 }
 $app['config']->set('oneqay.runtime_class', 'ci');
 
 // Denied attempts must not create journal evidence.
-foreach ([
-    'csrf-missing', 'payload-authority-attempt', 'protected-permission-attempt', 'protected-role-attempt',
-    'foreign-target-attempt', 'no-authority-attempt', 'scope-escape-attempt', 'missing-session-attempt',
-    'invalid-membership-attempt', 'runtime-denied-preview', 'runtime-denied-production',
-] as $mutationId) {
+$deniedMutationIds = array_merge([
+    'csrf-missing',
+    'payload-authority-attempt',
+    'protected-permission-attempt',
+    'protected-role-attempt',
+    'foreign-target-attempt',
+    'no-authority-attempt',
+    'scope-escape-attempt',
+    'missing-session-attempt',
+    'invalid-membership-attempt',
+    'runtime-denied-preview',
+    'runtime-denied-production',
+], $invalidOperationIds);
+foreach ($deniedMutationIds as $mutationId) {
     $assert($connection->table('oneqay_policy_mutations')->where('mutation_id', $mutationId)->doesntExist(), 'denied attempt wrote journal evidence: '.$mutationId);
 }
 
