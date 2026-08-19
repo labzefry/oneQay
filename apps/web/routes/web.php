@@ -6,6 +6,7 @@ use App\Delivery\Http\Identity\FirstPartySessionController;
 use App\Delivery\Http\Identity\InitialPasswordEnrollmentController;
 use App\Delivery\Http\Identity\PrivilegedReauthenticationController;
 use App\Delivery\Http\Identity\PrivilegedTotpMfaController;
+use App\Delivery\Http\Identity\RecoveryCodeController;
 use App\Delivery\Http\Middleware\RequirePolicyAdministrationSessionContextMiddleware;
 use App\Delivery\Http\SystemUpdate\SystemUpdateControlPlaneController;
 use App\Delivery\Http\SystemUpdate\SystemUpdatePageController;
@@ -38,6 +39,17 @@ if (in_array($firstPartyAuthRuntime, ['local', 'test', 'ci'], true)) {
     Route::post('/administration/identity/password-enrollments', [InitialPasswordEnrollmentController::class, 'issue'])
         ->middleware(['throttle:5,1', RequirePolicyAdministrationSessionContextMiddleware::class])
         ->name('identity.initial-password-enrollment.issue');
+
+    if ((bool) config('oneqay.authentication_recovery.enabled', false)
+        && (int) config('oneqay.authentication_recovery.restricted_session_ttl_seconds', 0) === 600) {
+        Route::post('/auth/recovery/codes/rotate', [RecoveryCodeController::class, 'rotate'])
+            ->middleware(['throttle:5,1', 'throttle:20,60'])
+            ->name('auth.recovery.codes.rotate');
+
+        Route::post('/auth/recovery/proof', [RecoveryCodeController::class, 'proof'])
+            ->middleware(['throttle:5,1', 'throttle:20,60'])
+            ->name('auth.recovery.proof');
+    }
 
     if ((bool) config('oneqay.privileged_totp_mfa.enabled', false)) {
         Route::post('/auth/mfa/totp/enrollment/start', [PrivilegedTotpMfaController::class, 'startEnrollment'])

@@ -15,6 +15,8 @@ use App\Application\Identity\PrivilegedStepUpClock;
 use App\Application\Identity\PrivilegedTotpClock;
 use App\Application\Identity\PrivilegedTotpEngine;
 use App\Application\Identity\PrivilegedTotpMfaRepository;
+use App\Application\Identity\RecoveryCodeClock;
+use App\Application\Identity\RecoveryCodeRepository;
 use App\Application\Organization\OrganizationalContextStore;
 use App\Application\Organization\OrganizationalRelationshipVerifier;
 use App\Application\Persistence\DurableContextGraphRepository;
@@ -30,6 +32,7 @@ use App\Infrastructure\Identity\LaravelFirstControlPrincipalCredentialBootstrapR
 use App\Infrastructure\Identity\LaravelFirstPartyIdentityCredentialVerifier;
 use App\Infrastructure\Identity\LaravelInitialPasswordEnrollmentRepository;
 use App\Infrastructure\Identity\LaravelPrivilegedTotpMfaRepository;
+use App\Infrastructure\Identity\LaravelRecoveryCodeRepository;
 use App\Infrastructure\Identity\OtphpPrivilegedTotpEngine;
 use App\Infrastructure\Organization\LaravelOrganizationalRelationshipVerifier;
 use App\Infrastructure\Organization\RequestOrganizationalContextStore;
@@ -183,6 +186,21 @@ final class AppServiceProvider extends ServiceProvider
         );
 
         $this->app->scoped(
+            RecoveryCodeRepository::class,
+            function ($app): RecoveryCodeRepository {
+                /** @var Connection $connection */
+                $connection = $app->make('db')->connection();
+
+                return new LaravelRecoveryCodeRepository(
+                    $connection,
+                    (bool) config('database.oneqay_persistence_enabled', false),
+                    (string) config('oneqay.runtime_class', ''),
+                    (bool) config('oneqay.authentication_recovery.enabled', false),
+                );
+            },
+        );
+
+        $this->app->scoped(
             FirstControlPrincipalCredentialBootstrapRepository::class,
             function ($app): FirstControlPrincipalCredentialBootstrapRepository {
                 /** @var Connection $connection */
@@ -231,6 +249,16 @@ final class AppServiceProvider extends ServiceProvider
         $this->app->scoped(
             PrivilegedStepUpClock::class,
             static fn (): PrivilegedStepUpClock => new class implements PrivilegedStepUpClock {
+                public function nowUnix(): int
+                {
+                    return time();
+                }
+            },
+        );
+
+        $this->app->scoped(
+            RecoveryCodeClock::class,
+            static fn (): RecoveryCodeClock => new class implements RecoveryCodeClock {
                 public function nowUnix(): int
                 {
                     return time();
