@@ -13,6 +13,9 @@ final class FirstPartySessionKeys
     public const OUTLET = 'oneqay.auth.outlet_id';
     public const DEVICE = 'oneqay.auth.device_id';
     public const MFA_VERIFIED_AT = 'oneqay.auth.mfa_verified_at';
+    public const STEP_UP_VERIFIED_AT = 'oneqay.auth.step_up_verified_at';
+    public const STEP_UP_SCOPE = 'oneqay.auth.step_up_scope';
+    public const STEP_UP_CONTEXT = 'oneqay.auth.step_up_context';
 
     public const PENDING_IDENTITY = 'oneqay.auth.pending.identity_id';
     public const PENDING_TENANT = 'oneqay.auth.pending.tenant_id';

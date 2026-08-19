@@ -11,6 +11,7 @@ use App\Application\Authorization\ProtectedControlAdministratorLifecycleReposito
 use App\Application\Identity\FirstControlPrincipalCredentialBootstrapRepository;
 use App\Application\Identity\FirstPartyIdentityCredentialVerifier;
 use App\Application\Identity\InitialPasswordEnrollmentRepository;
+use App\Application\Identity\PrivilegedStepUpClock;
 use App\Application\Identity\PrivilegedTotpClock;
 use App\Application\Identity\PrivilegedTotpEngine;
 use App\Application\Identity\PrivilegedTotpMfaRepository;
@@ -220,6 +221,16 @@ final class AppServiceProvider extends ServiceProvider
         $this->app->scoped(
             PrivilegedTotpClock::class,
             static fn (): PrivilegedTotpClock => new class implements PrivilegedTotpClock {
+                public function nowUnix(): int
+                {
+                    return time();
+                }
+            },
+        );
+
+        $this->app->scoped(
+            PrivilegedStepUpClock::class,
+            static fn (): PrivilegedStepUpClock => new class implements PrivilegedStepUpClock {
                 public function nowUnix(): int
                 {
                     return time();
