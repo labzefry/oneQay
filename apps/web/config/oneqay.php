@@ -20,6 +20,16 @@ return [
         ),
     ],
 
+    'privileged_step_up' => [
+        // Local/Test/CI privileged step-up remains fail-closed unless explicitly armed.
+        'enabled' => filter_var(
+            env('ONEQAY_PRIVILEGED_STEP_UP_ENABLED', false),
+            FILTER_VALIDATE_BOOL,
+        ),
+        // Sprint 31 fixed freshness window; not environment-configurable.
+        'freshness_seconds' => 300,
+    ],
+
     'system_update' => [
         // Backend control-plane visibility/checking may only be enabled explicitly.
         'control_plane_enabled' => filter_var(

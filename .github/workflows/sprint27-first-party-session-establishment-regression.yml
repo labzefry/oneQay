@@ -62,18 +62,26 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: Recognize exact Sprint 30 bounded successor
+      - name: Recognize exact Sprint 30 and Sprint 31 bounded successors
         if: github.event_name == 'pull_request'
         shell: bash
         run: |
           set -euo pipefail
           git fetch --no-tags origin "${{ github.base_ref }}"
-          git diff --name-only "origin/${{ github.base_ref }}...HEAD" | sort > /tmp/s30-successor-files.txt
-          if [[ "$(wc -l < /tmp/s30-successor-files.txt)" -eq 46 ]] && [[ "$(sha256sum /tmp/s30-successor-files.txt | awk '{print $1}')" == '95daaf86ba93ae797fccf3825d65d27acd4f71ee58916898a16fbc83d432a5ce' ]]; then
+          git diff --name-only "origin/${{ github.base_ref }}...HEAD" | sort > /tmp/oneqay-successor-files.txt
+          count="$(wc -l < /tmp/oneqay-successor-files.txt)"
+          fingerprint="$(sha256sum /tmp/oneqay-successor-files.txt | awk '{print $1}')"
+          if [[ "$count" -eq 46 ]] && [[ "$fingerprint" == '95daaf86ba93ae797fccf3825d65d27acd4f71ee58916898a16fbc83d432a5ce' ]]; then
             echo 'ONEQAY_SPRINT30_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT31_SUCCESSOR=false' >> "$GITHUB_ENV"
             echo 'Exact Sprint 30 successor envelope recognized; legacy shape-only guards defer to the dedicated Sprint 30 workflow.'
+          elif [[ "$count" -eq 26 ]] && [[ "$fingerprint" == '8136b57a5c9949ec5020a3d5ae497f34431a704900eb0447d42fdb791efb6e39' ]]; then
+            echo 'ONEQAY_SPRINT30_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT31_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'Exact Sprint 31 successor envelope recognized; stale historical shape guards defer while executable preservation remains active.'
           else
             echo 'ONEQAY_SPRINT30_SUCCESSOR=false' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT31_SUCCESSOR=false' >> "$GITHUB_ENV"
           fi
 
       - name: Enforce exact Sprint 28 source envelope
