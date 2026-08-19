@@ -5,10 +5,14 @@ declare(strict_types=1);
 namespace App\Delivery\Http\Identity;
 
 use App\Application\Identity\IdentityContextViolation;
+use App\Application\Identity\PrivilegedTotpMfaService;
+use App\Application\Identity\PrivilegedTotpMfaState;
+use App\Application\Identity\PrivilegedTotpMfaViolation;
 use App\Application\Identity\VerifyFirstPartyIdentityCredential;
 use App\Application\Organization\EnterOrganizationalContext;
 use App\Application\Organization\OrganizationalAccessViolation;
 use App\Application\Organization\OrganizationalContextStore;
+use App\Application\Organization\VerifiedOrganizationalContext;
 use App\Application\Tenancy\MissingTenantContext;
 use App\Application\Tenancy\TenantContextStore;
 use App\Delivery\Http\SafeErrorEnvelope;
@@ -36,6 +40,7 @@ final class FirstPartySessionController
 
     public function __construct(
         private readonly VerifyFirstPartyIdentityCredential $credentials,
+        private readonly PrivilegedTotpMfaService $mfa,
         private readonly TenantContextStore $tenantContexts,
         private readonly OrganizationalContextStore $organizationalContexts,
         private readonly EnterOrganizationalContext $enterOrganizationalContext,
@@ -81,20 +86,31 @@ final class FirstPartySessionController
                 $deviceValue,
             );
 
-            $session = $request->session();
-            $session->invalidate();
-            $session->regenerateToken();
-            $session->put(FirstPartySessionKeys::IDENTITY, $context->identityId()->value());
-            $session->put(FirstPartySessionKeys::TENANT, $context->tenantId()->value());
-            $session->put(FirstPartySessionKeys::ORGANIZATION, $context->organizationId()->value());
+            if ($this->mfaEnabled()) {
+                try {
+                    $mfaState = $this->mfa->requiredState($tenantId, $identityId);
+                } catch (PrivilegedTotpMfaViolation) {
+                    return $this->authenticationFailed($correlationId);
+                }
 
-            if ($context->outletId() !== null) {
-                $session->put(FirstPartySessionKeys::OUTLET, $context->outletId()->value());
+                if ($mfaState !== null) {
+                    $pendingState = $mfaState->is(PrivilegedTotpMfaState::CONFIRMED)
+                        ? FirstPartySessionKeys::MFA_CHALLENGE_REQUIRED
+                        : FirstPartySessionKeys::MFA_ENROLLMENT_REQUIRED;
+
+                    $this->establishPendingMfaSession($request, $context, $pendingState);
+
+                    return response()->json([
+                        'status' => 'mfa_required',
+                        'code' => $pendingState === FirstPartySessionKeys::MFA_CHALLENGE_REQUIRED
+                            ? 'MFA_CHALLENGE_REQUIRED'
+                            : 'MFA_ENROLLMENT_REQUIRED',
+                        'correlation_id' => $correlationId,
+                    ], 202);
+                }
             }
 
-            if ($context->deviceId() !== null) {
-                $session->put(FirstPartySessionKeys::DEVICE, $context->deviceId()->value());
-            }
+            $this->establishFullSession($request, $context);
 
             return response()->json([
                 'status' => 'ok',
@@ -118,6 +134,46 @@ final class FirstPartySessionController
             return response()->noContent();
         } finally {
             $this->clearRequestContexts();
+        }
+    }
+
+    private function establishFullSession(Request $request, VerifiedOrganizationalContext $context): void
+    {
+        $session = $request->session();
+        $session->invalidate();
+        $session->regenerateToken();
+        $session->put(FirstPartySessionKeys::IDENTITY, $context->identityId()->value());
+        $session->put(FirstPartySessionKeys::TENANT, $context->tenantId()->value());
+        $session->put(FirstPartySessionKeys::ORGANIZATION, $context->organizationId()->value());
+
+        if ($context->outletId() !== null) {
+            $session->put(FirstPartySessionKeys::OUTLET, $context->outletId()->value());
+        }
+
+        if ($context->deviceId() !== null) {
+            $session->put(FirstPartySessionKeys::DEVICE, $context->deviceId()->value());
+        }
+    }
+
+    private function establishPendingMfaSession(
+        Request $request,
+        VerifiedOrganizationalContext $context,
+        string $pendingState,
+    ): void {
+        $session = $request->session();
+        $session->invalidate();
+        $session->regenerateToken();
+        $session->put(FirstPartySessionKeys::PENDING_IDENTITY, $context->identityId()->value());
+        $session->put(FirstPartySessionKeys::PENDING_TENANT, $context->tenantId()->value());
+        $session->put(FirstPartySessionKeys::PENDING_ORGANIZATION, $context->organizationId()->value());
+        $session->put(FirstPartySessionKeys::PENDING_MFA_STATE, $pendingState);
+
+        if ($context->outletId() !== null) {
+            $session->put(FirstPartySessionKeys::PENDING_OUTLET, $context->outletId()->value());
+        }
+
+        if ($context->deviceId() !== null) {
+            $session->put(FirstPartySessionKeys::PENDING_DEVICE, $context->deviceId()->value());
         }
     }
 
@@ -169,6 +225,11 @@ final class FirstPartySessionController
             SafeErrorEnvelope::make('AUTHENTICATION_FAILED', $correlationId),
             401,
         );
+    }
+
+    private function mfaEnabled(): bool
+    {
+        return (bool) config('oneqay.privileged_totp_mfa.enabled', false);
     }
 
     private function requireAllowedRuntime(): void

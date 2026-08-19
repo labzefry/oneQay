@@ -47,6 +47,13 @@ final class RequirePolicyAdministrationSessionContextMiddleware
             $outletValue = $this->optionalSessionString($request, self::OUTLET_SESSION);
             $deviceValue = $this->optionalSessionString($request, self::DEVICE_SESSION);
 
+            if ((bool) config('oneqay.privileged_totp_mfa.enabled', false)) {
+                $verifiedAt = $request->session()->get(FirstPartySessionKeys::MFA_VERIFIED_AT);
+                if (! is_int($verifiedAt) || $verifiedAt <= 0) {
+                    throw new InvalidArgumentException('Policy administration MFA evidence is missing.');
+                }
+            }
+
             $identity = new ServerVerifiedPlatformIdentity(PlatformIdentityId::fromString($identityValue));
             $tenant = new ServerVerifiedTenantContext(TenantId::fromString($tenantValue));
             $this->tenantContexts->setVerified($tenant);
@@ -76,6 +83,7 @@ final class RequirePolicyAdministrationSessionContextMiddleware
         if (! is_string($value) || trim($value) === '') {
             throw new InvalidArgumentException('Policy administration session context is invalid.');
         }
+
         return trim($value);
     }
 
@@ -88,6 +96,7 @@ final class RequirePolicyAdministrationSessionContextMiddleware
         if (! is_string($value) || trim($value) === '') {
             throw new InvalidArgumentException('Policy administration session context is invalid.');
         }
+
         return trim($value);
     }
 

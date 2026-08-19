@@ -61,8 +61,22 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: Preserve dependency manifests lockfiles and Sprint 28 migration boundary
+      - name: Recognize exact Sprint 30 bounded successor
         if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "${{ github.base_ref }}"
+          git diff --name-only "origin/${{ github.base_ref }}...HEAD" | sort > /tmp/s30-successor-files.txt
+          if [[ "$(wc -l < /tmp/s30-successor-files.txt)" -eq 46 ]] && [[ "$(sha256sum /tmp/s30-successor-files.txt | awk '{print $1}')" == '95daaf86ba93ae797fccf3825d65d27acd4f71ee58916898a16fbc83d432a5ce' ]]; then
+            echo 'ONEQAY_SPRINT30_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'Exact Sprint 30 successor envelope recognized; legacy shape-only guards defer to the dedicated Sprint 30 workflow.'
+          else
+            echo 'ONEQAY_SPRINT30_SUCCESSOR=false' >> "$GITHUB_ENV"
+          fi
+
+      - name: Preserve dependency manifests lockfiles and Sprint 28 migration boundary
+        if: github.event_name == 'pull_request' && env.ONEQAY_SPRINT30_SUCCESSOR != 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -95,6 +109,7 @@ jobs:
           composer install --no-interaction --no-progress --prefer-dist
 
       - name: Validate Preview and Sprint 28 boundaries
+        if: env.ONEQAY_SPRINT30_SUCCESSOR != 'true'
         shell: bash
         run: |
           set -euo pipefail

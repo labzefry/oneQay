@@ -84,10 +84,11 @@ $migrationNames = [
     '0000_00_00_000006_create_protected_control_administrator_mutation_journal.php',
     '0000_00_00_000007_create_identity_password_credentials.php',
     '0000_00_00_000008_create_initial_password_enrollments.php',
+    '0000_00_00_000009_create_identity_totp_factors.php',
 ];
 $actualMigrations = array_values(array_filter(scandir(__DIR__.'/../database/migrations') ?: [], static fn (string $file): bool => str_ends_with($file, '.php')));
 sort($actualMigrations);
-$assert($actualMigrations === $migrationNames, 'canonical eight-migration set through Sprint 28 changed');
+$assert($actualMigrations === $migrationNames, 'canonical nine-migration set through Sprint 30 changed');
 foreach ($migrationNames as $migration) {
     (require __DIR__.'/../database/migrations/'.$migration)->up();
 }

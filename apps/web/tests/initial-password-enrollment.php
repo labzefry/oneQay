@@ -85,10 +85,11 @@ $migrationNames = [
     '0000_00_00_000006_create_protected_control_administrator_mutation_journal.php',
     '0000_00_00_000007_create_identity_password_credentials.php',
     '0000_00_00_000008_create_initial_password_enrollments.php',
+    '0000_00_00_000009_create_identity_totp_factors.php',
 ];
 $actualMigrations = array_values(array_filter(scandir(__DIR__.'/../database/migrations') ?: [], static fn (string $file): bool => str_ends_with($file, '.php')));
 sort($actualMigrations);
-$assert($actualMigrations === $migrationNames, 'canonical migration set is not exactly #1-#8');
+$assert($actualMigrations === $migrationNames, 'canonical migration set is not exactly #1-#9');
 foreach ($migrationNames as $migration) {
     (require __DIR__.'/../database/migrations/'.$migration)->up();
 }

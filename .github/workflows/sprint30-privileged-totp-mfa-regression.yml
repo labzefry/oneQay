@@ -1,0 +1,294 @@
+name: Sprint 30 Privileged TOTP MFA Regression
+
+# Attribution: Lab | zefry
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/m7-2-tenant-isolation-regression.yml'
+      - '.github/workflows/m7-3-identity-org-context-regression.yml'
+      - '.github/workflows/m7-4a-technical-preview-interaction-regression.yml'
+      - '.github/workflows/m7-5-preview-db-qualification-regression.yml'
+      - '.github/workflows/sprint21-role-permission-policy-regression.yml'
+      - '.github/workflows/sprint22-policy-administration-regression.yml'
+      - '.github/workflows/sprint23-initial-tenant-admin-provisioning-regression.yml'
+      - '.github/workflows/sprint24-protected-control-admin-lifecycle-regression.yml'
+      - '.github/workflows/sprint25-policy-administration-delivery-regression.yml'
+      - '.github/workflows/sprint26-identity-credential-verification-regression.yml'
+      - '.github/workflows/sprint27-first-party-session-establishment-regression.yml'
+      - '.github/workflows/sprint28-initial-password-enrollment-regression.yml'
+      - '.github/workflows/sprint29-first-control-principal-credential-bootstrap-regression.yml'
+      - '.github/workflows/sprint30-privileged-totp-mfa-regression.yml'
+      - 'apps/web/app/Application/Identity/IssuedPrivilegedTotpEnrollment.php'
+      - 'apps/web/app/Application/Identity/PrivilegedTotpClock.php'
+      - 'apps/web/app/Application/Identity/PrivilegedTotpEngine.php'
+      - 'apps/web/app/Application/Identity/PrivilegedTotpMfaRepository.php'
+      - 'apps/web/app/Application/Identity/PrivilegedTotpMfaService.php'
+      - 'apps/web/app/Application/Identity/PrivilegedTotpMfaState.php'
+      - 'apps/web/app/Application/Identity/PrivilegedTotpMfaViolation.php'
+      - 'apps/web/app/Delivery/Http/Identity/FirstPartySessionController.php'
+      - 'apps/web/app/Delivery/Http/Identity/FirstPartySessionKeys.php'
+      - 'apps/web/app/Delivery/Http/Identity/PrivilegedTotpMfaController.php'
+      - 'apps/web/app/Delivery/Http/Middleware/RequirePolicyAdministrationSessionContextMiddleware.php'
+      - 'apps/web/app/Infrastructure/Identity/LaravelPrivilegedTotpMfaRepository.php'
+      - 'apps/web/app/Infrastructure/Identity/OtphpPrivilegedTotpEngine.php'
+      - 'apps/web/app/Providers/AppServiceProvider.php'
+      - 'apps/web/composer.json'
+      - 'apps/web/composer.lock'
+      - 'apps/web/config/oneqay.php'
+      - 'apps/web/database/migrations/0000_00_00_000009_create_identity_totp_factors.php'
+      - 'apps/web/routes/web.php'
+      - 'apps/web/tests/authorization-administration-persistence.php'
+      - 'apps/web/tests/authorization-persistence.php'
+      - 'apps/web/tests/first-control-principal-credential-bootstrap.php'
+      - 'apps/web/tests/first-party-session-establishment.php'
+      - 'apps/web/tests/identity-credential-verification.php'
+      - 'apps/web/tests/identity-org-context.php'
+      - 'apps/web/tests/initial-password-enrollment.php'
+      - 'apps/web/tests/initial-tenant-administrator-provisioning.php'
+      - 'apps/web/tests/policy-administration-delivery.php'
+      - 'apps/web/tests/privileged-totp-mfa.php'
+      - 'apps/web/tests/protected-control-administrator-lifecycle.php'
+      - 'apps/web/tests/tenant-isolation.php'
+      - 'docs/PRIVILEGED_TOTP_MFA_FOUNDATION.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint30-privileged-totp-mfa-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sprint30-privileged-totp-mfa-regression:
+    name: sprint30-privileged-totp-mfa-regression
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:bW1tbW1tbW1tbW1tbW1tbW1tbW1tbW1tbW1tbW1tbW0=
+      APP_DEBUG: 'false'
+      APP_URL: http://localhost
+      ONEQAY_RUNTIME_CLASS: ci
+      ONEQAY_PERSISTENCE_ENABLED: 'false'
+      ONEQAY_PRIVILEGED_TOTP_MFA_ENABLED: 'false'
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Setup exact PHP runtime
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        with:
+          php-version: '8.3'
+          tools: composer:v2
+          coverage: none
+
+      - name: Enforce exact Sprint 30 source envelope
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "${{ github.base_ref }}"
+          git diff --name-only "origin/${{ github.base_ref }}...HEAD" | sort > /tmp/sprint30-files.txt
+          test "$(wc -l < /tmp/sprint30-files.txt)" -eq 46
+          actual="$(sha256sum /tmp/sprint30-files.txt | awk '{print $1}')"
+          expected='95daaf86ba93ae797fccf3825d65d27acd4f71ee58916898a16fbc83d432a5ce'
+          test "$actual" = "$expected"
+          if grep -Eq '(^|/)\.env($|\.)' /tmp/sprint30-files.txt; then exit 1; fi
+          if grep -Eq '(^|/)package(-lock)?\.json$' /tmp/sprint30-files.txt; then exit 1; fi
+          mapfile -t composer_diff < <(git diff --name-only "origin/${{ github.base_ref }}...HEAD" -- apps/web/composer.json apps/web/composer.lock | sort)
+          test "${composer_diff[*]}" = 'apps/web/composer.json apps/web/composer.lock'
+
+      - name: Enforce migration nine additive-only contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${{ github.event_name }}" == 'pull_request' ]]; then
+            base="origin/${{ github.base_ref }}"
+            for migration in \
+              0000_00_00_000001_create_foundational_context_graph.php \
+              0000_00_00_000002_create_organizational_access_grants.php \
+              0000_00_00_000003_create_scoped_role_permission_policy.php \
+              0000_00_00_000004_create_policy_mutation_journal.php \
+              0000_00_00_000005_create_initial_tenant_administrator_provisioning_journal.php \
+              0000_00_00_000006_create_protected_control_administrator_mutation_journal.php \
+              0000_00_00_000007_create_identity_password_credentials.php \
+              0000_00_00_000008_create_initial_password_enrollments.php
+            do
+              git diff --exit-code "$base...HEAD" -- "apps/web/database/migrations/$migration"
+            done
+            mapfile -t migration_diff < <(git diff --name-status "$base...HEAD" -- apps/web/database/migrations)
+            test "${#migration_diff[@]}" -eq 1
+            test "${migration_diff[0]}" = $'A\tapps/web/database/migrations/0000_00_00_000009_create_identity_totp_factors.php'
+          fi
+          mapfile -t migrations < <(find apps/web/database/migrations -maxdepth 1 -type f -name '*.php' -printf '%f\n' | sort)
+          expected=(
+            '0000_00_00_000001_create_foundational_context_graph.php'
+            '0000_00_00_000002_create_organizational_access_grants.php'
+            '0000_00_00_000003_create_scoped_role_permission_policy.php'
+            '0000_00_00_000004_create_policy_mutation_journal.php'
+            '0000_00_00_000005_create_initial_tenant_administrator_provisioning_journal.php'
+            '0000_00_00_000006_create_protected_control_administrator_mutation_journal.php'
+            '0000_00_00_000007_create_identity_password_credentials.php'
+            '0000_00_00_000008_create_initial_password_enrollments.php'
+            '0000_00_00_000009_create_identity_totp_factors.php'
+          )
+          test "${migrations[*]}" = "${expected[*]}"
+          ! find apps/web/database/migrations -maxdepth 1 -type f -name '*000010*' -print -quit | grep -q .
+          migration='apps/web/database/migrations/0000_00_00_000009_create_identity_totp_factors.php'
+          grep -Fq "Schema::create('oneqay_identity_totp_factors'" "$migration"
+          grep -Fq "string('tenant_id', 64)" "$migration"
+          grep -Fq "string('identity_id', 96)" "$migration"
+          grep -Fq "text('secret_ciphertext')" "$migration"
+          grep -Fq "unsignedBigInteger('created_at_unix')" "$migration"
+          grep -Fq "unsignedBigInteger('confirmed_at_unix')->nullable()" "$migration"
+          grep -Fq "unsignedBigInteger('last_accepted_time_step')->nullable()" "$migration"
+          grep -Fq "primary(['tenant_id', 'identity_id']" "$migration"
+          grep -Fq 'fk_identity_totp_factor_identity' "$migration"
+          grep -Fq "throw new LogicException('Forward-only generated migration; rollback is not authorized.')" "$migration"
+
+      - name: Preserve root Platform Foundation regression
+        run: |
+          composer validate --strict --no-check-publish
+          composer test
+
+      - name: Validate exact application Composer dependency
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          composer validate --no-check-publish
+          php -r '$j=json_decode(file_get_contents("composer.json"),true,512,JSON_THROW_ON_ERROR); if (($j["require"]["spomky-labs/otphp"] ?? null) !== "11.5.0") exit(1);'
+          php -r '$j=json_decode(file_get_contents("composer.lock"),true,512,JSON_THROW_ON_ERROR); $p=[]; foreach($j["packages"] as $x){$p[$x["name"]]=$x;} if (($p["spomky-labs/otphp"]["version"] ?? null)!=="11.5.0") exit(1); if (($p["spomky-labs/otphp"]["source"]["reference"] ?? null)!=="877683d6352b80cdc7020fd43a725629c2524435") exit(1); if (($p["paragonie/constant_time_encoding"]["version"] ?? null)!=="v3.1.3") exit(1); if (($p["paragonie/constant_time_encoding"]["source"]["reference"] ?? null)!=="d5b01a39b3415c2cd581d3bd3a3575c1ebbd8e77") exit(1);'
+          composer install --no-interaction --no-progress --prefer-dist
+          composer show --locked spomky-labs/otphp | grep -F '11.5.0'
+          composer show --locked paragonie/constant_time_encoding | grep -F '3.1.3'
+
+      - name: Reject High or Critical Composer advisories
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          composer audit --locked --format=json > /tmp/oneqay-s30-composer-audit.json || true
+          php -r '$data=json_decode(file_get_contents("/tmp/oneqay-s30-composer-audit.json"),true,512,JSON_THROW_ON_ERROR); foreach (($data["advisories"] ?? []) as $package=>$items) { foreach ($items as $item) { if (in_array(strtolower((string)($item["severity"] ?? "")), ["high","critical"], true)) { fwrite(STDERR,"Blocking Composer advisory for {$package}.\n"); exit(1); } } }'
+
+      - name: Lint Sprint 30 PHP source and preserved fixtures
+        shell: bash
+        run: |
+          set -euo pipefail
+          find apps/web/app apps/web/database/migrations apps/web/routes apps/web/tests -type f -name '*.php' -print0 | while IFS= read -r -d '' file; do php -l "$file"; done
+
+      - name: Enforce framework-independent Application and provider-only OTPHP boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          application=(
+            apps/web/app/Application/Identity/IssuedPrivilegedTotpEnrollment.php
+            apps/web/app/Application/Identity/PrivilegedTotpClock.php
+            apps/web/app/Application/Identity/PrivilegedTotpEngine.php
+            apps/web/app/Application/Identity/PrivilegedTotpMfaRepository.php
+            apps/web/app/Application/Identity/PrivilegedTotpMfaService.php
+            apps/web/app/Application/Identity/PrivilegedTotpMfaState.php
+            apps/web/app/Application/Identity/PrivilegedTotpMfaViolation.php
+          )
+          if grep -n -E 'Illuminate\\|OTPHP\\|Schema::|DB::|new PDO|mysqli_|ConnectionInterface|Request|Session' "${application[@]}"; then exit 1; fi
+          mapfile -t otphp_imports < <(grep -RIl -E '^use OTPHP\\|OTPHP\\' apps/web/app || true)
+          test "${#otphp_imports[@]}" -eq 1
+          test "${otphp_imports[0]}" = 'apps/web/app/Infrastructure/Identity/OtphpPrivilegedTotpEngine.php'
+          if grep -RInE 'hash_hmac|base32|dynamic truncation|GoogleChart|chart.googleapis|quickchart|qrcode' "${application[@]}" apps/web/app/Delivery/Http/Identity/PrivilegedTotpMfaController.php; then exit 1; fi
+
+      - name: Enforce fixed TOTP profile encrypted binding and monotonic replay control
+        shell: bash
+        run: |
+          set -euo pipefail
+          engine='apps/web/app/Infrastructure/Identity/OtphpPrivilegedTotpEngine.php'
+          repo='apps/web/app/Infrastructure/Identity/LaravelPrivilegedTotpMfaRepository.php'
+          grep -Fq "PERIOD_SECONDS = 30" "$engine"
+          grep -Fq "DIGITS = 6" "$engine"
+          grep -Fq "DIGEST = 'sha1'" "$engine"
+          grep -Fq "SECRET_BYTES = 20" "$engine"
+          grep -Fq "ISSUER = 'oneQay'" "$engine"
+          grep -Fq 'verify($code, $timestamp, null)' "$engine"
+          grep -Fq 'encryptString($payload)' "$repo"
+          grep -Fq 'decryptString($ciphertext)' "$repo"
+          grep -Fq "'tenant_id' => \$tenantId" "$repo"
+          grep -Fq "'identity_id' => \$identityId" "$repo"
+          grep -Fq 'lockForUpdate()' "$repo"
+          grep -Fq "where('last_accepted_time_step', '<', \$matchedTimeStep)" "$repo"
+          grep -Fq "update(['last_accepted_time_step' => \$matchedTimeStep])" "$repo"
+          if grep -Eq 'table\(self::TABLE\).*(delete|truncate|upsert|updateOrInsert)' "$repo"; then exit 1; fi
+
+      - name: Enforce fail-closed feature arm exact session vocabulary and bounded routes
+        shell: bash
+        run: |
+          set -euo pipefail
+          config='apps/web/config/oneqay.php'
+          keys='apps/web/app/Delivery/Http/Identity/FirstPartySessionKeys.php'
+          routes='apps/web/routes/web.php'
+          middleware='apps/web/app/Delivery/Http/Middleware/RequirePolicyAdministrationSessionContextMiddleware.php'
+          grep -Fq "env('ONEQAY_PRIVILEGED_TOTP_MFA_ENABLED', false)" "$config"
+          for literal in \
+            'oneqay.auth.pending.identity_id' \
+            'oneqay.auth.pending.tenant_id' \
+            'oneqay.auth.pending.organization_id' \
+            'oneqay.auth.pending.outlet_id' \
+            'oneqay.auth.pending.device_id' \
+            'oneqay.auth.pending.mfa_state' \
+            'oneqay.auth.mfa_verified_at' \
+            'enrollment_required' \
+            'challenge_required'
+          do grep -Fq "$literal" "$keys"; done
+          test "$(grep -Fc "Route::post('/auth/mfa/totp/" "$routes")" -eq 3
+          grep -Fq "'/auth/mfa/totp/enrollment/start'" "$routes"
+          grep -Fq "'/auth/mfa/totp/enrollment/confirm'" "$routes"
+          grep -Fq "'/auth/mfa/totp/challenge'" "$routes"
+          grep -Fq "['local', 'test', 'ci']" "$routes"
+          grep -Fq 'MFA_VERIFIED_AT' "$middleware"
+          grep -Fq 'mfa_verified_at' "$keys"
+
+      - name: Enforce no secret leakage and Preview Production updater separation
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -RInE 'PrivilegedTotp|privileged_totp|mfa/totp' apps/web/app/Application/Preview apps/web/app/Delivery/Preview 2>/dev/null; then exit 1; fi
+          grep -Fq "'install_enabled' => false" apps/web/config/oneqay.php
+          grep -Fq 'NO_SCHEMA_CHANGE' docs/PRIVILEGED_TOTP_MFA_FOUNDATION.md
+          grep -Fq 'NO-GO / NOT AUTHORIZED' docs/PRIVILEGED_TOTP_MFA_FOUNDATION.md
+          grep -Fq 'DISABLED / UNWIRED' docs/PRIVILEGED_TOTP_MFA_FOUNDATION.md
+          if grep -RInE 'echo .*secret|print.*secret|var_dump\(.*secret|logger.*secret|Log::.*secret' apps/web/app apps/web/tests/privileged-totp-mfa.php; then exit 1; fi
+
+      - name: Run disposable Sprint 30 privileged TOTP MFA regression
+        run: php apps/web/tests/privileged-totp-mfa.php
+
+      - name: Preserve Sprint 21 through Sprint 24 with application harness
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -r 'require "vendor/autoload.php"; $app=require "bootstrap/app.php"; $app->make(Illuminate\Contracts\Http\Kernel::class)->bootstrap(); $assert=static function(bool $c,string $m):void{if(!$c)throw new RuntimeException($m);}; require "tests/authorization-persistence.php"; require "tests/authorization-administration-persistence.php"; require "tests/initial-tenant-administrator-provisioning.php"; require "tests/protected-control-administrator-lifecycle.php";'
+
+      - name: Preserve M7 tenant identity and Sprint 25 through Sprint 29 regressions
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          php tests/tenant-isolation.php
+          php tests/identity-org-context.php
+          php tests/policy-administration-delivery.php
+          php tests/identity-credential-verification.php
+          php tests/first-party-session-establishment.php
+          php tests/initial-password-enrollment.php
+          php tests/first-control-principal-credential-bootstrap.php
+          php tests/privileged-update-security.php
+
+      - name: Confirm tracked source cleanliness
+        run: test -z "$(git status --porcelain --untracked-files=no)"

@@ -11,6 +11,9 @@ use App\Application\Authorization\ProtectedControlAdministratorLifecycleReposito
 use App\Application\Identity\FirstControlPrincipalCredentialBootstrapRepository;
 use App\Application\Identity\FirstPartyIdentityCredentialVerifier;
 use App\Application\Identity\InitialPasswordEnrollmentRepository;
+use App\Application\Identity\PrivilegedTotpClock;
+use App\Application\Identity\PrivilegedTotpEngine;
+use App\Application\Identity\PrivilegedTotpMfaRepository;
 use App\Application\Organization\OrganizationalContextStore;
 use App\Application\Organization\OrganizationalRelationshipVerifier;
 use App\Application\Persistence\DurableContextGraphRepository;
@@ -25,12 +28,15 @@ use App\Infrastructure\Authorization\LaravelProtectedControlAdministratorLifecyc
 use App\Infrastructure\Identity\LaravelFirstControlPrincipalCredentialBootstrapRepository;
 use App\Infrastructure\Identity\LaravelFirstPartyIdentityCredentialVerifier;
 use App\Infrastructure\Identity\LaravelInitialPasswordEnrollmentRepository;
+use App\Infrastructure\Identity\LaravelPrivilegedTotpMfaRepository;
+use App\Infrastructure\Identity\OtphpPrivilegedTotpEngine;
 use App\Infrastructure\Organization\LaravelOrganizationalRelationshipVerifier;
 use App\Infrastructure\Organization\RequestOrganizationalContextStore;
 use App\Infrastructure\Persistence\LaravelDurableContextGraphRepository;
 use App\Infrastructure\Persistence\LaravelPersistenceTransaction;
 use App\Infrastructure\Tenancy\LaravelTenantMembershipVerifier;
 use App\Infrastructure\Tenancy\RequestTenantContextStore;
+use Illuminate\Contracts\Encryption\Encrypter;
 use Illuminate\Database\Connection;
 use Illuminate\Support\ServiceProvider;
 
@@ -187,6 +193,37 @@ final class AppServiceProvider extends ServiceProvider
                     (string) config('oneqay.runtime_class', ''),
                     (bool) config('oneqay.first_control_principal_credential_bootstrap.enabled', false),
                 );
+            },
+        );
+
+        $this->app->scoped(
+            PrivilegedTotpMfaRepository::class,
+            function ($app): PrivilegedTotpMfaRepository {
+                /** @var Connection $connection */
+                $connection = $app->make('db')->connection();
+
+                return new LaravelPrivilegedTotpMfaRepository(
+                    $connection,
+                    $app->make(Encrypter::class),
+                    (bool) config('database.oneqay_persistence_enabled', false),
+                    (string) config('oneqay.runtime_class', ''),
+                    (bool) config('oneqay.privileged_totp_mfa.enabled', false),
+                );
+            },
+        );
+
+        $this->app->scoped(
+            PrivilegedTotpEngine::class,
+            static fn (): PrivilegedTotpEngine => new OtphpPrivilegedTotpEngine(),
+        );
+
+        $this->app->scoped(
+            PrivilegedTotpClock::class,
+            static fn (): PrivilegedTotpClock => new class implements PrivilegedTotpClock {
+                public function nowUnix(): int
+                {
+                    return time();
+                }
             },
         );
 
