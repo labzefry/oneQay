@@ -122,10 +122,11 @@ $expectedNames = [
     '0000_00_00_000006_create_protected_control_administrator_mutation_journal.php',
     '0000_00_00_000007_create_identity_password_credentials.php',
     '0000_00_00_000008_create_initial_password_enrollments.php',
+    '0000_00_00_000009_create_identity_totp_factors.php',
 ];
 $actual = array_values(array_filter(scandir($migrationDir) ?: [], static fn (string $file): bool => str_ends_with($file, '.php')));
 sort($actual);
-$assertM73($actual === $expectedNames, 'migration set must remain exact through Sprint 28');
+$assertM73($actual === $expectedNames, 'migration set must remain exact through Sprint 30');
 
 $accessSource = (string) file_get_contents(__DIR__.'/../app/Infrastructure/Access/LaravelDurableOrganizationalAccessRepository.php');
 $tenantVerifier = (string) file_get_contents(__DIR__.'/../app/Infrastructure/Tenancy/LaravelTenantMembershipVerifier.php');

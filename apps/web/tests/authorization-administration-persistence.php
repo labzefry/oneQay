@@ -79,10 +79,11 @@ $s22Migrations = [
     '0000_00_00_000006_create_protected_control_administrator_mutation_journal.php',
     '0000_00_00_000007_create_identity_password_credentials.php',
     '0000_00_00_000008_create_initial_password_enrollments.php',
+    '0000_00_00_000009_create_identity_totp_factors.php',
 ];
 $s22Actual = array_values(array_filter(scandir(__DIR__.'/../database/migrations') ?: [], static fn (string $file): bool => str_ends_with($file, '.php')));
 sort($s22Actual);
-$assert($s22Actual === $s22Migrations, 'Sprint 22 preservation requires the exact eight-migration set through Sprint 28.');
+$assert($s22Actual === $s22Migrations, 'Sprint 22 preservation requires the exact nine-migration set through Sprint 30.');
 foreach ($s22Migrations as $migration) { (require __DIR__.'/../database/migrations/'.$migration)->up(); }
 $assert($s22Connection->getSchemaBuilder()->hasTable('oneqay_policy_mutations'), 'Sprint 22 mutation journal missing.');
 $assert($s22Connection->getSchemaBuilder()->hasTable('oneqay_initial_tenant_admin_provisionings'), 'Sprint 23 provisioning journal missing during Sprint 22 preservation.');

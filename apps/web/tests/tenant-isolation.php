@@ -56,8 +56,9 @@ $expected = [
     '0000_00_00_000006_create_protected_control_administrator_mutation_journal.php',
     '0000_00_00_000007_create_identity_password_credentials.php',
     '0000_00_00_000008_create_initial_password_enrollments.php',
+    '0000_00_00_000009_create_identity_totp_factors.php',
 ];
-$assertM72($migrations === $expected, 'exact eight-migration set through Sprint 28 changed');
+$assertM72($migrations === $expected, 'exact nine-migration set through Sprint 30 changed');
 $mutationMigration = (string) file_get_contents($migrationDir.'/'.$expected[3]);
 foreach (['oneqay_policy_mutations', "primary(['tenant_id', 'mutation_id']", 'fk_policy_mutation_actor', 'Forward-only generated migration; rollback is not authorized.'] as $marker) {
     $assertM72(str_contains($mutationMigration, $marker), 'Sprint 22 migration boundary missing: '.$marker);

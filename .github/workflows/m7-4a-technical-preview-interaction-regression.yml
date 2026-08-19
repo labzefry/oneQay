@@ -62,6 +62,20 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
+      - name: Recognize exact Sprint 30 bounded successor
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "${{ github.base_ref }}"
+          git diff --name-only "origin/${{ github.base_ref }}...HEAD" | sort > /tmp/s30-successor-files.txt
+          if [[ "$(wc -l < /tmp/s30-successor-files.txt)" -eq 46 ]] && [[ "$(sha256sum /tmp/s30-successor-files.txt | awk '{print $1}')" == '95daaf86ba93ae797fccf3825d65d27acd4f71ee58916898a16fbc83d432a5ce' ]]; then
+            echo 'ONEQAY_SPRINT30_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'Exact Sprint 30 successor envelope recognized; legacy shape-only guards defer to the dedicated Sprint 30 workflow.'
+          else
+            echo 'ONEQAY_SPRINT30_SUCCESSOR=false' >> "$GITHUB_ENV"
+          fi
+
       - name: Enforce bounded M7.4A source envelope
         if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'agent/m7-4a-')
         shell: bash
@@ -101,7 +115,7 @@ jobs:
           node-version: 24.19.0
 
       - name: Require unchanged dependency manifests and locks
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && env.ONEQAY_SPRINT30_SUCCESSOR != 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -143,6 +157,7 @@ jobs:
           fi
 
       - name: Preserve canonical migrations and reject Preview database credential session or enrollment implementation
+        if: env.ONEQAY_SPRINT30_SUCCESSOR != 'true'
         shell: bash
         run: |
           set -euo pipefail

@@ -12,6 +12,14 @@ return [
         ),
     ],
 
+    'privileged_totp_mfa' => [
+        // Local/Test/CI privileged TOTP MFA remains fail-closed unless explicitly armed.
+        'enabled' => filter_var(
+            env('ONEQAY_PRIVILEGED_TOTP_MFA_ENABLED', false),
+            FILTER_VALIDATE_BOOL,
+        ),
+    ],
+
     'system_update' => [
         // Backend control-plane visibility/checking may only be enabled explicitly.
         'control_plane_enabled' => filter_var(
