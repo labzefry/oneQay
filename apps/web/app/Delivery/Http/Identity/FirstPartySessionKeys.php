@@ -24,6 +24,12 @@ final class FirstPartySessionKeys
     public const PENDING_DEVICE = 'oneqay.auth.pending.device_id';
     public const PENDING_MFA_STATE = 'oneqay.auth.pending.mfa_state';
 
+    public const RECOVERY_TENANT = 'oneqay.auth.recovery.tenant_id';
+    public const RECOVERY_IDENTITY = 'oneqay.auth.recovery.identity_id';
+    public const RECOVERY_STATE = 'oneqay.auth.recovery.state';
+    public const RECOVERY_PROVED_AT = 'oneqay.auth.recovery.proved_at';
+    public const RECOVERY_EXPIRES_AT = 'oneqay.auth.recovery.expires_at';
+
     public const MFA_ENROLLMENT_REQUIRED = 'enrollment_required';
     public const MFA_CHALLENGE_REQUIRED = 'challenge_required';
 
@@ -49,6 +55,18 @@ final class FirstPartySessionKeys
             self::PENDING_OUTLET,
             self::PENDING_DEVICE,
             self::PENDING_MFA_STATE,
+        ];
+    }
+
+    /** @return list<string> */
+    public static function recovery(): array
+    {
+        return [
+            self::RECOVERY_TENANT,
+            self::RECOVERY_IDENTITY,
+            self::RECOVERY_STATE,
+            self::RECOVERY_PROVED_AT,
+            self::RECOVERY_EXPIRES_AT,
         ];
     }
 

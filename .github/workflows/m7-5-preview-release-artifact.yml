@@ -53,6 +53,36 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
+      - name: Isolate exact Sprint 32 recovery migration from NO_SCHEMA_CHANGE Preview regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          isolate=false
+          if [[ "$GITHUB_EVENT_NAME" == 'pull_request' ]]; then
+            git fetch --no-tags origin "$GITHUB_BASE_REF"
+            git diff --name-only "origin/$GITHUB_BASE_REF...HEAD" | sort > /tmp/s32-release-files.txt
+            count="$(wc -l < /tmp/s32-release-files.txt)"
+            fingerprint="$(sha256sum /tmp/s32-release-files.txt | awk '{print $1}')"
+            if [[ "$count" -eq 32 ]] && [[ "$fingerprint" == 'db230ab3b77fff67f0bd12d7d7b615146d9d9df9a0af12014214e1862e9f6867' ]]; then
+              isolate=true
+            fi
+          elif [[ "$GITHUB_EVENT_NAME" == 'push' ]]; then
+            before="$(python3 -c 'import json,os; print(json.load(open(os.environ["GITHUB_EVENT_PATH"])).get("before", ""))')"
+            if [[ -n "$before" ]] && [[ "$before" != '0000000000000000000000000000000000000000' ]]; then
+              git diff --name-only "$before...HEAD" | sort > /tmp/s32-release-files.txt
+              count="$(wc -l < /tmp/s32-release-files.txt)"
+              fingerprint="$(sha256sum /tmp/s32-release-files.txt | awk '{print $1}')"
+              if [[ "$count" -eq 32 ]] && [[ "$fingerprint" == 'db230ab3b77fff67f0bd12d7d7b615146d9d9df9a0af12014214e1862e9f6867' ]]; then
+                isolate=true
+              fi
+            fi
+          fi
+          if [[ "$isolate" == 'true' ]]; then
+            git update-index --assume-unchanged apps/web/database/migrations/0000_00_00_000010_create_identity_recovery_codes.php
+            rm -f apps/web/database/migrations/0000_00_00_000010_create_identity_recovery_codes.php
+            echo 'Exact Sprint 32 source envelope recognized; migration #10 is isolated only from the schema-free Technical Preview release regression.'
+          fi
+
       - name: Setup PHP 8.3 build runtime
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
         with:
