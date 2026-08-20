@@ -8,6 +8,7 @@ use App\Application\Identity\IdentityContextViolation;
 use App\Application\Identity\PrivilegedTotpMfaService;
 use App\Application\Identity\PrivilegedTotpMfaState;
 use App\Application\Identity\PrivilegedTotpMfaViolation;
+use App\Application\Identity\VerifyFirstPartyCredentialEpoch;
 use App\Application\Identity\VerifyFirstPartyIdentityCredential;
 use App\Application\Organization\EnterOrganizationalContext;
 use App\Application\Organization\OrganizationalAccessViolation;
@@ -41,6 +42,7 @@ final class FirstPartySessionController
     public function __construct(
         private readonly VerifyFirstPartyIdentityCredential $credentials,
         private readonly PrivilegedTotpMfaService $mfa,
+        private readonly VerifyFirstPartyCredentialEpoch $credentialEpochs,
         private readonly TenantContextStore $tenantContexts,
         private readonly OrganizationalContextStore $organizationalContexts,
         private readonly EnterOrganizationalContext $enterOrganizationalContext,
@@ -110,7 +112,8 @@ final class FirstPartySessionController
                 }
             }
 
-            $this->establishFullSession($request, $context);
+            $credentialEpoch = $this->credentialEpochs->capture($tenantId, $identityId);
+            $this->establishFullSession($request, $context, $credentialEpoch);
 
             return response()->json([
                 'status' => 'ok',
@@ -137,14 +140,22 @@ final class FirstPartySessionController
         }
     }
 
-    private function establishFullSession(Request $request, VerifiedOrganizationalContext $context): void
-    {
+    private function establishFullSession(
+        Request $request,
+        VerifiedOrganizationalContext $context,
+        int $credentialEpoch,
+    ): void {
+        if ($credentialEpoch < 0) {
+            throw new InvalidArgumentException('Authentication request is invalid.');
+        }
+
         $session = $request->session();
         $session->invalidate();
         $session->regenerateToken();
         $session->put(FirstPartySessionKeys::IDENTITY, $context->identityId()->value());
         $session->put(FirstPartySessionKeys::TENANT, $context->tenantId()->value());
         $session->put(FirstPartySessionKeys::ORGANIZATION, $context->organizationId()->value());
+        $session->put(FirstPartySessionKeys::CREDENTIAL_EPOCH, $credentialEpoch);
 
         if ($context->outletId() !== null) {
             $session->put(FirstPartySessionKeys::OUTLET, $context->outletId()->value());

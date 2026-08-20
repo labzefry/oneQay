@@ -7,6 +7,7 @@ namespace App\Delivery\Http\Identity;
 use App\Application\Identity\IdentityContextViolation;
 use App\Application\Identity\RecoveryCodeService;
 use App\Application\Identity\RecoveryCodeViolation;
+use App\Application\Identity\VerifyFirstPartyCredentialEpoch;
 use App\Application\Organization\EnterOrganizationalContext;
 use App\Application\Organization\OrganizationalAccessViolation;
 use App\Application\Organization\OrganizationalContextStore;
@@ -30,6 +31,7 @@ final class RecoveryCodeController
 
     public function __construct(
         private readonly RecoveryCodeService $recovery,
+        private readonly VerifyFirstPartyCredentialEpoch $credentialEpochs,
         private readonly TenantContextStore $tenantContexts,
         private readonly OrganizationalContextStore $organizationalContexts,
         private readonly EnterOrganizationalContext $enterOrganizationalContext,
@@ -48,6 +50,12 @@ final class RecoveryCodeController
             }
 
             $context = $this->fullContext($request);
+            $this->credentialEpochs->assertCurrent(
+                $context->tenantId(),
+                $context->identityId(),
+                $request->session()->get(FirstPartySessionKeys::CREDENTIAL_EPOCH),
+            );
+
             $issued = $this->recovery->rotate(
                 $context->tenantId(),
                 $context->identityId(),
@@ -141,6 +149,7 @@ final class RecoveryCodeController
             FirstPartySessionKeys::pending(),
             FirstPartySessionKeys::recovery(),
             [
+                FirstPartySessionKeys::CREDENTIAL_EPOCH,
                 FirstPartySessionKeys::MFA_VERIFIED_AT,
                 FirstPartySessionKeys::STEP_UP_VERIFIED_AT,
                 FirstPartySessionKeys::STEP_UP_SCOPE,
@@ -169,6 +178,7 @@ final class RecoveryCodeController
         $session->regenerateToken();
         $session->put(FirstPartySessionKeys::RECOVERY_TENANT, $verified->tenantId()->value());
         $session->put(FirstPartySessionKeys::RECOVERY_IDENTITY, $verified->identityId()->value());
+        $session->put(FirstPartySessionKeys::RECOVERY_CODE_ID, $verified->codeId());
         $session->put(FirstPartySessionKeys::RECOVERY_STATE, self::RECOVERY_STATE);
         $session->put(FirstPartySessionKeys::RECOVERY_PROVED_AT, $provedAt);
         $session->put(FirstPartySessionKeys::RECOVERY_EXPIRES_AT, $provedAt + self::RESTRICTED_SESSION_TTL_SECONDS);

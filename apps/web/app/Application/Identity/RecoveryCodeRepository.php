@@ -25,7 +25,7 @@ interface RecoveryCodeRepository
     /**
      * Called only inside PersistenceTransaction.
      *
-     * @return array{tenant_id:string,identity_id:string,proved_at_unix:int}
+     * @return array{tenant_id:string,identity_id:string,code_id:string,proved_at_unix:int}
      */
     public function consume(
         #[\SensitiveParameter] string $recoveryCode,
