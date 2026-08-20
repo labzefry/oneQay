@@ -187,6 +187,7 @@ $app['router']->get('/__s27/session-inspect', static function (Request $request)
     return response()->json([
         'csrf_token' => $request->session()->token(),
         'auth' => $auth,
+        'credential_epoch' => $request->session()->get(FirstPartySessionKeys::CREDENTIAL_EPOCH),
     ]);
 })->middleware('web');
 
@@ -319,6 +320,7 @@ $assertNoAuth = static function (array $inspection) use ($assert): void {
         $assert(array_key_exists($key, $auth), 'session inspection omitted '.$key);
         $assert($auth[$key] === null, 'failed/cleared session retained '.$key);
     }
+    $assert(($inspection['credential_epoch'] ?? null) === null, 'failed/cleared session retained credential epoch');
 };
 
 $assertContextsCleared = static function () use ($app, $assert): void {
@@ -342,7 +344,7 @@ $assert($response->getStatusCode() === 419, 'missing login CSRF token was not re
 $inspection = $inspect($kernel, $cookieName, $cookie);
 $assertNoAuth($inspection);
 
-// Successful login rotates the session identifier and CSRF token, and writes canonical verified context only.
+// Successful login rotates the session identifier and CSRF token, and writes canonical verified context plus separate epoch evidence.
 $response = $sendLogin($kernel, $cookieName, $cookie, $csrfInitial, $adminLogin, '10.27.0.2');
 $assert($response->getStatusCode() === 200, 'valid first-party login did not succeed');
 $assert($cookie !== null && $cookie !== $anonymousCookie, 'authenticated session cookie was not rotated');
@@ -362,6 +364,8 @@ $assert(($auth[FirstPartySessionKeys::TENANT] ?? null) === 'tenant-alpha', 'cano
 $assert(($auth[FirstPartySessionKeys::ORGANIZATION] ?? null) === 'organization-alpha', 'canonical organization session fact missing');
 $assert(($auth[FirstPartySessionKeys::OUTLET] ?? null) === null, 'unverified outlet was stored');
 $assert(($auth[FirstPartySessionKeys::DEVICE] ?? null) === null, 'unverified device was stored');
+$assert(($inspection['credential_epoch'] ?? null) === 0, 'fresh legacy-schema login did not capture epoch zero');
+$assert(! in_array(FirstPartySessionKeys::CREDENTIAL_EPOCH, FirstPartySessionKeys::all(), true), 'credential epoch entered the canonical five-key list');
 $assertContextsCleared();
 
 // The existing Sprint 25 route consumes the real Sprint 27 session but still applies its own durable authorization checks.
@@ -374,6 +378,7 @@ $response = $sendLogout($kernel, $cookieName, $cookie, $csrfAuthenticated, false
 $assert($response->getStatusCode() === 419, 'missing logout CSRF token was not rejected');
 $inspection = $inspect($kernel, $cookieName, $cookie);
 $assert(($inspection['auth'][FirstPartySessionKeys::IDENTITY] ?? null) === 'admin-alpha', 'CSRF-rejected logout cleared authenticated state');
+$assert(($inspection['credential_epoch'] ?? null) === 0, 'CSRF-rejected logout cleared credential epoch evidence');
 
 $authenticatedCookie = $cookie;
 $response = $sendLogout($kernel, $cookieName, $cookie, $csrfAuthenticated, true);
@@ -467,6 +472,7 @@ $assert(($auth[FirstPartySessionKeys::TENANT] ?? null) === 'tenant-alpha', 'full
 $assert(($auth[FirstPartySessionKeys::ORGANIZATION] ?? null) === 'organization-alpha', 'full context organization mismatch');
 $assert(($auth[FirstPartySessionKeys::OUTLET] ?? null) === 'outlet-alpha', 'verified outlet not stored');
 $assert(($auth[FirstPartySessionKeys::DEVICE] ?? null) === 'device-alpha', 'verified device not stored');
+$assert(($inspection['credential_epoch'] ?? null) === 0, 'full-context login did not retain separate epoch evidence');
 $fullCsrf = $inspection['csrf_token'] ?? null;
 $response = $sendLogout($kernel, $cookieName, $cookie, is_string($fullCsrf) ? $fullCsrf : null);
 $assert($response->getStatusCode() === 204, 'full-context logout failed');
@@ -485,6 +491,7 @@ $response = $sendLogin(
 $assert($response->getStatusCode() === 200, 'tenant-beta independent credential did not authenticate');
 $inspection = $inspect($kernel, $cookieName, $cookie);
 $assert(($inspection['auth'][FirstPartySessionKeys::TENANT] ?? null) === 'tenant-beta', 'tenant-beta session ownership mismatch');
+$assert(($inspection['credential_epoch'] ?? null) === 0, 'tenant-beta login epoch evidence mismatch');
 $betaCsrf = $inspection['csrf_token'] ?? null;
 $response = $sendLogout($kernel, $cookieName, $cookie, is_string($betaCsrf) ? $betaCsrf : null);
 $assert($response->getStatusCode() === 204, 'tenant-beta logout failed');
@@ -504,6 +511,7 @@ $assert($response->getStatusCode() === 200, 'valid no-authority identity could n
 $inspection = $inspect($kernel, $cookieName, $cookie);
 $noAuthorityCsrf = $inspection['csrf_token'] ?? null;
 $assert(is_string($noAuthorityCsrf) && $noAuthorityCsrf !== '', 'no-authority CSRF token missing');
+$assert(($inspection['credential_epoch'] ?? null) === 0, 'no-authority login epoch evidence mismatch');
 $response = $sendPolicyMutation($kernel, $cookieName, $cookie, $noAuthorityCsrf, 's27-no-authority');
 $assert($response->getStatusCode() === 403, 'authentication incorrectly granted policy authority');
 $response = $sendLogout($kernel, $cookieName, $cookie, $noAuthorityCsrf);

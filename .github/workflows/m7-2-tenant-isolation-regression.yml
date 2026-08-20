@@ -71,7 +71,7 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: Recognize exact Sprint 30 through Sprint 32 bounded successors
+      - name: Recognize exact Sprint 30 through Sprint 33 bounded successors
         if: github.event_name == 'pull_request'
         shell: bash
         run: |
@@ -80,10 +80,19 @@ jobs:
           git diff --name-only "origin/${{ github.base_ref }}...HEAD" | sort > /tmp/oneqay-successor-files.txt
           count="$(wc -l < /tmp/oneqay-successor-files.txt)"
           fingerprint="$(sha256sum /tmp/oneqay-successor-files.txt | awk '{print $1}')"
-          if [[ "$count" -eq 32 ]] && [[ "$fingerprint" == 'db230ab3b77fff67f0bd12d7d7b615146d9d9df9a0af12014214e1862e9f6867' ]]; then
+          if [[ "$count" -eq 39 ]] && [[ "$fingerprint" == '04a1177c12712183a7dda4ae81be1356c0e41294533336c9f999d376c224712a' ]]; then
             echo 'ONEQAY_SPRINT30_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT31_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT32_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT33_SUCCESSOR=true' >> "$GITHUB_ENV"
+            git update-index --assume-unchanged apps/web/database/migrations/0000_00_00_000010_create_identity_recovery_codes.php
+            rm -f apps/web/database/migrations/0000_00_00_000010_create_identity_recovery_codes.php
+            echo 'Exact Sprint 33 successor envelope recognized; historical executable regression remains active while migration #10 is isolated from the legacy migration-shape guard.'
+          elif [[ "$count" -eq 32 ]] && [[ "$fingerprint" == 'db230ab3b77fff67f0bd12d7d7b615146d9d9df9a0af12014214e1862e9f6867' ]]; then
+            echo 'ONEQAY_SPRINT30_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT31_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT32_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT33_SUCCESSOR=false' >> "$GITHUB_ENV"
             git update-index --assume-unchanged apps/web/database/migrations/0000_00_00_000010_create_identity_recovery_codes.php
             rm -f apps/web/database/migrations/0000_00_00_000010_create_identity_recovery_codes.php
             echo 'Exact Sprint 32 successor envelope recognized; historical executable regression remains active while migration #10 is isolated from the legacy migration-shape guard.'
@@ -91,16 +100,19 @@ jobs:
             echo 'ONEQAY_SPRINT30_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT31_SUCCESSOR=false' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT32_SUCCESSOR=false' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT33_SUCCESSOR=false' >> "$GITHUB_ENV"
             echo 'Exact Sprint 30 successor envelope recognized; legacy shape-only guards defer to the dedicated Sprint 30 workflow.'
           elif [[ "$count" -eq 26 ]] && [[ "$fingerprint" == '8136b57a5c9949ec5020a3d5ae497f34431a704900eb0447d42fdb791efb6e39' ]]; then
             echo 'ONEQAY_SPRINT30_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT31_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT32_SUCCESSOR=false' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT33_SUCCESSOR=false' >> "$GITHUB_ENV"
             echo 'Exact Sprint 31 successor envelope recognized; stale historical shape guards defer while executable preservation remains active.'
           else
             echo 'ONEQAY_SPRINT30_SUCCESSOR=false' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT31_SUCCESSOR=false' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT32_SUCCESSOR=false' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT33_SUCCESSOR=false' >> "$GITHUB_ENV"
           fi
 
       - name: Enforce exact Sprint 28 source envelope

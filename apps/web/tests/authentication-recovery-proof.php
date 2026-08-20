@@ -93,6 +93,7 @@ final class Sprint32RecoveryRepository implements RecoveryCodeRepository
         return [
             'tenant_id' => 'tenant-alpha',
             'identity_id' => 'identity-alpha',
+            'code_id' => str_repeat('a', 32),
             'proved_at_unix' => $occurredAtUnix,
         ];
     }
@@ -133,6 +134,7 @@ $assert($repository->rotateCalls === 1 && $transaction->calls === 1, 'Rotation m
 $proof = $service->prove($codes[0], 'corr-s32-proof');
 $assert($proof->tenantId()->equals($tenant), 'Verified proof tenant must be server-derived from repository state.');
 $assert($proof->identityId()->equals($identity), 'Verified proof identity must be server-derived from repository state.');
+$assert($proof->codeId() === str_repeat('a', 32), 'Verified proof code id must be server-derived from consumed recovery state.');
 $assert($proof->provedAtUnix() === 1_800_000_000, 'Verified proof timestamp must be server clock time.');
 $assert($repository->consumeCalls === 1 && $transaction->calls === 2, 'Proof must enter exactly one persistence transaction.');
 
@@ -169,10 +171,12 @@ $assert(FirstPartySessionKeys::all() === [
 $assert(FirstPartySessionKeys::recovery() === [
     FirstPartySessionKeys::RECOVERY_TENANT,
     FirstPartySessionKeys::RECOVERY_IDENTITY,
+    FirstPartySessionKeys::RECOVERY_CODE_ID,
     FirstPartySessionKeys::RECOVERY_STATE,
     FirstPartySessionKeys::RECOVERY_PROVED_AT,
     FirstPartySessionKeys::RECOVERY_EXPIRES_AT,
-], 'Restricted recovery session must enumerate exactly five recovery keys.');
+], 'Restricted recovery session must enumerate the server-bound Sprint 33 recovery evidence.');
+$assert(! in_array(FirstPartySessionKeys::CREDENTIAL_EPOCH, FirstPartySessionKeys::all(), true), 'Credential epoch must remain outside the five Sprint 27 canonical keys.');
 
 $config = $read('config/oneqay.php');
 $routes = $read('routes/web.php');
@@ -209,6 +213,7 @@ foreach (['decryptString', 'encryptString', 'secret_ciphertext', 'provisioningUr
 }
 $assert(str_contains($repo, "->update(['revoked_at_unix' => \$occurredAtUnix])"), 'Rotation must atomically revoke prior unused codes.');
 $assert(str_contains($repo, "->update(['consumed_at_unix' => \$occurredAtUnix])"), 'Proof must atomically consume one code.');
+$assert(str_contains($repo, "'code_id' => \$row->code_id"), 'Proof must carry the server-owned consumed code id.');
 $assert(str_contains($repo, 'if ($updated !== 1)'), 'Same-code replay/concurrency must have at most one winner.');
 
 foreach ([
@@ -248,6 +253,7 @@ foreach ([
     '$session->invalidate();',
     '$session->regenerateToken();',
     'FirstPartySessionKeys::recovery()',
+    'FirstPartySessionKeys::RECOVERY_CODE_ID',
     "SafeErrorEnvelope::make('AUTHENTICATION_RECOVERY_FAILED'",
 ] as $needle) {
     $assert(str_contains($controller, $needle), 'Recovery controller missing invariant: '.$needle);
@@ -255,16 +261,18 @@ foreach ([
 foreach ([
     'oneqay.auth.recovery.tenant_id',
     'oneqay.auth.recovery.identity_id',
+    'oneqay.auth.recovery.code_id',
     'oneqay.auth.recovery.state',
     'oneqay.auth.recovery.proved_at',
     'oneqay.auth.recovery.expires_at',
+    'oneqay.auth.credential_epoch',
 ] as $needle) {
-    $assert(str_contains($keys, $needle), 'Recovery session key missing: '.$needle);
+    $assert(str_contains($keys, $needle), 'Recovery/session key missing: '.$needle);
 }
 
-$assert(! str_contains($controller, 'password_hash'), 'Sprint 32 controller must not change passwords.');
-$assert(! str_contains($controller, 'PrivilegedTotpMfaService'), 'Sprint 32 controller must not recover or replace TOTP.');
-$assert(str_contains($foundation, 'does not implement password reset'), 'Foundation must preserve no-password-reset boundary.');
+$assert(! str_contains($controller, 'password_hash'), 'Recovery proof controller must not change passwords.');
+$assert(! str_contains($controller, 'PrivilegedTotpMfaService'), 'Recovery proof controller must not recover or replace TOTP.');
+$assert(str_contains($foundation, 'does not implement password reset'), 'Historical Sprint 32 foundation boundary statement changed.');
 $assert(str_contains($foundation, 'Technical Preview remains NO_SCHEMA_CHANGE'), 'Foundation must preserve Technical Preview boundary.');
 $assert(str_contains($foundation, 'Production remains NO-GO / NOT AUTHORIZED'), 'Foundation must preserve Production boundary.');
 

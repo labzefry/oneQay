@@ -9,6 +9,7 @@ use App\Application\Authorization\InitialTenantAdministratorProvisioningReposito
 use App\Application\Authorization\PolicyAdministrationClock;
 use App\Application\Authorization\ProtectedControlAdministratorLifecycleRepository;
 use App\Application\Identity\FirstControlPrincipalCredentialBootstrapRepository;
+use App\Application\Identity\FirstPartyCredentialEpochRepository;
 use App\Application\Identity\FirstPartyIdentityCredentialVerifier;
 use App\Application\Identity\InitialPasswordEnrollmentRepository;
 use App\Application\Identity\PrivilegedStepUpClock;
@@ -17,6 +18,7 @@ use App\Application\Identity\PrivilegedTotpEngine;
 use App\Application\Identity\PrivilegedTotpMfaRepository;
 use App\Application\Identity\RecoveryCodeClock;
 use App\Application\Identity\RecoveryCodeRepository;
+use App\Application\Identity\RecoveryPasswordResetRepository;
 use App\Application\Organization\OrganizationalContextStore;
 use App\Application\Organization\OrganizationalRelationshipVerifier;
 use App\Application\Persistence\DurableContextGraphRepository;
@@ -29,10 +31,12 @@ use App\Infrastructure\Authorization\LaravelDurableRolePermissionRepository;
 use App\Infrastructure\Authorization\LaravelInitialTenantAdministratorProvisioningRepository;
 use App\Infrastructure\Authorization\LaravelProtectedControlAdministratorLifecycleRepository;
 use App\Infrastructure\Identity\LaravelFirstControlPrincipalCredentialBootstrapRepository;
+use App\Infrastructure\Identity\LaravelFirstPartyCredentialEpochRepository;
 use App\Infrastructure\Identity\LaravelFirstPartyIdentityCredentialVerifier;
 use App\Infrastructure\Identity\LaravelInitialPasswordEnrollmentRepository;
 use App\Infrastructure\Identity\LaravelPrivilegedTotpMfaRepository;
 use App\Infrastructure\Identity\LaravelRecoveryCodeRepository;
+use App\Infrastructure\Identity\LaravelRecoveryPasswordResetRepository;
 use App\Infrastructure\Identity\OtphpPrivilegedTotpEngine;
 use App\Infrastructure\Organization\LaravelOrganizationalRelationshipVerifier;
 use App\Infrastructure\Organization\RequestOrganizationalContextStore;
@@ -172,6 +176,20 @@ final class AppServiceProvider extends ServiceProvider
         );
 
         $this->app->scoped(
+            FirstPartyCredentialEpochRepository::class,
+            function ($app): FirstPartyCredentialEpochRepository {
+                /** @var Connection $connection */
+                $connection = $app->make('db')->connection();
+
+                return new LaravelFirstPartyCredentialEpochRepository(
+                    $connection,
+                    (bool) config('database.oneqay_persistence_enabled', false),
+                    (string) config('oneqay.runtime_class', ''),
+                );
+            },
+        );
+
+        $this->app->scoped(
             InitialPasswordEnrollmentRepository::class,
             function ($app): InitialPasswordEnrollmentRepository {
                 /** @var Connection $connection */
@@ -192,6 +210,21 @@ final class AppServiceProvider extends ServiceProvider
                 $connection = $app->make('db')->connection();
 
                 return new LaravelRecoveryCodeRepository(
+                    $connection,
+                    (bool) config('database.oneqay_persistence_enabled', false),
+                    (string) config('oneqay.runtime_class', ''),
+                    (bool) config('oneqay.authentication_recovery.enabled', false),
+                );
+            },
+        );
+
+        $this->app->scoped(
+            RecoveryPasswordResetRepository::class,
+            function ($app): RecoveryPasswordResetRepository {
+                /** @var Connection $connection */
+                $connection = $app->make('db')->connection();
+
+                return new LaravelRecoveryPasswordResetRepository(
                     $connection,
                     (bool) config('database.oneqay_persistence_enabled', false),
                     (string) config('oneqay.runtime_class', ''),

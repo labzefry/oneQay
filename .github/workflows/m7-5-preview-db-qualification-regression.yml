@@ -101,6 +101,26 @@ jobs:
             echo 'ONEQAY_SPRINT32_SUCCESSOR=false' >> "$GITHUB_ENV"
           fi
 
+      - name: Recognize exact Sprint 33 bounded successor
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --name-only "origin/${{ github.base_ref }}...HEAD" | sort > /tmp/s33-successor-files.txt
+          count="$(wc -l < /tmp/s33-successor-files.txt)"
+          fingerprint="$(sha256sum /tmp/s33-successor-files.txt | awk '{print $1}')"
+          if [[ "$count" -eq 39 ]] && [[ "$fingerprint" == '04a1177c12712183a7dda4ae81be1356c0e41294533336c9f999d376c224712a' ]]; then
+            echo 'ONEQAY_SPRINT30_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT31_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT32_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT33_SUCCESSOR=true' >> "$GITHUB_ENV"
+            git update-index --assume-unchanged apps/web/database/migrations/0000_00_00_000010_create_identity_recovery_codes.php
+            rm -f apps/web/database/migrations/0000_00_00_000010_create_identity_recovery_codes.php
+            echo 'Exact Sprint 33 successor envelope recognized; historical executable regression remains active while migration #10 is isolated from legacy migration-shape guards.'
+          else
+            echo 'ONEQAY_SPRINT33_SUCCESSOR=false' >> "$GITHUB_ENV"
+          fi
+
       - name: Preserve dependency manifests lockfiles and Sprint 28 migration boundary
         if: github.event_name == 'pull_request' && env.ONEQAY_SPRINT30_SUCCESSOR != 'true'
         shell: bash

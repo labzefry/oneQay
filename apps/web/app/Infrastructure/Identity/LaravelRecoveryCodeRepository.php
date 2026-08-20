@@ -165,6 +165,7 @@ final readonly class LaravelRecoveryCodeRepository implements RecoveryCodeReposi
             return [
                 'tenant_id' => $tenant,
                 'identity_id' => $identity,
+                'code_id' => $row->code_id,
                 'proved_at_unix' => $occurredAtUnix,
             ];
         } catch (RecoveryCodeViolation|DurablePersistenceViolation $exception) {

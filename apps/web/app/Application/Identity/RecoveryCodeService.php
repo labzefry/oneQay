@@ -14,6 +14,7 @@ use InvalidArgumentException;
 final readonly class RecoveryCodeService
 {
     private const CODE_PATTERN = '/\Arq1\.[A-Za-z0-9_-]{22}\.[A-Za-z0-9_-]{43}\z/D';
+    private const CODE_ID_PATTERN = '/\A[0-9a-f]{32}\z/D';
 
     public function __construct(
         private VerifyFirstPartyIdentityCredential $credentials,
@@ -73,9 +74,11 @@ final readonly class RecoveryCodeService
                 ),
             );
 
-            if (array_keys($verified) !== ['tenant_id', 'identity_id', 'proved_at_unix']
+            if (array_keys($verified) !== ['tenant_id', 'identity_id', 'code_id', 'proved_at_unix']
                 || ! is_string($verified['tenant_id'] ?? null)
                 || ! is_string($verified['identity_id'] ?? null)
+                || ! is_string($verified['code_id'] ?? null)
+                || preg_match(self::CODE_ID_PATTERN, $verified['code_id']) !== 1
                 || ! is_int($verified['proved_at_unix'] ?? null)
                 || $verified['proved_at_unix'] !== $now) {
                 $this->verificationFailed();
@@ -84,6 +87,7 @@ final readonly class RecoveryCodeService
             return new VerifiedRecoveryProof(
                 TenantId::fromString($verified['tenant_id']),
                 PlatformIdentityId::fromString($verified['identity_id']),
+                $verified['code_id'],
                 $verified['proved_at_unix'],
             );
         } catch (RecoveryCodeViolation|DurablePersistenceViolation|InvalidArgumentException) {
