@@ -1,5 +1,25 @@
 # AI Next Task
 
+## Canonical post-Sprint 34 program-state reconciliation — 2026-08-21
+
+For current identity, security, recovery, schema, runtime, workflow, and next-work interpretation, this section supersedes older current-facing post-Sprint33 wording retained below as historical provenance.
+
+- Sprint 21 through Sprint 34 governed control/identity foundations are **COMPLETE / IMPLEMENTED / PUBLISHED** within their bounded authorities.
+- Sprint34 Authenticated In-Session Password Change Foundation is published through source PR #217 as `4420ad423c27ea30ebe58307a68a547a6115d1bf` with tree `d9f133eaa37b1ebf635f6611e70409d7ffa133a3`, parent `8b4fc5425ba8d98f35f02c39bd1880ce50c4759b`, and a verified/valid publication signature after **24/24** exact-head pull-request workflows succeeded.
+- The qualified Sprint34 source head was `dc35373a43ce59c59c9e0a71f66b49e4f0aabd9e`; source remained exactly **35 paths** with sorted-path SHA-256 `e3b724002cfc0be1ef890d1b5594a2a5179123f949f6f486354e21950c7328eb`.
+- Sprint34 entry-gate PR #215 and schema/source-envelope gate PR #216 remain published provenance; their authorities and PR #217 merge authority are consumed and grant no standing successor authority.
+- Canonical source migrations are exactly **#1 through #11**. Migrations #1–#10 remain immutable. Migration #11 adds durable `credential_epoch` to `oneqay_identity_password_credentials`; migration #12 is **NOT SELECTED / DOES NOT EXIST**.
+- Generic credential epoch authority now comes from `oneqay_identity_password_credentials.credential_epoch`; recovery audit remains recovery-specific evidence rather than generic runtime epoch authority.
+- `POST /auth/password/change` is published for **Local/Test/CI only**, uses server-owned authenticated tenant/identity context, current-password re-verification, same-password rejection, `PASSWORD_DEFAULT`, privileged canonical TOTP when required, update-only locked mutation, exact old+1 epoch increment, recovery-code revocation, and fresh-login-required session invalidation.
+- Sprint33 recovery-bound reset now increments the same durable credential epoch exactly once while preserving its recovery-specific evidence; authenticated normal password change fabricates no recovery proof/audit events and consumes no recovery code.
+- The Sprint34 verifier wiring correction preserves synthetic Technical Preview verification only when Preview is explicitly armed and normal durable verification otherwise.
+- `ONEQAY_PERSISTENCE_ENABLED=false` and `ONEQAY_AUTHENTICATION_RECOVERY_ENABLED=false` remain source defaults. Technical Preview remains **`NO_SCHEMA_CHANGE`**. Production remains **`NO-GO / NOT AUTHORIZED`**. Updater remains **`DISABLED / UNWIRED`**. Deployment and release remain **NOT AUTHORIZED**.
+- This reconciliation selects **no Sprint35 implementation concern**, assumes no migration #12, and grants no Sprint35 source, Preview, Production, updater, deployment, or release authority.
+
+The detailed factual baseline is `docs/ai/AI_POST_SPRINT_34_CANONICAL_STATE.md`. Historical sections below remain preserved as provenance and must not override this section for current-state interpretation.
+
+Attribution: **Lab | zefry**
+
 ## Canonical post-Sprint 33 program-state reconciliation — 2026-08-20
 
 For current identity, security, recovery, schema, runtime, workflow, and next-work interpretation, this section supersedes older current-facing post-Sprint32 wording retained below as historical provenance.
