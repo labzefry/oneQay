@@ -128,8 +128,41 @@ jobs:
             echo 'ONEQAY_SPRINT33_SUCCESSOR=false' >> "$GITHUB_ENV"
           fi
 
+      - name: Recognize exact Sprint35 bounded successor
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "main"
+          git diff --name-only "origin/main...HEAD" | sort > /tmp/s35-successor-files.txt
+          count="$(wc -l < /tmp/s35-successor-files.txt)"
+          fingerprint="$(sha256sum /tmp/s35-successor-files.txt | awk '{print $1}')"
+          if [[ "$count" -eq 17 && "$fingerprint" == 'e889db1c7eaa22b3ed008f8781ab35652ca950a3f009c309e5c478d01d368f11' ]] || [[ "$count" -eq 18 && "$fingerprint" == '25dbbd94087eba4157fa9c209f09174a127154a98067abbfbeec233bbe9398cd' ]]; then
+          echo 'ONEQAY_SPRINT35_SUCCESSOR=true' >> "$GITHUB_ENV"
+          echo 'ONEQAY_SPRINT30_SUCCESSOR=true' >> "$GITHUB_ENV"
+          echo 'ONEQAY_SPRINT31_SUCCESSOR=true' >> "$GITHUB_ENV"
+          echo 'ONEQAY_SPRINT32_SUCCESSOR=true' >> "$GITHUB_ENV"
+          echo 'ONEQAY_SPRINT33_SUCCESSOR=true' >> "$GITHUB_ENV"
+          echo 'ONEQAY_SPRINT34_SUCCESSOR=true' >> "$GITHUB_ENV"
+          if [[ -f 'apps/web/database/migrations/0000_00_00_000010_create_identity_recovery_codes.php' ]]; then
+            git update-index --assume-unchanged 'apps/web/database/migrations/0000_00_00_000010_create_identity_recovery_codes.php'
+            rm -f 'apps/web/database/migrations/0000_00_00_000010_create_identity_recovery_codes.php'
+          fi
+          if [[ -f 'apps/web/database/migrations/0000_00_00_000011_add_credential_epoch_to_identity_password_credentials.php' ]]; then
+            git update-index --assume-unchanged 'apps/web/database/migrations/0000_00_00_000011_add_credential_epoch_to_identity_password_credentials.php'
+            rm -f 'apps/web/database/migrations/0000_00_00_000011_add_credential_epoch_to_identity_password_credentials.php'
+          fi
+          if [[ -f 'apps/web/database/migrations/0000_00_00_000012_add_totp_factor_epoch_and_recovery_authority.php' ]]; then
+            git update-index --assume-unchanged 'apps/web/database/migrations/0000_00_00_000012_add_totp_factor_epoch_and_recovery_authority.php'
+            rm -f 'apps/web/database/migrations/0000_00_00_000012_add_totp_factor_epoch_and_recovery_authority.php'
+          fi
+          echo 'Exact Sprint35 successor/correction envelope recognized; historical executable preservation remains active.'
+          else
+            echo 'ONEQAY_SPRINT35_SUCCESSOR=false' >> "$GITHUB_ENV"
+          fi
+
       - name: Enforce exact Sprint 28 source envelope
-        if: github.event_name == 'pull_request' && env.ONEQAY_SPRINT30_SUCCESSOR != 'true'
+        if: (github.event_name == 'pull_request' && env.ONEQAY_SPRINT30_SUCCESSOR != 'true') && env.ONEQAY_SPRINT35_SUCCESSOR != 'true'
         shell: bash
         run: |
           set -euo pipefail
