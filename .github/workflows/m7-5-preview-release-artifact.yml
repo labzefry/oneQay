@@ -64,6 +64,11 @@ jobs:
             git diff --name-only "origin/$GITHUB_BASE_REF...HEAD" | sort > /tmp/release-successor-files.txt
             count="$(wc -l < /tmp/release-successor-files.txt)"
             fingerprint="$(sha256sum /tmp/release-successor-files.txt | awk '{print $1}')"
+            if [[ "$count" -eq 35 ]] && [[ "$fingerprint" == 'e3b724002cfc0be1ef890d1b5594a2a5179123f949f6f486354e21950c7328eb' ]]; then
+              isolate=true
+              recognized='Sprint 34'
+              echo 'ONEQAY_SPRINT34_SUCCESSOR=true' >> "$GITHUB_ENV"
+            fi
             if [[ "$count" -eq 39 ]] && [[ "$fingerprint" == '04a1177c12712183a7dda4ae81be1356c0e41294533336c9f999d376c224712a' ]]; then
               isolate=true
               recognized='Sprint 33'
@@ -77,6 +82,11 @@ jobs:
               git diff --name-only "$before...HEAD" | sort > /tmp/release-successor-files.txt
               count="$(wc -l < /tmp/release-successor-files.txt)"
               fingerprint="$(sha256sum /tmp/release-successor-files.txt | awk '{print $1}')"
+              if [[ "$count" -eq 35 ]] && [[ "$fingerprint" == 'e3b724002cfc0be1ef890d1b5594a2a5179123f949f6f486354e21950c7328eb' ]]; then
+                isolate=true
+                recognized='Sprint 34'
+                echo 'ONEQAY_SPRINT34_SUCCESSOR=true' >> "$GITHUB_ENV"
+              fi
               if [[ "$count" -eq 39 ]] && [[ "$fingerprint" == '04a1177c12712183a7dda4ae81be1356c0e41294533336c9f999d376c224712a' ]]; then
                 isolate=true
                 recognized='Sprint 33'
@@ -89,6 +99,10 @@ jobs:
           if [[ "$isolate" == 'true' ]]; then
             git update-index --assume-unchanged apps/web/database/migrations/0000_00_00_000010_create_identity_recovery_codes.php
             rm -f apps/web/database/migrations/0000_00_00_000010_create_identity_recovery_codes.php
+            if [[ "$recognized" == 'Sprint 34' ]]; then
+              git update-index --assume-unchanged apps/web/database/migrations/0000_00_00_000011_add_credential_epoch_to_identity_password_credentials.php
+              rm -f apps/web/database/migrations/0000_00_00_000011_add_credential_epoch_to_identity_password_credentials.php
+            fi
             echo "Exact ${recognized} source envelope recognized; migration #10 is isolated only from the schema-free Technical Preview release regression."
           fi
 

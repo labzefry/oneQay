@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 use App\Application\Authorization\AdministrationPermission;
 use App\Application\Authorization\InitialTenantAdministratorProvisioningRepository;
+use App\Application\Identity\FirstPartyCredentialEpochRepository;
 use App\Application\Organization\OrganizationalContextStore;
 use App\Application\Tenancy\TenantContextStore;
 use App\Delivery\Http\Identity\FirstPartySessionKeys;
+use App\Domain\Identity\PlatformIdentityId;
+use App\Domain\Tenancy\TenantId;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Http\Request;
 
@@ -56,6 +59,7 @@ $assert(@mkdir($workspace, 0700, false), 'workspace create');
 $dbPath = $workspace.DIRECTORY_SEPARATOR.'session.sqlite';
 $assert(touch($dbPath), 'SQLite create');
 
+$app['config']->set('database.default', 's27_session');
 $app['config']->set('database.connections.s27_session', [
     'driver' => 'sqlite',
     'url' => null,
@@ -75,7 +79,7 @@ $manager->setDefaultConnection('s27_session');
 $connection = $manager->connection('s27_session');
 $connection->getPdo();
 
-$migrationNames = [
+$legacyMigrations = [
     '0000_00_00_000001_create_foundational_context_graph.php',
     '0000_00_00_000002_create_organizational_access_grants.php',
     '0000_00_00_000003_create_scoped_role_permission_policy.php',
@@ -86,13 +90,28 @@ $migrationNames = [
     '0000_00_00_000008_create_initial_password_enrollments.php',
     '0000_00_00_000009_create_identity_totp_factors.php',
 ];
+$fullSprint34Migrations = [
+    ...$legacyMigrations,
+    '0000_00_00_000010_create_identity_recovery_codes.php',
+    '0000_00_00_000011_add_credential_epoch_to_identity_password_credentials.php',
+];
 $actualMigrations = array_values(array_filter(scandir(__DIR__.'/../database/migrations') ?: [], static fn (string $file): bool => str_ends_with($file, '.php')));
 sort($actualMigrations);
-$assert($actualMigrations === $migrationNames, 'canonical migration set is not exactly #1-#9');
-foreach ($migrationNames as $migration) {
+$fullSprint34 = $actualMigrations === $fullSprint34Migrations;
+$legacyIsolation = $actualMigrations === $legacyMigrations;
+$assert($fullSprint34 || $legacyIsolation, 'migration set must be exact Sprint34 #1-#11 or exact historical isolation #1-#9');
+foreach ($actualMigrations as $migration) {
     (require __DIR__.'/../database/migrations/'.$migration)->up();
 }
 $assert($connection->getSchemaBuilder()->hasTable('oneqay_initial_password_enrollments'), 'Sprint 28 enrollment table missing during Sprint 27 preservation');
+if ($fullSprint34) {
+    $assert($connection->getSchemaBuilder()->hasTable('oneqay_identity_recovery_audit'), 'Sprint 32 recovery audit table missing during Sprint 27 preservation');
+    $assert($connection->getSchemaBuilder()->hasColumn('oneqay_identity_password_credentials', 'credential_epoch'), 'Sprint 34 credential epoch missing during Sprint 27 preservation');
+} else {
+    $app->instance(FirstPartyCredentialEpochRepository::class, new class implements FirstPartyCredentialEpochRepository {
+        public function current(TenantId $tenantId, PlatformIdentityId $identityId): int { return 0; }
+    });
+}
 
 foreach (['tenant-alpha', 'tenant-beta'] as $tenant) {
     $connection->table('oneqay_tenants')->insert(['id' => $tenant]);
@@ -153,12 +172,20 @@ $sharedBetaHash = password_hash($sharedBetaPassword, PASSWORD_BCRYPT);
 $noAuthorityHash = password_hash($noAuthorityPassword, PASSWORD_BCRYPT);
 $assert(is_string($adminHash) && is_string($sharedAlphaHash) && is_string($sharedBetaHash) && is_string($noAuthorityHash), 'synthetic password hashes were not created');
 
-$connection->table('oneqay_identity_password_credentials')->insert([
+$credentials = [
     ['tenant_id' => 'tenant-alpha', 'identity_id' => 'admin-alpha', 'password_hash' => $adminHash],
     ['tenant_id' => 'tenant-alpha', 'identity_id' => 'shared-user', 'password_hash' => $sharedAlphaHash],
     ['tenant_id' => 'tenant-alpha', 'identity_id' => 'no-authority-alpha', 'password_hash' => $noAuthorityHash],
     ['tenant_id' => 'tenant-beta', 'identity_id' => 'shared-user', 'password_hash' => $sharedBetaHash],
-]);
+];
+if ($fullSprint34) {
+    $credentials[0]['credential_epoch'] = 2;
+    $credentials[1]['credential_epoch'] = 0;
+    $credentials[2]['credential_epoch'] = 0;
+    $credentials[3]['credential_epoch'] = 0;
+}
+$connection->table('oneqay_identity_password_credentials')->insert($credentials);
+$expectedAdminEpoch = $fullSprint34 ? 2 : 0;
 
 $connection->table('oneqay_roles')->insert([
     'tenant_id' => 'tenant-alpha',
@@ -204,114 +231,59 @@ $inspect = static function (
     string $cookieName,
     ?string &$cookie,
 ) use ($refreshCookie, $assert): array {
-    $request = Request::create(
-        '/__s27/session-inspect',
-        'GET',
-        cookies: $cookie === null ? [] : [$cookieName => $cookie],
-        server: ['HTTP_ACCEPT' => 'application/json'],
-    );
+    $request = Request::create('/__s27/session-inspect', 'GET', cookies: $cookie === null ? [] : [$cookieName => $cookie], server: ['HTTP_ACCEPT' => 'application/json']);
     $response = $kernel->handle($request);
     $kernel->terminate($request, $response);
     $assert($response->getStatusCode() === 200, 'test-only session inspection failed');
     $refreshCookie($response, $cookieName, $cookie);
-
     return json_decode((string) $response->getContent(), true, flags: JSON_THROW_ON_ERROR);
 };
 
-$sendLogin = static function (
-    Kernel $kernel,
-    string $cookieName,
-    ?string &$cookie,
-    ?string $csrfToken,
-    array $payload,
-    string $ip,
-    bool $includeCsrf = true,
-) use ($refreshCookie): \Symfony\Component\HttpFoundation\Response {
-    if ($includeCsrf && $csrfToken !== null) {
-        $payload['_token'] = $csrfToken;
-    }
-    $request = Request::create(
-        '/auth/login',
-        'POST',
-        $payload,
-        cookies: $cookie === null ? [] : [$cookieName => $cookie],
-        server: [
-            'HTTP_ACCEPT' => 'application/json',
-            'HTTP_X_CORRELATION_ID' => 'S27-Auth_0001',
-            'REMOTE_ADDR' => $ip,
-        ],
-    );
+$sendLogin = static function (Kernel $kernel, string $cookieName, ?string &$cookie, ?string $csrfToken, array $payload, string $ip, bool $includeCsrf = true) use ($refreshCookie): \Symfony\Component\HttpFoundation\Response {
+    if ($includeCsrf && $csrfToken !== null) { $payload['_token'] = $csrfToken; }
+    $request = Request::create('/auth/login', 'POST', $payload, cookies: $cookie === null ? [] : [$cookieName => $cookie], server: [
+        'HTTP_ACCEPT' => 'application/json', 'HTTP_X_CORRELATION_ID' => 'S27-Auth_0001', 'REMOTE_ADDR' => $ip,
+    ]);
     $response = $kernel->handle($request);
     $kernel->terminate($request, $response);
     $refreshCookie($response, $cookieName, $cookie);
-
     return $response;
 };
 
-$sendLogout = static function (
-    Kernel $kernel,
-    string $cookieName,
-    ?string &$cookie,
-    ?string $csrfToken,
-    bool $includeCsrf = true,
-) use ($refreshCookie): \Symfony\Component\HttpFoundation\Response {
+$sendLogout = static function (Kernel $kernel, string $cookieName, ?string &$cookie, ?string $csrfToken, bool $includeCsrf = true) use ($refreshCookie): \Symfony\Component\HttpFoundation\Response {
     $payload = [];
-    if ($includeCsrf && $csrfToken !== null) {
-        $payload['_token'] = $csrfToken;
-    }
-    $request = Request::create(
-        '/auth/logout',
-        'POST',
-        $payload,
-        cookies: $cookie === null ? [] : [$cookieName => $cookie],
-        server: [
-            'HTTP_ACCEPT' => 'application/json',
-            'HTTP_X_CORRELATION_ID' => 'S27-Auth_0001',
-            'REMOTE_ADDR' => '10.27.0.250',
-        ],
-    );
+    if ($includeCsrf && $csrfToken !== null) { $payload['_token'] = $csrfToken; }
+    $request = Request::create('/auth/logout', 'POST', $payload, cookies: $cookie === null ? [] : [$cookieName => $cookie], server: [
+        'HTTP_ACCEPT' => 'application/json', 'HTTP_X_CORRELATION_ID' => 'S27-Auth_0001', 'REMOTE_ADDR' => '10.27.0.250',
+    ]);
     $response = $kernel->handle($request);
     $kernel->terminate($request, $response);
     $refreshCookie($response, $cookieName, $cookie);
-
     return $response;
 };
 
-$sendPolicyMutation = static function (
-    Kernel $kernel,
-    string $cookieName,
-    ?string &$cookie,
-    string $csrfToken,
-    string $mutationId,
-) use ($refreshCookie): \Symfony\Component\HttpFoundation\Response {
-    $request = Request::create(
-        '/administration/policy/mutations',
-        'POST',
-        [
-            '_token' => $csrfToken,
-            'mutation_id' => $mutationId,
-            'operation' => 'role.create',
-            'role' => 's27-synthetic-operator',
-        ],
-        cookies: $cookie === null ? [] : [$cookieName => $cookie],
-        server: [
-            'HTTP_ACCEPT' => 'application/json',
-            'HTTP_X_CORRELATION_ID' => 'S27-Policy_0001',
-        ],
-    );
+$sendPolicyMutation = static function (Kernel $kernel, string $cookieName, ?string &$cookie, string $csrfToken, string $mutationId) use ($refreshCookie): \Symfony\Component\HttpFoundation\Response {
+    $request = Request::create('/administration/policy/mutations', 'POST', [
+        '_token' => $csrfToken, 'mutation_id' => $mutationId, 'operation' => 'role.create', 'role' => 's27-synthetic-operator',
+    ], cookies: $cookie === null ? [] : [$cookieName => $cookie], server: [
+        'HTTP_ACCEPT' => 'application/json', 'HTTP_X_CORRELATION_ID' => 'S27-Policy_0001',
+    ]);
     $response = $kernel->handle($request);
     $kernel->terminate($request, $response);
     $refreshCookie($response, $cookieName, $cookie);
-
     return $response;
 };
 
 $baseLogin = static fn (string $tenant, string $identity, string $password, string $organization): array => [
-    'tenant_id' => $tenant,
-    'identity_id' => $identity,
-    'password' => $password,
-    'organization_id' => $organization,
+    'tenant_id' => $tenant, 'identity_id' => $identity, 'password' => $password, 'organization_id' => $organization,
 ];
+
+$flushLoginController = static function () use ($app, $assert): void {
+    $route = $app['router']->getRoutes()->getByName('auth.first-party.login');
+    $assert($route !== null, 'named first-party login route missing while refreshing test dependency graph');
+    $assert(method_exists($route, 'flushController'), 'framework route cannot flush cached login controller');
+    $route->flushController();
+};
 
 $assertNoAuth = static function (array $inspection) use ($assert): void {
     $auth = $inspection['auth'] ?? null;
@@ -337,14 +309,10 @@ $anonymousCookie = $cookie;
 $assertNoAuth($initial);
 
 $adminLogin = $baseLogin('tenant-alpha', 'admin-alpha', $adminPassword, 'organization-alpha');
-
-// CSRF remains framework-mandatory before authentication logic.
 $response = $sendLogin($kernel, $cookieName, $cookie, $csrfInitial, $adminLogin, '10.27.0.1', false);
 $assert($response->getStatusCode() === 419, 'missing login CSRF token was not rejected');
-$inspection = $inspect($kernel, $cookieName, $cookie);
-$assertNoAuth($inspection);
+$assertNoAuth($inspect($kernel, $cookieName, $cookie));
 
-// Successful login rotates the session identifier and CSRF token, and writes canonical verified context plus separate epoch evidence.
 $response = $sendLogin($kernel, $cookieName, $cookie, $csrfInitial, $adminLogin, '10.27.0.2');
 $assert($response->getStatusCode() === 200, 'valid first-party login did not succeed');
 $assert($cookie !== null && $cookie !== $anonymousCookie, 'authenticated session cookie was not rotated');
@@ -364,21 +332,19 @@ $assert(($auth[FirstPartySessionKeys::TENANT] ?? null) === 'tenant-alpha', 'cano
 $assert(($auth[FirstPartySessionKeys::ORGANIZATION] ?? null) === 'organization-alpha', 'canonical organization session fact missing');
 $assert(($auth[FirstPartySessionKeys::OUTLET] ?? null) === null, 'unverified outlet was stored');
 $assert(($auth[FirstPartySessionKeys::DEVICE] ?? null) === null, 'unverified device was stored');
-$assert(($inspection['credential_epoch'] ?? null) === 0, 'fresh legacy-schema login did not capture epoch zero');
+$assert(($inspection['credential_epoch'] ?? null) === $expectedAdminEpoch, 'fresh login did not capture the applicable exact credential epoch');
 $assert(! in_array(FirstPartySessionKeys::CREDENTIAL_EPOCH, FirstPartySessionKeys::all(), true), 'credential epoch entered the canonical five-key list');
 $assertContextsCleared();
 
-// The existing Sprint 25 route consumes the real Sprint 27 session but still applies its own durable authorization checks.
 $response = $sendPolicyMutation($kernel, $cookieName, $cookie, $csrfAuthenticated, 's27-authenticated-role-create');
 $assert($response->getStatusCode() === 200, 'Sprint 25 policy route rejected valid Sprint 27 authenticated admin session');
 $assert($connection->table('oneqay_roles')->where('tenant_id', 'tenant-alpha')->where('id', 's27-synthetic-operator')->exists(), 'policy mutation did not use authenticated tenant context');
 
-// Logout itself remains CSRF protected.
 $response = $sendLogout($kernel, $cookieName, $cookie, $csrfAuthenticated, false);
 $assert($response->getStatusCode() === 419, 'missing logout CSRF token was not rejected');
 $inspection = $inspect($kernel, $cookieName, $cookie);
 $assert(($inspection['auth'][FirstPartySessionKeys::IDENTITY] ?? null) === 'admin-alpha', 'CSRF-rejected logout cleared authenticated state');
-$assert(($inspection['credential_epoch'] ?? null) === 0, 'CSRF-rejected logout cleared credential epoch evidence');
+$assert(($inspection['credential_epoch'] ?? null) === $expectedAdminEpoch, 'CSRF-rejected logout cleared credential epoch evidence');
 
 $authenticatedCookie = $cookie;
 $response = $sendLogout($kernel, $cookieName, $cookie, $csrfAuthenticated, true);
@@ -393,15 +359,7 @@ $assertContextsCleared();
 $response = $sendPolicyMutation($kernel, $cookieName, $cookie, $csrfAfterLogout, 's27-after-logout');
 $assert($response->getStatusCode() === 403, 'logged-out session remained authoritative for policy delivery');
 
-// Establish the canonical generic failure envelope and prove all business failures collapse to it.
-$response = $sendLogin(
-    $kernel,
-    $cookieName,
-    $cookie,
-    $csrfAfterLogout,
-    $baseLogin('tenant-alpha', 'admin-alpha', 'wrong synthetic password', 'organization-alpha'),
-    '10.27.1.1',
-);
+$response = $sendLogin($kernel, $cookieName, $cookie, $csrfAfterLogout, $baseLogin('tenant-alpha', 'admin-alpha', 'wrong synthetic password', 'organization-alpha'), '10.27.1.1');
 $assert($response->getStatusCode() === 401, 'wrong password did not fail generically');
 $genericFailure = json_decode((string) $response->getContent(), true, flags: JSON_THROW_ON_ERROR);
 $assert(($genericFailure['error']['code'] ?? null) === 'AUTHENTICATION_FAILED', 'generic failure code changed');
@@ -417,7 +375,6 @@ $failureCases = [
     ['unknown field', [...$adminLogin, 'role' => 'authorization-policy-administrator'], '10.27.1.6'],
     ['device without outlet', [...$adminLogin, 'device_id' => 'device-alpha'], '10.27.1.7'],
 ];
-
 foreach ($failureCases as [$label, $payload, $ip]) {
     $inspection = $inspect($kernel, $cookieName, $cookie);
     $csrf = $inspection['csrf_token'] ?? null;
@@ -430,9 +387,14 @@ foreach ($failureCases as [$label, $payload, $ip]) {
     $assertContextsCleared();
 }
 
-// Persistence disabled remains the same generic business failure and writes no authenticated state.
 $app['config']->set('database.oneqay_persistence_enabled', false);
 $app->forgetScopedInstances();
+$flushLoginController();
+if ($legacyIsolation) {
+    $app->instance(FirstPartyCredentialEpochRepository::class, new class implements FirstPartyCredentialEpochRepository {
+        public function current(TenantId $tenantId, PlatformIdentityId $identityId): int { return 0; }
+    });
+}
 $inspection = $inspect($kernel, $cookieName, $cookie);
 $csrf = $inspection['csrf_token'] ?? null;
 $response = $sendLogin($kernel, $cookieName, $cookie, is_string($csrf) ? $csrf : null, $adminLogin, '10.27.1.8');
@@ -442,10 +404,17 @@ $assert($decoded === $genericFailure, 'persistence-disabled login exposed a dist
 $assertNoAuth($inspect($kernel, $cookieName, $cookie));
 $app['config']->set('database.oneqay_persistence_enabled', true);
 $app->forgetScopedInstances();
+$flushLoginController();
+if ($legacyIsolation) {
+    $app->instance(FirstPartyCredentialEpochRepository::class, new class implements FirstPartyCredentialEpochRepository {
+        public function current(TenantId $tenantId, PlatformIdentityId $identityId): int { return 0; }
+    });
+}
 
-// Controller defense remains fail-closed even if a cached/previously registered route is invoked under denied runtime.
 foreach (['preview', 'production'] as $runtime) {
     $app['config']->set('oneqay.runtime_class', $runtime);
+    $app->forgetScopedInstances();
+    $flushLoginController();
     $inspection = $inspect($kernel, $cookieName, $cookie);
     $csrf = $inspection['csrf_token'] ?? null;
     $response = $sendLogin($kernel, $cookieName, $cookie, is_string($csrf) ? $csrf : null, $adminLogin, '10.27.2.'.($runtime === 'preview' ? '1' : '2'));
@@ -454,15 +423,16 @@ foreach (['preview', 'production'] as $runtime) {
 }
 $app['config']->set('oneqay.runtime_class', 'ci');
 $app->forgetScopedInstances();
+$flushLoginController();
+if ($legacyIsolation) {
+    $app->instance(FirstPartyCredentialEpochRepository::class, new class implements FirstPartyCredentialEpochRepository {
+        public function current(TenantId $tenantId, PlatformIdentityId $identityId): int { return 0; }
+    });
+}
 
-// A valid full organizational context writes exactly the optional outlet/device facts after durable verification.
 $inspection = $inspect($kernel, $cookieName, $cookie);
 $csrf = $inspection['csrf_token'] ?? null;
-$fullContextLogin = [
-    ...$baseLogin('tenant-alpha', 'shared-user', $sharedAlphaPassword, 'organization-alpha'),
-    'outlet_id' => 'outlet-alpha',
-    'device_id' => 'device-alpha',
-];
+$fullContextLogin = [...$baseLogin('tenant-alpha', 'shared-user', $sharedAlphaPassword, 'organization-alpha'), 'outlet_id' => 'outlet-alpha', 'device_id' => 'device-alpha'];
 $response = $sendLogin($kernel, $cookieName, $cookie, is_string($csrf) ? $csrf : null, $fullContextLogin, '10.27.3.1');
 $assert($response->getStatusCode() === 200, 'valid full organizational context login failed');
 $inspection = $inspect($kernel, $cookieName, $cookie);
@@ -477,17 +447,9 @@ $fullCsrf = $inspection['csrf_token'] ?? null;
 $response = $sendLogout($kernel, $cookieName, $cookie, is_string($fullCsrf) ? $fullCsrf : null);
 $assert($response->getStatusCode() === 204, 'full-context logout failed');
 
-// Same textual identity in another tenant succeeds only with that tenant's independent credential.
 $inspection = $inspect($kernel, $cookieName, $cookie);
 $csrf = $inspection['csrf_token'] ?? null;
-$response = $sendLogin(
-    $kernel,
-    $cookieName,
-    $cookie,
-    is_string($csrf) ? $csrf : null,
-    $baseLogin('tenant-beta', 'shared-user', $sharedBetaPassword, 'organization-beta'),
-    '10.27.3.2',
-);
+$response = $sendLogin($kernel, $cookieName, $cookie, is_string($csrf) ? $csrf : null, $baseLogin('tenant-beta', 'shared-user', $sharedBetaPassword, 'organization-beta'), '10.27.3.2');
 $assert($response->getStatusCode() === 200, 'tenant-beta independent credential did not authenticate');
 $inspection = $inspect($kernel, $cookieName, $cookie);
 $assert(($inspection['auth'][FirstPartySessionKeys::TENANT] ?? null) === 'tenant-beta', 'tenant-beta session ownership mismatch');
@@ -496,17 +458,9 @@ $betaCsrf = $inspection['csrf_token'] ?? null;
 $response = $sendLogout($kernel, $cookieName, $cookie, is_string($betaCsrf) ? $betaCsrf : null);
 $assert($response->getStatusCode() === 204, 'tenant-beta logout failed');
 
-// Correct authentication without policy authority remains denied by the existing Sprint 21/22/25 authorization boundary.
 $inspection = $inspect($kernel, $cookieName, $cookie);
 $csrf = $inspection['csrf_token'] ?? null;
-$response = $sendLogin(
-    $kernel,
-    $cookieName,
-    $cookie,
-    is_string($csrf) ? $csrf : null,
-    $baseLogin('tenant-alpha', 'no-authority-alpha', $noAuthorityPassword, 'organization-alpha'),
-    '10.27.3.3',
-);
+$response = $sendLogin($kernel, $cookieName, $cookie, is_string($csrf) ? $csrf : null, $baseLogin('tenant-alpha', 'no-authority-alpha', $noAuthorityPassword, 'organization-alpha'), '10.27.3.3');
 $assert($response->getStatusCode() === 200, 'valid no-authority identity could not establish a session');
 $inspection = $inspect($kernel, $cookieName, $cookie);
 $noAuthorityCsrf = $inspection['csrf_token'] ?? null;
@@ -517,13 +471,9 @@ $assert($response->getStatusCode() === 403, 'authentication incorrectly granted 
 $response = $sendLogout($kernel, $cookieName, $cookie, $noAuthorityCsrf);
 $assert($response->getStatusCode() === 204, 'no-authority logout failed');
 
-$storedAdminHash = $connection->table('oneqay_identity_password_credentials')
-    ->where('tenant_id', 'tenant-alpha')
-    ->where('identity_id', 'admin-alpha')
-    ->value('password_hash');
+$storedAdminHash = $connection->table('oneqay_identity_password_credentials')->where('tenant_id', 'tenant-alpha')->where('identity_id', 'admin-alpha')->value('password_hash');
 $assert($storedAdminHash === $adminHash, 'login/logout mutated stored credential hash');
 $assertContextsCleared();
 
 $removeTree($workspace);
-
 echo "Sprint 27 first-party session establishment regression passed.\n";

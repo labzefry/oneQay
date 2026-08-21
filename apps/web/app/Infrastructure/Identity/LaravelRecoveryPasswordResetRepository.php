@@ -106,9 +106,13 @@ final readonly class LaravelRecoveryPasswordResetRepository implements RecoveryP
                 ->first();
             if (! is_object($credential)
                 || ! is_string($credential->password_hash ?? null)
-                || $credential->password_hash === '') {
+                || $credential->password_hash === ''
+                || ! is_int($credential->credential_epoch ?? null)
+                || $credential->credential_epoch < 0
+                || $credential->credential_epoch === PHP_INT_MAX) {
                 $this->resetFailed();
             }
+            $credentialEpoch = $credential->credential_epoch;
 
             $protectedControl = $this->connection->table('oneqay_tenant_role_assignments')
                 ->where('tenant_id', $tenant)
@@ -136,7 +140,11 @@ final readonly class LaravelRecoveryPasswordResetRepository implements RecoveryP
             $updated = $this->connection->table(self::CREDENTIAL_TABLE)
                 ->where('tenant_id', $tenant)
                 ->where('identity_id', $identity)
-                ->update(['password_hash' => $replacementHash]);
+                ->where('credential_epoch', $credentialEpoch)
+                ->update([
+                    'password_hash' => $replacementHash,
+                    'credential_epoch' => $credentialEpoch + 1,
+                ]);
             if ($updated !== 1) {
                 $this->resetFailed();
             }

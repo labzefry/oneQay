@@ -2,6 +2,7 @@
 
 use App\Delivery\Http\Authorization\PolicyAdministrationController;
 use App\Delivery\Http\HealthController;
+use App\Delivery\Http\Identity\AuthenticatedPasswordChangeController;
 use App\Delivery\Http\Identity\FirstPartySessionController;
 use App\Delivery\Http\Identity\InitialPasswordEnrollmentController;
 use App\Delivery\Http\Identity\PrivilegedReauthenticationController;
@@ -32,6 +33,10 @@ if (in_array($firstPartyAuthRuntime, ['local', 'test', 'ci'], true)) {
 
     Route::post('/auth/logout', [FirstPartySessionController::class, 'logout'])
         ->name('auth.first-party.logout');
+
+    Route::post('/auth/password/change', [AuthenticatedPasswordChangeController::class, 'change'])
+        ->middleware(['throttle:5,1', 'throttle:20,60'])
+        ->name('auth.password.change');
 
     Route::post('/auth/password-enrollment', [InitialPasswordEnrollmentController::class, 'redeem'])
         ->middleware(['throttle:5,1', 'throttle:20,60'])
