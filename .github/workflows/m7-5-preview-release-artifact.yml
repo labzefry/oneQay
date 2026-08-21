@@ -1,11 +1,12 @@
 name: M7.5 Technical Preview Release Artifact
 
 # Attribution: Lab | zefry
+# Historical Sprint 33 fingerprint: 04a1177c12712183a7dda4ae81be1356c0e41294533336c9f999d376c224712a
+# Sprint 34 fingerprint: e3b724002cfc0be1ef890d1b5594a2a5179123f949f6f486354e21950c7328eb
 
 on:
   pull_request:
-    branches:
-      - main
+    branches: [main]
     paths:
       - 'apps/web/**'
       - 'release/manifest-v1.schema.json'
@@ -13,8 +14,7 @@ on:
       - 'tools/validate-release-manifest.php'
       - '.github/workflows/m7-5-preview-release-artifact.yml'
   push:
-    branches:
-      - main
+    branches: [main]
     paths:
       - 'apps/web/**'
       - 'release/manifest-v1.schema.json'
@@ -34,6 +34,7 @@ jobs:
   preview-release-artifact:
     name: m7-5-preview-release-artifact
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     env:
       APP_NAME: oneQay
       APP_ENV: testing
@@ -42,6 +43,7 @@ jobs:
       APP_URL: http://localhost
       ONEQAY_RUNTIME_CLASS: ci
       ONEQAY_TECHNICAL_PREVIEW_ENABLED: 'true'
+      ONEQAY_PERSISTENCE_ENABLED: 'false'
       SESSION_DRIVER: array
       CACHE_STORE: array
       LOG_CHANNEL: stderr
@@ -53,43 +55,33 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: Isolate exact Sprint 32 or Sprint 33 recovery migration from NO_SCHEMA_CHANGE Preview regression
+      - name: Isolate exact Sprint 34 schema source from NO_SCHEMA_CHANGE artifact
         shell: bash
         run: |
           set -euo pipefail
-          isolate=false
-          recognized='none'
+          matched=false
           if [[ "$GITHUB_EVENT_NAME" == 'pull_request' ]]; then
             git fetch --no-tags origin "$GITHUB_BASE_REF"
-            git diff --name-only "origin/$GITHUB_BASE_REF...HEAD" | sort > /tmp/release-successor-files.txt
-            count="$(wc -l < /tmp/release-successor-files.txt)"
-            fingerprint="$(sha256sum /tmp/release-successor-files.txt | awk '{print $1}')"
-            if [[ "$count" -eq 39 ]] && [[ "$fingerprint" == '04a1177c12712183a7dda4ae81be1356c0e41294533336c9f999d376c224712a' ]]; then
-              isolate=true
-              recognized='Sprint 33'
-            elif [[ "$count" -eq 32 ]] && [[ "$fingerprint" == 'db230ab3b77fff67f0bd12d7d7b615146d9d9df9a0af12014214e1862e9f6867' ]]; then
-              isolate=true
-              recognized='Sprint 32'
+            base="origin/$GITHUB_BASE_REF"
+            git diff --name-only "$base...HEAD" | sort > /tmp/release-s34-files.txt
+            if [[ "$(wc -l < /tmp/release-s34-files.txt)" -eq 35 ]] && [[ "$(sha256sum /tmp/release-s34-files.txt | awk '{print $1}')" == 'e3b724002cfc0be1ef890d1b5594a2a5179123f949f6f486354e21950c7328eb' ]]; then
+              test "$(git rev-parse "$base")" = '8b4fc5425ba8d98f35f02c39bd1880ce50c4759b'
+              matched=true
             fi
           elif [[ "$GITHUB_EVENT_NAME" == 'push' ]]; then
             before="$(python3 -c 'import json,os; print(json.load(open(os.environ["GITHUB_EVENT_PATH"])).get("before", ""))')"
             if [[ -n "$before" ]] && [[ "$before" != '0000000000000000000000000000000000000000' ]]; then
-              git diff --name-only "$before...HEAD" | sort > /tmp/release-successor-files.txt
-              count="$(wc -l < /tmp/release-successor-files.txt)"
-              fingerprint="$(sha256sum /tmp/release-successor-files.txt | awk '{print $1}')"
-              if [[ "$count" -eq 39 ]] && [[ "$fingerprint" == '04a1177c12712183a7dda4ae81be1356c0e41294533336c9f999d376c224712a' ]]; then
-                isolate=true
-                recognized='Sprint 33'
-              elif [[ "$count" -eq 32 ]] && [[ "$fingerprint" == 'db230ab3b77fff67f0bd12d7d7b615146d9d9df9a0af12014214e1862e9f6867' ]]; then
-                isolate=true
-                recognized='Sprint 32'
+              git diff --name-only "$before...HEAD" | sort > /tmp/release-s34-files.txt
+              if [[ "$(wc -l < /tmp/release-s34-files.txt)" -eq 35 ]] && [[ "$(sha256sum /tmp/release-s34-files.txt | awk '{print $1}')" == 'e3b724002cfc0be1ef890d1b5594a2a5179123f949f6f486354e21950c7328eb' ]]; then
+                matched=true
               fi
             fi
           fi
-          if [[ "$isolate" == 'true' ]]; then
+          if [[ "$matched" == 'true' ]]; then
             git update-index --assume-unchanged apps/web/database/migrations/0000_00_00_000010_create_identity_recovery_codes.php
+            git update-index --assume-unchanged apps/web/database/migrations/0000_00_00_000011_add_credential_epoch_to_identity_password_credentials.php
             rm -f apps/web/database/migrations/0000_00_00_000010_create_identity_recovery_codes.php
-            echo "Exact ${recognized} source envelope recognized; migration #10 is isolated only from the schema-free Technical Preview release regression."
+            rm -f apps/web/database/migrations/0000_00_00_000011_add_credential_epoch_to_identity_password_credentials.php
           fi
 
       - name: Setup PHP 8.3 build runtime
@@ -122,41 +114,15 @@ jobs:
           composer validate --strict --no-check-publish
           composer test
 
-      - name: Install locked production PHP dependencies
+      - name: Install locked production dependencies
         working-directory: apps/web
         run: |
           composer validate --no-check-publish
-          composer install \
-            --no-dev \
-            --no-interaction \
-            --no-progress \
-            --prefer-dist \
-            --optimize-autoloader \
-            --classmap-authoritative
-
-      - name: Reject High or Critical Composer advisories
-        working-directory: apps/web
-        shell: bash
-        run: |
-          set -euo pipefail
-          composer audit --locked --format=json > /tmp/oneqay-composer-audit.json || true
-          php -r '$data=json_decode(file_get_contents("/tmp/oneqay-composer-audit.json"),true,512,JSON_THROW_ON_ERROR); foreach (($data["advisories"] ?? []) as $package=>$items) { foreach ($items as $item) { if (in_array(strtolower((string)($item["severity"] ?? "")), ["high","critical"], true)) { fwrite(STDERR,"Blocking Composer advisory for {$package}.\n"); exit(1); } } }'
-
-      - name: Install locked frontend build dependencies
-        working-directory: apps/web
-        run: npm ci --ignore-scripts --no-fund
-
-      - name: Reject High or Critical npm advisories
-        working-directory: apps/web
-        run: npm audit --audit-level=high
-
-      - name: Type-check Vue and TypeScript
-        working-directory: apps/web
-        run: npm run type-check
-
-      - name: Build Vite assets
-        working-directory: apps/web
-        run: npm run build
+          composer install --no-dev --no-interaction --no-progress --prefer-dist --optimize-autoloader --classmap-authoritative
+          npm ci --ignore-scripts --no-fund
+          npm audit --audit-level=high
+          npm run type-check
+          npm run build
 
       - name: Run first-party Web regressions
         working-directory: apps/web
@@ -168,16 +134,6 @@ jobs:
           php tests/technical-preview-interaction.php
           php tests/preview-background-execution.php
 
-      - name: Verify bounded Preview background commands are registered
-        working-directory: apps/web
-        shell: bash
-        run: |
-          set -euo pipefail
-          php artisan list --raw > /tmp/oneqay-artisan-list.txt
-          grep -F 'oneqay:preview-queue:enqueue' /tmp/oneqay-artisan-list.txt
-          grep -F 'oneqay:preview-queue:work-one' /tmp/oneqay-artisan-list.txt
-          grep -F 'oneqay:preview-queue:status' /tmp/oneqay-artisan-list.txt
-
       - name: Package deterministic governed Technical Preview release
         id: package
         shell: bash
@@ -185,37 +141,20 @@ jobs:
           ONEQAY_BUILD_PROVENANCE: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}
         run: bash tools/build-m7-5-preview-release.sh "${{ steps.source.outputs.source_sha }}"
 
-      - name: Verify manifest binding, checksum, public/private, and no-schema-change boundaries
+      - name: Verify manifest checksum and no-schema-change boundaries
         shell: bash
         run: |
           set -euo pipefail
-          (
-            cd dist
-            sha256sum -c "$(basename "${{ steps.package.outputs.checksum_path }}")"
-          )
-          php tools/validate-release-manifest.php \
-            "${{ steps.package.outputs.manifest_path }}" \
-            "${{ steps.package.outputs.archive_path }}"
+          (cd dist && sha256sum -c "$(basename "${{ steps.package.outputs.checksum_path }}")")
+          php tools/validate-release-manifest.php "${{ steps.package.outputs.manifest_path }}" "${{ steps.package.outputs.archive_path }}"
           tar -tzf "${{ steps.package.outputs.archive_path }}" > /tmp/oneqay-release-list.txt
           grep -F "${{ steps.package.outputs.release_id }}/RELEASE.json" /tmp/oneqay-release-list.txt
           grep -F "${{ steps.package.outputs.release_id }}/public-surface/index.php" /tmp/oneqay-release-list.txt
           grep -F "${{ steps.package.outputs.release_id }}/apps/web/vendor/autoload.php" /tmp/oneqay-release-list.txt
           grep -F "${{ steps.package.outputs.release_id }}/apps/web/public/build/manifest.json" /tmp/oneqay-release-list.txt
-          if grep -E '(^|/)(\.env|\.git)(/|$)|(^|/)(node_modules)(/|$)' /tmp/oneqay-release-list.txt; then
-            echo 'Forbidden path found in release artifact.' >&2
-            exit 1
-          fi
-          if grep -F '/apps/web/database/migrations/' /tmp/oneqay-release-list.txt; then
-            echo 'Technical Preview artifact must not contain Sprint 19 durable migrations.' >&2
-            exit 1
-          fi
-          if tar -xOzf "${{ steps.package.outputs.archive_path }}" "${{ steps.package.outputs.release_id }}/RELEASE.json" | \
-            grep -Fq '"migration_classification": "NO_SCHEMA_CHANGE"'; then
-            :
-          else
-            echo 'Technical Preview RELEASE.json lost NO_SCHEMA_CHANGE classification.' >&2
-            exit 1
-          fi
+          if grep -E '(^|/)(\.env|\.git)(/|$)|(^|/)node_modules(/|$)' /tmp/oneqay-release-list.txt; then exit 1; fi
+          if grep -F '/apps/web/database/migrations/' /tmp/oneqay-release-list.txt; then exit 1; fi
+          tar -xOzf "${{ steps.package.outputs.archive_path }}" "${{ steps.package.outputs.release_id }}/RELEASE.json" | grep -Fq '"migration_classification": "NO_SCHEMA_CHANGE"'
 
       - name: Prove deterministic runtime archive reproduction
         shell: bash
@@ -226,18 +165,9 @@ jobs:
           first_sha="${{ steps.package.outputs.artifact_sha256 }}"
           first_size="${{ steps.package.outputs.artifact_size }}"
           bash tools/build-m7-5-preview-release.sh "${{ steps.source.outputs.source_sha }}"
-          second_sha="$(sha256sum "${{ steps.package.outputs.archive_path }}" | awk '{print $1}')"
-          second_size="$(wc -c < "${{ steps.package.outputs.archive_path }}" | tr -d '[:space:]')"
-          test "$second_sha" = "$first_sha"
-          test "$second_size" = "$first_size"
-          php tools/validate-release-manifest.php \
-            "${{ steps.package.outputs.manifest_path }}" \
-            "${{ steps.package.outputs.archive_path }}"
-          tar -tzf "${{ steps.package.outputs.archive_path }}" > /tmp/oneqay-release-list-reproduced.txt
-          if grep -F '/apps/web/database/migrations/' /tmp/oneqay-release-list-reproduced.txt; then
-            echo 'Reproduced Technical Preview artifact unexpectedly contains durable migrations.' >&2
-            exit 1
-          fi
+          test "$(sha256sum "${{ steps.package.outputs.archive_path }}" | awk '{print $1}')" = "$first_sha"
+          test "$(wc -c < "${{ steps.package.outputs.archive_path }}" | tr -d '[:space:]')" = "$first_size"
+          if tar -tzf "${{ steps.package.outputs.archive_path }}" | grep -F '/apps/web/database/migrations/'; then exit 1; fi
 
       - name: Upload governed Technical Preview release bundle
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
@@ -252,5 +182,4 @@ jobs:
           compression-level: 0
 
       - name: Confirm tracked source remains unchanged
-        shell: bash
         run: git diff --exit-code

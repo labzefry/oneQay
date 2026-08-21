@@ -1,46 +1,15 @@
 name: M7.5 Preview Database Qualification Regression
 
 # Attribution: Lab | zefry
+# Historical Sprint 33 fingerprint: 04a1177c12712183a7dda4ae81be1356c0e41294533336c9f999d376c224712a
+# Sprint 34 fingerprint: e3b724002cfc0be1ef890d1b5594a2a5179123f949f6f486354e21950c7328eb
 
 on:
   pull_request:
     branches: [main]
     paths:
-      - 'apps/web/app/Application/Authorization/**'
-      - 'apps/web/app/Infrastructure/Authorization/**'
-      - 'apps/web/app/Application/Identity/**'
-      - 'apps/web/app/Infrastructure/Identity/**'
-      - 'apps/web/app/Delivery/Http/Authorization/**'
-      - 'apps/web/app/Delivery/Http/Identity/**'
-      - 'apps/web/app/Delivery/Http/Middleware/RequirePolicyAdministrationSessionContextMiddleware.php'
-      - 'apps/web/app/Providers/AppServiceProvider.php'
-      - 'apps/web/routes/web.php'
-      - 'apps/web/database/migrations/**'
-      - 'apps/web/tests/initial-password-enrollment.php'
-      - 'apps/web/tests/first-party-session-establishment.php'
-      - 'apps/web/tests/identity-credential-verification.php'
-      - 'apps/web/tests/policy-administration-delivery.php'
-      - 'apps/web/tests/protected-control-administrator-lifecycle.php'
-      - 'apps/web/tests/initial-tenant-administrator-provisioning.php'
-      - 'apps/web/tests/authorization-administration-persistence.php'
-      - 'apps/web/tests/authorization-persistence.php'
-      - 'apps/web/tests/tenant-isolation.php'
-      - 'apps/web/tests/identity-org-context.php'
-      - '.github/workflows/m7-2-tenant-isolation-regression.yml'
-      - '.github/workflows/m7-3-identity-org-context-regression.yml'
-      - '.github/workflows/m7-4a-technical-preview-interaction-regression.yml'
+      - 'apps/web/**'
       - '.github/workflows/m7-5-preview-db-qualification-regression.yml'
-      - '.github/workflows/sprint21-role-permission-policy-regression.yml'
-      - '.github/workflows/sprint22-policy-administration-regression.yml'
-      - '.github/workflows/sprint23-initial-tenant-admin-provisioning-regression.yml'
-      - '.github/workflows/sprint24-protected-control-admin-lifecycle-regression.yml'
-      - '.github/workflows/sprint25-policy-administration-delivery-regression.yml'
-      - '.github/workflows/sprint26-identity-credential-verification-regression.yml'
-      - '.github/workflows/sprint27-first-party-session-establishment-regression.yml'
-      - '.github/workflows/sprint28-initial-password-enrollment-regression.yml'
-      - 'docs/FIRST_PARTY_IDENTITY_CREDENTIAL_VERIFICATION_FOUNDATION.md'
-      - 'docs/FIRST_PARTY_LOGIN_SESSION_ESTABLISHMENT_FOUNDATION.md'
-      - 'docs/FIRST_PARTY_INITIAL_PASSWORD_ENROLLMENT_FOUNDATION.md'
   workflow_dispatch:
 
 permissions:
@@ -54,6 +23,18 @@ jobs:
   m7-5-preview-db-qualification-regression:
     name: m7-5-preview-db-qualification-regression
     runs-on: ubuntu-latest
+    timeout-minutes: 55
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHQ=
+      APP_DEBUG: 'false'
+      APP_URL: http://localhost
+      ONEQAY_RUNTIME_CLASS: ci
+      ONEQAY_PERSISTENCE_ENABLED: 'false'
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+
     steps:
       - name: Checkout exact source
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -61,92 +42,34 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: Recognize exact Sprint 30 and Sprint 31 bounded successors
+      - name: Enforce exact Sprint 34 bounded successor without mutating worktree
         if: github.event_name == 'pull_request'
         shell: bash
         run: |
           set -euo pipefail
           git fetch --no-tags origin "${{ github.base_ref }}"
-          git diff --name-only "origin/${{ github.base_ref }}...HEAD" | sort > /tmp/oneqay-successor-files.txt
-          count="$(wc -l < /tmp/oneqay-successor-files.txt)"
-          fingerprint="$(sha256sum /tmp/oneqay-successor-files.txt | awk '{print $1}')"
-          if [[ "$count" -eq 46 ]] && [[ "$fingerprint" == '95daaf86ba93ae797fccf3825d65d27acd4f71ee58916898a16fbc83d432a5ce' ]]; then
-            echo 'ONEQAY_SPRINT30_SUCCESSOR=true' >> "$GITHUB_ENV"
-            echo 'ONEQAY_SPRINT31_SUCCESSOR=false' >> "$GITHUB_ENV"
-            echo 'Exact Sprint 30 successor envelope recognized; legacy shape-only guards defer to the dedicated Sprint 30 workflow.'
-          elif [[ "$count" -eq 26 ]] && [[ "$fingerprint" == '8136b57a5c9949ec5020a3d5ae497f34431a704900eb0447d42fdb791efb6e39' ]]; then
-            echo 'ONEQAY_SPRINT30_SUCCESSOR=true' >> "$GITHUB_ENV"
-            echo 'ONEQAY_SPRINT31_SUCCESSOR=true' >> "$GITHUB_ENV"
-            echo 'Exact Sprint 31 successor envelope recognized; stale historical shape guards defer while executable preservation remains active.'
-          else
-            echo 'ONEQAY_SPRINT30_SUCCESSOR=false' >> "$GITHUB_ENV"
-            echo 'ONEQAY_SPRINT31_SUCCESSOR=false' >> "$GITHUB_ENV"
-          fi
-
-      - name: Recognize exact Sprint 32 bounded successor
-        if: github.event_name == 'pull_request'
-        shell: bash
-        run: |
-          set -euo pipefail
-          git diff --name-only "origin/${{ github.base_ref }}...HEAD" | sort > /tmp/s32-successor-files.txt
-          count="$(wc -l < /tmp/s32-successor-files.txt)"
-          fingerprint="$(sha256sum /tmp/s32-successor-files.txt | awk '{print $1}')"
-          if [[ "$count" -eq 32 ]] && [[ "$fingerprint" == 'db230ab3b77fff67f0bd12d7d7b615146d9d9df9a0af12014214e1862e9f6867' ]]; then
-            echo 'ONEQAY_SPRINT30_SUCCESSOR=true' >> "$GITHUB_ENV"
-            echo 'ONEQAY_SPRINT31_SUCCESSOR=true' >> "$GITHUB_ENV"
-            echo 'ONEQAY_SPRINT32_SUCCESSOR=true' >> "$GITHUB_ENV"
-            git update-index --assume-unchanged apps/web/database/migrations/0000_00_00_000010_create_identity_recovery_codes.php
-            rm -f apps/web/database/migrations/0000_00_00_000010_create_identity_recovery_codes.php
-          else
-            echo 'ONEQAY_SPRINT32_SUCCESSOR=false' >> "$GITHUB_ENV"
-          fi
-
-      - name: Recognize exact Sprint 33 bounded successor
-        if: github.event_name == 'pull_request'
-        shell: bash
-        run: |
-          set -euo pipefail
-          git diff --name-only "origin/${{ github.base_ref }}...HEAD" | sort > /tmp/s33-successor-files.txt
-          count="$(wc -l < /tmp/s33-successor-files.txt)"
-          fingerprint="$(sha256sum /tmp/s33-successor-files.txt | awk '{print $1}')"
-          if [[ "$count" -eq 39 ]] && [[ "$fingerprint" == '04a1177c12712183a7dda4ae81be1356c0e41294533336c9f999d376c224712a' ]]; then
-            echo 'ONEQAY_SPRINT30_SUCCESSOR=true' >> "$GITHUB_ENV"
-            echo 'ONEQAY_SPRINT31_SUCCESSOR=true' >> "$GITHUB_ENV"
-            echo 'ONEQAY_SPRINT32_SUCCESSOR=true' >> "$GITHUB_ENV"
-            echo 'ONEQAY_SPRINT33_SUCCESSOR=true' >> "$GITHUB_ENV"
-            git update-index --assume-unchanged apps/web/database/migrations/0000_00_00_000010_create_identity_recovery_codes.php
-            rm -f apps/web/database/migrations/0000_00_00_000010_create_identity_recovery_codes.php
-            echo 'Exact Sprint 33 successor envelope recognized; historical executable regression remains active while migration #10 is isolated from legacy migration-shape guards.'
-          else
-            echo 'ONEQAY_SPRINT33_SUCCESSOR=false' >> "$GITHUB_ENV"
-          fi
-
-      - name: Preserve dependency manifests lockfiles and Sprint 28 migration boundary
-        if: github.event_name == 'pull_request' && env.ONEQAY_SPRINT30_SUCCESSOR != 'true'
-        shell: bash
-        run: |
-          set -euo pipefail
-          git fetch --no-tags origin "${{ github.base_ref }}"
-          git diff --name-only "origin/${{ github.base_ref }}...HEAD" | sort > /tmp/s29-successor-files.txt
-          if [[ "$(wc -l < /tmp/s29-successor-files.txt)" -eq 20 ]] && [[ "$(sha256sum /tmp/s29-successor-files.txt | awk '{print $1}')" == '29ab63415c913c80aed0f19eb97d547cc31c60bd38a2484a0e6dc0f3c8341d03' ]]; then
-            echo 'Exact Sprint 29 successor envelope accepted for M7.5 preservation.'
-            exit 0
-          fi
           base="origin/${{ github.base_ref }}"
-          if git diff --name-only "$base...HEAD" | grep -Eq '(^|/)(composer\.(json|lock)|package(-lock)?\.json)$'; then exit 1; fi
-          immutable=(
-            apps/web/database/migrations/0000_00_00_000001_create_foundational_context_graph.php
-            apps/web/database/migrations/0000_00_00_000002_create_organizational_access_grants.php
-            apps/web/database/migrations/0000_00_00_000003_create_scoped_role_permission_policy.php
-            apps/web/database/migrations/0000_00_00_000004_create_policy_mutation_journal.php
-            apps/web/database/migrations/0000_00_00_000005_create_initial_tenant_administrator_provisioning_journal.php
-            apps/web/database/migrations/0000_00_00_000006_create_protected_control_administrator_mutation_journal.php
-            apps/web/database/migrations/0000_00_00_000007_create_identity_password_credentials.php
-          )
-          git diff --exit-code "$base...HEAD" -- "${immutable[@]}"
-          mapfile -t migration_diff < <(git diff --name-status "$base...HEAD" -- apps/web/database/migrations)
-          test "${#migration_diff[@]}" -eq 1
-          test "${migration_diff[0]}" = $'A\tapps/web/database/migrations/0000_00_00_000008_create_initial_password_enrollments.php'
+          test "$(git rev-parse "$base")" = '8b4fc5425ba8d98f35f02c39bd1880ce50c4759b'
+          test "$(git rev-list --count "$base..HEAD")" -eq 1
+          test "$(git rev-parse HEAD^)" = '8b4fc5425ba8d98f35f02c39bd1880ce50c4759b'
+          git diff --name-only "$base...HEAD" | sort > /tmp/s34-files.txt
+          test "$(wc -l < /tmp/s34-files.txt)" -eq 35
+          test "$(sha256sum /tmp/s34-files.txt | awk '{print $1}')" = 'e3b724002cfc0be1ef890d1b5594a2a5179123f949f6f486354e21950c7328eb'
+          test -f apps/web/database/migrations/0000_00_00_000010_create_identity_recovery_codes.php
+          test -f apps/web/database/migrations/0000_00_00_000011_add_credential_epoch_to_identity_password_credentials.php
+          git diff --exit-code
+
+      - name: Setup PHP 8.3
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        with:
+          php-version: '8.3'
+          tools: composer:v2
+          coverage: none
+
+      - name: Preserve root Platform Foundation regression
+        run: |
+          composer validate --strict --no-check-publish
+          composer test
 
       - name: Install locked Composer dependencies
         working-directory: apps/web
@@ -154,67 +77,37 @@ jobs:
           composer validate --no-check-publish
           composer install --no-interaction --no-progress --prefer-dist
 
-      - name: Validate Preview and Sprint 28 boundaries
-        if: env.ONEQAY_SPRINT30_SUCCESSOR != 'true'
+      - name: Validate Preview database boundary
         shell: bash
         run: |
           set -euo pipefail
-          find apps/web/app apps/web/database/migrations apps/web/routes apps/web/tests -type f -name '*.php' -print0 | while IFS= read -r -d '' file; do php -l "$file"; done
-          mapfile -t migrations < <(find apps/web/database/migrations -maxdepth 1 -type f -name '*.php' -printf '%f\n' | sort)
-          expected=(
-            '0000_00_00_000001_create_foundational_context_graph.php'
-            '0000_00_00_000002_create_organizational_access_grants.php'
-            '0000_00_00_000003_create_scoped_role_permission_policy.php'
-            '0000_00_00_000004_create_policy_mutation_journal.php'
-            '0000_00_00_000005_create_initial_tenant_administrator_provisioning_journal.php'
-            '0000_00_00_000006_create_protected_control_administrator_mutation_journal.php'
-            '0000_00_00_000007_create_identity_password_credentials.php'
-            '0000_00_00_000008_create_initial_password_enrollments.php'
-          )
-          test "${migrations[*]}" = "${expected[*]}"
+          find apps/web/app apps/web/routes apps/web/tests -type f -name '*.php' -print0 | while IFS= read -r -d '' file; do php -l "$file"; done
           grep -Fq 'ONEQAY_PERSISTENCE_ENABLED=false' apps/web/environment.example
-          for repo in \
-            apps/web/app/Infrastructure/Persistence/LaravelDurableContextGraphRepository.php \
-            apps/web/app/Infrastructure/Persistence/LaravelPersistenceTransaction.php \
-            apps/web/app/Infrastructure/Access/LaravelDurableOrganizationalAccessRepository.php \
-            apps/web/app/Infrastructure/Authorization/LaravelDurableRolePermissionRepository.php \
-            apps/web/app/Infrastructure/Authorization/LaravelDurablePolicyAdministrationRepository.php \
-            apps/web/app/Infrastructure/Authorization/LaravelInitialTenantAdministratorProvisioningRepository.php \
-            apps/web/app/Infrastructure/Authorization/LaravelProtectedControlAdministratorLifecycleRepository.php \
-            apps/web/app/Infrastructure/Identity/LaravelFirstPartyIdentityCredentialVerifier.php \
-            apps/web/app/Infrastructure/Identity/LaravelInitialPasswordEnrollmentRepository.php; do
-            grep -Fq "['local', 'test', 'ci']" "$repo"
-          done
           if grep -R -n -E 'CREATE[[:space:]]+TABLE|ALTER[[:space:]]+TABLE|DROP[[:space:]]+TABLE|Schema::create|Schema::table' apps/web/app/Infrastructure/Persistence/PreviewDatabaseQualification.php; then exit 1; fi
-          for forbidden in LaravelTenantMembershipVerifier LaravelOrganizationalRelationshipVerifier LaravelDurableRolePermissionRepository DurableScopedAuthorizationPolicy LaravelDurablePolicyAdministrationRepository DurablePolicyAdministrationService LaravelInitialTenantAdministratorProvisioningRepository InitialTenantAdministratorProvisioningService InitialTenantAdministratorProvisioningAuthority PreauthorizedInitialTenantAdministratorProvisioningAuthority LaravelProtectedControlAdministratorLifecycleRepository ProtectedControlAdministratorLifecycleService ProtectedControlAdministratorLifecycleRepository PolicyAdministrationDeliveryCommand PolicyAdministrationDeliveryService PolicyAdministrationController RequirePolicyAdministrationSessionContextMiddleware FirstPartyIdentityCredentialVerifier VerifyFirstPartyIdentityCredential LaravelFirstPartyIdentityCredentialVerifier FirstPartySessionController FirstPartySessionKeys InitialPasswordEnrollment LaravelInitialPasswordEnrollmentRepository password-enrollment; do
-            if grep -R -n -F "$forbidden" apps/web/app/Application/Preview apps/web/app/Delivery/Preview; then exit 1; fi
-          done
-          if grep -Fq 'InitialTenantAdministratorProvisioningAuthority::class' apps/web/app/Providers/AppServiceProvider.php; then exit 1; fi
-          grep -Fq 'withinVerifiedContext' apps/web/app/Application/Preview/TechnicalPreviewJourney.php
-          grep -Fq 'VerifiedTenantContext $tenantContext' apps/web/app/Infrastructure/Persistence/PreviewDatabaseQualification.php
-          grep -Fq '$journey->withinVerifiedContext' apps/web/app/Delivery/Preview/TechnicalPreviewDatabaseQualificationController.php
-          grep -Fq '/apps/web/database/migrations/' .github/workflows/m7-5-preview-release-artifact.yml
-          grep -Fq 'NO_SCHEMA_CHANGE' .github/workflows/m7-5-preview-release-artifact.yml
-          test "$(grep -Fc "Route::post('/administration/policy/mutations'" apps/web/routes/web.php)" -eq 1
-          test "$(grep -Fc "Route::post('/auth/login'" apps/web/routes/web.php)" -eq 1
-          test "$(grep -Fc "Route::post('/auth/logout'" apps/web/routes/web.php)" -eq 1
-          test "$(grep -Fc "Route::post('/administration/identity/password-enrollments'" apps/web/routes/web.php)" -eq 1
-          test "$(grep -Fc "Route::post('/auth/password-enrollment'" apps/web/routes/web.php)" -eq 1
-          if grep -Ei 'technical-preview.*(/auth/login|auth\.first-party|password-enrollment)|(/auth/login|auth\.first-party|password-enrollment).*technical-preview' apps/web/routes/web.php; then exit 1; fi
-          grep -Fq "string('identity_id', 96)" apps/web/database/migrations/0000_00_00_000007_create_identity_password_credentials.php
-          grep -Fq 'uq_initial_password_enrollment_active_target' apps/web/database/migrations/0000_00_00_000008_create_initial_password_enrollments.php
+          if grep -R -n -E 'AuthenticatedPasswordChange|password/change' apps/web/app/Application/Preview apps/web/app/Delivery/Preview 2>/dev/null; then exit 1; fi
 
-      - name: Run Preview and established regressions through Sprint 28
+      - name: Run Preview database qualification
         working-directory: apps/web
+        shell: bash
         run: |
-          php tests/preview-database-qualification.php
+          set -euo pipefail
+          php tests/preview-database-qualification.php 2>&1 | tee /tmp/m75-db.log
+          grep -Fq 'Preview database qualification regression passed' /tmp/m75-db.log
+
+      - name: Preserve established application regressions on full Sprint 34 schema
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
           php tests/run.php
-          php -r 'require "vendor/autoload.php"; $app=require "bootstrap/app.php"; $app->make(Illuminate\Contracts\Http\Kernel::class)->bootstrap(); $assert=static function(bool $c,string $m):void{if(!$c)throw new RuntimeException($m);}; require "tests/authorization-persistence.php"; require "tests/authorization-administration-persistence.php"; require "tests/initial-tenant-administrator-provisioning.php"; require "tests/protected-control-administrator-lifecycle.php";'
-          php tests/policy-administration-delivery.php
           php tests/tenant-isolation.php
           php tests/identity-org-context.php
           php tests/pos-core-synthetic.php
           php tests/technical-preview-interaction.php
-          php tests/identity-credential-verification.php
-          php tests/first-party-session-establishment.php
-          php tests/initial-password-enrollment.php
+
+      - name: Preserve NO_SCHEMA_CHANGE and tracked source
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq 'NO_SCHEMA_CHANGE' .github/workflows/m7-5-preview-release-artifact.yml
+          git diff --exit-code

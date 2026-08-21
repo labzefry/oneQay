@@ -8,6 +8,9 @@ use App\Application\Authorization\DurableRolePermissionRepository;
 use App\Application\Authorization\InitialTenantAdministratorProvisioningRepository;
 use App\Application\Authorization\PolicyAdministrationClock;
 use App\Application\Authorization\ProtectedControlAdministratorLifecycleRepository;
+use App\Application\Identity\AuthenticatedPasswordChangeClock;
+use App\Application\Identity\AuthenticatedPasswordChangeRepository;
+use App\Application\Identity\AuthenticatedPasswordChangeService;
 use App\Application\Identity\FirstControlPrincipalCredentialBootstrapRepository;
 use App\Application\Identity\FirstPartyCredentialEpochRepository;
 use App\Application\Identity\FirstPartyIdentityCredentialVerifier;
@@ -16,9 +19,12 @@ use App\Application\Identity\PrivilegedStepUpClock;
 use App\Application\Identity\PrivilegedTotpClock;
 use App\Application\Identity\PrivilegedTotpEngine;
 use App\Application\Identity\PrivilegedTotpMfaRepository;
+use App\Application\Identity\PrivilegedTotpMfaService;
 use App\Application\Identity\RecoveryCodeClock;
 use App\Application\Identity\RecoveryCodeRepository;
 use App\Application\Identity\RecoveryPasswordResetRepository;
+use App\Application\Identity\VerifyFirstPartyCredentialEpoch;
+use App\Application\Identity\VerifyFirstPartyIdentityCredential;
 use App\Application\Organization\OrganizationalContextStore;
 use App\Application\Organization\OrganizationalRelationshipVerifier;
 use App\Application\Persistence\DurableContextGraphRepository;
@@ -30,6 +36,7 @@ use App\Infrastructure\Authorization\LaravelDurablePolicyAdministrationRepositor
 use App\Infrastructure\Authorization\LaravelDurableRolePermissionRepository;
 use App\Infrastructure\Authorization\LaravelInitialTenantAdministratorProvisioningRepository;
 use App\Infrastructure\Authorization\LaravelProtectedControlAdministratorLifecycleRepository;
+use App\Infrastructure\Identity\LaravelAuthenticatedPasswordChangeRepository;
 use App\Infrastructure\Identity\LaravelFirstControlPrincipalCredentialBootstrapRepository;
 use App\Infrastructure\Identity\LaravelFirstPartyCredentialEpochRepository;
 use App\Infrastructure\Identity\LaravelFirstPartyIdentityCredentialVerifier;
@@ -190,6 +197,33 @@ final class AppServiceProvider extends ServiceProvider
         );
 
         $this->app->scoped(
+            AuthenticatedPasswordChangeRepository::class,
+            function ($app): AuthenticatedPasswordChangeRepository {
+                /** @var Connection $connection */
+                $connection = $app->make('db')->connection();
+
+                return new LaravelAuthenticatedPasswordChangeRepository(
+                    $connection,
+                    (bool) config('database.oneqay_persistence_enabled', false),
+                    (string) config('oneqay.runtime_class', ''),
+                );
+            },
+        );
+
+        $this->app->scoped(
+            AuthenticatedPasswordChangeService::class,
+            fn ($app): AuthenticatedPasswordChangeService => new AuthenticatedPasswordChangeService(
+                $app->make(AuthenticatedPasswordChangeRepository::class),
+                $app->make(VerifyFirstPartyIdentityCredential::class),
+                $app->make(VerifyFirstPartyCredentialEpoch::class),
+                $app->make(PrivilegedTotpMfaService::class),
+                $app->make(PersistenceTransaction::class),
+                $app->make(AuthenticatedPasswordChangeClock::class),
+                (bool) config('oneqay.privileged_totp_mfa.enabled', false),
+            ),
+        );
+
+        $this->app->scoped(
             InitialPasswordEnrollmentRepository::class,
             function ($app): InitialPasswordEnrollmentRepository {
                 /** @var Connection $connection */
@@ -300,6 +334,16 @@ final class AppServiceProvider extends ServiceProvider
         );
 
         $this->app->scoped(
+            AuthenticatedPasswordChangeClock::class,
+            static fn (): AuthenticatedPasswordChangeClock => new class implements AuthenticatedPasswordChangeClock {
+                public function nowUnix(): int
+                {
+                    return time();
+                }
+            },
+        );
+
+        $this->app->scoped(
             PolicyAdministrationClock::class,
             static fn (): PolicyAdministrationClock => new class implements PolicyAdministrationClock {
                 public function nowUnix(): int
@@ -326,6 +370,30 @@ final class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        //
+        $technicalPreviewEnabled = filter_var(
+            env('ONEQAY_TECHNICAL_PREVIEW_ENABLED', false),
+            FILTER_VALIDATE_BOOL,
+        );
+
+        if ($technicalPreviewEnabled) {
+            return;
+        }
+
+        // TechnicalPreviewServiceProvider is registered after this provider and owns the
+        // synthetic verifier pair only while Technical Preview is explicitly armed.
+        // Restore durable authentication verification for normal Local/Test/CI runtime.
+        $this->app->scoped(
+            TenantMembershipVerifier::class,
+            fn ($app): TenantMembershipVerifier => new LaravelTenantMembershipVerifier(
+                $app->make(DurableOrganizationalAccessRepository::class),
+            ),
+        );
+
+        $this->app->scoped(
+            OrganizationalRelationshipVerifier::class,
+            fn ($app): OrganizationalRelationshipVerifier => new LaravelOrganizationalRelationshipVerifier(
+                $app->make(DurableOrganizationalAccessRepository::class),
+            ),
+        );
     }
 }

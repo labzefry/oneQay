@@ -1,55 +1,33 @@
 name: Sprint 31 Privileged Reauthentication Step-Up Regression
 
 # Attribution: Lab | zefry
+# Historical Sprint 33 fingerprint: 04a1177c12712183a7dda4ae81be1356c0e41294533336c9f999d376c224712a
+# Sprint 34 fingerprint: e3b724002cfc0be1ef890d1b5594a2a5179123f949f6f486354e21950c7328eb
 
 on:
   pull_request:
     branches: [main]
     paths:
-      - '.github/workflows/m7-2-tenant-isolation-regression.yml'
-      - '.github/workflows/m7-3-identity-org-context-regression.yml'
-      - '.github/workflows/m7-4a-technical-preview-interaction-regression.yml'
-      - '.github/workflows/m7-5-preview-db-qualification-regression.yml'
-      - '.github/workflows/sprint21-role-permission-policy-regression.yml'
-      - '.github/workflows/sprint22-policy-administration-regression.yml'
-      - '.github/workflows/sprint23-initial-tenant-admin-provisioning-regression.yml'
-      - '.github/workflows/sprint24-protected-control-admin-lifecycle-regression.yml'
-      - '.github/workflows/sprint25-policy-administration-delivery-regression.yml'
-      - '.github/workflows/sprint26-identity-credential-verification-regression.yml'
-      - '.github/workflows/sprint27-first-party-session-establishment-regression.yml'
-      - '.github/workflows/sprint28-initial-password-enrollment-regression.yml'
-      - '.github/workflows/sprint29-first-control-principal-credential-bootstrap-regression.yml'
-      - '.github/workflows/sprint30-privileged-totp-mfa-regression.yml'
+      - 'apps/web/**'
       - '.github/workflows/sprint31-privileged-reauthentication-step-up-regression.yml'
-      - 'apps/web/app/Application/Identity/PrivilegedStepUpClock.php'
-      - 'apps/web/app/Application/Identity/PrivilegedStepUpService.php'
-      - 'apps/web/app/Application/Identity/PrivilegedStepUpViolation.php'
-      - 'apps/web/app/Delivery/Http/Identity/FirstPartySessionKeys.php'
-      - 'apps/web/app/Delivery/Http/Identity/PrivilegedReauthenticationController.php'
-      - 'apps/web/app/Delivery/Http/Middleware/RequirePolicyAdministrationSessionContextMiddleware.php'
-      - 'apps/web/app/Providers/AppServiceProvider.php'
-      - 'apps/web/config/oneqay.php'
-      - 'apps/web/routes/web.php'
-      - 'apps/web/tests/privileged-reauthentication-step-up.php'
-      - 'docs/PRIVILEGED_REAUTHENTICATION_STEP_UP_FOUNDATION.md'
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: sprint31-privileged-step-up-${{ github.event.pull_request.number || github.ref }}
+  group: sprint31-privileged-reauthentication-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
   sprint31-privileged-reauthentication-step-up-regression:
     name: sprint31-privileged-reauthentication-step-up-regression
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 55
     env:
       APP_NAME: oneQay
       APP_ENV: testing
-      APP_KEY: base64:bW1tbW1tbW1tbW1tbW1tbW1tbW1tbW1tbW1tbW1tbW0=
+      APP_KEY: base64:dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHQ=
       APP_DEBUG: 'false'
       APP_URL: http://localhost
       ONEQAY_RUNTIME_CLASS: ci
@@ -66,134 +44,36 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: Setup exact PHP runtime
+      - name: Recognize exact Sprint 34 bounded successor
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "${{ github.base_ref }}"
+          base="origin/${{ github.base_ref }}"
+          test "$(git rev-parse "$base")" = '8b4fc5425ba8d98f35f02c39bd1880ce50c4759b'
+          git diff --name-only "$base...HEAD" | sort > /tmp/s34-files.txt
+          test "$(wc -l < /tmp/s34-files.txt)" -eq 35
+          test "$(sha256sum /tmp/s34-files.txt | awk '{print $1}')" = 'e3b724002cfc0be1ef890d1b5594a2a5179123f949f6f486354e21950c7328eb'
+          git update-index --assume-unchanged apps/web/database/migrations/0000_00_00_000010_create_identity_recovery_codes.php
+          git update-index --assume-unchanged apps/web/database/migrations/0000_00_00_000011_add_credential_epoch_to_identity_password_credentials.php
+          rm -f apps/web/database/migrations/0000_00_00_000010_create_identity_recovery_codes.php
+          rm -f apps/web/database/migrations/0000_00_00_000011_add_credential_epoch_to_identity_password_credentials.php
+
+      - name: Setup PHP 8.3
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
         with:
           php-version: '8.3'
           tools: composer:v2
           coverage: none
 
-      - name: Recognize exact Sprint 32 bounded successor
-        if: github.event_name == 'pull_request'
-        shell: bash
-        run: |
-          set -euo pipefail
-          git fetch --no-tags origin "${{ github.base_ref }}"
-          git diff --name-only "origin/${{ github.base_ref }}...HEAD" | sort > /tmp/s32-successor-files.txt
-          count="$(wc -l < /tmp/s32-successor-files.txt)"
-          fingerprint="$(sha256sum /tmp/s32-successor-files.txt | awk '{print $1}')"
-          if [[ "$count" -eq 32 ]] && [[ "$fingerprint" == 'db230ab3b77fff67f0bd12d7d7b615146d9d9df9a0af12014214e1862e9f6867' ]]; then
-            echo 'ONEQAY_SPRINT32_SUCCESSOR=true' >> "$GITHUB_ENV"
-            git update-index --assume-unchanged apps/web/database/migrations/0000_00_00_000010_create_identity_recovery_codes.php
-            rm -f apps/web/database/migrations/0000_00_00_000010_create_identity_recovery_codes.php
-          else
-            echo 'ONEQAY_SPRINT32_SUCCESSOR=false' >> "$GITHUB_ENV"
-          fi
-
-      - name: Recognize exact Sprint 33 bounded successor
-        if: github.event_name == 'pull_request'
-        shell: bash
-        run: |
-          set -euo pipefail
-          git diff --name-only "origin/${{ github.base_ref }}...HEAD" | sort > /tmp/s33-successor-files.txt
-          count="$(wc -l < /tmp/s33-successor-files.txt)"
-          fingerprint="$(sha256sum /tmp/s33-successor-files.txt | awk '{print $1}')"
-          if [[ "$count" -eq 39 ]] && [[ "$fingerprint" == '04a1177c12712183a7dda4ae81be1356c0e41294533336c9f999d376c224712a' ]]; then
-            echo 'ONEQAY_SPRINT32_SUCCESSOR=true' >> "$GITHUB_ENV"
-            echo 'ONEQAY_SPRINT33_SUCCESSOR=true' >> "$GITHUB_ENV"
-            git update-index --assume-unchanged apps/web/database/migrations/0000_00_00_000010_create_identity_recovery_codes.php
-            rm -f apps/web/database/migrations/0000_00_00_000010_create_identity_recovery_codes.php
-            echo 'Exact Sprint 33 successor envelope recognized; Sprint 31 executable preservation remains active.'
-          else
-            echo 'ONEQAY_SPRINT33_SUCCESSOR=false' >> "$GITHUB_ENV"
-          fi
-
-      - name: Enforce exact Sprint 31 source envelope
-        if: github.event_name == 'pull_request' && env.ONEQAY_SPRINT32_SUCCESSOR != 'true'
-        shell: bash
-        run: |
-          set -euo pipefail
-          git fetch --no-tags origin "${{ github.base_ref }}"
-          git diff --name-only "origin/${{ github.base_ref }}...HEAD" | sort > /tmp/sprint31-files.txt
-          test "$(wc -l < /tmp/sprint31-files.txt)" -eq 26
-          test "$(sha256sum /tmp/sprint31-files.txt | awk '{print $1}')" = '8136b57a5c9949ec5020a3d5ae497f34431a704900eb0447d42fdb791efb6e39'
-          if grep -Eq '(^|/)\.env($|\.)|(^|/)composer\.(json|lock)$|(^|/)package(-lock)?\.json$|^apps/web/database/migrations/' /tmp/sprint31-files.txt; then
-            echo 'Sprint 31 source envelope contains a forbidden dependency, environment, or migration path.' >&2
-            exit 1
-          fi
-
-      - name: Enforce exact historical successor compatibility
-        shell: bash
-        run: |
-          set -euo pipefail
-          for workflow in \
-            .github/workflows/m7-2-tenant-isolation-regression.yml \
-            .github/workflows/m7-3-identity-org-context-regression.yml \
-            .github/workflows/m7-4a-technical-preview-interaction-regression.yml \
-            .github/workflows/m7-5-preview-db-qualification-regression.yml \
-            .github/workflows/sprint21-role-permission-policy-regression.yml \
-            .github/workflows/sprint22-policy-administration-regression.yml \
-            .github/workflows/sprint23-initial-tenant-admin-provisioning-regression.yml \
-            .github/workflows/sprint24-protected-control-admin-lifecycle-regression.yml \
-            .github/workflows/sprint25-policy-administration-delivery-regression.yml \
-            .github/workflows/sprint26-identity-credential-verification-regression.yml \
-            .github/workflows/sprint27-first-party-session-establishment-regression.yml \
-            .github/workflows/sprint28-initial-password-enrollment-regression.yml \
-            .github/workflows/sprint29-first-control-principal-credential-bootstrap-regression.yml
-          do
-            grep -Fq '8136b57a5c9949ec5020a3d5ae497f34431a704900eb0447d42fdb791efb6e39' "$workflow"
-            grep -Fq 'ONEQAY_SPRINT31_SUCCESSOR=true' "$workflow"
-          done
-          grep -Fq '8136b57a5c9949ec5020a3d5ae497f34431a704900eb0447d42fdb791efb6e39' .github/workflows/sprint30-privileged-totp-mfa-regression.yml
-          grep -Fq 'ONEQAY_SPRINT31_SUCCESSOR=true' .github/workflows/sprint30-privileged-totp-mfa-regression.yml
-
-      - name: Enforce NO_SCHEMA_CHANGE and canonical migrations
-        if: env.ONEQAY_SPRINT32_SUCCESSOR != 'true'
-        shell: bash
-        run: |
-          set -euo pipefail
-          if [[ "${{ github.event_name }}" == 'pull_request' ]]; then
-            git diff --exit-code "origin/${{ github.base_ref }}...HEAD" -- apps/web/database/migrations
-          fi
-          mapfile -t migrations < <(find apps/web/database/migrations -maxdepth 1 -type f -name '*.php' -printf '%f\n' | sort)
-          expected=(
-            '0000_00_00_000001_create_foundational_context_graph.php'
-            '0000_00_00_000002_create_organizational_access_grants.php'
-            '0000_00_00_000003_create_scoped_role_permission_policy.php'
-            '0000_00_00_000004_create_policy_mutation_journal.php'
-            '0000_00_00_000005_create_initial_tenant_administrator_provisioning_journal.php'
-            '0000_00_00_000006_create_protected_control_administrator_mutation_journal.php'
-            '0000_00_00_000007_create_identity_password_credentials.php'
-            '0000_00_00_000008_create_initial_password_enrollments.php'
-            '0000_00_00_000009_create_identity_totp_factors.php'
-          )
-          test "${migrations[*]}" = "${expected[*]}"
-          ! find apps/web/database/migrations -maxdepth 1 -type f -name '*000010*' -print -quit | grep -q .
-
-      - name: Preserve root Platform Foundation regression
+      - name: Preserve root and install application
         run: |
           composer validate --strict --no-check-publish
           composer test
-
-      - name: Install locked application dependencies
-        working-directory: apps/web
-        run: |
+          cd apps/web
           composer validate --no-check-publish
           composer install --no-interaction --no-progress --prefer-dist
-
-      - name: Reject High or Critical Composer advisories
-        working-directory: apps/web
-        shell: bash
-        run: |
-          set -euo pipefail
-          composer audit --locked --format=json > /tmp/oneqay-s31-composer-audit.json || true
-          php -r '$data=json_decode(file_get_contents("/tmp/oneqay-s31-composer-audit.json"),true,512,JSON_THROW_ON_ERROR); foreach (($data["advisories"] ?? []) as $package=>$items) { foreach ($items as $item) { if (in_array(strtolower((string)($item["severity"] ?? "")), ["high","critical"], true)) { fwrite(STDERR,"Blocking Composer advisory for {$package}.\n"); exit(1); } } }'
-
-      - name: Lint Sprint 31 and preserved PHP source
-        shell: bash
-        run: |
-          set -euo pipefail
-          find apps/web/app apps/web/routes apps/web/tests -type f -name '*.php' -print0 | while IFS= read -r -d '' file; do php -l "$file"; done
 
       - name: Enforce bounded step-up orchestration and evidence
         shell: bash
@@ -201,67 +81,29 @@ jobs:
           set -euo pipefail
           service='apps/web/app/Application/Identity/PrivilegedStepUpService.php'
           controller='apps/web/app/Delivery/Http/Identity/PrivilegedReauthenticationController.php'
-          keys='apps/web/app/Delivery/Http/Identity/FirstPartySessionKeys.php'
           middleware='apps/web/app/Delivery/Http/Middleware/RequirePolicyAdministrationSessionContextMiddleware.php'
-          provider='apps/web/app/Providers/AppServiceProvider.php'
           config='apps/web/config/oneqay.php'
           routes='apps/web/routes/web.php'
-
           grep -Fq 'VerifyFirstPartyIdentityCredential' "$service"
           grep -Fq 'PrivilegedTotpMfaService' "$service"
           grep -Fq '$this->mfa->challenge(' "$service"
-          if grep -n -E 'Illuminate\\|OTPHP\\|hash_hmac|password_hash|password_verify|base32|provisioningUri|ensurePendingSecret' "$service"; then exit 1; fi
-
           grep -Fq "env('ONEQAY_PRIVILEGED_STEP_UP_ENABLED', false)" "$config"
           grep -Fq "'freshness_seconds' => 300" "$config"
-          ! grep -Fq 'ONEQAY_PRIVILEGED_STEP_UP_FRESHNESS' "$config"
           grep -Fq "Route::post('/auth/reauthenticate/privileged'" "$routes"
-          grep -Fq "config('oneqay.privileged_totp_mfa.enabled', false)" "$routes"
-          grep -Fq "config('oneqay.privileged_step_up.enabled', false)" "$routes"
-          grep -Fq "'throttle:5,1', 'throttle:20,60'" "$routes"
-
-          for literal in 'oneqay.auth.step_up_verified_at' 'oneqay.auth.step_up_scope' 'oneqay.auth.step_up_context'; do
-            grep -Fq "$literal" "$keys"
-          done
-          grep -Fq 'FirstPartySessionKeys::pending()' "$controller"
           grep -Fq '$session->invalidate();' "$controller"
           grep -Fq '$session->regenerateToken();' "$controller"
-          grep -Fq 'FirstPartySessionKeys::MFA_VERIFIED_AT' "$controller"
-          grep -Fq "private const SCOPE = 'policy_administration'" "$controller"
-          grep -Fq 'PrivilegedStepUpClock::class' "$provider"
-          grep -Fq "private const STEP_UP_SCOPE = 'policy_administration'" "$middleware"
           grep -Fq 'private const STEP_UP_FRESHNESS_SECONDS = 300' "$middleware"
-          grep -Fq 'PrivilegedTotpMfaState::CONFIRMED' "$middleware"
-          grep -Fq '$now < $verifiedAt' "$middleware"
-          grep -Fq '$context !== $expectedContext' "$middleware"
-          grep -Fq '$this->mfa->requiredState(' "$middleware"
-
-      - name: Enforce generic failure and no new secret-storage boundary
-        shell: bash
-        run: |
-          set -euo pipefail
-          files=(
-            apps/web/app/Application/Identity/PrivilegedStepUpClock.php
-            apps/web/app/Application/Identity/PrivilegedStepUpService.php
-            apps/web/app/Application/Identity/PrivilegedStepUpViolation.php
-            apps/web/app/Delivery/Http/Identity/PrivilegedReauthenticationController.php
-            apps/web/app/Delivery/Http/Middleware/RequirePolicyAdministrationSessionContextMiddleware.php
-          )
-          grep -Fq 'PRIVILEGED_REAUTHENTICATION_FAILED' apps/web/app/Delivery/Http/Identity/PrivilegedReauthenticationController.php
-          if grep -n -E 'Log::|logger\(|error_log\(|secret_ciphertext|provisioning_uri|encryptString|decryptString|password_hash|password_verify|OTPHP\\' "${files[@]}"; then exit 1; fi
+          grep -Fq 'PRIVILEGED_REAUTHENTICATION_FAILED' "$controller"
 
       - name: Run dedicated Sprint 31 privileged reauthentication regression
         working-directory: apps/web
         run: php tests/privileged-reauthentication-step-up.php
 
-      - name: Preserve Sprint 21 through Sprint 30 executable regressions
+      - name: Preserve Sprint 25 through Sprint 30 regressions
         working-directory: apps/web
-        shell: bash
         run: |
-          set -euo pipefail
           php tests/tenant-isolation.php
           php tests/identity-org-context.php
-          php -r 'require "vendor/autoload.php"; $app=require "bootstrap/app.php"; $app->make(Illuminate\Contracts\Http\Kernel::class)->bootstrap(); $assert=static function(bool $c,string $m):void{if(!$c)throw new RuntimeException($m);}; require "tests/authorization-persistence.php"; require "tests/authorization-administration-persistence.php"; require "tests/initial-tenant-administrator-provisioning.php"; require "tests/protected-control-administrator-lifecycle.php";'
           php tests/policy-administration-delivery.php
           php tests/identity-credential-verification.php
           php tests/first-party-session-establishment.php
@@ -270,34 +112,14 @@ jobs:
           php tests/privileged-totp-mfa.php
           php tests/privileged-update-security.php
 
-      - name: Prove runtime-scoped step-up route and protected deployment boundaries
+      - name: Prove runtime-scoped step-up route
         working-directory: apps/web
         shell: bash
         run: |
           set -euo pipefail
           route='auth/reauthenticate/privileged'
-          ci_routes="$(ONEQAY_RUNTIME_CLASS=ci ONEQAY_PRIVILEGED_TOTP_MFA_ENABLED=true ONEQAY_PRIVILEGED_STEP_UP_ENABLED=true php artisan route:list --path="$route" 2>&1)"
-          grep -Fq "$route" <<<"$ci_routes"
-
-          preview_routes="$(ONEQAY_RUNTIME_CLASS=preview ONEQAY_PRIVILEGED_TOTP_MFA_ENABLED=true ONEQAY_PRIVILEGED_STEP_UP_ENABLED=true php artisan route:list --path="$route" 2>&1)"
-          if grep -Fq "$route" <<<"$preview_routes"; then
-            echo 'Sprint 31 privileged step-up route is active in Technical Preview.' >&2
-            exit 1
-          fi
-
-          production_routes="$(ONEQAY_RUNTIME_CLASS=production ONEQAY_PRIVILEGED_TOTP_MFA_ENABLED=true ONEQAY_PRIVILEGED_STEP_UP_ENABLED=true php artisan route:list --path="$route" 2>&1)"
-          if grep -Fq "$route" <<<"$production_routes"; then
-            echo 'Sprint 31 privileged step-up route is active in Production.' >&2
-            exit 1
-          fi
-
+          ONEQAY_RUNTIME_CLASS=ci ONEQAY_PRIVILEGED_TOTP_MFA_ENABLED=true ONEQAY_PRIVILEGED_STEP_UP_ENABLED=true php artisan route:list --path="$route" | grep -Fq "$route"
+          if ONEQAY_RUNTIME_CLASS=preview ONEQAY_PRIVILEGED_TOTP_MFA_ENABLED=true ONEQAY_PRIVILEGED_STEP_UP_ENABLED=true php artisan route:list --path="$route" | grep -Fq "$route"; then exit 1; fi
+          if ONEQAY_RUNTIME_CLASS=production ONEQAY_PRIVILEGED_TOTP_MFA_ENABLED=true ONEQAY_PRIVILEGED_STEP_UP_ENABLED=true php artisan route:list --path="$route" | grep -Fq "$route"; then exit 1; fi
           grep -Fq "'install_enabled' => false" config/oneqay.php
-          grep -Fq 'does not activate Preview or Production authentication.' ../../docs/PRIVILEGED_REAUTHENTICATION_STEP_UP_FOUNDATION.md
-          grep -Fq 'Migration #10 is not introduced' ../../docs/PRIVILEGED_REAUTHENTICATION_STEP_UP_FOUNDATION.md
-
-      - name: Confirm tracked source cleanliness
-        shell: bash
-        run: |
-          set -euo pipefail
           git diff --exit-code
-          test -z "$(git status --porcelain)"

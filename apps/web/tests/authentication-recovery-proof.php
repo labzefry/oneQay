@@ -184,6 +184,7 @@ $repo = $read('app/Infrastructure/Identity/LaravelRecoveryCodeRepository.php');
 $controller = $read('app/Delivery/Http/Identity/RecoveryCodeController.php');
 $keys = $read('app/Delivery/Http/Identity/FirstPartySessionKeys.php');
 $migration = $read('database/migrations/0000_00_00_000010_create_identity_recovery_codes.php');
+$epochMigration = $read('database/migrations/0000_00_00_000011_add_credential_epoch_to_identity_password_credentials.php');
 $foundation = $read('../../docs/AUTHENTICATION_RECOVERY_PROOF_FOUNDATION.md');
 
 $assert(str_contains($config, "env('ONEQAY_AUTHENTICATION_RECOVERY_ENABLED', false)"), 'Recovery feature arm must default false.');
@@ -231,6 +232,11 @@ foreach (['plaintext', "string('password'", "string('totp'", "string('email'", "
     $assert(! str_contains(strtolower($migration), strtolower($forbidden)), 'Migration #10 contains forbidden recovery storage: '.$forbidden);
 }
 
+$assert(str_contains($epochMigration, "unsignedBigInteger('credential_epoch')->default(0)"), 'Migration #11 must add only generic credential epoch authority.');
+$assert(str_contains($epochMigration, "where('event_type', 'password_reset_completed')"), 'Migration #11 backfill must preserve historical reset-derived epoch.');
+$assert(! str_contains($epochMigration, "Schema::create('oneqay_identity_recovery"), 'Migration #11 must not recreate recovery storage.');
+$assert(! str_contains($epochMigration, "'proof_succeeded'"), 'Migration #11 must not count recovery proof as credential mutation.');
+
 $migrations = array_map('basename', glob($root.'/database/migrations/*.php') ?: []);
 sort($migrations);
 $expectedMigrations = [
@@ -244,8 +250,9 @@ $expectedMigrations = [
     '0000_00_00_000008_create_initial_password_enrollments.php',
     '0000_00_00_000009_create_identity_totp_factors.php',
     '0000_00_00_000010_create_identity_recovery_codes.php',
+    '0000_00_00_000011_add_credential_epoch_to_identity_password_credentials.php',
 ];
-$assert($migrations === $expectedMigrations, 'Source migration set must be exactly #1 through #10.');
+$assert($migrations === $expectedMigrations, 'Source migration set must be exactly #1 through #11.');
 
 foreach ([
     "private const RECOVERY_STATE = 'password_reset_required'",
