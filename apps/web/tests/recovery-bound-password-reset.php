@@ -90,10 +90,11 @@ $migrationNames = [
     '0000_00_00_000008_create_initial_password_enrollments.php',
     '0000_00_00_000009_create_identity_totp_factors.php',
     '0000_00_00_000010_create_identity_recovery_codes.php',
+    '0000_00_00_000011_add_credential_epoch_to_identity_password_credentials.php',
 ];
 $actualMigrations = array_values(array_filter(scandir(__DIR__.'/../database/migrations') ?: [], static fn (string $file): bool => str_ends_with($file, '.php')));
 sort($actualMigrations);
-$assert($actualMigrations === $migrationNames, 'canonical migration set must be exactly #1-#10');
+$assert($actualMigrations === $migrationNames, 'canonical migration set must be exactly #1-#11');
 foreach ($migrationNames as $migration) {
     (require __DIR__.'/../database/migrations/'.$migration)->up();
 }
@@ -135,6 +136,7 @@ $connection->table('oneqay_identity_password_credentials')->insert([
     ['tenant_id' => 'tenant-alpha', 'identity_id' => 'totp-alpha', 'password_hash' => password_hash($totpPassword, PASSWORD_DEFAULT)],
     ['tenant_id' => 'tenant-beta', 'identity_id' => 'reset-beta', 'password_hash' => password_hash($betaPassword, PASSWORD_DEFAULT)],
 ]);
+$assert($connection->table('oneqay_identity_password_credentials')->where('tenant_id', 'tenant-alpha')->where('identity_id', 'reset-alpha')->value('credential_epoch') === 0, 'new credential row must start at generic epoch zero');
 
 $connection->table('oneqay_roles')->insert([
     'tenant_id' => 'tenant-alpha',
@@ -384,7 +386,6 @@ $installRestrictedSession = static function (
     ]);
 };
 
-// Exact canonical five remain unchanged and Sprint 33 evidence remains separate.
 $assert(FirstPartySessionKeys::all() === [
     FirstPartySessionKeys::IDENTITY,
     FirstPartySessionKeys::TENANT,
@@ -395,7 +396,6 @@ $assert(FirstPartySessionKeys::all() === [
 $assert(! in_array(FirstPartySessionKeys::CREDENTIAL_EPOCH, FirstPartySessionKeys::all(), true), 'credential epoch entered canonical key list');
 $assert(in_array(FirstPartySessionKeys::RECOVERY_CODE_ID, FirstPartySessionKeys::recovery(), true), 'recovery code id missing from restricted evidence');
 
-// Reset requires restricted proof; full-session collision and anonymous requests fail.
 $anonymous = null;
 $anonymousReset = $reset($kernel, $cookieName, $anonymous, ['password' => 'abcdefghijkl']);
 $assert($anonymousReset->getStatusCode() === 401, 'anonymous reset was accepted');
@@ -407,12 +407,10 @@ $assert(($fullState['credential_epoch'] ?? null) === 0, 'fresh pre-reset login d
 $fullCollision = $reset($kernel, $cookieName, $fullCookie, ['password' => 'abcdefghijkl']);
 $assert($fullCollision->getStatusCode() === 401, 'full authenticated session was accepted as restricted reset session');
 
-// Preserve a separate pre-reset session for stale-epoch checks.
 $staleCookie = null;
 [$staleLogin, $staleState] = $login($kernel, $cookieName, $staleCookie, 'tenant-alpha', 'reset-alpha', $oldPassword, 'organization-alpha');
 $assert($staleLogin->getStatusCode() === 200 && ($staleState['credential_epoch'] ?? null) === 0, 'stale-session fixture setup failed');
 
-// Missing legacy epoch is accepted only while durable epoch is zero.
 $legacyCookie = null;
 [$legacyLogin] = $login($kernel, $cookieName, $legacyCookie, 'tenant-alpha', 'reset-alpha', $oldPassword, 'organization-alpha');
 $assert($legacyLogin->getStatusCode() === 200, 'legacy-session setup login failed');
@@ -420,7 +418,6 @@ $mutateSession($kernel, $cookieName, $legacyCookie, [], [FirstPartySessionKeys::
 $legacyRotation = $rotate($kernel, $cookieName, $legacyCookie, $oldPassword);
 $assert($legacyRotation->getStatusCode() === 200, 'missing legacy epoch was rejected while durable epoch was zero');
 
-// First reset: exact unknown-field rejection, 11-byte rejection, no normalization, then 12-byte success.
 [$resetCookie, $firstCodes] = $issueRestrictedProof($kernel, $cookieName, 'tenant-alpha', 'reset-alpha', $oldPassword, 'organization-alpha');
 $restricted = $inspect($kernel, $cookieName, $resetCookie);
 $restrictedCodeId = $restricted['recovery'][FirstPartySessionKeys::RECOVERY_CODE_ID] ?? null;
@@ -454,11 +451,13 @@ foreach ($afterFirstReset['recovery'] as $value) {
 $assert(($afterFirstReset['mfa_verified_at'] ?? null) === null, 'reset fabricated MFA evidence');
 $assert(($afterFirstReset['step_up_verified_at'] ?? null) === null, 'reset fabricated step-up evidence');
 
-$storedHash = $connection->table('oneqay_identity_password_credentials')
-    ->where('tenant_id', 'tenant-alpha')->where('identity_id', 'reset-alpha')->value('password_hash');
-$assert(is_string($storedHash) && password_verify($twelveBytes, $storedHash), 'replacement password hash not stored');
-$assert(! password_verify($oldPassword, $storedHash), 'old password still verifies after reset');
-$assert(! password_verify(trim($twelveBytes), $storedHash), 'password reset trimmed or normalized password input');
+$storedCredential = $connection->table('oneqay_identity_password_credentials')
+    ->where('tenant_id', 'tenant-alpha')->where('identity_id', 'reset-alpha')->first();
+$assert(is_object($storedCredential) && is_string($storedCredential->password_hash ?? null), 'replacement credential missing');
+$assert(password_verify($twelveBytes, $storedCredential->password_hash), 'replacement password hash not stored');
+$assert(! password_verify($oldPassword, $storedCredential->password_hash), 'old password still verifies after reset');
+$assert(! password_verify(trim($twelveBytes), $storedCredential->password_hash), 'password reset trimmed or normalized password input');
+$assert(($storedCredential->credential_epoch ?? null) === 1, 'first recovery reset must increment generic credential epoch exactly once');
 
 $firstCompletionCount = $connection->table('oneqay_identity_recovery_audit')
     ->where('tenant_id', 'tenant-alpha')->where('identity_id', 'reset-alpha')
@@ -472,7 +471,6 @@ $remainingActive = $connection->table('oneqay_identity_recovery_codes')
     ->where('code_id', '<>', $restrictedCodeId)->whereNull('consumed_at_unix')->whereNull('revoked_at_unix')->count();
 $assert($remainingActive === 0, 'other unused recovery codes were not revoked');
 
-// No automatic login: old password fails, exact untrimmed new password succeeds and captures epoch one.
 $oldCookie = null;
 [$oldLogin] = $login($kernel, $cookieName, $oldCookie, 'tenant-alpha', 'reset-alpha', $oldPassword, 'organization-alpha');
 $assert($oldLogin->getStatusCode() === 401, 'old password authenticated after reset');
@@ -481,14 +479,12 @@ $freshCookie = null;
 $assert($freshLogin->getStatusCode() === 200, 'new password did not authenticate through normal login');
 $assert(($freshState['credential_epoch'] ?? null) === 1, 'fresh post-reset login did not capture durable epoch one');
 
-// Stale and missing pre-reset epoch evidence cannot rotate codes after reset.
 $staleRotation = $rotate($kernel, $cookieName, $staleCookie, $twelveBytes);
 $assert($staleRotation->getStatusCode() === 401, 'stale pre-reset session epoch remained authoritative');
 $mutateSession($kernel, $cookieName, $staleCookie, [], [FirstPartySessionKeys::CREDENTIAL_EPOCH]);
 $missingAfterReset = $rotate($kernel, $cookieName, $staleCookie, $twelveBytes);
 $assert($missingAfterReset->getStatusCode() === 401, 'missing epoch was accepted after durable epoch advanced');
 
-// Negative/future/invented epoch values fail closed; fresh current epoch remains usable.
 $negativeCookie = null;
 [$negativeLogin] = $login($kernel, $cookieName, $negativeCookie, 'tenant-alpha', 'reset-alpha', $twelveBytes, 'organization-alpha');
 $assert($negativeLogin->getStatusCode() === 200, 'negative-epoch setup login failed');
@@ -502,7 +498,6 @@ $mutateSession($kernel, $cookieName, $futureCookie, [FirstPartySessionKeys::CRED
 $assert($rotate($kernel, $cookieName, $futureCookie, $twelveBytes)->getStatusCode() === 401, 'invented future session epoch was accepted');
 $assert($rotate($kernel, $cookieName, $freshCookie, $twelveBytes)->getStatusCode() === 200, 'fresh current epoch could not rotate recovery codes');
 
-// Replay of the exact consumed proof cannot create a second completion.
 $replayCookie = null;
 $installRestrictedSession($kernel, $cookieName, $replayCookie, 'tenant-alpha', 'reset-alpha', $restrictedCodeId);
 $replay = $reset($kernel, $cookieName, $replayCookie, ['password' => 'mnopqrstuvwx']);
@@ -511,7 +506,6 @@ $assert($connection->table('oneqay_identity_recovery_audit')
     ->where('tenant_id', 'tenant-alpha')->where('identity_id', 'reset-alpha')
     ->where('code_id', $restrictedCodeId)->where('event_type', 'password_reset_completed')->count() === 1, 'replay appended a second completion event');
 
-// Restricted-session collisions fail without consuming the proof or extending TTL.
 [$collisionCookie] = $issueRestrictedProof($kernel, $cookieName, 'tenant-alpha', 'reset-alpha', $twelveBytes, 'organization-alpha');
 $collisionState = $inspect($kernel, $cookieName, $collisionCookie);
 $collisionCodeId = $collisionState['recovery'][FirstPartySessionKeys::RECOVERY_CODE_ID];
@@ -533,7 +527,6 @@ foreach ($collisions as $key => $value) {
 }
 $assert(! $connection->table('oneqay_identity_recovery_audit')->where('code_id', $collisionCodeId)->where('event_type', 'password_reset_completed')->exists(), 'collision attempt consumed recovery proof');
 
-// Expired proof fails and does not mutate credential state.
 $beforeExpiryHash = $connection->table('oneqay_identity_password_credentials')->where('tenant_id', 'tenant-alpha')->where('identity_id', 'reset-alpha')->value('password_hash');
 $fakeClock->now += 601;
 $expired = $reset($kernel, $cookieName, $collisionCookie, ['password' => 'mnopqrstuvwx']);
@@ -541,7 +534,6 @@ $assert($expired->getStatusCode() === 401, 'expired restricted session was accep
 $afterExpiryHash = $connection->table('oneqay_identity_password_credentials')->where('tenant_id', 'tenant-alpha')->where('identity_id', 'reset-alpha')->value('password_hash');
 $assert($beforeExpiryHash === $afterExpiryHash, 'expired reset mutated credential');
 
-// Protected-control, confirmed-TOTP, and missing-credential states are revalidated inside reset persistence.
 foreach ([
     ['protected-alpha', $protectedPassword, 'protected'],
     ['totp-alpha', $totpPassword, 'totp'],
@@ -559,7 +551,6 @@ foreach ([
     $assert(! $connection->table('oneqay_identity_recovery_audit')->where('code_id', $codeId)->where('event_type', 'password_reset_completed')->exists(), $suffix.' denial wrote completion audit');
 }
 
-// Second reset: 4097 bytes rejected, 4096 bytes accepted, epoch advances to two.
 $fakeClock->now += 10;
 [$secondResetCookie] = $issueRestrictedProof($kernel, $cookieName, 'tenant-alpha', 'reset-alpha', $twelveBytes, 'organization-alpha');
 $tooLong = str_repeat('L', 4097);
@@ -567,16 +558,15 @@ $maxPassword = str_repeat('M', 4096);
 $assert($reset($kernel, $cookieName, $secondResetCookie, ['password' => $tooLong])->getStatusCode() === 401, '4097-byte password was accepted');
 $secondReset = $reset($kernel, $cookieName, $secondResetCookie, ['password' => $maxPassword]);
 $assert($secondReset->getStatusCode() === 200, '4096-byte password was rejected');
-$assert($connection->table('oneqay_identity_recovery_audit')->where('tenant_id', 'tenant-alpha')->where('identity_id', 'reset-alpha')->where('event_type', 'password_reset_completed')->count() === 2, 'second reset did not advance durable epoch');
+$assert($connection->table('oneqay_identity_recovery_audit')->where('tenant_id', 'tenant-alpha')->where('identity_id', 'reset-alpha')->where('event_type', 'password_reset_completed')->count() === 2, 'second reset did not preserve exactly two completion audit events');
+$assert($connection->table('oneqay_identity_password_credentials')->where('tenant_id', 'tenant-alpha')->where('identity_id', 'reset-alpha')->value('credential_epoch') === 2, 'second recovery reset must increment generic credential epoch exactly once');
 
-// A session captured at epoch one becomes stale after the second reset.
 $postFirstCookie = null;
 [$postFirstLogin, $postFirstState] = $login($kernel, $cookieName, $postFirstCookie, 'tenant-alpha', 'reset-alpha', $maxPassword, 'organization-alpha');
 $assert($postFirstLogin->getStatusCode() === 200 && ($postFirstState['credential_epoch'] ?? null) === 2, 'fresh epoch-two login failed');
 $assert($rotate($kernel, $cookieName, $freshCookie, $maxPassword)->getStatusCode() === 401, 'epoch-one session remained authoritative after second reset');
 $assert($rotate($kernel, $cookieName, $postFirstCookie, $maxPassword)->getStatusCode() === 200, 'fresh epoch-two session could not rotate recovery codes');
 
-// Epoch lookup remains independent from the feature arm after durable resets.
 $app['config']->set('oneqay.authentication_recovery.enabled', false);
 $app->forgetScopedInstances();
 /** @var \App\Application\Identity\FirstPartyCredentialEpochRepository $epochRepository */
@@ -588,7 +578,6 @@ $assert($epochRepository->current(
 $app['config']->set('oneqay.authentication_recovery.enabled', true);
 $app->forgetScopedInstances();
 
-// Secret-free audit and update-only credential boundary.
 $auditRows = $connection->table('oneqay_identity_recovery_audit')->where('event_type', 'password_reset_completed')->get();
 foreach ($auditRows as $row) {
     $serialized = json_encode($row, JSON_THROW_ON_ERROR);
