@@ -1,5 +1,26 @@
 # AI Next Task
 
+## Canonical post-Sprint 35 program-state reconciliation — 2026-08-21
+
+For current identity, security, recovery, schema, runtime, workflow, and next-work interpretation, this section supersedes older current-facing post-Sprint34 wording retained below as historical provenance.
+
+- Sprint 21 through Sprint 35 governed control/identity foundations are **COMPLETE / IMPLEMENTED / PUBLISHED** within their bounded authorities.
+- Sprint35 **Privileged TOTP Recovery & Factor Replacement Foundation** is published through source PR #221 as `0bc4204badd05c45e729116937fef44448a91e59` with tree `d108098077fa5221b90e0de8d503424080138a9b`, parent `b6e8335610943216b293f6f6275bbe7dc5c6498e`, and a verified/valid publication signature.
+- The exact qualified Sprint35 source head was `7b2d46bcd8d1301eca67540f38fd263f9a86cc68`; the semantic source diff is exactly **17 paths** with sorted-path SHA-256 `e889db1c7eaa22b3ed008f8781ab35652ca950a3f009c309e5c478d01d368f11`, inside the published 19-path source envelope from PR #220.
+- Sprint35 entry gate PR #219, schema/source-envelope gate PR #220, preservation-compatibility gate PR #222, compatibility correction PR #223, and source PR #221 are published provenance; their lifecycle authorities are consumed and grant no standing successor authority.
+- PR #223 preserves the historical workflow matrix through exactly **18 legacy workflow paths** with sorted-path SHA-256 `25dbbd94087eba4157fa9c209f09174a127154a98067abbfbeec233bbe9398cd`; unknown successor shapes remain fail-closed.
+- Canonical source migrations are now exactly **#1 through #12**. Migrations #1–#11 remain immutable. Migration #12 adds separate privileged-TOTP `factor_epoch` authority plus dedicated privileged-TOTP recovery-code and secret-free audit tables. Migration #13 is **NOT SELECTED / DOES NOT EXIST**.
+- Password `credential_epoch` and TOTP `factor_epoch` remain separate monotonic authorities and must not substitute for one another. Sprint32 password-recovery `rq1` authority remains separate from Sprint35 privileged-TOTP recovery authority.
+- Sprint35 privileged-TOTP recovery remains **Local/Test/CI only** under the existing disabled-by-default authentication-recovery and privileged-TOTP runtime boundaries. Published routes cover recovery-code rotation, recovery proof, replacement start, and replacement confirm, each with `throttle:5,1` and `throttle:20,60`.
+- Successful privileged recovery proof establishes only restricted recovery state for exactly **600 seconds**. Factor replacement is update-only, requires proof of the newly generated factor, checks the old factor epoch, increments factor epoch exactly once, revokes remaining dedicated recovery codes, records secret-free evidence, invalidates restricted state/session authority, and requires fresh normal login plus canonical TOTP challenge. It does not auto-login or synthesize MFA/step-up authority.
+- The exact clean-rebased Sprint35 head completed the dedicated Sprint35 recovery regression and the full triggered preservation/cross-cutting matrix successfully before publication.
+- `ONEQAY_PERSISTENCE_ENABLED=false` and `ONEQAY_AUTHENTICATION_RECOVERY_ENABLED=false` remain source defaults. Technical Preview remains **`NO_SCHEMA_CHANGE`**. Production remains **`NO-GO / NOT AUTHORIZED`**. Updater remains **`DISABLED / UNWIRED`**. Deployment and release remain **NOT AUTHORIZED**.
+- This reconciliation selects **no Sprint36 implementation concern**, assumes no migration #13, and grants no Sprint36 source, Preview, Production, updater, deployment, or release authority.
+
+The detailed factual baseline is `docs/ai/AI_POST_SPRINT_35_CANONICAL_STATE.md`. Historical sections below remain preserved as provenance and must not override this section for current-state interpretation.
+
+Attribution: **Lab | zefry**
+
 ## Canonical post-Sprint 34 program-state reconciliation — 2026-08-21
 
 For current identity, security, recovery, schema, runtime, workflow, and next-work interpretation, this section supersedes older current-facing post-Sprint33 wording retained below as historical provenance.
