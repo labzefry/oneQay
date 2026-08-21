@@ -95,8 +95,14 @@ jobs:
             sort -o /tmp/post-sprint35-reconciliation-paths /tmp/post-sprint35-reconciliation-paths
             test "$(sha256sum /tmp/post-sprint35-reconciliation-paths | awk '{print $1}')" = "3560af0fd075ac70c3e0c0c54e0562aa72a8accdbcb24e62412dab6f3875945e"
 
+            cat > /tmp/sprint35-workflow-correction-paths <<'EOF'
+          .github/workflows/sprint35-privileged-totp-recovery-regression.yml
+          EOF
+
             if cmp -s /tmp/actual-sprint35-paths /tmp/post-sprint35-reconciliation-paths; then
               echo "Recognized exact post-Sprint35 canonical reconciliation successor shape."
+            elif cmp -s /tmp/actual-sprint35-paths /tmp/sprint35-workflow-correction-paths; then
+              echo "Recognized exact Sprint35 successor-compatibility workflow correction shape."
             else
               unexpected="$(comm -13 /tmp/allowed-sprint35-paths /tmp/actual-sprint35-paths)"
               missing="$(comm -23 /tmp/required-sprint35-paths /tmp/actual-sprint35-paths)"
