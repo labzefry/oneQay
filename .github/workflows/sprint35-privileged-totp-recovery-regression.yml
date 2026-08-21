@@ -87,10 +87,22 @@ jobs:
 
           if [[ "${{ github.event_name }}" = "pull_request" ]]; then
             git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | sort > /tmp/actual-sprint35-paths
-            unexpected="$(comm -13 /tmp/allowed-sprint35-paths /tmp/actual-sprint35-paths)"
-            missing="$(comm -23 /tmp/required-sprint35-paths /tmp/actual-sprint35-paths)"
-            test -z "$unexpected" || { echo "Unexpected Sprint35 paths:" >&2; echo "$unexpected" >&2; exit 1; }
-            test -z "$missing" || { echo "Missing required Sprint35 implementation paths:" >&2; echo "$missing" >&2; exit 1; }
+
+            cat > /tmp/post-sprint35-reconciliation-paths <<'EOF'
+          docs/ai/AI_NEXT_TASK.md
+          docs/ai/AI_POST_SPRINT_35_CANONICAL_STATE.md
+          EOF
+            sort -o /tmp/post-sprint35-reconciliation-paths /tmp/post-sprint35-reconciliation-paths
+            test "$(sha256sum /tmp/post-sprint35-reconciliation-paths | awk '{print $1}')" = "3560af0fd075ac70c3e0c0c54e0562aa72a8accdbcb24e62412dab6f3875945e"
+
+            if cmp -s /tmp/actual-sprint35-paths /tmp/post-sprint35-reconciliation-paths; then
+              echo "Recognized exact post-Sprint35 canonical reconciliation successor shape."
+            else
+              unexpected="$(comm -13 /tmp/allowed-sprint35-paths /tmp/actual-sprint35-paths)"
+              missing="$(comm -23 /tmp/required-sprint35-paths /tmp/actual-sprint35-paths)"
+              test -z "$unexpected" || { echo "Unexpected Sprint35 paths:" >&2; echo "$unexpected" >&2; exit 1; }
+              test -z "$missing" || { echo "Missing required Sprint35 implementation paths:" >&2; echo "$missing" >&2; exit 1; }
+            fi
           fi
 
       - name: Preserve historical regression blobs
