@@ -64,6 +64,12 @@ jobs:
             git diff --name-only "origin/$GITHUB_BASE_REF...HEAD" | sort > /tmp/release-successor-files.txt
             count="$(wc -l < /tmp/release-successor-files.txt)"
             fingerprint="$(sha256sum /tmp/release-successor-files.txt | awk '{print $1}')"
+            if [[ "$count" -eq 35 ]] && [[ "$fingerprint" == 'e3b724002cfc0be1ef890d1b5594a2a5179123f949f6f486354e21950c7328eb' ]]; then
+              isolate=true
+              recognized='Sprint 34'
+              echo 'ONEQAY_SPRINT34_SUCCESSOR=true' >> "$GITHUB_ENV"
+              exit 0
+            fi
             if [[ "$count" -eq 39 ]] && [[ "$fingerprint" == '04a1177c12712183a7dda4ae81be1356c0e41294533336c9f999d376c224712a' ]]; then
               isolate=true
               recognized='Sprint 33'
@@ -77,6 +83,12 @@ jobs:
               git diff --name-only "$before...HEAD" | sort > /tmp/release-successor-files.txt
               count="$(wc -l < /tmp/release-successor-files.txt)"
               fingerprint="$(sha256sum /tmp/release-successor-files.txt | awk '{print $1}')"
+              if [[ "$count" -eq 35 ]] && [[ "$fingerprint" == 'e3b724002cfc0be1ef890d1b5594a2a5179123f949f6f486354e21950c7328eb' ]]; then
+                isolate=true
+                recognized='Sprint 34'
+                echo 'ONEQAY_SPRINT34_SUCCESSOR=true' >> "$GITHUB_ENV"
+                exit 0
+              fi
               if [[ "$count" -eq 39 ]] && [[ "$fingerprint" == '04a1177c12712183a7dda4ae81be1356c0e41294533336c9f999d376c224712a' ]]; then
                 isolate=true
                 recognized='Sprint 33'

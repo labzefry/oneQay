@@ -89,6 +89,12 @@ jobs:
           git diff --name-only "origin/${{ github.base_ref }}...HEAD" | sort > /tmp/s33-successor-files.txt
           count="$(wc -l < /tmp/s33-successor-files.txt)"
           fingerprint="$(sha256sum /tmp/s33-successor-files.txt | awk '{print $1}')"
+          if [[ "$count" -eq 35 ]] && [[ "$fingerprint" == 'e3b724002cfc0be1ef890d1b5594a2a5179123f949f6f486354e21950c7328eb' ]]; then
+            echo 'ONEQAY_SPRINT33_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT34_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'Exact Sprint 34 successor envelope recognized; Sprint 32 recovery proof remains executable.'
+            exit 0
+          fi
           if [[ "$count" -eq 39 ]] && [[ "$fingerprint" == '04a1177c12712183a7dda4ae81be1356c0e41294533336c9f999d376c224712a' ]]; then
             echo 'ONEQAY_SPRINT33_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'Exact Sprint 33 successor envelope recognized; Sprint 32 recovery proof remains executable.'

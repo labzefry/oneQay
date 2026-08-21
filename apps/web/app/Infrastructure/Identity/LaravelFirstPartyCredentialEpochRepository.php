@@ -14,8 +14,8 @@ use Throwable;
 // Author by Lab | zefry
 final readonly class LaravelFirstPartyCredentialEpochRepository implements FirstPartyCredentialEpochRepository
 {
-    private const AUDIT_TABLE = 'oneqay_identity_recovery_audit';
-    private const COMPLETION_EVENT = 'password_reset_completed';
+    private const CREDENTIAL_TABLE = 'oneqay_identity_password_credentials';
+    private const CANONICAL_EPOCH_PATTERN = '/\A(?:0|[1-9][0-9]*)\z/D';
 
     public function __construct(
         private Connection $connection,
@@ -30,26 +30,41 @@ final readonly class LaravelFirstPartyCredentialEpochRepository implements First
         $this->assertOperational();
 
         try {
-            if (! $this->connection->getSchemaBuilder()->hasTable(self::AUDIT_TABLE)) {
-                return 0;
-            }
-
-            $count = $this->connection->table(self::AUDIT_TABLE)
+            $row = $this->connection->table(self::CREDENTIAL_TABLE)
                 ->where('tenant_id', $tenantId->value())
                 ->where('identity_id', $identityId->value())
-                ->where('event_type', self::COMPLETION_EVENT)
-                ->count();
+                ->first(['credential_epoch']);
 
-            if (! is_int($count) || $count < 0) {
+            if (! is_object($row)) {
                 $this->storageFailure();
             }
 
-            return $count;
+            return $this->canonicalEpoch($row->credential_epoch ?? null);
         } catch (DurablePersistenceViolation $exception) {
             throw $exception;
         } catch (Throwable) {
             $this->storageFailure();
         }
+    }
+
+    private function canonicalEpoch(mixed $value): int
+    {
+        if (is_int($value)) {
+            if ($value < 0) {
+                $this->storageFailure();
+            }
+
+            return $value;
+        }
+
+        if (! is_string($value)
+            || preg_match(self::CANONICAL_EPOCH_PATTERN, $value) !== 1
+            || strlen($value) > strlen((string) PHP_INT_MAX)
+            || (strlen($value) === strlen((string) PHP_INT_MAX) && strcmp($value, (string) PHP_INT_MAX) > 0)) {
+            $this->storageFailure();
+        }
+
+        return (int) $value;
     }
 
     private function assertOperational(): void
