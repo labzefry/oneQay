@@ -7,6 +7,7 @@ use App\Delivery\Http\Identity\FirstPartySessionController;
 use App\Delivery\Http\Identity\InitialPasswordEnrollmentController;
 use App\Delivery\Http\Identity\PrivilegedReauthenticationController;
 use App\Delivery\Http\Identity\PrivilegedTotpMfaController;
+use App\Delivery\Http\Identity\PrivilegedTotpRecoveryController;
 use App\Delivery\Http\Identity\RecoveryCodeController;
 use App\Delivery\Http\Identity\RecoveryPasswordResetController;
 use App\Delivery\Http\Middleware\RequirePolicyAdministrationSessionContextMiddleware;
@@ -74,6 +75,25 @@ if (in_array($firstPartyAuthRuntime, ['local', 'test', 'ci'], true)) {
             ->middleware(['throttle:5,1', 'throttle:20,60'])
             ->name('auth.privileged-totp.challenge');
 
+        if ((bool) config('oneqay.authentication_recovery.enabled', false)
+            && (int) config('oneqay.authentication_recovery.restricted_session_ttl_seconds', 0) === 600) {
+            Route::post('/auth/mfa/recovery/codes/rotate', [PrivilegedTotpRecoveryController::class, 'rotate'])
+                ->middleware(['throttle:5,1', 'throttle:20,60'])
+                ->name('auth.privileged-totp-recovery.codes.rotate');
+
+            Route::post('/auth/mfa/recovery/proof', [PrivilegedTotpRecoveryController::class, 'proof'])
+                ->middleware(['throttle:5,1', 'throttle:20,60'])
+                ->name('auth.privileged-totp-recovery.proof');
+
+            Route::post('/auth/mfa/recovery/totp/replace/start', [PrivilegedTotpRecoveryController::class, 'startReplacement'])
+                ->middleware(['throttle:5,1', 'throttle:20,60'])
+                ->name('auth.privileged-totp-recovery.replace.start');
+
+            Route::post('/auth/mfa/recovery/totp/replace/confirm', [PrivilegedTotpRecoveryController::class, 'confirmReplacement'])
+                ->middleware(['throttle:5,1', 'throttle:20,60'])
+                ->name('auth.privileged-totp-recovery.replace.confirm');
+        }
+
         if ((bool) config('oneqay.privileged_step_up.enabled', false)
             && (int) config('oneqay.privileged_step_up.freshness_seconds', 0) === 300) {
             Route::post('/auth/reauthenticate/privileged', [PrivilegedReauthenticationController::class, 'reauthenticate'])
@@ -91,7 +111,6 @@ Route::get('/system/update', SystemUpdatePageController::class)->name('system-up
 
 Route::prefix('system/update')->controller(SystemUpdateControlPlaneController::class)->group(function (): void {
     Route::get('/status', 'status')->name('system-update.status');
-
     Route::middleware(['throttle:5,1', 'throttle:20,60'])->group(function (): void {
         Route::post('/check', 'check')->name('system-update.check');
         Route::post('/install', 'install')->name('system-update.install');
@@ -109,7 +128,5 @@ Route::prefix('technical-preview')->controller(TechnicalPreviewController::class
     Route::post('/logout', 'logout')->name('preview.logout');
 });
 
-Route::get(
-    '/technical-preview/database-qualification',
-    TechnicalPreviewDatabaseQualificationController::class,
-)->name('preview.database-qualification');
+Route::get('/technical-preview/database-qualification', TechnicalPreviewDatabaseQualificationController::class)
+    ->name('preview.database-qualification');
