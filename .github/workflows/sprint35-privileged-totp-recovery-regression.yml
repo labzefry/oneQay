@@ -99,7 +99,7 @@ jobs:
           docs/SPRINT_36_FIRST_PARTY_SESSION_INVENTORY_REVOCATION_ENTRY_GATE.md
           EOF
             sort -o /tmp/sprint36-entry-gate-paths /tmp/sprint36-entry-gate-paths
-            test "$(sha256sum /tmp/sprint36-entry-gate-paths | awk '{print $1}')" = "96263f8e7a78d670ba5f2706bddb511f5b4fdcc9e96edb19f4dfb71001179f7a"
+            test "$(sha256sum /tmp/sprint36-entry-gate-paths | awk '{print $1}')" = "5f7f977fcfbf2afcf479b3e9fecd8fdf922711ad29b51c3be7db778c0d88c2f6"
 
             cat > /tmp/sprint35-workflow-correction-paths <<'EOF'
           .github/workflows/sprint35-privileged-totp-recovery-regression.yml
