@@ -1,0 +1,167 @@
+name: Sprint35 Privileged TOTP Recovery Regression
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint35-privileged-totp-recovery-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sprint35-privileged-totp-recovery:
+    name: sprint35-privileged-totp-recovery
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHQ=
+      APP_DEBUG: "false"
+      APP_URL: http://localhost
+      ONEQAY_RUNTIME_CLASS: ci
+      ONEQAY_PERSISTENCE_ENABLED: "false"
+      ONEQAY_AUTHENTICATION_RECOVERY_ENABLED: "false"
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Enforce frozen Sprint35 source envelope
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/allowed-sprint35-paths <<'EOF'
+          .github/workflows/sprint35-privileged-totp-recovery-regression.yml
+          apps/web/app/Application/Identity/IssuedPrivilegedTotpRecoveryCodeSet.php
+          apps/web/app/Application/Identity/PrivilegedTotpFactorEpochRepository.php
+          apps/web/app/Application/Identity/PrivilegedTotpRecoveryClock.php
+          apps/web/app/Application/Identity/PrivilegedTotpRecoveryRepository.php
+          apps/web/app/Application/Identity/PrivilegedTotpRecoveryService.php
+          apps/web/app/Application/Identity/PrivilegedTotpRecoveryViolation.php
+          apps/web/app/Application/Identity/VerifiedPrivilegedTotpRecoveryProof.php
+          apps/web/app/Delivery/Http/Identity/FirstPartySessionKeys.php
+          apps/web/app/Delivery/Http/Identity/PrivilegedTotpRecoveryController.php
+          apps/web/app/Infrastructure/Identity/LaravelPrivilegedTotpFactorEpochRepository.php
+          apps/web/app/Infrastructure/Identity/LaravelPrivilegedTotpRecoveryRepository.php
+          apps/web/app/Providers/AppServiceProvider.php
+          apps/web/database/migrations/0000_00_00_000012_add_totp_factor_epoch_and_recovery_authority.php
+          apps/web/routes/web.php
+          apps/web/tests/privileged-totp-mfa.php
+          apps/web/tests/privileged-totp-recovery.php
+          apps/web/tests/run.php
+          docs/PRIVILEGED_TOTP_RECOVERY_FACTOR_REPLACEMENT_FOUNDATION.md
+          EOF
+          sort -o /tmp/allowed-sprint35-paths /tmp/allowed-sprint35-paths
+          test "$(sha256sum /tmp/allowed-sprint35-paths | awk '{print $1}')" = "aaf7fb11490250d29c68dc7b46b62d2ee2239707ca53e004f9c0652878928e3f"
+
+          cat > /tmp/required-sprint35-paths <<'EOF'
+          .github/workflows/sprint35-privileged-totp-recovery-regression.yml
+          apps/web/app/Application/Identity/IssuedPrivilegedTotpRecoveryCodeSet.php
+          apps/web/app/Application/Identity/PrivilegedTotpFactorEpochRepository.php
+          apps/web/app/Application/Identity/PrivilegedTotpRecoveryClock.php
+          apps/web/app/Application/Identity/PrivilegedTotpRecoveryRepository.php
+          apps/web/app/Application/Identity/PrivilegedTotpRecoveryService.php
+          apps/web/app/Application/Identity/PrivilegedTotpRecoveryViolation.php
+          apps/web/app/Application/Identity/VerifiedPrivilegedTotpRecoveryProof.php
+          apps/web/app/Delivery/Http/Identity/FirstPartySessionKeys.php
+          apps/web/app/Delivery/Http/Identity/PrivilegedTotpRecoveryController.php
+          apps/web/app/Infrastructure/Identity/LaravelPrivilegedTotpFactorEpochRepository.php
+          apps/web/app/Infrastructure/Identity/LaravelPrivilegedTotpRecoveryRepository.php
+          apps/web/app/Providers/AppServiceProvider.php
+          apps/web/database/migrations/0000_00_00_000012_add_totp_factor_epoch_and_recovery_authority.php
+          apps/web/routes/web.php
+          apps/web/tests/privileged-totp-recovery.php
+          docs/PRIVILEGED_TOTP_RECOVERY_FACTOR_REPLACEMENT_FOUNDATION.md
+          EOF
+          sort -o /tmp/required-sprint35-paths /tmp/required-sprint35-paths
+
+          if [[ "${{ github.event_name }}" = "pull_request" ]]; then
+            git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | sort > /tmp/actual-sprint35-paths
+            unexpected="$(comm -13 /tmp/allowed-sprint35-paths /tmp/actual-sprint35-paths)"
+            missing="$(comm -23 /tmp/required-sprint35-paths /tmp/actual-sprint35-paths)"
+            test -z "$unexpected" || { echo "Unexpected Sprint35 paths:" >&2; echo "$unexpected" >&2; exit 1; }
+            test -z "$missing" || { echo "Missing required Sprint35 implementation paths:" >&2; echo "$missing" >&2; exit 1; }
+          fi
+
+      - name: Preserve historical regression blobs
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD:apps/web/tests/privileged-totp-mfa.php)" = "ce0d0cde5031191dc0fdc383ad71d1e20bacf869"
+          test "$(git rev-parse HEAD:apps/web/tests/run.php)" = "8f74a9fc7db0efce06bf03bc7e5aead644d80948"
+
+      - name: Preserve migrations one through eleven
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${{ github.event_name }}" = "pull_request" ]]; then
+            if git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" -- apps/web/database/migrations/ | grep -E '0000_00_00_00000[1-9]|0000_00_00_00001[01]' ; then
+              echo "Historical migrations #1-#11 are immutable." >&2
+              exit 1
+            fi
+          fi
+          test -f apps/web/database/migrations/0000_00_00_000012_add_totp_factor_epoch_and_recovery_authority.php
+
+      - name: Validate PHP runtime and syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -r 'if (PHP_VERSION_ID < 80200 || PHP_VERSION_ID >= 80600) { exit(1); }'
+          find apps/web/app apps/web/database/migrations apps/web/routes apps/web/tests -type f -name '*.php' -print0 |
+            while IFS= read -r -d '' file; do php -l "$file"; done
+
+      - name: Install locked Composer dependencies
+        working-directory: apps/web
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Run Sprint35 recovery regression
+        working-directory: apps/web
+        run: php tests/privileged-totp-recovery.php
+
+      - name: Preserve canonical Sprint30 TOTP behavior
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/sprint35-successor-migrations
+          restore_successors() {
+            for file in /tmp/sprint35-successor-migrations/*.php; do
+              [[ -e "$file" ]] || continue
+              mv "$file" apps/web/database/migrations/
+            done
+          }
+          trap restore_successors EXIT
+          for migration in \
+            apps/web/database/migrations/0000_00_00_000010_create_identity_recovery_codes.php \
+            apps/web/database/migrations/0000_00_00_000011_add_credential_epoch_to_identity_password_credentials.php \
+            apps/web/database/migrations/0000_00_00_000012_add_totp_factor_epoch_and_recovery_authority.php; do
+            mv "$migration" /tmp/sprint35-successor-migrations/
+          done
+          (cd apps/web && php tests/privileged-totp-mfa.php)
+          restore_successors
+          trap - EXIT
+          test "$(git hash-object apps/web/tests/privileged-totp-mfa.php)" = "ce0d0cde5031191dc0fdc383ad71d1e20bacf869"
+
+      - name: Preserve full application regression
+        working-directory: apps/web
+        run: php tests/run.php
+
+      - name: Preserve disabled activation defaults
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "${ONEQAY_PERSISTENCE_ENABLED}" = "false"
+          test "${ONEQAY_AUTHENTICATION_RECOVERY_ENABLED}" = "false"
+          ! grep -R --exclude='sprint35-privileged-totp-recovery-regression.yml' -E 'ONEQAY_TECHNICAL_PREVIEW_ENABLED[[:space:]]*=[[:space:]]*true' apps/web .github/workflows
+          grep -F 'Technical Preview remains **NO_SCHEMA_CHANGE**.' docs/PRIVILEGED_TOTP_RECOVERY_FACTOR_REPLACEMENT_FOUNDATION.md
+          grep -F 'Production remains **NO-GO / NOT AUTHORIZED**.' docs/PRIVILEGED_TOTP_RECOVERY_FACTOR_REPLACEMENT_FOUNDATION.md
+          grep -F 'Updater remains **DISABLED / UNWIRED**.' docs/PRIVILEGED_TOTP_RECOVERY_FACTOR_REPLACEMENT_FOUNDATION.md
