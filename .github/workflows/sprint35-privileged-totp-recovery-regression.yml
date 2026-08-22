@@ -101,6 +101,12 @@ jobs:
             sort -o /tmp/sprint36-entry-gate-paths /tmp/sprint36-entry-gate-paths
             test "$(sha256sum /tmp/sprint36-entry-gate-paths | awk '{print $1}')" = "5f7f977fcfbf2afcf479b3e9fecd8fdf922711ad29b51c3be7db778c0d88c2f6"
 
+            cat > /tmp/sprint36-schema-source-envelope-gate-paths <<'EOF'
+          docs/SPRINT_36_FIRST_PARTY_SESSION_INVENTORY_REVOCATION_SCHEMA_SOURCE_ENVELOPE_GATE.md
+          EOF
+            sort -o /tmp/sprint36-schema-source-envelope-gate-paths /tmp/sprint36-schema-source-envelope-gate-paths
+            test "$(sha256sum /tmp/sprint36-schema-source-envelope-gate-paths | awk '{print $1}')" = "90b723c95350369a3fe8c1493a3ec41e538310a15d8fc1728a14d21dd4b11500"
+
             cat > /tmp/sprint35-workflow-correction-paths <<'EOF'
           .github/workflows/sprint35-privileged-totp-recovery-regression.yml
           EOF
@@ -109,6 +115,8 @@ jobs:
               echo "Recognized exact post-Sprint35 canonical reconciliation successor shape."
             elif cmp -s /tmp/actual-sprint35-paths /tmp/sprint36-entry-gate-paths; then
               echo "Recognized exact Sprint36 entry-gate successor shape."
+            elif cmp -s /tmp/actual-sprint35-paths /tmp/sprint36-schema-source-envelope-gate-paths; then
+              echo "Recognized exact Sprint36 schema/source-envelope gate successor shape."
             elif cmp -s /tmp/actual-sprint35-paths /tmp/sprint35-workflow-correction-paths; then
               echo "Recognized exact Sprint35 successor-compatibility workflow correction shape."
             else
