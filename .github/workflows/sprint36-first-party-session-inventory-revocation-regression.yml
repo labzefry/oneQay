@@ -94,6 +94,22 @@ jobs:
           sort -o /tmp/sprint37-schema-source-envelope-gate-paths /tmp/sprint37-schema-source-envelope-gate-paths
           test "$(sha256sum /tmp/sprint37-schema-source-envelope-gate-paths | awk '{print $1}')" = "872d2c9cc2e535bfc2882ad64927cc9873fe001af4ece3bb75308e66d1008b32"
 
+          cat > /tmp/sprint37-source-paths <<'EOF'
+          .github/workflows/sprint35-privileged-totp-recovery-regression.yml
+          .github/workflows/sprint36-first-party-session-inventory-revocation-regression.yml
+          .github/workflows/sprint37-first-party-all-session-termination-regression.yml
+          apps/web/app/Application/Identity/FirstPartySessionAuthorityRepository.php
+          apps/web/app/Application/Identity/FirstPartySessionAuthorityService.php
+          apps/web/app/Delivery/Http/Identity/FirstPartySessionControlController.php
+          apps/web/app/Infrastructure/Identity/LaravelFirstPartySessionAuthorityRepository.php
+          apps/web/routes/web.php
+          apps/web/tests/first-party-session-all-session-termination.php
+          apps/web/tests/first-party-session-inventory-revocation.php
+          docs/FIRST_PARTY_ALL_SESSION_TERMINATION_FOUNDATION.md
+          EOF
+          sort -o /tmp/sprint37-source-paths /tmp/sprint37-source-paths
+          test "$(sha256sum /tmp/sprint37-source-paths | awk '{print $1}')" = "a221779e05b1e8ab220610b5068be5d1eb01bc08b516b338ba8f22373e7d89d0"
+
           if [[ "${{ github.event_name }}" = "pull_request" ]]; then
             git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | sort > /tmp/actual-sprint36-paths
             if cmp -s /tmp/actual-sprint36-paths /tmp/post-sprint36-reconciliation-paths; then
@@ -104,6 +120,8 @@ jobs:
               echo "Recognized exact Sprint37 entry-gate successor shape."
             elif cmp -s /tmp/actual-sprint36-paths /tmp/sprint37-schema-source-envelope-gate-paths; then
               echo "Recognized exact Sprint37 schema/source-envelope gate successor shape."
+            elif cmp -s /tmp/actual-sprint36-paths /tmp/sprint37-source-paths; then
+              echo "Recognized exact Sprint37 source successor shape."
             else
               cmp -s /tmp/actual-sprint36-paths /tmp/sprint36-paths || {
                 echo "Sprint36 changed-file envelope mismatch." >&2
