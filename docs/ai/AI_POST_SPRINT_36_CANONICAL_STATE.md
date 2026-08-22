@@ -53,4 +53,8 @@ Unknown successor shapes remain fail-closed.
 
 This reconciliation does **not** select a Sprint37 implementation concern and grants no Sprint37 source authority, migration #14 authority, Preview/Production activation, updater authority, deployment authority, or release authority.
 
+## Post-PR236 historical-provenance correction
+
+PR #236 unintentionally removed the historical post-Sprint28 completion bullet stating that Sprint 21 through Sprint 28 governed foundations were complete, implemented, and published within their bounded authorities. The bounded successor correction restores that historical line in `docs/ai/AI_NEXT_TASK.md` only as provenance; it does not change current program state or introduce any new implementation, schema, runtime, Preview, Production, updater, deployment, or release authority.
+
 Attribution: **Lab | zefry**
