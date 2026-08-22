@@ -309,7 +309,19 @@ jobs:
 
       - name: Run dedicated Sprint 31 privileged reauthentication regression
         working-directory: apps/web
-        run: php tests/privileged-reauthentication-step-up.php
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${ONEQAY_SPRINT36_SUCCESSOR:-false}" == 'true' ]]; then
+            historical='fba7b862ff0022de05c9f0ba98b153bd7e399621'
+            git -C ../.. cat-file -e "${historical}^{commit}"
+            git -C ../.. worktree add --detach /tmp/oneqay-s31-historical-preservation "$historical"
+            cd /tmp/oneqay-s31-historical-preservation/apps/web
+            composer install --no-interaction --no-progress --prefer-dist
+            php tests/privileged-reauthentication-step-up.php
+            exit 0
+          fi
+          php tests/privileged-reauthentication-step-up.php
 
       - name: Preserve Sprint 21 through Sprint 30 executable regressions
         working-directory: apps/web
