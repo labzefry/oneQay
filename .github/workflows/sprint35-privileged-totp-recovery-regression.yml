@@ -124,6 +124,12 @@ jobs:
             sort -o /tmp/sprint36-schema-source-envelope-gate-paths /tmp/sprint36-schema-source-envelope-gate-paths
             test "$(sha256sum /tmp/sprint36-schema-source-envelope-gate-paths | awk '{print $1}')" = "90b723c95350369a3fe8c1493a3ec41e538310a15d8fc1728a14d21dd4b11500"
 
+            cat > /tmp/sprint37-entry-gate-paths <<'EOF'
+          docs/SPRINT_37_FIRST_PARTY_ALL_SESSION_TERMINATION_ENTRY_GATE.md
+          EOF
+            sort -o /tmp/sprint37-entry-gate-paths /tmp/sprint37-entry-gate-paths
+            test "$(sha256sum /tmp/sprint37-entry-gate-paths | awk '{print $1}')" = "0a3fe02e88dd12689eee39b1940642e61a91afb1bc985086a6cbdd9a10d30e2b"
+
             cat > /tmp/sprint35-workflow-correction-paths <<'EOF'
           .github/workflows/sprint35-privileged-totp-recovery-regression.yml
           EOF
@@ -144,6 +150,9 @@ jobs:
               sprint36_successor=true
             elif cmp -s /tmp/actual-sprint35-paths /tmp/post-sprint36-compatibility-correction-paths; then
               echo "Recognized exact post-Sprint36 two-workflow compatibility correction shape."
+              sprint36_successor=true
+            elif cmp -s /tmp/actual-sprint35-paths /tmp/sprint37-entry-gate-paths; then
+              echo "Recognized exact Sprint37 entry-gate successor shape."
               sprint36_successor=true
             elif cmp -s /tmp/actual-sprint35-paths /tmp/sprint36-entry-gate-paths; then
               echo "Recognized exact Sprint36 entry-gate successor shape."
