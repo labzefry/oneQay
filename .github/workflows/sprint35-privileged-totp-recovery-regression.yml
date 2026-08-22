@@ -120,6 +120,9 @@ jobs:
             elif [[ "$actual_count" -eq 19 && "$actual_fingerprint" == 'fc2b578fc9d090dfce1fd34c5acfa7a07f065979a94f62becb3dc54dee664920' ]]; then
               echo "Recognized exact Sprint36 19-path preservation-compatibility correction shape."
               sprint36_successor=true
+            elif [[ "$actual_count" -eq 4 && "$actual_fingerprint" == 'a5d3b0816c3b0e6f1fa7dd5ece73ea6347042372dd517af31e303c41d49abfaa' ]]; then
+              echo "Recognized exact Sprint36 4-path requalification preservation correction shape."
+              sprint36_successor=true
             elif cmp -s /tmp/actual-sprint35-paths /tmp/post-sprint35-reconciliation-paths; then
               echo "Recognized exact post-Sprint35 canonical reconciliation successor shape."
             elif cmp -s /tmp/actual-sprint35-paths /tmp/sprint36-entry-gate-paths; then
