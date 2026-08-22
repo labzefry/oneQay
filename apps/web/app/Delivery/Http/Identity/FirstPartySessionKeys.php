@@ -15,6 +15,7 @@ final class FirstPartySessionKeys
     public const CREDENTIAL_EPOCH = 'oneqay.auth.credential_epoch';
     public const MFA_VERIFIED_AT = 'oneqay.auth.mfa_verified_at';
     public const MFA_FACTOR_EPOCH = 'oneqay.auth.mfa_factor_epoch';
+    public const SESSION_AUTHORITY_ID = 'oneqay.auth.session_authority_id';
     public const STEP_UP_VERIFIED_AT = 'oneqay.auth.step_up_verified_at';
     public const STEP_UP_SCOPE = 'oneqay.auth.step_up_scope';
     public const STEP_UP_CONTEXT = 'oneqay.auth.step_up_context';

@@ -4,9 +4,14 @@ declare(strict_types=1);
 
 namespace App\Delivery\Http\Identity;
 
+use App\Application\Identity\FirstPartySessionAuthorityService;
+use App\Application\Identity\FirstPartySessionAuthorityViolation;
 use App\Application\Identity\IdentityContextViolation;
+use App\Application\Identity\PrivilegedTotpFactorEpochRepository;
 use App\Application\Identity\PrivilegedTotpMfaService;
 use App\Application\Identity\PrivilegedTotpMfaViolation;
+use App\Application\Identity\PrivilegedTotpRecoveryViolation;
+use App\Application\Identity\VerifyFirstPartyCredentialEpoch;
 use App\Application\Organization\EnterOrganizationalContext;
 use App\Application\Organization\OrganizationalAccessViolation;
 use App\Application\Organization\OrganizationalContextStore;
@@ -28,6 +33,9 @@ final class PrivilegedTotpMfaController
 {
     public function __construct(
         private readonly PrivilegedTotpMfaService $mfa,
+        private readonly VerifyFirstPartyCredentialEpoch $credentialEpochs,
+        private readonly PrivilegedTotpFactorEpochRepository $factorEpochs,
+        private readonly FirstPartySessionAuthorityService $sessionAuthorities,
         private readonly TenantContextStore $tenantContexts,
         private readonly OrganizationalContextStore $organizationalContexts,
         private readonly EnterOrganizationalContext $enterOrganizationalContext,
@@ -91,7 +99,34 @@ final class PrivilegedTotpMfaController
             $code = $this->exactCode($request);
             $context = $this->pendingContext($request, FirstPartySessionKeys::MFA_CHALLENGE_REQUIRED);
             $verifiedAt = $this->mfa->challenge($context->tenantId(), $context->identityId(), $code);
-            $this->establishVerifiedFullSession($request, $context, $verifiedAt);
+
+            $credentialEpoch = null;
+            $factorEpoch = null;
+            $authorityId = null;
+            if ($this->sessionControlEnabled()) {
+                $credentialEpoch = $this->credentialEpochs->capture($context->tenantId(), $context->identityId());
+                $factorEpoch = $this->factorEpochs->currentEpoch($context->tenantId(), $context->identityId());
+                $issued = $this->sessionAuthorities->issue(
+                    $context->tenantId(),
+                    $context->identityId(),
+                    $context->organizationId()->value(),
+                    $context->outletId()?->value(),
+                    $context->deviceId()?->value(),
+                    $credentialEpoch,
+                    $factorEpoch,
+                    $correlationId,
+                );
+                $authorityId = $issued->authorityId();
+            }
+
+            $this->establishVerifiedFullSession(
+                $request,
+                $context,
+                $verifiedAt,
+                $credentialEpoch,
+                $factorEpoch,
+                $authorityId,
+            );
 
             return response()->json([
                 'status' => 'ok',
@@ -99,7 +134,7 @@ final class PrivilegedTotpMfaController
             ], 200, [
                 'Cache-Control' => 'no-store, private',
             ]);
-        } catch (InvalidArgumentException|IdentityContextViolation|MissingTenantContext|OrganizationalAccessViolation|PrivilegedTotpMfaViolation) {
+        } catch (InvalidArgumentException|IdentityContextViolation|MissingTenantContext|OrganizationalAccessViolation|PrivilegedTotpMfaViolation|PrivilegedTotpRecoveryViolation|FirstPartySessionAuthorityViolation) {
             return $this->mfaFailed($correlationId, 401);
         } finally {
             $this->clearRequestContexts();
@@ -129,8 +164,9 @@ final class PrivilegedTotpMfaController
                 throw new InvalidArgumentException('Privileged TOTP pending session contains full authentication state.');
             }
         }
-        if ($session->has(FirstPartySessionKeys::MFA_VERIFIED_AT)) {
-            throw new InvalidArgumentException('Privileged TOTP pending session contains MFA evidence.');
+        if ($session->has(FirstPartySessionKeys::MFA_VERIFIED_AT)
+            || $session->has(FirstPartySessionKeys::SESSION_AUTHORITY_ID)) {
+            throw new InvalidArgumentException('Privileged TOTP pending session contains full authority evidence.');
         }
 
         $identity = new ServerVerifiedPlatformIdentity($identityId);
@@ -150,9 +186,17 @@ final class PrivilegedTotpMfaController
         Request $request,
         VerifiedOrganizationalContext $context,
         int $verifiedAt,
+        ?int $credentialEpoch,
+        ?int $factorEpoch,
+        ?string $authorityId,
     ): void {
         if ($verifiedAt <= 0) {
             throw new InvalidArgumentException('Privileged TOTP verification timestamp is invalid.');
+        }
+
+        if ($authorityId !== null
+            && ($credentialEpoch === null || $credentialEpoch < 0 || $factorEpoch === null || $factorEpoch < 0)) {
+            throw new InvalidArgumentException('Privileged session authority evidence is invalid.');
         }
 
         $session = $request->session();
@@ -162,6 +206,12 @@ final class PrivilegedTotpMfaController
         $session->put(FirstPartySessionKeys::TENANT, $context->tenantId()->value());
         $session->put(FirstPartySessionKeys::ORGANIZATION, $context->organizationId()->value());
         $session->put(FirstPartySessionKeys::MFA_VERIFIED_AT, $verifiedAt);
+
+        if ($authorityId !== null) {
+            $session->put(FirstPartySessionKeys::CREDENTIAL_EPOCH, $credentialEpoch);
+            $session->put(FirstPartySessionKeys::MFA_FACTOR_EPOCH, $factorEpoch);
+            $session->put(FirstPartySessionKeys::SESSION_AUTHORITY_ID, $authorityId);
+        }
 
         if ($context->outletId() !== null) {
             $session->put(FirstPartySessionKeys::OUTLET, $context->outletId()->value());
@@ -237,6 +287,12 @@ final class PrivilegedTotpMfaController
         $runtime = strtolower(trim((string) config('oneqay.runtime_class', '')));
         $enabled = (bool) config('oneqay.privileged_totp_mfa.enabled', false);
         abort_unless($enabled && in_array($runtime, ['local', 'test', 'ci'], true), 404);
+    }
+
+    private function sessionControlEnabled(): bool
+    {
+        return (bool) config('oneqay.session_control.enabled', false)
+            && (int) config('oneqay.session_control.idle_ttl_seconds', 0) === 7200;
     }
 
     private function clearRequestContexts(): void

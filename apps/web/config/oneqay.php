@@ -40,6 +40,16 @@ return [
         'restricted_session_ttl_seconds' => 600,
     ],
 
+    'session_control' => [
+        // Sprint36 durable first-party session authority remains fail-closed unless explicitly armed.
+        'enabled' => filter_var(
+            env('ONEQAY_AUTHENTICATION_SESSION_CONTROL_ENABLED', false),
+            FILTER_VALIDATE_BOOL,
+        ),
+        // Fixed idle lifetime; not environment-configurable.
+        'idle_ttl_seconds' => 7200,
+    ],
+
     'system_update' => [
         // Backend control-plane visibility/checking may only be enabled explicitly.
         'control_plane_enabled' => filter_var(
