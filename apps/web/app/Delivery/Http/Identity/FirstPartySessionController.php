@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Delivery\Http\Identity;
 
+use App\Application\Identity\FirstPartySessionAuthorityService;
+use App\Application\Identity\FirstPartySessionAuthorityViolation;
 use App\Application\Identity\IdentityContextViolation;
 use App\Application\Identity\PrivilegedTotpMfaService;
 use App\Application\Identity\PrivilegedTotpMfaState;
@@ -43,6 +45,7 @@ final class FirstPartySessionController
         private readonly VerifyFirstPartyIdentityCredential $credentials,
         private readonly PrivilegedTotpMfaService $mfa,
         private readonly VerifyFirstPartyCredentialEpoch $credentialEpochs,
+        private readonly FirstPartySessionAuthorityService $sessionAuthorities,
         private readonly TenantContextStore $tenantContexts,
         private readonly OrganizationalContextStore $organizationalContexts,
         private readonly EnterOrganizationalContext $enterOrganizationalContext,
@@ -113,13 +116,27 @@ final class FirstPartySessionController
             }
 
             $credentialEpoch = $this->credentialEpochs->capture($tenantId, $identityId);
-            $this->establishFullSession($request, $context, $credentialEpoch);
+            $authorityId = null;
+            if ($this->sessionControlEnabled()) {
+                $issued = $this->sessionAuthorities->issue(
+                    $tenantId,
+                    $identityId,
+                    $context->organizationId()->value(),
+                    $context->outletId()?->value(),
+                    $context->deviceId()?->value(),
+                    $credentialEpoch,
+                    null,
+                    $correlationId,
+                );
+                $authorityId = $issued->authorityId();
+            }
+            $this->establishFullSession($request, $context, $credentialEpoch, $authorityId);
 
             return response()->json([
                 'status' => 'ok',
                 'correlation_id' => $correlationId,
             ]);
-        } catch (InvalidArgumentException|IdentityContextViolation|MissingTenantContext|OrganizationalAccessViolation) {
+        } catch (InvalidArgumentException|IdentityContextViolation|MissingTenantContext|OrganizationalAccessViolation|FirstPartySessionAuthorityViolation) {
             return $this->authenticationFailed($correlationId);
         } finally {
             $this->clearRequestContexts();
@@ -129,8 +146,27 @@ final class FirstPartySessionController
     public function logout(Request $request): Response
     {
         $this->requireAllowedRuntime();
+        $correlationId = (string) $request->attributes->get('oneqay.correlation_id', 'correlation-missing');
 
         try {
+            if ($this->sessionControlEnabled()) {
+                try {
+                    $tenant = $request->session()->get(FirstPartySessionKeys::TENANT);
+                    $identity = $request->session()->get(FirstPartySessionKeys::IDENTITY);
+                    $authority = $request->session()->get(FirstPartySessionKeys::SESSION_AUTHORITY_ID);
+                    if (is_string($tenant) && is_string($identity) && is_string($authority)) {
+                        $this->sessionAuthorities->logoutCurrent(
+                            TenantId::fromString($tenant),
+                            PlatformIdentityId::fromString($identity),
+                            $authority,
+                            $correlationId,
+                        );
+                    }
+                } catch (InvalidArgumentException|FirstPartySessionAuthorityViolation) {
+                    // Logout remains safe for stale or malformed local session state.
+                }
+            }
+
             $request->session()->invalidate();
             $request->session()->regenerateToken();
 
@@ -144,6 +180,7 @@ final class FirstPartySessionController
         Request $request,
         VerifiedOrganizationalContext $context,
         int $credentialEpoch,
+        ?string $authorityId,
     ): void {
         if ($credentialEpoch < 0) {
             throw new InvalidArgumentException('Authentication request is invalid.');
@@ -156,6 +193,9 @@ final class FirstPartySessionController
         $session->put(FirstPartySessionKeys::TENANT, $context->tenantId()->value());
         $session->put(FirstPartySessionKeys::ORGANIZATION, $context->organizationId()->value());
         $session->put(FirstPartySessionKeys::CREDENTIAL_EPOCH, $credentialEpoch);
+        if ($authorityId !== null) {
+            $session->put(FirstPartySessionKeys::SESSION_AUTHORITY_ID, $authorityId);
+        }
 
         if ($context->outletId() !== null) {
             $session->put(FirstPartySessionKeys::OUTLET, $context->outletId()->value());
@@ -241,6 +281,12 @@ final class FirstPartySessionController
     private function mfaEnabled(): bool
     {
         return (bool) config('oneqay.privileged_totp_mfa.enabled', false);
+    }
+
+    private function sessionControlEnabled(): bool
+    {
+        return (bool) config('oneqay.session_control.enabled', false)
+            && (int) config('oneqay.session_control.idle_ttl_seconds', 0) === 7200;
     }
 
     private function requireAllowedRuntime(): void

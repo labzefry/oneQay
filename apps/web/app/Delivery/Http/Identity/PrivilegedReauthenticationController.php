@@ -25,7 +25,8 @@ use InvalidArgumentException;
 // Author by Lab | zefry
 final class PrivilegedReauthenticationController
 {
-    private const SCOPE = 'policy_administration';
+    private const POLICY_SCOPE = 'policy_administration';
+    private const SESSION_CONTROL_SCOPE = 'session_control';
 
     public function __construct(
         private readonly PrivilegedStepUpService $stepUp,
@@ -36,7 +37,17 @@ final class PrivilegedReauthenticationController
 
     public function reauthenticate(Request $request): JsonResponse
     {
-        $this->requireAllowedRuntimeAndFeatures();
+        return $this->reauthenticateForScope($request, self::POLICY_SCOPE, false);
+    }
+
+    public function sessionControl(Request $request): JsonResponse
+    {
+        return $this->reauthenticateForScope($request, self::SESSION_CONTROL_SCOPE, true);
+    }
+
+    private function reauthenticateForScope(Request $request, string $scope, bool $requiresSessionControl): JsonResponse
+    {
+        $this->requireAllowedRuntimeAndFeatures($requiresSessionControl);
         $correlationId = (string) $request->attributes->get('oneqay.correlation_id', 'correlation-missing');
 
         try {
@@ -54,14 +65,14 @@ final class PrivilegedReauthenticationController
                 throw new InvalidArgumentException('Privileged reauthentication request is invalid.');
             }
 
-            [$context, $mfaVerifiedAt] = $this->fullContext($request);
+            [$context, $mfaVerifiedAt, $preserved] = $this->fullContext($request);
             $verifiedAt = $this->stepUp->verify(
                 $context->tenantId(),
                 $context->identityId(),
                 $password,
                 $code,
             );
-            $this->establishStepUpSession($request, $context, $mfaVerifiedAt, $verifiedAt);
+            $this->establishStepUpSession($request, $context, $mfaVerifiedAt, $verifiedAt, $scope, $preserved);
 
             return response()->json([
                 'status' => 'ok',
@@ -78,12 +89,12 @@ final class PrivilegedReauthenticationController
         }
     }
 
-    /** @return array{0: VerifiedOrganizationalContext, 1: int} */
+    /** @return array{0: VerifiedOrganizationalContext, 1: int, 2: array<string,mixed>} */
     private function fullContext(Request $request): array
     {
         $session = $request->session();
-        foreach (FirstPartySessionKeys::pending() as $pendingKey) {
-            if ($session->has($pendingKey)) {
+        foreach (array_merge(FirstPartySessionKeys::pending(), FirstPartySessionKeys::recovery(), FirstPartySessionKeys::totpRecovery()) as $restrictedKey) {
+            if ($session->has($restrictedKey)) {
                 throw new InvalidArgumentException('Privileged reauthentication session is invalid.');
             }
         }
@@ -109,16 +120,30 @@ final class PrivilegedReauthenticationController
             $deviceId,
         );
 
-        return [$context, $mfaVerifiedAt];
+        $preserved = [];
+        foreach ([
+            FirstPartySessionKeys::CREDENTIAL_EPOCH,
+            FirstPartySessionKeys::MFA_FACTOR_EPOCH,
+            FirstPartySessionKeys::SESSION_AUTHORITY_ID,
+        ] as $key) {
+            if ($session->has($key)) {
+                $preserved[$key] = $session->get($key);
+            }
+        }
+
+        return [$context, $mfaVerifiedAt, $preserved];
     }
 
+    /** @param array<string,mixed> $preserved */
     private function establishStepUpSession(
         Request $request,
         VerifiedOrganizationalContext $context,
         int $mfaVerifiedAt,
         int $verifiedAt,
+        string $scope,
+        array $preserved,
     ): void {
-        if ($mfaVerifiedAt <= 0 || $verifiedAt <= 0) {
+        if ($mfaVerifiedAt <= 0 || $verifiedAt <= 0 || ! in_array($scope, [self::POLICY_SCOPE, self::SESSION_CONTROL_SCOPE], true)) {
             throw new InvalidArgumentException('Privileged reauthentication evidence is invalid.');
         }
 
@@ -130,7 +155,7 @@ final class PrivilegedReauthenticationController
         $session->put(FirstPartySessionKeys::ORGANIZATION, $context->organizationId()->value());
         $session->put(FirstPartySessionKeys::MFA_VERIFIED_AT, $mfaVerifiedAt);
         $session->put(FirstPartySessionKeys::STEP_UP_VERIFIED_AT, $verifiedAt);
-        $session->put(FirstPartySessionKeys::STEP_UP_SCOPE, self::SCOPE);
+        $session->put(FirstPartySessionKeys::STEP_UP_SCOPE, $scope);
         $session->put(FirstPartySessionKeys::STEP_UP_CONTEXT, [
             'identity_id' => $context->identityId()->value(),
             'tenant_id' => $context->tenantId()->value(),
@@ -138,6 +163,21 @@ final class PrivilegedReauthenticationController
             'outlet_id' => $context->outletId()?->value(),
             'device_id' => $context->deviceId()?->value(),
         ]);
+
+        foreach ($preserved as $key => $value) {
+            if (in_array($key, [FirstPartySessionKeys::CREDENTIAL_EPOCH, FirstPartySessionKeys::MFA_FACTOR_EPOCH], true)) {
+                if (! is_int($value) || $value < 0) {
+                    throw new InvalidArgumentException('Privileged reauthentication epoch evidence is invalid.');
+                }
+            } elseif ($key === FirstPartySessionKeys::SESSION_AUTHORITY_ID) {
+                if (! is_string($value) || preg_match('/\A[0-9a-f]{32}\z/D', $value) !== 1) {
+                    throw new InvalidArgumentException('Privileged reauthentication authority evidence is invalid.');
+                }
+            } else {
+                throw new InvalidArgumentException('Privileged reauthentication preservation set is invalid.');
+            }
+            $session->put($key, $value);
+        }
 
         if ($context->outletId() !== null) {
             $session->put(FirstPartySessionKeys::OUTLET, $context->outletId()->value());
@@ -153,7 +193,6 @@ final class PrivilegedReauthenticationController
         if (! is_string($value) || trim($value) === '') {
             throw new InvalidArgumentException('Privileged reauthentication session is invalid.');
         }
-
         return trim($value);
     }
 
@@ -166,17 +205,20 @@ final class PrivilegedReauthenticationController
         if (! is_string($value) || trim($value) === '') {
             throw new InvalidArgumentException('Privileged reauthentication session is invalid.');
         }
-
         return trim($value);
     }
 
-    private function requireAllowedRuntimeAndFeatures(): void
+    private function requireAllowedRuntimeAndFeatures(bool $requiresSessionControl): void
     {
         $runtime = strtolower(trim((string) config('oneqay.runtime_class', '')));
         $stepUp = (bool) config('oneqay.privileged_step_up.enabled', false);
         $mfa = (bool) config('oneqay.privileged_totp_mfa.enabled', false);
         $freshness = (int) config('oneqay.privileged_step_up.freshness_seconds', 0);
-        abort_unless($stepUp && $mfa && $freshness === 300 && in_array($runtime, ['local', 'test', 'ci'], true), 404);
+        $sessionControl = ! $requiresSessionControl || (
+            (bool) config('oneqay.session_control.enabled', false)
+            && (int) config('oneqay.session_control.idle_ttl_seconds', 0) === 7200
+        );
+        abort_unless($stepUp && $mfa && $sessionControl && $freshness === 300 && in_array($runtime, ['local', 'test', 'ci'], true), 404);
     }
 
     private function clearContexts(): void

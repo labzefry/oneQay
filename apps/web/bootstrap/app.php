@@ -1,7 +1,9 @@
 <?php
 
 use App\Delivery\Http\Middleware\CorrelationIdMiddleware;
+use App\Delivery\Http\Middleware\EnforceActiveFirstPartySessionAuthorityMiddleware;
 use App\Delivery\Http\Middleware\HandleInertiaRequests;
+use App\Delivery\Http\Middleware\RequireFirstPartySessionControlMutationContextMiddleware;
 use App\Delivery\Http\Middleware\RequireVerifiedTenantContextMiddleware;
 use App\Delivery\Http\Middleware\SafeRequestObservationMiddleware;
 use App\Delivery\Http\Middleware\SecurityHeadersMiddleware;
@@ -17,6 +19,8 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'tenant.verified' => RequireVerifiedTenantContextMiddleware::class,
+            'session.active' => EnforceActiveFirstPartySessionAuthorityMiddleware::class,
+            'session.control-mutation' => RequireFirstPartySessionControlMutationContextMiddleware::class,
         ]);
         $middleware->append(CorrelationIdMiddleware::class);
         $middleware->append(SafeRequestObservationMiddleware::class);

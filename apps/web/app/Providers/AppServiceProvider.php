@@ -14,6 +14,9 @@ use App\Application\Identity\AuthenticatedPasswordChangeService;
 use App\Application\Identity\FirstControlPrincipalCredentialBootstrapRepository;
 use App\Application\Identity\FirstPartyCredentialEpochRepository;
 use App\Application\Identity\FirstPartyIdentityCredentialVerifier;
+use App\Application\Identity\FirstPartySessionAuthorityClock;
+use App\Application\Identity\FirstPartySessionAuthorityRepository;
+use App\Application\Identity\FirstPartySessionAuthorityService;
 use App\Application\Identity\InitialPasswordEnrollmentRepository;
 use App\Application\Identity\PrivilegedStepUpClock;
 use App\Application\Identity\PrivilegedTotpClock;
@@ -43,6 +46,7 @@ use App\Infrastructure\Identity\LaravelAuthenticatedPasswordChangeRepository;
 use App\Infrastructure\Identity\LaravelFirstControlPrincipalCredentialBootstrapRepository;
 use App\Infrastructure\Identity\LaravelFirstPartyCredentialEpochRepository;
 use App\Infrastructure\Identity\LaravelFirstPartyIdentityCredentialVerifier;
+use App\Infrastructure\Identity\LaravelFirstPartySessionAuthorityRepository;
 use App\Infrastructure\Identity\LaravelInitialPasswordEnrollmentRepository;
 use App\Infrastructure\Identity\LaravelPrivilegedTotpFactorEpochRepository;
 use App\Infrastructure\Identity\LaravelPrivilegedTotpMfaRepository;
@@ -143,7 +147,7 @@ final class AppServiceProvider extends ServiceProvider
                 $app->make(Encrypter::class),
                 $this->persistenceEnabled(),
                 $this->runtimeClass(),
-                (bool) config('oneqay.privileged_totp_mfa.enabled', false),
+                $this->mfaOperationalEnabled(),
             );
         });
         $this->app->scoped(PrivilegedTotpFactorEpochRepository::class, function ($app): PrivilegedTotpFactorEpochRepository {
@@ -151,7 +155,7 @@ final class AppServiceProvider extends ServiceProvider
                 $this->connection($app),
                 $this->persistenceEnabled(),
                 $this->runtimeClass(),
-                $this->totpRecoveryEnabled(),
+                $this->totpRecoveryEnabled() || $this->sessionControlEnabled(),
             );
         });
         $this->app->scoped(PrivilegedTotpRecoveryRepository::class, function ($app): PrivilegedTotpRecoveryRepository {
@@ -164,6 +168,24 @@ final class AppServiceProvider extends ServiceProvider
             );
         });
 
+        $this->app->scoped(FirstPartySessionAuthorityRepository::class, function ($app): FirstPartySessionAuthorityRepository {
+            return new LaravelFirstPartySessionAuthorityRepository(
+                $this->connection($app),
+                $this->persistenceEnabled(),
+                $this->runtimeClass(),
+                $this->sessionControlEnabled(),
+            );
+        });
+        $this->app->scoped(FirstPartySessionAuthorityService::class, fn ($app): FirstPartySessionAuthorityService => new FirstPartySessionAuthorityService(
+            $app->make(FirstPartySessionAuthorityRepository::class),
+            $app->make(FirstPartySessionAuthorityClock::class),
+            $app->make(FirstPartyCredentialEpochRepository::class),
+            $app->make(PrivilegedTotpFactorEpochRepository::class),
+            $app->make(PrivilegedTotpMfaService::class),
+            $this->mfaOperationalEnabled(),
+            (int) config('oneqay.session_control.idle_ttl_seconds', 0),
+        ));
+
         $this->app->scoped(PrivilegedTotpEngine::class, static fn (): PrivilegedTotpEngine => new OtphpPrivilegedTotpEngine());
         $this->app->scoped(PrivilegedTotpClock::class, static fn (): PrivilegedTotpClock => new class implements PrivilegedTotpClock { public function nowUnix(): int { return time(); } });
         $this->app->scoped(PrivilegedTotpRecoveryClock::class, static fn (): PrivilegedTotpRecoveryClock => new class implements PrivilegedTotpRecoveryClock { public function nowUnix(): int { return time(); } });
@@ -171,6 +193,7 @@ final class AppServiceProvider extends ServiceProvider
         $this->app->scoped(RecoveryCodeClock::class, static fn (): RecoveryCodeClock => new class implements RecoveryCodeClock { public function nowUnix(): int { return time(); } });
         $this->app->scoped(AuthenticatedPasswordChangeClock::class, static fn (): AuthenticatedPasswordChangeClock => new class implements AuthenticatedPasswordChangeClock { public function nowUnix(): int { return time(); } });
         $this->app->scoped(PolicyAdministrationClock::class, static fn (): PolicyAdministrationClock => new class implements PolicyAdministrationClock { public function nowUnix(): int { return time(); } });
+        $this->app->scoped(FirstPartySessionAuthorityClock::class, static fn (): FirstPartySessionAuthorityClock => new class implements FirstPartySessionAuthorityClock { public function nowUnix(): int { return time(); } });
 
         $this->app->scoped(PersistenceTransaction::class, function ($app): PersistenceTransaction {
             return new LaravelPersistenceTransaction($this->connection($app), $this->persistenceEnabled(), $this->runtimeClass());
@@ -212,5 +235,17 @@ final class AppServiceProvider extends ServiceProvider
     {
         return (bool) config('oneqay.authentication_recovery.enabled', false)
             && (bool) config('oneqay.privileged_totp_mfa.enabled', false);
+    }
+
+    private function sessionControlEnabled(): bool
+    {
+        return (bool) config('oneqay.session_control.enabled', false)
+            && (int) config('oneqay.session_control.idle_ttl_seconds', 0) === 7200;
+    }
+
+    private function mfaOperationalEnabled(): bool
+    {
+        return (bool) config('oneqay.privileged_totp_mfa.enabled', false)
+            || $this->sessionControlEnabled();
     }
 }

@@ -4,6 +4,7 @@ use App\Delivery\Http\Authorization\PolicyAdministrationController;
 use App\Delivery\Http\HealthController;
 use App\Delivery\Http\Identity\AuthenticatedPasswordChangeController;
 use App\Delivery\Http\Identity\FirstPartySessionController;
+use App\Delivery\Http\Identity\FirstPartySessionControlController;
 use App\Delivery\Http\Identity\InitialPasswordEnrollmentController;
 use App\Delivery\Http\Identity\PrivilegedReauthenticationController;
 use App\Delivery\Http\Identity\PrivilegedTotpMfaController;
@@ -27,16 +28,21 @@ Route::get('/', static fn () => Inertia::render('Foundation', [
 
 // Author by Lab | zefry
 $firstPartyAuthRuntime = strtolower(trim((string) config('oneqay.runtime_class', '')));
+$sessionControlEnabled = (bool) config('oneqay.session_control.enabled', false)
+    && (int) config('oneqay.session_control.idle_ttl_seconds', 0) === 7200;
+$sessionActiveMiddleware = $sessionControlEnabled ? ['session.active'] : [];
+
 if (in_array($firstPartyAuthRuntime, ['local', 'test', 'ci'], true)) {
     Route::post('/auth/login', [FirstPartySessionController::class, 'login'])
         ->middleware(['throttle:5,1', 'throttle:20,60'])
         ->name('auth.first-party.login');
 
     Route::post('/auth/logout', [FirstPartySessionController::class, 'logout'])
+        ->middleware($sessionActiveMiddleware)
         ->name('auth.first-party.logout');
 
     Route::post('/auth/password/change', [AuthenticatedPasswordChangeController::class, 'change'])
-        ->middleware(['throttle:5,1', 'throttle:20,60'])
+        ->middleware([...$sessionActiveMiddleware, 'throttle:5,1', 'throttle:20,60'])
         ->name('auth.password.change');
 
     Route::post('/auth/password-enrollment', [InitialPasswordEnrollmentController::class, 'redeem'])
@@ -44,13 +50,28 @@ if (in_array($firstPartyAuthRuntime, ['local', 'test', 'ci'], true)) {
         ->name('auth.initial-password-enrollment.redeem');
 
     Route::post('/administration/identity/password-enrollments', [InitialPasswordEnrollmentController::class, 'issue'])
-        ->middleware(['throttle:5,1', RequirePolicyAdministrationSessionContextMiddleware::class])
+        ->middleware([...$sessionActiveMiddleware, 'throttle:5,1', RequirePolicyAdministrationSessionContextMiddleware::class])
         ->name('identity.initial-password-enrollment.issue');
+
+    if ($sessionControlEnabled) {
+        Route::get('/auth/sessions', [FirstPartySessionControlController::class, 'inventory'])
+            ->middleware('session.active')
+            ->name('auth.sessions.inventory');
+
+        Route::delete('/auth/sessions/{public_handle}', [FirstPartySessionControlController::class, 'revokeOne'])
+            ->where('public_handle', '[A-Za-z0-9_-]{43}')
+            ->middleware(['session.active', 'session.control-mutation', 'throttle:5,1', 'throttle:20,60'])
+            ->name('auth.sessions.revoke-one');
+
+        Route::post('/auth/sessions/revoke-others', [FirstPartySessionControlController::class, 'revokeOthers'])
+            ->middleware(['session.active', 'session.control-mutation', 'throttle:5,1', 'throttle:20,60'])
+            ->name('auth.sessions.revoke-others');
+    }
 
     if ((bool) config('oneqay.authentication_recovery.enabled', false)
         && (int) config('oneqay.authentication_recovery.restricted_session_ttl_seconds', 0) === 600) {
         Route::post('/auth/recovery/codes/rotate', [RecoveryCodeController::class, 'rotate'])
-            ->middleware(['throttle:5,1', 'throttle:20,60'])
+            ->middleware([...$sessionActiveMiddleware, 'throttle:5,1', 'throttle:20,60'])
             ->name('auth.recovery.codes.rotate');
 
         Route::post('/auth/recovery/proof', [RecoveryCodeController::class, 'proof'])
@@ -78,7 +99,7 @@ if (in_array($firstPartyAuthRuntime, ['local', 'test', 'ci'], true)) {
         if ((bool) config('oneqay.authentication_recovery.enabled', false)
             && (int) config('oneqay.authentication_recovery.restricted_session_ttl_seconds', 0) === 600) {
             Route::post('/auth/mfa/recovery/codes/rotate', [PrivilegedTotpRecoveryController::class, 'rotate'])
-                ->middleware(['throttle:5,1', 'throttle:20,60'])
+                ->middleware([...$sessionActiveMiddleware, 'throttle:5,1', 'throttle:20,60'])
                 ->name('auth.privileged-totp-recovery.codes.rotate');
 
             Route::post('/auth/mfa/recovery/proof', [PrivilegedTotpRecoveryController::class, 'proof'])
@@ -97,14 +118,20 @@ if (in_array($firstPartyAuthRuntime, ['local', 'test', 'ci'], true)) {
         if ((bool) config('oneqay.privileged_step_up.enabled', false)
             && (int) config('oneqay.privileged_step_up.freshness_seconds', 0) === 300) {
             Route::post('/auth/reauthenticate/privileged', [PrivilegedReauthenticationController::class, 'reauthenticate'])
-                ->middleware(['throttle:5,1', 'throttle:20,60'])
+                ->middleware([...$sessionActiveMiddleware, 'throttle:5,1', 'throttle:20,60'])
                 ->name('auth.privileged-step-up.reauthenticate');
+
+            if ($sessionControlEnabled) {
+                Route::post('/auth/reauthenticate/session-control', [PrivilegedReauthenticationController::class, 'sessionControl'])
+                    ->middleware(['session.active', 'throttle:5,1', 'throttle:20,60'])
+                    ->name('auth.session-control.reauthenticate');
+            }
         }
     }
 }
 
 Route::post('/administration/policy/mutations', PolicyAdministrationController::class)
-    ->middleware(RequirePolicyAdministrationSessionContextMiddleware::class)
+    ->middleware([...$sessionActiveMiddleware, RequirePolicyAdministrationSessionContextMiddleware::class])
     ->name('policy-administration.mutate');
 
 Route::get('/system/update', SystemUpdatePageController::class)->name('system-update.page');
