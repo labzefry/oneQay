@@ -144,7 +144,7 @@ jobs:
               echo "Recognized exact Sprint36 23-path source successor shape."
               sprint36_successor=true
             elif [[ "$actual_count" -eq 19 && "$actual_fingerprint" == 'fc2b578fc9d090dfce1fd34c5acfa7a07f065979a94f62becb3dc54dee664920' ]]; then
-              echo "Recognized exact Sprint36 19-path preservation-compatibility correction shape."
+              echo "Recognized exact 19-path historical preservation-compatibility shape; governed Sprint37 predecessor reuse remains bounded to the same exact path fingerprint."
               sprint36_successor=true
             elif [[ "$actual_count" -eq 4 && "$actual_fingerprint" == 'a5d3b0816c3b0e6f1fa7dd5ece73ea6347042372dd517af31e303c41d49abfaa' ]]; then
               echo "Recognized exact Sprint36 4-path requalification preservation correction shape."
