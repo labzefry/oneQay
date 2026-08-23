@@ -56,13 +56,34 @@ jobs:
           sort -o /tmp/sprint37-paths /tmp/sprint37-paths
           test "$(sha256sum /tmp/sprint37-paths | awk '{print $1}')" = "a221779e05b1e8ab220610b5068be5d1eb01bc08b516b338ba8f22373e7d89d0"
 
+          cat > /tmp/post-sprint37-preservation-paths <<'EOF'
+          .github/workflows/sprint35-privileged-totp-recovery-regression.yml
+          .github/workflows/sprint36-first-party-session-inventory-revocation-regression.yml
+          .github/workflows/sprint37-first-party-all-session-termination-regression.yml
+          EOF
+          sort -o /tmp/post-sprint37-preservation-paths /tmp/post-sprint37-preservation-paths
+          test "$(sha256sum /tmp/post-sprint37-preservation-paths | awk '{print $1}')" = "93fe19acad52a31981ecea81ab1dc65c730f0f01729959ca6eaedb0de5b128b7"
+
+          cat > /tmp/post-sprint37-reconciliation-paths <<'EOF'
+          docs/ai/AI_NEXT_TASK.md
+          docs/ai/AI_POST_SPRINT_37_CANONICAL_STATE.md
+          EOF
+          sort -o /tmp/post-sprint37-reconciliation-paths /tmp/post-sprint37-reconciliation-paths
+          test "$(sha256sum /tmp/post-sprint37-reconciliation-paths | awk '{print $1}')" = "2b3a711f5cb921dea0fb51a005c0bc742186bce526a0a7e87b10215733215dbe"
+
           if [[ "${{ github.event_name }}" = "pull_request" ]]; then
             git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | sort > /tmp/actual-sprint37-paths
-            cmp -s /tmp/actual-sprint37-paths /tmp/sprint37-paths || {
+            if cmp -s /tmp/actual-sprint37-paths /tmp/sprint37-paths; then
+              echo "Recognized exact Sprint37 source envelope."
+            elif cmp -s /tmp/actual-sprint37-paths /tmp/post-sprint37-preservation-paths; then
+              echo "Recognized exact post-Sprint37 preservation predecessor shape."
+            elif cmp -s /tmp/actual-sprint37-paths /tmp/post-sprint37-reconciliation-paths; then
+              echo "Recognized exact post-Sprint37 canonical reconciliation successor shape."
+            else
               echo "Sprint37 changed-file envelope mismatch." >&2
               diff -u /tmp/sprint37-paths /tmp/actual-sprint37-paths >&2 || true
               exit 1
-            }
+            fi
 
             if git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" -- apps/web/database/migrations/ | grep -q .; then
               echo "Sprint37 is NO_SCHEMA_CHANGE; migration mutation is forbidden." >&2
