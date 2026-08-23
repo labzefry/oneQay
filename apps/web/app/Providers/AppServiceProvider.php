@@ -184,6 +184,7 @@ final class AppServiceProvider extends ServiceProvider
             $app->make(PrivilegedTotpMfaService::class),
             $this->mfaOperationalEnabled(),
             (int) config('oneqay.session_control.idle_ttl_seconds', 0),
+            (int) config('oneqay.session_control.absolute_ttl_seconds', 0),
         ));
 
         $this->app->scoped(PrivilegedTotpEngine::class, static fn (): PrivilegedTotpEngine => new OtphpPrivilegedTotpEngine());
@@ -240,7 +241,8 @@ final class AppServiceProvider extends ServiceProvider
     private function sessionControlEnabled(): bool
     {
         return (bool) config('oneqay.session_control.enabled', false)
-            && (int) config('oneqay.session_control.idle_ttl_seconds', 0) === 7200;
+            && (int) config('oneqay.session_control.idle_ttl_seconds', 0) === 7200
+            && (int) config('oneqay.session_control.absolute_ttl_seconds', 0) === 43200;
     }
 
     private function mfaOperationalEnabled(): bool
