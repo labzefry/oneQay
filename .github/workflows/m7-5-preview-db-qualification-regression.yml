@@ -143,7 +143,7 @@ jobs:
           git diff --name-only "origin/main...HEAD" | sort > /tmp/s35-successor-files.txt
           count="$(wc -l < /tmp/s35-successor-files.txt)"
           fingerprint="$(sha256sum /tmp/s35-successor-files.txt | awk '{print $1}')"
-          if [[ "$count" -eq 17 && "$fingerprint" == 'e889db1c7eaa22b3ed008f8781ab35652ca950a3f009c309e5c478d01d368f11' ]] || [[ "$count" -eq 18 && "$fingerprint" == '25dbbd94087eba4157fa9c209f09174a127154a98067abbfbeec233bbe9398cd' ]] || [[ "$count" -eq 23 && "$fingerprint" == 'ea735f8f5ee06d480863f9d1ba7ae58a91642109963c3f340e8453f3205bb7ae' ]] || [[ "$count" -eq 19 && "$fingerprint" == 'fc2b578fc9d090dfce1fd34c5acfa7a07f065979a94f62becb3dc54dee664920' ]]; then
+          if [[ "$count" -eq 17 && "$fingerprint" == 'e889db1c7eaa22b3ed008f8781ab35652ca950a3f009c309e5c478d01d368f11' ]] || [[ "$count" -eq 18 && "$fingerprint" == '25dbbd94087eba4157fa9c209f09174a127154a98067abbfbeec233bbe9398cd' ]] || [[ "$count" -eq 23 && "$fingerprint" == 'ea735f8f5ee06d480863f9d1ba7ae58a91642109963c3f340e8453f3205bb7ae' ]] || [[ "$count" -eq 19 && "$fingerprint" == 'fc2b578fc9d090dfce1fd34c5acfa7a07f065979a94f62becb3dc54dee664920' ]] || [[ "$count" -eq 11 && "$fingerprint" == 'a221779e05b1e8ab220610b5068be5d1eb01bc08b516b338ba8f22373e7d89d0' ]]; then
           echo 'ONEQAY_SPRINT35_SUCCESSOR=true' >> "$GITHUB_ENV"
           echo 'ONEQAY_SPRINT30_SUCCESSOR=true' >> "$GITHUB_ENV"
           echo 'ONEQAY_SPRINT31_SUCCESSOR=true' >> "$GITHUB_ENV"
