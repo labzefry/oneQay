@@ -23,6 +23,7 @@ final readonly class FirstPartySessionAuthorityService
         private PrivilegedTotpMfaService $mfa,
         private bool $mfaEnabled,
         private int $idleTtlSeconds,
+        private int $absoluteTtlSeconds = 43200,
     ) {}
 
     public function issue(
@@ -65,7 +66,7 @@ final readonly class FirstPartySessionAuthorityService
             $authorityId,
             $publicHandle,
             $now,
-            $now + $this->idleTtlSeconds,
+            $this->effectiveExpiry($now, $now),
             $correlationId,
         );
     }
@@ -108,7 +109,7 @@ final readonly class FirstPartySessionAuthorityService
                 $identityId,
                 $authorityId,
                 $now,
-                $now + $this->idleTtlSeconds,
+                $this->effectiveExpiry($this->recordInt($record, 'issued_at_unix'), $now),
             );
         }
     }
@@ -144,15 +145,19 @@ final readonly class FirstPartySessionAuthorityService
                 continue;
             }
 
+            $issuedAtUnix = $this->recordInt($record, 'issued_at_unix');
             $items[] = new FirstPartySessionInventoryItem(
                 $this->recordString($record, 'public_handle'),
                 hash_equals($currentAuthorityId, $this->recordString($record, 'authority_id')),
                 $this->recordString($record, 'organization_id'),
                 $this->recordNullableString($record, 'outlet_id'),
                 $this->recordNullableString($record, 'device_id'),
-                $this->recordInt($record, 'issued_at_unix'),
+                $issuedAtUnix,
                 $this->recordInt($record, 'last_seen_at_unix'),
-                $this->recordInt($record, 'expires_at_unix'),
+                min(
+                    $this->recordInt($record, 'expires_at_unix'),
+                    $this->absoluteDeadline($issuedAtUnix),
+                ),
             );
         }
 
@@ -340,7 +345,11 @@ final readonly class FirstPartySessionAuthorityService
         PlatformIdentityId $identityId,
         int $now,
     ): void {
-        if (($record['revoked_at_unix'] ?? null) !== null || $now > $this->recordInt($record, 'expires_at_unix')) {
+        $issuedAtUnix = $this->recordInt($record, 'issued_at_unix');
+        if (($record['revoked_at_unix'] ?? null) !== null
+            || $now < $issuedAtUnix
+            || $now > $this->recordInt($record, 'expires_at_unix')
+            || $now > $this->absoluteDeadline($issuedAtUnix)) {
             $this->authorityDenied();
         }
 
@@ -393,12 +402,38 @@ final readonly class FirstPartySessionAuthorityService
 
     private function assertConfigured(): void
     {
-        if ($this->idleTtlSeconds !== 7200) {
+        if ($this->idleTtlSeconds !== 7200 || $this->absoluteTtlSeconds !== 43200) {
             throw new FirstPartySessionAuthorityViolation(
                 FirstPartySessionAuthorityViolation::FEATURE_DISABLED,
                 'First-party session authority feature is not configured.',
             );
         }
+    }
+
+    private function effectiveExpiry(int $issuedAtUnix, int $nowUnix): int
+    {
+        if ($issuedAtUnix <= 0 || $nowUnix < $issuedAtUnix) {
+            $this->invalidState();
+        }
+
+        return min(
+            $this->deadline($nowUnix, $this->idleTtlSeconds),
+            $this->absoluteDeadline($issuedAtUnix),
+        );
+    }
+
+    private function absoluteDeadline(int $issuedAtUnix): int
+    {
+        return $this->deadline($issuedAtUnix, $this->absoluteTtlSeconds);
+    }
+
+    private function deadline(int $originUnix, int $ttlSeconds): int
+    {
+        if ($originUnix <= 0 || $ttlSeconds <= 0 || $originUnix > PHP_INT_MAX - $ttlSeconds) {
+            $this->invalidState();
+        }
+
+        return $originUnix + $ttlSeconds;
     }
 
     private function now(): int
