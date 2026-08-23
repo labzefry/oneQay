@@ -155,6 +155,12 @@ jobs:
           sort -o /tmp/sprint38-entry-gate-paths /tmp/sprint38-entry-gate-paths
           test "$(sha256sum /tmp/sprint38-entry-gate-paths | awk '{print $1}')" = "b5e631b39dee456c18e2f14ab3266db599a97d3b5f3778c8d8dfdd3243658434"
 
+          cat > /tmp/sprint38-schema-source-envelope-gate-paths <<'EOF'
+          docs/SPRINT_38_FIRST_PARTY_SESSION_ABSOLUTE_LIFETIME_SCHEMA_SOURCE_ENVELOPE_GATE.md
+          EOF
+          sort -o /tmp/sprint38-schema-source-envelope-gate-paths /tmp/sprint38-schema-source-envelope-gate-paths
+          test "$(sha256sum /tmp/sprint38-schema-source-envelope-gate-paths | awk '{print $1}')" = "ce1f2c0f1f1aaa0bab782eab85f6b023e2749cd98835812288711d37117887f9"
+
           if [[ "${{ github.event_name }}" = "pull_request" ]]; then
             git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | sort > /tmp/actual-sprint36-paths
             if cmp -s /tmp/actual-sprint36-paths /tmp/post-sprint36-reconciliation-paths; then
@@ -175,6 +181,8 @@ jobs:
               echo "Recognized exact post-Sprint37 canonical reconciliation successor shape."
             elif cmp -s /tmp/actual-sprint36-paths /tmp/sprint38-entry-gate-paths; then
               echo "Recognized exact Sprint38 entry-gate successor shape."
+            elif cmp -s /tmp/actual-sprint36-paths /tmp/sprint38-schema-source-envelope-gate-paths; then
+              echo "Recognized exact Sprint38 schema/source-envelope gate successor shape."
             else
               cmp -s /tmp/actual-sprint36-paths /tmp/sprint36-paths || {
                 echo "Sprint36 changed-file envelope mismatch." >&2
