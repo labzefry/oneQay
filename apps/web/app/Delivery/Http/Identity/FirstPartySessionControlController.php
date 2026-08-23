@@ -104,6 +104,33 @@ final class FirstPartySessionControlController
         }
     }
 
+    public function revokeAll(Request $request): Response
+    {
+        $correlationId = $this->correlationId($request);
+        try {
+            $this->assertNoPayload($request);
+            [$tenantId, $identityId, $authorityId, $organizationId, $outletId, $deviceId, $credentialEpoch, $factorEpoch] = $this->sessionContext($request);
+            $this->sessionAuthorities->revokeAll(
+                $tenantId,
+                $identityId,
+                $authorityId,
+                $organizationId,
+                $outletId,
+                $deviceId,
+                $credentialEpoch,
+                $factorEpoch,
+                $correlationId,
+            );
+
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return response()->noContent(204, ['Cache-Control' => 'no-store, private']);
+        } catch (InvalidArgumentException|FirstPartySessionAuthorityViolation) {
+            return $this->denied($correlationId);
+        }
+    }
+
     /** @return array{0:TenantId,1:PlatformIdentityId,2:string,3:string,4:?string,5:?string,6:int,7:?int} */
     private function sessionContext(Request $request): array
     {

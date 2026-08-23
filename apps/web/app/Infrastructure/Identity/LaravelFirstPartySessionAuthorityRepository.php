@@ -316,6 +316,57 @@ final readonly class LaravelFirstPartySessionAuthorityRepository implements Firs
         }
     }
 
+    public function revokeAll(
+        TenantId $tenantId,
+        PlatformIdentityId $identityId,
+        string $actorAuthorityId,
+        int $nowUnix,
+        string $correlationId,
+    ): int {
+        $this->assertOperational();
+        $this->assertAuthorityId($actorAuthorityId);
+        $this->assertEventInputs($nowUnix, $correlationId);
+
+        try {
+            return $this->connection->transaction(function () use (
+                $tenantId,
+                $identityId,
+                $actorAuthorityId,
+                $nowUnix,
+                $correlationId,
+            ): int {
+                $updated = $this->connection->table(self::SESSION_TABLE)
+                    ->where('tenant_id', $tenantId->value())
+                    ->where('identity_id', $identityId->value())
+                    ->whereNull('revoked_at_unix')
+                    ->where('expires_at_unix', '>=', $nowUnix)
+                    ->update(['revoked_at_unix' => $nowUnix]);
+
+                if (! is_int($updated) || $updated < 0) {
+                    $this->storageFailure();
+                }
+
+                if ($updated > 0) {
+                    $this->insertAudit(
+                        $tenantId->value(),
+                        $identityId->value(),
+                        $actorAuthorityId,
+                        $actorAuthorityId,
+                        'all_sessions_revoked',
+                        $correlationId,
+                        $nowUnix,
+                    );
+                }
+
+                return $updated;
+            });
+        } catch (FirstPartySessionAuthorityViolation $exception) {
+            throw $exception;
+        } catch (Throwable) {
+            $this->storageFailure();
+        }
+    }
+
     public function revokeCurrent(
         TenantId $tenantId,
         PlatformIdentityId $identityId,
@@ -375,7 +426,7 @@ final readonly class LaravelFirstPartySessionAuthorityRepository implements Firs
         string $correlationId,
         int $occurredAtUnix,
     ): void {
-        if (! in_array($eventType, ['session_issued', 'session_revoked', 'other_sessions_revoked', 'session_logout'], true)) {
+        if (! in_array($eventType, ['session_issued', 'session_revoked', 'other_sessions_revoked', 'all_sessions_revoked', 'session_logout'], true)) {
             $this->invalidState();
         }
         $inserted = $this->connection->table(self::AUDIT_TABLE)->insert([

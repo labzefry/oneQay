@@ -251,6 +251,38 @@ final readonly class FirstPartySessionAuthorityService
         );
     }
 
+    public function revokeAll(
+        TenantId $tenantId,
+        PlatformIdentityId $identityId,
+        string $currentAuthorityId,
+        string $organizationId,
+        ?string $outletId,
+        ?string $deviceId,
+        mixed $sessionCredentialEpoch,
+        mixed $sessionFactorEpoch,
+        string $correlationId,
+    ): int {
+        $this->assertActiveCurrent(
+            $tenantId,
+            $identityId,
+            $currentAuthorityId,
+            $organizationId,
+            $outletId,
+            $deviceId,
+            $sessionCredentialEpoch,
+            $sessionFactorEpoch,
+        );
+        $this->assertCorrelationId($correlationId);
+
+        return $this->repository->revokeAll(
+            $tenantId,
+            $identityId,
+            $currentAuthorityId,
+            $this->now(),
+            $correlationId,
+        );
+    }
+
     public function logoutCurrent(
         TenantId $tenantId,
         PlatformIdentityId $identityId,
