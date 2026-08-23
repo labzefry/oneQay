@@ -179,6 +179,21 @@ jobs:
             sort -o /tmp/sprint38-schema-source-envelope-gate-paths /tmp/sprint38-schema-source-envelope-gate-paths
             test "$(sha256sum /tmp/sprint38-schema-source-envelope-gate-paths | awk '{print $1}')" = "ce1f2c0f1f1aaa0bab782eab85f6b023e2749cd98835812288711d37117887f9"
 
+            cat > /tmp/sprint38-source-paths <<'EOF'
+          .github/workflows/sprint35-privileged-totp-recovery-regression.yml
+          .github/workflows/sprint36-first-party-session-inventory-revocation-regression.yml
+          .github/workflows/sprint37-first-party-all-session-termination-regression.yml
+          .github/workflows/sprint38-first-party-session-absolute-lifetime-regression.yml
+          apps/web/app/Application/Identity/FirstPartySessionAuthorityService.php
+          apps/web/app/Providers/AppServiceProvider.php
+          apps/web/config/oneqay.php
+          apps/web/tests/first-party-session-absolute-lifetime.php
+          apps/web/tests/first-party-session-inventory-revocation.php
+          docs/FIRST_PARTY_SESSION_ABSOLUTE_LIFETIME_FOUNDATION.md
+          EOF
+            sort -o /tmp/sprint38-source-paths /tmp/sprint38-source-paths
+            test "$(sha256sum /tmp/sprint38-source-paths | awk '{print $1}')" = "411950d5602dc7160668c88e08a3941ebccc8bdc82d20bee77ce4004f039d216"
+
             cat > /tmp/sprint35-workflow-correction-paths <<'EOF'
           .github/workflows/sprint35-privileged-totp-recovery-regression.yml
           EOF
@@ -187,7 +202,7 @@ jobs:
               echo "Recognized exact Sprint36 23-path source successor shape."
               sprint36_successor=true
             elif [[ "$actual_count" -eq 19 && "$actual_fingerprint" == 'fc2b578fc9d090dfce1fd34c5acfa7a07f065979a94f62becb3dc54dee664920' ]]; then
-              echo "Recognized exact 19-path historical preservation-compatibility shape; governed Sprint37 predecessor reuse remains bounded to the same exact path fingerprint."
+              echo "Recognized exact 19-path historical preservation-compatibility shape; governed successor reuse remains bounded to the same exact path fingerprint."
               sprint36_successor=true
             elif [[ "$actual_count" -eq 11 && "$actual_fingerprint" == 'a221779e05b1e8ab220610b5068be5d1eb01bc08b516b338ba8f22373e7d89d0' ]]; then
               echo "Recognized exact Sprint37 11-path source successor shape."
@@ -220,6 +235,9 @@ jobs:
               sprint36_successor=true
             elif cmp -s /tmp/actual-sprint35-paths /tmp/sprint38-schema-source-envelope-gate-paths; then
               echo "Recognized exact Sprint38 schema/source-envelope gate successor shape."
+              sprint36_successor=true
+            elif cmp -s /tmp/actual-sprint35-paths /tmp/sprint38-source-paths; then
+              echo "Recognized exact Sprint38 source successor shape."
               sprint36_successor=true
             elif cmp -s /tmp/actual-sprint35-paths /tmp/sprint36-entry-gate-paths; then
               echo "Recognized exact Sprint36 entry-gate successor shape."
