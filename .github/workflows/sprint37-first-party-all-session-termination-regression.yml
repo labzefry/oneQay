@@ -83,6 +83,45 @@ jobs:
           sort -o /tmp/sprint38-schema-source-envelope-gate-paths /tmp/sprint38-schema-source-envelope-gate-paths
           test "$(sha256sum /tmp/sprint38-schema-source-envelope-gate-paths | awk '{print $1}')" = "ce1f2c0f1f1aaa0bab782eab85f6b023e2749cd98835812288711d37117887f9"
 
+          cat > /tmp/sprint38-historical-preservation-paths <<'EOF'
+          .github/workflows/m7-2-tenant-isolation-regression.yml
+          .github/workflows/m7-3-identity-org-context-regression.yml
+          .github/workflows/m7-4a-technical-preview-interaction-regression.yml
+          .github/workflows/m7-5-preview-db-qualification-regression.yml
+          .github/workflows/m7-5-preview-release-artifact.yml
+          .github/workflows/sprint21-role-permission-policy-regression.yml
+          .github/workflows/sprint22-policy-administration-regression.yml
+          .github/workflows/sprint23-initial-tenant-admin-provisioning-regression.yml
+          .github/workflows/sprint24-protected-control-admin-lifecycle-regression.yml
+          .github/workflows/sprint25-policy-administration-delivery-regression.yml
+          .github/workflows/sprint26-identity-credential-verification-regression.yml
+          .github/workflows/sprint27-first-party-session-establishment-regression.yml
+          .github/workflows/sprint28-initial-password-enrollment-regression.yml
+          .github/workflows/sprint29-first-control-principal-credential-bootstrap-regression.yml
+          .github/workflows/sprint30-privileged-totp-mfa-regression.yml
+          .github/workflows/sprint31-privileged-reauthentication-step-up-regression.yml
+          .github/workflows/sprint33-recovery-bound-password-reset-regression.yml
+          .github/workflows/sprint34-authenticated-password-change-regression.yml
+          .github/workflows/sprint35-privileged-totp-recovery-regression.yml
+          EOF
+          sort -o /tmp/sprint38-historical-preservation-paths /tmp/sprint38-historical-preservation-paths
+          test "$(sha256sum /tmp/sprint38-historical-preservation-paths | awk '{print $1}')" = "fc2b578fc9d090dfce1fd34c5acfa7a07f065979a94f62becb3dc54dee664920"
+
+          cat > /tmp/sprint38-source-paths <<'EOF'
+          .github/workflows/sprint35-privileged-totp-recovery-regression.yml
+          .github/workflows/sprint36-first-party-session-inventory-revocation-regression.yml
+          .github/workflows/sprint37-first-party-all-session-termination-regression.yml
+          .github/workflows/sprint38-first-party-session-absolute-lifetime-regression.yml
+          apps/web/app/Application/Identity/FirstPartySessionAuthorityService.php
+          apps/web/app/Providers/AppServiceProvider.php
+          apps/web/config/oneqay.php
+          apps/web/tests/first-party-session-absolute-lifetime.php
+          apps/web/tests/first-party-session-inventory-revocation.php
+          docs/FIRST_PARTY_SESSION_ABSOLUTE_LIFETIME_FOUNDATION.md
+          EOF
+          sort -o /tmp/sprint38-source-paths /tmp/sprint38-source-paths
+          test "$(sha256sum /tmp/sprint38-source-paths | awk '{print $1}')" = "411950d5602dc7160668c88e08a3941ebccc8bdc82d20bee77ce4004f039d216"
+
           if [[ "${{ github.event_name }}" = "pull_request" ]]; then
             git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | sort > /tmp/actual-sprint37-paths
             if cmp -s /tmp/actual-sprint37-paths /tmp/sprint37-paths; then
@@ -95,6 +134,10 @@ jobs:
               echo "Recognized exact Sprint38 entry-gate successor shape."
             elif cmp -s /tmp/actual-sprint37-paths /tmp/sprint38-schema-source-envelope-gate-paths; then
               echo "Recognized exact Sprint38 schema/source-envelope gate successor shape."
+            elif cmp -s /tmp/actual-sprint37-paths /tmp/sprint38-historical-preservation-paths; then
+              echo "Recognized exact Sprint38 19-path historical preservation predecessor shape."
+            elif cmp -s /tmp/actual-sprint37-paths /tmp/sprint38-source-paths; then
+              echo "Recognized exact Sprint38 source successor shape."
             else
               echo "Sprint37 changed-file envelope mismatch." >&2
               diff -u /tmp/sprint37-paths /tmp/actual-sprint37-paths >&2 || true
