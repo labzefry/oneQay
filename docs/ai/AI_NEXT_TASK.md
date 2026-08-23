@@ -1,5 +1,27 @@
 # AI Next Task
 
+## Canonical post-Sprint 37 program-state reconciliation — 2026-08-23
+
+For current identity, security, recovery, session-control, schema, runtime, workflow, and next-work interpretation, this section supersedes older current-facing post-Sprint36 wording retained below as historical provenance.
+
+- Sprint 21 through Sprint 37 governed control/identity foundations are **COMPLETE / IMPLEMENTED / PUBLISHED** within their bounded authorities.
+- Sprint37 **First-Party All-Session Termination (Tenant-Scoped Revoke-All) Foundation** is published through source PR #245 as `0b2ac0ea18b1ad28e6b46ba952d2ac260b297643` with tree `fe9fd64e7f9dda2e24c4fb573f73b5d5441a5d50`, parent `d8f9ffe52773c44f256a4721dc2390bd734cf797`, and a verified/valid publication signature.
+- The exact qualified Sprint37 source head was `f6b3b18e16d68f91a8e12dbd567a06571add1daf`; the semantic source diff is exactly **11 paths** with sorted-path SHA-256 `a221779e05b1e8ab220610b5068be5d1eb01bc08b516b338ba8f22373e7d89d0`.
+- Sprint37 entry-gate preservation PR #238, entry gate PR #239, schema/source-envelope preservation PR #240, schema/source-envelope gate PR #241, historical-preservation bridge PR #243, historical-preservation predecessor PR #244, and source PR #245 are published provenance. PR #242 was closed without merge and grants no authority. All consumed lifecycle authorities grant no standing successor authority.
+- Post-Sprint37 reconciliation successor preservation is published through PR #246 as `deadaeacd665cb62e5c59e4fe33c70d5162ec992` with tree `7ba8b9366dab15f1dd45053220c4540234b77f3f`, parent `0b2ac0ea18b1ad28e6b46ba952d2ac260b297643`, and a verified/valid signature. The predecessor changes exactly Sprint35/Sprint36/Sprint37 preservation workflows with sorted-path SHA-256 `93fe19acad52a31981ecea81ab1dc65c730f0f01729959ca6eaedb0de5b128b7` and recognizes only the exact two-document reconciliation successor fingerprint `2b3a711f5cb921dea0fb51a005c0bc742186bce526a0a7e87b10215733215dbe`.
+- Canonical source migrations remain exactly **#1 through #13** and are immutable for this reconciliation. Migration #14 is **NOT REQUIRED / NOT SELECTED / NOT AUTHORIZED**.
+- Sprint37 adds `POST /auth/sessions/revoke-all` / `auth.sessions.revoke-all` under the existing session-control boundary. Exact tenant + identity ownership is derived server-side; caller-supplied owner/authority selectors are not accepted.
+- Revoke-all monotonically revokes every active logical first-party session authority for the exact current tenant + identity, including current authority, while another tenant or identity remains untouched. Durable revocation completes before local Laravel session invalidation and CSRF regeneration.
+- Protected privileged identities reuse canonical `session_control` step-up with **300-second** freshness; ordinary identities receive no invented privileged challenge. Credential and factor epochs remain validation evidence and are not mutated by revoke-all.
+- The only new bounded audit event is `all_sessions_revoked`; audit evidence remains server-derived and secret-free. Replay/concurrency cannot resurrect authority or create duplicate transition evidence after the active owner set has already converged to revoked.
+- Existing inventory, revoke-one, revoke-others, canonical logout, 7200-second idle lifetime, tenant/identity isolation, credential/factor epoch enforcement, and disabled-by-default session-control semantics remain preserved.
+- `ONEQAY_AUTHENTICATION_SESSION_CONTROL_ENABLED=false` remains the source default. Sprint37 delivery remains **Local/Test/CI only**. Technical Preview remains **`NO_SCHEMA_CHANGE`**. Production remains **`NO-GO / NOT AUTHORIZED`**. Updater remains **`DISABLED / UNWIRED`**. Deployment and release remain **NOT AUTHORIZED**.
+- This reconciliation selects **no Sprint38 implementation concern** and grants no Sprint38 source, schema/migration, Preview, Production, updater, deployment, or release authority. The next governed action is Product Owner selection of a future concern and its separately authorized bounded entry gate.
+
+The detailed factual baseline is `docs/ai/AI_POST_SPRINT_37_CANONICAL_STATE.md`. Historical sections below remain preserved as provenance and must not override this section for current-state interpretation.
+
+Attribution: **Lab | zefry**
+
 ## Canonical post-Sprint 36 program-state reconciliation — 2026-08-22
 
 For current identity, security, recovery, session-control, schema, runtime, workflow, and next-work interpretation, this section supersedes older current-facing post-Sprint35 wording retained below as historical provenance.
