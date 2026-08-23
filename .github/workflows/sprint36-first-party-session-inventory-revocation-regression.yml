@@ -161,6 +161,21 @@ jobs:
           sort -o /tmp/sprint38-schema-source-envelope-gate-paths /tmp/sprint38-schema-source-envelope-gate-paths
           test "$(sha256sum /tmp/sprint38-schema-source-envelope-gate-paths | awk '{print $1}')" = "ce1f2c0f1f1aaa0bab782eab85f6b023e2749cd98835812288711d37117887f9"
 
+          cat > /tmp/sprint38-source-paths <<'EOF'
+          .github/workflows/sprint35-privileged-totp-recovery-regression.yml
+          .github/workflows/sprint36-first-party-session-inventory-revocation-regression.yml
+          .github/workflows/sprint37-first-party-all-session-termination-regression.yml
+          .github/workflows/sprint38-first-party-session-absolute-lifetime-regression.yml
+          apps/web/app/Application/Identity/FirstPartySessionAuthorityService.php
+          apps/web/app/Providers/AppServiceProvider.php
+          apps/web/config/oneqay.php
+          apps/web/tests/first-party-session-absolute-lifetime.php
+          apps/web/tests/first-party-session-inventory-revocation.php
+          docs/FIRST_PARTY_SESSION_ABSOLUTE_LIFETIME_FOUNDATION.md
+          EOF
+          sort -o /tmp/sprint38-source-paths /tmp/sprint38-source-paths
+          test "$(sha256sum /tmp/sprint38-source-paths | awk '{print $1}')" = "411950d5602dc7160668c88e08a3941ebccc8bdc82d20bee77ce4004f039d216"
+
           if [[ "${{ github.event_name }}" = "pull_request" ]]; then
             git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | sort > /tmp/actual-sprint36-paths
             if cmp -s /tmp/actual-sprint36-paths /tmp/post-sprint36-reconciliation-paths; then
@@ -168,7 +183,7 @@ jobs:
             elif cmp -s /tmp/actual-sprint36-paths /tmp/post-sprint36-compatibility-correction-paths; then
               echo "Recognized exact post-Sprint36 two-workflow compatibility correction shape."
             elif cmp -s /tmp/actual-sprint36-paths /tmp/sprint37-preservation-compatibility-paths; then
-              echo "Recognized exact Sprint37 19-path historical preservation predecessor shape."
+              echo "Recognized exact 19-path historical preservation predecessor shape."
             elif cmp -s /tmp/actual-sprint36-paths /tmp/sprint37-entry-gate-paths; then
               echo "Recognized exact Sprint37 entry-gate successor shape."
             elif cmp -s /tmp/actual-sprint36-paths /tmp/sprint37-schema-source-envelope-gate-paths; then
@@ -183,6 +198,8 @@ jobs:
               echo "Recognized exact Sprint38 entry-gate successor shape."
             elif cmp -s /tmp/actual-sprint36-paths /tmp/sprint38-schema-source-envelope-gate-paths; then
               echo "Recognized exact Sprint38 schema/source-envelope gate successor shape."
+            elif cmp -s /tmp/actual-sprint36-paths /tmp/sprint38-source-paths; then
+              echo "Recognized exact Sprint38 source successor shape."
             else
               cmp -s /tmp/actual-sprint36-paths /tmp/sprint36-paths || {
                 echo "Sprint36 changed-file envelope mismatch." >&2
