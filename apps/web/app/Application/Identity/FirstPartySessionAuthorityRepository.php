@@ -71,6 +71,14 @@ interface FirstPartySessionAuthorityRepository
         string $correlationId,
     ): int;
 
+    public function revokeAll(
+        TenantId $tenantId,
+        PlatformIdentityId $identityId,
+        string $actorAuthorityId,
+        int $nowUnix,
+        string $correlationId,
+    ): int;
+
     public function revokeCurrent(
         TenantId $tenantId,
         PlatformIdentityId $identityId,

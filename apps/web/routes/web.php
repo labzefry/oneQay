@@ -66,6 +66,10 @@ if (in_array($firstPartyAuthRuntime, ['local', 'test', 'ci'], true)) {
         Route::post('/auth/sessions/revoke-others', [FirstPartySessionControlController::class, 'revokeOthers'])
             ->middleware(['session.active', 'session.control-mutation', 'throttle:5,1', 'throttle:20,60'])
             ->name('auth.sessions.revoke-others');
+
+        Route::post('/auth/sessions/revoke-all', [FirstPartySessionControlController::class, 'revokeAll'])
+            ->middleware(['session.active', 'session.control-mutation', 'throttle:5,1', 'throttle:20,60'])
+            ->name('auth.sessions.revoke-all');
     }
 
     if ((bool) config('oneqay.authentication_recovery.enabled', false)

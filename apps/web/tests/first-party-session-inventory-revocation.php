@@ -220,7 +220,7 @@ try {
 
 $auditRows = $connection->table('oneqay_identity_first_party_session_audit')->orderBy('occurred_at_unix')->get();
 $assert($auditRows->count() >= 6, 'session authority audit evidence is incomplete');
-$allowedEvents = ['session_issued', 'session_revoked', 'other_sessions_revoked', 'session_logout'];
+$allowedEvents = ['session_issued', 'session_revoked', 'other_sessions_revoked', 'all_sessions_revoked', 'session_logout'];
 foreach ($auditRows as $audit) {
     $assert(is_object($audit) && is_string($audit->event_type ?? null) && in_array($audit->event_type, $allowedEvents, true), 'unexpected session audit event type');
     $encoded = json_encode($audit, JSON_THROW_ON_ERROR);
@@ -230,10 +230,9 @@ foreach ($auditRows as $audit) {
 }
 
 $routeNames = array_filter(array_map(static fn ($route): ?string => $route->getName(), iterator_to_array($app['router']->getRoutes())));
-foreach (['auth.sessions.inventory', 'auth.sessions.revoke-one', 'auth.sessions.revoke-others', 'auth.session-control.reauthenticate'] as $requiredRoute) {
-    $assert(in_array($requiredRoute, $routeNames, true), 'required Sprint36 route missing: '.$requiredRoute);
+foreach (['auth.sessions.inventory', 'auth.sessions.revoke-one', 'auth.sessions.revoke-others', 'auth.sessions.revoke-all', 'auth.session-control.reauthenticate'] as $requiredRoute) {
+    $assert(in_array($requiredRoute, $routeNames, true), 'required Sprint36/Sprint37 route missing: '.$requiredRoute);
 }
-$assert(! in_array('auth.sessions.revoke-all', $routeNames, true), 'forbidden revoke-all route exists');
 
 $migration13 = require __DIR__.'/../database/migrations/0000_00_00_000013_create_first_party_session_authority.php';
 try {
