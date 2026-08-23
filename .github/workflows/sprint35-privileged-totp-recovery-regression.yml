@@ -152,6 +152,21 @@ jobs:
             sort -o /tmp/sprint37-source-paths /tmp/sprint37-source-paths
             test "$(sha256sum /tmp/sprint37-source-paths | awk '{print $1}')" = "a221779e05b1e8ab220610b5068be5d1eb01bc08b516b338ba8f22373e7d89d0"
 
+            cat > /tmp/post-sprint37-preservation-paths <<'EOF'
+          .github/workflows/sprint35-privileged-totp-recovery-regression.yml
+          .github/workflows/sprint36-first-party-session-inventory-revocation-regression.yml
+          .github/workflows/sprint37-first-party-all-session-termination-regression.yml
+          EOF
+            sort -o /tmp/post-sprint37-preservation-paths /tmp/post-sprint37-preservation-paths
+            test "$(sha256sum /tmp/post-sprint37-preservation-paths | awk '{print $1}')" = "93fe19acad52a31981ecea81ab1dc65c730f0f01729959ca6eaedb0de5b128b7"
+
+            cat > /tmp/post-sprint37-reconciliation-paths <<'EOF'
+          docs/ai/AI_NEXT_TASK.md
+          docs/ai/AI_POST_SPRINT_37_CANONICAL_STATE.md
+          EOF
+            sort -o /tmp/post-sprint37-reconciliation-paths /tmp/post-sprint37-reconciliation-paths
+            test "$(sha256sum /tmp/post-sprint37-reconciliation-paths | awk '{print $1}')" = "2b3a711f5cb921dea0fb51a005c0bc742186bce526a0a7e87b10215733215dbe"
+
             cat > /tmp/sprint35-workflow-correction-paths <<'EOF'
           .github/workflows/sprint35-privileged-totp-recovery-regression.yml
           EOF
@@ -181,6 +196,12 @@ jobs:
               sprint36_successor=true
             elif cmp -s /tmp/actual-sprint35-paths /tmp/sprint37-schema-source-envelope-gate-paths; then
               echo "Recognized exact Sprint37 schema/source-envelope gate successor shape."
+              sprint36_successor=true
+            elif cmp -s /tmp/actual-sprint35-paths /tmp/post-sprint37-preservation-paths; then
+              echo "Recognized exact post-Sprint37 preservation predecessor shape."
+              sprint36_successor=true
+            elif cmp -s /tmp/actual-sprint35-paths /tmp/post-sprint37-reconciliation-paths; then
+              echo "Recognized exact post-Sprint37 canonical reconciliation successor shape."
               sprint36_successor=true
             elif cmp -s /tmp/actual-sprint35-paths /tmp/sprint36-entry-gate-paths; then
               echo "Recognized exact Sprint36 entry-gate successor shape."
