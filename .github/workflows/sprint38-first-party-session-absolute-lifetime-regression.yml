@@ -161,23 +161,33 @@ jobs:
           composer validate --no-check-publish
           composer install --no-interaction --no-progress --prefer-dist
 
-      - name: Run dedicated Sprint38 absolute lifetime regression
+      - name: Run dedicated Sprint38 absolute lifetime regression fail-closed
         working-directory: apps/web
-        run: php tests/first-party-session-absolute-lifetime.php
+        shell: bash
+        run: |
+          set -euo pipefail
+          output="$(php tests/first-party-session-absolute-lifetime.php 2>&1)" || { printf '%s\n' "$output"; exit 1; }
+          printf '%s\n' "$output"
+          grep -Fq 'Sprint38 first-party session absolute lifetime regression passed.' <<<"$output"
 
       - name: Preserve Sprint36 inventory and revocation regression
         working-directory: apps/web
         run: php tests/first-party-session-inventory-revocation.php
 
-      - name: Preserve Sprint37 all-session termination regression
-        working-directory: apps/web
-        run: php tests/first-party-session-all-session-termination.php
+      - name: Preserve unchanged Sprint37 regression fixture
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="${{ github.event.pull_request.base.sha }}"
+          test "$(git rev-parse HEAD:apps/web/tests/first-party-session-all-session-termination.php)" = "$(git rev-parse "$base":apps/web/tests/first-party-session-all-session-termination.php)"
+          git diff --exit-code "$base" HEAD -- apps/web/tests/first-party-session-all-session-termination.php
 
       - name: Preserve protected deployment boundaries
         shell: bash
         run: |
           set -euo pipefail
-          grep -Fq 'ONEQAY_AUTHENTICATION_SESSION_CONTROL_ENABLED=false' apps/web/environment.example
+          grep -Fq "env('ONEQAY_AUTHENTICATION_SESSION_CONTROL_ENABLED', false)" apps/web/config/oneqay.php
           grep -Fq "'install_enabled' => false" apps/web/config/oneqay.php
           grep -Fq 'Technical Preview remains **NO_SCHEMA_CHANGE**' docs/FIRST_PARTY_SESSION_ABSOLUTE_LIFETIME_FOUNDATION.md
           grep -Fq 'Production remains **NO-GO / NOT AUTHORIZED**' docs/FIRST_PARTY_SESSION_ABSOLUTE_LIFETIME_FOUNDATION.md
