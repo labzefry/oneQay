@@ -1,5 +1,30 @@
 # AI Next Task
 
+## Canonical post-Sprint 38 program-state reconciliation — 2026-08-25
+
+For current identity, security, recovery, session-control, schema, runtime, workflow, and next-work interpretation, this section supersedes older current-facing post-Sprint37 wording retained below as historical provenance.
+
+- Sprint 21 through Sprint 38 governed control/identity/session foundations are **COMPLETE / IMPLEMENTED / PUBLISHED** within their bounded authorities.
+- Sprint38 **First-Party Session Absolute Lifetime Foundation** is published through source PR #254 as `1443749c9c69b6a2f9bcfa37534d51b92b6a8de6` with tree `1562f95d6ae05f2dea432365bdbb87748e2718e2`, parent `99095a16f881084fef5937dfbcc0ec9ee6ac97ee`, and a verified/valid publication signature.
+- The exact qualified Sprint38 source head was `1aad005fc52fd2d7160c73b81fcdadb38ea4a499`; the semantic source diff is exactly **10 paths** with sorted-path SHA-256 `411950d5602dc7160668c88e08a3941ebccc8bdc82d20bee77ce4004f039d216` after **29/29** exact-head pull-request workflows succeeded.
+- Sprint38 entry-gate preservation PR #248, entry gate PR #249, schema/source-gate preservation PR #250, schema/source-envelope gate PR #251, source preservation bridge PR #252, historical preservation predecessor PR #253, and source PR #254 are published provenance. All consumed lifecycle authorities grant no standing successor authority.
+- Post-Sprint38 reconciliation preservation is published through PR #255 as `767a762701ad6dccb53428ff9976e9c22631bc16` with tree `ad78349c5313d930166625f79987b032ce136c00`, parent `1443749c9c69b6a2f9bcfa37534d51b92b6a8de6`, and a verified/valid signature. The predecessor changes exactly Sprint35/Sprint36/Sprint37/Sprint38 preservation workflows with sorted-path SHA-256 `f6064e6563ec987fc487162fc29285870fab4869509a626c1b9a9280dc6ebafe` and recognizes the exact two-document reconciliation successor fingerprint `e1bd5f1acb858e3b8e91f3b57dfe8505c4142564142bf9a32b98240c1dd9c472`.
+- Canonical source migrations remain exactly **#1 through #13** and are immutable for this reconciliation. Migration #14 is **NOT REQUIRED / NOT SELECTED / NOT AUTHORIZED**.
+- Sprint38 preserves the existing fixed idle authority lifetime of **7200 seconds** and adds a fixed absolute logical authority lifetime of **43200 seconds / 12 hours** from durable server-owned `issued_at_unix`.
+- Effective authority expiry is bounded by `min(now + 7200, issued_at_unix + 43200)`. Activity, Laravel session rotation, inventory access, and privileged step-up do not reset the durable issuance origin and cannot extend the same logical authority beyond the hard deadline.
+- The exact absolute deadline remains a valid equality boundary. At equality the authority may remain valid, but the service performs no non-advancing repository touch when effective expiry is no longer greater than the current time. At deadline + 1 second the authority fails closed.
+- Inventory reports effective capped expiry; an inflated historical `expires_at_unix` cannot grant authority beyond `issued_at_unix + 43200`, and absolute-expired authorities are denied or omitted from active inventory.
+- Clock rollback before durable issuance, malformed timestamp state, and idle/absolute TTL configuration mismatch fail closed.
+- Canonical lifetime configuration remains source-controlled as `idle_ttl_seconds => 7200` and `absolute_ttl_seconds => 43200`; Sprint38 introduces no environment-controlled absolute TTL.
+- Sprint36 inventory/revoke-one/revoke-others/canonical logout semantics and Sprint37 tenant-scoped revoke-all remain preserved. Exact tenant + identity ownership, opaque `public_handle`, non-public `authority_id`, credential/factor epoch validation, and `session_control` step-up freshness of **300 seconds** remain unchanged.
+- Sprint38 adds no public route, API, request payload, repository method, audit event, middleware authority, or schema change. Existing session audit vocabulary, including `all_sessions_revoked`, remains preserved and secret-free.
+- `ONEQAY_AUTHENTICATION_SESSION_CONTROL_ENABLED=false` remains the source default. Sprint38 delivery remains **Local/Test/CI only**. Technical Preview remains **`NO_SCHEMA_CHANGE`**. Production remains **`NO-GO / NOT AUTHORIZED`**. Updater remains **`DISABLED / UNWIRED`**. Deployment and release remain **NOT AUTHORIZED**.
+- This reconciliation selects **no Sprint39 implementation concern** and grants no Sprint39 source, schema/migration, Preview, Production, updater, deployment, or release authority. The next governed action is Product Owner selection of a future concern and its separately authorized bounded entry gate.
+
+The detailed factual baseline is `docs/ai/AI_POST_SPRINT_38_CANONICAL_STATE.md`. Historical sections below remain preserved as provenance and must not override this section for current-state interpretation.
+
+Attribution: **Lab | zefry**
+
 ## Canonical post-Sprint 37 program-state reconciliation — 2026-08-23
 
 For current identity, security, recovery, session-control, schema, runtime, workflow, and next-work interpretation, this section supersedes older current-facing post-Sprint36 wording retained below as historical provenance.
