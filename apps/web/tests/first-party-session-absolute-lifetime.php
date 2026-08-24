@@ -183,7 +183,7 @@ $assert((int) $rollingRow->expires_at_unix === $issuedAt + 43200, 'continuous ac
 $inventoryNearDeadline = $service->inventory($tenantId, $identityId, $rolling->authorityId(), 'organization-alpha', null, null, 8, null);
 $inflatedInventory = array_values(array_filter(
     $inventoryNearDeadline,
-    static fn ($item): bool => hash_equals($inflated->publicHandle(), $item->publicHandle),
+    static fn ($item): bool => hash_equals($inflated->publicHandle(), $item->handle),
 ));
 $assert(count($inflatedInventory) === 1, 'pre-Sprint38-style inflated row missing before absolute deadline');
 $assert($inflatedInventory[0]->expiresAtUnix === $issuedAt + 43200, 'inventory exposed durable expiry beyond absolute deadline');
@@ -202,7 +202,7 @@ $expectViolation(
 
 $viewer = $service->issue($tenantId, $identityId, 'organization-alpha', null, null, 8, null, 'S38-Issue_Viewer');
 $afterDeadlineInventory = $service->inventory($tenantId, $identityId, $viewer->authorityId(), 'organization-alpha', null, null, 8, null);
-$handlesAfterDeadline = array_map(static fn ($item): string => $item->publicHandle, $afterDeadlineInventory);
+$handlesAfterDeadline = array_map(static fn ($item): string => $item->handle, $afterDeadlineInventory);
 $assert(! in_array($inflated->publicHandle(), $handlesAfterDeadline, true), 'inflated expired row remained an active inventory item');
 $assert(! in_array($rolling->publicHandle(), $handlesAfterDeadline, true), 'absolute-expired rolling row remained an active inventory item');
 
