@@ -167,6 +167,13 @@ jobs:
             sort -o /tmp/post-sprint37-reconciliation-paths /tmp/post-sprint37-reconciliation-paths
             test "$(sha256sum /tmp/post-sprint37-reconciliation-paths | awk '{print $1}')" = "2b3a711f5cb921dea0fb51a005c0bc742186bce526a0a7e87b10215733215dbe"
 
+            cat > /tmp/post-sprint38-reconciliation-paths <<'EOF'
+          docs/ai/AI_NEXT_TASK.md
+          docs/ai/AI_POST_SPRINT_38_CANONICAL_STATE.md
+          EOF
+            sort -o /tmp/post-sprint38-reconciliation-paths /tmp/post-sprint38-reconciliation-paths
+            test "$(sha256sum /tmp/post-sprint38-reconciliation-paths | awk '{print $1}')" = "e1bd5f1acb858e3b8e91f3b57dfe8505c4142564142bf9a32b98240c1dd9c472"
+
             cat > /tmp/sprint38-entry-gate-paths <<'EOF'
           docs/SPRINT_38_FIRST_PARTY_SESSION_ABSOLUTE_LIFETIME_ENTRY_GATE.md
           EOF
@@ -229,6 +236,9 @@ jobs:
               sprint36_successor=true
             elif cmp -s /tmp/actual-sprint35-paths /tmp/post-sprint37-reconciliation-paths; then
               echo "Recognized exact post-Sprint37 canonical reconciliation successor shape."
+              sprint36_successor=true
+            elif cmp -s /tmp/actual-sprint35-paths /tmp/post-sprint38-reconciliation-paths; then
+              echo "Recognized exact post-Sprint38 canonical reconciliation successor shape."
               sprint36_successor=true
             elif cmp -s /tmp/actual-sprint35-paths /tmp/sprint38-entry-gate-paths; then
               echo "Recognized exact Sprint38 entry-gate successor shape."
