@@ -104,13 +104,16 @@ final readonly class FirstPartySessionAuthorityService
 
         $lastSeen = $this->recordInt($record, 'last_seen_at_unix');
         if (($now - $lastSeen) >= self::TOUCH_INTERVAL_SECONDS) {
-            $this->repository->touch(
-                $tenantId,
-                $identityId,
-                $authorityId,
-                $now,
-                $this->effectiveExpiry($this->recordInt($record, 'issued_at_unix'), $now),
-            );
+            $effectiveExpiry = $this->effectiveExpiry($this->recordInt($record, 'issued_at_unix'), $now);
+            if ($effectiveExpiry > $now) {
+                $this->repository->touch(
+                    $tenantId,
+                    $identityId,
+                    $authorityId,
+                    $now,
+                    $effectiveExpiry,
+                );
+            }
         }
     }
 
