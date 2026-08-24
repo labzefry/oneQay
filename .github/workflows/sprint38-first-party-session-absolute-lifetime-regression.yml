@@ -1,0 +1,204 @@
+name: Sprint38 First-Party Session Absolute Lifetime Regression
+
+# Attribution: Lab | zefry
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/sprint35-privileged-totp-recovery-regression.yml'
+      - '.github/workflows/sprint36-first-party-session-inventory-revocation-regression.yml'
+      - '.github/workflows/sprint37-first-party-all-session-termination-regression.yml'
+      - '.github/workflows/sprint38-first-party-session-absolute-lifetime-regression.yml'
+      - 'apps/web/app/Application/Identity/FirstPartySessionAuthorityService.php'
+      - 'apps/web/app/Providers/AppServiceProvider.php'
+      - 'apps/web/config/oneqay.php'
+      - 'apps/web/tests/first-party-session-absolute-lifetime.php'
+      - 'apps/web/tests/first-party-session-inventory-revocation.php'
+      - 'docs/FIRST_PARTY_SESSION_ABSOLUTE_LIFETIME_FOUNDATION.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint38-first-party-session-absolute-lifetime-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sprint38-first-party-session-absolute-lifetime-regression:
+    name: sprint38-first-party-session-absolute-lifetime-regression
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWE=
+      APP_DEBUG: 'false'
+      APP_URL: http://localhost
+      ONEQAY_RUNTIME_CLASS: ci
+      ONEQAY_PERSISTENCE_ENABLED: 'true'
+      ONEQAY_AUTHENTICATION_SESSION_CONTROL_ENABLED: 'true'
+      ONEQAY_PRIVILEGED_TOTP_MFA_ENABLED: 'false'
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Setup exact PHP runtime
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        with:
+          php-version: '8.3'
+          tools: composer:v2
+          coverage: none
+
+      - name: Enforce exact Sprint38 source envelope
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/sprint38-source-paths <<'EOF'
+          .github/workflows/sprint35-privileged-totp-recovery-regression.yml
+          .github/workflows/sprint36-first-party-session-inventory-revocation-regression.yml
+          .github/workflows/sprint37-first-party-all-session-termination-regression.yml
+          .github/workflows/sprint38-first-party-session-absolute-lifetime-regression.yml
+          apps/web/app/Application/Identity/FirstPartySessionAuthorityService.php
+          apps/web/app/Providers/AppServiceProvider.php
+          apps/web/config/oneqay.php
+          apps/web/tests/first-party-session-absolute-lifetime.php
+          apps/web/tests/first-party-session-inventory-revocation.php
+          docs/FIRST_PARTY_SESSION_ABSOLUTE_LIFETIME_FOUNDATION.md
+          EOF
+          sort -o /tmp/sprint38-source-paths /tmp/sprint38-source-paths
+          test "$(sha256sum /tmp/sprint38-source-paths | awk '{print $1}')" = '411950d5602dc7160668c88e08a3941ebccc8bdc82d20bee77ce4004f039d216'
+
+          git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | sort > /tmp/actual-sprint38-source-paths
+          test "$(wc -l < /tmp/actual-sprint38-source-paths)" -eq 10
+          test "$(sha256sum /tmp/actual-sprint38-source-paths | awk '{print $1}')" = '411950d5602dc7160668c88e08a3941ebccc8bdc82d20bee77ce4004f039d216'
+          cmp -s /tmp/sprint38-source-paths /tmp/actual-sprint38-source-paths
+          if grep -Eq '(^|/)\.env($|\.)|(^|/)composer\.(json|lock)$|(^|/)package(-lock)?\.json$|^apps/web/database/migrations/' /tmp/actual-sprint38-source-paths; then
+            echo 'Sprint38 source envelope contains a forbidden environment, dependency, or migration path.' >&2
+            exit 1
+          fi
+
+      - name: Enforce NO_SCHEMA_CHANGE and migrations one through thirteen
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --exit-code "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" -- apps/web/database/migrations
+          mapfile -t migrations < <(find apps/web/database/migrations -maxdepth 1 -type f -name '*.php' -printf '%f\n' | sort)
+          test "${#migrations[@]}" -eq 13
+          for index in $(seq 1 13); do
+            prefix="$(printf '0000_00_00_%06d_' "$index")"
+            test "$(printf '%s\n' "${migrations[@]}" | grep -c "^${prefix}")" -eq 1
+          done
+          ! find apps/web/database/migrations -maxdepth 1 -type f -name '*000014*' -print -quit | grep -q .
+
+      - name: Preserve repository HTTP and audit contracts
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+          git diff --exit-code "$base" "$head" -- \
+            apps/web/app/Application/Identity/FirstPartySessionAuthorityRepository.php \
+            apps/web/app/Infrastructure/Identity/LaravelFirstPartySessionAuthorityRepository.php \
+            apps/web/app/Delivery/Http/Identity/FirstPartySessionControlController.php \
+            apps/web/routes/web.php
+          repo='apps/web/app/Infrastructure/Identity/LaravelFirstPartySessionAuthorityRepository.php'
+          for event in session_issued session_revoked other_sessions_revoked all_sessions_revoked session_logout; do
+            grep -Fq "'$event'" "$repo"
+          done
+          if grep -RInE "session_absolute|absolute_session|absolute.*revoked" apps/web/app/Application/Identity apps/web/app/Infrastructure/Identity apps/web/routes/web.php; then
+            echo 'Sprint38 introduced an unauthorized route/audit mutation vocabulary.' >&2
+            exit 1
+          fi
+
+      - name: Enforce fixed idle and absolute lifetime configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          config='apps/web/config/oneqay.php'
+          provider='apps/web/app/Providers/AppServiceProvider.php'
+          service='apps/web/app/Application/Identity/FirstPartySessionAuthorityService.php'
+          grep -Fq "'idle_ttl_seconds' => 7200" "$config"
+          grep -Fq "'absolute_ttl_seconds' => 43200" "$config"
+          grep -Fq "config('oneqay.session_control.idle_ttl_seconds', 0)" "$provider"
+          grep -Fq "config('oneqay.session_control.absolute_ttl_seconds', 0)" "$provider"
+          grep -Fq "config('oneqay.session_control.idle_ttl_seconds', 0) === 7200" "$provider"
+          grep -Fq "config('oneqay.session_control.absolute_ttl_seconds', 0) === 43200" "$provider"
+          grep -Fq 'private int $absoluteTtlSeconds = 43200' "$service"
+          grep -Fq '$this->absoluteTtlSeconds !== 43200' "$service"
+          grep -Fq '$this->effectiveExpiry($now, $now)' "$service"
+          grep -Fq "\$this->effectiveExpiry(\$this->recordInt(\$record, 'issued_at_unix'), \$now)" "$service"
+          grep -Fq '$now > $this->absoluteDeadline($issuedAtUnix)' "$service"
+          if grep -RInE 'ONEQAY_.*(ABSOLUTE|SESSION.*TTL)|env\([^)]*absolute_ttl' "$config" apps/web/environment.example; then
+            echo 'Sprint38 absolute lifetime became environment-configurable.' >&2
+            exit 1
+          fi
+
+      - name: Lint Sprint38 and preserved PHP source
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l apps/web/app/Application/Identity/FirstPartySessionAuthorityService.php
+          php -l apps/web/app/Providers/AppServiceProvider.php
+          php -l apps/web/config/oneqay.php
+          php -l apps/web/tests/first-party-session-absolute-lifetime.php
+          php -l apps/web/tests/first-party-session-inventory-revocation.php
+          php -l apps/web/tests/first-party-session-all-session-termination.php
+
+      - name: Install locked application dependencies
+        working-directory: apps/web
+        run: |
+          composer validate --no-check-publish
+          composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Run dedicated Sprint38 absolute lifetime regression fail-closed
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          output="$(php tests/first-party-session-absolute-lifetime.php 2>&1)" || { printf '%s\n' "$output"; exit 1; }
+          printf '%s\n' "$output"
+          grep -Fq 'Sprint38 first-party session absolute lifetime regression passed.' <<<"$output"
+
+      - name: Preserve Sprint36 inventory and revocation regression
+        working-directory: apps/web
+        run: php tests/first-party-session-inventory-revocation.php
+
+      - name: Preserve unchanged Sprint37 regression fixture
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="${{ github.event.pull_request.base.sha }}"
+          test "$(git rev-parse HEAD:apps/web/tests/first-party-session-all-session-termination.php)" = "$(git rev-parse "$base":apps/web/tests/first-party-session-all-session-termination.php)"
+          git diff --exit-code "$base" HEAD -- apps/web/tests/first-party-session-all-session-termination.php
+
+      - name: Preserve protected deployment boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq "env('ONEQAY_AUTHENTICATION_SESSION_CONTROL_ENABLED', false)" apps/web/config/oneqay.php
+          grep -Fq "'install_enabled' => false" apps/web/config/oneqay.php
+          grep -Fq 'Technical Preview remains **NO_SCHEMA_CHANGE**' docs/FIRST_PARTY_SESSION_ABSOLUTE_LIFETIME_FOUNDATION.md
+          grep -Fq 'Production remains **NO-GO / NOT AUTHORIZED**' docs/FIRST_PARTY_SESSION_ABSOLUTE_LIFETIME_FOUNDATION.md
+          grep -Fq 'Updater remains **DISABLED / UNWIRED**' docs/FIRST_PARTY_SESSION_ABSOLUTE_LIFETIME_FOUNDATION.md
+          if grep -RInE 'ONEQAY_TECHNICAL_PREVIEW_ENABLED[[:space:]]*=[[:space:]]*true|runtime_class.*production.*session_control' \
+            apps/web/config/oneqay.php \
+            apps/web/app/Application/Identity/FirstPartySessionAuthorityService.php \
+            apps/web/app/Providers/AppServiceProvider.php; then
+            echo 'Sprint38 activated a protected runtime.' >&2
+            exit 1
+          fi
+
+      - name: Confirm tracked source cleanliness
+        run: git diff --exit-code

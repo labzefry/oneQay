@@ -77,6 +77,7 @@ $app['config']->set('database.oneqay_persistence_enabled', true);
 $app['config']->set('oneqay.runtime_class', 'ci');
 $app['config']->set('oneqay.session_control.enabled', true);
 $app['config']->set('oneqay.session_control.idle_ttl_seconds', 7200);
+$app['config']->set('oneqay.session_control.absolute_ttl_seconds', 43200);
 $app['config']->set('oneqay.privileged_totp_mfa.enabled', true);
 $app['config']->set('oneqay.privileged_step_up.enabled', true);
 $app['config']->set('oneqay.privileged_step_up.freshness_seconds', 300);
@@ -144,6 +145,7 @@ $service = new FirstPartySessionAuthorityService(
     $mfa,
     true,
     7200,
+    43200,
 );
 
 $tenantId = TenantId::fromString('tenant-alpha');
@@ -159,6 +161,7 @@ $service->assertActiveCurrent($tenantId, $identityId, $current->authorityId(), '
 $touched = $connection->table('oneqay_identity_first_party_sessions')->where('authority_id', $current->authorityId())->first();
 $assert(is_object($touched) && (int) $touched->last_seen_at_unix === $clock->now, 'bounded touch did not update after 60 seconds');
 $assert((int) $touched->expires_at_unix === $clock->now + 7200, 'touch did not extend exact idle lifetime');
+$assert((int) $touched->expires_at_unix <= (int) $touched->issued_at_unix + 43200, 'touch exceeded absolute lifetime');
 
 $clock->now += 1;
 $remote = $service->issue($tenantId, $identityId, 'organization-alpha', null, null, 3, null, 'S36-Issue_0002');
@@ -170,6 +173,7 @@ foreach ($inventoryPayload as $item) {
     $assert(! array_key_exists('authority_id', $item), 'inventory leaked internal authority id');
     $assert(! array_key_exists('credential_epoch', $item), 'inventory leaked credential epoch');
     $assert(! array_key_exists('factor_epoch', $item), 'inventory leaked factor epoch');
+    $assert($item['expires_at_unix'] <= $item['issued_at_unix'] + 43200, 'inventory exposed expiry beyond absolute lifetime');
 }
 
 try {

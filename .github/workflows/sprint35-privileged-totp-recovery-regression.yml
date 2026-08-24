@@ -327,6 +327,7 @@ jobs:
           set -euo pipefail
           test "${ONEQAY_PERSISTENCE_ENABLED}" = "false"
           test "${ONEQAY_AUTHENTICATION_RECOVERY_ENABLED}" = "false"
+          grep -F "'absolute_ttl_seconds' => 43200" apps/web/config/oneqay.php
           ! grep -R --exclude='sprint35-privileged-totp-recovery-regression.yml' -E 'ONEQAY_TECHNICAL_PREVIEW_ENABLED[[:space:]]*=[[:space:]]*true' apps/web .github/workflows
           grep -F 'Technical Preview remains **NO_SCHEMA_CHANGE**.' docs/PRIVILEGED_TOTP_RECOVERY_FACTOR_REPLACEMENT_FOUNDATION.md
           grep -F 'Production remains **NO-GO / NOT AUTHORIZED**.' docs/PRIVILEGED_TOTP_RECOVERY_FACTOR_REPLACEMENT_FOUNDATION.md

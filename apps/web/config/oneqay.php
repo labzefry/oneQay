@@ -48,6 +48,8 @@ return [
         ),
         // Fixed idle lifetime; not environment-configurable.
         'idle_ttl_seconds' => 7200,
+        // Sprint38 fixed absolute lifetime; not environment-configurable.
+        'absolute_ttl_seconds' => 43200,
     ],
 
     'system_update' => [
