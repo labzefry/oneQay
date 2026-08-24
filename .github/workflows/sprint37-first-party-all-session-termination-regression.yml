@@ -64,6 +64,15 @@ jobs:
           sort -o /tmp/post-sprint37-preservation-paths /tmp/post-sprint37-preservation-paths
           test "$(sha256sum /tmp/post-sprint37-preservation-paths | awk '{print $1}')" = "93fe19acad52a31981ecea81ab1dc65c730f0f01729959ca6eaedb0de5b128b7"
 
+          cat > /tmp/post-sprint38-preservation-paths <<'EOF'
+          .github/workflows/sprint35-privileged-totp-recovery-regression.yml
+          .github/workflows/sprint36-first-party-session-inventory-revocation-regression.yml
+          .github/workflows/sprint37-first-party-all-session-termination-regression.yml
+          .github/workflows/sprint38-first-party-session-absolute-lifetime-regression.yml
+          EOF
+          sort -o /tmp/post-sprint38-preservation-paths /tmp/post-sprint38-preservation-paths
+          test "$(sha256sum /tmp/post-sprint38-preservation-paths | awk '{print $1}')" = "f6064e6563ec987fc487162fc29285870fab4869509a626c1b9a9280dc6ebafe"
+
           cat > /tmp/post-sprint37-reconciliation-paths <<'EOF'
           docs/ai/AI_NEXT_TASK.md
           docs/ai/AI_POST_SPRINT_37_CANONICAL_STATE.md
@@ -135,6 +144,8 @@ jobs:
               echo "Recognized exact Sprint37 source envelope."
             elif cmp -s /tmp/actual-sprint37-paths /tmp/post-sprint37-preservation-paths; then
               echo "Recognized exact post-Sprint37 preservation predecessor shape."
+            elif cmp -s /tmp/actual-sprint37-paths /tmp/post-sprint38-preservation-paths; then
+              echo "Recognized exact post-Sprint38 preservation predecessor shape."
             elif cmp -s /tmp/actual-sprint37-paths /tmp/post-sprint37-reconciliation-paths; then
               echo "Recognized exact post-Sprint37 canonical reconciliation successor shape."
             elif cmp -s /tmp/actual-sprint37-paths /tmp/post-sprint38-reconciliation-paths; then
