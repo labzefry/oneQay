@@ -1,5 +1,22 @@
 # oneQay Security Handbook
 
+## Canonical Sprint40 pre-source security state — 2026-08-25
+
+For current identity-eligibility, logical-session, authorization, schema, runtime, and next-work interpretation, this section supersedes older current-facing wording retained below as historical provenance.
+
+- Sprint40 selected concern is **First-Party Session Identity Disablement Revalidation Foundation**. Entry-gate and schema/source-envelope decisions are published, while application source and migration #14 remain **NOT YET IMPLEMENTED / NOT YET PUBLISHED**.
+- An otherwise-valid first-party logical session must not continue solely because its credential, factor, tenant membership, and organizational authority remain valid. The exact current server-derived identity must also remain independently eligible for first-party authentication at request time.
+- Identity eligibility is server-owned and independent from password `credential_epoch`, privileged-TOTP `factor_epoch`, tenant membership, organization/outlet/device relationships, session revocation, idle lifetime, and absolute lifetime. None may substitute for another.
+- Disabled, missing, malformed, contradictory, cross-tenant, cross-identity, or otherwise non-canonical eligibility evidence must fail closed. Caller-controlled tenant, identity, organization, outlet, device, owner, eligibility, or authority selectors must never become authorization authority.
+- Identity disablement revalidation must not auto-reactivate identity, restore grants, switch organizational context, rotate credentials/factors, create replacement authority, synthesize MFA/step-up evidence, or expose a new public identity-administration route/API/payload.
+- Migration #14 is selected only as a future minimal Local/Test/CI schema mutation adding non-null boolean `first_party_authentication_enabled` default `true` to `oneqay_identities`; it is **NOT YET CREATED / NOT APPLIED**. Migrations #1-#13 remain immutable at this stage.
+- The future Sprint40 source envelope is exactly eight paths with sorted newline-terminated SHA-256 `a9caf2b68210a38687fee543256aec04dc1e67ee1ef403608f7db69139957ff8`. The current 13-document synchronization is documentation-only with sorted newline-terminated fingerprint `b129d4b1c1135f2f5aecd5dde5ff1b5f6392eecb4d54006e80fc71889763647d`.
+- `ONEQAY_AUTHENTICATION_SESSION_CONTROL_ENABLED=false` remains the source default. Technical Preview receives no Sprint40 activation. Production remains **NO-GO / NOT AUTHORIZED**. Updater remains **DISABLED / UNWIRED**. Deployment and release remain **NOT AUTHORIZED**.
+
+Historical security sections below remain preserved as provenance and must not override this section for current-state interpretation.
+
+Attribution: **Lab | zefry**
+
 ## Canonical post-Sprint 33 program-state reconciliation — 2026-08-20
 
 For current identity, security, recovery, schema, runtime, workflow, and next-work interpretation, this section supersedes older current-facing post-Sprint32 wording retained below as historical provenance.
