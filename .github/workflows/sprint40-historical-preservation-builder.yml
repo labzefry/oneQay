@@ -1,6 +1,6 @@
 name: Sprint40 Historical Preservation Branch Builder
 
-# Temporary branch-local construction workflow. It self-removes before PR creation.
+# Temporary branch-local construction workflow. Final PR excludes this file.
 # Attribution: Lab | zefry
 
 on:
@@ -9,7 +9,7 @@ on:
       - ci/sprint40-historical-preservation-compatibility
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: sprint40-historical-preservation-builder
@@ -27,7 +27,7 @@ jobs:
           ref: ci/sprint40-historical-preservation-compatibility
           fetch-depth: 0
 
-      - name: Materialize bounded correction and self-remove
+      - name: Materialize bounded correction
         shell: bash
         run: |
           set -euo pipefail
@@ -72,63 +72,52 @@ jobs:
               text = path.read_text()
 
               if source_fp in text:
-                  if anchor.strip() in text:
-                      raise SystemExit(f'{name}: compatibility anchor already present unexpectedly')
-                  attribution = '# Attribution: Lab | zefry\n'
-                  if attribution in text:
-                      text = text.replace(attribution, attribution + anchor, 1)
-                  else:
-                      text = anchor + text
+                  if anchor.strip() not in text:
+                      attribution = '# Attribution: Lab | zefry\n'
+                      text = text.replace(attribution, attribution + anchor, 1) if attribution in text else anchor + text
                   path.write_text(text)
                   continue
 
               lines = text.splitlines(keepends=True)
-              target = None
-              for i, line in enumerate(lines):
-                  if 'if [[' in line and line.rstrip().endswith('; then') and (sprint38_fp in line or correction_fp in line):
-                      target = i
-                      break
-              if target is None:
+              targets = [
+                  i for i, line in enumerate(lines)
+                  if 'if [[' in line and line.rstrip().endswith('; then') and (sprint38_fp in line or correction_fp in line)
+              ]
+              if not targets:
                   raise SystemExit(f'{name}: bounded successor recognizer line not found')
 
-              line = lines[target]
-              suffix = '; then\n' if line.endswith('; then\n') else '; then'
-              replacement = f" || [[ \"$count\" -eq 8 && \"$fingerprint\" == '{source_fp}' ]]{suffix}"
-              lines[target] = line[:-len(suffix)] + replacement
-              lines.insert(target + 1, block)
+              offset = 0
+              for original_index in targets:
+                  target = original_index + offset
+                  line = lines[target]
+                  if source_fp not in line:
+                      suffix = '; then\n' if line.endswith('; then\n') else '; then'
+                      replacement = f" || [[ \"$count\" -eq 8 && \"$fingerprint\" == '{source_fp}' ]]{suffix}"
+                      lines[target] = line[:-len(suffix)] + replacement
+                  lines.insert(target + 1, block)
+                  offset += 1
               path.write_text(''.join(lines))
 
-          Path('.github/workflows/sprint40-historical-preservation-builder.yml').unlink()
+          output = Path('/tmp/sprint40-preservation')
+          for name in files:
+              target = output / name
+              target.parent.mkdir(parents=True, exist_ok=True)
+              target.write_bytes(Path(name).read_bytes())
+
+          manifest = output / 'MANIFEST.txt'
+          manifest.write_text('\n'.join(files) + '\n')
           PY
 
-          git diff --name-only | sort >/tmp/materialized.txt
-          cat >/tmp/expected.txt <<'EOF'
-          .github/workflows/m7-2-tenant-isolation-regression.yml
-          .github/workflows/m7-3-identity-org-context-regression.yml
-          .github/workflows/m7-4a-technical-preview-interaction-regression.yml
-          .github/workflows/m7-5-preview-db-qualification-regression.yml
-          .github/workflows/m7-5-preview-release-artifact.yml
-          .github/workflows/sprint21-role-permission-policy-regression.yml
-          .github/workflows/sprint22-policy-administration-regression.yml
-          .github/workflows/sprint23-initial-tenant-admin-provisioning-regression.yml
-          .github/workflows/sprint24-protected-control-admin-lifecycle-regression.yml
-          .github/workflows/sprint25-policy-administration-delivery-regression.yml
-          .github/workflows/sprint26-identity-credential-verification-regression.yml
-          .github/workflows/sprint27-first-party-session-establishment-regression.yml
-          .github/workflows/sprint28-initial-password-enrollment-regression.yml
-          .github/workflows/sprint29-first-control-principal-credential-bootstrap-regression.yml
-          .github/workflows/sprint30-privileged-totp-mfa-regression.yml
-          .github/workflows/sprint31-privileged-reauthentication-step-up-regression.yml
-          .github/workflows/sprint33-recovery-bound-password-reset-regression.yml
-          .github/workflows/sprint34-authenticated-password-change-regression.yml
-          .github/workflows/sprint35-privileged-totp-recovery-regression.yml
-          .github/workflows/sprint40-historical-preservation-builder.yml
-          EOF
-          sort -o /tmp/expected.txt /tmp/expected.txt
-          cmp -s /tmp/materialized.txt /tmp/expected.txt || { diff -u /tmp/expected.txt /tmp/materialized.txt; exit 1; }
+          test "$(wc -l </tmp/sprint40-preservation/MANIFEST.txt)" -eq 19
+          test "$(sha256sum /tmp/sprint40-preservation/MANIFEST.txt | awk '{print $1}')" = 'fc2b578fc9d090dfce1fd34c5acfa7a07f065979a94f62becb3dc54dee664920'
+          for file in $(cat /tmp/sprint40-preservation/MANIFEST.txt); do
+            grep -Fq 'a9caf2b68210a38687fee543256aec04dc1e67ee1ef403608f7db69139957ff8' "/tmp/sprint40-preservation/$file"
+          done
 
-          git config user.name 'labzefry'
-          git config user.email 'lab.zefa@gmail.com'
-          git add -A
-          git commit -m 'ci: preserve Sprint40 historical source compatibility'
-          git push origin HEAD:ci/sprint40-historical-preservation-compatibility
+      - name: Upload deterministic correction artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: sprint40-historical-preservation
+          path: /tmp/sprint40-preservation
+          if-no-files-found: error
+          retention-days: 1
