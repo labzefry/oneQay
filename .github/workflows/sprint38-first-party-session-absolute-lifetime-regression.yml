@@ -16,6 +16,7 @@ on:
       - 'apps/web/tests/first-party-session-absolute-lifetime.php'
       - 'apps/web/tests/first-party-session-inventory-revocation.php'
       - 'docs/FIRST_PARTY_SESSION_ABSOLUTE_LIFETIME_FOUNDATION.md'
+      - 'docs/SPRINT_39_FIRST_PARTY_SESSION_ORGANIZATIONAL_ACCESS_REVALIDATION_ENTRY_GATE.md'
   workflow_dispatch:
 
 permissions:
@@ -86,11 +87,19 @@ jobs:
           sort -o /tmp/post-sprint38-preservation-paths /tmp/post-sprint38-preservation-paths
           test "$(sha256sum /tmp/post-sprint38-preservation-paths | awk '{print $1}')" = 'f6064e6563ec987fc487162fc29285870fab4869509a626c1b9a9280dc6ebafe'
 
+          cat > /tmp/sprint39-entry-gate-paths <<'EOF'
+          docs/SPRINT_39_FIRST_PARTY_SESSION_ORGANIZATIONAL_ACCESS_REVALIDATION_ENTRY_GATE.md
+          EOF
+          sort -o /tmp/sprint39-entry-gate-paths /tmp/sprint39-entry-gate-paths
+          test "$(sha256sum /tmp/sprint39-entry-gate-paths | awk '{print $1}')" = 'b2c4936a3315788100b47537b32474e7079143942c38684cf2394628f1084dd2'
+
           git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | sort > /tmp/actual-sprint38-source-paths
           if cmp -s /tmp/sprint38-source-paths /tmp/actual-sprint38-source-paths; then
             echo 'Recognized exact Sprint38 source envelope.'
           elif cmp -s /tmp/post-sprint38-preservation-paths /tmp/actual-sprint38-source-paths; then
             echo 'Recognized exact post-Sprint38 preservation predecessor shape.'
+          elif cmp -s /tmp/sprint39-entry-gate-paths /tmp/actual-sprint38-source-paths; then
+            echo 'Recognized exact Sprint39 organizational-access revalidation entry-gate successor shape.'
           else
             echo 'Sprint38 changed-file envelope mismatch.' >&2
             diff -u /tmp/sprint38-source-paths /tmp/actual-sprint38-source-paths >&2 || true
