@@ -131,7 +131,9 @@ jobs:
           test "$(sha256sum /tmp/post-sprint39-reconciliation-paths | awk '{print $1}')" = 'f38b1a2dea2bd5a55a5cd166db0ea7b2d4ae5186cefe2cb5db27f18f9639e866'
 
           git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | sort > /tmp/actual-sprint38-source-paths
-          if [[ "$(wc -l < /tmp/actual-sprint38-source-paths)" -eq 7 ]] && [[ "$(sha256sum /tmp/actual-sprint38-source-paths | awk '{print $1}')" == '4784ffca1c940d3fa54a2a3988ead07e2de993bde8d3af2bd41014dbdf905be0' ]]; then
+          if [[ "$(wc -l < /tmp/actual-sprint38-source-paths)" -eq 5 ]] && [[ "$(sha256sum /tmp/actual-sprint38-source-paths | awk '{print $1}')" == 'ab09e044925ae98740a49c46a70ff387e5f5445b245d3a556d85ad6a354305ec' ]]; then
+            echo 'Recognized exact post-Sprint39 five-workflow reconciliation preservation predecessor shape.'
+          elif [[ "$(wc -l < /tmp/actual-sprint38-source-paths)" -eq 7 ]] && [[ "$(sha256sum /tmp/actual-sprint38-source-paths | awk '{print $1}')" == '4784ffca1c940d3fa54a2a3988ead07e2de993bde8d3af2bd41014dbdf905be0' ]]; then
             echo 'Recognized exact Sprint39 seven-workflow M7.5 preservation correction shape.'
           elif cmp -s /tmp/sprint38-source-paths /tmp/actual-sprint38-source-paths; then
             echo 'Recognized exact Sprint38 source envelope.'
