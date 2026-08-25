@@ -1,5 +1,20 @@
 # oneQay Deployment Handbook
 
+## Canonical Sprint40 pre-source deployment state — 2026-08-25
+
+For current Sprint40 runtime, deployment, schema-activation, and release interpretation, this section supersedes older current-facing wording retained below as historical provenance.
+
+- Sprint40 **First-Party Session Identity Disablement Revalidation Foundation** is selected and governed through its published entry gate and schema/source-envelope gate, but source implementation and migration #14 are **NOT YET IMPLEMENTED / NOT YET PUBLISHED**.
+- The selected migration #14 is Local/Test/CI source-stage work only and remains **NOT CREATED / NOT APPLIED** at this documentation-synchronization stage. Technical Preview receives no Sprint40 migration or authentication-eligibility activation from this work.
+- The future Sprint40 source envelope remains exactly eight paths with sorted newline-terminated SHA-256 `a9caf2b68210a38687fee543256aec04dc1e67ee1ef403608f7db69139957ff8`; publication of preservation workflows does not activate any runtime.
+- This canonical documentation synchronization is exactly 13 documentation paths with sorted newline-terminated SHA-256 `b129d4b1c1135f2f5aecd5dde5ff1b5f6392eecb4d54006e80fc71889763647d`. It performs no build, migration, deployment, release, updater, DNS, cPanel, Preview, or Production mutation.
+- `ONEQAY_AUTHENTICATION_SESSION_CONTROL_ENABLED=false` remains source-default. Sprint40 execution remains bounded to a future separately qualified Local/Test/CI source stage unless later authority explicitly changes that boundary.
+- Technical Preview remains unactivated for Sprint40. Production remains **NO-GO / NOT AUTHORIZED**. Updater remains **DISABLED / UNWIRED**. M7.6, M7.7, deployment, release, Production migration, and Production database mutation remain **NOT AUTHORIZED**.
+
+Historical deployment sections below remain preserved as provenance and must not override this section for current-state interpretation.
+
+Attribution: **Lab | zefry**
+
 ## Canonical post-Sprint 33 program-state reconciliation — 2026-08-20
 
 For current identity, security, recovery, schema, runtime, workflow, and next-work interpretation, this section supersedes older current-facing post-Sprint32 wording retained below as historical provenance.
