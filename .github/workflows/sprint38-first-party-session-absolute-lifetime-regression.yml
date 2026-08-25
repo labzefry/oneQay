@@ -237,6 +237,8 @@ jobs:
           set -euo pipefail
           grep -Fq "env('ONEQAY_AUTHENTICATION_SESSION_CONTROL_ENABLED', false)" apps/web/config/oneqay.php
           grep -Fq "'install_enabled' => false" apps/web/config/oneqay.php
+          grep -Fq 'TenantMembershipVerifier $tenantMemberships' apps/web/app/Delivery/Http/Middleware/EnforceActiveFirstPartySessionAuthorityMiddleware.php
+          grep -Fq 'OrganizationalRelationshipVerifier $organizationalRelationships' apps/web/app/Delivery/Http/Middleware/EnforceActiveFirstPartySessionAuthorityMiddleware.php
           grep -Fq 'Technical Preview remains **NO_SCHEMA_CHANGE**' docs/FIRST_PARTY_SESSION_ABSOLUTE_LIFETIME_FOUNDATION.md
           grep -Fq 'Production remains **NO-GO / NOT AUTHORIZED**' docs/FIRST_PARTY_SESSION_ABSOLUTE_LIFETIME_FOUNDATION.md
           grep -Fq 'Updater remains **DISABLED / UNWIRED**' docs/FIRST_PARTY_SESSION_ABSOLUTE_LIFETIME_FOUNDATION.md
