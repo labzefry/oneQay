@@ -1,5 +1,23 @@
 # oneQay Tasks
 
+## Canonical Sprint40 pre-source task checkpoint — 2026-08-25
+
+For current task-state and next-work interpretation, this section supersedes older current-facing task statements retained below as historical provenance.
+
+- Sprint 21 through Sprint 39 governed identity/control foundations: **Done / COMPLETE / IMPLEMENTED / PUBLISHED** within bounded authority.
+- Sprint40 concern selection and entry gate: **Done / PUBLISHED** through PR #268.
+- Sprint40 schema/source-envelope gate: **Done / PUBLISHED** through PR #270.
+- Sprint40 source-preservation predecessor and compatibility prerequisites: **Done / PUBLISHED** through PR #271, PR #272, and PR #273.
+- Sprint40 documentation-synchronization preservation predecessor: **Done / PUBLISHED** through PR #274 as `7be563d66e2f8441cf28dd2ed9ce5d6c0704098f` / tree `adbbce29218e312b243076dc3ee984e68ce79b65`.
+- Current bounded task: exact **13-document canonical documentation synchronization**, fingerprint `b129d4b1c1135f2f5aecd5dde5ff1b5f6392eecb4d54006e80fc71889763647d`.
+- Canonical source migrations remain exactly **#1–#13**. Migration #14 is **selected for later Sprint40 source implementation but does not yet exist/apply on canonical `main`**.
+- Future Sprint40 source implementation: **Blocked / Separately Governed** until this documentation synchronization is published and a fresh exact-main source authority is granted. Its frozen envelope is exactly 8 paths with fingerprint `a9caf2b68210a38687fee543256aec04dc1e67ee1ef403608f7db69139957ff8`.
+- Technical Preview Sprint40 activation, Production, updater, deployment, release, and migration #14 execution remain **Blocked / Not Authorized**.
+
+This task checkpoint changes documentation only. It does not create source, workflow YAML, dependency, migration, schema, route/API, runtime, Preview, Production, updater, deployment, or release behavior.
+
+Attribution: **Lab | zefry**
+
 ## Canonical post-Sprint 33 program-state reconciliation — 2026-08-20
 
 For current identity, security, recovery, schema, runtime, workflow, and next-work interpretation, this section supersedes older current-facing post-Sprint32 wording retained below as historical provenance.
