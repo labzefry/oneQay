@@ -1,21 +1,5 @@
 # oneQay Testing Strategy
 
-## Canonical Sprint40 pre-source testing state — 2026-08-25
-
-For current Sprint40 qualification and regression interpretation, this section supersedes older generic current-facing guidance where more specific.
-
-- Sprint40 **First-Party Session Identity Disablement Revalidation Foundation** is selected and gated, but its application source and migration #14 are **NOT YET IMPLEMENTED / NOT YET PUBLISHED**.
-- The future source implementation must remain inside the exact eight-path envelope whose sorted newline-terminated SHA-256 is `a9caf2b68210a38687fee543256aec04dc1e67ee1ef403608f7db69139957ff8`.
-- Dedicated Sprint40 regression must prove request-time denial when exact server-derived identity eligibility is disabled, missing, malformed, or contradictory, while another tenant and another identity remain isolated.
-- Regression must preserve existing Sprint36 inventory/revocation, Sprint37 all-session termination, Sprint38 idle/absolute lifetime, and Sprint39 organizational-access revalidation semantics. Identity eligibility must remain independent from credential epoch, factor epoch, tenant membership, and organization/outlet/device relationship authority.
-- Caller-supplied tenant/identity/organization/outlet/device/owner/authority selectors must never become eligibility authority. Revalidation must be fail-closed and must not auto-reactivate identity, recreate grants, switch organizational context, or issue replacement logical session authority.
-- Migration #14 is selected only for the later Local/Test/CI source stage. Migrations #1-#13 remain immutable. Technical Preview and Production schema/application activation are not part of this documentation synchronization.
-- The current documentation synchronization is an exact 13-path documentation-only envelope with sorted newline-terminated SHA-256 `b129d4b1c1135f2f5aecd5dde5ff1b5f6392eecb4d54006e80fc71889763647d`; preservation workflows are expected to recognize only that exact successor shape and continue failing closed for unknown shapes.
-- Pull-request qualification remains exact-head based. Only workflows actually triggered for the exact head are counted; no failing workflow may be bypassed. `product-owner-merge-authority` remains a separate lifecycle gate.
-- Production remains **NO-GO / NOT AUTHORIZED**. Updater remains **DISABLED / UNWIRED**. Deployment and release remain **NOT AUTHORIZED**.
-
-Attribution: **Lab | zefry**
-
 ## Objectives
 
 Testing memberi evidence bahwa oneQay benar, aman, terisolasi antar tenant, kompatibel, cepat, accessible, dapat diinstal/diupdate, dan dapat dipulihkan. Coverage percentage bukan satu-satunya ukuran kualitas.
