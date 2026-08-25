@@ -118,6 +118,30 @@ jobs:
           sort -o /tmp/sprint40-schema-source-envelope-gate-paths /tmp/sprint40-schema-source-envelope-gate-paths
           test "$(sha256sum /tmp/sprint40-schema-source-envelope-gate-paths | awk '{print $1}')" = "9a3a85fb3de7ce007b09586af60e18b0cefd6ec1b6fba1b3c2b64e508354d803"
 
+          cat > /tmp/sprint40-source-preservation-paths <<'EOF'
+          .github/workflows/m7-5-preview-release-artifact.yml
+          .github/workflows/sprint35-privileged-totp-recovery-regression.yml
+          .github/workflows/sprint36-first-party-session-inventory-revocation-regression.yml
+          .github/workflows/sprint37-first-party-all-session-termination-regression.yml
+          .github/workflows/sprint38-first-party-session-absolute-lifetime-regression.yml
+          .github/workflows/sprint39-first-party-session-organizational-access-revalidation-regression.yml
+          EOF
+          sort -o /tmp/sprint40-source-preservation-paths /tmp/sprint40-source-preservation-paths
+          test "$(sha256sum /tmp/sprint40-source-preservation-paths | awk '{print $1}')" = "671946562a3eef1375d87b70936bac263aa18f660d6ea274406ed57f1c653351"
+
+          cat > /tmp/sprint40-source-paths <<'EOF'
+          .github/workflows/sprint40-first-party-session-identity-disablement-revalidation-regression.yml
+          apps/web/app/Application/Identity/FirstPartyIdentityEligibilityVerifier.php
+          apps/web/app/Delivery/Http/Middleware/EnforceActiveFirstPartySessionAuthorityMiddleware.php
+          apps/web/app/Infrastructure/Identity/LaravelFirstPartyIdentityEligibilityVerifier.php
+          apps/web/app/Providers/AppServiceProvider.php
+          apps/web/database/migrations/0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php
+          apps/web/tests/first-party-session-identity-disablement-revalidation.php
+          docs/FIRST_PARTY_SESSION_IDENTITY_DISABLEMENT_REVALIDATION_FOUNDATION.md
+          EOF
+          sort -o /tmp/sprint40-source-paths /tmp/sprint40-source-paths
+          test "$(sha256sum /tmp/sprint40-source-paths | awk '{print $1}')" = "a9caf2b68210a38687fee543256aec04dc1e67ee1ef403608f7db69139957ff8"
+
           cat > /tmp/sprint39-schema-source-envelope-gate-paths <<'EOF'
           docs/SPRINT_39_FIRST_PARTY_SESSION_ORGANIZATIONAL_ACCESS_REVALIDATION_SCHEMA_SOURCE_ENVELOPE_GATE.md
           EOF
@@ -192,12 +216,15 @@ jobs:
           sort -o /tmp/sprint38-source-paths /tmp/sprint38-source-paths
           test "$(sha256sum /tmp/sprint38-source-paths | awk '{print $1}')" = "411950d5602dc7160668c88e08a3941ebccc8bdc82d20bee77ce4004f039d216"
 
+          echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
           if [[ "${{ github.event_name }}" = "pull_request" ]]; then
             git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | sort > /tmp/actual-sprint37-paths
             if [[ "$(wc -l < /tmp/actual-sprint37-paths)" -eq 5 ]] && [[ "$(sha256sum /tmp/actual-sprint37-paths | awk '{print $1}')" == "ab09e044925ae98740a49c46a70ff387e5f5445b245d3a556d85ad6a354305ec" ]]; then
               echo "Recognized exact post-Sprint39 five-workflow reconciliation preservation predecessor shape."
             elif [[ "$(wc -l < /tmp/actual-sprint37-paths)" -eq 7 ]] && [[ "$(sha256sum /tmp/actual-sprint37-paths | awk '{print $1}')" == "4784ffca1c940d3fa54a2a3988ead07e2de993bde8d3af2bd41014dbdf905be0" ]]; then
               echo "Recognized exact Sprint39 seven-workflow M7.5 preservation correction shape."
+            elif [[ "$(wc -l < /tmp/actual-sprint37-paths)" -eq 2 ]] && [[ "$(sha256sum /tmp/actual-sprint37-paths | awk '{print $1}')" == "bde0c14f6b8c45f090844b9e5d701415690e990b8b7bea3b605f4ba04c727116" ]]; then
+              echo "Recognized exact Sprint40 Sprint33/Sprint34 historical-compatibility correction shape."
             elif cmp -s /tmp/actual-sprint37-paths /tmp/sprint37-paths; then
               echo "Recognized exact Sprint37 source envelope."
             elif cmp -s /tmp/actual-sprint37-paths /tmp/post-sprint37-preservation-paths; then
@@ -218,6 +245,11 @@ jobs:
               echo "Recognized exact Sprint40 identity-disablement revalidation entry-gate successor shape."
             elif cmp -s /tmp/actual-sprint37-paths /tmp/sprint40-schema-source-envelope-gate-paths; then
               echo "Recognized exact Sprint40 identity-disablement revalidation schema/source-envelope gate successor shape."
+            elif cmp -s /tmp/actual-sprint37-paths /tmp/sprint40-source-preservation-paths; then
+              echo "Recognized exact Sprint40 six-workflow source-preservation predecessor shape."
+            elif cmp -s /tmp/actual-sprint37-paths /tmp/sprint40-source-paths; then
+              echo "Recognized exact Sprint40 identity-disablement revalidation source successor shape."
+              echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             elif cmp -s /tmp/actual-sprint37-paths /tmp/sprint39-schema-source-envelope-gate-paths; then
               echo "Recognized exact Sprint39 organizational-access revalidation schema/source-envelope gate successor shape."
             elif cmp -s /tmp/actual-sprint37-paths /tmp/sprint39-source-paths; then
@@ -236,20 +268,28 @@ jobs:
               exit 1
             fi
 
-            if git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" -- apps/web/database/migrations/ | grep -q .; then
+            if [[ "${ONEQAY_SPRINT40_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+              unexpected_migrations="$(git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" -- apps/web/database/migrations/ | grep -v '^apps/web/database/migrations/0000_00_00_000014_add_first_party_authentication_eligibility_to_identities\.php$' || true)"
+              test -z "$unexpected_migrations" || { echo "Sprint37 successor mutated an unauthorized migration:" >&2; echo "$unexpected_migrations" >&2; exit 1; }
+            elif git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" -- apps/web/database/migrations/ | grep -q .; then
               echo "Sprint37 is NO_SCHEMA_CHANGE; migration mutation is forbidden." >&2
               exit 1
             fi
           fi
 
           mapfile -t migrations < <(find apps/web/database/migrations -maxdepth 1 -type f -name '*.php' -printf '%f\n' | sort)
-          test "${#migrations[@]}" -eq 13
+          if [[ "${ONEQAY_SPRINT40_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            test "${#migrations[@]}" -eq 14
+            test "$(printf '%s\n' "${migrations[@]}" | grep -c '^0000_00_00_000014_add_first_party_authentication_eligibility_to_identities\.php$')" -eq 1
+          else
+            test "${#migrations[@]}" -eq 13
+            ! printf '%s\n' "${migrations[@]}" | grep -q '^0000_00_00_000014_'
+          fi
           for index in $(seq 1 13); do
             prefix="$(printf '0000_00_00_%06d_' "$index")"
             count="$(printf '%s\n' "${migrations[@]}" | grep -c "^${prefix}")"
             test "$count" -eq 1
           done
-          ! printf '%s\n' "${migrations[@]}" | grep -q '^0000_00_00_000014_'
 
       - name: Validate Sprint37 source and schema boundary
         shell: bash
