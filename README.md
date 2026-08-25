@@ -1,5 +1,23 @@
 # oneQay
 
+## Canonical Sprint40 pre-source program state — 2026-08-25
+
+For current identity/session governance, schema selection, workflow preservation, runtime activation, and next-work interpretation, this section supersedes older current-facing sections retained below as historical provenance.
+
+- Sprint 21 through Sprint 39 governed identity/control foundations are **COMPLETE / IMPLEMENTED / PUBLISHED** within their bounded authorities.
+- Sprint40 has selected **First-Party Session Identity Disablement Revalidation Foundation** as the next governed concern, but its application source implementation is **NOT YET IMPLEMENTED / NOT AUTHORIZED BY THIS DOCUMENTATION SYNCHRONIZATION**.
+- Sprint40 entry-gate PR #268 and schema/source-envelope gate PR #270 are **PUBLISHED**. The gate selects a minimal forward-only migration #14 for later source implementation: `apps/web/database/migrations/0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php`, adding only non-null boolean `first_party_authentication_enabled` with default `true` to `oneqay_identities`.
+- Canonical source migrations on `main` remain exactly **#1 through #13**. Migration #14 is **SELECTED FOR THE LATER SPRINT40 SOURCE STAGE BUT DOES NOT YET EXIST OR APPLY ON CANONICAL `main`**.
+- The frozen future Sprint40 source implementation envelope is exactly eight paths with sorted newline-terminated SHA-256 `a9caf2b68210a38687fee543256aec04dc1e67ee1ef403608f7db69139957ff8`.
+- Sprint40 source-preservation predecessor PR #271 is **PUBLISHED**; its historical compatibility prerequisites/corrections were published through PR #272 and PR #273. Canonical source-preservation publication commit is `31fe2214312618448356fdae668d6bace215b1a7`.
+- Documentation-synchronization preservation predecessor PR #274 is **PUBLISHED** as canonical commit `7be563d66e2f8441cf28dd2ed9ce5d6c0704098f`, tree `adbbce29218e312b243076dc3ee984e68ce79b65`, with verified/valid Git signature. It recognizes only the exact 13-document synchronization fingerprint `b129d4b1c1135f2f5aecd5dde5ff1b5f6392eecb4d54006e80fc71889763647d`.
+- Sprint40 request-time semantics remain fail-closed and server-authoritative: the exact session identity must remain currently eligible; missing, disabled, malformed, or contradictory eligibility evidence must deny access without converting credential/factor epoch, tenant membership, organization/outlet/device access, or caller-supplied selectors into identity authority.
+- Technical Preview remains **`NO_SCHEMA_CHANGE` / NOT ACTIVATED FOR SPRINT40**. Production remains **`NO-GO / NOT AUTHORIZED`**. Updater remains **`DISABLED / UNWIRED`**. Deployment and release remain **NOT AUTHORIZED**.
+- This synchronization publishes documentation only. It grants no Sprint40 source mutation, migration creation/execution, schema application, route/API addition, runtime activation, Preview/Production activation, updater, deployment, or release authority.
+- After this 13-document synchronization is published, the next logical governed stage is the already-frozen Sprint40 eight-path source implementation against a freshly verified canonical `main`; that source stage still requires its own separately bounded authority.
+
+Attribution: **Lab | zefry**
+
 ## Canonical post-Sprint 33 program-state reconciliation — 2026-08-20
 
 For current identity, security, recovery, schema, runtime, workflow, and next-work interpretation, this section supersedes older current-facing post-Sprint32 wording retained below as historical provenance.
