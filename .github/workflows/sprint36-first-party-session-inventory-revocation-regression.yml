@@ -236,7 +236,9 @@ jobs:
 
           if [[ "${{ github.event_name }}" = "pull_request" ]]; then
             git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | sort > /tmp/actual-sprint36-paths
-            if [[ "$(wc -l < /tmp/actual-sprint36-paths)" -eq 7 ]] && [[ "$(sha256sum /tmp/actual-sprint36-paths | awk '{print $1}')" == "4784ffca1c940d3fa54a2a3988ead07e2de993bde8d3af2bd41014dbdf905be0" ]]; then
+            if [[ "$(wc -l < /tmp/actual-sprint36-paths)" -eq 5 ]] && [[ "$(sha256sum /tmp/actual-sprint36-paths | awk '{print $1}')" == "ab09e044925ae98740a49c46a70ff387e5f5445b245d3a556d85ad6a354305ec" ]]; then
+              echo "Recognized exact post-Sprint39 five-workflow reconciliation preservation predecessor shape."
+            elif [[ "$(wc -l < /tmp/actual-sprint36-paths)" -eq 7 ]] && [[ "$(sha256sum /tmp/actual-sprint36-paths | awk '{print $1}')" == "4784ffca1c940d3fa54a2a3988ead07e2de993bde8d3af2bd41014dbdf905be0" ]]; then
               echo "Recognized exact Sprint39 seven-workflow M7.5 preservation correction shape."
             elif cmp -s /tmp/actual-sprint36-paths /tmp/post-sprint36-reconciliation-paths; then
               echo "Recognized exact post-Sprint36 canonical reconciliation successor shape."
