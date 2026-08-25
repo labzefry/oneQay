@@ -5,9 +5,14 @@ declare(strict_types=1);
 namespace App\Delivery\Http\Middleware;
 
 use App\Application\Identity\FirstPartySessionAuthorityService;
+use App\Application\Organization\OrganizationalRelationshipVerifier;
+use App\Application\Tenancy\TenantMembershipVerifier;
 use App\Delivery\Http\Identity\FirstPartySessionKeys;
 use App\Delivery\Http\SafeErrorEnvelope;
+use App\Domain\Device\DeviceId;
 use App\Domain\Identity\PlatformIdentityId;
+use App\Domain\Organization\OrganizationId;
+use App\Domain\Outlet\OutletId;
 use App\Domain\Tenancy\TenantId;
 use Closure;
 use Illuminate\Http\Request;
@@ -20,6 +25,8 @@ final class EnforceActiveFirstPartySessionAuthorityMiddleware
 {
     public function __construct(
         private readonly FirstPartySessionAuthorityService $sessionAuthorities,
+        private readonly TenantMembershipVerifier $tenantMemberships,
+        private readonly OrganizationalRelationshipVerifier $organizationalRelationships,
     ) {}
 
     public function handle(Request $request, Closure $next): Response
@@ -41,9 +48,14 @@ final class EnforceActiveFirstPartySessionAuthorityMiddleware
             $outlet = $this->optionalString($request, FirstPartySessionKeys::OUTLET);
             $device = $this->optionalString($request, FirstPartySessionKeys::DEVICE);
 
+            $tenantId = TenantId::fromString($tenant);
+            $identityId = PlatformIdentityId::fromString($identity);
+            $this->assertCanonicalIdentifier($tenant, $tenantId->value());
+            $this->assertCanonicalIdentifier($identity, $identityId->value());
+
             $this->sessionAuthorities->assertActiveCurrent(
-                TenantId::fromString($tenant),
-                PlatformIdentityId::fromString($identity),
+                $tenantId,
+                $identityId,
                 $authority,
                 $organization,
                 $outlet,
@@ -51,6 +63,35 @@ final class EnforceActiveFirstPartySessionAuthorityMiddleware
                 $session->get(FirstPartySessionKeys::CREDENTIAL_EPOCH),
                 $session->get(FirstPartySessionKeys::MFA_FACTOR_EPOCH),
             );
+
+            $organizationId = OrganizationId::fromString($organization);
+            $outletId = $outlet === null ? null : OutletId::fromString($outlet);
+            $deviceId = $device === null ? null : DeviceId::fromString($device);
+            $this->assertCanonicalIdentifier($organization, $organizationId->value());
+            if ($outletId !== null) {
+                $this->assertCanonicalIdentifier($outlet, $outletId->value());
+            }
+            if ($deviceId !== null) {
+                $this->assertCanonicalIdentifier($device, $deviceId->value());
+                if ($outletId === null) {
+                    throw new InvalidArgumentException('Device-bound session authority requires an outlet.');
+                }
+            }
+
+            $verifiedTenant = $this->tenantMemberships->verify($identityId->value(), $tenantId->value());
+            if ($verifiedTenant === null || ! hash_equals($tenantId->value(), $verifiedTenant->tenantId())) {
+                throw new InvalidArgumentException('Current tenant membership is not authorized.');
+            }
+
+            if (! $this->organizationalRelationships->verify(
+                $identityId,
+                $tenantId,
+                $organizationId,
+                $outletId,
+                $deviceId,
+            )) {
+                throw new InvalidArgumentException('Current organizational relationship is not authorized.');
+            }
         } catch (Throwable) {
             return $this->deny($request);
         }
@@ -95,6 +136,13 @@ final class EnforceActiveFirstPartySessionAuthorityMiddleware
             throw new InvalidArgumentException('Full-session authority state is invalid.');
         }
         return $value;
+    }
+
+    private function assertCanonicalIdentifier(string $raw, string $canonical): void
+    {
+        if (! hash_equals($raw, $canonical)) {
+            throw new InvalidArgumentException('Full-session authority identifier is not canonical.');
+        }
     }
 
     private function assertFeatureAvailable(): void
