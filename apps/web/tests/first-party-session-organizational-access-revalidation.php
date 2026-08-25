@@ -248,7 +248,9 @@ $makeRequest = static function (
     return $request;
 };
 
-$invoke = static function (Request $request) use ($middleware): Response {
+$invoke = static function (Request $request) use ($middleware, $app): Response {
+    $app->instance('request', $request);
+
     return $middleware->handle(
         $request,
         static fn (): Response => response()->json(['authorized' => true], 200, ['Cache-Control' => 'no-store, private']),
