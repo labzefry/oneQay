@@ -128,6 +128,8 @@ jobs:
             echo 'Recognized exact Sprint39 source envelope.'
           elif cmp -s /tmp/post-sprint39-reconciliation-preservation-paths /tmp/actual-sprint39-source-paths; then
             echo 'Recognized exact post-Sprint39 reconciliation preservation predecessor shape.'
+          elif [[ "$(wc -l < /tmp/actual-sprint39-source-paths)" -eq 13 ]] && [[ "$(sha256sum /tmp/actual-sprint39-source-paths | awk '{print $1}')" == 'b129d4b1c1135f2f5aecd5dde5ff1b5f6392eecb4d54006e80fc71889763647d' ]]; then
+            echo 'Recognized exact Sprint40 canonical documentation synchronization successor shape.'
           elif cmp -s /tmp/sprint40-entry-gate-paths /tmp/actual-sprint39-source-paths; then
             echo 'Recognized exact Sprint40 identity-disablement revalidation entry-gate successor shape.'
           elif cmp -s /tmp/sprint40-schema-source-envelope-gate-paths /tmp/actual-sprint39-source-paths; then
