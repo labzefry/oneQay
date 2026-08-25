@@ -1,0 +1,245 @@
+name: Sprint40 First-Party Session Identity Disablement Revalidation Regression
+
+# Attribution: Lab | zefry
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/sprint40-first-party-session-identity-disablement-revalidation-regression.yml'
+      - 'apps/web/app/Application/Identity/FirstPartyIdentityEligibilityVerifier.php'
+      - 'apps/web/app/Delivery/Http/Middleware/EnforceActiveFirstPartySessionAuthorityMiddleware.php'
+      - 'apps/web/app/Infrastructure/Identity/LaravelFirstPartyIdentityEligibilityVerifier.php'
+      - 'apps/web/app/Providers/AppServiceProvider.php'
+      - 'apps/web/database/migrations/0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php'
+      - 'apps/web/tests/first-party-session-identity-disablement-revalidation.php'
+      - 'docs/FIRST_PARTY_SESSION_IDENTITY_DISABLEMENT_REVALIDATION_FOUNDATION.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint40-first-party-session-identity-disablement-revalidation-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sprint40-first-party-session-identity-disablement-revalidation:
+    name: sprint40-first-party-session-identity-disablement-revalidation
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:b29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb28=
+      APP_DEBUG: 'false'
+      APP_URL: http://localhost
+      ONEQAY_RUNTIME_CLASS: ci
+      ONEQAY_PERSISTENCE_ENABLED: 'false'
+      ONEQAY_AUTHENTICATION_SESSION_CONTROL_ENABLED: 'true'
+      ONEQAY_PRIVILEGED_TOTP_MFA_ENABLED: 'false'
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Setup exact PHP runtime
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        with:
+          php-version: '8.3'
+          tools: composer:v2
+          coverage: none
+
+      - name: Enforce exact Sprint40 source envelope
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/sprint40-source-paths <<'EOF'
+          .github/workflows/sprint40-first-party-session-identity-disablement-revalidation-regression.yml
+          apps/web/app/Application/Identity/FirstPartyIdentityEligibilityVerifier.php
+          apps/web/app/Delivery/Http/Middleware/EnforceActiveFirstPartySessionAuthorityMiddleware.php
+          apps/web/app/Infrastructure/Identity/LaravelFirstPartyIdentityEligibilityVerifier.php
+          apps/web/app/Providers/AppServiceProvider.php
+          apps/web/database/migrations/0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php
+          apps/web/tests/first-party-session-identity-disablement-revalidation.php
+          docs/FIRST_PARTY_SESSION_IDENTITY_DISABLEMENT_REVALIDATION_FOUNDATION.md
+          EOF
+          sort -o /tmp/sprint40-source-paths /tmp/sprint40-source-paths
+          test "$(sha256sum /tmp/sprint40-source-paths | awk '{print $1}')" = 'a9caf2b68210a38687fee543256aec04dc1e67ee1ef403608f7db69139957ff8'
+          git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | sort > /tmp/actual-sprint40-source-paths
+          cmp -s /tmp/sprint40-source-paths /tmp/actual-sprint40-source-paths || {
+            echo 'Sprint40 changed-file envelope mismatch.' >&2
+            diff -u /tmp/sprint40-source-paths /tmp/actual-sprint40-source-paths >&2 || true
+            exit 1
+          }
+          test "$(sha256sum /tmp/actual-sprint40-source-paths | awk '{print $1}')" = 'a9caf2b68210a38687fee543256aec04dc1e67ee1ef403608f7db69139957ff8'
+
+      - name: Enforce migration immutability and exact migration 14
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+          migration='apps/web/database/migrations/0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php'
+          git diff --exit-code "$base" "$head" -- apps/web/database/migrations ":(exclude)$migration"
+          mapfile -t migrations < <(find apps/web/database/migrations -maxdepth 1 -type f -name '*.php' -printf '%f\n' | sort)
+          test "${#migrations[@]}" -eq 14
+          for index in $(seq 1 13); do
+            prefix="$(printf '0000_00_00_%06d_' "$index")"
+            test "$(printf '%s\n' "${migrations[@]}" | grep -c "^${prefix}")" -eq 1
+          done
+          test "$(printf '%s\n' "${migrations[@]}" | grep -c '^0000_00_00_000014_add_first_party_authentication_eligibility_to_identities\.php$')" -eq 1
+          grep -Fq "Schema::table('oneqay_identities'" "$migration"
+          grep -Fq "\$table->boolean('first_party_authentication_enabled')->default(true);" "$migration"
+          grep -Fq "throw new LogicException('Forward-only generated migration; rollback is not authorized.');" "$migration"
+          ! grep -Eq '\$table->(index|unique|foreign|timestamp|timestamps|enum)|Schema::create|DB::' "$migration"
+
+      - name: Validate exact verifier contract and middleware ordering
+        shell: bash
+        run: |
+          set -euo pipefail
+          contract='apps/web/app/Application/Identity/FirstPartyIdentityEligibilityVerifier.php'
+          adapter='apps/web/app/Infrastructure/Identity/LaravelFirstPartyIdentityEligibilityVerifier.php'
+          middleware='apps/web/app/Delivery/Http/Middleware/EnforceActiveFirstPartySessionAuthorityMiddleware.php'
+          provider='apps/web/app/Providers/AppServiceProvider.php'
+          grep -Fq 'interface FirstPartyIdentityEligibilityVerifier' "$contract"
+          grep -Fq 'public function isEligible(TenantId $tenantId, PlatformIdentityId $identityId): bool;' "$contract"
+          grep -Fq 'implements FirstPartyIdentityEligibilityVerifier' "$adapter"
+          grep -Fq "private const IDENTITY_TABLE = 'oneqay_identities';" "$adapter"
+          grep -Fq "->where('tenant_id', \$tenantId->value())" "$adapter"
+          grep -Fq "->where('id', \$identityId->value())" "$adapter"
+          grep -Fq "->get(['first_party_authentication_enabled'])" "$adapter"
+          grep -Fq "['local', 'test', 'ci']" "$adapter"
+          grep -Fq 'FirstPartyIdentityEligibilityVerifier $identityEligibility' "$middleware"
+          session_line="$(grep -nF '\$this->sessionAuthorities->assertActiveCurrent(' "$middleware" | head -1 | cut -d: -f1)"
+          eligibility_line="$(grep -nF '\$this->identityEligibility->isEligible(\$tenantId, \$identityId)' "$middleware" | head -1 | cut -d: -f1)"
+          membership_line="$(grep -nF '\$this->tenantMemberships->verify(\$identityId->value(), \$tenantId->value())' "$middleware" | head -1 | cut -d: -f1)"
+          test -n "$session_line" && test -n "$eligibility_line" && test -n "$membership_line"
+          test "$session_line" -lt "$eligibility_line"
+          test "$eligibility_line" -lt "$membership_line"
+          grep -Fq "SafeErrorEnvelope::make('SESSION_AUTHORITY_DENIED'" "$middleware"
+          grep -Fq 'FirstPartyIdentityEligibilityVerifier::class' "$provider"
+          grep -Fq 'new LaravelFirstPartyIdentityEligibilityVerifier(' "$provider"
+          grep -Fq '\$this->sessionControlEnabled(),' "$provider"
+
+      - name: Preserve excluded public and configuration surfaces
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+          git diff --exit-code "$base" "$head" -- \
+            apps/web/routes/web.php \
+            apps/web/config/oneqay.php \
+            apps/web/bootstrap/app.php \
+            apps/web/composer.json \
+            apps/web/composer.lock \
+            apps/web/package.json \
+            apps/web/package-lock.json \
+            apps/web/app/Application/Identity/FirstPartySessionAuthorityService.php \
+            apps/web/app/Application/Identity/FirstPartySessionAuthorityRepository.php \
+            apps/web/app/Infrastructure/Identity/LaravelFirstPartySessionAuthorityRepository.php \
+            apps/web/app/Application/Tenancy/TenantMembershipVerifier.php \
+            apps/web/app/Infrastructure/Tenancy/LaravelTenantMembershipVerifier.php \
+            apps/web/app/Application/Organization/OrganizationalRelationshipVerifier.php \
+            apps/web/app/Infrastructure/Organization/LaravelOrganizationalRelationshipVerifier.php \
+            apps/web/app/Application/Access/DurableOrganizationalAccessRepository.php \
+            apps/web/app/Infrastructure/Access/LaravelDurableOrganizationalAccessRepository.php
+          grep -Fq "env('ONEQAY_AUTHENTICATION_SESSION_CONTROL_ENABLED', false)" apps/web/config/oneqay.php
+          grep -Fq "'idle_ttl_seconds' => 7200" apps/web/config/oneqay.php
+          grep -Fq "'absolute_ttl_seconds' => 43200" apps/web/config/oneqay.php
+
+      - name: Preserve route and audit vocabulary
+        shell: bash
+        run: |
+          set -euo pipefail
+          repo='apps/web/app/Infrastructure/Identity/LaravelFirstPartySessionAuthorityRepository.php'
+          for event in session_issued session_revoked other_sessions_revoked all_sessions_revoked session_logout; do
+            grep -Fq "'$event'" "$repo"
+          done
+          ! grep -RInE 'identity_(disabled|enabled)|authentication_eligibility_(changed|updated)|session_identity_disabled' \
+            apps/web/app \
+            apps/web/routes/web.php
+          grep -Fq "Route::get('/auth/sessions'" apps/web/routes/web.php
+          grep -Fq "Route::post('/auth/sessions/revoke-all'" apps/web/routes/web.php
+          ! grep -RInE "Route::(post|put|patch|delete)\([^\n]*(identity|eligibility).*(disable|enable)" apps/web/routes
+
+      - name: Lint Sprint40 source
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l apps/web/app/Application/Identity/FirstPartyIdentityEligibilityVerifier.php
+          php -l apps/web/app/Infrastructure/Identity/LaravelFirstPartyIdentityEligibilityVerifier.php
+          php -l apps/web/app/Delivery/Http/Middleware/EnforceActiveFirstPartySessionAuthorityMiddleware.php
+          php -l apps/web/app/Providers/AppServiceProvider.php
+          php -l apps/web/database/migrations/0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php
+          php -l apps/web/tests/first-party-session-identity-disablement-revalidation.php
+
+      - name: Install locked application dependencies
+        working-directory: apps/web
+        run: |
+          composer validate --no-check-publish
+          composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Run dedicated Sprint40 identity disablement regression
+        working-directory: apps/web
+        shell: bash
+        env:
+          ONEQAY_PERSISTENCE_ENABLED: 'true'
+        run: |
+          set -euo pipefail
+          output="$(php tests/first-party-session-identity-disablement-revalidation.php 2>&1)" || { printf '%s\n' "$output"; exit 1; }
+          printf '%s\n' "$output"
+          grep -Fq 'Sprint40 first-party session identity disablement revalidation regression passed.' <<<"$output"
+
+      - name: Preserve Sprint36-Sprint39 historical regressions
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          migration='database/migrations/0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php'
+          middleware='app/Delivery/Http/Middleware/EnforceActiveFirstPartySessionAuthorityMiddleware.php'
+          cp "$migration" /tmp/oneqay-s40-migration.php
+          cp "$middleware" /tmp/oneqay-s40-middleware.php
+          rm "$migration"
+          git show "${{ github.event.pull_request.base.sha }}:apps/web/app/Delivery/Http/Middleware/EnforceActiveFirstPartySessionAuthorityMiddleware.php" > "$middleware"
+          php tests/first-party-session-inventory-revocation.php
+          php tests/first-party-session-all-session-termination.php
+          ONEQAY_PERSISTENCE_ENABLED=true php tests/first-party-session-absolute-lifetime.php
+          ONEQAY_PERSISTENCE_ENABLED=true php tests/first-party-session-organizational-access-revalidation.php
+          mv /tmp/oneqay-s40-migration.php "$migration"
+          mv /tmp/oneqay-s40-middleware.php "$middleware"
+
+      - name: Preserve full application regression
+        working-directory: apps/web
+        run: php tests/run.php
+
+      - name: Preserve protected runtime boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          doc='docs/FIRST_PARTY_SESSION_IDENTITY_DISABLEMENT_REVALIDATION_FOUNDATION.md'
+          grep -Fq 'Local / Test / CI only' "$doc"
+          grep -Fq 'Technical Preview remains **NO_SCHEMA_CHANGE / SPRINT40 NOT ACTIVATED**' "$doc"
+          grep -Fq 'Production remains **NO-GO / NOT AUTHORIZED**' "$doc"
+          grep -Fq 'Updater remains **DISABLED / UNWIRED**' "$doc"
+          grep -Fq 'Deployment and release remain **NOT AUTHORIZED**' "$doc"
+          if grep -RInE 'ONEQAY_TECHNICAL_PREVIEW_ENABLED[[:space:]]*=[[:space:]]*true|runtime_class.*production.*session_control' \
+            apps/web/app/Application/Identity/FirstPartyIdentityEligibilityVerifier.php \
+            apps/web/app/Infrastructure/Identity/LaravelFirstPartyIdentityEligibilityVerifier.php \
+            apps/web/app/Delivery/Http/Middleware/EnforceActiveFirstPartySessionAuthorityMiddleware.php \
+            apps/web/app/Providers/AppServiceProvider.php; then
+            echo 'Sprint40 activated a protected runtime.' >&2
+            exit 1
+          fi
+
+      - name: Confirm tracked source cleanliness
+        run: git diff --exit-code
