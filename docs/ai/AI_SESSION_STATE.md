@@ -1,5 +1,25 @@
 # AI Session State
 
+## Canonical Sprint40 pre-source session handoff — 2026-08-25
+
+- Repository: `labzefry/oneQay`.
+- Current bounded session work is the exact 13-document Sprint40 canonical documentation synchronization from pre-sync canonical base `7be563d66e2f8441cf28dd2ed9ce5d6c0704098f`, tree `adbbce29218e312b243076dc3ee984e68ce79b65`.
+- Sprint 21 through Sprint 39 governed control/identity/session foundations are **COMPLETE / IMPLEMENTED / PUBLISHED** within bounded authority.
+- Sprint40 selected concern is **First-Party Session Identity Disablement Revalidation Foundation**; entry-gate PR #268 and schema/source-envelope gate PR #270 are published.
+- Source-preservation predecessor PR #271, compatibility corrections PR #272/#273, and documentation-sync preservation predecessor PR #274 are published.
+- Canonical source migrations remain exactly **#1–#13**. Migration #14 is selected for the later Sprint40 source stage but does not yet exist or apply on canonical `main`.
+- Future migration #14 is limited to adding non-null boolean `first_party_authentication_enabled` default `true` to `oneqay_identities`.
+- Frozen future source envelope is exactly 8 paths with SHA-256 `a9caf2b68210a38687fee543256aec04dc1e67ee1ef403608f7db69139957ff8`.
+- Current documentation synchronization envelope is exactly 13 paths with SHA-256 `b129d4b1c1135f2f5aecd5dde5ff1b5f6392eecb4d54006e80fc71889763647d`.
+- This session performs no Sprint40 source implementation, route/API/payload/audit-event addition, workflow YAML change, migration creation/execution, runtime activation, or Preview/Production mutation.
+- Technical Preview remains **`NO_SCHEMA_CHANGE` / Sprint40 not activated**. Production remains **`NO-GO / NOT AUTHORIZED`**. Updater remains **`DISABLED / UNWIRED`**. Deployment and release remain **NOT AUTHORIZED**.
+- After this documentation synchronization is published, the next logical governed stage is the frozen eight-path Sprint40 source implementation against freshly verified canonical `main`. That source stage requires separate Product Owner source authority and does not inherit this documentation-stage merge authority.
+- Fresh GitHub race-check remains mandatory immediately before Ready/merge lifecycle use; any final branch-head mutation invalidates exact-head repository-native merge authorization.
+
+Historical session handoffs below remain provenance and must not override this section.
+
+Attribution: **Lab | zefry**
+
 ## Canonical post-Sprint 33 program-state reconciliation — 2026-08-20
 
 For current identity, security, recovery, schema, runtime, workflow, and next-work interpretation, this section supersedes older current-facing post-Sprint32 wording retained below as historical provenance.
