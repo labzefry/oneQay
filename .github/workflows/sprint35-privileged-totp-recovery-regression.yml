@@ -96,7 +96,7 @@ jobs:
           docs/ai/AI_POST_SPRINT_35_CANONICAL_STATE.md
           EOF
             sort -o /tmp/post-sprint35-reconciliation-paths /tmp/post-sprint35-reconciliation-paths
-            test "$(sha256sum /tmp/post-sprint35-reconciliation-paths | awk '{print $1}')" = "3560af0fd075ac70c3e0c0c54e0562aa72a8accdbcb24e62412dab6f3875945e"
+            test "$(sha256sum /tmp/post-sprint35-reconciliation-paths | awk '{print $1}')" = "3560af0fd075ac70c3e0c0c54e0562aa72a8accdb24e62412dab6f3875945e"
 
             cat > /tmp/post-sprint36-reconciliation-paths <<'EOF'
           docs/ai/AI_NEXT_TASK.md
@@ -205,6 +205,16 @@ jobs:
             sort -o /tmp/sprint39-source-paths /tmp/sprint39-source-paths
             test "$(sha256sum /tmp/sprint39-source-paths | awk '{print $1}')" = "2cfc92c34f46375b11bf3fe92f9094cefa598d234133847fdd6629be211f12c4"
 
+            cat > /tmp/sprint39-m75-preservation-correction-paths <<'EOF'
+          .github/workflows/m7-5-preview-release-artifact.yml
+          .github/workflows/sprint35-privileged-totp-recovery-regression.yml
+          .github/workflows/sprint36-first-party-session-inventory-revocation-regression.yml
+          .github/workflows/sprint37-first-party-all-session-termination-regression.yml
+          .github/workflows/sprint38-first-party-session-absolute-lifetime-regression.yml
+          EOF
+            sort -o /tmp/sprint39-m75-preservation-correction-paths /tmp/sprint39-m75-preservation-correction-paths
+            test "$(sha256sum /tmp/sprint39-m75-preservation-correction-paths | awk '{print $1}')" = "84031e95f99240ea9a4a6eb39f75ff8dfa731fa3f2506396642b811d3425cd68"
+
             cat > /tmp/sprint38-schema-source-envelope-gate-paths <<'EOF'
           docs/SPRINT_38_FIRST_PARTY_SESSION_ABSOLUTE_LIFETIME_SCHEMA_SOURCE_ENVELOPE_GATE.md
           EOF
@@ -279,6 +289,9 @@ jobs:
               sprint36_successor=true
             elif cmp -s /tmp/actual-sprint35-paths /tmp/sprint39-source-paths; then
               echo "Recognized exact Sprint39 organizational-access revalidation source successor shape."
+              sprint36_successor=true
+            elif cmp -s /tmp/actual-sprint35-paths /tmp/sprint39-m75-preservation-correction-paths; then
+              echo "Recognized exact Sprint39 M7.5 preservation correction shape."
               sprint36_successor=true
             elif cmp -s /tmp/actual-sprint35-paths /tmp/sprint38-schema-source-envelope-gate-paths; then
               echo "Recognized exact Sprint38 schema/source-envelope gate successor shape."
