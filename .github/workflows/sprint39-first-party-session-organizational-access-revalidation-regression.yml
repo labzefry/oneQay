@@ -97,6 +97,31 @@ jobs:
           sort -o /tmp/sprint40-schema-source-envelope-gate-paths /tmp/sprint40-schema-source-envelope-gate-paths
           test "$(sha256sum /tmp/sprint40-schema-source-envelope-gate-paths | awk '{print $1}')" = '9a3a85fb3de7ce007b09586af60e18b0cefd6ec1b6fba1b3c2b64e508354d803'
 
+          cat > /tmp/sprint40-source-preservation-paths <<'EOF'
+          .github/workflows/m7-5-preview-release-artifact.yml
+          .github/workflows/sprint35-privileged-totp-recovery-regression.yml
+          .github/workflows/sprint36-first-party-session-inventory-revocation-regression.yml
+          .github/workflows/sprint37-first-party-all-session-termination-regression.yml
+          .github/workflows/sprint38-first-party-session-absolute-lifetime-regression.yml
+          .github/workflows/sprint39-first-party-session-organizational-access-revalidation-regression.yml
+          EOF
+          sort -o /tmp/sprint40-source-preservation-paths /tmp/sprint40-source-preservation-paths
+          test "$(sha256sum /tmp/sprint40-source-preservation-paths | awk '{print $1}')" = '671946562a3eef1375d87b70936bac263aa18f660d6ea274406ed57f1c653351'
+
+          cat > /tmp/sprint40-source-paths <<'EOF'
+          .github/workflows/sprint40-first-party-session-identity-disablement-revalidation-regression.yml
+          apps/web/app/Application/Identity/FirstPartyIdentityEligibilityVerifier.php
+          apps/web/app/Delivery/Http/Middleware/EnforceActiveFirstPartySessionAuthorityMiddleware.php
+          apps/web/app/Infrastructure/Identity/LaravelFirstPartyIdentityEligibilityVerifier.php
+          apps/web/app/Providers/AppServiceProvider.php
+          apps/web/database/migrations/0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php
+          apps/web/tests/first-party-session-identity-disablement-revalidation.php
+          docs/FIRST_PARTY_SESSION_IDENTITY_DISABLEMENT_REVALIDATION_FOUNDATION.md
+          EOF
+          sort -o /tmp/sprint40-source-paths /tmp/sprint40-source-paths
+          test "$(sha256sum /tmp/sprint40-source-paths | awk '{print $1}')" = 'a9caf2b68210a38687fee543256aec04dc1e67ee1ef403608f7db69139957ff8'
+
+          echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
           git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | sort > /tmp/actual-sprint39-source-paths
           if cmp -s /tmp/sprint39-source-paths /tmp/actual-sprint39-source-paths; then
             test "$(sha256sum /tmp/actual-sprint39-source-paths | awk '{print $1}')" = '2cfc92c34f46375b11bf3fe92f9094cefa598d234133847fdd6629be211f12c4'
@@ -107,6 +132,11 @@ jobs:
             echo 'Recognized exact Sprint40 identity-disablement revalidation entry-gate successor shape.'
           elif cmp -s /tmp/sprint40-schema-source-envelope-gate-paths /tmp/actual-sprint39-source-paths; then
             echo 'Recognized exact Sprint40 identity-disablement revalidation schema/source-envelope gate successor shape.'
+          elif cmp -s /tmp/sprint40-source-preservation-paths /tmp/actual-sprint39-source-paths; then
+            echo 'Recognized exact Sprint40 six-workflow source-preservation predecessor shape.'
+          elif cmp -s /tmp/sprint40-source-paths /tmp/actual-sprint39-source-paths; then
+            echo 'Recognized exact Sprint40 identity-disablement revalidation source successor shape.'
+            echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
           else
             echo 'Sprint39 changed-file envelope mismatch.' >&2
             diff -u /tmp/sprint39-source-paths /tmp/actual-sprint39-source-paths >&2 || true
@@ -120,14 +150,25 @@ jobs:
           set -euo pipefail
           base="${{ github.event.pull_request.base.sha }}"
           head="${{ github.event.pull_request.head.sha }}"
-          git diff --exit-code "$base" "$head" -- apps/web/database/migrations
+          if [[ "${ONEQAY_SPRINT40_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            git diff --exit-code "$base" "$head" -- \
+              apps/web/database/migrations \
+              ':(exclude)apps/web/database/migrations/0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php'
+          else
+            git diff --exit-code "$base" "$head" -- apps/web/database/migrations
+          fi
           mapfile -t migrations < <(find apps/web/database/migrations -maxdepth 1 -type f -name '*.php' -printf '%f\n' | sort)
-          test "${#migrations[@]}" -eq 13
+          if [[ "${ONEQAY_SPRINT40_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            test "${#migrations[@]}" -eq 14
+            test "$(printf '%s\n' "${migrations[@]}" | grep -c '^0000_00_00_000014_add_first_party_authentication_eligibility_to_identities\.php$')" -eq 1
+          else
+            test "${#migrations[@]}" -eq 13
+            ! printf '%s\n' "${migrations[@]}" | grep -q '^0000_00_00_000014_'
+          fi
           for index in $(seq 1 13); do
             prefix="$(printf '0000_00_00_%06d_' "$index")"
             test "$(printf '%s\n' "${migrations[@]}" | grep -c "^${prefix}")" -eq 1
           done
-          ! printf '%s\n' "${migrations[@]}" | grep -q '^0000_00_00_000014_'
 
       - name: Preserve excluded authority and public contract surfaces
         if: github.event_name == 'pull_request'
@@ -136,25 +177,46 @@ jobs:
           set -euo pipefail
           base="${{ github.event.pull_request.base.sha }}"
           head="${{ github.event.pull_request.head.sha }}"
-          git diff --exit-code "$base" "$head" -- \
-            apps/web/app/Application/Identity/FirstPartySessionAuthorityService.php \
-            apps/web/app/Application/Identity/FirstPartySessionAuthorityRepository.php \
-            apps/web/app/Infrastructure/Identity/LaravelFirstPartySessionAuthorityRepository.php \
-            apps/web/app/Application/Tenancy/TenantMembershipVerifier.php \
-            apps/web/app/Infrastructure/Tenancy/LaravelTenantMembershipVerifier.php \
-            apps/web/app/Application/Organization/OrganizationalRelationshipVerifier.php \
-            apps/web/app/Infrastructure/Organization/LaravelOrganizationalRelationshipVerifier.php \
-            apps/web/app/Application/Access/DurableOrganizationalAccessRepository.php \
-            apps/web/app/Infrastructure/Access/LaravelDurableOrganizationalAccessRepository.php \
-            apps/web/app/Providers/AppServiceProvider.php \
-            apps/web/bootstrap/app.php \
-            apps/web/config/oneqay.php \
-            apps/web/routes/web.php \
-            apps/web/tests/run.php \
-            apps/web/composer.json \
-            apps/web/composer.lock \
-            apps/web/package.json \
-            apps/web/package-lock.json
+          if [[ "${ONEQAY_SPRINT40_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            git diff --exit-code "$base" "$head" -- \
+              apps/web/app/Application/Identity/FirstPartySessionAuthorityService.php \
+              apps/web/app/Application/Identity/FirstPartySessionAuthorityRepository.php \
+              apps/web/app/Infrastructure/Identity/LaravelFirstPartySessionAuthorityRepository.php \
+              apps/web/app/Application/Tenancy/TenantMembershipVerifier.php \
+              apps/web/app/Infrastructure/Tenancy/LaravelTenantMembershipVerifier.php \
+              apps/web/app/Application/Organization/OrganizationalRelationshipVerifier.php \
+              apps/web/app/Infrastructure/Organization/LaravelOrganizationalRelationshipVerifier.php \
+              apps/web/app/Application/Access/DurableOrganizationalAccessRepository.php \
+              apps/web/app/Infrastructure/Access/LaravelDurableOrganizationalAccessRepository.php \
+              apps/web/bootstrap/app.php \
+              apps/web/config/oneqay.php \
+              apps/web/routes/web.php \
+              apps/web/tests/run.php \
+              apps/web/composer.json \
+              apps/web/composer.lock \
+              apps/web/package.json \
+              apps/web/package-lock.json
+          else
+            git diff --exit-code "$base" "$head" -- \
+              apps/web/app/Application/Identity/FirstPartySessionAuthorityService.php \
+              apps/web/app/Application/Identity/FirstPartySessionAuthorityRepository.php \
+              apps/web/app/Infrastructure/Identity/LaravelFirstPartySessionAuthorityRepository.php \
+              apps/web/app/Application/Tenancy/TenantMembershipVerifier.php \
+              apps/web/app/Infrastructure/Tenancy/LaravelTenantMembershipVerifier.php \
+              apps/web/app/Application/Organization/OrganizationalRelationshipVerifier.php \
+              apps/web/app/Infrastructure/Organization/LaravelOrganizationalRelationshipVerifier.php \
+              apps/web/app/Application/Access/DurableOrganizationalAccessRepository.php \
+              apps/web/app/Infrastructure/Access/LaravelDurableOrganizationalAccessRepository.php \
+              apps/web/app/Providers/AppServiceProvider.php \
+              apps/web/bootstrap/app.php \
+              apps/web/config/oneqay.php \
+              apps/web/routes/web.php \
+              apps/web/tests/run.php \
+              apps/web/composer.json \
+              apps/web/composer.lock \
+              apps/web/package.json \
+              apps/web/package-lock.json
+          fi
 
       - name: Validate exact request-time revalidation wiring
         shell: bash
