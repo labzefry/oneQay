@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Delivery\Http\Middleware;
 
+use App\Application\Identity\FirstPartyIdentityEligibilityVerifier;
 use App\Application\Identity\FirstPartySessionAuthorityService;
 use App\Application\Organization\OrganizationalRelationshipVerifier;
 use App\Application\Tenancy\TenantMembershipVerifier;
@@ -25,6 +26,7 @@ final class EnforceActiveFirstPartySessionAuthorityMiddleware
 {
     public function __construct(
         private readonly FirstPartySessionAuthorityService $sessionAuthorities,
+        private readonly FirstPartyIdentityEligibilityVerifier $identityEligibility,
         private readonly TenantMembershipVerifier $tenantMemberships,
         private readonly OrganizationalRelationshipVerifier $organizationalRelationships,
     ) {}
@@ -63,6 +65,10 @@ final class EnforceActiveFirstPartySessionAuthorityMiddleware
                 $session->get(FirstPartySessionKeys::CREDENTIAL_EPOCH),
                 $session->get(FirstPartySessionKeys::MFA_FACTOR_EPOCH),
             );
+
+            if (! $this->identityEligibility->isEligible($tenantId, $identityId)) {
+                throw new InvalidArgumentException('Current first-party identity eligibility is not authorized.');
+            }
 
             $organizationId = OrganizationId::fromString($organization);
             $outletId = $outlet === null ? null : OutletId::fromString($outlet);
