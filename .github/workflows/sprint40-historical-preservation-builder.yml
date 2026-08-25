@@ -1,0 +1,124 @@
+name: Sprint40 Historical Preservation Branch Builder
+
+# Temporary branch-local construction workflow. It self-removes before PR creation.
+# Attribution: Lab | zefry
+
+on:
+  push:
+    branches:
+      - ci/sprint40-historical-preservation-compatibility
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sprint40-historical-preservation-builder
+  cancel-in-progress: false
+
+jobs:
+  materialize:
+    if: github.ref == 'refs/heads/ci/sprint40-historical-preservation-compatibility'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact branch
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ci/sprint40-historical-preservation-compatibility
+          fetch-depth: 0
+
+      - name: Materialize bounded correction and self-remove
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 <<'PY'
+          from pathlib import Path
+
+          files = [
+              '.github/workflows/m7-2-tenant-isolation-regression.yml',
+              '.github/workflows/m7-3-identity-org-context-regression.yml',
+              '.github/workflows/m7-4a-technical-preview-interaction-regression.yml',
+              '.github/workflows/m7-5-preview-db-qualification-regression.yml',
+              '.github/workflows/m7-5-preview-release-artifact.yml',
+              '.github/workflows/sprint21-role-permission-policy-regression.yml',
+              '.github/workflows/sprint22-policy-administration-regression.yml',
+              '.github/workflows/sprint23-initial-tenant-admin-provisioning-regression.yml',
+              '.github/workflows/sprint24-protected-control-admin-lifecycle-regression.yml',
+              '.github/workflows/sprint25-policy-administration-delivery-regression.yml',
+              '.github/workflows/sprint26-identity-credential-verification-regression.yml',
+              '.github/workflows/sprint27-first-party-session-establishment-regression.yml',
+              '.github/workflows/sprint28-initial-password-enrollment-regression.yml',
+              '.github/workflows/sprint29-first-control-principal-credential-bootstrap-regression.yml',
+              '.github/workflows/sprint30-privileged-totp-mfa-regression.yml',
+              '.github/workflows/sprint31-privileged-reauthentication-step-up-regression.yml',
+              '.github/workflows/sprint33-recovery-bound-password-reset-regression.yml',
+              '.github/workflows/sprint34-authenticated-password-change-regression.yml',
+              '.github/workflows/sprint35-privileged-totp-recovery-regression.yml',
+          ]
+          source_fp = 'a9caf2b68210a38687fee543256aec04dc1e67ee1ef403608f7db69139957ff8'
+          sprint38_fp = '411950d5602dc7160668c88e08a3941ebccc8bdc82d20bee77ce4004f039d216'
+          migration14 = 'apps/web/database/migrations/0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php'
+          block = (
+              "          if [[ -f '" + migration14 + "' ]]; then\n"
+              "            git update-index --assume-unchanged '" + migration14 + "'\n"
+              "            rm -f '" + migration14 + "'\n"
+              "          fi\n"
+          )
+
+          for name in files:
+              path = Path(name)
+              text = path.read_text()
+              if source_fp in text:
+                  raise SystemExit(f'{name}: Sprint40 fingerprint already present unexpectedly')
+
+              lines = text.splitlines(keepends=True)
+              target = None
+              for i, line in enumerate(lines):
+                  if sprint38_fp in line and 'if [[' in line and line.rstrip().endswith('; then'):
+                      target = i
+                      break
+              if target is None:
+                  raise SystemExit(f'{name}: bounded successor recognizer line not found')
+
+              line = lines[target]
+              suffix = '; then\n' if line.endswith('; then\n') else '; then'
+              replacement = f" || [[ \"$count\" -eq 8 && \"$fingerprint\" == '{source_fp}' ]]{suffix}"
+              lines[target] = line[:-len(suffix)] + replacement
+              lines.insert(target + 1, block)
+              path.write_text(''.join(lines))
+
+          Path('.github/workflows/sprint40-historical-preservation-builder.yml').unlink()
+          PY
+
+          git diff --name-only origin/main...HEAD >/tmp/preexisting.txt || true
+          git diff --name-only | sort >/tmp/materialized.txt
+          cat >/tmp/expected.txt <<'EOF'
+          .github/workflows/m7-2-tenant-isolation-regression.yml
+          .github/workflows/m7-3-identity-org-context-regression.yml
+          .github/workflows/m7-4a-technical-preview-interaction-regression.yml
+          .github/workflows/m7-5-preview-db-qualification-regression.yml
+          .github/workflows/m7-5-preview-release-artifact.yml
+          .github/workflows/sprint21-role-permission-policy-regression.yml
+          .github/workflows/sprint22-policy-administration-regression.yml
+          .github/workflows/sprint23-initial-tenant-admin-provisioning-regression.yml
+          .github/workflows/sprint24-protected-control-admin-lifecycle-regression.yml
+          .github/workflows/sprint25-policy-administration-delivery-regression.yml
+          .github/workflows/sprint26-identity-credential-verification-regression.yml
+          .github/workflows/sprint27-first-party-session-establishment-regression.yml
+          .github/workflows/sprint28-initial-password-enrollment-regression.yml
+          .github/workflows/sprint29-first-control-principal-credential-bootstrap-regression.yml
+          .github/workflows/sprint30-privileged-totp-mfa-regression.yml
+          .github/workflows/sprint31-privileged-reauthentication-step-up-regression.yml
+          .github/workflows/sprint33-recovery-bound-password-reset-regression.yml
+          .github/workflows/sprint34-authenticated-password-change-regression.yml
+          .github/workflows/sprint35-privileged-totp-recovery-regression.yml
+          .github/workflows/sprint40-historical-preservation-builder.yml
+          EOF
+          sort -o /tmp/expected.txt /tmp/expected.txt
+          cmp -s /tmp/materialized.txt /tmp/expected.txt || { diff -u /tmp/expected.txt /tmp/materialized.txt; exit 1; }
+
+          git config user.name 'labzefry'
+          git config user.email 'lab.zefa@gmail.com'
+          git add -A
+          git commit -m 'ci: preserve Sprint40 historical source compatibility'
+          git push origin HEAD:ci/sprint40-historical-preservation-compatibility
