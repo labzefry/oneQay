@@ -1,5 +1,22 @@
 # oneQay Architecture
 
+## Canonical Sprint40 pre-source architecture state — 2026-08-25
+
+For current identity, security, session-control, schema, runtime, workflow, and next-work interpretation, this section supersedes older current-facing wording retained below as historical provenance.
+
+- Sprint21 through Sprint39 governed foundations remain **COMPLETE / IMPLEMENTED / PUBLISHED** within their bounded authorities.
+- Sprint40 selected concern is **First-Party Session Identity Disablement Revalidation Foundation**. Its entry gate is published through PR #268 and its schema/source-envelope gate is published through PR #270.
+- Sprint40 source implementation is **NOT YET IMPLEMENTED / NOT YET PUBLISHED**. The source-preservation lineage through PR #271, supplemental historical compatibility PR #272/#273, and canonical-documentation synchronization preservation PR #274 establishes fail-closed qualification only; it creates no source/runtime authority by itself.
+- Sprint40 request-time architecture requires the exact current first-party identity to remain independently eligible before an otherwise-valid logical session authority may continue. Identity eligibility is server-owned and cannot be supplied or widened by caller-controlled tenant, identity, organization, outlet, device, owner, or authority selectors.
+- The selected future persistence change is migration #14, `apps/web/database/migrations/0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php`, adding only non-null boolean `first_party_authentication_enabled` default `true` to `oneqay_identities`. Migration #14 is **SELECTED / NOT YET CREATED / NOT APPLIED**; migrations #1-#13 remain immutable.
+- The exact future source implementation envelope remains eight paths with sorted newline-terminated SHA-256 `a9caf2b68210a38687fee543256aec04dc1e67ee1ef403608f7db69139957ff8`. No route/API/payload, audit vocabulary, feature arm, config key, credential/factor mutation, organizational-verifier mutation, Technical Preview activation, Production activation, updater wiring, deployment, or release expansion is authorized by this documentation synchronization.
+- This canonical documentation synchronization itself is exactly 13 documents with sorted newline-terminated changed-path SHA-256 `b129d4b1c1135f2f5aecd5dde5ff1b5f6392eecb4d54006e80fc71889763647d` and is documentation-only.
+- `ONEQAY_AUTHENTICATION_SESSION_CONTROL_ENABLED=false` remains the source default. Technical Preview remains unactivated for Sprint40. Production remains **NO-GO / NOT AUTHORIZED**. Updater remains **DISABLED / UNWIRED**. Deployment and release remain **NOT AUTHORIZED**.
+
+Historical architecture sections below remain preserved as provenance and must not override this section for current-state interpretation.
+
+Attribution: **Lab | zefry**
+
 ## Canonical post-Sprint 33 program-state reconciliation — 2026-08-20
 
 For current identity, security, recovery, schema, runtime, workflow, and next-work interpretation, this section supersedes older current-facing post-Sprint32 wording retained below as historical provenance.
