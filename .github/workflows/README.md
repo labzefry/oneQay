@@ -1,5 +1,22 @@
 # Workflow Directory
 
+## Canonical Sprint40 pre-source workflow state — 2026-08-25
+
+For current Sprint40 workflow, preservation, exact-shape, and lifecycle interpretation, this section supersedes older current-facing inventory wording retained below as historical provenance.
+
+- Sprint40 **First-Party Session Identity Disablement Revalidation Foundation** has a published entry gate (#268), schema/source-envelope gate (#270), source-preservation predecessor (#271), supplemental Sprint33/Sprint34 compatibility correction (#272), historical-compatibility bridge (#273), and canonical-documentation synchronization preservation predecessor (#274).
+- The published Sprint40 source-preservation lineage recognizes only the exact future eight-path source implementation shape with sorted newline-terminated SHA-256 `a9caf2b68210a38687fee543256aec04dc1e67ee1ef403608f7db69139957ff8`. Sprint40 application source and migration #14 remain **NOT YET IMPLEMENTED / NOT YET PUBLISHED**.
+- PR #274 prepared the Sprint35-Sprint39 fail-closed historical workflow horizon to recognize only the exact 13-document canonical synchronization successor when changed-path count is exactly 13 and sorted newline-terminated fingerprint is `b129d4b1c1135f2f5aecd5dde5ff1b5f6392eecb4d54006e80fc71889763647d`.
+- The 13-document synchronization envelope is `README.md`, `PROJECT_MANIFEST.md`, `ROADMAP.md`, `TASKS.md`, `CHANGELOG.md`, `docs/ai/AI_NEXT_TASK.md`, `docs/ai/AI_PROJECT_STATE.md`, `docs/ai/AI_SESSION_STATE.md`, `ARCHITECTURE.md`, `DATABASE.md`, `TESTING.md`, `DEPLOYMENT.md`, and `.github/workflows/README.md`.
+- Unknown successor shapes remain fail-closed. No wildcard successor acceptance, broad `paths-ignore`, workflow/job disablement, source/schema/runtime bypass, or direct-main mutation is authorized.
+- Pull-request qualification is exact-head based. Only workflows actually triggered for the exact head are counted; every triggered workflow must complete successfully. A head mutation invalidates previously head-bound Product Owner merge authority.
+- `product-owner-merge-authority.yml` remains the repository-native exact-head merge gate. The Product Owner's explicit lifecycle decision must be recorded on the PR in the exact standalone format documented below; the comment is operational evidence of the already-granted Product Owner authority, not a substitute for that authority.
+- Technical Preview remains unactivated for Sprint40. Production remains **NO-GO / NOT AUTHORIZED**. Updater remains **DISABLED / UNWIRED**. Deployment and release remain **NOT AUTHORIZED**.
+
+Historical workflow sections below remain preserved as provenance and must not override this section for current-state interpretation.
+
+Attribution: **Lab | zefry**
+
 ## Canonical post-Sprint 33 program-state reconciliation — 2026-08-20
 
 For current identity, security, recovery, schema, runtime, workflow, and next-work interpretation, this section supersedes older current-facing post-Sprint32 wording retained below as historical provenance.
