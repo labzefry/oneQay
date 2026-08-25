@@ -118,6 +118,16 @@ jobs:
           sort -o /tmp/sprint39-source-paths /tmp/sprint39-source-paths
           test "$(sha256sum /tmp/sprint39-source-paths | awk '{print $1}')" = "2cfc92c34f46375b11bf3fe92f9094cefa598d234133847fdd6629be211f12c4"
 
+          cat > /tmp/sprint39-m75-preservation-correction-paths <<'EOF'
+          .github/workflows/m7-5-preview-release-artifact.yml
+          .github/workflows/sprint35-privileged-totp-recovery-regression.yml
+          .github/workflows/sprint36-first-party-session-inventory-revocation-regression.yml
+          .github/workflows/sprint37-first-party-all-session-termination-regression.yml
+          .github/workflows/sprint38-first-party-session-absolute-lifetime-regression.yml
+          EOF
+          sort -o /tmp/sprint39-m75-preservation-correction-paths /tmp/sprint39-m75-preservation-correction-paths
+          test "$(sha256sum /tmp/sprint39-m75-preservation-correction-paths | awk '{print $1}')" = "84031e95f99240ea9a4a6eb39f75ff8dfa731fa3f2506396642b811d3425cd68"
+
           cat > /tmp/sprint38-schema-source-envelope-gate-paths <<'EOF'
           docs/SPRINT_38_FIRST_PARTY_SESSION_ABSOLUTE_LIFETIME_SCHEMA_SOURCE_ENVELOPE_GATE.md
           EOF
@@ -165,7 +175,9 @@ jobs:
 
           if [[ "${{ github.event_name }}" = "pull_request" ]]; then
             git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | sort > /tmp/actual-sprint37-paths
-            if cmp -s /tmp/actual-sprint37-paths /tmp/sprint37-paths; then
+            if [[ "$(wc -l < /tmp/actual-sprint37-paths)" -eq 7 ]] && [[ "$(sha256sum /tmp/actual-sprint37-paths | awk '{print $1}')" == "4784ffca1c940d3fa54a2a3988ead07e2de993bde8d3af2bd41014dbdf905be0" ]]; then
+              echo "Recognized exact Sprint39 seven-workflow M7.5 preservation correction shape."
+            elif cmp -s /tmp/actual-sprint37-paths /tmp/sprint37-paths; then
               echo "Recognized exact Sprint37 source envelope."
             elif cmp -s /tmp/actual-sprint37-paths /tmp/post-sprint37-preservation-paths; then
               echo "Recognized exact post-Sprint37 preservation predecessor shape."
@@ -183,6 +195,8 @@ jobs:
               echo "Recognized exact Sprint39 organizational-access revalidation schema/source-envelope gate successor shape."
             elif cmp -s /tmp/actual-sprint37-paths /tmp/sprint39-source-paths; then
               echo "Recognized exact Sprint39 organizational-access revalidation source successor shape."
+            elif cmp -s /tmp/actual-sprint37-paths /tmp/sprint39-m75-preservation-correction-paths; then
+              echo "Recognized exact Sprint39 M7.5 preservation correction shape."
             elif cmp -s /tmp/actual-sprint37-paths /tmp/sprint38-schema-source-envelope-gate-paths; then
               echo "Recognized exact Sprint38 schema/source-envelope gate successor shape."
             elif cmp -s /tmp/actual-sprint37-paths /tmp/sprint38-historical-preservation-paths; then
