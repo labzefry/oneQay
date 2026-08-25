@@ -233,6 +233,8 @@ jobs:
           grep -F "env('ONEQAY_AUTHENTICATION_SESSION_CONTROL_ENABLED', false)" apps/web/config/oneqay.php
           grep -F "'idle_ttl_seconds' => 7200" apps/web/config/oneqay.php
           grep -F "'absolute_ttl_seconds' => 43200" apps/web/config/oneqay.php
+          grep -F 'TenantMembershipVerifier $tenantMemberships' apps/web/app/Delivery/Http/Middleware/EnforceActiveFirstPartySessionAuthorityMiddleware.php
+          grep -F 'OrganizationalRelationshipVerifier $organizationalRelationships' apps/web/app/Delivery/Http/Middleware/EnforceActiveFirstPartySessionAuthorityMiddleware.php
           grep -F "Route::post('/auth/sessions/revoke-all'" apps/web/routes/web.php
           grep -F -- "->name('auth.sessions.revoke-all');" apps/web/routes/web.php
           grep -F "'all_sessions_revoked'" apps/web/app/Infrastructure/Identity/LaravelFirstPartySessionAuthorityRepository.php
