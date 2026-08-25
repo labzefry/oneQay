@@ -1,5 +1,22 @@
 # oneQay Database Handbook
 
+## Canonical Sprint40 pre-source database state — 2026-08-25
+
+For current persistence, schema, identity-eligibility, runtime, and next-work interpretation, this section supersedes older current-facing wording retained below as historical provenance.
+
+- Canonical source migrations remain exactly **#1 through #13** at this documentation-synchronization stage. Migrations #1-#13 remain immutable.
+- Sprint40 **First-Party Session Identity Disablement Revalidation Foundation** has selected a minimal forward-only migration #14 through the published schema/source-envelope gate PR #270, but migration #14 is **NOT YET CREATED / NOT APPLIED / NOT PUBLISHED AS SOURCE**.
+- The selected migration path is `apps/web/database/migrations/0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php`.
+- The only selected schema mutation is a non-null boolean `first_party_authentication_enabled` with default `true` on `oneqay_identities`. No index, timestamp, reason, actor, lifecycle journal, trigger, auxiliary table, credential epoch mutation, factor epoch mutation, or organizational-access schema mutation is selected.
+- Identity authentication eligibility remains a server-owned concern distinct from credential existence, credential epoch, TOTP factor state/epoch, tenant membership, and organization/outlet/device relationships.
+- The future Sprint40 source envelope is exactly eight paths with sorted newline-terminated SHA-256 `a9caf2b68210a38687fee543256aec04dc1e67ee1ef403608f7db69139957ff8`. Its preservation lineage is published; source implementation itself remains **NOT YET IMPLEMENTED / NOT YET PUBLISHED**.
+- This canonical documentation synchronization changes exactly 13 documentation paths with sorted newline-terminated SHA-256 `b129d4b1c1135f2f5aecd5dde5ff1b5f6392eecb4d54006e80fc71889763647d`; it creates no database object and executes no migration.
+- Technical Preview receives no Sprint40 schema activation from this stage. Production remains **NO-GO / NOT AUTHORIZED**. Updater remains **DISABLED / UNWIRED**. Deployment, release, SQL execution, migration execution, and Production database mutation remain **NOT AUTHORIZED**.
+
+Historical database sections below remain preserved as provenance and must not override this section for current-state interpretation.
+
+Attribution: **Lab | zefry**
+
 ## Canonical post-Sprint 33 program-state reconciliation — 2026-08-20
 
 For current identity, security, recovery, schema, runtime, workflow, and next-work interpretation, this section supersedes older current-facing post-Sprint32 wording retained below as historical provenance.

@@ -1,5 +1,45 @@
 # AI Next Task
 
+## Canonical Sprint40 pre-source next-task checkpoint — 2026-08-25
+
+This section is the current-facing next-work authority checkpoint. Older sections below remain historical provenance.
+
+### Current completed/gated boundary
+
+- Sprint 21 through Sprint 39 governed control/identity/session foundations are **COMPLETE / IMPLEMENTED / PUBLISHED** within bounded authority.
+- Sprint40 **First-Party Session Identity Disablement Revalidation Foundation** is selected and governed through published entry-gate PR #268 and schema/source-envelope gate PR #270.
+- Sprint40 source-preservation predecessor PR #271, historical compatibility corrections PR #272/#273, and documentation-sync preservation predecessor PR #274 are **PUBLISHED**.
+- Current pre-sync canonical base is `7be563d66e2f8441cf28dd2ed9ce5d6c0704098f`, tree `adbbce29218e312b243076dc3ee984e68ce79b65`, with verified/valid signature.
+- Canonical source migrations on `main` remain exactly **#1–#13**. Migration #14 is selected for the later source stage but **does not yet exist or apply on canonical `main`**.
+- The exact documentation synchronization envelope is 13 paths with SHA-256 `b129d4b1c1135f2f5aecd5dde5ff1b5f6392eecb4d54006e80fc71889763647d`.
+
+### Next logical governed task after this synchronization is published
+
+**Sprint40 First-Party Session Identity Disablement Revalidation Foundation — frozen eight-path source implementation.**
+
+Frozen future source envelope SHA-256:
+
+`a9caf2b68210a38687fee543256aec04dc1e67ee1ef403608f7db69139957ff8`
+
+The later source stage is expected to add only the separately selected migration `apps/web/database/migrations/0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php` plus the already-frozen application/test/workflow paths. Its schema addition is limited to non-null boolean `first_party_authentication_enabled` default `true` on `oneqay_identities`.
+
+### Frozen semantic boundary
+
+- The exact identity remains server-derived from already verified logical session authority.
+- Current identity eligibility is an independent request-time condition; missing, disabled, malformed, contradictory, cross-tenant, or cross-identity eligibility evidence fails closed.
+- Credential epoch, factor epoch, durable session inventory/revocation, idle/absolute lifetime, tenant membership, and exact organization/outlet/device revalidation remain independent controls and cannot substitute for identity eligibility.
+- Caller-supplied identity/tenant/organization/outlet/device selectors never become authority.
+- The concern must not auto-reactivate an identity, restore grants, switch context, widen authority, or issue replacement logical session authority.
+- No new public route, API, request payload, audit event, feature arm, or environment variable is selected by the frozen gate.
+
+### Authority boundary
+
+This 13-document synchronization does **not** authorize the later Sprint40 source stage. Before any source mutation after this synchronization is published, re-read live canonical `main` and obtain separate bounded Product Owner source authority for the exact resulting baseline/head.
+
+Technical Preview remains **`NO_SCHEMA_CHANGE` / Sprint40 not activated**. Production remains **`NO-GO / NOT AUTHORIZED`**. Updater remains **`DISABLED / UNWIRED`**. Deployment and release remain **NOT AUTHORIZED**.
+
+Attribution: **Lab | zefry**
+
 ## Canonical post-Sprint 39 program-state reconciliation — 2026-08-25
 
 For current identity, security, recovery, session-control, organizational-access, schema, runtime, workflow, and next-work interpretation, this section supersedes older current-facing post-Sprint38 wording retained below as historical provenance.

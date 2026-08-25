@@ -1,5 +1,22 @@
 # oneQay Roadmap
 
+## Canonical Sprint40 pre-source roadmap checkpoint — 2026-08-25
+
+For current roadmap sequencing, this checkpoint supersedes older current-facing next-work statements retained below as historical provenance.
+
+- Sprint 21 through Sprint 39 governed identity/control foundations are **COMPLETE / IMPLEMENTED / PUBLISHED** within their bounded authorities.
+- Sprint40 **First-Party Session Identity Disablement Revalidation Foundation** is the selected governed concern.
+- Entry-gate PR #268 and schema/source-envelope gate PR #270 are **PUBLISHED**.
+- Source-preservation predecessor PR #271 and its compatibility prerequisites PR #272/#273 are **PUBLISHED**.
+- Documentation-synchronization preservation predecessor PR #274 is **PUBLISHED** as `7be563d66e2f8441cf28dd2ed9ce5d6c0704098f` / tree `adbbce29218e312b243076dc3ee984e68ce79b65`.
+- The present roadmap stage is the exact **13-document canonical synchronization** with fingerprint `b129d4b1c1135f2f5aecd5dde5ff1b5f6392eecb4d54006e80fc71889763647d`.
+- Canonical source migrations remain exactly **#1–#13**. Migration #14 is selected for the later Sprint40 source stage but does not yet exist or apply on canonical `main`.
+- The next logical stage after this documentation synchronization is the already-frozen exact **8-path Sprint40 source implementation**, fingerprint `a9caf2b68210a38687fee543256aec04dc1e67ee1ef403608f7db69139957ff8`, subject to a fresh canonical-main check and separate source authority.
+- Technical Preview remains **`NO_SCHEMA_CHANGE` / Sprint40 not activated**; Production remains **`NO-GO / NOT AUTHORIZED`**; updater remains **`DISABLED / UNWIRED`**; deployment and release remain **NOT AUTHORIZED**.
+- This documentation checkpoint does not itself implement Sprint40 source, create or execute migration #14, change runtime behavior, or grant Preview/Production authority.
+
+Attribution: **Lab | zefry**
+
 ## Canonical post-Sprint 33 program-state reconciliation — 2026-08-20
 
 For current identity, security, recovery, schema, runtime, workflow, and next-work interpretation, this section supersedes older current-facing post-Sprint32 wording retained below as historical provenance.
