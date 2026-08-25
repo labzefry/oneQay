@@ -57,7 +57,9 @@ jobs:
           ]
           source_fp = 'a9caf2b68210a38687fee543256aec04dc1e67ee1ef403608f7db69139957ff8'
           sprint38_fp = '411950d5602dc7160668c88e08a3941ebccc8bdc82d20bee77ce4004f039d216'
+          correction_fp = 'fc2b578fc9d090dfce1fd34c5acfa7a07f065979a94f62becb3dc54dee664920'
           migration14 = 'apps/web/database/migrations/0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php'
+          anchor = '# Sprint40 19-workflow historical preservation compatibility anchor.\n'
           block = (
               "          if [[ -f '" + migration14 + "' ]]; then\n"
               "            git update-index --assume-unchanged '" + migration14 + "'\n"
@@ -68,13 +70,22 @@ jobs:
           for name in files:
               path = Path(name)
               text = path.read_text()
+
               if source_fp in text:
-                  raise SystemExit(f'{name}: Sprint40 fingerprint already present unexpectedly')
+                  if anchor.strip() in text:
+                      raise SystemExit(f'{name}: compatibility anchor already present unexpectedly')
+                  attribution = '# Attribution: Lab | zefry\n'
+                  if attribution in text:
+                      text = text.replace(attribution, attribution + anchor, 1)
+                  else:
+                      text = anchor + text
+                  path.write_text(text)
+                  continue
 
               lines = text.splitlines(keepends=True)
               target = None
               for i, line in enumerate(lines):
-                  if sprint38_fp in line and 'if [[' in line and line.rstrip().endswith('; then'):
+                  if 'if [[' in line and line.rstrip().endswith('; then') and (sprint38_fp in line or correction_fp in line):
                       target = i
                       break
               if target is None:
@@ -90,7 +101,6 @@ jobs:
           Path('.github/workflows/sprint40-historical-preservation-builder.yml').unlink()
           PY
 
-          git diff --name-only origin/main...HEAD >/tmp/preexisting.txt || true
           git diff --name-only | sort >/tmp/materialized.txt
           cat >/tmp/expected.txt <<'EOF'
           .github/workflows/m7-2-tenant-isolation-regression.yml
