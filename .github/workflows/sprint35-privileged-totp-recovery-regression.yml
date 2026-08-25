@@ -174,6 +174,13 @@ jobs:
             sort -o /tmp/post-sprint38-reconciliation-paths /tmp/post-sprint38-reconciliation-paths
             test "$(sha256sum /tmp/post-sprint38-reconciliation-paths | awk '{print $1}')" = "e1bd5f1acb858e3b8e91f3b57dfe8505c4142564142bf9a32b98240c1dd9c472"
 
+            cat > /tmp/post-sprint39-reconciliation-paths <<'EOF'
+          docs/ai/AI_NEXT_TASK.md
+          docs/ai/AI_POST_SPRINT_39_CANONICAL_STATE.md
+          EOF
+            sort -o /tmp/post-sprint39-reconciliation-paths /tmp/post-sprint39-reconciliation-paths
+            test "$(sha256sum /tmp/post-sprint39-reconciliation-paths | awk '{print $1}')" = "f38b1a2dea2bd5a55a5cd166db0ea7b2d4ae5186cefe2cb5db27f18f9639e866"
+
             cat > /tmp/sprint38-entry-gate-paths <<'EOF'
           docs/SPRINT_38_FIRST_PARTY_SESSION_ABSOLUTE_LIFETIME_ENTRY_GATE.md
           EOF
@@ -255,6 +262,9 @@ jobs:
             elif [[ "$actual_count" -eq 4 && "$actual_fingerprint" == 'f6064e6563ec987fc487162fc29285870fab4869509a626c1b9a9280dc6ebafe' ]]; then
               echo "Recognized exact post-Sprint38 4-workflow preservation predecessor shape."
               sprint36_successor=true
+            elif [[ "$actual_count" -eq 5 && "$actual_fingerprint" == 'ab09e044925ae98740a49c46a70ff387e5f5445b245d3a556d85ad6a354305ec' ]]; then
+              echo "Recognized exact post-Sprint39 five-workflow reconciliation preservation predecessor shape."
+              sprint36_successor=true
             elif [[ "$actual_count" -eq 7 && "$actual_fingerprint" == '4784ffca1c940d3fa54a2a3988ead07e2de993bde8d3af2bd41014dbdf905be0' ]]; then
               echo "Recognized exact Sprint39 seven-workflow M7.5 preservation correction shape."
               sprint36_successor=true
@@ -280,6 +290,9 @@ jobs:
               sprint36_successor=true
             elif cmp -s /tmp/actual-sprint35-paths /tmp/post-sprint38-reconciliation-paths; then
               echo "Recognized exact post-Sprint38 canonical reconciliation successor shape."
+              sprint36_successor=true
+            elif cmp -s /tmp/actual-sprint35-paths /tmp/post-sprint39-reconciliation-paths; then
+              echo "Recognized exact post-Sprint39 canonical reconciliation successor shape."
               sprint36_successor=true
             elif cmp -s /tmp/actual-sprint35-paths /tmp/sprint38-entry-gate-paths; then
               echo "Recognized exact Sprint38 entry-gate successor shape."
