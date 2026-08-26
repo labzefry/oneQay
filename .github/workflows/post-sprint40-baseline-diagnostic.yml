@@ -1,0 +1,30 @@
+name: Post-Sprint40 Baseline Diagnostic
+
+# Temporary branch-local diagnostic only. Never publish to main.
+# Attribution: Lab | zefry
+
+on:
+  push:
+    branches:
+      - ci/post-sprint40-baseline-diagnostic
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact diagnostic branch
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+      - name: Lint workflow definitions
+        shell: bash
+        run: |
+          set -euo pipefail
+          go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.7 \
+            .github/workflows/sprint32-authentication-recovery-proof-regression.yml \
+            .github/workflows/sprint35-privileged-totp-recovery-regression.yml \
+            .github/workflows/m7-5-preview-release-artifact.yml
