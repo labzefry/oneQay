@@ -45,7 +45,7 @@ jobs:
             echo 'Exact post-Sprint40 M7.5 preservation successor recognized; migrations #12-#14 isolated only from historical Sprint32 execution.'
             exit 0
           fi
-"""
+          """
           if text.count(anchor) != 1:
               raise SystemExit(f'expected one Sprint32 insertion anchor, found {text.count(anchor)}')
           path.write_text(text.replace(anchor, insertion + anchor, 1))
