@@ -1,0 +1,92 @@
+name: Post-Sprint40 Sprint32 Self-Correction Builder
+
+# Attribution: Lab | zefry
+
+on:
+  push:
+    branches:
+      - ci/post-sprint40-s32-self-correction-builder
+
+permissions:
+  contents: write
+
+jobs:
+  build-clean-sprint32-correction:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout builder head
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+
+      - name: Add exact Sprint32 self-correction handling
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('.github/workflows/sprint32-authentication-recovery-proof-regression.yml')
+          text = path.read_text()
+          fingerprint = '261f147d880a37fe9137b28d9541724c6c5e3987138f3fb56d5465ff31dc7412'
+
+          anchor = """          fingerprint=\"$(sha256sum /tmp/s33-successor-files.txt | awk '{print $1}')\"\n          if [[ \"$count\" -eq 35 ]] && [[ \"$fingerprint\" == 'e3b724002cfc0be1ef890d1b5594a2a5179123f949f6f486354e21950c7328eb' ]]; then\n"""
+          replacement = f"""          fingerprint=\"$(sha256sum /tmp/s33-successor-files.txt | awk '{{print $1}}')\"\n          if [[ \"$count\" -eq 1 ]] && [[ \"$fingerprint\" == '{fingerprint}' ]]; then\n            echo 'ONEQAY_SPRINT32_WORKFLOW_CORRECTION=true' >> \"$GITHUB_ENV\"\n            for migration in \\\n              0000_00_00_000011_add_credential_epoch_to_identity_password_credentials.php \\\n              0000_00_00_000012_add_totp_factor_epoch_and_recovery_authority.php \\\n              0000_00_00_000013_create_first_party_session_authority.php \\\n              0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php\n            do\n              migration_path=\"apps/web/database/migrations/$migration\"\n              if [[ -f \"$migration_path\" ]]; then\n                git update-index --assume-unchanged \"$migration_path\"\n                rm -f \"$migration_path\"\n              fi\n            done\n            echo 'Exact Sprint32 workflow correction recognized; migrations #11-#14 isolated only from historical Sprint32 executable preservation.'\n            exit 0\n          fi\n          echo 'ONEQAY_SPRINT32_WORKFLOW_CORRECTION=false' >> \"$GITHUB_ENV\"\n          if [[ \"$count\" -eq 35 ]] && [[ \"$fingerprint\" == 'e3b724002cfc0be1ef890d1b5594a2a5179123f949f6f486354e21950c7328eb' ]]; then\n"""
+          if text.count(anchor) != 1:
+              raise SystemExit('recognition anchor mismatch')
+          text = text.replace(anchor, replacement, 1)
+
+          old_if = "      - name: Enforce exact Sprint 32 source envelope\n        if: github.event_name == 'pull_request' && env.ONEQAY_SPRINT33_SUCCESSOR != 'true'\n"
+          new_if = "      - name: Enforce exact Sprint 32 source envelope\n        if: github.event_name == 'pull_request' && env.ONEQAY_SPRINT33_SUCCESSOR != 'true' && env.ONEQAY_SPRINT32_WORKFLOW_CORRECTION != 'true'\n"
+          if text.count(old_if) != 1:
+              raise SystemExit('source-envelope condition anchor mismatch')
+          text = text.replace(old_if, new_if, 1)
+
+          old_migration_start = """            base=\"origin/${{ github.base_ref }}\"\n            if [[ \"${ONEQAY_SPRINT34_SUCCESSOR:-false}\" == 'true' ]]; then\n"""
+          new_migration_start = """            base=\"origin/${{ github.base_ref }}\"\n            if [[ \"${ONEQAY_SPRINT32_WORKFLOW_CORRECTION:-false}\" == 'true' ]]; then\n              git diff --exit-code \"$base...HEAD\" -- apps/web/database/migrations\n            elif [[ \"${ONEQAY_SPRINT34_SUCCESSOR:-false}\" == 'true' ]]; then\n"""
+          if text.count(old_migration_start) != 1:
+              raise SystemExit('migration start anchor mismatch')
+          text = text.replace(old_migration_start, new_migration_start, 1)
+
+          old_successor_branch = """            if [[ \"${ONEQAY_SPRINT33_SUCCESSOR:-false}\" == 'true' ]]; then\n              git diff --exit-code \"$base...HEAD\" -- apps/web/database/migrations\n            else\n              for migration in \\\n"""
+          new_successor_branch = """            if [[ \"${ONEQAY_SPRINT32_WORKFLOW_CORRECTION:-false}\" != 'true' && \"${ONEQAY_SPRINT33_SUCCESSOR:-false}\" == 'true' ]]; then\n              git diff --exit-code \"$base...HEAD\" -- apps/web/database/migrations\n            elif [[ \"${ONEQAY_SPRINT32_WORKFLOW_CORRECTION:-false}\" != 'true' ]]; then\n              for migration in \\\n"""
+          if text.count(old_successor_branch) != 1:
+              raise SystemExit('successor branch anchor mismatch')
+          text = text.replace(old_successor_branch, new_successor_branch, 1)
+
+          path.write_text(text)
+          PY
+
+          git diff --check
+          go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.7 -shellcheck= .github/workflows/sprint32-authentication-recovery-proof-regression.yml
+
+      - name: Commit clean Sprint32 correction and publish commit object
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'labzefry'
+          git config user.email 'lab.zefa@gmail.com'
+          git rm .github/workflows/post-sprint40-s32-self-correction-builder.yml
+          git add .github/workflows/sprint32-authentication-recovery-proof-regression.yml
+          git commit -m 'ci: make Sprint32 workflow correction self-preserving'
+
+          cat > /tmp/expected-net-paths <<'EOF'
+          .github/workflows/sprint32-authentication-recovery-proof-regression.yml
+          EOF
+          git diff --name-only 1045255743574d87c4dc8d9a2638a25c1c7f037a HEAD | sort > /tmp/actual-net-paths
+          cmp -s /tmp/expected-net-paths /tmp/actual-net-paths || {
+            echo 'Unexpected Sprint32 correction net path set:' >&2
+            diff -u /tmp/expected-net-paths /tmp/actual-net-paths >&2 || true
+            exit 1
+          }
+
+          echo "FINAL_COMMIT=$(git rev-parse HEAD)"
+          echo "FINAL_TREE=$(git rev-parse HEAD^{tree})"
+
+          set +e
+          git push origin HEAD:ci/post-sprint40-s32-self-correction-builder
+          rc=$?
+          set -e
+          echo "PUSH_RC=$rc"
+          exit 0
