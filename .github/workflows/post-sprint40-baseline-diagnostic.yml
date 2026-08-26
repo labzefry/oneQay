@@ -1,7 +1,7 @@
 name: Post-Sprint40 Baseline Diagnostic
 
 # Temporary branch-local diagnostic only. Never publish to main.
-# Diagnostic revision 12.
+# Diagnostic revision 13.
 # Attribution: Lab | zefry
 
 on:
@@ -32,9 +32,8 @@ jobs:
           from pathlib import Path
           p = Path('.github/workflows/sprint39-first-party-session-organizational-access-revalidation-regression.yml')
           rows = p.read_text().splitlines(True)
-          fp = 'ab09e044925ae98740a49c46a70ff387e5f5445b245d3a556d85ad6a354305ec'
-          start = next(i for i, line in enumerate(rows) if fp in line and 'actual-sprint39-source-paths' in line)
-          recognized = next(i for i in range(start + 1, min(start + 12, len(rows))) if 'Recognized exact post-Sprint39 reconciliation preservation predecessor shape.' in rows[i])
+          recognized = next(i for i, line in enumerate(rows) if 'Recognized exact post-Sprint39 reconciliation preservation predecessor shape.' in line)
+          start = next(i for i in range(recognized - 1, max(recognized - 12, -1), -1) if 'post-sprint39-reconciliation-preservation-paths' in rows[i] and 'actual-sprint39-source-paths' in rows[i])
           branch_indent = rows[start][:len(rows[start]) - len(rows[start].lstrip())]
           replacement = [
               rows[start],
