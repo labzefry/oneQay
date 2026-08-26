@@ -174,8 +174,7 @@ jobs:
               mapfile -t migration_diff < <(git diff --name-status "$base...HEAD" -- apps/web/database/migrations)
               test "${#migration_diff[@]}" -eq 1
               test "${migration_diff[0]}" = $'A	apps/web/database/migrations/0000_00_00_000011_add_credential_epoch_to_identity_password_credentials.php'
-              mapfile -t s34_migrations < <(find apps/web/database/migrations -maxdepth 1 -type f -name '*.php' -printf '%f
-' | sort)
+              mapfile -t s34_migrations < <(find apps/web/database/migrations -maxdepth 1 -type f -name '*.php' -printf '%f\n' | sort)
               test "${#s34_migrations[@]}" -eq 11
               test "${s34_migrations[9]}" = '0000_00_00_000010_create_identity_recovery_codes.php'
               test "${s34_migrations[10]}" = '0000_00_00_000011_add_credential_epoch_to_identity_password_credentials.php'
