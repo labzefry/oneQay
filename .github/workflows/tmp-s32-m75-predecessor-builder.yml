@@ -1,10 +1,9 @@
 name: Temporary Sprint32 M7.5 Predecessor Builder
 
 on:
-  pull_request:
-    branches: [main]
-    paths:
-      - '.github/workflows/tmp-s32-m75-predecessor-builder.yml'
+  push:
+    branches:
+      - ci/builder-runtime-base
 
 permissions:
   contents: write
@@ -14,11 +13,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - name: Checkout exact builder head
+      - name: Checkout canonical source
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           fetch-depth: 0
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: 517d6fc92c8becf225e9997899d96bf53da28433
 
       - name: Build and validate clean Sprint32 predecessor
         shell: bash
@@ -52,18 +51,16 @@ jobs:
           PY
           git diff --check
           go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.7 -shellcheck= .github/workflows/sprint32-authentication-recovery-proof-regression.yml
-          printf '%s\n' '.github/workflows/sprint32-authentication-recovery-proof-regression.yml' > /tmp/expected-paths
-          git diff --name-only 517d6fc92c8becf225e9997899d96bf53da28433 -- . ':!.github/workflows/tmp-s32-m75-predecessor-builder.yml' | sort > /tmp/actual-paths
-          cmp -s /tmp/expected-paths /tmp/actual-paths
+          test "$(git diff --name-only 517d6fc92c8becf225e9997899d96bf53da28433 | sort)" = '.github/workflows/sprint32-authentication-recovery-proof-regression.yml'
+          printf '%s\n' '.github/workflows/sprint32-authentication-recovery-proof-regression.yml' > /tmp/actual-paths
           test "$(sha256sum /tmp/actual-paths | awk '{print $1}')" = '261f147d880a37fe9137b28d9541724c6c5e3987138f3fb56d5465ff31dc7412'
 
-      - name: Export clean commit object
+      - name: Export clean canonical-parent commit object
         shell: bash
         run: |
           set -euo pipefail
           git config user.name 'labzefry'
           git config user.email 'lab.zefa@gmail.com'
-          git rm .github/workflows/tmp-s32-m75-predecessor-builder.yml
           git add .github/workflows/sprint32-authentication-recovery-proof-regression.yml
           tree="$(git write-tree)"
           commit="$(printf '%s\n\n%s\n' 'ci: preserve M7.5 closure through Sprint32 horizon' 'Attribution: Lab | zefry' | git commit-tree "$tree" -p 517d6fc92c8becf225e9997899d96bf53da28433)"
