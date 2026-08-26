@@ -131,7 +131,9 @@ jobs:
             test "$(sha256sum /tmp/actual-sprint39-source-paths | awk '{print $1}')" = '2cfc92c34f46375b11bf3fe92f9094cefa598d234133847fdd6629be211f12c4'
             echo 'Recognized exact Sprint39 source envelope.'
           elif cmp -s /tmp/post-sprint39-reconciliation-preservation-paths /tmp/actual-sprint39-source-paths; then
-            echo 'Recognized exact post-Sprint39 reconciliation preservation predecessor shape.'
+            grep -Fq '261f147d880a37fe9137b28d9541724c6c5e3987138f3fb56d5465ff31dc7412' .github/workflows/sprint35-privileged-totp-recovery-regression.yml
+            grep -Fq '261f147d880a37fe9137b28d9541724c6c5e3987138f3fb56d5465ff31dc7412' .github/workflows/sprint37-first-party-all-session-termination-regression.yml
+            echo 'Recognized exact post-Sprint39 reconciliation preservation predecessor shape with Sprint32 YAML closure compatibility.'
             echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
           elif [[ "$(wc -l < /tmp/actual-sprint39-source-paths)" -eq 13 ]] && [[ "$(sha256sum /tmp/actual-sprint39-source-paths | awk '{print $1}')" == 'b129d4b1c1135f2f5aecd5dde5ff1b5f6392eecb4d54006e80fc71889763647d' ]]; then
             echo 'Recognized exact Sprint40 canonical documentation synchronization successor shape.'
