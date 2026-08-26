@@ -1,0 +1,76 @@
+name: Post-Sprint40 Sprint32 Preservation Builder
+
+on:
+  push:
+    branches:
+      - ci/post-sprint40-sprint32-preservation-builder
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout builder source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+
+      - name: Apply exact bounded preservation corrections
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          fingerprint = '261f147d880a37fe9137b28d9541724c6c5e3987138f3fb56d5465ff31dc7412'
+
+          for path, actual in [
+              (Path('.github/workflows/sprint36-first-party-session-inventory-revocation-regression.yml'), '/tmp/actual-sprint36-paths'),
+              (Path('.github/workflows/sprint37-first-party-all-session-termination-regression.yml'), '/tmp/actual-sprint37-paths'),
+          ]:
+              text = path.read_text()
+              needle = f'  if [[ "$(wc -l < {actual})" -eq 5 ]] && [[ "$(sha256sum {actual} | awk \'{{print $1}}\')" == "ab09e044925ae98740a49c46a70ff387e5f5445b245d3a556d85ad6a354305ec" ]]; then\n'
+              replacement = (
+                  f'  if [[ "$(wc -l < {actual})" -eq 1 ]] && [[ "$(sha256sum {actual} | awk \'{{print $1}}\')" == "{fingerprint}" ]]; then\n'
+                  '    echo "Recognized exact Sprint32 workflow YAML closure successor shape."\n'
+                  f'  elif [[ "$(wc -l < {actual})" -eq 5 ]] && [[ "$(sha256sum {actual} | awk \'{{print $1}}\')" == "ab09e044925ae98740a49c46a70ff387e5f5445b245d3a556d85ad6a354305ec" ]]; then\n'
+              )
+              if text.count(needle) != 1:
+                  raise SystemExit(f'expected one preservation anchor in {path}, got {text.count(needle)}')
+              path.write_text(text.replace(needle, replacement, 1))
+
+          p39 = Path('.github/workflows/sprint39-first-party-session-organizational-access-revalidation-regression.yml')
+          text = p39.read_text()
+          suffix = ':apps/web/app/Delivery/Http/Middleware/EnforceActiveFirstPartySessionAuthorityMiddleware.php" > "$middleware"'
+          candidates = [line for line in text.splitlines() if 'git show ' in line and suffix in line]
+          if len(candidates) != 1:
+              raise SystemExit(f'expected one Sprint39 historical middleware restore, got {len(candidates)}')
+          old = candidates[0]
+          indent = old[:len(old)-len(old.lstrip())]
+          new = indent + 'git show "bd55f92015d963379dcac3804a25f4d13ae55613:apps/web/app/Delivery/Http/Middleware/EnforceActiveFirstPartySessionAuthorityMiddleware.php" > "$middleware"'
+          p39.write_text(text.replace(old, new, 1))
+          PY
+          git diff --check
+          git diff --name-only | sort
+          test "$(git diff --name-only | wc -l)" -eq 3
+          git diff --name-only | grep -Fx '.github/workflows/sprint36-first-party-session-inventory-revocation-regression.yml'
+          git diff --name-only | grep -Fx '.github/workflows/sprint37-first-party-all-session-termination-regression.yml'
+          git diff --name-only | grep -Fx '.github/workflows/sprint39-first-party-session-organizational-access-revalidation-regression.yml'
+
+      - name: Create diagnostic object commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'Lab | zefry'
+          git config user.email 'labzefry@users.noreply.github.com'
+          git add \
+            .github/workflows/sprint36-first-party-session-inventory-revocation-regression.yml \
+            .github/workflows/sprint37-first-party-all-session-termination-regression.yml \
+            .github/workflows/sprint39-first-party-session-organizational-access-revalidation-regression.yml
+          git commit -m 'ci: build Sprint32 historical preservation objects'
+          echo "BUILDER_COMMIT=$(git rev-parse HEAD)"
+          git show --format=fuller --stat --oneline HEAD
+          git push origin HEAD:refs/heads/ci/post-sprint40-sprint32-preservation-object || true
