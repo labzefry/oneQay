@@ -299,26 +299,39 @@ jobs:
         run: php tests/authentication-recovery-proof.php
 
       - name: Preserve Sprint 21 through Sprint 31 executable regressions
-        working-directory: apps/web
         shell: bash
         run: |
           set -euo pipefail
-          git -C ../.. update-index --assume-unchanged apps/web/database/migrations/0000_00_00_000010_create_identity_recovery_codes.php
-          rm -f database/migrations/0000_00_00_000010_create_identity_recovery_codes.php
-          git -C ../.. update-index --assume-unchanged apps/web/database/migrations/0000_00_00_000011_add_credential_epoch_to_identity_password_credentials.php
-          rm -f database/migrations/0000_00_00_000011_add_credential_epoch_to_identity_password_credentials.php
-          echo 'Migration #10 isolated only from preserved Sprint 21-31 executable regressions after Sprint 32 migration/security/recovery qualification passed.'
-          php tests/tenant-isolation.php
-          php tests/identity-org-context.php
-          php -r 'require "vendor/autoload.php"; $app=require "bootstrap/app.php"; $app->make(Illuminate\Contracts\Http\Kernel::class)->bootstrap(); $assert=static function(bool $c,string $m):void{if(!$c)throw new RuntimeException($m);}; require "tests/authorization-persistence.php"; require "tests/authorization-administration-persistence.php"; require "tests/initial-tenant-administrator-provisioning.php"; require "tests/protected-control-administrator-lifecycle.php";'
-          php tests/policy-administration-delivery.php
-          php tests/identity-credential-verification.php
-          php tests/first-party-session-establishment.php
-          php tests/initial-password-enrollment.php
-          php tests/first-control-principal-credential-bootstrap.php
-          php tests/privileged-totp-mfa.php
-          php tests/privileged-reauthentication-step-up.php
-          php tests/privileged-update-security.php
+          historical_commit='fba7b862ff0022de05c9f0ba98b153bd7e399621'
+          historical_tree='a31d367fc03b836a0266daf92e23f3b9ce3ce995'
+          preservation_root='/tmp/oneqay-sprint31-preservation'
+          git cat-file -e "${historical_commit}^{commit}"
+          test "$(git rev-parse "${historical_commit}^{tree}")" = "$historical_tree"
+          rm -rf "$preservation_root"
+          git worktree add --detach "$preservation_root" "$historical_commit"
+          cleanup_preservation() {
+            git worktree remove --force "$preservation_root" >/dev/null 2>&1 || true
+          }
+          trap cleanup_preservation EXIT
+          (
+            cd "$preservation_root/apps/web"
+            composer validate --no-check-publish
+            composer install --no-interaction --no-progress --prefer-dist
+            php tests/tenant-isolation.php
+            php tests/identity-org-context.php
+            php -r 'require "vendor/autoload.php"; $app=require "bootstrap/app.php"; $app->make(Illuminate\Contracts\Http\Kernel::class)->bootstrap(); $assert=static function(bool $c,string $m):void{if(!$c)throw new RuntimeException($m);}; require "tests/authorization-persistence.php"; require "tests/authorization-administration-persistence.php"; require "tests/initial-tenant-administrator-provisioning.php"; require "tests/protected-control-administrator-lifecycle.php";'
+            php tests/policy-administration-delivery.php
+            php tests/identity-credential-verification.php
+            php tests/first-party-session-establishment.php
+            php tests/initial-password-enrollment.php
+            php tests/first-control-principal-credential-bootstrap.php
+            php tests/privileged-totp-mfa.php
+            php tests/privileged-reauthentication-step-up.php
+            php tests/privileged-update-security.php
+          )
+          cleanup_preservation
+          trap - EXIT
+          echo 'Sprint21-Sprint31 executable preservation passed against canonical Sprint31 source snapshot.'
 
       - name: Prove runtime-scoped recovery routes and protected deployment boundaries
         working-directory: apps/web
