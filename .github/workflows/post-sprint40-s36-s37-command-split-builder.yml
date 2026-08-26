@@ -18,16 +18,23 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Split oversized historical workflow commands
+      - name: Repair YAML indentation and split oversized commands
         shell: bash
         run: |
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
 
-          def split_step(path, old_name, prepare_name, marker):
+          def repair_and_split(path, old_name, prepare_name, marker):
               p = Path(path)
               text = p.read_text()
+
+              bad = '\n    echo "Recognized exact Sprint32 workflow YAML closure successor shape."\n  elif [['
+              good = '\n              echo "Recognized exact Sprint32 workflow YAML closure successor shape."\n            elif [['
+              if text.count(bad) != 1:
+                  raise SystemExit(f"unexpected malformed recognizer count for {path}: {text.count(bad)}")
+              text = text.replace(bad, good, 1)
+
               header = (
                   f"      - name: {old_name}\n"
                   "        shell: bash\n"
@@ -57,13 +64,13 @@ jobs:
 
           expr = chr(36) + "{{ github.event_name }}"
           sprint36_marker = f'          if [[ "{expr}" = "pull_request" ]]; then\n'
-          split_step(
+          repair_and_split(
               ".github/workflows/sprint36-first-party-session-inventory-revocation-regression.yml",
               "Enforce frozen Sprint36 source envelope",
               "Prepare frozen Sprint36 source manifests",
               sprint36_marker,
           )
-          split_step(
+          repair_and_split(
               ".github/workflows/sprint37-first-party-all-session-termination-regression.yml",
               "Enforce frozen Sprint37 source envelope",
               "Prepare frozen Sprint37 source manifests",
@@ -120,7 +127,7 @@ jobs:
           git add \
             .github/workflows/sprint36-first-party-session-inventory-revocation-regression.yml \
             .github/workflows/sprint37-first-party-all-session-termination-regression.yml
-          git commit -m 'ci: split oversized Sprint36 Sprint37 commands'
+          git commit -m 'ci: repair and split Sprint36 Sprint37 workflow commands'
 
           cat > /tmp/expected-net-paths <<'EOF'
           .github/workflows/sprint36-first-party-session-inventory-revocation-regression.yml
