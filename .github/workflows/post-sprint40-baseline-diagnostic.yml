@@ -1,7 +1,7 @@
 name: Post-Sprint40 Baseline Diagnostic
 
 # Temporary branch-local diagnostic only. Never publish to main.
-# Diagnostic revision 15.
+# Diagnostic revision 16.
 # Attribution: Lab | zefry
 
 on:
@@ -22,7 +22,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Build final Sprint39 exact-five-path fixture correction
+      - name: Export final Sprint39 exact-five-path fixture correction
         shell: bash
         run: |
           set -euo pipefail
@@ -40,7 +40,6 @@ jobs:
           del rows[isolate_start:isolate_end + 1]
 
           recognized = next(i for i, line in enumerate(rows) if 'Recognized exact post-Sprint39 reconciliation preservation predecessor shape.' in line)
-          branch = next(i for i in range(recognized - 1, max(recognized - 12, -1), -1) if 'post-sprint39-reconciliation-preservation-paths' in rows[i] and 'actual-sprint39-source-paths' in rows[i])
           indent = rows[recognized][:len(rows[recognized]) - len(rows[recognized].lstrip())]
           rows[recognized + 1:recognized + 1] = [
               indent + "echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> \"$GITHUB_ENV\"\n",
@@ -58,4 +57,4 @@ jobs:
           git commit -m 'ci: finalize bounded Sprint39 fixture isolation'
           echo "FINAL_COMMIT=$(git rev-parse HEAD)"
           echo "FINAL_TREE=$(git rev-parse HEAD^{tree})"
-          git push origin HEAD:ci/post-sprint40-historical-workflow-baseline-closure
+          git push origin HEAD:ci/post-sprint40-sprint39-final-object
