@@ -1,0 +1,105 @@
+name: Sprint40 Sprint37 Same-Step Env Correction Builder
+
+# Temporary branch-local construction workflow. Final PR excludes this file.
+# Attribution: Lab | zefry
+
+on:
+  push:
+    branches:
+      - ci/sprint40-s37-same-step-env-correction-builder
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sprint40-s37-same-step-env-correction-builder
+  cancel-in-progress: false
+
+jobs:
+  materialize:
+    if: github.ref == 'refs/heads/ci/sprint40-s37-same-step-env-correction-builder'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact builder branch
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ci/sprint40-s37-same-step-env-correction-builder
+          fetch-depth: 0
+
+      - name: Materialize exact six-workflow correction
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 <<'PY'
+          from pathlib import Path
+
+          files = [
+              '.github/workflows/m7-5-preview-release-artifact.yml',
+              '.github/workflows/sprint35-privileged-totp-recovery-regression.yml',
+              '.github/workflows/sprint36-first-party-session-inventory-revocation-regression.yml',
+              '.github/workflows/sprint37-first-party-all-session-termination-regression.yml',
+              '.github/workflows/sprint38-first-party-session-absolute-lifetime-regression.yml',
+              '.github/workflows/sprint39-first-party-session-organizational-access-revalidation-regression.yml',
+          ]
+          anchor = '# Sprint40 Sprint37 same-step successor-state correction anchor.\n'
+          attribution = '# Attribution: Lab | zefry\n'
+
+          for name in files:
+              p = Path(name)
+              text = p.read_text()
+              if anchor.strip() not in text:
+                  if attribution in text:
+                      text = text.replace(attribution, attribution + anchor, 1)
+                  else:
+                      text = anchor + text
+              p.write_text(text)
+
+          p = Path('.github/workflows/sprint37-first-party-all-session-termination-regression.yml')
+          text = p.read_text()
+
+          old_init = "          echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=false' >> \"$GITHUB_ENV\"\n"
+          new_init = "          sprint40_source_successor=false\n          echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=false' >> \"$GITHUB_ENV\"\n"
+          if text.count(old_init) != 1:
+              raise SystemExit(f'Sprint37 local successor-state initialization count mismatch: {text.count(old_init)}')
+          text = text.replace(old_init, new_init, 1)
+
+          old_true = "              echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> \"$GITHUB_ENV\"\n"
+          new_true = "              sprint40_source_successor=true\n              echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> \"$GITHUB_ENV\"\n"
+          if text.count(old_true) != 1:
+              raise SystemExit(f'Sprint37 local successor-state activation count mismatch: {text.count(old_true)}')
+          text = text.replace(old_true, new_true, 1)
+
+          old_inner = "            if [[ \"${ONEQAY_SPRINT40_SOURCE_SUCCESSOR:-false}\" == 'true' ]]; then\n"
+          new_inner = "            if [[ \"$sprint40_source_successor\" == 'true' ]]; then\n"
+          if text.count(old_inner) != 1:
+              raise SystemExit(f'Sprint37 migration guard read count mismatch: {text.count(old_inner)}')
+          text = text.replace(old_inner, new_inner, 1)
+
+          old_outer = "          if [[ \"${ONEQAY_SPRINT40_SOURCE_SUCCESSOR:-false}\" == 'true' ]]; then\n"
+          new_outer = "          if [[ \"$sprint40_source_successor\" == 'true' ]]; then\n"
+          if text.count(old_outer) != 1:
+              raise SystemExit(f'Sprint37 migration count read mismatch: {text.count(old_outer)}')
+          text = text.replace(old_outer, new_outer, 1)
+
+          p.write_text(text)
+          PY
+
+          rm '.github/workflows/sprint40-s37-same-step-env-correction-builder.yml'
+          git add -A
+          git diff --cached --name-only | sort >/tmp/s40-s37-fix-staged.txt
+          test "$(wc -l </tmp/s40-s37-fix-staged.txt)" -eq 7
+          grep -Fxq '.github/workflows/sprint40-s37-same-step-env-correction-builder.yml' /tmp/s40-s37-fix-staged.txt
+          grep -vFx '.github/workflows/sprint40-s37-same-step-env-correction-builder.yml' /tmp/s40-s37-fix-staged.txt >/tmp/s40-s37-fix-final.txt
+          test "$(wc -l </tmp/s40-s37-fix-final.txt)" -eq 6
+          test "$(sha256sum /tmp/s40-s37-fix-final.txt | awk '{print $1}')" = '671946562a3eef1375d87b70936bac263aa18f660d6ea274406ed57f1c653351'
+          grep -Fq 'sprint40_source_successor=false' '.github/workflows/sprint37-first-party-all-session-termination-regression.yml'
+          grep -Fq 'sprint40_source_successor=true' '.github/workflows/sprint37-first-party-all-session-termination-regression.yml'
+          test "$(grep -Fc 'if [[ \"$sprint40_source_successor\" == '\''true'\'' ]]; then' '.github/workflows/sprint37-first-party-all-session-termination-regression.yml')" -eq 2
+
+          git config user.name 'labzefry'
+          git config user.email 'lab.zefa@gmail.com'
+          git commit -m 'ci: correct Sprint37 same-step Sprint40 successor state'
+          echo "FINAL_CORRECTION_COMMIT=$(git rev-parse HEAD)"
+          echo "FINAL_CORRECTION_TREE=$(git rev-parse HEAD^{tree})"
+          git push origin HEAD:ci/sprint40-s37-same-step-env-correction-builder
