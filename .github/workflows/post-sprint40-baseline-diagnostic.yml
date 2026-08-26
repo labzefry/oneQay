@@ -1,7 +1,7 @@
 name: Post-Sprint40 Baseline Diagnostic
 
 # Temporary branch-local diagnostic only. Never publish to main.
-# Diagnostic revision 5.
+# Diagnostic revision 6.
 # Attribution: Lab | zefry
 
 on:
@@ -21,19 +21,38 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           fetch-depth: 0
-      - name: Inspect Sprint35 workflow structure
+      - name: Measure workflow run blocks
         shell: bash
         run: |
           set -euo pipefail
-          wc -c -l .github/workflows/sprint35-privileged-totp-recovery-regression.yml
+          git show 8bf452e2bf5ffb63725e434c85292965decd221f:.github/workflows/sprint35-privileged-totp-recovery-regression.yml > /tmp/sprint35-post39.yml
           python3 - <<'PY'
           from pathlib import Path
-          needle = chr(36) + '{{'
-          for number, line in enumerate(Path('.github/workflows/sprint35-privileged-totp-recovery-regression.yml').read_text().splitlines(), 1):
-              if needle in line:
-                  print(f'{number}:{line}')
+
+          def measure(label, path):
+              lines = Path(path).read_text().splitlines(True)
+              blocks = []
+              i = 0
+              while i < len(lines):
+                  line = lines[i]
+                  stripped = line.lstrip(' ')
+                  indent = len(line) - len(stripped)
+                  if stripped.startswith('run: |'):
+                      start = i + 1
+                      j = start
+                      body = []
+                      while j < len(lines):
+                          nxt = lines[j]
+                          if nxt.strip() and len(nxt) - len(nxt.lstrip(' ')) <= indent:
+                              break
+                          body.append(nxt)
+                          j += 1
+                      blocks.append((i + 1, sum(len(x) for x in body), j - start))
+                      i = j
+                  else:
+                      i += 1
+              print(label, 'bytes=', Path(path).stat().st_size, 'run_blocks=', blocks)
+
+          measure('post39', '/tmp/sprint35-post39.yml')
+          measure('current', '.github/workflows/sprint35-privileged-totp-recovery-regression.yml')
           PY
-          go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.7 -ignore 'SC2016|SC2251' \
-            .github/workflows/sprint32-authentication-recovery-proof-regression.yml \
-            .github/workflows/sprint35-privileged-totp-recovery-regression.yml \
-            .github/workflows/m7-5-preview-release-artifact.yml
