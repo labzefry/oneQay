@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 jobs:
-  build-clean-correction:
+  expand-to-seven-path-precedent:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout builder head
@@ -17,102 +17,54 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Apply bounded M7.5 fixture correction
+      - name: Build seven-path preservation child
         shell: bash
         run: |
           set -euo pipefail
+          parent='f447a112040c3025b39ebc902f00882195172b83'
+          canonical='517d6fc92c8becf225e9997899d96bf53da28433'
+          git checkout --detach "$parent"
           python3 - <<'PY'
           from pathlib import Path
-
           anchor = '# Post-Sprint40 M7.5 canonical-main fixture isolation anchor.\n'
           for name in [
-              '.github/workflows/sprint35-privileged-totp-recovery-regression.yml',
-              '.github/workflows/sprint36-first-party-session-inventory-revocation-regression.yml',
-              '.github/workflows/sprint37-first-party-all-session-termination-regression.yml',
-              '.github/workflows/sprint38-first-party-session-absolute-lifetime-regression.yml',
+              '.github/workflows/sprint33-recovery-bound-password-reset-regression.yml',
+              '.github/workflows/sprint34-authenticated-password-change-regression.yml',
           ]:
               p = Path(name)
               text = p.read_text()
               if anchor not in text:
                   p.write_text(anchor + text)
-
-          p = Path('.github/workflows/m7-5-preview-release-artifact.yml')
-          text = p.read_text()
-          start_marker = '      - name: Run first-party Web regressions\n'
-          end_marker = '\n      - name: Verify bounded Preview background commands are registered\n'
-          start = text.find(start_marker)
-          if start < 0:
-              raise SystemExit('M7.5 Web regression start marker missing')
-          end = text.find(end_marker, start)
-          if end < 0:
-              raise SystemExit('M7.5 Web regression end marker missing')
-          block = ''.join([
-              '      - name: Run first-party Web regressions\n',
-              '        working-directory: apps/web\n',
-              '        shell: bash\n',
-              '        run: |\n',
-              '          set -euo pipefail\n',
-              '          composer test\n',
-              '\n',
-              "          migration14='database/migrations/0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php'\n",
-              "          migration14_backup='/tmp/oneqay-m7-5-migration14.php'\n",
-              '          rm -f "$migration14_backup"\n',
-              '          restore_migration14() {\n',
-              '            if [[ -f "$migration14_backup" ]]; then\n',
-              '              mv "$migration14_backup" "$migration14"\n',
-              '            fi\n',
-              '          }\n',
-              '          if [[ -f "$migration14" ]]; then\n',
-              '            cp "$migration14" "$migration14_backup"\n',
-              '            rm -f "$migration14"\n',
-              '          fi\n',
-              '          trap restore_migration14 EXIT\n',
-              '          php tests/tenant-isolation.php\n',
-              '          restore_migration14\n',
-              '          trap - EXIT\n',
-              '          git -C ../.. diff --exit-code -- apps/web/database/migrations/0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php\n',
-              '\n',
-              '          php tests/identity-org-context.php\n',
-              '          php tests/pos-core-synthetic.php\n',
-              '          php tests/technical-preview-interaction.php\n',
-              '          php tests/preview-background-execution.php\n',
-          ])
-          p.write_text(text[:start] + block + text[end:])
           PY
-
           git diff --check
           printf '%s\n' \
             .github/workflows/m7-5-preview-release-artifact.yml \
+            .github/workflows/sprint33-recovery-bound-password-reset-regression.yml \
+            .github/workflows/sprint34-authenticated-password-change-regression.yml \
             .github/workflows/sprint35-privileged-totp-recovery-regression.yml \
             .github/workflows/sprint36-first-party-session-inventory-revocation-regression.yml \
             .github/workflows/sprint37-first-party-all-session-termination-regression.yml \
             .github/workflows/sprint38-first-party-session-absolute-lifetime-regression.yml \
             | sort > /tmp/expected-paths
-          git diff --name-only 517d6fc92c8becf225e9997899d96bf53da28433 -- . ':!.github/workflows/post-sprint40-m75-fixture-builder.yml' | sort > /tmp/actual-paths
+          git diff --name-only "$canonical...HEAD" | sort > /tmp/before-paths
+          test "$(wc -l < /tmp/before-paths)" -eq 5
+          git add \
+            .github/workflows/sprint33-recovery-bound-password-reset-regression.yml \
+            .github/workflows/sprint34-authenticated-password-change-regression.yml
+          tree="$(git write-tree)"
+          final_commit="$(printf '%s\n\n%s\n' 'ci: align M7.5 closure with seven-path preservation precedent' 'Attribution: Lab | zefry' | git commit-tree "$tree" -p "$parent")"
+          git diff-tree --no-commit-id --name-only -r "$canonical" "$final_commit" | sort > /tmp/actual-paths
           cmp -s /tmp/expected-paths /tmp/actual-paths
-          test "$(sha256sum /tmp/actual-paths | awk '{print $1}')" = '84031e95f99240ea9a4a6eb39f75ff8dfa731fa3f2506396642b811d3425cd68'
+          test "$(sha256sum /tmp/actual-paths | awk '{print $1}')" = '4784ffca1c940d3fa54a2a3988ead07e2de993bde8d3af2bd41014dbdf905be0'
+          git checkout --detach "$final_commit"
           go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.7 -shellcheck= \
             .github/workflows/m7-5-preview-release-artifact.yml \
+            .github/workflows/sprint33-recovery-bound-password-reset-regression.yml \
+            .github/workflows/sprint34-authenticated-password-change-regression.yml \
             .github/workflows/sprint35-privileged-totp-recovery-regression.yml \
             .github/workflows/sprint36-first-party-session-inventory-revocation-regression.yml \
             .github/workflows/sprint37-first-party-all-session-termination-regression.yml \
             .github/workflows/sprint38-first-party-session-absolute-lifetime-regression.yml
-
-      - name: Create clean canonical-parent commit object
-        shell: bash
-        run: |
-          set -euo pipefail
-          git config user.name 'labzefry'
-          git config user.email 'lab.zefa@gmail.com'
-          git rm .github/workflows/post-sprint40-m75-fixture-builder.yml
-          git add \
-            .github/workflows/m7-5-preview-release-artifact.yml \
-            .github/workflows/sprint35-privileged-totp-recovery-regression.yml \
-            .github/workflows/sprint36-first-party-session-inventory-revocation-regression.yml \
-            .github/workflows/sprint37-first-party-all-session-termination-regression.yml \
-            .github/workflows/sprint38-first-party-session-absolute-lifetime-regression.yml
-          tree="$(git write-tree)"
-          final_commit="$(printf '%s\n\n%s\n' 'ci: isolate Sprint40 migration from M7.5 historical fixture' 'Attribution: Lab | zefry' | git commit-tree "$tree" -p 517d6fc92c8becf225e9997899d96bf53da28433)"
           echo "FINAL_COMMIT=$final_commit"
           echo "FINAL_TREE=$tree"
           set +e
