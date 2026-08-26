@@ -43,15 +43,25 @@ jobs:
               raise SystemExit('source-envelope condition anchor mismatch')
           text = text.replace(old_if, new_if, 1)
 
-          base_ref_expr = chr(36) + '{{ github.base_ref }}'
-          old_migration_start = f"""            base=\"origin/{base_ref_expr}\"\n            if [[ \"${{ONEQAY_SPRINT34_SUCCESSOR:-false}}\" == 'true' ]]; then\n"""
-          new_migration_start = f"""            base=\"origin/{base_ref_expr}\"\n            if [[ \"${{ONEQAY_SPRINT32_WORKFLOW_CORRECTION:-false}}\" == 'true' ]]; then\n              git diff --exit-code \"$base...HEAD\" -- apps/web/database/migrations\n            elif [[ \"${{ONEQAY_SPRINT34_SUCCESSOR:-false}}\" == 'true' ]]; then\n"""
-          if text.count(old_migration_start) != 1:
-              raise SystemExit('migration start anchor mismatch')
-          text = text.replace(old_migration_start, new_migration_start, 1)
+          old_s34 = "            if [[ \"${ONEQAY_SPRINT34_SUCCESSOR:-false}\" == 'true' ]]; then\n"
+          new_s34 = """            if [[ \"${ONEQAY_SPRINT32_WORKFLOW_CORRECTION:-false}\" == 'true' ]]; then
+              git diff --exit-code \"$base...HEAD\" -- apps/web/database/migrations
+            elif [[ \"${ONEQAY_SPRINT34_SUCCESSOR:-false}\" == 'true' ]]; then
+"""
+          if text.count(old_s34) != 1:
+              raise SystemExit('Sprint34 branch anchor mismatch')
+          text = text.replace(old_s34, new_s34, 1)
 
-          old_successor_branch = """            if [[ \"${ONEQAY_SPRINT33_SUCCESSOR:-false}\" == 'true' ]]; then\n              git diff --exit-code \"$base...HEAD\" -- apps/web/database/migrations\n            else\n              for migration in \\\n"""
-          new_successor_branch = """            if [[ \"${ONEQAY_SPRINT32_WORKFLOW_CORRECTION:-false}\" != 'true' && \"${ONEQAY_SPRINT33_SUCCESSOR:-false}\" == 'true' ]]; then\n              git diff --exit-code \"$base...HEAD\" -- apps/web/database/migrations\n            elif [[ \"${ONEQAY_SPRINT32_WORKFLOW_CORRECTION:-false}\" != 'true' ]]; then\n              for migration in \\\n"""
+          old_successor_branch = """            if [[ \"${ONEQAY_SPRINT33_SUCCESSOR:-false}\" == 'true' ]]; then
+              git diff --exit-code \"$base...HEAD\" -- apps/web/database/migrations
+            else
+              for migration in \\
+"""
+          new_successor_branch = """            if [[ \"${ONEQAY_SPRINT32_WORKFLOW_CORRECTION:-false}\" != 'true' && \"${ONEQAY_SPRINT33_SUCCESSOR:-false}\" == 'true' ]]; then
+              git diff --exit-code \"$base...HEAD\" -- apps/web/database/migrations
+            elif [[ \"${ONEQAY_SPRINT32_WORKFLOW_CORRECTION:-false}\" != 'true' ]]; then
+              for migration in \\
+"""
           if text.count(old_successor_branch) != 1:
               raise SystemExit('successor branch anchor mismatch')
           text = text.replace(old_successor_branch, new_successor_branch, 1)
