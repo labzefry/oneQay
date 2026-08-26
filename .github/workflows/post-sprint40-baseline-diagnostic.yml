@@ -1,7 +1,7 @@
 name: Post-Sprint40 Baseline Diagnostic
 
 # Temporary branch-local diagnostic only. Never publish to main.
-# Diagnostic revision 8.
+# Diagnostic revision 9.
 # Attribution: Lab | zefry
 
 on:
@@ -10,7 +10,7 @@ on:
       - ci/post-sprint40-baseline-diagnostic
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   diagnose:
@@ -21,7 +21,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           fetch-depth: 0
-      - name: Build Sprint35 split-step validation candidate
+      - name: Build and export Sprint35 split-step candidate
         shell: bash
         run: |
           set -euo pipefail
@@ -55,8 +55,7 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           lines = Path('.github/workflows/sprint35-privileged-totp-recovery-regression.yml').read_text().splitlines(True)
-          sizes=[]
-          i=0
+          sizes=[]; i=0
           while i < len(lines):
               line=lines[i]; stripped=line.lstrip(' '); indent=len(line)-len(stripped)
               if stripped.startswith('run: |'):
@@ -79,3 +78,4 @@ jobs:
           git commit -m 'ci: split oversized Sprint35 workflow command'
           echo "FINAL_SPRINT35_COMMIT=$(git rev-parse HEAD)"
           echo "FINAL_SPRINT35_TREE=$(git rev-parse HEAD^{tree})"
+          git push origin HEAD:ci/post-sprint40-baseline-diagnostic
