@@ -14,6 +14,7 @@ use App\Application\Identity\AuthenticatedPasswordChangeService;
 use App\Application\Identity\FirstControlPrincipalCredentialBootstrapRepository;
 use App\Application\Identity\FirstPartyCredentialEpochRepository;
 use App\Application\Identity\FirstPartyIdentityCredentialVerifier;
+use App\Application\Identity\FirstPartyIdentityEligibilityVerifier;
 use App\Application\Identity\FirstPartySessionAuthorityClock;
 use App\Application\Identity\FirstPartySessionAuthorityRepository;
 use App\Application\Identity\FirstPartySessionAuthorityService;
@@ -46,6 +47,7 @@ use App\Infrastructure\Identity\LaravelAuthenticatedPasswordChangeRepository;
 use App\Infrastructure\Identity\LaravelFirstControlPrincipalCredentialBootstrapRepository;
 use App\Infrastructure\Identity\LaravelFirstPartyCredentialEpochRepository;
 use App\Infrastructure\Identity\LaravelFirstPartyIdentityCredentialVerifier;
+use App\Infrastructure\Identity\LaravelFirstPartyIdentityEligibilityVerifier;
 use App\Infrastructure\Identity\LaravelFirstPartySessionAuthorityRepository;
 use App\Infrastructure\Identity\LaravelInitialPasswordEnrollmentRepository;
 use App\Infrastructure\Identity\LaravelPrivilegedTotpFactorEpochRepository;
@@ -168,6 +170,14 @@ final class AppServiceProvider extends ServiceProvider
             );
         });
 
+        $this->app->scoped(FirstPartyIdentityEligibilityVerifier::class, function ($app): FirstPartyIdentityEligibilityVerifier {
+            return new LaravelFirstPartyIdentityEligibilityVerifier(
+                $this->connection($app),
+                $this->persistenceEnabled(),
+                $this->runtimeClass(),
+                $this->sessionControlEnabled(),
+            );
+        });
         $this->app->scoped(FirstPartySessionAuthorityRepository::class, function ($app): FirstPartySessionAuthorityRepository {
             return new LaravelFirstPartySessionAuthorityRepository(
                 $this->connection($app),
