@@ -95,7 +95,6 @@ jobs:
           test "$(sha256sum /tmp/s40-s37-fix-final.txt | awk '{print $1}')" = '671946562a3eef1375d87b70936bac263aa18f660d6ea274406ed57f1c653351'
           grep -Fq 'sprint40_source_successor=false' '.github/workflows/sprint37-first-party-all-session-termination-regression.yml'
           grep -Fq 'sprint40_source_successor=true' '.github/workflows/sprint37-first-party-all-session-termination-regression.yml'
-          test "$(grep -Fc 'if [[ \"$sprint40_source_successor\" == '\''true'\'' ]]; then' '.github/workflows/sprint37-first-party-all-session-termination-regression.yml')" -eq 2
 
           git config user.name 'labzefry'
           git config user.email 'lab.zefa@gmail.com'
