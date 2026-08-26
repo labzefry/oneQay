@@ -116,6 +116,6 @@ jobs:
           echo "FINAL_COMMIT=$final_commit"
           echo "FINAL_TREE=$tree"
           set +e
-          git push origin "$final_commit":refs/heads/ci/m75-fixture-builder-20260826
+          git push origin "$final_commit":refs/heads/ci/post-sprint40-m75-main-push-closure
           echo "PUSH_RC=$?"
           exit 0
