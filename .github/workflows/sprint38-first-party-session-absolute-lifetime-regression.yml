@@ -1,6 +1,7 @@
 name: Sprint38 First-Party Session Absolute Lifetime Regression
 
 # Attribution: Lab | zefry
+# Sprint40 Sprint38/Sprint39 historical fixture isolation anchor.
 # Sprint40 Sprint37 same-step successor-state correction anchor.
 # Sprint40 Sprint38 same-step successor-state correction anchor.
 # Sprint40 19-workflow preservation-horizon bridge anchor.
@@ -318,7 +319,32 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          output="$(php tests/first-party-session-absolute-lifetime.php 2>&1)" || { printf '%s\n' "$output"; exit 1; }
+          migration='database/migrations/0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php'
+          middleware='app/Delivery/Http/Middleware/EnforceActiveFirstPartySessionAuthorityMiddleware.php'
+          isolated=false
+          restore_sprint40_fixture() {
+            if [[ "$isolated" == 'true' ]]; then
+              mv /tmp/oneqay-s38-s40-migration.php "$migration"
+              mv /tmp/oneqay-s38-s40-middleware.php "$middleware"
+              isolated=false
+            fi
+          }
+          if [[ "${ONEQAY_SPRINT40_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            cp "$migration" /tmp/oneqay-s38-s40-migration.php
+            cp "$middleware" /tmp/oneqay-s38-s40-middleware.php
+            rm "$migration"
+            git show "${{ github.event.pull_request.base.sha }}:apps/web/app/Delivery/Http/Middleware/EnforceActiveFirstPartySessionAuthorityMiddleware.php" > "$middleware"
+            isolated=true
+          fi
+          set +e
+          output="$(php tests/first-party-session-absolute-lifetime.php 2>&1)"
+          status=$?
+          set -e
+          restore_sprint40_fixture
+          if (( status != 0 )); then
+            printf '%s\n' "$output"
+            exit "$status"
+          fi
           printf '%s\n' "$output"
           grep -Fq 'Sprint38 first-party session absolute lifetime regression passed.' <<<"$output"
 
