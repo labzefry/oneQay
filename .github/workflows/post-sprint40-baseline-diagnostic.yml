@@ -1,6 +1,7 @@
 name: Post-Sprint40 Baseline Diagnostic
 
 # Temporary branch-local diagnostic only. Never publish to main.
+# Diagnostic revision 2.
 # Attribution: Lab | zefry
 
 on:
