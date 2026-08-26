@@ -1,0 +1,144 @@
+name: Post-Sprint40 Sprint36 Sprint37 Command Split Builder
+
+on:
+  push:
+    branches:
+      - ci/post-sprint40-s36-s37-command-split-builder
+
+permissions:
+  contents: write
+
+jobs:
+  build-clean-correction:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout builder head
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+
+      - name: Split oversized historical workflow commands
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          def split_step(path, old_name, prepare_name, marker):
+              p = Path(path)
+              text = p.read_text()
+              header = (
+                  f"      - name: {old_name}\n"
+                  "        shell: bash\n"
+                  "        run: |\n"
+                  "          set -euo pipefail\n"
+              )
+              if text.count(header) != 1:
+                  raise SystemExit(f"unexpected header count for {path}: {text.count(header)}")
+              start = text.index(header)
+              body_start = start + len(header)
+              split_at = text.index(marker, body_start)
+              prepare_body = text[body_start:split_at]
+              replacement = (
+                  f"      - name: {prepare_name}\n"
+                  "        shell: bash\n"
+                  "        run: |\n"
+                  "          set -euo pipefail\n"
+                  + prepare_body
+                  + f"      - name: {old_name}\n"
+                  "        shell: bash\n"
+                  "        run: |\n"
+                  "          set -euo pipefail\n"
+                  + marker
+              )
+              text = text[:start] + replacement + text[split_at + len(marker):]
+              p.write_text(text)
+
+          expr = chr(36) + "{{ github.event_name }}"
+          sprint36_marker = f'          if [[ "{expr}" = "pull_request" ]]; then\n'
+          split_step(
+              ".github/workflows/sprint36-first-party-session-inventory-revocation-regression.yml",
+              "Enforce frozen Sprint36 source envelope",
+              "Prepare frozen Sprint36 source manifests",
+              sprint36_marker,
+          )
+          split_step(
+              ".github/workflows/sprint37-first-party-all-session-termination-regression.yml",
+              "Enforce frozen Sprint37 source envelope",
+              "Prepare frozen Sprint37 source manifests",
+              "          sprint40_source_successor=false\n",
+          )
+          PY
+
+          git diff --check
+
+          python3 - <<'PY'
+          from pathlib import Path
+
+          paths = [
+              Path('.github/workflows/sprint36-first-party-session-inventory-revocation-regression.yml'),
+              Path('.github/workflows/sprint37-first-party-all-session-termination-regression.yml'),
+          ]
+          for path in paths:
+              lines = path.read_text().splitlines(True)
+              lengths = []
+              i = 0
+              while i < len(lines):
+                  if lines[i].startswith('        run: |'):
+                      i += 1
+                      block = []
+                      while i < len(lines):
+                          line = lines[i]
+                          if line.strip() and not line.startswith('          '):
+                              break
+                          if line.startswith('          '):
+                              block.append(line[10:])
+                          else:
+                              block.append(line)
+                          i += 1
+                      lengths.append(len(''.join(block)))
+                  else:
+                      i += 1
+              print(f'{path}: run-lengths={lengths}')
+              if any(n > 21000 for n in lengths):
+                  raise SystemExit(f'run command still exceeds 21000 chars in {path}')
+          PY
+
+          go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.7 -shellcheck= \
+            .github/workflows/sprint36-first-party-session-inventory-revocation-regression.yml \
+            .github/workflows/sprint37-first-party-all-session-termination-regression.yml
+
+      - name: Commit clean final tree and publish commit object
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'labzefry'
+          git config user.email 'lab.zefa@gmail.com'
+
+          git rm .github/workflows/post-sprint40-s36-s37-command-split-builder.yml
+          git add \
+            .github/workflows/sprint36-first-party-session-inventory-revocation-regression.yml \
+            .github/workflows/sprint37-first-party-all-session-termination-regression.yml
+          git commit -m 'ci: split oversized Sprint36 Sprint37 commands'
+
+          cat > /tmp/expected-net-paths <<'EOF'
+          .github/workflows/sprint36-first-party-session-inventory-revocation-regression.yml
+          .github/workflows/sprint37-first-party-all-session-termination-regression.yml
+          EOF
+          git diff --name-only 39461d61688cea575c5ec346c1a7b01c713c08a5 HEAD | sort > /tmp/actual-net-paths
+          cmp -s /tmp/expected-net-paths /tmp/actual-net-paths || {
+            echo 'Unexpected clean-builder net path set:' >&2
+            diff -u /tmp/expected-net-paths /tmp/actual-net-paths >&2 || true
+            exit 1
+          }
+
+          echo "FINAL_COMMIT=$(git rev-parse HEAD)"
+          echo "FINAL_TREE=$(git rev-parse HEAD^{tree})"
+
+          set +e
+          git push origin HEAD:ci/post-sprint40-s36-s37-command-split-builder
+          rc=$?
+          set -e
+          echo "PUSH_RC=$rc"
+          exit 0
