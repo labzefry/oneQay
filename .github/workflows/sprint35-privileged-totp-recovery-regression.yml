@@ -1,8 +1,3 @@
-# Sprint40 Sprint38/Sprint39 historical fixture isolation anchor.
-# Sprint40 Sprint37 same-step successor-state correction anchor.
-# Sprint40 Sprint38 same-step successor-state correction anchor.
-# Sprint40 19-workflow historical preservation compatibility anchor.
-# Sprint40 19-workflow preservation-horizon bridge anchor.
 name: Sprint35 Privileged TOTP Recovery Regression
 
 on:
@@ -198,18 +193,6 @@ jobs:
             sort -o /tmp/sprint39-entry-gate-paths /tmp/sprint39-entry-gate-paths
             test "$(sha256sum /tmp/sprint39-entry-gate-paths | awk '{print $1}')" = "b2c4936a3315788100b47537b32474e7079143942c38684cf2394628f1084dd2"
 
-            cat > /tmp/sprint40-entry-gate-paths <<'EOF'
-          docs/SPRINT_40_FIRST_PARTY_SESSION_IDENTITY_DISABLEMENT_REVALIDATION_ENTRY_GATE.md
-          EOF
-            sort -o /tmp/sprint40-entry-gate-paths /tmp/sprint40-entry-gate-paths
-            test "$(sha256sum /tmp/sprint40-entry-gate-paths | awk '{print $1}')" = "7a8c362aa7ec66500ba544911e3fb008a20f5d21ac4d00d6a12ea04749ed2466"
-
-            cat > /tmp/sprint40-schema-source-envelope-gate-paths <<'EOF'
-          docs/SPRINT_40_FIRST_PARTY_SESSION_IDENTITY_DISABLEMENT_REVALIDATION_SCHEMA_SOURCE_ENVELOPE_GATE.md
-          EOF
-            sort -o /tmp/sprint40-schema-source-envelope-gate-paths /tmp/sprint40-schema-source-envelope-gate-paths
-            test "$(sha256sum /tmp/sprint40-schema-source-envelope-gate-paths | awk '{print $1}')" = "9a3a85fb3de7ce007b09586af60e18b0cefd6ec1b6fba1b3c2b64e508354d803"
-
             cat > /tmp/sprint39-schema-source-envelope-gate-paths <<'EOF'
           docs/SPRINT_39_FIRST_PARTY_SESSION_ORGANIZATIONAL_ACCESS_REVALIDATION_SCHEMA_SOURCE_ENVELOPE_GATE.md
           EOF
@@ -282,22 +265,8 @@ jobs:
             elif [[ "$actual_count" -eq 5 && "$actual_fingerprint" == 'ab09e044925ae98740a49c46a70ff387e5f5445b245d3a556d85ad6a354305ec' ]]; then
               echo "Recognized exact post-Sprint39 five-workflow reconciliation preservation predecessor shape."
               sprint36_successor=true
-            elif [[ "$actual_count" -eq 13 && "$actual_fingerprint" == 'b129d4b1c1135f2f5aecd5dde5ff1b5f6392eecb4d54006e80fc71889763647d' ]]; then
-              echo "Recognized exact Sprint40 canonical documentation synchronization successor shape."
-              sprint36_successor=true
             elif [[ "$actual_count" -eq 7 && "$actual_fingerprint" == '4784ffca1c940d3fa54a2a3988ead07e2de993bde8d3af2bd41014dbdf905be0' ]]; then
               echo "Recognized exact Sprint39 seven-workflow M7.5 preservation correction shape."
-              sprint36_successor=true
-            elif [[ "$actual_count" -eq 2 && "$actual_fingerprint" == 'bde0c14f6b8c45f090844b9e5d701415690e990b8b7bea3b605f4ba04c727116' ]]; then
-              echo "Recognized exact Sprint40 Sprint33/Sprint34 historical-compatibility correction shape."
-              sprint36_successor=true
-            elif [[ "$actual_count" -eq 6 && "$actual_fingerprint" == '671946562a3eef1375d87b70936bac263aa18f660d6ea274406ed57f1c653351' ]]; then
-              grep -Fq 'bde0c14f6b8c45f090844b9e5d701415690e990b8b7bea3b605f4ba04c727116' .github/workflows/sprint33-recovery-bound-password-reset-regression.yml
-              grep -Fq 'bde0c14f6b8c45f090844b9e5d701415690e990b8b7bea3b605f4ba04c727116' .github/workflows/sprint34-authenticated-password-change-regression.yml
-              echo "Recognized exact Sprint40 six-workflow source-preservation predecessor shape with historical correction closure."
-              sprint36_successor=true
-            elif [[ "$actual_count" -eq 8 && "$actual_fingerprint" == 'a9caf2b68210a38687fee543256aec04dc1e67ee1ef403608f7db69139957ff8' ]]; then
-              echo "Recognized exact Sprint40 identity-disablement revalidation source successor shape."
               sprint36_successor=true
             elif cmp -s /tmp/actual-sprint35-paths /tmp/post-sprint35-reconciliation-paths; then
               echo "Recognized exact post-Sprint35 canonical reconciliation successor shape."
@@ -330,12 +299,6 @@ jobs:
               sprint36_successor=true
             elif cmp -s /tmp/actual-sprint35-paths /tmp/sprint39-entry-gate-paths; then
               echo "Recognized exact Sprint39 organizational-access revalidation entry-gate successor shape."
-              sprint36_successor=true
-            elif cmp -s /tmp/actual-sprint35-paths /tmp/sprint40-entry-gate-paths; then
-              echo "Recognized exact Sprint40 identity-disablement revalidation entry-gate successor shape."
-              sprint36_successor=true
-            elif cmp -s /tmp/actual-sprint35-paths /tmp/sprint40-schema-source-envelope-gate-paths; then
-              echo "Recognized exact Sprint40 identity-disablement revalidation schema/source-envelope gate successor shape."
               sprint36_successor=true
             elif cmp -s /tmp/actual-sprint35-paths /tmp/sprint39-schema-source-envelope-gate-paths; then
               echo "Recognized exact Sprint39 organizational-access revalidation schema/source-envelope gate successor shape."
