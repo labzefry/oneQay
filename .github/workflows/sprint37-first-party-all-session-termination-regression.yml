@@ -1,3 +1,4 @@
+# Sprint40 Sprint37 same-step successor-state correction anchor.
 # Sprint40 Sprint38 same-step successor-state correction anchor.
 # Sprint40 19-workflow preservation-horizon bridge anchor.
 name: Sprint37 First-Party All-Session Termination Regression
@@ -218,6 +219,7 @@ jobs:
           sort -o /tmp/sprint38-source-paths /tmp/sprint38-source-paths
           test "$(sha256sum /tmp/sprint38-source-paths | awk '{print $1}')" = "411950d5602dc7160668c88e08a3941ebccc8bdc82d20bee77ce4004f039d216"
 
+          sprint40_source_successor=false
           echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
           if [[ "${{ github.event_name }}" = "pull_request" ]]; then
             git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | sort > /tmp/actual-sprint37-paths
@@ -255,6 +257,7 @@ jobs:
               echo "Recognized exact Sprint40 six-workflow source-preservation predecessor shape with historical correction closure."
             elif cmp -s /tmp/actual-sprint37-paths /tmp/sprint40-source-paths; then
               echo "Recognized exact Sprint40 identity-disablement revalidation source successor shape."
+              sprint40_source_successor=true
               echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             elif cmp -s /tmp/actual-sprint37-paths /tmp/sprint39-schema-source-envelope-gate-paths; then
               echo "Recognized exact Sprint39 organizational-access revalidation schema/source-envelope gate successor shape."
@@ -274,7 +277,7 @@ jobs:
               exit 1
             fi
 
-            if [[ "${ONEQAY_SPRINT40_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            if [[ "$sprint40_source_successor" == 'true' ]]; then
               unexpected_migrations="$(git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" -- apps/web/database/migrations/ | grep -v '^apps/web/database/migrations/0000_00_00_000014_add_first_party_authentication_eligibility_to_identities\.php$' || true)"
               test -z "$unexpected_migrations" || { echo "Sprint37 successor mutated an unauthorized migration:" >&2; echo "$unexpected_migrations" >&2; exit 1; }
             elif git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" -- apps/web/database/migrations/ | grep -q .; then
@@ -284,7 +287,7 @@ jobs:
           fi
 
           mapfile -t migrations < <(find apps/web/database/migrations -maxdepth 1 -type f -name '*.php' -printf '%f\n' | sort)
-          if [[ "${ONEQAY_SPRINT40_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+          if [[ "$sprint40_source_successor" == 'true' ]]; then
             test "${#migrations[@]}" -eq 14
             test "$(printf '%s\n' "${migrations[@]}" | grep -c '^0000_00_00_000014_add_first_party_authentication_eligibility_to_identities\.php$')" -eq 1
           else
