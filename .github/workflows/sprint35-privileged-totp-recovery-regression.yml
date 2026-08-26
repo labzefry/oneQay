@@ -41,7 +41,7 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: Enforce frozen Sprint35 source envelope
+      - name: Prepare frozen Sprint35 source manifests
         shell: bash
         run: |
           set -euo pipefail
@@ -90,6 +90,11 @@ jobs:
           EOF
           sort -o /tmp/required-sprint35-paths /tmp/required-sprint35-paths
 
+
+      - name: Enforce frozen Sprint35 source envelope
+        shell: bash
+        run: |
+          set -euo pipefail
           if [[ "${{ github.event_name }}" = "pull_request" ]]; then
             git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | sort > /tmp/actual-sprint35-paths
             actual_count="$(wc -l < /tmp/actual-sprint35-paths)"
