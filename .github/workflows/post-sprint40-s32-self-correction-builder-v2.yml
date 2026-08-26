@@ -1,0 +1,49 @@
+name: Post-Sprint40 Sprint32 Self-Correction Builder V2
+
+# Attribution: Lab | zefry
+
+on:
+  push:
+    branches:
+      - ci/post-sprint40-s32-self-correction-builder-v2
+
+permissions:
+  contents: write
+
+jobs:
+  build-clean-sprint32-correction:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout builder head
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+
+      - name: Transform and validate Sprint32 workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo 'ZnJvbSBwYXRobGliIGltcG9ydCBQYXRoCgpwYXRoID0gUGF0aCgiLmdpdGh1Yi93b3JrZmxvd3Mvc3ByaW50MzItYXV0aGVudGljYXRpb24tcmVjb3ZlcnktcHJvb2YtcmVncmVzc2lvbi55bWwiKQp0ZXh0ID0gcGF0aC5yZWFkX3RleHQoKQpmaW5nZXJwcmludCA9ICIyNjFmMTQ3ZDg4MGEzN2ZlOTEzN2IyOGQ5NTQxNzI0YzZjNWUzOTg3MTM4ZjNmYjU2ZDU0NjVmZjMxZGM3NDEyIgoKYW5jaG9yID0gIiIiICAgICAgICAgIGZpbmdlcnByaW50PSIkKHNoYTI1NnN1bSAvdG1wL3MzMy1zdWNjZXNzb3ItZmlsZXMudHh0IHwgYXdrICd7cHJpbnQgJDF9JykiCiAgICAgICAgICBpZiBbWyAiJGNvdW50IiAtZXEgMzUgXV0gJiYgW1sgIiRmaW5nZXJwcmludCIgPT0gJ2UzYjcyNDAwMmNmYzBiZTFlZjg5MGQxYjU1OTRhMmE1MTc5MTIzZjk0OWY2ZjQ4NjM1NGUyMTk1MGM3MzI4ZWInIF1dOyB0aGVuCiIiIgpyZXBsYWNlbWVudCA9IGYiIiIgICAgICAgICAgZmluZ2VycHJpbnQ9IiQoc2hhMjU2c3VtIC90bXAvczMzLXN1Y2Nlc3Nvci1maWxlcy50eHQgfCBhd2sgJ3t7cHJpbnQgJDF9fScpIgogICAgICAgICAgaWYgW1sgIiRjb3VudCIgLWVxIDEgXV0gJiYgW1sgIiRmaW5nZXJwcmludCIgPT0gJ3tmaW5nZXJwcmludH0nIF1dOyB0aGVuCiAgICAgICAgICAgIGVjaG8gJ09ORVFBWV9TUFJJTlQzMl9XT1JLRkxPV19DT1JSRUNUSU9OPXRydWUnID4+ICIkR0lUSFVCX0VOViIKICAgICAgICAgICAgZm9yIG1pZ3JhdGlvbiBpbiBcXAogICAgICAgICAgICAgIDAwMDBfMDBfMDBfMDAwMDExX2FkZF9jcmVkZW50aWFsX2Vwb2NoX3RvX2lkZW50aXR5X3Bhc3N3b3JkX2NyZWRlbnRpYWxzLnBocCBcXAogICAgICAgICAgICAgIDAwMDBfMDBfMDBfMDAwMDEyX2FkZF90b3RwX2ZhY3Rvcl9lcG9jaF9hbmRfcmVjb3ZlcnlfYXV0aG9yaXR5LnBocCBcXAogICAgICAgICAgICAgIDAwMDBfMDBfMDBfMDAwMDEzX2NyZWF0ZV9maXJzdF9wYXJ0eV9zZXNzaW9uX2F1dGhvcml0eS5waHAgXFwKICAgICAgICAgICAgICAwMDAwXzAwXzAwXzAwMDAxNF9hZGRfZmlyc3RfcGFydHlfYXV0aGVudGljYXRpb25fZWxpZ2liaWxpdHlfdG9faWRlbnRpdGllcy5waHAKICAgICAgICAgICAgZG8KICAgICAgICAgICAgICBtaWdyYXRpb25fcGF0aD0iYXBwcy93ZWIvZGF0YWJhc2UvbWlncmF0aW9ucy8kbWlncmF0aW9uIgogICAgICAgICAgICAgIGlmIFtbIC1mICIkbWlncmF0aW9uX3BhdGgiIF1dOyB0aGVuCiAgICAgICAgICAgICAgICBnaXQgdXBkYXRlLWluZGV4IC0tYXNzdW1lLXVuY2hhbmdlZCAiJG1pZ3JhdGlvbl9wYXRoIgogICAgICAgICAgICAgICAgcm0gLWYgIiRtaWdyYXRpb25fcGF0aCIKICAgICAgICAgICAgICBmaQogICAgICAgICAgICBkb25lCiAgICAgICAgICAgIGVjaG8gJ0V4YWN0IFNwcmludDMyIHdvcmtmbG93IGNvcnJlY3Rpb24gcmVjb2duaXplZDsgbWlncmF0aW9ucyAjMTEtIzE0IGlzb2xhdGVkIG9ubHkgZnJvbSBoaXN0b3JpY2FsIFNwcmludDMyIGV4ZWN1dGFibGUgcHJlc2VydmF0aW9uLicKICAgICAgICAgICAgZXhpdCAwCiAgICAgICAgICBmaQogICAgICAgICAgZWNobyAnT05FUUFZX1NQUklOVDMyX1dPUktGTE9XX0NPUlJFQ1RJT049ZmFsc2UnID4+ICIkR0lUSFVCX0VOViIKICAgICAgICAgIGlmIFtbICIkY291bnQiIC1lcSAzNSBdXSAmJiBbWyAiJGZpbmdlcnByaW50IiA9PSAnZTNiNzI0MDAyY2ZjMGJlMWVmODkwZDFiNTU5NGEyYTUxNzkxMjNmOTQ5ZjZmNDg2MzU0ZTIxOTUwYzczMjhlYicgXV07IHRoZW4KIiIiCmFzc2VydCB0ZXh0LmNvdW50KGFuY2hvcikgPT0gMSwgZiJyZWNvZ25pdGlvbiBhbmNob3IgY291bnQ9e3RleHQuY291bnQoYW5jaG9yKX0iCnRleHQgPSB0ZXh0LnJlcGxhY2UoYW5jaG9yLCByZXBsYWNlbWVudCwgMSkKCm9sZF9pZiA9ICIiIiAgICAgIC0gbmFtZTogRW5mb3JjZSBleGFjdCBTcHJpbnQgMzIgc291cmNlIGVudmVsb3BlCiAgICAgICAgaWY6IGdpdGh1Yi5ldmVudF9uYW1lID09ICdwdWxsX3JlcXVlc3QnICYmIGVudi5PTkVRQVlfU1BSSU5UMzNfU1VDQ0VTU09SICE9ICd0cnVlJwoiIiIKbmV3X2lmID0gIiIiICAgICAgLSBuYW1lOiBFbmZvcmNlIGV4YWN0IFNwcmludCAzMiBzb3VyY2UgZW52ZWxvcGUKICAgICAgICBpZjogZ2l0aHViLmV2ZW50X25hbWUgPT0gJ3B1bGxfcmVxdWVzdCcgJiYgZW52Lk9ORVFBWV9TUFJJTlQzM19TVUNDRVNTT1IgIT0gJ3RydWUnICYmIGVudi5PTkVRQVlfU1BSSU5UMzJfV09SS0ZMT1dfQ09SUkVDVElPTiAhPSAndHJ1ZScKIiIiCmFzc2VydCB0ZXh0LmNvdW50KG9sZF9pZikgPT0gMSwgZiJzb3VyY2UgY29uZGl0aW9uIGNvdW50PXt0ZXh0LmNvdW50KG9sZF9pZil9Igp0ZXh0ID0gdGV4dC5yZXBsYWNlKG9sZF9pZiwgbmV3X2lmLCAxKQoKb2xkX3MzNCA9ICIiIiAgICAgICAgICAgIGlmIFtbICIke09ORVFBWV9TUFJJTlQzNF9TVUNDRVNTT1I6LWZhbHNlfSIgPT0gJ3RydWUnIF1dOyB0aGVuCiIiIgpuZXdfczM0ID0gIiIiICAgICAgICAgICAgaWYgW1sgIiR7T05FUUFZX1NQUklOVDMyX1dPUktGTE9XX0NPUlJFQ1RJT046LWZhbHNlfSIgPT0gJ3RydWUnIF1dOyB0aGVuCiAgICAgICAgICAgICAgZ2l0IGRpZmYgLS1leGl0LWNvZGUgIiRiYXNlLi4uSEVBRCIgLS0gYXBwcy93ZWIvZGF0YWJhc2UvbWlncmF0aW9ucwogICAgICAgICAgICBlbGlmIFtbICIke09ORVFBWV9TUFJJTlQzNF9TVUNDRVNTT1I6LWZhbHNlfSIgPT0gJ3RydWUnIF1dOyB0aGVuCiIiIgphc3NlcnQgdGV4dC5jb3VudChvbGRfczM0KSA9PSAxLCBmInMzNCBhbmNob3IgY291bnQ9e3RleHQuY291bnQob2xkX3MzNCl9Igp0ZXh0ID0gdGV4dC5yZXBsYWNlKG9sZF9zMzQsIG5ld19zMzQsIDEpCgpvbGRfc3VjY2Vzc29yX2JyYW5jaCA9ICIiIiAgICAgICAgICAgIGlmIFtbICIke09ORVFBWV9TUFJJTlQzM19TVUNDRVNTT1I6LWZhbHNlfSIgPT0gJ3RydWUnIF1dOyB0aGVuCiAgICAgICAgICAgICAgZ2l0IGRpZmYgLS1leGl0LWNvZGUgIiRiYXNlLi4uSEVBRCIgLS0gYXBwcy93ZWIvZGF0YWJhc2UvbWlncmF0aW9ucwogICAgICAgICAgICBlbHNlCiAgICAgICAgICAgICAgZm9yIG1pZ3JhdGlvbiBpbiBcXAoiIiIKbmV3X3N1Y2Nlc3Nvcl9icmFuY2ggPSAiIiIgICAgICAgICAgICBpZiBbWyAiJHtPTkVRQVlfU1BSSU5UMzJfV09SS0ZMT1dfQ09SUkVDVElPTjotZmFsc2V9IiAhPSAndHJ1ZScgJiYgIiR7T05FUUFZX1NQUklOVDMzX1NVQ0NFU1NPUjotZmFsc2V9IiA9PSAndHJ1ZScgXV07IHRoZW4KICAgICAgICAgICAgICBnaXQgZGlmZiAtLWV4aXQtY29kZSAiJGJhc2UuLi5IRUFEIiAtLSBhcHBzL3dlYi9kYXRhYmFzZS9taWdyYXRpb25zCiAgICAgICAgICAgIGVsaWYgW1sgIiR7T05FUUFZX1NQUklOVDMyX1dPUktGTE9XX0NPUlJFQ1RJT046LWZhbHNlfSIgIT0gJ3RydWUnIF1dOyB0aGVuCiAgICAgICAgICAgICAgZm9yIG1pZ3JhdGlvbiBpbiBcXAoiIiIKYXNzZXJ0IHRleHQuY291bnQob2xkX3N1Y2Nlc3Nvcl9icmFuY2gpID09IDEsIGYic3VjY2Vzc29yIGJyYW5jaCBjb3VudD17dGV4dC5jb3VudChvbGRfc3VjY2Vzc29yX2JyYW5jaCl9Igp0ZXh0ID0gdGV4dC5yZXBsYWNlKG9sZF9zdWNjZXNzb3JfYnJhbmNoLCBuZXdfc3VjY2Vzc29yX2JyYW5jaCwgMSkKCnBhdGgud3JpdGVfdGV4dCh0ZXh0KQo=' | base64 -d > /tmp/patch.py
+          python3 /tmp/patch.py
+          git diff --check
+          go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.7 -shellcheck= .github/workflows/sprint32-authentication-recovery-proof-regression.yml
+
+      - name: Commit clean correction and expose commit object
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'labzefry'
+          git config user.email 'lab.zefa@gmail.com'
+          git rm .github/workflows/post-sprint40-s32-self-correction-builder-v2.yml
+          git add .github/workflows/sprint32-authentication-recovery-proof-regression.yml
+          git commit -m 'ci: make Sprint32 workflow correction self-preserving'
+          printf '%s\n' '.github/workflows/sprint32-authentication-recovery-proof-regression.yml' > /tmp/expected
+          git diff --name-only 1045255743574d87c4dc8d9a2638a25c1c7f037a HEAD | sort > /tmp/actual
+          cmp -s /tmp/expected /tmp/actual
+          echo "FINAL_COMMIT=$(git rev-parse HEAD)"
+          echo "FINAL_TREE=$(git rev-parse HEAD^{tree})"
+          set +e
+          git push origin HEAD:ci/post-sprint40-s32-self-correction-builder-v2
+          echo "PUSH_RC=$?"
+          exit 0
