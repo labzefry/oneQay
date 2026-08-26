@@ -24,6 +24,8 @@ jobs:
           parent='f447a112040c3025b39ebc902f00882195172b83'
           canonical='517d6fc92c8becf225e9997899d96bf53da28433'
           git checkout --detach "$parent"
+          git config user.name 'labzefry'
+          git config user.email 'lab.zefa@gmail.com'
           python3 - <<'PY'
           from pathlib import Path
           anchor = '# Post-Sprint40 M7.5 canonical-main fixture isolation anchor.\n'
