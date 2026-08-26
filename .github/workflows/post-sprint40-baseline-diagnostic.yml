@@ -1,7 +1,7 @@
 name: Post-Sprint40 Baseline Diagnostic
 
 # Temporary branch-local diagnostic only. Never publish to main.
-# Diagnostic revision 7.
+# Diagnostic revision 8.
 # Attribution: Lab | zefry
 
 on:
@@ -21,36 +21,61 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           fetch-depth: 0
-      - name: Measure effective Sprint35 command sizes
+      - name: Build Sprint35 split-step validation candidate
         shell: bash
         run: |
           set -euo pipefail
-          git show 8bf452e2bf5ffb63725e434c85292965decd221f:.github/workflows/sprint35-privileged-totp-recovery-regression.yml > /tmp/sprint35-post39.yml
-          git show origin/main:.github/workflows/sprint35-privileged-totp-recovery-regression.yml > /tmp/sprint35-current.yml
+          git show origin/main:.github/workflows/sprint35-privileged-totp-recovery-regression.yml > .github/workflows/sprint35-privileged-totp-recovery-regression.yml
           python3 - <<'PY'
           from pathlib import Path
-
-          def first_run(label, path):
-              lines = Path(path).read_text().splitlines(True)
-              for i, line in enumerate(lines):
-                  stripped = line.lstrip(' ')
-                  indent = len(line) - len(stripped)
-                  if stripped.startswith('run: |'):
-                      body = []
-                      j = i + 1
-                      while j < len(lines):
-                          nxt = lines[j]
-                          if nxt.strip() and len(nxt) - len(nxt.lstrip(' ')) <= indent:
-                              break
-                          body.append(nxt)
-                          j += 1
-                      nonempty = [len(x) - len(x.lstrip(' ')) for x in body if x.strip()]
-                      body_indent = min(nonempty) if nonempty else 0
-                      effective = ''.join(x[body_indent:] if x.strip() else '\n' for x in body)
-                      print(label, 'raw=', sum(len(x) for x in body), 'body_indent=', body_indent, 'effective=', len(effective), 'lines=', len(body))
-                      return
-              raise SystemExit(f'no run block in {path}')
-
-          first_run('post39', '/tmp/sprint35-post39.yml')
-          first_run('current', '/tmp/sprint35-current.yml')
+          p = Path('.github/workflows/sprint35-privileged-totp-recovery-regression.yml')
+          lines = p.read_text().splitlines(True)
+          start = next(i for i, line in enumerate(lines) if line == '      - name: Enforce frozen Sprint35 source envelope\n')
+          event_line = next(i for i, line in enumerate(lines) if 'github.event_name' in line and line.lstrip().startswith('if [['))
+          body_start = start + 3
+          if lines[body_start].strip() != 'set -euo pipefail':
+              raise SystemExit('unexpected Sprint35 step preamble')
+          prefix_body = lines[body_start:event_line]
+          suffix_body = lines[event_line:]
+          replacement = [
+              '      - name: Prepare frozen Sprint35 source manifests\n',
+              '        shell: bash\n',
+              '        run: |\n',
+              *prefix_body,
+              '\n',
+              '      - name: Enforce frozen Sprint35 source envelope\n',
+              '        shell: bash\n',
+              '        run: |\n',
+              '          set -euo pipefail\n',
+              *suffix_body,
+          ]
+          p.write_text(''.join(lines[:start] + replacement))
           PY
+          go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.7 -ignore 'SC2016|SC2251' .github/workflows/sprint35-privileged-totp-recovery-regression.yml
+          python3 - <<'PY'
+          from pathlib import Path
+          lines = Path('.github/workflows/sprint35-privileged-totp-recovery-regression.yml').read_text().splitlines(True)
+          sizes=[]
+          i=0
+          while i < len(lines):
+              line=lines[i]; stripped=line.lstrip(' '); indent=len(line)-len(stripped)
+              if stripped.startswith('run: |'):
+                  body=[]; j=i+1
+                  while j < len(lines):
+                      nxt=lines[j]
+                      if nxt.strip() and len(nxt)-len(nxt.lstrip(' ')) <= indent: break
+                      body.append(nxt); j+=1
+                  ind=min((len(x)-len(x.lstrip(' ')) for x in body if x.strip()), default=0)
+                  sizes.append(len(''.join(x[ind:] if x.strip() else '\n' for x in body)))
+                  i=j
+              else: i+=1
+          print('effective_run_sizes=', sizes)
+          if max(sizes) > 21000:
+              raise SystemExit('Sprint35 candidate still exceeds GitHub run-command limit')
+          PY
+          git add .github/workflows/sprint35-privileged-totp-recovery-regression.yml
+          git config user.name 'labzefry'
+          git config user.email 'lab.zefa@gmail.com'
+          git commit -m 'ci: split oversized Sprint35 workflow command'
+          echo "FINAL_SPRINT35_COMMIT=$(git rev-parse HEAD)"
+          echo "FINAL_SPRINT35_TREE=$(git rev-parse HEAD^{tree})"
