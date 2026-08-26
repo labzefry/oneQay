@@ -119,5 +119,6 @@ jobs:
         with:
           name: sprint40-historical-preservation
           path: /tmp/sprint40-preservation
+          include-hidden-files: true
           if-no-files-found: error
           retention-days: 1
