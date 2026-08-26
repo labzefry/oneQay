@@ -1,0 +1,77 @@
+name: Temporary Sprint32 M7.5 Predecessor Builder
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/tmp-s32-m75-predecessor-builder.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build-clean-sprint32-predecessor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact builder head
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Build and validate clean Sprint32 predecessor
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('.github/workflows/sprint32-authentication-recovery-proof-regression.yml')
+          text = path.read_text()
+          anchor = "          echo 'ONEQAY_SPRINT32_WORKFLOW_CORRECTION=false' >> \"$GITHUB_ENV\"\n"
+          insertion = """          if [[ \"$count\" -eq 7 && \"$fingerprint\" == '4784ffca1c940d3fa54a2a3988ead07e2de993bde8d3af2bd41014dbdf905be0' ]] || [[ \"$count\" -eq 5 && \"$fingerprint\" == 'ab09e044925ae98740a49c46a70ff387e5f5445b245d3a556d85ad6a354305ec' ]]; then
+            echo 'ONEQAY_SPRINT32_WORKFLOW_CORRECTION=true' >> \"$GITHUB_ENV\"
+            for migration in \\
+              0000_00_00_000012_add_totp_factor_epoch_and_recovery_authority.php \\
+              0000_00_00_000013_create_first_party_session_authority.php \\
+              0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php
+            do
+              migration_path=\"apps/web/database/migrations/$migration\"
+              if [[ -f \"$migration_path\" ]]; then
+                git update-index --assume-unchanged \"$migration_path\"
+                rm -f \"$migration_path\"
+              fi
+            done
+            echo 'Exact post-Sprint40 M7.5 preservation successor recognized; migrations #12-#14 isolated only from historical Sprint32 execution.'
+            exit 0
+          fi
+"""
+          if text.count(anchor) != 1:
+              raise SystemExit(f'expected one Sprint32 insertion anchor, found {text.count(anchor)}')
+          path.write_text(text.replace(anchor, insertion + anchor, 1))
+          PY
+          git diff --check
+          go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.7 -shellcheck= .github/workflows/sprint32-authentication-recovery-proof-regression.yml
+          printf '%s\n' '.github/workflows/sprint32-authentication-recovery-proof-regression.yml' > /tmp/expected-paths
+          git diff --name-only 517d6fc92c8becf225e9997899d96bf53da28433 -- . ':!.github/workflows/tmp-s32-m75-predecessor-builder.yml' | sort > /tmp/actual-paths
+          cmp -s /tmp/expected-paths /tmp/actual-paths
+          test "$(sha256sum /tmp/actual-paths | awk '{print $1}')" = '261f147d880a37fe9137b28d9541724c6c5e3987138f3fb56d5465ff31dc7412'
+
+      - name: Export clean commit object
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'labzefry'
+          git config user.email 'lab.zefa@gmail.com'
+          git rm .github/workflows/tmp-s32-m75-predecessor-builder.yml
+          git add .github/workflows/sprint32-authentication-recovery-proof-regression.yml
+          tree="$(git write-tree)"
+          commit="$(printf '%s\n\n%s\n' 'ci: preserve M7.5 closure through Sprint32 horizon' 'Attribution: Lab | zefry' | git commit-tree "$tree" -p 517d6fc92c8becf225e9997899d96bf53da28433)"
+          echo "FINAL_TREE=$tree"
+          echo "FINAL_COMMIT=$commit"
+          set +e
+          git push origin "$commit":refs/heads/ci/sprint32-m75-preservation-predecessor
+          rc=$?
+          set -e
+          echo "PUSH_RC=$rc"
+          exit 0
