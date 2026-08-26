@@ -1,7 +1,7 @@
 name: Post-Sprint40 Baseline Diagnostic
 
 # Temporary branch-local diagnostic only. Never publish to main.
-# Diagnostic revision 9.
+# Diagnostic revision 10.
 # Attribution: Lab | zefry
 
 on:
@@ -15,21 +15,51 @@ permissions:
 jobs:
   diagnose:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - name: Checkout exact diagnostic branch
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           fetch-depth: 0
-      - name: Build and export Sprint35 split-step candidate
+
+      - name: Build five-workflow Sprint35 closure candidate
         shell: bash
         run: |
           set -euo pipefail
-          git show origin/main:.github/workflows/sprint35-privileged-totp-recovery-regression.yml > .github/workflows/sprint35-privileged-totp-recovery-regression.yml
+          paths=(
+            .github/workflows/sprint35-privileged-totp-recovery-regression.yml
+            .github/workflows/sprint36-first-party-session-inventory-revocation-regression.yml
+            .github/workflows/sprint37-first-party-all-session-termination-regression.yml
+            .github/workflows/sprint38-first-party-session-absolute-lifetime-regression.yml
+            .github/workflows/sprint39-first-party-session-organizational-access-revalidation-regression.yml
+          )
+          for path in "${paths[@]}"; do
+            git show "origin/main:$path" > "$path"
+          done
+
           python3 - <<'PY'
           from pathlib import Path
+
+          migration14 = 'apps/web/database/migrations/0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php'
+
+          # Sprint35: preserve the exact guard semantics while splitting the oversized run command.
           p = Path('.github/workflows/sprint35-privileged-totp-recovery-regression.yml')
           lines = p.read_text().splitlines(True)
+
+          # Extend the historical successor isolation from migration #13 through canonical migration #14.
+          start13 = next(i for i, line in enumerate(lines) if 'if [[ "$sprint36_successor"' in line and '000013_create_first_party_session_authority.php' in line)
+          base_indent = lines[start13][:len(lines[start13]) - len(lines[start13].lstrip())]
+          end13 = next(i for i in range(start13 + 1, len(lines)) if lines[i] == base_indent + 'fi\n')
+          block14 = [
+              base_indent + f"if [[ \"$sprint36_successor\" == 'true' ]] && [[ -f '{migration14}' ]]; then\n",
+              base_indent + f"  git update-index --assume-unchanged '{migration14}'\n",
+              base_indent + f"  rm -f '{migration14}'\n",
+              base_indent + '  echo "Migration #14 isolated only from historical Sprint35 executable preservation."\n',
+              base_indent + 'fi\n',
+          ]
+          lines[end13 + 1:end13 + 1] = block14
+
+          # Split the oversized source-envelope step at the pull-request event branch.
           start = next(i for i, line in enumerate(lines) if line == '      - name: Enforce frozen Sprint35 source envelope\n')
           event_line = next(i for i, line in enumerate(lines) if 'github.event_name' in line and line.lstrip().startswith('if [['))
           body_start = start + 3
@@ -50,11 +80,46 @@ jobs:
               *suffix_body,
           ]
           p.write_text(''.join(lines[:start] + replacement))
+
+          # Sprint36-Sprint39: for the already-frozen exact five-workflow correction
+          # path set, isolate only migration #14 from their historical schema-free fixtures.
+          fp = 'ab09e044925ae98740a49c46a70ff387e5f5445b245d3a556d85ad6a354305ec'
+          for sprint in (36, 37, 38, 39):
+              path = Path(f'.github/workflows/sprint{sprint}-' + {
+                  36: 'first-party-session-inventory-revocation-regression.yml',
+                  37: 'first-party-all-session-termination-regression.yml',
+                  38: 'first-party-session-absolute-lifetime-regression.yml',
+                  39: 'first-party-session-organizational-access-revalidation-regression.yml',
+              }[sprint])
+              rows = path.read_text().splitlines(True)
+              idx = next(i for i, line in enumerate(rows) if fp in line)
+              indent = rows[idx][:len(rows[idx]) - len(rows[idx].lstrip())] + '  '
+              insert = [
+                  indent + f"if [[ -f '{migration14}' ]]; then\n",
+                  indent + f"  git update-index --assume-unchanged '{migration14}'\n",
+                  indent + f"  rm -f '{migration14}'\n",
+                  indent + f'  echo "Migration #14 isolated only from historical Sprint{sprint} executable preservation."\n',
+                  indent + 'fi\n',
+              ]
+              rows[idx + 1:idx + 1] = insert
+              path.write_text(''.join(rows))
           PY
-          go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.7 -ignore 'SC2016|SC2251' .github/workflows/sprint35-privileged-totp-recovery-regression.yml
+
+          go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.7 -ignore 'SC2016|SC2251' \
+            .github/workflows/sprint35-privileged-totp-recovery-regression.yml \
+            .github/workflows/sprint36-first-party-session-inventory-revocation-regression.yml \
+            .github/workflows/sprint37-first-party-all-session-termination-regression.yml \
+            .github/workflows/sprint38-first-party-session-absolute-lifetime-regression.yml \
+            .github/workflows/sprint39-first-party-session-organizational-access-revalidation-regression.yml
+
+          git diff --name-only origin/main -- "${paths[@]}" | sort > /tmp/final-paths
+          test "$(wc -l < /tmp/final-paths)" -eq 5
+          test "$(sha256sum /tmp/final-paths | awk '{print $1}')" = 'ab09e044925ae98740a49c46a70ff387e5f5445b245d3a556d85ad6a354305ec'
+
           python3 - <<'PY'
           from pathlib import Path
-          lines = Path('.github/workflows/sprint35-privileged-totp-recovery-regression.yml').read_text().splitlines(True)
+          path = Path('.github/workflows/sprint35-privileged-totp-recovery-regression.yml')
+          lines = path.read_text().splitlines(True)
           sizes=[]; i=0
           while i < len(lines):
               line=lines[i]; stripped=line.lstrip(' '); indent=len(line)-len(stripped)
@@ -62,20 +127,23 @@ jobs:
                   body=[]; j=i+1
                   while j < len(lines):
                       nxt=lines[j]
-                      if nxt.strip() and len(nxt)-len(nxt.lstrip(' ')) <= indent: break
+                      if nxt.strip() and len(nxt)-len(nxt.lstrip(' ')) <= indent:
+                          break
                       body.append(nxt); j+=1
                   ind=min((len(x)-len(x.lstrip(' ')) for x in body if x.strip()), default=0)
                   sizes.append(len(''.join(x[ind:] if x.strip() else '\n' for x in body)))
                   i=j
-              else: i+=1
-          print('effective_run_sizes=', sizes)
+              else:
+                  i+=1
+          print('SPRINT35_EFFECTIVE_RUN_SIZES=', sizes)
           if max(sizes) > 21000:
               raise SystemExit('Sprint35 candidate still exceeds GitHub run-command limit')
           PY
-          git add .github/workflows/sprint35-privileged-totp-recovery-regression.yml
+
+          git add "${paths[@]}"
           git config user.name 'labzefry'
           git config user.email 'lab.zefa@gmail.com'
-          git commit -m 'ci: split oversized Sprint35 workflow command'
-          echo "FINAL_SPRINT35_COMMIT=$(git rev-parse HEAD)"
-          echo "FINAL_SPRINT35_TREE=$(git rev-parse HEAD^{tree})"
+          git commit -m 'ci: close post-Sprint40 historical workflow baseline'
+          echo "FINAL_COMMIT=$(git rev-parse HEAD)"
+          echo "FINAL_TREE=$(git rev-parse HEAD^{tree})"
           git push origin HEAD:ci/post-sprint40-baseline-diagnostic
