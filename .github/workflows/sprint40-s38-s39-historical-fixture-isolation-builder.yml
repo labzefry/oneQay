@@ -1,0 +1,176 @@
+name: Sprint40 Sprint38 Sprint39 Historical Fixture Isolation Builder
+
+# Temporary branch-local construction workflow. Final PR excludes this file.
+# Attribution: Lab | zefry
+
+on:
+  push:
+    branches:
+      - ci/sprint40-s38-s39-historical-fixture-isolation-builder
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sprint40-s38-s39-historical-fixture-isolation-builder
+  cancel-in-progress: false
+
+jobs:
+  materialize:
+    if: github.ref == 'refs/heads/ci/sprint40-s38-s39-historical-fixture-isolation-builder'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact builder branch
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ci/sprint40-s38-s39-historical-fixture-isolation-builder
+          fetch-depth: 0
+
+      - name: Materialize exact six-workflow correction
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 <<'PY'
+          from pathlib import Path
+
+          files = [
+              '.github/workflows/m7-5-preview-release-artifact.yml',
+              '.github/workflows/sprint35-privileged-totp-recovery-regression.yml',
+              '.github/workflows/sprint36-first-party-session-inventory-revocation-regression.yml',
+              '.github/workflows/sprint37-first-party-all-session-termination-regression.yml',
+              '.github/workflows/sprint38-first-party-session-absolute-lifetime-regression.yml',
+              '.github/workflows/sprint39-first-party-session-organizational-access-revalidation-regression.yml',
+          ]
+          anchor = '# Sprint40 Sprint38/Sprint39 historical fixture isolation anchor.\n'
+          attribution = '# Attribution: Lab | zefry\n'
+          for name in files:
+              p = Path(name)
+              text = p.read_text()
+              if anchor.strip() not in text:
+                  if attribution in text:
+                      text = text.replace(attribution, attribution + anchor, 1)
+                  else:
+                      text = anchor + text
+              p.write_text(text)
+
+          s38 = Path('.github/workflows/sprint38-first-party-session-absolute-lifetime-regression.yml')
+          text = s38.read_text()
+          old38 = '''      - name: Run dedicated Sprint38 absolute lifetime regression fail-closed
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          output="$(php tests/first-party-session-absolute-lifetime.php 2>&1)" || { printf '%s\\n' "$output"; exit 1; }
+          printf '%s\\n' "$output"
+          grep -Fq 'Sprint38 first-party session absolute lifetime regression passed.' <<<"$output"
+'''
+          new38 = '''      - name: Run dedicated Sprint38 absolute lifetime regression fail-closed
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          migration='database/migrations/0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php'
+          middleware='app/Delivery/Http/Middleware/EnforceActiveFirstPartySessionAuthorityMiddleware.php'
+          isolated=false
+          restore_sprint40_fixture() {
+            if [[ "$isolated" == 'true' ]]; then
+              mv /tmp/oneqay-s38-s40-migration.php "$migration"
+              mv /tmp/oneqay-s38-s40-middleware.php "$middleware"
+              isolated=false
+            fi
+          }
+          if [[ "${ONEQAY_SPRINT40_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            cp "$migration" /tmp/oneqay-s38-s40-migration.php
+            cp "$middleware" /tmp/oneqay-s38-s40-middleware.php
+            rm "$migration"
+            git show "${{ github.event.pull_request.base.sha }}:apps/web/app/Delivery/Http/Middleware/EnforceActiveFirstPartySessionAuthorityMiddleware.php" > "$middleware"
+            isolated=true
+          fi
+          set +e
+          output="$(php tests/first-party-session-absolute-lifetime.php 2>&1)"
+          status=$?
+          set -e
+          restore_sprint40_fixture
+          if (( status != 0 )); then
+            printf '%s\\n' "$output"
+            exit "$status"
+          fi
+          printf '%s\\n' "$output"
+          grep -Fq 'Sprint38 first-party session absolute lifetime regression passed.' <<<"$output"
+'''
+          if text.count(old38) != 1:
+              raise SystemExit(f'Sprint38 dedicated fixture block count mismatch: {text.count(old38)}')
+          s38.write_text(text.replace(old38, new38, 1))
+
+          s39 = Path('.github/workflows/sprint39-first-party-session-organizational-access-revalidation-regression.yml')
+          text = s39.read_text()
+          old39 = '''      - name: Run dedicated Sprint39 organizational access regression
+        working-directory: apps/web
+        shell: bash
+        env:
+          ONEQAY_PERSISTENCE_ENABLED: 'true'
+        run: |
+          set -euo pipefail
+          output="$(php tests/first-party-session-organizational-access-revalidation.php 2>&1)" || { printf '%s\\n' "$output"; exit 1; }
+          printf '%s\\n' "$output"
+          grep -Fq 'Sprint39 first-party session organizational access revalidation regression passed.' <<<"$output"
+'''
+          new39 = '''      - name: Run dedicated Sprint39 organizational access regression
+        working-directory: apps/web
+        shell: bash
+        env:
+          ONEQAY_PERSISTENCE_ENABLED: 'true'
+        run: |
+          set -euo pipefail
+          migration='database/migrations/0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php'
+          middleware='app/Delivery/Http/Middleware/EnforceActiveFirstPartySessionAuthorityMiddleware.php'
+          isolated=false
+          restore_sprint40_fixture() {
+            if [[ "$isolated" == 'true' ]]; then
+              mv /tmp/oneqay-s39-s40-migration.php "$migration"
+              mv /tmp/oneqay-s39-s40-middleware.php "$middleware"
+              isolated=false
+            fi
+          }
+          if [[ "${ONEQAY_SPRINT40_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            cp "$migration" /tmp/oneqay-s39-s40-migration.php
+            cp "$middleware" /tmp/oneqay-s39-s40-middleware.php
+            rm "$migration"
+            git show "${{ github.event.pull_request.base.sha }}:apps/web/app/Delivery/Http/Middleware/EnforceActiveFirstPartySessionAuthorityMiddleware.php" > "$middleware"
+            isolated=true
+          fi
+          set +e
+          output="$(php tests/first-party-session-organizational-access-revalidation.php 2>&1)"
+          status=$?
+          set -e
+          restore_sprint40_fixture
+          if (( status != 0 )); then
+            printf '%s\\n' "$output"
+            exit "$status"
+          fi
+          printf '%s\\n' "$output"
+          grep -Fq 'Sprint39 first-party session organizational access revalidation regression passed.' <<<"$output"
+'''
+          if text.count(old39) != 1:
+              raise SystemExit(f'Sprint39 dedicated fixture block count mismatch: {text.count(old39)}')
+          s39.write_text(text.replace(old39, new39, 1))
+          PY
+
+          rm '.github/workflows/sprint40-s38-s39-historical-fixture-isolation-builder.yml'
+          git add -A
+          git diff --cached --name-only | sort >/tmp/s40-fixture-isolation-staged.txt
+          test "$(wc -l </tmp/s40-fixture-isolation-staged.txt)" -eq 7
+          grep -Fxq '.github/workflows/sprint40-s38-s39-historical-fixture-isolation-builder.yml' /tmp/s40-fixture-isolation-staged.txt
+          grep -vFx '.github/workflows/sprint40-s38-s39-historical-fixture-isolation-builder.yml' /tmp/s40-fixture-isolation-staged.txt >/tmp/s40-fixture-isolation-final.txt
+          test "$(wc -l </tmp/s40-fixture-isolation-final.txt)" -eq 6
+          test "$(sha256sum /tmp/s40-fixture-isolation-final.txt | awk '{print $1}')" = '671946562a3eef1375d87b70936bac263aa18f660d6ea274406ed57f1c653351'
+          grep -Fq "git show \"\${{ github.event.pull_request.base.sha }}:apps/web/app/Delivery/Http/Middleware/EnforceActiveFirstPartySessionAuthorityMiddleware.php\"" '.github/workflows/sprint38-first-party-session-absolute-lifetime-regression.yml'
+          grep -Fq "git show \"\${{ github.event.pull_request.base.sha }}:apps/web/app/Delivery/Http/Middleware/EnforceActiveFirstPartySessionAuthorityMiddleware.php\"" '.github/workflows/sprint39-first-party-session-organizational-access-revalidation-regression.yml'
+
+          git config user.name 'labzefry'
+          git config user.email 'lab.zefa@gmail.com'
+          git commit -m 'ci: isolate Sprint38 and Sprint39 historical fixtures for Sprint40'
+          echo "FINAL_CORRECTION_COMMIT=$(git rev-parse HEAD)"
+          echo "FINAL_CORRECTION_TREE=$(git rev-parse HEAD^{tree})"
+          git push origin HEAD:ci/sprint40-s38-s39-historical-fixture-isolation-builder
