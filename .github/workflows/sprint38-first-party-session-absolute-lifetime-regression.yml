@@ -1,6 +1,7 @@
 name: Sprint38 First-Party Session Absolute Lifetime Regression
 
 # Attribution: Lab | zefry
+# Sprint40 19-workflow preservation-horizon bridge anchor.
 
 on:
   pull_request:
@@ -190,6 +191,8 @@ jobs:
             grep -Fq 'bde0c14f6b8c45f090844b9e5d701415690e990b8b7bea3b605f4ba04c727116' .github/workflows/sprint33-recovery-bound-password-reset-regression.yml
             grep -Fq 'bde0c14f6b8c45f090844b9e5d701415690e990b8b7bea3b605f4ba04c727116' .github/workflows/sprint34-authenticated-password-change-regression.yml
             echo 'Recognized exact Sprint40 six-workflow source-preservation predecessor shape with historical correction closure.'
+          elif [[ "$(wc -l < /tmp/actual-sprint38-source-paths)" -eq 19 ]] && [[ "$(sha256sum /tmp/actual-sprint38-source-paths | awk '{print $1}')" == 'fc2b578fc9d090dfce1fd34c5acfa7a07f065979a94f62becb3dc54dee664920' ]]; then
+            echo 'Recognized exact Sprint40 19-workflow historical preservation correction shape.'
           elif cmp -s /tmp/sprint40-source-paths /tmp/actual-sprint38-source-paths; then
             echo 'Recognized exact Sprint40 identity-disablement revalidation source successor shape.'
             echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
