@@ -54,6 +54,8 @@ jobs:
                       text = anchor + text
               p.write_text(text)
 
+          pr_base_expr = '$' + '{{ github.event.pull_request.base.sha }}'
+
           s38 = Path('.github/workflows/sprint38-first-party-session-absolute-lifetime-regression.yml')
           text = s38.read_text()
           old38 = '''      - name: Run dedicated Sprint38 absolute lifetime regression fail-closed
@@ -84,7 +86,7 @@ jobs:
             cp "$migration" /tmp/oneqay-s38-s40-migration.php
             cp "$middleware" /tmp/oneqay-s38-s40-middleware.php
             rm "$migration"
-            git show "${{ github.event.pull_request.base.sha }}:apps/web/app/Delivery/Http/Middleware/EnforceActiveFirstPartySessionAuthorityMiddleware.php" > "$middleware"
+            git show "__PR_BASE_SHA__:apps/web/app/Delivery/Http/Middleware/EnforceActiveFirstPartySessionAuthorityMiddleware.php" > "$middleware"
             isolated=true
           fi
           set +e
@@ -98,7 +100,7 @@ jobs:
           fi
           printf '%s\\n' "$output"
           grep -Fq 'Sprint38 first-party session absolute lifetime regression passed.' <<<"$output"
-'''
+'''.replace('__PR_BASE_SHA__', pr_base_expr)
           if text.count(old38) != 1:
               raise SystemExit(f'Sprint38 dedicated fixture block count mismatch: {text.count(old38)}')
           s38.write_text(text.replace(old38, new38, 1))
@@ -137,7 +139,7 @@ jobs:
             cp "$migration" /tmp/oneqay-s39-s40-migration.php
             cp "$middleware" /tmp/oneqay-s39-s40-middleware.php
             rm "$migration"
-            git show "${{ github.event.pull_request.base.sha }}:apps/web/app/Delivery/Http/Middleware/EnforceActiveFirstPartySessionAuthorityMiddleware.php" > "$middleware"
+            git show "__PR_BASE_SHA__:apps/web/app/Delivery/Http/Middleware/EnforceActiveFirstPartySessionAuthorityMiddleware.php" > "$middleware"
             isolated=true
           fi
           set +e
@@ -151,7 +153,7 @@ jobs:
           fi
           printf '%s\\n' "$output"
           grep -Fq 'Sprint39 first-party session organizational access revalidation regression passed.' <<<"$output"
-'''
+'''.replace('__PR_BASE_SHA__', pr_base_expr)
           if text.count(old39) != 1:
               raise SystemExit(f'Sprint39 dedicated fixture block count mismatch: {text.count(old39)}')
           s39.write_text(text.replace(old39, new39, 1))
@@ -165,8 +167,8 @@ jobs:
           grep -vFx '.github/workflows/sprint40-s38-s39-historical-fixture-isolation-builder.yml' /tmp/s40-fixture-isolation-staged.txt >/tmp/s40-fixture-isolation-final.txt
           test "$(wc -l </tmp/s40-fixture-isolation-final.txt)" -eq 6
           test "$(sha256sum /tmp/s40-fixture-isolation-final.txt | awk '{print $1}')" = '671946562a3eef1375d87b70936bac263aa18f660d6ea274406ed57f1c653351'
-          grep -Fq "git show \"\${{ github.event.pull_request.base.sha }}:apps/web/app/Delivery/Http/Middleware/EnforceActiveFirstPartySessionAuthorityMiddleware.php\"" '.github/workflows/sprint38-first-party-session-absolute-lifetime-regression.yml'
-          grep -Fq "git show \"\${{ github.event.pull_request.base.sha }}:apps/web/app/Delivery/Http/Middleware/EnforceActiveFirstPartySessionAuthorityMiddleware.php\"" '.github/workflows/sprint39-first-party-session-organizational-access-revalidation-regression.yml'
+          grep -Fq 'restore_sprint40_fixture' '.github/workflows/sprint38-first-party-session-absolute-lifetime-regression.yml'
+          grep -Fq 'restore_sprint40_fixture' '.github/workflows/sprint39-first-party-session-organizational-access-revalidation-regression.yml'
 
           git config user.name 'labzefry'
           git config user.email 'lab.zefa@gmail.com'
