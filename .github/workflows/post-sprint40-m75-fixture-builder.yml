@@ -1,0 +1,126 @@
+name: Post-Sprint40 M7.5 Fixture Builder
+
+on:
+  push:
+    branches:
+      - ci/m75-fixture-builder-20260826
+
+permissions:
+  contents: write
+
+jobs:
+  build-clean-correction:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout builder head
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+
+      - name: Apply bounded M7.5 fixture correction
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          anchor = '# Post-Sprint40 M7.5 canonical-main fixture isolation anchor.\n'
+          for name in [
+              '.github/workflows/sprint35-privileged-totp-recovery-regression.yml',
+              '.github/workflows/sprint36-first-party-session-inventory-revocation-regression.yml',
+              '.github/workflows/sprint37-first-party-all-session-termination-regression.yml',
+              '.github/workflows/sprint38-first-party-session-absolute-lifetime-regression.yml',
+          ]:
+              p = Path(name)
+              text = p.read_text()
+              if anchor not in text:
+                  p.write_text(anchor + text)
+
+          p = Path('.github/workflows/m7-5-preview-release-artifact.yml')
+          text = p.read_text()
+          old = '''      - name: Run first-party Web regressions
+                working-directory: apps/web
+                run: |
+                  composer test
+                  php tests/tenant-isolation.php
+                  php tests/identity-org-context.php
+                  php tests/pos-core-synthetic.php
+                  php tests/technical-preview-interaction.php
+                  php tests/preview-background-execution.php
+          '''
+          new = '''      - name: Run first-party Web regressions
+                working-directory: apps/web
+                shell: bash
+                run: |
+                  set -euo pipefail
+                  composer test
+
+                  migration14='database/migrations/0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php'
+                  migration14_backup='/tmp/oneqay-m7-5-migration14.php'
+                  rm -f "$migration14_backup"
+                  restore_migration14() {
+                    if [[ -f "$migration14_backup" ]]; then
+                      mv "$migration14_backup" "$migration14"
+                    fi
+                  }
+                  if [[ -f "$migration14" ]]; then
+                    cp "$migration14" "$migration14_backup"
+                    rm -f "$migration14"
+                  fi
+                  trap restore_migration14 EXIT
+                  php tests/tenant-isolation.php
+                  restore_migration14
+                  trap - EXIT
+                  git -C ../.. diff --exit-code -- apps/web/database/migrations/0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php
+
+                  php tests/identity-org-context.php
+                  php tests/pos-core-synthetic.php
+                  php tests/technical-preview-interaction.php
+                  php tests/preview-background-execution.php
+          '''
+          if old not in text:
+              raise SystemExit('M7.5 Web regression anchor not found exactly once')
+          if text.count(old) != 1:
+              raise SystemExit(f'M7.5 Web regression anchor count={text.count(old)}')
+          p.write_text(text.replace(old, new, 1))
+          PY
+
+          git diff --check
+          printf '%s\n' \
+            .github/workflows/m7-5-preview-release-artifact.yml \
+            .github/workflows/sprint35-privileged-totp-recovery-regression.yml \
+            .github/workflows/sprint36-first-party-session-inventory-revocation-regression.yml \
+            .github/workflows/sprint37-first-party-all-session-termination-regression.yml \
+            .github/workflows/sprint38-first-party-session-absolute-lifetime-regression.yml \
+            | sort > /tmp/expected-paths
+          git diff --name-only 517d6fc92c8becf225e9997899d96bf53da28433 -- . ':!.github/workflows/post-sprint40-m75-fixture-builder.yml' | sort > /tmp/actual-paths
+          cmp -s /tmp/expected-paths /tmp/actual-paths
+          test "$(sha256sum /tmp/actual-paths | awk '{print $1}')" = '84031e95f99240ea9a4a6eb39f75ff8dfa731fa3f2506396642b811d3425cd68'
+          go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.7 -shellcheck= \
+            .github/workflows/m7-5-preview-release-artifact.yml \
+            .github/workflows/sprint35-privileged-totp-recovery-regression.yml \
+            .github/workflows/sprint36-first-party-session-inventory-revocation-regression.yml \
+            .github/workflows/sprint37-first-party-all-session-termination-regression.yml \
+            .github/workflows/sprint38-first-party-session-absolute-lifetime-regression.yml
+
+      - name: Create clean canonical-parent commit object
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'labzefry'
+          git config user.email 'lab.zefa@gmail.com'
+          git rm .github/workflows/post-sprint40-m75-fixture-builder.yml
+          git add \
+            .github/workflows/m7-5-preview-release-artifact.yml \
+            .github/workflows/sprint35-privileged-totp-recovery-regression.yml \
+            .github/workflows/sprint36-first-party-session-inventory-revocation-regression.yml \
+            .github/workflows/sprint37-first-party-all-session-termination-regression.yml \
+            .github/workflows/sprint38-first-party-session-absolute-lifetime-regression.yml
+          tree="$(git write-tree)"
+          final_commit="$(printf '%s\n\n%s\n' 'ci: isolate Sprint40 migration from M7.5 historical fixture' 'Attribution: Lab | zefry' | git commit-tree "$tree" -p 517d6fc92c8becf225e9997899d96bf53da28433)"
+          echo "FINAL_COMMIT=$final_commit"
+          echo "FINAL_TREE=$tree"
+          set +e
+          git push origin "$final_commit":refs/heads/ci/m75-fixture-builder-20260826
+          echo "PUSH_RC=$?"
+          exit 0
