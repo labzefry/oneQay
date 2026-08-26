@@ -132,6 +132,7 @@ jobs:
             echo 'Recognized exact Sprint39 source envelope.'
           elif cmp -s /tmp/post-sprint39-reconciliation-preservation-paths /tmp/actual-sprint39-source-paths; then
             echo 'Recognized exact post-Sprint39 reconciliation preservation predecessor shape.'
+            echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
           elif [[ "$(wc -l < /tmp/actual-sprint39-source-paths)" -eq 13 ]] && [[ "$(sha256sum /tmp/actual-sprint39-source-paths | awk '{print $1}')" == 'b129d4b1c1135f2f5aecd5dde5ff1b5f6392eecb4d54006e80fc71889763647d' ]]; then
             echo 'Recognized exact Sprint40 canonical documentation synchronization successor shape.'
           elif cmp -s /tmp/sprint40-entry-gate-paths /tmp/actual-sprint39-source-paths; then
@@ -297,7 +298,7 @@ jobs:
             cp "$migration" /tmp/oneqay-s39-s40-migration.php
             cp "$middleware" /tmp/oneqay-s39-s40-middleware.php
             rm "$migration"
-            git show "${{ github.event.pull_request.base.sha }}:apps/web/app/Delivery/Http/Middleware/EnforceActiveFirstPartySessionAuthorityMiddleware.php" > "$middleware"
+            git show "bd55f92015d963379dcac3804a25f4d13ae55613:apps/web/app/Delivery/Http/Middleware/EnforceActiveFirstPartySessionAuthorityMiddleware.php" > "$middleware"
             isolated=true
           fi
           set +e
