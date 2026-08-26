@@ -1,7 +1,7 @@
 name: Post-Sprint40 Baseline Diagnostic
 
 # Temporary branch-local diagnostic only. Never publish to main.
-# Diagnostic revision 11.
+# Diagnostic revision 12.
 # Attribution: Lab | zefry
 
 on:
@@ -31,23 +31,19 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           p = Path('.github/workflows/sprint39-first-party-session-organizational-access-revalidation-regression.yml')
-          text = p.read_text()
-          old = '''          if [[ "$(wc -l < /tmp/actual-sprint39-source-paths)" -eq 5 ]] && [[ "$(sha256sum /tmp/actual-sprint39-source-paths | awk '{print $1}')" == 'ab09e044925ae98740a49c46a70ff387e5f5445b245d3a556d85ad6a354305ec' ]]; then
-            if [[ -f 'apps/web/database/migrations/0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php' ]]; then
-              git update-index --assume-unchanged 'apps/web/database/migrations/0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php'
-              rm -f 'apps/web/database/migrations/0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php'
-              echo "Migration #14 isolated only from historical Sprint39 executable preservation."
-            fi
-            echo 'Recognized exact post-Sprint39 reconciliation preservation predecessor shape.'
-'''
-          new = '''          if [[ "$(wc -l < /tmp/actual-sprint39-source-paths)" -eq 5 ]] && [[ "$(sha256sum /tmp/actual-sprint39-source-paths | awk '{print $1}')" == 'ab09e044925ae98740a49c46a70ff387e5f5445b245d3a556d85ad6a354305ec' ]]; then
-            echo 'Recognized exact post-Sprint39 reconciliation preservation predecessor shape.'
-            echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
-            echo 'Bounded Sprint40 fixture isolation enabled for subsequent historical Sprint39 steps.'
-'''
-          if old not in text:
-              raise SystemExit('expected Sprint39 five-path block not found')
-          p.write_text(text.replace(old, new, 1))
+          rows = p.read_text().splitlines(True)
+          fp = 'ab09e044925ae98740a49c46a70ff387e5f5445b245d3a556d85ad6a354305ec'
+          start = next(i for i, line in enumerate(rows) if fp in line and 'actual-sprint39-source-paths' in line)
+          recognized = next(i for i in range(start + 1, min(start + 12, len(rows))) if 'Recognized exact post-Sprint39 reconciliation preservation predecessor shape.' in rows[i])
+          branch_indent = rows[start][:len(rows[start]) - len(rows[start].lstrip())]
+          replacement = [
+              rows[start],
+              branch_indent + "  echo 'Recognized exact post-Sprint39 reconciliation preservation predecessor shape.'\n",
+              branch_indent + "  echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> \"$GITHUB_ENV\"\n",
+              branch_indent + "  echo 'Bounded Sprint40 fixture isolation enabled for subsequent historical Sprint39 steps.'\n",
+          ]
+          rows[start:recognized + 1] = replacement
+          p.write_text(''.join(rows))
           PY
           go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.7 -ignore 'SC2016|SC2251' "$target"
           git diff --check
