@@ -1,7 +1,7 @@
 name: Post-Sprint40 Baseline Diagnostic
 
 # Temporary branch-local diagnostic only. Never publish to main.
-# Diagnostic revision 14.
+# Diagnostic revision 15.
 # Attribution: Lab | zefry
 
 on:
@@ -22,21 +22,30 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Finalize Sprint39 exact-five-path fixture correction
+      - name: Build final Sprint39 exact-five-path fixture correction
         shell: bash
         run: |
           set -euo pipefail
           target='.github/workflows/sprint39-first-party-session-organizational-access-revalidation-regression.yml'
-          git show 1c9e9f9902077bfb7e041bbb0cc2747bdcdda30a:"$target" > "$target"
+          git show origin/ci/post-sprint40-historical-workflow-baseline-closure:"$target" > "$target"
           python3 - <<'PY'
           from pathlib import Path
           p = Path('.github/workflows/sprint39-first-party-session-organizational-access-revalidation-regression.yml')
           rows = p.read_text().splitlines(True)
+
           marker = 'Migration #14 isolated only from historical Sprint39 executable preservation.'
           echo_idx = next(i for i, line in enumerate(rows) if marker in line)
-          start = next(i for i in range(echo_idx - 1, max(echo_idx - 5, -1), -1) if "if [[ -f 'apps/web/database/migrations/0000_00_00_000014_" in rows[i])
-          end = next(i for i in range(echo_idx + 1, min(echo_idx + 4, len(rows))) if rows[i].strip() == 'fi')
-          del rows[start:end + 1]
+          isolate_start = next(i for i in range(echo_idx - 1, max(echo_idx - 5, -1), -1) if "if [[ -f 'apps/web/database/migrations/0000_00_00_000014_" in rows[i])
+          isolate_end = next(i for i in range(echo_idx + 1, min(echo_idx + 4, len(rows))) if rows[i].strip() == 'fi')
+          del rows[isolate_start:isolate_end + 1]
+
+          recognized = next(i for i, line in enumerate(rows) if 'Recognized exact post-Sprint39 reconciliation preservation predecessor shape.' in line)
+          branch = next(i for i in range(recognized - 1, max(recognized - 12, -1), -1) if 'post-sprint39-reconciliation-preservation-paths' in rows[i] and 'actual-sprint39-source-paths' in rows[i])
+          indent = rows[recognized][:len(rows[recognized]) - len(rows[recognized].lstrip())]
+          rows[recognized + 1:recognized + 1] = [
+              indent + "echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> \"$GITHUB_ENV\"\n",
+              indent + "echo 'Bounded Sprint40 fixture isolation enabled for subsequent historical Sprint39 steps.'\n",
+          ]
           p.write_text(''.join(rows))
           PY
           go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.7 -ignore 'SC2016|SC2251' "$target"
