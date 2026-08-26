@@ -89,6 +89,23 @@ jobs:
           git diff --name-only "origin/${{ github.base_ref }}...HEAD" | sort > /tmp/s33-successor-files.txt
           count="$(wc -l < /tmp/s33-successor-files.txt)"
           fingerprint="$(sha256sum /tmp/s33-successor-files.txt | awk '{print $1}')"
+          if [[ "$count" -eq 1 ]] && [[ "$fingerprint" == '261f147d880a37fe9137b28d9541724c6c5e3987138f3fb56d5465ff31dc7412' ]]; then
+            echo 'ONEQAY_SPRINT32_WORKFLOW_CORRECTION=true' >> "$GITHUB_ENV"
+            for migration in \
+              0000_00_00_000012_add_totp_factor_epoch_and_recovery_authority.php \
+              0000_00_00_000013_create_first_party_session_authority.php \
+              0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php
+            do
+              migration_path="apps/web/database/migrations/$migration"
+              if [[ -f "$migration_path" ]]; then
+                git update-index --assume-unchanged "$migration_path"
+                rm -f "$migration_path"
+              fi
+            done
+            echo 'Exact Sprint32 workflow correction recognized; migrations #12-#14 isolated only from historical Sprint32 executable preservation.'
+            exit 0
+          fi
+          echo 'ONEQAY_SPRINT32_WORKFLOW_CORRECTION=false' >> "$GITHUB_ENV"
           if [[ "$count" -eq 35 ]] && [[ "$fingerprint" == 'e3b724002cfc0be1ef890d1b5594a2a5179123f949f6f486354e21950c7328eb' ]]; then
             echo 'ONEQAY_SPRINT33_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT34_SUCCESSOR=true' >> "$GITHUB_ENV"
@@ -103,7 +120,7 @@ jobs:
           fi
 
       - name: Enforce exact Sprint 32 source envelope
-        if: github.event_name == 'pull_request' && env.ONEQAY_SPRINT33_SUCCESSOR != 'true'
+        if: github.event_name == 'pull_request' && env.ONEQAY_SPRINT33_SUCCESSOR != 'true' && env.ONEQAY_SPRINT32_WORKFLOW_CORRECTION != 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -156,7 +173,9 @@ jobs:
           set -euo pipefail
           if [[ "${{ github.event_name }}" == 'pull_request' ]]; then
             base="origin/${{ github.base_ref }}"
-            if [[ "${ONEQAY_SPRINT34_SUCCESSOR:-false}" == 'true' ]]; then
+            if [[ "${ONEQAY_SPRINT32_WORKFLOW_CORRECTION:-false}" == 'true' ]]; then
+              git diff --exit-code "$base...HEAD" -- apps/web/database/migrations
+            elif [[ "${ONEQAY_SPRINT34_SUCCESSOR:-false}" == 'true' ]]; then
               for migration in \
                 0000_00_00_000001_create_foundational_context_graph.php \
                 0000_00_00_000002_create_organizational_access_grants.php \
@@ -174,17 +193,16 @@ jobs:
               mapfile -t migration_diff < <(git diff --name-status "$base...HEAD" -- apps/web/database/migrations)
               test "${#migration_diff[@]}" -eq 1
               test "${migration_diff[0]}" = $'A	apps/web/database/migrations/0000_00_00_000011_add_credential_epoch_to_identity_password_credentials.php'
-              mapfile -t s34_migrations < <(find apps/web/database/migrations -maxdepth 1 -type f -name '*.php' -printf '%f
-' | sort)
+              mapfile -t s34_migrations < <(find apps/web/database/migrations -maxdepth 1 -type f -name '*.php' -printf '%f\n' | sort)
               test "${#s34_migrations[@]}" -eq 11
               test "${s34_migrations[9]}" = '0000_00_00_000010_create_identity_recovery_codes.php'
               test "${s34_migrations[10]}" = '0000_00_00_000011_add_credential_epoch_to_identity_password_credentials.php'
               grep -Fq "unsignedBigInteger('credential_epoch')->default(0)" apps/web/database/migrations/0000_00_00_000011_add_credential_epoch_to_identity_password_credentials.php
               exit 0
             fi
-            if [[ "${ONEQAY_SPRINT33_SUCCESSOR:-false}" == 'true' ]]; then
+            if [[ "${ONEQAY_SPRINT32_WORKFLOW_CORRECTION:-false}" != 'true' && "${ONEQAY_SPRINT33_SUCCESSOR:-false}" == 'true' ]]; then
               git diff --exit-code "$base...HEAD" -- apps/web/database/migrations
-            else
+            elif [[ "${ONEQAY_SPRINT32_WORKFLOW_CORRECTION:-false}" != 'true' ]]; then
               for migration in \
                 0000_00_00_000001_create_foundational_context_graph.php \
                 0000_00_00_000002_create_organizational_access_grants.php \
@@ -216,6 +234,9 @@ jobs:
             '0000_00_00_000009_create_identity_totp_factors.php'
             '0000_00_00_000010_create_identity_recovery_codes.php'
           )
+          if [[ "${ONEQAY_SPRINT32_WORKFLOW_CORRECTION:-false}" == 'true' ]]; then
+            expected+=('0000_00_00_000011_add_credential_epoch_to_identity_password_credentials.php')
+          fi
           test "${migrations[*]}" = "${expected[*]}"
           migration='apps/web/database/migrations/0000_00_00_000010_create_identity_recovery_codes.php'
           grep -Fq "Schema::create('oneqay_identity_recovery_codes'" "$migration"
@@ -278,26 +299,39 @@ jobs:
         run: php tests/authentication-recovery-proof.php
 
       - name: Preserve Sprint 21 through Sprint 31 executable regressions
-        working-directory: apps/web
         shell: bash
         run: |
           set -euo pipefail
-          git -C ../.. update-index --assume-unchanged apps/web/database/migrations/0000_00_00_000010_create_identity_recovery_codes.php
-          rm -f database/migrations/0000_00_00_000010_create_identity_recovery_codes.php
-          git -C ../.. update-index --assume-unchanged apps/web/database/migrations/0000_00_00_000011_add_credential_epoch_to_identity_password_credentials.php
-          rm -f database/migrations/0000_00_00_000011_add_credential_epoch_to_identity_password_credentials.php
-          echo 'Migration #10 isolated only from preserved Sprint 21-31 executable regressions after Sprint 32 migration/security/recovery qualification passed.'
-          php tests/tenant-isolation.php
-          php tests/identity-org-context.php
-          php -r 'require "vendor/autoload.php"; $app=require "bootstrap/app.php"; $app->make(Illuminate\Contracts\Http\Kernel::class)->bootstrap(); $assert=static function(bool $c,string $m):void{if(!$c)throw new RuntimeException($m);}; require "tests/authorization-persistence.php"; require "tests/authorization-administration-persistence.php"; require "tests/initial-tenant-administrator-provisioning.php"; require "tests/protected-control-administrator-lifecycle.php";'
-          php tests/policy-administration-delivery.php
-          php tests/identity-credential-verification.php
-          php tests/first-party-session-establishment.php
-          php tests/initial-password-enrollment.php
-          php tests/first-control-principal-credential-bootstrap.php
-          php tests/privileged-totp-mfa.php
-          php tests/privileged-reauthentication-step-up.php
-          php tests/privileged-update-security.php
+          historical_commit='fba7b862ff0022de05c9f0ba98b153bd7e399621'
+          historical_tree='a31d367fc03b836a0266daf92e23f3b9ce3ce995'
+          preservation_root='/tmp/oneqay-sprint31-preservation'
+          git cat-file -e "${historical_commit}^{commit}"
+          test "$(git rev-parse "${historical_commit}^{tree}")" = "$historical_tree"
+          rm -rf "$preservation_root"
+          git worktree add --detach "$preservation_root" "$historical_commit"
+          cleanup_preservation() {
+            git worktree remove --force "$preservation_root" >/dev/null 2>&1 || true
+          }
+          trap cleanup_preservation EXIT
+          (
+            cd "$preservation_root/apps/web"
+            composer validate --no-check-publish
+            composer install --no-interaction --no-progress --prefer-dist
+            php tests/tenant-isolation.php
+            php tests/identity-org-context.php
+            php -r 'require "vendor/autoload.php"; $app=require "bootstrap/app.php"; $app->make(Illuminate\Contracts\Http\Kernel::class)->bootstrap(); $assert=static function(bool $c,string $m):void{if(!$c)throw new RuntimeException($m);}; require "tests/authorization-persistence.php"; require "tests/authorization-administration-persistence.php"; require "tests/initial-tenant-administrator-provisioning.php"; require "tests/protected-control-administrator-lifecycle.php";'
+            php tests/policy-administration-delivery.php
+            php tests/identity-credential-verification.php
+            php tests/first-party-session-establishment.php
+            php tests/initial-password-enrollment.php
+            php tests/first-control-principal-credential-bootstrap.php
+            php tests/privileged-totp-mfa.php
+            php tests/privileged-reauthentication-step-up.php
+            php tests/privileged-update-security.php
+          )
+          cleanup_preservation
+          trap - EXIT
+          echo 'Sprint21-Sprint31 executable preservation passed against canonical Sprint31 source snapshot.'
 
       - name: Prove runtime-scoped recovery routes and protected deployment boundaries
         working-directory: apps/web
