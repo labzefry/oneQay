@@ -1,0 +1,99 @@
+name: Sprint40 Historical Preservation Horizon Bridge Builder
+
+# Temporary branch-local construction workflow. Final PR excludes this file.
+# Attribution: Lab | zefry
+
+on:
+  push:
+    branches:
+      - ci/sprint40-historical-preservation-horizon-bridge-builder
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sprint40-historical-preservation-horizon-bridge-builder
+  cancel-in-progress: false
+
+jobs:
+  materialize:
+    if: github.ref == 'refs/heads/ci/sprint40-historical-preservation-horizon-bridge-builder'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact builder branch
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ci/sprint40-historical-preservation-horizon-bridge-builder
+          fetch-depth: 0
+
+      - name: Materialize exact six-workflow bridge
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 <<'PY'
+          from pathlib import Path
+
+          files = [
+              '.github/workflows/m7-5-preview-release-artifact.yml',
+              '.github/workflows/sprint35-privileged-totp-recovery-regression.yml',
+              '.github/workflows/sprint36-first-party-session-inventory-revocation-regression.yml',
+              '.github/workflows/sprint37-first-party-all-session-termination-regression.yml',
+              '.github/workflows/sprint38-first-party-session-absolute-lifetime-regression.yml',
+              '.github/workflows/sprint39-first-party-session-organizational-access-revalidation-regression.yml',
+          ]
+          correction_fp = 'fc2b578fc9d090dfce1fd34c5acfa7a07f065979a94f62becb3dc54dee664920'
+          anchor = '# Sprint40 19-workflow preservation-horizon bridge anchor.\n'
+          attribution = '# Attribution: Lab | zefry\n'
+
+          for name in files:
+              p = Path(name)
+              text = p.read_text()
+              if anchor.strip() not in text:
+                  if attribution in text:
+                      text = text.replace(attribution, attribution + anchor, 1)
+                  else:
+                      text = anchor + text
+              p.write_text(text)
+
+          patches = {
+              '.github/workflows/sprint38-first-party-session-absolute-lifetime-regression.yml': (
+                  "          elif cmp -s /tmp/sprint40-source-paths /tmp/actual-sprint38-source-paths; then\n",
+                  "          elif [[ \"$(wc -l < /tmp/actual-sprint38-source-paths)\" -eq 19 ]] && [[ \"$(sha256sum /tmp/actual-sprint38-source-paths | awk '{print $1}')\" == '" + correction_fp + "' ]]; then\n"
+                  "            echo 'Recognized exact Sprint40 19-workflow historical preservation correction shape.'\n"
+                  "          elif cmp -s /tmp/sprint40-source-paths /tmp/actual-sprint38-source-paths; then\n"
+              ),
+              '.github/workflows/sprint39-first-party-session-organizational-access-revalidation-regression.yml': (
+                  "          elif cmp -s /tmp/sprint40-source-paths /tmp/actual-sprint39-source-paths; then\n",
+                  "          elif [[ \"$(wc -l < /tmp/actual-sprint39-source-paths)\" -eq 19 ]] && [[ \"$(sha256sum /tmp/actual-sprint39-source-paths | awk '{print $1}')\" == '" + correction_fp + "' ]]; then\n"
+                  "            echo 'Recognized exact Sprint40 19-workflow historical preservation correction shape.'\n"
+                  "          elif cmp -s /tmp/sprint40-source-paths /tmp/actual-sprint39-source-paths; then\n"
+              ),
+          }
+
+          for name, (needle, replacement) in patches.items():
+              p = Path(name)
+              text = p.read_text()
+              if correction_fp not in text:
+                  if needle not in text:
+                      raise SystemExit(f'{name}: bounded insertion point not found')
+                  text = text.replace(needle, replacement, 1)
+                  p.write_text(text)
+          PY
+
+          rm '.github/workflows/sprint40-historical-preservation-horizon-bridge-builder.yml'
+          git diff --name-only origin/main...HEAD >/tmp/preexisting-builder-diff.txt || true
+          git add -A
+          git diff --cached --name-only | sort >/tmp/s40-horizon-bridge-files.txt
+          test "$(wc -l </tmp/s40-horizon-bridge-files.txt)" -eq 7
+          grep -Fxq '.github/workflows/sprint40-historical-preservation-horizon-bridge-builder.yml' /tmp/s40-horizon-bridge-files.txt
+          grep -vFx '.github/workflows/sprint40-historical-preservation-horizon-bridge-builder.yml' /tmp/s40-horizon-bridge-files.txt >/tmp/s40-horizon-final-files.txt
+          test "$(wc -l </tmp/s40-horizon-final-files.txt)" -eq 6
+          test "$(sha256sum /tmp/s40-horizon-final-files.txt | awk '{print $1}')" = '671946562a3eef1375d87b70936bac263aa18f660d6ea274406ed57f1c653351'
+
+          git config user.name 'labzefry'
+          git config user.email 'lab.zefa@gmail.com'
+          git commit -m 'ci: bridge Sprint38-Sprint39 to Sprint40 historical preservation'
+          echo "FINAL_BRIDGE_COMMIT=$(git rev-parse HEAD)"
+          echo "FINAL_BRIDGE_TREE=$(git rev-parse HEAD^{tree})"
+          git push origin HEAD:ci/sprint40-historical-preservation-horizon-bridge-builder
