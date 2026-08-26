@@ -1,7 +1,7 @@
 name: Post-Sprint40 Baseline Diagnostic
 
 # Temporary branch-local diagnostic only. Never publish to main.
-# Diagnostic revision 4.
+# Diagnostic revision 5.
 # Attribution: Lab | zefry
 
 on:
@@ -26,7 +26,13 @@ jobs:
         run: |
           set -euo pipefail
           wc -c -l .github/workflows/sprint35-privileged-totp-recovery-regression.yml
-          grep -nF '${{' .github/workflows/sprint35-privileged-totp-recovery-regression.yml || true
+          python3 - <<'PY'
+          from pathlib import Path
+          needle = chr(36) + '{{'
+          for number, line in enumerate(Path('.github/workflows/sprint35-privileged-totp-recovery-regression.yml').read_text().splitlines(), 1):
+              if needle in line:
+                  print(f'{number}:{line}')
+          PY
           go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.7 -ignore 'SC2016|SC2251' \
             .github/workflows/sprint32-authentication-recovery-proof-regression.yml \
             .github/workflows/sprint35-privileged-totp-recovery-regression.yml \
