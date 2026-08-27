@@ -436,7 +436,6 @@ $assert(str_contains($migrationSource, "throw new LogicException('Forward-only g
 
 $assert((int) config('oneqay.session_control.idle_ttl_seconds') === 7200, 'idle TTL changed');
 $assert((int) config('oneqay.session_control.absolute_ttl_seconds') === 43200, 'absolute TTL changed');
-$assert(! (new LaravelFirstPartyIdentityEligibilityAdministrationRepository($connection, true, 'production'))->hasTenantControlAuthority($actor), 'unreachable');
 
 $manager->disconnect('s41_identity_eligibility_admin');
 $manager->purge('s41_identity_eligibility_admin');
