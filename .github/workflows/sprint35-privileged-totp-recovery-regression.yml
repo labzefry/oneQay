@@ -299,6 +299,9 @@ jobs:
             elif [[ "$actual_count" -eq 5 && "$actual_fingerprint" == 'ab09e044925ae98740a49c46a70ff387e5f5445b245d3a556d85ad6a354305ec' ]]; then
               echo "Recognized exact post-Sprint39 five-workflow reconciliation preservation predecessor shape."
               sprint36_successor=true
+            elif [[ "$actual_count" -eq 3 && "$actual_fingerprint" == 'fd5f1466a41a7b11f0684303f5e93196668c2ca929ce9119e415186ae6708e9d' ]]; then
+              echo "Recognized exact Sprint32-Sprint34 Sprint41 compatibility correction shape."
+              sprint36_successor=true
             elif [[ "$actual_count" -eq 13 && "$actual_fingerprint" == 'b129d4b1c1135f2f5aecd5dde5ff1b5f6392eecb4d54006e80fc71889763647d' ]]; then
               echo "Recognized exact Sprint40 canonical documentation synchronization successor shape."
               sprint36_successor=true
