@@ -14,6 +14,8 @@ use App\Application\Identity\AuthenticatedPasswordChangeService;
 use App\Application\Identity\FirstControlPrincipalCredentialBootstrapRepository;
 use App\Application\Identity\FirstPartyCredentialEpochRepository;
 use App\Application\Identity\FirstPartyIdentityCredentialVerifier;
+use App\Application\Identity\FirstPartyIdentityEligibilityAdministrationRepository;
+use App\Application\Identity\FirstPartyIdentityEligibilityAdministrationService;
 use App\Application\Identity\FirstPartyIdentityEligibilityVerifier;
 use App\Application\Identity\FirstPartySessionAuthorityClock;
 use App\Application\Identity\FirstPartySessionAuthorityRepository;
@@ -47,6 +49,7 @@ use App\Infrastructure\Identity\LaravelAuthenticatedPasswordChangeRepository;
 use App\Infrastructure\Identity\LaravelFirstControlPrincipalCredentialBootstrapRepository;
 use App\Infrastructure\Identity\LaravelFirstPartyCredentialEpochRepository;
 use App\Infrastructure\Identity\LaravelFirstPartyIdentityCredentialVerifier;
+use App\Infrastructure\Identity\LaravelFirstPartyIdentityEligibilityAdministrationRepository;
 use App\Infrastructure\Identity\LaravelFirstPartyIdentityEligibilityVerifier;
 use App\Infrastructure\Identity\LaravelFirstPartySessionAuthorityRepository;
 use App\Infrastructure\Identity\LaravelInitialPasswordEnrollmentRepository;
@@ -178,6 +181,18 @@ final class AppServiceProvider extends ServiceProvider
                 $this->sessionControlEnabled(),
             );
         });
+        $this->app->scoped(FirstPartyIdentityEligibilityAdministrationRepository::class, function ($app): FirstPartyIdentityEligibilityAdministrationRepository {
+            return new LaravelFirstPartyIdentityEligibilityAdministrationRepository(
+                $this->connection($app),
+                $this->persistenceEnabled(),
+                $this->runtimeClass(),
+            );
+        });
+        $this->app->scoped(FirstPartyIdentityEligibilityAdministrationService::class, fn ($app): FirstPartyIdentityEligibilityAdministrationService => new FirstPartyIdentityEligibilityAdministrationService(
+            $app->make(FirstPartyIdentityEligibilityAdministrationRepository::class),
+            $app->make(PersistenceTransaction::class),
+            $app->make(PolicyAdministrationClock::class),
+        ));
         $this->app->scoped(FirstPartySessionAuthorityRepository::class, function ($app): FirstPartySessionAuthorityRepository {
             return new LaravelFirstPartySessionAuthorityRepository(
                 $this->connection($app),
