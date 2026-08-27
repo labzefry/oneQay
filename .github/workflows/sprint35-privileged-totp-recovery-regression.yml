@@ -213,6 +213,12 @@ jobs:
             sort -o /tmp/sprint40-entry-gate-paths /tmp/sprint40-entry-gate-paths
             test "$(sha256sum /tmp/sprint40-entry-gate-paths | awk '{print $1}')" = "7a8c362aa7ec66500ba544911e3fb008a20f5d21ac4d00d6a12ea04749ed2466"
 
+            cat > /tmp/sprint41-entry-gate-paths <<'EOF'
+          docs/SPRINT_41_FIRST_PARTY_IDENTITY_AUTHENTICATION_ELIGIBILITY_ADMINISTRATION_ENTRY_GATE.md
+          EOF
+            sort -o /tmp/sprint41-entry-gate-paths /tmp/sprint41-entry-gate-paths
+            test "$(sha256sum /tmp/sprint41-entry-gate-paths | awk '{print $1}')" = "074a842bd6fb56ac06ae4658aeb6596b3674d426c4d58fee594b699820eac5f2"
+
             cat > /tmp/sprint40-schema-source-envelope-gate-paths <<'EOF'
           docs/SPRINT_40_FIRST_PARTY_SESSION_IDENTITY_DISABLEMENT_REVALIDATION_SCHEMA_SOURCE_ENVELOPE_GATE.md
           EOF
@@ -345,6 +351,9 @@ jobs:
               sprint36_successor=true
             elif cmp -s /tmp/actual-sprint35-paths /tmp/sprint40-entry-gate-paths; then
               echo "Recognized exact Sprint40 identity-disablement revalidation entry-gate successor shape."
+              sprint36_successor=true
+            elif cmp -s /tmp/actual-sprint35-paths /tmp/sprint41-entry-gate-paths; then
+              echo "Recognized exact Sprint41 identity-authentication eligibility administration entry-gate successor shape."
               sprint36_successor=true
             elif cmp -s /tmp/actual-sprint35-paths /tmp/sprint40-schema-source-envelope-gate-paths; then
               echo "Recognized exact Sprint40 identity-disablement revalidation schema/source-envelope gate successor shape."
