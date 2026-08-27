@@ -24,6 +24,7 @@ on:
       - 'docs/SPRINT_40_FIRST_PARTY_SESSION_IDENTITY_DISABLEMENT_REVALIDATION_ENTRY_GATE.md'
       - 'docs/SPRINT_40_FIRST_PARTY_SESSION_IDENTITY_DISABLEMENT_REVALIDATION_SCHEMA_SOURCE_ENVELOPE_GATE.md'
       - 'docs/SPRINT_41_FIRST_PARTY_IDENTITY_AUTHENTICATION_ELIGIBILITY_ADMINISTRATION_SCHEMA_SOURCE_ENVELOPE_GATE.md'
+      - '.github/workflows/sprint41-first-party-identity-authentication-eligibility-administration-regression.yml'
   workflow_dispatch:
 
 permissions:
@@ -154,6 +155,7 @@ jobs:
           test "$(sha256sum /tmp/sprint40-source-paths | awk '{print $1}')" = 'a9caf2b68210a38687fee543256aec04dc1e67ee1ef403608f7db69139957ff8'
 
           echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
+          echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
           git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | sort > /tmp/actual-sprint39-source-paths
           if cmp -s /tmp/sprint39-source-paths /tmp/actual-sprint39-source-paths; then
             test "$(sha256sum /tmp/actual-sprint39-source-paths | awk '{print $1}')" = '2cfc92c34f46375b11bf3fe92f9094cefa598d234133847fdd6629be211f12c4'
@@ -184,6 +186,13 @@ jobs:
             echo 'Recognized exact Sprint40 six-workflow source-preservation predecessor shape with historical correction closure.'
           elif [[ "$(wc -l < /tmp/actual-sprint39-source-paths)" -eq 19 ]] && [[ "$(sha256sum /tmp/actual-sprint39-source-paths | awk '{print $1}')" == 'fc2b578fc9d090dfce1fd34c5acfa7a07f065979a94f62becb3dc54dee664920' ]]; then
             echo 'Recognized exact Sprint40 19-workflow historical preservation correction shape.'
+          elif [[ "$(wc -l < /tmp/actual-sprint39-source-paths)" -eq 7 ]] && [[ "$(sha256sum /tmp/actual-sprint39-source-paths | awk '{print $1}')" == 'f3f8b3ad0cca378307000ca242c4b9a4a8a7ab967d1649a5cd6408837001364c' ]]; then
+            echo 'Recognized exact Sprint41 seven-workflow source-preservation predecessor shape.'
+            echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+          elif [[ "$(wc -l < /tmp/actual-sprint39-source-paths)" -eq 12 ]] && [[ "$(sha256sum /tmp/actual-sprint39-source-paths | awk '{print $1}')" == 'b2c5fc10a8baa2d56991d6dbd36b0407159d70953654ef322a9a11d23660489b' ]]; then
+            echo 'Recognized exact Sprint41 identity-authentication eligibility administration source successor shape.'
+            echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
           elif cmp -s /tmp/sprint40-source-paths /tmp/actual-sprint39-source-paths; then
             echo 'Recognized exact Sprint40 identity-disablement revalidation source successor shape.'
             echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
@@ -193,6 +202,17 @@ jobs:
             exit 1
           fi
 
+      - name: Isolate Sprint41 journal from historical Sprint39 executable preservation
+        if: env.ONEQAY_SPRINT41_SOURCE_SUCCESSOR == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          migration='apps/web/database/migrations/0000_00_00_000015_create_identity_authentication_eligibility_administration_journal.php'
+          if [[ -f "$migration" ]]; then
+            git update-index --assume-unchanged "$migration"
+            rm -f "$migration"
+          fi
+
       - name: Enforce NO_SCHEMA_CHANGE and migration immutability
         if: github.event_name == 'pull_request'
         shell: bash
@@ -200,7 +220,11 @@ jobs:
           set -euo pipefail
           base="${{ github.event.pull_request.base.sha }}"
           head="${{ github.event.pull_request.head.sha }}"
-          if [[ "${ONEQAY_SPRINT40_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+          if [[ "${ONEQAY_SPRINT41_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            git diff --exit-code "$base" "$head" -- \
+              apps/web/database/migrations \
+              ':(exclude)apps/web/database/migrations/0000_00_00_000015_create_identity_authentication_eligibility_administration_journal.php'
+          elif [[ "${ONEQAY_SPRINT40_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
             git diff --exit-code "$base" "$head" -- \
               apps/web/database/migrations \
               ':(exclude)apps/web/database/migrations/0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php'
@@ -227,7 +251,25 @@ jobs:
           set -euo pipefail
           base="${{ github.event.pull_request.base.sha }}"
           head="${{ github.event.pull_request.head.sha }}"
-          if [[ "${ONEQAY_SPRINT40_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+          if [[ "${ONEQAY_SPRINT41_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            git diff --exit-code "$base" "$head" -- \
+              apps/web/app/Application/Identity/FirstPartySessionAuthorityService.php \
+              apps/web/app/Application/Identity/FirstPartySessionAuthorityRepository.php \
+              apps/web/app/Infrastructure/Identity/LaravelFirstPartySessionAuthorityRepository.php \
+              apps/web/app/Application/Tenancy/TenantMembershipVerifier.php \
+              apps/web/app/Infrastructure/Tenancy/LaravelTenantMembershipVerifier.php \
+              apps/web/app/Application/Organization/OrganizationalRelationshipVerifier.php \
+              apps/web/app/Infrastructure/Organization/LaravelOrganizationalRelationshipVerifier.php \
+              apps/web/app/Application/Access/DurableOrganizationalAccessRepository.php \
+              apps/web/app/Infrastructure/Access/LaravelDurableOrganizationalAccessRepository.php \
+              apps/web/bootstrap/app.php \
+              apps/web/config/oneqay.php \
+              apps/web/tests/run.php \
+              apps/web/composer.json \
+              apps/web/composer.lock \
+              apps/web/package.json \
+              apps/web/package-lock.json
+          elif [[ "${ONEQAY_SPRINT40_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
             git diff --exit-code "$base" "$head" -- \
               apps/web/app/Application/Identity/FirstPartySessionAuthorityService.php \
               apps/web/app/Application/Identity/FirstPartySessionAuthorityRepository.php \
