@@ -331,7 +331,7 @@ jobs:
             git diff --exit-code "$base" "$head" -- \
             apps/web/app/Application/Identity/FirstPartySessionAuthorityRepository.php \
             apps/web/app/Infrastructure/Identity/LaravelFirstPartySessionAuthorityRepository.php \
-            apps/web/app/Delivery/Http/Identity/FirstPartySessionControlController.php \
+            apps/web/app/Delivery/Http/Identity/FirstPartySessionControlController.php
           else
             git diff --exit-code "$base" "$head" -- \
             apps/web/app/Application/Identity/FirstPartySessionAuthorityRepository.php \
