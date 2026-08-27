@@ -179,6 +179,10 @@ jobs:
           elif cmp -s /tmp/sprint41-entry-gate-paths /tmp/actual-sprint39-source-paths; then
             echo 'Recognized exact Sprint41 identity-authentication eligibility administration entry-gate successor shape.'
             echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+          elif [[ "$(wc -l < /tmp/actual-sprint39-source-paths)" -eq 1 ]] && [[ "$(sha256sum /tmp/actual-sprint39-source-paths | awk '{print $1}')" == '4297e429d072432122534ac88c96d3ce18ed870e31c2b5605d6fbb7d5ada0b0b' ]]; then
+            echo 'Recognized exact Sprint42 disabled-identity session-termination entry-gate successor shape.'
+            echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
           elif cmp -s /tmp/sprint40-schema-source-envelope-gate-paths /tmp/actual-sprint39-source-paths; then
             echo 'Recognized exact Sprint40 identity-disablement revalidation schema/source-envelope gate successor shape.'
           elif cmp -s /tmp/sprint41-schema-source-envelope-gate-paths /tmp/actual-sprint39-source-paths; then
