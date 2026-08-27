@@ -29,6 +29,7 @@ on:
       - 'docs/SPRINT_41_FIRST_PARTY_IDENTITY_AUTHENTICATION_ELIGIBILITY_ADMINISTRATION_SCHEMA_SOURCE_ENVELOPE_GATE.md'
       - 'docs/SPRINT_42_FIRST_PARTY_IDENTITY_DISABLEMENT_SESSION_TERMINATION_SCHEMA_SOURCE_ENVELOPE_GATE.md'
       - '.github/workflows/sprint41-first-party-identity-authentication-eligibility-administration-regression.yml'
+      - '.github/workflows/sprint42-first-party-identity-disablement-session-termination-regression.yml'
   workflow_dispatch:
 
 permissions:
@@ -205,6 +206,14 @@ jobs:
             echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
           elif [[ "$(wc -l < /tmp/actual-sprint39-source-paths)" -eq 12 ]] && [[ "$(sha256sum /tmp/actual-sprint39-source-paths | awk '{print $1}')" == 'b2c5fc10a8baa2d56991d6dbd36b0407159d70953654ef322a9a11d23660489b' ]]; then
             echo 'Recognized exact Sprint41 identity-authentication eligibility administration source successor shape.'
+            echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+          elif [[ "$(wc -l < /tmp/actual-sprint39-source-paths)" -eq 8 ]] && [[ "$(sha256sum /tmp/actual-sprint39-source-paths | awk '{print $1}')" == 'e773cbe308d202808021c452c75954cc80234c081bbb1f23cb757210f76b8c85' ]]; then
+            echo 'Recognized exact Sprint42 eight-workflow source-preservation predecessor shape.'
+            echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+          elif [[ "$(wc -l < /tmp/actual-sprint39-source-paths)" -eq 8 ]] && [[ "$(sha256sum /tmp/actual-sprint39-source-paths | awk '{print $1}')" == '6315890d318c3cdfca549bfacef6cb8d1ca66a4421416b49b4978095a98b6729' ]]; then
+            echo 'Recognized exact Sprint42 disabled-identity session-termination source successor shape.'
             echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
           elif cmp -s /tmp/sprint40-source-paths /tmp/actual-sprint39-source-paths; then
