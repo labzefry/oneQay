@@ -128,6 +128,10 @@ jobs:
             echo 'ONEQAY_SPRINT41_S35_PRESERVATION=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'Recognized exact post-Sprint41 canonical documentation reconciliation shape.'
+          elif [[ "$count" -eq 1 && "$fingerprint" == '4297e429d072432122534ac88c96d3ce18ed870e31c2b5605d6fbb7d5ada0b0b' ]]; then
+            echo 'ONEQAY_SPRINT41_S35_PRESERVATION=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'Recognized exact Sprint42 disabled-identity session-termination entry-gate successor shape.'
           fi
 
       - name: Enforce frozen Sprint35 source envelope
