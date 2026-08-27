@@ -44,6 +44,7 @@ foreach ([
 }
 
 $app = require __DIR__.'/../bootstrap/app.php';
+$app->instance('request', Request::create('/'));
 /** @var Kernel $kernel */
 $kernel = $app->make(Kernel::class);
 $kernel->bootstrap();
