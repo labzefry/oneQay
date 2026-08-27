@@ -320,6 +320,12 @@ jobs:
               sprint41_source_successor=true
               echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
               echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            elif [[ "$(wc -l < /tmp/actual-sprint37-paths)" -eq 1 ]] && [[ "$(sha256sum /tmp/actual-sprint37-paths | awk '{print $1}')" == "ea64d8bb82faab74b21dfc3cab1c5ac6550e4444fc91baee7567f4fe2680bd26" ]]; then
+              echo "Recognized exact Sprint42 disabled-identity session-termination schema/source-envelope gate successor shape."
+              sprint40_source_successor=true
+              sprint41_source_successor=true
+              echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+              echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             elif cmp -s /tmp/actual-sprint37-paths /tmp/sprint40-schema-source-envelope-gate-paths; then
               echo "Recognized exact Sprint40 identity-disablement revalidation schema/source-envelope gate successor shape."
             elif cmp -s /tmp/actual-sprint37-paths /tmp/sprint41-schema-source-envelope-gate-paths; then
