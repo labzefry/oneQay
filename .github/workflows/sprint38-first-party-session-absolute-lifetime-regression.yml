@@ -191,8 +191,10 @@ jobs:
           test "$(sha256sum /tmp/post-sprint39-reconciliation-paths | awk '{print $1}')" = 'f38b1a2dea2bd5a55a5cd166db0ea7b2d4ae5186cefe2cb5db27f18f9639e866'
 
           sprint40_source_successor=false
+          sprint40_legacy_horizon=false
           sprint41_source_successor=false
           echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
+          echo 'ONEQAY_SPRINT40_LEGACY_HORIZON=false' >> "$GITHUB_ENV"
           echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
           git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | sort > /tmp/actual-sprint38-source-paths
           if [[ "$(wc -l < /tmp/actual-sprint38-source-paths)" -eq 5 ]] && [[ "$(sha256sum /tmp/actual-sprint38-source-paths | awk '{print $1}')" == 'ab09e044925ae98740a49c46a70ff387e5f5445b245d3a556d85ad6a354305ec' ]]; then
@@ -232,8 +234,8 @@ jobs:
             echo 'Recognized exact Sprint40 six-workflow source-preservation predecessor shape with historical correction closure.'
           elif [[ "$(wc -l < /tmp/actual-sprint38-source-paths)" -eq 19 ]] && [[ "$(sha256sum /tmp/actual-sprint38-source-paths | awk '{print $1}')" == 'fc2b578fc9d090dfce1fd34c5acfa7a07f065979a94f62becb3dc54dee664920' ]]; then
             echo 'Recognized exact Sprint40 19-workflow historical preservation correction shape.'
-            sprint40_source_successor=true
-            echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            sprint40_legacy_horizon=true
+            echo 'ONEQAY_SPRINT40_LEGACY_HORIZON=true' >> "$GITHUB_ENV"
           elif [[ "$(wc -l < /tmp/actual-sprint38-source-paths)" -eq 7 ]] && [[ "$(sha256sum /tmp/actual-sprint38-source-paths | awk '{print $1}')" == 'f3f8b3ad0cca378307000ca242c4b9a4a8a7ab967d1649a5cd6408837001364c' ]]; then
             echo 'Recognized exact Sprint41 seven-workflow source-preservation predecessor shape.'
             echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
@@ -269,6 +271,8 @@ jobs:
           elif [[ "$sprint40_source_successor" == 'true' ]]; then
             test "$(grep -c '^apps/web/database/migrations/' /tmp/actual-sprint38-source-paths)" -eq 1
             grep -Fxq 'apps/web/database/migrations/0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php' /tmp/actual-sprint38-source-paths
+          elif [[ "$sprint40_legacy_horizon" == 'true' ]]; then
+            ! grep -q '^apps/web/database/migrations/' /tmp/actual-sprint38-source-paths
           elif grep -q '^apps/web/database/migrations/' /tmp/actual-sprint38-source-paths; then
             echo 'Sprint38 source envelope contains a forbidden migration path.' >&2
             exit 1
@@ -304,9 +308,153 @@ jobs:
             git diff --exit-code "$base" "$head" -- apps/web/database/migrations
           fi
           mapfile -t migrations < <(find apps/web/database/migrations -maxdepth 1 -type f -name '*.php' -printf '%f\n' | sort)
-          if [[ "${ONEQAY_SPRINT40_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+          if [[ "${ONEQAY_SPRINT40_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT40_LEGACY_HORIZON:-false}" == 'true' ]]; then
             test "${#migrations[@]}" -eq 14
-            test "$(printf '%s\n' "${migrations[@]}" | grep -c '^0000_00_00_000014_add_first_party_authentication_eligibility_to_identities\.php$')" -eq 1
+            test "$(printf '%s\n' "${migrations[@]}" | grep -c '^0000_00_00_000014_add_first_party_authentication_eligibility_to_identities\.php
+            test "${#migrations[@]}" -eq 13
+            ! find apps/web/database/migrations -maxdepth 1 -type f -name '*000014*' -print -quit | grep -q .
+          fi
+          for index in $(seq 1 13); do
+            prefix="$(printf '0000_00_00_%06d_' "$index")"
+            test "$(printf '%s\n' "${migrations[@]}" | grep -c "^${prefix}")" -eq 1
+          done
+
+      - name: Preserve repository HTTP and audit contracts
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+          if [[ "${ONEQAY_SPRINT41_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            git diff --exit-code "$base" "$head" -- \
+            apps/web/app/Application/Identity/FirstPartySessionAuthorityRepository.php \
+            apps/web/app/Infrastructure/Identity/LaravelFirstPartySessionAuthorityRepository.php \
+            apps/web/app/Delivery/Http/Identity/FirstPartySessionControlController.php \
+          else
+            git diff --exit-code "$base" "$head" -- \
+            apps/web/app/Application/Identity/FirstPartySessionAuthorityRepository.php \
+            apps/web/app/Infrastructure/Identity/LaravelFirstPartySessionAuthorityRepository.php \
+            apps/web/app/Delivery/Http/Identity/FirstPartySessionControlController.php \
+            apps/web/routes/web.php
+          fi
+          repo='apps/web/app/Infrastructure/Identity/LaravelFirstPartySessionAuthorityRepository.php'
+          for event in session_issued session_revoked other_sessions_revoked all_sessions_revoked session_logout; do
+            grep -Fq "'$event'" "$repo"
+          done
+          if grep -RInE "session_absolute|absolute_session|absolute.*revoked" apps/web/app/Application/Identity apps/web/app/Infrastructure/Identity apps/web/routes/web.php; then
+            echo 'Sprint38 introduced an unauthorized route/audit mutation vocabulary.' >&2
+            exit 1
+          fi
+
+      - name: Enforce fixed idle and absolute lifetime configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          config='apps/web/config/oneqay.php'
+          provider='apps/web/app/Providers/AppServiceProvider.php'
+          service='apps/web/app/Application/Identity/FirstPartySessionAuthorityService.php'
+          grep -Fq "'idle_ttl_seconds' => 7200" "$config"
+          grep -Fq "'absolute_ttl_seconds' => 43200" "$config"
+          grep -Fq "config('oneqay.session_control.idle_ttl_seconds', 0)" "$provider"
+          grep -Fq "config('oneqay.session_control.absolute_ttl_seconds', 0)" "$provider"
+          grep -Fq "config('oneqay.session_control.idle_ttl_seconds', 0) === 7200" "$provider"
+          grep -Fq "config('oneqay.session_control.absolute_ttl_seconds', 0) === 43200" "$provider"
+          grep -Fq 'private int $absoluteTtlSeconds = 43200' "$service"
+          grep -Fq '$this->absoluteTtlSeconds !== 43200' "$service"
+          grep -Fq '$this->effectiveExpiry($now, $now)' "$service"
+          grep -Fq "\$this->effectiveExpiry(\$this->recordInt(\$record, 'issued_at_unix'), \$now)" "$service"
+          grep -Fq '$now > $this->absoluteDeadline($issuedAtUnix)' "$service"
+          if grep -RInE 'ONEQAY_.*(ABSOLUTE|SESSION.*TTL)|env\([^)]*absolute_ttl' "$config" apps/web/environment.example; then
+            echo 'Sprint38 absolute lifetime became environment-configurable.' >&2
+            exit 1
+          fi
+
+      - name: Lint Sprint38 and preserved PHP source
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l apps/web/app/Application/Identity/FirstPartySessionAuthorityService.php
+          php -l apps/web/app/Providers/AppServiceProvider.php
+          php -l apps/web/config/oneqay.php
+          php -l apps/web/tests/first-party-session-absolute-lifetime.php
+          php -l apps/web/tests/first-party-session-inventory-revocation.php
+          php -l apps/web/tests/first-party-session-all-session-termination.php
+
+      - name: Install locked application dependencies
+        working-directory: apps/web
+        run: |
+          composer validate --no-check-publish
+          composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Run dedicated Sprint38 absolute lifetime regression fail-closed
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          migration='database/migrations/0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php'
+          middleware='app/Delivery/Http/Middleware/EnforceActiveFirstPartySessionAuthorityMiddleware.php'
+          isolated=false
+          restore_sprint40_fixture() {
+            if [[ "$isolated" == 'true' ]]; then
+              mv /tmp/oneqay-s38-s40-migration.php "$migration"
+              mv /tmp/oneqay-s38-s40-middleware.php "$middleware"
+              isolated=false
+            fi
+          }
+          if [[ "${ONEQAY_SPRINT40_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            cp "$migration" /tmp/oneqay-s38-s40-migration.php
+            cp "$middleware" /tmp/oneqay-s38-s40-middleware.php
+            rm "$migration"
+            git show "${{ github.event.pull_request.base.sha }}:apps/web/app/Delivery/Http/Middleware/EnforceActiveFirstPartySessionAuthorityMiddleware.php" > "$middleware"
+            isolated=true
+          fi
+          set +e
+          output="$(php tests/first-party-session-absolute-lifetime.php 2>&1)"
+          status=$?
+          set -e
+          restore_sprint40_fixture
+          if (( status != 0 )); then
+            printf '%s\n' "$output"
+            exit "$status"
+          fi
+          printf '%s\n' "$output"
+          grep -Fq 'Sprint38 first-party session absolute lifetime regression passed.' <<<"$output"
+
+      - name: Preserve Sprint36 inventory and revocation regression
+        working-directory: apps/web
+        run: php tests/first-party-session-inventory-revocation.php
+
+      - name: Preserve unchanged Sprint37 regression fixture
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="${{ github.event.pull_request.base.sha }}"
+          test "$(git rev-parse HEAD:apps/web/tests/first-party-session-all-session-termination.php)" = "$(git rev-parse "$base":apps/web/tests/first-party-session-all-session-termination.php)"
+          git diff --exit-code "$base" HEAD -- apps/web/tests/first-party-session-all-session-termination.php
+
+      - name: Preserve protected deployment boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq "env('ONEQAY_AUTHENTICATION_SESSION_CONTROL_ENABLED', false)" apps/web/config/oneqay.php
+          grep -Fq "'install_enabled' => false" apps/web/config/oneqay.php
+          grep -Fq 'TenantMembershipVerifier $tenantMemberships' apps/web/app/Delivery/Http/Middleware/EnforceActiveFirstPartySessionAuthorityMiddleware.php
+          grep -Fq 'OrganizationalRelationshipVerifier $organizationalRelationships' apps/web/app/Delivery/Http/Middleware/EnforceActiveFirstPartySessionAuthorityMiddleware.php
+          grep -Fq 'Technical Preview remains **NO_SCHEMA_CHANGE**' docs/FIRST_PARTY_SESSION_ABSOLUTE_LIFETIME_FOUNDATION.md
+          grep -Fq 'Production remains **NO-GO / NOT AUTHORIZED**' docs/FIRST_PARTY_SESSION_ABSOLUTE_LIFETIME_FOUNDATION.md
+          grep -Fq 'Updater remains **DISABLED / UNWIRED**' docs/FIRST_PARTY_SESSION_ABSOLUTE_LIFETIME_FOUNDATION.md
+          if grep -RInE 'ONEQAY_TECHNICAL_PREVIEW_ENABLED[[:space:]]*=[[:space:]]*true|runtime_class.*production.*session_control' \
+            apps/web/config/oneqay.php \
+            apps/web/app/Application/Identity/FirstPartySessionAuthorityService.php \
+            apps/web/app/Providers/AppServiceProvider.php; then
+            echo 'Sprint38 activated a protected runtime.' >&2
+            exit 1
+          fi
+
+      - name: Confirm tracked source cleanliness
+        run: git diff --exit-code)" -eq 1
           else
             test "${#migrations[@]}" -eq 13
             ! find apps/web/database/migrations -maxdepth 1 -type f -name '*000014*' -print -quit | grep -q .
