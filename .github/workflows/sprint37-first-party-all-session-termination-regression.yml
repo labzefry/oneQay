@@ -334,6 +334,8 @@ jobs:
               echo "Recognized exact Sprint38 schema/source-envelope gate successor shape."
             elif cmp -s /tmp/actual-sprint37-paths /tmp/sprint38-historical-preservation-paths; then
               echo "Recognized exact Sprint38 19-path historical preservation predecessor shape."
+              sprint40_source_successor=true
+              echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             elif cmp -s /tmp/actual-sprint37-paths /tmp/sprint38-source-paths; then
               echo "Recognized exact Sprint38 source successor shape."
             else
