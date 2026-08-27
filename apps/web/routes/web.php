@@ -3,6 +3,7 @@
 use App\Delivery\Http\Authorization\PolicyAdministrationController;
 use App\Delivery\Http\HealthController;
 use App\Delivery\Http\Identity\AuthenticatedPasswordChangeController;
+use App\Delivery\Http\Identity\FirstPartyIdentityEligibilityAdministrationController;
 use App\Delivery\Http\Identity\FirstPartySessionController;
 use App\Delivery\Http\Identity\FirstPartySessionControlController;
 use App\Delivery\Http\Identity\InitialPasswordEnrollmentController;
@@ -137,6 +138,10 @@ if (in_array($firstPartyAuthRuntime, ['local', 'test', 'ci'], true)) {
 Route::post('/administration/policy/mutations', PolicyAdministrationController::class)
     ->middleware([...$sessionActiveMiddleware, RequirePolicyAdministrationSessionContextMiddleware::class])
     ->name('policy-administration.mutate');
+
+Route::post('/administration/identities/{identity_id}/authentication-disablement', FirstPartyIdentityEligibilityAdministrationController::class)
+    ->middleware(['session.active', 'throttle:5,1', 'throttle:20,60', RequirePolicyAdministrationSessionContextMiddleware::class])
+    ->name('identity.authentication-eligibility.disable');
 
 Route::get('/system/update', SystemUpdatePageController::class)->name('system-update.page');
 
