@@ -105,6 +105,22 @@ jobs:
             echo 'Exact Sprint32 workflow correction recognized; migrations #12-#14 isolated only from historical Sprint32 executable preservation.'
             exit 0
           fi
+          if [[ "$count" -eq 7 && "$fingerprint" == '4784ffca1c940d3fa54a2a3988ead07e2de993bde8d3af2bd41014dbdf905be0' ]] || [[ "$count" -eq 5 && "$fingerprint" == 'ab09e044925ae98740a49c46a70ff387e5f5445b245d3a556d85ad6a354305ec' ]]; then
+            echo 'ONEQAY_SPRINT32_WORKFLOW_CORRECTION=true' >> "$GITHUB_ENV"
+            for migration in \
+              0000_00_00_000012_add_totp_factor_epoch_and_recovery_authority.php \
+              0000_00_00_000013_create_first_party_session_authority.php \
+              0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php
+            do
+              migration_path="apps/web/database/migrations/$migration"
+              if [[ -f "$migration_path" ]]; then
+                git update-index --assume-unchanged "$migration_path"
+                rm -f "$migration_path"
+              fi
+            done
+            echo 'Exact post-Sprint40 M7.5 preservation successor recognized; migrations #12-#14 isolated only from historical Sprint32 execution.'
+            exit 0
+          fi
           echo 'ONEQAY_SPRINT32_WORKFLOW_CORRECTION=false' >> "$GITHUB_ENV"
           if [[ "$count" -eq 35 ]] && [[ "$fingerprint" == 'e3b724002cfc0be1ef890d1b5594a2a5179123f949f6f486354e21950c7328eb' ]]; then
             echo 'ONEQAY_SPRINT33_SUCCESSOR=true' >> "$GITHUB_ENV"
