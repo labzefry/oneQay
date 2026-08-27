@@ -231,6 +231,9 @@ jobs:
 
       - name: Preserve full application regression
         working-directory: apps/web
+        env:
+          ONEQAY_PERSISTENCE_ENABLED: 'false'
+          ONEQAY_AUTHENTICATION_SESSION_CONTROL_ENABLED: 'false'
         run: php tests/run.php
 
       - name: Preserve runtime and activation boundaries
