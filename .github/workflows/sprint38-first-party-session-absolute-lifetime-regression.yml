@@ -403,7 +403,7 @@ jobs:
               isolated=false
             fi
           }
-          if [[ "${ONEQAY_SPRINT40_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+          if [[ "${ONEQAY_SPRINT40_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT40_LEGACY_HORIZON:-false}" == 'true' ]]; then
             cp "$migration" /tmp/oneqay-s38-s40-migration.php
             cp "$middleware" /tmp/oneqay-s38-s40-middleware.php
             rm "$migration"
