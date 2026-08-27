@@ -42,6 +42,17 @@ final readonly class LaravelFirstPartyIdentityDisablementSessionTerminationRepos
                 $this->storageFailure();
             }
 
+            $remaining = $this->connection->table(self::SESSION_TABLE)
+                ->where('tenant_id', $tenantId->value())
+                ->where('identity_id', $targetIdentityId->value())
+                ->whereNull('revoked_at_unix')
+                ->where('expires_at_unix', '>=', $revokedAtUnix)
+                ->exists();
+
+            if ($remaining) {
+                $this->storageFailure();
+            }
+
             return $updated;
         } catch (DurablePersistenceViolation $exception) {
             throw $exception;
