@@ -190,6 +190,7 @@ jobs:
             echo 'Recognized exact Sprint40 canonical documentation synchronization successor shape.'
           elif [[ "$(wc -l < /tmp/actual-sprint38-source-paths)" -eq 7 ]] && [[ "$(sha256sum /tmp/actual-sprint38-source-paths | awk '{print $1}')" == '4784ffca1c940d3fa54a2a3988ead07e2de993bde8d3af2bd41014dbdf905be0' ]]; then
             echo 'Recognized exact Sprint39 seven-workflow M7.5 preservation correction shape.'
+            echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
           elif cmp -s /tmp/sprint38-source-paths /tmp/actual-sprint38-source-paths; then
             echo 'Recognized exact Sprint38 source envelope.'
           elif cmp -s /tmp/post-sprint38-preservation-paths /tmp/actual-sprint38-source-paths; then
