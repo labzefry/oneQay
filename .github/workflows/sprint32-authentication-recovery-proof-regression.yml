@@ -105,12 +105,13 @@ jobs:
             echo 'Exact Sprint32 workflow correction recognized; migrations #12-#14 isolated only from historical Sprint32 executable preservation.'
             exit 0
           fi
-          if [[ "$count" -eq 7 && "$fingerprint" == '4784ffca1c940d3fa54a2a3988ead07e2de993bde8d3af2bd41014dbdf905be0' ]] || [[ "$count" -eq 5 && "$fingerprint" == 'ab09e044925ae98740a49c46a70ff387e5f5445b245d3a556d85ad6a354305ec' ]]; then
+          if [[ "$count" -eq 7 && "$fingerprint" == '4784ffca1c940d3fa54a2a3988ead07e2de993bde8d3af2bd41014dbdf905be0' ]] || [[ "$count" -eq 5 && "$fingerprint" == 'ab09e044925ae98740a49c46a70ff387e5f5445b245d3a556d85ad6a354305ec' ]] || [[ "$count" -eq 3 && "$fingerprint" == 'fd5f1466a41a7b11f0684303f5e93196668c2ca929ce9119e415186ae6708e9d' ]] || [[ "$count" -eq 7 && "$fingerprint" == 'f3f8b3ad0cca378307000ca242c4b9a4a8a7ab967d1649a5cd6408837001364c' ]] || [[ "$count" -eq 12 && "$fingerprint" == 'b2c5fc10a8baa2d56991d6dbd36b0407159d70953654ef322a9a11d23660489b' ]]; then
             echo 'ONEQAY_SPRINT32_WORKFLOW_CORRECTION=true' >> "$GITHUB_ENV"
             for migration in \
               0000_00_00_000012_add_totp_factor_epoch_and_recovery_authority.php \
               0000_00_00_000013_create_first_party_session_authority.php \
-              0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php
+              0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php \
+              0000_00_00_000015_create_identity_authentication_eligibility_administration_journal.php
             do
               migration_path="apps/web/database/migrations/$migration"
               if [[ -f "$migration_path" ]]; then
