@@ -126,11 +126,11 @@ jobs:
 
           grep -Fq "private const SESSION_TABLE = 'oneqay_identity_first_party_sessions';" "$adapter"
           grep -Fq "['local', 'test', 'ci']" "$adapter"
-          grep -Fq "->where('tenant_id', \$tenantId->value())" "$adapter"
-          grep -Fq "->where('identity_id', \$targetIdentityId->value())" "$adapter"
-          grep -Fq "->whereNull('revoked_at_unix')" "$adapter"
-          grep -Fq "->where('expires_at_unix', '>=', \$revokedAtUnix)" "$adapter"
-          test "$(grep -Fc "->update(['revoked_at_unix' => \$revokedAtUnix])" "$adapter")" -eq 1
+          grep -Fq -- "->where('tenant_id', \$tenantId->value())" "$adapter"
+          grep -Fq -- "->where('identity_id', \$targetIdentityId->value())" "$adapter"
+          grep -Fq -- "->whereNull('revoked_at_unix')" "$adapter"
+          grep -Fq -- "->where('expires_at_unix', '>=', \$revokedAtUnix)" "$adapter"
+          test "$(grep -Fc -- "->update(['revoked_at_unix' => \$revokedAtUnix])" "$adapter")" -eq 1
           ! grep -Fq 'oneqay_identity_first_party_session_audit' "$adapter"
           ! grep -Eq -- '->(insert|insertOrIgnore|updateOrInsert|upsert|delete|truncate)\(' "$adapter"
 
