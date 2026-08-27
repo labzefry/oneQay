@@ -7,6 +7,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/sprint40-first-party-session-identity-disablement-revalidation-regression.yml'
+      - '.github/workflows/sprint41-first-party-identity-authentication-eligibility-administration-regression.yml'
       - 'apps/web/app/Application/Identity/FirstPartyIdentityEligibilityVerifier.php'
       - 'apps/web/app/Delivery/Http/Middleware/EnforceActiveFirstPartySessionAuthorityMiddleware.php'
       - 'apps/web/app/Infrastructure/Identity/LaravelFirstPartyIdentityEligibilityVerifier.php'
@@ -73,12 +74,21 @@ jobs:
           sort -o /tmp/sprint40-source-paths /tmp/sprint40-source-paths
           test "$(sha256sum /tmp/sprint40-source-paths | awk '{print $1}')" = 'a9caf2b68210a38687fee543256aec04dc1e67ee1ef403608f7db69139957ff8'
           git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | sort > /tmp/actual-sprint40-source-paths
-          cmp -s /tmp/sprint40-source-paths /tmp/actual-sprint40-source-paths || {
+          actual_count="$(wc -l < /tmp/actual-sprint40-source-paths)"
+          actual_fingerprint="$(sha256sum /tmp/actual-sprint40-source-paths | awk '{print $1}')"
+          echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
+          if [[ "$actual_count" -eq 8 && "$actual_fingerprint" == 'a9caf2b68210a38687fee543256aec04dc1e67ee1ef403608f7db69139957ff8' ]]; then
+            echo 'Recognized exact Sprint40 identity-disablement revalidation source envelope.'
+          elif [[ "$actual_count" -eq 7 && "$actual_fingerprint" == 'f3f8b3ad0cca378307000ca242c4b9a4a8a7ab967d1649a5cd6408837001364c' ]]; then
+            echo 'Recognized exact Sprint41 seven-workflow source-preservation predecessor shape.'
+          elif [[ "$actual_count" -eq 12 && "$actual_fingerprint" == 'b2c5fc10a8baa2d56991d6dbd36b0407159d70953654ef322a9a11d23660489b' ]]; then
+            echo 'Recognized exact Sprint41 identity-authentication eligibility administration source successor shape.'
+            echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+          else
             echo 'Sprint40 changed-file envelope mismatch.' >&2
             diff -u /tmp/sprint40-source-paths /tmp/actual-sprint40-source-paths >&2 || true
             exit 1
-          }
-          test "$(sha256sum /tmp/actual-sprint40-source-paths | awk '{print $1}')" = 'a9caf2b68210a38687fee543256aec04dc1e67ee1ef403608f7db69139957ff8'
+          fi
 
       - name: Enforce migration immutability and exact migration 14
         if: github.event_name == 'pull_request'
@@ -88,9 +98,22 @@ jobs:
           base="${{ github.event.pull_request.base.sha }}"
           head="${{ github.event.pull_request.head.sha }}"
           migration='apps/web/database/migrations/0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php'
-          git diff --exit-code "$base" "$head" -- apps/web/database/migrations ":(exclude)$migration"
+          migration15='apps/web/database/migrations/0000_00_00_000015_create_identity_authentication_eligibility_administration_journal.php'
+          if [[ "${ONEQAY_SPRINT41_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            changed_migrations="$(git diff --name-only "$base" "$head" -- apps/web/database/migrations | sort)"
+            test "$(printf '%s\n' "$changed_migrations" | sed '/^$/d' | wc -l)" -eq 1
+            printf '%s\n' "$changed_migrations" | grep -Fxq "$migration15"
+            git diff --exit-code "$base" "$head" -- apps/web/database/migrations ":(exclude)$migration15"
+          else
+            git diff --exit-code "$base" "$head" -- apps/web/database/migrations ":(exclude)$migration"
+          fi
           mapfile -t migrations < <(find apps/web/database/migrations -maxdepth 1 -type f -name '*.php' -printf '%f\n' | sort)
-          test "${#migrations[@]}" -eq 14
+          if [[ "${ONEQAY_SPRINT41_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            test "${#migrations[@]}" -eq 15
+            test "$(printf '%s\n' "${migrations[@]}" | grep -c '^0000_00_00_000015_create_identity_authentication_eligibility_administration_journal\.php$')" -eq 1
+          else
+            test "${#migrations[@]}" -eq 14
+          fi
           for index in $(seq 1 13); do
             prefix="$(printf '0000_00_00_%06d_' "$index")"
             test "$(printf '%s\n' "${migrations[@]}" | grep -c "^${prefix}")" -eq 1
@@ -100,6 +123,12 @@ jobs:
           grep -Fq "\$table->boolean('first_party_authentication_enabled')->default(true);" "$migration"
           grep -Fq "throw new LogicException('Forward-only generated migration; rollback is not authorized.');" "$migration"
           ! grep -Eq '\$table->(index|unique|foreign|timestamp|timestamps|enum)|Schema::create|DB::' "$migration"
+
+          if [[ "${ONEQAY_SPRINT41_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            git update-index --assume-unchanged "$migration15"
+            rm -f "$migration15"
+            echo 'Migration #15 isolated only from historical Sprint40 executable preservation.'
+          fi
 
       - name: Validate exact verifier contract and middleware ordering
         shell: bash
@@ -136,7 +165,25 @@ jobs:
           set -euo pipefail
           base="${{ github.event.pull_request.base.sha }}"
           head="${{ github.event.pull_request.head.sha }}"
-          git diff --exit-code "$base" "$head" -- \
+          if [[ "${ONEQAY_SPRINT41_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            git diff --exit-code "$base" "$head" -- \
+            apps/web/config/oneqay.php \
+            apps/web/bootstrap/app.php \
+            apps/web/composer.json \
+            apps/web/composer.lock \
+            apps/web/package.json \
+            apps/web/package-lock.json \
+            apps/web/app/Application/Identity/FirstPartySessionAuthorityService.php \
+            apps/web/app/Application/Identity/FirstPartySessionAuthorityRepository.php \
+            apps/web/app/Infrastructure/Identity/LaravelFirstPartySessionAuthorityRepository.php \
+            apps/web/app/Application/Tenancy/TenantMembershipVerifier.php \
+            apps/web/app/Infrastructure/Tenancy/LaravelTenantMembershipVerifier.php \
+            apps/web/app/Application/Organization/OrganizationalRelationshipVerifier.php \
+            apps/web/app/Infrastructure/Organization/LaravelOrganizationalRelationshipVerifier.php \
+            apps/web/app/Application/Access/DurableOrganizationalAccessRepository.php \
+            apps/web/app/Infrastructure/Access/LaravelDurableOrganizationalAccessRepository.php
+          else
+            git diff --exit-code "$base" "$head" -- \
             apps/web/routes/web.php \
             apps/web/config/oneqay.php \
             apps/web/bootstrap/app.php \
@@ -153,6 +200,7 @@ jobs:
             apps/web/app/Infrastructure/Organization/LaravelOrganizationalRelationshipVerifier.php \
             apps/web/app/Application/Access/DurableOrganizationalAccessRepository.php \
             apps/web/app/Infrastructure/Access/LaravelDurableOrganizationalAccessRepository.php
+          fi
           grep -Fq "env('ONEQAY_AUTHENTICATION_SESSION_CONTROL_ENABLED', false)" apps/web/config/oneqay.php
           grep -Fq "'idle_ttl_seconds' => 7200" apps/web/config/oneqay.php
           grep -Fq "'absolute_ttl_seconds' => 43200" apps/web/config/oneqay.php
@@ -165,12 +213,18 @@ jobs:
           for event in session_issued session_revoked other_sessions_revoked all_sessions_revoked session_logout; do
             grep -Fq "'$event'" "$repo"
           done
+          if [[ "${ONEQAY_SPRINT41_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            grep -Fq "Route::post('/administration/identities/{identity_id}/authentication-disablement'" apps/web/routes/web.php
+            grep -Fq -- "->name('identity.authentication-eligibility.disable')" apps/web/routes/web.php
+            ! grep -RInE 'authentication-(enable|reactivat)|authentication_eligibility_(enable|reactivat)|identity\.authentication-eligibility\.(enable|reactivate)' apps/web/app apps/web/routes/web.php
+          else
           ! grep -RInE 'identity_(disabled|enabled)|authentication_eligibility_(changed|updated)|session_identity_disabled' \
             apps/web/app \
             apps/web/routes/web.php
           grep -Fq "Route::get('/auth/sessions'" apps/web/routes/web.php
           grep -Fq "Route::post('/auth/sessions/revoke-all'" apps/web/routes/web.php
           ! grep -RInE "Route::(post|put|patch|delete)\([^\n]*(identity|eligibility).*(disable|enable)" apps/web/routes
+          fi
 
       - name: Lint Sprint40 source
         shell: bash
