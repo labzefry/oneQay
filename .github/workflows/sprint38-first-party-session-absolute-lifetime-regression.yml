@@ -222,7 +222,6 @@ jobs:
             echo 'Recognized exact Sprint40 identity-disablement revalidation schema/source-envelope gate successor shape.'
           elif cmp -s /tmp/sprint41-schema-source-envelope-gate-paths /tmp/actual-sprint38-source-paths; then
             echo 'Recognized exact Sprint41 identity-authentication eligibility administration schema/source-envelope gate successor shape.'
-            sprint40_source_successor=true
             echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
           elif cmp -s /tmp/sprint40-source-preservation-paths /tmp/actual-sprint38-source-paths; then
             grep -Fq 'bde0c14f6b8c45f090844b9e5d701415690e990b8b7bea3b605f4ba04c727116' .github/workflows/sprint33-recovery-bound-password-reset-regression.yml
