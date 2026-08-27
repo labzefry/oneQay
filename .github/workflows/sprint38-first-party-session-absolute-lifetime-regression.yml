@@ -191,7 +191,9 @@ jobs:
           test "$(sha256sum /tmp/post-sprint39-reconciliation-paths | awk '{print $1}')" = 'f38b1a2dea2bd5a55a5cd166db0ea7b2d4ae5186cefe2cb5db27f18f9639e866'
 
           sprint40_source_successor=false
+          sprint41_source_successor=false
           echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
+          echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
           git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | sort > /tmp/actual-sprint38-source-paths
           if [[ "$(wc -l < /tmp/actual-sprint38-source-paths)" -eq 5 ]] && [[ "$(sha256sum /tmp/actual-sprint38-source-paths | awk '{print $1}')" == 'ab09e044925ae98740a49c46a70ff387e5f5445b245d3a556d85ad6a354305ec' ]]; then
             if [[ -f 'apps/web/database/migrations/0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php' ]]; then
@@ -230,6 +232,14 @@ jobs:
             echo 'Recognized exact Sprint40 six-workflow source-preservation predecessor shape with historical correction closure.'
           elif [[ "$(wc -l < /tmp/actual-sprint38-source-paths)" -eq 19 ]] && [[ "$(sha256sum /tmp/actual-sprint38-source-paths | awk '{print $1}')" == 'fc2b578fc9d090dfce1fd34c5acfa7a07f065979a94f62becb3dc54dee664920' ]]; then
             echo 'Recognized exact Sprint40 19-workflow historical preservation correction shape.'
+          elif [[ "$(wc -l < /tmp/actual-sprint38-source-paths)" -eq 7 ]] && [[ "$(sha256sum /tmp/actual-sprint38-source-paths | awk '{print $1}')" == 'f3f8b3ad0cca378307000ca242c4b9a4a8a7ab967d1649a5cd6408837001364c' ]]; then
+            echo 'Recognized exact Sprint41 seven-workflow source-preservation predecessor shape.'
+            echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+          elif [[ "$(wc -l < /tmp/actual-sprint38-source-paths)" -eq 12 ]] && [[ "$(sha256sum /tmp/actual-sprint38-source-paths | awk '{print $1}')" == 'b2c5fc10a8baa2d56991d6dbd36b0407159d70953654ef322a9a11d23660489b' ]]; then
+            echo 'Recognized exact Sprint41 identity-authentication eligibility administration source successor shape.'
+            sprint41_source_successor=true
+            echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
           elif cmp -s /tmp/sprint40-source-paths /tmp/actual-sprint38-source-paths; then
             echo 'Recognized exact Sprint40 identity-disablement revalidation source successor shape.'
             sprint40_source_successor=true
@@ -251,12 +261,26 @@ jobs:
             echo 'Sprint38 source envelope contains a forbidden environment or dependency path.' >&2
             exit 1
           fi
-          if [[ "$sprint40_source_successor" == 'true' ]]; then
+          if [[ "$sprint41_source_successor" == 'true' ]]; then
+            test "$(grep -c '^apps/web/database/migrations/' /tmp/actual-sprint38-source-paths)" -eq 1
+            grep -Fxq 'apps/web/database/migrations/0000_00_00_000015_create_identity_authentication_eligibility_administration_journal.php' /tmp/actual-sprint38-source-paths
+          elif [[ "$sprint40_source_successor" == 'true' ]]; then
             test "$(grep -c '^apps/web/database/migrations/' /tmp/actual-sprint38-source-paths)" -eq 1
             grep -Fxq 'apps/web/database/migrations/0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php' /tmp/actual-sprint38-source-paths
           elif grep -q '^apps/web/database/migrations/' /tmp/actual-sprint38-source-paths; then
             echo 'Sprint38 source envelope contains a forbidden migration path.' >&2
             exit 1
+          fi
+
+      - name: Isolate Sprint41 journal from historical Sprint38 executable preservation
+        if: env.ONEQAY_SPRINT41_SOURCE_SUCCESSOR == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          migration='apps/web/database/migrations/0000_00_00_000015_create_identity_authentication_eligibility_administration_journal.php'
+          if [[ -f "$migration" ]]; then
+            git update-index --assume-unchanged "$migration"
+            rm -f "$migration"
           fi
 
       - name: Enforce NO_SCHEMA_CHANGE and migrations one through thirteen
@@ -266,7 +290,11 @@ jobs:
           set -euo pipefail
           base="${{ github.event.pull_request.base.sha }}"
           head="${{ github.event.pull_request.head.sha }}"
-          if [[ "${ONEQAY_SPRINT40_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+          if [[ "${ONEQAY_SPRINT41_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            git diff --exit-code "$base" "$head" -- \
+              apps/web/database/migrations \
+              ':(exclude)apps/web/database/migrations/0000_00_00_000015_create_identity_authentication_eligibility_administration_journal.php'
+          elif [[ "${ONEQAY_SPRINT40_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
             git diff --exit-code "$base" "$head" -- \
               apps/web/database/migrations \
               ':(exclude)apps/web/database/migrations/0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php'
@@ -293,11 +321,18 @@ jobs:
           set -euo pipefail
           base="${{ github.event.pull_request.base.sha }}"
           head="${{ github.event.pull_request.head.sha }}"
-          git diff --exit-code "$base" "$head" -- \
+          if [[ "${ONEQAY_SPRINT41_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            git diff --exit-code "$base" "$head" -- \
+            apps/web/app/Application/Identity/FirstPartySessionAuthorityRepository.php \
+            apps/web/app/Infrastructure/Identity/LaravelFirstPartySessionAuthorityRepository.php \
+            apps/web/app/Delivery/Http/Identity/FirstPartySessionControlController.php \
+          else
+            git diff --exit-code "$base" "$head" -- \
             apps/web/app/Application/Identity/FirstPartySessionAuthorityRepository.php \
             apps/web/app/Infrastructure/Identity/LaravelFirstPartySessionAuthorityRepository.php \
             apps/web/app/Delivery/Http/Identity/FirstPartySessionControlController.php \
             apps/web/routes/web.php
+          fi
           repo='apps/web/app/Infrastructure/Identity/LaravelFirstPartySessionAuthorityRepository.php'
           for event in session_issued session_revoked other_sessions_revoked all_sessions_revoked session_logout; do
             grep -Fq "'$event'" "$repo"
