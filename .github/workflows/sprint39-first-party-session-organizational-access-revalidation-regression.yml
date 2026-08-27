@@ -1,3 +1,4 @@
+# Post-Sprint39 M7.5 seven-workflow preservation predecessor anchor.
 name: Sprint39 First-Party Session Organizational Access Revalidation Regression
 
 # Attribution: Lab | zefry
@@ -89,6 +90,18 @@ jobs:
           sort -o /tmp/post-sprint39-reconciliation-preservation-paths /tmp/post-sprint39-reconciliation-preservation-paths
           test "$(sha256sum /tmp/post-sprint39-reconciliation-preservation-paths | awk '{print $1}')" = 'ab09e044925ae98740a49c46a70ff387e5f5445b245d3a556d85ad6a354305ec'
 
+          cat > /tmp/m7-5-sprint39-seven-workflow-preservation-paths <<'EOF'
+          .github/workflows/m7-5-preview-release-artifact.yml
+          .github/workflows/sprint33-recovery-bound-password-reset-regression.yml
+          .github/workflows/sprint34-authenticated-password-change-regression.yml
+          .github/workflows/sprint35-privileged-totp-recovery-regression.yml
+          .github/workflows/sprint36-first-party-session-inventory-revocation-regression.yml
+          .github/workflows/sprint37-first-party-all-session-termination-regression.yml
+          .github/workflows/sprint38-first-party-session-absolute-lifetime-regression.yml
+          EOF
+          sort -o /tmp/m7-5-sprint39-seven-workflow-preservation-paths /tmp/m7-5-sprint39-seven-workflow-preservation-paths
+          test "$(sha256sum /tmp/m7-5-sprint39-seven-workflow-preservation-paths | awk '{print $1}')" = '4784ffca1c940d3fa54a2a3988ead07e2de993bde8d3af2bd41014dbdf905be0'
+
           cat > /tmp/sprint40-entry-gate-paths <<'EOF'
           docs/SPRINT_40_FIRST_PARTY_SESSION_IDENTITY_DISABLEMENT_REVALIDATION_ENTRY_GATE.md
           EOF
@@ -134,6 +147,9 @@ jobs:
             grep -Fq '261f147d880a37fe9137b28d9541724c6c5e3987138f3fb56d5465ff31dc7412' .github/workflows/sprint35-privileged-totp-recovery-regression.yml
             grep -Fq '261f147d880a37fe9137b28d9541724c6c5e3987138f3fb56d5465ff31dc7412' .github/workflows/sprint37-first-party-all-session-termination-regression.yml
             echo 'Recognized exact post-Sprint39 reconciliation preservation predecessor shape with Sprint32 YAML closure compatibility.'
+            echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+          elif cmp -s /tmp/m7-5-sprint39-seven-workflow-preservation-paths /tmp/actual-sprint39-source-paths; then
+            echo 'Recognized exact Sprint39 seven-workflow M7.5 preservation correction shape.'
             echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
           elif [[ "$(wc -l < /tmp/actual-sprint39-source-paths)" -eq 13 ]] && [[ "$(sha256sum /tmp/actual-sprint39-source-paths | awk '{print $1}')" == 'b129d4b1c1135f2f5aecd5dde5ff1b5f6392eecb4d54006e80fc71889763647d' ]]; then
             echo 'Recognized exact Sprint40 canonical documentation synchronization successor shape.'
