@@ -141,8 +141,8 @@ jobs:
           grep -Fq 'PersistenceTransaction $transaction' "$service"
           grep -Fq 'PolicyAdministrationClock $clock' "$service"
           grep -Fq "private const JOURNAL_TABLE = 'oneqay_identity_authentication_eligibility_mutations';" "$adapter"
-          grep -Fq "->where('first_party_authentication_enabled', 1)" "$adapter"
-          grep -Fq "->update(['first_party_authentication_enabled' => false])" "$adapter"
+          grep -Fq -- "->where('first_party_authentication_enabled', 1)" "$adapter"
+          grep -Fq -- "->update(['first_party_authentication_enabled' => false])" "$adapter"
           grep -Fq 'AdministrationPermission::MANAGE' "$adapter"
           grep -Fq "['local', 'test', 'ci']" "$adapter"
           grep -Fq "count($payload) !== 1" "$controller"
@@ -159,7 +159,7 @@ jobs:
             apps/web/app/Delivery/Http/Identity/FirstPartyIdentityEligibilityAdministrationController.php \
             apps/web/app/Infrastructure/Identity/LaravelFirstPartyIdentityEligibilityAdministrationRepository.php \
             apps/web/routes/web.php
-          ! grep -Fq "->update(['first_party_authentication_enabled' => true])" "$adapter"
+          ! grep -Fq -- "->update(['first_party_authentication_enabled' => true])" "$adapter"
 
       - name: Lint Sprint41 source
         shell: bash
