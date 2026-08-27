@@ -120,6 +120,12 @@ jobs:
           sort -o /tmp/sprint40-schema-source-envelope-gate-paths /tmp/sprint40-schema-source-envelope-gate-paths
           test "$(sha256sum /tmp/sprint40-schema-source-envelope-gate-paths | awk '{print $1}')" = '9a3a85fb3de7ce007b09586af60e18b0cefd6ec1b6fba1b3c2b64e508354d803'
 
+          cat > /tmp/sprint41-schema-source-envelope-gate-paths <<'EOF'
+          docs/SPRINT_41_FIRST_PARTY_IDENTITY_AUTHENTICATION_ELIGIBILITY_ADMINISTRATION_SCHEMA_SOURCE_ENVELOPE_GATE.md
+          EOF
+          sort -o /tmp/sprint41-schema-source-envelope-gate-paths /tmp/sprint41-schema-source-envelope-gate-paths
+          test "$(sha256sum /tmp/sprint41-schema-source-envelope-gate-paths | awk '{print $1}')" = '1a2c18a7ec9b363a9b2ef3bc6ff86366ab58f4812e8968d83642e6ce359f48b2'
+
           cat > /tmp/sprint40-source-preservation-paths <<'EOF'
           .github/workflows/m7-5-preview-release-artifact.yml
           .github/workflows/sprint35-privileged-totp-recovery-regression.yml
@@ -166,6 +172,9 @@ jobs:
             echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
           elif cmp -s /tmp/sprint40-schema-source-envelope-gate-paths /tmp/actual-sprint39-source-paths; then
             echo 'Recognized exact Sprint40 identity-disablement revalidation schema/source-envelope gate successor shape.'
+          elif cmp -s /tmp/sprint41-schema-source-envelope-gate-paths /tmp/actual-sprint39-source-paths; then
+            echo 'Recognized exact Sprint41 identity-authentication eligibility administration schema/source-envelope gate successor shape.'
+            echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
           elif cmp -s /tmp/sprint40-source-preservation-paths /tmp/actual-sprint39-source-paths; then
             grep -Fq 'bde0c14f6b8c45f090844b9e5d701415690e990b8b7bea3b605f4ba04c727116' .github/workflows/sprint33-recovery-bound-password-reset-regression.yml
             grep -Fq 'bde0c14f6b8c45f090844b9e5d701415690e990b8b7bea3b605f4ba04c727116' .github/workflows/sprint34-authenticated-password-change-regression.yml
