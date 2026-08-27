@@ -358,6 +358,9 @@ jobs:
             elif cmp -s /tmp/actual-sprint35-paths /tmp/sprint40-schema-source-envelope-gate-paths; then
               echo "Recognized exact Sprint40 identity-disablement revalidation schema/source-envelope gate successor shape."
               sprint36_successor=true
+            elif [[ "$actual_count" -eq 1 && "$actual_fingerprint" == '1a2c18a7ec9b363a9b2ef3bc6ff86366ab58f4812e8968d83642e6ce359f48b2' ]]; then
+              echo "Recognized exact Sprint41 identity-authentication eligibility administration schema/source-envelope gate successor shape."
+              sprint36_successor=true
             elif cmp -s /tmp/actual-sprint35-paths /tmp/sprint39-schema-source-envelope-gate-paths; then
               echo "Recognized exact Sprint39 organizational-access revalidation schema/source-envelope gate successor shape."
               sprint36_successor=true
