@@ -276,6 +276,10 @@ jobs:
               echo "Recognized exact Sprint39 seven-workflow M7.5 preservation correction shape."
               sprint40_source_successor=true
               echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            elif [[ "$(wc -l < /tmp/actual-sprint37-paths)" -eq 19 ]] && [[ "$(sha256sum /tmp/actual-sprint37-paths | awk '{print $1}')" == "fc2b578fc9d090dfce1fd34c5acfa7a07f065979a94f62becb3dc54dee664920" ]]; then
+              echo "Recognized exact Sprint40 19-workflow historical preservation correction shape."
+              sprint40_source_successor=true
+              echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             elif [[ "$(wc -l < /tmp/actual-sprint37-paths)" -eq 2 ]] && [[ "$(sha256sum /tmp/actual-sprint37-paths | awk '{print $1}')" == "bde0c14f6b8c45f090844b9e5d701415690e990b8b7bea3b605f4ba04c727116" ]]; then
               echo "Recognized exact Sprint40 Sprint33/Sprint34 historical-compatibility correction shape."
             elif cmp -s /tmp/actual-sprint37-paths /tmp/sprint37-paths; then
