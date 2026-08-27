@@ -352,6 +352,9 @@ jobs:
               echo "Recognized exact Sprint40 identity-disablement revalidation entry-gate successor shape."
             elif cmp -s /tmp/actual-sprint36-paths /tmp/sprint41-entry-gate-paths; then
               echo "Recognized exact Sprint41 identity-authentication eligibility administration entry-gate successor shape."
+            elif [[ "$(wc -l < /tmp/actual-sprint36-paths)" -eq 1 ]] && [[ "$(sha256sum /tmp/actual-sprint36-paths | awk '{print $1}')" == "4297e429d072432122534ac88c96d3ce18ed870e31c2b5605d6fbb7d5ada0b0b" ]]; then
+              echo "Recognized exact Sprint42 disabled-identity session-termination entry-gate successor shape."
+              echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             elif cmp -s /tmp/actual-sprint36-paths /tmp/sprint40-schema-source-envelope-gate-paths; then
               echo "Recognized exact Sprint40 identity-disablement revalidation schema/source-envelope gate successor shape."
             elif cmp -s /tmp/actual-sprint36-paths /tmp/sprint41-schema-source-envelope-gate-paths; then
