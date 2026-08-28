@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Application\Authorization\AdministrationPermission;
 use App\Application\Authorization\InitialTenantAdministratorProvisioningRepository;
 use App\Application\Authorization\PolicyAdministrationClock;
+use App\Application\Identity\FirstPartyIdentityDisablementSessionTerminationRepository;
 use App\Application\Identity\FirstPartyIdentityEligibilityAdministrationRepository;
 use App\Application\Identity\FirstPartyIdentityEligibilityAdministrationService;
 use App\Application\Identity\FirstPartyIdentityEligibilityAdministrationViolation;
@@ -224,7 +225,19 @@ foreach ([
 
 $repository = new LaravelFirstPartyIdentityEligibilityAdministrationRepository($connection, true, 'ci');
 $transaction = new LaravelPersistenceTransaction($connection, true, 'ci');
-$service = new FirstPartyIdentityEligibilityAdministrationService($repository, $transaction, $clock);
+$termination = new class implements FirstPartyIdentityDisablementSessionTerminationRepository {
+    public int $calls = 0;
+
+    public function revokeActiveForIdentityDisablement(
+        TenantId $tenantId,
+        PlatformIdentityId $targetIdentityId,
+        int $revokedAtUnix,
+    ): int {
+        $this->calls++;
+        return 0;
+    }
+};
+$service = new FirstPartyIdentityEligibilityAdministrationService($repository, $termination, $transaction, $clock);
 $verifier = new LaravelFirstPartyIdentityEligibilityVerifier($connection, true, 'ci', true);
 
 $assert($repository->hasTenantControlAuthority($actor), 'exact tenant control actor not authorized');

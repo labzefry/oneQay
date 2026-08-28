@@ -1,0 +1,252 @@
+name: Sprint42 First-Party Identity Disablement Session Termination Regression
+
+# Attribution: Lab | zefry
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/sprint42-first-party-identity-disablement-session-termination-regression.yml'
+      - 'apps/web/app/Application/Identity/FirstPartyIdentityDisablementSessionTerminationRepository.php'
+      - 'apps/web/app/Application/Identity/FirstPartyIdentityEligibilityAdministrationService.php'
+      - 'apps/web/app/Infrastructure/Identity/LaravelFirstPartyIdentityDisablementSessionTerminationRepository.php'
+      - 'apps/web/app/Providers/AppServiceProvider.php'
+      - 'apps/web/tests/first-party-identity-authentication-eligibility-administration.php'
+      - 'apps/web/tests/first-party-identity-disablement-session-termination.php'
+      - 'docs/FIRST_PARTY_IDENTITY_DISABLEMENT_SESSION_TERMINATION_FOUNDATION.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint42-identity-disablement-session-termination-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sprint42-identity-disablement-session-termination:
+    name: sprint42-identity-disablement-session-termination
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXU=
+      APP_DEBUG: 'false'
+      APP_URL: http://localhost
+      ONEQAY_RUNTIME_CLASS: ci
+      ONEQAY_PERSISTENCE_ENABLED: 'true'
+      ONEQAY_AUTHENTICATION_SESSION_CONTROL_ENABLED: 'true'
+      ONEQAY_PRIVILEGED_TOTP_MFA_ENABLED: 'false'
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Setup exact PHP runtime
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        with:
+          php-version: '8.3'
+          tools: composer:v2
+          coverage: none
+
+      - name: Enforce exact Sprint42 source envelope
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/sprint42-source-paths <<'EOF'
+          .github/workflows/sprint42-first-party-identity-disablement-session-termination-regression.yml
+          apps/web/app/Application/Identity/FirstPartyIdentityDisablementSessionTerminationRepository.php
+          apps/web/app/Application/Identity/FirstPartyIdentityEligibilityAdministrationService.php
+          apps/web/app/Infrastructure/Identity/LaravelFirstPartyIdentityDisablementSessionTerminationRepository.php
+          apps/web/app/Providers/AppServiceProvider.php
+          apps/web/tests/first-party-identity-authentication-eligibility-administration.php
+          apps/web/tests/first-party-identity-disablement-session-termination.php
+          docs/FIRST_PARTY_IDENTITY_DISABLEMENT_SESSION_TERMINATION_FOUNDATION.md
+          EOF
+          sort -o /tmp/sprint42-source-paths /tmp/sprint42-source-paths
+          test "$(wc -l < /tmp/sprint42-source-paths)" -eq 8
+          test "$(sha256sum /tmp/sprint42-source-paths | awk '{print $1}')" = '6315890d318c3cdfca549bfacef6cb8d1ca66a4421416b49b4978095a98b6729'
+
+          git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | sort > /tmp/actual-sprint42-source-paths
+          cmp -s /tmp/sprint42-source-paths /tmp/actual-sprint42-source-paths || {
+            echo 'Sprint42 changed-file envelope mismatch.' >&2
+            diff -u /tmp/sprint42-source-paths /tmp/actual-sprint42-source-paths >&2 || true
+            exit 1
+          }
+          test "$(sha256sum /tmp/actual-sprint42-source-paths | awk '{print $1}')" = '6315890d318c3cdfca549bfacef6cb8d1ca66a4421416b49b4978095a98b6729'
+
+      - name: Enforce NO_SCHEMA_CHANGE and migrations one through fifteen
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+          git diff --exit-code "$base" "$head" -- apps/web/database/migrations
+
+          mapfile -t migrations < <(find apps/web/database/migrations -maxdepth 1 -type f -name '*.php' -printf '%f\n' | sort)
+          test "${#migrations[@]}" -eq 15
+          for index in $(seq 1 15); do
+            prefix="$(printf '0000_00_00_%06d_' "$index")"
+            test "$(printf '%s\n' "${migrations[@]}" | grep -c "^$prefix")" -eq 1
+          done
+          ! printf '%s\n' "${migrations[@]}" | grep -q '^0000_00_00_000016_'
+          test "$(printf '%s\n' "${migrations[@]}" | grep -c '^0000_00_00_000013_create_first_party_session_authority\.php$')" -eq 1
+          test "$(printf '%s\n' "${migrations[@]}" | grep -c '^0000_00_00_000015_create_identity_authentication_eligibility_administration_journal\.php$')" -eq 1
+
+      - name: Preserve excluded public configuration dependency and authority surfaces
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+          git diff --exit-code "$base" "$head" --             apps/web/routes/web.php             apps/web/app/Delivery/Http/Identity/FirstPartyIdentityEligibilityAdministrationController.php             apps/web/app/Application/Identity/FirstPartySessionAuthorityRepository.php             apps/web/app/Infrastructure/Identity/LaravelFirstPartySessionAuthorityRepository.php             apps/web/app/Delivery/Http/Identity/FirstPartySessionControlController.php             apps/web/app/Delivery/Http/Middleware/EnforceActiveFirstPartySessionAuthorityMiddleware.php             apps/web/config/oneqay.php             apps/web/config/database.php             apps/web/composer.json             apps/web/composer.lock             apps/web/package.json             apps/web/package-lock.json
+
+      - name: Validate dedicated termination contract and adapter
+        shell: bash
+        run: |
+          set -euo pipefail
+          contract='apps/web/app/Application/Identity/FirstPartyIdentityDisablementSessionTerminationRepository.php'
+          adapter='apps/web/app/Infrastructure/Identity/LaravelFirstPartyIdentityDisablementSessionTerminationRepository.php'
+
+          grep -Fq 'interface FirstPartyIdentityDisablementSessionTerminationRepository' "$contract"
+          grep -Fq 'revokeActiveForIdentityDisablement(' "$contract"
+          grep -Fq 'TenantId $tenantId' "$contract"
+          grep -Fq 'PlatformIdentityId $targetIdentityId' "$contract"
+          grep -Fq 'int $revokedAtUnix' "$contract"
+          ! grep -Eq 'publicHandle|authorityId|organizationId|outletId|deviceId|reactivat|enable\(' "$contract"
+
+          grep -Fq "private const SESSION_TABLE = 'oneqay_identity_first_party_sessions';" "$adapter"
+          grep -Fq "['local', 'test', 'ci']" "$adapter"
+          grep -Fq -- "->where('tenant_id', \$tenantId->value())" "$adapter"
+          grep -Fq -- "->where('identity_id', \$targetIdentityId->value())" "$adapter"
+          grep -Fq -- "->whereNull('revoked_at_unix')" "$adapter"
+          grep -Fq -- "->where('expires_at_unix', '>=', \$revokedAtUnix)" "$adapter"
+          test "$(grep -Fc -- "->update(['revoked_at_unix' => \$revokedAtUnix])" "$adapter")" -eq 1
+          ! grep -Fq 'oneqay_identity_first_party_session_audit' "$adapter"
+          ! grep -Eq -- '->(insert|insertOrIgnore|updateOrInsert|upsert|delete|truncate)\(' "$adapter"
+
+      - name: Validate transaction ordering and provider composition
+        shell: bash
+        run: |
+          set -euo pipefail
+          service='apps/web/app/Application/Identity/FirstPartyIdentityEligibilityAdministrationService.php'
+          provider='apps/web/app/Providers/AppServiceProvider.php'
+
+          grep -Fq 'FirstPartyIdentityDisablementSessionTerminationRepository $sessionTermination' "$service"
+          grep -Fq 'PersistenceTransaction $transaction' "$service"
+          grep -Fq 'PolicyAdministrationClock $clock' "$service"
+          grep -Fq '$outcome = $this->repository->applyFresh(' "$service"
+          grep -Fq '$this->sessionTermination->revokeActiveForIdentityDisablement(' "$service"
+          grep -Fq '$actor->tenantId(),' "$service"
+          test "$(grep -Fc 'return $this->transaction->run(function () use (' "$service")" -ge 2
+          ! grep -Eq '\b(enable|reactivate)\s*\(' "$service"
+
+          grep -Fq 'FirstPartyIdentityDisablementSessionTerminationRepository::class' "$provider"
+          grep -Fq 'new LaravelFirstPartyIdentityDisablementSessionTerminationRepository(' "$provider"
+          grep -Fq '$this->persistenceEnabled(),' "$provider"
+          grep -Fq '$this->runtimeClass(),' "$provider"
+          grep -Fq '$this->sessionControlEnabled(),' "$provider"
+          grep -Fq '$app->make(FirstPartyIdentityDisablementSessionTerminationRepository::class)' "$provider"
+
+      - name: Preserve exact Sprint41 public route payload and response contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          routes='apps/web/routes/web.php'
+          controller='apps/web/app/Delivery/Http/Identity/FirstPartyIdentityEligibilityAdministrationController.php'
+
+          test "$(grep -Fc "Route::post('/administration/identities/{identity_id}/authentication-disablement'" "$routes")" -eq 1
+          grep -Fq -- "->name('identity.authentication-eligibility.disable')" "$routes"
+          grep -Fq 'count($payload) !== 1' "$controller"
+          grep -Fq "array_key_exists('mutation_id', \$payload)" "$controller"
+          grep -Fq 'IDENTITY_AUTHENTICATION_ELIGIBILITY_ADMINISTRATION_REJECTED' "$controller"
+          ! grep -RInE 'authentication-(enable|reactivat)|disablement-session|session-termination|identity\.authentication-eligibility\.(enable|reactivate)'             apps/web/routes/web.php             apps/web/app/Delivery/Http/Identity/FirstPartyIdentityEligibilityAdministrationController.php
+
+      - name: Lint Sprint42 source
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l apps/web/app/Application/Identity/FirstPartyIdentityDisablementSessionTerminationRepository.php
+          php -l apps/web/app/Application/Identity/FirstPartyIdentityEligibilityAdministrationService.php
+          php -l apps/web/app/Infrastructure/Identity/LaravelFirstPartyIdentityDisablementSessionTerminationRepository.php
+          php -l apps/web/app/Providers/AppServiceProvider.php
+          php -l apps/web/tests/first-party-identity-authentication-eligibility-administration.php
+          php -l apps/web/tests/first-party-identity-disablement-session-termination.php
+
+      - name: Install locked application dependencies
+        working-directory: apps/web
+        run: |
+          composer validate --no-check-publish
+          composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Run dedicated Sprint42 disablement session termination regression
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          output="$(php tests/first-party-identity-disablement-session-termination.php 2>&1)" || {
+            printf '%s\n' "$output"
+            exit 1
+          }
+          printf '%s\n' "$output"
+          grep -Fq 'Sprint42 first-party identity disablement session termination regression passed.' <<<"$output"
+
+      - name: Preserve Sprint41 identity eligibility administration regression
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          output="$(php tests/first-party-identity-authentication-eligibility-administration.php 2>&1)" || {
+            printf '%s\n' "$output"
+            exit 1
+          }
+          printf '%s\n' "$output"
+          grep -Fq 'Sprint41 first-party identity authentication eligibility administration regression passed.' <<<"$output"
+
+      - name: Preserve Sprint40 request-time eligibility regression
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          migration='database/migrations/0000_00_00_000015_create_identity_authentication_eligibility_administration_journal.php'
+          cp "$migration" /tmp/oneqay-s42-migration15.php
+          rm "$migration"
+          output="$(php tests/first-party-session-identity-disablement-revalidation.php 2>&1)" || {
+            printf '%s\n' "$output"
+            mv /tmp/oneqay-s42-migration15.php "$migration"
+            exit 1
+          }
+          printf '%s\n' "$output"
+          grep -Fq 'Sprint40 first-party session identity disablement revalidation regression passed.' <<<"$output"
+          mv /tmp/oneqay-s42-migration15.php "$migration"
+
+      - name: Preserve full application regression
+        working-directory: apps/web
+        env:
+          ONEQAY_PERSISTENCE_ENABLED: 'false'
+          ONEQAY_AUTHENTICATION_SESSION_CONTROL_ENABLED: 'false'
+        run: php tests/run.php
+
+      - name: Preserve runtime and activation boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          doc='docs/FIRST_PARTY_IDENTITY_DISABLEMENT_SESSION_TERMINATION_FOUNDATION.md'
+          grep -Fq 'Local / Test / CI only' "$doc"
+          grep -Fq 'NO_SCHEMA_CHANGE / SPRINT40 NOT ACTIVATED' "$doc"
+          grep -Fq 'NO-GO / NOT AUTHORIZED' "$doc"
+          grep -Fq 'DISABLED / UNWIRED' "$doc"
+          grep -Fq 'NOT AUTHORIZED' "$doc"
+          ! grep -RInE 'ONEQAY_TECHNICAL_PREVIEW_ENABLED[[:space:]]*=[[:space:]]*true|runtime_class.*production.*termination'             apps/web/app/Application/Identity/FirstPartyIdentityDisablementSessionTerminationRepository.php             apps/web/app/Application/Identity/FirstPartyIdentityEligibilityAdministrationService.php             apps/web/app/Infrastructure/Identity/LaravelFirstPartyIdentityDisablementSessionTerminationRepository.php             apps/web/app/Providers/AppServiceProvider.php
+
+      - name: Confirm tracked source cleanliness
+        run: git diff --exit-code

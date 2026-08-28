@@ -14,6 +14,7 @@ use App\Application\Identity\AuthenticatedPasswordChangeService;
 use App\Application\Identity\FirstControlPrincipalCredentialBootstrapRepository;
 use App\Application\Identity\FirstPartyCredentialEpochRepository;
 use App\Application\Identity\FirstPartyIdentityCredentialVerifier;
+use App\Application\Identity\FirstPartyIdentityDisablementSessionTerminationRepository;
 use App\Application\Identity\FirstPartyIdentityEligibilityAdministrationRepository;
 use App\Application\Identity\FirstPartyIdentityEligibilityAdministrationService;
 use App\Application\Identity\FirstPartyIdentityEligibilityVerifier;
@@ -49,6 +50,7 @@ use App\Infrastructure\Identity\LaravelAuthenticatedPasswordChangeRepository;
 use App\Infrastructure\Identity\LaravelFirstControlPrincipalCredentialBootstrapRepository;
 use App\Infrastructure\Identity\LaravelFirstPartyCredentialEpochRepository;
 use App\Infrastructure\Identity\LaravelFirstPartyIdentityCredentialVerifier;
+use App\Infrastructure\Identity\LaravelFirstPartyIdentityDisablementSessionTerminationRepository;
 use App\Infrastructure\Identity\LaravelFirstPartyIdentityEligibilityAdministrationRepository;
 use App\Infrastructure\Identity\LaravelFirstPartyIdentityEligibilityVerifier;
 use App\Infrastructure\Identity\LaravelFirstPartySessionAuthorityRepository;
@@ -188,8 +190,17 @@ final class AppServiceProvider extends ServiceProvider
                 $this->runtimeClass(),
             );
         });
+        $this->app->scoped(FirstPartyIdentityDisablementSessionTerminationRepository::class, function ($app): FirstPartyIdentityDisablementSessionTerminationRepository {
+            return new LaravelFirstPartyIdentityDisablementSessionTerminationRepository(
+                $this->connection($app),
+                $this->persistenceEnabled(),
+                $this->runtimeClass(),
+                $this->sessionControlEnabled(),
+            );
+        });
         $this->app->scoped(FirstPartyIdentityEligibilityAdministrationService::class, fn ($app): FirstPartyIdentityEligibilityAdministrationService => new FirstPartyIdentityEligibilityAdministrationService(
             $app->make(FirstPartyIdentityEligibilityAdministrationRepository::class),
+            $app->make(FirstPartyIdentityDisablementSessionTerminationRepository::class),
             $app->make(PersistenceTransaction::class),
             $app->make(PolicyAdministrationClock::class),
         ));
