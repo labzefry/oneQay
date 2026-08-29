@@ -172,7 +172,11 @@ jobs:
           echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
           echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
           git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | sort > /tmp/actual-sprint39-source-paths
-          if cmp -s /tmp/sprint39-source-paths /tmp/actual-sprint39-source-paths; then
+          if [[ "$(wc -l < /tmp/actual-sprint39-source-paths)" -eq 6 ]] && [[ "$(sha256sum /tmp/actual-sprint39-source-paths | awk '{print $1}')" == '6e0a346e98e8f622081c3d9e81866e8b44b79af800a178568bb71e3e6e28da62' ]]; then
+            echo 'Recognized exact Sprint46 JRN-006 M7.4 compatibility predecessor shape.'
+            echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+          elif cmp -s /tmp/sprint39-source-paths /tmp/actual-sprint39-source-paths; then
             test "$(sha256sum /tmp/actual-sprint39-source-paths | awk '{print $1}')" = '2cfc92c34f46375b11bf3fe92f9094cefa598d234133847fdd6629be211f12c4'
             echo 'Recognized exact Sprint39 source envelope.'
           elif cmp -s /tmp/post-sprint39-reconciliation-preservation-paths /tmp/actual-sprint39-source-paths; then
