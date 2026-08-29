@@ -11,6 +11,7 @@ use App\Domain\Identity\PlatformIdentityId;
 interface FirstPartyIdentityEligibilityAdministrationRepository
 {
     public const OPERATION_DISABLE = 'disable';
+    public const OPERATION_REACTIVATE = 'reactivate';
     public const OUTCOME_APPLIED = 'applied';
     public const OUTCOME_NO_CHANGE = 'no_change';
 
@@ -28,8 +29,23 @@ interface FirstPartyIdentityEligibilityAdministrationRepository
         IdentityAuthenticationEligibilityMutationId $mutationId,
     ): ?string;
 
+    /** Returns a prior deterministic reactivation outcome for exact replay, or null when fresh. */
+    public function replayReactivationOutcome(
+        VerifiedOrganizationalContext $actor,
+        PlatformIdentityId $targetIdentityId,
+        IdentityAuthenticationEligibilityMutationId $mutationId,
+    ): ?string;
+
     /** Called only inside PersistenceTransaction after Application preflight. */
     public function applyFresh(
+        VerifiedOrganizationalContext $actor,
+        PlatformIdentityId $targetIdentityId,
+        IdentityAuthenticationEligibilityMutationId $mutationId,
+        int $occurredAtUnix,
+    ): string;
+
+    /** Called only inside PersistenceTransaction after Application preflight. */
+    public function applyFreshReactivation(
         VerifiedOrganizationalContext $actor,
         PlatformIdentityId $targetIdentityId,
         IdentityAuthenticationEligibilityMutationId $mutationId,
