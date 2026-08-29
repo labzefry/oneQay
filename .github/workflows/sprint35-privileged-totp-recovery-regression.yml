@@ -1,608 +1,114 @@
-# Sprint45 Sprint36 exact source-compatibility predecessor anchor.
-# Sprint44 Sprint33/Sprint34 exact compatibility state predecessor anchor.
-# Sprint44 source legacy-horizon compatibility preservation anchor.
-# Sprint44 source four-path compatibility predecessor anchor.
-# Sprint43 exact source legacy-horizon compatibility preservation anchor.
-# Sprint42 exact source legacy-horizon compatibility preservation anchor.
-# Sprint41 Sprint31 source-successor state correction preservation anchor.
-# Sprint41 Sprint38 source-successor route-guard correction anchor.
-# Sprint41 Sprint38 legacy-horizon executable-isolation correction anchor.
-# Sprint41 Sprint38 legacy-horizon migration-state correction anchor.
-# Sprint41 exact source legacy-horizon compatibility preservation anchor.
-# Sprint41 legacy-horizon upper-state compatibility preservation anchor.
-# Sprint41 schema-gate Sprint38 canonical-state correction anchor.
-# Sprint41 schema/source gate exact-trigger preservation anchor.
-# Sprint40 canonical documentation synchronization successor-state preservation anchor.
-# Post-merge M7.5 main-push oracle correction anchor.
-# Post-Sprint40 M7.5 canonical-main fixture isolation anchor.
-# Post-Sprint39 M7.5 seven-workflow preservation predecessor anchor.
-# Sprint40 Sprint38/Sprint39 historical fixture isolation anchor.
-# Sprint40 Sprint37 same-step successor-state correction anchor.
-# Sprint40 Sprint38 same-step successor-state correction anchor.
-# Sprint40 19-workflow historical preservation compatibility anchor.
-# Sprint40 19-workflow preservation-horizon bridge anchor.
 name: Sprint35 Privileged TOTP Recovery Regression
+
+# Author by Lab | zefry
+# TRANSIENT MATERIALIZER — branch-only; this workflow mutation must never merge.
 
 on:
   pull_request:
-    branches:
-      - main
-  workflow_dispatch:
+    branches: [main]
+    paths:
+      - '.github/workflows/sprint35-privileged-totp-recovery-regression.yml'
 
 permissions:
-  contents: read
-
-concurrency:
-  group: sprint35-privileged-totp-recovery-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  contents: write
 
 jobs:
-  sprint35-privileged-totp-recovery:
-    name: sprint35-privileged-totp-recovery
+  sprint35-recovery:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
-    env:
-      APP_NAME: oneQay
-      APP_ENV: testing
-      APP_KEY: base64:dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHQ=
-      APP_DEBUG: "false"
-      APP_URL: http://localhost
-      ONEQAY_RUNTIME_CLASS: ci
-      ONEQAY_PERSISTENCE_ENABLED: "false"
-      ONEQAY_AUTHENTICATION_RECOVERY_ENABLED: "false"
-      SESSION_DRIVER: array
-      CACHE_STORE: array
+    timeout-minutes: 10
     steps:
-      - name: Checkout exact source
+      - name: Checkout exact transient branch
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
+          ref: sprint45-doc-reconciliation-s35-materializer
           fetch-depth: 0
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: Prepare frozen Sprint35 source manifests
+      - name: Materialize exact Sprint45 canonical reconciliation
         shell: bash
         run: |
           set -euo pipefail
-          cat > /tmp/allowed-sprint35-paths <<'EOF'
-          .github/workflows/sprint35-privileged-totp-recovery-regression.yml
-          apps/web/app/Application/Identity/IssuedPrivilegedTotpRecoveryCodeSet.php
-          apps/web/app/Application/Identity/PrivilegedTotpFactorEpochRepository.php
-          apps/web/app/Application/Identity/PrivilegedTotpRecoveryClock.php
-          apps/web/app/Application/Identity/PrivilegedTotpRecoveryRepository.php
-          apps/web/app/Application/Identity/PrivilegedTotpRecoveryService.php
-          apps/web/app/Application/Identity/PrivilegedTotpRecoveryViolation.php
-          apps/web/app/Application/Identity/VerifiedPrivilegedTotpRecoveryProof.php
-          apps/web/app/Delivery/Http/Identity/FirstPartySessionKeys.php
-          apps/web/app/Delivery/Http/Identity/PrivilegedTotpRecoveryController.php
-          apps/web/app/Infrastructure/Identity/LaravelPrivilegedTotpFactorEpochRepository.php
-          apps/web/app/Infrastructure/Identity/LaravelPrivilegedTotpRecoveryRepository.php
-          apps/web/app/Providers/AppServiceProvider.php
-          apps/web/database/migrations/0000_00_00_000012_add_totp_factor_epoch_and_recovery_authority.php
-          apps/web/routes/web.php
-          apps/web/tests/privileged-totp-mfa.php
-          apps/web/tests/privileged-totp-recovery.php
-          apps/web/tests/run.php
-          docs/PRIVILEGED_TOTP_RECOVERY_FACTOR_REPLACEMENT_FOUNDATION.md
-          EOF
-          sort -o /tmp/allowed-sprint35-paths /tmp/allowed-sprint35-paths
-          test "$(sha256sum /tmp/allowed-sprint35-paths | awk '{print $1}')" = "aaf7fb11490250d29c68dc7b46b62d2ee2239707ca53e004f9c0652878928e3f"
+          python3 - <<'PY'
+          from pathlib import Path
 
-          cat > /tmp/required-sprint35-paths <<'EOF'
-          .github/workflows/sprint35-privileged-totp-recovery-regression.yml
-          apps/web/app/Application/Identity/IssuedPrivilegedTotpRecoveryCodeSet.php
-          apps/web/app/Application/Identity/PrivilegedTotpFactorEpochRepository.php
-          apps/web/app/Application/Identity/PrivilegedTotpRecoveryClock.php
-          apps/web/app/Application/Identity/PrivilegedTotpRecoveryRepository.php
-          apps/web/app/Application/Identity/PrivilegedTotpRecoveryService.php
-          apps/web/app/Application/Identity/PrivilegedTotpRecoveryViolation.php
-          apps/web/app/Application/Identity/VerifiedPrivilegedTotpRecoveryProof.php
-          apps/web/app/Delivery/Http/Identity/FirstPartySessionKeys.php
-          apps/web/app/Delivery/Http/Identity/PrivilegedTotpRecoveryController.php
-          apps/web/app/Infrastructure/Identity/LaravelPrivilegedTotpFactorEpochRepository.php
-          apps/web/app/Infrastructure/Identity/LaravelPrivilegedTotpRecoveryRepository.php
-          apps/web/app/Providers/AppServiceProvider.php
-          apps/web/database/migrations/0000_00_00_000012_add_totp_factor_epoch_and_recovery_authority.php
-          apps/web/routes/web.php
-          apps/web/tests/privileged-totp-recovery.php
-          docs/PRIVILEGED_TOTP_RECOVERY_FACTOR_REPLACEMENT_FOUNDATION.md
-          EOF
-          sort -o /tmp/required-sprint35-paths /tmp/required-sprint35-paths
+          paths = [
+              '.github/workflows/README.md',
+              'ARCHITECTURE.md',
+              'CHANGELOG.md',
+              'DATABASE.md',
+              'DEPLOYMENT.md',
+              'PROJECT_MANIFEST.md',
+              'README.md',
+              'ROADMAP.md',
+              'SECURITY.md',
+              'TASKS.md',
+              'docs/ai/AI_NEXT_TASK.md',
+              'docs/ai/AI_PROJECT_STATE.md',
+              'docs/ai/AI_SESSION_STATE.md',
+          ]
 
-      - name: Recognize exact Sprint41 Sprint35 preservation state
-        if: github.event_name == 'pull_request'
-        shell: bash
-        run: |
-          set -euo pipefail
-          git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | sort > /tmp/sprint41-s35-paths
-          count="$(wc -l < /tmp/sprint41-s35-paths)"
-          fingerprint="$(sha256sum /tmp/sprint41-s35-paths | awk '{print $1}')"
-          echo 'ONEQAY_SPRINT41_S35_PRESERVATION=false' >> "$GITHUB_ENV"
-          echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
-          if [[ "$count" -eq 7 && "$fingerprint" == 'f3f8b3ad0cca378307000ca242c4b9a4a8a7ab967d1649a5cd6408837001364c' ]]; then
-            echo 'ONEQAY_SPRINT41_S35_PRESERVATION=true' >> "$GITHUB_ENV"
-            echo 'Recognized exact Sprint41 seven-workflow source-preservation predecessor shape.'
-          elif [[ "$count" -eq 12 && "$fingerprint" == 'b2c5fc10a8baa2d56991d6dbd36b0407159d70953654ef322a9a11d23660489b' ]]; then
-            echo 'ONEQAY_SPRINT41_S35_PRESERVATION=true' >> "$GITHUB_ENV"
-            echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
-            echo 'Recognized exact Sprint41 identity-authentication eligibility administration source successor shape.'
-          elif [[ "$count" -eq 5 && "$fingerprint" == 'ab09e044925ae98740a49c46a70ff387e5f5445b245d3a556d85ad6a354305ec' ]]; then
-            echo 'ONEQAY_SPRINT41_S35_PRESERVATION=true' >> "$GITHUB_ENV"
-            echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
-            echo 'Recognized exact post-Sprint41 five-workflow documentation-preservation predecessor shape.'
-          elif [[ "$count" -eq 13 && "$fingerprint" == 'b129d4b1c1135f2f5aecd5dde5ff1b5f6392eecb4d54006e80fc71889763647d' ]]; then
-            echo 'ONEQAY_SPRINT41_S35_PRESERVATION=true' >> "$GITHUB_ENV"
-            echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
-            echo 'Recognized exact post-Sprint41 canonical documentation reconciliation shape.'
-          elif [[ "$count" -eq 1 && "$fingerprint" == '4297e429d072432122534ac88c96d3ce18ed870e31c2b5605d6fbb7d5ada0b0b' ]]; then
-            echo 'ONEQAY_SPRINT41_S35_PRESERVATION=true' >> "$GITHUB_ENV"
-            echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
-            echo 'Recognized exact Sprint42 disabled-identity session-termination entry-gate successor shape.'
-          elif [[ "$count" -eq 1 && "$fingerprint" == '2c0f9ad3b6e8a9fe2199202656da55c8af533c57cd653be61c28cebfeabb3dc2' ]]; then
-            echo 'ONEQAY_SPRINT41_S35_PRESERVATION=true' >> "$GITHUB_ENV"
-            echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
-            echo 'Recognized exact Sprint43 identity-authentication eligibility reactivation entry-gate successor shape.'
-          elif [[ "$count" -eq 1 && "$fingerprint" == '93559a76a6b31068316959787d8e7ebf041355955aa4226262958c39f791af89' ]]; then
-            echo 'ONEQAY_SPRINT41_S35_PRESERVATION=true' >> "$GITHUB_ENV"
-            echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
-            echo 'Recognized exact Sprint44 identity-reactivation fresh-authentication re-entry entry-gate successor shape.'
-          elif [[ "$count" -eq 1 && "$fingerprint" == 'c2531ec04dd34198ac94aee5d5f39c271440101541817c1f12bcfb0140a2dca0' ]]; then
-            echo 'ONEQAY_SPRINT41_S35_PRESERVATION=true' >> "$GITHUB_ENV"
-            echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
-            echo 'Recognized exact Sprint45 pending-MFA identity-eligibility revalidation entry-gate successor shape.'
-          elif [[ "$count" -eq 1 && "$fingerprint" == '94430119e646c8ab2fca48233276b8155c8f8769965532b3c739479510f10017' ]]; then
-            echo 'ONEQAY_SPRINT41_S35_PRESERVATION=true' >> "$GITHUB_ENV"
-            echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
-            echo 'Recognized exact Sprint45 pending-MFA identity-eligibility revalidation schema/source-envelope gate successor shape.'
-          elif [[ "$count" -eq 1 && "$fingerprint" == '5005a4ecc48fb122f024e09b3e73ab0ddada7a9d1e6aada6d2c53aae763e5975' ]]; then
-            echo 'ONEQAY_SPRINT41_S35_PRESERVATION=true' >> "$GITHUB_ENV"
-            echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
-            echo 'Recognized exact Sprint44 identity-reactivation fresh-authentication re-entry schema/source-envelope gate successor shape.'
-          elif [[ "$count" -eq 4 && "$fingerprint" == 'ff01f1355de6c7fdfd28c2d359eb70787dd8448f0b1fc6d9cb73c1a0fb76580a' ]] || [[ "$count" -eq 4 && "$fingerprint" == '5dfaecf9be5c584b431606a7253515ab623ad9a11b4ff74062e794a1f40917c7' ]]; then
-            echo 'ONEQAY_SPRINT41_S35_PRESERVATION=true' >> "$GITHUB_ENV"
-            echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
-            echo 'Recognized exact Sprint44 identity-reactivation fresh-authentication re-entry source successor shape.'
-          elif [[ "$count" -eq 1 && "$fingerprint" == '71ea234d8aa6e4691e5871e2165a61c162a04d30c824a6ae8b3aafb8c39962be' ]]; then
-            echo 'ONEQAY_SPRINT41_S35_PRESERVATION=true' >> "$GITHUB_ENV"
-            echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
-            echo 'Recognized exact Sprint43 identity-authentication eligibility reactivation schema/source-envelope gate successor shape.'
-          elif [[ "$count" -eq 1 && "$fingerprint" == 'ea64d8bb82faab74b21dfc3cab1c5ac6550e4444fc91baee7567f4fe2680bd26' ]]; then
-            echo 'ONEQAY_SPRINT41_S35_PRESERVATION=true' >> "$GITHUB_ENV"
-            echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
-            echo 'Recognized exact Sprint42 disabled-identity session-termination schema/source-envelope gate successor shape.'
-          elif [[ "$count" -eq 19 && "$fingerprint" == 'fc2b578fc9d090dfce1fd34c5acfa7a07f065979a94f62becb3dc54dee664920' ]]; then
-            echo 'ONEQAY_SPRINT41_S35_PRESERVATION=true' >> "$GITHUB_ENV"
-            echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
-            echo 'Recognized exact post-Sprint41 19-workflow historical preservation correction shape.'
-          elif [[ "$count" -eq 8 && "$fingerprint" == 'e773cbe308d202808021c452c75954cc80234c081bbb1f23cb757210f76b8c85' ]]; then
-            echo 'ONEQAY_SPRINT41_S35_PRESERVATION=true' >> "$GITHUB_ENV"
-            echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
-            echo 'Recognized exact Sprint42 eight-workflow source-preservation predecessor shape.'
-          elif [[ "$count" -eq 8 && "$fingerprint" == '6315890d318c3cdfca549bfacef6cb8d1ca66a4421416b49b4978095a98b6729' ]]; then
-            echo 'ONEQAY_SPRINT41_S35_PRESERVATION=true' >> "$GITHUB_ENV"
-            echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
-            echo 'Recognized exact Sprint42 disabled-identity session-termination source successor shape.'
-          elif [[ "$count" -eq 9 && "$fingerprint" == 'b8afa8415c0675c2675c1b8dbd528b44e8181a8f79a97fe28b0a0996623e1749' ]]; then
-            echo 'ONEQAY_SPRINT41_S35_PRESERVATION=true' >> "$GITHUB_ENV"
-            echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
-            echo 'Recognized exact Sprint43 nine-workflow source-preservation predecessor shape.'
-          elif [[ "$count" -eq 9 && "$fingerprint" == '3d0293362f451fe4bf472d0d2c38c3eec3d67df75b451ba5b273e8dbdb0f2eed' ]]; then
-            echo 'ONEQAY_SPRINT41_S35_PRESERVATION=true' >> "$GITHUB_ENV"
-            echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
-            echo 'Recognized exact Sprint43 identity-authentication eligibility reactivation source successor shape.'
-          elif [[ "$count" -eq 2 && "$fingerprint" == 'bde0c14f6b8c45f090844b9e5d701415690e990b8b7bea3b605f4ba04c727116' ]]; then
-            echo 'ONEQAY_SPRINT41_S35_PRESERVATION=true' >> "$GITHUB_ENV"
-            echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
-            echo 'Recognized exact Sprint33/Sprint34 two-workflow source-compatibility successor state.'
-          elif [[ "$count" -eq 3 && "$fingerprint" == 'fd5f1466a41a7b11f0684303f5e93196668c2ca929ce9119e415186ae6708e9d' ]]; then
-            echo 'ONEQAY_SPRINT41_S35_PRESERVATION=true' >> "$GITHUB_ENV"
-            echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
-            echo 'Recognized exact Sprint43 legacy three-workflow compatibility correction shape.'
-          fi
+          section = '''## Canonical post-Sprint45 source publication reconciliation — 2026-08-29
 
-      - name: Enforce frozen Sprint35 source envelope
-        if: env.ONEQAY_SPRINT41_S35_PRESERVATION != 'true'
-        shell: bash
-        run: |
-          set -euo pipefail
-          if [[ "${{ github.event_name }}" = "pull_request" ]]; then
-            git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | sort > /tmp/actual-sprint35-paths
-            actual_count="$(wc -l < /tmp/actual-sprint35-paths)"
-            actual_fingerprint="$(sha256sum /tmp/actual-sprint35-paths | awk '{print $1}')"
-            sprint36_successor=false
+This current-facing section supersedes older post-Sprint44/current-state wording retained below as historical provenance. It records canonical source and CI evidence only and creates no new implementation or lifecycle authority.
 
-            cat > /tmp/post-sprint35-reconciliation-paths <<'EOF'
+- Functional canonical baseline reconciled by this docs-only publication: `031d2379565a9b5cb5f1e6bc9e02957f8291206d`; tree `4beda30c01ffcc3f371c1460fc2caaa8fe4adea0`; GitHub signature **verified / valid**.
+- Sprint45 **First-Party Pending MFA Identity Eligibility Revalidation Foundation** is **IMPLEMENTED / PUBLISHED** through PR #387 as `031d2379565a9b5cb5f1e6bc9e02957f8291206d`, from qualified exact source head `0f1e7db2193254171ac2ac3794ec0a8fd5a5140e`.
+- Sprint45 source remains exactly **4 paths** with sorted newline-terminated SHA-256 `5dfaecf9be5c584b431606a7253515ab623ad9a11b4ff74062e794a1f40917c7`.
+- Canonical source migrations remain exactly **#1–#15**. Sprint45 is **NO_SCHEMA_CHANGE**; migration #16 is **NOT SELECTED** and does not exist.
+- Sprint45 revalidates current first-party identity authentication eligibility for the exact pending tenant+identity before privileged TOTP enrollment start, enrollment confirmation, or challenge completion may advance authentication state.
+- When session control is enabled and current eligibility cannot be proven true, the pending framework session is invalidated, the CSRF token is regenerated, no TOTP advancement occurs, and no logical or framework full-authentication authority is issued.
+- Later Sprint43 reactivation cannot resume or resurrect the burned pending MFA flow. A new canonical primary-credential authentication is required before any new pending privileged MFA flow may be established.
+- Historical revoked, expired, idle-expired, epoch-invalid, membership-invalid, organizationally invalid, or otherwise terminated logical session authority remains invalid and is never restored or reused.
+- Sprint45 adds no restore/resume/login-after-reactivate/automatic-login/self-service reactivation-login/protected-control bypass/break-glass/bulk/cross-tenant/timed/caller-selected tenant, identity, role, permission, or session authority.
+- The final Sprint45 exact source head completed **19 materially triggered pull-request workflows / 19 success / 0 non-success**, including the dedicated Sprint45 regression and the exact historical Sprint36 preservation gate; the repository-native `product-owner-merge-authority` status completed **success** before squash publication.
+- The bounded publication chain includes the frozen Sprint45 schema/source-envelope gate PR #378, bounded legacy-horizon compatibility PR #383, exact Sprint36 source-compatibility predecessor PR #386, and final source PR #387. Closed unmerged attempts do not constitute canonical authority.
+- Technical Preview remains **`NO_SCHEMA_CHANGE / SPRINT40 NOT ACTIVATED`**; Sprint41 migration #15 and Sprint42/Sprint43/Sprint44/Sprint45 source remain unactivated/unapplied in Technical Preview. Production remains **`NO-GO / NOT AUTHORIZED`**. Updater remains **`DISABLED / UNWIRED`**. Deployment, release, migration execution, and rollback remain **`NOT AUTHORIZED`**.
+- No Sprint46 implementation concern is selected by this reconciliation. Any Sprint46 or other successor concern requires a separately bounded Product Owner entry gate; migration #16, new source/schema/runtime authority, Preview/Production activation, updater wiring, deployment, release, migration execution, and rollback are not implied.
+- This reconciliation changes only the established **13-document canonical state envelope**, whose sorted newline-terminated path SHA-256 remains `b129d4b1c1135f2f5aecd5dde5ff1b5f6392eecb4d54006e80fc71889763647d`.
+
+Attribution: **Lab | zefry**
+'''.encode('utf-8')
+
+          marker = b'## Canonical post-Sprint45 source publication reconciliation — 2026-08-29'
+          for raw in paths:
+              path = Path(raw)
+              data = path.read_bytes()
+              if marker in data:
+                  raise SystemExit(f'already reconciled unexpectedly: {raw}')
+              first_nl = data.find(b'\n')
+              if first_nl < 0 or not data.startswith(b'# '):
+                  raise SystemExit(f'missing canonical H1: {raw}')
+              path.write_bytes(data[:first_nl + 1] + b'\n' + section + data[first_nl + 1:])
+          PY
+
+          git checkout origin/main -- .github/workflows/sprint35-privileged-totp-recovery-regression.yml
+
+          cat > /tmp/expected <<'EOF'
+          .github/workflows/README.md
+          ARCHITECTURE.md
+          CHANGELOG.md
+          DATABASE.md
+          DEPLOYMENT.md
+          PROJECT_MANIFEST.md
+          README.md
+          ROADMAP.md
+          SECURITY.md
+          TASKS.md
           docs/ai/AI_NEXT_TASK.md
-          docs/ai/AI_POST_SPRINT_35_CANONICAL_STATE.md
+          docs/ai/AI_PROJECT_STATE.md
+          docs/ai/AI_SESSION_STATE.md
           EOF
-            sort -o /tmp/post-sprint35-reconciliation-paths /tmp/post-sprint35-reconciliation-paths
-            test "$(sha256sum /tmp/post-sprint35-reconciliation-paths | awk '{print $1}')" = "3560af0fd075ac70c3e0c0c54e0562aa72a8accdbcb24e62412dab6f3875945e"
+          sort -o /tmp/expected /tmp/expected
+          test "$(sha256sum /tmp/expected | awk '{print $1}')" = 'b129d4b1c1135f2f5aecd5dde5ff1b5f6392eecb4d54006e80fc71889763647d'
 
-            cat > /tmp/post-sprint36-reconciliation-paths <<'EOF'
-          docs/ai/AI_NEXT_TASK.md
-          docs/ai/AI_POST_SPRINT_36_CANONICAL_STATE.md
-          EOF
-            sort -o /tmp/post-sprint36-reconciliation-paths /tmp/post-sprint36-reconciliation-paths
-            test "$(sha256sum /tmp/post-sprint36-reconciliation-paths | awk '{print $1}')" = "2e2c88793557dc4a0bed42a3610bc83f1c811a469dd50636f62b5c9397e9683d"
-
-            cat > /tmp/post-sprint36-compatibility-correction-paths <<'EOF'
-          .github/workflows/sprint35-privileged-totp-recovery-regression.yml
-          .github/workflows/sprint36-first-party-session-inventory-revocation-regression.yml
-          EOF
-            sort -o /tmp/post-sprint36-compatibility-correction-paths /tmp/post-sprint36-compatibility-correction-paths
-            test "$(sha256sum /tmp/post-sprint36-compatibility-correction-paths | awk '{print $1}')" = "c333c5a6ac31588aa9b0520160a1a1080a22af2971658d742ba9456eff94cbc8"
-
-            cat > /tmp/sprint36-entry-gate-paths <<'EOF'
-          docs/SPRINT_36_FIRST_PARTY_SESSION_INVENTORY_REVOCATION_ENTRY_GATE.md
-          EOF
-            sort -o /tmp/sprint36-entry-gate-paths /tmp/sprint36-entry-gate-paths
-            test "$(sha256sum /tmp/sprint36-entry-gate-paths | awk '{print $1}')" = "5f7f977fcfbf2afcf479b3e9fecd8fdf922711ad29b51c3be7db778c0d88c2f6"
-
-            cat > /tmp/sprint36-schema-source-envelope-gate-paths <<'EOF'
-          docs/SPRINT_36_FIRST_PARTY_SESSION_INVENTORY_REVOCATION_SCHEMA_SOURCE_ENVELOPE_GATE.md
-          EOF
-            sort -o /tmp/sprint36-schema-source-envelope-gate-paths /tmp/sprint36-schema-source-envelope-gate-paths
-            test "$(sha256sum /tmp/sprint36-schema-source-envelope-gate-paths | awk '{print $1}')" = "90b723c95350369a3fe8c1493a3ec41e538310a15d8fc1728a14d21dd4b11500"
-
-            cat > /tmp/sprint37-entry-gate-paths <<'EOF'
-          docs/SPRINT_37_FIRST_PARTY_ALL_SESSION_TERMINATION_ENTRY_GATE.md
-          EOF
-            sort -o /tmp/sprint37-entry-gate-paths /tmp/sprint37-entry-gate-paths
-            test "$(sha256sum /tmp/sprint37-entry-gate-paths | awk '{print $1}')" = "0a3fe02e88dd12689eee39b1940642e61a91afb1bc985086a6cbdd9a10d30e2b"
-
-            cat > /tmp/sprint37-schema-source-envelope-gate-paths <<'EOF'
-          docs/SPRINT_37_FIRST_PARTY_ALL_SESSION_TERMINATION_SCHEMA_SOURCE_ENVELOPE_GATE.md
-          EOF
-            sort -o /tmp/sprint37-schema-source-envelope-gate-paths /tmp/sprint37-schema-source-envelope-gate-paths
-            test "$(sha256sum /tmp/sprint37-schema-source-envelope-gate-paths | awk '{print $1}')" = "872d2c9cc2e535bfc2882ad64927cc9873fe001af4ece3bb75308e66d1008b32"
-
-            cat > /tmp/sprint37-source-paths <<'EOF'
-          .github/workflows/sprint35-privileged-totp-recovery-regression.yml
-          .github/workflows/sprint36-first-party-session-inventory-revocation-regression.yml
-          .github/workflows/sprint37-first-party-all-session-termination-regression.yml
-          apps/web/app/Application/Identity/FirstPartySessionAuthorityRepository.php
-          apps/web/app/Application/Identity/FirstPartySessionAuthorityService.php
-          apps/web/app/Delivery/Http/Identity/FirstPartySessionControlController.php
-          apps/web/app/Infrastructure/Identity/LaravelFirstPartySessionAuthorityRepository.php
-          apps/web/routes/web.php
-          apps/web/tests/first-party-session-all-session-termination.php
-          apps/web/tests/first-party-session-inventory-revocation.php
-          docs/FIRST_PARTY_ALL_SESSION_TERMINATION_FOUNDATION.md
-          EOF
-            sort -o /tmp/sprint37-source-paths /tmp/sprint37-source-paths
-            test "$(sha256sum /tmp/sprint37-source-paths | awk '{print $1}')" = "a221779e05b1e8ab220610b5068be5d1eb01bc08b516b338ba8f22373e7d89d0"
-
-            cat > /tmp/post-sprint37-preservation-paths <<'EOF'
-          .github/workflows/sprint35-privileged-totp-recovery-regression.yml
-          .github/workflows/sprint36-first-party-session-inventory-revocation-regression.yml
-          .github/workflows/sprint37-first-party-all-session-termination-regression.yml
-          EOF
-            sort -o /tmp/post-sprint37-preservation-paths /tmp/post-sprint37-preservation-paths
-            test "$(sha256sum /tmp/post-sprint37-preservation-paths | awk '{print $1}')" = "93fe19acad52a31981ecea81ab1dc65c730f0f01729959ca6eaedb0de5b128b7"
-
-            cat > /tmp/post-sprint37-reconciliation-paths <<'EOF'
-          docs/ai/AI_NEXT_TASK.md
-          docs/ai/AI_POST_SPRINT_37_CANONICAL_STATE.md
-          EOF
-            sort -o /tmp/post-sprint37-reconciliation-paths /tmp/post-sprint37-reconciliation-paths
-            test "$(sha256sum /tmp/post-sprint37-reconciliation-paths | awk '{print $1}')" = "2b3a711f5cb921dea0fb51a005c0bc742186bce526a0a7e87b10215733215dbe"
-
-            cat > /tmp/post-sprint38-reconciliation-paths <<'EOF'
-          docs/ai/AI_NEXT_TASK.md
-          docs/ai/AI_POST_SPRINT_38_CANONICAL_STATE.md
-          EOF
-            sort -o /tmp/post-sprint38-reconciliation-paths /tmp/post-sprint38-reconciliation-paths
-            test "$(sha256sum /tmp/post-sprint38-reconciliation-paths | awk '{print $1}')" = "e1bd5f1acb858e3b8e91f3b57dfe8505c4142564142bf9a32b98240c1dd9c472"
-
-            cat > /tmp/post-sprint39-reconciliation-paths <<'EOF'
-          docs/ai/AI_NEXT_TASK.md
-          docs/ai/AI_POST_SPRINT_39_CANONICAL_STATE.md
-          EOF
-            sort -o /tmp/post-sprint39-reconciliation-paths /tmp/post-sprint39-reconciliation-paths
-            test "$(sha256sum /tmp/post-sprint39-reconciliation-paths | awk '{print $1}')" = "f38b1a2dea2bd5a55a5cd166db0ea7b2d4ae5186cefe2cb5db27f18f9639e866"
-
-            cat > /tmp/sprint38-entry-gate-paths <<'EOF'
-          docs/SPRINT_38_FIRST_PARTY_SESSION_ABSOLUTE_LIFETIME_ENTRY_GATE.md
-          EOF
-            sort -o /tmp/sprint38-entry-gate-paths /tmp/sprint38-entry-gate-paths
-            test "$(sha256sum /tmp/sprint38-entry-gate-paths | awk '{print $1}')" = "b5e631b39dee456c18e2f14ab3266db599a97d3b5f3778c8d8dfdd3243658434"
-
-            cat > /tmp/sprint39-entry-gate-paths <<'EOF'
-          docs/SPRINT_39_FIRST_PARTY_SESSION_ORGANIZATIONAL_ACCESS_REVALIDATION_ENTRY_GATE.md
-          EOF
-            sort -o /tmp/sprint39-entry-gate-paths /tmp/sprint39-entry-gate-paths
-            test "$(sha256sum /tmp/sprint39-entry-gate-paths | awk '{print $1}')" = "b2c4936a3315788100b47537b32474e7079143942c38684cf2394628f1084dd2"
-
-            cat > /tmp/sprint40-entry-gate-paths <<'EOF'
-          docs/SPRINT_40_FIRST_PARTY_SESSION_IDENTITY_DISABLEMENT_REVALIDATION_ENTRY_GATE.md
-          EOF
-            sort -o /tmp/sprint40-entry-gate-paths /tmp/sprint40-entry-gate-paths
-            test "$(sha256sum /tmp/sprint40-entry-gate-paths | awk '{print $1}')" = "7a8c362aa7ec66500ba544911e3fb008a20f5d21ac4d00d6a12ea04749ed2466"
-
-            cat > /tmp/sprint41-entry-gate-paths <<'EOF'
-          docs/SPRINT_41_FIRST_PARTY_IDENTITY_AUTHENTICATION_ELIGIBILITY_ADMINISTRATION_ENTRY_GATE.md
-          EOF
-            sort -o /tmp/sprint41-entry-gate-paths /tmp/sprint41-entry-gate-paths
-            test "$(sha256sum /tmp/sprint41-entry-gate-paths | awk '{print $1}')" = "074a842bd6fb56ac06ae4658aeb6596b3674d426c4d58fee594b699820eac5f2"
-
-            cat > /tmp/sprint40-schema-source-envelope-gate-paths <<'EOF'
-          docs/SPRINT_40_FIRST_PARTY_SESSION_IDENTITY_DISABLEMENT_REVALIDATION_SCHEMA_SOURCE_ENVELOPE_GATE.md
-          EOF
-            sort -o /tmp/sprint40-schema-source-envelope-gate-paths /tmp/sprint40-schema-source-envelope-gate-paths
-            test "$(sha256sum /tmp/sprint40-schema-source-envelope-gate-paths | awk '{print $1}')" = "9a3a85fb3de7ce007b09586af60e18b0cefd6ec1b6fba1b3c2b64e508354d803"
-
-            cat > /tmp/sprint39-schema-source-envelope-gate-paths <<'EOF'
-          docs/SPRINT_39_FIRST_PARTY_SESSION_ORGANIZATIONAL_ACCESS_REVALIDATION_SCHEMA_SOURCE_ENVELOPE_GATE.md
-          EOF
-            sort -o /tmp/sprint39-schema-source-envelope-gate-paths /tmp/sprint39-schema-source-envelope-gate-paths
-            test "$(sha256sum /tmp/sprint39-schema-source-envelope-gate-paths | awk '{print $1}')" = "c66722c0e61aac85deb260fb5f8989aeae55cacdd61bb60ed9beadc161b570af"
-
-            cat > /tmp/sprint39-source-paths <<'EOF'
-          .github/workflows/sprint35-privileged-totp-recovery-regression.yml
-          .github/workflows/sprint36-first-party-session-inventory-revocation-regression.yml
-          .github/workflows/sprint37-first-party-all-session-termination-regression.yml
-          .github/workflows/sprint38-first-party-session-absolute-lifetime-regression.yml
-          .github/workflows/sprint39-first-party-session-organizational-access-revalidation-regression.yml
-          apps/web/app/Delivery/Http/Middleware/EnforceActiveFirstPartySessionAuthorityMiddleware.php
-          apps/web/tests/first-party-session-organizational-access-revalidation.php
-          docs/FIRST_PARTY_SESSION_ORGANIZATIONAL_ACCESS_REVALIDATION_FOUNDATION.md
-          EOF
-            sort -o /tmp/sprint39-source-paths /tmp/sprint39-source-paths
-            test "$(sha256sum /tmp/sprint39-source-paths | awk '{print $1}')" = "2cfc92c34f46375b11bf3fe92f9094cefa598d234133847fdd6629be211f12c4"
-
-            cat > /tmp/sprint39-m75-preservation-correction-paths <<'EOF'
-          .github/workflows/m7-5-preview-release-artifact.yml
-          .github/workflows/sprint35-privileged-totp-recovery-regression.yml
-          .github/workflows/sprint36-first-party-session-inventory-revocation-regression.yml
-          .github/workflows/sprint37-first-party-all-session-termination-regression.yml
-          .github/workflows/sprint38-first-party-session-absolute-lifetime-regression.yml
-          EOF
-            sort -o /tmp/sprint39-m75-preservation-correction-paths /tmp/sprint39-m75-preservation-correction-paths
-            test "$(sha256sum /tmp/sprint39-m75-preservation-correction-paths | awk '{print $1}')" = "84031e95f99240ea9a4a6eb39f75ff8dfa731fa3f2506396642b811d3425cd68"
-
-            cat > /tmp/sprint38-schema-source-envelope-gate-paths <<'EOF'
-          docs/SPRINT_38_FIRST_PARTY_SESSION_ABSOLUTE_LIFETIME_SCHEMA_SOURCE_ENVELOPE_GATE.md
-          EOF
-            sort -o /tmp/sprint38-schema-source-envelope-gate-paths /tmp/sprint38-schema-source-envelope-gate-paths
-            test "$(sha256sum /tmp/sprint38-schema-source-envelope-gate-paths | awk '{print $1}')" = "ce1f2c0f1f1aaa0bab782eab85f6b023e2749cd98835812288711d37117887f9"
-
-            cat > /tmp/sprint38-source-paths <<'EOF'
-          .github/workflows/sprint35-privileged-totp-recovery-regression.yml
-          .github/workflows/sprint36-first-party-session-inventory-revocation-regression.yml
-          .github/workflows/sprint37-first-party-all-session-termination-regression.yml
-          .github/workflows/sprint38-first-party-session-absolute-lifetime-regression.yml
-          apps/web/app/Application/Identity/FirstPartySessionAuthorityService.php
-          apps/web/app/Providers/AppServiceProvider.php
-          apps/web/config/oneqay.php
-          apps/web/tests/first-party-session-absolute-lifetime.php
-          apps/web/tests/first-party-session-inventory-revocation.php
-          docs/FIRST_PARTY_SESSION_ABSOLUTE_LIFETIME_FOUNDATION.md
-          EOF
-            sort -o /tmp/sprint38-source-paths /tmp/sprint38-source-paths
-            test "$(sha256sum /tmp/sprint38-source-paths | awk '{print $1}')" = "411950d5602dc7160668c88e08a3941ebccc8bdc82d20bee77ce4004f039d216"
-
-            cat > /tmp/sprint35-workflow-correction-paths <<'EOF'
-          .github/workflows/sprint35-privileged-totp-recovery-regression.yml
-          EOF
-
-            if [[ "$actual_count" -eq 23 && "$actual_fingerprint" == 'ea735f8f5ee06d480863f9d1ba7ae58a91642109963c3f340e8453f3205bb7ae' ]]; then
-              echo "Recognized exact Sprint36 23-path source successor shape."
-              sprint36_successor=true
-            elif [[ "$actual_count" -eq 19 && "$actual_fingerprint" == 'fc2b578fc9d090dfce1fd34c5acfa7a07f065979a94f62becb3dc54dee664920' ]]; then
-              echo "Recognized exact 19-path historical preservation-compatibility shape; governed Sprint38 predecessor reuse remains bounded to the same exact path fingerprint."
-              sprint36_successor=true
-            elif [[ "$actual_count" -eq 11 && "$actual_fingerprint" == 'a221779e05b1e8ab220610b5068be5d1eb01bc08b516b338ba8f22373e7d89d0' ]]; then
-              echo "Recognized exact Sprint37 11-path source successor shape."
-              sprint36_successor=true
-            elif [[ "$actual_count" -eq 4 && "$actual_fingerprint" == 'a5d3b0816c3b0e6f1fa7dd5ece73ea6347042372dd517af31e303c41d49abfaa' ]]; then
-              echo "Recognized exact Sprint36 4-path requalification preservation correction shape."
-              sprint36_successor=true
-            elif [[ "$actual_count" -eq 4 && "$actual_fingerprint" == 'f6064e6563ec987fc487162fc29285870fab4869509a626c1b9a9280dc6ebafe' ]]; then
-              echo "Recognized exact post-Sprint38 4-workflow preservation predecessor shape."
-              sprint36_successor=true
-            elif [[ "$actual_count" -eq 5 && "$actual_fingerprint" == 'ab09e044925ae98740a49c46a70ff387e5f5445b245d3a556d85ad6a354305ec' ]]; then
-              echo "Recognized exact post-Sprint39 five-workflow reconciliation preservation predecessor shape."
-              sprint36_successor=true
-            elif [[ "$actual_count" -eq 3 && "$actual_fingerprint" == 'fd5f1466a41a7b11f0684303f5e93196668c2ca929ce9119e415186ae6708e9d' ]]; then
-              echo "Recognized exact Sprint32-Sprint34 Sprint41 compatibility correction shape."
-              sprint36_successor=true
-            elif [[ "$actual_count" -eq 13 && "$actual_fingerprint" == 'b129d4b1c1135f2f5aecd5dde5ff1b5f6392eecb4d54006e80fc71889763647d' ]]; then
-              echo "Recognized exact Sprint40 canonical documentation synchronization successor shape."
-              sprint36_successor=true
-            elif [[ "$actual_count" -eq 7 && "$actual_fingerprint" == '4784ffca1c940d3fa54a2a3988ead07e2de993bde8d3af2bd41014dbdf905be0' ]]; then
-              echo "Recognized exact Sprint39 seven-workflow M7.5 preservation correction shape."
-              sprint36_successor=true
-            elif [[ "$actual_count" -eq 2 && "$actual_fingerprint" == 'bde0c14f6b8c45f090844b9e5d701415690e990b8b7bea3b605f4ba04c727116' ]]; then
-              echo "Recognized exact Sprint40 Sprint33/Sprint34 historical-compatibility correction shape."
-              sprint36_successor=true
-            elif [[ "$actual_count" -eq 1 && "$actual_fingerprint" == '261f147d880a37fe9137b28d9541724c6c5e3987138f3fb56d5465ff31dc7412' ]]; then
-              echo "Recognized exact Sprint32 workflow YAML closure successor shape."
-              sprint36_successor=true
-            elif [[ "$actual_count" -eq 6 && "$actual_fingerprint" == '671946562a3eef1375d87b70936bac263aa18f660d6ea274406ed57f1c653351' ]]; then
-              grep -Fq 'bde0c14f6b8c45f090844b9e5d701415690e990b8b7bea3b605f4ba04c727116' .github/workflows/sprint33-recovery-bound-password-reset-regression.yml
-              grep -Fq 'bde0c14f6b8c45f090844b9e5d701415690e990b8b7bea3b605f4ba04c727116' .github/workflows/sprint34-authenticated-password-change-regression.yml
-              echo "Recognized exact Sprint40 six-workflow source-preservation predecessor shape with historical correction closure."
-              sprint36_successor=true
-            elif [[ "$actual_count" -eq 8 && "$actual_fingerprint" == 'a9caf2b68210a38687fee543256aec04dc1e67ee1ef403608f7db69139957ff8' ]]; then
-              echo "Recognized exact Sprint40 identity-disablement revalidation source successor shape."
-              sprint36_successor=true
-            elif cmp -s /tmp/actual-sprint35-paths /tmp/post-sprint35-reconciliation-paths; then
-              echo "Recognized exact post-Sprint35 canonical reconciliation successor shape."
-            elif cmp -s /tmp/actual-sprint35-paths /tmp/post-sprint36-reconciliation-paths; then
-              echo "Recognized exact post-Sprint36 canonical reconciliation successor shape."
-              sprint36_successor=true
-            elif cmp -s /tmp/actual-sprint35-paths /tmp/post-sprint36-compatibility-correction-paths; then
-              echo "Recognized exact post-Sprint36 two-workflow compatibility correction shape."
-              sprint36_successor=true
-            elif cmp -s /tmp/actual-sprint35-paths /tmp/sprint37-entry-gate-paths; then
-              echo "Recognized exact Sprint37 entry-gate successor shape."
-              sprint36_successor=true
-            elif cmp -s /tmp/actual-sprint35-paths /tmp/sprint37-schema-source-envelope-gate-paths; then
-              echo "Recognized exact Sprint37 schema/source-envelope gate successor shape."
-              sprint36_successor=true
-            elif cmp -s /tmp/actual-sprint35-paths /tmp/post-sprint37-preservation-paths; then
-              echo "Recognized exact post-Sprint37 preservation predecessor shape."
-              sprint36_successor=true
-            elif cmp -s /tmp/actual-sprint35-paths /tmp/post-sprint37-reconciliation-paths; then
-              echo "Recognized exact post-Sprint37 canonical reconciliation successor shape."
-              sprint36_successor=true
-            elif cmp -s /tmp/actual-sprint35-paths /tmp/post-sprint38-reconciliation-paths; then
-              echo "Recognized exact post-Sprint38 canonical reconciliation successor shape."
-              sprint36_successor=true
-            elif cmp -s /tmp/actual-sprint35-paths /tmp/post-sprint39-reconciliation-paths; then
-              echo "Recognized exact post-Sprint39 canonical reconciliation successor shape."
-              sprint36_successor=true
-            elif cmp -s /tmp/actual-sprint35-paths /tmp/sprint38-entry-gate-paths; then
-              echo "Recognized exact Sprint38 entry-gate successor shape."
-              sprint36_successor=true
-            elif cmp -s /tmp/actual-sprint35-paths /tmp/sprint39-entry-gate-paths; then
-              echo "Recognized exact Sprint39 organizational-access revalidation entry-gate successor shape."
-              sprint36_successor=true
-            elif cmp -s /tmp/actual-sprint35-paths /tmp/sprint40-entry-gate-paths; then
-              echo "Recognized exact Sprint40 identity-disablement revalidation entry-gate successor shape."
-              sprint36_successor=true
-            elif cmp -s /tmp/actual-sprint35-paths /tmp/sprint41-entry-gate-paths; then
-              echo "Recognized exact Sprint41 identity-authentication eligibility administration entry-gate successor shape."
-              sprint36_successor=true
-            elif cmp -s /tmp/actual-sprint35-paths /tmp/sprint40-schema-source-envelope-gate-paths; then
-              echo "Recognized exact Sprint40 identity-disablement revalidation schema/source-envelope gate successor shape."
-              sprint36_successor=true
-            elif [[ "$actual_count" -eq 1 && "$actual_fingerprint" == '1a2c18a7ec9b363a9b2ef3bc6ff86366ab58f4812e8968d83642e6ce359f48b2' ]]; then
-              echo "Recognized exact Sprint41 identity-authentication eligibility administration schema/source-envelope gate successor shape."
-              sprint36_successor=true
-            elif cmp -s /tmp/actual-sprint35-paths /tmp/sprint39-schema-source-envelope-gate-paths; then
-              echo "Recognized exact Sprint39 organizational-access revalidation schema/source-envelope gate successor shape."
-              sprint36_successor=true
-            elif cmp -s /tmp/actual-sprint35-paths /tmp/sprint39-source-paths; then
-              echo "Recognized exact Sprint39 organizational-access revalidation source successor shape."
-              sprint36_successor=true
-            elif cmp -s /tmp/actual-sprint35-paths /tmp/sprint39-m75-preservation-correction-paths; then
-              echo "Recognized exact Sprint39 M7.5 preservation correction shape."
-              sprint36_successor=true
-            elif cmp -s /tmp/actual-sprint35-paths /tmp/sprint38-schema-source-envelope-gate-paths; then
-              echo "Recognized exact Sprint38 schema/source-envelope gate successor shape."
-              sprint36_successor=true
-            elif cmp -s /tmp/actual-sprint35-paths /tmp/sprint38-source-paths; then
-              echo "Recognized exact Sprint38 source successor shape."
-              sprint36_successor=true
-            elif cmp -s /tmp/actual-sprint35-paths /tmp/sprint36-entry-gate-paths; then
-              echo "Recognized exact Sprint36 entry-gate successor shape."
-            elif cmp -s /tmp/actual-sprint35-paths /tmp/sprint36-schema-source-envelope-gate-paths; then
-              echo "Recognized exact Sprint36 schema/source-envelope gate successor shape."
-            elif cmp -s /tmp/actual-sprint35-paths /tmp/sprint35-workflow-correction-paths; then
-              echo "Recognized exact Sprint35 successor-compatibility workflow correction shape."
-            else
-              unexpected="$(comm -13 /tmp/allowed-sprint35-paths /tmp/actual-sprint35-paths)"
-              missing="$(comm -23 /tmp/required-sprint35-paths /tmp/actual-sprint35-paths)"
-              test -z "$unexpected" || { echo "Unexpected Sprint35 paths:" >&2; echo "$unexpected" >&2; exit 1; }
-              test -z "$missing" || { echo "Missing required Sprint35 implementation paths:" >&2; echo "$missing" >&2; exit 1; }
-            fi
-
-            if [[ "$sprint36_successor" == 'true' ]] && [[ -f 'apps/web/database/migrations/0000_00_00_000013_create_first_party_session_authority.php' ]]; then
-              git update-index --assume-unchanged 'apps/web/database/migrations/0000_00_00_000013_create_first_party_session_authority.php'
-              rm -f 'apps/web/database/migrations/0000_00_00_000013_create_first_party_session_authority.php'
-              echo "Migration #13 isolated only from historical Sprint35 executable preservation."
-            fi
-            if [[ "$sprint36_successor" == 'true' ]] && [[ -f 'apps/web/database/migrations/0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php' ]]; then
-              git update-index --assume-unchanged 'apps/web/database/migrations/0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php'
-              rm -f 'apps/web/database/migrations/0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php'
-              echo "Migration #14 isolated only from historical Sprint35 executable preservation."
-            fi
-          fi
-
-      - name: Isolate exact Sprint41 state from historical Sprint35 executable preservation
-        if: env.ONEQAY_SPRINT41_S35_PRESERVATION == 'true'
-        shell: bash
-        run: |
-          set -euo pipefail
-          for migration in \
-            apps/web/database/migrations/0000_00_00_000013_create_first_party_session_authority.php \
-            apps/web/database/migrations/0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php
-          do
-            if [[ -f "$migration" ]]; then
-              git update-index --assume-unchanged "$migration"
-              rm -f "$migration"
-            fi
-          done
-          if [[ "${ONEQAY_SPRINT41_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
-            migration='apps/web/database/migrations/0000_00_00_000015_create_identity_authentication_eligibility_administration_journal.php'
-            if [[ -f "$migration" ]]; then
-              git update-index --assume-unchanged "$migration"
-              rm -f "$migration"
-            fi
-          fi
-
-      - name: Preserve historical regression blobs
-        shell: bash
-        run: |
-          set -euo pipefail
-          test "$(git rev-parse HEAD:apps/web/tests/privileged-totp-mfa.php)" = "ce0d0cde5031191dc0fdc383ad71d1e20bacf869"
-          test "$(git rev-parse HEAD:apps/web/tests/run.php)" = "8f74a9fc7db0efce06bf03bc7e5aead644d80948"
-
-      - name: Preserve migrations one through eleven
-        shell: bash
-        run: |
-          set -euo pipefail
-          if [[ "${{ github.event_name }}" = "pull_request" ]]; then
-            if git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" -- apps/web/database/migrations/ | grep -E '0000_00_00_00000[1-9]|0000_00_00_00001[01]' ; then
-              echo "Historical migrations #1-#11 are immutable." >&2
-              exit 1
-            fi
-          fi
-          test -f apps/web/database/migrations/0000_00_00_000012_add_totp_factor_epoch_and_recovery_authority.php
-
-      - name: Validate PHP runtime and syntax
-        shell: bash
-        run: |
-          set -euo pipefail
-          php -r 'if (PHP_VERSION_ID < 80200 || PHP_VERSION_ID >= 80600) { exit(1); }'
-          find apps/web/app apps/web/database/migrations apps/web/routes apps/web/tests -type f -name '*.php' -print0 |
-            while IFS= read -r -d '' file; do php -l "$file"; done
-
-      - name: Install locked Composer dependencies
-        working-directory: apps/web
-        run: composer install --no-interaction --no-progress --prefer-dist
-
-      - name: Run Sprint35 recovery regression
-        working-directory: apps/web
-        run: php tests/privileged-totp-recovery.php
-
-      - name: Preserve canonical Sprint30 TOTP behavior
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p /tmp/sprint35-successor-migrations
-          restore_successors() {
-            for file in /tmp/sprint35-successor-migrations/*.php; do
-              [[ -e "$file" ]] || continue
-              mv "$file" apps/web/database/migrations/
-            done
+          git add .github/workflows/README.md ARCHITECTURE.md CHANGELOG.md DATABASE.md DEPLOYMENT.md PROJECT_MANIFEST.md README.md ROADMAP.md SECURITY.md TASKS.md docs/ai/AI_NEXT_TASK.md docs/ai/AI_PROJECT_STATE.md docs/ai/AI_SESSION_STATE.md .github/workflows/sprint35-privileged-totp-recovery-regression.yml
+          git diff --cached --name-only | sort > /tmp/staged
+          cmp -s /tmp/expected /tmp/staged || {
+            echo 'Materialized reconciliation envelope mismatch.' >&2
+            diff -u /tmp/expected /tmp/staged >&2 || true
+            exit 1
           }
-          trap restore_successors EXIT
-          for migration in \
-            apps/web/database/migrations/0000_00_00_000010_create_identity_recovery_codes.php \
-            apps/web/database/migrations/0000_00_00_000011_add_credential_epoch_to_identity_password_credentials.php \
-            apps/web/database/migrations/0000_00_00_000012_add_totp_factor_epoch_and_recovery_authority.php; do
-            mv "$migration" /tmp/sprint35-successor-migrations/
-          done
-          (cd apps/web && php tests/privileged-totp-mfa.php)
-          restore_successors
-          trap - EXIT
-          test "$(git hash-object apps/web/tests/privileged-totp-mfa.php)" = "ce0d0cde5031191dc0fdc383ad71d1e20bacf869"
 
-      - name: Preserve full application regression
-        working-directory: apps/web
-        run: php tests/run.php
-
-      - name: Preserve disabled activation defaults
-        shell: bash
-        run: |
-          set -euo pipefail
-          test "${ONEQAY_PERSISTENCE_ENABLED}" = "false"
-          test "${ONEQAY_AUTHENTICATION_RECOVERY_ENABLED}" = "false"
-          grep -F "'absolute_ttl_seconds' => 43200" apps/web/config/oneqay.php
-          grep -F 'TenantMembershipVerifier $tenantMemberships' apps/web/app/Delivery/Http/Middleware/EnforceActiveFirstPartySessionAuthorityMiddleware.php
-          grep -F 'OrganizationalRelationshipVerifier $organizationalRelationships' apps/web/app/Delivery/Http/Middleware/EnforceActiveFirstPartySessionAuthorityMiddleware.php
-          ! grep -R --exclude='sprint35-privileged-totp-recovery-regression.yml' -E 'ONEQAY_TECHNICAL_PREVIEW_ENABLED[[:space:]]*=[[:space:]]*true' apps/web .github/workflows
-          grep -F 'Technical Preview remains **NO_SCHEMA_CHANGE**.' docs/PRIVILEGED_TOTP_RECOVERY_FACTOR_REPLACEMENT_FOUNDATION.md
-          grep -F 'Production remains **NO-GO / NOT AUTHORIZED**.' docs/PRIVILEGED_TOTP_RECOVERY_FACTOR_REPLACEMENT_FOUNDATION.md
-          grep -F 'Updater remains **DISABLED / UNWIRED**.' docs/PRIVILEGED_TOTP_RECOVERY_FACTOR_REPLACEMENT_FOUNDATION.md
+          git config user.name 'Lab | zefry'
+          git config user.email 'lab.zefry@users.noreply.github.com'
+          git commit -m 'docs: materialize Sprint45 reconciliation' -m 'Attribution: Lab | zefry'
+          git push origin HEAD:sprint45-doc-reconciliation-s35-materializer
