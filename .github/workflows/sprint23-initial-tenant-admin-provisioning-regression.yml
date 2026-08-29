@@ -131,7 +131,7 @@ jobs:
             git update-index --assume-unchanged apps/web/database/migrations/0000_00_00_000011_add_credential_epoch_to_identity_password_credentials.php
             rm -f apps/web/database/migrations/0000_00_00_000010_create_identity_recovery_codes.php
             rm -f apps/web/database/migrations/0000_00_00_000011_add_credential_epoch_to_identity_password_credentials.php
-            echo 'Exact Sprint 34 successor envelope recognized; historical executable preservation remains active while migration #10 is isolated from legacy migration-shape guards.'
+            echo 'Exact Sprint 34 successor envelope recognized; historical executable regression remains active while migration #10 is isolated from legacy migration-shape guards.'
             exit 0
           fi
           if [[ "$count" -eq 39 ]] && [[ "$fingerprint" == '04a1177c12712183a7dda4ae81be1356c0e41294533336c9f999d376c224712a' ]]; then
@@ -177,7 +177,7 @@ jobs:
           fi
           if [[ -f 'apps/web/database/migrations/0000_00_00_000011_add_credential_epoch_to_identity_password_credentials.php' ]]; then
             git update-index --assume-unchanged 'apps/web/database/migrations/0000_00_00_000011_add_credential_epoch_to_identity_password_credentials.php'
-            rm -f 'apps/web/database/migrations/0000_00_00_000011_add_first_party_authentication_eligibility_to_identities.php'
+            rm -f 'apps/web/database/migrations/0000_00_00_000011_add_credential_epoch_to_identity_password_credentials.php'
           fi
           if [[ -f 'apps/web/database/migrations/0000_00_00_000012_add_totp_factor_epoch_and_recovery_authority.php' ]]; then
             git update-index --assume-unchanged 'apps/web/database/migrations/0000_00_00_000012_add_totp_factor_epoch_and_recovery_authority.php'
