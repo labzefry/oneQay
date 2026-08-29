@@ -1,3 +1,4 @@
+# Sprint44 source four-path compatibility predecessor anchor.
 # Sprint41 Sprint38 source-successor route-guard correction anchor.
 # Sprint41 Sprint38 legacy-horizon executable-isolation correction anchor.
 # Sprint41 Sprint38 legacy-horizon migration-state correction anchor.
@@ -345,6 +346,12 @@ jobs:
               echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             elif [[ "$(wc -l < /tmp/actual-sprint37-paths)" -eq 1 ]] && [[ "$(sha256sum /tmp/actual-sprint37-paths | awk '{print $1}')" == "5005a4ecc48fb122f024e09b3e73ab0ddada7a9d1e6aada6d2c53aae763e5975" ]]; then
               echo "Recognized exact Sprint44 identity-reactivation fresh-authentication re-entry schema/source-envelope gate successor shape."
+              sprint40_source_successor=true
+              sprint41_source_successor=true
+              echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+              echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            elif [[ "$(wc -l < /tmp/actual-sprint37-paths)" -eq 4 ]] && [[ "$(sha256sum /tmp/actual-sprint37-paths | awk '{print $1}')" == "ff01f1355de6c7fdfd28c2d359eb70787dd8448f0b1fc6d9cb73c1a0fb76580a" ]]; then
+              echo "Recognized exact Sprint44 identity-reactivation fresh-authentication re-entry source successor shape."
               sprint40_source_successor=true
               sprint41_source_successor=true
               echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
