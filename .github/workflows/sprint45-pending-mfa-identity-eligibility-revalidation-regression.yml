@@ -1,0 +1,169 @@
+name: Sprint45 Pending MFA Identity Eligibility Revalidation Regression
+
+# Author by Lab | zefry
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/sprint45-pending-mfa-identity-eligibility-revalidation-regression.yml'
+      - 'apps/web/app/Delivery/Http/Identity/PrivilegedTotpMfaController.php'
+      - 'apps/web/tests/first-party-pending-mfa-identity-eligibility-revalidation.php'
+      - 'docs/FIRST_PARTY_PENDING_MFA_IDENTITY_ELIGIBILITY_REVALIDATION_FOUNDATION.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint45-pending-mfa-eligibility-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sprint45-pending-mfa-eligibility:
+    name: sprint45-pending-mfa-eligibility
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHg=
+      APP_DEBUG: 'false'
+      APP_URL: http://localhost
+      ONEQAY_RUNTIME_CLASS: ci
+      ONEQAY_PERSISTENCE_ENABLED: 'true'
+      ONEQAY_AUTHENTICATION_SESSION_CONTROL_ENABLED: 'true'
+      ONEQAY_PRIVILEGED_TOTP_MFA_ENABLED: 'true'
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Setup exact PHP runtime
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        with:
+          php-version: '8.3'
+          tools: composer:v2
+          coverage: none
+
+      - name: Enforce exact Sprint45 source envelope
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/sprint45-source-paths <<'EOF'
+          .github/workflows/sprint45-pending-mfa-identity-eligibility-revalidation-regression.yml
+          apps/web/app/Delivery/Http/Identity/PrivilegedTotpMfaController.php
+          apps/web/tests/first-party-pending-mfa-identity-eligibility-revalidation.php
+          docs/FIRST_PARTY_PENDING_MFA_IDENTITY_ELIGIBILITY_REVALIDATION_FOUNDATION.md
+          EOF
+          sort -o /tmp/sprint45-source-paths /tmp/sprint45-source-paths
+          test "$(sha256sum /tmp/sprint45-source-paths | awk '{print $1}')" = '5dfaecf9be5c584b431606a7253515ab623ad9a11b4ff74062e794a1f40917c7'
+
+          git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | sort > /tmp/actual-sprint45-source-paths
+          cmp -s /tmp/sprint45-source-paths /tmp/actual-sprint45-source-paths || {
+            echo 'Sprint45 changed-file envelope mismatch.' >&2
+            diff -u /tmp/sprint45-source-paths /tmp/actual-sprint45-source-paths >&2 || true
+            exit 1
+          }
+          test "$(sha256sum /tmp/actual-sprint45-source-paths | awk '{print $1}')" = '5dfaecf9be5c584b431606a7253515ab623ad9a11b4ff74062e794a1f40917c7'
+          ! grep -Eq '(^|/)\.env($|\.)|(^|/)composer\.(json|lock)$|(^|/)package(-lock)?\.json$|^apps/web/database/migrations/' /tmp/actual-sprint45-source-paths
+
+      - name: Enforce NO_SCHEMA_CHANGE and migration sixteen lock
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t migrations < <(find apps/web/database/migrations -maxdepth 1 -type f -name '*.php' -printf '%f\n' | sort)
+          test "${#migrations[@]}" -eq 15
+          for index in $(seq 1 15); do
+            prefix="$(printf '0000_00_00_%06d_' "$index")"
+            test "$(printf '%s\n' "${migrations[@]}" | grep -c "^${prefix}")" -eq 1
+          done
+          ! printf '%s\n' "${migrations[@]}" | grep -q '^0000_00_00_000016_'
+          if [[ "${{ github.event_name }}" = 'pull_request' ]]; then
+            git diff --exit-code "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" -- apps/web/database/migrations
+          fi
+
+      - name: Verify pending MFA eligibility composition and ordering
+        shell: bash
+        run: |
+          set -euo pipefail
+          controller='apps/web/app/Delivery/Http/Identity/PrivilegedTotpMfaController.php'
+          grep -Fq 'use App\Application\Identity\FirstPartyIdentityEligibilityVerifier;' "$controller"
+          grep -Fq 'private readonly FirstPartyIdentityEligibilityVerifier $identityEligibility' "$controller"
+          test "$(grep -Fc '$this->pendingContext($request,' "$controller")" -eq 3
+          grep -Fq '! $this->identityEligibility->isEligible($tenantId, $identityId)' "$controller"
+          eligibility_line="$(grep -n '! \$this->identityEligibility->isEligible' "$controller" | cut -d: -f1)"
+          context_line="$(grep -n '\$this->enterOrganizationalContext->enter' "$controller" | head -1 | cut -d: -f1)"
+          test -n "$eligibility_line" && test -n "$context_line"
+          test "$eligibility_line" -lt "$context_line"
+          grep -A4 -F '! $this->identityEligibility->isEligible($tenantId, $identityId)' "$controller" | grep -Fq '$session->invalidate();'
+          grep -A4 -F '! $this->identityEligibility->isEligible($tenantId, $identityId)' "$controller" | grep -Fq '$session->regenerateToken();'
+          grep -Fq "SafeErrorEnvelope::make('MFA_VERIFICATION_FAILED'" "$controller"
+
+      - name: Verify no route or authority widening
+        shell: bash
+        run: |
+          set -euo pipefail
+          routes='apps/web/routes/web.php'
+          controller='apps/web/app/Delivery/Http/Identity/PrivilegedTotpMfaController.php'
+          grep -Fq "Route::post('/auth/mfa/totp/enrollment/start'" "$routes"
+          grep -Fq "Route::post('/auth/mfa/totp/enrollment/confirm'" "$routes"
+          grep -Fq "Route::post('/auth/mfa/totp/challenge'" "$routes"
+          ! grep -Ein 'login_after_reactivate|restore_session|resume_session|reactivate.*login|restore.*session|resume.*session' "$routes"
+          ! grep -Ein 'caller.*tenant|caller.*identity|caller.*role|caller.*permission|caller.*authority' "$controller"
+
+      - name: Lint Sprint45 PHP source
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l apps/web/app/Delivery/Http/Identity/PrivilegedTotpMfaController.php
+          php -l apps/web/tests/first-party-pending-mfa-identity-eligibility-revalidation.php
+
+      - name: Install locked application dependencies
+        working-directory: apps/web
+        run: |
+          composer validate --no-check-publish
+          composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Run Sprint45 pending MFA eligibility regression
+        working-directory: apps/web
+        run: php tests/first-party-pending-mfa-identity-eligibility-revalidation.php
+
+      - name: Preserve Sprint44 fresh-authentication re-entry regression
+        working-directory: apps/web
+        env:
+          ONEQAY_PRIVILEGED_TOTP_MFA_ENABLED: 'false'
+        run: php tests/first-party-identity-reactivation-fresh-authentication-reentry.php
+
+      - name: Preserve full application regression
+        working-directory: apps/web
+        env:
+          ONEQAY_PERSISTENCE_ENABLED: 'false'
+          ONEQAY_AUTHENTICATION_SESSION_CONTROL_ENABLED: 'false'
+          ONEQAY_PRIVILEGED_TOTP_MFA_ENABLED: 'false'
+        run: php tests/run.php
+
+      - name: Preserve lifecycle locks
+        shell: bash
+        run: |
+          set -euo pipefail
+          doc='docs/FIRST_PARTY_PENDING_MFA_IDENTITY_ELIGIBILITY_REVALIDATION_FOUNDATION.md'
+          grep -Fq 'Technical Preview remains **NO_SCHEMA_CHANGE / SPRINT40 NOT ACTIVATED**.' "$doc"
+          grep -Fq 'Sprint41 migration #15 remains **NOT ACTIVATED / NOT APPLIED in Technical Preview**.' "$doc"
+          grep -Fq 'Sprint42, Sprint43, Sprint44, and Sprint45 source remain **NOT ACTIVATED in Technical Preview**.' "$doc"
+          grep -Fq 'Production remains **NO-GO / NOT AUTHORIZED**.' "$doc"
+          grep -Fq 'Updater remains **DISABLED / UNWIRED**.' "$doc"
+          grep -Fq 'Deployment, release, migration execution, and rollback remain **NOT AUTHORIZED**.' "$doc"
+          grep -Fq 'Migration #16 is **NOT SELECTED** and does not exist.' "$doc"
+          ! grep -RInE 'ONEQAY_TECHNICAL_PREVIEW_ENABLED[[:space:]]*=[[:space:]]*true' \
+            apps/web/app/Delivery/Http/Identity/PrivilegedTotpMfaController.php \
+            docs/FIRST_PARTY_PENDING_MFA_IDENTITY_ELIGIBILITY_REVALIDATION_FOUNDATION.md
+
+      - name: Confirm tracked source cleanliness
+        run: git diff --exit-code
