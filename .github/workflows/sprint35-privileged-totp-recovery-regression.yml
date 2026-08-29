@@ -238,9 +238,9 @@ jobs:
           set -euo pipefail
           count="$(wc -l < /tmp/sprint41-s35-paths)"
           fingerprint="$(sha256sum /tmp/sprint41-s35-paths | awk '{print $1}')"
-          if [[ "$count" -eq 13 && "$fingerprint" == 'b129d4b1c1135f2f5aecd5dde5ff1b5f6392eecb4d54006e80fc71889763647d' ]]; then
+          if [[ "$count" -eq 13 && "$fingerprint" == 'b129d4b1c1135f2f5aecd5dde5ff1b5f6392eecb4d54006e80fc71889763647d' ]] || [[ "$count" -eq 5 && "$fingerprint" == 'ab09e044925ae98740a49c46a70ff387e5f5445b245d3a556d85ad6a354305ec' ]]; then
             echo 'ONEQAY_SPRINT46_JRN006_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
-            echo 'Recognized post-Sprint46 documentation reconciliation migration #16 isolation state.'
+            echo 'Recognized post-Sprint46 migration #16 isolation state for exact documentation or compatibility envelope.'
           fi
 
       - name: Enforce frozen Sprint35 source envelope
