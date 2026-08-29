@@ -1,0 +1,116 @@
+name: Sprint45 Documentation Reconciliation Push Materializer
+
+# Author by Lab | zefry
+# TRANSIENT BRANCH-ONLY MATERIALIZER — self-removes before clean PR publication.
+
+on:
+  push:
+    branches:
+      - sprint45-doc-reconciliation-materialized
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact branch head
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: sprint45-doc-reconciliation-materialized
+          fetch-depth: 0
+
+      - name: Materialize exact 13-document Sprint45 reconciliation
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          paths = [
+              '.github/workflows/README.md',
+              'ARCHITECTURE.md',
+              'CHANGELOG.md',
+              'DATABASE.md',
+              'DEPLOYMENT.md',
+              'PROJECT_MANIFEST.md',
+              'README.md',
+              'ROADMAP.md',
+              'SECURITY.md',
+              'TASKS.md',
+              'docs/ai/AI_NEXT_TASK.md',
+              'docs/ai/AI_PROJECT_STATE.md',
+              'docs/ai/AI_SESSION_STATE.md',
+          ]
+
+          section = '''## Canonical post-Sprint45 source publication reconciliation — 2026-08-29
+
+This current-facing section supersedes older post-Sprint44/current-state wording retained below as historical provenance. It records canonical source and CI evidence only and creates no new implementation or lifecycle authority.
+
+- Functional canonical baseline reconciled by this docs-only publication: `031d2379565a9b5cb5f1e6bc9e02957f8291206d`; tree `4beda30c01ffcc3f371c1460fc2caaa8fe4adea0`; GitHub signature **verified / valid**.
+- Sprint45 **First-Party Pending MFA Identity Eligibility Revalidation Foundation** is **IMPLEMENTED / PUBLISHED** through PR #387 as `031d2379565a9b5cb5f1e6bc9e02957f8291206d`, from qualified exact source head `0f1e7db2193254171ac2ac3794ec0a8fd5a5140e`.
+- Sprint45 source remains exactly **4 paths** with sorted newline-terminated SHA-256 `5dfaecf9be5c584b431606a7253515ab623ad9a11b4ff74062e794a1f40917c7`.
+- Canonical source migrations remain exactly **#1–#15**. Sprint45 is **NO_SCHEMA_CHANGE**; migration #16 is **NOT SELECTED** and does not exist.
+- Sprint45 revalidates current first-party identity authentication eligibility for the exact pending tenant+identity before privileged TOTP enrollment start, enrollment confirmation, or challenge completion may advance authentication state.
+- When session control is enabled and current eligibility cannot be proven true, the pending framework session is invalidated, the CSRF token is regenerated, no TOTP advancement occurs, and no logical or framework full-authentication authority is issued.
+- Later Sprint43 reactivation cannot resume or resurrect the burned pending MFA flow. A new canonical primary-credential authentication is required before any new pending privileged MFA flow may be established.
+- Historical revoked, expired, idle-expired, epoch-invalid, membership-invalid, organizationally invalid, or otherwise terminated logical session authority remains invalid and is never restored or reused.
+- Sprint45 adds no restore/resume/login-after-reactivate/automatic-login/self-service reactivation-login/protected-control bypass/break-glass/bulk/cross-tenant/timed/caller-selected tenant, identity, role, permission, or session authority.
+- The final Sprint45 exact source head completed **19 materially triggered pull-request workflows / 19 success / 0 non-success**, including the dedicated Sprint45 regression and the exact historical Sprint36 preservation gate; the repository-native `product-owner-merge-authority` status completed **success** before squash publication.
+- The bounded publication chain includes the frozen Sprint45 schema/source-envelope gate PR #378, bounded legacy-horizon compatibility PR #383, exact Sprint36 source-compatibility predecessor PR #386, and final source PR #387. Closed unmerged attempts do not constitute canonical authority.
+- Technical Preview remains **`NO_SCHEMA_CHANGE / SPRINT40 NOT ACTIVATED`**; Sprint41 migration #15 and Sprint42/Sprint43/Sprint44/Sprint45 source remain unactivated/unapplied in Technical Preview. Production remains **`NO-GO / NOT AUTHORIZED`**. Updater remains **`DISABLED / UNWIRED`**. Deployment, release, migration execution, and rollback remain **`NOT AUTHORIZED`**.
+- No Sprint46 implementation concern is selected by this reconciliation. Any Sprint46 or other successor concern requires a separately bounded Product Owner entry gate; migration #16, new source/schema/runtime authority, Preview/Production activation, updater wiring, deployment, release, migration execution, and rollback are not implied.
+- This reconciliation changes only the established **13-document canonical state envelope**, whose sorted newline-terminated path SHA-256 remains `b129d4b1c1135f2f5aecd5dde5ff1b5f6392eecb4d54006e80fc71889763647d`.
+
+Attribution: **Lab | zefry**
+'''.encode('utf-8')
+
+          marker = b'## Canonical post-Sprint45 source publication reconciliation — 2026-08-29'
+          for raw in paths:
+              path = Path(raw)
+              data = path.read_bytes()
+              if marker in data:
+                  raise SystemExit(f'already reconciled unexpectedly: {raw}')
+              first_nl = data.find(b'\n')
+              if first_nl < 0 or not data.startswith(b'# '):
+                  raise SystemExit(f'missing canonical H1: {raw}')
+              path.write_bytes(data[:first_nl + 1] + b'\n' + section + data[first_nl + 1:])
+          PY
+
+          cat > /tmp/expected <<'EOF'
+          .github/workflows/README.md
+          ARCHITECTURE.md
+          CHANGELOG.md
+          DATABASE.md
+          DEPLOYMENT.md
+          PROJECT_MANIFEST.md
+          README.md
+          ROADMAP.md
+          SECURITY.md
+          TASKS.md
+          docs/ai/AI_NEXT_TASK.md
+          docs/ai/AI_PROJECT_STATE.md
+          docs/ai/AI_SESSION_STATE.md
+          EOF
+          sort -o /tmp/expected /tmp/expected
+          test "$(sha256sum /tmp/expected | awk '{print $1}')" = 'b129d4b1c1135f2f5aecd5dde5ff1b5f6392eecb4d54006e80fc71889763647d'
+
+          git rm .github/workflows/sprint45-doc-reconciliation-push-materializer.yml
+          git add .github/workflows/README.md ARCHITECTURE.md CHANGELOG.md DATABASE.md DEPLOYMENT.md PROJECT_MANIFEST.md README.md ROADMAP.md SECURITY.md TASKS.md docs/ai/AI_NEXT_TASK.md docs/ai/AI_PROJECT_STATE.md docs/ai/AI_SESSION_STATE.md
+          git diff --cached --check
+
+          git config user.name 'Lab | zefry'
+          git config user.email 'lab.zefry@users.noreply.github.com'
+          git commit -m 'docs: materialize Sprint45 canonical reconciliation' -m 'Attribution: Lab | zefry'
+
+          git diff --name-only origin/main HEAD | LC_ALL=C sort > /tmp/final
+          cmp -s /tmp/expected /tmp/final || {
+            echo 'Final branch reconciliation envelope mismatch.' >&2
+            diff -u /tmp/expected /tmp/final >&2 || true
+            exit 1
+          }
+          test "$(sha256sum /tmp/final | awk '{print $1}')" = 'b129d4b1c1135f2f5aecd5dde5ff1b5f6392eecb4d54006e80fc71889763647d'
+
+          git push origin HEAD:sprint45-doc-reconciliation-materialized
