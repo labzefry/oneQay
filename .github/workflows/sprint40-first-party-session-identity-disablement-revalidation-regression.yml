@@ -9,6 +9,7 @@ on:
       - '.github/workflows/sprint40-first-party-session-identity-disablement-revalidation-regression.yml'
       - '.github/workflows/sprint41-first-party-identity-authentication-eligibility-administration-regression.yml'
       - '.github/workflows/sprint42-first-party-identity-disablement-session-termination-regression.yml'
+      - '.github/workflows/sprint43-first-party-identity-authentication-eligibility-reactivation-regression.yml'
       - 'apps/web/app/Application/Identity/FirstPartyIdentityEligibilityVerifier.php'
       - 'apps/web/app/Delivery/Http/Middleware/EnforceActiveFirstPartySessionAuthorityMiddleware.php'
       - 'apps/web/app/Infrastructure/Identity/LaravelFirstPartyIdentityEligibilityVerifier.php'
@@ -79,6 +80,8 @@ jobs:
           actual_fingerprint="$(sha256sum /tmp/actual-sprint40-source-paths | awk '{print $1}')"
           echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
           echo 'ONEQAY_SPRINT42_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
+          echo 'ONEQAY_SPRINT43_PRESERVATION=false' >> "$GITHUB_ENV"
+          echo 'ONEQAY_SPRINT43_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
           if [[ "$actual_count" -eq 8 && "$actual_fingerprint" == 'a9caf2b68210a38687fee543256aec04dc1e67ee1ef403608f7db69139957ff8' ]]; then
             echo 'Recognized exact Sprint40 identity-disablement revalidation source envelope.'
           elif [[ "$actual_count" -eq 7 && "$actual_fingerprint" == 'f3f8b3ad0cca378307000ca242c4b9a4a8a7ab967d1649a5cd6408837001364c' ]]; then
@@ -92,6 +95,14 @@ jobs:
           elif [[ "$actual_count" -eq 8 && "$actual_fingerprint" == '6315890d318c3cdfca549bfacef6cb8d1ca66a4421416b49b4978095a98b6729' ]]; then
             echo 'Recognized exact Sprint42 disabled-identity session-termination source successor shape.'
             echo 'ONEQAY_SPRINT42_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+          elif [[ "$actual_count" -eq 9 && "$actual_fingerprint" == 'b8afa8415c0675c2675c1b8dbd528b44e8181a8f79a97fe28b0a0996623e1749' ]]; then
+            echo 'Recognized exact Sprint43 nine-workflow source-preservation predecessor shape.'
+            echo 'ONEQAY_SPRINT42_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT43_PRESERVATION=true' >> "$GITHUB_ENV"
+          elif [[ "$actual_count" -eq 9 && "$actual_fingerprint" == '3d0293362f451fe4bf472d0d2c38c3eec3d67df75b451ba5b273e8dbdb0f2eed' ]]; then
+            echo 'Recognized exact Sprint43 identity-authentication eligibility reactivation source successor shape.'
+            echo 'ONEQAY_SPRINT42_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT43_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
           else
             echo 'Sprint40 changed-file envelope mismatch.' >&2
             diff -u /tmp/sprint40-source-paths /tmp/actual-sprint40-source-paths >&2 || true
@@ -223,7 +234,13 @@ jobs:
           if [[ "${ONEQAY_SPRINT41_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT42_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
             grep -Fq "Route::post('/administration/identities/{identity_id}/authentication-disablement'" apps/web/routes/web.php
             grep -Fq -- "->name('identity.authentication-eligibility.disable')" apps/web/routes/web.php
-            ! grep -RInE 'authentication-(enable|reactivat)|authentication_eligibility_(enable|reactivat)|identity\.authentication-eligibility\.(enable|reactivate)' apps/web/app apps/web/routes/web.php
+            if [[ "${ONEQAY_SPRINT43_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+              grep -Fq "Route::post('/administration/identities/{identity_id}/authentication-reactivation'" apps/web/routes/web.php
+              grep -Fq -- "->name('identity.authentication-eligibility.reactivate')" apps/web/routes/web.php
+              ! grep -RInE 'authentication-(enablement|toggle)|authentication_eligibility_(enable|toggle)|identity\.authentication-eligibility\.(enable|toggle)' apps/web/app apps/web/routes/web.php
+            else
+              ! grep -RInE 'authentication-(enable|reactivat)|authentication_eligibility_(enable|reactivat)|identity\.authentication-eligibility\.(enable|reactivate)' apps/web/app apps/web/routes/web.php
+            fi
           else
           ! grep -RInE 'identity_(disabled|enabled)|authentication_eligibility_(changed|updated)|session_identity_disabled' \
             apps/web/app \

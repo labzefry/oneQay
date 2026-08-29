@@ -8,6 +8,7 @@ on:
     paths:
       - '.github/workflows/sprint41-first-party-identity-authentication-eligibility-administration-regression.yml'
       - '.github/workflows/sprint42-first-party-identity-disablement-session-termination-regression.yml'
+      - '.github/workflows/sprint43-first-party-identity-authentication-eligibility-reactivation-regression.yml'
       - 'apps/web/app/Application/Identity/FirstPartyIdentityEligibilityAdministrationRepository.php'
       - 'apps/web/app/Application/Identity/FirstPartyIdentityEligibilityAdministrationService.php'
       - 'apps/web/app/Application/Identity/FirstPartyIdentityEligibilityAdministrationViolation.php'
@@ -87,6 +88,8 @@ jobs:
           actual_fingerprint="$(sha256sum /tmp/actual-sprint41-source-paths | awk '{print $1}')"
           echo 'ONEQAY_SPRINT42_PRESERVATION=false' >> "$GITHUB_ENV"
           echo 'ONEQAY_SPRINT42_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
+          echo 'ONEQAY_SPRINT43_PRESERVATION=false' >> "$GITHUB_ENV"
+          echo 'ONEQAY_SPRINT43_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
           if [[ "$actual_count" -eq 12 && "$actual_fingerprint" == 'b2c5fc10a8baa2d56991d6dbd36b0407159d70953654ef322a9a11d23660489b' ]]; then
             cmp -s /tmp/sprint41-source-paths /tmp/actual-sprint41-source-paths
             echo 'Recognized exact Sprint41 source envelope.'
@@ -96,6 +99,14 @@ jobs:
           elif [[ "$actual_count" -eq 8 && "$actual_fingerprint" == '6315890d318c3cdfca549bfacef6cb8d1ca66a4421416b49b4978095a98b6729' ]]; then
             echo 'ONEQAY_SPRINT42_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'Recognized exact Sprint42 disabled-identity session-termination source successor shape.'
+          elif [[ "$actual_count" -eq 9 && "$actual_fingerprint" == 'b8afa8415c0675c2675c1b8dbd528b44e8181a8f79a97fe28b0a0996623e1749' ]]; then
+            echo 'ONEQAY_SPRINT42_PRESERVATION=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT43_PRESERVATION=true' >> "$GITHUB_ENV"
+            echo 'Recognized exact Sprint43 nine-workflow source-preservation predecessor shape.'
+          elif [[ "$actual_count" -eq 9 && "$actual_fingerprint" == '3d0293362f451fe4bf472d0d2c38c3eec3d67df75b451ba5b273e8dbdb0f2eed' ]]; then
+            echo 'ONEQAY_SPRINT42_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT43_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'Recognized exact Sprint43 identity-authentication eligibility reactivation source successor shape.'
           else
             echo 'Sprint41/Sprint42 changed-file envelope mismatch.' >&2
             diff -u /tmp/sprint41-source-paths /tmp/actual-sprint41-source-paths >&2 || true
@@ -171,12 +182,26 @@ jobs:
           grep -Fq -- "->name('identity.authentication-eligibility.disable')" "$routes"
           grep -Fq "'session.active', 'throttle:5,1', 'throttle:20,60', RequirePolicyAdministrationSessionContextMiddleware::class" "$routes"
 
-          ! grep -RInE "authentication-(enable|reactivat)|authentication_eligibility_(enable|reactivat)|identity\.authentication-eligibility\.(enable|reactivate)" \
-            apps/web/app/Application/Identity/FirstPartyIdentityEligibilityAdministration*.php \
-            apps/web/app/Delivery/Http/Identity/FirstPartyIdentityEligibilityAdministrationController.php \
-            apps/web/app/Infrastructure/Identity/LaravelFirstPartyIdentityEligibilityAdministrationRepository.php \
-            apps/web/routes/web.php
-          ! grep -Fq -- "->update(['first_party_authentication_enabled' => true])" "$adapter"
+          if [[ "${ONEQAY_SPRINT43_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            grep -Fq "public const OPERATION_REACTIVATE = 'reactivate';" "$contract"
+            grep -Fq 'public function reactivate(' "$service"
+            grep -Fq -- "->where('first_party_authentication_enabled', 0)" "$adapter"
+            grep -Fq -- "->update(['first_party_authentication_enabled' => true])" "$adapter"
+            grep -Fq "Route::post('/administration/identities/{identity_id}/authentication-reactivation'" "$routes"
+            grep -Fq -- "->name('identity.authentication-eligibility.reactivate')" "$routes"
+            ! grep -RInE 'authentication-(enablement|toggle)|authentication_eligibility_(enable|toggle)|identity\.authentication-eligibility\.(enable|toggle)' \
+              apps/web/app/Application/Identity/FirstPartyIdentityEligibilityAdministration*.php \
+              apps/web/app/Delivery/Http/Identity/FirstPartyIdentityEligibilityAdministrationController.php \
+              apps/web/app/Infrastructure/Identity/LaravelFirstPartyIdentityEligibilityAdministrationRepository.php \
+              apps/web/routes/web.php
+          else
+            ! grep -RInE "authentication-(enable|reactivat)|authentication_eligibility_(enable|reactivat)|identity\.authentication-eligibility\.(enable|reactivate)" \
+              apps/web/app/Application/Identity/FirstPartyIdentityEligibilityAdministration*.php \
+              apps/web/app/Delivery/Http/Identity/FirstPartyIdentityEligibilityAdministrationController.php \
+              apps/web/app/Infrastructure/Identity/LaravelFirstPartyIdentityEligibilityAdministrationRepository.php \
+              apps/web/routes/web.php
+            ! grep -Fq -- "->update(['first_party_authentication_enabled' => true])" "$adapter"
+          fi
 
       - name: Lint Sprint41 source
         shell: bash
