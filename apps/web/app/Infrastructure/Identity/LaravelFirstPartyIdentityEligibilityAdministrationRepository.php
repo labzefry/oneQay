@@ -121,6 +121,56 @@ final readonly class LaravelFirstPartyIdentityEligibilityAdministrationRepositor
         }
     }
 
+    public function replayReactivationOutcome(
+        VerifiedOrganizationalContext $actor,
+        PlatformIdentityId $targetIdentityId,
+        IdentityAuthenticationEligibilityMutationId $mutationId,
+    ): ?string {
+        $this->assertRuntimeAllowedForAdministration();
+
+        try {
+            $row = $this->connection->table(self::JOURNAL_TABLE)
+                ->where('tenant_id', $actor->tenantId()->value())
+                ->where('mutation_id', $mutationId->value())
+                ->first();
+
+            if ($row === null) {
+                return null;
+            }
+
+            $expected = $this->reactivationFingerprint($actor, $targetIdentityId);
+            $actorIdentity = $actor->identityId()->value();
+            $target = $targetIdentityId->value();
+
+            if (
+                ! is_string($row->payload_fingerprint ?? null)
+                || ! hash_equals($row->payload_fingerprint, $expected)
+                || ! is_string($row->operation ?? null)
+                || ! hash_equals($row->operation, self::OPERATION_REACTIVATE)
+                || ! is_string($row->actor_identity_id ?? null)
+                || ! hash_equals($row->actor_identity_id, $actorIdentity)
+                || ! is_string($row->target_identity_id ?? null)
+                || ! hash_equals($row->target_identity_id, $target)
+            ) {
+                throw new FirstPartyIdentityEligibilityAdministrationViolation(
+                    FirstPartyIdentityEligibilityAdministrationViolation::MUTATION_CONFLICT,
+                    'Identity authentication eligibility mutation identifier is bound to a different payload.',
+                );
+            }
+
+            $outcome = is_string($row->outcome ?? null) ? $row->outcome : '';
+            if (! in_array($outcome, [self::OUTCOME_APPLIED, self::OUTCOME_NO_CHANGE], true)) {
+                $this->administrationStorageFailure();
+            }
+
+            return $outcome;
+        } catch (FirstPartyIdentityEligibilityAdministrationViolation $exception) {
+            throw $exception;
+        } catch (Throwable) {
+            $this->administrationStorageFailure();
+        }
+    }
+
     public function applyFresh(
         VerifiedOrganizationalContext $actor,
         PlatformIdentityId $targetIdentityId,
@@ -227,6 +277,117 @@ final readonly class LaravelFirstPartyIdentityEligibilityAdministrationRepositor
         }
     }
 
+    public function applyFreshReactivation(
+        VerifiedOrganizationalContext $actor,
+        PlatformIdentityId $targetIdentityId,
+        IdentityAuthenticationEligibilityMutationId $mutationId,
+        int $occurredAtUnix,
+    ): string {
+        $this->assertRuntimeAllowedForPersistence();
+
+        if ($occurredAtUnix <= 0) {
+            $this->relationshipConflict();
+        }
+
+        try {
+            $tenant = $actor->tenantId()->value();
+            $actorIdentity = $actor->identityId()->value();
+            $target = $targetIdentityId->value();
+            $fingerprint = $this->reactivationFingerprint($actor, $targetIdentityId);
+
+            if (hash_equals($actorIdentity, $target)) {
+                $this->relationshipConflict();
+            }
+            if (! $this->tenantControlAuthorityExists($tenant, $actorIdentity)) {
+                $this->relationshipConflict();
+            }
+            if (! $this->identityExists($tenant, $target)) {
+                $this->relationshipConflict();
+            }
+            if ($this->tenantControlAuthorityExists($tenant, $target)) {
+                $this->relationshipConflict();
+            }
+
+            $existing = $this->connection->table(self::JOURNAL_TABLE)
+                ->where('tenant_id', $tenant)
+                ->where('mutation_id', $mutationId->value())
+                ->first();
+
+            if ($existing !== null) {
+                if (
+                    is_string($existing->payload_fingerprint ?? null)
+                    && hash_equals($existing->payload_fingerprint, $fingerprint)
+                    && is_string($existing->operation ?? null)
+                    && hash_equals($existing->operation, self::OPERATION_REACTIVATE)
+                    && is_string($existing->actor_identity_id ?? null)
+                    && hash_equals($existing->actor_identity_id, $actorIdentity)
+                    && is_string($existing->target_identity_id ?? null)
+                    && hash_equals($existing->target_identity_id, $target)
+                    && is_string($existing->outcome ?? null)
+                    && in_array($existing->outcome, [self::OUTCOME_APPLIED, self::OUTCOME_NO_CHANGE], true)
+                ) {
+                    return $existing->outcome;
+                }
+
+                $this->relationshipConflict();
+            }
+
+            $state = $this->readEligibilityState($tenant, $target);
+            $outcome = self::OUTCOME_NO_CHANGE;
+
+            if ($state === false) {
+                $updated = $this->connection->table(self::IDENTITY_TABLE)
+                    ->where('tenant_id', $tenant)
+                    ->where('id', $target)
+                    ->where('first_party_authentication_enabled', 0)
+                    ->update(['first_party_authentication_enabled' => true]);
+
+                if ($updated === 1) {
+                    $outcome = self::OUTCOME_APPLIED;
+                } elseif ($updated === 0 && $this->readEligibilityState($tenant, $target) === true) {
+                    $outcome = self::OUTCOME_NO_CHANGE;
+                } else {
+                    $this->relationshipConflict();
+                }
+            }
+
+            if ($this->readEligibilityState($tenant, $target) !== true) {
+                $this->relationshipConflict();
+            }
+
+            $inserted = $this->connection->table(self::JOURNAL_TABLE)->insertOrIgnore([
+                'tenant_id' => $tenant,
+                'mutation_id' => $mutationId->value(),
+                'actor_identity_id' => $actorIdentity,
+                'target_identity_id' => $target,
+                'operation' => self::OPERATION_REACTIVATE,
+                'payload_fingerprint' => $fingerprint,
+                'outcome' => $outcome,
+                'occurred_at_unix' => $occurredAtUnix,
+            ]);
+
+            if ($inserted !== 1) {
+                $this->relationshipConflict();
+            }
+
+            if (! $this->tenantControlAuthorityExists($tenant, $actorIdentity)) {
+                $this->relationshipConflict();
+            }
+            if ($this->tenantControlAuthorityExists($tenant, $target)) {
+                $this->relationshipConflict();
+            }
+            if ($this->readEligibilityState($tenant, $target) !== true) {
+                $this->relationshipConflict();
+            }
+
+            return $outcome;
+        } catch (DurablePersistenceViolation $exception) {
+            throw $exception;
+        } catch (Throwable) {
+            $this->persistenceStorageFailure();
+        }
+    }
+
     private function tenantControlAuthorityExists(string $tenantId, string $identityId): bool
     {
         return $this->connection->table('oneqay_tenant_role_assignments as a')
@@ -279,6 +440,20 @@ final readonly class LaravelFirstPartyIdentityEligibilityAdministrationRepositor
             $actor->identityId()->value(),
             $targetIdentityId->value(),
             self::OPERATION_DISABLE,
+            AdministrationPermission::MANAGE,
+            'tenant',
+        ]));
+    }
+
+    private function reactivationFingerprint(
+        VerifiedOrganizationalContext $actor,
+        PlatformIdentityId $targetIdentityId,
+    ): string {
+        return hash('sha256', implode("\n", [
+            $actor->tenantId()->value(),
+            $actor->identityId()->value(),
+            $targetIdentityId->value(),
+            self::OPERATION_REACTIVATE,
             AdministrationPermission::MANAGE,
             'tenant',
         ]));
