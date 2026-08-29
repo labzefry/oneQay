@@ -1,0 +1,177 @@
+name: Sprint44 First-Party Identity Reactivation Fresh Authentication Re-entry Regression
+
+# Author by Lab | zefry
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/sprint44-first-party-identity-reactivation-fresh-authentication-reentry-regression.yml'
+      - 'apps/web/app/Delivery/Http/Identity/FirstPartySessionController.php'
+      - 'apps/web/tests/first-party-identity-reactivation-fresh-authentication-reentry.php'
+      - 'docs/FIRST_PARTY_IDENTITY_REACTIVATION_FRESH_AUTHENTICATION_REENTRY_FOUNDATION.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint44-fresh-authentication-reentry-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sprint44-fresh-authentication-reentry:
+    name: sprint44-fresh-authentication-reentry
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3c=
+      APP_DEBUG: 'false'
+      APP_URL: http://localhost
+      ONEQAY_RUNTIME_CLASS: ci
+      ONEQAY_PERSISTENCE_ENABLED: 'true'
+      ONEQAY_AUTHENTICATION_SESSION_CONTROL_ENABLED: 'true'
+      ONEQAY_PRIVILEGED_TOTP_MFA_ENABLED: 'false'
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Setup exact PHP runtime
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        with:
+          php-version: '8.3'
+          tools: composer:v2
+          coverage: none
+
+      - name: Enforce exact Sprint44 source envelope
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/sprint44-source-paths <<'EOF'
+          .github/workflows/sprint44-first-party-identity-reactivation-fresh-authentication-reentry-regression.yml
+          apps/web/app/Delivery/Http/Identity/FirstPartySessionController.php
+          apps/web/tests/first-party-identity-reactivation-fresh-authentication-reentry.php
+          docs/FIRST_PARTY_IDENTITY_REACTIVATION_FRESH_AUTHENTICATION_REENTRY_FOUNDATION.md
+          EOF
+          sort -o /tmp/sprint44-source-paths /tmp/sprint44-source-paths
+          test "$(sha256sum /tmp/sprint44-source-paths | awk '{print $1}')" = 'ff01f1355de6c7fdfd28c2d359eb70787dd8448f0b1fc6d9cb73c1a0fb76580a'
+
+          git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | sort > /tmp/actual-sprint44-source-paths
+          cmp -s /tmp/sprint44-source-paths /tmp/actual-sprint44-source-paths || {
+            echo 'Sprint44 changed-file envelope mismatch.' >&2
+            diff -u /tmp/sprint44-source-paths /tmp/actual-sprint44-source-paths >&2 || true
+            exit 1
+          }
+          test "$(sha256sum /tmp/actual-sprint44-source-paths | awk '{print $1}')" = 'ff01f1355de6c7fdfd28c2d359eb70787dd8448f0b1fc6d9cb73c1a0fb76580a'
+
+          ! grep -Eq '(^|/)\.env($|\.)|(^|/)composer\.(json|lock)$|(^|/)package(-lock)?\.json$|^apps/web/database/migrations/' /tmp/actual-sprint44-source-paths
+
+      - name: Enforce NO_SCHEMA_CHANGE and migration sixteen lock
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t migrations < <(find apps/web/database/migrations -maxdepth 1 -type f -name '*.php' -printf '%f\n' | sort)
+          test "${#migrations[@]}" -eq 15
+          for index in $(seq 1 15); do
+            prefix="$(printf '0000_00_00_%06d_' "$index")"
+            test "$(printf '%s\n' "${migrations[@]}" | grep -c "^${prefix}")" -eq 1
+          done
+          ! printf '%s\n' "${migrations[@]}" | grep -q '^0000_00_00_000016_'
+          if [[ "${{ github.event_name }}" = 'pull_request' ]]; then
+            git diff --exit-code "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" -- apps/web/database/migrations
+          fi
+
+      - name: Verify canonical composition and route non-widening
+        shell: bash
+        run: |
+          set -euo pipefail
+          controller='apps/web/app/Delivery/Http/Identity/FirstPartySessionController.php'
+          provider='apps/web/app/Providers/AppServiceProvider.php'
+          routes='apps/web/routes/web.php'
+          grep -Fq 'use App\Application\Identity\FirstPartyIdentityEligibilityVerifier;' "$controller"
+          grep -Fq 'private readonly FirstPartyIdentityEligibilityVerifier $identityEligibility' "$controller"
+          grep -Fq '! $this->identityEligibility->isEligible($tenantId, $identityId)' "$controller"
+          grep -Fq 'FirstPartyIdentityEligibilityVerifier::class' "$provider"
+          grep -Fq 'LaravelFirstPartyIdentityEligibilityVerifier' "$provider"
+          grep -Fq "Route::post('/auth/login', [FirstPartySessionController::class, 'login'])" "$routes"
+          ! grep -Ein 'login_after_reactivate|restore_session|resume_session|reactivate.*login|restore.*session|resume.*session' "$routes"
+
+      - name: Verify safe authentication failure and session issuance ordering
+        shell: bash
+        run: |
+          set -euo pipefail
+          controller='apps/web/app/Delivery/Http/Identity/FirstPartySessionController.php'
+          eligibility_line="$(grep -n '! \$this->identityEligibility->isEligible' "$controller" | cut -d: -f1)"
+          context_line="$(grep -n '\$this->enterOrganizationalContext->enter' "$controller" | cut -d: -f1)"
+          issue_line="$(grep -n '\$this->sessionAuthorities->issue' "$controller" | cut -d: -f1)"
+          test -n "$eligibility_line" && test -n "$context_line" && test -n "$issue_line"
+          test "$eligibility_line" -lt "$context_line"
+          test "$eligibility_line" -lt "$issue_line"
+          grep -Fq "SafeErrorEnvelope::make('AUTHENTICATION_FAILED'" "$controller"
+
+      - name: Lint Sprint44 PHP source
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l apps/web/app/Delivery/Http/Identity/FirstPartySessionController.php
+          php -l apps/web/tests/first-party-identity-reactivation-fresh-authentication-reentry.php
+
+      - name: Install locked application dependencies
+        working-directory: apps/web
+        run: |
+          composer validate --no-check-publish
+          composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Run Sprint44 fresh-authentication re-entry regression
+        working-directory: apps/web
+        run: php tests/first-party-identity-reactivation-fresh-authentication-reentry.php
+
+      - name: Preserve Sprint41 eligibility administration regression
+        working-directory: apps/web
+        run: php tests/first-party-identity-authentication-eligibility-administration.php
+
+      - name: Preserve Sprint42 disablement session termination regression
+        working-directory: apps/web
+        run: php tests/first-party-identity-disablement-session-termination.php
+
+      - name: Preserve Sprint43 reactivation regression
+        working-directory: apps/web
+        run: php tests/first-party-identity-authentication-eligibility-reactivation.php
+
+      - name: Preserve full application regression
+        working-directory: apps/web
+        run: php tests/run.php
+
+      - name: Preserve lifecycle locks
+        shell: bash
+        run: |
+          set -euo pipefail
+          doc='docs/FIRST_PARTY_IDENTITY_REACTIVATION_FRESH_AUTHENTICATION_REENTRY_FOUNDATION.md'
+          grep -Fq 'Technical Preview remains **NO_SCHEMA_CHANGE / SPRINT40 NOT ACTIVATED**.' "$doc"
+          grep -Fq 'Sprint41 migration #15 remains **NOT ACTIVATED / NOT APPLIED in Technical Preview**.' "$doc"
+          grep -Fq 'Sprint42 source remains **NOT ACTIVATED in Technical Preview**.' "$doc"
+          grep -Fq 'Sprint43 source remains **NOT ACTIVATED in Technical Preview**.' "$doc"
+          grep -Fq 'Sprint44 source remains **NOT ACTIVATED in Technical Preview**.' "$doc"
+          grep -Fq 'Production remains **NO-GO / NOT AUTHORIZED**.' "$doc"
+          grep -Fq 'Updater remains **DISABLED / UNWIRED**.' "$doc"
+          grep -Fq 'Deployment and release remain **NOT AUTHORIZED**.' "$doc"
+          grep -Fq 'Rollback remains **NOT AUTHORIZED**.' "$doc"
+          grep -Fq 'Migration #16 remains **NOT SELECTED**.' "$doc"
+          if grep -RInE 'ONEQAY_TECHNICAL_PREVIEW_ENABLED[[:space:]]*=[[:space:]]*true' \
+            apps/web/app/Delivery/Http/Identity/FirstPartySessionController.php \
+            docs/FIRST_PARTY_IDENTITY_REACTIVATION_FRESH_AUTHENTICATION_REENTRY_FOUNDATION.md; then
+            echo 'Sprint44 activated Technical Preview.' >&2
+            exit 1
+          fi
+
+      - name: Confirm tracked source cleanliness
+        run: git diff --exit-code
