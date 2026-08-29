@@ -8,7 +8,7 @@ Author by Lab | zefry
 
 ## Canonical predecessor
 
-This bounded Sprint45 entry gate starts from canonical main `64f8caf10d2387dc2ae17845998537570bc0cfb6`, tree `0e90645ecd547a3c513982fd52338c0d525abfe7`, after Sprint44 source publication and canonical documentation reconciliation.
+This bounded Sprint45 entry gate starts from canonical main `027bb62096a45832af4aa38e70e0dba6f0f5956d`, tree `0f293dda49ecab0a1ca700803b80018df566b195`, after the bounded Sprint45 entry-gate compatibility predecessor and completed Sprint44 source publication/reconciliation.
 
 Sprint44 established fail-closed current identity eligibility on the canonical password-authentication path before organizational-context entry, pending MFA state creation, logical authority issuance, or framework-session establishment. Sprint42 disablement terminates active logical session authority, while a pending MFA session intentionally contains no full logical session authority.
 
@@ -32,6 +32,8 @@ Therefore the bounded security question for Sprint45 is the race in which:
 When canonical session control is enabled, every pending privileged MFA operation capable of advancing authentication state must revalidate current authentication eligibility for the exact pending tenant+identity before it may create, confirm, or convert authentication state into full authority.
 
 At minimum, a disabled, missing, ambiguous, malformed, cross-tenant, or otherwise unverifiable eligibility state must fail closed with the existing safe MFA/authentication error envelope and must create no new logical authority, public session handle, framework full-session authority, or resurrected session state.
+
+A pending MFA state created before a later disablement must not become a resurrection path after reactivation. Once that pending flow encounters current ineligibility, the eventual bounded design must ensure it cannot later be resumed merely because eligibility becomes true again; canonical fresh primary-credential authentication must establish any new pending MFA flow after reactivation.
 
 The eventual bounded implementation must preserve current credential epoch, factor epoch, organizational-access, membership, outlet/device, TOTP enrollment/challenge, recovery, and session-authority semantics. It must not add caller-selected tenant, identity, role, permission, grant, factor, epoch, authority ID, public handle, eligibility state, restore/resume operation, or lifecycle bypass.
 
@@ -88,4 +90,4 @@ Deployment, release, migration execution, and rollback remain **NOT AUTHORIZED**
 
 ## Result
 
-Sprint45 is selected only as a bounded pending-MFA identity-eligibility revalidation concern. This entry gate creates no implementation or runtime authority and preserves deny-by-default, tenant isolation, exact-head qualification, and no-resurrection semantics.
+Sprint45 is selected only as a bounded pending-MFA identity-eligibility revalidation concern. This entry gate creates no implementation or runtime authority and preserves deny-by-default, tenant isolation, exact-head qualification, fresh-authentication re-entry, and no-resurrection semantics.
