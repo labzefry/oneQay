@@ -118,7 +118,7 @@ jobs:
           fingerprint="$(sha256sum /tmp/sprint41-s35-paths | awk '{print $1}')"
           echo 'ONEQAY_SPRINT41_S35_PRESERVATION=false' >> "$GITHUB_ENV"
           echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
-          if [[ "$count" -eq 4 && "$fingerprint" == '31e6715f1695fd87b58711d525751b5fbb89515b9315ef0f0c0d69b26660e66d' ]]; then
+          if [[ "$count" -eq 6 && "$fingerprint" == '6e0a346e98e8f622081c3d9e81866e8b44b79af800a178568bb71e3e6e28da62' ]]; then
             echo 'ONEQAY_SPRINT41_S35_PRESERVATION=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'Recognized exact Sprint46 JRN-006 M7.4 compatibility predecessor shape.'
