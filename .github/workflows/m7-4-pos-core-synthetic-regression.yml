@@ -210,11 +210,43 @@ jobs:
 
       - name: Preserve M7.2 tenant isolation regression
         working-directory: apps/web
-        run: php tests/tenant-isolation.php
+        shell: bash
+        run: |
+          set -euo pipefail
+          legacy_dir="/tmp/oneqay-m74-m72-migrations"
+          rm -rf "$legacy_dir"
+          mkdir -p "$legacy_dir"
+          restore() {
+            find "$legacy_dir" -maxdepth 1 -type f -name '*.php' -exec mv {} database/migrations/ \;
+          }
+          trap restore EXIT
+          for index in $(seq 10 16); do
+            prefix="$(printf '0000_00_00_%06d_' "$index")"
+            while IFS= read -r file; do
+              mv "$file" "$legacy_dir/"
+            done < <(find database/migrations -maxdepth 1 -type f -name "$prefix*.php" -print)
+          done
+          php tests/tenant-isolation.php
 
       - name: Preserve M7.3 identity organizational context regression
         working-directory: apps/web
-        run: php tests/identity-org-context.php
+        shell: bash
+        run: |
+          set -euo pipefail
+          legacy_dir="/tmp/oneqay-m74-m73-migrations"
+          rm -rf "$legacy_dir"
+          mkdir -p "$legacy_dir"
+          restore() {
+            find "$legacy_dir" -maxdepth 1 -type f -name '*.php' -exec mv {} database/migrations/ \;
+          }
+          trap restore EXIT
+          for index in $(seq 10 16); do
+            prefix="$(printf '0000_00_00_%06d_' "$index")"
+            while IFS= read -r file; do
+              mv "$file" "$legacy_dir/"
+            done < <(find database/migrations -maxdepth 1 -type f -name "$prefix*.php" -print)
+          done
+          php tests/identity-org-context.php
 
       - name: Run M7.4 POS core synthetic regression
         working-directory: apps/web
