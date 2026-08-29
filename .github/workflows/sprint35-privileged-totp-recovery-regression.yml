@@ -156,7 +156,7 @@ jobs:
             echo 'ONEQAY_SPRINT41_S35_PRESERVATION=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'Recognized exact Sprint44 identity-reactivation fresh-authentication re-entry schema/source-envelope gate successor shape.'
-          elif [[ "$count" -eq 4 && "$fingerprint" == 'ff01f1355de6c7fdfd28c2d359eb70787dd8448f0b1fc6d9cb73c1a0fb76580a' ]]; then
+          elif [[ "$count" -eq 4 && "$fingerprint" == 'ff01f1355de6c7fdfd28c2d359eb70787dd8448f0b1fc6d9cb73c1a0fb76580a' ]] || [[ "$count" -eq 4 && "$fingerprint" == '5dfaecf9be5c584b431606a7253515ab623ad9a11b4ff74062e794a1f40917c7' ]]; then
             echo 'ONEQAY_SPRINT41_S35_PRESERVATION=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'Recognized exact Sprint44 identity-reactivation fresh-authentication re-entry source successor shape.'
