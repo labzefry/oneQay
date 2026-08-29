@@ -52,6 +52,14 @@ return [
         'absolute_ttl_seconds' => 43200,
     ],
 
+    'pos_sale_completion' => [
+        // JRN-006 durable sale completion remains Local/Test/CI-only and fail-closed unless explicitly armed.
+        'enabled' => filter_var(
+            env('ONEQAY_POS_SALE_COMPLETION_ENABLED', false),
+            FILTER_VALIDATE_BOOL,
+        ),
+    ],
+
     'system_update' => [
         // Backend control-plane visibility/checking may only be enabled explicitly.
         'control_plane_enabled' => filter_var(
