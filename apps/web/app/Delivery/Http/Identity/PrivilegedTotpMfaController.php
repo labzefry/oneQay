@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Delivery\Http\Identity;
 
+use App\Application\Identity\FirstPartyIdentityEligibilityVerifier;
 use App\Application\Identity\FirstPartySessionAuthorityService;
 use App\Application\Identity\FirstPartySessionAuthorityViolation;
 use App\Application\Identity\IdentityContextViolation;
@@ -33,6 +34,7 @@ final class PrivilegedTotpMfaController
 {
     public function __construct(
         private readonly PrivilegedTotpMfaService $mfa,
+        private readonly FirstPartyIdentityEligibilityVerifier $identityEligibility,
         private readonly VerifyFirstPartyCredentialEpoch $credentialEpochs,
         private readonly PrivilegedTotpFactorEpochRepository $factorEpochs,
         private readonly FirstPartySessionAuthorityService $sessionAuthorities,
@@ -167,6 +169,12 @@ final class PrivilegedTotpMfaController
         if ($session->has(FirstPartySessionKeys::MFA_VERIFIED_AT)
             || $session->has(FirstPartySessionKeys::SESSION_AUTHORITY_ID)) {
             throw new InvalidArgumentException('Privileged TOTP pending session contains full authority evidence.');
+        }
+
+        if ($this->sessionControlEnabled() && ! $this->identityEligibility->isEligible($tenantId, $identityId)) {
+            $session->invalidate();
+            $session->regenerateToken();
+            throw new InvalidArgumentException('Privileged TOTP pending identity is not currently eligible.');
         }
 
         $identity = new ServerVerifiedPlatformIdentity($identityId);
