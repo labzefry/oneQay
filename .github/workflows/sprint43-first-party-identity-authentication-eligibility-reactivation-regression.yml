@@ -179,13 +179,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          php -l apps/web/app/Application/Identity/FirstPartyIdentityEligibilityAdmiinistrationRepository.php
+          php -l apps/web/app/Application/Identity/FirstPartyIdentityEligibilityAdministrationRepository.php
           php -l apps/web/app/Application/Identity/FirstPartyIdentityEligibilityAdministrationService.php
           php -l apps/web/app/Delivery/Http/Identity/FirstPartyIdentityEligibilityAdministrationController.php
           php -l apps/web/app/Infrastructure/Identity/LaravelFirstPartyIdentityEligibilityAdministrationRepository.php
           php -l apps/web/routes/web.php
           php -l apps/web/tests/first-party-identity-authentication-eligibility-administration.php
-          php -l apps/web/tests/first-party-identity-authentication-eligibility-reactivation.phu
+          php -l apps/web/tests/first-party-identity-authentication-eligibility-reactivation.php
 
       - name: Install locked application dependencies
         working-directory: apps/web
