@@ -1,3 +1,4 @@
+# Sprint44 source four-path compatibility predecessor anchor.
 # Sprint43 fd5 post-Sprint42 legacy compatibility preservation anchor.
 # Sprint42 fc2b post-Sprint41 upper-state preservation anchor.
 # Post-Sprint41 canonical documentation reconciliation preservation anchor.
@@ -365,6 +366,9 @@ jobs:
               echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             elif [[ "$(wc -l < /tmp/actual-sprint36-paths)" -eq 1 ]] && [[ "$(sha256sum /tmp/actual-sprint36-paths | awk '{print $1}')" == "5005a4ecc48fb122f024e09b3e73ab0ddada7a9d1e6aada6d2c53aae763e5975" ]]; then
               echo "Recognized exact Sprint44 identity-reactivation fresh-authentication re-entry schema/source-envelope gate successor shape."
+              echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            elif [[ "$(wc -l < /tmp/actual-sprint36-paths)" -eq 4 ]] && [[ "$(sha256sum /tmp/actual-sprint36-paths | awk '{print $1}')" == "ff01f1355de6c7fdfd28c2d359eb70787dd8448f0b1fc6d9cb73c1a0fb76580a" ]]; then
+              echo "Recognized exact Sprint44 identity-reactivation fresh-authentication re-entry source successor shape."
               echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             elif [[ "$(wc -l < /tmp/actual-sprint36-paths)" -eq 1 ]] && [[ "$(sha256sum /tmp/actual-sprint36-paths | awk '{print $1}')" == "71ea234d8aa6e4691e5871e2165a61c162a04d30c824a6ae8b3aafb8c39962be" ]]; then
               echo "Recognized exact Sprint43 identity-authentication eligibility reactivation schema/source-envelope gate successor shape."
