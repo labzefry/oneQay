@@ -7,6 +7,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/sprint42-first-party-identity-disablement-session-termination-regression.yml'
+      - '.github/workflows/sprint43-first-party-identity-authentication-eligibility-reactivation-regression.yml'
       - 'apps/web/app/Application/Identity/FirstPartyIdentityDisablementSessionTerminationRepository.php'
       - 'apps/web/app/Application/Identity/FirstPartyIdentityEligibilityAdministrationService.php'
       - 'apps/web/app/Infrastructure/Identity/LaravelFirstPartyIdentityDisablementSessionTerminationRepository.php'
@@ -75,12 +76,24 @@ jobs:
           test "$(sha256sum /tmp/sprint42-source-paths | awk '{print $1}')" = '6315890d318c3cdfca549bfacef6cb8d1ca66a4421416b49b4978095a98b6729'
 
           git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | sort > /tmp/actual-sprint42-source-paths
-          cmp -s /tmp/sprint42-source-paths /tmp/actual-sprint42-source-paths || {
-            echo 'Sprint42 changed-file envelope mismatch.' >&2
+          actual_count="$(wc -l < /tmp/actual-sprint42-source-paths)"
+          actual_fingerprint="$(sha256sum /tmp/actual-sprint42-source-paths | awk '{print $1}')"
+          echo 'ONEQAY_SPRINT43_PRESERVATION=false' >> "$GITHUB_ENV"
+          echo 'ONEQAY_SPRINT43_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
+          if [[ "$actual_count" -eq 8 && "$actual_fingerprint" == '6315890d318c3cdfca549bfacef6cb8d1ca66a4421416b49b4978095a98b6729' ]]; then
+            cmp -s /tmp/sprint42-source-paths /tmp/actual-sprint42-source-paths
+            echo 'Recognized exact Sprint42 source envelope.'
+          elif [[ "$actual_count" -eq 9 && "$actual_fingerprint" == 'b8afa8415c0675c2675c1b8dbd528b44e8181a8f79a97fe28b0a0996623e1749' ]]; then
+            echo 'ONEQAY_SPRINT43_PRESERVATION=true' >> "$GITHUB_ENV"
+            echo 'Recognized exact Sprint43 nine-workflow source-preservation predecessor shape.'
+          elif [[ "$actual_count" -eq 9 && "$actual_fingerprint" == '3d0293362f451fe4bf472d0d2c38c3eec3d67df75b451ba5b273e8dbdb0f2eed' ]]; then
+            echo 'ONEQAY_SPRINT43_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'Recognized exact Sprint43 identity-authentication eligibility reactivation source successor shape.'
+          else
+            echo 'Sprint42/Sprint43 changed-file envelope mismatch.' >&2
             diff -u /tmp/sprint42-source-paths /tmp/actual-sprint42-source-paths >&2 || true
             exit 1
-          }
-          test "$(sha256sum /tmp/actual-sprint42-source-paths | awk '{print $1}')" = '6315890d318c3cdfca549bfacef6cb8d1ca66a4421416b49b4978095a98b6729'
+          fi
 
       - name: Enforce NO_SCHEMA_CHANGE and migrations one through fifteen
         if: github.event_name == 'pull_request'
@@ -108,7 +121,11 @@ jobs:
           set -euo pipefail
           base="${{ github.event.pull_request.base.sha }}"
           head="${{ github.event.pull_request.head.sha }}"
-          git diff --exit-code "$base" "$head" --             apps/web/routes/web.php             apps/web/app/Delivery/Http/Identity/FirstPartyIdentityEligibilityAdministrationController.php             apps/web/app/Application/Identity/FirstPartySessionAuthorityRepository.php             apps/web/app/Infrastructure/Identity/LaravelFirstPartySessionAuthorityRepository.php             apps/web/app/Delivery/Http/Identity/FirstPartySessionControlController.php             apps/web/app/Delivery/Http/Middleware/EnforceActiveFirstPartySessionAuthorityMiddleware.php             apps/web/config/oneqay.php             apps/web/config/database.php             apps/web/composer.json             apps/web/composer.lock             apps/web/package.json             apps/web/package-lock.json
+          if [[ "${ONEQAY_SPRINT43_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            git diff --exit-code "$base" "$head" --               apps/web/app/Application/Identity/FirstPartySessionAuthorityRepository.php               apps/web/app/Infrastructure/Identity/LaravelFirstPartySessionAuthorityRepository.php               apps/web/app/Delivery/Http/Identity/FirstPartySessionControlController.php               apps/web/app/Delivery/Http/Middleware/EnforceActiveFirstPartySessionAuthorityMiddleware.php               apps/web/config/oneqay.php               apps/web/config/database.php               apps/web/composer.json               apps/web/composer.lock               apps/web/package.json               apps/web/package-lock.json
+          else
+            git diff --exit-code "$base" "$head" --               apps/web/routes/web.php               apps/web/app/Delivery/Http/Identity/FirstPartyIdentityEligibilityAdministrationController.php               apps/web/app/Application/Identity/FirstPartySessionAuthorityRepository.php               apps/web/app/Infrastructure/Identity/LaravelFirstPartySessionAuthorityRepository.php               apps/web/app/Delivery/Http/Identity/FirstPartySessionControlController.php               apps/web/app/Delivery/Http/Middleware/EnforceActiveFirstPartySessionAuthorityMiddleware.php               apps/web/config/oneqay.php               apps/web/config/database.php               apps/web/composer.json               apps/web/composer.lock               apps/web/package.json               apps/web/package-lock.json
+          fi
 
       - name: Validate dedicated termination contract and adapter
         shell: bash
@@ -148,7 +165,11 @@ jobs:
           grep -Fq '$this->sessionTermination->revokeActiveForIdentityDisablement(' "$service"
           grep -Fq '$actor->tenantId(),' "$service"
           test "$(grep -Fc 'return $this->transaction->run(function () use (' "$service")" -ge 2
-          ! grep -Eq '\b(enable|reactivate)\s*\(' "$service"
+          if [[ "${ONEQAY_SPRINT43_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            grep -Fq 'public function reactivate(' "$service"
+          else
+            ! grep -Eq '\b(enable|reactivate)\s*\(' "$service"
+          fi
 
           grep -Fq 'FirstPartyIdentityDisablementSessionTerminationRepository::class' "$provider"
           grep -Fq 'new LaravelFirstPartyIdentityDisablementSessionTerminationRepository(' "$provider"
@@ -169,7 +190,13 @@ jobs:
           grep -Fq 'count($payload) !== 1' "$controller"
           grep -Fq "array_key_exists('mutation_id', \$payload)" "$controller"
           grep -Fq 'IDENTITY_AUTHENTICATION_ELIGIBILITY_ADMINISTRATION_REJECTED' "$controller"
-          ! grep -RInE 'authentication-(enable|reactivat)|disablement-session|session-termination|identity\.authentication-eligibility\.(enable|reactivate)'             apps/web/routes/web.php             apps/web/app/Delivery/Http/Identity/FirstPartyIdentityEligibilityAdministrationController.php
+          if [[ "${ONEQAY_SPRINT43_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            grep -Fq "Route::post('/administration/identities/{identity_id}/authentication-reactivation'" apps/web/routes/web.php
+            grep -Fq -- "->name('identity.authentication-eligibility.reactivate')" apps/web/routes/web.php
+            ! grep -RInE 'authentication-(enablement|toggle)|identity\.authentication-eligibility\.(enable|toggle)|disablement-session|session-termination'               apps/web/routes/web.php               apps/web/app/Delivery/Http/Identity/FirstPartyIdentityEligibilityAdministrationController.php
+          else
+            ! grep -RInE 'authentication-(enable|reactivat)|disablement-session|session-termination|identity\.authentication-eligibility\.(enable|reactivate)'               apps/web/routes/web.php               apps/web/app/Delivery/Http/Identity/FirstPartyIdentityEligibilityAdministrationController.php
+          fi
 
       - name: Lint Sprint42 source
         shell: bash
