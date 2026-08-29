@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Delivery\Http\Identity;
 
+use App\Application\Identity\FirstPartyIdentityEligibilityVerifier;
 use App\Application\Identity\FirstPartySessionAuthorityService;
 use App\Application\Identity\FirstPartySessionAuthorityViolation;
 use App\Application\Identity\IdentityContextViolation;
@@ -43,6 +44,7 @@ final class FirstPartySessionController
 
     public function __construct(
         private readonly VerifyFirstPartyIdentityCredential $credentials,
+        private readonly FirstPartyIdentityEligibilityVerifier $identityEligibility,
         private readonly PrivilegedTotpMfaService $mfa,
         private readonly VerifyFirstPartyCredentialEpoch $credentialEpochs,
         private readonly FirstPartySessionAuthorityService $sessionAuthorities,
@@ -76,6 +78,10 @@ final class FirstPartySessionController
             $identityId = PlatformIdentityId::fromString($identityValue);
 
             if (! $this->credentials->verify($tenantId, $identityId, $password)) {
+                return $this->authenticationFailed($correlationId);
+            }
+
+            if ($this->sessionControlEnabled() && ! $this->identityEligibility->isEligible($tenantId, $identityId)) {
                 return $this->authenticationFailed($correlationId);
             }
 
