@@ -303,6 +303,10 @@ jobs:
               echo "Recognized exact Sprint37 source envelope."
             elif cmp -s /tmp/actual-sprint37-paths /tmp/post-sprint37-preservation-paths; then
               echo "Recognized exact post-Sprint37 preservation predecessor shape."
+              sprint40_source_successor=true
+              sprint41_source_successor=true
+              echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+              echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             elif cmp -s /tmp/actual-sprint37-paths /tmp/post-sprint38-preservation-paths; then
               echo "Recognized exact post-Sprint38 preservation predecessor shape."
             elif cmp -s /tmp/actual-sprint37-paths /tmp/post-sprint37-reconciliation-paths; then
@@ -335,6 +339,12 @@ jobs:
               echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             elif [[ "$(wc -l < /tmp/actual-sprint37-paths)" -eq 1 ]] && [[ "$(sha256sum /tmp/actual-sprint37-paths | awk '{print $1}')" == "93559a76a6b31068316959787d8e7ebf041355955aa4226262958c39f791af89" ]]; then
               echo "Recognized exact Sprint44 identity-reactivation fresh-authentication re-entry entry-gate successor shape."
+              sprint40_source_successor=true
+              sprint41_source_successor=true
+              echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+              echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            elif [[ "$(wc -l < /tmp/actual-sprint37-paths)" -eq 1 ]] && [[ "$(sha256sum /tmp/actual-sprint37-paths | awk '{print $1}')" == "5005a4ecc48fb122f024e09b3e73ab0ddada7a9d1e6aada6d2c53aae763e5975" ]]; then
+              echo "Recognized exact Sprint44 identity-reactivation fresh-authentication re-entry schema/source-envelope gate successor shape."
               sprint40_source_successor=true
               sprint41_source_successor=true
               echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
