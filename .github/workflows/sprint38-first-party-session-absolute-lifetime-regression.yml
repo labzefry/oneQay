@@ -211,8 +211,6 @@ jobs:
           git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | sort > /tmp/actual-sprint38-source-paths
           if [[ "$(wc -l < /tmp/actual-sprint38-source-paths)" -eq 6 ]] && [[ "$(sha256sum /tmp/actual-sprint38-source-paths | awk '{print $1}')" == '6e0a346e98e8f622081c3d9e81866e8b44b79af800a178568bb71e3e6e28da62' ]]; then
             echo 'Recognized exact Sprint46 JRN-006 M7.4 compatibility predecessor shape.'
-            sprint40_source_successor=true
-            sprint41_source_successor=true
             echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
           elif [[ "$(wc -l < /tmp/actual-sprint38-source-paths)" -eq 5 ]] && [[ "$(sha256sum /tmp/actual-sprint38-source-paths | awk '{print $1}')" == 'ab09e044925ae98740a49c46a70ff387e5f5445b245d3a556d85ad6a354305ec' ]]; then
