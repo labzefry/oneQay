@@ -149,6 +149,10 @@ jobs:
             echo 'ONEQAY_SPRINT41_S35_PRESERVATION=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'Recognized exact Sprint45 pending-MFA identity-eligibility revalidation entry-gate successor shape.'
+          elif [[ "$count" -eq 1 && "$fingerprint" == '88f7f342b07619929e82a5f7f057c8354471e8a02347d4d9d66331cae9f123c0' ]]; then
+            echo 'ONEQAY_SPRINT41_S35_PRESERVATION=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'Recognized exact Sprint46 Business MVP POS core transaction and outlet operations entry-gate successor shape.'
           elif [[ "$count" -eq 1 && "$fingerprint" == '94430119e646c8ab2fca48233276b8155c8f8769965532b3c739479510f10017' ]]; then
             echo 'ONEQAY_SPRINT41_S35_PRESERVATION=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
