@@ -244,6 +244,10 @@ jobs:
             echo 'Recognized exact Sprint42 disabled-identity session-termination entry-gate successor shape.'
             echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+          elif [[ "$(wc -l < /tmp/actual-sprint38-source-paths)" -eq 2 ]] && [[ "$(sha256sum /tmp/actual-sprint38-source-paths | awk '{print $1}')" == 'c333c5a6ac31588aa9b0520160a1a1080a22af2971658d742ba9456eff94cbc8' ]]; then
+            echo 'Recognized exact Sprint35/Sprint36 two-workflow compatibility predecessor shape.'
+            echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
           elif [[ "$(wc -l < /tmp/actual-sprint38-source-paths)" -eq 1 ]] && [[ "$(sha256sum /tmp/actual-sprint38-source-paths | awk '{print $1}')" == '2c0f9ad3b6e8a9fe2199202656da55c8af533c57cd653be61c28cebfeabb3dc2' ]]; then
             echo 'Recognized exact Sprint43 identity-authentication eligibility reactivation entry-gate successor shape.'
             echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
