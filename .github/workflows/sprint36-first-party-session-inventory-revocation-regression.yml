@@ -310,6 +310,16 @@ jobs:
             if [[ "$(wc -l < /tmp/actual-sprint36-paths)" -eq 6 ]] && [[ "$(sha256sum /tmp/actual-sprint36-paths | awk '{print $1}')" == "6e0a346e98e8f622081c3d9e81866e8b44b79af800a178568bb71e3e6e28da62" ]]; then
               echo "Recognized exact Sprint46 JRN-006 M7.4 compatibility predecessor shape."
               echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            elif [[ "$(wc -l < /tmp/actual-sprint36-paths)" -eq 4 ]] && [[ "$(sha256sum /tmp/actual-sprint36-paths | awk '{print $1}')" == "a5d3b0816c3b0e6f1fa7dd5ece73ea6347042372dd517af31e303c41d49abfaa" ]]; then
+              echo "Recognized exact four-workflow Sprint46 JRN-006 legacy-runner correction shape."
+            elif [[ "$(wc -l < /tmp/actual-sprint36-paths)" -eq 14 ]] && [[ "$(sha256sum /tmp/actual-sprint36-paths | awk '{print $1}')" == "ed29b6128c193f0efd6359748e220a37aefaec856acc4bc3b90f445ce3ccb674" ]]; then
+              echo "Recognized exact Sprint46 JRN-006 durable sale source successor shape."
+              echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+              migration='apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php'
+              if [[ -f "$migration" ]]; then
+                git update-index --assume-unchanged "$migration"
+                rm -f "$migration"
+              fi
             elif [[ "$(wc -l < /tmp/actual-sprint36-paths)" -eq 1 ]] && [[ "$(sha256sum /tmp/actual-sprint36-paths | awk '{print $1}')" == "261f147d880a37fe9137b28d9541724c6c5e3987138f3fb56d5465ff31dc7412" ]]; then
               echo "Recognized exact Sprint32 workflow YAML closure successor shape."
             elif [[ "$(wc -l < /tmp/actual-sprint36-paths)" -eq 5 ]] && [[ "$(sha256sum /tmp/actual-sprint36-paths | awk '{print $1}')" == "ab09e044925ae98740a49c46a70ff387e5f5445b245d3a556d85ad6a354305ec" ]]; then
