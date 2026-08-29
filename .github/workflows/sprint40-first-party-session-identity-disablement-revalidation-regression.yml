@@ -219,7 +219,23 @@ jobs:
           set -euo pipefail
           base="${{ github.event.pull_request.base.sha }}"
           head="${{ github.event.pull_request.head.sha }}"
-          if [[ "${ONEQAY_SPRINT41_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+          if [[ "${ONEQAY_SPRINT46_JRN006_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            git diff --exit-code "$base" "$head" -- \
+            apps/web/bootstrap/app.php \
+            apps/web/composer.json \
+            apps/web/composer.lock \
+            apps/web/package.json \
+            apps/web/package-lock.json \
+            apps/web/app/Application/Identity/FirstPartySessionAuthorityService.php \
+            apps/web/app/Application/Identity/FirstPartySessionAuthorityRepository.php \
+            apps/web/app/Infrastructure/Identity/LaravelFirstPartySessionAuthorityRepository.php \
+            apps/web/app/Application/Tenancy/TenantMembershipVerifier.php \
+            apps/web/app/Infrastructure/Tenancy/LaravelTenantMembershipVerifier.php \
+            apps/web/app/Application/Organization/OrganizationalRelationshipVerifier.php \
+            apps/web/app/Infrastructure/Organization/LaravelOrganizationalRelationshipVerifier.php \
+            apps/web/app/Application/Access/DurableOrganizationalAccessRepository.php \
+            apps/web/app/Infrastructure/Access/LaravelDurableOrganizationalAccessRepository.php
+          elif [[ "${ONEQAY_SPRINT41_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
             git diff --exit-code "$base" "$head" -- \
             apps/web/config/oneqay.php \
             apps/web/bootstrap/app.php \
