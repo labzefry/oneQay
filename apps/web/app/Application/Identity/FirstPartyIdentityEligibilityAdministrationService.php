@@ -68,6 +68,46 @@ final readonly class FirstPartyIdentityEligibilityAdministrationService
         }
     }
 
+    public function reactivate(
+        VerifiedOrganizationalContext $actor,
+        PlatformIdentityId $targetIdentityId,
+        IdentityAuthenticationEligibilityMutationId $mutationId,
+    ): string {
+        $this->assertPreflight($actor, $targetIdentityId);
+
+        $prior = $this->repository->replayReactivationOutcome($actor, $targetIdentityId, $mutationId);
+        if ($prior !== null) {
+            return $prior;
+        }
+
+        $occurredAtUnix = $this->positiveAdministrationTimestamp();
+
+        try {
+            return $this->transaction->run(function () use (
+                $actor,
+                $targetIdentityId,
+                $mutationId,
+                $occurredAtUnix,
+            ): string {
+                return $this->repository->applyFreshReactivation(
+                    $actor,
+                    $targetIdentityId,
+                    $mutationId,
+                    $occurredAtUnix,
+                );
+            });
+        } catch (DurablePersistenceViolation $exception) {
+            $this->assertPreflight($actor, $targetIdentityId);
+
+            $prior = $this->repository->replayReactivationOutcome($actor, $targetIdentityId, $mutationId);
+            if ($prior !== null) {
+                return $prior;
+            }
+
+            $this->failFromPersistence($exception);
+        }
+    }
+
     private function completePriorOutcome(
         VerifiedOrganizationalContext $actor,
         PlatformIdentityId $targetIdentityId,
