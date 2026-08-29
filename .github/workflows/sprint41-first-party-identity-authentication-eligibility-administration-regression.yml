@@ -90,6 +90,7 @@ jobs:
           echo 'ONEQAY_SPRINT42_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
           echo 'ONEQAY_SPRINT43_PRESERVATION=false' >> "$GITHUB_ENV"
           echo 'ONEQAY_SPRINT43_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
+          echo 'ONEQAY_SPRINT46_JRN006_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
           if [[ "$actual_count" -eq 12 && "$actual_fingerprint" == 'b2c5fc10a8baa2d56991d6dbd36b0407159d70953654ef322a9a11d23660489b' ]]; then
             cmp -s /tmp/sprint41-source-paths /tmp/actual-sprint41-source-paths
             echo 'Recognized exact Sprint41 source envelope.'
@@ -99,10 +100,16 @@ jobs:
           elif [[ "$actual_count" -eq 8 && "$actual_fingerprint" == '6315890d318c3cdfca549bfacef6cb8d1ca66a4421416b49b4978095a98b6729' ]]; then
             echo 'ONEQAY_SPRINT42_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'Recognized exact Sprint42 disabled-identity session-termination source successor shape.'
+          elif [[ "$actual_count" -eq 14 && "$actual_fingerprint" == 'ed29b6128c193f0efd6359748e220a37aefaec856acc4bc3b90f445ce3ccb674' ]]; then
+            echo 'ONEQAY_SPRINT46_JRN006_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT42_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT43_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'Recognized exact Sprint46 JRN-006 durable sale source successor shape.'
           elif [[ "$actual_count" -eq 9 && "$actual_fingerprint" == 'b8afa8415c0675c2675c1b8dbd528b44e8181a8f79a97fe28b0a0996623e1749' ]]; then
             echo 'ONEQAY_SPRINT42_PRESERVATION=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT43_PRESERVATION=true' >> "$GITHUB_ENV"
-            echo 'Recognized exact Sprint43 nine-workflow source-preservation predecessor shape.'
+            echo 'ONEQAY_SPRINT43_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'Recognized exact Sprint43 nine-workflow source-preservation predecessor shape in post-Sprint43 canonical state.'
           elif [[ "$actual_count" -eq 9 && "$actual_fingerprint" == '3d0293362f451fe4bf472d0d2c38c3eec3d67df75b451ba5b273e8dbdb0f2eed' ]]; then
             echo 'ONEQAY_SPRINT42_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT43_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
@@ -113,7 +120,7 @@ jobs:
             exit 1
           fi
 
-      - name: Enforce migration fifteen exclusivity and prior migration immutability
+      - name: Enforce migration fifteen and exact JRN-006 successor boundary
         if: github.event_name == 'pull_request'
         shell: bash
         run: |
@@ -121,7 +128,14 @@ jobs:
           base="${{ github.event.pull_request.base.sha }}"
           head="${{ github.event.pull_request.head.sha }}"
           migration='apps/web/database/migrations/0000_00_00_000015_create_identity_authentication_eligibility_administration_journal.php'
-          if [[ "${ONEQAY_SPRINT42_PRESERVATION:-false}" == 'true' || "${ONEQAY_SPRINT42_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+          migration16='apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php'
+
+          if [[ "${ONEQAY_SPRINT46_JRN006_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            changed="$(git diff --name-only "$base" "$head" -- apps/web/database/migrations | sort)"
+            test "$(printf '%s\n' "$changed" | sed '/^$/d' | wc -l)" -eq 1
+            printf '%s\n' "$changed" | grep -Fxq "$migration16"
+            git diff --exit-code "$base" "$head" -- apps/web/database/migrations ":(exclude)$migration16"
+          elif [[ "${ONEQAY_SPRINT42_PRESERVATION:-false}" == 'true' || "${ONEQAY_SPRINT42_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
             git diff --exit-code "$base" "$head" -- apps/web/database/migrations
           else
             changed="$(git diff --name-only "$base" "$head" -- apps/web/database/migrations | sort)"
@@ -131,13 +145,23 @@ jobs:
           fi
 
           mapfile -t migrations < <(find apps/web/database/migrations -maxdepth 1 -type f -name '*.php' -printf '%f\n' | sort)
-          test "${#migrations[@]}" -eq 15
+          if [[ "${ONEQAY_SPRINT46_JRN006_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            test "${#migrations[@]}" -eq 16
+          else
+            test "${#migrations[@]}" -eq 15
+          fi
           for index in $(seq 1 15); do
             prefix="$(printf '0000_00_00_%06d_' "$index")"
             test "$(printf '%s\n' "${migrations[@]}" | grep -c "^$prefix")" -eq 1
           done
           test "$(printf '%s\n' "${migrations[@]}" | grep -c '^0000_00_00_000014_add_first_party_authentication_eligibility_to_identities\.php$')" -eq 1
           test "$(printf '%s\n' "${migrations[@]}" | grep -c '^0000_00_00_000015_create_identity_authentication_eligibility_administration_journal\.php$')" -eq 1
+          if [[ "${ONEQAY_SPRINT46_JRN006_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            test "$(printf '%s\n' "${migrations[@]}" | grep -c '^0000_00_00_000016_create_pos_sale_completion_foundation\.php$')" -eq 1
+            git update-index --assume-unchanged "$migration16"
+            rm -f "$migration16"
+            echo 'Migration #16 isolated only from exact Sprint46 JRN-006 historical Sprint41 execution.'
+          fi
 
       - name: Validate exact migration fifteen schema
         shell: bash

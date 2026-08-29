@@ -1,6 +1,3 @@
-# Sprint46 JRN-006 Sprint39 correction preservation anchor.
-# Sprint46 JRN-006 ab09 compatibility preservation anchor.
-# Sprint45 Sprint36 exact source-compatibility predecessor anchor.
 # Sprint44 Sprint33/Sprint34 exact compatibility isolation predecessor anchor.
 # Sprint44 source four-path compatibility predecessor anchor.
 # Sprint41 Sprint38 source-successor route-guard correction anchor.
@@ -360,24 +357,6 @@ jobs:
               echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             elif [[ "$(wc -l < /tmp/actual-sprint37-paths)" -eq 1 ]] && [[ "$(sha256sum /tmp/actual-sprint37-paths | awk '{print $1}')" == "c2531ec04dd34198ac94aee5d5f39c271440101541817c1f12bcfb0140a2dca0" ]]; then
               echo "Recognized exact Sprint45 pending-MFA identity-eligibility revalidation entry-gate successor shape."
-              sprint40_source_successor=true
-              sprint41_source_successor=true
-              echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
-              echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
-            elif [[ "$(wc -l < /tmp/actual-sprint37-paths)" -eq 1 ]] && [[ "$(sha256sum /tmp/actual-sprint37-paths | awk '{print $1}')" == "88f7f342b07619929e82a5f7f057c8354471e8a02347d4d9d66331cae9f123c0" ]]; then
-              echo "Recognized exact Sprint46 Business MVP POS core transaction and outlet operations entry-gate successor shape."
-              sprint40_source_successor=true
-              sprint41_source_successor=true
-              echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
-              echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
-            elif [[ "$(wc -l < /tmp/actual-sprint37-paths)" -eq 1 ]] && [[ "$(sha256sum /tmp/actual-sprint37-paths | awk '{print $1}')" == "33959c9b56089ae6d8272acebdac93a03b82c5498bc689d1d7542ab4297e10cd" ]]; then
-              echo "Recognized exact Sprint46 JRN-006 sale completion schema/source-envelope gate successor shape."
-              sprint40_source_successor=true
-              sprint41_source_successor=true
-              echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
-              echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
-            elif [[ "$(wc -l < /tmp/actual-sprint37-paths)" -eq 1 ]] && [[ "$(sha256sum /tmp/actual-sprint37-paths | awk '{print $1}')" == "94430119e646c8ab2fca48233276b8155c8f8769965532b3c739479510f10017" ]]; then
-              echo "Recognized exact Sprint45 pending-MFA identity-eligibility revalidation schema/source-envelope gate successor shape."
               sprint40_source_successor=true
               sprint41_source_successor=true
               echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
