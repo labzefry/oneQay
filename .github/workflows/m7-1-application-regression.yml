@@ -1,138 +1,20 @@
-name: M7.1 Application Regression
+name: Sprint45 Canonical Reconciliation Blob Materializer
 
 on:
   push:
     branches:
-      - agent/m7-1-application-skeleton-config-boundary
       - sprint45-doc-reconciliation-push-materializer
-  pull_request:
-    branches:
-      - main
-  workflow_dispatch:
 
 permissions:
-  contents: read
-
-concurrency:
-  group: m7-1-application-regression-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  contents: write
 
 jobs:
-  m7-1-application-regression:
-    name: m7-1-application-regression
+  materialize:
+    name: materialize
     runs-on: ubuntu-latest
-    env:
-      APP_NAME: oneQay
-      APP_ENV: testing
-      APP_KEY: base64:dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHQ=
-      APP_DEBUG: "false"
-      APP_URL: http://localhost
-      ONEQAY_RUNTIME_CLASS: ci
-      SESSION_DRIVER: array
-      CACHE_STORE: array
+    timeout-minutes: 15
     steps:
-      - name: Checkout exact source
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
-        with:
-          fetch-depth: 0
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
-
-      - name: Validate PHP runtime boundary
-        shell: bash
-        run: |
-          set -euo pipefail
-          php --version
-          php -r 'if (PHP_VERSION_ID < 80200 || PHP_VERSION_ID >= 80600) { fwrite(STDERR, "M7.1 requires governed PHP 8.2-8.5 compatibility.\n"); exit(1); }'
-          composer --version
-
-      - name: Preserve root Platform Foundation regression
-        run: |
-          composer validate --strict --no-check-publish
-          composer test
-
-      - name: Setup exact Node LTS
-        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
-        with:
-          node-version: 24.19.0
-
-      - name: Show Node and npm versions
-        run: |
-          node --version
-          npm --version
-
-      - name: Require deterministic dependency locks
-        shell: bash
-        run: |
-          set -euo pipefail
-          test -f apps/web/composer.lock
-          test -f apps/web/package-lock.json
-
-      - name: Validate application Composer metadata
-        working-directory: apps/web
-        run: composer validate --no-check-publish
-
-      - name: Install locked Composer dependencies
-        working-directory: apps/web
-        run: composer install --no-interaction --no-progress --prefer-dist
-
-      - name: Reject High or Critical Composer advisories
-        working-directory: apps/web
-        shell: bash
-        run: |
-          set -euo pipefail
-          composer audit --locked --format=json > /tmp/oneqay-composer-audit.json || true
-          cat /tmp/oneqay-composer-audit.json
-          php -r '
-            $data = json_decode(file_get_contents("/tmp/oneqay-composer-audit.json"), true, 512, JSON_THROW_ON_ERROR);
-            foreach (($data["advisories"] ?? []) as $package => $items) {
-                foreach ($items as $item) {
-                    $severity = strtolower((string) ($item["severity"] ?? ""));
-                    if (in_array($severity, ["high", "critical"], true)) {
-                        fwrite(STDERR, "Blocking Composer advisory for {$package}: ".($item["advisoryId"] ?? "unknown")."\n");
-                        exit(1);
-                    }
-                }
-            }
-          '
-
-      - name: Validate application PHP syntax
-        shell: bash
-        run: |
-          set -euo pipefail
-          find apps/web/app apps/web/bootstrap apps/web/config apps/web/public apps/web/routes apps/web/tests \
-            -type f -name '*.php' -print0 |
-            while IFS= read -r -d '' file; do
-              php -l "$file"
-            done
-
-      - name: Install locked npm dependencies
-        working-directory: apps/web
-        run: npm ci --ignore-scripts --no-fund
-
-      - name: Reject High or Critical npm advisories
-        working-directory: apps/web
-        run: npm audit --audit-level=high
-
-      - name: Type-check Vue and TypeScript
-        working-directory: apps/web
-        run: npm run type-check
-
-      - name: Build Vite assets
-        working-directory: apps/web
-        run: npm run build
-
-      - name: Run M7.1 application regression
-        working-directory: apps/web
-        run: composer test
-
-  sprint45-doc-reconciliation-materializer:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/sprint45-doc-reconciliation-push-materializer'
-    name: sprint45-doc-reconciliation-materializer
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout exact source
+      - name: Checkout exact branch state
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           fetch-depth: 0
@@ -142,9 +24,12 @@ jobs:
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
+          SECTION_B64: IyMgQ2Fub25pY2FsIHBvc3QtU3ByaW50NDUgc291cmNlIHB1YmxpY2F0aW9uIHJlY29uY2lsaWF0aW9uIOKAlCAyMDI2LTA4LTI5CgpUaGlzIGN1cnJlbnQtZmFjaW5nIHNlY3Rpb24gc3VwZXJzZWRlcyBvbGRlciBwb3N0LVNwcmludDQ0L2N1cnJlbnQtc3RhdGUgd29yZGluZyByZXRhaW5lZCBiZWxvdyBhcyBoaXN0b3JpY2FsIHByb3ZlbmFuY2UuIEl0IHJlY29yZHMgY2Fub25pY2FsIHNvdXJjZSBhbmQgQ0kgZXZpZGVuY2Ugb25seSBhbmQgY3JlYXRlcyBubyBuZXcgaW1wbGVtZW50YXRpb24gb3IgbGlmZWN5Y2xlIGF1dGhvcml0eS4KCi0gRnVuY3Rpb25hbCBjYW5vbmljYWwgYmFzZWxpbmUgcmVjb25jaWxlZCBieSB0aGlzIGRvY3Mtb25seSBwdWJsaWNhdGlvbjogYDAzMWQyMzc5NTY1YTliNWNiNWYxZTZiYzllMDI5NTdmODI5MTIwNmRgOyB0cmVlIGA0YmVkYTMwYzAxZmZjYzNmMzcxYzE0NjBmYzJjYWFhOGZlNGFkZWEwYDsgR2l0SHViIHNpZ25hdHVyZSAqKnZlcmlmaWVkIC8gdmFsaWQqKi4KLSBTcHJpbnQ0NSAqKkZpcnN0LVBhcnR5IFBlbmRpbmcgTUZBIElkZW50aXR5IEVsaWdpYmlsaXR5IFJldmFsaWRhdGlvbiBGb3VuZGF0aW9uKiogaXMgKipJTVBMRU1FTlRFRCAvIFBVQkxJU0hFRCoqIHRocm91Z2ggUFIgIzM4NyBhcyBgMDMxZDIzNzk1NjVhOWI1Y2I1ZjFlNmJjOWUwMjk1N2Y4MjkxMjA2ZGAsIGZyb20gcXVhbGlmaWVkIGV4YWN0IHNvdXJjZSBoZWFkIGAwZjFlN2RiMjE5MzI1NDE3MWFjMmFjMzc5NGVjMGE4ZmQ1YTUxNDBlYC4KLSBTcHJpbnQ0NSBzb3VyY2UgcmVtYWlucyBleGFjdGx5ICoqNCBwYXRocyoqIHdpdGggc29ydGVkIG5ld2xpbmUtdGVybWluYXRlZCBTSEEtMjU2IGA1ZGZhZWNmOWJlNWM1ODRiNDMxNjA2YTcyNTM1MTVhYjYyM2FkOWExMWI0ZmY3NDA2MmU3OTRhMWY0MDkxN2M3YC4KLSBDYW5vbmljYWwgc291cmNlIG1pZ3JhdGlvbnMgcmVtYWluIGV4YWN0bHkgKiojMeKAkyMxNSoqLiBTcHJpbnQ0NSBpcyAqKk5PX1NDSEVNQV9DSEFOR0UqKjsgbWlncmF0aW9uICMxNiBpcyAqKk5PVCBTRUxFQ1RFRCoqIGFuZCBkb2VzIG5vdCBleGlzdC4KLSBTcHJpbnQ0NSByZXZhbGlkYXRlcyBjdXJyZW50IGF1dGhlbnRpY2F0aW9uIGVsaWdpYmlsaXR5IGZvciB0aGUgZXhhY3QgcGVuZGluZyB0ZW5hbnQraWRlbnRpdHkgYmVmb3JlIHByaXZpbGVnZWQgcGVuZGluZy1NRkEgZW5yb2xsbWVudCBzdGFydCwgZW5yb2xsbWVudCBjb25maXJtYXRpb24sIG9yIGNoYWxsZW5nZSBjb21wbGV0aW9uIG1heSBhZHZhbmNlIGF1dGhlbnRpY2F0aW9uIHN0YXRlLgotIElmIHRoZSBwZW5kaW5nIGlkZW50aXR5IGlzIGRpc2FibGVkIG9yIG90aGVyd2lzZSBpbmVsaWdpYmxlLCB0aGUgcGVuZGluZyBmcmFtZXdvcmsgYXV0aGVudGljYXRpb24gc3RhdGUgaXMgaW52YWxpZGF0ZWQgZmFpbCBjbG9zZWQgYW5kIHRoZSBDU1JGIHRva2VuIGlzIHJlZ2VuZXJhdGVkLiBMYXRlciByZWFjdGl2YXRpb24gY2Fubm90IHJlc3VtZSBvciByZXN0b3JlIHRoYXQgYnVybmVkIHBlbmRpbmcgc3RhdGU7IGNhbm9uaWNhbCBmcmVzaCBwcmltYXJ5IGF1dGhlbnRpY2F0aW9uIHJlbWFpbnMgbWFuZGF0b3J5LgotIFNwcmludDQ1IGRvZXMgbm90IGNyZWF0ZSBhIHJlYWN0aXZhdGlvbi1sb2dpbiBwYXRoLCBkb2VzIG5vdCByZXN0b3JlIG9sZCBmcmFtZXdvcmsvbG9naWNhbCBzZXNzaW9uIGF1dGhvcml0eSwgZG9lcyBub3QgcmV1c2UgaGlzdG9yaWNhbCBwdWJsaWMgc2Vzc2lvbiBoYW5kbGVzIG9yIGF1dGhvcml0eSBpZGVudGlmaWVycywgYW5kIGRvZXMgbm90IHdlYWtlbiBTcHJpbnQ0MeKAk1NwcmludDQ0IGRpc2FibGVtZW50LCB0ZXJtaW5hdGlvbiwgcmVhY3RpdmF0aW9uLCBvciBmcmVzaC1hdXRoZW50aWNhdGlvbiBuby1yZXN1cnJlY3Rpb24gc2VtYW50aWNzLgotIFRlbmFudCwgaWRlbnRpdHksIG9yZ2FuaXphdGlvbiwgb3V0bGV0LCBkZXZpY2UsIGNyZWRlbnRpYWwvZmFjdG9yIGVwb2NoLCBwcml2aWxlZ2VkLWZhY3RvciwgYW5kIGN1cnJlbnQgZWxpZ2liaWxpdHkgYm91bmRhcmllcyByZW1haW4gc2VydmVyLWRlcml2ZWQgYW5kIGRlbnktYnktZGVmYXVsdC4gQ2FsbGVyLXNlbGVjdGVkIHRlbmFudC9yb2xlL3Blcm1pc3Npb24vc2Vzc2lvbiBhdXRob3JpdHkgaXMgbm90IGludHJvZHVjZWQuCi0gU3ByaW50NDUgY3JlYXRlcyBubyBjcmVkZW50aWFsLCBUT1RQL3JlY292ZXJ5LWZhY3Rvciwgcm9sZSwgcGVybWlzc2lvbiwgZ3JhbnQsIG1lbWJlcnNoaXAsIG9yZ2FuaXphdGlvbi9vdXRsZXQvZGV2aWNlLCBwcm90ZWN0ZWQtY29udHJvbCwgZGVwbG95bWVudCwgcmVsZWFzZSwgdXBkYXRlciwgb3IgbWlncmF0aW9uLWV4ZWN1dGlvbiBhdXRob3JpdHkuCi0gVGhlIGZpbmFsIFNwcmludDQ1IGV4YWN0IHNvdXJjZSBoZWFkIGNvbXBsZXRlZCAqKjE5IG1hdGVyaWFsbHkgdHJpZ2dlcmVkIHB1bGwtcmVxdWVzdCB3b3JrZmxvd3MgLyAxOSBzdWNjZXNzIC8gMCBub24tc3VjY2VzcyoqLCBhbmQgdGhlIGV4YWN0LWhlYWQgYHByb2R1Y3Qtb3duZXItbWVyZ2UtYXV0aG9yaXR5YCBzdGF0dXMgY29tcGxldGVkICoqc3VjY2VzcyoqIGJlZm9yZSBzcXVhc2ggcHVibGljYXRpb24uCi0gVGVjaG5pY2FsIFByZXZpZXcgcmVtYWlucyAqKmBOT19TQ0hFTUFfQ0hBTkdFIC8gU1BSSU5UNDAgTk9UIEFDVElWQVRFRGAqKjsgbWlncmF0aW9uICMxNSBhbmQgU3ByaW50NDIvU3ByaW50NDMvU3ByaW50NDQvU3ByaW50NDUgc291cmNlIHJlbWFpbiB1bmFjdGl2YXRlZC91bmFwcGxpZWQgaW4gVGVjaG5pY2FsIFByZXZpZXcuIFByb2R1Y3Rpb24gcmVtYWlucyAqKmBOTy1HTyAvIE5PVCBBVVRIT1JJWkVEYCoqLiBVcGRhdGVyIHJlbWFpbnMgKipgRElTQUJMRUQgLyBVTldJUkVEYCoqLiBEZXBsb3ltZW50LCByZWxlYXNlLCBtaWdyYXRpb24gZXhlY3V0aW9uLCBhbmQgcm9sbGJhY2sgcmVtYWluICoqYE5PVCBBVVRIT1JJWkVEYCoqLgotIE5vIHBvc3QtU3ByaW50NDUgc3VjY2Vzc29yIGltcGxlbWVudGF0aW9uIGNvbmNlcm4gaXMgc2VsZWN0ZWQgYnkgdGhpcyByZWNvbmNpbGlhdGlvbi4gQW55IFNwcmludDQ2IG9yIG90aGVyIHN1Y2Nlc3NvciBjb25jZXJuIG11c3QgYmVnaW4gd2l0aCBhIHNlcGFyYXRlbHkgYm91bmRlZCBQcm9kdWN0IE93bmVyIGVudHJ5IGdhdGU7IG1pZ3JhdGlvbiAjMTYsIG5ldyBzb3VyY2Uvc2NoZW1hL3J1bnRpbWUgYXV0aG9yaXR5LCBQcmV2aWV3L1Byb2R1Y3Rpb24gYWN0aXZhdGlvbiwgdXBkYXRlciB3aXJpbmcsIGRlcGxveW1lbnQsIHJlbGVhc2UsIG1pZ3JhdGlvbiBleGVjdXRpb24sIGFuZCByb2xsYmFjayBhcmUgbm90IGltcGxpZWQuCi0gVGhpcyByZWNvbmNpbGlhdGlvbiBjaGFuZ2VzIG9ubHkgdGhlIGVzdGFibGlzaGVkICoqMTMtZG9jdW1lbnQgY2Fub25pY2FsIHN0YXRlIGVudmVsb3BlKiosIHdob3NlIHNvcnRlZCBuZXdsaW5lLXRlcm1pbmF0ZWQgcGF0aCBTSEEtMjU2IHJlbWFpbnMgYGIxMjlkNGIxYzExMzVmMmY1YWVjZDVkZGU1ZmYxYjVmNjM5MmVlY2I0ZDU0MDA2ZTgwZmM3MTg4OTc2MzY0N2RgLgoKQXR0cmlidXRpb246ICoqTGFiIHwgemVmcnkqKg==
         run: |
           set -euo pipefail
           python3 - <<'PY'
+          import base64
+          import os
           from pathlib import Path
 
           paths = [
@@ -162,27 +47,7 @@ jobs:
               'docs/ai/AI_PROJECT_STATE.md',
               'docs/ai/AI_SESSION_STATE.md',
           ]
-
-          section = '''## Canonical post-Sprint45 source publication reconciliation — 2026-08-29
-
-This current-facing section supersedes older post-Sprint44/current-state wording retained below as historical provenance. It records canonical source and CI evidence only and creates no new implementation or lifecycle authority.
-
-- Functional canonical baseline reconciled by this docs-only publication: `031d2379565a9b5cb5f1e6bc9e02957f8291206d`; tree `4beda30c01ffcc3f371c1460fc2caaa8fe4adea0`; GitHub signature **verified / valid**.
-- Sprint45 **First-Party Pending MFA Identity Eligibility Revalidation Foundation** is **IMPLEMENTED / PUBLISHED** through PR #387 as `031d2379565a9b5cb5f1e6bc9e02957f8291206d`, from qualified exact source head `0f1e7db2193254171ac2ac3794ec0a8fd5a5140e`.
-- Sprint45 source remains exactly **4 paths** with sorted newline-terminated SHA-256 `5dfaecf9be5c584b431606a7253515ab623ad9a11b4ff74062e794a1f40917c7`.
-- Canonical source migrations remain exactly **#1–#15**. Sprint45 is **NO_SCHEMA_CHANGE**; migration #16 is **NOT SELECTED** and does not exist.
-- Sprint45 revalidates current authentication eligibility for the exact pending tenant+identity before privileged pending-MFA enrollment start, enrollment confirmation, or challenge completion may advance authentication state.
-- If the pending identity is disabled or otherwise ineligible, the pending framework authentication state is invalidated fail closed and the CSRF token is regenerated. Later reactivation cannot resume or restore that burned pending state; canonical fresh primary authentication remains mandatory.
-- Sprint45 does not create a reactivation-login path, does not restore old framework/logical session authority, does not reuse historical public session handles or authority identifiers, and does not weaken Sprint41–Sprint44 disablement, termination, reactivation, or fresh-authentication no-resurrection semantics.
-- Tenant, identity, organization, outlet, device, credential/factor epoch, privileged-factor, and current eligibility boundaries remain server-derived and deny-by-default. Caller-selected tenant/role/permission/session authority is not introduced.
-- Sprint45 creates no credential, TOTP/recovery-factor, role, permission, grant, membership, organization/outlet/device, protected-control, deployment, release, updater, or migration-execution authority.
-- The final Sprint45 exact source head completed **19 materially triggered pull-request workflows / 19 success / 0 non-success**, and the exact-head `product-owner-merge-authority` status completed **success** before squash publication.
-- Technical Preview remains **`NO_SCHEMA_CHANGE / SPRINT40 NOT ACTIVATED`**; migration #15 and Sprint42/Sprint43/Sprint44/Sprint45 source remain unactivated/unapplied in Technical Preview. Production remains **`NO-GO / NOT AUTHORIZED`**. Updater remains **`DISABLED / UNWIRED`**. Deployment, release, migration execution, and rollback remain **`NOT AUTHORIZED`**.
-- No post-Sprint45 successor implementation concern is selected by this reconciliation. Any Sprint46 or other successor concern must begin with a separately bounded Product Owner entry gate; migration #16, new source/schema/runtime authority, Preview/Production activation, updater wiring, deployment, release, migration execution, and rollback are not implied.
-- This reconciliation changes only the established **13-document canonical state envelope**, whose sorted newline-terminated path SHA-256 remains `b129d4b1c1135f2f5aecd5dde5ff1b5f6392eecb4d54006e80fc71889763647d`.
-
-Attribution: **Lab | zefry**'''
-
+          section = base64.b64decode(os.environ['SECTION_B64']).decode('utf-8')
           marker = '## Canonical post-Sprint44 source publication reconciliation — 2026-08-29'
           for raw in paths:
               path = Path(raw)
