@@ -156,7 +156,13 @@ The source-envelope workflow must prove that the existing `FirstPartyIdentityEli
 
 ## Source implementation path fingerprint
 
-The exact SHA-256 is computed from the four paths above, lexicographically sorted, each followed by one LF byte and with no additional lines. The implementation workflow MUST freeze and verify that computed value before source qualification. The implementation PR must not widen the path set.
+The exact SHA-256 is computed from the four paths above, lexicographically sorted, each followed by one LF byte and with no additional lines.
+
+Exact source implementation envelope SHA-256:
+
+`ff01f1355de6c7fdfd28c2d359eb70787dd8448f0b1fc6d9cb73c1a0fb76580a`
+
+The implementation workflow MUST freeze and verify exactly this value before source qualification. The implementation PR must not widen the path set.
 
 ## Required regression proof
 
