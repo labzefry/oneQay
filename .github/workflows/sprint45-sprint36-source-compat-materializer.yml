@@ -1,0 +1,74 @@
+name: Sprint45 Sprint36 Source Compatibility Materializer
+
+# Author by Lab | zefry
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/sprint45-sprint36-source-compat-materializer.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact materializer branch
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+
+      - name: Materialize bounded Sprint35-Sprint39 compatibility blobs
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          source_fp = '5dfaecf9be5c584b431606a7253515ab623ad9a11b4ff74062e794a1f40917c7'
+          s36 = Path('.github/workflows/sprint36-first-party-session-inventory-revocation-regression.yml')
+          text = s36.read_text(encoding='utf-8')
+          if source_fp in text:
+              raise SystemExit('Sprint36 unexpectedly already recognizes Sprint45 source')
+          needle = '''            elif [[ "$(wc -l < /tmp/actual-sprint36-paths)" -eq 4 ]] && [[ "$(sha256sum /tmp/actual-sprint36-paths | awk '{print $1}')" == "ff01f1355de6c7fdfd28c2d359eb70787dd8448f0b1fc6d9cb73c1a0fb76580a" ]]; then\n              echo "Recognized exact Sprint44 identity-reactivation fresh-authentication re-entry source successor shape."\n              echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"\n'''
+          addition = needle + '''            elif [[ "$(wc -l < /tmp/actual-sprint36-paths)" -eq 4 ]] && [[ "$(sha256sum /tmp/actual-sprint36-paths | awk '{print $1}')" == "5dfaecf9be5c584b431606a7253515ab623ad9a11b4ff74062e794a1f40917c7" ]]; then\n              echo "Recognized exact Sprint45 pending-MFA identity-eligibility revalidation source successor shape."\n              echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"\n'''
+          if text.count(needle) != 1:
+              raise SystemExit('Sprint36 prior exact Sprint44 source recognizer is not unique')
+          s36.write_text(text.replace(needle, addition), encoding='utf-8', newline='\n')
+
+          anchors = {
+              Path('.github/workflows/sprint35-privileged-totp-recovery-regression.yml'): '# Sprint45 Sprint36 exact source-compatibility predecessor anchor.\n',
+              Path('.github/workflows/sprint37-first-party-all-session-termination-regression.yml'): '# Sprint45 Sprint36 exact source-compatibility predecessor anchor.\n',
+              Path('.github/workflows/sprint38-first-party-session-absolute-lifetime-regression.yml'): '# Sprint45 Sprint36 exact source-compatibility predecessor anchor.\n',
+              Path('.github/workflows/sprint39-first-party-session-organizational-access-revalidation-regression.yml'): '# Sprint45 Sprint36 exact source-compatibility predecessor anchor.\n',
+          }
+          for path, anchor in anchors.items():
+              current = path.read_text(encoding='utf-8')
+              if anchor.strip() in current:
+                  raise SystemExit(f'{path}: anchor already exists')
+              path.write_text(anchor + current, encoding='utf-8', newline='\n')
+          PY
+
+          git diff --check
+          mapfile -t changed < <(git diff --name-only | LC_ALL=C sort)
+          printf '%s\n' "${changed[@]}" > /tmp/changed.txt
+          test "$(wc -l < /tmp/changed.txt)" -eq 5
+          test "$(sha256sum /tmp/changed.txt | awk '{print $1}')" = 'ab09e044925ae98740a49c46a70ff387e5f5445b245d3a556d85ad6a354305ec'
+          echo "ENVELOPE_SHA256 $(sha256sum /tmp/changed.txt | awk '{print $1}')"
+
+          while IFS= read -r path; do
+            payload="$(python3 - "$path" <<'PY'
+          import base64, json, pathlib, sys
+          data = base64.b64encode(pathlib.Path(sys.argv[1]).read_bytes()).decode('ascii')
+          print(json.dumps({'content': data, 'encoding': 'base64'}))
+          PY
+          )"
+            sha="$(gh api --method POST "repos/${GITHUB_REPOSITORY}/git/blobs" --input - --jq .sha <<<"$payload")"
+            printf 'MATERIALIZED_BLOB %s %s\n' "$path" "$sha"
+          done < /tmp/changed.txt
