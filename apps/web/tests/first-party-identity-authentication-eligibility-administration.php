@@ -429,6 +429,8 @@ foreach ([
 
 $routeSource = (string) file_get_contents(__DIR__.'/../routes/web.php');
 $providerSource = (string) file_get_contents(__DIR__.'/../app/Providers/AppServiceProvider.php');
+$repositoryContractSource = (string) file_get_contents(__DIR__.'/../app/Application/Identity/FirstPartyIdentityEligibilityAdministrationRepository.php');
+$controllerSource = (string) file_get_contents(__DIR__.'/../app/Delivery/Http/Identity/FirstPartyIdentityEligibilityAdministrationController.php');
 $adapterSource = (string) file_get_contents(__DIR__.'/../app/Infrastructure/Identity/LaravelFirstPartyIdentityEligibilityAdministrationRepository.php');
 $serviceSource = (string) file_get_contents(__DIR__.'/../app/Application/Identity/FirstPartyIdentityEligibilityAdministrationService.php');
 $migrationSource = (string) file_get_contents(__DIR__.'/../database/migrations/0000_00_00_000015_create_identity_authentication_eligibility_administration_journal.php');
@@ -436,15 +438,24 @@ $migrationSource = (string) file_get_contents(__DIR__.'/../database/migrations/0
 $assert(substr_count($routeSource, "Route::post('/administration/identities/{identity_id}/authentication-disablement'") === 1, 'exactly one disable route required');
 $assert(str_contains($routeSource, "->name('identity.authentication-eligibility.disable')"), 'disable route name missing');
 $assert(str_contains($routeSource, "'session.active', 'throttle:5,1', 'throttle:20,60', RequirePolicyAdministrationSessionContextMiddleware::class"), 'disable route middleware contract missing');
-$assert(! preg_match("#Route::(?:post|put|patch).*authentication-(?:enable|reactivat)#i", $routeSource), 'enable/reactivation route exists');
+$assert(substr_count($routeSource, "Route::post('/administration/identities/{identity_id}/authentication-reactivation'") === 1, 'dedicated reactivation route count changed');
+$assert(str_contains($routeSource, "->name('identity.authentication-eligibility.reactivate')"), 'dedicated reactivation route name missing');
+$assert(! preg_match("#authentication-(?:enablement|toggle)#i", $routeSource), 'generic eligibility route vocabulary exists');
 $assert(str_contains($providerSource, 'FirstPartyIdentityEligibilityAdministrationRepository::class'), 'repository binding missing');
 $assert(str_contains($providerSource, 'FirstPartyIdentityEligibilityAdministrationService::class'), 'service binding missing');
 $assert(str_contains($providerSource, 'PolicyAdministrationClock::class'), 'canonical administration clock not reused');
 $assert(str_contains($adapterSource, "private const JOURNAL_TABLE = 'oneqay_identity_authentication_eligibility_mutations';"), 'journal table constant missing');
+$assert(str_contains($repositoryContractSource, "public const OPERATION_DISABLE = 'disable';"), 'disable operation vocabulary changed');
+$assert(str_contains($repositoryContractSource, "public const OPERATION_REACTIVATE = 'reactivate';"), 'dedicated reactivation operation vocabulary missing');
+$assert(substr_count($serviceSource, 'public function disable(') === 1, 'disable application operation count changed');
+$assert(substr_count($serviceSource, 'public function reactivate(') === 1, 'dedicated reactivation application operation missing');
+$assert(substr_count($controllerSource, '$this->administration->disable(') === 1, 'disable controller invocation changed');
+$assert(substr_count($controllerSource, '$this->administration->reactivate(') === 1, 'dedicated reactivation controller invocation missing');
 $assert(str_contains($adapterSource, "->where('first_party_authentication_enabled', 1)"), 'conditional true-to-false update guard missing');
 $assert(str_contains($adapterSource, "->update(['first_party_authentication_enabled' => false])"), 'disable-only update missing');
-$assert(! str_contains($adapterSource, "->update(['first_party_authentication_enabled' => true])"), 'reactivation update exists');
-$assert(! preg_match('/\b(enable|reactivate)\s*\(/i', $serviceSource), 'service exposes reactivation method');
+$assert(str_contains($adapterSource, "->where('first_party_authentication_enabled', 0)"), 'dedicated false-to-true reactivation guard missing');
+$assert(str_contains($adapterSource, "->update(['first_party_authentication_enabled' => true])"), 'dedicated reactivation update missing');
+$assert(! preg_match('/\b(toggle|setEligibility|setEnabled)\s*\(/i', $repositoryContractSource.$serviceSource), 'generic eligibility mutation method exists');
 $assert(substr_count($migrationSource, "Schema::create('oneqay_identity_authentication_eligibility_mutations'") === 1, 'journal migration table count');
 $assert(str_contains($migrationSource, "throw new LogicException('Forward-only generated migration; rollback is not authorized.');"), 'migration rollback denial missing');
 
