@@ -191,6 +191,10 @@ jobs:
             echo 'Recognized exact Sprint43 identity-authentication eligibility reactivation entry-gate successor shape.'
             echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+          elif [[ "$(wc -l < /tmp/actual-sprint39-source-paths)" -eq 1 ]] && [[ "$(sha256sum /tmp/actual-sprint39-source-paths | awk '{print $1}')" == '93559a76a6b31068316959787d8e7ebf041355955aa4226262958c39f791af89' ]]; then
+            echo 'Recognized exact Sprint44 identity-reactivation fresh-authentication re-entry entry-gate successor shape.'
+            echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
           elif [[ "$(wc -l < /tmp/actual-sprint39-source-paths)" -eq 1 ]] && [[ "$(sha256sum /tmp/actual-sprint39-source-paths | awk '{print $1}')" == '71ea234d8aa6e4691e5871e2165a61c162a04d30c824a6ae8b3aafb8c39962be' ]]; then
             echo 'Recognized exact Sprint43 identity-authentication eligibility reactivation schema/source-envelope gate successor shape.'
             echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
