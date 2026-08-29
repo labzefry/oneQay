@@ -1,0 +1,104 @@
+name: Sprint45 Entry Gate Compatibility Materializer
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/sprint45-entry-gate-compat-materializer.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.head.ref == 'sprint45-entry-gate-compat-materializer'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact materializer branch
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: sprint45-entry-gate-compat-materializer
+          fetch-depth: 0
+
+      - name: Materialize bounded five-workflow compatibility blobs
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          old = '93559a76a6b31068316959787d8e7ebf041355955aa4226262958c39f791af89'
+          new = 'c2531ec04dd34198ac94aee5d5f39c271440101541817c1f12bcfb0140a2dca0'
+          recognizers = [
+              Path('.github/workflows/sprint35-privileged-totp-recovery-regression.yml'),
+              Path('.github/workflows/sprint36-first-party-session-inventory-revocation-regression.yml'),
+              Path('.github/workflows/sprint37-first-party-all-session-termination-regression.yml'),
+          ]
+
+          for path in recognizers:
+              lines = path.read_text(encoding='utf-8').splitlines(keepends=True)
+              matches = [i for i, line in enumerate(lines) if old in line]
+              if len(matches) != 1:
+                  raise SystemExit(f'{path}: expected exactly one Sprint44 entry-gate fingerprint, found {len(matches)}')
+              start = matches[0]
+              stripped = lines[start].lstrip()
+              if not stripped.startswith('elif '):
+                  raise SystemExit(f'{path}: Sprint44 entry-gate fingerprint is not on an elif line')
+              indent = lines[start][:len(lines[start]) - len(stripped)]
+              end = None
+              for i in range(start + 1, len(lines)):
+                  if lines[i].startswith(indent + 'elif '):
+                      end = i
+                      break
+              if end is None:
+                  raise SystemExit(f'{path}: could not bound Sprint44 entry-gate recognizer block')
+              block = lines[start:end]
+              cloned = []
+              for line in block:
+                  line = line.replace(old, new)
+                  if 'echo "Recognized exact Sprint44' in line and 'entry-gate successor shape.' in line:
+                      line_indent = line[:len(line) - len(line.lstrip())]
+                      line = line_indent + 'echo "Recognized exact Sprint45 pending-MFA identity-eligibility revalidation entry-gate successor shape."\n'
+                  cloned.append(line)
+              updated = lines[:end] + cloned + lines[end:]
+              text = ''.join(updated)
+              if text.count(new) != 1:
+                  raise SystemExit(f'{path}: new fingerprint count is not exactly one')
+              path.write_text(text, encoding='utf-8', newline='\n')
+
+          anchors = {
+              Path('.github/workflows/sprint38-first-party-session-absolute-lifetime-regression.yml'):
+                  '# Sprint45 pending-MFA identity-eligibility entry-gate compatibility preservation anchor.\n',
+              Path('.github/workflows/sprint39-first-party-session-organizational-access-revalidation-regression.yml'):
+                  '# Sprint45 pending-MFA identity-eligibility entry-gate compatibility preservation anchor.\n',
+          }
+          for path, anchor in anchors.items():
+              text = path.read_text(encoding='utf-8')
+              if anchor.strip() in text:
+                  raise SystemExit(f'{path}: unexpected pre-existing Sprint45 anchor')
+              path.write_text(anchor + text, encoding='utf-8', newline='\n')
+          PY
+
+          git diff --check
+          mapfile -t changed < <(git diff --name-only | LC_ALL=C sort)
+          printf '%s\n' "${changed[@]}" > /tmp/changed.txt
+          test "$(wc -l < /tmp/changed.txt)" -eq 5
+          test "$(sha256sum /tmp/changed.txt | awk '{print $1}')" = 'ab09e044925ae98740a49c46a70ff387e5f5445b245d3a556d85ad6a354305ec'
+          echo "ENVELOPE_SHA256 $(sha256sum /tmp/changed.txt | awk '{print $1}')"
+
+          while IFS= read -r path; do
+            payload="$(python3 - "$path" <<'PY'
+          import base64, json, pathlib, sys
+          data = base64.b64encode(pathlib.Path(sys.argv[1]).read_bytes()).decode('ascii')
+          print(json.dumps({'content': data, 'encoding': 'base64'}))
+          PY
+          )"
+            sha="$(gh api --method POST "repos/${GITHUB_REPOSITORY}/git/blobs" --input - --jq .sha <<<"$payload")"
+            printf 'MATERIALIZED_BLOB %s %s\n' "$path" "$sha"
+          done < /tmp/changed.txt
