@@ -39,6 +39,10 @@ use App\Application\Organization\OrganizationalContextStore;
 use App\Application\Organization\OrganizationalRelationshipVerifier;
 use App\Application\Persistence\DurableContextGraphRepository;
 use App\Application\Persistence\PersistenceTransaction;
+use App\Application\Authorization\DurableScopedAuthorizationPolicy;
+use App\Application\Pos\CompleteSale;
+use App\Application\Pos\DurablePosSaleRepository;
+use App\Application\Pos\PosSaleClock;
 use App\Application\Tenancy\TenantContextStore;
 use App\Application\Tenancy\TenantMembershipVerifier;
 use App\Infrastructure\Access\LaravelDurableOrganizationalAccessRepository;
@@ -63,6 +67,7 @@ use App\Infrastructure\Identity\LaravelRecoveryPasswordResetRepository;
 use App\Infrastructure\Identity\OtphpPrivilegedTotpEngine;
 use App\Infrastructure\Organization\LaravelOrganizationalRelationshipVerifier;
 use App\Infrastructure\Organization\RequestOrganizationalContextStore;
+use App\Infrastructure\Pos\LaravelDurablePosSaleRepository;
 use App\Infrastructure\Persistence\LaravelDurableContextGraphRepository;
 use App\Infrastructure\Persistence\LaravelPersistenceTransaction;
 use App\Infrastructure\Tenancy\LaravelTenantMembershipVerifier;
@@ -223,6 +228,22 @@ final class AppServiceProvider extends ServiceProvider
             (int) config('oneqay.session_control.absolute_ttl_seconds', 0),
         ));
 
+        $this->app->scoped(DurablePosSaleRepository::class, function ($app): DurablePosSaleRepository {
+            return new LaravelDurablePosSaleRepository(
+                $this->connection($app),
+                $this->persistenceEnabled(),
+                $this->runtimeClass(),
+                (bool) config('oneqay.pos_sale_completion.enabled', false),
+            );
+        });
+        $this->app->scoped(CompleteSale::class, fn ($app): CompleteSale => new CompleteSale(
+            $app->make(DurablePosSaleRepository::class),
+            $app->make(OrganizationalContextStore::class),
+            $app->make(DurableScopedAuthorizationPolicy::class),
+            $app->make(PersistenceTransaction::class),
+            $app->make(PosSaleClock::class),
+        ));
+
         $this->app->scoped(PrivilegedTotpEngine::class, static fn (): PrivilegedTotpEngine => new OtphpPrivilegedTotpEngine());
         $this->app->scoped(PrivilegedTotpClock::class, static fn (): PrivilegedTotpClock => new class implements PrivilegedTotpClock { public function nowUnix(): int { return time(); } });
         $this->app->scoped(PrivilegedTotpRecoveryClock::class, static fn (): PrivilegedTotpRecoveryClock => new class implements PrivilegedTotpRecoveryClock { public function nowUnix(): int { return time(); } });
@@ -231,6 +252,7 @@ final class AppServiceProvider extends ServiceProvider
         $this->app->scoped(AuthenticatedPasswordChangeClock::class, static fn (): AuthenticatedPasswordChangeClock => new class implements AuthenticatedPasswordChangeClock { public function nowUnix(): int { return time(); } });
         $this->app->scoped(PolicyAdministrationClock::class, static fn (): PolicyAdministrationClock => new class implements PolicyAdministrationClock { public function nowUnix(): int { return time(); } });
         $this->app->scoped(FirstPartySessionAuthorityClock::class, static fn (): FirstPartySessionAuthorityClock => new class implements FirstPartySessionAuthorityClock { public function nowUnix(): int { return time(); } });
+        $this->app->scoped(PosSaleClock::class, static fn (): PosSaleClock => new class implements PosSaleClock { public function nowUnix(): int { return time(); } });
 
         $this->app->scoped(PersistenceTransaction::class, function ($app): PersistenceTransaction {
             return new LaravelPersistenceTransaction($this->connection($app), $this->persistenceEnabled(), $this->runtimeClass());
