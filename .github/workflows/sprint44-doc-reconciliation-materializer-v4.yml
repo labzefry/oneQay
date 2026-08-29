@@ -24,13 +24,16 @@ jobs:
           ref: sprint44-doc-reconciliation-materializer-v4
           fetch-depth: 0
 
-      - name: Materialize exact 13-document reconciliation
+      - name: Materialize exact 13-document reconciliation blobs
         shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
           import hashlib
+          import textwrap
 
           paths = [
               '.github/workflows/README.md',
@@ -75,15 +78,13 @@ jobs:
           Attribution: **Lab | zefry**
 
           '''
-          import textwrap
           section = textwrap.dedent(section)
-
           marker = '## Canonical post-Sprint44 source publication reconciliation — 2026-08-29'
           for raw in paths:
               p = Path(raw)
               original = p.read_text(encoding='utf-8')
               if marker in original:
-                  continue
+                  raise SystemExit(f'unexpected pre-existing Sprint44 section in {raw}')
               first_nl = original.find('\n')
               if first_nl < 0:
                   raise SystemExit(f'no title line in {raw}')
@@ -91,21 +92,20 @@ jobs:
               p.write_text(updated, encoding='utf-8', newline='\n')
           PY
 
-          rm .github/workflows/sprint44-doc-reconciliation-materializer-v4.yml
           git diff --check
-          mapfile -t changed < <(
-            git diff --name-only |
-              grep -v '^\.github/workflows/sprint44-doc-reconciliation-materializer-v4\.yml$' |
-              LC_ALL=C sort
-          )
+          mapfile -t changed < <(git diff --name-only | LC_ALL=C sort)
           printf '%s\n' "${changed[@]}" > /tmp/changed.txt
-          sha256sum /tmp/changed.txt
           test "$(wc -l < /tmp/changed.txt)" -eq 13
           test "$(sha256sum /tmp/changed.txt | awk '{print $1}')" = 'b129d4b1c1135f2f5aecd5dde5ff1b5f6392eecb4d54006e80fc71889763647d'
-          test "$(git status --short .github/workflows/sprint44-doc-reconciliation-materializer-v4.yml | wc -l)" -eq 1
+          echo "ENVELOPE_SHA256 $(sha256sum /tmp/changed.txt | awk '{print $1}')"
 
-          git config user.name 'labzefry'
-          git config user.email 'lab.zefa@gmail.com'
-          git add --all
-          git commit -m 'docs: materialize Sprint44 canonical reconciliation' -m 'Attribution: Lab | zefry'
-          git push origin HEAD:sprint44-doc-reconciliation-materializer-v4
+          while IFS= read -r path; do
+            payload="$(python3 - "$path" <<'PY'
+          import base64, json, pathlib, sys
+          data = base64.b64encode(pathlib.Path(sys.argv[1]).read_bytes()).decode('ascii')
+          print(json.dumps({'content': data, 'encoding': 'base64'}))
+          PY
+          )"
+            sha="$(gh api --method POST "repos/${GITHUB_REPOSITORY}/git/blobs" --input - --jq .sha <<<"$payload")"
+            printf 'MATERIALIZED_BLOB %s %s\n' "$path" "$sha"
+          done < /tmp/changed.txt
