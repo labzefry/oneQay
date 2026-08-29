@@ -252,11 +252,31 @@ jobs:
           count="$(wc -l < /tmp/s37-compat-paths)"
           fingerprint="$(sha256sum /tmp/s37-compat-paths | awk '{print $1}')"
           echo 'ONEQAY_S37_S35_S36_COMPATIBILITY=false' >> "$GITHUB_ENV"
+          echo 'ONEQAY_SPRINT46_JRN006_PREDECESSOR=false' >> "$GITHUB_ENV"
+          echo 'ONEQAY_SPRINT46_JRN006_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
           if [[ "$count" -eq 2 && "$fingerprint" == 'c333c5a6ac31588aa9b0520160a1a1080a22af2971658d742ba9456eff94cbc8' ]]; then
             echo 'ONEQAY_S37_S35_S36_COMPATIBILITY=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'Recognized exact Sprint35/Sprint36 two-workflow compatibility predecessor shape.'
+          elif [[ "$count" -eq 3 && "$fingerprint" == '749ce1548b3491572af9dce61b34012842c638e409d8a9bbfd9625b94d8dd886' ]]; then
+            echo 'ONEQAY_S37_S35_S36_COMPATIBILITY=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT46_JRN006_PREDECESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'Recognized exact Sprint46 JRN-006 three-workflow source-compatibility predecessor shape.'
+          elif [[ "$count" -eq 14 && "$fingerprint" == 'ed29b6128c193f0efd6359748e220a37aefaec856acc4bc3b90f445ce3ccb674' ]]; then
+            migration16='apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php'
+            migration_delta="$(grep '^apps/web/database/migrations/' /tmp/s37-compat-paths || true)"
+            test "$migration_delta" = "$migration16"
+            mapfile -t migrations < <(find apps/web/database/migrations -maxdepth 1 -type f -name '*.php' -printf '%f\n' | sort)
+            test "${#migrations[@]}" -eq 16
+            test -f "$migration16"
+            echo 'ONEQAY_S37_S35_S36_COMPATIBILITY=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT46_JRN006_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'Recognized exact Sprint46 JRN-006 durable sale source successor shape.'
           fi
 
       - name: Enforce frozen Sprint37 source envelope
@@ -504,11 +524,16 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          migration='apps/web/database/migrations/0000_00_00_000015_create_identity_authentication_eligibility_administration_journal.php'
-          if [[ -f "$migration" ]]; then
-            git update-index --assume-unchanged "$migration"
-            rm -f "$migration"
-          fi
+          migrations=(
+            'apps/web/database/migrations/0000_00_00_000015_create_identity_authentication_eligibility_administration_journal.php'
+            'apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php'
+          )
+          for migration in "${migrations[@]}"; do
+            if [[ -f "$migration" ]]; then
+              git update-index --assume-unchanged "$migration"
+              rm -f "$migration"
+            fi
+          done
 
       - name: Validate Sprint37 source and schema boundary
         shell: bash
