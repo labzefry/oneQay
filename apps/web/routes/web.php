@@ -143,6 +143,10 @@ Route::post('/administration/identities/{identity_id}/authentication-disablement
     ->middleware(['session.active', 'throttle:5,1', 'throttle:20,60', RequirePolicyAdministrationSessionContextMiddleware::class])
     ->name('identity.authentication-eligibility.disable');
 
+Route::post('/administration/identities/{identity_id}/authentication-reactivation', [FirstPartyIdentityEligibilityAdministrationController::class, 'reactivate'])
+    ->middleware(['session.active', 'throttle:5,1', 'throttle:20,60', RequirePolicyAdministrationSessionContextMiddleware::class])
+    ->name('identity.authentication-eligibility.reactivate');
+
 Route::get('/system/update', SystemUpdatePageController::class)->name('system-update.page');
 
 Route::prefix('system/update')->controller(SystemUpdateControlPlaneController::class)->group(function (): void {
