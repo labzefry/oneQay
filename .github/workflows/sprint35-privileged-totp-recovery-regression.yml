@@ -1,3 +1,4 @@
+# Sprint46 JRN-006 exact legacy-runner correction anchor.
 # Sprint46 JRN-006 Sprint39 correction preservation anchor.
 # Sprint46 JRN-006 ab09 compatibility preservation anchor.
 # Sprint45 Sprint36 exact source-compatibility predecessor anchor.
@@ -130,6 +131,10 @@ jobs:
             echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT46_JRN006_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'Recognized exact Sprint46 JRN-006 durable sale source successor shape.'
+          elif [[ "$count" -eq 4 && "$fingerprint" == 'a5d3b0816c3b0e6f1fa7dd5ece73ea6347042372dd517af31e303c41d49abfaa' ]]; then
+            echo 'ONEQAY_SPRINT41_S35_PRESERVATION=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'Recognized exact Sprint46 JRN-006 four-workflow legacy-runner correction shape.'
           elif [[ "$count" -eq 7 && "$fingerprint" == 'f3f8b3ad0cca378307000ca242c4b9a4a8a7ab967d1649a5cd6408837001364c' ]]; then
             echo 'ONEQAY_SPRINT41_S35_PRESERVATION=true' >> "$GITHUB_ENV"
             echo 'Recognized exact Sprint41 seven-workflow source-preservation predecessor shape.'
