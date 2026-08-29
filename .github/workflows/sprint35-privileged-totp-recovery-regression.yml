@@ -1,3 +1,4 @@
+# Sprint44 source four-path compatibility predecessor anchor.
 # Sprint43 exact source legacy-horizon compatibility preservation anchor.
 # Sprint42 exact source legacy-horizon compatibility preservation anchor.
 # Sprint41 Sprint31 source-successor state correction preservation anchor.
@@ -145,6 +146,10 @@ jobs:
             echo 'ONEQAY_SPRINT41_S35_PRESERVATION=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'Recognized exact Sprint44 identity-reactivation fresh-authentication re-entry schema/source-envelope gate successor shape.'
+          elif [[ "$count" -eq 4 && "$fingerprint" == 'ff01f1355de6c7fdfd28c2d359eb70787dd8448f0b1fc6d9cb73c1a0fb76580a' ]]; then
+            echo 'ONEQAY_SPRINT41_S35_PRESERVATION=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'Recognized exact Sprint44 identity-reactivation fresh-authentication re-entry source successor shape.'
           elif [[ "$count" -eq 1 && "$fingerprint" == '71ea234d8aa6e4691e5871e2165a61c162a04d30c824a6ae8b3aafb8c39962be' ]]; then
             echo 'ONEQAY_SPRINT41_S35_PRESERVATION=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
