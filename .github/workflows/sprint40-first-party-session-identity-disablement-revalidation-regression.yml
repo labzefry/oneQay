@@ -3,16 +3,16 @@ name: Sprint44 Documentation Reconciliation Materializer
 # Author by Lab | zefry
 
 on:
-  push:
-    branches:
-      - sprint44-doc-reconciliation-materializer-v2
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
   materialize:
-    if: github.actor == 'labzefry'
+    if: github.event.pull_request.head.ref == 'sprint44-doc-reconciliation-materializer-v2'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -24,8 +24,16 @@ jobs:
 
       - name: Materialize exact 13-document reconciliation
         shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
+          marker='## Canonical post-Sprint44 source publication reconciliation — 2026-08-29'
+          if grep -Fq "$marker" docs/ai/AI_NEXT_TASK.md; then
+            echo 'Sprint44 documentation reconciliation already materialized on transient branch.'
+            exit 0
+          fi
+
           python3 - <<'PY'
           from pathlib import Path
 
@@ -73,7 +81,7 @@ Attribution: **Lab | zefry**
               path = Path(raw)
               text = path.read_text(encoding='utf-8')
               if marker in text:
-                  raise SystemExit(f'already reconciled: {raw}')
+                  raise SystemExit(f'already reconciled unexpectedly: {raw}')
               lines = text.splitlines(keepends=True)
               if not lines or not lines[0].startswith('# '):
                   raise SystemExit(f'missing canonical H1: {raw}')
