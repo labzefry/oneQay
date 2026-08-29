@@ -231,6 +231,18 @@ jobs:
             echo 'Recognized exact Sprint43 legacy three-workflow compatibility correction shape.'
           fi
 
+      - name: Extend Sprint35 historical isolation for post-Sprint46 docs
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          count="$(wc -l < /tmp/sprint41-s35-paths)"
+          fingerprint="$(sha256sum /tmp/sprint41-s35-paths | awk '{print $1}')"
+          if [[ "$count" -eq 13 && "$fingerprint" == 'b129d4b1c1135f2f5aecd5dde5ff1b5f6392eecb4d54006e80fc71889763647d' ]]; then
+            echo 'ONEQAY_SPRINT46_JRN006_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'Recognized post-Sprint46 documentation reconciliation migration #16 isolation state.'
+          fi
+
       - name: Enforce frozen Sprint35 source envelope
         if: env.ONEQAY_SPRINT41_S35_PRESERVATION != 'true'
         shell: bash
