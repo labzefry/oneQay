@@ -1,0 +1,103 @@
+name: Sprint45 Post-Source Reconciliation Materializer
+
+# Author by Lab | zefry
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/sprint45-post-source-reconciliation-materializer.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact materializer branch
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+
+      - name: Materialize exact Sprint45 canonical reconciliation blobs
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          paths = [
+              Path('.github/workflows/README.md'),
+              Path('ARCHITECTURE.md'),
+              Path('CHANGELOG.md'),
+              Path('DATABASE.md'),
+              Path('DEPLOYMENT.md'),
+              Path('PROJECT_MANIFEST.md'),
+              Path('README.md'),
+              Path('ROADMAP.md'),
+              Path('SECURITY.md'),
+              Path('TASKS.md'),
+              Path('docs/ai/AI_NEXT_TASK.md'),
+              Path('docs/ai/AI_PROJECT_STATE.md'),
+              Path('docs/ai/AI_SESSION_STATE.md'),
+          ]
+
+          section = '''## Canonical post-Sprint45 source publication reconciliation — 2026-08-29
+
+This current-facing section supersedes older post-Sprint44/current-state wording retained below as historical provenance. It records canonical source and CI evidence only and creates no new implementation or lifecycle authority.
+
+- Functional canonical baseline reconciled by this docs-only publication: `031d2379565a9b5cb5f1e6bc9e02957f8291206d`; tree `4beda30c01ffcc3f371c1460fc2caaa8fe4adea0`; GitHub signature **verified / valid**.
+- Sprint45 **First-Party Pending MFA Identity Eligibility Revalidation Foundation** is **IMPLEMENTED / PUBLISHED** through PR #387 as `031d2379565a9b5cb5f1e6bc9e02957f8291206d`, from qualified exact source head `0f1e7db2193254171ac2ac3794ec0a8fd5a5140e`.
+- Sprint45 source remains exactly **4 paths** with sorted newline-terminated SHA-256 `5dfaecf9be5c584b431606a7253515ab623ad9a11b4ff74062e794a1f40917c7`.
+- Canonical source migrations remain exactly **#1–#15**. Sprint45 is **NO_SCHEMA_CHANGE**; migration #16 is **NOT SELECTED** and does not exist.
+- Sprint45 composes the canonical current-eligibility verifier into the shared privileged pending-MFA boundary. Enrollment start, enrollment confirmation, and challenge completion must revalidate the exact pending tenant+identity before authentication state may advance.
+- When canonical session control is enabled and current eligibility is missing, disabled, ambiguous, malformed, cross-tenant, or otherwise unverifiable, the pending MFA operation fails closed through the existing safe MFA failure envelope. The pending framework session is invalidated and its CSRF token regenerated before any organizational-context advancement, factor progression, credential/factor epoch capture, logical authority issuance, public session handle creation, or full framework-session establishment.
+- A pending MFA session carries no full logical authority for Sprint42 to terminate. Sprint45 therefore closes the disable-after-primary-authentication race by burning ineligible pending framework state itself; later Sprint43 reactivation cannot resume or restore that burned pending state. Fresh primary authentication remains mandatory.
+- Sprint45 does not restore/resume pending state, does not create automatic login after reactivation, does not clear historical `revoked_at_unix`, does not reuse old authority/session identifiers or public handles, and does not add caller-selected tenant, identity, role, permission, factor, epoch, grant, or session authority.
+- Existing credential epoch, factor epoch, organizational-access, membership, outlet/device, TOTP enrollment/challenge/recovery, Sprint44 fresh-authentication re-entry, and logical-session authority semantics remain preserved. Reactivation remains eligibility-only and creates no session authority by itself.
+- The final Sprint45 dedicated regression proves the exact source envelope, NO_SCHEMA_CHANGE and migration #16 lock, canonical verifier composition, ordering and pending-state invalidation, route/authority non-widening, PHP syntax, pending-MFA no-resurrection behavior, Sprint44 preservation, full application regression, lifecycle locks, and tracked-source cleanliness.
+- The final Sprint45 exact source head completed **19 materially triggered pull-request workflows / 19 success / 0 non-success**, and the exact-head `product-owner-merge-authority` status completed **success** before squash publication.
+- The bounded Sprint45 publication chain includes entry/schema gates PR #374 and #378, compatibility publications PR #373, #377, #383, and #386, and final source PR #387. Closed unmerged qualification attempts such as PR #375, #379, #381, and #384 do not constitute canonical authority; transient materializers were also intentionally closed unmerged.
+- Technical Preview remains **`NO_SCHEMA_CHANGE / SPRINT40 NOT ACTIVATED`**; Sprint41 migration #15 and Sprint42/Sprint43/Sprint44/Sprint45 source remain unactivated/unapplied in Technical Preview. Production remains **`NO-GO / NOT AUTHORIZED`**. Updater remains **`DISABLED / UNWIRED`**. Deployment, release, migration execution, and rollback remain **`NOT AUTHORIZED`**.
+- No post-Sprint45 successor implementation concern is selected by this reconciliation. Any Sprint46 or other successor concern must begin with a separately bounded Product Owner entry gate; migration #16, new source/schema/runtime authority, Preview/Production activation, updater wiring, deployment, release, migration execution, and rollback are not implied.
+- This reconciliation changes only the established **13-document canonical state envelope**, whose sorted newline-terminated path SHA-256 remains `b129d4b1c1135f2f5aecd5dde5ff1b5f6392eecb4d54006e80fc71889763647d`.
+
+Attribution: **Lab | zefry**
+
+
+'''
+
+          for path in paths:
+              text = path.read_text(encoding='utf-8')
+              if '## Canonical post-Sprint45 source publication reconciliation — 2026-08-29' in text:
+                  raise SystemExit(f'{path}: Sprint45 reconciliation already exists')
+              first_break = text.find('\n\n')
+              if first_break < 0:
+                  raise SystemExit(f'{path}: cannot locate title separator')
+              insertion = first_break + 2
+              updated = text[:insertion] + section + text[insertion:]
+              path.write_text(updated, encoding='utf-8', newline='\n')
+          PY
+
+          git diff --check
+          mapfile -t changed < <(git diff --name-only | LC_ALL=C sort)
+          printf '%s\n' "${changed[@]}" > /tmp/changed.txt
+          test "$(wc -l < /tmp/changed.txt)" -eq 13
+          test "$(sha256sum /tmp/changed.txt | awk '{print $1}')" = 'b129d4b1c1135f2f5aecd5dde5ff1b5f6392eecb4d54006e80fc71889763647d'
+          echo "ENVELOPE_SHA256 $(sha256sum /tmp/changed.txt | awk '{print $1}')"
+
+          while IFS= read -r path; do
+            payload="$(python3 - "$path" <<'PY'
+          import base64, json, pathlib, sys
+          data = base64.b64encode(pathlib.Path(sys.argv[1]).read_bytes()).decode('ascii')
+          print(json.dumps({'content': data, 'encoding': 'base64'}))
+          PY
+          )"
+            sha="$(gh api --method POST "repos/${GITHUB_REPOSITORY}/git/blobs" --input - --jq .sha <<<"$payload")"
+            printf 'MATERIALIZED_BLOB %s %s\n' "$path" "$sha"
+          done < /tmp/changed.txt
