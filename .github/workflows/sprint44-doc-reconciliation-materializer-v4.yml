@@ -75,7 +75,6 @@ jobs:
           Attribution: **Lab | zefry**
 
           '''
-          # Dedent only the controlled section; never rewrite historical bytes.
           import textwrap
           section = textwrap.dedent(section)
 
@@ -94,11 +93,16 @@ jobs:
 
           rm .github/workflows/sprint44-doc-reconciliation-materializer-v4.yml
           git diff --check
-          mapfile -t changed < <(git diff --name-only | LC_ALL=C sort)
+          mapfile -t changed < <(
+            git diff --name-only |
+              grep -v '^\.github/workflows/sprint44-doc-reconciliation-materializer-v4\.yml$' |
+              LC_ALL=C sort
+          )
           printf '%s\n' "${changed[@]}" > /tmp/changed.txt
           sha256sum /tmp/changed.txt
           test "$(wc -l < /tmp/changed.txt)" -eq 13
           test "$(sha256sum /tmp/changed.txt | awk '{print $1}')" = 'b129d4b1c1135f2f5aecd5dde5ff1b5f6392eecb4d54006e80fc71889763647d'
+          test "$(git status --short .github/workflows/sprint44-doc-reconciliation-materializer-v4.yml | wc -l)" -eq 1
 
           git config user.name 'labzefry'
           git config user.email 'lab.zefa@gmail.com'
