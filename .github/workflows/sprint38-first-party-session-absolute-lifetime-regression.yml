@@ -1,4 +1,3 @@
-# Sprint46 JRN-006 upper-horizon exact preservation anchor.
 # Sprint46 JRN-006 sale completion schema/source-envelope gate compatibility preservation anchor.
 # Sprint46 Business MVP POS core transaction and outlet operations entry-gate compatibility preservation anchor.
 # Sprint45 Sprint36 exact source-compatibility predecessor anchor.
@@ -206,11 +205,9 @@ jobs:
           sprint40_source_successor=false
           sprint40_legacy_horizon=false
           sprint41_source_successor=false
-          sprint46_jrn006_source_successor=false
           echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
           echo 'ONEQAY_SPRINT40_LEGACY_HORIZON=false' >> "$GITHUB_ENV"
           echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
-          echo 'ONEQAY_SPRINT46_JRN006_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
           git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | sort > /tmp/actual-sprint38-source-paths
           if [[ "$(wc -l < /tmp/actual-sprint38-source-paths)" -eq 5 ]] && [[ "$(sha256sum /tmp/actual-sprint38-source-paths | awk '{print $1}')" == 'ab09e044925ae98740a49c46a70ff387e5f5445b245d3a556d85ad6a354305ec' ]]; then
             if [[ -f 'apps/web/database/migrations/0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php' ]]; then
@@ -293,12 +290,6 @@ jobs:
             echo 'Recognized exact Sprint42 disabled-identity session-termination source successor shape.'
             echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
-          elif [[ "$(wc -l < /tmp/actual-sprint38-source-paths)" -eq 14 ]] && [[ "$(sha256sum /tmp/actual-sprint38-source-paths | awk '{print $1}')" == 'ed29b6128c193f0efd6359748e220a37aefaec856acc4bc3b90f445ce3ccb674' ]]; then
-            echo 'Recognized exact Sprint46 JRN-006 durable sale source successor shape.'
-            sprint46_jrn006_source_successor=true
-            echo 'ONEQAY_SPRINT46_JRN006_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
-            echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
-            echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
           elif [[ "$(wc -l < /tmp/actual-sprint38-source-paths)" -eq 9 ]] && [[ "$(sha256sum /tmp/actual-sprint38-source-paths | awk '{print $1}')" == 'b8afa8415c0675c2675c1b8dbd528b44e8181a8f79a97fe28b0a0996623e1749' ]]; then
             echo 'Recognized exact Sprint43 nine-workflow source-preservation predecessor shape.'
             echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
@@ -328,10 +319,6 @@ jobs:
             echo 'Sprint38 source envelope contains a forbidden environment or dependency path.' >&2
             exit 1
           fi
-          if [[ "$sprint46_jrn006_source_successor" == 'true' ]]; then
-            test "$(grep -c '^apps/web/database/migrations/' /tmp/actual-sprint38-source-paths)" -eq 1
-            grep -Fxq 'apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php' /tmp/actual-sprint38-source-paths
-          else
           if [[ "$sprint41_source_successor" == 'true' ]]; then
             test "$(grep -c '^apps/web/database/migrations/' /tmp/actual-sprint38-source-paths)" -eq 1
             grep -Fxq 'apps/web/database/migrations/0000_00_00_000015_create_identity_authentication_eligibility_administration_journal.php' /tmp/actual-sprint38-source-paths
@@ -344,23 +331,17 @@ jobs:
             echo 'Sprint38 source envelope contains a forbidden migration path.' >&2
             exit 1
           fi
-          fi
 
       - name: Isolate Sprint41 journal from historical Sprint38 executable preservation
         if: env.ONEQAY_SPRINT41_SOURCE_SUCCESSOR == 'true'
         shell: bash
         run: |
           set -euo pipefail
-          migrations=(
-            'apps/web/database/migrations/0000_00_00_000015_create_identity_authentication_eligibility_administration_journal.php'
-            'apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php'
-          )
-          for migration in "${migrations[@]}"; do
-            if [[ -f "$migration" ]]; then
-              git update-index --assume-unchanged "$migration"
-              rm -f "$migration"
-            fi
-          done
+          migration='apps/web/database/migrations/0000_00_00_000015_create_identity_authentication_eligibility_administration_journal.php'
+          if [[ -f "$migration" ]]; then
+            git update-index --assume-unchanged "$migration"
+            rm -f "$migration"
+          fi
 
       - name: Enforce NO_SCHEMA_CHANGE and migrations one through thirteen
         if: github.event_name == 'pull_request'
@@ -369,11 +350,6 @@ jobs:
           set -euo pipefail
           base="${{ github.event.pull_request.base.sha }}"
           head="${{ github.event.pull_request.head.sha }}"
-          if [[ "${ONEQAY_SPRINT46_JRN006_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
-            git diff --exit-code "$base" "$head" -- \
-              apps/web/database/migrations \
-              ':(exclude)apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php'
-          else
           if [[ "${ONEQAY_SPRINT41_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
             git diff --exit-code "$base" "$head" -- \
               apps/web/database/migrations \
@@ -384,7 +360,6 @@ jobs:
               ':(exclude)apps/web/database/migrations/0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php'
           else
             git diff --exit-code "$base" "$head" -- apps/web/database/migrations
-          fi
           fi
           mapfile -t migrations < <(find apps/web/database/migrations -maxdepth 1 -type f -name '*.php' -printf '%f\n' | sort)
           if [[ "${ONEQAY_SPRINT40_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT40_LEGACY_HORIZON:-false}" == 'true' ]]; then
