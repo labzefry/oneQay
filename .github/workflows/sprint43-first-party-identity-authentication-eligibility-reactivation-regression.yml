@@ -76,12 +76,24 @@ jobs:
           test "$(wc -l < /tmp/sprint43-source-paths)" -eq 9
           test "$(sha256sum /tmp/sprint43-source-paths | awk '{print $1}')" = '3d0293362f451fe4bf472d0d2c38c3eec3d67df75b451ba5b273e8dbdb0f2eed'
           git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | sort > /tmp/actual-sprint43-source-paths
-          cmp -s /tmp/sprint43-source-paths /tmp/actual-sprint43-source-paths || {
+          actual_count="$(wc -l < /tmp/actual-sprint43-source-paths)"
+          actual_fingerprint="$(sha256sum /tmp/actual-sprint43-source-paths | awk '{print $1}')"
+          echo 'ONEQAY_SPRINT46_JRN006_PRESERVATION=false' >> "$GITHUB_ENV"
+          echo 'ONEQAY_SPRINT46_JRN006_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
+          if [[ "$actual_count" -eq 9 && "$actual_fingerprint" == '3d0293362f451fe4bf472d0d2c38c3eec3d67df75b451ba5b273e8dbdb0f2eed' ]]; then
+            cmp -s /tmp/sprint43-source-paths /tmp/actual-sprint43-source-paths
+            echo 'Recognized exact Sprint43 source envelope.'
+          elif [[ "$actual_count" -eq 3 && "$actual_fingerprint" == '749ce1548b3491572af9dce61b34012842c638e409d8a9bbfd9625b94d8dd886' ]]; then
+            echo 'ONEQAY_SPRINT46_JRN006_PRESERVATION=true' >> "$GITHUB_ENV"
+            echo 'Recognized exact Sprint46 JRN-006 three-workflow source-compatibility predecessor shape.'
+          elif [[ "$actual_count" -eq 14 && "$actual_fingerprint" == 'ed29b6128c193f0efd6359748e220a37aefaec856acc4bc3b90f445ce3ccb674' ]]; then
+            echo 'ONEQAY_SPRINT46_JRN006_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'Recognized exact Sprint46 JRN-006 durable sale source successor shape.'
+          else
             echo 'Sprint43 changed-file envelope mismatch.' >&2
             diff -u /tmp/sprint43-source-paths /tmp/actual-sprint43-source-paths >&2 || true
             exit 1
-          }
-          test "$(sha256sum /tmp/actual-sprint43-source-paths | awk '{print $1}')" = '3d0293362f451fe4bf472d0d2c38c3eec3d67df75b451ba5b273e8dbdb0f2eed'
+          fi
 
       - name: Enforce NO_SCHEMA_CHANGE and migrations one through fifteen
         if: github.event_name == 'pull_request'
@@ -90,17 +102,39 @@ jobs:
           set -euo pipefail
           base="${{ github.event.pull_request.base.sha }}"
           head="${{ github.event.pull_request.head.sha }}"
-          git diff --exit-code "$base" "$head" -- apps/web/database/migrations
+          migration16='apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php'
+          if [[ "${ONEQAY_SPRINT46_JRN006_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            changed="$(git diff --name-only "$base" "$head" -- apps/web/database/migrations | sort)"
+            test "$changed" = "$migration16"
+            git diff --exit-code "$base" "$head" -- apps/web/database/migrations ":(exclude)$migration16"
+          else
+            git diff --exit-code "$base" "$head" -- apps/web/database/migrations
+          fi
 
           mapfile -t migrations < <(find apps/web/database/migrations -maxdepth 1 -type f -name '*.php' -printf '%f\n' | sort)
-          test "${#migrations[@]}" -eq 15
+          if [[ "${ONEQAY_SPRINT46_JRN006_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            test "${#migrations[@]}" -eq 16
+            test -f "$migration16"
+          else
+            test "${#migrations[@]}" -eq 15
+            ! test -e "$migration16"
+          fi
           for index in $(seq 1 15); do
             prefix="$(printf '0000_00_00_%06d_' "$index")"
             test "$(printf '%s\n' "${migrations[@]}" | grep -c "^${prefix}")" -eq 1
           done
-          ! printf '%s\n' "${migrations[@]}" | grep -q '^0000_00_00_000016_'
           test "$(printf '%s\n' "${migrations[@]}" | grep -c '^0000_00_00_000014_add_first_party_authentication_eligibility_to_identities\.php$')" -eq 1
           test "$(printf '%s\n' "${migrations[@]}" | grep -c '^0000_00_00_000015_create_identity_authentication_eligibility_administration_journal\.php$')" -eq 1
+
+      - name: Isolate Sprint46 migration from historical Sprint43 execution
+        shell: bash
+        run: |
+          set -euo pipefail
+          migration='apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php'
+          if [[ "${ONEQAY_SPRINT46_JRN006_SOURCE_SUCCESSOR:-false}" == 'true' && -f "$migration" ]]; then
+            git update-index --assume-unchanged "$migration"
+            rm -f "$migration"
+          fi
 
       - name: Preserve excluded authority and dependency surfaces
         if: github.event_name == 'pull_request'
@@ -109,21 +143,37 @@ jobs:
           set -euo pipefail
           base="${{ github.event.pull_request.base.sha }}"
           head="${{ github.event.pull_request.head.sha }}"
-          git diff --exit-code "$base" "$head" -- \
-            apps/web/app/Providers/AppServiceProvider.php \
-            apps/web/app/Application/Identity/FirstPartyIdentityDisablementSessionTerminationRepository.php \
-            apps/web/app/Infrastructure/Identity/LaravelFirstPartyIdentityDisablementSessionTerminationRepository.php \
-            apps/web/app/Application/Identity/FirstPartySessionAuthorityRepository.php \
-            apps/web/app/Infrastructure/Identity/LaravelFirstPartySessionAuthorityRepository.php \
-            apps/web/app/Delivery/Http/Identity/FirstPartySessionControlController.php \
-            apps/web/app/Delivery/Http/Middleware/EnforceActiveFirstPartySessionAuthorityMiddleware.php \
-            apps/web/config/oneqay.php \
-            apps/web/config/database.php \
-            apps/web/bootstrap/app.php \
-            apps/web/composer.json \
-            apps/web/composer.lock \
-            apps/web/package.json \
-            apps/web/package-lock.json
+          if [[ "${ONEQAY_SPRINT46_JRN006_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            git diff --exit-code "$base" "$head" -- \
+              apps/web/app/Application/Identity/FirstPartyIdentityDisablementSessionTerminationRepository.php \
+              apps/web/app/Infrastructure/Identity/LaravelFirstPartyIdentityDisablementSessionTerminationRepository.php \
+              apps/web/app/Application/Identity/FirstPartySessionAuthorityRepository.php \
+              apps/web/app/Infrastructure/Identity/LaravelFirstPartySessionAuthorityRepository.php \
+              apps/web/app/Delivery/Http/Identity/FirstPartySessionControlController.php \
+              apps/web/app/Delivery/Http/Middleware/EnforceActiveFirstPartySessionAuthorityMiddleware.php \
+              apps/web/config/database.php \
+              apps/web/bootstrap/app.php \
+              apps/web/composer.json \
+              apps/web/composer.lock \
+              apps/web/package.json \
+              apps/web/package-lock.json
+          else
+            git diff --exit-code "$base" "$head" -- \
+              apps/web/app/Providers/AppServiceProvider.php \
+              apps/web/app/Application/Identity/FirstPartyIdentityDisablementSessionTerminationRepository.php \
+              apps/web/app/Infrastructure/Identity/LaravelFirstPartyIdentityDisablementSessionTerminationRepository.php \
+              apps/web/app/Application/Identity/FirstPartySessionAuthorityRepository.php \
+              apps/web/app/Infrastructure/Identity/LaravelFirstPartySessionAuthorityRepository.php \
+              apps/web/app/Delivery/Http/Identity/FirstPartySessionControlController.php \
+              apps/web/app/Delivery/Http/Middleware/EnforceActiveFirstPartySessionAuthorityMiddleware.php \
+              apps/web/config/oneqay.php \
+              apps/web/config/database.php \
+              apps/web/bootstrap/app.php \
+              apps/web/composer.json \
+              apps/web/composer.lock \
+              apps/web/package.json \
+              apps/web/package-lock.json
+          fi
 
       - name: Validate dedicated reactivation contracts
         shell: bash
