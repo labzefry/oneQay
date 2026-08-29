@@ -50,7 +50,10 @@ jobs:
           count="$(wc -l < /tmp/m74-changed-files.txt)"
           fingerprint="$(sha256sum /tmp/m74-changed-files.txt | awk '{print $1}')"
           echo 'ONEQAY_SPRINT46_JRN006_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
-          if [[ "$count" -eq 14 && "$fingerprint" == 'ed29b6128c193f0efd6359748e220a37aefaec856acc4bc3b90f445ce3ccb674' ]]; then
+          if [[ "$count" -eq 6 && "$fingerprint" == '6e0a346e98e8f622081c3d9e81866e8b44b79af800a178568bb71e3e6e28da62' ]]; then
+            echo 'Recognized exact Sprint46 JRN-006 M7.4 compatibility predecessor shape.'
+            exit 0
+          elif [[ "$count" -eq 14 && "$fingerprint" == 'ed29b6128c193f0efd6359748e220a37aefaec856acc4bc3b90f445ce3ccb674' ]]; then
             echo 'ONEQAY_SPRINT46_JRN006_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'Recognized exact Sprint46 JRN-006 durable sale source successor shape.'
             exit 0
