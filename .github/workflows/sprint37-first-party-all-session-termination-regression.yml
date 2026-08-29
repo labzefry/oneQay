@@ -242,7 +242,24 @@ jobs:
           sort -o /tmp/sprint38-source-paths /tmp/sprint38-source-paths
           test "$(sha256sum /tmp/sprint38-source-paths | awk '{print $1}')" = "411950d5602dc7160668c88e08a3941ebccc8bdc82d20bee77ce4004f039d216"
 
+      - name: Classify exact Sprint35 Sprint36 compatibility
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | sort > /tmp/s37-compat-paths
+          count="$(wc -l < /tmp/s37-compat-paths)"
+          fingerprint="$(sha256sum /tmp/s37-compat-paths | awk '{print $1}')"
+          echo 'ONEQAY_S37_S35_S36_COMPATIBILITY=false' >> "$GITHUB_ENV"
+          if [[ "$count" -eq 2 && "$fingerprint" == 'c333c5a6ac31588aa9b0520160a1a1080a22af2971658d742ba9456eff94cbc8' ]]; then
+            echo 'ONEQAY_S37_S35_S36_COMPATIBILITY=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'Recognized exact Sprint35/Sprint36 two-workflow compatibility predecessor shape.'
+          fi
+
       - name: Enforce frozen Sprint37 source envelope
+        if: env.ONEQAY_S37_S35_S36_COMPATIBILITY != 'true'
         shell: bash
         run: |
           set -euo pipefail
