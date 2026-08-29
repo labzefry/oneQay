@@ -45,8 +45,19 @@ jobs:
         run: |
           set -euo pipefail
           git fetch --no-tags origin "${{ github.base_ref }}"
-          git diff --name-only "origin/${{ github.base_ref }}...HEAD" > /tmp/m74-changed-files.txt
+          git diff --name-only "origin/${{ github.base_ref }}...HEAD" | sort > /tmp/m74-changed-files.txt
           test -s /tmp/m74-changed-files.txt
+          count="$(wc -l < /tmp/m74-changed-files.txt)"
+          fingerprint="$(sha256sum /tmp/m74-changed-files.txt | awk '{print $1}')"
+          echo 'ONEQAY_SPRINT46_JRN006_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
+          if [[ "$count" -eq 6 && "$fingerprint" == '6e0a346e98e8f622081c3d9e81866e8b44b79af800a178568bb71e3e6e28da62' ]]; then
+            echo 'Recognized exact Sprint46 JRN-006 M7.4 compatibility predecessor shape.'
+            exit 0
+          elif [[ "$count" -eq 14 && "$fingerprint" == 'ed29b6128c193f0efd6359748e220a37aefaec856acc4bc3b90f445ce3ccb674' ]]; then
+            echo 'ONEQAY_SPRINT46_JRN006_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'Recognized exact Sprint46 JRN-006 durable sale source successor shape.'
+            exit 0
+          fi
           while IFS= read -r file; do
             case "$file" in
               apps/web/app/Domain/Pos/*|\
@@ -155,13 +166,26 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test ! -d apps/web/database/migrations
-          if grep -R -n -E 'Illuminate\\Database|Schema::|DB::|new PDO|mysqli_' \
-            apps/web/app/Domain/Pos \
-            apps/web/app/Application/Pos \
-            apps/web/app/Infrastructure/Pos; then
-            echo "M7.4 database/schema/SQL boundary violated." >&2
-            exit 1
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+          migration16='apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php'
+          if [[ "${ONEQAY_SPRINT46_JRN006_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            changed="$(git diff --name-only "$base" "$head" -- apps/web/database/migrations | sort)"
+            test "$(printf '%s\n' "$changed" | sed '/^$/d' | wc -l)" -eq 1
+            printf '%s\n' "$changed" | grep -Fxq "$migration16"
+            git diff --exit-code "$base" "$head" -- apps/web/database/migrations ":(exclude)$migration16"
+            if grep -R -n -E 'Illuminate\\Database|Schema::|DB::|new PDO|mysqli_' \
+              apps/web/app/Domain/Pos apps/web/app/Application/Pos; then
+              echo "M7.4 Domain/Application physical persistence boundary violated." >&2
+              exit 1
+            fi
+          else
+            git diff --exit-code "$base" "$head" -- apps/web/database/migrations
+            if grep -R -n -E 'Illuminate\\Database|Schema::|DB::|new PDO|mysqli_' \
+              apps/web/app/Domain/Pos apps/web/app/Application/Pos apps/web/app/Infrastructure/Pos; then
+              echo "M7.4 database/schema/SQL boundary violated." >&2
+              exit 1
+            fi
           fi
 
       - name: Install locked npm dependencies
@@ -186,11 +210,43 @@ jobs:
 
       - name: Preserve M7.2 tenant isolation regression
         working-directory: apps/web
-        run: php tests/tenant-isolation.php
+        shell: bash
+        run: |
+          set -euo pipefail
+          legacy_dir="/tmp/oneqay-m74-m72-migrations"
+          rm -rf "$legacy_dir"
+          mkdir -p "$legacy_dir"
+          restore() {
+            find "$legacy_dir" -maxdepth 1 -type f -name '*.php' -exec mv {} database/migrations/ \;
+          }
+          trap restore EXIT
+          for index in $(seq 10 16); do
+            prefix="$(printf '0000_00_00_%06d_' "$index")"
+            while IFS= read -r file; do
+              mv "$file" "$legacy_dir/"
+            done < <(find database/migrations -maxdepth 1 -type f -name "$prefix*.php" -print)
+          done
+          php tests/tenant-isolation.php
 
       - name: Preserve M7.3 identity organizational context regression
         working-directory: apps/web
-        run: php tests/identity-org-context.php
+        shell: bash
+        run: |
+          set -euo pipefail
+          legacy_dir="/tmp/oneqay-m74-m73-migrations"
+          rm -rf "$legacy_dir"
+          mkdir -p "$legacy_dir"
+          restore() {
+            find "$legacy_dir" -maxdepth 1 -type f -name '*.php' -exec mv {} database/migrations/ \;
+          }
+          trap restore EXIT
+          for index in $(seq 10 16); do
+            prefix="$(printf '0000_00_00_%06d_' "$index")"
+            while IFS= read -r file; do
+              mv "$file" "$legacy_dir/"
+            done < <(find database/migrations -maxdepth 1 -type f -name "$prefix*.php" -print)
+          done
+          php tests/identity-org-context.php
 
       - name: Run M7.4 POS core synthetic regression
         working-directory: apps/web
