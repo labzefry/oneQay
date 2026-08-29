@@ -13,6 +13,8 @@ use App\Delivery\Http\Identity\PrivilegedTotpRecoveryController;
 use App\Delivery\Http\Identity\RecoveryCodeController;
 use App\Delivery\Http\Identity\RecoveryPasswordResetController;
 use App\Delivery\Http\Middleware\RequirePolicyAdministrationSessionContextMiddleware;
+use App\Delivery\Http\Middleware\RequirePosSessionContextMiddleware;
+use App\Delivery\Http\Pos\PosSaleController;
 use App\Delivery\Http\SystemUpdate\SystemUpdateControlPlaneController;
 use App\Delivery\Http\SystemUpdate\SystemUpdatePageController;
 use App\Delivery\Preview\TechnicalPreviewController;
@@ -133,6 +135,14 @@ if (in_array($firstPartyAuthRuntime, ['local', 'test', 'ci'], true)) {
             }
         }
     }
+}
+
+if (in_array($firstPartyAuthRuntime, ['local', 'test', 'ci'], true)
+    && $sessionControlEnabled
+    && (bool) config('oneqay.pos_sale_completion.enabled', false)) {
+    Route::post('/pos/sales', PosSaleController::class)
+        ->middleware(['session.active', 'throttle:30,1', 'throttle:300,60', RequirePosSessionContextMiddleware::class])
+        ->name('pos.sales.complete');
 }
 
 Route::post('/administration/policy/mutations', PolicyAdministrationController::class)
