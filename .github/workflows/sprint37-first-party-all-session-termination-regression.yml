@@ -381,6 +381,18 @@ jobs:
               sprint41_source_successor=true
               echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
               echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            elif [[ "$(wc -l < /tmp/actual-sprint37-paths)" -eq 9 ]] && [[ "$(sha256sum /tmp/actual-sprint37-paths | awk '{print $1}')" == "b8afa8415c0675c2675c1b8dbd528b44e8181a8f79a97fe28b0a0996623e1749" ]]; then
+              echo "Recognized exact Sprint43 nine-workflow source-preservation predecessor shape."
+              sprint40_source_successor=true
+              sprint41_source_successor=true
+              echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+              echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            elif [[ "$(wc -l < /tmp/actual-sprint37-paths)" -eq 9 ]] && [[ "$(sha256sum /tmp/actual-sprint37-paths | awk '{print $1}')" == "3d0293362f451fe4bf472d0d2c38c3eec3d67df75b451ba5b273e8dbdb0f2eed" ]]; then
+              echo "Recognized exact Sprint43 identity-authentication eligibility reactivation source successor shape."
+              sprint40_source_successor=true
+              sprint41_source_successor=true
+              echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+              echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             elif cmp -s /tmp/actual-sprint37-paths /tmp/sprint39-schema-source-envelope-gate-paths; then
               echo "Recognized exact Sprint39 organizational-access revalidation schema/source-envelope gate successor shape."
             elif cmp -s /tmp/actual-sprint37-paths /tmp/sprint39-source-paths; then
