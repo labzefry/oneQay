@@ -105,6 +105,11 @@ jobs:
             echo 'ONEQAY_SPRINT42_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT43_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'Recognized exact Sprint46 JRN-006 durable sale source successor shape.'
+          elif [[ "$actual_count" -eq 3 && "$actual_fingerprint" == '749ce1548b3491572af9dce61b34012842c638e409d8a9bbfd9625b94d8dd886' ]]; then
+            echo 'ONEQAY_SPRINT42_PRESERVATION=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT43_PRESERVATION=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT43_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'Recognized exact Sprint46 JRN-006 three-workflow source-compatibility predecessor shape.'
           elif [[ "$actual_count" -eq 9 && "$actual_fingerprint" == 'b8afa8415c0675c2675c1b8dbd528b44e8181a8f79a97fe28b0a0996623e1749' ]]; then
             echo 'ONEQAY_SPRINT42_PRESERVATION=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT43_PRESERVATION=true' >> "$GITHUB_ENV"

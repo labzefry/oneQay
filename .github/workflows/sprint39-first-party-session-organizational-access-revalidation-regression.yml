@@ -191,6 +191,10 @@ jobs:
           elif cmp -s /tmp/sprint39-source-paths /tmp/actual-sprint39-source-paths; then
             test "$(sha256sum /tmp/actual-sprint39-source-paths | awk '{print $1}')" = '2cfc92c34f46375b11bf3fe92f9094cefa598d234133847fdd6629be211f12c4'
             echo 'Recognized exact Sprint39 source envelope.'
+          elif [[ "$(wc -l < /tmp/actual-sprint39-source-paths)" -eq 3 ]] && [[ "$(sha256sum /tmp/actual-sprint39-source-paths | awk '{print $1}')" == '749ce1548b3491572af9dce61b34012842c638e409d8a9bbfd9625b94d8dd886' ]]; then
+            echo 'Recognized exact Sprint46 JRN-006 three-workflow source-compatibility predecessor shape.'
+            echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
           elif [[ "$(wc -l < /tmp/actual-sprint39-source-paths)" -eq 2 ]] && [[ "$(sha256sum /tmp/actual-sprint39-source-paths | awk '{print $1}')" == 'c333c5a6ac31588aa9b0520160a1a1080a22af2971658d742ba9456eff94cbc8' ]]; then
             echo 'Recognized exact Sprint35/Sprint36 two-workflow compatibility predecessor shape.'
             echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
