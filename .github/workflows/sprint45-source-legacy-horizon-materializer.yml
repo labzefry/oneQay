@@ -1,0 +1,131 @@
+name: Sprint45 Source Legacy Horizon Materializer
+
+# Author by Lab | zefry
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/sprint45-source-legacy-horizon-materializer.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact materializer branch
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+
+      - name: Materialize exact Sprint45 source legacy-horizon blobs
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          old = 'ff01f1355de6c7fdfd28c2d359eb70787dd8448f0b1fc6d9cb73c1a0fb76580a'
+          new = '5dfaecf9be5c584b431606a7253515ab623ad9a11b4ff74062e794a1f40917c7'
+          paths = [
+              Path('.github/workflows/m7-2-tenant-isolation-regression.yml'),
+              Path('.github/workflows/m7-3-identity-org-context-regression.yml'),
+              Path('.github/workflows/m7-4a-technical-preview-interaction-regression.yml'),
+              Path('.github/workflows/m7-5-preview-db-qualification-regression.yml'),
+              Path('.github/workflows/m7-5-preview-release-artifact.yml'),
+              Path('.github/workflows/sprint21-role-permission-policy-regression.yml'),
+              Path('.github/workflows/sprint22-policy-administration-regression.yml'),
+              Path('.github/workflows/sprint23-initial-tenant-admin-provisioning-regression.yml'),
+              Path('.github/workflows/sprint24-protected-control-admin-lifecycle-regression.yml'),
+              Path('.github/workflows/sprint25-policy-administration-delivery-regression.yml'),
+              Path('.github/workflows/sprint26-identity-credential-verification-regression.yml'),
+              Path('.github/workflows/sprint27-first-party-session-establishment-regression.yml'),
+              Path('.github/workflows/sprint28-initial-password-enrollment-regression.yml'),
+              Path('.github/workflows/sprint29-first-control-principal-credential-bootstrap-regression.yml'),
+              Path('.github/workflows/sprint30-privileged-totp-mfa-regression.yml'),
+              Path('.github/workflows/sprint31-privileged-reauthentication-step-up-regression.yml'),
+              Path('.github/workflows/sprint33-recovery-bound-password-reset-regression.yml'),
+              Path('.github/workflows/sprint34-authenticated-password-change-regression.yml'),
+              Path('.github/workflows/sprint35-privileged-totp-recovery-regression.yml'),
+          ]
+
+          for path in paths:
+              text = path.read_text(encoding='utf-8')
+              if new in text:
+                  raise SystemExit(f'{path}: unexpected pre-existing Sprint45 source fingerprint')
+              lines = text.splitlines(keepends=True)
+              matches = [i for i, line in enumerate(lines) if old in line]
+              if not matches:
+                  anchor = '# Sprint45 pending-MFA eligibility source legacy-horizon compatibility preservation anchor.\n'
+                  path.write_text(anchor + text, encoding='utf-8', newline='\n')
+                  continue
+
+              # Process from bottom to top so indexes remain stable. Clone the nearest
+              # same-indent if/elif branch containing the prior exact Sprint44 source
+              # fingerprint and substitute only the fingerprint plus recognition text.
+              for start in reversed(matches):
+                  stripped = lines[start].lstrip()
+                  indent = lines[start][:len(lines[start]) - len(stripped)]
+                  if not (stripped.startswith('if ') or stripped.startswith('elif ')):
+                      # If the fingerprint is embedded in a compound line rather than the
+                      # branch opener, walk upward to the owning same-indent if/elif.
+                      owner = None
+                      for j in range(start, -1, -1):
+                          s = lines[j].lstrip()
+                          ind = lines[j][:len(lines[j]) - len(s)]
+                          if ind == indent and (s.startswith('if ') or s.startswith('elif ')):
+                              owner = j
+                              break
+                      if owner is None:
+                          raise SystemExit(f'{path}: could not locate branch owner for prior fingerprint')
+                      start = owner
+                      stripped = lines[start].lstrip()
+                      indent = lines[start][:len(lines[start]) - len(stripped)]
+
+                  end = None
+                  for j in range(start + 1, len(lines)):
+                      s = lines[j].lstrip()
+                      ind = lines[j][:len(lines[j]) - len(s)]
+                      if ind == indent and (s.startswith('elif ') or s.startswith('else') or s.startswith('fi')):
+                          end = j
+                          break
+                  if end is None:
+                      raise SystemExit(f'{path}: could not bound prior exact-source branch')
+
+                  block = ''.join(lines[start:end])
+                  if old not in block:
+                      raise SystemExit(f'{path}: bounded branch lost prior fingerprint')
+                  clone = block.replace(old, new)
+                  clone = clone.replace('Sprint44', 'Sprint45').replace('fresh-authentication re-entry', 'pending-MFA identity-eligibility revalidation')
+                  lines[start:end] = lines[start:end] + [clone]
+
+              out = ''.join(lines)
+              if new not in out:
+                  raise SystemExit(f'{path}: Sprint45 source fingerprint was not materialized')
+              path.write_text(out, encoding='utf-8', newline='\n')
+          PY
+
+          git diff --check
+          mapfile -t changed < <(git diff --name-only | LC_ALL=C sort)
+          printf '%s\n' "${changed[@]}" > /tmp/changed.txt
+          test "$(wc -l < /tmp/changed.txt)" -eq 19
+          test "$(sha256sum /tmp/changed.txt | awk '{print $1}')" = 'fc2b578fc9d090dfce1fd34c5acfa7a07f065979a94f62becb3dc54dee664920'
+          echo "ENVELOPE_SHA256 $(sha256sum /tmp/changed.txt | awk '{print $1}')"
+
+          while IFS= read -r path; do
+            payload="$(python3 - "$path" <<'PY'
+          import base64, json, pathlib, sys
+          data = base64.b64encode(pathlib.Path(sys.argv[1]).read_bytes()).decode('ascii')
+          print(json.dumps({'content': data, 'encoding': 'base64'}))
+          PY
+          )"
+            sha="$(gh api --method POST "repos/${GITHUB_REPOSITORY}/git/blobs" --input - --jq .sha <<<"$payload")"
+            printf 'MATERIALIZED_BLOB %s %s\n' "$path" "$sha"
+          done < /tmp/changed.txt
