@@ -1,3 +1,4 @@
+# Sprint44 source four-path compatibility predecessor anchor.
 # Sprint43 fd5 post-Sprint42 legacy compatibility preservation anchor.
 # Sprint41 Sprint32-Sprint34 upper-horizon compatibility preservation anchor.
 # Sprint40 canonical documentation synchronization successor-state preservation anchor.
@@ -411,7 +412,7 @@ jobs:
           grep -Fq 'private int $absoluteTtlSeconds = 43200' "$service"
           grep -Fq '$this->absoluteTtlSeconds !== 43200' "$service"
           grep -Fq '$this->effectiveExpiry($now, $now)' "$service"
-          grep -Fq "\$this->effectiveExpiry(\$this->recordInt(\$record, 'issued_at_unix'), \$now)" "$service"
+          grep -Fq "$this->effectiveExpiry($this->recordInt($record, 'issued_at_unix'), $now)" "$service"
           grep -Fq '$now > $this->absoluteDeadline($issuedAtUnix)' "$service"
           if grep -RInE 'ONEQAY_.*(ABSOLUTE|SESSION.*TTL)|env\([^)]*absolute_ttl' "$config" apps/web/environment.example; then
             echo 'Sprint38 absolute lifetime became environment-configurable.' >&2
