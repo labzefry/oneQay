@@ -26,7 +26,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: sprint46-jrn006-durable-sale-completion-\${{ github.event.pull_request.number || github.ref }}
+  group: sprint46-jrn006-durable-sale-completion-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -52,14 +52,14 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           fetch-depth: 0
-          ref: \${{ github.event.pull_request.head.sha || github.sha }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - name: Enforce exact Sprint46 source envelope
         if: github.event_name == 'pull_request'
         shell: bash
         run: |
           set -euo pipefail
-          git diff --name-only "\${{ github.event.pull_request.base.sha }}" "\${{ github.event.pull_request.head.sha }}" | sort > /tmp/s46-source-paths
+          git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | sort > /tmp/s46-source-paths
           test "$(wc -l < /tmp/s46-source-paths)" -eq 14
           test "$(sha256sum /tmp/s46-source-paths | awk '{print $1}')" = 'ed29b6128c193f0efd6359748e220a37aefaec856acc4bc3b90f445ce3ccb674'
           test "$(grep -c '^apps/web/database/migrations/' /tmp/s46-source-paths)" -eq 1
@@ -71,8 +71,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          base="\${{ github.event.pull_request.base.sha }}"
-          head="\${{ github.event.pull_request.head.sha }}"
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
           migration='apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php'
           git diff --exit-code "$base" "$head" -- apps/web/database/migrations ":(exclude)$migration"
           mapfile -t migrations < <(find apps/web/database/migrations -maxdepth 1 -type f -name '*.php' -printf '%f\n' | sort)
