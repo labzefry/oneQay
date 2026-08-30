@@ -60,6 +60,14 @@ return [
         ),
     ],
 
+    'pos_catalog_preparation' => [
+        // JRN-004 catalog preparation remains Local/Test/CI-only and fail-closed unless explicitly armed.
+        'enabled' => filter_var(
+            env('ONEQAY_POS_CATALOG_PREPARATION_ENABLED', false),
+            FILTER_VALIDATE_BOOL,
+        ),
+    ],
+
     'system_update' => [
         // Backend control-plane visibility/checking may only be enabled explicitly.
         'control_plane_enabled' => filter_var(
