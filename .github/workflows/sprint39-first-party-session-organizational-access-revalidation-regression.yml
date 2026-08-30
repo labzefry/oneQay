@@ -87,8 +87,24 @@ jobs:
           tools: composer:v2
           coverage: none
 
-      - name: Enforce exact Sprint39 source envelope
+      - name: Classify exact Sprint37 quote-correction compatibility
         if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | sort > /tmp/s39-s37-quote-compat-paths
+          count="$(wc -l < /tmp/s39-s37-quote-compat-paths)"
+          fingerprint="$(sha256sum /tmp/s39-s37-quote-compat-paths | awk '{print $1}')"
+          echo 'ONEQAY_S39_SPRINT37_QUOTE_COMPATIBILITY=false' >> "$GITHUB_ENV"
+          if [[ "$count" -eq 1 && "$fingerprint" == '83b1eb2b4585a83825ab8f84457cb2ca945a3dfcaa5abbf82c1341981983ff9a' ]]; then
+            echo 'ONEQAY_S39_SPRINT37_QUOTE_COMPATIBILITY=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'Recognized exact Sprint37 quote-correction successor shape.'
+          fi
+
+      - name: Enforce exact Sprint39 source envelope
+        if: github.event_name == 'pull_request' && env.ONEQAY_S39_SPRINT37_QUOTE_COMPATIBILITY != 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -248,14 +264,6 @@ jobs:
             grep -Fq 'bde0c14f6b8c45f090844b9e5d701415690e990b8b7bea3b605f4ba04c727116' .github/workflows/sprint33-recovery-bound-password-reset-regression.yml
             grep -Fq 'bde0c14f6b8c45f090844b9e5d701415690e990b8b7bea3b605f4ba04c727116' .github/workflows/sprint34-authenticated-password-change-regression.yml
             echo 'Recognized exact Sprint40 six-workflow source-preservation predecessor shape with historical correction closure.'
-          elif [[ "$(wc -l < /tmp/actual-sprint39-source-paths)" -eq 4 ]] && [[ "$(sha256sum /tmp/actual-sprint39-source-paths | awk '{print $1}')" == '05da42c322a709dee74fdb78643a7b0ac01346318c70f95ef9b8316169c24c92' ]]; then
-            echo 'Recognized exact four-workflow Sprint37 quote-correction compatibility predecessor shape.'
-            echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
-            echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
-          elif [[ "$(wc -l < /tmp/actual-sprint39-source-paths)" -eq 1 ]] && [[ "$(sha256sum /tmp/actual-sprint39-source-paths | awk '{print $1}')" == '83b1eb2b4585a83825ab8f84457cb2ca945a3dfcaa5abbf82c1341981983ff9a' ]]; then
-            echo 'Recognized exact Sprint37 quote-correction successor shape.'
-            echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
-            echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
           elif [[ "$(wc -l < /tmp/actual-sprint39-source-paths)" -eq 19 ]] && [[ "$(sha256sum /tmp/actual-sprint39-source-paths | awk '{print $1}')" == 'fc2b578fc9d090dfce1fd34c5acfa7a07f065979a94f62becb3dc54dee664920' ]]; then
             echo 'Recognized exact post-Sprint41 19-workflow historical preservation correction shape.'
             echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
