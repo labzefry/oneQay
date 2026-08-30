@@ -1,5 +1,29 @@
 # Changelog
 
+## Canonical post-Sprint47 JRN-004 source publication reconciliation — 2026-08-30
+
+This current-facing section supersedes older post-Sprint46/current-state wording retained below as historical provenance. It records canonical source and CI evidence only and creates no new implementation or lifecycle authority.
+
+- Functional canonical baseline reconciled by this docs-only publication: `77ca26f06054b190b3b3ace9e51f875ec255316b`; tree `a8d4faf4bf14a59ac68b70190be81c50f373f839`; GitHub signature **verified / valid**.
+- Sprint47 JRN-004 **Tenant/Outlet-Scoped Catalog Sellability and Current Price Preparation Foundation** is **IMPLEMENTED / SOURCE-PUBLISHED** through PR #440 as `77ca26f06054b190b3b3ace9e51f875ec255316b`, from qualified exact source head `c9ec9542270765168a8e6be369141f71bf4f3336`.
+- The published JRN-004 source envelope remains exactly **15 paths** with sorted newline-terminated SHA-256 `c1ac6d5130c9d78ff99ed0accf5d11e3f08debc575c0d5152ef5b24e6f82ce02`.
+- Canonical source now contains migrations exactly **#1–#17**. Migration #16 remains **SOURCE-PUBLISHED / NOT EXECUTED / NOT APPLIED / NOT ACTIVATED**. Migration #17 is **SOURCE-PUBLISHED / SELECTED IN SOURCE DESIGN / NOT EXECUTED / NOT APPLIED / NOT ACTIVATED**. This reconciliation grants no migration execution authority.
+- JRN-004 adds only bounded tenant+outlet catalog preparation for current display name, unit price, currency/scale, and sellability. It does not create broad catalog CRUD, inventory administration, stock adjustment, pricing-engine, tax/fiscal, promotion, purchasing, supplier, refund/void, or external-payment authority.
+- `pos.catalog.prepare` is deny-by-default through the canonical durable scoped authorization policy. Tenant, identity, organization, outlet, device, current session authority, mutation identity, correlation identity, and event time remain server-derived; no default permission grant is created.
+- Canonical `oneqay_pos_sale_catalog_items` remains the current bounded catalog state. Existing `available_quantity` is preserved exactly; a newly prepared row receives only deterministic server-owned zero. Caller-controlled stock quantity remains forbidden.
+- Migration #17 adds only the durable `oneqay_pos_catalog_preparation_journal` source required for exact idempotency/replay, conflict denial, before/after audit evidence, correlation identity, and event time. Exact replay returns the original applied after-state without rewriting current catalog state; conflicting replay fails closed.
+- Completed JRN-006 sale-line price snapshots remain immutable and are not recalculated by later catalog preparation.
+- `ONEQAY_POS_CATALOG_PREPARATION_ENABLED` remains **default false**. The HTTP mutation boundary remains **Local/Test/CI only** when canonical session control is enabled and the feature is explicitly armed. Technical Preview and Production remain unactivated.
+- The final Sprint47 exact source head completed **36 materially triggered pull-request workflows / 36 success / 0 non-success**, including the dedicated Sprint47 JRN-004 regression, Sprint46 JRN-006 preservation, Sprint21–Sprint43 historical preservation, M7.1–M7.6 boundaries, Governance, PHP Foundation, and updater/deployment-control regressions.
+- Exact Product Owner merge authorization for PR #440 was recorded for head `c9ec9542270765168a8e6be369141f71bf4f3336`; the post-authorization `issue_comment` evaluator completed **success** before squash publication.
+- The bounded Sprint47 publication chain includes entry gate PR #425, schema/source-envelope gate PR #428, exact JRN-006 compatibility PR #441, frozen-source compatibility PRs #449 and #450, and final source PR #440. Closed, superseded, stale, or unmerged probes do not constitute canonical authority.
+- Technical Preview remains **`NO_SCHEMA_CHANGE / SPRINT40 NOT ACTIVATED`**. Migrations #15, #16, and #17 remain unapplied/unactivated in Technical Preview. Production remains **`NO-GO / NOT AUTHORIZED`**. Updater remains **`DISABLED / UNWIRED`**. Deployment, release, migration execution, and rollback remain **`NOT AUTHORIZED`**.
+- No post-Sprint47 successor implementation concern is selected by this reconciliation. Any Sprint48 or other successor concern must begin with a separately bounded Product Owner entry gate; new source/schema/runtime authority, Preview/Production activation, updater wiring, deployment, release, migration execution, and rollback are not implied.
+- This reconciliation changes only the established **13-document canonical state envelope**, whose sorted newline-terminated path SHA-256 remains `b129d4b1c1135f2f5aecd5dde5ff1b5f6392eecb4d54006e80fc71889763647d`.
+
+Attribution: **Lab | zefry**
+
+
 ## Canonical post-Sprint46 JRN-006 source publication reconciliation — 2026-08-29
 
 This current-facing section supersedes older post-Sprint45/current-state wording retained below as historical provenance. It records canonical source and CI evidence only and creates no new implementation or lifecycle authority.
