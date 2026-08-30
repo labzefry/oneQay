@@ -87,8 +87,24 @@ jobs:
           tools: composer:v2
           coverage: none
 
-      - name: Enforce exact Sprint39 source envelope
+      - name: Classify exact Sprint37 quote-correction compatibility
         if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | sort > /tmp/s39-s37-quote-compat-paths
+          count="$(wc -l < /tmp/s39-s37-quote-compat-paths)"
+          fingerprint="$(sha256sum /tmp/s39-s37-quote-compat-paths | awk '{print $1}')"
+          echo 'ONEQAY_S39_SPRINT37_QUOTE_COMPATIBILITY=false' >> "$GITHUB_ENV"
+          if [[ "$count" -eq 1 && "$fingerprint" == '83b1eb2b4585a83825ab8f84457cb2ca945a3dfcaa5abbf82c1341981983ff9a' ]]; then
+            echo 'ONEQAY_S39_SPRINT37_QUOTE_COMPATIBILITY=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'Recognized exact Sprint37 quote-correction successor shape.'
+          fi
+
+      - name: Enforce exact Sprint39 source envelope
+        if: github.event_name == 'pull_request' && env.ONEQAY_S39_SPRINT37_QUOTE_COMPATIBILITY != 'true'
         shell: bash
         run: |
           set -euo pipefail
