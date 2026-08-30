@@ -151,13 +151,13 @@ jobs:
             }
           '
 
-      - name: Run M7.4 synthetic POS regression
-        working-directory: apps/web
-        run: php tests/pos-core-synthetic.php
-
       - name: Run Sprint47 JRN-004 durable catalog regression
         working-directory: apps/web
         run: php tests/pos-catalog-preparation-durable.php
+
+      - name: Run M7.4 synthetic POS regression
+        working-directory: apps/web
+        run: php tests/pos-core-synthetic.php
 
       - name: Preserve tracked source cleanliness
         run: git diff --exit-code
