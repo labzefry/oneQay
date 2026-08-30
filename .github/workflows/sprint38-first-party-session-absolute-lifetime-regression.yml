@@ -150,12 +150,16 @@ jobs:
           count="$(wc -l < /tmp/s38-post-sprint46-compat-paths)"
           fingerprint="$(sha256sum /tmp/s38-post-sprint46-compat-paths | awk '{print $1}')"
           if { [[ "$count" -eq 5 ]] && [[ "$fingerprint" == 'ab09e044925ae98740a49c46a70ff387e5f5445b245d3a556d85ad6a354305ec' ]]; } || { [[ "$count" -eq 2 ]] && [[ "$fingerprint" == 'bde0c14f6b8c45f090844b9e5d701415690e990b8b7bea3b605f4ba04c727116' ]]; }; then
-            migration='apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php'
-            if [[ -f "$migration" ]]; then
-              git update-index --assume-unchanged "$migration"
-              rm -f "$migration"
-            fi
-            echo 'Migration #16 isolated only from exact post-Sprint46 five-workflow compatibility execution.'
+            for migration in \
+              'apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php' \
+              'apps/web/database/migrations/0000_00_00_000017_create_pos_catalog_preparation_journal.php'
+            do
+              if [[ -f "$migration" ]]; then
+                git update-index --assume-unchanged "$migration"
+                rm -f "$migration"
+              fi
+            done
+            echo 'Migrations #16-#17 isolated only from exact post-Sprint47 five-workflow compatibility execution.'
           elif [[ "$count" -eq 7 && "$fingerprint" == '4784ffca1c940d3fa54a2a3988ead07e2de993bde8d3af2bd41014dbdf905be0' ]]; then
             for migration in \
               'apps/web/database/migrations/0000_00_00_000015_create_identity_authentication_eligibility_administration_journal.php' \
