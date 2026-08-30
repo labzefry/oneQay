@@ -319,7 +319,7 @@ jobs:
           count="$(wc -l < /tmp/s36-jrn004-compat-paths)"
           fingerprint="$(sha256sum /tmp/s36-jrn004-compat-paths | awk '{print $1}')"
           echo 'ONEQAY_S36_JRN004_COMPATIBILITY=false' >> "$GITHUB_ENV"
-          if [[ "$count" -eq 2 && "$fingerprint" == '920918ec3a30e7954bec598ce2d45ce4ce05681f1705308bae87232cd192ee4e' ]] || [[ "$count" -eq 15 && "$fingerprint" == 'c1ac6d5130c9d78ff99ed0accf5d11e3f08debc575c0d5152ef5b24e6f82ce02' ]] || [[ "$count" -eq 1 && "$fingerprint" == 'e81cae9acc9a4e6697e9696606f146eaeb6a85e66aee4836d77561026d28272e' ]]; then
+          if [[ "$count" -eq 2 && "$fingerprint" == '920918ec3a30e7954bec598ce2d45ce4ce05681f1705308bae87232cd192ee4e' ]] || [[ "$count" -eq 15 && "$fingerprint" == 'c1ac6d5130c9d78ff99ed0accf5d11e3f08debc575c0d5152ef5b24e6f82ce02' ]] || [[ "$count" -eq 1 && "$fingerprint" == 'e81cae9acc9a4e6697e9696606f146eaeb6a85e66aee4836d77561026d28272e' ]] || [[ "$count" -eq 1 && "$fingerprint" == '94fbf396830524ff1314ec1d60042a64b4307ba20d81d5f034d2da3f713efa22' ]]; then
             echo 'ONEQAY_S36_JRN004_COMPATIBILITY=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             for migration in \
