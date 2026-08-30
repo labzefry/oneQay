@@ -387,7 +387,8 @@ jobs:
               fi
               grep -Fq '261f147d880a37fe9137b28d9541724c6c5e3987138f3fb56d5465ff31dc7412' .github/workflows/sprint35-privileged-totp-recovery-regression.yml
               grep -Fq '261f147d880a37fe9137b28d9541724c6c5e3987138f3fb56d5465ff31dc7412' .github/workflows/sprint37-first-party-all-session-termination-regression.yml
-              echo "Recognized exact post-Sprint39 five-workflow reconciliation preservation predecessor shape."
+              echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+              echo "Recognized exact post-Sprint39 five-workflow reconciliation preservation predecessor shape across canonical migration sixteen."
             elif [[ "$(wc -l < /tmp/actual-sprint36-paths)" -eq 3 ]] && [[ "$(sha256sum /tmp/actual-sprint36-paths | awk '{print $1}')" == "749ce1548b3491572af9dce61b34012842c638e409d8a9bbfd9625b94d8dd886" ]]; then
               echo "Recognized exact Sprint46 JRN-006 three-workflow source-compatibility predecessor shape."
             elif [[ "$(wc -l < /tmp/actual-sprint36-paths)" -eq 3 ]] && [[ "$(sha256sum /tmp/actual-sprint36-paths | awk '{print $1}')" == "fd5f1466a41a7b11f0684303f5e93196668c2ca929ce9119e415186ae6708e9d" ]]; then
@@ -397,7 +398,8 @@ jobs:
             elif [[ "$(wc -l < /tmp/actual-sprint36-paths)" -eq 7 ]] && [[ "$(sha256sum /tmp/actual-sprint36-paths | awk '{print $1}')" == "4784ffca1c940d3fa54a2a3988ead07e2de993bde8d3af2bd41014dbdf905be0" ]]; then
               echo "Recognized exact Sprint39 seven-workflow M7.5 preservation correction shape."
             elif [[ "$(wc -l < /tmp/actual-sprint36-paths)" -eq 2 ]] && [[ "$(sha256sum /tmp/actual-sprint36-paths | awk '{print $1}')" == "bde0c14f6b8c45f090844b9e5d701415690e990b8b7bea3b605f4ba04c727116" ]]; then
-              echo "Recognized exact Sprint40 Sprint33/Sprint34 historical-compatibility correction shape."
+              echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+              echo "Recognized exact Sprint40 Sprint33/Sprint34 historical-compatibility correction shape across canonical migration sixteen."
             elif cmp -s /tmp/actual-sprint36-paths /tmp/post-sprint36-reconciliation-paths; then
               echo "Recognized exact post-Sprint36 canonical reconciliation successor shape."
             elif cmp -s /tmp/actual-sprint36-paths /tmp/post-sprint36-compatibility-correction-paths; then
@@ -514,16 +516,20 @@ jobs:
             fi
           fi
 
-      - name: Isolate Sprint41 journal from historical Sprint36 executable preservation
+      - name: Isolate post-Sprint36 journals from historical executable preservation
         if: env.ONEQAY_SPRINT41_SOURCE_SUCCESSOR == 'true'
         shell: bash
         run: |
           set -euo pipefail
-          migration='apps/web/database/migrations/0000_00_00_000015_create_identity_authentication_eligibility_administration_journal.php'
-          if [[ -f "$migration" ]]; then
-            git update-index --assume-unchanged "$migration"
-            rm -f "$migration"
-          fi
+          for migration in \
+            'apps/web/database/migrations/0000_00_00_000015_create_identity_authentication_eligibility_administration_journal.php' \
+            'apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php'
+          do
+            if [[ -f "$migration" ]]; then
+              git update-index --assume-unchanged "$migration"
+              rm -f "$migration"
+            fi
+          done
 
       - name: Validate migration thirteen and feature defaults
         shell: bash
