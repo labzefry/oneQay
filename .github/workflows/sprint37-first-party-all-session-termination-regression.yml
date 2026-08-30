@@ -1,3 +1,4 @@
+# Sprint47 JRN-004 canonical migration #16 horizon preservation anchor.
 # Sprint47 JRN-004 M7.4 compatibility preservation anchor.
 # Sprint46 JRN-006 exact source-surface compatibility preservation anchor.
 # Sprint46 JRN-006 S39-S42 exact three-path compatibility preservation anchor.
@@ -557,7 +558,12 @@ jobs:
               echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
               echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             elif [[ "$(wc -l < /tmp/actual-sprint37-paths)" -eq 9 ]] && [[ "$(sha256sum /tmp/actual-sprint37-paths | awk '{print $1}')" == "b8afa8415c0675c2675c1b8dbd528b44e8181a8f79a97fe28b0a0996623e1749" ]]; then
-              echo "Recognized exact Sprint43 nine-workflow source-preservation predecessor shape."
+              if [[ -f 'apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php' ]]; then
+                git update-index --assume-unchanged 'apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php'
+                rm -f 'apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php'
+                echo "Migration #16 isolated only from exact nine-workflow upper-horizon historical Sprint37 execution."
+              fi
+              echo "Recognized exact Sprint43 nine-workflow source-preservation predecessor shape across canonical migration sixteen."
               sprint40_source_successor=true
               sprint41_source_successor=true
               echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
