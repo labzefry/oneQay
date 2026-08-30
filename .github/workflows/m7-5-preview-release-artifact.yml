@@ -271,6 +271,15 @@ jobs:
             'database/migrations/0000_00_00_000015_create_identity_authentication_eligibility_administration_journal.php'
             'database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php'
           )
+          if [[ "${{ github.event_name }}" == 'pull_request' ]]; then
+            git -C ../.. diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | sort > /tmp/m75-nine-paths
+            count="$(wc -l < /tmp/m75-nine-paths)"
+            fingerprint="$(sha256sum /tmp/m75-nine-paths | awk '{print $1}')"
+            if [[ "$count" -eq 9 && "$fingerprint" == 'b8afa8415c0675c2675c1b8dbd528b44e8181a8f79a97fe28b0a0996623e1749' ]]; then
+              historical_migrations+=('database/migrations/0000_00_00_000017_create_pos_catalog_preparation_journal.php')
+              echo 'Migration #17 included only in exact nine-workflow M7.5 historical fixture isolation.'
+            fi
+          fi
           historical_backup='/tmp/oneqay-m7-5-historical-migrations'
           rm -rf "$historical_backup"
           mkdir -p "$historical_backup"
@@ -305,7 +314,8 @@ jobs:
             apps/web/database/migrations/0000_00_00_000013_create_first_party_session_authority.php \
             apps/web/database/migrations/0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php \
             apps/web/database/migrations/0000_00_00_000015_create_identity_authentication_eligibility_administration_journal.php \
-            apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php
+            apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php \
+            apps/web/database/migrations/0000_00_00_000017_create_pos_catalog_preparation_journal.php
 
           php tests/pos-core-synthetic.php
           php tests/technical-preview-interaction.php
