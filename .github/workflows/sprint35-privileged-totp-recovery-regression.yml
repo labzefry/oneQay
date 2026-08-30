@@ -483,6 +483,7 @@ jobs:
             elif [[ "$actual_count" -eq 7 && "$actual_fingerprint" == '4784ffca1c940d3fa54a2a3988ead07e2de993bde8d3af2bd41014dbdf905be0' ]]; then
               echo "Recognized exact Sprint39 seven-workflow M7.5 preservation correction shape."
               sprint36_successor=true
+              echo 'ONEQAY_SPRINT46_JRN006_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             elif [[ "$actual_count" -eq 2 && "$actual_fingerprint" == 'bde0c14f6b8c45f090844b9e5d701415690e990b8b7bea3b605f4ba04c727116' ]]; then
               echo "Recognized exact Sprint40 Sprint33/Sprint34 historical-compatibility correction shape."
               sprint36_successor=true
