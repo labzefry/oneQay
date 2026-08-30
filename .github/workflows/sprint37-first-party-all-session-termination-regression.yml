@@ -1,3 +1,4 @@
+# Sprint47 JRN-004 canonical migration #16 horizon preservation anchor.
 # Sprint47 JRN-004 M7.4 compatibility preservation anchor.
 # Sprint46 JRN-006 exact source-surface compatibility preservation anchor.
 # Sprint46 JRN-006 S39-S42 exact three-path compatibility preservation anchor.
@@ -276,6 +277,22 @@ jobs:
             echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'Recognized exact Sprint35/Sprint36 two-workflow compatibility predecessor shape.'
+          elif [[ "$count" -eq 1 && "$fingerprint" == '261f147d880a37fe9137b28d9541724c6c5e3987138f3fb56d5465ff31dc7412' ]] || [[ "$count" -eq 4 && "$fingerprint" == 'a5d3b0816c3b0e6f1fa7dd5ece73ea6347042372dd517af31e303c41d49abfaa' ]]; then
+            echo 'ONEQAY_S37_S35_S36_COMPATIBILITY=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            for migration in \
+              'apps/web/database/migrations/0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php' \
+              'apps/web/database/migrations/0000_00_00_000015_create_identity_authentication_eligibility_administration_journal.php' \
+              'apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php' \
+              'apps/web/database/migrations/0000_00_00_000017_create_pos_catalog_preparation_journal.php'
+            do
+              if [[ -f "$migration" ]]; then
+                git update-index --assume-unchanged "$migration"
+                rm -f "$migration"
+              fi
+            done
+            echo 'Recognized exact Sprint32 correction or four-workflow legacy-runner shape across canonical migration horizon.'
           elif [[ "$count" -eq 3 && "$fingerprint" == '749ce1548b3491572af9dce61b34012842c638e409d8a9bbfd9625b94d8dd886' ]]; then
             echo 'ONEQAY_S37_S35_S36_COMPATIBILITY=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT46_JRN006_PREDECESSOR=true' >> "$GITHUB_ENV"
@@ -395,6 +412,11 @@ jobs:
                 rm -f 'apps/web/database/migrations/0000_00_00_000015_create_identity_authentication_eligibility_administration_journal.php'
                 echo "Migration #15 isolated only from exact post-Sprint41 five-workflow documentation preservation."
               fi
+              if [[ -f 'apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php' ]]; then
+                git update-index --assume-unchanged 'apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php'
+                rm -f 'apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php'
+                echo "Migration #16 isolated only from exact five-workflow historical compatibility preservation."
+              fi
               echo "Recognized exact post-Sprint41 five-workflow documentation-preservation predecessor shape."
             elif [[ "$(wc -l < /tmp/actual-sprint37-paths)" -eq 3 ]] && [[ "$(sha256sum /tmp/actual-sprint37-paths | awk '{print $1}')" == "fd5f1466a41a7b11f0684303f5e93196668c2ca929ce9119e415186ae6708e9d" ]]; then
               if [[ -f 'apps/web/database/migrations/0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php' ]]; then
@@ -434,6 +456,11 @@ jobs:
                 git update-index --assume-unchanged 'apps/web/database/migrations/0000_00_00_000015_create_identity_authentication_eligibility_administration_journal.php'
                 rm -f 'apps/web/database/migrations/0000_00_00_000015_create_identity_authentication_eligibility_administration_journal.php'
                 echo "Migration #15 isolated only from exact Sprint33/Sprint34 historical compatibility preservation."
+              fi
+              if [[ -f 'apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php' ]]; then
+                git update-index --assume-unchanged 'apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php'
+                rm -f 'apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php'
+                echo "Migration #16 isolated only from exact Sprint33/Sprint34 historical compatibility preservation."
               fi
               echo "Recognized exact Sprint40 Sprint33/Sprint34 historical-compatibility correction shape."
             elif cmp -s /tmp/actual-sprint37-paths /tmp/sprint37-paths; then
@@ -547,7 +574,12 @@ jobs:
               echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
               echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             elif [[ "$(wc -l < /tmp/actual-sprint37-paths)" -eq 9 ]] && [[ "$(sha256sum /tmp/actual-sprint37-paths | awk '{print $1}')" == "b8afa8415c0675c2675c1b8dbd528b44e8181a8f79a97fe28b0a0996623e1749" ]]; then
-              echo "Recognized exact Sprint43 nine-workflow source-preservation predecessor shape."
+              if [[ -f 'apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php' ]]; then
+                git update-index --assume-unchanged 'apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php'
+                rm -f 'apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php'
+                echo "Migration #16 isolated only from exact nine-workflow upper-horizon historical Sprint37 execution."
+              fi
+              echo "Recognized exact Sprint43 nine-workflow source-preservation predecessor shape across canonical migration sixteen."
               sprint40_source_successor=true
               sprint41_source_successor=true
               echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
