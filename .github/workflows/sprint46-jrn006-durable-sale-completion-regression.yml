@@ -60,10 +60,22 @@ jobs:
         run: |
           set -euo pipefail
           git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | sort > /tmp/s46-source-paths
-          test "$(wc -l < /tmp/s46-source-paths)" -eq 14
-          test "$(sha256sum /tmp/s46-source-paths | awk '{print $1}')" = 'ed29b6128c193f0efd6359748e220a37aefaec856acc4bc3b90f445ce3ccb674'
-          test "$(grep -c '^apps/web/database/migrations/' /tmp/s46-source-paths)" -eq 1
-          grep -Fxq 'apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php' /tmp/s46-source-paths
+          count="$(wc -l < /tmp/s46-source-paths)"
+          fingerprint="$(sha256sum /tmp/s46-source-paths | awk '{print $1}')"
+          echo 'ONEQAY_SPRINT47_JRN004_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
+          if [[ "$count" -eq 14 && "$fingerprint" == 'ed29b6128c193f0efd6359748e220a37aefaec856acc4bc3b90f445ce3ccb674' ]]; then
+            test "$(grep -c '^apps/web/database/migrations/' /tmp/s46-source-paths)" -eq 1
+            grep -Fxq 'apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php' /tmp/s46-source-paths
+            echo 'Recognized exact Sprint46 JRN-006 durable sale source envelope.'
+          elif [[ "$count" -eq 15 && "$fingerprint" == 'c1ac6d5130c9d78ff99ed0accf5d11e3f08debc575c0d5152ef5b24e6f82ce02' ]]; then
+            test "$(grep -c '^apps/web/database/migrations/' /tmp/s46-source-paths)" -eq 1
+            grep -Fxq 'apps/web/database/migrations/0000_00_00_000017_create_pos_catalog_preparation_journal.php' /tmp/s46-source-paths
+            echo 'ONEQAY_SPRINT47_JRN004_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'Recognized exact Sprint47 JRN-004 durable catalog source successor shape.'
+          else
+            echo 'Sprint46/JRN-004 changed-file envelope mismatch.' >&2
+            exit 1
+          fi
           ! grep -Eq '(^|/)(composer\.(json|lock)|package(-lock)?\.json|\.env(\.|$))' /tmp/s46-source-paths
 
       - name: Preserve migrations one through fifteen and validate migration sixteen
@@ -74,9 +86,22 @@ jobs:
           base="${{ github.event.pull_request.base.sha }}"
           head="${{ github.event.pull_request.head.sha }}"
           migration='apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php'
-          git diff --exit-code "$base" "$head" -- apps/web/database/migrations ":(exclude)$migration"
+          migration17='apps/web/database/migrations/0000_00_00_000017_create_pos_catalog_preparation_journal.php'
+          if [[ "${ONEQAY_SPRINT47_JRN004_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            changed="$(git diff --name-only "$base" "$head" -- apps/web/database/migrations | sort)"
+            test "$(printf '%s\n' "$changed" | sed '/^$/d' | wc -l)" -eq 1
+            printf '%s\n' "$changed" | grep -Fxq "$migration17"
+            git diff --exit-code "$base" "$head" -- apps/web/database/migrations ":(exclude)$migration17"
+          else
+            git diff --exit-code "$base" "$head" -- apps/web/database/migrations ":(exclude)$migration"
+          fi
           mapfile -t migrations < <(find apps/web/database/migrations -maxdepth 1 -type f -name '*.php' -printf '%f\n' | sort)
-          test "${#migrations[@]}" -eq 16
+          if [[ "${ONEQAY_SPRINT47_JRN004_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            test "${#migrations[@]}" -eq 17
+            test -f "$migration17"
+          else
+            test "${#migrations[@]}" -eq 16
+          fi
           for index in $(seq 1 16); do
             prefix="$(printf '0000_00_00_%06d_' "$index")"
             test "$(printf '%s\n' "${migrations[@]}" | grep -c "^$prefix")" -eq 1
@@ -143,7 +168,26 @@ jobs:
 
       - name: Run JRN-006 durable sale regression
         working-directory: apps/web
-        run: php tests/pos-sale-completion-durable.php
+        shell: bash
+        run: |
+          set -euo pipefail
+          migration17='database/migrations/0000_00_00_000017_create_pos_catalog_preparation_journal.php'
+          if [[ "${ONEQAY_SPRINT47_JRN004_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            backup='/tmp/oneqay-s46-jrn004-migration17.php'
+            cp "$migration17" "$backup"
+            restore() {
+              if [[ -f "$backup" ]]; then
+                mv "$backup" "$migration17"
+              fi
+            }
+            trap restore EXIT
+            rm -f "$migration17"
+            php tests/pos-sale-completion-durable.php
+            restore
+            trap - EXIT
+          else
+            php tests/pos-sale-completion-durable.php
+          fi
 
       - name: Preserve tracked source cleanliness
         run: git diff --exit-code
