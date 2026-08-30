@@ -126,7 +126,12 @@ jobs:
           echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
           echo 'ONEQAY_SPRINT46_JRN006_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
           echo 'ONEQAY_SPRINT47_JRN004_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
-          if [[ "$count" -eq 6 && "$fingerprint" == '6e0a346e98e8f622081c3d9e81866e8b44b79af800a178568bb71e3e6e28da62' ]]; then
+          if [[ "$count" -eq 2 && "$fingerprint" == '920918ec3a30e7954bec598ce2d45ce4ce05681f1705308bae87232cd192ee4e' ]]; then
+            echo 'ONEQAY_SPRINT41_S35_PRESERVATION=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT46_JRN006_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'Recognized exact Sprint47 JRN-004 M7.4 compatibility predecessor shape.'
+          elif [[ "$count" -eq 6 && "$fingerprint" == '6e0a346e98e8f622081c3d9e81866e8b44b79af800a178568bb71e3e6e28da62' ]]; then
             echo 'ONEQAY_SPRINT41_S35_PRESERVATION=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'Recognized exact Sprint46 JRN-006 M7.4 compatibility predecessor shape.'
