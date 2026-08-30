@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+// Sprint47 JRN-004 JRN-006 compatibility preservation anchor.
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
