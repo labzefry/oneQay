@@ -11,6 +11,7 @@ final class PosPermission
 {
     public const COMPLETE_SALE = 'pos.sale.complete';
     public const PREPARE_CATALOG = 'pos.catalog.prepare';
+    public const OPEN_SHIFT = 'pos.shift.open';
 
     public static function completeSale(): PermissionIdentifier
     {
