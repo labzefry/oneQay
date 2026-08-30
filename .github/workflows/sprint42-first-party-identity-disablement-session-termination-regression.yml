@@ -1,3 +1,4 @@
+# Sprint48 JRN-005 three-path migration-17 compatibility preservation anchor.
 name: Sprint42 First-Party Identity Disablement Session Termination Regression
 
 # Attribution: Lab | zefry
@@ -97,6 +98,12 @@ jobs:
             echo 'ONEQAY_SPRINT43_PRESERVATION=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT43_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'Recognized exact Sprint43 nine-workflow source-preservation predecessor shape in post-Sprint43 canonical state.'
+            migration17='apps/web/database/migrations/0000_00_00_000017_create_pos_catalog_preparation_journal.php'
+            if [[ -f "$migration17" ]]; then
+              git update-index --assume-unchanged "$migration17"
+              rm -f "$migration17"
+              echo 'Migration #17 isolated only from exact nine-workflow Sprint42 preservation.'
+            fi
           elif [[ "$actual_count" -eq 9 && "$actual_fingerprint" == '3d0293362f451fe4bf472d0d2c38c3eec3d67df75b451ba5b273e8dbdb0f2eed' ]]; then
             echo 'ONEQAY_SPRINT43_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'Recognized exact Sprint43 identity-authentication eligibility reactivation source successor shape.'

@@ -1,3 +1,4 @@
+# Sprint48 JRN-005 three-path migration-17 compatibility preservation anchor.
 # Sprint48 JRN-005 schema/source-envelope gate compatibility preservation anchor.
 # Sprint48 JRN-005 entry-gate compatibility preservation anchor.
 # Sprint47 JRN-004 Sprint43 frozen-source compatibility preservation anchor.
@@ -415,6 +416,12 @@ jobs:
             echo 'Recognized exact Sprint43 nine-workflow source-preservation predecessor shape.'
             echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            migration17='apps/web/database/migrations/0000_00_00_000017_create_pos_catalog_preparation_journal.php'
+            if [[ -f "$migration17" ]]; then
+              git update-index --assume-unchanged "$migration17"
+              rm -f "$migration17"
+              echo 'Migration #17 isolated only from exact nine-workflow Sprint38 preservation.'
+            fi
           elif [[ "$(wc -l < /tmp/actual-sprint38-source-paths)" -eq 9 ]] && [[ "$(sha256sum /tmp/actual-sprint38-source-paths | awk '{print $1}')" == '3d0293362f451fe4bf472d0d2c38c3eec3d67df75b451ba5b273e8dbdb0f2eed' ]]; then
             echo 'Recognized exact Sprint43 identity-authentication eligibility reactivation source successor shape.'
             echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
