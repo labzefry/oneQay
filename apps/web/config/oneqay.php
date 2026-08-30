@@ -1,5 +1,7 @@
 <?php
 
+// Sprint47 JRN-004 JRN-006 compatibility preservation anchor.
+
 return [
     'runtime_class' => env('ONEQAY_RUNTIME_CLASS'),
 
