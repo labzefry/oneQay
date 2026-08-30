@@ -83,6 +83,7 @@ jobs:
           echo 'ONEQAY_SPRINT43_PRESERVATION=false' >> "$GITHUB_ENV"
           echo 'ONEQAY_SPRINT43_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
           echo 'ONEQAY_SPRINT46_JRN006_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
+          echo 'ONEQAY_SPRINT47_JRN004_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
           if [[ "$actual_count" -eq 8 && "$actual_fingerprint" == 'a9caf2b68210a38687fee543256aec04dc1e67ee1ef403608f7db69139957ff8' ]]; then
             echo 'Recognized exact Sprint40 identity-disablement revalidation source envelope.'
           elif [[ "$actual_count" -eq 7 && "$actual_fingerprint" == 'f3f8b3ad0cca378307000ca242c4b9a4a8a7ab967d1649a5cd6408837001364c' ]]; then
@@ -115,6 +116,11 @@ jobs:
             echo 'Recognized exact Sprint43 identity-authentication eligibility reactivation source successor shape.'
             echo 'ONEQAY_SPRINT42_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT43_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+          elif [[ "$actual_count" -eq 15 && "$actual_fingerprint" == 'c1ac6d5130c9d78ff99ed0accf5d11e3f08debc575c0d5152ef5b24e6f82ce02' ]]; then
+            echo 'Recognized exact Sprint47 JRN-004 catalog preparation source successor shape.'
+            echo 'ONEQAY_SPRINT47_JRN004_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT42_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT43_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
           else
             echo 'Sprint40 changed-file envelope mismatch.' >&2
             diff -u /tmp/sprint40-source-paths /tmp/actual-sprint40-source-paths >&2 || true
@@ -131,8 +137,14 @@ jobs:
           migration='apps/web/database/migrations/0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php'
           migration15='apps/web/database/migrations/0000_00_00_000015_create_identity_authentication_eligibility_administration_journal.php'
           migration16='apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php'
+          migration17='apps/web/database/migrations/0000_00_00_000017_create_pos_catalog_preparation_journal.php'
 
-          if [[ "${ONEQAY_SPRINT46_JRN006_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+          if [[ "${ONEQAY_SPRINT47_JRN004_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            changed_migrations="$(git diff --name-only "$base" "$head" -- apps/web/database/migrations | sort)"
+            test "$(printf '%s\n' "$changed_migrations" | sed '/^$/d' | wc -l)" -eq 1
+            printf '%s\n' "$changed_migrations" | grep -Fxq "$migration17"
+            git diff --exit-code "$base" "$head" -- apps/web/database/migrations ":(exclude)$migration17"
+          elif [[ "${ONEQAY_SPRINT46_JRN006_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
             changed_migrations="$(git diff --name-only "$base" "$head" -- apps/web/database/migrations | sort)"
             test "$(printf '%s\n' "$changed_migrations" | sed '/^$/d' | wc -l)" -eq 1
             printf '%s\n' "$changed_migrations" | grep -Fxq "$migration16"
@@ -151,7 +163,12 @@ jobs:
           fi
 
           mapfile -t migrations < <(find apps/web/database/migrations -maxdepth 1 -type f -name '*.php' -printf '%f\n' | sort)
-          if [[ "${ONEQAY_SPRINT46_JRN006_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+          if [[ "${ONEQAY_SPRINT47_JRN004_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            test "${#migrations[@]}" -eq 17
+            test "$(printf '%s\n' "${migrations[@]}" | grep -c '^0000_00_00_000015_create_identity_authentication_eligibility_administration_journal\.php$')" -eq 1
+            test "$(printf '%s\n' "${migrations[@]}" | grep -c '^0000_00_00_000016_create_pos_sale_completion_foundation\.php$')" -eq 1
+            test "$(printf '%s\n' "${migrations[@]}" | grep -c '^0000_00_00_000017_create_pos_catalog_preparation_journal\.php$')" -eq 1
+          elif [[ "${ONEQAY_SPRINT46_JRN006_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
             test "${#migrations[@]}" -eq 16
             test "$(printf '%s\n' "${migrations[@]}" | grep -c '^0000_00_00_000015_create_identity_authentication_eligibility_administration_journal\.php$')" -eq 1
             test "$(printf '%s\n' "${migrations[@]}" | grep -c '^0000_00_00_000016_create_pos_sale_completion_foundation\.php$')" -eq 1
@@ -176,7 +193,15 @@ jobs:
           grep -Fq "throw new LogicException('Forward-only generated migration; rollback is not authorized.');" "$migration"
           ! grep -Eq '\$table->(index|unique|foreign|timestamp|timestamps|enum)|Schema::create|DB::' "$migration"
 
-          if [[ "${ONEQAY_SPRINT46_JRN006_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT43_PRESERVATION:-false}" == 'true' ]]; then
+          if [[ "${ONEQAY_SPRINT47_JRN004_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            for historical_migration in "$migration15" "$migration16" "$migration17"; do
+              if [[ -f "$historical_migration" ]]; then
+                git update-index --assume-unchanged "$historical_migration"
+                rm -f "$historical_migration"
+              fi
+            done
+            echo 'Migrations #15-#17 isolated only from exact Sprint47 JRN-004 historical Sprint40 execution.'
+          elif [[ "${ONEQAY_SPRINT46_JRN006_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT43_PRESERVATION:-false}" == 'true' ]]; then
             for historical_migration in "$migration15" "$migration16"; do
               if [[ -f "$historical_migration" ]]; then
                 git update-index --assume-unchanged "$historical_migration"
@@ -225,7 +250,7 @@ jobs:
           set -euo pipefail
           base="${{ github.event.pull_request.base.sha }}"
           head="${{ github.event.pull_request.head.sha }}"
-          if [[ "${ONEQAY_SPRINT46_JRN006_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+          if [[ "${ONEQAY_SPRINT46_JRN006_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT47_JRN004_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
             git diff --exit-code "$base" "$head" -- \
             apps/web/bootstrap/app.php \
             apps/web/composer.json \
