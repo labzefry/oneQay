@@ -145,6 +145,11 @@ jobs:
             echo 'ONEQAY_SPRINT41_S35_PRESERVATION=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'Recognized exact Sprint41 identity-authentication eligibility administration source successor shape.'
+          elif [[ "$count" -eq 1 && "$fingerprint" == '83b1eb2b4585a83825ab8f84457cb2ca945a3dfcaa5abbf82c1341981983ff9a' ]]; then
+            echo 'ONEQAY_SPRINT41_S35_PRESERVATION=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT46_JRN006_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'Recognized exact Sprint37 quote-correction successor shape.'
           elif [[ "$count" -eq 5 && "$fingerprint" == 'ab09e044925ae98740a49c46a70ff387e5f5445b245d3a556d85ad6a354305ec' ]]; then
             echo 'ONEQAY_SPRINT41_S35_PRESERVATION=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
@@ -207,16 +212,6 @@ jobs:
             echo 'ONEQAY_SPRINT41_S35_PRESERVATION=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'Recognized exact Sprint42 disabled-identity session-termination schema/source-envelope gate successor shape.'
-          elif [[ "$count" -eq 4 && "$fingerprint" == '05da42c322a709dee74fdb78643a7b0ac01346318c70f95ef9b8316169c24c92' ]]; then
-            echo 'ONEQAY_SPRINT41_S35_PRESERVATION=true' >> "$GITHUB_ENV"
-            echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
-            echo 'ONEQAY_SPRINT46_JRN006_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
-            echo 'Recognized exact four-workflow Sprint37 quote-correction compatibility predecessor shape.'
-          elif [[ "$count" -eq 1 && "$fingerprint" == '83b1eb2b4585a83825ab8f84457cb2ca945a3dfcaa5abbf82c1341981983ff9a' ]]; then
-            echo 'ONEQAY_SPRINT41_S35_PRESERVATION=true' >> "$GITHUB_ENV"
-            echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
-            echo 'ONEQAY_SPRINT46_JRN006_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
-            echo 'Recognized exact Sprint37 quote-correction successor shape.'
           elif [[ "$count" -eq 19 && "$fingerprint" == 'fc2b578fc9d090dfce1fd34c5acfa7a07f065979a94f62becb3dc54dee664920' ]]; then
             echo 'ONEQAY_SPRINT41_S35_PRESERVATION=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
