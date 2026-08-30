@@ -18,6 +18,7 @@ use App\Delivery\Http\Middleware\RequirePolicyAdministrationSessionContextMiddle
 use App\Delivery\Http\Middleware\RequirePosSessionContextMiddleware;
 use App\Delivery\Http\Pos\PosCatalogPreparationController;
 use App\Delivery\Http\Pos\PosSaleController;
+use App\Delivery\Http\Pos\PosShiftOpeningController;
 use App\Delivery\Http\SystemUpdate\SystemUpdateControlPlaneController;
 use App\Delivery\Http\SystemUpdate\SystemUpdatePageController;
 use App\Delivery\Preview\TechnicalPreviewController;
@@ -152,6 +153,14 @@ if (in_array($firstPartyAuthRuntime, ['local', 'test', 'ci'], true)
             ->middleware(['session.active', 'throttle:20,1', 'throttle:200,60', RequirePosSessionContextMiddleware::class])
             ->name('pos.catalog.prepare');
     }
+}
+
+if (in_array($firstPartyAuthRuntime, ['local', 'test', 'ci'], true)
+    && $sessionControlEnabled
+    && (bool) config('oneqay.pos_shift_opening.enabled', false)) {
+    Route::post('/pos/shifts/open', PosShiftOpeningController::class)
+        ->middleware(['session.active', 'throttle:10,1', 'throttle:100,60', RequirePosSessionContextMiddleware::class])
+        ->name('pos.shifts.open');
 }
 
 Route::post('/administration/policy/mutations', PolicyAdministrationController::class)
