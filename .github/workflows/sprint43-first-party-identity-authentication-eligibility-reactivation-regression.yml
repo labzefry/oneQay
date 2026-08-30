@@ -88,6 +88,12 @@ jobs:
           elif [[ "$actual_count" -eq 3 && "$actual_fingerprint" == '749ce1548b3491572af9dce61b34012842c638e409d8a9bbfd9625b94d8dd886' ]]; then
             echo 'ONEQAY_SPRINT46_JRN006_PRESERVATION=true' >> "$GITHUB_ENV"
             echo 'Recognized exact Sprint46 JRN-006 three-workflow source-compatibility predecessor shape.'
+            migration17='apps/web/database/migrations/0000_00_00_000017_create_pos_catalog_preparation_journal.php'
+            if [[ -f "$migration17" ]]; then
+              git update-index --assume-unchanged "$migration17"
+              rm -f "$migration17"
+              echo 'Migration #17 isolated only from exact three-workflow Sprint43 preservation.'
+            fi
           elif [[ "$actual_count" -eq 14 && "$actual_fingerprint" == 'ed29b6128c193f0efd6359748e220a37aefaec856acc4bc3b90f445ce3ccb674' ]]; then
             migration16='apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php'
             migration_delta="$(grep '^apps/web/database/migrations/' /tmp/actual-sprint43-source-paths || true)"
