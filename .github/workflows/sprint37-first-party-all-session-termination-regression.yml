@@ -370,6 +370,12 @@ jobs:
               sprint41_source_successor=true
               echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
               echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+              migration='apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php'
+              if [[ -f "$migration" ]]; then
+                git update-index --assume-unchanged "$migration"
+                rm -f "$migration"
+                echo "Migration #16 isolated only from exact post-Sprint46 19-workflow historical preservation."
+              fi
             elif [[ "$(wc -l < /tmp/actual-sprint37-paths)" -eq 2 ]] && [[ "$(sha256sum /tmp/actual-sprint37-paths | awk '{print $1}')" == "bde0c14f6b8c45f090844b9e5d701415690e990b8b7bea3b605f4ba04c727116" ]]; then
               if [[ -f 'apps/web/database/migrations/0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php' ]]; then
                 git update-index --assume-unchanged 'apps/web/database/migrations/0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php'
