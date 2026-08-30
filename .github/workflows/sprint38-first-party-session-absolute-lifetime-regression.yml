@@ -396,6 +396,12 @@ jobs:
             sprint40_legacy_horizon=true
             echo 'ONEQAY_SPRINT40_LEGACY_HORIZON=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            migration17='apps/web/database/migrations/0000_00_00_000017_create_pos_catalog_preparation_journal.php'
+            if [[ -f "$migration17" ]]; then
+              git update-index --assume-unchanged "$migration17"
+              rm -f "$migration17"
+              echo 'Migration #17 isolated only from exact 19-workflow historical Sprint38 preservation.'
+            fi
           elif [[ "$(wc -l < /tmp/actual-sprint38-source-paths)" -eq 7 ]] && [[ "$(sha256sum /tmp/actual-sprint38-source-paths | awk '{print $1}')" == 'f3f8b3ad0cca378307000ca242c4b9a4a8a7ab967d1649a5cd6408837001364c' ]]; then
             echo 'Recognized exact Sprint41 seven-workflow source-preservation predecessor shape.'
             echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
