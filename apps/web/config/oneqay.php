@@ -1,5 +1,7 @@
 <?php
 
+// Sprint47 JRN-004 JRN-006 compatibility preservation anchor.
+
 return [
     'runtime_class' => env('ONEQAY_RUNTIME_CLASS'),
 
@@ -56,14 +58,6 @@ return [
         // JRN-006 durable sale completion remains Local/Test/CI-only and fail-closed unless explicitly armed.
         'enabled' => filter_var(
             env('ONEQAY_POS_SALE_COMPLETION_ENABLED', false),
-            FILTER_VALIDATE_BOOL,
-        ),
-    ],
-
-    'pos_catalog_preparation' => [
-        // Sprint47 JRN-004 catalog preparation remains Local/Test/CI-only and fail-closed unless explicitly armed.
-        'enabled' => filter_var(
-            env('ONEQAY_POS_CATALOG_PREPARATION_ENABLED', false),
             FILTER_VALIDATE_BOOL,
         ),
     ],
