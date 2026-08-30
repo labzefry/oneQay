@@ -42,9 +42,12 @@ use App\Application\Organization\OrganizationalRelationshipVerifier;
 use App\Application\Persistence\DurableContextGraphRepository;
 use App\Application\Persistence\PersistenceTransaction;
 use App\Application\Authorization\DurableScopedAuthorizationPolicy;
+use App\Application\Pos\CatalogPreparationClock;
+use App\Application\Pos\CatalogPreparationRepository;
 use App\Application\Pos\CompleteSale;
 use App\Application\Pos\DurablePosSaleRepository;
 use App\Application\Pos\PosSaleClock;
+use App\Application\Pos\PrepareCatalogItem;
 use App\Application\Tenancy\TenantContextStore;
 use App\Application\Tenancy\TenantMembershipVerifier;
 use App\Infrastructure\Access\LaravelDurableOrganizationalAccessRepository;
@@ -69,6 +72,7 @@ use App\Infrastructure\Identity\LaravelRecoveryPasswordResetRepository;
 use App\Infrastructure\Identity\OtphpPrivilegedTotpEngine;
 use App\Infrastructure\Organization\LaravelOrganizationalRelationshipVerifier;
 use App\Infrastructure\Organization\RequestOrganizationalContextStore;
+use App\Infrastructure\Pos\LaravelCatalogPreparationRepository;
 use App\Infrastructure\Pos\LaravelDurablePosSaleRepository;
 use App\Infrastructure\Persistence\LaravelDurableContextGraphRepository;
 use App\Infrastructure\Persistence\LaravelPersistenceTransaction;
@@ -246,6 +250,22 @@ final class AppServiceProvider extends ServiceProvider
             $app->make(PosSaleClock::class),
         ));
 
+        $this->app->scoped(CatalogPreparationRepository::class, function ($app): CatalogPreparationRepository {
+            return new LaravelCatalogPreparationRepository(
+                $this->connection($app),
+                $this->persistenceEnabled(),
+                $this->runtimeClass(),
+                (bool) config('oneqay.pos_catalog_preparation.enabled', false),
+            );
+        });
+        $this->app->scoped(PrepareCatalogItem::class, fn ($app): PrepareCatalogItem => new PrepareCatalogItem(
+            $app->make(CatalogPreparationRepository::class),
+            $app->make(OrganizationalContextStore::class),
+            $app->make(DurableScopedAuthorizationPolicy::class),
+            $app->make(PersistenceTransaction::class),
+            $app->make(CatalogPreparationClock::class),
+        ));
+
         $this->app->scoped(PrivilegedTotpEngine::class, static fn (): PrivilegedTotpEngine => new OtphpPrivilegedTotpEngine());
         $this->app->scoped(PrivilegedTotpClock::class, static fn (): PrivilegedTotpClock => new class implements PrivilegedTotpClock { public function nowUnix(): int { return time(); } });
         $this->app->scoped(PrivilegedTotpRecoveryClock::class, static fn (): PrivilegedTotpRecoveryClock => new class implements PrivilegedTotpRecoveryClock { public function nowUnix(): int { return time(); } });
@@ -255,6 +275,7 @@ final class AppServiceProvider extends ServiceProvider
         $this->app->scoped(PolicyAdministrationClock::class, static fn (): PolicyAdministrationClock => new class implements PolicyAdministrationClock { public function nowUnix(): int { return time(); } });
         $this->app->scoped(FirstPartySessionAuthorityClock::class, static fn (): FirstPartySessionAuthorityClock => new class implements FirstPartySessionAuthorityClock { public function nowUnix(): int { return time(); } });
         $this->app->scoped(PosSaleClock::class, static fn (): PosSaleClock => new class implements PosSaleClock { public function nowUnix(): int { return time(); } });
+        $this->app->scoped(CatalogPreparationClock::class, static fn (): CatalogPreparationClock => new class implements CatalogPreparationClock { public function nowUnix(): int { return time(); } });
 
         $this->app->scoped(PersistenceTransaction::class, function ($app): PersistenceTransaction {
             return new LaravelPersistenceTransaction($this->connection($app), $this->persistenceEnabled(), $this->runtimeClass());
