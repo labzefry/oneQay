@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+// Sprint47 JRN-004 JRN-006 compatibility preservation anchor.
+
 namespace App\Delivery\Http\Middleware;
 
 use App\Application\Identity\IdentityContextViolation;
