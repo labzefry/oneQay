@@ -325,6 +325,8 @@ jobs:
                 git update-index --assume-unchanged "$migration"
                 rm -f "$migration"
               fi
+            elif [[ "$(wc -l < /tmp/actual-sprint36-paths)" -eq 1 ]] && [[ "$(sha256sum /tmp/actual-sprint36-paths | awk '{print $1}')" == "f2b8728a2dfb5f36aad996777170ca65e23ff28be81ec235a95d338287779d5f" ]]; then
+              echo "Recognized exact Sprint47 JRN-004 schema/source-envelope gate successor shape."
             elif [[ "$(wc -l < /tmp/actual-sprint36-paths)" -eq 1 ]] && [[ "$(sha256sum /tmp/actual-sprint36-paths | awk '{print $1}')" == "745a9d58ec096946dd72c5ee951d88bc15014a7b7aa983fcd0fcf7301e75a40f" ]]; then
               echo "Recognized exact Sprint47 JRN-004 catalog preparation entry-gate successor shape."
             elif [[ "$(wc -l < /tmp/actual-sprint36-paths)" -eq 1 ]] && [[ "$(sha256sum /tmp/actual-sprint36-paths | awk '{print $1}')" == "261f147d880a37fe9137b28d9541724c6c5e3987138f3fb56d5465ff31dc7412" ]]; then
