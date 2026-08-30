@@ -150,7 +150,8 @@ jobs:
           elif [[ "$count" -eq 4 && "$fingerprint" == 'a5d3b0816c3b0e6f1fa7dd5ece73ea6347042372dd517af31e303c41d49abfaa' ]]; then
             echo 'ONEQAY_SPRINT41_S35_PRESERVATION=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
-            echo 'Recognized exact Sprint46 JRN-006 four-workflow legacy-runner correction shape.'
+            echo 'ONEQAY_SPRINT46_JRN006_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'Recognized exact Sprint46 JRN-006 four-workflow legacy-runner correction shape across canonical migration sixteen.'
           elif [[ "$count" -eq 7 && "$fingerprint" == '4784ffca1c940d3fa54a2a3988ead07e2de993bde8d3af2bd41014dbdf905be0' ]]; then
             echo 'ONEQAY_SPRINT41_S35_PRESERVATION=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
@@ -163,6 +164,11 @@ jobs:
             echo 'ONEQAY_SPRINT41_S35_PRESERVATION=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'Recognized exact Sprint41 identity-authentication eligibility administration source successor shape.'
+          elif [[ "$count" -eq 1 && "$fingerprint" == '261f147d880a37fe9137b28d9541724c6c5e3987138f3fb56d5465ff31dc7412' ]]; then
+            echo 'ONEQAY_SPRINT41_S35_PRESERVATION=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT46_JRN006_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'Recognized exact Sprint32 workflow correction across canonical migration sixteen horizon.'
           elif [[ "$count" -eq 1 && "$fingerprint" == '83b1eb2b4585a83825ab8f84457cb2ca945a3dfcaa5abbf82c1341981983ff9a' ]]; then
             echo 'ONEQAY_SPRINT41_S35_PRESERVATION=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
