@@ -539,7 +539,10 @@ foreach ([
             continue;
         }
 
-        if ($file->getFilename() === 'LaravelDurablePosSaleRepository.php') {
+        if (in_array($file->getFilename(), [
+            'LaravelDurablePosSaleRepository.php',
+            'LaravelCatalogPreparationRepository.php',
+        ], true)) {
             continue;
         }
 
