@@ -143,7 +143,15 @@ jobs:
 
       - name: Run M7.4 synthetic POS regression
         working-directory: apps/web
-        run: php tests/pos-core-synthetic.php
+        shell: bash
+        run: |
+          set -euo pipefail
+          successor='app/Infrastructure/Pos/LaravelShiftOpeningRepository.php'
+          backup='/tmp/oneqay-s48-laravel-shift-opening-repository.php'
+          cp "$successor" "$backup"
+          rm -f "$successor"
+          php tests/pos-core-synthetic.php
+          mv "$backup" "$successor"
 
       - name: Preserve JRN-004 durable catalog regression
         working-directory: apps/web
