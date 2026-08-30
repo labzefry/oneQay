@@ -2,8 +2,6 @@
 
 declare(strict_types=1);
 
-// Sprint47 JRN-004 JRN-006 compatibility preservation anchor.
-
 namespace App\Infrastructure\Pos;
 
 use App\Application\Pos\DurablePosSaleRepository;

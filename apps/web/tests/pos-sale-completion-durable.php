@@ -2,8 +2,6 @@
 
 declare(strict_types=1);
 
-// Sprint47 JRN-004 JRN-006 compatibility preservation anchor.
-
 use App\Application\Authorization\DurableAuthorizationViolation;
 use App\Application\Authorization\PosPermission;
 use App\Application\Organization\OrganizationalContextStore;

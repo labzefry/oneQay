@@ -1,7 +1,5 @@
 <?php
 
-// Sprint47 JRN-004 JRN-006 compatibility preservation anchor.
-
 namespace App\Providers;
 
 use App\Application\Access\DurableOrganizationalAccessRepository;

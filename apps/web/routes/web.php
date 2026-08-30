@@ -1,7 +1,5 @@
 <?php
 
-// Sprint47 JRN-004 JRN-006 compatibility preservation anchor.
-
 use App\Delivery\Http\Authorization\PolicyAdministrationController;
 use App\Delivery\Http\HealthController;
 use App\Delivery\Http\Identity\AuthenticatedPasswordChangeController;

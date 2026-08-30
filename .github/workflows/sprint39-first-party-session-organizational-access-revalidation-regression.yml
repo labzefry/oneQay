@@ -1,3 +1,4 @@
+# Sprint47 JRN-004 canonical migration #16 horizon preservation anchor.
 # Sprint47 JRN-004 schema-gate exact five-workflow preservation anchor.
 # Sprint47 JRN-004 entry-gate compatibility preservation anchor.
 # Sprint46 post-source docs migration-horizon preservation anchor.
@@ -253,6 +254,10 @@ jobs:
             echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
           elif [[ "$(wc -l < /tmp/actual-sprint39-source-paths)" -eq 2 ]] && [[ "$(sha256sum /tmp/actual-sprint39-source-paths | awk '{print $1}')" == 'c333c5a6ac31588aa9b0520160a1a1080a22af2971658d742ba9456eff94cbc8' ]]; then
             echo 'Recognized exact Sprint35/Sprint36 two-workflow compatibility predecessor shape.'
+            echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+          elif [[ "$(wc -l < /tmp/actual-sprint39-source-paths)" -eq 2 ]] && [[ "$(sha256sum /tmp/actual-sprint39-source-paths | awk '{print $1}')" == 'bde0c14f6b8c45f090844b9e5d701415690e990b8b7bea3b605f4ba04c727116' ]]; then
+            echo 'Recognized exact Sprint33/Sprint34 two-workflow compatibility correction across canonical migration sixteen.'
             echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
           elif cmp -s /tmp/post-sprint39-reconciliation-preservation-paths /tmp/actual-sprint39-source-paths; then

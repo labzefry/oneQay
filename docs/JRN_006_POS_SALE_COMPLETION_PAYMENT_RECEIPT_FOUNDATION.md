@@ -1,4 +1,3 @@
-<!-- Sprint47 JRN-004 JRN-006 compatibility preservation anchor. -->
 # JRN-006 POS Sale Completion / Payment Recording / Receipt Foundation
 
 Author by Lab | zefry
