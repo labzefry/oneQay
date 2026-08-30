@@ -504,7 +504,7 @@ jobs:
           set -euo pipefail
           base="${{ github.event.pull_request.base.sha }}"
           head="${{ github.event.pull_request.head.sha }}"
-          if [[ "${ONEQAY_SPRINT41_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+          if [[ "${ONEQAY_SPRINT41_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_S38_JRN004_COMPATIBILITY:-false}" == 'true' ]]; then
             git diff --exit-code "$base" "$head" -- \
             apps/web/app/Application/Identity/FirstPartySessionAuthorityRepository.php \
             apps/web/app/Infrastructure/Identity/LaravelFirstPartySessionAuthorityRepository.php \
