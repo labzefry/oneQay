@@ -1,3 +1,4 @@
+# Sprint47 JRN-004 Sprint43 frozen-source compatibility preservation anchor.
 # Sprint47 JRN-004 canonical migration #16 horizon preservation anchor.
 # Sprint47 JRN-004 M7.4 compatibility preservation anchor.
 # Sprint47 JRN-004 schema-gate exact five-workflow preservation anchor.
@@ -504,7 +505,7 @@ jobs:
           set -euo pipefail
           base="${{ github.event.pull_request.base.sha }}"
           head="${{ github.event.pull_request.head.sha }}"
-          if [[ "${ONEQAY_SPRINT41_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+          if [[ "${ONEQAY_SPRINT41_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_S38_JRN004_COMPATIBILITY:-false}" == 'true' ]]; then
             git diff --exit-code "$base" "$head" -- \
             apps/web/app/Application/Identity/FirstPartySessionAuthorityRepository.php \
             apps/web/app/Infrastructure/Identity/LaravelFirstPartySessionAuthorityRepository.php \
