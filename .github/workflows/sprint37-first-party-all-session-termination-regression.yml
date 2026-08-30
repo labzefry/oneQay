@@ -255,7 +255,12 @@ jobs:
           echo 'ONEQAY_S37_S35_S36_COMPATIBILITY=false' >> "$GITHUB_ENV"
           echo 'ONEQAY_SPRINT46_JRN006_PREDECESSOR=false' >> "$GITHUB_ENV"
           echo 'ONEQAY_SPRINT46_JRN006_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
-          if [[ "$count" -eq 1 && "$fingerprint" == '745a9d58ec096946dd72c5ee951d88bc15014a7b7aa983fcd0fcf7301e75a40f' ]]; then
+          if [[ "$count" -eq 1 && "$fingerprint" == 'f2b8728a2dfb5f36aad996777170ca65e23ff28be81ec235a95d338287779d5f' ]]; then
+            echo 'ONEQAY_S37_S35_S36_COMPATIBILITY=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'Recognized exact Sprint47 JRN-004 schema/source-envelope gate successor shape.'
+          elif [[ "$count" -eq 1 && "$fingerprint" == '745a9d58ec096946dd72c5ee951d88bc15014a7b7aa983fcd0fcf7301e75a40f' ]]; then
             echo 'ONEQAY_S37_S35_S36_COMPATIBILITY=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
