@@ -72,7 +72,7 @@ final readonly class LaravelCatalogPreparationRepository implements CatalogPrepa
             $beforeSellable = $beforeExists ? (bool) $catalog->active : null;
 
             if ($beforeExists) {
-                $updated = $this->connection->table('oneqay_pos_sale_catalog_items')
+                $this->connection->table('oneqay_pos_sale_catalog_items')
                     ->where('tenant_id', $context->tenantId())
                     ->where('outlet_id', $context->outletId())
                     ->where('product_id', $command->productId()->value())
@@ -83,10 +83,6 @@ final readonly class LaravelCatalogPreparationRepository implements CatalogPrepa
                         'currency_scale' => $command->unitPrice()->scale(),
                         'active' => $command->sellable(),
                     ]);
-
-                if ($updated !== 1) {
-                    throw new PosTransactionViolation();
-                }
             } else {
                 $this->connection->table('oneqay_pos_sale_catalog_items')->insert([
                     'tenant_id' => $context->tenantId(),
