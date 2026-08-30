@@ -265,6 +265,11 @@ jobs:
             echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'Recognized exact Sprint47 JRN-004 catalog preparation entry-gate successor shape.'
+          elif [[ "$count" -eq 1 && "$fingerprint" == '83b1eb2b4585a83825ab8f84457cb2ca945a3dfcaa5abbf82c1341981983ff9a' ]]; then
+            echo 'ONEQAY_S37_S35_S36_COMPATIBILITY=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'Recognized exact Sprint37 quote-correction successor shape.'
           elif [[ "$count" -eq 2 && "$fingerprint" == 'c333c5a6ac31588aa9b0520160a1a1080a22af2971658d742ba9456eff94cbc8' ]]; then
             echo 'ONEQAY_S37_S35_S36_COMPATIBILITY=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
