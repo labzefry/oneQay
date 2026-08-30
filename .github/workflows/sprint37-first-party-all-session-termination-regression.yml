@@ -415,12 +415,17 @@ jobs:
                 rm -f 'apps/web/database/migrations/0000_00_00_000015_create_identity_authentication_eligibility_administration_journal.php'
                 echo "Migration #15 isolated only from exact post-Sprint41 five-workflow documentation preservation."
               fi
-              if [[ -f 'apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php' ]]; then
-                git update-index --assume-unchanged 'apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php'
-                rm -f 'apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php'
-                echo "Migration #16 isolated only from exact five-workflow historical compatibility preservation."
-              fi
-              echo "Recognized exact post-Sprint41 five-workflow documentation-preservation predecessor shape."
+              for migration in \
+                'apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php' \
+                'apps/web/database/migrations/0000_00_00_000017_create_pos_catalog_preparation_journal.php'
+              do
+                if [[ -f "$migration" ]]; then
+                  git update-index --assume-unchanged "$migration"
+                  rm -f "$migration"
+                fi
+              done
+              echo "Migrations #16-#17 isolated only from exact five-workflow historical compatibility preservation."
+              echo "Recognized exact post-Sprint47 five-workflow documentation-preservation predecessor shape."
             elif [[ "$(wc -l < /tmp/actual-sprint37-paths)" -eq 3 ]] && [[ "$(sha256sum /tmp/actual-sprint37-paths | awk '{print $1}')" == "fd5f1466a41a7b11f0684303f5e93196668c2ca929ce9119e415186ae6708e9d" ]]; then
               if [[ -f 'apps/web/database/migrations/0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php' ]]; then
                 git update-index --assume-unchanged 'apps/web/database/migrations/0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php'
