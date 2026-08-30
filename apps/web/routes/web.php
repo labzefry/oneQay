@@ -14,6 +14,7 @@ use App\Delivery\Http\Identity\RecoveryCodeController;
 use App\Delivery\Http\Identity\RecoveryPasswordResetController;
 use App\Delivery\Http\Middleware\RequirePolicyAdministrationSessionContextMiddleware;
 use App\Delivery\Http\Middleware\RequirePosSessionContextMiddleware;
+use App\Delivery\Http\Pos\PosCatalogPreparationController;
 use App\Delivery\Http\Pos\PosSaleController;
 use App\Delivery\Http\SystemUpdate\SystemUpdateControlPlaneController;
 use App\Delivery\Http\SystemUpdate\SystemUpdatePageController;
@@ -143,6 +144,12 @@ if (in_array($firstPartyAuthRuntime, ['local', 'test', 'ci'], true)
     Route::post('/pos/sales', PosSaleController::class)
         ->middleware(['session.active', 'throttle:30,1', 'throttle:300,60', RequirePosSessionContextMiddleware::class])
         ->name('pos.sales.complete');
+
+    if ((bool) config('oneqay.pos_catalog_preparation.enabled', false)) {
+        Route::post('/pos/catalog/preparation', PosCatalogPreparationController::class)
+            ->middleware(['session.active', 'throttle:20,1', 'throttle:200,60', RequirePosSessionContextMiddleware::class])
+            ->name('pos.catalog.prepare');
+    }
 }
 
 Route::post('/administration/policy/mutations', PolicyAdministrationController::class)
