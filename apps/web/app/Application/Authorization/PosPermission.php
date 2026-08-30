@@ -1,8 +1,8 @@
 <?php
 
-// Sprint47 JRN-004 JRN-006 compatibility preservation anchor.
-
 declare(strict_types=1);
+
+// Sprint47 JRN-004 JRN-006 compatibility preservation anchor.
 
 namespace App\Application\Authorization;
 
