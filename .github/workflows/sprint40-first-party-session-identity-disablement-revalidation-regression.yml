@@ -1,3 +1,4 @@
+# Sprint48 JRN-005 exact three-path Sprint35/Sprint42 compatibility preservation anchor.
 name: Sprint40 First-Party Session Identity Disablement Revalidation Regression
 
 # Attribution: Lab | zefry
@@ -107,11 +108,23 @@ jobs:
             echo 'ONEQAY_SPRINT42_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT43_PRESERVATION=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT43_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            migration17='apps/web/database/migrations/0000_00_00_000017_create_pos_catalog_preparation_journal.php'
+            if [[ -f "$migration17" ]]; then
+              git update-index --assume-unchanged "$migration17"
+              rm -f "$migration17"
+              echo 'Migration #17 isolated only from exact three-workflow historical Sprint40 preservation.'
+            fi
           elif [[ "$actual_count" -eq 9 && "$actual_fingerprint" == 'b8afa8415c0675c2675c1b8dbd528b44e8181a8f79a97fe28b0a0996623e1749' ]]; then
             echo 'Recognized exact Sprint43 nine-workflow source-preservation predecessor shape in post-Sprint43 canonical state.'
             echo 'ONEQAY_SPRINT42_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT43_PRESERVATION=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT43_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            migration17='apps/web/database/migrations/0000_00_00_000017_create_pos_catalog_preparation_journal.php'
+            if [[ -f "$migration17" ]]; then
+              git update-index --assume-unchanged "$migration17"
+              rm -f "$migration17"
+              echo 'Migration #17 isolated only from exact nine-workflow Sprint40 preservation.'
+            fi
           elif [[ "$actual_count" -eq 9 && "$actual_fingerprint" == '3d0293362f451fe4bf472d0d2c38c3eec3d67df75b451ba5b273e8dbdb0f2eed' ]]; then
             echo 'Recognized exact Sprint43 identity-authentication eligibility reactivation source successor shape.'
             echo 'ONEQAY_SPRINT42_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
