@@ -191,3 +191,5 @@ Route::get('/technical-preview/database-qualification', TechnicalPreviewDatabase
     ->name('preview.database-qualification');
 
 // Sprint48 JRN-005 Sprint46 compatibility preservation anchor.
+
+// Sprint48 JRN-005 Sprint47 source-successor compatibility preservation anchor.

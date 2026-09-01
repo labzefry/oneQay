@@ -414,3 +414,5 @@ $manager->purge('s47_catalog');
 echo "Sprint47 JRN-004 catalog preparation regression passed.\n";
 
 // Sprint48 JRN-005 Sprint47 JRN-006 compatibility preservation anchor.
+
+// Sprint48 JRN-005 Sprint47 source-successor compatibility preservation anchor.
