@@ -78,9 +78,9 @@ jobs:
           set -euo pipefail
           repository='apps/web/app/Infrastructure/Pos/LaravelDurablePosSaleRepository.php'
           grep -Fq "table('oneqay_pos_shifts')" "$repository"
-          grep -Fq "where('tenant_id', $context->tenantId())" "$repository"
-          grep -Fq "where('outlet_id', $context->outletId())" "$repository"
-          grep -Fq "where('device_id', $context->deviceId())" "$repository"
+          grep -Fq "where('tenant_id', \$context->tenantId())" "$repository"
+          grep -Fq "where('outlet_id', \$context->outletId())" "$repository"
+          grep -Fq "where('device_id', \$context->deviceId())" "$repository"
           grep -Fq "where('active_slot', 1)" "$repository"
           grep -Fq -- '->lockForUpdate()' "$repository"
           grep -Fq 'if ($activeShift === null)' "$repository"
