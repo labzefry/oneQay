@@ -11,6 +11,7 @@ final class PosPermission
 {
     public const COMPLETE_SALE = 'pos.sale.complete';
     public const PREPARE_CATALOG = 'pos.catalog.prepare';
+    public const OPEN_SHIFT = 'pos.shift.open';
 
     public static function completeSale(): PermissionIdentifier
     {
@@ -22,7 +23,3 @@ final class PosPermission
         return PermissionIdentifier::fromString(self::PREPARE_CATALOG);
     }
 }
-
-// Sprint48 JRN-005 Sprint46 compatibility preservation anchor.
-
-// Sprint48 JRN-005 Sprint47 source-successor compatibility preservation anchor.

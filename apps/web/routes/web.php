@@ -18,6 +18,7 @@ use App\Delivery\Http\Middleware\RequirePolicyAdministrationSessionContextMiddle
 use App\Delivery\Http\Middleware\RequirePosSessionContextMiddleware;
 use App\Delivery\Http\Pos\PosCatalogPreparationController;
 use App\Delivery\Http\Pos\PosSaleController;
+use App\Delivery\Http\Pos\PosShiftOpeningController;
 use App\Delivery\Http\SystemUpdate\SystemUpdateControlPlaneController;
 use App\Delivery\Http\SystemUpdate\SystemUpdatePageController;
 use App\Delivery\Preview\TechnicalPreviewController;
@@ -154,6 +155,14 @@ if (in_array($firstPartyAuthRuntime, ['local', 'test', 'ci'], true)
     }
 }
 
+if (in_array($firstPartyAuthRuntime, ['local', 'test', 'ci'], true)
+    && $sessionControlEnabled
+    && (bool) config('oneqay.pos_shift_opening.enabled', false)) {
+    Route::post('/pos/shifts/open', PosShiftOpeningController::class)
+        ->middleware(['session.active', 'throttle:10,1', 'throttle:100,60', RequirePosSessionContextMiddleware::class])
+        ->name('pos.shifts.open');
+}
+
 Route::post('/administration/policy/mutations', PolicyAdministrationController::class)
     ->middleware([...$sessionActiveMiddleware, RequirePolicyAdministrationSessionContextMiddleware::class])
     ->name('policy-administration.mutate');
@@ -189,7 +198,3 @@ Route::prefix('technical-preview')->controller(TechnicalPreviewController::class
 
 Route::get('/technical-preview/database-qualification', TechnicalPreviewDatabaseQualificationController::class)
     ->name('preview.database-qualification');
-
-// Sprint48 JRN-005 Sprint46 compatibility preservation anchor.
-
-// Sprint48 JRN-005 Sprint47 source-successor compatibility preservation anchor.

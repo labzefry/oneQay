@@ -48,6 +48,9 @@ use App\Application\Pos\CompleteSale;
 use App\Application\Pos\DurablePosSaleRepository;
 use App\Application\Pos\PosSaleClock;
 use App\Application\Pos\PrepareCatalogItem;
+use App\Application\Pos\OpenShift;
+use App\Application\Pos\ShiftOpeningClock;
+use App\Application\Pos\ShiftOpeningRepository;
 use App\Application\Tenancy\TenantContextStore;
 use App\Application\Tenancy\TenantMembershipVerifier;
 use App\Infrastructure\Access\LaravelDurableOrganizationalAccessRepository;
@@ -74,6 +77,7 @@ use App\Infrastructure\Organization\LaravelOrganizationalRelationshipVerifier;
 use App\Infrastructure\Organization\RequestOrganizationalContextStore;
 use App\Infrastructure\Pos\LaravelCatalogPreparationRepository;
 use App\Infrastructure\Pos\LaravelDurablePosSaleRepository;
+use App\Infrastructure\Pos\LaravelShiftOpeningRepository;
 use App\Infrastructure\Persistence\LaravelDurableContextGraphRepository;
 use App\Infrastructure\Persistence\LaravelPersistenceTransaction;
 use App\Infrastructure\Tenancy\LaravelTenantMembershipVerifier;
@@ -266,6 +270,22 @@ final class AppServiceProvider extends ServiceProvider
             $app->make(CatalogPreparationClock::class),
         ));
 
+        $this->app->scoped(ShiftOpeningRepository::class, function ($app): ShiftOpeningRepository {
+            return new LaravelShiftOpeningRepository(
+                $this->connection($app),
+                $this->persistenceEnabled(),
+                $this->runtimeClass(),
+                (bool) config('oneqay.pos_shift_opening.enabled', false),
+            );
+        });
+        $this->app->scoped(OpenShift::class, fn ($app): OpenShift => new OpenShift(
+            $app->make(ShiftOpeningRepository::class),
+            $app->make(OrganizationalContextStore::class),
+            $app->make(DurableScopedAuthorizationPolicy::class),
+            $app->make(PersistenceTransaction::class),
+            $app->make(ShiftOpeningClock::class),
+        ));
+
         $this->app->scoped(PrivilegedTotpEngine::class, static fn (): PrivilegedTotpEngine => new OtphpPrivilegedTotpEngine());
         $this->app->scoped(PrivilegedTotpClock::class, static fn (): PrivilegedTotpClock => new class implements PrivilegedTotpClock { public function nowUnix(): int { return time(); } });
         $this->app->scoped(PrivilegedTotpRecoveryClock::class, static fn (): PrivilegedTotpRecoveryClock => new class implements PrivilegedTotpRecoveryClock { public function nowUnix(): int { return time(); } });
@@ -276,6 +296,7 @@ final class AppServiceProvider extends ServiceProvider
         $this->app->scoped(FirstPartySessionAuthorityClock::class, static fn (): FirstPartySessionAuthorityClock => new class implements FirstPartySessionAuthorityClock { public function nowUnix(): int { return time(); } });
         $this->app->scoped(PosSaleClock::class, static fn (): PosSaleClock => new class implements PosSaleClock { public function nowUnix(): int { return time(); } });
         $this->app->scoped(CatalogPreparationClock::class, static fn (): CatalogPreparationClock => new class implements CatalogPreparationClock { public function nowUnix(): int { return time(); } });
+        $this->app->scoped(ShiftOpeningClock::class, static fn (): ShiftOpeningClock => new class implements ShiftOpeningClock { public function nowUnix(): int { return time(); } });
 
         $this->app->scoped(PersistenceTransaction::class, function ($app): PersistenceTransaction {
             return new LaravelPersistenceTransaction($this->connection($app), $this->persistenceEnabled(), $this->runtimeClass());
@@ -332,7 +353,3 @@ final class AppServiceProvider extends ServiceProvider
             || $this->sessionControlEnabled();
     }
 }
-
-// Sprint48 JRN-005 Sprint46 compatibility preservation anchor.
-
-// Sprint48 JRN-005 Sprint47 source-successor compatibility preservation anchor.

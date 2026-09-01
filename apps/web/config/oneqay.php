@@ -70,6 +70,14 @@ return [
         ),
     ],
 
+    'pos_shift_opening' => [
+        // Sprint48 JRN-005 shift opening remains Local/Test/CI-only and fail-closed unless explicitly armed.
+        'enabled' => filter_var(
+            env('ONEQAY_POS_SHIFT_OPENING_ENABLED', false),
+            FILTER_VALIDATE_BOOL,
+        ),
+    ],
+
     'system_update' => [
         // Backend control-plane visibility/checking may only be enabled explicitly.
         'control_plane_enabled' => filter_var(
@@ -94,7 +102,3 @@ return [
         'charset' => env('ONEQAY_PREVIEW_DB_CHARSET', 'utf8mb4'),
     ],
 ];
-
-// Sprint48 JRN-005 Sprint46 compatibility preservation anchor.
-
-// Sprint48 JRN-005 Sprint47 source-successor compatibility preservation anchor.
