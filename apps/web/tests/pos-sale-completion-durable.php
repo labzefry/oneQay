@@ -204,3 +204,5 @@ $manager->purge('s46_pos');
 @rmdir($workspace);
 
 echo "Sprint46 JRN-006 durable sale completion regression passed.\n";
+
+// Sprint48 JRN-005 Sprint46 compatibility preservation anchor.

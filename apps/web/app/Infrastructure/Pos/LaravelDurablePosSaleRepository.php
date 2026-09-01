@@ -257,3 +257,5 @@ final readonly class LaravelDurablePosSaleRepository implements DurablePosSaleRe
         }
     }
 }
+
+// Sprint48 JRN-005 Sprint46 compatibility preservation anchor.

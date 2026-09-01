@@ -11,3 +11,5 @@ interface PosSaleClock
 {
     public function nowUnix(): int;
 }
+
+// Sprint48 JRN-005 Sprint46 compatibility preservation anchor.
