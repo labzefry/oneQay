@@ -61,6 +61,18 @@ final readonly class LaravelDurablePosSaleRepository implements DurablePosSaleRe
                 return $receipt;
             }
 
+            $activeShift = $this->connection->table('oneqay_pos_shifts')
+                ->where('tenant_id', $context->tenantId())
+                ->where('outlet_id', $context->outletId())
+                ->where('device_id', $context->deviceId())
+                ->where('active_slot', 1)
+                ->lockForUpdate()
+                ->first();
+
+            if ($activeShift === null) {
+                throw new PosTransactionViolation();
+            }
+
             $resolved = [];
             $total = null;
             foreach ($command->cart()->lines() as $cartLine) {
