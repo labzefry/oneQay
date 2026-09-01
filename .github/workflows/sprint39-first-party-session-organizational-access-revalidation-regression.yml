@@ -361,6 +361,7 @@ jobs:
             'apps/web/database/migrations/0000_00_00_000015_create_identity_authentication_eligibility_administration_journal.php'
             'apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php'
             'apps/web/database/migrations/0000_00_00_000017_create_pos_catalog_preparation_journal.php'
+            'apps/web/database/migrations/0000_00_00_000018_create_pos_shift_opening_foundation.php'
           )
           for migration in "${migrations[@]}"; do
             if [[ -f "$migration" ]]; then
