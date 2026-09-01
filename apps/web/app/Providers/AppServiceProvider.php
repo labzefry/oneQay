@@ -332,3 +332,5 @@ final class AppServiceProvider extends ServiceProvider
             || $this->sessionControlEnabled();
     }
 }
+
+// Sprint48 JRN-005 Sprint47 JRN-006 compatibility preservation anchor.
