@@ -3,6 +3,24 @@
 
 Author by Lab | zefry
 
+## Sprint49 active-shift sale-completion precondition extension
+
+Sprint49 adds only the bounded fail-closed active-shift precondition required by the canonical JRN-006 journey.
+
+For a **fresh** sale-completion operation:
+
+- the existing server-derived tenant, identity, organization, outlet, and device-backed register execution context remains authoritative;
+- `pos.sale.complete` remains mandatory and no new permission is introduced;
+- the existing durable `tenant_id + operation_id` lookup and semantic-fingerprint conflict check remain first;
+- when no completed operation exists, the same persistence transaction must resolve an active `oneqay_pos_shifts` row for the exact `tenant_id + outlet_id + device_id` context with server-owned `active_slot = 1`;
+- missing, cross-tenant, cross-outlet, or cross-device active-shift evidence fails closed before catalog, stock, sale, payment, line, or completion-event mutation;
+- exact replay of an already-completed sale remains deterministic and does not require the shift to still be active;
+- sale completion does not create, close, move, reopen, or otherwise mutate shift opening evidence.
+
+Sprint49 is **NO_SCHEMA_CHANGE**. Migration #19 is not selected. No `shift_id` column is added to completed sales, and migrations #1 through #18 remain unchanged.
+
+This extension does not authorize shift close, JRN-010 reconciliation, cash count/variance, register administration, provider reconciliation, deployment, release, updater activation, or migration execution.
+
 ## Status
 
 BOUNDED SOURCE IMPLEMENTATION / LOCAL-TEST-CI ONLY / SOURCE-DEFAULT DISABLED
