@@ -180,6 +180,17 @@ jobs:
               rm -f "$migration"
             fi
             echo 'Recognized exact Sprint48 JRN-005 durable shift-opening source successor shape with migration #18 isolated from Sprint35 historical execution.'
+          elif [[ "$count" -eq 4 && "$fingerprint" == '154e4e0f6fb898b2c5c677764571a5a9a57c31371c852f16e89a74f3b104adec' ]] || [[ "$count" -eq 9 && "$fingerprint" == 'c7f53821f0f3fc1554ee23a3c85b53369972accb0815ec2b8096664054cd01b9' ]]; then
+            echo 'ONEQAY_SPRINT41_S35_PRESERVATION=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT46_JRN006_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT47_JRN004_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            migration='apps/web/database/migrations/0000_00_00_000018_create_pos_shift_opening_foundation.php'
+            if [[ -f "$migration" ]]; then
+              git update-index --assume-unchanged "$migration"
+              rm -f "$migration"
+            fi
+            echo 'Recognized exact Sprint49 active-shift source or five-workflow compatibility predecessor shape.'
           elif [[ "$count" -eq 4 && "$fingerprint" == 'a5d3b0816c3b0e6f1fa7dd5ece73ea6347042372dd517af31e303c41d49abfaa' ]]; then
             echo 'ONEQAY_SPRINT41_S35_PRESERVATION=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
@@ -341,10 +352,10 @@ jobs:
           set -euo pipefail
           count="$(wc -l < /tmp/sprint41-s35-paths)"
           fingerprint="$(sha256sum /tmp/sprint41-s35-paths | awk '{print $1}')"
-          if [[ "$count" -eq 13 && "$fingerprint" == 'b129d4b1c1135f2f5aecd5dde5ff1b5f6392eecb4d54006e80fc71889763647d' ]] || [[ "$count" -eq 5 && "$fingerprint" == 'ab09e044925ae98740a49c46a70ff387e5f5445b245d3a556d85ad6a354305ec' ]] || [[ "$count" -eq 1 && "$fingerprint" == 'e81cae9acc9a4e6697e9696606f146eaeb6a85e66aee4836d77561026d28272e' ]] || [[ "$count" -eq 1 && "$fingerprint" == '94fbf396830524ff1314ec1d60042a64b4307ba20d81d5f034d2da3f713efa22' ]] || [[ "$count" -eq 1 && "$fingerprint" == '3964a91b30218aa2ad2aec1cdb87e1fe12cdb8f65dc2bee146c974cbe60c8d99' ]] || [[ "$count" -eq 1 && "$fingerprint" == '41fd19359942f3d271740e81609eb786fd3b02b701f7cb2fb7a4380d84425054' ]]; then
+          if [[ "$count" -eq 13 && "$fingerprint" == 'b129d4b1c1135f2f5aecd5dde5ff1b5f6392eecb4d54006e80fc71889763647d' ]] || [[ "$count" -eq 5 && "$fingerprint" == 'ab09e044925ae98740a49c46a70ff387e5f5445b245d3a556d85ad6a354305ec' ]] || [[ "$count" -eq 1 && "$fingerprint" == 'e81cae9acc9a4e6697e9696606f146eaeb6a85e66aee4836d77561026d28272e' ]] || [[ "$count" -eq 1 && "$fingerprint" == '94fbf396830524ff1314ec1d60042a64b4307ba20d81d5f034d2da3f713efa22' ]] || [[ "$count" -eq 1 && "$fingerprint" == '3964a91b30218aa2ad2aec1cdb87e1fe12cdb8f65dc2bee146c974cbe60c8d99' ]] || [[ "$count" -eq 1 && "$fingerprint" == '41fd19359942f3d271740e81609eb786fd3b02b701f7cb2fb7a4380d84425054' ]] || [[ "$count" -eq 4 && "$fingerprint" == '154e4e0f6fb898b2c5c677764571a5a9a57c31371c852f16e89a74f3b104adec' ]] || [[ "$count" -eq 9 && "$fingerprint" == 'c7f53821f0f3fc1554ee23a3c85b53369972accb0815ec2b8096664054cd01b9' ]]; then
             echo 'ONEQAY_SPRINT46_JRN006_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'Recognized post-Sprint46 migration #16 isolation state for exact documentation or compatibility envelope.'
-            if { [[ "$count" -eq 13 ]] && [[ "$fingerprint" == 'b129d4b1c1135f2f5aecd5dde5ff1b5f6392eecb4d54006e80fc71889763647d' ]]; } || { [[ "$count" -eq 5 ]] && [[ "$fingerprint" == 'ab09e044925ae98740a49c46a70ff387e5f5445b245d3a556d85ad6a354305ec' ]]; } || { [[ "$count" -eq 1 ]] && [[ "$fingerprint" == '3964a91b30218aa2ad2aec1cdb87e1fe12cdb8f65dc2bee146c974cbe60c8d99' ]]; } || { [[ "$count" -eq 1 ]] && [[ "$fingerprint" == '41fd19359942f3d271740e81609eb786fd3b02b701f7cb2fb7a4380d84425054' ]]; }; then
+            if { [[ "$count" -eq 13 ]] && [[ "$fingerprint" == 'b129d4b1c1135f2f5aecd5dde5ff1b5f6392eecb4d54006e80fc71889763647d' ]]; } || { [[ "$count" -eq 5 ]] && [[ "$fingerprint" == 'ab09e044925ae98740a49c46a70ff387e5f5445b245d3a556d85ad6a354305ec' ]]; } || { [[ "$count" -eq 1 ]] && [[ "$fingerprint" == '3964a91b30218aa2ad2aec1cdb87e1fe12cdb8f65dc2bee146c974cbe60c8d99' ]]; } || { [[ "$count" -eq 1 ]] && [[ "$fingerprint" == '41fd19359942f3d271740e81609eb786fd3b02b701f7cb2fb7a4380d84425054' ]]; } || { [[ "$count" -eq 4 ]] && [[ "$fingerprint" == '154e4e0f6fb898b2c5c677764571a5a9a57c31371c852f16e89a74f3b104adec' ]]; } || { [[ "$count" -eq 9 ]] && [[ "$fingerprint" == 'c7f53821f0f3fc1554ee23a3c85b53369972accb0815ec2b8096664054cd01b9' ]]; }; then
               migration18='apps/web/database/migrations/0000_00_00_000018_create_pos_shift_opening_foundation.php'
               if [[ -f "$migration18" ]]; then
                 git update-index --assume-unchanged "$migration18"
@@ -554,8 +565,8 @@ jobs:
             elif [[ "$actual_count" -eq 4 && "$actual_fingerprint" == 'f6064e6563ec987fc487162fc29285870fab4869509a626c1b9a9280dc6ebafe' ]]; then
               echo "Recognized exact post-Sprint38 4-workflow preservation predecessor shape."
               sprint36_successor=true
-            elif [[ "$actual_count" -eq 5 && "$actual_fingerprint" == 'ab09e044925ae98740a49c46a70ff387e5f5445b245d3a556d85ad6a354305ec' ]]; then
-              echo "Recognized exact post-Sprint39 five-workflow reconciliation preservation predecessor shape."
+            elif [[ "$actual_count" -eq 5 && "$actual_fingerprint" == 'ab09e044925ae98740a49c46a70ff387e5f5445b245d3a556d85ad6a354305ec' ]] || [[ "$actual_count" -eq 4 && "$actual_fingerprint" == '154e4e0f6fb898b2c5c677764571a5a9a57c31371c852f16e89a74f3b104adec' ]] || [[ "$actual_count" -eq 5 && "$actual_fingerprint" == 'c7f53821f0f3fc1554ee23a3c85b53369972accb0815ec2b8096664054cd01b9' ]]; then
+              echo "Recognized exact governed Sprint49 source or five-workflow compatibility shape."
               sprint36_successor=true
             elif [[ "$actual_count" -eq 3 && "$actual_fingerprint" == 'fd5f1466a41a7b11f0684303f5e93196668c2ca929ce9119e415186ae6708e9d' ]]; then
               echo "Recognized exact Sprint32-Sprint34 Sprint41 compatibility correction shape."
