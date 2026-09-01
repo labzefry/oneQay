@@ -65,6 +65,7 @@ jobs:
           echo 'ONEQAY_SPRINT46_JRN006_COMPATIBILITY_PREDECESSOR=false' >> "$GITHUB_ENV"
           echo 'ONEQAY_SPRINT47_JRN004_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
           echo 'ONEQAY_SPRINT48_JRN005_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
+          echo 'ONEQAY_SPRINT49_JRN006_ACTIVE_SHIFT_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
           if [[ "$count" -eq 14 && "$fingerprint" == 'ed29b6128c193f0efd6359748e220a37aefaec856acc4bc3b90f445ce3ccb674' ]]; then
             test "$(grep -c '^apps/web/database/migrations/' /tmp/s46-source-paths)" -eq 1
             migration16='apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php'
@@ -89,6 +90,10 @@ jobs:
             grep -Fxq 'apps/web/database/migrations/0000_00_00_000018_create_pos_shift_opening_foundation.php' /tmp/s46-source-paths
             echo 'ONEQAY_SPRINT48_JRN005_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'Recognized exact Sprint48 JRN-005 shift-opening source successor shape.'
+          elif [[ "$count" -eq 4 && "$fingerprint" == '154e4e0f6fb898b2c5c677764571a5a9a57c31371c852f16e89a74f3b104adec' ]] || [[ "$count" -eq 5 && "$fingerprint" == 'c7f53821f0f3fc1554ee23a3c85b53369972accb0815ec2b8096664054cd01b9' ]]; then
+            test "$(grep -c '^apps/web/database/migrations/' /tmp/s46-source-paths)" -eq 0
+            echo 'ONEQAY_SPRINT49_JRN006_ACTIVE_SHIFT_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'Recognized exact Sprint49 active-shift source or compatibility predecessor shape.'
           else
             echo 'Sprint46/JRN-004 changed-file envelope mismatch.' >&2
             exit 1
@@ -105,7 +110,9 @@ jobs:
           migration='apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php'
           migration17='apps/web/database/migrations/0000_00_00_000017_create_pos_catalog_preparation_journal.php'
           migration18='apps/web/database/migrations/0000_00_00_000018_create_pos_shift_opening_foundation.php'
-          if [[ "${ONEQAY_SPRINT48_JRN005_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+          if [[ "${ONEQAY_SPRINT49_JRN006_ACTIVE_SHIFT_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            git diff --exit-code "$base" "$head" -- apps/web/database/migrations
+          elif [[ "${ONEQAY_SPRINT48_JRN005_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
             changed="$(git diff --name-only "$base" "$head" -- apps/web/database/migrations | sort)"
             test "$(printf '%s\n' "$changed" | sed '/^$/d' | wc -l)" -eq 1
             printf '%s\n' "$changed" | grep -Fxq "$migration18"
@@ -124,7 +131,11 @@ jobs:
             git diff --exit-code "$base" "$head" -- apps/web/database/migrations ":(exclude)$migration"
           fi
           mapfile -t migrations < <(find apps/web/database/migrations -maxdepth 1 -type f -name '*.php' -printf '%f\n' | sort)
-          if [[ "${ONEQAY_SPRINT48_JRN005_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+          if [[ "${ONEQAY_SPRINT49_JRN006_ACTIVE_SHIFT_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            test "${#migrations[@]}" -eq 18
+            test -f "$migration17"
+            test -f "$migration18"
+          elif [[ "${ONEQAY_SPRINT48_JRN005_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
             test "${#migrations[@]}" -eq 18
             test -f "$migration17"
             test -f "$migration18"
@@ -209,7 +220,26 @@ jobs:
           set -euo pipefail
           migration17='database/migrations/0000_00_00_000017_create_pos_catalog_preparation_journal.php'
           migration18='database/migrations/0000_00_00_000018_create_pos_shift_opening_foundation.php'
-          if [[ "${ONEQAY_SPRINT48_JRN005_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+          if [[ "${ONEQAY_SPRINT49_JRN006_ACTIVE_SHIFT_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            repository='app/Infrastructure/Pos/LaravelDurablePosSaleRepository.php'
+            repository_backup='/tmp/oneqay-s46-s49-sale-repository.php'
+            backup17='/tmp/oneqay-s46-s49-migration17.php'
+            backup18='/tmp/oneqay-s46-s49-migration18.php'
+            cp "$repository" "$repository_backup"
+            cp "$migration17" "$backup17"
+            cp "$migration18" "$backup18"
+            restore() {
+              if [[ -f "$repository_backup" ]]; then mv "$repository_backup" "$repository"; fi
+              if [[ -f "$backup17" ]]; then mv "$backup17" "$migration17"; fi
+              if [[ -f "$backup18" ]]; then mv "$backup18" "$migration18"; fi
+            }
+            trap restore EXIT
+            git show "${{ github.event.pull_request.base.sha }}:apps/web/$repository" > "$repository"
+            rm -f "$migration17" "$migration18"
+            php tests/pos-sale-completion-durable.php
+            restore
+            trap - EXIT
+          elif [[ "${ONEQAY_SPRINT48_JRN005_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
             backup17='/tmp/oneqay-s46-jrn005-migration17.php'
             backup18='/tmp/oneqay-s46-jrn005-migration18.php'
             cp "$migration17" "$backup17"
