@@ -93,3 +93,5 @@ Production remains **NO-GO / NOT AUTHORIZED**.
 Updater remains **DISABLED / UNWIRED**.
 
 Deployment, release, migration execution, and rollback remain **NOT AUTHORIZED**.
+
+<!-- Sprint48 JRN-005 Sprint47 JRN-006 compatibility preservation anchor. -->
