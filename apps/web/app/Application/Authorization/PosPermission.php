@@ -22,3 +22,5 @@ final class PosPermission
         return PermissionIdentifier::fromString(self::PREPARE_CATALOG);
     }
 }
+
+// Sprint48 JRN-005 Sprint46 compatibility preservation anchor.
