@@ -1,5 +1,28 @@
 # oneQay Database Handbook
 
+## Canonical post-Sprint48 JRN-005 source publication reconciliation — 2026-09-01
+
+This current-facing section supersedes older post-Sprint47/current-state wording retained below as historical provenance. It records canonical source and CI evidence only and creates no new implementation or lifecycle authority.
+
+- Functional canonical baseline reconciled by this docs-only publication: `83ffc5f77129767e836349ae3e3d2d0f2f5bb7ef`; tree `4f1027da5440630830c6c996f0b89be6462f255d`; GitHub signature **verified / valid**.
+- Sprint48 JRN-005 **POS Shift/Register Opening Foundation** is **IMPLEMENTED / SOURCE-PUBLISHED** through PR #458 as `83ffc5f77129767e836349ae3e3d2d0f2f5bb7ef`, from qualified exact source head `d65aec3db0096429469878f322ea91d2c6731039`.
+- The published JRN-005 source envelope remains exactly **15 paths** with sorted newline-terminated SHA-256 `5e19664988cabba0030f9927d26b0702370414be4cd6b424d585925b634ca2b8`.
+- Canonical source now contains migrations exactly **#1–#18**. Migrations #16, #17, and #18 remain **SOURCE-PUBLISHED / NOT EXECUTED / NOT APPLIED / NOT ACTIVATED**. This reconciliation grants no migration execution authority.
+- JRN-005 adds only bounded opening of one accountable active shift for the exact verified tenant/outlet/device-backed register execution context. It does not create shift close, opening cash, cash movement/reconciliation, general register administration, JRN-010, JRN-006 active-shift enforcement, sale/catalog/stock mutation, payment-provider integration, deployment, or release authority.
+- `pos.shift.open` is deny-by-default through the canonical durable scoped authorization policy. The caller supplies only `operation_id`; actor identity, tenant, organization, outlet, device-backed register execution context, correlation identity, and event time remain server-derived.
+- The active uniqueness boundary is `tenant_id + outlet_id + device_id + active_slot`; server-owned `active_slot = 1` and the database uniqueness constraint remain the final arbiter. Different verified devices at the same outlet may hold independent active shifts.
+- Durable idempotency remains `tenant_id + operation_id`. Exact replay returns the original shift/opening evidence without a second write; conflicting operation-id reuse fails closed.
+- `ONEQAY_POS_SHIFT_OPENING_ENABLED` remains **default false**. The HTTP mutation `POST /pos/shifts/open` remains **Local/Test/CI only** when explicitly armed and protected by active first-party session control plus the canonical POS session-context middleware. Technical Preview and Production remain unactivated.
+- The final Sprint48 exact source head completed **36 materially triggered pull-request workflows / 36 success / 0 non-success**, including dedicated JRN-005, Sprint46 JRN-006, Sprint47 JRN-004, Sprint43 compatibility, Sprint21–Sprint42 historical preservation, M7.1–M7.6 boundaries, Governance, PHP Foundation, and updater/deployment-control regressions.
+- Exact Product Owner merge authorization for PR #458 was recorded for head `d65aec3db0096429469878f322ea91d2c6731039` in comment `5493432963`; evaluator run `33504130660` / job `99844040504` completed **success** and exact-head status `product-owner-merge-authority` was **success** before squash publication.
+- The bounded Sprint48 closure chain includes Sprint46 compatibility PR #472, Sprint47 compatibility PR #478, Sprint43 compatibility PR #479, and final source PR #458. Closed, superseded, stale, or unmerged probes do not constitute canonical authority.
+- Technical Preview remains **`NO_SCHEMA_CHANGE / NOT ACTIVATED`**. Migrations #16, #17, and #18 remain unapplied/unactivated in Technical Preview. Production remains **`NO-GO / NOT AUTHORIZED`**. Updater remains **`NOT ACTIVATED`**. Deployment, release, migration execution, and rollback remain **`NOT AUTHORIZED`**.
+- No post-Sprint48 successor implementation concern is selected by this reconciliation. Any Sprint49 or other successor concern requires a separately bounded entry gate; new source/schema/runtime authority, Preview/Production activation, updater wiring, deployment, release, migration execution, and rollback are not implied.
+- This reconciliation changes only the established **13-document canonical state envelope**, whose sorted newline-terminated path SHA-256 remains `b129d4b1c1135f2f5aecd5dde5ff1b5f6392eecb4d54006e80fc71889763647d`.
+
+Attribution: **Lab | zefry**
+
+
 ## Canonical post-Sprint47 JRN-004 source publication reconciliation — 2026-08-30
 
 This current-facing section supersedes older post-Sprint46/current-state wording retained below as historical provenance. It records canonical source and CI evidence only and creates no new implementation or lifecycle authority.
