@@ -29,3 +29,5 @@ final readonly class CatalogPreparationResult
     public function unitPrice(): Money { return $this->unitPrice; }
     public function sellable(): bool { return $this->sellable; }
 }
+
+// Sprint48 JRN-005 Sprint47 JRN-006 compatibility preservation anchor.
