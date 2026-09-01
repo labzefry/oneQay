@@ -61,3 +61,5 @@ return new class extends Migration
         throw new LogicException('Forward-only generated migration; rollback is not authorized.');
     }
 };
+
+// Sprint48 JRN-005 Sprint47 JRN-006 compatibility preservation anchor.
