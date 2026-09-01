@@ -90,3 +90,5 @@ final class RequirePosSessionContextMiddleware
         $this->tenantContexts->clear();
     }
 }
+
+// Sprint48 JRN-005 Sprint46 compatibility preservation anchor.
