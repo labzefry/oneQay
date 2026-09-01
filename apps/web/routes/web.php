@@ -189,3 +189,5 @@ Route::prefix('technical-preview')->controller(TechnicalPreviewController::class
 
 Route::get('/technical-preview/database-qualification', TechnicalPreviewDatabaseQualificationController::class)
     ->name('preview.database-qualification');
+
+// Sprint48 JRN-005 Sprint46 compatibility preservation anchor.
