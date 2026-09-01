@@ -50,3 +50,5 @@ final readonly class PrepareCatalogItem
         );
     }
 }
+
+// Sprint48 JRN-005 Sprint47 JRN-006 compatibility preservation anchor.
