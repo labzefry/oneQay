@@ -94,3 +94,5 @@ return [
         'charset' => env('ONEQAY_PREVIEW_DB_CHARSET', 'utf8mb4'),
     ],
 ];
+
+// Sprint48 JRN-005 Sprint47 JRN-006 compatibility preservation anchor.
