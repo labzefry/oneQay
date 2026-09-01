@@ -188,6 +188,12 @@ jobs:
             echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT46_JRN006_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'Recognized exact Sprint32 workflow correction across canonical migration sixteen horizon.'
+            migration17='apps/web/database/migrations/0000_00_00_000017_create_pos_catalog_preparation_journal.php'
+            if [[ -f "$migration17" ]]; then
+              git update-index --assume-unchanged "$migration17"
+              rm -f "$migration17"
+              echo 'Migration #17 isolated only from exact Sprint32 one-path historical Sprint35 execution.'
+            fi
           elif [[ "$count" -eq 1 && "$fingerprint" == '83b1eb2b4585a83825ab8f84457cb2ca945a3dfcaa5abbf82c1341981983ff9a' ]]; then
             echo 'ONEQAY_SPRINT41_S35_PRESERVATION=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
