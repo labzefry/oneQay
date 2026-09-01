@@ -1,4 +1,4 @@
-# Sprint50 JRN-007 entry-gate historical compatibility anchor.
+# Sprint50 JRN-007 entry/schema-gate historical compatibility anchor.
 # Author by Lab | zefry
 # Sprint48 JRN-005 Sprint35 JRN-006 compatibility preservation anchor.
 # Sprint48 JRN-005 Sprint46 upper-horizon preservation anchor.
@@ -393,6 +393,9 @@ jobs:
               echo "Recognized exact Sprint32 workflow YAML closure successor shape."
             elif [[ "$(wc -l < /tmp/actual-sprint36-paths)" -eq 1 ]] && [[ "$(sha256sum /tmp/actual-sprint36-paths | awk '{print $1}')" == "a023ef6e5366a21c2911f5d17445e5afa565df98696a15e3da41ee36bfe9918f" ]]; then
               echo "Recognized exact Sprint50 JRN-007 completed-sale void entry-gate successor shape."
+              echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            elif [[ "$(wc -l < /tmp/actual-sprint36-paths)" -eq 1 ]] && [[ "$(sha256sum /tmp/actual-sprint36-paths | awk '{print $1}')" == "42bf761a33ab61dc2110d9afae0a307ffcc63828c34c2dbd7d2b0f0da4e87f0f" ]]; then
+              echo "Recognized exact Sprint50 JRN-007 completed-sale void schema/source-envelope gate successor shape."
               echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             elif [[ "$(wc -l < /tmp/actual-sprint36-paths)" -eq 2 ]] && [[ "$(sha256sum /tmp/actual-sprint36-paths | awk '{print $1}')" == "4eb9f6b88fe36860855f16eff81c962c37d91aab5e73e445dca87749ea388055" ]]; then
               echo "Recognized exact Sprint50 Sprint36/Sprint39 two-workflow historical-compatibility predecessor shape."
