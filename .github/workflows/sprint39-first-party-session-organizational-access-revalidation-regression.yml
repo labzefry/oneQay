@@ -1,3 +1,5 @@
+# Sprint50 JRN-007 entry-gate historical compatibility anchor.
+# Author by Lab | zefry
 # Sprint49 JRN-006 active-shift schema/source-envelope compatibility preservation anchor.
 # Sprint49 JRN-006 active-shift precondition entry-gate compatibility preservation anchor.
 # Sprint48 JRN-005 Sprint35 JRN-006 compatibility preservation anchor.
@@ -339,6 +341,10 @@ jobs:
             echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
           elif [[ "$(wc -l < /tmp/actual-sprint39-source-paths)" -eq 9 ]] && [[ "$(sha256sum /tmp/actual-sprint39-source-paths | awk '{print $1}')" == 'b8afa8415c0675c2675c1b8dbd528b44e8181a8f79a97fe28b0a0996623e1749' ]]; then
             echo 'Recognized exact Sprint43 nine-workflow source-preservation predecessor shape.'
+            echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+          elif [[ "$(wc -l < /tmp/actual-sprint39-source-paths)" -eq 2 ]] && [[ "$(sha256sum /tmp/actual-sprint39-source-paths | awk '{print $1}')" == '4eb9f6b88fe36860855f16eff81c962c37d91aab5e73e445dca87749ea388055' ]]; then
+            echo 'Recognized exact Sprint50 Sprint36/Sprint39 two-workflow historical-compatibility predecessor shape.'
             echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
           elif [[ "$(wc -l < /tmp/actual-sprint39-source-paths)" -eq 9 ]] && [[ "$(sha256sum /tmp/actual-sprint39-source-paths | awk '{print $1}')" == 'c7f53821f0f3fc1554ee23a3c85b53369972accb0815ec2b8096664054cd01b9' ]]; then
