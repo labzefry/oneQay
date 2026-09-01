@@ -62,16 +62,33 @@ jobs:
           git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | sort > /tmp/s46-source-paths
           count="$(wc -l < /tmp/s46-source-paths)"
           fingerprint="$(sha256sum /tmp/s46-source-paths | awk '{print $1}')"
+          echo 'ONEQAY_SPRINT46_JRN006_COMPATIBILITY_PREDECESSOR=false' >> "$GITHUB_ENV"
           echo 'ONEQAY_SPRINT47_JRN004_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
+          echo 'ONEQAY_SPRINT48_JRN005_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
           if [[ "$count" -eq 14 && "$fingerprint" == 'ed29b6128c193f0efd6359748e220a37aefaec856acc4bc3b90f445ce3ccb674' ]]; then
             test "$(grep -c '^apps/web/database/migrations/' /tmp/s46-source-paths)" -eq 1
-            grep -Fxq 'apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php' /tmp/s46-source-paths
-            echo 'Recognized exact Sprint46 JRN-006 durable sale source envelope.'
+            migration16='apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php'
+            grep -Fxq "$migration16" /tmp/s46-source-paths
+            status="$(git diff --name-status "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" -- "$migration16" | awk 'NR==1 {print $1}')"
+            if [[ "$status" == 'A' ]]; then
+              echo 'Recognized exact Sprint46 JRN-006 durable sale source envelope.'
+            elif [[ "$status" == 'M' ]]; then
+              echo 'ONEQAY_SPRINT46_JRN006_COMPATIBILITY_PREDECESSOR=true' >> "$GITHUB_ENV"
+              echo 'Recognized exact Sprint46 JRN-006 compatibility predecessor envelope.'
+            else
+              echo "Unexpected JRN-006 migration #16 status: ${status:-none}" >&2
+              exit 1
+            fi
           elif [[ "$count" -eq 15 && "$fingerprint" == 'c1ac6d5130c9d78ff99ed0accf5d11e3f08debc575c0d5152ef5b24e6f82ce02' ]]; then
             test "$(grep -c '^apps/web/database/migrations/' /tmp/s46-source-paths)" -eq 1
             grep -Fxq 'apps/web/database/migrations/0000_00_00_000017_create_pos_catalog_preparation_journal.php' /tmp/s46-source-paths
             echo 'ONEQAY_SPRINT47_JRN004_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'Recognized exact Sprint47 JRN-004 durable catalog source successor shape.'
+          elif [[ "$count" -eq 15 && "$fingerprint" == '5e19664988cabba0030f9927d26b0702370414be4cd6b424d585925b634ca2b8' ]]; then
+            test "$(grep -c '^apps/web/database/migrations/' /tmp/s46-source-paths)" -eq 1
+            grep -Fxq 'apps/web/database/migrations/0000_00_00_000018_create_pos_shift_opening_foundation.php' /tmp/s46-source-paths
+            echo 'ONEQAY_SPRINT48_JRN005_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'Recognized exact Sprint48 JRN-005 shift-opening source successor shape.'
           else
             echo 'Sprint46/JRN-004 changed-file envelope mismatch.' >&2
             exit 1
@@ -87,7 +104,18 @@ jobs:
           head="${{ github.event.pull_request.head.sha }}"
           migration='apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php'
           migration17='apps/web/database/migrations/0000_00_00_000017_create_pos_catalog_preparation_journal.php'
-          if [[ "${ONEQAY_SPRINT47_JRN004_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+          migration18='apps/web/database/migrations/0000_00_00_000018_create_pos_shift_opening_foundation.php'
+          if [[ "${ONEQAY_SPRINT48_JRN005_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            changed="$(git diff --name-only "$base" "$head" -- apps/web/database/migrations | sort)"
+            test "$(printf '%s\n' "$changed" | sed '/^$/d' | wc -l)" -eq 1
+            printf '%s\n' "$changed" | grep -Fxq "$migration18"
+            git diff --exit-code "$base" "$head" -- apps/web/database/migrations ":(exclude)$migration18"
+          elif [[ "${ONEQAY_SPRINT46_JRN006_COMPATIBILITY_PREDECESSOR:-false}" == 'true' ]]; then
+            changed="$(git diff --name-only "$base" "$head" -- apps/web/database/migrations | sort)"
+            test "$(printf '%s\n' "$changed" | sed '/^$/d' | wc -l)" -eq 1
+            printf '%s\n' "$changed" | grep -Fxq "$migration"
+            git diff --exit-code "$base" "$head" -- apps/web/database/migrations ":(exclude)$migration"
+          elif [[ "${ONEQAY_SPRINT47_JRN004_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
             changed="$(git diff --name-only "$base" "$head" -- apps/web/database/migrations | sort)"
             test "$(printf '%s\n' "$changed" | sed '/^$/d' | wc -l)" -eq 1
             printf '%s\n' "$changed" | grep -Fxq "$migration17"
@@ -96,7 +124,15 @@ jobs:
             git diff --exit-code "$base" "$head" -- apps/web/database/migrations ":(exclude)$migration"
           fi
           mapfile -t migrations < <(find apps/web/database/migrations -maxdepth 1 -type f -name '*.php' -printf '%f\n' | sort)
-          if [[ "${ONEQAY_SPRINT47_JRN004_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+          if [[ "${ONEQAY_SPRINT48_JRN005_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            test "${#migrations[@]}" -eq 18
+            test -f "$migration17"
+            test -f "$migration18"
+          elif [[ "${ONEQAY_SPRINT46_JRN006_COMPATIBILITY_PREDECESSOR:-false}" == 'true' ]]; then
+            test "${#migrations[@]}" -eq 17
+            test -f "$migration17"
+            test ! -f "$migration18"
+          elif [[ "${ONEQAY_SPRINT47_JRN004_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
             test "${#migrations[@]}" -eq 17
             test -f "$migration17"
           else
@@ -172,8 +208,23 @@ jobs:
         run: |
           set -euo pipefail
           migration17='database/migrations/0000_00_00_000017_create_pos_catalog_preparation_journal.php'
-          if [[ "${ONEQAY_SPRINT47_JRN004_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
-            backup='/tmp/oneqay-s46-jrn004-migration17.php'
+          migration18='database/migrations/0000_00_00_000018_create_pos_shift_opening_foundation.php'
+          if [[ "${ONEQAY_SPRINT48_JRN005_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            backup17='/tmp/oneqay-s46-jrn005-migration17.php'
+            backup18='/tmp/oneqay-s46-jrn005-migration18.php'
+            cp "$migration17" "$backup17"
+            cp "$migration18" "$backup18"
+            restore() {
+              if [[ -f "$backup17" ]]; then mv "$backup17" "$migration17"; fi
+              if [[ -f "$backup18" ]]; then mv "$backup18" "$migration18"; fi
+            }
+            trap restore EXIT
+            rm -f "$migration17" "$migration18"
+            php tests/pos-sale-completion-durable.php
+            restore
+            trap - EXIT
+          elif [[ "${ONEQAY_SPRINT47_JRN004_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT46_JRN006_COMPATIBILITY_PREDECESSOR:-false}" == 'true' ]]; then
+            backup='/tmp/oneqay-s46-compat-migration17.php'
             cp "$migration17" "$backup"
             restore() {
               if [[ -f "$backup" ]]; then

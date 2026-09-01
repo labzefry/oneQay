@@ -333,4 +333,4 @@ final class AppServiceProvider extends ServiceProvider
     }
 }
 
-// Sprint48 JRN-005 Sprint47 JRN-006 compatibility preservation anchor.
+// Sprint48 JRN-005 Sprint46 compatibility preservation anchor.

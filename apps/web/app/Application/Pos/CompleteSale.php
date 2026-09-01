@@ -39,3 +39,5 @@ final readonly class CompleteSale
         );
     }
 }
+
+// Sprint48 JRN-005 Sprint46 compatibility preservation anchor.
