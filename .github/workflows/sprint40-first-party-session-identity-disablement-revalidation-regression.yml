@@ -85,6 +85,7 @@ jobs:
           echo 'ONEQAY_SPRINT43_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
           echo 'ONEQAY_SPRINT46_JRN006_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
           echo 'ONEQAY_SPRINT47_JRN004_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
+          echo 'ONEQAY_SPRINT48_JRN005_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
           if [[ "$actual_count" -eq 8 && "$actual_fingerprint" == 'a9caf2b68210a38687fee543256aec04dc1e67ee1ef403608f7db69139957ff8' ]]; then
             echo 'Recognized exact Sprint40 identity-disablement revalidation source envelope.'
           elif [[ "$actual_count" -eq 7 && "$actual_fingerprint" == 'f3f8b3ad0cca378307000ca242c4b9a4a8a7ab967d1649a5cd6408837001364c' ]]; then
@@ -134,6 +135,11 @@ jobs:
             echo 'ONEQAY_SPRINT47_JRN004_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT42_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT43_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+          elif [[ "$actual_count" -eq 15 && "$actual_fingerprint" == '5e19664988cabba0030f9927d26b0702370414be4cd6b424d585925b634ca2b8' ]]; then
+            echo 'Recognized exact Sprint48 JRN-005 shift-opening source successor shape.'
+            echo 'ONEQAY_SPRINT48_JRN005_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT42_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT43_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
           else
             echo 'Sprint40 changed-file envelope mismatch.' >&2
             diff -u /tmp/sprint40-source-paths /tmp/actual-sprint40-source-paths >&2 || true
@@ -151,8 +157,14 @@ jobs:
           migration15='apps/web/database/migrations/0000_00_00_000015_create_identity_authentication_eligibility_administration_journal.php'
           migration16='apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php'
           migration17='apps/web/database/migrations/0000_00_00_000017_create_pos_catalog_preparation_journal.php'
+          migration18='apps/web/database/migrations/0000_00_00_000018_create_pos_shift_opening_foundation.php'
 
-          if [[ "${ONEQAY_SPRINT47_JRN004_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+          if [[ "${ONEQAY_SPRINT48_JRN005_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            changed_migrations="$(git diff --name-only "$base" "$head" -- apps/web/database/migrations | sort)"
+            test "$(printf '%s\n' "$changed_migrations" | sed '/^$/d' | wc -l)" -eq 1
+            printf '%s\n' "$changed_migrations" | grep -Fxq "$migration18"
+            git diff --exit-code "$base" "$head" -- apps/web/database/migrations ":(exclude)$migration18"
+          elif [[ "${ONEQAY_SPRINT47_JRN004_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
             changed_migrations="$(git diff --name-only "$base" "$head" -- apps/web/database/migrations | sort)"
             test "$(printf '%s\n' "$changed_migrations" | sed '/^$/d' | wc -l)" -eq 1
             printf '%s\n' "$changed_migrations" | grep -Fxq "$migration17"
@@ -176,7 +188,13 @@ jobs:
           fi
 
           mapfile -t migrations < <(find apps/web/database/migrations -maxdepth 1 -type f -name '*.php' -printf '%f\n' | sort)
-          if [[ "${ONEQAY_SPRINT47_JRN004_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+          if [[ "${ONEQAY_SPRINT48_JRN005_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            test "${#migrations[@]}" -eq 18
+            test "$(printf '%s\n' "${migrations[@]}" | grep -c '^0000_00_00_000015_create_identity_authentication_eligibility_administration_journal\.php$')" -eq 1
+            test "$(printf '%s\n' "${migrations[@]}" | grep -c '^0000_00_00_000016_create_pos_sale_completion_foundation\.php$')" -eq 1
+            test "$(printf '%s\n' "${migrations[@]}" | grep -c '^0000_00_00_000017_create_pos_catalog_preparation_journal\.php$')" -eq 1
+            test "$(printf '%s\n' "${migrations[@]}" | grep -c '^0000_00_00_000018_create_pos_shift_opening_foundation\.php$')" -eq 1
+          elif [[ "${ONEQAY_SPRINT47_JRN004_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
             test "${#migrations[@]}" -eq 17
             test "$(printf '%s\n' "${migrations[@]}" | grep -c '^0000_00_00_000015_create_identity_authentication_eligibility_administration_journal\.php$')" -eq 1
             test "$(printf '%s\n' "${migrations[@]}" | grep -c '^0000_00_00_000016_create_pos_sale_completion_foundation\.php$')" -eq 1
@@ -206,7 +224,15 @@ jobs:
           grep -Fq "throw new LogicException('Forward-only generated migration; rollback is not authorized.');" "$migration"
           ! grep -Eq '\$table->(index|unique|foreign|timestamp|timestamps|enum)|Schema::create|DB::' "$migration"
 
-          if [[ "${ONEQAY_SPRINT47_JRN004_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+          if [[ "${ONEQAY_SPRINT48_JRN005_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            for historical_migration in "$migration15" "$migration16" "$migration17" "$migration18"; do
+              if [[ -f "$historical_migration" ]]; then
+                git update-index --assume-unchanged "$historical_migration"
+                rm -f "$historical_migration"
+              fi
+            done
+            echo 'Migrations #15-#18 isolated only from exact Sprint48 JRN-005 historical Sprint40 execution.'
+          elif [[ "${ONEQAY_SPRINT47_JRN004_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
             for historical_migration in "$migration15" "$migration16" "$migration17"; do
               if [[ -f "$historical_migration" ]]; then
                 git update-index --assume-unchanged "$historical_migration"
@@ -263,7 +289,7 @@ jobs:
           set -euo pipefail
           base="${{ github.event.pull_request.base.sha }}"
           head="${{ github.event.pull_request.head.sha }}"
-          if [[ "${ONEQAY_SPRINT46_JRN006_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT47_JRN004_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+          if [[ "${ONEQAY_SPRINT46_JRN006_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT47_JRN004_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT48_JRN005_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
             git diff --exit-code "$base" "$head" -- \
             apps/web/bootstrap/app.php \
             apps/web/composer.json \
