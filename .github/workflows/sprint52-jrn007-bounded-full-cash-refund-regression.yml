@@ -1,3 +1,4 @@
+# Sprint54 bounded 10-workflow source-preservation correction — Lab | zefry
 # Sprint54 bounded successor compatibility predecessor — Lab | zefry
 # Sprint53 bounded third historical fixture compatibility closure — Lab | zefry
 # Sprint53 bounded second historical fixture compatibility closure — Lab | zefry
@@ -72,13 +73,582 @@ jobs:
           count="$(wc -l < /tmp/s52-source-paths)"
           fingerprint="$(sha256sum /tmp/s52-source-paths | awk '{print $1}')"
           echo 'ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
+          echo 'ONEQAY_SPRINT54_JRN010_PREREQ_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
           if [[ "$count" -eq 14 && "$fingerprint" == 'ad4f6c62c820bdc59d7c1c8550ffeec0a4a0718ba4388a516418d50468d7e9d5' ]]; then
             test "$(grep -c '^apps/web/database/migrations/' /tmp/s52-source-paths)" -eq 1
             grep -Fxq 'apps/web/database/migrations/0000_00_00_000021_create_pos_sale_cash_refund_foundation.php' /tmp/s52-source-paths
-          elif [[ "$count" -eq 14 && "$fingerprint" == '1d75fe26236e2bb56c113713e878e81d3df72cee9aa647b3f7759b9d1bec9164' ]] || [[ "$count" -eq 14 && "$fingerprint" == 'a0914d7db5c1636e909e331e8b72653bc9814eb74e3a3823d7db36bd3b73b624' ]]; then
+          elif [[ "$count" -eq 14 && "$fingerprint" == 'a0914d7db5c1636e909e331e8b72653bc9814eb74e3a3823d7db36bd3b73b624' ]]; then
+            test "$(grep -c '^apps/web/database/migrations/' /tmp/s52-source-paths)" -eq 1
+            grep -Fxq 'apps/web/database/migrations/0000_00_00_000023_create_pos_shift_closing_cash_evidence_foundation.php' /tmp/s52-source-paths
+            echo 'ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT54_JRN010_PREREQ_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+          elif [[ "$count" -eq 14 && "$fingerprint" == '1d75fe26236e2bb56c113713e878e81d3df72cee9aa647b3f7759b9d1bec9164' ]]; then
             test "$(grep -c '^apps/web/database/migrations/' /tmp/s52-source-paths)" -eq 1
             grep -Fxq 'apps/web/database/migrations/0000_00_00_000022_create_pos_shift_opening_cash_evidence_foundation.php' /tmp/s52-source-paths
             echo 'ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+          elif [[ "$count" -eq 10 && "$fingerprint" == '36cebb616758e497d8d4114723973fa140e3440480a25f17a0fc01def4baf1a5' ]]; then
+            test "$(grep -c '^apps/web/database/migrations/' /tmp/s52-source-paths)" -eq 0
+            echo 'ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+          else
+            echo 'Sprint52/Sprint53 changed-file envelope mismatch.' >&2
+            exit 1
+          fi
+          ! grep -Eq '(^|/)(composer\.(json|lock)|package(-lock)?\.json|\.env(\.|$))' /tmp/s52-source-paths
+
+      - name: Preserve migrations one through twenty and validate migration twenty-one
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+          migration='apps/web/database/migrations/0000_00_00_000021_create_pos_sale_cash_refund_foundation.php'
+          migration22='apps/web/database/migrations/0000_00_00_000022_create_pos_shift_opening_cash_evidence_foundation.php'
+          migration23='apps/web/database/migrations/0000_00_00_000023_create_pos_shift_closing_cash_evidence_foundation.php'
+          if [[ "${ONEQAY_SPRINT54_JRN010_PREREQ_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            changed="$(git diff --name-only "$base" "$head" -- apps/web/database/migrations | sort)"
+            changed_count="$(printf '%s\n' "$changed" | sed '/^$/d' | wc -l)"
+            if [[ "$changed_count" -eq 1 ]]; then printf '%s\n' "$changed" | grep -Fxq "$migration23"; else test "$changed_count" -eq 0; fi
+            git diff --exit-code "$base" "$head" -- apps/web/database/migrations ":(exclude)$migration23"
+            for historical_migration in "$migration22" "$migration23"; do
+              if [[ -f "$historical_migration" ]]; then
+                git update-index --assume-unchanged "$historical_migration"
+                rm -f "$historical_migration"
+              fi
+            done
+          else
+            git diff --exit-code "$base" "$head" -- apps/web/database/migrations ":(exclude)$migration"
+          fi
+          mapfile -t migrations < <(find apps/web/database/migrations -maxdepth 1 -type f -name '*.php' -printf '%f\n' | sort)
+          test "${#migrations[@]}" -eq 21
+          for index in $(seq 1 21); do
+            prefix="$(printf '0000_00_00_%06d_' "$index")"
+            test "$(printf '%s\n' "${migrations[@]}" | grep -c "^$prefix")" -eq 1
+          done
+          grep -Fq "Schema::create('oneqay_pos_sale_cash_refunds'" "$migration"
+          grep -Fq "unique(['tenant_id', 'operation_id']" "$migration"
+          grep -Fq "unique(['tenant_id', 'sale_id']" "$migration"
+          grep -Fq "unique(['tenant_id', 'void_id']" "$migration"
+          grep -Fq "foreign(['tenant_id', 'sale_id']" "$migration"
+          grep -Fq "foreign(['tenant_id', 'void_id']" "$migration"
+          grep -Fq "on('oneqay_pos_sale_voids')" "$migration"
+          grep -Fq "throw new LogicException('Forward-only generated migration; rollback is not authorized.');" "$migration"
+
+      - name: Validate source-default authorization and delivery locks
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq "public const REFUND_SALE = 'pos.sale.refund';" apps/web/app/Application/Authorization/PosPermission.php
+          grep -Fq "env('ONEQAY_POS_SALE_CASH_REFUND_ENABLED', false)" apps/web/config/oneqay.php
+          grep -Fq "config('oneqay.pos_sale_cash_refund.enabled', false)" apps/web/routes/web.php
+          grep -Fq "Route::post('/pos/sales/cash-refund'" apps/web/routes/web.php
+          grep -Fq "'session.active'" apps/web/routes/web.php
+          grep -Fq 'RequirePosSessionContextMiddleware::class' apps/web/routes/web.php
+          grep -Fq "table('oneqay_pos_sale_cash_refunds')" apps/web/app/Infrastructure/Pos/LaravelSaleCashRefundRepository.php
+          grep -Fq "table('oneqay_pos_sale_voids')" apps/web/app/Infrastructure/Pos/LaravelSaleCashRefundRepository.php
+          grep -Fq 'FULL_CASH_REFUND' apps/web/app/Infrastructure/Pos/LaravelSaleCashRefundRepository.php
+          grep -Fq "'REFUNDED'" apps/web/app/Infrastructure/Pos/LaravelSaleCashRefundRepository.php
+          grep -Fq '$sale->applied_atomic' apps/web/app/Infrastructure/Pos/LaravelSaleCashRefundRepository.php
+          ! grep -Fq "table('oneqay_pos_sale_catalog_items')" apps/web/app/Infrastructure/Pos/LaravelSaleCashRefundRepository.php
+          grep -Fq "private const ALLOWED_FIELDS = ['operation_id', 'sale_id'];" apps/web/app/Delivery/Http/Pos/PosSaleCashRefundController.php
+
+      - name: Preserve Application framework independence
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -n -F -e 'Illuminate\' -e 'Laravel\' -e 'Schema::' -e 'DB::'             apps/web/app/Application/Authorization/PosPermission.php             apps/web/app/Application/Pos/RecordCashRefund.php             apps/web/app/Application/Pos/SaleCashRefundCommand.php             apps/web/app/Application/Pos/SaleCashRefundRepository.php             apps/web/app/Application/Pos/SaleCashRefundResult.php; then
+            echo 'Sprint52 JRN-007 Application framework boundary violated.' >&2
+            exit 1
+          fi
+
+      - name: Validate PHP syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          find apps/web/app apps/web/database/migrations apps/web/routes apps/web/tests -type f -name '*.php' -print0 |
+            while IFS= read -r -d '' file; do php -l "$file"; done
+
+      - name: Install locked dependencies
+        working-directory: apps/web
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Reject High or Critical Composer advisories
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          composer audit --locked --format=json > /tmp/oneqay-composer-audit.json
+          php -r '
+            $data = json_decode(file_get_contents("/tmp/oneqay-composer-audit.json"), true, 512, JSON_THROW_ON_ERROR);
+            foreach (($data["advisories"] ?? []) as $items) {
+                foreach ($items as $item) {
+                    if (in_array(strtolower((string) ($item["severity"] ?? "")), ["high", "critical"], true)) {
+                        fwrite(STDERR, "Blocking Composer advisory.\n");
+                        exit(1);
+                    }
+                }
+            }
+          '
+
+      - name: Run Sprint52 JRN-007 durable full CASH refund regression
+        working-directory: apps/web
+        run: php tests/pos-sale-cash-refund-durable.php
+
+      - name: Preserve Sprint51 JRN-008 inventory baseline regression
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          migration21='database/migrations/0000_00_00_000021_create_pos_sale_cash_refund_foundation.php'
+          backup21='/tmp/oneqay-s52-migration21-inventory.php'
+          cp "$migration21" "$backup21"
+          restore() { [[ ! -f "$backup21" ]] || mv "$backup21" "$migration21"; }
+          trap restore EXIT
+          rm -f "$migration21"
+          php tests/pos-inventory-baseline-durable.php
+          restore
+          trap - EXIT
+
+      - name: Preserve Sprint50 JRN-007 sale void regression
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          migration20='database/migrations/0000_00_00_000020_create_pos_inventory_baseline_foundation.php'
+          migration21='database/migrations/0000_00_00_000021_create_pos_sale_cash_refund_foundation.php'
+          backup20='/tmp/oneqay-s52-migration20-void.php'
+          backup21='/tmp/oneqay-s52-migration21-void.php'
+          cp "$migration20" "$backup20"
+          cp "$migration21" "$backup21"
+          restore() {
+            [[ ! -f "$backup20" ]] || mv "$backup20" "$migration20"
+            [[ ! -f "$backup21" ]] || mv "$backup21" "$migration21"
+          }
+          trap restore EXIT
+          rm -f "$migration20" "$migration21"
+          php tests/pos-sale-void-durable.php
+          restore
+          trap - EXIT
+
+      - name: Preserve Sprint49 active-shift sale regression
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          migration19='database/migrations/0000_00_00_000019_create_pos_sale_void_foundation.php'
+          migration20='database/migrations/0000_00_00_000020_create_pos_inventory_baseline_foundation.php'
+          migration21='database/migrations/0000_00_00_000021_create_pos_sale_cash_refund_foundation.php'
+          backup19='/tmp/oneqay-s52-migration19-active-shift.php'
+          backup20='/tmp/oneqay-s52-migration20-active-shift.php'
+          backup21='/tmp/oneqay-s52-migration21-active-shift.php'
+          cp "$migration19" "$backup19"
+          cp "$migration20" "$backup20"
+          cp "$migration21" "$backup21"
+          restore() {
+            [[ ! -f "$backup19" ]] || mv "$backup19" "$migration19"
+            [[ ! -f "$backup20" ]] || mv "$backup20" "$migration20"
+            [[ ! -f "$backup21" ]] || mv "$backup21" "$migration21"
+          }
+          trap restore EXIT
+          rm -f "$migration19" "$migration20" "$migration21"
+          php tests/pos-sale-completion-active-shift.php
+          restore
+          trap - EXIT
+
+      - name: Preserve Sprint48 JRN-005 shift regression
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          migration19='database/migrations/0000_00_00_000019_create_pos_sale_void_foundation.php'
+          migration20='database/migrations/0000_00_00_000020_create_pos_inventory_baseline_foundation.php'
+          migration21='database/migrations/0000_00_00_000021_create_pos_sale_cash_refund_foundation.php'
+          backup19='/tmp/oneqay-s52-migration19-shift.php'
+          backup20='/tmp/oneqay-s52-migration20-shift.php'
+          backup21='/tmp/oneqay-s52-migration21-shift.php'
+          cp "$migration19" "$backup19"
+          cp "$migration20" "$backup20"
+          cp "$migration21" "$backup21"
+          restore() {
+            [[ ! -f "$backup19" ]] || mv "$backup19" "$migration19"
+            [[ ! -f "$backup20" ]] || mv "$backup20" "$migration20"
+            [[ ! -f "$backup21" ]] || mv "$backup21" "$migration21"
+          }
+          trap restore EXIT
+          rm -f "$migration19" "$migration20" "$migration21"
+          php tests/pos-shift-opening-durable.php
+          restore
+          trap - EXIT
+
+      - name: Preserve Sprint47 JRN-004 catalog regression
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          migration18='database/migrations/0000_00_00_000018_create_pos_shift_opening_foundation.php'
+          migration19='database/migrations/0000_00_00_000019_create_pos_sale_void_foundation.php'
+          migration20='database/migrations/0000_00_00_000020_create_pos_inventory_baseline_foundation.php'
+          migration21='database/migrations/0000_00_00_000021_create_pos_sale_cash_refund_foundation.php'
+          backup18='/tmp/oneqay-s52-migration18-catalog.php'
+          backup19='/tmp/oneqay-s52-migration19-catalog.php'
+          backup20='/tmp/oneqay-s52-migration20-catalog.php'
+          backup21='/tmp/oneqay-s52-migration21-catalog.php'
+          cp "$migration18" "$backup18"
+          cp "$migration19" "$backup19"
+          cp "$migration20" "$backup20"
+          cp "$migration21" "$backup21"
+          restore() {
+            [[ ! -f "$backup18" ]] || mv "$backup18" "$migration18"
+            [[ ! -f "$backup19" ]] || mv "$backup19" "$migration19"
+            [[ ! -f "$backup20" ]] || mv "$backup20" "$migration20"
+            [[ ! -f "$backup21" ]] || mv "$backup21" "$migration21"
+          }
+          trap restore EXIT
+          rm -f "$migration18" "$migration19" "$migration20" "$migration21"
+          php tests/pos-catalog-preparation-durable.php
+          restore
+          trap - EXIT
+
+      - name: Preserve historical Sprint46 JRN-006 durable sale regression
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          repository='app/Infrastructure/Pos/LaravelDurablePosSaleRepository.php'
+          migration17='database/migrations/0000_00_00_000017_create_pos_catalog_preparation_journal.php'
+          migration18='database/migrations/0000_00_00_000018_create_pos_shift_opening_foundation.php'
+          migration19='database/migrations/0000_00_00_000019_create_pos_sale_void_foundation.php'
+          migration20='database/migrations/0000_00_00_000020_create_pos_inventory_baseline_foundation.php'
+          migration21='database/migrations/0000_00_00_000021_create_pos_sale_cash_refund_foundation.php'
+          repository_backup='/tmp/oneqay-s52-sale-repository.php'
+          migration17_backup='/tmp/oneqay-s52-migration17.php'
+          migration18_backup='/tmp/oneqay-s52-migration18.php'
+          migration19_backup='/tmp/oneqay-s52-migration19.php'
+          migration20_backup='/tmp/oneqay-s52-migration20.php'
+          migration21_backup='/tmp/oneqay-s52-migration21.php'
+          cp "$repository" "$repository_backup"
+          cp "$migration17" "$migration17_backup"
+          cp "$migration18" "$migration18_backup"
+          cp "$migration19" "$migration19_backup"
+          cp "$migration20" "$migration20_backup"
+          cp "$migration21" "$migration21_backup"
+          restore() {
+            [[ ! -f "$repository_backup" ]] || mv "$repository_backup" "$repository"
+            [[ ! -f "$migration17_backup" ]] || mv "$migration17_backup" "$migration17"
+            [[ ! -f "$migration18_backup" ]] || mv "$migration18_backup" "$migration18"
+            [[ ! -f "$migration19_backup" ]] || mv "$migration19_backup" "$migration19"
+            [[ ! -f "$migration20_backup" ]] || mv "$migration20_backup" "$migration20"
+            [[ ! -f "$migration21_backup" ]] || mv "$migration21_backup" "$migration21"
+          }
+          trap restore EXIT
+          git show cc55ad9c981cceb287206db8a3001e629b1d8d57:apps/web/app/Infrastructure/Pos/LaravelDurablePosSaleRepository.php > "$repository"
+          rm -f "$migration17" "$migration18" "$migration19" "$migration20" "$migration21"
+          php tests/pos-sale-completion-durable.php
+          restore
+          trap - EXIT
+
+      - name: Preserve M7.4 synthetic POS regression
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          shift_successor='app/Infrastructure/Pos/LaravelShiftOpeningRepository.php'
+          inventory_successor='app/Infrastructure/Pos/LaravelInventoryBaselineRepository.php'
+          refund_successor='app/Infrastructure/Pos/LaravelSaleCashRefundRepository.php'
+          opening_cash_successor='app/Infrastructure/Pos/LaravelShiftOpeningCashRepository.php'
+          shift_backup='/tmp/oneqay-s52-shift-opening-repository.php'
+          inventory_backup='/tmp/oneqay-s52-inventory-baseline-repository.php'
+          refund_backup='/tmp/oneqay-s52-cash-refund-repository.php'
+          opening_cash_backup='/tmp/oneqay-s52-opening-cash-repository.php'
+          cp "$shift_successor" "$shift_backup"
+          cp "$inventory_successor" "$inventory_backup"
+          cp "$refund_successor" "$refund_backup"
+          if [[ -f "$opening_cash_successor" ]]; then cp "$opening_cash_successor" "$opening_cash_backup"; fi
+          restore() {
+            [[ ! -f "$shift_backup" ]] || mv "$shift_backup" "$shift_successor"
+            [[ ! -f "$inventory_backup" ]] || mv "$inventory_backup" "$inventory_successor"
+            [[ ! -f "$refund_backup" ]] || mv "$refund_backup" "$refund_successor"
+            [[ ! -f "$opening_cash_backup" ]] || mv "$opening_cash_backup" "$opening_cash_successor"
+          }
+          trap restore EXIT
+          rm -f "$shift_successor" "$inventory_successor" "$refund_successor" "$opening_cash_successor"
+          php tests/pos-core-synthetic.php
+          restore
+          trap - EXIT
+
+      - name: Preserve tracked source cleanliness
+        run: git diff --exit-code
+          elif [[ "${ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            changed="$(git diff --name-only "$base" "$head" -- apps/web/database/migrations | sort)"
+            changed_count="$(printf '%s\n' "$changed" | sed '/^$/d' | wc -l)"
+            if [[ "$changed_count" -eq 1 ]]; then printf '%s\n' "$changed" | grep -Fxq "$migration22"; else test "$changed_count" -eq 0; fi
+            git diff --exit-code "$base" "$head" -- apps/web/database/migrations ":(exclude)$migration22"
+            if [[ -f "$migration22" ]]; then
+              git update-index --assume-unchanged "$migration22"
+              rm -f "$migration22"
+            fi
+          else
+            git diff --exit-code "$base" "$head" -- apps/web/database/migrations ":(exclude)$migration"
+          fi
+          mapfile -t migrations < <(find apps/web/database/migrations -maxdepth 1 -type f -name '*.php' -printf '%f\n' | sort)
+          test "${#migrations[@]}" -eq 21
+          for index in $(seq 1 21); do
+            prefix="$(printf '0000_00_00_%06d_' "$index")"
+            test "$(printf '%s\n' "${migrations[@]}" | grep -c "^$prefix")" -eq 1
+          done
+          grep -Fq "Schema::create('oneqay_pos_sale_cash_refunds'" "$migration"
+          grep -Fq "unique(['tenant_id', 'operation_id']" "$migration"
+          grep -Fq "unique(['tenant_id', 'sale_id']" "$migration"
+          grep -Fq "unique(['tenant_id', 'void_id']" "$migration"
+          grep -Fq "foreign(['tenant_id', 'sale_id']" "$migration"
+          grep -Fq "foreign(['tenant_id', 'void_id']" "$migration"
+          grep -Fq "on('oneqay_pos_sale_voids')" "$migration"
+          grep -Fq "throw new LogicException('Forward-only generated migration; rollback is not authorized.');" "$migration"
+
+      - name: Validate source-default authorization and delivery locks
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq "public const REFUND_SALE = 'pos.sale.refund';" apps/web/app/Application/Authorization/PosPermission.php
+          grep -Fq "env('ONEQAY_POS_SALE_CASH_REFUND_ENABLED', false)" apps/web/config/oneqay.php
+          grep -Fq "config('oneqay.pos_sale_cash_refund.enabled', false)" apps/web/routes/web.php
+          grep -Fq "Route::post('/pos/sales/cash-refund'" apps/web/routes/web.php
+          grep -Fq "'session.active'" apps/web/routes/web.php
+          grep -Fq 'RequirePosSessionContextMiddleware::class' apps/web/routes/web.php
+          grep -Fq "table('oneqay_pos_sale_cash_refunds')" apps/web/app/Infrastructure/Pos/LaravelSaleCashRefundRepository.php
+          grep -Fq "table('oneqay_pos_sale_voids')" apps/web/app/Infrastructure/Pos/LaravelSaleCashRefundRepository.php
+          grep -Fq 'FULL_CASH_REFUND' apps/web/app/Infrastructure/Pos/LaravelSaleCashRefundRepository.php
+          grep -Fq "'REFUNDED'" apps/web/app/Infrastructure/Pos/LaravelSaleCashRefundRepository.php
+          grep -Fq '$sale->applied_atomic' apps/web/app/Infrastructure/Pos/LaravelSaleCashRefundRepository.php
+          ! grep -Fq "table('oneqay_pos_sale_catalog_items')" apps/web/app/Infrastructure/Pos/LaravelSaleCashRefundRepository.php
+          grep -Fq "private const ALLOWED_FIELDS = ['operation_id', 'sale_id'];" apps/web/app/Delivery/Http/Pos/PosSaleCashRefundController.php
+
+      - name: Preserve Application framework independence
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -n -F -e 'Illuminate\' -e 'Laravel\' -e 'Schema::' -e 'DB::'             apps/web/app/Application/Authorization/PosPermission.php             apps/web/app/Application/Pos/RecordCashRefund.php             apps/web/app/Application/Pos/SaleCashRefundCommand.php             apps/web/app/Application/Pos/SaleCashRefundRepository.php             apps/web/app/Application/Pos/SaleCashRefundResult.php; then
+            echo 'Sprint52 JRN-007 Application framework boundary violated.' >&2
+            exit 1
+          fi
+
+      - name: Validate PHP syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          find apps/web/app apps/web/database/migrations apps/web/routes apps/web/tests -type f -name '*.php' -print0 |
+            while IFS= read -r -d '' file; do php -l "$file"; done
+
+      - name: Install locked dependencies
+        working-directory: apps/web
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Reject High or Critical Composer advisories
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          composer audit --locked --format=json > /tmp/oneqay-composer-audit.json
+          php -r '
+            $data = json_decode(file_get_contents("/tmp/oneqay-composer-audit.json"), true, 512, JSON_THROW_ON_ERROR);
+            foreach (($data["advisories"] ?? []) as $items) {
+                foreach ($items as $item) {
+                    if (in_array(strtolower((string) ($item["severity"] ?? "")), ["high", "critical"], true)) {
+                        fwrite(STDERR, "Blocking Composer advisory.\n");
+                        exit(1);
+                    }
+                }
+            }
+          '
+
+      - name: Run Sprint52 JRN-007 durable full CASH refund regression
+        working-directory: apps/web
+        run: php tests/pos-sale-cash-refund-durable.php
+
+      - name: Preserve Sprint51 JRN-008 inventory baseline regression
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          migration21='database/migrations/0000_00_00_000021_create_pos_sale_cash_refund_foundation.php'
+          backup21='/tmp/oneqay-s52-migration21-inventory.php'
+          cp "$migration21" "$backup21"
+          restore() { [[ ! -f "$backup21" ]] || mv "$backup21" "$migration21"; }
+          trap restore EXIT
+          rm -f "$migration21"
+          php tests/pos-inventory-baseline-durable.php
+          restore
+          trap - EXIT
+
+      - name: Preserve Sprint50 JRN-007 sale void regression
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          migration20='database/migrations/0000_00_00_000020_create_pos_inventory_baseline_foundation.php'
+          migration21='database/migrations/0000_00_00_000021_create_pos_sale_cash_refund_foundation.php'
+          backup20='/tmp/oneqay-s52-migration20-void.php'
+          backup21='/tmp/oneqay-s52-migration21-void.php'
+          cp "$migration20" "$backup20"
+          cp "$migration21" "$backup21"
+          restore() {
+            [[ ! -f "$backup20" ]] || mv "$backup20" "$migration20"
+            [[ ! -f "$backup21" ]] || mv "$backup21" "$migration21"
+          }
+          trap restore EXIT
+          rm -f "$migration20" "$migration21"
+          php tests/pos-sale-void-durable.php
+          restore
+          trap - EXIT
+
+      - name: Preserve Sprint49 active-shift sale regression
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          migration19='database/migrations/0000_00_00_000019_create_pos_sale_void_foundation.php'
+          migration20='database/migrations/0000_00_00_000020_create_pos_inventory_baseline_foundation.php'
+          migration21='database/migrations/0000_00_00_000021_create_pos_sale_cash_refund_foundation.php'
+          backup19='/tmp/oneqay-s52-migration19-active-shift.php'
+          backup20='/tmp/oneqay-s52-migration20-active-shift.php'
+          backup21='/tmp/oneqay-s52-migration21-active-shift.php'
+          cp "$migration19" "$backup19"
+          cp "$migration20" "$backup20"
+          cp "$migration21" "$backup21"
+          restore() {
+            [[ ! -f "$backup19" ]] || mv "$backup19" "$migration19"
+            [[ ! -f "$backup20" ]] || mv "$backup20" "$migration20"
+            [[ ! -f "$backup21" ]] || mv "$backup21" "$migration21"
+          }
+          trap restore EXIT
+          rm -f "$migration19" "$migration20" "$migration21"
+          php tests/pos-sale-completion-active-shift.php
+          restore
+          trap - EXIT
+
+      - name: Preserve Sprint48 JRN-005 shift regression
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          migration19='database/migrations/0000_00_00_000019_create_pos_sale_void_foundation.php'
+          migration20='database/migrations/0000_00_00_000020_create_pos_inventory_baseline_foundation.php'
+          migration21='database/migrations/0000_00_00_000021_create_pos_sale_cash_refund_foundation.php'
+          backup19='/tmp/oneqay-s52-migration19-shift.php'
+          backup20='/tmp/oneqay-s52-migration20-shift.php'
+          backup21='/tmp/oneqay-s52-migration21-shift.php'
+          cp "$migration19" "$backup19"
+          cp "$migration20" "$backup20"
+          cp "$migration21" "$backup21"
+          restore() {
+            [[ ! -f "$backup19" ]] || mv "$backup19" "$migration19"
+            [[ ! -f "$backup20" ]] || mv "$backup20" "$migration20"
+            [[ ! -f "$backup21" ]] || mv "$backup21" "$migration21"
+          }
+          trap restore EXIT
+          rm -f "$migration19" "$migration20" "$migration21"
+          php tests/pos-shift-opening-durable.php
+          restore
+          trap - EXIT
+
+      - name: Preserve Sprint47 JRN-004 catalog regression
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          migration18='database/migrations/0000_00_00_000018_create_pos_shift_opening_foundation.php'
+          migration19='database/migrations/0000_00_00_000019_create_pos_sale_void_foundation.php'
+          migration20='database/migrations/0000_00_00_000020_create_pos_inventory_baseline_foundation.php'
+          migration21='database/migrations/0000_00_00_000021_create_pos_sale_cash_refund_foundation.php'
+          backup18='/tmp/oneqay-s52-migration18-catalog.php'
+          backup19='/tmp/oneqay-s52-migration19-catalog.php'
+          backup20='/tmp/oneqay-s52-migration20-catalog.php'
+          backup21='/tmp/oneqay-s52-migration21-catalog.php'
+          cp "$migration18" "$backup18"
+          cp "$migration19" "$backup19"
+          cp "$migration20" "$backup20"
+          cp "$migration21" "$backup21"
+          restore() {
+            [[ ! -f "$backup18" ]] || mv "$backup18" "$migration18"
+            [[ ! -f "$backup19" ]] || mv "$backup19" "$migration19"
+            [[ ! -f "$backup20" ]] || mv "$backup20" "$migration20"
+            [[ ! -f "$backup21" ]] || mv "$backup21" "$migration21"
+          }
+          trap restore EXIT
+          rm -f "$migration18" "$migration19" "$migration20" "$migration21"
+          php tests/pos-catalog-preparation-durable.php
+          restore
+          trap - EXIT
+
+      - name: Preserve historical Sprint46 JRN-006 durable sale regression
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          repository='app/Infrastructure/Pos/LaravelDurablePosSaleRepository.php'
+          migration17='database/migrations/0000_00_00_000017_create_pos_catalog_preparation_journal.php'
+          migration18='database/migrations/0000_00_00_000018_create_pos_shift_opening_foundation.php'
+          migration19='database/migrations/0000_00_00_000019_create_pos_sale_void_foundation.php'
+          migration20='database/migrations/0000_00_00_000020_create_pos_inventory_baseline_foundation.php'
+          migration21='database/migrations/0000_00_00_000021_create_pos_sale_cash_refund_foundation.php'
+          repository_backup='/tmp/oneqay-s52-sale-repository.php'
+          migration17_backup='/tmp/oneqay-s52-migration17.php'
+          migration18_backup='/tmp/oneqay-s52-migration18.php'
+          migration19_backup='/tmp/oneqay-s52-migration19.php'
+          migration20_backup='/tmp/oneqay-s52-migration20.php'
+          migration21_backup='/tmp/oneqay-s52-migration21.php'
+          cp "$repository" "$repository_backup"
+          cp "$migration17" "$migration17_backup"
+          cp "$migration18" "$migration18_backup"
+          cp "$migration19" "$migration19_backup"
+          cp "$migration20" "$migration20_backup"
+          cp "$migration21" "$migration21_backup"
+          restore() {
+            [[ ! -f "$repository_backup" ]] || mv "$repository_backup" "$repository"
+            [[ ! -f "$migration17_backup" ]] || mv "$migration17_backup" "$migration17"
+            [[ ! -f "$migration18_backup" ]] || mv "$migration18_backup" "$migration18"
+            [[ ! -f "$migration19_backup" ]] || mv "$migration19_backup" "$migration19"
+            [[ ! -f "$migration20_backup" ]] || mv "$migration20_backup" "$migration20"
+            [[ ! -f "$migration21_backup" ]] || mv "$migration21_backup" "$migration21"
+          }
+          trap restore EXIT
+          git show cc55ad9c981cceb287206db8a3001e629b1d8d57:apps/web/app/Infrastructure/Pos/LaravelDurablePosSaleRepository.php > "$repository"
+          rm -f "$migration17" "$migration18" "$migration19" "$migration20" "$migration21"
+          php tests/pos-sale-completion-durable.php
+          restore
+          trap - EXIT
+
+      - name: Preserve M7.4 synthetic POS regression
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          shift_successor='app/Infrastructure/Pos/LaravelShiftOpeningRepository.php'
+          inventory_successor='app/Infrastructure/Pos/LaravelInventoryBaselineRepository.php'
+          refund_successor='app/Infrastructure/Pos/LaravelSaleCashRefundRepository.php'
+          opening_cash_successor='app/Infrastructure/Pos/LaravelShiftOpeningCashRepository.php'
+          shift_backup='/tmp/oneqay-s52-shift-opening-repository.php'
+          inventory_backup='/tmp/oneqay-s52-inventory-baseline-repository.php'
+          refund_backup='/tmp/oneqay-s52-cash-refund-repository.php'
+          opening_cash_backup='/tmp/oneqay-s52-opening-cash-repository.php'
+          cp "$shift_successor" "$shift_backup"
+          cp "$inventory_successor" "$inventory_backup"
+          cp "$refund_successor" "$refund_backup"
+          if [[ -f "$opening_cash_successor" ]]; then cp "$opening_cash_successor" "$opening_cash_backup"; fi
+          restore() {
+            [[ ! -f "$shift_backup" ]] || mv "$shift_backup" "$shift_successor"
+            [[ ! -f "$inventory_backup" ]] || mv "$inventory_backup" "$inventory_successor"
+            [[ ! -f "$refund_backup" ]] || mv "$refund_backup" "$refund_successor"
+            [[ ! -f "$opening_cash_backup" ]] || mv "$opening_cash_backup" "$opening_cash_successor"
+          }
+          trap restore EXIT
+          rm -f "$shift_successor" "$inventory_successor" "$refund_successor" "$opening_cash_successor"
+          php tests/pos-core-synthetic.php
+          restore
+          trap - EXIT
+
+      - name: Preserve tracked source cleanliness
+        run: git diff --exit-code
           elif [[ "$count" -eq 30 && "$fingerprint" == '930cd1237722f4dd0af03e85d684ffa435adab6a1ae16db96d78243510fd85bc' ]]; then
             test "$(grep -c '^apps/web/database/migrations/' /tmp/s52-source-paths)" -eq 0
             echo 'ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
