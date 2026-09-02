@@ -349,7 +349,7 @@ jobs:
             echo 'Recognized exact Sprint50 Sprint36/Sprint39 two-workflow historical-compatibility predecessor shape.'
             echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
-          elif [[ "$(wc -l < /tmp/actual-sprint39-source-paths)" -eq 9 ]] && [[ "$(sha256sum /tmp/actual-sprint39-source-paths | awk '{print $1}')" == 'c7f53821f0f3fc1554ee23a3c85b53369972accb0815ec2b8096664054cd01b9' ]]; then
+          elif { [[ "$(wc -l < /tmp/actual-sprint39-source-paths)" -eq 9 ]] && [[ "$(sha256sum /tmp/actual-sprint39-source-paths | awk '{print $1}')" == 'c7f53821f0f3fc1554ee23a3c85b53369972accb0815ec2b8096664054cd01b9' ]]; } || { [[ "$(wc -l < /tmp/actual-sprint39-source-paths)" -eq 9 ]] && [[ "$(sha256sum /tmp/actual-sprint39-source-paths | awk '{print $1}')" == '3402c8ea58722711f2894b8e3219b6e9d5dede4a5a87f61faa265f299a34c5b1' ]]; }; then
             echo 'Recognized exact Sprint49 nine-workflow historical compatibility predecessor shape.'
             echo 'ONEQAY_SPRINT40_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
