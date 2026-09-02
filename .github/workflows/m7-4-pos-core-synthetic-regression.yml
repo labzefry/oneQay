@@ -1,3 +1,4 @@
+# Sprint57 immutable sale-to-shift binding M7.4 compatibility — Lab | zefry
 # Sprint54 bounded successor compatibility predecessor — Lab | zefry
 # Sprint53 bounded third historical fixture compatibility closure — Lab | zefry
 # Sprint53 bounded second historical fixture compatibility closure — Lab | zefry
@@ -64,7 +65,21 @@ jobs:
           echo 'ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
           echo 'ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
           echo 'ONEQAY_SPRINT54_JRN010_PREREQ_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
-          if [[ "$count" -eq 2 && "$fingerprint" == '920918ec3a30e7954bec598ce2d45ce4ce05681f1705308bae87232cd192ee4e' ]]; then
+          echo 'ONEQAY_SPRINT57_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
+          echo 'ONEQAY_SPRINT57_M74_COMPATIBILITY=false' >> "$GITHUB_ENV"
+          if [[ "$count" -eq 1 && "$fingerprint" == '5bc05564bcf4dae33ea3ce6c4890083437a60a21eb4e7f1e9318911ae60f5c16' ]]; then
+            grep -Fxq '.github/workflows/m7-4-pos-core-synthetic-regression.yml' /tmp/m74-changed-files.txt
+            echo 'ONEQAY_SPRINT57_M74_COMPATIBILITY=true' >> "$GITHUB_ENV"
+            echo 'Recognized exact Sprint57 M7.4 workflow-only compatibility correction shape.'
+            exit 0
+          elif [[ "$count" -eq 5 && "$fingerprint" == '26d2d48f114c88d60dc302dccd8d41118bc730c309c9d79b71f5e516731a0b25' ]]; then
+            test "$(grep -c '^apps/web/database/migrations/' /tmp/m74-changed-files.txt)" -eq 1
+            grep -Fxq 'apps/web/database/migrations/0000_00_00_000024_add_immutable_shift_binding_to_pos_sales.php' /tmp/m74-changed-files.txt
+            grep -Fxq 'apps/web/app/Infrastructure/Pos/LaravelDurablePosSaleRepository.php' /tmp/m74-changed-files.txt
+            echo 'ONEQAY_SPRINT57_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'Recognized exact Sprint57 immutable sale-to-shift binding source successor shape.'
+            exit 0
+          elif [[ "$count" -eq 2 && "$fingerprint" == '920918ec3a30e7954bec598ce2d45ce4ce05681f1705308bae87232cd192ee4e' ]]; then
             echo 'ONEQAY_SPRINT47_JRN004_M74_COMPATIBILITY=true' >> "$GITHUB_ENV"
             echo 'Recognized exact Sprint47 JRN-004 M7.4 compatibility predecessor shape.'
             exit 0
@@ -268,7 +283,29 @@ jobs:
           migration21='apps/web/database/migrations/0000_00_00_000021_create_pos_sale_cash_refund_foundation.php'
           migration22='apps/web/database/migrations/0000_00_00_000022_create_pos_shift_opening_cash_evidence_foundation.php'
           migration23='apps/web/database/migrations/0000_00_00_000023_create_pos_shift_closing_cash_evidence_foundation.php'
-          if [[ "${ONEQAY_SPRINT54_JRN010_PREREQ_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+          migration24='apps/web/database/migrations/0000_00_00_000024_add_immutable_shift_binding_to_pos_sales.php'
+          repository='apps/web/app/Infrastructure/Pos/LaravelDurablePosSaleRepository.php'
+          if [[ "${ONEQAY_SPRINT57_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            changed="$(git diff --name-only "$base" "$head" -- apps/web/database/migrations | sort)"
+            test "$changed" = "$migration24"
+            git diff --exit-code "$base" "$head" -- apps/web/database/migrations ":(exclude)$migration24"
+            git update-index --assume-unchanged "$repository"
+            git show "$base:$repository" > "$repository"
+            for migration_to_isolate in "$migration19" "$migration20" "$migration21" "$migration22" "$migration23" "$migration24"; do
+              if [[ -f "$migration_to_isolate" ]]; then
+                git update-index --assume-unchanged "$migration_to_isolate"
+                rm -f "$migration_to_isolate"
+              fi
+            done
+          elif [[ "${ONEQAY_SPRINT57_M74_COMPATIBILITY:-false}" == 'true' ]]; then
+            git diff --exit-code "$base" "$head" -- apps/web/database/migrations
+            for migration_to_isolate in "$migration19" "$migration20" "$migration21" "$migration22" "$migration23"; do
+              if [[ -f "$migration_to_isolate" ]]; then
+                git update-index --assume-unchanged "$migration_to_isolate"
+                rm -f "$migration_to_isolate"
+              fi
+            done
+          elif [[ "${ONEQAY_SPRINT54_JRN010_PREREQ_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
             changed="$(git diff --name-only "$base" "$head" -- apps/web/database/migrations | sort)"
             changed_count="$(printf '%s\n' "$changed" | sed '/^$/d' | wc -l)"
             if [[ "$changed_count" -eq 1 ]]; then printf '%s\n' "$changed" | grep -Fxq "$migration23"; else test "$changed_count" -eq 0; fi
@@ -455,7 +492,7 @@ jobs:
           refund='app/Infrastructure/Pos/LaravelSaleCashRefundRepository.php'
           opening_cash='app/Infrastructure/Pos/LaravelShiftOpeningCashRepository.php'
           closing_cash='app/Infrastructure/Pos/LaravelShiftClosingCashRepository.php'
-          if [[ "${ONEQAY_SPRINT54_JRN010_PREREQ_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+          if [[ "${ONEQAY_SPRINT57_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT57_M74_COMPATIBILITY:-false}" == 'true' || "${ONEQAY_SPRINT54_JRN010_PREREQ_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
             inventory_backup='/tmp/oneqay-m74-s54-inventory-repository.php'
             refund_backup='/tmp/oneqay-m74-s54-refund-repository.php'
             opening_cash_backup='/tmp/oneqay-m74-s54-opening-cash-repository.php'
