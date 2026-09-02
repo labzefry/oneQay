@@ -77,7 +77,7 @@ jobs:
             test "$(grep -c '^apps/web/database/migrations/' /tmp/s51-source-paths)" -eq 1
             grep -Fxq 'apps/web/database/migrations/0000_00_00_000021_create_pos_sale_cash_refund_foundation.php' /tmp/s51-source-paths
             echo 'ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
-          elif [[ "$count" -eq 29 && "$fingerprint" == 'e56a3e2732f5d5b0b40dd3ae50ec25746cf18bc8bd556d25405e85642c789878' ]] || [[ "$count" -eq 5 && "$fingerprint" == 'd2202a9b909bf0cc1ce0a80d9a1127e3f224b4576c16740594b85402b280ea1c' ]]; then
+          elif [[ "$count" -eq 29 && "$fingerprint" == 'e56a3e2732f5d5b0b40dd3ae50ec25746cf18bc8bd556d25405e85642c789878' ]] || [[ "$count" -eq 20 && "$fingerprint" == 'b25a8747bd003c6952e86f97982ee7cfd504e9ffffda137fca52fb6dd597d663' ]]; then
             test "$(grep -c '^apps/web/database/migrations/' /tmp/s51-source-paths)" -eq 0
             echo 'ONEQAY_SPRINT52_COMPATIBILITY_PREDECESSOR=true' >> "$GITHUB_ENV"
           else
