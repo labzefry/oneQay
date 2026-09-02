@@ -304,17 +304,21 @@ jobs:
           set -euo pipefail
           inventory='app/Infrastructure/Pos/LaravelInventoryBaselineRepository.php'
           refund='app/Infrastructure/Pos/LaravelSaleCashRefundRepository.php'
-          if [[ "${ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+          opening_cash='app/Infrastructure/Pos/LaravelShiftOpeningCashRepository.php'
+          if [[ "${ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
             inventory_backup='/tmp/oneqay-s46-jrn008-inventory-repository.php'
             refund_backup='/tmp/oneqay-s46-jrn007-refund-repository.php'
+            opening_cash_backup='/tmp/oneqay-s53-opening-cash-repository.php'
             cp "$inventory" "$inventory_backup"
             cp "$refund" "$refund_backup"
+            if [[ -f "$opening_cash" ]]; then cp "$opening_cash" "$opening_cash_backup"; fi
             restore_s52() {
               [[ ! -f "$inventory_backup" ]] || mv "$inventory_backup" "$inventory"
               [[ ! -f "$refund_backup" ]] || mv "$refund_backup" "$refund"
+              [[ ! -f "$opening_cash_backup" ]] || mv "$opening_cash_backup" "$opening_cash"
             }
             trap restore_s52 EXIT
-            rm -f "$inventory" "$refund"
+            rm -f "$inventory" "$refund" "$opening_cash"
             php tests/pos-core-synthetic.php
             restore_s52
             trap - EXIT

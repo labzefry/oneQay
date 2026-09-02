@@ -130,7 +130,7 @@ jobs:
             for historical_migration in "$migration19" "$migration20" "$migration21" "$migration22"; do
               if [[ -f "$historical_migration" ]]; then git update-index --assume-unchanged "$historical_migration"; rm -f "$historical_migration"; fi
             done
-          elif [[ "${ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+          elif [[ "${ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
             changed="$(git diff --name-only "$base" "$head" -- apps/web/database/migrations | sort)"
             test "$changed" = "$migration21"
             git diff --exit-code "$base" "$head" -- apps/web/database/migrations ":(exclude)$migration21"
@@ -233,28 +233,32 @@ jobs:
           successor='app/Infrastructure/Pos/LaravelShiftOpeningRepository.php'
           inventory='app/Infrastructure/Pos/LaravelInventoryBaselineRepository.php'
           refund='app/Infrastructure/Pos/LaravelSaleCashRefundRepository.php'
+          opening_cash='app/Infrastructure/Pos/LaravelShiftOpeningCashRepository.php'
           backup='/tmp/oneqay-s48-laravel-shift-opening-repository.php'
           inventory_backup='/tmp/oneqay-s48-inventory-baseline-repository.php'
           refund_backup='/tmp/oneqay-s48-cash-refund-repository.php'
+          opening_cash_backup='/tmp/oneqay-s48-opening-cash-repository.php'
           cp "$successor" "$backup"
-          if [[ "${ONEQAY_SPRINT51_JRN008_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT52_COMPATIBILITY_PREDECESSOR:-false}" == 'true' || "${ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+          if [[ "${ONEQAY_SPRINT51_JRN008_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT52_COMPATIBILITY_PREDECESSOR:-false}" == 'true' || "${ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
             cp "$inventory" "$inventory_backup"
           fi
-          if [[ "${ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+          if [[ "${ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
             cp "$refund" "$refund_backup"
+            if [[ -f "$opening_cash" ]]; then cp "$opening_cash" "$opening_cash_backup"; fi
           fi
           restore() {
             [[ ! -f "$backup" ]] || mv "$backup" "$successor"
             [[ ! -f "$inventory_backup" ]] || mv "$inventory_backup" "$inventory"
             [[ ! -f "$refund_backup" ]] || mv "$refund_backup" "$refund"
+            [[ ! -f "$opening_cash_backup" ]] || mv "$opening_cash_backup" "$opening_cash"
           }
           trap restore EXIT
           rm -f "$successor"
-          if [[ "${ONEQAY_SPRINT51_JRN008_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT52_COMPATIBILITY_PREDECESSOR:-false}" == 'true' || "${ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+          if [[ "${ONEQAY_SPRINT51_JRN008_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT52_COMPATIBILITY_PREDECESSOR:-false}" == 'true' || "${ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
             rm -f "$inventory"
           fi
-          if [[ "${ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
-            rm -f "$refund"
+          if [[ "${ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            rm -f "$refund" "$opening_cash"
           fi
           php tests/pos-core-synthetic.php
           restore
