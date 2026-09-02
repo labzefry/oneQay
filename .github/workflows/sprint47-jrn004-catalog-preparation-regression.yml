@@ -123,7 +123,7 @@ jobs:
             echo 'ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'Recognized exact Sprint53 opening-cash source successor shape.'
-          elif [[ "$count" -eq 30 && "$fingerprint" == '930cd1237722f4dd0af03e85d684ffa435adab6a1ae16db96d78243510fd85bc' ]]; then
+          elif [[ "$count" -eq 30 && "$fingerprint" == '930cd1237722f4dd0af03e85d684ffa435adab6a1ae16db96d78243510fd85bc' ]] || [[ "$count" -eq 6 && "$fingerprint" == 'ee7e3bdc0de47cf8a762635a5ca69af1afde8cb2048363f4902b42a1290c9f14' ]]; then
             test "$(grep -c '^apps/web/database/migrations/' /tmp/s47-jrn004-source-paths)" -eq 0
             echo 'ONEQAY_SPRINT50_COMPATIBILITY_PREDECESSOR=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
@@ -224,7 +224,10 @@ jobs:
           fi
 
           mapfile -t migrations < <(find apps/web/database/migrations -maxdepth 1 -type f -name '*.php' -printf '%f\n' | sort)
-          if [[ "${ONEQAY_SPRINT48_JRN005_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+          if [[ "${ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            test "${#migrations[@]}" -eq 17
+            test ! -f "$migration18"
+          elif [[ "${ONEQAY_SPRINT48_JRN005_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
             test "${#migrations[@]}" -eq 18
             test -f "$migration18"
           else
