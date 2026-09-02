@@ -122,7 +122,6 @@ jobs:
             echo 'Recognized exact Sprint47 JRN-004 durable catalog source successor shape.'
           elif [[ "$actual_count" -eq 15 && "$actual_fingerprint" == '5e19664988cabba0030f9927d26b0702370414be4cd6b424d585925b634ca2b8' ]]; then
             migration18='apps/web/database/migrations/0000_00_00_000018_create_pos_shift_opening_foundation.php'
-          migration19='apps/web/database/migrations/0000_00_00_000019_create_pos_sale_void_foundation.php'
             migration_delta="$(grep '^apps/web/database/migrations/' /tmp/actual-sprint43-source-paths || true)"
             test "$migration_delta" = "$migration18"
             echo 'ONEQAY_SPRINT48_JRN005_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
@@ -135,6 +134,14 @@ jobs:
             echo 'ONEQAY_SPRINT48_JRN005_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT50_COMPATIBILITY_PREDECESSOR=true' >> "$GITHUB_ENV"
             echo 'Recognized exact Sprint50 historical compatibility predecessor shape.'
+          elif [[ "$actual_count" -eq 2 && "$actual_fingerprint" == '0f7b19c619d32f5b461eec1625cf0779b2b7f0a0ee31292c855d5709a2962669' ]]; then
+            echo 'ONEQAY_SPRINT48_JRN005_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT50_COMPATIBILITY_PREDECESSOR=true' >> "$GITHUB_ENV"
+            echo 'Recognized exact Sprint50 two-workflow source-compatibility correction shape.'
+          elif [[ "$actual_count" -eq 9 && "$actual_fingerprint" == '3402c8ea58722711f2894b8e3219b6e9d5dede4a5a87f61faa265f299a34c5b1' ]]; then
+            echo 'ONEQAY_SPRINT48_JRN005_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT50_COMPATIBILITY_PREDECESSOR=true' >> "$GITHUB_ENV"
+            echo 'Recognized exact Sprint50 nine-workflow source-compatibility correction shape.'
           else
             echo 'Sprint43 changed-file envelope mismatch.' >&2
             diff -u /tmp/sprint43-source-paths /tmp/actual-sprint43-source-paths >&2 || true
@@ -151,6 +158,7 @@ jobs:
           migration16='apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php'
           migration17='apps/web/database/migrations/0000_00_00_000017_create_pos_catalog_preparation_journal.php'
           migration18='apps/web/database/migrations/0000_00_00_000018_create_pos_shift_opening_foundation.php'
+          migration19='apps/web/database/migrations/0000_00_00_000019_create_pos_sale_void_foundation.php'
           if [[ "${ONEQAY_SPRINT50_JRN007_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
             changed="$(git diff --name-only "$base" "$head" -- apps/web/database/migrations | sort)"
             test "$(printf '%s\n' "$changed" | sed '/^$/d' | wc -l)" -eq 1
