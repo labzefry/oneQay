@@ -316,20 +316,25 @@ jobs:
           shift_successor='app/Infrastructure/Pos/LaravelShiftOpeningRepository.php'
           inventory_successor='app/Infrastructure/Pos/LaravelInventoryBaselineRepository.php'
           refund_successor='app/Infrastructure/Pos/LaravelSaleCashRefundRepository.php'
+          opening_cash_successor='app/Infrastructure/Pos/LaravelShiftOpeningCashRepository.php'
           shift_backup='/tmp/oneqay-s51-shift-opening-repository.php'
           inventory_backup='/tmp/oneqay-s51-inventory-baseline-repository.php'
           refund_backup='/tmp/oneqay-s51-cash-refund-repository.php'
+          opening_cash_backup='/tmp/oneqay-s51-opening-cash-repository.php'
           cp "$shift_successor" "$shift_backup"
           cp "$inventory_successor" "$inventory_backup"
           if [[ -f "$refund_successor" ]]; then cp "$refund_successor" "$refund_backup"; fi
+          if [[ -f "$opening_cash_successor" ]]; then cp "$opening_cash_successor" "$opening_cash_backup"; fi
           restore() {
             [[ ! -f "$shift_backup" ]] || mv "$shift_backup" "$shift_successor"
             [[ ! -f "$inventory_backup" ]] || mv "$inventory_backup" "$inventory_successor"
             [[ ! -f "$refund_backup" ]] || mv "$refund_backup" "$refund_successor"
+            [[ ! -f "$opening_cash_backup" ]] || mv "$opening_cash_backup" "$opening_cash_successor"
           }
           trap restore EXIT
           rm -f "$shift_successor" "$inventory_successor"
           if [[ -f "$refund_successor" ]]; then rm -f "$refund_successor"; fi
+          if [[ -f "$opening_cash_successor" ]]; then rm -f "$opening_cash_successor"; fi
           php tests/pos-core-synthetic.php
           restore
           trap - EXIT
