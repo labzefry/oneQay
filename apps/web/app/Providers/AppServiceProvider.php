@@ -45,6 +45,7 @@ use App\Application\Authorization\DurableScopedAuthorizationPolicy;
 use App\Application\Pos\CatalogPreparationClock;
 use App\Application\Pos\CatalogPreparationRepository;
 use App\Application\Pos\CompleteSale;
+use App\Application\Pos\VoidSale;
 use App\Application\Pos\DurablePosSaleRepository;
 use App\Application\Pos\PosSaleClock;
 use App\Application\Pos\PrepareCatalogItem;
@@ -244,9 +245,17 @@ final class AppServiceProvider extends ServiceProvider
                 $this->persistenceEnabled(),
                 $this->runtimeClass(),
                 (bool) config('oneqay.pos_sale_completion.enabled', false),
+                (bool) config('oneqay.pos_sale_void.enabled', false),
             );
         });
         $this->app->scoped(CompleteSale::class, fn ($app): CompleteSale => new CompleteSale(
+            $app->make(DurablePosSaleRepository::class),
+            $app->make(OrganizationalContextStore::class),
+            $app->make(DurableScopedAuthorizationPolicy::class),
+            $app->make(PersistenceTransaction::class),
+            $app->make(PosSaleClock::class),
+        ));
+        $this->app->scoped(VoidSale::class, fn ($app): VoidSale => new VoidSale(
             $app->make(DurablePosSaleRepository::class),
             $app->make(OrganizationalContextStore::class),
             $app->make(DurableScopedAuthorizationPolicy::class),
