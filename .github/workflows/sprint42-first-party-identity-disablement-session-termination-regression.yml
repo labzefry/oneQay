@@ -137,10 +137,12 @@ jobs:
             echo 'Recognized exact Sprint48 JRN-005 shift-opening source successor shape.'
           elif [[ "$actual_count" -eq 14 && "$actual_fingerprint" == '78628976e4dbfea29ecab4b40ec6bfbdf697564668ef028a5cb77a3b53466451' ]]; then
             echo 'ONEQAY_SPRINT48_JRN005_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT43_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT50_JRN007_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'Recognized exact Sprint50 JRN-007 source successor shape.'
           elif [[ "$actual_count" -eq 29 && "$actual_fingerprint" == 'e2ab1c790458071afb5e26f9c1525a34386df666851bb77d58c04c15220d1e52' ]]; then
             echo 'ONEQAY_SPRINT48_JRN005_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT43_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT50_COMPATIBILITY_PREDECESSOR=true' >> "$GITHUB_ENV"
             echo 'Recognized exact Sprint50 historical compatibility predecessor shape.'
           else
