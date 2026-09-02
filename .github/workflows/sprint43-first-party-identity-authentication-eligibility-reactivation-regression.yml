@@ -1,3 +1,4 @@
+# Author by Lab | zefry
 # Sprint47 JRN-004 Sprint38 legacy-state correction preservation anchor.
 name: Sprint43 First-Party Identity Authentication Eligibility Reactivation Regression
 
@@ -84,6 +85,8 @@ jobs:
           echo 'ONEQAY_SPRINT46_JRN006_COMPATIBILITY_PREDECESSOR=false' >> "$GITHUB_ENV"
           echo 'ONEQAY_SPRINT47_JRN004_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
           echo 'ONEQAY_SPRINT48_JRN005_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
+          echo 'ONEQAY_SPRINT50_JRN007_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
+          echo 'ONEQAY_SPRINT50_COMPATIBILITY_PREDECESSOR=false' >> "$GITHUB_ENV"
           if [[ "$actual_count" -eq 9 && "$actual_fingerprint" == '3d0293362f451fe4bf472d0d2c38c3eec3d67df75b451ba5b273e8dbdb0f2eed' ]]; then
             cmp -s /tmp/sprint43-source-paths /tmp/actual-sprint43-source-paths
             echo 'Recognized exact Sprint43 source envelope.'
@@ -119,10 +122,19 @@ jobs:
             echo 'Recognized exact Sprint47 JRN-004 durable catalog source successor shape.'
           elif [[ "$actual_count" -eq 15 && "$actual_fingerprint" == '5e19664988cabba0030f9927d26b0702370414be4cd6b424d585925b634ca2b8' ]]; then
             migration18='apps/web/database/migrations/0000_00_00_000018_create_pos_shift_opening_foundation.php'
+          migration19='apps/web/database/migrations/0000_00_00_000019_create_pos_sale_void_foundation.php'
             migration_delta="$(grep '^apps/web/database/migrations/' /tmp/actual-sprint43-source-paths || true)"
             test "$migration_delta" = "$migration18"
             echo 'ONEQAY_SPRINT48_JRN005_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'Recognized exact Sprint48 JRN-005 shift-opening source successor shape.'
+          elif [[ "$actual_count" -eq 14 && "$actual_fingerprint" == '78628976e4dbfea29ecab4b40ec6bfbdf697564668ef028a5cb77a3b53466451' ]]; then
+            echo 'ONEQAY_SPRINT48_JRN005_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT50_JRN007_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'Recognized exact Sprint50 JRN-007 source successor shape.'
+          elif [[ "$actual_count" -eq 30 && "$actual_fingerprint" == 'cf8adb2328427a8e27e46f0efd9fe88db90f0401eba9cafd513944c7e040035e' ]]; then
+            echo 'ONEQAY_SPRINT48_JRN005_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT50_COMPATIBILITY_PREDECESSOR=true' >> "$GITHUB_ENV"
+            echo 'Recognized exact Sprint50 historical compatibility predecessor shape.'
           else
             echo 'Sprint43 changed-file envelope mismatch.' >&2
             diff -u /tmp/sprint43-source-paths /tmp/actual-sprint43-source-paths >&2 || true
@@ -139,7 +151,16 @@ jobs:
           migration16='apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php'
           migration17='apps/web/database/migrations/0000_00_00_000017_create_pos_catalog_preparation_journal.php'
           migration18='apps/web/database/migrations/0000_00_00_000018_create_pos_shift_opening_foundation.php'
-          if [[ "${ONEQAY_SPRINT48_JRN005_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+          if [[ "${ONEQAY_SPRINT50_JRN007_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            changed="$(git diff --name-only "$base" "$head" -- apps/web/database/migrations | sort)"
+            test "$(printf '%s\n' "$changed" | sed '/^$/d' | wc -l)" -eq 1
+            printf '%s\n' "$changed" | grep -Fxq "$migration19"
+            git diff --exit-code "$base" "$head" -- apps/web/database/migrations ":(exclude)$migration19"
+            git update-index --assume-unchanged "$migration19"
+            rm -f "$migration19"
+          elif [[ "${ONEQAY_SPRINT50_COMPATIBILITY_PREDECESSOR:-false}" == 'true' ]]; then
+            git diff --exit-code "$base" "$head" -- apps/web/database/migrations
+          elif [[ "${ONEQAY_SPRINT48_JRN005_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
             changed="$(git diff --name-only "$base" "$head" -- apps/web/database/migrations | sort)"
             test "$changed" = "$migration18"
             git diff --exit-code "$base" "$head" -- apps/web/database/migrations ":(exclude)$migration18"
