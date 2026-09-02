@@ -1,3 +1,4 @@
+# Sprint57 immutable sale-to-shift binding Sprint46 compatibility — Lab | zefry
 # Sprint54 bounded successor compatibility predecessor — Lab | zefry
 # Sprint53 bounded third historical fixture compatibility closure — Lab | zefry
 name: Sprint46 JRN-006 Durable Sale Completion Regression
@@ -74,7 +75,19 @@ jobs:
           echo 'ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
           echo 'ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
           echo 'ONEQAY_SPRINT54_JRN010_PREREQ_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
-          if [[ "$count" -eq 14 && "$fingerprint" == 'ed29b6128c193f0efd6359748e220a37aefaec856acc4bc3b90f445ce3ccb674' ]]; then
+          echo 'ONEQAY_SPRINT57_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
+          echo 'ONEQAY_SPRINT57_S46_COMPATIBILITY=false' >> "$GITHUB_ENV"
+          if [[ "$count" -eq 1 && "$fingerprint" == '614205aa94cab7ad3d5a50242e14d60e87534a26d22a614ed7752acb2f454e7e' ]]; then
+            grep -Fxq '.github/workflows/sprint46-jrn006-durable-sale-completion-regression.yml' /tmp/s46-source-paths
+            echo 'ONEQAY_SPRINT57_S46_COMPATIBILITY=true' >> "$GITHUB_ENV"
+            echo 'Recognized exact Sprint57 Sprint46 workflow-only compatibility correction shape.'
+          elif [[ "$count" -eq 5 && "$fingerprint" == '26d2d48f114c88d60dc302dccd8d41118bc730c309c9d79b71f5e516731a0b25' ]]; then
+            test "$(grep -c '^apps/web/database/migrations/' /tmp/s46-source-paths)" -eq 1
+            grep -Fxq 'apps/web/database/migrations/0000_00_00_000024_add_immutable_shift_binding_to_pos_sales.php' /tmp/s46-source-paths
+            grep -Fxq 'apps/web/app/Infrastructure/Pos/LaravelDurablePosSaleRepository.php' /tmp/s46-source-paths
+            echo 'ONEQAY_SPRINT57_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'Recognized exact Sprint57 immutable sale-to-shift binding source successor shape.'
+          elif [[ "$count" -eq 14 && "$fingerprint" == 'ed29b6128c193f0efd6359748e220a37aefaec856acc4bc3b90f445ce3ccb674' ]]; then
             test "$(grep -c '^apps/web/database/migrations/' /tmp/s46-source-paths)" -eq 1
             migration16='apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php'
             grep -Fxq "$migration16" /tmp/s46-source-paths
@@ -176,7 +189,23 @@ jobs:
           migration21='apps/web/database/migrations/0000_00_00_000021_create_pos_sale_cash_refund_foundation.php'
           migration22='apps/web/database/migrations/0000_00_00_000022_create_pos_shift_opening_cash_evidence_foundation.php'
           migration23='apps/web/database/migrations/0000_00_00_000023_create_pos_shift_closing_cash_evidence_foundation.php'
-          if [[ "${ONEQAY_SPRINT54_JRN010_PREREQ_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+          migration24='apps/web/database/migrations/0000_00_00_000024_add_immutable_shift_binding_to_pos_sales.php'
+          repository='apps/web/app/Infrastructure/Pos/LaravelDurablePosSaleRepository.php'
+          if [[ "${ONEQAY_SPRINT57_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            changed="$(git diff --name-only "$base" "$head" -- apps/web/database/migrations | sort)"
+            test "$changed" = "$migration24"
+            git diff --exit-code "$base" "$head" -- apps/web/database/migrations ":(exclude)$migration24"
+            git update-index --assume-unchanged "$repository"
+            git show "$base:$repository" > "$repository"
+            for historical_migration in "$migration17" "$migration18" "$migration19" "$migration20" "$migration21" "$migration22" "$migration23" "$migration24"; do
+              if [[ -f "$historical_migration" ]]; then git update-index --assume-unchanged "$historical_migration"; rm -f "$historical_migration"; fi
+            done
+          elif [[ "${ONEQAY_SPRINT57_S46_COMPATIBILITY:-false}" == 'true' ]]; then
+            git diff --exit-code "$base" "$head" -- apps/web/database/migrations
+            for historical_migration in "$migration17" "$migration18" "$migration19" "$migration20" "$migration21" "$migration22" "$migration23"; do
+              if [[ -f "$historical_migration" ]]; then git update-index --assume-unchanged "$historical_migration"; rm -f "$historical_migration"; fi
+            done
+          elif [[ "${ONEQAY_SPRINT54_JRN010_PREREQ_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
             changed="$(git diff --name-only "$base" "$head" -- apps/web/database/migrations | sort)"
             changed_count="$(printf '%s\n' "$changed" | sed '/^$/d' | wc -l)"
             if [[ "$changed_count" -eq 1 ]]; then printf '%s\n' "$changed" | grep -Fxq "$migration23"; else test "$changed_count" -eq 0; fi
@@ -240,7 +269,7 @@ jobs:
             git diff --exit-code "$base" "$head" -- apps/web/database/migrations ":(exclude)$migration"
           fi
           mapfile -t migrations < <(find apps/web/database/migrations -maxdepth 1 -type f -name '*.php' -printf '%f\n' | sort)
-          if [[ "${ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+          if [[ "${ONEQAY_SPRINT57_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT57_S46_COMPATIBILITY:-false}" == 'true' || "${ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
             test "${#migrations[@]}" -eq 16
             test ! -f "$migration17"
             test ! -f "$migration18"
@@ -331,13 +360,13 @@ jobs:
           refund='app/Infrastructure/Pos/LaravelSaleCashRefundRepository.php'
           opening_cash='app/Infrastructure/Pos/LaravelShiftOpeningCashRepository.php'
           closing_cash='app/Infrastructure/Pos/LaravelShiftClosingCashRepository.php'
-          if [[ "${ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+          if [[ "${ONEQAY_SPRINT57_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT57_S46_COMPATIBILITY:-false}" == 'true' || "${ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
             inventory_backup='/tmp/oneqay-s46-jrn008-inventory-repository.php'
             refund_backup='/tmp/oneqay-s46-jrn007-refund-repository.php'
             opening_cash_backup='/tmp/oneqay-s53-opening-cash-repository.php'
             closing_cash_backup='/tmp/oneqay-s54-closing-cash-repository.php'
-            cp "$inventory" "$inventory_backup"
-            cp "$refund" "$refund_backup"
+            if [[ -f "$inventory" ]]; then cp "$inventory" "$inventory_backup"; fi
+            if [[ -f "$refund" ]]; then cp "$refund" "$refund_backup"; fi
             if [[ -f "$opening_cash" ]]; then cp "$opening_cash" "$opening_cash_backup"; fi
             if [[ -f "$closing_cash" ]]; then cp "$closing_cash" "$closing_cash_backup"; fi
             restore_s52() {
@@ -362,6 +391,7 @@ jobs:
           else
             php tests/pos-core-synthetic.php
           fi
+
       - name: Run JRN-006 durable sale regression
         working-directory: apps/web
         shell: bash
@@ -369,7 +399,7 @@ jobs:
           set -euo pipefail
           migration17='database/migrations/0000_00_00_000017_create_pos_catalog_preparation_journal.php'
           migration18='database/migrations/0000_00_00_000018_create_pos_shift_opening_foundation.php'
-          if [[ "${ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+          if [[ "${ONEQAY_SPRINT57_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT57_S46_COMPATIBILITY:-false}" == 'true' || "${ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
             test ! -f "$migration17"
             test ! -f "$migration18"
             php tests/pos-sale-completion-durable.php
