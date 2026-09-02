@@ -1,5 +1,28 @@
 # oneQay Tasks
 
+## Canonical post-Sprint52 JRN-007 refund closure and Sprint53 bounded next task — 2026-09-02
+
+This current-facing section supersedes the older post-Sprint51/current-state task wording retained below as historical provenance.
+
+- [x] Publish Sprint52 JRN-007 **Bounded Full CASH Refund Evidence Foundation** through PR #526 as canonical `1966a923566903e58dba4368269307cd67853f52`.
+- [x] Preserve exact Sprint52 14-path source-envelope SHA-256 `ad4f6c62c820bdc59d7c1c8550ffeec0a4a0718ba4388a516418d50468d7e9d5`.
+- [x] Verify **14/14** post-merge pinned source blob SHAs remained identical.
+- [x] Preserve exact-head qualification evidence for PR #526: **37/37 success / 0 non-success**, Product Owner exact-head authority, evaluator success, raw authority success, final race check, and squash publication.
+- [x] Preserve canonical Sprint52 compatibility corrections through PR #521, PR #523, and PR #525; keep PR #520, PR #522, and PR #524 stale/closed and unmergeable as source candidates.
+- [x] Keep migration #21 **SOURCE-PUBLISHED / NOT EXECUTED / NOT APPLIED / NOT ACTIVATED**.
+- [x] Keep Sprint52 refund delivery **default false / Local-Test-CI only**; Technical Preview and Production remain unactivated.
+- [ ] **Sprint53 next bounded task: prepare JRN-010 prerequisite — Bounded Shift Opening Cash Evidence Entry Gate.**
+- [ ] Define only the minimum immutable opening-cash evidence required for one canonical active shift before any close/variance selection.
+- [ ] Preserve server-derived tenant/organization/outlet/device/register/shift/actor/correlation/time authority, deny-by-default authorization, deterministic tenant-scoped idempotency/replay, and fail-closed conflict handling.
+- [ ] Explicitly prohibit silently treating unknown physical opening cash as zero.
+- [ ] Defer any operator-observed opening-cash amount representation, currency/scale binding, schema, endpoint, permission, runtime flag, and exact source paths to the bounded gate that freezes those decisions.
+- [ ] Keep shift close, close cash count, expected-vs-actual variance, settlement, arbitrary cash movement, drawer administration, accounting, purchasing, suppliers, provider integration, deployment, release, Production, Technical Preview activation, updater activation, migration execution, rollback, and destructive database actions outside this reconciliation.
+- [ ] Do **not** select migration #22 in this reconciliation.
+- [ ] Keep JRN-010 **NOT SELECTED** until opening-cash evidence and separately required close-count/variance/settlement semantics are canonical.
+- [x] Current reconciliation scope is exactly `ROADMAP.md` + `TASKS.md`; sorted newline-terminated path SHA-256 `fd007931409a4ccbdca7ce03827f34c6c989686ee149320299df34586e94a91f`.
+
+Attribution: **Lab | zefry**
+
 ## Canonical post-Sprint51 JRN-008 closure and Sprint52 bounded next task — 2026-09-02
 
 This current-facing section supersedes the older post-Sprint50/current-state task wording retained below as historical provenance.
