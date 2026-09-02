@@ -74,8 +74,8 @@ jobs:
             grep -Fxq 'apps/web/database/migrations/0000_00_00_000024_add_immutable_shift_binding_to_pos_sales.php' /tmp/s49-source-paths
             grep -Fxq 'apps/web/app/Infrastructure/Pos/LaravelDurablePosSaleRepository.php' /tmp/s49-source-paths
             echo 'ONEQAY_SPRINT57_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
-          elif [[ "$count" -eq 16 && "$fingerprint" == '2b779f5f20907d7ef58e6afd144a8c3f7d0f103a1c6271bc513f514f3c5b16fc' ]]; then
-            test "$(grep -c '^\.github/workflows/' /tmp/s49-source-paths)" -eq 16
+          elif [[ "$count" -eq 1 && "$fingerprint" == 'd32b86b706433c898b058c950c947266db7d366d249bf4612b56a883f578443a' ]]; then
+            grep -Fxq '.github/workflows/sprint49-jrn006-active-shift-precondition-regression.yml' /tmp/s49-source-paths
             echo 'ONEQAY_SPRINT57_COMPATIBILITY_CORRECTION=true' >> "$GITHUB_ENV"
           else
             echo 'Sprint49 changed-file envelope mismatch.' >&2
