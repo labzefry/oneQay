@@ -1,3 +1,4 @@
+# Sprint53 bounded third historical fixture compatibility closure — Lab | zefry
 name: Sprint47 JRN-004 Catalog Preparation Regression
 
 # Author by Lab | zefry
@@ -311,7 +312,10 @@ jobs:
         run: |
           set -euo pipefail
           migration18='database/migrations/0000_00_00_000018_create_pos_shift_opening_foundation.php'
-          if [[ "${ONEQAY_SPRINT48_JRN005_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+          if [[ "${ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            test ! -f "$migration18"
+            php tests/pos-catalog-preparation-durable.php
+          elif [[ "${ONEQAY_SPRINT48_JRN005_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
             backup='/tmp/oneqay-s47-jrn005-migration18.php'
             cp "$migration18" "$backup"
             restore() {
