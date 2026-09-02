@@ -196,8 +196,12 @@ jobs:
             test "$(printf '%s\n' "$changed" | sed '/^$/d' | wc -l)" -eq 1
             printf '%s\n' "$changed" | grep -Fxq "$migration20"
             git diff --exit-code "$base" "$head" -- apps/web/database/migrations ":(exclude)$migration20"
-            git update-index --assume-unchanged "$migration20"
-            rm -f "$migration20"
+            for historical_migration in "$migration19" "$migration20"; do
+              if [[ -f "$historical_migration" ]]; then
+                git update-index --assume-unchanged "$historical_migration"
+                rm -f "$historical_migration"
+              fi
+            done
           elif [[ "${ONEQAY_SPRINT50_JRN007_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
             changed_migrations="$(git diff --name-only "$base" "$head" -- apps/web/database/migrations | sort)"
             test "$(printf '%s\n' "$changed_migrations" | sed '/^$/d' | wc -l)" -eq 1
@@ -209,6 +213,10 @@ jobs:
             fi
           elif [[ "${ONEQAY_SPRINT50_COMPATIBILITY_PREDECESSOR:-false}" == 'true' ]]; then
             git diff --exit-code "$base" "$head" -- apps/web/database/migrations
+            if [[ -f "$migration19" ]]; then
+              git update-index --assume-unchanged "$migration19"
+              rm -f "$migration19"
+            fi
           elif [[ "${ONEQAY_SPRINT48_JRN005_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
             changed_migrations="$(git diff --name-only "$base" "$head" -- apps/web/database/migrations | sort)"
             test "$(printf '%s\n' "$changed_migrations" | sed '/^$/d' | wc -l)" -eq 1
