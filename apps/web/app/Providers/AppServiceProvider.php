@@ -52,11 +52,13 @@ use App\Application\Pos\InventoryBaselineClock;
 use App\Application\Pos\InventoryBaselineRepository;
 use App\Application\Pos\PosSaleClock;
 use App\Application\Pos\RecordCashRefund;
+use App\Application\Pos\RecordShiftOpeningCash;
 use App\Application\Pos\SaleCashRefundRepository;
 use App\Application\Pos\PrepareCatalogItem;
 use App\Application\Pos\OpenShift;
 use App\Application\Pos\ShiftOpeningClock;
 use App\Application\Pos\ShiftOpeningRepository;
+use App\Application\Pos\ShiftOpeningCashRepository;
 use App\Application\Tenancy\TenantContextStore;
 use App\Application\Tenancy\TenantMembershipVerifier;
 use App\Infrastructure\Access\LaravelDurableOrganizationalAccessRepository;
@@ -86,6 +88,7 @@ use App\Infrastructure\Pos\LaravelDurablePosSaleRepository;
 use App\Infrastructure\Pos\LaravelInventoryBaselineRepository;
 use App\Infrastructure\Pos\LaravelSaleCashRefundRepository;
 use App\Infrastructure\Pos\LaravelShiftOpeningRepository;
+use App\Infrastructure\Pos\LaravelShiftOpeningCashRepository;
 use App\Infrastructure\Persistence\LaravelDurableContextGraphRepository;
 use App\Infrastructure\Persistence\LaravelPersistenceTransaction;
 use App\Infrastructure\Tenancy\LaravelTenantMembershipVerifier;
@@ -312,6 +315,22 @@ final class AppServiceProvider extends ServiceProvider
         });
         $this->app->scoped(OpenShift::class, fn ($app): OpenShift => new OpenShift(
             $app->make(ShiftOpeningRepository::class),
+            $app->make(OrganizationalContextStore::class),
+            $app->make(DurableScopedAuthorizationPolicy::class),
+            $app->make(PersistenceTransaction::class),
+            $app->make(ShiftOpeningClock::class),
+        ));
+
+        $this->app->scoped(ShiftOpeningCashRepository::class, function ($app): ShiftOpeningCashRepository {
+            return new LaravelShiftOpeningCashRepository(
+                $this->connection($app),
+                $this->persistenceEnabled(),
+                $this->runtimeClass(),
+                (bool) config('oneqay.pos_shift_opening_cash_evidence.enabled', false),
+            );
+        });
+        $this->app->scoped(RecordShiftOpeningCash::class, fn ($app): RecordShiftOpeningCash => new RecordShiftOpeningCash(
+            $app->make(ShiftOpeningCashRepository::class),
             $app->make(OrganizationalContextStore::class),
             $app->make(DurableScopedAuthorizationPolicy::class),
             $app->make(PersistenceTransaction::class),
