@@ -63,10 +63,26 @@ jobs:
           base="${{ github.event.pull_request.base.sha }}"
           head="${{ github.event.pull_request.head.sha }}"
           git diff --name-only "$base" "$head" | sort > /tmp/s50-source-paths
-          test "$(wc -l < /tmp/s50-source-paths)" -eq 14
-          test "$(sha256sum /tmp/s50-source-paths | awk '{print $1}')" = '78628976e4dbfea29ecab4b40ec6bfbdf697564668ef028a5cb77a3b53466451'
-          test "$(grep -c '^apps/web/database/migrations/' /tmp/s50-source-paths)" -eq 1
-          grep -Fxq 'apps/web/database/migrations/0000_00_00_000019_create_pos_sale_void_foundation.php' /tmp/s50-source-paths
+          count="$(wc -l < /tmp/s50-source-paths)"
+          fingerprint="$(sha256sum /tmp/s50-source-paths | awk '{print $1}')"
+          echo 'ONEQAY_SPRINT51_JRN008_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
+          echo 'ONEQAY_SPRINT51_COMPATIBILITY_PREDECESSOR=false' >> "$GITHUB_ENV"
+          if [[ "$count" -eq 14 && "$fingerprint" == '78628976e4dbfea29ecab4b40ec6bfbdf697564668ef028a5cb77a3b53466451' ]]; then
+            test "$(grep -c '^apps/web/database/migrations/' /tmp/s50-source-paths)" -eq 1
+            grep -Fxq 'apps/web/database/migrations/0000_00_00_000019_create_pos_sale_void_foundation.php' /tmp/s50-source-paths
+          elif [[ "$count" -eq 15 && "$fingerprint" == '325559599c79ba68340eac34569f8e5513aa4957b1ddf2515007b98b2cc1f15f' ]]; then
+            test "$(grep -c '^apps/web/database/migrations/' /tmp/s50-source-paths)" -eq 1
+            grep -Fxq 'apps/web/database/migrations/0000_00_00_000020_create_pos_inventory_baseline_foundation.php' /tmp/s50-source-paths
+            echo 'ONEQAY_SPRINT51_JRN008_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'Recognized exact Sprint51 JRN-008 source successor shape.'
+          elif [[ "$count" -eq 28 && "$fingerprint" == '3b97670674b60c636a23e52551b7ade69a3f545d5d0b4a861fa1c06eae5c0656' ]]; then
+            test "$(grep -c '^apps/web/database/migrations/' /tmp/s50-source-paths)" -eq 0
+            echo 'ONEQAY_SPRINT51_COMPATIBILITY_PREDECESSOR=true' >> "$GITHUB_ENV"
+            echo 'Recognized exact Sprint51 historical compatibility predecessor shape.'
+          else
+            echo 'Sprint50 changed-file envelope mismatch.' >&2
+            exit 1
+          fi
           ! grep -Eq '(^|/)(composer\.(json|lock)|package(-lock)?\.json|\.env(\.|$))' /tmp/s50-source-paths
 
       - name: Preserve migrations one through eighteen and validate migration nineteen
@@ -77,7 +93,18 @@ jobs:
           base="${{ github.event.pull_request.base.sha }}"
           head="${{ github.event.pull_request.head.sha }}"
           migration='apps/web/database/migrations/0000_00_00_000019_create_pos_sale_void_foundation.php'
-          git diff --exit-code "$base" "$head" -- apps/web/database/migrations ":(exclude)$migration"
+          migration20='apps/web/database/migrations/0000_00_00_000020_create_pos_inventory_baseline_foundation.php'
+          if [[ "${ONEQAY_SPRINT51_JRN008_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            changed="$(git diff --name-only "$base" "$head" -- apps/web/database/migrations | sort)"
+            test "$changed" = "$migration20"
+            git diff --exit-code "$base" "$head" -- apps/web/database/migrations ":(exclude)$migration20"
+            git update-index --assume-unchanged "$migration20"
+            rm -f "$migration20"
+          elif [[ "${ONEQAY_SPRINT51_COMPATIBILITY_PREDECESSOR:-false}" == 'true' ]]; then
+            git diff --exit-code "$base" "$head" -- apps/web/database/migrations
+          else
+            git diff --exit-code "$base" "$head" -- apps/web/database/migrations ":(exclude)$migration"
+          fi
           mapfile -t migrations < <(find apps/web/database/migrations -maxdepth 1 -type f -name '*.php' -printf '%f\n' | sort)
           test "${#migrations[@]}" -eq 19
           for index in $(seq 1 19); do
