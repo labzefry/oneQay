@@ -1,3 +1,4 @@
+# Sprint54 bounded successor compatibility predecessor — Lab | zefry
 # Sprint53 bounded third historical fixture compatibility closure — Lab | zefry
 # Sprint53 bounded second historical fixture compatibility closure — Lab | zefry
 name: Sprint50 JRN-007 Completed Sale Void Regression
@@ -83,7 +84,7 @@ jobs:
             grep -Fxq 'apps/web/database/migrations/0000_00_00_000021_create_pos_sale_cash_refund_foundation.php' /tmp/s50-source-paths
             echo 'ONEQAY_SPRINT51_JRN008_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
-          elif [[ "$count" -eq 14 && "$fingerprint" == '1d75fe26236e2bb56c113713e878e81d3df72cee9aa647b3f7759b9d1bec9164' ]]; then
+          elif [[ "$count" -eq 14 && "$fingerprint" == '1d75fe26236e2bb56c113713e878e81d3df72cee9aa647b3f7759b9d1bec9164' ]] || [[ "$count" -eq 14 && "$fingerprint" == 'a0914d7db5c1636e909e331e8b72653bc9814eb74e3a3823d7db36bd3b73b624' ]]; then
             test "$(grep -c '^apps/web/database/migrations/' /tmp/s50-source-paths)" -eq 1
             grep -Fxq 'apps/web/database/migrations/0000_00_00_000022_create_pos_shift_opening_cash_evidence_foundation.php' /tmp/s50-source-paths
             echo 'ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
@@ -302,10 +303,13 @@ jobs:
           inventory='app/Infrastructure/Pos/LaravelInventoryBaselineRepository.php'
           refund='app/Infrastructure/Pos/LaravelSaleCashRefundRepository.php'
           opening_cash='app/Infrastructure/Pos/LaravelShiftOpeningCashRepository.php'
+          closing_cash='app/Infrastructure/Pos/LaravelShiftClosingCashRepository.php'
           backup='/tmp/oneqay-s50-shift-opening-repository.php'
           inventory_backup='/tmp/oneqay-s50-inventory-baseline-repository.php'
           refund_backup='/tmp/oneqay-s50-cash-refund-repository.php'
           opening_cash_backup='/tmp/oneqay-s50-opening-cash-repository.php'
+
+          closing_cash_backup='/tmp/oneqay-s50-closing-cash-repository.php'
           cp "$successor" "$backup"
           if [[ "${ONEQAY_SPRINT51_JRN008_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT52_COMPATIBILITY_PREDECESSOR:-false}" == 'true' || "${ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
             cp "$inventory" "$inventory_backup"
@@ -313,12 +317,16 @@ jobs:
           if [[ "${ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
             cp "$refund" "$refund_backup"
             if [[ -f "$opening_cash" ]]; then cp "$opening_cash" "$opening_cash_backup"; fi
+
+            if [[ -f "$closing_cash" ]]; then cp "$closing_cash" "$closing_cash_backup"; fi
           fi
           restore() {
             [[ ! -f "$backup" ]] || mv "$backup" "$successor"
             [[ ! -f "$inventory_backup" ]] || mv "$inventory_backup" "$inventory"
             [[ ! -f "$refund_backup" ]] || mv "$refund_backup" "$refund"
             [[ ! -f "$opening_cash_backup" ]] || mv "$opening_cash_backup" "$opening_cash"
+
+            [[ ! -f "$closing_cash_backup" ]] || mv "$closing_cash_backup" "$closing_cash"
           }
           trap restore EXIT
           rm -f "$successor"

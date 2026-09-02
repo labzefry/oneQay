@@ -1,3 +1,4 @@
+# Sprint54 bounded successor compatibility predecessor — Lab | zefry
 # Sprint53 bounded third historical fixture compatibility closure — Lab | zefry
 # Sprint53 bounded second historical fixture compatibility closure — Lab | zefry
 # Author by Lab | zefry
@@ -62,6 +63,7 @@ jobs:
           echo 'ONEQAY_SPRINT51_JRN008_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
           echo 'ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
           echo 'ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
+          echo 'ONEQAY_SPRINT54_JRN010_PREREQ_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
           if [[ "$count" -eq 2 && "$fingerprint" == '920918ec3a30e7954bec598ce2d45ce4ce05681f1705308bae87232cd192ee4e' ]]; then
             echo 'ONEQAY_SPRINT47_JRN004_M74_COMPATIBILITY=true' >> "$GITHUB_ENV"
             echo 'Recognized exact Sprint47 JRN-004 M7.4 compatibility predecessor shape.'
@@ -107,6 +109,16 @@ jobs:
             echo 'ONEQAY_SPRINT51_JRN008_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'Recognized exact Sprint52 JRN-007 full CASH refund source successor shape.'
+            exit 0
+          elif [[ "$count" -eq 14 && "$fingerprint" == 'a0914d7db5c1636e909e331e8b72653bc9814eb74e3a3823d7db36bd3b73b624' ]]; then
+            test "$(grep -c '^apps/web/database/migrations/' /tmp/m74-changed-files.txt)" -eq 1
+            grep -Fxq 'apps/web/database/migrations/0000_00_00_000023_create_pos_shift_closing_cash_evidence_foundation.php' /tmp/m74-changed-files.txt
+            echo 'ONEQAY_SPRINT49_JRN006_ACTIVE_SHIFT_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT51_JRN008_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT54_JRN010_PREREQ_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'Recognized exact Sprint54 closing-cash source successor shape.'
             exit 0
           elif [[ "$count" -eq 14 && "$fingerprint" == '1d75fe26236e2bb56c113713e878e81d3df72cee9aa647b3f7759b9d1bec9164' ]]; then
             test "$(grep -c '^apps/web/database/migrations/' /tmp/m74-changed-files.txt)" -eq 1
@@ -255,7 +267,19 @@ jobs:
           fi
           migration21='apps/web/database/migrations/0000_00_00_000021_create_pos_sale_cash_refund_foundation.php'
           migration22='apps/web/database/migrations/0000_00_00_000022_create_pos_shift_opening_cash_evidence_foundation.php'
-          if [[ "${ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+          migration23='apps/web/database/migrations/0000_00_00_000023_create_pos_shift_closing_cash_evidence_foundation.php'
+          if [[ "${ONEQAY_SPRINT54_JRN010_PREREQ_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            changed="$(git diff --name-only "$base" "$head" -- apps/web/database/migrations | sort)"
+            changed_count="$(printf '%s\n' "$changed" | sed '/^$/d' | wc -l)"
+            if [[ "$changed_count" -eq 1 ]]; then printf '%s\n' "$changed" | grep -Fxq "$migration23"; else test "$changed_count" -eq 0; fi
+            git diff --exit-code "$base" "$head" -- apps/web/database/migrations ":(exclude)$migration23"
+            for migration_to_isolate in "$migration19" "$migration20" "$migration21" "$migration22" "$migration23"; do
+              if [[ -f "$migration_to_isolate" ]]; then
+                git update-index --assume-unchanged "$migration_to_isolate"
+                rm -f "$migration_to_isolate"
+              fi
+            done
+          elif [[ "${ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
             changed="$(git diff --name-only "$base" "$head" -- apps/web/database/migrations | sort)"
             changed_count="$(printf '%s\n' "$changed" | sed '/^$/d' | wc -l)"
             if [[ "$changed_count" -eq 1 ]]; then printf '%s\n' "$changed" | grep -Fxq "$migration22"; else test "$changed_count" -eq 0; fi
@@ -430,7 +454,28 @@ jobs:
           inventory='app/Infrastructure/Pos/LaravelInventoryBaselineRepository.php'
           refund='app/Infrastructure/Pos/LaravelSaleCashRefundRepository.php'
           opening_cash='app/Infrastructure/Pos/LaravelShiftOpeningCashRepository.php'
-          if [[ "${ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+          closing_cash='app/Infrastructure/Pos/LaravelShiftClosingCashRepository.php'
+          if [[ "${ONEQAY_SPRINT54_JRN010_PREREQ_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            inventory_backup='/tmp/oneqay-m74-s54-inventory-repository.php'
+            refund_backup='/tmp/oneqay-m74-s54-refund-repository.php'
+            opening_cash_backup='/tmp/oneqay-m74-s54-opening-cash-repository.php'
+            closing_cash_backup='/tmp/oneqay-m74-s54-closing-cash-repository.php'
+            if [[ -f "$inventory" ]]; then cp "$inventory" "$inventory_backup"; fi
+            if [[ -f "$refund" ]]; then cp "$refund" "$refund_backup"; fi
+            if [[ -f "$opening_cash" ]]; then cp "$opening_cash" "$opening_cash_backup"; fi
+            if [[ -f "$closing_cash" ]]; then cp "$closing_cash" "$closing_cash_backup"; fi
+            restore_s54() {
+              [[ ! -f "$inventory_backup" ]] || mv "$inventory_backup" "$inventory"
+              [[ ! -f "$refund_backup" ]] || mv "$refund_backup" "$refund"
+              [[ ! -f "$opening_cash_backup" ]] || mv "$opening_cash_backup" "$opening_cash"
+              [[ ! -f "$closing_cash_backup" ]] || mv "$closing_cash_backup" "$closing_cash"
+            }
+            trap restore_s54 EXIT
+            rm -f "$inventory" "$refund" "$opening_cash" "$closing_cash"
+            php tests/pos-core-synthetic.php
+            restore_s54
+            trap - EXIT
+          elif [[ "${ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
             inventory_backup='/tmp/oneqay-m74-s53-inventory-repository.php'
             refund_backup='/tmp/oneqay-m74-s53-refund-repository.php'
             opening_cash_backup='/tmp/oneqay-m74-s53-opening-cash-repository.php'
