@@ -51,6 +51,8 @@ use App\Application\Pos\EstablishInventoryBaseline;
 use App\Application\Pos\InventoryBaselineClock;
 use App\Application\Pos\InventoryBaselineRepository;
 use App\Application\Pos\PosSaleClock;
+use App\Application\Pos\RecordCashRefund;
+use App\Application\Pos\SaleCashRefundRepository;
 use App\Application\Pos\PrepareCatalogItem;
 use App\Application\Pos\OpenShift;
 use App\Application\Pos\ShiftOpeningClock;
@@ -82,6 +84,7 @@ use App\Infrastructure\Organization\RequestOrganizationalContextStore;
 use App\Infrastructure\Pos\LaravelCatalogPreparationRepository;
 use App\Infrastructure\Pos\LaravelDurablePosSaleRepository;
 use App\Infrastructure\Pos\LaravelInventoryBaselineRepository;
+use App\Infrastructure\Pos\LaravelSaleCashRefundRepository;
 use App\Infrastructure\Pos\LaravelShiftOpeningRepository;
 use App\Infrastructure\Persistence\LaravelDurableContextGraphRepository;
 use App\Infrastructure\Persistence\LaravelPersistenceTransaction;
@@ -261,6 +264,22 @@ final class AppServiceProvider extends ServiceProvider
         ));
         $this->app->scoped(VoidSale::class, fn ($app): VoidSale => new VoidSale(
             $app->make(DurablePosSaleRepository::class),
+            $app->make(OrganizationalContextStore::class),
+            $app->make(DurableScopedAuthorizationPolicy::class),
+            $app->make(PersistenceTransaction::class),
+            $app->make(PosSaleClock::class),
+        ));
+
+        $this->app->scoped(SaleCashRefundRepository::class, function ($app): SaleCashRefundRepository {
+            return new LaravelSaleCashRefundRepository(
+                $this->connection($app),
+                $this->persistenceEnabled(),
+                $this->runtimeClass(),
+                (bool) config('oneqay.pos_sale_cash_refund.enabled', false),
+            );
+        });
+        $this->app->scoped(RecordCashRefund::class, fn ($app): RecordCashRefund => new RecordCashRefund(
+            $app->make(SaleCashRefundRepository::class),
             $app->make(OrganizationalContextStore::class),
             $app->make(DurableScopedAuthorizationPolicy::class),
             $app->make(PersistenceTransaction::class),
