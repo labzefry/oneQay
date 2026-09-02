@@ -241,6 +241,10 @@ jobs:
             rm -f "$migration19"
           elif [[ "${ONEQAY_SPRINT50_COMPATIBILITY_PREDECESSOR:-false}" == 'true' ]]; then
             git diff --exit-code "$base" "$head" -- apps/web/database/migrations
+            if [[ -f "$migration19" ]]; then
+              git update-index --assume-unchanged "$migration19"
+              rm -f "$migration19"
+            fi
             if grep -R -n -E 'Illuminate\\Database|Schema::|DB::|new PDO|mysqli_' \
               apps/web/app/Domain/Pos apps/web/app/Application/Pos; then
               echo "M7.4 Sprint50 compatibility Domain/Application physical persistence boundary violated." >&2
