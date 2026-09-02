@@ -1,4 +1,4 @@
-# Sprint54 bounded 10-workflow source-preservation correction — Lab | zefry
+# Sprint54 bounded 12-workflow source-preservation correction — Lab | zefry
 # Sprint54 bounded successor compatibility predecessor — Lab | zefry
 # Sprint53 bounded third historical fixture compatibility closure — Lab | zefry
 # Sprint53 bounded second historical fixture compatibility closure — Lab | zefry
@@ -86,7 +86,7 @@ jobs:
             test "$(grep -c '^apps/web/database/migrations/' /tmp/s52-source-paths)" -eq 1
             grep -Fxq 'apps/web/database/migrations/0000_00_00_000022_create_pos_shift_opening_cash_evidence_foundation.php' /tmp/s52-source-paths
             echo 'ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
-          elif [[ "$count" -eq 10 && "$fingerprint" == '36cebb616758e497d8d4114723973fa140e3440480a25f17a0fc01def4baf1a5' ]]; then
+          elif [[ "$count" -eq 12 && "$fingerprint" == '77a408974add7f466ed746b8b47c10d5fec45c8073ab32e0450abd95f206bf1f' ]]; then
             test "$(grep -c '^apps/web/database/migrations/' /tmp/s52-source-paths)" -eq 0
             echo 'ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
           else
@@ -116,6 +116,15 @@ jobs:
                 rm -f "$historical_migration"
               fi
             done
+          elif [[ "${ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            changed="$(git diff --name-only "$base" "$head" -- apps/web/database/migrations | sort)"
+            changed_count="$(printf '%s\n' "$changed" | sed '/^$/d' | wc -l)"
+            if [[ "$changed_count" -eq 1 ]]; then printf '%s\n' "$changed" | grep -Fxq "$migration22"; else test "$changed_count" -eq 0; fi
+            git diff --exit-code "$base" "$head" -- apps/web/database/migrations ":(exclude)$migration22"
+            if [[ -f "$migration22" ]]; then
+              git update-index --assume-unchanged "$migration22"
+              rm -f "$migration22"
+            fi
           else
             git diff --exit-code "$base" "$head" -- apps/web/database/migrations ":(exclude)$migration"
           fi
