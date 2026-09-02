@@ -16,6 +16,13 @@ interface DurablePosSaleRepository
         SaleCommand $command,
         int $occurredAtUnix,
     ): SaleReceipt;
+
+    public function voidCompletedSale(
+        PosExecutionContext $context,
+        SaleVoidCommand $command,
+        string $correlationId,
+        int $occurredAtUnix,
+    ): SaleVoidResult;
 }
 
 // Sprint48 JRN-005 Sprint46 compatibility preservation anchor.
