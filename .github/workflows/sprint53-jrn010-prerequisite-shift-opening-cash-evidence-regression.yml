@@ -1,3 +1,4 @@
+# Sprint54 bounded successor bridge — Lab | zefry
 name: Sprint53 JRN-010 Prerequisite Shift Opening Cash Evidence Regression
 
 # Author by Lab | zefry
@@ -60,7 +61,7 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: Enforce exact Sprint53 source envelope
+      - name: Enforce exact Sprint53 source envelope or bounded Sprint54 successor
         if: github.event_name == 'pull_request'
         shell: bash
         run: |
@@ -68,33 +69,70 @@ jobs:
           base="${{ github.event.pull_request.base.sha }}"
           head="${{ github.event.pull_request.head.sha }}"
           git diff --name-only "$base" "$head" | sort > /tmp/s53-source-paths
-          test "$(wc -l < /tmp/s53-source-paths)" -eq 14
-          test "$(sha256sum /tmp/s53-source-paths | awk '{print $1}')" = '1d75fe26236e2bb56c113713e878e81d3df72cee9aa647b3f7759b9d1bec9164'
-          test "$(grep -c '^apps/web/database/migrations/' /tmp/s53-source-paths)" -eq 1
-          grep -Fxq 'apps/web/database/migrations/0000_00_00_000022_create_pos_shift_opening_cash_evidence_foundation.php' /tmp/s53-source-paths
+          count="$(wc -l < /tmp/s53-source-paths)"
+          fingerprint="$(sha256sum /tmp/s53-source-paths | awk '{print $1}')"
+          echo 'ONEQAY_SPRINT54_JRN010_PREREQ_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
+          echo 'ONEQAY_SPRINT53_WORKFLOW_BRIDGE=false' >> "$GITHUB_ENV"
+
+          if [[ "$count" -eq 1 && "$fingerprint" == '60da6bcaf9c659bf159316880fcd674036e68bdb51aa257befb717817713a702' ]]; then
+            grep -Fxq '.github/workflows/sprint53-jrn010-prerequisite-shift-opening-cash-evidence-regression.yml' /tmp/s53-source-paths
+            echo 'ONEQAY_SPRINT53_WORKFLOW_BRIDGE=true' >> "$GITHUB_ENV"
+            echo 'Recognized exact Sprint53 dedicated-workflow Sprint54 compatibility bridge.'
+          elif [[ "$count" -eq 14 && "$fingerprint" == '1d75fe26236e2bb56c113713e878e81d3df72cee9aa647b3f7759b9d1bec9164' ]]; then
+            test "$(grep -c '^apps/web/database/migrations/' /tmp/s53-source-paths)" -eq 1
+            grep -Fxq 'apps/web/database/migrations/0000_00_00_000022_create_pos_shift_opening_cash_evidence_foundation.php' /tmp/s53-source-paths
+            echo 'Recognized exact Sprint53 opening-cash source envelope.'
+          elif [[ "$count" -eq 14 && "$fingerprint" == 'a0914d7db5c1636e909e331e8b72653bc9814eb74e3a3823d7db36bd3b73b624' ]]; then
+            test "$(grep -c '^apps/web/database/migrations/' /tmp/s53-source-paths)" -eq 1
+            grep -Fxq 'apps/web/database/migrations/0000_00_00_000023_create_pos_shift_closing_cash_evidence_foundation.php' /tmp/s53-source-paths
+            echo 'ONEQAY_SPRINT54_JRN010_PREREQ_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'Recognized exact Sprint54 closing-cash source successor envelope.'
+          else
+            echo 'Sprint53/Sprint54 exact source envelope mismatch.' >&2
+            exit 1
+          fi
+
           ! grep -Eq '(^|/)(composer\.(json|lock)|package(-lock)?\.json|\.env(\.|$))' /tmp/s53-source-paths
 
-      - name: Preserve migrations one through twenty-one and validate migration twenty-two
+      - name: Preserve migration horizon and validate Sprint53 opening-cash migration
         if: github.event_name == 'pull_request'
         shell: bash
         run: |
           set -euo pipefail
           base="${{ github.event.pull_request.base.sha }}"
           head="${{ github.event.pull_request.head.sha }}"
-          migration='apps/web/database/migrations/0000_00_00_000022_create_pos_shift_opening_cash_evidence_foundation.php'
-          git diff --exit-code "$base" "$head" -- apps/web/database/migrations ":(exclude)$migration"
-          mapfile -t migrations < <(find apps/web/database/migrations -maxdepth 1 -type f -name '*.php' -printf '%f\n' | sort)
-          test "${#migrations[@]}" -eq 22
-          for index in $(seq 1 22); do
-            prefix="$(printf '0000_00_00_%06d_' "$index")"
-            test "$(printf '%s\n' "${migrations[@]}" | grep -c "^$prefix")" -eq 1
-          done
-          grep -Fq "Schema::create('oneqay_pos_shift_opening_cash_evidence'" "$migration"
-          grep -Fq "unique(['tenant_id', 'operation_id']" "$migration"
-          grep -Fq "unique(['tenant_id', 'shift_id']" "$migration"
-          grep -Fq "foreign(['tenant_id', 'shift_id']" "$migration"
-          grep -Fq "on('oneqay_pos_shifts')" "$migration"
-          grep -Fq "throw new LogicException('Forward-only generated migration; rollback is not authorized.');" "$migration"
+          migration22='apps/web/database/migrations/0000_00_00_000022_create_pos_shift_opening_cash_evidence_foundation.php'
+          migration23='apps/web/database/migrations/0000_00_00_000023_create_pos_shift_closing_cash_evidence_foundation.php'
+
+          if [[ "${ONEQAY_SPRINT54_JRN010_PREREQ_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            changed="$(git diff --name-only "$base" "$head" -- apps/web/database/migrations | sort)"
+            test "$(printf '%s\n' "$changed" | sed '/^$/d' | wc -l)" -eq 1
+            printf '%s\n' "$changed" | grep -Fxq "$migration23"
+            git diff --exit-code "$base" "$head" -- apps/web/database/migrations ":(exclude)$migration23"
+            test -f "$migration22"
+            test -f "$migration23"
+            mapfile -t migrations < <(find apps/web/database/migrations -maxdepth 1 -type f -name '*.php' -printf '%f\n' | sort)
+            test "${#migrations[@]}" -eq 23
+            for index in $(seq 1 23); do
+              prefix="$(printf '0000_00_00_%06d_' "$index")"
+              test "$(printf '%s\n' "${migrations[@]}" | grep -c "^$prefix")" -eq 1
+            done
+          else
+            git diff --exit-code "$base" "$head" -- apps/web/database/migrations ":(exclude)$migration22"
+            mapfile -t migrations < <(find apps/web/database/migrations -maxdepth 1 -type f -name '*.php' -printf '%f\n' | sort)
+            test "${#migrations[@]}" -eq 22
+            for index in $(seq 1 22); do
+              prefix="$(printf '0000_00_00_%06d_' "$index")"
+              test "$(printf '%s\n' "${migrations[@]}" | grep -c "^$prefix")" -eq 1
+            done
+          fi
+
+          grep -Fq "Schema::create('oneqay_pos_shift_opening_cash_evidence'" "$migration22"
+          grep -Fq "unique(['tenant_id', 'operation_id']" "$migration22"
+          grep -Fq "unique(['tenant_id', 'shift_id']" "$migration22"
+          grep -Fq "foreign(['tenant_id', 'shift_id']" "$migration22"
+          grep -Fq "on('oneqay_pos_shifts')" "$migration22"
+          grep -Fq "throw new LogicException('Forward-only generated migration; rollback is not authorized.');" "$migration22"
 
       - name: Validate authorization and delivery locks
         shell: bash
@@ -160,19 +198,47 @@ jobs:
 
       - name: Run Sprint53 durable opening-cash evidence regression
         working-directory: apps/web
-        run: php tests/pos-shift-opening-cash-durable.php
+        shell: bash
+        run: |
+          set -euo pipefail
+          migration23='database/migrations/0000_00_00_000023_create_pos_shift_closing_cash_evidence_foundation.php'
+          backup23='/tmp/oneqay-s53-s54-migration23-opening.php'
+          restore() { [[ ! -f "$backup23" ]] || mv "$backup23" "$migration23"; }
+          trap restore EXIT
+          if [[ -f "$migration23" ]]; then
+            cp "$migration23" "$backup23"
+            rm -f "$migration23"
+          fi
+          php tests/pos-shift-opening-cash-durable.php
+          restore
+          trap - EXIT
 
       - name: Preserve Sprint52 full CASH refund regression
         working-directory: apps/web
         shell: bash
         run: |
           set -euo pipefail
-          migration22='database/migrations/0000_00_00_000022_create_pos_shift_opening_cash_evidence_foundation.php'
-          backup22='/tmp/oneqay-s53-migration22-refund.php'
-          cp "$migration22" "$backup22"
-          restore() { [[ ! -f "$backup22" ]] || mv "$backup22" "$migration22"; }
+          migrations=(
+            database/migrations/0000_00_00_000022_create_pos_shift_opening_cash_evidence_foundation.php
+            database/migrations/0000_00_00_000023_create_pos_shift_closing_cash_evidence_foundation.php
+          )
+          backups=()
+          restore() {
+            for index in "${!migrations[@]}"; do
+              [[ ! -f "${backups[$index]:-}" ]] || mv "${backups[$index]}" "${migrations[$index]}"
+            done
+          }
           trap restore EXIT
-          rm -f "$migration22"
+          for index in "${!migrations[@]}"; do
+            if [[ -f "${migrations[$index]}" ]]; then
+              backup="/tmp/oneqay-s53-s54-refund-$index.php"
+              cp "${migrations[$index]}" "$backup"
+              backups[$index]="$backup"
+              rm -f "${migrations[$index]}"
+            else
+              backups[$index]=''
+            fi
+          done
           php tests/pos-sale-cash-refund-durable.php
           restore
           trap - EXIT
@@ -182,18 +248,28 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          migration21='database/migrations/0000_00_00_000021_create_pos_sale_cash_refund_foundation.php'
-          migration22='database/migrations/0000_00_00_000022_create_pos_shift_opening_cash_evidence_foundation.php'
-          backup21='/tmp/oneqay-s53-migration21-inventory.php'
-          backup22='/tmp/oneqay-s53-migration22-inventory.php'
-          cp "$migration21" "$backup21"
-          cp "$migration22" "$backup22"
+          migrations=(
+            database/migrations/0000_00_00_000021_create_pos_sale_cash_refund_foundation.php
+            database/migrations/0000_00_00_000022_create_pos_shift_opening_cash_evidence_foundation.php
+            database/migrations/0000_00_00_000023_create_pos_shift_closing_cash_evidence_foundation.php
+          )
+          backups=()
           restore() {
-            [[ ! -f "$backup21" ]] || mv "$backup21" "$migration21"
-            [[ ! -f "$backup22" ]] || mv "$backup22" "$migration22"
+            for index in "${!migrations[@]}"; do
+              [[ ! -f "${backups[$index]:-}" ]] || mv "${backups[$index]}" "${migrations[$index]}"
+            done
           }
           trap restore EXIT
-          rm -f "$migration21" "$migration22"
+          for index in "${!migrations[@]}"; do
+            if [[ -f "${migrations[$index]}" ]]; then
+              backup="/tmp/oneqay-s53-s54-inventory-$index.php"
+              cp "${migrations[$index]}" "$backup"
+              backups[$index]="$backup"
+              rm -f "${migrations[$index]}"
+            else
+              backups[$index]=''
+            fi
+          done
           php tests/pos-inventory-baseline-durable.php
           restore
           trap - EXIT
@@ -208,6 +284,7 @@ jobs:
             database/migrations/0000_00_00_000020_create_pos_inventory_baseline_foundation.php
             database/migrations/0000_00_00_000021_create_pos_sale_cash_refund_foundation.php
             database/migrations/0000_00_00_000022_create_pos_shift_opening_cash_evidence_foundation.php
+            database/migrations/0000_00_00_000023_create_pos_shift_closing_cash_evidence_foundation.php
           )
           backups=()
           restore() {
@@ -218,9 +295,13 @@ jobs:
           trap restore EXIT
           for index in "${!migrations[@]}"; do
             backup="/tmp/oneqay-s53-shift-$index.php"
-            cp "${migrations[$index]}" "$backup"
-            backups+=("$backup")
-            rm -f "${migrations[$index]}"
+            if [[ -f "${migrations[$index]}" ]]; then
+              cp "${migrations[$index]}" "$backup"
+              backups+=("$backup")
+              rm -f "${migrations[$index]}"
+            else
+              backups+=('')
+            fi
           done
           php tests/pos-shift-opening-durable.php
           restore
