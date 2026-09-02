@@ -96,6 +96,7 @@ jobs:
           echo 'ONEQAY_SPRINT47_JRN004_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
           echo 'ONEQAY_SPRINT47_JRN004_COMPATIBILITY_PREDECESSOR=false' >> "$GITHUB_ENV"
           echo 'ONEQAY_SPRINT48_JRN005_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
+          echo 'ONEQAY_SPRINT50_JRN007_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
           if [[ "$count" -eq 1 ]] && [[ "$fingerprint" == '261f147d880a37fe9137b28d9541724c6c5e3987138f3fb56d5465ff31dc7412' ]]; then
             echo 'ONEQAY_SPRINT32_WORKFLOW_CORRECTION=true' >> "$GITHUB_ENV"
             for migration in \
@@ -114,11 +115,14 @@ jobs:
                 rm -f "$migration_path"
               fi
             done
-            echo 'Exact Sprint32 workflow correction recognized; migrations #12-#18 isolated when present only from historical Sprint32 executable preservation.'
+            echo 'Exact Sprint32 workflow correction recognized; migrations #12-#19 isolated when present only from historical Sprint32 executable preservation.'
             exit 0
           fi
-          if [[ "$count" -eq 7 && "$fingerprint" == '4784ffca1c940d3fa54a2a3988ead07e2de993bde8d3af2bd41014dbdf905be0' ]] || [[ "$count" -eq 5 && "$fingerprint" == 'ab09e044925ae98740a49c46a70ff387e5f5445b245d3a556d85ad6a354305ec' ]] || [[ "$count" -eq 3 && "$fingerprint" == 'fd5f1466a41a7b11f0684303f5e93196668c2ca929ce9119e415186ae6708e9d' ]] || [[ "$count" -eq 7 && "$fingerprint" == 'f3f8b3ad0cca378307000ca242c4b9a4a8a7ab967d1649a5cd6408837001364c' ]] || [[ "$count" -eq 12 && "$fingerprint" == 'b2c5fc10a8baa2d56991d6dbd36b0407159d70953654ef322a9a11d23660489b' ]] || [[ "$count" -eq 19 && "$fingerprint" == 'fc2b578fc9d090dfce1fd34c5acfa7a07f065979a94f62becb3dc54dee664920' ]] || [[ "$count" -eq 8 && "$fingerprint" == 'e773cbe308d202808021c452c75954cc80234c081bbb1f23cb757210f76b8c85' ]] || [[ "$count" -eq 8 && "$fingerprint" == '6315890d318c3cdfca549bfacef6cb8d1ca66a4421416b49b4978095a98b6729' ]] || [[ "$count" -eq 9 && "$fingerprint" == 'b8afa8415c0675c2675c1b8dbd528b44e8181a8f79a97fe28b0a0996623e1749' ]] || [[ "$count" -eq 9 && "$fingerprint" == 'c7f53821f0f3fc1554ee23a3c85b53369972accb0815ec2b8096664054cd01b9' ]] || [[ "$count" -eq 9 && "$fingerprint" == '3d0293362f451fe4bf472d0d2c38c3eec3d67df75b451ba5b273e8dbdb0f2eed' ]] || [[ "$count" -eq 4 && "$fingerprint" == 'a5d3b0816c3b0e6f1fa7dd5ece73ea6347042372dd517af31e303c41d49abfaa' ]] || [[ "$count" -eq 14 && "$fingerprint" == 'ed29b6128c193f0efd6359748e220a37aefaec856acc4bc3b90f445ce3ccb674' ]] || [[ "$count" -eq 15 && "$fingerprint" == 'c1ac6d5130c9d78ff99ed0accf5d11e3f08debc575c0d5152ef5b24e6f82ce02' ]] || [[ "$count" -eq 15 && "$fingerprint" == '5e19664988cabba0030f9927d26b0702370414be4cd6b424d585925b634ca2b8' ]] || [[ "$count" -eq 14 && "$fingerprint" == '78628976e4dbfea29ecab4b40ec6bfbdf697564668ef028a5cb77a3b53466451' ]] || [[ "$count" -eq 30 && "$fingerprint" == 'cf8adb2328427a8e27e46f0efd9fe88db90f0401eba9cafd513944c7e040035e' ]]; then
+          if [[ "$count" -eq 7 && "$fingerprint" == '4784ffca1c940d3fa54a2a3988ead07e2de993bde8d3af2bd41014dbdf905be0' ]] || [[ "$count" -eq 5 && "$fingerprint" == 'ab09e044925ae98740a49c46a70ff387e5f5445b245d3a556d85ad6a354305ec' ]] || [[ "$count" -eq 3 && "$fingerprint" == 'fd5f1466a41a7b11f0684303f5e93196668c2ca929ce9119e415186ae6708e9d' ]] || [[ "$count" -eq 7 && "$fingerprint" == 'f3f8b3ad0cca378307000ca242c4b9a4a8a7ab967d1649a5cd6408837001364c' ]] || [[ "$count" -eq 12 && "$fingerprint" == 'b2c5fc10a8baa2d56991d6dbd36b0407159d70953654ef322a9a11d23660489b' ]] || [[ "$count" -eq 19 && "$fingerprint" == 'fc2b578fc9d090dfce1fd34c5acfa7a07f065979a94f62becb3dc54dee664920' ]] || [[ "$count" -eq 8 && "$fingerprint" == 'e773cbe308d202808021c452c75954cc80234c081bbb1f23cb757210f76b8c85' ]] || [[ "$count" -eq 8 && "$fingerprint" == '6315890d318c3cdfca549bfacef6cb8d1ca66a4421416b49b4978095a98b6729' ]] || [[ "$count" -eq 9 && "$fingerprint" == 'b8afa8415c0675c2675c1b8dbd528b44e8181a8f79a97fe28b0a0996623e1749' ]] || [[ "$count" -eq 9 && "$fingerprint" == 'c7f53821f0f3fc1554ee23a3c85b53369972accb0815ec2b8096664054cd01b9' ]] || [[ "$count" -eq 9 && "$fingerprint" == '3d0293362f451fe4bf472d0d2c38c3eec3d67df75b451ba5b273e8dbdb0f2eed' ]] || [[ "$count" -eq 4 && "$fingerprint" == 'a5d3b0816c3b0e6f1fa7dd5ece73ea6347042372dd517af31e303c41d49abfaa' ]] || [[ "$count" -eq 14 && "$fingerprint" == 'ed29b6128c193f0efd6359748e220a37aefaec856acc4bc3b90f445ce3ccb674' ]] || [[ "$count" -eq 15 && "$fingerprint" == 'c1ac6d5130c9d78ff99ed0accf5d11e3f08debc575c0d5152ef5b24e6f82ce02' ]] || [[ "$count" -eq 15 && "$fingerprint" == '5e19664988cabba0030f9927d26b0702370414be4cd6b424d585925b634ca2b8' ]] || [[ "$count" -eq 14 && "$fingerprint" == '78628976e4dbfea29ecab4b40ec6bfbdf697564668ef028a5cb77a3b53466451' ]] || [[ "$count" -eq 30 && "$fingerprint" == 'cf8adb2328427a8e27e46f0efd9fe88db90f0401eba9cafd513944c7e040035e' ]] || [[ "$count" -eq 2 && "$fingerprint" == '0f7b19c619d32f5b461eec1625cf0779b2b7f0a0ee31292c855d5709a2962669' ]]; then
             echo 'ONEQAY_SPRINT32_WORKFLOW_CORRECTION=true' >> "$GITHUB_ENV"
+            if [[ "$count" -eq 14 && "$fingerprint" == '78628976e4dbfea29ecab4b40ec6bfbdf697564668ef028a5cb77a3b53466451' ]]; then
+              echo 'ONEQAY_SPRINT50_JRN007_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            fi
             if [[ "$count" -eq 15 && "$fingerprint" == '5e19664988cabba0030f9927d26b0702370414be4cd6b424d585925b634ca2b8' ]]; then
               echo 'ONEQAY_SPRINT48_JRN005_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
               echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
@@ -167,7 +171,7 @@ jobs:
                 rm -f "$migration_path"
               fi
             done
-            echo 'Exact governed preservation/source successor recognized; migrations #12-#18 isolated when present only from historical Sprint32 execution.'
+            echo 'Exact governed preservation/source successor recognized; migrations #12-#19 isolated when present only from historical Sprint32 execution.'
             exit 0
           fi
           echo 'ONEQAY_SPRINT32_WORKFLOW_CORRECTION=false' >> "$GITHUB_ENV"
@@ -239,7 +243,12 @@ jobs:
           if [[ "${{ github.event_name }}" == 'pull_request' ]]; then
             base="origin/${{ github.base_ref }}"
             if [[ "${ONEQAY_SPRINT32_WORKFLOW_CORRECTION:-false}" == 'true' ]]; then
-              if [[ "${ONEQAY_SPRINT48_JRN005_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+              if [[ "${ONEQAY_SPRINT50_JRN007_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+                migration19='apps/web/database/migrations/0000_00_00_000019_create_pos_sale_void_foundation.php'
+                git diff --exit-code "$base...HEAD" -- apps/web/database/migrations ":(exclude)$migration19"
+                test "$(git diff --name-only "$base...HEAD" -- apps/web/database/migrations | sed '/^$/d' | wc -l)" -eq 1
+                git diff --diff-filter=A --name-only "$base...HEAD" -- apps/web/database/migrations | grep -Fxq "$migration19"
+              elif [[ "${ONEQAY_SPRINT48_JRN005_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
                 migration18='apps/web/database/migrations/0000_00_00_000018_create_pos_shift_opening_foundation.php'
                 git diff --exit-code "$base...HEAD" -- apps/web/database/migrations ":(exclude)$migration18"
                 test "$(git diff --name-only "$base...HEAD" -- apps/web/database/migrations | sed '/^$/d' | wc -l)" -eq 1
