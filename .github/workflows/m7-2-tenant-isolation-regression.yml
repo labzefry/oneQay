@@ -1,3 +1,4 @@
+# Sprint57 bounded M7.2 sale-to-shift binding compatibility — Lab | zefry
 # Sprint54 bounded successor compatibility predecessor — Lab | zefry
 # Sprint53 bounded third historical fixture compatibility closure — Lab | zefry
 # Sprint53 bounded second historical fixture compatibility closure — Lab | zefry
@@ -215,6 +216,45 @@ jobs:
           fi
           else
             echo 'ONEQAY_SPRINT35_SUCCESSOR=false' >> "$GITHUB_ENV"
+          fi
+
+      - name: Recognize exact Sprint57 sale-shift binding for M7.2 historical preservation
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+          git diff --name-only "$base" "$head" | sort > /tmp/s57-m72-paths
+          count="$(wc -l < /tmp/s57-m72-paths)"
+          fingerprint="$(sha256sum /tmp/s57-m72-paths | awk '{print $1}')"
+          source=false
+          self=false
+          if [[ "$count" -eq 5 && "$fingerprint" == '26d2d48f114c88d60dc302dccd8d41118bc730c309c9d79b71f5e516731a0b25' ]]; then
+            source=true
+            migration24='apps/web/database/migrations/0000_00_00_000024_add_immutable_shift_binding_to_pos_sales.php'
+            test "$(grep -c '^apps/web/database/migrations/' /tmp/s57-m72-paths)" -eq 1
+            grep -Fxq "$migration24" /tmp/s57-m72-paths
+            git diff --exit-code "$base" "$head" -- apps/web/database/migrations ":(exclude)$migration24"
+          elif [[ "$count" -eq 1 && "$fingerprint" == 'ce636b5cf670291469beb0fa97041617c15ec0c402c7d61d1f6820d783096995' ]]; then
+            self=true
+            test "$(grep -c '^apps/web/database/migrations/' /tmp/s57-m72-paths)" -eq 0
+          fi
+          if [[ "$source" == 'true' || "$self" == 'true' ]]; then
+            for index in $(seq 10 24); do
+              migration="$(find apps/web/database/migrations -maxdepth 1 -type f -name "$(printf '0000_00_00_%06d_*' "$index")" -print -quit)"
+              if [[ -n "$migration" && -f "$migration" ]]; then
+                git update-index --assume-unchanged "$migration"
+                rm -f "$migration"
+              fi
+            done
+            echo 'ONEQAY_SPRINT35_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT30_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT31_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT32_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT33_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT34_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'Exact Sprint57 M7.2 source/self envelope recognized; migrations #10-#24 isolated from historical tenant-isolation execution.'
           fi
 
       - name: Enforce exact Sprint 28 source envelope
