@@ -1,3 +1,4 @@
+# Sprint57 immutable sale-to-shift binding compatibility — Lab | zefry
 name: Sprint49 JRN-006 Active Shift Sale Precondition Regression
 
 # Author by Lab | zefry
@@ -57,6 +58,8 @@ jobs:
           fingerprint="$(sha256sum /tmp/s49-source-paths | awk '{print $1}')"
           echo 'ONEQAY_SPRINT50_JRN007_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
           echo 'ONEQAY_SPRINT50_COMPATIBILITY_PREDECESSOR=false' >> "$GITHUB_ENV"
+          echo 'ONEQAY_SPRINT57_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
+          echo 'ONEQAY_SPRINT57_COMPATIBILITY_CORRECTION=false' >> "$GITHUB_ENV"
           if [[ "$count" -eq 4 && "$fingerprint" == '154e4e0f6fb898b2c5c677764571a5a9a57c31371c852f16e89a74f3b104adec' ]]; then
             git diff --exit-code "$base" "$head" -- apps/web/database/migrations
           elif [[ "$count" -eq 14 && "$fingerprint" == '78628976e4dbfea29ecab4b40ec6bfbdf697564668ef028a5cb77a3b53466451' ]]; then
@@ -66,6 +69,14 @@ jobs:
           elif [[ "$count" -eq 30 && "$fingerprint" == 'cf8adb2328427a8e27e46f0efd9fe88db90f0401eba9cafd513944c7e040035e' ]]; then
             test "$(grep -c '^apps/web/database/migrations/' /tmp/s49-source-paths)" -eq 0
             echo 'ONEQAY_SPRINT50_COMPATIBILITY_PREDECESSOR=true' >> "$GITHUB_ENV"
+          elif [[ "$count" -eq 5 && "$fingerprint" == '26d2d48f114c88d60dc302dccd8d41118bc730c309c9d79b71f5e516731a0b25' ]]; then
+            test "$(grep -c '^apps/web/database/migrations/' /tmp/s49-source-paths)" -eq 1
+            grep -Fxq 'apps/web/database/migrations/0000_00_00_000024_add_immutable_shift_binding_to_pos_sales.php' /tmp/s49-source-paths
+            grep -Fxq 'apps/web/app/Infrastructure/Pos/LaravelDurablePosSaleRepository.php' /tmp/s49-source-paths
+            echo 'ONEQAY_SPRINT57_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+          elif [[ "$count" -eq 1 && "$fingerprint" == 'd32b86b706433c898b058c950c947266db7d366d249bf4612b56a883f578443a' ]]; then
+            grep -Fxq '.github/workflows/sprint49-jrn006-active-shift-precondition-regression.yml' /tmp/s49-source-paths
+            echo 'ONEQAY_SPRINT57_COMPATIBILITY_CORRECTION=true' >> "$GITHUB_ENV"
           else
             echo 'Sprint49 changed-file envelope mismatch.' >&2
             exit 1
@@ -76,9 +87,33 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if [[ "${ONEQAY_SPRINT50_JRN007_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
-            base="${{ github.event.pull_request.base.sha }}"
-            head="${{ github.event.pull_request.head.sha }}"
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+          repository='apps/web/app/Infrastructure/Pos/LaravelDurablePosSaleRepository.php'
+          if [[ "${ONEQAY_SPRINT57_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            migration24='apps/web/database/migrations/0000_00_00_000024_add_immutable_shift_binding_to_pos_sales.php'
+            changed="$(git diff --name-only "$base" "$head" -- apps/web/database/migrations | sort)"
+            test "$changed" = "$migration24"
+            git diff --exit-code "$base" "$head" -- apps/web/database/migrations ":(exclude)$migration24"
+            git update-index --assume-unchanged "$repository"
+            git show "$base:$repository" > "$repository"
+            for index in $(seq 19 24); do
+              migration="$(find apps/web/database/migrations -maxdepth 1 -type f -name "$(printf '0000_00_00_%06d_*' "$index")" -print -quit)"
+              if [[ -n "$migration" ]]; then
+                git update-index --assume-unchanged "$migration"
+                rm -f "$migration"
+              fi
+            done
+          elif [[ "${ONEQAY_SPRINT57_COMPATIBILITY_CORRECTION:-false}" == 'true' ]]; then
+            git diff --exit-code "$base" "$head" -- apps/web/database/migrations
+            for index in $(seq 19 23); do
+              migration="$(find apps/web/database/migrations -maxdepth 1 -type f -name "$(printf '0000_00_00_%06d_*' "$index")" -print -quit)"
+              if [[ -n "$migration" ]]; then
+                git update-index --assume-unchanged "$migration"
+                rm -f "$migration"
+              fi
+            done
+          elif [[ "${ONEQAY_SPRINT50_JRN007_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
             migration19='apps/web/database/migrations/0000_00_00_000019_create_pos_sale_void_foundation.php'
             changed="$(git diff --name-only "$base" "$head" -- apps/web/database/migrations | sort)"
             test "$changed" = "$migration19"
@@ -86,7 +121,7 @@ jobs:
             git update-index --assume-unchanged "$migration19"
             rm -f "$migration19"
           elif [[ "${ONEQAY_SPRINT50_COMPATIBILITY_PREDECESSOR:-false}" == 'true' ]]; then
-            git diff --exit-code "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" -- apps/web/database/migrations
+            git diff --exit-code "$base" "$head" -- apps/web/database/migrations
           fi
           mapfile -t migrations < <(find apps/web/database/migrations -maxdepth 1 -type f -name '*.php' -printf '%f\n' | sort)
           test "${#migrations[@]}" -eq 18
@@ -196,12 +231,33 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          successor='app/Infrastructure/Pos/LaravelShiftOpeningRepository.php'
-          backup='/tmp/oneqay-s49-shift-opening-repository.php'
-          cp "$successor" "$backup"
-          restore() { [[ ! -f "$backup" ]] || mv "$backup" "$successor"; }
+          successors=(
+            'app/Infrastructure/Pos/LaravelShiftOpeningRepository.php'
+          )
+          if [[ "${ONEQAY_SPRINT57_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT57_COMPATIBILITY_CORRECTION:-false}" == 'true' ]]; then
+            successors+=(
+              'app/Infrastructure/Pos/LaravelShiftClosingCashRepository.php'
+              'app/Infrastructure/Pos/LaravelShiftOpeningCashRepository.php'
+              'app/Infrastructure/Pos/LaravelSaleCashRefundRepository.php'
+              'app/Infrastructure/Pos/LaravelInventoryBaselineRepository.php'
+            )
+          fi
+          backup_dir='/tmp/oneqay-s49-m74-successors'
+          rm -rf "$backup_dir"
+          mkdir -p "$backup_dir"
+          restore() {
+            for successor in "${successors[@]}"; do
+              backup="$backup_dir/$(basename "$successor")"
+              [[ ! -f "$backup" ]] || mv "$backup" "$successor"
+            done
+          }
           trap restore EXIT
-          rm -f "$successor"
+          for successor in "${successors[@]}"; do
+            if [[ -f "$successor" ]]; then
+              cp "$successor" "$backup_dir/$(basename "$successor")"
+              rm -f "$successor"
+            fi
+          done
           php tests/pos-core-synthetic.php
           restore
           trap - EXIT
