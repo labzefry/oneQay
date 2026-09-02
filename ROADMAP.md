@@ -1,5 +1,29 @@
 # oneQay Roadmap
 
+## Canonical post-Sprint53 JRN-010 prerequisite closure and Sprint54 bounded next task — 2026-09-02
+
+This current-facing section supersedes the older post-Sprint52/current-state wording retained below as historical provenance. It records the live canonical Sprint53 prerequisite closure and selects only the next bounded entry-gate concern. It creates no schema, migration-execution, runtime-activation, deployment, release, updater, rollback, or Production authority.
+
+- Functional canonical baseline: `2b3221ee01978fc9153a6bacc9db255ac51d326b`.
+- Sprint53 JRN-010 prerequisite **Bounded Shift Opening Cash Observation Evidence Foundation** is **IMPLEMENTED / SOURCE-PUBLISHED** through PR #536 as `2b3221ee01978fc9153a6bacc9db255ac51d326b`, from qualified exact source head `49ec4a9166462a4ee6f2688c91f2379b976682b7`.
+- The published Sprint53 source envelope remains exactly **14 paths** with sorted newline-terminated SHA-256 `1d75fe26236e2bb56c113713e878e81d3df72cee9aa647b3f7759b9d1bec9164`; post-merge verification preserved all **14/14** pinned source blob SHAs.
+- Fresh exact-head qualification for PR #536 completed **38/38 success / 0 non-success** before Product Owner exact-head authorization, authority evaluator success, raw `product-owner-merge-authority = success`, final race verification, and squash publication.
+- Sprint53 workflow compatibility closures are canonical through PR #531 (`31cd08edd50ec18c409e5807c99761fe0b52ee4d`), PR #533 (`5cdffd666fb364537df7cea024c83afa70e4ea67`), and PR #535 (`33c0b23ba11afa84cea6d59da781bbc155aa717a`). Closed source attempts #530, #532, and #534 remain stale historical evidence only.
+- Canonical source now contains migrations exactly **#1–#22**. Migration #22 remains **SOURCE-PUBLISHED / NOT EXECUTED / NOT APPLIED / NOT ACTIVATED**. This reconciliation grants no migration execution authority.
+- Sprint53 adds only one immutable operator-observed opening-cash fact for one canonical shift. Zero is valid only when explicitly observed; unknown opening cash is never silently converted to zero. Tenant, organization, outlet, device-backed register/shift context, actor, correlation identity, and time remain server-derived.
+- `pos.shift.opening-cash.record` remains deny-by-default with no default grant. `ONEQAY_POS_SHIFT_OPENING_CASH_ENABLED` remains default false and the mutation boundary remains Local/Test/CI only when explicitly armed.
+- **Sprint54 planning candidate is selected as a JRN-010 prerequisite — Bounded Shift Closing Cash Observation Evidence Entry Gate.**
+- Selection rationale: DEC-001 keeps JRN-010 Shift Close and Operational Reconciliation in MVP scope and DEC-007 requires operational reconciliation to compare oneQay records against physical cash/register/shift evidence. Opening-cash evidence is now canonical, but a trustworthy actual-at-close cash observation is still missing.
+- Sprint54 entry-gate work must define only the minimum immutable operator-observed closing-cash evidence for one canonical shift. It must preserve server-derived tenant/organization/outlet/device/register/shift/actor/correlation/time authority, deny-by-default authorization, deterministic tenant-scoped idempotency/replay, and fail-closed conflict handling.
+- The entry gate must not infer closing cash from system-calculated expected cash and must not silently equate an absent observation with zero. If money input is selected, atomic amount, currency, scale, observation timing, replay, and one-observation-per-shift semantics must be explicit.
+- Sprint54 explicitly excludes final shift close, expected-cash derivation, expected-vs-actual variance, variance tolerance/explanation, reviewer approval, controlled reopen, arbitrary cash movement, denominations, settlement, accounting, purchasing, suppliers, provider reconciliation, deployment, release, Production, Technical Preview activation, updater activation, migration execution, rollback, and destructive database actions.
+- Migration #23, any closing-cash table, endpoint, exact permission identifier, runtime flag, or application source path is **NOT SELECTED by this reconciliation**. Those require later bounded entry-gate/schema-source decisions.
+- JRN-010 **Shift Close and Operational Reconciliation remains NOT SELECTED** until closing-cash evidence plus separately required expected-cash/variance/close-authority/settlement semantics are canonical.
+- Technical Preview remains **NOT ACTIVATED**. Production remains **NO-GO / NOT AUTHORIZED**. Updater activation, deployment, release, migration execution, rollback, and destructive lifecycle actions remain **NOT AUTHORIZED**.
+- This reconciliation changes exactly `ROADMAP.md` and `TASKS.md`; sorted newline-terminated path SHA-256 remains `fd007931409a4ccbdca7ce03827f34c6c989686ee149320299df34586e94a91f`.
+
+Attribution: **Lab | zefry**
+
 ## Canonical post-Sprint52 JRN-007 refund closure and Sprint53 bounded next task — 2026-09-02
 
 This current-facing section supersedes the older post-Sprint51/current-state wording retained below as historical provenance. It records the live canonical Sprint52 closure and selects only the next bounded entry-gate concern. It creates no schema, migration-execution, runtime-activation, deployment, release, updater, rollback, or Production authority.
