@@ -1,5 +1,27 @@
 # oneQay Roadmap
 
+## Canonical post-Sprint50 JRN-007 source publication reconciliation — 2026-09-02
+
+This current-facing section supersedes older post-Sprint48/current-state wording retained below as historical provenance. It records the live canonical Sprint50 closure and selects only the next bounded planning concern; it creates no source, schema, migration-execution, runtime-activation, deployment, release, updater, rollback, or Production authority.
+
+- Functional canonical baseline: `21be2bee82a26342bc7de91cec61e259eaecd105`.
+- Sprint50 JRN-007 **Controlled Full Completed-Sale Void Foundation** is **IMPLEMENTED / SOURCE-PUBLISHED** through PR #505 as `21be2bee82a26342bc7de91cec61e259eaecd105`, from qualified exact source head `82ac1ae3627e46bd0470718f9c2374a1524ab9ce`.
+- The published JRN-007 source envelope remains exactly **14 paths** with sorted newline-terminated SHA-256 `78628976e4dbfea29ecab4b40ec6bfbdf697564668ef028a5cb77a3b53466451`; post-merge verification preserved all **14/14** canonical source blob SHAs.
+- Sprint50 historical-regression compatibility closure was published first through PR #504 as `c483d4085d3d5b49f032678ba4c16752d15950f4`. Its exact final correction envelope remains **9 workflow paths** with SHA-256 `3402c8ea58722711f2894b8e3219b6e9d5dede4a5a87f61faa265f299a34c5b1`.
+- Canonical source now contains migrations exactly **#1–#19**. Migrations #16 through #19 remain **SOURCE-PUBLISHED / NOT EXECUTED / NOT APPLIED / NOT ACTIVATED**. Migration #19 is selected only as JRN-007 source design; this reconciliation grants no migration execution authority.
+- JRN-007 adds only one controlled **full completed-sale void** semantic. It preserves immutable original sale/line/payment/receipt evidence, derives stock restoration only from original durable sale lines, records exactly one `VOIDED` event on first success, enforces one void per sale plus durable `tenant_id + operation_id` replay protection, and creates no refund, partial return, provider reversal, shift-close, settlement, or reconciliation authority.
+- `pos.sale.void` remains deny-by-default with no default grant. Tenant, organization, outlet, verified identity/device/session authority, mutation identity, correlation identity, and event time remain server-derived.
+- `ONEQAY_POS_SALE_VOID_ENABLED` remains **default false**. The mutation boundary remains **Local/Test/CI only** when explicitly armed. Technical Preview and Production remain unactivated.
+- The fresh PR #505 exact source head completed **37 materially triggered pull-request workflows / 37 success / 0 non-success**. Dedicated JRN-007, Sprint32/Sprint43 historical preservation, Sprint46–Sprint49 preservation, Governance, PHP Foundation, updater/deployment-control, Technical Preview database, and recovery-rehearsal boundaries all completed successfully before exact-head Product Owner merge authorization and squash publication.
+- The compatibility PR #504 exact final head completed **12/12 success / 0 non-success** before exact-head Product Owner merge authorization and squash publication.
+- **Sprint51 planning candidate is selected as JRN-008 — Bounded Outlet Inventory Baseline Entry Gate**, because DEC-001 identifies JRN-008 as a bounded MVP dependency and the currently published POS path already has catalog preparation, shift opening, active-shift sale completion, and controlled full-sale void.
+- Sprint51 selection is **entry-gate planning only**. No JRN-008 application source path, schema, table, migration #20, endpoint, permission, runtime feature flag, stock-adjustment semantic, or executable database action is selected or authorized by this reconciliation.
+- JRN-010 **Shift Close and Operational Reconciliation** remains **NOT SELECTED**. The existing Sprint50 entry-gate evidence explicitly preserves the dependency on refund/cash/variance/settlement evidence before close/reconciliation may be chosen.
+- Technical Preview remains **NOT ACTIVATED** for these Business MVP source additions. Production remains **NO-GO / NOT AUTHORIZED**. Updater activation, deployment, release, migration execution, rollback, and destructive lifecycle actions remain **NOT AUTHORIZED**.
+- This reconciliation changes exactly `ROADMAP.md` and `TASKS.md`; sorted newline-terminated path SHA-256: `fd007931409a4ccbdca7ce03827f34c6c989686ee149320299df34586e94a91f`.
+
+Attribution: **Lab | zefry**
+
 ## Canonical post-Sprint48 JRN-005 source publication reconciliation — 2026-09-01
 
 This current-facing section supersedes older post-Sprint47/current-state wording retained below as historical provenance. It records canonical source and CI evidence only and creates no new implementation or lifecycle authority.
