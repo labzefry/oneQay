@@ -18,6 +18,7 @@ use App\Delivery\Http\Middleware\RequirePolicyAdministrationSessionContextMiddle
 use App\Delivery\Http\Middleware\RequirePosSessionContextMiddleware;
 use App\Delivery\Http\Pos\PosCatalogPreparationController;
 use App\Delivery\Http\Pos\PosSaleController;
+use App\Delivery\Http\Pos\PosSaleVoidController;
 use App\Delivery\Http\Pos\PosShiftOpeningController;
 use App\Delivery\Http\SystemUpdate\SystemUpdateControlPlaneController;
 use App\Delivery\Http\SystemUpdate\SystemUpdatePageController;
@@ -147,6 +148,12 @@ if (in_array($firstPartyAuthRuntime, ['local', 'test', 'ci'], true)
     Route::post('/pos/sales', PosSaleController::class)
         ->middleware(['session.active', 'throttle:30,1', 'throttle:300,60', RequirePosSessionContextMiddleware::class])
         ->name('pos.sales.complete');
+
+    if ((bool) config('oneqay.pos_sale_void.enabled', false)) {
+        Route::post('/pos/sales/void', PosSaleVoidController::class)
+            ->middleware(['session.active', 'throttle:10,1', 'throttle:100,60', RequirePosSessionContextMiddleware::class])
+            ->name('pos.sales.void');
+    }
 
     if ((bool) config('oneqay.pos_catalog_preparation.enabled', false)) {
         Route::post('/pos/catalog/preparation', PosCatalogPreparationController::class)
