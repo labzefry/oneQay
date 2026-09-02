@@ -67,6 +67,7 @@ jobs:
           echo 'ONEQAY_SPRINT50_COMPATIBILITY_PREDECESSOR=false' >> "$GITHUB_ENV"
           echo 'ONEQAY_SPRINT51_JRN008_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
           echo 'ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
+          echo 'ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
           if [[ "$count" -eq 15 && "$fingerprint" == '5e19664988cabba0030f9927d26b0702370414be4cd6b424d585925b634ca2b8' ]]; then
             test "$(grep -c '^apps/web/database/migrations/' /tmp/s48-jrn005-source-paths)" -eq 1
             grep -Fxq 'apps/web/database/migrations/0000_00_00_000018_create_pos_shift_opening_foundation.php' /tmp/s48-jrn005-source-paths
@@ -83,6 +84,16 @@ jobs:
             grep -Fxq 'apps/web/database/migrations/0000_00_00_000021_create_pos_sale_cash_refund_foundation.php' /tmp/s48-jrn005-source-paths
             echo 'ONEQAY_SPRINT51_JRN008_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+          elif [[ "$count" -eq 14 && "$fingerprint" == '1d75fe26236e2bb56c113713e878e81d3df72cee9aa647b3f7759b9d1bec9164' ]]; then
+            test "$(grep -c '^apps/web/database/migrations/' /tmp/s48-jrn005-source-paths)" -eq 1
+            grep -Fxq 'apps/web/database/migrations/0000_00_00_000022_create_pos_shift_opening_cash_evidence_foundation.php' /tmp/s48-jrn005-source-paths
+            echo 'ONEQAY_SPRINT51_JRN008_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+          elif [[ "$count" -eq 30 && "$fingerprint" == '930cd1237722f4dd0af03e85d684ffa435adab6a1ae16db96d78243510fd85bc' ]]; then
+            test "$(grep -c '^apps/web/database/migrations/' /tmp/s48-jrn005-source-paths)" -eq 0
+            echo 'ONEQAY_SPRINT50_COMPATIBILITY_PREDECESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
           elif [[ "$count" -eq 30 && "$fingerprint" == 'cf8adb2328427a8e27e46f0efd9fe88db90f0401eba9cafd513944c7e040035e' ]] || [[ "$count" -eq 28 && "$fingerprint" == '3b97670674b60c636a23e52551b7ade69a3f545d5d0b4a861fa1c06eae5c0656' ]] || [[ "$count" -eq 29 && "$fingerprint" == 'e56a3e2732f5d5b0b40dd3ae50ec25746cf18bc8bd556d25405e85642c789878' ]]; then
             if [[ "$count" -eq 29 && "$fingerprint" == 'e56a3e2732f5d5b0b40dd3ae50ec25746cf18bc8bd556d25405e85642c789878' ]]; then
               echo 'ONEQAY_SPRINT52_COMPATIBILITY_PREDECESSOR=true' >> "$GITHUB_ENV"
@@ -110,7 +121,16 @@ jobs:
             rm -f "$migration20"
           fi
           migration21='apps/web/database/migrations/0000_00_00_000021_create_pos_sale_cash_refund_foundation.php'
-          if [[ "${ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+          migration22='apps/web/database/migrations/0000_00_00_000022_create_pos_shift_opening_cash_evidence_foundation.php'
+          if [[ "${ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            changed="$(git diff --name-only "$base" "$head" -- apps/web/database/migrations | sort)"
+            changed_count="$(printf '%s\n' "$changed" | sed '/^$/d' | wc -l)"
+            if [[ "$changed_count" -eq 1 ]]; then printf '%s\n' "$changed" | grep -Fxq "$migration22"; else test "$changed_count" -eq 0; fi
+            git diff --exit-code "$base" "$head" -- apps/web/database/migrations ":(exclude)$migration22"
+            for historical_migration in "$migration19" "$migration20" "$migration21" "$migration22"; do
+              if [[ -f "$historical_migration" ]]; then git update-index --assume-unchanged "$historical_migration"; rm -f "$historical_migration"; fi
+            done
+          elif [[ "${ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
             changed="$(git diff --name-only "$base" "$head" -- apps/web/database/migrations | sort)"
             test "$changed" = "$migration21"
             git diff --exit-code "$base" "$head" -- apps/web/database/migrations ":(exclude)$migration21"
@@ -213,28 +233,32 @@ jobs:
           successor='app/Infrastructure/Pos/LaravelShiftOpeningRepository.php'
           inventory='app/Infrastructure/Pos/LaravelInventoryBaselineRepository.php'
           refund='app/Infrastructure/Pos/LaravelSaleCashRefundRepository.php'
+          opening_cash='app/Infrastructure/Pos/LaravelShiftOpeningCashRepository.php'
           backup='/tmp/oneqay-s48-laravel-shift-opening-repository.php'
           inventory_backup='/tmp/oneqay-s48-inventory-baseline-repository.php'
           refund_backup='/tmp/oneqay-s48-cash-refund-repository.php'
+          opening_cash_backup='/tmp/oneqay-s48-opening-cash-repository.php'
           cp "$successor" "$backup"
-          if [[ "${ONEQAY_SPRINT51_JRN008_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT52_COMPATIBILITY_PREDECESSOR:-false}" == 'true' || "${ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+          if [[ "${ONEQAY_SPRINT51_JRN008_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT52_COMPATIBILITY_PREDECESSOR:-false}" == 'true' || "${ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
             cp "$inventory" "$inventory_backup"
           fi
-          if [[ "${ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+          if [[ "${ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
             cp "$refund" "$refund_backup"
+            if [[ -f "$opening_cash" ]]; then cp "$opening_cash" "$opening_cash_backup"; fi
           fi
           restore() {
             [[ ! -f "$backup" ]] || mv "$backup" "$successor"
             [[ ! -f "$inventory_backup" ]] || mv "$inventory_backup" "$inventory"
             [[ ! -f "$refund_backup" ]] || mv "$refund_backup" "$refund"
+            [[ ! -f "$opening_cash_backup" ]] || mv "$opening_cash_backup" "$opening_cash"
           }
           trap restore EXIT
           rm -f "$successor"
-          if [[ "${ONEQAY_SPRINT51_JRN008_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT52_COMPATIBILITY_PREDECESSOR:-false}" == 'true' || "${ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+          if [[ "${ONEQAY_SPRINT51_JRN008_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT52_COMPATIBILITY_PREDECESSOR:-false}" == 'true' || "${ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
             rm -f "$inventory"
           fi
-          if [[ "${ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
-            rm -f "$refund"
+          if [[ "${ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            rm -f "$refund" "$opening_cash"
           fi
           php tests/pos-core-synthetic.php
           restore
