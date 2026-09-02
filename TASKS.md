@@ -1,5 +1,30 @@
 # oneQay Tasks
 
+## Canonical post-Sprint50 JRN-007 closure and Sprint51 bounded next task — 2026-09-02
+
+This current-facing section supersedes older post-Sprint48/current-state task wording retained below as historical provenance. It records completed canonical work and identifies only the next bounded entry-gate task.
+
+- [x] Publish Sprint50 historical compatibility correction through PR #504 as `c483d4085d3d5b49f032678ba4c16752d15950f4`.
+- [x] Preserve the exact 9-workflow correction envelope SHA-256 `3402c8ea58722711f2894b8e3219b6e9d5dede4a5a87f61faa265f299a34c5b1`.
+- [x] Qualify PR #504 exact head with **12/12 success / 0 non-success**, exact-head Product Owner merge authority, and squash publication.
+- [x] Replay the 14 JRN-007 source blobs byte-identically from canonical source history.
+- [x] Publish Sprint50 JRN-007 **Controlled Full Completed-Sale Void Foundation** through PR #505 as canonical `21be2bee82a26342bc7de91cec61e259eaecd105`.
+- [x] Preserve exact JRN-007 14-path source-envelope SHA-256 `78628976e4dbfea29ecab4b40ec6bfbdf697564668ef028a5cb77a3b53466451`.
+- [x] Verify **14/14** source blob SHAs remained identical after squash publication.
+- [x] Qualify PR #505 exact source head `82ac1ae3627e46bd0470718f9c2374a1524ab9ce` with **37/37 success / 0 non-success**, including dedicated JRN-007 and historical preservation.
+- [x] Keep migrations #16–#19 **SOURCE-PUBLISHED / NOT EXECUTED / NOT APPLIED / NOT ACTIVATED**.
+- [x] Keep JRN-007 feature delivery **default false / Local-Test-CI only**; Technical Preview and Production remain unactivated.
+- [ ] **Sprint51 next bounded task: prepare JRN-008 — Bounded Outlet Inventory Baseline Entry Gate.**
+- [ ] Sprint51 entry gate must derive exact minimum business semantics from DEC-001 and current durable catalog/sale/void state before any schema or source-envelope selection.
+- [ ] Sprint51 entry gate must preserve server-derived tenant/organization/outlet/device/session authority, deny-by-default authorization, deterministic idempotency/replay, and tenant isolation.
+- [ ] Sprint51 entry gate must explicitly exclude broad inventory administration, purchasing, suppliers, transfers, stocktake/reconciliation, arbitrary stock adjustment, negative-stock policy expansion, deployment, release, Production, and migration execution unless separately gated later.
+- [ ] Do **not** select migration #20 or freeze JRN-008 source paths in this reconciliation; those require a later schema/source-envelope gate after the entry gate is qualified.
+- [ ] Keep JRN-010 Shift Close and Operational Reconciliation **NOT SELECTED** until its refund/cash/variance/settlement evidence dependencies are separately satisfied.
+- [ ] Keep Technical Preview activation, Production, updater activation, deployment, release, rollback, and migration execution **NOT AUTHORIZED**.
+- [x] Current reconciliation scope is exactly `ROADMAP.md` + `TASKS.md`; sorted newline-terminated path SHA-256 `fd007931409a4ccbdca7ce03827f34c6c989686ee149320299df34586e94a91f`.
+
+Attribution: **Lab | zefry**
+
 ## Canonical post-Sprint48 JRN-005 source publication reconciliation — 2026-09-01
 
 This current-facing section supersedes older post-Sprint47/current-state wording retained below as historical provenance. It records canonical source and CI evidence only and creates no new implementation or lifecycle authority.
