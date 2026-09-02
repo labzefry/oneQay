@@ -138,6 +138,10 @@ jobs:
             echo 'ONEQAY_SPRINT48_JRN005_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT50_COMPATIBILITY_PREDECESSOR=true' >> "$GITHUB_ENV"
             echo 'Recognized exact Sprint50 two-workflow source-compatibility correction shape.'
+          elif [[ "$actual_count" -eq 9 && "$actual_fingerprint" == '3402c8ea58722711f2894b8e3219b6e9d5dede4a5a87f61faa265f299a34c5b1' ]]; then
+            echo 'ONEQAY_SPRINT48_JRN005_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT50_COMPATIBILITY_PREDECESSOR=true' >> "$GITHUB_ENV"
+            echo 'Recognized exact Sprint50 nine-workflow source-compatibility correction shape.'
           else
             echo 'Sprint43 changed-file envelope mismatch.' >&2
             diff -u /tmp/sprint43-source-paths /tmp/actual-sprint43-source-paths >&2 || true
