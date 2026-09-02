@@ -69,6 +69,7 @@ jobs:
           count="$(wc -l < /tmp/s51-source-paths)"
           fingerprint="$(sha256sum /tmp/s51-source-paths | awk '{print $1}')"
           echo 'ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
+          echo 'ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
           echo 'ONEQAY_SPRINT52_COMPATIBILITY_PREDECESSOR=false' >> "$GITHUB_ENV"
           if [[ "$count" -eq 15 && "$fingerprint" == '325559599c79ba68340eac34569f8e5513aa4957b1ddf2515007b98b2cc1f15f' ]]; then
             test "$(grep -c '^apps/web/database/migrations/' /tmp/s51-source-paths)" -eq 1
@@ -77,6 +78,14 @@ jobs:
             test "$(grep -c '^apps/web/database/migrations/' /tmp/s51-source-paths)" -eq 1
             grep -Fxq 'apps/web/database/migrations/0000_00_00_000021_create_pos_sale_cash_refund_foundation.php' /tmp/s51-source-paths
             echo 'ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+          elif [[ "$count" -eq 14 && "$fingerprint" == '1d75fe26236e2bb56c113713e878e81d3df72cee9aa647b3f7759b9d1bec9164' ]]; then
+            test "$(grep -c '^apps/web/database/migrations/' /tmp/s51-source-paths)" -eq 1
+            grep -Fxq 'apps/web/database/migrations/0000_00_00_000022_create_pos_shift_opening_cash_evidence_foundation.php' /tmp/s51-source-paths
+            echo 'ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+          elif [[ "$count" -eq 30 && "$fingerprint" == '930cd1237722f4dd0af03e85d684ffa435adab6a1ae16db96d78243510fd85bc' ]]; then
+            test "$(grep -c '^apps/web/database/migrations/' /tmp/s51-source-paths)" -eq 0
+            echo 'ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
           elif [[ "$count" -eq 29 && "$fingerprint" == 'e56a3e2732f5d5b0b40dd3ae50ec25746cf18bc8bd556d25405e85642c789878' ]] || [[ "$count" -eq 20 && "$fingerprint" == 'b25a8747bd003c6952e86f97982ee7cfd504e9ffffda137fca52fb6dd597d663' ]]; then
             test "$(grep -c '^apps/web/database/migrations/' /tmp/s51-source-paths)" -eq 0
             echo 'ONEQAY_SPRINT52_COMPATIBILITY_PREDECESSOR=true' >> "$GITHUB_ENV"
@@ -95,7 +104,16 @@ jobs:
           head="${{ github.event.pull_request.head.sha }}"
           migration='apps/web/database/migrations/0000_00_00_000020_create_pos_inventory_baseline_foundation.php'
           migration21='apps/web/database/migrations/0000_00_00_000021_create_pos_sale_cash_refund_foundation.php'
-          if [[ "${ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+          migration22='apps/web/database/migrations/0000_00_00_000022_create_pos_shift_opening_cash_evidence_foundation.php'
+          if [[ "${ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            changed="$(git diff --name-only "$base" "$head" -- apps/web/database/migrations | sort)"
+            changed_count="$(printf '%s\n' "$changed" | sed '/^$/d' | wc -l)"
+            if [[ "$changed_count" -eq 1 ]]; then printf '%s\n' "$changed" | grep -Fxq "$migration22"; else test "$changed_count" -eq 0; fi
+            git diff --exit-code "$base" "$head" -- apps/web/database/migrations ":(exclude)$migration22"
+            for historical_migration in $migration21 $migration22; do
+              if [[ -f "$historical_migration" ]]; then git update-index --assume-unchanged "$historical_migration"; rm -f "$historical_migration"; fi
+            done
+          elif [[ "${ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
             git diff --exit-code "$base" "$head" -- apps/web/database/migrations ":(exclude)$migration21"
             git update-index --assume-unchanged "$migration21"
             rm -f "$migration21"
