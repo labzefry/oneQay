@@ -231,12 +231,33 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          successor='app/Infrastructure/Pos/LaravelShiftOpeningRepository.php'
-          backup='/tmp/oneqay-s49-shift-opening-repository.php'
-          cp "$successor" "$backup"
-          restore() { [[ ! -f "$backup" ]] || mv "$backup" "$successor"; }
+          successors=(
+            'app/Infrastructure/Pos/LaravelShiftOpeningRepository.php'
+          )
+          if [[ "${ONEQAY_SPRINT57_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT57_COMPATIBILITY_CORRECTION:-false}" == 'true' ]]; then
+            successors+=(
+              'app/Infrastructure/Pos/LaravelShiftClosingCashRepository.php'
+              'app/Infrastructure/Pos/LaravelShiftOpeningCashRepository.php'
+              'app/Infrastructure/Pos/LaravelSaleCashRefundRepository.php'
+              'app/Infrastructure/Pos/LaravelInventoryBaselineRepository.php'
+            )
+          fi
+          backup_dir='/tmp/oneqay-s49-m74-successors'
+          rm -rf "$backup_dir"
+          mkdir -p "$backup_dir"
+          restore() {
+            for successor in "${successors[@]}"; do
+              backup="$backup_dir/$(basename "$successor")"
+              [[ ! -f "$backup" ]] || mv "$backup" "$successor"
+            done
+          }
           trap restore EXIT
-          rm -f "$successor"
+          for successor in "${successors[@]}"; do
+            if [[ -f "$successor" ]]; then
+              cp "$successor" "$backup_dir/$(basename "$successor")"
+              rm -f "$successor"
+            fi
+          done
           php tests/pos-core-synthetic.php
           restore
           trap - EXIT
