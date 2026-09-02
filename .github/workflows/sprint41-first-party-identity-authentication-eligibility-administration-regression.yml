@@ -184,6 +184,9 @@ jobs:
             echo 'ONEQAY_SPRINT50_COMPATIBILITY_PREDECESSOR=true' >> "$GITHUB_ENV"
             echo 'Recognized exact Sprint50 nine-workflow source-compatibility correction shape.'
           elif [[ "$actual_count" -eq 30 && "$actual_fingerprint" == 'cf8adb2328427a8e27e46f0efd9fe88db90f0401eba9cafd513944c7e040035e' ]] || [[ "$actual_count" -eq 28 && "$actual_fingerprint" == '3b97670674b60c636a23e52551b7ade69a3f545d5d0b4a861fa1c06eae5c0656' ]] || [[ "$actual_count" -eq 29 && "$actual_fingerprint" == 'e56a3e2732f5d5b0b40dd3ae50ec25746cf18bc8bd556d25405e85642c789878' ]]; then
+            if [[ "$actual_count" -eq 29 && "$actual_fingerprint" == 'e56a3e2732f5d5b0b40dd3ae50ec25746cf18bc8bd556d25405e85642c789878' ]]; then
+              echo 'ONEQAY_SPRINT52_COMPATIBILITY_PREDECESSOR=true' >> "$GITHUB_ENV"
+            fi
             echo 'ONEQAY_SPRINT48_JRN005_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT42_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT43_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
@@ -209,6 +212,10 @@ jobs:
           migration19='apps/web/database/migrations/0000_00_00_000019_create_pos_sale_void_foundation.php'
 
           migration20='apps/web/database/migrations/0000_00_00_000020_create_pos_inventory_baseline_foundation.php'
+          if [[ "${ONEQAY_SPRINT52_COMPATIBILITY_PREDECESSOR:-false}" == 'true' && -f "$migration20" ]]; then
+            git update-index --assume-unchanged "$migration20"
+            rm -f "$migration20"
+          fi
           migration21='apps/web/database/migrations/0000_00_00_000021_create_pos_sale_cash_refund_foundation.php'
 
           if [[ "${ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
