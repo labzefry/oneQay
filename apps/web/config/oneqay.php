@@ -86,6 +86,14 @@ return [
         ),
     ],
 
+    'pos_inventory_baseline' => [
+        // Sprint51 JRN-008 opening inventory baseline remains Local/Test/CI-only and fail-closed unless explicitly armed.
+        'enabled' => filter_var(
+            env('ONEQAY_POS_INVENTORY_BASELINE_ENABLED', false),
+            FILTER_VALIDATE_BOOL,
+        ),
+    ],
+
     'system_update' => [
         // Backend control-plane visibility/checking may only be enabled explicitly.
         'control_plane_enabled' => filter_var(
