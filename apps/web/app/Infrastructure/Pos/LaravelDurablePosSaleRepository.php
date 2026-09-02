@@ -66,13 +66,16 @@ final readonly class LaravelDurablePosSaleRepository implements DurablePosSaleRe
 
             $activeShift = $this->connection->table('oneqay_pos_shifts')
                 ->where('tenant_id', $context->tenantId())
+                ->where('organization_id', $context->organizationId())
                 ->where('outlet_id', $context->outletId())
                 ->where('device_id', $context->deviceId())
                 ->where('active_slot', 1)
                 ->lockForUpdate()
                 ->first();
 
-            if ($activeShift === null) {
+            if ($activeShift === null
+                || ! is_string($activeShift->shift_id)
+                || trim($activeShift->shift_id) === '') {
                 throw new PosTransactionViolation();
             }
 
@@ -141,6 +144,7 @@ final readonly class LaravelDurablePosSaleRepository implements DurablePosSaleRe
                 'organization_id' => $context->organizationId(),
                 'outlet_id' => $context->outletId(),
                 'device_id' => $context->deviceId(),
+                'shift_id' => $activeShift->shift_id,
                 'total_atomic' => $total->atomicUnits(),
                 'currency' => $total->currency(),
                 'currency_scale' => $total->scale(),
