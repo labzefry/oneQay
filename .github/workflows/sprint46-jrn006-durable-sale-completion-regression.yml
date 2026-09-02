@@ -280,7 +280,22 @@ jobs:
         run: |
           set -euo pipefail
           inventory='app/Infrastructure/Pos/LaravelInventoryBaselineRepository.php'
-          if [[ "${ONEQAY_SPRINT51_JRN008_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+          refund='app/Infrastructure/Pos/LaravelSaleCashRefundRepository.php'
+          if [[ "${ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            inventory_backup='/tmp/oneqay-s46-jrn008-inventory-repository.php'
+            refund_backup='/tmp/oneqay-s46-jrn007-refund-repository.php'
+            cp "$inventory" "$inventory_backup"
+            cp "$refund" "$refund_backup"
+            restore_s52() {
+              [[ ! -f "$inventory_backup" ]] || mv "$inventory_backup" "$inventory"
+              [[ ! -f "$refund_backup" ]] || mv "$refund_backup" "$refund"
+            }
+            trap restore_s52 EXIT
+            rm -f "$inventory" "$refund"
+            php tests/pos-core-synthetic.php
+            restore_s52
+            trap - EXIT
+          elif [[ "${ONEQAY_SPRINT51_JRN008_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT52_COMPATIBILITY_PREDECESSOR:-false}" == 'true' ]]; then
             backup='/tmp/oneqay-s46-jrn008-inventory-repository.php'
             cp "$inventory" "$backup"
             trap '[[ ! -f "$backup" ]] || mv "$backup" "$inventory"' EXIT
@@ -291,7 +306,6 @@ jobs:
           else
             php tests/pos-core-synthetic.php
           fi
-
       - name: Run JRN-006 durable sale regression
         working-directory: apps/web
         shell: bash

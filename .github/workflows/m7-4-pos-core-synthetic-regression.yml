@@ -412,7 +412,7 @@ jobs:
             php tests/pos-core-synthetic.php
             restore_s52
             trap - EXIT
-          elif [[ "${ONEQAY_SPRINT51_JRN008_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+          elif [[ "${ONEQAY_SPRINT51_JRN008_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT52_COMPATIBILITY_PREDECESSOR:-false}" == 'true' ]]; then
             backup='/tmp/oneqay-m74-jrn008-inventory-repository.php'
             cp "$inventory" "$backup"
             trap '[[ ! -f "$backup" ]] || mv "$backup" "$inventory"' EXIT

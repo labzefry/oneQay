@@ -280,20 +280,32 @@ jobs:
           set -euo pipefail
           successor='app/Infrastructure/Pos/LaravelShiftOpeningRepository.php'
           inventory='app/Infrastructure/Pos/LaravelInventoryBaselineRepository.php'
+          refund='app/Infrastructure/Pos/LaravelSaleCashRefundRepository.php'
           backup='/tmp/oneqay-s50-shift-opening-repository.php'
           inventory_backup='/tmp/oneqay-s50-inventory-baseline-repository.php'
+          refund_backup='/tmp/oneqay-s50-cash-refund-repository.php'
           cp "$successor" "$backup"
-          if [[ "${ONEQAY_SPRINT51_JRN008_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then cp "$inventory" "$inventory_backup"; fi
+          if [[ "${ONEQAY_SPRINT51_JRN008_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT52_COMPATIBILITY_PREDECESSOR:-false}" == 'true' || "${ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            cp "$inventory" "$inventory_backup"
+          fi
+          if [[ "${ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            cp "$refund" "$refund_backup"
+          fi
           restore() {
             [[ ! -f "$backup" ]] || mv "$backup" "$successor"
             [[ ! -f "$inventory_backup" ]] || mv "$inventory_backup" "$inventory"
+            [[ ! -f "$refund_backup" ]] || mv "$refund_backup" "$refund"
           }
           trap restore EXIT
           rm -f "$successor"
-          if [[ "${ONEQAY_SPRINT51_JRN008_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then rm -f "$inventory"; fi
+          if [[ "${ONEQAY_SPRINT51_JRN008_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT52_COMPATIBILITY_PREDECESSOR:-false}" == 'true' || "${ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            rm -f "$inventory"
+          fi
+          if [[ "${ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            rm -f "$refund"
+          fi
           php tests/pos-core-synthetic.php
           restore
           trap - EXIT
-
       - name: Preserve tracked source cleanliness
         run: git diff --exit-code
