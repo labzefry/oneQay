@@ -1,3 +1,4 @@
+# Sprint54 bounded 12-workflow source-preservation correction — Lab | zefry
 # Sprint54 bounded successor compatibility predecessor — Lab | zefry
 # Sprint53 bounded third historical fixture compatibility closure — Lab | zefry
 # Sprint53 bounded second historical fixture compatibility closure — Lab | zefry
@@ -72,18 +73,28 @@ jobs:
           count="$(wc -l < /tmp/s52-source-paths)"
           fingerprint="$(sha256sum /tmp/s52-source-paths | awk '{print $1}')"
           echo 'ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
+          echo 'ONEQAY_SPRINT54_JRN010_PREREQ_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
           if [[ "$count" -eq 14 && "$fingerprint" == 'ad4f6c62c820bdc59d7c1c8550ffeec0a4a0718ba4388a516418d50468d7e9d5' ]]; then
             test "$(grep -c '^apps/web/database/migrations/' /tmp/s52-source-paths)" -eq 1
             grep -Fxq 'apps/web/database/migrations/0000_00_00_000021_create_pos_sale_cash_refund_foundation.php' /tmp/s52-source-paths
-          elif [[ "$count" -eq 14 && "$fingerprint" == '1d75fe26236e2bb56c113713e878e81d3df72cee9aa647b3f7759b9d1bec9164' ]] || [[ "$count" -eq 14 && "$fingerprint" == 'a0914d7db5c1636e909e331e8b72653bc9814eb74e3a3823d7db36bd3b73b624' ]]; then
+          elif [[ "$count" -eq 14 && "$fingerprint" == 'a0914d7db5c1636e909e331e8b72653bc9814eb74e3a3823d7db36bd3b73b624' ]]; then
+            test "$(grep -c '^apps/web/database/migrations/' /tmp/s52-source-paths)" -eq 1
+            grep -Fxq 'apps/web/database/migrations/0000_00_00_000023_create_pos_shift_closing_cash_evidence_foundation.php' /tmp/s52-source-paths
+            echo 'ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT54_JRN010_PREREQ_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+          elif [[ "$count" -eq 14 && "$fingerprint" == '1d75fe26236e2bb56c113713e878e81d3df72cee9aa647b3f7759b9d1bec9164' ]]; then
             test "$(grep -c '^apps/web/database/migrations/' /tmp/s52-source-paths)" -eq 1
             grep -Fxq 'apps/web/database/migrations/0000_00_00_000022_create_pos_shift_opening_cash_evidence_foundation.php' /tmp/s52-source-paths
             echo 'ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+          elif [[ "$count" -eq 12 && "$fingerprint" == '77a408974add7f466ed746b8b47c10d5fec45c8073ab32e0450abd95f206bf1f' ]]; then
+            test "$(grep -c '^apps/web/database/migrations/' /tmp/s52-source-paths)" -eq 0
+            echo 'ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'Recognized exact Sprint54 12-workflow source-preservation correction shape.'
           elif [[ "$count" -eq 30 && "$fingerprint" == '930cd1237722f4dd0af03e85d684ffa435adab6a1ae16db96d78243510fd85bc' ]]; then
             test "$(grep -c '^apps/web/database/migrations/' /tmp/s52-source-paths)" -eq 0
             echo 'ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
           else
-            echo 'Sprint52/Sprint53 changed-file envelope mismatch.' >&2
+            echo 'Sprint52/Sprint53/Sprint54 changed-file envelope mismatch.' >&2
             exit 1
           fi
           ! grep -Eq '(^|/)(composer\.(json|lock)|package(-lock)?\.json|\.env(\.|$))' /tmp/s52-source-paths
@@ -97,7 +108,19 @@ jobs:
           head="${{ github.event.pull_request.head.sha }}"
           migration='apps/web/database/migrations/0000_00_00_000021_create_pos_sale_cash_refund_foundation.php'
           migration22='apps/web/database/migrations/0000_00_00_000022_create_pos_shift_opening_cash_evidence_foundation.php'
-          if [[ "${ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+          migration23='apps/web/database/migrations/0000_00_00_000023_create_pos_shift_closing_cash_evidence_foundation.php'
+          if [[ "${ONEQAY_SPRINT54_JRN010_PREREQ_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            changed="$(git diff --name-only "$base" "$head" -- apps/web/database/migrations | sort)"
+            changed_count="$(printf '%s\n' "$changed" | sed '/^$/d' | wc -l)"
+            if [[ "$changed_count" -eq 1 ]]; then printf '%s\n' "$changed" | grep -Fxq "$migration23"; else test "$changed_count" -eq 0; fi
+            git diff --exit-code "$base" "$head" -- apps/web/database/migrations ":(exclude)$migration23"
+            for historical_migration in "$migration22" "$migration23"; do
+              if [[ -f "$historical_migration" ]]; then
+                git update-index --assume-unchanged "$historical_migration"
+                rm -f "$historical_migration"
+              fi
+            done
+          elif [[ "${ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
             changed="$(git diff --name-only "$base" "$head" -- apps/web/database/migrations | sort)"
             changed_count="$(printf '%s\n' "$changed" | sed '/^$/d' | wc -l)"
             if [[ "$changed_count" -eq 1 ]]; then printf '%s\n' "$changed" | grep -Fxq "$migration22"; else test "$changed_count" -eq 0; fi
@@ -346,22 +369,26 @@ jobs:
           inventory_successor='app/Infrastructure/Pos/LaravelInventoryBaselineRepository.php'
           refund_successor='app/Infrastructure/Pos/LaravelSaleCashRefundRepository.php'
           opening_cash_successor='app/Infrastructure/Pos/LaravelShiftOpeningCashRepository.php'
+          closing_cash_successor='app/Infrastructure/Pos/LaravelShiftClosingCashRepository.php'
           shift_backup='/tmp/oneqay-s52-shift-opening-repository.php'
           inventory_backup='/tmp/oneqay-s52-inventory-baseline-repository.php'
           refund_backup='/tmp/oneqay-s52-cash-refund-repository.php'
           opening_cash_backup='/tmp/oneqay-s52-opening-cash-repository.php'
+          closing_cash_backup='/tmp/oneqay-s52-closing-cash-repository.php'
           cp "$shift_successor" "$shift_backup"
           cp "$inventory_successor" "$inventory_backup"
           cp "$refund_successor" "$refund_backup"
           if [[ -f "$opening_cash_successor" ]]; then cp "$opening_cash_successor" "$opening_cash_backup"; fi
+          if [[ -f "$closing_cash_successor" ]]; then cp "$closing_cash_successor" "$closing_cash_backup"; fi
           restore() {
             [[ ! -f "$shift_backup" ]] || mv "$shift_backup" "$shift_successor"
             [[ ! -f "$inventory_backup" ]] || mv "$inventory_backup" "$inventory_successor"
             [[ ! -f "$refund_backup" ]] || mv "$refund_backup" "$refund_successor"
             [[ ! -f "$opening_cash_backup" ]] || mv "$opening_cash_backup" "$opening_cash_successor"
+            [[ ! -f "$closing_cash_backup" ]] || mv "$closing_cash_backup" "$closing_cash_successor"
           }
           trap restore EXIT
-          rm -f "$shift_successor" "$inventory_successor" "$refund_successor" "$opening_cash_successor"
+          rm -f "$shift_successor" "$inventory_successor" "$refund_successor" "$opening_cash_successor" "$closing_cash_successor"
           php tests/pos-core-synthetic.php
           restore
           trap - EXIT
