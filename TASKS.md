@@ -1,5 +1,27 @@
 # oneQay Tasks
 
+## Canonical post-Sprint51 JRN-008 closure and Sprint52 bounded next task — 2026-09-02
+
+This current-facing section supersedes the older post-Sprint50/current-state task wording retained below as historical provenance.
+
+- [x] Publish Sprint51 JRN-008 **Bounded Outlet Inventory Baseline Foundation** through PR #516 as canonical `e05714364304abdf7cea1c3000e3cab44ba1c29b`.
+- [x] Preserve exact JRN-008 15-path source-envelope SHA-256 `325559599c79ba68340eac34569f8e5513aa4957b1ddf2515007b98b2cc1f15f`.
+- [x] Verify **15/15** post-merge source blob SHAs remained identical.
+- [x] Preserve exact-head qualification evidence for PR #516: **36/36 success / 0 non-success**, exact-head Product Owner merge authority, raw authority success, final race check, and squash publication.
+- [x] Keep migration #20 **SOURCE-PUBLISHED / NOT EXECUTED / NOT APPLIED / NOT ACTIVATED**.
+- [x] Keep JRN-008 feature delivery **default false / Local-Test-CI only**; Technical Preview and Production remain unactivated.
+- [ ] **Sprint52 next bounded task: prepare JRN-007 Bounded Full CASH Refund Evidence Entry Gate.**
+- [ ] Limit the selected correction semantic to one deterministic full CASH refund record for an eligible sale already corrected through the canonical JRN-007 full-sale void foundation.
+- [ ] Derive refund amount/currency/scale and all tenant/organization/outlet/actor/device/correlation/time context from canonical server-owned evidence; caller-selected refund amount remains forbidden.
+- [ ] Preserve original sale/payment/receipt evidence and prohibit any second stock restoration.
+- [ ] Require dedicated deny-by-default refund authorization with no default grant and deterministic tenant-scoped operation replay/conflict denial.
+- [ ] Keep partial refund/return, exchange, MANUAL_EXTERNAL refund, provider refund/reversal, chargeback, drawer automation, cash count, variance, settlement, accounting, purchasing, suppliers, and JRN-010 outside Sprint52.
+- [ ] Do **not** select migration #21, a refund table, endpoint, exact permission identifier, or source-envelope paths in this reconciliation; those belong to a later bounded schema/source-envelope gate.
+- [ ] Keep JRN-010 **NOT SELECTED** until refund plus separately required cash-count/variance/settlement evidence dependencies are satisfied.
+- [ ] Keep Technical Preview activation, Production, updater activation, deployment, release, rollback, migration execution, and destructive database operations **NOT AUTHORIZED**.
+
+Attribution: **Lab | zefry**
+
 ## Canonical post-Sprint50 JRN-007 closure and Sprint51 bounded next task — 2026-09-02
 
 This current-facing section supersedes older post-Sprint48/current-state task wording retained below as historical provenance. It records completed canonical work and identifies only the next bounded entry-gate task.
