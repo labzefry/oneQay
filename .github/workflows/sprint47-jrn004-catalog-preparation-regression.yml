@@ -67,6 +67,8 @@ jobs:
           echo 'ONEQAY_SPRINT46_JRN006_COMPATIBILITY_PREDECESSOR=false' >> "$GITHUB_ENV"
           echo 'ONEQAY_SPRINT47_JRN004_COMPATIBILITY_PREDECESSOR=false' >> "$GITHUB_ENV"
           echo 'ONEQAY_SPRINT48_JRN005_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
+          echo 'ONEQAY_SPRINT50_JRN007_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
+          echo 'ONEQAY_SPRINT50_COMPATIBILITY_PREDECESSOR=false' >> "$GITHUB_ENV"
           if [[ "$count" -eq 15 && "$fingerprint" == 'c1ac6d5130c9d78ff99ed0accf5d11e3f08debc575c0d5152ef5b24e6f82ce02' ]]; then
             test "$(grep -c '^apps/web/database/migrations/' /tmp/s47-jrn004-source-paths)" -eq 1
             grep -Fxq 'apps/web/database/migrations/0000_00_00_000017_create_pos_catalog_preparation_journal.php' /tmp/s47-jrn004-source-paths
@@ -91,6 +93,17 @@ jobs:
             grep -Fxq 'apps/web/database/migrations/0000_00_00_000018_create_pos_shift_opening_foundation.php' /tmp/s47-jrn004-source-paths
             echo 'ONEQAY_SPRINT48_JRN005_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'Recognized exact Sprint48 JRN-005 shift-opening source successor shape.'
+          elif [[ "$count" -eq 14 && "$fingerprint" == '78628976e4dbfea29ecab4b40ec6bfbdf697564668ef028a5cb77a3b53466451' ]]; then
+            test "$(grep -c '^apps/web/database/migrations/' /tmp/s47-jrn004-source-paths)" -eq 1
+            grep -Fxq 'apps/web/database/migrations/0000_00_00_000019_create_pos_sale_void_foundation.php' /tmp/s47-jrn004-source-paths
+            echo 'ONEQAY_SPRINT48_JRN005_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT50_JRN007_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'Recognized exact Sprint50 JRN-007 source successor shape.'
+          elif [[ "$count" -eq 29 && "$fingerprint" == 'e2ab1c790458071afb5e26f9c1525a34386df666851bb77d58c04c15220d1e52' ]]; then
+            test "$(grep -c '^apps/web/database/migrations/' /tmp/s47-jrn004-source-paths)" -eq 0
+            echo 'ONEQAY_SPRINT48_JRN005_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT50_COMPATIBILITY_PREDECESSOR=true' >> "$GITHUB_ENV"
+            echo 'Recognized exact Sprint50 historical compatibility predecessor shape.'
           else
             echo 'Sprint47 changed-file envelope mismatch.' >&2
             exit 1
@@ -107,7 +120,16 @@ jobs:
           migration16='apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php'
           migration='apps/web/database/migrations/0000_00_00_000017_create_pos_catalog_preparation_journal.php'
           migration18='apps/web/database/migrations/0000_00_00_000018_create_pos_shift_opening_foundation.php'
-          if [[ "${ONEQAY_SPRINT48_JRN005_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+          migration19='apps/web/database/migrations/0000_00_00_000019_create_pos_sale_void_foundation.php'
+          if [[ "${ONEQAY_SPRINT50_JRN007_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            changed="$(git diff --name-only "$base" "$head" -- apps/web/database/migrations | sort)"
+            test "$changed" = "$migration19"
+            git diff --exit-code "$base" "$head" -- apps/web/database/migrations ":(exclude)$migration19"
+            git update-index --assume-unchanged "$migration19"
+            rm -f "$migration19"
+          elif [[ "${ONEQAY_SPRINT50_COMPATIBILITY_PREDECESSOR:-false}" == 'true' ]]; then
+            git diff --exit-code "$base" "$head" -- apps/web/database/migrations
+          elif [[ "${ONEQAY_SPRINT48_JRN005_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
             mapfile -t migration_diff < <(git diff --name-status "$base" "$head" -- apps/web/database/migrations)
             test "${#migration_diff[@]}" -eq 1
             status="$(printf '%s\n' "${migration_diff[0]}" | awk '{print $1}')"
