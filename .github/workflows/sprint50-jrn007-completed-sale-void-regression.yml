@@ -66,6 +66,7 @@ jobs:
           count="$(wc -l < /tmp/s50-source-paths)"
           fingerprint="$(sha256sum /tmp/s50-source-paths | awk '{print $1}')"
           echo 'ONEQAY_SPRINT51_JRN008_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
+          echo 'ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
           echo 'ONEQAY_SPRINT51_COMPATIBILITY_PREDECESSOR=false' >> "$GITHUB_ENV"
           if [[ "$count" -eq 14 && "$fingerprint" == '78628976e4dbfea29ecab4b40ec6bfbdf697564668ef028a5cb77a3b53466451' ]]; then
             test "$(grep -c '^apps/web/database/migrations/' /tmp/s50-source-paths)" -eq 1
@@ -74,7 +75,15 @@ jobs:
             test "$(grep -c '^apps/web/database/migrations/' /tmp/s50-source-paths)" -eq 1
             grep -Fxq 'apps/web/database/migrations/0000_00_00_000020_create_pos_inventory_baseline_foundation.php' /tmp/s50-source-paths
             echo 'ONEQAY_SPRINT51_JRN008_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
-          elif [[ "$count" -eq 28 && "$fingerprint" == '3b97670674b60c636a23e52551b7ade69a3f545d5d0b4a861fa1c06eae5c0656' ]]; then
+          elif [[ "$count" -eq 14 && "$fingerprint" == 'ad4f6c62c820bdc59d7c1c8550ffeec0a4a0718ba4388a516418d50468d7e9d5' ]]; then
+            test "$(grep -c '^apps/web/database/migrations/' /tmp/s50-source-paths)" -eq 1
+            grep -Fxq 'apps/web/database/migrations/0000_00_00_000021_create_pos_sale_cash_refund_foundation.php' /tmp/s50-source-paths
+            echo 'ONEQAY_SPRINT51_JRN008_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+          elif [[ "$count" -eq 28 && "$fingerprint" == '3b97670674b60c636a23e52551b7ade69a3f545d5d0b4a861fa1c06eae5c0656' ]] || [[ "$count" -eq 29 && "$fingerprint" == 'e56a3e2732f5d5b0b40dd3ae50ec25746cf18bc8bd556d25405e85642c789878' ]]; then
+            if [[ "$count" -eq 29 && "$fingerprint" == 'e56a3e2732f5d5b0b40dd3ae50ec25746cf18bc8bd556d25405e85642c789878' ]]; then
+              echo 'ONEQAY_SPRINT52_COMPATIBILITY_PREDECESSOR=true' >> "$GITHUB_ENV"
+            fi
             test "$(grep -c '^apps/web/database/migrations/' /tmp/s50-source-paths)" -eq 0
             echo 'ONEQAY_SPRINT51_COMPATIBILITY_PREDECESSOR=true' >> "$GITHUB_ENV"
           else
@@ -92,7 +101,19 @@ jobs:
           head="${{ github.event.pull_request.head.sha }}"
           migration='apps/web/database/migrations/0000_00_00_000019_create_pos_sale_void_foundation.php'
           migration20='apps/web/database/migrations/0000_00_00_000020_create_pos_inventory_baseline_foundation.php'
-          if [[ "${ONEQAY_SPRINT51_JRN008_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+          if [[ "${ONEQAY_SPRINT52_COMPATIBILITY_PREDECESSOR:-false}" == 'true' && -f "$migration20" ]]; then
+            git update-index --assume-unchanged "$migration20"
+            rm -f "$migration20"
+          fi
+          migration21='apps/web/database/migrations/0000_00_00_000021_create_pos_sale_cash_refund_foundation.php'
+          if [[ "${ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            git diff --exit-code "$base" "$head" -- apps/web/database/migrations ":(exclude)$migration21"
+            test "$(git diff --name-only "$base" "$head" -- apps/web/database/migrations | sed '/^$/d' | wc -l)" -eq 1
+            git diff --diff-filter=A --name-only "$base" "$head" -- apps/web/database/migrations | grep -Fxq "$migration21"
+            if [[ -f "$migration20" ]]; then git update-index --assume-unchanged "$migration20"; rm -f "$migration20"; fi
+            git update-index --assume-unchanged "$migration21"
+            rm -f "$migration21"
+          elif [[ "${ONEQAY_SPRINT51_JRN008_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
             git diff --exit-code "$base" "$head" -- apps/web/database/migrations ":(exclude)$migration20"
             test "$(git diff --name-only "$base" "$head" -- apps/web/database/migrations | sed '/^$/d' | wc -l)" -eq 1
             git diff --diff-filter=A --name-only "$base" "$head" -- apps/web/database/migrations | grep -Fxq "$migration20"
@@ -259,20 +280,32 @@ jobs:
           set -euo pipefail
           successor='app/Infrastructure/Pos/LaravelShiftOpeningRepository.php'
           inventory='app/Infrastructure/Pos/LaravelInventoryBaselineRepository.php'
+          refund='app/Infrastructure/Pos/LaravelSaleCashRefundRepository.php'
           backup='/tmp/oneqay-s50-shift-opening-repository.php'
           inventory_backup='/tmp/oneqay-s50-inventory-baseline-repository.php'
+          refund_backup='/tmp/oneqay-s50-cash-refund-repository.php'
           cp "$successor" "$backup"
-          if [[ "${ONEQAY_SPRINT51_JRN008_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then cp "$inventory" "$inventory_backup"; fi
+          if [[ "${ONEQAY_SPRINT51_JRN008_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT52_COMPATIBILITY_PREDECESSOR:-false}" == 'true' || "${ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            cp "$inventory" "$inventory_backup"
+          fi
+          if [[ "${ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            cp "$refund" "$refund_backup"
+          fi
           restore() {
             [[ ! -f "$backup" ]] || mv "$backup" "$successor"
             [[ ! -f "$inventory_backup" ]] || mv "$inventory_backup" "$inventory"
+            [[ ! -f "$refund_backup" ]] || mv "$refund_backup" "$refund"
           }
           trap restore EXIT
           rm -f "$successor"
-          if [[ "${ONEQAY_SPRINT51_JRN008_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then rm -f "$inventory"; fi
+          if [[ "${ONEQAY_SPRINT51_JRN008_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT52_COMPATIBILITY_PREDECESSOR:-false}" == 'true' || "${ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            rm -f "$inventory"
+          fi
+          if [[ "${ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            rm -f "$refund"
+          fi
           php tests/pos-core-synthetic.php
           restore
           trap - EXIT
-
       - name: Preserve tracked source cleanliness
         run: git diff --exit-code
