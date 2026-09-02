@@ -1,5 +1,29 @@
 # oneQay Roadmap
 
+## Canonical post-Sprint54 JRN-010 prerequisite closure and Sprint55 bounded next task — 2026-09-02
+
+This current-facing section supersedes the older post-Sprint53/current-state wording retained below as historical provenance. It records the live canonical Sprint54 prerequisite closure and selects only the next bounded planning entry-gate concern. It creates no application source, schema, migration-execution, runtime-activation, deployment, release, updater, rollback, or Production authority.
+
+- Functional canonical baseline: `2140a9cea36292ce6d6d1f00bea42a02b8a06c85`.
+- Sprint54 JRN-010 prerequisite **Bounded Shift Closing Cash Observation Evidence Foundation** is **IMPLEMENTED / SOURCE-PUBLISHED** through PR #544 as `2140a9cea36292ce6d6d1f00bea42a02b8a06c85`, from qualified exact source head `f02469a94eeb81633fb87f15b711d17a5cb15d9d`.
+- The published Sprint54 source envelope remains exactly **14 paths** with sorted newline-terminated SHA-256 `a0914d7db5c1636e909e331e8b72653bc9814eb74e3a3823d7db36bd3b73b624`; post-merge verification preserved all **14/14** pinned source blob SHAs.
+- Fresh exact-head qualification for PR #544 completed **39/39 success / 0 non-success** before Product Owner exact-head authorization, authority evaluator success, raw `product-owner-merge-authority = success`, final race verification, and squash publication.
+- Sprint54 historical/source compatibility predecessors are canonical through PR #540 (`2c2f4c61bf86b1145a8273a2d19e30152c626082`), PR #541 (`5e3eb31824620f636fb30feaaa06cbfe22e62ddd`), and PR #543 (`8329f4584260ac9d26a457853aa0f8168994f433`). PR #543 closed on an exact **12-workflow** correction envelope with SHA-256 `77a408974add7f466ed746b8b47c10d5fec45c8073ab32e0450abd95f206bf1f` and **15/15 success / 0 non-success** before publication. PR #542 is closed without merge as a stale-base source attempt.
+- Canonical source now contains migrations exactly **#1–#23**. Existing migration execution posture remains unchanged. Migration #22 and migration #23 remain **SOURCE-PUBLISHED / NOT EXECUTED / NOT APPLIED / NOT ACTIVATED**; this reconciliation grants no execution authority for any migration.
+- Sprint54 records only one immutable operator-observed closing-cash fact for one canonical active shift. Fresh establishment requires the canonical same-shift opening-cash evidence, exact currency/scale compatibility, server-derived tenant/organization/outlet/device/shift/actor/correlation/time authority, tenant-scoped exact operation replay, and fail-closed conflict/second-observation handling. The shift remains active.
+- `pos.shift.closing-cash.record` remains deny-by-default with no default grant. `ONEQAY_POS_SHIFT_CLOSING_CASH_EVIDENCE_ENABLED` remains default false and the mutation boundary remains Local/Test/CI only when explicitly armed. Technical Preview and Production remain unavailable.
+- **Sprint55 planning candidate is selected as a JRN-010 prerequisite — Bounded Expected Cash Derivation Entry Gate.**
+- Selection rationale: canonical opening-cash and closing-cash observations now provide independent physical-cash evidence, but JRN-010 cannot define variance or final close safely until system expected cash is derived from an exact, auditable set of eligible immutable CASH evidence with an explicit observation cutoff.
+- Sprint55 entry-gate work must define only the minimum deterministic expected-cash derivation semantics. It must bind the calculation to canonical opening-cash evidence plus explicitly eligible canonical CASH sale/refund evidence, use atomic money with exact currency/scale compatibility, and derive all tenant/outlet/shift/evidence/correlation/time facts from server-owned durable evidence rather than caller input.
+- The entry gate must explicitly freeze evidence eligibility, treatment of sale/void/refund relationships, the cutoff relative to the closing-cash observation, late-event behavior, missing/incompatible evidence behavior, and deterministic reproducibility. Unknown, ambiguous, cross-tenant, cross-shift, or money-incompatible evidence must fail closed rather than be silently ignored or coerced.
+- Sprint55 is **planning/entry-gate only**. It does not select an expected-cash table, stored aggregate, endpoint, permission, runtime flag, application source envelope, migration #24, variance formula, tolerance, explanation, reviewer approval, final shift-state transition, close authority, reopen, arbitrary cash movement, denominations, settlement, provider reconciliation, accounting/general ledger, deployment, release, Production, Technical Preview activation, updater activation, migration execution, rollback, or destructive database action.
+- Migration #24 remains **NOT SELECTED**.
+- JRN-010 **Shift Close and Operational Reconciliation remains NOT SELECTED** until expected-cash derivation, cutoff/late-event semantics, variance semantics, close authority, one-time close concurrency/idempotency, and any required settlement/reviewer policy are separately canonical.
+- Technical Preview remains **NOT ACTIVATED**. Production remains **NO-GO / NOT AUTHORIZED**. Updater activation, deployment, release, migration execution, rollback, and destructive lifecycle actions remain **NOT AUTHORIZED**.
+- This reconciliation changes exactly `ROADMAP.md` and `TASKS.md`; sorted newline-terminated path SHA-256 remains `fd007931409a4ccbdca7ce03827f34c6c989686ee149320299df34586e94a91f`.
+
+Attribution: **Lab | zefry**
+
 ## Canonical post-Sprint53 JRN-010 prerequisite closure and Sprint54 bounded next task — 2026-09-02
 
 This current-facing section supersedes the older post-Sprint52/current-state wording retained below as historical provenance. It records the live canonical Sprint53 prerequisite closure and selects only the next bounded entry-gate concern. It creates no schema, migration-execution, runtime-activation, deployment, release, updater, rollback, or Production authority.

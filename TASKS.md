@@ -1,5 +1,29 @@
 # oneQay Tasks
 
+## Canonical post-Sprint54 JRN-010 prerequisite closure and Sprint55 bounded next task — 2026-09-02
+
+This current-facing section supersedes the older post-Sprint53/current-state task wording retained below as historical provenance.
+
+- [x] Publish Sprint54 JRN-010 prerequisite **Bounded Shift Closing Cash Observation Evidence Foundation** through PR #544 as canonical `2140a9cea36292ce6d6d1f00bea42a02b8a06c85`.
+- [x] Preserve exact Sprint54 14-path source-envelope SHA-256 `a0914d7db5c1636e909e331e8b72653bc9814eb74e3a3823d7db36bd3b73b624`.
+- [x] Verify **14/14** post-merge pinned source blob SHAs remained identical.
+- [x] Preserve exact-head qualification evidence for PR #544: **39/39 success / 0 non-success**, Product Owner exact-head authority, evaluator success, raw authority success, final race check, and squash publication.
+- [x] Preserve canonical Sprint54 compatibility predecessors through PR #540, PR #541, and PR #543; keep PR #542 closed without merge as a stale-base source attempt.
+- [x] Preserve PR #543 exact **12-workflow** correction-envelope SHA-256 `77a408974add7f466ed746b8b47c10d5fec45c8073ab32e0450abd95f206bf1f` and **15/15 success / 0 non-success** qualification evidence.
+- [x] Keep migration #22 and migration #23 **SOURCE-PUBLISHED / NOT EXECUTED / NOT APPLIED / NOT ACTIVATED** and grant no migration execution authority.
+- [x] Keep Sprint54 closing-cash delivery **default false / Local-Test-CI only**; Technical Preview and Production remain unactivated.
+- [ ] **Sprint55 next bounded task: prepare JRN-010 prerequisite — Bounded Expected Cash Derivation Entry Gate.**
+- [ ] Define only deterministic expected-cash derivation semantics needed before variance or final close can be selected.
+- [ ] Bind expected cash to canonical opening-cash evidence plus an explicitly frozen set of eligible immutable CASH sale/refund evidence; do not accept caller-supplied expected cash.
+- [ ] Freeze exact sale/void/refund eligibility semantics, closing-observation cutoff, late-event behavior, money currency/scale compatibility, missing-evidence behavior, and deterministic reproducibility.
+- [ ] Preserve server-derived tenant/outlet/shift/evidence/correlation/time authority and fail closed on cross-tenant, cross-shift, ambiguous, unknown, or money-incompatible evidence.
+- [ ] Do **not** select an expected-cash persistence table, endpoint, permission, feature flag, exact application source paths, stored aggregate, or migration #24 in this reconciliation.
+- [ ] Keep expected-vs-observed variance, tolerance/explanation, reviewer approval, final shift close/state transition, close authority, controlled reopen, arbitrary cash movement, denominations, settlement, provider reconciliation, accounting/general ledger, deployment, release, Production, Technical Preview activation, updater activation, migration execution, rollback, and destructive database actions outside Sprint55 entry-gate selection.
+- [ ] Keep JRN-010 **Shift Close and Operational Reconciliation NOT SELECTED** until expected-cash derivation, cutoff/late-event semantics, variance, close authority, one-time close concurrency/idempotency, and any required reviewer/settlement policy are separately canonical.
+- [x] Current reconciliation scope is exactly `ROADMAP.md` + `TASKS.md`; sorted newline-terminated path SHA-256 `fd007931409a4ccbdca7ce03827f34c6c989686ee149320299df34586e94a91f`.
+
+Attribution: **Lab | zefry**
+
 ## Canonical post-Sprint53 JRN-010 prerequisite closure and Sprint54 bounded next task — 2026-09-02
 
 This current-facing section supersedes the older post-Sprint52/current-state task wording retained below as historical provenance.
