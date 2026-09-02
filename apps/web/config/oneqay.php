@@ -62,6 +62,14 @@ return [
         ),
     ],
 
+    'pos_sale_void' => [
+        // Sprint50 JRN-007 completed-sale void remains Local/Test/CI-only and fail-closed unless explicitly armed.
+        'enabled' => filter_var(
+            env('ONEQAY_POS_SALE_VOID_ENABLED', false),
+            FILTER_VALIDATE_BOOL,
+        ),
+    ],
+
     'pos_catalog_preparation' => [
         // Sprint47 JRN-004 catalog preparation remains Local/Test/CI-only and fail-closed unless explicitly armed.
         'enabled' => filter_var(
