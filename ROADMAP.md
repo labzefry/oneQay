@@ -1,5 +1,26 @@
 # oneQay Roadmap
 
+## Canonical post-Sprint51 JRN-008 closure and Sprint52 bounded next task — 2026-09-02
+
+This current-facing section supersedes the older post-Sprint50/current-state wording retained below as historical provenance. It records the live canonical Sprint51 closure and selects only the next bounded entry-gate concern. It creates no schema, migration-execution, runtime-activation, deployment, release, updater, rollback, or Production authority.
+
+- Functional canonical baseline: `e05714364304abdf7cea1c3000e3cab44ba1c29b`.
+- Sprint51 JRN-008 **Bounded Outlet Inventory Baseline Foundation** is **IMPLEMENTED / SOURCE-PUBLISHED** through PR #516 as `e05714364304abdf7cea1c3000e3cab44ba1c29b`, from qualified exact source head `e486b4f0abdea7d62d3309dbdb4a54d3b7fb78bf`.
+- The published JRN-008 source envelope remains exactly **15 paths** with sorted newline-terminated SHA-256 `325559599c79ba68340eac34569f8e5513aa4957b1ddf2515007b98b2cc1f15f`; post-merge verification preserved all **15/15** canonical source blob SHAs.
+- Canonical source now contains migrations exactly **#1–#20**. Migration #20 remains **SOURCE-PUBLISHED / NOT EXECUTED / NOT APPLIED / NOT ACTIVATED**. This reconciliation grants no migration execution authority.
+- JRN-008 adds only a one-time tenant/outlet/product inventory baseline with durable replay and one-time uniqueness, catalog-row locking, zero-current-state protection, prior-sale-history protection, and server-derived execution context. It does not create purchasing, suppliers, transfer, stocktake, arbitrary adjustment, accounting, or lifecycle activation authority.
+- `ONEQAY_POS_INVENTORY_BASELINE_ENABLED` remains **default false** and the mutation boundary remains **Local/Test/CI only** when explicitly armed. Technical Preview and Production remain unactivated.
+- **Sprint52 planning candidate is selected as a JRN-007 continuation — Bounded Full CASH Refund Evidence Entry Gate.**
+- Selection rationale: DEC-001 includes controlled refund/correction in the approved POS MVP journey; the canonical Sprint50 JRN-007 implementation intentionally stops at full completed-sale void and explicitly does not implement refund; DEC-007 keeps refund distinct from void/reversal and requires refund evidence to remain authorization-controlled, idempotent, auditable, and bound to original eligible payment evidence.
+- Sprint52 entry-gate scope is limited to recording one deterministic full **CASH** refund for an eligible canonical sale already corrected by the existing JRN-007 full-void foundation. The amount, currency, scale, tenant, organization, outlet, actor, device, correlation identity, original sale/payment evidence, and occurrence time remain server-derived.
+- The entry gate must preserve immutable original sale/payment/receipt evidence, must not repeat JRN-007 stock restoration, must use deny-by-default dedicated authorization with no default grant, and must preserve deterministic tenant-scoped idempotency/replay plus fail-closed conflict handling.
+- Sprint52 explicitly excludes partial refund, partial return, exchange, manual/external tender refund, provider refund/reversal, chargeback, arbitrary refund amount, drawer/cash-movement automation, shift close, cash count, variance, settlement, accounting, purchasing, supplier lifecycle, deployment, release, Production, Technical Preview activation, updater activation, migration execution, rollback, and destructive database actions.
+- Migration #21, any durable refund table, exact endpoint, exact permission identifier, exact source paths, and exact source-envelope fingerprint are **NOT SELECTED by this reconciliation**. Those require a later bounded schema/source-envelope gate after this entry gate is qualified.
+- JRN-010 **Shift Close and Operational Reconciliation** remains **NOT SELECTED**. Even after a future bounded cash-refund source publication, cash-count/variance/settlement evidence must still be separately qualified before JRN-010 selection.
+- Technical Preview remains **NOT ACTIVATED**. Production remains **NO-GO / NOT AUTHORIZED**. Updater activation, deployment, release, migration execution, rollback, and destructive lifecycle actions remain **NOT AUTHORIZED**.
+
+Attribution: **Lab | zefry**
+
 ## Canonical post-Sprint50 JRN-007 source publication reconciliation — 2026-09-02
 
 This current-facing section supersedes older post-Sprint48/current-state wording retained below as historical provenance. It records the live canonical Sprint50 closure and selects only the next bounded planning concern; it creates no source, schema, migration-execution, runtime-activation, deployment, release, updater, rollback, or Production authority.
