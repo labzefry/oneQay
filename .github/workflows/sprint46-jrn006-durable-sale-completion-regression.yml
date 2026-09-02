@@ -1,3 +1,4 @@
+# Sprint53 bounded third historical fixture compatibility closure — Lab | zefry
 name: Sprint46 JRN-006 Durable Sale Completion Regression
 
 # Author by Lab | zefry
@@ -344,7 +345,11 @@ jobs:
           set -euo pipefail
           migration17='database/migrations/0000_00_00_000017_create_pos_catalog_preparation_journal.php'
           migration18='database/migrations/0000_00_00_000018_create_pos_shift_opening_foundation.php'
-          if [[ "${ONEQAY_SPRINT49_JRN006_ACTIVE_SHIFT_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+          if [[ "${ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            test ! -f "$migration17"
+            test ! -f "$migration18"
+            php tests/pos-sale-completion-durable.php
+          elif [[ "${ONEQAY_SPRINT49_JRN006_ACTIVE_SHIFT_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
             repository='app/Infrastructure/Pos/LaravelDurablePosSaleRepository.php'
             repository_backup='/tmp/oneqay-s46-s49-sale-repository.php'
             backup17='/tmp/oneqay-s46-s49-migration17.php'
