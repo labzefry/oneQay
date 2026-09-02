@@ -47,6 +47,9 @@ use App\Application\Pos\CatalogPreparationRepository;
 use App\Application\Pos\CompleteSale;
 use App\Application\Pos\VoidSale;
 use App\Application\Pos\DurablePosSaleRepository;
+use App\Application\Pos\EstablishInventoryBaseline;
+use App\Application\Pos\InventoryBaselineClock;
+use App\Application\Pos\InventoryBaselineRepository;
 use App\Application\Pos\PosSaleClock;
 use App\Application\Pos\PrepareCatalogItem;
 use App\Application\Pos\OpenShift;
@@ -78,6 +81,7 @@ use App\Infrastructure\Organization\LaravelOrganizationalRelationshipVerifier;
 use App\Infrastructure\Organization\RequestOrganizationalContextStore;
 use App\Infrastructure\Pos\LaravelCatalogPreparationRepository;
 use App\Infrastructure\Pos\LaravelDurablePosSaleRepository;
+use App\Infrastructure\Pos\LaravelInventoryBaselineRepository;
 use App\Infrastructure\Pos\LaravelShiftOpeningRepository;
 use App\Infrastructure\Persistence\LaravelDurableContextGraphRepository;
 use App\Infrastructure\Persistence\LaravelPersistenceTransaction;
@@ -295,6 +299,22 @@ final class AppServiceProvider extends ServiceProvider
             $app->make(ShiftOpeningClock::class),
         ));
 
+        $this->app->scoped(InventoryBaselineRepository::class, function ($app): InventoryBaselineRepository {
+            return new LaravelInventoryBaselineRepository(
+                $this->connection($app),
+                $this->persistenceEnabled(),
+                $this->runtimeClass(),
+                (bool) config('oneqay.pos_inventory_baseline.enabled', false),
+            );
+        });
+        $this->app->scoped(EstablishInventoryBaseline::class, fn ($app): EstablishInventoryBaseline => new EstablishInventoryBaseline(
+            $app->make(InventoryBaselineRepository::class),
+            $app->make(OrganizationalContextStore::class),
+            $app->make(DurableScopedAuthorizationPolicy::class),
+            $app->make(PersistenceTransaction::class),
+            $app->make(InventoryBaselineClock::class),
+        ));
+
         $this->app->scoped(PrivilegedTotpEngine::class, static fn (): PrivilegedTotpEngine => new OtphpPrivilegedTotpEngine());
         $this->app->scoped(PrivilegedTotpClock::class, static fn (): PrivilegedTotpClock => new class implements PrivilegedTotpClock { public function nowUnix(): int { return time(); } });
         $this->app->scoped(PrivilegedTotpRecoveryClock::class, static fn (): PrivilegedTotpRecoveryClock => new class implements PrivilegedTotpRecoveryClock { public function nowUnix(): int { return time(); } });
@@ -306,6 +326,7 @@ final class AppServiceProvider extends ServiceProvider
         $this->app->scoped(PosSaleClock::class, static fn (): PosSaleClock => new class implements PosSaleClock { public function nowUnix(): int { return time(); } });
         $this->app->scoped(CatalogPreparationClock::class, static fn (): CatalogPreparationClock => new class implements CatalogPreparationClock { public function nowUnix(): int { return time(); } });
         $this->app->scoped(ShiftOpeningClock::class, static fn (): ShiftOpeningClock => new class implements ShiftOpeningClock { public function nowUnix(): int { return time(); } });
+        $this->app->scoped(InventoryBaselineClock::class, static fn (): InventoryBaselineClock => new class implements InventoryBaselineClock { public function nowUnix(): int { return time(); } });
 
         $this->app->scoped(PersistenceTransaction::class, function ($app): PersistenceTransaction {
             return new LaravelPersistenceTransaction($this->connection($app), $this->persistenceEnabled(), $this->runtimeClass());

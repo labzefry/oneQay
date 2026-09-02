@@ -17,6 +17,7 @@ use App\Delivery\Http\Identity\RecoveryPasswordResetController;
 use App\Delivery\Http\Middleware\RequirePolicyAdministrationSessionContextMiddleware;
 use App\Delivery\Http\Middleware\RequirePosSessionContextMiddleware;
 use App\Delivery\Http\Pos\PosCatalogPreparationController;
+use App\Delivery\Http\Pos\PosInventoryBaselineController;
 use App\Delivery\Http\Pos\PosSaleController;
 use App\Delivery\Http\Pos\PosSaleVoidController;
 use App\Delivery\Http\Pos\PosShiftOpeningController;
@@ -168,6 +169,14 @@ if (in_array($firstPartyAuthRuntime, ['local', 'test', 'ci'], true)
     Route::post('/pos/shifts/open', PosShiftOpeningController::class)
         ->middleware(['session.active', 'throttle:10,1', 'throttle:100,60', RequirePosSessionContextMiddleware::class])
         ->name('pos.shifts.open');
+}
+
+if (in_array($firstPartyAuthRuntime, ['local', 'test', 'ci'], true)
+    && $sessionControlEnabled
+    && (bool) config('oneqay.pos_inventory_baseline.enabled', false)) {
+    Route::post('/pos/inventory/baseline', PosInventoryBaselineController::class)
+        ->middleware(['session.active', 'throttle:20,1', 'throttle:200,60', RequirePosSessionContextMiddleware::class])
+        ->name('pos.inventory.baseline');
 }
 
 Route::post('/administration/policy/mutations', PolicyAdministrationController::class)
