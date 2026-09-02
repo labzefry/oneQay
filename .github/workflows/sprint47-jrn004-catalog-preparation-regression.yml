@@ -99,7 +99,7 @@ jobs:
             echo 'ONEQAY_SPRINT48_JRN005_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT50_JRN007_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'Recognized exact Sprint50 JRN-007 source successor shape.'
-          elif [[ "$count" -eq 29 && "$fingerprint" == 'e2ab1c790458071afb5e26f9c1525a34386df666851bb77d58c04c15220d1e52' ]]; then
+          elif [[ "$count" -eq 30 && "$fingerprint" == 'cf8adb2328427a8e27e46f0efd9fe88db90f0401eba9cafd513944c7e040035e' ]]; then
             test "$(grep -c '^apps/web/database/migrations/' /tmp/s47-jrn004-source-paths)" -eq 0
             echo 'ONEQAY_SPRINT48_JRN005_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT50_COMPATIBILITY_PREDECESSOR=true' >> "$GITHUB_ENV"
