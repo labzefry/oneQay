@@ -102,6 +102,14 @@ return [
         ),
     ],
 
+    'pos_shift_closing_cash_evidence' => [
+        // Sprint54 JRN-010 prerequisite closing-cash evidence remains Local/Test/CI-only and fail-closed unless explicitly armed.
+        'enabled' => filter_var(
+            env('ONEQAY_POS_SHIFT_CLOSING_CASH_EVIDENCE_ENABLED', false),
+            FILTER_VALIDATE_BOOL,
+        ),
+    ],
+
     'pos_inventory_baseline' => [
         // Sprint51 JRN-008 opening inventory baseline remains Local/Test/CI-only and fail-closed unless explicitly armed.
         'enabled' => filter_var(
