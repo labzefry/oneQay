@@ -70,6 +70,14 @@ return [
         ),
     ],
 
+    'pos_sale_cash_refund' => [
+        // Sprint52 JRN-007 full CASH refund evidence remains Local/Test/CI-only and fail-closed unless explicitly armed.
+        'enabled' => filter_var(
+            env('ONEQAY_POS_SALE_CASH_REFUND_ENABLED', false),
+            FILTER_VALIDATE_BOOL,
+        ),
+    ],
+
     'pos_catalog_preparation' => [
         // Sprint47 JRN-004 catalog preparation remains Local/Test/CI-only and fail-closed unless explicitly armed.
         'enabled' => filter_var(
