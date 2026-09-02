@@ -111,6 +111,10 @@ jobs:
             rm -f "$migration19"
           elif [[ "${ONEQAY_SPRINT50_COMPATIBILITY_PREDECESSOR:-false}" == 'true' ]]; then
             git diff --exit-code "$base" "$head" -- apps/web/database/migrations
+            if [[ -f "$migration19" ]]; then
+              git update-index --assume-unchanged "$migration19"
+              rm -f "$migration19"
+            fi
           else
             git diff --exit-code "$base" "$head" -- apps/web/database/migrations ":(exclude)$migration"
           fi
