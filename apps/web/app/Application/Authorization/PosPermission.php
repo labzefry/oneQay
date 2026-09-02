@@ -13,6 +13,7 @@ final class PosPermission
     public const PREPARE_CATALOG = 'pos.catalog.prepare';
     public const OPEN_SHIFT = 'pos.shift.open';
     public const VOID_SALE = 'pos.sale.void';
+    public const INVENTORY_BASELINE = 'pos.inventory.baseline';
 
     public static function completeSale(): PermissionIdentifier
     {
@@ -32,5 +33,10 @@ final class PosPermission
     public static function voidSale(): PermissionIdentifier
     {
         return PermissionIdentifier::fromString(self::VOID_SALE);
+    }
+
+    public static function inventoryBaseline(): PermissionIdentifier
+    {
+        return PermissionIdentifier::fromString(self::INVENTORY_BASELINE);
     }
 }
