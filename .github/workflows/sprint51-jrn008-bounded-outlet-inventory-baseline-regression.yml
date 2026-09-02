@@ -272,12 +272,18 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          successor='app/Infrastructure/Pos/LaravelShiftOpeningRepository.php'
-          backup='/tmp/oneqay-s51-shift-opening-repository.php'
-          cp "$successor" "$backup"
-          restore() { [[ ! -f "$backup" ]] || mv "$backup" "$successor"; }
+          shift_successor='app/Infrastructure/Pos/LaravelShiftOpeningRepository.php'
+          inventory_successor='app/Infrastructure/Pos/LaravelInventoryBaselineRepository.php'
+          shift_backup='/tmp/oneqay-s51-shift-opening-repository.php'
+          inventory_backup='/tmp/oneqay-s51-inventory-baseline-repository.php'
+          cp "$shift_successor" "$shift_backup"
+          cp "$inventory_successor" "$inventory_backup"
+          restore() {
+            [[ ! -f "$shift_backup" ]] || mv "$shift_backup" "$shift_successor"
+            [[ ! -f "$inventory_backup" ]] || mv "$inventory_backup" "$inventory_successor"
+          }
           trap restore EXIT
-          rm -f "$successor"
+          rm -f "$shift_successor" "$inventory_successor"
           php tests/pos-core-synthetic.php
           restore
           trap - EXIT
