@@ -22,6 +22,7 @@ use App\Delivery\Http\Pos\PosSaleController;
 use App\Delivery\Http\Pos\PosSaleCashRefundController;
 use App\Delivery\Http\Pos\PosSaleVoidController;
 use App\Delivery\Http\Pos\PosShiftOpeningController;
+use App\Delivery\Http\Pos\PosShiftOpeningCashController;
 use App\Delivery\Http\SystemUpdate\SystemUpdateControlPlaneController;
 use App\Delivery\Http\SystemUpdate\SystemUpdatePageController;
 use App\Delivery\Preview\TechnicalPreviewController;
@@ -178,6 +179,14 @@ if (in_array($firstPartyAuthRuntime, ['local', 'test', 'ci'], true)
     Route::post('/pos/shifts/open', PosShiftOpeningController::class)
         ->middleware(['session.active', 'throttle:10,1', 'throttle:100,60', RequirePosSessionContextMiddleware::class])
         ->name('pos.shifts.open');
+}
+
+if (in_array($firstPartyAuthRuntime, ['local', 'test', 'ci'], true)
+    && $sessionControlEnabled
+    && (bool) config('oneqay.pos_shift_opening_cash_evidence.enabled', false)) {
+    Route::post('/pos/shifts/opening-cash', PosShiftOpeningCashController::class)
+        ->middleware(['session.active', 'throttle:10,1', 'throttle:100,60', RequirePosSessionContextMiddleware::class])
+        ->name('pos.shifts.opening-cash');
 }
 
 if (in_array($firstPartyAuthRuntime, ['local', 'test', 'ci'], true)
