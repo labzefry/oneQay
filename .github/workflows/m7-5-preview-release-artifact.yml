@@ -269,6 +269,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          sprint50_historical_compatibility=false
           if [[ "$GITHUB_EVENT_NAME" == 'pull_request' ]]; then
             git diff --name-only "origin/$GITHUB_BASE_REF...HEAD" | sort > /tmp/s50-release-shape.txt
             count="$(wc -l < /tmp/s50-release-shape.txt)"
@@ -279,6 +280,7 @@ jobs:
                 git update-index --assume-unchanged "$migration19"
                 rm -f "$migration19"
               fi
+              sprint50_historical_compatibility=true
               echo 'Migration #19 isolated only from exact Sprint50 historical release-artifact regression.'
             fi
           fi
@@ -293,6 +295,13 @@ jobs:
             'database/migrations/0000_00_00_000015_create_identity_authentication_eligibility_administration_journal.php'
             'database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php'
           )
+          if [[ "$sprint50_historical_compatibility" == 'true' ]]; then
+            historical_migrations+=(
+              'database/migrations/0000_00_00_000017_create_pos_catalog_preparation_journal.php'
+              'database/migrations/0000_00_00_000018_create_pos_shift_opening_foundation.php'
+            )
+            echo 'Migrations #17-#18 included only in exact Sprint50 historical M7.5 fixture isolation.'
+          fi
           if [[ "${{ github.event_name }}" == 'pull_request' ]]; then
             git -C ../.. diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | sort > /tmp/m75-nine-paths
             count="$(wc -l < /tmp/m75-nine-paths)"
