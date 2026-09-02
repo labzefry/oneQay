@@ -147,6 +147,10 @@ jobs:
             rm -f "$migration19"
           elif [[ "${ONEQAY_SPRINT50_COMPATIBILITY_PREDECESSOR:-false}" == 'true' ]]; then
             git diff --exit-code "$base" "$head" -- apps/web/database/migrations
+            if [[ -f "$migration19" ]]; then
+              git update-index --assume-unchanged "$migration19"
+              rm -f "$migration19"
+            fi
           elif [[ "${ONEQAY_SPRINT49_JRN006_ACTIVE_SHIFT_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
             git diff --exit-code "$base" "$head" -- apps/web/database/migrations
           elif [[ "${ONEQAY_SPRINT48_JRN005_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
