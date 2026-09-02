@@ -1,0 +1,230 @@
+name: Sprint53 JRN-010 Prerequisite Shift Opening Cash Evidence Regression
+
+# Author by Lab | zefry
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/sprint53-jrn010-prerequisite-shift-opening-cash-evidence-regression.yml'
+      - 'apps/web/app/Application/Authorization/PosPermission.php'
+      - 'apps/web/app/Application/Pos/RecordShiftOpeningCash.php'
+      - 'apps/web/app/Application/Pos/ShiftOpeningCashCommand.php'
+      - 'apps/web/app/Application/Pos/ShiftOpeningCashRepository.php'
+      - 'apps/web/app/Application/Pos/ShiftOpeningCashResult.php'
+      - 'apps/web/app/Delivery/Http/Pos/PosShiftOpeningCashController.php'
+      - 'apps/web/app/Infrastructure/Pos/LaravelShiftOpeningCashRepository.php'
+      - 'apps/web/app/Providers/AppServiceProvider.php'
+      - 'apps/web/config/oneqay.php'
+      - 'apps/web/database/migrations/0000_00_00_000022_create_pos_shift_opening_cash_evidence_foundation.php'
+      - 'apps/web/routes/web.php'
+      - 'apps/web/tests/pos-shift-opening-cash-durable.php'
+      - 'docs/JRN_010_PREREQUISITE_POS_BOUNDED_SHIFT_OPENING_CASH_EVIDENCE_FOUNDATION.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint53-jrn010-opening-cash-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sprint53-jrn010-opening-cash:
+    name: sprint53-jrn010-opening-cash
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:cXFxcXFxcXFxcXFxcXFxcXFxcXFxcXFxcXFxcXFxcXE=
+      APP_DEBUG: 'false'
+      APP_URL: http://localhost
+      ONEQAY_RUNTIME_CLASS: ci
+      ONEQAY_PERSISTENCE_ENABLED: 'true'
+      ONEQAY_AUTHENTICATION_SESSION_CONTROL_ENABLED: 'true'
+      ONEQAY_POS_SHIFT_OPENING_ENABLED: 'true'
+      ONEQAY_POS_SHIFT_OPENING_CASH_EVIDENCE_ENABLED: 'true'
+      ONEQAY_POS_SALE_COMPLETION_ENABLED: 'true'
+      ONEQAY_POS_SALE_VOID_ENABLED: 'true'
+      ONEQAY_POS_SALE_CASH_REFUND_ENABLED: 'true'
+      ONEQAY_POS_CATALOG_PREPARATION_ENABLED: 'true'
+      ONEQAY_POS_INVENTORY_BASELINE_ENABLED: 'true'
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Enforce exact Sprint53 source envelope
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+          git diff --name-only "$base" "$head" | sort > /tmp/s53-source-paths
+          test "$(wc -l < /tmp/s53-source-paths)" -eq 14
+          test "$(sha256sum /tmp/s53-source-paths | awk '{print $1}')" = '1d75fe26236e2bb56c113713e878e81d3df72cee9aa647b3f7759b9d1bec9164'
+          test "$(grep -c '^apps/web/database/migrations/' /tmp/s53-source-paths)" -eq 1
+          grep -Fxq 'apps/web/database/migrations/0000_00_00_000022_create_pos_shift_opening_cash_evidence_foundation.php' /tmp/s53-source-paths
+          ! grep -Eq '(^|/)(composer\.(json|lock)|package(-lock)?\.json|\.env(\.|$))' /tmp/s53-source-paths
+
+      - name: Preserve migrations one through twenty-one and validate migration twenty-two
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+          migration='apps/web/database/migrations/0000_00_00_000022_create_pos_shift_opening_cash_evidence_foundation.php'
+          git diff --exit-code "$base" "$head" -- apps/web/database/migrations ":(exclude)$migration"
+          mapfile -t migrations < <(find apps/web/database/migrations -maxdepth 1 -type f -name '*.php' -printf '%f\n' | sort)
+          test "${#migrations[@]}" -eq 22
+          for index in $(seq 1 22); do
+            prefix="$(printf '0000_00_00_%06d_' "$index")"
+            test "$(printf '%s\n' "${migrations[@]}" | grep -c "^$prefix")" -eq 1
+          done
+          grep -Fq "Schema::create('oneqay_pos_shift_opening_cash_evidence'" "$migration"
+          grep -Fq "unique(['tenant_id', 'operation_id']" "$migration"
+          grep -Fq "unique(['tenant_id', 'shift_id']" "$migration"
+          grep -Fq "foreign(['tenant_id', 'shift_id']" "$migration"
+          grep -Fq "on('oneqay_pos_shifts')" "$migration"
+          grep -Fq "throw new LogicException('Forward-only generated migration; rollback is not authorized.');" "$migration"
+
+      - name: Validate authorization and delivery locks
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq "public const RECORD_SHIFT_OPENING_CASH = 'pos.shift.opening-cash.record';" apps/web/app/Application/Authorization/PosPermission.php
+          grep -Fq "env('ONEQAY_POS_SHIFT_OPENING_CASH_EVIDENCE_ENABLED', false)" apps/web/config/oneqay.php
+          grep -Fq "config('oneqay.pos_shift_opening_cash_evidence.enabled', false)" apps/web/routes/web.php
+          grep -Fq "Route::post('/pos/shifts/opening-cash'" apps/web/routes/web.php
+          grep -Fq "'session.active'" apps/web/routes/web.php
+          grep -Fq 'RequirePosSessionContextMiddleware::class' apps/web/routes/web.php
+          grep -Fq "table('oneqay_pos_shift_opening_cash_evidence')" apps/web/app/Infrastructure/Pos/LaravelShiftOpeningCashRepository.php
+          grep -Fq "table('oneqay_pos_shifts')" apps/web/app/Infrastructure/Pos/LaravelShiftOpeningCashRepository.php
+          grep -Fq "where('active_slot', 1)" apps/web/app/Infrastructure/Pos/LaravelShiftOpeningCashRepository.php
+          grep -Fq 'OPERATOR_OBSERVED_OPENING_CASH' apps/web/app/Infrastructure/Pos/LaravelShiftOpeningCashRepository.php
+          ! grep -Fq "update(['active_slot'" apps/web/app/Infrastructure/Pos/LaravelShiftOpeningCashRepository.php
+          ! grep -Fq "table('oneqay_pos_sales')" apps/web/app/Infrastructure/Pos/LaravelShiftOpeningCashRepository.php
+          ! grep -Fq "table('oneqay_pos_sale_cash_refunds')" apps/web/app/Infrastructure/Pos/LaravelShiftOpeningCashRepository.php
+          ! grep -Fq "table('oneqay_pos_sale_catalog_items')" apps/web/app/Infrastructure/Pos/LaravelShiftOpeningCashRepository.php
+
+      - name: Preserve Application framework independence
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -n -F -e 'Illuminate\' -e 'Laravel\' -e 'Schema::' -e 'DB::' \
+            apps/web/app/Application/Authorization/PosPermission.php \
+            apps/web/app/Application/Pos/RecordShiftOpeningCash.php \
+            apps/web/app/Application/Pos/ShiftOpeningCashCommand.php \
+            apps/web/app/Application/Pos/ShiftOpeningCashRepository.php \
+            apps/web/app/Application/Pos/ShiftOpeningCashResult.php; then
+            echo 'Sprint53 opening-cash Application framework boundary violated.' >&2
+            exit 1
+          fi
+
+      - name: Validate PHP syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          find apps/web/app apps/web/database/migrations apps/web/routes apps/web/tests -type f -name '*.php' -print0 |
+            while IFS= read -r -d '' file; do php -l "$file"; done
+
+      - name: Install locked dependencies
+        working-directory: apps/web
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Reject High or Critical Composer advisories
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          composer audit --locked --format=json > /tmp/oneqay-composer-audit.json
+          php -r '
+            $data = json_decode(file_get_contents("/tmp/oneqay-composer-audit.json"), true, 512, JSON_THROW_ON_ERROR);
+            foreach (($data["advisories"] ?? []) as $items) {
+                foreach ($items as $item) {
+                    if (in_array(strtolower((string) ($item["severity"] ?? "")), ["high", "critical"], true)) {
+                        fwrite(STDERR, "Blocking Composer advisory.\n");
+                        exit(1);
+                    }
+                }
+            }
+          '
+
+      - name: Run Sprint53 durable opening-cash evidence regression
+        working-directory: apps/web
+        run: php tests/pos-shift-opening-cash-durable.php
+
+      - name: Preserve Sprint52 full CASH refund regression
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          migration22='database/migrations/0000_00_00_000022_create_pos_shift_opening_cash_evidence_foundation.php'
+          backup22='/tmp/oneqay-s53-migration22-refund.php'
+          cp "$migration22" "$backup22"
+          restore() { [[ ! -f "$backup22" ]] || mv "$backup22" "$migration22"; }
+          trap restore EXIT
+          rm -f "$migration22"
+          php tests/pos-sale-cash-refund-durable.php
+          restore
+          trap - EXIT
+
+      - name: Preserve Sprint51 inventory baseline regression
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          migration21='database/migrations/0000_00_00_000021_create_pos_sale_cash_refund_foundation.php'
+          migration22='database/migrations/0000_00_00_000022_create_pos_shift_opening_cash_evidence_foundation.php'
+          backup21='/tmp/oneqay-s53-migration21-inventory.php'
+          backup22='/tmp/oneqay-s53-migration22-inventory.php'
+          cp "$migration21" "$backup21"
+          cp "$migration22" "$backup22"
+          restore() {
+            [[ ! -f "$backup21" ]] || mv "$backup21" "$migration21"
+            [[ ! -f "$backup22" ]] || mv "$backup22" "$migration22"
+          }
+          trap restore EXIT
+          rm -f "$migration21" "$migration22"
+          php tests/pos-inventory-baseline-durable.php
+          restore
+          trap - EXIT
+
+      - name: Preserve Sprint48 shift opening regression
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          migrations=(
+            database/migrations/0000_00_00_000019_create_pos_sale_void_foundation.php
+            database/migrations/0000_00_00_000020_create_pos_inventory_baseline_foundation.php
+            database/migrations/0000_00_00_000021_create_pos_sale_cash_refund_foundation.php
+            database/migrations/0000_00_00_000022_create_pos_shift_opening_cash_evidence_foundation.php
+          )
+          backups=()
+          restore() {
+            for index in "${!migrations[@]}"; do
+              [[ ! -f "${backups[$index]}" ]] || mv "${backups[$index]}" "${migrations[$index]}"
+            done
+          }
+          trap restore EXIT
+          for index in "${!migrations[@]}"; do
+            backup="/tmp/oneqay-s53-shift-$index.php"
+            cp "${migrations[$index]}" "$backup"
+            backups+=("$backup")
+            rm -f "${migrations[$index]}"
+          done
+          php tests/pos-shift-opening-durable.php
+          restore
+          trap - EXIT
+
+      - name: Preserve tracked source cleanliness
+        run: git diff --exit-code
