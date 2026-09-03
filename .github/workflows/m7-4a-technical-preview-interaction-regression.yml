@@ -332,6 +332,16 @@ jobs:
             grep -Fxq 'apps/web/tests/pos-cash-variance-explanation-durable.php' /tmp/s70-historical-paths
             grep -Fxq 'docs/JRN_010_PREREQUISITE_CASH_VARIANCE_EXPLANATION_SOURCE_FOUNDATION.md' /tmp/s70-historical-paths
             recognized=true
+          elif [[ "$count" -eq 4 && "$fingerprint" == 'eaa9c44aed2728b0a508f6be91155f3f2021f7f3de1383164a54be611d3933cf' ]]; then
+            for expected in \
+              '.github/workflows/m7-4-pos-core-synthetic-regression.yml' \
+              '.github/workflows/m7-4a-technical-preview-interaction-regression.yml' \
+              '.github/workflows/m7-5-preview-db-qualification-regression.yml' \
+              '.github/workflows/m7-5-preview-release-artifact.yml'
+            do
+              grep -Fxq "$expected" /tmp/s70-historical-paths
+            done
+            recognized=true
           elif [[ "$count" -eq 13 && "$fingerprint" == 'dcc4ec5d3fdefa32271c50cebec7e2536c179b203a60c3fb5bed1aeb9f4a47fb' ]] || [[ "$count" -eq 20 && "$fingerprint" == 'c6cd387d5ea83d73382493ca78d219c0db35477e55c61a68e489a0329231f922' ]]; then
             grep -Fxq '.github/workflows/m7-2-tenant-isolation-regression.yml' /tmp/s70-historical-paths
             grep -Fxq '.github/workflows/m7-3-identity-org-context-regression.yml' /tmp/s70-historical-paths
@@ -454,17 +464,20 @@ jobs:
           opening_cash='app/Infrastructure/Pos/LaravelShiftOpeningCashRepository.php'
           closing_cash='app/Infrastructure/Pos/LaravelShiftClosingCashRepository.php'
           expected_cash='app/Infrastructure/Pos/LaravelExpectedCashRepository.php'
+          variance_explanation='app/Infrastructure/Pos/LaravelCashVarianceExplanationRepository.php'
           inventory_backup='/tmp/oneqay-m74a-jrn008-inventory-repository.php'
           refund_backup='/tmp/oneqay-m74a-jrn007-refund-repository.php'
           opening_cash_backup='/tmp/oneqay-m74a-s53-opening-cash-repository.php'
           closing_cash_backup='/tmp/oneqay-m74a-s53-closing-cash-repository.php'
           expected_cash_backup='/tmp/oneqay-m74a-s60-expected-cash-repository.php'
+          variance_explanation_backup='/tmp/oneqay-m74a-s70-variance-explanation-repository.php'
           restore_pos_successors() {
             if [[ -f "$inventory_backup" ]]; then mv "$inventory_backup" "$inventory"; fi
             if [[ -f "$refund_backup" ]]; then mv "$refund_backup" "$refund"; fi
             if [[ -f "$opening_cash_backup" ]]; then mv "$opening_cash_backup" "$opening_cash"; fi
             if [[ -f "$closing_cash_backup" ]]; then mv "$closing_cash_backup" "$closing_cash"; fi
             if [[ -f "$expected_cash_backup" ]]; then mv "$expected_cash_backup" "$expected_cash"; fi
+            if [[ -f "$variance_explanation_backup" ]]; then mv "$variance_explanation_backup" "$variance_explanation"; fi
           }
           if [[ "${ONEQAY_SPRINT51_JRN008_PREVIEW_FIXTURE:-false}" == 'true' ]]; then
             if [[ -f "$inventory" ]]; then cp "$inventory" "$inventory_backup"; rm -f "$inventory"; fi
@@ -472,6 +485,7 @@ jobs:
             if [[ -f "$opening_cash" ]]; then cp "$opening_cash" "$opening_cash_backup"; rm -f "$opening_cash"; fi
             if [[ -f "$closing_cash" ]]; then cp "$closing_cash" "$closing_cash_backup"; rm -f "$closing_cash"; fi
             if [[ -f "$expected_cash" ]]; then cp "$expected_cash" "$expected_cash_backup"; rm -f "$expected_cash"; fi
+            if [[ -f "$variance_explanation" ]]; then cp "$variance_explanation" "$variance_explanation_backup"; rm -f "$variance_explanation"; fi
             trap restore_pos_successors EXIT
           fi
           php tests/pos-core-synthetic.php
