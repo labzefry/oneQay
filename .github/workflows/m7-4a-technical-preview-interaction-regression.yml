@@ -452,21 +452,25 @@ jobs:
           refund='app/Infrastructure/Pos/LaravelSaleCashRefundRepository.php'
           opening_cash='app/Infrastructure/Pos/LaravelShiftOpeningCashRepository.php'
           closing_cash='app/Infrastructure/Pos/LaravelShiftClosingCashRepository.php'
+          expected_cash='app/Infrastructure/Pos/LaravelExpectedCashRepository.php'
           inventory_backup='/tmp/oneqay-m74a-jrn008-inventory-repository.php'
           refund_backup='/tmp/oneqay-m74a-jrn007-refund-repository.php'
           opening_cash_backup='/tmp/oneqay-m74a-s53-opening-cash-repository.php'
           closing_cash_backup='/tmp/oneqay-m74a-s53-closing-cash-repository.php'
+          expected_cash_backup='/tmp/oneqay-m74a-s60-expected-cash-repository.php'
           restore_pos_successors() {
             if [[ -f "$inventory_backup" ]]; then mv "$inventory_backup" "$inventory"; fi
             if [[ -f "$refund_backup" ]]; then mv "$refund_backup" "$refund"; fi
             if [[ -f "$opening_cash_backup" ]]; then mv "$opening_cash_backup" "$opening_cash"; fi
             if [[ -f "$closing_cash_backup" ]]; then mv "$closing_cash_backup" "$closing_cash"; fi
+            if [[ -f "$expected_cash_backup" ]]; then mv "$expected_cash_backup" "$expected_cash"; fi
           }
           if [[ "${ONEQAY_SPRINT51_JRN008_PREVIEW_FIXTURE:-false}" == 'true' ]]; then
             if [[ -f "$inventory" ]]; then cp "$inventory" "$inventory_backup"; rm -f "$inventory"; fi
             if [[ -f "$refund" ]]; then cp "$refund" "$refund_backup"; rm -f "$refund"; fi
             if [[ -f "$opening_cash" ]]; then cp "$opening_cash" "$opening_cash_backup"; rm -f "$opening_cash"; fi
             if [[ -f "$closing_cash" ]]; then cp "$closing_cash" "$closing_cash_backup"; rm -f "$closing_cash"; fi
+            if [[ -f "$expected_cash" ]]; then cp "$expected_cash" "$expected_cash_backup"; rm -f "$expected_cash"; fi
             trap restore_pos_successors EXIT
           fi
           php tests/pos-core-synthetic.php
