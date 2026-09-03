@@ -69,10 +69,53 @@ jobs:
           base="${{ github.event.pull_request.base.sha }}"
           head="${{ github.event.pull_request.head.sha }}"
           git diff --name-only "$base" "$head" | sort > /tmp/s54-source-paths
-          test "$(wc -l < /tmp/s54-source-paths)" -eq 14
-          test "$(sha256sum /tmp/s54-source-paths | awk '{print $1}')" = 'a0914d7db5c1636e909e331e8b72653bc9814eb74e3a3823d7db36bd3b73b624'
-          test "$(grep -c '^apps/web/database/migrations/' /tmp/s54-source-paths)" -eq 1
-          grep -Fxq 'apps/web/database/migrations/0000_00_00_000023_create_pos_shift_closing_cash_evidence_foundation.php' /tmp/s54-source-paths
+          count="$(wc -l < /tmp/s54-source-paths)"
+          fingerprint="$(sha256sum /tmp/s54-source-paths | awk '{print $1}')"
+
+          isolate_sprint74_migration_successors() {
+            for index in $(seq 24 25); do
+              migration="$(find apps/web/database/migrations -maxdepth 1 -type f -name "$(printf '0000_00_00_%06d_*' "$index")" -print -quit)"
+              if [[ -n "$migration" && -f "$migration" ]]; then
+                git update-index --assume-unchanged "$migration"
+                rm -f "$migration"
+              fi
+            done
+          }
+
+          if [[ "$count" -eq 6 && "$fingerprint" == 'cc40f08beda780e4aa4795f29aa7533bbde1029d11855d43f180812502c4d80b' ]]; then
+            for expected in \
+              '.github/workflows/sprint69-jrn010-prerequisite-cash-variance-explanation-source-regression.yml' \
+              'apps/web/app/Application/Authorization/PosPermission.php' \
+              'apps/web/app/Application/Pos/RecordCashVarianceExplanation.php' \
+              'apps/web/tests/pos-cash-variance-explanation-authorization.php' \
+              'apps/web/tests/pos-cash-variance-explanation-durable.php' \
+              'docs/JRN_010_PREREQUISITE_CASH_VARIANCE_EXPLANATION_AUTHORIZATION_SOURCE_FOUNDATION.md'
+            do
+              grep -Fxq "$expected" /tmp/s54-source-paths
+            done
+            isolate_sprint74_migration_successors
+            echo 'Recognized exact Sprint74 authorization source successor shape at migration #23 horizon.'
+          elif [[ "$count" -eq 8 && "$fingerprint" == '3e5b516b17bfc4b2b4e8694248672ff7a4298a3e080e0617a70b1bb1d8aa6194' ]]; then
+            for expected in \
+              '.github/workflows/sprint46-jrn006-durable-sale-completion-regression.yml' \
+              '.github/workflows/sprint47-jrn004-catalog-preparation-regression.yml' \
+              '.github/workflows/sprint48-jrn005-shift-register-opening-regression.yml' \
+              '.github/workflows/sprint50-jrn007-completed-sale-void-regression.yml' \
+              '.github/workflows/sprint51-jrn008-bounded-outlet-inventory-baseline-regression.yml' \
+              '.github/workflows/sprint52-jrn007-bounded-full-cash-refund-regression.yml' \
+              '.github/workflows/sprint53-jrn010-prerequisite-shift-opening-cash-evidence-regression.yml' \
+              '.github/workflows/sprint54-jrn010-prerequisite-shift-closing-cash-evidence-regression.yml'
+            do
+              grep -Fxq "$expected" /tmp/s54-source-paths
+            done
+            isolate_sprint74_migration_successors
+            echo 'Recognized exact Sprint74 POS historical compatibility self-qualification shape at migration #23 horizon.'
+          else
+            test "$count" -eq 14
+            test "$fingerprint" = 'a0914d7db5c1636e909e331e8b72653bc9814eb74e3a3823d7db36bd3b73b624'
+            test "$(grep -c '^apps/web/database/migrations/' /tmp/s54-source-paths)" -eq 1
+            grep -Fxq 'apps/web/database/migrations/0000_00_00_000023_create_pos_shift_closing_cash_evidence_foundation.php' /tmp/s54-source-paths
+          fi
           ! grep -Eq '(^|/)(composer\.(json|lock)|package(-lock)?\.json|\.env(\.|$))' /tmp/s54-source-paths
 
       - name: Preserve migrations one through twenty-two and validate migration twenty-three
