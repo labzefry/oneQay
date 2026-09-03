@@ -91,7 +91,7 @@ jobs:
               'apps/web/app/Application/Pos/RecordCashVarianceExplanation.php' \
               'apps/web/tests/pos-cash-variance-explanation-authorization.php' \
               'apps/web/tests/pos-cash-variance-explanation-durable.php' \
-              'docs/JRN_010_PREREQUISITE_CASH_VARIANCE_EXPLANATION_AUTHORIZATION_SOURCE_FOUNDATION.md' \
+              'docs/JRN_010_PREREQUISITE_CASH_VARIANCE_EXPLANATION_AUTHORIZATION_SOURCE_FOUNDATION.md'
             do
               grep -Fxq "$expected" /tmp/s52-source-paths
             done
@@ -106,7 +106,7 @@ jobs:
               '.github/workflows/sprint51-jrn008-bounded-outlet-inventory-baseline-regression.yml' \
               '.github/workflows/sprint52-jrn007-bounded-full-cash-refund-regression.yml' \
               '.github/workflows/sprint53-jrn010-prerequisite-shift-opening-cash-evidence-regression.yml' \
-              '.github/workflows/sprint54-jrn010-prerequisite-shift-closing-cash-evidence-regression.yml' \
+              '.github/workflows/sprint54-jrn010-prerequisite-shift-closing-cash-evidence-regression.yml'
             do
               grep -Fxq "$expected" /tmp/s52-source-paths
             done
