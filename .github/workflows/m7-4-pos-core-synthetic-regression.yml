@@ -83,6 +83,15 @@ jobs:
             echo 'ONEQAY_SPRINT57_M74_COMPATIBILITY=true' >> "$GITHUB_ENV"
             echo 'Recognized exact Sprint60 expected-cash source successor shape.'
             exit 0
+          elif [[ "$count" -eq 5 && "$fingerprint" == 'f668cbbe0bd82b75171a34b410138d1c0c8c8c4196d14f964617e513f2aa59e3' ]]; then
+            grep -Fxq '.github/workflows/sprint63-jrn010-prerequisite-cash-variance-source-regression.yml' /tmp/m74-changed-files.txt
+            grep -Fxq 'apps/web/app/Application/Pos/CashVarianceResult.php' /tmp/m74-changed-files.txt
+            grep -Fxq 'apps/web/app/Application/Pos/DeriveCashVariance.php' /tmp/m74-changed-files.txt
+            grep -Fxq 'apps/web/tests/pos-cash-variance-derivation.php' /tmp/m74-changed-files.txt
+            grep -Fxq 'docs/JRN_010_PREREQUISITE_CASH_VARIANCE_SOURCE_FOUNDATION.md' /tmp/m74-changed-files.txt
+            echo 'ONEQAY_SPRINT57_M74_COMPATIBILITY=true' >> "$GITHUB_ENV"
+            echo 'Recognized exact Sprint64 cash-variance source successor shape.'
+            exit 0
           elif [[ "$count" -eq 5 && "$fingerprint" == '26d2d48f114c88d60dc302dccd8d41118bc730c309c9d79b71f5e516731a0b25' ]]; then
             test "$(grep -c '^apps/web/database/migrations/' /tmp/m74-changed-files.txt)" -eq 1
             grep -Fxq 'apps/web/database/migrations/0000_00_00_000024_add_immutable_shift_binding_to_pos_sales.php' /tmp/m74-changed-files.txt
