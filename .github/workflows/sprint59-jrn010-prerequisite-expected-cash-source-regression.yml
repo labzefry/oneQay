@@ -1,0 +1,195 @@
+name: Sprint60 JRN-010 Prerequisite Expected Cash Source Regression
+
+# Author by Lab | zefry
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/sprint59-jrn010-prerequisite-expected-cash-source-regression.yml'
+      - 'apps/web/app/Application/Pos/DeriveExpectedCash.php'
+      - 'apps/web/app/Application/Pos/ExpectedCashRepository.php'
+      - 'apps/web/app/Application/Pos/ExpectedCashResult.php'
+      - 'apps/web/app/Infrastructure/Pos/LaravelExpectedCashRepository.php'
+      - 'apps/web/tests/pos-expected-cash-derivation.php'
+      - 'docs/JRN_010_PREREQUISITE_EXPECTED_CASH_DERIVATION_SOURCE_FOUNDATION.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint60-jrn010-expected-cash-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sprint60-jrn010-expected-cash:
+    name: sprint60-jrn010-expected-cash
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:cXFxcXFxcXFxcXFxcXFxcXFxcXFxcXFxcXFxcXFxcXE=
+      APP_DEBUG: 'false'
+      APP_URL: http://localhost
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Enforce exact Sprint60 source envelope
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+          git diff --name-only "$base" "$head" | sort > /tmp/s60-source-paths
+          test "$(wc -l < /tmp/s60-source-paths)" -eq 7
+          test "$(sha256sum /tmp/s60-source-paths | awk '{print $1}')" = 'ae57a65e64fa71509141c224012036c0d69920a48f6f323412d952f9234ba789'
+          test "$(grep -c '^apps/web/database/migrations/' /tmp/s60-source-paths || true)" -eq 0
+          grep -Fxq '.github/workflows/sprint59-jrn010-prerequisite-expected-cash-source-regression.yml' /tmp/s60-source-paths
+          grep -Fxq 'apps/web/app/Application/Pos/DeriveExpectedCash.php' /tmp/s60-source-paths
+          grep -Fxq 'apps/web/app/Application/Pos/ExpectedCashRepository.php' /tmp/s60-source-paths
+          grep -Fxq 'apps/web/app/Application/Pos/ExpectedCashResult.php' /tmp/s60-source-paths
+          grep -Fxq 'apps/web/app/Infrastructure/Pos/LaravelExpectedCashRepository.php' /tmp/s60-source-paths
+          grep -Fxq 'apps/web/tests/pos-expected-cash-derivation.php' /tmp/s60-source-paths
+          grep -Fxq 'docs/JRN_010_PREREQUISITE_EXPECTED_CASH_DERIVATION_SOURCE_FOUNDATION.md' /tmp/s60-source-paths
+          ! grep -Eq '(^|/)(composer\.(json|lock)|package(-lock)?\.json|\.env(\.|$))' /tmp/s60-source-paths
+
+      - name: Preserve migrations one through twenty-four and reject migration twenty-five
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+          git diff --exit-code "$base" "$head" -- apps/web/database/migrations
+          mapfile -t migrations < <(find apps/web/database/migrations -maxdepth 1 -type f -name '*.php' -printf '%f\n' | sort)
+          test "${#migrations[@]}" -eq 24
+          for index in $(seq 1 24); do
+            prefix="$(printf '0000_00_00_%06d_' "$index")"
+            test "$(printf '%s\n' "${migrations[@]}" | grep -c "^$prefix")" -eq 1
+          done
+          ! printf '%s\n' "${migrations[@]}" | grep -Eq '^0000_00_00_000025_'
+
+      - name: Validate stateless expected-cash source locks
+        shell: bash
+        run: |
+          set -euo pipefail
+          repository='apps/web/app/Infrastructure/Pos/LaravelExpectedCashRepository.php'
+          contract='apps/web/app/Application/Pos/ExpectedCashRepository.php'
+          service='apps/web/app/Application/Pos/DeriveExpectedCash.php'
+          grep -Fq 'ShiftClosingCashResult $closingCashEvidence' "$contract"
+          grep -Fq 'ShiftClosingCashResult $closingCashEvidence' "$service"
+          grep -Fq "table('oneqay_pos_shift_closing_cash_evidence')" "$repository"
+          grep -Fq "table('oneqay_pos_shift_opening_cash_evidence')" "$repository"
+          grep -Fq "table('oneqay_pos_sales')" "$repository"
+          grep -Fq "table('oneqay_pos_sale_voids')" "$repository"
+          grep -Fq "table('oneqay_pos_sale_cash_refunds')" "$repository"
+          grep -Fq "whereNull('shift_id')" "$repository"
+          grep -Fq 'SET TRANSACTION ISOLATION LEVEL REPEATABLE READ' "$repository"
+          grep -Fq 'transactionLevel()' "$repository"
+          grep -Fq 'FULL_SALE_VOID' "$repository"
+          grep -Fq 'FULL_CASH_REFUND' "$repository"
+          ! grep -Eq -- '->(insert|update|upsert|delete|increment|decrement)\(' "$repository"
+          ! grep -Eq 'active_slot|now\(|CURRENT_TIMESTAMP|orderBy\(' "$repository"
+
+      - name: Validate PHP syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l apps/web/app/Application/Pos/DeriveExpectedCash.php
+          php -l apps/web/app/Application/Pos/ExpectedCashRepository.php
+          php -l apps/web/app/Application/Pos/ExpectedCashResult.php
+          php -l apps/web/app/Infrastructure/Pos/LaravelExpectedCashRepository.php
+          php -l apps/web/tests/pos-expected-cash-derivation.php
+
+      - name: Install locked dependencies
+        working-directory: apps/web
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Reject High or Critical Composer advisories
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          composer audit --locked --format=json > /tmp/oneqay-composer-audit.json
+          php -r '
+            $data = json_decode(file_get_contents("/tmp/oneqay-composer-audit.json"), true, 512, JSON_THROW_ON_ERROR);
+            foreach (($data["advisories"] ?? []) as $items) {
+                foreach ($items as $item) {
+                    if (in_array(strtolower((string) ($item["severity"] ?? "")), ["high", "critical"], true)) {
+                        fwrite(STDERR, "Blocking Composer advisory.\n");
+                        exit(1);
+                    }
+                }
+            }
+          '
+
+      - name: Run Sprint60 expected-cash derivation regression
+        working-directory: apps/web
+        run: php tests/pos-expected-cash-derivation.php
+
+      - name: Preserve Sprint57 immutable sale-to-shift binding regression
+        working-directory: apps/web
+        run: php tests/pos-sale-shift-binding-durable.php
+
+      - name: Preserve Sprint54 closing-cash regression
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          migration='database/migrations/0000_00_00_000024_add_immutable_shift_binding_to_pos_sales.php'
+          backup='/tmp/oneqay-s60-m24.php'
+          cp "$migration" "$backup"
+          trap 'mv "$backup" "$migration"' EXIT
+          rm -f "$migration"
+          php tests/pos-shift-closing-cash-durable.php
+          mv "$backup" "$migration"
+          trap - EXIT
+
+      - name: Preserve Sprint52 full CASH refund regression
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          migrations=(
+            database/migrations/0000_00_00_000022_create_pos_shift_opening_cash_evidence_foundation.php
+            database/migrations/0000_00_00_000023_create_pos_shift_closing_cash_evidence_foundation.php
+            database/migrations/0000_00_00_000024_add_immutable_shift_binding_to_pos_sales.php
+          )
+          backups=()
+          restore() {
+            for index in "${!migrations[@]}"; do
+              [[ ! -f "${backups[$index]}" ]] || mv "${backups[$index]}" "${migrations[$index]}"
+            done
+          }
+          trap restore EXIT
+          for index in "${!migrations[@]}"; do
+            backup="/tmp/oneqay-s60-refund-$index.php"
+            cp "${migrations[$index]}" "$backup"
+            backups+=("$backup")
+            rm -f "${migrations[$index]}"
+          done
+          php tests/pos-sale-cash-refund-durable.php
+          restore
+          trap - EXIT
+
+      - name: Assert lifecycle and dependency locks
+        shell: bash
+        run: |
+          set -euo pipefail
+          doc='docs/JRN_010_PREREQUISITE_EXPECTED_CASH_DERIVATION_SOURCE_FOUNDATION.md'
+          grep -Fq 'Migration #24: **SOURCE-PUBLISHED ONLY / NOT EXECUTED / NOT APPLIED / NOT ACTIVATED**' "$doc"
+          grep -Fq 'Migration #25: **NOT SELECTED**' "$doc"
+          grep -Fq 'Technical Preview: **INACTIVE**' "$doc"
+          grep -Fq 'Production: **NO-GO**' "$doc"
+          grep -Fq 'Updater: **INACTIVE**' "$doc"
+          grep -Fq 'JRN-010 Shift Close: **NOT SELECTED**' "$doc"
