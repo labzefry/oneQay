@@ -504,6 +504,33 @@ $deny(
     'sign direction mismatch',
 );
 
+$wrongMagnitude = new CashVarianceResult(
+    'tenant-alpha',
+    'organization-alpha',
+    'outlet-alpha',
+    $alphaShift,
+    $alphaOpening,
+    $alphaClosing,
+    2000,
+    900,
+    1000,
+    99,
+    CashVarianceResult::DIRECTION_OVER,
+    'IDR',
+    0,
+);
+$deny(
+    fn () => $service->record(
+        $wrongMagnitude,
+        new CashVarianceExplanationCommand(
+            'variance-explain-operation-magnitude-0001',
+            'Invalid arithmetic magnitude.',
+        ),
+        'variance-explain-correlation-magnitude',
+    ),
+    'variance arithmetic mismatch',
+);
+
 try {
     new CashVarianceExplanationCommand('variance-explain-empty-0001', " \r\n ");
     $assert(false, 'empty explanation accepted');
