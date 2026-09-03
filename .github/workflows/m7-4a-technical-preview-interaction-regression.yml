@@ -321,7 +321,29 @@ jobs:
           count="$(wc -l < /tmp/s70-historical-paths)"
           fingerprint="$(sha256sum /tmp/s70-historical-paths | awk '{print $1}')"
           recognized=false
-          if [[ "$count" -eq 9 && "$fingerprint" == 'c2a575ec728249a8a4b26c173229b26455eee92c7bd4c59026a1d4c064e2c442' ]]; then
+          if [[ "$count" -eq 6 && "$fingerprint" == 'cc40f08beda780e4aa4795f29aa7533bbde1029d11855d43f180812502c4d80b' ]]; then
+            grep -Fxq '.github/workflows/sprint69-jrn010-prerequisite-cash-variance-explanation-source-regression.yml' /tmp/s70-historical-paths
+            grep -Fxq 'apps/web/app/Application/Authorization/PosPermission.php' /tmp/s70-historical-paths
+            grep -Fxq 'apps/web/app/Application/Pos/RecordCashVarianceExplanation.php' /tmp/s70-historical-paths
+            grep -Fxq 'apps/web/tests/pos-cash-variance-explanation-authorization.php' /tmp/s70-historical-paths
+            grep -Fxq 'apps/web/tests/pos-cash-variance-explanation-durable.php' /tmp/s70-historical-paths
+            grep -Fxq 'docs/JRN_010_PREREQUISITE_CASH_VARIANCE_EXPLANATION_AUTHORIZATION_SOURCE_FOUNDATION.md' /tmp/s70-historical-paths
+            recognized=true
+          elif [[ "$count" -eq 8 && "$fingerprint" == '3e5b516b17bfc4b2b4e8694248672ff7a4298a3e080e0617a70b1bb1d8aa6194' ]]; then
+            for expected in \
+              '.github/workflows/sprint46-jrn006-durable-sale-completion-regression.yml' \
+              '.github/workflows/sprint47-jrn004-catalog-preparation-regression.yml' \
+              '.github/workflows/sprint48-jrn005-shift-register-opening-regression.yml' \
+              '.github/workflows/sprint50-jrn007-completed-sale-void-regression.yml' \
+              '.github/workflows/sprint51-jrn008-bounded-outlet-inventory-baseline-regression.yml' \
+              '.github/workflows/sprint52-jrn007-bounded-full-cash-refund-regression.yml' \
+              '.github/workflows/sprint53-jrn010-prerequisite-shift-opening-cash-evidence-regression.yml' \
+              '.github/workflows/sprint54-jrn010-prerequisite-shift-closing-cash-evidence-regression.yml'
+            do
+              grep -Fxq "$expected" /tmp/s70-historical-paths
+            done
+            recognized=true
+          elif [[ "$count" -eq 9 && "$fingerprint" == 'c2a575ec728249a8a4b26c173229b26455eee92c7bd4c59026a1d4c064e2c442' ]]; then
             grep -Fxq '.github/workflows/sprint69-jrn010-prerequisite-cash-variance-explanation-source-regression.yml' /tmp/s70-historical-paths
             grep -Fxq 'apps/web/app/Application/Pos/CashVarianceExplanationCommand.php' /tmp/s70-historical-paths
             grep -Fxq 'apps/web/app/Application/Pos/CashVarianceExplanationRepository.php' /tmp/s70-historical-paths
