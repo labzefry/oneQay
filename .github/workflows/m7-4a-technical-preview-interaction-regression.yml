@@ -363,6 +363,7 @@ jobs:
             echo 'ONEQAY_SPRINT32_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT33_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT34_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT51_JRN008_PREVIEW_FIXTURE=true' >> "$GITHUB_ENV"
             echo 'Exact Sprint70 source/compatibility envelope recognized; migrations #10-#25 isolated only from historical executable preservation.'
           fi
 
