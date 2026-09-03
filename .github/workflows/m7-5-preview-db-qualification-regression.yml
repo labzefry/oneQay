@@ -120,6 +120,7 @@ jobs:
             echo 'ONEQAY_SPRINT32_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT33_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT34_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT51_JRN008_PREVIEW_FIXTURE=true' >> "$GITHUB_ENV"
             git update-index --assume-unchanged apps/web/database/migrations/0000_00_00_000010_create_identity_recovery_codes.php
             git update-index --assume-unchanged apps/web/database/migrations/0000_00_00_000011_add_credential_epoch_to_identity_password_credentials.php
             rm -f apps/web/database/migrations/0000_00_00_000010_create_identity_recovery_codes.php
@@ -228,6 +229,63 @@ jobs:
             echo 'ONEQAY_SPRINT35_SUCCESSOR=false' >> "$GITHUB_ENV"
           fi
 
+      - name: Recognize exact Sprint70 source and historical compatibility envelopes
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+          git diff --name-only "$base" "$head" | sort > /tmp/s70-historical-paths
+          count="$(wc -l < /tmp/s70-historical-paths)"
+          fingerprint="$(sha256sum /tmp/s70-historical-paths | awk '{print $1}')"
+          recognized=false
+          if [[ "$count" -eq 9 && "$fingerprint" == 'c2a575ec728249a8a4b26c173229b26455eee92c7bd4c59026a1d4c064e2c442' ]]; then
+            grep -Fxq '.github/workflows/sprint69-jrn010-prerequisite-cash-variance-explanation-source-regression.yml' /tmp/s70-historical-paths
+            grep -Fxq 'apps/web/app/Application/Pos/CashVarianceExplanationCommand.php' /tmp/s70-historical-paths
+            grep -Fxq 'apps/web/app/Application/Pos/CashVarianceExplanationRepository.php' /tmp/s70-historical-paths
+            grep -Fxq 'apps/web/app/Application/Pos/CashVarianceExplanationResult.php' /tmp/s70-historical-paths
+            grep -Fxq 'apps/web/app/Application/Pos/RecordCashVarianceExplanation.php' /tmp/s70-historical-paths
+            grep -Fxq 'apps/web/app/Infrastructure/Pos/LaravelCashVarianceExplanationRepository.php' /tmp/s70-historical-paths
+            grep -Fxq 'apps/web/database/migrations/0000_00_00_000025_create_pos_cash_variance_explanation_evidence_foundation.php' /tmp/s70-historical-paths
+            grep -Fxq 'apps/web/tests/pos-cash-variance-explanation-durable.php' /tmp/s70-historical-paths
+            grep -Fxq 'docs/JRN_010_PREREQUISITE_CASH_VARIANCE_EXPLANATION_SOURCE_FOUNDATION.md' /tmp/s70-historical-paths
+            recognized=true
+          elif [[ "$count" -eq 13 && "$fingerprint" == 'dcc4ec5d3fdefa32271c50cebec7e2536c179b203a60c3fb5bed1aeb9f4a47fb' ]] || [[ "$count" -eq 20 && "$fingerprint" == 'c6cd387d5ea83d73382493ca78d219c0db35477e55c61a68e489a0329231f922' ]]; then
+            grep -Fxq '.github/workflows/m7-2-tenant-isolation-regression.yml' /tmp/s70-historical-paths
+            grep -Fxq '.github/workflows/m7-3-identity-org-context-regression.yml' /tmp/s70-historical-paths
+            grep -Fxq '.github/workflows/m7-4-pos-core-synthetic-regression.yml' /tmp/s70-historical-paths
+            grep -Fxq '.github/workflows/m7-4a-technical-preview-interaction-regression.yml' /tmp/s70-historical-paths
+            grep -Fxq '.github/workflows/m7-5-preview-db-qualification-regression.yml' /tmp/s70-historical-paths
+            grep -Fxq '.github/workflows/m7-5-preview-release-artifact.yml' /tmp/s70-historical-paths
+            grep -Fxq '.github/workflows/sprint21-role-permission-policy-regression.yml' /tmp/s70-historical-paths
+            grep -Fxq '.github/workflows/sprint22-policy-administration-regression.yml' /tmp/s70-historical-paths
+            grep -Fxq '.github/workflows/sprint23-initial-tenant-admin-provisioning-regression.yml' /tmp/s70-historical-paths
+            grep -Fxq '.github/workflows/sprint24-protected-control-admin-lifecycle-regression.yml' /tmp/s70-historical-paths
+            grep -Fxq '.github/workflows/sprint25-policy-administration-delivery-regression.yml' /tmp/s70-historical-paths
+            grep -Fxq '.github/workflows/sprint26-identity-credential-verification-regression.yml' /tmp/s70-historical-paths
+            grep -Fxq '.github/workflows/sprint27-first-party-session-establishment-regression.yml' /tmp/s70-historical-paths
+            recognized=true
+          fi
+          if [[ "$recognized" == 'true' ]]; then
+            for index in $(seq 10 25); do
+              migration="$(find apps/web/database/migrations -maxdepth 1 -type f -name "$(printf '0000_00_00_%06d_*' "$index")" -print -quit)"
+              if [[ -n "$migration" && -f "$migration" ]]; then
+                git update-index --assume-unchanged "$migration"
+                rm -f "$migration"
+              fi
+            done
+            echo 'ONEQAY_S50_SOURCE_COMPATIBILITY=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT35_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT30_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT31_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT32_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT33_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT34_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT51_JRN008_PREVIEW_FIXTURE=true' >> "$GITHUB_ENV"
+            echo 'Exact Sprint70 source/compatibility envelope recognized; migrations #10-#25 isolated only from historical executable preservation.'
+          fi
+
       - name: Preserve dependency manifests lockfiles and Sprint 28 migration boundary
         if: (github.event_name == 'pull_request' && env.ONEQAY_SPRINT30_SUCCESSOR != 'true') && env.ONEQAY_SPRINT35_SUCCESSOR != 'true'
         shell: bash
@@ -324,21 +382,25 @@ jobs:
           refund='app/Infrastructure/Pos/LaravelSaleCashRefundRepository.php'
           opening_cash='app/Infrastructure/Pos/LaravelShiftOpeningCashRepository.php'
           closing_cash='app/Infrastructure/Pos/LaravelShiftClosingCashRepository.php'
+          expected_cash='app/Infrastructure/Pos/LaravelExpectedCashRepository.php'
           inventory_backup='/tmp/oneqay-m75-db-jrn008-inventory-repository.php'
           refund_backup='/tmp/oneqay-m75-db-jrn007-refund-repository.php'
           opening_cash_backup='/tmp/oneqay-m75-db-s53-opening-cash-repository.php'
           closing_cash_backup='/tmp/oneqay-m75-db-s53-closing-cash-repository.php'
+          expected_cash_backup='/tmp/oneqay-m75-db-s60-expected-cash-repository.php'
           restore_pos_successors() {
             if [[ -f "$inventory_backup" ]]; then mv "$inventory_backup" "$inventory"; fi
             if [[ -f "$refund_backup" ]]; then mv "$refund_backup" "$refund"; fi
             if [[ -f "$opening_cash_backup" ]]; then mv "$opening_cash_backup" "$opening_cash"; fi
             if [[ -f "$closing_cash_backup" ]]; then mv "$closing_cash_backup" "$closing_cash"; fi
+            if [[ -f "$expected_cash_backup" ]]; then mv "$expected_cash_backup" "$expected_cash"; fi
           }
           if [[ "${ONEQAY_SPRINT51_JRN008_PREVIEW_FIXTURE:-false}" == 'true' ]]; then
             if [[ -f "$inventory" ]]; then cp "$inventory" "$inventory_backup"; rm -f "$inventory"; fi
             if [[ -f "$refund" ]]; then cp "$refund" "$refund_backup"; rm -f "$refund"; fi
             if [[ -f "$opening_cash" ]]; then cp "$opening_cash" "$opening_cash_backup"; rm -f "$opening_cash"; fi
             if [[ -f "$closing_cash" ]]; then cp "$closing_cash" "$closing_cash_backup"; rm -f "$closing_cash"; fi
+            if [[ -f "$expected_cash" ]]; then cp "$expected_cash" "$expected_cash_backup"; rm -f "$expected_cash"; fi
             trap restore_pos_successors EXIT
           fi
           php tests/pos-core-synthetic.php

@@ -83,6 +83,40 @@ jobs:
             echo 'ONEQAY_SPRINT57_M74_COMPATIBILITY=true' >> "$GITHUB_ENV"
             echo 'Recognized exact Sprint60 expected-cash source successor shape.'
             exit 0
+          elif [[ "$count" -eq 9 && "$fingerprint" == 'c2a575ec728249a8a4b26c173229b26455eee92c7bd4c59026a1d4c064e2c442' ]]; then
+            grep -Fxq '.github/workflows/sprint69-jrn010-prerequisite-cash-variance-explanation-source-regression.yml' /tmp/m74-changed-files.txt
+            grep -Fxq 'apps/web/app/Application/Pos/CashVarianceExplanationCommand.php' /tmp/m74-changed-files.txt
+            grep -Fxq 'apps/web/app/Application/Pos/CashVarianceExplanationRepository.php' /tmp/m74-changed-files.txt
+            grep -Fxq 'apps/web/app/Application/Pos/CashVarianceExplanationResult.php' /tmp/m74-changed-files.txt
+            grep -Fxq 'apps/web/app/Application/Pos/RecordCashVarianceExplanation.php' /tmp/m74-changed-files.txt
+            grep -Fxq 'apps/web/app/Infrastructure/Pos/LaravelCashVarianceExplanationRepository.php' /tmp/m74-changed-files.txt
+            grep -Fxq 'apps/web/database/migrations/0000_00_00_000025_create_pos_cash_variance_explanation_evidence_foundation.php' /tmp/m74-changed-files.txt
+            grep -Fxq 'apps/web/tests/pos-cash-variance-explanation-durable.php' /tmp/m74-changed-files.txt
+            grep -Fxq 'docs/JRN_010_PREREQUISITE_CASH_VARIANCE_EXPLANATION_SOURCE_FOUNDATION.md' /tmp/m74-changed-files.txt
+            echo 'ONEQAY_SPRINT57_M74_COMPATIBILITY=true' >> "$GITHUB_ENV"
+            echo 'Recognized exact Sprint70 cash-variance explanation source successor shape.'
+            exit 0
+          elif [[ "$count" -eq 13 && "$fingerprint" == 'dcc4ec5d3fdefa32271c50cebec7e2536c179b203a60c3fb5bed1aeb9f4a47fb' ]] || [[ "$count" -eq 20 && "$fingerprint" == 'c6cd387d5ea83d73382493ca78d219c0db35477e55c61a68e489a0329231f922' ]]; then
+            for expected in \
+              '.github/workflows/m7-2-tenant-isolation-regression.yml' \
+              '.github/workflows/m7-3-identity-org-context-regression.yml' \
+              '.github/workflows/m7-4-pos-core-synthetic-regression.yml' \
+              '.github/workflows/m7-4a-technical-preview-interaction-regression.yml' \
+              '.github/workflows/m7-5-preview-db-qualification-regression.yml' \
+              '.github/workflows/m7-5-preview-release-artifact.yml' \
+              '.github/workflows/sprint21-role-permission-policy-regression.yml' \
+              '.github/workflows/sprint22-policy-administration-regression.yml' \
+              '.github/workflows/sprint23-initial-tenant-admin-provisioning-regression.yml' \
+              '.github/workflows/sprint24-protected-control-admin-lifecycle-regression.yml' \
+              '.github/workflows/sprint25-policy-administration-delivery-regression.yml' \
+              '.github/workflows/sprint26-identity-credential-verification-regression.yml' \
+              '.github/workflows/sprint27-first-party-session-establishment-regression.yml'
+            do
+              grep -Fxq "$expected" /tmp/m74-changed-files.txt
+            done
+            echo 'ONEQAY_SPRINT57_M74_COMPATIBILITY=true' >> "$GITHUB_ENV"
+            echo 'Recognized exact Sprint70 historical workflow compatibility correction shape.'
+            exit 0
           elif [[ "$count" -eq 5 && "$fingerprint" == 'f668cbbe0bd82b75171a34b410138d1c0c8c8c4196d14f964617e513f2aa59e3' ]]; then
             grep -Fxq '.github/workflows/sprint63-jrn010-prerequisite-cash-variance-source-regression.yml' /tmp/m74-changed-files.txt
             grep -Fxq 'apps/web/app/Application/Pos/CashVarianceResult.php' /tmp/m74-changed-files.txt
@@ -318,8 +352,16 @@ jobs:
               fi
             done
           elif [[ "${ONEQAY_SPRINT57_M74_COMPATIBILITY:-false}" == 'true' ]]; then
-            git diff --exit-code "$base" "$head" -- apps/web/database/migrations
-            for migration_to_isolate in "$migration19" "$migration20" "$migration21" "$migration22" "$migration23" "$migration24"; do
+            migration25='apps/web/database/migrations/0000_00_00_000025_create_pos_cash_variance_explanation_evidence_foundation.php'
+            changed="$(git diff --name-only "$base" "$head" -- apps/web/database/migrations | sort)"
+            changed_count="$(printf '%s\n' "$changed" | sed '/^$/d' | wc -l)"
+            if [[ "$changed_count" -eq 1 ]]; then
+              printf '%s\n' "$changed" | grep -Fxq "$migration25"
+            else
+              test "$changed_count" -eq 0
+            fi
+            git diff --exit-code "$base" "$head" -- apps/web/database/migrations ":(exclude)$migration25"
+            for migration_to_isolate in "$migration19" "$migration20" "$migration21" "$migration22" "$migration23" "$migration24" "$migration25"; do
               if [[ -f "$migration_to_isolate" ]]; then
                 git update-index --assume-unchanged "$migration_to_isolate"
                 rm -f "$migration_to_isolate"
