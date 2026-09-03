@@ -96,7 +96,7 @@ jobs:
             echo 'ONEQAY_SPRINT57_M74_COMPATIBILITY=true' >> "$GITHUB_ENV"
             echo 'Recognized exact Sprint70 cash-variance explanation source successor shape.'
             exit 0
-          elif [[ "$count" -eq 13 && "$fingerprint" == 'dcc4ec5d3fdefa32271c50cebec7e2536c179b203a60c3fb5bed1aeb9f4a47fb' ]]; then
+          elif [[ "$count" -eq 13 && "$fingerprint" == 'dcc4ec5d3fdefa32271c50cebec7e2536c179b203a60c3fb5bed1aeb9f4a47fb' ]] || [[ "$count" -eq 20 && "$fingerprint" == 'c6cd387d5ea83d73382493ca78d219c0db35477e55c61a68e489a0329231f922' ]]; then
             for expected in \
               '.github/workflows/m7-2-tenant-isolation-regression.yml' \
               '.github/workflows/m7-3-identity-org-context-regression.yml' \
