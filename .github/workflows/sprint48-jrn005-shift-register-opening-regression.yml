@@ -83,6 +83,7 @@ jobs:
             done
           }
 
+          echo 'ONEQAY_SPRINT74_POS_HISTORICAL=false' >> "$GITHUB_ENV"
           if [[ "$count" -eq 6 && "$fingerprint" == 'cc40f08beda780e4aa4795f29aa7533bbde1029d11855d43f180812502c4d80b' ]]; then
             for expected in \
               '.github/workflows/sprint69-jrn010-prerequisite-cash-variance-explanation-source-regression.yml' \
@@ -95,6 +96,7 @@ jobs:
               grep -Fxq "$expected" /tmp/s48-jrn005-source-paths
             done
             isolate_sprint74_migration_successors
+            echo 'ONEQAY_SPRINT74_POS_HISTORICAL=true' >> "$GITHUB_ENV"
             echo 'Recognized exact Sprint74 authorization source successor shape at migration #18 horizon.'
           elif [[ "$count" -eq 8 && "$fingerprint" == '3e5b516b17bfc4b2b4e8694248672ff7a4298a3e080e0617a70b1bb1d8aa6194' ]]; then
             for expected in \
@@ -110,6 +112,7 @@ jobs:
               grep -Fxq "$expected" /tmp/s48-jrn005-source-paths
             done
             isolate_sprint74_migration_successors
+            echo 'ONEQAY_SPRINT74_POS_HISTORICAL=true' >> "$GITHUB_ENV"
             echo 'Recognized exact Sprint74 POS historical compatibility self-qualification shape at migration #18 horizon.'
           elif [[ "$count" -eq 15 && "$fingerprint" == '5e19664988cabba0030f9927d26b0702370414be4cd6b424d585925b634ca2b8' ]]; then
             test "$(grep -c '^apps/web/database/migrations/' /tmp/s48-jrn005-source-paths)" -eq 1
@@ -293,6 +296,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          if [[ "${ONEQAY_SPRINT74_POS_HISTORICAL:-false}" == 'true' ]]; then
+            s74_expected_cash='app/Infrastructure/Pos/LaravelExpectedCashRepository.php'
+            s74_variance_explanation='app/Infrastructure/Pos/LaravelCashVarianceExplanationRepository.php'
+            s74_expected_backup='/tmp/oneqay-s74-historical-expected-cash.php'
+            s74_variance_backup='/tmp/oneqay-s74-historical-variance-explanation.php'
+            if [[ -f "$s74_expected_cash" ]]; then cp "$s74_expected_cash" "$s74_expected_backup"; rm -f "$s74_expected_cash"; fi
+            if [[ -f "$s74_variance_explanation" ]]; then cp "$s74_variance_explanation" "$s74_variance_backup"; rm -f "$s74_variance_explanation"; fi
+          fi
           successor='app/Infrastructure/Pos/LaravelShiftOpeningRepository.php'
           inventory='app/Infrastructure/Pos/LaravelInventoryBaselineRepository.php'
           refund='app/Infrastructure/Pos/LaravelSaleCashRefundRepository.php'
@@ -333,6 +344,11 @@ jobs:
           php tests/pos-core-synthetic.php
           restore
           trap - EXIT
+          if [[ "${ONEQAY_SPRINT74_POS_HISTORICAL:-false}" == 'true' ]]; then
+            if [[ -f "$s74_expected_backup" ]]; then mv "$s74_expected_backup" "$s74_expected_cash"; fi
+            if [[ -f "$s74_variance_backup" ]]; then mv "$s74_variance_backup" "$s74_variance_explanation"; fi
+          fi
+
       - name: Preserve JRN-004 durable catalog regression
         working-directory: apps/web
         shell: bash
