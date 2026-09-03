@@ -2,6 +2,10 @@
 
 declare(strict_types=1);
 
+use App\Application\Authorization\DurableRolePermissionRepository;
+use App\Application\Authorization\DurableScopedAuthorizationPolicy;
+use App\Application\Authorization\PermissionIdentifier;
+use App\Application\Authorization\PosPermission;
 use App\Application\Organization\OrganizationalContextStore;
 use App\Application\Organization\VerifiedOrganizationalContext;
 use App\Application\Persistence\PersistenceTransaction;
@@ -332,6 +336,32 @@ $makeService = static function (
         $runtimeClass,
         $featureEnabled,
     );
+    $authorization = new DurableScopedAuthorizationPolicy(
+        new class implements DurableRolePermissionRepository {
+            public function allows(
+                VerifiedOrganizationalContext $context,
+                PermissionIdentifier $permission,
+            ): bool {
+                if ($permission->value() !== PosPermission::RECORD_CASH_VARIANCE_EXPLANATION) {
+                    return false;
+                }
+
+                $outlet = $context->outletId()?->value() ?? '';
+                $key = implode('|', [
+                    $context->identityId()->value(),
+                    $context->tenantId()->value(),
+                    $context->organizationId()->value(),
+                    $outlet,
+                    $permission->value(),
+                ]);
+
+                return in_array($key, [
+                    'explainer-alpha|tenant-alpha|organization-alpha|outlet-alpha|pos.shift.cash-variance-explanation.record',
+                    'explainer-beta|tenant-beta|organization-beta|outlet-beta|pos.shift.cash-variance-explanation.record',
+                ], true);
+            }
+        },
+    );
     $transaction = new LaravelPersistenceTransaction(
         $connection,
         $persistenceEnabled,
@@ -345,6 +375,7 @@ $makeService = static function (
     return new RecordCashVarianceExplanation(
         $repository,
         $contexts,
+        $authorization,
         $transaction,
         $clock,
     );
