@@ -1,4 +1,4 @@
-name: Sprint70 JRN-010 Prerequisite Cash Variance Explanation Source Regression
+name: Sprint74 JRN-010 Prerequisite Cash Variance Explanation Authorization Source Regression
 
 # Author by Lab | zefry
 
@@ -7,13 +7,16 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/sprint69-jrn010-prerequisite-cash-variance-explanation-source-regression.yml'
+      - 'apps/web/app/Application/Authorization/PosPermission.php'
       - 'apps/web/app/Application/Pos/CashVarianceExplanationCommand.php'
       - 'apps/web/app/Application/Pos/CashVarianceExplanationRepository.php'
       - 'apps/web/app/Application/Pos/CashVarianceExplanationResult.php'
       - 'apps/web/app/Application/Pos/RecordCashVarianceExplanation.php'
       - 'apps/web/app/Infrastructure/Pos/LaravelCashVarianceExplanationRepository.php'
       - 'apps/web/database/migrations/0000_00_00_000025_create_pos_cash_variance_explanation_evidence_foundation.php'
+      - 'apps/web/tests/pos-cash-variance-explanation-authorization.php'
       - 'apps/web/tests/pos-cash-variance-explanation-durable.php'
+      - 'docs/JRN_010_PREREQUISITE_CASH_VARIANCE_EXPLANATION_AUTHORIZATION_SOURCE_FOUNDATION.md'
       - 'docs/JRN_010_PREREQUISITE_CASH_VARIANCE_EXPLANATION_SOURCE_FOUNDATION.md'
   workflow_dispatch:
 
@@ -21,12 +24,12 @@ permissions:
   contents: read
 
 concurrency:
-  group: sprint70-jrn010-variance-explanation-${{ github.event.pull_request.number || github.ref }}
+  group: sprint74-jrn010-variance-explanation-authorization-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
-  sprint70-jrn010-variance-explanation:
-    name: sprint70-jrn010-variance-explanation
+  sprint74-jrn010-variance-explanation-authorization:
+    name: sprint74-jrn010-variance-explanation-authorization
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
@@ -45,40 +48,37 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: Enforce exact Sprint70 source envelope
+      - name: Enforce exact Sprint74 authorization source envelope
         if: github.event_name == 'pull_request'
         shell: bash
         run: |
           set -euo pipefail
           base="${{ github.event.pull_request.base.sha }}"
           head="${{ github.event.pull_request.head.sha }}"
-          git diff --name-only "$base" "$head" | sort > /tmp/s70-source-paths
-          test "$(wc -l < /tmp/s70-source-paths)" -eq 9
-          test "$(sha256sum /tmp/s70-source-paths | awk '{print $1}')" = 'c2a575ec728249a8a4b26c173229b26455eee92c7bd4c59026a1d4c064e2c442'
-          grep -Fxq '.github/workflows/sprint69-jrn010-prerequisite-cash-variance-explanation-source-regression.yml' /tmp/s70-source-paths
-          grep -Fxq 'apps/web/app/Application/Pos/CashVarianceExplanationCommand.php' /tmp/s70-source-paths
-          grep -Fxq 'apps/web/app/Application/Pos/CashVarianceExplanationRepository.php' /tmp/s70-source-paths
-          grep -Fxq 'apps/web/app/Application/Pos/CashVarianceExplanationResult.php' /tmp/s70-source-paths
-          grep -Fxq 'apps/web/app/Application/Pos/RecordCashVarianceExplanation.php' /tmp/s70-source-paths
-          grep -Fxq 'apps/web/app/Infrastructure/Pos/LaravelCashVarianceExplanationRepository.php' /tmp/s70-source-paths
-          grep -Fxq 'apps/web/database/migrations/0000_00_00_000025_create_pos_cash_variance_explanation_evidence_foundation.php' /tmp/s70-source-paths
-          grep -Fxq 'apps/web/tests/pos-cash-variance-explanation-durable.php' /tmp/s70-source-paths
-          grep -Fxq 'docs/JRN_010_PREREQUISITE_CASH_VARIANCE_EXPLANATION_SOURCE_FOUNDATION.md' /tmp/s70-source-paths
-          ! grep -Fxq 'apps/web/app/Providers/AppServiceProvider.php' /tmp/s70-source-paths
-          ! grep -Fxq 'apps/web/config/oneqay.php' /tmp/s70-source-paths
-          ! grep -Eq '(^|/)(routes|resources)/(.*)$' /tmp/s70-source-paths
-          ! grep -Eq 'Permission|DefaultGrant|Mfa|StepUp|Reviewer|Approval|ShiftClose' /tmp/s70-source-paths
+          git diff --name-only "$base" "$head" | sort > /tmp/s74-source-paths
+          test "$(wc -l < /tmp/s74-source-paths)" -eq 6
+          test "$(sha256sum /tmp/s74-source-paths | awk '{print $1}')" = 'cc40f08beda780e4aa4795f29aa7533bbde1029d11855d43f180812502c4d80b'
+          grep -Fxq '.github/workflows/sprint69-jrn010-prerequisite-cash-variance-explanation-source-regression.yml' /tmp/s74-source-paths
+          grep -Fxq 'apps/web/app/Application/Authorization/PosPermission.php' /tmp/s74-source-paths
+          grep -Fxq 'apps/web/app/Application/Pos/RecordCashVarianceExplanation.php' /tmp/s74-source-paths
+          grep -Fxq 'apps/web/tests/pos-cash-variance-explanation-authorization.php' /tmp/s74-source-paths
+          grep -Fxq 'apps/web/tests/pos-cash-variance-explanation-durable.php' /tmp/s74-source-paths
+          grep -Fxq 'docs/JRN_010_PREREQUISITE_CASH_VARIANCE_EXPLANATION_AUTHORIZATION_SOURCE_FOUNDATION.md' /tmp/s74-source-paths
+          ! grep -Fxq 'apps/web/app/Providers/AppServiceProvider.php' /tmp/s74-source-paths
+          ! grep -Fxq 'apps/web/config/oneqay.php' /tmp/s74-source-paths
+          ! grep -Fxq 'apps/web/routes/web.php' /tmp/s74-source-paths
+          ! grep -Eq '(^|/)database/migrations/' /tmp/s74-source-paths
+          ! grep -Eq 'Reviewer|Approval|DefaultGrant|Mfa|StepUp|ShiftClose' /tmp/s74-source-paths
 
-      - name: Preserve migrations one through twenty-four and publish only migration twenty-five
-        if: github.event_name == 'pull_request'
+      - name: Preserve exact migration set through twenty-five
         shell: bash
         run: |
           set -euo pipefail
-          base="${{ github.event.pull_request.base.sha }}"
-          head="${{ github.event.pull_request.head.sha }}"
-          git diff --name-only "$base" "$head" -- apps/web/database/migrations | sort > /tmp/s70-migration-paths
-          test "$(wc -l < /tmp/s70-migration-paths)" -eq 1
-          grep -Fxq 'apps/web/database/migrations/0000_00_00_000025_create_pos_cash_variance_explanation_evidence_foundation.php' /tmp/s70-migration-paths
+          if [[ "${{ github.event_name }}" == 'pull_request' ]]; then
+            base="${{ github.event.pull_request.base.sha }}"
+            head="${{ github.event.pull_request.head.sha }}"
+            git diff --exit-code "$base" "$head" -- apps/web/database/migrations
+          fi
 
           mapfile -t migrations < <(find apps/web/database/migrations -maxdepth 1 -type f -name '*.php' -printf '%f\n' | sort)
           test "${#migrations[@]}" -eq 25
@@ -88,50 +88,87 @@ jobs:
           done
           ! printf '%s\n' "${migrations[@]}" | grep -Eq '^0000_00_00_000026_'
 
-      - name: Validate bounded durable explanation source locks
+      - name: Validate bounded authorization source locks
         shell: bash
         run: |
           set -euo pipefail
+          permission='apps/web/app/Application/Authorization/PosPermission.php'
+          service='apps/web/app/Application/Pos/RecordCashVarianceExplanation.php'
           command='apps/web/app/Application/Pos/CashVarianceExplanationCommand.php'
           result='apps/web/app/Application/Pos/CashVarianceExplanationResult.php'
           port='apps/web/app/Application/Pos/CashVarianceExplanationRepository.php'
-          service='apps/web/app/Application/Pos/RecordCashVarianceExplanation.php'
           adapter='apps/web/app/Infrastructure/Pos/LaravelCashVarianceExplanationRepository.php'
           migration='apps/web/database/migrations/0000_00_00_000025_create_pos_cash_variance_explanation_evidence_foundation.php'
+          auth_test='apps/web/tests/pos-cash-variance-explanation-authorization.php'
+          durable_test='apps/web/tests/pos-cash-variance-explanation-durable.php'
 
-          grep -Fq 'final readonly class CashVarianceExplanationCommand' "$command"
-          grep -Fq 'MAX_EXPLANATION_BYTES = 4096' "$command"
-          grep -Fq 'final readonly class CashVarianceExplanationResult' "$result"
-          grep -Fq 'interface CashVarianceExplanationRepository' "$port"
-          grep -Fq 'CashVarianceResult $variance' "$port"
-          grep -Fq 'final readonly class RecordCashVarianceExplanation' "$service"
+          grep -Fq "public const RECORD_CASH_VARIANCE_EXPLANATION = 'pos.shift.cash-variance-explanation.record';" "$permission"
+          grep -Fq 'public static function recordCashVarianceExplanation(): PermissionIdentifier' "$permission"
+          test "$(grep -Fc "pos.shift.cash-variance-explanation.record" "$permission")" -eq 1
+
+          grep -Fq 'use App\Application\Authorization\DurableScopedAuthorizationPolicy;' "$service"
+          grep -Fq 'use App\Application\Authorization\PosPermission;' "$service"
+          grep -Fq 'private DurableScopedAuthorizationPolicy $authorization' "$service"
+          grep -Fq 'PosPermission::recordCashVarianceExplanation()' "$service"
           grep -Fq 'PosExecutionContext::fromVerified' "$service"
           grep -Fq 'PersistenceTransaction' "$service"
           grep -Fq 'ShiftOpeningClock' "$service"
-          grep -Fq 'final readonly class LaravelCashVarianceExplanationRepository' "$adapter"
-          grep -Fq "table('oneqay_pos_cash_variance_explanation_evidence')" "$adapter"
-          grep -Fq "Schema::create('oneqay_pos_cash_variance_explanation_evidence'" "$migration"
-          grep -Fq "\$table->bigInteger('variance_atomic')" "$migration"
-          grep -Fq "uq_pos_var_explain_operation" "$migration"
-          grep -Fq "uq_pos_var_explain_closing" "$migration"
-          grep -Fq 'restrictOnDelete()->restrictOnUpdate()' "$migration"
-          grep -Fq "rollback is not authorized" "$migration"
 
-          ! grep -Eq 'DurableScopedAuthorizationPolicy|PosPermission' "$service" "$port" "$adapter"
-          ! grep -Eqi 'reviewer|approval|rejection|waiver|step.?up|mfa|close.?authority|shift.?state' "$command" "$result" "$port" "$service" "$adapter" "$migration"
+          context_line="$(grep -nF '$context->tenantId() !== $variance->tenantId()' "$service" | head -n1 | cut -d: -f1)"
+          authorization_line="$(grep -nF '$this->authorization->require(' "$service" | head -n1 | cut -d: -f1)"
+          clock_line="$(grep -nF '$recordedAtUnix = $this->clock->nowUnix();' "$service" | head -n1 | cut -d: -f1)"
+          transaction_line="$(grep -nF 'return $this->transaction->run(' "$service" | head -n1 | cut -d: -f1)"
+          test -n "$context_line"
+          test -n "$authorization_line"
+          test -n "$clock_line"
+          test -n "$transaction_line"
+          test "$context_line" -lt "$authorization_line"
+          test "$authorization_line" -lt "$clock_line"
+          test "$clock_line" -lt "$transaction_line"
+
+          grep -Fq 'final readonly class CashVarianceExplanationCommand' "$command"
+          grep -Fq 'final readonly class CashVarianceExplanationResult' "$result"
+          grep -Fq 'interface CashVarianceExplanationRepository' "$port"
+          grep -Fq 'final readonly class LaravelCashVarianceExplanationRepository' "$adapter"
+          grep -Fq "Schema::create('oneqay_pos_cash_variance_explanation_evidence'" "$migration"
+          grep -Fq 'restrictOnDelete()->restrictOnUpdate()' "$migration"
+
+          grep -Fq 'DurableScopedAuthorizationPolicy' "$auth_test"
+          grep -Fq "['authorization', 'clock', 'transaction', 'repository']" "$auth_test"
+          grep -Fq 'replay without permission' "$auth_test"
+          grep -Fq 'cross-tenant grant' "$auth_test"
+          grep -Fq 'cross-organization grant' "$auth_test"
+          grep -Fq 'cross-outlet grant' "$auth_test"
+          grep -Fq 'DurableScopedAuthorizationPolicy' "$durable_test"
+          grep -Fq 'explainer-alpha|tenant-alpha|organization-alpha|outlet-alpha|pos.shift.cash-variance-explanation.record' "$durable_test"
+          grep -Fq 'explainer-beta|tenant-beta|organization-beta|outlet-beta|pos.shift.cash-variance-explanation.record' "$durable_test"
+
+          ! grep -Eq 'LaravelDurableRolePermissionRepository|DurableRolePermissionRepository' "$service"
+          ! grep -Eqi 'reviewer|approval|rejection|waiver|step.?up|mfa|close.?authority|shift.?state' "$permission" "$service"
           ! grep -Eq -- '->update\(|->delete\(' "$adapter"
           ! grep -Eq '\b(float|double)\b' "$command" "$result" "$port" "$service" "$adapter" "$migration"
+
+      - name: Assert no runtime binding or default grant
+        shell: bash
+        run: |
+          set -euo pipefail
+          ! grep -Fq 'CashVarianceExplanationRepository::class' apps/web/app/Providers/AppServiceProvider.php
+          ! grep -Fq 'RecordCashVarianceExplanation::class' apps/web/app/Providers/AppServiceProvider.php
+          ! grep -Fq 'pos_cash_variance_explanation' apps/web/config/oneqay.php
+          ! grep -Fq 'cash-variance-explanation' apps/web/routes/web.php
+          ! git grep -nF 'pos.shift.cash-variance-explanation.record' -- apps/web/database || true
+          if git grep -nF 'pos.shift.cash-variance-explanation.record' -- apps/web/database; then
+            echo 'Unexpected database/default-grant source for Sprint74 permission.' >&2
+            exit 1
+          fi
 
       - name: Validate PHP syntax
         shell: bash
         run: |
           set -euo pipefail
-          php -l apps/web/app/Application/Pos/CashVarianceExplanationCommand.php
-          php -l apps/web/app/Application/Pos/CashVarianceExplanationRepository.php
-          php -l apps/web/app/Application/Pos/CashVarianceExplanationResult.php
+          php -l apps/web/app/Application/Authorization/PosPermission.php
           php -l apps/web/app/Application/Pos/RecordCashVarianceExplanation.php
-          php -l apps/web/app/Infrastructure/Pos/LaravelCashVarianceExplanationRepository.php
-          php -l apps/web/database/migrations/0000_00_00_000025_create_pos_cash_variance_explanation_evidence_foundation.php
+          php -l apps/web/tests/pos-cash-variance-explanation-authorization.php
           php -l apps/web/tests/pos-cash-variance-explanation-durable.php
 
       - name: Install locked dependencies
@@ -156,7 +193,11 @@ jobs:
             }
           '
 
-      - name: Run Sprint70 durable explanation regression
+      - name: Run Sprint74 explanation authorization regression
+        working-directory: apps/web
+        run: php tests/pos-cash-variance-explanation-authorization.php
+
+      - name: Preserve Sprint70 durable explanation regression
         working-directory: apps/web
         run: php tests/pos-cash-variance-explanation-durable.php
 
@@ -170,7 +211,7 @@ jobs:
         run: |
           set -euo pipefail
           migration='database/migrations/0000_00_00_000025_create_pos_cash_variance_explanation_evidence_foundation.php'
-          backup='/tmp/oneqay-s70-m25-expected.php'
+          backup='/tmp/oneqay-s74-m25-expected.php'
           cp "$migration" "$backup"
           trap 'mv "$backup" "$migration"' EXIT
           rm -f "$migration"
@@ -184,7 +225,7 @@ jobs:
         run: |
           set -euo pipefail
           migration='database/migrations/0000_00_00_000025_create_pos_cash_variance_explanation_evidence_foundation.php'
-          backup='/tmp/oneqay-s70-m25-binding.php'
+          backup='/tmp/oneqay-s74-m25-binding.php'
           cp "$migration" "$backup"
           trap 'mv "$backup" "$migration"' EXIT
           rm -f "$migration"
@@ -209,7 +250,7 @@ jobs:
           }
           trap restore EXIT
           for index in "${!migrations[@]}"; do
-            backup="/tmp/oneqay-s70-closing-$index.php"
+            backup="/tmp/oneqay-s74-closing-$index.php"
             cp "${migrations[$index]}" "$backup"
             backups+=("$backup")
             rm -f "${migrations[$index]}"
@@ -236,7 +277,7 @@ jobs:
           }
           trap restore EXIT
           for index in "${!migrations[@]}"; do
-            backup="/tmp/oneqay-s70-opening-$index.php"
+            backup="/tmp/oneqay-s74-opening-$index.php"
             cp "${migrations[$index]}" "$backup"
             backups+=("$backup")
             rm -f "${migrations[$index]}"
@@ -249,7 +290,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          doc='docs/JRN_010_PREREQUISITE_CASH_VARIANCE_EXPLANATION_SOURCE_FOUNDATION.md'
+          doc='docs/JRN_010_PREREQUISITE_CASH_VARIANCE_EXPLANATION_AUTHORIZATION_SOURCE_FOUNDATION.md'
           grep -Fq 'Migration #24: **SOURCE-PUBLISHED ONLY / NOT EXECUTED / NOT APPLIED / NOT ACTIVATED**' "$doc"
           grep -Fq 'Migration #25: **SOURCE-PUBLISHED ONLY / NOT EXECUTED / NOT APPLIED / NOT ACTIVATED**' "$doc"
           grep -Fq 'Migration #26: **NOT SELECTED**' "$doc"
