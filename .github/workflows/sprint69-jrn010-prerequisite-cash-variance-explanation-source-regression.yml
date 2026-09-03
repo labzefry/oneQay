@@ -1,0 +1,259 @@
+name: Sprint70 JRN-010 Prerequisite Cash Variance Explanation Source Regression
+
+# Author by Lab | zefry
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/sprint69-jrn010-prerequisite-cash-variance-explanation-source-regression.yml'
+      - 'apps/web/app/Application/Pos/CashVarianceExplanationCommand.php'
+      - 'apps/web/app/Application/Pos/CashVarianceExplanationRepository.php'
+      - 'apps/web/app/Application/Pos/CashVarianceExplanationResult.php'
+      - 'apps/web/app/Application/Pos/RecordCashVarianceExplanation.php'
+      - 'apps/web/app/Infrastructure/Pos/LaravelCashVarianceExplanationRepository.php'
+      - 'apps/web/database/migrations/0000_00_00_000025_create_pos_cash_variance_explanation_evidence_foundation.php'
+      - 'apps/web/tests/pos-cash-variance-explanation-durable.php'
+      - 'docs/JRN_010_PREREQUISITE_CASH_VARIANCE_EXPLANATION_SOURCE_FOUNDATION.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint70-jrn010-variance-explanation-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sprint70-jrn010-variance-explanation:
+    name: sprint70-jrn010-variance-explanation
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:cXFxcXFxcXFxcXFxcXFxcXFxcXFxcXFxcXFxcXFxcXE=
+      APP_DEBUG: 'false'
+      APP_URL: http://localhost
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Enforce exact Sprint70 source envelope
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+          git diff --name-only "$base" "$head" | sort > /tmp/s70-source-paths
+          test "$(wc -l < /tmp/s70-source-paths)" -eq 9
+          test "$(sha256sum /tmp/s70-source-paths | awk '{print $1}')" = 'c2a575ec728249a8a4b26c173229b26455eee92c7bd4c59026a1d4c064e2c442'
+          grep -Fxq '.github/workflows/sprint69-jrn010-prerequisite-cash-variance-explanation-source-regression.yml' /tmp/s70-source-paths
+          grep -Fxq 'apps/web/app/Application/Pos/CashVarianceExplanationCommand.php' /tmp/s70-source-paths
+          grep -Fxq 'apps/web/app/Application/Pos/CashVarianceExplanationRepository.php' /tmp/s70-source-paths
+          grep -Fxq 'apps/web/app/Application/Pos/CashVarianceExplanationResult.php' /tmp/s70-source-paths
+          grep -Fxq 'apps/web/app/Application/Pos/RecordCashVarianceExplanation.php' /tmp/s70-source-paths
+          grep -Fxq 'apps/web/app/Infrastructure/Pos/LaravelCashVarianceExplanationRepository.php' /tmp/s70-source-paths
+          grep -Fxq 'apps/web/database/migrations/0000_00_00_000025_create_pos_cash_variance_explanation_evidence_foundation.php' /tmp/s70-source-paths
+          grep -Fxq 'apps/web/tests/pos-cash-variance-explanation-durable.php' /tmp/s70-source-paths
+          grep -Fxq 'docs/JRN_010_PREREQUISITE_CASH_VARIANCE_EXPLANATION_SOURCE_FOUNDATION.md' /tmp/s70-source-paths
+          ! grep -Fxq 'apps/web/app/Providers/AppServiceProvider.php' /tmp/s70-source-paths
+          ! grep -Fxq 'apps/web/config/oneqay.php' /tmp/s70-source-paths
+          ! grep -Eq '(^|/)(routes|resources)/(.*)$' /tmp/s70-source-paths
+          ! grep -Eq 'Permission|DefaultGrant|Mfa|StepUp|Reviewer|Approval|ShiftClose' /tmp/s70-source-paths
+
+      - name: Preserve migrations one through twenty-four and publish only migration twenty-five
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+          git diff --name-only "$base" "$head" -- apps/web/database/migrations | sort > /tmp/s70-migration-paths
+          test "$(wc -l < /tmp/s70-migration-paths)" -eq 1
+          grep -Fxq 'apps/web/database/migrations/0000_00_00_000025_create_pos_cash_variance_explanation_evidence_foundation.php' /tmp/s70-migration-paths
+
+          mapfile -t migrations < <(find apps/web/database/migrations -maxdepth 1 -type f -name '*.php' -printf '%f\n' | sort)
+          test "${#migrations[@]}" -eq 25
+          for index in $(seq 1 25); do
+            prefix="$(printf '0000_00_00_%06d_' "$index")"
+            test "$(printf '%s\n' "${migrations[@]}" | grep -c "^$prefix")" -eq 1
+          done
+          ! printf '%s\n' "${migrations[@]}" | grep -Eq '^0000_00_00_000026_'
+
+      - name: Validate bounded durable explanation source locks
+        shell: bash
+        run: |
+          set -euo pipefail
+          command='apps/web/app/Application/Pos/CashVarianceExplanationCommand.php'
+          result='apps/web/app/Application/Pos/CashVarianceExplanationResult.php'
+          port='apps/web/app/Application/Pos/CashVarianceExplanationRepository.php'
+          service='apps/web/app/Application/Pos/RecordCashVarianceExplanation.php'
+          adapter='apps/web/app/Infrastructure/Pos/LaravelCashVarianceExplanationRepository.php'
+          migration='apps/web/database/migrations/0000_00_00_000025_create_pos_cash_variance_explanation_evidence_foundation.php'
+
+          grep -Fq 'final readonly class CashVarianceExplanationCommand' "$command"
+          grep -Fq 'MAX_EXPLANATION_BYTES = 4096' "$command"
+          grep -Fq 'final readonly class CashVarianceExplanationResult' "$result"
+          grep -Fq 'interface CashVarianceExplanationRepository' "$port"
+          grep -Fq 'CashVarianceResult $variance' "$port"
+          grep -Fq 'final readonly class RecordCashVarianceExplanation' "$service"
+          grep -Fq 'PosExecutionContext::fromVerified' "$service"
+          grep -Fq 'PersistenceTransaction' "$service"
+          grep -Fq 'ShiftOpeningClock' "$service"
+          grep -Fq 'final readonly class LaravelCashVarianceExplanationRepository' "$adapter"
+          grep -Fq "table('oneqay_pos_cash_variance_explanation_evidence')" "$adapter"
+          grep -Fq "Schema::create('oneqay_pos_cash_variance_explanation_evidence'" "$migration"
+          grep -Fq "\$table->bigInteger('variance_atomic')" "$migration"
+          grep -Fq "uq_pos_var_explain_operation" "$migration"
+          grep -Fq "uq_pos_var_explain_closing" "$migration"
+          grep -Fq 'restrictOnDelete()->restrictOnUpdate()' "$migration"
+          grep -Fq "rollback is not authorized" "$migration"
+
+          ! grep -Eq 'DurableScopedAuthorizationPolicy|PosPermission' "$service" "$port" "$adapter"
+          ! grep -Eqi 'reviewer|approval|rejection|waiver|step.?up|mfa|close.?authority|shift.?state' "$command" "$result" "$port" "$service" "$adapter" "$migration"
+          ! grep -Eq -- '->update\(|->delete\(' "$adapter"
+          ! grep -Eq '\b(float|double)\b' "$command" "$result" "$port" "$service" "$adapter" "$migration"
+
+      - name: Validate PHP syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l apps/web/app/Application/Pos/CashVarianceExplanationCommand.php
+          php -l apps/web/app/Application/Pos/CashVarianceExplanationRepository.php
+          php -l apps/web/app/Application/Pos/CashVarianceExplanationResult.php
+          php -l apps/web/app/Application/Pos/RecordCashVarianceExplanation.php
+          php -l apps/web/app/Infrastructure/Pos/LaravelCashVarianceExplanationRepository.php
+          php -l apps/web/database/migrations/0000_00_00_000025_create_pos_cash_variance_explanation_evidence_foundation.php
+          php -l apps/web/tests/pos-cash-variance-explanation-durable.php
+
+      - name: Install locked dependencies
+        working-directory: apps/web
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Reject High or Critical Composer advisories
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          composer audit --locked --format=json > /tmp/oneqay-composer-audit.json
+          php -r '
+            $data = json_decode(file_get_contents("/tmp/oneqay-composer-audit.json"), true, 512, JSON_THROW_ON_ERROR);
+            foreach (($data["advisories"] ?? []) as $items) {
+                foreach ($items as $item) {
+                    if (in_array(strtolower((string) ($item["severity"] ?? "")), ["high", "critical"], true)) {
+                        fwrite(STDERR, "Blocking Composer advisory.\n");
+                        exit(1);
+                    }
+                }
+            }
+          '
+
+      - name: Run Sprint70 durable explanation regression
+        working-directory: apps/web
+        run: php tests/pos-cash-variance-explanation-durable.php
+
+      - name: Preserve Sprint64 cash variance regression
+        working-directory: apps/web
+        run: php tests/pos-cash-variance-derivation.php
+
+      - name: Preserve Sprint60 expected-cash regression at migration twenty-four horizon
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          migration='database/migrations/0000_00_00_000025_create_pos_cash_variance_explanation_evidence_foundation.php'
+          backup='/tmp/oneqay-s70-m25-expected.php'
+          cp "$migration" "$backup"
+          trap 'mv "$backup" "$migration"' EXIT
+          rm -f "$migration"
+          php tests/pos-expected-cash-derivation.php
+          mv "$backup" "$migration"
+          trap - EXIT
+
+      - name: Preserve Sprint57 sale-to-shift binding regression at migration twenty-four horizon
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          migration='database/migrations/0000_00_00_000025_create_pos_cash_variance_explanation_evidence_foundation.php'
+          backup='/tmp/oneqay-s70-m25-binding.php'
+          cp "$migration" "$backup"
+          trap 'mv "$backup" "$migration"' EXIT
+          rm -f "$migration"
+          php tests/pos-sale-shift-binding-durable.php
+          mv "$backup" "$migration"
+          trap - EXIT
+
+      - name: Preserve Sprint54 closing-cash regression at migration twenty-three horizon
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          migrations=(
+            database/migrations/0000_00_00_000024_add_immutable_shift_binding_to_pos_sales.php
+            database/migrations/0000_00_00_000025_create_pos_cash_variance_explanation_evidence_foundation.php
+          )
+          backups=()
+          restore() {
+            for index in "${!migrations[@]}"; do
+              [[ ! -f "${backups[$index]}" ]] || mv "${backups[$index]}" "${migrations[$index]}"
+            done
+          }
+          trap restore EXIT
+          for index in "${!migrations[@]}"; do
+            backup="/tmp/oneqay-s70-closing-$index.php"
+            cp "${migrations[$index]}" "$backup"
+            backups+=("$backup")
+            rm -f "${migrations[$index]}"
+          done
+          php tests/pos-shift-closing-cash-durable.php
+          restore
+          trap - EXIT
+
+      - name: Preserve Sprint53 opening-cash regression at migration twenty-two horizon
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          migrations=(
+            database/migrations/0000_00_00_000023_create_pos_shift_closing_cash_evidence_foundation.php
+            database/migrations/0000_00_00_000024_add_immutable_shift_binding_to_pos_sales.php
+            database/migrations/0000_00_00_000025_create_pos_cash_variance_explanation_evidence_foundation.php
+          )
+          backups=()
+          restore() {
+            for index in "${!migrations[@]}"; do
+              [[ ! -f "${backups[$index]}" ]] || mv "${backups[$index]}" "${migrations[$index]}"
+            done
+          }
+          trap restore EXIT
+          for index in "${!migrations[@]}"; do
+            backup="/tmp/oneqay-s70-opening-$index.php"
+            cp "${migrations[$index]}" "$backup"
+            backups+=("$backup")
+            rm -f "${migrations[$index]}"
+          done
+          php tests/pos-shift-opening-cash-durable.php
+          restore
+          trap - EXIT
+
+      - name: Assert migration and lifecycle locks
+        shell: bash
+        run: |
+          set -euo pipefail
+          doc='docs/JRN_010_PREREQUISITE_CASH_VARIANCE_EXPLANATION_SOURCE_FOUNDATION.md'
+          grep -Fq 'Migration #24: **SOURCE-PUBLISHED ONLY / NOT EXECUTED / NOT APPLIED / NOT ACTIVATED**' "$doc"
+          grep -Fq 'Migration #25: **SOURCE-PUBLISHED ONLY / NOT EXECUTED / NOT APPLIED / NOT ACTIVATED**' "$doc"
+          grep -Fq 'Migration #26: **NOT SELECTED**' "$doc"
+          grep -Fq 'Technical Preview: **INACTIVE**' "$doc"
+          grep -Fq 'Production: **NO-GO**' "$doc"
+          grep -Fq 'Updater: **INACTIVE**' "$doc"
+          grep -Fq 'JRN-010 Shift Close: **NOT SELECTED**' "$doc"
