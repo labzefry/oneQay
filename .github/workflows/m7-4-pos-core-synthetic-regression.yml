@@ -73,6 +73,12 @@ jobs:
             echo 'ONEQAY_SPRINT57_M74_COMPATIBILITY=true' >> "$GITHUB_ENV"
             echo 'Recognized exact Sprint57 M7.4 workflow-only compatibility correction shape.'
             exit 0
+          elif [[ "$count" -eq 2 && "$fingerprint" == 'cce261e63125368c85fff8038d2571005da2385497e5a13e6f37f82bd3ca31a7' ]]; then
+            grep -Fxq '.github/workflows/m7-4-pos-core-synthetic-regression.yml' /tmp/m74-changed-files.txt
+            grep -Fxq '.github/workflows/m7-5-preview-release-artifact.yml' /tmp/m74-changed-files.txt
+            echo 'ONEQAY_SPRINT57_M74_COMPATIBILITY=true' >> "$GITHUB_ENV"
+            echo 'Recognized exact Sprint60 M7.4/M7.5 Expected Cash historical fixture correction shape.'
+            exit 0
           elif [[ "$count" -eq 7 && "$fingerprint" == 'ae57a65e64fa71509141c224012036c0d69920a48f6f323412d952f9234ba789' ]]; then
             echo 'ONEQAY_SPRINT57_M74_COMPATIBILITY=true' >> "$GITHUB_ENV"
             echo 'Recognized exact Sprint60 expected-cash source successor shape.'
@@ -497,23 +503,27 @@ jobs:
           refund='app/Infrastructure/Pos/LaravelSaleCashRefundRepository.php'
           opening_cash='app/Infrastructure/Pos/LaravelShiftOpeningCashRepository.php'
           closing_cash='app/Infrastructure/Pos/LaravelShiftClosingCashRepository.php'
+          expected_cash='app/Infrastructure/Pos/LaravelExpectedCashRepository.php'
           if [[ "${ONEQAY_SPRINT57_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT57_M74_COMPATIBILITY:-false}" == 'true' || "${ONEQAY_SPRINT54_JRN010_PREREQ_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
             inventory_backup='/tmp/oneqay-m74-s54-inventory-repository.php'
             refund_backup='/tmp/oneqay-m74-s54-refund-repository.php'
             opening_cash_backup='/tmp/oneqay-m74-s54-opening-cash-repository.php'
             closing_cash_backup='/tmp/oneqay-m74-s54-closing-cash-repository.php'
+            expected_cash_backup='/tmp/oneqay-m74-s60-expected-cash-repository.php'
             if [[ -f "$inventory" ]]; then cp "$inventory" "$inventory_backup"; fi
             if [[ -f "$refund" ]]; then cp "$refund" "$refund_backup"; fi
             if [[ -f "$opening_cash" ]]; then cp "$opening_cash" "$opening_cash_backup"; fi
             if [[ -f "$closing_cash" ]]; then cp "$closing_cash" "$closing_cash_backup"; fi
+            if [[ -f "$expected_cash" ]]; then cp "$expected_cash" "$expected_cash_backup"; fi
             restore_s54() {
               [[ ! -f "$inventory_backup" ]] || mv "$inventory_backup" "$inventory"
               [[ ! -f "$refund_backup" ]] || mv "$refund_backup" "$refund"
               [[ ! -f "$opening_cash_backup" ]] || mv "$opening_cash_backup" "$opening_cash"
               [[ ! -f "$closing_cash_backup" ]] || mv "$closing_cash_backup" "$closing_cash"
+              [[ ! -f "$expected_cash_backup" ]] || mv "$expected_cash_backup" "$expected_cash"
             }
             trap restore_s54 EXIT
-            rm -f "$inventory" "$refund" "$opening_cash" "$closing_cash"
+            rm -f "$inventory" "$refund" "$opening_cash" "$closing_cash" "$expected_cash"
             php tests/pos-core-synthetic.php
             restore_s54
             trap - EXIT
