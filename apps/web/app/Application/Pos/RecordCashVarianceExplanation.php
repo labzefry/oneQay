@@ -84,12 +84,39 @@ final readonly class RecordCashVarianceExplanation
             throw new PosTransactionViolation();
         }
 
-        $validOver = $variance->direction() === CashVarianceResult::DIRECTION_OVER
-            && $variance->varianceAtomic() > 0;
-        $validShort = $variance->direction() === CashVarianceResult::DIRECTION_SHORT
-            && $variance->varianceAtomic() < 0;
+        $this->assertVarianceArithmetic(
+            $variance->expectedCashAtomic(),
+            $variance->observedClosingAtomic(),
+            $variance->varianceAtomic(),
+            $variance->direction(),
+        );
+    }
 
-        if (! $validOver && ! $validShort) {
+    private function assertVarianceArithmetic(
+        int $expectedAtomic,
+        int $observedAtomic,
+        int $varianceAtomic,
+        string $direction,
+    ): void {
+        if ($observedAtomic >= $expectedAtomic) {
+            $delta = $observedAtomic - $expectedAtomic;
+            if (
+                $delta <= 0
+                || $direction !== CashVarianceResult::DIRECTION_OVER
+                || $varianceAtomic !== $delta
+            ) {
+                throw new PosTransactionViolation();
+            }
+
+            return;
+        }
+
+        $magnitude = $expectedAtomic - $observedAtomic;
+        if (
+            $magnitude <= 0
+            || $direction !== CashVarianceResult::DIRECTION_SHORT
+            || $varianceAtomic !== -$magnitude
+        ) {
             throw new PosTransactionViolation();
         }
     }
