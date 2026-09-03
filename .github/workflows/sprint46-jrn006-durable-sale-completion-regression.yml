@@ -77,7 +77,33 @@ jobs:
           echo 'ONEQAY_SPRINT54_JRN010_PREREQ_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
           echo 'ONEQAY_SPRINT57_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
           echo 'ONEQAY_SPRINT57_S46_COMPATIBILITY=false' >> "$GITHUB_ENV"
-          if [[ "$count" -eq 1 && "$fingerprint" == '614205aa94cab7ad3d5a50242e14d60e87534a26d22a614ed7752acb2f454e7e' ]]; then
+          if [[ "$count" -eq 6 && "$fingerprint" == 'cc40f08beda780e4aa4795f29aa7533bbde1029d11855d43f180812502c4d80b' ]]; then
+            for expected in \
+              '.github/workflows/sprint69-jrn010-prerequisite-cash-variance-explanation-source-regression.yml' \
+              'apps/web/app/Application/Authorization/PosPermission.php' \
+              'apps/web/app/Application/Pos/RecordCashVarianceExplanation.php' \
+              'apps/web/tests/pos-cash-variance-explanation-authorization.php' \
+              'apps/web/tests/pos-cash-variance-explanation-durable.php' \
+              'docs/JRN_010_PREREQUISITE_CASH_VARIANCE_EXPLANATION_AUTHORIZATION_SOURCE_FOUNDATION.md' \
+            do
+              grep -Fxq "$expected" /tmp/s46-source-paths
+            done
+            echo 'Recognized exact Sprint74 authorization source successor shape.'
+          elif [[ "$count" -eq 8 && "$fingerprint" == '3e5b516b17bfc4b2b4e8694248672ff7a4298a3e080e0617a70b1bb1d8aa6194' ]]; then
+            for expected in \
+              '.github/workflows/sprint46-jrn006-durable-sale-completion-regression.yml' \
+              '.github/workflows/sprint47-jrn004-catalog-preparation-regression.yml' \
+              '.github/workflows/sprint48-jrn005-shift-register-opening-regression.yml' \
+              '.github/workflows/sprint50-jrn007-completed-sale-void-regression.yml' \
+              '.github/workflows/sprint51-jrn008-bounded-outlet-inventory-baseline-regression.yml' \
+              '.github/workflows/sprint52-jrn007-bounded-full-cash-refund-regression.yml' \
+              '.github/workflows/sprint53-jrn010-prerequisite-shift-opening-cash-evidence-regression.yml' \
+              '.github/workflows/sprint54-jrn010-prerequisite-shift-closing-cash-evidence-regression.yml' \
+            do
+              grep -Fxq "$expected" /tmp/s46-source-paths
+            done
+            echo 'Recognized exact Sprint74 POS historical compatibility self-qualification shape.'
+          elif [[ "$count" -eq 1 && "$fingerprint" == '614205aa94cab7ad3d5a50242e14d60e87534a26d22a614ed7752acb2f454e7e' ]]; then
             grep -Fxq '.github/workflows/sprint46-jrn006-durable-sale-completion-regression.yml' /tmp/s46-source-paths
             echo 'ONEQAY_SPRINT57_S46_COMPATIBILITY=true' >> "$GITHUB_ENV"
             echo 'Recognized exact Sprint57 Sprint46 workflow-only compatibility correction shape.'
