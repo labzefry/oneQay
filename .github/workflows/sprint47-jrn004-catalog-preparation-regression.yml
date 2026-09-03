@@ -409,7 +409,7 @@ jobs:
           refund='app/Infrastructure/Pos/LaravelSaleCashRefundRepository.php'
           opening_cash='app/Infrastructure/Pos/LaravelShiftOpeningCashRepository.php'
           closing_cash='app/Infrastructure/Pos/LaravelShiftClosingCashRepository.php'
-          if [[ "${ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+          if [[ "${ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT74_POS_HISTORICAL:-false}" == 'true' ]]; then
             shift_backup='/tmp/oneqay-s47-jrn008-shift-opening-repository.php'
             inventory_backup='/tmp/oneqay-s47-jrn008-inventory-repository.php'
             refund_backup='/tmp/oneqay-s47-jrn007-refund-repository.php'
