@@ -205,14 +205,11 @@ final readonly class LaravelCashVarianceExplanationRepository implements CashVar
             throw new PosTransactionViolation();
         }
 
+        $expectedAtomic = $this->safeUnsignedBigIntToInt($row->expected_cash_atomic);
+        $observedAtomic = $this->safeUnsignedBigIntToInt($row->observed_closing_cash_atomic);
         $varianceAtomic = $this->safeSignedBigIntToInt($row->variance_atomic);
         $direction = (string) $row->variance_direction;
-        $validOver = $direction === CashVarianceResult::DIRECTION_OVER && $varianceAtomic > 0;
-        $validShort = $direction === CashVarianceResult::DIRECTION_SHORT && $varianceAtomic < 0;
-
-        if (! $validOver && ! $validShort) {
-            throw new PosTransactionViolation();
-        }
+        $this->assertVarianceArithmetic($expectedAtomic, $observedAtomic, $varianceAtomic, $direction);
 
         return new CashVarianceExplanationResult(
             (string) $row->evidence_id,
@@ -225,8 +222,8 @@ final readonly class LaravelCashVarianceExplanationRepository implements CashVar
             (string) $row->closing_cash_evidence_id,
             (string) $row->actor_identity_id,
             $this->safeUnsignedBigIntToInt($row->cutoff_at_unix),
-            $this->safeUnsignedBigIntToInt($row->expected_cash_atomic),
-            $this->safeUnsignedBigIntToInt($row->observed_closing_cash_atomic),
+            $expectedAtomic,
+            $observedAtomic,
             $varianceAtomic,
             $direction,
             (string) $row->currency,
@@ -260,12 +257,39 @@ final readonly class LaravelCashVarianceExplanationRepository implements CashVar
             throw new PosTransactionViolation();
         }
 
-        $validOver = $variance->direction() === CashVarianceResult::DIRECTION_OVER
-            && $variance->varianceAtomic() > 0;
-        $validShort = $variance->direction() === CashVarianceResult::DIRECTION_SHORT
-            && $variance->varianceAtomic() < 0;
+        $this->assertVarianceArithmetic(
+            $variance->expectedCashAtomic(),
+            $variance->observedClosingAtomic(),
+            $variance->varianceAtomic(),
+            $variance->direction(),
+        );
+    }
 
-        if (! $validOver && ! $validShort) {
+    private function assertVarianceArithmetic(
+        int $expectedAtomic,
+        int $observedAtomic,
+        int $varianceAtomic,
+        string $direction,
+    ): void {
+        if ($observedAtomic >= $expectedAtomic) {
+            $delta = $observedAtomic - $expectedAtomic;
+            if (
+                $delta <= 0
+                || $direction !== CashVarianceResult::DIRECTION_OVER
+                || $varianceAtomic !== $delta
+            ) {
+                throw new PosTransactionViolation();
+            }
+
+            return;
+        }
+
+        $magnitude = $expectedAtomic - $observedAtomic;
+        if (
+            $magnitude <= 0
+            || $direction !== CashVarianceResult::DIRECTION_SHORT
+            || $varianceAtomic !== -$magnitude
+        ) {
             throw new PosTransactionViolation();
         }
     }
