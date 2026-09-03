@@ -409,7 +409,7 @@ jobs:
           refund='app/Infrastructure/Pos/LaravelSaleCashRefundRepository.php'
           opening_cash='app/Infrastructure/Pos/LaravelShiftOpeningCashRepository.php'
           closing_cash='app/Infrastructure/Pos/LaravelShiftClosingCashRepository.php'
-          if [[ "${ONEQAY_SPRINT57_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT57_S46_COMPATIBILITY:-false}" == 'true' || "${ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+          if [[ "${ONEQAY_SPRINT57_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT57_S46_COMPATIBILITY:-false}" == 'true' || "${ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT74_POS_HISTORICAL:-false}" == 'true' ]]; then
             inventory_backup='/tmp/oneqay-s46-jrn008-inventory-repository.php'
             refund_backup='/tmp/oneqay-s46-jrn007-refund-repository.php'
             opening_cash_backup='/tmp/oneqay-s53-opening-cash-repository.php'
