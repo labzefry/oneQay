@@ -1,3 +1,4 @@
+# Sprint60 expected-cash M7.4 compatibility — Lab | zefry
 # Sprint57 immutable sale-to-shift binding M7.4 compatibility — Lab | zefry
 # Sprint54 bounded successor compatibility predecessor — Lab | zefry
 # Sprint53 bounded third historical fixture compatibility closure — Lab | zefry
@@ -71,6 +72,10 @@ jobs:
             grep -Fxq '.github/workflows/m7-4-pos-core-synthetic-regression.yml' /tmp/m74-changed-files.txt
             echo 'ONEQAY_SPRINT57_M74_COMPATIBILITY=true' >> "$GITHUB_ENV"
             echo 'Recognized exact Sprint57 M7.4 workflow-only compatibility correction shape.'
+            exit 0
+          elif [[ "$count" -eq 7 && "$fingerprint" == 'ae57a65e64fa71509141c224012036c0d69920a48f6f323412d952f9234ba789' ]]; then
+            echo 'ONEQAY_SPRINT57_M74_COMPATIBILITY=true' >> "$GITHUB_ENV"
+            echo 'Recognized exact Sprint60 expected-cash source successor shape.'
             exit 0
           elif [[ "$count" -eq 5 && "$fingerprint" == '26d2d48f114c88d60dc302dccd8d41118bc730c309c9d79b71f5e516731a0b25' ]]; then
             test "$(grep -c '^apps/web/database/migrations/' /tmp/m74-changed-files.txt)" -eq 1
@@ -299,7 +304,7 @@ jobs:
             done
           elif [[ "${ONEQAY_SPRINT57_M74_COMPATIBILITY:-false}" == 'true' ]]; then
             git diff --exit-code "$base" "$head" -- apps/web/database/migrations
-            for migration_to_isolate in "$migration19" "$migration20" "$migration21" "$migration22" "$migration23"; do
+            for migration_to_isolate in "$migration19" "$migration20" "$migration21" "$migration22" "$migration23" "$migration24"; do
               if [[ -f "$migration_to_isolate" ]]; then
                 git update-index --assume-unchanged "$migration_to_isolate"
                 rm -f "$migration_to_isolate"
