@@ -196,7 +196,7 @@ jobs:
             for historical_migration in "$migration19" "$migration20" "$migration21" "$migration22"; do
               if [[ -f "$historical_migration" ]]; then git update-index --assume-unchanged "$historical_migration"; rm -f "$historical_migration"; fi
             done
-          elif [[ "${ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT74_POS_HISTORICAL:-false}" == 'true' ]]; then
+          elif [[ "${ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
             changed="$(git diff --name-only "$base" "$head" -- apps/web/database/migrations | sort)"
             test "$changed" = "$migration21"
             git diff --exit-code "$base" "$head" -- apps/web/database/migrations ":(exclude)$migration21"
