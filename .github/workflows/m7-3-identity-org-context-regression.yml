@@ -256,7 +256,7 @@ jobs:
             grep -Fxq 'apps/web/tests/pos-cash-variance-explanation-durable.php' /tmp/s70-historical-paths
             grep -Fxq 'docs/JRN_010_PREREQUISITE_CASH_VARIANCE_EXPLANATION_SOURCE_FOUNDATION.md' /tmp/s70-historical-paths
             recognized=true
-          elif [[ "$count" -eq 13 && "$fingerprint" == 'dcc4ec5d3fdefa32271c50cebec7e2536c179b203a60c3fb5bed1aeb9f4a47fb' ]]; then
+          elif [[ "$count" -eq 13 && "$fingerprint" == 'dcc4ec5d3fdefa32271c50cebec7e2536c179b203a60c3fb5bed1aeb9f4a47fb' ]] || [[ "$count" -eq 20 && "$fingerprint" == 'c6cd387d5ea83d73382493ca78d219c0db35477e55c61a68e489a0329231f922' ]]; then
             grep -Fxq '.github/workflows/m7-2-tenant-isolation-regression.yml' /tmp/s70-historical-paths
             grep -Fxq '.github/workflows/m7-3-identity-org-context-regression.yml' /tmp/s70-historical-paths
             grep -Fxq '.github/workflows/m7-4-pos-core-synthetic-regression.yml' /tmp/s70-historical-paths
