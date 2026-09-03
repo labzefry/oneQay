@@ -105,6 +105,7 @@ It rejects:
 - positive variance labeled `SHORT`;
 - negative variance labeled `OVER`;
 - unknown direction;
+- signed variance that does not exactly equal observed minus expected;
 - malformed currency;
 - unsupported scale;
 - negative expected cash;
@@ -334,6 +335,7 @@ The dedicated regression proves at least:
 - durable `SHORT` explanation;
 - `MATCH` denial;
 - sign/direction mismatch denial;
+- exact observed-minus-expected arithmetic mismatch denial;
 - empty explanation denial;
 - oversized explanation denial;
 - canonical explanation normalization;
