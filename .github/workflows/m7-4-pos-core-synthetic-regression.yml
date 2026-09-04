@@ -73,6 +73,18 @@ jobs:
             echo 'ONEQAY_SPRINT57_M74_COMPATIBILITY=true' >> "$GITHUB_ENV"
             echo 'Recognized exact Sprint57 M7.4 workflow-only compatibility correction shape.'
             exit 0
+          elif [[ "$count" -eq 2 && "$fingerprint" == '00cbf0f3271b3693bf9587b16e43c0f28799b53b95a622331c022c74390af91a' ]]; then
+            grep -Fxq '.github/workflows/m7-4-pos-core-synthetic-regression.yml' /tmp/m74-changed-files.txt
+            grep -Fxq '.github/workflows/sprint78-jrn010-prerequisite-cash-variance-review-decision-source-regression.yml' /tmp/m74-changed-files.txt
+            echo 'ONEQAY_SPRINT57_M74_COMPATIBILITY=true' >> "$GITHUB_ENV"
+            echo 'Recognized exact reviewer-authorization two-workflow compatibility predecessor.'
+            exit 0
+          elif [[ "$count" -eq 2 && "$fingerprint" == '034fdf11410ac54e5b24d5b783d2364c34eadf06e74b57243cce94c523d37396' ]]; then
+            grep -Fxq 'apps/web/app/Application/Pos/RecordCashVarianceReviewDecision.php' /tmp/m74-changed-files.txt
+            grep -Fxq 'apps/web/tests/pos-cash-variance-review-decision-authorization.php' /tmp/m74-changed-files.txt
+            echo 'ONEQAY_SPRINT57_M74_COMPATIBILITY=true' >> "$GITHUB_ENV"
+            echo 'Recognized exact scoped reviewer-authorization implementation slice.'
+            exit 0
           elif [[ "$count" -eq 2 && "$fingerprint" == 'cce261e63125368c85fff8038d2571005da2385497e5a13e6f37f82bd3ca31a7' ]]; then
             grep -Fxq '.github/workflows/m7-4-pos-core-synthetic-regression.yml' /tmp/m74-changed-files.txt
             grep -Fxq '.github/workflows/m7-5-preview-release-artifact.yml' /tmp/m74-changed-files.txt
