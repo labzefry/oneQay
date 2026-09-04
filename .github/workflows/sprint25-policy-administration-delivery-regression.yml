@@ -241,7 +241,27 @@ jobs:
           count="$(wc -l < /tmp/s70-historical-paths)"
           fingerprint="$(sha256sum /tmp/s70-historical-paths | awk '{print $1}')"
           recognized=false
-          if [[ "$count" -eq 6 && "$fingerprint" == 'cc40f08beda780e4aa4795f29aa7533bbde1029d11855d43f180812502c4d80b' ]]; then
+          if [[ "$count" -eq 9 && "$fingerprint" == '890cb08631de804bc2936882f635be11dea52c1e022c4f5112389fd76744ce10' ]]; then
+            for expected in \
+              '.github/workflows/sprint78-jrn010-prerequisite-cash-variance-review-decision-source-regression.yml' \
+              'apps/web/app/Application/Pos/CashVarianceReviewDecisionCommand.php' \
+              'apps/web/app/Application/Pos/CashVarianceReviewDecisionRepository.php' \
+              'apps/web/app/Application/Pos/CashVarianceReviewDecisionResult.php' \
+              'apps/web/app/Application/Pos/RecordCashVarianceReviewDecision.php' \
+              'apps/web/app/Infrastructure/Pos/LaravelCashVarianceReviewDecisionRepository.php' \
+              'apps/web/database/migrations/0000_00_00_000026_create_pos_cash_variance_review_decision_evidence_foundation.php' \
+              'apps/web/tests/pos-cash-variance-review-decision-durable.php' \
+              'docs/JRN_010_PREREQUISITE_CASH_VARIANCE_REVIEW_DECISION_SOURCE_FOUNDATION.md'
+            do
+              grep -Fxq "$expected" /tmp/s70-historical-paths
+            done
+            migration26='apps/web/database/migrations/0000_00_00_000026_create_pos_cash_variance_review_decision_evidence_foundation.php'
+            if [[ -f "$migration26" ]]; then
+              git update-index --assume-unchanged "$migration26"
+              rm -f "$migration26"
+            fi
+            recognized=true
+          elif [[ "$count" -eq 6 && "$fingerprint" == 'cc40f08beda780e4aa4795f29aa7533bbde1029d11855d43f180812502c4d80b' ]]; then
             grep -Fxq '.github/workflows/sprint69-jrn010-prerequisite-cash-variance-explanation-source-regression.yml' /tmp/s70-historical-paths
             grep -Fxq 'apps/web/app/Application/Authorization/PosPermission.php' /tmp/s70-historical-paths
             grep -Fxq 'apps/web/app/Application/Pos/RecordCashVarianceExplanation.php' /tmp/s70-historical-paths
@@ -301,7 +321,7 @@ jobs:
             recognized=true
           fi
           if [[ "$recognized" == 'true' ]]; then
-            for index in $(seq 10 25); do
+            for index in $(seq 10 26); do
               migration="$(find apps/web/database/migrations -maxdepth 1 -type f -name "$(printf '0000_00_00_%06d_*' "$index")" -print -quit)"
               if [[ -n "$migration" && -f "$migration" ]]; then
                 git update-index --assume-unchanged "$migration"

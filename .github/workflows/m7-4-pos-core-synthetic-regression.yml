@@ -83,6 +83,23 @@ jobs:
             echo 'ONEQAY_SPRINT57_M74_COMPATIBILITY=true' >> "$GITHUB_ENV"
             echo 'Recognized exact Sprint60 expected-cash source successor shape.'
             exit 0
+          elif [[ "$count" -eq 9 && "$fingerprint" == '890cb08631de804bc2936882f635be11dea52c1e022c4f5112389fd76744ce10' ]]; then
+              for expected in \
+                '.github/workflows/sprint78-jrn010-prerequisite-cash-variance-review-decision-source-regression.yml' \
+                'apps/web/app/Application/Pos/CashVarianceReviewDecisionCommand.php' \
+                'apps/web/app/Application/Pos/CashVarianceReviewDecisionRepository.php' \
+                'apps/web/app/Application/Pos/CashVarianceReviewDecisionResult.php' \
+                'apps/web/app/Application/Pos/RecordCashVarianceReviewDecision.php' \
+                'apps/web/app/Infrastructure/Pos/LaravelCashVarianceReviewDecisionRepository.php' \
+                'apps/web/database/migrations/0000_00_00_000026_create_pos_cash_variance_review_decision_evidence_foundation.php' \
+                'apps/web/tests/pos-cash-variance-review-decision-durable.php' \
+                'docs/JRN_010_PREREQUISITE_CASH_VARIANCE_REVIEW_DECISION_SOURCE_FOUNDATION.md'
+              do
+                grep -Fxq "$expected" /tmp/m74-changed-files.txt
+              done
+            echo 'ONEQAY_SPRINT57_M74_COMPATIBILITY=true' >> "$GITHUB_ENV"
+            echo 'Recognized exact Sprint79 cash-variance review-decision source successor shape.'
+            exit 0
           elif [[ "$count" -eq 6 && "$fingerprint" == 'cc40f08beda780e4aa4795f29aa7533bbde1029d11855d43f180812502c4d80b' ]]; then
             grep -Fxq '.github/workflows/sprint69-jrn010-prerequisite-cash-variance-explanation-source-regression.yml' /tmp/m74-changed-files.txt
             grep -Fxq 'apps/web/app/Application/Authorization/PosPermission.php' /tmp/m74-changed-files.txt
@@ -391,15 +408,19 @@ jobs:
             done
           elif [[ "${ONEQAY_SPRINT57_M74_COMPATIBILITY:-false}" == 'true' ]]; then
             migration25='apps/web/database/migrations/0000_00_00_000025_create_pos_cash_variance_explanation_evidence_foundation.php'
+            migration26='apps/web/database/migrations/0000_00_00_000026_create_pos_cash_variance_review_decision_evidence_foundation.php'
             changed="$(git diff --name-only "$base" "$head" -- apps/web/database/migrations | sort)"
             changed_count="$(printf '%s\n' "$changed" | sed '/^$/d' | wc -l)"
             if [[ "$changed_count" -eq 1 ]]; then
-              printf '%s\n' "$changed" | grep -Fxq "$migration25"
+              if ! printf '%s\n' "$changed" | grep -Fxq "$migration25" && ! printf '%s\n' "$changed" | grep -Fxq "$migration26"; then
+                echo 'M7.4 compatibility permits only migration #25 or #26 as the single governed migration delta.' >&2
+                exit 1
+              fi
             else
               test "$changed_count" -eq 0
             fi
-            git diff --exit-code "$base" "$head" -- apps/web/database/migrations ":(exclude)$migration25"
-            for migration_to_isolate in "$migration19" "$migration20" "$migration21" "$migration22" "$migration23" "$migration24" "$migration25"; do
+            git diff --exit-code "$base" "$head" -- apps/web/database/migrations ":(exclude)$migration25" ":(exclude)$migration26"
+            for migration_to_isolate in "$migration19" "$migration20" "$migration21" "$migration22" "$migration23" "$migration24" "$migration25" "$migration26"; do
               if [[ -f "$migration_to_isolate" ]]; then
                 git update-index --assume-unchanged "$migration_to_isolate"
                 rm -f "$migration_to_isolate"
