@@ -61,4 +61,12 @@ final class TechnicalPreviewServiceProvider extends ServiceProvider
             static fn (): OrganizationalContextStore => new RequestOrganizationalContextStore(),
         );
     }
+
+    public function boot(): void
+    {
+        $enabled = filter_var(env('ONEQAY_TECHNICAL_PREVIEW_ENABLED', false), FILTER_VALIDATE_BOOL);
+        if ($enabled) {
+            $this->loadRoutesFrom(base_path('routes/technical-preview-cash-control.php'));
+        }
+    }
 }

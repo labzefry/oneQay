@@ -6,8 +6,12 @@ namespace App\Application\Preview;
 
 use App\Application\Organization\EnterOrganizationalContext;
 use App\Application\Organization\OrganizationalAccessViolation;
+use App\Application\Pos\CashVarianceResult;
 use App\Application\Pos\CompleteSyntheticSale;
+use App\Application\Pos\DeriveCashVariance;
+use App\Application\Pos\ExpectedCashResult;
 use App\Application\Pos\SaleCommand;
+use App\Application\Pos\ShiftClosingCashResult;
 use App\Application\Tenancy\MissingTenantContext;
 use App\Application\Tenancy\TenantContextStore;
 use App\Application\Tenancy\TenantMembershipVerifier;
@@ -24,6 +28,9 @@ use InvalidArgumentException;
 // Author by Lab | zefry
 final readonly class TechnicalPreviewJourney
 {
+    private const IDENTIFIER_PATTERN = '/\A[A-Za-z0-9][A-Za-z0-9._:-]{7,127}\z/';
+    private const MAX_PREVIEW_CASH_ATOMIC = 1_000_000_000;
+
     public function __construct(
         private PreviewFixtureGateway $fixtures,
         private TenantMembershipVerifier $memberships,
@@ -101,7 +108,7 @@ final readonly class TechnicalPreviewJourney
             throw new InvalidArgumentException('Technical Preview tender is invalid.');
         }
 
-        if ($tenderedAtomicUnits < 0 || $tenderedAtomicUnits > 1_000_000_000) {
+        if ($tenderedAtomicUnits < 0 || $tenderedAtomicUnits > self::MAX_PREVIEW_CASH_ATOMIC) {
             throw new InvalidArgumentException('Technical Preview tender amount is invalid.');
         }
 
@@ -130,6 +137,91 @@ final readonly class TechnicalPreviewJourney
         } finally {
             $this->clearContext();
         }
+    }
+
+    public function reconcileCash(
+        PreviewProfile $profile,
+        string $shiftId,
+        string $openingCashEvidenceId,
+        int $openingCashAtomic,
+        int $cashSalesAtomic,
+        int $observedClosingAtomic,
+        int $cutoffAtUnix,
+        string $correlationId,
+    ): CashVarianceResult {
+        foreach ([$shiftId, $openingCashEvidenceId, $correlationId] as $identifier) {
+            if (preg_match(self::IDENTIFIER_PATTERN, $identifier) !== 1) {
+                throw new InvalidArgumentException('Technical Preview cash-control identifier is invalid.');
+            }
+        }
+
+        if (
+            $openingCashAtomic < 0
+            || $cashSalesAtomic < 0
+            || $observedClosingAtomic < 0
+            || $openingCashAtomic > self::MAX_PREVIEW_CASH_ATOMIC
+            || $cashSalesAtomic > self::MAX_PREVIEW_CASH_ATOMIC
+            || $observedClosingAtomic > self::MAX_PREVIEW_CASH_ATOMIC
+            || $cutoffAtUnix <= 0
+        ) {
+            throw new InvalidArgumentException('Technical Preview cash-control amount is invalid.');
+        }
+
+        $expectedCashAtomic = $openingCashAtomic + $cashSalesAtomic;
+        if ($expectedCashAtomic > self::MAX_PREVIEW_CASH_ATOMIC) {
+            throw new InvalidArgumentException('Technical Preview expected cash exceeds the bounded preview limit.');
+        }
+
+        return $this->withinVerifiedContext(
+            $profile,
+            static function () use (
+                $profile,
+                $shiftId,
+                $openingCashEvidenceId,
+                $expectedCashAtomic,
+                $observedClosingAtomic,
+                $cutoffAtUnix,
+                $correlationId,
+            ): CashVarianceResult {
+                $closingCashEvidenceId = 'preview-closing-'.substr(hash(
+                    'sha256',
+                    implode('|', [
+                        $profile->tenantId(),
+                        $profile->outletId(),
+                        $shiftId,
+                        (string) $cutoffAtUnix,
+                        $correlationId,
+                    ]),
+                ), 0, 32);
+
+                $closing = new ShiftClosingCashResult(
+                    $closingCashEvidenceId,
+                    $openingCashEvidenceId,
+                    $shiftId,
+                    'preview-close-'.substr(hash('sha256', $correlationId), 0, 32),
+                    $profile->tenantId(),
+                    $profile->outletId(),
+                    $profile->deviceId(),
+                    Money::fromAtomicUnits($observedClosingAtomic, 'IDR', 0),
+                    'OPERATOR_OBSERVED_CLOSING_CASH',
+                    $correlationId,
+                    $cutoffAtUnix,
+                );
+
+                $expected = new ExpectedCashResult(
+                    $profile->tenantId(),
+                    $profile->organizationId(),
+                    $profile->outletId(),
+                    $shiftId,
+                    $openingCashEvidenceId,
+                    $closingCashEvidenceId,
+                    $cutoffAtUnix,
+                    Money::fromAtomicUnits($expectedCashAtomic, 'IDR', 0),
+                );
+
+                return (new DeriveCashVariance())->derive($expected, $closing);
+            },
+        );
     }
 
     private function enterVerifiedContext(PreviewProfile $profile): void
