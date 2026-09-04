@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Application\Pos;
 
+use App\Application\Authorization\DurableScopedAuthorizationPolicy;
+use App\Application\Authorization\PosPermission;
 use App\Application\Organization\OrganizationalContextStore;
 use App\Application\Persistence\PersistenceTransaction;
 use InvalidArgumentException;
@@ -16,6 +18,7 @@ final readonly class RecordCashVarianceReviewDecision
     public function __construct(
         private CashVarianceReviewDecisionRepository $evidence,
         private OrganizationalContextStore $contexts,
+        private DurableScopedAuthorizationPolicy $authorization,
         private PersistenceTransaction $transaction,
         private ShiftOpeningClock $clock,
     ) {}
@@ -41,6 +44,11 @@ final readonly class RecordCashVarianceReviewDecision
         ) {
             throw new PosTransactionViolation();
         }
+
+        $this->authorization->require(
+            $verified,
+            PosPermission::recordCashVarianceReviewDecision(),
+        );
 
         $explanation = $this->evidence->resolveExplanation(
             $context,
