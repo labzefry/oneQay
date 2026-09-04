@@ -1,0 +1,193 @@
+# Temporary Sprint79 compatibility-20 blob materializer — Author by Lab | zefry
+name: Sprint79 Compatibility 20 Blob Materializer
+
+on:
+  push:
+    branches:
+      - ci/sprint79-compat20-materializer
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact builder branch
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ci/sprint79-compat20-materializer
+
+      - name: Transform only Sprint28 through Sprint34 historical workflows
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin main
+          test "$(git rev-parse origin/main)" = '1962f5b814ac2ac6fb9d08bc70a68e49b737a665'
+          git checkout '1962f5b814ac2ac6fb9d08bc70a68e49b737a665' -- \
+            .github/workflows/sprint28-initial-password-enrollment-regression.yml \
+            .github/workflows/sprint29-first-control-principal-credential-bootstrap-regression.yml \
+            .github/workflows/sprint30-privileged-totp-mfa-regression.yml \
+            .github/workflows/sprint31-privileged-reauthentication-step-up-regression.yml \
+            .github/workflows/sprint32-authentication-recovery-proof-regression.yml \
+            .github/workflows/sprint33-recovery-bound-password-reset-regression.yml \
+            .github/workflows/sprint34-authenticated-password-change-regression.yml
+          python3 <<'PY'
+          from pathlib import Path
+          import re
+
+          source_fp = '890cb08631de804bc2936882f635be11dea52c1e022c4f5112389fd76744ce10'
+          closure_fp = 'c6cd387d5ea83d73382493ca78d219c0db35477e55c61a68e489a0329231f922'
+          source_paths = [
+              '.github/workflows/sprint78-jrn010-prerequisite-cash-variance-review-decision-source-regression.yml',
+              'apps/web/app/Application/Pos/CashVarianceReviewDecisionCommand.php',
+              'apps/web/app/Application/Pos/CashVarianceReviewDecisionRepository.php',
+              'apps/web/app/Application/Pos/CashVarianceReviewDecisionResult.php',
+              'apps/web/app/Application/Pos/RecordCashVarianceReviewDecision.php',
+              'apps/web/app/Infrastructure/Pos/LaravelCashVarianceReviewDecisionRepository.php',
+              'apps/web/database/migrations/0000_00_00_000026_create_pos_cash_variance_review_decision_evidence_foundation.php',
+              'apps/web/tests/pos-cash-variance-review-decision-durable.php',
+              'docs/JRN_010_PREREQUISITE_CASH_VARIANCE_REVIEW_DECISION_SOURCE_FOUNDATION.md',
+          ]
+          targets = [
+              '.github/workflows/sprint28-initial-password-enrollment-regression.yml',
+              '.github/workflows/sprint29-first-control-principal-credential-bootstrap-regression.yml',
+              '.github/workflows/sprint30-privileged-totp-mfa-regression.yml',
+              '.github/workflows/sprint31-privileged-reauthentication-step-up-regression.yml',
+              '.github/workflows/sprint32-authentication-recovery-proof-regression.yml',
+              '.github/workflows/sprint33-recovery-bound-password-reset-regression.yml',
+              '.github/workflows/sprint34-authenticated-password-change-regression.yml',
+          ]
+
+          for name in targets:
+              path = Path(name)
+              text = path.read_text()
+              step = '      - name: Recognize exact Sprint70 source and workflow closure for Sprint'
+              start = text.find(step)
+              if start < 0:
+                  raise SystemExit(f'{name}: Sprint70 closure step missing')
+              end = text.find('\n      - name:', start + len(step))
+              if end < 0:
+                  raise SystemExit(f'{name}: Sprint70 closure step end missing')
+              block = text[start:end]
+              if source_fp in block:
+                  raise SystemExit(f'{name}: Sprint79 fingerprint unexpectedly already present')
+              if closure_fp not in block:
+                  raise SystemExit(f'{name}: canonical 20-workflow closure fingerprint missing')
+              anchor = '          fingerprint="$(sha256sum /tmp/s70-downstream-paths | awk \'{print $1}\')"\n'
+              if block.count(anchor) != 1:
+                  raise SystemExit(f'{name}: fingerprint anchor count {block.count(anchor)}')
+              lines = [
+                  "          sprint79_source=false",
+                  f"          if [[ \"$count\" -eq 9 && \"$fingerprint\" == '{source_fp}' ]]; then",
+                  "            for expected in \\",
+              ]
+              for i, expected in enumerate(source_paths):
+                  suffix = ' \\' if i < len(source_paths) - 1 else ''
+                  lines.append(f"              '{expected}'{suffix}")
+              lines += [
+                  "            do",
+                  "              grep -Fxq \"$expected\" /tmp/s70-downstream-paths",
+                  "            done",
+                  "            sprint79_source=true",
+                  "          fi",
+              ]
+              block = block.replace(anchor, anchor + '\n'.join(lines) + '\n', 1)
+              old_if = '          if [[ "$count"'
+              if block.count(old_if) < 1:
+                  raise SystemExit(f'{name}: governed closure condition missing')
+              block = block.replace(old_if, '          if [[ "$sprint79_source" == \'true\' ]] || [[ "$count"', 1)
+              matches = list(re.finditer(r'for index in \$\(seq (\d+) 25\); do', block))
+              if len(matches) != 1:
+                  raise SystemExit(f'{name}: expected one migration horizon ending at 25, found {len(matches)}')
+              m = matches[0]
+              block = block[:m.start()] + f'for index in $(seq {m.group(1)} 26); do' + block[m.end():]
+              if block.count(source_fp) != 1:
+                  raise SystemExit(f'{name}: Sprint79 fingerprint count after transform != 1')
+              text = text[:start] + block + text[end:]
+              path.write_text(text)
+          PY
+
+      - name: Verify transformed seven and canonical 20-path closure
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/upper7 <<'EOF'
+          .github/workflows/sprint28-initial-password-enrollment-regression.yml
+          .github/workflows/sprint29-first-control-principal-credential-bootstrap-regression.yml
+          .github/workflows/sprint30-privileged-totp-mfa-regression.yml
+          .github/workflows/sprint31-privileged-reauthentication-step-up-regression.yml
+          .github/workflows/sprint32-authentication-recovery-proof-regression.yml
+          .github/workflows/sprint33-recovery-bound-password-reset-regression.yml
+          .github/workflows/sprint34-authenticated-password-change-regression.yml
+          EOF
+          sed -i 's/^          //' /tmp/upper7
+          sort -o /tmp/upper7 /tmp/upper7
+          test "$(wc -l < /tmp/upper7)" -eq 7
+          cat > /tmp/full20 <<'EOF'
+          .github/workflows/m7-2-tenant-isolation-regression.yml
+          .github/workflows/m7-3-identity-org-context-regression.yml
+          .github/workflows/m7-4-pos-core-synthetic-regression.yml
+          .github/workflows/m7-4a-technical-preview-interaction-regression.yml
+          .github/workflows/m7-5-preview-db-qualification-regression.yml
+          .github/workflows/m7-5-preview-release-artifact.yml
+          .github/workflows/sprint21-role-permission-policy-regression.yml
+          .github/workflows/sprint22-policy-administration-regression.yml
+          .github/workflows/sprint23-initial-tenant-admin-provisioning-regression.yml
+          .github/workflows/sprint24-protected-control-admin-lifecycle-regression.yml
+          .github/workflows/sprint25-policy-administration-delivery-regression.yml
+          .github/workflows/sprint26-identity-credential-verification-regression.yml
+          .github/workflows/sprint27-first-party-session-establishment-regression.yml
+          .github/workflows/sprint28-initial-password-enrollment-regression.yml
+          .github/workflows/sprint29-first-control-principal-credential-bootstrap-regression.yml
+          .github/workflows/sprint30-privileged-totp-mfa-regression.yml
+          .github/workflows/sprint31-privileged-reauthentication-step-up-regression.yml
+          .github/workflows/sprint32-authentication-recovery-proof-regression.yml
+          .github/workflows/sprint33-recovery-bound-password-reset-regression.yml
+          .github/workflows/sprint34-authenticated-password-change-regression.yml
+          EOF
+          sed -i 's/^          //' /tmp/full20
+          sort -o /tmp/full20 /tmp/full20
+          test "$(wc -l < /tmp/full20)" -eq 20
+          test "$(sha256sum /tmp/full20 | awk '{print $1}')" = 'c6cd387d5ea83d73382493ca78d219c0db35477e55c61a68e489a0329231f922'
+          while IFS= read -r path; do
+            grep -Fq '890cb08631de804bc2936882f635be11dea52c1e022c4f5112389fd76744ce10' "$path"
+            ruby -e 'require "yaml"; YAML.load_file(ARGV[0], aliases: true)' "$path"
+          done < /tmp/upper7
+
+      - name: Stage transformed seven as unreachable Git blobs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          api='https://api.github.com/repos/labzefry/oneQay'
+          : > /tmp/blob-manifest.tsv
+          while IFS= read -r path; do
+            encoded="$(base64 -w0 "$path")"
+            payload="$(jq -cn --arg content "$encoded" '{content:$content,encoding:"base64"}')"
+            response="$(curl --fail-with-body -sS -X POST -H 'Accept: application/vnd.github+json' -H "Authorization: Bearer $GH_TOKEN" -H 'X-GitHub-Api-Version: 2022-11-28' "$api/git/blobs" -d "$payload")"
+            sha="$(jq -r '.sha' <<<"$response")"
+            test "$sha" != null
+            printf '%s\t%s\n' "$path" "$sha" >> /tmp/blob-manifest.tsv
+          done < /tmp/upper7
+
+      - name: Upload seven-workflow evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: sprint79-compat20-upper7
+          retention-days: 1
+          if-no-files-found: error
+          include-hidden-files: true
+          path: |
+            .github/workflows/sprint28-initial-password-enrollment-regression.yml
+            .github/workflows/sprint29-first-control-principal-credential-bootstrap-regression.yml
+            .github/workflows/sprint30-privileged-totp-mfa-regression.yml
+            .github/workflows/sprint31-privileged-reauthentication-step-up-regression.yml
+            .github/workflows/sprint32-authentication-recovery-proof-regression.yml
+            .github/workflows/sprint33-recovery-bound-password-reset-regression.yml
+            .github/workflows/sprint34-authenticated-password-change-regression.yml
+            /tmp/blob-manifest.tsv
+            /tmp/upper7
+            /tmp/full20
