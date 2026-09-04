@@ -14,6 +14,7 @@ on:
       - 'apps/web/app/Infrastructure/Pos/LaravelCashVarianceReviewDecisionRepository.php'
       - 'apps/web/database/migrations/0000_00_00_000026_create_pos_cash_variance_review_decision_evidence_foundation.php'
       - 'apps/web/tests/pos-cash-variance-review-decision-durable.php'
+      - 'apps/web/tests/pos-cash-variance-review-decision-authorization.php'
       - 'docs/JRN_010_PREREQUISITE_CASH_VARIANCE_REVIEW_DECISION_SOURCE_FOUNDATION.md'
   workflow_dispatch:
 
@@ -55,17 +56,31 @@ jobs:
           base="${{ github.event.pull_request.base.sha }}"
           head="${{ github.event.pull_request.head.sha }}"
           git diff --name-only "$base" "$head" | sort > /tmp/s79-source-paths
-          test "$(wc -l < /tmp/s79-source-paths)" -eq 9
-          test "$(sha256sum /tmp/s79-source-paths | awk '{print $1}')" = '890cb08631de804bc2936882f635be11dea52c1e022c4f5112389fd76744ce10'
-          grep -Fxq '.github/workflows/sprint78-jrn010-prerequisite-cash-variance-review-decision-source-regression.yml' /tmp/s79-source-paths
-          grep -Fxq 'apps/web/app/Application/Pos/CashVarianceReviewDecisionCommand.php' /tmp/s79-source-paths
-          grep -Fxq 'apps/web/app/Application/Pos/CashVarianceReviewDecisionRepository.php' /tmp/s79-source-paths
-          grep -Fxq 'apps/web/app/Application/Pos/CashVarianceReviewDecisionResult.php' /tmp/s79-source-paths
-          grep -Fxq 'apps/web/app/Application/Pos/RecordCashVarianceReviewDecision.php' /tmp/s79-source-paths
-          grep -Fxq 'apps/web/app/Infrastructure/Pos/LaravelCashVarianceReviewDecisionRepository.php' /tmp/s79-source-paths
-          grep -Fxq 'apps/web/database/migrations/0000_00_00_000026_create_pos_cash_variance_review_decision_evidence_foundation.php' /tmp/s79-source-paths
-          grep -Fxq 'apps/web/tests/pos-cash-variance-review-decision-durable.php' /tmp/s79-source-paths
-          grep -Fxq 'docs/JRN_010_PREREQUISITE_CASH_VARIANCE_REVIEW_DECISION_SOURCE_FOUNDATION.md' /tmp/s79-source-paths
+          count="$(wc -l < /tmp/s79-source-paths)"
+          fingerprint="$(sha256sum /tmp/s79-source-paths | awk '{print $1}')"
+
+          if [[ "$count" -eq 2 && "$fingerprint" == '034fdf11410ac54e5b24d5b783d2364c34eadf06e74b57243cce94c523d37396' ]]; then
+            grep -Fxq 'apps/web/app/Application/Pos/RecordCashVarianceReviewDecision.php' /tmp/s79-source-paths
+            grep -Fxq 'apps/web/tests/pos-cash-variance-review-decision-authorization.php' /tmp/s79-source-paths
+            echo 'Recognized exact scoped reviewer-authorization implementation slice.'
+          elif [[ "$count" -eq 2 && "$fingerprint" == '00cbf0f3271b3693bf9587b16e43c0f28799b53b95a622331c022c74390af91a' ]]; then
+            grep -Fxq '.github/workflows/m7-4-pos-core-synthetic-regression.yml' /tmp/s79-source-paths
+            grep -Fxq '.github/workflows/sprint78-jrn010-prerequisite-cash-variance-review-decision-source-regression.yml' /tmp/s79-source-paths
+            echo 'Recognized exact reviewer-authorization two-workflow compatibility predecessor.'
+          else
+            test "$count" -eq 9
+            test "$fingerprint" = '890cb08631de804bc2936882f635be11dea52c1e022c4f5112389fd76744ce10'
+            grep -Fxq '.github/workflows/sprint78-jrn010-prerequisite-cash-variance-review-decision-source-regression.yml' /tmp/s79-source-paths
+            grep -Fxq 'apps/web/app/Application/Pos/CashVarianceReviewDecisionCommand.php' /tmp/s79-source-paths
+            grep -Fxq 'apps/web/app/Application/Pos/CashVarianceReviewDecisionRepository.php' /tmp/s79-source-paths
+            grep -Fxq 'apps/web/app/Application/Pos/CashVarianceReviewDecisionResult.php' /tmp/s79-source-paths
+            grep -Fxq 'apps/web/app/Application/Pos/RecordCashVarianceReviewDecision.php' /tmp/s79-source-paths
+            grep -Fxq 'apps/web/app/Infrastructure/Pos/LaravelCashVarianceReviewDecisionRepository.php' /tmp/s79-source-paths
+            grep -Fxq 'apps/web/database/migrations/0000_00_00_000026_create_pos_cash_variance_review_decision_evidence_foundation.php' /tmp/s79-source-paths
+            grep -Fxq 'apps/web/tests/pos-cash-variance-review-decision-durable.php' /tmp/s79-source-paths
+            grep -Fxq 'docs/JRN_010_PREREQUISITE_CASH_VARIANCE_REVIEW_DECISION_SOURCE_FOUNDATION.md' /tmp/s79-source-paths
+          fi
+
           ! grep -Fxq 'apps/web/app/Providers/AppServiceProvider.php' /tmp/s79-source-paths
           ! grep -Fxq 'apps/web/config/oneqay.php' /tmp/s79-source-paths
           ! grep -Fxq 'apps/web/app/Application/Authorization/PosPermission.php' /tmp/s79-source-paths
@@ -94,6 +109,7 @@ jobs:
           adapter='apps/web/app/Infrastructure/Pos/LaravelCashVarianceReviewDecisionRepository.php'
           migration='apps/web/database/migrations/0000_00_00_000026_create_pos_cash_variance_review_decision_evidence_foundation.php'
           regression='apps/web/tests/pos-cash-variance-review-decision-durable.php'
+          auth_regression='apps/web/tests/pos-cash-variance-review-decision-authorization.php'
 
           grep -Fq "public const REVIEW_ACCEPTED = 'REVIEW_ACCEPTED';" "$command"
           grep -Fq "public const REVIEW_REJECTED = 'REVIEW_REJECTED';" "$command"
@@ -119,6 +135,18 @@ jobs:
           grep -Fq 'competing independent decision' "$regression"
           grep -Fq 'cross-tenant operation isolation' "$regression"
           grep -Fq 'REVIEW_REJECTED durable round-trip' "$regression"
+
+          if [[ -f "$auth_regression" ]]; then
+            grep -Fq 'DurableScopedAuthorizationPolicy' "$service"
+            grep -Fq 'PermissionIdentifier::fromString(self::REVIEW_PERMISSION)' "$service"
+            grep -Fq "private const REVIEW_PERMISSION = 'pos.shift.cash-variance-review-decision.record';" "$service"
+            grep -Fq 'deny-before-effects ordering' "$auth_regression"
+            grep -Fq 'explanation permission substitution' "$auth_regression"
+            grep -Fq 'wrong-scope reviewer grant' "$auth_regression"
+            grep -Fq "['authorization', 'resolve', 'clock', 'transaction', 'record']" "$auth_regression"
+            grep -Fq 'self-review ordering' "$auth_regression"
+          fi
+
           ! grep -Eq '\b(float|double)\b' "$command" "$port" "$result" "$service" "$adapter" "$migration"
 
       - name: Assert no reviewer runtime binding or permission publication
@@ -146,6 +174,9 @@ jobs:
           php -l apps/web/app/Infrastructure/Pos/LaravelCashVarianceReviewDecisionRepository.php
           php -l apps/web/database/migrations/0000_00_00_000026_create_pos_cash_variance_review_decision_evidence_foundation.php
           php -l apps/web/tests/pos-cash-variance-review-decision-durable.php
+          if [[ -f apps/web/tests/pos-cash-variance-review-decision-authorization.php ]]; then
+            php -l apps/web/tests/pos-cash-variance-review-decision-authorization.php
+          fi
 
       - name: Install locked dependencies
         working-directory: apps/web
@@ -172,6 +203,15 @@ jobs:
       - name: Run Sprint79 durable reviewer-decision regression
         working-directory: apps/web
         run: php tests/pos-cash-variance-review-decision-durable.php
+
+      - name: Run scoped reviewer authorization regression when published
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -f tests/pos-cash-variance-review-decision-authorization.php ]]; then
+            php tests/pos-cash-variance-review-decision-authorization.php
+          fi
 
       - name: Preserve canonical explanation and variance regressions at migration twenty-five horizon
         working-directory: apps/web
