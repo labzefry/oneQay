@@ -13,6 +13,7 @@ use App\Delivery\Http\Identity\PrivilegedReauthenticationController;
 use App\Delivery\Http\Identity\PrivilegedTotpMfaController;
 use App\Delivery\Http\Identity\PrivilegedTotpRecoveryController;
 use App\Delivery\Http\Identity\RecoveryCodeController;
+use App\Delivery\Http\Identity\RecoveryPasswordResetController;
 use App\Delivery\Http\Middleware\RequirePolicyAdministrationSessionContextMiddleware;
 use App\Delivery\Http\Middleware\RequirePosSessionContextMiddleware;
 use App\Delivery\Http\Pos\PosCatalogPreparationController;
