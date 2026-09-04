@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Application\Pos;
 
+use App\Application\Authorization\DurableScopedAuthorizationPolicy;
+use App\Application\Authorization\PermissionIdentifier;
 use App\Application\Organization\OrganizationalContextStore;
 use App\Application\Persistence\PersistenceTransaction;
 use InvalidArgumentException;
@@ -12,10 +14,12 @@ use InvalidArgumentException;
 final readonly class RecordCashVarianceReviewDecision
 {
     private const IDENTIFIER_PATTERN = '/\A[A-Za-z0-9][A-Za-z0-9._:-]{7,127}\z/';
+    private const REVIEW_PERMISSION = 'pos.shift.cash-variance-review-decision.record';
 
     public function __construct(
         private CashVarianceReviewDecisionRepository $evidence,
         private OrganizationalContextStore $contexts,
+        private DurableScopedAuthorizationPolicy $authorization,
         private PersistenceTransaction $transaction,
         private ShiftOpeningClock $clock,
     ) {}
@@ -41,6 +45,11 @@ final readonly class RecordCashVarianceReviewDecision
         ) {
             throw new PosTransactionViolation();
         }
+
+        $this->authorization->require(
+            $verified,
+            PermissionIdentifier::fromString(self::REVIEW_PERMISSION),
+        );
 
         $explanation = $this->evidence->resolveExplanation(
             $context,
