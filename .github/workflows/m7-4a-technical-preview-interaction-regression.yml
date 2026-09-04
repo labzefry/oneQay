@@ -23,6 +23,7 @@ on:
       - 'apps/web/config/technical-preview.php'
       - 'apps/web/database/migrations/**'
       - 'apps/web/routes/web.php'
+      - 'apps/web/routes/technical-preview-cash-control.php'
       - 'apps/web/resources/js/pages/Preview/**'
       - 'apps/web/resources/js/components/Preview/**'
       - 'apps/web/tests/initial-password-enrollment.php'
@@ -321,7 +322,23 @@ jobs:
           count="$(wc -l < /tmp/s70-historical-paths)"
           fingerprint="$(sha256sum /tmp/s70-historical-paths | awk '{print $1}')"
           recognized=false
-          if [[ "$count" -eq 9 && "$fingerprint" == '890cb08631de804bc2936882f635be11dea52c1e022c4f5112389fd76744ce10' ]]; then
+          if [[ "$count" -eq 1 && "$fingerprint" == 'cbf904ad24e645ca19377aeae645c574c386bf21bbb7997737df2f11fc903cd2' ]]; then
+            grep -Fxq '.github/workflows/m7-4a-technical-preview-interaction-regression.yml' /tmp/s70-historical-paths
+            recognized=true
+          elif [[ "$count" -eq 7 && "$fingerprint" == '485c5a63945d3aef4afa4e075847814dfcd806fd788e17b8a717c5831e9af3f3' ]]; then
+            for expected in \
+              'apps/web/app/Application/Preview/TechnicalPreviewJourney.php' \
+              'apps/web/app/Delivery/Preview/TechnicalPreviewController.php' \
+              'apps/web/app/Providers/TechnicalPreviewServiceProvider.php' \
+              'apps/web/resources/js/pages/Preview/Pos.vue' \
+              'apps/web/resources/js/pages/Preview/Reconciliation.vue' \
+              'apps/web/routes/technical-preview-cash-control.php' \
+              'apps/web/tests/technical-preview-interaction.php'
+            do
+              grep -Fxq "$expected" /tmp/s70-historical-paths
+            done
+            recognized=true
+          elif [[ "$count" -eq 9 && "$fingerprint" == '890cb08631de804bc2936882f635be11dea52c1e022c4f5112389fd76744ce10' ]]; then
             for expected in \
               '.github/workflows/sprint78-jrn010-prerequisite-cash-variance-review-decision-source-regression.yml' \
               'apps/web/app/Application/Pos/CashVarianceReviewDecisionCommand.php' \
