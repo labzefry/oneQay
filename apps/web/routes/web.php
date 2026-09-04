@@ -13,7 +13,6 @@ use App\Delivery\Http\Identity\PrivilegedReauthenticationController;
 use App\Delivery\Http\Identity\PrivilegedTotpMfaController;
 use App\Delivery\Http\Identity\PrivilegedTotpRecoveryController;
 use App\Delivery\Http\Identity\RecoveryCodeController;
-use App\Delivery\Http\Identity\RecoveryPasswordResetController;
 use App\Delivery\Http\Middleware\RequirePolicyAdministrationSessionContextMiddleware;
 use App\Delivery\Http\Middleware\RequirePosSessionContextMiddleware;
 use App\Delivery\Http\Pos\PosCatalogPreparationController;
@@ -234,11 +233,8 @@ Route::prefix('technical-preview')->controller(TechnicalPreviewController::class
     Route::get('/context', 'context')->name('preview.context');
     Route::post('/context', 'selectContext')->name('preview.context.select');
     Route::get('/pos', 'pos')->name('preview.pos');
-    Route::post('/shift/open', 'openShift')->name('preview.shift.open');
     Route::post('/sale', 'sale')->name('preview.sale');
     Route::get('/receipt', 'receipt')->name('preview.receipt');
-    Route::post('/shift/close', 'closeShift')->name('preview.shift.close');
-    Route::get('/reconciliation', 'reconciliation')->name('preview.reconciliation');
     Route::post('/logout', 'logout')->name('preview.logout');
 });
 
