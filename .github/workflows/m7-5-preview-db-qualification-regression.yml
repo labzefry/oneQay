@@ -436,12 +436,14 @@ jobs:
           closing_cash='app/Infrastructure/Pos/LaravelShiftClosingCashRepository.php'
           expected_cash='app/Infrastructure/Pos/LaravelExpectedCashRepository.php'
           variance_explanation='app/Infrastructure/Pos/LaravelCashVarianceExplanationRepository.php'
+          review_decision='app/Infrastructure/Pos/LaravelCashVarianceReviewDecisionRepository.php'
           inventory_backup='/tmp/oneqay-m75-db-jrn008-inventory-repository.php'
           refund_backup='/tmp/oneqay-m75-db-jrn007-refund-repository.php'
           opening_cash_backup='/tmp/oneqay-m75-db-s53-opening-cash-repository.php'
           closing_cash_backup='/tmp/oneqay-m75-db-s53-closing-cash-repository.php'
           expected_cash_backup='/tmp/oneqay-m75-db-s60-expected-cash-repository.php'
           variance_explanation_backup='/tmp/oneqay-m75-db-s70-variance-explanation-repository.php'
+          review_decision_backup='/tmp/oneqay-m75-db-s79-review-decision-repository.php'
           restore_pos_successors() {
             if [[ -f "$inventory_backup" ]]; then mv "$inventory_backup" "$inventory"; fi
             if [[ -f "$refund_backup" ]]; then mv "$refund_backup" "$refund"; fi
@@ -449,6 +451,7 @@ jobs:
             if [[ -f "$closing_cash_backup" ]]; then mv "$closing_cash_backup" "$closing_cash"; fi
             if [[ -f "$expected_cash_backup" ]]; then mv "$expected_cash_backup" "$expected_cash"; fi
             if [[ -f "$variance_explanation_backup" ]]; then mv "$variance_explanation_backup" "$variance_explanation"; fi
+            if [[ -f "$review_decision_backup" ]]; then mv "$review_decision_backup" "$review_decision"; fi
           }
           if [[ "${ONEQAY_SPRINT51_JRN008_PREVIEW_FIXTURE:-false}" == 'true' ]]; then
             if [[ -f "$inventory" ]]; then cp "$inventory" "$inventory_backup"; rm -f "$inventory"; fi
@@ -457,6 +460,7 @@ jobs:
             if [[ -f "$closing_cash" ]]; then cp "$closing_cash" "$closing_cash_backup"; rm -f "$closing_cash"; fi
             if [[ -f "$expected_cash" ]]; then cp "$expected_cash" "$expected_cash_backup"; rm -f "$expected_cash"; fi
             if [[ -f "$variance_explanation" ]]; then cp "$variance_explanation" "$variance_explanation_backup"; rm -f "$variance_explanation"; fi
+            if [[ -f "$review_decision" ]]; then cp "$review_decision" "$review_decision_backup"; rm -f "$review_decision"; fi
             trap restore_pos_successors EXIT
           fi
           php tests/pos-core-synthetic.php
