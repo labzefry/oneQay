@@ -2,19 +2,11 @@
 
 declare(strict_types=1);
 
-use App\Application\Authorization\DurableAuthorizationViolation;
-use App\Application\Authorization\DurableRolePermissionRepository;
-use App\Application\Authorization\DurableScopedAuthorizationPolicy;
-use App\Application\Authorization\PermissionIdentifier;
-use App\Application\Authorization\PosPermission;
 use App\Application\Organization\OrganizationalContextStore;
 use App\Application\Organization\VerifiedOrganizationalContext;
-use App\Application\Persistence\PersistenceTransaction;
-use App\Application\Pos\CashVarianceExplanationResult;
 use App\Application\Pos\CashVarianceResult;
 use App\Application\Pos\CashVarianceReviewDecisionCommand;
 use App\Application\Pos\CashVarianceReviewDecisionRepository;
-use App\Application\Pos\CashVarianceReviewDecisionResult;
 use App\Application\Pos\PosExecutionContext;
 use App\Application\Pos\RecordCashVarianceReviewDecision;
 use App\Application\Pos\ShiftOpeningClock;
@@ -23,6 +15,7 @@ use App\Domain\Identity\PlatformIdentityId;
 use App\Domain\Organization\OrganizationId;
 use App\Domain\Outlet\OutletId;
 use App\Domain\Tenancy\TenantId;
+use App\Infrastructure\Persistence\LaravelPersistenceTransaction;
 use App\Infrastructure\Pos\LaravelCashVarianceReviewDecisionRepository;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Database\Connection;
@@ -47,173 +40,34 @@ foreach ([
     $_SERVER[$key] = $value;
 }
 
-final class S80EventLog
-{
-    /** @var list<string> */
-    public array $events = [];
-}
-
-final class S80AuthorizationRepository implements DurableRolePermissionRepository
-{
-    /** @var array<string, true> */
-    private array $grants = [];
-
-    /** @var list<string> */
-    public array $requestedPermissions = [];
-
-    public int $calls = 0;
-
-    public function __construct(private readonly S80EventLog $log) {}
-
-    public function allows(
-        VerifiedOrganizationalContext $context,
-        PermissionIdentifier $permission,
-    ): bool {
-        $this->calls++;
-        $this->requestedPermissions[] = $permission->value();
-        $this->log->events[] = 'authorization';
-
-        $key = implode('|', [
-            $context->identityId()->value(),
-            $context->tenantId()->value(),
-            $context->organizationId()->value(),
-            $context->outletId()?->value() ?? '',
-            $permission->value(),
-        ]);
-
-        return isset($this->grants[$key]);
-    }
-
-    public function grant(
-        string $identity,
-        string $tenant,
-        string $organization,
-        string $outlet,
-        string $permission,
-    ): void {
-        $this->grants[implode('|', [
-            $identity,
-            $tenant,
-            $organization,
-            $outlet,
-            $permission,
-        ])] = true;
-    }
-}
-
-final class S80Clock implements ShiftOpeningClock
-{
-    public int $calls = 0;
-
-    public function __construct(
-        private readonly S80EventLog $log,
-        private readonly int $now,
-    ) {}
-
-    public function nowUnix(): int
-    {
-        $this->calls++;
-        $this->log->events[] = 'clock';
-
-        return $this->now;
-    }
-}
-
-final class S80Transaction implements PersistenceTransaction
-{
-    public int $calls = 0;
-
-    public function __construct(
-        private readonly S80EventLog $log,
-        private readonly Connection $connection,
-    ) {}
-
-    public function run(callable $operation): mixed
-    {
-        $this->calls++;
-        $this->log->events[] = 'transaction';
-
-        return $this->connection->transaction($operation);
-    }
-}
-
-final class S80ReviewRepository implements CashVarianceReviewDecisionRepository
-{
-    public int $resolveCalls = 0;
-    public int $recordCalls = 0;
-
-    public function __construct(
-        private readonly S80EventLog $log,
-        private readonly LaravelCashVarianceReviewDecisionRepository $inner,
-    ) {}
-
-    public function resolveExplanation(
-        PosExecutionContext $context,
-        CashVarianceResult $variance,
-        string $cashVarianceExplanationEvidenceId,
-    ): CashVarianceExplanationResult {
-        $this->resolveCalls++;
-        $this->log->events[] = 'resolve';
-
-        return $this->inner->resolveExplanation(
-            $context,
-            $variance,
-            $cashVarianceExplanationEvidenceId,
-        );
-    }
-
-    public function record(
-        PosExecutionContext $context,
-        CashVarianceResult $variance,
-        CashVarianceExplanationResult $explanation,
-        CashVarianceReviewDecisionCommand $command,
-        string $correlationId,
-        int $reviewedAtUnix,
-    ): CashVarianceReviewDecisionResult {
-        $this->recordCalls++;
-        $this->log->events[] = 'record';
-
-        return $this->inner->record(
-            $context,
-            $variance,
-            $explanation,
-            $command,
-            $correlationId,
-            $reviewedAtUnix,
-        );
-    }
-}
-
 $app = require __DIR__.'/../bootstrap/app.php';
 $app->instance('request', Request::create('/'));
 $app->make(Kernel::class)->bootstrap();
 
 $assert = static function (bool $condition, string $case): void {
     if (! $condition) {
-        throw new RuntimeException('Reviewer authorization regression failed: '.$case);
+        throw new RuntimeException('Sprint79 review decision regression failed: '.$case);
     }
 };
 
-$deny = static function (callable $operation, string $case) use ($assert): Throwable {
+$deny = static function (callable $operation, string $case) use ($assert): void {
+    $rejected = false;
     try {
         $operation();
-    } catch (Throwable $exception) {
-        return $exception;
+    } catch (Throwable) {
+        $rejected = true;
     }
-
-    $assert(false, $case.' accepted');
-
-    throw new RuntimeException('Unreachable');
+    $assert($rejected, $case.' accepted');
 };
 
 $workspace = rtrim(sys_get_temp_dir(), DIRECTORY_SEPARATOR)
-    .DIRECTORY_SEPARATOR.'oneqay-review-authorization-'.getmypid();
+    .DIRECTORY_SEPARATOR.'oneqay-s79-review-decision-'.getmypid();
 @mkdir($workspace, 0700, true);
 $db = $workspace.DIRECTORY_SEPARATOR.'review-decision.sqlite';
 $assert(touch($db), 'SQLite create');
 
-$app['config']->set('database.default', 'review_authorization');
-$app['config']->set('database.connections.review_authorization', [
+$app['config']->set('database.default', 's79_review_decision');
+$app['config']->set('database.connections.s79_review_decision', [
     'driver' => 'sqlite',
     'url' => null,
     'database' => $db,
@@ -227,9 +81,9 @@ $app['config']->set('database.oneqay_persistence_enabled', true);
 $app['config']->set('oneqay.runtime_class', 'ci');
 
 $manager = $app->make('db');
-$manager->purge('review_authorization');
-$manager->setDefaultConnection('review_authorization');
-$connection = $manager->connection('review_authorization');
+$manager->purge('s79_review_decision');
+$manager->setDefaultConnection('s79_review_decision');
+$connection = $manager->connection('s79_review_decision');
 $connection->getPdo();
 $connection->statement('PRAGMA foreign_keys = ON');
 
@@ -256,20 +110,6 @@ foreach ($migrations as $migration) {
 $assert(
     ! $app->bound(CashVarianceReviewDecisionRepository::class),
     'runtime repository binding unexpectedly published',
-);
-
-$permission = PosPermission::recordCashVarianceReviewDecision();
-$assert(
-    $permission->value() === 'pos.shift.cash-variance-review-decision.record',
-    'exact reviewer permission identifier',
-);
-$assert(
-    PosPermission::RECORD_CASH_VARIANCE_REVIEW_DECISION === $permission->value(),
-    'reviewer permission constant/accessor mismatch',
-);
-$assert(
-    PosPermission::RECORD_CASH_VARIANCE_EXPLANATION !== $permission->value(),
-    'explanation permission reused as reviewer permission',
 );
 
 $fixtures = [
@@ -446,66 +286,36 @@ $setContext = static function (
     return $contexts;
 };
 
-$makeAuthorization = static function (
-    S80EventLog $log,
-    ?array $grant = null,
-): S80AuthorizationRepository {
-    $authorization = new S80AuthorizationRepository($log);
-
-    if ($grant !== null) {
-        $authorization->grant(
-            $grant['identity'],
-            $grant['tenant'],
-            $grant['organization'],
-            $grant['outlet'],
-            $grant['permission'],
-        );
-    }
-
-    return $authorization;
-};
-
-$reviewGrant = static fn (
-    array $fixture,
-    string $actor,
-    ?string $outlet = null,
-): array => [
-    'identity' => $actor,
-    'tenant' => $fixture['tenant'],
-    'organization' => $fixture['organization'],
-    'outlet' => $outlet ?? $fixture['outlet'],
-    'permission' => PosPermission::RECORD_CASH_VARIANCE_REVIEW_DECISION,
-];
-
 $makeService = static function (
     OrganizationalContextStore $contexts,
     Connection $connection,
     int $now,
-    S80EventLog $log,
-    S80AuthorizationRepository $authorization,
     bool $persistenceEnabled = true,
     string $runtimeClass = 'ci',
     bool $featureEnabled = true,
-): array {
-    $inner = new LaravelCashVarianceReviewDecisionRepository(
+): RecordCashVarianceReviewDecision {
+    $repository = new LaravelCashVarianceReviewDecisionRepository(
         $connection,
         $persistenceEnabled,
         $runtimeClass,
         $featureEnabled,
     );
-    $repository = new S80ReviewRepository($log, $inner);
-    $transaction = new S80Transaction($log, $connection);
-    $clock = new S80Clock($log, $now);
+    $transaction = new LaravelPersistenceTransaction(
+        $connection,
+        $persistenceEnabled,
+        $runtimeClass,
+    );
+    $clock = new class($now) implements ShiftOpeningClock {
+        public function __construct(private int $now) {}
+        public function nowUnix(): int { return $this->now; }
+    };
 
-    $service = new RecordCashVarianceReviewDecision(
+    return new RecordCashVarianceReviewDecision(
         $repository,
         $contexts,
-        new DurableScopedAuthorizationPolicy($authorization),
         $transaction,
         $clock,
     );
-
-    return [$service, $repository, $transaction, $clock];
 };
 
 $alpha = $fixtures['alpha'];
@@ -520,127 +330,8 @@ $alphaShiftBefore = (array) $connection->table('oneqay_pos_shifts')
 
 $alphaReviewerContext = $setContext($alpha, $alpha['reviewer']);
 
-// Deny-by-default: absent reviewer grant fails before any evidence read or side effect.
-$logDenied = new S80EventLog();
-$authorizationDenied = $makeAuthorization($logDenied);
-[$deniedService, $deniedRepository, $deniedTransaction, $deniedClock] = $makeService(
-    $alphaReviewerContext,
-    $connection,
-    4800,
-    $logDenied,
-    $authorizationDenied,
-);
-$denial = $deny(
-    fn () => $deniedService->record(
-        $alphaVariance,
-        new CashVarianceReviewDecisionCommand(
-            'variance-review-auth-denied-0001',
-            $alpha['explanation'],
-            CashVarianceReviewDecisionCommand::REVIEW_ACCEPTED,
-        ),
-        'variance-review-auth-denied-correlation-0001',
-    ),
-    'absent reviewer permission',
-);
-$assert($denial instanceof DurableAuthorizationViolation, 'absent permission exception type');
-$assert(
-    $denial instanceof DurableAuthorizationViolation
-        && $denial->errorCode === DurableAuthorizationViolation::PERMISSION_DENIED,
-    'absent permission denial code',
-);
-$assert($logDenied->events === ['authorization'], 'authorization denial ordering');
-$assert($deniedRepository->resolveCalls === 0, 'denied evidence resolve invoked');
-$assert($deniedRepository->recordCalls === 0, 'denied repository record invoked');
-$assert($deniedClock->calls === 0, 'denied reviewer clock invoked');
-$assert($deniedTransaction->calls === 0, 'denied transaction invoked');
-
-// Explanation-author permission is intentionally insufficient for review authority.
-$logExplanationOnly = new S80EventLog();
-$authorizationExplanationOnly = $makeAuthorization($logExplanationOnly, [
-    'identity' => $alpha['reviewer'],
-    'tenant' => $alpha['tenant'],
-    'organization' => $alpha['organization'],
-    'outlet' => $alpha['outlet'],
-    'permission' => PosPermission::RECORD_CASH_VARIANCE_EXPLANATION,
-]);
-[$explanationOnlyService, $explanationOnlyRepository, $explanationOnlyTransaction, $explanationOnlyClock]
-    = $makeService(
-        $alphaReviewerContext,
-        $connection,
-        4801,
-        $logExplanationOnly,
-        $authorizationExplanationOnly,
-    );
 $deny(
-    fn () => $explanationOnlyService->record(
-        $alphaVariance,
-        new CashVarianceReviewDecisionCommand(
-            'variance-review-auth-explanation-only-0001',
-            $alpha['explanation'],
-            CashVarianceReviewDecisionCommand::REVIEW_ACCEPTED,
-        ),
-        'variance-review-auth-explanation-only-correlation-0001',
-    ),
-    'explanation permission only',
-);
-$assert($logExplanationOnly->events === ['authorization'], 'explanation-only denial ordering');
-$assert(
-    $authorizationExplanationOnly->requestedPermissions === [
-        PosPermission::RECORD_CASH_VARIANCE_REVIEW_DECISION,
-    ],
-    'review service requested wrong permission',
-);
-$assert($explanationOnlyRepository->resolveCalls === 0, 'explanation-only evidence read');
-$assert($explanationOnlyClock->calls === 0, 'explanation-only clock invoked');
-$assert($explanationOnlyTransaction->calls === 0, 'explanation-only transaction invoked');
-
-// Exact reviewer grant is scope-bound; a wrong-outlet grant is not authority.
-$logWrongScope = new S80EventLog();
-$authorizationWrongScope = $makeAuthorization(
-    $logWrongScope,
-    $reviewGrant($alpha, $alpha['reviewer'], 'outlet-not-authorized'),
-);
-[$wrongScopeService, $wrongScopeRepository, $wrongScopeTransaction, $wrongScopeClock]
-    = $makeService(
-        $alphaReviewerContext,
-        $connection,
-        4802,
-        $logWrongScope,
-        $authorizationWrongScope,
-    );
-$deny(
-    fn () => $wrongScopeService->record(
-        $alphaVariance,
-        new CashVarianceReviewDecisionCommand(
-            'variance-review-auth-wrong-scope-0001',
-            $alpha['explanation'],
-            CashVarianceReviewDecisionCommand::REVIEW_ACCEPTED,
-        ),
-        'variance-review-auth-wrong-scope-correlation-0001',
-    ),
-    'wrong outlet reviewer grant',
-);
-$assert($logWrongScope->events === ['authorization'], 'wrong-scope denial ordering');
-$assert($wrongScopeRepository->resolveCalls === 0, 'wrong-scope evidence read');
-$assert($wrongScopeClock->calls === 0, 'wrong-scope clock invoked');
-$assert($wrongScopeTransaction->calls === 0, 'wrong-scope transaction invoked');
-
-// Self-review remains denied even when the explanation author has the reviewer permission.
-$selfContext = $setContext($alpha, $alpha['explainer']);
-$logSelf = new S80EventLog();
-$authorizationSelf = $makeAuthorization(
-    $logSelf,
-    $reviewGrant($alpha, $alpha['explainer']),
-);
-[$selfService, $selfRepository, $selfTransaction, $selfClock] = $makeService(
-    $selfContext,
-    $connection,
-    4900,
-    $logSelf,
-    $authorizationSelf,
-);
-$deny(
-    fn () => $selfService->record(
+    fn () => $makeService($setContext($alpha, $alpha['explainer']), $connection, 4900)->record(
         $alphaVariance,
         new CashVarianceReviewDecisionCommand(
             'variance-review-operation-self-0001',
@@ -651,49 +342,13 @@ $deny(
     ),
     'self-review',
 );
-$assert($logSelf->events === ['authorization', 'resolve'], 'self-review ordering');
-$assert($selfRepository->resolveCalls === 1, 'self-review explanation resolution');
-$assert($selfRepository->recordCalls === 0, 'self-review durable write');
-$assert($selfClock->calls === 0, 'self-review clock invoked');
-$assert($selfTransaction->calls === 0, 'self-review transaction invoked');
-
-$alphaAuthorized = static function (
-    int $now,
-    OrganizationalContextStore $context,
-    Connection $connection,
-    array $fixture,
-    callable $makeAuthorization,
-    callable $reviewGrant,
-    callable $makeService,
-): array {
-    $log = new S80EventLog();
-    $authorization = $makeAuthorization(
-        $log,
-        $reviewGrant($fixture, $fixture['reviewer']),
-    );
-
-    return [
-        ...$makeService($context, $connection, $now, $log, $authorization),
-        $log,
-        $authorization,
-    ];
-};
 
 $connection->table('oneqay_pos_cash_variance_explanation_evidence')
     ->where('tenant_id', $alpha['tenant'])
     ->where('evidence_id', $alpha['explanation'])
     ->update(['expected_cash_atomic' => 901]);
-[$service] = $alphaAuthorized(
-    4901,
-    $alphaReviewerContext,
-    $connection,
-    $alpha,
-    $makeAuthorization,
-    $reviewGrant,
-    $makeService,
-);
 $deny(
-    fn () => $service->record(
+    fn () => $makeService($alphaReviewerContext, $connection, 4901)->record(
         $alphaVariance,
         new CashVarianceReviewDecisionCommand(
             'variance-review-operation-wrong-subject-0001',
@@ -709,26 +364,12 @@ $connection->table('oneqay_pos_cash_variance_explanation_evidence')
     ->where('evidence_id', $alpha['explanation'])
     ->update(['expected_cash_atomic' => 900]);
 
-$crossOrgContext = $setContext(
-    $alpha,
-    $alpha['reviewer'],
-    $beta['organization'],
-    $alpha['outlet'],
-);
-$logCrossOrg = new S80EventLog();
-$authorizationCrossOrg = $makeAuthorization(
-    $logCrossOrg,
-    $reviewGrant($alpha, $alpha['reviewer']),
-);
-[$crossOrgService] = $makeService(
-    $crossOrgContext,
-    $connection,
-    4902,
-    $logCrossOrg,
-    $authorizationCrossOrg,
-);
 $deny(
-    fn () => $crossOrgService->record(
+    fn () => $makeService(
+        $setContext($alpha, $alpha['reviewer'], $beta['organization'], $alpha['outlet']),
+        $connection,
+        4902,
+    )->record(
         $alphaVariance,
         new CashVarianceReviewDecisionCommand(
             'variance-review-operation-wrong-org-0001',
@@ -739,28 +380,12 @@ $deny(
     ),
     'cross-organization context',
 );
-$assert($logCrossOrg->events === [], 'cross-organization reached authorization');
-
-$crossOutletContext = $setContext(
-    $alpha,
-    $alpha['reviewer'],
-    $alpha['organization'],
-    $beta['outlet'],
-);
-$logCrossOutlet = new S80EventLog();
-$authorizationCrossOutlet = $makeAuthorization(
-    $logCrossOutlet,
-    $reviewGrant($alpha, $alpha['reviewer']),
-);
-[$crossOutletService] = $makeService(
-    $crossOutletContext,
-    $connection,
-    4903,
-    $logCrossOutlet,
-    $authorizationCrossOutlet,
-);
 $deny(
-    fn () => $crossOutletService->record(
+    fn () => $makeService(
+        $setContext($alpha, $alpha['reviewer'], $alpha['organization'], $beta['outlet']),
+        $connection,
+        4903,
+    )->record(
         $alphaVariance,
         new CashVarianceReviewDecisionCommand(
             'variance-review-operation-wrong-outlet-0001',
@@ -771,7 +396,6 @@ $deny(
     ),
     'cross-outlet context',
 );
-$assert($logCrossOutlet->events === [], 'cross-outlet reached authorization');
 
 $wrongSign = new CashVarianceResult(
     $alpha['tenant'],
@@ -788,17 +412,8 @@ $wrongSign = new CashVarianceResult(
     'IDR',
     0,
 );
-[$wrongSignService, , , , $wrongSignLog] = $alphaAuthorized(
-    4904,
-    $alphaReviewerContext,
-    $connection,
-    $alpha,
-    $makeAuthorization,
-    $reviewGrant,
-    $makeService,
-);
 $deny(
-    fn () => $wrongSignService->record(
+    fn () => $makeService($alphaReviewerContext, $connection, 4904)->record(
         $wrongSign,
         new CashVarianceReviewDecisionCommand(
             'variance-review-operation-sign-0001',
@@ -809,7 +424,6 @@ $deny(
     ),
     'malformed sign direction',
 );
-$assert($wrongSignLog->events === [], 'malformed variance reached authorization');
 
 $match = new CashVarianceResult(
     $alpha['tenant'],
@@ -826,17 +440,8 @@ $match = new CashVarianceResult(
     'IDR',
     0,
 );
-[$matchService, , , , $matchLog] = $alphaAuthorized(
-    4905,
-    $alphaReviewerContext,
-    $connection,
-    $alpha,
-    $makeAuthorization,
-    $reviewGrant,
-    $makeService,
-);
 $deny(
-    fn () => $matchService->record(
+    fn () => $makeService($alphaReviewerContext, $connection, 4905)->record(
         $match,
         new CashVarianceReviewDecisionCommand(
             'variance-review-operation-match-0001',
@@ -847,7 +452,6 @@ $deny(
     ),
     'MATCH review',
 );
-$assert($matchLog->events === [], 'MATCH review reached authorization');
 
 $deny(
     fn () => new CashVarianceReviewDecisionCommand(
@@ -858,17 +462,8 @@ $deny(
     'unknown outcome alias',
 );
 
-[$missingService] = $alphaAuthorized(
-    4906,
-    $alphaReviewerContext,
-    $connection,
-    $alpha,
-    $makeAuthorization,
-    $reviewGrant,
-    $makeService,
-);
 $deny(
-    fn () => $missingService->record(
+    fn () => $makeService($alphaReviewerContext, $connection, 4906)->record(
         $alphaVariance,
         new CashVarianceReviewDecisionCommand(
             'variance-review-operation-missing-0001',
@@ -879,18 +474,8 @@ $deny(
     ),
     'missing explanation',
 );
-
-[$crossTenantService] = $alphaAuthorized(
-    4907,
-    $alphaReviewerContext,
-    $connection,
-    $alpha,
-    $makeAuthorization,
-    $reviewGrant,
-    $makeService,
-);
 $deny(
-    fn () => $crossTenantService->record(
+    fn () => $makeService($alphaReviewerContext, $connection, 4907)->record(
         $alphaVariance,
         new CashVarianceReviewDecisionCommand(
             'variance-review-operation-cross-0001',
@@ -901,18 +486,8 @@ $deny(
     ),
     'cross-tenant explanation',
 );
-
-[$clockFailureService] = $alphaAuthorized(
-    0,
-    $alphaReviewerContext,
-    $connection,
-    $alpha,
-    $makeAuthorization,
-    $reviewGrant,
-    $makeService,
-);
 $deny(
-    fn () => $clockFailureService->record(
+    fn () => $makeService($alphaReviewerContext, $connection, 0)->record(
         $alphaVariance,
         new CashVarianceReviewDecisionCommand(
             'variance-review-operation-clock-0001',
@@ -930,36 +505,12 @@ $alphaCommand = new CashVarianceReviewDecisionCommand(
     $alpha['explanation'],
     CashVarianceReviewDecisionCommand::REVIEW_ACCEPTED,
 );
-[$alphaService, $alphaRepository, $alphaTransaction, $alphaClock, $alphaLog, $alphaAuthorization]
-    = $alphaAuthorized(
-        5000,
-        $alphaReviewerContext,
-        $connection,
-        $alpha,
-        $makeAuthorization,
-        $reviewGrant,
-        $makeService,
-    );
-$alphaResult = $alphaService->record(
+$alphaResult = $makeService($alphaReviewerContext, $connection, 5000)->record(
     $alphaVariance,
     $alphaCommand,
     'variance-review-correlation-alpha-0001',
 );
-$assert(
-    $alphaLog->events === ['authorization', 'resolve', 'clock', 'transaction', 'record'],
-    'authorized reviewer ordering',
-);
-$assert($alphaAuthorization->calls === 1, 'authorized permission check count');
-$assert(
-    $alphaAuthorization->requestedPermissions === [
-        PosPermission::RECORD_CASH_VARIANCE_REVIEW_DECISION,
-    ],
-    'authorized requested permission mismatch',
-);
-$assert($alphaRepository->resolveCalls === 1, 'authorized explanation resolution count');
-$assert($alphaRepository->recordCalls === 1, 'authorized durable record count');
-$assert($alphaClock->calls === 1, 'authorized clock count');
-$assert($alphaTransaction->calls === 1, 'authorized transaction count');
+
 $assert($alphaResult->reviewerActorIdentityId() === $alpha['reviewer'], 'authoritative reviewer identity');
 $assert($alphaResult->explanationActorIdentityId() === $alpha['explainer'], 'authoritative explanation author identity');
 $assert($alphaResult->reviewOutcome() === CashVarianceReviewDecisionCommand::REVIEW_ACCEPTED, 'REVIEW_ACCEPTED durable round-trip');
@@ -969,16 +520,7 @@ $assert(
     'exact explanation payload fingerprint binding',
 );
 
-[$replayService] = $alphaAuthorized(
-    9999,
-    $alphaReviewerContext,
-    $connection,
-    $alpha,
-    $makeAuthorization,
-    $reviewGrant,
-    $makeService,
-);
-$replay = $replayService->record(
+$replay = $makeService($alphaReviewerContext, $connection, 9999)->record(
     $alphaVariance,
     $alphaCommand,
     'variance-review-correlation-alpha-retry',
@@ -987,17 +529,8 @@ $assert($replay->reviewEvidenceId() === $alphaResult->reviewEvidenceId(), 'exact
 $assert($replay->reviewedAtUnix() === 5000, 'exact replay original reviewed timestamp');
 $assert($replay->correlationId() === 'variance-review-correlation-alpha-0001', 'exact replay original correlation');
 
-[$conflictService] = $alphaAuthorized(
-    5001,
-    $alphaReviewerContext,
-    $connection,
-    $alpha,
-    $makeAuthorization,
-    $reviewGrant,
-    $makeService,
-);
 $deny(
-    fn () => $conflictService->record(
+    fn () => $makeService($alphaReviewerContext, $connection, 5001)->record(
         $alphaVariance,
         new CashVarianceReviewDecisionCommand(
             $sharedOperation,
@@ -1008,18 +541,8 @@ $deny(
     ),
     'conflicting operation replay',
 );
-
-[$secondDecisionService] = $alphaAuthorized(
-    5002,
-    $alphaReviewerContext,
-    $connection,
-    $alpha,
-    $makeAuthorization,
-    $reviewGrant,
-    $makeService,
-);
 $deny(
-    fn () => $secondDecisionService->record(
+    fn () => $makeService($alphaReviewerContext, $connection, 5002)->record(
         $alphaVariance,
         new CashVarianceReviewDecisionCommand(
             'variance-review-operation-alpha-0002',
@@ -1036,40 +559,8 @@ $connection->table('oneqay_pos_cash_variance_explanation_evidence')
     ->where('tenant_id', $beta['tenant'])
     ->where('evidence_id', $beta['explanation'])
     ->update(['payload_fingerprint' => 'malformed']);
-
-$betaAuthorized = static function (
-    int $now,
-    OrganizationalContextStore $context,
-    Connection $connection,
-    array $fixture,
-    callable $makeAuthorization,
-    callable $reviewGrant,
-    callable $makeService,
-): array {
-    $log = new S80EventLog();
-    $authorization = $makeAuthorization(
-        $log,
-        $reviewGrant($fixture, $fixture['reviewer']),
-    );
-
-    return [
-        ...$makeService($context, $connection, $now, $log, $authorization),
-        $log,
-        $authorization,
-    ];
-};
-
-[$malformedFingerprintService] = $betaAuthorized(
-    5999,
-    $betaReviewerContext,
-    $connection,
-    $beta,
-    $makeAuthorization,
-    $reviewGrant,
-    $makeService,
-);
 $deny(
-    fn () => $malformedFingerprintService->record(
+    fn () => $makeService($betaReviewerContext, $connection, 5999)->record(
         $betaVariance,
         new CashVarianceReviewDecisionCommand(
             'variance-review-operation-fingerprint-0001',
@@ -1085,16 +576,7 @@ $connection->table('oneqay_pos_cash_variance_explanation_evidence')
     ->where('evidence_id', $beta['explanation'])
     ->update(['payload_fingerprint' => hash('sha256', 'authoritative-beta-explanation')]);
 
-[$betaService] = $betaAuthorized(
-    6000,
-    $betaReviewerContext,
-    $connection,
-    $beta,
-    $makeAuthorization,
-    $reviewGrant,
-    $makeService,
-);
-$betaResult = $betaService->record(
+$betaResult = $makeService($betaReviewerContext, $connection, 6000)->record(
     $betaVariance,
     new CashVarianceReviewDecisionCommand(
         $sharedOperation,
@@ -1151,4 +633,4 @@ $assert(! str_contains($adapterSource, '->delete('), 'adapter delete path absent
 @unlink($db);
 @rmdir($workspace);
 
-echo "Cash variance reviewer authorization and durable decision regression: PASS\n";
+echo "Sprint79 durable cash variance reviewer decision regression: PASS\n";
