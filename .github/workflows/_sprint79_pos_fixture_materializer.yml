@@ -48,11 +48,8 @@ jobs:
               assignment = "          variance_explanation='app/Infrastructure/Pos/LaravelCashVarianceExplanationRepository.php'\n"
               if text.count(assignment) != 1:
                   raise SystemExit(f'{name}: variance assignment count != 1')
-              text = text.replace(
-                  assignment,
-                  assignment + "          review_decision='app/Infrastructure/Pos/LaravelCashVarianceReviewDecisionRepository.php'\n",
-                  1,
-              )
+              review_assignment = "          review_decision='app/Infrastructure/Pos/LaravelCashVarianceReviewDecisionRepository.php'\n"
+              text = text.replace(assignment, assignment + review_assignment, 1)
 
               marker = "          variance_explanation_backup='/tmp/"
               start = text.find(marker)
@@ -115,7 +112,7 @@ jobs:
               else:
                   raise SystemExit(f'{name}: variance copy shape missing')
 
-              if text.count('LaravelCashVarianceReviewDecisionRepository.php') != 1:
+              if text.count(review_assignment) != 1:
                   raise SystemExit(f'{name}: review-decision repository assignment count != 1')
               if text.count('review_decision_backup') < 3:
                   raise SystemExit(f'{name}: incomplete review-decision backup lifecycle')
@@ -138,7 +135,7 @@ jobs:
           test "$(sha256sum /tmp/pos4 | awk '{print $1}')" = 'eaa9c44aed2728b0a508f6be91155f3f2021f7f3de1383164a54be611d3933cf'
           while IFS= read -r path; do
             grep -Fq '890cb08631de804bc2936882f635be11dea52c1e022c4f5112389fd76744ce10' "$path"
-            grep -Fq 'LaravelCashVarianceReviewDecisionRepository.php' "$path"
+            grep -Fq "review_decision='app/Infrastructure/Pos/LaravelCashVarianceReviewDecisionRepository.php'" "$path"
             grep -Fq 'review_decision_backup' "$path"
             ruby -e 'require "yaml"; YAML.load_file(ARGV[0], aliases: true)' "$path"
           done < /tmp/pos4
