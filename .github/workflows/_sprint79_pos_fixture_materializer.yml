@@ -1,0 +1,178 @@
+# Temporary Sprint79 POS historical fixture materializer — Author by Lab | zefry
+name: Sprint79 POS Fixture Materializer
+
+on:
+  push:
+    branches:
+      - ci/sprint79-review-decision-pos-fixture-materializer
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact builder branch
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ci/sprint79-review-decision-pos-fixture-materializer
+
+      - name: Transform only four historical POS fixture workflows
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin main
+          test "$(git rev-parse origin/main)" = '514e87051f770aee1a60b98bbc824014d7b058cc'
+          git checkout '514e87051f770aee1a60b98bbc824014d7b058cc' -- \
+            .github/workflows/m7-4-pos-core-synthetic-regression.yml \
+            .github/workflows/m7-4a-technical-preview-interaction-regression.yml \
+            .github/workflows/m7-5-preview-db-qualification-regression.yml \
+            .github/workflows/m7-5-preview-release-artifact.yml
+          python3 <<'PY'
+          from pathlib import Path
+
+          targets = {
+              '.github/workflows/m7-4-pos-core-synthetic-regression.yml': 'oneqay-m74-s79-review-decision-repository.php',
+              '.github/workflows/m7-4a-technical-preview-interaction-regression.yml': 'oneqay-m74a-s79-review-decision-repository.php',
+              '.github/workflows/m7-5-preview-db-qualification-regression.yml': 'oneqay-m75-db-s79-review-decision-repository.php',
+              '.github/workflows/m7-5-preview-release-artifact.yml': 'oneqay-m75-release-s79-review-decision-repository.php',
+          }
+
+          for name, backup_name in targets.items():
+              path = Path(name)
+              text = path.read_text()
+              if '890cb08631de804bc2936882f635be11dea52c1e022c4f5112389fd76744ce10' not in text:
+                  raise SystemExit(f'{name}: exact Sprint79 source fingerprint missing')
+              assignment = "          variance_explanation='app/Infrastructure/Pos/LaravelCashVarianceExplanationRepository.php'\n"
+              if text.count(assignment) != 1:
+                  raise SystemExit(f'{name}: variance assignment count != 1')
+              text = text.replace(
+                  assignment,
+                  assignment + "          review_decision='app/Infrastructure/Pos/LaravelCashVarianceReviewDecisionRepository.php'\n",
+                  1,
+              )
+
+              marker = "          variance_explanation_backup='/tmp/"
+              start = text.find(marker)
+              if start < 0:
+                  raise SystemExit(f'{name}: variance backup marker missing')
+              end = text.find("\n", start)
+              line = text[start:end+1]
+              if text.count(line) != 1:
+                  raise SystemExit(f'{name}: variance backup line not unique')
+              review_backup = f"          review_decision_backup='/tmp/{backup_name}'\n"
+              text = text.replace(line, line + review_backup, 1)
+
+              restore_bash = '              [[ ! -f "$variance_explanation_backup" ]] || mv "$variance_explanation_backup" "$variance_explanation"\n'
+              restore_if = '            if [[ -f "$variance_explanation_backup" ]]; then mv "$variance_explanation_backup" "$variance_explanation"; fi\n'
+              if restore_bash in text:
+                  if text.count(restore_bash) != 1:
+                      raise SystemExit(f'{name}: variance bash restore count != 1')
+                  text = text.replace(
+                      restore_bash,
+                      restore_bash + '              [[ ! -f "$review_decision_backup" ]] || mv "$review_decision_backup" "$review_decision"\n',
+                      1,
+                  )
+              elif restore_if in text:
+                  if text.count(restore_if) != 1:
+                      raise SystemExit(f'{name}: variance if restore count != 1')
+                  text = text.replace(
+                      restore_if,
+                      restore_if + '            if [[ -f "$review_decision_backup" ]]; then mv "$review_decision_backup" "$review_decision"; fi\n',
+                      1,
+                  )
+              else:
+                  raise SystemExit(f'{name}: variance restore shape missing')
+
+              copy_only = '            if [[ -f "$variance_explanation" ]]; then cp "$variance_explanation" "$variance_explanation_backup"; fi\n'
+              copy_remove = '            if [[ -f "$variance_explanation" ]]; then cp "$variance_explanation" "$variance_explanation_backup"; rm -f "$variance_explanation"; fi\n'
+              if copy_only in text:
+                  if text.count(copy_only) != 1:
+                      raise SystemExit(f'{name}: variance copy-only count != 1')
+                  text = text.replace(
+                      copy_only,
+                      copy_only + '            if [[ -f "$review_decision" ]]; then cp "$review_decision" "$review_decision_backup"; fi\n',
+                      1,
+                  )
+                  rm_line = '            rm -f "$inventory" "$refund" "$opening_cash" "$closing_cash" "$expected_cash" "$variance_explanation"\n'
+                  if text.count(rm_line) != 1:
+                      raise SystemExit(f'{name}: governed rm line count != 1')
+                  text = text.replace(
+                      rm_line,
+                      '            rm -f "$inventory" "$refund" "$opening_cash" "$closing_cash" "$expected_cash" "$variance_explanation" "$review_decision"\n',
+                      1,
+                  )
+              elif copy_remove in text:
+                  if text.count(copy_remove) != 1:
+                      raise SystemExit(f'{name}: variance copy-remove count != 1')
+                  text = text.replace(
+                      copy_remove,
+                      copy_remove + '            if [[ -f "$review_decision" ]]; then cp "$review_decision" "$review_decision_backup"; rm -f "$review_decision"; fi\n',
+                      1,
+                  )
+              else:
+                  raise SystemExit(f'{name}: variance copy shape missing')
+
+              if text.count('LaravelCashVarianceReviewDecisionRepository.php') != 1:
+                  raise SystemExit(f'{name}: review-decision repository assignment count != 1')
+              if text.count('review_decision_backup') < 3:
+                  raise SystemExit(f'{name}: incomplete review-decision backup lifecycle')
+              path.write_text(text)
+          PY
+
+      - name: Verify exact four-path correction envelope and YAML syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/pos4 <<'EOF'
+          .github/workflows/m7-4-pos-core-synthetic-regression.yml
+          .github/workflows/m7-4a-technical-preview-interaction-regression.yml
+          .github/workflows/m7-5-preview-db-qualification-regression.yml
+          .github/workflows/m7-5-preview-release-artifact.yml
+          EOF
+          sed -i 's/^          //' /tmp/pos4
+          sort -o /tmp/pos4 /tmp/pos4
+          test "$(wc -l < /tmp/pos4)" -eq 4
+          test "$(sha256sum /tmp/pos4 | awk '{print $1}')" = 'eaa9c44aed2728b0a508f6be91155f3f2021f7f3de1383164a54be611d3933cf'
+          while IFS= read -r path; do
+            grep -Fq '890cb08631de804bc2936882f635be11dea52c1e022c4f5112389fd76744ce10' "$path"
+            grep -Fq 'LaravelCashVarianceReviewDecisionRepository.php' "$path"
+            grep -Fq 'review_decision_backup' "$path"
+            ruby -e 'require "yaml"; YAML.load_file(ARGV[0], aliases: true)' "$path"
+          done < /tmp/pos4
+          git diff --name-only '514e87051f770aee1a60b98bbc824014d7b058cc' -- .github/workflows | sort > /tmp/actual4
+          diff -u /tmp/pos4 /tmp/actual4
+
+      - name: Stage transformed four as Git blobs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          api='https://api.github.com/repos/labzefry/oneQay'
+          : > /tmp/blob-manifest.tsv
+          while IFS= read -r path; do
+            encoded="$(base64 -w0 "$path")"
+            payload="$(jq -cn --arg content "$encoded" '{content:$content,encoding:"base64"}')"
+            response="$(curl --fail-with-body -sS -X POST -H 'Accept: application/vnd.github+json' -H "Authorization: Bearer $GH_TOKEN" -H 'X-GitHub-Api-Version: 2022-11-28' "$api/git/blobs" -d "$payload")"
+            sha="$(jq -r '.sha' <<<"$response")"
+            test "$sha" != null
+            printf '%s\t%s\n' "$path" "$sha" | tee -a /tmp/blob-manifest.tsv
+          done < /tmp/pos4
+
+      - name: Upload four-workflow evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: sprint79-pos-fixture-four
+          retention-days: 1
+          if-no-files-found: error
+          include-hidden-files: true
+          path: |
+            .github/workflows/m7-4-pos-core-synthetic-regression.yml
+            .github/workflows/m7-4a-technical-preview-interaction-regression.yml
+            .github/workflows/m7-5-preview-db-qualification-regression.yml
+            .github/workflows/m7-5-preview-release-artifact.yml
+            /tmp/blob-manifest.tsv
+            /tmp/pos4
