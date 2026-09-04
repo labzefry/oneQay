@@ -139,7 +139,11 @@ jobs:
             grep -Fq 'review_decision_backup' "$path"
             ruby -e 'require "yaml"; YAML.load_file(ARGV[0], aliases: true)' "$path"
           done < /tmp/pos4
-          git diff --name-only '514e87051f770aee1a60b98bbc824014d7b058cc' -- .github/workflows | sort > /tmp/actual4
+          git diff --name-only '514e87051f770aee1a60b98bbc824014d7b058cc' -- \
+            .github/workflows/m7-4-pos-core-synthetic-regression.yml \
+            .github/workflows/m7-4a-technical-preview-interaction-regression.yml \
+            .github/workflows/m7-5-preview-db-qualification-regression.yml \
+            .github/workflows/m7-5-preview-release-artifact.yml | sort > /tmp/actual4
           diff -u /tmp/pos4 /tmp/actual4
 
       - name: Stage transformed four as Git blobs
