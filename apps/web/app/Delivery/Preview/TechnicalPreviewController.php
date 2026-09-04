@@ -6,6 +6,7 @@ namespace App\Delivery\Preview;
 
 use App\Application\Identity\IdentityContextViolation;
 use App\Application\Organization\OrganizationalAccessViolation;
+use App\Application\Pos\CashVarianceResult;
 use App\Application\Pos\PosAccessViolation;
 use App\Application\Pos\PosTransactionViolation;
 use App\Application\Preview\PreviewProfile;
@@ -25,6 +26,9 @@ final class TechnicalPreviewController
     private const PRINCIPAL_SESSION = 'oneqay.preview.principal';
     private const CONTEXT_SESSION = 'oneqay.preview.context_selected';
     private const RECEIPT_SESSION = 'oneqay.preview.receipt';
+    private const SHIFT_SESSION = 'oneqay.preview.cash_shift';
+    private const RECONCILIATION_SESSION = 'oneqay.preview.cash_reconciliation';
+    private const MAX_PREVIEW_CASH_ATOMIC = 1_000_000_000;
 
     public function index(Request $request, TechnicalPreviewJourney $journey): Response|RedirectResponse
     {
@@ -61,7 +65,12 @@ final class TechnicalPreviewController
 
         $request->session()->regenerate();
         $request->session()->put(self::PRINCIPAL_SESSION, $profile->principalId());
-        $request->session()->forget([self::CONTEXT_SESSION, self::RECEIPT_SESSION]);
+        $request->session()->forget([
+            self::CONTEXT_SESSION,
+            self::RECEIPT_SESSION,
+            self::SHIFT_SESSION,
+            self::RECONCILIATION_SESSION,
+        ]);
 
         return redirect()->route('preview.context');
     }
@@ -103,7 +112,11 @@ final class TechnicalPreviewController
         }
 
         $request->session()->put(self::CONTEXT_SESSION, true);
-        $request->session()->forget(self::RECEIPT_SESSION);
+        $request->session()->forget([
+            self::RECEIPT_SESSION,
+            self::SHIFT_SESSION,
+            self::RECONCILIATION_SESSION,
+        ]);
 
         return redirect()->route('preview.pos');
     }
@@ -127,9 +140,58 @@ final class TechnicalPreviewController
         return Inertia::render('Preview/Pos', [
             'profile' => $this->projectProfile($profile),
             'catalog' => array_map([$this, 'projectCatalogItem'], $catalog),
+            'shift' => $this->shiftFromSession($request, $profile),
             'previewLabel' => 'Synthetic Technical Preview',
             'productionReady' => false,
         ]);
+    }
+
+    public function openShift(Request $request, TechnicalPreviewJourney $journey): RedirectResponse
+    {
+        $this->assertEnabled();
+        $profile = $this->verifiedSessionProfile($request, $journey);
+        if ($profile instanceof RedirectResponse) {
+            return $profile;
+        }
+
+        if ($this->shiftFromSession($request, $profile) !== null) {
+            return redirect()->route('preview.pos')
+                ->withErrors(['shift' => 'Synthetic cash shift is already open.']);
+        }
+
+        $openingCashAtomic = $this->boundedAtomicInput($request, 'opening_cash_atomic');
+        if ($openingCashAtomic === null) {
+            return redirect()->route('preview.pos')
+                ->withErrors(['shift' => 'Opening cash must be a bounded non-negative IDR amount.']);
+        }
+
+        try {
+            $journey->catalog($profile);
+        } catch (IdentityContextViolation|MissingTenantContext|OrganizationalAccessViolation) {
+            return redirect()->route('preview.context')
+                ->withErrors(['selection' => 'Technical Preview context requires re-verification.']);
+        }
+
+        $shiftId = 'preview-shift-'.bin2hex(random_bytes(16));
+        $openingCashEvidenceId = 'preview-opening-'.bin2hex(random_bytes(16));
+
+        $request->session()->put(self::SHIFT_SESSION, [
+            'status' => 'OPEN',
+            'shift_id' => $shiftId,
+            'opening_cash_evidence_id' => $openingCashEvidenceId,
+            'tenant_id' => $profile->tenantId(),
+            'organization_id' => $profile->organizationId(),
+            'outlet_id' => $profile->outletId(),
+            'device_id' => $profile->deviceId(),
+            'opening_cash_atomic' => $openingCashAtomic,
+            'cash_sales_atomic' => 0,
+            'sale_count' => 0,
+            'recorded_sale_ids' => [],
+            'opened_at_unix' => time(),
+        ]);
+        $request->session()->forget([self::RECEIPT_SESSION, self::RECONCILIATION_SESSION]);
+
+        return redirect()->route('preview.pos');
     }
 
     public function sale(Request $request, TechnicalPreviewJourney $journey): RedirectResponse
@@ -138,6 +200,12 @@ final class TechnicalPreviewController
         $profile = $this->verifiedSessionProfile($request, $journey);
         if ($profile instanceof RedirectResponse) {
             return $profile;
+        }
+
+        $shift = $this->shiftFromSession($request, $profile);
+        if ($shift === null) {
+            return redirect()->route('preview.pos')
+                ->withErrors(['shift' => 'Open a synthetic cash shift before recording a sale.']);
         }
 
         $rawLines = $request->input('lines', []);
@@ -167,13 +235,72 @@ final class TechnicalPreviewController
                 (string) $request->input('operation_id'),
                 $correlationId,
             );
-            $request->session()->put(self::RECEIPT_SESSION, $this->projectReceipt($receipt, $journey->catalog($profile)));
+            $projectedReceipt = $this->projectReceipt($receipt, $journey->catalog($profile));
+            $request->session()->put(self::RECEIPT_SESSION, $projectedReceipt);
+
+            $recordedSaleIds = $shift['recorded_sale_ids'];
+            if (! in_array($receipt->saleId(), $recordedSaleIds, true)) {
+                $recordedSaleIds[] = $receipt->saleId();
+                $shift['recorded_sale_ids'] = $recordedSaleIds;
+                $shift['sale_count']++;
+                if ($receipt->tenderCategory()->value === 'CASH') {
+                    $shift['cash_sales_atomic'] += $receipt->total()->atomicUnits();
+                }
+                if ($shift['cash_sales_atomic'] > self::MAX_PREVIEW_CASH_ATOMIC) {
+                    throw new PosTransactionViolation();
+                }
+                $request->session()->put(self::SHIFT_SESSION, $shift);
+            }
         } catch (InvalidArgumentException|IdentityContextViolation|MissingTenantContext|OrganizationalAccessViolation|PosAccessViolation|PosTransactionViolation) {
             return redirect()->route('preview.pos')
                 ->withErrors(['sale' => 'Synthetic sale was rejected safely. Check cart, context, stock, and tender.']);
         }
 
         return redirect()->route('preview.receipt');
+    }
+
+    public function closeShift(Request $request, TechnicalPreviewJourney $journey): RedirectResponse
+    {
+        $this->assertEnabled();
+        $profile = $this->verifiedSessionProfile($request, $journey);
+        if ($profile instanceof RedirectResponse) {
+            return $profile;
+        }
+
+        $shift = $this->shiftFromSession($request, $profile);
+        if ($shift === null) {
+            return redirect()->route('preview.pos')
+                ->withErrors(['shift' => 'No synthetic cash shift is open.']);
+        }
+
+        $observedClosingAtomic = $this->boundedAtomicInput($request, 'observed_closing_atomic');
+        if ($observedClosingAtomic === null) {
+            return redirect()->route('preview.pos')
+                ->withErrors(['shift' => 'Closing cash must be a bounded non-negative IDR amount.']);
+        }
+
+        $correlationId = (string) $request->attributes->get('oneqay.correlation_id', 'preview-close-correlation-missing');
+
+        try {
+            $variance = $journey->reconcileCash(
+                $profile,
+                $shift['shift_id'],
+                $shift['opening_cash_evidence_id'],
+                $shift['opening_cash_atomic'],
+                $shift['cash_sales_atomic'],
+                $observedClosingAtomic,
+                time(),
+                $correlationId,
+            );
+        } catch (InvalidArgumentException|IdentityContextViolation|MissingTenantContext|OrganizationalAccessViolation|PosTransactionViolation) {
+            return redirect()->route('preview.pos')
+                ->withErrors(['shift' => 'Synthetic cash reconciliation was rejected safely.']);
+        }
+
+        $request->session()->put(self::RECONCILIATION_SESSION, $this->projectReconciliation($shift, $variance));
+        $request->session()->forget([self::SHIFT_SESSION, self::RECEIPT_SESSION]);
+
+        return redirect()->route('preview.reconciliation');
     }
 
     public function receipt(Request $request, TechnicalPreviewJourney $journey): Response|RedirectResponse
@@ -192,6 +319,28 @@ final class TechnicalPreviewController
         return Inertia::render('Preview/Receipt', [
             'profile' => $this->projectProfile($profile),
             'receipt' => $receipt,
+            'previewLabel' => 'Synthetic Technical Preview',
+            'productionReady' => false,
+        ]);
+    }
+
+    public function reconciliation(Request $request, TechnicalPreviewJourney $journey): Response|RedirectResponse
+    {
+        $this->assertEnabled();
+        $profile = $this->verifiedSessionProfile($request, $journey);
+        if ($profile instanceof RedirectResponse) {
+            return $profile;
+        }
+
+        $reconciliation = $request->session()->get(self::RECONCILIATION_SESSION);
+        if (! is_array($reconciliation) || ! $this->reconciliationMatchesProfile($reconciliation, $profile)) {
+            $request->session()->forget(self::RECONCILIATION_SESSION);
+            return redirect()->route('preview.pos');
+        }
+
+        return Inertia::render('Preview/Reconciliation', [
+            'profile' => $this->projectProfile($profile),
+            'reconciliation' => $reconciliation,
             'previewLabel' => 'Synthetic Technical Preview',
             'productionReady' => false,
         ]);
@@ -229,6 +378,56 @@ final class TechnicalPreviewController
             return redirect()->route('preview.context');
         }
         return $profile;
+    }
+
+    /** @return array<string, mixed>|null */
+    private function shiftFromSession(Request $request, PreviewProfile $profile): ?array
+    {
+        $shift = $request->session()->get(self::SHIFT_SESSION);
+        if (! is_array($shift)) {
+            return null;
+        }
+
+        if (
+            ($shift['status'] ?? null) !== 'OPEN'
+            || ($shift['tenant_id'] ?? null) !== $profile->tenantId()
+            || ($shift['organization_id'] ?? null) !== $profile->organizationId()
+            || ($shift['outlet_id'] ?? null) !== $profile->outletId()
+            || ($shift['device_id'] ?? null) !== $profile->deviceId()
+            || ! is_string($shift['shift_id'] ?? null)
+            || ! is_string($shift['opening_cash_evidence_id'] ?? null)
+            || ! is_int($shift['opening_cash_atomic'] ?? null)
+            || ! is_int($shift['cash_sales_atomic'] ?? null)
+            || ! is_int($shift['sale_count'] ?? null)
+            || ! is_array($shift['recorded_sale_ids'] ?? null)
+            || ! is_int($shift['opened_at_unix'] ?? null)
+            || $shift['opening_cash_atomic'] < 0
+            || $shift['cash_sales_atomic'] < 0
+            || $shift['sale_count'] < 0
+        ) {
+            $request->session()->forget(self::SHIFT_SESSION);
+            return null;
+        }
+
+        return $shift;
+    }
+
+    private function boundedAtomicInput(Request $request, string $field): ?int
+    {
+        $value = filter_var($request->input($field), FILTER_VALIDATE_INT);
+        if ($value === false || $value < 0 || $value > self::MAX_PREVIEW_CASH_ATOMIC) {
+            return null;
+        }
+
+        return $value;
+    }
+
+    private function reconciliationMatchesProfile(array $reconciliation, PreviewProfile $profile): bool
+    {
+        return ($reconciliation['tenant_id'] ?? null) === $profile->tenantId()
+            && ($reconciliation['organization_id'] ?? null) === $profile->organizationId()
+            && ($reconciliation['outlet_id'] ?? null) === $profile->outletId()
+            && ($reconciliation['device_id'] ?? null) === $profile->deviceId();
     }
 
     private function projectProfile(PreviewProfile $profile): array
@@ -279,6 +478,28 @@ final class TechnicalPreviewController
             'evidence_mode' => $receipt->evidenceMode(),
             'change_atomic' => $receipt->changeAmount()->atomicUnits(),
             'correlation_id' => $receipt->correlationId(),
+        ];
+    }
+
+    private function projectReconciliation(array $shift, CashVarianceResult $variance): array
+    {
+        return [
+            'tenant_id' => $variance->tenantId(),
+            'organization_id' => $variance->organizationId(),
+            'outlet_id' => $variance->outletId(),
+            'device_id' => $shift['device_id'],
+            'shift_id' => $variance->shiftId(),
+            'opening_cash_evidence_id' => $variance->openingCashEvidenceId(),
+            'closing_cash_evidence_id' => $variance->closingCashEvidenceId(),
+            'opening_cash_atomic' => $shift['opening_cash_atomic'],
+            'cash_sales_atomic' => $shift['cash_sales_atomic'],
+            'sale_count' => $shift['sale_count'],
+            'expected_cash_atomic' => $variance->expectedCashAtomic(),
+            'observed_closing_atomic' => $variance->observedClosingAtomic(),
+            'variance_atomic' => $variance->varianceAtomic(),
+            'variance_direction' => $variance->direction(),
+            'currency' => $variance->currency(),
+            'cutoff_at_unix' => $variance->cutoffAtUnix(),
         ];
     }
 }
