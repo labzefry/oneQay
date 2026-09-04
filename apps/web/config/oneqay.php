@@ -6,6 +6,14 @@ return [
     'runtime_class' => env('ONEQAY_RUNTIME_CLASS'),
 
     // Author by Lab | zefry
+    'technical_preview' => [
+        // Synthetic Technical Preview remains fail-closed unless explicitly armed.
+        'enabled' => filter_var(
+            env('ONEQAY_TECHNICAL_PREVIEW_ENABLED', false),
+            FILTER_VALIDATE_BOOL,
+        ),
+    ],
+
     'first_control_principal_credential_bootstrap' => [
         // Local/Test/CI console bootstrap is denied unless explicitly armed.
         'enabled' => filter_var(
