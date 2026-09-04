@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Application\Identity\RequireVerifiedPlatformIdentity;
 use App\Application\Organization\EnterOrganizationalContext;
 use App\Application\Organization\OrganizationalAccessViolation;
+use App\Application\Pos\CashVarianceResult;
 use App\Application\Pos\CompleteSyntheticSale;
 use App\Application\Pos\PosTransactionViolation;
 use App\Application\Preview\PreviewProfile;
@@ -183,8 +184,42 @@ $expect(
     'M74A-PAY-003 insufficient tender safely rejected',
 );
 
-$assert($tenantContexts->current() === null, 'M74A-CTX-005 tenant context cleared after sale');
-$assert($organizationalContexts->current() === null, 'M74A-CTX-006 org context cleared after sale');
+$variance = $journey->reconcileCash(
+    $alpha,
+    'preview-shift-alpha-0001',
+    'preview-opening-alpha-0001',
+    1000,
+    5000,
+    6100,
+    7000,
+    'preview-close-correlation-alpha-0001',
+);
+$assert($variance->tenantId() === 'tenant-alpha', 'M74A-CASH-001 reconciliation tenant server verified');
+$assert($variance->outletId() === 'outlet-alpha', 'M74A-CASH-002 reconciliation outlet server verified');
+$assert($variance->expectedCashAtomic() === 6000, 'M74A-CASH-003 opening plus cash sales derives expected cash');
+$assert($variance->observedClosingAtomic() === 6100, 'M74A-CASH-004 observed closing cash preserved');
+$assert($variance->varianceAtomic() === 100, 'M74A-CASH-005 exact positive variance');
+$assert($variance->direction() === CashVarianceResult::DIRECTION_OVER, 'M74A-CASH-006 canonical OVER direction');
+$assert($tenantContexts->current() === null, 'M74A-CASH-007 tenant context cleared after reconciliation');
+$assert($organizationalContexts->current() === null, 'M74A-CASH-008 org context cleared after reconciliation');
+
+$expect(
+    OrganizationalAccessViolation::class,
+    static fn () => $journey->reconcileCash(
+        $forged,
+        'preview-shift-forged-0001',
+        'preview-opening-forged-0001',
+        1000,
+        5000,
+        6000,
+        7001,
+        'preview-close-correlation-forged-0001',
+    ),
+    'M74A-ISO-007 forged foreign cash reconciliation denied',
+);
+
+$assert($tenantContexts->current() === null, 'M74A-CTX-005 tenant context cleared after sale/cash controls');
+$assert($organizationalContexts->current() === null, 'M74A-CTX-006 org context cleared after sale/cash controls');
 
 /** @var Illuminate\Foundation\Application $app */
 $app = require __DIR__.'/../bootstrap/app.php';
@@ -268,6 +303,27 @@ $assert(str_ends_with((string) $selectContext->headers->get('Location'), '/techn
 $assert($posPage->getStatusCode() === 200, 'M74A-HTTP-010 POS page is reachable after verified context');
 $assert(str_contains((string) $posPage->getContent(), 'Synthetic Alpha Product'), 'M74A-HTTP-011 alpha catalog appears');
 $assert(! str_contains((string) $posPage->getContent(), 'Synthetic Beta Product'), 'M74A-HTTP-012 beta catalog is not disclosed');
+$assert(str_contains((string) $posPage->getContent(), 'Buka shift kas synthetic'), 'M74A-HTTP-013 cash shift opening UI is visible');
+
+[$saleBeforeShift] = $sendHttp('POST', '/technical-preview/sale', [
+    'lines' => [['product_id' => 'synthetic-product-alpha', 'quantity' => 1]],
+    'tender_category' => 'CASH',
+    'tendered_atomic_units' => 1999,
+    'operation_id' => 'preview-http-before-shift-0001',
+]);
+$assert($saleBeforeShift->getStatusCode() === 302, 'M74A-HTTP-014 sale before shift safely redirects');
+$assert(str_ends_with((string) $saleBeforeShift->headers->get('Location'), '/technical-preview/pos'), 'M74A-HTTP-015 sale before shift stays at POS');
+
+[$openShift] = $sendHttp('POST', '/technical-preview/shift/open', [
+    'opening_cash_atomic' => 1000,
+]);
+$assert($openShift->getStatusCode() === 302, 'M74A-HTTP-016 shift opening redirects');
+$assert(str_ends_with((string) $openShift->headers->get('Location'), '/technical-preview/pos'), 'M74A-HTTP-017 shift opening returns to POS');
+
+[$openShiftPos] = $sendHttp('GET', '/technical-preview/pos');
+$assert($openShiftPos->getStatusCode() === 200, 'M74A-HTTP-018 POS remains reachable with open shift');
+$assert(str_contains((string) $openShiftPos->getContent(), 'Shift aktif'), 'M74A-HTTP-019 server-owned open shift is projected');
+$assert(str_contains((string) $openShiftPos->getContent(), 'opening_cash_atomic'), 'M74A-HTTP-020 opening cash state is projected');
 
 [$sale] = $sendHttp('POST', '/technical-preview/sale', [
     'lines' => [
@@ -278,17 +334,17 @@ $assert(! str_contains((string) $posPage->getContent(), 'Synthetic Beta Product'
     'tendered_atomic_units' => 6000,
     'operation_id' => 'preview-http-alpha-0001',
 ]);
-$assert($sale->getStatusCode() === 302, 'M74A-HTTP-013 synthetic sale redirects');
-$assert(str_ends_with((string) $sale->headers->get('Location'), '/technical-preview/receipt'), 'M74A-HTTP-014 sale advances to receipt');
+$assert($sale->getStatusCode() === 302, 'M74A-HTTP-021 synthetic sale redirects');
+$assert(str_ends_with((string) $sale->headers->get('Location'), '/technical-preview/receipt'), 'M74A-HTTP-022 sale advances to receipt');
 
 [$receiptPage] = $sendHttp('GET', '/technical-preview/receipt');
-$assert($receiptPage->getStatusCode() === 200, 'M74A-HTTP-015 receipt preview is reachable');
-$assert(str_contains((string) $receiptPage->getContent(), 'CASH_COUNTED'), 'M74A-HTTP-016 receipt preserves cash evidence mode');
+$assert($receiptPage->getStatusCode() === 200, 'M74A-HTTP-023 receipt preview is reachable');
+$assert(str_contains((string) $receiptPage->getContent(), 'CASH_COUNTED'), 'M74A-HTTP-024 receipt preserves cash evidence mode');
 
 $manifestPath = __DIR__.'/../public/build/manifest.json';
-$assert(is_file($manifestPath), 'M74A-HTTP-017 Vite manifest exists for Inertia versioning');
+$assert(is_file($manifestPath), 'M74A-HTTP-025 Vite manifest exists for Inertia versioning');
 $inertiaVersion = hash_file('xxh128', $manifestPath);
-$assert(is_string($inertiaVersion) && $inertiaVersion !== '', 'M74A-HTTP-017 Inertia asset version is deterministic');
+$assert(is_string($inertiaVersion) && $inertiaVersion !== '', 'M74A-HTTP-026 Inertia asset version is deterministic');
 
 [$receiptInertia] = $sendHttp('GET', '/technical-preview/receipt', [], [
     'HTTP_X_INERTIA' => 'true',
@@ -296,19 +352,43 @@ $assert(is_string($inertiaVersion) && $inertiaVersion !== '', 'M74A-HTTP-017 Ine
     'HTTP_X_REQUESTED_WITH' => 'XMLHttpRequest',
     'HTTP_ACCEPT' => 'application/json',
 ]);
-$assert($receiptInertia->getStatusCode() === 200, 'M74A-HTTP-017 receipt Inertia boundary is reachable');
+$assert($receiptInertia->getStatusCode() === 200, 'M74A-HTTP-027 receipt Inertia boundary is reachable');
 $receiptPayload = json_decode((string) $receiptInertia->getContent(), true, 512, JSON_THROW_ON_ERROR);
 $assert(
     array_key_exists('productionReady', $receiptPayload['props'] ?? [])
         && $receiptPayload['props']['productionReady'] === false,
-    'M74A-HTTP-017 receipt labels non-production boundary',
+    'M74A-HTTP-028 receipt labels non-production boundary',
 );
 
+[$posAfterSale] = $sendHttp('GET', '/technical-preview/pos');
+$assert($posAfterSale->getStatusCode() === 200, 'M74A-HTTP-029 POS returns with same open shift after receipt');
+$assert(str_contains((string) $posAfterSale->getContent(), 'cash_sales_atomic'), 'M74A-HTTP-030 server cash ledger is projected');
+$assert(str_contains((string) $posAfterSale->getContent(), '5000'), 'M74A-HTTP-031 cash ledger uses receipt total, excluding change');
+
+[$closeShift] = $sendHttp('POST', '/technical-preview/shift/close', [
+    'observed_closing_atomic' => 6100,
+]);
+$assert($closeShift->getStatusCode() === 302, 'M74A-HTTP-032 closing cash redirects');
+$assert(str_ends_with((string) $closeShift->headers->get('Location'), '/technical-preview/reconciliation'), 'M74A-HTTP-033 closing cash advances to reconciliation');
+
+[$reconciliationPage] = $sendHttp('GET', '/technical-preview/reconciliation');
+$assert($reconciliationPage->getStatusCode() === 200, 'M74A-HTTP-034 reconciliation page is reachable');
+$assert(str_contains((string) $reconciliationPage->getContent(), 'Rekonsiliasi Kas Synthetic'), 'M74A-HTTP-035 reconciliation UI is rendered');
+$assert(str_contains((string) $reconciliationPage->getContent(), 'OVER'), 'M74A-HTTP-036 canonical OVER outcome is projected');
+$assert(str_contains((string) $reconciliationPage->getContent(), 'expected_cash_atomic'), 'M74A-HTTP-037 server-derived expected cash is projected');
+$assert(str_contains((string) $reconciliationPage->getContent(), '6000'), 'M74A-HTTP-038 expected cash equals opening plus cash sales');
+$assert(str_contains((string) $reconciliationPage->getContent(), '6100'), 'M74A-HTTP-039 observed closing cash is projected');
+$assert(str_contains((string) $reconciliationPage->getContent(), 'Not Production Ready'), 'M74A-HTTP-040 reconciliation preserves non-production boundary');
+
+[$postClosePos] = $sendHttp('GET', '/technical-preview/pos');
+$assert($postClosePos->getStatusCode() === 200, 'M74A-HTTP-041 POS remains usable after reconciliation');
+$assert(str_contains((string) $postClosePos->getContent(), 'Buka shift kas synthetic'), 'M74A-HTTP-042 closed shift cannot leak as active state');
+
 [$logout] = $sendHttp('POST', '/technical-preview/logout');
-$assert($logout->getStatusCode() === 302, 'M74A-HTTP-018 logout redirects');
+$assert($logout->getStatusCode() === 302, 'M74A-HTTP-043 logout redirects');
 
 [$postLogoutPos] = $sendHttp('GET', '/technical-preview/pos');
-$assert($postLogoutPos->getStatusCode() === 302, 'M74A-HTTP-019 post-logout POS access is denied');
-$assert(str_ends_with((string) $postLogoutPos->headers->get('Location'), '/technical-preview'), 'M74A-HTTP-020 post-logout returns to sign-in');
+$assert($postLogoutPos->getStatusCode() === 302, 'M74A-HTTP-044 post-logout POS access is denied');
+$assert(str_ends_with((string) $postLogoutPos->headers->get('Location'), '/technical-preview'), 'M74A-HTTP-045 post-logout returns to sign-in');
 
 echo "M7.4A Technical Preview interaction regression passed.\n";
