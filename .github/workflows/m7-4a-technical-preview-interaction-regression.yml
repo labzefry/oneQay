@@ -338,6 +338,18 @@ jobs:
               grep -Fxq "$expected" /tmp/s70-historical-paths
             done
             recognized=true
+          elif [[ "$count" -eq 6 && "$fingerprint" == '510ab91deb5186729f22eda7ad268dde53f55b6b9328dce3bb7ac30817d0f595' ]]; then
+            for expected in \
+              'apps/web/app/Application/Preview/TechnicalPreviewRuntimePolicy.php' \
+              'apps/web/app/Delivery/Preview/TechnicalPreviewController.php' \
+              'apps/web/app/Providers/TechnicalPreviewServiceProvider.php' \
+              'apps/web/config/technical-preview.php' \
+              'apps/web/environment.example' \
+              'apps/web/tests/technical-preview-interaction.php'
+            do
+              grep -Fxq "$expected" /tmp/s70-historical-paths
+            done
+            recognized=true
           elif [[ "$count" -eq 9 && "$fingerprint" == '890cb08631de804bc2936882f635be11dea52c1e022c4f5112389fd76744ce10' ]]; then
             for expected in \
               '.github/workflows/sprint78-jrn010-prerequisite-cash-variance-review-decision-source-regression.yml' \
