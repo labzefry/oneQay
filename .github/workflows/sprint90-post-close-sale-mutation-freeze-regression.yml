@@ -1,0 +1,106 @@
+name: Sprint90 Post-Close Sale Mutation Freeze Regression
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/sprint90-post-close-sale-mutation-freeze-regression.yml'
+      - 'apps/web/app/Infrastructure/Pos/LaravelDurablePosSaleRepository.php'
+      - 'apps/web/app/Infrastructure/Pos/LaravelSaleCashRefundRepository.php'
+      - 'apps/web/tests/pos-post-close-sale-mutation-freeze.php'
+      - 'docs/SPRINT90_POST_CLOSE_SALE_MUTATION_FREEZE.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint90-post-close-sale-mutation-freeze-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sprint90-post-close-sale-mutation-freeze:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:ZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmY=
+      APP_DEBUG: 'false'
+      APP_URL: http://localhost
+      ONEQAY_RUNTIME_CLASS: ci
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Enforce exact Sprint90 source envelope
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+          git diff --name-only "$base" "$head" | sort > /tmp/s90-paths
+          test "$(wc -l < /tmp/s90-paths)" -eq 5
+          fingerprint="$(sha256sum /tmp/s90-paths | awk '{print $1}')"
+          test "$fingerprint" = '43e53ee63fdf476b91f9dd2fa0d2d6ab32f710e0d26e144ad119f4da60a2149c'
+          for expected in \
+            '.github/workflows/sprint90-post-close-sale-mutation-freeze-regression.yml' \
+            'apps/web/app/Infrastructure/Pos/LaravelDurablePosSaleRepository.php' \
+            'apps/web/app/Infrastructure/Pos/LaravelSaleCashRefundRepository.php' \
+            'apps/web/tests/pos-post-close-sale-mutation-freeze.php' \
+            'docs/SPRINT90_POST_CLOSE_SALE_MUTATION_FREEZE.md'
+          do
+            grep -Fxq "$expected" /tmp/s90-paths
+          done
+          test "$(grep -c '^apps/web/database/migrations/' /tmp/s90-paths || true)" -eq 0
+          test "$(grep -c '^apps/web/app/Providers/' /tmp/s90-paths || true)" -eq 0
+          test "$(grep -c '^apps/web/routes/' /tmp/s90-paths || true)" -eq 0
+          test "$(grep -c '^apps/web/resources/' /tmp/s90-paths || true)" -eq 0
+
+      - name: Install locked application dependencies
+        working-directory: apps/web
+        run: |
+          composer validate --no-check-publish
+          composer install --no-interaction --no-progress --prefer-dist
+          composer audit --locked --no-interaction
+
+      - name: Validate PHP syntax and hardening boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l apps/web/app/Infrastructure/Pos/LaravelDurablePosSaleRepository.php
+          php -l apps/web/app/Infrastructure/Pos/LaravelSaleCashRefundRepository.php
+          php -l apps/web/tests/pos-post-close-sale-mutation-freeze.php
+          for repository in \
+            apps/web/app/Infrastructure/Pos/LaravelDurablePosSaleRepository.php \
+            apps/web/app/Infrastructure/Pos/LaravelSaleCashRefundRepository.php
+          do
+            grep -Fq "table('oneqay_pos_shifts')" "$repository"
+            grep -Fq "->where('shift_id', \$sale->shift_id)" "$repository"
+            grep -Fq "->where('active_slot', 1)" "$repository"
+            grep -Fq -- '->lockForUpdate()' "$repository"
+          done
+          test ! -e apps/web/database/migrations/0000_00_00_000028_create_pos_shift_close*
+          ! grep -R -n -F 'pos.shift.close' apps/web/app apps/web/config apps/web/routes
+          ! find apps/web/app -type f -name 'CloseShift.php' -print -quit | grep -q .
+
+      - name: Run current-horizon post-close mutation proof
+        working-directory: apps/web
+        run: php tests/pos-post-close-sale-mutation-freeze.php
+
+      - name: Preserve application regression
+        run: composer test
+
+      - name: Preserve tracked source
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --exit-code
+          git status --porcelain=v1 --untracked-files=all | grep -q '^?? apps/web/vendor/' || true
