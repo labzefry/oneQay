@@ -55,10 +55,6 @@ final readonly class TechnicalPreviewJourney
     }
 
     /**
-     * Execute one bounded operation while the server-verified Preview tenant and
-     * organizational context remain active. The callback receives only the
-     * verified tenant context; raw tenant hints never become authority here.
-     *
      * @template T
      * @param callable(VerifiedTenantContext): T $operation
      * @return T
@@ -91,9 +87,7 @@ final readonly class TechnicalPreviewJourney
         }
     }
 
-    /**
-     * @param list<array{product_id:string,quantity:int}> $lines
-     */
+    /** @param list<array{product_id:string,quantity:int}> $lines */
     public function completeSale(
         PreviewProfile $profile,
         array $lines,
@@ -143,43 +137,30 @@ final readonly class TechnicalPreviewJourney
     }
 
     /**
-     * Apply canonical void semantics to a server-owned synthetic receipt snapshot.
-     * No fixture-memory continuity is required between HTTP requests.
-     *
-     * @param array{sale_id:string,status:string,void_operation_id:?string,refund_operation_id:?string,refund_amount_atomic:int,tender_category:string,idempotent_replay:bool} $currentAdjustment
+     * @param array<string, mixed> $receiptSnapshot
      * @return array{sale_id:string,status:string,void_operation_id:string,refund_operation_id:?string,refund_amount_atomic:int,tender_category:string,idempotent_replay:bool}
      */
     public function voidSale(
         PreviewProfile $profile,
-        string $saleId,
-        string $tenderCategory,
         string $operationId,
-        array $currentAdjustment,
+        array $receiptSnapshot,
     ): array {
-        $command = new SaleVoidCommand($operationId, $saleId);
-        $category = TenderCategory::tryFrom($tenderCategory);
-        if ($category === null) {
-            throw new PosTransactionViolation();
-        }
-
         return $this->withinVerifiedContext(
             $profile,
-            function () use ($command, $category, $currentAdjustment): array {
-                $this->assertAdjustmentSnapshot(
-                    $command->saleId(),
-                    $category->value,
-                    $currentAdjustment,
-                );
+            function () use ($profile, $operationId, $receiptSnapshot): array {
+                $this->assertReceiptSnapshot($profile, $receiptSnapshot);
+                $command = new SaleVoidCommand($operationId, $receiptSnapshot['sale_id']);
+                $adjustment = $receiptSnapshot['adjustment'];
 
                 if (
-                    in_array($currentAdjustment['status'], ['VOIDED', 'REFUNDED'], true)
-                    && is_string($currentAdjustment['void_operation_id'])
-                    && hash_equals($currentAdjustment['void_operation_id'], $command->operationId())
+                    in_array($adjustment['status'], ['VOIDED', 'REFUNDED'], true)
+                    && is_string($adjustment['void_operation_id'])
+                    && hash_equals($adjustment['void_operation_id'], $command->operationId())
                 ) {
-                    return array_replace($currentAdjustment, ['idempotent_replay' => true]);
+                    return array_replace($adjustment, ['idempotent_replay' => true]);
                 }
 
-                if ($currentAdjustment['status'] !== 'COMPLETED') {
+                if ($adjustment['status'] !== 'COMPLETED') {
                     throw new PosTransactionViolation();
                 }
 
@@ -189,7 +170,7 @@ final readonly class TechnicalPreviewJourney
                     'void_operation_id' => $command->operationId(),
                     'refund_operation_id' => null,
                     'refund_amount_atomic' => 0,
-                    'tender_category' => $category->value,
+                    'tender_category' => $receiptSnapshot['tender_category'],
                     'idempotent_replay' => false,
                 ];
             },
@@ -197,54 +178,42 @@ final readonly class TechnicalPreviewJourney
     }
 
     /**
-     * Apply canonical full-CASH-refund semantics to a server-owned synthetic receipt snapshot.
-     *
-     * @param array{sale_id:string,status:string,void_operation_id:?string,refund_operation_id:?string,refund_amount_atomic:int,tender_category:string,idempotent_replay:bool} $currentAdjustment
+     * @param array<string, mixed> $receiptSnapshot
      * @return array{sale_id:string,status:string,void_operation_id:string,refund_operation_id:string,refund_amount_atomic:int,tender_category:string,idempotent_replay:bool}
      */
     public function refundCashSale(
         PreviewProfile $profile,
-        string $saleId,
-        int $saleTotalAtomic,
-        string $tenderCategory,
         string $operationId,
-        array $currentAdjustment,
+        array $receiptSnapshot,
     ): array {
-        $command = new SaleCashRefundCommand($operationId, $saleId);
-        $category = TenderCategory::tryFrom($tenderCategory);
-        if (
-            $category !== TenderCategory::CASH
-            || $saleTotalAtomic <= 0
-            || $saleTotalAtomic > self::MAX_PREVIEW_CASH_ATOMIC
-        ) {
-            throw new PosTransactionViolation();
-        }
-
         return $this->withinVerifiedContext(
             $profile,
-            function () use ($command, $category, $saleTotalAtomic, $currentAdjustment): array {
-                $this->assertAdjustmentSnapshot(
-                    $command->saleId(),
-                    $category->value,
-                    $currentAdjustment,
-                );
+            function () use ($profile, $operationId, $receiptSnapshot): array {
+                $this->assertReceiptSnapshot($profile, $receiptSnapshot);
+                if ($receiptSnapshot['tender_category'] !== TenderCategory::CASH->value) {
+                    throw new PosTransactionViolation();
+                }
+
+                $command = new SaleCashRefundCommand($operationId, $receiptSnapshot['sale_id']);
+                $adjustment = $receiptSnapshot['adjustment'];
+                $saleTotalAtomic = $receiptSnapshot['total_atomic'];
 
                 if (
-                    $currentAdjustment['status'] === 'REFUNDED'
-                    && is_string($currentAdjustment['refund_operation_id'])
-                    && hash_equals($currentAdjustment['refund_operation_id'], $command->operationId())
+                    $adjustment['status'] === 'REFUNDED'
+                    && is_string($adjustment['refund_operation_id'])
+                    && hash_equals($adjustment['refund_operation_id'], $command->operationId())
                 ) {
-                    if ($currentAdjustment['refund_amount_atomic'] !== $saleTotalAtomic) {
+                    if ($adjustment['refund_amount_atomic'] !== $saleTotalAtomic) {
                         throw new PosTransactionViolation();
                     }
 
-                    return array_replace($currentAdjustment, ['idempotent_replay' => true]);
+                    return array_replace($adjustment, ['idempotent_replay' => true]);
                 }
 
                 if (
-                    $currentAdjustment['status'] !== 'VOIDED'
-                    || ! is_string($currentAdjustment['void_operation_id'])
-                    || $currentAdjustment['void_operation_id'] === ''
+                    $adjustment['status'] !== 'VOIDED'
+                    || ! is_string($adjustment['void_operation_id'])
+                    || $adjustment['void_operation_id'] === ''
                 ) {
                     throw new PosTransactionViolation();
                 }
@@ -252,10 +221,10 @@ final readonly class TechnicalPreviewJourney
                 return [
                     'sale_id' => $command->saleId(),
                     'status' => 'REFUNDED',
-                    'void_operation_id' => $currentAdjustment['void_operation_id'],
+                    'void_operation_id' => $adjustment['void_operation_id'],
                     'refund_operation_id' => $command->operationId(),
                     'refund_amount_atomic' => $saleTotalAtomic,
-                    'tender_category' => $category->value,
+                    'tender_category' => TenderCategory::CASH->value,
                     'idempotent_replay' => false,
                 ];
             },
@@ -350,26 +319,53 @@ final readonly class TechnicalPreviewJourney
         );
     }
 
-    /**
-     * @param array{sale_id:string,status:string,void_operation_id:?string,refund_operation_id:?string,refund_amount_atomic:int,tender_category:string,idempotent_replay:bool} $adjustment
-     */
-    private function assertAdjustmentSnapshot(string $saleId, string $tenderCategory, array $adjustment): void
+    /** @param array<string, mixed> $receipt */
+    private function assertReceiptSnapshot(PreviewProfile $profile, array $receipt): void
     {
         if (
-            ! isset($adjustment['sale_id'], $adjustment['status'], $adjustment['refund_amount_atomic'], $adjustment['tender_category'], $adjustment['idempotent_replay'])
-            || ! is_string($adjustment['sale_id'])
-            || ! hash_equals($saleId, $adjustment['sale_id'])
-            || ! is_string($adjustment['status'])
+            ! is_string($receipt['sale_id'] ?? null)
+            || ($receipt['tenant_id'] ?? null) !== $profile->tenantId()
+            || ($receipt['organization_id'] ?? null) !== $profile->organizationId()
+            || ($receipt['actor_id'] ?? null) !== $profile->principalId()
+            || ($receipt['outlet_id'] ?? null) !== $profile->outletId()
+            || ($receipt['device_id'] ?? null) !== $profile->deviceId()
+            || ! is_int($receipt['total_atomic'] ?? null)
+            || $receipt['total_atomic'] <= 0
+            || $receipt['total_atomic'] > self::MAX_PREVIEW_CASH_ATOMIC
+            || ! is_string($receipt['tender_category'] ?? null)
+            || TenderCategory::tryFrom($receipt['tender_category']) === null
+            || ! is_array($receipt['adjustment'] ?? null)
+        ) {
+            throw new PosTransactionViolation();
+        }
+
+        $this->assertAdjustmentSnapshot(
+            $receipt['sale_id'],
+            $receipt['tender_category'],
+            $receipt['total_atomic'],
+            $receipt['adjustment'],
+        );
+    }
+
+    /** @param array<string, mixed> $adjustment */
+    private function assertAdjustmentSnapshot(
+        string $saleId,
+        string $tenderCategory,
+        int $saleTotalAtomic,
+        array $adjustment,
+    ): void {
+        if (
+            ($adjustment['sale_id'] ?? null) !== $saleId
+            || ($adjustment['tender_category'] ?? null) !== $tenderCategory
+            || ! is_string($adjustment['status'] ?? null)
             || ! in_array($adjustment['status'], ['COMPLETED', 'VOIDED', 'REFUNDED'], true)
             || ! array_key_exists('void_operation_id', $adjustment)
             || ! array_key_exists('refund_operation_id', $adjustment)
             || ($adjustment['void_operation_id'] !== null && ! is_string($adjustment['void_operation_id']))
             || ($adjustment['refund_operation_id'] !== null && ! is_string($adjustment['refund_operation_id']))
-            || ! is_int($adjustment['refund_amount_atomic'])
+            || ! is_int($adjustment['refund_amount_atomic'] ?? null)
             || $adjustment['refund_amount_atomic'] < 0
-            || ! is_string($adjustment['tender_category'])
-            || ! hash_equals($tenderCategory, $adjustment['tender_category'])
-            || ! is_bool($adjustment['idempotent_replay'])
+            || ! is_bool($adjustment['idempotent_replay'] ?? null)
         ) {
             throw new PosTransactionViolation();
         }
@@ -391,8 +387,8 @@ final readonly class TechnicalPreviewJourney
                 || $adjustment['void_operation_id'] === ''
                 || ! is_string($adjustment['refund_operation_id'])
                 || $adjustment['refund_operation_id'] === ''
-                || $adjustment['refund_amount_atomic'] <= 0
-                || $adjustment['tender_category'] !== TenderCategory::CASH->value
+                || $adjustment['refund_amount_atomic'] !== $saleTotalAtomic
+                || $tenderCategory !== TenderCategory::CASH->value
             ))
         ) {
             throw new PosTransactionViolation();
