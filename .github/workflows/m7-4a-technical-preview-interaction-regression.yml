@@ -393,20 +393,6 @@ jobs:
               grep -Fxq "$expected" /tmp/s70-historical-paths
             done
             recognized=true
-          elif [[ "$count" -eq 4 && "$fingerprint" == '81821d8a3aabb0fe5fee2a7d64f43985b79e2d1b217b5d37f3f834c94ec93e0d' ]]; then
-            for expected in \
-              '.github/workflows/preview-route-off-switch-regression.yml' \
-              'apps/web/app/Delivery/Preview/TechnicalPreviewDatabaseQualificationController.php' \
-              'apps/web/app/Providers/TechnicalPreviewServiceProvider.php' \
-              'apps/web/tests/technical-preview-route-off-switch.php'
-            do
-              grep -Fxq "$expected" /tmp/s70-historical-paths
-            done
-            recognized=true
-          elif [[ "$count" -eq 2 && "$fingerprint" == '6f2b5809c60ed18cffe7226973b85d08249f97dd4c894d4cb8ee50f52fbb59c3' ]]; then
-            grep -Fxq '.github/workflows/m7-4a-technical-preview-interaction-regression.yml' /tmp/s70-historical-paths
-            grep -Fxq '.github/workflows/preview-variance-review-journey-regression.yml' /tmp/s70-historical-paths
-            recognized=true
           elif [[ "$count" -eq 9 && "$fingerprint" == '890cb08631de804bc2936882f635be11dea52c1e022c4f5112389fd76744ce10' ]]; then
             for expected in \
               '.github/workflows/sprint78-jrn010-prerequisite-cash-variance-review-decision-source-regression.yml' \
@@ -502,7 +488,7 @@ jobs:
             echo 'ONEQAY_SPRINT33_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT34_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT51_JRN008_PREVIEW_FIXTURE=true' >> "$GITHUB_ENV"
-            echo 'Exact Sprint70 source/compatibility envelope recognized; migrations #10-#26 isolated only from historical executable preservation.'
+            echo 'Exact Sprint70 source/compatibility envelope recognized; migrations #10-#25 isolated only from historical executable preservation.'
           fi
 
       - name: Preserve canonical migrations and reject Preview database credential session or enrollment implementation
