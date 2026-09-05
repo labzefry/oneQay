@@ -8,6 +8,7 @@ use App\Application\Organization\OrganizationalContextStore;
 use App\Application\Organization\OrganizationalRelationshipVerifier;
 use App\Application\Pos\SyntheticPosStore;
 use App\Application\Preview\PreviewFixtureGateway;
+use App\Application\Preview\TechnicalPreviewRuntimePolicy;
 use App\Application\Tenancy\TenantMembershipVerifier;
 use App\Infrastructure\Organization\RequestOrganizationalContextStore;
 use App\Infrastructure\Organization\SyntheticOrganizationalRelationshipVerifier;
@@ -64,9 +65,25 @@ final class TechnicalPreviewServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        $enabled = filter_var(env('ONEQAY_TECHNICAL_PREVIEW_ENABLED', false), FILTER_VALIDATE_BOOL);
-        if ($enabled) {
+        if ($this->previewRuntimePermitted()) {
             $this->loadRoutesFrom(base_path('routes/technical-preview-cash-control.php'));
         }
+    }
+
+    private function previewRuntimePermitted(): bool
+    {
+        return TechnicalPreviewRuntimePolicy::permits(
+            enabled: (bool) config('oneqay.technical_preview.enabled', false),
+            runtimeClass: (string) config('oneqay.runtime_class', ''),
+            sessionDriver: (string) config('session.driver', ''),
+            sessionLifetimeMinutes: (int) config('session.lifetime', 0),
+            sessionEncrypted: (bool) config('session.encrypt', false),
+            sessionSecure: (bool) config('session.secure', false),
+            sessionHttpOnly: (bool) config('session.http_only', false),
+            sessionSameSite: (string) config('session.same_site', ''),
+            sessionDomain: config('session.domain'),
+            sessionPath: (string) config('session.path', ''),
+            sessionCookie: (string) config('session.cookie', ''),
+        );
     }
 }
