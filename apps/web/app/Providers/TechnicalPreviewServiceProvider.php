@@ -97,6 +97,7 @@ final class TechnicalPreviewServiceProvider extends ServiceProvider
             'oneqay.runtime_class' => $runtimeClass,
         ]);
 
+        $this->loadRoutesFrom(base_path('routes/technical-preview.php'));
         $this->loadRoutesFrom(base_path('routes/technical-preview-cash-control.php'));
     }
 
