@@ -181,10 +181,10 @@ final readonly class TechnicalPreviewJourney
         string $openingCashEvidenceId,
         int $openingCashAtomic,
         int $cashSalesAtomic,
-        int $cashRefundsAtomic,
         int $observedClosingAtomic,
         int $cutoffAtUnix,
         string $correlationId,
+        int $cashRefundsAtomic = 0,
     ): CashVarianceResult {
         foreach ([$shiftId, $openingCashEvidenceId, $correlationId] as $identifier) {
             if (preg_match(self::IDENTIFIER_PATTERN, $identifier) !== 1) {
