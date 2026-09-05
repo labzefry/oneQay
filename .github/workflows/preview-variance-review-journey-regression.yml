@@ -84,8 +84,7 @@ jobs:
               grep -Fxq "$expected" /tmp/preview-variance-review-paths
             done
             recognized=true
-          elif [[ "$count" -eq 2 && "$fingerprint" == '6f2b5809c60ed18cffe7226973b85d08249f97dd4c894d4cb8ee50f52fbb59c3' ]]; then
-            grep -Fxq '.github/workflows/m7-4a-technical-preview-interaction-regression.yml' /tmp/preview-variance-review-paths
+          elif [[ "$count" -eq 1 && "$fingerprint" == '5a0dc0276e080c7057589f6a23c42e9b084c10b05a82bc6d80a38ad305b3c0d6' ]]; then
             grep -Fxq '.github/workflows/preview-variance-review-journey-regression.yml' /tmp/preview-variance-review-paths
             recognized=true
           fi
