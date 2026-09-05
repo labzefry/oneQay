@@ -7,7 +7,20 @@ APP_URL=http://localhost
 ONEQAY_RUNTIME_CLASS=local
 ONEQAY_TECHNICAL_PREVIEW_ENABLED=false
 
+# Default Local/Test/CI session posture. A deployed Synthetic Technical Preview
+# must explicitly use the bounded Sprint82 envelope below before enablement:
+# ONEQAY_RUNTIME_CLASS=preview
+# ONEQAY_TECHNICAL_PREVIEW_ENABLED=true
+# SESSION_DRIVER=file
+# SESSION_LIFETIME=60
+# SESSION_ENCRYPT=true
+# SESSION_SECURE_COOKIE=true
+# SESSION_COOKIE=oneqay-preview-session
 SESSION_DRIVER=array
+SESSION_LIFETIME=120
+SESSION_ENCRYPT=false
+SESSION_SECURE_COOKIE=false
+SESSION_COOKIE=oneqay-session
 CACHE_STORE=array
 LOG_CHANNEL=stderr
 
