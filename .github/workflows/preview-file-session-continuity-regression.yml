@@ -24,7 +24,7 @@ jobs:
     timeout-minutes: 15
     env:
       APP_NAME: oneQay
-      APP_ENV: testing
+      APP_ENV: preview
       APP_KEY: base64:dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHQ=
       APP_DEBUG: 'false'
       APP_URL: https://preview.oneqay.test
