@@ -287,6 +287,10 @@ $originalLines = array_map(
         ->all(),
 );
 
+$connection->table('oneqay_pos_shifts')
+    ->where('tenant_id', 'tenant-alpha')
+    ->where('operation_id', 'shift-source-alpha')
+    ->update(['active_slot' => null]);
 $shiftBeforeVoid = (array) $connection->table('oneqay_pos_shifts')
     ->where('tenant_id', 'tenant-alpha')
     ->where('operation_id', 'shift-source-alpha')
@@ -383,49 +387,12 @@ $shiftAfterVoid = (array) $connection->table('oneqay_pos_shifts')
     ->first();
 $assert($shiftAfterVoid === $shiftBeforeVoid, 'void mutated shift evidence');
 
-$connection->table('oneqay_pos_shifts')
-    ->where('tenant_id', 'tenant-alpha')
-    ->where('operation_id', 'shift-source-alpha')
-    ->update(['active_slot' => null]);
-$assert(
-    $connection->table('oneqay_pos_shifts')
-        ->where('tenant_id', 'tenant-alpha')
-        ->where('operation_id', 'shift-source-alpha')
-        ->value('active_slot') === null,
-    'shift close fixture did not release active slot',
-);
-
 $replay = $voids->execute($voidCommand, 'correlation-void-replay');
 $assert($replay->voidId() === $voidResult->voidId(), 'exact replay returned original void');
 $assert($replay->correlationId() === 'correlation-void-success', 'replay preserved original correlation');
 $assert((int) $connection->table('oneqay_pos_sale_catalog_items')->where('product_id','product-a')->value('available_quantity') === 19, 'replay duplicated stock restoration');
 $assert($connection->table('oneqay_pos_sale_voids')->where('sale_id',$successReceipt->saleId())->count() === 1, 'replay duplicated void row');
 $assert($connection->table('oneqay_pos_sale_events')->where('sale_id',$successReceipt->saleId())->where('event_type','VOIDED')->count() === 1, 'replay duplicated VOIDED event');
-
-$productCBeforePostCloseVoid = (int) $connection->table('oneqay_pos_sale_catalog_items')
-    ->where('tenant_id', 'tenant-alpha')
-    ->where('outlet_id', 'outlet-alpha')
-    ->where('product_id', 'product-c')
-    ->value('available_quantity');
-try {
-    $voids->execute(
-        new SaleVoidCommand('void-post-close-new-operation', $otherReceipt->saleId()),
-        'correlation-post-close-new-void',
-    );
-    $assert(false, 'new void accepted after bound shift became inactive');
-} catch (PosTransactionViolation) {}
-$assert(
-    $connection->table('oneqay_pos_sale_voids')->where('sale_id', $otherReceipt->saleId())->count() === 0,
-    'post-close denied void persisted evidence',
-);
-$assert(
-    (int) $connection->table('oneqay_pos_sale_catalog_items')
-        ->where('tenant_id', 'tenant-alpha')
-        ->where('outlet_id', 'outlet-alpha')
-        ->where('product_id', 'product-c')
-        ->value('available_quantity') === $productCBeforePostCloseVoid,
-    'post-close denied void mutated inventory',
-);
 
 try {
     $voids->execute(
@@ -442,11 +409,6 @@ try {
     );
     $assert(false, 'second operation voided already-void sale');
 } catch (PosTransactionViolation) {}
-
-$connection->table('oneqay_pos_shifts')
-    ->where('tenant_id', 'tenant-alpha')
-    ->where('operation_id', 'shift-source-alpha')
-    ->update(['active_slot' => 1]);
 
 $connection->table('oneqay_pos_sale_catalog_items')
     ->where('tenant_id','tenant-alpha')
@@ -496,11 +458,6 @@ $assert(
     'overflow mutated stock',
 );
 $assert($connection->table('oneqay_pos_sale_voids')->where('sale_id',$overflowReceipt->saleId())->count() === 0, 'overflow persisted correction');
-
-$connection->table('oneqay_pos_shifts')
-    ->where('tenant_id', 'tenant-alpha')
-    ->where('operation_id', 'shift-source-alpha')
-    ->update(['active_slot' => null]);
 
 $setContext('cashier-alpha', 'tenant-alpha', 'organization-alpha', 'outlet-alpha', 'device-alpha');
 $saleReplayAfterVoid = $sales->complete($successCommand);

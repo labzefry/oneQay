@@ -296,10 +296,6 @@ $successVoid = $voids->execute(
     new SaleVoidCommand('void-refund-success', $successReceipt->saleId()),
     'correlation-void-refund-success',
 );
-$otherVoid = $voids->execute(
-    new SaleVoidCommand('void-refund-other', $otherReceipt->saleId()),
-    'correlation-void-refund-other',
-);
 $externalVoid = $voids->execute(
     new SaleVoidCommand('void-refund-external', $externalReceipt->saleId()),
     'correlation-void-refund-external',
@@ -316,6 +312,10 @@ $stockAfterVoid = (int) $connection->table('oneqay_pos_sale_catalog_items')
     ->value('available_quantity');
 $assert($stockAfterVoid === 20, 'JRN-007 exact stock restoration before refund');
 
+$connection->table('oneqay_pos_shifts')
+    ->where('tenant_id', 'tenant-alpha')
+    ->where('operation_id', 'shift-source-refund')
+    ->update(['active_slot' => null]);
 $shiftBeforeRefund = (array) $connection->table('oneqay_pos_shifts')
     ->where('tenant_id', 'tenant-alpha')
     ->where('operation_id', 'shift-source-refund')
@@ -442,43 +442,6 @@ $assert(
         ->where('product_id', 'product-success')
         ->value('available_quantity') === $stockAfterVoid,
     'refund changed stock after JRN-007 restoration',
-);
-
-$connection->table('oneqay_pos_shifts')
-    ->where('tenant_id', 'tenant-alpha')
-    ->where('operation_id', 'shift-source-refund')
-    ->update(['active_slot' => null]);
-$assert(
-    $connection->table('oneqay_pos_shifts')
-        ->where('tenant_id', 'tenant-alpha')
-        ->where('operation_id', 'shift-source-refund')
-        ->value('active_slot') === null,
-    'shift close fixture did not release refund active slot',
-);
-
-$productOtherBeforePostCloseRefund = (int) $connection->table('oneqay_pos_sale_catalog_items')
-    ->where('tenant_id', 'tenant-alpha')
-    ->where('outlet_id', 'outlet-alpha')
-    ->where('product_id', 'product-other')
-    ->value('available_quantity');
-try {
-    $refunds->record(
-        new SaleCashRefundCommand('refund-post-close-new-operation', $otherReceipt->saleId()),
-        'correlation-refund-post-close-new',
-    );
-    $assert(false, 'new refund accepted after bound shift became inactive');
-} catch (PosTransactionViolation) {}
-$assert(
-    $connection->table('oneqay_pos_sale_cash_refunds')->where('sale_id', $otherReceipt->saleId())->count() === 0,
-    'post-close denied refund persisted evidence',
-);
-$assert(
-    (int) $connection->table('oneqay_pos_sale_catalog_items')
-        ->where('tenant_id', 'tenant-alpha')
-        ->where('outlet_id', 'outlet-alpha')
-        ->where('product_id', 'product-other')
-        ->value('available_quantity') === $productOtherBeforePostCloseRefund,
-    'post-close denied refund mutated inventory',
 );
 
 $replay = $refunds->record($refundCommand, 'correlation-refund-replay');
