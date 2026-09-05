@@ -39,6 +39,7 @@ register_shutdown_function(static function () use ($sessionDirectory, $baselineS
 $app = require __DIR__.'/../bootstrap/app.php';
 /** @var HttpKernel $kernel */
 $kernel = $app->make(HttpKernel::class);
+$kernel->bootstrap();
 
 /** @var array<string, string> $cookies */
 $cookies = [];
