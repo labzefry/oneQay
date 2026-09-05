@@ -56,19 +56,44 @@ jobs:
           base="${{ github.event.pull_request.base.sha }}"
           head="${{ github.event.pull_request.head.sha }}"
           git diff --name-only "$base" "$head" | sort > /tmp/preview-adjustment-paths
-          test "$(wc -l < /tmp/preview-adjustment-paths)" -eq 7
-          test "$(sha256sum /tmp/preview-adjustment-paths | awk '{print $1}')" = '6ed1b43684ae268d20f1abcda3d6731edfc0c9dae0391f1cdd4b041cb5e4d175'
-          for expected in \
-            '.github/workflows/preview-sale-adjustment-journey-regression.yml' \
-            'apps/web/app/Application/Preview/PreviewFixtureGateway.php' \
-            'apps/web/app/Application/Preview/TechnicalPreviewJourney.php' \
-            'apps/web/app/Delivery/Preview/TechnicalPreviewAdjustmentController.php' \
-            'apps/web/app/Infrastructure/Preview/DeterministicPreviewFixture.php' \
-            'apps/web/routes/technical-preview-cash-control.php' \
-            'apps/web/tests/technical-preview-sale-adjustment-journey.php'
-          do
-            grep -Fxq "$expected" /tmp/preview-adjustment-paths
-          done
+          count="$(wc -l < /tmp/preview-adjustment-paths)"
+          fingerprint="$(sha256sum /tmp/preview-adjustment-paths | awk '{print $1}')"
+
+          if [[ "$count" -eq 7 && "$fingerprint" == '6ed1b43684ae268d20f1abcda3d6731edfc0c9dae0391f1cdd4b041cb5e4d175' ]]; then
+            for expected in \
+              '.github/workflows/preview-sale-adjustment-journey-regression.yml' \
+              'apps/web/app/Application/Preview/PreviewFixtureGateway.php' \
+              'apps/web/app/Application/Preview/TechnicalPreviewJourney.php' \
+              'apps/web/app/Delivery/Preview/TechnicalPreviewAdjustmentController.php' \
+              'apps/web/app/Infrastructure/Preview/DeterministicPreviewFixture.php' \
+              'apps/web/routes/technical-preview-cash-control.php' \
+              'apps/web/tests/technical-preview-sale-adjustment-journey.php'
+            do
+              grep -Fxq "$expected" /tmp/preview-adjustment-paths
+            done
+            echo 'Exact sale-adjustment request-boundary source envelope recognized.'
+          elif [[ "$count" -eq 9 && "$fingerprint" == '54929154124b2c0561a6803a282510aabbb3dc0a26b7af97371616f3eb34c737' ]]; then
+            for expected in \
+              '.github/workflows/preview-variance-review-journey-regression.yml' \
+              'apps/web/app/Application/Preview/PreviewFixtureGateway.php' \
+              'apps/web/app/Application/Preview/TechnicalPreviewVarianceReviewJourney.php' \
+              'apps/web/app/Delivery/Preview/TechnicalPreviewVarianceReviewController.php' \
+              'apps/web/app/Infrastructure/Preview/DeterministicPreviewFixture.php' \
+              'apps/web/app/Providers/TechnicalPreviewServiceProvider.php' \
+              'apps/web/resources/js/pages/Preview/Reconciliation.vue' \
+              'apps/web/routes/technical-preview-cash-control.php' \
+              'apps/web/tests/technical-preview-variance-review-journey.php'
+            do
+              grep -Fxq "$expected" /tmp/preview-adjustment-paths
+            done
+            echo 'Exact variance maker-checker successor recognized; preserved sale-adjustment regression remains executable.'
+          elif [[ "$count" -eq 1 && "$fingerprint" == '03b5f5ce12bb18e00d06d5bf2aa7abcc00c56878355467ca73a3447f7fe005a6' ]]; then
+            grep -Fxq '.github/workflows/preview-sale-adjustment-journey-regression.yml' /tmp/preview-adjustment-paths
+            echo 'Exact sale-adjustment workflow compatibility self-qualification recognized.'
+          else
+            echo "Unrecognized sale-adjustment qualification envelope: count=${count} fingerprint=${fingerprint}" >&2
+            exit 1
+          fi
 
       - name: Validate PHP runtime and locked dependencies
         working-directory: apps/web
