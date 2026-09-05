@@ -1,0 +1,153 @@
+# Sprint88 compatibility 20-workflow deterministic exporter — Lab | zefry
+# Author by Lab | zefry
+name: Sprint88 Compatibility 20 Exporter
+
+on:
+  push:
+    branches: [sprint88-compat20-exporter-v11]
+    paths:
+      - '.github/workflows/sprint88-compat20-exporter.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exporter branch
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: sprint88-compat20-exporter-v11
+
+      - name: Generate exact 20-workflow Sprint88 compatibility outputs
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+
+          targets = [
+              '.github/workflows/m7-2-tenant-isolation-regression.yml',
+              '.github/workflows/m7-3-identity-org-context-regression.yml',
+              '.github/workflows/m7-4-pos-core-synthetic-regression.yml',
+              '.github/workflows/m7-4a-technical-preview-interaction-regression.yml',
+              '.github/workflows/m7-5-preview-db-qualification-regression.yml',
+              '.github/workflows/m7-5-preview-release-artifact.yml',
+              '.github/workflows/sprint21-role-permission-policy-regression.yml',
+              '.github/workflows/sprint22-policy-administration-regression.yml',
+              '.github/workflows/sprint23-initial-tenant-admin-provisioning-regression.yml',
+              '.github/workflows/sprint24-protected-control-admin-lifecycle-regression.yml',
+              '.github/workflows/sprint25-policy-administration-delivery-regression.yml',
+              '.github/workflows/sprint26-identity-credential-verification-regression.yml',
+              '.github/workflows/sprint27-first-party-session-establishment-regression.yml',
+              '.github/workflows/sprint28-initial-password-enrollment-regression.yml',
+              '.github/workflows/sprint29-first-control-principal-credential-bootstrap-regression.yml',
+              '.github/workflows/sprint30-privileged-totp-mfa-regression.yml',
+              '.github/workflows/sprint31-privileged-reauthentication-step-up-regression.yml',
+              '.github/workflows/sprint32-authentication-recovery-proof-regression.yml',
+              '.github/workflows/sprint33-recovery-bound-password-reset-regression.yml',
+              '.github/workflows/sprint34-authenticated-password-change-regression.yml',
+          ]
+          lower = set(targets[:13])
+          source_paths = [
+              '.github/workflows/sprint88-final-shift-close-migration-source-gate.yml',
+              'apps/web/database/migrations/0000_00_00_000027_create_pos_shift_close_evidence_foundation.php',
+              'apps/web/tests/pos-shift-close-migration-foundation.php',
+              'docs/SPRINT88_FINAL_SHIFT_CLOSE_MIGRATION_SOURCE_ENVELOPE.md',
+          ]
+          source_fp = '6f4e1a3efe6e2dc8bcc5e213b88d968ead955d64074f159f52971e16a8a9abf8'
+          closure_fp = 'c6cd387d5ea83d73382493ca78d219c0db35477e55c61a68e489a0329231f922'
+          out_root = Path('docs/_sprint88_compat20')
+          out_root.mkdir(parents=True, exist_ok=True)
+
+          def verify_block(tmp_path: str, indent: str = '            ') -> str:
+              rows = [indent + 'for expected in \\\n']
+              for i, p in enumerate(source_paths):
+                  suffix = ' \\\n' if i < len(source_paths) - 1 else '\n'
+                  rows.append(indent + "  '" + p + "'" + suffix)
+              rows += [indent + 'do\n', indent + f'  grep -Fxq "$expected" {tmp_path}\n', indent + 'done\n']
+              return ''.join(rows)
+
+          for filename in targets:
+              path = Path(filename)
+              text = path.read_text()
+              start = text.find('      - name: Recognize exact Sprint70')
+              if start < 0:
+                  raise SystemExit(f'missing Sprint70 recognizer: {filename}')
+              end = text.find('\n      - name:', start + 20)
+              if end < 0:
+                  raise SystemExit(f'missing next step after Sprint70 recognizer: {filename}')
+              step = text[start:end]
+              m = re.search(r'git diff --name-only .*?\| sort > (/tmp/[A-Za-z0-9._-]+)', step)
+              if not m:
+                  raise SystemExit(f'missing Sprint70 tmp path: {filename}')
+              tmp = m.group(1)
+              if closure_fp not in step:
+                  raise SystemExit(f'missing canonical 20-workflow closure: {filename}')
+
+              if filename in lower:
+                  needle = '          recognized=false\n'
+                  if step.count(needle) != 1:
+                      raise SystemExit(f'lower recognizer marker mismatch: {filename}')
+                  first_if = step.find('          if [[', step.find(needle) + len(needle))
+                  if first_if < 0:
+                      raise SystemExit(f'lower first shape missing: {filename}')
+                  block = (
+                      f'          if [[ "$count" -eq 4 && "$fingerprint" == \'{source_fp}\' ]]; then\n'
+                      + verify_block(tmp)
+                      + '            recognized=true\n'
+                  )
+                  existing = step[first_if:]
+                  existing = existing.replace('          if [[', '          elif [[', 1)
+                  step = step[:first_if] + block + existing
+              else:
+                  needle = '          sprint79_source=false\n'
+                  if step.count(needle) != 1:
+                      raise SystemExit(f'upper source marker mismatch: {filename}')
+                  block = (
+                      '          sprint88_source=false\n'
+                      f'          if [[ "$count" -eq 4 && "$fingerprint" == \'{source_fp}\' ]]; then\n'
+                      + verify_block(tmp)
+                      + '            sprint88_source=true\n'
+                      + '          fi\n'
+                  )
+                  step = step.replace(needle, block + needle, 1)
+                  condition = re.search(r'\n          if \[\[ "\$count" -eq 6 .*?closure_fp_placeholder', '')
+                  anchor = '\n          if [[ "$count" -eq 6'
+                  pos = step.find(anchor)
+                  if pos < 0:
+                      raise SystemExit(f'upper closure condition missing: {filename}')
+                  step = step[:pos] + '\n          if [[ "$sprint88_source" == \'true\' ]] || [[ "$count" -eq 6' + step[pos + len(anchor):]
+
+              matches = list(re.finditer(r'\$\(seq ([0-9]+) 26\)', step))
+              if len(matches) != 1:
+                  raise SystemExit(f'expected exactly one Sprint70 migration upper-bound 26: {filename}: {len(matches)}')
+              step = re.sub(r'\$\(seq ([0-9]+) 26\)', r'$(seq \1 27)', step, count=1)
+              step = step.replace('migrations #10-#25 isolated only from historical executable preservation.', 'migrations #10-#27 isolated only from historical executable preservation.')
+              step = step.replace('migrations #10-#26 isolated only from historical executable preservation.', 'migrations #10-#27 isolated only from historical executable preservation.')
+
+              updated = text[:start] + step + text[end:]
+              if updated == text:
+                  raise SystemExit(f'no output delta: {filename}')
+              out = out_root / path.name
+              out.write_text(updated)
+
+          actual = sorted(p.name for p in out_root.glob('*.yml'))
+          expected = sorted(Path(p).name for p in targets)
+          if actual != expected:
+              raise SystemExit('output filename set mismatch')
+          print('Sprint88 exact 20-workflow compatibility outputs generated.')
+
+      - name: Publish ordinary output files only
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(find docs/_sprint88_compat20 -maxdepth 1 -type f -name '*.yml' | wc -l)" -eq 20
+          git config user.name 'Lab | zefry'
+          git config user.email 'lab.zefry@users.noreply.github.com'
+          git add docs/_sprint88_compat20
+          git commit -m 'ci(sprint88): export canonical 20-workflow compatibility' -m 'Author by Lab | zefry'
+          git push origin HEAD:sprint88-compat20-exporter-v11
