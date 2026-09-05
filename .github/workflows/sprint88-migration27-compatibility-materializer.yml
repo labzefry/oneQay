@@ -133,7 +133,7 @@ jobs:
           git config user.name 'Lab | zefry'
           git config user.email 'lab.zefry@users.noreply.github.com'
           git add .github/workflows
-          git diff --cached --name-only | sort > /tmp/materialized-paths
+          git diff --cached --name-only origin/main | sort > /tmp/materialized-paths
           test "$(wc -l < /tmp/materialized-paths)" -eq 11
           test "$(sha256sum /tmp/materialized-paths | awk '{print $1}')" = '4c45c3e84cbc4a94a48fe3c4be7df2b2f909de3fdaacc19ca8d03baec6c966ae'
           git commit -m 'ci(sprint88): recognize migration #27 historical compatibility' -m 'Author by Lab | zefry'
