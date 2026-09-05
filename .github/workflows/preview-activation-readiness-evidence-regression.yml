@@ -125,6 +125,20 @@ jobs:
         working-directory: apps/web
         run: composer test
 
+      - name: Setup exact Node LTS
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: 24.19.0
+
+      - name: Build locked Preview assets
+        working-directory: apps/web
+        run: |
+          set -euo pipefail
+          npm ci --ignore-scripts --no-fund
+          npm audit --audit-level=high
+          npm run type-check
+          npm run build
+
       - name: Prepare private file-session qualification storage
         working-directory: apps/web
         run: |
