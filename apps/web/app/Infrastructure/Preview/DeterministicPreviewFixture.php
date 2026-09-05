@@ -25,6 +25,9 @@ final class DeterministicPreviewFixture implements PreviewFixtureGateway
     /** @var array<string, PreviewProfile> */
     private array $profiles;
 
+    /** @var array<string, PreviewProfile> */
+    private array $reviewers;
+
     /** @var array<string, list<CatalogItem>> */
     private array $catalog = [];
 
@@ -40,6 +43,17 @@ final class DeterministicPreviewFixture implements PreviewFixtureGateway
             'synthetic-principal-b' => new PreviewProfile(
                 'synthetic-principal-b', 'Demo Beta', 'tenant-beta',
                 'organization-beta', 'outlet-beta', 'device-beta',
+            ),
+        ];
+
+        $this->reviewers = [
+            'synthetic-principal-a' => new PreviewProfile(
+                'synthetic-principal-reviewer-a', 'Independent Reviewer Alpha', 'tenant-alpha',
+                'organization-alpha', 'outlet-alpha', 'device-alpha-reviewer',
+            ),
+            'synthetic-principal-b' => new PreviewProfile(
+                'synthetic-principal-reviewer-b', 'Independent Reviewer Beta', 'tenant-beta',
+                'organization-beta', 'outlet-beta', 'device-beta-reviewer',
             ),
         ];
 
@@ -60,9 +74,24 @@ final class DeterministicPreviewFixture implements PreviewFixtureGateway
         return $this->profiles[$principalId] ?? null;
     }
 
+    public function reviewerFor(string $operatorPrincipalId): ?PreviewProfile
+    {
+        return $this->reviewers[$operatorPrincipalId] ?? null;
+    }
+
     public function verifiedIdentity(string $principalId): ?VerifiedPlatformIdentity
     {
-        if (! isset($this->profiles[$principalId])) {
+        $known = isset($this->profiles[$principalId]);
+        if (! $known) {
+            foreach ($this->reviewers as $reviewer) {
+                if ($reviewer->principalId() === $principalId) {
+                    $known = true;
+                    break;
+                }
+            }
+        }
+
+        if (! $known) {
             return null;
         }
 
