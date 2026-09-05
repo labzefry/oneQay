@@ -14,6 +14,8 @@ use App\Infrastructure\Organization\RequestOrganizationalContextStore;
 use App\Infrastructure\Organization\SyntheticOrganizationalRelationshipVerifier;
 use App\Infrastructure\Preview\DeterministicPreviewFixture;
 use App\Infrastructure\Tenancy\SyntheticTenantMembershipVerifier;
+use Illuminate\Routing\RouteCollection;
+use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
 
 // Author by Lab | zefry
@@ -80,6 +82,7 @@ final class TechnicalPreviewServiceProvider extends ServiceProvider
     public function boot(): void
     {
         if (! $this->selectedPreviewRuntimePermitted()) {
+            $this->removeDeniedPreviewRoutesAfterApplicationBoot();
             return;
         }
 
@@ -115,6 +118,29 @@ final class TechnicalPreviewServiceProvider extends ServiceProvider
             sessionPath: (string) config('technical-preview.session.path', ''),
             sessionCookie: (string) config('technical-preview.session.cookie', ''),
         );
+    }
+
+    private function removeDeniedPreviewRoutesAfterApplicationBoot(): void
+    {
+        $this->app->booted(function (): void {
+            /** @var Router $router */
+            $router = $this->app->make('router');
+            $filteredRoutes = new RouteCollection();
+
+            foreach ($router->getRoutes()->getRoutes() as $route) {
+                $routeName = $route->getName();
+                $uri = ltrim($route->uri(), '/');
+                $isPreviewRoute = (is_string($routeName) && str_starts_with($routeName, 'preview.'))
+                    || $uri === 'technical-preview'
+                    || str_starts_with($uri, 'technical-preview/');
+
+                if (! $isPreviewRoute) {
+                    $filteredRoutes->add($route);
+                }
+            }
+
+            $router->setRoutes($filteredRoutes);
+        });
     }
 
     private function applyDeployedPreviewSessionEnvelope(): void

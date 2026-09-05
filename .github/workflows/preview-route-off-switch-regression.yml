@@ -1,0 +1,134 @@
+# Technical Preview route off-switch qualification — Lab | zefry
+# Author by Lab | zefry
+name: Technical Preview Route Off-Switch Regression
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/preview-route-off-switch-regression.yml'
+      - 'apps/web/app/Delivery/Preview/TechnicalPreviewDatabaseQualificationController.php'
+      - 'apps/web/app/Providers/TechnicalPreviewServiceProvider.php'
+      - 'apps/web/tests/technical-preview-route-off-switch.php'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: preview-route-off-switch-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  preview-route-off-switch-regression:
+    name: preview-route-off-switch-regression
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      APP_NAME: oneQay
+      APP_KEY: base64:dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHQ=
+      APP_DEBUG: 'false'
+      APP_URL: https://preview.oneqay.test
+      CACHE_STORE: array
+
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Enforce exact bounded route off-switch envelope
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+          git diff --name-only "$base" "$head" | sort > /tmp/preview-route-off-switch-paths
+          test "$(wc -l < /tmp/preview-route-off-switch-paths)" -eq 4
+          test "$(sha256sum /tmp/preview-route-off-switch-paths | awk '{print $1}')" = '81821d8a3aabb0fe5fee2a7d64f43985b79e2d1b217b5d37f3f834c94ec93e0d'
+          for expected in \
+            '.github/workflows/preview-route-off-switch-regression.yml' \
+            'apps/web/app/Delivery/Preview/TechnicalPreviewDatabaseQualificationController.php' \
+            'apps/web/app/Providers/TechnicalPreviewServiceProvider.php' \
+            'apps/web/tests/technical-preview-route-off-switch.php'
+          do
+            grep -Fxq "$expected" /tmp/preview-route-off-switch-paths
+          done
+          git diff --quiet "$base" "$head" -- apps/web/routes/web.php
+          git diff --quiet "$base" "$head" -- apps/web/routes/technical-preview-cash-control.php
+
+      - name: Validate PHP runtime and locked dependencies
+        working-directory: apps/web
+        run: |
+          set -euo pipefail
+          php -v
+          composer validate --no-check-publish
+          composer install --no-interaction --no-progress --prefer-dist
+          composer audit --locked --no-interaction --abandoned=report
+
+      - name: Validate fail-closed route pruning and config-cache boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l apps/web/app/Delivery/Preview/TechnicalPreviewDatabaseQualificationController.php
+          php -l apps/web/app/Providers/TechnicalPreviewServiceProvider.php
+          php -l apps/web/tests/technical-preview-route-off-switch.php
+          ! grep -Fq 'env(' apps/web/app/Delivery/Preview/TechnicalPreviewDatabaseQualificationController.php
+          grep -Fq 'removeDeniedPreviewRoutesAfterApplicationBoot' apps/web/app/Providers/TechnicalPreviewServiceProvider.php
+          grep -Fq 'new RouteCollection()' apps/web/app/Providers/TechnicalPreviewServiceProvider.php
+          grep -Fq 'setRoutes($filteredRoutes)' apps/web/app/Providers/TechnicalPreviewServiceProvider.php
+          grep -Fq "Route::middleware('web')->prefix('technical-preview')" apps/web/routes/technical-preview-cash-control.php
+
+      - name: Prove disabled Preview removes route surface
+        working-directory: apps/web
+        env:
+          APP_ENV: preview
+          ONEQAY_RUNTIME_CLASS: preview
+          ONEQAY_TECHNICAL_PREVIEW_ENABLED: 'false'
+          SESSION_DRIVER: file
+          SESSION_LIFETIME: '60'
+          SESSION_ENCRYPT: 'true'
+          SESSION_SECURE_COOKIE: 'true'
+          SESSION_COOKIE: oneqay-preview-session
+        run: php tests/technical-preview-route-off-switch.php preview-disabled
+
+      - name: Prove Production runtime never registers Preview routes
+        working-directory: apps/web
+        env:
+          APP_ENV: production
+          ONEQAY_RUNTIME_CLASS: production
+          ONEQAY_TECHNICAL_PREVIEW_ENABLED: 'true'
+          SESSION_DRIVER: file
+          SESSION_LIFETIME: '60'
+          SESSION_ENCRYPT: 'true'
+          SESSION_SECURE_COOKIE: 'true'
+          SESSION_COOKIE: oneqay-preview-session
+        run: php tests/technical-preview-route-off-switch.php production-denied
+
+      - name: Prove exact deployed Preview retains approved route surface
+        working-directory: apps/web
+        env:
+          APP_ENV: preview
+          ONEQAY_RUNTIME_CLASS: preview
+          ONEQAY_TECHNICAL_PREVIEW_ENABLED: 'true'
+          SESSION_DRIVER: file
+          SESSION_LIFETIME: '60'
+          SESSION_ENCRYPT: 'true'
+          SESSION_SECURE_COOKIE: 'true'
+          SESSION_COOKIE: oneqay-preview-session
+        run: php tests/technical-preview-route-off-switch.php preview-enabled
+
+      - name: Preserve CI qualification route surface
+        working-directory: apps/web
+        env:
+          APP_ENV: testing
+          ONEQAY_RUNTIME_CLASS: ci
+          ONEQAY_TECHNICAL_PREVIEW_ENABLED: 'true'
+          SESSION_DRIVER: array
+          SESSION_LIFETIME: '120'
+          SESSION_ENCRYPT: 'false'
+          SESSION_SECURE_COOKIE: 'false'
+          SESSION_COOKIE: oneqay-session
+        run: php tests/technical-preview-route-off-switch.php qualification-enabled
