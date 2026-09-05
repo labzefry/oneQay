@@ -143,10 +143,6 @@ jobs:
           SESSION_LIFETIME: '60'
           SESSION_ENCRYPT: 'true'
           SESSION_SECURE_COOKIE: 'true'
-          SESSION_HTTP_ONLY: 'true'
-          SESSION_SAME_SITE: lax
-          SESSION_DOMAIN: ''
-          SESSION_PATH: '/'
           SESSION_COOKIE: oneqay-preview-session
         run: php tests/technical-preview-file-session-continuity.php
 
@@ -161,10 +157,6 @@ jobs:
           SESSION_LIFETIME: '60'
           SESSION_ENCRYPT: 'true'
           SESSION_SECURE_COOKIE: 'true'
-          SESSION_HTTP_ONLY: 'true'
-          SESSION_SAME_SITE: lax
-          SESSION_DOMAIN: ''
-          SESSION_PATH: '/'
           SESSION_COOKIE: oneqay-preview-session
         run: php tests/technical-preview-session-failure-containment.php
 
