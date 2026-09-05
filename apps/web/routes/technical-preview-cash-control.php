@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Delivery\Preview\TechnicalPreviewAdjustmentController;
 use App\Delivery\Preview\TechnicalPreviewController;
+use App\Delivery\Preview\TechnicalPreviewVarianceReviewController;
 use Illuminate\Support\Facades\Route;
 
 // Author by Lab | zefry
@@ -17,5 +18,10 @@ Route::middleware('web')->prefix('technical-preview')->group(function (): void {
     Route::controller(TechnicalPreviewAdjustmentController::class)->group(function (): void {
         Route::post('/sale/void', 'voidSale')->name('preview.sale.void');
         Route::post('/sale/refund', 'refundCashSale')->name('preview.sale.refund');
+    });
+
+    Route::controller(TechnicalPreviewVarianceReviewController::class)->group(function (): void {
+        Route::post('/reconciliation/explanation', 'recordExplanation')->name('preview.reconciliation.explanation');
+        Route::post('/reconciliation/review', 'reviewDecision')->name('preview.reconciliation.review');
     });
 });
