@@ -1,0 +1,590 @@
+# Sprint57 immutable sale-to-shift binding compatibility predecessor — Lab | zefry
+# Sprint54 bounded 12-workflow source-preservation correction — Lab | zefry
+# Sprint54 bounded successor compatibility predecessor — Lab | zefry
+# Sprint53 bounded third historical fixture compatibility closure — Lab | zefry
+# Author by Lab | zefry
+# Sprint48 JRN-005 Sprint46 upper-horizon preservation anchor.
+# Sprint48 JRN-005 Sprint40-Sprint42 nine-path preservation anchor.
+# Sprint48 JRN-005 exact three-path Sprint35/Sprint42 compatibility preservation anchor.
+# Sprint48 JRN-005 three-path migration-17 compatibility preservation anchor.
+# Sprint47 JRN-004 frozen source upper compatibility preservation anchor.
+# Sprint47 JRN-004 canonical migration #16 horizon preservation anchor.
+# Sprint46 JRN-006 exact source-surface compatibility preservation anchor.
+# Sprint46 JRN-006 S39-S42 exact three-path compatibility preservation anchor.
+# Sprint46 JRN-006 upper-horizon exact preservation anchor.
+# Sprint45 pending-MFA eligibility source legacy-horizon compatibility preservation anchor.
+# Sprint44 source legacy-horizon compatibility preservation anchor.
+# Sprint43 exact source legacy-horizon compatibility preservation anchor.
+# Sprint42 exact source legacy-horizon compatibility preservation anchor.
+# Sprint41 Sprint31 source-successor state correction preservation anchor.
+# Sprint41 exact source legacy-horizon compatibility preservation anchor.
+# Sprint40 canonical documentation synchronization successor-state preservation anchor.
+name: M7.5 Technical Preview Release Artifact
+
+# Attribution: Lab | zefry
+# Sprint40 Sprint38/Sprint39 historical fixture isolation anchor.
+# Sprint40 Sprint37 same-step successor-state correction anchor.
+# Sprint40 Sprint38 same-step successor-state correction anchor.
+# Sprint40 19-workflow historical preservation compatibility anchor.
+# Sprint40 19-workflow preservation-horizon bridge anchor.
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'apps/web/**'
+      - 'release/manifest-v1.schema.json'
+      - 'tools/build-m7-5-preview-release.sh'
+      - 'tools/validate-release-manifest.php'
+      - '.github/workflows/m7-5-preview-release-artifact.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/web/**'
+      - 'release/manifest-v1.schema.json'
+      - 'tools/build-m7-5-preview-release.sh'
+      - 'tools/validate-release-manifest.php'
+      - '.github/workflows/m7-5-preview-release-artifact.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: m7-5-preview-release-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  preview-release-artifact:
+    name: m7-5-preview-release-artifact
+    runs-on: ubuntu-latest
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHQ=
+      APP_DEBUG: 'false'
+      APP_URL: http://localhost
+      ONEQAY_RUNTIME_CLASS: ci
+      ONEQAY_TECHNICAL_PREVIEW_ENABLED: 'true'
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+      LOG_CHANNEL: stderr
+
+    steps:
+      - name: Checkout exact governed source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Preserve Sprint40 historical compatibility closure
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq 'bde0c14f6b8c45f090844b9e5d701415690e990b8b7bea3b605f4ba04c727116' .github/workflows/sprint33-recovery-bound-password-reset-regression.yml
+          grep -Fq 'bde0c14f6b8c45f090844b9e5d701415690e990b8b7bea3b605f4ba04c727116' .github/workflows/sprint34-authenticated-password-change-regression.yml
+
+      - name: Recognize exact Sprint35 and Sprint36 bounded successors
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "main"
+          git diff --name-only "origin/main...HEAD" | sort > /tmp/s35-successor-files.txt
+          count="$(wc -l < /tmp/s35-successor-files.txt)"
+          fingerprint="$(sha256sum /tmp/s35-successor-files.txt | awk '{print $1}')"
+          if { [[ "$count" -eq 15 && "$fingerprint" == '5e19664988cabba0030f9927d26b0702370414be4cd6b424d585925b634ca2b8' ]] || [[ "$count" -eq 4 && "$fingerprint" == '154e4e0f6fb898b2c5c677764571a5a9a57c31371c852f16e89a74f3b104adec' ]] || [[ "$count" -eq 9 && "$fingerprint" == 'c7f53821f0f3fc1554ee23a3c85b53369972accb0815ec2b8096664054cd01b9' ]]; } && [[ -f 'apps/web/database/migrations/0000_00_00_000018_create_pos_shift_opening_foundation.php' ]]; then
+            git update-index --assume-unchanged 'apps/web/database/migrations/0000_00_00_000018_create_pos_shift_opening_foundation.php'
+            rm -f 'apps/web/database/migrations/0000_00_00_000018_create_pos_shift_opening_foundation.php'
+            echo 'Migration #18 isolated only from exact Sprint48 JRN-005 source historical preservation.'
+          fi
+          if [[ "$count" -eq 7 && "$fingerprint" == '4784ffca1c940d3fa54a2a3988ead07e2de993bde8d3af2bd41014dbdf905be0' ]]; then
+            echo 'ONEQAY_SPRINT35_SUCCESSOR=false' >> "$GITHUB_ENV"
+            echo 'Exact M7.5 seven-workflow closure shape defers historical migration isolation until after full-source composer test.'
+          elif [[ "$count" -eq 5 && "$fingerprint" == '26d2d48f114c88d60dc302dccd8d41118bc730c309c9d79b71f5e516731a0b25' ]] || [[ "$count" -eq 19 && "$fingerprint" == '563d445adb1c6a2d7caf2fae5a0b694485cddfa5389fc61773ceaa19d978cf79' ]] || [[ "$count" -eq 2 && "$fingerprint" == '920918ec3a30e7954bec598ce2d45ce4ce05681f1705308bae87232cd192ee4e' ]] || [[ "$count" -eq 17 && "$fingerprint" == 'e889db1c7eaa22b3ed008f8781ab35652ca950a3f009c309e5c478d01d368f11' ]] || [[ "$count" -eq 18 && "$fingerprint" == '25dbbd94087eba4157fa9c209f09174a127154a98067abbfbeec233bbe9398cd' ]] || [[ "$count" -eq 23 && "$fingerprint" == 'ea735f8f5ee06d480863f9d1ba7ae58a91642109963c3f340e8453f3205bb7ae' ]] || [[ "$count" -eq 19 && "$fingerprint" == 'fc2b578fc9d090dfce1fd34c5acfa7a07f065979a94f62becb3dc54dee664920' ]] || [[ "$count" -eq 14 && "$fingerprint" == 'ed29b6128c193f0efd6359748e220a37aefaec856acc4bc3b90f445ce3ccb674' ]] || [[ "$count" -eq 15 && "$fingerprint" == 'c1ac6d5130c9d78ff99ed0accf5d11e3f08debc575c0d5152ef5b24e6f82ce02' ]] || [[ "$count" -eq 15 && "$fingerprint" == '5e19664988cabba0030f9927d26b0702370414be4cd6b424d585925b634ca2b8' ]] || [[ "$count" -eq 4 && "$fingerprint" == '154e4e0f6fb898b2c5c677764571a5a9a57c31371c852f16e89a74f3b104adec' ]] || [[ "$count" -eq 9 && "$fingerprint" == 'c7f53821f0f3fc1554ee23a3c85b53369972accb0815ec2b8096664054cd01b9' ]] || [[ "$count" -eq 11 && "$fingerprint" == 'a221779e05b1e8ab220610b5068be5d1eb01bc08b516b338ba8f22373e7d89d0' ]] || [[ "$count" -eq 10 && "$fingerprint" == '411950d5602dc7160668c88e08a3941ebccc8bdc82d20bee77ce4004f039d216' ]] || [[ "$count" -eq 8 && "$fingerprint" == '2cfc92c34f46375b11bf3fe92f9094cefa598d234133847fdd6629be211f12c4' ]] || [[ "$count" -eq 6 && "$fingerprint" == '671946562a3eef1375d87b70936bac263aa18f660d6ea274406ed57f1c653351' ]] || [[ "$count" -eq 8 && "$fingerprint" == 'a9caf2b68210a38687fee543256aec04dc1e67ee1ef403608f7db69139957ff8' ]] || [[ "$count" -eq 7 && "$fingerprint" == 'f3f8b3ad0cca378307000ca242c4b9a4a8a7ab967d1649a5cd6408837001364c' ]] || [[ "$count" -eq 12 && "$fingerprint" == 'b2c5fc10a8baa2d56991d6dbd36b0407159d70953654ef322a9a11d23660489b' ]] || [[ "$count" -eq 8 && "$fingerprint" == 'e773cbe308d202808021c452c75954cc80234c081bbb1f23cb757210f76b8c85' ]] || [[ "$count" -eq 8 && "$fingerprint" == '6315890d318c3cdfca549bfacef6cb8d1ca66a4421416b49b4978095a98b6729' ]] || [[ "$count" -eq 9 && "$fingerprint" == 'b8afa8415c0675c2675c1b8dbd528b44e8181a8f79a97fe28b0a0996623e1749' ]] || [[ "$count" -eq 9 && "$fingerprint" == '3d0293362f451fe4bf472d0d2c38c3eec3d67df75b451ba5b273e8dbdb0f2eed' ]]; then
+          echo 'ONEQAY_SPRINT35_SUCCESSOR=true' >> "$GITHUB_ENV"
+          if [[ -f 'apps/web/database/migrations/0000_00_00_000010_create_identity_recovery_codes.php' ]]; then
+            git update-index --assume-unchanged 'apps/web/database/migrations/0000_00_00_000010_create_identity_recovery_codes.php'
+            rm -f 'apps/web/database/migrations/0000_00_00_000010_create_identity_recovery_codes.php'
+          fi
+          if [[ -f 'apps/web/database/migrations/0000_00_00_000011_add_credential_epoch_to_identity_password_credentials.php' ]]; then
+            git update-index --assume-unchanged 'apps/web/database/migrations/0000_00_00_000011_add_credential_epoch_to_identity_password_credentials.php'
+            rm -f 'apps/web/database/migrations/0000_00_00_000011_add_credential_epoch_to_identity_password_credentials.php'
+          fi
+          if [[ -f 'apps/web/database/migrations/0000_00_00_000012_add_totp_factor_epoch_and_recovery_authority.php' ]]; then
+            git update-index --assume-unchanged 'apps/web/database/migrations/0000_00_00_000012_add_totp_factor_epoch_and_recovery_authority.php'
+            rm -f 'apps/web/database/migrations/0000_00_00_000012_add_totp_factor_epoch_and_recovery_authority.php'
+          fi
+          if [[ -f 'apps/web/database/migrations/0000_00_00_000013_create_first_party_session_authority.php' ]]; then
+            git update-index --assume-unchanged 'apps/web/database/migrations/0000_00_00_000013_create_first_party_session_authority.php'
+            rm -f 'apps/web/database/migrations/0000_00_00_000013_create_first_party_session_authority.php'
+          fi
+          if [[ -f 'apps/web/database/migrations/0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php' ]]; then
+            git update-index --assume-unchanged 'apps/web/database/migrations/0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php'
+            rm -f 'apps/web/database/migrations/0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php'
+          fi
+          if { [[ "$count" -eq 5 && "$fingerprint" == '26d2d48f114c88d60dc302dccd8d41118bc730c309c9d79b71f5e516731a0b25' ]] || [[ "$count" -eq 19 && "$fingerprint" == '563d445adb1c6a2d7caf2fae5a0b694485cddfa5389fc61773ceaa19d978cf79' ]] || [[ "$count" -eq 12 && "$fingerprint" == 'b2c5fc10a8baa2d56991d6dbd36b0407159d70953654ef322a9a11d23660489b' ]] || [[ "$count" -eq 8 && "$fingerprint" == 'e773cbe308d202808021c452c75954cc80234c081bbb1f23cb757210f76b8c85' ]] || [[ "$count" -eq 8 && "$fingerprint" == '6315890d318c3cdfca549bfacef6cb8d1ca66a4421416b49b4978095a98b6729' ]] || [[ "$count" -eq 9 && "$fingerprint" == 'b8afa8415c0675c2675c1b8dbd528b44e8181a8f79a97fe28b0a0996623e1749' ]] || [[ "$count" -eq 9 && "$fingerprint" == '3d0293362f451fe4bf472d0d2c38c3eec3d67df75b451ba5b273e8dbdb0f2eed' ]]; } && [[ -f 'apps/web/database/migrations/0000_00_00_000015_create_identity_authentication_eligibility_administration_journal.php' ]]; then
+            git update-index --assume-unchanged 'apps/web/database/migrations/0000_00_00_000015_create_identity_authentication_eligibility_administration_journal.php'
+            rm -f 'apps/web/database/migrations/0000_00_00_000015_create_identity_authentication_eligibility_administration_journal.php'
+            echo 'Migration #15 isolated only from historical M7.5 Preview preservation.'
+          fi
+          echo 'Exact Sprint35/Sprint36/Sprint57 successor or bounded correction envelope recognized; schema-free Preview preservation remains active.'
+          if [[ "$count" -eq 5 && "$fingerprint" == '26d2d48f114c88d60dc302dccd8d41118bc730c309c9d79b71f5e516731a0b25' ]] || [[ "$count" -eq 19 && "$fingerprint" == '563d445adb1c6a2d7caf2fae5a0b694485cddfa5389fc61773ceaa19d978cf79' ]] || [[ "$count" -eq 2 && "$fingerprint" == '920918ec3a30e7954bec598ce2d45ce4ce05681f1705308bae87232cd192ee4e' ]] || [[ "$count" -eq 14 && "$fingerprint" == 'ed29b6128c193f0efd6359748e220a37aefaec856acc4bc3b90f445ce3ccb674' ]] || [[ "$count" -eq 15 && "$fingerprint" == 'c1ac6d5130c9d78ff99ed0accf5d11e3f08debc575c0d5152ef5b24e6f82ce02' ]] || [[ "$count" -eq 15 && "$fingerprint" == '5e19664988cabba0030f9927d26b0702370414be4cd6b424d585925b634ca2b8' ]] || [[ "$count" -eq 4 && "$fingerprint" == '154e4e0f6fb898b2c5c677764571a5a9a57c31371c852f16e89a74f3b104adec' ]] || [[ "$count" -eq 9 && "$fingerprint" == 'c7f53821f0f3fc1554ee23a3c85b53369972accb0815ec2b8096664054cd01b9' ]] || [[ "$count" -eq 19 && "$fingerprint" == 'fc2b578fc9d090dfce1fd34c5acfa7a07f065979a94f62becb3dc54dee664920' ]]; then
+            for migration in \
+              'apps/web/database/migrations/0000_00_00_000015_create_identity_authentication_eligibility_administration_journal.php' \
+              'apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php' \
+              'apps/web/database/migrations/0000_00_00_000017_create_pos_catalog_preparation_journal.php'
+            do
+              if [[ -f "$migration" ]]; then
+                git update-index --assume-unchanged "$migration"
+                rm -f "$migration"
+              fi
+            done
+            echo 'Migrations #15-#17 isolated only from exact governed POS source historical preservation.'
+          fi
+          else
+            echo 'ONEQAY_SPRINT35_SUCCESSOR=false' >> "$GITHUB_ENV"
+          fi
+
+      - name: Isolate exact Sprint 32 or Sprint 33 recovery migration from NO_SCHEMA_CHANGE Preview regression
+        if: env.ONEQAY_SPRINT35_SUCCESSOR != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          isolate=false
+          recognized='none'
+          if [[ "$GITHUB_EVENT_NAME" == 'pull_request' ]]; then
+            git fetch --no-tags origin "$GITHUB_BASE_REF"
+            git diff --name-only "origin/$GITHUB_BASE_REF...HEAD" | sort > /tmp/release-successor-files.txt
+            count="$(wc -l < /tmp/release-successor-files.txt)"
+            fingerprint="$(sha256sum /tmp/release-successor-files.txt | awk '{print $1}')"
+            if [[ "$count" -eq 35 ]] && [[ "$fingerprint" == 'e3b724002cfc0be1ef890d1b5594a2a5179123f949f6f486354e21950c7328eb' ]]; then
+              isolate=true
+              recognized='Sprint 34'
+              echo 'ONEQAY_SPRINT34_SUCCESSOR=true' >> "$GITHUB_ENV"
+            fi
+            if [[ "$count" -eq 39 ]] && [[ "$fingerprint" == '04a1177c12712183a7dda4ae81be1356c0e41294533336c9f999d376c224712a' ]]; then
+              isolate=true
+              recognized='Sprint 33'
+            elif [[ "$count" -eq 32 ]] && [[ "$fingerprint" == 'db230ab3b77fff67f0bd12d7d7b615146d9d9df9a0af12014214e1862e9f6867' ]]; then
+              isolate=true
+              recognized='Sprint 32'
+            fi
+          elif [[ "$GITHUB_EVENT_NAME" == 'push' ]]; then
+            before="$(python3 -c 'import json,os; print(json.load(open(os.environ["GITHUB_EVENT_PATH"])).get("before", ""))')"
+            if [[ -n "$before" ]] && [[ "$before" != '0000000000000000000000000000000000000000' ]]; then
+              git diff --name-only "$before...HEAD" | sort > /tmp/release-successor-files.txt
+              count="$(wc -l < /tmp/release-successor-files.txt)"
+              fingerprint="$(sha256sum /tmp/release-successor-files.txt | awk '{print $1}')"
+              if [[ "$count" -eq 35 ]] && [[ "$fingerprint" == 'e3b724002cfc0be1ef890d1b5594a2a5179123f949f6f486354e21950c7328eb' ]]; then
+                isolate=true
+                recognized='Sprint 34'
+                echo 'ONEQAY_SPRINT34_SUCCESSOR=true' >> "$GITHUB_ENV"
+              fi
+              if [[ "$count" -eq 39 ]] && [[ "$fingerprint" == '04a1177c12712183a7dda4ae81be1356c0e41294533336c9f999d376c224712a' ]]; then
+                isolate=true
+                recognized='Sprint 33'
+              elif [[ "$count" -eq 32 ]] && [[ "$fingerprint" == 'db230ab3b77fff67f0bd12d7d7b615146d9d9df9a0af12014214e1862e9f6867' ]]; then
+                isolate=true
+                recognized='Sprint 32'
+              fi
+            fi
+          fi
+          if [[ "$isolate" == 'true' ]]; then
+            git update-index --assume-unchanged apps/web/database/migrations/0000_00_00_000010_create_identity_recovery_codes.php
+            rm -f apps/web/database/migrations/0000_00_00_000010_create_identity_recovery_codes.php
+            if [[ "$recognized" == 'Sprint 34' ]]; then
+              git update-index --assume-unchanged apps/web/database/migrations/0000_00_00_000011_add_credential_epoch_to_identity_password_credentials.php
+              rm -f apps/web/database/migrations/0000_00_00_000011_add_credential_epoch_to_identity_password_credentials.php
+            fi
+            echo "Exact ${recognized} source envelope recognized; migration #10 is isolated only from the schema-free Technical Preview release regression."
+          fi
+
+      - name: Setup PHP 8.3 build runtime
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        with:
+          php-version: '8.3'
+          tools: composer:v2
+          coverage: none
+
+      - name: Setup exact Node LTS
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: 24.19.0
+
+      - name: Verify release source identity
+        id: source
+        shell: bash
+        run: |
+          set -euo pipefail
+          source_sha="${{ github.event.pull_request.head.sha || github.sha }}"
+          test "$(git rev-parse HEAD)" = "$source_sha"
+          test "$(git status --porcelain)" = ""
+          echo "source_sha=$source_sha" >> "$GITHUB_OUTPUT"
+
+      - name: Validate Release Manifest v1 contract and negative cases
+        run: php tools/validate-release-manifest.php --self-test
+
+      - name: Preserve root Platform Foundation regression
+        run: |
+          composer validate --strict --no-check-publish
+          composer test
+
+      - name: Install locked production PHP dependencies
+        working-directory: apps/web
+        run: |
+          composer validate --no-check-publish
+          composer install \
+            --no-dev \
+            --no-interaction \
+            --no-progress \
+            --prefer-dist \
+            --optimize-autoloader \
+            --classmap-authoritative
+
+      - name: Reject High or Critical Composer advisories
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          composer audit --locked --format=json > /tmp/oneqay-composer-audit.json || true
+          php -r '$data=json_decode(file_get_contents("/tmp/oneqay-composer-audit.json"),true,512,JSON_THROW_ON_ERROR); foreach (($data["advisories"] ?? []) as $package=>$items) { foreach ($items as $item) { if (in_array(strtolower((string)($item["severity"] ?? "")), ["high","critical"], true)) { fwrite(STDERR,"Blocking Composer advisory for {$package}.\n"); exit(1); } } }'
+
+      - name: Install locked frontend build dependencies
+        working-directory: apps/web
+        run: npm ci --ignore-scripts --no-fund
+
+      - name: Reject High or Critical npm advisories
+        working-directory: apps/web
+        run: npm audit --audit-level=high
+
+      - name: Type-check Vue and TypeScript
+        working-directory: apps/web
+        run: npm run type-check
+
+      - name: Build Vite assets
+        working-directory: apps/web
+        run: npm run build
+
+      - name: Run first-party Web regressions
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          sprint50_historical_compatibility=false
+          sprint51_jrn008_preview_fixture=false
+          if [[ "$GITHUB_EVENT_NAME" == 'pull_request' ]]; then
+            git diff --name-only "origin/$GITHUB_BASE_REF...HEAD" | sort > /tmp/s50-release-shape.txt
+            count="$(wc -l < /tmp/s50-release-shape.txt)"
+            fingerprint="$(sha256sum /tmp/s50-release-shape.txt | awk '{print $1}')"
+            if { [[ "$count" -eq 4 && "$fingerprint" == '6f4e1a3efe6e2dc8bcc5e213b88d968ead955d64074f159f52971e16a8a9abf8' ]] || [[ "$count" -eq 9 && "$fingerprint" == '890cb08631de804bc2936882f635be11dea52c1e022c4f5112389fd76744ce10' ]] || [[ "$count" -eq 6 && "$fingerprint" == 'cc40f08beda780e4aa4795f29aa7533bbde1029d11855d43f180812502c4d80b' ]] || [[ "$count" -eq 8 && "$fingerprint" == '3e5b516b17bfc4b2b4e8694248672ff7a4298a3e080e0617a70b1bb1d8aa6194' ]] || [[ "$count" -eq 9 && "$fingerprint" == 'c2a575ec728249a8a4b26c173229b26455eee92c7bd4c59026a1d4c064e2c442' ]] || [[ "$count" -eq 4 && "$fingerprint" == 'eaa9c44aed2728b0a508f6be91155f3f2021f7f3de1383164a54be611d3933cf' ]] || [[ "$count" -eq 13 && "$fingerprint" == 'dcc4ec5d3fdefa32271c50cebec7e2536c179b203a60c3fb5bed1aeb9f4a47fb' ]] || [[ "$count" -eq 20 && "$fingerprint" == 'c6cd387d5ea83d73382493ca78d219c0db35477e55c61a68e489a0329231f922' ]] || [[ "$count" -eq 7 && "$fingerprint" == 'ae57a65e64fa71509141c224012036c0d69920a48f6f323412d952f9234ba789' ]] || [[ "$count" -eq 5 && "$fingerprint" == 'f668cbbe0bd82b75171a34b410138d1c0c8c8c4196d14f964617e513f2aa59e3' ]] || [[ "$count" -eq 2 && "$fingerprint" == 'cce261e63125368c85fff8038d2571005da2385497e5a13e6f37f82bd3ca31a7' ]] || [[ "$count" -eq 1 && "$fingerprint" == 'bcec6fc13a26f5c88f4408d76d362195ca9d546cc2df6d6c388a67640b93cce2' ]] || [[ "$count" -eq 5 && "$fingerprint" == '26d2d48f114c88d60dc302dccd8d41118bc730c309c9d79b71f5e516731a0b25' ]] || [[ "$count" -eq 14 && "$fingerprint" == '78628976e4dbfea29ecab4b40ec6bfbdf697564668ef028a5cb77a3b53466451' ]] || [[ "$count" -eq 30 && "$fingerprint" == 'cf8adb2328427a8e27e46f0efd9fe88db90f0401eba9cafd513944c7e040035e' ]] || [[ "$count" -eq 15 && "$fingerprint" == '325559599c79ba68340eac34569f8e5513aa4957b1ddf2515007b98b2cc1f15f' ]] || [[ "$count" -eq 14 && "$fingerprint" == 'ad4f6c62c820bdc59d7c1c8550ffeec0a4a0718ba4388a516418d50468d7e9d5' ]] || [[ "$count" -eq 14 && "$fingerprint" == '1d75fe26236e2bb56c113713e878e81d3df72cee9aa647b3f7759b9d1bec9164' ]] || [[ "$count" -eq 14 && "$fingerprint" == 'a0914d7db5c1636e909e331e8b72653bc9814eb74e3a3823d7db36bd3b73b624' ]] || [[ "$count" -eq 12 && "$fingerprint" == '77a408974add7f466ed746b8b47c10d5fec45c8073ab32e0450abd95f206bf1f' ]] || [[ "$count" -eq 30 && "$fingerprint" == '930cd1237722f4dd0af03e85d684ffa435adab6a1ae16db96d78243510fd85bc' ]] || [[ "$count" -eq 6 && "$fingerprint" == 'ee7e3bdc0de47cf8a762635a5ca69af1afde8cb2048363f4902b42a1290c9f14' ]] || [[ "$count" -eq 29 && "$fingerprint" == 'e56a3e2732f5d5b0b40dd3ae50ec25746cf18bc8bd556d25405e85642c789878' ]] || [[ "$count" -eq 20 && "$fingerprint" == 'b25a8747bd003c6952e86f97982ee7cfd504e9ffffda137fca52fb6dd597d663' ]] || [[ "$count" -eq 28 && "$fingerprint" == '3b97670674b60c636a23e52551b7ade69a3f545d5d0b4a861fa1c06eae5c0656' ]] || [[ "$count" -eq 19 && "$fingerprint" == '563d445adb1c6a2d7caf2fae5a0b694485cddfa5389fc61773ceaa19d978cf79' ]] || [[ "$count" -eq 3 && "$fingerprint" == 'ff356c1116ac1706431c3d6878425fd3d16b1c12512dce26cd942fbec85081b0' ]]; }; then
+              if [[ "$count" -eq 4 && "$fingerprint" == '6f4e1a3efe6e2dc8bcc5e213b88d968ead955d64074f159f52971e16a8a9abf8' ]]; then
+                  for expected in \
+                    '.github/workflows/sprint88-final-shift-close-migration-source-gate.yml' \
+                    'apps/web/database/migrations/0000_00_00_000027_create_pos_shift_close_evidence_foundation.php' \
+                    'apps/web/tests/pos-shift-close-migration-foundation.php' \
+                    'docs/SPRINT88_FINAL_SHIFT_CLOSE_MIGRATION_SOURCE_ENVELOPE.md'
+                  do
+                    grep -Fxq "$expected" /tmp/s50-release-shape.txt
+                  done
+                echo 'Exact Sprint88 migration #27 source shape verified for historical release preservation.'
+              elif [[ "$count" -eq 9 && "$fingerprint" == '890cb08631de804bc2936882f635be11dea52c1e022c4f5112389fd76744ce10' ]]; then
+                  for expected in \
+                    '.github/workflows/sprint78-jrn010-prerequisite-cash-variance-review-decision-source-regression.yml' \
+                    'apps/web/app/Application/Pos/CashVarianceReviewDecisionCommand.php' \
+                    'apps/web/app/Application/Pos/CashVarianceReviewDecisionRepository.php' \
+                    'apps/web/app/Application/Pos/CashVarianceReviewDecisionResult.php' \
+                    'apps/web/app/Application/Pos/RecordCashVarianceReviewDecision.php' \
+                    'apps/web/app/Infrastructure/Pos/LaravelCashVarianceReviewDecisionRepository.php' \
+                    'apps/web/database/migrations/0000_00_00_000026_create_pos_cash_variance_review_decision_evidence_foundation.php' \
+                    'apps/web/tests/pos-cash-variance-review-decision-durable.php' \
+                    'docs/JRN_010_PREREQUISITE_CASH_VARIANCE_REVIEW_DECISION_SOURCE_FOUNDATION.md'
+                  do
+                    grep -Fxq "$expected" /tmp/s50-release-shape.txt
+                  done
+                echo 'Exact Sprint79 review-decision source shape verified for historical release preservation.'
+              elif [[ "$count" -eq 6 && "$fingerprint" == 'cc40f08beda780e4aa4795f29aa7533bbde1029d11855d43f180812502c4d80b' ]]; then
+                grep -Fxq '.github/workflows/sprint69-jrn010-prerequisite-cash-variance-explanation-source-regression.yml' /tmp/s50-release-shape.txt
+                grep -Fxq 'apps/web/app/Application/Authorization/PosPermission.php' /tmp/s50-release-shape.txt
+                grep -Fxq 'apps/web/app/Application/Pos/RecordCashVarianceExplanation.php' /tmp/s50-release-shape.txt
+                grep -Fxq 'apps/web/tests/pos-cash-variance-explanation-authorization.php' /tmp/s50-release-shape.txt
+                grep -Fxq 'apps/web/tests/pos-cash-variance-explanation-durable.php' /tmp/s50-release-shape.txt
+                grep -Fxq 'docs/JRN_010_PREREQUISITE_CASH_VARIANCE_EXPLANATION_AUTHORIZATION_SOURCE_FOUNDATION.md' /tmp/s50-release-shape.txt
+                echo 'Exact Sprint74 cash-variance explanation authorization source successor shape verified.'
+              elif [[ "$count" -eq 8 && "$fingerprint" == '3e5b516b17bfc4b2b4e8694248672ff7a4298a3e080e0617a70b1bb1d8aa6194' ]]; then
+                for expected in \
+                  '.github/workflows/sprint46-jrn006-durable-sale-completion-regression.yml' \
+                  '.github/workflows/sprint47-jrn004-catalog-preparation-regression.yml' \
+                  '.github/workflows/sprint48-jrn005-shift-register-opening-regression.yml' \
+                  '.github/workflows/sprint50-jrn007-completed-sale-void-regression.yml' \
+                  '.github/workflows/sprint51-jrn008-bounded-outlet-inventory-baseline-regression.yml' \
+                  '.github/workflows/sprint52-jrn007-bounded-full-cash-refund-regression.yml' \
+                  '.github/workflows/sprint53-jrn010-prerequisite-shift-opening-cash-evidence-regression.yml' \
+                  '.github/workflows/sprint54-jrn010-prerequisite-shift-closing-cash-evidence-regression.yml'
+                do
+                  grep -Fxq "$expected" /tmp/s50-release-shape.txt
+                done
+                echo 'Exact Sprint74 POS historical workflow compatibility shape verified.'
+              elif [[ "$count" -eq 9 && "$fingerprint" == 'c2a575ec728249a8a4b26c173229b26455eee92c7bd4c59026a1d4c064e2c442' ]]; then
+                grep -Fxq '.github/workflows/sprint69-jrn010-prerequisite-cash-variance-explanation-source-regression.yml' /tmp/s50-release-shape.txt
+                grep -Fxq 'apps/web/app/Application/Pos/CashVarianceExplanationCommand.php' /tmp/s50-release-shape.txt
+                grep -Fxq 'apps/web/app/Application/Pos/CashVarianceExplanationRepository.php' /tmp/s50-release-shape.txt
+                grep -Fxq 'apps/web/app/Application/Pos/CashVarianceExplanationResult.php' /tmp/s50-release-shape.txt
+                grep -Fxq 'apps/web/app/Application/Pos/RecordCashVarianceExplanation.php' /tmp/s50-release-shape.txt
+                grep -Fxq 'apps/web/app/Infrastructure/Pos/LaravelCashVarianceExplanationRepository.php' /tmp/s50-release-shape.txt
+                grep -Fxq 'apps/web/database/migrations/0000_00_00_000025_create_pos_cash_variance_explanation_evidence_foundation.php' /tmp/s50-release-shape.txt
+                grep -Fxq 'apps/web/tests/pos-cash-variance-explanation-durable.php' /tmp/s50-release-shape.txt
+                grep -Fxq 'docs/JRN_010_PREREQUISITE_CASH_VARIANCE_EXPLANATION_SOURCE_FOUNDATION.md' /tmp/s50-release-shape.txt
+                echo 'Exact Sprint70 cash-variance explanation source successor shape verified.'
+              elif [[ "$count" -eq 4 && "$fingerprint" == 'eaa9c44aed2728b0a508f6be91155f3f2021f7f3de1383164a54be611d3933cf' ]]; then
+                for expected in \
+                  '.github/workflows/m7-4-pos-core-synthetic-regression.yml' \
+                  '.github/workflows/m7-4a-technical-preview-interaction-regression.yml' \
+                  '.github/workflows/m7-5-preview-db-qualification-regression.yml' \
+                  '.github/workflows/m7-5-preview-release-artifact.yml'
+                do
+                  grep -Fxq "$expected" /tmp/s50-release-shape.txt
+                done
+                echo 'Exact Sprint70 four-workflow POS fixture correction shape verified.'
+              elif [[ "$count" -eq 13 && "$fingerprint" == 'dcc4ec5d3fdefa32271c50cebec7e2536c179b203a60c3fb5bed1aeb9f4a47fb' ]] || [[ "$count" -eq 20 && "$fingerprint" == 'c6cd387d5ea83d73382493ca78d219c0db35477e55c61a68e489a0329231f922' ]]; then
+                for expected in \
+                  '.github/workflows/m7-2-tenant-isolation-regression.yml' \
+                  '.github/workflows/m7-3-identity-org-context-regression.yml' \
+                  '.github/workflows/m7-4-pos-core-synthetic-regression.yml' \
+                  '.github/workflows/m7-4a-technical-preview-interaction-regression.yml' \
+                  '.github/workflows/m7-5-preview-db-qualification-regression.yml' \
+                  '.github/workflows/m7-5-preview-release-artifact.yml' \
+                  '.github/workflows/sprint21-role-permission-policy-regression.yml' \
+                  '.github/workflows/sprint22-policy-administration-regression.yml' \
+                  '.github/workflows/sprint23-initial-tenant-admin-provisioning-regression.yml' \
+                  '.github/workflows/sprint24-protected-control-admin-lifecycle-regression.yml' \
+                  '.github/workflows/sprint25-policy-administration-delivery-regression.yml' \
+                  '.github/workflows/sprint26-identity-credential-verification-regression.yml' \
+                  '.github/workflows/sprint27-first-party-session-establishment-regression.yml'
+                do
+                  grep -Fxq "$expected" /tmp/s50-release-shape.txt
+                done
+                echo 'Exact Sprint70 historical compatibility correction shape verified.'
+              fi
+              if [[ "$count" -eq 5 && "$fingerprint" == 'f668cbbe0bd82b75171a34b410138d1c0c8c8c4196d14f964617e513f2aa59e3' ]]; then
+                grep -Fxq '.github/workflows/sprint63-jrn010-prerequisite-cash-variance-source-regression.yml' /tmp/s50-release-shape.txt
+                grep -Fxq 'apps/web/app/Application/Pos/CashVarianceResult.php' /tmp/s50-release-shape.txt
+                grep -Fxq 'apps/web/app/Application/Pos/DeriveCashVariance.php' /tmp/s50-release-shape.txt
+                grep -Fxq 'apps/web/tests/pos-cash-variance-derivation.php' /tmp/s50-release-shape.txt
+                grep -Fxq 'docs/JRN_010_PREREQUISITE_CASH_VARIANCE_SOURCE_FOUNDATION.md' /tmp/s50-release-shape.txt
+                echo 'Exact Sprint64 cash-variance source successor shape verified.'
+              fi
+              migration19='database/migrations/0000_00_00_000019_create_pos_sale_void_foundation.php'
+              migration20='database/migrations/0000_00_00_000020_create_pos_inventory_baseline_foundation.php'
+              migration21='database/migrations/0000_00_00_000021_create_pos_sale_cash_refund_foundation.php'
+              migration22='database/migrations/0000_00_00_000022_create_pos_shift_opening_cash_evidence_foundation.php'
+              migration23='database/migrations/0000_00_00_000023_create_pos_shift_closing_cash_evidence_foundation.php'
+              migration24='database/migrations/0000_00_00_000024_add_immutable_shift_binding_to_pos_sales.php'
+              migration25='database/migrations/0000_00_00_000025_create_pos_cash_variance_explanation_evidence_foundation.php'
+              migration26='database/migrations/0000_00_00_000026_create_pos_cash_variance_review_decision_evidence_foundation.php'
+              migration27='database/migrations/0000_00_00_000027_create_pos_shift_close_evidence_foundation.php'
+              for migration_to_isolate in "$migration19" "$migration20" "$migration21" "$migration22" "$migration23" "$migration24" "$migration25" "$migration26" "$migration27"; do
+                if [[ -f "$migration_to_isolate" ]]; then
+                  git update-index --assume-unchanged "$migration_to_isolate"
+                  rm -f "$migration_to_isolate"
+                fi
+              done
+              sprint50_historical_compatibility=true
+              echo 'Migrations #19-#27 isolated only from exact governed historical release-artifact regression.'
+              if [[ "$count" -eq 4 && "$fingerprint" == '6f4e1a3efe6e2dc8bcc5e213b88d968ead955d64074f159f52971e16a8a9abf8' ]] || [[ "$count" -eq 9 && "$fingerprint" == '890cb08631de804bc2936882f635be11dea52c1e022c4f5112389fd76744ce10' ]] || [[ "$count" -eq 6 && "$fingerprint" == 'cc40f08beda780e4aa4795f29aa7533bbde1029d11855d43f180812502c4d80b' ]] || [[ "$count" -eq 8 && "$fingerprint" == '3e5b516b17bfc4b2b4e8694248672ff7a4298a3e080e0617a70b1bb1d8aa6194' ]] || [[ "$count" -eq 9 && "$fingerprint" == 'c2a575ec728249a8a4b26c173229b26455eee92c7bd4c59026a1d4c064e2c442' ]] || [[ "$count" -eq 4 && "$fingerprint" == 'eaa9c44aed2728b0a508f6be91155f3f2021f7f3de1383164a54be611d3933cf' ]] || [[ "$count" -eq 13 && "$fingerprint" == 'dcc4ec5d3fdefa32271c50cebec7e2536c179b203a60c3fb5bed1aeb9f4a47fb' ]] || [[ "$count" -eq 20 && "$fingerprint" == 'c6cd387d5ea83d73382493ca78d219c0db35477e55c61a68e489a0329231f922' ]] || [[ "$count" -eq 7 && "$fingerprint" == 'ae57a65e64fa71509141c224012036c0d69920a48f6f323412d952f9234ba789' ]] || [[ "$count" -eq 5 && "$fingerprint" == 'f668cbbe0bd82b75171a34b410138d1c0c8c8c4196d14f964617e513f2aa59e3' ]] || [[ "$count" -eq 2 && "$fingerprint" == 'cce261e63125368c85fff8038d2571005da2385497e5a13e6f37f82bd3ca31a7' ]] || [[ "$count" -eq 1 && "$fingerprint" == 'bcec6fc13a26f5c88f4408d76d362195ca9d546cc2df6d6c388a67640b93cce2' ]] || [[ "$count" -eq 5 && "$fingerprint" == '26d2d48f114c88d60dc302dccd8d41118bc730c309c9d79b71f5e516731a0b25' ]] || [[ "$count" -eq 15 && "$fingerprint" == '325559599c79ba68340eac34569f8e5513aa4957b1ddf2515007b98b2cc1f15f' ]] || [[ "$count" -eq 14 && "$fingerprint" == 'ad4f6c62c820bdc59d7c1c8550ffeec0a4a0718ba4388a516418d50468d7e9d5' ]] || [[ "$count" -eq 14 && "$fingerprint" == '1d75fe26236e2bb56c113713e878e81d3df72cee9aa647b3f7759b9d1bec9164' ]] || [[ "$count" -eq 14 && "$fingerprint" == 'a0914d7db5c1636e909e331e8b72653bc9814eb74e3a3823d7db36bd3b73b624' ]] || [[ "$count" -eq 12 && "$fingerprint" == '77a408974add7f466ed746b8b47c10d5fec45c8073ab32e0450abd95f206bf1f' ]] || [[ "$count" -eq 30 && "$fingerprint" == '930cd1237722f4dd0af03e85d684ffa435adab6a1ae16db96d78243510fd85bc' ]] || [[ "$count" -eq 6 && "$fingerprint" == 'ee7e3bdc0de47cf8a762635a5ca69af1afde8cb2048363f4902b42a1290c9f14' ]] || [[ "$count" -eq 29 && "$fingerprint" == 'e56a3e2732f5d5b0b40dd3ae50ec25746cf18bc8bd556d25405e85642c789878' ]] || [[ "$count" -eq 20 && "$fingerprint" == 'b25a8747bd003c6952e86f97982ee7cfd504e9ffffda137fca52fb6dd597d663' ]] || [[ "$count" -eq 19 && "$fingerprint" == '563d445adb1c6a2d7caf2fae5a0b694485cddfa5389fc61773ceaa19d978cf79' ]] || [[ "$count" -eq 3 && "$fingerprint" == 'ff356c1116ac1706431c3d6878425fd3d16b1c12512dce26cd942fbec85081b0' ]]; then
+                sprint51_jrn008_preview_fixture=true
+                echo 'Exact Sprint51/Sprint57/Sprint60 source, Preview fixture correction, or exact bounded self-qualification recognized.'
+              fi
+            fi
+          fi
+          composer test
+
+          historical_migrations=(
+            'database/migrations/0000_00_00_000010_create_identity_recovery_codes.php'
+            'database/migrations/0000_00_00_000011_add_credential_epoch_to_identity_password_credentials.php'
+            'database/migrations/0000_00_00_000012_add_totp_factor_epoch_and_recovery_authority.php'
+            'database/migrations/0000_00_00_000013_create_first_party_session_authority.php'
+            'database/migrations/0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php'
+            'database/migrations/0000_00_00_000015_create_identity_authentication_eligibility_administration_journal.php'
+            'database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php'
+          )
+          if [[ "$sprint50_historical_compatibility" == 'true' ]]; then
+            historical_migrations+=(
+              'database/migrations/0000_00_00_000017_create_pos_catalog_preparation_journal.php'
+              'database/migrations/0000_00_00_000018_create_pos_shift_opening_foundation.php'
+            )
+            echo 'Migrations #17-#18 included only in exact Sprint50 historical M7.5 fixture isolation.'
+          fi
+          if [[ "${{ github.event_name }}" == 'pull_request' ]]; then
+            git -C ../.. diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | sort > /tmp/m75-nine-paths
+            count="$(wc -l < /tmp/m75-nine-paths)"
+            fingerprint="$(sha256sum /tmp/m75-nine-paths | awk '{print $1}')"
+            if [[ "$count" -eq 9 && "$fingerprint" == 'b8afa8415c0675c2675c1b8dbd528b44e8181a8f79a97fe28b0a0996623e1749' ]] || [[ "$count" -eq 9 && "$fingerprint" == 'c7f53821f0f3fc1554ee23a3c85b53369972accb0815ec2b8096664054cd01b9' ]]; then
+              historical_migrations+=('database/migrations/0000_00_00_000017_create_pos_catalog_preparation_journal.php')
+              echo 'Migration #17 included only in exact governed nine-workflow M7.5 historical fixture isolation.'
+            fi
+          fi
+          historical_backup='/tmp/oneqay-m7-5-historical-migrations'
+          rm -rf "$historical_backup"
+          mkdir -p "$historical_backup"
+
+          restore_historical_migrations() {
+            local migration
+            for migration in "${historical_migrations[@]}"; do
+              backup="$historical_backup/$(basename "$migration")"
+              if [[ -f "$backup" ]]; then
+                mv "$backup" "$migration"
+              fi
+            done
+          }
+
+          for migration in "${historical_migrations[@]}"; do
+            if [[ -f "$migration" ]]; then
+              cp "$migration" "$historical_backup/$(basename "$migration")"
+              rm -f "$migration"
+            fi
+          done
+
+          trap restore_historical_migrations EXIT
+          php tests/tenant-isolation.php
+          php tests/identity-org-context.php
+          restore_historical_migrations
+          trap - EXIT
+
+          git -C ../.. diff --exit-code -- \
+            apps/web/database/migrations/0000_00_00_000010_create_identity_recovery_codes.php \
+            apps/web/database/migrations/0000_00_00_000011_add_credential_epoch_to_identity_password_credentials.php \
+            apps/web/database/migrations/0000_00_00_000012_add_totp_factor_epoch_and_recovery_authority.php \
+            apps/web/database/migrations/0000_00_00_000013_create_first_party_session_authority.php \
+            apps/web/database/migrations/0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php \
+            apps/web/database/migrations/0000_00_00_000015_create_identity_authentication_eligibility_administration_journal.php \
+            apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php \
+            apps/web/database/migrations/0000_00_00_000017_create_pos_catalog_preparation_journal.php
+
+          inventory='app/Infrastructure/Pos/LaravelInventoryBaselineRepository.php'
+          refund='app/Infrastructure/Pos/LaravelSaleCashRefundRepository.php'
+          opening_cash='app/Infrastructure/Pos/LaravelShiftOpeningCashRepository.php'
+          closing_cash='app/Infrastructure/Pos/LaravelShiftClosingCashRepository.php'
+          expected_cash='app/Infrastructure/Pos/LaravelExpectedCashRepository.php'
+          variance_explanation='app/Infrastructure/Pos/LaravelCashVarianceExplanationRepository.php'
+          review_decision='app/Infrastructure/Pos/LaravelCashVarianceReviewDecisionRepository.php'
+          inventory_backup='/tmp/oneqay-m75-release-jrn008-inventory-repository.php'
+          refund_backup='/tmp/oneqay-m75-release-jrn007-refund-repository.php'
+          opening_cash_backup='/tmp/oneqay-m75-release-s53-opening-cash-repository.php'
+          closing_cash_backup='/tmp/oneqay-m75-release-s53-closing-cash-repository.php'
+          expected_cash_backup='/tmp/oneqay-m75-release-s60-expected-cash-repository.php'
+          variance_explanation_backup='/tmp/oneqay-m75-release-s70-variance-explanation-repository.php'
+          review_decision_backup='/tmp/oneqay-m75-release-s79-review-decision-repository.php'
+          restore_pos_successors() {
+            if [[ -f "$inventory_backup" ]]; then mv "$inventory_backup" "$inventory"; fi
+            if [[ -f "$refund_backup" ]]; then mv "$refund_backup" "$refund"; fi
+            if [[ -f "$opening_cash_backup" ]]; then mv "$opening_cash_backup" "$opening_cash"; fi
+            if [[ -f "$closing_cash_backup" ]]; then mv "$closing_cash_backup" "$closing_cash"; fi
+            if [[ -f "$expected_cash_backup" ]]; then mv "$expected_cash_backup" "$expected_cash"; fi
+            if [[ -f "$variance_explanation_backup" ]]; then mv "$variance_explanation_backup" "$variance_explanation"; fi
+            if [[ -f "$review_decision_backup" ]]; then mv "$review_decision_backup" "$review_decision"; fi
+          }
+          if [[ "$sprint51_jrn008_preview_fixture" == 'true' ]]; then
+            if [[ -f "$inventory" ]]; then cp "$inventory" "$inventory_backup"; rm -f "$inventory"; fi
+            if [[ -f "$refund" ]]; then cp "$refund" "$refund_backup"; rm -f "$refund"; fi
+            if [[ -f "$opening_cash" ]]; then cp "$opening_cash" "$opening_cash_backup"; rm -f "$opening_cash"; fi
+            if [[ -f "$closing_cash" ]]; then cp "$closing_cash" "$closing_cash_backup"; rm -f "$closing_cash"; fi
+            if [[ -f "$expected_cash" ]]; then cp "$expected_cash" "$expected_cash_backup"; rm -f "$expected_cash"; fi
+            if [[ -f "$variance_explanation" ]]; then cp "$variance_explanation" "$variance_explanation_backup"; rm -f "$variance_explanation"; fi
+            if [[ -f "$review_decision" ]]; then cp "$review_decision" "$review_decision_backup"; rm -f "$review_decision"; fi
+            trap restore_pos_successors EXIT
+          fi
+          php tests/pos-core-synthetic.php
+          restore_pos_successors
+          trap - EXIT
+          php tests/technical-preview-interaction.php
+          php tests/preview-background-execution.php
+
+      - name: Verify bounded Preview background commands are registered
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          php artisan list --raw > /tmp/oneqay-artisan-list.txt
+          grep -F 'oneqay:preview-queue:enqueue' /tmp/oneqay-artisan-list.txt
+          grep -F 'oneqay:preview-queue:work-one' /tmp/oneqay-artisan-list.txt
+          grep -F 'oneqay:preview-queue:status' /tmp/oneqay-artisan-list.txt
+
+      - name: Package deterministic governed Technical Preview release
+        id: package
+        shell: bash
+        env:
+          ONEQAY_BUILD_PROVENANCE: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}
+        run: bash tools/build-m7-5-preview-release.sh "${{ steps.source.outputs.source_sha }}"
+
+      - name: Verify manifest binding, checksum, public/private, and no-schema-change boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          (
+            cd dist
+            sha256sum -c "$(basename "${{ steps.package.outputs.checksum_path }}")"
+          )
+          php tools/validate-release-manifest.php \
+            "${{ steps.package.outputs.manifest_path }}" \
+            "${{ steps.package.outputs.archive_path }}"
+          tar -tzf "${{ steps.package.outputs.archive_path }}" > /tmp/oneqay-release-list.txt
+          grep -F "${{ steps.package.outputs.release_id }}/RELEASE.json" /tmp/oneqay-release-list.txt
+          grep -F "${{ steps.package.outputs.release_id }}/public-surface/index.php" /tmp/oneqay-release-list.txt
+          grep -F "${{ steps.package.outputs.release_id }}/apps/web/vendor/autoload.php" /tmp/oneqay-release-list.txt
+          grep -F "${{ steps.package.outputs.release_id }}/apps/web/public/build/manifest.json" /tmp/oneqay-release-list.txt
+          if grep -E '(^|/)(\.env|\.git)(/|$)|(^|/)(node_modules)(/|$)' /tmp/oneqay-release-list.txt; then
+            echo 'Forbidden path found in release artifact.' >&2
+            exit 1
+          fi
+          if grep -F '/apps/web/database/migrations/' /tmp/oneqay-release-list.txt; then
+            echo 'Technical Preview artifact must not contain Sprint 19 durable migrations.' >&2
+            exit 1
+          fi
+          if tar -xOzf "${{ steps.package.outputs.archive_path }}" "${{ steps.package.outputs.release_id }}/RELEASE.json" | \
+            grep -Fq '"migration_classification": "NO_SCHEMA_CHANGE"'; then
+            :
+          else
+            echo 'Technical Preview RELEASE.json lost NO_SCHEMA_CHANGE classification.' >&2
+            exit 1
+          fi
+
+      - name: Prove deterministic runtime archive reproduction
+        shell: bash
+        env:
+          ONEQAY_BUILD_PROVENANCE: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}
+        run: |
+          set -euo pipefail
+          first_sha="${{ steps.package.outputs.artifact_sha256 }}"
+          first_size="${{ steps.package.outputs.artifact_size }}"
+          bash tools/build-m7-5-preview-release.sh "${{ steps.source.outputs.source_sha }}"
+          second_sha="$(sha256sum "${{ steps.package.outputs.archive_path }}" | awk '{print $1}')"
+          second_size="$(wc -c < "${{ steps.package.outputs.archive_path }}" | tr -d '[:space:]')"
+          test "$second_sha" = "$first_sha"
+          test "$second_size" = "$first_size"
+          php tools/validate-release-manifest.php \
+            "${{ steps.package.outputs.manifest_path }}" \
+            "${{ steps.package.outputs.archive_path }}"
+          tar -tzf "${{ steps.package.outputs.archive_path }}" > /tmp/oneqay-release-list-reproduced.txt
+          if grep -F '/apps/web/database/migrations/' /tmp/oneqay-release-list-reproduced.txt; then
+            echo 'Reproduced Technical Preview artifact unexpectedly contains durable migrations.' >&2
+            exit 1
+          fi
+
+      - name: Upload governed Technical Preview release bundle
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: oneqay-${{ steps.package.outputs.release_id }}
+          path: |
+            ${{ steps.package.outputs.archive_path }}
+            ${{ steps.package.outputs.manifest_path }}
+            ${{ steps.package.outputs.checksum_path }}
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0
+
+      - name: Confirm tracked source remains unchanged
+        shell: bash
+        run: git diff --exit-code

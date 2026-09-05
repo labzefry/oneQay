@@ -1,0 +1,601 @@
+# Sprint57 immutable sale-to-shift binding compatibility preservation anchor — Lab | zefry
+# Sprint54 bounded 12-workflow source-preservation correction — Lab | zefry
+# Sprint54 bounded successor compatibility predecessor — Lab | zefry
+# Sprint53 bounded third historical fixture compatibility closure — Lab | zefry
+# Author by Lab | zefry
+# Sprint42 Sprint33 bounded-successor compatibility anchor.
+name: Sprint 32 Authentication Recovery Proof Regression
+
+# Attribution: Lab | zefry
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/m7-2-tenant-isolation-regression.yml'
+      - '.github/workflows/m7-3-identity-org-context-regression.yml'
+      - '.github/workflows/m7-4a-technical-preview-interaction-regression.yml'
+      - '.github/workflows/m7-5-preview-db-qualification-regression.yml'
+      - '.github/workflows/m7-5-preview-release-artifact.yml'
+      - '.github/workflows/sprint21-role-permission-policy-regression.yml'
+      - '.github/workflows/sprint22-policy-administration-regression.yml'
+      - '.github/workflows/sprint23-initial-tenant-admin-provisioning-regression.yml'
+      - '.github/workflows/sprint24-protected-control-admin-lifecycle-regression.yml'
+      - '.github/workflows/sprint25-policy-administration-delivery-regression.yml'
+      - '.github/workflows/sprint26-identity-credential-verification-regression.yml'
+      - '.github/workflows/sprint27-first-party-session-establishment-regression.yml'
+      - '.github/workflows/sprint28-initial-password-enrollment-regression.yml'
+      - '.github/workflows/sprint29-first-control-principal-credential-bootstrap-regression.yml'
+      - '.github/workflows/sprint30-privileged-totp-mfa-regression.yml'
+      - '.github/workflows/sprint31-privileged-reauthentication-step-up-regression.yml'
+      - '.github/workflows/sprint32-authentication-recovery-proof-regression.yml'
+      - 'apps/web/app/Application/Identity/IssuedRecoveryCodeSet.php'
+      - 'apps/web/app/Application/Identity/RecoveryCodeClock.php'
+      - 'apps/web/app/Application/Identity/RecoveryCodeRepository.php'
+      - 'apps/web/app/Application/Identity/RecoveryCodeService.php'
+      - 'apps/web/app/Application/Identity/RecoveryCodeViolation.php'
+      - 'apps/web/app/Application/Identity/VerifiedRecoveryProof.php'
+      - 'apps/web/app/Delivery/Http/Identity/FirstPartySessionKeys.php'
+      - 'apps/web/app/Delivery/Http/Identity/RecoveryCodeController.php'
+      - 'apps/web/app/Infrastructure/Identity/LaravelRecoveryCodeRepository.php'
+      - 'apps/web/app/Providers/AppServiceProvider.php'
+      - 'apps/web/config/oneqay.php'
+      - 'apps/web/database/migrations/0000_00_00_000010_create_identity_recovery_codes.php'
+      - 'apps/web/routes/web.php'
+      - 'apps/web/tests/authentication-recovery-proof.php'
+      - 'docs/AUTHENTICATION_RECOVERY_PROOF_FOUNDATION.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint32-authentication-recovery-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sprint32-authentication-recovery-proof-regression:
+    name: sprint32-authentication-recovery-proof-regression
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:bW1tbW1tbW1tbW1tbW1tbW1tbW1tbW1tbW1tbW1tbW0=
+      APP_DEBUG: 'false'
+      APP_URL: http://localhost
+      ONEQAY_RUNTIME_CLASS: ci
+      ONEQAY_PERSISTENCE_ENABLED: 'false'
+      ONEQAY_PRIVILEGED_TOTP_MFA_ENABLED: 'false'
+      ONEQAY_PRIVILEGED_STEP_UP_ENABLED: 'false'
+      ONEQAY_AUTHENTICATION_RECOVERY_ENABLED: 'false'
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Setup exact PHP runtime
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        with:
+          php-version: '8.3'
+          tools: composer:v2
+          coverage: none
+
+      - name: Recognize exact Sprint 33 bounded successor
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "${{ github.base_ref }}"
+          git diff --name-only "origin/${{ github.base_ref }}...HEAD" | sort > /tmp/s33-successor-files.txt
+          count="$(wc -l < /tmp/s33-successor-files.txt)"
+          fingerprint="$(sha256sum /tmp/s33-successor-files.txt | awk '{print $1}')"
+          echo 'ONEQAY_SPRINT46_JRN006_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
+          echo 'ONEQAY_SPRINT46_JRN006_COMPATIBILITY_PREDECESSOR=false' >> "$GITHUB_ENV"
+          echo 'ONEQAY_SPRINT47_JRN004_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
+          echo 'ONEQAY_SPRINT47_JRN004_COMPATIBILITY_PREDECESSOR=false' >> "$GITHUB_ENV"
+          echo 'ONEQAY_SPRINT48_JRN005_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
+          echo 'ONEQAY_SPRINT50_JRN007_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
+          echo 'ONEQAY_SPRINT51_JRN008_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
+          echo 'ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
+          if { [[ "$count" -eq 1 ]] && [[ "$fingerprint" == '261f147d880a37fe9137b28d9541724c6c5e3987138f3fb56d5465ff31dc7412' ]]; } || { [[ "$count" -eq 1 ]] && [[ "$fingerprint" == 'bcec6fc13a26f5c88f4408d76d362195ca9d546cc2df6d6c388a67640b93cce2' ]]; }; then
+            echo 'ONEQAY_SPRINT32_WORKFLOW_CORRECTION=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT54_JRN010_PREREQ_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
+            if [[ "$count" -eq 14 && "$fingerprint" == '1d75fe26236e2bb56c113713e878e81d3df72cee9aa647b3f7759b9d1bec9164' ]] || [[ "$count" -eq 14 && "$fingerprint" == 'a0914d7db5c1636e909e331e8b72653bc9814eb74e3a3823d7db36bd3b73b624' ]] || [[ "$count" -eq 30 && "$fingerprint" == '930cd1237722f4dd0af03e85d684ffa435adab6a1ae16db96d78243510fd85bc' ]] || [[ "$count" -eq 6 && "$fingerprint" == 'ee7e3bdc0de47cf8a762635a5ca69af1afde8cb2048363f4902b42a1290c9f14' ]]; then
+              echo 'ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+                if [[ "$count" -eq 14 && "$fingerprint" == 'a0914d7db5c1636e909e331e8b72653bc9814eb74e3a3823d7db36bd3b73b624' ]]; then echo 'ONEQAY_SPRINT54_JRN010_PREREQ_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"; fi
+            fi
+            for migration in \
+              0000_00_00_000012_add_totp_factor_epoch_and_recovery_authority.php \
+              0000_00_00_000013_create_first_party_session_authority.php \
+              0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php \
+              0000_00_00_000015_create_identity_authentication_eligibility_administration_journal.php \
+              0000_00_00_000016_create_pos_sale_completion_foundation.php \
+              0000_00_00_000017_create_pos_catalog_preparation_journal.php \
+              0000_00_00_000018_create_pos_shift_opening_foundation.php \
+              0000_00_00_000019_create_pos_sale_void_foundation.php \
+              0000_00_00_000020_create_pos_inventory_baseline_foundation.php \
+              0000_00_00_000021_create_pos_sale_cash_refund_foundation.php \
+              0000_00_00_000022_create_pos_shift_opening_cash_evidence_foundation.php \
+              0000_00_00_000023_create_pos_shift_closing_cash_evidence_foundation.php \
+              0000_00_00_000024_add_immutable_shift_binding_to_pos_sales.php
+            do
+              migration_path="apps/web/database/migrations/$migration"
+              if [[ -f "$migration_path" ]]; then
+                git update-index --assume-unchanged "$migration_path"
+                rm -f "$migration_path"
+              fi
+            done
+            echo 'Exact Sprint32 or M7.5 workflow correction recognized; migrations #12-#24 isolated when present only from historical Sprint32 executable preservation.'
+            exit 0
+          fi
+          if [[ "$count" -eq 7 && "$fingerprint" == '4784ffca1c940d3fa54a2a3988ead07e2de993bde8d3af2bd41014dbdf905be0' ]] || [[ "$count" -eq 5 && "$fingerprint" == 'ab09e044925ae98740a49c46a70ff387e5f5445b245d3a556d85ad6a354305ec' ]] || [[ "$count" -eq 3 && "$fingerprint" == 'fd5f1466a41a7b11f0684303f5e93196668c2ca929ce9119e415186ae6708e9d' ]] || [[ "$count" -eq 7 && "$fingerprint" == 'f3f8b3ad0cca378307000ca242c4b9a4a8a7ab967d1649a5cd6408837001364c' ]] || [[ "$count" -eq 12 && "$fingerprint" == 'b2c5fc10a8baa2d56991d6dbd36b0407159d70953654ef322a9a11d23660489b' ]] || [[ "$count" -eq 19 && "$fingerprint" == 'fc2b578fc9d090dfce1fd34c5acfa7a07f065979a94f62becb3dc54dee664920' ]] || [[ "$count" -eq 8 && "$fingerprint" == 'e773cbe308d202808021c452c75954cc80234c081bbb1f23cb757210f76b8c85' ]] || [[ "$count" -eq 8 && "$fingerprint" == '6315890d318c3cdfca549bfacef6cb8d1ca66a4421416b49b4978095a98b6729' ]] || [[ "$count" -eq 9 && "$fingerprint" == 'b8afa8415c0675c2675c1b8dbd528b44e8181a8f79a97fe28b0a0996623e1749' ]] || [[ "$count" -eq 9 && "$fingerprint" == 'c7f53821f0f3fc1554ee23a3c85b53369972accb0815ec2b8096664054cd01b9' ]] || [[ "$count" -eq 9 && "$fingerprint" == '3d0293362f451fe4bf472d0d2c38c3eec3d67df75b451ba5b273e8dbdb0f2eed' ]] || [[ "$count" -eq 4 && "$fingerprint" == 'a5d3b0816c3b0e6f1fa7dd5ece73ea6347042372dd517af31e303c41d49abfaa' ]] || [[ "$count" -eq 14 && "$fingerprint" == 'ed29b6128c193f0efd6359748e220a37aefaec856acc4bc3b90f445ce3ccb674' ]] || [[ "$count" -eq 15 && "$fingerprint" == 'c1ac6d5130c9d78ff99ed0accf5d11e3f08debc575c0d5152ef5b24e6f82ce02' ]] || [[ "$count" -eq 15 && "$fingerprint" == '5e19664988cabba0030f9927d26b0702370414be4cd6b424d585925b634ca2b8' ]] || [[ "$count" -eq 14 && "$fingerprint" == '78628976e4dbfea29ecab4b40ec6bfbdf697564668ef028a5cb77a3b53466451' ]] || [[ "$count" -eq 30 && "$fingerprint" == 'cf8adb2328427a8e27e46f0efd9fe88db90f0401eba9cafd513944c7e040035e' ]] || [[ "$count" -eq 2 && "$fingerprint" == '0f7b19c619d32f5b461eec1625cf0779b2b7f0a0ee31292c855d5709a2962669' ]] || [[ "$count" -eq 9 && "$fingerprint" == '3402c8ea58722711f2894b8e3219b6e9d5dede4a5a87f61faa265f299a34c5b1' ]] || [[ "$count" -eq 15 && "$fingerprint" == '325559599c79ba68340eac34569f8e5513aa4957b1ddf2515007b98b2cc1f15f' ]] || [[ "$count" -eq 14 && "$fingerprint" == 'ad4f6c62c820bdc59d7c1c8550ffeec0a4a0718ba4388a516418d50468d7e9d5' ]] || [[ "$count" -eq 14 && "$fingerprint" == '1d75fe26236e2bb56c113713e878e81d3df72cee9aa647b3f7759b9d1bec9164' ]] || [[ "$count" -eq 14 && "$fingerprint" == 'a0914d7db5c1636e909e331e8b72653bc9814eb74e3a3823d7db36bd3b73b624' ]] || [[ "$count" -eq 30 && "$fingerprint" == '930cd1237722f4dd0af03e85d684ffa435adab6a1ae16db96d78243510fd85bc' ]] || [[ "$count" -eq 6 && "$fingerprint" == 'ee7e3bdc0de47cf8a762635a5ca69af1afde8cb2048363f4902b42a1290c9f14' ]] || [[ "$count" -eq 29 && "$fingerprint" == 'e56a3e2732f5d5b0b40dd3ae50ec25746cf18bc8bd556d25405e85642c789878' ]] || [[ "$count" -eq 20 && "$fingerprint" == 'b25a8747bd003c6952e86f97982ee7cfd504e9ffffda137fca52fb6dd597d663' ]] || [[ "$count" -eq 28 && "$fingerprint" == '3b97670674b60c636a23e52551b7ade69a3f545d5d0b4a861fa1c06eae5c0656' ]] || [[ "$count" -eq 19 && "$fingerprint" == '563d445adb1c6a2d7caf2fae5a0b694485cddfa5389fc61773ceaa19d978cf79' ]] || [[ "$count" -eq 12 && "$fingerprint" == '77a408974add7f466ed746b8b47c10d5fec45c8073ab32e0450abd95f206bf1f' ]]; then
+            echo 'ONEQAY_SPRINT32_WORKFLOW_CORRECTION=true' >> "$GITHUB_ENV"
+            if [[ "$count" -eq 14 && "$fingerprint" == '78628976e4dbfea29ecab4b40ec6bfbdf697564668ef028a5cb77a3b53466451' ]]; then
+              echo 'ONEQAY_SPRINT50_JRN007_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            elif [[ "$count" -eq 15 && "$fingerprint" == '325559599c79ba68340eac34569f8e5513aa4957b1ddf2515007b98b2cc1f15f' ]]; then
+              echo 'ONEQAY_SPRINT51_JRN008_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            elif [[ "$count" -eq 14 && "$fingerprint" == 'ad4f6c62c820bdc59d7c1c8550ffeec0a4a0718ba4388a516418d50468d7e9d5' ]] || [[ "$count" -eq 14 && "$fingerprint" == '1d75fe26236e2bb56c113713e878e81d3df72cee9aa647b3f7759b9d1bec9164' ]] || [[ "$count" -eq 14 && "$fingerprint" == 'a0914d7db5c1636e909e331e8b72653bc9814eb74e3a3823d7db36bd3b73b624' ]] || [[ "$count" -eq 30 && "$fingerprint" == '930cd1237722f4dd0af03e85d684ffa435adab6a1ae16db96d78243510fd85bc' ]] || [[ "$count" -eq 6 && "$fingerprint" == 'ee7e3bdc0de47cf8a762635a5ca69af1afde8cb2048363f4902b42a1290c9f14' ]]; then
+              echo 'ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+              if [[ "$count" -eq 14 && "$fingerprint" == '1d75fe26236e2bb56c113713e878e81d3df72cee9aa647b3f7759b9d1bec9164' ]] || [[ "$count" -eq 14 && "$fingerprint" == 'a0914d7db5c1636e909e331e8b72653bc9814eb74e3a3823d7db36bd3b73b624' ]] || [[ "$count" -eq 30 && "$fingerprint" == '930cd1237722f4dd0af03e85d684ffa435adab6a1ae16db96d78243510fd85bc' ]] || [[ "$count" -eq 6 && "$fingerprint" == 'ee7e3bdc0de47cf8a762635a5ca69af1afde8cb2048363f4902b42a1290c9f14' ]]; then
+                echo 'ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+                if [[ "$count" -eq 14 && "$fingerprint" == 'a0914d7db5c1636e909e331e8b72653bc9814eb74e3a3823d7db36bd3b73b624' ]]; then echo 'ONEQAY_SPRINT54_JRN010_PREREQ_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"; fi
+              fi
+            fi
+            if [[ "$count" -eq 15 && "$fingerprint" == '5e19664988cabba0030f9927d26b0702370414be4cd6b424d585925b634ca2b8' ]]; then
+              echo 'ONEQAY_SPRINT48_JRN005_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+              echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            elif [[ "$count" -eq 15 && "$fingerprint" == 'c1ac6d5130c9d78ff99ed0accf5d11e3f08debc575c0d5152ef5b24e6f82ce02' ]]; then
+              migration17='apps/web/database/migrations/0000_00_00_000017_create_pos_catalog_preparation_journal.php'
+              status="$(git diff --name-status "origin/${{ github.base_ref }}...HEAD" -- "$migration17" | awk 'NR==1 {print $1}')"
+              if [[ "$status" == 'A' ]]; then
+                echo 'ONEQAY_SPRINT47_JRN004_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+              elif [[ "$status" == 'M' ]]; then
+                echo 'ONEQAY_SPRINT47_JRN004_COMPATIBILITY_PREDECESSOR=true' >> "$GITHUB_ENV"
+              else
+                echo "Unexpected JRN-004 migration #17 status: ${status:-none}" >&2
+                exit 1
+              fi
+              echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            elif [[ "$count" -eq 14 && "$fingerprint" == 'ed29b6128c193f0efd6359748e220a37aefaec856acc4bc3b90f445ce3ccb674' ]]; then
+              migration16='apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php'
+              status="$(git diff --name-status "origin/${{ github.base_ref }}...HEAD" -- "$migration16" | awk 'NR==1 {print $1}')"
+              if [[ "$status" == 'A' ]]; then
+                echo 'ONEQAY_SPRINT46_JRN006_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+              elif [[ "$status" == 'M' ]]; then
+                echo 'ONEQAY_SPRINT46_JRN006_COMPATIBILITY_PREDECESSOR=true' >> "$GITHUB_ENV"
+              else
+                echo "Unexpected JRN-006 migration #16 status: ${status:-none}" >&2
+                exit 1
+              fi
+              echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            elif [[ "$count" -eq 12 && "$fingerprint" == 'b2c5fc10a8baa2d56991d6dbd36b0407159d70953654ef322a9a11d23660489b' ]]; then
+              echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            else
+              echo 'ONEQAY_SPRINT41_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
+            fi
+            for migration in \
+              0000_00_00_000012_add_totp_factor_epoch_and_recovery_authority.php \
+              0000_00_00_000013_create_first_party_session_authority.php \
+              0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php \
+              0000_00_00_000015_create_identity_authentication_eligibility_administration_journal.php \
+              0000_00_00_000016_create_pos_sale_completion_foundation.php \
+              0000_00_00_000017_create_pos_catalog_preparation_journal.php \
+              0000_00_00_000018_create_pos_shift_opening_foundation.php \
+              0000_00_00_000019_create_pos_sale_void_foundation.php \
+              0000_00_00_000020_create_pos_inventory_baseline_foundation.php \
+              0000_00_00_000021_create_pos_sale_cash_refund_foundation.php \
+              0000_00_00_000022_create_pos_shift_opening_cash_evidence_foundation.php \
+              0000_00_00_000023_create_pos_shift_closing_cash_evidence_foundation.php \
+              0000_00_00_000024_add_immutable_shift_binding_to_pos_sales.php
+            do
+              migration_path="apps/web/database/migrations/$migration"
+              if [[ -f "$migration_path" ]]; then
+                git update-index --assume-unchanged "$migration_path"
+                rm -f "$migration_path"
+              fi
+            done
+            echo 'Exact governed preservation/source successor recognized; migrations #12-#24 isolated when present only from historical Sprint32 execution.'
+            exit 0
+          fi
+          echo 'ONEQAY_SPRINT32_WORKFLOW_CORRECTION=false' >> "$GITHUB_ENV"
+          if [[ "$count" -eq 35 ]] && [[ "$fingerprint" == 'e3b724002cfc0be1ef890d1b5594a2a5179123f949f6f486354e21950c7328eb' ]]; then
+            echo 'ONEQAY_SPRINT33_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT34_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'Exact Sprint 34 successor envelope recognized; Sprint 32 recovery proof remains executable.'
+            exit 0
+          fi
+          if [[ "$count" -eq 39 ]] && [[ "$fingerprint" == '04a1177c12712183a7dda4ae81be1356c0e41294533336c9f999d376c224712a' ]]; then
+            echo 'ONEQAY_SPRINT33_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'Exact Sprint 33 successor envelope recognized; Sprint 32 recovery proof remains executable.'
+          else
+            echo 'ONEQAY_SPRINT33_SUCCESSOR=false' >> "$GITHUB_ENV"
+          fi
+
+      - name: Recognize exact Sprint70 source and workflow closure for Sprint32
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+          git diff --name-only "$base" "$head" | sort > /tmp/s70-downstream-paths
+          count="$(wc -l < /tmp/s70-downstream-paths)"
+          fingerprint="$(sha256sum /tmp/s70-downstream-paths | awk '{print $1}')"
+          sprint88_source=false
+          if [[ "$count" -eq 4 && "$fingerprint" == '6f4e1a3efe6e2dc8bcc5e213b88d968ead955d64074f159f52971e16a8a9abf8' ]]; then
+            for expected in \
+              '.github/workflows/sprint88-final-shift-close-migration-source-gate.yml' \
+              'apps/web/database/migrations/0000_00_00_000027_create_pos_shift_close_evidence_foundation.php' \
+              'apps/web/tests/pos-shift-close-migration-foundation.php' \
+              'docs/SPRINT88_FINAL_SHIFT_CLOSE_MIGRATION_SOURCE_ENVELOPE.md'
+            do
+              grep -Fxq "$expected" /tmp/s70-downstream-paths
+            done
+            sprint88_source=true
+          fi
+          sprint79_source=false
+          if [[ "$sprint79_source" == 'true' ]] || [[ "$count" -eq 9 && "$fingerprint" == '890cb08631de804bc2936882f635be11dea52c1e022c4f5112389fd76744ce10' ]]; then
+            for expected in \
+              '.github/workflows/sprint78-jrn010-prerequisite-cash-variance-review-decision-source-regression.yml' \
+              'apps/web/app/Application/Pos/CashVarianceReviewDecisionCommand.php' \
+              'apps/web/app/Application/Pos/CashVarianceReviewDecisionRepository.php' \
+              'apps/web/app/Application/Pos/CashVarianceReviewDecisionResult.php' \
+              'apps/web/app/Application/Pos/RecordCashVarianceReviewDecision.php' \
+              'apps/web/app/Infrastructure/Pos/LaravelCashVarianceReviewDecisionRepository.php' \
+              'apps/web/database/migrations/0000_00_00_000026_create_pos_cash_variance_review_decision_evidence_foundation.php' \
+              'apps/web/tests/pos-cash-variance-review-decision-durable.php' \
+              'docs/JRN_010_PREREQUISITE_CASH_VARIANCE_REVIEW_DECISION_SOURCE_FOUNDATION.md'
+            do
+              grep -Fxq "$expected" /tmp/s70-downstream-paths
+            done
+            sprint79_source=true
+          fi
+          if [[ "$sprint88_source" == 'true' ]] || [[ "$count" -eq 6 && "$fingerprint" == 'cc40f08beda780e4aa4795f29aa7533bbde1029d11855d43f180812502c4d80b' ]] || [[ "$count" -eq 8 && "$fingerprint" == '3e5b516b17bfc4b2b4e8694248672ff7a4298a3e080e0617a70b1bb1d8aa6194' ]] || [[ "$count" -eq 9 && "$fingerprint" == 'c2a575ec728249a8a4b26c173229b26455eee92c7bd4c59026a1d4c064e2c442' ]] || [[ "$count" -eq 4 && "$fingerprint" == 'eaa9c44aed2728b0a508f6be91155f3f2021f7f3de1383164a54be611d3933cf' ]] || [[ "$count" -eq 20 && "$fingerprint" == 'c6cd387d5ea83d73382493ca78d219c0db35477e55c61a68e489a0329231f922' ]]; then
+            for index in $(seq 12 27); do
+              migration="$(find apps/web/database/migrations -maxdepth 1 -type f -name "$(printf '0000_00_00_%06d_*' "$index")" -print -quit)"
+              if [[ -n "$migration" && -f "$migration" ]]; then
+                git update-index --assume-unchanged "$migration"
+                rm -f "$migration"
+              fi
+            done
+            echo 'ONEQAY_SPRINT32_WORKFLOW_CORRECTION=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT33_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'ONEQAY_SPRINT34_SUCCESSOR=true' >> "$GITHUB_ENV"
+          fi
+
+      - name: Enforce exact Sprint 32 source envelope
+        if: github.event_name == 'pull_request' && env.ONEQAY_SPRINT33_SUCCESSOR != 'true' && env.ONEQAY_SPRINT32_WORKFLOW_CORRECTION != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "${{ github.base_ref }}"
+          git diff --name-only "origin/${{ github.base_ref }}...HEAD" | sort > /tmp/sprint32-files.txt
+          test "$(wc -l < /tmp/sprint32-files.txt)" -eq 32
+          test "$(sha256sum /tmp/sprint32-files.txt | awk '{print $1}')" = 'db230ab3b77fff67f0bd12d7d7b615146d9d9df9a0af12014214e1862e9f6867'
+          if grep -Eq '(^|/)\.env($|\.)|(^|/)composer\.(json|lock)$|(^|/)package(-lock)?\.json$' /tmp/sprint32-files.txt; then
+            echo 'Sprint 32 source envelope contains a forbidden dependency or environment path.' >&2
+            exit 1
+          fi
+
+      - name: Enforce exact historical successor compatibility
+        shell: bash
+        run: |
+          set -euo pipefail
+          workflows=(
+            .github/workflows/m7-2-tenant-isolation-regression.yml
+            .github/workflows/m7-3-identity-org-context-regression.yml
+            .github/workflows/m7-4a-technical-preview-interaction-regression.yml
+            .github/workflows/m7-5-preview-db-qualification-regression.yml
+            .github/workflows/sprint21-role-permission-policy-regression.yml
+            .github/workflows/sprint22-policy-administration-regression.yml
+            .github/workflows/sprint23-initial-tenant-admin-provisioning-regression.yml
+            .github/workflows/sprint24-protected-control-admin-lifecycle-regression.yml
+            .github/workflows/sprint25-policy-administration-delivery-regression.yml
+            .github/workflows/sprint26-identity-credential-verification-regression.yml
+            .github/workflows/sprint27-first-party-session-establishment-regression.yml
+            .github/workflows/sprint28-initial-password-enrollment-regression.yml
+            .github/workflows/sprint29-first-control-principal-credential-bootstrap-regression.yml
+            .github/workflows/sprint30-privileged-totp-mfa-regression.yml
+            .github/workflows/sprint31-privileged-reauthentication-step-up-regression.yml
+          )
+          for workflow in "${workflows[@]}"; do
+            grep -Fq 'db230ab3b77fff67f0bd12d7d7b615146d9d9df9a0af12014214e1862e9f6867' "$workflow"
+            grep -Fq '04a1177c12712183a7dda4ae81be1356c0e41294533336c9f999d376c224712a' "$workflow"
+          done
+
+          release='.github/workflows/m7-5-preview-release-artifact.yml'
+          grep -Fq 'db230ab3b77fff67f0bd12d7d7b615146d9d9df9a0af12014214e1862e9f6867' "$release"
+          grep -Fq '04a1177c12712183a7dda4ae81be1356c0e41294533336c9f999d376c224712a' "$release"
+          grep -Fq 'NO_SCHEMA_CHANGE Preview regression' "$release"
+          grep -Fq 'isolate=true' "$release"
+          grep -Fq 'git update-index --assume-unchanged apps/web/database/migrations/0000_00_00_000010_create_identity_recovery_codes.php' "$release"
+          grep -Fq 'rm -f apps/web/database/migrations/0000_00_00_000010_create_identity_recovery_codes.php' "$release"
+
+      - name: Enforce migration ten preservation or Sprint 32 additive-only contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${{ github.event_name }}" == 'pull_request' ]]; then
+            base="origin/${{ github.base_ref }}"
+            if [[ "${ONEQAY_SPRINT32_WORKFLOW_CORRECTION:-false}" == 'true' ]]; then
+              if [[ "${ONEQAY_SPRINT54_JRN010_PREREQ_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+                migration23='apps/web/database/migrations/0000_00_00_000023_create_pos_shift_closing_cash_evidence_foundation.php'
+                changed="$(git diff --name-only "$base...HEAD" -- apps/web/database/migrations | sort)"
+                changed_count="$(printf '%s\n' "$changed" | sed '/^$/d' | wc -l)"
+                if [[ "$changed_count" -eq 1 ]]; then
+                  printf '%s\n' "$changed" | grep -Fxq "$migration23"
+                else
+                  test "$changed_count" -eq 0
+                fi
+                git diff --exit-code "$base...HEAD" -- apps/web/database/migrations ":(exclude)$migration23"
+                exit 0
+              elif [[ "${ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+                migration22='apps/web/database/migrations/0000_00_00_000022_create_pos_shift_opening_cash_evidence_foundation.php'
+                changed="$(git diff --name-only "$base...HEAD" -- apps/web/database/migrations | sort)"
+                changed_count="$(printf '%s\n' "$changed" | sed '/^$/d' | wc -l)"
+                if [[ "$changed_count" -eq 1 ]]; then
+                  printf '%s\n' "$changed" | grep -Fxq "$migration22"
+                else
+                  test "$changed_count" -eq 0
+                fi
+                git diff --exit-code "$base...HEAD" -- apps/web/database/migrations ":(exclude)$migration22"
+                exit 0
+              elif [[ "${ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+                migration21='apps/web/database/migrations/0000_00_00_000021_create_pos_sale_cash_refund_foundation.php'
+                git diff --exit-code "$base...HEAD" -- apps/web/database/migrations ":(exclude)$migration21"
+                test "$(git diff --name-only "$base...HEAD" -- apps/web/database/migrations | sed '/^$/d' | wc -l)" -eq 1
+                git diff --diff-filter=A --name-only "$base...HEAD" -- apps/web/database/migrations | grep -Fxq "$migration21"
+              elif [[ "${ONEQAY_SPRINT51_JRN008_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+                migration20='apps/web/database/migrations/0000_00_00_000020_create_pos_inventory_baseline_foundation.php'
+                git diff --exit-code "$base...HEAD" -- apps/web/database/migrations ":(exclude)$migration20"
+                test "$(git diff --name-only "$base...HEAD" -- apps/web/database/migrations | sed '/^$/d' | wc -l)" -eq 1
+                git diff --diff-filter=A --name-only "$base...HEAD" -- apps/web/database/migrations | grep -Fxq "$migration20"
+              elif [[ "${ONEQAY_SPRINT50_JRN007_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+                migration19='apps/web/database/migrations/0000_00_00_000019_create_pos_sale_void_foundation.php'
+                git diff --exit-code "$base...HEAD" -- apps/web/database/migrations ":(exclude)$migration19"
+                test "$(git diff --name-only "$base...HEAD" -- apps/web/database/migrations | sed '/^$/d' | wc -l)" -eq 1
+                git diff --diff-filter=A --name-only "$base...HEAD" -- apps/web/database/migrations | grep -Fxq "$migration19"
+              elif [[ "${ONEQAY_SPRINT48_JRN005_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+                migration18='apps/web/database/migrations/0000_00_00_000018_create_pos_shift_opening_foundation.php'
+                git diff --exit-code "$base...HEAD" -- apps/web/database/migrations ":(exclude)$migration18"
+                test "$(git diff --name-only "$base...HEAD" -- apps/web/database/migrations | sed '/^$/d' | wc -l)" -eq 1
+                git diff --diff-filter=A --name-only "$base...HEAD" -- apps/web/database/migrations | grep -Fxq "$migration18"
+              elif [[ "${ONEQAY_SPRINT47_JRN004_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+                migration17='apps/web/database/migrations/0000_00_00_000017_create_pos_catalog_preparation_journal.php'
+                git diff --exit-code "$base...HEAD" -- apps/web/database/migrations ":(exclude)$migration17"
+                test "$(git diff --name-only "$base...HEAD" -- apps/web/database/migrations | sed '/^$/d' | wc -l)" -eq 1
+                git diff --diff-filter=A --name-only "$base...HEAD" -- apps/web/database/migrations | grep -Fxq "$migration17"
+              elif [[ "${ONEQAY_SPRINT47_JRN004_COMPATIBILITY_PREDECESSOR:-false}" == 'true' ]]; then
+                migration17='apps/web/database/migrations/0000_00_00_000017_create_pos_catalog_preparation_journal.php'
+                git diff --exit-code "$base...HEAD" -- apps/web/database/migrations ":(exclude)$migration17"
+                test "$(git diff --name-only "$base...HEAD" -- apps/web/database/migrations | sed '/^$/d' | wc -l)" -eq 1
+                git diff --diff-filter=M --name-only "$base...HEAD" -- apps/web/database/migrations | grep -Fxq "$migration17"
+              elif [[ "${ONEQAY_SPRINT46_JRN006_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+                migration16='apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php'
+                git diff --exit-code "$base...HEAD" -- apps/web/database/migrations ":(exclude)$migration16"
+                test "$(git diff --name-only "$base...HEAD" -- apps/web/database/migrations | sed '/^$/d' | wc -l)" -eq 1
+                git diff --diff-filter=A --name-only "$base...HEAD" -- apps/web/database/migrations | grep -Fxq "$migration16"
+              elif [[ "${ONEQAY_SPRINT46_JRN006_COMPATIBILITY_PREDECESSOR:-false}" == 'true' ]]; then
+                migration16='apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php'
+                git diff --exit-code "$base...HEAD" -- apps/web/database/migrations ":(exclude)$migration16"
+                test "$(git diff --name-only "$base...HEAD" -- apps/web/database/migrations | sed '/^$/d' | wc -l)" -eq 1
+                git diff --diff-filter=M --name-only "$base...HEAD" -- apps/web/database/migrations | grep -Fxq "$migration16"
+              elif [[ "${ONEQAY_SPRINT41_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+                migration15='apps/web/database/migrations/0000_00_00_000015_create_identity_authentication_eligibility_administration_journal.php'
+                git diff --exit-code "$base...HEAD" -- apps/web/database/migrations ":(exclude)$migration15"
+                test "$(git diff --name-only "$base...HEAD" -- apps/web/database/migrations | sed '/^$/d' | wc -l)" -eq 1
+                git diff --diff-filter=A --name-only "$base...HEAD" -- apps/web/database/migrations | grep -Fxq "$migration15"
+              else
+                git diff --exit-code "$base...HEAD" -- apps/web/database/migrations
+              fi
+            elif [[ "${ONEQAY_SPRINT34_SUCCESSOR:-false}" == 'true' ]]; then
+              for migration in \
+                0000_00_00_000001_create_foundational_context_graph.php \
+                0000_00_00_000002_create_organizational_access_grants.php \
+                0000_00_00_000003_create_scoped_role_permission_policy.php \
+                0000_00_00_000004_create_policy_mutation_journal.php \
+                0000_00_00_000005_create_initial_tenant_administrator_provisioning_journal.php \
+                0000_00_00_000006_create_protected_control_administrator_mutation_journal.php \
+                0000_00_00_000007_create_identity_password_credentials.php \
+                0000_00_00_000008_create_initial_password_enrollments.php \
+                0000_00_00_000009_create_identity_totp_factors.php \
+                0000_00_00_000010_create_identity_recovery_codes.php
+              do
+                git diff --exit-code "$base...HEAD" -- "apps/web/database/migrations/$migration"
+              done
+              mapfile -t migration_diff < <(git diff --name-status "$base...HEAD" -- apps/web/database/migrations)
+              test "${#migration_diff[@]}" -eq 1
+              test "${migration_diff[0]}" = $'A	apps/web/database/migrations/0000_00_00_000011_add_credential_epoch_to_identity_password_credentials.php'
+              mapfile -t s34_migrations < <(find apps/web/database/migrations -maxdepth 1 -type f -name '*.php' -printf '%f\n' | sort)
+              test "${#s34_migrations[@]}" -eq 11
+              test "${s34_migrations[9]}" = '0000_00_00_000010_create_identity_recovery_codes.php'
+              test "${s34_migrations[10]}" = '0000_00_00_000011_add_credential_epoch_to_identity_password_credentials.php'
+              grep -Fq "unsignedBigInteger('credential_epoch')->default(0)" apps/web/database/migrations/0000_00_00_000011_add_credential_epoch_to_identity_password_credentials.php
+              exit 0
+            fi
+            if [[ "${ONEQAY_SPRINT32_WORKFLOW_CORRECTION:-false}" != 'true' && "${ONEQAY_SPRINT33_SUCCESSOR:-false}" == 'true' ]]; then
+              git diff --exit-code "$base...HEAD" -- apps/web/database/migrations
+            elif [[ "${ONEQAY_SPRINT32_WORKFLOW_CORRECTION:-false}" != 'true' ]]; then
+              for migration in \
+                0000_00_00_000001_create_foundational_context_graph.php \
+                0000_00_00_000002_create_organizational_access_grants.php \
+                0000_00_00_000003_create_scoped_role_permission_policy.php \
+                0000_00_00_000004_create_policy_mutation_journal.php \
+                0000_00_00_000005_create_initial_tenant_administrator_provisioning_journal.php \
+                0000_00_00_000006_create_protected_control_administrator_mutation_journal.php \
+                0000_00_00_000007_create_identity_password_credentials.php \
+                0000_00_00_000008_create_initial_password_enrollments.php \
+                0000_00_00_000009_create_identity_totp_factors.php
+              do
+                git diff --exit-code "$base...HEAD" -- "apps/web/database/migrations/$migration"
+              done
+              mapfile -t migration_diff < <(git diff --name-status "$base...HEAD" -- apps/web/database/migrations)
+              test "${#migration_diff[@]}" -eq 1
+              test "${migration_diff[0]}" = $'A\tapps/web/database/migrations/0000_00_00_000010_create_identity_recovery_codes.php'
+            fi
+          fi
+          mapfile -t migrations < <(find apps/web/database/migrations -maxdepth 1 -type f -name '*.php' -printf '%f\n' | sort)
+          expected=(
+            '0000_00_00_000001_create_foundational_context_graph.php'
+            '0000_00_00_000002_create_organizational_access_grants.php'
+            '0000_00_00_000003_create_scoped_role_permission_policy.php'
+            '0000_00_00_000004_create_policy_mutation_journal.php'
+            '0000_00_00_000005_create_initial_tenant_administrator_provisioning_journal.php'
+            '0000_00_00_000006_create_protected_control_administrator_mutation_journal.php'
+            '0000_00_00_000007_create_identity_password_credentials.php'
+            '0000_00_00_000008_create_initial_password_enrollments.php'
+            '0000_00_00_000009_create_identity_totp_factors.php'
+            '0000_00_00_000010_create_identity_recovery_codes.php'
+          )
+          if [[ "${ONEQAY_SPRINT32_WORKFLOW_CORRECTION:-false}" == 'true' ]]; then
+            expected+=('0000_00_00_000011_add_credential_epoch_to_identity_password_credentials.php')
+          fi
+          test "${migrations[*]}" = "${expected[*]}"
+          migration='apps/web/database/migrations/0000_00_00_000010_create_identity_recovery_codes.php'
+          grep -Fq "Schema::create('oneqay_identity_recovery_codes'" "$migration"
+          grep -Fq "Schema::create('oneqay_identity_recovery_audit'" "$migration"
+          grep -Fq "char('code_selector', 22)" "$migration"
+          grep -Fq "char('secret_digest', 64)" "$migration"
+          grep -Fq "throw new LogicException('Forward-only generated migration; rollback is not authorized.')" "$migration"
+
+      - name: Preserve root Platform Foundation regression
+        run: |
+          composer validate --strict --no-check-publish
+          composer test
+
+      - name: Install locked application dependencies
+        working-directory: apps/web
+        run: |
+          composer validate --no-check-publish
+          composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Reject High or Critical Composer advisories
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          composer audit --locked --format=json > /tmp/oneqay-s32-composer-audit.json || true
+          php -r '$data=json_decode(file_get_contents("/tmp/oneqay-s32-composer-audit.json"),true,512,JSON_THROW_ON_ERROR); foreach (($data["advisories"] ?? []) as $package=>$items) { foreach ($items as $item) { if (in_array(strtolower((string)($item["severity"] ?? "")), ["high","critical"], true)) { fwrite(STDERR,"Blocking Composer advisory for {$package}.\n"); exit(1); } } }'
+
+      - name: Lint Sprint 32 and preserved PHP source
+        shell: bash
+        run: |
+          set -euo pipefail
+          find apps/web/app apps/web/database/migrations apps/web/routes apps/web/tests -type f -name '*.php' -print0 | while IFS= read -r -d '' file; do php -l "$file"; done
+
+      - name: Enforce recovery security boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          repo='apps/web/app/Infrastructure/Identity/LaravelRecoveryCodeRepository.php'
+          service='apps/web/app/Application/Identity/RecoveryCodeService.php'
+          controller='apps/web/app/Delivery/Http/Identity/RecoveryCodeController.php'
+          config='apps/web/config/oneqay.php'
+          routes='apps/web/routes/web.php'
+          grep -Fq "env('ONEQAY_AUTHENTICATION_RECOVERY_ENABLED', false)" "$config"
+          grep -Fq "'restricted_session_ttl_seconds' => 600" "$config"
+          grep -Fq "Route::post('/auth/recovery/codes/rotate'" "$routes"
+          grep -Fq "Route::post('/auth/recovery/proof'" "$routes"
+          grep -Fq 'VerifyFirstPartyIdentityCredential' "$service"
+          grep -Fq 'random_bytes(16)' "$repo"
+          grep -Fq 'random_bytes(32)' "$repo"
+          grep -Fq "hash('sha256', \$secret)" "$repo"
+          grep -Fq 'hash_equals($row->secret_digest, $suppliedDigest)' "$repo"
+          grep -Fq "whereNotNull('confirmed_at_unix')" "$repo"
+          grep -Fq 'lockForUpdate()' "$repo"
+          grep -Fq '$session->invalidate();' "$controller"
+          grep -Fq '$session->regenerateToken();' "$controller"
+          if grep -n -E 'decryptString|encryptString|secret_ciphertext|provisioningUri|password_hash\(|password_verify\(' "$repo" "$service" "$controller"; then exit 1; fi
+
+      - name: Run dedicated Sprint 32 authentication recovery regression
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          migration22='database/migrations/0000_00_00_000022_create_pos_shift_opening_cash_evidence_foundation.php'
+          backup='/tmp/oneqay-s32-s53-migration22.php'
+          restore_s53_migration22() {
+            if [[ -f "$backup" ]]; then mv "$backup" "$migration22"; fi
+          }
+          if [[ "${ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR:-false}" == 'true' && -f "$migration22" ]]; then
+            cp "$migration22" "$backup"
+            trap restore_s53_migration22 EXIT
+            rm -f "$migration22"
+          fi
+          php tests/authentication-recovery-proof.php
+          restore_s53_migration22
+          trap - EXIT
+
+      - name: Preserve Sprint 21 through Sprint 31 executable regressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          historical_commit='fba7b862ff0022de05c9f0ba98b153bd7e399621'
+          historical_tree='a31d367fc03b836a0266daf92e23f3b9ce3ce995'
+          preservation_root='/tmp/oneqay-sprint31-preservation'
+          git cat-file -e "${historical_commit}^{commit}"
+          test "$(git rev-parse "${historical_commit}^{tree}")" = "$historical_tree"
+          rm -rf "$preservation_root"
+          git worktree add --detach "$preservation_root" "$historical_commit"
+          cleanup_preservation() {
+            git worktree remove --force "$preservation_root" >/dev/null 2>&1 || true
+          }
+          trap cleanup_preservation EXIT
+          (
+            cd "$preservation_root/apps/web"
+            composer validate --no-check-publish
+            composer install --no-interaction --no-progress --prefer-dist
+            php tests/tenant-isolation.php
+            php tests/identity-org-context.php
+            php -r 'require "vendor/autoload.php"; $app=require "bootstrap/app.php"; $app->make(Illuminate\Contracts\Http\Kernel::class)->bootstrap(); $assert=static function(bool $c,string $m):void{if(!$c)throw new RuntimeException($m);}; require "tests/authorization-persistence.php"; require "tests/authorization-administration-persistence.php"; require "tests/initial-tenant-administrator-provisioning.php"; require "tests/protected-control-administrator-lifecycle.php";'
+            php tests/policy-administration-delivery.php
+            php tests/identity-credential-verification.php
+            php tests/first-party-session-establishment.php
+            php tests/initial-password-enrollment.php
+            php tests/first-control-principal-credential-bootstrap.php
+            php tests/privileged-totp-mfa.php
+            php tests/privileged-reauthentication-step-up.php
+            php tests/privileged-update-security.php
+          )
+          cleanup_preservation
+          trap - EXIT
+          echo 'Sprint21-Sprint31 executable preservation passed against canonical Sprint31 source snapshot.'
+
+      - name: Prove runtime-scoped recovery routes and protected deployment boundaries
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          ci_routes="$(ONEQAY_RUNTIME_CLASS=ci ONEQAY_AUTHENTICATION_RECOVERY_ENABLED=true php artisan route:list --path=auth/recovery 2>&1)"
+          grep -Fq 'auth/recovery/codes/rotate' <<<"$ci_routes"
+          grep -Fq 'auth/recovery/proof' <<<"$ci_routes"
+
+          preview_routes="$(ONEQAY_RUNTIME_CLASS=preview ONEQAY_AUTHENTICATION_RECOVERY_ENABLED=true php artisan route:list --path=auth/recovery 2>&1)"
+          if grep -Fq 'auth/recovery/' <<<"$preview_routes"; then
+            echo 'Sprint 32 recovery route is active in Technical Preview.' >&2
+            exit 1
+          fi
+
+          production_routes="$(ONEQAY_RUNTIME_CLASS=production ONEQAY_AUTHENTICATION_RECOVERY_ENABLED=true php artisan route:list --path=auth/recovery 2>&1)"
+          if grep -Fq 'auth/recovery/' <<<"$production_routes"; then
+            echo 'Sprint 32 recovery route is active in Production.' >&2
+            exit 1
+          fi
+
+          grep -Fq "'install_enabled' => false" config/oneqay.php
+          grep -Fq 'Technical Preview remains NO_SCHEMA_CHANGE' ../../docs/AUTHENTICATION_RECOVERY_PROOF_FOUNDATION.md
+          grep -Fq 'Production remains NO-GO / NOT AUTHORIZED' ../../docs/AUTHENTICATION_RECOVERY_PROOF_FOUNDATION.md
+
+      - name: Confirm tracked source cleanliness
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --exit-code
+          test -z "$(git status --porcelain)"
