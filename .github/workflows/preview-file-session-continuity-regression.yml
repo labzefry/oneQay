@@ -1,0 +1,108 @@
+# Technical Preview deployed file-session continuity qualification — Lab | zefry
+# Author by Lab | zefry
+name: Technical Preview File Session Continuity Regression
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/web/tests/technical-preview-file-session-continuity.php'
+      - '.github/workflows/preview-file-session-continuity-regression.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: preview-file-session-continuity-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  preview-file-session-continuity-regression:
+    name: preview-file-session-continuity-regression
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHQ=
+      APP_DEBUG: 'false'
+      APP_URL: https://preview.oneqay.test
+      ONEQAY_RUNTIME_CLASS: preview
+      ONEQAY_TECHNICAL_PREVIEW_ENABLED: 'true'
+      SESSION_DRIVER: file
+      SESSION_LIFETIME: '60'
+      SESSION_ENCRYPT: 'true'
+      SESSION_SECURE_COOKIE: 'true'
+      SESSION_COOKIE: oneqay-preview-session
+      CACHE_STORE: array
+
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Enforce exact bounded file-session qualification envelope
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+          git diff --name-only "$base" "$head" | sort > /tmp/preview-file-session-paths
+          test "$(wc -l < /tmp/preview-file-session-paths)" -eq 2
+          test "$(sha256sum /tmp/preview-file-session-paths | awk '{print $1}')" = '79e4d515dcc2100a12503218f3a6199df97a1423292ec4a9d606702cf9cf3e33'
+          grep -Fxq '.github/workflows/preview-file-session-continuity-regression.yml' /tmp/preview-file-session-paths
+          grep -Fxq 'apps/web/tests/technical-preview-file-session-continuity.php' /tmp/preview-file-session-paths
+
+      - name: Validate PHP runtime and locked dependencies
+        working-directory: apps/web
+        run: |
+          set -euo pipefail
+          php -v
+          composer validate --no-check-publish
+          composer install --no-interaction --no-progress --prefer-dist
+          composer audit --locked --no-interaction --abandoned=report
+
+      - name: Validate file-session qualification boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l apps/web/tests/technical-preview-file-session-continuity.php
+          ! git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | grep -E '^apps/web/(database/migrations|app/Infrastructure/Pos|app/Providers/AppServiceProvider.php)'
+          grep -Fq 'FileSessionHandler' apps/web/tests/technical-preview-file-session-continuity.php
+          grep -Fq 'EncryptedStore' apps/web/tests/technical-preview-file-session-continuity.php
+          grep -Fq 'oneqay-preview-session' apps/web/tests/technical-preview-file-session-continuity.php
+          grep -Fq 'stale pre-logout cookie' apps/web/tests/technical-preview-file-session-continuity.php
+          grep -Fq '# SESSION_DRIVER=file' apps/web/environment.example
+          grep -Fq '# SESSION_LIFETIME=60' apps/web/environment.example
+          grep -Fq '# SESSION_ENCRYPT=true' apps/web/environment.example
+          grep -Fq '# SESSION_SECURE_COOKIE=true' apps/web/environment.example
+          grep -Fq '# SESSION_COOKIE=oneqay-preview-session' apps/web/environment.example
+
+      - name: Setup exact Node LTS
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: 24.19.0
+
+      - name: Build locked Preview assets
+        working-directory: apps/web
+        run: |
+          set -euo pipefail
+          npm ci --ignore-scripts --no-fund
+          npm audit --audit-level=high
+          npm run type-check
+          npm run build
+
+      - name: Prepare server-owned file session storage
+        working-directory: apps/web
+        run: |
+          set -euo pipefail
+          mkdir -p storage/framework/sessions
+          chmod 700 storage/framework/sessions
+
+      - name: Run deployed Preview file-session continuity regression
+        working-directory: apps/web
+        run: php tests/technical-preview-file-session-continuity.php
