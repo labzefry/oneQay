@@ -374,10 +374,10 @@ final class TechnicalPreviewController
                 $shift['opening_cash_evidence_id'],
                 $shift['opening_cash_atomic'],
                 $shift['cash_sales_atomic'],
-                $shift['cash_refunds_atomic'],
                 $observedClosingAtomic,
                 time(),
                 $correlationId,
+                $shift['cash_refunds_atomic'],
             );
         } catch (InvalidArgumentException|IdentityContextViolation|MissingTenantContext|OrganizationalAccessViolation|PosTransactionViolation) {
             return redirect()->route('preview.pos')
