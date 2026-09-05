@@ -10,6 +10,7 @@ use App\Application\Pos\CompleteSyntheticSale;
 use App\Application\Pos\PosTransactionViolation;
 use App\Application\Preview\PreviewProfile;
 use App\Application\Preview\TechnicalPreviewJourney;
+use App\Application\Preview\TechnicalPreviewRuntimePolicy;
 use App\Application\Tenancy\RequireVerifiedTenantContext;
 use App\Infrastructure\Organization\RequestOrganizationalContextStore;
 use App\Infrastructure\Organization\SyntheticOrganizationalRelationshipVerifier;
@@ -40,6 +41,65 @@ $expect = static function (string $class, callable $callback, string $case) use 
     $assert(false, $case.' must throw');
     throw new RuntimeException('unreachable');
 };
+
+$assert(
+    TechnicalPreviewRuntimePolicy::permits(
+        enabled: true,
+        runtimeClass: 'ci',
+        sessionDriver: 'array',
+        sessionLifetimeMinutes: 120,
+        sessionEncrypted: false,
+        sessionSecure: false,
+        sessionHttpOnly: true,
+        sessionSameSite: 'lax',
+        sessionDomain: null,
+        sessionPath: '/',
+        sessionCookie: 'oneqay-session',
+    ),
+    'M74A-RUNTIME-001 qualification runtime remains intentionally available with in-memory session',
+);
+
+$deployedRuntime = static function (
+    string $driver = 'file',
+    int $lifetime = 60,
+    bool $encrypted = true,
+    bool $secure = true,
+    bool $httpOnly = true,
+    string $sameSite = 'lax',
+    ?string $domain = null,
+    string $path = '/',
+    string $cookie = 'oneqay-preview-session',
+    bool $enabled = true,
+    string $runtimeClass = 'preview',
+): bool {
+    return TechnicalPreviewRuntimePolicy::permits(
+        enabled: $enabled,
+        runtimeClass: $runtimeClass,
+        sessionDriver: $driver,
+        sessionLifetimeMinutes: $lifetime,
+        sessionEncrypted: $encrypted,
+        sessionSecure: $secure,
+        sessionHttpOnly: $httpOnly,
+        sessionSameSite: $sameSite,
+        sessionDomain: $domain,
+        sessionPath: $path,
+        sessionCookie: $cookie,
+    );
+};
+
+$assert($deployedRuntime(), 'M74A-RUNTIME-002 exact deployed Preview session envelope is admitted');
+$assert(! $deployedRuntime(driver: 'array'), 'M74A-RUNTIME-003 deployed Preview rejects non-file session');
+$assert(! $deployedRuntime(lifetime: 61), 'M74A-RUNTIME-004 deployed Preview rejects session lifetime above 60 minutes');
+$assert(! $deployedRuntime(lifetime: 0), 'M74A-RUNTIME-005 deployed Preview rejects non-positive session lifetime');
+$assert(! $deployedRuntime(encrypted: false), 'M74A-RUNTIME-006 deployed Preview requires encrypted session payload');
+$assert(! $deployedRuntime(secure: false), 'M74A-RUNTIME-007 deployed Preview requires Secure cookie');
+$assert(! $deployedRuntime(httpOnly: false), 'M74A-RUNTIME-008 deployed Preview requires HttpOnly cookie');
+$assert(! $deployedRuntime(sameSite: 'none'), 'M74A-RUNTIME-009 deployed Preview requires SameSite=Lax');
+$assert(! $deployedRuntime(domain: '.example.test'), 'M74A-RUNTIME-010 deployed Preview requires host-only cookie');
+$assert(! $deployedRuntime(path: '/technical-preview'), 'M74A-RUNTIME-011 deployed Preview requires root cookie path');
+$assert(! $deployedRuntime(cookie: 'oneqay-session'), 'M74A-RUNTIME-012 deployed Preview requires dedicated cookie name');
+$assert(! $deployedRuntime(enabled: false), 'M74A-RUNTIME-013 deployed Preview remains disabled unless explicitly armed');
+$assert(! $deployedRuntime(runtimeClass: 'production'), 'M74A-RUNTIME-014 Production runtime is never admitted as Technical Preview');
 
 $fixtures = new DeterministicPreviewFixture();
 $memberships = new SyntheticTenantMembershipVerifier([
