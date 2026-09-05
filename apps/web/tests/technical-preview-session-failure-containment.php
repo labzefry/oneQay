@@ -117,12 +117,11 @@ $assert((string) config('session.driver') === 'file', 'TPSF-CONFIG-003 admitted 
 $assert((bool) config('session.encrypt') === true, 'TPSF-CONFIG-004 admitted Preview session payload is encrypted');
 
 // Missing backend state must never preserve previously authenticated Preview authority.
-[$missingSessionId, $missingSessionPath] = $signIn();
+[, $missingSessionPath] = $signIn();
 $assert(@unlink($missingSessionPath), 'TPSF-MISSING-001 qualification can remove the signed-in backend session state');
 [$missingResponse] = $sendHttp('GET', '/technical-preview/pos');
 $assert($missingResponse->getStatusCode() === 302, 'TPSF-MISSING-002 missing backend state fails closed instead of serving Preview POS');
 $assert(str_ends_with((string) $missingResponse->headers->get('Location'), '/technical-preview'), 'TPSF-MISSING-003 missing backend state returns to Preview sign-in');
-$assert(! is_file($sessionDirectory.'/'.$missingSessionId) || filesize($sessionDirectory.'/'.$missingSessionId) >= 0, 'TPSF-MISSING-004 missing authority is not inferred from the stale cookie');
 
 // Corrupt encrypted backend state must deserialize to an empty authority boundary.
 $resetBrowser();
