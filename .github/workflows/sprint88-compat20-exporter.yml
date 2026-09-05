@@ -51,7 +51,10 @@ jobs:
               '.github/workflows/sprint33-recovery-bound-password-reset-regression.yml',
               '.github/workflows/sprint34-authenticated-password-change-regression.yml',
           ]
-          lower = set(targets[:13])
+          m74 = '.github/workflows/m7-4-pos-core-synthetic-regression.yml'
+          release = '.github/workflows/m7-5-preview-release-artifact.yml'
+          upper = set(targets[13:])
+          generic_lower = set(targets[:13]) - {m74, release}
           source_paths = [
               '.github/workflows/sprint88-final-shift-close-migration-source-gate.yml',
               'apps/web/database/migrations/0000_00_00_000027_create_pos_shift_close_evidence_foundation.php',
@@ -60,6 +63,7 @@ jobs:
           ]
           source_fp = '6f4e1a3efe6e2dc8bcc5e213b88d968ead955d64074f159f52971e16a8a9abf8'
           closure_fp = 'c6cd387d5ea83d73382493ca78d219c0db35477e55c61a68e489a0329231f922'
+          source79_fp = '890cb08631de804bc2936882f635be11dea52c1e022c4f5112389fd76744ce10'
           out_root = Path('docs/_sprint88_compat20')
           out_root.mkdir(parents=True, exist_ok=True)
 
@@ -71,9 +75,7 @@ jobs:
               rows += [indent + 'do\n', indent + f'  grep -Fxq "$expected" {tmp_path}\n', indent + 'done\n']
               return ''.join(rows)
 
-          for filename in targets:
-              path = Path(filename)
-              text = path.read_text()
+          def patch_generic(text: str, filename: str, is_upper: bool) -> str:
               start = text.find('      - name: Recognize exact Sprint70')
               if start < 0:
                   raise SystemExit(f'missing Sprint70 recognizer: {filename}')
@@ -82,26 +84,20 @@ jobs:
                   raise SystemExit(f'missing next step after Sprint70 recognizer: {filename}')
               step = text[start:end]
               m = re.search(r'git diff --name-only .*?\| sort > (/tmp/[A-Za-z0-9._-]+)', step)
-              if not m:
-                  raise SystemExit(f'missing Sprint70 tmp path: {filename}')
+              if not m or closure_fp not in step:
+                  raise SystemExit(f'invalid Sprint70 recognizer contract: {filename}')
               tmp = m.group(1)
-              if closure_fp not in step:
-                  raise SystemExit(f'missing canonical 20-workflow closure: {filename}')
-
-              if filename in lower:
+              if not is_upper:
                   needle = '          recognized=false\n'
                   if step.count(needle) != 1:
                       raise SystemExit(f'lower recognizer marker mismatch: {filename}')
                   first_if = step.find('          if [[', step.find(needle) + len(needle))
-                  if first_if < 0:
-                      raise SystemExit(f'lower first shape missing: {filename}')
                   block = (
                       f'          if [[ "$count" -eq 4 && "$fingerprint" == \'{source_fp}\' ]]; then\n'
                       + verify_block(tmp)
                       + '            recognized=true\n'
                   )
-                  existing = step[first_if:]
-                  existing = existing.replace('          if [[', '          elif [[', 1)
+                  existing = step[first_if:].replace('          if [[', '          elif [[', 1)
                   step = step[:first_if] + block + existing
               else:
                   needle = '          sprint79_source=false\n'
@@ -115,25 +111,99 @@ jobs:
                       + '          fi\n'
                   )
                   step = step.replace(needle, block + needle, 1)
-                  condition = re.search(r'\n          if \[\[ "\$count" -eq 6 .*?closure_fp_placeholder', '')
                   anchor = '\n          if [[ "$count" -eq 6'
                   pos = step.find(anchor)
                   if pos < 0:
                       raise SystemExit(f'upper closure condition missing: {filename}')
                   step = step[:pos] + '\n          if [[ "$sprint88_source" == \'true\' ]] || [[ "$count" -eq 6' + step[pos + len(anchor):]
-
               matches = list(re.finditer(r'\$\(seq ([0-9]+) 26\)', step))
               if len(matches) != 1:
-                  raise SystemExit(f'expected exactly one Sprint70 migration upper-bound 26: {filename}: {len(matches)}')
+                  raise SystemExit(f'expected one Sprint70 migration upper bound 26: {filename}: {len(matches)}')
               step = re.sub(r'\$\(seq ([0-9]+) 26\)', r'$(seq \1 27)', step, count=1)
               step = step.replace('migrations #10-#25 isolated only from historical executable preservation.', 'migrations #10-#27 isolated only from historical executable preservation.')
               step = step.replace('migrations #10-#26 isolated only from historical executable preservation.', 'migrations #10-#27 isolated only from historical executable preservation.')
+              return text[:start] + step + text[end:]
 
-              updated = text[:start] + step + text[end:]
+          def patch_m74(text: str) -> str:
+              anchor = f'          elif [[ "$count" -eq 9 && "$fingerprint" == \'{source79_fp}\' ]]; then\n'
+              if text.count(anchor) != 1 or closure_fp not in text:
+                  raise SystemExit('M7.4 source/closure anchor mismatch')
+              block = (
+                  f'          elif [[ "$count" -eq 4 && "$fingerprint" == \'{source_fp}\' ]]; then\n'
+                  + verify_block('/tmp/m74-changed-files.txt', '              ')
+                  + '            echo \'ONEQAY_SPRINT57_M74_COMPATIBILITY=true\' >> "$GITHUB_ENV"\n'
+                  + '            echo \'Recognized exact Sprint88 migration #27 source successor shape.\'\n'
+                  + '            exit 0\n'
+              )
+              text = text.replace(anchor, block + anchor, 1)
+              needle26 = "            migration26='apps/web/database/migrations/0000_00_00_000026_create_pos_cash_variance_review_decision_evidence_foundation.php'\n"
+              if text.count(needle26) != 1:
+                  raise SystemExit('M7.4 migration26 anchor mismatch')
+              text = text.replace(needle26, needle26 + "            migration27='apps/web/database/migrations/0000_00_00_000027_create_pos_shift_close_evidence_foundation.php'\n", 1)
+              old = "              if ! printf '%s\\n' \"$changed\" | grep -Fxq \"$migration25\" && ! printf '%s\\n' \"$changed\" | grep -Fxq \"$migration26\"; then\n"
+              new = "              if ! printf '%s\\n' \"$changed\" | grep -Fxq \"$migration25\" && ! printf '%s\\n' \"$changed\" | grep -Fxq \"$migration26\" && ! printf '%s\\n' \"$changed\" | grep -Fxq \"$migration27\"; then\n"
+              if text.count(old) != 1:
+                  raise SystemExit('M7.4 governed migration condition mismatch')
+              text = text.replace(old, new, 1)
+              text = text.replace('M7.4 compatibility permits only migration #25 or #26 as the single governed migration delta.', 'M7.4 compatibility permits only migration #25, #26, or #27 as the single governed migration delta.', 1)
+              old = '            git diff --exit-code "$base" "$head" -- apps/web/database/migrations ":(exclude)$migration25" ":(exclude)$migration26"\n'
+              new = '            git diff --exit-code "$base" "$head" -- apps/web/database/migrations ":(exclude)$migration25" ":(exclude)$migration26" ":(exclude)$migration27"\n'
+              if text.count(old) != 1:
+                  raise SystemExit('M7.4 exclusion anchor mismatch')
+              text = text.replace(old, new, 1)
+              old = '            for migration_to_isolate in "$migration19" "$migration20" "$migration21" "$migration22" "$migration23" "$migration24" "$migration25" "$migration26"; do\n'
+              new = '            for migration_to_isolate in "$migration19" "$migration20" "$migration21" "$migration22" "$migration23" "$migration24" "$migration25" "$migration26" "$migration27"; do\n'
+              if text.count(old) != 1:
+                  raise SystemExit('M7.4 isolation list mismatch')
+              return text.replace(old, new, 1)
+
+          def patch_release(text: str) -> str:
+              outer = f'            if {{ [[ "$count" -eq 9 && "$fingerprint" == \'{source79_fp}\' ]] ||'
+              if text.count(outer) != 1 or closure_fp not in text:
+                  raise SystemExit('M7.5 Release outer shape mismatch')
+              text = text.replace(outer, f'            if {{ [[ "$count" -eq 4 && "$fingerprint" == \'{source_fp}\' ]] || [[ "$count" -eq 9 && "$fingerprint" == \'{source79_fp}\' ]] ||', 1)
+              inner = f'              if [[ "$count" -eq 9 && "$fingerprint" == \'{source79_fp}\' ]]; then\n'
+              if text.count(inner) < 1:
+                  raise SystemExit('M7.5 Release inner source79 mismatch')
+              block = (
+                  f'              if [[ "$count" -eq 4 && "$fingerprint" == \'{source_fp}\' ]]; then\n'
+                  + verify_block('/tmp/s50-release-shape.txt', '                  ')
+                  + '                echo \'Exact Sprint88 migration #27 source shape verified for historical release preservation.\'\n'
+                  + '              elif [[ "$count" -eq 9 && "$fingerprint" == \'%s\' ]]; then\n' % source79_fp
+              )
+              text = text.replace(inner, block, 1)
+              needle26 = "              migration26='database/migrations/0000_00_00_000026_create_pos_cash_variance_review_decision_evidence_foundation.php'\n"
+              if text.count(needle26) != 1:
+                  raise SystemExit('M7.5 Release migration26 mismatch')
+              text = text.replace(needle26, needle26 + "              migration27='database/migrations/0000_00_00_000027_create_pos_shift_close_evidence_foundation.php'\n", 1)
+              old = '              for migration_to_isolate in "$migration19" "$migration20" "$migration21" "$migration22" "$migration23" "$migration24" "$migration25" "$migration26"; do\n'
+              new = '              for migration_to_isolate in "$migration19" "$migration20" "$migration21" "$migration22" "$migration23" "$migration24" "$migration25" "$migration26" "$migration27"; do\n'
+              if text.count(old) != 1:
+                  raise SystemExit('M7.5 Release isolation list mismatch')
+              text = text.replace(old, new, 1)
+              text = text.replace('Migrations #19-#26 isolated only from exact governed historical release-artifact regression.', 'Migrations #19-#27 isolated only from exact governed historical release-artifact regression.', 1)
+              later = f'              if [[ "$count" -eq 9 && "$fingerprint" == \'{source79_fp}\' ]] ||'
+              pos = text.rfind(later)
+              if pos < 0:
+                  raise SystemExit('M7.5 Release fixture recognition condition mismatch')
+              text = text[:pos] + f'              if [[ "$count" -eq 4 && "$fingerprint" == \'{source_fp}\' ]] || [[ "$count" -eq 9 && "$fingerprint" == \'{source79_fp}\' ]] ||' + text[pos + len(later):]
+              return text
+
+          for filename in targets:
+              text = Path(filename).read_text()
+              if filename in generic_lower:
+                  updated = patch_generic(text, filename, False)
+              elif filename in upper:
+                  updated = patch_generic(text, filename, True)
+              elif filename == m74:
+                  updated = patch_m74(text)
+              elif filename == release:
+                  updated = patch_release(text)
+              else:
+                  raise SystemExit(f'unclassified target: {filename}')
               if updated == text:
                   raise SystemExit(f'no output delta: {filename}')
-              out = out_root / path.name
-              out.write_text(updated)
+              (out_root / Path(filename).name).write_text(updated)
 
           actual = sorted(p.name for p in out_root.glob('*.yml'))
           expected = sorted(Path(p).name for p in targets)
