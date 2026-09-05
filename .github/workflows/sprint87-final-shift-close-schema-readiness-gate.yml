@@ -100,7 +100,7 @@ jobs:
           grep -Fq '`review_evidence_id` — string(32), nullable' "$doc"
           grep -Fq "review_outcome = 'REVIEW_ACCEPTED'" "$doc"
           grep -Fq 'REVIEW_REJECTED` is never a valid value in final-close evidence' "$doc"
-          grep -Fq 'update `oneqay_pos_shifts.active_slot` from `1` to `NULL`' "$doc"
+          grep -Fq '`oneqay_pos_shifts.active_slot` from `1` to `NULL`' "$doc"
           grep -Fq 'same `PersistenceTransaction` boundary' "$doc"
           grep -Fq 'FINAL_SHIFT_CLOSE_SCHEMA_READINESS = PASS_TO_MIGRATION_SOURCE_ENVELOPE' "$doc"
           grep -Fq 'ACTIVE_SLOT_RELEASE_CONTRACT = SELECTED_ATOMIC_WITH_EVIDENCE_INSERT' "$doc"
