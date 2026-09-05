@@ -1,0 +1,225 @@
+# Sprint85 Technical Preview activation-readiness evidence qualification — Lab | zefry
+# Author by Lab | zefry
+name: Technical Preview Activation Readiness Evidence Regression
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/preview-activation-readiness-evidence-regression.yml'
+      - 'apps/web/tests/technical-preview-session-failure-containment.php'
+      - 'docs/SPRINT85_TECHNICAL_PREVIEW_ACTIVATION_READINESS_EVIDENCE_GATE.md'
+      - 'apps/web/app/Application/Preview/**'
+      - 'apps/web/app/Delivery/Preview/**'
+      - 'apps/web/app/Infrastructure/Preview/**'
+      - 'apps/web/app/Providers/TechnicalPreviewServiceProvider.php'
+      - 'apps/web/config/technical-preview.php'
+      - 'apps/web/routes/technical-preview-cash-control.php'
+      - 'apps/web/tests/technical-preview-*.php'
+      - '.github/workflows/preview-file-session-continuity-regression.yml'
+      - '.github/workflows/preview-route-off-switch-regression.yml'
+      - '.github/workflows/m7-5-preview-release-artifact.yml'
+      - '.github/workflows/m7-6-preview-deployment-recovery-rehearsal-regression.yml'
+      - '.github/workflows/safe-staging-activation-health-rollback-regression.yml'
+      - '.github/workflows/shared-runtime-configuration-boundary-regression.yml'
+      - 'tools/build-m7-5-preview-release.sh'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: preview-activation-readiness-evidence-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  preview-activation-readiness-evidence:
+    name: preview-activation-readiness-evidence
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHQ=
+      APP_DEBUG: 'false'
+      APP_URL: http://localhost
+      ONEQAY_RUNTIME_CLASS: ci
+      ONEQAY_TECHNICAL_PREVIEW_ENABLED: 'true'
+      ONEQAY_SYSTEM_UPDATE_CONTROL_PLANE_ENABLED: 'false'
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Enforce exact Sprint85 evidence envelope
+        if: github.event_name == 'pull_request' && github.head_ref == 'preview-activation-readiness-evidence'
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+          git diff --name-only "$base" "$head" | sort > /tmp/s85-readiness-paths
+          test "$(wc -l < /tmp/s85-readiness-paths)" -eq 3
+          test "$(sha256sum /tmp/s85-readiness-paths | awk '{print $1}')" = '423d531061f3245689bbcb8c476803114b9b2fecd147d359015454d6e9899463'
+          grep -Fxq '.github/workflows/preview-activation-readiness-evidence-regression.yml' /tmp/s85-readiness-paths
+          grep -Fxq 'apps/web/tests/technical-preview-session-failure-containment.php' /tmp/s85-readiness-paths
+          grep -Fxq 'docs/SPRINT85_TECHNICAL_PREVIEW_ACTIVATION_READINESS_EVIDENCE_GATE.md' /tmp/s85-readiness-paths
+
+      - name: Validate locked dependencies
+        working-directory: apps/web
+        run: |
+          set -euo pipefail
+          php -v
+          composer validate --no-check-publish
+          composer install --no-interaction --no-progress --prefer-dist
+          composer audit --locked --no-interaction --abandoned=report
+
+      - name: Validate Sprint85 PHP and authority boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l apps/web/tests/technical-preview-session-failure-containment.php
+          grep -Fq 'TECHNICAL_ACTIVATION_READINESS = PASS_FOR_SEPARATE_ACTIVATION_REQUEST' docs/SPRINT85_TECHNICAL_PREVIEW_ACTIVATION_READINESS_EVIDENCE_GATE.md
+          grep -Fq 'ACTIVATION_AUTHORITY = NOT_GRANTED' docs/SPRINT85_TECHNICAL_PREVIEW_ACTIVATION_READINESS_EVIDENCE_GATE.md
+          grep -Fq 'DEPLOYMENT_EXECUTION_AUTHORITY = NOT_GRANTED' docs/SPRINT85_TECHNICAL_PREVIEW_ACTIVATION_READINESS_EVIDENCE_GATE.md
+          grep -Fq 'Technical Preview remains **NOT ACTIVATED / NO-GO**' docs/SPRINT85_TECHNICAL_PREVIEW_ACTIVATION_READINESS_EVIDENCE_GATE.md
+          ! git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | grep -E '^apps/web/(database/migrations|app/Infrastructure/Pos|app/Providers/AppServiceProvider.php|routes/web.php|config/technical-preview.php)'
+
+      - name: Prove canonical readiness evidence contracts remain present
+        shell: bash
+        run: |
+          set -euo pipefail
+          runtime=apps/web/app/Application/Preview/TechnicalPreviewRuntimePolicy.php
+          grep -Fq "public const DEPLOYED_RUNTIME_CLASS = 'preview'" "$runtime"
+          grep -Fq "public const DEPLOYED_SESSION_DRIVER = 'file'" "$runtime"
+          grep -Fq "public const DEPLOYED_SESSION_COOKIE = 'oneqay-preview-session'" "$runtime"
+          grep -Fq 'MAX_DEPLOYED_SESSION_LIFETIME_MINUTES = 60' "$runtime"
+          grep -Fq 'sessionDomain === null' "$runtime"
+          grep -Fq "sessionPath === '/'" "$runtime"
+
+          grep -Fq 'Run deployed Preview file-session continuity regression' .github/workflows/preview-file-session-continuity-regression.yml
+          grep -Fq 'Prove disabled Preview removes route surface' .github/workflows/preview-route-off-switch-regression.yml
+          grep -Fq 'Prove Production runtime never registers Preview routes' .github/workflows/preview-route-off-switch-regression.yml
+
+          grep -Fq "policy['path'] === storage_path('logs/oneqay-observation.log')" apps/web/tests/run.php
+          grep -Fq "policy['days'] === 14" apps/web/tests/run.php
+          grep -Fq 'safe observation log must not leak synthetic sensitive values' apps/web/tests/run.php
+
+          grep -Fq 'Package deterministic governed Technical Preview release' .github/workflows/m7-5-preview-release-artifact.yml
+          grep -Fq 'Prove deterministic runtime archive reproduction' .github/workflows/m7-5-preview-release-artifact.yml
+          grep -Fq 'NO_SCHEMA_CHANGE' .github/workflows/m7-5-preview-release-artifact.yml
+          grep -Fq '/apps/web/database/migrations/' .github/workflows/m7-5-preview-release-artifact.yml
+
+          grep -Fq "'install_enabled' => false" apps/web/config/oneqay.php
+          grep -Fq 'ROLLING_BACK' apps/web/app/Application/SystemUpdate/SystemUpdateActivationCoordinator.php
+          grep -Fq 'rollback_health_failed' apps/web/app/Application/SystemUpdate/SystemUpdateActivationCoordinator.php
+          grep -Fq 'Prove updater runtime remains hard disabled and rehearsal unwired' .github/workflows/m7-6-preview-deployment-recovery-rehearsal-regression.yml
+          grep -Fq 'Enforce secret and database boundary' .github/workflows/shared-runtime-configuration-boundary-regression.yml
+
+      - name: Preserve M7.1 observability and application regression
+        working-directory: apps/web
+        run: composer test
+
+      - name: Prepare private file-session qualification storage
+        working-directory: apps/web
+        run: |
+          set -euo pipefail
+          mkdir -p storage/framework/sessions
+          chmod 700 storage/framework/sessions
+
+      - name: Prove deployed file-session continuity
+        working-directory: apps/web
+        env:
+          APP_ENV: preview
+          APP_URL: https://preview.oneqay.test
+          ONEQAY_RUNTIME_CLASS: preview
+          ONEQAY_TECHNICAL_PREVIEW_ENABLED: 'true'
+          SESSION_DRIVER: file
+          SESSION_LIFETIME: '60'
+          SESSION_ENCRYPT: 'true'
+          SESSION_SECURE_COOKIE: 'true'
+          SESSION_HTTP_ONLY: 'true'
+          SESSION_SAME_SITE: lax
+          SESSION_DOMAIN: ''
+          SESSION_PATH: '/'
+          SESSION_COOKIE: oneqay-preview-session
+        run: php tests/technical-preview-file-session-continuity.php
+
+      - name: Prove missing corrupt and expired session state fails closed
+        working-directory: apps/web
+        env:
+          APP_ENV: preview
+          APP_URL: https://preview.oneqay.test
+          ONEQAY_RUNTIME_CLASS: preview
+          ONEQAY_TECHNICAL_PREVIEW_ENABLED: 'true'
+          SESSION_DRIVER: file
+          SESSION_LIFETIME: '60'
+          SESSION_ENCRYPT: 'true'
+          SESSION_SECURE_COOKIE: 'true'
+          SESSION_HTTP_ONLY: 'true'
+          SESSION_SAME_SITE: lax
+          SESSION_DOMAIN: ''
+          SESSION_PATH: '/'
+          SESSION_COOKIE: oneqay-preview-session
+        run: php tests/technical-preview-session-failure-containment.php
+
+      - name: Re-prove Preview off-switch
+        working-directory: apps/web
+        env:
+          APP_ENV: preview
+          ONEQAY_RUNTIME_CLASS: preview
+          ONEQAY_TECHNICAL_PREVIEW_ENABLED: 'false'
+          SESSION_DRIVER: file
+          SESSION_LIFETIME: '60'
+          SESSION_ENCRYPT: 'true'
+          SESSION_SECURE_COOKIE: 'true'
+          SESSION_COOKIE: oneqay-preview-session
+        run: php tests/technical-preview-route-off-switch.php preview-disabled
+
+      - name: Re-prove Production denial
+        working-directory: apps/web
+        env:
+          APP_ENV: production
+          ONEQAY_RUNTIME_CLASS: production
+          ONEQAY_TECHNICAL_PREVIEW_ENABLED: 'true'
+          SESSION_DRIVER: file
+          SESSION_LIFETIME: '60'
+          SESSION_ENCRYPT: 'true'
+          SESSION_SECURE_COOKIE: 'true'
+          SESSION_COOKIE: oneqay-preview-session
+        run: php tests/technical-preview-route-off-switch.php production-denied
+
+      - name: Preserve synthetic Preview business and maker-checker journeys
+        working-directory: apps/web
+        env:
+          APP_ENV: testing
+          ONEQAY_RUNTIME_CLASS: ci
+          ONEQAY_TECHNICAL_PREVIEW_ENABLED: 'true'
+          SESSION_DRIVER: array
+        run: |
+          set -euo pipefail
+          php tests/technical-preview-interaction.php
+          php tests/technical-preview-sale-adjustment-journey.php
+          php tests/technical-preview-variance-review-journey.php
+
+      - name: Preserve recovery and shared-runtime safety foundations
+        working-directory: apps/web
+        env:
+          APP_ENV: testing
+          ONEQAY_RUNTIME_CLASS: ci
+          ONEQAY_SYSTEM_UPDATE_CONTROL_PLANE_ENABLED: 'false'
+          SESSION_DRIVER: array
+        run: |
+          set -euo pipefail
+          php tests/m7-6-preview-deployment-recovery-rehearsal.php
+          php tests/safe-staging-activation-health-rollback.php
+          php tests/shared-runtime-configuration-boundary.php
+
+      - name: Confirm tracked source remains unchanged
+        shell: bash
+        run: git diff --exit-code
