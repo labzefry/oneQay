@@ -7,6 +7,7 @@ namespace App\Delivery\Preview;
 use App\Application\Identity\IdentityContextViolation;
 use App\Application\Organization\OrganizationalAccessViolation;
 use App\Application\Preview\TechnicalPreviewJourney;
+use App\Application\Preview\TechnicalPreviewRuntimePolicy;
 use App\Application\Tenancy\MissingTenantContext;
 use App\Application\Tenancy\VerifiedTenantContext;
 use App\Infrastructure\Persistence\PreviewDatabaseQualification;
@@ -65,9 +66,21 @@ final class TechnicalPreviewDatabaseQualificationController
 
     private function assertEnabled(): void
     {
-        $runtimeClass = strtolower((string) env('ONEQAY_RUNTIME_CLASS', ''));
-        $enabled = filter_var(env('ONEQAY_TECHNICAL_PREVIEW_ENABLED', false), FILTER_VALIDATE_BOOL);
-
-        abort_unless($enabled && in_array($runtimeClass, ['local', 'test', 'testing', 'ci', 'preview'], true), 404);
+        abort_unless(
+            TechnicalPreviewRuntimePolicy::permits(
+                enabled: (bool) config('oneqay.technical_preview.enabled', false),
+                runtimeClass: (string) config('oneqay.runtime_class', ''),
+                sessionDriver: (string) config('session.driver', ''),
+                sessionLifetimeMinutes: (int) config('session.lifetime', 0),
+                sessionEncrypted: (bool) config('session.encrypt', false),
+                sessionSecure: (bool) config('session.secure', false),
+                sessionHttpOnly: (bool) config('session.http_only', false),
+                sessionSameSite: (string) config('session.same_site', ''),
+                sessionDomain: config('session.domain'),
+                sessionPath: (string) config('session.path', ''),
+                sessionCookie: (string) config('session.cookie', ''),
+            ),
+            404,
+        );
     }
 }
