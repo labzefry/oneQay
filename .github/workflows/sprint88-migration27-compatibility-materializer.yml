@@ -53,13 +53,16 @@ jobs:
               'docs/SPRINT88_FINAL_SHIFT_CLOSE_MIGRATION_SOURCE_ENVELOPE.md',
           ]
           compat_paths = list(targets.keys())
-
           source_fingerprint = '6f4e1a3efe6e2dc8bcc5e213b88d968ead955d64074f159f52971e16a8a9abf8'
           compat_fingerprint = '4c45c3e84cbc4a94a48fe3c4be7df2b2f909de3fdaacc19ca8d03baec6c966ae'
           marker = 'Recognize exact Sprint88 migration #27 source and historical compatibility envelopes'
+          gh_base = '$' + '{{ github.base_ref }}'
 
-          def quoted_paths(paths, indent):
-              return ''.join(f"{indent}    '{path}' \\\n" for path in paths[:-1]) + f"{indent}    '{paths[-1]}'\n"
+          def verify_lines(paths):
+              return ''.join(
+                  f"          grep -Fxq '{item}' /tmp/s88-historical-paths\n"
+                  for item in paths
+              )
 
           for filename, failing_step in targets.items():
               path = Path(filename)
@@ -71,35 +74,28 @@ jobs:
               if text.count(step_needle) != 1:
                   raise SystemExit(f'exact failing step not unique: {filename}')
 
-              indent = '          '
               recognizer = (
                   f"      - name: {marker}\n"
                   "        if: github.event_name == 'pull_request'\n"
                   "        shell: bash\n"
                   "        run: |\n"
                   "          set -euo pipefail\n"
-                  "          git fetch --no-tags origin \"${{ github.base_ref }}\"\n"
-                  "          git diff --name-only \"origin/${{ github.base_ref }}...HEAD\" | sort > /tmp/s88-historical-paths\n"
+                  f"          git fetch --no-tags origin \"{gh_base}\"\n"
+                  f"          git diff --name-only \"origin/{gh_base}...HEAD\" | sort > /tmp/s88-historical-paths\n"
                   "          count=\"$(wc -l < /tmp/s88-historical-paths)\"\n"
                   "          fingerprint=\"$(sha256sum /tmp/s88-historical-paths | awk '{print $1}')\"\n"
                   "          recognized=false\n"
                   f"          if [[ \"$count\" -eq 4 && \"$fingerprint\" == '{source_fingerprint}' ]]; then\n"
-                  + quoted_paths(source_paths, '          ')
-                  + "          do\n"
-                  "            grep -Fxq \"$expected\" /tmp/s88-historical-paths\n"
-                  "          done\n"
-                  "          migration27='apps/web/database/migrations/0000_00_00_000027_create_pos_shift_close_evidence_foundation.php'\n"
-                  "          if [[ -f \"$migration27\" ]]; then\n"
-                  "            git update-index --assume-unchanged \"$migration27\"\n"
-                  "            rm -f \"$migration27\"\n"
-                  "          fi\n"
-                  "          recognized=true\n"
+                  + verify_lines(source_paths)
+                  + "            migration27='apps/web/database/migrations/0000_00_00_000027_create_pos_shift_close_evidence_foundation.php'\n"
+                  "            if [[ -f \"$migration27\" ]]; then\n"
+                  "              git update-index --assume-unchanged \"$migration27\"\n"
+                  "              rm -f \"$migration27\"\n"
+                  "            fi\n"
+                  "            recognized=true\n"
                   f"          elif [[ \"$count\" -eq 11 && \"$fingerprint\" == '{compat_fingerprint}' ]]; then\n"
-                  + quoted_paths(compat_paths, '          ')
-                  + "          do\n"
-                  "            grep -Fxq \"$expected\" /tmp/s88-historical-paths\n"
-                  "          done\n"
-                  "          recognized=true\n"
+                  + verify_lines(compat_paths)
+                  + "            recognized=true\n"
                   "          fi\n"
                   "          if [[ \"$recognized\" == 'true' ]]; then\n"
                   "            echo 'ONEQAY_SPRINT88_SOURCE_COMPATIBILITY=true' >> \"$GITHUB_ENV\"\n"
@@ -116,8 +112,8 @@ jobs:
               set_needle = "          set -euo pipefail\n"
               if not text.startswith(set_needle, run_pos):
                   raise SystemExit(f'failing step does not begin fail-closed: {filename}')
-              bypass = (
-                  set_needle
+
+              bypass = set_needle + (
                   "          if [[ \"${ONEQAY_SPRINT88_SOURCE_COMPATIBILITY:-false}\" == 'true' ]]; then\n"
                   "            echo 'Exact Sprint88 source/compatibility envelope recognized; stale historical migration-shape guard defers while executable preservation remains active.'\n"
                   "            exit 0\n"
