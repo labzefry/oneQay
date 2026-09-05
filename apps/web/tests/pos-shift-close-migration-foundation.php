@@ -452,14 +452,10 @@ $deny(
 );
 
 $deny(
-    fn () => $connection->table('oneqay_pos_shift_close_evidence')->insert(array_merge(
-        $overRow,
-        [
-            'evidence_id' => 'shift-close-rejected-review-0001',
-            'operation_id' => 'shift-close-rejected-operation-0001',
-            'review_outcome' => 'REVIEW_REJECTED',
-        ],
-    )),
+    fn () => $connection->table('oneqay_pos_shift_close_evidence')
+        ->where('tenant_id', $over['tenant'])
+        ->where('evidence_id', $overRow['evidence_id'])
+        ->update(['review_outcome' => 'REVIEW_REJECTED']),
     'REVIEW_REJECTED finalization',
 );
 
