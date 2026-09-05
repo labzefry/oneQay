@@ -26,6 +26,8 @@ use App\Delivery\Http\Pos\PosShiftOpeningCashController;
 use App\Delivery\Http\Pos\PosShiftClosingCashController;
 use App\Delivery\Http\SystemUpdate\SystemUpdateControlPlaneController;
 use App\Delivery\Http\SystemUpdate\SystemUpdatePageController;
+use App\Delivery\Preview\TechnicalPreviewController;
+use App\Delivery\Preview\TechnicalPreviewDatabaseQualificationController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -225,3 +227,17 @@ Route::prefix('system/update')->controller(SystemUpdateControlPlaneController::c
         Route::post('/install', 'install')->name('system-update.install');
     });
 });
+
+Route::prefix('technical-preview')->controller(TechnicalPreviewController::class)->group(function (): void {
+    Route::get('/', 'index')->name('preview.index');
+    Route::post('/sign-in', 'signIn')->name('preview.sign-in');
+    Route::get('/context', 'context')->name('preview.context');
+    Route::post('/context', 'selectContext')->name('preview.context.select');
+    Route::get('/pos', 'pos')->name('preview.pos');
+    Route::post('/sale', 'sale')->name('preview.sale');
+    Route::get('/receipt', 'receipt')->name('preview.receipt');
+    Route::post('/logout', 'logout')->name('preview.logout');
+});
+
+Route::get('/technical-preview/database-qualification', TechnicalPreviewDatabaseQualificationController::class)
+    ->name('preview.database-qualification');
