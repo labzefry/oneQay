@@ -371,6 +371,19 @@ jobs:
           composer validate --no-check-publish
           composer install --no-interaction --no-progress --prefer-dist
 
+      - name: Setup exact Node LTS
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: 24.19.0
+
+      - name: Build locked frontend qualification assets
+        working-directory: apps/web
+        run: |
+          npm ci --ignore-scripts --no-fund
+          npm audit --audit-level=high
+          npm run type-check
+          npm run build
+
       - name: Validate Preview and Sprint 28 boundaries
         if: env.ONEQAY_SPRINT30_SUCCESSOR != 'true'
         shell: bash
