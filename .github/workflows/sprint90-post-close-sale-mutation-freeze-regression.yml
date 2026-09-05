@@ -83,8 +83,8 @@ jobs:
             apps/web/app/Infrastructure/Pos/LaravelSaleCashRefundRepository.php
           do
             grep -Fq "table('oneqay_pos_shifts')" "$repository"
-            grep -Fq "->where('shift_id', \$sale->shift_id)" "$repository"
-            grep -Fq "->where('active_slot', 1)" "$repository"
+            grep -Fq -- "->where('shift_id', \$sale->shift_id)" "$repository"
+            grep -Fq -- "->where('active_slot', 1)" "$repository"
             grep -Fq -- '->lockForUpdate()' "$repository"
           done
           test ! -e apps/web/database/migrations/0000_00_00_000028_create_pos_shift_close*
