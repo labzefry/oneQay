@@ -1,0 +1,186 @@
+name: Sprint88 Compatibility20 Exporter
+
+on:
+  push:
+    branches:
+      - sprint88-migration27-historical-compatibility
+
+permissions:
+  contents: write
+
+jobs:
+  export:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout exact branch
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+
+      - name: Materialize exact canonical 20-workflow outputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 <<'PY'
+          from pathlib import Path
+          import re
+
+          lower = [
+              '.github/workflows/m7-2-tenant-isolation-regression.yml',
+              '.github/workflows/m7-3-identity-org-context-regression.yml',
+              '.github/workflows/m7-4a-technical-preview-interaction-regression.yml',
+              '.github/workflows/m7-5-preview-db-qualification-regression.yml',
+              '.github/workflows/sprint21-role-permission-policy-regression.yml',
+              '.github/workflows/sprint22-policy-administration-regression.yml',
+              '.github/workflows/sprint23-initial-tenant-admin-provisioning-regression.yml',
+              '.github/workflows/sprint24-protected-control-admin-lifecycle-regression.yml',
+              '.github/workflows/sprint25-policy-administration-delivery-regression.yml',
+              '.github/workflows/sprint26-identity-credential-verification-regression.yml',
+              '.github/workflows/sprint27-first-party-session-establishment-regression.yml',
+          ]
+          upper = [
+              '.github/workflows/m7-4-pos-core-synthetic-regression.yml',
+              '.github/workflows/m7-5-preview-release-artifact.yml',
+              '.github/workflows/sprint28-initial-password-enrollment-regression.yml',
+              '.github/workflows/sprint29-first-control-principal-credential-bootstrap-regression.yml',
+              '.github/workflows/sprint30-privileged-totp-mfa-regression.yml',
+              '.github/workflows/sprint31-privileged-reauthentication-step-up-regression.yml',
+              '.github/workflows/sprint32-authentication-recovery-proof-regression.yml',
+              '.github/workflows/sprint33-recovery-bound-password-reset-regression.yml',
+              '.github/workflows/sprint34-authenticated-password-change-regression.yml',
+          ]
+          all_paths = lower + upper
+          source_fp = '6f4e1a3efe6e2dc8bcc5e213b88d968ead955d64074f159f52971e16a8a9abf8'
+          compat11_fp = '4c45c3e84cbc4a94a48fe3c4be7df2b2f909de3fdaacc19ca8d03baec6c966ae'
+          compat20_fp = 'c6cd387d5ea83d73382493ca78d219c0db35477e55c61a68e489a0329231f922'
+          source_paths = [
+              '.github/workflows/sprint88-final-shift-close-migration-source-gate.yml',
+              'apps/web/database/migrations/0000_00_00_000027_create_pos_shift_close_evidence_foundation.php',
+              'apps/web/tests/pos-shift-close-migration-foundation.php',
+              'docs/SPRINT88_FINAL_SHIFT_CLOSE_MIGRATION_SOURCE_ENVELOPE.md',
+          ]
+          compat20_paths = [
+              '.github/workflows/m7-2-tenant-isolation-regression.yml',
+              '.github/workflows/m7-3-identity-org-context-regression.yml',
+              '.github/workflows/m7-4-pos-core-synthetic-regression.yml',
+              '.github/workflows/m7-4a-technical-preview-interaction-regression.yml',
+              '.github/workflows/m7-5-preview-db-qualification-regression.yml',
+              '.github/workflows/m7-5-preview-release-artifact.yml',
+              '.github/workflows/sprint21-role-permission-policy-regression.yml',
+              '.github/workflows/sprint22-policy-administration-regression.yml',
+              '.github/workflows/sprint23-initial-tenant-admin-provisioning-regression.yml',
+              '.github/workflows/sprint24-protected-control-admin-lifecycle-regression.yml',
+              '.github/workflows/sprint25-policy-administration-delivery-regression.yml',
+              '.github/workflows/sprint26-identity-credential-verification-regression.yml',
+              '.github/workflows/sprint27-first-party-session-establishment-regression.yml',
+              '.github/workflows/sprint28-initial-password-enrollment-regression.yml',
+              '.github/workflows/sprint29-first-control-principal-credential-bootstrap-regression.yml',
+              '.github/workflows/sprint30-privileged-totp-mfa-regression.yml',
+              '.github/workflows/sprint31-privileged-reauthentication-step-up-regression.yml',
+              '.github/workflows/sprint32-authentication-recovery-proof-regression.yml',
+              '.github/workflows/sprint33-recovery-bound-password-reset-regression.yml',
+              '.github/workflows/sprint34-authenticated-password-change-regression.yml',
+          ]
+
+          out = Path('docs/_sprint88_compat20')
+          out.mkdir(parents=True, exist_ok=True)
+
+          expected20 = ''.join(f"              '{p}' \\\n" for p in compat20_paths[:-1]) + f"              '{compat20_paths[-1]}'\n"
+          source_block = (
+              "          sprint88_source=false\n"
+              f"          if [[ \"$count\" -eq 4 && \"$fingerprint\" == '{source_fp}' ]]; then\n"
+              "            for expected in \\\n" +
+              ''.join(f"              '{p}' \\\n" for p in source_paths[:-1]) +
+              f"              '{source_paths[-1]}'\n"
+              "            do\n"
+              "              grep -Fxq \"$expected\" /tmp/s70-downstream-paths\n"
+              "            done\n"
+              "            sprint88_source=true\n"
+              "          fi\n"
+          )
+
+          for path in lower:
+              p = Path(path)
+              text = p.read_text()
+              old = f"elif [[ \"$count\" -eq 11 && \"$fingerprint\" == '{compat11_fp}' ]]; then"
+              new = f"elif [[ \"$count\" -eq 20 && \"$fingerprint\" == '{compat20_fp}' ]]; then"
+              if text.count(old) != 1:
+                  raise SystemExit(f'{path}: expected exactly one self11 recognizer, found {text.count(old)}')
+              text = text.replace(old, new, 1)
+              branch_start = text.index(new)
+              branch_end = text.index('            recognized=true', branch_start)
+              segment = text[branch_start:branch_end]
+              for old_path in [
+                  '.github/workflows/m7-2-tenant-isolation-regression.yml',
+                  '.github/workflows/m7-3-identity-org-context-regression.yml',
+                  '.github/workflows/m7-4a-technical-preview-interaction-regression.yml',
+                  '.github/workflows/m7-5-preview-db-qualification-regression.yml',
+                  '.github/workflows/sprint21-role-permission-policy-regression.yml',
+                  '.github/workflows/sprint22-policy-administration-regression.yml',
+                  '.github/workflows/sprint23-initial-tenant-admin-provisioning-regression.yml',
+                  '.github/workflows/sprint24-protected-control-admin-lifecycle-regression.yml',
+                  '.github/workflows/sprint25-policy-administration-delivery-regression.yml',
+                  '.github/workflows/sprint26-identity-credential-verification-regression.yml',
+                  '.github/workflows/sprint27-first-party-session-establishment-regression.yml',
+              ]:
+                  segment = segment.replace(f"              '{old_path}' \\\n", '')
+                  segment = segment.replace(f"              '{old_path}'\n", '')
+              marker = "            for expected in \\\n"
+              if marker not in segment:
+                  raise SystemExit(f'{path}: self recognizer expected-list marker missing')
+              prefix = segment[:segment.index(marker) + len(marker)]
+              suffix_pos = segment.index('            do\n', segment.index(marker))
+              suffix = segment[suffix_pos:]
+              segment = prefix + expected20 + suffix
+              text = text[:branch_start] + segment + text[branch_end:]
+              (out / p.name).write_text(text)
+
+          for path in upper:
+              p = Path(path)
+              text = p.read_text()
+              if source_fp in text:
+                  raise SystemExit(f'{path}: Sprint88 source recognizer unexpectedly already present')
+              anchor = "          fingerprint=\"$(sha256sum /tmp/s70-downstream-paths | awk '{print $1}')\"\n"
+              if text.count(anchor) != 1:
+                  raise SystemExit(f'{path}: downstream fingerprint anchor count={text.count(anchor)}')
+              text = text.replace(anchor, anchor + source_block, 1)
+              lines = text.splitlines(True)
+              changed_cond = False
+              changed_seq = False
+              for i, line in enumerate(lines):
+                  if compat20_fp in line and line.lstrip().startswith('if '):
+                      if 'sprint88_source' not in line:
+                          indent = line[:len(line)-len(line.lstrip())]
+                          lines[i] = indent + 'if [[ "$sprint88_source" == \'true\' ]] || ' + line.lstrip()[3:]
+                      changed_cond = True
+                      for j in range(i + 1, min(i + 8, len(lines))):
+                          m = re.search(r'for index in \$\(seq (\d+) 26\); do', lines[j])
+                          if m:
+                              lines[j] = lines[j].replace(f"$(seq {m.group(1)} 26)", f"$(seq {m.group(1)} 27)")
+                              changed_seq = True
+                              break
+                      break
+              if not changed_cond or not changed_seq:
+                  raise SystemExit(f'{path}: failed to extend canonical downstream isolation (condition={changed_cond}, seq={changed_seq})')
+              text = ''.join(lines)
+              (out / p.name).write_text(text)
+
+          generated = sorted(x.name for x in out.iterdir() if x.is_file())
+          expected = sorted(Path(x).name for x in all_paths)
+          if generated != expected:
+              raise SystemExit(f'generated outputs mismatch: {generated!r}')
+          print(f'Generated {len(generated)} exact Sprint88 compatibility outputs.')
+          PY
+
+      - name: Commit exported non-workflow blobs
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'Lab | zefry'
+          git config user.email 'lab.zefry@users.noreply.github.com'
+          git add docs/_sprint88_compat20
+          test "$(git diff --cached --name-only | wc -l)" -eq 20
+          git commit -m 'ci(sprint88): export canonical compatibility20 blobs
+
+          Author by Lab | zefry'
+          git push origin HEAD:sprint88-migration27-historical-compatibility
