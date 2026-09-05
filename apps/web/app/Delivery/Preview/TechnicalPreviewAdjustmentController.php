@@ -42,14 +42,15 @@ final class TechnicalPreviewAdjustmentController
 
         $saleId = $receipt['sale_id'];
         $operationId = $this->adjustmentOperationId('void', $profile, $saleId);
+        $receiptSnapshot = array_replace($receipt, [
+            'organization_id' => $profile->organizationId(),
+        ]);
 
         try {
             $adjustment = $journey->voidSale(
                 $profile,
-                $saleId,
-                $receipt['tender_category'],
                 $operationId,
-                $receipt['adjustment'],
+                $receiptSnapshot,
             );
             $receipt['adjustment'] = $adjustment;
             if (! in_array($saleId, $shift['voided_sale_ids'], true)) {
@@ -82,15 +83,15 @@ final class TechnicalPreviewAdjustmentController
 
         $saleId = $receipt['sale_id'];
         $operationId = $this->adjustmentOperationId('refund', $profile, $saleId);
+        $receiptSnapshot = array_replace($receipt, [
+            'organization_id' => $profile->organizationId(),
+        ]);
 
         try {
             $adjustment = $journey->refundCashSale(
                 $profile,
-                $saleId,
-                $receipt['total_atomic'],
-                $receipt['tender_category'],
                 $operationId,
-                $receipt['adjustment'],
+                $receiptSnapshot,
             );
             $receipt['adjustment'] = $adjustment;
             if (! in_array($saleId, $shift['refunded_sale_ids'], true)) {
