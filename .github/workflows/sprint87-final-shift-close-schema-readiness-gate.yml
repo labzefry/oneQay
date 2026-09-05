@@ -1,0 +1,142 @@
+# Sprint87 Final Shift Close schema-readiness gate — Lab | zefry
+# Author by Lab | zefry
+name: Sprint87 Final Shift Close Schema Readiness Gate
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/sprint87-final-shift-close-schema-readiness-gate.yml'
+      - 'docs/SPRINT87_FINAL_SHIFT_CLOSE_SCHEMA_READINESS.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint87-final-shift-close-schema-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  final-shift-close-schema-readiness:
+    name: final-shift-close-schema-readiness
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHQ=
+      APP_DEBUG: 'false'
+      APP_URL: http://localhost
+      ONEQAY_RUNTIME_CLASS: ci
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Enforce exact Sprint87 schema-readiness envelope
+        if: github.event_name == 'pull_request' && github.head_ref == 'sprint87-final-shift-close-schema-readiness'
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+          git diff --name-only "$base" "$head" | sort > /tmp/s87-paths
+          test "$(wc -l < /tmp/s87-paths)" -eq 2
+          test "$(sha256sum /tmp/s87-paths | awk '{print $1}')" = 'dbac15cdaf050acc9121992cdf34790868d06f25e41e820b24fae4fd3a4a4475'
+          grep -Fxq '.github/workflows/sprint87-final-shift-close-schema-readiness-gate.yml' /tmp/s87-paths
+          grep -Fxq 'docs/SPRINT87_FINAL_SHIFT_CLOSE_SCHEMA_READINESS.md' /tmp/s87-paths
+
+      - name: Validate locked Composer dependencies
+        working-directory: apps/web
+        run: |
+          set -euo pipefail
+          composer validate --no-check-publish
+          composer install --no-interaction --no-progress --prefer-dist
+          composer audit --locked --no-interaction --abandoned=report
+
+      - name: Prove canonical migration horizon and shift active-slot contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f apps/web/database/migrations/0000_00_00_000026_create_pos_cash_variance_review_decision_evidence_foundation.php
+          test ! -e apps/web/database/migrations/0000_00_00_000027_create_pos_shift_close_evidence_foundation.php
+          shift_migration=apps/web/database/migrations/0000_00_00_000018_create_pos_shift_opening_foundation.php
+          grep -Fq "Schema::create('oneqay_pos_shifts'" "$shift_migration"
+          grep -Fq "unsignedTinyInteger('active_slot')->nullable()" "$shift_migration"
+          grep -Fq "['tenant_id', 'outlet_id', 'device_id', 'active_slot']" "$shift_migration"
+          ! grep -Fq "closed_at_unix" "$shift_migration"
+
+      - name: Prove canonical evidence bindings supporting the selected plan
+        shell: bash
+        run: |
+          set -euo pipefail
+          closing=apps/web/database/migrations/0000_00_00_000023_create_pos_shift_closing_cash_evidence_foundation.php
+          review=apps/web/database/migrations/0000_00_00_000026_create_pos_cash_variance_review_decision_evidence_foundation.php
+          grep -Fq "unique(['tenant_id', 'shift_id']" "$closing"
+          grep -Fq "foreign(['tenant_id', 'shift_id']" "$closing"
+          grep -Fq "cash_variance_explanation_evidence_id" "$review"
+          grep -Fq "review_outcome" "$review"
+          grep -Fq "reviewer_actor_identity_id" "$review"
+          grep -Fq "explanation_actor_identity_id" "$review"
+          grep -Fq 'chk_pos_var_review_maker_checker' "$review"
+          grep -Fq "public const REVIEW_ACCEPTED = 'REVIEW_ACCEPTED'" apps/web/app/Application/Pos/CashVarianceReviewDecisionCommand.php
+          grep -Fq "public const REVIEW_REJECTED = 'REVIEW_REJECTED'" apps/web/app/Application/Pos/CashVarianceReviewDecisionCommand.php
+          grep -Fq "public const DIRECTION_MATCH = 'MATCH'" apps/web/app/Application/Pos/CashVarianceResult.php
+          grep -Fq "public const DIRECTION_OVER = 'OVER'" apps/web/app/Application/Pos/CashVarianceResult.php
+          grep -Fq "public const DIRECTION_SHORT = 'SHORT'" apps/web/app/Application/Pos/CashVarianceResult.php
+
+      - name: Enforce selected schema contract and authority boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          doc=docs/SPRINT87_FINAL_SHIFT_CLOSE_SCHEMA_READINESS.md
+          grep -Fq '`oneqay_pos_shift_close_evidence`' "$doc"
+          grep -Fq '`review_evidence_id` — string(32), nullable' "$doc"
+          grep -Fq "review_outcome = 'REVIEW_ACCEPTED'" "$doc"
+          grep -Fq 'REVIEW_REJECTED` is never a valid value in final-close evidence' "$doc"
+          grep -Fq 'update `oneqay_pos_shifts.active_slot` from `1` to `NULL`' "$doc"
+          grep -Fq 'same `PersistenceTransaction` boundary' "$doc"
+          grep -Fq 'FINAL_SHIFT_CLOSE_SCHEMA_READINESS = PASS_TO_MIGRATION_SOURCE_ENVELOPE' "$doc"
+          grep -Fq 'ACTIVE_SLOT_RELEASE_CONTRACT = SELECTED_ATOMIC_WITH_EVIDENCE_INSERT' "$doc"
+          grep -Fq 'NONZERO_VARIANCE_REQUIRES_ACCEPTED_REVIEW = TRUE' "$doc"
+          grep -Fq 'FINAL_SHIFT_CLOSE_AUTHORITY = NOT_SELECTED' "$doc"
+          grep -Fq 'FINAL_SHIFT_CLOSE_PERMISSION = NOT_DEFINED' "$doc"
+          grep -Fq 'SHIFT_CLOSE_EXECUTION = NOT_IMPLEMENTED' "$doc"
+          grep -Fq 'MIGRATION_27_SOURCE = NOT_CREATED' "$doc"
+          grep -Fq 'MIGRATION_EXECUTION_AUTHORITY = NOT_GRANTED' "$doc"
+          grep -Fq 'TECHNICAL_PREVIEW_ACTIVATION_AUTHORITY = NOT_GRANTED' "$doc"
+          grep -Fq 'PRODUCTION_AUTHORITY = NOT_GRANTED' "$doc"
+
+      - name: Prove no Final Shift Close source or permission was introduced
+        shell: bash
+        run: |
+          set -euo pipefail
+          test ! -e apps/web/app/Application/Pos/CloseShift.php
+          test ! -e apps/web/app/Application/Pos/CloseShiftCommand.php
+          test ! -e apps/web/app/Application/Pos/CloseShiftRepository.php
+          test ! -e apps/web/app/Application/Pos/CloseShiftResult.php
+          test ! -e apps/web/app/Infrastructure/Pos/LaravelCloseShiftRepository.php
+          ! grep -R -F 'pos.shift.close' apps/web/app apps/web/config apps/web/routes --exclude='*.md'
+
+      - name: Reject migration runtime provider route config or business-source delta
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+          ! git diff --name-only "$base" "$head" | grep -E '^apps/web/(app|database/migrations|routes|config)/'
+
+      - name: Preserve migration governance and application regression
+        working-directory: apps/web
+        run: composer test
+
+      - name: Confirm tracked source remains unchanged
+        shell: bash
+        run: git diff --exit-code
