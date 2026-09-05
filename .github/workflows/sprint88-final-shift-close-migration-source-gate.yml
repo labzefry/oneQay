@@ -1,0 +1,152 @@
+# Sprint88 Final Shift Close migration source gate — Lab | zefry
+# Author by Lab | zefry
+name: Sprint88 Final Shift Close Migration Source Gate
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/sprint88-final-shift-close-migration-source-gate.yml'
+      - 'apps/web/database/migrations/0000_00_00_000027_create_pos_shift_close_evidence_foundation.php'
+      - 'apps/web/tests/pos-shift-close-migration-foundation.php'
+      - 'docs/SPRINT88_FINAL_SHIFT_CLOSE_MIGRATION_SOURCE_ENVELOPE.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint88-final-shift-close-migration-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  final-shift-close-migration-source:
+    name: final-shift-close-migration-source
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:c3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3M=
+      APP_DEBUG: 'false'
+      APP_URL: http://localhost
+      ONEQAY_RUNTIME_CLASS: ci
+      ONEQAY_PERSISTENCE_ENABLED: 'true'
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Enforce exact Sprint88 source envelope
+        if: github.event_name == 'pull_request' && github.head_ref == 'sprint88-final-shift-close-migration-source'
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+          git diff --name-only "$base" "$head" | sort > /tmp/s88-paths
+          test "$(wc -l < /tmp/s88-paths)" -eq 4
+          test "$(sha256sum /tmp/s88-paths | awk '{print $1}')" = '6f4e1a3efe6e2dc8bcc5e213b88d968ead955d64074f159f52971e16a8a9abf8'
+          grep -Fxq '.github/workflows/sprint88-final-shift-close-migration-source-gate.yml' /tmp/s88-paths
+          grep -Fxq 'apps/web/database/migrations/0000_00_00_000027_create_pos_shift_close_evidence_foundation.php' /tmp/s88-paths
+          grep -Fxq 'apps/web/tests/pos-shift-close-migration-foundation.php' /tmp/s88-paths
+          grep -Fxq 'docs/SPRINT88_FINAL_SHIFT_CLOSE_MIGRATION_SOURCE_ENVELOPE.md' /tmp/s88-paths
+
+      - name: Validate locked Composer dependencies
+        working-directory: apps/web
+        run: |
+          set -euo pipefail
+          composer validate --no-check-publish
+          composer install --no-interaction --no-progress --prefer-dist
+          composer audit --locked --no-interaction --abandoned=report
+
+      - name: Validate migration source syntax and horizon
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l apps/web/database/migrations/0000_00_00_000027_create_pos_shift_close_evidence_foundation.php
+          php -l apps/web/tests/pos-shift-close-migration-foundation.php
+          test -f apps/web/database/migrations/0000_00_00_000026_create_pos_cash_variance_review_decision_evidence_foundation.php
+          test -f apps/web/database/migrations/0000_00_00_000027_create_pos_shift_close_evidence_foundation.php
+          test ! -e apps/web/database/migrations/0000_00_00_000028_
+          test "$(find apps/web/database/migrations -maxdepth 1 -type f -name '*.php' | wc -l)" -eq 27
+
+      - name: Enforce selected table keys and foreign-key contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          migration=apps/web/database/migrations/0000_00_00_000027_create_pos_shift_close_evidence_foundation.php
+          grep -Fq "Schema::create('oneqay_pos_shift_close_evidence'" "$migration"
+          grep -Fq "primary(['tenant_id', 'evidence_id'], 'pk_pos_shift_close_final')" "$migration"
+          grep -Fq "unique(['tenant_id', 'operation_id'], 'uq_pos_shift_close_operation')" "$migration"
+          grep -Fq "unique(['tenant_id', 'shift_id'], 'uq_pos_shift_close_shift')" "$migration"
+          grep -Fq "['tenant_id', 'outlet_id', 'closed_at_unix']" "$migration"
+          grep -Fq "on('oneqay_pos_shifts')" "$migration"
+          grep -Fq "on('oneqay_pos_shift_opening_cash_evidence')" "$migration"
+          grep -Fq "on('oneqay_pos_shift_closing_cash_evidence')" "$migration"
+          grep -Fq "on('oneqay_identities')" "$migration"
+          grep -Fq "on('oneqay_organizations')" "$migration"
+          grep -Fq "on('oneqay_outlets')" "$migration"
+          grep -Fq "on('oneqay_devices')" "$migration"
+          grep -Fq "on('oneqay_pos_cash_variance_review_decision_evidence')" "$migration"
+
+      - name: Enforce variance review fail-closed database rule
+        shell: bash
+        run: |
+          set -euo pipefail
+          migration=apps/web/database/migrations/0000_00_00_000027_create_pos_shift_close_evidence_foundation.php
+          grep -Fq "variance_direction = 'MATCH' AND variance_atomic = 0" "$migration"
+          grep -Fq "variance_direction = 'OVER' AND variance_atomic > 0" "$migration"
+          grep -Fq "variance_direction = 'SHORT' AND variance_atomic < 0" "$migration"
+          grep -Fq "review_outcome = 'REVIEW_ACCEPTED'" "$migration"
+          grep -Fq 'chk_pos_shift_close_variance_review' "$migration"
+          grep -Fq "['mysql', 'sqlite']" "$migration"
+          grep -Fq "Forward-only generated migration; rollback is not authorized." "$migration"
+
+      - name: Run isolated SQLite migration regression
+        working-directory: apps/web
+        run: php tests/pos-shift-close-migration-foundation.php
+
+      - name: Preserve canonical variance derivation regression
+        working-directory: apps/web
+        run: php tests/pos-cash-variance-derivation.php
+
+      - name: Enforce Sprint88 authority and execution boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          doc=docs/SPRINT88_FINAL_SHIFT_CLOSE_MIGRATION_SOURCE_ENVELOPE.md
+          grep -Fq 'FINAL_SHIFT_CLOSE_MIGRATION_SOURCE = QUALIFIED_SOURCE_ONLY' "$doc"
+          grep -Fq 'MIGRATION_27_SOURCE = CREATED' "$doc"
+          grep -Fq 'MIGRATION_27_LIVE_EXECUTION = NOT_AUTHORIZED' "$doc"
+          grep -Fq 'FINAL_SHIFT_CLOSE_APPLICATION_SOURCE = NOT_IMPLEMENTED' "$doc"
+          grep -Fq 'FINAL_SHIFT_CLOSE_AUTHORITY = NOT_SELECTED' "$doc"
+          grep -Fq 'FINAL_SHIFT_CLOSE_PERMISSION = NOT_DEFINED' "$doc"
+          grep -Fq 'ACTIVE_SLOT_RELEASE_EXECUTION = NOT_IMPLEMENTED' "$doc"
+          grep -Fq 'MIGRATION_EXECUTION_AUTHORITY = NOT_GRANTED' "$doc"
+          grep -Fq 'TECHNICAL_PREVIEW_ACTIVATION_AUTHORITY = NOT_GRANTED' "$doc"
+          grep -Fq 'PRODUCTION_AUTHORITY = NOT_GRANTED' "$doc"
+
+      - name: Reject application runtime permission or activation delta
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+          ! git diff --name-only "$base" "$head" | grep -E '^apps/web/(app|routes|config)/'
+          ! grep -R -F 'pos.shift.close' apps/web/app apps/web/config apps/web/routes --exclude='*.md'
+          test ! -e apps/web/app/Application/Pos/CloseShift.php
+          test ! -e apps/web/app/Application/Pos/CloseShiftCommand.php
+          test ! -e apps/web/app/Application/Pos/CloseShiftRepository.php
+          test ! -e apps/web/app/Application/Pos/CloseShiftResult.php
+          test ! -e apps/web/app/Infrastructure/Pos/LaravelCloseShiftRepository.php
+
+      - name: Confirm tracked source remains unchanged
+        shell: bash
+        run: git diff --exit-code
