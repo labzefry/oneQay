@@ -35,12 +35,6 @@ register_shutdown_function(static function () use ($sessionDirectory, $baselineS
     }
 });
 
-/** @var Illuminate\Foundation\Application $app */
-$app = require __DIR__.'/../bootstrap/app.php';
-/** @var HttpKernel $kernel */
-$kernel = $app->make(HttpKernel::class);
-$kernel->bootstrap();
-
 /** @var array<string, string> $cookies */
 $cookies = [];
 $csrfToken = null;
@@ -49,7 +43,12 @@ $sendHttp = static function (
     string $method,
     string $uri,
     array $parameters = [],
-) use ($kernel, &$cookies, &$csrfToken): array {
+) use (&$cookies, &$csrfToken): array {
+    /** @var Illuminate\Foundation\Application $app */
+    $app = require __DIR__.'/../bootstrap/app.php';
+    /** @var HttpKernel $kernel */
+    $kernel = $app->make(HttpKernel::class);
+
     $method = strtoupper($method);
     if ($method !== 'GET' && $csrfToken !== null && ! array_key_exists('_token', $parameters)) {
         $parameters['_token'] = $csrfToken;
@@ -112,10 +111,14 @@ $signIn = static function () use ($sendHttp, $assert, $sessionDirectory): array 
     return [$sessionId, $sessionPath];
 };
 
+// Bootstrap one independent request before inspecting the config repository.
+[$configProbeResponse] = $sendHttp('GET', '/technical-preview');
+$assert($configProbeResponse->getStatusCode() === 200, 'TPSF-CONFIG-000 deployed Preview request bootstraps successfully');
 $assert((string) config('technical-preview.runtime_class') === 'preview', 'TPSF-CONFIG-001 exact deployed Preview runtime is selected');
 $assert((bool) config('technical-preview.enabled') === true, 'TPSF-CONFIG-002 Preview is explicitly enabled only inside this qualification');
 $assert((string) config('session.driver') === 'file', 'TPSF-CONFIG-003 admitted Preview runtime uses file sessions');
 $assert((bool) config('session.encrypt') === true, 'TPSF-CONFIG-004 admitted Preview session payload is encrypted');
+$resetBrowser();
 
 // Missing backend state must never preserve previously authenticated Preview authority.
 [, $missingSessionPath] = $signIn();
