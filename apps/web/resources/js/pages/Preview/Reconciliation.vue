@@ -20,7 +20,10 @@ type Reconciliation = {
   closing_cash_evidence_id: string
   opening_cash_atomic: number
   cash_sales_atomic: number
+  cash_refunds_atomic: number
   sale_count: number
+  void_count: number
+  refund_count: number
   expected_cash_atomic: number
   observed_closing_atomic: number
   variance_atomic: number
@@ -76,6 +79,11 @@ const outcomeLabel = computed(() => {
           <small>Cash sales · {{ reconciliation.sale_count }} transaksi</small>
           <strong>{{ money(reconciliation.cash_sales_atomic) }}</strong>
         </article>
+        <span>−</span>
+        <article class="refunds">
+          <small>Cash refunds · {{ reconciliation.refund_count }} refund</small>
+          <strong>{{ money(reconciliation.cash_refunds_atomic) }}</strong>
+        </article>
         <span>=</span>
         <article class="expected">
           <small>Expected cash · server-derived</small>
@@ -84,6 +92,8 @@ const outcomeLabel = computed(() => {
       </section>
 
       <section class="comparison">
+        <span>Void evidence <strong>{{ reconciliation.void_count }}</strong></span>
+        <span>Cash refund evidence <strong>{{ reconciliation.refund_count }}</strong></span>
         <span>Expected cash <strong>{{ money(reconciliation.expected_cash_atomic) }}</strong></span>
         <span>Observed closing cash <strong>{{ money(reconciliation.observed_closing_atomic) }}</strong></span>
         <span>Variance <strong>{{ money(reconciliation.variance_atomic) }}</strong></span>
@@ -98,7 +108,7 @@ const outcomeLabel = computed(() => {
 
       <aside class="warning">
         <strong>Not Production Ready</strong>
-        <span>Expected cash dan variance dihitung server-side dengan aturan canonical, tetapi state shift ini hanya Synthetic Technical Preview session evidence. Tidak ada migration execution, durable production ledger, deployment, atau Production activation.</span>
+        <span>Expected cash mengikuti lifecycle canonical: void tidak otomatis mengurangi kas; full CASH refund yang terikat ke void menjadi pengurang eksplisit. State shift ini tetap Synthetic Technical Preview session evidence. Tidak ada migration execution, durable production ledger, deployment, atau Production activation.</span>
       </aside>
 
       <div class="actions">
@@ -111,7 +121,7 @@ const outcomeLabel = computed(() => {
 
 <style scoped>
 .preview-shell { min-height: 100vh; display: grid; place-items: center; padding: 2rem; background: #0b1020; color: #eef2ff; }
-.reconciliation-card { width: min(58rem, 100%); padding: 2rem; border: 1px solid #334155; border-radius: 1.25rem; background: #111827; }
+.reconciliation-card { width: min(68rem, 100%); padding: 2rem; border: 1px solid #334155; border-radius: 1.25rem; background: #111827; }
 .preview-eyebrow { margin: 0 0 .35rem; font-size: .75rem; letter-spacing: .12em; text-transform: uppercase; color: #93c5fd; }
 h1 { margin: 0; }
 .muted, small { color: #94a3b8; }
@@ -121,8 +131,9 @@ h1 { margin: 0; }
 .outcome[data-direction="MATCH"] { border: 1px solid #166534; }
 .outcome[data-direction="OVER"] { border: 1px solid #0369a1; }
 .outcome[data-direction="SHORT"] { border: 1px solid #b91c1c; }
-.equation { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; gap: .75rem; align-items: center; }
+.equation { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr auto 1fr; gap: .75rem; align-items: center; }
 .equation article { display: grid; gap: .3rem; min-height: 4.6rem; padding: .85rem; border-radius: .7rem; background: #0f172a; }
+.equation .refunds { background: #3f1d24; }
 .equation .expected { background: #082f49; }
 .comparison { display: grid; gap: .6rem; margin: 1.25rem 0; }
 .comparison span { display: flex; justify-content: space-between; gap: 1rem; padding-bottom: .55rem; border-bottom: 1px solid #1f2937; }
@@ -132,5 +143,5 @@ h1 { margin: 0; }
 .actions { display: flex; gap: .75rem; margin-top: 1.25rem; flex-wrap: wrap; }
 button { border: 0; border-radius: .65rem; padding: .75rem 1rem; background: #dbeafe; color: #0f172a; font-weight: 700; cursor: pointer; }
 button.secondary { background: #1e293b; color: #e2e8f0; border: 1px solid #475569; }
-@media (max-width: 720px) { .equation { grid-template-columns: 1fr; } .equation > span { display: none; } .evidence { grid-template-columns: 1fr; } .outcome { grid-template-columns: 1fr; } }
+@media (max-width: 900px) { .equation { grid-template-columns: 1fr; } .equation > span { display: none; } .evidence { grid-template-columns: 1fr; } .outcome { grid-template-columns: 1fr; } }
 </style>
