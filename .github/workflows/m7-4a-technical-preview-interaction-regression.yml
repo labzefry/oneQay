@@ -322,7 +322,17 @@ jobs:
           count="$(wc -l < /tmp/s70-historical-paths)"
           fingerprint="$(sha256sum /tmp/s70-historical-paths | awk '{print $1}')"
           recognized=false
-          if [[ "$count" -eq 1 && "$fingerprint" == 'cbf904ad24e645ca19377aeae645c574c386bf21bbb7997737df2f11fc903cd2' ]]; then
+          if [[ "$count" -eq 4 && "$fingerprint" == '6f4e1a3efe6e2dc8bcc5e213b88d968ead955d64074f159f52971e16a8a9abf8' ]]; then
+            for expected in \
+              '.github/workflows/sprint88-final-shift-close-migration-source-gate.yml' \
+              'apps/web/database/migrations/0000_00_00_000027_create_pos_shift_close_evidence_foundation.php' \
+              'apps/web/tests/pos-shift-close-migration-foundation.php' \
+              'docs/SPRINT88_FINAL_SHIFT_CLOSE_MIGRATION_SOURCE_ENVELOPE.md'
+            do
+              grep -Fxq "$expected" /tmp/s70-historical-paths
+            done
+            recognized=true
+          elif [[ "$count" -eq 1 && "$fingerprint" == 'cbf904ad24e645ca19377aeae645c574c386bf21bbb7997737df2f11fc903cd2' ]]; then
             grep -Fxq '.github/workflows/m7-4a-technical-preview-interaction-regression.yml' /tmp/s70-historical-paths
             recognized=true
           elif [[ "$count" -eq 7 && "$fingerprint" == '485c5a63945d3aef4afa4e075847814dfcd806fd788e17b8a717c5831e9af3f3' ]]; then
@@ -487,7 +497,7 @@ jobs:
             recognized=true
           fi
           if [[ "$recognized" == 'true' ]]; then
-            for index in $(seq 10 26); do
+            for index in $(seq 10 27); do
               migration="$(find apps/web/database/migrations -maxdepth 1 -type f -name "$(printf '0000_00_00_%06d_*' "$index")" -print -quit)"
               if [[ -n "$migration" && -f "$migration" ]]; then
                 git update-index --assume-unchanged "$migration"
@@ -502,7 +512,7 @@ jobs:
             echo 'ONEQAY_SPRINT33_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT34_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT51_JRN008_PREVIEW_FIXTURE=true' >> "$GITHUB_ENV"
-            echo 'Exact Sprint70 source/compatibility envelope recognized; migrations #10-#26 isolated only from historical executable preservation.'
+            echo 'Exact Sprint70 source/compatibility envelope recognized; migrations #10-#27 isolated only from historical executable preservation.'
           fi
 
       - name: Preserve canonical migrations and reject Preview database credential session or enrollment implementation
