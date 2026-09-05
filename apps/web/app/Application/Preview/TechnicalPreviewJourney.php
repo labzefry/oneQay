@@ -10,6 +10,7 @@ use App\Application\Pos\CashVarianceResult;
 use App\Application\Pos\CompleteSyntheticSale;
 use App\Application\Pos\DeriveCashVariance;
 use App\Application\Pos\ExpectedCashResult;
+use App\Application\Pos\PosTransactionViolation;
 use App\Application\Pos\SaleCashRefundCommand;
 use App\Application\Pos\SaleCommand;
 use App\Application\Pos\SaleVoidCommand;
@@ -142,36 +143,122 @@ final readonly class TechnicalPreviewJourney
     }
 
     /**
+     * Apply canonical void semantics to a server-owned synthetic receipt snapshot.
+     * No fixture-memory continuity is required between HTTP requests.
+     *
+     * @param array{sale_id:string,status:string,void_operation_id:?string,refund_operation_id:?string,refund_amount_atomic:int,tender_category:string,idempotent_replay:bool} $currentAdjustment
      * @return array{sale_id:string,status:string,void_operation_id:string,refund_operation_id:?string,refund_amount_atomic:int,tender_category:string,idempotent_replay:bool}
      */
     public function voidSale(
         PreviewProfile $profile,
         string $saleId,
+        string $tenderCategory,
         string $operationId,
+        array $currentAdjustment,
     ): array {
+        $command = new SaleVoidCommand($operationId, $saleId);
+        $category = TenderCategory::tryFrom($tenderCategory);
+        if ($category === null) {
+            throw new PosTransactionViolation();
+        }
+
         return $this->withinVerifiedContext(
             $profile,
-            fn (): array => $this->fixtures->voidSale(
-                $profile,
-                new SaleVoidCommand($operationId, $saleId),
-            ),
+            function () use ($command, $category, $currentAdjustment): array {
+                $this->assertAdjustmentSnapshot(
+                    $command->saleId(),
+                    $category->value,
+                    $currentAdjustment,
+                );
+
+                if (
+                    in_array($currentAdjustment['status'], ['VOIDED', 'REFUNDED'], true)
+                    && is_string($currentAdjustment['void_operation_id'])
+                    && hash_equals($currentAdjustment['void_operation_id'], $command->operationId())
+                ) {
+                    return array_replace($currentAdjustment, ['idempotent_replay' => true]);
+                }
+
+                if ($currentAdjustment['status'] !== 'COMPLETED') {
+                    throw new PosTransactionViolation();
+                }
+
+                return [
+                    'sale_id' => $command->saleId(),
+                    'status' => 'VOIDED',
+                    'void_operation_id' => $command->operationId(),
+                    'refund_operation_id' => null,
+                    'refund_amount_atomic' => 0,
+                    'tender_category' => $category->value,
+                    'idempotent_replay' => false,
+                ];
+            },
         );
     }
 
     /**
+     * Apply canonical full-CASH-refund semantics to a server-owned synthetic receipt snapshot.
+     *
+     * @param array{sale_id:string,status:string,void_operation_id:?string,refund_operation_id:?string,refund_amount_atomic:int,tender_category:string,idempotent_replay:bool} $currentAdjustment
      * @return array{sale_id:string,status:string,void_operation_id:string,refund_operation_id:string,refund_amount_atomic:int,tender_category:string,idempotent_replay:bool}
      */
     public function refundCashSale(
         PreviewProfile $profile,
         string $saleId,
+        int $saleTotalAtomic,
+        string $tenderCategory,
         string $operationId,
+        array $currentAdjustment,
     ): array {
+        $command = new SaleCashRefundCommand($operationId, $saleId);
+        $category = TenderCategory::tryFrom($tenderCategory);
+        if (
+            $category !== TenderCategory::CASH
+            || $saleTotalAtomic <= 0
+            || $saleTotalAtomic > self::MAX_PREVIEW_CASH_ATOMIC
+        ) {
+            throw new PosTransactionViolation();
+        }
+
         return $this->withinVerifiedContext(
             $profile,
-            fn (): array => $this->fixtures->refundCashSale(
-                $profile,
-                new SaleCashRefundCommand($operationId, $saleId),
-            ),
+            function () use ($command, $category, $saleTotalAtomic, $currentAdjustment): array {
+                $this->assertAdjustmentSnapshot(
+                    $command->saleId(),
+                    $category->value,
+                    $currentAdjustment,
+                );
+
+                if (
+                    $currentAdjustment['status'] === 'REFUNDED'
+                    && is_string($currentAdjustment['refund_operation_id'])
+                    && hash_equals($currentAdjustment['refund_operation_id'], $command->operationId())
+                ) {
+                    if ($currentAdjustment['refund_amount_atomic'] !== $saleTotalAtomic) {
+                        throw new PosTransactionViolation();
+                    }
+
+                    return array_replace($currentAdjustment, ['idempotent_replay' => true]);
+                }
+
+                if (
+                    $currentAdjustment['status'] !== 'VOIDED'
+                    || ! is_string($currentAdjustment['void_operation_id'])
+                    || $currentAdjustment['void_operation_id'] === ''
+                ) {
+                    throw new PosTransactionViolation();
+                }
+
+                return [
+                    'sale_id' => $command->saleId(),
+                    'status' => 'REFUNDED',
+                    'void_operation_id' => $currentAdjustment['void_operation_id'],
+                    'refund_operation_id' => $command->operationId(),
+                    'refund_amount_atomic' => $saleTotalAtomic,
+                    'tender_category' => $category->value,
+                    'idempotent_replay' => false,
+                ];
+            },
         );
     }
 
@@ -261,6 +348,55 @@ final readonly class TechnicalPreviewJourney
                 return (new DeriveCashVariance())->derive($expected, $closing);
             },
         );
+    }
+
+    /**
+     * @param array{sale_id:string,status:string,void_operation_id:?string,refund_operation_id:?string,refund_amount_atomic:int,tender_category:string,idempotent_replay:bool} $adjustment
+     */
+    private function assertAdjustmentSnapshot(string $saleId, string $tenderCategory, array $adjustment): void
+    {
+        if (
+            ! isset($adjustment['sale_id'], $adjustment['status'], $adjustment['refund_amount_atomic'], $adjustment['tender_category'], $adjustment['idempotent_replay'])
+            || ! is_string($adjustment['sale_id'])
+            || ! hash_equals($saleId, $adjustment['sale_id'])
+            || ! is_string($adjustment['status'])
+            || ! in_array($adjustment['status'], ['COMPLETED', 'VOIDED', 'REFUNDED'], true)
+            || ! array_key_exists('void_operation_id', $adjustment)
+            || ! array_key_exists('refund_operation_id', $adjustment)
+            || ($adjustment['void_operation_id'] !== null && ! is_string($adjustment['void_operation_id']))
+            || ($adjustment['refund_operation_id'] !== null && ! is_string($adjustment['refund_operation_id']))
+            || ! is_int($adjustment['refund_amount_atomic'])
+            || $adjustment['refund_amount_atomic'] < 0
+            || ! is_string($adjustment['tender_category'])
+            || ! hash_equals($tenderCategory, $adjustment['tender_category'])
+            || ! is_bool($adjustment['idempotent_replay'])
+        ) {
+            throw new PosTransactionViolation();
+        }
+
+        if (
+            ($adjustment['status'] === 'COMPLETED' && (
+                $adjustment['void_operation_id'] !== null
+                || $adjustment['refund_operation_id'] !== null
+                || $adjustment['refund_amount_atomic'] !== 0
+            ))
+            || ($adjustment['status'] === 'VOIDED' && (
+                ! is_string($adjustment['void_operation_id'])
+                || $adjustment['void_operation_id'] === ''
+                || $adjustment['refund_operation_id'] !== null
+                || $adjustment['refund_amount_atomic'] !== 0
+            ))
+            || ($adjustment['status'] === 'REFUNDED' && (
+                ! is_string($adjustment['void_operation_id'])
+                || $adjustment['void_operation_id'] === ''
+                || ! is_string($adjustment['refund_operation_id'])
+                || $adjustment['refund_operation_id'] === ''
+                || $adjustment['refund_amount_atomic'] <= 0
+                || $adjustment['tender_category'] !== TenderCategory::CASH->value
+            ))
+        ) {
+            throw new PosTransactionViolation();
+        }
     }
 
     private function enterVerifiedContext(PreviewProfile $profile): void
