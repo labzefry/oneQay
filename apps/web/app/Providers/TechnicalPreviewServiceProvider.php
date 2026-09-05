@@ -65,25 +65,46 @@ final class TechnicalPreviewServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        if ($this->previewRuntimePermitted()) {
-            $this->loadRoutesFrom(base_path('routes/technical-preview-cash-control.php'));
+        if (! $this->selectedPreviewRuntimePermitted()) {
+            return;
         }
+
+        if (strtolower(trim((string) config('technical-preview.runtime_class', ''))) === 'preview') {
+            $this->applyDeployedPreviewSessionEnvelope();
+        }
+
+        $this->loadRoutesFrom(base_path('routes/technical-preview-cash-control.php'));
     }
 
-    private function previewRuntimePermitted(): bool
+    private function selectedPreviewRuntimePermitted(): bool
     {
         return TechnicalPreviewRuntimePolicy::permits(
-            enabled: (bool) config('oneqay.technical_preview.enabled', false),
-            runtimeClass: (string) config('oneqay.runtime_class', ''),
-            sessionDriver: (string) config('session.driver', ''),
-            sessionLifetimeMinutes: (int) config('session.lifetime', 0),
-            sessionEncrypted: (bool) config('session.encrypt', false),
-            sessionSecure: (bool) config('session.secure', false),
-            sessionHttpOnly: (bool) config('session.http_only', false),
-            sessionSameSite: (string) config('session.same_site', ''),
-            sessionDomain: config('session.domain'),
-            sessionPath: (string) config('session.path', ''),
-            sessionCookie: (string) config('session.cookie', ''),
+            enabled: (bool) config('technical-preview.enabled', false),
+            runtimeClass: (string) config('technical-preview.runtime_class', ''),
+            sessionDriver: (string) config('technical-preview.session.driver', ''),
+            sessionLifetimeMinutes: (int) config('technical-preview.session.lifetime', 0),
+            sessionEncrypted: (bool) config('technical-preview.session.encrypt', false),
+            sessionSecure: (bool) config('technical-preview.session.secure', false),
+            sessionHttpOnly: (bool) config('technical-preview.session.http_only', false),
+            sessionSameSite: (string) config('technical-preview.session.same_site', ''),
+            sessionDomain: config('technical-preview.session.domain'),
+            sessionPath: (string) config('technical-preview.session.path', ''),
+            sessionCookie: (string) config('technical-preview.session.cookie', ''),
         );
+    }
+
+    private function applyDeployedPreviewSessionEnvelope(): void
+    {
+        config([
+            'session.driver' => (string) config('technical-preview.session.driver'),
+            'session.lifetime' => (int) config('technical-preview.session.lifetime'),
+            'session.encrypt' => (bool) config('technical-preview.session.encrypt'),
+            'session.secure' => (bool) config('technical-preview.session.secure'),
+            'session.http_only' => (bool) config('technical-preview.session.http_only'),
+            'session.same_site' => (string) config('technical-preview.session.same_site'),
+            'session.domain' => config('technical-preview.session.domain'),
+            'session.path' => (string) config('technical-preview.session.path'),
+            'session.cookie' => (string) config('technical-preview.session.cookie'),
+        ]);
     }
 }
