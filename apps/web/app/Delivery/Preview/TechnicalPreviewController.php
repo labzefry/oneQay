@@ -186,8 +186,11 @@ final class TechnicalPreviewController
             'device_id' => $profile->deviceId(),
             'opening_cash_atomic' => $openingCashAtomic,
             'cash_sales_atomic' => 0,
+            'cash_refunds_atomic' => 0,
             'sale_count' => 0,
             'recorded_sale_ids' => [],
+            'voided_sale_ids' => [],
+            'refunded_sale_ids' => [],
             'opened_at_unix' => time(),
         ]);
         $request->session()->forget([self::RECEIPT_SESSION, self::RECONCILIATION_SESSION]);
@@ -260,6 +263,88 @@ final class TechnicalPreviewController
         return redirect()->route('preview.receipt');
     }
 
+    public function voidSale(Request $request, TechnicalPreviewJourney $journey): RedirectResponse
+    {
+        $this->assertEnabled();
+        $profile = $this->verifiedSessionProfile($request, $journey);
+        if ($profile instanceof RedirectResponse) {
+            return $profile;
+        }
+
+        $shift = $this->shiftFromSession($request, $profile);
+        $receipt = $shift === null ? null : $this->receiptFromSession($request, $profile, $shift);
+        if ($shift === null || $receipt === null) {
+            return redirect()->route('preview.pos')
+                ->withErrors(['sale' => 'A current synthetic completed sale is required before void.']);
+        }
+
+        $saleId = $receipt['sale_id'];
+        $operationId = 'preview-void-'.substr(hash('sha256', implode('|', [
+            $profile->tenantId(),
+            $profile->outletId(),
+            $saleId,
+        ])), 0, 32);
+
+        try {
+            $adjustment = $journey->voidSale($profile, $saleId, $operationId);
+            $receipt['adjustment'] = $adjustment;
+            if (! in_array($saleId, $shift['voided_sale_ids'], true)) {
+                $shift['voided_sale_ids'][] = $saleId;
+            }
+            $request->session()->put(self::RECEIPT_SESSION, $receipt);
+            $request->session()->put(self::SHIFT_SESSION, $shift);
+        } catch (InvalidArgumentException|IdentityContextViolation|MissingTenantContext|OrganizationalAccessViolation|PosAccessViolation|PosTransactionViolation) {
+            return redirect()->route('preview.receipt')
+                ->withErrors(['sale' => 'Synthetic sale void was rejected safely.']);
+        }
+
+        return redirect()->route('preview.receipt');
+    }
+
+    public function refundCashSale(Request $request, TechnicalPreviewJourney $journey): RedirectResponse
+    {
+        $this->assertEnabled();
+        $profile = $this->verifiedSessionProfile($request, $journey);
+        if ($profile instanceof RedirectResponse) {
+            return $profile;
+        }
+
+        $shift = $this->shiftFromSession($request, $profile);
+        $receipt = $shift === null ? null : $this->receiptFromSession($request, $profile, $shift);
+        if ($shift === null || $receipt === null) {
+            return redirect()->route('preview.pos')
+                ->withErrors(['sale' => 'A current synthetic voided cash sale is required before refund.']);
+        }
+
+        $saleId = $receipt['sale_id'];
+        $operationId = 'preview-refund-'.substr(hash('sha256', implode('|', [
+            $profile->tenantId(),
+            $profile->outletId(),
+            $saleId,
+        ])), 0, 32);
+
+        try {
+            $adjustment = $journey->refundCashSale($profile, $saleId, $operationId);
+            $receipt['adjustment'] = $adjustment;
+            if (! in_array($saleId, $shift['refunded_sale_ids'], true)) {
+                $refundAmount = $adjustment['refund_amount_atomic'];
+                $nextRefundTotal = $shift['cash_refunds_atomic'] + $refundAmount;
+                if ($refundAmount <= 0 || $nextRefundTotal > $shift['cash_sales_atomic']) {
+                    throw new PosTransactionViolation();
+                }
+                $shift['cash_refunds_atomic'] = $nextRefundTotal;
+                $shift['refunded_sale_ids'][] = $saleId;
+            }
+            $request->session()->put(self::RECEIPT_SESSION, $receipt);
+            $request->session()->put(self::SHIFT_SESSION, $shift);
+        } catch (InvalidArgumentException|IdentityContextViolation|MissingTenantContext|OrganizationalAccessViolation|PosAccessViolation|PosTransactionViolation) {
+            return redirect()->route('preview.receipt')
+                ->withErrors(['sale' => 'Synthetic cash refund was rejected safely.']);
+        }
+
+        return redirect()->route('preview.receipt');
+    }
+
     public function closeShift(Request $request, TechnicalPreviewJourney $journey): RedirectResponse
     {
         $this->assertEnabled();
@@ -289,6 +374,7 @@ final class TechnicalPreviewController
                 $shift['opening_cash_evidence_id'],
                 $shift['opening_cash_atomic'],
                 $shift['cash_sales_atomic'],
+                $shift['cash_refunds_atomic'],
                 $observedClosingAtomic,
                 time(),
                 $correlationId,
@@ -312,8 +398,9 @@ final class TechnicalPreviewController
             return $profile;
         }
 
-        $receipt = $request->session()->get(self::RECEIPT_SESSION);
-        if (! is_array($receipt)) {
+        $shift = $this->shiftFromSession($request, $profile);
+        $receipt = $shift === null ? null : $this->receiptFromSession($request, $profile, $shift);
+        if ($receipt === null) {
             return redirect()->route('preview.pos');
         }
 
@@ -411,18 +498,47 @@ final class TechnicalPreviewController
             || ! is_string($shift['opening_cash_evidence_id'] ?? null)
             || ! is_int($shift['opening_cash_atomic'] ?? null)
             || ! is_int($shift['cash_sales_atomic'] ?? null)
+            || ! is_int($shift['cash_refunds_atomic'] ?? null)
             || ! is_int($shift['sale_count'] ?? null)
             || ! is_array($shift['recorded_sale_ids'] ?? null)
+            || ! is_array($shift['voided_sale_ids'] ?? null)
+            || ! is_array($shift['refunded_sale_ids'] ?? null)
             || ! is_int($shift['opened_at_unix'] ?? null)
             || $shift['opening_cash_atomic'] < 0
             || $shift['cash_sales_atomic'] < 0
+            || $shift['cash_refunds_atomic'] < 0
+            || $shift['cash_refunds_atomic'] > $shift['cash_sales_atomic']
             || $shift['sale_count'] < 0
+            || count($shift['recorded_sale_ids']) !== $shift['sale_count']
+            || array_diff($shift['voided_sale_ids'], $shift['recorded_sale_ids']) !== []
+            || array_diff($shift['refunded_sale_ids'], $shift['voided_sale_ids']) !== []
         ) {
             $request->session()->forget(self::SHIFT_SESSION);
             return null;
         }
 
         return $shift;
+    }
+
+    /** @param array<string, mixed> $shift @return array<string, mixed>|null */
+    private function receiptFromSession(Request $request, PreviewProfile $profile, array $shift): ?array
+    {
+        $receipt = $request->session()->get(self::RECEIPT_SESSION);
+        if (
+            ! is_array($receipt)
+            || ($receipt['tenant_id'] ?? null) !== $profile->tenantId()
+            || ($receipt['actor_id'] ?? null) !== $profile->principalId()
+            || ($receipt['outlet_id'] ?? null) !== $profile->outletId()
+            || ($receipt['device_id'] ?? null) !== $profile->deviceId()
+            || ! is_string($receipt['sale_id'] ?? null)
+            || ! in_array($receipt['sale_id'], $shift['recorded_sale_ids'], true)
+            || ! is_array($receipt['adjustment'] ?? null)
+        ) {
+            $request->session()->forget(self::RECEIPT_SESSION);
+            return null;
+        }
+
+        return $receipt;
     }
 
     private function boundedAtomicInput(Request $request, string $field): ?int
@@ -491,6 +607,15 @@ final class TechnicalPreviewController
             'evidence_mode' => $receipt->evidenceMode(),
             'change_atomic' => $receipt->changeAmount()->atomicUnits(),
             'correlation_id' => $receipt->correlationId(),
+            'adjustment' => [
+                'sale_id' => $receipt->saleId(),
+                'status' => 'COMPLETED',
+                'void_operation_id' => null,
+                'refund_operation_id' => null,
+                'refund_amount_atomic' => 0,
+                'tender_category' => $receipt->tenderCategory()->value,
+                'idempotent_replay' => false,
+            ],
         ];
     }
 
@@ -506,7 +631,10 @@ final class TechnicalPreviewController
             'closing_cash_evidence_id' => $variance->closingCashEvidenceId(),
             'opening_cash_atomic' => $shift['opening_cash_atomic'],
             'cash_sales_atomic' => $shift['cash_sales_atomic'],
+            'cash_refunds_atomic' => $shift['cash_refunds_atomic'],
             'sale_count' => $shift['sale_count'],
+            'void_count' => count($shift['voided_sale_ids']),
+            'refund_count' => count($shift['refunded_sale_ids']),
             'expected_cash_atomic' => $variance->expectedCashAtomic(),
             'observed_closing_atomic' => $variance->observedClosingAtomic(),
             'variance_atomic' => $variance->varianceAtomic(),
