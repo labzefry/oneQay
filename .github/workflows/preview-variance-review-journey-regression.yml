@@ -55,21 +55,45 @@ jobs:
           base="${{ github.event.pull_request.base.sha }}"
           head="${{ github.event.pull_request.head.sha }}"
           git diff --name-only "$base" "$head" | sort > /tmp/preview-variance-review-paths
-          test "$(wc -l < /tmp/preview-variance-review-paths)" -eq 9
-          test "$(sha256sum /tmp/preview-variance-review-paths | awk '{print $1}')" = '54929154124b2c0561a6803a282510aabbb3dc0a26b7af97371616f3eb34c737'
-          for expected in \
-            '.github/workflows/preview-variance-review-journey-regression.yml' \
-            'apps/web/app/Application/Preview/PreviewFixtureGateway.php' \
-            'apps/web/app/Application/Preview/TechnicalPreviewVarianceReviewJourney.php' \
-            'apps/web/app/Delivery/Preview/TechnicalPreviewVarianceReviewController.php' \
-            'apps/web/app/Infrastructure/Preview/DeterministicPreviewFixture.php' \
-            'apps/web/app/Providers/TechnicalPreviewServiceProvider.php' \
-            'apps/web/resources/js/pages/Preview/Reconciliation.vue' \
-            'apps/web/routes/technical-preview-cash-control.php' \
-            'apps/web/tests/technical-preview-variance-review-journey.php'
-          do
-            grep -Fxq "$expected" /tmp/preview-variance-review-paths
-          done
+          count="$(wc -l < /tmp/preview-variance-review-paths)"
+          fingerprint="$(sha256sum /tmp/preview-variance-review-paths | awk '{print $1}')"
+          recognized=false
+
+          if [[ "$count" -eq 9 && "$fingerprint" == '54929154124b2c0561a6803a282510aabbb3dc0a26b7af97371616f3eb34c737' ]]; then
+            for expected in \
+              '.github/workflows/preview-variance-review-journey-regression.yml' \
+              'apps/web/app/Application/Preview/PreviewFixtureGateway.php' \
+              'apps/web/app/Application/Preview/TechnicalPreviewVarianceReviewJourney.php' \
+              'apps/web/app/Delivery/Preview/TechnicalPreviewVarianceReviewController.php' \
+              'apps/web/app/Infrastructure/Preview/DeterministicPreviewFixture.php' \
+              'apps/web/app/Providers/TechnicalPreviewServiceProvider.php' \
+              'apps/web/resources/js/pages/Preview/Reconciliation.vue' \
+              'apps/web/routes/technical-preview-cash-control.php' \
+              'apps/web/tests/technical-preview-variance-review-journey.php'
+            do
+              grep -Fxq "$expected" /tmp/preview-variance-review-paths
+            done
+            recognized=true
+          elif [[ "$count" -eq 4 && "$fingerprint" == '81821d8a3aabb0fe5fee2a7d64f43985b79e2d1b217b5d37f3f834c94ec93e0d' ]]; then
+            for expected in \
+              '.github/workflows/preview-route-off-switch-regression.yml' \
+              'apps/web/app/Delivery/Preview/TechnicalPreviewDatabaseQualificationController.php' \
+              'apps/web/app/Providers/TechnicalPreviewServiceProvider.php' \
+              'apps/web/tests/technical-preview-route-off-switch.php'
+            do
+              grep -Fxq "$expected" /tmp/preview-variance-review-paths
+            done
+            recognized=true
+          elif [[ "$count" -eq 2 && "$fingerprint" == '6f2b5809c60ed18cffe7226973b85d08249f97dd4c894d4cb8ee50f52fbb59c3' ]]; then
+            grep -Fxq '.github/workflows/m7-4a-technical-preview-interaction-regression.yml' /tmp/preview-variance-review-paths
+            grep -Fxq '.github/workflows/preview-variance-review-journey-regression.yml' /tmp/preview-variance-review-paths
+            recognized=true
+          fi
+
+          if [[ "$recognized" != 'true' ]]; then
+            echo 'Technical Preview variance maker-checker workflow rejects unknown source shapes.' >&2
+            exit 1
+          fi
 
       - name: Validate PHP runtime and locked dependencies
         working-directory: apps/web
