@@ -10,7 +10,9 @@ use App\Application\Pos\CashVarianceResult;
 use App\Application\Pos\CompleteSyntheticSale;
 use App\Application\Pos\DeriveCashVariance;
 use App\Application\Pos\ExpectedCashResult;
+use App\Application\Pos\SaleCashRefundCommand;
 use App\Application\Pos\SaleCommand;
+use App\Application\Pos\SaleVoidCommand;
 use App\Application\Pos\ShiftClosingCashResult;
 use App\Application\Tenancy\MissingTenantContext;
 use App\Application\Tenancy\TenantContextStore;
@@ -139,12 +141,47 @@ final readonly class TechnicalPreviewJourney
         }
     }
 
+    /**
+     * @return array{sale_id:string,status:string,void_operation_id:string,refund_operation_id:?string,refund_amount_atomic:int,tender_category:string,idempotent_replay:bool}
+     */
+    public function voidSale(
+        PreviewProfile $profile,
+        string $saleId,
+        string $operationId,
+    ): array {
+        return $this->withinVerifiedContext(
+            $profile,
+            fn (): array => $this->fixtures->voidSale(
+                $profile,
+                new SaleVoidCommand($operationId, $saleId),
+            ),
+        );
+    }
+
+    /**
+     * @return array{sale_id:string,status:string,void_operation_id:string,refund_operation_id:string,refund_amount_atomic:int,tender_category:string,idempotent_replay:bool}
+     */
+    public function refundCashSale(
+        PreviewProfile $profile,
+        string $saleId,
+        string $operationId,
+    ): array {
+        return $this->withinVerifiedContext(
+            $profile,
+            fn (): array => $this->fixtures->refundCashSale(
+                $profile,
+                new SaleCashRefundCommand($operationId, $saleId),
+            ),
+        );
+    }
+
     public function reconcileCash(
         PreviewProfile $profile,
         string $shiftId,
         string $openingCashEvidenceId,
         int $openingCashAtomic,
         int $cashSalesAtomic,
+        int $cashRefundsAtomic,
         int $observedClosingAtomic,
         int $cutoffAtUnix,
         string $correlationId,
@@ -158,17 +195,19 @@ final readonly class TechnicalPreviewJourney
         if (
             $openingCashAtomic < 0
             || $cashSalesAtomic < 0
+            || $cashRefundsAtomic < 0
             || $observedClosingAtomic < 0
             || $openingCashAtomic > self::MAX_PREVIEW_CASH_ATOMIC
             || $cashSalesAtomic > self::MAX_PREVIEW_CASH_ATOMIC
+            || $cashRefundsAtomic > $cashSalesAtomic
             || $observedClosingAtomic > self::MAX_PREVIEW_CASH_ATOMIC
             || $cutoffAtUnix <= 0
         ) {
             throw new InvalidArgumentException('Technical Preview cash-control amount is invalid.');
         }
 
-        $expectedCashAtomic = $openingCashAtomic + $cashSalesAtomic;
-        if ($expectedCashAtomic > self::MAX_PREVIEW_CASH_ATOMIC) {
+        $expectedCashAtomic = $openingCashAtomic + $cashSalesAtomic - $cashRefundsAtomic;
+        if ($expectedCashAtomic < 0 || $expectedCashAtomic > self::MAX_PREVIEW_CASH_ATOMIC) {
             throw new InvalidArgumentException('Technical Preview expected cash exceeds the bounded preview limit.');
         }
 
