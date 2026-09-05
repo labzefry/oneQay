@@ -69,9 +69,19 @@ final class TechnicalPreviewServiceProvider extends ServiceProvider
             return;
         }
 
-        if (strtolower(trim((string) config('technical-preview.runtime_class', ''))) === 'preview') {
+        $runtimeClass = strtolower(trim((string) config('technical-preview.runtime_class', '')));
+
+        if ($runtimeClass === 'preview') {
             $this->applyDeployedPreviewSessionEnvelope();
         }
+
+        // Preserve the current controller-facing configuration contract while
+        // keeping Preview-specific environment reads isolated in its own
+        // config-cacheable file.
+        config([
+            'oneqay.technical_preview.enabled' => true,
+            'oneqay.runtime_class' => $runtimeClass,
+        ]);
 
         $this->loadRoutesFrom(base_path('routes/technical-preview-cash-control.php'));
     }
