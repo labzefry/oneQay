@@ -16,6 +16,8 @@ interface PreviewFixtureGateway extends SyntheticPosStore
 
     public function profile(string $principalId): ?PreviewProfile;
 
+    public function reviewerFor(string $operatorPrincipalId): ?PreviewProfile;
+
     public function verifiedIdentity(string $principalId): ?VerifiedPlatformIdentity;
 
     /** @return list<CatalogItem> */

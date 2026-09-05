@@ -36,6 +36,8 @@ final class TechnicalPreviewServiceProvider extends ServiceProvider
             static fn (): TenantMembershipVerifier => new SyntheticTenantMembershipVerifier([
                 'synthetic-principal-a' => ['tenant-alpha'],
                 'synthetic-principal-b' => ['tenant-beta'],
+                'synthetic-principal-reviewer-a' => ['tenant-alpha'],
+                'synthetic-principal-reviewer-b' => ['tenant-beta'],
             ]),
         );
 
@@ -53,6 +55,18 @@ final class TechnicalPreviewServiceProvider extends ServiceProvider
                     'organization' => 'organization-beta',
                     'outlet' => 'outlet-beta',
                     'device' => 'device-beta',
+                ]],
+                'synthetic-principal-reviewer-a' => [[
+                    'tenant' => 'tenant-alpha',
+                    'organization' => 'organization-alpha',
+                    'outlet' => 'outlet-alpha',
+                    'device' => 'device-alpha-reviewer',
+                ]],
+                'synthetic-principal-reviewer-b' => [[
+                    'tenant' => 'tenant-beta',
+                    'organization' => 'organization-beta',
+                    'outlet' => 'outlet-beta',
+                    'device' => 'device-beta-reviewer',
                 ]],
             ]),
         );
