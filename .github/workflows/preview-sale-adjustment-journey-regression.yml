@@ -8,6 +8,7 @@ on:
     paths:
       - 'apps/web/app/Application/Preview/PreviewFixtureGateway.php'
       - 'apps/web/app/Application/Preview/TechnicalPreviewJourney.php'
+      - 'apps/web/app/Delivery/Preview/TechnicalPreviewAdjustmentController.php'
       - 'apps/web/app/Delivery/Preview/TechnicalPreviewController.php'
       - 'apps/web/app/Infrastructure/Preview/DeterministicPreviewFixture.php'
       - 'apps/web/resources/js/pages/Preview/Receipt.vue'
@@ -47,7 +48,7 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: Enforce exact bounded journey envelope
+      - name: Enforce exact bounded session-boundary envelope
         if: github.event_name == 'pull_request'
         shell: bash
         run: |
@@ -55,16 +56,14 @@ jobs:
           base="${{ github.event.pull_request.base.sha }}"
           head="${{ github.event.pull_request.head.sha }}"
           git diff --name-only "$base" "$head" | sort > /tmp/preview-adjustment-paths
-          test "$(wc -l < /tmp/preview-adjustment-paths)" -eq 9
-          test "$(sha256sum /tmp/preview-adjustment-paths | awk '{print $1}')" = '4248ca961d3283913908d694d30f628768db6c3a70674e1eabafbc97f45589ee'
+          test "$(wc -l < /tmp/preview-adjustment-paths)" -eq 7
+          test "$(sha256sum /tmp/preview-adjustment-paths | awk '{print $1}')" = '6ed1b43684ae268d20f1abcda3d6731edfc0c9dae0391f1cdd4b041cb5e4d175'
           for expected in \
             '.github/workflows/preview-sale-adjustment-journey-regression.yml' \
             'apps/web/app/Application/Preview/PreviewFixtureGateway.php' \
             'apps/web/app/Application/Preview/TechnicalPreviewJourney.php' \
-            'apps/web/app/Delivery/Preview/TechnicalPreviewController.php' \
+            'apps/web/app/Delivery/Preview/TechnicalPreviewAdjustmentController.php' \
             'apps/web/app/Infrastructure/Preview/DeterministicPreviewFixture.php' \
-            'apps/web/resources/js/pages/Preview/Receipt.vue' \
-            'apps/web/resources/js/pages/Preview/Reconciliation.vue' \
             'apps/web/routes/technical-preview-cash-control.php' \
             'apps/web/tests/technical-preview-sale-adjustment-journey.php'
           do
@@ -86,15 +85,18 @@ jobs:
           set -euo pipefail
           php -l apps/web/app/Application/Preview/PreviewFixtureGateway.php
           php -l apps/web/app/Application/Preview/TechnicalPreviewJourney.php
-          php -l apps/web/app/Delivery/Preview/TechnicalPreviewController.php
+          php -l apps/web/app/Delivery/Preview/TechnicalPreviewAdjustmentController.php
           php -l apps/web/app/Infrastructure/Preview/DeterministicPreviewFixture.php
           php -l apps/web/routes/technical-preview-cash-control.php
           php -l apps/web/tests/technical-preview-sale-adjustment-journey.php
           ! git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | grep -E '^apps/web/(database/migrations|app/Infrastructure/Pos|app/Providers/AppServiceProvider.php)'
+          grep -Fq 'TechnicalPreviewAdjustmentController' apps/web/routes/technical-preview-cash-control.php
           grep -Fq "Route::post('/sale/void'" apps/web/routes/technical-preview-cash-control.php
           grep -Fq "Route::post('/sale/refund'" apps/web/routes/technical-preview-cash-control.php
-          grep -Fq 'full CASH refund' apps/web/resources/js/pages/Preview/Receipt.vue
-          grep -Fq 'cash_refunds_atomic' apps/web/resources/js/pages/Preview/Reconciliation.vue
+          grep -Fq 'assertReceiptSnapshot' apps/web/app/Application/Preview/TechnicalPreviewJourney.php
+          grep -Fq 'fresh request' apps/web/tests/technical-preview-sale-adjustment-journey.php
+          ! grep -Fq 'private array $adjustments' apps/web/app/Infrastructure/Preview/DeterministicPreviewFixture.php
+          ! grep -Fq 'private array $operationFingerprints' apps/web/app/Infrastructure/Preview/DeterministicPreviewFixture.php
 
       - name: Setup exact Node LTS
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
@@ -110,6 +112,6 @@ jobs:
           npm run type-check
           npm run build
 
-      - name: Run focused sale adjustment journey regression
+      - name: Run focused sale adjustment request-boundary regression
         working-directory: apps/web
         run: php tests/technical-preview-sale-adjustment-journey.php
