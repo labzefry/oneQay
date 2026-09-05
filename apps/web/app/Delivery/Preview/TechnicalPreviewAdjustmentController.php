@@ -47,8 +47,8 @@ final class TechnicalPreviewAdjustmentController
             $adjustment = $journey->voidSale(
                 $profile,
                 $saleId,
-                $operationId,
                 $receipt['tender_category'],
+                $operationId,
                 $receipt['adjustment'],
             );
             $receipt['adjustment'] = $adjustment;
@@ -87,9 +87,9 @@ final class TechnicalPreviewAdjustmentController
             $adjustment = $journey->refundCashSale(
                 $profile,
                 $saleId,
-                $operationId,
                 $receipt['total_atomic'],
                 $receipt['tender_category'],
+                $operationId,
                 $receipt['adjustment'],
             );
             $receipt['adjustment'] = $adjustment;
