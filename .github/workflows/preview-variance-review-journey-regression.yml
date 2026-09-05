@@ -1,0 +1,121 @@
+# Technical Preview variance maker-checker journey qualification — Lab | zefry
+# Author by Lab | zefry
+name: Technical Preview Variance Review Journey Regression
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/web/app/Application/Preview/PreviewFixtureGateway.php'
+      - 'apps/web/app/Application/Preview/TechnicalPreviewVarianceReviewJourney.php'
+      - 'apps/web/app/Delivery/Preview/TechnicalPreviewVarianceReviewController.php'
+      - 'apps/web/app/Infrastructure/Preview/DeterministicPreviewFixture.php'
+      - 'apps/web/app/Providers/TechnicalPreviewServiceProvider.php'
+      - 'apps/web/resources/js/pages/Preview/Reconciliation.vue'
+      - 'apps/web/routes/technical-preview-cash-control.php'
+      - 'apps/web/tests/technical-preview-variance-review-journey.php'
+      - '.github/workflows/preview-variance-review-journey-regression.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: preview-variance-review-journey-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  preview-variance-review-journey-regression:
+    name: preview-variance-review-journey-regression
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHQ=
+      APP_DEBUG: 'false'
+      APP_URL: http://localhost
+      ONEQAY_RUNTIME_CLASS: ci
+      ONEQAY_TECHNICAL_PREVIEW_ENABLED: 'true'
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Enforce exact bounded maker-checker envelope
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+          git diff --name-only "$base" "$head" | sort > /tmp/preview-variance-review-paths
+          test "$(wc -l < /tmp/preview-variance-review-paths)" -eq 9
+          test "$(sha256sum /tmp/preview-variance-review-paths | awk '{print $1}')" = '54929154124b2c0561a6803a282510aabbb3dc0a26b7af97371616f3eb34c737'
+          for expected in \
+            '.github/workflows/preview-variance-review-journey-regression.yml' \
+            'apps/web/app/Application/Preview/PreviewFixtureGateway.php' \
+            'apps/web/app/Application/Preview/TechnicalPreviewVarianceReviewJourney.php' \
+            'apps/web/app/Delivery/Preview/TechnicalPreviewVarianceReviewController.php' \
+            'apps/web/app/Infrastructure/Preview/DeterministicPreviewFixture.php' \
+            'apps/web/app/Providers/TechnicalPreviewServiceProvider.php' \
+            'apps/web/resources/js/pages/Preview/Reconciliation.vue' \
+            'apps/web/routes/technical-preview-cash-control.php' \
+            'apps/web/tests/technical-preview-variance-review-journey.php'
+          do
+            grep -Fxq "$expected" /tmp/preview-variance-review-paths
+          done
+
+      - name: Validate PHP runtime and locked dependencies
+        working-directory: apps/web
+        run: |
+          set -euo pipefail
+          php -v
+          composer validate --no-check-publish
+          composer install --no-interaction --no-progress --prefer-dist
+          composer audit --locked --no-interaction --abandoned=report
+
+      - name: Validate Preview-only maker-checker boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l apps/web/app/Application/Preview/PreviewFixtureGateway.php
+          php -l apps/web/app/Application/Preview/TechnicalPreviewVarianceReviewJourney.php
+          php -l apps/web/app/Delivery/Preview/TechnicalPreviewVarianceReviewController.php
+          php -l apps/web/app/Infrastructure/Preview/DeterministicPreviewFixture.php
+          php -l apps/web/app/Providers/TechnicalPreviewServiceProvider.php
+          php -l apps/web/routes/technical-preview-cash-control.php
+          php -l apps/web/tests/technical-preview-variance-review-journey.php
+          ! git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | grep -E '^apps/web/(database/migrations|app/Infrastructure/Pos|app/Providers/AppServiceProvider.php)'
+          grep -Fq 'CashVarianceExplanationCommand' apps/web/app/Application/Preview/TechnicalPreviewVarianceReviewJourney.php
+          grep -Fq 'CashVarianceReviewDecisionCommand' apps/web/app/Application/Preview/TechnicalPreviewVarianceReviewJourney.php
+          grep -Fq 'reviewerFor' apps/web/app/Application/Preview/PreviewFixtureGateway.php
+          grep -Fq 'synthetic-principal-reviewer-a' apps/web/app/Infrastructure/Preview/DeterministicPreviewFixture.php
+          grep -Fq "return array_values(\$this->profiles);" apps/web/app/Infrastructure/Preview/DeterministicPreviewFixture.php
+          grep -Fq "Route::post('/reconciliation/explanation'" apps/web/routes/technical-preview-cash-control.php
+          grep -Fq "Route::post('/reconciliation/review'" apps/web/routes/technical-preview-cash-control.php
+          grep -Fq 'Review ACCEPT/REJECT bukan durable final Shift Close authority' apps/web/resources/js/pages/Preview/Reconciliation.vue
+          ! grep -R -n -E 'Illuminate\\Database|Schema::|DB::|new PDO|mysqli_' apps/web/app/Application/Preview/TechnicalPreviewVarianceReviewJourney.php apps/web/app/Delivery/Preview/TechnicalPreviewVarianceReviewController.php
+
+      - name: Setup exact Node LTS
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: 24.19.0
+
+      - name: Qualify frontend contract
+        working-directory: apps/web
+        run: |
+          set -euo pipefail
+          npm ci --ignore-scripts --no-fund
+          npm audit --audit-level=high
+          npm run type-check
+          npm run build
+
+      - name: Run focused variance maker-checker regression
+        working-directory: apps/web
+        run: php tests/technical-preview-variance-review-journey.php
