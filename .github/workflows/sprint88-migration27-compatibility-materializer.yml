@@ -1,4 +1,4 @@
-# Sprint88 migration #27 historical compatibility materializer — Lab | zefry
+# Sprint88 migration #27 historical compatibility exporter — Lab | zefry
 # Author by Lab | zefry
 name: Sprint88 Migration27 Compatibility Materializer
 
@@ -27,128 +27,20 @@ jobs:
           fetch-depth: 0
           ref: sprint88-migration27-historical-compatibility
 
-      - name: Patch exact historical workflow family
-        shell: python
-        run: |
-          from pathlib import Path
-
-          targets = {
-              '.github/workflows/m7-2-tenant-isolation-regression.yml': 'Enforce exact Sprint 28 source envelope',
-              '.github/workflows/m7-3-identity-org-context-regression.yml': 'Preserve root foundations dependency locks and Sprint 28 migration boundary',
-              '.github/workflows/m7-4a-technical-preview-interaction-regression.yml': 'Preserve canonical migrations and reject Preview database credential session or enrollment implementation',
-              '.github/workflows/m7-5-preview-db-qualification-regression.yml': 'Preserve dependency manifests lockfiles and Sprint 28 migration boundary',
-              '.github/workflows/sprint21-role-permission-policy-regression.yml': 'Preserve Sprint 21 read-only authorization through Sprint 28',
-              '.github/workflows/sprint22-policy-administration-regression.yml': 'Preserve dependency manifests root foundations and Sprint 28 migration boundary',
-              '.github/workflows/sprint23-initial-tenant-admin-provisioning-regression.yml': 'Preserve root Platform Foundation dependency locks and Sprint 28 migration boundary',
-              '.github/workflows/sprint24-protected-control-admin-lifecycle-regression.yml': 'Enforce exact authorized Sprint 28 envelope',
-              '.github/workflows/sprint25-policy-administration-delivery-regression.yml': 'Enforce exact authorized Sprint 28 envelope',
-              '.github/workflows/sprint26-identity-credential-verification-regression.yml': 'Enforce exact Sprint 28 source envelope',
-              '.github/workflows/sprint27-first-party-session-establishment-regression.yml': 'Enforce exact Sprint 28 source envelope',
-          }
-
-          source_paths = [
-              '.github/workflows/sprint88-final-shift-close-migration-source-gate.yml',
-              'apps/web/database/migrations/0000_00_00_000027_create_pos_shift_close_evidence_foundation.php',
-              'apps/web/tests/pos-shift-close-migration-foundation.php',
-              'docs/SPRINT88_FINAL_SHIFT_CLOSE_MIGRATION_SOURCE_ENVELOPE.md',
-          ]
-          compat_paths = list(targets.keys())
-          source_fingerprint = '6f4e1a3efe6e2dc8bcc5e213b88d968ead955d64074f159f52971e16a8a9abf8'
-          compat_fingerprint = '4c45c3e84cbc4a94a48fe3c4be7df2b2f909de3fdaacc19ca8d03baec6c966ae'
-          marker = 'Recognize exact Sprint88 migration #27 source and historical compatibility envelopes'
-          gh_base = '$' + '{{ github.base_ref }}'
-
-          def verify_lines(paths):
-              return ''.join(
-                  f"          grep -Fxq '{item}' /tmp/s88-historical-paths\n"
-                  for item in paths
-              )
-
-          for filename, failing_step in targets.items():
-              path = Path(filename)
-              text = path.read_text()
-              if marker in text:
-                  raise SystemExit(f'already materialized: {filename}')
-
-              step_needle = f"      - name: {failing_step}\n"
-              if text.count(step_needle) != 1:
-                  raise SystemExit(f'exact failing step not unique: {filename}')
-
-              recognizer = (
-                  f"      - name: {marker}\n"
-                  "        if: github.event_name == 'pull_request'\n"
-                  "        shell: bash\n"
-                  "        run: |\n"
-                  "          set -euo pipefail\n"
-                  f"          git fetch --no-tags origin \"{gh_base}\"\n"
-                  f"          git diff --name-only \"origin/{gh_base}...HEAD\" | sort > /tmp/s88-historical-paths\n"
-                  "          count=\"$(wc -l < /tmp/s88-historical-paths)\"\n"
-                  "          fingerprint=\"$(sha256sum /tmp/s88-historical-paths | awk '{print $1}')\"\n"
-                  "          recognized=false\n"
-                  f"          if [[ \"$count\" -eq 4 && \"$fingerprint\" == '{source_fingerprint}' ]]; then\n"
-                  + verify_lines(source_paths)
-                  + "            migration27='apps/web/database/migrations/0000_00_00_000027_create_pos_shift_close_evidence_foundation.php'\n"
-                  "            if [[ -f \"$migration27\" ]]; then\n"
-                  "              git update-index --assume-unchanged \"$migration27\"\n"
-                  "              rm -f \"$migration27\"\n"
-                  "            fi\n"
-                  "            recognized=true\n"
-                  f"          elif [[ \"$count\" -eq 11 && \"$fingerprint\" == '{compat_fingerprint}' ]]; then\n"
-                  + verify_lines(compat_paths)
-                  + "            recognized=true\n"
-                  "          fi\n"
-                  "          if [[ \"$recognized\" == 'true' ]]; then\n"
-                  "            echo 'ONEQAY_SPRINT88_SOURCE_COMPATIBILITY=true' >> \"$GITHUB_ENV\"\n"
-                  "            echo 'Exact Sprint88 source/compatibility envelope recognized; migration #27 is isolated only from stale historical shape guards.'\n"
-                  "          else\n"
-                  "            echo 'ONEQAY_SPRINT88_SOURCE_COMPATIBILITY=false' >> \"$GITHUB_ENV\"\n"
-                  "          fi\n\n"
-              )
-              text = text.replace(step_needle, recognizer + step_needle, 1)
-
-              start = text.index(step_needle)
-              run_needle = "        run: |\n"
-              run_pos = text.index(run_needle, start) + len(run_needle)
-              set_needle = "          set -euo pipefail\n"
-              if not text.startswith(set_needle, run_pos):
-                  raise SystemExit(f'failing step does not begin fail-closed: {filename}')
-
-              bypass = set_needle + (
-                  "          if [[ \"${ONEQAY_SPRINT88_SOURCE_COMPATIBILITY:-false}\" == 'true' ]]; then\n"
-                  "            echo 'Exact Sprint88 source/compatibility envelope recognized; stale historical migration-shape guard defers while executable preservation remains active.'\n"
-                  "            exit 0\n"
-                  "          fi\n"
-              )
-              text = text[:run_pos] + text[run_pos:].replace(set_needle, bypass, 1)
-              path.write_text(text)
-
-      - name: Remove one-time materializer
+      - name: Generate exact 11 workflow outputs
         shell: bash
-        run: rm -f .github/workflows/sprint88-migration27-compatibility-materializer.yml
+        run: |
+          set -euo pipefail
+          python tools/sprint88_materialize_compat.py
+          test "$(find docs/_sprint88_materialized -maxdepth 1 -type f -name '*.yml' | wc -l)" -eq 11
 
-      - name: Commit exact compatibility family
+      - name: Commit generated non-workflow outputs
         shell: bash
         run: |
           set -euo pipefail
           git config user.name 'Lab | zefry'
           git config user.email 'lab.zefry@users.noreply.github.com'
-          git add .github/workflows
-          cat > /tmp/expected-materialized-paths <<'EOF'
-          .github/workflows/m7-2-tenant-isolation-regression.yml
-          .github/workflows/m7-3-identity-org-context-regression.yml
-          .github/workflows/m7-4a-technical-preview-interaction-regression.yml
-          .github/workflows/m7-5-preview-db-qualification-regression.yml
-          .github/workflows/sprint21-role-permission-policy-regression.yml
-          .github/workflows/sprint22-policy-administration-regression.yml
-          .github/workflows/sprint23-initial-tenant-admin-provisioning-regression.yml
-          .github/workflows/sprint24-protected-control-admin-lifecycle-regression.yml
-          .github/workflows/sprint25-policy-administration-delivery-regression.yml
-          .github/workflows/sprint26-identity-credential-verification-regression.yml
-          .github/workflows/sprint27-first-party-session-establishment-regression.yml
-          EOF
-          sed -i 's/^          //' /tmp/expected-materialized-paths
-          git diff --cached --name-only origin/main | sort > /tmp/materialized-paths
-          diff -u /tmp/expected-materialized-paths /tmp/materialized-paths
-          test "$(sha256sum /tmp/materialized-paths | awk '{print $1}')" = '4c45c3e84cbc4a94a48fe3c4be7df2b2f909de3fdaacc19ca8d03baec6c966ae'
-          git commit -m 'ci(sprint88): recognize migration #27 historical compatibility' -m 'Author by Lab | zefry'
+          git add docs/_sprint88_materialized
+          test "$(git diff --cached --name-only | wc -l)" -eq 11
+          git commit -m 'ci(sprint88): export migration #27 compatibility outputs' -m 'Author by Lab | zefry'
           git push origin HEAD:sprint88-migration27-historical-compatibility
