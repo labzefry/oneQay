@@ -133,8 +133,22 @@ jobs:
           git config user.name 'Lab | zefry'
           git config user.email 'lab.zefry@users.noreply.github.com'
           git add .github/workflows
+          cat > /tmp/expected-materialized-paths <<'EOF'
+          .github/workflows/m7-2-tenant-isolation-regression.yml
+          .github/workflows/m7-3-identity-org-context-regression.yml
+          .github/workflows/m7-4a-technical-preview-interaction-regression.yml
+          .github/workflows/m7-5-preview-db-qualification-regression.yml
+          .github/workflows/sprint21-role-permission-policy-regression.yml
+          .github/workflows/sprint22-policy-administration-regression.yml
+          .github/workflows/sprint23-initial-tenant-admin-provisioning-regression.yml
+          .github/workflows/sprint24-protected-control-admin-lifecycle-regression.yml
+          .github/workflows/sprint25-policy-administration-delivery-regression.yml
+          .github/workflows/sprint26-identity-credential-verification-regression.yml
+          .github/workflows/sprint27-first-party-session-establishment-regression.yml
+          EOF
+          sed -i 's/^          //' /tmp/expected-materialized-paths
           git diff --cached --name-only origin/main | sort > /tmp/materialized-paths
-          test "$(wc -l < /tmp/materialized-paths)" -eq 11
+          diff -u /tmp/expected-materialized-paths /tmp/materialized-paths
           test "$(sha256sum /tmp/materialized-paths | awk '{print $1}')" = '4c45c3e84cbc4a94a48fe3c4be7df2b2f909de3fdaacc19ca8d03baec6c966ae'
           git commit -m 'ci(sprint88): recognize migration #27 historical compatibility' -m 'Author by Lab | zefry'
           git push origin HEAD:sprint88-migration27-historical-compatibility
