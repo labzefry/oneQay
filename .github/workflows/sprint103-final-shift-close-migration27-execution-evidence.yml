@@ -6,11 +6,12 @@ on:
   pull_request:
     branches: [main]
     paths:
-      - '.github/workflows/final-shift-close-migration27-execution.yml'
+      - '.github/workflows/final-shift-close-migration27-selected-target-db-binding.yml'
       - '.github/workflows/sprint103-final-shift-close-migration27-execution-evidence.yml'
       - '.github/workflows/sprint117-final-shift-close-migration27-selected-target-binding.yml'
-      - 'docs/SPRINT103_FINAL_SHIFT_CLOSE_MIGRATION27_EXECUTION_EVIDENCE.md'
+      - '.github/workflows/sprint118-final-shift-close-migration27-selected-target-db-binding.yml'
       - 'docs/SPRINT117_FINAL_SHIFT_CLOSE_MIGRATION27_SELECTED_TARGET_BINDING.md'
+      - 'docs/SPRINT118_FINAL_SHIFT_CLOSE_MIGRATION27_SELECTED_TARGET_DB_BINDING.md'
       - 'ops/final-shift-close/MIGRATION27_SELECTED_TARGET_BINDING_CONTRACT.json'
 
 permissions:
@@ -28,7 +29,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
-      - name: Enforce exact Sprint117 compatibility envelope
+      - name: Enforce exact Sprint118 successor compatibility envelope
         shell: bash
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
@@ -37,17 +38,18 @@ jobs:
           set -euo pipefail
           git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/actual
           cat > /tmp/expected <<'EOF'
-          .github/workflows/final-shift-close-migration27-execution.yml
+          .github/workflows/final-shift-close-migration27-selected-target-db-binding.yml
           .github/workflows/sprint103-final-shift-close-migration27-execution-evidence.yml
           .github/workflows/sprint117-final-shift-close-migration27-selected-target-binding.yml
-          docs/SPRINT103_FINAL_SHIFT_CLOSE_MIGRATION27_EXECUTION_EVIDENCE.md
+          .github/workflows/sprint118-final-shift-close-migration27-selected-target-db-binding.yml
           docs/SPRINT117_FINAL_SHIFT_CLOSE_MIGRATION27_SELECTED_TARGET_BINDING.md
+          docs/SPRINT118_FINAL_SHIFT_CLOSE_MIGRATION27_SELECTED_TARGET_DB_BINDING.md
           ops/final-shift-close/MIGRATION27_SELECTED_TARGET_BINDING_CONTRACT.json
           EOF
           diff -u /tmp/expected /tmp/actual
-          test "$(sha256sum /tmp/actual | awk '{print $1}')" = '0aab6969f2e6fe3e7f23aae2af99bc8fb9d70ac10e6d620bf20bc30a58ba4e25'
+          test "$(sha256sum /tmp/actual | awk '{print $1}')" = '1b8a8a9851a5cac94389c6939f4c4f08dd479c108296c3959c996884612ee13c'
 
-      - name: Preserve canonical application operational state and migration source
+      - name: Preserve canonical application operational state migration source and executor
         shell: bash
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
@@ -55,6 +57,7 @@ jobs:
         run: |
           set -euo pipefail
           git diff --exit-code "$BASE_SHA" "$HEAD_SHA" -- \
+            .github/workflows/final-shift-close-migration27-execution.yml \
             ops/final-shift-close/STATE.json \
             ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json \
             apps/web/database/migrations \
@@ -65,7 +68,7 @@ jobs:
             apps/web/config
           test "$(git rev-parse "$HEAD_SHA:apps/web/database/migrations/0000_00_00_000027_create_pos_shift_close_evidence_foundation.php")" = 'a412560c2f340f4783a385aef729dbd074389a4c'
 
-      - name: Preserve manual canonical-main execution boundary
+      - name: Preserve manual canonical-main migration execution boundary
         shell: bash
         run: |
           set -euo pipefail
@@ -80,7 +83,7 @@ jobs:
           ! grep -Fq 'contents: write' "$executor"
           ! grep -Fq 'deployments: write' "$executor"
 
-      - name: Require canonical selected durable target before execution
+      - name: Preserve exact selected-target and authority prerequisites
         shell: bash
         run: |
           set -euo pipefail
@@ -88,8 +91,7 @@ jobs:
           grep -Fq 'TARGET_SELECTION_FILE: ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json' "$executor"
           grep -Fq 'binding_run_id:' "$executor"
           grep -Fq 'binding_run_attempt:' "$executor"
-          grep -Fq "SELECTED_NOT_AUTHORIZED" "$executor"
-          grep -Fq 'selected_target | type' "$executor"
+          grep -Fq 'SELECTED_NOT_AUTHORIZED' "$executor"
           grep -Fq 'selected_target.environment_id' "$executor"
           grep -Fq 'selected_target.runtime_class' "$executor"
           grep -Fq 'selected_target.exact_running_source_commit' "$executor"
@@ -98,50 +100,34 @@ jobs:
           grep -Fq 'selected_target.selection_fingerprint_sha256' "$executor"
           grep -Fq 'selected_target.trusted_ingestion.run_id' "$executor"
           grep -Fq 'selected_target.trusted_ingestion.ingestion_fingerprint_sha256' "$executor"
-          grep -Fq 'Canonical selected target runtime class is not eligible for bounded migration27 execution.' "$executor"
-
-      - name: Preserve exact target PR transition and authority prerequisites
-        shell: bash
-        run: |
-          set -euo pipefail
-          executor=.github/workflows/final-shift-close-migration27-execution.yml
-          grep -Fq '.base.ref' "$executor"
-          grep -Fq '.base.sha' "$executor"
-          grep -Fq '.head.sha' "$executor"
-          grep -Fq '.head.repo.full_name' "$executor"
-          grep -Fq 'ops/final-shift-close/STATE.json' "$executor"
-          grep -Fq "base-state.json)\" == 'NOT_EXECUTED'" "$executor"
-          grep -Fq "target-state.json)\" == 'EXECUTED'" "$executor"
-          grep -Fq '.migration27.state = "NOT_EXECUTED"' "$executor"
           grep -Fq "require_latest_success 'final-shift-close-migration27-execution-authority'" "$executor"
           grep -Fq "require_latest_success 'product-owner-merge-authority'" "$executor"
           grep -Fq "require_workflow_success 'Governance Required Checks'" "$executor"
           grep -Fq "require_workflow_success 'PHP Foundation Regression'" "$executor"
           grep -Fq "require_workflow_success 'M7.1 Application Regression'" "$executor"
-          ! grep -Fq 'final-shift-close-feature-activation-authority' "$executor"
-          ! grep -Fq 'final-shift-close-permission-provisioning-authority' "$executor"
 
-      - name: Lock exact selected-target binding evidence prerequisite
+      - name: Preserve selected-target binding evidence consumer semantics
         shell: bash
         run: |
           set -euo pipefail
           executor=.github/workflows/final-shift-close-migration27-execution.yml
+          producer=.github/workflows/final-shift-close-migration27-selected-target-db-binding.yml
           grep -Fq 'BINDING_WORKFLOW_PATH: .github/workflows/final-shift-close-migration27-selected-target-db-binding.yml' "$executor"
           grep -Fq 'BINDING_ARTIFACT_NAME: final-shift-close-migration27-selected-target-db-binding' "$executor"
           grep -Fq 'BINDING_EVIDENCE_CONTEXT: final-shift-close-migration27-selected-target-db-binding-evidence' "$executor"
-          grep -Fq "'.path'" "$executor"
-          grep -Fq "'.event'" "$executor"
-          grep -Fq "'.head_branch'" "$executor"
-          grep -Fq "'.conclusion'" "$executor"
           grep -Fq '.expired == false' "$executor"
           grep -Fq 'binding.json' "$executor"
           grep -Fq 'execution.json' "$executor"
           grep -Fq 'VERIFIED_SELECTED_TARGET_DATABASE' "$executor"
           grep -Fq 'database_binding_sha256' "$executor"
           grep -Fq 'actions/runs/$BINDING_RUN_ID' "$executor"
-          test ! -e .github/workflows/final-shift-close-migration27-selected-target-db-binding.yml
+          test -f "$producer"
+          grep -Fq 'workflow_dispatch:' "$producer"
+          ! grep -Fq 'inputs:' "$producer"
+          grep -Fq 'BINDING_ARTIFACT_NAME: final-shift-close-migration27-selected-target-db-binding' "$producer"
+          grep -Fq 'BINDING_EVIDENCE_CONTEXT: final-shift-close-migration27-selected-target-db-binding-evidence' "$producer"
 
-      - name: Lock pre-mutation database identity readback
+      - name: Preserve pre-mutation database identity binding
         shell: bash
         run: |
           set -euo pipefail
@@ -173,11 +159,12 @@ jobs:
           grep -Fq 'Required canonical predecessor migrations are not fully recorded.' "$executor"
           grep -Fq 'chk_pos_shift_close_variance_review' "$executor"
 
-      - name: Preserve evidence lifecycle and non-migration no-go boundaries
+      - name: Preserve execution evidence lifecycle and no-go boundaries
         shell: bash
         run: |
           set -euo pipefail
           executor=.github/workflows/final-shift-close-migration27-execution.yml
+          producer=.github/workflows/final-shift-close-migration27-selected-target-db-binding.yml
           grep -Fq 'EVIDENCE_CONTEXT: final-shift-close-migration27-execution-evidence' "$executor"
           grep -Fq -- '--arg state pending' "$executor"
           grep -Fq 'steps.binding.outputs.verified' "$executor"
@@ -186,9 +173,9 @@ jobs:
           grep -Fq 'state=failure' "$executor"
           ! grep -Fq 'ONEQAY_POS_SHIFT_CLOSE_ENABLED=true' "$executor"
           ! grep -Eq '(kubectl |helm |ssh |scp |rsync |gh release|docker push)' "$executor"
-          ! grep -Fq 'pos.shift.close' "$executor"
+          ! grep -Eq '(php artisan migrate|migrate:rollback|migrate:fresh|DROP TABLE|TRUNCATE TABLE)' "$producer"
 
-      - name: Validate Sprint117 contract and Sprint103 addendum
+      - name: Validate Sprint118 successor contract while retaining Sprint117 provenance
         shell: bash
         run: |
           set -euo pipefail
@@ -197,13 +184,14 @@ jobs:
           jq -e . "$contract" >/dev/null
           test "$(jq -r '.contract_state' "$contract")" = 'MATERIALIZED_SOURCE_ONLY_NOT_DISPATCHED'
           test "$(jq -r '.required_selection_state' "$contract")" = 'SELECTED_NOT_AUTHORIZED'
-          test "$(jq -r '.binding_producer_source_state' "$contract")" = 'NOT_IMPLEMENTED'
+          test "$(jq -r '.binding_producer_source_state' "$contract")" = 'SOURCE_MATERIALIZED_NOT_DISPATCHED'
           test "$(jq -r '.database_binding_algorithm' "$contract")" = 'SHA256_CANONICAL_JSON_DATABASE_HOSTNAME_PORT_V1'
           test "$(jq -r '.canonical_boundaries.selected_target' "$contract")" = 'NONE'
+          test "$(jq -r '.canonical_boundaries.binding_evidence' "$contract")" = 'NONE'
           test "$(jq -r '.canonical_boundaries.migration27_execution' "$contract")" = 'NOT_PERFORMED'
-          test "$(jq -r '.source_envelope_sha256' "$contract")" = '0aab6969f2e6fe3e7f23aae2af99bc8fb9d70ac10e6d620bf20bc30a58ba4e25'
+          test "$(jq -r '.sprint117_source_envelope_sha256' "$contract")" = '0aab6969f2e6fe3e7f23aae2af99bc8fb9d70ac10e6d620bf20bc30a58ba4e25'
+          test "$(jq -r '.source_envelope_sha256' "$contract")" = '1b8a8a9851a5cac94389c6939f4c4f08dd479c108296c3959c996884612ee13c'
           grep -Fq 'Sprint117 selected-target binding hardening' "$doc103"
-          grep -Fq 'MIGRATION27_SELECTED_TARGET_BINDING_PRODUCER = NOT_IMPLEMENTED' "$doc103"
           grep -Fq 'MIGRATION_27_LIVE_EXECUTION = NOT_PERFORMED' "$doc103"
 
       - name: Verify tracked-source cleanliness
