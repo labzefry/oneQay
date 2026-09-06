@@ -12,9 +12,11 @@ use App\Application\Pos\CloseShiftRepository;
 use App\Application\Pos\DeriveCashVariance;
 use App\Application\Pos\FinalShiftCloseAuthorizationPolicy;
 use App\Application\Pos\ShiftCloseClock;
+use App\Delivery\Http\Middleware\RequirePosSessionContextMiddleware;
 use App\Infrastructure\Pos\LaravelCloseShiftRepository;
 use App\Infrastructure\Pos\LaravelExpectedCashSnapshotReader;
 use Illuminate\Database\Connection;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 
 // Author by Lab | zefry
@@ -57,6 +59,21 @@ final class FinalShiftCloseServiceProvider extends ServiceProvider
         });
     }
 
+    public function boot(): void
+    {
+        if (! $this->deliveryEnabled()) {
+            return;
+        }
+
+        Route::middleware([
+            'web',
+            'session.active',
+            'throttle:5,1',
+            'throttle:50,60',
+            RequirePosSessionContextMiddleware::class,
+        ])->group(base_path('routes/pos-final-shift-close.php'));
+    }
+
     private function connection($app): Connection
     {
         /** @var Connection $connection */
@@ -78,5 +95,14 @@ final class FinalShiftCloseServiceProvider extends ServiceProvider
     private function featureEnabled(): bool
     {
         return filter_var(env('ONEQAY_POS_SHIFT_CLOSE_ENABLED', false), FILTER_VALIDATE_BOOL);
+    }
+
+    private function deliveryEnabled(): bool
+    {
+        return in_array(strtolower(trim($this->runtimeClass())), ['local', 'test', 'ci'], true)
+            && $this->persistenceEnabled()
+            && (bool) config('oneqay.session_control.enabled', false)
+            && (bool) config('oneqay.pos_sale_completion.enabled', false)
+            && $this->featureEnabled();
     }
 }
