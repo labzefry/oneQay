@@ -438,10 +438,13 @@ jobs:
           if [[ "${ONEQAY_SPRINT74_POS_HISTORICAL:-false}" == 'true' ]]; then
             s74_expected_cash='app/Infrastructure/Pos/LaravelExpectedCashRepository.php'
             s74_variance_explanation='app/Infrastructure/Pos/LaravelCashVarianceExplanationRepository.php'
+            s74_review_decision='app/Infrastructure/Pos/LaravelCashVarianceReviewDecisionRepository.php'
             s74_expected_backup='/tmp/oneqay-s74-historical-expected-cash.php'
             s74_variance_backup='/tmp/oneqay-s74-historical-variance-explanation.php'
+            s74_review_backup='/tmp/oneqay-s74-historical-review-decision.php'
             if [[ -f "$s74_expected_cash" ]]; then cp "$s74_expected_cash" "$s74_expected_backup"; rm -f "$s74_expected_cash"; fi
             if [[ -f "$s74_variance_explanation" ]]; then cp "$s74_variance_explanation" "$s74_variance_backup"; rm -f "$s74_variance_explanation"; fi
+            if [[ -f "$s74_review_decision" ]]; then cp "$s74_review_decision" "$s74_review_backup"; rm -f "$s74_review_decision"; fi
           fi
           inventory='app/Infrastructure/Pos/LaravelInventoryBaselineRepository.php'
           refund='app/Infrastructure/Pos/LaravelSaleCashRefundRepository.php'
@@ -482,6 +485,7 @@ jobs:
           if [[ "${ONEQAY_SPRINT74_POS_HISTORICAL:-false}" == 'true' ]]; then
             if [[ -f "$s74_expected_backup" ]]; then mv "$s74_expected_backup" "$s74_expected_cash"; fi
             if [[ -f "$s74_variance_backup" ]]; then mv "$s74_variance_backup" "$s74_variance_explanation"; fi
+            if [[ -f "$s74_review_backup" ]]; then mv "$s74_review_backup" "$s74_review_decision"; fi
           fi
 
       - name: Run JRN-006 durable sale regression
