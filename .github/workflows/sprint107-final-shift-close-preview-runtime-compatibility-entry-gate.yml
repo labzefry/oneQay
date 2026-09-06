@@ -1,0 +1,136 @@
+name: Sprint107 Final Shift Close Preview Runtime Compatibility Entry Gate
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/sprint107-final-shift-close-preview-runtime-compatibility-entry-gate.yml'
+      - 'docs/SPRINT107_FINAL_SHIFT_CLOSE_PREVIEW_RUNTIME_COMPATIBILITY_ENTRY_GATE.md'
+      - 'ops/final-shift-close/PREVIEW_RUNTIME_COMPATIBILITY.json'
+
+permissions:
+  contents: read
+
+jobs:
+  qualify-entry-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Lock exact Sprint107 envelope
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/actual
+          cat > /tmp/expected <<'EOF'
+          .github/workflows/sprint107-final-shift-close-preview-runtime-compatibility-entry-gate.yml
+          docs/SPRINT107_FINAL_SHIFT_CLOSE_PREVIEW_RUNTIME_COMPATIBILITY_ENTRY_GATE.md
+          ops/final-shift-close/PREVIEW_RUNTIME_COMPATIBILITY.json
+          EOF
+          diff -u /tmp/expected /tmp/actual
+          test "$(sha256sum /tmp/actual | awk '{print $1}')" = '64ed8e573b49f8d608c4bd7da4aeb80950b8f8601e0d7b28e292fbb451fced62'
+
+      - name: Validate selected Preview target remains non-authorized
+        shell: bash
+        run: |
+          set -euo pipefail
+          target=ops/final-shift-close/ACTIVATION_TARGET.json
+          jq -e . "$target" >/dev/null
+          test "$(jq -r '.target.environment_id' "$target")" = 'oneqay-synthetic-technical-preview'
+          test "$(jq -r '.target.environment_class' "$target")" = 'technical-preview'
+          test "$(jq -r '.target.runtime_class' "$target")" = 'preview'
+          test "$(jq -r '.target.selection_state' "$target")" = 'SELECTED_NOT_AUTHORIZED'
+          test "$(jq -r '.runtime_binding.shared_environment_profile' "$target")" = 'PRIVATE_SHARED_DOTENV_V1'
+
+      - name: Validate machine-readable blocker matrix
+        shell: bash
+        run: |
+          set -euo pipefail
+          matrix=ops/final-shift-close/PREVIEW_RUNTIME_COMPATIBILITY.json
+          jq -e . "$matrix" >/dev/null
+          test "$(jq -r '.schema_version' "$matrix")" = '1'
+          test "$(jq -r '.feature' "$matrix")" = 'final-shift-close'
+          test "$(jq -r '.target_runtime_class' "$matrix")" = 'preview'
+          test "$(jq -r '.compatibility_state' "$matrix")" = 'BLOCKED'
+          test "$(jq '.required_runtime_envelope | length' "$matrix")" = '9'
+          test "$(jq '[.required_runtime_envelope[] | select(.preview_qualified == false)] | length' "$matrix")" = '9'
+          test "$(jq -r '.runtime_allowlist_change' "$matrix")" = 'NOT_IMPLEMENTED'
+          test "$(jq -r '.preview_runtime_regression' "$matrix")" = 'NOT_IMPLEMENTED'
+          test "$(jq -r '.feature_activation_evidence_producer' "$matrix")" = 'NOT_IMPLEMENTED'
+          test "$(jq -r '.feature_activation_execution' "$matrix")" = 'NOT_PERFORMED'
+          test "$(jq -r '.technical_preview_activation_authority' "$matrix")" = 'NOT_GRANTED'
+          test "$(jq -r '.production_authority' "$matrix")" = 'NOT_GRANTED'
+
+      - name: Prove current runtime guards still deny Preview
+        shell: bash
+        run: |
+          set -euo pipefail
+          files=(
+            apps/web/app/Providers/FinalShiftCloseServiceProvider.php
+            apps/web/app/Delivery/Http/Middleware/RequirePosSessionContextMiddleware.php
+            apps/web/app/Delivery/Http/Middleware/EnforceActiveFirstPartySessionAuthorityMiddleware.php
+            apps/web/app/Infrastructure/Identity/LaravelFirstPartySessionAuthorityRepository.php
+            apps/web/app/Infrastructure/Identity/LaravelFirstPartyIdentityEligibilityVerifier.php
+            apps/web/app/Infrastructure/Authorization/LaravelDurableRolePermissionRepository.php
+            apps/web/app/Infrastructure/Persistence/LaravelPersistenceTransaction.php
+            apps/web/app/Infrastructure/Pos/LaravelCloseShiftRepository.php
+            apps/web/app/Infrastructure/Pos/LaravelDurablePosSaleRepository.php
+          )
+          for file in "${files[@]}"; do
+            grep -Fq "['local', 'test', 'ci']" "$file"
+            if grep -Fq "['local', 'test', 'ci', 'preview']" "$file"; then
+              echo "Preview runtime was widened before bounded qualification: $file" >&2
+              exit 1
+            fi
+          done
+
+      - name: Prove synthetic Preview verifiers do not imply durable runtime compatibility
+        shell: bash
+        run: |
+          set -euo pipefail
+          preview=apps/web/app/Providers/TechnicalPreviewServiceProvider.php
+          grep -Fq 'SyntheticTenantMembershipVerifier' "$preview"
+          grep -Fq 'SyntheticOrganizationalRelationshipVerifier' "$preview"
+          grep -Fq "if (\$runtimeClass === 'preview')" "$preview"
+          grep -Fq "'session.active' => EnforceActiveFirstPartySessionAuthorityMiddleware::class" apps/web/bootstrap/app.php
+          grep -Fq 'RequirePosSessionContextMiddleware::class' apps/web/app/Providers/FinalShiftCloseServiceProvider.php
+
+      - name: Preserve operational no-go boundaries
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git diff --exit-code "$BASE_SHA" "$HEAD_SHA" -- \
+            apps/web/app \
+            apps/web/bootstrap \
+            apps/web/config \
+            apps/web/database/migrations \
+            apps/web/routes \
+            apps/web/resources \
+            ops/final-shift-close/STATE.json \
+            ops/final-shift-close/ACTIVATION_TARGET.json
+          workflow=.github/workflows/sprint107-final-shift-close-preview-runtime-compatibility-entry-gate.yml
+          ! grep -Eq '^  workflow_dispatch:' "$workflow"
+
+      - name: Lock Sprint107 disposition
+        shell: bash
+        run: |
+          set -euo pipefail
+          doc=docs/SPRINT107_FINAL_SHIFT_CLOSE_PREVIEW_RUNTIME_COMPATIBILITY_ENTRY_GATE.md
+          grep -Fq 'PREVIEW_RUNTIME_COMPATIBILITY = BLOCKED' "$doc"
+          grep -Fq 'RUNTIME_ALLOWLIST_CHANGE = NOT_IMPLEMENTED' "$doc"
+          grep -Fq 'FEATURE_ACTIVATION_EVIDENCE_PRODUCER = NOT_IMPLEMENTED' "$doc"
+          grep -Fq 'FEATURE_ACTIVATION_EXECUTION = NOT_PERFORMED' "$doc"
+          grep -Fq 'TECHNICAL_PREVIEW_ACTIVATION_AUTHORITY = NOT_GRANTED' "$doc"
+          grep -Fq 'PRODUCTION_AUTHORITY = NOT_GRANTED' "$doc"
+          grep -Fq 'UPDATER_ACTIVATION_AUTHORITY = NOT_GRANTED' "$doc"
