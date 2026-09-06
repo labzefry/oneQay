@@ -61,6 +61,7 @@ jobs:
           echo 'ONEQAY_SPRINT50_COMPATIBILITY_PREDECESSOR=false' >> "$GITHUB_ENV"
           echo 'ONEQAY_SPRINT57_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
           echo 'ONEQAY_SPRINT57_COMPATIBILITY_CORRECTION=false' >> "$GITHUB_ENV"
+          echo 'ONEQAY_SPRINT90_POS_HISTORICAL=false' >> "$GITHUB_ENV"
           if [[ "$count" -eq 5 && "$fingerprint" == '43e53ee63fdf476b91f9dd2fa0d2d6ab32f710e0d26e144ad119f4da60a2149c' ]]; then
             for expected in \
               '.github/workflows/sprint90-post-close-sale-mutation-freeze-regression.yml' \
@@ -82,6 +83,7 @@ jobs:
                 rm -f "$migration"
               fi
             done
+            echo 'ONEQAY_SPRINT90_POS_HISTORICAL=true' >> "$GITHUB_ENV"
             echo 'Recognized exact Sprint90 post-close mutation source at Sprint49 migration #18 horizon.'
           elif [[ "$count" -eq 6 && "$fingerprint" == '232e112191b5ea0fb6b7aa402443692af512bcf66101f0d235525862cb586462' ]]; then
             for expected in \
@@ -105,6 +107,7 @@ jobs:
                 rm -f "$migration"
               fi
             done
+            echo 'ONEQAY_SPRINT90_POS_HISTORICAL=true' >> "$GITHUB_ENV"
             echo 'Recognized exact Sprint90 six-workflow compatibility self-qualification at Sprint49 migration #18 horizon.'
           elif [[ "$count" -eq 4 && "$fingerprint" == '154e4e0f6fb898b2c5c677764571a5a9a57c31371c852f16e89a74f3b104adec' ]]; then
             git diff --exit-code "$base" "$head" -- apps/web/database/migrations
@@ -234,11 +237,18 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          repository='app/Infrastructure/Pos/LaravelDurablePosSaleRepository.php'
           migration18='database/migrations/0000_00_00_000018_create_pos_shift_opening_foundation.php'
-          backup='/tmp/oneqay-s49-migration18.php'
-          cp "$migration18" "$backup"
-          restore() { [[ ! -f "$backup" ]] || mv "$backup" "$migration18"; }
+          repository_backup='/tmp/oneqay-s49-s47-sale-repository.php'
+          migration18_backup='/tmp/oneqay-s49-migration18.php'
+          cp "$repository" "$repository_backup"
+          cp "$migration18" "$migration18_backup"
+          restore() {
+            [[ ! -f "$repository_backup" ]] || mv "$repository_backup" "$repository"
+            [[ ! -f "$migration18_backup" ]] || mv "$migration18_backup" "$migration18"
+          }
           trap restore EXIT
+          git show cc55ad9c981cceb287206db8a3001e629b1d8d57:apps/web/app/Infrastructure/Pos/LaravelDurablePosSaleRepository.php > "$repository"
           rm -f "$migration18"
           php tests/pos-catalog-preparation-durable.php
           restore
@@ -279,12 +289,15 @@ jobs:
           successors=(
             'app/Infrastructure/Pos/LaravelShiftOpeningRepository.php'
           )
-          if [[ "${ONEQAY_SPRINT57_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT57_COMPATIBILITY_CORRECTION:-false}" == 'true' ]]; then
+          if [[ "${ONEQAY_SPRINT57_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT57_COMPATIBILITY_CORRECTION:-false}" == 'true' || "${ONEQAY_SPRINT90_POS_HISTORICAL:-false}" == 'true' ]]; then
             successors+=(
               'app/Infrastructure/Pos/LaravelShiftClosingCashRepository.php'
               'app/Infrastructure/Pos/LaravelShiftOpeningCashRepository.php'
               'app/Infrastructure/Pos/LaravelSaleCashRefundRepository.php'
               'app/Infrastructure/Pos/LaravelInventoryBaselineRepository.php'
+              'app/Infrastructure/Pos/LaravelExpectedCashRepository.php'
+              'app/Infrastructure/Pos/LaravelCashVarianceExplanationRepository.php'
+              'app/Infrastructure/Pos/LaravelCashVarianceReviewDecisionRepository.php'
             )
           fi
           backup_dir='/tmp/oneqay-s49-m74-successors'
