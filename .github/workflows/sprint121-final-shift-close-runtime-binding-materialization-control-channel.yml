@@ -27,20 +27,21 @@ jobs:
           set -euo pipefail
           git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | sort > /tmp/paths
           cat > /tmp/expected <<'EOF'
-.github/workflows/sprint121-final-shift-close-runtime-binding-materialization-control-channel.yml
-apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingMaterializationRequest.php
-apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingMaterializer.php
-apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware.php
-apps/web/app/Delivery/Http/Pos/FinalShiftCloseRuntimeBindingMaterializationController.php
-apps/web/app/Providers/FinalShiftCloseRuntimeBindingMaterializationServiceProvider.php
-apps/web/routes/final-shift-close-runtime-binding-materialization.php
-apps/web/tests/final-shift-close-runtime-binding-materialization-control-channel.php
-docs/SPRINT121_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MATERIALIZATION_CONTROL_CHANNEL.md
-ops/final-shift-close/RUNTIME_BINDING_MATERIALIZATION_CONTROL_CHANNEL_CONTRACT.json
+          .github/workflows/sprint120-final-shift-close-runtime-binding-manifest-writer.yml
+          .github/workflows/sprint121-final-shift-close-runtime-binding-materialization-control-channel.yml
+          apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingMaterializationRequest.php
+          apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingMaterializer.php
+          apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware.php
+          apps/web/app/Delivery/Http/Pos/FinalShiftCloseRuntimeBindingMaterializationController.php
+          apps/web/app/Providers/FinalShiftCloseRuntimeBindingMaterializationServiceProvider.php
+          apps/web/routes/final-shift-close-runtime-binding-materialization.php
+          apps/web/tests/final-shift-close-runtime-binding-materialization-control-channel.php
+          docs/SPRINT121_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MATERIALIZATION_CONTROL_CHANNEL.md
+          ops/final-shift-close/RUNTIME_BINDING_MATERIALIZATION_CONTROL_CHANNEL_CONTRACT.json
           EOF
           diff -u /tmp/expected /tmp/paths
           fingerprint="$(sha256sum /tmp/paths | awk '{print $1}')"
-          [[ "$fingerprint" == '0334e2b0d37b7b8ee19cdab9e78a42719b4da21a905ac670435d6c9965b2e7de' ]]
+          [[ "$fingerprint" == '49535e71a6e3dc9278f57102301b43967088c37294ebbd98e8a49ee90ed95022' ]]
 
       - name: Prove Sprint119 and Sprint120 delivery state remain untouched
         shell: bash
