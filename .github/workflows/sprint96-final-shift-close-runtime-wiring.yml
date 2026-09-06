@@ -6,8 +6,7 @@ on:
     paths:
       - '.github/workflows/sprint96-final-shift-close-runtime-wiring.yml'
       - 'apps/web/app/Providers/FinalShiftCloseServiceProvider.php'
-      - 'apps/web/bootstrap/providers.php'
-      - 'apps/web/config/oneqay.php'
+      - 'apps/web/bootstrap/app.php'
       - 'apps/web/tests/pos-final-shift-close-runtime-wiring.php'
       - 'docs/SPRINT96_FINAL_SHIFT_CLOSE_RUNTIME_WIRING.md'
 
@@ -33,13 +32,12 @@ jobs:
           cat > /tmp/expected <<'EOF'
           .github/workflows/sprint96-final-shift-close-runtime-wiring.yml
           apps/web/app/Providers/FinalShiftCloseServiceProvider.php
-          apps/web/bootstrap/providers.php
-          apps/web/config/oneqay.php
+          apps/web/bootstrap/app.php
           apps/web/tests/pos-final-shift-close-runtime-wiring.php
           docs/SPRINT96_FINAL_SHIFT_CLOSE_RUNTIME_WIRING.md
           EOF
           diff -u /tmp/expected /tmp/actual
-          test "$(sha256sum /tmp/actual | awk '{print $1}')" = 'a26e7984ed1c3992106f84136bae5180f022b528f16d324d9d213d528df3fe0b'
+          test "$(sha256sum /tmp/actual | awk '{print $1}')" = '6a76872dafb8fe8cc111371f00344e53f44950e05b04500873586b49ee2b65a7'
 
       - name: Lock fail-closed runtime wiring
         shell: bash
@@ -48,17 +46,22 @@ jobs:
           provider=apps/web/app/Providers/FinalShiftCloseServiceProvider.php
           grep -Fq 'scoped(CloseShiftRepository::class' "$provider"
           grep -Fq 'new LaravelCloseShiftRepository(' "$provider"
-          grep -Fq "config('oneqay.pos_shift_close.enabled', false)" "$provider"
+          grep -Fq '$this->featureEnabled()' "$provider"
           grep -Fq 'scoped(CloseShift::class' "$provider"
           grep -Fq 'scoped(ShiftCloseClock::class' "$provider"
-          grep -Fq 'App\Providers\FinalShiftCloseServiceProvider::class' apps/web/bootstrap/providers.php
-          grep -Fq "env('ONEQAY_POS_SHIFT_CLOSE_ENABLED', false)" apps/web/config/oneqay.php
+          grep -Fq "env('ONEQAY_POS_SHIFT_CLOSE_ENABLED', false)" "$provider"
+          grep -Fq 'FILTER_VALIDATE_BOOL' "$provider"
+          grep -Fq 'use App\Providers\FinalShiftCloseServiceProvider;' apps/web/bootstrap/app.php
+          grep -Fq 'FinalShiftCloseServiceProvider::class,' apps/web/bootstrap/app.php
 
-      - name: Preserve delivery and migration boundaries
+      - name: Preserve historical shared runtime and delivery boundaries
         shell: bash
         run: |
           set -euo pipefail
-          test "$(git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" -- apps/web/database/migrations apps/web/routes routes apps/web/resources | wc -l)" -eq 0
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+          git diff --exit-code "$base" "$head" -- apps/web/bootstrap/providers.php apps/web/config/oneqay.php
+          test "$(git diff --name-only "$base" "$head" -- apps/web/database/migrations apps/web/routes routes apps/web/resources | wc -l)" -eq 0
           doc=docs/SPRINT96_FINAL_SHIFT_CLOSE_RUNTIME_WIRING.md
           grep -Fq 'FINAL_SHIFT_CLOSE_RUNTIME_FEATURE_FLAG_DEFAULT = DISABLED' "$doc"
           grep -Fq 'FINAL_SHIFT_CLOSE_ROUTE_DELIVERY = NOT_IMPLEMENTED' "$doc"
@@ -73,8 +76,7 @@ jobs:
         run: |
           set -euo pipefail
           php -l apps/web/app/Providers/FinalShiftCloseServiceProvider.php
-          php -l apps/web/bootstrap/providers.php
-          php -l apps/web/config/oneqay.php
+          php -l apps/web/bootstrap/app.php
           php -l apps/web/tests/pos-final-shift-close-runtime-wiring.php
 
       - name: Install PHP dependencies
