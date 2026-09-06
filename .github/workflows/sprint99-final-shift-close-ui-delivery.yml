@@ -66,8 +66,15 @@ jobs:
           grep -Fq -- "->name('pos.shifts.close')" "$route"
           grep -Fq "import axios, { AxiosError } from 'axios'" "$page"
           grep -Fq 'crypto.randomUUID()' "$page"
-          grep -Fq 'operation_id: operation.value' "$page"
-          ! grep -Fq 'closing_cash_atomic:' "$page"
+          python3 - <<'PY'
+          from pathlib import Path
+          page = Path('apps/web/resources/js/pages/Pos/ShiftClose.vue').read_text()
+          needle = """axios.post<CloseResult>(props.delivery.post_url, {
+                operation_id: operation.value,
+              }, {"""
+          if needle not in page:
+              raise SystemExit('Final Shift Close UI mutation body must contain exactly operation_id.')
+          PY
           ! grep -Fq 'reviewer_actor_identity_id' "$page"
           ! grep -Fq 'closer_actor_identity_id' "$page"
 
