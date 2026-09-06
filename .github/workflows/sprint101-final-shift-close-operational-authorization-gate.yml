@@ -83,15 +83,53 @@ jobs:
           grep -Fq 'PRODUCTION_AUTHORITY = NOT_GRANTED' "$doc"
           grep -Fq 'UPDATER_ACTIVATION_AUTHORITY = NOT_GRANTED' "$doc"
 
+      - name: Exercise exact-body matching semantics
+        shell: bash
+        run: |
+          set -euo pipefail
+          owner='labzefry'
+          pr='650'
+          head='0123456789abcdef0123456789abcdef01234567'
+          header='PRODUCT OWNER FINAL SHIFT CLOSE MIGRATION27 EXECUTION AUTHORIZATION'
+          grant='MIGRATION27 EXECUTION AUTHORITY: GRANTED'
+          expected="$(printf '%s\nPR: #%s\nEXACT HEAD: %s\n%s' "$header" "$pr" "$head" "$grant")"
+
+          count_matches() {
+            jq -s --arg login "$owner" --arg expected "$expected" '[
+              .[]
+              | select(.user.login == $login)
+              | select((.body | gsub("\\r"; "") | sub("\\n+$"; "")) == $expected)
+            ] | length' "$1"
+          }
+
+          printf '%s\n' "$(jq -nc --arg body "$expected" '{user:{login:"labzefry"},body:$body}')" > /tmp/exact.jsonl
+          test "$(count_matches /tmp/exact.jsonl)" -eq 1
+
+          wrong_head="$(printf '%s\nPR: #%s\nEXACT HEAD: %s\n%s' "$header" "$pr" 'ffffffffffffffffffffffffffffffffffffffff' "$grant")"
+          printf '%s\n' "$(jq -nc --arg body "$wrong_head" '{user:{login:"labzefry"},body:$body}')" > /tmp/wrong-head.jsonl
+          test "$(count_matches /tmp/wrong-head.jsonl)" -eq 0
+
+          printf '%s\n' "$(jq -nc --arg body "$expected" '{user:{login:"not-owner"},body:$body}')" > /tmp/non-owner.jsonl
+          test "$(count_matches /tmp/non-owner.jsonl)" -eq 0
+
+          combined="${expected}"$'\nPRODUCT OWNER FINAL SHIFT CLOSE FEATURE ACTIVATION AUTHORIZATION'
+          printf '%s\n' "$(jq -nc --arg body "$combined" '{user:{login:"labzefry"},body:$body}')" > /tmp/combined.jsonl
+          test "$(count_matches /tmp/combined.jsonl)" -eq 0
+
+          : > /tmp/revoked.jsonl
+          test "$(count_matches /tmp/revoked.jsonl)" -eq 0
+
       - name: Preserve authorization gate as status-only mechanism
         shell: bash
         run: |
           set -euo pipefail
           workflow=.github/workflows/sprint101-final-shift-close-operational-authorization-gate.yml
           grep -Fq 'statuses: write' "$workflow"
-          ! grep -Eq '(^|[[:space:]])(php artisan migrate|mysql |mysqldump |kubectl |helm |ssh |scp |rsync )' "$workflow"
-          ! grep -Fq 'ONEQAY_POS_SHIFT_CLOSE_ENABLED=true' "$workflow"
-          ! grep -Fq "'permission_id' => 'pos.shift.close'" "$workflow"
+          awk '/^  evaluate-operational-authority:/{capture=1} capture{print}' "$workflow" > /tmp/evaluator
+          test -s /tmp/evaluator
+          ! grep -Eq '(^|[[:space:]])(php artisan migrate|mysql |mysqldump |kubectl |helm |ssh |scp |rsync )' /tmp/evaluator
+          ! grep -Fq 'ONEQAY_POS_SHIFT_CLOSE_ENABLED=true' /tmp/evaluator
+          ! grep -Fq "'permission_id' => 'pos.shift.close'" /tmp/evaluator
 
   evaluate-operational-authority:
     if: >-
