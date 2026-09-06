@@ -6,10 +6,9 @@ declare(strict_types=1);
 
 $root = dirname(__DIR__);
 $provider = file_get_contents($root.'/app/Providers/FinalShiftCloseServiceProvider.php');
-$providers = file_get_contents($root.'/bootstrap/providers.php');
-$config = file_get_contents($root.'/config/oneqay.php');
+$bootstrap = file_get_contents($root.'/bootstrap/app.php');
 
-if ($provider === false || $providers === false || $config === false) {
+if ($provider === false || $bootstrap === false) {
     fwrite(STDERR, "Sprint96 runtime wiring source is unreadable.\n");
     exit(1);
 }
@@ -20,12 +19,14 @@ $requiredProviderFragments = [
     'scoped(FinalShiftCloseAuthorizationPolicy::class',
     'scoped(CloseShiftRepository::class',
     'new LaravelCloseShiftRepository(',
-    "config('oneqay.pos_shift_close.enabled', false)",
+    '$this->featureEnabled()',
     'scoped(CloseShift::class',
     'scoped(ShiftCloseClock::class',
     '$app->make(OrganizationalContextStore::class)',
     '$app->make(DurableScopedAuthorizationPolicy::class)',
     '$app->make(PersistenceTransaction::class)',
+    "env('ONEQAY_POS_SHIFT_CLOSE_ENABLED', false)",
+    'FILTER_VALIDATE_BOOL',
 ];
 
 foreach ($requiredProviderFragments as $fragment) {
@@ -35,24 +36,12 @@ foreach ($requiredProviderFragments as $fragment) {
     }
 }
 
-if (! str_contains($providers, 'App\\Providers\\FinalShiftCloseServiceProvider::class')) {
-    fwrite(STDERR, "Final Shift Close provider is not registered.\n");
-    exit(1);
-}
-
-$appPosition = strpos($providers, 'App\\Providers\\AppServiceProvider::class');
-$closePosition = strpos($providers, 'App\\Providers\\FinalShiftCloseServiceProvider::class');
-$previewPosition = strpos($providers, 'App\\Providers\\TechnicalPreviewServiceProvider::class');
-if ($appPosition === false || $closePosition === false || $previewPosition === false || ! ($appPosition < $closePosition && $closePosition < $previewPosition)) {
-    fwrite(STDERR, "Final Shift Close provider registration order is invalid.\n");
-    exit(1);
-}
-
 if (
-    ! str_contains($config, "'pos_shift_close' => [")
-    || ! str_contains($config, "env('ONEQAY_POS_SHIFT_CLOSE_ENABLED', false)")
+    ! str_contains($bootstrap, 'use App\\Providers\\FinalShiftCloseServiceProvider;')
+    || ! str_contains($bootstrap, '->withProviders([')
+    || ! str_contains($bootstrap, 'FinalShiftCloseServiceProvider::class,')
 ) {
-    fwrite(STDERR, "Final Shift Close feature flag is not fail-closed by default.\n");
+    fwrite(STDERR, "Final Shift Close provider is not registered at the application bootstrap boundary.\n");
     exit(1);
 }
 
@@ -63,6 +52,17 @@ foreach ($routeFiles as $routeFile) {
         fwrite(STDERR, "Sprint96 must not expose Final Shift Close through a route.\n");
         exit(1);
     }
+}
+
+$sharedProviders = file_get_contents($root.'/bootstrap/providers.php');
+$sharedConfig = file_get_contents($root.'/config/oneqay.php');
+if ($sharedProviders === false || $sharedConfig === false) {
+    fwrite(STDERR, "Canonical shared runtime files are unreadable.\n");
+    exit(1);
+}
+if (str_contains($sharedProviders, 'FinalShiftCloseServiceProvider') || str_contains($sharedConfig, 'pos_shift_close')) {
+    fwrite(STDERR, "Sprint96 must not widen historical shared provider/config horizons.\n");
+    exit(1);
 }
 
 echo "Sprint96 Final Shift Close runtime wiring regression passed.\n";
