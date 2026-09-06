@@ -76,9 +76,6 @@ jobs:
             repository='apps/web/app/Infrastructure/Pos/LaravelDurablePosSaleRepository.php'
             git update-index --assume-unchanged "$repository"
             git show '4fe3940991da118b4d140f7021f38e2598d530c2:apps/web/app/Infrastructure/Pos/LaravelDurablePosSaleRepository.php' > "$repository"
-            historical_catalog_test='apps/web/tests/pos-catalog-preparation-durable.php'
-            git update-index --assume-unchanged "$historical_catalog_test"
-            git show 'c9ec9542270765168a8e6be369141f71bf4f3336:apps/web/tests/pos-catalog-preparation-durable.php' > "$historical_catalog_test"
             for index in $(seq 19 27); do
               migration="$(find apps/web/database/migrations -maxdepth 1 -type f -name "$(printf '0000_00_00_%06d_*' "$index")" -print -quit)"
               if [[ -n "$migration" && -f "$migration" ]]; then
@@ -103,9 +100,6 @@ jobs:
             repository='apps/web/app/Infrastructure/Pos/LaravelDurablePosSaleRepository.php'
             git update-index --assume-unchanged "$repository"
             git show '4fe3940991da118b4d140f7021f38e2598d530c2:apps/web/app/Infrastructure/Pos/LaravelDurablePosSaleRepository.php' > "$repository"
-            historical_catalog_test='apps/web/tests/pos-catalog-preparation-durable.php'
-            git update-index --assume-unchanged "$historical_catalog_test"
-            git show 'c9ec9542270765168a8e6be369141f71bf4f3336:apps/web/tests/pos-catalog-preparation-durable.php' > "$historical_catalog_test"
             for index in $(seq 19 27); do
               migration="$(find apps/web/database/migrations -maxdepth 1 -type f -name "$(printf '0000_00_00_%06d_*' "$index")" -print -quit)"
               if [[ -n "$migration" && -f "$migration" ]]; then
@@ -243,18 +237,42 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          repository='app/Infrastructure/Pos/LaravelDurablePosSaleRepository.php'
+          historical='c9ec9542270765168a8e6be369141f71bf4f3336'
+          paths=(
+            'app/Application/Authorization/PosPermission.php'
+            'app/Application/Pos/CatalogPreparationClock.php'
+            'app/Application/Pos/CatalogPreparationCommand.php'
+            'app/Application/Pos/CatalogPreparationRepository.php'
+            'app/Application/Pos/CatalogPreparationResult.php'
+            'app/Application/Pos/PrepareCatalogItem.php'
+            'app/Delivery/Http/Pos/PosCatalogPreparationController.php'
+            'app/Infrastructure/Pos/LaravelCatalogPreparationRepository.php'
+            'app/Infrastructure/Pos/LaravelDurablePosSaleRepository.php'
+            'app/Providers/AppServiceProvider.php'
+            'config/oneqay.php'
+            'database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php'
+            'database/migrations/0000_00_00_000017_create_pos_catalog_preparation_journal.php'
+            'routes/web.php'
+            'tests/pos-catalog-preparation-durable.php'
+          )
           migration18='database/migrations/0000_00_00_000018_create_pos_shift_opening_foundation.php'
-          repository_backup='/tmp/oneqay-s49-s47-sale-repository.php'
-          migration18_backup='/tmp/oneqay-s49-migration18.php'
-          cp "$repository" "$repository_backup"
-          cp "$migration18" "$migration18_backup"
+          backup_dir='/tmp/oneqay-s49-s47-exact'
+          rm -rf "$backup_dir"
+          mkdir -p "$backup_dir"
           restore() {
-            [[ ! -f "$repository_backup" ]] || mv "$repository_backup" "$repository"
-            [[ ! -f "$migration18_backup" ]] || mv "$migration18_backup" "$migration18"
+            for path in "${paths[@]}"; do
+              backup="$backup_dir/${path//\//__}"
+              [[ ! -f "$backup" ]] || mv "$backup" "$path"
+            done
+            [[ ! -f "$backup_dir/migration18.php" ]] || mv "$backup_dir/migration18.php" "$migration18"
           }
           trap restore EXIT
-          git show cc55ad9c981cceb287206db8a3001e629b1d8d57:apps/web/app/Infrastructure/Pos/LaravelDurablePosSaleRepository.php > "$repository"
+          for path in "${paths[@]}"; do
+            backup="$backup_dir/${path//\//__}"
+            cp "$path" "$backup"
+            git show "$historical:apps/web/$path" > "$path"
+          done
+          cp "$migration18" "$backup_dir/migration18.php"
           rm -f "$migration18"
           php tests/pos-catalog-preparation-durable.php
           restore
