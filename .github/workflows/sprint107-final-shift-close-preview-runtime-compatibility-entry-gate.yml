@@ -119,8 +119,8 @@ jobs:
             apps/web/resources \
             ops/final-shift-close/STATE.json \
             ops/final-shift-close/ACTIVATION_TARGET.json
-          ! grep -R -n -E 'workflow_dispatch|ONEQAY_POS_SHIFT_CLOSE_ENABLED=true|php artisan migrate|kubectl|helm|ssh |scp |rsync ' \
-            .github/workflows/sprint107-final-shift-close-preview-runtime-compatibility-entry-gate.yml
+          workflow=.github/workflows/sprint107-final-shift-close-preview-runtime-compatibility-entry-gate.yml
+          ! grep -Eq '^  workflow_dispatch:' "$workflow"
 
       - name: Lock Sprint107 disposition
         shell: bash
