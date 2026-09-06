@@ -5,7 +5,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/sprint94-final-shift-close-authorization-contract.yml'
-      - 'apps/web/app/Application/Authorization/FinalShiftClosePermission.php'
+      - 'apps/web/app/Application/Pos/FinalShiftClosePermission.php'
       - 'apps/web/app/Application/Pos/FinalShiftCloseAuthorizationPolicy.php'
       - 'apps/web/tests/pos-final-shift-close-authorization-contract.php'
       - 'docs/SPRINT94_FINAL_SHIFT_CLOSE_AUTHORIZATION_CONTRACT.md'
@@ -31,20 +31,20 @@ jobs:
           git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | LC_ALL=C sort > /tmp/actual
           cat > /tmp/expected <<'EOF'
           .github/workflows/sprint94-final-shift-close-authorization-contract.yml
-          apps/web/app/Application/Authorization/FinalShiftClosePermission.php
           apps/web/app/Application/Pos/FinalShiftCloseAuthorizationPolicy.php
+          apps/web/app/Application/Pos/FinalShiftClosePermission.php
           apps/web/tests/pos-final-shift-close-authorization-contract.php
           docs/SPRINT94_FINAL_SHIFT_CLOSE_AUTHORIZATION_CONTRACT.md
           EOF
           diff -u /tmp/expected /tmp/actual
-          test "$(sha256sum /tmp/actual | awk '{print $1}')" = "4e5874b18bdf004d5a26374cc8efa6c61a629ae8a1fb335c1ed29ea3a8b7c5d7"
+          test "$(sha256sum /tmp/actual | awk '{print $1}')" = "a07965561c3c060b1a17b13fdcc4c48fa78a2594ac0c228adddd02c4df40ffbd"
 
       - name: Lock selected authorization contract
         shell: bash
         run: |
           set -euo pipefail
-          grep -Fq "public const IDENTIFIER = 'pos.shift.close';" apps/web/app/Application/Authorization/FinalShiftClosePermission.php
-          grep -Fq 'function identifier()' apps/web/app/Application/Authorization/FinalShiftClosePermission.php
+          grep -Fq "public const IDENTIFIER = 'pos.shift.close';" apps/web/app/Application/Pos/FinalShiftClosePermission.php
+          grep -Fq 'function identifier()' apps/web/app/Application/Pos/FinalShiftClosePermission.php
           grep -Fq 'NO_DEFAULT_GRANT' docs/SPRINT94_FINAL_SHIFT_CLOSE_AUTHORIZATION_CONTRACT.md
           grep -Fq 'FINAL_SHIFT_CLOSE_CLOSER_VS_OPENER = SEPARATION_REQUIRED' docs/SPRINT94_FINAL_SHIFT_CLOSE_AUTHORIZATION_CONTRACT.md
           grep -Fq 'FINAL_SHIFT_CLOSE_CLOSER_VS_EXPLANATION_AUTHOR = SEPARATION_REQUIRED_FOR_NONZERO_VARIANCE' docs/SPRINT94_FINAL_SHIFT_CLOSE_AUTHORIZATION_CONTRACT.md
@@ -72,7 +72,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          php -l apps/web/app/Application/Authorization/FinalShiftClosePermission.php
+          php -l apps/web/app/Application/Pos/FinalShiftClosePermission.php
           php -l apps/web/app/Application/Pos/FinalShiftCloseAuthorizationPolicy.php
           php -l apps/web/tests/pos-final-shift-close-authorization-contract.php
 
