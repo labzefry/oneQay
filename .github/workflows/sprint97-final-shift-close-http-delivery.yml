@@ -137,16 +137,36 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          output="$(ONEQAY_RUNTIME_CLASS=ci ONEQAY_POS_SHIFT_CLOSE_ENABLED=false php artisan route:list --name=pos.shifts.close --json)"
-          php -r '$rows=json_decode($argv[1], true, 512, JSON_THROW_ON_ERROR); if (count($rows) !== 0) { fwrite(STDERR, "Final Shift Close route must be absent by default.\n"); exit(1); }' "$output"
+          output="$(ONEQAY_RUNTIME_CLASS=ci ONEQAY_POS_SHIFT_CLOSE_ENABLED=false php artisan route:list --json)"
+          php -r '
+            $rows=json_decode($argv[1], true, 512, JSON_THROW_ON_ERROR);
+            foreach ($rows as $row) {
+                if (($row["name"] ?? "") === "pos.shifts.close" || ($row["uri"] ?? "") === "pos/shifts/close") {
+                    fwrite(STDERR, "Final Shift Close route must be absent by default.\n");
+                    exit(1);
+                }
+            }
+          ' "$output"
 
       - name: Prove route appears only when explicitly armed
         working-directory: apps/web
         shell: bash
         run: |
           set -euo pipefail
-          output="$(ONEQAY_RUNTIME_CLASS=ci ONEQAY_PERSISTENCE_ENABLED=true ONEQAY_AUTHENTICATION_SESSION_CONTROL_ENABLED=true ONEQAY_POS_SALE_COMPLETION_ENABLED=true ONEQAY_POS_SHIFT_CLOSE_ENABLED=true php artisan route:list --name=pos.shifts.close --json)"
-          php -r '$rows=json_decode($argv[1], true, 512, JSON_THROW_ON_ERROR); if (count($rows) !== 1 || ($rows[0]["method"] ?? "") !== "POST" || ($rows[0]["uri"] ?? "") !== "pos/shifts/close" || ($rows[0]["name"] ?? "") !== "pos.shifts.close") { fwrite(STDERR, "Final Shift Close route arm contract is invalid.\n"); exit(1); }' "$output"
+          output="$(ONEQAY_RUNTIME_CLASS=ci ONEQAY_PERSISTENCE_ENABLED=true ONEQAY_AUTHENTICATION_SESSION_CONTROL_ENABLED=true ONEQAY_POS_SALE_COMPLETION_ENABLED=true ONEQAY_POS_SHIFT_CLOSE_ENABLED=true php artisan route:list --json)"
+          php -r '
+            $rows=json_decode($argv[1], true, 512, JSON_THROW_ON_ERROR);
+            $matches=array_values(array_filter($rows, static fn (array $row): bool => ($row["name"] ?? "") === "pos.shifts.close" || ($row["uri"] ?? "") === "pos/shifts/close"));
+            if (count($matches) !== 1) {
+                fwrite(STDERR, "Final Shift Close route arm contract is invalid.\n");
+                exit(1);
+            }
+            $route=$matches[0];
+            if (($route["method"] ?? "") !== "POST" || ($route["uri"] ?? "") !== "pos/shifts/close" || ($route["name"] ?? "") !== "pos.shifts.close") {
+                fwrite(STDERR, "Final Shift Close route arm contract is invalid.\n");
+                exit(1);
+            }
+          ' "$output"
 
       - name: Preserve tracked source cleanliness
         run: git diff --exit-code
