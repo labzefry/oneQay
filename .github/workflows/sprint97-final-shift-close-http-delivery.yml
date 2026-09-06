@@ -1,0 +1,172 @@
+name: Sprint97 Final Shift Close HTTP Delivery
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/sprint97-final-shift-close-http-delivery.yml'
+      - 'apps/web/app/Delivery/Http/Pos/PosShiftCloseController.php'
+      - 'apps/web/app/Providers/FinalShiftCloseServiceProvider.php'
+      - 'apps/web/routes/pos-final-shift-close.php'
+      - 'apps/web/tests/pos-final-shift-close-http-delivery.php'
+      - 'docs/SPRINT97_FINAL_SHIFT_CLOSE_HTTP_DELIVERY.md'
+
+permissions:
+  contents: read
+
+jobs:
+  qualify-source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHQ=
+      APP_DEBUG: 'false'
+      APP_URL: http://localhost
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Enforce exact Sprint97 source envelope
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | LC_ALL=C sort > /tmp/actual
+          cat > /tmp/expected <<'EOF'
+          .github/workflows/sprint97-final-shift-close-http-delivery.yml
+          apps/web/app/Delivery/Http/Pos/PosShiftCloseController.php
+          apps/web/app/Providers/FinalShiftCloseServiceProvider.php
+          apps/web/routes/pos-final-shift-close.php
+          apps/web/tests/pos-final-shift-close-http-delivery.php
+          docs/SPRINT97_FINAL_SHIFT_CLOSE_HTTP_DELIVERY.md
+          EOF
+          diff -u /tmp/expected /tmp/actual
+          test "$(sha256sum /tmp/actual | awk '{print $1}')" = '2582b4a7112c580b5f3fa986e2bf5f7cf92cecda4b9806310e8cf1f0b669ff8a'
+
+      - name: Lock closed request and safe response contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          controller=apps/web/app/Delivery/Http/Pos/PosShiftCloseController.php
+          grep -Fq "private const ALLOWED_FIELDS = ['operation_id'];" "$controller"
+          grep -Fq "new CloseShiftCommand(\$payload['operation_id'])" "$controller"
+          grep -Fq "POS_SHIFT_CLOSE_AUTHORIZATION_DENIED" "$controller"
+          grep -Fq "POS_SHIFT_CLOSE_REJECTED" "$controller"
+          grep -Fq "'Cache-Control' => 'no-store, private'" "$controller"
+          ! grep -Fq "'closer_actor_identity_id'" "$controller"
+          ! grep -Fq "'opener_actor_identity_id'" "$controller"
+          ! grep -Fq "'reviewer_actor_identity_id'" "$controller"
+
+      - name: Lock fail-closed route registration
+        shell: bash
+        run: |
+          set -euo pipefail
+          provider=apps/web/app/Providers/FinalShiftCloseServiceProvider.php
+          grep -Fq 'public function boot(): void' "$provider"
+          grep -Fq "['local', 'test', 'ci']" "$provider"
+          grep -Fq "config('database.oneqay_persistence_enabled', false)" "$provider"
+          grep -Fq "config('oneqay.session_control.enabled', false)" "$provider"
+          grep -Fq "config('oneqay.pos_sale_completion.enabled', false)" "$provider"
+          grep -Fq "env('ONEQAY_POS_SHIFT_CLOSE_ENABLED', false)" "$provider"
+          grep -Fq "'session.active'" "$provider"
+          grep -Fq 'RequirePosSessionContextMiddleware::class' "$provider"
+          grep -Fq "group(base_path('routes/pos-final-shift-close.php'))" "$provider"
+          grep -Fq "Route::post('/pos/shifts/close', PosShiftCloseController::class)" apps/web/routes/pos-final-shift-close.php
+          grep -Fq -- "->name('pos.shifts.close')" apps/web/routes/pos-final-shift-close.php
+
+      - name: Preserve migration UI and historical route boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+          git diff --exit-code "$base" "$head" -- apps/web/database/migrations apps/web/resources apps/web/routes/web.php
+          doc=docs/SPRINT97_FINAL_SHIFT_CLOSE_HTTP_DELIVERY.md
+          grep -Fq 'FINAL_SHIFT_CLOSE_HTTP_ROUTE_DEFAULT = ABSENT_FAIL_CLOSED' "$doc"
+          grep -Fq 'FINAL_SHIFT_CLOSE_UI_DELIVERY = NOT_IMPLEMENTED' "$doc"
+          grep -Fq 'MIGRATION_27_LIVE_EXECUTION = NOT_AUTHORIZED' "$doc"
+          grep -Fq 'TECHNICAL_PREVIEW_ACTIVATION_AUTHORITY = NOT_GRANTED' "$doc"
+          grep -Fq 'PRODUCTION_AUTHORITY = NOT_GRANTED' "$doc"
+          grep -Fq 'UPDATER_ACTIVATION_AUTHORITY = NOT_GRANTED' "$doc"
+
+      - name: Validate PHP syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l apps/web/app/Delivery/Http/Pos/PosShiftCloseController.php
+          php -l apps/web/app/Providers/FinalShiftCloseServiceProvider.php
+          php -l apps/web/routes/pos-final-shift-close.php
+          php -l apps/web/tests/pos-final-shift-close-http-delivery.php
+
+      - name: Install PHP dependencies
+        working-directory: apps/web
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Reject High or Critical Composer advisories
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          composer audit --locked --format=json > /tmp/oneqay-composer-audit.json || true
+          cat /tmp/oneqay-composer-audit.json
+          php -r '
+            $data = json_decode(file_get_contents("/tmp/oneqay-composer-audit.json"), true, 512, JSON_THROW_ON_ERROR);
+            foreach (($data["advisories"] ?? []) as $package => $items) {
+                foreach ($items as $item) {
+                    $severity = strtolower((string) ($item["severity"] ?? ""));
+                    if (in_array($severity, ["high", "critical"], true)) {
+                        fwrite(STDERR, "Blocking Composer advisory for {$package}: ".($item["advisoryId"] ?? "unknown")."\n");
+                        exit(1);
+                    }
+                }
+            }
+          '
+
+      - name: Execute Sprint97 delivery regression
+        working-directory: apps/web
+        run: php tests/pos-final-shift-close-http-delivery.php
+
+      - name: Prove route absent by default
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          output="$(ONEQAY_RUNTIME_CLASS=ci ONEQAY_POS_SHIFT_CLOSE_ENABLED=false php artisan route:list --json)"
+          php -r '
+            $rows=json_decode($argv[1], true, 512, JSON_THROW_ON_ERROR);
+            foreach ($rows as $row) {
+                if (($row["name"] ?? "") === "pos.shifts.close" || ($row["uri"] ?? "") === "pos/shifts/close") {
+                    fwrite(STDERR, "Final Shift Close route must be absent by default.\n");
+                    exit(1);
+                }
+            }
+          ' "$output"
+
+      - name: Prove route appears only when explicitly armed
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          output="$(ONEQAY_RUNTIME_CLASS=ci ONEQAY_PERSISTENCE_ENABLED=true ONEQAY_AUTHENTICATION_SESSION_CONTROL_ENABLED=true ONEQAY_POS_SALE_COMPLETION_ENABLED=true ONEQAY_POS_SHIFT_CLOSE_ENABLED=true php artisan route:list --json)"
+          php -r '
+            $rows=json_decode($argv[1], true, 512, JSON_THROW_ON_ERROR);
+            $matches=array_values(array_filter($rows, static fn (array $row): bool => ($row["name"] ?? "") === "pos.shifts.close" || ($row["uri"] ?? "") === "pos/shifts/close"));
+            if (count($matches) !== 1) {
+                fwrite(STDERR, "Final Shift Close route arm contract is invalid.\n");
+                exit(1);
+            }
+            $route=$matches[0];
+            if (($route["method"] ?? "") !== "POST" || ($route["uri"] ?? "") !== "pos/shifts/close" || ($route["name"] ?? "") !== "pos.shifts.close") {
+                fwrite(STDERR, "Final Shift Close route arm contract is invalid.\n");
+                exit(1);
+            }
+          ' "$output"
+
+      - name: Preserve tracked source cleanliness
+        run: git diff --exit-code
