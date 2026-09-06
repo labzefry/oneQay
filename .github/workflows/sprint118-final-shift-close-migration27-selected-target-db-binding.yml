@@ -1,0 +1,257 @@
+name: Sprint118 Final Shift Close Migration27 Selected Target DB Binding
+
+# Attribution: Lab | zefry
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/final-shift-close-migration27-selected-target-db-binding.yml'
+      - '.github/workflows/sprint103-final-shift-close-migration27-execution-evidence.yml'
+      - '.github/workflows/sprint117-final-shift-close-migration27-selected-target-binding.yml'
+      - '.github/workflows/sprint118-final-shift-close-migration27-selected-target-db-binding.yml'
+      - 'docs/SPRINT117_FINAL_SHIFT_CLOSE_MIGRATION27_SELECTED_TARGET_BINDING.md'
+      - 'docs/SPRINT118_FINAL_SHIFT_CLOSE_MIGRATION27_SELECTED_TARGET_DB_BINDING.md'
+      - 'ops/final-shift-close/MIGRATION27_SELECTED_TARGET_BINDING_CONTRACT.json'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint118-final-shift-close-migration27-selected-target-db-binding-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qualify-selected-target-db-binding-producer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Lock exact Sprint118 source envelope
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/actual
+          cat > /tmp/expected <<'EOF'
+          .github/workflows/final-shift-close-migration27-selected-target-db-binding.yml
+          .github/workflows/sprint103-final-shift-close-migration27-execution-evidence.yml
+          .github/workflows/sprint117-final-shift-close-migration27-selected-target-binding.yml
+          .github/workflows/sprint118-final-shift-close-migration27-selected-target-db-binding.yml
+          docs/SPRINT117_FINAL_SHIFT_CLOSE_MIGRATION27_SELECTED_TARGET_BINDING.md
+          docs/SPRINT118_FINAL_SHIFT_CLOSE_MIGRATION27_SELECTED_TARGET_DB_BINDING.md
+          ops/final-shift-close/MIGRATION27_SELECTED_TARGET_BINDING_CONTRACT.json
+          EOF
+          diff -u /tmp/expected /tmp/actual
+          test "$(sha256sum /tmp/actual | awk '{print $1}')" = '1b8a8a9851a5cac94389c6939f4c4f08dd479c108296c3959c996884612ee13c'
+
+      - name: Preserve application migration executor and canonical state
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git diff --exit-code "$BASE_SHA" "$HEAD_SHA" -- \
+            .github/workflows/final-shift-close-migration27-execution.yml \
+            apps/web/app \
+            apps/web/bootstrap \
+            apps/web/config \
+            apps/web/database/migrations \
+            apps/web/routes \
+            apps/web/resources \
+            ops/final-shift-close/STATE.json \
+            ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+
+          state=ops/final-shift-close/STATE.json
+          selection=ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+          test "$(jq -r '.migration27.state' "$state")" = 'NOT_EXECUTED'
+          test "$(jq -r '.permission_provisioning.state' "$state")" = 'NONE'
+          test "$(jq -r '.feature_activation.state' "$state")" = 'INACTIVE'
+          test "$(jq -r '.selection_state' "$selection")" = 'BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET'
+          test "$(jq -r '.selected_target' "$selection")" = 'null'
+          test "$(git rev-parse "$HEAD_SHA:apps/web/database/migrations/0000_00_00_000027_create_pos_shift_close_evidence_foundation.php")" = 'a412560c2f340f4783a385aef729dbd074389a4c'
+
+      - name: Validate Sprint118 machine-readable contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          contract=ops/final-shift-close/MIGRATION27_SELECTED_TARGET_BINDING_CONTRACT.json
+          jq -e . "$contract" >/dev/null
+          test "$(jq -r '.schema_version' "$contract")" = '1'
+          test "$(jq -r '.binding_producer_source_state' "$contract")" = 'SOURCE_MATERIALIZED_NOT_DISPATCHED'
+          test "$(jq -r '.binding_producer_environment' "$contract")" = 'final-shift-close-migration27-selected-target-db-binding'
+          test "$(jq -r '.binding_producer_dispatch_inputs | length' "$contract")" = '0'
+          test "$(jq -r '.binding_producer_control_channel.runtime_attestation_mode' "$contract")" = 'READ_ONLY'
+          test "$(jq -r '.binding_producer_control_channel.runtime_database_identity_source' "$contract")" = 'ACTIVE_APPLICATION_DATABASE_CONNECTION'
+          test "$(jq -r '.binding_producer_independent_database_readback.driver' "$contract")" = 'pdo_mysql'
+          test "$(jq -r '.binding_producer_independent_database_readback.runtime_reported_fingerprint_must_equal_independent_database_fingerprint' "$contract")" = 'true'
+          test "$(jq -r '.binding_producer_independent_database_readback.comparison' "$contract")" = 'hash_equals'
+          test "$(jq -r '.canonical_boundaries.binding_producer' "$contract")" = 'SOURCE_MATERIALIZED_NOT_DISPATCHED'
+          test "$(jq -r '.canonical_boundaries.binding_evidence' "$contract")" = 'NONE'
+          test "$(jq -r '.canonical_boundaries.migration27_execution' "$contract")" = 'NOT_PERFORMED'
+          test "$(jq -r '.sprint117_source_envelope_sha256' "$contract")" = '0aab6969f2e6fe3e7f23aae2af99bc8fb9d70ac10e6d620bf20bc30a58ba4e25'
+          test "$(jq -r '.source_envelope_sha256' "$contract")" = '1b8a8a9851a5cac94389c6939f4c4f08dd479c108296c3959c996884612ee13c'
+
+      - name: Lock manual current-main protected-environment producer boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          producer=.github/workflows/final-shift-close-migration27-selected-target-db-binding.yml
+          grep -Fq 'workflow_dispatch:' "$producer"
+          ! grep -Fq 'inputs:' "$producer"
+          ! grep -Eq '^  (pull_request|push|schedule):' "$producer"
+          grep -Fq "github.ref == 'refs/heads/main'" "$producer"
+          grep -Fq 'ref:' "$producer"
+          grep -Fq 'github.sha' "$producer"
+          grep -Fq 'environment: final-shift-close-migration27-selected-target-db-binding' "$producer"
+          grep -Fq 'contents: read' "$producer"
+          grep -Fq 'statuses: write' "$producer"
+          ! grep -Fq 'contents: write' "$producer"
+          ! grep -Fq 'deployments: write' "$producer"
+          grep -Fq 'ONEQAY_MIGRATION27_BINDING_PROTECTION_ASSERTION' "$producer"
+          grep -Fq "ENVIRONMENT_PROTECTION_ASSERTION\" == 'REVIEW_GATED_V1'" "$producer"
+
+      - name: Lock canonical selected-target and operational-state prerequisite
+        shell: bash
+        run: |
+          set -euo pipefail
+          producer=.github/workflows/final-shift-close-migration27-selected-target-db-binding.yml
+          grep -Fq 'TARGET_SELECTION_FILE: ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json' "$producer"
+          grep -Fq 'OPERATIONAL_STATE_FILE: ops/final-shift-close/STATE.json' "$producer"
+          grep -Fq 'SELECTED_NOT_AUTHORIZED' "$producer"
+          grep -Fq 'selected_target.environment_id' "$producer"
+          grep -Fq 'selected_target.runtime_class' "$producer"
+          grep -Fq 'selected_target.exact_running_source_commit' "$producer"
+          grep -Fq 'selected_target.exact_running_artifact_sha256' "$producer"
+          grep -Fq 'selected_target.readiness_attestation_sha256' "$producer"
+          grep -Fq 'selected_target.selection_fingerprint_sha256' "$producer"
+          grep -Fq 'selected_target.trusted_ingestion.run_id' "$producer"
+          grep -Fq 'selected_target.trusted_ingestion.run_attempt' "$producer"
+          grep -Fq 'selected_target.trusted_ingestion.ingestion_fingerprint_sha256' "$producer"
+          grep -Fq '.migration27.state' "$producer"
+          grep -Fq "== 'NOT_EXECUTED'" "$producer"
+          grep -Fq "== 'NONE'" "$producer"
+          grep -Fq "== 'INACTIVE'" "$producer"
+          grep -Fq 'compare/$running_source...$GITHUB_SHA' "$producer"
+
+      - name: Lock authenticated read-only runtime database attestation
+        shell: bash
+        run: |
+          set -euo pipefail
+          producer=.github/workflows/final-shift-close-migration27-selected-target-db-binding.yml
+          grep -Fq 'ONEQAY_MIGRATION27_BINDING_ATTESTATION_URL' "$producer"
+          grep -Fq 'ONEQAY_MIGRATION27_BINDING_ATTESTATION_TOKEN' "$producer"
+          grep -Fq -- "--proto '=https'" "$producer"
+          grep -Fq -- '--tlsv1.2' "$producer"
+          grep -Fq 'Authorization: Bearer $BINDING_ATTESTATION_TOKEN' "$producer"
+          grep -Fq 'bytes > 1 && bytes <= 32768' "$producer"
+          grep -Fq 'Runtime DB binding attestation field set is not exact.' "$producer"
+          grep -Fq 'VERIFIED_SELECTED_TARGET_DATABASE' "$producer"
+          grep -Fq 'ACTIVE_APPLICATION_DATABASE_CONNECTION' "$producer"
+          grep -Fq "'attestation_mode'" "$producer"
+          grep -Fq "'READ_ONLY'" "$producer"
+          grep -Fq 'database_binding_algorithm' "$producer"
+          grep -Fq 'secrets_embedded' "$producer"
+
+      - name: Lock independent database readback and anti-retrospective checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          producer=.github/workflows/final-shift-close-migration27-selected-target-db-binding.yml
+          grep -Fq "extension_loaded('pdo_mysql')" "$producer"
+          grep -Fq 'PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION' "$producer"
+          grep -Fq 'PDO::ATTR_TIMEOUT => 5' "$producer"
+          grep -Fq 'SELECT DATABASE() AS database_name, @@hostname AS server_hostname, @@port AS server_port' "$producer"
+          grep -Fq 'TABLE_NAME = ?' "$producer"
+          grep -Fq "execute(['migrations'])" "$producer"
+          grep -Fq "execute(['oneqay_pos_shift_close_evidence'])" "$producer"
+          grep -Fq 'Migration27 table already exists; refusing retrospective database-binding evidence.' "$producer"
+          grep -Fq '0000_00_00_000027_create_pos_shift_close_evidence_foundation' "$producer"
+          grep -Fq 'Migration27 is already recorded; refusing retrospective database-binding evidence.' "$producer"
+          grep -Fq "'database_name' => \$databaseName" "$producer"
+          grep -Fq "'server_hostname' => \$serverHostname" "$producer"
+          grep -Fq "'server_port' => \$serverPort" "$producer"
+          grep -Fq 'ksort($bindingPayload, SORT_STRING)' "$producer"
+          grep -Fq "hash('sha256', json_encode(" "$producer"
+          grep -Fq 'hash_equals($runtimeBinding, $actualBinding)' "$producer"
+          grep -Fq 'Protected runtime control channel and independent migration database connection do not identify the same database.' "$producer"
+
+      - name: Prove producer cannot mutate database or application runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          producer=.github/workflows/final-shift-close-migration27-selected-target-db-binding.yml
+          ! grep -Eq '(php artisan migrate|migrate:rollback|migrate:reset|migrate:refresh|migrate:fresh)' "$producer"
+          ! grep -Eq '(INSERT INTO|UPDATE |DELETE FROM|DROP TABLE|TRUNCATE TABLE|ALTER TABLE|CREATE TABLE)' "$producer"
+          ! grep -Fq 'ONEQAY_POS_SHIFT_CLOSE_ENABLED=true' "$producer"
+          ! grep -Eq '(kubectl |helm |ssh |scp |rsync |gh release|docker push)' "$producer"
+          ! grep -Fq 'authorization.policy.manage' "$producer"
+          ! grep -Fq 'pos.shift.close' "$producer"
+
+      - name: Lock exact secret-free evidence payload consumed by Sprint117 executor
+        shell: bash
+        run: |
+          set -euo pipefail
+          producer=.github/workflows/final-shift-close-migration27-selected-target-db-binding.yml
+          executor=.github/workflows/final-shift-close-migration27-execution.yml
+          grep -Fq 'BINDING_ARTIFACT_NAME: final-shift-close-migration27-selected-target-db-binding' "$producer"
+          grep -Fq 'BINDING_EVIDENCE_CONTEXT: final-shift-close-migration27-selected-target-db-binding-evidence' "$producer"
+          grep -Fq 'binding.json' "$producer"
+          grep -Fq 'execution.json' "$producer"
+          grep -Fq 'binding_state:"VERIFIED_SELECTED_TARGET_DATABASE"' "$producer"
+          grep -Fq 'migration27_state:"NOT_EXECUTED"' "$producer"
+          grep -Fq 'secrets_embedded:false' "$producer"
+          grep -Fq 'workflow_path:$workflow_path' "$producer"
+          grep -Fq 'run_id:($run_id|tonumber)' "$producer"
+          grep -Fq 'run_attempt:($run_attempt|tonumber)' "$producer"
+          grep -Fq 'evidence_state:"success"' "$producer"
+          grep -Fq 'BINDING_WORKFLOW_PATH: .github/workflows/final-shift-close-migration27-selected-target-db-binding.yml' "$executor"
+          grep -Fq 'BINDING_ARTIFACT_NAME: final-shift-close-migration27-selected-target-db-binding' "$executor"
+          grep -Fq 'BINDING_EVIDENCE_CONTEXT: final-shift-close-migration27-selected-target-db-binding-evidence' "$executor"
+
+      - name: Lock evidence publication ordering and exact run URL
+        shell: bash
+        run: |
+          set -euo pipefail
+          producer=.github/workflows/final-shift-close-migration27-selected-target-db-binding.yml
+          verify_line="$(grep -n 'name: Independently read database identity and verify migration27 is absent' "$producer" | cut -d: -f1)"
+          bundle_line="$(grep -n 'name: Materialize secret-free selected-target database binding evidence' "$producer" | cut -d: -f1)"
+          pending_line="$(grep -n 'name: Publish pending selected-target database-binding evidence status' "$producer" | cut -d: -f1)"
+          upload_line="$(grep -n 'name: Upload selected-target database-binding evidence' "$producer" | cut -d: -f1)"
+          success_line="$(grep -n 'name: Publish success selected-target database-binding evidence status' "$producer" | cut -d: -f1)"
+          (( verify_line < bundle_line && bundle_line < pending_line && pending_line < upload_line && upload_line < success_line ))
+          grep -Fq 'actions/runs/$GITHUB_RUN_ID' "$producer"
+          grep -Fq -- '--arg state pending' "$producer"
+          grep -Fq -- '--arg state success' "$producer"
+          grep -Fq 'statuses/$RUNNING_SOURCE' "$producer"
+
+      - name: Lock Sprint118 no-go documentation
+        shell: bash
+        run: |
+          set -euo pipefail
+          doc=docs/SPRINT118_FINAL_SHIFT_CLOSE_MIGRATION27_SELECTED_TARGET_DB_BINDING.md
+          grep -Fq 'SPRINT118_DB_BINDING_PRODUCER_SOURCE = MATERIALIZED_NOT_DISPATCHED' "$doc"
+          grep -Fq 'SPRINT118_DB_BINDING_PRODUCER_TRIGGER = MANUAL_MAIN_ONLY' "$doc"
+          grep -Fq 'SPRINT118_DB_BINDING_PRODUCER_CALLER_TARGET_INPUTS = NONE' "$doc"
+          grep -Fq 'CURRENT_SELECTION_STATE = BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET' "$doc"
+          grep -Fq 'SELECTED_TARGET = NONE' "$doc"
+          grep -Fq 'MIGRATION27_SELECTED_TARGET_BINDING_EVIDENCE = NONE' "$doc"
+          grep -Fq 'MIGRATION27_EXECUTION_AUTHORITY = NOT_GRANTED' "$doc"
+          grep -Fq 'MIGRATION_27_EXECUTION = NOT_PERFORMED' "$doc"
+          grep -Fq 'PERMISSION_PROVISIONING = NONE' "$doc"
+          grep -Fq 'FEATURE_ACTIVATION = INACTIVE' "$doc"
+          grep -Fq 'PRODUCTION_ACTIVATION = NOT_AUTHORIZED' "$doc"
+          grep -Fq 'UPDATER_ACTIVATION = INACTIVE' "$doc"
+
+      - name: Verify tracked-source cleanliness
+        shell: bash
+        run: git diff --exit-code

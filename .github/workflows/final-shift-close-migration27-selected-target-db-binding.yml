@@ -1,0 +1,472 @@
+name: Final Shift Close Migration27 Selected Target DB Binding
+
+# Attribution: Lab | zefry
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  statuses: write
+
+env:
+  TARGET_SELECTION_FILE: ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+  OPERATIONAL_STATE_FILE: ops/final-shift-close/STATE.json
+  PRODUCER_WORKFLOW_PATH: .github/workflows/final-shift-close-migration27-selected-target-db-binding.yml
+  PRODUCER_ENVIRONMENT: final-shift-close-migration27-selected-target-db-binding
+  BINDING_ARTIFACT_NAME: final-shift-close-migration27-selected-target-db-binding
+  BINDING_EVIDENCE_CONTEXT: final-shift-close-migration27-selected-target-db-binding-evidence
+  DATABASE_BINDING_ALGORITHM: SHA256_CANONICAL_JSON_DATABASE_HOSTNAME_PORT_V1
+
+concurrency:
+  group: final-shift-close-migration27-selected-target-db-binding
+  cancel-in-progress: false
+
+jobs:
+  bind-selected-target-database:
+    if: ${{ github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: final-shift-close-migration27-selected-target-db-binding
+    env:
+      BINDING_ATTESTATION_URL: ${{ secrets.ONEQAY_MIGRATION27_BINDING_ATTESTATION_URL }}
+      BINDING_ATTESTATION_TOKEN: ${{ secrets.ONEQAY_MIGRATION27_BINDING_ATTESTATION_TOKEN }}
+      ENVIRONMENT_PROTECTION_ASSERTION: ${{ secrets.ONEQAY_MIGRATION27_BINDING_PROTECTION_ASSERTION }}
+      BINDING_DB_HOST: ${{ secrets.ONEQAY_MIGRATION27_BINDING_DB_HOST }}
+      BINDING_DB_PORT: ${{ secrets.ONEQAY_MIGRATION27_BINDING_DB_PORT }}
+      BINDING_DB_DATABASE: ${{ secrets.ONEQAY_MIGRATION27_BINDING_DB_DATABASE }}
+      BINDING_DB_USERNAME: ${{ secrets.ONEQAY_MIGRATION27_BINDING_DB_USERNAME }}
+      BINDING_DB_PASSWORD: ${{ secrets.ONEQAY_MIGRATION27_BINDING_DB_PASSWORD }}
+
+    steps:
+      - name: Checkout canonical dispatch source only
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+
+      - name: Validate current canonical main and selected durable target
+        id: selected
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          API_URL: ${{ github.api_url }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          [[ "$GITHUB_REF" == 'refs/heads/main' ]]
+          [[ "$GITHUB_REPOSITORY" == 'labzefry/oneQay' ]]
+
+          main_sha="$(curl --fail-with-body --silent --show-error \
+            --header 'Accept: application/vnd.github+json' \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header 'X-GitHub-Api-Version: 2022-11-28' \
+            "$API_URL/repos/$REPOSITORY/branches/main" | jq -r '.commit.sha')"
+          [[ "$main_sha" == "$GITHUB_SHA" ]] || {
+            echo "DB-binding producer must run from current canonical main: $GITHUB_SHA != $main_sha" >&2
+            exit 1
+          }
+
+          jq -e 'type == "object"' "$TARGET_SELECTION_FILE" >/dev/null
+          jq -e 'type == "object"' "$OPERATIONAL_STATE_FILE" >/dev/null
+          [[ "$(jq -r '.selection_state' "$TARGET_SELECTION_FILE")" == 'SELECTED_NOT_AUTHORIZED' ]] || {
+            echo 'Canonical durable target has not been persisted as SELECTED_NOT_AUTHORIZED.' >&2
+            exit 1
+          }
+          [[ "$(jq -r '.selected_target | type' "$TARGET_SELECTION_FILE")" == 'object' ]]
+          [[ "$(jq -r '.migration27.state' "$OPERATIONAL_STATE_FILE")" == 'NOT_EXECUTED' ]]
+          [[ "$(jq -r '.permission_provisioning.state' "$OPERATIONAL_STATE_FILE")" == 'NONE' ]]
+          [[ "$(jq -r '.feature_activation.state' "$OPERATIONAL_STATE_FILE")" == 'INACTIVE' ]]
+
+          environment_id="$(jq -r '.selected_target.environment_id // ""' "$TARGET_SELECTION_FILE")"
+          runtime_class="$(jq -r '.selected_target.runtime_class // ""' "$TARGET_SELECTION_FILE")"
+          running_source="$(jq -r '.selected_target.exact_running_source_commit // ""' "$TARGET_SELECTION_FILE")"
+          running_artifact="$(jq -r '.selected_target.exact_running_artifact_sha256 // ""' "$TARGET_SELECTION_FILE")"
+          readiness_attestation="$(jq -r '.selected_target.readiness_attestation_sha256 // ""' "$TARGET_SELECTION_FILE")"
+          selection_fingerprint="$(jq -r '.selected_target.selection_fingerprint_sha256 // ""' "$TARGET_SELECTION_FILE")"
+          ingestion_run_id="$(jq -r '.selected_target.trusted_ingestion.run_id // ""' "$TARGET_SELECTION_FILE")"
+          ingestion_run_attempt="$(jq -r '.selected_target.trusted_ingestion.run_attempt // ""' "$TARGET_SELECTION_FILE")"
+          ingestion_fingerprint="$(jq -r '.selected_target.trusted_ingestion.ingestion_fingerprint_sha256 // ""' "$TARGET_SELECTION_FILE")"
+
+          [[ "$environment_id" =~ ^[a-z0-9][a-z0-9._:-]{7,127}$ ]]
+          [[ "$runtime_class" =~ ^[a-z0-9][a-z0-9._:-]{7,127}$ ]]
+          [[ "$running_source" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$running_artifact" =~ ^[0-9a-f]{64}$ ]]
+          [[ "$readiness_attestation" =~ ^[0-9a-f]{64}$ ]]
+          [[ "$selection_fingerprint" =~ ^[0-9a-f]{64}$ ]]
+          [[ "$ingestion_run_id" =~ ^[1-9][0-9]*$ ]]
+          [[ "$ingestion_run_attempt" =~ ^[1-9][0-9]*$ ]]
+          [[ "$ingestion_fingerprint" =~ ^[0-9a-f]{64}$ ]]
+
+          case "$runtime_class" in
+            local|test|testing|ci|preview|synthetic-preview|production|prod)
+              echo 'Canonical selected runtime class is not eligible for migration27 database binding.' >&2
+              exit 1
+              ;;
+          esac
+
+          compare="$(curl --fail-with-body --silent --show-error \
+            --header 'Accept: application/vnd.github+json' \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header 'X-GitHub-Api-Version: 2022-11-28' \
+            "$API_URL/repos/$REPOSITORY/compare/$running_source...$GITHUB_SHA")"
+          compare_status="$(jq -r '.status' <<<"$compare")"
+          compare_behind="$(jq -r '.behind_by' <<<"$compare")"
+          [[ "$compare_status" == 'ahead' || "$compare_status" == 'identical' ]]
+          [[ "$compare_behind" == '0' ]]
+
+          printf '%s' "$environment_id" > /tmp/selected-environment.txt
+          printf '%s' "$runtime_class" > /tmp/selected-runtime.txt
+          printf '%s' "$running_source" > /tmp/selected-source.txt
+          printf '%s' "$running_artifact" > /tmp/selected-artifact.txt
+          printf '%s' "$readiness_attestation" > /tmp/selected-attestation.txt
+          printf '%s' "$selection_fingerprint" > /tmp/selected-selection-fingerprint.txt
+          printf '%s' "$ingestion_run_id" > /tmp/selected-ingestion-run-id.txt
+          printf '%s' "$ingestion_run_attempt" > /tmp/selected-ingestion-run-attempt.txt
+          printf '%s' "$ingestion_fingerprint" > /tmp/selected-ingestion-fingerprint.txt
+          echo "running_source=$running_source" >> "$GITHUB_OUTPUT"
+
+      - name: Validate protected control channel and database credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$BINDING_ATTESTATION_URL" =~ ^https://[^[:space:]]+$ ]]
+          [[ -n "$BINDING_ATTESTATION_TOKEN" ]]
+          [[ "$ENVIRONMENT_PROTECTION_ASSERTION" == 'REVIEW_GATED_V1' ]]
+          [[ -n "$BINDING_DB_HOST" ]]
+          [[ "$BINDING_DB_HOST" != *';'* ]]
+          [[ "$BINDING_DB_HOST" != *[[:space:]]* ]]
+          [[ "$BINDING_DB_PORT" =~ ^[1-9][0-9]{0,4}$ ]]
+          (( BINDING_DB_PORT >= 1 && BINDING_DB_PORT <= 65535 ))
+          [[ -n "$BINDING_DB_DATABASE" ]]
+          [[ "$BINDING_DB_DATABASE" != *';'* ]]
+          [[ "$BINDING_DB_DATABASE" != *[[:space:]]* ]]
+          [[ -n "$BINDING_DB_USERNAME" ]]
+          [[ -n "$BINDING_DB_PASSWORD" ]]
+
+      - name: Fetch authenticated selected-runtime database binding attestation
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          curl \
+            --proto '=https' \
+            --tlsv1.2 \
+            --connect-timeout 5 \
+            --max-time 20 \
+            --fail-with-body \
+            --silent \
+            --show-error \
+            --header 'Accept: application/json' \
+            --header "Authorization: Bearer $BINDING_ATTESTATION_TOKEN" \
+            "$BINDING_ATTESTATION_URL" > /tmp/runtime-db-binding-attestation.json
+
+          bytes="$(wc -c < /tmp/runtime-db-binding-attestation.json)"
+          (( bytes > 1 && bytes <= 32768 )) || {
+            echo "Runtime DB binding attestation exceeds accepted size: $bytes" >&2
+            exit 1
+          }
+          jq -e 'type == "object"' /tmp/runtime-db-binding-attestation.json >/dev/null
+
+      - name: Verify authenticated runtime binding against canonical selected target
+        shell: bash
+        run: |
+          set -euo pipefail
+          ATTESTATION_FILE=/tmp/runtime-db-binding-attestation.json \
+          SELECTED_FILE="$TARGET_SELECTION_FILE" \
+          DATABASE_BINDING_ALGORITHM="$DATABASE_BINDING_ALGORITHM" \
+          php <<'PHP'
+          <?php
+          declare(strict_types=1);
+
+          function objectFromFile(string $path): array {
+              $raw = file_get_contents($path);
+              if ($raw === false) {
+                  throw new RuntimeException('Cannot read JSON object: '.$path);
+              }
+              $value = json_decode($raw, true, 32, JSON_THROW_ON_ERROR);
+              if (! is_array($value)) {
+                  throw new RuntimeException('Expected JSON object: '.$path);
+              }
+              return $value;
+          }
+
+          $attestation = objectFromFile((string) getenv('ATTESTATION_FILE'));
+          $selection = objectFromFile((string) getenv('SELECTED_FILE'));
+          $selected = $selection['selected_target'] ?? null;
+          if (! is_array($selected)) {
+              throw new RuntimeException('Canonical selected target is unavailable.');
+          }
+
+          $expectedKeys = [
+              'schema_version',
+              'feature',
+              'binding_state',
+              'environment_id',
+              'runtime_class',
+              'exact_running_source_commit',
+              'exact_running_artifact_sha256',
+              'readiness_attestation_sha256',
+              'selection_fingerprint_sha256',
+              'trusted_ingestion',
+              'migration27_state',
+              'database_binding_algorithm',
+              'database_binding_sha256',
+              'database_identity_source',
+              'attestation_mode',
+              'secrets_embedded',
+          ];
+          $actualKeys = array_keys($attestation);
+          sort($expectedKeys, SORT_STRING);
+          sort($actualKeys, SORT_STRING);
+          if ($expectedKeys !== $actualKeys) {
+              throw new RuntimeException('Runtime DB binding attestation field set is not exact.');
+          }
+
+          $trustedIngestion = $attestation['trusted_ingestion'] ?? null;
+          if (! is_array($trustedIngestion)) {
+              throw new RuntimeException('Runtime DB binding trusted_ingestion must be an object.');
+          }
+          $trustedKeys = array_keys($trustedIngestion);
+          sort($trustedKeys, SORT_STRING);
+          if ($trustedKeys !== ['ingestion_fingerprint_sha256', 'run_attempt', 'run_id']) {
+              throw new RuntimeException('Runtime DB binding trusted_ingestion field set is not exact.');
+          }
+
+          $checks = [
+              ($attestation['schema_version'] ?? null) === 1,
+              ($attestation['feature'] ?? null) === 'final-shift-close',
+              ($attestation['binding_state'] ?? null) === 'VERIFIED_SELECTED_TARGET_DATABASE',
+              ($attestation['environment_id'] ?? null) === ($selected['environment_id'] ?? null),
+              ($attestation['runtime_class'] ?? null) === ($selected['runtime_class'] ?? null),
+              ($attestation['exact_running_source_commit'] ?? null) === ($selected['exact_running_source_commit'] ?? null),
+              ($attestation['exact_running_artifact_sha256'] ?? null) === ($selected['exact_running_artifact_sha256'] ?? null),
+              ($attestation['readiness_attestation_sha256'] ?? null) === ($selected['readiness_attestation_sha256'] ?? null),
+              ($attestation['selection_fingerprint_sha256'] ?? null) === ($selected['selection_fingerprint_sha256'] ?? null),
+              ($trustedIngestion['run_id'] ?? null) === ($selected['trusted_ingestion']['run_id'] ?? null),
+              ($trustedIngestion['run_attempt'] ?? null) === ($selected['trusted_ingestion']['run_attempt'] ?? null),
+              ($trustedIngestion['ingestion_fingerprint_sha256'] ?? null) === ($selected['trusted_ingestion']['ingestion_fingerprint_sha256'] ?? null),
+              ($attestation['migration27_state'] ?? null) === 'NOT_EXECUTED',
+              ($attestation['database_binding_algorithm'] ?? null) === getenv('DATABASE_BINDING_ALGORITHM'),
+              ($attestation['database_identity_source'] ?? null) === 'ACTIVE_APPLICATION_DATABASE_CONNECTION',
+              ($attestation['attestation_mode'] ?? null) === 'READ_ONLY',
+              ($attestation['secrets_embedded'] ?? null) === false,
+          ];
+          if (in_array(false, $checks, true)) {
+              throw new RuntimeException('Authenticated runtime DB binding does not match canonical selected target.');
+          }
+
+          $databaseBinding = $attestation['database_binding_sha256'] ?? null;
+          if (! is_string($databaseBinding) || preg_match('/\A[0-9a-f]{64}\z/', $databaseBinding) !== 1) {
+              throw new RuntimeException('Runtime database binding fingerprint is invalid.');
+          }
+          PHP
+
+      - name: Independently read database identity and verify migration27 is absent
+        id: database
+        shell: bash
+        run: |
+          set -euo pipefail
+          BINDING_ATTESTATION_FILE=/tmp/runtime-db-binding-attestation.json \
+          BINDING_DB_HOST="$BINDING_DB_HOST" \
+          BINDING_DB_PORT="$BINDING_DB_PORT" \
+          BINDING_DB_DATABASE="$BINDING_DB_DATABASE" \
+          BINDING_DB_USERNAME="$BINDING_DB_USERNAME" \
+          BINDING_DB_PASSWORD="$BINDING_DB_PASSWORD" \
+          php <<'PHP'
+          <?php
+          declare(strict_types=1);
+
+          if (! extension_loaded('pdo_mysql')) {
+              throw new RuntimeException('pdo_mysql is required for selected-target database binding.');
+          }
+
+          $host = (string) getenv('BINDING_DB_HOST');
+          $port = (int) getenv('BINDING_DB_PORT');
+          $database = (string) getenv('BINDING_DB_DATABASE');
+          $username = (string) getenv('BINDING_DB_USERNAME');
+          $password = (string) getenv('BINDING_DB_PASSWORD');
+          if ($host === '' || $port < 1 || $port > 65535 || $database === '' || $username === '' || $password === '') {
+              throw new RuntimeException('Selected-target DB binding credentials are incomplete.');
+          }
+
+          $pdo = new PDO(
+              sprintf('mysql:host=%s;port=%d;dbname=%s;charset=utf8mb4', $host, $port, $database),
+              $username,
+              $password,
+              [
+                  PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                  PDO::ATTR_TIMEOUT => 5,
+                  PDO::ATTR_EMULATE_PREPARES => false,
+              ],
+          );
+
+          $identity = $pdo->query('SELECT DATABASE() AS database_name, @@hostname AS server_hostname, @@port AS server_port')->fetch(PDO::FETCH_ASSOC);
+          if (! is_array($identity)) {
+              throw new RuntimeException('Selected-target database identity readback failed.');
+          }
+          $databaseName = trim((string) ($identity['database_name'] ?? ''));
+          $serverHostname = trim((string) ($identity['server_hostname'] ?? ''));
+          $serverPort = (int) ($identity['server_port'] ?? 0);
+          if ($databaseName === '' || $serverHostname === '' || $serverPort < 1 || $serverPort > 65535) {
+              throw new RuntimeException('Selected-target database identity readback is incomplete.');
+          }
+
+          $tableCheck = $pdo->prepare(
+              'SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?'
+          );
+          $tableCheck->execute(['migrations']);
+          if ((int) $tableCheck->fetchColumn() !== 1) {
+              throw new RuntimeException('Canonical migrations table is missing on selected-target database.');
+          }
+          $tableCheck->execute(['oneqay_pos_shift_close_evidence']);
+          if ((int) $tableCheck->fetchColumn() !== 0) {
+              throw new RuntimeException('Migration27 table already exists; refusing retrospective database-binding evidence.');
+          }
+
+          $migration = '0000_00_00_000027_create_pos_shift_close_evidence_foundation';
+          $migrationCheck = $pdo->prepare('SELECT COUNT(*) FROM migrations WHERE migration = ?');
+          $migrationCheck->execute([$migration]);
+          if ((int) $migrationCheck->fetchColumn() !== 0) {
+              throw new RuntimeException('Migration27 is already recorded; refusing retrospective database-binding evidence.');
+          }
+
+          $bindingPayload = [
+              'database_name' => $databaseName,
+              'server_hostname' => $serverHostname,
+              'server_port' => $serverPort,
+          ];
+          ksort($bindingPayload, SORT_STRING);
+          $actualBinding = hash('sha256', json_encode(
+              $bindingPayload,
+              JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR,
+          ));
+
+          $attestationRaw = file_get_contents((string) getenv('BINDING_ATTESTATION_FILE'));
+          if ($attestationRaw === false) {
+              throw new RuntimeException('Runtime DB binding attestation cannot be read.');
+          }
+          $attestation = json_decode($attestationRaw, true, 32, JSON_THROW_ON_ERROR);
+          $runtimeBinding = is_array($attestation) ? ($attestation['database_binding_sha256'] ?? null) : null;
+          if (! is_string($runtimeBinding) || preg_match('/\A[0-9a-f]{64}\z/', $runtimeBinding) !== 1) {
+              throw new RuntimeException('Runtime database binding fingerprint is unavailable.');
+          }
+          if (! hash_equals($runtimeBinding, $actualBinding)) {
+              throw new RuntimeException('Protected runtime control channel and independent migration database connection do not identify the same database.');
+          }
+
+          file_put_contents('/tmp/database-binding-sha256.txt', $actualBinding, LOCK_EX);
+          PHP
+          echo "database_binding_sha256=$(cat /tmp/database-binding-sha256.txt)" >> "$GITHUB_OUTPUT"
+
+      - name: Materialize secret-free selected-target database binding evidence
+        id: bundle
+        shell: bash
+        env:
+          DATABASE_BINDING_SHA256: ${{ steps.database.outputs.database_binding_sha256 }}
+        run: |
+          set -euo pipefail
+          [[ "$DATABASE_BINDING_SHA256" =~ ^[0-9a-f]{64}$ ]]
+          mkdir -p /tmp/migration27-selected-target-db-binding
+
+          environment_id="$(cat /tmp/selected-environment.txt)"
+          runtime_class="$(cat /tmp/selected-runtime.txt)"
+          running_source="$(cat /tmp/selected-source.txt)"
+          running_artifact="$(cat /tmp/selected-artifact.txt)"
+          readiness_attestation="$(cat /tmp/selected-attestation.txt)"
+          selection_fingerprint="$(cat /tmp/selected-selection-fingerprint.txt)"
+          ingestion_run_id="$(cat /tmp/selected-ingestion-run-id.txt)"
+          ingestion_run_attempt="$(cat /tmp/selected-ingestion-run-attempt.txt)"
+          ingestion_fingerprint="$(cat /tmp/selected-ingestion-fingerprint.txt)"
+
+          jq -n \
+            --arg feature 'final-shift-close' \
+            --arg environment_id "$environment_id" \
+            --arg runtime_class "$runtime_class" \
+            --arg running_source "$running_source" \
+            --arg running_artifact "$running_artifact" \
+            --arg readiness_attestation "$readiness_attestation" \
+            --arg selection_fingerprint "$selection_fingerprint" \
+            --arg ingestion_run_id "$ingestion_run_id" \
+            --arg ingestion_run_attempt "$ingestion_run_attempt" \
+            --arg ingestion_fingerprint "$ingestion_fingerprint" \
+            --arg database_binding "$DATABASE_BINDING_SHA256" \
+            '{schema_version:1,feature:$feature,binding_state:"VERIFIED_SELECTED_TARGET_DATABASE",environment_id:$environment_id,runtime_class:$runtime_class,exact_running_source_commit:$running_source,exact_running_artifact_sha256:$running_artifact,readiness_attestation_sha256:$readiness_attestation,selection_fingerprint_sha256:$selection_fingerprint,trusted_ingestion:{run_id:($ingestion_run_id|tonumber),run_attempt:($ingestion_run_attempt|tonumber),ingestion_fingerprint_sha256:$ingestion_fingerprint},migration27_state:"NOT_EXECUTED",database_binding_sha256:$database_binding,secrets_embedded:false}' \
+            > /tmp/migration27-selected-target-db-binding/binding.json
+
+          jq -n \
+            --arg feature 'final-shift-close' \
+            --arg workflow_path "$PRODUCER_WORKFLOW_PATH" \
+            --arg repository "$GITHUB_REPOSITORY" \
+            --arg ref "$GITHUB_REF" \
+            --arg source_commit "$GITHUB_SHA" \
+            --arg run_id "$GITHUB_RUN_ID" \
+            --arg run_attempt "$GITHUB_RUN_ATTEMPT" \
+            --arg database_binding "$DATABASE_BINDING_SHA256" \
+            --arg selection_fingerprint "$selection_fingerprint" \
+            --arg evidence_context "$BINDING_EVIDENCE_CONTEXT" \
+            '{schema_version:1,feature:$feature,workflow_path:$workflow_path,repository:$repository,ref:$ref,source_commit:$source_commit,run_id:($run_id|tonumber),run_attempt:($run_attempt|tonumber),database_binding_sha256:$database_binding,selection_fingerprint_sha256:$selection_fingerprint,evidence_context:$evidence_context,evidence_state:"success",secrets_embedded:false}' \
+            > /tmp/migration27-selected-target-db-binding/execution.json
+
+          jq -e 'type == "object"' /tmp/migration27-selected-target-db-binding/binding.json >/dev/null
+          jq -e 'type == "object"' /tmp/migration27-selected-target-db-binding/execution.json >/dev/null
+          [[ "$(jq -r '.binding_state' /tmp/migration27-selected-target-db-binding/binding.json)" == 'VERIFIED_SELECTED_TARGET_DATABASE' ]]
+          [[ "$(jq -r '.migration27_state' /tmp/migration27-selected-target-db-binding/binding.json)" == 'NOT_EXECUTED' ]]
+          [[ "$(jq -r '.secrets_embedded' /tmp/migration27-selected-target-db-binding/binding.json)" == 'false' ]]
+          [[ "$(jq -r '.secrets_embedded' /tmp/migration27-selected-target-db-binding/execution.json)" == 'false' ]]
+          echo "running_source=$running_source" >> "$GITHUB_OUTPUT"
+
+      - name: Publish pending selected-target database-binding evidence status
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          API_URL: ${{ github.api_url }}
+          REPOSITORY: ${{ github.repository }}
+          RUNNING_SOURCE: ${{ steps.bundle.outputs.running_source }}
+        run: |
+          set -euo pipefail
+          payload="$(jq -n \
+            --arg state pending \
+            --arg context "$BINDING_EVIDENCE_CONTEXT" \
+            --arg description 'Selected-target database binding evidence is being published' \
+            --arg target_url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+            '{state:$state,context:$context,description:$description,target_url:$target_url}')"
+          curl --fail-with-body --silent --show-error \
+            --request POST \
+            --header 'Accept: application/vnd.github+json' \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header 'X-GitHub-Api-Version: 2022-11-28' \
+            "$API_URL/repos/$REPOSITORY/statuses/$RUNNING_SOURCE" \
+            --data "$payload" >/dev/null
+
+      - name: Upload selected-target database-binding evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: final-shift-close-migration27-selected-target-db-binding
+          path: /tmp/migration27-selected-target-db-binding
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Publish success selected-target database-binding evidence status
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          API_URL: ${{ github.api_url }}
+          REPOSITORY: ${{ github.repository }}
+          RUNNING_SOURCE: ${{ steps.bundle.outputs.running_source }}
+        run: |
+          set -euo pipefail
+          payload="$(jq -n \
+            --arg state success \
+            --arg context "$BINDING_EVIDENCE_CONTEXT" \
+            --arg description 'Selected-target runtime and migration database identity are cryptographically bound' \
+            --arg target_url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+            '{state:$state,context:$context,description:$description,target_url:$target_url}')"
+          curl --fail-with-body --silent --show-error \
+            --request POST \
+            --header 'Accept: application/vnd.github+json' \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header 'X-GitHub-Api-Version: 2022-11-28' \
+            "$API_URL/repos/$REPOSITORY/statuses/$RUNNING_SOURCE" \
+            --data "$payload" >/dev/null

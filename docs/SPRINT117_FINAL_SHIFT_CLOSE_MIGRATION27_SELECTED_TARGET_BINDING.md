@@ -2,71 +2,43 @@
 
 Author by Lab | zefry
 
-## Purpose
+## Historical Sprint117 purpose
 
-Sprint117 hardens the existing Final Shift Close migration #27 execution source so a future operational execution cannot rely only on a GitHub Environment name plus database secrets.
+Sprint117 hardened the Final Shift Close migration #27 executor so future operational execution cannot rely only on a GitHub Environment name plus database secrets.
 
-The new requirement is fail-closed: migration #27 may become operationally eligible only after a durable runtime has actually been persisted as `SELECTED_NOT_AUTHORIZED` and a separate trusted database-binding evidence producer proves that the DB credentials used by the migration executor belong to that exact selected target.
+At the Sprint117 merge checkpoint, migration #27 could become eligible only after a durable runtime was persisted as `SELECTED_NOT_AUTHORIZED` and a separately trusted database-binding evidence producer proved that the migration database belonged to that exact selected target.
 
-Sprint117 is source-only. It does not select a target, implement or dispatch the binding producer, dispatch migration execution, execute migration #27, modify `STATE.json`, provision `pos.shift.close`, widen runtime allowlists, enable Final Shift Close, deploy, release, activate Technical Preview, activate Production, or activate the updater.
+Sprint117 itself did not implement or dispatch that producer, did not select a target, did not execute migration #27, did not modify `STATE.json`, did not provision `pos.shift.close`, did not widen runtime allowlists, did not enable Final Shift Close, and did not deploy or activate any environment.
 
-## Why Sprint117 is required
+## Sprint117 selected-target prerequisite retained
 
-Sprint116 proved the historical Sprint103 migration executor was not yet bound to the durable target selected by Sprint110–Sprint115.
-
-The historical executor used the fixed GitHub Environment `final-shift-close-migration27-execution` and `ONEQAY_MIGRATION27_DB_*` secrets. Those controls are necessary, but neither proves that the resulting DB connection belongs to the exact selected runtime/build.
-
-Sprint117 therefore preserves the Sprint103 migration semantics while adding a selected-target and DB-identity prerequisite before any pending execution status or migration command.
-
-## Exact source changes
-
-Sprint117 changes only:
-
-1. `.github/workflows/final-shift-close-migration27-execution.yml`;
-2. `.github/workflows/sprint103-final-shift-close-migration27-execution-evidence.yml`;
-3. `.github/workflows/sprint117-final-shift-close-migration27-selected-target-binding.yml`;
-4. `docs/SPRINT103_FINAL_SHIFT_CLOSE_MIGRATION27_EXECUTION_EVIDENCE.md`;
-5. `docs/SPRINT117_FINAL_SHIFT_CLOSE_MIGRATION27_SELECTED_TARGET_BINDING.md`;
-6. `ops/final-shift-close/MIGRATION27_SELECTED_TARGET_BINDING_CONTRACT.json`.
-
-Sorted-newline envelope SHA-256:
-
-`0aab6969f2e6fe3e7f23aae2af99bc8fb9d70ac10e6d620bf20bc30a58ba4e25`
-
-No application/runtime/provider/route/UI/bootstrap/config/migration source or operational state file changes are allowed by the Sprint117 qualification gate.
-
-## Canonical selected-target prerequisite
-
-The migration executor now reads:
+The migration executor reads:
 
 `ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json`
 
-A future dispatch is rejected unless:
+A future dispatch remains rejected unless:
 
 - `selection_state == SELECTED_NOT_AUTHORIZED`;
 - `selected_target` is an object;
-- environment ID is stable and explicit;
-- runtime class is an eligible non-synthetic non-production class;
-- exact running source commit is a 40-character lowercase Git SHA;
-- exact running artifact SHA-256 is present;
-- readiness attestation SHA-256 is present;
-- selection fingerprint SHA-256 is present;
-- trusted ingestion run ID/attempt are present;
-- trusted ingestion fingerprint SHA-256 is present;
+- environment ID and runtime class are explicit and stable;
+- the runtime class is an eligible isolated non-synthetic non-production class;
+- exact running source SHA and artifact SHA-256 are present;
+- readiness attestation and selection fingerprints are present;
+- trusted ingestion run ID, run attempt, and ingestion fingerprint are present;
 - the selected running source remains in canonical-main history.
 
-The current canonical state remains blocked with `selected_target = null`, so the hardened executor cannot pass this prerequisite today.
+The canonical repository remains blocked with `selected_target = null` until the earlier Sprint113–Sprint115 operational evidence chain is actually executed and merged through its own gates.
 
-## Exact database-binding evidence prerequisite
+## Sprint117 database-binding contract retained
 
-A future migration dispatch must additionally provide only:
+The migration executor accepts only evidence identity inputs in addition to the state-transition target:
 
 - `binding_run_id`;
 - `binding_run_attempt`.
 
-These values identify an exact trusted evidence run. They do not define the runtime target.
+The caller still cannot provide environment ID, runtime class, running source SHA, artifact SHA-256, selection fingerprint, or database fingerprint.
 
-Reserved producer workflow:
+The reserved workflow remains:
 
 `.github/workflows/final-shift-close-migration27-selected-target-db-binding.yml`
 
@@ -78,51 +50,21 @@ Reserved status context:
 
 `final-shift-close-migration27-selected-target-db-binding-evidence`
 
-Sprint117 does not implement this producer. That is deliberate: the existing repository has no canonical DB/runtime identity endpoint or durable installation identity anchor that would let Sprint117 manufacture a valid binding without additional source work.
+The executor requires exact run path/event/ref/result/run attempt, exact single non-expired bounded artifact, exact selected-target field matches, exact database-binding fingerprint, and an exact success status whose target URL points to the same run.
 
-The migration executor therefore remains non-dispatchable in practice until a separately bounded successor implements and qualifies that producer.
+## Database identity algorithm retained
 
-## Required future binding artifact
-
-The exact producer artifact must contain only:
-
-- `binding.json`;
-- `execution.json`.
-
-The run must be successful `workflow_dispatch` from `main`, its head must remain in canonical-main history, the exact artifact must be single/non-expired/bounded, and the success status must point to the same exact run.
-
-`binding.json` must carry:
-
-- `schema_version = 1`;
-- `feature = final-shift-close`;
-- `binding_state = VERIFIED_SELECTED_TARGET_DATABASE`;
-- exact selected environment ID;
-- exact selected runtime class;
-- exact selected running source commit;
-- exact selected running artifact SHA-256;
-- exact selected readiness attestation SHA-256;
-- exact selected selection fingerprint SHA-256;
-- exact trusted ingestion run ID/attempt;
-- exact trusted ingestion fingerprint SHA-256;
-- `migration27_state = NOT_EXECUTED`;
-- lowercase 64-character `database_binding_sha256`;
-- `secrets_embedded = false`.
-
-`execution.json` must bind the artifact to the exact workflow path, repository, main ref, source commit, run ID/attempt, selection fingerprint, database-binding fingerprint, evidence context, and success state.
-
-## Database identity algorithm
-
-The canonical algorithm is:
+Canonical algorithm:
 
 `SHA256_CANONICAL_JSON_DATABASE_HOSTNAME_PORT_V1`
 
-Immediately before any migration command, the executor connects using `ONEQAY_MIGRATION27_DB_*` and reads:
+Immediately before migration, the executor reads from its actual migration database connection:
 
 ```sql
 SELECT DATABASE() AS database_name, @@hostname AS server_hostname, @@port AS server_port
 ```
 
-The canonical payload is:
+Canonical payload:
 
 ```json
 {
@@ -132,49 +74,71 @@ The canonical payload is:
 }
 ```
 
-Keys are sorted and encoded as unescaped JSON, then SHA-256 hashed. The result must equal the trusted `database_binding_sha256` using constant-time `hash_equals()`.
+The keys are sorted, encoded as unescaped JSON, and SHA-256 hashed. The executor compares that result with trusted binding evidence using `hash_equals()` before any migration command.
 
-A mismatch aborts before `php artisan migrate`.
-
-This binds the actual database connection used by migration execution to a separately trusted selected-target binding proof. It prevents the following from being treated as sufficient identity evidence:
-
-- GitHub Environment name alone;
-- database secret names alone;
-- caller-supplied runtime target values;
-- `STATE.json` alone;
-- `DURABLE_ACTIVATION_TARGET_SELECTION.json` alone.
+A GitHub Environment name, secret names, target-selection state, or caller-supplied values are never sufficient by themselves.
 
 ## Preserved migration semantics
 
-Sprint117 does not change the migration source or its Git blob pin.
+Sprint117 and its successors preserve:
 
-The executor still:
+- canonical migration #27 source and Git blob pin;
+- exact migration-execution authority;
+- exact-head Product Owner merge authority;
+- Governance, PHP Foundation, and M7.1 prerequisites;
+- exact one-file `STATE.json` transition;
+- `NOT_EXECUTED → EXECUTED` only;
+- permission state `NONE` during migration transition;
+- feature state `INACTIVE` during migration transition;
+- refusal of ambiguous retrospective migration evidence;
+- forward-only `php artisan migrate --path=... --force --no-interaction` semantics;
+- post-execution table/index/CHECK/column/migration-record verification;
+- no automatic merge of the target transition PR.
 
-- requires exact migration execution authority and exact-head merge authority;
-- requires Governance, PHP Foundation, and M7.1 success;
-- accepts exactly one `STATE.json` transition PR;
-- permits only `NOT_EXECUTED → EXECUTED` for migration #27;
-- preserves permission `NONE` and feature `INACTIVE`;
-- rejects already-created close evidence table or already-recorded migration #27;
-- requires predecessor tables/migrations;
-- executes only the pinned migration #27 with `--force --no-interaction`;
-- verifies the new table, indexes, CHECK constraint, columns, and exact migration record;
-- does not merge the target PR.
+## Sprint118 successor compatibility addendum
 
-## Evidence lifecycle
+Sprint118 is the bounded successor that materializes the reserved selected-target database-binding producer source.
 
-The migration execution evidence context remains:
+This successor does **not** weaken any Sprint117 prerequisite. It closes only the producer-source gap.
 
-`final-shift-close-migration27-execution-evidence`
+Sprint118 producer source:
 
-The executor cannot publish `pending` until both:
+`.github/workflows/final-shift-close-migration27-selected-target-db-binding.yml`
 
-1. exact target/state/authority qualification succeeds; and
-2. exact selected-target DB binding evidence succeeds.
+The producer is manual `workflow_dispatch` from current canonical `main`, has no caller-supplied target inputs, and is protected by the fixed GitHub Environment:
 
-A successful migration command is still insufficient by itself. Post-execution schema verification must also succeed before the final status can be `success`.
+`final-shift-close-migration27-selected-target-db-binding`
 
-## Current no-go disposition
+A future producer run must simultaneously prove:
+
+1. canonical selection is `SELECTED_NOT_AUTHORIZED`;
+2. migration #27 canonical operational state is still `NOT_EXECUTED`;
+3. authenticated protected runtime control-channel evidence matches the exact selected environment/runtime/source/artifact/readiness/selection/ingestion provenance;
+4. the control channel states that its database identity comes from the active application database connection and the attestation is read-only;
+5. an independent PDO MySQL connection reads `DATABASE()/@@hostname/@@port`;
+6. migration #27 table and migration record are both absent;
+7. the independent database fingerprint exactly equals the runtime-reported fingerprint using `hash_equals()`.
+
+Only after those checks can the producer publish a secret-free two-file artifact:
+
+- `binding.json`;
+- `execution.json`.
+
+The producer publishes `pending` only after binding verification, uploads the artifact, then publishes `success`. The success status targets the exact producer run and is attached to the selected running source SHA consumed by the migration executor.
+
+## Historical and successor source envelopes
+
+Sprint117 historical sorted-newline source envelope SHA-256:
+
+`0aab6969f2e6fe3e7f23aae2af99bc8fb9d70ac10e6d620bf20bc30a58ba4e25`
+
+Sprint118 successor sorted-newline source envelope SHA-256:
+
+`1b8a8a9851a5cac94389c6939f4c4f08dd479c108296c3959c996884612ee13c`
+
+The Sprint103 and Sprint117 qualification workflows are upgraded only as successor compatibility gates so historical migration/executor guarantees remain locked while the reserved producer becomes real source.
+
+## Current canonical no-go disposition after Sprint118 source publication
 
 `MIGRATION27_SELECTED_TARGET_BINDING_CONTRACT = MATERIALIZED_SOURCE_ONLY`
 
@@ -184,7 +148,9 @@ A successful migration command is still insufficient by itself. Post-execution s
 
 `SELECTED_TARGET = NONE`
 
-`MIGRATION27_SELECTED_TARGET_BINDING_PRODUCER = NOT_IMPLEMENTED`
+`SPRINT117_HISTORICAL_BINDING_PRODUCER_STATE = NOT_IMPLEMENTED_AT_SPRINT117_CHECKPOINT`
+
+`SPRINT118_SUCCESSOR_BINDING_PRODUCER_STATE = SOURCE_MATERIALIZED_NOT_DISPATCHED`
 
 `MIGRATION27_SELECTED_TARGET_BINDING_EVIDENCE = NONE`
 
@@ -206,4 +172,4 @@ A successful migration command is still insufficient by itself. Post-execution s
 
 `UPDATER_ACTIVATION = INACTIVE`
 
-The next bounded successor is the trusted selected-target database-binding producer/endpoint contract. That successor must not create retrospective evidence and must not execute migration #27 merely because producer source exists.
+Source publication does not dispatch the Sprint118 producer or the migration executor, does not create binding evidence, and does not grant migration, deployment, Technical Preview, Production, release, or updater authority.
