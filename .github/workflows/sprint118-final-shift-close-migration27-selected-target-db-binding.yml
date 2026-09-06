@@ -8,6 +8,7 @@ on:
       - main
     paths:
       - '.github/workflows/final-shift-close-migration27-selected-target-db-binding.yml'
+      - '.github/workflows/sprint103-final-shift-close-migration27-execution-evidence.yml'
       - '.github/workflows/sprint117-final-shift-close-migration27-selected-target-binding.yml'
       - '.github/workflows/sprint118-final-shift-close-migration27-selected-target-db-binding.yml'
       - 'docs/SPRINT117_FINAL_SHIFT_CLOSE_MIGRATION27_SELECTED_TARGET_BINDING.md'
@@ -42,6 +43,7 @@ jobs:
           git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/actual
           cat > /tmp/expected <<'EOF'
           .github/workflows/final-shift-close-migration27-selected-target-db-binding.yml
+          .github/workflows/sprint103-final-shift-close-migration27-execution-evidence.yml
           .github/workflows/sprint117-final-shift-close-migration27-selected-target-binding.yml
           .github/workflows/sprint118-final-shift-close-migration27-selected-target-db-binding.yml
           docs/SPRINT117_FINAL_SHIFT_CLOSE_MIGRATION27_SELECTED_TARGET_BINDING.md
@@ -49,7 +51,7 @@ jobs:
           ops/final-shift-close/MIGRATION27_SELECTED_TARGET_BINDING_CONTRACT.json
           EOF
           diff -u /tmp/expected /tmp/actual
-          test "$(sha256sum /tmp/actual | awk '{print $1}')" = 'a046e41aef37a4e6e2c6d66054517ffd7ed81be85b70b1a9199e926af5388b57'
+          test "$(sha256sum /tmp/actual | awk '{print $1}')" = '1b8a8a9851a5cac94389c6939f4c4f08dd479c108296c3959c996884612ee13c'
 
       - name: Preserve application migration executor and canonical state
         shell: bash
@@ -60,7 +62,6 @@ jobs:
           set -euo pipefail
           git diff --exit-code "$BASE_SHA" "$HEAD_SHA" -- \
             .github/workflows/final-shift-close-migration27-execution.yml \
-            .github/workflows/sprint103-final-shift-close-migration27-execution-evidence.yml \
             apps/web/app \
             apps/web/bootstrap \
             apps/web/config \
@@ -98,7 +99,7 @@ jobs:
           test "$(jq -r '.canonical_boundaries.binding_evidence' "$contract")" = 'NONE'
           test "$(jq -r '.canonical_boundaries.migration27_execution' "$contract")" = 'NOT_PERFORMED'
           test "$(jq -r '.sprint117_source_envelope_sha256' "$contract")" = '0aab6969f2e6fe3e7f23aae2af99bc8fb9d70ac10e6d620bf20bc30a58ba4e25'
-          test "$(jq -r '.source_envelope_sha256' "$contract")" = 'a046e41aef37a4e6e2c6d66054517ffd7ed81be85b70b1a9199e926af5388b57'
+          test "$(jq -r '.source_envelope_sha256' "$contract")" = '1b8a8a9851a5cac94389c6939f4c4f08dd479c108296c3959c996884612ee13c'
 
       - name: Lock manual current-main protected-environment producer boundary
         shell: bash
