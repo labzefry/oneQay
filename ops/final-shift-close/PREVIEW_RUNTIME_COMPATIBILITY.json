@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "feature": "final-shift-close",
+  "target_contract": "ops/final-shift-close/ACTIVATION_TARGET.json",
+  "target_environment_id": "oneqay-synthetic-technical-preview",
+  "target_environment_class": "technical-preview",
+  "target_runtime_class": "preview",
+  "compatibility_state": "BLOCKED",
+  "required_runtime_envelope": [
+    {
+      "component": "final_shift_close_delivery",
+      "path": "apps/web/app/Providers/FinalShiftCloseServiceProvider.php",
+      "current_allowed_runtime_classes": ["local", "test", "ci"],
+      "preview_qualified": false
+    },
+    {
+      "component": "pos_session_context",
+      "path": "apps/web/app/Delivery/Http/Middleware/RequirePosSessionContextMiddleware.php",
+      "current_allowed_runtime_classes": ["local", "test", "ci"],
+      "preview_qualified": false
+    },
+    {
+      "component": "active_first_party_session_middleware",
+      "path": "apps/web/app/Delivery/Http/Middleware/EnforceActiveFirstPartySessionAuthorityMiddleware.php",
+      "current_allowed_runtime_classes": ["local", "test", "ci"],
+      "preview_qualified": false
+    },
+    {
+      "component": "first_party_session_authority_repository",
+      "path": "apps/web/app/Infrastructure/Identity/LaravelFirstPartySessionAuthorityRepository.php",
+      "current_allowed_runtime_classes": ["local", "test", "ci"],
+      "preview_qualified": false
+    },
+    {
+      "component": "first_party_identity_eligibility",
+      "path": "apps/web/app/Infrastructure/Identity/LaravelFirstPartyIdentityEligibilityVerifier.php",
+      "current_allowed_runtime_classes": ["local", "test", "ci"],
+      "preview_qualified": false
+    },
+    {
+      "component": "durable_role_permission_authorization",
+      "path": "apps/web/app/Infrastructure/Authorization/LaravelDurableRolePermissionRepository.php",
+      "current_allowed_runtime_classes": ["local", "test", "ci"],
+      "preview_qualified": false
+    },
+    {
+      "component": "durable_persistence_transaction",
+      "path": "apps/web/app/Infrastructure/Persistence/LaravelPersistenceTransaction.php",
+      "current_allowed_runtime_classes": ["local", "test", "ci"],
+      "preview_qualified": false
+    },
+    {
+      "component": "final_shift_close_repository",
+      "path": "apps/web/app/Infrastructure/Pos/LaravelCloseShiftRepository.php",
+      "current_allowed_runtime_classes": ["local", "test", "ci"],
+      "preview_qualified": false
+    },
+    {
+      "component": "durable_pos_sale_lifecycle",
+      "path": "apps/web/app/Infrastructure/Pos/LaravelDurablePosSaleRepository.php",
+      "current_allowed_runtime_classes": ["local", "test", "ci"],
+      "preview_qualified": false
+    }
+  ],
+  "synthetic_preview_context_verifiers": "PRESENT_BUT_NOT_SUFFICIENT",
+  "runtime_allowlist_change": "NOT_IMPLEMENTED",
+  "preview_runtime_regression": "NOT_IMPLEMENTED",
+  "feature_activation_evidence_producer": "NOT_IMPLEMENTED",
+  "feature_activation_execution": "NOT_PERFORMED",
+  "migration27_execution": "NOT_PERFORMED",
+  "permission_provisioning": "NOT_PERFORMED",
+  "technical_preview_activation_authority": "NOT_GRANTED",
+  "production_authority": "NOT_GRANTED",
+  "updater_activation": "INACTIVE",
+  "attribution": "Author by Lab | zefry"
+}
