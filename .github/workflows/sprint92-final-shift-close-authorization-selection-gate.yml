@@ -1,0 +1,99 @@
+name: Sprint92 Final Shift Close Authorization Selection Gate
+
+# Author by Lab | zefry
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/sprint92-final-shift-close-authorization-selection-gate.yml'
+      - 'docs/SPRINT92_FINAL_SHIFT_CLOSE_AUTHORIZATION_SELECTION_GATE.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint92-final-shift-close-authorization-selection-gate-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sprint92-final-shift-close-authorization-selection-gate:
+    name: sprint92-final-shift-close-authorization-selection-gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Enforce exact Sprint92 evidence envelope
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+          git diff --name-only "$base" "$head" | sort > /tmp/s92-paths
+          test "$(wc -l < /tmp/s92-paths)" -eq 2
+          test "$(sha256sum /tmp/s92-paths | awk '{print $1}')" = 'fed8a75ace1a0c29ac1ed07a3c53d5dcb6ea61b70639ca81eccccb763a8cea75'
+          grep -Fxq '.github/workflows/sprint92-final-shift-close-authorization-selection-gate.yml' /tmp/s92-paths
+          grep -Fxq 'docs/SPRINT92_FINAL_SHIFT_CLOSE_AUTHORIZATION_SELECTION_GATE.md' /tmp/s92-paths
+          test "$(grep -c '^apps/web/' /tmp/s92-paths || true)" -eq 0
+          test "$(grep -c '^apps/web/database/migrations/' /tmp/s92-paths || true)" -eq 0
+
+      - name: Validate authorization remains unselected
+        shell: bash
+        run: |
+          set -euo pipefail
+          doc='docs/SPRINT92_FINAL_SHIFT_CLOSE_AUTHORIZATION_SELECTION_GATE.md'
+          grep -Fq '`FINAL_SHIFT_CLOSE_PERMISSION = NOT_DEFINED`' "$doc"
+          grep -Fq '`FINAL_SHIFT_CLOSE_DEFAULT_ROLE_GRANT = NOT_SELECTED`' "$doc"
+          grep -Fq '`FINAL_SHIFT_CLOSE_CLOSER_VS_OPENER = NOT_SELECTED`' "$doc"
+          grep -Fq '`FINAL_SHIFT_CLOSE_CLOSER_VS_EXPLANATION_AUTHOR = NOT_SELECTED`' "$doc"
+          grep -Fq '`FINAL_SHIFT_CLOSE_CLOSER_VS_REVIEWER = NOT_SELECTED`' "$doc"
+          grep -Fq '`FINAL_SHIFT_CLOSE_AUTHORITY = NOT_SELECTED`' "$doc"
+          grep -Fq '`FINAL_SHIFT_CLOSE_APPLICATION_SOURCE = BLOCKED_BY_AUTHORIZATION_SELECTION`' "$doc"
+          grep -Fq 'This is a recommendation for decision support only. It is **not** selected authority' "$doc"
+
+      - name: Validate canonical authority boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          permission='apps/web/app/Application/Authorization/PosPermission.php'
+          review='apps/web/app/Application/Pos/RecordCashVarianceReviewDecision.php'
+          ! grep -Fq "pos.shift.close" "$permission"
+          grep -Fq "pos.shift.cash-variance-review-decision.record" "$review"
+          grep -Fq "hash_equals(\$context->actorId(), \$explanation->actorIdentityId())" "$review"
+          grep -Fq "pos.shift.closing-cash.record" "$permission"
+          grep -Fq "pos.shift.cash-variance-explanation.record" "$permission"
+
+      - name: Reject Final Shift Close source materialization
+        shell: bash
+        run: |
+          set -euo pipefail
+          for path in \
+            apps/web/app/Application/Pos/CloseShift.php \
+            apps/web/app/Application/Pos/CloseShiftCommand.php \
+            apps/web/app/Application/Pos/CloseShiftRepository.php \
+            apps/web/app/Application/Pos/CloseShiftResult.php \
+            apps/web/app/Infrastructure/Pos/LaravelCloseShiftRepository.php; do
+            test ! -e "$path"
+          done
+
+      - name: Validate lifecycle boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          doc='docs/SPRINT92_FINAL_SHIFT_CLOSE_AUTHORIZATION_SELECTION_GATE.md'
+          grep -Fq 'Migration #27: **SOURCE-PUBLISHED ONLY / NOT EXECUTED / NOT APPLIED**' "$doc"
+          grep -Fq 'Technical Preview: **NOT ACTIVATED / NO-GO**' "$doc"
+          grep -Fq 'Production: **NO-GO**' "$doc"
+          grep -Fq 'Updater: **INACTIVE**' "$doc"
+          grep -Fq 'Final Shift Close runtime: **NOT IMPLEMENTED**' "$doc"
+
+      - name: Preserve tracked source cleanliness
+        shell: bash
+        run: git diff --exit-code
