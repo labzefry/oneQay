@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "feature": "final-shift-close",
+  "contract_state": "RUNTIME_ATTESTATION_ENDPOINT_SOURCE_MATERIALIZED_DELIVERY_INACTIVE",
+  "purpose": "MATERIALIZE_AUTHENTICATED_READ_ONLY_ACTIVE_APPLICATION_DATABASE_BINDING_ATTESTATION_WITHOUT_RUNTIME_DELIVERY_ACTIVATION",
+  "producer_consumer_workflow": ".github/workflows/final-shift-close-migration27-selected-target-db-binding.yml",
+  "route_path": "/internal/final-shift-close/runtime-db-binding-attestation",
+  "http_method": "GET",
+  "provider": "App\\Providers\\FinalShiftCloseRuntimeDbBindingAttestationServiceProvider",
+  "provider_registration": "NOT_REGISTERED",
+  "delivery_gate": "HARD_FALSE",
+  "token_configuration_key": "oneqay.final_shift_close_runtime_db_binding_attestation.token",
+  "token_configuration_source": "NOT_MATERIALIZED",
+  "runtime_manifest_path": "storage/app/private/final-shift-close-runtime-binding.json",
+  "runtime_manifest_writer": "NOT_IMPLEMENTED",
+  "runtime_manifest_requirements": {
+    "regular_file": true,
+    "symlink_forbidden": true,
+    "owner_only_permissions": true,
+    "max_bytes": 32768,
+    "selection_state": "SELECTED_NOT_AUTHORIZED",
+    "secrets_embedded": false,
+    "ineligible_runtime_classes": [
+      "local",
+      "test",
+      "testing",
+      "ci",
+      "preview",
+      "synthetic-preview",
+      "production",
+      "prod"
+    ]
+  },
+  "database_identity": {
+    "connection": "oneqay",
+    "driver": "mysql",
+    "query": "SELECT DATABASE() AS database_name, @@hostname AS server_hostname, @@port AS server_port",
+    "algorithm": "SHA256_CANONICAL_JSON_DATABASE_HOSTNAME_PORT_V1",
+    "source": "ACTIVE_APPLICATION_DATABASE_CONNECTION",
+    "migration27_table_must_not_exist": true,
+    "migration27_record_must_not_exist": true,
+    "migrations_ledger_must_exist": true,
+    "read_only": true
+  },
+  "response_contract": {
+    "binding_state": "VERIFIED_SELECTED_TARGET_DATABASE",
+    "migration27_state": "NOT_EXECUTED",
+    "attestation_mode": "READ_ONLY",
+    "secrets_embedded": false,
+    "exact_field_count": 16
+  },
+  "source_envelope_sha256": "2b7741ab925e255f9faefedfaebafcff001f294137fbae41fe4519fd710bf061",
+  "canonical_boundaries": {
+    "runtime_endpoint_delivery": "INACTIVE",
+    "provider_registration": "NOT_REGISTERED",
+    "token_configuration": "NOT_MATERIALIZED",
+    "runtime_manifest_writer": "NOT_IMPLEMENTED",
+    "selected_target": "NONE",
+    "migration27_binding_producer_dispatch": "NOT_PERFORMED",
+    "migration27_binding_evidence": "NONE",
+    "migration27_execution": "NOT_PERFORMED",
+    "permission_provisioning": "NONE",
+    "feature_activation": "INACTIVE",
+    "runtime_allowlist_change": "NOT_IMPLEMENTED",
+    "environment_deployment": "NOT_PERFORMED",
+    "technical_preview_activation": "NOT_AUTHORIZED",
+    "production_activation": "NOT_AUTHORIZED",
+    "updater_activation": "INACTIVE"
+  }
+}

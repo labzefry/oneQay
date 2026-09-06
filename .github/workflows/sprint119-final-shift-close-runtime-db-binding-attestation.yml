@@ -1,0 +1,229 @@
+name: Sprint119 Final Shift Close Runtime DB Binding Attestation
+
+# Attribution: Lab | zefry
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/sprint119-final-shift-close-runtime-db-binding-attestation.yml'
+      - 'apps/web/app/Application/Pos/FinalShiftCloseRuntimeDatabaseIdentity.php'
+      - 'apps/web/app/Application/Pos/FinalShiftCloseRuntimeDatabaseIdentityReader.php'
+      - 'apps/web/app/Application/Pos/FinalShiftCloseRuntimeDbBindingAttestation.php'
+      - 'apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingTokenMiddleware.php'
+      - 'apps/web/app/Delivery/Http/Pos/FinalShiftCloseRuntimeDbBindingAttestationController.php'
+      - 'apps/web/app/Infrastructure/Pos/LaravelFinalShiftCloseRuntimeDatabaseIdentityReader.php'
+      - 'apps/web/app/Providers/FinalShiftCloseRuntimeDbBindingAttestationServiceProvider.php'
+      - 'apps/web/routes/final-shift-close-runtime-db-binding-attestation.php'
+      - 'apps/web/tests/final-shift-close-runtime-db-binding-attestation.php'
+      - 'docs/SPRINT119_FINAL_SHIFT_CLOSE_RUNTIME_DB_BINDING_ATTESTATION.md'
+      - 'ops/final-shift-close/RUNTIME_DB_BINDING_ATTESTATION_CONTRACT.json'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint119-final-shift-close-runtime-db-binding-attestation-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qualify-runtime-db-binding-attestation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Lock exact Sprint119 source envelope
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/actual
+          cat > /tmp/expected <<'EOF'
+          .github/workflows/sprint119-final-shift-close-runtime-db-binding-attestation.yml
+          apps/web/app/Application/Pos/FinalShiftCloseRuntimeDatabaseIdentity.php
+          apps/web/app/Application/Pos/FinalShiftCloseRuntimeDatabaseIdentityReader.php
+          apps/web/app/Application/Pos/FinalShiftCloseRuntimeDbBindingAttestation.php
+          apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingTokenMiddleware.php
+          apps/web/app/Delivery/Http/Pos/FinalShiftCloseRuntimeDbBindingAttestationController.php
+          apps/web/app/Infrastructure/Pos/LaravelFinalShiftCloseRuntimeDatabaseIdentityReader.php
+          apps/web/app/Providers/FinalShiftCloseRuntimeDbBindingAttestationServiceProvider.php
+          apps/web/routes/final-shift-close-runtime-db-binding-attestation.php
+          apps/web/tests/final-shift-close-runtime-db-binding-attestation.php
+          docs/SPRINT119_FINAL_SHIFT_CLOSE_RUNTIME_DB_BINDING_ATTESTATION.md
+          ops/final-shift-close/RUNTIME_DB_BINDING_ATTESTATION_CONTRACT.json
+          EOF
+          diff -u /tmp/expected /tmp/actual
+          test "$(sha256sum /tmp/actual | awk '{print $1}')" = '2b7741ab925e255f9faefedfaebafcff001f294137fbae41fe4519fd710bf061'
+
+      - name: Prove operational and existing producer source remain untouched
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git diff --exit-code "$BASE_SHA" "$HEAD_SHA" -- \
+            apps/web/bootstrap/providers.php \
+            apps/web/config \
+            apps/web/database/migrations \
+            .github/workflows/final-shift-close-migration27-selected-target-db-binding.yml \
+            .github/workflows/final-shift-close-migration27-execution.yml \
+            ops/final-shift-close/STATE.json \
+            ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+          test "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" = 'NOT_EXECUTED'
+          test "$(jq -r '.permission_provisioning.state' ops/final-shift-close/STATE.json)" = 'NONE'
+          test "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" = 'INACTIVE'
+          test "$(jq -r '.selection_state' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" = 'BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET'
+          test "$(jq -r '.selected_target' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" = 'null'
+
+      - name: Validate machine-readable Sprint119 contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          contract=ops/final-shift-close/RUNTIME_DB_BINDING_ATTESTATION_CONTRACT.json
+          jq -e . "$contract" >/dev/null
+          test "$(jq -r '.schema_version' "$contract")" = '1'
+          test "$(jq -r '.contract_state' "$contract")" = 'RUNTIME_ATTESTATION_ENDPOINT_SOURCE_MATERIALIZED_DELIVERY_INACTIVE'
+          test "$(jq -r '.provider_registration' "$contract")" = 'NOT_REGISTERED'
+          test "$(jq -r '.delivery_gate' "$contract")" = 'HARD_FALSE'
+          test "$(jq -r '.token_configuration_source' "$contract")" = 'NOT_MATERIALIZED'
+          test "$(jq -r '.runtime_manifest_writer' "$contract")" = 'NOT_IMPLEMENTED'
+          test "$(jq -r '.database_identity.read_only' "$contract")" = 'true'
+          test "$(jq -r '.database_identity.algorithm' "$contract")" = 'SHA256_CANONICAL_JSON_DATABASE_HOSTNAME_PORT_V1'
+          test "$(jq -r '.canonical_boundaries.runtime_endpoint_delivery' "$contract")" = 'INACTIVE'
+          test "$(jq -r '.source_envelope_sha256' "$contract")" = '2b7741ab925e255f9faefedfaebafcff001f294137fbae41fe4519fd710bf061'
+
+      - name: Lock endpoint delivery as double fail-closed
+        shell: bash
+        run: |
+          set -euo pipefail
+          provider=apps/web/app/Providers/FinalShiftCloseRuntimeDbBindingAttestationServiceProvider.php
+          bootstrap=apps/web/bootstrap/providers.php
+          route=apps/web/routes/final-shift-close-runtime-db-binding-attestation.php
+          ! grep -Fq 'FinalShiftCloseRuntimeDbBindingAttestationServiceProvider::class' "$bootstrap"
+          grep -Fq 'private function deliveryEnabled(): bool' "$provider"
+          grep -Fq 'return false;' "$provider"
+          grep -Fq 'throttle:2,1' "$provider"
+          grep -Fq 'RequireFinalShiftCloseRuntimeBindingTokenMiddleware::class' "$provider"
+          grep -Fq "connection('oneqay')" "$provider"
+          grep -Fq "storage_path('app/private/final-shift-close-runtime-binding.json')" "$provider"
+          grep -Fq '/internal/final-shift-close/runtime-db-binding-attestation' "$route"
+          grep -Fq 'Route::get(' "$route"
+          ! grep -Eq 'Route::(post|put|patch|delete)' "$route"
+
+      - name: Lock bearer-token and no-store boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          middleware=apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingTokenMiddleware.php
+          controller=apps/web/app/Delivery/Http/Pos/FinalShiftCloseRuntimeDbBindingAttestationController.php
+          grep -Fq "config('oneqay.final_shift_close_runtime_db_binding_attestation.token', '')" "$middleware"
+          grep -Fq "headers->get('Authorization')" "$middleware"
+          grep -Fq 'Bearer ' "$middleware"
+          grep -Fq 'hash_equals($configured, $matches[1])' "$middleware"
+          grep -Fq "'Cache-Control' => 'no-store, private'" "$middleware"
+          ! grep -Eq '(query\(|input\(|cookie\()' "$middleware"
+          grep -Fq 'RUNTIME_DB_BINDING_ATTESTATION_UNAVAILABLE' "$controller"
+          grep -Fq "'X-Robots-Tag' => 'noindex, nofollow, noarchive'" "$controller"
+          ! grep -Eq '(dd\(|dump\(|logger\(|Log::)' "$controller"
+
+      - name: Lock manifest and selected-runtime provenance validation
+        shell: bash
+        run: |
+          set -euo pipefail
+          service=apps/web/app/Application/Pos/FinalShiftCloseRuntimeDbBindingAttestation.php
+          grep -Fq 'is_link($path)' "$service"
+          grep -Fq 'MAX_MANIFEST_BYTES = 32768' "$service"
+          grep -Fq '(($permissions & 0077) !== 0)' "$service"
+          grep -Fq 'SELECTED_NOT_AUTHORIZED' "$service"
+          grep -Fq "'preview'" "$service"
+          grep -Fq "'production'" "$service"
+          grep -Fq 'exact_running_source_commit' "$service"
+          grep -Fq 'exact_running_artifact_sha256' "$service"
+          grep -Fq 'readiness_attestation_sha256' "$service"
+          grep -Fq 'selection_fingerprint_sha256' "$service"
+          grep -Fq 'ingestion_fingerprint_sha256' "$service"
+          grep -Fq "'secrets_embedded' => false" "$service"
+
+      - name: Lock active database read-only identity and anti-retrospective checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          reader=apps/web/app/Infrastructure/Pos/LaravelFinalShiftCloseRuntimeDatabaseIdentityReader.php
+          identity=apps/web/app/Application/Pos/FinalShiftCloseRuntimeDatabaseIdentity.php
+          grep -Fq "getDriverName()) !== 'mysql'" "$reader"
+          grep -Fq "hasTable('migrations')" "$reader"
+          grep -Fq "hasTable('oneqay_pos_shift_close_evidence')" "$reader"
+          grep -Fq -- "->where('migration', self::MIGRATION)" "$reader"
+          grep -Fq 'SELECT DATABASE() AS database_name, @@hostname AS server_hostname, @@port AS server_port' "$reader"
+          ! grep -Eq '(insert\(|update\(|delete\(|statement\(|unprepared\()' "$reader"
+          grep -Fq "ALGORITHM = 'SHA256_CANONICAL_JSON_DATABASE_HOSTNAME_PORT_V1'" "$identity"
+          grep -Fq 'ksort($payload, SORT_STRING)' "$identity"
+          grep -Fq "hash('sha256', json_encode(" "$identity"
+
+      - name: Prove exact Sprint118-compatible response contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          service=apps/web/app/Application/Pos/FinalShiftCloseRuntimeDbBindingAttestation.php
+          producer=.github/workflows/final-shift-close-migration27-selected-target-db-binding.yml
+          for field in \
+            schema_version feature binding_state environment_id runtime_class \
+            exact_running_source_commit exact_running_artifact_sha256 \
+            readiness_attestation_sha256 selection_fingerprint_sha256 trusted_ingestion \
+            migration27_state database_binding_algorithm database_binding_sha256 \
+            database_identity_source attestation_mode secrets_embedded; do
+            grep -Fq "$field" "$service"
+            grep -Fq "'$field'" "$producer"
+          done
+          grep -Fq 'VERIFIED_SELECTED_TARGET_DATABASE' "$service"
+          grep -Fq 'ACTIVE_APPLICATION_DATABASE_CONNECTION' "$service"
+          grep -Fq 'READ_ONLY' "$service"
+          grep -Fq 'NOT_EXECUTED' "$service"
+
+      - name: Validate Sprint119 PHP syntax and executable regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          for file in \
+            apps/web/app/Application/Pos/FinalShiftCloseRuntimeDatabaseIdentity.php \
+            apps/web/app/Application/Pos/FinalShiftCloseRuntimeDatabaseIdentityReader.php \
+            apps/web/app/Application/Pos/FinalShiftCloseRuntimeDbBindingAttestation.php \
+            apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingTokenMiddleware.php \
+            apps/web/app/Delivery/Http/Pos/FinalShiftCloseRuntimeDbBindingAttestationController.php \
+            apps/web/app/Infrastructure/Pos/LaravelFinalShiftCloseRuntimeDatabaseIdentityReader.php \
+            apps/web/app/Providers/FinalShiftCloseRuntimeDbBindingAttestationServiceProvider.php \
+            apps/web/routes/final-shift-close-runtime-db-binding-attestation.php \
+            apps/web/tests/final-shift-close-runtime-db-binding-attestation.php; do
+            php -l "$file"
+          done
+          php apps/web/tests/final-shift-close-runtime-db-binding-attestation.php
+
+      - name: Lock Sprint119 no-go documentation
+        shell: bash
+        run: |
+          set -euo pipefail
+          doc=docs/SPRINT119_FINAL_SHIFT_CLOSE_RUNTIME_DB_BINDING_ATTESTATION.md
+          grep -Fq 'SPRINT119_RUNTIME_DB_BINDING_ATTESTATION_SOURCE = MATERIALIZED' "$doc"
+          grep -Fq 'SPRINT119_RUNTIME_DB_BINDING_ATTESTATION_DELIVERY = INACTIVE' "$doc"
+          grep -Fq 'SPRINT119_PROVIDER_REGISTRATION = NOT_REGISTERED' "$doc"
+          grep -Fq 'SPRINT119_DELIVERY_GATE = HARD_FALSE' "$doc"
+          grep -Fq 'SPRINT119_TOKEN_CONFIGURATION = NOT_MATERIALIZED' "$doc"
+          grep -Fq 'SPRINT119_RUNTIME_MANIFEST_WRITER = NOT_IMPLEMENTED' "$doc"
+          grep -Fq 'SELECTED_TARGET = NONE' "$doc"
+          grep -Fq 'MIGRATION_27_EXECUTION = NOT_PERFORMED' "$doc"
+          grep -Fq 'PERMISSION_PROVISIONING = NONE' "$doc"
+          grep -Fq 'FEATURE_ACTIVATION = INACTIVE' "$doc"
+          grep -Fq 'PRODUCTION_ACTIVATION = NOT_AUTHORIZED' "$doc"
+
+      - name: Verify tracked-source cleanliness
+        shell: bash
+        run: git diff --exit-code
