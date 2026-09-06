@@ -76,6 +76,9 @@ jobs:
             repository='apps/web/app/Infrastructure/Pos/LaravelDurablePosSaleRepository.php'
             git update-index --assume-unchanged "$repository"
             git show '4fe3940991da118b4d140f7021f38e2598d530c2:apps/web/app/Infrastructure/Pos/LaravelDurablePosSaleRepository.php' > "$repository"
+            historical_catalog_test='apps/web/tests/pos-catalog-preparation-durable.php'
+            git update-index --assume-unchanged "$historical_catalog_test"
+            git show 'c9ec9542270765168a8e6be369141f71bf4f3336:apps/web/tests/pos-catalog-preparation-durable.php' > "$historical_catalog_test"
             for index in $(seq 19 27); do
               migration="$(find apps/web/database/migrations -maxdepth 1 -type f -name "$(printf '0000_00_00_%06d_*' "$index")" -print -quit)"
               if [[ -n "$migration" && -f "$migration" ]]; then
@@ -100,6 +103,9 @@ jobs:
             repository='apps/web/app/Infrastructure/Pos/LaravelDurablePosSaleRepository.php'
             git update-index --assume-unchanged "$repository"
             git show '4fe3940991da118b4d140f7021f38e2598d530c2:apps/web/app/Infrastructure/Pos/LaravelDurablePosSaleRepository.php' > "$repository"
+            historical_catalog_test='apps/web/tests/pos-catalog-preparation-durable.php'
+            git update-index --assume-unchanged "$historical_catalog_test"
+            git show 'c9ec9542270765168a8e6be369141f71bf4f3336:apps/web/tests/pos-catalog-preparation-durable.php' > "$historical_catalog_test"
             for index in $(seq 19 27); do
               migration="$(find apps/web/database/migrations -maxdepth 1 -type f -name "$(printf '0000_00_00_%06d_*' "$index")" -print -quit)"
               if [[ -n "$migration" && -f "$migration" ]]; then
