@@ -48,7 +48,7 @@ jobs:
           test "$(jq -r '.target.environment_class' "$target")" = 'technical-preview'
           test "$(jq -r '.target.runtime_class' "$target")" = 'preview'
           test "$(jq -r '.target.selection_state' "$target")" = 'SELECTED_NOT_AUTHORIZED'
-          test "$(jq -r '.shared_runtime.profile' "$target")" = 'PRIVATE_SHARED_DOTENV_V1'
+          test "$(jq -r '.runtime_binding.shared_environment_profile' "$target")" = 'PRIVATE_SHARED_DOTENV_V1'
 
       - name: Validate machine-readable blocker matrix
         shell: bash
