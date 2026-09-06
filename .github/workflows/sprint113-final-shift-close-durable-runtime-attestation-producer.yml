@@ -1,0 +1,204 @@
+name: Sprint113 Final Shift Close Durable Runtime Attestation Producer
+
+# Attribution: Lab | zefry
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/final-shift-close-durable-runtime-attestation.yml'
+      - '.github/workflows/sprint113-final-shift-close-durable-runtime-attestation-producer.yml'
+      - 'docs/SPRINT113_FINAL_SHIFT_CLOSE_DURABLE_RUNTIME_ATTESTATION_PRODUCER.md'
+      - 'ops/final-shift-close/DURABLE_RUNTIME_ATTESTATION_PRODUCER_CONTRACT.json'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint113-final-shift-close-durable-runtime-attestation-producer-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qualify-durable-runtime-attestation-producer:
+    name: qualify-durable-runtime-attestation-producer
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Lock exact Sprint113 envelope
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/actual
+          cat > /tmp/expected <<'EOF'
+          .github/workflows/final-shift-close-durable-runtime-attestation.yml
+          .github/workflows/sprint113-final-shift-close-durable-runtime-attestation-producer.yml
+          docs/SPRINT113_FINAL_SHIFT_CLOSE_DURABLE_RUNTIME_ATTESTATION_PRODUCER.md
+          ops/final-shift-close/DURABLE_RUNTIME_ATTESTATION_PRODUCER_CONTRACT.json
+          EOF
+          diff -u /tmp/expected /tmp/actual
+          test "$(sha256sum /tmp/actual | awk '{print $1}')" = '52aff2303fd78f5e2b8a75fb69ec8727fcaee480b787df6c8419042d1b68fe4f'
+
+      - name: Validate Sprint112 producer reservation
+        shell: bash
+        run: |
+          set -euo pipefail
+          ingestion=ops/final-shift-close/DURABLE_RUNTIME_ATTESTATION_INGESTION_CONTRACT.json
+          jq -e . "$ingestion" >/dev/null
+          test "$(jq -r '.trusted_producer_contract.producer_workflow_path' "$ingestion")" = '.github/workflows/final-shift-close-durable-runtime-attestation.yml'
+          test "$(jq -r '.trusted_producer_contract.producer_environment' "$ingestion")" = 'final-shift-close-durable-runtime-attestation'
+          test "$(jq -r '.trusted_producer_contract.producer_ref' "$ingestion")" = 'refs/heads/main'
+          test "$(jq -r '.trusted_producer_contract.evidence_status_context' "$ingestion")" = 'final-shift-close-durable-runtime-attestation-evidence'
+          test "$(jq -r '.canonical_selection_state' "$ingestion")" = 'BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET'
+          test "$(jq -r '.selected_target' "$ingestion")" = 'null'
+
+      - name: Validate Sprint113 producer contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          contract=ops/final-shift-close/DURABLE_RUNTIME_ATTESTATION_PRODUCER_CONTRACT.json
+          jq -e . "$contract" >/dev/null
+          test "$(jq -r '.contract_state' "$contract")" = 'MATERIALIZED_SOURCE_ONLY_NOT_DISPATCHED'
+          test "$(jq -r '.supersedes_sprint112_producer_state' "$contract")" = 'true'
+          test "$(jq -r '.producer_workflow_path' "$contract")" = '.github/workflows/final-shift-close-durable-runtime-attestation.yml'
+          test "$(jq -r '.producer_repository' "$contract")" = 'labzefry/oneQay'
+          test "$(jq -r '.producer_ref' "$contract")" = 'refs/heads/main'
+          test "$(jq -r '.producer_environment' "$contract")" = 'final-shift-close-durable-runtime-attestation'
+          test "$(jq -r '.producer_event' "$contract")" = 'workflow_dispatch'
+          test "$(jq -r '.caller_supplied_target_inputs' "$contract")" = 'false'
+          test "$(jq -r '.evidence_status_context' "$contract")" = 'final-shift-close-durable-runtime-attestation-evidence'
+          test "$(jq -r '.evidence_status_target' "$contract")" = 'EXACT_RUNNING_SOURCE_COMMIT'
+          test "$(jq -r '.protected_environment_configuration' "$contract")" = 'REQUIRED_OUT_OF_BAND_NOT_MACHINE_VERIFIED_BY_SOURCE'
+          test "$(jq -r '.runtime_endpoint_contract.transport' "$contract")" = 'HTTPS_ONLY'
+          test "$(jq -r '.runtime_endpoint_contract.max_response_bytes' "$contract")" = '32768'
+          test "$(jq -r '.canonical_boundaries.producer_source' "$contract")" = 'MATERIALIZED_NOT_DISPATCHED'
+          test "$(jq -r '.canonical_boundaries.real_attestation' "$contract")" = 'NONE'
+          test "$(jq -r '.canonical_boundaries.selected_target' "$contract")" = 'NONE'
+          test "$(jq -r '.canonical_boundaries.feature_activation' "$contract")" = 'INACTIVE'
+
+      - name: Prove producer is manual current-main only with no caller target input
+        shell: bash
+        run: |
+          set -euo pipefail
+          producer=.github/workflows/final-shift-close-durable-runtime-attestation.yml
+          grep -Fq '  workflow_dispatch:' "$producer"
+          ! grep -Fq 'inputs:' "$producer"
+          ! grep -Fq 'pull_request:' "$producer"
+          ! grep -Fq 'push:' "$producer"
+          ! grep -Fq 'schedule:' "$producer"
+          grep -Fq "if: ${{ github.ref == 'refs/heads/main' }}" "$producer"
+          grep -Fq 'environment: final-shift-close-durable-runtime-attestation' "$producer"
+          grep -Fq 'branches/main' "$producer"
+          grep -Fq 'main_sha' "$producer"
+          grep -Fq 'Attestation producer must run from current canonical main' "$producer"
+
+      - name: Prove protected-environment and HTTPS runtime binding
+        shell: bash
+        run: |
+          set -euo pipefail
+          producer=.github/workflows/final-shift-close-durable-runtime-attestation.yml
+          grep -Fq 'secrets.ONEQAY_DURABLE_RUNTIME_ATTESTATION_URL' "$producer"
+          grep -Fq 'secrets.ONEQAY_DURABLE_RUNTIME_ATTESTATION_TOKEN' "$producer"
+          grep -Fq 'secrets.ONEQAY_DURABLE_RUNTIME_ATTESTATION_PROTECTION_ASSERTION' "$producer"
+          grep -Fq 'vars.ONEQAY_DURABLE_RUNTIME_ENVIRONMENT_ID' "$producer"
+          grep -Fq 'vars.ONEQAY_DURABLE_RUNTIME_CLASS' "$producer"
+          grep -Fq "REVIEW_GATED_V1" "$producer"
+          grep -Fq "^https://" "$producer"
+          grep -Fq "--proto '=https'" "$producer"
+          grep -Fq -- '--tlsv1.2' "$producer"
+          grep -Fq 'bytes <= 32768' "$producer"
+          grep -Fq 'Authorization: Bearer $ATTESTATION_TOKEN' "$producer"
+
+      - name: Prove Sprint110 readiness and canonical source-history qualification
+        shell: bash
+        run: |
+          set -euo pipefail
+          producer=.github/workflows/final-shift-close-durable-runtime-attestation.yml
+          grep -Fq 'FinalShiftCloseDurableRuntimeReadiness.php' "$producer"
+          grep -Fq 'requireQualified($attestation)' "$producer"
+          grep -Fq 'Runtime environment identity does not match protected-environment configuration.' "$producer"
+          grep -Fq 'Runtime class does not match protected-environment configuration.' "$producer"
+          grep -Fq 'exact_running_source_commit' "$producer"
+          grep -Fq 'repos/$REPOSITORY/commits/$running_source' "$producer"
+          grep -Fq 'repos/$REPOSITORY/compare/$running_source...$GITHUB_SHA' "$producer"
+          grep -Fq "status" "$producer"
+          grep -Fq "behind" "$producer"
+
+      - name: Prove Sprint112-compatible provenance and evidence ordering
+        shell: bash
+        run: |
+          set -euo pipefail
+          producer=.github/workflows/final-shift-close-durable-runtime-attestation.yml
+          grep -Fq "'evidence_source' => 'GITHUB_ACTIONS_PROTECTED_ENVIRONMENT'" "$producer"
+          grep -Fq "'evidence_state' => 'VERIFIED'" "$producer"
+          grep -Fq "'producer_repository' => 'labzefry/oneQay'" "$producer"
+          grep -Fq "'producer_workflow_path' => '.github/workflows/final-shift-close-durable-runtime-attestation.yml'" "$producer"
+          grep -Fq "'producer_environment' => 'final-shift-close-durable-runtime-attestation'" "$producer"
+          grep -Fq "'producer_ref' => 'refs/heads/main'" "$producer"
+          grep -Fq "'evidence_status_context' => 'final-shift-close-durable-runtime-attestation-evidence'" "$producer"
+          grep -Fq "'evidence_status_state' => 'success'" "$producer"
+          grep -Fq "'secrets_embedded' => false" "$producer"
+          grep -Fq 'actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02' "$producer"
+
+          pending_line="$(grep -n 'name: Publish pending evidence status' "$producer" | cut -d: -f1)"
+          upload_line="$(grep -n 'name: Upload trusted attestation evidence bundle' "$producer" | cut -d: -f1)"
+          success_line="$(grep -n 'name: Publish success evidence status' "$producer" | cut -d: -f1)"
+          (( pending_line < upload_line && upload_line < success_line ))
+
+      - name: Preserve canonical operational no-go boundaries
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git diff --exit-code "$BASE_SHA" "$HEAD_SHA" -- \
+            apps/web/app \
+            apps/web/bootstrap \
+            apps/web/config \
+            apps/web/database/migrations \
+            apps/web/routes \
+            apps/web/resources \
+            ops/final-shift-close/STATE.json \
+            ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+
+          state=ops/final-shift-close/STATE.json
+          selection=ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+          test "$(jq -r '.migration27.state' "$state")" = 'NOT_EXECUTED'
+          test "$(jq -r '.permission_provisioning.state' "$state")" = 'NONE'
+          test "$(jq -r '.feature_activation.state' "$state")" = 'INACTIVE'
+          test "$(jq -r '.selection_state' "$selection")" = 'BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET'
+          test "$(jq -r '.selected_target' "$selection")" = 'null'
+
+          producer=.github/workflows/final-shift-close-durable-runtime-attestation.yml
+          ! grep -Eq 'php artisan (migrate|db:)|ONEQAY_POS_SHIFT_CLOSE_ENABLED[=: ]+true|deploy|release|updater' "$producer"
+
+      - name: Lock Sprint113 source-only disposition
+        shell: bash
+        run: |
+          set -euo pipefail
+          doc=docs/SPRINT113_FINAL_SHIFT_CLOSE_DURABLE_RUNTIME_ATTESTATION_PRODUCER.md
+          grep -Fq 'DURABLE_RUNTIME_ATTESTATION_PRODUCER_SOURCE = MATERIALIZED_NOT_DISPATCHED' "$doc"
+          grep -Fq 'PROTECTED_ENVIRONMENT_CONFIGURATION = REQUIRED_OUT_OF_BAND_NOT_VERIFIED' "$doc"
+          grep -Fq 'REAL_DURABLE_RUNTIME_ATTESTATION = NONE' "$doc"
+          grep -Fq 'TRUSTED_ATTESTATION_INGESTION_EXECUTION = NOT_IMPLEMENTED' "$doc"
+          grep -Fq 'SELECTED_TARGET = NONE' "$doc"
+          grep -Fq 'RUNTIME_ALLOWLIST_CHANGE = NOT_IMPLEMENTED' "$doc"
+          grep -Fq 'MIGRATION_27_EXECUTION = NOT_PERFORMED' "$doc"
+          grep -Fq 'PERMISSION_PROVISIONING = NONE' "$doc"
+          grep -Fq 'FEATURE_ACTIVATION = INACTIVE' "$doc"
+          grep -Fq 'PRODUCTION_ACTIVATION = NOT_AUTHORIZED' "$doc"
+          grep -Fq 'UPDATER_ACTIVATION = INACTIVE' "$doc"
+
+      - name: Confirm tracked source remains unchanged
+        shell: bash
+        run: git diff --exit-code
