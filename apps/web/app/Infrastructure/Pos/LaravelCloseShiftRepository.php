@@ -80,6 +80,15 @@ final readonly class LaravelCloseShiftRepository implements CloseShiftRepository
             $this->assertEquals($shift->device_id ?? null, $context->deviceId());
             $openerActorId = $this->requiredString($shift->actor_identity_id ?? null);
 
+            $existingShiftClose = $this->connection->table('oneqay_pos_shift_close_evidence')
+                ->where('tenant_id', $context->tenantId())
+                ->where('shift_id', $shiftId)
+                ->lockForUpdate()
+                ->first();
+            if ($existingShiftClose !== null) {
+                throw new PosTransactionViolation();
+            }
+
             $closing = $this->connection->table('oneqay_pos_shift_closing_cash_evidence')
                 ->where('tenant_id', $context->tenantId())
                 ->where('shift_id', $shiftId)
@@ -99,6 +108,9 @@ final readonly class LaravelCloseShiftRepository implements CloseShiftRepository
 
             $expected = $this->expectedCash->deriveFrom($closingResult);
             $variance = $this->cashVariance->derive($expected, $closingResult);
+            if ($closedAtUnix < $variance->cutoffAtUnix()) {
+                throw new PosTransactionViolation();
+            }
 
             $reviewEvidenceId = null;
             $reviewOutcome = null;
@@ -211,11 +223,12 @@ final readonly class LaravelCloseShiftRepository implements CloseShiftRepository
             ->lockForUpdate()
             ->get();
 
-        if ($rows->count() !== 1 || ! is_object($rows->first())) {
+        $review = $rows->first();
+        if ($rows->count() !== 1 || ! is_object($review)) {
             throw new PosTransactionViolation();
         }
 
-        return $rows->first();
+        return $review;
     }
 
     private function closingCashResult(object $row): ShiftClosingCashResult
@@ -233,7 +246,7 @@ final readonly class LaravelCloseShiftRepository implements CloseShiftRepository
             Money::fromAtomicUnits(
                 $this->safeUnsignedBigIntToInt($row->closing_cash_atomic ?? null),
                 $this->requiredString($row->currency ?? null),
-                (int) ($row->currency_scale ?? -1),
+                $this->safeScale($row->currency_scale ?? null),
             ),
             self::CLOSING_MODE,
             $this->requiredString($row->correlation_id ?? null),
@@ -244,6 +257,11 @@ final readonly class LaravelCloseShiftRepository implements CloseShiftRepository
     private function replayOrFail(object $row, string $fingerprint): CloseShiftResult
     {
         $this->assertEquals($row->payload_fingerprint ?? null, $fingerprint);
+        $direction = $this->requiredString($row->variance_direction ?? null);
+        $varianceAtomic = $this->safeSignedBigIntToInt($row->variance_atomic ?? null);
+        $reviewEvidenceId = $this->nullableString($row->review_evidence_id ?? null);
+        $reviewOutcome = $this->nullableString($row->review_outcome ?? null);
+        $this->assertVarianceReviewState($direction, $varianceAtomic, $reviewEvidenceId, $reviewOutcome);
 
         return new CloseShiftResult(
             $this->requiredString($row->evidence_id ?? null),
@@ -259,15 +277,37 @@ final readonly class LaravelCloseShiftRepository implements CloseShiftRepository
             $this->safeUnsignedBigIntToInt($row->cutoff_at_unix ?? null),
             $this->safeUnsignedBigIntToInt($row->expected_cash_atomic ?? null),
             $this->safeUnsignedBigIntToInt($row->observed_closing_cash_atomic ?? null),
-            (int) ($row->variance_atomic ?? 0),
-            $this->requiredString($row->variance_direction ?? null),
+            $varianceAtomic,
+            $direction,
             $this->requiredString($row->currency ?? null),
-            (int) ($row->currency_scale ?? -1),
-            $this->nullableString($row->review_evidence_id ?? null),
-            $this->nullableString($row->review_outcome ?? null),
+            $this->safeScale($row->currency_scale ?? null),
+            $reviewEvidenceId,
+            $reviewOutcome,
             $this->requiredString($row->correlation_id ?? null),
             $this->safeUnsignedBigIntToInt($row->closed_at_unix ?? null),
         );
+    }
+
+    private function assertVarianceReviewState(
+        string $direction,
+        int $varianceAtomic,
+        ?string $reviewEvidenceId,
+        ?string $reviewOutcome,
+    ): void {
+        if ($direction === CashVarianceResult::DIRECTION_MATCH
+            && $varianceAtomic === 0
+            && $reviewEvidenceId === null
+            && $reviewOutcome === null) {
+            return;
+        }
+        if (in_array($direction, [CashVarianceResult::DIRECTION_OVER, CashVarianceResult::DIRECTION_SHORT], true)
+            && (($direction === CashVarianceResult::DIRECTION_OVER && $varianceAtomic > 0)
+                || ($direction === CashVarianceResult::DIRECTION_SHORT && $varianceAtomic < 0))
+            && $reviewEvidenceId !== null
+            && $reviewOutcome === CashVarianceReviewDecisionCommand::REVIEW_ACCEPTED) {
+            return;
+        }
+        throw new PosTransactionViolation();
     }
 
     private function assertOperational(): void
@@ -301,6 +341,39 @@ final readonly class LaravelCloseShiftRepository implements CloseShiftRepository
         if (! is_string($actual) || ! hash_equals($expected, $actual)) {
             throw new PosTransactionViolation();
         }
+    }
+
+    private function safeScale(mixed $value): int
+    {
+        if (! is_int($value) && !(is_string($value) && preg_match('/\A[0-9]+\z/', $value) === 1)) {
+            throw new PosTransactionViolation();
+        }
+        $scale = (int) $value;
+        if ($scale < 0 || $scale > 6) {
+            throw new PosTransactionViolation();
+        }
+        return $scale;
+    }
+
+    private function safeSignedBigIntToInt(mixed $value): int
+    {
+        if (is_int($value)) {
+            return $value;
+        }
+        if (! is_string($value) || preg_match('/\A-?[0-9]+\z/', $value) !== 1) {
+            throw new PosTransactionViolation();
+        }
+        if ($value[0] === '-') {
+            $magnitude = ltrim(substr($value, 1), '0');
+            $magnitude = $magnitude === '' ? '0' : $magnitude;
+            $minimumMagnitude = ltrim((string) PHP_INT_MIN, '-');
+            if (strlen($magnitude) > strlen($minimumMagnitude)
+                || (strlen($magnitude) === strlen($minimumMagnitude) && strcmp($magnitude, $minimumMagnitude) > 0)) {
+                throw new PosTransactionViolation();
+            }
+            return -(int) $magnitude;
+        }
+        return $this->safeUnsignedBigIntToInt($value);
     }
 
     private function safeUnsignedBigIntToInt(mixed $value): int
