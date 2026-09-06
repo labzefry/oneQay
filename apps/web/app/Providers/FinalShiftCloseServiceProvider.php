@@ -37,7 +37,7 @@ final class FinalShiftCloseServiceProvider extends ServiceProvider
                 $app->make(FinalShiftCloseAuthorizationPolicy::class),
                 $this->persistenceEnabled(),
                 $this->runtimeClass(),
-                (bool) config('oneqay.pos_shift_close.enabled', false),
+                $this->featureEnabled(),
             );
         });
 
@@ -73,5 +73,10 @@ final class FinalShiftCloseServiceProvider extends ServiceProvider
     private function runtimeClass(): string
     {
         return (string) config('oneqay.runtime_class', '');
+    }
+
+    private function featureEnabled(): bool
+    {
+        return filter_var(env('ONEQAY_POS_SHIFT_CLOSE_ENABLED', false), FILTER_VALIDATE_BOOL);
     }
 }
