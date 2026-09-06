@@ -1,0 +1,97 @@
+name: Sprint94 Final Shift Close Authorization Contract
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/sprint94-final-shift-close-authorization-contract.yml'
+      - 'apps/web/app/Application/Pos/FinalShiftClosePermission.php'
+      - 'apps/web/app/Application/Pos/FinalShiftCloseAuthorizationPolicy.php'
+      - 'apps/web/tests/pos-final-shift-close-authorization-contract.php'
+      - 'docs/SPRINT94_FINAL_SHIFT_CLOSE_AUTHORIZATION_CONTRACT.md'
+
+permissions:
+  contents: read
+
+jobs:
+  qualify-source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Enforce exact Sprint94 source envelope
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | LC_ALL=C sort > /tmp/actual
+          cat > /tmp/expected <<'EOF'
+          .github/workflows/sprint94-final-shift-close-authorization-contract.yml
+          apps/web/app/Application/Pos/FinalShiftCloseAuthorizationPolicy.php
+          apps/web/app/Application/Pos/FinalShiftClosePermission.php
+          apps/web/tests/pos-final-shift-close-authorization-contract.php
+          docs/SPRINT94_FINAL_SHIFT_CLOSE_AUTHORIZATION_CONTRACT.md
+          EOF
+          diff -u /tmp/expected /tmp/actual
+          test "$(sha256sum /tmp/actual | awk '{print $1}')" = "a07965561c3c060b1a17b13fdcc4c48fa78a2594ac0c228adddd02c4df40ffbd"
+
+      - name: Lock selected authorization contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq "public const IDENTIFIER = 'pos.shift.close';" apps/web/app/Application/Pos/FinalShiftClosePermission.php
+          grep -Fq 'function identifier()' apps/web/app/Application/Pos/FinalShiftClosePermission.php
+          grep -Fq 'NO_DEFAULT_GRANT' docs/SPRINT94_FINAL_SHIFT_CLOSE_AUTHORIZATION_CONTRACT.md
+          grep -Fq 'FINAL_SHIFT_CLOSE_CLOSER_VS_OPENER = SEPARATION_REQUIRED' docs/SPRINT94_FINAL_SHIFT_CLOSE_AUTHORIZATION_CONTRACT.md
+          grep -Fq 'FINAL_SHIFT_CLOSE_CLOSER_VS_EXPLANATION_AUTHOR = SEPARATION_REQUIRED_FOR_NONZERO_VARIANCE' docs/SPRINT94_FINAL_SHIFT_CLOSE_AUTHORIZATION_CONTRACT.md
+          grep -Fq 'FINAL_SHIFT_CLOSE_CLOSER_VS_REVIEWER = SEPARATION_REQUIRED_FOR_NONZERO_VARIANCE' docs/SPRINT94_FINAL_SHIFT_CLOSE_AUTHORIZATION_CONTRACT.md
+          grep -Fq 'FINAL_SHIFT_CLOSE_AUTHORITY = SELECTED' docs/SPRINT94_FINAL_SHIFT_CLOSE_AUTHORIZATION_CONTRACT.md
+
+      - name: Preserve lifecycle and runtime boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          for path in \
+            apps/web/app/Application/Pos/CloseShift.php \
+            apps/web/app/Application/Pos/CloseShiftCommand.php \
+            apps/web/app/Application/Pos/CloseShiftRepository.php \
+            apps/web/app/Application/Pos/CloseShiftResult.php \
+            apps/web/app/Infrastructure/Pos/LaravelCloseShiftRepository.php; do
+            test ! -e "$path"
+          done
+          git diff --exit-code "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" -- apps/web/app/Application/Authorization/PosPermission.php
+          test "$(git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" -- apps/web/database/migrations | wc -l)" -eq 0
+          test "$(git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" -- apps/web/app/Providers routes apps/web/routes | wc -l)" -eq 0
+          ! git diff "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" -- apps/web | grep -E '^\+.*(oneqay_role_permissions|grantPermission|assignPermission)' || true
+
+      - name: Validate PHP syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l apps/web/app/Application/Pos/FinalShiftClosePermission.php
+          php -l apps/web/app/Application/Pos/FinalShiftCloseAuthorizationPolicy.php
+          php -l apps/web/tests/pos-final-shift-close-authorization-contract.php
+
+      - name: Install PHP dependencies
+        working-directory: apps/web
+        shell: bash
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Execute Sprint94 regression
+        working-directory: apps/web
+        shell: bash
+        run: php tests/pos-final-shift-close-authorization-contract.php
+
+      - name: Preserve migration and activation boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          doc=docs/SPRINT94_FINAL_SHIFT_CLOSE_AUTHORIZATION_CONTRACT.md
+          grep -Fq 'MIGRATION_27_LIVE_EXECUTION = NOT_AUTHORIZED' "$doc"
+          grep -Fq 'TECHNICAL_PREVIEW_ACTIVATION_AUTHORITY = NOT_GRANTED' "$doc"
+          grep -Fq 'PRODUCTION_AUTHORITY = NOT_GRANTED' "$doc"
+          grep -Fq 'UPDATER_ACTIVATION_AUTHORITY = NOT_GRANTED' "$doc"
