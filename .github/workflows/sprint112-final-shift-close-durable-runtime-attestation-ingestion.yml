@@ -1,0 +1,206 @@
+name: Sprint112 Final Shift Close Durable Runtime Attestation Ingestion
+
+# Attribution: Lab | zefry
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/sprint112-final-shift-close-durable-runtime-attestation-ingestion.yml'
+      - 'apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeAttestationIngestion.php'
+      - 'apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeAttestationProvenance.php'
+      - 'apps/web/tests/pos-final-shift-close-durable-runtime-attestation-ingestion.php'
+      - 'docs/SPRINT112_FINAL_SHIFT_CLOSE_DURABLE_RUNTIME_ATTESTATION_INGESTION.md'
+      - 'ops/final-shift-close/DURABLE_RUNTIME_ATTESTATION_INGESTION_CONTRACT.json'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint112-final-shift-close-durable-runtime-attestation-ingestion-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qualify-durable-runtime-attestation-ingestion:
+    name: qualify-durable-runtime-attestation-ingestion
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Lock exact Sprint112 envelope
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/actual
+          cat > /tmp/expected <<'EOF'
+          .github/workflows/sprint112-final-shift-close-durable-runtime-attestation-ingestion.yml
+          apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeAttestationIngestion.php
+          apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeAttestationProvenance.php
+          apps/web/tests/pos-final-shift-close-durable-runtime-attestation-ingestion.php
+          docs/SPRINT112_FINAL_SHIFT_CLOSE_DURABLE_RUNTIME_ATTESTATION_INGESTION.md
+          ops/final-shift-close/DURABLE_RUNTIME_ATTESTATION_INGESTION_CONTRACT.json
+          EOF
+          diff -u /tmp/expected /tmp/actual
+          test "$(sha256sum /tmp/actual | awk '{print $1}')" = 'a0f33e92877ee696ee8090a57bc52e0356dab03f915f37a67809da36643e62d2'
+
+      - name: Validate Sprint110 and Sprint111 prerequisites
+        shell: bash
+        run: |
+          set -euo pipefail
+          readiness=ops/final-shift-close/DURABLE_RUNTIME_READINESS_CONTRACT.json
+          selection_contract=ops/final-shift-close/DURABLE_RUNTIME_TARGET_SELECTION_CONTRACT.json
+          canonical_selection=ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+
+          jq -e . "$readiness" >/dev/null
+          jq -e . "$selection_contract" >/dev/null
+          jq -e . "$canonical_selection" >/dev/null
+
+          test "$(jq -r '.contract_state' "$readiness")" = 'SOURCE_READINESS_ONLY'
+          test "$(jq -r '.required_runtime_model' "$readiness")" = 'NON_SYNTHETIC_DURABLE_RUNTIME'
+          test "$(jq -r '.contract_state' "$selection_contract")" = 'SOURCE_SELECTION_MECHANISM_ONLY'
+          test "$(jq -r '.output_selection_state' "$selection_contract")" = 'SELECTED_NOT_AUTHORIZED'
+          test "$(jq -r '.selection_state' "$canonical_selection")" = 'BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET'
+          test "$(jq -r '.selected_target' "$canonical_selection")" = 'null'
+
+      - name: Validate Sprint112 ingestion contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          contract=ops/final-shift-close/DURABLE_RUNTIME_ATTESTATION_INGESTION_CONTRACT.json
+          jq -e . "$contract" >/dev/null
+
+          test "$(jq -r '.contract_state' "$contract")" = 'SOURCE_INGESTION_GATE_ONLY'
+          test "$(jq -r '.accepted_ingestion_state' "$contract")" = 'ACCEPTED_NOT_SELECTED'
+          test "$(jq -r '.canonical_selection_state' "$contract")" = 'BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET'
+          test "$(jq -r '.selected_target' "$contract")" = 'null'
+          test "$(jq -r '.activation_authority_state' "$contract")" = 'NOT_GRANTED'
+          test "$(jq -r '.feature_activation_state' "$contract")" = 'INACTIVE'
+          test "$(jq -r '.runtime_allowlist_change' "$contract")" = 'NOT_IMPLEMENTED'
+          test "$(jq -r '.persistence_state' "$contract")" = 'NOT_PERFORMED'
+          test "$(jq '.required_provenance_fields | length' "$contract")" = '19'
+
+          test "$(jq -r '.trusted_producer_contract.producer_state' "$contract")" = 'NOT_IMPLEMENTED'
+          test "$(jq -r '.trusted_producer_contract.evidence_source' "$contract")" = 'GITHUB_ACTIONS_PROTECTED_ENVIRONMENT'
+          test "$(jq -r '.trusted_producer_contract.producer_repository' "$contract")" = 'labzefry/oneQay'
+          test "$(jq -r '.trusted_producer_contract.producer_workflow_path' "$contract")" = '.github/workflows/final-shift-close-durable-runtime-attestation.yml'
+          test "$(jq -r '.trusted_producer_contract.producer_environment' "$contract")" = 'final-shift-close-durable-runtime-attestation'
+          test "$(jq -r '.trusted_producer_contract.producer_ref' "$contract")" = 'refs/heads/main'
+          test "$(jq -r '.trusted_producer_contract.evidence_status_context' "$contract")" = 'final-shift-close-durable-runtime-attestation-evidence'
+          test "$(jq -r '.trusted_producer_contract.required_evidence_status_state' "$contract")" = 'success'
+
+          test "$(jq -r '.qualification_requirements.sprint110_readiness_must_qualify' "$contract")" = 'true'
+          test "$(jq -r '.qualification_requirements.attestation_digest_must_match' "$contract")" = 'true'
+          test "$(jq -r '.qualification_requirements.ingestion_does_not_select_target' "$contract")" = 'true'
+          test "$(jq -r '.qualification_requirements.ingestion_does_not_grant_activation_authority' "$contract")" = 'true'
+          test "$(jq -r '.qualification_requirements.secrets_embedded' "$contract")" = 'false'
+
+      - name: Prove trusted producer remains absent and reserved
+        shell: bash
+        run: |
+          set -euo pipefail
+          test ! -e .github/workflows/final-shift-close-durable-runtime-attestation.yml
+          grep -Fq "PRODUCER_WORKFLOW_PATH = '.github/workflows/final-shift-close-durable-runtime-attestation.yml'" apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeAttestationProvenance.php
+          grep -Fq "PRODUCER_ENVIRONMENT = 'final-shift-close-durable-runtime-attestation'" apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeAttestationProvenance.php
+          grep -Fq "EVIDENCE_STATUS_CONTEXT = 'final-shift-close-durable-runtime-attestation-evidence'" apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeAttestationProvenance.php
+
+      - name: Prove ingestion source is pure and fail closed
+        shell: bash
+        run: |
+          set -euo pipefail
+          provenance=apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeAttestationProvenance.php
+          ingestion=apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeAttestationIngestion.php
+
+          grep -Fq 'attestation_sha256_mismatch' "$provenance"
+          grep -Fq 'attestation_binding_mismatch:' "$provenance"
+          grep -Fq 'provenance_must_not_embed_secrets' "$provenance"
+          grep -Fq "EVIDENCE_STATUS_STATE = 'success'" "$provenance"
+          grep -Fq 'FinalShiftCloseDurableRuntimeReadiness' "$ingestion"
+          grep -Fq 'FinalShiftCloseDurableRuntimeAttestationProvenance' "$ingestion"
+          grep -Fq "INGESTION_STATE = 'ACCEPTED_NOT_SELECTED'" "$ingestion"
+          grep -Fq "CANONICAL_SELECTION_STATE = 'BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET'" "$ingestion"
+          grep -Fq "ACTIVATION_AUTHORITY_STATE = 'NOT_GRANTED'" "$ingestion"
+          grep -Fq "FEATURE_ACTIVATION_STATE = 'INACTIVE'" "$ingestion"
+          grep -Fq "PERSISTENCE_STATE = 'NOT_PERFORMED'" "$ingestion"
+
+          if grep -Eq 'env\(|getenv\(|putenv\(|config\(|Illuminate\\|Route::|DB::|Schema::|Connection|Http::|curl_|Guzzle|exec\(|shell_exec\(|proc_open\(|file_put_contents\(|fopen\(' "$provenance" "$ingestion"; then
+            echo 'Sprint112 ingestion source must remain pure, read-only, framework-independent, and unbound.' >&2
+            exit 1
+          fi
+
+      - name: Preserve canonical blocked selection and operational envelope
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git diff --exit-code "$BASE_SHA" "$HEAD_SHA" -- \
+            apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeReadiness.php \
+            apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeTargetSelection.php \
+            apps/web/app/Providers/FinalShiftCloseServiceProvider.php \
+            apps/web/app/Infrastructure/Pos/LaravelCloseShiftRepository.php \
+            apps/web/config/oneqay.php \
+            apps/web/bootstrap \
+            apps/web/database/migrations \
+            apps/web/routes \
+            ops/final-shift-close/STATE.json \
+            ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json \
+            ops/final-shift-close/DURABLE_RUNTIME_READINESS_CONTRACT.json \
+            ops/final-shift-close/DURABLE_RUNTIME_TARGET_SELECTION_CONTRACT.json
+
+          selection=ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+          state=ops/final-shift-close/STATE.json
+          test "$(jq -r '.selection_state' "$selection")" = 'BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET'
+          test "$(jq -r '.selected_target' "$selection")" = 'null'
+          test "$(jq -r '.migration27.state' "$state")" = 'NOT_EXECUTED'
+          test "$(jq -r '.permission_provisioning.state' "$state")" = 'NONE'
+          test "$(jq -r '.feature_activation.state' "$state")" = 'INACTIVE'
+          test "$(jq -r '.deployment_authority' "$state")" = 'NOT_GRANTED'
+          test "$(jq -r '.production_activation' "$state")" = 'NOT_AUTHORIZED'
+
+          grep -Fq "['local', 'test', 'ci']" apps/web/app/Providers/FinalShiftCloseServiceProvider.php
+          grep -Fq "['local', 'test', 'ci']" apps/web/app/Infrastructure/Pos/LaravelCloseShiftRepository.php
+
+      - name: Validate PHP syntax and executable ingestion regression
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l app/Application/Pos/FinalShiftCloseDurableRuntimeAttestationProvenance.php
+          php -l app/Application/Pos/FinalShiftCloseDurableRuntimeAttestationIngestion.php
+          php -l tests/pos-final-shift-close-durable-runtime-attestation-ingestion.php
+          php tests/pos-final-shift-close-durable-runtime-attestation-ingestion.php
+
+      - name: Lock Sprint112 source-only disposition
+        shell: bash
+        run: |
+          set -euo pipefail
+          doc=docs/SPRINT112_FINAL_SHIFT_CLOSE_DURABLE_RUNTIME_ATTESTATION_INGESTION.md
+          grep -Fq 'DURABLE_RUNTIME_ATTESTATION_INGESTION = MATERIALIZED_SOURCE_ONLY' "$doc"
+          grep -Fq 'TRUSTED_ATTESTATION_PRODUCER = NOT_IMPLEMENTED' "$doc"
+          grep -Fq 'REAL_ATTESTATION = NONE' "$doc"
+          grep -Fq 'INGESTION_OUTPUT_STATE = ACCEPTED_NOT_SELECTED' "$doc"
+          grep -Fq 'SELECTED_TARGET = NONE' "$doc"
+          grep -Fq 'ACTIVATION_AUTHORITY = NOT_GRANTED' "$doc"
+          grep -Fq 'RUNTIME_ALLOWLIST_CHANGE = NOT_IMPLEMENTED' "$doc"
+          grep -Fq 'ENVIRONMENT_DEPLOYMENT = NOT_PERFORMED' "$doc"
+          grep -Fq 'MIGRATION_27_EXECUTION = NOT_PERFORMED' "$doc"
+          grep -Fq 'FEATURE_ACTIVATION = INACTIVE' "$doc"
+          grep -Fq 'PRODUCTION_AUTHORITY = NOT_GRANTED' "$doc"
+          grep -Fq 'UPDATER_ACTIVATION_AUTHORITY = NOT_GRANTED' "$doc"
+
+          workflow=.github/workflows/sprint112-final-shift-close-durable-runtime-attestation-ingestion.yml
+          ! grep -Eq '^  workflow_dispatch:' "$workflow"
+
+      - name: Confirm tracked source remains unchanged
+        shell: bash
+        run: git diff --exit-code
