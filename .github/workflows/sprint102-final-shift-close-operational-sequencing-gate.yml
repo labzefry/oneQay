@@ -1,0 +1,232 @@
+name: Sprint102 Final Shift Close Operational Sequencing Gate
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/sprint102-final-shift-close-operational-sequencing-gate.yml'
+      - 'docs/SPRINT102_FINAL_SHIFT_CLOSE_OPERATIONAL_SEQUENCE.md'
+      - 'ops/final-shift-close/STATE.json'
+
+permissions:
+  contents: read
+  pull-requests: read
+  statuses: read
+
+jobs:
+  enforce-operational-sequence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Validate bootstrap or single-state transition envelope
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          state=ops/final-shift-close/STATE.json
+
+          git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/actual
+
+          if ! git cat-file -e "$BASE_SHA:$state" 2>/dev/null; then
+            cat > /tmp/expected <<'EOF'
+          .github/workflows/sprint102-final-shift-close-operational-sequencing-gate.yml
+          docs/SPRINT102_FINAL_SHIFT_CLOSE_OPERATIONAL_SEQUENCE.md
+          ops/final-shift-close/STATE.json
+          EOF
+            diff -u /tmp/expected /tmp/actual
+            test "$(sha256sum /tmp/actual | awk '{print $1}')" = '3b84ea8473858f6f786977ec1788c07a84507da4c940e1891db411c1f0defded'
+            echo 'Sprint102 bootstrap envelope verified.'
+            exit 0
+          fi
+
+          cat > /tmp/expected <<'EOF'
+          ops/final-shift-close/STATE.json
+          EOF
+          diff -u /tmp/expected /tmp/actual
+          echo 'Single-state transition envelope verified.'
+
+      - name: Validate canonical state structure and immutable boundaries
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          state=ops/final-shift-close/STATE.json
+          jq -e . "$state" >/dev/null
+
+          test "$(jq -r '.schema_version' "$state")" = '1'
+          test "$(jq -r '.feature' "$state")" = 'final-shift-close'
+          test "$(jq -r '.migration27.authority_context' "$state")" = 'final-shift-close-migration27-execution-authority'
+          test "$(jq -r '.migration27.evidence_context' "$state")" = 'final-shift-close-migration27-execution-evidence'
+          test "$(jq -r '.permission_provisioning.authority_context' "$state")" = 'final-shift-close-permission-provisioning-authority'
+          test "$(jq -r '.permission_provisioning.evidence_context' "$state")" = 'final-shift-close-permission-provisioning-evidence'
+          test "$(jq -r '.permission_provisioning.permission_id' "$state")" = 'pos.shift.close'
+          test "$(jq -r '.permission_provisioning.default_grant' "$state")" = 'NONE'
+          test "$(jq -r '.feature_activation.authority_context' "$state")" = 'final-shift-close-feature-activation-authority'
+          test "$(jq -r '.feature_activation.evidence_context' "$state")" = 'final-shift-close-feature-activation-evidence'
+          test "$(jq -r '.feature_activation.runtime_flag' "$state")" = 'ONEQAY_POS_SHIFT_CLOSE_ENABLED'
+          test "$(jq -r '.deployment_authority' "$state")" = 'NOT_GRANTED'
+          test "$(jq -r '.technical_preview_activation' "$state")" = 'NOT_AUTHORIZED'
+          test "$(jq -r '.production_activation' "$state")" = 'NOT_AUTHORIZED'
+          test "$(jq -r '.updater_activation' "$state")" = 'INACTIVE'
+
+          case "$(jq -r '.migration27.state' "$state")" in
+            NOT_EXECUTED|EXECUTED) ;;
+            *) echo 'Invalid migration27 state.' >&2; exit 1 ;;
+          esac
+          case "$(jq -r '.permission_provisioning.state' "$state")" in
+            NONE|PROVISIONED) ;;
+            *) echo 'Invalid permission provisioning state.' >&2; exit 1 ;;
+          esac
+          case "$(jq -r '.feature_activation.state' "$state")" in
+            INACTIVE|ACTIVE) ;;
+            *) echo 'Invalid feature activation state.' >&2; exit 1 ;;
+          esac
+
+          if git cat-file -e "$BASE_SHA:$state" 2>/dev/null; then
+            git show "$BASE_SHA:$state" > /tmp/base-state.json
+            jq -S 'del(.migration27.state, .permission_provisioning.state, .feature_activation.state)' /tmp/base-state.json > /tmp/base-immutable.json
+            jq -S 'del(.migration27.state, .permission_provisioning.state, .feature_activation.state)' "$state" > /tmp/head-immutable.json
+            diff -u /tmp/base-immutable.json /tmp/head-immutable.json
+          else
+            test "$(jq -r '.migration27.state' "$state")" = 'NOT_EXECUTED'
+            test "$(jq -r '.permission_provisioning.state' "$state")" = 'NONE'
+            test "$(jq -r '.feature_activation.state' "$state")" = 'INACTIVE'
+          fi
+
+      - name: Enforce one-action ordered transition with exact-head authority and evidence
+        if: ${{ github.event.pull_request.base.sha != '' }}
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          API_URL: ${{ github.api_url }}
+        run: |
+          set -euo pipefail
+          state=ops/final-shift-close/STATE.json
+
+          if ! git cat-file -e "$BASE_SHA:$state" 2>/dev/null; then
+            echo 'Bootstrap state has no operational transition.'
+            exit 0
+          fi
+
+          git show "$BASE_SHA:$state" > /tmp/base-state.json
+
+          base_migration="$(jq -r '.migration27.state' /tmp/base-state.json)"
+          head_migration="$(jq -r '.migration27.state' "$state")"
+          base_permission="$(jq -r '.permission_provisioning.state' /tmp/base-state.json)"
+          head_permission="$(jq -r '.permission_provisioning.state' "$state")"
+          base_feature="$(jq -r '.feature_activation.state' /tmp/base-state.json)"
+          head_feature="$(jq -r '.feature_activation.state' "$state")"
+
+          changed=0
+          [[ "$base_migration" != "$head_migration" ]] && changed=$((changed + 1))
+          [[ "$base_permission" != "$head_permission" ]] && changed=$((changed + 1))
+          [[ "$base_feature" != "$head_feature" ]] && changed=$((changed + 1))
+          if [[ "$changed" -ne 1 ]]; then
+            echo "Exactly one dangerous operational state must transition; observed $changed." >&2
+            exit 1
+          fi
+
+          statuses="$(curl --fail-with-body --silent --show-error \
+            --header 'Accept: application/vnd.github+json' \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header 'X-GitHub-Api-Version: 2022-11-28' \
+            "$API_URL/repos/$REPOSITORY/commits/$HEAD_SHA/statuses?per_page=100")"
+
+          require_latest_success() {
+            local context="$1"
+            local state_value
+            state_value="$(jq -r --arg context "$context" '[.[] | select(.context == $context)][0].state // "missing"' <<<"$statuses")"
+            if [[ "$state_value" != 'success' ]]; then
+              echo "Required exact-head status is not success: $context ($state_value)." >&2
+              exit 1
+            fi
+          }
+
+          if [[ "$base_migration" != "$head_migration" ]]; then
+            [[ "$base_migration" == 'NOT_EXECUTED' && "$head_migration" == 'EXECUTED' ]] || {
+              echo 'Only migration27 NOT_EXECUTED -> EXECUTED is allowed.' >&2
+              exit 1
+            }
+            require_latest_success 'final-shift-close-migration27-execution-authority'
+            require_latest_success 'final-shift-close-migration27-execution-evidence'
+            echo 'Migration27 state transition qualified.'
+            exit 0
+          fi
+
+          if [[ "$base_permission" != "$head_permission" ]]; then
+            [[ "$base_permission" == 'NONE' && "$head_permission" == 'PROVISIONED' ]] || {
+              echo 'Only permission NONE -> PROVISIONED is allowed.' >&2
+              exit 1
+            }
+            [[ "$base_migration" == 'EXECUTED' ]] || {
+              echo 'Permission provisioning requires canonical migration27 EXECUTED state.' >&2
+              exit 1
+            }
+            require_latest_success 'final-shift-close-permission-provisioning-authority'
+            require_latest_success 'final-shift-close-permission-provisioning-evidence'
+            echo 'Scoped permission provisioning state transition qualified.'
+            exit 0
+          fi
+
+          [[ "$base_feature" == 'INACTIVE' && "$head_feature" == 'ACTIVE' ]] || {
+            echo 'Only feature INACTIVE -> ACTIVE is allowed.' >&2
+            exit 1
+          }
+          [[ "$base_migration" == 'EXECUTED' ]] || {
+            echo 'Feature activation requires canonical migration27 EXECUTED state.' >&2
+            exit 1
+          }
+          [[ "$base_permission" == 'PROVISIONED' ]] || {
+            echo 'Feature activation requires canonical scoped permission PROVISIONED state.' >&2
+            exit 1
+          }
+          require_latest_success 'final-shift-close-feature-activation-authority'
+          require_latest_success 'final-shift-close-feature-activation-evidence'
+          echo 'Feature activation state transition qualified.'
+
+      - name: Preserve Sprint102 as non-executing evidence consumer
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          workflow=.github/workflows/sprint102-final-shift-close-operational-sequencing-gate.yml
+          doc=docs/SPRINT102_FINAL_SHIFT_CLOSE_OPERATIONAL_SEQUENCE.md
+
+          grep -Fq 'final-shift-close-migration27-execution-evidence' "$workflow"
+          grep -Fq 'final-shift-close-permission-provisioning-evidence' "$workflow"
+          grep -Fq 'final-shift-close-feature-activation-evidence' "$workflow"
+          grep -Fq 'FINAL_SHIFT_CLOSE_EXECUTION_EVIDENCE_PRODUCER = NOT_IMPLEMENTED' "$doc"
+          grep -Fq 'MIGRATION_27_LIVE_EXECUTION = NOT_AUTHORIZED' "$doc"
+          grep -Fq 'FINAL_SHIFT_CLOSE_OPERATIONAL_ACTIVATION = NOT_AUTHORIZED' "$doc"
+          grep -Fq 'DEPLOYMENT_AUTHORITY = NOT_GRANTED' "$doc"
+          grep -Fq 'TECHNICAL_PREVIEW_ACTIVATION_AUTHORITY = NOT_GRANTED' "$doc"
+          grep -Fq 'PRODUCTION_AUTHORITY = NOT_GRANTED' "$doc"
+          grep -Fq 'UPDATER_ACTIVATION_AUTHORITY = NOT_GRANTED' "$doc"
+
+          ! grep -Fq -- '--request POST' "$workflow"
+          ! grep -Eq '(^|[[:space:]])(php artisan migrate|mysql |mysqldump |kubectl |helm |ssh |scp |rsync )' "$workflow"
+          ! grep -Fq 'ONEQAY_POS_SHIFT_CLOSE_ENABLED=true' "$workflow"
+
+          if ! git cat-file -e "$BASE_SHA:ops/final-shift-close/STATE.json" 2>/dev/null; then
+            git diff --exit-code "$BASE_SHA" "$HEAD_SHA" -- \
+              apps/web/app \
+              apps/web/database/migrations \
+              apps/web/routes \
+              apps/web/resources \
+              apps/web/bootstrap \
+              apps/web/config
+          fi

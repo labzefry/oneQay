@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "feature": "final-shift-close",
+  "migration27": {
+    "state": "NOT_EXECUTED",
+    "authority_context": "final-shift-close-migration27-execution-authority",
+    "evidence_context": "final-shift-close-migration27-execution-evidence"
+  },
+  "permission_provisioning": {
+    "state": "NONE",
+    "authority_context": "final-shift-close-permission-provisioning-authority",
+    "evidence_context": "final-shift-close-permission-provisioning-evidence",
+    "permission_id": "pos.shift.close",
+    "default_grant": "NONE"
+  },
+  "feature_activation": {
+    "state": "INACTIVE",
+    "authority_context": "final-shift-close-feature-activation-authority",
+    "evidence_context": "final-shift-close-feature-activation-evidence",
+    "runtime_flag": "ONEQAY_POS_SHIFT_CLOSE_ENABLED"
+  },
+  "deployment_authority": "NOT_GRANTED",
+  "technical_preview_activation": "NOT_AUTHORIZED",
+  "production_activation": "NOT_AUTHORIZED",
+  "updater_activation": "INACTIVE"
+}
