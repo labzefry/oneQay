@@ -134,9 +134,9 @@ Sprint117 historical sorted-newline source envelope SHA-256:
 
 Sprint118 successor sorted-newline source envelope SHA-256:
 
-`a046e41aef37a4e6e2c6d66054517ffd7ed81be85b70b1a9199e926af5388b57`
+`1b8a8a9851a5cac94389c6939f4c4f08dd479c108296c3959c996884612ee13c`
 
-The Sprint117 qualification workflow is upgraded only as a successor compatibility gate so the historical executor guarantees remain locked while the reserved producer becomes real source.
+The Sprint103 and Sprint117 qualification workflows are upgraded only as successor compatibility gates so historical migration/executor guarantees remain locked while the reserved producer becomes real source.
 
 ## Current canonical no-go disposition after Sprint118 source publication
 
