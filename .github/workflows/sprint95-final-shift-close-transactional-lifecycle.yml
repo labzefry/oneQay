@@ -63,12 +63,12 @@ jobs:
           set -euo pipefail
           repo=apps/web/app/Infrastructure/Pos/LaravelCloseShiftRepository.php
           grep -Fq 'transactionLevel() < 1' "$repo"
-          grep -Fq '->where('\''active_slot'\'', 1)' "$repo"
+          grep -Fq -- '->where('\''active_slot'\'', 1)' "$repo"
           grep -Fq 'LaravelExpectedCashSnapshotReader' "$repo"
           grep -Fq 'DeriveCashVariance' "$repo"
           grep -Fq 'REVIEW_ACCEPTED' "$repo"
           grep -Fq 'requireAuthorizedActors(' "$repo"
-          grep -Fq "->update(['active_slot' => null])" "$repo"
+          grep -Fq -- "->update(['active_slot' => null])" "$repo"
           grep -Fq "table('oneqay_pos_shift_close_evidence')->insert" "$repo"
           grep -Fq 'return $this->replayOrFail($existing, $fingerprint);' "$repo"
 
