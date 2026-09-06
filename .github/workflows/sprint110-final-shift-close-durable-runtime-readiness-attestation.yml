@@ -1,0 +1,163 @@
+name: Sprint110 Final Shift Close Durable Runtime Readiness Attestation
+
+# Attribution: Lab | zefry
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/sprint110-final-shift-close-durable-runtime-readiness-attestation.yml'
+      - 'apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeReadiness.php'
+      - 'apps/web/tests/pos-final-shift-close-durable-runtime-readiness.php'
+      - 'docs/SPRINT110_FINAL_SHIFT_CLOSE_DURABLE_RUNTIME_READINESS_ATTESTATION.md'
+      - 'ops/final-shift-close/DURABLE_RUNTIME_READINESS_CONTRACT.json'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint110-final-shift-close-durable-runtime-readiness-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qualify-durable-runtime-readiness:
+    name: qualify-durable-runtime-readiness
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Lock exact Sprint110 envelope
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/actual
+          cat > /tmp/expected <<'EOF'
+          .github/workflows/sprint110-final-shift-close-durable-runtime-readiness-attestation.yml
+          apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeReadiness.php
+          apps/web/tests/pos-final-shift-close-durable-runtime-readiness.php
+          docs/SPRINT110_FINAL_SHIFT_CLOSE_DURABLE_RUNTIME_READINESS_ATTESTATION.md
+          ops/final-shift-close/DURABLE_RUNTIME_READINESS_CONTRACT.json
+          EOF
+          diff -u /tmp/expected /tmp/actual
+          test "$(sha256sum /tmp/actual | awk '{print $1}')" = 'efce88241df5ada783e6699c996769a320688ed05c082bf3e2d7590372169c77'
+
+      - name: Validate Sprint109 blocked-target prerequisite
+        shell: bash
+        run: |
+          set -euo pipefail
+          selection=ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+          jq -e . "$selection" >/dev/null
+          test "$(jq -r '.selection_state' "$selection")" = 'BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET'
+          test "$(jq -r '.selected_target' "$selection")" = 'null'
+          test "$(jq -r '.required_runtime_model' "$selection")" = 'NON_SYNTHETIC_DURABLE_RUNTIME'
+
+      - name: Validate durable runtime readiness contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          contract=ops/final-shift-close/DURABLE_RUNTIME_READINESS_CONTRACT.json
+          jq -e . "$contract" >/dev/null
+          test "$(jq -r '.contract_state' "$contract")" = 'SOURCE_READINESS_ONLY'
+          test "$(jq -r '.required_runtime_model' "$contract")" = 'NON_SYNTHETIC_DURABLE_RUNTIME'
+          test "$(jq -r '.required_environment_isolation' "$contract")" = 'ISOLATED_NON_PRODUCTION'
+          test "$(jq -r '.required_activation_authority_binding' "$contract")" = 'SEPARATE_EXPLICIT_ACTIVATION_AUTHORITY'
+          test "$(jq -r '.required_feature_activation_state' "$contract")" = 'INACTIVE'
+          test "$(jq '.required_attestation_fields | length' "$contract")" = '22'
+          test "$(jq '.disallowed_runtime_classes | length' "$contract")" = '8'
+          for runtime in local test testing ci preview synthetic-preview production prod; do
+            test "$(jq --arg runtime "$runtime" '[.disallowed_runtime_classes[] | select(. == $runtime)] | length' "$contract")" = '1'
+          done
+          test "$(jq -r '.qualification_requirements.serving_application_runtime' "$contract")" = 'true'
+          test "$(jq -r '.qualification_requirements.synthetic_fixture_runtime' "$contract")" = 'false'
+          test "$(jq -r '.qualification_requirements.production_traffic_served' "$contract")" = 'false'
+          test "$(jq -r '.qualification_requirements.authenticated_configuration_mutation_channel' "$contract")" = 'true'
+          test "$(jq -r '.qualification_requirements.verified_flag_rollback_supported' "$contract")" = 'true'
+          test "$(jq -r '.qualification_requirements.secrets_embedded' "$contract")" = 'false'
+
+      - name: Prove validator is read-only and unbound
+        shell: bash
+        run: |
+          set -euo pipefail
+          validator=apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeReadiness.php
+          grep -Fq "NON_SYNTHETIC_DURABLE_RUNTIME" "$validator"
+          grep -Fq "ISOLATED_NON_PRODUCTION" "$validator"
+          grep -Fq "SEPARATE_EXPLICIT_ACTIVATION_AUTHORITY" "$validator"
+          grep -Fq "FEATURE_ACTIVATION_STATE = 'INACTIVE'" "$validator"
+          grep -Fq "'ci'" "$validator"
+          grep -Fq "'preview'" "$validator"
+          grep -Fq "'production'" "$validator"
+          grep -Fq 'attestation_must_not_embed_secrets' "$validator"
+          grep -Fq 'final_shift_close_durable_runtime_readiness_rejected:' "$validator"
+
+          if grep -Eq 'env\(|getenv\(|putenv\(|config\(|Illuminate\\|Route::|DB::|Schema::|Connection|Http::|curl_|Guzzle|exec\(|shell_exec\(|proc_open\(' "$validator"; then
+            echo 'Sprint110 readiness validator must remain read-only, framework-independent, and unbound.' >&2
+            exit 1
+          fi
+
+      - name: Preserve operational runtime envelope and state
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git diff --exit-code "$BASE_SHA" "$HEAD_SHA" -- \
+            apps/web/app/Providers/FinalShiftCloseServiceProvider.php \
+            apps/web/app/Infrastructure/Pos/LaravelCloseShiftRepository.php \
+            apps/web/config/oneqay.php \
+            apps/web/bootstrap \
+            apps/web/database/migrations \
+            apps/web/routes \
+            ops/final-shift-close/STATE.json \
+            ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+
+          provider=apps/web/app/Providers/FinalShiftCloseServiceProvider.php
+          repository=apps/web/app/Infrastructure/Pos/LaravelCloseShiftRepository.php
+          grep -Fq "['local', 'test', 'ci']" "$provider"
+          grep -Fq "['local', 'test', 'ci']" "$repository"
+
+          state=ops/final-shift-close/STATE.json
+          test "$(jq -r '.migration27.state' "$state")" = 'NOT_EXECUTED'
+          test "$(jq -r '.permission_provisioning.state' "$state")" = 'NONE'
+          test "$(jq -r '.feature_activation.state' "$state")" = 'INACTIVE'
+          test "$(jq -r '.deployment_authority' "$state")" = 'NOT_GRANTED'
+          test "$(jq -r '.production_activation' "$state")" = 'NOT_AUTHORIZED'
+
+      - name: Validate PHP syntax and executable readiness regression
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l app/Application/Pos/FinalShiftCloseDurableRuntimeReadiness.php
+          php -l tests/pos-final-shift-close-durable-runtime-readiness.php
+          php tests/pos-final-shift-close-durable-runtime-readiness.php
+
+      - name: Lock Sprint110 source-only disposition
+        shell: bash
+        run: |
+          set -euo pipefail
+          doc=docs/SPRINT110_FINAL_SHIFT_CLOSE_DURABLE_RUNTIME_READINESS_ATTESTATION.md
+          grep -Fq 'DURABLE_RUNTIME_READINESS_VERIFIER = MATERIALIZED_SOURCE_ONLY' "$doc"
+          grep -Fq 'SELECTED_TARGET = NONE' "$doc"
+          grep -Fq 'RUNTIME_ALLOWLIST_CHANGE = NOT_IMPLEMENTED' "$doc"
+          grep -Fq 'ENVIRONMENT_DEPLOYMENT = NOT_PERFORMED' "$doc"
+          grep -Fq 'MIGRATION_27_EXECUTION = NOT_PERFORMED' "$doc"
+          grep -Fq 'FEATURE_ACTIVATION = INACTIVE' "$doc"
+          grep -Fq 'PRODUCTION_AUTHORITY = NOT_GRANTED' "$doc"
+          grep -Fq 'UPDATER_ACTIVATION_AUTHORITY = NOT_GRANTED' "$doc"
+
+          workflow=.github/workflows/sprint110-final-shift-close-durable-runtime-readiness-attestation.yml
+          ! grep -Eq '^  workflow_dispatch:' "$workflow"
+
+      - name: Confirm tracked source remains unchanged
+        shell: bash
+        run: git diff --exit-code
