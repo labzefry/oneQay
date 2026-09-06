@@ -244,6 +244,7 @@ jobs:
             'app/Application/Pos/CatalogPreparationCommand.php'
             'app/Application/Pos/CatalogPreparationRepository.php'
             'app/Application/Pos/CatalogPreparationResult.php'
+            'app/Application/Pos/DurablePosSaleRepository.php'
             'app/Application/Pos/PrepareCatalogItem.php'
             'app/Delivery/Http/Pos/PosCatalogPreparationController.php'
             'app/Infrastructure/Pos/LaravelCatalogPreparationRepository.php'
