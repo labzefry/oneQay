@@ -1,0 +1,212 @@
+name: Sprint115 Final Shift Close Durable Runtime Target Selection Persistence
+
+# Attribution: Lab | zefry
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/final-shift-close-durable-runtime-target-selection-persistence.yml'
+      - '.github/workflows/sprint115-final-shift-close-durable-runtime-target-selection-persistence.yml'
+      - 'docs/SPRINT115_FINAL_SHIFT_CLOSE_DURABLE_RUNTIME_TARGET_SELECTION_PERSISTENCE.md'
+      - 'ops/final-shift-close/DURABLE_RUNTIME_TARGET_SELECTION_PERSISTENCE_CONTRACT.json'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint115-final-shift-close-durable-runtime-target-selection-persistence-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qualify-durable-target-selection-persistence:
+    name: qualify-durable-target-selection-persistence
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Lock exact Sprint115 source envelope
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/actual
+          cat > /tmp/expected <<'EOF'
+          .github/workflows/final-shift-close-durable-runtime-target-selection-persistence.yml
+          .github/workflows/sprint115-final-shift-close-durable-runtime-target-selection-persistence.yml
+          docs/SPRINT115_FINAL_SHIFT_CLOSE_DURABLE_RUNTIME_TARGET_SELECTION_PERSISTENCE.md
+          ops/final-shift-close/DURABLE_RUNTIME_TARGET_SELECTION_PERSISTENCE_CONTRACT.json
+          EOF
+          diff -u /tmp/expected /tmp/actual
+          test "$(sha256sum /tmp/actual | awk '{print $1}')" = 'b60f059137e8a1893d773d9067378ce0f83c9c76d8e5197a464e9bc36854add1'
+
+      - name: Validate Sprint115 persistence contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          contract=ops/final-shift-close/DURABLE_RUNTIME_TARGET_SELECTION_PERSISTENCE_CONTRACT.json
+          jq -e . "$contract" >/dev/null
+          test "$(jq -r '.contract_state' "$contract")" = 'MATERIALIZED_SOURCE_ONLY_NOT_DISPATCHED'
+          test "$(jq -r '.executor_workflow_path' "$contract")" = '.github/workflows/final-shift-close-durable-runtime-target-selection-persistence.yml'
+          test "$(jq -r '.caller_supplied_runtime_target_inputs' "$contract")" = 'false'
+          test "$(jq -r '.ingestion_workflow_path' "$contract")" = '.github/workflows/final-shift-close-durable-runtime-attestation-ingestion.yml'
+          test "$(jq -r '.ingestion_artifact_name' "$contract")" = 'final-shift-close-durable-runtime-attestation-ingestion'
+          test "$(jq -r '.base_selection_state' "$contract")" = 'BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET'
+          test "$(jq -r '.target_selection_state' "$contract")" = 'SELECTED_NOT_AUTHORIZED'
+          test "$(jq -r '.target_pr_requirements.changed_file_count' "$contract")" = '1'
+          test "$(jq -r '.target_pr_requirements.changed_file' "$contract")" = 'ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json'
+          test "$(jq -r '.target_pr_requirements.only_selection_state_and_selected_target_may_change' "$contract")" = 'true'
+          test "$(jq -r '.target_pr_requirements.product_owner_merge_authority_required_on_exact_head' "$contract")" = 'true'
+          test "$(jq -r '.trusted_ingestion_requirements.ingestion_state_must_equal' "$contract")" = 'ACCEPTED_NOT_SELECTED'
+          test "$(jq -r '.trusted_ingestion_requirements.ingestion_selected_target_must_be_null' "$contract")" = 'true'
+          test "$(jq -r '.selection_transition_requirements.sprint110_readiness_validation_is_reused' "$contract")" = 'true'
+          test "$(jq -r '.selection_transition_requirements.sprint111_target_selector_is_reused' "$contract")" = 'true'
+          test "$(jq -r '.selection_transition_requirements.executor_does_not_modify_or_merge_target_pr' "$contract")" = 'true'
+          test "$(jq -r '.source_envelope_sha256' "$contract")" = 'b60f059137e8a1893d773d9067378ce0f83c9c76d8e5197a464e9bc36854add1'
+          test "$(jq -r '.canonical_boundaries.selected_target' "$contract")" = 'NONE'
+          test "$(jq -r '.canonical_boundaries.feature_activation' "$contract")" = 'INACTIVE'
+
+      - name: Prove manual current-main evidence-only executor boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          executor=.github/workflows/final-shift-close-durable-runtime-target-selection-persistence.yml
+          grep -Fq '  workflow_dispatch:' "$executor"
+          grep -Fq 'target_pr_number:' "$executor"
+          grep -Fq 'target_head_sha:' "$executor"
+          grep -Fq 'ingestion_run_id:' "$executor"
+          grep -Fq 'ingestion_run_attempt:' "$executor"
+          ! grep -Fq 'pull_request:' "$executor"
+          ! grep -Fq 'schedule:' "$executor"
+          grep -Fq 'refs/heads/main' "$executor"
+          grep -Fq 'Selection persistence gate must run from current canonical main' "$executor"
+          grep -Fq 'ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json' "$executor"
+
+      - name: Prove exact target PR and merge-authority qualification
+        shell: bash
+        run: |
+          set -euo pipefail
+          executor=.github/workflows/final-shift-close-durable-runtime-target-selection-persistence.yml
+          grep -Fq "jq -r '.changed_files'" "$executor"
+          grep -Fq "== '1'" "$executor"
+          grep -Fq "jq -r '.head.repo.full_name'" "$executor"
+          grep -Fq "jq -r '.base.ref'" "$executor"
+          grep -Fq "jq -r '.base.sha'" "$executor"
+          grep -Fq "jq -r '.head.sha'" "$executor"
+          grep -Fq 'product-owner-merge-authority' "$executor"
+          grep -Fq 'Exact-head Product Owner merge authority is required' "$executor"
+          grep -Fq 'BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET' "$executor"
+          grep -Fq 'SELECTED_NOT_AUTHORIZED' "$executor"
+
+      - name: Prove exact Sprint114 ingestion evidence retrieval and binding
+        shell: bash
+        run: |
+          set -euo pipefail
+          executor=.github/workflows/final-shift-close-durable-runtime-target-selection-persistence.yml
+          grep -Fq '.github/workflows/final-shift-close-durable-runtime-attestation-ingestion.yml' "$executor"
+          grep -Fq 'final-shift-close-durable-runtime-attestation-ingestion' "$executor"
+          grep -Fq 'final-shift-close-durable-runtime-attestation-ingestion-evidence' "$executor"
+          grep -Fq "jq -r '.run_attempt'" "$executor"
+          grep -Fq "jq -r '.head_branch'" "$executor"
+          grep -Fq "jq -r '.conclusion'" "$executor"
+          grep -Fq 'compare/$ingestion_head...$GITHUB_SHA' "$executor"
+          grep -Fq '.expired == false' "$executor"
+          grep -Fq 'artifact_size <= 524288' "$executor"
+          grep -Fq 'attestation.json' "$executor"
+          grep -Fq 'provenance.json' "$executor"
+          grep -Fq 'ingestion.json' "$executor"
+          grep -Fq 'execution.json' "$executor"
+          grep -Fq 'ACCEPTED_NOT_SELECTED' "$executor"
+          grep -Fq 'NOT_PERFORMED' "$executor"
+          grep -Fq 'actions/runs/$INGESTION_RUN_ID' "$executor"
+
+      - name: Prove canonical recomputation and evidence-bound selection semantics
+        shell: bash
+        run: |
+          set -euo pipefail
+          executor=.github/workflows/final-shift-close-durable-runtime-target-selection-persistence.yml
+          grep -Fq 'FinalShiftCloseDurableRuntimeReadiness.php' "$executor"
+          grep -Fq 'FinalShiftCloseDurableRuntimeAttestationProvenance.php' "$executor"
+          grep -Fq 'FinalShiftCloseDurableRuntimeAttestationIngestion.php' "$executor"
+          grep -Fq 'FinalShiftCloseDurableRuntimeTargetSelection.php' "$executor"
+          grep -Fq 'does not match canonical Sprint112 recomputation' "$executor"
+          grep -Fq "'selection_fingerprint_sha256'" "$executor"
+          grep -Fq "'trusted_ingestion'" "$executor"
+          grep -Fq "'run_id' =>" "$executor"
+          grep -Fq "'run_attempt' =>" "$executor"
+          grep -Fq "'ingestion_fingerprint_sha256' =>" "$executor"
+          grep -Fq 'changes fields outside selection_state and selected_target' "$executor"
+
+      - name: Prove evidence lifecycle and no target mutation
+        shell: bash
+        run: |
+          set -euo pipefail
+          executor=.github/workflows/final-shift-close-durable-runtime-target-selection-persistence.yml
+          pending_line="$(grep -n 'name: Publish pending target selection persistence evidence status' "$executor" | cut -d: -f1)"
+          upload_line="$(grep -n 'name: Upload target selection persistence evidence' "$executor" | cut -d: -f1)"
+          success_line="$(grep -n 'name: Publish success target selection persistence evidence status' "$executor" | cut -d: -f1)"
+          (( pending_line < upload_line && upload_line < success_line ))
+          grep -Fq 'actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02' "$executor"
+          grep -Fq 'TARGET_PR_ONLY_NOT_MERGED_BY_EXECUTOR' "$executor"
+          ! grep -Fq 'git push' "$executor"
+          ! grep -Fq '/merges' "$executor"
+          ! grep -Fq '/merge"' "$executor"
+          ! grep -Fq 'ONEQAY_POS_SHIFT_CLOSE_ENABLED=true' "$executor"
+          ! grep -Fq 'php artisan migrate' "$executor"
+
+      - name: Preserve canonical operational and runtime source
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git diff --exit-code "$BASE_SHA" "$HEAD_SHA" -- \
+            apps/web/app \
+            apps/web/bootstrap \
+            apps/web/config \
+            apps/web/database/migrations \
+            apps/web/routes \
+            apps/web/resources \
+            ops/final-shift-close/STATE.json \
+            ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+
+          state=ops/final-shift-close/STATE.json
+          selection=ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+          test "$(jq -r '.migration27.state' "$state")" = 'NOT_EXECUTED'
+          test "$(jq -r '.permission_provisioning.state' "$state")" = 'NONE'
+          test "$(jq -r '.feature_activation.state' "$state")" = 'INACTIVE'
+          test "$(jq -r '.selection_state' "$selection")" = 'BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET'
+          test "$(jq -r '.selected_target' "$selection")" = 'null'
+
+      - name: Lock Sprint115 source-only no-go disposition
+        shell: bash
+        run: |
+          set -euo pipefail
+          doc=docs/SPRINT115_FINAL_SHIFT_CLOSE_DURABLE_RUNTIME_TARGET_SELECTION_PERSISTENCE.md
+          grep -Fq 'DURABLE_RUNTIME_TARGET_SELECTION_PERSISTENCE_EXECUTOR_SOURCE = MATERIALIZED_NOT_DISPATCHED' "$doc"
+          grep -Fq 'SPRINT113_PRODUCER_DISPATCH = NOT_PERFORMED' "$doc"
+          grep -Fq 'REAL_DURABLE_RUNTIME_ATTESTATION = NONE' "$doc"
+          grep -Fq 'SPRINT114_INGESTION_DISPATCH = NOT_PERFORMED' "$doc"
+          grep -Fq 'ACCEPTED_REAL_INGESTION_CANDIDATE = NONE' "$doc"
+          grep -Fq 'TARGET_SELECTION_PERSISTENCE_EXECUTION = NOT_PERFORMED' "$doc"
+          grep -Fq 'SELECTED_TARGET = NONE' "$doc"
+          grep -Fq 'ACTIVATION_AUTHORITY = NOT_GRANTED' "$doc"
+          grep -Fq 'RUNTIME_ALLOWLIST_CHANGE = NOT_IMPLEMENTED' "$doc"
+          grep -Fq 'MIGRATION_27_EXECUTION = NOT_PERFORMED' "$doc"
+          grep -Fq 'PERMISSION_PROVISIONING = NONE' "$doc"
+          grep -Fq 'FEATURE_ACTIVATION = INACTIVE' "$doc"
+          grep -Fq 'PRODUCTION_ACTIVATION = NOT_AUTHORIZED' "$doc"
+          grep -Fq 'UPDATER_ACTIVATION = INACTIVE' "$doc"
+
+      - name: Confirm tracked source remains unchanged
+        shell: bash
+        run: git diff --exit-code
