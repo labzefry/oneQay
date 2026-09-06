@@ -26,12 +26,10 @@ $assert(str_contains($route, "Route::post('/pos/shifts/close', PosShiftCloseCont
 $assert(str_contains($route, "->name('pos.shifts.close')"), 'canonical POST route name preserved');
 $assert(str_contains($page, "import axios, { AxiosError } from 'axios'"), 'JSON delivery uses axios');
 $assert(str_contains($page, 'crypto.randomUUID()'), 'stable client operation ID seed');
-$assert(str_contains($page, 'operation_id: operation.value'), 'operation-id-only mutation payload');
-$assert(! str_contains($page, 'closing_cash_atomic:'), 'UI cannot submit closing cash');
-$assert(! str_contains($page, 'variance_atomic:'), 'UI cannot submit variance');
+$mutationPayload = "axios.post<CloseResult>(props.delivery.post_url, {\n      operation_id: operation.value,\n    }, {";
+$assert(str_contains($page, $mutationPayload), 'mutation payload contains exactly operation ID');
 $assert(! str_contains($page, 'reviewer_actor_identity_id'), 'UI cannot submit reviewer identity');
 $assert(! str_contains($page, 'closer_actor_identity_id'), 'UI cannot submit closer identity');
-$assert(! str_contains($page, 'opened_at_unix:'), 'UI cannot submit lifecycle timestamp');
 $assert(str_contains($page, 'result.value !== null'), 'successful close disables second UI mutation');
 $assert(str_contains($page, "activation_state: 'DORMANT_FAIL_CLOSED'"), 'typed dormant boundary');
 $assert(str_contains($page, 'production_ready: false'), 'typed production no-go boundary');
