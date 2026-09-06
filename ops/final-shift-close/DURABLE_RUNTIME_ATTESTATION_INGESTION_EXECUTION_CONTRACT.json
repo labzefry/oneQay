@@ -1,0 +1,87 @@
+{
+  "schema_version": 1,
+  "feature": "final-shift-close",
+  "contract_state": "MATERIALIZED_SOURCE_ONLY_NOT_DISPATCHED",
+  "purpose": "RETRIEVE_EXACT_SPRINT113_ATTESTATION_ARTIFACT_AND_EXECUTE_SPRINT112_INGESTION_WITHOUT_TARGET_SELECTION",
+  "executor_workflow_path": ".github/workflows/final-shift-close-durable-runtime-attestation-ingestion.yml",
+  "executor_repository": "labzefry/oneQay",
+  "executor_ref": "refs/heads/main",
+  "executor_event": "workflow_dispatch",
+  "caller_supplied_runtime_target_inputs": false,
+  "allowed_dispatch_inputs": [
+    "producer_run_id",
+    "producer_run_attempt"
+  ],
+  "producer_workflow_path": ".github/workflows/final-shift-close-durable-runtime-attestation.yml",
+  "producer_artifact_name": "final-shift-close-durable-runtime-attestation",
+  "producer_evidence_context": "final-shift-close-durable-runtime-attestation-evidence",
+  "ingestion_artifact_name": "final-shift-close-durable-runtime-attestation-ingestion",
+  "ingestion_evidence_context": "final-shift-close-durable-runtime-attestation-ingestion-evidence",
+  "ingestion_output_state": "ACCEPTED_NOT_SELECTED",
+  "selected_target": null,
+  "activation_authority_state": "NOT_GRANTED",
+  "feature_activation_state": "INACTIVE",
+  "persistence_state": "NOT_PERFORMED",
+  "runtime_allowlist_change": "NOT_IMPLEMENTED",
+  "artifact_constraints": {
+    "producer_artifact_count": 1,
+    "producer_artifact_must_not_be_expired": true,
+    "producer_artifact_max_zip_bytes": 262144,
+    "producer_bundle_entries": [
+      "attestation.json",
+      "provenance.json"
+    ],
+    "producer_json_max_bytes_each": 32768,
+    "ingestion_bundle_entries": [
+      "attestation.json",
+      "provenance.json",
+      "ingestion.json",
+      "execution.json"
+    ],
+    "retention_days": 30
+  },
+  "qualification_requirements": {
+    "executor_source_must_equal_current_canonical_main": true,
+    "producer_run_id_and_attempt_are_exact": true,
+    "producer_run_event_must_be_workflow_dispatch": true,
+    "producer_run_workflow_path_is_fixed": true,
+    "producer_run_head_branch_is_main": true,
+    "producer_run_must_be_completed_success": true,
+    "producer_run_head_must_remain_in_canonical_main_history": true,
+    "exact_single_non_expired_producer_artifact_required": true,
+    "producer_artifact_bundle_shape_is_exact": true,
+    "producer_run_identity_must_match_provenance": true,
+    "producer_source_commit_must_match_run_head": true,
+    "producer_success_status_context_and_exact_run_target_url_required": true,
+    "sprint110_readiness_validation_is_reused": true,
+    "sprint112_provenance_validation_is_reused": true,
+    "sprint112_ingestion_service_is_reused": true,
+    "ingestion_output_must_remain_accepted_not_selected": true,
+    "pending_status_precedes_ingestion_artifact_publish": true,
+    "success_status_follows_successful_ingestion_artifact_publish": true,
+    "source_merge_does_not_dispatch_executor": true,
+    "source_merge_does_not_persist_target_selection": true,
+    "source_merge_does_not_grant_activation_authority": true
+  },
+  "action_pins": {
+    "actions_checkout": "11bd71901bbe5b1630ceea73d27597364c9af683",
+    "actions_upload_artifact": "ea165f8d65b6e75b540449e92b4886f43607fa02"
+  },
+  "canonical_boundaries": {
+    "producer_source": "MATERIALIZED_NOT_DISPATCHED_BY_SPRINT113",
+    "producer_dispatch": "NOT_PERFORMED",
+    "real_attestation": "NONE",
+    "trusted_ingestion_executor_source": "MATERIALIZED_NOT_DISPATCHED",
+    "trusted_ingestion_execution": "NOT_PERFORMED",
+    "selected_target": "NONE",
+    "environment_creation": "NOT_PERFORMED",
+    "environment_deployment": "NOT_PERFORMED",
+    "runtime_allowlist_change": "NOT_IMPLEMENTED",
+    "migration27_execution": "NOT_PERFORMED",
+    "permission_provisioning": "NONE",
+    "feature_activation": "INACTIVE",
+    "technical_preview_activation": "NOT_AUTHORIZED",
+    "production_activation": "NOT_AUTHORIZED",
+    "updater_activation": "INACTIVE"
+  }
+}
