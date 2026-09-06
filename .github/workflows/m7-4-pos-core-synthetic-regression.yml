@@ -1,3 +1,4 @@
+# Sprint90 post-close mutation M7.4 compatibility — Lab | zefry
 # Sprint60 expected-cash M7.4 compatibility — Lab | zefry
 # Sprint57 immutable sale-to-shift binding M7.4 compatibility — Lab | zefry
 # Sprint54 bounded successor compatibility predecessor — Lab | zefry
@@ -68,7 +69,43 @@ jobs:
           echo 'ONEQAY_SPRINT54_JRN010_PREREQ_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
           echo 'ONEQAY_SPRINT57_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
           echo 'ONEQAY_SPRINT57_M74_COMPATIBILITY=false' >> "$GITHUB_ENV"
-          if [[ "$count" -eq 1 && "$fingerprint" == '5bc05564bcf4dae33ea3ce6c4890083437a60a21eb4e7f1e9318911ae60f5c16' ]]; then
+          if [[ "$count" -eq 5 && "$fingerprint" == '43e53ee63fdf476b91f9dd2fa0d2d6ab32f710e0d26e144ad119f4da60a2149c' ]]; then
+            for expected in \
+              '.github/workflows/sprint90-post-close-sale-mutation-freeze-regression.yml' \
+              'apps/web/app/Infrastructure/Pos/LaravelDurablePosSaleRepository.php' \
+              'apps/web/app/Infrastructure/Pos/LaravelSaleCashRefundRepository.php' \
+              'apps/web/tests/pos-post-close-sale-mutation-freeze.php' \
+              'docs/SPRINT90_POST_CLOSE_SALE_MUTATION_FREEZE.md'
+            do
+              grep -Fxq "$expected" /tmp/m74-changed-files.txt
+            done
+            git diff --exit-code "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" -- apps/web/database/migrations
+            for repository in \
+              'apps/web/app/Infrastructure/Pos/LaravelDurablePosSaleRepository.php' \
+              'apps/web/app/Infrastructure/Pos/LaravelSaleCashRefundRepository.php'
+            do
+              git update-index --assume-unchanged "$repository"
+              git show "${{ github.event.pull_request.base.sha }}:$repository" > "$repository"
+            done
+            echo 'ONEQAY_SPRINT57_M74_COMPATIBILITY=true' >> "$GITHUB_ENV"
+            echo 'Recognized exact Sprint90 post-close mutation source at M7.4 historical horizon.'
+            exit 0
+          elif [[ "$count" -eq 6 && "$fingerprint" == '232e112191b5ea0fb6b7aa402443692af512bcf66101f0d235525862cb586462' ]]; then
+            for expected in \
+              '.github/workflows/m7-4-pos-core-synthetic-regression.yml' \
+              '.github/workflows/sprint46-jrn006-durable-sale-completion-regression.yml' \
+              '.github/workflows/sprint49-jrn006-active-shift-precondition-regression.yml' \
+              '.github/workflows/sprint50-jrn007-completed-sale-void-regression.yml' \
+              '.github/workflows/sprint52-jrn007-bounded-full-cash-refund-regression.yml' \
+              '.github/workflows/sprint57-jrn010-prerequisite-sale-shift-binding-regression.yml'
+            do
+              grep -Fxq "$expected" /tmp/m74-changed-files.txt
+            done
+            git diff --exit-code "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" -- apps/web/database/migrations
+            echo 'ONEQAY_SPRINT57_M74_COMPATIBILITY=true' >> "$GITHUB_ENV"
+            echo 'Recognized exact Sprint90 six-workflow compatibility self-qualification at M7.4 historical horizon.'
+            exit 0
+          elif [[ "$count" -eq 1 && "$fingerprint" == '5bc05564bcf4dae33ea3ce6c4890083437a60a21eb4e7f1e9318911ae60f5c16' ]]; then
             grep -Fxq '.github/workflows/m7-4-pos-core-synthetic-regression.yml' /tmp/m74-changed-files.txt
             echo 'ONEQAY_SPRINT57_M74_COMPATIBILITY=true' >> "$GITHUB_ENV"
             echo 'Recognized exact Sprint57 M7.4 workflow-only compatibility correction shape.'
