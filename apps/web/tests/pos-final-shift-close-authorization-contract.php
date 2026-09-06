@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Application\Authorization\FinalShiftClosePermission;
 use App\Application\Pos\FinalShiftCloseAuthorizationPolicy;
+use App\Application\Pos\FinalShiftClosePermission;
 use App\Application\Pos\PosTransactionViolation;
 
 // Author by Lab | zefry
