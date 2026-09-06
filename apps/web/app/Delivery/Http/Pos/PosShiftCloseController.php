@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Delivery\Http\Pos;
 
 use App\Application\Authorization\DurableAuthorizationViolation;
+use App\Application\Persistence\DurablePersistenceViolation;
 use App\Application\Pos\CloseShift;
 use App\Application\Pos\CloseShiftCommand;
 use App\Application\Pos\PosTransactionViolation;
@@ -64,7 +65,7 @@ final class PosShiftCloseController
                 403,
                 ['Cache-Control' => 'no-store, private'],
             );
-        } catch (InvalidArgumentException|PosTransactionViolation) {
+        } catch (InvalidArgumentException|PosTransactionViolation|DurablePersistenceViolation) {
             return response()->json(
                 SafeErrorEnvelope::make('POS_SHIFT_CLOSE_REJECTED', $correlationId),
                 422,
