@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "feature": "final-shift-close",
+  "sprint": 120,
+  "runtime_binding_manifest_writer_source": "MATERIALIZED",
+  "writer_invocation": "NOT_IMPLEMENTED",
+  "runtime_manifest_materialization": "NOT_PERFORMED",
+  "target_path_contract": "ABSOLUTE_PRIVATE_FILESYSTEM_PATH",
+  "default_runtime_target_path": "storage/app/private/final-shift-close-runtime-binding.json",
+  "manifest_contract": {
+    "exact_field_set": true,
+    "selection_state": "SELECTED_NOT_AUTHORIZED",
+    "secrets_embedded": false,
+    "forbidden_runtime_classes": [
+      "local",
+      "test",
+      "testing",
+      "ci",
+      "preview",
+      "synthetic-preview",
+      "production",
+      "prod"
+    ],
+    "canonical_json": true
+  },
+  "filesystem_contract": {
+    "parent_directory_required": true,
+    "parent_directory_symlink_forbidden": true,
+    "parent_group_world_access_forbidden": true,
+    "target_symlink_forbidden": true,
+    "existing_target_must_be_private_regular_file": true,
+    "lock_file_mode": "0600",
+    "temporary_file_mode": "0600",
+    "final_file_mode": "0600",
+    "atomic_rename": true,
+    "post_write_sha256_verification": true
+  },
+  "delivery_boundary": {
+    "provider_registration": "NOT_REGISTERED",
+    "sprint119_delivery_gate": "HARD_FALSE",
+    "writer_command": "NOT_IMPLEMENTED",
+    "writer_route": "NOT_IMPLEMENTED",
+    "writer_service_provider": "NOT_IMPLEMENTED",
+    "token_configuration": "NOT_MATERIALIZED"
+  },
+  "canonical_boundaries": {
+    "selected_target": "NONE",
+    "sprint118_binding_producer_dispatch": "NOT_PERFORMED",
+    "migration27_execution": "NOT_PERFORMED",
+    "permission_provisioning": "NONE",
+    "feature_activation": "INACTIVE",
+    "runtime_allowlist_change": "NOT_IMPLEMENTED",
+    "deployment_authority": "NOT_GRANTED",
+    "technical_preview_activation": "NOT_AUTHORIZED",
+    "production_activation": "NOT_AUTHORIZED",
+    "updater_activation": "INACTIVE"
+  },
+  "attribution": "Lab | zefry"
+}
