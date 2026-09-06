@@ -1,3 +1,4 @@
+# Sprint90 post-close mutation historical compatibility — Lab | zefry
 # Sprint57 immutable sale-to-shift binding Sprint50 compatibility — Lab | zefry
 # Sprint54 bounded 12-workflow source-preservation correction — Lab | zefry
 # Sprint54 bounded successor compatibility predecessor — Lab | zefry
@@ -88,7 +89,55 @@ jobs:
           }
 
           echo 'ONEQAY_SPRINT74_POS_HISTORICAL=false' >> "$GITHUB_ENV"
-          if [[ "$count" -eq 6 && "$fingerprint" == 'cc40f08beda780e4aa4795f29aa7533bbde1029d11855d43f180812502c4d80b' ]]; then
+          if [[ "$count" -eq 5 && "$fingerprint" == '43e53ee63fdf476b91f9dd2fa0d2d6ab32f710e0d26e144ad119f4da60a2149c' ]]; then
+            for expected in \
+              '.github/workflows/sprint90-post-close-sale-mutation-freeze-regression.yml' \
+              'apps/web/app/Infrastructure/Pos/LaravelDurablePosSaleRepository.php' \
+              'apps/web/app/Infrastructure/Pos/LaravelSaleCashRefundRepository.php' \
+              'apps/web/tests/pos-post-close-sale-mutation-freeze.php' \
+              'docs/SPRINT90_POST_CLOSE_SALE_MUTATION_FREEZE.md'
+            do
+              grep -Fxq "$expected" /tmp/s50-source-paths
+            done
+            git diff --exit-code "$base" "$head" -- apps/web/database/migrations
+            for repository in \
+              'apps/web/app/Infrastructure/Pos/LaravelDurablePosSaleRepository.php' \
+              'apps/web/app/Infrastructure/Pos/LaravelSaleCashRefundRepository.php'
+            do
+              git update-index --assume-unchanged "$repository"
+              git show "$base:$repository" > "$repository"
+            done
+            for index in $(seq 20 27); do
+              migration="$(find apps/web/database/migrations -maxdepth 1 -type f -name "$(printf '0000_00_00_%06d_*' "$index")" -print -quit)"
+              if [[ -n "$migration" && -f "$migration" ]]; then
+                git update-index --assume-unchanged "$migration"
+                rm -f "$migration"
+              fi
+            done
+            echo 'ONEQAY_SPRINT74_POS_HISTORICAL=true' >> "$GITHUB_ENV"
+            echo 'Recognized exact Sprint90 post-close mutation source at Sprint50 migration #19 horizon.'
+          elif [[ "$count" -eq 6 && "$fingerprint" == '232e112191b5ea0fb6b7aa402443692af512bcf66101f0d235525862cb586462' ]]; then
+            for expected in \
+              '.github/workflows/m7-4-pos-core-synthetic-regression.yml' \
+              '.github/workflows/sprint46-jrn006-durable-sale-completion-regression.yml' \
+              '.github/workflows/sprint49-jrn006-active-shift-precondition-regression.yml' \
+              '.github/workflows/sprint50-jrn007-completed-sale-void-regression.yml' \
+              '.github/workflows/sprint52-jrn007-bounded-full-cash-refund-regression.yml' \
+              '.github/workflows/sprint57-jrn010-prerequisite-sale-shift-binding-regression.yml'
+            do
+              grep -Fxq "$expected" /tmp/s50-source-paths
+            done
+            git diff --exit-code "$base" "$head" -- apps/web/database/migrations
+            for index in $(seq 20 27); do
+              migration="$(find apps/web/database/migrations -maxdepth 1 -type f -name "$(printf '0000_00_00_%06d_*' "$index")" -print -quit)"
+              if [[ -n "$migration" && -f "$migration" ]]; then
+                git update-index --assume-unchanged "$migration"
+                rm -f "$migration"
+              fi
+            done
+            echo 'ONEQAY_SPRINT74_POS_HISTORICAL=true' >> "$GITHUB_ENV"
+            echo 'Recognized exact Sprint90 six-workflow compatibility self-qualification at Sprint50 migration #19 horizon.'
+          elif [[ "$count" -eq 6 && "$fingerprint" == 'cc40f08beda780e4aa4795f29aa7533bbde1029d11855d43f180812502c4d80b' ]]; then
             for expected in \
               '.github/workflows/sprint69-jrn010-prerequisite-cash-variance-explanation-source-regression.yml' \
               'apps/web/app/Application/Authorization/PosPermission.php' \
@@ -392,10 +441,13 @@ jobs:
           if [[ "${ONEQAY_SPRINT74_POS_HISTORICAL:-false}" == 'true' ]]; then
             s74_expected_cash='app/Infrastructure/Pos/LaravelExpectedCashRepository.php'
             s74_variance_explanation='app/Infrastructure/Pos/LaravelCashVarianceExplanationRepository.php'
+            s74_review_decision='app/Infrastructure/Pos/LaravelCashVarianceReviewDecisionRepository.php'
             s74_expected_backup='/tmp/oneqay-s74-historical-expected-cash.php'
             s74_variance_backup='/tmp/oneqay-s74-historical-variance-explanation.php'
+            s74_review_backup='/tmp/oneqay-s74-historical-review-decision.php'
             if [[ -f "$s74_expected_cash" ]]; then cp "$s74_expected_cash" "$s74_expected_backup"; rm -f "$s74_expected_cash"; fi
             if [[ -f "$s74_variance_explanation" ]]; then cp "$s74_variance_explanation" "$s74_variance_backup"; rm -f "$s74_variance_explanation"; fi
+            if [[ -f "$s74_review_decision" ]]; then cp "$s74_review_decision" "$s74_review_backup"; rm -f "$s74_review_decision"; fi
           fi
           successor='app/Infrastructure/Pos/LaravelShiftOpeningRepository.php'
           inventory='app/Infrastructure/Pos/LaravelInventoryBaselineRepository.php'
@@ -438,6 +490,7 @@ jobs:
           if [[ "${ONEQAY_SPRINT74_POS_HISTORICAL:-false}" == 'true' ]]; then
             if [[ -f "$s74_expected_backup" ]]; then mv "$s74_expected_backup" "$s74_expected_cash"; fi
             if [[ -f "$s74_variance_backup" ]]; then mv "$s74_variance_backup" "$s74_variance_explanation"; fi
+            if [[ -f "$s74_review_backup" ]]; then mv "$s74_review_backup" "$s74_review_decision"; fi
           fi
 
       - name: Preserve tracked source cleanliness
