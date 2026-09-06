@@ -1,3 +1,4 @@
+# Sprint91 transaction-aware expected-cash compatibility — Lab | zefry
 name: Sprint60 JRN-010 Prerequisite Expected Cash Source Regression
 
 # Author by Lab | zefry
@@ -11,8 +12,11 @@ on:
       - 'apps/web/app/Application/Pos/ExpectedCashRepository.php'
       - 'apps/web/app/Application/Pos/ExpectedCashResult.php'
       - 'apps/web/app/Infrastructure/Pos/LaravelExpectedCashRepository.php'
+      - 'apps/web/app/Infrastructure/Pos/LaravelExpectedCashSnapshotReader.php'
       - 'apps/web/tests/pos-expected-cash-derivation.php'
+      - 'apps/web/tests/pos-expected-cash-transaction-aware-snapshot.php'
       - 'docs/JRN_010_PREREQUISITE_EXPECTED_CASH_DERIVATION_SOURCE_FOUNDATION.md'
+      - 'docs/SPRINT91_TRANSACTION_AWARE_EXPECTED_CASH_SNAPSHOT.md'
   workflow_dispatch:
 
 permissions:
@@ -51,16 +55,42 @@ jobs:
           base="${{ github.event.pull_request.base.sha }}"
           head="${{ github.event.pull_request.head.sha }}"
           git diff --name-only "$base" "$head" | sort > /tmp/s60-source-paths
-          test "$(wc -l < /tmp/s60-source-paths)" -eq 7
-          test "$(sha256sum /tmp/s60-source-paths | awk '{print $1}')" = 'ae57a65e64fa71509141c224012036c0d69920a48f6f323412d952f9234ba789'
-          test "$(grep -c '^apps/web/database/migrations/' /tmp/s60-source-paths || true)" -eq 0
-          grep -Fxq '.github/workflows/sprint59-jrn010-prerequisite-expected-cash-source-regression.yml' /tmp/s60-source-paths
-          grep -Fxq 'apps/web/app/Application/Pos/DeriveExpectedCash.php' /tmp/s60-source-paths
-          grep -Fxq 'apps/web/app/Application/Pos/ExpectedCashRepository.php' /tmp/s60-source-paths
-          grep -Fxq 'apps/web/app/Application/Pos/ExpectedCashResult.php' /tmp/s60-source-paths
-          grep -Fxq 'apps/web/app/Infrastructure/Pos/LaravelExpectedCashRepository.php' /tmp/s60-source-paths
-          grep -Fxq 'apps/web/tests/pos-expected-cash-derivation.php' /tmp/s60-source-paths
-          grep -Fxq 'docs/JRN_010_PREREQUISITE_EXPECTED_CASH_DERIVATION_SOURCE_FOUNDATION.md' /tmp/s60-source-paths
+          count="$(wc -l < /tmp/s60-source-paths)"
+          fingerprint="$(sha256sum /tmp/s60-source-paths | awk '{print $1}')"
+          echo 'ONEQAY_SPRINT91_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
+          echo 'ONEQAY_SPRINT91_S60_COMPATIBILITY=false' >> "$GITHUB_ENV"
+
+          if [[ "$count" -eq 5 && "$fingerprint" == 'c09d42e49f3ad4086591dbb7dc7cc964d4868de1228025223bd06933cef50bd6' ]]; then
+            for expected in \
+              '.github/workflows/sprint91-transaction-aware-expected-cash-snapshot-regression.yml' \
+              'apps/web/app/Infrastructure/Pos/LaravelExpectedCashRepository.php' \
+              'apps/web/app/Infrastructure/Pos/LaravelExpectedCashSnapshotReader.php' \
+              'apps/web/tests/pos-expected-cash-transaction-aware-snapshot.php' \
+              'docs/SPRINT91_TRANSACTION_AWARE_EXPECTED_CASH_SNAPSHOT.md'
+            do
+              grep -Fxq "$expected" /tmp/s60-source-paths
+            done
+            git diff --exit-code "$base" "$head" -- apps/web/database/migrations
+            echo 'ONEQAY_SPRINT91_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'Recognized exact Sprint91 transaction-aware expected-cash source successor.'
+          elif [[ "$count" -eq 1 && "$fingerprint" == '89bd3926cbf4956b896995472a1e419558bd69331456e6ca2a4492cbb7bf7d65' ]]; then
+            grep -Fxq '.github/workflows/sprint59-jrn010-prerequisite-expected-cash-source-regression.yml' /tmp/s60-source-paths
+            git diff --exit-code "$base" "$head" -- apps/web/database/migrations
+            echo 'ONEQAY_SPRINT91_S60_COMPATIBILITY=true' >> "$GITHUB_ENV"
+            echo 'Recognized exact Sprint91 Sprint60 workflow-only compatibility predecessor.'
+          elif [[ "$count" -eq 7 && "$fingerprint" == 'ae57a65e64fa71509141c224012036c0d69920a48f6f323412d952f9234ba789' ]]; then
+            test "$(grep -c '^apps/web/database/migrations/' /tmp/s60-source-paths || true)" -eq 0
+            grep -Fxq '.github/workflows/sprint59-jrn010-prerequisite-expected-cash-source-regression.yml' /tmp/s60-source-paths
+            grep -Fxq 'apps/web/app/Application/Pos/DeriveExpectedCash.php' /tmp/s60-source-paths
+            grep -Fxq 'apps/web/app/Application/Pos/ExpectedCashRepository.php' /tmp/s60-source-paths
+            grep -Fxq 'apps/web/app/Application/Pos/ExpectedCashResult.php' /tmp/s60-source-paths
+            grep -Fxq 'apps/web/app/Infrastructure/Pos/LaravelExpectedCashRepository.php' /tmp/s60-source-paths
+            grep -Fxq 'apps/web/tests/pos-expected-cash-derivation.php' /tmp/s60-source-paths
+            grep -Fxq 'docs/JRN_010_PREREQUISITE_EXPECTED_CASH_DERIVATION_SOURCE_FOUNDATION.md' /tmp/s60-source-paths
+          else
+            echo 'Sprint60 changed-file envelope mismatch.' >&2
+            exit 1
+          fi
           ! grep -Eq '(^|/)(composer\.(json|lock)|package(-lock)?\.json|\.env(\.|$))' /tmp/s60-source-paths
 
       - name: Preserve migrations one through twenty-four and reject migration twenty-five
@@ -71,6 +101,15 @@ jobs:
           base="${{ github.event.pull_request.base.sha }}"
           head="${{ github.event.pull_request.head.sha }}"
           git diff --exit-code "$base" "$head" -- apps/web/database/migrations
+          if [[ "${ONEQAY_SPRINT91_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT91_S60_COMPATIBILITY:-false}" == 'true' ]]; then
+            for index in $(seq 25 27); do
+              migration="$(find apps/web/database/migrations -maxdepth 1 -type f -name "$(printf '0000_00_00_%06d_*' "$index")" -print -quit)"
+              if [[ -n "$migration" && -f "$migration" ]]; then
+                git update-index --assume-unchanged "$migration"
+                rm -f "$migration"
+              fi
+            done
+          fi
           mapfile -t migrations < <(find apps/web/database/migrations -maxdepth 1 -type f -name '*.php' -printf '%f\n' | sort)
           test "${#migrations[@]}" -eq 24
           for index in $(seq 1 24); do
@@ -84,22 +123,42 @@ jobs:
         run: |
           set -euo pipefail
           repository='apps/web/app/Infrastructure/Pos/LaravelExpectedCashRepository.php'
+          reader='apps/web/app/Infrastructure/Pos/LaravelExpectedCashSnapshotReader.php'
           contract='apps/web/app/Application/Pos/ExpectedCashRepository.php'
           service='apps/web/app/Application/Pos/DeriveExpectedCash.php'
           grep -Fq 'ShiftClosingCashResult $closingCashEvidence' "$contract"
           grep -Fq 'ShiftClosingCashResult $closingCashEvidence' "$service"
-          grep -Fq "table('oneqay_pos_shift_closing_cash_evidence')" "$repository"
-          grep -Fq "table('oneqay_pos_shift_opening_cash_evidence')" "$repository"
-          grep -Fq "table('oneqay_pos_sales')" "$repository"
-          grep -Fq "table('oneqay_pos_sale_voids')" "$repository"
-          grep -Fq "table('oneqay_pos_sale_cash_refunds')" "$repository"
-          grep -Fq "whereNull('shift_id')" "$repository"
-          grep -Fq 'SET TRANSACTION ISOLATION LEVEL REPEATABLE READ' "$repository"
-          grep -Fq 'transactionLevel()' "$repository"
-          grep -Fq 'FULL_SALE_VOID' "$repository"
-          grep -Fq 'FULL_CASH_REFUND' "$repository"
-          ! grep -Eq -- '->(insert|update|upsert|delete|increment|decrement)\(' "$repository"
-          ! grep -Eq 'active_slot|now\(|CURRENT_TIMESTAMP|orderBy\(' "$repository"
+          if [[ "${ONEQAY_SPRINT91_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+            test -f "$reader"
+            grep -Fq "table('oneqay_pos_shift_closing_cash_evidence')" "$reader"
+            grep -Fq "table('oneqay_pos_shift_opening_cash_evidence')" "$reader"
+            grep -Fq "table('oneqay_pos_sales')" "$reader"
+            grep -Fq "table('oneqay_pos_sale_voids')" "$reader"
+            grep -Fq "table('oneqay_pos_sale_cash_refunds')" "$reader"
+            grep -Fq "whereNull('shift_id')" "$reader"
+            grep -Fq 'FULL_SALE_VOID' "$reader"
+            grep -Fq 'FULL_CASH_REFUND' "$reader"
+            grep -Fq 'if ($this->connection->transactionLevel() < 1)' "$reader"
+            ! grep -Eq -- '->(insert|update|upsert|delete|increment|decrement)\(' "$reader"
+            ! grep -Eq 'active_slot|now\(|CURRENT_TIMESTAMP|orderBy\(' "$reader"
+            ! grep -Fq -- '->transaction(' "$reader"
+            grep -Fq 'SET TRANSACTION ISOLATION LEVEL REPEATABLE READ' "$repository"
+            grep -Fq 'if ($this->connection->transactionLevel() !== 0)' "$repository"
+            grep -Fq '$this->snapshotReader->deriveFrom($closingCashEvidence)' "$repository"
+          else
+            grep -Fq "table('oneqay_pos_shift_closing_cash_evidence')" "$repository"
+            grep -Fq "table('oneqay_pos_shift_opening_cash_evidence')" "$repository"
+            grep -Fq "table('oneqay_pos_sales')" "$repository"
+            grep -Fq "table('oneqay_pos_sale_voids')" "$repository"
+            grep -Fq "table('oneqay_pos_sale_cash_refunds')" "$repository"
+            grep -Fq "whereNull('shift_id')" "$repository"
+            grep -Fq 'SET TRANSACTION ISOLATION LEVEL REPEATABLE READ' "$repository"
+            grep -Fq 'transactionLevel()' "$repository"
+            grep -Fq 'FULL_SALE_VOID' "$repository"
+            grep -Fq 'FULL_CASH_REFUND' "$repository"
+            ! grep -Eq -- '->(insert|update|upsert|delete|increment|decrement)\(' "$repository"
+            ! grep -Eq 'active_slot|now\(|CURRENT_TIMESTAMP|orderBy\(' "$repository"
+          fi
 
       - name: Validate PHP syntax
         shell: bash
@@ -109,6 +168,9 @@ jobs:
           php -l apps/web/app/Application/Pos/ExpectedCashRepository.php
           php -l apps/web/app/Application/Pos/ExpectedCashResult.php
           php -l apps/web/app/Infrastructure/Pos/LaravelExpectedCashRepository.php
+          if [[ -f apps/web/app/Infrastructure/Pos/LaravelExpectedCashSnapshotReader.php ]]; then
+            php -l apps/web/app/Infrastructure/Pos/LaravelExpectedCashSnapshotReader.php
+          fi
           php -l apps/web/tests/pos-expected-cash-derivation.php
 
       - name: Install locked dependencies
