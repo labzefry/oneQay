@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "feature": "final-shift-close",
+  "contract_state": "SOURCE_SELECTION_MECHANISM_ONLY",
+  "purpose": "BUILD_DETERMINISTIC_SELECTED_NOT_AUTHORIZED_RECORD_FROM_SPRINT110_QUALIFIED_ATTESTATION",
+  "prerequisite_selection_state": "BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET",
+  "prerequisite_readiness_contract_state": "SOURCE_READINESS_ONLY",
+  "prerequisite_runtime_model": "NON_SYNTHETIC_DURABLE_RUNTIME",
+  "output_selection_state": "SELECTED_NOT_AUTHORIZED",
+  "output_activation_authority_state": "NOT_GRANTED",
+  "output_feature_activation_state": "INACTIVE",
+  "output_runtime_allowlist_change": "NOT_IMPLEMENTED",
+  "selected_target_fields": [
+    "environment_id",
+    "runtime_class",
+    "exact_running_source_commit",
+    "exact_running_artifact_sha256",
+    "readiness_attestation_sha256"
+  ],
+  "determinism": {
+    "attestation_digest": "SHA256_OF_KEY_SORTED_CANONICAL_JSON",
+    "selection_fingerprint": "SHA256_OF_FEATURE_SELECTION_STATE_ENVIRONMENT_RUNTIME_SOURCE_ARTIFACT_ATTESTATION_DIGEST",
+    "timestamps_in_fingerprint": false,
+    "caller_supplied_authority_state": false
+  },
+  "qualification_requirements": {
+    "sprint110_readiness_validator_must_pass": true,
+    "selection_record_is_pure_and_unpersisted": true,
+    "existing_canonical_selection_file_remains_blocked": true,
+    "activation_authority_is_not_granted_by_selection": true,
+    "feature_remains_inactive": true,
+    "runtime_allowlist_remains_unchanged": true,
+    "environment_deployment_not_performed": true
+  },
+  "canonical_boundaries": {
+    "selected_target": "NONE",
+    "runtime_allowlist_change": "NOT_IMPLEMENTED",
+    "environment_creation": "NOT_PERFORMED",
+    "environment_deployment": "NOT_PERFORMED",
+    "migration27_execution": "NOT_PERFORMED",
+    "permission_provisioning": "NONE",
+    "feature_activation": "INACTIVE",
+    "feature_activation_evidence_producer": "NOT_IMPLEMENTED",
+    "technical_preview_activation": "NOT_AUTHORIZED",
+    "production_activation": "NOT_AUTHORIZED",
+    "updater_activation": "INACTIVE"
+  }
+}

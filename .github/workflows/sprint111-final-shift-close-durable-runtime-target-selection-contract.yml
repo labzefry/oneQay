@@ -1,0 +1,171 @@
+name: Sprint111 Final Shift Close Durable Runtime Target Selection Contract
+
+# Attribution: Lab | zefry
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/sprint111-final-shift-close-durable-runtime-target-selection-contract.yml'
+      - 'apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeTargetSelection.php'
+      - 'apps/web/tests/pos-final-shift-close-durable-runtime-target-selection.php'
+      - 'docs/SPRINT111_FINAL_SHIFT_CLOSE_DURABLE_RUNTIME_TARGET_SELECTION_CONTRACT.md'
+      - 'ops/final-shift-close/DURABLE_RUNTIME_TARGET_SELECTION_CONTRACT.json'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint111-final-shift-close-durable-runtime-target-selection-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qualify-durable-runtime-target-selection:
+    name: qualify-durable-runtime-target-selection
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Lock exact Sprint111 envelope
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/actual
+          cat > /tmp/expected <<'EOF'
+          .github/workflows/sprint111-final-shift-close-durable-runtime-target-selection-contract.yml
+          apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeTargetSelection.php
+          apps/web/tests/pos-final-shift-close-durable-runtime-target-selection.php
+          docs/SPRINT111_FINAL_SHIFT_CLOSE_DURABLE_RUNTIME_TARGET_SELECTION_CONTRACT.md
+          ops/final-shift-close/DURABLE_RUNTIME_TARGET_SELECTION_CONTRACT.json
+          EOF
+          diff -u /tmp/expected /tmp/actual
+          test "$(sha256sum /tmp/actual | awk '{print $1}')" = 'd9decbb8f58e1a707927ec1c08eba33c5d53b9a5716b211c09384fd4a7408179'
+
+      - name: Validate Sprint109 and Sprint110 prerequisites
+        shell: bash
+        run: |
+          set -euo pipefail
+          selection=ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+          readiness=ops/final-shift-close/DURABLE_RUNTIME_READINESS_CONTRACT.json
+          jq -e . "$selection" >/dev/null
+          jq -e . "$readiness" >/dev/null
+          test "$(jq -r '.selection_state' "$selection")" = 'BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET'
+          test "$(jq -r '.selected_target' "$selection")" = 'null'
+          test "$(jq -r '.required_runtime_model' "$selection")" = 'NON_SYNTHETIC_DURABLE_RUNTIME'
+          test "$(jq -r '.contract_state' "$readiness")" = 'SOURCE_READINESS_ONLY'
+          test "$(jq -r '.required_runtime_model' "$readiness")" = 'NON_SYNTHETIC_DURABLE_RUNTIME'
+          test "$(jq -r '.canonical_boundaries.selected_target' "$readiness")" = 'NONE'
+          test "$(jq -r '.canonical_boundaries.feature_activation' "$readiness")" = 'INACTIVE'
+
+      - name: Validate Sprint111 selection contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          contract=ops/final-shift-close/DURABLE_RUNTIME_TARGET_SELECTION_CONTRACT.json
+          jq -e . "$contract" >/dev/null
+          test "$(jq -r '.contract_state' "$contract")" = 'SOURCE_SELECTION_MECHANISM_ONLY'
+          test "$(jq -r '.prerequisite_selection_state' "$contract")" = 'BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET'
+          test "$(jq -r '.prerequisite_readiness_contract_state' "$contract")" = 'SOURCE_READINESS_ONLY'
+          test "$(jq -r '.output_selection_state' "$contract")" = 'SELECTED_NOT_AUTHORIZED'
+          test "$(jq -r '.output_activation_authority_state' "$contract")" = 'NOT_GRANTED'
+          test "$(jq -r '.output_feature_activation_state' "$contract")" = 'INACTIVE'
+          test "$(jq -r '.output_runtime_allowlist_change' "$contract")" = 'NOT_IMPLEMENTED'
+          test "$(jq '.selected_target_fields | length' "$contract")" = '5'
+          test "$(jq -r '.determinism.timestamps_in_fingerprint' "$contract")" = 'false'
+          test "$(jq -r '.determinism.caller_supplied_authority_state' "$contract")" = 'false'
+          test "$(jq -r '.qualification_requirements.selection_record_is_pure_and_unpersisted' "$contract")" = 'true'
+          test "$(jq -r '.qualification_requirements.existing_canonical_selection_file_remains_blocked' "$contract")" = 'true'
+          test "$(jq -r '.qualification_requirements.activation_authority_is_not_granted_by_selection' "$contract")" = 'true'
+
+      - name: Prove selection source is pure and readiness-bound
+        shell: bash
+        run: |
+          set -euo pipefail
+          selector=apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeTargetSelection.php
+          grep -Fq 'FinalShiftCloseDurableRuntimeReadiness' "$selector"
+          grep -Fq 'requireQualified' "$selector"
+          grep -Fq "SELECTION_STATE = 'SELECTED_NOT_AUTHORIZED'" "$selector"
+          grep -Fq "ACTIVATION_AUTHORITY_STATE = 'NOT_GRANTED'" "$selector"
+          grep -Fq "FEATURE_ACTIVATION_STATE = 'INACTIVE'" "$selector"
+          grep -Fq "RUNTIME_ALLOWLIST_CHANGE = 'NOT_IMPLEMENTED'" "$selector"
+          grep -Fq 'ksort($canonicalAttestation, SORT_STRING)' "$selector"
+          grep -Fq "hash('sha256'" "$selector"
+
+          if grep -Eq 'env\(|getenv\(|putenv\(|config\(|Illuminate\\|Route::|DB::|Schema::|Connection|Http::|curl_|Guzzle|exec\(|shell_exec\(|proc_open\(|file_put_contents\(|fopen\(' "$selector"; then
+            echo 'Sprint111 selector must remain pure, read-only, framework-independent, and unbound.' >&2
+            exit 1
+          fi
+
+      - name: Preserve canonical blocked selection and operational envelope
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git diff --exit-code "$BASE_SHA" "$HEAD_SHA" -- \
+            apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeReadiness.php \
+            apps/web/app/Providers/FinalShiftCloseServiceProvider.php \
+            apps/web/app/Infrastructure/Pos/LaravelCloseShiftRepository.php \
+            apps/web/config/oneqay.php \
+            apps/web/bootstrap \
+            apps/web/database/migrations \
+            apps/web/routes \
+            ops/final-shift-close/STATE.json \
+            ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json \
+            ops/final-shift-close/DURABLE_RUNTIME_READINESS_CONTRACT.json
+
+          selection=ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+          state=ops/final-shift-close/STATE.json
+          test "$(jq -r '.selection_state' "$selection")" = 'BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET'
+          test "$(jq -r '.selected_target' "$selection")" = 'null'
+          test "$(jq -r '.migration27.state' "$state")" = 'NOT_EXECUTED'
+          test "$(jq -r '.permission_provisioning.state' "$state")" = 'NONE'
+          test "$(jq -r '.feature_activation.state' "$state")" = 'INACTIVE'
+          test "$(jq -r '.deployment_authority' "$state")" = 'NOT_GRANTED'
+          test "$(jq -r '.production_activation' "$state")" = 'NOT_AUTHORIZED'
+
+          grep -Fq "['local', 'test', 'ci']" apps/web/app/Providers/FinalShiftCloseServiceProvider.php
+          grep -Fq "['local', 'test', 'ci']" apps/web/app/Infrastructure/Pos/LaravelCloseShiftRepository.php
+
+      - name: Validate PHP syntax and executable selection regression
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l app/Application/Pos/FinalShiftCloseDurableRuntimeTargetSelection.php
+          php -l tests/pos-final-shift-close-durable-runtime-target-selection.php
+          php tests/pos-final-shift-close-durable-runtime-target-selection.php
+
+      - name: Lock Sprint111 source-only disposition
+        shell: bash
+        run: |
+          set -euo pipefail
+          doc=docs/SPRINT111_FINAL_SHIFT_CLOSE_DURABLE_RUNTIME_TARGET_SELECTION_CONTRACT.md
+          grep -Fq 'DURABLE_RUNTIME_TARGET_SELECTION_MECHANISM = MATERIALIZED_SOURCE_ONLY' "$doc"
+          grep -Fq 'CANONICAL_SELECTION_STATE = BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET' "$doc"
+          grep -Fq 'SELECTED_TARGET = NONE' "$doc"
+          grep -Fq 'OUTPUT_STATE_IF_FUTURE_ATTESTATION_QUALIFIES = SELECTED_NOT_AUTHORIZED' "$doc"
+          grep -Fq 'ACTIVATION_AUTHORITY = NOT_GRANTED' "$doc"
+          grep -Fq 'RUNTIME_ALLOWLIST_CHANGE = NOT_IMPLEMENTED' "$doc"
+          grep -Fq 'ENVIRONMENT_DEPLOYMENT = NOT_PERFORMED' "$doc"
+          grep -Fq 'MIGRATION_27_EXECUTION = NOT_PERFORMED' "$doc"
+          grep -Fq 'FEATURE_ACTIVATION = INACTIVE' "$doc"
+          grep -Fq 'PRODUCTION_AUTHORITY = NOT_GRANTED' "$doc"
+          grep -Fq 'UPDATER_ACTIVATION_AUTHORITY = NOT_GRANTED' "$doc"
+
+          workflow=.github/workflows/sprint111-final-shift-close-durable-runtime-target-selection-contract.yml
+          ! grep -Eq '^  workflow_dispatch:' "$workflow"
+
+      - name: Confirm tracked source remains unchanged
+        shell: bash
+        run: git diff --exit-code
