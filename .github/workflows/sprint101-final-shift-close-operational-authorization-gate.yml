@@ -1,0 +1,225 @@
+name: Sprint101 Final Shift Close Operational Authorization Gate
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/sprint101-final-shift-close-operational-authorization-gate.yml'
+      - 'docs/SPRINT101_FINAL_SHIFT_CLOSE_OPERATIONAL_AUTHORIZATION_GATE.md'
+  pull_request_target:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+  issue_comment:
+    types: [created, edited, deleted]
+
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
+  statuses: write
+
+jobs:
+  qualify-source:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Enforce exact Sprint101 source envelope
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | LC_ALL=C sort > /tmp/actual
+          cat > /tmp/expected <<'EOF'
+          .github/workflows/sprint101-final-shift-close-operational-authorization-gate.yml
+          docs/SPRINT101_FINAL_SHIFT_CLOSE_OPERATIONAL_AUTHORIZATION_GATE.md
+          EOF
+          diff -u /tmp/expected /tmp/actual
+          test "$(sha256sum /tmp/actual | awk '{print $1}')" = '57dd4cf09964c6dd9b934ecbfb94be57cbd171a303d4cfef6d223bb9d7bb87f2'
+
+      - name: Preserve canonical runtime and migration source
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+          git diff --exit-code "$base" "$head" -- \
+            apps/web/app \
+            apps/web/database/migrations \
+            apps/web/routes \
+            apps/web/resources \
+            apps/web/bootstrap \
+            apps/web/config
+          test -f apps/web/database/migrations/0000_00_00_000027_create_pos_shift_close_evidence_foundation.php
+          grep -Fq "public const IDENTIFIER = 'pos.shift.close';" apps/web/app/Application/Pos/FinalShiftClosePermission.php
+          grep -Fq "env('ONEQAY_POS_SHIFT_CLOSE_ENABLED', false)" apps/web/app/Providers/FinalShiftCloseServiceProvider.php
+
+      - name: Lock independent exact-head authority semantics
+        shell: bash
+        run: |
+          set -euo pipefail
+          doc=docs/SPRINT101_FINAL_SHIFT_CLOSE_OPERATIONAL_AUTHORIZATION_GATE.md
+          grep -Fq 'PRODUCT OWNER FINAL SHIFT CLOSE MIGRATION27 EXECUTION AUTHORIZATION' "$doc"
+          grep -Fq 'MIGRATION27 EXECUTION AUTHORITY: GRANTED' "$doc"
+          grep -Fq 'final-shift-close-migration27-execution-authority' "$doc"
+          grep -Fq 'PRODUCT OWNER FINAL SHIFT CLOSE PERMISSION PROVISIONING AUTHORIZATION' "$doc"
+          grep -Fq 'PERMISSION PROVISIONING AUTHORITY: GRANTED' "$doc"
+          grep -Fq 'final-shift-close-permission-provisioning-authority' "$doc"
+          grep -Fq 'PRODUCT OWNER FINAL SHIFT CLOSE FEATURE ACTIVATION AUTHORIZATION' "$doc"
+          grep -Fq 'FEATURE ACTIVATION AUTHORITY: GRANTED' "$doc"
+          grep -Fq 'final-shift-close-feature-activation-authority' "$doc"
+          grep -Fq 'FINAL_SHIFT_CLOSE_MIGRATION27_EXECUTION_AUTHORITY = SEPARATE_EXACT_HEAD_REQUIRED' "$doc"
+          grep -Fq 'FINAL_SHIFT_CLOSE_PERMISSION_PROVISIONING_AUTHORITY = SEPARATE_EXACT_HEAD_REQUIRED' "$doc"
+          grep -Fq 'FINAL_SHIFT_CLOSE_FEATURE_ACTIVATION_AUTHORITY = SEPARATE_EXACT_HEAD_REQUIRED' "$doc"
+          grep -Fq 'FINAL_SHIFT_CLOSE_PERMISSION_DEFAULT_GRANT = NONE' "$doc"
+          grep -Fq 'MIGRATION_27_LIVE_EXECUTION = NOT_AUTHORIZED' "$doc"
+          grep -Fq 'FINAL_SHIFT_CLOSE_OPERATIONAL_ACTIVATION = NOT_AUTHORIZED' "$doc"
+          grep -Fq 'TECHNICAL_PREVIEW_ACTIVATION_AUTHORITY = NOT_GRANTED' "$doc"
+          grep -Fq 'PRODUCTION_AUTHORITY = NOT_GRANTED' "$doc"
+          grep -Fq 'UPDATER_ACTIVATION_AUTHORITY = NOT_GRANTED' "$doc"
+
+      - name: Preserve authorization gate as status-only mechanism
+        shell: bash
+        run: |
+          set -euo pipefail
+          workflow=.github/workflows/sprint101-final-shift-close-operational-authorization-gate.yml
+          grep -Fq 'statuses: write' "$workflow"
+          ! grep -Eq '(^|[[:space:]])(php artisan migrate|mysql |mysqldump |kubectl |helm |ssh |scp |rsync )' "$workflow"
+          ! grep -Fq 'ONEQAY_POS_SHIFT_CLOSE_ENABLED=true' "$workflow"
+          ! grep -Fq "'permission_id' => 'pos.shift.close'" "$workflow"
+
+  evaluate-operational-authority:
+    if: >-
+      github.event_name == 'pull_request_target' ||
+      (github.event_name == 'issue_comment' && github.event.issue.pull_request != null)
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Evaluate independent exact-head operational authorities
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          REPOSITORY_OWNER: ${{ github.repository_owner }}
+          PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
+          API_URL: ${{ github.api_url }}
+          SERVER_URL: ${{ github.server_url }}
+          EVENT_BODY: ${{ github.event.comment.body || '' }}
+          EVENT_PREVIOUS_BODY: ${{ github.event.changes.body.from || '' }}
+        run: |
+          set -euo pipefail
+
+          if [[ -z "$PR_NUMBER" ]]; then
+            echo 'No pull request number is available.' >&2
+            exit 1
+          fi
+
+          pr_json="$(curl --fail-with-body --silent --show-error \
+            --header 'Accept: application/vnd.github+json' \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header 'X-GitHub-Api-Version: 2022-11-28' \
+            "$API_URL/repos/$REPOSITORY/pulls/$PR_NUMBER")"
+          head_sha="$(jq -r '.head.sha' <<<"$pr_json")"
+          if [[ ! "$head_sha" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "Invalid current pull request head SHA: $head_sha" >&2
+            exit 1
+          fi
+
+          comments_file="$(mktemp)"
+          trap 'rm -f "$comments_file"' EXIT
+          page=1
+          while :; do
+            page_json="$(curl --fail-with-body --silent --show-error \
+              --header 'Accept: application/vnd.github+json' \
+              --header "Authorization: Bearer $GH_TOKEN" \
+              --header 'X-GitHub-Api-Version: 2022-11-28' \
+              "$API_URL/repos/$REPOSITORY/issues/$PR_NUMBER/comments?per_page=100&page=$page")"
+            count="$(jq 'length' <<<"$page_json")"
+            jq -c '.[]' <<<"$page_json" >> "$comments_file"
+            if [[ "$count" -lt 100 ]]; then
+              break
+            fi
+            page=$((page + 1))
+          done
+
+          headers_regex='PRODUCT OWNER FINAL SHIFT CLOSE (MIGRATION27 EXECUTION|PERMISSION PROVISIONING|FEATURE ACTIVATION) AUTHORIZATION'
+          current_signal="$(jq -s --arg regex "$headers_regex" '[.[] | select(.body | test("^" + $regex; "m"))] | length' "$comments_file")"
+          event_signal=0
+          if grep -Eq "^${headers_regex}$" <<<"${EVENT_BODY//$'\r'/}" || \
+             grep -Eq "^${headers_regex}$" <<<"${EVENT_PREVIOUS_BODY//$'\r'/}"; then
+            event_signal=1
+          fi
+
+          if [[ "$current_signal" -eq 0 && "$event_signal" -eq 0 ]]; then
+            echo 'No Final Shift Close operational authorization signal exists; no operational statuses written.'
+            exit 0
+          fi
+
+          evaluate_authority() {
+            local context="$1"
+            local header="$2"
+            local grant_line="$3"
+            local success_description="$4"
+            local failure_description="$5"
+            local expected valid_count state description payload
+
+            expected="$(printf '%s\nPR: #%s\nEXACT HEAD: %s\n%s' "$header" "$PR_NUMBER" "$head_sha" "$grant_line")"
+            valid_count="$(jq -s \
+              --arg login "$REPOSITORY_OWNER" \
+              --arg expected "$expected" \
+              '[
+                .[]
+                | select(.user.login == $login)
+                | select((.body | gsub("\\r"; "") | sub("\\n+$"; "")) == $expected)
+              ] | length' "$comments_file")"
+
+            state='failure'
+            description="$failure_description"
+            if [[ "$valid_count" -gt 0 ]]; then
+              state='success'
+              description="$success_description"
+            fi
+
+            payload="$(jq -n \
+              --arg state "$state" \
+              --arg context "$context" \
+              --arg description "$description" \
+              --arg target_url "$SERVER_URL/$REPOSITORY/pull/$PR_NUMBER" \
+              '{state:$state,context:$context,description:$description,target_url:$target_url}')"
+
+            curl --fail-with-body --silent --show-error \
+              --request POST \
+              --header 'Accept: application/vnd.github+json' \
+              --header "Authorization: Bearer $GH_TOKEN" \
+              --header 'X-GitHub-Api-Version: 2022-11-28' \
+              "$API_URL/repos/$REPOSITORY/statuses/$head_sha" \
+              --data "$payload" > /dev/null
+
+            echo "$context: $state"
+          }
+
+          evaluate_authority \
+            'final-shift-close-migration27-execution-authority' \
+            'PRODUCT OWNER FINAL SHIFT CLOSE MIGRATION27 EXECUTION AUTHORIZATION' \
+            'MIGRATION27 EXECUTION AUTHORITY: GRANTED' \
+            'Exact-head migration27 execution authority verified.' \
+            'Exact-head migration27 execution authority absent.'
+
+          evaluate_authority \
+            'final-shift-close-permission-provisioning-authority' \
+            'PRODUCT OWNER FINAL SHIFT CLOSE PERMISSION PROVISIONING AUTHORIZATION' \
+            'PERMISSION PROVISIONING AUTHORITY: GRANTED' \
+            'Exact-head permission provisioning authority verified.' \
+            'Exact-head permission provisioning authority absent.'
+
+          evaluate_authority \
+            'final-shift-close-feature-activation-authority' \
+            'PRODUCT OWNER FINAL SHIFT CLOSE FEATURE ACTIVATION AUTHORIZATION' \
+            'FEATURE ACTIVATION AUTHORITY: GRANTED' \
+            'Exact-head feature activation authority verified.' \
+            'Exact-head feature activation authority absent.'
