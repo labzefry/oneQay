@@ -4,7 +4,7 @@ Author by Lab | zefry
 
 ## Purpose
 
-Sprint96 wires the canonical Sprint95 Final Shift Close lifecycle into the Laravel service container while preserving fail-closed delivery boundaries.
+Sprint96 wires the canonical Sprint95 Final Shift Close lifecycle into the Laravel service container while preserving fail-closed delivery boundaries and historical qualification horizons.
 
 This sprint does not expose Final Shift Close through HTTP routes or UI and does not execute migration #27.
 
@@ -21,19 +21,13 @@ This sprint does not expose Final Shift Close through HTTP routes or UI and does
 
 The provider consumes the canonical `OrganizationalContextStore`, `DurableScopedAuthorizationPolicy`, and `PersistenceTransaction` registrations from `AppServiceProvider`.
 
+The dedicated provider is registered through the Laravel application-builder boundary in `bootstrap/app.php`. Sprint96 intentionally leaves the historical shared `bootstrap/providers.php` list unchanged.
+
 ## Fail-closed feature control
 
-The runtime repository is gated by:
+`FinalShiftCloseServiceProvider` reads `ONEQAY_POS_SHIFT_CLOSE_ENABLED` directly with a default of `false` and `FILTER_VALIDATE_BOOL`.
 
-`oneqay.pos_shift_close.enabled`
-
-which is sourced from:
-
-`ONEQAY_POS_SHIFT_CLOSE_ENABLED`
-
-and defaults to `false`.
-
-Container resolvability therefore does not itself authorize or activate Final Shift Close persistence.
+Sprint96 intentionally leaves the historical shared `config/oneqay.php` horizon unchanged. Container resolvability therefore does not itself authorize or activate Final Shift Close persistence, and the repository remains fail-closed unless a separately authorized runtime explicitly arms the feature.
 
 ## Preserved authorization policy
 
@@ -54,6 +48,8 @@ Sprint96 does not:
 - add controller delivery;
 - add UI delivery;
 - grant `pos.shift.close` to any role;
+- modify the historical shared `bootstrap/providers.php` provider list;
+- modify the historical shared `config/oneqay.php` POS feature horizon;
 - enable Technical Preview;
 - enable Production;
 - enable updater installation or activation.
