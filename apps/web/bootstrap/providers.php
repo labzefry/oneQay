@@ -2,7 +2,6 @@
 
 return [
     App\Providers\AppServiceProvider::class,
-    App\Providers\FinalShiftCloseServiceProvider::class,
     App\Providers\TechnicalPreviewServiceProvider::class,
     App\Providers\SystemUpdateServiceProvider::class,
 ];
