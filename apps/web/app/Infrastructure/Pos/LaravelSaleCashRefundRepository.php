@@ -70,8 +70,23 @@ final readonly class LaravelSaleCashRefundRepository implements SaleCashRefundRe
                 || ! hash_equals($context->organizationId(), $sale->organization_id)
                 || ! is_string($sale->outlet_id)
                 || ! hash_equals($context->outletId(), $sale->outlet_id)
+                || ! is_string($sale->shift_id)
+                || trim($sale->shift_id) === ''
                 || ! is_string($sale->tender_category)
                 || $sale->tender_category !== TenderCategory::CASH->value) {
+                throw new PosTransactionViolation();
+            }
+
+            $activeShift = $this->connection->table('oneqay_pos_shifts')
+                ->where('tenant_id', $context->tenantId())
+                ->where('shift_id', $sale->shift_id)
+                ->where('organization_id', $sale->organization_id)
+                ->where('outlet_id', $sale->outlet_id)
+                ->where('active_slot', 1)
+                ->lockForUpdate()
+                ->first();
+
+            if ($activeShift === null) {
                 throw new PosTransactionViolation();
             }
 
