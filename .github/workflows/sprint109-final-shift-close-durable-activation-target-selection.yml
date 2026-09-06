@@ -1,0 +1,117 @@
+name: Sprint109 Final Shift Close Durable Activation Target Selection
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/sprint109-final-shift-close-durable-activation-target-selection.yml'
+      - 'docs/SPRINT109_FINAL_SHIFT_CLOSE_DURABLE_ACTIVATION_TARGET_SELECTION.md'
+      - 'ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json'
+
+permissions:
+  contents: read
+
+jobs:
+  qualify-target-selection:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Lock exact Sprint109 envelope
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/actual
+          cat > /tmp/expected <<'EOF'
+          .github/workflows/sprint109-final-shift-close-durable-activation-target-selection.yml
+          docs/SPRINT109_FINAL_SHIFT_CLOSE_DURABLE_ACTIVATION_TARGET_SELECTION.md
+          ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+          EOF
+          diff -u /tmp/expected /tmp/actual
+          test "$(sha256sum /tmp/actual | awk '{print $1}')" = 'd580cc75392b23f1e5dee46b0f4bcb83e3420c3f981b90e93134a40ebdfdf014'
+
+      - name: Validate Sprint108 strategy prerequisite
+        shell: bash
+        run: |
+          set -euo pipefail
+          strategy=ops/final-shift-close/PREVIEW_RUNTIME_STRATEGY.json
+          jq -e . "$strategy" >/dev/null
+          test "$(jq -r '.selected_strategy' "$strategy")" = 'KEEP_DURABLE_FINAL_SHIFT_CLOSE_UNAVAILABLE_ON_SYNTHETIC_PREVIEW'
+          test "$(jq -r '.future_durable_activation_target.selection_required' "$strategy")" = 'true'
+          test "$(jq -r '.future_durable_activation_target.required_runtime_model' "$strategy")" = 'NON_SYNTHETIC_DURABLE_RUNTIME'
+
+      - name: Validate no qualified target disposition
+        shell: bash
+        run: |
+          set -euo pipefail
+          selection=ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+          jq -e . "$selection" >/dev/null
+          test "$(jq -r '.selection_state' "$selection")" = 'BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET'
+          test "$(jq -r '.selected_target' "$selection")" = 'null'
+          test "$(jq -r '.required_runtime_model' "$selection")" = 'NON_SYNTHETIC_DURABLE_RUNTIME'
+          test "$(jq '.candidate_evaluations | length' "$selection")" = '3'
+          test "$(jq '[.candidate_evaluations[] | select(.disposition == "REJECTED")] | length' "$selection")" = '3'
+          test "$(jq -r '.future_target_requirements.isolated_non_production_environment' "$selection")" = 'true'
+          test "$(jq -r '.future_target_requirements.non_synthetic_durable_runtime' "$selection")" = 'true'
+          test "$(jq -r '.future_target_requirements.authenticated_configuration_mutation_channel' "$selection")" = 'true'
+          test "$(jq -r '.future_target_requirements.verified_flag_rollback' "$selection")" = 'true'
+
+      - name: Prove canonical staging foundation is CI-only and unwired
+        shell: bash
+        run: |
+          set -euo pipefail
+          staging=.github/workflows/safe-staging-activation-health-rollback-regression.yml
+          grep -Fq 'APP_ENV: testing' "$staging"
+          grep -Fq 'ONEQAY_RUNTIME_CLASS: ci' "$staging"
+          grep -Fq "'install_enabled' => false" "$staging"
+          grep -Fq 'Activation foundation must not wire runtime HTTP/config/provider mutation.' "$staging"
+          grep -Fq 'Run safe staging activation health rollback regression' "$staging"
+
+      - name: Preserve current operational state and runtime source
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git diff --exit-code "$BASE_SHA" "$HEAD_SHA" -- \
+            apps/web/app \
+            apps/web/bootstrap \
+            apps/web/config \
+            apps/web/database/migrations \
+            apps/web/routes \
+            apps/web/resources \
+            ops/final-shift-close/STATE.json \
+            ops/final-shift-close/ACTIVATION_TARGET.json \
+            ops/final-shift-close/PREVIEW_RUNTIME_COMPATIBILITY.json \
+            ops/final-shift-close/PREVIEW_RUNTIME_STRATEGY.json
+
+          state=ops/final-shift-close/STATE.json
+          test "$(jq -r '.migration27.state' "$state")" = 'NOT_EXECUTED'
+          test "$(jq -r '.permission_provisioning.state' "$state")" = 'NONE'
+          test "$(jq -r '.feature_activation.state' "$state")" = 'INACTIVE'
+          test "$(jq -r '.deployment_authority' "$state")" = 'NOT_GRANTED'
+          test "$(jq -r '.production_activation' "$state")" = 'NOT_AUTHORIZED'
+
+      - name: Lock Sprint109 disposition
+        shell: bash
+        run: |
+          set -euo pipefail
+          doc=docs/SPRINT109_FINAL_SHIFT_CLOSE_DURABLE_ACTIVATION_TARGET_SELECTION.md
+          grep -Fq 'DURABLE_ACTIVATION_TARGET_SELECTION = BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET' "$doc"
+          grep -Fq 'SELECTED_TARGET = NONE' "$doc"
+          grep -Fq 'FEATURE_ACTIVATION = INACTIVE' "$doc"
+          grep -Fq 'RUNTIME_ALLOWLIST_CHANGE = NOT_IMPLEMENTED' "$doc"
+          grep -Fq 'PRODUCTION_AUTHORITY = NOT_GRANTED' "$doc"
+          grep -Fq 'UPDATER_ACTIVATION_AUTHORITY = NOT_GRANTED' "$doc"
+
+          workflow=.github/workflows/sprint109-final-shift-close-durable-activation-target-selection.yml
+          ! grep -Eq '^  workflow_dispatch:' "$workflow"

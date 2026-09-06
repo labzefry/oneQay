@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "feature": "final-shift-close",
+  "selection_state": "BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET",
+  "selected_target": null,
+  "required_runtime_model": "NON_SYNTHETIC_DURABLE_RUNTIME",
+  "candidate_evaluations": [
+    {
+      "candidate": "oneqay-synthetic-technical-preview",
+      "disposition": "REJECTED",
+      "reason": "SYNTHETIC_RUNTIME_NOT_DURABLE_ACTIVATION_EVIDENCE_ELIGIBLE"
+    },
+    {
+      "candidate": "system-update-staging-activation-foundation",
+      "disposition": "REJECTED",
+      "reason": "CI_REGRESSION_FOUNDATION_NOT_SERVING_APPLICATION_RUNTIME"
+    },
+    {
+      "candidate": "production",
+      "disposition": "REJECTED",
+      "reason": "PRODUCTION_AUTHORITY_NOT_GRANTED_AND_FIRST_ACTIVATION_TARGET_MUST_BE_ISOLATED_NON_PRODUCTION"
+    }
+  ],
+  "future_target_requirements": {
+    "isolated_non_production_environment": true,
+    "non_synthetic_durable_runtime": true,
+    "explicit_environment_id": true,
+    "explicit_runtime_class": true,
+    "durable_persistence_enabled": true,
+    "durable_session_authorization_transaction_pos_envelope": true,
+    "exact_running_source_commit": true,
+    "exact_running_artifact_sha256": true,
+    "authenticated_configuration_mutation_channel": true,
+    "read_before_write_read_after_flag_verification": true,
+    "non_mutating_health_attestation": true,
+    "verified_flag_rollback": true,
+    "separate_activation_authority": true
+  },
+  "canonical_boundaries": {
+    "migration27_execution": "NOT_PERFORMED",
+    "permission_provisioning": "NONE",
+    "feature_activation": "INACTIVE",
+    "runtime_allowlist_change": "NOT_IMPLEMENTED",
+    "feature_activation_evidence_producer": "NOT_IMPLEMENTED",
+    "deployment_authority": "NOT_GRANTED",
+    "technical_preview_activation": "NOT_AUTHORIZED",
+    "production_activation": "NOT_AUTHORIZED",
+    "updater_activation": "INACTIVE"
+  }
+}
