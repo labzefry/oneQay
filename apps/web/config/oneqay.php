@@ -110,14 +110,6 @@ return [
         ),
     ],
 
-    'pos_shift_close' => [
-        // Sprint96 Final Shift Close runtime wiring remains fail-closed unless explicitly armed in a separately authorized runtime.
-        'enabled' => filter_var(
-            env('ONEQAY_POS_SHIFT_CLOSE_ENABLED', false),
-            FILTER_VALIDATE_BOOL,
-        ),
-    ],
-
     'pos_inventory_baseline' => [
         // Sprint51 JRN-008 opening inventory baseline remains Local/Test/CI-only and fail-closed unless explicitly armed.
         'enabled' => filter_var(
