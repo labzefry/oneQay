@@ -1,5 +1,7 @@
 name: Final Shift Close Migration27 Execution Evidence
 
+# Attribution: Lab | zefry
+
 on:
   workflow_dispatch:
     inputs:
@@ -11,12 +13,26 @@ on:
         description: 'Exact 40-character state-transition PR head SHA'
         required: true
         type: string
+      binding_run_id:
+        description: 'Exact successful selected-target database-binding workflow run ID'
+        required: true
+        type: string
+      binding_run_attempt:
+        description: 'Exact successful selected-target database-binding workflow run attempt'
+        required: true
+        type: string
 
 permissions:
   contents: read
   pull-requests: read
   statuses: write
   actions: read
+
+env:
+  TARGET_SELECTION_FILE: ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+  BINDING_WORKFLOW_PATH: .github/workflows/final-shift-close-migration27-selected-target-db-binding.yml
+  BINDING_ARTIFACT_NAME: final-shift-close-migration27-selected-target-db-binding
+  BINDING_EVIDENCE_CONTEXT: final-shift-close-migration27-selected-target-db-binding-evidence
 
 concurrency:
   group: final-shift-close-migration27-${{ inputs.target_pr_number }}
@@ -49,7 +65,7 @@ jobs:
           ref: ${{ github.sha }}
           fetch-depth: 1
 
-      - name: Validate canonical main and exact target transition
+      - name: Validate canonical selected target and exact state transition
         id: preflight
         shell: bash
         env:
@@ -58,12 +74,17 @@ jobs:
           REPOSITORY: ${{ github.repository }}
           TARGET_PR: ${{ inputs.target_pr_number }}
           TARGET_HEAD: ${{ inputs.target_head_sha }}
+          BINDING_RUN_ID: ${{ inputs.binding_run_id }}
+          BINDING_RUN_ATTEMPT: ${{ inputs.binding_run_attempt }}
         run: |
           set -euo pipefail
 
           [[ "$GITHUB_REF" == 'refs/heads/main' ]]
+          [[ "$GITHUB_REPOSITORY" == 'labzefry/oneQay' ]]
           [[ "$TARGET_PR" =~ ^[1-9][0-9]*$ ]]
           [[ "$TARGET_HEAD" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$BINDING_RUN_ID" =~ ^[1-9][0-9]*$ ]]
+          [[ "$BINDING_RUN_ATTEMPT" =~ ^[1-9][0-9]*$ ]]
 
           api() {
             curl --fail-with-body --silent --show-error \
@@ -84,6 +105,46 @@ jobs:
             echo 'Canonical migration #27 blob does not match qualified source.' >&2
             exit 1
           }
+
+          jq -e 'type == "object"' "$TARGET_SELECTION_FILE" >/dev/null
+          [[ "$(jq -r '.selection_state' "$TARGET_SELECTION_FILE")" == 'SELECTED_NOT_AUTHORIZED' ]] || {
+            echo 'Migration27 execution requires a canonical durable target in SELECTED_NOT_AUTHORIZED state.' >&2
+            exit 1
+          }
+          [[ "$(jq -r '.selected_target | type' "$TARGET_SELECTION_FILE")" == 'object' ]]
+
+          selected_environment="$(jq -r '.selected_target.environment_id // ""' "$TARGET_SELECTION_FILE")"
+          selected_runtime="$(jq -r '.selected_target.runtime_class // ""' "$TARGET_SELECTION_FILE")"
+          selected_source="$(jq -r '.selected_target.exact_running_source_commit // ""' "$TARGET_SELECTION_FILE")"
+          selected_artifact="$(jq -r '.selected_target.exact_running_artifact_sha256 // ""' "$TARGET_SELECTION_FILE")"
+          selected_attestation="$(jq -r '.selected_target.readiness_attestation_sha256 // ""' "$TARGET_SELECTION_FILE")"
+          selected_selection_fingerprint="$(jq -r '.selected_target.selection_fingerprint_sha256 // ""' "$TARGET_SELECTION_FILE")"
+          selected_ingestion_run_id="$(jq -r '.selected_target.trusted_ingestion.run_id // ""' "$TARGET_SELECTION_FILE")"
+          selected_ingestion_run_attempt="$(jq -r '.selected_target.trusted_ingestion.run_attempt // ""' "$TARGET_SELECTION_FILE")"
+          selected_ingestion_fingerprint="$(jq -r '.selected_target.trusted_ingestion.ingestion_fingerprint_sha256 // ""' "$TARGET_SELECTION_FILE")"
+
+          [[ "$selected_environment" =~ ^[a-z0-9][a-z0-9._:-]{7,127}$ ]]
+          [[ "$selected_runtime" =~ ^[a-z0-9][a-z0-9._:-]{7,127}$ ]]
+          [[ "$selected_source" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$selected_artifact" =~ ^[0-9a-f]{64}$ ]]
+          [[ "$selected_attestation" =~ ^[0-9a-f]{64}$ ]]
+          [[ "$selected_selection_fingerprint" =~ ^[0-9a-f]{64}$ ]]
+          [[ "$selected_ingestion_run_id" =~ ^[1-9][0-9]*$ ]]
+          [[ "$selected_ingestion_run_attempt" =~ ^[1-9][0-9]*$ ]]
+          [[ "$selected_ingestion_fingerprint" =~ ^[0-9a-f]{64}$ ]]
+
+          case "$selected_runtime" in
+            local|test|testing|ci|preview|synthetic-preview|production|prod)
+              echo 'Canonical selected target runtime class is not eligible for bounded migration27 execution.' >&2
+              exit 1
+              ;;
+          esac
+
+          selected_compare="$(api "$API_URL/repos/$REPOSITORY/compare/$selected_source...$GITHUB_SHA")"
+          selected_status="$(jq -r '.status' <<<"$selected_compare")"
+          selected_behind="$(jq -r '.behind_by' <<<"$selected_compare")"
+          [[ "$selected_status" == 'ahead' || "$selected_status" == 'identical' ]]
+          [[ "$selected_behind" == '0' ]]
 
           pr_json="$(api "$API_URL/repos/$REPOSITORY/pulls/$TARGET_PR")"
           [[ "$(jq -r '.state' <<<"$pr_json")" == 'open' ]]
@@ -123,9 +184,6 @@ jobs:
           jq -S . /tmp/base-state.json > /tmp/base-normalized.json
           diff -u /tmp/base-normalized.json /tmp/target-normalized.json
 
-          echo "target_head=$TARGET_HEAD" >> "$GITHUB_OUTPUT"
-          echo 'verified=true' >> "$GITHUB_OUTPUT"
-
           statuses="$(api "$API_URL/repos/$REPOSITORY/commits/$TARGET_HEAD/statuses?per_page=100")"
           require_latest_success() {
             local context="$1"
@@ -153,10 +211,145 @@ jobs:
           require_workflow_success 'PHP Foundation Regression'
           require_workflow_success 'M7.1 Application Regression'
 
-          echo 'Exact migration27 transition target and prerequisite authorities qualified.'
+          printf '%s' "$selected_environment" > /tmp/selected-environment.txt
+          printf '%s' "$selected_runtime" > /tmp/selected-runtime.txt
+          printf '%s' "$selected_source" > /tmp/selected-source.txt
+          printf '%s' "$selected_artifact" > /tmp/selected-artifact.txt
+          printf '%s' "$selected_attestation" > /tmp/selected-attestation.txt
+          printf '%s' "$selected_selection_fingerprint" > /tmp/selected-selection-fingerprint.txt
+          printf '%s' "$selected_ingestion_run_id" > /tmp/selected-ingestion-run-id.txt
+          printf '%s' "$selected_ingestion_run_attempt" > /tmp/selected-ingestion-run-attempt.txt
+          printf '%s' "$selected_ingestion_fingerprint" > /tmp/selected-ingestion-fingerprint.txt
+
+          echo "target_head=$TARGET_HEAD" >> "$GITHUB_OUTPUT"
+          echo 'verified=true' >> "$GITHUB_OUTPUT"
+          echo 'Exact migration27 transition, selected target, and prerequisite authorities qualified.'
+
+      - name: Resolve exact selected-target database-binding evidence
+        id: binding
+        if: ${{ steps.preflight.outputs.verified == 'true' }}
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          API_URL: ${{ github.api_url }}
+          REPOSITORY: ${{ github.repository }}
+          BINDING_RUN_ID: ${{ inputs.binding_run_id }}
+          BINDING_RUN_ATTEMPT: ${{ inputs.binding_run_attempt }}
+        run: |
+          set -euo pipefail
+
+          api() {
+            curl --fail-with-body --silent --show-error \
+              --header 'Accept: application/vnd.github+json' \
+              --header "Authorization: Bearer $GH_TOKEN" \
+              --header 'X-GitHub-Api-Version: 2022-11-28' \
+              "$1"
+          }
+
+          run="$(api "$API_URL/repos/$REPOSITORY/actions/runs/$BINDING_RUN_ID")"
+          [[ "$(jq -r '.path' <<<"$run")" == "$BINDING_WORKFLOW_PATH" ]]
+          [[ "$(jq -r '.event' <<<"$run")" == 'workflow_dispatch' ]]
+          [[ "$(jq -r '.head_branch' <<<"$run")" == 'main' ]]
+          [[ "$(jq -r '.status' <<<"$run")" == 'completed' ]]
+          [[ "$(jq -r '.conclusion' <<<"$run")" == 'success' ]]
+          [[ "$(jq -r '.run_attempt' <<<"$run")" == "$BINDING_RUN_ATTEMPT" ]]
+          binding_head="$(jq -r '.head_sha' <<<"$run")"
+          [[ "$binding_head" =~ ^[0-9a-f]{40}$ ]]
+
+          compare="$(api "$API_URL/repos/$REPOSITORY/compare/$binding_head...$GITHUB_SHA")"
+          compare_status="$(jq -r '.status' <<<"$compare")"
+          compare_behind="$(jq -r '.behind_by' <<<"$compare")"
+          [[ "$compare_status" == 'ahead' || "$compare_status" == 'identical' ]]
+          [[ "$compare_behind" == '0' ]]
+
+          artifacts="$(api "$API_URL/repos/$REPOSITORY/actions/runs/$BINDING_RUN_ID/artifacts?per_page=100")"
+          matches="$(jq --arg n "$BINDING_ARTIFACT_NAME" '[.artifacts[] | select(.name == $n and .expired == false)]' <<<"$artifacts")"
+          [[ "$(jq 'length' <<<"$matches")" == '1' ]]
+          artifact_id="$(jq -r '.[0].id' <<<"$matches")"
+          artifact_size="$(jq -r '.[0].size_in_bytes' <<<"$matches")"
+          [[ "$artifact_id" =~ ^[1-9][0-9]*$ ]]
+          (( artifact_size > 0 && artifact_size <= 262144 ))
+
+          curl --fail-with-body --silent --show-error --location \
+            --header 'Accept: application/vnd.github+json' \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header 'X-GitHub-Api-Version: 2022-11-28' \
+            "$API_URL/repos/$REPOSITORY/actions/artifacts/$artifact_id/zip" \
+            --output /tmp/migration27-binding.zip
+          (( $(wc -c < /tmp/migration27-binding.zip) <= 262144 ))
+
+          unzip -Z1 /tmp/migration27-binding.zip | LC_ALL=C sort > /tmp/binding-actual-entries
+          cat > /tmp/binding-expected-entries <<'EOF'
+          binding.json
+          execution.json
+          EOF
+          diff -u /tmp/binding-expected-entries /tmp/binding-actual-entries
+          mkdir /tmp/migration27-binding
+          unzip -qq /tmp/migration27-binding.zip -d /tmp/migration27-binding
+          for f in binding.json execution.json; do
+            (( $(wc -c < "/tmp/migration27-binding/$f") > 1 ))
+            (( $(wc -c < "/tmp/migration27-binding/$f") <= 32768 ))
+            jq -e 'type == "object"' "/tmp/migration27-binding/$f" >/dev/null
+          done
+
+          binding=/tmp/migration27-binding/binding.json
+          execution=/tmp/migration27-binding/execution.json
+          selected_environment="$(cat /tmp/selected-environment.txt)"
+          selected_runtime="$(cat /tmp/selected-runtime.txt)"
+          selected_source="$(cat /tmp/selected-source.txt)"
+          selected_artifact="$(cat /tmp/selected-artifact.txt)"
+          selected_attestation="$(cat /tmp/selected-attestation.txt)"
+          selected_selection_fingerprint="$(cat /tmp/selected-selection-fingerprint.txt)"
+          selected_ingestion_run_id="$(cat /tmp/selected-ingestion-run-id.txt)"
+          selected_ingestion_run_attempt="$(cat /tmp/selected-ingestion-run-attempt.txt)"
+          selected_ingestion_fingerprint="$(cat /tmp/selected-ingestion-fingerprint.txt)"
+
+          [[ "$(jq -r '.schema_version' "$binding")" == '1' ]]
+          [[ "$(jq -r '.feature' "$binding")" == 'final-shift-close' ]]
+          [[ "$(jq -r '.binding_state' "$binding")" == 'VERIFIED_SELECTED_TARGET_DATABASE' ]]
+          [[ "$(jq -r '.environment_id' "$binding")" == "$selected_environment" ]]
+          [[ "$(jq -r '.runtime_class' "$binding")" == "$selected_runtime" ]]
+          [[ "$(jq -r '.exact_running_source_commit' "$binding")" == "$selected_source" ]]
+          [[ "$(jq -r '.exact_running_artifact_sha256' "$binding")" == "$selected_artifact" ]]
+          [[ "$(jq -r '.readiness_attestation_sha256' "$binding")" == "$selected_attestation" ]]
+          [[ "$(jq -r '.selection_fingerprint_sha256' "$binding")" == "$selected_selection_fingerprint" ]]
+          [[ "$(jq -r '.trusted_ingestion.run_id' "$binding")" == "$selected_ingestion_run_id" ]]
+          [[ "$(jq -r '.trusted_ingestion.run_attempt' "$binding")" == "$selected_ingestion_run_attempt" ]]
+          [[ "$(jq -r '.trusted_ingestion.ingestion_fingerprint_sha256' "$binding")" == "$selected_ingestion_fingerprint" ]]
+          [[ "$(jq -r '.migration27_state' "$binding")" == 'NOT_EXECUTED' ]]
+          [[ "$(jq -r '.secrets_embedded' "$binding")" == 'false' ]]
+          database_binding="$(jq -r '.database_binding_sha256 // ""' "$binding")"
+          [[ "$database_binding" =~ ^[0-9a-f]{64}$ ]]
+
+          [[ "$(jq -r '.schema_version' "$execution")" == '1' ]]
+          [[ "$(jq -r '.feature' "$execution")" == 'final-shift-close' ]]
+          [[ "$(jq -r '.workflow_path' "$execution")" == "$BINDING_WORKFLOW_PATH" ]]
+          [[ "$(jq -r '.repository' "$execution")" == 'labzefry/oneQay' ]]
+          [[ "$(jq -r '.ref' "$execution")" == 'refs/heads/main' ]]
+          [[ "$(jq -r '.source_commit' "$execution")" == "$binding_head" ]]
+          [[ "$(jq -r '.run_id' "$execution")" == "$BINDING_RUN_ID" ]]
+          [[ "$(jq -r '.run_attempt' "$execution")" == "$BINDING_RUN_ATTEMPT" ]]
+          [[ "$(jq -r '.database_binding_sha256' "$execution")" == "$database_binding" ]]
+          [[ "$(jq -r '.selection_fingerprint_sha256' "$execution")" == "$selected_selection_fingerprint" ]]
+          [[ "$(jq -r '.evidence_context' "$execution")" == "$BINDING_EVIDENCE_CONTEXT" ]]
+          [[ "$(jq -r '.evidence_state' "$execution")" == 'success' ]]
+          [[ "$(jq -r '.secrets_embedded' "$execution")" == 'false' ]]
+
+          expected_target="$GITHUB_SERVER_URL/$REPOSITORY/actions/runs/$BINDING_RUN_ID"
+          statuses="$(api "$API_URL/repos/$REPOSITORY/commits/$selected_source/statuses?per_page=100")"
+          exact="$(jq -r --arg c "$BINDING_EVIDENCE_CONTEXT" --arg u "$expected_target" \
+            '[.[] | select(.context == $c and .state == "success" and .target_url == $u)][0].state // ""' <<<"$statuses")"
+          [[ "$exact" == 'success' ]] || {
+            echo 'Exact selected-target database-binding evidence status is not success.' >&2
+            exit 1
+          }
+
+          echo "expected_db_binding=$database_binding" >> "$GITHUB_OUTPUT"
+          echo 'verified=true' >> "$GITHUB_OUTPUT"
+          echo 'Exact selected-target database-binding evidence qualified.'
 
       - name: Publish pending execution evidence
-        if: ${{ steps.preflight.outputs.verified == 'true' }}
+        if: ${{ steps.preflight.outputs.verified == 'true' && steps.binding.outputs.verified == 'true' }}
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
@@ -168,7 +361,7 @@ jobs:
           payload="$(jq -n \
             --arg state pending \
             --arg context "$EVIDENCE_CONTEXT" \
-            --arg description 'Migration27 authorized execution is in progress' \
+            --arg description 'Migration27 selected-target-bound execution is in progress' \
             --arg target_url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
             '{state:$state,context:$context,description:$description,target_url:$target_url}')"
           curl --fail-with-body --silent --show-error \
@@ -181,8 +374,10 @@ jobs:
 
       - name: Execute canonical migration27 and verify durable schema
         id: execute
-        if: ${{ steps.preflight.outputs.verified == 'true' }}
+        if: ${{ steps.preflight.outputs.verified == 'true' && steps.binding.outputs.verified == 'true' }}
         shell: bash
+        env:
+          EXPECTED_DB_BINDING: ${{ steps.binding.outputs.expected_db_binding }}
         run: |
           set -euo pipefail
 
@@ -191,12 +386,14 @@ jobs:
             "$ONEQAY_DB_PORT" \
             "$ONEQAY_DB_DATABASE" \
             "$ONEQAY_DB_USERNAME" \
-            "$ONEQAY_DB_PASSWORD"; do
+            "$ONEQAY_DB_PASSWORD" \
+            "$EXPECTED_DB_BINDING"; do
             [[ -n "$value" ]] || {
-              echo 'Required migration27 environment secret is missing.' >&2
+              echo 'Required migration27 environment secret or selected-target binding is missing.' >&2
               exit 1
             }
           done
+          [[ "$EXPECTED_DB_BINDING" =~ ^[0-9a-f]{64}$ ]]
 
           composer install \
             --working-dir=apps/web \
@@ -217,6 +414,32 @@ jobs:
           if (strtolower($db->getDriverName()) !== 'mysql') {
               throw new RuntimeException('Live migration27 executor requires canonical MySQL-compatible target.');
           }
+
+          $identity = $db->selectOne('SELECT DATABASE() AS database_name, @@hostname AS server_hostname, @@port AS server_port');
+          if (! is_object($identity)) {
+              throw new RuntimeException('Selected-target database identity readback failed.');
+          }
+          $databaseName = trim((string) ($identity->database_name ?? ''));
+          $serverHostname = trim((string) ($identity->server_hostname ?? ''));
+          $serverPort = (int) ($identity->server_port ?? 0);
+          if ($databaseName === '' || $serverHostname === '' || $serverPort < 1 || $serverPort > 65535) {
+              throw new RuntimeException('Selected-target database identity readback is incomplete.');
+          }
+          $bindingPayload = [
+              'database_name' => $databaseName,
+              'server_hostname' => $serverHostname,
+              'server_port' => $serverPort,
+          ];
+          ksort($bindingPayload, SORT_STRING);
+          $actualBinding = hash('sha256', json_encode(
+              $bindingPayload,
+              JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR,
+          ));
+          $expectedBinding = (string) getenv('EXPECTED_DB_BINDING');
+          if (! hash_equals($expectedBinding, $actualBinding)) {
+              throw new RuntimeException('Migration27 database credentials are not bound to the exact selected durable target.');
+          }
+
           if (! $schema->hasTable('migrations')) {
               throw new RuntimeException('Canonical migrations table is missing.');
           }
@@ -320,10 +543,10 @@ jobs:
           }
           PHP
 
-          echo 'Canonical migration27 execution and durable schema verification succeeded.'
+          echo 'Canonical migration27 selected-target-bound execution and durable schema verification succeeded.'
 
       - name: Publish final execution evidence
-        if: ${{ always() && steps.preflight.outputs.verified == 'true' }}
+        if: ${{ always() && steps.preflight.outputs.verified == 'true' && steps.binding.outputs.verified == 'true' }}
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
@@ -335,10 +558,10 @@ jobs:
           set -euo pipefail
           if [[ "$EXECUTE_OUTCOME" == 'success' ]]; then
             state=success
-            description='Migration27 execution verified against canonical target'
+            description='Migration27 execution verified against exact selected durable target'
           else
             state=failure
-            description='Migration27 execution or verification failed closed'
+            description='Migration27 selected-target execution or verification failed closed'
           fi
 
           payload="$(jq -n \
