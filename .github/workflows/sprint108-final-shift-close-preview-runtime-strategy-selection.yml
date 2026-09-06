@@ -1,0 +1,132 @@
+name: Sprint108 Final Shift Close Preview Runtime Strategy Selection
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/sprint108-final-shift-close-preview-runtime-strategy-selection.yml'
+      - 'docs/SPRINT108_FINAL_SHIFT_CLOSE_PREVIEW_RUNTIME_STRATEGY_SELECTION.md'
+      - 'ops/final-shift-close/PREVIEW_RUNTIME_STRATEGY.json'
+
+permissions:
+  contents: read
+
+jobs:
+  qualify-strategy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Lock exact Sprint108 envelope
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/actual
+          cat > /tmp/expected <<'EOF'
+          .github/workflows/sprint108-final-shift-close-preview-runtime-strategy-selection.yml
+          docs/SPRINT108_FINAL_SHIFT_CLOSE_PREVIEW_RUNTIME_STRATEGY_SELECTION.md
+          ops/final-shift-close/PREVIEW_RUNTIME_STRATEGY.json
+          EOF
+          diff -u /tmp/expected /tmp/actual
+          test "$(sha256sum /tmp/actual | awk '{print $1}')" = '43da0ab9e3ebde00cbacc86890c26527a2cf1ae88c42f17e5ad8798dd1d9faab'
+
+      - name: Preserve Sprint106 target and Sprint107 blocker state
+        shell: bash
+        run: |
+          set -euo pipefail
+          target=ops/final-shift-close/ACTIVATION_TARGET.json
+          matrix=ops/final-shift-close/PREVIEW_RUNTIME_COMPATIBILITY.json
+          test "$(jq -r '.target.environment_id' "$target")" = 'oneqay-synthetic-technical-preview'
+          test "$(jq -r '.target.runtime_class' "$target")" = 'preview'
+          test "$(jq -r '.target.selection_state' "$target")" = 'SELECTED_NOT_AUTHORIZED'
+          test "$(jq -r '.compatibility_state' "$matrix")" = 'BLOCKED'
+          test "$(jq '[.required_runtime_envelope[] | select(.preview_qualified == false)] | length' "$matrix")" = '9'
+
+      - name: Prove Synthetic Preview runtime model
+        shell: bash
+        run: |
+          set -euo pipefail
+          provider=apps/web/app/Providers/TechnicalPreviewServiceProvider.php
+          grep -Fq 'SyntheticPosStore::class' "$provider"
+          grep -Fq 'DeterministicPreviewFixture' "$provider"
+          grep -Fq 'SyntheticTenantMembershipVerifier' "$provider"
+          grep -Fq 'SyntheticOrganizationalRelationshipVerifier' "$provider"
+          grep -Fq "if (\$runtimeClass === 'preview')" "$provider"
+
+      - name: Prove durable Final Shift Close path remains Preview-denied
+        shell: bash
+        run: |
+          set -euo pipefail
+          files=(
+            apps/web/app/Providers/FinalShiftCloseServiceProvider.php
+            apps/web/app/Delivery/Http/Middleware/RequirePosSessionContextMiddleware.php
+            apps/web/app/Delivery/Http/Middleware/EnforceActiveFirstPartySessionAuthorityMiddleware.php
+            apps/web/app/Infrastructure/Identity/LaravelFirstPartySessionAuthorityRepository.php
+            apps/web/app/Infrastructure/Identity/LaravelFirstPartyIdentityEligibilityVerifier.php
+            apps/web/app/Infrastructure/Authorization/LaravelDurableRolePermissionRepository.php
+            apps/web/app/Infrastructure/Persistence/LaravelPersistenceTransaction.php
+            apps/web/app/Infrastructure/Pos/LaravelCloseShiftRepository.php
+            apps/web/app/Infrastructure/Pos/LaravelDurablePosSaleRepository.php
+          )
+          for file in "${files[@]}"; do
+            grep -Fq "['local', 'test', 'ci']" "$file"
+            ! grep -Fq "['local', 'test', 'ci', 'preview']" "$file"
+          done
+
+      - name: Validate machine-readable strategy selection
+        shell: bash
+        run: |
+          set -euo pipefail
+          strategy=ops/final-shift-close/PREVIEW_RUNTIME_STRATEGY.json
+          jq -e . "$strategy" >/dev/null
+          test "$(jq -r '.schema_version' "$strategy")" = '1'
+          test "$(jq -r '.selected_strategy' "$strategy")" = 'KEEP_DURABLE_FINAL_SHIFT_CLOSE_UNAVAILABLE_ON_SYNTHETIC_PREVIEW'
+          test "$(jq -r '.strategy_state' "$strategy")" = 'SELECTED_SOURCE_ONLY'
+          test "$(jq -r '.synthetic_preview.durable_final_shift_close' "$strategy")" = 'UNAVAILABLE'
+          test "$(jq -r '.synthetic_preview.durable_activation_evidence_eligible' "$strategy")" = 'false'
+          test "$(jq -r '.future_durable_activation_target.selection_required' "$strategy")" = 'true'
+          test "$(jq -r '.future_durable_activation_target.required_runtime_model' "$strategy")" = 'NON_SYNTHETIC_DURABLE_RUNTIME'
+          test "$(jq -r '.canonical_boundaries.runtime_allowlist_change' "$strategy")" = 'NOT_IMPLEMENTED'
+          test "$(jq -r '.canonical_boundaries.feature_activation_evidence_producer' "$strategy")" = 'NOT_IMPLEMENTED'
+          test "$(jq -r '.canonical_boundaries.feature_activation_execution' "$strategy")" = 'NOT_PERFORMED'
+
+      - name: Preserve operational no-go boundaries
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git diff --exit-code "$BASE_SHA" "$HEAD_SHA" -- \
+            apps/web/app \
+            apps/web/bootstrap \
+            apps/web/config \
+            apps/web/database/migrations \
+            apps/web/routes \
+            apps/web/resources \
+            ops/final-shift-close/STATE.json \
+            ops/final-shift-close/ACTIVATION_TARGET.json \
+            ops/final-shift-close/PREVIEW_RUNTIME_COMPATIBILITY.json
+          workflow=.github/workflows/sprint108-final-shift-close-preview-runtime-strategy-selection.yml
+          ! grep -Eq '^  workflow_dispatch:' "$workflow"
+
+      - name: Lock Sprint108 disposition
+        shell: bash
+        run: |
+          set -euo pipefail
+          doc=docs/SPRINT108_FINAL_SHIFT_CLOSE_PREVIEW_RUNTIME_STRATEGY_SELECTION.md
+          grep -Fq 'PREVIEW_RUNTIME_STRATEGY = KEEP_DURABLE_FINAL_SHIFT_CLOSE_UNAVAILABLE_ON_SYNTHETIC_PREVIEW' "$doc"
+          grep -Fq 'SYNTHETIC_PREVIEW_DURABLE_ACTIVATION_EVIDENCE = REJECTED' "$doc"
+          grep -Fq 'FUTURE_DURABLE_ACTIVATION_TARGET = RESELECTION_REQUIRED' "$doc"
+          grep -Fq 'RUNTIME_ALLOWLIST_CHANGE = NOT_IMPLEMENTED' "$doc"
+          grep -Fq 'FEATURE_ACTIVATION_EXECUTION = NOT_PERFORMED' "$doc"
+          grep -Fq 'TECHNICAL_PREVIEW_ACTIVATION_AUTHORITY = NOT_GRANTED' "$doc"
+          grep -Fq 'PRODUCTION_AUTHORITY = NOT_GRANTED' "$doc"

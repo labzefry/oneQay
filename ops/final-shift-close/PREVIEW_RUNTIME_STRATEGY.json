@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "feature": "final-shift-close",
+  "selected_strategy": "KEEP_DURABLE_FINAL_SHIFT_CLOSE_UNAVAILABLE_ON_SYNTHETIC_PREVIEW",
+  "strategy_state": "SELECTED_SOURCE_ONLY",
+  "synthetic_preview": {
+    "environment_id": "oneqay-synthetic-technical-preview",
+    "runtime_class": "preview",
+    "runtime_model": "SYNTHETIC_FIXTURE_RUNTIME",
+    "durable_final_shift_close": "UNAVAILABLE",
+    "durable_activation_evidence_eligible": false,
+    "synthetic_rehearsal_may_be_designed_separately": true
+  },
+  "rejected_strategies": [
+    {
+      "strategy": "WIDEN_DURABLE_RUNTIME_ENVELOPE_TO_SYNTHETIC_PREVIEW",
+      "reason": "MIXES_SYNTHETIC_AND_DURABLE_RUNTIME_MODELS"
+    },
+    {
+      "strategy": "USE_SYNTHETIC_PREVIEW_AS_DURABLE_ACTIVATION_EVIDENCE_TARGET",
+      "reason": "WOULD_NOT_PROVE_REAL_DURABLE_RUNTIME_EXECUTION"
+    }
+  ],
+  "future_durable_activation_target": {
+    "selection_required": true,
+    "required_runtime_model": "NON_SYNTHETIC_DURABLE_RUNTIME",
+    "must_have_exact_running_build_provenance": true,
+    "must_have_authenticated_configuration_channel": true,
+    "must_have_durable_session_authorization_transaction_pos_envelope": true,
+    "must_have_non_mutating_health_attestation": true,
+    "must_have_verified_flag_rollback": true
+  },
+  "canonical_boundaries": {
+    "runtime_allowlist_change": "NOT_IMPLEMENTED",
+    "preview_runtime_regression": "NOT_IMPLEMENTED",
+    "feature_activation_evidence_producer": "NOT_IMPLEMENTED",
+    "feature_activation_execution": "NOT_PERFORMED",
+    "migration27_execution": "NOT_PERFORMED",
+    "permission_provisioning": "NONE",
+    "technical_preview_activation_authority": "NOT_GRANTED",
+    "production_authority": "NOT_GRANTED",
+    "updater_activation": "INACTIVE"
+  }
+}
