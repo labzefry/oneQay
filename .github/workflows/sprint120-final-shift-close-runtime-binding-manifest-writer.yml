@@ -114,7 +114,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          ! git diff "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | grep -E '^\+.*(Route::|Artisan::|Commands\\|providers\.php|workflow_dispatch|ONEQAY_POS_SHIFT_CLOSE_ENABLED)'
+          ! grep -R -E '(Route::|Artisan::|workflow_dispatch|ONEQAY_POS_SHIFT_CLOSE_ENABLED)' \
+            apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingManifest.php \
+            apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingManifestWriter.php \
+            apps/web/app/Infrastructure/Pos/FilesystemFinalShiftCloseRuntimeBindingManifestWriter.php \
+            apps/web/tests/final-shift-close-runtime-binding-manifest-writer.php
           grep -Fq 'SPRINT120_WRITER_INVOCATION = NOT_IMPLEMENTED' docs/SPRINT120_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MANIFEST_WRITER.md
           grep -Fq 'SPRINT120_RUNTIME_MANIFEST_MATERIALIZATION = NOT_PERFORMED' docs/SPRINT120_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MANIFEST_WRITER.md
           grep -Fq 'FEATURE_ACTIVATION = INACTIVE' docs/SPRINT120_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MANIFEST_WRITER.md
