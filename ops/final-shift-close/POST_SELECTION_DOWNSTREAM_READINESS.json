@@ -1,0 +1,124 @@
+{
+  "schema_version": 1,
+  "feature": "final-shift-close",
+  "contract_state": "MATERIALIZED_SOURCE_ONLY",
+  "purpose": "DEFINE_FAIL_CLOSED_POST_SELECTION_ELIGIBILITY_BEFORE_ANY_DURABLE_RUNTIME_OPERATIONAL_EXECUTION",
+  "selection_prerequisite": {
+    "canonical_file": "ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json",
+    "required_selection_state": "SELECTED_NOT_AUTHORIZED",
+    "required_selected_target": "NON_NULL_EXACT_SPRINT111_SELECTOR_OUTPUT_PLUS_TRUSTED_INGESTION_BINDING",
+    "current_selection_state": "BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET",
+    "current_selected_target": null,
+    "current_eligibility": "BLOCKED_SELECTION_NOT_PERSISTED"
+  },
+  "required_target_binding": {
+    "environment_id": true,
+    "runtime_class": true,
+    "exact_running_source_commit": true,
+    "exact_running_artifact_sha256": true,
+    "readiness_attestation_sha256": true,
+    "selection_fingerprint_sha256": true,
+    "trusted_ingestion_run_id": true,
+    "trusted_ingestion_run_attempt": true,
+    "trusted_ingestion_fingerprint_sha256": true,
+    "operator_secrets_or_control_channel_must_be_cryptographically_or_configuration_bound_to_selected_environment": true,
+    "runtime_readback_must_confirm_same_selected_environment_before_mutation": true
+  },
+  "downstream_components": {
+    "migration27_execution": {
+      "source_path": ".github/workflows/final-shift-close-migration27-execution.yml",
+      "source_materialized": true,
+      "selected_target_binding_present": false,
+      "current_eligibility": "NOT_ELIGIBLE_SELECTED_TARGET_BINDING_MISSING",
+      "required_before_eligibility": [
+        "EXACT_SELECTED_TARGET_RECORD",
+        "DATABASE_ENDPOINT_OR_CONTROL_CHANNEL_BOUND_TO_SELECTED_ENVIRONMENT_ID",
+        "PRE_MUTATION_RUNTIME_IDENTITY_READBACK",
+        "EXACT_RUNNING_SOURCE_AND_ARTIFACT_PROVENANCE_MATCH_SELECTED_TARGET"
+      ]
+    },
+    "permission_provisioning": {
+      "source_path": ".github/workflows/final-shift-close-permission-provisioning.yml",
+      "source_materialized": true,
+      "selected_target_binding_present": false,
+      "current_eligibility": "NOT_ELIGIBLE_SELECTED_TARGET_BINDING_MISSING",
+      "required_before_eligibility": [
+        "MIGRATION27_EXECUTED_ON_SAME_SELECTED_TARGET",
+        "EXACT_SELECTED_TARGET_RECORD",
+        "DATABASE_ENDPOINT_OR_CONTROL_CHANNEL_BOUND_TO_SELECTED_ENVIRONMENT_ID",
+        "PRE_MUTATION_RUNTIME_IDENTITY_READBACK",
+        "EXACT_RUNNING_SOURCE_AND_ARTIFACT_PROVENANCE_MATCH_SELECTED_TARGET",
+        "NO_DEFAULT_GRANT_PRESERVED"
+      ]
+    },
+    "feature_activation": {
+      "source_path": ".github/workflows/final-shift-close-feature-activation.yml",
+      "source_materialized": false,
+      "selected_target_binding_present": false,
+      "current_eligibility": "NOT_ELIGIBLE_EXECUTOR_NOT_IMPLEMENTED",
+      "required_before_eligibility": [
+        "MIGRATION27_EXECUTED_ON_SAME_SELECTED_TARGET",
+        "PERMISSION_PROVISIONED_ON_SAME_SELECTED_TARGET",
+        "EXACT_SELECTED_TARGET_RECORD",
+        "AUTHENTICATED_CONFIGURATION_MUTATION_CHANNEL_BOUND_TO_SELECTED_ENVIRONMENT_ID",
+        "READ_BEFORE_WRITE_READ_AFTER_FLAG_VERIFICATION",
+        "NON_MUTATING_HEALTH_ATTESTATION",
+        "VERIFIED_FLAG_ROLLBACK",
+        "EXACT_FEATURE_ACTIVATION_AUTHORITY"
+      ]
+    },
+    "runtime_allowlist": {
+      "source_path": "apps/web/app/Providers/FinalShiftCloseServiceProvider.php",
+      "current_runtime_classes": [
+        "local",
+        "test",
+        "ci"
+      ],
+      "selected_runtime_class_enabled": false,
+      "current_eligibility": "NOT_ELIGIBLE_SELECTED_RUNTIME_NOT_QUALIFIED",
+      "required_before_eligibility": [
+        "FULL_DURABLE_DEPENDENCY_ENVELOPE_QUALIFIED_FOR_SELECTED_RUNTIME_CLASS",
+        "NO_SYNTHETIC_MIXING",
+        "EXACT_SELECTED_TARGET_PROVENANCE",
+        "REGRESSION_COVERAGE_FOR_SELECTED_RUNTIME_CLASS"
+      ]
+    }
+  },
+  "ordering": [
+    "PERSIST_SELECTED_NOT_AUTHORIZED_TARGET",
+    "BIND_AND_QUALIFY_MIGRATION27_EXECUTION_TO_SELECTED_TARGET",
+    "EXECUTE_AND_PROVE_MIGRATION27_ON_SELECTED_TARGET",
+    "BIND_AND_QUALIFY_PERMISSION_PROVISIONING_TO_SAME_SELECTED_TARGET",
+    "PROVISION_AND_PROVE_POS_SHIFT_CLOSE_ON_SELECTED_TARGET",
+    "QUALIFY_FULL_DURABLE_RUNTIME_ENVELOPE_FOR_SELECTED_RUNTIME_CLASS",
+    "MATERIALIZE_SELECTED_TARGET_BOUND_FEATURE_ACTIVATION_EXECUTOR",
+    "OBTAIN_EXACT_FEATURE_ACTIVATION_AUTHORITY",
+    "ACTIVATE_WITH_READBACK_HEALTH_AND_ROLLBACK_EVIDENCE"
+  ],
+  "forbidden_shortcuts": [
+    "RUN_MIGRATION27_AGAINST_UNBOUND_DB_SECRETS",
+    "RUN_PERMISSION_PROVISIONING_AGAINST_UNBOUND_DB_SECRETS",
+    "ASSUME_GITHUB_ENVIRONMENT_NAME_EQUALS_SELECTED_RUNTIME_IDENTITY",
+    "WIDEN_FINAL_SHIFT_CLOSE_RUNTIME_ALLOWLIST_BEFORE_FULL_DEPENDENCY_QUALIFICATION",
+    "TREAT_SELECTED_NOT_AUTHORIZED_AS_ACTIVATION_AUTHORITY",
+    "TREAT_STATE_JSON_AS_LIVE_RUNTIME_EVIDENCE"
+  ],
+  "source_envelope_sha256": "6583f7e9e4b1cce966f166c4e650e42e8c106b9c5354e75adceb10ace5688c18",
+  "canonical_boundaries": {
+    "producer_dispatch": "NOT_PERFORMED",
+    "real_attestation": "NONE",
+    "ingestion_dispatch": "NOT_PERFORMED",
+    "accepted_ingestion_candidate": "NONE",
+    "selection_persistence_execution": "NOT_PERFORMED",
+    "selected_target": "NONE",
+    "migration27_execution": "NOT_PERFORMED",
+    "permission_provisioning": "NONE",
+    "runtime_allowlist_change": "NOT_IMPLEMENTED",
+    "feature_activation_executor": "NOT_IMPLEMENTED",
+    "feature_activation": "INACTIVE",
+    "deployment_authority": "NOT_GRANTED",
+    "technical_preview_activation": "NOT_AUTHORIZED",
+    "production_activation": "NOT_AUTHORIZED",
+    "updater_activation": "INACTIVE"
+  }
+}
