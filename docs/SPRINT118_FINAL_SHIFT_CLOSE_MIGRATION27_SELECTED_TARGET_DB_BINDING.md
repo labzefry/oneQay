@@ -24,17 +24,18 @@ Neither a GitHub Environment name nor a database secret name is accepted as runt
 Sprint118 changes exactly:
 
 1. `.github/workflows/final-shift-close-migration27-selected-target-db-binding.yml`;
-2. `.github/workflows/sprint117-final-shift-close-migration27-selected-target-binding.yml`;
-3. `.github/workflows/sprint118-final-shift-close-migration27-selected-target-db-binding.yml`;
-4. `docs/SPRINT117_FINAL_SHIFT_CLOSE_MIGRATION27_SELECTED_TARGET_BINDING.md`;
-5. `docs/SPRINT118_FINAL_SHIFT_CLOSE_MIGRATION27_SELECTED_TARGET_DB_BINDING.md`;
-6. `ops/final-shift-close/MIGRATION27_SELECTED_TARGET_BINDING_CONTRACT.json`.
+2. `.github/workflows/sprint103-final-shift-close-migration27-execution-evidence.yml`;
+3. `.github/workflows/sprint117-final-shift-close-migration27-selected-target-binding.yml`;
+4. `.github/workflows/sprint118-final-shift-close-migration27-selected-target-db-binding.yml`;
+5. `docs/SPRINT117_FINAL_SHIFT_CLOSE_MIGRATION27_SELECTED_TARGET_BINDING.md`;
+6. `docs/SPRINT118_FINAL_SHIFT_CLOSE_MIGRATION27_SELECTED_TARGET_DB_BINDING.md`;
+7. `ops/final-shift-close/MIGRATION27_SELECTED_TARGET_BINDING_CONTRACT.json`.
 
 Sorted-newline envelope SHA-256:
 
-`a046e41aef37a4e6e2c6d66054517ffd7ed81be85b70b1a9199e926af5388b57`
+`1b8a8a9851a5cac94389c6939f4c4f08dd479c108296c3959c996884612ee13c`
 
-No application source, provider, route, UI, bootstrap, config, migration source, operational `STATE.json`, durable target-selection state, migration executor, or Sprint103 migration qualification source changes are part of Sprint118.
+No application source, provider, route, UI, bootstrap, config, migration source, operational `STATE.json`, durable target-selection state, or migration executor changes are part of Sprint118. The Sprint103 and Sprint117 workflow changes are successor-compatibility qualification only.
 
 ## Producer trigger and caller boundary
 
@@ -254,15 +255,15 @@ Therefore the Sprint118 producer does not grant migration execution authority an
 
 ## Historical compatibility
 
-The Sprint117 qualification workflow is updated as a successor compatibility gate.
+The Sprint103 and Sprint117 qualification workflows are updated as successor compatibility gates.
 
-It preserves:
+They preserve:
 
+- canonical migration #27 blob/source;
 - Sprint117 executor selected-target prerequisites;
 - Sprint117 database-binding evidence requirements;
 - pre-mutation database fingerprint verification;
-- migration #27 blob pin;
-- forward-only execution;
+- forward-only migration execution;
 - migration authority and merge authority boundaries;
 - absence of deployment/feature/updater actions.
 
