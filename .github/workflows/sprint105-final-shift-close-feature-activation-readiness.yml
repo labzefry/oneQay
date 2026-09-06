@@ -1,0 +1,154 @@
+name: Sprint105 Final Shift Close Feature Activation Readiness
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/sprint105-final-shift-close-feature-activation-readiness.yml'
+      - 'docs/SPRINT105_FINAL_SHIFT_CLOSE_FEATURE_ACTIVATION_EXECUTION_READINESS.md'
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  qualify-feature-activation-execution-readiness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Enforce exact Sprint105 source envelope
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/actual
+          cat > /tmp/expected <<'EOF'
+          .github/workflows/sprint105-final-shift-close-feature-activation-readiness.yml
+          docs/SPRINT105_FINAL_SHIFT_CLOSE_FEATURE_ACTIVATION_EXECUTION_READINESS.md
+          EOF
+          diff -u /tmp/expected /tmp/actual
+          test "$(sha256sum /tmp/actual | awk '{print $1}')" = 'ed38ca48bd90229ac65f9c174a29028b4ed8b6aa6eedadb8c8943bfeb664ef3d'
+
+      - name: Preserve canonical operational and application state
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git diff --exit-code "$BASE_SHA" "$HEAD_SHA" -- \
+            ops/final-shift-close/STATE.json \
+            apps/web/app \
+            apps/web/config \
+            apps/web/environment.example \
+            apps/web/database/migrations \
+            apps/web/routes \
+            apps/web/resources \
+            apps/web/bootstrap
+
+          state=ops/final-shift-close/STATE.json
+          test "$(jq -r '.migration27.state' "$state")" = 'NOT_EXECUTED'
+          test "$(jq -r '.permission_provisioning.state' "$state")" = 'NONE'
+          test "$(jq -r '.permission_provisioning.default_grant' "$state")" = 'NONE'
+          test "$(jq -r '.feature_activation.state' "$state")" = 'INACTIVE'
+          test "$(jq -r '.feature_activation.runtime_flag' "$state")" = 'ONEQAY_POS_SHIFT_CLOSE_ENABLED'
+          test "$(jq -r '.deployment_authority' "$state")" = 'NOT_GRANTED'
+          test "$(jq -r '.technical_preview_activation' "$state")" = 'NOT_AUTHORIZED'
+          test "$(jq -r '.production_activation' "$state")" = 'NOT_AUTHORIZED'
+          test "$(jq -r '.updater_activation' "$state")" = 'INACTIVE'
+
+      - name: Prove current runtime compatibility blocker
+        shell: bash
+        run: |
+          set -euo pipefail
+          provider=apps/web/app/Providers/FinalShiftCloseServiceProvider.php
+          sale_repo=apps/web/app/Infrastructure/Pos/LaravelDurablePosSaleRepository.php
+          environment=apps/web/environment.example
+
+          grep -Fq "env('ONEQAY_POS_SHIFT_CLOSE_ENABLED', false)" "$provider"
+          grep -Fq "['local', 'test', 'ci']" "$provider"
+          grep -Fq '&& $this->persistenceEnabled()' "$provider"
+          grep -Fq "config('oneqay.session_control.enabled', false)" "$provider"
+          grep -Fq "config('oneqay.pos_sale_completion.enabled', false)" "$provider"
+          grep -Fq '# ONEQAY_RUNTIME_CLASS=preview' "$environment"
+          grep -Fq '# ONEQAY_TECHNICAL_PREVIEW_ENABLED=true' "$environment"
+          grep -Fq "['local', 'test', 'ci']" "$sale_repo"
+
+      - name: Prove activation target scope is not encoded in canonical state
+        shell: bash
+        run: |
+          set -euo pipefail
+          state=ops/final-shift-close/STATE.json
+          test "$(jq -r '.feature_activation | keys | sort | join(",")' "$state")" = 'authority_context,evidence_context,runtime_flag,state'
+          ! jq -e '.feature_activation.target_environment' "$state" >/dev/null 2>&1
+          ! jq -e '.feature_activation.runtime_identity' "$state" >/dev/null 2>&1
+          ! jq -e '.feature_activation.source_sha' "$state" >/dev/null 2>&1
+          ! jq -e '.feature_activation.configuration_revision' "$state" >/dev/null 2>&1
+
+      - name: Keep trusted activation evidence producer absent
+        shell: bash
+        run: |
+          set -euo pipefail
+          test ! -e .github/workflows/final-shift-close-feature-activation.yml
+          ! grep -R -Fq 'final-shift-close-feature-activation-evidence' .github/workflows \
+            --exclude='sprint101-final-shift-close-operational-authorization-gate.yml' \
+            --exclude='sprint102-final-shift-close-operational-sequencing-gate.yml' \
+            --exclude='sprint105-final-shift-close-feature-activation-readiness.yml'
+
+      - name: Lock future executor readiness contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          doc=docs/SPRINT105_FINAL_SHIFT_CLOSE_FEATURE_ACTIVATION_EXECUTION_READINESS.md
+
+          grep -Fq 'one explicit runtime class' "$doc"
+          grep -Fq 'one stable runtime/environment identity' "$doc"
+          grep -Fq 'one canonical source or build SHA identity' "$doc"
+          grep -Fq 'one authenticated configuration-control channel' "$doc"
+          grep -Fq 'one read-before/write/read-after flag primitive' "$doc"
+          grep -Fq 'one non-mutating runtime health/route attestation primitive' "$doc"
+          grep -Fq 'one rollback primitive that restores `false`' "$doc"
+          grep -Fq 'base migration state is `EXECUTED`' "$doc"
+          grep -Fq 'base permission provisioning state is `PROVISIONED`' "$doc"
+          grep -Fq 'base feature state is `INACTIVE`' "$doc"
+          grep -Fq '`final-shift-close-feature-activation-authority = success`' "$doc"
+          grep -Fq '`product-owner-merge-authority = success`' "$doc"
+          grep -Fq 'only then may `final-shift-close-feature-activation-evidence = success` be published' "$doc"
+          grep -Fq 'restore the feature flag to `false`' "$doc"
+
+      - name: Lock fail-closed disposition and no-go boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          doc=docs/SPRINT105_FINAL_SHIFT_CLOSE_FEATURE_ACTIVATION_EXECUTION_READINESS.md
+
+          grep -Fq 'FEATURE_ACTIVATION_EXECUTION_READINESS = BLOCKED' "$doc"
+          grep -Fq 'BLOCKER_RUNTIME_SCOPE = UNRESOLVED' "$doc"
+          grep -Fq 'BLOCKER_RUNTIME_MUTATION_CHANNEL = NOT_IMPLEMENTED' "$doc"
+          grep -Fq 'BLOCKER_PREVIEW_RUNTIME_COMPATIBILITY = NOT_QUALIFIED' "$doc"
+          grep -Fq 'FEATURE_ACTIVATION_EVIDENCE_PRODUCER = NOT_IMPLEMENTED' "$doc"
+          grep -Fq 'FEATURE_ACTIVATION_EXECUTION = NOT_PERFORMED' "$doc"
+          grep -Fq 'MIGRATION_27_LIVE_EXECUTION = NOT_AUTHORIZED' "$doc"
+          grep -Fq 'FINAL_SHIFT_CLOSE_PERMISSION_PROVISIONING = NONE' "$doc"
+          grep -Fq 'FINAL_SHIFT_CLOSE_FEATURE_ACTIVATION = INACTIVE' "$doc"
+          grep -Fq 'DEPLOYMENT_AUTHORITY = NOT_GRANTED' "$doc"
+          grep -Fq 'TECHNICAL_PREVIEW_ACTIVATION_AUTHORITY = NOT_GRANTED' "$doc"
+          grep -Fq 'PRODUCTION_AUTHORITY = NOT_GRANTED' "$doc"
+          grep -Fq 'UPDATER_ACTIVATION_AUTHORITY = NOT_GRANTED' "$doc"
+
+          ! grep -Fq 'ONEQAY_POS_SHIFT_CLOSE_ENABLED=true' .github/workflows/sprint105-final-shift-close-feature-activation-readiness.yml
+          ! grep -Eq '(^|[[:space:]])(php artisan migrate|mysql |mysqldump |kubectl |helm |ssh |scp |rsync |gh release|docker push)' .github/workflows/sprint105-final-shift-close-feature-activation-readiness.yml
+
+      - name: Verify tracked-source cleanliness
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -z "$(git status --porcelain --untracked-files=no)"
