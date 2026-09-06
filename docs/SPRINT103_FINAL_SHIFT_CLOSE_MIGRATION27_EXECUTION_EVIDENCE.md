@@ -4,48 +4,42 @@ Author by Lab | zefry
 
 ## Purpose
 
-Sprint103 materializes the first trusted execution-evidence producer required by the Sprint102 Final Shift Close operational state machine.
+Sprint103 materialized the first trusted execution-evidence producer required by the Sprint102 Final Shift Close operational state machine.
 
-The producer is deliberately limited to migration #27. Sprint103 does **not** dispatch the executor, execute migration #27, change the canonical operational state, provision `pos.shift.close`, enable Final Shift Close, deploy, release, activate Technical Preview, activate Production, or activate the updater.
+The producer is deliberately limited to migration #27. Source publication does **not** dispatch the executor, execute migration #27, change canonical operational state, provision `pos.shift.close`, enable Final Shift Close, deploy, release, activate Technical Preview, activate Production, or activate the updater.
 
-## Trust boundary
-
-The executor is stored at:
+The executor remains at:
 
 `.github/workflows/final-shift-close-migration27-execution.yml`
 
-It is manual `workflow_dispatch` only. It is not triggered by `push` or `pull_request`.
+It remains manual `workflow_dispatch` only, current-canonical-`main` only, and continues to execute only the pinned canonical migration #27 source.
 
-A future execution must be dispatched from current canonical `main`. The workflow verifies that its own `github.sha` still equals the current `main` branch SHA before it evaluates a target transition. It checks out canonical dispatch source only and never checks out the target PR head for execution.
+## Canonical migration source
 
-The canonical migration source is pinned to:
+Path:
 
 `apps/web/database/migrations/0000_00_00_000027_create_pos_shift_close_evidence_foundation.php`
 
-Canonical Git blob:
+Git blob:
 
 `a412560c2f340f4783a385aef729dbd074389a4c`
 
-If that migration source changes, this executor fails closed until a separately reviewed successor updates the pin.
+If the migration source changes, the executor fails closed until a separately reviewed successor updates the pin.
 
-## Exact future target PR contract
+## Exact state-transition PR contract
 
 A future migration execution transition PR must:
 
 1. target `main`;
 2. be based on the same current canonical `main` SHA used to dispatch the executor;
 3. come from the same repository;
-4. change exactly one path: `ops/final-shift-close/STATE.json`;
+4. change exactly `ops/final-shift-close/STATE.json`;
 5. change only `migration27.state` from `NOT_EXECUTED` to `EXECUTED`;
 6. preserve permission provisioning as `NONE`;
 7. preserve feature activation as `INACTIVE`;
 8. preserve every other state field exactly.
 
-The executor requires the caller to supply both the exact PR number and exact 40-character PR head SHA. It resolves the live PR through GitHub before any database access.
-
-## Required exact-head prerequisites
-
-Before database execution, the target exact head must have current success for:
+The target exact head must have current success for:
 
 - `final-shift-close-migration27-execution-authority`;
 - `product-owner-merge-authority`;
@@ -53,17 +47,15 @@ Before database execution, the target exact head must have current success for:
 - `PHP Foundation Regression`;
 - `M7.1 Application Regression`.
 
-The Sprint102 sequencing workflow is intentionally not required to be green before execution because that workflow consumes the execution-evidence status produced here. Before evidence exists, the migration state-transition check is expected to remain fail-closed. After verified execution evidence is produced, the Sprint102 gate must be rerun/reevaluated and succeed before merge.
+Execution evidence remains distinct from authorization and remains distinct from state merge. The executor never merges the target PR.
 
-## Environment and secret boundary
+## Database execution and verification baseline
 
-The executor uses the fixed GitHub Environment name:
+The fixed GitHub Environment remains:
 
 `final-shift-close-migration27-execution`
 
-Sprint103 does not claim that this environment already has reviewer protection or secrets configured. A future authorized operator must configure the repository/environment controls separately before execution.
-
-The workflow requires these environment secrets and fails closed when any is missing:
+The operational DB connection still requires:
 
 - `ONEQAY_MIGRATION27_DB_HOST`;
 - `ONEQAY_MIGRATION27_DB_PORT`;
@@ -71,67 +63,114 @@ The workflow requires these environment secrets and fails closed when any is mis
 - `ONEQAY_MIGRATION27_DB_USERNAME`;
 - `ONEQAY_MIGRATION27_DB_PASSWORD`.
 
-The live executor forces `ONEQAY_DB_DRIVER=mysql`. SQLite remains isolated CI-only qualification and is not accepted by this operational executor.
-
-## Database preflight
-
-Before migration execution, the workflow verifies:
-
-- the canonical `migrations` table exists;
-- `oneqay_pos_shift_close_evidence` does not already exist;
-- migration #27 is not already recorded;
-- required predecessor tables exist;
-- required predecessor migration records for shift opening, opening cash, closing cash, and variance review decision evidence exist.
-
-If the migration table or migration record already exists, the executor refuses to manufacture retrospective evidence. Operational drift must be handled by a separately bounded reconciliation process.
-
-## Execution
-
-Only the pinned canonical migration is executed:
+The workflow still requires MySQL-compatible execution, rejects retrospective/ambiguous migration evidence, checks predecessor migrations and tables, executes only:
 
 ```text
 php artisan migrate --path=database/migrations/0000_00_00_000027_create_pos_shift_close_evidence_foundation.php --force --no-interaction
 ```
 
-No rollback, reset, refresh, fresh migration, destructive table command, permission provisioning, feature toggle, deployment, release, or updater action is present in this executor.
+and performs the existing post-execution schema/index/CHECK/column verification before `final-shift-close-migration27-execution-evidence` can become `success`.
 
-## Post-execution verification
+No rollback, reset, refresh, fresh migration, destructive table command, permission provisioning, feature toggle, deployment, release, or updater action is introduced.
 
-Evidence cannot become `success` merely because the migration command exits zero.
+## Sprint117 selected-target binding hardening
 
-The workflow additionally verifies:
+Sprint116 established that a GitHub Environment name plus database secrets are not sufficient proof that the database being mutated belongs to the exact durable runtime selected by the Sprint110–Sprint115 chain.
 
-- `oneqay_pos_shift_close_evidence` exists;
-- migration #27 is recorded exactly once;
-- the new close evidence table is empty immediately after schema creation;
-- unique indexes `uq_pos_shift_close_operation` and `uq_pos_shift_close_shift` exist;
-- index `ix_pos_shift_close_outlet_time` exists;
-- CHECK constraint `chk_pos_shift_close_variance_review` is actually exposed as an enforced `CHECK` constraint by the MySQL-compatible target;
-- required durable close evidence columns exist.
+Sprint117 therefore hardens the existing Sprint103 executor without performing a live migration.
 
-Only after those checks succeed is the target exact-head status set to:
+A future dispatch now additionally requires exact `binding_run_id` and `binding_run_attempt` inputs. These are evidence identities only. The caller cannot supply environment ID, runtime class, running source SHA, artifact digest, selection fingerprint, ingestion fingerprint, or database binding fingerprint.
 
-`final-shift-close-migration27-execution-evidence = success`
+Before any pending migration execution status or database mutation, the executor now requires canonical:
 
-The workflow first publishes `pending`. If execution or verification fails after the target has been validated, the final evidence status is `failure`. Sprint102 consumes the latest exact-head status, preventing an older success from overriding a later failure.
+`ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json`
 
-## Separation from authorization and state merge
+to be in:
 
-Execution evidence is not authorization. The executor requires Sprint101 migration authority before it can touch the database.
+`SELECTED_NOT_AUTHORIZED`
 
-Execution evidence is also not a state merge. The executor never updates `ops/final-shift-close/STATE.json` and never merges the target PR. After successful evidence production, the target state PR still must pass the Sprint102 sequencing gate and all merge requirements.
+with a non-null `selected_target` carrying the exact trusted selection/ingestion bindings materialized by Sprint111–Sprint115.
 
-## Canonical boundaries after Sprint103
+The executor rejects the current blocked state and therefore cannot execute migration #27 while no durable target is selected.
 
-`FINAL_SHIFT_CLOSE_MIGRATION27_EXECUTION_EVIDENCE_PRODUCER = SOURCE_MATERIALIZED`
+## Trusted selected-target database-binding evidence
+
+Sprint117 reserves the future binding producer path:
+
+`.github/workflows/final-shift-close-migration27-selected-target-db-binding.yml`
+
+Evidence artifact:
+
+`final-shift-close-migration27-selected-target-db-binding`
+
+Evidence context:
+
+`final-shift-close-migration27-selected-target-db-binding-evidence`
+
+The producer is intentionally **not implemented in Sprint117**. Consequently, source merge alone cannot satisfy the new prerequisite and cannot make migration execution operationally eligible.
+
+A future exact binding run must be completed-success `workflow_dispatch` from `main`, remain in canonical-main history, provide one non-expired exact artifact, and publish success status whose target URL identifies that exact run.
+
+Its `binding.json` must bind exactly to canonical selected-target:
+
+- environment ID;
+- runtime class;
+- exact running source commit;
+- exact running artifact SHA-256;
+- readiness attestation SHA-256;
+- selection fingerprint SHA-256;
+- trusted ingestion run ID/attempt;
+- trusted ingestion fingerprint SHA-256.
+
+It must also state migration #27 is still `NOT_EXECUTED`, contain no secrets, and carry `database_binding_sha256`.
+
+## Pre-mutation database readback
+
+The binding algorithm is fixed as:
+
+`SHA256_CANONICAL_JSON_DATABASE_HOSTNAME_PORT_V1`
+
+The migration executor reads directly from the DB connection represented by `ONEQAY_MIGRATION27_DB_*`:
+
+- `DATABASE()`;
+- `@@hostname`;
+- `@@port`.
+
+It canonicalizes these as `database_name`, `server_hostname`, and integer `server_port`, hashes the canonical JSON with SHA-256, and compares that value using `hash_equals()` against the trusted selected-target database-binding evidence.
+
+A mismatch fails before `php artisan migrate` is reached.
+
+This prevents unbound DB secrets, a GitHub Environment label, or a state JSON file from being treated as sufficient live-runtime identity evidence.
+
+## Evidence lifecycle
+
+The migration execution context remains:
+
+`final-shift-close-migration27-execution-evidence`
+
+`pending` is not published until both the exact target/state/authority preflight and the exact selected-target database-binding preflight have succeeded.
+
+Final `success` is published only if database binding, migration execution, and post-execution verification all succeed. A migration execution or post-verification failure after qualified binding publishes failure and fails closed.
+
+## Canonical boundaries after Sprint117 source hardening
+
+`FINAL_SHIFT_CLOSE_MIGRATION27_EXECUTION_EVIDENCE_PRODUCER = SOURCE_HARDENED_SELECTED_TARGET_BINDING_REQUIRED`
 
 `FINAL_SHIFT_CLOSE_MIGRATION27_EXECUTOR_TRIGGER = MANUAL_MAIN_ONLY`
 
 `FINAL_SHIFT_CLOSE_MIGRATION27_EVIDENCE_CONTEXT = final-shift-close-migration27-execution-evidence`
 
+`MIGRATION27_SELECTED_TARGET_BINDING_PRODUCER = NOT_IMPLEMENTED`
+
+`MIGRATION27_SELECTED_TARGET_BINDING_EVIDENCE = NONE`
+
+`SELECTED_DURABLE_TARGET = NONE`
+
 `SPRINT103_LIVE_EXECUTION = NOT_PERFORMED`
 
-`MIGRATION_27_LIVE_EXECUTION = NOT_AUTHORIZED`
+`MIGRATION_27_LIVE_EXECUTION = NOT_PERFORMED`
+
+`MIGRATION_27_LIVE_AUTHORITY = NOT_GRANTED`
 
 `FINAL_SHIFT_CLOSE_PERMISSION_PROVISIONING = NONE`
 
@@ -143,4 +182,4 @@ Execution evidence is also not a state merge. The executor never updates `ops/fi
 
 `UPDATER_ACTIVATION_AUTHORITY = NOT_GRANTED`
 
-Sprint103 changes no application, infrastructure, provider, route, UI, bootstrap, config, migration, operational state, deployment, release, Technical Preview, Production, or updater source/state beyond the new executor/qualification workflow and this documentation.
+Sprint117 changes no application runtime, migration source, operational `STATE.json`, durable target selection state, deployment, release, Technical Preview, Production, or updater state. The strengthened executor is not dispatched by Sprint117.
