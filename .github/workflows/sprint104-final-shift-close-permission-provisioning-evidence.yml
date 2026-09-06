@@ -1,0 +1,159 @@
+name: Sprint104 Final Shift Close Permission Provisioning Evidence
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/final-shift-close-permission-provisioning.yml'
+      - '.github/workflows/sprint104-final-shift-close-permission-provisioning-evidence.yml'
+      - 'docs/SPRINT104_FINAL_SHIFT_CLOSE_PERMISSION_PROVISIONING_EVIDENCE.md'
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  qualify-permission-provisioning-evidence-producer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Enforce exact Sprint104 source envelope
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/actual
+          cat > /tmp/expected <<'EOF'
+          .github/workflows/final-shift-close-permission-provisioning.yml
+          .github/workflows/sprint104-final-shift-close-permission-provisioning-evidence.yml
+          docs/SPRINT104_FINAL_SHIFT_CLOSE_PERMISSION_PROVISIONING_EVIDENCE.md
+          EOF
+          diff -u /tmp/expected /tmp/actual
+          test "$(sha256sum /tmp/actual | awk '{print $1}')" = 'c8e22973b8e5f8ae3f20cc2d1121e78b10e526a6510f38c3b13771c057fe1692'
+
+      - name: Preserve canonical application and operational state
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git diff --exit-code "$BASE_SHA" "$HEAD_SHA" -- \
+            ops/final-shift-close/STATE.json \
+            apps/web/app \
+            apps/web/database/migrations \
+            apps/web/routes \
+            apps/web/resources \
+            apps/web/bootstrap \
+            apps/web/config
+          grep -Fq "public const IDENTIFIER = 'pos.shift.close';" apps/web/app/Application/Pos/FinalShiftClosePermission.php
+          grep -Fq "env('ONEQAY_POS_SHIFT_CLOSE_ENABLED', false)" apps/web/app/Providers/FinalShiftCloseServiceProvider.php
+          grep -Fq "if (! in_array(\$runtime, ['local', 'test', 'ci'], true))" apps/web/app/Infrastructure/Authorization/LaravelDurablePolicyAdministrationRepository.php
+
+      - name: Lock executor trigger permissions and runtime boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          f=.github/workflows/final-shift-close-permission-provisioning.yml
+          grep -Fq 'workflow_dispatch:' "$f"
+          ! grep -Eq '^  (pull_request|push|schedule):' "$f"
+          grep -Fq "github.ref == 'refs/heads/main'" "$f"
+          grep -Fq 'Checkout canonical dispatch source only' "$f"
+          grep -Fq 'github.sha' "$f"
+          grep -Fq 'fetch-depth: 1' "$f"
+          grep -Fq 'environment: final-shift-close-permission-provisioning' "$f"
+          grep -Fq 'statuses: write' "$f"
+          grep -Fq 'actions: read' "$f"
+          ! grep -Fq 'contents: write' "$f"
+          ! grep -Fq 'deployments: write' "$f"
+          grep -Fq 'APP_ENV: production' "$f"
+          grep -Fq "ONEQAY_PERSISTENCE_ENABLED: 'false'" "$f"
+          grep -Fq "getenv('APP_ENV') !== 'production'" "$f"
+          grep -Fq 'Application persistence must remain disabled during the isolated operational provisioning ceremony.' "$f"
+          ! grep -Fq 'APP_ENV: ci' "$f"
+          ! grep -Fq "ONEQAY_PERSISTENCE_ENABLED: 'true'" "$f"
+          ! grep -Fq 'DurablePolicyAdministrationService::class' "$f"
+
+      - name: Lock exact target transition and prerequisite statuses
+        shell: bash
+        run: |
+          set -euo pipefail
+          f=.github/workflows/final-shift-close-permission-provisioning.yml
+          grep -Fq "'.migration27.state' /tmp/base-state.json)\" == 'EXECUTED'" "$f"
+          grep -Fq "'.permission_provisioning.state' /tmp/base-state.json)\" == 'NONE'" "$f"
+          grep -Fq "'.permission_provisioning.state' /tmp/target-state.json)\" == 'PROVISIONED'" "$f"
+          grep -Fq "'.feature_activation.state' /tmp/target-state.json)\" == 'INACTIVE'" "$f"
+          grep -Fq "'.permission_provisioning.default_grant' /tmp/target-state.json)\" == 'NONE'" "$f"
+          grep -Fq '.permission_provisioning.state = "NONE"' "$f"
+          grep -Fq "[[ \"\$(jq 'length' <<<\"\$files_json\")\" -eq 1 ]]" "$f"
+          grep -Fq 'ops/final-shift-close/STATE.json' "$f"
+          grep -Fq "require_latest_success 'final-shift-close-permission-provisioning-authority'" "$f"
+          grep -Fq "require_latest_success 'product-owner-merge-authority'" "$f"
+          grep -Fq "require_workflow_success 'Governance Required Checks'" "$f"
+          grep -Fq "require_workflow_success 'PHP Foundation Regression'" "$f"
+          grep -Fq "require_workflow_success 'M7.1 Application Regression'" "$f"
+          ! grep -Fq "require_latest_success 'final-shift-close-feature-activation-authority'" "$f"
+
+      - name: Lock bounded production transaction semantics
+        shell: bash
+        run: |
+          set -euo pipefail
+          f=.github/workflows/final-shift-close-permission-provisioning.yml
+          grep -Fq 'DurablePolicyMutation::permissionGrant' "$f"
+          grep -Fq 'FinalShiftClosePermission::identifier()' "$f"
+          grep -Fq 'PolicyMutationOperation::PERMISSION_GRANT' "$f"
+          grep -Fq -- '->fingerprint($actor)' "$f"
+          grep -Fq '$db->transaction(function () use (' "$f"
+          grep -Fq 'lockForUpdate()' "$f"
+          grep -Fq 'AdministrationPermission::MANAGE' "$f"
+          grep -Fq 'Provisioning actor lacks tenant-scoped protected control authority.' "$f"
+          grep -Fq 'Protected control role cannot receive Final Shift Close permission through this executor.' "$f"
+          grep -Fq 'Final Shift Close permission already exists on target role; refusing retrospective evidence.' "$f"
+          grep -Fq 'Deterministic provisioning mutation journal already exists; refusing ambiguous evidence.' "$f"
+          grep -Fq "table('oneqay_policy_mutations')->insert([" "$f"
+          grep -Fq "table('oneqay_role_permissions')->insert([" "$f"
+          grep -Fq "'outcome' => 'applied'" "$f"
+          grep -Fq 'Final Shift Close permission grant is not exact after provisioning.' "$f"
+          grep -Fq 'Permission provisioning changed a role assignment boundary:' "$f"
+          ! grep -Fq 'insertOrIgnore' "$f"
+          ! grep -Fq 'role.assign.' "$f"
+          ! grep -Eq "table\('oneqay_(tenant|organization|outlet|device)_role_assignments'\)->(insert|delete|update)" "$f"
+
+      - name: Lock evidence lifecycle and no-go boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          f=.github/workflows/final-shift-close-permission-provisioning.yml
+          d=docs/SPRINT104_FINAL_SHIFT_CLOSE_PERMISSION_PROVISIONING_EVIDENCE.md
+          grep -Fq 'EVIDENCE_CONTEXT: final-shift-close-permission-provisioning-evidence' "$f"
+          grep -Fq -- '--arg state pending' "$f"
+          grep -Fq 'EXECUTE_OUTCOME:' "$f"
+          grep -Fq 'steps.execute.outcome' "$f"
+          grep -Fq 'state=success' "$f"
+          grep -Fq 'state=failure' "$f"
+          ! grep -Eq '(^|[[:space:]])php artisan migrate([[:space:]]|$)' "$f"
+          ! grep -Fq 'ONEQAY_POS_SHIFT_CLOSE_ENABLED=true' "$f"
+          ! grep -Eq '(kubectl |helm |ssh |scp |rsync |gh release|docker push)' "$f"
+          grep -Fq 'SPRINT104_LIVE_PROVISIONING = NOT_PERFORMED' "$d"
+          grep -Fq 'MIGRATION_27_LIVE_EXECUTION = NOT_AUTHORIZED' "$d"
+          grep -Fq 'FINAL_SHIFT_CLOSE_PERMISSION_PROVISIONING = NONE' "$d"
+          grep -Fq 'FINAL_SHIFT_CLOSE_FEATURE_ACTIVATION = INACTIVE' "$d"
+          grep -Fq 'FINAL_SHIFT_CLOSE_PERMISSION_PROVISIONING_RUNTIME_CLASS = PRODUCTION_PRESERVED' "$d"
+          grep -Fq 'FINAL_SHIFT_CLOSE_PERMISSION_PROVISIONING_APPLICATION_PERSISTENCE = DISABLED' "$d"
+          grep -Fq 'TECHNICAL_PREVIEW_ACTIVATION_AUTHORITY = NOT_GRANTED' "$d"
+          grep -Fq 'PRODUCTION_AUTHORITY = NOT_GRANTED' "$d"
+          grep -Fq 'UPDATER_ACTIVATION_AUTHORITY = NOT_GRANTED' "$d"
+
+      - name: Verify tracked-source cleanliness
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -z "$(git status --porcelain --untracked-files=no)"

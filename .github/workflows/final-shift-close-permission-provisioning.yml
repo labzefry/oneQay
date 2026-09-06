@@ -1,0 +1,490 @@
+name: Final Shift Close Permission Provisioning Evidence
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_pr_number:
+        description: 'Exact state-transition PR number'
+        required: true
+        type: string
+      target_head_sha:
+        description: 'Exact 40-character state-transition PR head SHA'
+        required: true
+        type: string
+      tenant_id:
+        description: 'Exact tenant receiving bounded role permission provisioning'
+        required: true
+        type: string
+      actor_identity_id:
+        description: 'Existing tenant-scoped control principal identity'
+        required: true
+        type: string
+      actor_organization_id:
+        description: 'Existing organization membership used to construct verified actor context'
+        required: true
+        type: string
+      role_id:
+        description: 'Existing non-protected tenant role receiving pos.shift.close'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  pull-requests: read
+  statuses: write
+  actions: read
+
+concurrency:
+  group: final-shift-close-permission-${{ inputs.target_pr_number }}
+  cancel-in-progress: false
+
+jobs:
+  provision-permission-and-publish-evidence:
+    if: ${{ github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: final-shift-close-permission-provisioning
+    env:
+      ONEQAY_DB_DRIVER: mysql
+      ONEQAY_DB_HOST: ${{ secrets.ONEQAY_PERMISSION_DB_HOST }}
+      ONEQAY_DB_PORT: ${{ secrets.ONEQAY_PERMISSION_DB_PORT }}
+      ONEQAY_DB_DATABASE: ${{ secrets.ONEQAY_PERMISSION_DB_DATABASE }}
+      ONEQAY_DB_USERNAME: ${{ secrets.ONEQAY_PERMISSION_DB_USERNAME }}
+      ONEQAY_DB_PASSWORD: ${{ secrets.ONEQAY_PERMISSION_DB_PASSWORD }}
+      ONEQAY_PERSISTENCE_ENABLED: 'false'
+      APP_ENV: production
+      APP_DEBUG: 'false'
+      EVIDENCE_CONTEXT: final-shift-close-permission-provisioning-evidence
+      PERMISSION_ID: pos.shift.close
+
+    steps:
+      - name: Checkout canonical dispatch source only
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+
+      - name: Validate canonical main and exact target transition
+        id: preflight
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          API_URL: ${{ github.api_url }}
+          REPOSITORY: ${{ github.repository }}
+          TARGET_PR: ${{ inputs.target_pr_number }}
+          TARGET_HEAD: ${{ inputs.target_head_sha }}
+          TENANT_ID: ${{ inputs.tenant_id }}
+          ACTOR_ID: ${{ inputs.actor_identity_id }}
+          ACTOR_ORG: ${{ inputs.actor_organization_id }}
+          ROLE_ID: ${{ inputs.role_id }}
+        run: |
+          set -euo pipefail
+
+          [[ "$GITHUB_REF" == 'refs/heads/main' ]]
+          [[ "$TARGET_PR" =~ ^[1-9][0-9]*$ ]]
+          [[ "$TARGET_HEAD" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$TENANT_ID" =~ ^[a-z0-9][a-z0-9_-]{0,63}$ ]]
+          [[ "$ACTOR_ID" =~ ^[a-z0-9][a-z0-9_-]{0,95}$ ]]
+          [[ "$ACTOR_ORG" =~ ^[a-z0-9][a-z0-9_-]{0,63}$ ]]
+          [[ "$ROLE_ID" =~ ^[a-z][a-z0-9_-]{0,63}$ ]]
+          [[ "$ROLE_ID" != platform-* ]]
+          [[ "$ROLE_ID" != platform_* ]]
+
+          api() {
+            curl --fail-with-body --silent --show-error \
+              --header 'Accept: application/vnd.github+json' \
+              --header "Authorization: Bearer $GH_TOKEN" \
+              --header 'X-GitHub-Api-Version: 2022-11-28' \
+              "$1"
+          }
+
+          main_json="$(api "$API_URL/repos/$REPOSITORY/branches/main")"
+          main_sha="$(jq -r '.commit.sha' <<<"$main_json")"
+          [[ "$main_sha" == "$GITHUB_SHA" ]] || {
+            echo "Dispatch source is not current canonical main: $GITHUB_SHA != $main_sha" >&2
+            exit 1
+          }
+
+          pr_json="$(api "$API_URL/repos/$REPOSITORY/pulls/$TARGET_PR")"
+          [[ "$(jq -r '.state' <<<"$pr_json")" == 'open' ]]
+          [[ "$(jq -r '.draft' <<<"$pr_json")" == 'false' ]]
+          [[ "$(jq -r '.base.ref' <<<"$pr_json")" == 'main' ]]
+          [[ "$(jq -r '.base.sha' <<<"$pr_json")" == "$GITHUB_SHA" ]] || {
+            echo 'Target PR must be based on current canonical main.' >&2
+            exit 1
+          }
+          [[ "$(jq -r '.head.sha' <<<"$pr_json")" == "$TARGET_HEAD" ]]
+          [[ "$(jq -r '.head.repo.full_name' <<<"$pr_json")" == "$REPOSITORY" ]] || {
+            echo 'Target transition must originate from this repository.' >&2
+            exit 1
+          }
+
+          files_json="$(api "$API_URL/repos/$REPOSITORY/pulls/$TARGET_PR/files?per_page=100")"
+          [[ "$(jq 'length' <<<"$files_json")" -eq 1 ]]
+          [[ "$(jq -r '.[0].filename' <<<"$files_json")" == 'ops/final-shift-close/STATE.json' ]] || {
+            echo 'Target PR must change only the canonical Final Shift Close state file.' >&2
+            exit 1
+          }
+
+          cp ops/final-shift-close/STATE.json /tmp/base-state.json
+          target_content="$(api "$API_URL/repos/$REPOSITORY/contents/ops/final-shift-close/STATE.json?ref=$TARGET_HEAD" | jq -r '.content' | tr -d '\n' | base64 --decode)"
+          printf '%s\n' "$target_content" > /tmp/target-state.json
+          jq -e . /tmp/base-state.json >/dev/null
+          jq -e . /tmp/target-state.json >/dev/null
+
+          [[ "$(jq -r '.migration27.state' /tmp/base-state.json)" == 'EXECUTED' ]]
+          [[ "$(jq -r '.permission_provisioning.state' /tmp/base-state.json)" == 'NONE' ]]
+          [[ "$(jq -r '.feature_activation.state' /tmp/base-state.json)" == 'INACTIVE' ]]
+          [[ "$(jq -r '.migration27.state' /tmp/target-state.json)" == 'EXECUTED' ]]
+          [[ "$(jq -r '.permission_provisioning.state' /tmp/target-state.json)" == 'PROVISIONED' ]]
+          [[ "$(jq -r '.feature_activation.state' /tmp/target-state.json)" == 'INACTIVE' ]]
+          [[ "$(jq -r '.permission_provisioning.permission_id' /tmp/target-state.json)" == 'pos.shift.close' ]]
+          [[ "$(jq -r '.permission_provisioning.default_grant' /tmp/target-state.json)" == 'NONE' ]]
+
+          jq -S '.permission_provisioning.state = "NONE"' /tmp/target-state.json > /tmp/target-normalized.json
+          jq -S . /tmp/base-state.json > /tmp/base-normalized.json
+          diff -u /tmp/base-normalized.json /tmp/target-normalized.json
+
+          statuses="$(api "$API_URL/repos/$REPOSITORY/commits/$TARGET_HEAD/statuses?per_page=100")"
+          require_latest_success() {
+            local context="$1"
+            local value
+            value="$(jq -r --arg context "$context" '[.[] | select(.context == $context)][0].state // "missing"' <<<"$statuses")"
+            [[ "$value" == 'success' ]] || {
+              echo "Required exact-head status is not success: $context ($value)." >&2
+              exit 1
+            }
+          }
+          require_latest_success 'final-shift-close-permission-provisioning-authority'
+          require_latest_success 'product-owner-merge-authority'
+
+          runs="$(api "$API_URL/repos/$REPOSITORY/actions/runs?head_sha=$TARGET_HEAD&event=pull_request&per_page=100")"
+          require_workflow_success() {
+            local workflow_name="$1"
+            local conclusion
+            conclusion="$(jq -r --arg name "$workflow_name" '[.workflow_runs | .[] | select(.name == $name)][0].conclusion // "missing"' <<<"$runs")"
+            [[ "$conclusion" == 'success' ]] || {
+              echo "Required qualification workflow is not success: $workflow_name ($conclusion)." >&2
+              exit 1
+            }
+          }
+          require_workflow_success 'Governance Required Checks'
+          require_workflow_success 'PHP Foundation Regression'
+          require_workflow_success 'M7.1 Application Regression'
+
+          echo "target_head=$TARGET_HEAD" >> "$GITHUB_OUTPUT"
+          echo 'verified=true' >> "$GITHUB_OUTPUT"
+          echo 'Exact permission provisioning target and prerequisite authorities qualified.'
+
+      - name: Publish pending provisioning evidence
+        if: ${{ steps.preflight.outputs.verified == 'true' }}
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          API_URL: ${{ github.api_url }}
+          REPOSITORY: ${{ github.repository }}
+          TARGET_HEAD: ${{ steps.preflight.outputs.target_head }}
+        run: |
+          set -euo pipefail
+          payload="$(jq -n \
+            --arg state pending \
+            --arg context "$EVIDENCE_CONTEXT" \
+            --arg description 'Scoped pos.shift.close provisioning is in progress' \
+            --arg target_url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+            '{state:$state,context:$context,description:$description,target_url:$target_url}')"
+          curl --fail-with-body --silent --show-error \
+            --request POST \
+            --header 'Accept: application/vnd.github+json' \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header 'X-GitHub-Api-Version: 2022-11-28' \
+            "$API_URL/repos/$REPOSITORY/statuses/$TARGET_HEAD" \
+            --data "$payload" >/dev/null
+
+      - name: Execute bounded production-class provisioning transaction
+        id: execute
+        if: ${{ steps.preflight.outputs.verified == 'true' }}
+        shell: bash
+        env:
+          TARGET_HEAD: ${{ steps.preflight.outputs.target_head }}
+          TENANT_ID: ${{ inputs.tenant_id }}
+          ACTOR_ID: ${{ inputs.actor_identity_id }}
+          ACTOR_ORG: ${{ inputs.actor_organization_id }}
+          ROLE_ID: ${{ inputs.role_id }}
+        run: |
+          set -euo pipefail
+
+          for value in \
+            "$ONEQAY_DB_HOST" \
+            "$ONEQAY_DB_PORT" \
+            "$ONEQAY_DB_DATABASE" \
+            "$ONEQAY_DB_USERNAME" \
+            "$ONEQAY_DB_PASSWORD"; do
+            [[ -n "$value" ]] || {
+              echo 'Required permission provisioning environment secret is missing.' >&2
+              exit 1
+            }
+          done
+
+          composer install \
+            --working-dir=apps/web \
+            --no-interaction \
+            --prefer-dist \
+            --no-progress
+
+          php <<'PHP'
+          <?php
+          declare(strict_types=1);
+
+          require __DIR__.'/apps/web/vendor/autoload.php';
+          $app = require __DIR__.'/apps/web/bootstrap/app.php';
+          $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+
+          $db = $app->make('db')->connection('oneqay');
+          $schema = $db->getSchemaBuilder();
+          if (strtolower($db->getDriverName()) !== 'mysql') {
+              throw new RuntimeException('Operational permission provisioning requires canonical MySQL-compatible target.');
+          }
+          if ((string) getenv('APP_ENV') !== 'production') {
+              throw new RuntimeException('Operational permission provisioning must retain production runtime classification.');
+          }
+          if (filter_var(getenv('ONEQAY_PERSISTENCE_ENABLED') ?: false, FILTER_VALIDATE_BOOL)) {
+              throw new RuntimeException('Application persistence must remain disabled during the isolated operational provisioning ceremony.');
+          }
+
+          $tenant = App\Domain\Tenancy\TenantId::fromString((string) getenv('TENANT_ID'));
+          $actorId = App\Domain\Identity\PlatformIdentityId::fromString((string) getenv('ACTOR_ID'));
+          $organization = App\Domain\Organization\OrganizationId::fromString((string) getenv('ACTOR_ORG'));
+          $role = App\Application\Authorization\RoleIdentifier::fromString((string) getenv('ROLE_ID'));
+          $permission = App\Application\Pos\FinalShiftClosePermission::identifier();
+          if (! hash_equals('pos.shift.close', $permission->value())) {
+              throw new RuntimeException('Canonical Final Shift Close permission identifier drifted.');
+          }
+
+          foreach ([
+              'migrations',
+              'oneqay_tenants',
+              'oneqay_identities',
+              'oneqay_identity_organizations',
+              'oneqay_roles',
+              'oneqay_role_permissions',
+              'oneqay_tenant_role_assignments',
+              'oneqay_organization_role_assignments',
+              'oneqay_outlet_role_assignments',
+              'oneqay_device_role_assignments',
+              'oneqay_policy_mutations',
+              'oneqay_pos_shift_close_evidence',
+          ] as $table) {
+              if (! $schema->hasTable($table)) {
+                  throw new RuntimeException('Required permission provisioning table missing: '.$table);
+              }
+          }
+
+          $migration27 = '0000_00_00_000027_create_pos_shift_close_evidence_foundation';
+          if ((int) $db->table('migrations')->where('migration', $migration27)->count() !== 1) {
+              throw new RuntimeException('Canonical migration27 execution record is not exact.');
+          }
+
+          $actor = new App\Application\Organization\VerifiedOrganizationalContext(
+              $actorId,
+              $tenant,
+              $organization,
+          );
+          $mutationId = App\Application\Authorization\PolicyMutationId::fromString(
+              'fscperm_'.substr(hash('sha256', (string) getenv('TARGET_HEAD').'|'.$tenant->value().'|'.$role->value()), 0, 55),
+          );
+          $mutation = App\Application\Authorization\DurablePolicyMutation::permissionGrant(
+              $mutationId,
+              $actor,
+              $role,
+              $permission,
+          );
+          $fingerprint = $mutation->fingerprint($actor);
+          if (preg_match('/\A[0-9a-f]{64}\z/', $fingerprint) !== 1) {
+              throw new RuntimeException('Canonical permission mutation fingerprint is invalid.');
+          }
+
+          $assignmentTables = [
+              'oneqay_tenant_role_assignments',
+              'oneqay_organization_role_assignments',
+              'oneqay_outlet_role_assignments',
+              'oneqay_device_role_assignments',
+          ];
+
+          $db->transaction(function () use (
+              $db,
+              $tenant,
+              $actorId,
+              $organization,
+              $role,
+              $permission,
+              $mutationId,
+              $fingerprint,
+              $assignmentTables,
+          ): void {
+              $tenantRow = $db->table('oneqay_tenants')->where('id', $tenant->value())->lockForUpdate()->first();
+              if ($tenantRow === null) {
+                  throw new RuntimeException('Target tenant does not exist.');
+              }
+              $identityRow = $db->table('oneqay_identities')->where('tenant_id', $tenant->value())
+                  ->where('id', $actorId->value())->lockForUpdate()->first();
+              if ($identityRow === null) {
+                  throw new RuntimeException('Provisioning actor is not an existing same-tenant identity.');
+              }
+              $membership = $db->table('oneqay_identity_organizations')->where('tenant_id', $tenant->value())
+                  ->where('identity_id', $actorId->value())->where('organization_id', $organization->value())
+                  ->lockForUpdate()->first();
+              if ($membership === null) {
+                  throw new RuntimeException('Provisioning actor organization membership is not durable.');
+              }
+              $roleRow = $db->table('oneqay_roles')->where('tenant_id', $tenant->value())
+                  ->where('id', $role->value())->lockForUpdate()->first();
+              if ($roleRow === null) {
+                  throw new RuntimeException('Target role does not exist.');
+              }
+
+              $actorAssignments = $db->table('oneqay_tenant_role_assignments')
+                  ->where('tenant_id', $tenant->value())->where('identity_id', $actorId->value())
+                  ->lockForUpdate()->get();
+              $tenantControl = false;
+              foreach ($actorAssignments as $assignment) {
+                  $controlRoleId = $assignment->role_id ?? null;
+                  if (! is_string($controlRoleId) || $controlRoleId === '') {
+                      continue;
+                  }
+                  $controlPermission = $db->table('oneqay_role_permissions')->where('tenant_id', $tenant->value())
+                      ->where('role_id', $controlRoleId)
+                      ->where('permission_id', App\Application\Authorization\AdministrationPermission::MANAGE)
+                      ->lockForUpdate()->first();
+                  if ($controlPermission !== null) {
+                      $tenantControl = true;
+                      break;
+                  }
+              }
+              if (! $tenantControl) {
+                  throw new RuntimeException('Provisioning actor lacks tenant-scoped protected control authority.');
+              }
+
+              $protectedTarget = $db->table('oneqay_role_permissions')->where('tenant_id', $tenant->value())
+                  ->where('role_id', $role->value())
+                  ->where('permission_id', App\Application\Authorization\AdministrationPermission::MANAGE)
+                  ->lockForUpdate()->first();
+              if ($protectedTarget !== null) {
+                  throw new RuntimeException('Protected control role cannot receive Final Shift Close permission through this executor.');
+              }
+
+              $existingGrant = $db->table('oneqay_role_permissions')->where('tenant_id', $tenant->value())
+                  ->where('role_id', $role->value())->where('permission_id', $permission->value())
+                  ->lockForUpdate()->first();
+              if ($existingGrant !== null) {
+                  throw new RuntimeException('Final Shift Close permission already exists on target role; refusing retrospective evidence.');
+              }
+              $existingJournal = $db->table('oneqay_policy_mutations')->where('tenant_id', $tenant->value())
+                  ->where('mutation_id', $mutationId->value())->lockForUpdate()->first();
+              if ($existingJournal !== null) {
+                  throw new RuntimeException('Deterministic provisioning mutation journal already exists; refusing ambiguous evidence.');
+              }
+
+              $assignmentCounts = [];
+              foreach ($assignmentTables as $table) {
+                  $assignmentCounts[$table] = (int) $db->table($table)->where('tenant_id', $tenant->value())
+                      ->where('role_id', $role->value())->count();
+              }
+
+              $occurredAtUnix = time();
+              if ($occurredAtUnix <= 0) {
+                  throw new RuntimeException('Operational provisioning clock returned an invalid timestamp.');
+              }
+
+              $journalInserted = $db->table('oneqay_policy_mutations')->insert([
+                  'tenant_id' => $tenant->value(),
+                  'mutation_id' => $mutationId->value(),
+                  'actor_identity_id' => $actorId->value(),
+                  'operation' => App\Application\Authorization\PolicyMutationOperation::PERMISSION_GRANT,
+                  'scope_type' => 'tenant',
+                  'organization_id' => null,
+                  'outlet_id' => null,
+                  'device_id' => null,
+                  'target_identity_id' => null,
+                  'role_id' => $role->value(),
+                  'permission_id' => $permission->value(),
+                  'payload_fingerprint' => $fingerprint,
+                  'outcome' => 'applied',
+                  'occurred_at_unix' => $occurredAtUnix,
+              ]);
+              if ($journalInserted !== true) {
+                  throw new RuntimeException('Canonical policy mutation journal insert failed.');
+              }
+
+              $grantInserted = $db->table('oneqay_role_permissions')->insert([
+                  'tenant_id' => $tenant->value(),
+                  'role_id' => $role->value(),
+                  'permission_id' => $permission->value(),
+              ]);
+              if ($grantInserted !== true) {
+                  throw new RuntimeException('Final Shift Close role permission insert failed.');
+              }
+
+              if ((int) $db->table('oneqay_role_permissions')->where('tenant_id', $tenant->value())
+                  ->where('role_id', $role->value())->where('permission_id', $permission->value())->count() !== 1) {
+                  throw new RuntimeException('Final Shift Close permission grant is not exact after provisioning.');
+              }
+
+              $journal = $db->table('oneqay_policy_mutations')->where('tenant_id', $tenant->value())
+                  ->where('mutation_id', $mutationId->value())->first();
+              if ($journal === null
+                  || ! hash_equals($actorId->value(), (string) ($journal->actor_identity_id ?? ''))
+                  || ! hash_equals(App\Application\Authorization\PolicyMutationOperation::PERMISSION_GRANT, (string) ($journal->operation ?? ''))
+                  || ! hash_equals('tenant', (string) ($journal->scope_type ?? ''))
+                  || ! hash_equals($role->value(), (string) ($journal->role_id ?? ''))
+                  || ! hash_equals($permission->value(), (string) ($journal->permission_id ?? ''))
+                  || ! hash_equals($fingerprint, (string) ($journal->payload_fingerprint ?? ''))
+                  || ! hash_equals('applied', (string) ($journal->outcome ?? ''))) {
+                  throw new RuntimeException('Canonical policy mutation journal evidence is invalid.');
+              }
+
+              foreach ($assignmentTables as $table) {
+                  $after = (int) $db->table($table)->where('tenant_id', $tenant->value())
+                      ->where('role_id', $role->value())->count();
+                  if ($after !== $assignmentCounts[$table]) {
+                      throw new RuntimeException('Permission provisioning changed a role assignment boundary: '.$table);
+                  }
+              }
+          }, 1);
+          PHP
+
+          echo 'Scoped pos.shift.close production-class provisioning transaction and journal verification succeeded.'
+
+      - name: Publish final provisioning evidence
+        if: ${{ always() && steps.preflight.outputs.verified == 'true' }}
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          API_URL: ${{ github.api_url }}
+          REPOSITORY: ${{ github.repository }}
+          TARGET_HEAD: ${{ steps.preflight.outputs.target_head }}
+          EXECUTE_OUTCOME: ${{ steps.execute.outcome }}
+        run: |
+          set -euo pipefail
+          if [[ "$EXECUTE_OUTCOME" == 'success' ]]; then
+            state=success
+            description='Scoped pos.shift.close provisioning verified'
+          else
+            state=failure
+            description='Scoped pos.shift.close provisioning failed closed'
+          fi
+
+          payload="$(jq -n \
+            --arg state "$state" \
+            --arg context "$EVIDENCE_CONTEXT" \
+            --arg description "$description" \
+            --arg target_url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+            '{state:$state,context:$context,description:$description,target_url:$target_url}')"
+          curl --fail-with-body --silent --show-error \
+            --request POST \
+            --header 'Accept: application/vnd.github+json' \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header 'X-GitHub-Api-Version: 2022-11-28' \
+            "$API_URL/repos/$REPOSITORY/statuses/$TARGET_HEAD" \
+            --data "$payload" >/dev/null
+
+          [[ "$state" == 'success' ]]
