@@ -1,0 +1,110 @@
+{
+  "schema_version": 1,
+  "feature": "final-shift-close",
+  "contract_state": "MATERIALIZED_SOURCE_ONLY_NOT_DISPATCHED",
+  "purpose": "REQUIRE_EXACT_SELECTED_DURABLE_TARGET_AND_TRUSTED_DATABASE_BINDING_BEFORE_MIGRATION27_EXECUTION",
+  "executor_workflow_path": ".github/workflows/final-shift-close-migration27-execution.yml",
+  "executor_repository": "labzefry/oneQay",
+  "executor_ref": "refs/heads/main",
+  "executor_event": "workflow_dispatch",
+  "selected_target_file": "ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json",
+  "required_selection_state": "SELECTED_NOT_AUTHORIZED",
+  "selected_target_required": true,
+  "allowed_dispatch_inputs": [
+    "target_pr_number",
+    "target_head_sha",
+    "binding_run_id",
+    "binding_run_attempt"
+  ],
+  "caller_supplied_runtime_target_inputs": false,
+  "binding_producer_workflow_path": ".github/workflows/final-shift-close-migration27-selected-target-db-binding.yml",
+  "binding_producer_source_state": "NOT_IMPLEMENTED",
+  "binding_artifact_name": "final-shift-close-migration27-selected-target-db-binding",
+  "binding_evidence_context": "final-shift-close-migration27-selected-target-db-binding-evidence",
+  "migration_execution_evidence_context": "final-shift-close-migration27-execution-evidence",
+  "database_binding_algorithm": "SHA256_CANONICAL_JSON_DATABASE_HOSTNAME_PORT_V1",
+  "database_binding_fields": [
+    "database_name",
+    "server_hostname",
+    "server_port"
+  ],
+  "selected_target_binding_requirements": {
+    "environment_id_exact_match": true,
+    "runtime_class_exact_match": true,
+    "exact_running_source_commit_exact_match": true,
+    "exact_running_artifact_sha256_exact_match": true,
+    "readiness_attestation_sha256_exact_match": true,
+    "selection_fingerprint_sha256_exact_match": true,
+    "trusted_ingestion_fingerprint_sha256_exact_match": true,
+    "trusted_ingestion_run_id_exact_match": true,
+    "trusted_ingestion_run_attempt_exact_match": true
+  },
+  "binding_run_requirements": {
+    "workflow_path_is_fixed": true,
+    "event_is_workflow_dispatch": true,
+    "head_branch_is_main": true,
+    "run_must_be_completed_success": true,
+    "run_head_must_remain_in_canonical_main_history": true,
+    "run_id_and_attempt_are_exact": true,
+    "exact_single_non_expired_artifact_required": true,
+    "artifact_bundle_entries": [
+      "binding.json",
+      "execution.json"
+    ],
+    "artifact_max_zip_bytes": 262144,
+    "json_max_bytes_each": 32768,
+    "exact_success_status_context_and_run_target_url_required": true,
+    "secrets_embedded_must_be_false": true
+  },
+  "binding_payload_requirements": {
+    "binding_state": "VERIFIED_SELECTED_TARGET_DATABASE",
+    "migration27_state": "NOT_EXECUTED",
+    "database_binding_sha256_required": true,
+    "database_binding_sha256_format": "LOWERCASE_HEX_64",
+    "runtime_target_fields_must_match_canonical_selection": true,
+    "execution_record_must_bind_exact_workflow_run": true
+  },
+  "pre_mutation_database_requirements": {
+    "mysql_compatible_driver_required": true,
+    "database_name_hostname_port_readback_required": true,
+    "actual_database_binding_sha256_must_equal_trusted_binding_evidence": true,
+    "binding_check_must_precede_migration_command": true,
+    "existing_migration27_ambiguity_remains_fail_closed": true
+  },
+  "target_state_transition_requirements": {
+    "changed_file_count": 1,
+    "changed_file": "ops/final-shift-close/STATE.json",
+    "base_migration27_state": "NOT_EXECUTED",
+    "target_migration27_state": "EXECUTED",
+    "permission_provisioning_must_remain": "NONE",
+    "feature_activation_must_remain": "INACTIVE",
+    "product_owner_merge_authority_required_on_exact_head": true,
+    "migration27_execution_authority_required_on_exact_head": true
+  },
+  "fail_closed_boundaries": {
+    "blocked_or_missing_selected_target_rejected": true,
+    "missing_binding_evidence_rejected": true,
+    "stale_or_unrelated_binding_run_rejected": true,
+    "binding_target_mismatch_rejected": true,
+    "database_fingerprint_mismatch_rejected": true,
+    "github_environment_name_alone_is_not_runtime_identity": true,
+    "unbound_database_secrets_are_not_execution_evidence": true,
+    "source_merge_does_not_dispatch_executor": true
+  },
+  "source_envelope_sha256": "0aab6969f2e6fe3e7f23aae2af99bc8fb9d70ac10e6d620bf20bc30a58ba4e25",
+  "canonical_boundaries": {
+    "selected_target": "NONE",
+    "selection_state": "BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET",
+    "binding_producer": "NOT_IMPLEMENTED",
+    "binding_evidence": "NONE",
+    "migration27_executor_source": "HARDENED_SELECTED_TARGET_BINDING_REQUIRED_NOT_DISPATCHED",
+    "migration27_execution": "NOT_PERFORMED",
+    "permission_provisioning": "NONE",
+    "feature_activation": "INACTIVE",
+    "runtime_allowlist_change": "NOT_IMPLEMENTED",
+    "environment_deployment": "NOT_PERFORMED",
+    "technical_preview_activation": "NOT_AUTHORIZED",
+    "production_activation": "NOT_AUTHORIZED",
+    "updater_activation": "INACTIVE"
+  }
+}
