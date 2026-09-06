@@ -78,7 +78,7 @@ jobs:
           grep -Fq 'RequirePosSessionContextMiddleware::class' "$provider"
           grep -Fq "group(base_path('routes/pos-final-shift-close.php'))" "$provider"
           grep -Fq "Route::post('/pos/shifts/close', PosShiftCloseController::class)" apps/web/routes/pos-final-shift-close.php
-          grep -Fq "->name('pos.shifts.close')" apps/web/routes/pos-final-shift-close.php
+          grep -Fq -- "->name('pos.shifts.close')" apps/web/routes/pos-final-shift-close.php
 
       - name: Preserve migration UI and historical route boundaries
         shell: bash
