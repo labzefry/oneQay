@@ -21,23 +21,41 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Lock exact Sprint120 source envelope
+      - name: Lock Sprint120 source or exact Sprint121 successor envelope
         shell: bash
         run: |
           set -euo pipefail
           git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | sort > /tmp/paths
-          cat > /tmp/expected <<'EOF'
-          .github/workflows/sprint120-final-shift-close-runtime-binding-manifest-writer.yml
-          apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingManifest.php
-          apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingManifestWriter.php
-          apps/web/app/Infrastructure/Pos/FilesystemFinalShiftCloseRuntimeBindingManifestWriter.php
-          apps/web/tests/final-shift-close-runtime-binding-manifest-writer.php
-          docs/SPRINT120_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MANIFEST_WRITER.md
-          ops/final-shift-close/RUNTIME_BINDING_MANIFEST_WRITER_CONTRACT.json
-          EOF
+          if grep -Fxq '.github/workflows/sprint121-final-shift-close-runtime-binding-materialization-control-channel.yml' /tmp/paths; then
+            cat > /tmp/expected <<'EOF'
+            .github/workflows/sprint120-final-shift-close-runtime-binding-manifest-writer.yml
+            .github/workflows/sprint121-final-shift-close-runtime-binding-materialization-control-channel.yml
+            apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingMaterializationRequest.php
+            apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingMaterializer.php
+            apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware.php
+            apps/web/app/Delivery/Http/Pos/FinalShiftCloseRuntimeBindingMaterializationController.php
+            apps/web/app/Providers/FinalShiftCloseRuntimeBindingMaterializationServiceProvider.php
+            apps/web/routes/final-shift-close-runtime-binding-materialization.php
+            apps/web/tests/final-shift-close-runtime-binding-materialization-control-channel.php
+            docs/SPRINT121_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MATERIALIZATION_CONTROL_CHANNEL.md
+            ops/final-shift-close/RUNTIME_BINDING_MATERIALIZATION_CONTROL_CHANNEL_CONTRACT.json
+            EOF
+            expected_fingerprint='49535e71a6e3dc9278f57102301b43967088c37294ebbd98e8a49ee90ed95022'
+          else
+            cat > /tmp/expected <<'EOF'
+            .github/workflows/sprint120-final-shift-close-runtime-binding-manifest-writer.yml
+            apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingManifest.php
+            apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingManifestWriter.php
+            apps/web/app/Infrastructure/Pos/FilesystemFinalShiftCloseRuntimeBindingManifestWriter.php
+            apps/web/tests/final-shift-close-runtime-binding-manifest-writer.php
+            docs/SPRINT120_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MANIFEST_WRITER.md
+            ops/final-shift-close/RUNTIME_BINDING_MANIFEST_WRITER_CONTRACT.json
+            EOF
+            expected_fingerprint='bbe19d6e6d726e3b76cec37463ff878c9d5fbac1652a8e399f643fd9126f3614'
+          fi
           diff -u /tmp/expected /tmp/paths
           fingerprint="$(sha256sum /tmp/paths | awk '{print $1}')"
-          [[ "$fingerprint" == 'bbe19d6e6d726e3b76cec37463ff878c9d5fbac1652a8e399f643fd9126f3614' ]]
+          [[ "$fingerprint" == "$expected_fingerprint" ]]
 
       - name: Prove Sprint119 delivery and operational state remain untouched
         shell: bash
