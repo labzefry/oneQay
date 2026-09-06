@@ -33,12 +33,16 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
-      - name: Enforce exact Sprint97 source envelope
+      - name: Recognize exact Sprint97 source and bounded successor envelopes
         shell: bash
         run: |
           set -euo pipefail
           git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | LC_ALL=C sort > /tmp/actual
-          cat > /tmp/expected <<'EOF'
+          fingerprint="$(sha256sum /tmp/actual | awk '{print $1}')"
+
+          case "$fingerprint" in
+            2582b4a7112c580b5f3fa986e2bf5f7cf92cecda4b9806310e8cf1f0b669ff8a)
+              cat > /tmp/expected <<'EOF'
           .github/workflows/sprint97-final-shift-close-http-delivery.yml
           apps/web/app/Delivery/Http/Pos/PosShiftCloseController.php
           apps/web/app/Providers/FinalShiftCloseServiceProvider.php
@@ -46,8 +50,32 @@ jobs:
           apps/web/tests/pos-final-shift-close-http-delivery.php
           docs/SPRINT97_FINAL_SHIFT_CLOSE_HTTP_DELIVERY.md
           EOF
+              echo 'sprint97-source' > /tmp/sprint97-shape
+              ;;
+            24b6671318d9bc8123cfcd05f3b8c90be47fcb810a6bf328eae20c1b0d2ad19c)
+              cat > /tmp/expected <<'EOF'
+          .github/workflows/sprint97-final-shift-close-http-delivery.yml
+          EOF
+              echo 'sprint98-compatibility-self' > /tmp/sprint97-shape
+              ;;
+            acde40aa8f79d15b25832572cf13c697897579f23394c2322a96d2723d241a61)
+              cat > /tmp/expected <<'EOF'
+          .github/workflows/sprint98-final-shift-close-delivery-durable-integration.yml
+          apps/web/app/Delivery/Http/Pos/PosShiftCloseController.php
+          apps/web/tests/pos-final-shift-close-delivery-durable-integration.php
+          docs/SPRINT98_FINAL_SHIFT_CLOSE_DELIVERY_DURABLE_INTEGRATION.md
+          EOF
+              echo 'sprint98-durable-delivery-successor' > /tmp/sprint97-shape
+              ;;
+            *)
+              echo "Unknown Sprint97 qualification shape: $fingerprint" >&2
+              cat /tmp/actual >&2
+              exit 1
+              ;;
+          esac
+
           diff -u /tmp/expected /tmp/actual
-          test "$(sha256sum /tmp/actual | awk '{print $1}')" = '2582b4a7112c580b5f3fa986e2bf5f7cf92cecda4b9806310e8cf1f0b669ff8a'
+          cat /tmp/sprint97-shape
 
       - name: Lock closed request and safe response contract
         shell: bash
