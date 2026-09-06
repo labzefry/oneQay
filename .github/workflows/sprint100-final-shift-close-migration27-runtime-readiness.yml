@@ -1,0 +1,117 @@
+name: Sprint100 Final Shift Close Migration27 Runtime Readiness
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/sprint100-final-shift-close-migration27-runtime-readiness.yml'
+      - 'apps/web/tests/pos-final-shift-close-migration27-runtime-readiness.php'
+      - 'docs/SPRINT100_FINAL_SHIFT_CLOSE_MIGRATION27_RUNTIME_READINESS.md'
+
+permissions:
+  contents: read
+
+jobs:
+  qualify-source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHQ=
+      APP_DEBUG: 'false'
+      APP_URL: http://localhost
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Enforce exact Sprint100 source envelope
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | LC_ALL=C sort > /tmp/actual
+          cat > /tmp/expected <<'EOF'
+          .github/workflows/sprint100-final-shift-close-migration27-runtime-readiness.yml
+          apps/web/tests/pos-final-shift-close-migration27-runtime-readiness.php
+          docs/SPRINT100_FINAL_SHIFT_CLOSE_MIGRATION27_RUNTIME_READINESS.md
+          EOF
+          diff -u /tmp/expected /tmp/actual
+          test "$(sha256sum /tmp/actual | awk '{print $1}')" = 'a8be23cf8098627ad1ffd3e31d26e25a96530107f3c4fc695ae62bec9aa824d5'
+
+      - name: Lock canonical migration runtime proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          testfile=apps/web/tests/pos-final-shift-close-migration27-runtime-readiness.php
+          grep -Fq '0000_00_00_000027_create_pos_shift_close_evidence_foundation.php' "$testfile"
+          grep -Fq '$migration->up();' "$testfile"
+          grep -Fq "Schema::hasTable('oneqay_pos_shift_close_evidence')" "$testfile"
+          grep -Fq "uq_pos_shift_close_operation" "$testfile"
+          grep -Fq "uq_pos_shift_close_shift" "$testfile"
+          grep -Fq "chk_pos_shift_close_variance_review_insert" "$testfile"
+          grep -Fq "chk_pos_shift_close_variance_review_update" "$testfile"
+          grep -Fq 'new PosShiftCloseController($app->make(CloseShift::class))' "$testfile"
+          grep -Fq "'permission_id' => 'pos.shift.close'" "$testfile"
+          grep -Fq "migration27 rollback remains unauthorized" "$testfile"
+          ! grep -Fq 'CREATE TABLE oneqay_pos_shift_close_evidence' "$testfile"
+
+      - name: Preserve runtime migration and activation source boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+          git diff --exit-code "$base" "$head" -- \
+            apps/web/app \
+            apps/web/database/migrations \
+            apps/web/routes \
+            apps/web/resources \
+            apps/web/bootstrap \
+            apps/web/config
+          doc=docs/SPRINT100_FINAL_SHIFT_CLOSE_MIGRATION27_RUNTIME_READINESS.md
+          grep -Fq 'FINAL_SHIFT_CLOSE_MIGRATION27_RUNTIME_COMPATIBILITY = QUALIFIED_IN_ISOLATED_CI' "$doc"
+          grep -Fq 'FINAL_SHIFT_CLOSE_PERMISSION_DEFAULT_GRANT = NONE' "$doc"
+          grep -Fq 'FINAL_SHIFT_CLOSE_OPERATIONAL_ACTIVATION = NOT_AUTHORIZED' "$doc"
+          grep -Fq 'MIGRATION_27_LIVE_EXECUTION = NOT_AUTHORIZED' "$doc"
+          grep -Fq 'TECHNICAL_PREVIEW_ACTIVATION_AUTHORITY = NOT_GRANTED' "$doc"
+          grep -Fq 'PRODUCTION_AUTHORITY = NOT_GRANTED' "$doc"
+          grep -Fq 'UPDATER_ACTIVATION_AUTHORITY = NOT_GRANTED' "$doc"
+
+      - name: Validate regression syntax
+        run: php -l apps/web/tests/pos-final-shift-close-migration27-runtime-readiness.php
+
+      - name: Install PHP dependencies
+        working-directory: apps/web
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Reject High or Critical Composer advisories
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          composer audit --locked --format=json > /tmp/oneqay-composer-audit.json || true
+          cat /tmp/oneqay-composer-audit.json
+          php -r '
+            $data = json_decode(file_get_contents("/tmp/oneqay-composer-audit.json"), true, 512, JSON_THROW_ON_ERROR);
+            foreach (($data["advisories"] ?? []) as $package => $items) {
+                foreach ($items as $item) {
+                    $severity = strtolower((string) ($item["severity"] ?? ""));
+                    if (in_array($severity, ["high", "critical"], true)) {
+                        fwrite(STDERR, "Blocking Composer advisory for {$package}: ".($item["advisoryId"] ?? "unknown")."\n");
+                        exit(1);
+                    }
+                }
+            }
+          '
+
+      - name: Execute migration27 runtime readiness regression
+        working-directory: apps/web
+        run: php tests/pos-final-shift-close-migration27-runtime-readiness.php
+
+      - name: Preserve tracked source cleanliness
+        run: git diff --exit-code
