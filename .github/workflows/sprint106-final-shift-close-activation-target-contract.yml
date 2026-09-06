@@ -1,0 +1,133 @@
+name: Sprint106 Final Shift Close Activation Target Contract
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/sprint106-final-shift-close-activation-target-contract.yml'
+      - 'docs/SPRINT106_FINAL_SHIFT_CLOSE_ACTIVATION_TARGET_CONTRACT.md'
+      - 'ops/final-shift-close/ACTIVATION_TARGET.json'
+
+permissions:
+  contents: read
+
+jobs:
+  qualify-activation-target-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Lock exact Sprint106 source envelope
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          cat > /tmp/expected <<'EOF'
+          .github/workflows/sprint106-final-shift-close-activation-target-contract.yml
+          docs/SPRINT106_FINAL_SHIFT_CLOSE_ACTIVATION_TARGET_CONTRACT.md
+          ops/final-shift-close/ACTIVATION_TARGET.json
+          EOF
+          git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/actual
+          diff -u /tmp/expected /tmp/actual
+          test "$(sha256sum /tmp/actual | awk '{print $1}')" = '6d116a05e8c56fcfb3b59e4e1b1ef56f1cd628a0a5413f95e723e18a0ab06bf6'
+
+      - name: Validate machine-readable target contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          target=ops/final-shift-close/ACTIVATION_TARGET.json
+          jq -e . "$target" >/dev/null
+          test "$(jq -r '.schema_version' "$target")" = '1'
+          test "$(jq -r '.feature' "$target")" = 'final-shift-close'
+          test "$(jq -r '.target.environment_id' "$target")" = 'oneqay-synthetic-technical-preview'
+          test "$(jq -r '.target.environment_class' "$target")" = 'technical-preview'
+          test "$(jq -r '.target.runtime_class' "$target")" = 'preview'
+          test "$(jq -r '.target.selection_state' "$target")" = 'SELECTED_NOT_AUTHORIZED'
+          test "$(jq -r '.runtime_binding.shared_environment_profile' "$target")" = 'PRIVATE_SHARED_DOTENV_V1'
+          test "$(jq -r '.runtime_binding.active_release_pointer_profile' "$target")" = 'SYSTEM_UPDATE_ACTIVE_RELEASE_POINTER_V1'
+          test "$(jq -r '.runtime_binding.configuration_revision_profile' "$target")" = 'FINAL_SHIFT_CLOSE_FEATURE_FLAG_REVISION_V1'
+          test "$(jq -r '.runtime_binding.required_release_identity_fields | join(",")' "$target")" = 'release_id,source_commit,artifact_sha256'
+          test "$(jq -r '.feature_flag.name' "$target")" = 'ONEQAY_POS_SHIFT_CLOSE_ENABLED'
+          test "$(jq -r '.feature_flag.required_pre_activation_value' "$target")" = 'false'
+          test "$(jq -r '.feature_flag.desired_activation_value' "$target")" = 'true'
+          test "$(jq -r '.feature_flag.rollback_value' "$target")" = 'false'
+          test "$(jq -r '.execution_requirements.authenticated_configuration_channel' "$target")" = 'NOT_IMPLEMENTED'
+          test "$(jq -r '.execution_requirements.read_before_write_read_after' "$target")" = 'REQUIRED'
+          test "$(jq -r '.execution_requirements.runtime_health_attestation' "$target")" = 'REQUIRED'
+          test "$(jq -r '.execution_requirements.verified_rollback' "$target")" = 'REQUIRED'
+          test "$(jq -r '.execution_requirements.preview_runtime_compatibility' "$target")" = 'NOT_QUALIFIED'
+          test "$(jq -r '.execution_requirements.feature_activation_evidence_producer' "$target")" = 'NOT_IMPLEMENTED'
+          test "$(jq -r '.authority_boundaries.feature_activation_authority' "$target")" = 'SEPARATE_EXACT_HEAD_REQUIRED'
+          test "$(jq -r '.authority_boundaries.deployment_authority' "$target")" = 'NOT_GRANTED'
+          test "$(jq -r '.authority_boundaries.technical_preview_activation' "$target")" = 'NOT_AUTHORIZED'
+          test "$(jq -r '.authority_boundaries.production_activation' "$target")" = 'NOT_AUTHORIZED'
+          test "$(jq -r '.authority_boundaries.updater_activation' "$target")" = 'INACTIVE'
+
+      - name: Preserve canonical operational state and runtime source
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git diff --exit-code "$BASE_SHA" "$HEAD_SHA" -- \
+            ops/final-shift-close/STATE.json \
+            apps/web/app \
+            apps/web/bootstrap \
+            apps/web/config \
+            apps/web/database/migrations \
+            apps/web/routes \
+            apps/web/resources
+          state=ops/final-shift-close/STATE.json
+          test "$(jq -r '.migration27.state' "$state")" = 'NOT_EXECUTED'
+          test "$(jq -r '.permission_provisioning.state' "$state")" = 'NONE'
+          test "$(jq -r '.permission_provisioning.default_grant' "$state")" = 'NONE'
+          test "$(jq -r '.feature_activation.state' "$state")" = 'INACTIVE'
+          test "$(jq -r '.technical_preview_activation' "$state")" = 'NOT_AUTHORIZED'
+          test "$(jq -r '.production_activation' "$state")" = 'NOT_AUTHORIZED'
+
+      - name: Prove selected target is canonical Synthetic Technical Preview
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq "'runtime_class' => env('ONEQAY_RUNTIME_CLASS', '')" apps/web/config/technical-preview.php
+          grep -Fq "if (\$runtimeClass === 'preview')" apps/web/app/Providers/TechnicalPreviewServiceProvider.php
+          grep -Fq "'oneqay.runtime_class' => \$runtimeClass" apps/web/app/Providers/TechnicalPreviewServiceProvider.php
+          grep -Fq "['local', 'test', 'ci']" apps/web/app/Providers/FinalShiftCloseServiceProvider.php
+          grep -Fq "['local', 'test', 'ci']" apps/web/app/Infrastructure/Pos/LaravelDurablePosSaleRepository.php
+          grep -Fq 'BLOCKER_RUNTIME_SCOPE = CLOSED_BY_TARGET_CONTRACT' docs/SPRINT106_FINAL_SHIFT_CLOSE_ACTIVATION_TARGET_CONTRACT.md
+          grep -Fq 'BLOCKER_PREVIEW_RUNTIME_COMPATIBILITY = NOT_QUALIFIED' docs/SPRINT106_FINAL_SHIFT_CLOSE_ACTIVATION_TARGET_CONTRACT.md
+
+      - name: Prove release and shared-runtime provenance anchors
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq "public const PROFILE = 'PRIVATE_SHARED_DOTENV_V1'" apps/web/app/Application/SystemUpdate/SharedConfiguration/SystemUpdateSharedRuntimeEnvironmentStatus.php
+          grep -Fq "(\$payload['pointer_version'] ?? null) !== 1" apps/web/app/Infrastructure/SystemUpdate/Activation/FilesystemSystemUpdateActiveReleasePointerStore.php
+          grep -Fq "\$payload['source_commit']" apps/web/app/Infrastructure/SystemUpdate/Activation/FilesystemSystemUpdateActiveReleasePointerStore.php
+          grep -Fq "\$payload['artifact_sha256']" apps/web/app/Infrastructure/SystemUpdate/Activation/FilesystemSystemUpdateActiveReleasePointerStore.php
+          grep -Fq "preg_match('/\\A[0-9a-f]{40}\\z/', \$sourceCommit)" apps/web/app/Application/SystemUpdate/SystemUpdateReleaseIdentity.php
+          grep -Fq "preg_match('/\\A[0-9a-f]{64}\\z/', \$artifactSha256)" apps/web/app/Application/SystemUpdate/SystemUpdateReleaseIdentity.php
+          grep -Fq 'release_source_mismatch' apps/web/app/Application/SystemUpdate/SystemUpdateReleaseIdentity.php
+
+      - name: Keep activation execution fail-closed
+        shell: bash
+        run: |
+          set -euo pipefail
+          test ! -e .github/workflows/final-shift-close-feature-activation.yml
+          grep -Fq 'FEATURE_ACTIVATION_EVIDENCE_PRODUCER = NOT_IMPLEMENTED' docs/SPRINT106_FINAL_SHIFT_CLOSE_ACTIVATION_TARGET_CONTRACT.md
+          grep -Fq 'FEATURE_ACTIVATION_EXECUTION = NOT_PERFORMED' docs/SPRINT106_FINAL_SHIFT_CLOSE_ACTIVATION_TARGET_CONTRACT.md
+          grep -Fq 'TECHNICAL_PREVIEW_ACTIVATION_AUTHORITY = NOT_GRANTED' docs/SPRINT106_FINAL_SHIFT_CLOSE_ACTIVATION_TARGET_CONTRACT.md
+          grep -Fq 'PRODUCTION_AUTHORITY = NOT_GRANTED' docs/SPRINT106_FINAL_SHIFT_CLOSE_ACTIVATION_TARGET_CONTRACT.md
+          ! grep -Eq '"(host|domain|url|credential|token|secret|password)"[[:space:]]*:' ops/final-shift-close/ACTIVATION_TARGET.json
+
+      - name: Confirm tracked source remains unchanged
+        shell: bash
+        run: git diff --exit-code

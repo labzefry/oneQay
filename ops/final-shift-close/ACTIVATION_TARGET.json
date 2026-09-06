@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "feature": "final-shift-close",
+  "target": {
+    "environment_id": "oneqay-synthetic-technical-preview",
+    "environment_class": "technical-preview",
+    "runtime_class": "preview",
+    "selection_state": "SELECTED_NOT_AUTHORIZED"
+  },
+  "runtime_binding": {
+    "shared_environment_profile": "PRIVATE_SHARED_DOTENV_V1",
+    "active_release_pointer_profile": "SYSTEM_UPDATE_ACTIVE_RELEASE_POINTER_V1",
+    "required_release_identity_fields": [
+      "release_id",
+      "source_commit",
+      "artifact_sha256"
+    ],
+    "configuration_revision_profile": "FINAL_SHIFT_CLOSE_FEATURE_FLAG_REVISION_V1"
+  },
+  "feature_flag": {
+    "name": "ONEQAY_POS_SHIFT_CLOSE_ENABLED",
+    "required_pre_activation_value": false,
+    "desired_activation_value": true,
+    "rollback_value": false
+  },
+  "execution_requirements": {
+    "authenticated_configuration_channel": "NOT_IMPLEMENTED",
+    "read_before_write_read_after": "REQUIRED",
+    "runtime_health_attestation": "REQUIRED",
+    "verified_rollback": "REQUIRED",
+    "preview_runtime_compatibility": "NOT_QUALIFIED",
+    "feature_activation_evidence_producer": "NOT_IMPLEMENTED"
+  },
+  "authority_boundaries": {
+    "feature_activation_authority": "SEPARATE_EXACT_HEAD_REQUIRED",
+    "deployment_authority": "NOT_GRANTED",
+    "technical_preview_activation": "NOT_AUTHORIZED",
+    "production_activation": "NOT_AUTHORIZED",
+    "updater_activation": "INACTIVE"
+  }
+}
