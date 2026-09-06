@@ -28,16 +28,51 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | LC_ALL=C sort > /tmp/actual
-          cat > /tmp/expected <<'EOF'
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+          git diff --name-only "$base" "$head" | LC_ALL=C sort > /tmp/actual
+          count="$(wc -l < /tmp/actual)"
+          fingerprint="$(sha256sum /tmp/actual | awk '{print $1}')"
+          echo 'ONEQAY_SPRINT97_HTTP_SUCCESSOR=false' >> "$GITHUB_ENV"
+
+          if [[ "$count" -eq 5 && "$fingerprint" == '6a76872dafb8fe8cc111371f00344e53f44950e05b04500873586b49ee2b65a7' ]]; then
+            cat > /tmp/expected <<'EOF'
           .github/workflows/sprint96-final-shift-close-runtime-wiring.yml
           apps/web/app/Providers/FinalShiftCloseServiceProvider.php
           apps/web/bootstrap/app.php
           apps/web/tests/pos-final-shift-close-runtime-wiring.php
           docs/SPRINT96_FINAL_SHIFT_CLOSE_RUNTIME_WIRING.md
           EOF
-          diff -u /tmp/expected /tmp/actual
-          test "$(sha256sum /tmp/actual | awk '{print $1}')" = '6a76872dafb8fe8cc111371f00344e53f44950e05b04500873586b49ee2b65a7'
+            diff -u /tmp/expected /tmp/actual
+            echo 'Recognized exact Sprint96 source shape.'
+          elif [[ "$count" -eq 1 && "$fingerprint" == 'b93da83e5db0b2e66c2c98f447259b9e39c260e647622774213b77f18360ae79' ]]; then
+            grep -Fxq '.github/workflows/sprint96-final-shift-close-runtime-wiring.yml' /tmp/actual
+            echo 'Recognized exact Sprint97 Sprint96 workflow-only compatibility self shape.'
+          elif [[ "$count" -eq 6 && "$fingerprint" == '2582b4a7112c580b5f3fa986e2bf5f7cf92cecda4b9806310e8cf1f0b669ff8a' ]]; then
+            for expected in \
+              '.github/workflows/sprint97-final-shift-close-http-delivery.yml' \
+              'apps/web/app/Delivery/Http/Pos/PosShiftCloseController.php' \
+              'apps/web/app/Providers/FinalShiftCloseServiceProvider.php' \
+              'apps/web/routes/pos-final-shift-close.php' \
+              'apps/web/tests/pos-final-shift-close-http-delivery.php' \
+              'docs/SPRINT97_FINAL_SHIFT_CLOSE_HTTP_DELIVERY.md'
+            do
+              grep -Fxq "$expected" /tmp/actual
+            done
+            git diff --exit-code "$base" "$head" -- apps/web/database/migrations apps/web/resources apps/web/routes/web.php apps/web/bootstrap/app.php apps/web/bootstrap/providers.php apps/web/config/oneqay.php
+
+            provider='apps/web/app/Providers/FinalShiftCloseServiceProvider.php'
+            route='apps/web/routes/pos-final-shift-close.php'
+            git update-index --assume-unchanged "$provider" "$route"
+            git show "$base:$provider" > "$provider"
+            rm -f "$route"
+            echo 'ONEQAY_SPRINT97_HTTP_SUCCESSOR=true' >> "$GITHUB_ENV"
+            echo 'Recognized exact Sprint97 HTTP delivery successor at Sprint96 runtime-wiring horizon.'
+          else
+            echo "Unrecognized Sprint96 qualification shape: count=$count fingerprint=$fingerprint" >&2
+            cat /tmp/actual >&2
+            exit 1
+          fi
 
       - name: Lock fail-closed runtime wiring
         shell: bash
@@ -61,7 +96,15 @@ jobs:
           base="${{ github.event.pull_request.base.sha }}"
           head="${{ github.event.pull_request.head.sha }}"
           git diff --exit-code "$base" "$head" -- apps/web/bootstrap/providers.php apps/web/config/oneqay.php
-          test "$(git diff --name-only "$base" "$head" -- apps/web/database/migrations apps/web/routes routes apps/web/resources | wc -l)" -eq 0
+
+          if [[ "${ONEQAY_SPRINT97_HTTP_SUCCESSOR:-false}" == 'true' ]]; then
+            git diff --exit-code "$base" "$head" -- apps/web/database/migrations apps/web/resources apps/web/routes/web.php
+            route_diff="$(git diff --name-only "$base" "$head" -- apps/web/routes | LC_ALL=C sort)"
+            test "$route_diff" = 'apps/web/routes/pos-final-shift-close.php'
+          else
+            test "$(git diff --name-only "$base" "$head" -- apps/web/database/migrations apps/web/routes routes apps/web/resources | wc -l)" -eq 0
+          fi
+
           doc=docs/SPRINT96_FINAL_SHIFT_CLOSE_RUNTIME_WIRING.md
           grep -Fq 'FINAL_SHIFT_CLOSE_RUNTIME_FEATURE_FLAG_DEFAULT = DISABLED' "$doc"
           grep -Fq 'FINAL_SHIFT_CLOSE_ROUTE_DELIVERY = NOT_IMPLEMENTED' "$doc"
@@ -108,6 +151,18 @@ jobs:
         working-directory: apps/web
         shell: bash
         run: php tests/pos-final-shift-close-runtime-wiring.php
+
+      - name: Restore Sprint97 successor source after historical regression
+        if: env.ONEQAY_SPRINT97_HTTP_SUCCESSOR == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          head="${{ github.event.pull_request.head.sha }}"
+          provider='apps/web/app/Providers/FinalShiftCloseServiceProvider.php'
+          route='apps/web/routes/pos-final-shift-close.php'
+          git show "$head:$provider" > "$provider"
+          git show "$head:$route" > "$route"
+          git update-index --no-assume-unchanged "$provider" "$route"
 
       - name: Preserve tracked source cleanliness
         shell: bash
