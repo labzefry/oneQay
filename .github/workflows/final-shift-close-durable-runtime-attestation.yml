@@ -1,0 +1,296 @@
+name: Final Shift Close Durable Runtime Attestation
+
+# Attribution: Lab | zefry
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  statuses: write
+
+env:
+  EVIDENCE_STATUS_CONTEXT: final-shift-close-durable-runtime-attestation-evidence
+  PRODUCER_ENVIRONMENT: final-shift-close-durable-runtime-attestation
+  PRODUCER_WORKFLOW_PATH: .github/workflows/final-shift-close-durable-runtime-attestation.yml
+  ATTESTATION_ARTIFACT_NAME: final-shift-close-durable-runtime-attestation
+
+concurrency:
+  group: final-shift-close-durable-runtime-attestation
+  cancel-in-progress: false
+
+jobs:
+  attest-durable-runtime:
+    if: ${{ github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: final-shift-close-durable-runtime-attestation
+    env:
+      ATTESTATION_URL: ${{ secrets.ONEQAY_DURABLE_RUNTIME_ATTESTATION_URL }}
+      ATTESTATION_TOKEN: ${{ secrets.ONEQAY_DURABLE_RUNTIME_ATTESTATION_TOKEN }}
+      ENVIRONMENT_PROTECTION_ASSERTION: ${{ secrets.ONEQAY_DURABLE_RUNTIME_ATTESTATION_PROTECTION_ASSERTION }}
+      EXPECTED_ENVIRONMENT_ID: ${{ vars.ONEQAY_DURABLE_RUNTIME_ENVIRONMENT_ID }}
+      EXPECTED_RUNTIME_CLASS: ${{ vars.ONEQAY_DURABLE_RUNTIME_CLASS }}
+
+    steps:
+      - name: Checkout canonical dispatch source only
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+
+      - name: Validate canonical source and protected-environment inputs
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          API_URL: ${{ github.api_url }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          [[ "$GITHUB_REF" == 'refs/heads/main' ]]
+          [[ "$GITHUB_REPOSITORY" == 'labzefry/oneQay' ]]
+          [[ "$ATTESTATION_URL" =~ ^https://[^[:space:]]+$ ]]
+          [[ -n "$ATTESTATION_TOKEN" ]]
+          [[ "$ENVIRONMENT_PROTECTION_ASSERTION" == 'REVIEW_GATED_V1' ]]
+          [[ "$EXPECTED_ENVIRONMENT_ID" =~ ^[a-z0-9][a-z0-9._:-]{7,127}$ ]]
+          [[ "$EXPECTED_RUNTIME_CLASS" =~ ^[a-z0-9][a-z0-9._:-]{7,127}$ ]]
+
+          case "$EXPECTED_RUNTIME_CLASS" in
+            local|test|testing|ci|preview|synthetic-preview|production|prod)
+              echo 'Configured runtime class is not an eligible isolated durable target.' >&2
+              exit 1
+              ;;
+          esac
+
+          main_sha="$(curl --fail-with-body --silent --show-error \
+            --header 'Accept: application/vnd.github+json' \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header 'X-GitHub-Api-Version: 2022-11-28' \
+            "$API_URL/repos/$REPOSITORY/branches/main" | jq -r '.commit.sha')"
+          [[ "$main_sha" == "$GITHUB_SHA" ]] || {
+            echo "Attestation producer must run from current canonical main: $GITHUB_SHA != $main_sha" >&2
+            exit 1
+          }
+
+      - name: Fetch authenticated runtime readiness attestation
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          curl \
+            --proto '=https' \
+            --tlsv1.2 \
+            --connect-timeout 5 \
+            --max-time 20 \
+            --fail-with-body \
+            --silent \
+            --show-error \
+            --header 'Accept: application/json' \
+            --header "Authorization: Bearer $ATTESTATION_TOKEN" \
+            "$ATTESTATION_URL" > /tmp/runtime-attestation.json
+
+          bytes="$(wc -c < /tmp/runtime-attestation.json)"
+          (( bytes > 1 && bytes <= 32768 )) || {
+            echo "Runtime attestation response size is outside the accepted bound: $bytes" >&2
+            exit 1
+          }
+          jq -e 'type == "object"' /tmp/runtime-attestation.json >/dev/null
+
+      - name: Qualify runtime attestation against Sprint110 contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          ATTESTATION_FILE=/tmp/runtime-attestation.json \
+          EXPECTED_ENVIRONMENT_ID="$EXPECTED_ENVIRONMENT_ID" \
+          EXPECTED_RUNTIME_CLASS="$EXPECTED_RUNTIME_CLASS" \
+          php <<'PHP'
+          <?php
+          declare(strict_types=1);
+
+          require __DIR__.'/apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeReadiness.php';
+
+          $path = getenv('ATTESTATION_FILE');
+          $expectedEnvironment = getenv('EXPECTED_ENVIRONMENT_ID');
+          $expectedRuntime = getenv('EXPECTED_RUNTIME_CLASS');
+          if (!is_string($path) || !is_string($expectedEnvironment) || !is_string($expectedRuntime)) {
+              throw new RuntimeException('Attestation producer environment is incomplete.');
+          }
+
+          $raw = file_get_contents($path);
+          if ($raw === false) {
+              throw new RuntimeException('Runtime attestation cannot be read.');
+          }
+          $attestation = json_decode($raw, true, 32, JSON_THROW_ON_ERROR);
+          if (!is_array($attestation)) {
+              throw new RuntimeException('Runtime attestation must decode to an object.');
+          }
+
+          $readiness = new App\Application\Pos\FinalShiftCloseDurableRuntimeReadiness();
+          $readiness->requireQualified($attestation);
+
+          if (($attestation['environment_id'] ?? null) !== $expectedEnvironment) {
+              throw new RuntimeException('Runtime environment identity does not match protected-environment configuration.');
+          }
+          if (($attestation['runtime_class'] ?? null) !== $expectedRuntime) {
+              throw new RuntimeException('Runtime class does not match protected-environment configuration.');
+          }
+          PHP
+
+      - name: Verify running source belongs to canonical main history
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          API_URL: ${{ github.api_url }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          running_source="$(jq -r '.exact_running_source_commit' /tmp/runtime-attestation.json)"
+          [[ "$running_source" =~ ^[0-9a-f]{40}$ ]]
+
+          curl --fail-with-body --silent --show-error \
+            --header 'Accept: application/vnd.github+json' \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header 'X-GitHub-Api-Version: 2022-11-28' \
+            "$API_URL/repos/$REPOSITORY/commits/$running_source" >/dev/null
+
+          compare="$(curl --fail-with-body --silent --show-error \
+            --header 'Accept: application/vnd.github+json' \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header 'X-GitHub-Api-Version: 2022-11-28' \
+            "$API_URL/repos/$REPOSITORY/compare/$running_source...$GITHUB_SHA")"
+          status="$(jq -r '.status' <<<"$compare")"
+          behind="$(jq -r '.behind_by' <<<"$compare")"
+          [[ "$status" == 'ahead' || "$status" == 'identical' ]]
+          [[ "$behind" == '0' ]]
+
+      - name: Materialize attestation and provenance evidence bundle
+        id: bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/final-shift-close-attestation
+          cp /tmp/runtime-attestation.json /tmp/final-shift-close-attestation/attestation.json
+
+          ATTESTATION_FILE=/tmp/runtime-attestation.json \
+          PROVENANCE_FILE=/tmp/final-shift-close-attestation/provenance.json \
+          PRODUCER_SOURCE_COMMIT="$GITHUB_SHA" \
+          PRODUCER_RUN_ID="$GITHUB_RUN_ID" \
+          PRODUCER_RUN_ATTEMPT="$GITHUB_RUN_ATTEMPT" \
+          php <<'PHP'
+          <?php
+          declare(strict_types=1);
+
+          $attestationPath = getenv('ATTESTATION_FILE');
+          $provenancePath = getenv('PROVENANCE_FILE');
+          $sourceCommit = getenv('PRODUCER_SOURCE_COMMIT');
+          $runId = getenv('PRODUCER_RUN_ID');
+          $runAttempt = getenv('PRODUCER_RUN_ATTEMPT');
+          foreach ([$attestationPath, $provenancePath, $sourceCommit, $runId, $runAttempt] as $value) {
+              if (!is_string($value) || $value === '') {
+                  throw new RuntimeException('Evidence materialization input is missing.');
+              }
+          }
+
+          $raw = file_get_contents($attestationPath);
+          if ($raw === false) {
+              throw new RuntimeException('Attestation cannot be read.');
+          }
+          $attestation = json_decode($raw, true, 32, JSON_THROW_ON_ERROR);
+          if (!is_array($attestation)) {
+              throw new RuntimeException('Attestation must decode to an object.');
+          }
+          $canonical = $attestation;
+          ksort($canonical, SORT_STRING);
+          $attestationSha = hash('sha256', json_encode(
+              $canonical,
+              JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR,
+          ));
+
+          $provenance = [
+              'schema_version' => 1,
+              'feature' => 'final-shift-close',
+              'evidence_source' => 'GITHUB_ACTIONS_PROTECTED_ENVIRONMENT',
+              'evidence_state' => 'VERIFIED',
+              'producer_repository' => 'labzefry/oneQay',
+              'producer_workflow_path' => '.github/workflows/final-shift-close-durable-runtime-attestation.yml',
+              'producer_environment' => 'final-shift-close-durable-runtime-attestation',
+              'producer_ref' => 'refs/heads/main',
+              'producer_source_commit' => $sourceCommit,
+              'producer_run_id' => (int) $runId,
+              'producer_run_attempt' => (int) $runAttempt,
+              'attestation_sha256' => $attestationSha,
+              'environment_id' => $attestation['environment_id'],
+              'runtime_class' => $attestation['runtime_class'],
+              'exact_running_source_commit' => $attestation['exact_running_source_commit'],
+              'exact_running_artifact_sha256' => $attestation['exact_running_artifact_sha256'],
+              'evidence_status_context' => 'final-shift-close-durable-runtime-attestation-evidence',
+              'evidence_status_state' => 'success',
+              'secrets_embedded' => false,
+          ];
+
+          file_put_contents($provenancePath, json_encode(
+              $provenance,
+              JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR,
+          )."\n", LOCK_EX);
+          PHP
+
+          jq -e . /tmp/final-shift-close-attestation/attestation.json >/dev/null
+          jq -e . /tmp/final-shift-close-attestation/provenance.json >/dev/null
+          ! grep -Fq "$ATTESTATION_TOKEN" /tmp/final-shift-close-attestation/attestation.json
+          ! grep -Fq "$ATTESTATION_TOKEN" /tmp/final-shift-close-attestation/provenance.json
+          echo "running_source=$(jq -r '.exact_running_source_commit' /tmp/runtime-attestation.json)" >> "$GITHUB_OUTPUT"
+
+      - name: Publish pending evidence status
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          API_URL: ${{ github.api_url }}
+          REPOSITORY: ${{ github.repository }}
+          RUNNING_SOURCE: ${{ steps.bundle.outputs.running_source }}
+        run: |
+          set -euo pipefail
+          payload="$(jq -n \
+            --arg state pending \
+            --arg context "$EVIDENCE_STATUS_CONTEXT" \
+            --arg description 'Durable runtime attestation evidence bundle is being published' \
+            --arg target_url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+            '{state:$state,context:$context,description:$description,target_url:$target_url}')"
+          curl --fail-with-body --silent --show-error \
+            --request POST \
+            --header 'Accept: application/vnd.github+json' \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header 'X-GitHub-Api-Version: 2022-11-28' \
+            "$API_URL/repos/$REPOSITORY/statuses/$RUNNING_SOURCE" \
+            --data "$payload" >/dev/null
+
+      - name: Upload trusted attestation evidence bundle
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: final-shift-close-durable-runtime-attestation
+          path: /tmp/final-shift-close-attestation
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Publish success evidence status
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          API_URL: ${{ github.api_url }}
+          REPOSITORY: ${{ github.repository }}
+          RUNNING_SOURCE: ${{ steps.bundle.outputs.running_source }}
+        run: |
+          set -euo pipefail
+          payload="$(jq -n \
+            --arg state success \
+            --arg context "$EVIDENCE_STATUS_CONTEXT" \
+            --arg description 'Durable runtime readiness attestation verified and published' \
+            --arg target_url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+            '{state:$state,context:$context,description:$description,target_url:$target_url}')"
+          curl --fail-with-body --silent --show-error \
+            --request POST \
+            --header 'Accept: application/vnd.github+json' \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header 'X-GitHub-Api-Version: 2022-11-28' \
+            "$API_URL/repos/$REPOSITORY/statuses/$RUNNING_SOURCE" \
+            --data "$payload" >/dev/null
