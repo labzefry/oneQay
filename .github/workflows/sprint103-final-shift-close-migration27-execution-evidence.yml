@@ -1,0 +1,180 @@
+name: Sprint103 Final Shift Close Migration27 Execution Evidence
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/final-shift-close-migration27-execution.yml'
+      - '.github/workflows/sprint103-final-shift-close-migration27-execution-evidence.yml'
+      - 'docs/SPRINT103_FINAL_SHIFT_CLOSE_MIGRATION27_EXECUTION_EVIDENCE.md'
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  qualify-migration27-evidence-producer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Enforce exact Sprint103 source envelope
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/actual
+          cat > /tmp/expected <<'EOF'
+          .github/workflows/final-shift-close-migration27-execution.yml
+          .github/workflows/sprint103-final-shift-close-migration27-execution-evidence.yml
+          docs/SPRINT103_FINAL_SHIFT_CLOSE_MIGRATION27_EXECUTION_EVIDENCE.md
+          EOF
+          diff -u /tmp/expected /tmp/actual
+          test "$(sha256sum /tmp/actual | awk '{print $1}')" = '1d07051e2d732b1b0d5c7b943541da475d8fb9144824ce693f711b06c0ead9b5'
+
+      - name: Preserve canonical operational state and migration source
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git diff --exit-code "$BASE_SHA" "$HEAD_SHA" -- \
+            ops/final-shift-close/STATE.json \
+            apps/web/database/migrations \
+            apps/web/app \
+            apps/web/routes \
+            apps/web/resources \
+            apps/web/bootstrap \
+            apps/web/config
+          test "$(git rev-parse "$HEAD_SHA:apps/web/database/migrations/0000_00_00_000027_create_pos_shift_close_evidence_foundation.php")" = 'a412560c2f340f4783a385aef729dbd074389a4c'
+
+      - name: Lock manual canonical-main execution boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          executor=.github/workflows/final-shift-close-migration27-execution.yml
+
+          grep -Fq 'workflow_dispatch:' "$executor"
+          ! grep -Eq '^  (pull_request|push|schedule):' "$executor"
+          grep -Fq "if: \${{ github.ref == 'refs/heads/main' }}" "$executor"
+          grep -Fq 'ref: ${{ github.sha }}' "$executor"
+          grep -Fq 'environment: final-shift-close-migration27-execution' "$executor"
+          grep -Fq 'statuses: write' "$executor"
+          grep -Fq 'actions: read' "$executor"
+          grep -Fq 'pull-requests: read' "$executor"
+          ! grep -Fq 'contents: write' "$executor"
+          ! grep -Fq 'deployments: write' "$executor"
+
+      - name: Lock exact target PR and one-state transition qualification
+        shell: bash
+        run: |
+          set -euo pipefail
+          executor=.github/workflows/final-shift-close-migration27-execution.yml
+
+          grep -Fq "[[ \"\$(jq -r '.base.ref' <<<\"\$pr_json\")\" == 'main' ]]" "$executor"
+          grep -Fq "[[ \"\$(jq -r '.base.sha' <<<\"\$pr_json\")\" == \"\$GITHUB_SHA\" ]]" "$executor"
+          grep -Fq "[[ \"\$(jq -r '.head.sha' <<<\"\$pr_json\")\" == \"\$TARGET_HEAD\" ]]" "$executor"
+          grep -Fq "[[ \"\$(jq -r '.head.repo.full_name' <<<\"\$pr_json\")\" == \"\$REPOSITORY\" ]]" "$executor"
+          grep -Fq "[[ \"\$(jq 'length' <<<\"\$files_json\")\" -eq 1 ]]" "$executor"
+          grep -Fq "ops/final-shift-close/STATE.json" "$executor"
+          grep -Fq "'.migration27.state' /tmp/base-state.json)\" == 'NOT_EXECUTED'" "$executor"
+          grep -Fq "'.migration27.state' /tmp/target-state.json)\" == 'EXECUTED'" "$executor"
+          grep -Fq "'.permission_provisioning.state' /tmp/target-state.json)\" == 'NONE'" "$executor"
+          grep -Fq "'.feature_activation.state' /tmp/target-state.json)\" == 'INACTIVE'" "$executor"
+          grep -Fq ".migration27.state = \"NOT_EXECUTED\"" "$executor"
+
+      - name: Lock exact-head authority and qualification prerequisites
+        shell: bash
+        run: |
+          set -euo pipefail
+          executor=.github/workflows/final-shift-close-migration27-execution.yml
+
+          grep -Fq "require_latest_success 'final-shift-close-migration27-execution-authority'" "$executor"
+          grep -Fq "require_latest_success 'product-owner-merge-authority'" "$executor"
+          grep -Fq "require_workflow_success 'Governance Required Checks'" "$executor"
+          grep -Fq "require_workflow_success 'PHP Foundation Regression'" "$executor"
+          grep -Fq "require_workflow_success 'M7.1 Application Regression'" "$executor"
+          ! grep -Fq 'final-shift-close-feature-activation-authority' "$executor"
+          ! grep -Fq 'final-shift-close-permission-provisioning-authority' "$executor"
+
+      - name: Lock canonical migration source and forward-only execution
+        shell: bash
+        run: |
+          set -euo pipefail
+          executor=.github/workflows/final-shift-close-migration27-execution.yml
+
+          grep -Fq 'MIGRATION_PATH: database/migrations/0000_00_00_000027_create_pos_shift_close_evidence_foundation.php' "$executor"
+          grep -Fq 'MIGRATION_BLOB_SHA: a412560c2f340f4783a385aef729dbd074389a4c' "$executor"
+          grep -Fq 'git hash-object "apps/web/$MIGRATION_PATH"' "$executor"
+          grep -Fq 'php artisan migrate \' "$executor"
+          grep -Fq -- '--path="$MIGRATION_PATH"' "$executor"
+          grep -Fq -- '--force' "$executor"
+          grep -Fq -- '--no-interaction' "$executor"
+          ! grep -Eq '(migrate:rollback|migrate:reset|migrate:refresh|migrate:fresh|->down\(|php artisan migrate:down)' "$executor"
+          ! grep -Eq '(DROP TABLE|TRUNCATE TABLE|DELETE FROM)' "$executor"
+
+      - name: Lock fail-closed database preflight and post-verification
+        shell: bash
+        run: |
+          set -euo pipefail
+          executor=.github/workflows/final-shift-close-migration27-execution.yml
+
+          grep -Fq "ONEQAY_DB_DRIVER: mysql" "$executor"
+          grep -Fq 'ONEQAY_MIGRATION27_DB_HOST' "$executor"
+          grep -Fq 'ONEQAY_MIGRATION27_DB_DATABASE' "$executor"
+          grep -Fq "if (\$schema->hasTable('oneqay_pos_shift_close_evidence'))" "$executor"
+          grep -Fq "where('migration', \$migration)->count() !== 0" "$executor"
+          grep -Fq "Required canonical predecessor migrations are not fully recorded." "$executor"
+          grep -Fq "where('migration', \$migration)->count() !== 1" "$executor"
+          grep -Fq "uq_pos_shift_close_operation" "$executor"
+          grep -Fq "uq_pos_shift_close_shift" "$executor"
+          grep -Fq "ix_pos_shift_close_outlet_time" "$executor"
+          grep -Fq "chk_pos_shift_close_variance_review" "$executor"
+          grep -Fq "Migration27 variance/review CHECK constraint is not enforced by the target." "$executor"
+
+      - name: Lock evidence status lifecycle
+        shell: bash
+        run: |
+          set -euo pipefail
+          executor=.github/workflows/final-shift-close-migration27-execution.yml
+
+          grep -Fq 'EVIDENCE_CONTEXT: final-shift-close-migration27-execution-evidence' "$executor"
+          grep -Fq -- '--arg state pending' "$executor"
+          grep -Fq "EXECUTE_OUTCOME: \${{ steps.execute.outcome }}" "$executor"
+          grep -Fq "if [[ \"\$EXECUTE_OUTCOME\" == 'success' ]]" "$executor"
+          grep -Fq "state=success" "$executor"
+          grep -Fq "state=failure" "$executor"
+          grep -Fq 'steps.preflight.outputs.verified' "$executor"
+          grep -Fq 'steps.execute.outcome' "$executor"
+
+      - name: Preserve non-migration operational no-go boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          executor=.github/workflows/final-shift-close-migration27-execution.yml
+          doc=docs/SPRINT103_FINAL_SHIFT_CLOSE_MIGRATION27_EXECUTION_EVIDENCE.md
+
+          ! grep -Fq 'ONEQAY_POS_SHIFT_CLOSE_ENABLED=true' "$executor"
+          ! grep -Eq '(kubectl |helm |ssh |scp |rsync |gh release|docker push)' "$executor"
+          ! grep -Fq 'pos.shift.close' "$executor"
+          grep -Fq 'SPRINT103_LIVE_EXECUTION = NOT_PERFORMED' "$doc"
+          grep -Fq 'MIGRATION_27_LIVE_EXECUTION = NOT_AUTHORIZED' "$doc"
+          grep -Fq 'FINAL_SHIFT_CLOSE_PERMISSION_PROVISIONING = NONE' "$doc"
+          grep -Fq 'FINAL_SHIFT_CLOSE_FEATURE_ACTIVATION = INACTIVE' "$doc"
+          grep -Fq 'TECHNICAL_PREVIEW_ACTIVATION_AUTHORITY = NOT_GRANTED' "$doc"
+          grep -Fq 'PRODUCTION_AUTHORITY = NOT_GRANTED' "$doc"
+          grep -Fq 'UPDATER_ACTIVATION_AUTHORITY = NOT_GRANTED' "$doc"
+
+      - name: Verify tracked-source cleanliness
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -z "$(git status --porcelain --untracked-files=no)"
