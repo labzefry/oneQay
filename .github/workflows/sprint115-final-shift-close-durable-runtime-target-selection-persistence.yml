@@ -86,7 +86,7 @@ jobs:
           grep -Fq 'ingestion_run_attempt:' "$executor"
           ! grep -Fq 'pull_request:' "$executor"
           ! grep -Fq 'schedule:' "$executor"
-          grep -Fq "refs/heads/main" "$executor"
+          grep -Fq 'refs/heads/main' "$executor"
           grep -Fq 'Selection persistence gate must run from current canonical main' "$executor"
           grep -Fq 'ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json' "$executor"
 
@@ -95,16 +95,16 @@ jobs:
         run: |
           set -euo pipefail
           executor=.github/workflows/final-shift-close-durable-runtime-target-selection-persistence.yml
-          grep -Fq "'.changed_files'" "$executor"
+          grep -Fq "jq -r '.changed_files'" "$executor"
           grep -Fq "== '1'" "$executor"
-          grep -Fq "'.head.repo.full_name'" "$executor"
-          grep -Fq "'.base.ref'" "$executor"
-          grep -Fq "'.base.sha'" "$executor"
-          grep -Fq "'.head.sha'" "$executor"
+          grep -Fq "jq -r '.head.repo.full_name'" "$executor"
+          grep -Fq "jq -r '.base.ref'" "$executor"
+          grep -Fq "jq -r '.base.sha'" "$executor"
+          grep -Fq "jq -r '.head.sha'" "$executor"
           grep -Fq 'product-owner-merge-authority' "$executor"
           grep -Fq 'Exact-head Product Owner merge authority is required' "$executor"
-          grep -Fq "BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET" "$executor"
-          grep -Fq "SELECTED_NOT_AUTHORIZED" "$executor"
+          grep -Fq 'BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET' "$executor"
+          grep -Fq 'SELECTED_NOT_AUTHORIZED' "$executor"
 
       - name: Prove exact Sprint114 ingestion evidence retrieval and binding
         shell: bash
@@ -114,11 +114,11 @@ jobs:
           grep -Fq '.github/workflows/final-shift-close-durable-runtime-attestation-ingestion.yml' "$executor"
           grep -Fq 'final-shift-close-durable-runtime-attestation-ingestion' "$executor"
           grep -Fq 'final-shift-close-durable-runtime-attestation-ingestion-evidence' "$executor"
-          grep -Fq "'.run_attempt'" "$executor"
-          grep -Fq "'.head_branch'" "$executor"
-          grep -Fq "'.conclusion'" "$executor"
+          grep -Fq "jq -r '.run_attempt'" "$executor"
+          grep -Fq "jq -r '.head_branch'" "$executor"
+          grep -Fq "jq -r '.conclusion'" "$executor"
           grep -Fq 'compare/$ingestion_head...$GITHUB_SHA' "$executor"
-          grep -Fq "'.expired == false'" "$executor"
+          grep -Fq '.expired == false' "$executor"
           grep -Fq 'artifact_size <= 524288' "$executor"
           grep -Fq 'attestation.json' "$executor"
           grep -Fq 'provenance.json' "$executor"
