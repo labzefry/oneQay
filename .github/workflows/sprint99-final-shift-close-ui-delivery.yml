@@ -1,0 +1,155 @@
+name: Sprint99 Final Shift Close UI Delivery
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/sprint99-final-shift-close-ui-delivery.yml'
+      - 'apps/web/app/Delivery/Http/Pos/PosShiftClosePageController.php'
+      - 'apps/web/resources/js/pages/Pos/ShiftClose.vue'
+      - 'apps/web/routes/pos-final-shift-close.php'
+      - 'apps/web/tests/pos-final-shift-close-ui-delivery.php'
+      - 'docs/SPRINT99_FINAL_SHIFT_CLOSE_UI_DELIVERY.md'
+
+permissions:
+  contents: read
+
+jobs:
+  qualify-source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHQ=
+      APP_DEBUG: 'false'
+      APP_URL: http://localhost
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Enforce exact Sprint99 source envelope
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | LC_ALL=C sort > /tmp/actual
+          cat > /tmp/expected <<'EOF'
+          .github/workflows/sprint99-final-shift-close-ui-delivery.yml
+          apps/web/app/Delivery/Http/Pos/PosShiftClosePageController.php
+          apps/web/resources/js/pages/Pos/ShiftClose.vue
+          apps/web/routes/pos-final-shift-close.php
+          apps/web/tests/pos-final-shift-close-ui-delivery.php
+          docs/SPRINT99_FINAL_SHIFT_CLOSE_UI_DELIVERY.md
+          EOF
+          diff -u /tmp/expected /tmp/actual
+          test "$(sha256sum /tmp/actual | awk '{print $1}')" = '7497d05fb6066cd24ce3c8c53bd64e9590a783b028bb944ec07b56f59661c51b'
+
+      - name: Lock authorization and operation-only UI contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          controller=apps/web/app/Delivery/Http/Pos/PosShiftClosePageController.php
+          page=apps/web/resources/js/pages/Pos/ShiftClose.vue
+          route=apps/web/routes/pos-final-shift-close.php
+          grep -Fq 'FinalShiftClosePermission::identifier()' "$controller"
+          grep -Fq '$this->authorization->require(' "$controller"
+          grep -Fq "abort(403, 'Final Shift Close access denied.')" "$controller"
+          grep -Fq "Inertia::render('Pos/ShiftClose'" "$controller"
+          grep -Fq "Route::get('/pos/shifts/close', PosShiftClosePageController::class)" "$route"
+          grep -Fq -- "->name('pos.shifts.close.page')" "$route"
+          grep -Fq "Route::post('/pos/shifts/close', PosShiftCloseController::class)" "$route"
+          grep -Fq -- "->name('pos.shifts.close')" "$route"
+          grep -Fq "import axios, { AxiosError } from 'axios'" "$page"
+          grep -Fq 'crypto.randomUUID()' "$page"
+          python3 - <<'PY'
+          from pathlib import Path
+          page = Path('apps/web/resources/js/pages/Pos/ShiftClose.vue').read_text()
+          needle = """axios.post<CloseResult>(props.delivery.post_url, {
+                operation_id: operation.value,
+              }, {"""
+          if needle not in page:
+              raise SystemExit('Final Shift Close UI mutation body must contain exactly operation_id.')
+          PY
+          ! grep -Fq 'reviewer_actor_identity_id' "$page"
+          ! grep -Fq 'closer_actor_identity_id' "$page"
+
+      - name: Preserve lifecycle persistence and activation boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+          git diff --exit-code "$base" "$head" -- apps/web/app/Application/Pos apps/web/app/Infrastructure/Pos apps/web/app/Providers apps/web/database/migrations apps/web/routes/web.php
+          doc=docs/SPRINT99_FINAL_SHIFT_CLOSE_UI_DELIVERY.md
+          grep -Fq 'FINAL_SHIFT_CLOSE_UI_DELIVERY_SOURCE = MATERIALIZED' "$doc"
+          grep -Fq 'FINAL_SHIFT_CLOSE_UI_ROUTE_DEFAULT = ABSENT_FAIL_CLOSED' "$doc"
+          grep -Fq 'FINAL_SHIFT_CLOSE_PERMISSION_DEFAULT_GRANT = NONE' "$doc"
+          grep -Fq 'MIGRATION_27_LIVE_EXECUTION = NOT_AUTHORIZED' "$doc"
+          grep -Fq 'TECHNICAL_PREVIEW_ACTIVATION_AUTHORITY = NOT_GRANTED' "$doc"
+          grep -Fq 'PRODUCTION_AUTHORITY = NOT_GRANTED' "$doc"
+          grep -Fq 'UPDATER_ACTIVATION_AUTHORITY = NOT_GRANTED' "$doc"
+
+      - name: Validate PHP syntax
+        run: |
+          php -l apps/web/app/Delivery/Http/Pos/PosShiftClosePageController.php
+          php -l apps/web/routes/pos-final-shift-close.php
+          php -l apps/web/tests/pos-final-shift-close-ui-delivery.php
+
+      - name: Install PHP dependencies
+        working-directory: apps/web
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Execute Sprint99 UI regression
+        working-directory: apps/web
+        run: php tests/pos-final-shift-close-ui-delivery.php
+
+      - name: Prove Final Shift Close routes absent by default
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          output="$(ONEQAY_RUNTIME_CLASS=ci ONEQAY_POS_SHIFT_CLOSE_ENABLED=false php artisan route:list --json)"
+          php -r '
+            $rows=json_decode($argv[1], true, 512, JSON_THROW_ON_ERROR);
+            foreach ($rows as $row) {
+                if (($row["name"] ?? "") === "pos.shifts.close" || ($row["name"] ?? "") === "pos.shifts.close.page") {
+                    fwrite(STDERR, "Final Shift Close routes must be absent by default.\n");
+                    exit(1);
+                }
+            }
+          ' "$output"
+
+      - name: Prove GET and POST routes appear only when explicitly armed
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          output="$(ONEQAY_RUNTIME_CLASS=ci ONEQAY_PERSISTENCE_ENABLED=true ONEQAY_AUTHENTICATION_SESSION_CONTROL_ENABLED=true ONEQAY_POS_SALE_COMPLETION_ENABLED=true ONEQAY_POS_SHIFT_CLOSE_ENABLED=true php artisan route:list --json)"
+          php -r '
+            $rows=json_decode($argv[1], true, 512, JSON_THROW_ON_ERROR);
+            $get=array_values(array_filter($rows, static fn (array $row): bool => ($row["name"] ?? "") === "pos.shifts.close.page"));
+            $post=array_values(array_filter($rows, static fn (array $row): bool => ($row["name"] ?? "") === "pos.shifts.close"));
+            if (count($get) !== 1 || count($post) !== 1) exit(1);
+            if (($get[0]["method"] ?? "") !== "GET|HEAD" || ($get[0]["uri"] ?? "") !== "pos/shifts/close") exit(1);
+            if (($post[0]["method"] ?? "") !== "POST" || ($post[0]["uri"] ?? "") !== "pos/shifts/close") exit(1);
+          ' "$output"
+
+      - name: Install locked npm dependencies
+        working-directory: apps/web
+        run: npm ci
+
+      - name: Type-check Vue and TypeScript
+        working-directory: apps/web
+        run: npm run type-check
+
+      - name: Build Vite assets
+        working-directory: apps/web
+        run: npm run build
+
+      - name: Preserve tracked source cleanliness
+        run: git diff --exit-code
