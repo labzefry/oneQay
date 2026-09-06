@@ -1,0 +1,153 @@
+name: Sprint98 Final Shift Close Durable Delivery Integration
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/sprint98-final-shift-close-delivery-durable-integration.yml'
+      - 'apps/web/app/Delivery/Http/Pos/PosShiftCloseController.php'
+      - 'apps/web/tests/pos-final-shift-close-delivery-durable-integration.php'
+      - 'docs/SPRINT98_FINAL_SHIFT_CLOSE_DELIVERY_DURABLE_INTEGRATION.md'
+
+permissions:
+  contents: read
+
+jobs:
+  qualify-source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:ZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGQ=
+      APP_DEBUG: 'false'
+      APP_URL: http://localhost
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Enforce exact Sprint98 source envelope
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | LC_ALL=C sort > /tmp/actual
+          cat > /tmp/expected <<'EOF'
+          .github/workflows/sprint98-final-shift-close-delivery-durable-integration.yml
+          apps/web/app/Delivery/Http/Pos/PosShiftCloseController.php
+          apps/web/tests/pos-final-shift-close-delivery-durable-integration.php
+          docs/SPRINT98_FINAL_SHIFT_CLOSE_DELIVERY_DURABLE_INTEGRATION.md
+          EOF
+          diff -u /tmp/expected /tmp/actual
+          test "$(sha256sum /tmp/actual | awk '{print $1}')" = 'acde40aa8f79d15b25832572cf13c697897579f23394c2322a96d2723d241a61'
+
+      - name: Prove controller delta is persistence rejection hardening only
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os
+          import pathlib
+          import subprocess
+          import sys
+
+          path = 'apps/web/app/Delivery/Http/Pos/PosShiftCloseController.php'
+          base = subprocess.check_output(['git', 'show', f"{os.environ['BASE_SHA']}:{path}"], text=True)
+          head = pathlib.Path(path).read_text()
+          import_line = 'use App\\Application\\Persistence\\DurablePersistenceViolation;\n'
+          old_catch = 'InvalidArgumentException|PosTransactionViolation'
+          new_catch = 'InvalidArgumentException|PosTransactionViolation|DurablePersistenceViolation'
+
+          if head.count(import_line) != 1 or head.count(new_catch) != 1:
+              sys.stderr.write('Sprint98 controller hardening fragments are not exact.\n')
+              sys.exit(1)
+
+          normalized = head.replace(import_line, '', 1).replace(new_catch, old_catch, 1)
+          if normalized != base:
+              sys.stderr.write('Sprint98 controller changed beyond the bounded persistence rejection hardening.\n')
+              sys.exit(1)
+          PY
+
+      - name: Lock safe durable delivery behavior
+        shell: bash
+        run: |
+          set -euo pipefail
+          controller=apps/web/app/Delivery/Http/Pos/PosShiftCloseController.php
+          grep -Fq 'use App\Application\Persistence\DurablePersistenceViolation;' "$controller"
+          grep -Fq 'catch (InvalidArgumentException|PosTransactionViolation|DurablePersistenceViolation)' "$controller"
+          grep -Fq "SafeErrorEnvelope::make('POS_SHIFT_CLOSE_REJECTED'" "$controller"
+          grep -Fq "private const ALLOWED_FIELDS = ['operation_id'];" "$controller"
+          ! grep -Fq "'closer_actor_identity_id'" "$controller"
+          ! grep -Fq "'opener_actor_identity_id'" "$controller"
+          ! grep -Fq "'reviewer_actor_identity_id'" "$controller"
+
+      - name: Preserve lifecycle runtime migration and UI boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+          git diff --exit-code "$base" "$head" -- \
+            apps/web/app/Application \
+            apps/web/app/Infrastructure \
+            apps/web/app/Providers \
+            apps/web/routes \
+            apps/web/bootstrap \
+            apps/web/database/migrations \
+            apps/web/resources
+          doc=docs/SPRINT98_FINAL_SHIFT_CLOSE_DELIVERY_DURABLE_INTEGRATION.md
+          grep -Fq 'FINAL_SHIFT_CLOSE_DURABLE_DELIVERY_INTEGRATION = SOURCE_QUALIFIED' "$doc"
+          grep -Fq 'FINAL_SHIFT_CLOSE_DURABLE_AUTHORIZATION_DEFAULT = DENY' "$doc"
+          grep -Fq 'FINAL_SHIFT_CLOSE_EXPLICIT_PERMISSION_GRANT_REQUIRED = TRUE' "$doc"
+          grep -Fq 'FINAL_SHIFT_CLOSE_HTTP_IDEMPOTENT_REPLAY = QUALIFIED' "$doc"
+          grep -Fq 'FINAL_SHIFT_CLOSE_HTTP_PERSISTENCE_REJECTION = SAFE_422' "$doc"
+          grep -Fq 'FINAL_SHIFT_CLOSE_HTTP_ROUTE_DEFAULT = ABSENT_FAIL_CLOSED' "$doc"
+          grep -Fq 'FINAL_SHIFT_CLOSE_UI_DELIVERY = NOT_IMPLEMENTED' "$doc"
+          grep -Fq 'MIGRATION_27_LIVE_EXECUTION = NOT_AUTHORIZED' "$doc"
+          grep -Fq 'TECHNICAL_PREVIEW_ACTIVATION_AUTHORITY = NOT_GRANTED' "$doc"
+          grep -Fq 'PRODUCTION_AUTHORITY = NOT_GRANTED' "$doc"
+          grep -Fq 'UPDATER_ACTIVATION_AUTHORITY = NOT_GRANTED' "$doc"
+
+      - name: Validate PHP syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l apps/web/app/Delivery/Http/Pos/PosShiftCloseController.php
+          php -l apps/web/tests/pos-final-shift-close-delivery-durable-integration.php
+
+      - name: Install PHP dependencies
+        working-directory: apps/web
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Reject High or Critical Composer advisories
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          composer audit --locked --format=json > /tmp/oneqay-composer-audit.json || true
+          cat /tmp/oneqay-composer-audit.json
+          php -r '
+            $data = json_decode(file_get_contents("/tmp/oneqay-composer-audit.json"), true, 512, JSON_THROW_ON_ERROR);
+            foreach (($data["advisories"] ?? []) as $package => $items) {
+                foreach ($items as $item) {
+                    $severity = strtolower((string) ($item["severity"] ?? ""));
+                    if (in_array($severity, ["high", "critical"], true)) {
+                        fwrite(STDERR, "Blocking Composer advisory for {$package}: ".($item["advisoryId"] ?? "unknown")."\n");
+                        exit(1);
+                    }
+                }
+            }
+          '
+
+      - name: Execute Sprint98 durable delivery integration regression
+        working-directory: apps/web
+        run: php tests/pos-final-shift-close-delivery-durable-integration.php
+
+      - name: Preserve tracked source cleanliness
+        run: git diff --exit-code
