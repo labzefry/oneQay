@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "feature": "final-shift-close",
+  "contract_state": "MATERIALIZED_SOURCE_ONLY_NOT_DISPATCHED",
+  "purpose": "PRODUCE_TRUSTED_DURABLE_RUNTIME_READINESS_ATTESTATION_EVIDENCE",
+  "supersedes_sprint112_producer_state": true,
+  "producer_workflow_path": ".github/workflows/final-shift-close-durable-runtime-attestation.yml",
+  "producer_repository": "labzefry/oneQay",
+  "producer_ref": "refs/heads/main",
+  "producer_environment": "final-shift-close-durable-runtime-attestation",
+  "producer_event": "workflow_dispatch",
+  "caller_supplied_target_inputs": false,
+  "evidence_status_context": "final-shift-close-durable-runtime-attestation-evidence",
+  "evidence_status_target": "EXACT_RUNNING_SOURCE_COMMIT",
+  "evidence_bundle_artifact": "final-shift-close-durable-runtime-attestation",
+  "evidence_bundle_retention_days": 30,
+  "readiness_contract": "SPRINT110_FINAL_SHIFT_CLOSE_DURABLE_RUNTIME_READINESS",
+  "ingestion_contract": "SPRINT112_FINAL_SHIFT_CLOSE_DURABLE_RUNTIME_ATTESTATION_INGESTION",
+  "protected_environment_configuration": "REQUIRED_OUT_OF_BAND_NOT_MACHINE_VERIFIED_BY_SOURCE",
+  "required_protected_environment_secrets": [
+    "ONEQAY_DURABLE_RUNTIME_ATTESTATION_URL",
+    "ONEQAY_DURABLE_RUNTIME_ATTESTATION_TOKEN",
+    "ONEQAY_DURABLE_RUNTIME_ATTESTATION_PROTECTION_ASSERTION"
+  ],
+  "required_protected_environment_variables": [
+    "ONEQAY_DURABLE_RUNTIME_ENVIRONMENT_ID",
+    "ONEQAY_DURABLE_RUNTIME_CLASS"
+  ],
+  "runtime_endpoint_contract": {
+    "transport": "HTTPS_ONLY",
+    "authentication": "BEARER_TOKEN_FROM_PROTECTED_ENVIRONMENT_SECRET",
+    "max_response_bytes": 32768,
+    "payload": "EXACT_SPRINT110_22_FIELD_READINESS_ATTESTATION",
+    "caller_can_override_environment_identity": false,
+    "caller_can_override_runtime_class": false,
+    "caller_can_override_running_source_commit": false,
+    "caller_can_override_artifact_sha256": false
+  },
+  "qualification_requirements": {
+    "dispatch_source_must_equal_current_canonical_main": true,
+    "runtime_class_must_not_be_disallowed_by_sprint110": true,
+    "sprint110_readiness_must_qualify": true,
+    "runtime_environment_id_must_match_protected_environment_variable": true,
+    "runtime_class_must_match_protected_environment_variable": true,
+    "running_source_commit_must_exist_in_repository": true,
+    "running_source_commit_must_be_in_canonical_main_history": true,
+    "provenance_must_match_sprint112_contract": true,
+    "attestation_and_provenance_bundle_must_be_secret_free": true,
+    "evidence_status_must_be_pending_before_bundle_publish": true,
+    "success_status_must_follow_successful_bundle_publish": true,
+    "source_merge_does_not_dispatch_producer": true,
+    "source_merge_does_not_select_target": true,
+    "source_merge_does_not_grant_activation_authority": true
+  },
+  "action_pins": {
+    "actions_checkout": "11bd71901bbe5b1630ceea73d27597364c9af683",
+    "actions_upload_artifact": "ea165f8d65b6e75b540449e92b4886f43607fa02"
+  },
+  "canonical_boundaries": {
+    "producer_source": "MATERIALIZED_NOT_DISPATCHED",
+    "real_attestation": "NONE",
+    "trusted_ingestion_execution": "NOT_IMPLEMENTED",
+    "selected_target": "NONE",
+    "environment_creation": "NOT_PERFORMED",
+    "environment_deployment": "NOT_PERFORMED",
+    "runtime_allowlist_change": "NOT_IMPLEMENTED",
+    "migration27_execution": "NOT_PERFORMED",
+    "permission_provisioning": "NONE",
+    "feature_activation": "INACTIVE",
+    "technical_preview_activation": "NOT_AUTHORIZED",
+    "production_activation": "NOT_AUTHORIZED",
+    "updater_activation": "INACTIVE"
+  }
+}
