@@ -56,6 +56,7 @@ jobs:
             apps/web/config
           grep -Fq "public const IDENTIFIER = 'pos.shift.close';" apps/web/app/Application/Pos/FinalShiftClosePermission.php
           grep -Fq "env('ONEQAY_POS_SHIFT_CLOSE_ENABLED', false)" apps/web/app/Providers/FinalShiftCloseServiceProvider.php
+          grep -Fq "if (! in_array(\$runtime, ['local', 'test', 'ci'], true))" apps/web/app/Infrastructure/Authorization/LaravelDurablePolicyAdministrationRepository.php
 
       - name: Lock manual canonical-main execution boundary
         shell: bash
@@ -64,13 +65,29 @@ jobs:
           executor=.github/workflows/final-shift-close-permission-provisioning.yml
           grep -Fq 'workflow_dispatch:' "$executor"
           ! grep -Eq '^  (pull_request|push|schedule):' "$executor"
-          grep -Fq "if: \${{ github.ref == 'refs/heads/main' }}" "$executor"
-          grep -Fq 'ref: ${{ github.sha }}' "$executor"
+          grep -Fq "github.ref == 'refs/heads/main'" "$executor"
+          grep -Fq 'Checkout canonical dispatch source only' "$executor"
+          grep -Fq 'github.sha' "$executor"
+          grep -Fq 'fetch-depth: 1' "$executor"
           grep -Fq 'environment: final-shift-close-permission-provisioning' "$executor"
           grep -Fq 'statuses: write' "$executor"
           grep -Fq 'actions: read' "$executor"
           ! grep -Fq 'contents: write' "$executor"
           ! grep -Fq 'deployments: write' "$executor"
+
+      - name: Lock production runtime classification without application bypass
+        shell: bash
+        run: |
+          set -euo pipefail
+          executor=.github/workflows/final-shift-close-permission-provisioning.yml
+          grep -Fq 'APP_ENV: production' "$executor"
+          grep -Fq "ONEQAY_PERSISTENCE_ENABLED: 'false'" "$executor"
+          grep -Fq "getenv('APP_ENV') !== 'production'" "$executor"
+          grep -Fq "getenv('ONEQAY_PERSISTENCE_ENABLED')" "$executor"
+          grep -Fq 'Application persistence must remain disabled during the isolated operational provisioning ceremony.' "$executor"
+          ! grep -Fq 'APP_ENV: ci' "$executor"
+          ! grep -Fq "ONEQAY_PERSISTENCE_ENABLED: 'true'" "$executor"
+          ! grep -Fq 'DurablePolicyAdministrationService::class' "$executor"
 
       - name: Lock exact target state transition and default-deny posture
         shell: bash
@@ -100,22 +117,25 @@ jobs:
           grep -Fq "require_workflow_success 'M7.1 Application Regression'" "$executor"
           ! grep -Fq "require_latest_success 'final-shift-close-feature-activation-authority'" "$executor"
 
-      - name: Lock canonical policy-administration mutation path
+      - name: Lock canonical mutation semantics inside isolated transaction
         shell: bash
         run: |
           set -euo pipefail
           executor=.github/workflows/final-shift-close-permission-provisioning.yml
-          grep -Fq 'DurablePolicyAdministrationService::class' "$executor"
           grep -Fq 'DurablePolicyMutation::permissionGrant' "$executor"
           grep -Fq 'FinalShiftClosePermission::identifier()' "$executor"
+          grep -Fq 'PolicyMutationOperation::PERMISSION_GRANT' "$executor"
+          grep -Fq '->fingerprint($actor)' "$executor"
+          grep -Fq '$db->transaction(function () use (' "$executor"
+          grep -Fq 'lockForUpdate()' "$executor"
           grep -Fq 'AdministrationPermission::MANAGE' "$executor"
           grep -Fq "Provisioning actor lacks tenant-scoped protected control authority." "$executor"
           grep -Fq "Protected control role cannot receive Final Shift Close permission through this executor." "$executor"
           grep -Fq "Final Shift Close permission already exists on target role; refusing retrospective evidence." "$executor"
-          grep -Fq "if (\$outcome !== 'applied')" "$executor"
-          grep -Fq "hash_equals('permission.grant'" "$executor"
-          grep -Fq "hash_equals('tenant'" "$executor"
-          ! grep -Fq "table('oneqay_role_permissions')->insert" "$executor"
+          grep -Fq "table('oneqay_policy_mutations')->insert([" "$executor"
+          grep -Fq "table('oneqay_role_permissions')->insert([" "$executor"
+          grep -Fq "'outcome' => 'applied'" "$executor"
+          ! grep -Fq 'insertOrIgnore' "$executor"
           ! grep -Fq 'role.assign.' "$executor"
 
       - name: Lock assignment immutability and journal verification
@@ -140,7 +160,8 @@ jobs:
           executor=.github/workflows/final-shift-close-permission-provisioning.yml
           grep -Fq 'EVIDENCE_CONTEXT: final-shift-close-permission-provisioning-evidence' "$executor"
           grep -Fq -- '--arg state pending' "$executor"
-          grep -Fq "EXECUTE_OUTCOME: \${{ steps.execute.outcome }}" "$executor"
+          grep -Fq 'EXECUTE_OUTCOME:' "$executor"
+          grep -Fq 'steps.execute.outcome' "$executor"
           grep -Fq "if [[ \"\$EXECUTE_OUTCOME\" == 'success' ]]" "$executor"
           grep -Fq 'state=success' "$executor"
           grep -Fq 'state=failure' "$executor"
@@ -158,6 +179,8 @@ jobs:
           grep -Fq 'MIGRATION_27_LIVE_EXECUTION = NOT_AUTHORIZED' "$doc"
           grep -Fq 'FINAL_SHIFT_CLOSE_PERMISSION_PROVISIONING = NONE' "$doc"
           grep -Fq 'FINAL_SHIFT_CLOSE_FEATURE_ACTIVATION = INACTIVE' "$doc"
+          grep -Fq 'FINAL_SHIFT_CLOSE_PERMISSION_PROVISIONING_RUNTIME_CLASS = PRODUCTION_PRESERVED' "$doc"
+          grep -Fq 'FINAL_SHIFT_CLOSE_PERMISSION_PROVISIONING_APPLICATION_PERSISTENCE = DISABLED' "$doc"
           grep -Fq 'TECHNICAL_PREVIEW_ACTIVATION_AUTHORITY = NOT_GRANTED' "$doc"
           grep -Fq 'PRODUCTION_AUTHORITY = NOT_GRANTED' "$doc"
           grep -Fq 'UPDATER_ACTIVATION_AUTHORITY = NOT_GRANTED' "$doc"
