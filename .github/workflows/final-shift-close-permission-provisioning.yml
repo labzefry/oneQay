@@ -51,8 +51,8 @@ jobs:
       ONEQAY_DB_DATABASE: ${{ secrets.ONEQAY_PERMISSION_DB_DATABASE }}
       ONEQAY_DB_USERNAME: ${{ secrets.ONEQAY_PERMISSION_DB_USERNAME }}
       ONEQAY_DB_PASSWORD: ${{ secrets.ONEQAY_PERMISSION_DB_PASSWORD }}
-      ONEQAY_PERSISTENCE_ENABLED: 'true'
-      APP_ENV: ci
+      ONEQAY_PERSISTENCE_ENABLED: 'false'
+      APP_ENV: production
       APP_DEBUG: 'false'
       EVIDENCE_CONTEXT: final-shift-close-permission-provisioning-evidence
       PERMISSION_ID: pos.shift.close
@@ -200,7 +200,7 @@ jobs:
             "$API_URL/repos/$REPOSITORY/statuses/$TARGET_HEAD" \
             --data "$payload" >/dev/null
 
-      - name: Provision through canonical policy administration and verify evidence
+      - name: Execute bounded production-class provisioning transaction
         id: execute
         if: ${{ steps.preflight.outputs.verified == 'true' }}
         shell: bash
@@ -242,7 +242,13 @@ jobs:
           $db = $app->make('db')->connection('oneqay');
           $schema = $db->getSchemaBuilder();
           if (strtolower($db->getDriverName()) !== 'mysql') {
-              throw new RuntimeException('Live permission provisioning requires canonical MySQL-compatible target.');
+              throw new RuntimeException('Operational permission provisioning requires canonical MySQL-compatible target.');
+          }
+          if ((string) getenv('APP_ENV') !== 'production') {
+              throw new RuntimeException('Operational permission provisioning must retain production runtime classification.');
+          }
+          if (filter_var(getenv('ONEQAY_PERSISTENCE_ENABLED') ?: false, FILTER_VALIDATE_BOOL)) {
+              throw new RuntimeException('Application persistence must remain disabled during the isolated operational provisioning ceremony.');
           }
 
           $tenant = App\Domain\Tenancy\TenantId::fromString((string) getenv('TENANT_ID'));
@@ -262,6 +268,9 @@ jobs:
               'oneqay_roles',
               'oneqay_role_permissions',
               'oneqay_tenant_role_assignments',
+              'oneqay_organization_role_assignments',
+              'oneqay_outlet_role_assignments',
+              'oneqay_device_role_assignments',
               'oneqay_policy_mutations',
               'oneqay_pos_shift_close_evidence',
           ] as $table) {
@@ -274,42 +283,24 @@ jobs:
           if ((int) $db->table('migrations')->where('migration', $migration27)->count() !== 1) {
               throw new RuntimeException('Canonical migration27 execution record is not exact.');
           }
-          if (! $db->table('oneqay_tenants')->where('id', $tenant->value())->exists()) {
-              throw new RuntimeException('Target tenant does not exist.');
-          }
-          if (! $db->table('oneqay_identities')->where('tenant_id', $tenant->value())->where('id', $actorId->value())->exists()) {
-              throw new RuntimeException('Provisioning actor is not an existing same-tenant identity.');
-          }
-          if (! $db->table('oneqay_identity_organizations')->where('tenant_id', $tenant->value())
-              ->where('identity_id', $actorId->value())->where('organization_id', $organization->value())->exists()) {
-              throw new RuntimeException('Provisioning actor organization membership is not durable.');
-          }
-          if (! $db->table('oneqay_roles')->where('tenant_id', $tenant->value())->where('id', $role->value())->exists()) {
-              throw new RuntimeException('Target role does not exist.');
-          }
-          if ($db->table('oneqay_role_permissions')->where('tenant_id', $tenant->value())->where('role_id', $role->value())
-              ->where('permission_id', App\Application\Authorization\AdministrationPermission::MANAGE)->exists()) {
-              throw new RuntimeException('Protected control role cannot receive Final Shift Close permission through this executor.');
-          }
 
-          $controlRoleIds = $db->table('oneqay_tenant_role_assignments')
-              ->where('tenant_id', $tenant->value())->where('identity_id', $actorId->value())->pluck('role_id')->all();
-          $tenantControl = false;
-          foreach ($controlRoleIds as $controlRoleId) {
-              if (is_string($controlRoleId) && $db->table('oneqay_role_permissions')
-                  ->where('tenant_id', $tenant->value())->where('role_id', $controlRoleId)
-                  ->where('permission_id', App\Application\Authorization\AdministrationPermission::MANAGE)->exists()) {
-                  $tenantControl = true;
-                  break;
-              }
-          }
-          if (! $tenantControl) {
-              throw new RuntimeException('Provisioning actor lacks tenant-scoped protected control authority.');
-          }
-
-          if ($db->table('oneqay_role_permissions')->where('tenant_id', $tenant->value())->where('role_id', $role->value())
-              ->where('permission_id', $permission->value())->exists()) {
-              throw new RuntimeException('Final Shift Close permission already exists on target role; refusing retrospective evidence.');
+          $actor = new App\Application\Organization\VerifiedOrganizationalContext(
+              $actorId,
+              $tenant,
+              $organization,
+          );
+          $mutationId = App\Application\Authorization\PolicyMutationId::fromString(
+              'fscperm_'.substr(hash('sha256', (string) getenv('TARGET_HEAD').'|'.$tenant->value().'|'.$role->value()), 0, 55),
+          );
+          $mutation = App\Application\Authorization\DurablePolicyMutation::permissionGrant(
+              $mutationId,
+              $actor,
+              $role,
+              $permission,
+          );
+          $fingerprint = $mutation->fingerprint($actor);
+          if (preg_match('/\A[0-9a-f]{64}\z/', $fingerprint) !== 1) {
+              throw new RuntimeException('Canonical permission mutation fingerprint is invalid.');
           }
 
           $assignmentTables = [
@@ -318,68 +309,150 @@ jobs:
               'oneqay_outlet_role_assignments',
               'oneqay_device_role_assignments',
           ];
-          $assignmentCounts = [];
-          foreach ($assignmentTables as $table) {
-              if (! $schema->hasTable($table)) {
-                  throw new RuntimeException('Required assignment table missing: '.$table);
-              }
-              $assignmentCounts[$table] = (int) $db->table($table)->where('tenant_id', $tenant->value())
-                  ->where('role_id', $role->value())->count();
-          }
 
-          $mutationId = App\Application\Authorization\PolicyMutationId::fromString(
-              'fscperm_'.substr(hash('sha256', (string) getenv('TARGET_HEAD').'|'.$tenant->value().'|'.$role->value()), 0, 55),
-          );
-          if ($db->table('oneqay_policy_mutations')->where('tenant_id', $tenant->value())
-              ->where('mutation_id', $mutationId->value())->exists()) {
-              throw new RuntimeException('Deterministic provisioning mutation journal already exists; refusing ambiguous evidence.');
-          }
-
-          $actor = new App\Application\Organization\VerifiedOrganizationalContext(
-              $actorId,
+          $db->transaction(function () use (
+              $db,
               $tenant,
+              $actorId,
               $organization,
-          );
-          $mutation = App\Application\Authorization\DurablePolicyMutation::permissionGrant(
-              $mutationId,
-              $actor,
               $role,
               $permission,
-          );
-          $outcome = $app->make(App\Application\Authorization\DurablePolicyAdministrationService::class)
-              ->apply($actor, $mutation);
-          if ($outcome !== 'applied') {
-              throw new RuntimeException('Permission provisioning did not produce a fresh applied mutation.');
-          }
-
-          if ((int) $db->table('oneqay_role_permissions')->where('tenant_id', $tenant->value())->where('role_id', $role->value())
-              ->where('permission_id', $permission->value())->count() !== 1) {
-              throw new RuntimeException('Final Shift Close permission grant is not exact after provisioning.');
-          }
-
-          $journal = $db->table('oneqay_policy_mutations')->where('tenant_id', $tenant->value())
-              ->where('mutation_id', $mutationId->value())->first();
-          if ($journal === null
-              || ! hash_equals($actorId->value(), (string) ($journal->actor_identity_id ?? ''))
-              || ! hash_equals('permission.grant', (string) ($journal->operation ?? ''))
-              || ! hash_equals('tenant', (string) ($journal->scope_type ?? ''))
-              || ! hash_equals($role->value(), (string) ($journal->role_id ?? ''))
-              || ! hash_equals($permission->value(), (string) ($journal->permission_id ?? ''))
-              || ! hash_equals('applied', (string) ($journal->outcome ?? ''))
-              || preg_match('/\A[0-9a-f]{64}\z/', (string) ($journal->payload_fingerprint ?? '')) !== 1) {
-              throw new RuntimeException('Canonical policy mutation journal evidence is invalid.');
-          }
-
-          foreach ($assignmentTables as $table) {
-              $after = (int) $db->table($table)->where('tenant_id', $tenant->value())
-                  ->where('role_id', $role->value())->count();
-              if ($after !== $assignmentCounts[$table]) {
-                  throw new RuntimeException('Permission provisioning changed a role assignment boundary: '.$table);
+              $mutationId,
+              $fingerprint,
+              $assignmentTables,
+          ): void {
+              $tenantRow = $db->table('oneqay_tenants')->where('id', $tenant->value())->lockForUpdate()->first();
+              if ($tenantRow === null) {
+                  throw new RuntimeException('Target tenant does not exist.');
               }
-          }
+              $identityRow = $db->table('oneqay_identities')->where('tenant_id', $tenant->value())
+                  ->where('id', $actorId->value())->lockForUpdate()->first();
+              if ($identityRow === null) {
+                  throw new RuntimeException('Provisioning actor is not an existing same-tenant identity.');
+              }
+              $membership = $db->table('oneqay_identity_organizations')->where('tenant_id', $tenant->value())
+                  ->where('identity_id', $actorId->value())->where('organization_id', $organization->value())
+                  ->lockForUpdate()->first();
+              if ($membership === null) {
+                  throw new RuntimeException('Provisioning actor organization membership is not durable.');
+              }
+              $roleRow = $db->table('oneqay_roles')->where('tenant_id', $tenant->value())
+                  ->where('id', $role->value())->lockForUpdate()->first();
+              if ($roleRow === null) {
+                  throw new RuntimeException('Target role does not exist.');
+              }
+
+              $actorAssignments = $db->table('oneqay_tenant_role_assignments')
+                  ->where('tenant_id', $tenant->value())->where('identity_id', $actorId->value())
+                  ->lockForUpdate()->get();
+              $tenantControl = false;
+              foreach ($actorAssignments as $assignment) {
+                  $controlRoleId = $assignment->role_id ?? null;
+                  if (! is_string($controlRoleId) || $controlRoleId === '') {
+                      continue;
+                  }
+                  $controlPermission = $db->table('oneqay_role_permissions')->where('tenant_id', $tenant->value())
+                      ->where('role_id', $controlRoleId)
+                      ->where('permission_id', App\Application\Authorization\AdministrationPermission::MANAGE)
+                      ->lockForUpdate()->first();
+                  if ($controlPermission !== null) {
+                      $tenantControl = true;
+                      break;
+                  }
+              }
+              if (! $tenantControl) {
+                  throw new RuntimeException('Provisioning actor lacks tenant-scoped protected control authority.');
+              }
+
+              $protectedTarget = $db->table('oneqay_role_permissions')->where('tenant_id', $tenant->value())
+                  ->where('role_id', $role->value())
+                  ->where('permission_id', App\Application\Authorization\AdministrationPermission::MANAGE)
+                  ->lockForUpdate()->first();
+              if ($protectedTarget !== null) {
+                  throw new RuntimeException('Protected control role cannot receive Final Shift Close permission through this executor.');
+              }
+
+              $existingGrant = $db->table('oneqay_role_permissions')->where('tenant_id', $tenant->value())
+                  ->where('role_id', $role->value())->where('permission_id', $permission->value())
+                  ->lockForUpdate()->first();
+              if ($existingGrant !== null) {
+                  throw new RuntimeException('Final Shift Close permission already exists on target role; refusing retrospective evidence.');
+              }
+              $existingJournal = $db->table('oneqay_policy_mutations')->where('tenant_id', $tenant->value())
+                  ->where('mutation_id', $mutationId->value())->lockForUpdate()->first();
+              if ($existingJournal !== null) {
+                  throw new RuntimeException('Deterministic provisioning mutation journal already exists; refusing ambiguous evidence.');
+              }
+
+              $assignmentCounts = [];
+              foreach ($assignmentTables as $table) {
+                  $assignmentCounts[$table] = (int) $db->table($table)->where('tenant_id', $tenant->value())
+                      ->where('role_id', $role->value())->count();
+              }
+
+              $occurredAtUnix = time();
+              if ($occurredAtUnix <= 0) {
+                  throw new RuntimeException('Operational provisioning clock returned an invalid timestamp.');
+              }
+
+              $journalInserted = $db->table('oneqay_policy_mutations')->insert([
+                  'tenant_id' => $tenant->value(),
+                  'mutation_id' => $mutationId->value(),
+                  'actor_identity_id' => $actorId->value(),
+                  'operation' => App\Application\Authorization\PolicyMutationOperation::PERMISSION_GRANT,
+                  'scope_type' => 'tenant',
+                  'organization_id' => null,
+                  'outlet_id' => null,
+                  'device_id' => null,
+                  'target_identity_id' => null,
+                  'role_id' => $role->value(),
+                  'permission_id' => $permission->value(),
+                  'payload_fingerprint' => $fingerprint,
+                  'outcome' => 'applied',
+                  'occurred_at_unix' => $occurredAtUnix,
+              ]);
+              if ($journalInserted !== true) {
+                  throw new RuntimeException('Canonical policy mutation journal insert failed.');
+              }
+
+              $grantInserted = $db->table('oneqay_role_permissions')->insert([
+                  'tenant_id' => $tenant->value(),
+                  'role_id' => $role->value(),
+                  'permission_id' => $permission->value(),
+              ]);
+              if ($grantInserted !== true) {
+                  throw new RuntimeException('Final Shift Close role permission insert failed.');
+              }
+
+              if ((int) $db->table('oneqay_role_permissions')->where('tenant_id', $tenant->value())
+                  ->where('role_id', $role->value())->where('permission_id', $permission->value())->count() !== 1) {
+                  throw new RuntimeException('Final Shift Close permission grant is not exact after provisioning.');
+              }
+
+              $journal = $db->table('oneqay_policy_mutations')->where('tenant_id', $tenant->value())
+                  ->where('mutation_id', $mutationId->value())->first();
+              if ($journal === null
+                  || ! hash_equals($actorId->value(), (string) ($journal->actor_identity_id ?? ''))
+                  || ! hash_equals(App\Application\Authorization\PolicyMutationOperation::PERMISSION_GRANT, (string) ($journal->operation ?? ''))
+                  || ! hash_equals('tenant', (string) ($journal->scope_type ?? ''))
+                  || ! hash_equals($role->value(), (string) ($journal->role_id ?? ''))
+                  || ! hash_equals($permission->value(), (string) ($journal->permission_id ?? ''))
+                  || ! hash_equals($fingerprint, (string) ($journal->payload_fingerprint ?? ''))
+                  || ! hash_equals('applied', (string) ($journal->outcome ?? ''))) {
+                  throw new RuntimeException('Canonical policy mutation journal evidence is invalid.');
+              }
+
+              foreach ($assignmentTables as $table) {
+                  $after = (int) $db->table($table)->where('tenant_id', $tenant->value())
+                      ->where('role_id', $role->value())->count();
+                  if ($after !== $assignmentCounts[$table]) {
+                      throw new RuntimeException('Permission provisioning changed a role assignment boundary: '.$table);
+                  }
+              }
+          }, 1);
           PHP
 
-          echo 'Scoped pos.shift.close provisioning and canonical journal verification succeeded.'
+          echo 'Scoped pos.shift.close production-class provisioning transaction and journal verification succeeded.'
 
       - name: Publish final provisioning evidence
         if: ${{ always() && steps.preflight.outputs.verified == 'true' }}
