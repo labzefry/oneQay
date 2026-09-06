@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Application\Authorization\PosPermission;
+use App\Application\Authorization\FinalShiftClosePermission;
 use App\Application\Pos\FinalShiftCloseAuthorizationPolicy;
 use App\Application\Pos\PosTransactionViolation;
 
@@ -25,8 +25,8 @@ $expectViolation = static function (callable $operation, string $message) use ($
     $assert(false, $message);
 };
 
-$assert(PosPermission::SHIFT_CLOSE === 'pos.shift.close', 'Sprint94 dedicated Final Shift Close permission identifier changed.');
-$assert(PosPermission::closeShift()->value() === 'pos.shift.close', 'Sprint94 Final Shift Close permission factory changed.');
+$assert(FinalShiftClosePermission::IDENTIFIER === 'pos.shift.close', 'Sprint94 dedicated Final Shift Close permission identifier changed.');
+$assert(FinalShiftClosePermission::identifier()->value() === 'pos.shift.close', 'Sprint94 Final Shift Close permission factory changed.');
 
 $policy = new FinalShiftCloseAuthorizationPolicy();
 $closer = 'identity-closer-001';
@@ -37,37 +37,13 @@ $reviewer = 'identity-reviewer-001';
 $policy->requireAuthorizedActors($closer, $opener, false);
 $policy->requireAuthorizedActors($closer, $opener, true, $explanationAuthor, $reviewer);
 
-$expectViolation(
-    static fn () => $policy->requireAuthorizedActors($closer, $closer, false),
-    'Sprint94 must deny closer equal to opener.',
-);
-$expectViolation(
-    static fn () => $policy->requireAuthorizedActors($closer, $opener, true),
-    'Sprint94 must deny nonzero variance without explanation/review actors.',
-);
-$expectViolation(
-    static fn () => $policy->requireAuthorizedActors($closer, $opener, true, $closer, $reviewer),
-    'Sprint94 must deny closer equal to variance explanation author.',
-);
-$expectViolation(
-    static fn () => $policy->requireAuthorizedActors($closer, $opener, true, $explanationAuthor, $closer),
-    'Sprint94 must deny closer equal to variance reviewer.',
-);
-$expectViolation(
-    static fn () => $policy->requireAuthorizedActors('bad', $opener, false),
-    'Sprint94 must fail closed on malformed closer identity.',
-);
-$expectViolation(
-    static fn () => $policy->requireAuthorizedActors($closer, 'bad', false),
-    'Sprint94 must fail closed on malformed opener identity.',
-);
-$expectViolation(
-    static fn () => $policy->requireAuthorizedActors($closer, $opener, true, 'bad', $reviewer),
-    'Sprint94 must fail closed on malformed explanation-author identity.',
-);
-$expectViolation(
-    static fn () => $policy->requireAuthorizedActors($closer, $opener, true, $explanationAuthor, 'bad'),
-    'Sprint94 must fail closed on malformed reviewer identity.',
-);
+$expectViolation(static fn () => $policy->requireAuthorizedActors($closer, $closer, false), 'Sprint94 must deny closer equal to opener.');
+$expectViolation(static fn () => $policy->requireAuthorizedActors($closer, $opener, true), 'Sprint94 must deny nonzero variance without explanation/review actors.');
+$expectViolation(static fn () => $policy->requireAuthorizedActors($closer, $opener, true, $closer, $reviewer), 'Sprint94 must deny closer equal to variance explanation author.');
+$expectViolation(static fn () => $policy->requireAuthorizedActors($closer, $opener, true, $explanationAuthor, $closer), 'Sprint94 must deny closer equal to variance reviewer.');
+$expectViolation(static fn () => $policy->requireAuthorizedActors('bad', $opener, false), 'Sprint94 must fail closed on malformed closer identity.');
+$expectViolation(static fn () => $policy->requireAuthorizedActors($closer, 'bad', false), 'Sprint94 must fail closed on malformed opener identity.');
+$expectViolation(static fn () => $policy->requireAuthorizedActors($closer, $opener, true, 'bad', $reviewer), 'Sprint94 must fail closed on malformed explanation-author identity.');
+$expectViolation(static fn () => $policy->requireAuthorizedActors($closer, $opener, true, $explanationAuthor, 'bad'), 'Sprint94 must fail closed on malformed reviewer identity.');
 
 fwrite(STDOUT, "Sprint94 Final Shift Close authorization contract regression passed.\n");
