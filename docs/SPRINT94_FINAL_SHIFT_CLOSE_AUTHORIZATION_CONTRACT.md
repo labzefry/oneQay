@@ -24,7 +24,7 @@ Product Owner selection accepted:
 
 This sprint is authorization-contract source only. It does not add `CloseShift`, `CloseShiftCommand`, `CloseShiftRepository`, `CloseShiftResult`, or `LaravelCloseShiftRepository`.
 
-The dedicated permission is defined in `PosPermission`. No role-permission provisioning or default grant is added. Existing durable authorization therefore continues to deny the permission unless an explicit scoped durable role-permission row is present.
+The dedicated permission is defined by `FinalShiftClosePermission` as the Sprint89-authorized equivalent dedicated permission surface. Legacy `PosPermission` remains unchanged so historical permission-regression envelopes are preserved. No role-permission provisioning or default grant is added. Existing durable authorization therefore continues to deny the permission unless an explicit scoped durable role-permission row is present.
 
 `FinalShiftCloseAuthorizationPolicy` is a pure application policy. A later bounded lifecycle slice must derive the closer identity from verified organizational context and supply opener / explanation-author / reviewer identities from authoritative durable evidence before it may mutate close state.
 
@@ -41,7 +41,7 @@ The Sprint94 regression proves:
 - closer equal to reviewer is denied;
 - malformed actor identifiers fail closed.
 
-The workflow locks the exact five-path source envelope and forbids Final Shift Close lifecycle source, migrations, provider binding, routes, UI, deployment, release, updater activation, or runtime role-grant changes in this sprint.
+The workflow locks the exact five-path source envelope and forbids Final Shift Close lifecycle source, migrations, provider binding, routes, UI, deployment, release, updater activation, legacy `PosPermission` mutation, or runtime role-grant changes in this sprint.
 
 ## Canonical boundary status
 
