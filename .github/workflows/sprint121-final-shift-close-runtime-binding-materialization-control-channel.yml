@@ -1,0 +1,138 @@
+name: Sprint121 Final Shift Close Runtime Binding Materialization Control Channel
+
+# Attribution: Lab | zefry
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  qualify-runtime-binding-materialization-control-channel:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+
+      - name: Lock exact Sprint121 source envelope
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | sort > /tmp/paths
+          cat > /tmp/expected <<'EOF'
+          .github/workflows/sprint120-final-shift-close-runtime-binding-manifest-writer.yml
+          .github/workflows/sprint121-final-shift-close-runtime-binding-materialization-control-channel.yml
+          apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingMaterializationRequest.php
+          apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingMaterializer.php
+          apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware.php
+          apps/web/app/Delivery/Http/Pos/FinalShiftCloseRuntimeBindingMaterializationController.php
+          apps/web/app/Providers/FinalShiftCloseRuntimeBindingMaterializationServiceProvider.php
+          apps/web/routes/final-shift-close-runtime-binding-materialization.php
+          apps/web/tests/final-shift-close-runtime-binding-materialization-control-channel.php
+          docs/SPRINT121_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MATERIALIZATION_CONTROL_CHANNEL.md
+          ops/final-shift-close/RUNTIME_BINDING_MATERIALIZATION_CONTROL_CHANNEL_CONTRACT.json
+          EOF
+          diff -u /tmp/expected /tmp/paths
+          fingerprint="$(sha256sum /tmp/paths | awk '{print $1}')"
+          [[ "$fingerprint" == '49535e71a6e3dc9278f57102301b43967088c37294ebbd98e8a49ee90ed95022' ]]
+
+      - name: Prove Sprint119 and Sprint120 delivery state remain untouched
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --quiet "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" -- apps/web/bootstrap/providers.php apps/web/config/oneqay.php apps/web/app/Providers/FinalShiftCloseRuntimeDbBindingAttestationServiceProvider.php apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingManifest.php apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingManifestWriter.php apps/web/app/Infrastructure/Pos/FilesystemFinalShiftCloseRuntimeBindingManifestWriter.php .github/workflows/final-shift-close-migration27-selected-target-db-binding.yml .github/workflows/final-shift-close-migration27-execution.yml apps/web/database/migrations ops/final-shift-close/STATE.json ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+          ! grep -Fq 'FinalShiftCloseRuntimeDbBindingAttestationServiceProvider::class' apps/web/bootstrap/providers.php
+          ! grep -Fq 'FinalShiftCloseRuntimeBindingMaterializationServiceProvider::class' apps/web/bootstrap/providers.php
+          grep -Fq 'return false;' apps/web/app/Providers/FinalShiftCloseRuntimeDbBindingAttestationServiceProvider.php
+          grep -Fq 'return false;' apps/web/app/Providers/FinalShiftCloseRuntimeBindingMaterializationServiceProvider.php
+
+      - name: Validate Sprint121 machine-readable contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=ops/final-shift-close/RUNTIME_BINDING_MATERIALIZATION_CONTROL_CHANNEL_CONTRACT.json
+          jq -e '
+            .schema_version == 1 and
+            .feature == "final-shift-close" and
+            .sprint == 121 and
+            .control_channel_source == "MATERIALIZED" and
+            .delivery == "INACTIVE" and
+            .provider_registration == "NOT_REGISTERED" and
+            .delivery_gate == "HARD_FALSE" and
+            .token_configuration == "NOT_MATERIALIZED" and
+            .materializer_interface == "MATERIALIZED" and
+            .materializer_implementation == "NOT_IMPLEMENTED" and
+            .runtime_manifest_materialization == "NOT_PERFORMED" and
+            .request_contract.operation == "final-shift-close.runtime-binding.materialize" and
+            .request_contract.caller_selected_target_fields == "FORBIDDEN" and
+            .anti_stale_boundary.write_once_or_compare_and_swap_required_before_materializer_binding == true and
+            .anti_stale_boundary.sprint120_writer_direct_binding == "FORBIDDEN" and
+            .canonical_boundaries.selected_target == "NONE" and
+            .canonical_boundaries.migration27_execution == "NOT_PERFORMED" and
+            .canonical_boundaries.permission_provisioning == "NONE" and
+            .canonical_boundaries.feature_activation == "INACTIVE"
+          ' "$file" >/dev/null
+
+      - name: Lock strict request provenance and authentication
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq "final-shift-close.runtime-binding.materialize" apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingMaterializationRequest.php
+          grep -Fq "hash('sha256', \$canonical)" apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingMaterializationRequest.php
+          grep -Fq 'hash_equals($expectedSha256, $manifestSha256)' apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingMaterializationRequest.php
+          grep -Fq "'fscbind_'.substr(\$expectedSha256, 0, 32)" apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingMaterializationRequest.php
+          grep -Fq "final_shift_close_runtime_binding_materialization.token" apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware.php
+          grep -Fq 'hash_equals($configured, $matches[1])' apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware.php
+          grep -Fq 'throttle:1,1' apps/web/app/Providers/FinalShiftCloseRuntimeBindingMaterializationServiceProvider.php
+          grep -Fq "Route::post(" apps/web/routes/final-shift-close-runtime-binding-materialization.php
+
+      - name: Prove materializer implementation and writer invocation remain absent
+        shell: bash
+        run: |
+          set -euo pipefail
+          app_paths=(
+            apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingMaterializationRequest.php
+            apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingMaterializer.php
+            apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware.php
+            apps/web/app/Delivery/Http/Pos/FinalShiftCloseRuntimeBindingMaterializationController.php
+            apps/web/app/Providers/FinalShiftCloseRuntimeBindingMaterializationServiceProvider.php
+            apps/web/routes/final-shift-close-runtime-binding-materialization.php
+          )
+          ! grep -Fq 'FinalShiftCloseRuntimeBindingManifestWriter' "${app_paths[@]}"
+          ! grep -Fq 'FilesystemFinalShiftCloseRuntimeBindingManifestWriter' "${app_paths[@]}"
+          ! grep -Fq 'storage/app/private/final-shift-close-runtime-binding.json' "${app_paths[@]}"
+          ! grep -Fq -- '->write(' "${app_paths[@]}"
+          ! grep -Fq 'ONEQAY_POS_SHIFT_CLOSE_ENABLED' "${app_paths[@]}"
+
+      - name: Validate PHP syntax and executable request regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          find apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingMaterializationRequest.php apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingMaterializer.php apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware.php apps/web/app/Delivery/Http/Pos/FinalShiftCloseRuntimeBindingMaterializationController.php apps/web/app/Providers/FinalShiftCloseRuntimeBindingMaterializationServiceProvider.php apps/web/routes/final-shift-close-runtime-binding-materialization.php apps/web/tests/final-shift-close-runtime-binding-materialization-control-channel.php -type f -print0 | xargs -0 -n1 php -l
+          cd apps/web
+          composer install --no-interaction --prefer-dist --no-progress
+          php tests/final-shift-close-runtime-binding-materialization-control-channel.php
+
+      - name: Lock Sprint121 no-go documentation
+        shell: bash
+        run: |
+          set -euo pipefail
+          doc=docs/SPRINT121_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MATERIALIZATION_CONTROL_CHANNEL.md
+          grep -Fq 'SPRINT121_RUNTIME_BINDING_MATERIALIZATION_DELIVERY = INACTIVE' "$doc"
+          grep -Fq 'SPRINT121_MATERIALIZER_IMPLEMENTATION = NOT_IMPLEMENTED' "$doc"
+          grep -Fq 'SPRINT121_RUNTIME_MANIFEST_MATERIALIZATION = NOT_PERFORMED' "$doc"
+          grep -Fq 'MIGRATION_27_EXECUTION = NOT_PERFORMED' "$doc"
+          grep -Fq 'FEATURE_ACTIVATION = INACTIVE' "$doc"
+
+      - name: Verify tracked-source cleanliness
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -z "$(git status --porcelain)" ]]

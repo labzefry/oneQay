@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "feature": "final-shift-close",
+  "sprint": 121,
+  "control_channel_source": "MATERIALIZED",
+  "delivery": "INACTIVE",
+  "provider_registration": "NOT_REGISTERED",
+  "delivery_gate": "HARD_FALSE",
+  "token_configuration": "NOT_MATERIALIZED",
+  "materializer_interface": "MATERIALIZED",
+  "materializer_implementation": "NOT_IMPLEMENTED",
+  "runtime_manifest_materialization": "NOT_PERFORMED",
+  "request_contract": {
+    "schema_version": 1,
+    "operation": "final-shift-close.runtime-binding.materialize",
+    "operation_id": "fscbind_<first32(manifest_sha256)>",
+    "manifest_sha256": "SHA256_CANONICAL_MANIFEST_JSON_V1",
+    "caller_selected_target_fields": "FORBIDDEN",
+    "exact_field_set": true,
+    "secrets_embedded": false
+  },
+  "authentication": {
+    "scheme": "Bearer",
+    "constant_time_compare": true,
+    "separate_token_namespace": true,
+    "missing_configuration": "DENY_404"
+  },
+  "anti_stale_boundary": {
+    "write_once_or_compare_and_swap_required_before_materializer_binding": true,
+    "sprint120_writer_direct_binding": "FORBIDDEN",
+    "reason": "SPRINT120_WRITER_PERMITS_DETERMINISTIC_REWRITE_WITHOUT_SELECTION_CAS"
+  },
+  "canonical_boundaries": {
+    "selected_target": "NONE",
+    "migration27_execution": "NOT_PERFORMED",
+    "permission_provisioning": "NONE",
+    "feature_activation": "INACTIVE",
+    "technical_preview_activation": "NOT_AUTHORIZED",
+    "production_activation": "NOT_AUTHORIZED",
+    "updater_activation": "INACTIVE"
+  }
+}
