@@ -1,0 +1,127 @@
+name: Sprint91 Transaction-Aware Expected Cash Snapshot Regression
+
+# Author by Lab | zefry
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/sprint91-transaction-aware-expected-cash-snapshot-regression.yml'
+      - 'apps/web/app/Infrastructure/Pos/LaravelExpectedCashRepository.php'
+      - 'apps/web/app/Infrastructure/Pos/LaravelExpectedCashSnapshotReader.php'
+      - 'apps/web/tests/pos-expected-cash-transaction-aware-snapshot.php'
+      - 'docs/SPRINT91_TRANSACTION_AWARE_EXPECTED_CASH_SNAPSHOT.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint91-transaction-aware-expected-cash-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sprint91-transaction-aware-expected-cash:
+    name: sprint91-transaction-aware-expected-cash
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:cXFxcXFxcXFxcXFxcXFxcXFxcXFxcXFxcXFxcXFxcXE=
+      APP_DEBUG: 'false'
+      APP_URL: http://localhost
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Enforce exact Sprint91 source envelope
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+          git diff --name-only "$base" "$head" | sort > /tmp/s91-source-paths
+          test "$(wc -l < /tmp/s91-source-paths)" -eq 5
+          test "$(sha256sum /tmp/s91-source-paths | awk '{print $1}')" = 'c09d42e49f3ad4086591dbb7dc7cc964d4868de1228025223bd06933cef50bd6'
+          for expected in \
+            '.github/workflows/sprint91-transaction-aware-expected-cash-snapshot-regression.yml' \
+            'apps/web/app/Infrastructure/Pos/LaravelExpectedCashRepository.php' \
+            'apps/web/app/Infrastructure/Pos/LaravelExpectedCashSnapshotReader.php' \
+            'apps/web/tests/pos-expected-cash-transaction-aware-snapshot.php' \
+            'docs/SPRINT91_TRANSACTION_AWARE_EXPECTED_CASH_SNAPSHOT.md'
+          do
+            grep -Fxq "$expected" /tmp/s91-source-paths
+          done
+          git diff --exit-code "$base" "$head" -- apps/web/database/migrations
+          ! grep -Eq '(^|/)(composer\.(json|lock)|package(-lock)?\.json|\.env(\.|$))' /tmp/s91-source-paths
+
+      - name: Validate bounded extraction contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          repository='apps/web/app/Infrastructure/Pos/LaravelExpectedCashRepository.php'
+          reader='apps/web/app/Infrastructure/Pos/LaravelExpectedCashSnapshotReader.php'
+          grep -Fq 'final readonly class LaravelExpectedCashSnapshotReader' "$reader"
+          grep -Fq 'if ($this->connection->transactionLevel() < 1)' "$reader"
+          grep -Fq 'if ($this->connection->transactionLevel() !== 0)' "$repository"
+          grep -Fq '$this->snapshotReader->deriveFrom($closingCashEvidence)' "$repository"
+          grep -Fq "SET TRANSACTION ISOLATION LEVEL REPEATABLE READ" "$repository"
+          ! grep -Fq 'SET TRANSACTION ISOLATION LEVEL' "$reader"
+          ! grep -Fq -- '->transaction(' "$reader"
+
+      - name: Validate no Final Shift Close authority or source
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --exit-code "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" -- \
+            apps/web/app/Application/Authorization/PosPermission.php \
+            apps/web/app/Providers/AppServiceProvider.php \
+            apps/web/routes \
+            apps/web/database/migrations
+          test ! -e apps/web/app/Application/Pos/CloseShift.php
+          test ! -e apps/web/app/Infrastructure/Pos/LaravelCloseShiftRepository.php
+
+      - name: Validate PHP syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l apps/web/app/Infrastructure/Pos/LaravelExpectedCashRepository.php
+          php -l apps/web/app/Infrastructure/Pos/LaravelExpectedCashSnapshotReader.php
+          php -l apps/web/tests/pos-expected-cash-transaction-aware-snapshot.php
+
+      - name: Install locked dependencies
+        working-directory: apps/web
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Reject High or Critical Composer advisories
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          composer audit --locked --format=json > /tmp/oneqay-composer-audit.json
+          php -r '
+            $data = json_decode(file_get_contents("/tmp/oneqay-composer-audit.json"), true, 512, JSON_THROW_ON_ERROR);
+            foreach (($data["advisories"] ?? []) as $items) {
+                foreach ($items as $item) {
+                    if (in_array(strtolower((string) ($item["severity"] ?? "")), ["high", "critical"], true)) {
+                        fwrite(STDERR, "Blocking Composer advisory.\n");
+                        exit(1);
+                    }
+                }
+            }
+          '
+
+      - name: Run Sprint91 transaction-aware snapshot regression
+        working-directory: apps/web
+        run: php tests/pos-expected-cash-transaction-aware-snapshot.php
+
+      - name: Preserve tracked source cleanliness
+        run: git diff --exit-code
