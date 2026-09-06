@@ -1,0 +1,440 @@
+name: Final Shift Close Durable Runtime Target Selection Persistence
+
+# Attribution: Lab | zefry
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_pr_number:
+        description: Exact target PR containing only the durable activation target selection transition
+        required: true
+        type: string
+      target_head_sha:
+        description: Exact target PR head SHA
+        required: true
+        type: string
+      ingestion_run_id:
+        description: Exact successful Sprint114 trusted ingestion workflow run ID
+        required: true
+        type: string
+      ingestion_run_attempt:
+        description: Exact successful Sprint114 trusted ingestion workflow run attempt
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  pull-requests: read
+  actions: read
+  statuses: write
+
+env:
+  TARGET_SELECTION_FILE: ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+  INGESTION_WORKFLOW_PATH: .github/workflows/final-shift-close-durable-runtime-attestation-ingestion.yml
+  INGESTION_ARTIFACT_NAME: final-shift-close-durable-runtime-attestation-ingestion
+  INGESTION_EVIDENCE_CONTEXT: final-shift-close-durable-runtime-attestation-ingestion-evidence
+  SELECTION_EVIDENCE_CONTEXT: final-shift-close-durable-runtime-target-selection-persistence-evidence
+  SELECTION_EVIDENCE_ARTIFACT: final-shift-close-durable-runtime-target-selection-persistence-evidence
+
+concurrency:
+  group: final-shift-close-durable-runtime-target-selection-persistence-${{ inputs.target_pr_number }}
+  cancel-in-progress: false
+
+jobs:
+  qualify-target-selection-persistence:
+    if: ${{ github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout canonical executor source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+
+      - name: Validate current canonical main and exact dispatch identities
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          API_URL: ${{ github.api_url }}
+          REPOSITORY: ${{ github.repository }}
+          TARGET_PR_NUMBER: ${{ inputs.target_pr_number }}
+          TARGET_HEAD_SHA: ${{ inputs.target_head_sha }}
+          INGESTION_RUN_ID: ${{ inputs.ingestion_run_id }}
+          INGESTION_RUN_ATTEMPT: ${{ inputs.ingestion_run_attempt }}
+        run: |
+          set -euo pipefail
+          [[ "$GITHUB_REF" == 'refs/heads/main' ]]
+          [[ "$GITHUB_REPOSITORY" == 'labzefry/oneQay' ]]
+          [[ "$TARGET_PR_NUMBER" =~ ^[1-9][0-9]*$ ]]
+          [[ "$TARGET_HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$INGESTION_RUN_ID" =~ ^[1-9][0-9]*$ ]]
+          [[ "$INGESTION_RUN_ATTEMPT" =~ ^[1-9][0-9]*$ ]]
+
+          main_sha="$(curl --fail-with-body --silent --show-error \
+            --header 'Accept: application/vnd.github+json' \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header 'X-GitHub-Api-Version: 2022-11-28' \
+            "$API_URL/repos/$REPOSITORY/branches/main" | jq -r '.commit.sha')"
+          [[ "$main_sha" == "$GITHUB_SHA" ]] || {
+            echo "Selection persistence gate must run from current canonical main: $GITHUB_SHA != $main_sha" >&2
+            exit 1
+          }
+
+      - name: Validate exact one-file target PR transition envelope
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          API_URL: ${{ github.api_url }}
+          REPOSITORY: ${{ github.repository }}
+          TARGET_PR_NUMBER: ${{ inputs.target_pr_number }}
+          TARGET_HEAD_SHA: ${{ inputs.target_head_sha }}
+        run: |
+          set -euo pipefail
+          pr="$(curl --fail-with-body --silent --show-error \
+            --header 'Accept: application/vnd.github+json' \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header 'X-GitHub-Api-Version: 2022-11-28' \
+            "$API_URL/repos/$REPOSITORY/pulls/$TARGET_PR_NUMBER")"
+
+          [[ "$(jq -r '.state' <<<"$pr")" == 'open' ]]
+          [[ "$(jq -r '.draft' <<<"$pr")" == 'false' ]]
+          [[ "$(jq -r '.base.ref' <<<"$pr")" == 'main' ]]
+          [[ "$(jq -r '.base.sha' <<<"$pr")" == "$GITHUB_SHA" ]]
+          [[ "$(jq -r '.head.sha' <<<"$pr")" == "$TARGET_HEAD_SHA" ]]
+          [[ "$(jq -r '.head.repo.full_name' <<<"$pr")" == "$REPOSITORY" ]]
+          [[ "$(jq -r '.changed_files' <<<"$pr")" == '1' ]]
+
+          files="$(curl --fail-with-body --silent --show-error \
+            --header 'Accept: application/vnd.github+json' \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header 'X-GitHub-Api-Version: 2022-11-28' \
+            "$API_URL/repos/$REPOSITORY/pulls/$TARGET_PR_NUMBER/files?per_page=100")"
+          [[ "$(jq 'length' <<<"$files")" == '1' ]]
+          [[ "$(jq -r '.[0].filename' <<<"$files")" == "$TARGET_SELECTION_FILE" ]]
+
+          git fetch --no-tags --depth=1 origin "$TARGET_HEAD_SHA"
+          git show "$TARGET_HEAD_SHA:$TARGET_SELECTION_FILE" > /tmp/target-selection.json
+          jq -e . "$TARGET_SELECTION_FILE" >/dev/null
+          jq -e . /tmp/target-selection.json >/dev/null
+
+          [[ "$(jq -r '.selection_state' "$TARGET_SELECTION_FILE")" == 'BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET' ]]
+          [[ "$(jq -r '.selected_target' "$TARGET_SELECTION_FILE")" == 'null' ]]
+          [[ "$(jq -r '.selection_state' /tmp/target-selection.json)" == 'SELECTED_NOT_AUTHORIZED' ]]
+          [[ "$(jq -r '.selected_target | type' /tmp/target-selection.json)" == 'object' ]]
+
+      - name: Require exact-head Product Owner merge authority on target PR
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          API_URL: ${{ github.api_url }}
+          REPOSITORY: ${{ github.repository }}
+          TARGET_PR_NUMBER: ${{ inputs.target_pr_number }}
+          TARGET_HEAD_SHA: ${{ inputs.target_head_sha }}
+        run: |
+          set -euo pipefail
+          combined="$(curl --fail-with-body --silent --show-error \
+            --header 'Accept: application/vnd.github+json' \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header 'X-GitHub-Api-Version: 2022-11-28' \
+            "$API_URL/repos/$REPOSITORY/commits/$TARGET_HEAD_SHA/status")"
+          exact="$(jq -r --arg u "$GITHUB_SERVER_URL/$REPOSITORY/pull/$TARGET_PR_NUMBER" \
+            '[.statuses[] | select(.context == "product-owner-merge-authority" and .state == "success" and .target_url == $u)][0].state // ""' <<<"$combined")"
+          [[ "$exact" == 'success' ]] || {
+            echo 'Exact-head Product Owner merge authority is required for target selection persistence evidence.' >&2
+            exit 1
+          }
+
+      - name: Resolve exact successful trusted ingestion run
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          API_URL: ${{ github.api_url }}
+          REPOSITORY: ${{ github.repository }}
+          INGESTION_RUN_ID: ${{ inputs.ingestion_run_id }}
+          INGESTION_RUN_ATTEMPT: ${{ inputs.ingestion_run_attempt }}
+        run: |
+          set -euo pipefail
+          run="$(curl --fail-with-body --silent --show-error \
+            --header 'Accept: application/vnd.github+json' \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header 'X-GitHub-Api-Version: 2022-11-28' \
+            "$API_URL/repos/$REPOSITORY/actions/runs/$INGESTION_RUN_ID")"
+
+          [[ "$(jq -r '.path' <<<"$run")" == "$INGESTION_WORKFLOW_PATH" ]]
+          [[ "$(jq -r '.event' <<<"$run")" == 'workflow_dispatch' ]]
+          [[ "$(jq -r '.head_branch' <<<"$run")" == 'main' ]]
+          [[ "$(jq -r '.status' <<<"$run")" == 'completed' ]]
+          [[ "$(jq -r '.conclusion' <<<"$run")" == 'success' ]]
+          [[ "$(jq -r '.run_attempt' <<<"$run")" == "$INGESTION_RUN_ATTEMPT" ]]
+          ingestion_head="$(jq -r '.head_sha' <<<"$run")"
+          [[ "$ingestion_head" =~ ^[0-9a-f]{40}$ ]]
+
+          compare="$(curl --fail-with-body --silent --show-error \
+            --header 'Accept: application/vnd.github+json' \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header 'X-GitHub-Api-Version: 2022-11-28' \
+            "$API_URL/repos/$REPOSITORY/compare/$ingestion_head...$GITHUB_SHA")"
+          status="$(jq -r '.status' <<<"$compare")"
+          behind="$(jq -r '.behind_by' <<<"$compare")"
+          [[ "$status" == 'ahead' || "$status" == 'identical' ]]
+          [[ "$behind" == '0' ]]
+          printf '%s' "$ingestion_head" > /tmp/ingestion-head.txt
+
+      - name: Retrieve exact trusted ingestion evidence artifact
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          API_URL: ${{ github.api_url }}
+          REPOSITORY: ${{ github.repository }}
+          INGESTION_RUN_ID: ${{ inputs.ingestion_run_id }}
+        run: |
+          set -euo pipefail
+          artifacts="$(curl --fail-with-body --silent --show-error \
+            --header 'Accept: application/vnd.github+json' \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header 'X-GitHub-Api-Version: 2022-11-28' \
+            "$API_URL/repos/$REPOSITORY/actions/runs/$INGESTION_RUN_ID/artifacts?per_page=100")"
+
+          matches="$(jq --arg n "$INGESTION_ARTIFACT_NAME" '[.artifacts[] | select(.name == $n and .expired == false)]' <<<"$artifacts")"
+          [[ "$(jq 'length' <<<"$matches")" == '1' ]]
+          artifact_id="$(jq -r '.[0].id' <<<"$matches")"
+          artifact_size="$(jq -r '.[0].size_in_bytes' <<<"$matches")"
+          [[ "$artifact_id" =~ ^[1-9][0-9]*$ ]]
+          (( artifact_size > 0 && artifact_size <= 524288 ))
+
+          curl --fail-with-body --silent --show-error --location \
+            --header 'Accept: application/vnd.github+json' \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header 'X-GitHub-Api-Version: 2022-11-28' \
+            "$API_URL/repos/$REPOSITORY/actions/artifacts/$artifact_id/zip" \
+            --output /tmp/ingestion.zip
+          (( $(wc -c < /tmp/ingestion.zip) <= 524288 ))
+
+          unzip -Z1 /tmp/ingestion.zip | LC_ALL=C sort > /tmp/actual-entries
+          cat > /tmp/expected-entries <<'EOF'
+          attestation.json
+          execution.json
+          ingestion.json
+          provenance.json
+          EOF
+          diff -u /tmp/expected-entries /tmp/actual-entries
+          mkdir /tmp/ingestion-evidence
+          unzip -qq /tmp/ingestion.zip -d /tmp/ingestion-evidence
+          for f in attestation.json provenance.json ingestion.json execution.json; do
+            (( $(wc -c < "/tmp/ingestion-evidence/$f") > 1 ))
+            (( $(wc -c < "/tmp/ingestion-evidence/$f") <= 32768 ))
+            jq -e 'type == "object"' "/tmp/ingestion-evidence/$f" >/dev/null
+          done
+
+      - name: Verify exact ingestion execution and success status binding
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          API_URL: ${{ github.api_url }}
+          REPOSITORY: ${{ github.repository }}
+          INGESTION_RUN_ID: ${{ inputs.ingestion_run_id }}
+          INGESTION_RUN_ATTEMPT: ${{ inputs.ingestion_run_attempt }}
+        run: |
+          set -euo pipefail
+          ingestion=/tmp/ingestion-evidence/ingestion.json
+          execution=/tmp/ingestion-evidence/execution.json
+          ingestion_head="$(cat /tmp/ingestion-head.txt)"
+
+          [[ "$(jq -r '.ingestion_state' "$ingestion")" == 'ACCEPTED_NOT_SELECTED' ]]
+          [[ "$(jq -r '.selected_target' "$ingestion")" == 'null' ]]
+          [[ "$(jq -r '.activation_authority_state' "$ingestion")" == 'NOT_GRANTED' ]]
+          [[ "$(jq -r '.feature_activation_state' "$ingestion")" == 'INACTIVE' ]]
+          [[ "$(jq -r '.persistence_state' "$ingestion")" == 'NOT_PERFORMED' ]]
+          [[ "$(jq -r '.execution_state' "$execution")" == 'ACCEPTED_NOT_SELECTED' ]]
+          [[ "$(jq -r '.ingestion_run_id' "$execution")" == "$INGESTION_RUN_ID" ]]
+          [[ "$(jq -r '.ingestion_run_attempt' "$execution")" == "$INGESTION_RUN_ATTEMPT" ]]
+          [[ "$(jq -r '.ingestion_source_commit' "$execution")" == "$ingestion_head" ]]
+          [[ "$(jq -r '.ingestion_fingerprint_sha256' "$execution")" == "$(jq -r '.ingestion_fingerprint_sha256' "$ingestion")" ]]
+          [[ "$(jq -r '.selected_target' "$execution")" == 'null' ]]
+          [[ "$(jq -r '.persistence_state' "$execution")" == 'NOT_PERFORMED' ]]
+          [[ "$(jq -r '.secrets_embedded' "$execution")" == 'false' ]]
+
+          running_source="$(jq -r '.candidate_target.exact_running_source_commit' "$ingestion")"
+          [[ "$running_source" =~ ^[0-9a-f]{40}$ ]]
+          expected_target="$GITHUB_SERVER_URL/$REPOSITORY/actions/runs/$INGESTION_RUN_ID"
+          statuses="$(curl --fail-with-body --silent --show-error \
+            --header 'Accept: application/vnd.github+json' \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header 'X-GitHub-Api-Version: 2022-11-28' \
+            "$API_URL/repos/$REPOSITORY/commits/$running_source/statuses?per_page=100")"
+          exact="$(jq -r --arg c "$INGESTION_EVIDENCE_CONTEXT" --arg u "$expected_target" \
+            '[.[] | select(.context == $c and .state == "success" and .target_url == $u)][0].state // ""' <<<"$statuses")"
+          [[ "$exact" == 'success' ]] || {
+            echo 'Exact trusted-ingestion evidence status is not success.' >&2
+            exit 1
+          }
+
+      - name: Recompute canonical ingestion and selector output then verify target transition
+        id: selection
+        shell: bash
+        env:
+          INGESTION_RUN_ID: ${{ inputs.ingestion_run_id }}
+          INGESTION_RUN_ATTEMPT: ${{ inputs.ingestion_run_attempt }}
+        run: |
+          set -euo pipefail
+          BASE_SELECTION_FILE="$TARGET_SELECTION_FILE" \
+          TARGET_SELECTION_CANDIDATE=/tmp/target-selection.json \
+          ATTESTATION_FILE=/tmp/ingestion-evidence/attestation.json \
+          PROVENANCE_FILE=/tmp/ingestion-evidence/provenance.json \
+          INGESTION_FILE=/tmp/ingestion-evidence/ingestion.json \
+          EXECUTION_FILE=/tmp/ingestion-evidence/execution.json \
+          INGESTION_RUN_ID="$INGESTION_RUN_ID" \
+          INGESTION_RUN_ATTEMPT="$INGESTION_RUN_ATTEMPT" \
+          php <<'PHP'
+          <?php
+          declare(strict_types=1);
+
+          require __DIR__.'/apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeReadiness.php';
+          require __DIR__.'/apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeAttestationProvenance.php';
+          require __DIR__.'/apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeAttestationIngestion.php';
+          require __DIR__.'/apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeTargetSelection.php';
+
+          function objectFromFile(string $path): array {
+              $value = json_decode((string) file_get_contents($path), true, 32, JSON_THROW_ON_ERROR);
+              if (!is_array($value)) {
+                  throw new RuntimeException('Expected JSON object: '.$path);
+              }
+              return $value;
+          }
+          function canonical(array $value): string {
+              ksort($value, SORT_STRING);
+              return json_encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
+          }
+
+          $base = objectFromFile((string) getenv('BASE_SELECTION_FILE'));
+          $target = objectFromFile((string) getenv('TARGET_SELECTION_CANDIDATE'));
+          $attestation = objectFromFile((string) getenv('ATTESTATION_FILE'));
+          $provenance = objectFromFile((string) getenv('PROVENANCE_FILE'));
+          $ingestionArtifact = objectFromFile((string) getenv('INGESTION_FILE'));
+          $execution = objectFromFile((string) getenv('EXECUTION_FILE'));
+          $runId = (int) getenv('INGESTION_RUN_ID');
+          $runAttempt = (int) getenv('INGESTION_RUN_ATTEMPT');
+
+          $readiness = new App\Application\Pos\FinalShiftCloseDurableRuntimeReadiness();
+          $provenanceValidator = new App\Application\Pos\FinalShiftCloseDurableRuntimeAttestationProvenance();
+          $ingestion = new App\Application\Pos\FinalShiftCloseDurableRuntimeAttestationIngestion($readiness, $provenanceValidator);
+          $recomputedIngestion = $ingestion->ingest($attestation, $provenance);
+          if (canonical($recomputedIngestion) !== canonical($ingestionArtifact)) {
+              throw new RuntimeException('Trusted ingestion artifact does not match canonical Sprint112 recomputation.');
+          }
+
+          $selector = new App\Application\Pos\FinalShiftCloseDurableRuntimeTargetSelection($readiness);
+          $selection = $selector->select($attestation);
+          $expectedTarget = $selection['selected_target'];
+          $expectedTarget['selection_fingerprint_sha256'] = $selection['selection_fingerprint_sha256'];
+          $expectedTarget['trusted_ingestion'] = [
+              'run_id' => $runId,
+              'run_attempt' => $runAttempt,
+              'ingestion_fingerprint_sha256' => $recomputedIngestion['ingestion_fingerprint_sha256'],
+          ];
+
+          if (($target['selection_state'] ?? null) !== 'SELECTED_NOT_AUTHORIZED') {
+              throw new RuntimeException('Target selection state must be SELECTED_NOT_AUTHORIZED.');
+          }
+          if (canonical((array) ($target['selected_target'] ?? [])) !== canonical($expectedTarget)) {
+              throw new RuntimeException('Target selected_target does not exactly match trusted selector and ingestion evidence.');
+          }
+
+          $expectedFile = $base;
+          $expectedFile['selection_state'] = 'SELECTED_NOT_AUTHORIZED';
+          $expectedFile['selected_target'] = $expectedTarget;
+          if (canonical($expectedFile) !== canonical($target)) {
+              throw new RuntimeException('Target PR changes fields outside selection_state and selected_target.');
+          }
+          if (($execution['ingestion_fingerprint_sha256'] ?? null) !== $recomputedIngestion['ingestion_fingerprint_sha256']) {
+              throw new RuntimeException('Ingestion execution fingerprint does not bind to canonical ingestion output.');
+          }
+
+          file_put_contents('/tmp/selection-fingerprint.txt', (string) $selection['selection_fingerprint_sha256']);
+          file_put_contents('/tmp/ingestion-fingerprint.txt', (string) $recomputedIngestion['ingestion_fingerprint_sha256']);
+          PHP
+          echo "selection_fingerprint=$(cat /tmp/selection-fingerprint.txt)" >> "$GITHUB_OUTPUT"
+          echo "ingestion_fingerprint=$(cat /tmp/ingestion-fingerprint.txt)" >> "$GITHUB_OUTPUT"
+
+      - name: Publish pending target selection persistence evidence status
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          API_URL: ${{ github.api_url }}
+          REPOSITORY: ${{ github.repository }}
+          TARGET_HEAD_SHA: ${{ inputs.target_head_sha }}
+        run: |
+          set -euo pipefail
+          payload="$(jq -n \
+            --arg state pending \
+            --arg context "$SELECTION_EVIDENCE_CONTEXT" \
+            --arg description 'Trusted durable target selection persistence evidence is being published' \
+            --arg target_url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+            '{state:$state,context:$context,description:$description,target_url:$target_url}')"
+          curl --fail-with-body --silent --show-error \
+            --request POST \
+            --header 'Accept: application/vnd.github+json' \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header 'X-GitHub-Api-Version: 2022-11-28' \
+            "$API_URL/repos/$REPOSITORY/statuses/$TARGET_HEAD_SHA" \
+            --data "$payload" >/dev/null
+
+      - name: Materialize secret-free selection persistence evidence
+        shell: bash
+        env:
+          TARGET_PR_NUMBER: ${{ inputs.target_pr_number }}
+          TARGET_HEAD_SHA: ${{ inputs.target_head_sha }}
+          INGESTION_RUN_ID: ${{ inputs.ingestion_run_id }}
+          INGESTION_RUN_ATTEMPT: ${{ inputs.ingestion_run_attempt }}
+          SELECTION_FINGERPRINT: ${{ steps.selection.outputs.selection_fingerprint }}
+          INGESTION_FINGERPRINT: ${{ steps.selection.outputs.ingestion_fingerprint }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/selection-persistence-evidence
+          cp /tmp/target-selection.json /tmp/selection-persistence-evidence/target-selection.json
+          jq -n \
+            --arg feature 'final-shift-close' \
+            --arg state 'SELECTED_NOT_AUTHORIZED' \
+            --arg workflow_path '.github/workflows/final-shift-close-durable-runtime-target-selection-persistence.yml' \
+            --arg source_commit "$GITHUB_SHA" \
+            --arg target_pr_number "$TARGET_PR_NUMBER" \
+            --arg target_head_sha "$TARGET_HEAD_SHA" \
+            --arg ingestion_run_id "$INGESTION_RUN_ID" \
+            --arg ingestion_run_attempt "$INGESTION_RUN_ATTEMPT" \
+            --arg selection_fingerprint "$SELECTION_FINGERPRINT" \
+            --arg ingestion_fingerprint "$INGESTION_FINGERPRINT" \
+            '{schema_version:1,feature:$feature,evidence_state:"QUALIFIED_NOT_MERGED",selection_state:$state,workflow_path:$workflow_path,executor_source_commit:$source_commit,target_pr_number:($target_pr_number|tonumber),target_head_sha:$target_head_sha,ingestion_run_id:($ingestion_run_id|tonumber),ingestion_run_attempt:($ingestion_run_attempt|tonumber),selection_fingerprint_sha256:$selection_fingerprint,ingestion_fingerprint_sha256:$ingestion_fingerprint,selected_target_persistence:"TARGET_PR_ONLY_NOT_MERGED_BY_EXECUTOR",activation_authority_state:"NOT_GRANTED",feature_activation_state:"INACTIVE",runtime_allowlist_change:"NOT_IMPLEMENTED",secrets_embedded:false}' \
+            > /tmp/selection-persistence-evidence/evidence.json
+          jq -e . /tmp/selection-persistence-evidence/evidence.json >/dev/null
+
+      - name: Upload target selection persistence evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: final-shift-close-durable-runtime-target-selection-persistence-evidence
+          path: /tmp/selection-persistence-evidence
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Publish success target selection persistence evidence status
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          API_URL: ${{ github.api_url }}
+          REPOSITORY: ${{ github.repository }}
+          TARGET_HEAD_SHA: ${{ inputs.target_head_sha }}
+        run: |
+          set -euo pipefail
+          payload="$(jq -n \
+            --arg state success \
+            --arg context "$SELECTION_EVIDENCE_CONTEXT" \
+            --arg description 'Trusted durable target selection persistence transition qualified' \
+            --arg target_url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+            '{state:$state,context:$context,description:$description,target_url:$target_url}')"
+          curl --fail-with-body --silent --show-error \
+            --request POST \
+            --header 'Accept: application/vnd.github+json' \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header 'X-GitHub-Api-Version: 2022-11-28' \
+            "$API_URL/repos/$REPOSITORY/statuses/$TARGET_HEAD_SHA" \
+            --data "$payload" >/dev/null
