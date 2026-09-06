@@ -1,0 +1,199 @@
+name: Sprint116 Final Shift Close Post-Selection Downstream Readiness
+
+# Attribution: Lab | zefry
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/sprint116-final-shift-close-post-selection-downstream-readiness.yml'
+      - 'docs/SPRINT116_FINAL_SHIFT_CLOSE_POST_SELECTION_DOWNSTREAM_READINESS.md'
+      - 'ops/final-shift-close/POST_SELECTION_DOWNSTREAM_READINESS.json'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint116-final-shift-close-post-selection-downstream-readiness-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qualify-post-selection-downstream-readiness:
+    name: qualify-post-selection-downstream-readiness
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Lock exact Sprint116 source envelope
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/actual
+          cat > /tmp/expected <<'EOF'
+          .github/workflows/sprint116-final-shift-close-post-selection-downstream-readiness.yml
+          docs/SPRINT116_FINAL_SHIFT_CLOSE_POST_SELECTION_DOWNSTREAM_READINESS.md
+          ops/final-shift-close/POST_SELECTION_DOWNSTREAM_READINESS.json
+          EOF
+          diff -u /tmp/expected /tmp/actual
+          test "$(sha256sum /tmp/actual | awk '{print $1}')" = '6583f7e9e4b1cce966f166c4e650e42e8c106b9c5354e75adceb10ace5688c18'
+
+      - name: Validate post-selection readiness contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          contract=ops/final-shift-close/POST_SELECTION_DOWNSTREAM_READINESS.json
+          jq -e . "$contract" >/dev/null
+          test "$(jq -r '.contract_state' "$contract")" = 'MATERIALIZED_SOURCE_ONLY'
+          test "$(jq -r '.selection_prerequisite.required_selection_state' "$contract")" = 'SELECTED_NOT_AUTHORIZED'
+          test "$(jq -r '.selection_prerequisite.current_selection_state' "$contract")" = 'BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET'
+          test "$(jq -r '.selection_prerequisite.current_selected_target' "$contract")" = 'null'
+          test "$(jq -r '.selection_prerequisite.current_eligibility' "$contract")" = 'BLOCKED_SELECTION_NOT_PERSISTED'
+          test "$(jq -r '.downstream_components.migration27_execution.current_eligibility' "$contract")" = 'NOT_ELIGIBLE_SELECTED_TARGET_BINDING_MISSING'
+          test "$(jq -r '.downstream_components.permission_provisioning.current_eligibility' "$contract")" = 'NOT_ELIGIBLE_SELECTED_TARGET_BINDING_MISSING'
+          test "$(jq -r '.downstream_components.feature_activation.current_eligibility' "$contract")" = 'NOT_ELIGIBLE_EXECUTOR_NOT_IMPLEMENTED'
+          test "$(jq -r '.downstream_components.runtime_allowlist.current_eligibility' "$contract")" = 'NOT_ELIGIBLE_SELECTED_RUNTIME_NOT_QUALIFIED'
+          test "$(jq -r '.source_envelope_sha256' "$contract")" = '6583f7e9e4b1cce966f166c4e650e42e8c106b9c5354e75adceb10ace5688c18'
+
+          test "$(jq -r '.required_target_binding.environment_id' "$contract")" = 'true'
+          test "$(jq -r '.required_target_binding.exact_running_source_commit' "$contract")" = 'true'
+          test "$(jq -r '.required_target_binding.exact_running_artifact_sha256' "$contract")" = 'true'
+          test "$(jq -r '.required_target_binding.selection_fingerprint_sha256' "$contract")" = 'true'
+          test "$(jq -r '.required_target_binding.trusted_ingestion_run_id' "$contract")" = 'true'
+          test "$(jq -r '.required_target_binding.operator_secrets_or_control_channel_must_be_cryptographically_or_configuration_bound_to_selected_environment' "$contract")" = 'true'
+          test "$(jq -r '.required_target_binding.runtime_readback_must_confirm_same_selected_environment_before_mutation' "$contract")" = 'true'
+
+      - name: Prove canonical selection remains blocked and operational state inactive
+        shell: bash
+        run: |
+          set -euo pipefail
+          selection=ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+          state=ops/final-shift-close/STATE.json
+          sprint115=ops/final-shift-close/DURABLE_RUNTIME_TARGET_SELECTION_PERSISTENCE_CONTRACT.json
+
+          jq -e . "$selection" >/dev/null
+          jq -e . "$state" >/dev/null
+          jq -e . "$sprint115" >/dev/null
+
+          test "$(jq -r '.selection_state' "$selection")" = 'BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET'
+          test "$(jq -r '.selected_target' "$selection")" = 'null'
+          test "$(jq -r '.target_selection_state' "$sprint115")" = 'SELECTED_NOT_AUTHORIZED'
+          test "$(jq -r '.target_selected_target_source' "$sprint115")" = 'EXACT_SPRINT111_SELECTOR_OUTPUT_PLUS_TRUSTED_INGESTION_BINDING'
+          test "$(jq -r '.migration27.state' "$state")" = 'NOT_EXECUTED'
+          test "$(jq -r '.permission_provisioning.state' "$state")" = 'NONE'
+          test "$(jq -r '.feature_activation.state' "$state")" = 'INACTIVE'
+
+      - name: Prove migration27 executor is not yet bound to selected durable target
+        shell: bash
+        run: |
+          set -euo pipefail
+          executor=.github/workflows/final-shift-close-migration27-execution.yml
+          grep -Fq 'environment: final-shift-close-migration27-execution' "$executor"
+          grep -Fq 'ONEQAY_MIGRATION27_DB_HOST' "$executor"
+          grep -Fq 'ONEQAY_MIGRATION27_DB_DATABASE' "$executor"
+          grep -Fq 'APP_ENV: production' "$executor"
+          ! grep -Fq 'DURABLE_ACTIVATION_TARGET_SELECTION.json' "$executor"
+          ! grep -Fq 'selected_target' "$executor"
+          ! grep -Fq 'selection_fingerprint_sha256' "$executor"
+          ! grep -Fq 'trusted_ingestion' "$executor"
+
+      - name: Prove permission provisioning executor is not yet bound to selected durable target
+        shell: bash
+        run: |
+          set -euo pipefail
+          executor=.github/workflows/final-shift-close-permission-provisioning.yml
+          grep -Fq 'environment: final-shift-close-permission-provisioning' "$executor"
+          grep -Fq 'ONEQAY_PERMISSION_DB_HOST' "$executor"
+          grep -Fq 'ONEQAY_PERMISSION_DB_DATABASE' "$executor"
+          grep -Fq "ONEQAY_PERSISTENCE_ENABLED: 'false'" "$executor"
+          grep -Fq 'APP_ENV: production' "$executor"
+          ! grep -Fq 'DURABLE_ACTIVATION_TARGET_SELECTION.json' "$executor"
+          ! grep -Fq 'selected_target' "$executor"
+          ! grep -Fq 'selection_fingerprint_sha256' "$executor"
+          ! grep -Fq 'trusted_ingestion' "$executor"
+
+      - name: Prove feature activation executor is still absent
+        shell: bash
+        run: |
+          set -euo pipefail
+          test ! -e .github/workflows/final-shift-close-feature-activation.yml
+          state=ops/final-shift-close/STATE.json
+          test "$(jq -r '.feature_activation.evidence_context' "$state")" = 'final-shift-close-feature-activation-evidence'
+          test "$(jq -r '.feature_activation.state' "$state")" = 'INACTIVE'
+
+      - name: Prove Final Shift Close runtime allowlist remains unchanged
+        shell: bash
+        run: |
+          set -euo pipefail
+          provider=apps/web/app/Providers/FinalShiftCloseServiceProvider.php
+          grep -Fq "['local', 'test', 'ci']" "$provider"
+          grep -Fq 'ONEQAY_POS_SHIFT_CLOSE_ENABLED' "$provider"
+          grep -Fq '&& $this->persistenceEnabled()' "$provider"
+          grep -Fq "config('oneqay.session_control.enabled', false)" "$provider"
+          grep -Fq "config('oneqay.pos_sale_completion.enabled', false)" "$provider"
+
+      - name: Prove fail-closed downstream ordering and forbidden shortcuts
+        shell: bash
+        run: |
+          set -euo pipefail
+          contract=ops/final-shift-close/POST_SELECTION_DOWNSTREAM_READINESS.json
+          test "$(jq -r '.ordering[0]' "$contract")" = 'PERSIST_SELECTED_NOT_AUTHORIZED_TARGET'
+          test "$(jq -r '.ordering[1]' "$contract")" = 'BIND_AND_QUALIFY_MIGRATION27_EXECUTION_TO_SELECTED_TARGET'
+          test "$(jq -r '.ordering[2]' "$contract")" = 'EXECUTE_AND_PROVE_MIGRATION27_ON_SELECTED_TARGET'
+          test "$(jq -r '.ordering[3]' "$contract")" = 'BIND_AND_QUALIFY_PERMISSION_PROVISIONING_TO_SAME_SELECTED_TARGET'
+          test "$(jq -r '.ordering[4]' "$contract")" = 'PROVISION_AND_PROVE_POS_SHIFT_CLOSE_ON_SELECTED_TARGET'
+          test "$(jq -r '.forbidden_shortcuts | index("RUN_MIGRATION27_AGAINST_UNBOUND_DB_SECRETS") != null' "$contract")" = 'true'
+          test "$(jq -r '.forbidden_shortcuts | index("RUN_PERMISSION_PROVISIONING_AGAINST_UNBOUND_DB_SECRETS") != null' "$contract")" = 'true'
+          test "$(jq -r '.forbidden_shortcuts | index("TREAT_SELECTED_NOT_AUTHORIZED_AS_ACTIVATION_AUTHORITY") != null' "$contract")" = 'true'
+          test "$(jq -r '.forbidden_shortcuts | index("TREAT_STATE_JSON_AS_LIVE_RUNTIME_EVIDENCE") != null' "$contract")" = 'true'
+
+      - name: Preserve application runtime and operational state source
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git diff --exit-code "$BASE_SHA" "$HEAD_SHA" -- \
+            apps/web/app \
+            apps/web/bootstrap \
+            apps/web/config \
+            apps/web/database/migrations \
+            apps/web/routes \
+            apps/web/resources \
+            ops/final-shift-close/STATE.json \
+            ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json \
+            .github/workflows/final-shift-close-migration27-execution.yml \
+            .github/workflows/final-shift-close-permission-provisioning.yml
+
+      - name: Lock Sprint116 source-only no-go disposition
+        shell: bash
+        run: |
+          set -euo pipefail
+          doc=docs/SPRINT116_FINAL_SHIFT_CLOSE_POST_SELECTION_DOWNSTREAM_READINESS.md
+          grep -Fq 'POST_SELECTION_DOWNSTREAM_READINESS_CONTRACT = MATERIALIZED_SOURCE_ONLY' "$doc"
+          grep -Fq 'CURRENT_SELECTION_STATE = BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET' "$doc"
+          grep -Fq 'SELECTED_TARGET = NONE' "$doc"
+          grep -Fq 'MIGRATION27_SELECTED_TARGET_BINDING = MISSING' "$doc"
+          grep -Fq 'PERMISSION_PROVISIONING_SELECTED_TARGET_BINDING = MISSING' "$doc"
+          grep -Fq 'FEATURE_ACTIVATION_EXECUTOR = NOT_IMPLEMENTED' "$doc"
+          grep -Fq 'RUNTIME_ALLOWLIST_CHANGE = NOT_IMPLEMENTED' "$doc"
+          grep -Fq 'MIGRATION_27_EXECUTION = NOT_PERFORMED' "$doc"
+          grep -Fq 'PERMISSION_PROVISIONING = NONE' "$doc"
+          grep -Fq 'FEATURE_ACTIVATION = INACTIVE' "$doc"
+          grep -Fq 'DEPLOYMENT_AUTHORITY = NOT_GRANTED' "$doc"
+          grep -Fq 'TECHNICAL_PREVIEW_ACTIVATION = NOT_AUTHORIZED' "$doc"
+          grep -Fq 'PRODUCTION_ACTIVATION = NOT_AUTHORIZED' "$doc"
+          grep -Fq 'UPDATER_ACTIVATION = INACTIVE' "$doc"
+
+      - name: Confirm tracked source remains unchanged
+        shell: bash
+        run: git diff --exit-code
