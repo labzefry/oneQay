@@ -1,0 +1,358 @@
+name: Final Shift Close Migration27 Execution Evidence
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_pr_number:
+        description: 'Exact state-transition PR number'
+        required: true
+        type: string
+      target_head_sha:
+        description: 'Exact 40-character state-transition PR head SHA'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  pull-requests: read
+  statuses: write
+  actions: read
+
+concurrency:
+  group: final-shift-close-migration27-${{ inputs.target_pr_number }}
+  cancel-in-progress: false
+
+jobs:
+  execute-migration27-and-publish-evidence:
+    if: ${{ github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: final-shift-close-migration27-execution
+    env:
+      ONEQAY_DB_DRIVER: mysql
+      ONEQAY_DB_HOST: ${{ secrets.ONEQAY_MIGRATION27_DB_HOST }}
+      ONEQAY_DB_PORT: ${{ secrets.ONEQAY_MIGRATION27_DB_PORT }}
+      ONEQAY_DB_DATABASE: ${{ secrets.ONEQAY_MIGRATION27_DB_DATABASE }}
+      ONEQAY_DB_USERNAME: ${{ secrets.ONEQAY_MIGRATION27_DB_USERNAME }}
+      ONEQAY_DB_PASSWORD: ${{ secrets.ONEQAY_MIGRATION27_DB_PASSWORD }}
+      APP_ENV: production
+      APP_DEBUG: 'false'
+      MIGRATION_PATH: database/migrations/0000_00_00_000027_create_pos_shift_close_evidence_foundation.php
+      MIGRATION_NAME: 0000_00_00_000027_create_pos_shift_close_evidence_foundation
+      MIGRATION_BLOB_SHA: a412560c2f340f4783a385aef729dbd074389a4c
+      EVIDENCE_CONTEXT: final-shift-close-migration27-execution-evidence
+
+    steps:
+      - name: Checkout canonical dispatch source only
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+
+      - name: Validate canonical main and exact target transition
+        id: preflight
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          API_URL: ${{ github.api_url }}
+          REPOSITORY: ${{ github.repository }}
+          TARGET_PR: ${{ inputs.target_pr_number }}
+          TARGET_HEAD: ${{ inputs.target_head_sha }}
+        run: |
+          set -euo pipefail
+
+          [[ "$GITHUB_REF" == 'refs/heads/main' ]]
+          [[ "$TARGET_PR" =~ ^[1-9][0-9]*$ ]]
+          [[ "$TARGET_HEAD" =~ ^[0-9a-f]{40}$ ]]
+
+          api() {
+            curl --fail-with-body --silent --show-error \
+              --header 'Accept: application/vnd.github+json' \
+              --header "Authorization: Bearer $GH_TOKEN" \
+              --header 'X-GitHub-Api-Version: 2022-11-28' \
+              "$1"
+          }
+
+          main_json="$(api "$API_URL/repos/$REPOSITORY/branches/main")"
+          main_sha="$(jq -r '.commit.sha' <<<"$main_json")"
+          [[ "$main_sha" == "$GITHUB_SHA" ]] || {
+            echo "Dispatch source is not current canonical main: $GITHUB_SHA != $main_sha" >&2
+            exit 1
+          }
+
+          [[ "$(git hash-object "apps/web/$MIGRATION_PATH")" == "$MIGRATION_BLOB_SHA" ]] || {
+            echo 'Canonical migration #27 blob does not match qualified source.' >&2
+            exit 1
+          }
+
+          pr_json="$(api "$API_URL/repos/$REPOSITORY/pulls/$TARGET_PR")"
+          [[ "$(jq -r '.state' <<<"$pr_json")" == 'open' ]]
+          [[ "$(jq -r '.draft' <<<"$pr_json")" == 'false' ]]
+          [[ "$(jq -r '.base.ref' <<<"$pr_json")" == 'main' ]]
+          [[ "$(jq -r '.base.sha' <<<"$pr_json")" == "$GITHUB_SHA" ]] || {
+            echo 'Target PR must be based on current canonical main.' >&2
+            exit 1
+          }
+          [[ "$(jq -r '.head.sha' <<<"$pr_json")" == "$TARGET_HEAD" ]]
+          [[ "$(jq -r '.head.repo.full_name' <<<"$pr_json")" == "$REPOSITORY" ]] || {
+            echo 'Target transition must originate from this repository.' >&2
+            exit 1
+          }
+
+          files_json="$(api "$API_URL/repos/$REPOSITORY/pulls/$TARGET_PR/files?per_page=100")"
+          [[ "$(jq 'length' <<<"$files_json")" -eq 1 ]]
+          [[ "$(jq -r '.[0].filename' <<<"$files_json")" == 'ops/final-shift-close/STATE.json' ]] || {
+            echo 'Target PR must change only the canonical Final Shift Close state file.' >&2
+            exit 1
+          }
+
+          cp ops/final-shift-close/STATE.json /tmp/base-state.json
+          target_content="$(api "$API_URL/repos/$REPOSITORY/contents/ops/final-shift-close/STATE.json?ref=$TARGET_HEAD" | jq -r '.content' | tr -d '\n' | base64 --decode)"
+          printf '%s\n' "$target_content" > /tmp/target-state.json
+          jq -e . /tmp/base-state.json >/dev/null
+          jq -e . /tmp/target-state.json >/dev/null
+
+          [[ "$(jq -r '.migration27.state' /tmp/base-state.json)" == 'NOT_EXECUTED' ]]
+          [[ "$(jq -r '.permission_provisioning.state' /tmp/base-state.json)" == 'NONE' ]]
+          [[ "$(jq -r '.feature_activation.state' /tmp/base-state.json)" == 'INACTIVE' ]]
+          [[ "$(jq -r '.migration27.state' /tmp/target-state.json)" == 'EXECUTED' ]]
+          [[ "$(jq -r '.permission_provisioning.state' /tmp/target-state.json)" == 'NONE' ]]
+          [[ "$(jq -r '.feature_activation.state' /tmp/target-state.json)" == 'INACTIVE' ]]
+
+          jq -S '.migration27.state = "NOT_EXECUTED"' /tmp/target-state.json > /tmp/target-normalized.json
+          jq -S . /tmp/base-state.json > /tmp/base-normalized.json
+          diff -u /tmp/base-normalized.json /tmp/target-normalized.json
+
+          echo "target_head=$TARGET_HEAD" >> "$GITHUB_OUTPUT"
+          echo 'verified=true' >> "$GITHUB_OUTPUT"
+
+          statuses="$(api "$API_URL/repos/$REPOSITORY/commits/$TARGET_HEAD/statuses?per_page=100")"
+          require_latest_success() {
+            local context="$1"
+            local value
+            value="$(jq -r --arg context "$context" '[.[] | select(.context == $context)][0].state // "missing"' <<<"$statuses")"
+            [[ "$value" == 'success' ]] || {
+              echo "Required exact-head status is not success: $context ($value)." >&2
+              exit 1
+            }
+          }
+          require_latest_success 'final-shift-close-migration27-execution-authority'
+          require_latest_success 'product-owner-merge-authority'
+
+          runs="$(api "$API_URL/repos/$REPOSITORY/actions/runs?head_sha=$TARGET_HEAD&event=pull_request&per_page=100")"
+          require_workflow_success() {
+            local workflow_name="$1"
+            local conclusion
+            conclusion="$(jq -r --arg name "$workflow_name" '[.workflow_runs | .[] | select(.name == $name)][0].conclusion // "missing"' <<<"$runs")"
+            [[ "$conclusion" == 'success' ]] || {
+              echo "Required qualification workflow is not success: $workflow_name ($conclusion)." >&2
+              exit 1
+            }
+          }
+          require_workflow_success 'Governance Required Checks'
+          require_workflow_success 'PHP Foundation Regression'
+          require_workflow_success 'M7.1 Application Regression'
+
+          echo 'Exact migration27 transition target and prerequisite authorities qualified.'
+
+      - name: Publish pending execution evidence
+        if: ${{ steps.preflight.outputs.verified == 'true' }}
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          API_URL: ${{ github.api_url }}
+          REPOSITORY: ${{ github.repository }}
+          TARGET_HEAD: ${{ steps.preflight.outputs.target_head }}
+        run: |
+          set -euo pipefail
+          payload="$(jq -n \
+            --arg state pending \
+            --arg context "$EVIDENCE_CONTEXT" \
+            --arg description 'Migration27 authorized execution is in progress' \
+            --arg target_url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+            '{state:$state,context:$context,description:$description,target_url:$target_url}')"
+          curl --fail-with-body --silent --show-error \
+            --request POST \
+            --header 'Accept: application/vnd.github+json' \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header 'X-GitHub-Api-Version: 2022-11-28' \
+            "$API_URL/repos/$REPOSITORY/statuses/$TARGET_HEAD" \
+            --data "$payload" >/dev/null
+
+      - name: Execute canonical migration27 and verify durable schema
+        id: execute
+        if: ${{ steps.preflight.outputs.verified == 'true' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          for value in \
+            "$ONEQAY_DB_HOST" \
+            "$ONEQAY_DB_PORT" \
+            "$ONEQAY_DB_DATABASE" \
+            "$ONEQAY_DB_USERNAME" \
+            "$ONEQAY_DB_PASSWORD"; do
+            [[ -n "$value" ]] || {
+              echo 'Required migration27 environment secret is missing.' >&2
+              exit 1
+            }
+          done
+
+          composer install \
+            --working-dir=apps/web \
+            --no-interaction \
+            --prefer-dist \
+            --no-progress
+
+          php <<'PHP'
+          <?php
+          declare(strict_types=1);
+
+          require __DIR__.'/apps/web/vendor/autoload.php';
+          $app = require __DIR__.'/apps/web/bootstrap/app.php';
+          $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+          $db = $app->make('db')->connection('oneqay');
+          $schema = $db->getSchemaBuilder();
+
+          if (strtolower($db->getDriverName()) !== 'mysql') {
+              throw new RuntimeException('Live migration27 executor requires canonical MySQL-compatible target.');
+          }
+          if (! $schema->hasTable('migrations')) {
+              throw new RuntimeException('Canonical migrations table is missing.');
+          }
+          if ($schema->hasTable('oneqay_pos_shift_close_evidence')) {
+              throw new RuntimeException('Migration27 close evidence table already exists; refusing ambiguous execution evidence.');
+          }
+
+          $requiredTables = [
+              'oneqay_pos_shifts',
+              'oneqay_pos_shift_opening_cash_evidence',
+              'oneqay_pos_shift_closing_cash_evidence',
+              'oneqay_pos_cash_variance_review_decision_evidence',
+              'oneqay_identities',
+              'oneqay_organizations',
+              'oneqay_outlets',
+              'oneqay_devices',
+          ];
+          foreach ($requiredTables as $table) {
+              if (! $schema->hasTable($table)) {
+                  throw new RuntimeException('Required predecessor table missing: '.$table);
+              }
+          }
+
+          $migration = '0000_00_00_000027_create_pos_shift_close_evidence_foundation';
+          if ((int) $db->table('migrations')->where('migration', $migration)->count() !== 0) {
+              throw new RuntimeException('Migration27 is already recorded; refusing duplicate evidence production.');
+          }
+
+          $requiredMigrations = [
+              '0000_00_00_000018_create_pos_shift_opening_foundation',
+              '0000_00_00_000022_create_pos_shift_opening_cash_evidence_foundation',
+              '0000_00_00_000023_create_pos_shift_closing_cash_evidence_foundation',
+              '0000_00_00_000026_create_pos_cash_variance_review_decision_evidence_foundation',
+          ];
+          $recorded = $db->table('migrations')->whereIn('migration', $requiredMigrations)->pluck('migration')->all();
+          sort($recorded);
+          sort($requiredMigrations);
+          if ($recorded !== $requiredMigrations) {
+              throw new RuntimeException('Required canonical predecessor migrations are not fully recorded.');
+          }
+          PHP
+
+          (
+            cd apps/web
+            php artisan migrate \
+              --path="$MIGRATION_PATH" \
+              --force \
+              --no-interaction
+          )
+
+          php <<'PHP'
+          <?php
+          declare(strict_types=1);
+
+          require __DIR__.'/apps/web/vendor/autoload.php';
+          $app = require __DIR__.'/apps/web/bootstrap/app.php';
+          $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+          $db = $app->make('db')->connection('oneqay');
+          $schema = $db->getSchemaBuilder();
+          $migration = '0000_00_00_000027_create_pos_shift_close_evidence_foundation';
+
+          if (! $schema->hasTable('oneqay_pos_shift_close_evidence')) {
+              throw new RuntimeException('Migration27 table missing after execution.');
+          }
+          if ((int) $db->table('migrations')->where('migration', $migration)->count() !== 1) {
+              throw new RuntimeException('Migration27 execution record is not exact.');
+          }
+          if ((int) $db->table('oneqay_pos_shift_close_evidence')->count() !== 0) {
+              throw new RuntimeException('New close evidence table must be empty immediately after schema execution.');
+          }
+
+          $indexes = $db->select(
+              "SELECT DISTINCT INDEX_NAME AS name FROM information_schema.STATISTICS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'oneqay_pos_shift_close_evidence'"
+          );
+          $indexNames = array_map(static fn (object $row): string => (string) $row->name, $indexes);
+          foreach (['uq_pos_shift_close_operation', 'uq_pos_shift_close_shift', 'ix_pos_shift_close_outlet_time'] as $required) {
+              if (! in_array($required, $indexNames, true)) {
+                  throw new RuntimeException('Required migration27 index missing: '.$required);
+              }
+          }
+
+          $constraints = $db->select(
+              "SELECT CONSTRAINT_NAME AS name, CONSTRAINT_TYPE AS type FROM information_schema.TABLE_CONSTRAINTS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'oneqay_pos_shift_close_evidence'"
+          );
+          $checkFound = false;
+          foreach ($constraints as $constraint) {
+              if ((string) $constraint->name === 'chk_pos_shift_close_variance_review'
+                  && strtoupper((string) $constraint->type) === 'CHECK') {
+                  $checkFound = true;
+              }
+          }
+          if (! $checkFound) {
+              throw new RuntimeException('Migration27 variance/review CHECK constraint is not enforced by the target.');
+          }
+
+          $columns = $schema->getColumnListing('oneqay_pos_shift_close_evidence');
+          foreach (['tenant_id', 'evidence_id', 'operation_id', 'payload_fingerprint', 'shift_id', 'variance_atomic', 'review_evidence_id', 'review_outcome', 'closed_at_unix'] as $required) {
+              if (! in_array($required, $columns, true)) {
+                  throw new RuntimeException('Required migration27 column missing: '.$required);
+              }
+          }
+          PHP
+
+          echo 'Canonical migration27 execution and durable schema verification succeeded.'
+
+      - name: Publish final execution evidence
+        if: ${{ always() && steps.preflight.outputs.verified == 'true' }}
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          API_URL: ${{ github.api_url }}
+          REPOSITORY: ${{ github.repository }}
+          TARGET_HEAD: ${{ steps.preflight.outputs.target_head }}
+          EXECUTE_OUTCOME: ${{ steps.execute.outcome }}
+        run: |
+          set -euo pipefail
+          if [[ "$EXECUTE_OUTCOME" == 'success' ]]; then
+            state=success
+            description='Migration27 execution verified against canonical target'
+          else
+            state=failure
+            description='Migration27 execution or verification failed closed'
+          fi
+
+          payload="$(jq -n \
+            --arg state "$state" \
+            --arg context "$EVIDENCE_CONTEXT" \
+            --arg description "$description" \
+            --arg target_url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+            '{state:$state,context:$context,description:$description,target_url:$target_url}')"
+          curl --fail-with-body --silent --show-error \
+            --request POST \
+            --header 'Accept: application/vnd.github+json' \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header 'X-GitHub-Api-Version: 2022-11-28' \
+            "$API_URL/repos/$REPOSITORY/statuses/$TARGET_HEAD" \
+            --data "$payload" >/dev/null
+
+          [[ "$state" == 'success' ]]
