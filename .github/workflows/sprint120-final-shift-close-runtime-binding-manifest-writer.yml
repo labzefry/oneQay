@@ -29,19 +29,15 @@ jobs:
           cat > /tmp/expected <<'EOF'
           .github/workflows/sprint120-final-shift-close-runtime-binding-manifest-writer.yml
           .github/workflows/sprint121-final-shift-close-runtime-binding-manifest-control-channel.yml
-          apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingManifestMaterializationRequest.php
-          apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingManifestMaterializer.php
-          apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware.php
-          apps/web/app/Delivery/Http/Pos/FinalShiftCloseRuntimeBindingManifestMaterializationController.php
-          apps/web/app/Providers/FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider.php
-          apps/web/routes/final-shift-close-runtime-binding-manifest-materialization.php
-          apps/web/tests/final-shift-close-runtime-binding-manifest-materialization.php
-          docs/SPRINT121_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MANIFEST_CONTROL_CHANNEL.md
-          ops/final-shift-close/RUNTIME_BINDING_MANIFEST_CONTROL_CHANNEL_CONTRACT.json
+          .github/workflows/sprint122-final-shift-close-runtime-binding-manifest-write-once-cas.yml
+          apps/web/app/Infrastructure/Pos/FilesystemFinalShiftCloseRuntimeBindingManifestWriter.php
+          apps/web/tests/final-shift-close-runtime-binding-manifest-writer.php
+          docs/SPRINT122_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MANIFEST_WRITE_ONCE_CAS.md
+          ops/final-shift-close/RUNTIME_BINDING_MANIFEST_WRITE_ONCE_CAS_CONTRACT.json
           EOF
           diff -u /tmp/expected /tmp/paths
           fingerprint="$(sha256sum /tmp/paths | awk '{print $1}')"
-          [[ "$fingerprint" == 'b36ef23c404c99d0202499cd0d8a8ea836b5b978d60cb78c4aad263fd1eee648' ]]
+          [[ "$fingerprint" == '2b4df6f0b04163f8c49b55e87483e969127867eda0541d9be503df6d2216b9ae' ]]
 
       - name: Prove Sprint119 delivery and operational state remain untouched
         shell: bash
@@ -50,17 +46,21 @@ jobs:
           git diff --quiet "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" -- \
             apps/web/bootstrap/providers.php \
             apps/web/app/Providers/FinalShiftCloseRuntimeDbBindingAttestationServiceProvider.php \
+            apps/web/app/Providers/FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider.php \
             apps/web/config \
             apps/web/routes/final-shift-close-runtime-db-binding-attestation.php \
+            apps/web/routes/final-shift-close-runtime-binding-manifest-materialization.php \
             .github/workflows/final-shift-close-migration27-selected-target-db-binding.yml \
             .github/workflows/final-shift-close-migration27-execution.yml \
             apps/web/database/migrations \
             ops/final-shift-close/STATE.json \
             ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
           ! grep -Fq 'FinalShiftCloseRuntimeDbBindingAttestationServiceProvider::class' apps/web/bootstrap/providers.php
+          ! grep -Fq 'FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider::class' apps/web/bootstrap/providers.php
           grep -Fq 'return false;' apps/web/app/Providers/FinalShiftCloseRuntimeDbBindingAttestationServiceProvider.php
+          grep -Fq 'return false;' apps/web/app/Providers/FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider.php
 
-      - name: Validate Sprint120 machine-readable contract
+      - name: Validate Sprint120 historical machine-readable contract
         shell: bash
         run: |
           set -euo pipefail
@@ -84,21 +84,24 @@ jobs:
             .canonical_boundaries.feature_activation == "INACTIVE"
           ' "$file" >/dev/null
 
-      - name: Lock strict manifest and filesystem semantics
+      - name: Lock strict manifest and successor write-once filesystem semantics
         shell: bash
         run: |
           set -euo pipefail
+          writer=apps/web/app/Infrastructure/Pos/FilesystemFinalShiftCloseRuntimeBindingManifestWriter.php
           grep -Fq "selection_state'] ?? null) !== 'SELECTED_NOT_AUTHORIZED'" apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingManifest.php
           grep -Fq "secrets_embedded'] ?? null) !== false" apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingManifest.php
           grep -Fq "'preview'" apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingManifest.php
           grep -Fq "'production'" apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingManifest.php
           grep -Fq 'JSON_UNESCAPED_SLASHES' apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingManifest.php
-          grep -Fq 'is_link($target)' apps/web/app/Infrastructure/Pos/FilesystemFinalShiftCloseRuntimeBindingManifestWriter.php
-          grep -Fq '($permissions & 0077) !== 0' apps/web/app/Infrastructure/Pos/FilesystemFinalShiftCloseRuntimeBindingManifestWriter.php
-          grep -Fq "fopen(\$temporary, 'x')" apps/web/app/Infrastructure/Pos/FilesystemFinalShiftCloseRuntimeBindingManifestWriter.php
-          grep -Fq 'rename($temporary, $target)' apps/web/app/Infrastructure/Pos/FilesystemFinalShiftCloseRuntimeBindingManifestWriter.php
-          grep -Fq "chmod(\$target, 0600)" apps/web/app/Infrastructure/Pos/FilesystemFinalShiftCloseRuntimeBindingManifestWriter.php
-          grep -Fq "hash_equals(hash('sha256', \$json), hash('sha256', \$writtenJson))" apps/web/app/Infrastructure/Pos/FilesystemFinalShiftCloseRuntimeBindingManifestWriter.php
+          grep -Fq 'is_link($target)' "$writer"
+          grep -Fq '($permissions & 0077) !== 0' "$writer"
+          grep -Fq "fopen(\$temporary, 'x')" "$writer"
+          grep -Fq '@link($temporary, $target)' "$writer"
+          ! grep -Fq 'rename($temporary, $target)' "$writer"
+          grep -Fq 'Runtime binding manifest immutable conflict detected.' "$writer"
+          grep -Fq "hash_equals(hash('sha256', \$expectedJson), hash('sha256', \$existingJson))" "$writer"
+          grep -Fq "hash_equals(hash('sha256', \$json), hash('sha256', \$writtenJson))" "$writer"
 
       - name: Validate PHP syntax and executable writer regression
         shell: bash
