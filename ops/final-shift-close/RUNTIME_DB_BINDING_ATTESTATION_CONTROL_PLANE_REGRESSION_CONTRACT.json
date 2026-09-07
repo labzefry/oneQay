@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "feature": "final-shift-close",
+  "sprint": 125,
+  "bounded_objective": "RUNTIME_DB_BINDING_ATTESTATION_CONTROL_PLANE_EXECUTABLE_OFF_SWITCH_REGRESSION",
+  "execution_mode": "CI_ONLY_SYNTHETIC_CONFIGURATION",
+  "gate_matrix": {
+    "disabled_with_valid_token": "ROUTE_ABSENT",
+    "enabled_with_empty_token": "ROUTE_ABSENT",
+    "enabled_with_short_token": "ROUTE_ABSENT",
+    "enabled_with_oversized_token": "ROUTE_ABSENT",
+    "enabled_with_valid_token": "ROUTE_REGISTERED"
+  },
+  "registered_route_contract": {
+    "route_name": "internal.final-shift-close.runtime-db-binding-attestation",
+    "http_method": "GET_ONLY",
+    "throttle": "2_PER_MINUTE",
+    "bearer_middleware_required": true,
+    "missing_bearer_disposition": "HTTP_404",
+    "malformed_bearer_disposition": "HTTP_404",
+    "cache_control_no_store": true,
+    "cache_control_private": true,
+    "nosniff": true,
+    "valid_bearer_request_performed": false
+  },
+  "source_preservation": {
+    "provider": "UNCHANGED",
+    "middleware": "UNCHANGED",
+    "application_bootstrap": "UNCHANGED",
+    "shared_bootstrap": "UNCHANGED",
+    "db_attestation_config": "UNCHANGED",
+    "manifest_materialization_config": "UNCHANGED",
+    "global_oneqay_config": "UNCHANGED",
+    "routes": "UNCHANGED",
+    "database_migrations": "UNCHANGED",
+    "canonical_state": "UNCHANGED",
+    "durable_target_selection": "UNCHANGED"
+  },
+  "successor_compatibility": {
+    "sprint120_manifest_writer": "PRESERVED",
+    "sprint121_control_channel": "PRESERVED",
+    "sprint122_write_once_cas": "PRESERVED",
+    "sprint123_manifest_control_plane_registration": "PRESERVED",
+    "sprint124_db_attestation_control_plane_registration": "PRESERVED"
+  },
+  "source_envelope_sha256": "e4cc7925de61e7a84e11a95627ce860b9a50518777e087741abbb93a8a97070e",
+  "canonical_boundaries": {
+    "runtime_configuration_mutation": "NOT_PERFORMED",
+    "runtime_token_provisioning": "NOT_PERFORMED",
+    "valid_bearer_request": "NOT_PERFORMED",
+    "runtime_db_binding_attestation": "NOT_PERFORMED",
+    "runtime_manifest_materialization": "NOT_PERFORMED",
+    "selected_target": "NONE",
+    "db_binding_producer_dispatch": "NOT_PERFORMED",
+    "migration27_execution": "NOT_PERFORMED",
+    "permission_provisioning": "NONE",
+    "feature_activation": "INACTIVE",
+    "deployment_authority": "NOT_GRANTED",
+    "technical_preview_activation": "NOT_AUTHORIZED",
+    "production_activation": "NOT_AUTHORIZED",
+    "updater_activation": "INACTIVE"
+  }
+}
