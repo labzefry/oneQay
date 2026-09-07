@@ -57,6 +57,7 @@
     "durable_target_selection": "UNCHANGED"
   },
   "successor_compatibility": {
+    "sprint119_runtime_db_binding_attestation": "PRESERVED_WITH_STRONGER_TOKEN_POLICY",
     "sprint120_manifest_writer": "PRESERVED",
     "sprint121_control_channel": "PRESERVED",
     "sprint122_write_once_cas": "PRESERVED",
@@ -66,7 +67,7 @@
     "sprint126_manifest_token_hardening": "PRESERVED_WITH_CORRECTED_CHARACTER_CLASS",
     "sprint127_manifest_control_plane_regression": "PRESERVED"
   },
-  "source_envelope_sha256": "e6f251e423857e49f9e0a1a0e2e5b5008934476028fe94d6ae10f3c015be45d1",
+  "source_envelope_sha256": "ae8691a2c9be31ba6558145a1162cc0aaa658727ff14279c1e638b0a971dc825",
   "canonical_boundaries": {
     "runtime_configuration_mutation": "NOT_PERFORMED",
     "runtime_token_provisioning": "NOT_PERFORMED",
