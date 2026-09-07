@@ -31,6 +31,7 @@ jobs:
           .github/workflows/sprint121-final-shift-close-runtime-binding-manifest-control-channel.yml
           .github/workflows/sprint122-final-shift-close-runtime-binding-manifest-write-once-cas.yml
           .github/workflows/sprint123-final-shift-close-runtime-binding-manifest-control-plane-registration.yml
+          .github/workflows/sprint96-final-shift-close-runtime-wiring.yml
           apps/web/app/Providers/FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider.php
           apps/web/bootstrap/app.php
           apps/web/config/final_shift_close_runtime_binding_materialization.php
@@ -39,7 +40,7 @@ jobs:
           EOF
           diff -u /tmp/expected /tmp/paths
           fingerprint="$(sha256sum /tmp/paths | awk '{print $1}')"
-          [[ "$fingerprint" == '2b1d247823c556f079521744ded5cc987b0d228794a1237b21aff87937331efb' ]]
+          [[ "$fingerprint" == 'e81ac67fb7d0e54c514b0b3a6bfd15737eb964a0c293e39faca52dd3e9863e19' ]]
 
       - name: Prove writer and operational state remain untouched
         shell: bash
