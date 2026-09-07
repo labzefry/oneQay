@@ -63,9 +63,10 @@ $assert(
 $unauthenticatedRequest = Request::create($routePath, 'GET');
 $unauthenticatedResponse = $kernel->handle($unauthenticatedRequest);
 $assert($unauthenticatedResponse->getStatusCode() === 404, 'CTRL-008 missing bearer credential fails closed before controller');
+$cacheControl = (string) $unauthenticatedResponse->headers->get('Cache-Control');
 $assert(
-    $unauthenticatedResponse->headers->get('Cache-Control') === 'no-store, private',
-    'CTRL-009 authentication rejection remains non-cacheable',
+    str_contains($cacheControl, 'no-store') && str_contains($cacheControl, 'private'),
+    'CTRL-009 authentication rejection remains non-cacheable and private',
 );
 $assert(
     $unauthenticatedResponse->headers->get('X-Content-Type-Options') === 'nosniff',
