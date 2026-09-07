@@ -27,6 +27,7 @@ jobs:
           set -euo pipefail
           git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | sort > /tmp/paths
           cat > /tmp/expected <<'EOF'
+          .github/workflows/sprint120-final-shift-close-runtime-binding-manifest-writer.yml
           .github/workflows/sprint121-final-shift-close-runtime-binding-manifest-control-channel.yml
           apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingManifestMaterializationRequest.php
           apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingManifestMaterializer.php
@@ -40,7 +41,7 @@ jobs:
           EOF
           diff -u /tmp/expected /tmp/paths
           fingerprint="$(sha256sum /tmp/paths | awk '{print $1}')"
-          [[ "$fingerprint" == '68137a4bba2416512cb7360489c2e2d6b7151d9d0540aad4f44ed6e60199332a' ]]
+          [[ "$fingerprint" == 'b36ef23c404c99d0202499cd0d8a8ea836b5b978d60cb78c4aad263fd1eee648' ]]
 
       - name: Prove existing delivery and operational state remain untouched
         shell: bash
