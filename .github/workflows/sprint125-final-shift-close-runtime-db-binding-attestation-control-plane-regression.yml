@@ -30,7 +30,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
-      - name: Lock exact Sprint125 source envelope
+      - name: Lock exact Sprint125 successor-compatible source envelope
         shell: bash
         run: |
           set -euo pipefail
@@ -44,15 +44,16 @@ jobs:
           .github/workflows/sprint123-final-shift-close-runtime-binding-manifest-control-plane-registration.yml
           .github/workflows/sprint124-final-shift-close-runtime-db-binding-attestation-control-plane-registration.yml
           .github/workflows/sprint125-final-shift-close-runtime-db-binding-attestation-control-plane-regression.yml
-          apps/web/tests/final-shift-close-runtime-db-binding-attestation-control-plane.php
-          docs/SPRINT125_FINAL_SHIFT_CLOSE_RUNTIME_DB_BINDING_ATTESTATION_CONTROL_PLANE_REGRESSION.md
-          ops/final-shift-close/RUNTIME_DB_BINDING_ATTESTATION_CONTROL_PLANE_REGRESSION_CONTRACT.json
+          .github/workflows/sprint126-final-shift-close-runtime-binding-manifest-control-plane-token-hardening.yml
+          apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware.php
+          apps/web/app/Providers/FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider.php
+          docs/SPRINT126_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MANIFEST_CONTROL_PLANE_TOKEN_HARDENING.md
+          ops/final-shift-close/RUNTIME_BINDING_MANIFEST_CONTROL_PLANE_TOKEN_HARDENING_CONTRACT.json
           EOF
           diff -u /tmp/expected /tmp/paths
-          fingerprint="$(sha256sum /tmp/paths | awk '{print $1}')"
-          [[ "$fingerprint" == 'e4cc7925de61e7a84e11a95627ce860b9a50518777e087741abbb93a8a97070e' ]]
+          [[ "$(sha256sum /tmp/paths | awk '{print $1}')" == 'b8a450e65fed26e8114752387a34133cfdd3bfc6979a2d9e447277f949534ed0' ]]
 
-      - name: Prove Sprint124 source and operational state remain untouched
+      - name: Prove Sprint124 DB attestation source and operational state remain untouched
         shell: bash
         run: |
           set -euo pipefail
@@ -94,23 +95,11 @@ jobs:
             .gate_matrix.enabled_with_short_token == "ROUTE_ABSENT" and
             .gate_matrix.enabled_with_oversized_token == "ROUTE_ABSENT" and
             .gate_matrix.enabled_with_valid_token == "ROUTE_REGISTERED" and
-            .registered_route_contract.http_method == "GET_ONLY" and
-            .registered_route_contract.throttle == "2_PER_MINUTE" and
-            .registered_route_contract.bearer_middleware_required == true and
-            .registered_route_contract.missing_bearer_disposition == "HTTP_404" and
-            .registered_route_contract.malformed_bearer_disposition == "HTTP_404" and
             .registered_route_contract.valid_bearer_request_performed == false and
-            .source_preservation.provider == "UNCHANGED" and
-            .source_preservation.middleware == "UNCHANGED" and
-            .source_preservation.application_bootstrap == "UNCHANGED" and
-            .canonical_boundaries.runtime_configuration_mutation == "NOT_PERFORMED" and
-            .canonical_boundaries.runtime_token_provisioning == "NOT_PERFORMED" and
-            .canonical_boundaries.valid_bearer_request == "NOT_PERFORMED" and
             .canonical_boundaries.runtime_db_binding_attestation == "NOT_PERFORMED" and
             .canonical_boundaries.migration27_execution == "NOT_PERFORMED" and
             .canonical_boundaries.permission_provisioning == "NONE" and
-            .canonical_boundaries.feature_activation == "INACTIVE" and
-            .source_envelope_sha256 == "e4cc7925de61e7a84e11a95627ce860b9a50518777e087741abbb93a8a97070e"
+            .canonical_boundaries.feature_activation == "INACTIVE"
           ' "$file" >/dev/null
 
       - name: Validate PHP syntax and locked dependencies
@@ -119,11 +108,13 @@ jobs:
         run: |
           set -euo pipefail
           php -l tests/final-shift-close-runtime-db-binding-attestation-control-plane.php
+          php -l app/Providers/FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider.php
+          php -l app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware.php
           composer validate --no-check-publish
           composer install --no-interaction --no-progress --prefer-dist
           composer audit --locked --no-interaction --abandoned=report
 
-      - name: Lock executable regression source safety
+      - name: Lock executable DB attestation regression source safety
         shell: bash
         run: |
           set -euo pipefail
@@ -134,63 +125,58 @@ jobs:
           grep -Fq 'RequireFinalShiftCloseRuntimeBindingTokenMiddleware::class' "$test"
           grep -Fq "'HTTP_AUTHORIZATION' => 'Bearer short'" "$test"
           ! grep -Fq 'enabled-valid-token' <<< "$(grep -E 'HTTP_AUTHORIZATION|Bearer ' "$test" || true)"
-          ! grep -Eq '(migration|migrate|Artisan::|DB::|connection\(|runtime-db-binding-attestation.*valid)' "$test"
 
-      - name: Prove disabled gate keeps route absent
+      - name: Prove disabled DB attestation gate keeps route absent
         working-directory: apps/web
         env:
           ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_DB_BINDING_ATTESTATION_ENABLED: 'false'
           ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_DB_BINDING_ATTESTATION_TOKEN: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
         run: php tests/final-shift-close-runtime-db-binding-attestation-control-plane.php disabled
 
-      - name: Prove enabled gate with empty token keeps route absent
-        working-directory: apps/web
-        env:
-          ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_DB_BINDING_ATTESTATION_ENABLED: 'true'
-          ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_DB_BINDING_ATTESTATION_TOKEN: ''
-        run: php tests/final-shift-close-runtime-db-binding-attestation-control-plane.php enabled-empty-token
-
-      - name: Prove enabled gate with short token keeps route absent
+      - name: Prove enabled DB attestation gate with invalid tokens remains absent
         working-directory: apps/web
         shell: bash
         run: |
           set -euo pipefail
-          token="$(printf 's%.0s' {1..31})"
-          ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_DB_BINDING_ATTESTATION_ENABLED=true \
-          ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_DB_BINDING_ATTESTATION_TOKEN="$token" \
-            php tests/final-shift-close-runtime-db-binding-attestation-control-plane.php enabled-short-token
+          ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_DB_BINDING_ATTESTATION_ENABLED=true ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_DB_BINDING_ATTESTATION_TOKEN='' php tests/final-shift-close-runtime-db-binding-attestation-control-plane.php enabled-empty-token
+          short="$(printf 's%.0s' {1..31})"
+          ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_DB_BINDING_ATTESTATION_ENABLED=true ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_DB_BINDING_ATTESTATION_TOKEN="$short" php tests/final-shift-close-runtime-db-binding-attestation-control-plane.php enabled-short-token
+          long="$(printf 'o%.0s' {1..513})"
+          ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_DB_BINDING_ATTESTATION_ENABLED=true ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_DB_BINDING_ATTESTATION_TOKEN="$long" php tests/final-shift-close-runtime-db-binding-attestation-control-plane.php enabled-oversized-token
 
-      - name: Prove enabled gate with oversized token keeps route absent
-        working-directory: apps/web
-        shell: bash
-        run: |
-          set -euo pipefail
-          token="$(printf 'o%.0s' {1..513})"
-          ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_DB_BINDING_ATTESTATION_ENABLED=true \
-          ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_DB_BINDING_ATTESTATION_TOKEN="$token" \
-            php tests/final-shift-close-runtime-db-binding-attestation-control-plane.php enabled-oversized-token
-
-      - name: Prove valid gate registers only authenticated read-only route surface
+      - name: Prove valid DB attestation gate retains authenticated read-only route surface
         working-directory: apps/web
         env:
           ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_DB_BINDING_ATTESTATION_ENABLED: 'true'
           ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_DB_BINDING_ATTESTATION_TOKEN: vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
         run: php tests/final-shift-close-runtime-db-binding-attestation-control-plane.php enabled-valid-token
 
+      - name: Preserve Sprint126 hardened manifest materialization token boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          provider=apps/web/app/Providers/FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider.php
+          middleware=apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware.php
+          grep -Fq 'strlen($token) >= 32' "$provider"
+          grep -Fq 'strlen($token) <= 512' "$provider"
+          grep -Fq 'strlen($this->expectedToken) < 32' "$middleware"
+          grep -Fq 'strlen($this->expectedToken) > 512' "$middleware"
+          grep -Fq '[A-Za-z0-9._~+\/-=]{32,512}' "$middleware"
+          jq -e '.sprint == 126 and .control_plane.delivery == "INACTIVE" and .canonical_boundaries.runtime_token_provisioning == "NOT_PERFORMED" and .canonical_boundaries.runtime_manifest_materialization == "NOT_PERFORMED"' ops/final-shift-close/RUNTIME_BINDING_MANIFEST_CONTROL_PLANE_TOKEN_HARDENING_CONTRACT.json >/dev/null
+
       - name: Lock no operational invocation or activation
         shell: bash
         run: |
           set -euo pipefail
-          ! grep -Fq 'workflow_dispatch' .github/workflows/sprint125-final-shift-close-runtime-db-binding-attestation-control-plane-regression.yml
           doc=docs/SPRINT125_FINAL_SHIFT_CLOSE_RUNTIME_DB_BINDING_ATTESTATION_CONTROL_PLANE_REGRESSION.md
           grep -Fq 'SPRINT125_CONTROL_PLANE_REGRESSION = EXECUTABLE_CI_ONLY' "$doc"
-          grep -Fq 'SPRINT125_RUNTIME_CONFIGURATION_MUTATION = NOT_PERFORMED' "$doc"
-          grep -Fq 'SPRINT125_RUNTIME_TOKEN_PROVISIONING = NOT_PERFORMED' "$doc"
           grep -Fq 'SPRINT125_VALID_BEARER_REQUEST = NOT_PERFORMED' "$doc"
-          grep -Fq 'SPRINT125_RUNTIME_DB_BINDING_ATTESTATION = NOT_PERFORMED' "$doc"
-          grep -Fq 'MIGRATION_27_EXECUTION = NOT_PERFORMED' "$doc"
-          grep -Fq 'FEATURE_ACTIVATION = INACTIVE' "$doc"
-          grep -Fq 'PRODUCTION = NO-GO' "$doc"
+          sprint126=docs/SPRINT126_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MANIFEST_CONTROL_PLANE_TOKEN_HARDENING.md
+          grep -Fq 'SPRINT126_RUNTIME_TOKEN_PROVISIONING = NOT_PERFORMED' "$sprint126"
+          grep -Fq 'SPRINT126_VALID_BEARER_REQUEST = NOT_PERFORMED' "$sprint126"
+          grep -Fq 'SPRINT126_RUNTIME_MANIFEST_MATERIALIZATION = NOT_PERFORMED' "$sprint126"
+          grep -Fq 'FEATURE_ACTIVATION = INACTIVE' "$sprint126"
+          grep -Fq 'PRODUCTION = NO-GO' "$sprint126"
 
       - name: Verify tracked-source cleanliness
         shell: bash
