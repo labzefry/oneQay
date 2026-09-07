@@ -1,0 +1,209 @@
+name: Sprint128 Final Shift Close Runtime Control Plane Token Character Policy
+
+# Attribution: Lab | zefry
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  qualify-runtime-control-plane-token-character-policy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHQ=
+      APP_DEBUG: 'false'
+      APP_URL: http://localhost
+      CACHE_STORE: array
+      SESSION_DRIVER: array
+
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Lock exact Sprint128 source envelope
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+          git diff --name-only "$base" "$head" | LC_ALL=C sort > /tmp/paths
+          cat > /tmp/expected <<'EOF'
+          .github/workflows/sprint120-final-shift-close-runtime-binding-manifest-writer.yml
+          .github/workflows/sprint121-final-shift-close-runtime-binding-manifest-control-channel.yml
+          .github/workflows/sprint122-final-shift-close-runtime-binding-manifest-write-once-cas.yml
+          .github/workflows/sprint123-final-shift-close-runtime-binding-manifest-control-plane-registration.yml
+          .github/workflows/sprint124-final-shift-close-runtime-db-binding-attestation-control-plane-registration.yml
+          .github/workflows/sprint125-final-shift-close-runtime-db-binding-attestation-control-plane-regression.yml
+          .github/workflows/sprint126-final-shift-close-runtime-binding-manifest-control-plane-token-hardening.yml
+          .github/workflows/sprint127-final-shift-close-runtime-binding-manifest-control-plane-regression.yml
+          .github/workflows/sprint128-final-shift-close-runtime-control-plane-token-character-policy.yml
+          apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware.php
+          apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingTokenMiddleware.php
+          apps/web/app/Providers/FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider.php
+          apps/web/app/Providers/FinalShiftCloseRuntimeDbBindingAttestationServiceProvider.php
+          apps/web/tests/final-shift-close-runtime-control-plane-token-character-policy.php
+          docs/SPRINT128_FINAL_SHIFT_CLOSE_RUNTIME_CONTROL_PLANE_TOKEN_CHARACTER_POLICY.md
+          ops/final-shift-close/RUNTIME_CONTROL_PLANE_TOKEN_CHARACTER_POLICY_CONTRACT.json
+          EOF
+          diff -u /tmp/expected /tmp/paths
+          [[ "$(sha256sum /tmp/paths | awk '{print $1}')" == 'e6f251e423857e49f9e0a1a0e2e5b5008934476028fe94d6ae10f3c015be45d1' ]]
+
+      - name: Prove preserved runtime and operational state remain untouched
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+          git diff --quiet "$base" "$head" -- \
+            apps/web/config/final_shift_close_runtime_binding_materialization.php \
+            apps/web/config/final_shift_close_runtime_db_binding_attestation.php \
+            apps/web/bootstrap/app.php \
+            apps/web/bootstrap/providers.php \
+            apps/web/routes \
+            apps/web/app/Delivery/Http/Pos/FinalShiftCloseRuntimeBindingManifestMaterializationController.php \
+            apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingManifestMaterializer.php \
+            apps/web/app/Infrastructure/Pos/FilesystemFinalShiftCloseRuntimeBindingManifestWriter.php \
+            apps/web/app/Delivery/Http/Pos/FinalShiftCloseRuntimeDbBindingAttestationController.php \
+            apps/web/app/Application/Pos/FinalShiftCloseRuntimeDbBindingAttestation.php \
+            apps/web/app/Infrastructure/Pos/LaravelFinalShiftCloseRuntimeDatabaseIdentityReader.php \
+            apps/web/config/oneqay.php \
+            apps/web/database/migrations \
+            .github/workflows/final-shift-close-migration27-selected-target-db-binding.yml \
+            .github/workflows/final-shift-close-migration27-execution.yml \
+            ops/final-shift-close/STATE.json \
+            ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+          [[ "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" == 'NOT_EXECUTED' ]]
+          [[ "$(jq -r '.permission_provisioning.state' ops/final-shift-close/STATE.json)" == 'NONE' ]]
+          [[ "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" == 'INACTIVE' ]]
+          [[ "$(jq -r '.selection_state' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" == 'BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET' ]]
+          [[ "$(jq -r '.selected_target' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" == 'null' ]]
+
+      - name: Lock exact token character policy source
+        shell: bash
+        run: |
+          set -euo pipefail
+          files=(
+            apps/web/app/Providers/FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider.php
+            apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware.php
+            apps/web/app/Providers/FinalShiftCloseRuntimeDbBindingAttestationServiceProvider.php
+            apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingTokenMiddleware.php
+          )
+          for file in "${files[@]}"; do
+            grep -Fq '[A-Za-z0-9._~+=\/-]{32,512}' "$file"
+            ! grep -Fq '[A-Za-z0-9._~+\/-=]{32,512}' "$file"
+          done
+          grep -Fq "preg_match('/\\A[A-Za-z0-9._~+=\\/-]{32,512}\\z/D', \$token) === 1" apps/web/app/Providers/FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider.php
+          grep -Fq "preg_match('/\\A[A-Za-z0-9._~+=\\/-]{32,512}\\z/D', \$token) === 1" apps/web/app/Providers/FinalShiftCloseRuntimeDbBindingAttestationServiceProvider.php
+          grep -Fq "preg_match('/\\A[A-Za-z0-9._~+=\\/-]{32,512}\\z/D', \$this->expectedToken) !== 1" apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware.php
+          grep -Fq "preg_match('/\\A[A-Za-z0-9._~+=\\/-]{32,512}\\z/D', \$this->expectedToken) !== 1" apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingTokenMiddleware.php
+          grep -Fq 'hash_equals($this->expectedToken, $matches[1])' apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware.php
+          grep -Fq 'hash_equals($this->expectedToken, $matches[1])' apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingTokenMiddleware.php
+
+      - name: Validate Sprint128 machine-readable contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=ops/final-shift-close/RUNTIME_CONTROL_PLANE_TOKEN_CHARACTER_POLICY_CONTRACT.json
+          jq -e '
+            .schema_version == 1 and
+            .feature == "final-shift-close" and
+            .sprint == 128 and
+            .bounded_objective == "RUNTIME_CONTROL_PLANE_TOKEN_CHARACTER_POLICY_REPAIR" and
+            .execution_mode == "SOURCE_HARDENING_WITH_CI_ONLY_REGRESSION" and
+            .token_policy.minimum_length == 32 and
+            .token_policy.maximum_length == 512 and
+            .token_policy.hyphen == "ALLOWED" and
+            .token_policy.colon == "REJECTED" and
+            .token_policy.semicolon == "REJECTED" and
+            .token_policy.less_than == "REJECTED" and
+            .materialization_control_plane.middleware_invalid_expected_token == "HTTP_503" and
+            .materialization_control_plane.middleware_invalid_bearer == "HTTP_401" and
+            .materialization_control_plane.valid_control_plane_request_performed == false and
+            .db_attestation_control_plane.middleware_invalid_expected_token == "HTTP_404_CLOAKED" and
+            .db_attestation_control_plane.middleware_invalid_bearer == "HTTP_404_CLOAKED" and
+            .db_attestation_control_plane.valid_control_plane_request_performed == false and
+            .canonical_boundaries.runtime_manifest_materialization == "NOT_PERFORMED" and
+            .canonical_boundaries.runtime_db_binding_attestation == "NOT_PERFORMED" and
+            .canonical_boundaries.feature_activation == "INACTIVE" and
+            .source_envelope_sha256 == "e6f251e423857e49f9e0a1a0e2e5b5008934476028fe94d6ae10f3c015be45d1"
+          ' "$file" >/dev/null
+
+      - name: Validate PHP syntax and locked dependencies
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l app/Providers/FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider.php
+          php -l app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware.php
+          php -l app/Providers/FinalShiftCloseRuntimeDbBindingAttestationServiceProvider.php
+          php -l app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingTokenMiddleware.php
+          php -l tests/final-shift-close-runtime-control-plane-token-character-policy.php
+          composer validate --no-check-publish
+          composer install --no-interaction --no-progress --prefer-dist
+          composer audit --locked --no-interaction --abandoned=report
+
+      - name: Prove exact regex character matrix
+        working-directory: apps/web
+        run: php tests/final-shift-close-runtime-control-plane-token-character-policy.php regex-matrix
+
+      - name: Prove materialization provider character policy
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          valid="$(printf 'a%.0s' {1..31})-"
+          ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MATERIALIZATION_ENABLED=true ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MATERIALIZATION_TOKEN="$valid" php tests/final-shift-close-runtime-control-plane-token-character-policy.php materialization-valid-hyphen
+          invalid="$(printf 'a%.0s' {1..31}):"
+          ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MATERIALIZATION_ENABLED=true ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MATERIALIZATION_TOKEN="$invalid" php tests/final-shift-close-runtime-control-plane-token-character-policy.php materialization-invalid-colon
+
+      - name: Prove DB attestation provider character policy
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          valid="$(printf 'a%.0s' {1..31})-"
+          ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_DB_BINDING_ATTESTATION_ENABLED=true ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_DB_BINDING_ATTESTATION_TOKEN="$valid" php tests/final-shift-close-runtime-control-plane-token-character-policy.php db-valid-hyphen
+          invalid="$(printf 'a%.0s' {1..31}):"
+          ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_DB_BINDING_ATTESTATION_ENABLED=true ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_DB_BINDING_ATTESTATION_TOKEN="$invalid" php tests/final-shift-close-runtime-control-plane-token-character-policy.php db-invalid-colon
+
+      - name: Prove middleware invalid-character dispositions
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          php tests/final-shift-close-runtime-control-plane-token-character-policy.php materialization-invalid-expected
+          php tests/final-shift-close-runtime-control-plane-token-character-policy.php materialization-invalid-bearer
+          php tests/final-shift-close-runtime-control-plane-token-character-policy.php db-invalid-expected
+          php tests/final-shift-close-runtime-control-plane-token-character-policy.php db-invalid-bearer
+
+      - name: Lock no operational invocation or activation
+        shell: bash
+        run: |
+          set -euo pipefail
+          ! grep -Fq 'workflow_dispatch' .github/workflows/sprint128-final-shift-close-runtime-control-plane-token-character-policy.yml
+          doc=docs/SPRINT128_FINAL_SHIFT_CLOSE_RUNTIME_CONTROL_PLANE_TOKEN_CHARACTER_POLICY.md
+          grep -Fq 'SPRINT128_VALID_CONTROL_PLANE_REQUEST = NOT_PERFORMED' "$doc"
+          grep -Fq 'SPRINT128_CONTROLLER_INVOCATION = NOT_PERFORMED' "$doc"
+          grep -Fq 'SPRINT128_RUNTIME_CONFIGURATION_MUTATION = NOT_PERFORMED' "$doc"
+          grep -Fq 'SPRINT128_RUNTIME_TOKEN_PROVISIONING = NOT_PERFORMED' "$doc"
+          grep -Fq 'SPRINT128_RUNTIME_MANIFEST_MATERIALIZATION = NOT_PERFORMED' "$doc"
+          grep -Fq 'SPRINT128_RUNTIME_DB_BINDING_ATTESTATION = NOT_PERFORMED' "$doc"
+          grep -Fq 'MIGRATION_27_EXECUTION = NOT_PERFORMED' "$doc"
+          grep -Fq 'FEATURE_ACTIVATION = INACTIVE' "$doc"
+          grep -Fq 'PRODUCTION = NO-GO' "$doc"
+
+      - name: Verify tracked-source cleanliness
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -z "$(git status --porcelain)" ]]
