@@ -1,0 +1,235 @@
+name: Sprint126 Final Shift Close Runtime Binding Manifest Control Plane Token Hardening
+
+# Attribution: Lab | zefry
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  qualify-runtime-binding-manifest-control-plane-token-hardening:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHQ=
+      APP_DEBUG: 'false'
+      APP_URL: http://localhost
+      CACHE_STORE: array
+      SESSION_DRIVER: array
+
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Lock exact Sprint126 source envelope
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+          git diff --name-only "$base" "$head" | LC_ALL=C sort > /tmp/paths
+          cat > /tmp/expected <<'EOF'
+          .github/workflows/sprint120-final-shift-close-runtime-binding-manifest-writer.yml
+          .github/workflows/sprint121-final-shift-close-runtime-binding-manifest-control-channel.yml
+          .github/workflows/sprint122-final-shift-close-runtime-binding-manifest-write-once-cas.yml
+          .github/workflows/sprint123-final-shift-close-runtime-binding-manifest-control-plane-registration.yml
+          .github/workflows/sprint124-final-shift-close-runtime-db-binding-attestation-control-plane-registration.yml
+          .github/workflows/sprint125-final-shift-close-runtime-db-binding-attestation-control-plane-regression.yml
+          .github/workflows/sprint126-final-shift-close-runtime-binding-manifest-control-plane-token-hardening.yml
+          apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware.php
+          apps/web/app/Providers/FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider.php
+          docs/SPRINT126_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MANIFEST_CONTROL_PLANE_TOKEN_HARDENING.md
+          ops/final-shift-close/RUNTIME_BINDING_MANIFEST_CONTROL_PLANE_TOKEN_HARDENING_CONTRACT.json
+          EOF
+          diff -u /tmp/expected /tmp/paths
+          fingerprint="$(sha256sum /tmp/paths | awk '{print $1}')"
+          [[ "$fingerprint" == 'b8a450e65fed26e8114752387a34133cfdd3bfc6979a2d9e447277f949534ed0' ]]
+
+      - name: Prove preserved source and operational state remain untouched
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+          git diff --quiet "$base" "$head" -- \
+            apps/web/config/final_shift_close_runtime_binding_materialization.php \
+            apps/web/bootstrap/app.php \
+            apps/web/bootstrap/providers.php \
+            apps/web/routes \
+            apps/web/app/Delivery/Http/Pos/FinalShiftCloseRuntimeBindingManifestMaterializationController.php \
+            apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingManifestMaterializer.php \
+            apps/web/app/Infrastructure/Pos/FilesystemFinalShiftCloseRuntimeBindingManifestWriter.php \
+            apps/web/config/final_shift_close_runtime_db_binding_attestation.php \
+            apps/web/app/Providers/FinalShiftCloseRuntimeDbBindingAttestationServiceProvider.php \
+            apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingTokenMiddleware.php \
+            apps/web/config/oneqay.php \
+            apps/web/database/migrations \
+            .github/workflows/final-shift-close-migration27-selected-target-db-binding.yml \
+            .github/workflows/final-shift-close-migration27-execution.yml \
+            ops/final-shift-close/STATE.json \
+            ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+          [[ "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" == 'NOT_EXECUTED' ]]
+          [[ "$(jq -r '.permission_provisioning.state' ops/final-shift-close/STATE.json)" == 'NONE' ]]
+          [[ "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" == 'INACTIVE' ]]
+          [[ "$(jq -r '.selection_state' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" == 'BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET' ]]
+          [[ "$(jq -r '.selected_target' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" == 'null' ]]
+
+      - name: Lock bounded token source policy
+        shell: bash
+        run: |
+          set -euo pipefail
+          provider=apps/web/app/Providers/FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider.php
+          middleware=apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware.php
+          config=apps/web/config/final_shift_close_runtime_binding_materialization.php
+          grep -Fq "env('ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MATERIALIZATION_ENABLED', false)" "$config"
+          grep -Fq "env('ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MATERIALIZATION_TOKEN', '')" "$config"
+          grep -Fq 'strlen($token) >= 32' "$provider"
+          grep -Fq 'strlen($token) <= 512' "$provider"
+          grep -Fq 'strlen($this->expectedToken) < 32' "$middleware"
+          grep -Fq 'strlen($this->expectedToken) > 512' "$middleware"
+          grep -Fq '[A-Za-z0-9._~+\/-=]{32,512}' "$middleware"
+          grep -Fq 'hash_equals($this->expectedToken, $matches[1])' "$middleware"
+          grep -Fq 'abort(503);' "$middleware"
+          grep -Fq 'abort(401);' "$middleware"
+          grep -Fq "'throttle:1,1'" "$provider"
+
+      - name: Validate Sprint126 machine-readable contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=ops/final-shift-close/RUNTIME_BINDING_MANIFEST_CONTROL_PLANE_TOKEN_HARDENING_CONTRACT.json
+          jq -e '
+            .schema_version == 1 and
+            .feature == "final-shift-close" and
+            .sprint == 126 and
+            .bounded_objective == "RUNTIME_BINDING_MANIFEST_CONTROL_PLANE_TOKEN_HARDENING" and
+            .token_policy.minimum_length == 32 and
+            .token_policy.maximum_length == 512 and
+            .token_policy.provider_registration_requires_valid_token == true and
+            .token_policy.invalid_expected_token_disposition == "HTTP_503" and
+            .token_policy.missing_or_malformed_bearer_disposition == "HTTP_401" and
+            .token_policy.constant_time_comparison == true and
+            .control_plane.delivery == "INACTIVE" and
+            .control_plane.delivery_gate == "DEFAULT_OFF_AND_BOUNDED_TOKEN_REQUIRED" and
+            .source_preservation.materialization_config == "UNCHANGED" and
+            .source_preservation.application_bootstrap == "UNCHANGED" and
+            .canonical_boundaries.runtime_configuration_mutation == "NOT_PERFORMED" and
+            .canonical_boundaries.runtime_token_provisioning == "NOT_PERFORMED" and
+            .canonical_boundaries.valid_bearer_request == "NOT_PERFORMED" and
+            .canonical_boundaries.runtime_manifest_materialization == "NOT_PERFORMED" and
+            .canonical_boundaries.migration27_execution == "NOT_PERFORMED" and
+            .canonical_boundaries.permission_provisioning == "NONE" and
+            .canonical_boundaries.feature_activation == "INACTIVE" and
+            .source_envelope_sha256 == "b8a450e65fed26e8114752387a34133cfdd3bfc6979a2d9e447277f949534ed0"
+          ' "$file" >/dev/null
+
+      - name: Validate PHP syntax and locked dependencies
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l app/Providers/FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider.php
+          php -l app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware.php
+          composer validate --no-check-publish
+          composer install --no-interaction --no-progress --prefer-dist
+          composer audit --locked --no-interaction --abandoned=report
+
+      - name: Prove disabled gate keeps materialization route absent
+        working-directory: apps/web
+        env:
+          ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MATERIALIZATION_ENABLED: 'false'
+          ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MATERIALIZATION_TOKEN: vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -r '
+            require "vendor/autoload.php";
+            $app = require "bootstrap/app.php";
+            $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+            $route = $app->make("router")->getRoutes()->getByName("internal.final-shift-close.runtime-binding-manifest.materialize");
+            exit($route === null ? 0 : 1);
+          '
+
+      - name: Prove short token keeps materialization route absent
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          token="$(printf 's%.0s' {1..31})"
+          ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MATERIALIZATION_ENABLED=true \
+          ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MATERIALIZATION_TOKEN="$token" \
+          php -r '
+            require "vendor/autoload.php";
+            $app = require "bootstrap/app.php";
+            $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+            $route = $app->make("router")->getRoutes()->getByName("internal.final-shift-close.runtime-binding-manifest.materialize");
+            exit($route === null ? 0 : 1);
+          '
+
+      - name: Prove oversized token keeps materialization route absent
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          token="$(printf 'o%.0s' {1..513})"
+          ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MATERIALIZATION_ENABLED=true \
+          ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MATERIALIZATION_TOKEN="$token" \
+          php -r '
+            require "vendor/autoload.php";
+            $app = require "bootstrap/app.php";
+            $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+            $route = $app->make("router")->getRoutes()->getByName("internal.final-shift-close.runtime-binding-manifest.materialize");
+            exit($route === null ? 0 : 1);
+          '
+
+      - name: Prove bounded valid token registers POST-only materialization route
+        working-directory: apps/web
+        env:
+          ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MATERIALIZATION_ENABLED: 'true'
+          ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MATERIALIZATION_TOKEN: vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -r '
+            require "vendor/autoload.php";
+            $app = require "bootstrap/app.php";
+            $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+            $route = $app->make("router")->getRoutes()->getByName("internal.final-shift-close.runtime-binding-manifest.materialize");
+            if ($route === null) exit(1);
+            $methods = $route->methods();
+            if (!in_array("POST", $methods, true) || in_array("GET", $methods, true)) exit(1);
+            $middleware = $route->gatherMiddleware();
+            if (!in_array("throttle:1,1", $middleware, true)) exit(1);
+            if (!in_array(App\Delivery\Http\Middleware\RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware::class, $middleware, true)) exit(1);
+          '
+
+      - name: Lock no operational invocation or activation
+        shell: bash
+        run: |
+          set -euo pipefail
+          ! grep -Fq 'workflow_dispatch' .github/workflows/sprint126-final-shift-close-runtime-binding-manifest-control-plane-token-hardening.yml
+          doc=docs/SPRINT126_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MANIFEST_CONTROL_PLANE_TOKEN_HARDENING.md
+          grep -Fq 'SPRINT126_TOKEN_POLICY = BOUNDED_32_512_ASCII_SOURCE_ONLY' "$doc"
+          grep -Fq 'SPRINT126_CONTROL_CHANNEL_DELIVERY = INACTIVE' "$doc"
+          grep -Fq 'SPRINT126_RUNTIME_CONFIGURATION_MUTATION = NOT_PERFORMED' "$doc"
+          grep -Fq 'SPRINT126_RUNTIME_TOKEN_PROVISIONING = NOT_PERFORMED' "$doc"
+          grep -Fq 'SPRINT126_VALID_BEARER_REQUEST = NOT_PERFORMED' "$doc"
+          grep -Fq 'SPRINT126_RUNTIME_MANIFEST_MATERIALIZATION = NOT_PERFORMED' "$doc"
+          grep -Fq 'MIGRATION_27_EXECUTION = NOT_PERFORMED' "$doc"
+          grep -Fq 'FEATURE_ACTIVATION = INACTIVE' "$doc"
+          grep -Fq 'PRODUCTION = NO-GO' "$doc"
+
+      - name: Verify tracked-source cleanliness
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -z "$(git status --porcelain)" ]]
