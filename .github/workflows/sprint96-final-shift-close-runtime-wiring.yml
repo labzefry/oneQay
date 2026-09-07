@@ -92,6 +92,32 @@ jobs:
               apps/web/resources \
               apps/web/routes
             echo 'Recognized exact Sprint123 bounded application-bootstrap successor at Sprint96 runtime-wiring horizon.'
+          elif [[ "$count" -eq 13 && "$fingerprint" == 'e6847c50f16ca24497a400b7a8be43efa9e319e24e4b9f2abe10555a9609b657' ]]; then
+            cat > /tmp/expected <<'EOF'
+          .github/workflows/sprint119-final-shift-close-runtime-db-binding-attestation.yml
+          .github/workflows/sprint120-final-shift-close-runtime-binding-manifest-writer.yml
+          .github/workflows/sprint121-final-shift-close-runtime-binding-manifest-control-channel.yml
+          .github/workflows/sprint122-final-shift-close-runtime-binding-manifest-write-once-cas.yml
+          .github/workflows/sprint123-final-shift-close-runtime-binding-manifest-control-plane-registration.yml
+          .github/workflows/sprint124-final-shift-close-runtime-db-binding-attestation-control-plane-registration.yml
+          .github/workflows/sprint96-final-shift-close-runtime-wiring.yml
+          apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingTokenMiddleware.php
+          apps/web/app/Providers/FinalShiftCloseRuntimeDbBindingAttestationServiceProvider.php
+          apps/web/bootstrap/app.php
+          apps/web/config/final_shift_close_runtime_db_binding_attestation.php
+          docs/SPRINT124_FINAL_SHIFT_CLOSE_RUNTIME_DB_BINDING_ATTESTATION_CONTROL_PLANE_REGISTRATION.md
+          ops/final-shift-close/RUNTIME_DB_BINDING_ATTESTATION_CONTROL_PLANE_REGISTRATION_CONTRACT.json
+          EOF
+            diff -u /tmp/expected /tmp/actual
+            git diff --exit-code "$base" "$head" -- \
+              apps/web/app/Providers/FinalShiftCloseServiceProvider.php \
+              apps/web/bootstrap/providers.php \
+              apps/web/config/oneqay.php \
+              apps/web/config/final_shift_close_runtime_binding_materialization.php \
+              apps/web/database/migrations \
+              apps/web/resources \
+              apps/web/routes
+            echo 'Recognized exact Sprint124 bounded application-bootstrap successor at Sprint96 runtime-wiring horizon.'
           else
             echo "Unrecognized Sprint96 qualification shape: count=$count fingerprint=$fingerprint" >&2
             cat /tmp/actual >&2
