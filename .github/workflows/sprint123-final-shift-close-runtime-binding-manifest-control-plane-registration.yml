@@ -32,19 +32,20 @@ jobs:
           .github/workflows/sprint123-final-shift-close-runtime-binding-manifest-control-plane-registration.yml
           apps/web/app/Providers/FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider.php
           apps/web/bootstrap/providers.php
-          apps/web/config/oneqay.php
+          apps/web/config/final_shift_close_runtime_binding_materialization.php
           docs/SPRINT123_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MANIFEST_CONTROL_PLANE_REGISTRATION.md
           ops/final-shift-close/RUNTIME_BINDING_MANIFEST_CONTROL_PLANE_REGISTRATION_CONTRACT.json
           EOF
           diff -u /tmp/expected /tmp/paths
           fingerprint="$(sha256sum /tmp/paths | awk '{print $1}')"
-          [[ "$fingerprint" == '258a041d330a9496f55c1a7ba4737acd308c6d6c0436603a20b9f2e8b67ec5f7' ]]
+          [[ "$fingerprint" == '97690e6bbacb18330a39e03f9d06c83e80067cca61a9173f480938192e693de1' ]]
 
       - name: Prove runtime semantics and operational state remain untouched
         shell: bash
         run: |
           set -euo pipefail
           git diff --quiet "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" -- \
+            apps/web/config/oneqay.php \
             apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingManifestMaterializer.php \
             apps/web/app/Infrastructure/Pos/FilesystemFinalShiftCloseRuntimeBindingManifestWriter.php \
             apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware.php \
@@ -65,13 +66,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          config=apps/web/config/oneqay.php
+          config=apps/web/config/final_shift_close_runtime_binding_materialization.php
           provider=apps/web/app/Providers/FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider.php
           middleware=apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware.php
           grep -Fq "env('ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MATERIALIZATION_ENABLED', false)" "$config"
           grep -Fq "env('ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MATERIALIZATION_TOKEN', '')" "$config"
-          grep -Fq "config('oneqay.final_shift_close_runtime_binding_materialization.enabled', false)" "$provider"
-          grep -Fq "config('oneqay.final_shift_close_runtime_binding_materialization.token', '')" "$provider"
+          grep -Fq "config('final_shift_close_runtime_binding_materialization.enabled', false)" "$provider"
+          grep -Fq "config('final_shift_close_runtime_binding_materialization.token', '')" "$provider"
           grep -Fq "return is_string(\$token) && \$token !== '';" "$provider"
           grep -Fq "'throttle:1,1'" "$provider"
           grep -Fq "if (\$this->expectedToken === '')" "$middleware"
@@ -103,7 +104,7 @@ jobs:
             .canonical_boundaries.migration27_execution == "NOT_PERFORMED" and
             .canonical_boundaries.permission_provisioning == "NONE" and
             .canonical_boundaries.feature_activation == "INACTIVE" and
-            .source_envelope_sha256 == "258a041d330a9496f55c1a7ba4737acd308c6d6c0436603a20b9f2e8b67ec5f7"
+            .source_envelope_sha256 == "97690e6bbacb18330a39e03f9d06c83e80067cca61a9173f480938192e693de1"
           ' "$file" >/dev/null
 
       - name: Preserve Sprint121 and Sprint122 security semantics
@@ -123,7 +124,7 @@ jobs:
         run: |
           set -euo pipefail
           find \
-            apps/web/config/oneqay.php \
+            apps/web/config/final_shift_close_runtime_binding_materialization.php \
             apps/web/bootstrap/providers.php \
             apps/web/app/Providers/FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider.php \
             apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingManifestMaterializer.php \
