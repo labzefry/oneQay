@@ -27,24 +27,26 @@ jobs:
           set -euo pipefail
           git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | sort > /tmp/paths
           cat > /tmp/expected <<'EOF'
+          .github/workflows/sprint120-final-shift-close-runtime-binding-manifest-writer.yml
           .github/workflows/sprint121-final-shift-close-runtime-binding-manifest-control-channel.yml
           .github/workflows/sprint122-final-shift-close-runtime-binding-manifest-write-once-cas.yml
           .github/workflows/sprint123-final-shift-close-runtime-binding-manifest-control-plane-registration.yml
           apps/web/app/Providers/FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider.php
-          apps/web/bootstrap/providers.php
+          apps/web/bootstrap/app.php
           apps/web/config/final_shift_close_runtime_binding_materialization.php
           docs/SPRINT123_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MANIFEST_CONTROL_PLANE_REGISTRATION.md
           ops/final-shift-close/RUNTIME_BINDING_MANIFEST_CONTROL_PLANE_REGISTRATION_CONTRACT.json
           EOF
           diff -u /tmp/expected /tmp/paths
           fingerprint="$(sha256sum /tmp/paths | awk '{print $1}')"
-          [[ "$fingerprint" == '97690e6bbacb18330a39e03f9d06c83e80067cca61a9173f480938192e693de1' ]]
+          [[ "$fingerprint" == '2b1d247823c556f079521744ded5cc987b0d228794a1237b21aff87937331efb' ]]
 
       - name: Prove runtime semantics and operational state remain untouched
         shell: bash
         run: |
           set -euo pipefail
           git diff --quiet "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" -- \
+            apps/web/bootstrap/providers.php \
             apps/web/config/oneqay.php \
             apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingManifestMaterializer.php \
             apps/web/app/Infrastructure/Pos/FilesystemFinalShiftCloseRuntimeBindingManifestWriter.php \
@@ -58,7 +60,9 @@ jobs:
             apps/web/database/migrations \
             ops/final-shift-close/STATE.json \
             ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
-          [[ "$(grep -Fc 'FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider::class' apps/web/bootstrap/providers.php)" -eq 1 ]]
+          [[ "$(grep -Fc 'FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider::class' apps/web/bootstrap/app.php)" -eq 1 ]]
+          ! grep -Fq 'FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider::class' apps/web/bootstrap/providers.php
+          ! grep -Fq 'FinalShiftCloseRuntimeDbBindingAttestationServiceProvider::class' apps/web/bootstrap/app.php
           ! grep -Fq 'FinalShiftCloseRuntimeDbBindingAttestationServiceProvider::class' apps/web/bootstrap/providers.php
           grep -Fq 'return false;' apps/web/app/Providers/FinalShiftCloseRuntimeDbBindingAttestationServiceProvider.php
 
@@ -104,7 +108,7 @@ jobs:
             .canonical_boundaries.migration27_execution == "NOT_PERFORMED" and
             .canonical_boundaries.permission_provisioning == "NONE" and
             .canonical_boundaries.feature_activation == "INACTIVE" and
-            .source_envelope_sha256 == "97690e6bbacb18330a39e03f9d06c83e80067cca61a9173f480938192e693de1"
+            .source_envelope_sha256 == "2b1d247823c556f079521744ded5cc987b0d228794a1237b21aff87937331efb"
           ' "$file" >/dev/null
 
       - name: Preserve Sprint121 and Sprint122 security semantics
@@ -124,8 +128,8 @@ jobs:
         run: |
           set -euo pipefail
           find \
+            apps/web/bootstrap/app.php \
             apps/web/config/final_shift_close_runtime_binding_materialization.php \
-            apps/web/bootstrap/providers.php \
             apps/web/app/Providers/FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider.php \
             apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingManifestMaterializer.php \
             apps/web/app/Infrastructure/Pos/FilesystemFinalShiftCloseRuntimeBindingManifestWriter.php \
