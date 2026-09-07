@@ -1,0 +1,184 @@
+name: Sprint124 Final Shift Close Runtime DB Binding Attestation Control Plane Registration
+
+# Attribution: Lab | zefry
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  qualify-runtime-db-binding-attestation-control-plane-registration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Lock exact Sprint124 source envelope
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+          git diff --name-only "$base" "$head" | LC_ALL=C sort > /tmp/paths
+          cat > /tmp/expected <<'EOF'
+          .github/workflows/sprint119-final-shift-close-runtime-db-binding-attestation.yml
+          .github/workflows/sprint120-final-shift-close-runtime-binding-manifest-writer.yml
+          .github/workflows/sprint121-final-shift-close-runtime-binding-manifest-control-channel.yml
+          .github/workflows/sprint122-final-shift-close-runtime-binding-manifest-write-once-cas.yml
+          .github/workflows/sprint123-final-shift-close-runtime-binding-manifest-control-plane-registration.yml
+          .github/workflows/sprint124-final-shift-close-runtime-db-binding-attestation-control-plane-registration.yml
+          .github/workflows/sprint96-final-shift-close-runtime-wiring.yml
+          apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingTokenMiddleware.php
+          apps/web/app/Providers/FinalShiftCloseRuntimeDbBindingAttestationServiceProvider.php
+          apps/web/bootstrap/app.php
+          apps/web/config/final_shift_close_runtime_db_binding_attestation.php
+          docs/SPRINT124_FINAL_SHIFT_CLOSE_RUNTIME_DB_BINDING_ATTESTATION_CONTROL_PLANE_REGISTRATION.md
+          ops/final-shift-close/RUNTIME_DB_BINDING_ATTESTATION_CONTROL_PLANE_REGISTRATION_CONTRACT.json
+          EOF
+          diff -u /tmp/expected /tmp/paths
+          fingerprint="$(sha256sum /tmp/paths | awk '{print $1}')"
+          [[ "$fingerprint" == 'e6847c50f16ca24497a400b7a8be43efa9e319e24e4b9f2abe10555a9609b657' ]]
+
+      - name: Prove operational state and mutation surfaces remain untouched
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+          git diff --quiet "$base" "$head" -- \
+            apps/web/bootstrap/providers.php \
+            apps/web/config/oneqay.php \
+            apps/web/database/migrations \
+            apps/web/routes/final-shift-close-runtime-db-binding-attestation.php \
+            apps/web/routes/final-shift-close-runtime-binding-manifest-materialization.php \
+            .github/workflows/final-shift-close-migration27-selected-target-db-binding.yml \
+            .github/workflows/final-shift-close-migration27-execution.yml \
+            ops/final-shift-close/STATE.json \
+            ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+          [[ "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" == 'NOT_EXECUTED' ]]
+          [[ "$(jq -r '.permission_provisioning.state' ops/final-shift-close/STATE.json)" == 'NONE' ]]
+          [[ "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" == 'INACTIVE' ]]
+          [[ "$(jq -r '.selection_state' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" == 'BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET' ]]
+          [[ "$(jq -r '.selected_target' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" == 'null' ]]
+
+      - name: Lock registered default-off token-required attestation gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          bootstrap=apps/web/bootstrap/app.php
+          provider=apps/web/app/Providers/FinalShiftCloseRuntimeDbBindingAttestationServiceProvider.php
+          middleware=apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingTokenMiddleware.php
+          config=apps/web/config/final_shift_close_runtime_db_binding_attestation.php
+          [[ "$(grep -Fc 'FinalShiftCloseRuntimeDbBindingAttestationServiceProvider::class' "$bootstrap")" -eq 1 ]]
+          grep -Fq 'use App\Providers\FinalShiftCloseRuntimeDbBindingAttestationServiceProvider;' "$bootstrap"
+          grep -Fq "env('ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_DB_BINDING_ATTESTATION_ENABLED', false)" "$config"
+          grep -Fq "env('ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_DB_BINDING_ATTESTATION_TOKEN', '')" "$config"
+          grep -Fq "config('final_shift_close_runtime_db_binding_attestation.enabled', false)" "$provider"
+          grep -Fq "config('final_shift_close_runtime_db_binding_attestation.token', '')" "$provider"
+          grep -Fq 'strlen($token) >= 32' "$provider"
+          grep -Fq 'strlen($token) <= 512' "$provider"
+          grep -Fq "'throttle:2,1'" "$provider"
+          grep -Fq "needs('$expectedToken')" "$provider"
+          grep -Fq 'private readonly string $expectedToken' "$middleware"
+          grep -Fq 'strlen($this->expectedToken) < 32' "$middleware"
+          grep -Fq 'strlen($this->expectedToken) > 512' "$middleware"
+          grep -Fq 'hash_equals($this->expectedToken, $matches[1])' "$middleware"
+          grep -Fq "response('', 404" "$middleware"
+          ! grep -Fq "config('oneqay.final_shift_close_runtime_db_binding_attestation.token'" "$middleware"
+
+      - name: Preserve read-only Sprint119 attestation semantics
+        shell: bash
+        run: |
+          set -euo pipefail
+          reader=apps/web/app/Infrastructure/Pos/LaravelFinalShiftCloseRuntimeDatabaseIdentityReader.php
+          service=apps/web/app/Application/Pos/FinalShiftCloseRuntimeDbBindingAttestation.php
+          route=apps/web/routes/final-shift-close-runtime-db-binding-attestation.php
+          grep -Fq "connection('oneqay')" apps/web/app/Providers/FinalShiftCloseRuntimeDbBindingAttestationServiceProvider.php
+          grep -Fq 'SELECT DATABASE() AS database_name, @@hostname AS server_hostname, @@port AS server_port' "$reader"
+          ! grep -Eq '(insert\(|update\(|delete\(|statement\(|unprepared\()' "$reader"
+          grep -Fq "hasTable('oneqay_pos_shift_close_evidence')" "$reader"
+          grep -Fq 'SELECTED_NOT_AUTHORIZED' "$service"
+          grep -Fq "'secrets_embedded' => false" "$service"
+          grep -Fq '/internal/final-shift-close/runtime-db-binding-attestation' "$route"
+          grep -Fq 'Route::get(' "$route"
+          ! grep -Eq 'Route::(post|put|patch|delete)' "$route"
+
+      - name: Validate Sprint124 machine-readable contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=ops/final-shift-close/RUNTIME_DB_BINDING_ATTESTATION_CONTROL_PLANE_REGISTRATION_CONTRACT.json
+          jq -e '
+            .schema_version == 1 and
+            .feature == "final-shift-close" and
+            .sprint == 124 and
+            .bounded_objective == "RUNTIME_DB_BINDING_ATTESTATION_CONTROL_PLANE_REGISTRATION_DEFAULT_OFF" and
+            .control_plane.provider_registration == "REGISTERED_SOURCE_ONLY" and
+            .control_plane.delivery == "INACTIVE" and
+            .control_plane.delivery_gate == "DEFAULT_OFF_AND_TOKEN_REQUIRED" and
+            .control_plane.route_registration_when_disabled == false and
+            .control_plane.token_min_length == 32 and
+            .control_plane.token_max_length == 512 and
+            .control_plane.invalid_credential_disposition == "HTTP_404" and
+            .attestation_boundary.database_identity_source == "ACTIVE_APPLICATION_DATABASE_CONNECTION" and
+            .attestation_boundary.database_identity_mode == "READ_ONLY" and
+            .attestation_boundary.migration27_presence_disposition == "REJECT" and
+            .successor_compatibility.sprint119_runtime_db_binding_attestation == "PRESERVED" and
+            .successor_compatibility.sprint123_manifest_control_plane_registration == "PRESERVED" and
+            .canonical_boundaries.runtime_db_binding_attestation == "NOT_PERFORMED" and
+            .canonical_boundaries.runtime_manifest_materialization == "NOT_PERFORMED" and
+            .canonical_boundaries.selected_target == "NONE" and
+            .canonical_boundaries.migration27_execution == "NOT_PERFORMED" and
+            .canonical_boundaries.permission_provisioning == "NONE" and
+            .canonical_boundaries.feature_activation == "INACTIVE" and
+            .source_envelope_sha256 == "e6847c50f16ca24497a400b7a8be43efa9e319e24e4b9f2abe10555a9609b657"
+          ' "$file" >/dev/null
+
+      - name: Validate PHP syntax and executable attestation regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          find \
+            apps/web/config/final_shift_close_runtime_db_binding_attestation.php \
+            apps/web/bootstrap/app.php \
+            apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingTokenMiddleware.php \
+            apps/web/app/Providers/FinalShiftCloseRuntimeDbBindingAttestationServiceProvider.php \
+            apps/web/app/Application/Pos/FinalShiftCloseRuntimeDatabaseIdentity.php \
+            apps/web/app/Application/Pos/FinalShiftCloseRuntimeDatabaseIdentityReader.php \
+            apps/web/app/Application/Pos/FinalShiftCloseRuntimeDbBindingAttestation.php \
+            apps/web/app/Infrastructure/Pos/LaravelFinalShiftCloseRuntimeDatabaseIdentityReader.php \
+            apps/web/routes/final-shift-close-runtime-db-binding-attestation.php \
+            apps/web/tests/final-shift-close-runtime-db-binding-attestation.php \
+            -type f -print0 | xargs -0 -n1 php -l
+          cd apps/web
+          composer install --no-interaction --prefer-dist --no-progress
+          php tests/final-shift-close-runtime-db-binding-attestation.php
+
+      - name: Lock no operational invocation or activation
+        shell: bash
+        run: |
+          set -euo pipefail
+          ! grep -Fq 'workflow_dispatch' .github/workflows/sprint124-final-shift-close-runtime-db-binding-attestation-control-plane-registration.yml
+          doc=docs/SPRINT124_FINAL_SHIFT_CLOSE_RUNTIME_DB_BINDING_ATTESTATION_CONTROL_PLANE_REGISTRATION.md
+          grep -Fq 'SPRINT124_RUNTIME_DB_BINDING_ATTESTATION_DELIVERY = INACTIVE' "$doc"
+          grep -Fq 'SPRINT124_RUNTIME_TOKEN_PROVISIONING = NOT_PERFORMED' "$doc"
+          grep -Fq 'SPRINT124_RUNTIME_DB_BINDING_ATTESTATION = NOT_PERFORMED' "$doc"
+          grep -Fq 'SPRINT124_RUNTIME_MANIFEST_MATERIALIZATION = NOT_PERFORMED' "$doc"
+          grep -Fq 'MIGRATION_27_EXECUTION = NOT_PERFORMED' "$doc"
+          grep -Fq 'FEATURE_ACTIVATION = INACTIVE' "$doc"
+          grep -Fq 'PRODUCTION = NO-GO' "$doc"
+
+      - name: Verify tracked-source cleanliness
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -z "$(git status --porcelain)" ]]
