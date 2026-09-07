@@ -118,6 +118,16 @@ return [
         ),
     ],
 
+    'final_shift_close_runtime_binding_materialization' => [
+        // Sprint123 registers the source control plane, but delivery remains denied by default.
+        'enabled' => filter_var(
+            env('ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MATERIALIZATION_ENABLED', false),
+            FILTER_VALIDATE_BOOL,
+        ),
+        // No token is provisioned by source. Empty token keeps route delivery fail-closed.
+        'token' => env('ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MATERIALIZATION_TOKEN', ''),
+    ],
+
     'system_update' => [
         // Backend control-plane visibility/checking may only be enabled explicitly.
         'control_plane_enabled' => filter_var(
