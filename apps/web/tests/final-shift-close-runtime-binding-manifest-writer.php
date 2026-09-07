@@ -73,11 +73,24 @@ try {
     $assert((fileperms($target) & 0777) === 0600, 'WRITE-002 target owner-only');
     $assert(file_get_contents($target) === $manifest->toCanonicalJson(), 'WRITE-003 canonical JSON persisted');
 
+    clearstatcache(true, $target);
     $firstHash = hash_file('sha256', $target);
+    $firstInode = fileinode($target);
     $writer->write($manifest);
-    $assert(hash_file('sha256', $target) === $firstHash, 'WRITE-004 deterministic idempotent rewrite');
-    $assert(count(glob($target.'.tmp.*') ?: []) === 0, 'WRITE-005 no temporary files remain');
-    $assert(is_file($target.'.lock') && (fileperms($target.'.lock') & 0777) === 0600, 'WRITE-006 private lock file');
+    clearstatcache(true, $target);
+    $assert(hash_file('sha256', $target) === $firstHash, 'WRITE-004 identical replay preserves content');
+    $assert(fileinode($target) === $firstInode, 'WRITE-005 identical replay performs no replacement');
+
+    $conflictPayload = $payload();
+    $conflictPayload['environment_id'] = 'isolated-durable-stage-02';
+    $conflictPayload['selection_fingerprint_sha256'] = str_repeat('6', 64);
+    $conflictingManifest = new FinalShiftCloseRuntimeBindingManifest($conflictPayload);
+    $expectFailure(static fn () => $writer->write($conflictingManifest), 'WRITE-006 conflicting rewrite rejected');
+    clearstatcache(true, $target);
+    $assert(hash_file('sha256', $target) === $firstHash, 'WRITE-007 conflict leaves original content unchanged');
+    $assert(fileinode($target) === $firstInode, 'WRITE-008 conflict leaves original inode unchanged');
+    $assert(count(glob($target.'.tmp.*') ?: []) === 0, 'WRITE-009 no temporary files remain');
+    $assert(is_file($target.'.lock') && (fileperms($target.'.lock') & 0777) === 0600, 'WRITE-010 private lock file');
 
     $preview = $payload();
     $preview['runtime_class'] = 'preview';
