@@ -145,11 +145,19 @@ jobs:
 
       - name: Prove disabled gate keeps materialization route absent
         working-directory: apps/web
+        env:
+          ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MATERIALIZATION_ENABLED: 'false'
+          ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MATERIALIZATION_TOKEN: vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
         shell: bash
         run: |
           set -euo pipefail
-          out="$(ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MATERIALIZATION_ENABLED=false ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MATERIALIZATION_TOKEN=vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv php artisan route:list --name=internal.final-shift-close.runtime-binding-manifest.materialize --json)"
-          php -r '$d=json_decode($argv[1], true, 512, JSON_THROW_ON_ERROR); exit(count($d) === 0 ? 0 : 1);' "$out"
+          php -r '
+            require "vendor/autoload.php";
+            $app = require "bootstrap/app.php";
+            $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+            $route = $app->make("router")->getRoutes()->getByName("internal.final-shift-close.runtime-binding-manifest.materialize");
+            exit($route === null ? 0 : 1);
+          '
 
       - name: Prove short token keeps materialization route absent
         working-directory: apps/web
@@ -157,8 +165,15 @@ jobs:
         run: |
           set -euo pipefail
           token="$(printf 's%.0s' {1..31})"
-          out="$(ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MATERIALIZATION_ENABLED=true ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MATERIALIZATION_TOKEN="$token" php artisan route:list --name=internal.final-shift-close.runtime-binding-manifest.materialize --json)"
-          php -r '$d=json_decode($argv[1], true, 512, JSON_THROW_ON_ERROR); exit(count($d) === 0 ? 0 : 1);' "$out"
+          ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MATERIALIZATION_ENABLED=true \
+          ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MATERIALIZATION_TOKEN="$token" \
+          php -r '
+            require "vendor/autoload.php";
+            $app = require "bootstrap/app.php";
+            $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+            $route = $app->make("router")->getRoutes()->getByName("internal.final-shift-close.runtime-binding-manifest.materialize");
+            exit($route === null ? 0 : 1);
+          '
 
       - name: Prove oversized token keeps materialization route absent
         working-directory: apps/web
@@ -166,22 +181,36 @@ jobs:
         run: |
           set -euo pipefail
           token="$(printf 'o%.0s' {1..513})"
-          out="$(ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MATERIALIZATION_ENABLED=true ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MATERIALIZATION_TOKEN="$token" php artisan route:list --name=internal.final-shift-close.runtime-binding-manifest.materialize --json)"
-          php -r '$d=json_decode($argv[1], true, 512, JSON_THROW_ON_ERROR); exit(count($d) === 0 ? 0 : 1);' "$out"
+          ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MATERIALIZATION_ENABLED=true \
+          ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MATERIALIZATION_TOKEN="$token" \
+          php -r '
+            require "vendor/autoload.php";
+            $app = require "bootstrap/app.php";
+            $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+            $route = $app->make("router")->getRoutes()->getByName("internal.final-shift-close.runtime-binding-manifest.materialize");
+            exit($route === null ? 0 : 1);
+          '
 
       - name: Prove bounded valid token registers POST-only materialization route
         working-directory: apps/web
+        env:
+          ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MATERIALIZATION_ENABLED: 'true'
+          ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MATERIALIZATION_TOKEN: vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
         shell: bash
         run: |
           set -euo pipefail
-          out="$(ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MATERIALIZATION_ENABLED=true ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MATERIALIZATION_TOKEN=vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv php artisan route:list --name=internal.final-shift-close.runtime-binding-manifest.materialize --json)"
           php -r '
-            $d=json_decode($argv[1], true, 512, JSON_THROW_ON_ERROR);
-            if (count($d) !== 1) exit(1);
-            $r=$d[0];
-            if (($r["name"] ?? null) !== "internal.final-shift-close.runtime-binding-manifest.materialize") exit(1);
-            if (!str_contains((string)($r["method"] ?? ""), "POST")) exit(1);
-          ' "$out"
+            require "vendor/autoload.php";
+            $app = require "bootstrap/app.php";
+            $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+            $route = $app->make("router")->getRoutes()->getByName("internal.final-shift-close.runtime-binding-manifest.materialize");
+            if ($route === null) exit(1);
+            $methods = $route->methods();
+            if (!in_array("POST", $methods, true) || in_array("GET", $methods, true)) exit(1);
+            $middleware = $route->gatherMiddleware();
+            if (!in_array("throttle:1,1", $middleware, true)) exit(1);
+            if (!in_array(App\Delivery\Http\Middleware\RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware::class, $middleware, true)) exit(1);
+          '
 
       - name: Lock no operational invocation or activation
         shell: bash
