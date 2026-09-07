@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "feature": "final-shift-close",
+  "sprint": 122,
+  "bounded_objective": "RUNTIME_BINDING_MANIFEST_WRITE_ONCE_CAS",
+  "writer_semantics": {
+    "existing_identical_manifest": "IDEMPOTENT_ACCEPT_NO_REWRITE",
+    "existing_different_manifest": "REJECT_IMMUTABLE_CONFLICT",
+    "atomic_create_primitive": "HARD_LINK_FSYNCED_TEMP_CREATE_IF_ABSENT",
+    "target_replacement": "FORBIDDEN",
+    "lock_serialization": true,
+    "temporary_create_exclusive": true,
+    "temporary_flush_required": true,
+    "temporary_fsync_when_available": true,
+    "private_parent_required": true,
+    "symlink_target_rejected": true,
+    "final_file_mode": "0600",
+    "post_write_sha256_verification": true
+  },
+  "control_channel_boundary": {
+    "delivery": "INACTIVE",
+    "provider_registration": "NOT_REGISTERED",
+    "delivery_gate": "HARD_FALSE",
+    "token_configuration": "NOT_MATERIALIZED"
+  },
+  "canonical_boundaries": {
+    "selected_target": "NONE",
+    "runtime_manifest_materialization": "NOT_PERFORMED",
+    "migration27_execution": "NOT_PERFORMED",
+    "permission_provisioning": "NONE",
+    "feature_activation": "INACTIVE",
+    "technical_preview_activation": "NO-GO",
+    "production_activation": "NO-GO",
+    "updater": "INACTIVE"
+  },
+  "attribution": "Author by Lab | zefry"
+}
