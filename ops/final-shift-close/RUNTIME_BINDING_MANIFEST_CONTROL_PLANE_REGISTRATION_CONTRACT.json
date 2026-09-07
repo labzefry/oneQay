@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "feature": "final-shift-close",
+  "sprint": 123,
+  "bounded_objective": "RUNTIME_BINDING_MANIFEST_CONTROL_PLANE_REGISTRATION_DEFAULT_OFF",
+  "control_plane": {
+    "provider_registration": "REGISTERED_SOURCE_ONLY",
+    "delivery": "INACTIVE",
+    "delivery_gate": "DEFAULT_OFF_AND_TOKEN_REQUIRED",
+    "route_registration_when_disabled": false,
+    "bearer_authentication_required": true,
+    "throttle": "1_PER_MINUTE"
+  },
+  "configuration": {
+    "config_file": "apps/web/config/final_shift_close_runtime_binding_materialization.php",
+    "enabled_env": "ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MATERIALIZATION_ENABLED",
+    "enabled_default": false,
+    "token_env": "ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MATERIALIZATION_TOKEN",
+    "token_default": "EMPTY",
+    "empty_token_disposition": "FAIL_CLOSED"
+  },
+  "successor_compatibility": {
+    "sprint96_runtime_wiring": "PRESERVED",
+    "sprint120_writer": "PRESERVED",
+    "sprint121_control_channel": "PRESERVED",
+    "sprint122_write_once_cas": "PRESERVED",
+    "manifest_source": "CANONICAL_SELECTED_TARGET_ONLY",
+    "writer_target_replacement": "FORBIDDEN"
+  },
+  "source_envelope_sha256": "e81ac67fb7d0e54c514b0b3a6bfd15737eb964a0c293e39faca52dd3e9863e19",
+  "canonical_boundaries": {
+    "runtime_manifest_materialization": "NOT_PERFORMED",
+    "selected_target": "NONE",
+    "db_binding_provider_registration": "NOT_REGISTERED",
+    "db_binding_producer_dispatch": "NOT_PERFORMED",
+    "migration27_execution": "NOT_PERFORMED",
+    "permission_provisioning": "NONE",
+    "feature_activation": "INACTIVE",
+    "deployment_authority": "NOT_GRANTED",
+    "technical_preview_activation": "NOT_AUTHORIZED",
+    "production_activation": "NOT_AUTHORIZED",
+    "updater_activation": "INACTIVE"
+  }
+}

@@ -33,7 +33,10 @@ final class FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider 
 
         $this->app->when(RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware::class)
             ->needs('$expectedToken')
-            ->give(fn (): string => (string) config('oneqay.final_shift_close_runtime_binding_materialization_token', ''));
+            ->give(fn (): string => (string) config(
+                'final_shift_close_runtime_binding_materialization.token',
+                '',
+            ));
     }
 
     public function boot(): void
@@ -50,8 +53,12 @@ final class FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider 
 
     private function deliveryEnabled(): bool
     {
-        // Sprint121 source-readiness only. A separately qualified successor must
-        // register this provider and replace this hard deny with a default-off gate.
-        return false;
+        if ((bool) config('final_shift_close_runtime_binding_materialization.enabled', false) !== true) {
+            return false;
+        }
+
+        $token = config('final_shift_close_runtime_binding_materialization.token', '');
+
+        return is_string($token) && $token !== '';
     }
 }
