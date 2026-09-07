@@ -19,17 +19,6 @@ final class FilesystemFinalShiftCloseRuntimeBindingManifestWriter implements Fin
         $parent = dirname($target);
         $this->assertPrivateDirectory($parent);
 
-        clearstatcache(true, $target);
-        if (is_link($target)) {
-            throw new RuntimeException('Runtime binding manifest target symlink is forbidden.');
-        }
-        if (file_exists($target)) {
-            if (! is_file($target)) {
-                throw new RuntimeException('Runtime binding manifest target is not a regular file.');
-            }
-            $this->assertPrivateFilePermissions($target);
-        }
-
         $lockPath = $target.'.lock';
         clearstatcache(true, $lockPath);
         if (is_link($lockPath)) {
@@ -52,12 +41,11 @@ final class FilesystemFinalShiftCloseRuntimeBindingManifestWriter implements Fin
                 throw new RuntimeException('Runtime binding manifest lock cannot be acquired.');
             }
 
-            clearstatcache(true, $target);
-            if (is_link($target)) {
-                throw new RuntimeException('Runtime binding manifest target symlink is forbidden.');
+            $json = $manifest->toCanonicalJson();
+            if ($this->acceptExistingIdenticalManifest($target, $json)) {
+                return;
             }
 
-            $json = $manifest->toCanonicalJson();
             $temporary = $target.'.tmp.'.bin2hex(random_bytes(16));
             $stream = fopen($temporary, 'x');
             if ($stream === false) {
@@ -83,14 +71,19 @@ final class FilesystemFinalShiftCloseRuntimeBindingManifestWriter implements Fin
             }
 
             $this->assertPrivateFilePermissions($temporary);
-            if (! rename($temporary, $target)) {
-                throw new RuntimeException('Runtime binding manifest atomic replacement failed.');
+
+            if (! @link($temporary, $target)) {
+                if ($this->acceptExistingIdenticalManifest($target, $json)) {
+                    return;
+                }
+
+                throw new RuntimeException('Runtime binding manifest write-once create failed.');
+            }
+
+            if (! @unlink($temporary)) {
+                throw new RuntimeException('Runtime binding manifest temporary cleanup failed.');
             }
             $temporary = null;
-
-            if (! chmod($target, 0600)) {
-                throw new RuntimeException('Runtime binding manifest final permissions cannot be hardened.');
-            }
 
             clearstatcache(true, $target);
             if (! is_file($target) || is_link($target) || ! is_readable($target)) {
@@ -111,6 +104,31 @@ final class FilesystemFinalShiftCloseRuntimeBindingManifestWriter implements Fin
                 @unlink($temporary);
             }
         }
+    }
+
+    private function acceptExistingIdenticalManifest(string $target, string $expectedJson): bool
+    {
+        clearstatcache(true, $target);
+        if (is_link($target)) {
+            throw new RuntimeException('Runtime binding manifest target symlink is forbidden.');
+        }
+        if (! file_exists($target)) {
+            return false;
+        }
+        if (! is_file($target) || ! is_readable($target)) {
+            throw new RuntimeException('Runtime binding manifest target is not a readable regular file.');
+        }
+
+        $this->assertPrivateFilePermissions($target);
+        $existingJson = file_get_contents($target);
+        if ($existingJson === false) {
+            throw new RuntimeException('Runtime binding manifest existing target cannot be read.');
+        }
+        if (! hash_equals(hash('sha256', $expectedJson), hash('sha256', $existingJson))) {
+            throw new RuntimeException('Runtime binding manifest immutable conflict detected.');
+        }
+
+        return true;
     }
 
     private function qualifiedTargetPath(): string
