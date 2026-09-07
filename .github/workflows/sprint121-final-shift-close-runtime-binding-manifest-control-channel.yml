@@ -21,7 +21,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Lock exact Sprint121 source envelope
+      - name: Lock Sprint121 successor-compatible source envelope
         shell: bash
         run: |
           set -euo pipefail
@@ -29,19 +29,15 @@ jobs:
           cat > /tmp/expected <<'EOF'
           .github/workflows/sprint120-final-shift-close-runtime-binding-manifest-writer.yml
           .github/workflows/sprint121-final-shift-close-runtime-binding-manifest-control-channel.yml
-          apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingManifestMaterializationRequest.php
-          apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingManifestMaterializer.php
-          apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware.php
-          apps/web/app/Delivery/Http/Pos/FinalShiftCloseRuntimeBindingManifestMaterializationController.php
-          apps/web/app/Providers/FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider.php
-          apps/web/routes/final-shift-close-runtime-binding-manifest-materialization.php
-          apps/web/tests/final-shift-close-runtime-binding-manifest-materialization.php
-          docs/SPRINT121_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MANIFEST_CONTROL_CHANNEL.md
-          ops/final-shift-close/RUNTIME_BINDING_MANIFEST_CONTROL_CHANNEL_CONTRACT.json
+          .github/workflows/sprint122-final-shift-close-runtime-binding-manifest-write-once-cas.yml
+          apps/web/app/Infrastructure/Pos/FilesystemFinalShiftCloseRuntimeBindingManifestWriter.php
+          apps/web/tests/final-shift-close-runtime-binding-manifest-writer.php
+          docs/SPRINT122_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MANIFEST_WRITE_ONCE_CAS.md
+          ops/final-shift-close/RUNTIME_BINDING_MANIFEST_WRITE_ONCE_CAS_CONTRACT.json
           EOF
           diff -u /tmp/expected /tmp/paths
           fingerprint="$(sha256sum /tmp/paths | awk '{print $1}')"
-          [[ "$fingerprint" == 'b36ef23c404c99d0202499cd0d8a8ea836b5b978d60cb78c4aad263fd1eee648' ]]
+          [[ "$fingerprint" == '2b4df6f0b04163f8c49b55e87483e969127867eda0541d9be503df6d2216b9ae' ]]
 
       - name: Prove existing delivery and operational state remain untouched
         shell: bash
@@ -51,6 +47,11 @@ jobs:
             apps/web/bootstrap/providers.php \
             apps/web/config \
             apps/web/app/Providers/FinalShiftCloseRuntimeDbBindingAttestationServiceProvider.php \
+            apps/web/app/Providers/FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider.php \
+            apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingManifestMaterializer.php \
+            apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware.php \
+            apps/web/app/Delivery/Http/Pos/FinalShiftCloseRuntimeBindingManifestMaterializationController.php \
+            apps/web/routes/final-shift-close-runtime-binding-manifest-materialization.php \
             .github/workflows/final-shift-close-migration27-selected-target-db-binding.yml \
             .github/workflows/final-shift-close-migration27-execution.yml \
             apps/web/database/migrations \
@@ -59,7 +60,7 @@ jobs:
           ! grep -Fq 'FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider::class' apps/web/bootstrap/providers.php
           grep -Fq 'return false;' apps/web/app/Providers/FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider.php
 
-      - name: Validate Sprint121 machine-readable contract
+      - name: Validate Sprint121 historical machine-readable contract
         shell: bash
         run: |
           set -euo pipefail
@@ -84,13 +85,14 @@ jobs:
             .canonical_boundaries.feature_activation == "INACTIVE"
           ' "$file" >/dev/null
 
-      - name: Lock caller cannot inject selected target provenance
+      - name: Lock caller provenance and successor immutable writer boundary
         shell: bash
         run: |
           set -euo pipefail
           request=apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingManifestMaterializationRequest.php
           service=apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingManifestMaterializer.php
           controller=apps/web/app/Delivery/Http/Pos/FinalShiftCloseRuntimeBindingManifestMaterializationController.php
+          writer=apps/web/app/Infrastructure/Pos/FilesystemFinalShiftCloseRuntimeBindingManifestWriter.php
           grep -Fq 'public string $operationId' "$request"
           grep -Fq 'public string $expectedSelectionFingerprintSha256' "$request"
           ! grep -Eq 'environmentId|runtimeClass|artifactSha|sourceCommit' "$request"
@@ -98,6 +100,9 @@ jobs:
           grep -Fq "'SELECTED_NOT_AUTHORIZED'" "$service"
           grep -Fq 'hash_equals($selectionFingerprint, $request->expectedSelectionFingerprintSha256)' "$service"
           grep -Fq "'expected_selection_fingerprint_sha256', 'operation_id'" "$controller"
+          grep -Fq '@link($temporary, $target)' "$writer"
+          ! grep -Fq 'rename($temporary, $target)' "$writer"
+          grep -Fq 'Runtime binding manifest immutable conflict detected.' "$writer"
 
       - name: Lock authenticated default-off HTTP source
         shell: bash
@@ -113,21 +118,24 @@ jobs:
           grep -Fq 'return false;' "$provider"
           grep -Fq "Route::post('/internal/final-shift-close/runtime-binding-manifest/materialize'" "$route"
 
-      - name: Validate PHP syntax and executable materialization regression
+      - name: Validate PHP syntax and executable successor regressions
         shell: bash
         run: |
           set -euo pipefail
           find \
             apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingManifestMaterializationRequest.php \
             apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingManifestMaterializer.php \
+            apps/web/app/Infrastructure/Pos/FilesystemFinalShiftCloseRuntimeBindingManifestWriter.php \
             apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware.php \
             apps/web/app/Delivery/Http/Pos/FinalShiftCloseRuntimeBindingManifestMaterializationController.php \
             apps/web/app/Providers/FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider.php \
             apps/web/routes/final-shift-close-runtime-binding-manifest-materialization.php \
+            apps/web/tests/final-shift-close-runtime-binding-manifest-writer.php \
             apps/web/tests/final-shift-close-runtime-binding-manifest-materialization.php \
             -type f -print0 | xargs -0 -n1 php -l
           cd apps/web
           composer install --no-interaction --prefer-dist --no-progress
+          php tests/final-shift-close-runtime-binding-manifest-writer.php
           php tests/final-shift-close-runtime-binding-manifest-materialization.php
 
       - name: Lock Sprint121 no-go documentation
