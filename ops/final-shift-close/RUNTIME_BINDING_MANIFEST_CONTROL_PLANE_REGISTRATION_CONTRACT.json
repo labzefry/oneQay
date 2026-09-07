@@ -20,12 +20,13 @@
     "empty_token_disposition": "FAIL_CLOSED"
   },
   "successor_compatibility": {
+    "sprint120_writer": "PRESERVED",
     "sprint121_control_channel": "PRESERVED",
     "sprint122_write_once_cas": "PRESERVED",
     "manifest_source": "CANONICAL_SELECTED_TARGET_ONLY",
     "writer_target_replacement": "FORBIDDEN"
   },
-  "source_envelope_sha256": "97690e6bbacb18330a39e03f9d06c83e80067cca61a9173f480938192e693de1",
+  "source_envelope_sha256": "2b1d247823c556f079521744ded5cc987b0d228794a1237b21aff87937331efb",
   "canonical_boundaries": {
     "runtime_manifest_materialization": "NOT_PERFORMED",
     "selected_target": "NONE",
