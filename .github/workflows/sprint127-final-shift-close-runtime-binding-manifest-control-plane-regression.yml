@@ -38,6 +38,7 @@ jobs:
           head="${{ github.event.pull_request.head.sha }}"
           git diff --name-only "$base" "$head" | LC_ALL=C sort > /tmp/paths
           cat > /tmp/expected <<'EOF'
+          .github/workflows/sprint119-final-shift-close-runtime-db-binding-attestation.yml
           .github/workflows/sprint120-final-shift-close-runtime-binding-manifest-writer.yml
           .github/workflows/sprint121-final-shift-close-runtime-binding-manifest-control-channel.yml
           .github/workflows/sprint122-final-shift-close-runtime-binding-manifest-write-once-cas.yml
@@ -56,7 +57,7 @@ jobs:
           ops/final-shift-close/RUNTIME_CONTROL_PLANE_TOKEN_CHARACTER_POLICY_CONTRACT.json
           EOF
           diff -u /tmp/expected /tmp/paths
-          [[ "$(sha256sum /tmp/paths | awk '{print $1}')" == 'e6f251e423857e49f9e0a1a0e2e5b5008934476028fe94d6ae10f3c015be45d1' ]]
+          [[ "$(sha256sum /tmp/paths | awk '{print $1}')" == 'ae8691a2c9be31ba6558145a1162cc0aaa658727ff14279c1e638b0a971dc825' ]]
 
       - name: Prove preserved operational state remains untouched
         shell: bash
@@ -93,21 +94,7 @@ jobs:
         run: |
           set -euo pipefail
           file=ops/final-shift-close/RUNTIME_BINDING_MANIFEST_CONTROL_PLANE_REGRESSION_CONTRACT.json
-          jq -e '
-            .sprint == 127 and
-            .bounded_objective == "RUNTIME_BINDING_MANIFEST_CONTROL_PLANE_EXECUTABLE_OFF_SWITCH_REGRESSION" and
-            .execution_mode == "CI_ONLY_SYNTHETIC_CONFIGURATION" and
-            .gate_matrix.disabled_with_valid_token == "ROUTE_ABSENT_HTTP_404" and
-            .gate_matrix.enabled_with_empty_token == "ROUTE_ABSENT_HTTP_404" and
-            .gate_matrix.enabled_with_short_token == "ROUTE_ABSENT_HTTP_404" and
-            .gate_matrix.enabled_with_oversized_token == "ROUTE_ABSENT_HTTP_404" and
-            .gate_matrix.enabled_with_valid_token_missing_auth == "ROUTE_REGISTERED_HTTP_401" and
-            .gate_matrix.enabled_with_valid_token_malformed_auth == "ROUTE_REGISTERED_HTTP_401" and
-            .registered_route_contract.valid_bearer_request_performed == false and
-            .registered_route_contract.controller_invocation_performed == false and
-            .canonical_boundaries.runtime_manifest_materialization == "NOT_PERFORMED" and
-            .canonical_boundaries.feature_activation == "INACTIVE"
-          ' "$file" >/dev/null
+          jq -e '.sprint == 127 and .bounded_objective == "RUNTIME_BINDING_MANIFEST_CONTROL_PLANE_EXECUTABLE_OFF_SWITCH_REGRESSION" and .execution_mode == "CI_ONLY_SYNTHETIC_CONFIGURATION" and .gate_matrix.disabled_with_valid_token == "ROUTE_ABSENT_HTTP_404" and .gate_matrix.enabled_with_empty_token == "ROUTE_ABSENT_HTTP_404" and .gate_matrix.enabled_with_short_token == "ROUTE_ABSENT_HTTP_404" and .gate_matrix.enabled_with_oversized_token == "ROUTE_ABSENT_HTTP_404" and .gate_matrix.enabled_with_valid_token_missing_auth == "ROUTE_REGISTERED_HTTP_401" and .gate_matrix.enabled_with_valid_token_malformed_auth == "ROUTE_REGISTERED_HTTP_401" and .registered_route_contract.valid_bearer_request_performed == false and .registered_route_contract.controller_invocation_performed == false and .canonical_boundaries.runtime_manifest_materialization == "NOT_PERFORMED" and .canonical_boundaries.feature_activation == "INACTIVE"' "$file" >/dev/null
 
       - name: Preserve Sprint128 corrected token character policy
         shell: bash
