@@ -12,11 +12,12 @@ No runtime token is provisioned, no gate is enabled, and no materialization requ
 
 ## Security Semantics
 
-Sprint123 preserves the Sprint121 canonical-selected-target-only materialization contract and the Sprint122 write-once/CAS persistence contract.
+Sprint123 preserves the Sprint120 writer boundary, Sprint121 canonical-selected-target-only materialization contract, and Sprint122 write-once/CAS persistence contract.
 
 The source registration boundary is constrained as follows:
 
-- the provider may be present in `bootstrap/providers.php`;
+- the provider is registered through the existing `Application::configure()->withProviders()` bootstrap mechanism in `bootstrap/app.php`;
+- `bootstrap/providers.php` remains unchanged, avoiding unrelated Technical Preview/POS historical compatibility triggers;
 - the delivery gate defaults to `false`;
 - an empty token prevents route registration even if the enabled flag is true;
 - the middleware independently rejects an empty configured token with HTTP 503;
@@ -28,17 +29,17 @@ The source registration boundary is constrained as follows:
 
 ## Configuration Source Boundary
 
-The source declares only names and fail-closed defaults:
+The source declares only names and fail-closed defaults in the isolated `config/final_shift_close_runtime_binding_materialization.php` file:
 
 `ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MATERIALIZATION_ENABLED=false`
 
 `ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MATERIALIZATION_TOKEN=`
 
-Sprint123 does not write either value into any environment, secret store, deployment target, or runtime.
+Sprint123 does not write either value into any environment, secret store, deployment target, or runtime. The global `config/oneqay.php` remains unchanged.
 
 ## Successor Compatibility
 
-Sprint121 and Sprint122 qualification workflows remain active as successor-compatibility gates. They continue to prove authenticated canonical-target materialization semantics and immutable write-once persistence while accepting this bounded provider-registration successor envelope.
+Sprint120, Sprint121, and Sprint122 qualification workflows remain active as successor-compatibility gates. They continue to prove historical writer semantics, authenticated canonical-target materialization semantics, and immutable write-once persistence while accepting this bounded provider-registration successor envelope.
 
 ## Canonical Boundaries
 
