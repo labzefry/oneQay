@@ -34,7 +34,7 @@ final class FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider 
         $this->app->when(RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware::class)
             ->needs('$expectedToken')
             ->give(fn (): string => (string) config(
-                'oneqay.final_shift_close_runtime_binding_materialization.token',
+                'final_shift_close_runtime_binding_materialization.token',
                 '',
             ));
     }
@@ -53,11 +53,11 @@ final class FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider 
 
     private function deliveryEnabled(): bool
     {
-        if ((bool) config('oneqay.final_shift_close_runtime_binding_materialization.enabled', false) !== true) {
+        if ((bool) config('final_shift_close_runtime_binding_materialization.enabled', false) !== true) {
             return false;
         }
 
-        $token = config('oneqay.final_shift_close_runtime_binding_materialization.token', '');
+        $token = config('final_shift_close_runtime_binding_materialization.token', '');
 
         return is_string($token) && $token !== '';
     }
