@@ -38,7 +38,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
-      - name: Lock exact Sprint119 source envelope
+      - name: Lock Sprint119 historical or exact Sprint124 successor envelope
         shell: bash
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
@@ -46,7 +46,11 @@ jobs:
         run: |
           set -euo pipefail
           git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/actual
-          cat > /tmp/expected <<'EOF'
+          count="$(wc -l < /tmp/actual)"
+          fingerprint="$(sha256sum /tmp/actual | awk '{print $1}')"
+
+          if [[ "$count" -eq 12 && "$fingerprint" == '2b7741ab925e255f9faefedfaebafcff001f294137fbae41fe4519fd710bf061' ]]; then
+            cat > /tmp/expected <<'EOF'
           .github/workflows/sprint119-final-shift-close-runtime-db-binding-attestation.yml
           apps/web/app/Application/Pos/FinalShiftCloseRuntimeDatabaseIdentity.php
           apps/web/app/Application/Pos/FinalShiftCloseRuntimeDatabaseIdentityReader.php
@@ -60,8 +64,29 @@ jobs:
           docs/SPRINT119_FINAL_SHIFT_CLOSE_RUNTIME_DB_BINDING_ATTESTATION.md
           ops/final-shift-close/RUNTIME_DB_BINDING_ATTESTATION_CONTRACT.json
           EOF
-          diff -u /tmp/expected /tmp/actual
-          test "$(sha256sum /tmp/actual | awk '{print $1}')" = '2b7741ab925e255f9faefedfaebafcff001f294137fbae41fe4519fd710bf061'
+            diff -u /tmp/expected /tmp/actual
+          elif [[ "$count" -eq 13 && "$fingerprint" == 'e6847c50f16ca24497a400b7a8be43efa9e319e24e4b9f2abe10555a9609b657' ]]; then
+            cat > /tmp/expected <<'EOF'
+          .github/workflows/sprint119-final-shift-close-runtime-db-binding-attestation.yml
+          .github/workflows/sprint120-final-shift-close-runtime-binding-manifest-writer.yml
+          .github/workflows/sprint121-final-shift-close-runtime-binding-manifest-control-channel.yml
+          .github/workflows/sprint122-final-shift-close-runtime-binding-manifest-write-once-cas.yml
+          .github/workflows/sprint123-final-shift-close-runtime-binding-manifest-control-plane-registration.yml
+          .github/workflows/sprint124-final-shift-close-runtime-db-binding-attestation-control-plane-registration.yml
+          .github/workflows/sprint96-final-shift-close-runtime-wiring.yml
+          apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingTokenMiddleware.php
+          apps/web/app/Providers/FinalShiftCloseRuntimeDbBindingAttestationServiceProvider.php
+          apps/web/bootstrap/app.php
+          apps/web/config/final_shift_close_runtime_db_binding_attestation.php
+          docs/SPRINT124_FINAL_SHIFT_CLOSE_RUNTIME_DB_BINDING_ATTESTATION_CONTROL_PLANE_REGISTRATION.md
+          ops/final-shift-close/RUNTIME_DB_BINDING_ATTESTATION_CONTROL_PLANE_REGISTRATION_CONTRACT.json
+          EOF
+            diff -u /tmp/expected /tmp/actual
+          else
+            echo "Unrecognized Sprint119 qualification shape: count=$count fingerprint=$fingerprint" >&2
+            cat /tmp/actual >&2
+            exit 1
+          fi
 
       - name: Prove operational and existing producer source remain untouched
         shell: bash
@@ -72,8 +97,10 @@ jobs:
           set -euo pipefail
           git diff --exit-code "$BASE_SHA" "$HEAD_SHA" -- \
             apps/web/bootstrap/providers.php \
-            apps/web/config \
+            apps/web/config/oneqay.php \
+            apps/web/config/final_shift_close_runtime_binding_materialization.php \
             apps/web/database/migrations \
+            apps/web/routes/final-shift-close-runtime-db-binding-attestation.php \
             .github/workflows/final-shift-close-migration27-selected-target-db-binding.yml \
             .github/workflows/final-shift-close-migration27-execution.yml \
             ops/final-shift-close/STATE.json \
@@ -84,7 +111,7 @@ jobs:
           test "$(jq -r '.selection_state' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" = 'BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET'
           test "$(jq -r '.selected_target' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" = 'null'
 
-      - name: Validate machine-readable Sprint119 contract
+      - name: Validate historical Sprint119 machine-readable contract
         shell: bash
         run: |
           set -euo pipefail
@@ -101,16 +128,24 @@ jobs:
           test "$(jq -r '.canonical_boundaries.runtime_endpoint_delivery' "$contract")" = 'INACTIVE'
           test "$(jq -r '.source_envelope_sha256' "$contract")" = '2b7741ab925e255f9faefedfaebafcff001f294137fbae41fe4519fd710bf061'
 
-      - name: Lock endpoint delivery as double fail-closed
+      - name: Accept Sprint124 registered default-off endpoint boundary
         shell: bash
         run: |
           set -euo pipefail
           provider=apps/web/app/Providers/FinalShiftCloseRuntimeDbBindingAttestationServiceProvider.php
-          bootstrap=apps/web/bootstrap/providers.php
+          bootstrap=apps/web/bootstrap/app.php
+          shared_bootstrap=apps/web/bootstrap/providers.php
+          config=apps/web/config/final_shift_close_runtime_db_binding_attestation.php
           route=apps/web/routes/final-shift-close-runtime-db-binding-attestation.php
-          ! grep -Fq 'FinalShiftCloseRuntimeDbBindingAttestationServiceProvider::class' "$bootstrap"
+          [[ "$(grep -Fc 'FinalShiftCloseRuntimeDbBindingAttestationServiceProvider::class' "$bootstrap")" -eq 1 ]]
+          ! grep -Fq 'FinalShiftCloseRuntimeDbBindingAttestationServiceProvider::class' "$shared_bootstrap"
+          grep -Fq "env('ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_DB_BINDING_ATTESTATION_ENABLED', false)" "$config"
+          grep -Fq "env('ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_DB_BINDING_ATTESTATION_TOKEN', '')" "$config"
           grep -Fq 'private function deliveryEnabled(): bool' "$provider"
-          grep -Fq 'return false;' "$provider"
+          grep -Fq "config('final_shift_close_runtime_db_binding_attestation.enabled', false)" "$provider"
+          grep -Fq "config('final_shift_close_runtime_db_binding_attestation.token', '')" "$provider"
+          grep -Fq 'strlen($token) >= 32' "$provider"
+          grep -Fq 'strlen($token) <= 512' "$provider"
           grep -Fq 'throttle:2,1' "$provider"
           grep -Fq 'RequireFinalShiftCloseRuntimeBindingTokenMiddleware::class' "$provider"
           grep -Fq "connection('oneqay')" "$provider"
@@ -125,11 +160,16 @@ jobs:
           set -euo pipefail
           middleware=apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingTokenMiddleware.php
           controller=apps/web/app/Delivery/Http/Pos/FinalShiftCloseRuntimeDbBindingAttestationController.php
-          grep -Fq "config('oneqay.final_shift_close_runtime_db_binding_attestation.token', '')" "$middleware"
+          provider=apps/web/app/Providers/FinalShiftCloseRuntimeDbBindingAttestationServiceProvider.php
+          grep -Fq 'needs(' "$provider"
+          grep -Fq '$expectedToken' "$provider"
+          grep -Fq 'private readonly string $expectedToken' "$middleware"
           grep -Fq "headers->get('Authorization')" "$middleware"
           grep -Fq 'Bearer ' "$middleware"
-          grep -Fq 'hash_equals($configured, $matches[1])' "$middleware"
+          grep -Fq 'hash_equals($this->expectedToken, $matches[1])' "$middleware"
           grep -Fq "'Cache-Control' => 'no-store, private'" "$middleware"
+          grep -Fq "response('', 404" "$middleware"
+          ! grep -Fq "config('oneqay.final_shift_close_runtime_db_binding_attestation.token'" "$middleware"
           ! grep -Eq '(query\(|input\(|cookie\()' "$middleware"
           grep -Fq 'RUNTIME_DB_BINDING_ATTESTATION_UNAVAILABLE' "$controller"
           grep -Fq "'X-Robots-Tag' => 'noindex, nofollow, noarchive'" "$controller"
@@ -189,11 +229,13 @@ jobs:
           grep -Fq 'READ_ONLY' "$service"
           grep -Fq 'NOT_EXECUTED' "$service"
 
-      - name: Validate Sprint119 PHP syntax and executable regression
+      - name: Validate Sprint119 and Sprint124 PHP syntax and executable regression
         shell: bash
         run: |
           set -euo pipefail
           for file in \
+            apps/web/bootstrap/app.php \
+            apps/web/config/final_shift_close_runtime_db_binding_attestation.php \
             apps/web/app/Application/Pos/FinalShiftCloseRuntimeDatabaseIdentity.php \
             apps/web/app/Application/Pos/FinalShiftCloseRuntimeDatabaseIdentityReader.php \
             apps/web/app/Application/Pos/FinalShiftCloseRuntimeDbBindingAttestation.php \
@@ -207,7 +249,7 @@ jobs:
           done
           php apps/web/tests/final-shift-close-runtime-db-binding-attestation.php
 
-      - name: Lock Sprint119 no-go documentation
+      - name: Lock historical and Sprint124 no-go documentation
         shell: bash
         run: |
           set -euo pipefail
@@ -217,12 +259,16 @@ jobs:
           grep -Fq 'SPRINT119_PROVIDER_REGISTRATION = NOT_REGISTERED' "$doc"
           grep -Fq 'SPRINT119_DELIVERY_GATE = HARD_FALSE' "$doc"
           grep -Fq 'SPRINT119_TOKEN_CONFIGURATION = NOT_MATERIALIZED' "$doc"
-          grep -Fq 'SPRINT119_RUNTIME_MANIFEST_WRITER = NOT_IMPLEMENTED' "$doc"
           grep -Fq 'SELECTED_TARGET = NONE' "$doc"
           grep -Fq 'MIGRATION_27_EXECUTION = NOT_PERFORMED' "$doc"
-          grep -Fq 'PERMISSION_PROVISIONING = NONE' "$doc"
-          grep -Fq 'FEATURE_ACTIVATION = INACTIVE' "$doc"
-          grep -Fq 'PRODUCTION_ACTIVATION = NOT_AUTHORIZED' "$doc"
+          sprint124=docs/SPRINT124_FINAL_SHIFT_CLOSE_RUNTIME_DB_BINDING_ATTESTATION_CONTROL_PLANE_REGISTRATION.md
+          grep -Fq 'SPRINT124_PROVIDER_REGISTRATION = REGISTERED_SOURCE_ONLY' "$sprint124"
+          grep -Fq 'SPRINT124_RUNTIME_DB_BINDING_ATTESTATION_DELIVERY = INACTIVE' "$sprint124"
+          grep -Fq 'SPRINT124_RUNTIME_TOKEN_PROVISIONING = NOT_PERFORMED' "$sprint124"
+          grep -Fq 'SPRINT124_RUNTIME_DB_BINDING_ATTESTATION = NOT_PERFORMED' "$sprint124"
+          grep -Fq 'PERMISSION_PROVISIONING = NONE' "$sprint124"
+          grep -Fq 'FEATURE_ACTIVATION = INACTIVE' "$sprint124"
+          grep -Fq 'PRODUCTION = NO-GO' "$sprint124"
 
       - name: Verify tracked-source cleanliness
         shell: bash

@@ -34,6 +34,13 @@ final class FinalShiftCloseRuntimeDbBindingAttestationServiceProvider extends Se
                 storage_path('app/private/final-shift-close-runtime-binding.json'),
             ),
         );
+
+        $this->app->when(RequireFinalShiftCloseRuntimeBindingTokenMiddleware::class)
+            ->needs('$expectedToken')
+            ->give(fn (): string => (string) config(
+                'final_shift_close_runtime_db_binding_attestation.token',
+                '',
+            ));
     }
 
     public function boot(): void
@@ -50,8 +57,14 @@ final class FinalShiftCloseRuntimeDbBindingAttestationServiceProvider extends Se
 
     private function deliveryEnabled(): bool
     {
-        // Sprint119 source-readiness only. A separately qualified successor must
-        // register this provider and replace this hard deny with a default-off gate.
-        return false;
+        if ((bool) config('final_shift_close_runtime_db_binding_attestation.enabled', false) !== true) {
+            return false;
+        }
+
+        $token = config('final_shift_close_runtime_db_binding_attestation.token', '');
+
+        return is_string($token)
+            && strlen($token) >= 32
+            && strlen($token) <= 512;
     }
 }

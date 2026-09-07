@@ -8,6 +8,7 @@ use App\Delivery\Http\Middleware\RequireVerifiedTenantContextMiddleware;
 use App\Delivery\Http\Middleware\SafeRequestObservationMiddleware;
 use App\Delivery\Http\Middleware\SecurityHeadersMiddleware;
 use App\Providers\FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider;
+use App\Providers\FinalShiftCloseRuntimeDbBindingAttestationServiceProvider;
 use App\Providers\FinalShiftCloseServiceProvider;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -17,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withProviders([
         FinalShiftCloseServiceProvider::class,
         FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider::class,
+        FinalShiftCloseRuntimeDbBindingAttestationServiceProvider::class,
     ])
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
