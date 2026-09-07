@@ -161,7 +161,8 @@ jobs:
           middleware=apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingTokenMiddleware.php
           controller=apps/web/app/Delivery/Http/Pos/FinalShiftCloseRuntimeDbBindingAttestationController.php
           provider=apps/web/app/Providers/FinalShiftCloseRuntimeDbBindingAttestationServiceProvider.php
-          grep -Fq "needs('$expectedToken')" "$provider"
+          grep -Fq 'needs(' "$provider"
+          grep -Fq '$expectedToken' "$provider"
           grep -Fq 'private readonly string $expectedToken' "$middleware"
           grep -Fq "headers->get('Authorization')" "$middleware"
           grep -Fq 'Bearer ' "$middleware"
