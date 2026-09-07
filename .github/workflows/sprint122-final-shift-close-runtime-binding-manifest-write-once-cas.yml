@@ -21,48 +21,47 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Lock exact Sprint122 source envelope
+      - name: Lock Sprint122 successor-compatible source envelope
         shell: bash
         run: |
           set -euo pipefail
           git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | sort > /tmp/paths
           cat > /tmp/expected <<'EOF'
-          .github/workflows/sprint120-final-shift-close-runtime-binding-manifest-writer.yml
           .github/workflows/sprint121-final-shift-close-runtime-binding-manifest-control-channel.yml
           .github/workflows/sprint122-final-shift-close-runtime-binding-manifest-write-once-cas.yml
-          apps/web/app/Infrastructure/Pos/FilesystemFinalShiftCloseRuntimeBindingManifestWriter.php
-          apps/web/tests/final-shift-close-runtime-binding-manifest-writer.php
-          docs/SPRINT122_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MANIFEST_WRITE_ONCE_CAS.md
-          ops/final-shift-close/RUNTIME_BINDING_MANIFEST_WRITE_ONCE_CAS_CONTRACT.json
+          .github/workflows/sprint123-final-shift-close-runtime-binding-manifest-control-plane-registration.yml
+          apps/web/app/Providers/FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider.php
+          apps/web/bootstrap/providers.php
+          apps/web/config/oneqay.php
+          docs/SPRINT123_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MANIFEST_CONTROL_PLANE_REGISTRATION.md
+          ops/final-shift-close/RUNTIME_BINDING_MANIFEST_CONTROL_PLANE_REGISTRATION_CONTRACT.json
           EOF
           diff -u /tmp/expected /tmp/paths
           fingerprint="$(sha256sum /tmp/paths | awk '{print $1}')"
-          [[ "$fingerprint" == '2b4df6f0b04163f8c49b55e87483e969127867eda0541d9be503df6d2216b9ae' ]]
+          [[ "$fingerprint" == '258a041d330a9496f55c1a7ba4737acd308c6d6c0436603a20b9f2e8b67ec5f7' ]]
 
-      - name: Prove delivery and operational state remain untouched
+      - name: Prove write-once implementation and operational state remain untouched
         shell: bash
         run: |
           set -euo pipefail
           git diff --quiet "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" -- \
-            apps/web/bootstrap/providers.php \
-            apps/web/config \
             apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingManifestMaterializer.php \
-            apps/web/app/Providers/FinalShiftCloseRuntimeDbBindingAttestationServiceProvider.php \
-            apps/web/app/Providers/FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider.php \
+            apps/web/app/Infrastructure/Pos/FilesystemFinalShiftCloseRuntimeBindingManifestWriter.php \
+            apps/web/tests/final-shift-close-runtime-binding-manifest-writer.php \
             apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware.php \
             apps/web/app/Delivery/Http/Pos/FinalShiftCloseRuntimeBindingManifestMaterializationController.php \
-            apps/web/routes/final-shift-close-runtime-db-binding-attestation.php \
             apps/web/routes/final-shift-close-runtime-binding-manifest-materialization.php \
+            apps/web/app/Providers/FinalShiftCloseRuntimeDbBindingAttestationServiceProvider.php \
+            apps/web/routes/final-shift-close-runtime-db-binding-attestation.php \
             .github/workflows/final-shift-close-migration27-selected-target-db-binding.yml \
             .github/workflows/final-shift-close-migration27-execution.yml \
             apps/web/database/migrations \
             ops/final-shift-close/STATE.json \
             ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
-          ! grep -Fq 'FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider::class' apps/web/bootstrap/providers.php
-          grep -Fq 'return false;' apps/web/app/Providers/FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider.php
+          ! grep -Fq 'FinalShiftCloseRuntimeDbBindingAttestationServiceProvider::class' apps/web/bootstrap/providers.php
           grep -Fq 'return false;' apps/web/app/Providers/FinalShiftCloseRuntimeDbBindingAttestationServiceProvider.php
 
-      - name: Validate Sprint122 machine-readable contract
+      - name: Validate Sprint122 historical machine-readable contract
         shell: bash
         run: |
           set -euo pipefail
@@ -88,7 +87,7 @@ jobs:
             .canonical_boundaries.feature_activation == "INACTIVE"
           ' "$file" >/dev/null
 
-      - name: Lock write-once CAS semantics
+      - name: Lock Sprint122 write-once CAS semantics
         shell: bash
         run: |
           set -euo pipefail
@@ -107,11 +106,29 @@ jobs:
           grep -Fq 'WRITE-006 conflicting rewrite rejected' "$test"
           grep -Fq 'WRITE-008 conflict leaves original inode unchanged' "$test"
 
+      - name: Accept Sprint123 registered default-off successor boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          config=apps/web/config/oneqay.php
+          provider=apps/web/app/Providers/FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider.php
+          middleware=apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware.php
+          [[ "$(grep -Fc 'FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider::class' apps/web/bootstrap/providers.php)" -eq 1 ]]
+          grep -Fq "env('ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MATERIALIZATION_ENABLED', false)" "$config"
+          grep -Fq "env('ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MATERIALIZATION_TOKEN', '')" "$config"
+          grep -Fq "config('oneqay.final_shift_close_runtime_binding_materialization.enabled', false)" "$provider"
+          grep -Fq "return is_string(\$token) && \$token !== '';" "$provider"
+          grep -Fq "if (\$this->expectedToken === '')" "$middleware"
+          grep -Fq 'abort(503);' "$middleware"
+
       - name: Validate PHP syntax and executable compatibility regressions
         shell: bash
         run: |
           set -euo pipefail
           find \
+            apps/web/config/oneqay.php \
+            apps/web/bootstrap/providers.php \
+            apps/web/app/Providers/FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider.php \
             apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingManifest.php \
             apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingManifestWriter.php \
             apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingManifestMaterializer.php \
@@ -124,20 +141,15 @@ jobs:
           php tests/final-shift-close-runtime-binding-manifest-writer.php
           php tests/final-shift-close-runtime-binding-manifest-materialization.php
 
-      - name: Lock no operational invocation or activation surface
+      - name: Lock historical and successor no-go boundaries
         shell: bash
         run: |
           set -euo pipefail
-          ! grep -R -E '(workflow_dispatch|ONEQAY_POS_SHIFT_CLOSE_ENABLED|FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider::class)' \
-            .github/workflows/sprint122-final-shift-close-runtime-binding-manifest-write-once-cas.yml \
-            apps/web/app/Infrastructure/Pos/FilesystemFinalShiftCloseRuntimeBindingManifestWriter.php \
-            apps/web/tests/final-shift-close-runtime-binding-manifest-writer.php \
-            docs/SPRINT122_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MANIFEST_WRITE_ONCE_CAS.md \
-            ops/final-shift-close/RUNTIME_BINDING_MANIFEST_WRITE_ONCE_CAS_CONTRACT.json
-          grep -Fq 'SPRINT122_CONTROL_CHANNEL_DELIVERY = INACTIVE' docs/SPRINT122_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MANIFEST_WRITE_ONCE_CAS.md
           grep -Fq 'SPRINT122_RUNTIME_MANIFEST_MATERIALIZATION = NOT_PERFORMED' docs/SPRINT122_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MANIFEST_WRITE_ONCE_CAS.md
-          grep -Fq 'MIGRATION_27_EXECUTION = NOT_PERFORMED' docs/SPRINT122_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MANIFEST_WRITE_ONCE_CAS.md
-          grep -Fq 'FEATURE_ACTIVATION = INACTIVE' docs/SPRINT122_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MANIFEST_WRITE_ONCE_CAS.md
+          grep -Fq 'SPRINT123_CONTROL_CHANNEL_DELIVERY = INACTIVE' docs/SPRINT123_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MANIFEST_CONTROL_PLANE_REGISTRATION.md
+          grep -Fq 'SPRINT123_RUNTIME_TOKEN_PROVISIONING = NOT_PERFORMED' docs/SPRINT123_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MANIFEST_CONTROL_PLANE_REGISTRATION.md
+          grep -Fq 'MIGRATION_27_EXECUTION = NOT_PERFORMED' docs/SPRINT123_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MANIFEST_CONTROL_PLANE_REGISTRATION.md
+          grep -Fq 'FEATURE_ACTIVATION = INACTIVE' docs/SPRINT123_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MANIFEST_CONTROL_PLANE_REGISTRATION.md
 
       - name: Verify tracked-source cleanliness
         shell: bash
