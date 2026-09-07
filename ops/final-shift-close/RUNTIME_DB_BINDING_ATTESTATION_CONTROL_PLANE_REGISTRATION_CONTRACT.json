@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "feature": "final-shift-close",
+  "sprint": 124,
+  "bounded_objective": "RUNTIME_DB_BINDING_ATTESTATION_CONTROL_PLANE_REGISTRATION_DEFAULT_OFF",
+  "control_plane": {
+    "provider_registration": "REGISTERED_SOURCE_ONLY",
+    "delivery": "INACTIVE",
+    "delivery_gate": "DEFAULT_OFF_AND_TOKEN_REQUIRED",
+    "route_registration_when_disabled": false,
+    "bearer_authentication_required": true,
+    "token_min_length": 32,
+    "token_max_length": 512,
+    "invalid_credential_disposition": "HTTP_404",
+    "throttle": "2_PER_MINUTE",
+    "http_method": "GET_ONLY"
+  },
+  "configuration": {
+    "config_file": "apps/web/config/final_shift_close_runtime_db_binding_attestation.php",
+    "enabled_env": "ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_DB_BINDING_ATTESTATION_ENABLED",
+    "enabled_default": false,
+    "token_env": "ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_DB_BINDING_ATTESTATION_TOKEN",
+    "token_default": "EMPTY",
+    "invalid_or_empty_token_disposition": "FAIL_CLOSED"
+  },
+  "attestation_boundary": {
+    "database_identity_source": "ACTIVE_APPLICATION_DATABASE_CONNECTION",
+    "database_identity_mode": "READ_ONLY",
+    "database_binding_algorithm": "SHA256_CANONICAL_JSON_DATABASE_HOSTNAME_PORT_V1",
+    "migration27_presence_disposition": "REJECT",
+    "runtime_manifest_required": true,
+    "runtime_manifest_source": "PRIVATE_OWNER_ONLY_NON_SYMLINK",
+    "caller_selected_target_authority": false,
+    "caller_database_identity_authority": false
+  },
+  "successor_compatibility": {
+    "sprint96_runtime_wiring": "PRESERVED",
+    "sprint119_runtime_db_binding_attestation": "PRESERVED",
+    "sprint120_manifest_writer": "PRESERVED",
+    "sprint121_control_channel": "PRESERVED",
+    "sprint122_write_once_cas": "PRESERVED",
+    "sprint123_manifest_control_plane_registration": "PRESERVED"
+  },
+  "source_envelope_sha256": "e6847c50f16ca24497a400b7a8be43efa9e319e24e4b9f2abe10555a9609b657",
+  "canonical_boundaries": {
+    "runtime_db_binding_attestation": "NOT_PERFORMED",
+    "runtime_manifest_materialization": "NOT_PERFORMED",
+    "selected_target": "NONE",
+    "db_binding_producer_dispatch": "NOT_PERFORMED",
+    "migration27_execution": "NOT_PERFORMED",
+    "permission_provisioning": "NONE",
+    "feature_activation": "INACTIVE",
+    "deployment_authority": "NOT_GRANTED",
+    "technical_preview_activation": "NOT_AUTHORIZED",
+    "production_activation": "NOT_AUTHORIZED",
+    "updater_activation": "INACTIVE"
+  }
+}
