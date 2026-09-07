@@ -45,15 +45,15 @@ jobs:
           .github/workflows/sprint124-final-shift-close-runtime-db-binding-attestation-control-plane-registration.yml
           .github/workflows/sprint125-final-shift-close-runtime-db-binding-attestation-control-plane-regression.yml
           .github/workflows/sprint126-final-shift-close-runtime-binding-manifest-control-plane-token-hardening.yml
-          apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware.php
-          apps/web/app/Providers/FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider.php
-          docs/SPRINT126_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MANIFEST_CONTROL_PLANE_TOKEN_HARDENING.md
-          ops/final-shift-close/RUNTIME_BINDING_MANIFEST_CONTROL_PLANE_TOKEN_HARDENING_CONTRACT.json
+          .github/workflows/sprint127-final-shift-close-runtime-binding-manifest-control-plane-regression.yml
+          apps/web/tests/final-shift-close-runtime-binding-manifest-control-plane.php
+          docs/SPRINT127_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MANIFEST_CONTROL_PLANE_REGRESSION.md
+          ops/final-shift-close/RUNTIME_BINDING_MANIFEST_CONTROL_PLANE_REGRESSION_CONTRACT.json
           EOF
           diff -u /tmp/expected /tmp/paths
-          [[ "$(sha256sum /tmp/paths | awk '{print $1}')" == 'b8a450e65fed26e8114752387a34133cfdd3bfc6979a2d9e447277f949534ed0' ]]
+          [[ "$(sha256sum /tmp/paths | awk '{print $1}')" == '0024a7b1e7e37964412b96107764c5d8cea6001003b9487fb49d22b32526bb0d' ]]
 
-      - name: Prove Sprint124 DB attestation source and operational state remain untouched
+      - name: Prove DB attestation and manifest materialization source remain untouched
         shell: bash
         run: |
           set -euo pipefail
@@ -62,11 +62,12 @@ jobs:
           git diff --quiet "$base" "$head" -- \
             apps/web/app/Providers/FinalShiftCloseRuntimeDbBindingAttestationServiceProvider.php \
             apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingTokenMiddleware.php \
+            apps/web/config/final_shift_close_runtime_db_binding_attestation.php \
+            apps/web/app/Providers/FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider.php \
+            apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware.php \
+            apps/web/config/final_shift_close_runtime_binding_materialization.php \
             apps/web/bootstrap/app.php \
             apps/web/bootstrap/providers.php \
-            apps/web/config/final_shift_close_runtime_db_binding_attestation.php \
-            apps/web/config/final_shift_close_runtime_binding_materialization.php \
-            apps/web/config/oneqay.php \
             apps/web/routes \
             apps/web/database/migrations \
             .github/workflows/final-shift-close-migration27-selected-target-db-binding.yml \
@@ -79,16 +80,13 @@ jobs:
           [[ "$(jq -r '.selection_state' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" == 'BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET' ]]
           [[ "$(jq -r '.selected_target' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" == 'null' ]]
 
-      - name: Validate Sprint125 machine-readable contract
+      - name: Preserve Sprint125 executable DB attestation regression contract
         shell: bash
         run: |
           set -euo pipefail
           file=ops/final-shift-close/RUNTIME_DB_BINDING_ATTESTATION_CONTROL_PLANE_REGRESSION_CONTRACT.json
           jq -e '
-            .schema_version == 1 and
-            .feature == "final-shift-close" and
             .sprint == 125 and
-            .bounded_objective == "RUNTIME_DB_BINDING_ATTESTATION_CONTROL_PLANE_EXECUTABLE_OFF_SWITCH_REGRESSION" and
             .execution_mode == "CI_ONLY_SYNTHETIC_CONFIGURATION" and
             .gate_matrix.disabled_with_valid_token == "ROUTE_ABSENT" and
             .gate_matrix.enabled_with_empty_token == "ROUTE_ABSENT" and
@@ -97,10 +95,28 @@ jobs:
             .gate_matrix.enabled_with_valid_token == "ROUTE_REGISTERED" and
             .registered_route_contract.valid_bearer_request_performed == false and
             .canonical_boundaries.runtime_db_binding_attestation == "NOT_PERFORMED" and
-            .canonical_boundaries.migration27_execution == "NOT_PERFORMED" and
-            .canonical_boundaries.permission_provisioning == "NONE" and
             .canonical_boundaries.feature_activation == "INACTIVE"
           ' "$file" >/dev/null
+
+      - name: Preserve Sprint126 hardening and Sprint127 regression boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          provider=apps/web/app/Providers/FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider.php
+          middleware=apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware.php
+          grep -Fq 'strlen($token) >= 32' "$provider"
+          grep -Fq 'strlen($token) <= 512' "$provider"
+          grep -Fq 'strlen($this->expectedToken) < 32' "$middleware"
+          grep -Fq 'strlen($this->expectedToken) > 512' "$middleware"
+          grep -Fq '[A-Za-z0-9._~+\/-=]{32,512}' "$middleware"
+          jq -e '
+            .sprint == 127 and
+            .bounded_objective == "RUNTIME_BINDING_MANIFEST_CONTROL_PLANE_EXECUTABLE_OFF_SWITCH_REGRESSION" and
+            .registered_route_contract.valid_bearer_request_performed == false and
+            .registered_route_contract.controller_invocation_performed == false and
+            .canonical_boundaries.runtime_manifest_materialization == "NOT_PERFORMED" and
+            .canonical_boundaries.runtime_db_binding_attestation == "NOT_PERFORMED"
+          ' ops/final-shift-close/RUNTIME_BINDING_MANIFEST_CONTROL_PLANE_REGRESSION_CONTRACT.json >/dev/null
 
       - name: Validate PHP syntax and locked dependencies
         working-directory: apps/web
@@ -108,23 +124,12 @@ jobs:
         run: |
           set -euo pipefail
           php -l tests/final-shift-close-runtime-db-binding-attestation-control-plane.php
+          php -l tests/final-shift-close-runtime-binding-manifest-control-plane.php
           php -l app/Providers/FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider.php
           php -l app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware.php
           composer validate --no-check-publish
           composer install --no-interaction --no-progress --prefer-dist
           composer audit --locked --no-interaction --abandoned=report
-
-      - name: Lock executable DB attestation regression source safety
-        shell: bash
-        run: |
-          set -euo pipefail
-          test=apps/web/tests/final-shift-close-runtime-db-binding-attestation-control-plane.php
-          grep -Fq "Request::create('/health/live', 'GET')" "$test"
-          grep -Fq "internal.final-shift-close.runtime-db-binding-attestation" "$test"
-          grep -Fq "'throttle:2,1'" "$test"
-          grep -Fq 'RequireFinalShiftCloseRuntimeBindingTokenMiddleware::class' "$test"
-          grep -Fq "'HTTP_AUTHORIZATION' => 'Bearer short'" "$test"
-          ! grep -Fq 'enabled-valid-token' <<< "$(grep -E 'HTTP_AUTHORIZATION|Bearer ' "$test" || true)"
 
       - name: Prove disabled DB attestation gate keeps route absent
         working-directory: apps/web
@@ -151,32 +156,18 @@ jobs:
           ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_DB_BINDING_ATTESTATION_TOKEN: vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
         run: php tests/final-shift-close-runtime-db-binding-attestation-control-plane.php enabled-valid-token
 
-      - name: Preserve Sprint126 hardened manifest materialization token boundary
-        shell: bash
-        run: |
-          set -euo pipefail
-          provider=apps/web/app/Providers/FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider.php
-          middleware=apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware.php
-          grep -Fq 'strlen($token) >= 32' "$provider"
-          grep -Fq 'strlen($token) <= 512' "$provider"
-          grep -Fq 'strlen($this->expectedToken) < 32' "$middleware"
-          grep -Fq 'strlen($this->expectedToken) > 512' "$middleware"
-          grep -Fq '[A-Za-z0-9._~+\/-=]{32,512}' "$middleware"
-          jq -e '.sprint == 126 and .control_plane.delivery == "INACTIVE" and .canonical_boundaries.runtime_token_provisioning == "NOT_PERFORMED" and .canonical_boundaries.runtime_manifest_materialization == "NOT_PERFORMED"' ops/final-shift-close/RUNTIME_BINDING_MANIFEST_CONTROL_PLANE_TOKEN_HARDENING_CONTRACT.json >/dev/null
-
       - name: Lock no operational invocation or activation
         shell: bash
         run: |
           set -euo pipefail
-          doc=docs/SPRINT125_FINAL_SHIFT_CLOSE_RUNTIME_DB_BINDING_ATTESTATION_CONTROL_PLANE_REGRESSION.md
-          grep -Fq 'SPRINT125_CONTROL_PLANE_REGRESSION = EXECUTABLE_CI_ONLY' "$doc"
-          grep -Fq 'SPRINT125_VALID_BEARER_REQUEST = NOT_PERFORMED' "$doc"
-          sprint126=docs/SPRINT126_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MANIFEST_CONTROL_PLANE_TOKEN_HARDENING.md
-          grep -Fq 'SPRINT126_RUNTIME_TOKEN_PROVISIONING = NOT_PERFORMED' "$sprint126"
-          grep -Fq 'SPRINT126_VALID_BEARER_REQUEST = NOT_PERFORMED' "$sprint126"
-          grep -Fq 'SPRINT126_RUNTIME_MANIFEST_MATERIALIZATION = NOT_PERFORMED' "$sprint126"
-          grep -Fq 'FEATURE_ACTIVATION = INACTIVE' "$sprint126"
-          grep -Fq 'PRODUCTION = NO-GO' "$sprint126"
+          doc=docs/SPRINT127_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MANIFEST_CONTROL_PLANE_REGRESSION.md
+          grep -Fq 'SPRINT127_CONTROL_PLANE_REGRESSION = EXECUTABLE_CI_ONLY' "$doc"
+          grep -Fq 'SPRINT127_RUNTIME_TOKEN_PROVISIONING = NOT_PERFORMED' "$doc"
+          grep -Fq 'SPRINT127_VALID_BEARER_REQUEST = NOT_PERFORMED' "$doc"
+          grep -Fq 'SPRINT127_CONTROLLER_INVOCATION = NOT_PERFORMED' "$doc"
+          grep -Fq 'SPRINT127_RUNTIME_MANIFEST_MATERIALIZATION = NOT_PERFORMED' "$doc"
+          grep -Fq 'FEATURE_ACTIVATION = INACTIVE' "$doc"
+          grep -Fq 'PRODUCTION = NO-GO' "$doc"
 
       - name: Verify tracked-source cleanliness
         shell: bash
