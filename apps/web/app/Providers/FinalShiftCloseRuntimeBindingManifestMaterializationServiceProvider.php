@@ -59,6 +59,8 @@ final class FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider 
 
         $token = config('final_shift_close_runtime_binding_materialization.token', '');
 
-        return is_string($token) && $token !== '';
+        return is_string($token)
+            && strlen($token) >= 32
+            && strlen($token) <= 512;
     }
 }
