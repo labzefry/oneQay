@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "feature": "final-shift-close",
+  "sprint": 121,
+  "control_channel_source": "MATERIALIZED",
+  "delivery": "INACTIVE",
+  "provider_registration": "NOT_REGISTERED",
+  "delivery_gate": "HARD_FALSE",
+  "runtime_manifest_materialization": "NOT_PERFORMED",
+  "request_contract": {
+    "method": "POST",
+    "path": "/internal/final-shift-close/runtime-binding-manifest/materialize",
+    "caller_fields": [
+      "operation_id",
+      "expected_selection_fingerprint_sha256"
+    ],
+    "caller_target_identity_fields_allowed": false,
+    "bearer_authentication_required": true,
+    "rate_limit": "1_PER_MINUTE"
+  },
+  "materialization_contract": {
+    "canonical_selection_source": "ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json",
+    "required_selection_state": "SELECTED_NOT_AUTHORIZED",
+    "selection_fingerprint_constant_time_match": true,
+    "manifest_source": "CANONICAL_SELECTED_TARGET_ONLY",
+    "writer": "FilesystemFinalShiftCloseRuntimeBindingManifestWriter",
+    "manifest_secrets_embedded": false
+  },
+  "delivery_boundary": {
+    "provider": "FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider",
+    "provider_registration": "NOT_REGISTERED",
+    "delivery_gate": "HARD_FALSE",
+    "token_config_key": "oneqay.final_shift_close_runtime_binding_materialization_token",
+    "token_config_materialized": false
+  },
+  "canonical_boundaries": {
+    "selected_target": "NONE",
+    "sprint119_attestation_delivery": "INACTIVE",
+    "sprint118_db_binding_producer_dispatch": "NOT_PERFORMED",
+    "migration27_execution": "NOT_PERFORMED",
+    "permission_provisioning": "NONE",
+    "feature_activation": "INACTIVE",
+    "technical_preview_activation": "NOT_AUTHORIZED",
+    "production_activation": "NOT_AUTHORIZED",
+    "updater_activation": "INACTIVE"
+  }
+}
