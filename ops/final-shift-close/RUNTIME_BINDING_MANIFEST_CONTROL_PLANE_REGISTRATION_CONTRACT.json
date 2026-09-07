@@ -12,6 +12,7 @@
     "throttle": "1_PER_MINUTE"
   },
   "configuration": {
+    "config_file": "apps/web/config/final_shift_close_runtime_binding_materialization.php",
     "enabled_env": "ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MATERIALIZATION_ENABLED",
     "enabled_default": false,
     "token_env": "ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MATERIALIZATION_TOKEN",
@@ -24,7 +25,7 @@
     "manifest_source": "CANONICAL_SELECTED_TARGET_ONLY",
     "writer_target_replacement": "FORBIDDEN"
   },
-  "source_envelope_sha256": "258a041d330a9496f55c1a7ba4737acd308c6d6c0436603a20b9f2e8b67ec5f7",
+  "source_envelope_sha256": "97690e6bbacb18330a39e03f9d06c83e80067cca61a9173f480938192e693de1",
   "canonical_boundaries": {
     "runtime_manifest_materialization": "NOT_PERFORMED",
     "selected_target": "NONE",
