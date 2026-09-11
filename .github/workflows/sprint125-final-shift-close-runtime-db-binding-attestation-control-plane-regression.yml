@@ -69,13 +69,15 @@ jobs:
         run: |
           set -euo pipefail
           jq -e '.sprint == 125 and .execution_mode == "CI_ONLY_SYNTHETIC_CONFIGURATION" and .gate_matrix.disabled_with_valid_token == "ROUTE_ABSENT" and .gate_matrix.enabled_with_empty_token == "ROUTE_ABSENT" and .gate_matrix.enabled_with_short_token == "ROUTE_ABSENT" and .gate_matrix.enabled_with_oversized_token == "ROUTE_ABSENT" and .gate_matrix.enabled_with_valid_token == "ROUTE_REGISTERED" and .registered_route_contract.valid_bearer_request_performed == false and .canonical_boundaries.runtime_db_binding_attestation == "NOT_PERFORMED"' ops/final-shift-close/RUNTIME_DB_BINDING_ATTESTATION_CONTROL_PLANE_REGRESSION_CONTRACT.json >/dev/null
+          policy=apps/web/app/Application/Pos/FinalShiftCloseRuntimeControlPlaneTokenPolicy.php
           provider=apps/web/app/Providers/FinalShiftCloseRuntimeDbBindingAttestationServiceProvider.php
           middleware=apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingTokenMiddleware.php
-          grep -Fq 'strlen($token) >= 32' "$provider"
-          grep -Fq 'strlen($token) <= 512' "$provider"
-          grep -Fq '[A-Za-z0-9._~+=\/-]{32,512}' "$provider"
-          grep -Fq '[A-Za-z0-9._~+=\/-]{32,512}' "$middleware"
-          grep -Fq 'hash_equals($this->expectedToken, $matches[1])' "$middleware"
+          grep -Fq 'public const MINIMUM_LENGTH = 32;' "$policy"
+          grep -Fq 'public const MAXIMUM_LENGTH = 512;' "$policy"
+          grep -Fq '[A-Za-z0-9._~+=\/-]+' "$policy"
+          grep -Fq 'FinalShiftCloseRuntimeControlPlaneTokenPolicy::isValidToken(' "$provider"
+          grep -Fq 'FinalShiftCloseRuntimeControlPlaneTokenPolicy::parseBearerCredential(' "$middleware"
+          grep -Fq 'hash_equals($this->expectedToken, $providedToken)' "$middleware"
 
       - name: Validate Sprint128 character policy successor contract
         shell: bash
@@ -90,6 +92,7 @@ jobs:
           set -euo pipefail
           php -l tests/final-shift-close-runtime-db-binding-attestation-control-plane.php
           php -l tests/final-shift-close-runtime-control-plane-token-character-policy.php
+          php -l app/Application/Pos/FinalShiftCloseRuntimeControlPlaneTokenPolicy.php
           php -l app/Providers/FinalShiftCloseRuntimeDbBindingAttestationServiceProvider.php
           php -l app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingTokenMiddleware.php
           composer validate --no-check-publish
