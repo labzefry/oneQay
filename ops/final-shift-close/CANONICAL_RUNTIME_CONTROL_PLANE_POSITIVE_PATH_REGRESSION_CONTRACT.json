@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "feature": "final-shift-close",
+  "sprint": 131,
+  "bounded_objective": "CANONICAL_CONTROL_PLANE_POSITIVE_PATH_REGRESSION",
+  "execution_mode": "CI_ONLY_SYNTHETIC_MIDDLEWARE_REGRESSION",
+  "canonical_policy_source": "apps/web/app/Application/Pos/FinalShiftCloseRuntimeControlPlaneTokenPolicy.php",
+  "qualification": {
+    "minimum_length_valid_token": "ACCEPTED",
+    "maximum_length_valid_token": "ACCEPTED",
+    "bearer_parsing": "EXACT_CANONICAL_BEARER_ONLY",
+    "materialization_matching_bearer": "SYNTHETIC_CLOSURE_HTTP_204",
+    "db_attestation_matching_bearer": "SYNTHETIC_CLOSURE_HTTP_204",
+    "credential_comparison": "HASH_EQUALS_IN_SECURITY_MIDDLEWARE",
+    "real_route_invocation": false,
+    "controller_invocation": false,
+    "application_service_invocation": false
+  },
+  "preserved_fail_closed_dispositions": {
+    "materialization_invalid_expected_token": "HTTP_503",
+    "materialization_invalid_bearer": "HTTP_401",
+    "db_attestation_invalid_expected_or_bearer": "HTTP_404_CLOAKED"
+  },
+  "successor_compatibility": {
+    "sprint130_full_pr_envelope_lock": "REMOVED_FROM_HISTORICAL_WORKFLOW",
+    "sprint130_owned_invariant_regression": "PRESERVED",
+    "active_sprint_envelope_authority": "SPRINT131_WORKFLOW_ONLY"
+  },
+  "source_envelope": {
+    "path_count": 5,
+    "sha256": "6549ac162090f316faad210ff3b6298640ee538aecb681f05ca49f616930dd6b"
+  },
+  "canonical_boundaries": {
+    "valid_operational_control_plane_request": "NOT_PERFORMED",
+    "real_route_invocation": "NOT_PERFORMED",
+    "controller_invocation": "NOT_PERFORMED",
+    "runtime_configuration_mutation": "NOT_PERFORMED",
+    "runtime_token_provisioning": "NOT_PERFORMED",
+    "runtime_manifest_materialization": "NOT_PERFORMED",
+    "runtime_db_binding_attestation": "NOT_PERFORMED",
+    "migration27_execution": "NOT_PERFORMED",
+    "permission_provisioning": "NONE",
+    "feature_activation": "INACTIVE",
+    "selected_target": null,
+    "deployment_authority": "NOT_GRANTED",
+    "technical_preview": "NO-GO",
+    "production": "NO-GO",
+    "updater": "INACTIVE"
+  },
+  "attribution": "Author by Lab | zefry"
+}
