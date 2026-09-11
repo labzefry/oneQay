@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Application\Pos\FinalShiftCloseRuntimeControlPlaneTokenPolicy;
 use App\Application\Pos\FinalShiftCloseRuntimeDatabaseIdentityReader;
 use App\Application\Pos\FinalShiftCloseRuntimeDbBindingAttestation;
 use App\Delivery\Http\Middleware\RequireFinalShiftCloseRuntimeBindingTokenMiddleware;
@@ -61,11 +62,8 @@ final class FinalShiftCloseRuntimeDbBindingAttestationServiceProvider extends Se
             return false;
         }
 
-        $token = config('final_shift_close_runtime_db_binding_attestation.token', '');
-
-        return is_string($token)
-            && strlen($token) >= 32
-            && strlen($token) <= 512
-            && preg_match('/\A[A-Za-z0-9._~+=\/-]{32,512}\z/D', $token) === 1;
+        return FinalShiftCloseRuntimeControlPlaneTokenPolicy::isValidToken(
+            config('final_shift_close_runtime_db_binding_attestation.token', ''),
+        );
     }
 }

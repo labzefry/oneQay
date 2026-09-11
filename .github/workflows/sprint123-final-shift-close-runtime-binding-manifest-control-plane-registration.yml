@@ -34,16 +34,18 @@ jobs:
           base="${{ github.event.pull_request.base.sha }}"; head="${{ github.event.pull_request.head.sha }}"
           git diff --quiet "$base" "$head" -- apps/web/config/final_shift_close_runtime_binding_materialization.php apps/web/bootstrap/app.php apps/web/routes apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingManifestMaterializer.php apps/web/app/Infrastructure/Pos/FilesystemFinalShiftCloseRuntimeBindingManifestWriter.php apps/web/database/migrations ops/final-shift-close/STATE.json ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
           config=apps/web/config/final_shift_close_runtime_binding_materialization.php
+          policy=apps/web/app/Application/Pos/FinalShiftCloseRuntimeControlPlaneTokenPolicy.php
           provider=apps/web/app/Providers/FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider.php
           middleware=apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware.php
           grep -Fq "env('ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MATERIALIZATION_ENABLED', false)" "$config"
           grep -Fq "env('ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MATERIALIZATION_TOKEN', '')" "$config"
-          grep -Fq 'strlen($token) >= 32' "$provider"
-          grep -Fq 'strlen($token) <= 512' "$provider"
-          grep -Fq '[A-Za-z0-9._~+=\/-]{32,512}' "$provider"
-          grep -Fq '[A-Za-z0-9._~+=\/-]{32,512}' "$middleware"
+          grep -Fq 'public const MINIMUM_LENGTH = 32;' "$policy"
+          grep -Fq 'public const MAXIMUM_LENGTH = 512;' "$policy"
+          grep -Fq '[A-Za-z0-9._~+=\/-]+' "$policy"
+          grep -Fq 'FinalShiftCloseRuntimeControlPlaneTokenPolicy::isValidToken(' "$provider"
+          grep -Fq 'FinalShiftCloseRuntimeControlPlaneTokenPolicy::parseBearerCredential(' "$middleware"
+          grep -Fq 'hash_equals($this->expectedToken, $providedToken)' "$middleware"
           grep -Fq "'throttle:1,1'" "$provider"
-          grep -Fq 'hash_equals($this->expectedToken, $matches[1])' "$middleware"
           grep -Fq "'SELECTED_NOT_AUTHORIZED'" apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingManifestMaterializer.php
           [[ "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" == 'INACTIVE' ]]
           jq -e '.sprint == 128 and .source_envelope_sha256 == "ae8691a2c9be31ba6558145a1162cc0aaa658727ff14279c1e638b0a971dc825" and .canonical_boundaries.valid_control_plane_request == "NOT_PERFORMED"' ops/final-shift-close/RUNTIME_CONTROL_PLANE_TOKEN_CHARACTER_POLICY_CONTRACT.json >/dev/null

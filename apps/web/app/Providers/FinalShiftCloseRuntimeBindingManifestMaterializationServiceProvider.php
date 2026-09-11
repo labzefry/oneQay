@@ -6,6 +6,7 @@ namespace App\Providers;
 
 use App\Application\Pos\FinalShiftCloseRuntimeBindingManifestMaterializer;
 use App\Application\Pos\FinalShiftCloseRuntimeBindingManifestWriter;
+use App\Application\Pos\FinalShiftCloseRuntimeControlPlaneTokenPolicy;
 use App\Delivery\Http\Middleware\RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware;
 use App\Infrastructure\Pos\FilesystemFinalShiftCloseRuntimeBindingManifestWriter;
 use Illuminate\Support\Facades\Route;
@@ -57,11 +58,8 @@ final class FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider 
             return false;
         }
 
-        $token = config('final_shift_close_runtime_binding_materialization.token', '');
-
-        return is_string($token)
-            && strlen($token) >= 32
-            && strlen($token) <= 512
-            && preg_match('/\A[A-Za-z0-9._~+=\/-]{32,512}\z/D', $token) === 1;
+        return FinalShiftCloseRuntimeControlPlaneTokenPolicy::isValidToken(
+            config('final_shift_close_runtime_binding_materialization.token', ''),
+        );
     }
 }

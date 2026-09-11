@@ -9,6 +9,7 @@ on:
     paths:
       - '.github/workflows/sprint119-final-shift-close-runtime-db-binding-attestation.yml'
       - '.github/workflows/sprint128-final-shift-close-runtime-control-plane-token-character-policy.yml'
+      - 'apps/web/app/Application/Pos/FinalShiftCloseRuntimeControlPlaneTokenPolicy.php'
       - 'apps/web/app/Application/Pos/FinalShiftCloseRuntimeDatabaseIdentity.php'
       - 'apps/web/app/Application/Pos/FinalShiftCloseRuntimeDatabaseIdentityReader.php'
       - 'apps/web/app/Application/Pos/FinalShiftCloseRuntimeDbBindingAttestation.php'
@@ -99,17 +100,19 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          policy=apps/web/app/Application/Pos/FinalShiftCloseRuntimeControlPlaneTokenPolicy.php
           provider=apps/web/app/Providers/FinalShiftCloseRuntimeDbBindingAttestationServiceProvider.php
           middleware=apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingTokenMiddleware.php
           config=apps/web/config/final_shift_close_runtime_db_binding_attestation.php
           grep -Fq "env('ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_DB_BINDING_ATTESTATION_ENABLED', false)" "$config"
           grep -Fq "env('ONEQAY_FINAL_SHIFT_CLOSE_RUNTIME_DB_BINDING_ATTESTATION_TOKEN', '')" "$config"
-          grep -Fq 'strlen($token) >= 32' "$provider"
-          grep -Fq 'strlen($token) <= 512' "$provider"
-          grep -Fq '[A-Za-z0-9._~+=\/-]{32,512}' "$provider"
-          grep -Fq '[A-Za-z0-9._~+=\/-]{32,512}' "$middleware"
-          ! grep -Fq '[A-Za-z0-9._~+\/-=]{32,512}' "$middleware"
-          grep -Fq 'hash_equals($this->expectedToken, $matches[1])' "$middleware"
+          grep -Fq 'public const MINIMUM_LENGTH = 32;' "$policy"
+          grep -Fq 'public const MAXIMUM_LENGTH = 512;' "$policy"
+          grep -Fq '[A-Za-z0-9._~+=\/-]+' "$policy"
+          ! grep -Fq '[A-Za-z0-9._~+\/-=]' "$policy"
+          grep -Fq 'FinalShiftCloseRuntimeControlPlaneTokenPolicy::isValidToken(' "$provider"
+          grep -Fq 'FinalShiftCloseRuntimeControlPlaneTokenPolicy::parseBearerCredential(' "$middleware"
+          grep -Fq 'hash_equals($this->expectedToken, $providedToken)' "$middleware"
           grep -Fq "response('', 404" "$middleware"
           grep -Fq "'Cache-Control' => 'no-store, private'" "$middleware"
           grep -Fq "'throttle:2,1'" "$provider"
@@ -125,6 +128,7 @@ jobs:
         run: |
           set -euo pipefail
           find \
+            apps/web/app/Application/Pos/FinalShiftCloseRuntimeControlPlaneTokenPolicy.php \
             apps/web/app/Application/Pos/FinalShiftCloseRuntimeDatabaseIdentity.php \
             apps/web/app/Application/Pos/FinalShiftCloseRuntimeDatabaseIdentityReader.php \
             apps/web/app/Application/Pos/FinalShiftCloseRuntimeDbBindingAttestation.php \

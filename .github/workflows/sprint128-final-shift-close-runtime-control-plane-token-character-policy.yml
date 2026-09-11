@@ -75,22 +75,27 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          files=(
-            apps/web/app/Providers/FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider.php
-            apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware.php
-            apps/web/app/Providers/FinalShiftCloseRuntimeDbBindingAttestationServiceProvider.php
-            apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingTokenMiddleware.php
-          )
-          for file in "${files[@]}"; do
-            grep -Fq '[A-Za-z0-9._~+=\/-]{32,512}' "$file"
-            ! grep -Fq '[A-Za-z0-9._~+\/-=]{32,512}' "$file"
-          done
-          grep -Fq "preg_match('/\\A[A-Za-z0-9._~+=\\/-]{32,512}\\z/D', \$token) === 1" apps/web/app/Providers/FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider.php
-          grep -Fq "preg_match('/\\A[A-Za-z0-9._~+=\\/-]{32,512}\\z/D', \$token) === 1" apps/web/app/Providers/FinalShiftCloseRuntimeDbBindingAttestationServiceProvider.php
-          grep -Fq "preg_match('/\\A[A-Za-z0-9._~+=\\/-]{32,512}\\z/D', \$this->expectedToken) !== 1" apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware.php
-          grep -Fq "preg_match('/\\A[A-Za-z0-9._~+=\\/-]{32,512}\\z/D', \$this->expectedToken) !== 1" apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingTokenMiddleware.php
-          grep -Fq 'hash_equals($this->expectedToken, $matches[1])' apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware.php
-          grep -Fq 'hash_equals($this->expectedToken, $matches[1])' apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingTokenMiddleware.php
+          policy=apps/web/app/Application/Pos/FinalShiftCloseRuntimeControlPlaneTokenPolicy.php
+          materialization_provider=apps/web/app/Providers/FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider.php
+          materialization_middleware=apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware.php
+          db_provider=apps/web/app/Providers/FinalShiftCloseRuntimeDbBindingAttestationServiceProvider.php
+          db_middleware=apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingTokenMiddleware.php
+
+          grep -Fq 'public const MINIMUM_LENGTH = 32;' "$policy"
+          grep -Fq 'public const MAXIMUM_LENGTH = 512;' "$policy"
+          grep -Fq '[A-Za-z0-9._~+=\/-]+' "$policy"
+          ! grep -Fq '[A-Za-z0-9._~+\/-=]' "$policy"
+          grep -Fq 'public static function isValidToken(mixed $token): bool' "$policy"
+          grep -Fq 'public static function parseBearerCredential(mixed $authorization): ?string' "$policy"
+
+          grep -Fq 'FinalShiftCloseRuntimeControlPlaneTokenPolicy::isValidToken(' "$materialization_provider"
+          grep -Fq 'FinalShiftCloseRuntimeControlPlaneTokenPolicy::isValidToken(' "$db_provider"
+          grep -Fq 'FinalShiftCloseRuntimeControlPlaneTokenPolicy::isValidToken($this->expectedToken)' "$materialization_middleware"
+          grep -Fq 'FinalShiftCloseRuntimeControlPlaneTokenPolicy::isValidToken($this->expectedToken)' "$db_middleware"
+          grep -Fq 'FinalShiftCloseRuntimeControlPlaneTokenPolicy::parseBearerCredential(' "$materialization_middleware"
+          grep -Fq 'FinalShiftCloseRuntimeControlPlaneTokenPolicy::parseBearerCredential(' "$db_middleware"
+          grep -Fq 'hash_equals($this->expectedToken, $providedToken)' "$materialization_middleware"
+          grep -Fq 'hash_equals($this->expectedToken, $providedToken)' "$db_middleware"
 
       - name: Validate Sprint128 machine-readable contract
         shell: bash
@@ -104,6 +109,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          php -l app/Application/Pos/FinalShiftCloseRuntimeControlPlaneTokenPolicy.php
           php -l app/Providers/FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider.php
           php -l app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware.php
           php -l app/Providers/FinalShiftCloseRuntimeDbBindingAttestationServiceProvider.php
