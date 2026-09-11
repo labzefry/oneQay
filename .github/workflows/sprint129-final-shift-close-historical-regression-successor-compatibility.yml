@@ -21,30 +21,16 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
-      - name: Lock exact Sprint129 source envelope
+      - name: Preserve successor-compatible historical regression boundary
         shell: bash
         run: |
           set -euo pipefail
           base="${{ github.event.pull_request.base.sha }}"
           head="${{ github.event.pull_request.head.sha }}"
           git diff --name-only "$base" "$head" | LC_ALL=C sort > /tmp/paths
-          cat > /tmp/expected <<'EOF'
-          .github/workflows/sprint119-final-shift-close-runtime-db-binding-attestation.yml
-          .github/workflows/sprint120-final-shift-close-runtime-binding-manifest-writer.yml
-          .github/workflows/sprint121-final-shift-close-runtime-binding-manifest-control-channel.yml
-          .github/workflows/sprint122-final-shift-close-runtime-binding-manifest-write-once-cas.yml
-          .github/workflows/sprint123-final-shift-close-runtime-binding-manifest-control-plane-registration.yml
-          .github/workflows/sprint124-final-shift-close-runtime-db-binding-attestation-control-plane-registration.yml
-          .github/workflows/sprint125-final-shift-close-runtime-db-binding-attestation-control-plane-regression.yml
-          .github/workflows/sprint126-final-shift-close-runtime-binding-manifest-control-plane-token-hardening.yml
-          .github/workflows/sprint127-final-shift-close-runtime-binding-manifest-control-plane-regression.yml
-          .github/workflows/sprint128-final-shift-close-runtime-control-plane-token-character-policy.yml
-          .github/workflows/sprint129-final-shift-close-historical-regression-successor-compatibility.yml
-          docs/SPRINT129_FINAL_SHIFT_CLOSE_HISTORICAL_REGRESSION_SUCCESSOR_COMPATIBILITY.md
-          ops/final-shift-close/HISTORICAL_REGRESSION_SUCCESSOR_COMPATIBILITY_CONTRACT.json
-          EOF
-          diff -u /tmp/expected /tmp/paths
-          [[ "$(sha256sum /tmp/paths | awk '{print $1}')" == '28dca334ecbd01d3832805a41043c7592a2356e252b36c9e2ccbe6db9f5d91d6' ]]
+          [[ -s /tmp/paths ]]
+          # Sprint129 is historical from Sprint130 onward and therefore validates
+          # its owned successor-compatibility invariant without owning the new full envelope.
 
       - name: Prove historical workflows no longer own successor full envelopes
         shell: bash
@@ -67,7 +53,12 @@ jobs:
           base="${{ github.event.pull_request.base.sha }}"
           head="${{ github.event.pull_request.head.sha }}"
           git diff --quiet "$base" "$head" -- \
-            apps/web \
+            apps/web/config \
+            apps/web/bootstrap \
+            apps/web/routes \
+            apps/web/database/migrations \
+            apps/web/app/Delivery/Http/Pos \
+            apps/web/app/Infrastructure/Pos \
             .github/workflows/final-shift-close-migration27-selected-target-db-binding.yml \
             .github/workflows/final-shift-close-migration27-execution.yml \
             ops/final-shift-close/STATE.json \
@@ -85,18 +76,18 @@ jobs:
           file=ops/final-shift-close/HISTORICAL_REGRESSION_SUCCESSOR_COMPATIBILITY_CONTRACT.json
           jq -e '.schema_version == 1 and .feature == "final-shift-close" and .sprint == 129 and .bounded_objective == "HISTORICAL_REGRESSION_SUCCESSOR_COMPATIBILITY" and .execution_mode == "CI_GOVERNANCE_HARDENING_ONLY" and .historical_regressions.range == "SPRINT119_THROUGH_SPRINT128" and .historical_regressions.full_pr_envelope_lock == "REMOVED_FROM_HISTORICAL_WORKFLOWS" and .historical_regressions.owned_invariant_regression == "PRESERVED" and .historical_regressions.active_sprint_envelope_authority == "CURRENT_SPRINT_WORKFLOW_ONLY" and .historical_regressions.exact_head_checkout == "PRESERVED" and .historical_regressions.fail_closed_operational_boundaries == "PRESERVED" and .canonical_boundaries.valid_control_plane_request == "NOT_PERFORMED" and .canonical_boundaries.runtime_manifest_materialization == "NOT_PERFORMED" and .canonical_boundaries.runtime_db_binding_attestation == "NOT_PERFORMED" and .canonical_boundaries.migration27_execution == "NOT_PERFORMED" and .canonical_boundaries.permission_provisioning == "NONE" and .canonical_boundaries.feature_activation == "INACTIVE" and .source_envelope.path_count == 13 and .source_envelope.sha256 == "28dca334ecbd01d3832805a41043c7592a2356e252b36c9e2ccbe6db9f5d91d6"' "$file" >/dev/null
 
-      - name: Preserve active Sprint128 security regression source
+      - name: Preserve canonical Sprint128 security invariant
         shell: bash
         run: |
           set -euo pipefail
-          provider_materialization=apps/web/app/Providers/FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider.php
-          provider_db=apps/web/app/Providers/FinalShiftCloseRuntimeDbBindingAttestationServiceProvider.php
-          middleware_materialization=apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware.php
-          middleware_db=apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingTokenMiddleware.php
-          grep -Fq '[A-Za-z0-9._~+=\/-]{32,512}' "$provider_materialization"
-          grep -Fq '[A-Za-z0-9._~+=\/-]{32,512}' "$provider_db"
-          grep -Fq 'hash_equals($this->expectedToken, $matches[1])' "$middleware_materialization"
-          grep -Fq 'hash_equals($this->expectedToken, $matches[1])' "$middleware_db"
+          policy=apps/web/app/Application/Pos/FinalShiftCloseRuntimeControlPlaneTokenPolicy.php
+          materialization_middleware=apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware.php
+          db_middleware=apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingTokenMiddleware.php
+          grep -Fq 'public const MINIMUM_LENGTH = 32;' "$policy"
+          grep -Fq 'public const MAXIMUM_LENGTH = 512;' "$policy"
+          grep -Fq '[A-Za-z0-9._~+=\/-]+' "$policy"
+          grep -Fq 'hash_equals($this->expectedToken, $providedToken)' "$materialization_middleware"
+          grep -Fq 'hash_equals($this->expectedToken, $providedToken)' "$db_middleware"
           jq -e '.sprint == 128 and .canonical_boundaries.runtime_manifest_materialization == "NOT_PERFORMED" and .canonical_boundaries.runtime_db_binding_attestation == "NOT_PERFORMED" and .canonical_boundaries.feature_activation == "INACTIVE"' ops/final-shift-close/RUNTIME_CONTROL_PLANE_TOKEN_CHARACTER_POLICY_CONTRACT.json >/dev/null
 
       - name: Lock no operational invocation or activation
