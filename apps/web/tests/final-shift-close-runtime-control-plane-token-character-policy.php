@@ -123,62 +123,108 @@ $dbReject = static function (
     $assert($nextInvoked === false, $case.' next/controller path not invoked');
 };
 
+$materializationAccept = static function (string $token, string $case) use ($assert): void {
+    $middleware = new RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware($token);
+    $request = Request::create('/_ci/token-policy-positive', 'POST', server: [
+        'HTTP_AUTHORIZATION' => 'Bearer '.$token,
+    ]);
+    $nextInvoked = false;
+    $response = $middleware->handle($request, static function () use (&$nextInvoked) {
+        $nextInvoked = true;
+
+        return response('', 204);
+    });
+
+    $assert($response->getStatusCode() === 204, $case.' synthetic closure response');
+    $assert($nextInvoked === true, $case.' synthetic closure invoked');
+};
+
+$dbAccept = static function (string $token, string $case) use ($assert): void {
+    $middleware = new RequireFinalShiftCloseRuntimeBindingTokenMiddleware($token);
+    $request = Request::create('/_ci/token-policy-positive', 'GET', server: [
+        'HTTP_AUTHORIZATION' => 'Bearer '.$token,
+    ]);
+    $nextInvoked = false;
+    $response = $middleware->handle($request, static function () use (&$nextInvoked) {
+        $nextInvoked = true;
+
+        return response('', 204);
+    });
+
+    $assert($response->getStatusCode() === 204, $case.' synthetic closure response');
+    $assert($nextInvoked === true, $case.' synthetic closure invoked');
+};
+
+if ($mode === 'materialization-matching-bearer') {
+    $materializationAccept(str_repeat('a', 32), 'POLICY-009 materialization minimum valid matching bearer');
+    $materializationAccept(str_repeat('a', 512), 'POLICY-010 materialization maximum valid matching bearer');
+    fwrite(STDOUT, "Final Shift Close materialization matching bearer synthetic closure: OK\n");
+    exit(0);
+}
+
+if ($mode === 'db-matching-bearer') {
+    $dbAccept(str_repeat('a', 32), 'POLICY-011 DB minimum valid matching bearer');
+    $dbAccept(str_repeat('a', 512), 'POLICY-012 DB maximum valid matching bearer');
+    fwrite(STDOUT, "Final Shift Close DB matching bearer synthetic closure: OK\n");
+    exit(0);
+}
+
 if ($mode === 'materialization-invalid-expected') {
-    $materializationReject($invalidColonToken, null, 503, 'POLICY-009 materialization invalid expected token');
+    $materializationReject($invalidColonToken, null, 503, 'POLICY-013 materialization invalid expected token');
     fwrite(STDOUT, "Final Shift Close materialization invalid expected token disposition: OK\n");
     exit(0);
 }
 
 if ($mode === 'materialization-missing-bearer') {
-    $materializationReject(str_repeat('a', 32), null, 401, 'POLICY-010 materialization missing bearer');
+    $materializationReject(str_repeat('a', 32), null, 401, 'POLICY-014 materialization missing bearer');
     fwrite(STDOUT, "Final Shift Close materialization missing bearer disposition: OK\n");
     exit(0);
 }
 
 if ($mode === 'materialization-malformed-bearer') {
-    $materializationReject(str_repeat('a', 32), 'Basic '.str_repeat('a', 32), 401, 'POLICY-011 materialization malformed bearer');
+    $materializationReject(str_repeat('a', 32), 'Basic '.str_repeat('a', 32), 401, 'POLICY-015 materialization malformed bearer');
     fwrite(STDOUT, "Final Shift Close materialization malformed bearer disposition: OK\n");
     exit(0);
 }
 
 if ($mode === 'materialization-invalid-bearer') {
-    $materializationReject(str_repeat('a', 32), 'Bearer '.str_repeat(':', 32), 401, 'POLICY-012 materialization invalid bearer');
+    $materializationReject(str_repeat('a', 32), 'Bearer '.str_repeat(':', 32), 401, 'POLICY-016 materialization invalid bearer');
     fwrite(STDOUT, "Final Shift Close materialization invalid bearer disposition: OK\n");
     exit(0);
 }
 
 if ($mode === 'materialization-mismatched-bearer') {
-    $materializationReject(str_repeat('a', 32), 'Bearer '.str_repeat('b', 32), 401, 'POLICY-013 materialization mismatched bearer');
+    $materializationReject(str_repeat('a', 32), 'Bearer '.str_repeat('b', 32), 401, 'POLICY-017 materialization mismatched bearer');
     fwrite(STDOUT, "Final Shift Close materialization mismatched bearer disposition: OK\n");
     exit(0);
 }
 
 if ($mode === 'db-invalid-expected') {
-    $dbReject($invalidColonToken, null, 'POLICY-014 DB invalid expected token');
+    $dbReject($invalidColonToken, null, 'POLICY-018 DB invalid expected token');
     fwrite(STDOUT, "Final Shift Close DB invalid expected token disposition: OK\n");
     exit(0);
 }
 
 if ($mode === 'db-missing-bearer') {
-    $dbReject(str_repeat('a', 32), null, 'POLICY-015 DB missing bearer');
+    $dbReject(str_repeat('a', 32), null, 'POLICY-019 DB missing bearer');
     fwrite(STDOUT, "Final Shift Close DB missing bearer disposition: OK\n");
     exit(0);
 }
 
 if ($mode === 'db-malformed-bearer') {
-    $dbReject(str_repeat('a', 32), 'Basic '.str_repeat('a', 32), 'POLICY-016 DB malformed bearer');
+    $dbReject(str_repeat('a', 32), 'Basic '.str_repeat('a', 32), 'POLICY-020 DB malformed bearer');
     fwrite(STDOUT, "Final Shift Close DB malformed bearer disposition: OK\n");
     exit(0);
 }
 
 if ($mode === 'db-invalid-bearer') {
-    $dbReject(str_repeat('a', 32), 'Bearer '.str_repeat(':', 32), 'POLICY-017 DB invalid bearer');
+    $dbReject(str_repeat('a', 32), 'Bearer '.str_repeat(':', 32), 'POLICY-021 DB invalid bearer');
     fwrite(STDOUT, "Final Shift Close DB invalid bearer disposition: OK\n");
     exit(0);
 }
 
 if ($mode === 'db-mismatched-bearer') {
-    $dbReject(str_repeat('a', 32), 'Bearer '.str_repeat('b', 32), 'POLICY-018 DB mismatched bearer');
+    $dbReject(str_repeat('a', 32), 'Bearer '.str_repeat('b', 32), 'POLICY-022 DB mismatched bearer');
     fwrite(STDOUT, "Final Shift Close DB mismatched bearer disposition: OK\n");
     exit(0);
 }
@@ -197,13 +243,13 @@ $expectedRoute = match ($mode) {
 
 $router = $app->make('router')->getRoutes();
 if (in_array($mode, ['materialization-valid-hyphen', 'materialization-route-present'], true)) {
-    $assert($router->getByName($expectedRoute) !== null, 'POLICY-019 valid token registers materialization route');
+    $assert($router->getByName($expectedRoute) !== null, 'POLICY-023 valid token registers materialization route');
 } elseif (in_array($mode, ['materialization-invalid-colon', 'materialization-route-absent'], true)) {
-    $assert($router->getByName('internal.final-shift-close.runtime-binding-manifest.materialize') === null, 'POLICY-020 invalid/disabled materialization route remains absent');
+    $assert($router->getByName('internal.final-shift-close.runtime-binding-manifest.materialize') === null, 'POLICY-024 invalid/disabled materialization route remains absent');
 } elseif (in_array($mode, ['db-valid-hyphen', 'db-route-present'], true)) {
-    $assert($router->getByName($expectedRoute) !== null, 'POLICY-021 valid token registers DB attestation route');
+    $assert($router->getByName($expectedRoute) !== null, 'POLICY-025 valid token registers DB attestation route');
 } else {
-    $assert($router->getByName('internal.final-shift-close.runtime-db-binding-attestation') === null, 'POLICY-022 invalid/disabled DB attestation route remains absent');
+    $assert($router->getByName('internal.final-shift-close.runtime-db-binding-attestation') === null, 'POLICY-026 invalid/disabled DB attestation route remains absent');
 }
 
 fwrite(STDOUT, "Final Shift Close runtime control-plane token policy passed for {$mode}.\n");
