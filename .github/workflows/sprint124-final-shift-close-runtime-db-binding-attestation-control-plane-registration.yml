@@ -33,12 +33,16 @@ jobs:
           set -euo pipefail
           base="${{ github.event.pull_request.base.sha }}"; head="${{ github.event.pull_request.head.sha }}"
           git diff --quiet "$base" "$head" -- apps/web/config/final_shift_close_runtime_db_binding_attestation.php apps/web/bootstrap/app.php apps/web/routes apps/web/app/Delivery/Http/Pos/FinalShiftCloseRuntimeDbBindingAttestationController.php apps/web/app/Application/Pos/FinalShiftCloseRuntimeDbBindingAttestation.php apps/web/app/Infrastructure/Pos/LaravelFinalShiftCloseRuntimeDatabaseIdentityReader.php apps/web/database/migrations ops/final-shift-close/STATE.json ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+          policy=apps/web/app/Application/Pos/FinalShiftCloseRuntimeControlPlaneTokenPolicy.php
           provider=apps/web/app/Providers/FinalShiftCloseRuntimeDbBindingAttestationServiceProvider.php
           middleware=apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingTokenMiddleware.php
           reader=apps/web/app/Infrastructure/Pos/LaravelFinalShiftCloseRuntimeDatabaseIdentityReader.php
-          grep -Fq '[A-Za-z0-9._~+=\/-]{32,512}' "$provider"
-          grep -Fq '[A-Za-z0-9._~+=\/-]{32,512}' "$middleware"
-          grep -Fq 'hash_equals($this->expectedToken, $matches[1])' "$middleware"
+          grep -Fq 'public const MINIMUM_LENGTH = 32;' "$policy"
+          grep -Fq 'public const MAXIMUM_LENGTH = 512;' "$policy"
+          grep -Fq '[A-Za-z0-9._~+=\/-]+' "$policy"
+          grep -Fq 'FinalShiftCloseRuntimeControlPlaneTokenPolicy::isValidToken(' "$provider"
+          grep -Fq 'FinalShiftCloseRuntimeControlPlaneTokenPolicy::parseBearerCredential(' "$middleware"
+          grep -Fq 'hash_equals($this->expectedToken, $providedToken)' "$middleware"
           grep -Fq "response('', 404" "$middleware"
           grep -Fq "'throttle:2,1'" "$provider"
           grep -Fq 'SELECT DATABASE() AS database_name, @@hostname AS server_hostname, @@port AS server_port' "$reader"
