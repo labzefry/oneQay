@@ -19,32 +19,14 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
-      - name: Lock exact Sprint128 successor envelope
+      - name: Preserve successor-compatible historical regression boundary
         shell: bash
         run: |
           set -euo pipefail
           git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | LC_ALL=C sort > /tmp/paths
-          cat > /tmp/expected <<'EOF'
-          .github/workflows/sprint119-final-shift-close-runtime-db-binding-attestation.yml
-          .github/workflows/sprint120-final-shift-close-runtime-binding-manifest-writer.yml
-          .github/workflows/sprint121-final-shift-close-runtime-binding-manifest-control-channel.yml
-          .github/workflows/sprint122-final-shift-close-runtime-binding-manifest-write-once-cas.yml
-          .github/workflows/sprint123-final-shift-close-runtime-binding-manifest-control-plane-registration.yml
-          .github/workflows/sprint124-final-shift-close-runtime-db-binding-attestation-control-plane-registration.yml
-          .github/workflows/sprint125-final-shift-close-runtime-db-binding-attestation-control-plane-regression.yml
-          .github/workflows/sprint126-final-shift-close-runtime-binding-manifest-control-plane-token-hardening.yml
-          .github/workflows/sprint127-final-shift-close-runtime-binding-manifest-control-plane-regression.yml
-          .github/workflows/sprint128-final-shift-close-runtime-control-plane-token-character-policy.yml
-          apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware.php
-          apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingTokenMiddleware.php
-          apps/web/app/Providers/FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider.php
-          apps/web/app/Providers/FinalShiftCloseRuntimeDbBindingAttestationServiceProvider.php
-          apps/web/tests/final-shift-close-runtime-control-plane-token-character-policy.php
-          docs/SPRINT128_FINAL_SHIFT_CLOSE_RUNTIME_CONTROL_PLANE_TOKEN_CHARACTER_POLICY.md
-          ops/final-shift-close/RUNTIME_CONTROL_PLANE_TOKEN_CHARACTER_POLICY_CONTRACT.json
-          EOF
-          diff -u /tmp/expected /tmp/paths
-          [[ "$(sha256sum /tmp/paths | awk '{print $1}')" == 'ae8691a2c9be31ba6558145a1162cc0aaa658727ff14279c1e638b0a971dc825' ]]
+          [[ -s /tmp/paths ]]
+          # Historical regression workflows validate their owned invariants only.
+          # Exact full-PR envelope locking belongs to the active sprint workflow.
       - name: Preserve provenance, immutable writer, and no-go state
         shell: bash
         run: |

@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "feature": "final-shift-close",
+  "sprint": 129,
+  "bounded_objective": "HISTORICAL_REGRESSION_SUCCESSOR_COMPATIBILITY",
+  "execution_mode": "CI_GOVERNANCE_HARDENING_ONLY",
+  "historical_regressions": {
+    "range": "SPRINT119_THROUGH_SPRINT128",
+    "full_pr_envelope_lock": "REMOVED_FROM_HISTORICAL_WORKFLOWS",
+    "owned_invariant_regression": "PRESERVED",
+    "active_sprint_envelope_authority": "CURRENT_SPRINT_WORKFLOW_ONLY",
+    "exact_head_checkout": "PRESERVED",
+    "fail_closed_operational_boundaries": "PRESERVED"
+  },
+  "canonical_boundaries": {
+    "valid_control_plane_request": "NOT_PERFORMED",
+    "controller_invocation": "NOT_PERFORMED",
+    "runtime_configuration_mutation": "NOT_PERFORMED",
+    "runtime_token_provisioning": "NOT_PERFORMED",
+    "runtime_manifest_materialization": "NOT_PERFORMED",
+    "runtime_db_binding_attestation": "NOT_PERFORMED",
+    "selected_target": null,
+    "db_binding_producer_dispatch": "NOT_PERFORMED",
+    "migration27_execution": "NOT_PERFORMED",
+    "permission_provisioning": "NONE",
+    "feature_activation": "INACTIVE",
+    "deployment_authority": "NOT_GRANTED",
+    "technical_preview": "NO-GO",
+    "production": "NO-GO",
+    "updater": "INACTIVE"
+  },
+  "source_envelope": {
+    "path_count": 13,
+    "sha256": "28dca334ecbd01d3832805a41043c7592a2356e252b36c9e2ccbe6db9f5d91d6"
+  },
+  "attribution": "Author by Lab | zefry"
+}
