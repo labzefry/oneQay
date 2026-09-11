@@ -82,14 +82,16 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          policy=apps/web/app/Application/Pos/FinalShiftCloseRuntimeControlPlaneTokenPolicy.php
           provider=apps/web/app/Providers/FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider.php
           middleware=apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware.php
-          grep -Fq 'strlen($token) >= 32' "$provider"
-          grep -Fq 'strlen($token) <= 512' "$provider"
-          grep -Fq '[A-Za-z0-9._~+=\/-]{32,512}' "$provider"
-          grep -Fq '[A-Za-z0-9._~+=\/-]{32,512}' "$middleware"
-          ! grep -Fq '[A-Za-z0-9._~+\/-=]{32,512}' "$middleware"
-          grep -Fq 'hash_equals($this->expectedToken, $matches[1])' "$middleware"
+          grep -Fq 'public const MINIMUM_LENGTH = 32;' "$policy"
+          grep -Fq 'public const MAXIMUM_LENGTH = 512;' "$policy"
+          grep -Fq '[A-Za-z0-9._~+=\/-]+' "$policy"
+          ! grep -Fq '[A-Za-z0-9._~+\/-=]' "$policy"
+          grep -Fq 'FinalShiftCloseRuntimeControlPlaneTokenPolicy::isValidToken(' "$provider"
+          grep -Fq 'FinalShiftCloseRuntimeControlPlaneTokenPolicy::parseBearerCredential(' "$middleware"
+          grep -Fq 'hash_equals($this->expectedToken, $providedToken)' "$middleware"
           jq -e '.sprint == 128 and .successor_compatibility.sprint127_manifest_control_plane_regression == "PRESERVED" and .token_policy.hyphen == "ALLOWED" and .token_policy.colon == "REJECTED" and .materialization_control_plane.valid_control_plane_request_performed == false and .canonical_boundaries.runtime_manifest_materialization == "NOT_PERFORMED"' ops/final-shift-close/RUNTIME_CONTROL_PLANE_TOKEN_CHARACTER_POLICY_CONTRACT.json >/dev/null
 
       - name: Validate regression source and locked dependencies
@@ -99,6 +101,7 @@ jobs:
           set -euo pipefail
           php -l tests/final-shift-close-runtime-binding-manifest-control-plane.php
           php -l tests/final-shift-close-runtime-control-plane-token-character-policy.php
+          php -l app/Application/Pos/FinalShiftCloseRuntimeControlPlaneTokenPolicy.php
           php -l app/Providers/FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider.php
           php -l app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware.php
           composer validate --no-check-publish
