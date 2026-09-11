@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "feature": "final-shift-close",
+  "sprint": 130,
+  "bounded_objective": "CANONICAL_RUNTIME_CONTROL_PLANE_TOKEN_POLICY",
+  "execution_mode": "SOURCE_HARDENING_WITH_CI_ONLY_REGRESSION",
+  "canonical_policy_source": "apps/web/app/Application/Pos/FinalShiftCloseRuntimeControlPlaneTokenPolicy.php",
+  "token_policy": {
+    "minimum_length": 32,
+    "maximum_length": 512,
+    "allowed_character_class": "[A-Za-z0-9._~+=\\/-]",
+    "hyphen": "ALLOWED",
+    "colon": "REJECTED",
+    "semicolon": "REJECTED",
+    "less_than": "REJECTED",
+    "greater_than": "REJECTED",
+    "at_sign": "REJECTED",
+    "whitespace": "REJECTED",
+    "tab": "REJECTED",
+    "bearer_parsing": "CANONICAL_POLICY",
+    "comparison": "HASH_EQUALS_IN_SECURITY_MIDDLEWARE"
+  },
+  "materialization_control_plane": {
+    "provider_policy": "CANONICAL",
+    "middleware_policy": "CANONICAL",
+    "invalid_expected_token": "HTTP_503",
+    "missing_malformed_invalid_or_mismatched_bearer": "HTTP_401",
+    "throttle": "1_PER_MINUTE",
+    "valid_control_plane_request_performed": false
+  },
+  "db_attestation_control_plane": {
+    "provider_policy": "CANONICAL",
+    "middleware_policy": "CANONICAL",
+    "invalid_expected_token": "HTTP_404_CLOAKED",
+    "missing_malformed_invalid_or_mismatched_bearer": "HTTP_404_CLOAKED",
+    "throttle": "2_PER_MINUTE",
+    "valid_control_plane_request_performed": false
+  },
+  "successor_compatibility": {
+    "historical_workflows_updated_for_policy_relocation": [
+      119,
+      123,
+      124,
+      125,
+      126,
+      127,
+      128,
+      129
+    ],
+    "historical_full_pr_envelope_lock": "NOT_REINTRODUCED",
+    "active_sprint_envelope_authority": "SPRINT130_WORKFLOW_ONLY"
+  },
+  "source_envelope": {
+    "path_count": 17,
+    "sha256": "a9250384c5a6a6d57664f11587bbe9bc4a981f149d1e44aace2e95aaca94fb24"
+  },
+  "canonical_boundaries": {
+    "runtime_token_provisioning": "NOT_PERFORMED",
+    "runtime_configuration_mutation": "NOT_PERFORMED",
+    "valid_control_plane_request": "NOT_PERFORMED",
+    "controller_invocation": "NOT_PERFORMED",
+    "runtime_manifest_materialization": "NOT_PERFORMED",
+    "runtime_db_binding_attestation": "NOT_PERFORMED",
+    "migration27_execution": "NOT_PERFORMED",
+    "permission_provisioning": "NONE",
+    "feature_activation": "INACTIVE",
+    "selected_target": null,
+    "deployment_authority": "NOT_GRANTED",
+    "technical_preview": "NO-GO",
+    "production": "NO-GO",
+    "updater": "INACTIVE"
+  },
+  "attribution": "Author by Lab | zefry"
+}
