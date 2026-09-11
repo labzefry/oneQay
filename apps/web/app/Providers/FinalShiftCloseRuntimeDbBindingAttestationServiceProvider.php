@@ -65,6 +65,7 @@ final class FinalShiftCloseRuntimeDbBindingAttestationServiceProvider extends Se
 
         return is_string($token)
             && strlen($token) >= 32
-            && strlen($token) <= 512;
+            && strlen($token) <= 512
+            && preg_match('/\A[A-Za-z0-9._~+=\/-]{32,512}\z/D', $token) === 1;
     }
 }

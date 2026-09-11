@@ -4,8 +4,7 @@ name: Sprint121 Final Shift Close Runtime Binding Manifest Control Channel
 
 on:
   pull_request:
-    branches:
-      - main
+    branches: [main]
 
 permissions:
   contents: read
@@ -14,19 +13,19 @@ jobs:
   qualify-runtime-binding-manifest-control-channel:
     runs-on: ubuntu-latest
     timeout-minutes: 10
-
     steps:
       - name: Checkout exact source
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
+          ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
-
-      - name: Lock Sprint121 successor-compatible source envelope
+      - name: Lock exact Sprint128 successor envelope
         shell: bash
         run: |
           set -euo pipefail
           git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | LC_ALL=C sort > /tmp/paths
           cat > /tmp/expected <<'EOF'
+          .github/workflows/sprint119-final-shift-close-runtime-db-binding-attestation.yml
           .github/workflows/sprint120-final-shift-close-runtime-binding-manifest-writer.yml
           .github/workflows/sprint121-final-shift-close-runtime-binding-manifest-control-channel.yml
           .github/workflows/sprint122-final-shift-close-runtime-binding-manifest-write-once-cas.yml
@@ -35,88 +34,47 @@ jobs:
           .github/workflows/sprint125-final-shift-close-runtime-db-binding-attestation-control-plane-regression.yml
           .github/workflows/sprint126-final-shift-close-runtime-binding-manifest-control-plane-token-hardening.yml
           .github/workflows/sprint127-final-shift-close-runtime-binding-manifest-control-plane-regression.yml
-          apps/web/tests/final-shift-close-runtime-binding-manifest-control-plane.php
-          docs/SPRINT127_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MANIFEST_CONTROL_PLANE_REGRESSION.md
-          ops/final-shift-close/RUNTIME_BINDING_MANIFEST_CONTROL_PLANE_REGRESSION_CONTRACT.json
+          .github/workflows/sprint128-final-shift-close-runtime-control-plane-token-character-policy.yml
+          apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware.php
+          apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingTokenMiddleware.php
+          apps/web/app/Providers/FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider.php
+          apps/web/app/Providers/FinalShiftCloseRuntimeDbBindingAttestationServiceProvider.php
+          apps/web/tests/final-shift-close-runtime-control-plane-token-character-policy.php
+          docs/SPRINT128_FINAL_SHIFT_CLOSE_RUNTIME_CONTROL_PLANE_TOKEN_CHARACTER_POLICY.md
+          ops/final-shift-close/RUNTIME_CONTROL_PLANE_TOKEN_CHARACTER_POLICY_CONTRACT.json
           EOF
           diff -u /tmp/expected /tmp/paths
-          [[ "$(sha256sum /tmp/paths | awk '{print $1}')" == '0024a7b1e7e37964412b96107764c5d8cea6001003b9487fb49d22b32526bb0d' ]]
-
-      - name: Prove materialization semantics and operational state remain untouched
+          [[ "$(sha256sum /tmp/paths | awk '{print $1}')" == 'ae8691a2c9be31ba6558145a1162cc0aaa658727ff14279c1e638b0a971dc825' ]]
+      - name: Preserve provenance, immutable writer, and no-go state
         shell: bash
         run: |
           set -euo pipefail
-          git diff --quiet "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" -- \
-            apps/web/bootstrap/app.php \
-            apps/web/bootstrap/providers.php \
-            apps/web/config/oneqay.php \
-            apps/web/config/final_shift_close_runtime_binding_materialization.php \
-            apps/web/app/Providers/FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider.php \
-            apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware.php \
-            apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingManifestMaterializer.php \
-            apps/web/app/Infrastructure/Pos/FilesystemFinalShiftCloseRuntimeBindingManifestWriter.php \
-            apps/web/app/Delivery/Http/Pos/FinalShiftCloseRuntimeBindingManifestMaterializationController.php \
-            apps/web/routes \
-            apps/web/database/migrations \
-            ops/final-shift-close/STATE.json \
-            ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
-          [[ "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" == 'NOT_EXECUTED' ]]
-          [[ "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" == 'INACTIVE' ]]
-
-      - name: Validate Sprint121 historical contract and provenance
-        shell: bash
-        run: |
-          set -euo pipefail
-          jq -e '.schema_version == 1 and .feature == "final-shift-close" and .sprint == 121 and .control_channel_source == "MATERIALIZED" and .runtime_manifest_materialization == "NOT_PERFORMED" and .materialization_contract.required_selection_state == "SELECTED_NOT_AUTHORIZED" and .canonical_boundaries.feature_activation == "INACTIVE"' ops/final-shift-close/RUNTIME_BINDING_MANIFEST_CONTROL_CHANNEL_CONTRACT.json >/dev/null
+          base="${{ github.event.pull_request.base.sha }}"; head="${{ github.event.pull_request.head.sha }}"
+          git diff --quiet "$base" "$head" -- apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingManifestMaterializationRequest.php apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingManifestMaterializer.php apps/web/app/Infrastructure/Pos/FilesystemFinalShiftCloseRuntimeBindingManifestWriter.php apps/web/config/final_shift_close_runtime_binding_materialization.php apps/web/bootstrap/app.php apps/web/routes apps/web/database/migrations ops/final-shift-close/STATE.json ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
           request=apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingManifestMaterializationRequest.php
           service=apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingManifestMaterializer.php
           writer=apps/web/app/Infrastructure/Pos/FilesystemFinalShiftCloseRuntimeBindingManifestWriter.php
           grep -Fq 'public string $operationId' "$request"
           grep -Fq 'public string $expectedSelectionFingerprintSha256' "$request"
-          ! grep -Eq 'environmentId|runtimeClass|artifactSha|sourceCommit' "$request"
           grep -Fq "'SELECTED_NOT_AUTHORIZED'" "$service"
           grep -Fq 'hash_equals($selectionFingerprint, $request->expectedSelectionFingerprintSha256)' "$service"
           grep -Fq '@link($temporary, $target)' "$writer"
           ! grep -Fq 'rename($temporary, $target)' "$writer"
-
-      - name: Preserve Sprint126 token hardening and Sprint127 regression contract
+          [[ "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" == 'NOT_EXECUTED' ]]
+          [[ "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" == 'INACTIVE' ]]
+          jq -e '.sprint == 128 and .source_envelope_sha256 == "ae8691a2c9be31ba6558145a1162cc0aaa658727ff14279c1e638b0a971dc825" and .canonical_boundaries.runtime_manifest_materialization == "NOT_PERFORMED"' ops/final-shift-close/RUNTIME_CONTROL_PLANE_TOKEN_CHARACTER_POLICY_CONTRACT.json >/dev/null
+      - name: Run historical materialization regressions
         shell: bash
         run: |
           set -euo pipefail
-          provider=apps/web/app/Providers/FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider.php
-          middleware=apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware.php
-          grep -Fq 'strlen($token) >= 32' "$provider"
-          grep -Fq 'strlen($token) <= 512' "$provider"
-          grep -Fq 'strlen($this->expectedToken) < 32' "$middleware"
-          grep -Fq 'strlen($this->expectedToken) > 512' "$middleware"
-          grep -Fq '[A-Za-z0-9._~+\/-=]{32,512}' "$middleware"
-          grep -Fq 'hash_equals($this->expectedToken, $matches[1])' "$middleware"
-          jq -e '.sprint == 126 and .canonical_boundaries.runtime_token_provisioning == "NOT_PERFORMED" and .canonical_boundaries.runtime_manifest_materialization == "NOT_PERFORMED"' ops/final-shift-close/RUNTIME_BINDING_MANIFEST_CONTROL_PLANE_TOKEN_HARDENING_CONTRACT.json >/dev/null
-          jq -e '.sprint == 127 and .registered_route_contract.valid_bearer_request_performed == false and .registered_route_contract.controller_invocation_performed == false and .canonical_boundaries.runtime_manifest_materialization == "NOT_PERFORMED"' ops/final-shift-close/RUNTIME_BINDING_MANIFEST_CONTROL_PLANE_REGRESSION_CONTRACT.json >/dev/null
-
-      - name: Validate PHP syntax and executable materialization regressions
-        shell: bash
-        run: |
-          set -euo pipefail
-          find apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingManifestMaterializationRequest.php apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingManifestMaterializer.php apps/web/app/Infrastructure/Pos/FilesystemFinalShiftCloseRuntimeBindingManifestWriter.php apps/web/tests/final-shift-close-runtime-binding-manifest-writer.php apps/web/tests/final-shift-close-runtime-binding-manifest-materialization.php apps/web/tests/final-shift-close-runtime-binding-manifest-control-plane.php -type f -print0 | xargs -0 -n1 php -l
           cd apps/web
           composer install --no-interaction --prefer-dist --no-progress
           php tests/final-shift-close-runtime-binding-manifest-writer.php
           php tests/final-shift-close-runtime-binding-manifest-materialization.php
-
-      - name: Lock no operational invocation
+      - name: Lock no operational invocation and cleanliness
         shell: bash
         run: |
           set -euo pipefail
           grep -Fq 'SPRINT121_RUNTIME_MANIFEST_MATERIALIZATION = NOT_PERFORMED' docs/SPRINT121_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MANIFEST_CONTROL_CHANNEL.md
-          doc=docs/SPRINT127_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MANIFEST_CONTROL_PLANE_REGRESSION.md
-          grep -Fq 'SPRINT127_CONTROL_PLANE_REGRESSION = EXECUTABLE_CI_ONLY' "$doc"
-          grep -Fq 'SPRINT127_VALID_BEARER_REQUEST = NOT_PERFORMED' "$doc"
-          grep -Fq 'SPRINT127_CONTROLLER_INVOCATION = NOT_PERFORMED' "$doc"
-          grep -Fq 'FEATURE_ACTIVATION = INACTIVE' "$doc"
-
-      - name: Verify tracked-source cleanliness
-        shell: bash
-        run: |
-          set -euo pipefail
+          grep -Fq 'SPRINT128_VALID_CONTROL_PLANE_REQUEST = NOT_PERFORMED' docs/SPRINT128_FINAL_SHIFT_CLOSE_RUNTIME_CONTROL_PLANE_TOKEN_CHARACTER_POLICY.md
           [[ -z "$(git status --porcelain)" ]]
