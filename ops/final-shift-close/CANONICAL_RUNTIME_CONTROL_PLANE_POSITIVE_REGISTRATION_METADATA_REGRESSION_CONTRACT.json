@@ -1,0 +1,88 @@
+{
+  "schema_version": 1,
+  "feature": "final-shift-close",
+  "sprint": 135,
+  "bounded_objective": "CANONICAL_CONTROL_PLANE_POSITIVE_REGISTRATION_METADATA_REGRESSION",
+  "execution_mode": "CI_ONLY_SYNTHETIC_POSITIVE_REGISTRATION_METADATA_REGRESSION",
+  "qualification": {
+    "inspection_mode": "IN_PROCESS_ROUTE_COLLECTION_ONLY",
+    "new_executable_gap": "CROSS_PROVIDER_CANONICAL_VALID_TOKEN_ROUTE_METADATA_AND_REGISTRATION_INERTNESS",
+    "canonical_token_policy_owner": "SPRINT130",
+    "fixture_length": "CANONICAL_MINIMUM",
+    "fixture_canonical_validity": true,
+    "shared_fixture_across_both_providers": true,
+    "materialization": {
+      "route_name": "internal.final-shift-close.runtime-binding-manifest.materialize",
+      "registration": "PRESENT",
+      "uri": "internal/final-shift-close/runtime-binding-manifest/materialize",
+      "required_method": "POST",
+      "forbidden_method": "GET",
+      "controller": "App\\Delivery\\Http\\Pos\\FinalShiftCloseRuntimeBindingManifestMaterializationController",
+      "throttle": "throttle:1,1",
+      "token_middleware": "App\\Delivery\\Http\\Middleware\\RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware"
+    },
+    "db_attestation": {
+      "route_name": "internal.final-shift-close.runtime-db-binding-attestation",
+      "registration": "PRESENT",
+      "uri": "internal/final-shift-close/runtime-db-binding-attestation",
+      "methods": "GET,HEAD",
+      "controller": "App\\Delivery\\Http\\Pos\\FinalShiftCloseRuntimeDbBindingAttestationController",
+      "throttle": "throttle:2,1",
+      "token_middleware": "App\\Delivery\\Http\\Middleware\\RequireFinalShiftCloseRuntimeBindingTokenMiddleware"
+    },
+    "valid_operational_control_plane_request": false,
+    "real_route_invocation": false,
+    "controller_invocation": false,
+    "production_manifest_writer_resolution": false,
+    "production_manifest_materializer_resolution": false,
+    "production_database_identity_reader_resolution": false,
+    "production_db_attestation_service_resolution": false,
+    "materialization_controller_resolution": false,
+    "db_attestation_controller_resolution": false,
+    "real_filesystem_adapter_invocation": false,
+    "real_database_connection": false,
+    "real_database_identity_read": false,
+    "operational_runtime_target_invocation": false,
+    "runtime_token_provisioning": false,
+    "runtime_configuration_mutation_outside_test_process": false
+  },
+  "historical_ownership": {
+    "sprint130_token_policy": "PRESERVED",
+    "sprint131_middleware_positive_path": "PRESERVED",
+    "sprint132_controller_positive_path": "PRESERVED",
+    "sprint133_controller_fail_closed": "PRESERVED",
+    "sprint134_disallowed_character_route_absence": "PRESERVED",
+    "provider_local_valid_token_registration_regressions": "PRESERVED_NOT_REOWNED"
+  },
+  "successor_compatibility": {
+    "sprint134_historical_workflow": "SUCCESSOR_COMPATIBLE",
+    "sprint134_full_pr_envelope_lock": "ABSENT",
+    "active_sprint_envelope_authority": "SPRINT135_WORKFLOW_ONLY"
+  },
+  "source_envelope": {
+    "path_count": 4,
+    "sha256": "628d99da2ce7f65938dc12df387c829748e36c4a8d8cab18a08eb5402fcf78fc"
+  },
+  "canonical_boundaries": {
+    "synthetic_positive_route_registration": "PERFORMED_IN_TEST_PROCESS_ONLY",
+    "operational_positive_route_registration": "NOT_PERFORMED",
+    "valid_operational_control_plane_request": "NOT_PERFORMED",
+    "real_route_invocation": "NOT_PERFORMED",
+    "controller_invocation": "NOT_PERFORMED",
+    "production_side_effect_adapter_resolution": "NOT_PERFORMED",
+    "real_filesystem_adapter_invocation": "NOT_PERFORMED",
+    "canonical_runtime_manifest_write": "NOT_PERFORMED",
+    "real_database_connection": "NOT_PERFORMED",
+    "real_database_identity_read": "NOT_PERFORMED",
+    "runtime_token_provisioning": "NOT_PERFORMED",
+    "selected_target": null,
+    "migration27_execution": "NOT_PERFORMED",
+    "permission_provisioning": "NONE",
+    "feature_activation": "INACTIVE",
+    "deployment_authority": "NOT_GRANTED",
+    "technical_preview": "NO-GO",
+    "production": "NO-GO",
+    "updater": "INACTIVE"
+  },
+  "attribution": "Author by Lab | zefry"
+}

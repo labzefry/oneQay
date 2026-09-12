@@ -1,0 +1,180 @@
+name: Sprint135 Final Shift Close Canonical Control Plane Positive Registration Metadata Regression
+
+# Attribution: Lab | zefry
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint135-final-shift-close-canonical-control-plane-positive-registration-metadata-regression-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qualify-canonical-control-plane-positive-registration-metadata-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHQ=
+      APP_DEBUG: 'false'
+      APP_URL: http://localhost
+      CACHE_STORE: array
+      SESSION_DRIVER: array
+
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Lock exact Sprint135 source envelope
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+          git diff --name-only "$base" "$head" | LC_ALL=C sort > /tmp/paths
+          cat > /tmp/expected <<'EOF'
+          .github/workflows/sprint135-final-shift-close-canonical-control-plane-positive-registration-metadata-regression.yml
+          apps/web/tests/final-shift-close-runtime-control-plane-positive-registration-metadata-regression.php
+          docs/SPRINT135_FINAL_SHIFT_CLOSE_CANONICAL_CONTROL_PLANE_POSITIVE_REGISTRATION_METADATA_REGRESSION.md
+          ops/final-shift-close/CANONICAL_RUNTIME_CONTROL_PLANE_POSITIVE_REGISTRATION_METADATA_REGRESSION_CONTRACT.json
+          EOF
+          diff -u /tmp/expected /tmp/paths
+          [[ "$(sha256sum /tmp/paths | awk '{print $1}')" == '628d99da2ce7f65938dc12df387c829748e36c4a8d8cab18a08eb5402fcf78fc' ]]
+
+      - name: Preserve Sprint134 historical successor compatibility
+        shell: bash
+        run: |
+          set -euo pipefail
+          workflow=.github/workflows/sprint134-final-shift-close-canonical-control-plane-delivery-gate-registration-regression.yml
+          grep -Fq 'Preserve successor-compatible historical regression boundary' "$workflow"
+          grep -Fq 'Sprint134 is historical after its canonical squash merge.' "$workflow"
+          ! grep -Fq 'Lock exact Sprint134 source envelope' "$workflow"
+
+      - name: Validate Sprint135 machine-readable contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=ops/final-shift-close/CANONICAL_RUNTIME_CONTROL_PLANE_POSITIVE_REGISTRATION_METADATA_REGRESSION_CONTRACT.json
+          jq -e '
+            .schema_version == 1 and
+            .feature == "final-shift-close" and
+            .sprint == 135 and
+            .bounded_objective == "CANONICAL_CONTROL_PLANE_POSITIVE_REGISTRATION_METADATA_REGRESSION" and
+            .execution_mode == "CI_ONLY_SYNTHETIC_POSITIVE_REGISTRATION_METADATA_REGRESSION" and
+            .qualification.inspection_mode == "IN_PROCESS_ROUTE_COLLECTION_ONLY" and
+            .qualification.new_executable_gap == "CROSS_PROVIDER_CANONICAL_VALID_TOKEN_ROUTE_METADATA_AND_REGISTRATION_INERTNESS" and
+            .qualification.canonical_token_policy_owner == "SPRINT130" and
+            .qualification.fixture_length == "CANONICAL_MINIMUM" and
+            .qualification.fixture_canonical_validity == true and
+            .qualification.shared_fixture_across_both_providers == true and
+            .qualification.materialization.registration == "PRESENT" and
+            .qualification.materialization.required_method == "POST" and
+            .qualification.materialization.controller == "App\\Delivery\\Http\\Pos\\FinalShiftCloseRuntimeBindingManifestMaterializationController" and
+            .qualification.materialization.throttle == "throttle:1,1" and
+            .qualification.db_attestation.registration == "PRESENT" and
+            .qualification.db_attestation.methods == "GET,HEAD" and
+            .qualification.db_attestation.controller == "App\\Delivery\\Http\\Pos\\FinalShiftCloseRuntimeDbBindingAttestationController" and
+            .qualification.db_attestation.throttle == "throttle:2,1" and
+            .qualification.real_route_invocation == false and
+            .qualification.controller_invocation == false and
+            .qualification.production_manifest_writer_resolution == false and
+            .qualification.production_manifest_materializer_resolution == false and
+            .qualification.production_database_identity_reader_resolution == false and
+            .qualification.production_db_attestation_service_resolution == false and
+            .qualification.materialization_controller_resolution == false and
+            .qualification.db_attestation_controller_resolution == false and
+            .qualification.real_filesystem_adapter_invocation == false and
+            .qualification.real_database_connection == false and
+            .qualification.real_database_identity_read == false and
+            .qualification.runtime_token_provisioning == false and
+            .historical_ownership.sprint130_token_policy == "PRESERVED" and
+            .historical_ownership.sprint134_disallowed_character_route_absence == "PRESERVED" and
+            .successor_compatibility.sprint134_historical_workflow == "SUCCESSOR_COMPATIBLE" and
+            .successor_compatibility.sprint134_full_pr_envelope_lock == "ABSENT" and
+            .source_envelope.path_count == 4 and
+            .source_envelope.sha256 == "628d99da2ce7f65938dc12df387c829748e36c4a8d8cab18a08eb5402fcf78fc" and
+            .canonical_boundaries.synthetic_positive_route_registration == "PERFORMED_IN_TEST_PROCESS_ONLY" and
+            .canonical_boundaries.operational_positive_route_registration == "NOT_PERFORMED" and
+            .canonical_boundaries.valid_operational_control_plane_request == "NOT_PERFORMED" and
+            .canonical_boundaries.real_route_invocation == "NOT_PERFORMED" and
+            .canonical_boundaries.controller_invocation == "NOT_PERFORMED" and
+            .canonical_boundaries.production_side_effect_adapter_resolution == "NOT_PERFORMED" and
+            .canonical_boundaries.migration27_execution == "NOT_PERFORMED" and
+            .canonical_boundaries.permission_provisioning == "NONE" and
+            .canonical_boundaries.feature_activation == "INACTIVE" and
+            .canonical_boundaries.deployment_authority == "NOT_GRANTED" and
+            .canonical_boundaries.technical_preview == "NO-GO" and
+            .canonical_boundaries.production == "NO-GO" and
+            .canonical_boundaries.updater == "INACTIVE" and
+            .attribution == "Author by Lab | zefry"
+          ' "$file" >/dev/null
+
+      - name: Prove Sprint135 regression remains synthetic and inert
+        shell: bash
+        run: |
+          set -euo pipefail
+          test_file=apps/web/tests/final-shift-close-runtime-control-plane-positive-registration-metadata-regression.php
+          grep -Fq 'FinalShiftCloseRuntimeControlPlaneTokenPolicy::MINIMUM_LENGTH' "$test_file"
+          grep -Fq 'FinalShiftCloseRuntimeControlPlaneTokenPolicy::isValidToken($validToken) === true' "$test_file"
+          grep -Fq "getByName('internal.final-shift-close.runtime-binding-manifest.materialize')" "$test_file"
+          grep -Fq "getByName('internal.final-shift-close.runtime-db-binding-attestation')" "$test_file"
+          grep -Fq "FinalShiftCloseRuntimeBindingManifestMaterializationController::class.'@__invoke'" "$test_file"
+          grep -Fq "FinalShiftCloseRuntimeDbBindingAttestationController::class.'@__invoke'" "$test_file"
+          grep -Fq '$app->resolved($service) === false' "$test_file"
+          ! grep -Fq 'Request::create' "$test_file"
+          ! grep -Fq 'FilesystemFinalShiftCloseRuntimeBindingManifestWriter' "$test_file"
+          ! grep -Fq 'LaravelFinalShiftCloseRuntimeDatabaseIdentityReader' "$test_file"
+          ! grep -Fq "connection('oneqay')" "$test_file"
+          ! grep -Fq -- '->materialize(' "$test_file"
+
+      - name: Prove operational NO-GO state remains intact
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" == 'NOT_EXECUTED' ]]
+          [[ "$(jq -r '.permission_provisioning.state' ops/final-shift-close/STATE.json)" == 'NONE' ]]
+          [[ "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" == 'INACTIVE' ]]
+          [[ "$(jq -r '.deployment_authority' ops/final-shift-close/STATE.json)" == 'NOT_GRANTED' ]]
+          [[ "$(jq -r '.technical_preview_activation' ops/final-shift-close/STATE.json)" == 'NOT_AUTHORIZED' ]]
+          [[ "$(jq -r '.production_activation' ops/final-shift-close/STATE.json)" == 'NOT_AUTHORIZED' ]]
+          [[ "$(jq -r '.updater_activation' ops/final-shift-close/STATE.json)" == 'INACTIVE' ]]
+          [[ "$(jq -r '.selection_state' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" == 'BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET' ]]
+          [[ "$(jq -r '.selected_target' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" == 'null' ]]
+
+      - name: Validate PHP syntax and locked dependencies
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l tests/final-shift-close-runtime-control-plane-positive-registration-metadata-regression.php
+          php -l tests/final-shift-close-runtime-control-plane-delivery-gate-registration-regression.php
+          php -l app/Application/Pos/FinalShiftCloseRuntimeControlPlaneTokenPolicy.php
+          php -l app/Providers/FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider.php
+          php -l app/Providers/FinalShiftCloseRuntimeDbBindingAttestationServiceProvider.php
+          composer validate --no-check-publish
+          composer install --no-interaction --no-progress --prefer-dist
+          composer audit --locked --no-interaction --abandoned=report
+
+      - name: Execute Sprint135 positive registration metadata regression
+        working-directory: apps/web
+        run: php tests/final-shift-close-runtime-control-plane-positive-registration-metadata-regression.php
+
+      - name: Preserve Sprint134 disallowed-character route-absence regression
+        working-directory: apps/web
+        run: php tests/final-shift-close-runtime-control-plane-delivery-gate-registration-regression.php
+
+      - name: Verify tracked-source cleanliness
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --exit-code
+          git status --short --untracked-files=no
