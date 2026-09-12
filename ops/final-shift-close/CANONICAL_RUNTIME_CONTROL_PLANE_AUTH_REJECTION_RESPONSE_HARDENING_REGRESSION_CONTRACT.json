@@ -14,6 +14,7 @@
     "route_registration_changed": false,
     "middleware_order_changed": false,
     "throttle_limits_changed": false,
+    "historical_workflow_representation_correction": "SPRINT126_SPRINT130_SPRINT131_ONLY",
     "materialization": {
       "invalid_expected_token_status": 503,
       "missing_bearer_status": 401,
@@ -49,7 +50,9 @@
     "operational_runtime_target_invocation": false
   },
   "historical_ownership": {
-    "sprint130_token_policy": "PRESERVED",
+    "sprint126_manifest_token_hardening": "PRESERVED_WITH_HARDENED_REJECTION_REPRESENTATION",
+    "sprint130_token_policy": "PRESERVED_WITH_HARDENED_REJECTION_REPRESENTATION",
+    "sprint131_middleware_positive_path": "PRESERVED_WITH_HARDENED_REJECTION_REPRESENTATION",
     "sprint134_delivery_gate_route_absence": "PRESERVED",
     "sprint135_registration_metadata": "PRESERVED",
     "sprint136_authenticated_http_positive_path": "PRESERVED",
@@ -63,8 +66,8 @@
     "active_sprint_envelope_authority": "SPRINT140_WORKFLOW_ONLY"
   },
   "source_envelope": {
-    "path_count": 6,
-    "sha256": "774f7d28ba9544455f1db7ac74a543482dd5fa352d27942843cb427fe9de7a40"
+    "path_count": 9,
+    "sha256": "43b358e86402863925ec2f9c246ae20aa5a47228ec21aa2ded43cdf8b19a257e"
   },
   "canonical_boundaries": {
     "operational_control_plane_request": "NOT_PERFORMED",
