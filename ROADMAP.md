@@ -1,7 +1,7 @@
 # oneQay Roadmap
 
-**Roadmap checkpoint:** post-Sprint139
-**Canonical engineering baseline:** `4028e05485589be649eb437c800b70c2990decf2`
+**Roadmap checkpoint:** post-Sprint140
+**Canonical engineering baseline:** `446f9ff80f646d2e77d0885b887da58a37994d28`
 **Current state authority:** `PROJECT_MANIFEST.md`
 
 This roadmap describes sequencing and gates. It does **not** grant operational authority. A completed roadmap item means its bounded repository objective was completed; it does not imply deployment, migration execution, runtime activation, Technical Preview activation, or Production activation unless separately evidenced.
@@ -38,7 +38,7 @@ These foundations are repository/source achievements, not a statement that a com
 
 Representative milestones: Sprint55, Sprint64, Sprint70, and Sprint80.
 
-## Horizon D — Final Shift Close source/readiness chain — completed through Sprint139 engineering boundary
+## Horizon D — Final Shift Close source/readiness chain — completed through Sprint140 engineering boundary
 
 - [x] Source-only migration #27 materialization — Sprint88
 - [x] Final Shift Close application-readiness contract — Sprint89
@@ -56,26 +56,28 @@ Representative milestones: Sprint55, Sprint64, Sprint70, and Sprint80.
 - [x] Canonical-valid-token authenticated HTTP route → middleware → real-controller fail-closed regression with exact HTTP 503 translation, response non-disclosure, and production-adapter isolation — Sprint137
 - [x] Canonical-valid authenticated HTTP throttle enforcement regression — Sprint138: materialization request two returns HTTP `429` without a second write; DB-attestation request three returns HTTP `429` without a third database-identity read
 - [x] Authentication-before-throttle hardening — Sprint139: wrong bearer traffic is rejected before limiter accounting and cannot reduce the valid bearer budget on either control plane, while the existing `1,1` and `2,1` limits remain unchanged
+- [x] Authentication-rejection response hardening — Sprint140: materialization 503/401 and DB-attestation cloaked 404 rejection semantics remain intact while rejection responses become explicit empty-body responses with `Cache-Control: no-store, private`, `Pragma: no-cache`, `X-Content-Type-Options: nosniff`, and `X-Robots-Tag: noindex, nofollow, noarchive`
+- [x] Sprint140 preserves canonical token policy, route registration, Sprint139 auth-before-throttle ordering, Sprint138 throttle limits, and synthetic-only qualification without production filesystem/database adapter resolution
 
 Migration #27 remains source-only and `NOT_EXECUTED`; completion of this engineering horizon does not authorize operational use.
 
-## Horizon E — Sprint140+ bounded engineering — next
+## Horizon E — Sprint141+ bounded engineering — next
 
 Status: **NOT YET SELECTED / NOT COMPLETED**.
 
-Sprint140 begins only after bounded discovery identifies the smallest non-duplicative remaining engineering gap from post-Sprint139.
+Sprint141 begins only after bounded discovery identifies the smallest non-duplicative remaining engineering gap from canonical post-Sprint140.
 
 Selection rules:
 
 1. prove the gap exists before adding source;
 2. freeze a bounded source envelope;
-3. preserve Sprint130–Sprint139 owned regressions and historical compatibility;
+3. preserve Sprint130–Sprint140 owned regressions and historical compatibility;
 4. stay fail-closed and deny-by-default;
 5. avoid operational adapter invocation and runtime-token provisioning unless separately authorized;
 6. qualify exact head in CI before merge;
 7. reconcile canonical project-state documentation at closure.
 
-No roadmap text pre-authorizes a specific Sprint140 implementation.
+No roadmap text pre-authorizes a specific Sprint141 implementation.
 
 ## Horizon F — Operational qualification — blocked / separate authority
 
