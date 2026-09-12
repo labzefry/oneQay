@@ -1,0 +1,222 @@
+name: Sprint133 Final Shift Close Canonical Control Plane Controller Fail Closed Regression
+
+# Attribution: Lab | zefry
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint133-final-shift-close-canonical-control-plane-controller-fail-closed-regression-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qualify-canonical-control-plane-controller-fail-closed-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHQ=
+      APP_DEBUG: 'false'
+      APP_URL: http://localhost
+      CACHE_STORE: array
+      SESSION_DRIVER: array
+
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Lock exact Sprint133 source envelope
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+          git diff --name-only "$base" "$head" | LC_ALL=C sort > /tmp/paths
+          cat > /tmp/expected <<'EOF'
+          .github/workflows/sprint132-final-shift-close-canonical-control-plane-controller-positive-path-regression.yml
+          .github/workflows/sprint133-final-shift-close-canonical-control-plane-controller-fail-closed-regression.yml
+          apps/web/tests/final-shift-close-runtime-control-plane-controller-fail-closed-regression.php
+          docs/SPRINT133_FINAL_SHIFT_CLOSE_CANONICAL_CONTROL_PLANE_CONTROLLER_FAIL_CLOSED_REGRESSION.md
+          ops/final-shift-close/CANONICAL_RUNTIME_CONTROL_PLANE_CONTROLLER_FAIL_CLOSED_REGRESSION_CONTRACT.json
+          EOF
+          diff -u /tmp/expected /tmp/paths
+          [[ "$(sha256sum /tmp/paths | awk '{print $1}')" == '2be909fed12150b2f831ab6ae9877e9609859c1a1b81792d165f79771ac31786' ]]
+
+      - name: Prove Sprint132 historical successor compatibility
+        shell: bash
+        run: |
+          set -euo pipefail
+          workflow=.github/workflows/sprint132-final-shift-close-canonical-control-plane-controller-positive-path-regression.yml
+          grep -Fq 'Preserve successor-compatible historical regression boundary' "$workflow"
+          grep -Fq 'Sprint132 is historical from Sprint133 onward.' "$workflow"
+          grep -Fq 'Historical regression workflows validate their owned invariants only.' "$workflow"
+          grep -Fq 'Exact full-PR envelope locking belongs to the active sprint workflow.' "$workflow"
+          ! grep -Fq 'Lock exact Sprint132 source envelope' "$workflow"
+
+      - name: Prove runtime and operational state remain untouched
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+          git diff --quiet "$base" "$head" -- \
+            apps/web/config/final_shift_close_runtime_binding_materialization.php \
+            apps/web/config/final_shift_close_runtime_db_binding_attestation.php \
+            apps/web/bootstrap/app.php \
+            apps/web/bootstrap/providers.php \
+            apps/web/routes \
+            apps/web/app/Delivery/Http/Pos/FinalShiftCloseRuntimeBindingManifestMaterializationController.php \
+            apps/web/app/Delivery/Http/Pos/FinalShiftCloseRuntimeDbBindingAttestationController.php \
+            apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingManifestMaterializationRequest.php \
+            apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingManifest.php \
+            apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingManifestMaterializer.php \
+            apps/web/app/Application/Pos/FinalShiftCloseRuntimeDatabaseIdentity.php \
+            apps/web/app/Application/Pos/FinalShiftCloseRuntimeDatabaseIdentityReader.php \
+            apps/web/app/Application/Pos/FinalShiftCloseRuntimeDbBindingAttestation.php \
+            apps/web/app/Infrastructure/Pos/FilesystemFinalShiftCloseRuntimeBindingManifestWriter.php \
+            apps/web/app/Infrastructure/Pos/LaravelFinalShiftCloseRuntimeDatabaseIdentityReader.php \
+            apps/web/database/migrations \
+            .github/workflows/final-shift-close-migration27-selected-target-db-binding.yml \
+            .github/workflows/final-shift-close-migration27-execution.yml \
+            ops/final-shift-close/STATE.json \
+            ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+          [[ "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" == 'NOT_EXECUTED' ]]
+          [[ "$(jq -r '.permission_provisioning.state' ops/final-shift-close/STATE.json)" == 'NONE' ]]
+          [[ "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" == 'INACTIVE' ]]
+          [[ "$(jq -r '.deployment_authority' ops/final-shift-close/STATE.json)" == 'NOT_GRANTED' ]]
+          [[ "$(jq -r '.technical_preview_activation' ops/final-shift-close/STATE.json)" == 'NOT_AUTHORIZED' ]]
+          [[ "$(jq -r '.production_activation' ops/final-shift-close/STATE.json)" == 'NOT_AUTHORIZED' ]]
+          [[ "$(jq -r '.updater_activation' ops/final-shift-close/STATE.json)" == 'INACTIVE' ]]
+          [[ "$(jq -r '.selection_state' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" == 'BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET' ]]
+          [[ "$(jq -r '.selected_target' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" == 'null' ]]
+
+      - name: Validate Sprint133 machine-readable contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=ops/final-shift-close/CANONICAL_RUNTIME_CONTROL_PLANE_CONTROLLER_FAIL_CLOSED_REGRESSION_CONTRACT.json
+          jq -e '.schema_version == 1 and .feature == "final-shift-close" and .sprint == 133 and .bounded_objective == "CANONICAL_CONTROL_PLANE_CONTROLLER_FAIL_CLOSED_REGRESSION" and .execution_mode == "CI_ONLY_SYNTHETIC_CONTROLLER_FAIL_CLOSED_REGRESSION" and .qualification.materialization_invalid_field_set_controller_direct_invocation == "SYNTHETIC_HTTP_422" and .qualification.materialization_invalid_field_set_error_contract == "invalid_request" and .qualification.materialization_invalid_field_set_writer_invocation_count == 0 and .qualification.materialization_application_failure_controller_direct_invocation == "SYNTHETIC_HTTP_503" and .qualification.materialization_application_failure_error_contract == "materialization_unavailable" and .qualification.materialization_failure_information_exposure == "NONE" and .qualification.db_attestation_application_failure_controller_direct_invocation == "SYNTHETIC_HTTP_503" and .qualification.db_attestation_identity_reader_failure_controller_direct_invocation == "SYNTHETIC_HTTP_503" and .qualification.db_attestation_error_contract == "RUNTIME_DB_BINDING_ATTESTATION_UNAVAILABLE" and .qualification.db_attestation_failure_information_exposure == "NONE" and .qualification.synthetic_fixture_scope == "ISOLATED_TEST_OWNED_TEMPORARY_DIRECTORY" and .qualification.real_route_invocation == false and .qualification.production_container_service_resolution == false and .qualification.real_filesystem_adapter_invocation == false and .qualification.real_database_connection == false and .qualification.real_database_identity_read == false and .successor_compatibility.sprint132_full_pr_envelope_lock == "REMOVED_FROM_HISTORICAL_WORKFLOW" and .successor_compatibility.sprint132_owned_controller_positive_path_regression == "PRESERVED" and .successor_compatibility.active_sprint_envelope_authority == "SPRINT133_WORKFLOW_ONLY" and .source_envelope.path_count == 5 and .source_envelope.sha256 == "2be909fed12150b2f831ab6ae9877e9609859c1a1b81792d165f79771ac31786" and .canonical_boundaries.valid_operational_control_plane_request == "NOT_PERFORMED" and .canonical_boundaries.real_route_invocation == "NOT_PERFORMED" and .canonical_boundaries.production_container_service_resolution == "NOT_PERFORMED" and .canonical_boundaries.real_filesystem_adapter_invocation == "NOT_PERFORMED" and .canonical_boundaries.canonical_runtime_manifest_write == "NOT_PERFORMED" and .canonical_boundaries.real_database_connection == "NOT_PERFORMED" and .canonical_boundaries.real_database_identity_read == "NOT_PERFORMED" and .canonical_boundaries.runtime_configuration_mutation == "NOT_PERFORMED" and .canonical_boundaries.runtime_token_provisioning == "NOT_PERFORMED" and .canonical_boundaries.canonical_runtime_manifest_materialization == "NOT_PERFORMED" and .canonical_boundaries.operational_runtime_db_binding_attestation == "NOT_PERFORMED" and .canonical_boundaries.selected_target == null and .canonical_boundaries.db_binding_producer_dispatch == "NOT_PERFORMED" and .canonical_boundaries.migration27_execution == "NOT_PERFORMED" and .canonical_boundaries.permission_provisioning == "NONE" and .canonical_boundaries.feature_activation == "INACTIVE" and .canonical_boundaries.deployment_authority == "NOT_GRANTED" and .canonical_boundaries.technical_preview == "NO-GO" and .canonical_boundaries.production == "NO-GO" and .canonical_boundaries.updater == "INACTIVE" and .attribution == "Author by Lab | zefry"' "$file" >/dev/null
+
+      - name: Prove Sprint133 controller regression is synthetic and isolated
+        shell: bash
+        run: |
+          set -euo pipefail
+          test_file=apps/web/tests/final-shift-close-runtime-control-plane-controller-fail-closed-regression.php
+          grep -Fq 'new FinalShiftCloseRuntimeBindingManifestMaterializationController($materializer)' "$test_file"
+          grep -Fq 'new FinalShiftCloseRuntimeDbBindingAttestationController($invalidAttestation)' "$test_file"
+          grep -Fq 'new FinalShiftCloseRuntimeDbBindingAttestationController($readerFailureAttestation)' "$test_file"
+          grep -Fq "sys_get_temp_dir().'/oneqay-sprint133-controller-fail-closed-'" "$test_file"
+          grep -Fq "'/_ci/sprint133/controller/materialization-invalid-field-set'" "$test_file"
+          grep -Fq "'/_ci/sprint133/controller/materialization-application-failure'" "$test_file"
+          grep -Fq 'new class implements FinalShiftCloseRuntimeBindingManifestWriter' "$test_file"
+          grep -Fq 'new class implements FinalShiftCloseRuntimeDatabaseIdentityReader' "$test_file"
+          grep -Fq 'SPRINT133_SYNTHETIC_DB_READER_FAILURE_INTERNAL_ONLY' "$test_file"
+          grep -Fq 'chmod($selectionPath, 0600)' "$test_file"
+          grep -Fq 'chmod($invalidManifestPath, 0600)' "$test_file"
+          grep -Fq 'chmod($validManifestPath, 0600)' "$test_file"
+          grep -Fq 'finally {' "$test_file"
+          grep -Fq '@unlink($selectionPath);' "$test_file"
+          grep -Fq '@unlink($invalidManifestPath);' "$test_file"
+          grep -Fq '@unlink($validManifestPath);' "$test_file"
+          grep -Fq '@rmdir($root);' "$test_file"
+          ! grep -Fq '/internal/final-shift-close/runtime-binding-manifest/materialize' "$test_file"
+          ! grep -Fq '/internal/final-shift-close/runtime-db-binding-attestation' "$test_file"
+          ! grep -Fq 'FilesystemFinalShiftCloseRuntimeBindingManifestWriter' "$test_file"
+          ! grep -Fq 'LaravelFinalShiftCloseRuntimeDatabaseIdentityReader' "$test_file"
+          ! grep -Fq 'FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider' "$test_file"
+          ! grep -Fq 'FinalShiftCloseRuntimeDbBindingAttestationServiceProvider' "$test_file"
+
+      - name: Validate PHP syntax and locked dependencies
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l app/Application/Pos/FinalShiftCloseRuntimeBindingManifest.php
+          php -l app/Application/Pos/FinalShiftCloseRuntimeBindingManifestWriter.php
+          php -l app/Application/Pos/FinalShiftCloseRuntimeBindingManifestMaterializationRequest.php
+          php -l app/Application/Pos/FinalShiftCloseRuntimeBindingManifestMaterializer.php
+          php -l app/Application/Pos/FinalShiftCloseRuntimeDatabaseIdentity.php
+          php -l app/Application/Pos/FinalShiftCloseRuntimeDatabaseIdentityReader.php
+          php -l app/Application/Pos/FinalShiftCloseRuntimeDbBindingAttestation.php
+          php -l app/Delivery/Http/Pos/FinalShiftCloseRuntimeBindingManifestMaterializationController.php
+          php -l app/Delivery/Http/Pos/FinalShiftCloseRuntimeDbBindingAttestationController.php
+          php -l tests/final-shift-close-runtime-control-plane-controller-fail-closed-regression.php
+          composer validate --no-check-publish
+          composer install --no-interaction --no-progress --prefer-dist
+          composer audit --locked --no-interaction --abandoned=report
+
+      - name: Execute Sprint133 controller fail-closed regression
+        working-directory: apps/web
+        run: php tests/final-shift-close-runtime-control-plane-controller-fail-closed-regression.php
+
+      - name: Preserve Sprint132 controller positive-path regression
+        working-directory: apps/web
+        run: php tests/final-shift-close-runtime-control-plane-controller-positive-path-regression.php
+
+      - name: Preserve Sprint131 middleware positive-path regression
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          php tests/final-shift-close-runtime-control-plane-token-character-policy.php regex-matrix
+          php tests/final-shift-close-runtime-control-plane-token-character-policy.php materialization-matching-bearer
+          php tests/final-shift-close-runtime-control-plane-token-character-policy.php db-matching-bearer
+
+      - name: Preserve fail-closed credential dispositions
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          php tests/final-shift-close-runtime-control-plane-token-character-policy.php materialization-invalid-expected
+          php tests/final-shift-close-runtime-control-plane-token-character-policy.php materialization-missing-bearer
+          php tests/final-shift-close-runtime-control-plane-token-character-policy.php materialization-malformed-bearer
+          php tests/final-shift-close-runtime-control-plane-token-character-policy.php materialization-invalid-bearer
+          php tests/final-shift-close-runtime-control-plane-token-character-policy.php materialization-mismatched-bearer
+          php tests/final-shift-close-runtime-control-plane-token-character-policy.php db-invalid-expected
+          php tests/final-shift-close-runtime-control-plane-token-character-policy.php db-missing-bearer
+          php tests/final-shift-close-runtime-control-plane-token-character-policy.php db-malformed-bearer
+          php tests/final-shift-close-runtime-control-plane-token-character-policy.php db-invalid-bearer
+          php tests/final-shift-close-runtime-control-plane-token-character-policy.php db-mismatched-bearer
+
+      - name: Lock no operational invocation or activation
+        shell: bash
+        run: |
+          set -euo pipefail
+          workflow=.github/workflows/sprint133-final-shift-close-canonical-control-plane-controller-fail-closed-regression.yml
+          ! grep -Fq 'workflow_dispatch' "$workflow"
+          doc=docs/SPRINT133_FINAL_SHIFT_CLOSE_CANONICAL_CONTROL_PLANE_CONTROLLER_FAIL_CLOSED_REGRESSION.md
+          grep -Fq 'SPRINT133_VALID_OPERATIONAL_CONTROL_PLANE_REQUEST = NOT_PERFORMED' "$doc"
+          grep -Fq 'SPRINT133_REAL_ROUTE_INVOCATION = NOT_PERFORMED' "$doc"
+          grep -Fq 'SPRINT133_PRODUCTION_CONTAINER_SERVICE_RESOLUTION = NOT_PERFORMED' "$doc"
+          grep -Fq 'SPRINT133_REAL_FILESYSTEM_ADAPTER_INVOCATION = NOT_PERFORMED' "$doc"
+          grep -Fq 'SPRINT133_CANONICAL_RUNTIME_MANIFEST_WRITE = NOT_PERFORMED' "$doc"
+          grep -Fq 'SPRINT133_REAL_DATABASE_CONNECTION = NOT_PERFORMED' "$doc"
+          grep -Fq 'SPRINT133_REAL_DATABASE_IDENTITY_READ = NOT_PERFORMED' "$doc"
+          grep -Fq 'SPRINT133_RUNTIME_CONFIGURATION_MUTATION = NOT_PERFORMED' "$doc"
+          grep -Fq 'SPRINT133_RUNTIME_TOKEN_PROVISIONING = NOT_PERFORMED' "$doc"
+          grep -Fq 'SPRINT133_CANONICAL_RUNTIME_MANIFEST_MATERIALIZATION = NOT_PERFORMED' "$doc"
+          grep -Fq 'SPRINT133_OPERATIONAL_RUNTIME_DB_BINDING_ATTESTATION = NOT_PERFORMED' "$doc"
+          grep -Fq 'SELECTED_TARGET = NONE' "$doc"
+          grep -Fq 'DB_BINDING_PRODUCER_DISPATCH = NOT_PERFORMED' "$doc"
+          grep -Fq 'MIGRATION_27_EXECUTION = NOT_PERFORMED' "$doc"
+          grep -Fq 'PERMISSION_PROVISIONING = NONE' "$doc"
+          grep -Fq 'FEATURE_ACTIVATION = INACTIVE' "$doc"
+          grep -Fq 'DEPLOYMENT_AUTHORITY = NOT_GRANTED' "$doc"
+          grep -Fq 'TECHNICAL_PREVIEW = NO-GO' "$doc"
+          grep -Fq 'PRODUCTION = NO-GO' "$doc"
+          grep -Fq 'UPDATER = INACTIVE' "$doc"
+
+      - name: Verify tracked-source cleanliness
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -z "$(git status --porcelain)" ]]
