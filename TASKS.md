@@ -1,7 +1,7 @@
 # oneQay Tasks
 
-**Current engineering checkpoint:** post-Sprint136  
-**Canonical engineering commit:** `2a92a870d9c8388bdb9ac4f516e9d671237ce116`  
+**Current engineering checkpoint:** post-Sprint136
+**Canonical engineering commit:** `2a92a870d9c8388bdb9ac4f516e9d671237ce116`
 **Canonical status authority:** `PROJECT_MANIFEST.md`
 
 This file is the current workboard. It separates **completed source engineering**, **next bounded engineering**, and **operational actions that remain unauthorized**.
