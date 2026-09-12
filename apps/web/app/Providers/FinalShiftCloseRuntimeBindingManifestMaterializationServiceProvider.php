@@ -47,8 +47,8 @@ final class FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider 
         }
 
         Route::middleware([
-            'throttle:1,1',
             RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware::class,
+            'throttle:1,1',
         ])->group(base_path('routes/final-shift-close-runtime-binding-manifest-materialization.php'));
     }
 
