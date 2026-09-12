@@ -3,27 +3,27 @@
 **Product:** oneQay — The Future of Intelligent Business Management
 **Repository owner / attribution:** Lab | zefry
 **Default branch:** `main`
-**Canonical engineering checkpoint:** Sprint134
-**Canonical engineering commit:** `185cbe9ddd4346b9d8c9e7ac7af283a20b9617bd`
-**Latest engineering PR:** #684 — `Sprint134: canonical control-plane delivery gate registration regression`
+**Canonical engineering checkpoint:** Sprint135
+**Canonical engineering commit:** `c13ea1e468154fc1997a48ad5ce7c0132ddbc1c9`
+**Latest engineering PR:** #686 — `Sprint135: canonical control-plane positive registration metadata regression`
 **Status date:** 2026-09-12
 
-> This file is the canonical human-readable source of truth for current oneQay project status. README, CHANGELOG, TASKS, and ROADMAP must summarize or reference this manifest rather than independently inventing a newer project state. Per-sprint documents and Git history remain the detailed evidence trail.
+> This file is the canonical human-readable source of truth for current oneQay project status. README, CHANGELOG, TASKS, and ROADMAP summarize this manifest. Per-sprint documents, contracts, workflows, merged pull requests, and Git history remain the detailed evidence trail.
 
 ## 1. Current project state
 
-oneQay is an actively engineered enterprise business-management platform using a modular-monolith-first architecture. The repository has progressed through Sprint134. The latest engineering chain is focused on Final Shift Close readiness, fail-closed runtime control-plane boundaries, and executable regression evidence.
+oneQay is an actively engineered enterprise business-management platform using a Modular Monolith First architecture with Clean Architecture, DDD, first-class tenant context, deny-by-default authorization, and fail-closed engineering controls.
 
-The repository is **not** represented as production-activated merely because source, migrations, providers, controllers, workflows, or regression evidence exist. Source publication and operational activation are separate lifecycle states.
+The repository has progressed through **Sprint135**. The latest engineering chain focuses on Final Shift Close runtime control-plane qualification while deliberately separating source readiness from operational activation.
 
 ### Canonical state summary
 
 | Area | Current canonical state |
 | --- | --- |
-| Latest closed engineering sprint | Sprint134 |
-| Latest engineering commit | `185cbe9ddd4346b9d8c9e7ac7af283a20b9617bd` |
-| Latest engineering PR | #684, merged |
-| Sprint134 exact-head CI | 18/18 pull-request workflow runs successful |
+| Latest closed engineering sprint | Sprint135 |
+| Latest engineering commit | `c13ea1e468154fc1997a48ad5ce7c0132ddbc1c9` |
+| Latest engineering PR | #686, merged |
+| Sprint135 exact-head CI | 19/19 pull-request workflow runs successful |
 | Architecture | Modular Monolith First, Clean Architecture, DDD |
 | Backend | Laravel / PHP |
 | Frontend | Vue 3 + Inertia + Vite |
@@ -41,56 +41,56 @@ The repository is **not** represented as production-activated merely because sou
 
 ## 2. What has actually been completed
 
-### Foundation and governance
+### Platform, governance, and POS foundation
 
-The repository has established the core modular-monolith architecture, tenant isolation model, deny-by-default authorization posture, versioned REST governance, correlation/idempotency conventions, CI governance, bounded source envelopes, exact-head qualification, and repository-native Product Owner merge-authorization controls.
+The repository has established the modular-monolith architecture, tenant isolation model, deny-by-default authorization posture, first-party session and privileged-authentication foundations, versioned REST governance, CI/governance controls, exact-head qualification, and repository-native Product Owner merge authorization.
 
-### POS and accounting evidence chain
+Bounded POS work includes register/shift opening, sale completion/payment/receipt evidence, tenant/outlet-scoped catalog preparation, durable idempotency preservation, and historical regression compatibility.
 
-Earlier bounded sprints published POS foundations including register/shift opening, sale completion/payment/receipt evidence, catalog preparation, and subsequent cash/shift evidence work. The post-Sprint54 sequence then advanced JRN-010 prerequisite work through expected-cash derivation, immutable sale-to-shift binding, cash-variance source readiness/foundation, adjudication/explanation evidence, and maker-checker/reviewer authorization controls.
+### JRN-010 cash and variance chain
 
-Representative canonical milestones from Git history include:
+Representative material milestones include:
 
-- Sprint55 — bounded expected-cash derivation entry gate;
+- Sprint55 — expected-cash derivation entry gate;
 - Sprint64 — cash-variance source foundation;
 - Sprint70 — durable cash-variance explanation foundation;
 - Sprint80 — scoped cash-variance reviewer authorization policy and implementation chain.
 
-These milestones are source/evidence achievements. They do not by themselves imply production activation.
+This chain established expected-cash, immutable sale-to-shift binding, cash-variance evidence, explanation/adjudication, maker-checker, and reviewer authorization foundations. These are source/evidence achievements, not production activation.
 
-### Final Shift Close readiness chain
+### Final Shift Close engineering chain
 
-The later sprint sequence moved from cash-variance readiness into Final Shift Close source and runtime-control-plane hardening.
+- Sprint88 — migration #27 source materialization only; migration remained `NOT_EXECUTED`.
+- Sprint89 — Final Shift Close application-readiness contract and fail-closed prerequisites.
+- Later bounded sprints progressively qualified application/service, provider, runtime-binding manifest, DB-binding attestation, authorization, target-readiness, and historical compatibility boundaries.
+- Sprint130 — canonical runtime control-plane token policy.
+- Sprint131 — CI-only synthetic middleware positive-path regression.
+- Sprint132 — CI-only synthetic direct-controller positive-path regression.
+- Sprint133 — direct-controller fail-closed regression.
+- Sprint134 — cross-provider delivery-gate route-absence regression for a canonical-length token containing a disallowed character.
+- Sprint135 — cross-provider positive registration metadata regression using one canonical valid synthetic token, proving exact route/controller/method/throttle/token-middleware metadata while registration remains inert and production side-effect services remain unresolved.
 
-- Sprint88 materialized migration #27 as a **source-only** Final Shift Close migration foundation while explicitly preserving no-execution/no-runtime/no-permission/no-activation boundaries.
-- Sprint89 selected the Final Shift Close application-readiness contract and fail-closed prerequisites.
-- Subsequent sprints progressively qualified application, provider, runtime binding, manifest, database-binding attestation, authorization, token policy, and historical compatibility boundaries.
-- Sprint130 established the canonical runtime control-plane token policy: minimum 32, maximum 512, canonical allowed-character policy, exact bearer semantics, and fail-closed handling.
-- Sprint131 added CI-only synthetic middleware positive-path regression.
-- Sprint132 added CI-only synthetic direct-controller positive-path regression.
-- Sprint133 added direct-controller fail-closed regression.
-- Sprint134 added provider/route delivery-gate registration regression for a canonical-length token containing a disallowed character, while preserving historical regressions and the operational NO-GO boundary.
+## 3. Sprint135 closure evidence
 
-## 3. Sprint134 closure evidence
+Sprint135 is closed through PR #686.
 
-Sprint134 is closed through PR #684.
+- Canonical squash commit: `c13ea1e468154fc1997a48ad5ce7c0132ddbc1c9`
+- Parent canonical checkpoint: `3bc22b9f31b9855ea15b750cd67af1d13537a93c`
+- Exact Sprint135 engineering envelope: four paths
+- Frozen Sprint135 envelope SHA-256: `628d99da2ce7f65938dc12df387c829748e36c4a8d8cab18a08eb5402fcf78fc`
+- Exact-head pull-request workflows: 19/19 successful
+- Product Owner merge authority workflow run `34683875845`: successful
+- Merge method: squash with exact-head guard
 
-- Canonical squash commit: `185cbe9ddd4346b9d8c9e7ac7af283a20b9617bd`
-- Parent engineering commit: `5e6b4929cfbf8e6c54fede283df249b60db9bf1d` (Sprint133)
-- Exact changed engineering envelope: five paths
-- Frozen Sprint134 envelope SHA-256: `73b87b460ef349a05ab801d10fc6dd4a19d056625f4a042ff621ab96a12d2c0e`
-- Exact-head pull-request workflows: 18/18 successful
-- Product Owner merge authority workflow: successful
-- Merge method: squash
+Detailed evidence:
 
-Detailed Sprint134 evidence remains in:
-
-- `docs/SPRINT134_FINAL_SHIFT_CLOSE_CANONICAL_CONTROL_PLANE_DELIVERY_GATE_REGISTRATION_REGRESSION.md`
-- `ops/final-shift-close/CANONICAL_RUNTIME_CONTROL_PLANE_DELIVERY_GATE_REGISTRATION_REGRESSION_CONTRACT.json`
+- `docs/SPRINT135_FINAL_SHIFT_CLOSE_CANONICAL_CONTROL_PLANE_POSITIVE_REGISTRATION_METADATA_REGRESSION.md`
+- `ops/final-shift-close/CANONICAL_RUNTIME_CONTROL_PLANE_POSITIVE_REGISTRATION_METADATA_REGRESSION_CONTRACT.json`
+- `apps/web/tests/final-shift-close-runtime-control-plane-positive-registration-metadata-regression.php`
 
 ## 4. Operational truth — NO-GO remains authoritative
 
-The following states are intentionally unchanged and must not be inferred from source readiness:
+Sprint135 does not grant operational authority. Current machine-readable state remains:
 
 - migration #27 execution: `NOT_EXECUTED` / `NOT_PERFORMED`;
 - permission provisioning: `NONE`;
@@ -104,21 +104,21 @@ The following states are intentionally unchanged and must not be inferred from s
 - runtime allowlist change: `NOT_IMPLEMENTED`;
 - feature-activation evidence producer: `NOT_IMPLEMENTED`.
 
-Machine-readable authority remains in:
+Machine-readable operational authority:
 
 - `ops/final-shift-close/STATE.json`
 - `ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json`
 
-If this manifest and those machine-readable state files ever conflict on an operational state, the machine-readable state files are authoritative for the operational gate.
+If this manifest and the machine-readable state files ever conflict on an operational state, the machine-readable state files are authoritative for that operational gate.
 
 ## 5. What is not yet complete
 
-The following must not be described as completed unless separately qualified and authorized:
+The following must not be described as complete unless separately qualified and authorized:
 
 - execution of migration #27 in an operational environment;
 - provisioning of Final Shift Close permissions;
-- activation of the Final Shift Close feature;
-- selection and qualification of a non-synthetic durable activation target;
+- activation of Final Shift Close;
+- qualification and selection of a non-synthetic durable activation target;
 - real operational runtime-binding manifest materialization;
 - real operational database-binding attestation;
 - Technical Preview activation;
@@ -128,27 +128,25 @@ The following must not be described as completed unless separately qualified and
 
 ## 6. Next engineering position
 
-The next engineering activity after this documentation reconciliation is **Sprint135 bounded discovery from the canonical post-Sprint134 engineering checkpoint**. Sprint135 is not considered started or completed merely because it appears in planning documents.
+The next engineering activity is **Sprint136 bounded discovery from canonical post-Sprint135**.
 
-Any Sprint135 work must select the smallest non-duplicative engineering gap, preserve historical executable regressions, remain fail-closed, and avoid converting source readiness into operational authority.
+Sprint136 is not considered started or complete merely because it is named here. Bounded discovery must first identify the smallest non-duplicative engineering gap, preserve Sprint130–Sprint135 executable ownership, remain fail-closed and deny-by-default, and avoid converting source readiness into operational authority.
 
 ## 7. Documentation responsibility model
 
-To prevent another documentation drift:
-
-- `PROJECT_MANIFEST.md` — canonical current project state and lifecycle truth;
-- `README.md` — concise repository entry point and current status summary;
-- `CHANGELOG.md` — chronological material-change summary, not a second state database;
+- `PROJECT_MANIFEST.md` — canonical human-readable current project/lifecycle state;
+- `README.md` — concise entry-point summary;
+- `CHANGELOG.md` — material chronology;
 - `TASKS.md` — current completed/pending workboard;
-- `ROADMAP.md` — forward-looking sequencing and gates;
-- per-sprint files under `docs/` — detailed bounded engineering evidence;
-- `ops/final-shift-close/*.json` — machine-readable operational gate authority;
-- Git history / merged PRs — immutable implementation provenance.
+- `ROADMAP.md` — forward sequencing and lifecycle gates;
+- `docs/SPRINT*.md` — detailed bounded sprint evidence;
+- `ops/final-shift-close/*.json` — machine-readable operational authority;
+- merged PRs and Git history — immutable implementation provenance.
 
-Historical status sections in technical handbooks may describe the state at the time they were written. They are provenance, not the current project-state authority.
+Historical status sections in technical handbooks remain provenance and do not override this manifest.
 
 ## 8. Update rule
 
-Every future closed sprint that materially changes project state should update this manifest, README, TASKS, ROADMAP, and CHANGELOG in the same bounded documentation reconciliation or explicitly record why no update is required. Current status must never be inferred from an old sprint heading left at the top of a handbook.
+Every material closed sprint must reconcile this manifest and the four root summary documents in the closure/handoff, or explicitly record why no current-state update is required. Current project status must never be inferred from a stale historical sprint heading.
 
 Author by Lab | zefry

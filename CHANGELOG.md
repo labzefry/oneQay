@@ -4,15 +4,37 @@ This changelog records **material canonical progress**, not every intermediate c
 
 Current project-state authority: [`PROJECT_MANIFEST.md`](PROJECT_MANIFEST.md).
 
+## 2026-09-12 — Post-Sprint135 canonical documentation reconciliation
+
+- Advanced all root current-state documents from Sprint134 to Sprint135 immediately after engineering closure.
+- Kept `PROJECT_MANIFEST.md` as the canonical human-readable status authority.
+- Moved the next bounded engineering position to Sprint136 discovery without preselecting a Sprint136 implementation.
+- Converted the Sprint135 active full-envelope workflow into successor-compatible historical ownership while preserving its executable regression, contract invariants, Sprint134 regression preservation, and operational NO-GO assertions.
+- No application runtime, schema execution, migration execution, permission provisioning, activation, deployment, release, Production, Technical Preview, or updater authority is created by this documentation reconciliation.
+
+## 2026-09-12 — Sprint135 closed
+
+**Sprint135: canonical control-plane positive registration metadata regression**
+
+- PR #686 squash merged.
+- Canonical engineering commit: `c13ea1e468154fc1997a48ad5ce7c0132ddbc1c9`.
+- Parent canonical checkpoint: `3bc22b9f31b9855ea15b750cd67af1d13537a93c`.
+- Added CI-only cross-provider positive registration metadata qualification using one canonical-minimum valid synthetic token.
+- Proved both Final Shift Close control-plane routes are simultaneously registered with the intended URI, controller action, HTTP methods, throttle, and token middleware.
+- Proved positive route registration itself remains inert: production writer, materializer, DB identity reader, DB attestation service, and controllers remain unresolved; no control-plane request is sent.
+- Exact Sprint135 engineering envelope: four paths.
+- Frozen envelope SHA-256: `628d99da2ce7f65938dc12df387c829748e36c4a8d8cab18a08eb5402fcf78fc`.
+- Exact-head pull-request qualification: 19/19 workflow runs successful.
+- Product Owner merge-authority workflow run `34683875845` completed successfully.
+- Operational NO-GO state remained unchanged.
+
 ## 2026-09-12 — Post-Sprint134 canonical documentation reconciliation
 
-### Documentation governance
-
-- Reconciled root project-state documents that were still reporting post-Sprint48/post-Sprint54 state.
+- Reconciled root project-state documents that had still reported post-Sprint48/post-Sprint54 state.
 - Established `PROJECT_MANIFEST.md` as the single canonical human-readable current-state authority.
 - Defined README as concise entry-point status, TASKS as current workboard, ROADMAP as forward sequencing, and CHANGELOG as material chronology.
+- Made the Sprint134 workflow successor-compatible after its canonical merge.
 - Preserved the distinction between source engineering readiness and operational activation.
-- No application source, schema, runtime, migration execution, permission provisioning, activation, deployment, release, updater, or production authority is created by this documentation reconciliation.
 
 ## 2026-09-12 — Sprint134 closed
 
@@ -20,12 +42,10 @@ Current project-state authority: [`PROJECT_MANIFEST.md`](PROJECT_MANIFEST.md).
 
 - PR #684 squash merged.
 - Canonical engineering commit: `185cbe9ddd4346b9d8c9e7ac7af283a20b9617bd`.
-- Added CI-only delivery-gate registration regression proving both Final Shift Close control-plane routes remain absent for a canonical-length token containing a disallowed character.
-- Preserved Sprint133 historical successor compatibility and transferred full active-envelope ownership to Sprint134 workflow.
+- Added CI-only delivery-gate registration regression proving both control-plane routes remain absent for a canonical-length token containing a disallowed character.
 - Exact Sprint134 source envelope: five paths.
 - Frozen path SHA-256: `73b87b460ef349a05ab801d10fc6dd4a19d056625f4a042ff621ab96a12d2c0e`.
-- Exact-head pull-request qualification: 18/18 workflow runs successful.
-- Product Owner merge-authority workflow completed successfully.
+- Exact-head qualification: 18/18 workflow runs successful.
 - Operational NO-GO state remained unchanged.
 
 ## 2026-09-12 — Sprint130–Sprint133 canonical control-plane hardening
@@ -37,65 +57,50 @@ Current project-state authority: [`PROJECT_MANIFEST.md`](PROJECT_MANIFEST.md).
 
 ### Sprint132
 
-- Added CI-only synthetic direct-controller positive-path regression.
-- Qualified synthetic HTTP success behavior without turning the canonical operational routes or production adapters into an activated runtime path.
+- Added CI-only synthetic direct-controller positive-path regression without activating operational routes or production adapters.
 
 ### Sprint131
 
 - Added CI-only synthetic middleware positive-path regression for canonical bearer handling.
-- Preserved no-real-route/no-operational-target boundary.
 
 ### Sprint130
 
-- Established canonical runtime control-plane token policy.
+- Established the canonical runtime control-plane token policy.
 - Canonical token length: minimum 32, maximum 512.
 - Canonical allowed-character policy: `[A-Za-z0-9._~+=/-]`.
-- Preserved exact bearer semantics, fail-closed invalid token handling, and constant-time comparison behavior where applicable.
+- Preserved exact bearer semantics and fail-closed invalid-token handling.
 
 ## 2026-09-05 onward — Final Shift Close readiness and runtime-control-plane chain
 
-The repository transitioned from cash-variance/JRN readiness into a bounded Final Shift Close engineering sequence.
-
 Material milestones include:
 
-- **Sprint88** — materialized Final Shift Close migration #27 as **source-only**, explicitly `NOT_EXECUTED` and not operationally activated.
-- **Sprint89** — selected the Final Shift Close application-readiness contract and fail-closed prerequisites.
-- Subsequent bounded sprints established and hardened application/service boundaries, provider behavior, runtime-binding manifest foundations, DB-binding attestation, runtime authorization controls, historical compatibility, token policy, controller qualification, and delivery-registration gates.
-- The chain culminated in Sprint130–Sprint134 canonical runtime-control-plane regression coverage.
+- **Sprint88** — migration #27 materialized as source-only and explicitly `NOT_EXECUTED`.
+- **Sprint89** — Final Shift Close application-readiness contract and fail-closed prerequisites.
+- Later bounded sprints established and hardened application/service boundaries, provider behavior, runtime-binding manifest foundations, DB-binding attestation, authorization, target-readiness, historical compatibility, token policy, controller qualification, and route-registration gates.
+- The canonical control-plane hardening chain currently reaches Sprint135.
 
 Throughout this sequence, migration execution, permission provisioning, deployment, Technical Preview activation, Production activation, and updater activation remained separately gated.
 
 ## 2026-09-03 to 2026-09-04 — JRN-010 cash-variance and reviewer-control chain
 
-Material post-Sprint54 progress includes:
+Representative material milestones:
 
-- **Sprint55** — bounded expected-cash derivation entry gate.
-- **Sprint56+** — immutable sale-to-shift binding and related prerequisite qualification.
-- **Sprint61–Sprint63** — cash-variance entry/source-readiness and frozen source-envelope work.
-- **Sprint64** — replayed/published cash-variance source foundation.
-- **Sprint65+** — cash-variance adjudication readiness.
-- **Sprint69–Sprint70** — variance-explanation source envelope and durable cash-variance explanation foundation.
-- **Sprint71+** — explanation-author authorization and subsequent review-decision/maker-checker controls.
-- **Sprint79–Sprint80** — review-decision source foundation followed by dedicated scoped cash-variance reviewer authorization policy and implementation qualification.
+- **Sprint55** — expected-cash derivation entry gate;
+- **Sprint64** — cash-variance source foundation;
+- **Sprint70** — durable cash-variance explanation foundation;
+- **Sprint80** — scoped cash-variance reviewer authorization policy and implementation chain.
 
-These changes materially advanced POS/JRN evidence and authorization controls while preserving fail-closed lifecycle boundaries.
+The broader chain established immutable sale-to-shift binding, cash-variance evidence, explanation/adjudication, maker-checker, and reviewer authorization foundations while preserving fail-closed lifecycle controls.
 
 ## Earlier canonical engineering history
 
-Before Sprint55, the repository had already established the main architecture/governance platform and bounded POS foundations, including:
+Earlier repository work established the architecture/governance platform, authentication/session hardening, bounded POS sale/payment/receipt foundations, catalog preparation, shift/register opening, CI/governance controls, updater/deployment safety foundations, and historical regression preservation.
 
-- tenant-aware modular architecture and deny-by-default authorization;
-- authentication/MFA/session hardening chains;
-- POS sale completion/payment/receipt evidence foundation;
-- tenant/outlet-scoped catalog preparation;
-- shift/register opening foundation;
-- governance, CI, historical regression, updater/deployment control, and exact-head merge controls.
-
-The previous root changelog contained very granular per-sprint reconciliation text through post-Sprint48/post-Sprint54. Those entries remain recoverable from Git history and corresponding `docs/SPRINT*.md` evidence. This reconciled changelog intentionally removes the false impression that those old headings are the current state.
+Detailed historical provenance remains in Git history and per-sprint evidence rather than being duplicated into this current changelog.
 
 ## Current lifecycle boundary
 
-As of the post-Sprint134 engineering checkpoint:
+As of the post-Sprint135 engineering checkpoint:
 
 - migration #27 execution: `NOT_EXECUTED`;
 - permission provisioning: `NONE`;
