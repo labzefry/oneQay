@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "feature": "final-shift-close",
+  "sprint": 133,
+  "bounded_objective": "CANONICAL_CONTROL_PLANE_CONTROLLER_FAIL_CLOSED_REGRESSION",
+  "execution_mode": "CI_ONLY_SYNTHETIC_CONTROLLER_FAIL_CLOSED_REGRESSION",
+  "qualification": {
+    "materialization_invalid_field_set_controller_direct_invocation": "SYNTHETIC_HTTP_422",
+    "materialization_invalid_field_set_error_contract": "invalid_request",
+    "materialization_invalid_field_set_writer_invocation_count": 0,
+    "materialization_application_failure_controller_direct_invocation": "SYNTHETIC_HTTP_503",
+    "materialization_application_failure_error_contract": "materialization_unavailable",
+    "materialization_failure_information_exposure": "NONE",
+    "materialization_response_protections": "NO_STORE_PRIVATE_PRAGMA_NO_CACHE_NOINDEX",
+    "db_attestation_application_failure_controller_direct_invocation": "SYNTHETIC_HTTP_503",
+    "db_attestation_identity_reader_failure_controller_direct_invocation": "SYNTHETIC_HTTP_503",
+    "db_attestation_error_contract": "RUNTIME_DB_BINDING_ATTESTATION_UNAVAILABLE",
+    "db_attestation_failure_information_exposure": "NONE",
+    "db_attestation_response_protections": "NO_STORE_PRIVATE_PRAGMA_NO_CACHE_NOSNIFF_NOINDEX",
+    "synthetic_fixture_scope": "ISOLATED_TEST_OWNED_TEMPORARY_DIRECTORY",
+    "real_route_invocation": false,
+    "production_container_service_resolution": false,
+    "real_filesystem_adapter_invocation": false,
+    "real_database_connection": false,
+    "real_database_identity_read": false
+  },
+  "successor_compatibility": {
+    "sprint132_full_pr_envelope_lock": "REMOVED_FROM_HISTORICAL_WORKFLOW",
+    "sprint132_owned_controller_positive_path_regression": "PRESERVED",
+    "active_sprint_envelope_authority": "SPRINT133_WORKFLOW_ONLY"
+  },
+  "source_envelope": {
+    "path_count": 5,
+    "sha256": "2be909fed12150b2f831ab6ae9877e9609859c1a1b81792d165f79771ac31786"
+  },
+  "canonical_boundaries": {
+    "valid_operational_control_plane_request": "NOT_PERFORMED",
+    "real_route_invocation": "NOT_PERFORMED",
+    "production_container_service_resolution": "NOT_PERFORMED",
+    "real_filesystem_adapter_invocation": "NOT_PERFORMED",
+    "canonical_runtime_manifest_write": "NOT_PERFORMED",
+    "real_database_connection": "NOT_PERFORMED",
+    "real_database_identity_read": "NOT_PERFORMED",
+    "runtime_configuration_mutation": "NOT_PERFORMED",
+    "runtime_token_provisioning": "NOT_PERFORMED",
+    "canonical_runtime_manifest_materialization": "NOT_PERFORMED",
+    "operational_runtime_db_binding_attestation": "NOT_PERFORMED",
+    "selected_target": null,
+    "db_binding_producer_dispatch": "NOT_PERFORMED",
+    "migration27_execution": "NOT_PERFORMED",
+    "permission_provisioning": "NONE",
+    "feature_activation": "INACTIVE",
+    "deployment_authority": "NOT_GRANTED",
+    "technical_preview": "NO-GO",
+    "production": "NO-GO",
+    "updater": "INACTIVE"
+  },
+  "attribution": "Author by Lab | zefry"
+}
