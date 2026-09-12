@@ -1,7 +1,7 @@
 # Sprint140 — Final Shift Close Canonical Control Plane Auth Rejection Response Hardening Regression
 
-**Product:** oneQay — The Future of Intelligent Business Management  
-**Owner / attribution:** Lab | zefry  
+**Product:** oneQay — The Future of Intelligent Business Management
+**Owner / attribution:** Lab | zefry
 **Execution mode:** `CI_ONLY_SYNTHETIC_AUTH_REJECTION_RESPONSE_HARDENING_REGRESSION`
 
 ## Objective
@@ -31,24 +31,35 @@ Canonical-valid matching bearer credentials must still pass to the next middlewa
 
 ## Source boundary
 
-Exactly six paths are authorized for Sprint140:
+Exactly nine paths are authorized for Sprint140:
 
-1. `.github/workflows/sprint140-final-shift-close-canonical-control-plane-auth-rejection-response-hardening-regression.yml`
-2. `apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware.php`
-3. `apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingTokenMiddleware.php`
-4. `apps/web/tests/final-shift-close-runtime-control-plane-auth-rejection-response-hardening-regression.php`
-5. `docs/SPRINT140_FINAL_SHIFT_CLOSE_CANONICAL_CONTROL_PLANE_AUTH_REJECTION_RESPONSE_HARDENING_REGRESSION.md`
-6. `ops/final-shift-close/CANONICAL_RUNTIME_CONTROL_PLANE_AUTH_REJECTION_RESPONSE_HARDENING_REGRESSION_CONTRACT.json`
+1. `.github/workflows/sprint126-final-shift-close-runtime-binding-manifest-control-plane-token-hardening.yml`
+2. `.github/workflows/sprint130-final-shift-close-canonical-runtime-control-plane-token-policy.yml`
+3. `.github/workflows/sprint131-final-shift-close-canonical-control-plane-positive-path-regression.yml`
+4. `.github/workflows/sprint140-final-shift-close-canonical-control-plane-auth-rejection-response-hardening-regression.yml`
+5. `apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingManifestMaterializationTokenMiddleware.php`
+6. `apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingTokenMiddleware.php`
+7. `apps/web/tests/final-shift-close-runtime-control-plane-auth-rejection-response-hardening-regression.php`
+8. `docs/SPRINT140_FINAL_SHIFT_CLOSE_CANONICAL_CONTROL_PLANE_AUTH_REJECTION_RESPONSE_HARDENING_REGRESSION.md`
+9. `ops/final-shift-close/CANONICAL_RUNTIME_CONTROL_PLANE_AUTH_REJECTION_RESPONSE_HARDENING_REGRESSION_CONTRACT.json`
 
 Sorted newline-terminated path SHA-256:
 
-`774f7d28ba9544455f1db7ac74a543482dd5fa352d27942843cb427fe9de7a40`
+`43b358e86402863925ec2f9c246ae20aa5a47228ec21aa2ded43cdf8b19a257e`
+
+## Historical workflow compatibility correction
+
+Initial exact-head CI correctly exposed three historical workflows whose static source-shape assertions still required the pre-Sprint140 materialization implementation to contain literal `abort(503)` and `abort(401)` calls. Sprint140 intentionally replaced those calls with explicit `rejectionResponse(503)` and `rejectionResponse(401)` responses so privacy/security headers can be attached without changing the owned HTTP status semantics.
+
+The bounded compatibility correction updates only Sprint126, Sprint130, and Sprint131 workflow assertions to recognize the hardened representation. Their executable token-policy, route-registration, positive-path, and fail-closed disposition tests remain preserved. No dummy, commented, or dead `abort()` text is introduced to manufacture a green result.
 
 ## Historical ownership preserved
 
 Sprint140 preserves:
 
-- Sprint130 canonical token policy;
+- Sprint126 materialization token-hardening semantics and executable registration checks;
+- Sprint130 canonical token policy and executable disposition matrix;
+- Sprint131 canonical middleware positive-path and fail-closed regressions;
 - Sprint134 route-absence delivery-gate qualification;
 - Sprint135 canonical-valid registration metadata and inertness;
 - Sprint136 authenticated HTTP positive path;
@@ -78,6 +89,6 @@ The current operational NO-GO state remains authoritative.
 
 ## Success criteria
 
-Sprint140 is complete only after the exact six-path envelope is qualified on an exact PR head, all required workflows are terminal successful, repository-native Product Owner merge authority succeeds for that exact head, final race checks remain clean, the PR is squash merged with an expected-head guard, and post-merge verification confirms the exact bounded delta and unchanged operational NO-GO state.
+Sprint140 is complete only after the exact nine-path envelope is qualified on an exact PR head, all required workflows are terminal successful, repository-native Product Owner merge authority succeeds for that exact head, final race checks remain clean, the PR is squash merged with an expected-head guard, and post-merge verification confirms the exact bounded delta and unchanged operational NO-GO state.
 
 Author by Lab | zefry
