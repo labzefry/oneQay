@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "feature": "final-shift-close",
+  "sprint": 138,
+  "bounded_objective": "CANONICAL_CONTROL_PLANE_AUTHENTICATED_HTTP_THROTTLE_REGRESSION",
+  "execution_mode": "CI_ONLY_SYNTHETIC_AUTHENTICATED_HTTP_THROTTLE_REGRESSION",
+  "qualification": {
+    "dispatch_mode": "IN_PROCESS_CANONICAL_HTTP_KERNEL",
+    "new_executable_gap": "CROSS_PROVIDER_CANONICAL_VALID_TOKEN_AUTHENTICATED_HTTP_THROTTLE_ENFORCEMENT_WITHOUT_REPEATED_SIDE_EFFECT",
+    "canonical_token_policy_owner": "SPRINT130",
+    "fixture_length": "CANONICAL_MINIMUM",
+    "fixture_canonical_validity": true,
+    "shared_fixture_across_both_control_planes": true,
+    "cache_store": "ARRAY_TEST_PROCESS_ONLY",
+    "materialization": {
+      "route_name": "internal.final-shift-close.runtime-binding-manifest.materialize",
+      "method": "POST",
+      "configured_throttle": "1,1",
+      "first_request_status": 200,
+      "excess_request_status": 429,
+      "writer": "IN_MEMORY_TEST_DOUBLE",
+      "writer_invocations_after_first_request": 1,
+      "writer_invocations_after_excess_request": 1,
+      "production_writer_bomb_resolution_attempts": 0,
+      "canonical_runtime_manifest_write": false
+    },
+    "db_attestation": {
+      "route_name": "internal.final-shift-close.runtime-db-binding-attestation",
+      "method": "GET",
+      "configured_throttle": "2,1",
+      "first_request_status": 200,
+      "second_request_status": 200,
+      "excess_request_status": 429,
+      "database_identity_reader": "IN_MEMORY_TEST_DOUBLE",
+      "reader_invocations_after_two_allowed_requests": 2,
+      "reader_invocations_after_excess_request": 2,
+      "production_database_identity_reader_bomb_resolution_attempts": 0,
+      "real_database_connection": false,
+      "real_database_identity_read": false,
+      "attestation_mode": "READ_ONLY",
+      "migration27_state": "NOT_EXECUTED"
+    },
+    "real_route": true,
+    "real_token_middleware": true,
+    "real_throttle_middleware": true,
+    "real_controller_for_allowed_requests": true,
+    "valid_operational_control_plane_request": false,
+    "operational_runtime_token": false,
+    "response_leakage": "FORBIDDEN"
+  },
+  "historical_ownership": {
+    "sprint130_token_policy": "PRESERVED",
+    "sprint135_registration_metadata": "PRESERVED",
+    "sprint136_authenticated_http_positive_path": "PRESERVED",
+    "sprint137_authenticated_http_fail_closed": "PRESERVED"
+  },
+  "successor_compatibility": {
+    "sprint137_historical_workflow": "SUCCESSOR_COMPATIBLE",
+    "sprint137_full_pr_envelope_lock": "ABSENT",
+    "active_sprint_envelope_authority": "SPRINT138_WORKFLOW_ONLY"
+  },
+  "source_envelope": {
+    "path_count": 4,
+    "sha256": "b26aae5dde0a1c39a2cbfbe494ed628ee8eb8c64597404caf17a01def13fe0ab"
+  },
+  "canonical_boundaries": {
+    "synthetic_authenticated_http_route_invocation": "PERFORMED_IN_TEST_PROCESS_ONLY",
+    "operational_control_plane_request": "NOT_PERFORMED",
+    "production_filesystem_adapter_resolution": "NOT_PERFORMED",
+    "canonical_runtime_manifest_write": "NOT_PERFORMED",
+    "production_database_identity_reader_resolution": "NOT_PERFORMED",
+    "real_database_connection": "NOT_PERFORMED",
+    "real_database_identity_read": "NOT_PERFORMED",
+    "runtime_token_provisioning": "NOT_PERFORMED",
+    "selected_target": null,
+    "migration27_execution": "NOT_PERFORMED",
+    "permission_provisioning": "NONE",
+    "feature_activation": "INACTIVE",
+    "deployment_authority": "NOT_GRANTED",
+    "technical_preview": "NO-GO",
+    "production": "NO-GO",
+    "updater": "INACTIVE"
+  },
+  "attribution": "Author by Lab | zefry"
+}
