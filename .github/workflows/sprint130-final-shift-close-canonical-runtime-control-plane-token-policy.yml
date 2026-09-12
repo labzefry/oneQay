@@ -105,9 +105,9 @@ jobs:
             ! grep -Fq '[A-Za-z0-9._~+=\/-]{32,512}' "$middleware"
           done
 
-          grep -Fq 'abort(503);' "$materialization_middleware"
-          grep -Fq 'abort(401);' "$materialization_middleware"
-          grep -Fq "response('', 404" "$db_middleware"
+          grep -Fq 'return $this->rejectionResponse(503);' "$materialization_middleware"
+          grep -Fq 'return $this->rejectionResponse(401);' "$materialization_middleware"
+          grep -Fq "return response('', 404" "$db_middleware"
           grep -Fq "'Cache-Control' => 'no-store, private'" "$db_middleware"
           grep -Fq "'throttle:1,1'" "$materialization_provider"
           grep -Fq "'throttle:2,1'" "$db_provider"
