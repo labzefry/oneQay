@@ -193,7 +193,7 @@ jobs:
           ! grep -Fq 'FilesystemFinalShiftCloseRuntimeBindingManifestWriter' "$test_file"
           ! grep -Fq 'LaravelFinalShiftCloseRuntimeDatabaseIdentityReader' "$test_file"
           ! grep -Fq "connection('oneqay')" "$test_file"
-          ! grep -Fq '->materialize(' "$test_file"
+          ! grep -Fq -- '->materialize(' "$test_file"
 
       - name: Validate PHP syntax and locked dependencies
         working-directory: apps/web
