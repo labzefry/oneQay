@@ -24,13 +24,19 @@ final class RequireFinalShiftCloseRuntimeBindingTokenMiddleware
             || $providedToken === null
             || ! hash_equals($this->expectedToken, $providedToken)
         ) {
-            return response('', 404, [
-                'Cache-Control' => 'no-store, private',
-                'Pragma' => 'no-cache',
-                'X-Content-Type-Options' => 'nosniff',
-            ]);
+            return $this->rejectionResponse();
         }
 
         return $next($request);
+    }
+
+    private function rejectionResponse(): Response
+    {
+        return response('', 404, [
+            'Cache-Control' => 'no-store, private',
+            'Pragma' => 'no-cache',
+            'X-Content-Type-Options' => 'nosniff',
+            'X-Robots-Tag' => 'noindex, nofollow, noarchive',
+        ]);
     }
 }
