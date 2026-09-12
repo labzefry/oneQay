@@ -37,7 +37,7 @@ Exactly nine paths are authorized for Sprint140:
 2. `.github/workflows/sprint130-final-shift-close-canonical-runtime-control-plane-token-policy.yml`
 3. `.github/workflows/sprint131-final-shift-close-canonical-control-plane-positive-path-regression.yml`
 4. `.github/workflows/sprint140-final-shift-close-canonical-control-plane-auth-rejection-response-hardening-regression.yml`
-5. `apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingManifestMaterializationTokenMiddleware.php`
+5. `apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware.php`
 6. `apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingTokenMiddleware.php`
 7. `apps/web/tests/final-shift-close-runtime-control-plane-auth-rejection-response-hardening-regression.php`
 8. `docs/SPRINT140_FINAL_SHIFT_CLOSE_CANONICAL_CONTROL_PLANE_AUTH_REJECTION_RESPONSE_HARDENING_REGRESSION.md`
@@ -45,7 +45,9 @@ Exactly nine paths are authorized for Sprint140:
 
 Sorted newline-terminated path SHA-256:
 
-`43b358e86402863925ec2f9c246ae20aa5a47228ec21aa2ded43cdf8b19a257e`
+`58f0fe3105a12fc3c6cac98e736743349237a5221a63376f668358c5c09fe1b3`
+
+The initial corrected-envelope draft accidentally used the non-existent path segment `RuntimeBindingManifestMaterializationTokenMiddleware.php`. Exact-head CI rejected that fingerprint before any executable step. The envelope is corrected here to the actual canonical source path `RuntimeBindingMaterializationTokenMiddleware.php`; the bounded nine-file set itself is unchanged.
 
 ## Historical workflow compatibility correction
 
