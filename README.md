@@ -8,13 +8,13 @@ Enterprise-oriented business-management platform built with a Modular Monolith F
 
 ## Current canonical status
 
-The latest closed **engineering** sprint is **Sprint135**.
+The latest closed **engineering** sprint is **Sprint136**.
 
-- Canonical engineering commit: `c13ea1e468154fc1997a48ad5ce7c0132ddbc1c9`
-- Latest engineering PR: #686 — `Sprint135: canonical control-plane positive registration metadata regression`
-- Sprint135 pull-request qualification: **19/19 workflow runs successful** on the exact authorized head
-- Sprint135 merge: squash merged with exact-head guard
-- Next engineering position: **Sprint136 bounded discovery**, not yet treated as started or complete
+- Canonical engineering commit: `2a92a870d9c8388bdb9ac4f516e9d671237ce116`
+- Latest engineering PR: #688 — `Sprint136: canonical control-plane authenticated HTTP positive path regression`
+- Sprint136 pull-request qualification: **20/20 workflow runs successful** on the exact authorized head
+- Sprint136 merge: squash merged with exact-head guard
+- Next engineering position: **Sprint137 bounded discovery**, not yet treated as started or complete
 
 For the full current project state, use **[`PROJECT_MANIFEST.md`](PROJECT_MANIFEST.md)** as the canonical human-readable source of truth.
 
@@ -29,7 +29,7 @@ Material canonical progress includes:
 - JRN-010 prerequisite work covering expected cash, immutable sale-to-shift binding, cash variance, explanation/adjudication, maker-checker, and reviewer authorization;
 - Final Shift Close source/readiness work including source-only migration #27 and application/runtime readiness contracts;
 - runtime-binding manifest, database-binding attestation, authorization, token-policy, middleware/controller, and delivery-gate regression chains;
-- Sprint130–Sprint135 canonical control-plane hardening, culminating in positive cross-provider route-registration metadata qualification that remains synthetic and inert.
+- Sprint130–Sprint136 canonical control-plane hardening, culminating in a synthetic authenticated HTTP positive path through the registered routes, canonical token middleware, and real controllers while production filesystem/database side-effect adapters remain unresolved.
 
 Detailed chronology is in [`CHANGELOG.md`](CHANGELOG.md), current work is in [`TASKS.md`](TASKS.md), and future sequencing is in [`ROADMAP.md`](ROADMAP.md).
 
@@ -84,6 +84,6 @@ No README wording grants deployment, release, migration execution, permission pr
 
 ## Documentation freshness rule
 
-Every material sprint closure must reconcile the canonical state documents promptly. Detailed historical evidence stays in per-sprint documents and Git history; root status documents remain concise, current, and non-contradictory.
+Every material sprint closure must reconcile the canonical state documents promptly and make the just-closed sprint workflow successor-compatible. Detailed historical evidence stays in per-sprint documents and Git history; root status documents remain concise, current, and non-contradictory.
 
 Author by Lab | zefry
