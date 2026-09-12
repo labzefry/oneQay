@@ -1,12 +1,12 @@
 # oneQay Tasks
 
-**Current engineering checkpoint:** post-Sprint136
-**Canonical engineering commit:** `2a92a870d9c8388bdb9ac4f516e9d671237ce116`
+**Current engineering checkpoint:** post-Sprint137
+**Canonical engineering commit:** `62196919fb2c2a172bc0a290159aa26a045d4ed9`
 **Canonical status authority:** `PROJECT_MANIFEST.md`
 
 This file is the current workboard. It separates **completed source engineering**, **next bounded engineering**, and **operational actions that remain unauthorized**.
 
-## Completed through Sprint136
+## Completed through Sprint137
 
 - [x] Core modular-monolith architecture and repository governance foundation
 - [x] Tenant-context-first and deny-by-default authorization foundations
@@ -26,39 +26,40 @@ This file is the current workboard. It separates **completed source engineering*
 - [x] Canonical control-plane delivery-gate registration regression — Sprint134
 - [x] Canonical cross-provider positive registration metadata regression — Sprint135
 - [x] Canonical authenticated HTTP route → middleware → controller positive-path regression — Sprint136
-- [x] Sprint136 PR #688 squash merged
-- [x] Sprint136 exact-head pull-request qualification — 20/20 successful
-- [x] Sprint136 Product Owner merge-authority workflow run `34685054761` successful
-- [x] Sprint136 post-merge operational NO-GO verification
+- [x] Canonical authenticated HTTP route → middleware → controller fail-closed regression — Sprint137
+- [x] Sprint137 PR #690 squash merged
+- [x] Sprint137 exact-head pull-request qualification — 21/21 successful
+- [x] Sprint137 Product Owner merge-authority workflow run `34700386217` successful
+- [x] Sprint137 post-merge operational NO-GO verification
 
-## Post-Sprint136 documentation reconciliation
+## Post-Sprint137 documentation reconciliation
 
-- [x] Advance `PROJECT_MANIFEST.md` to Sprint136 engineering truth
-- [x] Advance `README.md` to Sprint136 current status
-- [x] Record Sprint136 closure in `CHANGELOG.md`
+- [x] Advance `PROJECT_MANIFEST.md` to Sprint137 engineering truth
+- [x] Advance `README.md` to Sprint137 current status
+- [x] Record Sprint137 closure in `CHANGELOG.md`
 - [x] Advance `TASKS.md` current workboard
-- [x] Advance `ROADMAP.md` completed engineering horizon and Sprint137 next position
-- [x] Convert Sprint136 full-envelope workflow ownership to successor-compatible historical regression ownership
+- [x] Advance `ROADMAP.md` completed engineering horizon and Sprint138 next position
+- [x] Convert Sprint137 full-envelope workflow ownership to successor-compatible historical regression ownership
 
-Publication vehicle: this bounded post-Sprint136 reconciliation pull request. GitHub PR/CI state is authoritative for its transient publication status.
+GitHub PR/CI state remains authoritative for the transient publication status of this bounded reconciliation.
 
 ## Next bounded engineering
 
-### Sprint137 — bounded discovery next
+### Sprint138 — bounded discovery next
 
-Sprint137 has **not** been selected, started, or completed merely because it is named here.
+Sprint138 has **not** been selected, started, or completed merely because it is named here.
 
 The next engineering activity must:
 
-- discover the smallest remaining non-duplicative executable gap from canonical post-Sprint136;
-- preserve Sprint130–Sprint136 control-plane ownership and historical regressions;
+- discover the smallest remaining non-duplicative executable gap from canonical post-Sprint137;
+- preserve Sprint130–Sprint137 control-plane ownership and historical regressions;
 - preserve existing POS/JRN evidence;
 - remain fail-closed and deny-by-default;
 - avoid operational adapter invocation or runtime-token provisioning unless separately authorized;
 - freeze a bounded source envelope before implementation;
 - qualify the exact PR head before merge.
 
-No specific Sprint137 implementation is canonical until bounded discovery freezes the objective and envelope.
+No specific Sprint138 implementation is canonical until bounded discovery freezes the objective and envelope.
 
 ## Operational blockers / separate authority required
 
