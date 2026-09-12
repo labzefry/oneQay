@@ -1,11 +1,11 @@
 # oneQay Project Manifest
 
-**Product:** oneQay — The Future of Intelligent Business Management  
-**Repository owner / attribution:** Lab | zefry  
-**Default branch:** `main`  
-**Canonical engineering checkpoint:** Sprint134  
-**Canonical engineering commit:** `185cbe9ddd4346b9d8c9e7ac7af283a20b9617bd`  
-**Latest engineering PR:** #684 — `Sprint134: canonical control-plane delivery gate registration regression`  
+**Product:** oneQay — The Future of Intelligent Business Management
+**Repository owner / attribution:** Lab | zefry
+**Default branch:** `main`
+**Canonical engineering checkpoint:** Sprint134
+**Canonical engineering commit:** `185cbe9ddd4346b9d8c9e7ac7af283a20b9617bd`
+**Latest engineering PR:** #684 — `Sprint134: canonical control-plane delivery gate registration regression`
 **Status date:** 2026-09-12
 
 > This file is the canonical human-readable source of truth for current oneQay project status. README, CHANGELOG, TASKS, and ROADMAP must summarize or reference this manifest rather than independently inventing a newer project state. Per-sprint documents and Git history remain the detailed evidence trail.
