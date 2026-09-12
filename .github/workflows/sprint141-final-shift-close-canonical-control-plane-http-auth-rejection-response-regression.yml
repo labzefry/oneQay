@@ -209,7 +209,7 @@ jobs:
           set -euo pipefail
           grep -Fq 'Sprint141' docs/SPRINT141_FINAL_SHIFT_CLOSE_CANONICAL_CONTROL_PLANE_HTTP_AUTH_REJECTION_RESPONSE_REGRESSION.md
           grep -Fq 'b75d55835722110dee38759068ce3f527efc0ecdbd2201f4fde9b4372211641a' docs/SPRINT141_FINAL_SHIFT_CLOSE_CANONICAL_CONTROL_PLANE_HTTP_AUTH_REJECTION_RESPONSE_REGRESSION.md
-          ! grep -Fq 'workflow_dispatch' .github/workflows/sprint141-final-shift-close-canonical-control-plane-http-auth-rejection-response-regression.yml
+          ! grep -Eq '^[[:space:]]*workflow_dispatch[[:space:]]*:' .github/workflows/sprint141-final-shift-close-canonical-control-plane-http-auth-rejection-response-regression.yml
 
       - name: Verify tracked-source cleanliness
         shell: bash
