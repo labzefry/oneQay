@@ -34,22 +34,18 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
-      - name: Lock exact Sprint131 source envelope
+      - name: Preserve successor-compatible historical regression boundary
         shell: bash
         run: |
           set -euo pipefail
           base="${{ github.event.pull_request.base.sha }}"
           head="${{ github.event.pull_request.head.sha }}"
           git diff --name-only "$base" "$head" | LC_ALL=C sort > /tmp/paths
-          cat > /tmp/expected <<'EOF'
-          .github/workflows/sprint130-final-shift-close-canonical-runtime-control-plane-token-policy.yml
-          .github/workflows/sprint131-final-shift-close-canonical-control-plane-positive-path-regression.yml
-          apps/web/tests/final-shift-close-runtime-control-plane-token-character-policy.php
-          docs/SPRINT131_FINAL_SHIFT_CLOSE_CANONICAL_CONTROL_PLANE_POSITIVE_PATH_REGRESSION.md
-          ops/final-shift-close/CANONICAL_RUNTIME_CONTROL_PLANE_POSITIVE_PATH_REGRESSION_CONTRACT.json
-          EOF
-          diff -u /tmp/expected /tmp/paths
-          [[ "$(sha256sum /tmp/paths | awk '{print $1}')" == '6549ac162090f316faad210ff3b6298640ee538aecb681f05ca49f616930dd6b' ]]
+          [[ -s /tmp/paths ]]
+          # Sprint131 is historical from Sprint132 onward and validates
+          # its owned canonical middleware positive-path invariant without owning the new full envelope.
+          # Historical regression workflows validate their owned invariants only.
+          # Exact full-PR envelope locking belongs to the active sprint workflow.
 
       - name: Prove Sprint130 historical successor compatibility
         shell: bash
