@@ -1,12 +1,12 @@
 # oneQay Tasks
 
-**Current engineering checkpoint:** post-Sprint134
-**Canonical engineering commit:** `185cbe9ddd4346b9d8c9e7ac7af283a20b9617bd`
+**Current engineering checkpoint:** post-Sprint135
+**Canonical engineering commit:** `c13ea1e468154fc1997a48ad5ce7c0132ddbc1c9`
 **Canonical status authority:** `PROJECT_MANIFEST.md`
 
-This file is the current workboard. It deliberately separates **completed source engineering**, **next bounded engineering**, and **operational actions that remain unauthorized**.
+This file is the current workboard. It separates **completed source engineering**, **next bounded engineering**, and **operational actions that remain unauthorized**.
 
-## Completed through Sprint134
+## Completed through Sprint135
 
 - [x] Core modular-monolith architecture and repository governance foundation
 - [x] Tenant-context-first and deny-by-default authorization foundations
@@ -14,61 +14,60 @@ This file is the current workboard. It deliberately separates **completed source
 - [x] POS shift/register opening foundation
 - [x] POS sale completion, payment recording, and receipt evidence foundation
 - [x] Tenant/outlet-scoped catalog preparation foundation
-- [x] JRN-010 prerequisite expected-cash derivation work
-- [x] Immutable sale-to-shift binding readiness/evidence work
-- [x] Cash-variance source readiness and durable source foundation
-- [x] Cash-variance adjudication/explanation evidence chain
-- [x] Maker-checker / scoped reviewer authorization hardening
+- [x] JRN-010 expected-cash and immutable sale-to-shift binding foundations
+- [x] Cash-variance source, explanation/adjudication, maker-checker, and reviewer authorization chain
 - [x] Final Shift Close migration #27 source materialization
-- [x] Final Shift Close application-readiness contract chain
+- [x] Final Shift Close application/runtime readiness chain
 - [x] Runtime binding / manifest / DB-binding attestation readiness chain
 - [x] Canonical runtime control-plane token policy — Sprint130
 - [x] Canonical middleware positive-path regression — Sprint131
 - [x] Canonical controller positive-path regression — Sprint132
 - [x] Canonical controller fail-closed regression — Sprint133
 - [x] Canonical control-plane delivery-gate registration regression — Sprint134
-- [x] Sprint134 PR #684 squash merged
-- [x] Sprint134 exact-head pull-request qualification — 18/18 successful
-- [x] Sprint134 Product Owner merge-authority workflow successful
+- [x] Canonical cross-provider positive registration metadata regression — Sprint135
+- [x] Sprint135 PR #686 squash merged
+- [x] Sprint135 exact-head pull-request qualification — 19/19 successful
+- [x] Sprint135 Product Owner merge-authority workflow run `34683875845` successful
+- [x] Sprint135 post-merge operational NO-GO verification
 
-## Current documentation reconciliation
+## Post-Sprint135 documentation reconciliation
 
-- [x] Detect stale root status documents still reporting post-Sprint48/post-Sprint54 state
-- [x] Establish `PROJECT_MANIFEST.md` as canonical human-readable project-state authority
-- [x] Reconcile `README.md` with post-Sprint134 engineering state
-- [x] Reconcile `TASKS.md` current workboard
-- [x] Reconcile `CHANGELOG.md` with material Sprint55–Sprint134 progress
-- [x] Reconcile `ROADMAP.md` with completed horizon and next bounded horizon
-- [x] Convert Sprint134 active full-envelope workflow lock into successor-compatible historical regression ownership
+- [x] Advance `PROJECT_MANIFEST.md` to Sprint135 engineering truth
+- [x] Advance `README.md` to Sprint135 current status
+- [x] Record Sprint135 closure in `CHANGELOG.md`
+- [x] Advance `TASKS.md` current workboard
+- [x] Advance `ROADMAP.md` completed engineering horizon and Sprint136 next position
+- [x] Convert Sprint135 full-envelope workflow ownership to successor-compatible historical regression ownership
 
-Publication vehicle: PR #685. GitHub PR/CI state is authoritative for the transient publication status; this file does not duplicate a stale pending/success flag.
+GitHub PR/CI state remains authoritative for transient publication status; this file intentionally avoids duplicating a pending/success flag for the documentation PR itself.
 
 ## Next bounded engineering
 
-### Sprint135 — not yet completed
+### Sprint136 — bounded discovery next
 
-The next engineering activity is **bounded discovery from canonical post-Sprint134**.
+Sprint136 has **not** been selected, started, or completed merely because it is named here.
 
-Sprint135 should:
+The next engineering activity must:
 
-- select only the smallest non-duplicative executable gap;
-- preserve the Sprint130–Sprint134 control-plane regression chain;
-- preserve historical POS/JRN regression evidence;
+- discover the smallest remaining non-duplicative executable gap from canonical post-Sprint135;
+- preserve Sprint130–Sprint135 control-plane ownership and historical regressions;
+- preserve existing POS/JRN evidence;
 - remain fail-closed and deny-by-default;
-- avoid operational adapter invocation unless separately authorized;
-- maintain exact-head qualification and bounded source-envelope governance.
+- avoid operational adapter invocation or runtime-token provisioning unless separately authorized;
+- freeze a bounded source envelope before implementation;
+- qualify the exact PR head before merge.
 
-No specific Sprint135 implementation should be treated as selected until bounded discovery freezes the objective and source envelope.
+No specific Sprint136 implementation is canonical until bounded discovery freezes the objective and envelope.
 
 ## Operational blockers / separate authority required
 
-These are **not engineering TODOs that may be silently executed**. They are lifecycle gates requiring their own authority and evidence.
+These are lifecycle gates, not engineering TODOs that may be silently executed.
 
 - [ ] Execute migration #27 — current state `NOT_EXECUTED`
 - [ ] Provision Final Shift Close permission — current state `NONE`
 - [ ] Activate Final Shift Close feature — current state `INACTIVE`
 - [ ] Qualify a non-synthetic durable activation target
-- [ ] Select a durable activation target — current selection is `null`
+- [ ] Select a durable activation target — current selection `null`
 - [ ] Perform real runtime-binding manifest materialization
 - [ ] Perform real operational DB-binding attestation
 - [ ] Grant deployment authority — current state `NOT_GRANTED`
@@ -76,16 +75,16 @@ These are **not engineering TODOs that may be silently executed**. They are life
 - [ ] Authorize Production activation — current state `NOT_AUTHORIZED`
 - [ ] Activate updater — current state `INACTIVE`
 
-The machine-readable operational gate is defined by `ops/final-shift-close/STATE.json` and `ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json`.
+Machine-readable operational authority remains in `ops/final-shift-close/STATE.json` and `ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json`.
 
 ## Maintenance rule
 
 At every material sprint closure:
 
 1. reconcile `PROJECT_MANIFEST.md` first;
-2. update README, TASKS, ROADMAP, and CHANGELOG only as summaries of that canonical state;
+2. update README, TASKS, ROADMAP, and CHANGELOG as summaries of the same canonical state;
 3. preserve detailed evidence in `docs/SPRINT*.md`, contracts, workflows, and Git history;
-4. never label source-published work as deployed/activated without operational evidence;
-5. never use a stale historical heading as the current project state.
+4. never label source-published work as deployed or activated without operational evidence;
+5. make the just-closed active sprint workflow successor-compatible before the next PR depends on it.
 
 Author by Lab | zefry
