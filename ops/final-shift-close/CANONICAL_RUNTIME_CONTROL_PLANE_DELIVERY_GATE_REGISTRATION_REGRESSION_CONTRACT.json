@@ -6,16 +6,27 @@
   "execution_mode": "CI_ONLY_SYNTHETIC_DELIVERY_GATE_REGISTRATION_REGRESSION",
   "qualification": {
     "inspection_mode": "IN_PROCESS_ROUTE_COLLECTION_ONLY",
-    "materialization_enabled_false_route_registration": "ABSENT",
-    "materialization_enabled_true_invalid_token_route_registration": "ABSENT",
-    "db_attestation_enabled_false_route_registration": "ABSENT",
-    "db_attestation_enabled_true_invalid_token_route_registration": "ABSENT",
-    "invalid_token_classes": [
+    "new_executable_gap": "LENGTH_VALID_DISALLOWED_CHARACTER_ROUTE_ABSENCE_BOTH_PROVIDERS",
+    "historical_registration_coverage": {
+      "materialization_disabled": "PRESERVED",
+      "materialization_empty_token": "PRESERVED",
+      "materialization_below_canonical_minimum": "PRESERVED",
+      "materialization_above_canonical_maximum": "PRESERVED",
+      "db_attestation_disabled": "PRESERVED",
+      "db_attestation_empty_token": "PRESERVED",
+      "db_attestation_below_canonical_minimum": "PRESERVED",
+      "db_attestation_above_canonical_maximum": "PRESERVED"
+    },
+    "aggregate_invalid_token_classes": [
       "EMPTY",
       "BELOW_CANONICAL_MINIMUM",
       "ABOVE_CANONICAL_MAXIMUM",
       "DISALLOWED_CHARACTER"
     ],
+    "sprint134_fixture_length": "CANONICAL_MINIMUM",
+    "sprint134_fixture_disallowed_character": true,
+    "materialization_disallowed_character_route_registration": "ABSENT",
+    "db_attestation_disallowed_character_route_registration": "ABSENT",
     "canonical_token_policy_owner": "SPRINT130",
     "alternate_token_validator": false,
     "valid_operational_control_plane_request": false,
@@ -24,6 +35,8 @@
     "production_manifest_materializer_resolution": false,
     "production_database_identity_reader_resolution": false,
     "production_db_attestation_service_resolution": false,
+    "materialization_controller_resolution": false,
+    "db_attestation_controller_resolution": false,
     "real_filesystem_adapter_invocation": false,
     "real_database_connection": false,
     "real_database_identity_read": false,
@@ -35,6 +48,7 @@
     "sprint133_owned_controller_fail_closed_regression": "PRESERVED",
     "sprint132_owned_controller_positive_path_regression": "PRESERVED",
     "sprint131_owned_middleware_positive_path_regression": "PRESERVED",
+    "historical_control_plane_registration_regressions": "PRESERVED_AS_AGGREGATE_EVIDENCE",
     "active_sprint_envelope_authority": "SPRINT134_WORKFLOW_ONLY"
   },
   "source_envelope": {
