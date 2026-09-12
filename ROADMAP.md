@@ -1,7 +1,7 @@
 # oneQay Roadmap
 
-**Roadmap checkpoint:** post-Sprint135
-**Canonical engineering baseline:** `c13ea1e468154fc1997a48ad5ce7c0132ddbc1c9`
+**Roadmap checkpoint:** post-Sprint136
+**Canonical engineering baseline:** `2a92a870d9c8388bdb9ac4f516e9d671237ce116`
 **Current state authority:** `PROJECT_MANIFEST.md`
 
 This roadmap describes sequencing and gates. It does **not** grant operational authority. A completed roadmap item means its bounded repository objective was completed; it does not imply deployment, migration execution, runtime activation, Technical Preview activation, or Production activation unless separately evidenced.
@@ -38,7 +38,7 @@ These foundations are repository/source achievements, not a statement that a com
 
 Representative milestones: Sprint55, Sprint64, Sprint70, and Sprint80.
 
-## Horizon D — Final Shift Close source/readiness chain — completed through Sprint135 engineering boundary
+## Horizon D — Final Shift Close source/readiness chain — completed through Sprint136 engineering boundary
 
 - [x] Source-only migration #27 materialization — Sprint88
 - [x] Final Shift Close application-readiness contract — Sprint89
@@ -52,26 +52,27 @@ Representative milestones: Sprint55, Sprint64, Sprint70, and Sprint80.
 - [x] Controller fail-closed regression — Sprint133
 - [x] Cross-provider delivery-gate invalid-token route-absence regression — Sprint134
 - [x] Cross-provider canonical-valid-token registration metadata and inertness regression — Sprint135
+- [x] Canonical-valid-token authenticated HTTP route → middleware → real-controller positive-path regression with synthetic side-effect application services — Sprint136
 
 Migration #27 remains source-only and `NOT_EXECUTED`; completion of this engineering horizon does not authorize operational use.
 
-## Horizon E — Sprint136+ bounded engineering — next
+## Horizon E — Sprint137+ bounded engineering — next
 
 Status: **NOT YET SELECTED / NOT COMPLETED**.
 
-Sprint136 begins only after bounded discovery identifies the smallest non-duplicative remaining engineering gap from post-Sprint135.
+Sprint137 begins only after bounded discovery identifies the smallest non-duplicative remaining engineering gap from post-Sprint136.
 
 Selection rules:
 
 1. prove the gap exists before adding source;
 2. freeze a bounded source envelope;
-3. preserve Sprint130–Sprint135 owned regressions and historical compatibility;
+3. preserve Sprint130–Sprint136 owned regressions and historical compatibility;
 4. stay fail-closed and deny-by-default;
 5. avoid operational adapter invocation and runtime-token provisioning unless separately authorized;
 6. qualify exact head in CI before merge;
 7. reconcile canonical project-state documentation at closure.
 
-No roadmap text pre-authorizes a specific Sprint136 implementation.
+No roadmap text pre-authorizes a specific Sprint137 implementation.
 
 ## Horizon F — Operational qualification — blocked / separate authority
 
@@ -83,6 +84,7 @@ Operational work may proceed only after its prerequisites and explicit authority
 - [ ] Permission provisioning authority — current state `NONE`
 - [ ] Feature activation authority — current state `INACTIVE`
 - [ ] Authenticated operational runtime configuration channel — must be qualified for the selected environment
+- [ ] Real operational runtime token provisioning — not performed
 - [ ] Real operational binding/attestation evidence — not performed
 - [ ] Deployment authority — `NOT_GRANTED`
 
