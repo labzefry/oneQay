@@ -34,21 +34,13 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
-      - name: Lock exact Sprint141 source envelope
+      - name: Preserve successor-compatible historical regression boundary
         shell: bash
         run: |
           set -euo pipefail
-          base="${{ github.event.pull_request.base.sha }}"
-          head="${{ github.event.pull_request.head.sha }}"
-          git diff --name-only "$base" "$head" | LC_ALL=C sort > /tmp/paths
-          cat > /tmp/expected <<'EOF'
-          .github/workflows/sprint141-final-shift-close-canonical-control-plane-http-auth-rejection-response-regression.yml
-          apps/web/tests/final-shift-close-runtime-control-plane-http-auth-rejection-response-regression.php
-          docs/SPRINT141_FINAL_SHIFT_CLOSE_CANONICAL_CONTROL_PLANE_HTTP_AUTH_REJECTION_RESPONSE_REGRESSION.md
-          ops/final-shift-close/CANONICAL_RUNTIME_CONTROL_PLANE_HTTP_AUTH_REJECTION_RESPONSE_REGRESSION_CONTRACT.json
-          EOF
-          diff -u /tmp/expected /tmp/paths
-          [[ "$(sha256sum /tmp/paths | awk '{print $1}')" == 'b75d55835722110dee38759068ce3f527efc0ecdbd2201f4fde9b4372211641a' ]]
+          echo 'Sprint141 is historical after its canonical squash merge.'
+          echo 'Historical regression workflows validate their owned invariants only.'
+          echo 'Exact full-PR envelope locking belongs to the active sprint workflow.'
 
       - name: Prove Sprint140 historical successor compatibility
         shell: bash
@@ -59,7 +51,7 @@ jobs:
           grep -Fq 'Sprint140 is historical after its canonical squash merge.' "$workflow"
           ! grep -Fq 'Lock exact Sprint140 source envelope' "$workflow"
 
-      - name: Validate Sprint141 machine-readable contract
+      - name: Validate Sprint141 machine-readable contract invariants
         shell: bash
         run: |
           set -euo pipefail
@@ -115,9 +107,6 @@ jobs:
             .historical_ownership.sprint139_auth_before_throttle == "PRESERVED" and
             .historical_ownership.sprint140_direct_middleware_auth_rejection_response_hardening == "PRESERVED" and
             .historical_ownership.sprint141_http_kernel_rejection_response_propagation == "OWNED" and
-            .successor_compatibility.sprint140_historical_workflow == "SUCCESSOR_COMPATIBLE" and
-            .successor_compatibility.sprint140_full_pr_envelope_lock == "ABSENT" and
-            .successor_compatibility.active_sprint_envelope_authority == "SPRINT141_WORKFLOW_ONLY" and
             .source_envelope.path_count == 4 and
             .source_envelope.sha256 == "b75d55835722110dee38759068ce3f527efc0ecdbd2201f4fde9b4372211641a" and
             .canonical_boundaries.migration27_execution == "NOT_PERFORMED" and
