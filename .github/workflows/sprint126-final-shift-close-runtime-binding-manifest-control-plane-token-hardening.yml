@@ -83,8 +83,8 @@ jobs:
           grep -Fq 'FinalShiftCloseRuntimeControlPlaneTokenPolicy::isValidToken($this->expectedToken)' "$middleware"
           grep -Fq 'FinalShiftCloseRuntimeControlPlaneTokenPolicy::parseBearerCredential(' "$middleware"
           grep -Fq 'hash_equals($this->expectedToken, $providedToken)' "$middleware"
-          grep -Fq 'abort(503);' "$middleware"
-          grep -Fq 'abort(401);' "$middleware"
+          grep -Fq 'return $this->rejectionResponse(503);' "$middleware"
+          grep -Fq 'return $this->rejectionResponse(401);' "$middleware"
           grep -Fq "'throttle:1,1'" "$provider"
           jq -e '.sprint == 126 and .token_policy.minimum_length == 32 and .token_policy.maximum_length == 512 and .control_plane.delivery == "INACTIVE" and .canonical_boundaries.runtime_manifest_materialization == "NOT_PERFORMED"' ops/final-shift-close/RUNTIME_BINDING_MANIFEST_CONTROL_PLANE_TOKEN_HARDENING_CONTRACT.json >/dev/null
 
