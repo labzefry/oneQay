@@ -17,7 +17,7 @@ final class RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware
     public function handle(Request $request, Closure $next): Response
     {
         if (! FinalShiftCloseRuntimeControlPlaneTokenPolicy::isValidToken($this->expectedToken)) {
-            abort(503);
+            return $this->rejectionResponse(503);
         }
 
         $providedToken = FinalShiftCloseRuntimeControlPlaneTokenPolicy::parseBearerCredential(
@@ -25,9 +25,19 @@ final class RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware
         );
 
         if ($providedToken === null || ! hash_equals($this->expectedToken, $providedToken)) {
-            abort(401);
+            return $this->rejectionResponse(401);
         }
 
         return $next($request);
+    }
+
+    private function rejectionResponse(int $status): Response
+    {
+        return response('', $status, [
+            'Cache-Control' => 'no-store, private',
+            'Pragma' => 'no-cache',
+            'X-Content-Type-Options' => 'nosniff',
+            'X-Robots-Tag' => 'noindex, nofollow, noarchive',
+        ]);
     }
 }
