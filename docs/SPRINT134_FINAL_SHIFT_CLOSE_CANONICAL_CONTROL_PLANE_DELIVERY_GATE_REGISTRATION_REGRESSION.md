@@ -4,9 +4,9 @@ Author by Lab | zefry
 
 ## Bounded objective
 
-Sprint134 adds CI-only executable proof that the Final Shift Close control-plane delivery gate remains fail-closed at provider and route-registration boundaries after Sprint131 qualified middleware positive paths, Sprint132 qualified direct controller positive paths, and Sprint133 qualified direct controller fail-closed mappings.
+Sprint134 adds CI-only executable proof for the remaining non-duplicative Final Shift Close control-plane provider delivery-gate registration gap after Sprint131 qualified middleware positive paths, Sprint132 qualified direct controller positive paths, and Sprint133 qualified direct controller fail-closed mappings.
 
-The regression must prove that unqualified delivery configuration cannot register the Final Shift Close manifest-materialization or runtime DB-binding-attestation routes. The proof remains synthetic and in-process. It must not invoke either operational control-plane route, resolve or invoke production side-effect adapters, provision runtime tokens, write the canonical runtime binding manifest, open the real application database connection, read real runtime database identity, or perform any operational runtime action.
+Repository-native control-plane regressions already prove route absence for disabled delivery and for enabled delivery with empty, below-minimum, and above-maximum tokens. Sprint134 therefore does not duplicate those cases. Its new executable responsibility is the missing provider-level consequence of the Sprint130 canonical character policy: a token whose length is canonically valid but whose character set is invalid must keep both Final Shift Close control-plane routes unregistered.
 
 Execution mode:
 
@@ -14,61 +14,66 @@ Execution mode:
 
 ## Delivery-gate qualification
 
-The regression must qualify both Final Shift Close control-plane service providers and prove all of the following:
+Aggregate Sprint134 qualification requires both the preserved historical registration regressions and the new Sprint134 regression.
 
-- manifest-materialization delivery remains disabled when its `enabled` configuration is `false`;
-- manifest-materialization delivery remains disabled when `enabled` is `true` but the configured token is empty, malformed, below the canonical minimum, above the canonical maximum, or contains characters outside the canonical token policy;
-- runtime DB-binding-attestation delivery remains disabled when its `enabled` configuration is `false`;
-- runtime DB-binding-attestation delivery remains disabled when `enabled` is `true` but the configured token is empty, malformed, below the canonical minimum, above the canonical maximum, or contains characters outside the canonical token policy;
-- in every unqualified case, the corresponding control-plane route is absent after application boot;
-- no route-registration qualification case resolves or invokes the production manifest writer, manifest materializer, Laravel runtime database identity reader, runtime DB-binding attestation service, real `oneqay` database connection, or any operational runtime target;
-- the proof does not mutate runtime configuration outside the isolated test process;
-- existing Sprint130 canonical token policy, Sprint131 middleware positive-path, Sprint132 controller positive-path, Sprint133 controller fail-closed, and prior fail-closed credential regressions remain unchanged.
+Historical owned evidence remains responsible for proving:
 
-The regression may boot isolated application instances with test-owned configuration values and inspect the in-process route collection. It must not send a valid operational request to a Final Shift Close control-plane route.
+- manifest-materialization delivery is absent when its `enabled` configuration is `false`;
+- manifest-materialization delivery is absent when enabled with an empty, below-minimum, or above-maximum token;
+- runtime DB-binding-attestation delivery is absent when its `enabled` configuration is `false`;
+- runtime DB-binding-attestation delivery is absent when enabled with an empty, below-minimum, or above-maximum token.
+
+The new Sprint134 executable regression is responsible only for the previously uncovered canonical character-policy consequence:
+
+- construct a token exactly at the canonical minimum length while containing a character forbidden by `FinalShiftCloseRuntimeControlPlaneTokenPolicy`;
+- enable both Final Shift Close control-plane delivery providers only inside the isolated test process;
+- prove the canonical token policy rejects that fixture because of its character set rather than its length;
+- bootstrap the application without sending a control-plane request;
+- inspect the in-process route collection and prove both the manifest-materialization and runtime DB-binding-attestation named routes are absent;
+- prove the production manifest writer, manifest materializer, runtime database identity reader, runtime DB-binding attestation service, and both control-plane controllers remain unresolved;
+- never resolve or invoke the filesystem runtime manifest writer, Laravel `oneqay` database connection, canonical runtime manifest, or any operational runtime target.
+
+Together, historical evidence plus the Sprint134 regression cover the unqualified delivery states `DISABLED`, `EMPTY`, `BELOW_CANONICAL_MINIMUM`, `ABOVE_CANONICAL_MAXIMUM`, and `DISALLOWED_CHARACTER` without duplicating already-owned executable coverage.
 
 ## Canonical token-policy boundary
 
 Sprint134 does not redefine the runtime control-plane token policy. Sprint130 remains the canonical owner of token validity semantics, including minimum length, maximum length, allowed character set, exact Bearer handling, constant-time comparison, and endpoint-specific credential disposition.
 
-Sprint134 consumes that existing policy only to prove the provider delivery-registration consequence: when the configured token is not canonically valid, delivery remains disabled and the route is not registered.
-
-The active Sprint134 regression must not introduce a second token validator, alternate character policy, relaxed length policy, fallback credential path, or test-only registration bypass.
+The Sprint134 fixture is deliberately exactly `MINIMUM_LENGTH` bytes long and includes one disallowed character. The regression calls the existing canonical policy to establish fixture disposition; it does not introduce a second validator, alternate character policy, relaxed length policy, fallback credential path, or test-only registration bypass.
 
 ## Synthetic isolation boundary
 
-The preferred proof is route-registration inspection after booting test-owned application instances under deliberately unqualified configuration states.
+The Sprint134 regression boots the normal application only after test-owned environment values enable both delivery providers with the deliberately invalid token fixture. It invokes the HTTP kernel bootstrap lifecycle solely to execute provider boot logic, then inspects the router collection directly.
 
-The test must remain side-effect free with respect to operational adapters. In particular:
+The active Sprint134 test must not send any request to a Final Shift Close control-plane route. It must not:
 
-- it must not call the manifest-materialization controller;
-- it must not call the runtime DB-binding-attestation controller;
-- it must not resolve `FinalShiftCloseRuntimeBindingManifestWriter` through the production provider binding;
-- it must not resolve `FinalShiftCloseRuntimeBindingManifestMaterializer` through the production provider binding;
-- it must not resolve `FinalShiftCloseRuntimeDatabaseIdentityReader` through the production provider binding;
-- it must not resolve `FinalShiftCloseRuntimeDbBindingAttestation` through the production provider binding;
-- it must not instantiate the filesystem runtime manifest writer as part of the qualification path;
-- it must not open the Laravel `oneqay` database connection;
-- it must not read or write the canonical runtime binding manifest;
-- it must not mutate durable target selection or any operational state file.
+- call the manifest-materialization controller;
+- call the runtime DB-binding-attestation controller;
+- resolve `FinalShiftCloseRuntimeBindingManifestWriter` through the production provider binding;
+- resolve `FinalShiftCloseRuntimeBindingManifestMaterializer` through the production provider binding;
+- resolve `FinalShiftCloseRuntimeDatabaseIdentityReader` through the production provider binding;
+- resolve `FinalShiftCloseRuntimeDbBindingAttestation` through the production provider binding;
+- instantiate the filesystem runtime manifest writer as part of qualification;
+- open the Laravel `oneqay` database connection;
+- read or write the canonical runtime binding manifest;
+- mutate durable target selection or any operational state file.
 
-A valid canonical token may be validated by the Sprint130 policy regression and existing middleware/controller regressions. Sprint134 does not require a valid-token positive registration case if doing so would unnecessarily widen the boundary toward operational route availability. The active objective is the smallest non-duplicative executable fail-closed delivery-registration proof.
+A valid-token positive registration case is intentionally outside Sprint134. Existing historical regressions already own valid-gate middleware behavior, and widening Sprint134 into positive operational registration would move the boundary toward production side-effect adapters without adding the missing fail-closed evidence.
 
 ## Non-duplication boundary
 
 Sprint134 does not repeat:
 
 - Sprint130 token-policy semantics;
+- the historical manifest-materialization control-plane regression for disabled, empty, short, oversized, or valid-token credential behavior;
+- the historical runtime DB-binding-attestation control-plane regression for disabled, empty, short, oversized, or valid-token credential behavior;
 - Sprint131 middleware positive-path qualification;
-- existing middleware credential fail-closed qualification;
 - Sprint132 direct controller positive-path behavior;
 - Sprint133 direct controller fail-closed translation and information containment;
 - application-service materialization or DB-binding-attestation business-rule qualification;
 - provider registration source existence already established by historical registration sprints.
 
-Sprint134 specifically qualifies the missing relationship between canonical provider configuration gates and actual in-process route registration: an unqualified delivery configuration must produce no operational control-plane route.
-
-This boundary is intentionally smaller than a positive real HTTP route test because the default provider bindings point toward the filesystem-backed runtime manifest writer and Laravel database identity reader. Sprint134 must not resolve or invoke those adapters merely to increase route-level coverage.
+Sprint134 closes only the missing cross-provider route-registration consequence for a length-valid token containing a disallowed character, while the active workflow retains the historical registration regressions as aggregate evidence for the other delivery-gate classes.
 
 ## Successor compatibility
 
@@ -158,4 +163,4 @@ Sprint134 must not:
 
 ## Closure condition
 
-Sprint134 is qualified only when the exact five-path envelope and fingerprint match, the executable regression proves both Final Shift Close delivery providers remain route-absent under default-off and canonically invalid-token configuration states, production side-effect adapters remain unresolved and uninvoked, Sprint133 and earlier owned regressions remain successful under successor-compatible workflows, required repository checks are terminal SUCCESS on the exact PR HEAD, repository-native exact-head Product Owner merge authority is valid, the final race check is clean, and post-merge operational state remains unchanged.
+Sprint134 is qualified only when the exact five-path envelope and fingerprint match, historical control-plane regressions continue proving route absence for disabled/empty/short/oversized delivery states, the new Sprint134 executable regression proves both providers remain route-absent for the length-valid disallowed-character state, production side-effect services remain unresolved and uninvoked, Sprint133 and earlier owned regressions remain successful under successor-compatible workflows, required repository checks are terminal SUCCESS on the exact PR HEAD, repository-native exact-head Product Owner merge authority is valid, the final race check is clean, and post-merge operational state remains unchanged.
