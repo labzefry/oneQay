@@ -8,13 +8,13 @@ Enterprise-oriented business-management platform built with a Modular Monolith F
 
 ## Current canonical status
 
-The latest closed **engineering** sprint is **Sprint138**.
+The latest closed **engineering** sprint is **Sprint139**.
 
-- Canonical engineering commit: `7f562ea48a0255b7e9803f6b268bd00a7e3b3dcf`
-- Latest engineering PR: #692 — `Sprint138: canonical control-plane authenticated HTTP throttle regression`
-- Sprint138 pull-request qualification: **22/22 workflow runs successful** on the exact authorized head
-- Sprint138 merge: squash merged with exact-head guard
-- Next engineering position: **Sprint139 bounded discovery**, not yet treated as started or complete
+- Canonical engineering commit: `4028e05485589be649eb437c800b70c2990decf2`
+- Latest engineering PR: #694 — `Sprint139: canonical control-plane auth-before-throttle regression`
+- Sprint139 pull-request qualification: **24/24 workflow runs successful** on the exact authorized head
+- Sprint139 merge: squash merged with exact-head guard
+- Next engineering position: **Sprint140 bounded discovery**, not yet treated as started or complete
 
 For the full current project state, use **[`PROJECT_MANIFEST.md`](PROJECT_MANIFEST.md)** as the canonical human-readable source of truth.
 
@@ -28,10 +28,10 @@ Material canonical progress includes:
 - POS foundations for shift/register opening, sale completion/payment/receipt evidence, and catalog preparation;
 - JRN-010 prerequisite work covering expected cash, immutable sale-to-shift binding, cash variance, explanation/adjudication, maker-checker, and reviewer authorization;
 - Final Shift Close source/readiness work including source-only migration #27 and application/runtime readiness contracts;
-- runtime-binding manifest, database-binding attestation, authorization, token-policy, middleware/controller, delivery-gate, authenticated HTTP, and throttle regression chains;
-- Sprint130–Sprint138 canonical control-plane hardening, now including canonical-valid authenticated HTTP positive-path, fail-closed, and request-budget enforcement while production filesystem/database side-effect adapters remain unresolved.
+- runtime-binding manifest, database-binding attestation, authorization, token-policy, middleware/controller, delivery-gate, authenticated HTTP, throttle, and authentication-order regression chains;
+- Sprint130–Sprint139 canonical control-plane hardening, including canonical-valid authenticated HTTP positive-path, fail-closed behavior, authenticated request-budget enforcement, and protection against unauthenticated traffic consuming that budget while production filesystem/database side-effect adapters remain unresolved.
 
-Sprint138 specifically proves that the materialization `1/min` and DB-attestation `2/min` route throttles execute through the real HTTP middleware: excess authenticated requests return HTTP `429` before a second materialization write or third database-identity read can occur.
+Sprint139 specifically proves both control planes authenticate before throttle accounting. A structurally valid but mismatched bearer from the same source IP is rejected without reducing the subsequent valid bearer's request budget; the unchanged `1,1` and `2,1` authenticated throttle limits still enforce HTTP `429` after their allowed valid requests.
 
 Detailed chronology is in [`CHANGELOG.md`](CHANGELOG.md), current work is in [`TASKS.md`](TASKS.md), and future sequencing is in [`ROADMAP.md`](ROADMAP.md).
 

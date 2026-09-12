@@ -4,6 +4,26 @@ This changelog records **material canonical progress**, not every intermediate c
 
 Current project-state authority: [`PROJECT_MANIFEST.md`](PROJECT_MANIFEST.md).
 
+## 2026-09-12 — Sprint139 closed
+
+**Sprint139: canonical control-plane auth-before-throttle regression**
+
+- PR #694 squash merged.
+- Canonical engineering commit: `4028e05485589be649eb437c800b70c2990decf2`.
+- Parent canonical documentation checkpoint: `0cbf88f00d55c82bd94ef54532f81ccebe6ddcb1`.
+- Corrected both Final Shift Close runtime control-plane providers so canonical bearer authentication executes before unchanged throttle accounting.
+- Preserved materialization `throttle:1,1` and DB-attestation `throttle:2,1` exactly; route URIs, controllers, delivery gates, and token policy were unchanged.
+- Added a same-IP regression using structurally canonical-valid expected and wrong bearer fixtures.
+- Proved a wrong materialization bearer returns HTTP `401` without consuming the authenticated limiter slot; the following valid request still returns `200`, and the next valid request returns `429` with the synthetic writer remaining at one invocation.
+- Proved a wrong DB-attestation bearer returns canonical cloaked HTTP `404` without consuming either authenticated limiter slot; two following valid requests return `200`, and the third valid request returns `429` with the synthetic identity reader remaining at two invocations.
+- Production filesystem/database adapters remained unresolved; no operational runtime token, canonical manifest write, real database connection, or operational control-plane request was used.
+- Exact Sprint139 engineering envelope: six paths.
+- Frozen envelope SHA-256: `be9546afdf82465da5f9d160845edc4cf6599f306445f941226e12288a7b2286`.
+- Final exact-head engineering SHA before merge: `b55892dcd8ae7dd5c83cea88e6f70496b4669d0f`.
+- Exact-head pull-request qualification: 24/24 workflow runs successful.
+- Product Owner merge-authority workflow run `34705209701` completed successfully.
+- Operational NO-GO state remained unchanged.
+
 ## 2026-09-12 — Sprint138 closed
 
 **Sprint138: canonical control-plane authenticated HTTP throttle regression**
@@ -94,7 +114,7 @@ Current project-state authority: [`PROJECT_MANIFEST.md`](PROJECT_MANIFEST.md).
 
 ## 2026-09-05 onward — Final Shift Close readiness and runtime-control-plane chain
 
-Material milestones include Sprint88 source-only migration #27, Sprint89 application-readiness, later application/provider/runtime-binding/DB-attestation/authorization/target-readiness qualification, and the Sprint130–Sprint138 canonical control-plane hardening chain.
+Material milestones include Sprint88 source-only migration #27, Sprint89 application-readiness, later application/provider/runtime-binding/DB-attestation/authorization/target-readiness qualification, and the Sprint130–Sprint139 canonical control-plane hardening chain.
 
 Throughout this sequence, migration execution, permission provisioning, deployment, Technical Preview activation, Production activation, and updater activation remained separately gated.
 
@@ -108,7 +128,7 @@ Earlier repository work established the architecture/governance platform, authen
 
 ## Current lifecycle boundary
 
-As of the post-Sprint138 engineering checkpoint:
+As of the post-Sprint139 engineering checkpoint:
 
 - migration #27 execution: `NOT_EXECUTED`;
 - permission provisioning: `NONE`;
