@@ -3,9 +3,9 @@
 **Product:** oneQay — The Future of Intelligent Business Management
 **Repository owner / attribution:** Lab | zefry
 **Default branch:** `main`
-**Canonical engineering checkpoint:** Sprint139
-**Canonical engineering commit:** `4028e05485589be649eb437c800b70c2990decf2`
-**Latest engineering PR:** #694 — `Sprint139: canonical control-plane auth-before-throttle regression`
+**Canonical engineering checkpoint:** Sprint140
+**Canonical engineering commit:** `446f9ff80f646d2e77d0885b887da58a37994d28`
+**Latest engineering PR:** #697 — `Sprint140: canonical control-plane auth rejection response hardening regression`
 **Status date:** 2026-09-12
 
 > This file is the canonical human-readable source of truth for current oneQay project status. README, CHANGELOG, TASKS, and ROADMAP summarize this manifest. Per-sprint documents, contracts, workflows, merged pull requests, and Git history remain the detailed evidence trail.
@@ -14,16 +14,16 @@
 
 oneQay is an actively engineered enterprise business-management platform using a Modular Monolith First architecture with Clean Architecture, DDD, first-class tenant context, deny-by-default authorization, and fail-closed engineering controls.
 
-The repository has progressed through **Sprint139**. The latest engineering chain focuses on Final Shift Close runtime control-plane qualification while deliberately separating source readiness from operational activation.
+The repository has progressed through **Sprint140**. The latest engineering chain focuses on Final Shift Close runtime control-plane qualification while deliberately separating source readiness from operational activation.
 
 ### Canonical state summary
 
 | Area | Current canonical state |
 | --- | --- |
-| Latest closed engineering sprint | Sprint139 |
-| Latest engineering commit | `4028e05485589be649eb437c800b70c2990decf2` |
-| Latest engineering PR | #694, merged |
-| Sprint139 exact-head CI | 24/24 pull-request workflow runs successful |
+| Latest closed engineering sprint | Sprint140 |
+| Latest engineering commit | `446f9ff80f646d2e77d0885b887da58a37994d28` |
+| Latest engineering PR | #697, merged |
+| Sprint140 exact-head CI | 25/25 pull-request workflow runs successful |
 | Architecture | Modular Monolith First, Clean Architecture, DDD |
 | Backend | Laravel / PHP |
 | Frontend | Vue 3 + Inertia + Vite |
@@ -65,36 +65,41 @@ These are source/evidence achievements, not production activation.
 - Sprint134 — cross-provider delivery-gate route-absence regression.
 - Sprint135 — canonical-valid-token cross-provider route-registration metadata and inertness regression.
 - Sprint136 — canonical-valid-token authenticated HTTP positive-path regression through real route, token middleware, and real controller with synthetic side-effect services.
-- Sprint137 — canonical-valid-token authenticated HTTP fail-closed regression proving materialization and DB-attestation failures remain exact HTTP 503 contracts through the composed HTTP path while production filesystem/database adapters remain unresolved and sensitive internals remain undisclosed.
-- Sprint138 — canonical-valid authenticated HTTP throttle regression proving materialization `1/min` and DB-attestation `2/min` enforcement through the real HTTP throttle middleware, with excess authenticated requests rejected as HTTP 429 before repeated synthetic side effects.
-- Sprint139 — authentication-before-throttle hardening for both control planes, proving a wrong structurally valid bearer from the same limiter key cannot consume authenticated request budget before the canonical token middleware rejects it.
+- Sprint137 — canonical-valid-token authenticated HTTP fail-closed regression with exact 503 translation and non-disclosure.
+- Sprint138 — canonical-valid authenticated HTTP throttle regression proving materialization `1/min` and DB-attestation `2/min` enforcement.
+- Sprint139 — authentication-before-throttle hardening, proving unauthenticated/mismatched bearer traffic cannot consume authenticated request budget.
+- Sprint140 — cross-provider authentication-rejection response hardening, preserving existing HTTP dispositions while making every auth rejection empty-body, non-cacheable/private, non-sniffable, robot-excluded, and non-reflective.
 
-## 3. Sprint139 closure evidence
+## 3. Sprint140 closure evidence
 
-Sprint139 is closed through engineering PR #694.
+Sprint140 is closed through engineering PR #697.
 
-- Canonical engineering squash commit: `4028e05485589be649eb437c800b70c2990decf2`
-- Parent canonical documentation checkpoint: `0cbf88f00d55c82bd94ef54532f81ccebe6ddcb1`
-- Exact Sprint139 engineering envelope: six paths
-- Frozen Sprint139 envelope SHA-256: `be9546afdf82465da5f9d160845edc4cf6599f306445f941226e12288a7b2286`
-- Final exact-head engineering SHA before merge: `b55892dcd8ae7dd5c83cea88e6f70496b4669d0f`
-- Exact-head pull-request workflows: 24/24 successful
-- Product Owner merge authority workflow run `34705209701`: successful
+- Canonical engineering squash commit: `446f9ff80f646d2e77d0885b887da58a37994d28`
+- Parent canonical documentation checkpoint: `0d08996238d7aec0db3476d0dedf6d69ef3f0669`
+- Exact Sprint140 engineering envelope: nine paths
+- Frozen Sprint140 envelope SHA-256: `58f0fe3105a12fc3c6cac98e736743349237a5221a63376f668358c5c09fe1b3`
+- Final exact-head engineering SHA before merge: `3ef7024368d8b68c98974535d6aa44f925e4ced5`
+- Exact-head pull-request workflows: 25/25 successful
+- Product Owner merge authority workflow run `34707917274`: successful
 - Merge method: squash with exact-head guard
 
-Sprint139 corrected only middleware ordering in the two runtime control-plane service providers. Materialization now applies `RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware` before `throttle:1,1`; DB-binding attestation applies `RequireFinalShiftCloseRuntimeBindingTokenMiddleware` before `throttle:2,1`. Route URIs, controller targets, token policy, throttle limits, delivery gates, application services, and infrastructure bindings were otherwise unchanged.
+Sprint140 hardened both runtime control-plane authentication middleware rejection surfaces without changing canonical token policy, route registration, middleware ordering, throttle limits, controllers, or application-service behavior.
 
-The Sprint139 test used canonical-valid expected and wrong synthetic bearer fixtures from the same source IP per control plane. The wrong materialization bearer returned HTTP `401` without consuming the single authenticated limiter slot, so the first subsequent valid request still returned HTTP `200`; the next valid request returned `429` and the in-memory writer remained at one invocation. The wrong DB-attestation bearer retained the canonical cloaked HTTP `404` without consuming either authenticated limiter slot; two subsequent valid requests returned `200`, the third returned `429`, and the synthetic identity reader remained at two invocations. Production filesystem/database adapters remained unresolved and no operational bearer or runtime target was used.
+Materialization preserves HTTP `503` for invalid expected-token configuration and HTTP `401` for missing, malformed, or mismatched bearer credentials. DB-binding attestation preserves cloaked HTTP `404` for the same invalid credential classes. All rejection responses are empty-body and expose `Cache-Control: no-store, private`, `Pragma: no-cache`, `X-Content-Type-Options: nosniff`, and `X-Robots-Tag: noindex, nofollow, noarchive`; bearer fixtures and internal paths are not reflected.
+
+The Sprint140 executable regression invokes the middleware directly in a synthetic test container, verifies matching credentials still reach a synthetic HTTP `204` continuation, and verifies production manifest-writer, database-identity-reader, and both controllers remain unresolved. No real route invocation, filesystem write, database connection, operational token, or runtime target was used.
+
+Initial exact-head qualification also identified historical Sprint126, Sprint130, and Sprint131 workflow assertions that locked the old literal `abort(503)` / `abort(401)` representation. Those workflow assertions were updated within the Sprint140 bounded envelope to recognize the hardened response representation while retaining their executable token-policy, route-registration, positive-path, and fail-closed tests.
 
 Detailed evidence:
 
-- `docs/SPRINT139_FINAL_SHIFT_CLOSE_CANONICAL_CONTROL_PLANE_AUTH_BEFORE_THROTTLE_REGRESSION.md`
-- `ops/final-shift-close/CANONICAL_RUNTIME_CONTROL_PLANE_AUTH_BEFORE_THROTTLE_REGRESSION_CONTRACT.json`
-- `apps/web/tests/final-shift-close-runtime-control-plane-auth-before-throttle-regression.php`
+- `docs/SPRINT140_FINAL_SHIFT_CLOSE_CANONICAL_CONTROL_PLANE_AUTH_REJECTION_RESPONSE_HARDENING_REGRESSION.md`
+- `ops/final-shift-close/CANONICAL_RUNTIME_CONTROL_PLANE_AUTH_REJECTION_RESPONSE_HARDENING_REGRESSION_CONTRACT.json`
+- `apps/web/tests/final-shift-close-runtime-control-plane-auth-rejection-response-hardening-regression.php`
 
 ## 4. Operational truth — NO-GO remains authoritative
 
-Sprint139 does not grant operational authority. Current machine-readable state remains:
+Sprint140 does not grant operational authority. Current machine-readable state remains:
 
 - migration #27 execution: `NOT_EXECUTED` / `NOT_PERFORMED`;
 - permission provisioning: `NONE`;
@@ -133,11 +138,11 @@ The following must not be described as complete unless separately qualified and 
 
 ## 6. Next engineering position
 
-The next engineering activity is **Sprint140 bounded discovery from canonical post-Sprint139**.
+The next engineering activity is **Sprint141 bounded discovery from canonical post-Sprint140**.
 
-Sprint140 is not considered started or complete merely because it is named here. Bounded discovery must identify the smallest non-duplicative engineering gap, preserve Sprint130–Sprint139 executable ownership, remain fail-closed and deny-by-default, and avoid converting source readiness into operational authority.
+Sprint141 is not considered started or complete merely because it is named here. Bounded discovery must identify the smallest non-duplicative engineering gap, preserve Sprint130–Sprint140 executable ownership, remain fail-closed and deny-by-default, and avoid converting source readiness into operational authority.
 
-No Sprint140 implementation or source envelope is preselected by this manifest.
+No Sprint141 implementation or source envelope is preselected by this manifest.
 
 ## 7. Documentation responsibility model
 
