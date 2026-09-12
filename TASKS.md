@@ -36,9 +36,9 @@ This file is the current workboard. It deliberately separates **completed source
 - [x] Detect stale root status documents still reporting post-Sprint48/post-Sprint54 state
 - [x] Establish `PROJECT_MANIFEST.md` as canonical human-readable project-state authority
 - [x] Reconcile `README.md` with post-Sprint134 engineering state
-- [x] Reconcile this current task board
-- [ ] Reconcile `CHANGELOG.md` with material Sprint55–Sprint134 progress
-- [ ] Reconcile `ROADMAP.md` with completed horizon and next bounded horizon
+- [x] Reconcile `TASKS.md` current workboard
+- [x] Reconcile `CHANGELOG.md` with material Sprint55–Sprint134 progress
+- [x] Reconcile `ROADMAP.md` with completed horizon and next bounded horizon
 - [ ] Qualify the documentation-only delta in CI
 - [ ] Publish the documentation reconciliation through normal PR governance
 
