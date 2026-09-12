@@ -8,13 +8,13 @@ Enterprise-oriented business-management platform built with a Modular Monolith F
 
 ## Current canonical status
 
-The latest closed **engineering** sprint is **Sprint136**.
+The latest closed **engineering** sprint is **Sprint137**.
 
-- Canonical engineering commit: `2a92a870d9c8388bdb9ac4f516e9d671237ce116`
-- Latest engineering PR: #688 — `Sprint136: canonical control-plane authenticated HTTP positive path regression`
-- Sprint136 pull-request qualification: **20/20 workflow runs successful** on the exact authorized head
-- Sprint136 merge: squash merged with exact-head guard
-- Next engineering position: **Sprint137 bounded discovery**, not yet treated as started or complete
+- Canonical engineering commit: `62196919fb2c2a172bc0a290159aa26a045d4ed9`
+- Latest engineering PR: #690 — `Sprint137: canonical control-plane authenticated HTTP fail-closed regression`
+- Sprint137 pull-request qualification: **21/21 workflow runs successful** on the exact authorized head
+- Sprint137 merge: squash merged with exact-head guard
+- Next engineering position: **Sprint138 bounded discovery**, not yet treated as started or complete
 
 For the full current project state, use **[`PROJECT_MANIFEST.md`](PROJECT_MANIFEST.md)** as the canonical human-readable source of truth.
 
@@ -29,7 +29,9 @@ Material canonical progress includes:
 - JRN-010 prerequisite work covering expected cash, immutable sale-to-shift binding, cash variance, explanation/adjudication, maker-checker, and reviewer authorization;
 - Final Shift Close source/readiness work including source-only migration #27 and application/runtime readiness contracts;
 - runtime-binding manifest, database-binding attestation, authorization, token-policy, middleware/controller, and delivery-gate regression chains;
-- Sprint130–Sprint136 canonical control-plane hardening, culminating in a synthetic authenticated HTTP positive path through the registered routes, canonical token middleware, and real controllers while production filesystem/database side-effect adapters remain unresolved.
+- Sprint130–Sprint137 canonical control-plane hardening, now including both authenticated HTTP positive-path and fail-closed composition through registered routes, canonical token middleware, and real controllers while production filesystem/database side-effect adapters remain unresolved.
+
+Sprint137 specifically proves that a canonical-valid synthetic bearer can traverse the real HTTP delivery path and still receive exact fail-closed HTTP `503` contracts when synthetic downstream materialization or database-attestation dependencies fail, without leaking internal paths, credentials, or exception details.
 
 Detailed chronology is in [`CHANGELOG.md`](CHANGELOG.md), current work is in [`TASKS.md`](TASKS.md), and future sequencing is in [`ROADMAP.md`](ROADMAP.md).
 
