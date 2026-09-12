@@ -67,7 +67,7 @@
   },
   "source_envelope": {
     "path_count": 9,
-    "sha256": "43b358e86402863925ec2f9c246ae20aa5a47228ec21aa2ded43cdf8b19a257e"
+    "sha256": "58f0fe3105a12fc3c6cac98e736743349237a5221a63376f668358c5c09fe1b3"
   },
   "canonical_boundaries": {
     "operational_control_plane_request": "NOT_PERFORMED",
