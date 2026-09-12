@@ -4,6 +4,26 @@ This changelog records **material canonical progress**, not every intermediate c
 
 Current project-state authority: [`PROJECT_MANIFEST.md`](PROJECT_MANIFEST.md).
 
+## 2026-09-12 — Sprint141 closed
+
+**Sprint141: canonical HTTP auth rejection response regression**
+
+- PR #699 squash merged.
+- Canonical engineering commit: `81d4d19c61e99746495bec804c0e7d8a9778a257`.
+- Parent canonical documentation checkpoint: `c49c5438180a89a393201c688482977fd9c9e3f1`.
+- Added a CI-only regression proving Sprint140 auth-rejection response hardening survives the real registered Final Shift Close routes and Laravel HTTP kernel.
+- With canonical-valid synthetic expected tokens registering both routes, missing, malformed, and structurally canonical-valid mismatched bearer credentials preserve materialization HTTP `401` and DB-attestation cloaked HTTP `404`.
+- Every rejection remains empty-body with `Cache-Control` containing `no-store` and `private`, `Pragma: no-cache`, `X-Content-Type-Options: nosniff`, and `X-Robots-Tag: noindex, nofollow, noarchive`.
+- Expected-token, mismatched-token, and synthetic internal-path values are not reflected.
+- Materialization controller, DB-attestation controller, manifest writer/materializer, database identity reader, and DB-attestation service remain unresolved for rejected requests; the canonical runtime manifest remains absent.
+- Preserved Sprint139 auth-before-throttle ownership and Sprint140 direct-middleware response-hardening ownership.
+- Exact Sprint141 engineering envelope: four paths.
+- Frozen envelope SHA-256: `b75d55835722110dee38759068ce3f527efc0ecdbd2201f4fde9b4372211641a`.
+- Final exact-head engineering SHA before merge: `8dc34649d15ca65e6b198221d0354bee8e75ecb1`.
+- Exact-head pull-request qualification: 25/25 workflow runs successful.
+- Product Owner merge-authority workflow run `34709040922` completed successfully.
+- Operational NO-GO state remained unchanged.
+
 ## 2026-09-12 — Sprint140 closed
 
 **Sprint140: canonical control-plane auth rejection response hardening regression**
@@ -75,7 +95,7 @@ Current project-state authority: [`PROJECT_MANIFEST.md`](PROJECT_MANIFEST.md).
 
 ## 2026-09-05 onward — Final Shift Close readiness and runtime-control-plane chain
 
-Material milestones include Sprint88 source-only migration #27, Sprint89 application-readiness, later application/provider/runtime-binding/DB-attestation/authorization/target-readiness qualification, and the Sprint130–Sprint140 canonical control-plane hardening chain.
+Material milestones include Sprint88 source-only migration #27, Sprint89 application-readiness, later application/provider/runtime-binding/DB-attestation/authorization/target-readiness qualification, and the Sprint130–Sprint141 canonical control-plane hardening chain.
 
 Throughout this sequence, migration execution, permission provisioning, deployment, Technical Preview activation, Production activation, and updater activation remained separately gated.
 
@@ -89,7 +109,7 @@ Earlier repository work established the architecture/governance platform, authen
 
 ## Current lifecycle boundary
 
-As of the post-Sprint140 engineering checkpoint:
+As of the post-Sprint141 engineering checkpoint:
 
 - migration #27 execution: `NOT_EXECUTED`;
 - permission provisioning: `NONE`;
