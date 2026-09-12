@@ -46,14 +46,14 @@ jobs:
           .github/workflows/sprint130-final-shift-close-canonical-runtime-control-plane-token-policy.yml
           .github/workflows/sprint131-final-shift-close-canonical-control-plane-positive-path-regression.yml
           .github/workflows/sprint140-final-shift-close-canonical-control-plane-auth-rejection-response-hardening-regression.yml
-          apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingManifestMaterializationTokenMiddleware.php
+          apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware.php
           apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingTokenMiddleware.php
           apps/web/tests/final-shift-close-runtime-control-plane-auth-rejection-response-hardening-regression.php
           docs/SPRINT140_FINAL_SHIFT_CLOSE_CANONICAL_CONTROL_PLANE_AUTH_REJECTION_RESPONSE_HARDENING_REGRESSION.md
           ops/final-shift-close/CANONICAL_RUNTIME_CONTROL_PLANE_AUTH_REJECTION_RESPONSE_HARDENING_REGRESSION_CONTRACT.json
           EOF
           diff -u /tmp/expected /tmp/paths
-          [[ "$(sha256sum /tmp/paths | awk '{print $1}')" == '43b358e86402863925ec2f9c246ae20aa5a47228ec21aa2ded43cdf8b19a257e' ]]
+          [[ "$(sha256sum /tmp/paths | awk '{print $1}')" == '58f0fe3105a12fc3c6cac98e736743349237a5221a63376f668358c5c09fe1b3' ]]
 
       - name: Preserve Sprint139 historical successor compatibility
         shell: bash
@@ -142,7 +142,7 @@ jobs:
             .successor_compatibility.sprint139_full_pr_envelope_lock == "ABSENT" and
             .successor_compatibility.active_sprint_envelope_authority == "SPRINT140_WORKFLOW_ONLY" and
             .source_envelope.path_count == 9 and
-            .source_envelope.sha256 == "43b358e86402863925ec2f9c246ae20aa5a47228ec21aa2ded43cdf8b19a257e" and
+            .source_envelope.sha256 == "58f0fe3105a12fc3c6cac98e736743349237a5221a63376f668358c5c09fe1b3" and
             .canonical_boundaries.operational_control_plane_request == "NOT_PERFORMED" and
             .canonical_boundaries.production_filesystem_adapter_resolution == "NOT_PERFORMED" and
             .canonical_boundaries.canonical_runtime_manifest_write == "NOT_PERFORMED" and
