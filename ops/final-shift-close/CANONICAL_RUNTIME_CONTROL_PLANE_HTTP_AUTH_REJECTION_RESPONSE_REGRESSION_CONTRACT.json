@@ -1,0 +1,99 @@
+{
+  "schema_version": 1,
+  "feature": "final-shift-close",
+  "sprint": 141,
+  "bounded_objective": "CANONICAL_CONTROL_PLANE_HTTP_AUTH_REJECTION_RESPONSE_REGRESSION",
+  "execution_mode": "CI_ONLY_SYNTHETIC_HTTP_AUTH_REJECTION_RESPONSE_REGRESSION",
+  "qualification": {
+    "new_executable_gap": "REGISTERED_ROUTE_HTTP_KERNEL_AUTH_REJECTION_RESPONSE_PROPAGATION_AND_INERTNESS",
+    "real_registered_route_invocation": true,
+    "real_http_kernel_invocation": true,
+    "real_token_middleware_invocation": true,
+    "real_controller_invocation": false,
+    "canonical_token_policy_owner": "SPRINT130",
+    "token_policy_changed": false,
+    "route_registration_changed": false,
+    "middleware_order_changed": false,
+    "throttle_limits_changed": false,
+    "production_source_changed": false,
+    "materialization": {
+      "missing_bearer_status": 401,
+      "malformed_bearer_status": 401,
+      "mismatched_bearer_status": 401,
+      "rejection_body": "EMPTY",
+      "cache_control_no_store": true,
+      "cache_control_private": true,
+      "pragma_no_cache": true,
+      "x_content_type_options_nosniff": true,
+      "x_robots_tag": "noindex, nofollow, noarchive"
+    },
+    "db_attestation": {
+      "missing_bearer_status": 404,
+      "malformed_bearer_status": 404,
+      "mismatched_bearer_status": 404,
+      "rejection_body": "EMPTY",
+      "cache_control_no_store": true,
+      "cache_control_private": true,
+      "pragma_no_cache": true,
+      "x_content_type_options_nosniff": true,
+      "x_robots_tag": "noindex, nofollow, noarchive"
+    },
+    "expected_bearer_leakage": "FORBIDDEN",
+    "mismatched_bearer_leakage": "FORBIDDEN",
+    "internal_path_leakage": "FORBIDDEN",
+    "materialization_controller_resolution": false,
+    "db_attestation_controller_resolution": false,
+    "manifest_writer_resolution": false,
+    "manifest_materializer_resolution": false,
+    "database_identity_reader_resolution": false,
+    "db_binding_attestation_service_resolution": false,
+    "production_filesystem_adapter_resolution": false,
+    "real_database_connection": false,
+    "operational_runtime_token": false,
+    "operational_runtime_target_invocation": false
+  },
+  "historical_ownership": {
+    "sprint130_token_policy": "PRESERVED",
+    "sprint134_delivery_gate_route_absence": "PRESERVED",
+    "sprint135_registration_metadata": "PRESERVED",
+    "sprint136_authenticated_http_positive_path": "PRESERVED",
+    "sprint137_authenticated_http_fail_closed": "PRESERVED",
+    "sprint138_authenticated_http_throttle": "PRESERVED",
+    "sprint139_auth_before_throttle": "PRESERVED",
+    "sprint140_direct_middleware_auth_rejection_response_hardening": "PRESERVED",
+    "sprint141_http_kernel_rejection_response_propagation": "OWNED"
+  },
+  "successor_compatibility": {
+    "sprint140_historical_workflow": "SUCCESSOR_COMPATIBLE",
+    "sprint140_full_pr_envelope_lock": "ABSENT",
+    "active_sprint_envelope_authority": "SPRINT141_WORKFLOW_ONLY"
+  },
+  "source_envelope": {
+    "path_count": 4,
+    "sha256": "b75d55835722110dee38759068ce3f527efc0ecdbd2201f4fde9b4372211641a",
+    "paths": [
+      ".github/workflows/sprint141-final-shift-close-canonical-control-plane-http-auth-rejection-response-regression.yml",
+      "apps/web/tests/final-shift-close-runtime-control-plane-http-auth-rejection-response-regression.php",
+      "docs/SPRINT141_FINAL_SHIFT_CLOSE_CANONICAL_CONTROL_PLANE_HTTP_AUTH_REJECTION_RESPONSE_REGRESSION.md",
+      "ops/final-shift-close/CANONICAL_RUNTIME_CONTROL_PLANE_HTTP_AUTH_REJECTION_RESPONSE_REGRESSION_CONTRACT.json"
+    ]
+  },
+  "canonical_boundaries": {
+    "migration27_execution": "NOT_PERFORMED",
+    "permission_provisioning": "NONE",
+    "feature_activation": "INACTIVE",
+    "durable_target_selection_or_invocation": "NOT_PERFORMED",
+    "selected_target": null,
+    "runtime_token_provisioning": "NOT_PERFORMED",
+    "canonical_runtime_manifest_write": "NOT_PERFORMED",
+    "production_filesystem_adapter_resolution": "NOT_PERFORMED",
+    "production_database_identity_reader_resolution": "NOT_PERFORMED",
+    "real_database_connection": "NOT_PERFORMED",
+    "real_database_identity_read": "NOT_PERFORMED",
+    "deployment_authority": "NOT_GRANTED",
+    "technical_preview": "NO-GO",
+    "production": "NO-GO",
+    "updater": "INACTIVE"
+  },
+  "attribution": "Author by Lab | zefry"
+}
