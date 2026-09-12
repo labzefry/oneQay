@@ -141,7 +141,7 @@ jobs:
           materialization = Path('apps/web/app/Providers/FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider.php').read_text()
           db_attestation = Path('apps/web/app/Providers/FinalShiftCloseRuntimeDbBindingAttestationServiceProvider.php').read_text()
 
-          materialization_auth = 'RequireFinalShiftCloseRuntimeBindingManifestMaterializationTokenMiddleware::class,'
+          materialization_auth = 'RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware::class,'
           materialization_throttle = "'throttle:1,1',"
           db_auth = 'RequireFinalShiftCloseRuntimeBindingTokenMiddleware::class,'
           db_throttle = "'throttle:2,1',"
