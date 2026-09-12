@@ -39,8 +39,9 @@ This file is the current workboard. It deliberately separates **completed source
 - [x] Reconcile `TASKS.md` current workboard
 - [x] Reconcile `CHANGELOG.md` with material Sprint55–Sprint134 progress
 - [x] Reconcile `ROADMAP.md` with completed horizon and next bounded horizon
-- [ ] Qualify the documentation-only delta in CI
-- [ ] Publish the documentation reconciliation through normal PR governance
+- [x] Convert Sprint134 active full-envelope workflow lock into successor-compatible historical regression ownership
+- [ ] Qualify the reconciliation delta in CI
+- [ ] Publish the reconciliation through normal PR governance
 
 ## Next bounded engineering
 
