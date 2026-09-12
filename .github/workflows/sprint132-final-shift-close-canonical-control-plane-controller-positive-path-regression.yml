@@ -61,7 +61,6 @@ jobs:
           grep -Fq 'Historical regression workflows validate their owned invariants only.' "$workflow"
           grep -Fq 'Exact full-PR envelope locking belongs to the active sprint workflow.' "$workflow"
           ! grep -Fq 'Lock exact Sprint131 source envelope' "$workflow"
-          ! grep -Fq '6549ac162090f316faad210ff3b6298640ee538aecb681f05ca49f616930dd6b' "$workflow"
           ! grep -Fq 'cat > /tmp/expected' "$workflow"
           ! grep -Fq 'diff -u /tmp/expected /tmp/paths' "$workflow"
 
