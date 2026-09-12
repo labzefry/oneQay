@@ -1,12 +1,12 @@
 # oneQay Tasks
 
-**Current engineering checkpoint:** post-Sprint135
-**Canonical engineering commit:** `c13ea1e468154fc1997a48ad5ce7c0132ddbc1c9`
+**Current engineering checkpoint:** post-Sprint136  
+**Canonical engineering commit:** `2a92a870d9c8388bdb9ac4f516e9d671237ce116`  
 **Canonical status authority:** `PROJECT_MANIFEST.md`
 
 This file is the current workboard. It separates **completed source engineering**, **next bounded engineering**, and **operational actions that remain unauthorized**.
 
-## Completed through Sprint135
+## Completed through Sprint136
 
 - [x] Core modular-monolith architecture and repository governance foundation
 - [x] Tenant-context-first and deny-by-default authorization foundations
@@ -25,39 +25,40 @@ This file is the current workboard. It separates **completed source engineering*
 - [x] Canonical controller fail-closed regression — Sprint133
 - [x] Canonical control-plane delivery-gate registration regression — Sprint134
 - [x] Canonical cross-provider positive registration metadata regression — Sprint135
-- [x] Sprint135 PR #686 squash merged
-- [x] Sprint135 exact-head pull-request qualification — 19/19 successful
-- [x] Sprint135 Product Owner merge-authority workflow run `34683875845` successful
-- [x] Sprint135 post-merge operational NO-GO verification
+- [x] Canonical authenticated HTTP route → middleware → controller positive-path regression — Sprint136
+- [x] Sprint136 PR #688 squash merged
+- [x] Sprint136 exact-head pull-request qualification — 20/20 successful
+- [x] Sprint136 Product Owner merge-authority workflow run `34685054761` successful
+- [x] Sprint136 post-merge operational NO-GO verification
 
-## Post-Sprint135 documentation reconciliation
+## Post-Sprint136 documentation reconciliation
 
-- [x] Advance `PROJECT_MANIFEST.md` to Sprint135 engineering truth
-- [x] Advance `README.md` to Sprint135 current status
-- [x] Record Sprint135 closure in `CHANGELOG.md`
+- [x] Advance `PROJECT_MANIFEST.md` to Sprint136 engineering truth
+- [x] Advance `README.md` to Sprint136 current status
+- [x] Record Sprint136 closure in `CHANGELOG.md`
 - [x] Advance `TASKS.md` current workboard
-- [x] Advance `ROADMAP.md` completed engineering horizon and Sprint136 next position
-- [x] Convert Sprint135 full-envelope workflow ownership to successor-compatible historical regression ownership
+- [x] Advance `ROADMAP.md` completed engineering horizon and Sprint137 next position
+- [x] Convert Sprint136 full-envelope workflow ownership to successor-compatible historical regression ownership
 
-GitHub PR/CI state remains authoritative for transient publication status; this file intentionally avoids duplicating a pending/success flag for the documentation PR itself.
+Publication vehicle: this bounded post-Sprint136 reconciliation pull request. GitHub PR/CI state is authoritative for its transient publication status.
 
 ## Next bounded engineering
 
-### Sprint136 — bounded discovery next
+### Sprint137 — bounded discovery next
 
-Sprint136 has **not** been selected, started, or completed merely because it is named here.
+Sprint137 has **not** been selected, started, or completed merely because it is named here.
 
 The next engineering activity must:
 
-- discover the smallest remaining non-duplicative executable gap from canonical post-Sprint135;
-- preserve Sprint130–Sprint135 control-plane ownership and historical regressions;
+- discover the smallest remaining non-duplicative executable gap from canonical post-Sprint136;
+- preserve Sprint130–Sprint136 control-plane ownership and historical regressions;
 - preserve existing POS/JRN evidence;
 - remain fail-closed and deny-by-default;
 - avoid operational adapter invocation or runtime-token provisioning unless separately authorized;
 - freeze a bounded source envelope before implementation;
 - qualify the exact PR head before merge.
 
-No specific Sprint136 implementation is canonical until bounded discovery freezes the objective and envelope.
+No specific Sprint137 implementation is canonical until bounded discovery freezes the objective and envelope.
 
 ## Operational blockers / separate authority required
 
@@ -70,6 +71,7 @@ These are lifecycle gates, not engineering TODOs that may be silently executed.
 - [ ] Select a durable activation target — current selection `null`
 - [ ] Perform real runtime-binding manifest materialization
 - [ ] Perform real operational DB-binding attestation
+- [ ] Provision an operational runtime control-plane token
 - [ ] Grant deployment authority — current state `NOT_GRANTED`
 - [ ] Authorize Technical Preview activation — current state `NOT_AUTHORIZED`
 - [ ] Authorize Production activation — current state `NOT_AUTHORIZED`
