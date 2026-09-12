@@ -1,11 +1,11 @@
 # oneQay Project Manifest
 
-**Product:** oneQay — The Future of Intelligent Business Management
-**Repository owner / attribution:** Lab | zefry
-**Default branch:** `main`
-**Canonical engineering checkpoint:** Sprint135
-**Canonical engineering commit:** `c13ea1e468154fc1997a48ad5ce7c0132ddbc1c9`
-**Latest engineering PR:** #686 — `Sprint135: canonical control-plane positive registration metadata regression`
+**Product:** oneQay — The Future of Intelligent Business Management  
+**Repository owner / attribution:** Lab | zefry  
+**Default branch:** `main`  
+**Canonical engineering checkpoint:** Sprint136  
+**Canonical engineering commit:** `2a92a870d9c8388bdb9ac4f516e9d671237ce116`  
+**Latest engineering PR:** #688 — `Sprint136: canonical control-plane authenticated HTTP positive path regression`  
 **Status date:** 2026-09-12
 
 > This file is the canonical human-readable source of truth for current oneQay project status. README, CHANGELOG, TASKS, and ROADMAP summarize this manifest. Per-sprint documents, contracts, workflows, merged pull requests, and Git history remain the detailed evidence trail.
@@ -14,16 +14,16 @@
 
 oneQay is an actively engineered enterprise business-management platform using a Modular Monolith First architecture with Clean Architecture, DDD, first-class tenant context, deny-by-default authorization, and fail-closed engineering controls.
 
-The repository has progressed through **Sprint135**. The latest engineering chain focuses on Final Shift Close runtime control-plane qualification while deliberately separating source readiness from operational activation.
+The repository has progressed through **Sprint136**. The latest engineering chain focuses on Final Shift Close runtime control-plane qualification while deliberately separating source readiness from operational activation.
 
 ### Canonical state summary
 
 | Area | Current canonical state |
 | --- | --- |
-| Latest closed engineering sprint | Sprint135 |
-| Latest engineering commit | `c13ea1e468154fc1997a48ad5ce7c0132ddbc1c9` |
-| Latest engineering PR | #686, merged |
-| Sprint135 exact-head CI | 19/19 pull-request workflow runs successful |
+| Latest closed engineering sprint | Sprint136 |
+| Latest engineering commit | `2a92a870d9c8388bdb9ac4f516e9d671237ce116` |
+| Latest engineering PR | #688, merged |
+| Sprint136 exact-head CI | 20/20 pull-request workflow runs successful |
 | Architecture | Modular Monolith First, Clean Architecture, DDD |
 | Backend | Laravel / PHP |
 | Frontend | Vue 3 + Inertia + Vite |
@@ -49,14 +49,9 @@ Bounded POS work includes register/shift opening, sale completion/payment/receip
 
 ### JRN-010 cash and variance chain
 
-Representative material milestones include:
+Representative material milestones include Sprint55 expected-cash derivation, Sprint64 cash-variance source foundation, Sprint70 durable cash-variance explanation, and Sprint80 scoped reviewer authorization. The broader chain established immutable sale-to-shift binding, cash-variance evidence, explanation/adjudication, maker-checker, and reviewer authorization foundations.
 
-- Sprint55 — expected-cash derivation entry gate;
-- Sprint64 — cash-variance source foundation;
-- Sprint70 — durable cash-variance explanation foundation;
-- Sprint80 — scoped cash-variance reviewer authorization policy and implementation chain.
-
-This chain established expected-cash, immutable sale-to-shift binding, cash-variance evidence, explanation/adjudication, maker-checker, and reviewer authorization foundations. These are source/evidence achievements, not production activation.
+These are source/evidence achievements, not production activation.
 
 ### Final Shift Close engineering chain
 
@@ -67,30 +62,34 @@ This chain established expected-cash, immutable sale-to-shift binding, cash-vari
 - Sprint131 — CI-only synthetic middleware positive-path regression.
 - Sprint132 — CI-only synthetic direct-controller positive-path regression.
 - Sprint133 — direct-controller fail-closed regression.
-- Sprint134 — cross-provider delivery-gate route-absence regression for a canonical-length token containing a disallowed character.
-- Sprint135 — cross-provider positive registration metadata regression using one canonical valid synthetic token, proving exact route/controller/method/throttle/token-middleware metadata while registration remains inert and production side-effect services remain unresolved.
+- Sprint134 — cross-provider delivery-gate route-absence regression.
+- Sprint135 — canonical-valid-token cross-provider route-registration metadata and inertness regression.
+- Sprint136 — canonical-valid-token authenticated HTTP positive-path regression proving the composed registered route → token middleware → real controller path for both control planes while side-effect application services remain synthetic/test-owned and production filesystem/database adapters remain unresolved.
 
-## 3. Sprint135 closure evidence
+## 3. Sprint136 closure evidence
 
-Sprint135 is closed through PR #686.
+Sprint136 is closed through engineering PR #688.
 
-- Canonical squash commit: `c13ea1e468154fc1997a48ad5ce7c0132ddbc1c9`
-- Parent canonical checkpoint: `3bc22b9f31b9855ea15b750cd67af1d13537a93c`
-- Exact Sprint135 engineering envelope: four paths
-- Frozen Sprint135 envelope SHA-256: `628d99da2ce7f65938dc12df387c829748e36c4a8d8cab18a08eb5402fcf78fc`
-- Exact-head pull-request workflows: 19/19 successful
-- Product Owner merge authority workflow run `34683875845`: successful
+- Canonical engineering squash commit: `2a92a870d9c8388bdb9ac4f516e9d671237ce116`
+- Parent canonical documentation checkpoint: `8e839881d7022df46516cd5a8ce83cdc58ee7a1b`
+- Exact Sprint136 engineering envelope: four paths
+- Frozen Sprint136 envelope SHA-256: `b459daf7b7f52fd2b028452b821dfa13760f8b050116bdf2fdb5db4d8485fca8`
+- Final exact-head engineering SHA before merge: `93c447566efbd75e3e206ab0756cf49716231b11`
+- Exact-head pull-request workflows: 20/20 successful
+- Product Owner merge authority workflow run `34685054761`: successful
 - Merge method: squash with exact-head guard
+
+Sprint136 qualified a test-process-only authenticated HTTP composition using a canonical-minimum valid synthetic token. Real registered routes, real token middleware, and real controllers were exercised. Materialization and DB-attestation side effects were supplied by synthetic/test-owned application instances and in-memory doubles; production filesystem and database identity adapters were bomb-isolated and remained unresolved.
 
 Detailed evidence:
 
-- `docs/SPRINT135_FINAL_SHIFT_CLOSE_CANONICAL_CONTROL_PLANE_POSITIVE_REGISTRATION_METADATA_REGRESSION.md`
-- `ops/final-shift-close/CANONICAL_RUNTIME_CONTROL_PLANE_POSITIVE_REGISTRATION_METADATA_REGRESSION_CONTRACT.json`
-- `apps/web/tests/final-shift-close-runtime-control-plane-positive-registration-metadata-regression.php`
+- `docs/SPRINT136_FINAL_SHIFT_CLOSE_CANONICAL_CONTROL_PLANE_AUTHENTICATED_HTTP_POSITIVE_PATH_REGRESSION.md`
+- `ops/final-shift-close/CANONICAL_RUNTIME_CONTROL_PLANE_AUTHENTICATED_HTTP_POSITIVE_PATH_REGRESSION_CONTRACT.json`
+- `apps/web/tests/final-shift-close-runtime-control-plane-authenticated-http-positive-path-regression.php`
 
 ## 4. Operational truth — NO-GO remains authoritative
 
-Sprint135 does not grant operational authority. Current machine-readable state remains:
+Sprint136 does not grant operational authority. Current machine-readable state remains:
 
 - migration #27 execution: `NOT_EXECUTED` / `NOT_PERFORMED`;
 - permission provisioning: `NONE`;
@@ -121,6 +120,7 @@ The following must not be described as complete unless separately qualified and 
 - qualification and selection of a non-synthetic durable activation target;
 - real operational runtime-binding manifest materialization;
 - real operational database-binding attestation;
+- operational runtime-token provisioning;
 - Technical Preview activation;
 - Production activation;
 - deployment/release publication;
@@ -128,9 +128,11 @@ The following must not be described as complete unless separately qualified and 
 
 ## 6. Next engineering position
 
-The next engineering activity is **Sprint136 bounded discovery from canonical post-Sprint135**.
+The next engineering activity is **Sprint137 bounded discovery from canonical post-Sprint136**.
 
-Sprint136 is not considered started or complete merely because it is named here. Bounded discovery must first identify the smallest non-duplicative engineering gap, preserve Sprint130–Sprint135 executable ownership, remain fail-closed and deny-by-default, and avoid converting source readiness into operational authority.
+Sprint137 is not considered started or complete merely because it is named here. Bounded discovery must identify the smallest non-duplicative engineering gap, preserve Sprint130–Sprint136 executable ownership, remain fail-closed and deny-by-default, and avoid converting source readiness into operational authority.
+
+No Sprint137 implementation or source envelope is preselected by this manifest.
 
 ## 7. Documentation responsibility model
 
@@ -147,6 +149,6 @@ Historical status sections in technical handbooks remain provenance and do not o
 
 ## 8. Update rule
 
-Every material closed sprint must reconcile this manifest and the four root summary documents in the closure/handoff, or explicitly record why no current-state update is required. Current project status must never be inferred from a stale historical sprint heading.
+Every material closed sprint must reconcile this manifest and the four root summary documents in the closure/handoff, or explicitly record why no current-state update is required. The just-closed active sprint workflow must also relinquish full-envelope ownership and remain successor-compatible while preserving its historical executable regression.
 
 Author by Lab | zefry
