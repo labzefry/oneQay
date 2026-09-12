@@ -1,10 +1,10 @@
 # oneQay Roadmap
 
-**Roadmap checkpoint:** post-Sprint134
-**Canonical engineering baseline:** `185cbe9ddd4346b9d8c9e7ac7af283a20b9617bd`
+**Roadmap checkpoint:** post-Sprint135
+**Canonical engineering baseline:** `c13ea1e468154fc1997a48ad5ce7c0132ddbc1c9`
 **Current state authority:** `PROJECT_MANIFEST.md`
 
-This roadmap describes sequencing and gates. It does **not** grant operational authority. A roadmap item marked complete means its bounded repository objective was completed; it does not imply deployment, migration execution, runtime activation, Technical Preview activation, or Production activation unless those states are separately evidenced.
+This roadmap describes sequencing and gates. It does **not** grant operational authority. A completed roadmap item means its bounded repository objective was completed; it does not imply deployment, migration execution, runtime activation, Technical Preview activation, or Production activation unless separately evidenced.
 
 ## Horizon A — Platform and repository foundation — completed
 
@@ -25,7 +25,7 @@ This roadmap describes sequencing and gates. It does **not** grant operational a
 - [x] Durable idempotency and scoped authorization preservation
 - [x] Historical compatibility/regression preservation across POS foundations
 
-These foundations are repository/source achievements. They are not a statement that a complete production POS has been activated.
+These foundations are repository/source achievements, not a statement that a complete production POS has been activated.
 
 ## Horizon C — JRN-010 cash and variance evidence — completed through bounded source objectives
 
@@ -38,7 +38,7 @@ These foundations are repository/source achievements. They are not a statement t
 
 Representative milestones: Sprint55, Sprint64, Sprint70, and Sprint80.
 
-## Horizon D — Final Shift Close source/readiness chain — completed through Sprint134 engineering boundary
+## Horizon D — Final Shift Close source/readiness chain — completed through Sprint135 engineering boundary
 
 - [x] Source-only migration #27 materialization — Sprint88
 - [x] Final Shift Close application-readiness contract — Sprint89
@@ -50,42 +50,39 @@ Representative milestones: Sprint55, Sprint64, Sprint70, and Sprint80.
 - [x] Middleware positive-path regression — Sprint131
 - [x] Controller positive-path regression — Sprint132
 - [x] Controller fail-closed regression — Sprint133
-- [x] Delivery-gate registration regression — Sprint134
+- [x] Cross-provider delivery-gate invalid-token route-absence regression — Sprint134
+- [x] Cross-provider canonical-valid-token registration metadata and inertness regression — Sprint135
 
-### Important boundary
+Migration #27 remains source-only and `NOT_EXECUTED`; completion of this engineering horizon does not authorize operational use.
 
-Migration #27 being present in source does **not** mean it has been executed. Current authoritative state remains `NOT_EXECUTED`.
-
-## Horizon E — Sprint135+ bounded engineering — next
+## Horizon E — Sprint136+ bounded engineering — next
 
 Status: **NOT YET SELECTED / NOT COMPLETED**.
 
-The next engineering sprint begins with bounded discovery from post-Sprint134. The objective must be derived from the smallest non-duplicative remaining gap and must preserve existing regression evidence and lifecycle gates.
+Sprint136 begins only after bounded discovery identifies the smallest non-duplicative remaining engineering gap from post-Sprint135.
 
-Expected selection rules:
+Selection rules:
 
 1. prove the gap exists before adding source;
 2. freeze a bounded source envelope;
-3. preserve exact historical regressions or make successor compatibility explicit;
+3. preserve Sprint130–Sprint135 owned regressions and historical compatibility;
 4. stay fail-closed and deny-by-default;
-5. avoid operational adapter invocation unless separately authorized;
+5. avoid operational adapter invocation and runtime-token provisioning unless separately authorized;
 6. qualify exact head in CI before merge;
-7. update canonical project-state documentation at closure when material state changes.
+7. reconcile canonical project-state documentation at closure.
 
-No roadmap text pre-authorizes a specific Sprint135 implementation.
+No roadmap text pre-authorizes a specific Sprint136 implementation.
 
 ## Horizon F — Operational qualification — blocked / separate authority
 
 Operational work may proceed only after its prerequisites and explicit authority exist.
 
-### Current blockers
-
-- [ ] Qualified non-synthetic durable runtime target — **missing**
+- [ ] Qualified non-synthetic durable runtime target — missing
 - [ ] Selected target — currently `null`
-- [ ] Migration #27 execution authority — **not granted**
+- [ ] Migration #27 execution authority — not granted
 - [ ] Permission provisioning authority — current state `NONE`
 - [ ] Feature activation authority — current state `INACTIVE`
-- [ ] Authenticated operational runtime configuration channel — must be qualified for selected environment
+- [ ] Authenticated operational runtime configuration channel — must be qualified for the selected environment
 - [ ] Real operational binding/attestation evidence — not performed
 - [ ] Deployment authority — `NOT_GRANTED`
 
@@ -97,17 +94,17 @@ Production remains rejected as the first activation target; any first activation
 
 Technical Preview activation remains `NOT_AUTHORIZED`.
 
-Before this horizon can change state, the repository requires, at minimum, a qualified target, separately authorized migration/permission/feature actions as applicable, exact running-source/artifact evidence, health attestation, configuration verification, rollback evidence, and an explicit activation decision.
+A state change requires a qualified target, separately authorized migration/permission/feature actions as applicable, exact running-source/artifact evidence, health attestation, configuration verification, rollback evidence, and explicit activation authority.
 
 ## Horizon H — Production activation — NO-GO until separately authorized
 
 Production activation remains `NOT_AUTHORIZED`.
 
-Production is not unlocked merely because Technical Preview, source, migration files, providers, control-plane routes, or CI regressions exist. Production requires a distinct operational readiness and authority chain.
+Production is not unlocked merely because source, migration files, providers, control-plane routes, synthetic regression evidence, or Technical Preview readiness artifacts exist.
 
 ## Horizon I — Updater/release activation — inactive until separately authorized
 
-Updater activation remains `INACTIVE`. Release/deployment procedures documented elsewhere are procedures only and do not establish authority or evidence that a release has occurred.
+Updater activation remains `INACTIVE`. Release/deployment procedures are procedures only and do not establish authority or evidence that a release occurred.
 
 ## Roadmap maintenance rule
 
@@ -117,6 +114,7 @@ At every material sprint closure:
 - do not mark operational activation complete from source evidence;
 - update `PROJECT_MANIFEST.md` first;
 - reconcile README, TASKS, CHANGELOG, and ROADMAP against that manifest;
+- make the just-closed sprint workflow successor-compatible;
 - retain per-sprint detail in `docs/` rather than duplicating full evidence into every root document.
 
 Author by Lab | zefry
