@@ -3,9 +3,9 @@
 **Product:** oneQay — The Future of Intelligent Business Management
 **Repository owner / attribution:** Lab | zefry
 **Default branch:** `main`
-**Canonical engineering checkpoint:** Sprint137
-**Canonical engineering commit:** `62196919fb2c2a172bc0a290159aa26a045d4ed9`
-**Latest engineering PR:** #690 — `Sprint137: canonical control-plane authenticated HTTP fail-closed regression`
+**Canonical engineering checkpoint:** Sprint138
+**Canonical engineering commit:** `7f562ea48a0255b7e9803f6b268bd00a7e3b3dcf`
+**Latest engineering PR:** #692 — `Sprint138: canonical control-plane authenticated HTTP throttle regression`
 **Status date:** 2026-09-12
 
 > This file is the canonical human-readable source of truth for current oneQay project status. README, CHANGELOG, TASKS, and ROADMAP summarize this manifest. Per-sprint documents, contracts, workflows, merged pull requests, and Git history remain the detailed evidence trail.
@@ -14,16 +14,16 @@
 
 oneQay is an actively engineered enterprise business-management platform using a Modular Monolith First architecture with Clean Architecture, DDD, first-class tenant context, deny-by-default authorization, and fail-closed engineering controls.
 
-The repository has progressed through **Sprint137**. The latest engineering chain focuses on Final Shift Close runtime control-plane qualification while deliberately separating source readiness from operational activation.
+The repository has progressed through **Sprint138**. The latest engineering chain focuses on Final Shift Close runtime control-plane qualification while deliberately separating source readiness from operational activation.
 
 ### Canonical state summary
 
 | Area | Current canonical state |
 | --- | --- |
-| Latest closed engineering sprint | Sprint137 |
-| Latest engineering commit | `62196919fb2c2a172bc0a290159aa26a045d4ed9` |
-| Latest engineering PR | #690, merged |
-| Sprint137 exact-head CI | 21/21 pull-request workflow runs successful |
+| Latest closed engineering sprint | Sprint138 |
+| Latest engineering commit | `7f562ea48a0255b7e9803f6b268bd00a7e3b3dcf` |
+| Latest engineering PR | #692, merged |
+| Sprint138 exact-head CI | 22/22 pull-request workflow runs successful |
 | Architecture | Modular Monolith First, Clean Architecture, DDD |
 | Backend | Laravel / PHP |
 | Frontend | Vue 3 + Inertia + Vite |
@@ -66,31 +66,32 @@ These are source/evidence achievements, not production activation.
 - Sprint135 — canonical-valid-token cross-provider route-registration metadata and inertness regression.
 - Sprint136 — canonical-valid-token authenticated HTTP positive-path regression through real route, token middleware, and real controller with synthetic side-effect services.
 - Sprint137 — canonical-valid-token authenticated HTTP fail-closed regression proving materialization and DB-attestation failures remain exact HTTP 503 contracts through the composed HTTP path while production filesystem/database adapters remain unresolved and sensitive internals remain undisclosed.
+- Sprint138 — canonical-valid authenticated HTTP throttle regression proving materialization `1/min` and DB-attestation `2/min` enforcement through the real HTTP throttle middleware, with excess requests rejected as HTTP 429 before repeated synthetic side effects.
 
-## 3. Sprint137 closure evidence
+## 3. Sprint138 closure evidence
 
-Sprint137 is closed through engineering PR #690.
+Sprint138 is closed through engineering PR #692.
 
-- Canonical engineering squash commit: `62196919fb2c2a172bc0a290159aa26a045d4ed9`
-- Parent canonical documentation checkpoint: `38084e1d61d0654f4b1235acb891f6c6912d8813`
-- Exact Sprint137 engineering envelope: four paths
-- Frozen Sprint137 envelope SHA-256: `52a6fd043b7004add6d454feba69de97ae859a6a8e7a27cd97f25ca891516f5d`
-- Final exact-head engineering SHA before merge: `e050c83db4990a8aa9a3f5fd660437f2498128d8`
-- Exact-head pull-request workflows: 21/21 successful
-- Product Owner merge authority workflow run `34700386217`: successful
+- Canonical engineering squash commit: `7f562ea48a0255b7e9803f6b268bd00a7e3b3dcf`
+- Parent canonical documentation checkpoint: `15acffd23cac4c28a395f1d901a54eb94b6ca06e`
+- Exact Sprint138 engineering envelope: four paths
+- Frozen Sprint138 envelope SHA-256: `b26aae5dde0a1c39a2cbfbe494ed628ee8eb8c64597404caf17a01def13fe0ab`
+- Final exact-head engineering SHA before merge: `5d4fa3978e175cb3179878c13be560874bc2e0b5`
+- Exact-head pull-request workflows: 22/22 successful
+- Product Owner merge authority workflow run `34701268872`: successful
 - Merge method: squash with exact-head guard
 
-Sprint137 qualified test-process-only authenticated HTTP failure composition using one canonical-minimum valid synthetic token. The materialization path returned exact HTTP `503` / `materialization_unavailable` from a blocked synthetic selection without invoking the writer. The DB-attestation path returned exact HTTP `503` / `RUNTIME_DB_BINDING_ATTESTATION_UNAVAILABLE` from a throwing synthetic identity reader while the production database reader remained unresolved. Both paths preserved private/no-store response behavior and internal-detail non-disclosure.
+Sprint138 qualified test-process-only authenticated HTTP throttle enforcement using a canonical-minimum valid synthetic token and isolated in-process limiter state. Materialization allowed one authenticated request, returned HTTP `429` for the second request in the same limiter window, and kept the in-memory writer at exactly one invocation. DB-binding attestation allowed two authenticated requests, returned HTTP `429` for the third request, and kept the synthetic identity reader at exactly two invocations. Production filesystem/database adapters remained unresolved, the canonical runtime manifest remained unwritten, and throttle responses did not expose the bearer fixture or synthetic fixture paths.
 
 Detailed evidence:
 
-- `docs/SPRINT137_FINAL_SHIFT_CLOSE_CANONICAL_CONTROL_PLANE_AUTHENTICATED_HTTP_FAIL_CLOSED_REGRESSION.md`
-- `ops/final-shift-close/CANONICAL_RUNTIME_CONTROL_PLANE_AUTHENTICATED_HTTP_FAIL_CLOSED_REGRESSION_CONTRACT.json`
-- `apps/web/tests/final-shift-close-runtime-control-plane-authenticated-http-fail-closed-regression.php`
+- `docs/SPRINT138_FINAL_SHIFT_CLOSE_CANONICAL_CONTROL_PLANE_AUTHENTICATED_HTTP_THROTTLE_REGRESSION.md`
+- `ops/final-shift-close/CANONICAL_RUNTIME_CONTROL_PLANE_AUTHENTICATED_HTTP_THROTTLE_REGRESSION_CONTRACT.json`
+- `apps/web/tests/final-shift-close-runtime-control-plane-authenticated-http-throttle-regression.php`
 
 ## 4. Operational truth — NO-GO remains authoritative
 
-Sprint137 does not grant operational authority. Current machine-readable state remains:
+Sprint138 does not grant operational authority. Current machine-readable state remains:
 
 - migration #27 execution: `NOT_EXECUTED` / `NOT_PERFORMED`;
 - permission provisioning: `NONE`;
@@ -129,11 +130,11 @@ The following must not be described as complete unless separately qualified and 
 
 ## 6. Next engineering position
 
-The next engineering activity is **Sprint138 bounded discovery from canonical post-Sprint137**.
+The next engineering activity is **Sprint139 bounded discovery from canonical post-Sprint138**.
 
-Sprint138 is not considered started or complete merely because it is named here. Bounded discovery must identify the smallest non-duplicative engineering gap, preserve Sprint130–Sprint137 executable ownership, remain fail-closed and deny-by-default, and avoid converting source readiness into operational authority.
+Sprint139 is not considered started or complete merely because it is named here. Bounded discovery must identify the smallest non-duplicative engineering gap, preserve Sprint130–Sprint138 executable ownership, remain fail-closed and deny-by-default, and avoid converting source readiness into operational authority.
 
-No Sprint138 implementation or source envelope is preselected by this manifest.
+No Sprint139 implementation or source envelope is preselected by this manifest.
 
 ## 7. Documentation responsibility model
 
