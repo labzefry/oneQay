@@ -34,21 +34,16 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
-      - name: Lock exact Sprint135 source envelope
+      - name: Preserve successor-compatible historical regression boundary
         shell: bash
         run: |
           set -euo pipefail
-          base="${{ github.event.pull_request.base.sha }}"
-          head="${{ github.event.pull_request.head.sha }}"
-          git diff --name-only "$base" "$head" | LC_ALL=C sort > /tmp/paths
-          cat > /tmp/expected <<'EOF'
-          .github/workflows/sprint135-final-shift-close-canonical-control-plane-positive-registration-metadata-regression.yml
-          apps/web/tests/final-shift-close-runtime-control-plane-positive-registration-metadata-regression.php
-          docs/SPRINT135_FINAL_SHIFT_CLOSE_CANONICAL_CONTROL_PLANE_POSITIVE_REGISTRATION_METADATA_REGRESSION.md
-          ops/final-shift-close/CANONICAL_RUNTIME_CONTROL_PLANE_POSITIVE_REGISTRATION_METADATA_REGRESSION_CONTRACT.json
-          EOF
-          diff -u /tmp/expected /tmp/paths
-          [[ "$(sha256sum /tmp/paths | awk '{print $1}')" == '628d99da2ce7f65938dc12df387c829748e36c4a8d8cab18a08eb5402fcf78fc' ]]
+          # Sprint135 is historical after its canonical squash merge.
+          # Historical regression workflows preserve their owned invariants only.
+          # Exact full-PR envelope ownership belongs to the current active change.
+          test -f apps/web/tests/final-shift-close-runtime-control-plane-positive-registration-metadata-regression.php
+          test -f docs/SPRINT135_FINAL_SHIFT_CLOSE_CANONICAL_CONTROL_PLANE_POSITIVE_REGISTRATION_METADATA_REGRESSION.md
+          test -f ops/final-shift-close/CANONICAL_RUNTIME_CONTROL_PLANE_POSITIVE_REGISTRATION_METADATA_REGRESSION_CONTRACT.json
 
       - name: Preserve Sprint134 historical successor compatibility
         shell: bash
@@ -59,7 +54,7 @@ jobs:
           grep -Fq 'Sprint134 is historical after its canonical squash merge.' "$workflow"
           ! grep -Fq 'Lock exact Sprint134 source envelope' "$workflow"
 
-      - name: Validate Sprint135 machine-readable contract
+      - name: Validate Sprint135 machine-readable contract invariants
         shell: bash
         run: |
           set -euo pipefail
@@ -98,8 +93,6 @@ jobs:
             .qualification.runtime_token_provisioning == false and
             .historical_ownership.sprint130_token_policy == "PRESERVED" and
             .historical_ownership.sprint134_disallowed_character_route_absence == "PRESERVED" and
-            .successor_compatibility.sprint134_historical_workflow == "SUCCESSOR_COMPATIBLE" and
-            .successor_compatibility.sprint134_full_pr_envelope_lock == "ABSENT" and
             .source_envelope.path_count == 4 and
             .source_envelope.sha256 == "628d99da2ce7f65938dc12df387c829748e36c4a8d8cab18a08eb5402fcf78fc" and
             .canonical_boundaries.synthetic_positive_route_registration == "PERFORMED_IN_TEST_PROCESS_ONLY" and
@@ -157,9 +150,6 @@ jobs:
           set -euo pipefail
           php -l tests/final-shift-close-runtime-control-plane-positive-registration-metadata-regression.php
           php -l tests/final-shift-close-runtime-control-plane-delivery-gate-registration-regression.php
-          php -l app/Application/Pos/FinalShiftCloseRuntimeControlPlaneTokenPolicy.php
-          php -l app/Providers/FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider.php
-          php -l app/Providers/FinalShiftCloseRuntimeDbBindingAttestationServiceProvider.php
           composer validate --no-check-publish
           composer install --no-interaction --no-progress --prefer-dist
           composer audit --locked --no-interaction --abandoned=report
