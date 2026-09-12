@@ -1,12 +1,12 @@
 # oneQay Tasks
 
-**Current engineering checkpoint:** post-Sprint137
-**Canonical engineering commit:** `62196919fb2c2a172bc0a290159aa26a045d4ed9`
+**Current engineering checkpoint:** post-Sprint138
+**Canonical engineering commit:** `7f562ea48a0255b7e9803f6b268bd00a7e3b3dcf`
 **Canonical status authority:** `PROJECT_MANIFEST.md`
 
 This file is the current workboard. It separates **completed source engineering**, **next bounded engineering**, and **operational actions that remain unauthorized**.
 
-## Completed through Sprint137
+## Completed through Sprint138
 
 - [x] Core modular-monolith architecture and repository governance foundation
 - [x] Tenant-context-first and deny-by-default authorization foundations
@@ -27,39 +27,42 @@ This file is the current workboard. It separates **completed source engineering*
 - [x] Canonical cross-provider positive registration metadata regression — Sprint135
 - [x] Canonical authenticated HTTP route → middleware → controller positive-path regression — Sprint136
 - [x] Canonical authenticated HTTP route → middleware → controller fail-closed regression — Sprint137
-- [x] Sprint137 PR #690 squash merged
-- [x] Sprint137 exact-head pull-request qualification — 21/21 successful
-- [x] Sprint137 Product Owner merge-authority workflow run `34700386217` successful
-- [x] Sprint137 post-merge operational NO-GO verification
+- [x] Canonical authenticated HTTP throttle enforcement regression — Sprint138
+- [x] Materialization first request allowed; second request throttled with HTTP 429 and writer remains at one invocation
+- [x] DB attestation first two requests allowed; third request throttled with HTTP 429 and synthetic reader remains at two invocations
+- [x] Sprint138 PR #692 squash merged
+- [x] Sprint138 exact-head pull-request qualification — 22/22 successful
+- [x] Sprint138 Product Owner merge-authority workflow run `34701268872` successful
+- [x] Sprint138 post-merge operational NO-GO verification
 
-## Post-Sprint137 documentation reconciliation
+## Post-Sprint138 documentation reconciliation
 
-- [x] Advance `PROJECT_MANIFEST.md` to Sprint137 engineering truth
-- [x] Advance `README.md` to Sprint137 current status
-- [x] Record Sprint137 closure in `CHANGELOG.md`
+- [x] Advance `PROJECT_MANIFEST.md` to Sprint138 engineering truth
+- [x] Advance `README.md` to Sprint138 current status
+- [x] Record Sprint138 closure in `CHANGELOG.md`
 - [x] Advance `TASKS.md` current workboard
-- [x] Advance `ROADMAP.md` completed engineering horizon and Sprint138 next position
-- [x] Convert Sprint137 full-envelope workflow ownership to successor-compatible historical regression ownership
+- [x] Advance `ROADMAP.md` completed engineering horizon and Sprint139 next position
+- [x] Convert Sprint138 full-envelope workflow ownership to successor-compatible historical regression ownership
 
 GitHub PR/CI state remains authoritative for the transient publication status of this bounded reconciliation.
 
 ## Next bounded engineering
 
-### Sprint138 — bounded discovery next
+### Sprint139 — bounded discovery next
 
-Sprint138 has **not** been selected, started, or completed merely because it is named here.
+Sprint139 has **not** been selected, started, or completed merely because it is named here.
 
 The next engineering activity must:
 
-- discover the smallest remaining non-duplicative executable gap from canonical post-Sprint137;
-- preserve Sprint130–Sprint137 control-plane ownership and historical regressions;
+- discover the smallest remaining non-duplicative executable gap from canonical post-Sprint138;
+- preserve Sprint130–Sprint138 control-plane ownership and historical regressions;
 - preserve existing POS/JRN evidence;
 - remain fail-closed and deny-by-default;
 - avoid operational adapter invocation or runtime-token provisioning unless separately authorized;
 - freeze a bounded source envelope before implementation;
 - qualify the exact PR head before merge.
 
-No specific Sprint138 implementation is canonical until bounded discovery freezes the objective and envelope.
+No specific Sprint139 implementation is canonical until bounded discovery freezes the objective and envelope.
 
 ## Operational blockers / separate authority required
 

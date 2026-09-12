@@ -4,6 +4,25 @@ This changelog records **material canonical progress**, not every intermediate c
 
 Current project-state authority: [`PROJECT_MANIFEST.md`](PROJECT_MANIFEST.md).
 
+## 2026-09-12 — Sprint138 closed
+
+**Sprint138: canonical control-plane authenticated HTTP throttle regression**
+
+- PR #692 squash merged.
+- Canonical engineering commit: `7f562ea48a0255b7e9803f6b268bd00a7e3b3dcf`.
+- Parent canonical documentation checkpoint: `15acffd23cac4c28a395f1d901a54eb94b6ca06e`.
+- Added CI-only canonical-valid authenticated HTTP throttle enforcement qualification for both Final Shift Close control planes.
+- Proved materialization `throttle:1,1` allows the first authenticated request and returns HTTP `429` for the second request in the same limiter window without a second in-memory manifest write.
+- Proved DB-attestation `throttle:2,1` allows the first two authenticated requests and returns HTTP `429` for the third request without a third synthetic database-identity read.
+- Used separate synthetic source IPs to isolate both route request budgets inside the same test process.
+- Production manifest-writer and database-identity-reader bindings remained unresolved; no canonical runtime manifest, real database connection, operational runtime token, or operational control-plane request was used.
+- Exact Sprint138 engineering envelope: four paths.
+- Frozen envelope SHA-256: `b26aae5dde0a1c39a2cbfbe494ed628ee8eb8c64597404caf17a01def13fe0ab`.
+- Final exact-head engineering SHA before merge: `5d4fa3978e175cb3179878c13be560874bc2e0b5`.
+- Exact-head pull-request qualification: 22/22 workflow runs successful.
+- Product Owner merge-authority workflow run `34701268872` completed successfully.
+- Operational NO-GO state remained unchanged.
+
 ## 2026-09-12 — Sprint137 closed
 
 **Sprint137: canonical control-plane authenticated HTTP fail-closed regression**
@@ -75,7 +94,7 @@ Current project-state authority: [`PROJECT_MANIFEST.md`](PROJECT_MANIFEST.md).
 
 ## 2026-09-05 onward — Final Shift Close readiness and runtime-control-plane chain
 
-Material milestones include Sprint88 source-only migration #27, Sprint89 application-readiness, later application/provider/runtime-binding/DB-attestation/authorization/target-readiness qualification, and the Sprint130–Sprint137 canonical control-plane hardening chain.
+Material milestones include Sprint88 source-only migration #27, Sprint89 application-readiness, later application/provider/runtime-binding/DB-attestation/authorization/target-readiness qualification, and the Sprint130–Sprint138 canonical control-plane hardening chain.
 
 Throughout this sequence, migration execution, permission provisioning, deployment, Technical Preview activation, Production activation, and updater activation remained separately gated.
 
@@ -89,7 +108,7 @@ Earlier repository work established the architecture/governance platform, authen
 
 ## Current lifecycle boundary
 
-As of the post-Sprint137 engineering checkpoint:
+As of the post-Sprint138 engineering checkpoint:
 
 - migration #27 execution: `NOT_EXECUTED`;
 - permission provisioning: `NONE`;
