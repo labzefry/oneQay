@@ -51,8 +51,8 @@ final class FinalShiftCloseRuntimeDbBindingAttestationServiceProvider extends Se
         }
 
         Route::middleware([
-            'throttle:2,1',
             RequireFinalShiftCloseRuntimeBindingTokenMiddleware::class,
+            'throttle:2,1',
         ])->group(base_path('routes/final-shift-close-runtime-db-binding-attestation.php'));
     }
 
