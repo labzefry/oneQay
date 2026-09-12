@@ -34,23 +34,11 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
-      - name: Lock exact Sprint139 source envelope
+      - name: Preserve successor-compatible historical regression boundary
         shell: bash
         run: |
           set -euo pipefail
-          base="${{ github.event.pull_request.base.sha }}"
-          head="${{ github.event.pull_request.head.sha }}"
-          git diff --name-only "$base" "$head" | LC_ALL=C sort > /tmp/paths
-          cat > /tmp/expected <<'EOF'
-          .github/workflows/sprint139-final-shift-close-canonical-control-plane-auth-before-throttle-regression.yml
-          apps/web/app/Providers/FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider.php
-          apps/web/app/Providers/FinalShiftCloseRuntimeDbBindingAttestationServiceProvider.php
-          apps/web/tests/final-shift-close-runtime-control-plane-auth-before-throttle-regression.php
-          docs/SPRINT139_FINAL_SHIFT_CLOSE_CANONICAL_CONTROL_PLANE_AUTH_BEFORE_THROTTLE_REGRESSION.md
-          ops/final-shift-close/CANONICAL_RUNTIME_CONTROL_PLANE_AUTH_BEFORE_THROTTLE_REGRESSION_CONTRACT.json
-          EOF
-          diff -u /tmp/expected /tmp/paths
-          [[ "$(sha256sum /tmp/paths | awk '{print $1}')" == 'be9546afdf82465da5f9d160845edc4cf6599f306445f941226e12288a7b2286' ]]
+          echo 'Sprint139 is historical after its canonical squash merge.'
 
       - name: Preserve Sprint138 historical successor compatibility
         shell: bash
@@ -61,7 +49,7 @@ jobs:
           grep -Fq 'Sprint138 is historical after its canonical squash merge.' "$workflow"
           ! grep -Fq 'Lock exact Sprint138 source envelope' "$workflow"
 
-      - name: Validate Sprint139 machine-readable contract
+      - name: Validate Sprint139 machine-readable contract invariants
         shell: bash
         run: |
           set -euo pipefail
@@ -122,7 +110,6 @@ jobs:
             .historical_ownership.sprint138_authenticated_http_throttle == "PRESERVED" and
             .successor_compatibility.sprint138_historical_workflow == "SUCCESSOR_COMPATIBLE" and
             .successor_compatibility.sprint138_full_pr_envelope_lock == "ABSENT" and
-            .successor_compatibility.active_sprint_envelope_authority == "SPRINT139_WORKFLOW_ONLY" and
             .source_envelope.path_count == 6 and
             .source_envelope.sha256 == "be9546afdf82465da5f9d160845edc4cf6599f306445f941226e12288a7b2286" and
             .canonical_boundaries.synthetic_authenticated_http_route_invocation == "PERFORMED_IN_TEST_PROCESS_ONLY" and
@@ -154,7 +141,7 @@ jobs:
           materialization = Path('apps/web/app/Providers/FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider.php').read_text()
           db_attestation = Path('apps/web/app/Providers/FinalShiftCloseRuntimeDbBindingAttestationServiceProvider.php').read_text()
 
-          materialization_auth = 'RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware::class,'
+          materialization_auth = 'RequireFinalShiftCloseRuntimeBindingManifestMaterializationTokenMiddleware::class,'
           materialization_throttle = "'throttle:1,1',"
           db_auth = 'RequireFinalShiftCloseRuntimeBindingTokenMiddleware::class,'
           db_throttle = "'throttle:2,1',"
