@@ -34,22 +34,16 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
-      - name: Lock exact Sprint132 source envelope
+      - name: Preserve successor-compatible historical regression boundary
         shell: bash
         run: |
           set -euo pipefail
-          base="${{ github.event.pull_request.base.sha }}"
-          head="${{ github.event.pull_request.head.sha }}"
-          git diff --name-only "$base" "$head" | LC_ALL=C sort > /tmp/paths
-          cat > /tmp/expected <<'EOF'
-          .github/workflows/sprint131-final-shift-close-canonical-control-plane-positive-path-regression.yml
-          .github/workflows/sprint132-final-shift-close-canonical-control-plane-controller-positive-path-regression.yml
-          apps/web/tests/final-shift-close-runtime-control-plane-controller-positive-path-regression.php
-          docs/SPRINT132_FINAL_SHIFT_CLOSE_CANONICAL_CONTROL_PLANE_CONTROLLER_POSITIVE_PATH_REGRESSION.md
-          ops/final-shift-close/CANONICAL_RUNTIME_CONTROL_PLANE_CONTROLLER_POSITIVE_PATH_REGRESSION_CONTRACT.json
-          EOF
-          diff -u /tmp/expected /tmp/paths
-          [[ "$(sha256sum /tmp/paths | awk '{print $1}')" == '579a9aaad8f0c0b5496974bace345b8b5aad0928918c970b587df1836bba0388' ]]
+          # Sprint132 is historical from Sprint133 onward.
+          # Historical regression workflows validate their owned invariants only.
+          # Exact full-PR envelope locking belongs to the active sprint workflow.
+          test -f apps/web/tests/final-shift-close-runtime-control-plane-controller-positive-path-regression.php
+          test -f docs/SPRINT132_FINAL_SHIFT_CLOSE_CANONICAL_CONTROL_PLANE_CONTROLLER_POSITIVE_PATH_REGRESSION.md
+          test -f ops/final-shift-close/CANONICAL_RUNTIME_CONTROL_PLANE_CONTROLLER_POSITIVE_PATH_REGRESSION_CONTRACT.json
 
       - name: Prove Sprint131 historical successor compatibility
         shell: bash
