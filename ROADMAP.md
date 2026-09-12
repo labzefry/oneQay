@@ -1,7 +1,7 @@
 # oneQay Roadmap
 
-**Roadmap checkpoint:** post-Sprint136  
-**Canonical engineering baseline:** `2a92a870d9c8388bdb9ac4f516e9d671237ce116`  
+**Roadmap checkpoint:** post-Sprint136
+**Canonical engineering baseline:** `2a92a870d9c8388bdb9ac4f516e9d671237ce116`
 **Current state authority:** `PROJECT_MANIFEST.md`
 
 This roadmap describes sequencing and gates. It does **not** grant operational authority. A completed roadmap item means its bounded repository objective was completed; it does not imply deployment, migration execution, runtime activation, Technical Preview activation, or Production activation unless separately evidenced.
