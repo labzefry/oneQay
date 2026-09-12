@@ -1,7 +1,7 @@
 # oneQay Tasks
 
-**Current engineering checkpoint:** post-Sprint134  
-**Canonical engineering commit:** `185cbe9ddd4346b9d8c9e7ac7af283a20b9617bd`  
+**Current engineering checkpoint:** post-Sprint134
+**Canonical engineering commit:** `185cbe9ddd4346b9d8c9e7ac7af283a20b9617bd`
 **Canonical status authority:** `PROJECT_MANIFEST.md`
 
 This file is the current workboard. It deliberately separates **completed source engineering**, **next bounded engineering**, and **operational actions that remain unauthorized**.
@@ -40,8 +40,8 @@ This file is the current workboard. It deliberately separates **completed source
 - [x] Reconcile `CHANGELOG.md` with material Sprint55–Sprint134 progress
 - [x] Reconcile `ROADMAP.md` with completed horizon and next bounded horizon
 - [x] Convert Sprint134 active full-envelope workflow lock into successor-compatible historical regression ownership
-- [ ] Qualify the reconciliation delta in CI
-- [ ] Publish the reconciliation through normal PR governance
+
+Publication vehicle: PR #685. GitHub PR/CI state is authoritative for the transient publication status; this file does not duplicate a stale pending/success flag.
 
 ## Next bounded engineering
 
