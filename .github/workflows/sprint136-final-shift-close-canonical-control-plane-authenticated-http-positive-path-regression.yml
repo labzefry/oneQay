@@ -34,21 +34,11 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
-      - name: Lock exact Sprint136 source envelope
+      - name: Preserve successor-compatible historical regression boundary
         shell: bash
         run: |
           set -euo pipefail
-          base="${{ github.event.pull_request.base.sha }}"
-          head="${{ github.event.pull_request.head.sha }}"
-          git diff --name-only "$base" "$head" | LC_ALL=C sort > /tmp/paths
-          cat > /tmp/expected <<'EOF'
-          .github/workflows/sprint136-final-shift-close-canonical-control-plane-authenticated-http-positive-path-regression.yml
-          apps/web/tests/final-shift-close-runtime-control-plane-authenticated-http-positive-path-regression.php
-          docs/SPRINT136_FINAL_SHIFT_CLOSE_CANONICAL_CONTROL_PLANE_AUTHENTICATED_HTTP_POSITIVE_PATH_REGRESSION.md
-          ops/final-shift-close/CANONICAL_RUNTIME_CONTROL_PLANE_AUTHENTICATED_HTTP_POSITIVE_PATH_REGRESSION_CONTRACT.json
-          EOF
-          diff -u /tmp/expected /tmp/paths
-          [[ "$(sha256sum /tmp/paths | awk '{print $1}')" == 'b459daf7b7f52fd2b028452b821dfa13760f8b050116bdf2fdb5db4d8485fca8' ]]
+          echo 'Sprint136 is historical after its canonical squash merge.'
 
       - name: Preserve Sprint135 historical successor compatibility
         shell: bash
@@ -59,7 +49,7 @@ jobs:
           grep -Fq 'Sprint135 is historical after its canonical squash merge.' "$workflow"
           ! grep -Fq 'Lock exact Sprint135 source envelope' "$workflow"
 
-      - name: Validate Sprint136 machine-readable contract
+      - name: Validate Sprint136 machine-readable contract invariants
         shell: bash
         run: |
           set -euo pipefail
@@ -115,7 +105,6 @@ jobs:
             .historical_ownership.sprint135_positive_registration_metadata_and_inertness == "PRESERVED" and
             .successor_compatibility.sprint135_historical_workflow == "SUCCESSOR_COMPATIBLE" and
             .successor_compatibility.sprint135_full_pr_envelope_lock == "ABSENT" and
-            .successor_compatibility.active_sprint_envelope_authority == "SPRINT136_WORKFLOW_ONLY" and
             .source_envelope.path_count == 4 and
             .source_envelope.sha256 == "b459daf7b7f52fd2b028452b821dfa13760f8b050116bdf2fdb5db4d8485fca8" and
             .canonical_boundaries.synthetic_authenticated_http_route_invocation == "PERFORMED_IN_TEST_PROCESS_ONLY" and
