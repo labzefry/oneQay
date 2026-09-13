@@ -35,8 +35,8 @@
     "operational_dispatch_in_sprint154": "FORBIDDEN"
   },
   "source_envelope": {
-    "path_count": 6,
-    "sha256": "35499fbb12404b3ab5f25de924d4528060f4cf4eb362091b116e5faf3c3766c3"
+    "path_count": 7,
+    "sha256": "5dcf1fcd0b638ed9ec3d311947055a2b2c96c74d8e8fb5b74ff1f1b96bd1296f"
   },
   "canonical_boundaries": {
     "activation_executor_source_foundation": "MATERIALIZED_SOURCE_ONLY",
@@ -53,6 +53,11 @@
     "technical_preview_activation": "NOT_AUTHORIZED",
     "production_activation": "NOT_AUTHORIZED",
     "updater_activation": "INACTIVE"
+  },
+  "historical_successor_compatibility": {
+    "sprint116_workflow_path": ".github/workflows/sprint116-final-shift-close-post-selection-downstream-readiness.yml",
+    "reason": "EXACT_HEAD_CI_PROVED_STALE_FEATURE_ACTIVATION_ELIGIBILITY_ASSERTION",
+    "preserves_operational_no_go": true
   },
   "attribution": "Author by Lab | zefry"
 }
