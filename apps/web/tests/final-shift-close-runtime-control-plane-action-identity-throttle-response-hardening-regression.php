@@ -14,199 +14,99 @@ require_once __DIR__.'/../vendor/autoload.php';
 // Author by Lab | zefry
 $assert = static function (bool $condition, string $case): void {
     if (! $condition) {
-        throw new RuntimeException(
-            'Sprint145 Final Shift Close action identity throttle response hardening regression failed: '.$case,
-        );
+        throw new RuntimeException('Sprint145 action identity regression failed: '.$case);
     }
 };
 
 $middleware = new HardenFinalShiftCloseRuntimeControlPlaneThrottleResponseMiddleware();
-
 $materializationPath = 'internal/final-shift-close/runtime-binding-manifest/materialize';
-$dbAttestationPath = 'internal/final-shift-close/runtime-db-binding-attestation';
-$materializationRouteName = 'internal.final-shift-close.runtime-binding-manifest.materialize';
-$dbAttestationRouteName = 'internal.final-shift-close.runtime-db-binding-attestation';
-$materializationAction = FinalShiftCloseRuntimeBindingManifestMaterializationController::class.'@__invoke';
-$dbAttestationAction = FinalShiftCloseRuntimeDbBindingAttestationController::class.'@__invoke';
+$dbPath = 'internal/final-shift-close/runtime-db-binding-attestation';
+$materializationName = 'internal.final-shift-close.runtime-binding-manifest.materialize';
+$dbName = 'internal.final-shift-close.runtime-db-binding-attestation';
+$materializationActionName = FinalShiftCloseRuntimeBindingManifestMaterializationController::class.'@__invoke';
+$dbActionName = FinalShiftCloseRuntimeDbBindingAttestationController::class.'@__invoke';
+$controllerAction = static fn (string $action): array => ['uses' => $action, 'controller' => $action];
 
-$makeRequest = static function (
-    string $method,
-    string $path,
-    string $routeName,
-    array $routeMethods,
-    mixed $routeAction,
-): Request {
+$make = static function (string $method, string $path, string $name, array $methods, mixed $action): Request {
     $request = Request::create('/'.$path, $method);
-    $route = new Route($routeMethods, $path, $routeAction);
-    $route->name($routeName);
+    $route = new Route($methods, $path, $action);
+    $route->name($name);
     $request->setRouteResolver(static fn (): Route => $route);
-
     return $request;
 };
 
-$frameworkThrottle = static function (int $limit, string $body): Closure {
-    return static fn (Request $request): Response => new Response(
-        $body,
-        429,
-        [
-            'Retry-After' => '60',
-            'X-RateLimit-Limit' => (string) $limit,
-            'X-RateLimit-Remaining' => '0',
-            'X-RateLimit-Reset' => '1999999999',
-            'X-Sprint145-Framework-Probe' => 'preserved',
-        ],
-    );
+$throttled = static fn (int $limit, string $body): Closure => static fn (Request $request): Response => new Response(
+    $body,
+    429,
+    [
+        'Retry-After' => '60',
+        'X-RateLimit-Limit' => (string) $limit,
+        'X-RateLimit-Remaining' => '0',
+        'X-RateLimit-Reset' => '1999999999',
+        'X-Sprint145-Probe' => 'preserved',
+    ],
+);
+
+$frameworkOwned = static function (Response $response, string $body, string $case) use ($assert): void {
+    $assert($response->getStatusCode() === 429, $case.' status');
+    $assert((string) $response->getContent() === $body, $case.' body');
+    $assert($response->headers->get('X-Sprint145-Probe') === 'preserved', $case.' marker');
+    $assert($response->headers->get('X-Robots-Tag') === null, $case.' no hardening');
 };
 
-$assertFrameworkOwned = static function (Response $response, string $body, string $case) use ($assert): void {
-    $assert($response->getStatusCode() === 429, $case.' status remains 429');
-    $assert((string) $response->getContent() === $body, $case.' framework body remains untouched');
-    $assert(
-        $response->headers->get('X-Sprint145-Framework-Probe') === 'preserved',
-        $case.' framework marker remains preserved',
-    );
-    $assert($response->headers->get('X-Robots-Tag') === null, $case.' hardening header is not injected');
+$hardened = static function (Response $response, int $limit, string $case) use ($assert): void {
+    $assert($response->getStatusCode() === 429, $case.' status');
+    $assert((string) $response->getContent() === '', $case.' empty body');
+    $assert(str_contains((string) $response->headers->get('Cache-Control'), 'no-store'), $case.' no-store');
+    $assert(str_contains((string) $response->headers->get('Cache-Control'), 'private'), $case.' private');
+    $assert($response->headers->get('Pragma') === 'no-cache', $case.' pragma');
+    $assert($response->headers->get('X-Content-Type-Options') === 'nosniff', $case.' nosniff');
+    $assert($response->headers->get('X-Robots-Tag') === 'noindex, nofollow, noarchive', $case.' robots');
+    $assert($response->headers->get('Retry-After') === '60', $case.' retry-after');
+    $assert((int) $response->headers->get('X-RateLimit-Limit') === $limit, $case.' limit');
+    $assert($response->headers->get('X-Sprint145-Probe') === 'preserved', $case.' marker preserved');
 };
 
-$assertCanonicallyHardened = static function (Response $response, int $limit, string $case) use ($assert): void {
-    $assert($response->getStatusCode() === 429, $case.' status remains 429');
-    $assert((string) $response->getContent() === '', $case.' body is empty');
-
-    $cacheControl = (string) $response->headers->get('Cache-Control');
-    $assert(str_contains($cacheControl, 'no-store'), $case.' cache-control contains no-store');
-    $assert(str_contains($cacheControl, 'private'), $case.' cache-control contains private');
-    $assert($response->headers->get('Pragma') === 'no-cache', $case.' pragma is no-cache');
-    $assert($response->headers->get('X-Content-Type-Options') === 'nosniff', $case.' nosniff is present');
-    $assert(
-        $response->headers->get('X-Robots-Tag') === 'noindex, nofollow, noarchive',
-        $case.' robot indexing is excluded',
-    );
-    $assert($response->headers->get('Retry-After') === '60', $case.' Retry-After remains preserved');
-    $assert((int) $response->headers->get('X-RateLimit-Limit') === $limit, $case.' rate limit remains preserved');
-    $assert(
-        $response->headers->get('X-Sprint145-Framework-Probe') === 'preserved',
-        $case.' unrelated framework header remains preserved',
-    );
-};
-
-$shadowMaterializationBody = 'framework-owned-materialization-noncanonical-action';
-$shadowMaterialization = $middleware->handle(
-    $makeRequest(
-        'POST',
-        $materializationPath,
-        $materializationRouteName,
-        ['POST'],
-        static fn (): Response => new Response('', 204),
-    ),
-    $frameworkThrottle(1, $shadowMaterializationBody),
-);
-$assertFrameworkOwned(
-    $shadowMaterialization,
-    $shadowMaterializationBody,
-    'ACTION-ID-001 canonical materialization name/method/path with noncanonical action',
+$body = 'materialization-noncanonical-action';
+$frameworkOwned(
+    $middleware->handle($make('POST', $materializationPath, $materializationName, ['POST'], static fn (): Response => new Response('', 204)), $throttled(1, $body)),
+    $body,
+    'ACTION-ID-001',
 );
 
-$shadowDbGetBody = 'framework-owned-db-get-noncanonical-action';
-$shadowDbGet = $middleware->handle(
-    $makeRequest(
-        'GET',
-        $dbAttestationPath,
-        $dbAttestationRouteName,
-        ['GET', 'HEAD'],
-        static fn (): Response => new Response('', 204),
-    ),
-    $frameworkThrottle(2, $shadowDbGetBody),
-);
-$assertFrameworkOwned(
-    $shadowDbGet,
-    $shadowDbGetBody,
-    'ACTION-ID-002 canonical DB-attestation GET name/method/path with noncanonical action',
+$body = 'db-get-noncanonical-action';
+$frameworkOwned(
+    $middleware->handle($make('GET', $dbPath, $dbName, ['GET', 'HEAD'], static fn (): Response => new Response('', 204)), $throttled(2, $body)),
+    $body,
+    'ACTION-ID-002',
 );
 
-$shadowDbHeadBody = 'framework-owned-db-head-noncanonical-action';
-$shadowDbHead = $middleware->handle(
-    $makeRequest(
-        'HEAD',
-        $dbAttestationPath,
-        $dbAttestationRouteName,
-        ['GET', 'HEAD'],
-        static fn (): Response => new Response('', 204),
-    ),
-    $frameworkThrottle(2, $shadowDbHeadBody),
-);
-$assertFrameworkOwned(
-    $shadowDbHead,
-    $shadowDbHeadBody,
-    'ACTION-ID-003 canonical DB-attestation HEAD name/method/path with noncanonical action',
+$body = 'db-head-noncanonical-action';
+$frameworkOwned(
+    $middleware->handle($make('HEAD', $dbPath, $dbName, ['GET', 'HEAD'], static fn (): Response => new Response('', 204)), $throttled(2, $body)),
+    $body,
+    'ACTION-ID-003',
 );
 
-$canonicalMaterializationRequest = $makeRequest(
+$materializationRequest = $make(
     'POST',
     $materializationPath,
-    $materializationRouteName,
+    $materializationName,
     ['POST'],
-    $materializationAction,
+    $controllerAction($materializationActionName),
 );
-$materializationResolvedRoute = $canonicalMaterializationRequest->route();
-$assert($materializationResolvedRoute instanceof Route, 'ACTION-ID-004 materialization canonical route resolves');
-$assert(
-    $materializationResolvedRoute->getActionName() === $materializationAction,
-    'ACTION-ID-005 materialization canonical action identity is exact',
-);
-$canonicalMaterialization = $middleware->handle(
-    $canonicalMaterializationRequest,
-    $frameworkThrottle(1, 'canonical-materialization-framework-body'),
-);
-$assertCanonicallyHardened(
-    $canonicalMaterialization,
-    1,
-    'ACTION-ID-006 canonical materialization route action identity',
-);
+$assert($materializationRequest->route() instanceof Route, 'ACTION-ID-004 route resolves');
+$assert($materializationRequest->route()->getActionName() === $materializationActionName, 'ACTION-ID-005 exact action');
+$hardened($middleware->handle($materializationRequest, $throttled(1, 'canonical')), 1, 'ACTION-ID-006');
 
-$canonicalDbGetRequest = $makeRequest(
-    'GET',
-    $dbAttestationPath,
-    $dbAttestationRouteName,
-    ['GET', 'HEAD'],
-    $dbAttestationAction,
-);
-$dbGetResolvedRoute = $canonicalDbGetRequest->route();
-$assert($dbGetResolvedRoute instanceof Route, 'ACTION-ID-007 DB GET canonical route resolves');
-$assert(
-    $dbGetResolvedRoute->getActionName() === $dbAttestationAction,
-    'ACTION-ID-008 DB GET canonical action identity is exact',
-);
-$canonicalDbGet = $middleware->handle(
-    $canonicalDbGetRequest,
-    $frameworkThrottle(2, 'canonical-db-get-framework-body'),
-);
-$assertCanonicallyHardened(
-    $canonicalDbGet,
-    2,
-    'ACTION-ID-009 canonical DB-attestation GET route action identity',
-);
+$dbGetRequest = $make('GET', $dbPath, $dbName, ['GET', 'HEAD'], $controllerAction($dbActionName));
+$assert($dbGetRequest->route() instanceof Route, 'ACTION-ID-007 route resolves');
+$assert($dbGetRequest->route()->getActionName() === $dbActionName, 'ACTION-ID-008 exact action');
+$hardened($middleware->handle($dbGetRequest, $throttled(2, 'canonical')), 2, 'ACTION-ID-009');
 
-$canonicalDbHeadRequest = $makeRequest(
-    'HEAD',
-    $dbAttestationPath,
-    $dbAttestationRouteName,
-    ['GET', 'HEAD'],
-    $dbAttestationAction,
-);
-$dbHeadResolvedRoute = $canonicalDbHeadRequest->route();
-$assert($dbHeadResolvedRoute instanceof Route, 'ACTION-ID-010 DB HEAD canonical route resolves');
-$assert(
-    $dbHeadResolvedRoute->getActionName() === $dbAttestationAction,
-    'ACTION-ID-011 DB HEAD canonical action identity is exact',
-);
-$canonicalDbHead = $middleware->handle(
-    $canonicalDbHeadRequest,
-    $frameworkThrottle(2, 'canonical-db-head-framework-body'),
-);
-$assertCanonicallyHardened(
-    $canonicalDbHead,
-    2,
-    'ACTION-ID-012 canonical DB-attestation HEAD route action identity',
-);
+$dbHeadRequest = $make('HEAD', $dbPath, $dbName, ['GET', 'HEAD'], $controllerAction($dbActionName));
+$assert($dbHeadRequest->route() instanceof Route, 'ACTION-ID-010 route resolves');
+$assert($dbHeadRequest->route()->getActionName() === $dbActionName, 'ACTION-ID-011 exact action');
+$hardened($middleware->handle($dbHeadRequest, $throttled(2, 'canonical')), 2, 'ACTION-ID-012');
 
 echo "Final Shift Close canonical action identity throttle response hardening regression passed.\n";
