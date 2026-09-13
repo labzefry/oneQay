@@ -3,9 +3,9 @@
 **Product:** oneQay — The Future of Intelligent Business Management
 **Repository owner / attribution:** Lab | zefry
 **Default branch:** `main`
-**Canonical engineering checkpoint:** Sprint149
-**Canonical engineering commit:** `662a892c3269d945579594da03121bce960c9074`
-**Latest engineering PR:** #716 — `Sprint149: durable runtime target-bound capability evidence producer`
+**Canonical engineering checkpoint:** Sprint150
+**Canonical engineering commit:** `d743a054092231729fa0e33cd34538f9d1e81787`
+**Latest engineering PR:** #718 — `Sprint150: qualify selected runtime durable dependency envelope`
 **Status date:** 2026-09-13
 
 > This file is the canonical human-readable source of truth for current oneQay project status. Machine-readable operational state remains authoritative for operational gates.
@@ -14,38 +14,37 @@
 
 oneQay is an actively engineered enterprise business-management platform using Modular Monolith First, Clean Architecture, DDD, first-class tenant context, deny-by-default authorization, and fail-closed engineering controls.
 
-The repository has progressed through **Sprint149 engineering**. Sprint149 materialized the trusted protected-environment source producer required to create exact target-bound durable-runtime capability evidence in a future separately authorized execution. The producer source is materialized but **not dispatched**, no real capability evidence exists, no durable target has been selected or persisted, and no operational activation has occurred.
+The repository has progressed through **Sprint150 engineering**. Sprint150 materialized a fail-closed source qualifier for the complete nine-component Sprint107 durable-runtime dependency envelope, bound to exact Sprint111 selected-target identity and exact Sprint148 target-bound capability-evidence identity. It did not create real dependency-envelope evidence, a dependency-evidence producer, a selected target, or a runtime-allowlist change.
 
 ### Canonical state summary
 
 | Area | Current canonical state |
 | --- | --- |
-| Latest closed engineering sprint | Sprint149 |
-| Latest engineering commit | `662a892c3269d945579594da03121bce960c9074` |
-| Latest engineering PR | #716, squash merged |
-| Sprint149 final engineering head | `449832afd18117c58fb034ad23c9d4217bd3cd1e` |
-| Sprint149 exact-head CI | 34/34 pull-request workflow runs successful |
-| Sprint149 Product Owner authority | run `34759693893`, successful exact-head repository-native verification |
-| Sprint149 engineering envelope | eight paths; SHA-256 `8acea0b1cc826dedbe2dd55f38b4aa24fd4854a96ee32dde9f7552d22d239a91` |
-| Post-Sprint149 reconciliation envelope | six paths; SHA-256 `f97c59e253a6d3d47ff84f026690e700c3c85c2b9e8baf9ec00bfb57c1663c7e` |
-| Architecture | Modular Monolith First, Clean Architecture, DDD |
-| Backend | Laravel / PHP |
-| Frontend | Vue 3 + Inertia + Vite |
-| Database | MySQL-compatible |
-| Tenant model | First-class tenant context, deny-by-default authorization |
-| Final Shift Close migration #27 | Source materialized; `NOT_EXECUTED` |
-| Permission provisioning | `NONE` |
-| Final Shift Close feature activation | `INACTIVE` |
-| Deployment authority | `NOT_GRANTED` |
-| Technical Preview activation | `NOT_AUTHORIZED` |
-| Production activation | `NOT_AUTHORIZED` |
-| Updater activation | `INACTIVE` |
-| Durable activation target | `BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET` |
-| Selected activation target | `NONE` / `null` |
+| Latest completed engineering sprint | Sprint150 |
+| Latest engineering commit | `d743a054092231729fa0e33cd34538f9d1e81787` |
+| Latest engineering PR | #718, squash merged |
+| Sprint150 final engineering head | `7102733080735f4591bb17df76bdec928975e826` |
+| Sprint150 exact-head CI | 35/35 pull-request workflow runs successful |
+| Sprint150 Product Owner authority | run `34761524119`, successful exact-head repository-native verification |
+| Sprint150 engineering envelope | six paths; SHA-256 `9f261895ab0373af5d6d385c3db3f93e5e510061b8e843e4110ecce992d9a0e6` |
+| Post-Sprint150 reconciliation envelope | six paths; SHA-256 `578765b03de34048670791017fcffe8680b65e6bede9f57d22affb255f5ee43f` |
+| Dependency-envelope qualifier | `MATERIALIZED_SOURCE_ONLY` |
+| Real dependency-envelope evidence | `NONE` |
+| Dependency-evidence producer | `NOT_IMPLEMENTED` |
+| Runtime allowlist | `local`, `test`, `ci` only |
 | Runtime allowlist change | `NOT_IMPLEMENTED` |
 | Real target-bound capability evidence | `NONE` |
 | Trusted capability-evidence producer | `MATERIALIZED_NOT_DISPATCHED` |
 | Capability-evidence producer dispatch | `NOT_PERFORMED` |
+| Durable activation target | `BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET` |
+| Selected activation target | `null` |
+| Final Shift Close migration #27 | `NOT_EXECUTED` |
+| Permission provisioning | `NONE` |
+| Feature activation | `INACTIVE` |
+| Deployment authority | `NOT_GRANTED` |
+| Technical Preview activation | `NOT_AUTHORIZED` |
+| Production activation | `NOT_AUTHORIZED` |
+| Updater activation | `INACTIVE` |
 
 ## 2. Material engineering progress
 
@@ -63,68 +62,58 @@ Representative milestones include Sprint55 expected-cash derivation, Sprint64 ca
 
 - Sprint88 — migration #27 source materialization only; migration remained `NOT_EXECUTED`.
 - Sprint89 — application-readiness contract and fail-closed prerequisites.
+- Sprint107 — nine-component runtime dependency inventory and explicit allowlist block.
 - Sprint110 — durable-runtime readiness shape and capability claims.
-- Sprint111 — exact durable-runtime selected-target identity and deterministic selection fingerprint, still `SELECTED_NOT_AUTHORIZED` when eventually persisted.
+- Sprint111 — exact durable-runtime selected-target identity and deterministic selection fingerprint.
 - Sprint113–Sprint117 — attestation producer/ingestion, selection-persistence and selected-target binding readiness, all source-only and non-operational.
-- Sprint130–Sprint147 — canonical runtime control-plane, authenticated HTTP, throttle/rejection, route/action/budget/metadata identity hardening.
-- Sprint148 — target-bound durable-runtime capability-evidence identity qualification before any future runtime-allowlist eligibility.
-- Sprint149 — trusted protected-environment target-bound capability-evidence producer source materialization, without dispatch or real evidence creation.
+- Sprint130–Sprint147 — canonical runtime-control-plane, authenticated HTTP, throttle/rejection, route/action/budget/metadata identity hardening.
+- Sprint148 — target-bound durable-runtime capability-evidence identity qualification.
+- Sprint149 — trusted protected-environment capability-evidence producer source materialization without dispatch.
+- Sprint150 — exact selected-runtime-class full durable dependency-envelope qualification source, without real dependency evidence or allowlist widening.
 
-## 3. Sprint149 description and closure evidence
+## 3. Sprint150 description and closure evidence
 
 ### Purpose / Why
 
-Sprint148 defined the exact identity contract for four capability-specific durable-runtime evidence records but deliberately left `real_capability_evidence = NONE` and the trusted producer unimplemented. Sprint149 closes only that source-readiness gap.
+Sprint107 established the canonical nine-component dependency inventory and intentionally blocked runtime-allowlist widening. Sprint148 and Sprint149 established target-bound capability-evidence qualification and producer source readiness, but no source owner qualified the full dependency envelope against the exact selected durable runtime identity.
 
 ### Objective / Gap
 
-Bounded objective: `DURABLE_RUNTIME_TARGET_BOUND_CAPABILITY_EVIDENCE_PRODUCER`.
+Bounded objective: `DURABLE_RUNTIME_SELECTED_CLASS_DEPENDENCY_ENVELOPE_QUALIFICATION`.
 
-The producer must obtain capability-specific observation digests from an authenticated protected-environment endpoint, reject Sprint110 boolean claims as evidence, recompute Sprint110 readiness and Sprint111 target identity, match a future persisted `SELECTED_NOT_AUTHORIZED` target, bind each capability evidence identity to the exact target, and require final Sprint148 qualification.
+The Sprint150 qualifier requires exact Sprint148 capability evidence to qualify first, then requires every Sprint107 dependency component to be independently verified, bound to the exact selected runtime class and target binding, represented by lowercase SHA-256 evidence identity, secret-free, and non-synthetic.
 
 ### What changed
 
-- Added `FinalShiftCloseDurableRuntimeCapabilityEvidenceProducer` as a deterministic, fail-closed application producer.
-- Added executable positive and negative Sprint149 regression coverage.
-- Added protected-environment `workflow_dispatch` producer source `.github/workflows/final-shift-close-durable-runtime-capability-evidence.yml`.
-- Added `DURABLE_RUNTIME_CAPABILITY_EVIDENCE_PRODUCER_CONTRACT.json`.
-- Extended `POST_SELECTION_DOWNSTREAM_READINESS.json` with producer source readiness while keeping real evidence absent and producer dispatch not performed.
-- Added detailed six-section Sprint149 documentation and an exact-head engineering workflow.
-- Exact-head CI proved historical Sprint148 still froze `trusted_evidence_producer_materialized == false`; the engineering envelope therefore expanded from seven to eight paths only to make Sprint148 successor-compatible while preserving Sprint148 evidence-binding and NO-GO invariants.
-- No producer dispatch, target persistence, runtime allowlist change, activation, provisioning, migration execution, or deployment occurred.
+- Added `FinalShiftCloseDurableRuntimeDependencyEnvelope` as a pure application-layer qualifier.
+- Added executable positive and fail-closed regression coverage.
+- Added `DURABLE_RUNTIME_DEPENDENCY_ENVELOPE_QUALIFICATION_CONTRACT.json`.
+- Extended `POST_SELECTION_DOWNSTREAM_READINESS.json` with explicit dependency-envelope qualification readiness and ordering.
+- Added an exact-head Sprint150 workflow and detailed six-section Sprint150 document.
+- Preserved `FinalShiftCloseServiceProvider` as `local/test/ci` only.
+- No historical compatibility expansion was required because all existing PR-triggered workflows passed on the frozen six-path envelope.
 
 ### Evidence / Qualification
 
-- Engineering PR: #716, squash merged.
-- Canonical engineering squash commit: `662a892c3269d945579594da03121bce960c9074`.
-- Parent canonical post-Sprint148 reconciliation checkpoint: `c595da17fd023a9eb2ebd3f046e6f17940430a03`.
-- Final exact engineering head before merge: `449832afd18117c58fb034ad23c9d4217bd3cd1e`.
-- Exact-head pull-request qualification: **34/34 successful**.
-- Repository-native Product Owner merge-authority run: `34759693893`, successful exact-head verification.
-- Final engineering envelope: eight paths.
-- Frozen engineering envelope SHA-256: `8acea0b1cc826dedbe2dd55f38b4aa24fd4854a96ee32dde9f7552d22d239a91`.
+- Engineering PR: #718, squash merged.
+- Canonical engineering squash commit: `d743a054092231729fa0e33cd34538f9d1e81787`.
+- Parent canonical post-Sprint149 reconciliation checkpoint: `0113ee31db38dcd8f7c1378b109371ad900c6f69`.
+- Final exact engineering head before merge: `7102733080735f4591bb17df76bdec928975e826`.
+- Exact-head pull-request qualification: **35/35 successful**.
+- Repository-native Product Owner merge-authority run: `34761524119`, successful exact-head verification.
+- Final engineering envelope: six paths.
+- Frozen engineering envelope SHA-256: `9f261895ab0373af5d6d385c3db3f93e5e510061b8e843e4110ecce992d9a0e6`.
 - Merge method: squash with expected-head guard.
-- Post-merge verification: one squash commit with parent exactly `c595da17fd023a9eb2ebd3f046e6f17940430a03`; operational NO-GO unchanged.
-- Post-Sprint149 reconciliation envelope: six paths; SHA-256 `f97c59e253a6d3d47ff84f026690e700c3c85c2b9e8baf9ec00bfb57c1663c7e`.
-
-Final engineering paths:
-
-1. `.github/workflows/final-shift-close-durable-runtime-capability-evidence.yml`
-2. `.github/workflows/sprint148-final-shift-close-durable-runtime-capability-evidence-binding-regression.yml`
-3. `.github/workflows/sprint149-final-shift-close-durable-runtime-capability-evidence-producer-regression.yml`
-4. `apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeCapabilityEvidenceProducer.php`
-5. `apps/web/tests/pos-final-shift-close-durable-runtime-capability-evidence-producer.php`
-6. `docs/SPRINT149_FINAL_SHIFT_CLOSE_DURABLE_RUNTIME_CAPABILITY_EVIDENCE_PRODUCER.md`
-7. `ops/final-shift-close/DURABLE_RUNTIME_CAPABILITY_EVIDENCE_PRODUCER_CONTRACT.json`
-8. `ops/final-shift-close/POST_SELECTION_DOWNSTREAM_READINESS.json`
+- Post-merge verification: one squash commit with parent exactly `0113ee31db38dcd8f7c1378b109371ad900c6f69`; exact six-path engineering delta; operational NO-GO unchanged.
+- Post-Sprint150 reconciliation envelope: six paths; SHA-256 `578765b03de34048670791017fcffe8680b65e6bede9f57d22affb255f5ee43f`.
 
 ### Operational boundaries / NO-GO
 
-Sprint149 does not grant or perform operational activation. It does not dispatch the capability-evidence producer, persist a durable target, create real capability evidence, execute migration #27, provision permissions, change the Final Shift Close runtime allowlist, materialize or execute feature activation, deploy/release, activate Technical Preview or Production, or activate the updater.
+Sprint150 does not select or persist a durable target, dispatch the Sprint149 capability-evidence producer, create real capability evidence, create or dispatch dependency-envelope evidence, widen the runtime allowlist, execute migration #27, provision permissions, materialize or execute feature activation, deploy/release, activate Technical Preview or Production, or activate the updater.
 
 ### Next position
 
-After post-Sprint149 canonical reconciliation is squash merged and verified, the next engineering position is **Sprint150 bounded discovery from canonical post-Sprint149**. No Sprint150 objective, implementation, or source envelope is preselected by this manifest.
+After this canonical reconciliation is squash merged and verified, the next engineering position is **Sprint151 bounded discovery from canonical post-Sprint150**. No Sprint151 objective, implementation, or source envelope is preselected by this manifest.
 
 ## 4. Operational truth — NO-GO remains authoritative
 
@@ -139,32 +128,27 @@ Current machine-readable state remains:
 - updater activation: `INACTIVE`;
 - durable target selection: `BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET`;
 - selected target: `null`;
-- runtime allowlist change: `NOT_IMPLEMENTED`;
+- capability-evidence producer: `MATERIALIZED_NOT_DISPATCHED`;
+- capability-evidence producer dispatch: `NOT_PERFORMED`;
 - real capability evidence: `NONE`;
-- trusted capability-evidence producer: `MATERIALIZED_NOT_DISPATCHED`;
-- capability-evidence producer dispatch: `NOT_PERFORMED`.
+- dependency-envelope qualifier: `MATERIALIZED_SOURCE_ONLY`;
+- dependency-envelope evidence: `NONE`;
+- dependency-evidence producer: `NOT_IMPLEMENTED`;
+- runtime allowlist change: `NOT_IMPLEMENTED`.
 
-Machine-readable operational authority:
-
-- `ops/final-shift-close/STATE.json`
-- `ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json`
-
-If this manifest and machine-readable state files ever conflict on an operational state, the machine-readable state files are authoritative for that gate.
+Machine-readable operational authority remains in `ops/final-shift-close/STATE.json`, `ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json`, and `ops/final-shift-close/POST_SELECTION_DOWNSTREAM_READINESS.json`.
 
 ## 5. What is not yet complete
 
-The following must not be described as complete unless separately qualified and authorized:
+The following remain separate future work or operational actions:
 
-- qualification, selection, and persistence of a real non-synthetic durable activation target;
-- dispatch of trusted capability-evidence producer and production of real target-bound capability evidence;
-- execution of migration #27 in an operational environment;
-- provisioning of Final Shift Close permissions;
-- runtime allowlist widening for a selected durable runtime class;
-- Final Shift Close activation;
-- Technical Preview activation;
-- Production activation;
-- deployment/release publication;
-- updater activation.
+- qualify, select, and persist a real non-synthetic durable target;
+- dispatch trusted capability-evidence production and obtain real capability evidence;
+- materialize trusted dependency-envelope evidence production and obtain real dependency evidence;
+- execute migration #27 and provision permission on the exact selected target;
+- qualify any selected runtime class for allowlist widening and then perform a separately authorized allowlist change;
+- materialize and separately authorize feature activation;
+- deploy/release or activate Technical Preview, Production, or updater.
 
 ## 6. Documentation responsibility model
 

@@ -14,7 +14,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  qualify-durable-runtime-dependency-envelope:
+  preserve-durable-runtime-dependency-envelope-qualification:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
@@ -32,29 +32,17 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
-      - name: Qualify exact Sprint150 source envelope
+      - name: Preserve Sprint150 historical source boundary
         shell: bash
         run: |
           set -euo pipefail
-          base='${{ github.event.pull_request.base.sha }}'
-          head='${{ github.event.pull_request.head.sha }}'
-          expected_hash='9f261895ab0373af5d6d385c3db3f93e5e510061b8e843e4110ecce992d9a0e6'
-          mapfile -t changed < <(git diff --name-only "$base" "$head" | LC_ALL=C sort)
-          test "${#changed[@]}" -eq 6
-          printf '%s\n' "${changed[@]}" > /tmp/sprint150-paths
-          test "$(sha256sum /tmp/sprint150-paths | awk '{print $1}')" = "$expected_hash"
-          expected=(
-            '.github/workflows/sprint150-final-shift-close-durable-runtime-dependency-envelope-qualification-regression.yml'
-            'apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeDependencyEnvelope.php'
-            'apps/web/tests/pos-final-shift-close-durable-runtime-dependency-envelope-qualification.php'
-            'docs/SPRINT150_FINAL_SHIFT_CLOSE_DURABLE_RUNTIME_DEPENDENCY_ENVELOPE_QUALIFICATION.md'
-            'ops/final-shift-close/DURABLE_RUNTIME_DEPENDENCY_ENVELOPE_QUALIFICATION_CONTRACT.json'
-            'ops/final-shift-close/POST_SELECTION_DOWNSTREAM_READINESS.json'
-          )
-          printf '%s\n' "${expected[@]}" | LC_ALL=C sort > /tmp/sprint150-expected
-          diff -u /tmp/sprint150-expected /tmp/sprint150-paths
+          test -f apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeDependencyEnvelope.php
+          test -f apps/web/tests/pos-final-shift-close-durable-runtime-dependency-envelope-qualification.php
+          test -f docs/SPRINT150_FINAL_SHIFT_CLOSE_DURABLE_RUNTIME_DEPENDENCY_ENVELOPE_QUALIFICATION.md
+          test -f ops/final-shift-close/DURABLE_RUNTIME_DEPENDENCY_ENVELOPE_QUALIFICATION_CONTRACT.json
+          test -f ops/final-shift-close/POST_SELECTION_DOWNSTREAM_READINESS.json
 
-      - name: Validate Sprint150 machine-readable contract
+      - name: Validate historical Sprint150 contract
         shell: bash
         run: |
           set -euo pipefail
@@ -112,7 +100,7 @@ jobs:
           php tests/pos-final-shift-close-durable-runtime-readiness.php
           php tests/pos-final-shift-close-durable-runtime-target-selection.php
 
-      - name: Preserve post-selection and operational NO-GO boundaries
+      - name: Preserve downstream and operational NO-GO boundaries
         shell: bash
         run: |
           set -euo pipefail
