@@ -1,7 +1,7 @@
 # oneQay Roadmap
 
-**Roadmap checkpoint:** post-Sprint147
-**Canonical engineering baseline:** `50a3ba99b8f5628381d9df63f4f6a0e1020d550a`
+**Roadmap checkpoint:** post-Sprint148 reconciliation
+**Canonical engineering baseline:** `7a07a3163842e60332ccd3e3780d4e970280d46c`
 **Current state authority:** `PROJECT_MANIFEST.md`
 
 This roadmap describes sequencing and gates. It does **not** grant operational authority. A completed roadmap item means its bounded repository objective was completed; it does not imply deployment, migration execution, runtime activation, Technical Preview activation, or Production activation unless separately evidenced.
@@ -35,11 +35,13 @@ This roadmap describes sequencing and gates. It does **not** grant operational a
 
 Representative milestones: Sprint55, Sprint64, Sprint70, and Sprint80.
 
-## Horizon D — Final Shift Close source/readiness chain — completed through Sprint147 engineering boundary
+## Horizon D — Final Shift Close source/readiness chain — completed through Sprint148 engineering boundary
 
 - [x] Source-only migration #27 materialization — Sprint88
 - [x] Final Shift Close application-readiness contract — Sprint89
-- [x] Runtime-binding / manifest / DB-binding attestation readiness
+- [x] Durable-runtime readiness capability shape — Sprint110
+- [x] Exact selected-target identity and deterministic selection fingerprint — Sprint111
+- [x] Source-only attestation producer/ingestion, selection persistence and binding readiness — Sprint113–Sprint117
 - [x] Canonical token policy — Sprint130
 - [x] Middleware/controller positive and fail-closed qualification — Sprint131–Sprint133
 - [x] Delivery-gate and registration metadata qualification — Sprint134–Sprint135
@@ -52,49 +54,54 @@ Representative milestones: Sprint55, Sprint64, Sprint70, and Sprint80.
 - [x] Canonical controller-action ownership hardening — Sprint145
 - [x] Canonical per-route throttle-budget identity response hardening — Sprint146
 - [x] Canonical throttle-rejection metadata identity response hardening — Sprint147
+- [x] Target-bound durable-runtime capability-evidence identity qualification — Sprint148
 
-### Sprint147 description
+### Sprint148 description
 
-**Purpose / Why:** Sprint146 already required canonical request identity and exact route-specific throttle ceilings, but response ownership still did not require the complete metadata shape emitted by a real framework throttle rejection.
+**Purpose / Why:** Sprint110 required durable-runtime capability claims and Sprint111 bound qualified readiness to an exact target, but boolean capability claims did not themselves prove capability-specific evidence tied to that exact selected environment/runtime/source/artifact identity.
 
-**Objective / Gap:** ownership now additionally requires exact `X-RateLimit-Remaining: 0`, decimal non-empty `Retry-After`, and decimal non-empty `X-RateLimit-Reset`.
+**Objective / Gap:** future evidence for authenticated configuration mutation, read-before/write/read-after verification, non-mutating health attestation, and verified rollback must each be `VERIFIED`, secret-free, digest-qualified, and bound to the exact Sprint111 selected-target identity while authority remains `NOT_GRANTED`, feature remains `INACTIVE`, and runtime allowlist change remains `NOT_IMPLEMENTED`.
 
-**What changed:** canonical throttle-rejection metadata validation was added to the hardener; Sprint147 added direct negative/positive metadata regressions, successor-compatible Sprint144 fixture metadata, a machine-readable contract, exact-head workflow, and detailed sprint documentation.
+**What changed:** added the Sprint148 pure capability-evidence qualifier, executable regressions, machine-readable contract, post-selection readiness prerequisite, active exact-head workflow, detailed documentation, and a CI-proven successor-compatible conversion of the historical Sprint116 workflow.
 
-**Evidence / Qualification:** PR #711; 31/31 exact-head CI; authority run `34752002084`; canonical engineering commit `50a3ba99b8f5628381d9df63f4f6a0e1020d550a`; six-path engineering envelope SHA-256 `ffd176da808eda16fccdf0375fcae2fd5bcc1cfc4b931aca6492ca31eb9b1d40`.
+**Evidence / Qualification:** PR #714; final engineering head `eba8687297e7b82bf5adfcd770d86233139b0454`; 33/33 exact-head CI; repository-native authority run `34756294306`; canonical engineering commit `7a07a3163842e60332ccd3e3780d4e970280d46c`; final seven-path engineering envelope SHA-256 `f7d9cfb173b54ac863cc70f10b9ae3df2f6715a4abdae0c7c32cbdb399bda5a6`; post-Sprint148 reconciliation envelope SHA-256 `5c315771e9777b9d5a5b428a206c7cec711e14a7851a83c685a5a5cfb378dfc5`.
 
-**Operational boundaries / NO-GO:** migration execution, permission provisioning, feature activation, runtime tokens, operational manifest/DB invocation, deployment/release, target activation, Technical Preview, Production, and updater activation remain outside this completed engineering boundary.
+**Operational boundaries / NO-GO:** real capability evidence, trusted evidence producer, selected-target persistence/activation, migration execution, permission provisioning, feature activation, runtime tokens, runtime allowlist change, operational manifest/DB invocation, deployment/release, Technical Preview, Production, and updater activation remain outside this completed engineering boundary.
 
-**Next position:** Sprint148 bounded discovery only; no implementation objective or source envelope is preselected.
+**Next position:** Sprint149 bounded discovery after canonical post-Sprint148 reconciliation; no implementation objective or source envelope is preselected.
 
 Migration #27 remains source-only and `NOT_EXECUTED`; completion of this engineering horizon does not authorize operational use.
 
-## Horizon E — Sprint148+ bounded engineering — next
+## Horizon E — Sprint149+ bounded engineering — next
 
-Status: **NOT YET SELECTED / NOT COMPLETED**.
+Status: **BOUNDED DISCOVERY NEXT AFTER SPRINT148 CLOSURE**.
 
-Sprint148 begins only after bounded discovery identifies the smallest non-duplicative remaining engineering gap from canonical post-Sprint147.
+Sprint149 may begin only after post-Sprint148 reconciliation is squash merged and canonical main is verified.
 
 Selection rules:
 
-1. prove the gap exists before adding source;
-2. freeze a bounded source envelope;
-3. preserve Sprint130–Sprint147 owned regressions and historical compatibility;
-4. stay fail-closed and deny-by-default;
-5. avoid operational adapter invocation and runtime-token provisioning unless separately authorized;
-6. qualify exact head in CI before merge;
-7. document the sprint using Purpose / Why, Objective / Gap, What changed, Evidence / Qualification, Operational boundaries / NO-GO, and Next position;
-8. reconcile canonical project-state documentation at closure.
+1. prove a material non-duplicative gap exists before adding source;
+2. check that Sprint110–Sprint148 historical regressions do not already own the invariant;
+3. prioritize production-readiness prerequisites that genuinely move toward a qualified isolated non-production durable target without performing operational mutation;
+4. freeze the smallest meaningful bounded source envelope;
+5. stay fail-closed and deny-by-default;
+6. avoid operational adapter invocation, runtime-token provisioning, migration execution, permission provisioning, activation, deployment, and allowlist widening unless separately authorized;
+7. qualify exact head in CI before merge;
+8. document the sprint using Purpose / Why, Objective / Gap, What changed, Evidence / Qualification, Operational boundaries / NO-GO, and Next position;
+9. reconcile canonical project-state documentation at closure.
 
-No roadmap text pre-authorizes a specific Sprint148 implementation.
+No roadmap text pre-authorizes a specific Sprint149 implementation.
 
 ## Horizon F — Operational qualification — blocked / separate authority
 
 - [ ] Qualified non-synthetic durable runtime target — missing
 - [ ] Selected target — currently `null`
+- [ ] Real target-bound capability evidence — `NONE`
+- [ ] Trusted capability-evidence producer — `NOT_IMPLEMENTED`
 - [ ] Migration #27 execution authority — not granted
 - [ ] Permission provisioning authority — current state `NONE`
 - [ ] Feature activation authority — current state `INACTIVE`
+- [ ] Runtime allowlist change for selected durable runtime class — `NOT_IMPLEMENTED`
 - [ ] Real operational runtime token provisioning — not performed
 - [ ] Real operational binding/attestation evidence — not performed
 - [ ] Deployment authority — `NOT_GRANTED`
