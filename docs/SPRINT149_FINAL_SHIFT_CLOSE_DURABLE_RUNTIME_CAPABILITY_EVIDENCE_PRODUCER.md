@@ -16,11 +16,13 @@ Sprint110 readiness booleans remain readiness claims, not target-bound evidence.
 
 Sprint149 materializes a protected-environment `workflow_dispatch` producer source, a pure application producer, executable regression coverage, and a machine-readable producer contract. The producer accepts no caller-supplied runtime target identity. It derives evidence identities deterministically from the exact target binding plus per-capability evidence payload digests, rejects unexpected fields, and emits only secret-free artifacts.
 
-The exact frozen seven-path source envelope SHA-256 is `51f9cc22db6b1d6b072a1ee649ce2d474fad2f457346d949a1aece67f6a1eb6b`.
+The initial seven-path envelope exposed a real successor-compatibility conflict in the historical Sprint148 workflow: it still required the trusted producer to remain unmaterialized. After exact-head CI proved that conflict, the bounded envelope expanded by exactly that one historical workflow. The final eight-path sorted newline-terminated source envelope SHA-256 is `8acea0b1cc826dedbe2dd55f38b4aa24fd4854a96ee32dde9f7552d22d239a91`.
 
 ## Evidence / Qualification
 
 The producer requires all four Sprint148 capability evidence kinds, exact selected-target identity, lowercase SHA-256 observation payload identities, protected-environment identity agreement, recomputed Sprint110/Sprint111 qualification, and final Sprint148 evidence qualification. Key-order-independent canonical hashing prevents object-order drift from changing producer identity.
+
+The historical Sprint148 regression remains responsible for the Sprint148 evidence-binding and NO-GO invariants, but no longer freezes the successor-owned producer-materialization boolean. `real_capability_evidence` must remain absent.
 
 The producer workflow publishes evidence only after qualification and uses pending/success commit status around artifact publication. Source materialization alone does not create real evidence.
 
