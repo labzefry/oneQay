@@ -20,7 +20,10 @@
       "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
       "@php artisan package:discover --ansi"
     ],
-    "test": "php tests/run.php"
+    "test": [
+      "php tests/run.php",
+      "php tests/pos-final-shift-close-feature-activation-transport-envelope.php"
+    ]
   },
   "extra": {
     "laravel": {
