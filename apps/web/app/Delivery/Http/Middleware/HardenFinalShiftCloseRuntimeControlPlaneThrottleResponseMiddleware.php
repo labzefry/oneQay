@@ -39,6 +39,7 @@ final class HardenFinalShiftCloseRuntimeControlPlaneThrottleResponseMiddleware
     private function isOwnedControlPlaneRequest(Request $request): bool
     {
         return ($request->isMethod('POST') && $request->is(self::MATERIALIZATION_PATH))
-            || ($request->isMethod('GET') && $request->is(self::DB_ATTESTATION_PATH));
+            || (($request->isMethod('GET') || $request->isMethod('HEAD'))
+                && $request->is(self::DB_ATTESTATION_PATH));
     }
 }
