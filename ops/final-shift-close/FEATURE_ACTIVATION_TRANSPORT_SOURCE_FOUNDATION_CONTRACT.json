@@ -26,14 +26,13 @@
     "operational_dispatch_in_sprint155": "FORBIDDEN"
   },
   "source_envelope": {
-    "path_count": 6,
+    "path_count": 5,
     "sorted_newline_terminated": true,
-    "sha256": "072cbe2bafe732a834d0418f3499dc5d4f07fec30fbfc9e6c6b84f1c771100de",
+    "sha256": "b73bb0ecd8c45d16dd13bb7855c559e00af76c7f077d1999b2b8096da8e896e3",
     "paths": [
       ".github/workflows/sprint155-final-shift-close-feature-activation-transport-source-foundation-regression.yml",
       "apps/web/app/Application/Pos/FinalShiftCloseFeatureActivationTransportEnvelope.php",
       "apps/web/tests/pos-final-shift-close-feature-activation-transport-envelope.php",
-      "docs/SPRINT155_FINAL_SHIFT_CLOSE_FEATURE_ACTIVATION_TRANSPORT_SOURCE_FOUNDATION.md",
       "ops/final-shift-close/FEATURE_ACTIVATION_TRANSPORT_SOURCE_FOUNDATION_CONTRACT.json",
       "ops/final-shift-close/POST_SELECTION_DOWNSTREAM_READINESS.json"
     ]
