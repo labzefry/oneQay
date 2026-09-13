@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "feature": "final-shift-close",
+  "sprint": 143,
+  "bounded_objective": "CANONICAL_CONTROL_PLANE_DB_ATTESTATION_HEAD_THROTTLE_REJECTION_RESPONSE_HARDENING_REGRESSION",
+  "execution_mode": "CI_ONLY_SYNTHETIC_AUTHENTICATED_HTTP_HEAD_THROTTLE_RESPONSE_HARDENING",
+  "qualification": {
+    "new_executable_gap": "DB_ATTESTATION_HEAD_THROTTLE_REJECTION_PRIVACY_SECURITY_PARITY",
+    "route_registration_changed": false,
+    "route_middleware_stack_changed": false,
+    "authentication_before_throttle_preserved": true,
+    "throttle_limits_changed": false,
+    "materialization_method_ownership": [
+      "POST"
+    ],
+    "db_attestation_methods": [
+      "GET",
+      "HEAD"
+    ],
+    "db_attestation_head_owned_by_hardener": true,
+    "db_attestation_configured_throttle": "2,1",
+    "head_success_status": 200,
+    "head_excess_status": 429,
+    "head_successful_reads_before_throttle": 2,
+    "head_excess_additional_reads": 0,
+    "throttle_rejection_body": "EMPTY",
+    "cache_control_no_store": true,
+    "cache_control_private": true,
+    "pragma_no_cache": true,
+    "x_content_type_options_nosniff": true,
+    "x_robots_tag": "noindex, nofollow, noarchive",
+    "retry_after_preserved": true,
+    "x_rate_limit_limit_preserved": true,
+    "x_rate_limit_remaining_preserved": true,
+    "x_rate_limit_reset_preserved": true,
+    "production_database_identity_reader_resolution": "FORBIDDEN",
+    "canonical_runtime_binding_manifest_write": "FORBIDDEN"
+  },
+  "historical_ownership": {
+    "sprint135_get_head_route_metadata": "PRESERVED",
+    "sprint138_authenticated_http_throttle_enforcement": "PRESERVED",
+    "sprint139_auth_before_throttle": "PRESERVED",
+    "sprint140_direct_middleware_auth_rejection_response_hardening": "PRESERVED",
+    "sprint141_http_kernel_auth_rejection_response_propagation": "PRESERVED",
+    "sprint142_authenticated_throttle_rejection_response_hardening": "PRESERVED",
+    "sprint143_db_attestation_head_throttle_rejection_response_hardening": "OWNED"
+  },
+  "source_envelope": {
+    "path_count": 5,
+    "sha256": "30df6d628ffa67335dd51275137c022cd461264a137b28b5d9fa623a1d1298ed"
+  },
+  "canonical_boundaries": {
+    "migration27_execution": "NOT_PERFORMED",
+    "permission_provisioning": "NONE",
+    "feature_activation": "INACTIVE",
+    "selected_target": null,
+    "deployment_authority": "NOT_GRANTED",
+    "technical_preview": "NO-GO",
+    "production": "NO-GO",
+    "updater": "INACTIVE"
+  },
+  "attribution": "Author by Lab | zefry"
+}
