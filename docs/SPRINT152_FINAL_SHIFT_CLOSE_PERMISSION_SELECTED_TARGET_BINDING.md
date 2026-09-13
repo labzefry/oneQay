@@ -18,11 +18,15 @@ Sprint152 hardens `.github/workflows/final-shift-close-permission-provisioning.y
 
 No new database-binding producer is introduced. The existing permission semantics remain bounded to one existing same-tenant non-protected role, preserve the canonical migration #27 prerequisite, and preserve `NO_DEFAULT_GRANT` assignment boundaries.
 
-Frozen engineering envelope: five paths. Sorted newline-terminated SHA-256: `10b79aec054c69df9208dbabf014ac2ed885701a0046d6d950a0623783007fac`.
+Initial exact-head CI proved the historical Sprint104 permission-provisioning regression still owned its original full three-path PR envelope. Sprint152 therefore expands by exactly one path to make that historical workflow successor-compatible while preserving the original Sprint104 fingerprint and all of its transaction, evidence-lifecycle, runtime-boundary, and NO-GO assertions.
+
+Final frozen engineering envelope: six paths. Sorted newline-terminated SHA-256: `052599d3aeb31aacaa4f139cac6ea1b0cd677a86a1c25358136d69b8f5f650c9`.
 
 ## Evidence / Qualification
 
-The exact-head Sprint152 regression validates the five-path envelope, machine-readable contract, required workflow inputs and binding artifact identity, selected-target prerequisite, pre-mutation database fingerprint readback, `hash_equals()` comparison, migration #27 prerequisite, downstream fail-closed state, and unchanged operational NO-GO values.
+The exact-head Sprint152 regression validates the six-path envelope, machine-readable contract, required workflow inputs and binding artifact identity, selected-target prerequisite, pre-mutation database fingerprint readback, `hash_equals()` comparison, migration #27 prerequisite, Sprint104 successor compatibility, downstream fail-closed state, and unchanged operational NO-GO values.
+
+The initial five-path exact head passed the active Sprint152 regression but produced a CI-proven Sprint104 historical envelope conflict in run `34765046079`. The bounded compatibility correction changes only the historical Sprint104 workflow ownership and does not weaken its semantic controls.
 
 Sprint152 does not dispatch the provisioning workflow or the Sprint118 binding producer. Real selected-target database-binding evidence remains `NONE` because canonical target selection is still blocked and no operational producer run is performed.
 
