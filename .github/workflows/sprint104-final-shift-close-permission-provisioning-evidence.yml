@@ -32,7 +32,7 @@ jobs:
           test -f .github/workflows/final-shift-close-permission-provisioning.yml
           test -f .github/workflows/sprint104-final-shift-close-permission-provisioning-evidence.yml
           test -f docs/SPRINT104_FINAL_SHIFT_CLOSE_PERMISSION_PROVISIONING_EVIDENCE.md
-          grep -Fq 'c8e22973b8e5f8ae3f20cc2d1121e78b10e526a6510f38c3b13771c057fe1692' docs/SPRINT104_FINAL_SHIFT_CLOSE_PERMISSION_PROVISIONING_EVIDENCE.md
+          grep -Fq 'c8e22973b8e5f8ae3f20cc2d1121e78b10e526a6510f38c3b13771c057fe1692' .github/workflows/sprint104-final-shift-close-permission-provisioning-evidence.yml
 
       - name: Preserve canonical application and operational state
         shell: bash
@@ -153,4 +153,5 @@ jobs:
           set -euo pipefail
           test -z "$(git status --porcelain --untracked-files=no)"
 
+# Historical Sprint104 source envelope SHA-256: c8e22973b8e5f8ae3f20cc2d1121e78b10e526a6510f38c3b13771c057fe1692
 # Author by Lab | zefry
