@@ -29,9 +29,10 @@ Sprint147 requires exact `X-RateLimit-Remaining: 0`, decimal non-empty `Retry-Af
 - [x] `README.md`
 - [x] `CHANGELOG.md`
 - [x] `TASKS.md`
-- [ ] `ROADMAP.md`
-- [ ] Sprint147 workflow successor compatibility
-- [ ] Reconciliation PR exact-head qualification and squash merge
+- [x] `ROADMAP.md`
+- [x] Sprint147 workflow successor compatibility
+
+GitHub PR/CI state remains authoritative for reconciliation publication until squash merge.
 
 ## Next bounded engineering
 
