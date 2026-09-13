@@ -1,11 +1,11 @@
 # oneQay Project Manifest
 
-**Product:** oneQay — The Future of Intelligent Business Management  
-**Repository owner / attribution:** Lab | zefry  
-**Default branch:** `main`  
-**Canonical engineering checkpoint:** Sprint149  
-**Canonical engineering commit:** `662a892c3269d945579594da03121bce960c9074`  
-**Latest engineering PR:** #716 — `Sprint149: durable runtime target-bound capability evidence producer`  
+**Product:** oneQay — The Future of Intelligent Business Management
+**Repository owner / attribution:** Lab | zefry
+**Default branch:** `main`
+**Canonical engineering checkpoint:** Sprint149
+**Canonical engineering commit:** `662a892c3269d945579594da03121bce960c9074`
+**Latest engineering PR:** #716 — `Sprint149: durable runtime target-bound capability evidence producer`
 **Status date:** 2026-09-13
 
 > This file is the canonical human-readable source of truth for current oneQay project status. Machine-readable operational state remains authoritative for operational gates.
