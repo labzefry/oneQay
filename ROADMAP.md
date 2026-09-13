@@ -1,7 +1,7 @@
 # oneQay Roadmap
 
-**Roadmap checkpoint:** post-Sprint146
-**Canonical engineering baseline:** `a5e4aec8c142e7478a0e58d2d732dbf106393b06`
+**Roadmap checkpoint:** post-Sprint147
+**Canonical engineering baseline:** `50a3ba99b8f5628381d9df63f4f6a0e1020d550a`
 **Current state authority:** `PROJECT_MANIFEST.md`
 
 This roadmap describes sequencing and gates. It does **not** grant operational authority. A completed roadmap item means its bounded repository objective was completed; it does not imply deployment, migration execution, runtime activation, Technical Preview activation, or Production activation unless separately evidenced.
@@ -35,7 +35,7 @@ This roadmap describes sequencing and gates. It does **not** grant operational a
 
 Representative milestones: Sprint55, Sprint64, Sprint70, and Sprint80.
 
-## Horizon D — Final Shift Close source/readiness chain — completed through Sprint146 engineering boundary
+## Horizon D — Final Shift Close source/readiness chain — completed through Sprint147 engineering boundary
 
 - [x] Source-only migration #27 materialization — Sprint88
 - [x] Final Shift Close application-readiness contract — Sprint89
@@ -51,41 +51,42 @@ Representative milestones: Sprint55, Sprint64, Sprint70, and Sprint80.
 - [x] Canonical named-route ownership hardening — Sprint144
 - [x] Canonical controller-action ownership hardening — Sprint145
 - [x] Canonical per-route throttle-budget identity response hardening — Sprint146
+- [x] Canonical throttle-rejection metadata identity response hardening — Sprint147
 
-### Sprint146 description
+### Sprint147 description
 
-**Purpose / Why:** Sprint145 already required canonical route name, controller action, method, and path, but response ownership still accepted any present rate-limit ceiling.
+**Purpose / Why:** Sprint146 already required canonical request identity and exact route-specific throttle ceilings, but response ownership still did not require the complete metadata shape emitted by a real framework throttle rejection.
 
-**Objective / Gap:** ownership now additionally requires exact canonical `X-RateLimit-Limit`: materialization POST `1`, DB-attestation GET/HEAD `2`.
+**Objective / Gap:** ownership now additionally requires exact `X-RateLimit-Remaining: 0`, decimal non-empty `Retry-After`, and decimal non-empty `X-RateLimit-Reset`.
 
-**What changed:** exact-string budget identity was added to the throttle-response hardener; Sprint146 added mismatch/arbitrary/numeric-alias regression coverage, a machine-readable contract, exact-head workflow, and detailed sprint documentation.
+**What changed:** canonical throttle-rejection metadata validation was added to the hardener; Sprint147 added direct negative/positive metadata regressions, successor-compatible Sprint144 fixture metadata, a machine-readable contract, exact-head workflow, and detailed sprint documentation.
 
-**Evidence / Qualification:** PR #709; 30/30 exact-head CI; authority run `34750648988`; canonical engineering commit `a5e4aec8c142e7478a0e58d2d732dbf106393b06`; five-path engineering envelope SHA-256 `bbc0da27fe84ca8a1fafcf4b76bcf9e1f42e595c01d35544a94793c1a7fec161`.
+**Evidence / Qualification:** PR #711; 31/31 exact-head CI; authority run `34752002084`; canonical engineering commit `50a3ba99b8f5628381d9df63f4f6a0e1020d550a`; six-path engineering envelope SHA-256 `ffd176da808eda16fccdf0375fcae2fd5bcc1cfc4b931aca6492ca31eb9b1d40`.
 
 **Operational boundaries / NO-GO:** migration execution, permission provisioning, feature activation, runtime tokens, operational manifest/DB invocation, deployment/release, target activation, Technical Preview, Production, and updater activation remain outside this completed engineering boundary.
 
-**Next position:** Sprint147 bounded discovery only; no implementation objective or source envelope is preselected.
+**Next position:** Sprint148 bounded discovery only; no implementation objective or source envelope is preselected.
 
 Migration #27 remains source-only and `NOT_EXECUTED`; completion of this engineering horizon does not authorize operational use.
 
-## Horizon E — Sprint147+ bounded engineering — next
+## Horizon E — Sprint148+ bounded engineering — next
 
 Status: **NOT YET SELECTED / NOT COMPLETED**.
 
-Sprint147 begins only after bounded discovery identifies the smallest non-duplicative remaining engineering gap from canonical post-Sprint146.
+Sprint148 begins only after bounded discovery identifies the smallest non-duplicative remaining engineering gap from canonical post-Sprint147.
 
 Selection rules:
 
 1. prove the gap exists before adding source;
 2. freeze a bounded source envelope;
-3. preserve Sprint130–Sprint146 owned regressions and historical compatibility;
+3. preserve Sprint130–Sprint147 owned regressions and historical compatibility;
 4. stay fail-closed and deny-by-default;
 5. avoid operational adapter invocation and runtime-token provisioning unless separately authorized;
 6. qualify exact head in CI before merge;
 7. document the sprint using Purpose / Why, Objective / Gap, What changed, Evidence / Qualification, Operational boundaries / NO-GO, and Next position;
 8. reconcile canonical project-state documentation at closure.
 
-No roadmap text pre-authorizes a specific Sprint147 implementation.
+No roadmap text pre-authorizes a specific Sprint148 implementation.
 
 ## Horizon F — Operational qualification — blocked / separate authority
 
