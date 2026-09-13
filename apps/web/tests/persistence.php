@@ -307,3 +307,6 @@ $app['config']->set('database.connections.s19_sqlite', null);
 @unlink($s19DatabasePath);
 $removeS19Tree($s19Parent);
 $assert(! file_exists($s19Parent), 'Sprint 19 durable persistence workspace cleanup failed.');
+
+// Sprint155: execute the source-only handoff regression inside the existing M7.1 harness.
+require __DIR__.'/pos-final-shift-close-feature-activation-transport-envelope.php';
