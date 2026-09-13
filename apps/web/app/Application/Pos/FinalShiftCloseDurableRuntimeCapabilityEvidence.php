@@ -166,7 +166,11 @@ final readonly class FinalShiftCloseDurableRuntimeCapabilityEvidence
         $capabilities = is_array($evidence['capabilities'] ?? null)
             ? $evidence['capabilities']
             : [];
-        if (array_keys($capabilities) !== array_keys(self::CAPABILITY_EVIDENCE_KINDS)) {
+        $actualCapabilityNames = array_keys($capabilities);
+        $expectedCapabilityNames = array_keys(self::CAPABILITY_EVIDENCE_KINDS);
+        sort($actualCapabilityNames, SORT_STRING);
+        sort($expectedCapabilityNames, SORT_STRING);
+        if ($actualCapabilityNames !== $expectedCapabilityNames) {
             $violations[] = 'capability_set_invalid';
         }
 
