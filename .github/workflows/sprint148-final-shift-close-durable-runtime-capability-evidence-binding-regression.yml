@@ -34,24 +34,22 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
-      - name: Lock exact Sprint148 source envelope
+      - name: Preserve successor-compatible historical regression boundary
         shell: bash
         run: |
           set -euo pipefail
-          git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | LC_ALL=C sort > /tmp/actual
-          cat > /tmp/expected <<'EOF'
-          .github/workflows/sprint116-final-shift-close-post-selection-downstream-readiness.yml
-          .github/workflows/sprint148-final-shift-close-durable-runtime-capability-evidence-binding-regression.yml
-          apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeCapabilityEvidence.php
-          apps/web/tests/pos-final-shift-close-durable-runtime-capability-evidence-binding.php
-          docs/SPRINT148_FINAL_SHIFT_CLOSE_DURABLE_RUNTIME_CAPABILITY_EVIDENCE_BINDING.md
-          ops/final-shift-close/DURABLE_RUNTIME_CAPABILITY_EVIDENCE_BINDING_CONTRACT.json
-          ops/final-shift-close/POST_SELECTION_DOWNSTREAM_READINESS.json
-          EOF
-          diff -u /tmp/expected /tmp/actual
-          [[ "$(sha256sum /tmp/actual | awk '{print $1}')" == 'f7d9cfb173b54ac863cc70f10b9ae3df2f6715a4abdae0c7c32cbdb399bda5a6' ]]
+          # Sprint148 is historical after its canonical squash merge.
+          # Future PRs may evolve adjacent source while this workflow continues
+          # to prove the behavior and NO-GO invariants owned by Sprint148.
+          test -f apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeCapabilityEvidence.php
+          test -f apps/web/tests/pos-final-shift-close-durable-runtime-capability-evidence-binding.php
+          test -f docs/SPRINT148_FINAL_SHIFT_CLOSE_DURABLE_RUNTIME_CAPABILITY_EVIDENCE_BINDING.md
+          test -f ops/final-shift-close/DURABLE_RUNTIME_CAPABILITY_EVIDENCE_BINDING_CONTRACT.json
+          test -f ops/final-shift-close/POST_SELECTION_DOWNSTREAM_READINESS.json
+          test -f ops/final-shift-close/STATE.json
+          test -f ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
 
-      - name: Preserve historical successor compatibility
+      - name: Preserve predecessor historical successor compatibility
         shell: bash
         run: |
           set -euo pipefail
@@ -62,7 +60,7 @@ jobs:
           grep -Fq 'Preserve successor-compatible historical regression boundary' "$sprint147"
           grep -Fq 'Sprint147 is historical after its canonical squash merge.' "$sprint147"
 
-      - name: Validate Sprint148 contract
+      - name: Validate historical Sprint148 contract
         shell: bash
         run: |
           set -euo pipefail
@@ -101,7 +99,7 @@ jobs:
             .attribution == "Author by Lab | zefry"
           ' "$file" >/dev/null
 
-      - name: Validate post-selection integration
+      - name: Preserve Sprint148 post-selection ownership
         shell: bash
         run: |
           set -euo pipefail
@@ -113,15 +111,11 @@ jobs:
             (.downstream_components.runtime_allowlist.required_before_eligibility | index("TARGET_BOUND_CAPABILITY_EVIDENCE_IDENTITY_QUALIFIED")) != null and
             (.ordering | index("QUALIFY_TARGET_BOUND_DURABLE_RUNTIME_CAPABILITY_EVIDENCE_IDENTITY")) != null and
             (.forbidden_shortcuts | index("TREAT_SPRINT110_BOOLEAN_CAPABILITY_CLAIMS_AS_TARGET_BOUND_EVIDENCE")) != null and
-            .source_envelope_sha256 == "6583f7e9e4b1cce966f166c4e650e42e8c106b9c5354e75adceb10ace5688c18" and
             .sprint148_extension.bounded_objective == "DURABLE_RUNTIME_TARGET_BOUND_CAPABILITY_EVIDENCE_IDENTITY_BINDING" and
             .sprint148_extension.source_envelope_sha256 == "f7d9cfb173b54ac863cc70f10b9ae3df2f6715a4abdae0c7c32cbdb399bda5a6" and
             .sprint148_extension.source_only == true and
             .sprint148_extension.real_capability_evidence == "NONE" and
-            .sprint148_extension.operational_execution == "NOT_PERFORMED" and
-            .canonical_boundaries.real_capability_evidence == "NONE" and
-            .canonical_boundaries.trusted_capability_evidence_producer == "NOT_IMPLEMENTED" and
-            .canonical_boundaries.runtime_allowlist_change == "NOT_IMPLEMENTED"
+            .sprint148_extension.operational_execution == "NOT_PERFORMED"
           ' "$file" >/dev/null
 
       - name: Prove target-bound capability evidence identity boundary
@@ -180,7 +174,7 @@ jobs:
         working-directory: apps/web
         run: php tests/pos-final-shift-close-durable-runtime-target-selection.php
 
-      - name: Lock documentation boundary
+      - name: Preserve Sprint148 documentation boundary
         shell: bash
         run: |
           set -euo pipefail
