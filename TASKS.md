@@ -1,12 +1,12 @@
 # oneQay Tasks
 
-**Current engineering checkpoint:** post-Sprint141
-**Canonical engineering commit:** `81d4d19c61e99746495bec804c0e7d8a9778a257`
+**Current engineering checkpoint:** post-Sprint142
+**Canonical engineering commit:** `61a6d68b45303a796c5eb7c2afa78b16e740da53`
 **Canonical status authority:** `PROJECT_MANIFEST.md`
 
 This file is the current workboard. It separates **completed source engineering**, **next bounded engineering**, and **operational actions that remain unauthorized**.
 
-## Completed through Sprint141
+## Completed through Sprint142
 
 - [x] Core modular-monolith architecture and repository governance foundation
 - [x] Tenant-context-first and deny-by-default authorization foundations
@@ -31,44 +31,46 @@ This file is the current workboard. It separates **completed source engineering*
 - [x] Canonical auth-before-throttle hardening and same-IP budget-isolation regression — Sprint139
 - [x] Canonical cross-provider direct-middleware auth-rejection response privacy/security hardening — Sprint140
 - [x] Canonical registered-route HTTP-kernel auth-rejection response propagation and inertness regression — Sprint141
-- [x] Materialization missing/malformed/mismatched bearer remains HTTP 401 through the real registered route and HTTP kernel
-- [x] DB-attestation missing/malformed/mismatched bearer remains cloaked HTTP 404 through the real registered route and HTTP kernel
-- [x] Composed HTTP rejections remain empty-body, `no-store, private`, `Pragma: no-cache`, `nosniff`, and robot-excluded without bearer/internal-path reflection
-- [x] Sprint141 rejected requests leave both controllers, manifest writer/materializer, DB identity reader, and DB-attestation service unresolved
-- [x] Sprint139 auth-before-throttle and Sprint140 direct-middleware response-hardening ownership preserved
-- [x] Sprint141 PR #699 squash merged
-- [x] Sprint141 exact-head pull-request qualification — 25/25 successful
-- [x] Sprint141 Product Owner merge-authority workflow run `34709040922` successful
-- [x] Sprint141 post-merge engineering verification completed
+- [x] Canonical authenticated throttle-rejection response privacy/security hardening — Sprint142
+- [x] Materialization throttle remains exactly `1,1`; excess authenticated request remains HTTP `429` with no second synthetic write
+- [x] DB-attestation throttle remains exactly `2,1`; excess authenticated request remains HTTP `429` with no third synthetic identity read
+- [x] Sprint142 throttle rejections are empty-body, `no-store, private`, `Pragma: no-cache`, `nosniff`, and robot-excluded
+- [x] `Retry-After`, `X-RateLimit-Limit`, `X-RateLimit-Remaining`, and `X-RateLimit-Reset` remain preserved
+- [x] Sprint142 hardening is exact-scope; unrelated throttled route remains outside the hardener
+- [x] Sprint138–Sprint141 executable ownership preserved
+- [x] Sprint142 PR #701 squash merged
+- [x] Sprint142 exact-head pull-request qualification — 26/26 successful
+- [x] Sprint142 Product Owner merge-authority workflow run `34744364161` successful
+- [x] Sprint142 post-merge engineering verification completed
 
-## Post-Sprint141 canonical reconciliation
+## Post-Sprint142 canonical reconciliation
 
-- [x] Advance `PROJECT_MANIFEST.md` to Sprint141 engineering truth
-- [x] Advance `README.md` to Sprint141 current status
-- [x] Record Sprint141 closure in `CHANGELOG.md`
+- [x] Advance `PROJECT_MANIFEST.md` to Sprint142 engineering truth
+- [x] Advance `README.md` to Sprint142 current status
+- [x] Record Sprint142 closure in `CHANGELOG.md`
 - [x] Advance `TASKS.md` current workboard
-- [x] Advance `ROADMAP.md` completed engineering horizon and Sprint142 next position
-- [x] Convert Sprint141 full-envelope workflow ownership to successor-compatible historical regression ownership
+- [x] Advance `ROADMAP.md` completed engineering horizon and Sprint143 next position
+- [x] Convert Sprint142 full-envelope workflow ownership to successor-compatible historical regression ownership
 
 GitHub PR/CI state remains authoritative for the transient publication status of this bounded reconciliation.
 
 ## Next bounded engineering
 
-### Sprint142 — bounded discovery next
+### Sprint143 — bounded discovery next
 
-Sprint142 has **not** been selected, started, or completed merely because it is named here.
+Sprint143 has **not** been selected, started, or completed merely because it is named here.
 
 The next engineering activity must:
 
-- discover the smallest remaining non-duplicative executable gap from canonical post-Sprint141;
-- preserve Sprint130–Sprint141 control-plane ownership and historical regressions;
+- discover the smallest remaining non-duplicative executable gap from canonical post-Sprint142;
+- preserve Sprint130–Sprint142 control-plane ownership and historical regressions;
 - preserve existing POS/JRN evidence;
 - remain fail-closed and deny-by-default;
 - avoid operational adapter invocation or runtime-token provisioning unless separately authorized;
 - freeze a bounded source envelope before implementation;
 - qualify the exact PR head before merge.
 
-No specific Sprint142 implementation is canonical until bounded discovery freezes the objective and envelope.
+No specific Sprint143 implementation is canonical until bounded discovery freezes the objective and envelope.
 
 ## Operational blockers / separate authority required
 
