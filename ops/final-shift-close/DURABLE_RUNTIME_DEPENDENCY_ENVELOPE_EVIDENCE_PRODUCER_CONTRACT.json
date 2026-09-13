@@ -29,14 +29,16 @@
     "secret_free_output_required": true,
     "runtime_allowlist_change_forbidden": true,
     "activation_authority_grant_forbidden": true,
-    "producer_dispatch_during_sprint153_forbidden": true
+    "producer_dispatch_during_sprint153_forbidden": true,
+    "sprint151_historical_workflow_successor_compatible_required": true
   },
   "source_envelope": {
-    "path_count": 5,
+    "path_count": 6,
     "sorted_newline_terminated": true,
-    "sha256": "4d184a18b6d9814474233bda0bf4761e7045ebfb0a8cda5ea56b6b296cef627b",
+    "sha256": "7269a0e5f8927c2763411d0700b0f456cdcb0781f1d198179966a97a7b934a79",
     "paths": [
       ".github/workflows/final-shift-close-durable-runtime-dependency-envelope-evidence.yml",
+      ".github/workflows/sprint151-final-shift-close-durable-runtime-dependency-envelope-source-foundation-regression.yml",
       ".github/workflows/sprint153-final-shift-close-durable-runtime-dependency-envelope-evidence-producer-regression.yml",
       "docs/SPRINT153_FINAL_SHIFT_CLOSE_DURABLE_RUNTIME_DEPENDENCY_ENVELOPE_EVIDENCE_PRODUCER.md",
       "ops/final-shift-close/DURABLE_RUNTIME_DEPENDENCY_ENVELOPE_EVIDENCE_PRODUCER_CONTRACT.json",
