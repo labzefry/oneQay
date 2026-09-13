@@ -1,8 +1,8 @@
 # Sprint146 — Final Shift Close Canonical Control Plane Throttle Budget Identity Response Hardening Regression
 
-**Product:** oneQay — The Future of Intelligent Business Management  
-**Repository owner / attribution:** Lab | zefry  
-**Canonical base:** `ebaf16c64245c67e9ecf8cac613696e5661a02ac`  
+**Product:** oneQay — The Future of Intelligent Business Management
+**Repository owner / attribution:** Lab | zefry
+**Canonical base:** `ebaf16c64245c67e9ecf8cac613696e5661a02ac`
 **Objective:** `CANONICAL_CONTROL_PLANE_THROTTLE_BUDGET_IDENTITY_RESPONSE_HARDENING_REGRESSION`
 
 ## Purpose / Why
