@@ -1,12 +1,12 @@
 # oneQay Tasks
 
-**Current engineering checkpoint:** post-Sprint142
-**Canonical engineering commit:** `61a6d68b45303a796c5eb7c2afa78b16e740da53`
+**Current engineering checkpoint:** post-Sprint143
+**Canonical engineering commit:** `b307d925400e9707c137f75bcfa3823a182fb84f`
 **Canonical status authority:** `PROJECT_MANIFEST.md`
 
 This file is the current workboard. It separates **completed source engineering**, **next bounded engineering**, and **operational actions that remain unauthorized**.
 
-## Completed through Sprint142
+## Completed through Sprint143
 
 - [x] Core modular-monolith architecture and repository governance foundation
 - [x] Tenant-context-first and deny-by-default authorization foundations
@@ -24,53 +24,54 @@ This file is the current workboard. It separates **completed source engineering*
 - [x] Canonical controller positive-path regression — Sprint132
 - [x] Canonical controller fail-closed regression — Sprint133
 - [x] Canonical control-plane delivery-gate registration regression — Sprint134
-- [x] Canonical cross-provider positive registration metadata regression — Sprint135
-- [x] Canonical authenticated HTTP route → middleware → controller positive-path regression — Sprint136
-- [x] Canonical authenticated HTTP route → middleware → controller fail-closed regression — Sprint137
+- [x] Canonical cross-provider positive registration metadata regression, including DB-attestation `GET,HEAD` ownership — Sprint135
+- [x] Canonical authenticated HTTP positive-path regression — Sprint136
+- [x] Canonical authenticated HTTP fail-closed regression — Sprint137
 - [x] Canonical authenticated HTTP throttle enforcement regression — Sprint138
 - [x] Canonical auth-before-throttle hardening and same-IP budget-isolation regression — Sprint139
-- [x] Canonical cross-provider direct-middleware auth-rejection response privacy/security hardening — Sprint140
-- [x] Canonical registered-route HTTP-kernel auth-rejection response propagation and inertness regression — Sprint141
+- [x] Canonical direct-middleware auth-rejection response hardening — Sprint140
+- [x] Canonical registered-route HTTP-kernel auth-rejection response propagation — Sprint141
 - [x] Canonical authenticated throttle-rejection response privacy/security hardening — Sprint142
-- [x] Materialization throttle remains exactly `1,1`; excess authenticated request remains HTTP `429` with no second synthetic write
-- [x] DB-attestation throttle remains exactly `2,1`; excess authenticated request remains HTTP `429` with no third synthetic identity read
-- [x] Sprint142 throttle rejections are empty-body, `no-store, private`, `Pragma: no-cache`, `nosniff`, and robot-excluded
-- [x] `Retry-After`, `X-RateLimit-Limit`, `X-RateLimit-Remaining`, and `X-RateLimit-Reset` remain preserved
-- [x] Sprint142 hardening is exact-scope; unrelated throttled route remains outside the hardener
-- [x] Sprint138–Sprint141 executable ownership preserved
-- [x] Sprint142 PR #701 squash merged
-- [x] Sprint142 exact-head pull-request qualification — 26/26 successful
-- [x] Sprint142 Product Owner merge-authority workflow run `34744364161` successful
-- [x] Sprint142 post-merge engineering verification completed
+- [x] Canonical DB-attestation HEAD throttle-rejection privacy/security parity hardening — Sprint143
+- [x] DB-attestation remains `GET,HEAD` with exact `throttle:2,1`
+- [x] Two same-IP authenticated HEAD requests succeed; third HEAD remains HTTP `429`
+- [x] Third HEAD performs no third synthetic database identity read
+- [x] HEAD throttle rejection preserves empty body, `no-store, private`, `Pragma: no-cache`, `nosniff`, robot exclusion, and Laravel rate-limit metadata
+- [x] Materialization POST and DB-attestation GET behavior preserved
+- [x] Sprint135 and Sprint138–Sprint142 executable ownership preserved
+- [x] Sprint143 PR #703 squash merged
+- [x] Sprint143 exact-head pull-request qualification — 27/27 successful
+- [x] Sprint143 Product Owner merge-authority workflow run `34746609129` successful
+- [x] Sprint143 post-merge engineering verification completed
 
-## Post-Sprint142 canonical reconciliation
+## Post-Sprint143 canonical reconciliation
 
-- [x] Advance `PROJECT_MANIFEST.md` to Sprint142 engineering truth
-- [x] Advance `README.md` to Sprint142 current status
-- [x] Record Sprint142 closure in `CHANGELOG.md`
+- [x] Advance `PROJECT_MANIFEST.md` to Sprint143 engineering truth
+- [x] Advance `README.md` to Sprint143 current status
+- [x] Record Sprint143 closure in `CHANGELOG.md`
 - [x] Advance `TASKS.md` current workboard
-- [x] Advance `ROADMAP.md` completed engineering horizon and Sprint143 next position
-- [x] Convert Sprint142 full-envelope workflow ownership to successor-compatible historical regression ownership
+- [x] Advance `ROADMAP.md` completed engineering horizon and Sprint144 next position
+- [x] Convert Sprint143 full-envelope workflow ownership to successor-compatible historical regression ownership
 
 GitHub PR/CI state remains authoritative for the transient publication status of this bounded reconciliation.
 
 ## Next bounded engineering
 
-### Sprint143 — bounded discovery next
+### Sprint144 — bounded discovery next
 
-Sprint143 has **not** been selected, started, or completed merely because it is named here.
+Sprint144 has **not** been selected, started, or completed merely because it is named here.
 
 The next engineering activity must:
 
-- discover the smallest remaining non-duplicative executable gap from canonical post-Sprint142;
-- preserve Sprint130–Sprint142 control-plane ownership and historical regressions;
+- discover the smallest remaining non-duplicative executable gap from canonical post-Sprint143;
+- preserve Sprint130–Sprint143 control-plane ownership and historical regressions;
 - preserve existing POS/JRN evidence;
 - remain fail-closed and deny-by-default;
 - avoid operational adapter invocation or runtime-token provisioning unless separately authorized;
 - freeze a bounded source envelope before implementation;
 - qualify the exact PR head before merge.
 
-No specific Sprint143 implementation is canonical until bounded discovery freezes the objective and envelope.
+No specific Sprint144 implementation is canonical until bounded discovery freezes the objective and envelope.
 
 ## Operational blockers / separate authority required
 
