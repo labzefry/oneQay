@@ -1,7 +1,7 @@
 # oneQay Roadmap
 
-**Roadmap checkpoint:** post-Sprint142
-**Canonical engineering baseline:** `61a6d68b45303a796c5eb7c2afa78b16e740da53`
+**Roadmap checkpoint:** post-Sprint143
+**Canonical engineering baseline:** `b307d925400e9707c137f75bcfa3823a182fb84f`
 **Current state authority:** `PROJECT_MANIFEST.md`
 
 This roadmap describes sequencing and gates. It does **not** grant operational authority. A completed roadmap item means its bounded repository objective was completed; it does not imply deployment, migration execution, runtime activation, Technical Preview activation, or Production activation unless separately evidenced.
@@ -38,7 +38,7 @@ These foundations are repository/source achievements, not a statement that a com
 
 Representative milestones: Sprint55, Sprint64, Sprint70, and Sprint80.
 
-## Horizon D — Final Shift Close source/readiness chain — completed through Sprint142 engineering boundary
+## Horizon D — Final Shift Close source/readiness chain — completed through Sprint143 engineering boundary
 
 - [x] Source-only migration #27 materialization — Sprint88
 - [x] Final Shift Close application-readiness contract — Sprint89
@@ -50,35 +50,36 @@ Representative milestones: Sprint55, Sprint64, Sprint70, and Sprint80.
 - [x] Middleware positive-path regression — Sprint131
 - [x] Controller positive-path regression — Sprint132
 - [x] Controller fail-closed regression — Sprint133
-- [x] Cross-provider delivery-gate invalid-token route-absence regression — Sprint134
-- [x] Cross-provider canonical-valid-token registration metadata and inertness regression — Sprint135
-- [x] Canonical-valid-token authenticated HTTP route → middleware → real-controller positive-path regression with synthetic side-effect application services — Sprint136
-- [x] Canonical-valid-token authenticated HTTP route → middleware → real-controller fail-closed regression with exact HTTP 503 translation, response non-disclosure, and production-adapter isolation — Sprint137
-- [x] Canonical-valid authenticated HTTP throttle enforcement regression — Sprint138: materialization request two returns HTTP `429` without a second write; DB-attestation request three returns HTTP `429` without a third database-identity read
-- [x] Authentication-before-throttle hardening — Sprint139: wrong bearer traffic is rejected before limiter accounting and cannot reduce the valid bearer budget on either control plane, while the existing `1,1` and `2,1` limits remain unchanged
-- [x] Authentication-rejection response hardening — Sprint140: direct middleware invocation preserves materialization 503/401 and DB-attestation cloaked 404 rejection semantics while standardizing empty-body, private/no-store, no-cache, nosniff, and robot-exclusion metadata
-- [x] Registered-route HTTP-kernel auth-rejection propagation — Sprint141: missing, malformed, and mismatched bearer credentials retain Sprint140 hardened rejection status/body/header/non-reflection behavior through the actual routes and Laravel kernel while controllers and side-effect application services remain unresolved
-- [x] Authenticated throttle-rejection response hardening — Sprint142: exact Final Shift Close control-plane HTTP `429` responses retain auth-before-throttle ordering, unchanged `1,1` / `2,1` limits, and Laravel rate-limit metadata while becoming empty-body, private/no-store, no-cache, nosniff, and robot-excluded; unrelated throttled routes remain outside the hardening scope
+- [x] Cross-provider delivery-gate route-absence regression — Sprint134
+- [x] Cross-provider registration metadata/inertness regression including DB-attestation `GET,HEAD` ownership — Sprint135
+- [x] Authenticated HTTP positive-path regression — Sprint136
+- [x] Authenticated HTTP fail-closed regression — Sprint137
+- [x] Authenticated HTTP throttle enforcement — Sprint138
+- [x] Authentication-before-throttle hardening — Sprint139
+- [x] Authentication-rejection response hardening — Sprint140
+- [x] Registered-route HTTP-kernel auth-rejection propagation — Sprint141
+- [x] Authenticated throttle-rejection response hardening for materialization POST and DB-attestation GET — Sprint142
+- [x] DB-attestation HEAD throttle-rejection parity hardening — Sprint143: the route-owned HEAD method now receives the same empty-body privacy/security and Laravel rate-limit metadata contract as GET; the third same-IP authenticated HEAD request remains HTTP `429` without a third synthetic identity read
 
 Migration #27 remains source-only and `NOT_EXECUTED`; completion of this engineering horizon does not authorize operational use.
 
-## Horizon E — Sprint143+ bounded engineering — next
+## Horizon E — Sprint144+ bounded engineering — next
 
 Status: **NOT YET SELECTED / NOT COMPLETED**.
 
-Sprint143 begins only after bounded discovery identifies the smallest non-duplicative remaining engineering gap from canonical post-Sprint142.
+Sprint144 begins only after bounded discovery identifies the smallest non-duplicative remaining engineering gap from canonical post-Sprint143.
 
 Selection rules:
 
 1. prove the gap exists before adding source;
 2. freeze a bounded source envelope;
-3. preserve Sprint130–Sprint142 owned regressions and historical compatibility;
+3. preserve Sprint130–Sprint143 owned regressions and historical compatibility;
 4. stay fail-closed and deny-by-default;
 5. avoid operational adapter invocation and runtime-token provisioning unless separately authorized;
 6. qualify exact head in CI before merge;
 7. reconcile canonical project-state documentation at closure.
 
-No roadmap text pre-authorizes a specific Sprint143 implementation.
+No roadmap text pre-authorizes a specific Sprint144 implementation.
 
 ## Horizon F — Operational qualification — blocked / separate authority
 

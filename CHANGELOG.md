@@ -4,119 +4,77 @@ This changelog records **material canonical progress**, not every intermediate c
 
 Current project-state authority: [`PROJECT_MANIFEST.md`](PROJECT_MANIFEST.md).
 
+## 2026-09-13 — Sprint143 closed
+
+**Sprint143: DB attestation HEAD throttle rejection response hardening**
+
+- PR #703 squash merged.
+- Canonical engineering commit: `b307d925400e9707c137f75bcfa3823a182fb84f`.
+- Parent canonical documentation checkpoint: `cdda490be67ef11cac95cb1449e7de86f176bef6`.
+- Closed the concrete method-parity gap where the canonical DB-attestation route exposes `GET,HEAD` but Sprint142 hardening owned only GET.
+- Extended only the throttle-response hardener's DB-attestation method ownership from GET-only to GET-or-HEAD.
+- Materialization remains POST-only; route registration, auth-before-throttle ordering, controllers, token policy, services, and exact DB-attestation `throttle:2,1` remain unchanged.
+- Two authenticated same-IP HEAD requests return HTTP `200`; the third remains HTTP `429` before any third synthetic database identity read.
+- The throttled HEAD response is empty-body, `no-store, private`, `Pragma: no-cache`, `nosniff`, robot-excluded, and preserves Laravel `Retry-After`, `X-RateLimit-Limit`, `X-RateLimit-Remaining`, and `X-RateLimit-Reset` metadata.
+- Sprint135 route metadata and Sprint138–Sprint142 executable ownership remain preserved.
+- Exact Sprint143 engineering envelope: five paths.
+- Frozen envelope SHA-256: `30df6d628ffa67335dd51275137c022cd461264a137b28b5d9fa623a1d1298ed`.
+- Final exact-head engineering SHA before merge: `440a345c99fb9df6e5de3ef717f6f2d967ea26cb`.
+- Exact-head pull-request qualification: 27/27 workflow runs successful.
+- Product Owner merge-authority workflow run `34746609129` completed successfully.
+- Operational NO-GO state remained unchanged.
+
 ## 2026-09-13 — Sprint142 closed
 
 **Sprint142: canonical control-plane throttle rejection response hardening**
 
-- PR #701 squash merged.
-- Canonical engineering commit: `61a6d68b45303a796c5eb7c2afa78b16e740da53`.
-- Parent canonical documentation checkpoint: `669661c70a376f4adc6c9f805af38c60f5672382`.
-- Closed the authenticated throttle-rejection response-hardening gap left after Sprint138–Sprint141.
-- Materialization remains auth-before-throttle with exact `throttle:1,1`; DB-attestation remains auth-before-throttle with exact `throttle:2,1`.
-- Throttle-generated HTTP `429` responses on the two exact Final Shift Close control-plane route/method pairs are now empty-body, `no-store, private`, `Pragma: no-cache`, `nosniff`, and robot-excluded.
-- Laravel throttle metadata remains preserved: `Retry-After`, `X-RateLimit-Limit`, `X-RateLimit-Remaining`, and `X-RateLimit-Reset`.
-- The hardening post-processor is exact-scope and requires throttle response metadata; an unrelated throttled route remains outside Sprint142 hardening.
-- Materialization still performs only one synthetic write before its excess request; DB-attestation still performs only two synthetic identity reads before its excess request.
-- Sprint138 throttle enforcement, Sprint139 auth-before-throttle, Sprint140 direct auth-rejection hardening, and Sprint141 HTTP-kernel auth-rejection propagation remain preserved.
-- Exact Sprint142 engineering envelope: six paths.
-- Frozen envelope SHA-256: `51245b1a9610a4a1989f52bfd76b80d57683e4c7069f6f7eafecee77d6147023`.
-- Final exact-head engineering SHA before merge: `c4154f33d21d3e6005a339662ce4c4f5642b8ed0`.
-- Exact-head pull-request qualification: 26/26 workflow runs successful.
-- Product Owner merge-authority workflow run `34744364161` completed successfully.
+- PR #701 squash merged at engineering commit `61a6d68b45303a796c5eb7c2afa78b16e740da53`.
+- Hardened authenticated HTTP `429` throttle rejections for materialization POST and DB-attestation GET while preserving auth-before-throttle ordering and exact `1,1` / `2,1` limits.
+- Preserved Laravel rate-limit metadata while standardizing empty-body privacy/security headers.
+- Exact-head qualification: 26/26 successful; Product Owner merge-authority run `34744364161` successful.
 - Operational NO-GO state remained unchanged.
 
 ## 2026-09-12 — Sprint141 closed
 
 **Sprint141: canonical HTTP auth rejection response regression**
 
-- PR #699 squash merged.
-- Canonical engineering commit: `81d4d19c61e99746495bec804c0e7d8a9778a257`.
-- Parent canonical documentation checkpoint: `c49c5438180a89a393201c688482977fd9c9e3f1`.
-- Added a CI-only regression proving Sprint140 auth-rejection response hardening survives the real registered Final Shift Close routes and Laravel HTTP kernel.
-- With canonical-valid synthetic expected tokens registering both routes, missing, malformed, and structurally canonical-valid mismatched bearer credentials preserve materialization HTTP `401` and DB-attestation cloaked HTTP `404`.
-- Every rejection remains empty-body with `Cache-Control` containing `no-store` and `private`, `Pragma: no-cache`, `X-Content-Type-Options: nosniff`, and `X-Robots-Tag: noindex, nofollow, noarchive`.
-- Expected-token, mismatched-token, and synthetic internal-path values are not reflected.
-- Materialization controller, DB-attestation controller, manifest writer/materializer, database identity reader, and DB-attestation service remain unresolved for rejected requests; the canonical runtime manifest remains absent.
-- Preserved Sprint139 auth-before-throttle ownership and Sprint140 direct-middleware response-hardening ownership.
-- Exact Sprint141 engineering envelope: four paths.
-- Frozen envelope SHA-256: `b75d55835722110dee38759068ce3f527efc0ecdbd2201f4fde9b4372211641a`.
-- Final exact-head engineering SHA before merge: `8dc34649d15ca65e6b198221d0354bee8e75ecb1`.
-- Exact-head pull-request qualification: 25/25 workflow runs successful.
-- Product Owner merge-authority workflow run `34709040922` completed successfully.
-- Operational NO-GO state remained unchanged.
+- PR #699 squash merged at engineering commit `81d4d19c61e99746495bec804c0e7d8a9778a257`.
+- Proved Sprint140 auth-rejection response hardening survives real registered routes and the Laravel HTTP kernel for missing, malformed, and mismatched bearer credentials.
+- Exact-head qualification: 25/25 successful; Product Owner merge-authority run `34709040922` successful.
 
 ## 2026-09-12 — Sprint140 closed
 
 **Sprint140: canonical control-plane auth rejection response hardening regression**
 
-- PR #697 squash merged.
-- Canonical engineering commit: `446f9ff80f646d2e77d0885b887da58a37994d28`.
-- Parent canonical documentation checkpoint: `0d08996238d7aec0db3476d0dedf6d69ef3f0669`.
-- Hardened both Final Shift Close authentication rejection surfaces without changing token policy, route registration, middleware ordering, throttle limits, controllers, or application-service semantics.
-- Materialization preserves HTTP `503` for invalid expected-token configuration and HTTP `401` for missing, malformed, or mismatched bearer credentials.
-- DB-binding attestation preserves cloaked HTTP `404` for invalid expected-token configuration and missing, malformed, or mismatched bearer credentials.
-- All auth rejection responses are empty-body, `no-store`/`private`, `no-cache`, `nosniff`, robot-excluded, and non-reflective.
-- Matching bearer credentials continue to a synthetic HTTP `204` continuation in the Sprint140 regression; production manifest-writer, database-identity-reader, and both controllers remain unresolved there.
-- Updated historical Sprint126, Sprint130, and Sprint131 static representation assertions to recognize hardened rejection responses while preserving their executable regression ownership.
-- Exact Sprint140 engineering envelope: nine paths.
-- Frozen envelope SHA-256: `58f0fe3105a12fc3c6cac98e736743349237a5221a63376f668358c5c09fe1b3`.
-- Final exact-head engineering SHA before merge: `3ef7024368d8b68c98974535d6aa44f925e4ced5`.
-- Exact-head pull-request qualification: 25/25 workflow runs successful.
-- Product Owner merge-authority workflow run `34707917274` completed successfully.
-- Operational NO-GO state remained unchanged.
+- PR #697 squash merged at engineering commit `446f9ff80f646d2e77d0885b887da58a37994d28`.
+- Hardened materialization `503/401` and DB-attestation cloaked `404` auth rejection surfaces with empty-body privacy/security metadata.
+- Exact-head qualification: 25/25 successful; Product Owner merge-authority run `34707917274` successful.
 
 ## 2026-09-12 — Sprint139 closed
 
-**Sprint139: canonical control-plane auth-before-throttle regression**
-
 - PR #694 squash merged at engineering commit `4028e05485589be649eb437c800b70c2990decf2`.
-- Corrected both control-plane providers so canonical bearer authentication executes before unchanged `throttle:1,1` / `throttle:2,1` accounting.
-- Proved structurally valid wrong-bearer traffic cannot consume authenticated request budget from the same source IP.
-- Exact engineering envelope: six paths; frozen SHA-256 `be9546afdf82465da5f9d160845edc4cf6599f306445f941226e12288a7b2286`.
-- Exact-head qualification: 24/24 successful; Product Owner merge-authority run `34705209701` successful.
-- Operational NO-GO state remained unchanged.
+- Corrected both control-plane providers so authentication executes before unchanged throttle accounting.
+- Proved wrong-bearer traffic cannot consume authenticated request budget.
 
 ## 2026-09-12 — Sprint138 closed
 
-**Sprint138: canonical control-plane authenticated HTTP throttle regression**
-
 - PR #692 squash merged at engineering commit `7f562ea48a0255b7e9803f6b268bd00a7e3b3dcf`.
-- Proved materialization `1/min` and DB-attestation `2/min` authenticated throttle enforcement with excess requests rejected as HTTP `429` before repeated synthetic side effects.
-- Exact-head qualification: 22/22 successful; Product Owner merge-authority run `34701268872` successful.
-- Operational NO-GO state remained unchanged.
+- Proved materialization `1/min` and DB-attestation `2/min` authenticated throttle enforcement before repeated synthetic side effects.
 
-## 2026-09-12 — Sprint137 closed
+## 2026-09-12 — Sprint130–Sprint137 canonical control-plane qualification
 
-**Sprint137: canonical control-plane authenticated HTTP fail-closed regression**
+- Sprint130 — canonical runtime control-plane token policy.
+- Sprint131 — middleware positive-path regression.
+- Sprint132 — controller positive-path regression.
+- Sprint133 — controller fail-closed regression.
+- Sprint134 — cross-provider delivery-gate registration regression.
+- Sprint135 — canonical-valid-token registration metadata/inertness regression, including DB-attestation `GET,HEAD` route ownership.
+- Sprint136 — authenticated HTTP positive path through real route, middleware, and controller.
+- Sprint137 — authenticated HTTP fail-closed translation and response non-disclosure.
 
-- PR #690 squash merged at engineering commit `62196919fb2c2a172bc0a290159aa26a045d4ed9`.
-- Proved authenticated HTTP failures traverse registered route, real token middleware, and real controller while returning exact fail-closed HTTP `503` contracts without sensitive leakage.
-- Production filesystem/database adapters remained unresolved.
+## 2026-09-05 onward — Final Shift Close readiness chain
 
-## 2026-09-12 — Sprint136 closed
-
-**Sprint136: canonical control-plane authenticated HTTP positive path regression**
-
-- PR #688 squash merged at engineering commit `2a92a870d9c8388bdb9ac4f516e9d671237ce116`.
-- Proved canonical-valid bearer credentials traverse registered routes, real token middleware, and real controllers with synthetic side-effect application services.
-- Production filesystem/database adapters remained isolated.
-
-## 2026-09-12 — Sprint134–Sprint135 canonical control-plane registration qualification
-
-- Sprint134 added cross-provider delivery-gate route-absence regression for unqualified token configuration and established canonical root documentation governance.
-- Sprint135 added canonical-valid-token cross-provider registration metadata/inertness qualification.
-- Both retained operational NO-GO boundaries.
-
-## 2026-09-12 — Sprint130–Sprint133 canonical control-plane hardening
-
-- **Sprint130** — canonical token validity/bearer policy.
-- **Sprint131** — CI-only synthetic middleware positive path.
-- **Sprint132** — CI-only synthetic direct-controller positive path.
-- **Sprint133** — direct-controller fail-closed translation and leakage regression.
-
-## 2026-09-05 onward — Final Shift Close readiness and runtime-control-plane chain
-
-Material milestones include Sprint88 source-only migration #27, Sprint89 application-readiness, later application/provider/runtime-binding/DB-attestation/authorization/target-readiness qualification, and the Sprint130–Sprint142 canonical control-plane hardening chain.
+Material milestones include Sprint88 source-only migration #27, Sprint89 application-readiness, later application/provider/runtime-binding/DB-attestation/authorization/target-readiness qualification, and the Sprint130–Sprint143 canonical control-plane hardening chain.
 
 Throughout this sequence, migration execution, permission provisioning, deployment, Technical Preview activation, Production activation, and updater activation remained separately gated.
 
@@ -130,7 +88,7 @@ Earlier repository work established the architecture/governance platform, authen
 
 ## Current lifecycle boundary
 
-As of the post-Sprint142 engineering checkpoint:
+As of the post-Sprint143 engineering checkpoint:
 
 - migration #27 execution: `NOT_EXECUTED`;
 - permission provisioning: `NONE`;
