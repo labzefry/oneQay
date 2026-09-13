@@ -38,13 +38,14 @@ jobs:
           set -euo pipefail
           base='${{ github.event.pull_request.base.sha }}'
           head='${{ github.event.pull_request.head.sha }}'
-          expected_hash='4d184a18b6d9814474233bda0bf4761e7045ebfb0a8cda5ea56b6b296cef627b'
+          expected_hash='7269a0e5f8927c2763411d0700b0f456cdcb0781f1d198179966a97a7b934a79'
           mapfile -t changed < <(git diff --name-only "$base" "$head" | LC_ALL=C sort)
-          test "${#changed[@]}" -eq 5
+          test "${#changed[@]}" -eq 6
           printf '%s\n' "${changed[@]}" > /tmp/sprint153-paths
           test "$(sha256sum /tmp/sprint153-paths | awk '{print $1}')" = "$expected_hash"
           expected=(
             '.github/workflows/final-shift-close-durable-runtime-dependency-envelope-evidence.yml'
+            '.github/workflows/sprint151-final-shift-close-durable-runtime-dependency-envelope-source-foundation-regression.yml'
             '.github/workflows/sprint153-final-shift-close-durable-runtime-dependency-envelope-evidence-producer-regression.yml'
             'docs/SPRINT153_FINAL_SHIFT_CLOSE_DURABLE_RUNTIME_DEPENDENCY_ENVELOPE_EVIDENCE_PRODUCER.md'
             'ops/final-shift-close/DURABLE_RUNTIME_DEPENDENCY_ENVELOPE_EVIDENCE_PRODUCER_CONTRACT.json'
@@ -75,8 +76,8 @@ jobs:
             .source_requirements.sprint151_source_foundation_reuse_required == true and
             .source_requirements.sprint150_final_qualification_required == true and
             .source_requirements.producer_dispatch_during_sprint153_forbidden == true and
-            .source_envelope.path_count == 5 and
-            .source_envelope.sha256 == "4d184a18b6d9814474233bda0bf4761e7045ebfb0a8cda5ea56b6b296cef627b" and
+            .source_envelope.path_count == 6 and
+            .source_envelope.sha256 == "7269a0e5f8927c2763411d0700b0f456cdcb0781f1d198179966a97a7b934a79" and
             .canonical_boundaries.producer_source == "MATERIALIZED_NOT_DISPATCHED" and
             .canonical_boundaries.real_dependency_envelope_evidence == "NONE" and
             .canonical_boundaries.runtime_allowlist_change == "NOT_IMPLEMENTED" and
@@ -134,7 +135,7 @@ jobs:
             .sprint153_extension.producer_source == "MATERIALIZED_NOT_DISPATCHED" and
             .sprint153_extension.producer_dispatch == "NOT_PERFORMED" and
             .sprint153_extension.real_dependency_envelope_evidence == "NONE" and
-            .sprint153_extension.source_envelope_sha256 == "4d184a18b6d9814474233bda0bf4761e7045ebfb0a8cda5ea56b6b296cef627b" and
+            .sprint153_extension.source_envelope_sha256 == "7269a0e5f8927c2763411d0700b0f456cdcb0781f1d198179966a97a7b934a79" and
             .canonical_boundaries.dependency_evidence_source_foundation == "MATERIALIZED_SOURCE_ONLY" and
             .canonical_boundaries.dependency_evidence_producer == "MATERIALIZED_NOT_DISPATCHED" and
             .canonical_boundaries.dependency_evidence_producer_dispatch == "NOT_PERFORMED" and
@@ -157,9 +158,10 @@ jobs:
           set -euo pipefail
           doc=docs/SPRINT153_FINAL_SHIFT_CLOSE_DURABLE_RUNTIME_DEPENDENCY_ENVELOPE_EVIDENCE_PRODUCER.md
           for heading in '## Purpose / Why' '## Objective / Gap' '## What changed' '## Evidence / Qualification' '## Operational boundaries / NO-GO' '## Next position'; do grep -Fq "$heading" "$doc"; done
-          grep -Fq '4d184a18b6d9814474233bda0bf4761e7045ebfb0a8cda5ea56b6b296cef627b' "$doc"
+          grep -Fq '7269a0e5f8927c2763411d0700b0f456cdcb0781f1d198179966a97a7b934a79' "$doc"
           grep -Fq 'Real dependency-envelope evidence remains `NONE`' "$doc"
           grep -Fq 'not dispatched' "$doc"
+          grep -Fq '34767104436' "$doc"
 
       - name: Verify tracked-source cleanliness
         run: |
