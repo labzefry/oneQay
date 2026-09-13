@@ -28,11 +28,12 @@
     "migration27_table_required_before_permission_mutation": true,
     "no_default_grant_preserved": true,
     "caller_supplied_target_identity_forbidden": true,
-    "new_binding_producer_forbidden": true
+    "new_binding_producer_forbidden": true,
+    "sprint104_historical_workflow_successor_compatible_required": true
   },
   "source_envelope": {
-    "path_count": 5,
-    "sha256": "10b79aec054c69df9208dbabf014ac2ed885701a0046d6d950a0623783007fac"
+    "path_count": 6,
+    "sha256": "052599d3aeb31aacaa4f139cac6ea1b0cd677a86a1c25358136d69b8f5f650c9"
   },
   "canonical_boundaries": {
     "current_selection_state": "BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET",
