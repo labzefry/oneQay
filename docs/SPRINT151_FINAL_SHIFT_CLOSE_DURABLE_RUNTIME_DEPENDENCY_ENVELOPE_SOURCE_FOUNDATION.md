@@ -24,7 +24,7 @@ Frozen engineering envelope: five paths. Sorted newline-terminated SHA-256: `ef0
 
 The exact-head Sprint151 workflow validates the five-path envelope, contract, PHP syntax, source invariants, Composer metadata and audit, and the predecessor Sprint148 capability binding, Sprint149 capability producer, and Sprint150 dependency-envelope qualification regressions.
 
-Source materialization is not operational evidence. Real dependency-envelope evidence remains `NONE`; producer dispatch remains `NOT_PERFORMED`.
+Source materialization is not operational evidence. real dependency-envelope evidence remains `NONE`; producer dispatch remains `NOT_PERFORMED`.
 
 ## Operational boundaries / NO-GO
 
