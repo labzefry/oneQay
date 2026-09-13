@@ -1,12 +1,12 @@
 # oneQay Tasks
 
-**Current engineering checkpoint:** post-Sprint154 reconciliation
-**Canonical engineering commit:** `5349acbffd1c90087d37a1a0f74ce0ffd7e87773`
+**Current engineering checkpoint:** Sprint155 engineering merged; post-Sprint155 reconciliation  
+**Canonical engineering commit:** `1e84e1b3e07915a1d20b56fe768b0d1454f901d2`  
 **Canonical status authority:** `PROJECT_MANIFEST.md`
 
 This file separates completed source engineering, next bounded engineering, and operational actions that remain separately gated.
 
-## Completed through Sprint154
+## Completed through Sprint155 engineering
 
 - [x] Core modular-monolith architecture and repository governance foundation
 - [x] Tenant-context-first and deny-by-default authorization foundations
@@ -24,37 +24,60 @@ This file separates completed source engineering, next bounded engineering, and 
 - [x] Permission provisioning selected-target database-binding source hardening — Sprint152
 - [x] Trusted dependency-envelope evidence producer source materialization — Sprint153
 - [x] Final Shift Close feature-activation executor source foundation — Sprint154
-- [x] Sprint154 CI-proven Sprint116 successor compatibility correction
-- [x] Sprint154 engineering PR #726 squash merged
-- [x] Sprint154 exact-head qualification — 39/39 successful
-- [x] Sprint154 Product Owner authority run `34772516177` successful
-- [x] Sprint154 engineering squash `5349acbffd1c90087d37a1a0f74ce0ffd7e87773`
-- [x] Sprint154 post-merge engineering NO-GO verification completed
+- [x] Final Shift Close deterministic source-only activation transport handoff envelope — Sprint155
+- [x] Sprint155 regression registered in existing M7.1 application harness
+- [x] Sprint155 engineering PR #728 squash merged
+- [x] Sprint155 exact-head qualification — 36/36 successful
+- [x] Sprint155 PHP Foundation run `34774606244` successful
+- [x] Sprint155 M7.1 run `34774606266` successful and explicitly executed the new regression
+- [x] Sprint155 Product Owner authority run `34775351008` successful
+- [x] Sprint155 engineering squash `1e84e1b3e07915a1d20b56fe768b0d1454f901d2`
+- [x] Sprint155 post-engineering merge delta verified as exactly one commit / three paths
+- [x] Sprint155 post-engineering machine-readable NO-GO verification completed
 
-## Sprint154 closure evidence
+## Sprint155 engineering evidence
 
-- Objective: `FINAL_SHIFT_CLOSE_FEATURE_ACTIVATION_EXECUTOR_SOURCE_FOUNDATION`
-- Final engineering head: `132dbd0048ad40248efe093e22f276b487890487`
-- Initial six-path envelope SHA-256: `35499fbb12404b3ab5f25de924d4528060f4cf4eb362091b116e5faf3c3766c3`
-- CI-proven Sprint116 compatibility conflict: run `34772115090`
-- Final engineering envelope: seven paths
-- Final engineering envelope SHA-256: `5dcf1fcd0b638ed9ec3d311947055a2b2c96c74d8e8fb5b74ff1f1b96bd1296f`
+- Objective: `FINAL_SHIFT_CLOSE_FEATURE_ACTIVATION_TRANSPORT_SOURCE_FOUNDATION`
+- Parent canonical checkpoint: `056d0300af925c9e8adf04a11a107cc4f5fde196`
+- Final engineering head: `4871e0ade60e8ac5e6f44b2bc27f0319ca150e63`
+- Engineering envelope: three paths
+- Engineering envelope SHA-256: `29619b928a422615647184c5316d9679dd4c4d582d759e89e8704e335ed982cb`
 - Reconciliation envelope: six paths
-- Reconciliation envelope SHA-256: `ba0208b79fb9790435dcc968fe85e05aece4a980cb891e4c2e946efcbc65650f`
+- Reconciliation envelope SHA-256: `323efb8b04badda3874aa7542285499b7be7b8df139cc86fd43b294aac7f8a38`
 - Activation executor source foundation: `MATERIALIZED_SOURCE_ONLY`
+- Source-only activation transport handoff envelope: materialized
+- Concrete configuration-mutation transport: `NOT_IMPLEMENTED`
 - Dispatchable feature-activation executor: `NOT_IMPLEMENTED`
-- Configuration-mutation transport: `NOT_IMPLEMENTED`
-- Executor dispatch: `NOT_PERFORMED`
+- Network / executor dispatch: `NOT_PERFORMED`
 - Runtime allowlist change: `NOT_IMPLEMENTED`
 - Feature activation: `INACTIVE`
 
+## Current reconciliation work
+
+- [x] Create reconciliation branch from exact engineering squash `1e84e1b3e07915a1d20b56fe768b0d1454f901d2`
+- [x] Add non-operational Sprint155 source-contract preservation workflow
+- [x] Freeze six-path reconciliation envelope and hash
+- [x] Reconcile `PROJECT_MANIFEST.md`
+- [x] Reconcile `README.md`
+- [x] Reconcile `CHANGELOG.md`
+- [x] Reconcile `TASKS.md`
+- [x] Reconcile `ROADMAP.md`
+- [ ] Open exact six-path reconciliation PR
+- [ ] Require all exact-head reconciliation CI successful
+- [ ] Obtain repository-native Product Owner exact-head authority
+- [ ] Complete final race and squash merge reconciliation PR
+- [ ] Verify engineering-to-reconciliation delta is exactly one commit / six paths
+- [ ] Verify manifest still references engineering SHA, not reconciliation SHA
+- [ ] Verify machine-readable operational NO-GO remains unchanged
+- [ ] Declare Sprint155 CLOSED
+
 ## Next bounded engineering
 
-### Sprint155 — bounded discovery after Sprint154 closure
+### Sprint156 — bounded discovery after Sprint155 closure
 
-After post-Sprint154 reconciliation closes, the next engineering activity must:
+After post-Sprint155 reconciliation closes, the next engineering activity must:
 
-- identify the smallest material non-duplicative production-readiness gap from canonical post-Sprint154;
+- identify the smallest material non-duplicative production-readiness gap from canonical post-Sprint155;
 - prove the invariant is not already owned by historical regressions, source contracts, or current foundations;
 - prioritize genuine durable-runtime prerequisites without operational mutation;
 - freeze the smallest meaningful bounded source envelope before implementation;
@@ -62,7 +85,7 @@ After post-Sprint154 reconciliation closes, the next engineering activity must:
 - qualify exact head before merge;
 - preserve the six-section sprint documentation rule.
 
-No Sprint155 implementation is preselected.
+No Sprint156 implementation is preselected.
 
 ## Operational blockers / separate authority required
 
@@ -87,6 +110,6 @@ Machine-readable operational authority remains in `ops/final-shift-close/STATE.j
 
 ## Maintenance rule
 
-At every material sprint closure: reconcile `PROJECT_MANIFEST.md`, README, TASKS, ROADMAP, and CHANGELOG; preserve detailed evidence in per-sprint docs/contracts/workflows/Git history; never label source-published work as deployed or activated without operational evidence; and make the just-closed workflow successor-compatible.
+At every material sprint closure: reconcile `PROJECT_MANIFEST.md`, README, TASKS, ROADMAP, and CHANGELOG; preserve detailed evidence in per-sprint evidence/contracts/workflows/Git history where materialized; never label source-published work as deployed or activated without operational evidence; and keep preservation workflows successor-compatible.
 
 Author by Lab | zefry
