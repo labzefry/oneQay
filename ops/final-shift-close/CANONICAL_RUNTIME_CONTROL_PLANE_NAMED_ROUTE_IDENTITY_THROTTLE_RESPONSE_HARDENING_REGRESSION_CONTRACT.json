@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "feature": "final-shift-close",
+  "sprint": 144,
+  "bounded_objective": "CANONICAL_CONTROL_PLANE_NAMED_ROUTE_IDENTITY_THROTTLE_RESPONSE_HARDENING_REGRESSION",
+  "execution_mode": "CI_ONLY_SYNTHETIC_DIRECT_MIDDLEWARE_ROUTE_IDENTITY_QUALIFICATION",
+  "qualification": {
+    "new_executable_gap": "SAME_PATH_METHOD_NONCANONICAL_ROUTE_IDENTITY_MUST_REMAIN_FRAMEWORK_OWNED",
+    "ownership_signal": "ROUTE_NAME_PLUS_METHOD_PLUS_PATH",
+    "route_registration_changed": false,
+    "route_middleware_stack_changed": false,
+    "authentication_before_throttle_preserved": true,
+    "throttle_limits_changed": false,
+    "materialization_route_name": "internal.final-shift-close.runtime-binding-manifest.materialize",
+    "materialization_method_ownership": ["POST"],
+    "db_attestation_route_name": "internal.final-shift-close.runtime-db-binding-attestation",
+    "db_attestation_method_ownership": ["GET", "HEAD"],
+    "canonical_path_match_still_required": true,
+    "noncanonical_same_path_post_framework_owned": true,
+    "noncanonical_same_path_get_framework_owned": true,
+    "noncanonical_same_path_head_framework_owned": true,
+    "unresolved_route_framework_owned": true,
+    "canonical_materialization_post_hardened": true,
+    "canonical_db_attestation_get_hardened": true,
+    "canonical_db_attestation_head_hardened": true,
+    "throttle_rejection_status": 429,
+    "canonical_throttle_rejection_body": "EMPTY",
+    "privacy_security_headers_preserved": true,
+    "framework_rate_limit_metadata_preserved": true,
+    "framework_owned_shadow_response_not_rewritten": true,
+    "canonical_runtime_binding_manifest_write": "FORBIDDEN"
+  },
+  "historical_ownership": {
+    "sprint135_get_head_route_metadata": "PRESERVED",
+    "sprint138_authenticated_http_throttle_enforcement": "PRESERVED",
+    "sprint139_auth_before_throttle": "PRESERVED",
+    "sprint140_direct_middleware_auth_rejection_response_hardening": "PRESERVED",
+    "sprint141_http_kernel_auth_rejection_response_propagation": "PRESERVED",
+    "sprint142_authenticated_throttle_rejection_response_hardening": "PRESERVED",
+    "sprint143_db_attestation_head_throttle_rejection_response_hardening": "PRESERVED",
+    "sprint144_named_route_identity_throttle_response_hardening": "OWNED"
+  },
+  "source_envelope": {
+    "path_count": 5,
+    "sha256": "a057418c27d32d2a3c0bb88bf694fb7389304c392d101e04a1d45955805c50ab"
+  },
+  "canonical_boundaries": {
+    "migration27_execution": "NOT_PERFORMED",
+    "permission_provisioning": "NONE",
+    "feature_activation": "INACTIVE",
+    "selected_target": null,
+    "deployment_authority": "NOT_GRANTED",
+    "technical_preview": "NO-GO",
+    "production": "NO-GO",
+    "updater": "INACTIVE"
+  },
+  "attribution": "Author by Lab | zefry"
+}
