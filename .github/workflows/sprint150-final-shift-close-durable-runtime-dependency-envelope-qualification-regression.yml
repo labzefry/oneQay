@@ -1,0 +1,153 @@
+name: Sprint150 Final Shift Close Durable Runtime Dependency Envelope Qualification Regression
+
+# Attribution: Lab | zefry
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint150-durable-runtime-dependency-envelope-qualification-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qualify-durable-runtime-dependency-envelope:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHQ=
+      APP_DEBUG: 'false'
+      APP_URL: http://localhost
+      CACHE_STORE: array
+      SESSION_DRIVER: array
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Qualify exact Sprint150 source envelope
+        shell: bash
+        run: |
+          set -euo pipefail
+          base='${{ github.event.pull_request.base.sha }}'
+          head='${{ github.event.pull_request.head.sha }}'
+          expected_hash='9f261895ab0373af5d6d385c3db3f93e5e510061b8e843e4110ecce992d9a0e6'
+          mapfile -t changed < <(git diff --name-only "$base" "$head" | LC_ALL=C sort)
+          test "${#changed[@]}" -eq 6
+          printf '%s\n' "${changed[@]}" > /tmp/sprint150-paths
+          test "$(sha256sum /tmp/sprint150-paths | awk '{print $1}')" = "$expected_hash"
+          expected=(
+            '.github/workflows/sprint150-final-shift-close-durable-runtime-dependency-envelope-qualification-regression.yml'
+            'apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeDependencyEnvelope.php'
+            'apps/web/tests/pos-final-shift-close-durable-runtime-dependency-envelope-qualification.php'
+            'docs/SPRINT150_FINAL_SHIFT_CLOSE_DURABLE_RUNTIME_DEPENDENCY_ENVELOPE_QUALIFICATION.md'
+            'ops/final-shift-close/DURABLE_RUNTIME_DEPENDENCY_ENVELOPE_QUALIFICATION_CONTRACT.json'
+            'ops/final-shift-close/POST_SELECTION_DOWNSTREAM_READINESS.json'
+          )
+          printf '%s\n' "${expected[@]}" | LC_ALL=C sort > /tmp/sprint150-expected
+          diff -u /tmp/sprint150-expected /tmp/sprint150-paths
+
+      - name: Validate Sprint150 machine-readable contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=ops/final-shift-close/DURABLE_RUNTIME_DEPENDENCY_ENVELOPE_QUALIFICATION_CONTRACT.json
+          jq -e '
+            .schema_version == 1 and
+            .feature == "final-shift-close" and
+            .sprint == 150 and
+            .contract_state == "MATERIALIZED_SOURCE_ONLY_NO_REAL_DEPENDENCY_EVIDENCE" and
+            .bounded_objective == "DURABLE_RUNTIME_SELECTED_CLASS_DEPENDENCY_ENVELOPE_QUALIFICATION" and
+            (.required_component_set | length) == 9 and
+            .qualification_requirements.exact_sprint148_target_bound_capability_evidence_must_qualify == true and
+            .qualification_requirements.synthetic_dependency_mixing_forbidden == true and
+            .qualification_output_state == "FULL_DURABLE_DEPENDENCY_ENVELOPE_QUALIFIED_NOT_ALLOWLISTED" and
+            .source_envelope.path_count == 6 and
+            .source_envelope.sha256 == "9f261895ab0373af5d6d385c3db3f93e5e510061b8e843e4110ecce992d9a0e6" and
+            .canonical_boundaries.real_dependency_envelope_evidence == "NONE" and
+            .canonical_boundaries.dependency_evidence_producer == "NOT_IMPLEMENTED" and
+            .canonical_boundaries.runtime_allowlist_change == "NOT_IMPLEMENTED" and
+            .canonical_boundaries.selected_runtime_class_enabled == false and
+            .attribution == "Author by Lab | zefry"
+          ' "$file" >/dev/null
+
+      - name: Preserve Sprint107 dependency inventory and runtime allowlist boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          inventory=ops/final-shift-close/PREVIEW_RUNTIME_COMPATIBILITY.json
+          provider=apps/web/app/Providers/FinalShiftCloseServiceProvider.php
+          jq -e '.compatibility_state == "BLOCKED" and (.required_runtime_envelope | length) == 9' "$inventory" >/dev/null
+          grep -Fq "['local', 'test', 'ci']" "$provider"
+          ! grep -Fq "'preview'" "$provider"
+          test "$(jq -r '.runtime_allowlist_change' "$inventory")" = 'NOT_IMPLEMENTED'
+
+      - name: Validate PHP and dependencies
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l app/Application/Pos/FinalShiftCloseDurableRuntimeDependencyEnvelope.php
+          php -l app/Application/Pos/FinalShiftCloseDurableRuntimeCapabilityEvidence.php
+          php -l tests/pos-final-shift-close-durable-runtime-dependency-envelope-qualification.php
+          composer validate --no-check-publish
+          composer install --no-interaction --no-progress --prefer-dist
+          composer audit --locked --no-interaction --abandoned=report
+
+      - name: Execute Sprint150 and predecessor regressions
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          php tests/pos-final-shift-close-durable-runtime-dependency-envelope-qualification.php
+          php tests/pos-final-shift-close-durable-runtime-capability-evidence-binding.php
+          php tests/pos-final-shift-close-durable-runtime-capability-evidence-producer.php
+          php tests/pos-final-shift-close-durable-runtime-readiness.php
+          php tests/pos-final-shift-close-durable-runtime-target-selection.php
+
+      - name: Preserve post-selection and operational NO-GO boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          downstream=ops/final-shift-close/POST_SELECTION_DOWNSTREAM_READINESS.json
+          state=ops/final-shift-close/STATE.json
+          selection=ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+          jq -e '
+            .sprint150_extension.bounded_objective == "DURABLE_RUNTIME_SELECTED_CLASS_DEPENDENCY_ENVELOPE_QUALIFICATION" and
+            .sprint150_extension.real_dependency_envelope_evidence == "NONE" and
+            .sprint150_extension.dependency_evidence_producer == "NOT_IMPLEMENTED" and
+            .canonical_boundaries.runtime_allowlist_change == "NOT_IMPLEMENTED" and
+            .canonical_boundaries.real_dependency_envelope_evidence == "NONE"
+          ' "$downstream" >/dev/null
+          test "$(jq -r '.migration27.state' "$state")" = 'NOT_EXECUTED'
+          test "$(jq -r '.permission_provisioning.state' "$state")" = 'NONE'
+          test "$(jq -r '.feature_activation.state' "$state")" = 'INACTIVE'
+          test "$(jq -r '.deployment_authority' "$state")" = 'NOT_GRANTED'
+          test "$(jq -r '.technical_preview_activation' "$state")" = 'NOT_AUTHORIZED'
+          test "$(jq -r '.production_activation' "$state")" = 'NOT_AUTHORIZED'
+          test "$(jq -r '.updater_activation' "$state")" = 'INACTIVE'
+          test "$(jq -r '.selection_state' "$selection")" = 'BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET'
+          test "$(jq -r '.selected_target' "$selection")" = 'null'
+
+      - name: Preserve Sprint150 documentation boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          doc=docs/SPRINT150_FINAL_SHIFT_CLOSE_DURABLE_RUNTIME_DEPENDENCY_ENVELOPE_QUALIFICATION.md
+          for heading in '## Purpose / Why' '## Objective / Gap' '## What changed' '## Evidence / Qualification' '## Operational boundaries / NO-GO' '## Next position'; do grep -Fq "$heading" "$doc"; done
+          grep -Fq '9f261895ab0373af5d6d385c3db3f93e5e510061b8e843e4110ecce992d9a0e6' "$doc"
+          grep -Fq 'real dependency-envelope evidence remains `NONE`' "$doc"
+
+      - name: Verify tracked-source cleanliness
+        run: |
+          git diff --exit-code
+          git diff --cached --exit-code
+
+# Author by Lab | zefry

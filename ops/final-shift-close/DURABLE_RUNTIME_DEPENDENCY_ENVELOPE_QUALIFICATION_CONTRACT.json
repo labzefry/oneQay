@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "feature": "final-shift-close",
+  "sprint": 150,
+  "contract_state": "MATERIALIZED_SOURCE_ONLY_NO_REAL_DEPENDENCY_EVIDENCE",
+  "bounded_objective": "DURABLE_RUNTIME_SELECTED_CLASS_DEPENDENCY_ENVELOPE_QUALIFICATION",
+  "purpose": "QUALIFY_THE_FULL_SPRINT107_DURABLE_DEPENDENCY_ENVELOPE_AGAINST_THE_EXACT_SPRINT111_SELECTED_RUNTIME_AND_SPRINT148_CAPABILITY_EVIDENCE_BINDING_BEFORE_ANY_RUNTIME_ALLOWLIST_CHANGE",
+  "qualifier_path": "apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeDependencyEnvelope.php",
+  "predecessor_contracts": [
+    "ops/final-shift-close/PREVIEW_RUNTIME_COMPATIBILITY.json",
+    "ops/final-shift-close/DURABLE_RUNTIME_CAPABILITY_EVIDENCE_BINDING_CONTRACT.json",
+    "ops/final-shift-close/DURABLE_RUNTIME_CAPABILITY_EVIDENCE_PRODUCER_CONTRACT.json",
+    "ops/final-shift-close/POST_SELECTION_DOWNSTREAM_READINESS.json"
+  ],
+  "required_component_set": {
+    "final_shift_close_delivery": "apps/web/app/Providers/FinalShiftCloseServiceProvider.php",
+    "pos_session_context": "apps/web/app/Delivery/Http/Middleware/RequirePosSessionContextMiddleware.php",
+    "active_first_party_session_middleware": "apps/web/app/Delivery/Http/Middleware/EnforceActiveFirstPartySessionAuthorityMiddleware.php",
+    "first_party_session_authority_repository": "apps/web/app/Infrastructure/Identity/LaravelFirstPartySessionAuthorityRepository.php",
+    "first_party_identity_eligibility": "apps/web/app/Infrastructure/Identity/LaravelFirstPartyIdentityEligibilityVerifier.php",
+    "durable_role_permission_authorization": "apps/web/app/Infrastructure/Authorization/LaravelDurableRolePermissionRepository.php",
+    "durable_persistence_transaction": "apps/web/app/Infrastructure/Persistence/LaravelPersistenceTransaction.php",
+    "final_shift_close_repository": "apps/web/app/Infrastructure/Pos/LaravelCloseShiftRepository.php",
+    "durable_pos_sale_lifecycle": "apps/web/app/Infrastructure/Pos/LaravelDurablePosSaleRepository.php"
+  },
+  "qualification_requirements": {
+    "exact_sprint110_readiness_must_requalify": true,
+    "exact_sprint111_selection_identity_must_recompute": true,
+    "exact_sprint148_target_bound_capability_evidence_must_qualify": true,
+    "dependency_environment_must_equal_selected_target_environment": true,
+    "dependency_runtime_class_must_equal_selected_target_runtime_class": true,
+    "dependency_target_binding_must_equal_sprint148_target_binding": true,
+    "dependency_capability_bundle_must_equal_sprint148_qualified_bundle": true,
+    "all_nine_sprint107_components_required": true,
+    "each_component_requires_exact_canonical_source_path": true,
+    "each_component_requires_verified_state": true,
+    "each_component_requires_lowercase_sha256_evidence": true,
+    "each_component_requires_exact_selected_runtime_class": true,
+    "each_component_requires_exact_target_binding": true,
+    "synthetic_dependency_mixing_forbidden": true,
+    "secret_bearing_dependency_evidence_forbidden": true,
+    "key_order_independent_canonical_hashing": true
+  },
+  "qualification_output_state": "FULL_DURABLE_DEPENDENCY_ENVELOPE_QUALIFIED_NOT_ALLOWLISTED",
+  "source_envelope": {
+    "path_count": 6,
+    "sorted_newline_terminated": true,
+    "sha256": "9f261895ab0373af5d6d385c3db3f93e5e510061b8e843e4110ecce992d9a0e6",
+    "paths": [
+      ".github/workflows/sprint150-final-shift-close-durable-runtime-dependency-envelope-qualification-regression.yml",
+      "apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeDependencyEnvelope.php",
+      "apps/web/tests/pos-final-shift-close-durable-runtime-dependency-envelope-qualification.php",
+      "docs/SPRINT150_FINAL_SHIFT_CLOSE_DURABLE_RUNTIME_DEPENDENCY_ENVELOPE_QUALIFICATION.md",
+      "ops/final-shift-close/DURABLE_RUNTIME_DEPENDENCY_ENVELOPE_QUALIFICATION_CONTRACT.json",
+      "ops/final-shift-close/POST_SELECTION_DOWNSTREAM_READINESS.json"
+    ]
+  },
+  "canonical_boundaries": {
+    "dependency_qualifier_source": "MATERIALIZED_SOURCE_ONLY",
+    "real_dependency_envelope_evidence": "NONE",
+    "dependency_evidence_producer": "NOT_IMPLEMENTED",
+    "runtime_allowlist_change": "NOT_IMPLEMENTED",
+    "selected_runtime_class_enabled": false,
+    "producer_dispatch": "NOT_PERFORMED",
+    "real_capability_evidence": "NONE",
+    "selected_target": "NONE",
+    "migration27_execution": "NOT_PERFORMED",
+    "permission_provisioning": "NONE",
+    "feature_activation_executor": "NOT_IMPLEMENTED",
+    "feature_activation": "INACTIVE",
+    "deployment_authority": "NOT_GRANTED",
+    "technical_preview_activation": "NOT_AUTHORIZED",
+    "production_activation": "NOT_AUTHORIZED",
+    "updater_activation": "INACTIVE"
+  },
+  "attribution": "Author by Lab | zefry"
+}
