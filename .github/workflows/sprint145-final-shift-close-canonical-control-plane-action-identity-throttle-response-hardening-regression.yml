@@ -43,11 +43,12 @@ jobs:
           .github/workflows/sprint145-final-shift-close-canonical-control-plane-action-identity-throttle-response-hardening-regression.yml
           apps/web/app/Delivery/Http/Middleware/HardenFinalShiftCloseRuntimeControlPlaneThrottleResponseMiddleware.php
           apps/web/tests/final-shift-close-runtime-control-plane-action-identity-throttle-response-hardening-regression.php
+          apps/web/tests/final-shift-close-runtime-control-plane-named-route-identity-throttle-response-hardening-regression.php
           docs/SPRINT145_FINAL_SHIFT_CLOSE_CANONICAL_CONTROL_PLANE_ACTION_IDENTITY_THROTTLE_RESPONSE_HARDENING_REGRESSION.md
           ops/final-shift-close/CANONICAL_RUNTIME_CONTROL_PLANE_ACTION_IDENTITY_THROTTLE_RESPONSE_HARDENING_REGRESSION_CONTRACT.json
           EOF
           diff -u /tmp/expected /tmp/paths
-          [[ "$(sha256sum /tmp/paths | awk '{print $1}')" == '1316090a005bae669963dfa13152ec84f37ea9f90947b97b0e33869e0ec84bf4' ]]
+          [[ "$(sha256sum /tmp/paths | awk '{print $1}')" == 'ed1a67c7a7b89e26cd4c3ade350132b8eca7c4e2142f76d9b69495ac0ba2fad2' ]]
 
       - name: Preserve Sprint144 successor compatibility
         shell: bash
@@ -72,9 +73,9 @@ jobs:
             .qualification.noncanonical_action_materialization_post_framework_owned == true and
             .qualification.noncanonical_action_db_get_framework_owned == true and
             .qualification.noncanonical_action_db_head_framework_owned == true and
-            .source_envelope.path_count == 5 and
-            .source_envelope.sha256 == "1316090a005bae669963dfa13152ec84f37ea9f90947b97b0e33869e0ec84bf4" and
-            .canonical_boundaries.deployment_authority == "NOT_GRANTED" and
+            .historical_ownership.sprint144_named_route_identity_throttle_response_hardening == "PRESERVED_WITH_SUCCESSOR_COMPATIBLE_CANONICAL_ACTION_FIXTURE" and
+            .source_envelope.path_count == 6 and
+            .source_envelope.sha256 == "ed1a67c7a7b89e26cd4c3ade350132b8eca7c4e2142f76d9b69495ac0ba2fad2" and
             .attribution == "Author by Lab | zefry"
           ' "$file" >/dev/null
 
@@ -107,6 +108,7 @@ jobs:
           set -euo pipefail
           php -l app/Delivery/Http/Middleware/HardenFinalShiftCloseRuntimeControlPlaneThrottleResponseMiddleware.php
           php -l tests/final-shift-close-runtime-control-plane-action-identity-throttle-response-hardening-regression.php
+          php -l tests/final-shift-close-runtime-control-plane-named-route-identity-throttle-response-hardening-regression.php
           composer validate --no-check-publish
           composer install --no-interaction --no-progress --prefer-dist
           composer audit --locked --no-interaction --abandoned=report
@@ -127,7 +129,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          grep -Fq '1316090a005bae669963dfa13152ec84f37ea9f90947b97b0e33869e0ec84bf4' docs/SPRINT145_FINAL_SHIFT_CLOSE_CANONICAL_CONTROL_PLANE_ACTION_IDENTITY_THROTTLE_RESPONSE_HARDENING_REGRESSION.md
+          grep -Fq 'ed1a67c7a7b89e26cd4c3ade350132b8eca7c4e2142f76d9b69495ac0ba2fad2' docs/SPRINT145_FINAL_SHIFT_CLOSE_CANONICAL_CONTROL_PLANE_ACTION_IDENTITY_THROTTLE_RESPONSE_HARDENING_REGRESSION.md
           ! grep -Eq '^[[:space:]]*workflow_dispatch[[:space:]]*:' .github/workflows/sprint145-final-shift-close-canonical-control-plane-action-identity-throttle-response-hardening-regression.yml
 
       - name: Verify tracked-source cleanliness
