@@ -128,7 +128,7 @@ jobs:
             .sprint154_extension.dispatchable_feature_activation_executor == "NOT_IMPLEMENTED" and
             .sprint154_extension.configuration_mutation_transport == "NOT_IMPLEMENTED" and
             .sprint154_extension.executor_dispatch == "NOT_PERFORMED" and
-            .sprint154_extension.source_envelope_sha256 == "5dcf1fcd0b638ed9ec3d311947055a2b2c96c74d8e8fb5b74ff1f1b96bd1296f" and
+            .sprint154_extension.source_envelope_sha256 == "35499fbb12404b3ab5f25de924d4528060f4cf4eb362091b116e5faf3c3766c3" and
             .canonical_boundaries.activation_executor_source_foundation == "MATERIALIZED_SOURCE_ONLY" and
             .canonical_boundaries.feature_activation_executor == "NOT_IMPLEMENTED" and
             .canonical_boundaries.runtime_allowlist_change == "NOT_IMPLEMENTED" and
