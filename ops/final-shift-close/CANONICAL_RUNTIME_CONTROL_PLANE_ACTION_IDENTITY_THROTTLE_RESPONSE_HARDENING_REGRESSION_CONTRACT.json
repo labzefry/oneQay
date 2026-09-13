@@ -11,18 +11,9 @@
     "route_middleware_stack_changed": false,
     "authentication_before_throttle_preserved": true,
     "throttle_limits_changed": false,
-    "materialization_method_ownership": [
-      "POST"
-    ],
-    "db_attestation_method_ownership": [
-      "GET",
-      "HEAD"
-    ],
-    "materialization_action_identity": "App\\Delivery\\Http\\Pos\\FinalShiftCloseRuntimeBindingManifestMaterializationController@__invoke",
-    "db_attestation_action_identity": "App\\Delivery\\Http\\Pos\\FinalShiftCloseRuntimeDbBindingAttestationController@__invoke",
-    "canonical_route_name_match_required": true,
+    "materialization_method_ownership": ["POST"],
+    "db_attestation_method_ownership": ["GET", "HEAD"],
     "canonical_action_match_required": true,
-    "canonical_path_match_required": true,
     "noncanonical_action_materialization_post_framework_owned": true,
     "noncanonical_action_db_get_framework_owned": true,
     "noncanonical_action_db_head_framework_owned": true,
@@ -37,25 +28,12 @@
   },
   "historical_ownership": {
     "sprint135_route_registration_action_metadata": "PRESERVED",
-    "sprint144_named_route_identity_throttle_response_hardening": "PRESERVED",
+    "sprint144_named_route_identity_throttle_response_hardening": "PRESERVED_WITH_SUCCESSOR_COMPATIBLE_CANONICAL_ACTION_FIXTURE",
     "sprint145_action_identity_throttle_response_hardening": "OWNED"
   },
   "source_envelope": {
-    "path_count": 5,
-    "sha256": "1316090a005bae669963dfa13152ec84f37ea9f90947b97b0e33869e0ec84bf4"
-  },
-  "canonical_boundaries": {
-    "migration27_execution": "NOT_PERFORMED",
-    "permission_provisioning": "NONE",
-    "feature_activation": "INACTIVE",
-    "selected_target": null,
-    "runtime_token_provisioning": "NOT_PERFORMED",
-    "runtime_manifest_materialization": "NOT_PERFORMED",
-    "operational_database_access": "NOT_PERFORMED",
-    "deployment_authority": "NOT_GRANTED",
-    "technical_preview": "NO-GO",
-    "production": "NO-GO",
-    "updater": "INACTIVE"
+    "path_count": 6,
+    "sha256": "ed1a67c7a7b89e26cd4c3ade350132b8eca7c4e2142f76d9b69495ac0ba2fad2"
   },
   "attribution": "Author by Lab | zefry"
 }
