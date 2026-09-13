@@ -40,6 +40,7 @@ jobs:
           set -euo pipefail
           git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | LC_ALL=C sort > /tmp/actual
           cat > /tmp/expected <<'EOF'
+          .github/workflows/sprint116-final-shift-close-post-selection-downstream-readiness.yml
           .github/workflows/sprint148-final-shift-close-durable-runtime-capability-evidence-binding-regression.yml
           apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeCapabilityEvidence.php
           apps/web/tests/pos-final-shift-close-durable-runtime-capability-evidence-binding.php
@@ -48,15 +49,18 @@ jobs:
           ops/final-shift-close/POST_SELECTION_DOWNSTREAM_READINESS.json
           EOF
           diff -u /tmp/expected /tmp/actual
-          [[ "$(sha256sum /tmp/actual | awk '{print $1}')" == '57ba389d323f4c2be1e37708fa86324f2731acda53ae3f7b7133d806f0f3c895' ]]
+          [[ "$(sha256sum /tmp/actual | awk '{print $1}')" == 'f7d9cfb173b54ac863cc70f10b9ae3df2f6715a4abdae0c7c32cbdb399bda5a6' ]]
 
-      - name: Preserve Sprint147 successor compatibility
+      - name: Preserve historical successor compatibility
         shell: bash
         run: |
           set -euo pipefail
-          workflow=.github/workflows/sprint147-final-shift-close-canonical-control-plane-throttle-rejection-metadata-identity-response-hardening-regression.yml
-          grep -Fq 'Preserve successor-compatible historical regression boundary' "$workflow"
-          grep -Fq 'Sprint147 is historical after its canonical squash merge.' "$workflow"
+          sprint116=.github/workflows/sprint116-final-shift-close-post-selection-downstream-readiness.yml
+          sprint147=.github/workflows/sprint147-final-shift-close-canonical-control-plane-throttle-rejection-metadata-identity-response-hardening-regression.yml
+          grep -Fq 'Preserve successor-compatible historical regression boundary' "$sprint116"
+          grep -Fq 'Sprint116 is historical after its canonical squash merge.' "$sprint116"
+          grep -Fq 'Preserve successor-compatible historical regression boundary' "$sprint147"
+          grep -Fq 'Sprint147 is historical after its canonical squash merge.' "$sprint147"
 
       - name: Validate Sprint148 contract
         shell: bash
@@ -84,8 +88,9 @@ jobs:
             .qualification.qualification_does_not_grant_activation_authority == true and
             .qualification.qualification_does_not_change_runtime_allowlist == true and
             .qualification.qualification_does_not_execute_operational_actions == true and
-            .source_envelope.path_count == 6 and
-            .source_envelope.sha256 == "57ba389d323f4c2be1e37708fa86324f2731acda53ae3f7b7133d806f0f3c895" and
+            .historical_ownership.sprint116_post_selection_downstream_readiness == "SUCCESSOR_COMPATIBLE_AFTER_CI_PROVEN_ENVELOPE_CONFLICT" and
+            .source_envelope.path_count == 7 and
+            .source_envelope.sha256 == "f7d9cfb173b54ac863cc70f10b9ae3df2f6715a4abdae0c7c32cbdb399bda5a6" and
             .canonical_boundaries.real_capability_evidence == "NONE" and
             .canonical_boundaries.trusted_capability_evidence_producer == "NOT_IMPLEMENTED" and
             .canonical_boundaries.migration27_execution == "NOT_PERFORMED" and
@@ -110,7 +115,7 @@ jobs:
             (.forbidden_shortcuts | index("TREAT_SPRINT110_BOOLEAN_CAPABILITY_CLAIMS_AS_TARGET_BOUND_EVIDENCE")) != null and
             .source_envelope_sha256 == "6583f7e9e4b1cce966f166c4e650e42e8c106b9c5354e75adceb10ace5688c18" and
             .sprint148_extension.bounded_objective == "DURABLE_RUNTIME_TARGET_BOUND_CAPABILITY_EVIDENCE_IDENTITY_BINDING" and
-            .sprint148_extension.source_envelope_sha256 == "57ba389d323f4c2be1e37708fa86324f2731acda53ae3f7b7133d806f0f3c895" and
+            .sprint148_extension.source_envelope_sha256 == "f7d9cfb173b54ac863cc70f10b9ae3df2f6715a4abdae0c7c32cbdb399bda5a6" and
             .sprint148_extension.source_only == true and
             .sprint148_extension.real_capability_evidence == "NONE" and
             .sprint148_extension.operational_execution == "NOT_PERFORMED" and
@@ -186,7 +191,7 @@ jobs:
           grep -Fq '## Evidence / Qualification' "$doc"
           grep -Fq '## Operational boundaries / NO-GO' "$doc"
           grep -Fq '## Next position' "$doc"
-          grep -Fq '57ba389d323f4c2be1e37708fa86324f2731acda53ae3f7b7133d806f0f3c895' "$doc"
+          grep -Fq 'f7d9cfb173b54ac863cc70f10b9ae3df2f6715a4abdae0c7c32cbdb399bda5a6' "$doc"
           ! grep -Eq '^[[:space:]]*workflow_dispatch[[:space:]]*:' .github/workflows/sprint148-final-shift-close-durable-runtime-capability-evidence-binding-regression.yml
 
       - name: Verify tracked-source cleanliness
