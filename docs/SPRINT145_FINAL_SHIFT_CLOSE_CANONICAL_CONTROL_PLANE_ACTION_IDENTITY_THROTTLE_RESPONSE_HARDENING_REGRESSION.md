@@ -1,8 +1,8 @@
 # Sprint145 — Final Shift Close Action Identity Throttle Response Hardening
 
-**Product:** oneQay — The Future of Intelligent Business Management  
-**Repository owner / attribution:** Lab | zefry  
-**Canonical base:** `a3ab64bffae0f1322eb731908b9ca1bf9dddf9b6`  
+**Product:** oneQay — The Future of Intelligent Business Management
+**Repository owner / attribution:** Lab | zefry
+**Canonical base:** `a3ab64bffae0f1322eb731908b9ca1bf9dddf9b6`
 **Objective:** `CANONICAL_CONTROL_PLANE_ACTION_IDENTITY_THROTTLE_RESPONSE_HARDENING_REGRESSION`
 
 ## Discovery
