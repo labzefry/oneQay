@@ -8,30 +8,30 @@ Enterprise-oriented business-management platform built with a Modular Monolith F
 
 ## Current canonical status
 
-The latest closed **engineering** sprint is **Sprint146**.
+The latest closed **engineering** sprint is **Sprint147**.
 
-- Canonical engineering commit: `a5e4aec8c142e7478a0e58d2d732dbf106393b06`
-- Latest engineering PR: #709 — `Sprint146: canonical throttle budget identity response hardening`
-- Sprint146 pull-request qualification: **30/30 workflow runs successful** on the exact authorized head
-- Sprint146 Product Owner merge-authority workflow run: `34750648988` successful
-- Sprint146 merge: squash merged with expected-head guard
-- Next engineering position: **Sprint147 bounded discovery**, not yet treated as started or complete
+- Canonical engineering commit: `50a3ba99b8f5628381d9df63f4f6a0e1020d550a`
+- Latest engineering PR: #711 — `Sprint147: canonical throttle rejection metadata identity response hardening`
+- Sprint147 pull-request qualification: **31/31 workflow runs successful** on the exact authorized head
+- Sprint147 Product Owner merge-authority workflow run: `34752002084` successful
+- Sprint147 merge: squash merged with expected-head guard
+- Next engineering position: **Sprint148 bounded discovery**, not yet treated as started or complete
 
 For the full current project state, use **[`PROJECT_MANIFEST.md`](PROJECT_MANIFEST.md)** as the canonical human-readable source of truth.
 
-## Sprint146 description
+## Sprint147 description
 
-**Purpose / Why:** Sprint145 secured request ownership using canonical route name, canonical controller action, exact method, and exact path, but the throttle-response hardener still accepted any present `X-RateLimit-Limit` value.
+**Purpose / Why:** Sprint146 secured throttle-response ownership using canonical request identity plus exact per-route rate-limit ceilings, but the hardener still did not require the complete framework throttle-rejection metadata shape before rewriting a `429` response.
 
-**Objective / Gap:** Require the previously qualified canonical request identity **plus the exact canonical per-route throttle ceiling** before Final Shift Close `429` privacy/security rewriting is allowed.
+**Objective / Gap:** Require the previously qualified canonical request identity and throttle ceiling **plus** `X-RateLimit-Remaining: 0`, decimal non-empty `Retry-After`, and decimal non-empty `X-RateLimit-Reset` before Final Shift Close privacy/security rewriting is allowed.
 
-**What changed:** The hardener now resolves the expected canonical throttle ceiling and requires exact-string equality: materialization POST `1`, DB-attestation GET/HEAD `2`. A Sprint146 regression proves cross-budget, arbitrary, and numeric-alias ceilings remain framework-owned while exact canonical ceilings preserve hardened behavior.
+**What changed:** The hardener now validates the complete throttle-rejection metadata identity; Sprint147 added direct regression coverage for materialization POST and DB-attestation GET/HEAD, and updated the Sprint144 historical fixture to the canonical metadata shape proved by Sprint142.
 
-**Evidence / Qualification:** PR #709; exact engineering head `b520b8e8c565a96b4c41e7838a68492f4b836066`; 30/30 exact-head CI successful; authority run `34750648988`; canonical engineering commit `a5e4aec8c142e7478a0e58d2d732dbf106393b06`; five-path envelope SHA-256 `bbc0da27fe84ca8a1fafcf4b76bcf9e1f42e595c01d35544a94793c1a7fec161`.
+**Evidence / Qualification:** PR #711; final engineering head `513d95dbb4d5ab95a8f6c3282f8911cf339a9697`; 31/31 exact-head CI successful; authority run `34752002084`; canonical engineering commit `50a3ba99b8f5628381d9df63f4f6a0e1020d550a`; six-path engineering envelope SHA-256 `ffd176da808eda16fccdf0375fcae2fd5bcc1cfc4b931aca6492ca31eb9b1d40`.
 
 **Operational boundaries / NO-GO:** No migration execution, permission provisioning, feature activation, runtime-token provisioning, deployment/release, durable-target activation, operational manifest/DB invocation, Technical Preview activation, Production activation, or updater activation occurred.
 
-**Next position:** Sprint147 bounded discovery only; no objective or source envelope is preselected.
+**Next position:** Sprint148 bounded discovery only; no objective or source envelope is preselected.
 
 ## What the repository has reached
 
@@ -41,7 +41,7 @@ Material canonical progress includes:
 - bounded POS shift/register, sale/payment/receipt, and catalog foundations;
 - JRN-010 expected-cash, immutable sale-to-shift binding, cash variance, explanation/adjudication, maker-checker, and reviewer-authorization foundations;
 - Final Shift Close source/readiness work including source-only migration #27 and application/runtime readiness contracts;
-- runtime-binding manifest, DB-binding attestation, token-policy, delivery-gate, authenticated HTTP, throttle, rejection hardening, route/action identity, and exact throttle-budget ownership qualification through Sprint146.
+- runtime-binding manifest, DB-binding attestation, token-policy, delivery-gate, authenticated HTTP, throttle, rejection hardening, route/action identity, exact throttle-budget identity, and canonical throttle-rejection metadata identity qualification through Sprint147.
 
 ## Operational status remains intentionally gated
 
