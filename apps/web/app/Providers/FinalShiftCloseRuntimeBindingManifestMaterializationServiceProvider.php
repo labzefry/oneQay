@@ -33,7 +33,7 @@ final class FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider 
             ),
         );
 
-        $this->app->when(RequireFinalShiftCloseRuntimeBindingManifestMaterializationTokenMiddleware::class)
+        $this->app->when(RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware::class)
             ->needs('$expectedToken')
             ->give(fn (): string => (string) config(
                 'final_shift_close_runtime_binding_materialization.token',
@@ -48,7 +48,7 @@ final class FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider 
         }
 
         Route::middleware([
-            RequireFinalShiftCloseRuntimeBindingManifestMaterializationTokenMiddleware::class,
+            RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware::class,
             HardenFinalShiftCloseRuntimeControlPlaneThrottleResponseMiddleware::class,
             'throttle:1,1',
         ])->group(base_path('routes/final-shift-close-runtime-binding-manifest-materialization.php'));
