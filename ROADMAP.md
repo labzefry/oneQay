@@ -1,7 +1,7 @@
 # oneQay Roadmap
 
-**Roadmap checkpoint:** post-Sprint155 reconciliation  
-**Canonical engineering baseline:** `1e84e1b3e07915a1d20b56fe768b0d1454f901d2`  
+**Roadmap checkpoint:** post-Sprint155 reconciliation
+**Canonical engineering baseline:** `1e84e1b3e07915a1d20b56fe768b0d1454f901d2`
 **Current state authority:** `PROJECT_MANIFEST.md`
 
 This roadmap describes sequencing and gates. It does **not** grant operational authority. Completed roadmap items are bounded repository objectives, not evidence of deployment or activation.
