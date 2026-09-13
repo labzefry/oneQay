@@ -144,7 +144,7 @@
     "bounded_objective": "DURABLE_RUNTIME_TARGET_BOUND_DEPENDENCY_ENVELOPE_EVIDENCE_PRODUCER",
     "contract_path": "ops/final-shift-close/DURABLE_RUNTIME_DEPENDENCY_ENVELOPE_EVIDENCE_PRODUCER_CONTRACT.json",
     "producer_workflow_path": ".github/workflows/final-shift-close-durable-runtime-dependency-envelope-evidence.yml",
-    "source_envelope_sha256": "4d184a18b6d9814474233bda0bf4761e7045ebfb0a8cda5ea56b6b296cef627b",
+    "source_envelope_sha256": "7269a0e5f8927c2763411d0700b0f456cdcb0781f1d198179966a97a7b934a79",
     "source_only": true,
     "producer_source": "MATERIALIZED_NOT_DISPATCHED",
     "producer_dispatch": "NOT_PERFORMED",
