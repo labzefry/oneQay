@@ -3,9 +3,9 @@
 **Product:** oneQay — The Future of Intelligent Business Management
 **Repository owner / attribution:** Lab | zefry
 **Default branch:** `main`
-**Canonical engineering checkpoint:** Sprint146
-**Canonical engineering commit:** `a5e4aec8c142e7478a0e58d2d732dbf106393b06`
-**Latest engineering PR:** #709 — `Sprint146: canonical throttle budget identity response hardening`
+**Canonical engineering checkpoint:** Sprint147
+**Canonical engineering commit:** `50a3ba99b8f5628381d9df63f4f6a0e1020d550a`
+**Latest engineering PR:** #711 — `Sprint147: canonical throttle rejection metadata identity response hardening`
 **Status date:** 2026-09-13
 
 > This file is the canonical human-readable source of truth for current oneQay project status. README, CHANGELOG, TASKS, and ROADMAP summarize this manifest. Per-sprint documents, contracts, workflows, merged pull requests, and Git history remain the detailed evidence trail.
@@ -14,17 +14,17 @@
 
 oneQay is an actively engineered enterprise business-management platform using a Modular Monolith First architecture with Clean Architecture, DDD, first-class tenant context, deny-by-default authorization, and fail-closed engineering controls.
 
-The repository has progressed through **Sprint146**. The current Final Shift Close engineering chain qualifies runtime control-plane behavior while deliberately keeping source readiness separate from operational activation.
+The repository has progressed through **Sprint147**. The current Final Shift Close engineering chain qualifies runtime control-plane behavior while deliberately keeping source readiness separate from operational activation.
 
 ### Canonical state summary
 
 | Area | Current canonical state |
 | --- | --- |
-| Latest closed engineering sprint | Sprint146 |
-| Latest engineering commit | `a5e4aec8c142e7478a0e58d2d732dbf106393b06` |
-| Latest engineering PR | #709, merged |
-| Sprint146 exact-head CI | 30/30 pull-request workflow runs successful |
-| Sprint146 Product Owner authority | run `34750648988`, successful |
+| Latest closed engineering sprint | Sprint147 |
+| Latest engineering commit | `50a3ba99b8f5628381d9df63f4f6a0e1020d550a` |
+| Latest engineering PR | #711, merged |
+| Sprint147 exact-head CI | 31/31 pull-request workflow runs successful |
+| Sprint147 Product Owner authority | run `34752002084`, successful |
 | Architecture | Modular Monolith First, Clean Architecture, DDD |
 | Backend | Laravel / PHP |
 | Frontend | Vue 3 + Inertia + Vite |
@@ -67,59 +67,60 @@ Representative milestones include Sprint55 expected-cash derivation, Sprint64 ca
 - Sprint144 — named-route identity ownership hardening.
 - Sprint145 — canonical controller-action identity added to throttle-response ownership.
 - Sprint146 — exact canonical per-route throttle-budget identity added to response ownership.
+- Sprint147 — canonical throttle-rejection metadata shape added to response ownership.
 
-## 3. Sprint146 description and closure evidence
+## 3. Sprint147 description and closure evidence
 
 ### Purpose / Why
 
-Sprint145 completed request ownership for the Final Shift Close throttle-response hardener using canonical route name, canonical controller action, exact HTTP method, and exact internal path. The response-side ownership check still accepted any present `X-RateLimit-Limit` value, so a canonical request identity paired with an unexpected throttle ceiling could still be rewritten as if it were canonical.
+Sprint146 bound throttle-response ownership to the exact canonical per-route throttle ceiling. Canonical framework throttle rejections also carry additional metadata proving that a request is genuinely over budget. The hardener did not yet require that complete metadata shape before rewriting a `429` response.
 
 ### Objective / Gap
 
-Bounded objective: `CANONICAL_CONTROL_PLANE_THROTTLE_BUDGET_IDENTITY_RESPONSE_HARDENING_REGRESSION`.
+Bounded objective: `CANONICAL_CONTROL_PLANE_THROTTLE_REJECTION_METADATA_IDENTITY_RESPONSE_HARDENING_REGRESSION`.
 
-Response ownership now requires the previously qualified request identity plus the exact canonical rate-limit ceiling:
+Response ownership now requires the previously qualified route/action/method/path and exact throttle-limit identity plus the canonical rejection metadata shape:
 
-1. materialization POST requires `X-RateLimit-Limit: 1`;
-2. DB-attestation GET requires `X-RateLimit-Limit: 2`;
-3. DB-attestation HEAD requires `X-RateLimit-Limit: 2`.
+1. `X-RateLimit-Remaining` must be exact string `0`;
+2. `Retry-After` must exist, be non-empty, and contain decimal digits only;
+3. `X-RateLimit-Reset` must exist, be non-empty, and contain decimal digits only.
 
-Cross-route ceilings, arbitrary ceilings, and numeric aliases such as `01` or `02` remain framework-owned.
+Missing metadata, nonzero or numeric-alias remaining values, and empty/nondigit retry/reset values remain framework-owned.
 
 ### What changed
 
-- Added explicit canonical throttle-limit constants to `HardenFinalShiftCloseRuntimeControlPlaneThrottleResponseMiddleware`.
-- Added `canonicalThrottleLimit(Request): ?string` so request identity and expected response budget are resolved together.
-- Required exact-string equality between the response `X-RateLimit-Limit` header and the route's canonical ceiling before privacy/security `429` rewriting.
-- Added a dedicated Sprint146 regression covering materialization POST and DB-attestation GET/HEAD canonical and mismatched budgets.
-- Added Sprint146 machine-readable contract, exact-head workflow, and detailed six-section Sprint description.
-- Preserved Sprint145 action identity and Sprint142 real HTTP-kernel throttle evidence.
+- Added canonical throttle-rejection metadata validation to `HardenFinalShiftCloseRuntimeControlPlaneThrottleResponseMiddleware`.
+- Preserved explicit metadata-presence guards required by historical Sprint142/Sprint143 ownership checks.
+- Added a dedicated Sprint147 direct-middleware regression for materialization POST and DB-attestation GET/HEAD.
+- Made the historical Sprint144 named-route identity fixture successor-compatible with the canonical rejection metadata shape proved by Sprint142.
+- Added Sprint147 machine-readable contract, exact-head workflow, and detailed six-section Sprint description.
+- Preserved Sprint146 throttle-budget identity, Sprint144 named-route identity, and Sprint142 real HTTP-kernel evidence.
 
 ### Evidence / Qualification
 
-- Engineering PR: #709, squash merged.
-- Canonical engineering squash commit: `a5e4aec8c142e7478a0e58d2d732dbf106393b06`.
-- Parent canonical documentation checkpoint: `ebaf16c64245c67e9ecf8cac613696e5661a02ac`.
-- Final exact-head SHA before merge: `b520b8e8c565a96b4c41e7838a68492f4b836066`.
-- Exact-head pull-request qualification: 30/30 successful.
-- Product Owner merge-authority workflow run: `34750648988`, successful.
-- Exact Sprint146 engineering envelope: five paths.
-- Frozen engineering envelope SHA-256: `bbc0da27fe84ca8a1fafcf4b76bcf9e1f42e595c01d35544a94793c1a7fec161`.
+- Engineering PR: #711, squash merged.
+- Canonical engineering squash commit: `50a3ba99b8f5628381d9df63f4f6a0e1020d550a`.
+- Parent canonical documentation checkpoint: `f4984081a30c4251d57acd143ec090b17ca181ff`.
+- Final exact-head SHA before merge: `513d95dbb4d5ab95a8f6c3282f8911cf339a9697`.
+- Exact-head pull-request qualification: 31/31 successful.
+- Product Owner merge-authority workflow run: `34752002084`, successful.
+- Exact Sprint147 engineering envelope: six paths.
+- Frozen engineering envelope SHA-256: `ffd176da808eda16fccdf0375fcae2fd5bcc1cfc4b931aca6492ca31eb9b1d40`.
 - Merge method: squash with expected-head guard.
 
 Detailed evidence:
 
-- `docs/SPRINT146_FINAL_SHIFT_CLOSE_CANONICAL_CONTROL_PLANE_THROTTLE_BUDGET_IDENTITY_RESPONSE_HARDENING_REGRESSION.md`
-- `ops/final-shift-close/CANONICAL_RUNTIME_CONTROL_PLANE_THROTTLE_BUDGET_IDENTITY_RESPONSE_HARDENING_REGRESSION_CONTRACT.json`
-- `apps/web/tests/final-shift-close-runtime-control-plane-throttle-budget-identity-response-hardening-regression.php`
+- `docs/SPRINT147_FINAL_SHIFT_CLOSE_CANONICAL_CONTROL_PLANE_THROTTLE_REJECTION_METADATA_IDENTITY_RESPONSE_HARDENING_REGRESSION.md`
+- `ops/final-shift-close/CANONICAL_RUNTIME_CONTROL_PLANE_THROTTLE_REJECTION_METADATA_IDENTITY_RESPONSE_HARDENING_REGRESSION_CONTRACT.json`
+- `apps/web/tests/final-shift-close-runtime-control-plane-throttle-rejection-metadata-identity-response-hardening-regression.php`
 
 ### Operational boundaries / NO-GO
 
-Sprint146 does not grant or perform operational activation. It does not execute migration #27, provision permissions, activate Final Shift Close, provision an operational runtime token, select or activate a durable target, perform operational runtime-binding manifest materialization or operational DB attestation, deploy/release, activate Technical Preview or Production, or activate the updater.
+Sprint147 does not grant or perform operational activation. It does not execute migration #27, provision permissions, activate Final Shift Close, provision an operational runtime token, select or activate a durable target, perform operational runtime-binding manifest materialization or operational DB attestation, deploy/release, activate Technical Preview or Production, or activate the updater.
 
 ### Next position
 
-The next engineering position is **Sprint147 bounded discovery from canonical post-Sprint146**. No Sprint147 objective or source envelope is preselected by this manifest.
+The next engineering position is **Sprint148 bounded discovery from canonical post-Sprint147**. No Sprint148 objective or source envelope is preselected by this manifest.
 
 ## 4. Operational truth — NO-GO remains authoritative
 
