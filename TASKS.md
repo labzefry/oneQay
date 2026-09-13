@@ -1,12 +1,12 @@
 # oneQay Tasks
 
-**Current engineering checkpoint:** post-Sprint150 reconciliation
-**Canonical engineering commit:** `d743a054092231729fa0e33cd34538f9d1e81787`
+**Current engineering checkpoint:** post-Sprint151 reconciliation
+**Canonical engineering commit:** `68b8362f326e56cfec478f0275b6d29ed0f54dec`
 **Canonical status authority:** `PROJECT_MANIFEST.md`
 
 This file separates completed source engineering, next bounded engineering, and operational actions that remain unauthorized.
 
-## Completed through Sprint150
+## Completed through Sprint151
 
 - [x] Core modular-monolith architecture and repository governance foundation
 - [x] Tenant-context-first and deny-by-default authorization foundations
@@ -20,48 +20,49 @@ This file separates completed source engineering, next bounded engineering, and 
 - [x] Target-bound durable-runtime capability-evidence identity qualification — Sprint148
 - [x] Trusted target-bound capability-evidence producer source materialization — Sprint149
 - [x] Full nine-component selected-runtime dependency-envelope qualification source — Sprint150
-- [x] Sprint150 PR #718 squash merged
-- [x] Sprint150 exact-head PR qualification — 35/35 successful
-- [x] Sprint150 repository-native Product Owner merge-authority run `34761524119` successful
-- [x] Sprint150 canonical engineering commit `d743a054092231729fa0e33cd34538f9d1e81787`
-- [x] Sprint150 post-merge engineering NO-GO verification completed
-- [x] Sprint150 provider runtime allowlist preserved as `local/test/ci`
+- [x] Target-bound dependency-envelope evidence construction source foundation — Sprint151
+- [x] Sprint151 PR #720 squash merged
+- [x] Sprint151 exact-head PR qualification — 36/36 successful
+- [x] Sprint151 repository-native Product Owner merge-authority run `34764011476` successful
+- [x] Sprint151 canonical engineering commit `68b8362f326e56cfec478f0275b6d29ed0f54dec`
+- [x] Sprint151 post-merge engineering NO-GO verification completed
+- [x] Sprint151 provider runtime allowlist preserved as `local/test/ci`
 
-## Sprint150 closure evidence
+## Sprint151 closure evidence
 
-- Objective: `DURABLE_RUNTIME_SELECTED_CLASS_DEPENDENCY_ENVELOPE_QUALIFICATION`
-- Final engineering head: `7102733080735f4591bb17df76bdec928975e826`
-- Engineering envelope: six paths
-- Engineering envelope SHA-256: `9f261895ab0373af5d6d385c3db3f93e5e510061b8e843e4110ecce992d9a0e6`
+- Objective: `DURABLE_RUNTIME_TARGET_BOUND_DEPENDENCY_ENVELOPE_EVIDENCE_SOURCE_FOUNDATION`
+- Final engineering head: `f41e32bc44e0ee0346f5efd15d54f6af21b8a19a`
+- Engineering envelope: five paths
+- Engineering envelope SHA-256: `ef000ec9172dcee1f08a6c8ea9149fb957a307e7929eaaa42c5d4b08bad94c54`
 - Reconciliation envelope: six paths
-- Reconciliation envelope SHA-256: `578765b03de34048670791017fcffe8680b65e6bede9f57d22affb255f5ee43f`
-- Dependency-envelope qualifier: `MATERIALIZED_SOURCE_ONLY`
+- Reconciliation envelope SHA-256: `82d72910aaa4409113cfbb8b2b7f326daa51c205d7a6bfefa90ad5624604fb25`
+- Dependency-evidence source foundation: `MATERIALIZED_SOURCE_ONLY`
+- Dispatchable dependency-evidence producer: `NOT_IMPLEMENTED`
 - Real dependency-envelope evidence: `NONE`
-- Dependency-evidence producer: `NOT_IMPLEMENTED`
 - Runtime allowlist change: `NOT_IMPLEMENTED`
 
 ## Next bounded engineering
 
-### Sprint151 — bounded discovery after Sprint150 closure
+### Sprint152 — bounded discovery after Sprint151 closure
 
-After post-Sprint150 reconciliation closes, the next engineering activity must:
+After post-Sprint151 reconciliation closes, the next engineering activity must:
 
-- identify the smallest material non-duplicative production-readiness gap from canonical post-Sprint150;
-- prove the invariant is not already owned by historical regressions or source contracts;
+- identify the smallest material non-duplicative production-readiness gap from canonical post-Sprint151;
+- prove the invariant is not already owned by historical regressions, source contracts, or current foundations;
 - prioritize genuine durable-runtime readiness prerequisites without operational mutation;
 - freeze a bounded source envelope before implementation;
 - remain fail-closed and deny-by-default;
 - qualify exact head before merge;
 - preserve the six-field sprint documentation rule.
 
-No Sprint151 implementation is preselected.
+No Sprint152 implementation is preselected.
 
 ## Operational blockers / separate authority required
 
 - [ ] Qualify/select and persist a real non-synthetic durable activation target — current selection `null`
 - [ ] Dispatch trusted capability-evidence producer — `NOT_PERFORMED`
 - [ ] Produce real target-bound durable-runtime capability evidence — `NONE`
-- [ ] Materialize/dispatch trusted dependency-envelope evidence producer — `NOT_IMPLEMENTED`
+- [ ] Materialize a separately qualified dispatchable dependency-envelope evidence producer — `NOT_IMPLEMENTED`
 - [ ] Produce real target-bound dependency-envelope evidence — `NONE`
 - [ ] Execute migration #27 — `NOT_EXECUTED`
 - [ ] Provision Final Shift Close permission — `NONE`

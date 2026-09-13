@@ -14,7 +14,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  qualify-source-foundation:
+  preserve-source-foundation:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
@@ -30,30 +30,9 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           ref: ${{ github.event.pull_request.head.sha }}
-          fetch-depth: 0
+          fetch-depth: 1
 
-      - name: Qualify exact Sprint151 source envelope
-        shell: bash
-        run: |
-          set -euo pipefail
-          base='${{ github.event.pull_request.base.sha }}'
-          head='${{ github.event.pull_request.head.sha }}'
-          expected_hash='ef000ec9172dcee1f08a6c8ea9149fb957a307e7929eaaa42c5d4b08bad94c54'
-          mapfile -t changed < <(git diff --name-only "$base" "$head" | LC_ALL=C sort)
-          test "${#changed[@]}" -eq 5
-          printf '%s\n' "${changed[@]}" > /tmp/sprint151-paths
-          test "$(sha256sum /tmp/sprint151-paths | awk '{print $1}')" = "$expected_hash"
-          expected=(
-            '.github/workflows/sprint151-final-shift-close-durable-runtime-dependency-envelope-source-foundation-regression.yml'
-            'apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeDependencyEnvelopeEvidenceProducer.php'
-            'docs/SPRINT151_FINAL_SHIFT_CLOSE_DURABLE_RUNTIME_DEPENDENCY_ENVELOPE_SOURCE_FOUNDATION.md'
-            'ops/final-shift-close/DURABLE_RUNTIME_DEPENDENCY_ENVELOPE_SOURCE_FOUNDATION_CONTRACT.json'
-            'ops/final-shift-close/POST_SELECTION_DOWNSTREAM_READINESS.json'
-          )
-          printf '%s\n' "${expected[@]}" | LC_ALL=C sort > /tmp/sprint151-expected
-          diff -u /tmp/sprint151-expected /tmp/sprint151-paths
-
-      - name: Validate Sprint151 machine-readable contract
+      - name: Preserve Sprint151 machine-readable contract
         shell: bash
         run: |
           set -euo pipefail
@@ -66,34 +45,36 @@ jobs:
             .bounded_objective == "DURABLE_RUNTIME_TARGET_BOUND_DEPENDENCY_ENVELOPE_EVIDENCE_SOURCE_FOUNDATION" and
             .required_component_count == 9 and
             .source_requirements.exact_component_set_required == true and
+            .source_requirements.exact_component_source_paths_required == true and
             .source_requirements.exact_selected_target_binding_required == true and
             .source_requirements.synthetic_mixing_forbidden == true and
             .source_requirements.sprint150_qualification_required_for_output == true and
             .source_envelope.path_count == 5 and
             .source_envelope.sha256 == "ef000ec9172dcee1f08a6c8ea9149fb957a307e7929eaaa42c5d4b08bad94c54" and
+            .canonical_boundaries.source_foundation == "MATERIALIZED_SOURCE_ONLY" and
             .canonical_boundaries.dispatchable_dependency_evidence_producer == "NOT_IMPLEMENTED" and
             .canonical_boundaries.real_dependency_envelope_evidence == "NONE" and
             .canonical_boundaries.runtime_allowlist_change == "NOT_IMPLEMENTED" and
             .attribution == "Author by Lab | zefry"
           ' "$file" >/dev/null
 
-      - name: Validate source surface and runtime allowlist boundary
+      - name: Preserve Sprint151 source and runtime boundary
         shell: bash
         run: |
           set -euo pipefail
           source=apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeDependencyEnvelopeEvidenceProducer.php
           provider=apps/web/app/Providers/FinalShiftCloseServiceProvider.php
           php -l "$source"
-          grep -Fq "TARGET_BOUND_DURABLE_RUNTIME_DEPENDENCY_OBSERVATIONS" "$source"
-          grep -Fq "TARGET_BOUND_DEPENDENCY_ENVELOPE_EVIDENCE_PRODUCED_NOT_AUTHORIZED" "$source"
-          grep -Fq "produced_dependency_evidence_fails_sprint150_qualification" "$source"
-          grep -Fq "synthetic_dependency_component_observation_forbidden" "$source"
+          grep -Fq 'TARGET_BOUND_DURABLE_RUNTIME_DEPENDENCY_OBSERVATIONS' "$source"
+          grep -Fq 'TARGET_BOUND_DEPENDENCY_ENVELOPE_EVIDENCE_PRODUCED_NOT_AUTHORIZED' "$source"
+          grep -Fq 'produced_dependency_evidence_fails_sprint150_qualification' "$source"
+          grep -Fq 'synthetic_dependency_component_observation_forbidden' "$source"
           grep -Fq "runtime_allowlist_change' => 'NOT_IMPLEMENTED'" "$source"
           grep -Fq "activation_authority_state' => 'NOT_GRANTED'" "$source"
           grep -Fq "['local', 'test', 'ci']" "$provider"
           ! grep -Fq "'preview'" "$provider"
 
-      - name: Validate dependencies and predecessor executable regressions
+      - name: Preserve dependency and predecessor qualification
         working-directory: apps/web
         shell: bash
         run: |
