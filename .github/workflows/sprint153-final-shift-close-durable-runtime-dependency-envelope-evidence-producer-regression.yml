@@ -100,7 +100,7 @@ jobs:
           grep -Fq 'SELECTED_NOT_AUTHORIZED' "$workflow"
           grep -Fq 'FinalShiftCloseDurableRuntimeDependencyEnvelopeEvidenceProducer' "$workflow"
           grep -Fq 'FinalShiftCloseDurableRuntimeDependencyEnvelope' "$workflow"
-          grep -Fq 'dependency-envelope-evidence.json' "$workflow"
+          grep -Fq 'dependency-evidence.json' "$workflow"
           grep -Fq "'activation_authority_state' => 'NOT_GRANTED'" "$workflow"
           grep -Fq "'feature_activation_state' => 'INACTIVE'" "$workflow"
           grep -Fq "'runtime_allowlist_change' => 'NOT_IMPLEMENTED'" "$workflow"
