@@ -142,5 +142,5 @@ jobs:
           doc=docs/SPRINT154_FINAL_SHIFT_CLOSE_FEATURE_ACTIVATION_EXECUTOR_SOURCE_FOUNDATION.md
           grep -Fq 'FINAL_SHIFT_CLOSE_FEATURE_ACTIVATION_EXECUTOR_SOURCE_FOUNDATION' "$doc"
           grep -Fq 'concrete_configuration_transport=NOT_IMPLEMENTED' "$doc"
-          grep -Fq '5dcf1fcd0b638ed9ec3d311947055a2b2c96c74d8e8fb5b74ff1f1b96bd1296f' "$doc"
+          grep -Fq '35499fbb12404b3ab5f25de924d4528060f4cf4eb362091b116e5faf3c3766c3' "$doc"
           grep -Fq 'Author by Lab | zefry' "$doc"
