@@ -1,7 +1,7 @@
 # oneQay Roadmap
 
-**Roadmap checkpoint:** post-Sprint143
-**Canonical engineering baseline:** `b307d925400e9707c137f75bcfa3823a182fb84f`
+**Roadmap checkpoint:** post-Sprint144
+**Canonical engineering baseline:** `98840c29c21bcf6b1d81cb2afe21d07eb720e120`
 **Current state authority:** `PROJECT_MANIFEST.md`
 
 This roadmap describes sequencing and gates. It does **not** grant operational authority. A completed roadmap item means its bounded repository objective was completed; it does not imply deployment, migration execution, runtime activation, Technical Preview activation, or Production activation unless separately evidenced.
@@ -38,7 +38,7 @@ These foundations are repository/source achievements, not a statement that a com
 
 Representative milestones: Sprint55, Sprint64, Sprint70, and Sprint80.
 
-## Horizon D — Final Shift Close source/readiness chain — completed through Sprint143 engineering boundary
+## Horizon D — Final Shift Close source/readiness chain — completed through Sprint144 engineering boundary
 
 - [x] Source-only migration #27 materialization — Sprint88
 - [x] Final Shift Close application-readiness contract — Sprint89
@@ -47,39 +47,36 @@ Representative milestones: Sprint55, Sprint64, Sprint70, and Sprint80.
 - [x] DB-binding attestation readiness foundations
 - [x] Runtime authorization and fail-closed control-plane hardening
 - [x] Canonical token policy — Sprint130
-- [x] Middleware positive-path regression — Sprint131
-- [x] Controller positive-path regression — Sprint132
-- [x] Controller fail-closed regression — Sprint133
-- [x] Cross-provider delivery-gate route-absence regression — Sprint134
-- [x] Cross-provider registration metadata/inertness regression including DB-attestation `GET,HEAD` ownership — Sprint135
-- [x] Authenticated HTTP positive-path regression — Sprint136
-- [x] Authenticated HTTP fail-closed regression — Sprint137
-- [x] Authenticated HTTP throttle enforcement — Sprint138
+- [x] Middleware/controller positive-path and fail-closed qualification — Sprint131–Sprint133
+- [x] Delivery-gate and registration metadata qualification — Sprint134–Sprint135
+- [x] Authenticated HTTP positive/fail-closed/throttle qualification — Sprint136–Sprint138
 - [x] Authentication-before-throttle hardening — Sprint139
-- [x] Authentication-rejection response hardening — Sprint140
-- [x] Registered-route HTTP-kernel auth-rejection propagation — Sprint141
-- [x] Authenticated throttle-rejection response hardening for materialization POST and DB-attestation GET — Sprint142
-- [x] DB-attestation HEAD throttle-rejection parity hardening — Sprint143: the route-owned HEAD method now receives the same empty-body privacy/security and Laravel rate-limit metadata contract as GET; the third same-IP authenticated HEAD request remains HTTP `429` without a third synthetic identity read
+- [x] Authentication-rejection hardening and HTTP-kernel propagation — Sprint140–Sprint141
+- [x] Authenticated throttle-rejection response hardening — Sprint142
+- [x] DB-attestation HEAD parity hardening — Sprint143
+- [x] Canonical named-route identity ownership hardening — Sprint144
+
+Sprint144 requires the throttle-response hardener to match canonical route identity in addition to method and path, preserving canonical POST/GET/HEAD behavior while leaving same-path/method noncanonical routes framework-owned.
 
 Migration #27 remains source-only and `NOT_EXECUTED`; completion of this engineering horizon does not authorize operational use.
 
-## Horizon E — Sprint144+ bounded engineering — next
+## Horizon E — Sprint145+ bounded engineering — next
 
 Status: **NOT YET SELECTED / NOT COMPLETED**.
 
-Sprint144 begins only after bounded discovery identifies the smallest non-duplicative remaining engineering gap from canonical post-Sprint143.
+Sprint145 begins only after bounded discovery identifies the smallest non-duplicative remaining engineering gap from canonical post-Sprint144.
 
 Selection rules:
 
 1. prove the gap exists before adding source;
 2. freeze a bounded source envelope;
-3. preserve Sprint130–Sprint143 owned regressions and historical compatibility;
+3. preserve Sprint130–Sprint144 owned regressions and historical compatibility;
 4. stay fail-closed and deny-by-default;
 5. avoid operational adapter invocation and runtime-token provisioning unless separately authorized;
 6. qualify exact head in CI before merge;
 7. reconcile canonical project-state documentation at closure.
 
-No roadmap text pre-authorizes a specific Sprint144 implementation.
+No roadmap text pre-authorizes a specific Sprint145 implementation.
 
 ## Horizon F — Operational qualification — blocked / separate authority
 
@@ -103,13 +100,9 @@ Production remains rejected as the first activation target; any first activation
 
 Technical Preview activation remains `NOT_AUTHORIZED`.
 
-A state change requires a qualified target, separately authorized migration/permission/feature actions as applicable, exact running-source/artifact evidence, health attestation, configuration verification, rollback evidence, and explicit activation authority.
-
 ## Horizon H — Production activation — NO-GO until separately authorized
 
 Production activation remains `NOT_AUTHORIZED`.
-
-Production is not unlocked merely because source, migration files, providers, control-plane routes, synthetic regression evidence, or Technical Preview readiness artifacts exist.
 
 ## Horizon I — Updater/release activation — inactive until separately authorized
 
