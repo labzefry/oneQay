@@ -51,6 +51,23 @@
         "NO_DEFAULT_GRANT_PRESERVED"
       ]
     },
+    "durable_runtime_capability_evidence_binding": {
+      "source_path": "apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeCapabilityEvidence.php",
+      "contract_path": "ops/final-shift-close/DURABLE_RUNTIME_CAPABILITY_EVIDENCE_BINDING_CONTRACT.json",
+      "source_materialized": true,
+      "real_capability_evidence_present": false,
+      "trusted_evidence_producer_materialized": false,
+      "current_eligibility": "NOT_ELIGIBLE_NO_SELECTED_TARGET_OR_REAL_CAPABILITY_EVIDENCE",
+      "required_before_eligibility": [
+        "EXACT_SPRINT110_QUALIFIED_READINESS_ATTESTATION",
+        "EXACT_SPRINT111_SELECTED_TARGET_IDENTITY",
+        "AUTHENTICATED_CONFIGURATION_CHANNEL_IDENTITY_EVIDENCE_BOUND_TO_SELECTED_TARGET",
+        "READ_BEFORE_WRITE_READ_AFTER_VERIFICATION_EVIDENCE_BOUND_TO_SELECTED_TARGET",
+        "NON_MUTATING_HEALTH_ATTESTATION_EVIDENCE_BOUND_TO_SELECTED_TARGET",
+        "VERIFIED_FLAG_ROLLBACK_EVIDENCE_BOUND_TO_SELECTED_TARGET",
+        "SECRET_FREE_CAPABILITY_EVIDENCE_BUNDLE"
+      ]
+    },
     "feature_activation": {
       "source_path": ".github/workflows/final-shift-close-feature-activation.yml",
       "source_materialized": false,
@@ -77,6 +94,7 @@
       "selected_runtime_class_enabled": false,
       "current_eligibility": "NOT_ELIGIBLE_SELECTED_RUNTIME_NOT_QUALIFIED",
       "required_before_eligibility": [
+        "TARGET_BOUND_CAPABILITY_EVIDENCE_IDENTITY_QUALIFIED",
         "FULL_DURABLE_DEPENDENCY_ENVELOPE_QUALIFIED_FOR_SELECTED_RUNTIME_CLASS",
         "NO_SYNTHETIC_MIXING",
         "EXACT_SELECTED_TARGET_PROVENANCE",
@@ -90,6 +108,7 @@
     "EXECUTE_AND_PROVE_MIGRATION27_ON_SELECTED_TARGET",
     "BIND_AND_QUALIFY_PERMISSION_PROVISIONING_TO_SAME_SELECTED_TARGET",
     "PROVISION_AND_PROVE_POS_SHIFT_CLOSE_ON_SELECTED_TARGET",
+    "QUALIFY_TARGET_BOUND_DURABLE_RUNTIME_CAPABILITY_EVIDENCE_IDENTITY",
     "QUALIFY_FULL_DURABLE_RUNTIME_ENVELOPE_FOR_SELECTED_RUNTIME_CLASS",
     "MATERIALIZE_SELECTED_TARGET_BOUND_FEATURE_ACTIVATION_EXECUTOR",
     "OBTAIN_EXACT_FEATURE_ACTIVATION_AUTHORITY",
@@ -99,11 +118,20 @@
     "RUN_MIGRATION27_AGAINST_UNBOUND_DB_SECRETS",
     "RUN_PERMISSION_PROVISIONING_AGAINST_UNBOUND_DB_SECRETS",
     "ASSUME_GITHUB_ENVIRONMENT_NAME_EQUALS_SELECTED_RUNTIME_IDENTITY",
+    "TREAT_SPRINT110_BOOLEAN_CAPABILITY_CLAIMS_AS_TARGET_BOUND_EVIDENCE",
     "WIDEN_FINAL_SHIFT_CLOSE_RUNTIME_ALLOWLIST_BEFORE_FULL_DEPENDENCY_QUALIFICATION",
     "TREAT_SELECTED_NOT_AUTHORIZED_AS_ACTIVATION_AUTHORITY",
     "TREAT_STATE_JSON_AS_LIVE_RUNTIME_EVIDENCE"
   ],
   "source_envelope_sha256": "6583f7e9e4b1cce966f166c4e650e42e8c106b9c5354e75adceb10ace5688c18",
+  "sprint148_extension": {
+    "bounded_objective": "DURABLE_RUNTIME_TARGET_BOUND_CAPABILITY_EVIDENCE_IDENTITY_BINDING",
+    "contract_path": "ops/final-shift-close/DURABLE_RUNTIME_CAPABILITY_EVIDENCE_BINDING_CONTRACT.json",
+    "source_envelope_sha256": "f7d9cfb173b54ac863cc70f10b9ae3df2f6715a4abdae0c7c32cbdb399bda5a6",
+    "source_only": true,
+    "real_capability_evidence": "NONE",
+    "operational_execution": "NOT_PERFORMED"
+  },
   "canonical_boundaries": {
     "producer_dispatch": "NOT_PERFORMED",
     "real_attestation": "NONE",
@@ -111,6 +139,8 @@
     "accepted_ingestion_candidate": "NONE",
     "selection_persistence_execution": "NOT_PERFORMED",
     "selected_target": "NONE",
+    "real_capability_evidence": "NONE",
+    "trusted_capability_evidence_producer": "NOT_IMPLEMENTED",
     "migration27_execution": "NOT_PERFORMED",
     "permission_provisioning": "NONE",
     "runtime_allowlist_change": "NOT_IMPLEMENTED",
