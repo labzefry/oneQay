@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "feature": "final-shift-close",
+  "sprint": 146,
+  "bounded_objective": "CANONICAL_CONTROL_PLANE_THROTTLE_BUDGET_IDENTITY_RESPONSE_HARDENING_REGRESSION",
+  "execution_mode": "CI_ONLY_SYNTHETIC_DIRECT_MIDDLEWARE_THROTTLE_BUDGET_IDENTITY_QUALIFICATION",
+  "qualification": {
+    "new_executable_gap": "CANONICAL_REQUEST_IDENTITY_WITH_NONCANONICAL_THROTTLE_CEILING_MUST_REMAIN_FRAMEWORK_OWNED",
+    "ownership_signal": "ROUTE_NAME_PLUS_ACTION_PLUS_METHOD_PLUS_PATH_PLUS_EXACT_CANONICAL_THROTTLE_LIMIT",
+    "route_registration_changed": false,
+    "route_middleware_stack_changed": false,
+    "authentication_before_throttle_preserved": true,
+    "throttle_limits_changed": false,
+    "materialization_method_ownership": ["POST"],
+    "db_attestation_method_ownership": ["GET", "HEAD"],
+    "materialization_canonical_throttle_limit": "1",
+    "db_attestation_canonical_throttle_limit": "2",
+    "exact_string_throttle_limit_match_required": true,
+    "materialization_cross_budget_framework_owned": true,
+    "materialization_arbitrary_budget_framework_owned": true,
+    "materialization_numeric_alias_budget_framework_owned": true,
+    "db_get_cross_budget_framework_owned": true,
+    "db_get_arbitrary_budget_framework_owned": true,
+    "db_get_numeric_alias_budget_framework_owned": true,
+    "db_head_cross_budget_framework_owned": true,
+    "db_head_arbitrary_budget_framework_owned": true,
+    "db_head_numeric_alias_budget_framework_owned": true,
+    "canonical_materialization_post_hardened": true,
+    "canonical_db_attestation_get_hardened": true,
+    "canonical_db_attestation_head_hardened": true,
+    "throttle_rejection_status": 429,
+    "canonical_throttle_rejection_body": "EMPTY",
+    "privacy_security_headers_preserved": true,
+    "framework_rate_limit_metadata_preserved": true,
+    "framework_owned_mismatched_budget_response_not_rewritten": true
+  },
+  "historical_ownership": {
+    "sprint142_registered_canonical_throttle_budgets": "PRESERVED_AS_REAL_HTTP_KERNEL_EVIDENCE",
+    "sprint143_db_head_throttle_rejection_parity": "PRESERVED",
+    "sprint144_named_route_identity_throttle_response_hardening": "PRESERVED",
+    "sprint145_action_identity_throttle_response_hardening": "PRESERVED",
+    "sprint146_throttle_budget_identity_response_hardening": "OWNED"
+  },
+  "source_envelope": {
+    "path_count": 5,
+    "sha256": "bbc0da27fe84ca8a1fafcf4b76bcf9e1f42e595c01d35544a94793c1a7fec161"
+  },
+  "attribution": "Author by Lab | zefry"
+}
