@@ -38,6 +38,7 @@ jobs:
           set -euo pipefail
           git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | LC_ALL=C sort > /tmp/actual
           cat > /tmp/expected <<'EOF'
+          .github/workflows/sprint116-final-shift-close-post-selection-downstream-readiness.yml
           .github/workflows/sprint154-final-shift-close-feature-activation-executor-source-foundation-regression.yml
           apps/web/app/Application/Pos/FinalShiftCloseFeatureActivationExecutionPlan.php
           apps/web/tests/pos-final-shift-close-feature-activation-execution-plan.php
@@ -47,7 +48,7 @@ jobs:
           EOF
           LC_ALL=C sort -o /tmp/expected /tmp/expected
           diff -u /tmp/expected /tmp/actual
-          test "$(sha256sum /tmp/expected | awk '{print $1}')" = "35499fbb12404b3ab5f25de924d4528060f4cf4eb362091b116e5faf3c3766c3"
+          test "$(sha256sum /tmp/expected | awk '{print $1}')" = "5dcf1fcd0b638ed9ec3d311947055a2b2c96c74d8e8fb5b74ff1f1b96bd1296f"
 
       - name: Validate Sprint154 machine-readable contract
         shell: bash
@@ -68,8 +69,10 @@ jobs:
             .source_requirements.concrete_configuration_transport == "NOT_IMPLEMENTED" and
             .source_requirements.network_or_secret_transport_in_sprint154 == "FORBIDDEN" and
             .source_requirements.provider_runtime_allowlist_change_in_sprint154 == "FORBIDDEN" and
-            .source_envelope.path_count == 6 and
-            .source_envelope.sha256 == "35499fbb12404b3ab5f25de924d4528060f4cf4eb362091b116e5faf3c3766c3" and
+            .source_envelope.path_count == 7 and
+            .source_envelope.sha256 == "5dcf1fcd0b638ed9ec3d311947055a2b2c96c74d8e8fb5b74ff1f1b96bd1296f" and
+            .historical_successor_compatibility.sprint116_workflow_path == ".github/workflows/sprint116-final-shift-close-post-selection-downstream-readiness.yml" and
+            .historical_successor_compatibility.preserves_operational_no_go == true and
             .canonical_boundaries.activation_executor_source_foundation == "MATERIALIZED_SOURCE_ONLY" and
             .canonical_boundaries.dispatchable_feature_activation_executor == "NOT_IMPLEMENTED" and
             .canonical_boundaries.executor_dispatch == "NOT_PERFORMED" and
@@ -89,6 +92,17 @@ jobs:
           php -l app/Application/Pos/FinalShiftCloseFeatureActivationExecutionPlan.php
           php -l tests/pos-final-shift-close-feature-activation-execution-plan.php
           php tests/pos-final-shift-close-feature-activation-execution-plan.php
+
+      - name: Preserve Sprint116 successor compatibility
+        shell: bash
+        run: |
+          set -euo pipefail
+          workflow=.github/workflows/sprint116-final-shift-close-post-selection-downstream-readiness.yml
+          grep -Fq 'NOT_ELIGIBLE_DISPATCHABLE_EXECUTOR_AND_TRANSPORT_NOT_IMPLEMENTED' "$workflow"
+          grep -Fq 'source_foundation_materialized' "$workflow"
+          grep -Fq 'dispatchable_executor_materialized' "$workflow"
+          grep -Fq 'configuration_mutation_transport' "$workflow"
+          grep -Fq 'FEATURE_ACTIVATION = INACTIVE' "$workflow"
 
       - name: Preserve runtime provider and canonical operational NO-GO
         shell: bash
@@ -114,7 +128,7 @@ jobs:
             .sprint154_extension.dispatchable_feature_activation_executor == "NOT_IMPLEMENTED" and
             .sprint154_extension.configuration_mutation_transport == "NOT_IMPLEMENTED" and
             .sprint154_extension.executor_dispatch == "NOT_PERFORMED" and
-            .sprint154_extension.source_envelope_sha256 == "35499fbb12404b3ab5f25de924d4528060f4cf4eb362091b116e5faf3c3766c3" and
+            .sprint154_extension.source_envelope_sha256 == "5dcf1fcd0b638ed9ec3d311947055a2b2c96c74d8e8fb5b74ff1f1b96bd1296f" and
             .canonical_boundaries.activation_executor_source_foundation == "MATERIALIZED_SOURCE_ONLY" and
             .canonical_boundaries.feature_activation_executor == "NOT_IMPLEMENTED" and
             .canonical_boundaries.runtime_allowlist_change == "NOT_IMPLEMENTED" and
@@ -128,5 +142,5 @@ jobs:
           doc=docs/SPRINT154_FINAL_SHIFT_CLOSE_FEATURE_ACTIVATION_EXECUTOR_SOURCE_FOUNDATION.md
           grep -Fq 'FINAL_SHIFT_CLOSE_FEATURE_ACTIVATION_EXECUTOR_SOURCE_FOUNDATION' "$doc"
           grep -Fq 'concrete_configuration_transport=NOT_IMPLEMENTED' "$doc"
-          grep -Fq '35499fbb12404b3ab5f25de924d4528060f4cf4eb362091b116e5faf3c3766c3' "$doc"
+          grep -Fq '5dcf1fcd0b638ed9ec3d311947055a2b2c96c74d8e8fb5b74ff1f1b96bd1296f' "$doc"
           grep -Fq 'Author by Lab | zefry' "$doc"
