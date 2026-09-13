@@ -4,6 +4,27 @@ This changelog records **material canonical progress**, not every intermediate c
 
 Current project-state authority: [`PROJECT_MANIFEST.md`](PROJECT_MANIFEST.md).
 
+## 2026-09-13 — Sprint142 closed
+
+**Sprint142: canonical control-plane throttle rejection response hardening**
+
+- PR #701 squash merged.
+- Canonical engineering commit: `61a6d68b45303a796c5eb7c2afa78b16e740da53`.
+- Parent canonical documentation checkpoint: `669661c70a376f4adc6c9f805af38c60f5672382`.
+- Closed the authenticated throttle-rejection response-hardening gap left after Sprint138–Sprint141.
+- Materialization remains auth-before-throttle with exact `throttle:1,1`; DB-attestation remains auth-before-throttle with exact `throttle:2,1`.
+- Throttle-generated HTTP `429` responses on the two exact Final Shift Close control-plane route/method pairs are now empty-body, `no-store, private`, `Pragma: no-cache`, `nosniff`, and robot-excluded.
+- Laravel throttle metadata remains preserved: `Retry-After`, `X-RateLimit-Limit`, `X-RateLimit-Remaining`, and `X-RateLimit-Reset`.
+- The hardening post-processor is exact-scope and requires throttle response metadata; an unrelated throttled route remains outside Sprint142 hardening.
+- Materialization still performs only one synthetic write before its excess request; DB-attestation still performs only two synthetic identity reads before its excess request.
+- Sprint138 throttle enforcement, Sprint139 auth-before-throttle, Sprint140 direct auth-rejection hardening, and Sprint141 HTTP-kernel auth-rejection propagation remain preserved.
+- Exact Sprint142 engineering envelope: six paths.
+- Frozen envelope SHA-256: `51245b1a9610a4a1989f52bfd76b80d57683e4c7069f6f7eafecee77d6147023`.
+- Final exact-head engineering SHA before merge: `c4154f33d21d3e6005a339662ce4c4f5642b8ed0`.
+- Exact-head pull-request qualification: 26/26 workflow runs successful.
+- Product Owner merge-authority workflow run `34744364161` completed successfully.
+- Operational NO-GO state remained unchanged.
+
 ## 2026-09-12 — Sprint141 closed
 
 **Sprint141: canonical HTTP auth rejection response regression**
@@ -95,7 +116,7 @@ Current project-state authority: [`PROJECT_MANIFEST.md`](PROJECT_MANIFEST.md).
 
 ## 2026-09-05 onward — Final Shift Close readiness and runtime-control-plane chain
 
-Material milestones include Sprint88 source-only migration #27, Sprint89 application-readiness, later application/provider/runtime-binding/DB-attestation/authorization/target-readiness qualification, and the Sprint130–Sprint141 canonical control-plane hardening chain.
+Material milestones include Sprint88 source-only migration #27, Sprint89 application-readiness, later application/provider/runtime-binding/DB-attestation/authorization/target-readiness qualification, and the Sprint130–Sprint142 canonical control-plane hardening chain.
 
 Throughout this sequence, migration execution, permission provisioning, deployment, Technical Preview activation, Production activation, and updater activation remained separately gated.
 
@@ -109,7 +130,7 @@ Earlier repository work established the architecture/governance platform, authen
 
 ## Current lifecycle boundary
 
-As of the post-Sprint141 engineering checkpoint:
+As of the post-Sprint142 engineering checkpoint:
 
 - migration #27 execution: `NOT_EXECUTED`;
 - permission provisioning: `NONE`;

@@ -1,7 +1,7 @@
 # oneQay Roadmap
 
-**Roadmap checkpoint:** post-Sprint141
-**Canonical engineering baseline:** `81d4d19c61e99746495bec804c0e7d8a9778a257`
+**Roadmap checkpoint:** post-Sprint142
+**Canonical engineering baseline:** `61a6d68b45303a796c5eb7c2afa78b16e740da53`
 **Current state authority:** `PROJECT_MANIFEST.md`
 
 This roadmap describes sequencing and gates. It does **not** grant operational authority. A completed roadmap item means its bounded repository objective was completed; it does not imply deployment, migration execution, runtime activation, Technical Preview activation, or Production activation unless separately evidenced.
@@ -38,7 +38,7 @@ These foundations are repository/source achievements, not a statement that a com
 
 Representative milestones: Sprint55, Sprint64, Sprint70, and Sprint80.
 
-## Horizon D — Final Shift Close source/readiness chain — completed through Sprint141 engineering boundary
+## Horizon D — Final Shift Close source/readiness chain — completed through Sprint142 engineering boundary
 
 - [x] Source-only migration #27 materialization — Sprint88
 - [x] Final Shift Close application-readiness contract — Sprint89
@@ -58,26 +58,27 @@ Representative milestones: Sprint55, Sprint64, Sprint70, and Sprint80.
 - [x] Authentication-before-throttle hardening — Sprint139: wrong bearer traffic is rejected before limiter accounting and cannot reduce the valid bearer budget on either control plane, while the existing `1,1` and `2,1` limits remain unchanged
 - [x] Authentication-rejection response hardening — Sprint140: direct middleware invocation preserves materialization 503/401 and DB-attestation cloaked 404 rejection semantics while standardizing empty-body, private/no-store, no-cache, nosniff, and robot-exclusion metadata
 - [x] Registered-route HTTP-kernel auth-rejection propagation — Sprint141: missing, malformed, and mismatched bearer credentials retain Sprint140 hardened rejection status/body/header/non-reflection behavior through the actual routes and Laravel kernel while controllers and side-effect application services remain unresolved
+- [x] Authenticated throttle-rejection response hardening — Sprint142: exact Final Shift Close control-plane HTTP `429` responses retain auth-before-throttle ordering, unchanged `1,1` / `2,1` limits, and Laravel rate-limit metadata while becoming empty-body, private/no-store, no-cache, nosniff, and robot-excluded; unrelated throttled routes remain outside the hardening scope
 
 Migration #27 remains source-only and `NOT_EXECUTED`; completion of this engineering horizon does not authorize operational use.
 
-## Horizon E — Sprint142+ bounded engineering — next
+## Horizon E — Sprint143+ bounded engineering — next
 
 Status: **NOT YET SELECTED / NOT COMPLETED**.
 
-Sprint142 begins only after bounded discovery identifies the smallest non-duplicative remaining engineering gap from canonical post-Sprint141.
+Sprint143 begins only after bounded discovery identifies the smallest non-duplicative remaining engineering gap from canonical post-Sprint142.
 
 Selection rules:
 
 1. prove the gap exists before adding source;
 2. freeze a bounded source envelope;
-3. preserve Sprint130–Sprint141 owned regressions and historical compatibility;
+3. preserve Sprint130–Sprint142 owned regressions and historical compatibility;
 4. stay fail-closed and deny-by-default;
 5. avoid operational adapter invocation and runtime-token provisioning unless separately authorized;
 6. qualify exact head in CI before merge;
 7. reconcile canonical project-state documentation at closure.
 
-No roadmap text pre-authorizes a specific Sprint142 implementation.
+No roadmap text pre-authorizes a specific Sprint143 implementation.
 
 ## Horizon F — Operational qualification — blocked / separate authority
 
