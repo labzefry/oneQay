@@ -30,14 +30,15 @@ jobs:
           set -euo pipefail
           base='${{ github.event.pull_request.base.sha }}'
           head='${{ github.event.pull_request.head.sha }}'
-          expected_hash='052599d3aeb31aacaa4f139cac6ea1b0cd677a86a1c25358136d69b8f5f650c9'
+          expected_hash='7ed9c7cc6da5f03f73fdbd3ef18f4315896b95832331c2c2d5e2fa6bb2151590'
           mapfile -t changed < <(git diff --name-only "$base" "$head" | LC_ALL=C sort)
-          test "${#changed[@]}" -eq 6
+          test "${#changed[@]}" -eq 7
           printf '%s\n' "${changed[@]}" > /tmp/sprint152-paths
           test "$(sha256sum /tmp/sprint152-paths | awk '{print $1}')" = "$expected_hash"
           expected=(
             '.github/workflows/final-shift-close-permission-provisioning.yml'
             '.github/workflows/sprint104-final-shift-close-permission-provisioning-evidence.yml'
+            '.github/workflows/sprint116-final-shift-close-post-selection-downstream-readiness.yml'
             '.github/workflows/sprint152-final-shift-close-permission-selected-target-binding-regression.yml'
             'docs/SPRINT152_FINAL_SHIFT_CLOSE_PERMISSION_SELECTED_TARGET_BINDING.md'
             'ops/final-shift-close/PERMISSION_PROVISIONING_SELECTED_TARGET_BINDING_CONTRACT.json'
@@ -63,8 +64,10 @@ jobs:
             .source_requirements.immediate_pre_mutation_database_identity_readback_required == true and
             .source_requirements.database_binding_hash_equals_required == true and
             .source_requirements.new_binding_producer_forbidden == true and
-            .source_envelope.path_count == 6 and
-            .source_envelope.sha256 == "052599d3aeb31aacaa4f139cac6ea1b0cd677a86a1c25358136d69b8f5f650c9" and
+            .source_requirements.sprint104_historical_workflow_successor_compatible_required == true and
+            .source_requirements.sprint116_historical_workflow_successor_compatible_required == true and
+            .source_envelope.path_count == 7 and
+            .source_envelope.sha256 == "7ed9c7cc6da5f03f73fdbd3ef18f4315896b95832331c2c2d5e2fa6bb2151590" and
             .canonical_boundaries.permission_provisioning == "NONE" and
             .canonical_boundaries.permission_provisioning_selected_target_binding_execution == "NOT_PERFORMED" and
             .attribution == "Author by Lab | zefry"
@@ -75,7 +78,8 @@ jobs:
         run: |
           set -euo pipefail
           workflow=.github/workflows/final-shift-close-permission-provisioning.yml
-          historical=.github/workflows/sprint104-final-shift-close-permission-provisioning-evidence.yml
+          sprint104=.github/workflows/sprint104-final-shift-close-permission-provisioning-evidence.yml
+          sprint116=.github/workflows/sprint116-final-shift-close-post-selection-downstream-readiness.yml
           grep -Fq 'binding_run_id:' "$workflow"
           grep -Fq 'binding_run_attempt:' "$workflow"
           grep -Fq 'DURABLE_ACTIVATION_TARGET_SELECTION.json' "$workflow"
@@ -90,9 +94,11 @@ jobs:
           grep -Fq 'hash_equals($expectedBinding, $actualBinding)' "$workflow"
           grep -Fq 'Canonical migration27 execution record is not exact.' "$workflow"
           grep -Fq "steps.binding.outputs.verified == 'true'" "$workflow"
-          grep -Fq 'Preserve Sprint104 historical source boundary' "$historical"
-          grep -Fq 'c8e22973b8e5f8ae3f20cc2d1121e78b10e526a6510f38c3b13771c057fe1692' "$historical"
-          ! grep -Fq 'Enforce exact Sprint104 source envelope' "$historical"
+          grep -Fq 'Preserve Sprint104 historical source boundary' "$sprint104"
+          grep -Fq 'c8e22973b8e5f8ae3f20cc2d1121e78b10e526a6510f38c3b13771c057fe1692' "$sprint104"
+          ! grep -Fq 'Enforce exact Sprint104 source envelope' "$sprint104"
+          grep -Fq 'NOT_ELIGIBLE_SELECTED_TARGET_BINDING_EVIDENCE_MISSING' "$sprint116"
+          grep -Fq 'Preserve selected-target binding fail-closed progression' "$sprint116"
 
       - name: Preserve downstream and operational NO-GO boundaries
         shell: bash
@@ -107,7 +113,7 @@ jobs:
             .sprint152_extension.provisioning_workflow_dispatch == "NOT_PERFORMED" and
             .sprint152_extension.real_selected_target_database_binding_evidence == "NONE" and
             .sprint152_extension.permission_provisioning == "NONE" and
-            .sprint152_extension.source_envelope_sha256 == "052599d3aeb31aacaa4f139cac6ea1b0cd677a86a1c25358136d69b8f5f650c9" and
+            .sprint152_extension.source_envelope_sha256 == "7ed9c7cc6da5f03f73fdbd3ef18f4315896b95832331c2c2d5e2fa6bb2151590" and
             .canonical_boundaries.permission_provisioning_selected_target_binding_source == "MATERIALIZED_NOT_DISPATCHED" and
             .canonical_boundaries.permission_provisioning_selected_target_binding_evidence == "NONE" and
             .canonical_boundaries.permission_provisioning == "NONE" and
@@ -129,10 +135,12 @@ jobs:
           set -euo pipefail
           doc=docs/SPRINT152_FINAL_SHIFT_CLOSE_PERMISSION_SELECTED_TARGET_BINDING.md
           for heading in '## Purpose / Why' '## Objective / Gap' '## What changed' '## Evidence / Qualification' '## Operational boundaries / NO-GO' '## Next position'; do grep -Fq "$heading" "$doc"; done
-          grep -Fq '052599d3aeb31aacaa4f139cac6ea1b0cd677a86a1c25358136d69b8f5f650c9' "$doc"
+          grep -Fq '7ed9c7cc6da5f03f73fdbd3ef18f4315896b95832331c2c2d5e2fa6bb2151590' "$doc"
           grep -Fq 'Real selected-target database-binding evidence remains `NONE`' "$doc"
           grep -Fq 'permission provisioning remains `NONE`' "$doc"
           grep -Fq 'Sprint104' "$doc"
+          grep -Fq 'Sprint116' "$doc"
+          grep -Fq '34765261070' "$doc"
 
       - name: Verify tracked-source cleanliness
         run: |
