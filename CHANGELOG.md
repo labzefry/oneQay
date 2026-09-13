@@ -1,40 +1,50 @@
 # Changelog
 
-This changelog records **material canonical progress**, not every intermediate compatibility or CI-only commit. Detailed provenance remains in merged pull requests, Git history, per-sprint documents, workflows, and machine-readable contracts.
+This changelog records **material canonical progress**, not every intermediate compatibility or CI-only commit. Detailed provenance remains in merged pull requests, Git history, per-sprint evidence, workflows, and machine-readable contracts.
 
 Current project-state authority: [`PROJECT_MANIFEST.md`](PROJECT_MANIFEST.md).
+
+## 2026-09-14 — Sprint155 engineering complete; canonical reconciliation in progress
+
+**Sprint155: Final Shift Close feature-activation transport source foundation**
+
+- **Purpose / Why:** post-Sprint154 had a deterministic activation execution plan but no bounded source handoff object binding that plan to qualified target-capability identity while preserving the absence of an operational adapter or dispatch surface.
+- **Objective / Gap:** `FINAL_SHIFT_CLOSE_FEATURE_ACTIVATION_TRANSPORT_SOURCE_FOUNDATION`.
+- **What changed:** added `FinalShiftCloseFeatureActivationTransportEnvelope.php`, executable regression `pos-final-shift-close-feature-activation-transport-envelope.php`, and registration through the existing M7.1 `tests/persistence.php` harness.
+- The envelope is deterministic and fail-closed around target identity, selection fingerprint, capability-evidence identity, ordered activation-plan semantics, and explicit NO-GO states.
+- Concrete configuration-mutation transport remains `NOT_IMPLEMENTED`; dispatchable feature-activation executor remains `NOT_IMPLEMENTED`; network/executor dispatch remains `NOT_PERFORMED`.
+- Engineering envelope: exactly three paths; SHA-256 `29619b928a422615647184c5316d9679dd4c4d582d759e89e8704e335ed982cb`.
+- Engineering PR #728 squash merged.
+- Canonical engineering commit: `1e84e1b3e07915a1d20b56fe768b0d1454f901d2`.
+- Parent canonical post-Sprint154 checkpoint: `056d0300af925c9e8adf04a11a107cc4f5fde196`.
+- Final exact engineering head: `4871e0ade60e8ac5e6f44b2bc27f0319ca150e63`.
+- Exact-head pull-request qualification: **36/36 successful**.
+- PHP Foundation Regression run `34774606244`: successful.
+- M7.1 Application Regression run `34774606266`: successful and explicitly reported `Final Shift Close feature activation transport envelope regression passed.`
+- Repository-native Product Owner merge-authority run `34775351008`: successful.
+- Post-merge verification proved exactly one squash commit and exactly the three engineering paths.
+- Proposed dedicated operationally suggestive workflow/document/metadata artifacts were rejected by connector safety guards during engineering. Scope was narrowed; no bypass was attempted.
+- Post-Sprint155 canonical reconciliation envelope: six paths; SHA-256 `323efb8b04badda3874aa7542285499b7be7b8df139cc86fd43b294aac7f8a38`.
+- Reconciliation adds a source-only preservation workflow that only installs locked PHP dependencies, validates PHP syntax, and runs the existing application regression suite.
+- **Operational boundaries / NO-GO:** target selection remains blocked/null; migration #27 remains `NOT_EXECUTED`; permission provisioning remains `NONE`; real capability/dependency evidence remains `NONE`; runtime allowlist change remains `NOT_IMPLEMENTED`; feature activation remains `INACTIVE`; deployment authority remains `NOT_GRANTED`; Technical Preview/Production remain `NOT_AUTHORIZED`; updater remains `INACTIVE`.
+- **Next position:** after reconciliation squash merge and post-merge verification, Sprint156 bounded discovery; no objective or source envelope is preselected.
 
 ## 2026-09-14 — Sprint154 closed
 
 **Sprint154: Final Shift Close feature-activation executor source foundation**
 
-- **Purpose / Why:** canonical post-Sprint153 lacked the selected-target-bound activation executor required by downstream ordering, while discovery proved no trustworthy repository-native concrete activation transport already existed.
-- **Objective / Gap:** `FINAL_SHIFT_CLOSE_FEATURE_ACTIVATION_EXECUTOR_SOURCE_FOUNDATION` — materialize only the deterministic, fail-closed plan/qualification source required before a future dispatchable executor can exist.
-- **What changed:** added `FinalShiftCloseFeatureActivationExecutionPlan.php`, its executable regression, machine-readable contract, downstream readiness state, active Sprint154 regression, and detailed Sprint154 documentation.
-- The source foundation requires future exact selected-target identity, migration #27 execution, same-target `pos.shift.close` permission provisioning with no default grant, full durable dependency-envelope qualification, and separate exact feature-activation authority.
-- Concrete configuration transport remains `NOT_IMPLEMENTED`; dispatchable feature-activation executor remains `NOT_IMPLEMENTED`; executor dispatch remains `NOT_PERFORMED`.
-- Initial six-path source-foundation envelope SHA-256: `35499fbb12404b3ab5f25de924d4528060f4cf4eb362091b116e5faf3c3766c3`.
-- Exact-head CI run `34772115090` proved Sprint116 still asserted the older feature-activation eligibility state. The final engineering envelope expanded by exactly one historical workflow path and Sprint116 became successor-compatible while preserving operational NO-GO.
-- Engineering PR #726 squash merged.
-- Canonical engineering commit: `5349acbffd1c90087d37a1a0f74ce0ffd7e87773`.
-- Parent canonical post-Sprint153 checkpoint: `a2b6177d030608775c90f370c17ba0779f28d783`.
-- Final exact engineering head: `132dbd0048ad40248efe093e22f276b487890487`.
-- Exact-head pull-request qualification: **39/39 successful**.
-- Repository-native Product Owner merge-authority run `34772516177` successful.
-- Final seven-path engineering envelope SHA-256: `5dcf1fcd0b638ed9ec3d311947055a2b2c96c74d8e8fb5b74ff1f1b96bd1296f`.
-- Post-Sprint154 canonical reconciliation envelope: six paths; SHA-256 `ba0208b79fb9790435dcc968fe85e05aece4a980cb891e4c2e946efcbc65650f`.
-- **Operational boundaries / NO-GO:** no target persistence, activation-executor dispatch, concrete transport implementation, migration execution, permission provisioning, real capability/dependency evidence production, runtime allowlist widening, feature activation, deployment/release, Technical Preview activation, Production activation, or updater activation.
-- **Next position:** Sprint155 bounded discovery after reconciliation closure; no objective or source envelope is preselected.
+- Added the deterministic selected-target-bound activation execution-plan source foundation.
+- Engineering PR #726 squash merged at `5349acbffd1c90087d37a1a0f74ce0ffd7e87773`.
+- Final engineering head `132dbd0048ad40248efe093e22f276b487890487`; 39/39 exact-head CI successful; Product Owner authority run `34772516177` successful.
+- Final engineering envelope SHA-256: `5dcf1fcd0b638ed9ec3d311947055a2b2c96c74d8e8fb5b74ff1f1b96bd1296f`.
+- Dispatchable executor and concrete configuration transport remained `NOT_IMPLEMENTED`; feature remained `INACTIVE`.
 
 ## 2026-09-13 — Sprint153 closed
 
-**Sprint153: durable runtime dependency-envelope evidence producer**
-
-- Added trusted protected-environment dependency-envelope evidence producer source without dispatch.
 - Engineering PR #724 squash merged at `e42ea89fca2b3974e7fa9b0a95fa31a901e9840c`.
+- Added trusted protected-environment dependency-envelope evidence producer source without dispatch.
 - Final engineering head `44a17e4590df58472114aad547dd1cd3087f8e96`; 38/38 exact-head CI successful; Product Owner authority run `34767471668` successful.
-- Final engineering envelope SHA-256: `7269a0e5f8927c2763411d0700b0f456cdcb0781f1d198179966a97a7b934a79`.
-- Producer source remained `MATERIALIZED_NOT_DISPATCHED`; real dependency evidence remained `NONE`.
+- Engineering envelope SHA-256: `7269a0e5f8927c2763411d0700b0f456cdcb0781f1d198179966a97a7b934a79`.
 
 ## 2026-09-13 — Sprint152 closed
 
@@ -68,7 +78,7 @@ Current project-state authority: [`PROJECT_MANIFEST.md`](PROJECT_MANIFEST.md).
 
 - PR #714 squash merged at engineering commit `7a07a3163842e60332ccd3e3780d4e970280d46c`.
 - Added exact target-bound durable-runtime capability-evidence identity qualification.
-- Final exact-head qualification: 33/33 successful; Product Owner authority run `34756294306` successful.
+- Exact-head qualification: 33/33 successful; Product Owner authority run `34756294306` successful.
 - Engineering envelope SHA-256: `f7d9cfb173b54ac863cc70f10b9ae3df2f6715a4abdae0c7c32cbdb399bda5a6`.
 
 ## Earlier material engineering history
@@ -79,7 +89,7 @@ Sprint130–Sprint147 established canonical runtime-control-plane policy and aut
 
 Machine-readable authority remains in `ops/final-shift-close/STATE.json`, `ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json`, and `ops/final-shift-close/POST_SELECTION_DOWNSTREAM_READINESS.json`.
 
-Current high-level values remain migration #27 `NOT_EXECUTED`, permission provisioning `NONE`, target selection blocked with selected target `null`, real capability evidence `NONE`, real dependency-envelope evidence `NONE`, activation executor source foundation `MATERIALIZED_SOURCE_ONLY`, dispatchable activation executor `NOT_IMPLEMENTED`, configuration-mutation transport `NOT_IMPLEMENTED`, runtime allowlist change `NOT_IMPLEMENTED`, feature activation `INACTIVE`, deployment authority `NOT_GRANTED`, Technical Preview/Production `NOT_AUTHORIZED`, and updater `INACTIVE`.
+Current high-level values remain migration #27 `NOT_EXECUTED`, permission provisioning `NONE`, target selection blocked with selected target `null`, real capability evidence `NONE`, real dependency-envelope evidence `NONE`, activation executor source foundation `MATERIALIZED_SOURCE_ONLY`, source-only activation transport handoff materialized, dispatchable activation executor `NOT_IMPLEMENTED`, concrete configuration-mutation transport `NOT_IMPLEMENTED`, runtime allowlist change `NOT_IMPLEMENTED`, feature activation `INACTIVE`, deployment authority `NOT_GRANTED`, Technical Preview/Production `NOT_AUTHORIZED`, and updater `INACTIVE`.
 
 ## Sprint description standard
 
