@@ -13,11 +13,7 @@
   "caller_supplied_target_inputs": false,
   "evidence_status_context": "final-shift-close-durable-runtime-capability-evidence",
   "evidence_artifact": "final-shift-close-durable-runtime-capability-evidence",
-  "evidence_artifact_entries": [
-    "attestation.json",
-    "evidence.json",
-    "producer.json"
-  ],
+  "evidence_artifact_entries": ["attestation.json", "evidence.json", "producer.json"],
   "evidence_artifact_retention_days": 30,
   "required_protected_environment_secrets": [
     "ONEQAY_DURABLE_RUNTIME_CAPABILITY_EVIDENCE_URL",
@@ -60,12 +56,16 @@
     "actions_checkout": "11bd71901bbe5b1630ceea73d27597364c9af683",
     "actions_upload_artifact": "ea165f8d65b6e75b540449e92b4886f43607fa02"
   },
+  "historical_ownership": {
+    "sprint148_capability_evidence_binding": "SUCCESSOR_COMPATIBLE_AFTER_CI_PROVEN_PRODUCER_STATE_CONFLICT"
+  },
   "source_envelope": {
-    "path_count": 7,
+    "path_count": 8,
     "sorted_newline_terminated": true,
-    "sha256": "51f9cc22db6b1d6b072a1ee649ce2d474fad2f457346d949a1aece67f6a1eb6b",
+    "sha256": "8acea0b1cc826dedbe2dd55f38b4aa24fd4854a96ee32dde9f7552d22d239a91",
     "paths": [
       ".github/workflows/final-shift-close-durable-runtime-capability-evidence.yml",
+      ".github/workflows/sprint148-final-shift-close-durable-runtime-capability-evidence-binding-regression.yml",
       ".github/workflows/sprint149-final-shift-close-durable-runtime-capability-evidence-producer-regression.yml",
       "apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeCapabilityEvidenceProducer.php",
       "apps/web/tests/pos-final-shift-close-durable-runtime-capability-evidence-producer.php",
