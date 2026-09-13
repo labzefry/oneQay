@@ -47,7 +47,7 @@ Source qualification alone produces no real runtime evidence and makes no select
 
 Sprint150 does not persist or select a durable target, dispatch the Sprint149 capability-evidence producer, create real capability evidence, create or dispatch a dependency-evidence producer, widen `FinalShiftCloseServiceProvider` or any other runtime allowlist, execute migration #27, provision permissions, materialize or execute feature activation, deploy/release, activate Technical Preview or Production, or activate the updater.
 
-The canonical provider remains `local/test/ci` only. Real dependency-envelope evidence remains `NONE`; runtime allowlist change remains `NOT_IMPLEMENTED`; feature activation remains `INACTIVE`.
+The canonical provider remains `local/test/ci` only. real dependency-envelope evidence remains `NONE`; runtime allowlist change remains `NOT_IMPLEMENTED`; feature activation remains `INACTIVE`.
 
 ## Next position
 
