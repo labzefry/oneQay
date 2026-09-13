@@ -4,6 +4,25 @@ This changelog records **material canonical progress**, not every intermediate c
 
 Current project-state authority: [`PROJECT_MANIFEST.md`](PROJECT_MANIFEST.md).
 
+## 2026-09-13 — Sprint148 closed
+
+**Sprint148: durable runtime target-bound capability evidence identity binding**
+
+- **Purpose / Why:** Sprint110 established canonical durable-runtime capability claims and Sprint111 bound qualified readiness to an exact target identity, but the capability booleans were not capability-specific evidence proving those capabilities for the exact selected target.
+- **Objective / Gap:** require capability-specific evidence for authenticated configuration mutation, read-before/write/read-after verification, non-mutating health attestation, and verified rollback to be individually verified, secret-free, digest-qualified, and bound to the exact Sprint111 target identity before any future runtime-allowlist eligibility.
+- **What changed:** added `FinalShiftCloseDurableRuntimeCapabilityEvidence`, dedicated executable Sprint148 regression coverage, `DURABLE_RUNTIME_CAPABILITY_EVIDENCE_BINDING_CONTRACT.json`, post-selection readiness integration, an exact-head workflow, and the detailed six-section Sprint148 description.
+- Exact-head CI proved historical Sprint116 still locked successor PRs to its original full three-path envelope; Sprint148 expanded from six to seven paths only to convert that workflow to successor-compatible historical regression while preserving its owned post-selection and NO-GO invariants.
+- Engineering PR #714 squash merged.
+- Canonical engineering commit: `7a07a3163842e60332ccd3e3780d4e970280d46c`.
+- Parent canonical post-Sprint147 reconciliation checkpoint: `54e209c6ef50b1f42c38fd30c7e6e12d757a8cd9`.
+- Final exact engineering head before merge: `eba8687297e7b82bf5adfcd770d86233139b0454`.
+- Exact-head pull-request qualification: **33/33 successful**.
+- Repository-native Product Owner merge-authority run `34756294306` successful.
+- Final engineering envelope: seven paths; SHA-256 `f7d9cfb173b54ac863cc70f10b9ae3df2f6715a4abdae0c7c32cbdb399bda5a6`.
+- Post-Sprint148 canonical reconciliation envelope: six paths; SHA-256 `5c315771e9777b9d5a5b428a206c7cec711e14a7851a83c685a5a5cfb378dfc5`.
+- **Operational boundaries / NO-GO:** no real capability evidence, trusted evidence producer, target persistence/activation, migration execution, permission provisioning, feature activation, runtime-token provisioning, runtime allowlist change, operational manifest/DB invocation, deployment/release, Technical Preview activation, Production activation, or updater activation.
+- **Next position:** Sprint149 bounded discovery from canonical post-Sprint148 after this reconciliation is squash merged and verified; no objective or envelope is preselected.
+
 ## 2026-09-13 — Sprint147 closed
 
 **Sprint147: canonical throttle rejection metadata identity response hardening**
@@ -68,7 +87,7 @@ Current project-state authority: [`PROJECT_MANIFEST.md`](PROJECT_MANIFEST.md).
 
 ## Earlier material engineering history
 
-Final Shift Close milestones include Sprint88 source-only migration #27 and Sprint89 application-readiness. JRN-010 milestones include Sprint55 expected-cash derivation, Sprint64 cash-variance source foundation, Sprint70 durable cash-variance explanation, and Sprint80 scoped reviewer authorization. Earlier work established architecture/governance, bounded POS foundations, authentication/session hardening, and regression-preservation controls.
+Final Shift Close milestones include Sprint88 source-only migration #27, Sprint89 application-readiness, Sprint110 durable-runtime readiness, Sprint111 selected-target identity, and Sprint113–Sprint117 source-only attestation/selection/binding readiness. JRN-010 milestones include Sprint55 expected-cash derivation, Sprint64 cash-variance source foundation, Sprint70 durable cash-variance explanation, and Sprint80 scoped reviewer authorization. Earlier work established architecture/governance, bounded POS foundations, authentication/session hardening, and regression-preservation controls.
 
 ## Current lifecycle boundary
 
@@ -77,7 +96,7 @@ Machine-readable authority remains in:
 - `ops/final-shift-close/STATE.json`
 - `ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json`
 
-Current high-level values remain migration #27 `NOT_EXECUTED`, permission provisioning `NONE`, feature `INACTIVE`, deployment `NOT_GRANTED`, preview/production `NOT_AUTHORIZED`, updater `INACTIVE`, durable target selection blocked, and selected target `null`.
+Current high-level values remain migration #27 `NOT_EXECUTED`, permission provisioning `NONE`, feature `INACTIVE`, deployment `NOT_GRANTED`, preview/production `NOT_AUTHORIZED`, updater `INACTIVE`, durable target selection blocked, selected target `null`, runtime allowlist change `NOT_IMPLEMENTED`, and real target-bound capability evidence `NONE`.
 
 ## Sprint description standard
 
