@@ -5,7 +5,6 @@ declare(strict_types=1);
 use App\Application\Pos\FinalShiftCloseDurableRuntimeCapabilityEvidence;
 use App\Application\Pos\FinalShiftCloseFeatureActivationExecutionPlan;
 use App\Application\Pos\FinalShiftCloseFeatureActivationTransportEnvelope;
-use InvalidArgumentException;
 
 require dirname(__DIR__).'/vendor/autoload.php';
 
@@ -22,7 +21,7 @@ function expectRejected(callable $operation, string $needle): void
 {
     try {
         $operation();
-    } catch (InvalidArgumentException $exception) {
+    } catch (\InvalidArgumentException $exception) {
         expectTrue(str_contains($exception->getMessage(), $needle), 'unexpected rejection: '.$exception->getMessage());
         return;
     }
