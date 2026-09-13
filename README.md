@@ -8,14 +8,14 @@ Enterprise-oriented business-management platform built with a Modular Monolith F
 
 ## Current canonical status
 
-The latest closed **engineering** sprint is **Sprint143**.
+The latest closed **engineering** sprint is **Sprint144**.
 
-- Canonical engineering commit: `b307d925400e9707c137f75bcfa3823a182fb84f`
-- Latest engineering PR: #703 — `Sprint143: DB attestation HEAD throttle rejection response hardening`
-- Sprint143 pull-request qualification: **27/27 workflow runs successful** on the exact authorized head
-- Sprint143 Product Owner merge-authority workflow run: `34746609129` successful
-- Sprint143 merge: squash merged with exact-head guard
-- Next engineering position: **Sprint144 bounded discovery**, not yet treated as started or complete
+- Canonical engineering commit: `98840c29c21bcf6b1d81cb2afe21d07eb720e120`
+- Latest engineering PR: #705 — `Sprint144: canonical named-route identity throttle response hardening`
+- Sprint144 pull-request qualification: **28/28 workflow runs successful** on the exact authorized head
+- Sprint144 Product Owner merge-authority workflow run: `34748118905` successful
+- Sprint144 merge: squash merged with exact-head guard
+- Next engineering position: **Sprint145 bounded discovery**, not yet treated as started or complete
 
 For the full current project state, use **[`PROJECT_MANIFEST.md`](PROJECT_MANIFEST.md)** as the canonical human-readable source of truth.
 
@@ -29,10 +29,10 @@ Material canonical progress includes:
 - POS foundations for shift/register opening, sale completion/payment/receipt evidence, and catalog preparation;
 - JRN-010 prerequisite work covering expected cash, immutable sale-to-shift binding, cash variance, explanation/adjudication, maker-checker, and reviewer authorization;
 - Final Shift Close source/readiness work including source-only migration #27 and application/runtime readiness contracts;
-- runtime-binding manifest, database-binding attestation, authorization, token-policy, middleware/controller, delivery-gate, authenticated HTTP, throttle, authentication-order, auth-rejection hardening, HTTP-kernel propagation, throttle-rejection hardening, and HEAD parity qualification;
-- Sprint130–Sprint143 canonical control-plane qualification while production filesystem/database side-effect adapters remain operationally inactive.
+- runtime-binding manifest, database-binding attestation, authorization, token-policy, middleware/controller, delivery-gate, authenticated HTTP, throttle, authentication-order, rejection hardening, HTTP-kernel propagation, throttle-response hardening, HEAD parity, and named-route ownership qualification;
+- Sprint130–Sprint144 canonical control-plane qualification while production filesystem/database side-effect adapters remain operationally inactive.
 
-Sprint143 specifically closes the DB-attestation `HEAD` throttle-rejection hardening gap left after Sprint142. The canonical DB-attestation route remains `GET,HEAD`; auth-before-throttle and `throttle:2,1` remain unchanged. Two authenticated same-IP HEAD requests succeed, while the third remains HTTP `429` with no third synthetic DB identity read and with the same empty-body privacy/security and Laravel rate-limit metadata contract owned by Sprint142.
+Sprint144 specifically narrows throttle-response hardening ownership to **canonical route name + exact method + exact path**. Canonical materialization POST and DB-attestation GET/HEAD continue to receive hardened empty-body HTTP `429` responses with privacy/security and framework rate-limit metadata. Same-path/method noncanonical routes and unresolved route identity remain framework-owned and are not rewritten.
 
 Detailed chronology is in [`CHANGELOG.md`](CHANGELOG.md), current work is in [`TASKS.md`](TASKS.md), and future sequencing is in [`ROADMAP.md`](ROADMAP.md).
 

@@ -3,9 +3,9 @@
 **Product:** oneQay — The Future of Intelligent Business Management
 **Repository owner / attribution:** Lab | zefry
 **Default branch:** `main`
-**Canonical engineering checkpoint:** Sprint143
-**Canonical engineering commit:** `b307d925400e9707c137f75bcfa3823a182fb84f`
-**Latest engineering PR:** #703 — `Sprint143: DB attestation HEAD throttle rejection response hardening`
+**Canonical engineering checkpoint:** Sprint144
+**Canonical engineering commit:** `98840c29c21bcf6b1d81cb2afe21d07eb720e120`
+**Latest engineering PR:** #705 — `Sprint144: canonical named-route identity throttle response hardening`
 **Status date:** 2026-09-13
 
 > This file is the canonical human-readable source of truth for current oneQay project status. README, CHANGELOG, TASKS, and ROADMAP summarize this manifest. Per-sprint documents, contracts, workflows, merged pull requests, and Git history remain the detailed evidence trail.
@@ -14,16 +14,16 @@
 
 oneQay is an actively engineered enterprise business-management platform using a Modular Monolith First architecture with Clean Architecture, DDD, first-class tenant context, deny-by-default authorization, and fail-closed engineering controls.
 
-The repository has progressed through **Sprint143**. The latest engineering chain focuses on Final Shift Close runtime control-plane qualification while deliberately separating source readiness from operational activation.
+The repository has progressed through **Sprint144**. The latest engineering chain focuses on Final Shift Close runtime control-plane qualification while deliberately separating source readiness from operational activation.
 
 ### Canonical state summary
 
 | Area | Current canonical state |
 | --- | --- |
-| Latest closed engineering sprint | Sprint143 |
-| Latest engineering commit | `b307d925400e9707c137f75bcfa3823a182fb84f` |
-| Latest engineering PR | #703, merged |
-| Sprint143 exact-head CI | 27/27 pull-request workflow runs successful |
+| Latest closed engineering sprint | Sprint144 |
+| Latest engineering commit | `98840c29c21bcf6b1d81cb2afe21d07eb720e120` |
+| Latest engineering PR | #705, merged |
+| Sprint144 exact-head CI | 28/28 pull-request workflow runs successful |
 | Architecture | Modular Monolith First, Clean Architecture, DDD |
 | Backend | Laravel / PHP |
 | Frontend | Vue 3 + Inertia + Vite |
@@ -69,37 +69,36 @@ These are source/evidence achievements, not production activation.
 - Sprint139 — authentication-before-throttle hardening so wrong-bearer traffic cannot consume authenticated request budget.
 - Sprint140 — authentication-rejection response hardening with empty-body privacy/security metadata.
 - Sprint141 — registered-route HTTP-kernel propagation of Sprint140 hardened authentication rejection responses.
-- Sprint142 — authenticated throttle-rejection response hardening for owned materialization POST and DB-attestation GET requests, preserving HTTP `429` and Laravel rate-limit metadata.
-- Sprint143 — DB-attestation HEAD throttle-rejection parity hardening, closing the route-owned HEAD surface left outside Sprint142 while preserving the exact `2,1` throttle, GET behavior, and all prior ownership.
+- Sprint142 — authenticated throttle-rejection response hardening for materialization POST and DB-attestation GET, preserving HTTP `429` and Laravel rate-limit metadata.
+- Sprint143 — DB-attestation HEAD throttle-rejection parity hardening.
+- Sprint144 — throttle-response hardening ownership now requires canonical route name plus exact method plus exact path; same-path/method noncanonical routes remain framework-owned.
 
-## 3. Sprint143 closure evidence
+## 3. Sprint144 closure evidence
 
-Sprint143 is closed through engineering PR #703.
+Sprint144 is closed through engineering PR #705.
 
-- Canonical engineering squash commit: `b307d925400e9707c137f75bcfa3823a182fb84f`
-- Parent canonical documentation checkpoint: `cdda490be67ef11cac95cb1449e7de86f176bef6`
-- Exact Sprint143 engineering envelope: five paths
-- Frozen Sprint143 envelope SHA-256: `30df6d628ffa67335dd51275137c022cd461264a137b28b5d9fa623a1d1298ed`
-- Final exact-head engineering SHA before merge: `440a345c99fb9df6e5de3ef717f6f2d967ea26cb`
-- Exact-head pull-request workflows: 27/27 successful
-- Product Owner merge authority workflow run `34746609129`: successful
+- Canonical engineering squash commit: `98840c29c21bcf6b1d81cb2afe21d07eb720e120`
+- Parent canonical documentation checkpoint: `7356081623524acb8218d6933a7104eecea36009`
+- Exact Sprint144 engineering envelope: five paths
+- Frozen Sprint144 envelope SHA-256: `a057418c27d32d2a3c0bb88bf694fb7389304c392d101e04a1d45955805c50ab`
+- Final exact-head engineering SHA before merge: `66883b9c838b76fadaa5cd0c38c84a51a5176b7f`
+- Exact-head pull-request workflows: 28/28 successful
+- Product Owner merge authority workflow run `34748118905`: successful
 - Merge method: squash with exact-head guard
 
-Sprint143 changes only the throttle-response hardener's DB-attestation method ownership from GET-only to GET-or-HEAD. Materialization remains POST-only. The DB-attestation route, token policy, auth-before-throttle ordering, controller, application service, and exact `throttle:2,1` limit are unchanged.
+Sprint144 hardens the global Final Shift Close throttle-response rewriter so response ownership requires the canonical route name in addition to the exact HTTP method and exact internal path. Canonical materialization POST and DB-attestation GET/HEAD retain the established hardened HTTP `429` behavior. Same-path/method noncanonical routes and unresolved route identity remain framework-owned and are not rewritten by the Sprint144 hardener.
 
-The executable Sprint143 regression uses the real registered DB-attestation route and Laravel HTTP kernel with a canonical-valid synthetic bearer, private temporary synthetic manifest, and synthetic database identity reader. The first two same-IP authenticated HEAD requests return HTTP `200` and perform exactly two synthetic reads. The third same-IP HEAD request is rejected by the existing throttle as HTTP `429` before any third read and preserves an empty body, `Cache-Control: no-store, private`, `Pragma: no-cache`, `X-Content-Type-Options: nosniff`, `X-Robots-Tag: noindex, nofollow, noarchive`, plus Laravel rate-limit headers.
-
-Production database identity reader resolution remains forbidden in the Sprint143 regression and the canonical runtime-binding manifest remains untouched. Sprint135 route metadata and Sprint138–Sprint142 executable ownership remain preserved.
+Route registration, auth-before-throttle ordering, token policy, controllers, application services, exact throttle budgets, migration state, runtime target state, and all operational gates remain unchanged. Sprint143 and earlier executable ownership remain preserved.
 
 Detailed evidence:
 
-- `docs/SPRINT143_FINAL_SHIFT_CLOSE_CANONICAL_CONTROL_PLANE_HEAD_THROTTLE_REJECTION_RESPONSE_HARDENING_REGRESSION.md`
-- `ops/final-shift-close/CANONICAL_RUNTIME_CONTROL_PLANE_HEAD_THROTTLE_REJECTION_RESPONSE_HARDENING_REGRESSION_CONTRACT.json`
-- `apps/web/tests/final-shift-close-runtime-control-plane-head-throttle-rejection-response-hardening-regression.php`
+- `docs/SPRINT144_FINAL_SHIFT_CLOSE_CANONICAL_CONTROL_PLANE_NAMED_ROUTE_IDENTITY_THROTTLE_RESPONSE_HARDENING_REGRESSION.md`
+- `ops/final-shift-close/CANONICAL_RUNTIME_CONTROL_PLANE_NAMED_ROUTE_IDENTITY_THROTTLE_RESPONSE_HARDENING_REGRESSION_CONTRACT.json`
+- `apps/web/tests/final-shift-close-runtime-control-plane-named-route-identity-throttle-response-hardening-regression.php`
 
 ## 4. Operational truth — NO-GO remains authoritative
 
-Sprint143 does not grant operational authority. Current machine-readable state remains:
+Sprint144 does not grant operational authority. Current machine-readable state remains:
 
 - migration #27 execution: `NOT_EXECUTED` / `NOT_PERFORMED`;
 - permission provisioning: `NONE`;
@@ -138,11 +137,11 @@ The following must not be described as complete unless separately qualified and 
 
 ## 6. Next engineering position
 
-The next engineering activity is **Sprint144 bounded discovery from canonical post-Sprint143**.
+The next engineering activity is **Sprint145 bounded discovery from canonical post-Sprint144**.
 
-Sprint144 is not considered started or complete merely because it is named here. Bounded discovery must identify the smallest non-duplicative engineering gap, preserve Sprint130–Sprint143 executable ownership, remain fail-closed and deny-by-default, and avoid converting source readiness into operational authority.
+Sprint145 is not considered started or complete merely because it is named here. Bounded discovery must identify the smallest non-duplicative engineering gap, preserve Sprint130–Sprint144 executable ownership, remain fail-closed and deny-by-default, and avoid converting source readiness into operational authority.
 
-No Sprint144 implementation or source envelope is preselected by this manifest.
+No Sprint145 implementation or source envelope is preselected by this manifest.
 
 ## 7. Documentation responsibility model
 
