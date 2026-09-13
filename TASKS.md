@@ -1,7 +1,7 @@
 # oneQay Tasks
 
-**Current engineering checkpoint:** post-Sprint154 reconciliation  
-**Canonical engineering commit:** `5349acbffd1c90087d37a1a0f74ce0ffd7e87773`  
+**Current engineering checkpoint:** post-Sprint154 reconciliation
+**Canonical engineering commit:** `5349acbffd1c90087d37a1a0f74ce0ffd7e87773`
 **Canonical status authority:** `PROJECT_MANIFEST.md`
 
 This file separates completed source engineering, next bounded engineering, and operational actions that remain separately gated.
