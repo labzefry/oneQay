@@ -29,14 +29,17 @@
   "historical_ownership": {
     "sprint146_throttle_budget_identity_response_hardening": "PRESERVED",
     "sprint145_action_identity_throttle_response_hardening": "PRESERVED_TRANSITIVELY",
+    "sprint144_named_route_identity_regression_fixture": "SUCCESSOR_COMPATIBLE_WITH_CANONICAL_REJECTION_METADATA",
+    "sprint143_head_throttle_response_hardening": "PRESERVED_TRANSITIVELY",
     "sprint142_real_http_kernel_throttle_rejection_metadata": "PRESERVED_AS_CANONICAL_FRAMEWORK_SHAPE_EVIDENCE"
   },
   "source_envelope": {
-    "path_count": 5,
-    "sha256": "db14c7f9b8c061a8f67c08c7d6fe6ed7474e0265e66cd35192ccfbf3409c4717",
+    "path_count": 6,
+    "sha256": "ffd176da808eda16fccdf0375fcae2fd5bcc1cfc4b931aca6492ca31eb9b1d40",
     "paths": [
       ".github/workflows/sprint147-final-shift-close-canonical-control-plane-throttle-rejection-metadata-identity-response-hardening-regression.yml",
       "apps/web/app/Delivery/Http/Middleware/HardenFinalShiftCloseRuntimeControlPlaneThrottleResponseMiddleware.php",
+      "apps/web/tests/final-shift-close-runtime-control-plane-named-route-identity-throttle-response-hardening-regression.php",
       "apps/web/tests/final-shift-close-runtime-control-plane-throttle-rejection-metadata-identity-response-hardening-regression.php",
       "docs/SPRINT147_FINAL_SHIFT_CLOSE_CANONICAL_CONTROL_PLANE_THROTTLE_REJECTION_METADATA_IDENTITY_RESPONSE_HARDENING_REGRESSION.md",
       "ops/final-shift-close/CANONICAL_RUNTIME_CONTROL_PLANE_THROTTLE_REJECTION_METADATA_IDENTITY_RESPONSE_HARDENING_REGRESSION_CONTRACT.json"
