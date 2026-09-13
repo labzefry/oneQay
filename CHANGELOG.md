@@ -4,30 +4,38 @@ This changelog records **material canonical progress**, not every intermediate c
 
 Current project-state authority: [`PROJECT_MANIFEST.md`](PROJECT_MANIFEST.md).
 
+## 2026-09-13 — Sprint153 closed
+
+**Sprint153: durable runtime dependency-envelope evidence producer**
+
+- **Purpose / Why:** Sprint150 qualified the full target-bound nine-component dependency envelope and Sprint151 provided deterministic construction, but canonical post-Sprint152 still lacked a trusted protected-environment producer transport for authenticated dependency observations.
+- **Objective / Gap:** materialize a source-only producer requiring canonical `SELECTED_NOT_AUTHORIZED`, exact trusted Sprint149 capability-producer provenance, authenticated HTTPS dependency observations, Sprint151 construction, and Sprint150 final qualification, with no caller-selected target identity.
+- **What changed:** added `.github/workflows/final-shift-close-durable-runtime-dependency-envelope-evidence.yml`, `DURABLE_RUNTIME_DEPENDENCY_ENVELOPE_EVIDENCE_PRODUCER_CONTRACT.json`, downstream producer-source readiness, exact-head Sprint153 regression, and six-section documentation.
+- The producer source is `MATERIALIZED_NOT_DISPATCHED`; producer dispatch remains `NOT_PERFORMED`; real dependency-envelope evidence remains `NONE`.
+- Initial engineering envelope contained five paths, SHA-256 `4d184a18b6d9814474233bda0bf4761e7045ebfb0a8cda5ea56b6b296cef627b`.
+- Exact-head CI run `34767104436` proved Sprint151 still locked the old canonical producer state. The final bounded envelope therefore added only the historical Sprint151 workflow and retained its original extension/provenance while making current canonical state successor-compatible.
+- Engineering PR #724 squash merged.
+- Canonical engineering commit: `e42ea89fca2b3974e7fa9b0a95fa31a901e9840c`.
+- Parent canonical post-Sprint152 reconciliation checkpoint: `fc1efce072abdbb3e06d4ba22d6aaaa169cd447d`.
+- Final exact engineering head: `44a17e4590df58472114aad547dd1cd3087f8e96`.
+- Exact-head pull-request qualification: **38/38 successful**.
+- Repository-native Product Owner merge-authority run `34767471668` successful.
+- Final engineering envelope: six paths; SHA-256 `7269a0e5f8927c2763411d0700b0f456cdcb0781f1d198179966a97a7b934a79`.
+- Post-Sprint153 canonical reconciliation envelope: six paths; SHA-256 `6a0fd4267f940c02d23e95ce4085e89cdf25a52186d95619e1b1da89488dfc46`.
+- **Operational boundaries / NO-GO:** no target persistence, dependency/capability producer dispatch, real dependency/capability evidence, migration execution, permission provisioning, runtime allowlist widening, feature activation, deployment/release, Technical Preview activation, Production activation, or updater activation.
+- **Next position:** Sprint154 bounded discovery from canonical post-Sprint153 after reconciliation is squash merged and verified; no objective or source envelope is preselected.
+
 ## 2026-09-13 — Sprint152 closed
 
-**Sprint152: permission provisioning selected-target database binding**
-
-- **Purpose / Why:** the existing bounded `pos.shift.close` permission executor could use protected DB credentials without proving that those credentials addressed the exact durable runtime selected by the canonical target-selection chain. Sprint118 already provides trusted selected-target DB-binding evidence, so Sprint152 reuses that evidence rather than duplicating its producer.
-- **Objective / Gap:** require exact canonical `SELECTED_NOT_AUTHORIZED` target identity, exact Sprint118 binding run/artifact/status identity, and immediate pre-mutation database identity readback whose canonical SHA-256 matches trusted evidence through `hash_equals()`.
-- **What changed:** hardened `.github/workflows/final-shift-close-permission-provisioning.yml`; added `PERMISSION_PROVISIONING_SELECTED_TARGET_BINDING_CONTRACT.json`; extended downstream readiness; added exact-head Sprint152 regression and six-section documentation.
-- Existing provisioning semantics remain bounded to one existing same-tenant non-protected role, require canonical migration #27 execution evidence in the target DB, preserve the durable policy-mutation journal, and preserve `NO_DEFAULT_GRANT` assignment boundaries.
-- Exact-head CI proved Sprint104 and Sprint116 historical successor assumptions required bounded compatibility corrections; their owned transaction, readiness, security, and NO-GO assertions remain preserved.
-- Engineering PR #722 squash merged.
-- Canonical engineering commit: `c6abc9356ad329c1a2273a71a4a8ca0e50822825`.
-- Parent canonical post-Sprint151 reconciliation checkpoint: `28e5ed8a29f4e4f7d2436f26f87de9341efc3b0d`.
-- Final exact engineering head: `70c30e407271c0e78439143230159f7b1c63f291`.
-- Exact-head pull-request qualification: **38/38 successful**.
-- Repository-native Product Owner merge-authority run `34765603014` successful.
-- Final engineering envelope: seven paths; SHA-256 `7ed9c7cc6da5f03f73fdbd3ef18f4315896b95832331c2c2d5e2fa6bb2151590`.
-- Post-Sprint152 canonical reconciliation envelope: six paths; SHA-256 `bd3613c19baad6d74925a78dd72dcaf8121fbec842ace3e9279beaf8ecf8b971`.
-- **Operational boundaries / NO-GO:** no target persistence, real binding-evidence production, migration execution, permission provisioning, capability/dependency producer dispatch, runtime allowlist widening, feature activation, deployment/release, Technical Preview activation, Production activation, or updater activation.
-- **Next position:** Sprint153 bounded discovery from canonical post-Sprint152 after reconciliation is squash merged and verified; no objective or source envelope is preselected.
+- PR #722 squash merged at engineering commit `c6abc9356ad329c1a2273a71a4a8ca0e50822825`.
+- Hardened permission provisioning with selected-target DB binding, Sprint118 evidence reuse, and immediate pre-mutation DB identity readback.
+- Exact-head qualification: 38/38 successful; Product Owner authority run `34765603014` successful.
+- Engineering envelope SHA-256: `7ed9c7cc6da5f03f73fdbd3ef18f4315896b95832331c2c2d5e2fa6bb2151590`.
 
 ## 2026-09-13 — Sprint151 closed
 
 - PR #720 squash merged at engineering commit `68b8362f326e56cfec478f0275b6d29ed0f54dec`.
-- Added target-bound dependency-envelope evidence construction source foundation.
+- Added target-bound dependency-envelope evidence deterministic construction source foundation.
 - Exact-head qualification: 36/36 successful; Product Owner authority run `34764011476` successful.
 - Engineering envelope SHA-256: `ef000ec9172dcee1f08a6c8ea9149fb957a307e7929eaaa42c5d4b08bad94c54`.
 
@@ -64,7 +72,7 @@ Final Shift Close milestones include Sprint88 source-only migration #27, Sprint8
 
 Machine-readable authority remains in `ops/final-shift-close/STATE.json`, `ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json`, and `ops/final-shift-close/POST_SELECTION_DOWNSTREAM_READINESS.json`.
 
-Current high-level values remain migration #27 `NOT_EXECUTED`, permission selected-target binding source `MATERIALIZED_NOT_DISPATCHED`, real permission binding evidence `NONE`, permission provisioning `NONE`, feature `INACTIVE`, deployment `NOT_GRANTED`, preview/production `NOT_AUTHORIZED`, updater `INACTIVE`, durable target selection blocked, selected target `null`, capability-evidence producer `MATERIALIZED_NOT_DISPATCHED`, real capability evidence `NONE`, dependency-evidence source foundation `MATERIALIZED_SOURCE_ONLY`, dispatchable dependency-evidence producer `NOT_IMPLEMENTED`, real dependency-envelope evidence `NONE`, and runtime allowlist change `NOT_IMPLEMENTED`.
+Current high-level values remain migration #27 `NOT_EXECUTED`, permission selected-target binding source `MATERIALIZED_NOT_DISPATCHED`, real permission binding evidence `NONE`, permission provisioning `NONE`, feature `INACTIVE`, deployment `NOT_GRANTED`, preview/production `NOT_AUTHORIZED`, updater `INACTIVE`, durable target selection blocked, selected target `null`, capability-evidence producer `MATERIALIZED_NOT_DISPATCHED`, capability producer dispatch `NOT_PERFORMED`, real capability evidence `NONE`, dependency-evidence source foundation `MATERIALIZED_SOURCE_ONLY`, dependency-evidence producer `MATERIALIZED_NOT_DISPATCHED`, dependency producer dispatch `NOT_PERFORMED`, real dependency-envelope evidence `NONE`, and runtime allowlist change `NOT_IMPLEMENTED`.
 
 ## Sprint description standard
 
