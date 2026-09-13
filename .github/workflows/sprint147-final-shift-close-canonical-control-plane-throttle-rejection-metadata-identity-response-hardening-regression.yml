@@ -42,12 +42,13 @@ jobs:
           cat > /tmp/expected <<'EOF'
           .github/workflows/sprint147-final-shift-close-canonical-control-plane-throttle-rejection-metadata-identity-response-hardening-regression.yml
           apps/web/app/Delivery/Http/Middleware/HardenFinalShiftCloseRuntimeControlPlaneThrottleResponseMiddleware.php
+          apps/web/tests/final-shift-close-runtime-control-plane-named-route-identity-throttle-response-hardening-regression.php
           apps/web/tests/final-shift-close-runtime-control-plane-throttle-rejection-metadata-identity-response-hardening-regression.php
           docs/SPRINT147_FINAL_SHIFT_CLOSE_CANONICAL_CONTROL_PLANE_THROTTLE_REJECTION_METADATA_IDENTITY_RESPONSE_HARDENING_REGRESSION.md
           ops/final-shift-close/CANONICAL_RUNTIME_CONTROL_PLANE_THROTTLE_REJECTION_METADATA_IDENTITY_RESPONSE_HARDENING_REGRESSION_CONTRACT.json
           EOF
           diff -u /tmp/expected /tmp/actual
-          [[ "$(sha256sum /tmp/actual | awk '{print $1}')" == 'db14c7f9b8c061a8f67c08c7d6fe6ed7474e0265e66cd35192ccfbf3409c4717' ]]
+          [[ "$(sha256sum /tmp/actual | awk '{print $1}')" == 'ffd176da808eda16fccdf0375fcae2fd5bcc1cfc4b931aca6492ca31eb9b1d40' ]]
 
       - name: Preserve Sprint146 successor compatibility
         shell: bash
@@ -88,8 +89,9 @@ jobs:
             .qualification.canonical_db_attestation_get_hardened == true and
             .qualification.canonical_db_attestation_head_hardened == true and
             .historical_ownership.sprint146_throttle_budget_identity_response_hardening == "PRESERVED" and
-            .source_envelope.path_count == 5 and
-            .source_envelope.sha256 == "db14c7f9b8c061a8f67c08c7d6fe6ed7474e0265e66cd35192ccfbf3409c4717" and
+            .historical_ownership.sprint144_named_route_identity_regression_fixture == "SUCCESSOR_COMPATIBLE_WITH_CANONICAL_REJECTION_METADATA" and
+            .source_envelope.path_count == 6 and
+            .source_envelope.sha256 == "ffd176da808eda16fccdf0375fcae2fd5bcc1cfc4b931aca6492ca31eb9b1d40" and
             .attribution == "Author by Lab | zefry"
           ' "$file" >/dev/null
 
@@ -99,6 +101,10 @@ jobs:
           set -euo pipefail
           middleware=apps/web/app/Delivery/Http/Middleware/HardenFinalShiftCloseRuntimeControlPlaneThrottleResponseMiddleware.php
           grep -Fq 'private function hasCanonicalThrottleRejectionMetadata(Response $response, string $expectedThrottleLimit): bool' "$middleware"
+          grep -Fq "headers->has('Retry-After')" "$middleware"
+          grep -Fq "headers->has('X-RateLimit-Limit')" "$middleware"
+          grep -Fq "headers->has('X-RateLimit-Remaining')" "$middleware"
+          grep -Fq "headers->has('X-RateLimit-Reset')" "$middleware"
           grep -Fq "\$response->headers->get('X-RateLimit-Limit') !== \$expectedThrottleLimit" "$middleware"
           grep -Fq "\$response->headers->get('X-RateLimit-Remaining') !== '0'" "$middleware"
           grep -Fq "\$retryAfter = \$response->headers->get('Retry-After');" "$middleware"
@@ -106,6 +112,15 @@ jobs:
           grep -Fq 'ctype_digit($retryAfter)' "$middleware"
           grep -Fq 'ctype_digit($reset)' "$middleware"
           ! grep -Fq "(int) \$response->headers->get('X-RateLimit-Remaining')" "$middleware"
+
+      - name: Prove Sprint144 successor-compatible fixture metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          test=apps/web/tests/final-shift-close-runtime-control-plane-named-route-identity-throttle-response-hardening-regression.php
+          grep -Fq "'X-RateLimit-Remaining' => '0'" "$test"
+          grep -Fq "'X-RateLimit-Reset' => '1999999999'" "$test"
+          grep -Fq "'Retry-After' => '60'" "$test"
 
       - name: Preserve canonical route throttle budgets
         shell: bash
@@ -138,6 +153,7 @@ jobs:
           php -l app/Delivery/Http/Middleware/HardenFinalShiftCloseRuntimeControlPlaneThrottleResponseMiddleware.php
           php -l tests/final-shift-close-runtime-control-plane-throttle-rejection-metadata-identity-response-hardening-regression.php
           php -l tests/final-shift-close-runtime-control-plane-throttle-budget-identity-response-hardening-regression.php
+          php -l tests/final-shift-close-runtime-control-plane-named-route-identity-throttle-response-hardening-regression.php
           php -l tests/final-shift-close-runtime-control-plane-throttle-rejection-response-hardening-regression.php
           composer validate --no-check-publish
           composer install --no-interaction --no-progress --prefer-dist
@@ -150,6 +166,10 @@ jobs:
       - name: Preserve Sprint146 regression
         working-directory: apps/web
         run: php tests/final-shift-close-runtime-control-plane-throttle-budget-identity-response-hardening-regression.php
+
+      - name: Preserve Sprint144 named-route identity regression
+        working-directory: apps/web
+        run: php tests/final-shift-close-runtime-control-plane-named-route-identity-throttle-response-hardening-regression.php
 
       - name: Preserve Sprint142 real HTTP-kernel throttle evidence
         working-directory: apps/web
@@ -166,7 +186,7 @@ jobs:
           grep -Fq '## Evidence / Qualification' "$doc"
           grep -Fq '## Operational boundaries / NO-GO' "$doc"
           grep -Fq '## Next position' "$doc"
-          grep -Fq 'db14c7f9b8c061a8f67c08c7d6fe6ed7474e0265e66cd35192ccfbf3409c4717' "$doc"
+          grep -Fq 'ffd176da808eda16fccdf0375fcae2fd5bcc1cfc4b931aca6492ca31eb9b1d40' "$doc"
           ! grep -Eq '^[[:space:]]*workflow_dispatch[[:space:]]*:' .github/workflows/sprint147-final-shift-close-canonical-control-plane-throttle-rejection-metadata-identity-response-hardening-regression.yml
 
       - name: Verify tracked-source cleanliness
