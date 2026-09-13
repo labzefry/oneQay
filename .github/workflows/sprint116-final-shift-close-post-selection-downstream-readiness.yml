@@ -68,7 +68,22 @@ jobs:
               exit 1
               ;;
           esac
-          test "$(jq -r '.downstream_components.feature_activation.current_eligibility' "$contract")" = 'NOT_ELIGIBLE_EXECUTOR_NOT_IMPLEMENTED'
+          feature_eligibility="$(jq -r '.downstream_components.feature_activation.current_eligibility' "$contract")"
+          case "$feature_eligibility" in
+            NOT_ELIGIBLE_EXECUTOR_NOT_IMPLEMENTED)
+              ;;
+            NOT_ELIGIBLE_DISPATCHABLE_EXECUTOR_AND_TRANSPORT_NOT_IMPLEMENTED)
+              test "$(jq -r '.downstream_components.feature_activation.source_foundation_materialized' "$contract")" = 'true'
+              test "$(jq -r '.downstream_components.feature_activation.dispatchable_executor_materialized' "$contract")" = 'false'
+              test "$(jq -r '.downstream_components.feature_activation.configuration_mutation_transport' "$contract")" = 'NOT_IMPLEMENTED'
+              test "$(jq -r '.canonical_boundaries.activation_executor_source_foundation' "$contract")" = 'MATERIALIZED_SOURCE_ONLY'
+              test "$(jq -r '.canonical_boundaries.feature_activation_executor' "$contract")" = 'NOT_IMPLEMENTED'
+              ;;
+            *)
+              echo "Unexpected feature activation eligibility successor state: $feature_eligibility" >&2
+              exit 1
+              ;;
+          esac
           test "$(jq -r '.downstream_components.runtime_allowlist.current_eligibility' "$contract")" = 'NOT_ELIGIBLE_SELECTED_RUNTIME_NOT_QUALIFIED'
           test "$(jq -r '.source_envelope_sha256' "$contract")" = '6583f7e9e4b1cce966f166c4e650e42e8c106b9c5354e75adceb10ace5688c18'
           test "$(jq -r '.required_target_binding.environment_id' "$contract")" = 'true'
