@@ -1,0 +1,171 @@
+name: Sprint153 Final Shift Close Durable Runtime Dependency Envelope Evidence Producer Regression
+
+# Attribution: Lab | zefry
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint153-durable-runtime-dependency-envelope-evidence-producer-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qualify-dependency-envelope-evidence-producer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHQ=
+      APP_DEBUG: 'false'
+      APP_URL: http://localhost
+      CACHE_STORE: array
+      SESSION_DRIVER: array
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Qualify exact Sprint153 source envelope
+        shell: bash
+        run: |
+          set -euo pipefail
+          base='${{ github.event.pull_request.base.sha }}'
+          head='${{ github.event.pull_request.head.sha }}'
+          expected_hash='7269a0e5f8927c2763411d0700b0f456cdcb0781f1d198179966a97a7b934a79'
+          mapfile -t changed < <(git diff --name-only "$base" "$head" | LC_ALL=C sort)
+          test "${#changed[@]}" -eq 6
+          printf '%s\n' "${changed[@]}" > /tmp/sprint153-paths
+          test "$(sha256sum /tmp/sprint153-paths | awk '{print $1}')" = "$expected_hash"
+          expected=(
+            '.github/workflows/final-shift-close-durable-runtime-dependency-envelope-evidence.yml'
+            '.github/workflows/sprint151-final-shift-close-durable-runtime-dependency-envelope-source-foundation-regression.yml'
+            '.github/workflows/sprint153-final-shift-close-durable-runtime-dependency-envelope-evidence-producer-regression.yml'
+            'docs/SPRINT153_FINAL_SHIFT_CLOSE_DURABLE_RUNTIME_DEPENDENCY_ENVELOPE_EVIDENCE_PRODUCER.md'
+            'ops/final-shift-close/DURABLE_RUNTIME_DEPENDENCY_ENVELOPE_EVIDENCE_PRODUCER_CONTRACT.json'
+            'ops/final-shift-close/POST_SELECTION_DOWNSTREAM_READINESS.json'
+          )
+          printf '%s\n' "${expected[@]}" | LC_ALL=C sort > /tmp/sprint153-expected
+          diff -u /tmp/sprint153-expected /tmp/sprint153-paths
+
+      - name: Validate Sprint153 machine-readable contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=ops/final-shift-close/DURABLE_RUNTIME_DEPENDENCY_ENVELOPE_EVIDENCE_PRODUCER_CONTRACT.json
+          jq -e '
+            .schema_version == 1 and
+            .feature == "final-shift-close" and
+            .sprint == 153 and
+            .contract_state == "MATERIALIZED_SOURCE_ONLY_NOT_DISPATCHED" and
+            .bounded_objective == "DURABLE_RUNTIME_TARGET_BOUND_DEPENDENCY_ENVELOPE_EVIDENCE_PRODUCER" and
+            .producer_workflow_path == ".github/workflows/final-shift-close-durable-runtime-dependency-envelope-evidence.yml" and
+            .source_foundation_path == "apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeDependencyEnvelopeEvidenceProducer.php" and
+            .qualification_source_path == "apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeDependencyEnvelope.php" and
+            .trusted_capability_producer_workflow_path == ".github/workflows/final-shift-close-durable-runtime-capability-evidence.yml" and
+            .required_component_count == 9 and
+            .source_requirements.caller_target_inputs_forbidden == true and
+            .source_requirements.protected_environment_required == true and
+            .source_requirements.exact_successful_trusted_capability_producer_run_required == true and
+            .source_requirements.sprint151_source_foundation_reuse_required == true and
+            .source_requirements.sprint150_final_qualification_required == true and
+            .source_requirements.producer_dispatch_during_sprint153_forbidden == true and
+            .source_envelope.path_count == 6 and
+            .source_envelope.sha256 == "7269a0e5f8927c2763411d0700b0f456cdcb0781f1d198179966a97a7b934a79" and
+            .canonical_boundaries.producer_source == "MATERIALIZED_NOT_DISPATCHED" and
+            .canonical_boundaries.real_dependency_envelope_evidence == "NONE" and
+            .canonical_boundaries.runtime_allowlist_change == "NOT_IMPLEMENTED" and
+            .attribution == "Author by Lab | zefry"
+          ' "$file" >/dev/null
+
+      - name: Prove protected trusted producer source
+        shell: bash
+        run: |
+          set -euo pipefail
+          workflow=.github/workflows/final-shift-close-durable-runtime-dependency-envelope-evidence.yml
+          grep -Fq 'workflow_dispatch:' "$workflow"
+          ! grep -Fq 'inputs:' "$workflow"
+          grep -Fq 'environment: final-shift-close-durable-runtime-dependency-envelope-evidence' "$workflow"
+          grep -Fq 'ONEQAY_DURABLE_RUNTIME_DEPENDENCY_OBSERVATIONS_URL' "$workflow"
+          grep -Fq 'ONEQAY_DURABLE_RUNTIME_DEPENDENCY_OBSERVATIONS_TOKEN' "$workflow"
+          grep -Fq 'ONEQAY_DURABLE_RUNTIME_CAPABILITY_EVIDENCE_RUN_ID' "$workflow"
+          grep -Fq '.github/workflows/final-shift-close-durable-runtime-capability-evidence.yml' "$workflow"
+          grep -Fq 'final-shift-close-durable-runtime-capability-evidence' "$workflow"
+          grep -Fq 'DURABLE_ACTIVATION_TARGET_SELECTION.json' "$workflow"
+          grep -Fq 'SELECTED_NOT_AUTHORIZED' "$workflow"
+          grep -Fq 'FinalShiftCloseDurableRuntimeDependencyEnvelopeEvidenceProducer' "$workflow"
+          grep -Fq 'FinalShiftCloseDurableRuntimeDependencyEnvelope' "$workflow"
+          grep -Fq 'dependency-evidence.json' "$workflow"
+          grep -Fq "'activation_authority_state' => 'NOT_GRANTED'" "$workflow"
+          grep -Fq "'feature_activation_state' => 'INACTIVE'" "$workflow"
+          grep -Fq "'runtime_allowlist_change' => 'NOT_IMPLEMENTED'" "$workflow"
+          grep -Fq 'actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02' "$workflow"
+
+      - name: Preserve Sprint151 construction and Sprint150 qualification
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          composer validate --no-check-publish
+          composer install --no-interaction --no-progress --prefer-dist
+          composer audit --locked --no-interaction --abandoned=report
+          php -l app/Application/Pos/FinalShiftCloseDurableRuntimeDependencyEnvelopeEvidenceProducer.php
+          php -l app/Application/Pos/FinalShiftCloseDurableRuntimeDependencyEnvelope.php
+          php tests/pos-final-shift-close-durable-runtime-dependency-envelope-qualification.php
+          php tests/pos-final-shift-close-durable-runtime-capability-evidence-producer.php
+          grep -Fq 'produced_dependency_evidence_fails_sprint150_qualification' app/Application/Pos/FinalShiftCloseDurableRuntimeDependencyEnvelopeEvidenceProducer.php
+          grep -Fq 'TARGET_BOUND_DEPENDENCY_ENVELOPE_EVIDENCE_PRODUCED_NOT_AUTHORIZED' app/Application/Pos/FinalShiftCloseDurableRuntimeDependencyEnvelopeEvidenceProducer.php
+
+      - name: Preserve downstream and operational NO-GO boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          downstream=ops/final-shift-close/POST_SELECTION_DOWNSTREAM_READINESS.json
+          state=ops/final-shift-close/STATE.json
+          selection=ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+          jq -e '
+            .sprint153_extension.bounded_objective == "DURABLE_RUNTIME_TARGET_BOUND_DEPENDENCY_ENVELOPE_EVIDENCE_PRODUCER" and
+            .sprint153_extension.source_only == true and
+            .sprint153_extension.producer_source == "MATERIALIZED_NOT_DISPATCHED" and
+            .sprint153_extension.producer_dispatch == "NOT_PERFORMED" and
+            .sprint153_extension.real_dependency_envelope_evidence == "NONE" and
+            .sprint153_extension.source_envelope_sha256 == "7269a0e5f8927c2763411d0700b0f456cdcb0781f1d198179966a97a7b934a79" and
+            .canonical_boundaries.dependency_evidence_source_foundation == "MATERIALIZED_SOURCE_ONLY" and
+            .canonical_boundaries.dependency_evidence_producer == "MATERIALIZED_NOT_DISPATCHED" and
+            .canonical_boundaries.dependency_evidence_producer_dispatch == "NOT_PERFORMED" and
+            .canonical_boundaries.real_dependency_envelope_evidence == "NONE" and
+            .canonical_boundaries.runtime_allowlist_change == "NOT_IMPLEMENTED"
+          ' "$downstream" >/dev/null
+          test "$(jq -r '.migration27.state' "$state")" = 'NOT_EXECUTED'
+          test "$(jq -r '.permission_provisioning.state' "$state")" = 'NONE'
+          test "$(jq -r '.feature_activation.state' "$state")" = 'INACTIVE'
+          test "$(jq -r '.deployment_authority' "$state")" = 'NOT_GRANTED'
+          test "$(jq -r '.technical_preview_activation' "$state")" = 'NOT_AUTHORIZED'
+          test "$(jq -r '.production_activation' "$state")" = 'NOT_AUTHORIZED'
+          test "$(jq -r '.updater_activation' "$state")" = 'INACTIVE'
+          test "$(jq -r '.selection_state' "$selection")" = 'BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET'
+          test "$(jq -r '.selected_target' "$selection")" = 'null'
+
+      - name: Preserve Sprint153 documentation boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          doc=docs/SPRINT153_FINAL_SHIFT_CLOSE_DURABLE_RUNTIME_DEPENDENCY_ENVELOPE_EVIDENCE_PRODUCER.md
+          for heading in '## Purpose / Why' '## Objective / Gap' '## What changed' '## Evidence / Qualification' '## Operational boundaries / NO-GO' '## Next position'; do grep -Fq "$heading" "$doc"; done
+          grep -Fq '7269a0e5f8927c2763411d0700b0f456cdcb0781f1d198179966a97a7b934a79' "$doc"
+          grep -Fq 'Real dependency-envelope evidence remains `NONE`' "$doc"
+          grep -Fq 'not dispatched' "$doc"
+          grep -Fq '34767104436' "$doc"
+
+      - name: Verify tracked-source cleanliness
+        run: |
+          git diff --exit-code
+          git diff --cached --exit-code
+
+# Author by Lab | zefry

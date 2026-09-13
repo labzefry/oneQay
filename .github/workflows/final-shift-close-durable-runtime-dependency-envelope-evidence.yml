@@ -1,0 +1,339 @@
+name: Final Shift Close Durable Runtime Dependency Envelope Evidence
+
+# Attribution: Lab | zefry
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+  statuses: write
+
+env:
+  EVIDENCE_STATUS_CONTEXT: final-shift-close-durable-runtime-dependency-envelope-evidence
+  PRODUCER_ENVIRONMENT: final-shift-close-durable-runtime-dependency-envelope-evidence
+  PRODUCER_WORKFLOW_PATH: .github/workflows/final-shift-close-durable-runtime-dependency-envelope-evidence.yml
+  EVIDENCE_ARTIFACT_NAME: final-shift-close-durable-runtime-dependency-envelope-evidence
+  TARGET_SELECTION_FILE: ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+  CAPABILITY_PRODUCER_WORKFLOW_PATH: .github/workflows/final-shift-close-durable-runtime-capability-evidence.yml
+  CAPABILITY_ARTIFACT_NAME: final-shift-close-durable-runtime-capability-evidence
+
+concurrency:
+  group: final-shift-close-durable-runtime-dependency-envelope-evidence
+  cancel-in-progress: false
+
+jobs:
+  produce-target-bound-dependency-envelope-evidence:
+    if: ${{ github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: final-shift-close-durable-runtime-dependency-envelope-evidence
+    env:
+      DEPENDENCY_OBSERVATIONS_URL: ${{ secrets.ONEQAY_DURABLE_RUNTIME_DEPENDENCY_OBSERVATIONS_URL }}
+      DEPENDENCY_OBSERVATIONS_TOKEN: ${{ secrets.ONEQAY_DURABLE_RUNTIME_DEPENDENCY_OBSERVATIONS_TOKEN }}
+      ENVIRONMENT_PROTECTION_ASSERTION: ${{ secrets.ONEQAY_DURABLE_RUNTIME_DEPENDENCY_EVIDENCE_PROTECTION_ASSERTION }}
+      EXPECTED_ENVIRONMENT_ID: ${{ vars.ONEQAY_DURABLE_RUNTIME_ENVIRONMENT_ID }}
+      EXPECTED_RUNTIME_CLASS: ${{ vars.ONEQAY_DURABLE_RUNTIME_CLASS }}
+      CAPABILITY_RUN_ID: ${{ vars.ONEQAY_DURABLE_RUNTIME_CAPABILITY_EVIDENCE_RUN_ID }}
+      CAPABILITY_RUN_ATTEMPT: ${{ vars.ONEQAY_DURABLE_RUNTIME_CAPABILITY_EVIDENCE_RUN_ATTEMPT }}
+
+    steps:
+      - name: Checkout canonical producer source only
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+
+      - name: Validate canonical source protected environment and persisted target
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          API_URL: ${{ github.api_url }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          [[ "$GITHUB_REF" == 'refs/heads/main' ]]
+          [[ "$GITHUB_REPOSITORY" == 'labzefry/oneQay' ]]
+          [[ "$DEPENDENCY_OBSERVATIONS_URL" =~ ^https://[^[:space:]]+$ ]]
+          [[ -n "$DEPENDENCY_OBSERVATIONS_TOKEN" ]]
+          [[ "$ENVIRONMENT_PROTECTION_ASSERTION" == 'REVIEW_GATED_V1' ]]
+          [[ "$EXPECTED_ENVIRONMENT_ID" =~ ^[a-z0-9][a-z0-9._:-]{7,127}$ ]]
+          [[ "$EXPECTED_RUNTIME_CLASS" =~ ^[a-z0-9][a-z0-9._:-]{7,127}$ ]]
+          [[ "$CAPABILITY_RUN_ID" =~ ^[1-9][0-9]*$ ]]
+          [[ "$CAPABILITY_RUN_ATTEMPT" =~ ^[1-9][0-9]*$ ]]
+
+          main_sha="$(curl --fail-with-body --silent --show-error \
+            --header 'Accept: application/vnd.github+json' \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header 'X-GitHub-Api-Version: 2022-11-28' \
+            "$API_URL/repos/$REPOSITORY/branches/main" | jq -r '.commit.sha')"
+          [[ "$main_sha" == "$GITHUB_SHA" ]]
+
+          jq -e '.schema_version == 1 and .feature == "final-shift-close"' "$TARGET_SELECTION_FILE" >/dev/null
+          [[ "$(jq -r '.selection_state' "$TARGET_SELECTION_FILE")" == 'SELECTED_NOT_AUTHORIZED' ]]
+          [[ "$(jq -r '.selected_target | type' "$TARGET_SELECTION_FILE")" == 'object' ]]
+          [[ "$(jq -r '.selected_target.environment_id' "$TARGET_SELECTION_FILE")" == "$EXPECTED_ENVIRONMENT_ID" ]]
+          [[ "$(jq -r '.selected_target.runtime_class' "$TARGET_SELECTION_FILE")" == "$EXPECTED_RUNTIME_CLASS" ]]
+
+      - name: Resolve exact trusted capability evidence artifact
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          API_URL: ${{ github.api_url }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          api() {
+            curl --fail-with-body --silent --show-error \
+              --header 'Accept: application/vnd.github+json' \
+              --header "Authorization: Bearer $GH_TOKEN" \
+              --header 'X-GitHub-Api-Version: 2022-11-28' \
+              "$1"
+          }
+
+          run="$(api "$API_URL/repos/$REPOSITORY/actions/runs/$CAPABILITY_RUN_ID")"
+          [[ "$(jq -r '.path' <<<"$run")" == "$CAPABILITY_PRODUCER_WORKFLOW_PATH" ]]
+          [[ "$(jq -r '.event' <<<"$run")" == 'workflow_dispatch' ]]
+          [[ "$(jq -r '.head_branch' <<<"$run")" == 'main' ]]
+          [[ "$(jq -r '.status' <<<"$run")" == 'completed' ]]
+          [[ "$(jq -r '.conclusion' <<<"$run")" == 'success' ]]
+          [[ "$(jq -r '.run_attempt' <<<"$run")" == "$CAPABILITY_RUN_ATTEMPT" ]]
+          capability_head="$(jq -r '.head_sha' <<<"$run")"
+          [[ "$capability_head" =~ ^[0-9a-f]{40}$ ]]
+
+          compare="$(api "$API_URL/repos/$REPOSITORY/compare/$capability_head...$GITHUB_SHA")"
+          status="$(jq -r '.status' <<<"$compare")"
+          behind="$(jq -r '.behind_by' <<<"$compare")"
+          [[ "$status" == 'ahead' || "$status" == 'identical' ]]
+          [[ "$behind" == '0' ]]
+
+          artifacts="$(api "$API_URL/repos/$REPOSITORY/actions/runs/$CAPABILITY_RUN_ID/artifacts?per_page=100")"
+          matches="$(jq --arg name "$CAPABILITY_ARTIFACT_NAME" '[.artifacts[] | select(.name == $name and .expired == false)]' <<<"$artifacts")"
+          [[ "$(jq 'length' <<<"$matches")" == '1' ]]
+          artifact_id="$(jq -r '.[0].id' <<<"$matches")"
+          artifact_size="$(jq -r '.[0].size_in_bytes' <<<"$matches")"
+          [[ "$artifact_id" =~ ^[1-9][0-9]*$ ]]
+          (( artifact_size > 0 && artifact_size <= 262144 ))
+
+          curl --fail-with-body --silent --show-error --location \
+            --header 'Accept: application/vnd.github+json' \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header 'X-GitHub-Api-Version: 2022-11-28' \
+            "$API_URL/repos/$REPOSITORY/actions/artifacts/$artifact_id/zip" \
+            --output /tmp/capability-evidence.zip
+          (( $(wc -c < /tmp/capability-evidence.zip) <= 262144 ))
+          unzip -Z1 /tmp/capability-evidence.zip | LC_ALL=C sort > /tmp/capability-entries
+          cat > /tmp/capability-expected-entries <<'EOF'
+          attestation.json
+          evidence.json
+          producer.json
+          EOF
+          diff -u /tmp/capability-expected-entries /tmp/capability-entries
+          mkdir /tmp/capability-evidence
+          unzip -qq /tmp/capability-evidence.zip -d /tmp/capability-evidence
+
+          for f in attestation.json evidence.json producer.json; do
+            (( $(wc -c < "/tmp/capability-evidence/$f") > 1 ))
+            (( $(wc -c < "/tmp/capability-evidence/$f") <= 32768 ))
+            jq -e 'type == "object"' "/tmp/capability-evidence/$f" >/dev/null
+          done
+
+          producer=/tmp/capability-evidence/producer.json
+          [[ "$(jq -r '.schema_version' "$producer")" == '1' ]]
+          [[ "$(jq -r '.feature' "$producer")" == 'final-shift-close' ]]
+          [[ "$(jq -r '.producer_repository' "$producer")" == 'labzefry/oneQay' ]]
+          [[ "$(jq -r '.producer_workflow_path' "$producer")" == "$CAPABILITY_PRODUCER_WORKFLOW_PATH" ]]
+          [[ "$(jq -r '.producer_environment' "$producer")" == 'final-shift-close-durable-runtime-capability-evidence' ]]
+          [[ "$(jq -r '.producer_source_commit' "$producer")" == "$capability_head" ]]
+          [[ "$(jq -r '.producer_run_id' "$producer")" == "$CAPABILITY_RUN_ID" ]]
+          [[ "$(jq -r '.producer_run_attempt' "$producer")" == "$CAPABILITY_RUN_ATTEMPT" ]]
+          [[ "$(jq -r '.producer_fingerprint_sha256' "$producer")" =~ ^[0-9a-f]{64}$ ]]
+          [[ "$(jq -r '.activation_authority_state' "$producer")" == 'NOT_GRANTED' ]]
+          [[ "$(jq -r '.feature_activation_state' "$producer")" == 'INACTIVE' ]]
+          [[ "$(jq -r '.runtime_allowlist_change' "$producer")" == 'NOT_IMPLEMENTED' ]]
+          [[ "$(jq -r '.secrets_embedded' "$producer")" == 'false' ]]
+
+      - name: Fetch authenticated target-bound dependency observations
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          curl \
+            --proto '=https' \
+            --tlsv1.2 \
+            --connect-timeout 5 \
+            --max-time 20 \
+            --fail-with-body \
+            --silent \
+            --show-error \
+            --header 'Accept: application/json' \
+            --header "Authorization: Bearer $DEPENDENCY_OBSERVATIONS_TOKEN" \
+            "$DEPENDENCY_OBSERVATIONS_URL" > /tmp/dependency-observations-input.json
+          bytes="$(wc -c < /tmp/dependency-observations-input.json)"
+          (( bytes > 1 && bytes <= 131072 ))
+          jq -e '
+            type == "object" and
+            (.observations | type == "object") and
+            (.secrets_embedded == false)
+          ' /tmp/dependency-observations-input.json >/dev/null
+
+      - name: Produce and qualify exact target-bound dependency envelope evidence
+        id: evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/final-shift-close-dependency-evidence
+          TARGET_SELECTION_FILE="$TARGET_SELECTION_FILE" \
+          CAPABILITY_ATTESTATION_FILE=/tmp/capability-evidence/attestation.json \
+          CAPABILITY_EVIDENCE_FILE=/tmp/capability-evidence/evidence.json \
+          CAPABILITY_PRODUCER_FILE=/tmp/capability-evidence/producer.json \
+          OBSERVATIONS_INPUT_FILE=/tmp/dependency-observations-input.json \
+          OUTPUT_DIR=/tmp/final-shift-close-dependency-evidence \
+          PRODUCER_SOURCE_COMMIT="$GITHUB_SHA" \
+          PRODUCER_RUN_ID="$GITHUB_RUN_ID" \
+          PRODUCER_RUN_ATTEMPT="$GITHUB_RUN_ATTEMPT" \
+          CAPABILITY_RUN_ID="$CAPABILITY_RUN_ID" \
+          CAPABILITY_RUN_ATTEMPT="$CAPABILITY_RUN_ATTEMPT" \
+          php <<'PHP'
+          <?php
+          declare(strict_types=1);
+
+          require __DIR__.'/apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeReadiness.php';
+          require __DIR__.'/apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeTargetSelection.php';
+          require __DIR__.'/apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeCapabilityEvidence.php';
+          require __DIR__.'/apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeDependencyEnvelope.php';
+          require __DIR__.'/apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeDependencyEnvelopeEvidenceProducer.php';
+
+          use App\Application\Pos\FinalShiftCloseDurableRuntimeCapabilityEvidence;
+          use App\Application\Pos\FinalShiftCloseDurableRuntimeDependencyEnvelope;
+          use App\Application\Pos\FinalShiftCloseDurableRuntimeDependencyEnvelopeEvidenceProducer;
+          use App\Application\Pos\FinalShiftCloseDurableRuntimeReadiness;
+          use App\Application\Pos\FinalShiftCloseDurableRuntimeTargetSelection;
+
+          $readJson = static function (string $path): array {
+              $raw = file_get_contents($path);
+              if ($raw === false) {
+                  throw new RuntimeException('Required producer input cannot be read.');
+              }
+              $decoded = json_decode($raw, true, 64, JSON_THROW_ON_ERROR);
+              if (!is_array($decoded)) {
+                  throw new RuntimeException('Required producer input must decode to an object.');
+              }
+              return $decoded;
+          };
+
+          $persisted = $readJson((string) getenv('TARGET_SELECTION_FILE'));
+          $attestation = $readJson((string) getenv('CAPABILITY_ATTESTATION_FILE'));
+          $capabilityEvidence = $readJson((string) getenv('CAPABILITY_EVIDENCE_FILE'));
+          $capabilityProducer = $readJson((string) getenv('CAPABILITY_PRODUCER_FILE'));
+          $input = $readJson((string) getenv('OBSERVATIONS_INPUT_FILE'));
+          $observations = is_array($input['observations'] ?? null) ? $input['observations'] : [];
+
+          $readiness = new FinalShiftCloseDurableRuntimeReadiness();
+          $selector = new FinalShiftCloseDurableRuntimeTargetSelection($readiness);
+          $capabilityQualifier = new FinalShiftCloseDurableRuntimeCapabilityEvidence($readiness, $selector);
+          $dependencyQualifier = new FinalShiftCloseDurableRuntimeDependencyEnvelope($capabilityQualifier);
+          $producer = new FinalShiftCloseDurableRuntimeDependencyEnvelopeEvidenceProducer($dependencyQualifier, $capabilityQualifier);
+          $selection = $selector->select($attestation);
+
+          if (($persisted['selection_state'] ?? null) !== FinalShiftCloseDurableRuntimeTargetSelection::SELECTION_STATE) {
+              throw new RuntimeException('Persisted target is not SELECTED_NOT_AUTHORIZED.');
+          }
+          if (($persisted['selection_fingerprint_sha256'] ?? null) !== ($selection['selection_fingerprint_sha256'] ?? null)) {
+              throw new RuntimeException('Persisted selection fingerprint does not match recomputed Sprint111 identity.');
+          }
+          $persistedTarget = is_array($persisted['selected_target'] ?? null) ? $persisted['selected_target'] : [];
+          $selectedTarget = is_array($selection['selected_target'] ?? null) ? $selection['selected_target'] : [];
+          foreach (['environment_id','runtime_class','exact_running_source_commit','exact_running_artifact_sha256','readiness_attestation_sha256'] as $field) {
+              if (($persistedTarget[$field] ?? null) !== ($selectedTarget[$field] ?? null)) {
+                  throw new RuntimeException('Persisted selected target does not match recomputed Sprint111 identity: '.$field);
+              }
+          }
+
+          $package = $producer->produce($selection, $attestation, $capabilityEvidence, $observations);
+          $evidence = $package['evidence'];
+          $qualification = $package['qualification'];
+          $producerRecord = [
+              'schema_version' => 1,
+              'feature' => 'final-shift-close',
+              'producer_state' => $package['producer_state'],
+              'producer_repository' => 'labzefry/oneQay',
+              'producer_workflow_path' => '.github/workflows/final-shift-close-durable-runtime-dependency-envelope-evidence.yml',
+              'producer_environment' => 'final-shift-close-durable-runtime-dependency-envelope-evidence',
+              'producer_source_commit' => getenv('PRODUCER_SOURCE_COMMIT'),
+              'producer_run_id' => (int) getenv('PRODUCER_RUN_ID'),
+              'producer_run_attempt' => (int) getenv('PRODUCER_RUN_ATTEMPT'),
+              'source_foundation_path' => 'apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeDependencyEnvelopeEvidenceProducer.php',
+              'qualification_source_path' => 'apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeDependencyEnvelope.php',
+              'capability_producer' => [
+                  'workflow_path' => '.github/workflows/final-shift-close-durable-runtime-capability-evidence.yml',
+                  'run_id' => (int) getenv('CAPABILITY_RUN_ID'),
+                  'run_attempt' => (int) getenv('CAPABILITY_RUN_ATTEMPT'),
+                  'source_commit' => $capabilityProducer['producer_source_commit'] ?? null,
+                  'producer_fingerprint_sha256' => $capabilityProducer['producer_fingerprint_sha256'] ?? null,
+              ],
+              'environment_id' => $qualification['environment_id'],
+              'runtime_class' => $qualification['runtime_class'],
+              'target_binding_sha256' => $qualification['target_binding_sha256'],
+              'capability_evidence_bundle_sha256' => $qualification['capability_evidence_bundle_sha256'],
+              'dependency_envelope_sha256' => $qualification['dependency_envelope_sha256'],
+              'producer_fingerprint_sha256' => $package['producer_fingerprint_sha256'],
+              'activation_authority_state' => 'NOT_GRANTED',
+              'feature_activation_state' => 'INACTIVE',
+              'runtime_allowlist_change' => 'NOT_IMPLEMENTED',
+              'secrets_embedded' => false,
+          ];
+
+          $outputDir = (string) getenv('OUTPUT_DIR');
+          $write = static function (string $name, array $value) use ($outputDir): void {
+              file_put_contents($outputDir.'/'.$name, json_encode($value, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR)."\n", LOCK_EX);
+          };
+          $write('attestation.json', $attestation);
+          $write('capability-evidence.json', $capabilityEvidence);
+          $write('dependency-evidence.json', $evidence);
+          $write('qualification.json', $qualification);
+          $write('producer.json', $producerRecord);
+          PHP
+
+          for f in attestation.json capability-evidence.json dependency-evidence.json qualification.json producer.json; do
+            jq -e 'type == "object"' "/tmp/final-shift-close-dependency-evidence/$f" >/dev/null
+            (( $(wc -c < "/tmp/final-shift-close-dependency-evidence/$f") <= 65536 ))
+            ! grep -Fq "$DEPENDENCY_OBSERVATIONS_TOKEN" "/tmp/final-shift-close-dependency-evidence/$f"
+          done
+          echo "running_source=$(jq -r '.exact_running_source_commit' /tmp/final-shift-close-dependency-evidence/attestation.json)" >> "$GITHUB_OUTPUT"
+
+      - name: Publish pending dependency evidence status
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          API_URL: ${{ github.api_url }}
+          REPOSITORY: ${{ github.repository }}
+          RUNNING_SOURCE: ${{ steps.evidence.outputs.running_source }}
+        run: |
+          set -euo pipefail
+          [[ "$RUNNING_SOURCE" =~ ^[0-9a-f]{40}$ ]]
+          payload="$(jq -n --arg state pending --arg context "$EVIDENCE_STATUS_CONTEXT" --arg description 'Target-bound dependency envelope evidence is being published' --arg target_url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" '{state:$state,context:$context,description:$description,target_url:$target_url}')"
+          curl --fail-with-body --silent --show-error --request POST --header 'Accept: application/vnd.github+json' --header "Authorization: Bearer $GH_TOKEN" --header 'X-GitHub-Api-Version: 2022-11-28' "$API_URL/repos/$REPOSITORY/statuses/$RUNNING_SOURCE" --data "$payload" >/dev/null
+
+      - name: Upload trusted target-bound dependency evidence bundle
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: final-shift-close-durable-runtime-dependency-envelope-evidence
+          path: /tmp/final-shift-close-dependency-evidence
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Publish success dependency evidence status
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          API_URL: ${{ github.api_url }}
+          REPOSITORY: ${{ github.repository }}
+          RUNNING_SOURCE: ${{ steps.evidence.outputs.running_source }}
+        run: |
+          set -euo pipefail
+          payload="$(jq -n --arg state success --arg context "$EVIDENCE_STATUS_CONTEXT" --arg description 'Target-bound dependency envelope evidence verified and published' --arg target_url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" '{state:$state,context:$context,description:$description,target_url:$target_url}')"
+          curl --fail-with-body --silent --show-error --request POST --header 'Accept: application/vnd.github+json' --header "Authorization: Bearer $GH_TOKEN" --header 'X-GitHub-Api-Version: 2022-11-28' "$API_URL/repos/$REPOSITORY/statuses/$RUNNING_SOURCE" --data "$payload" >/dev/null
+
+# Author by Lab | zefry
