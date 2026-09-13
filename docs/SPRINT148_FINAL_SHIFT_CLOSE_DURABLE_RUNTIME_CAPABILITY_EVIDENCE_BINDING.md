@@ -34,29 +34,32 @@ Missing capability evidence, malformed digests, generic/incorrect evidence kinds
 - Added an executable Sprint148 regression covering the canonical qualification path and fail-closed cases for missing evidence, malformed digest, wrong evidence kind, wrong target binding, target identity drift, secret-bearing evidence, unqualified readiness, selection fingerprint drift, and authority drift.
 - Added `DURABLE_RUNTIME_CAPABILITY_EVIDENCE_BINDING_CONTRACT.json` as the machine-readable Sprint148 contract.
 - Extended `POST_SELECTION_DOWNSTREAM_READINESS.json` so future runtime-allowlist eligibility explicitly requires target-bound capability-evidence identity qualification before the full durable runtime envelope can qualify.
-- Added an active exact-head Sprint148 workflow that owns the six-path engineering envelope, validates the new contract/integration, preserves Sprint110/Sprint111 historical behavior, executes the regression, and reasserts canonical operational NO-GO state.
+- Added an active exact-head Sprint148 workflow that owns the bounded engineering envelope, validates the new contract/integration, preserves Sprint110/Sprint111 historical behavior, executes the regression, and reasserts canonical operational NO-GO state.
+- Initial exact-head CI proved that historical Sprint116 still locked every successor PR to its original three-path envelope when `POST_SELECTION_DOWNSTREAM_READINESS.json` evolved. Sprint148 therefore converted only the Sprint116 workflow to a successor-compatible historical regression while preserving its owned post-selection/NO-GO invariants.
 - No runtime class was enabled and no real capability-evidence producer was materialized or dispatched.
 
 ## Evidence / Qualification
 
-Sprint148 is CI-only bounded source engineering. Its exact six-path source envelope is:
+Sprint148 is CI-only bounded source engineering. The initially frozen six-path envelope was expanded by exactly one historical workflow after exact-head CI proved a real successor-compatibility conflict. The final seven-path source envelope is:
 
-1. `.github/workflows/sprint148-final-shift-close-durable-runtime-capability-evidence-binding-regression.yml`
-2. `apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeCapabilityEvidence.php`
-3. `apps/web/tests/pos-final-shift-close-durable-runtime-capability-evidence-binding.php`
-4. `docs/SPRINT148_FINAL_SHIFT_CLOSE_DURABLE_RUNTIME_CAPABILITY_EVIDENCE_BINDING.md`
-5. `ops/final-shift-close/DURABLE_RUNTIME_CAPABILITY_EVIDENCE_BINDING_CONTRACT.json`
-6. `ops/final-shift-close/POST_SELECTION_DOWNSTREAM_READINESS.json`
+1. `.github/workflows/sprint116-final-shift-close-post-selection-downstream-readiness.yml`
+2. `.github/workflows/sprint148-final-shift-close-durable-runtime-capability-evidence-binding-regression.yml`
+3. `apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeCapabilityEvidence.php`
+4. `apps/web/tests/pos-final-shift-close-durable-runtime-capability-evidence-binding.php`
+5. `docs/SPRINT148_FINAL_SHIFT_CLOSE_DURABLE_RUNTIME_CAPABILITY_EVIDENCE_BINDING.md`
+6. `ops/final-shift-close/DURABLE_RUNTIME_CAPABILITY_EVIDENCE_BINDING_CONTRACT.json`
+7. `ops/final-shift-close/POST_SELECTION_DOWNSTREAM_READINESS.json`
 
-Frozen sorted newline-terminated envelope SHA-256:
+Frozen sorted newline-terminated final envelope SHA-256:
 
-`57ba389d323f4c2be1e37708fa86324f2731acda53ae3f7b7133d806f0f3c895`
+`f7d9cfb173b54ac863cc70f10b9ae3df2f6715a4abdae0c7c32cbdb399bda5a6`
 
 Qualification requires:
 
-- exact-head checkout and exact six-path envelope lock;
+- exact-head checkout and exact seven-path envelope lock;
 - machine-readable Sprint148 contract validation;
 - post-selection readiness integration validation;
+- Sprint116 successor-compatible historical regression preservation;
 - executable Sprint148 target-bound capability-evidence regression;
 - Sprint110 durable-runtime readiness regression preservation;
 - Sprint111 durable-runtime target-selection regression preservation;
