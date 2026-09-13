@@ -1,0 +1,88 @@
+{
+  "schema_version": 1,
+  "feature": "final-shift-close",
+  "sprint": 148,
+  "contract_state": "MATERIALIZED_SOURCE_ONLY",
+  "bounded_objective": "DURABLE_RUNTIME_TARGET_BOUND_CAPABILITY_EVIDENCE_IDENTITY_BINDING",
+  "purpose": "REQUIRE_CAPABILITY_SPECIFIC_EVIDENCE_IDENTITY_BOUND_TO_THE_EXACT_SPRINT111_DURABLE_TARGET_BEFORE_ANY_FUTURE_RUNTIME_ALLOWLIST_ELIGIBILITY",
+  "qualification": {
+    "sprint110_readiness_attestation_must_remain_qualified": true,
+    "sprint111_selection_identity_must_recompute_exactly": true,
+    "required_selection_state": "SELECTED_NOT_AUTHORIZED",
+    "required_activation_authority_state": "NOT_GRANTED",
+    "required_feature_activation_state": "INACTIVE",
+    "required_runtime_allowlist_change": "NOT_IMPLEMENTED",
+    "target_binding_fields": [
+      "feature",
+      "selection_state",
+      "environment_id",
+      "runtime_class",
+      "exact_running_source_commit",
+      "exact_running_artifact_sha256",
+      "readiness_attestation_sha256",
+      "selection_fingerprint_sha256"
+    ],
+    "target_binding_algorithm": "SHA256_PIPE_DELIMITED_CANONICAL_TARGET_IDENTITY_V1",
+    "required_capability_evidence": {
+      "authenticated_configuration_mutation_channel": "AUTHENTICATED_CONFIGURATION_CHANNEL_IDENTITY_EVIDENCE",
+      "read_before_write_read_after": "READ_BEFORE_WRITE_READ_AFTER_VERIFICATION_EVIDENCE",
+      "non_mutating_health_attestation": "NON_MUTATING_HEALTH_ATTESTATION_EVIDENCE",
+      "verified_flag_rollback": "VERIFIED_FLAG_ROLLBACK_EVIDENCE"
+    },
+    "each_capability_state_must_equal": "VERIFIED",
+    "each_capability_evidence_sha256_must_be_lowercase_hex64": true,
+    "each_capability_must_bind_exact_target_binding_sha256": true,
+    "evidence_bundle_fingerprint_key_order_independent": true,
+    "evidence_and_capability_records_must_be_secret_free": true,
+    "raw_sprint110_boolean_capability_claims_are_not_target_bound_evidence": true,
+    "qualification_does_not_grant_activation_authority": true,
+    "qualification_does_not_change_runtime_allowlist": true,
+    "qualification_does_not_execute_operational_actions": true
+  },
+  "post_selection_integration": {
+    "contract_path": "ops/final-shift-close/POST_SELECTION_DOWNSTREAM_READINESS.json",
+    "runtime_allowlist_requires_target_bound_capability_evidence_identity": true,
+    "real_capability_evidence_present": false,
+    "future_trusted_evidence_producer_required": true,
+    "future_operational_execution_requires_separate_authority": true
+  },
+  "historical_ownership": {
+    "sprint110_durable_runtime_readiness_shape": "PRESERVED",
+    "sprint111_durable_runtime_target_selection_identity": "PRESERVED",
+    "sprint113_attestation_producer_source_only_boundary": "PRESERVED",
+    "sprint114_trusted_ingestion_executor_source_only_boundary": "PRESERVED",
+    "sprint117_selected_target_database_binding_boundary": "PRESERVED"
+  },
+  "source_envelope": {
+    "path_count": 6,
+    "sorted_newline_terminated": true,
+    "sha256": "57ba389d323f4c2be1e37708fa86324f2731acda53ae3f7b7133d806f0f3c895",
+    "paths": [
+      ".github/workflows/sprint148-final-shift-close-durable-runtime-capability-evidence-binding-regression.yml",
+      "apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeCapabilityEvidence.php",
+      "apps/web/tests/pos-final-shift-close-durable-runtime-capability-evidence-binding.php",
+      "docs/SPRINT148_FINAL_SHIFT_CLOSE_DURABLE_RUNTIME_CAPABILITY_EVIDENCE_BINDING.md",
+      "ops/final-shift-close/DURABLE_RUNTIME_CAPABILITY_EVIDENCE_BINDING_CONTRACT.json",
+      "ops/final-shift-close/POST_SELECTION_DOWNSTREAM_READINESS.json"
+    ]
+  },
+  "canonical_boundaries": {
+    "real_capability_evidence": "NONE",
+    "trusted_capability_evidence_producer": "NOT_IMPLEMENTED",
+    "producer_dispatch": "NOT_PERFORMED",
+    "real_attestation": "NONE",
+    "ingestion_dispatch": "NOT_PERFORMED",
+    "selection_persistence_execution": "NOT_PERFORMED",
+    "selected_target": "NONE",
+    "migration27_execution": "NOT_PERFORMED",
+    "permission_provisioning": "NONE",
+    "runtime_allowlist_change": "NOT_IMPLEMENTED",
+    "feature_activation_executor": "NOT_IMPLEMENTED",
+    "feature_activation": "INACTIVE",
+    "deployment_authority": "NOT_GRANTED",
+    "technical_preview_activation": "NOT_AUTHORIZED",
+    "production_activation": "NOT_AUTHORIZED",
+    "updater_activation": "INACTIVE"
+  },
+  "attribution": "Author by Lab | zefry"
+}
