@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "feature": "final-shift-close",
+  "sprint": 147,
+  "bounded_objective": "CANONICAL_CONTROL_PLANE_THROTTLE_REJECTION_METADATA_IDENTITY_RESPONSE_HARDENING_REGRESSION",
+  "execution": "CI_ONLY_SYNTHETIC_THROTTLE_REJECTION_METADATA_IDENTITY_REGRESSION",
+  "qualification": {
+    "ownership_signal": "ROUTE_NAME_PLUS_ACTION_PLUS_METHOD_PLUS_PATH_PLUS_EXACT_CANONICAL_THROTTLE_LIMIT_PLUS_CANONICAL_REJECTION_METADATA_SHAPE",
+    "materialization_canonical_throttle_limit": "1",
+    "db_attestation_canonical_throttle_limit": "2",
+    "remaining_exact_string": "0",
+    "retry_after_required": true,
+    "retry_after_non_empty_decimal_required": true,
+    "reset_required": true,
+    "reset_non_empty_decimal_required": true,
+    "missing_remaining_framework_owned": true,
+    "nonzero_remaining_framework_owned": true,
+    "numeric_alias_remaining_framework_owned": true,
+    "missing_retry_after_framework_owned": true,
+    "empty_retry_after_framework_owned": true,
+    "nondigit_retry_after_framework_owned": true,
+    "missing_reset_framework_owned": true,
+    "empty_reset_framework_owned": true,
+    "nondigit_reset_framework_owned": true,
+    "canonical_materialization_post_hardened": true,
+    "canonical_db_attestation_get_hardened": true,
+    "canonical_db_attestation_head_hardened": true
+  },
+  "historical_ownership": {
+    "sprint146_throttle_budget_identity_response_hardening": "PRESERVED",
+    "sprint145_action_identity_throttle_response_hardening": "PRESERVED_TRANSITIVELY",
+    "sprint142_real_http_kernel_throttle_rejection_metadata": "PRESERVED_AS_CANONICAL_FRAMEWORK_SHAPE_EVIDENCE"
+  },
+  "source_envelope": {
+    "path_count": 5,
+    "sha256": "db14c7f9b8c061a8f67c08c7d6fe6ed7474e0265e66cd35192ccfbf3409c4717",
+    "paths": [
+      ".github/workflows/sprint147-final-shift-close-canonical-control-plane-throttle-rejection-metadata-identity-response-hardening-regression.yml",
+      "apps/web/app/Delivery/Http/Middleware/HardenFinalShiftCloseRuntimeControlPlaneThrottleResponseMiddleware.php",
+      "apps/web/tests/final-shift-close-runtime-control-plane-throttle-rejection-metadata-identity-response-hardening-regression.php",
+      "docs/SPRINT147_FINAL_SHIFT_CLOSE_CANONICAL_CONTROL_PLANE_THROTTLE_REJECTION_METADATA_IDENTITY_RESPONSE_HARDENING_REGRESSION.md",
+      "ops/final-shift-close/CANONICAL_RUNTIME_CONTROL_PLANE_THROTTLE_REJECTION_METADATA_IDENTITY_RESPONSE_HARDENING_REGRESSION_CONTRACT.json"
+    ]
+  },
+  "operational_actions": {
+    "migration27_execution": false,
+    "permission_provisioning": false,
+    "feature_activation": false,
+    "runtime_token_provisioning": false,
+    "durable_target_selection_or_activation": false,
+    "operational_manifest_materialization": false,
+    "operational_db_attestation": false,
+    "runtime_allowlist_change": false,
+    "deployment_or_release": false,
+    "technical_preview_activation": false,
+    "production_activation": false,
+    "updater_activation": false
+  },
+  "canonical_no_go": {
+    "migration27": "NOT_EXECUTED",
+    "permission_provisioning": "NONE",
+    "feature_activation": "INACTIVE",
+    "deployment_authority": "NOT_GRANTED",
+    "technical_preview_activation": "NOT_AUTHORIZED",
+    "production_activation": "NOT_AUTHORIZED",
+    "updater_activation": "INACTIVE",
+    "durable_target_selection": "BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET",
+    "selected_target": null
+  },
+  "attribution": "Author by Lab | zefry"
+}
