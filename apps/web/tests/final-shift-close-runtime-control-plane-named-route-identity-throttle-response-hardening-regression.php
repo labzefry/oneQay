@@ -23,8 +23,9 @@ $materializationPath = 'internal/final-shift-close/runtime-binding-manifest/mate
 $dbPath = 'internal/final-shift-close/runtime-db-binding-attestation';
 $materializationName = 'internal.final-shift-close.runtime-binding-manifest.materialize';
 $dbName = 'internal.final-shift-close.runtime-db-binding-attestation';
-$materializationAction = FinalShiftCloseRuntimeBindingManifestMaterializationController::class.'@__invoke';
-$dbAction = FinalShiftCloseRuntimeDbBindingAttestationController::class.'@__invoke';
+$materializationActionName = FinalShiftCloseRuntimeBindingManifestMaterializationController::class.'@__invoke';
+$dbActionName = FinalShiftCloseRuntimeDbBindingAttestationController::class.'@__invoke';
+$controllerAction = static fn (string $action): array => ['uses' => $action, 'controller' => $action];
 
 $make = static function (string $method, string $path, ?string $name, array $methods, mixed $action = null): Request {
     $request = Request::create('/'.$path, $method);
@@ -88,17 +89,17 @@ $frameworkOwned(
 );
 
 $hardened(
-    $middleware->handle($make('POST', $materializationPath, $materializationName, ['POST'], $materializationAction), $throttled(1, 'canonical')),
+    $middleware->handle($make('POST', $materializationPath, $materializationName, ['POST'], $controllerAction($materializationActionName)), $throttled(1, 'canonical')),
     1,
     'ROUTE-ID-005',
 );
 $hardened(
-    $middleware->handle($make('GET', $dbPath, $dbName, ['GET', 'HEAD'], $dbAction), $throttled(2, 'canonical')),
+    $middleware->handle($make('GET', $dbPath, $dbName, ['GET', 'HEAD'], $controllerAction($dbActionName)), $throttled(2, 'canonical')),
     2,
     'ROUTE-ID-006',
 );
 $hardened(
-    $middleware->handle($make('HEAD', $dbPath, $dbName, ['GET', 'HEAD'], $dbAction), $throttled(2, 'canonical')),
+    $middleware->handle($make('HEAD', $dbPath, $dbName, ['GET', 'HEAD'], $controllerAction($dbActionName)), $throttled(2, 'canonical')),
     2,
     'ROUTE-ID-007',
 );
