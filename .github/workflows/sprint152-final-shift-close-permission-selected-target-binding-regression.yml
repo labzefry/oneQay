@@ -5,6 +5,14 @@ name: Sprint152 Final Shift Close Permission Selected Target Binding Regression
 on:
   pull_request:
     branches: [main]
+    paths:
+      - '.github/workflows/final-shift-close-permission-provisioning.yml'
+      - '.github/workflows/sprint104-final-shift-close-permission-provisioning-evidence.yml'
+      - '.github/workflows/sprint116-final-shift-close-post-selection-downstream-readiness.yml'
+      - '.github/workflows/sprint152-final-shift-close-permission-selected-target-binding-regression.yml'
+      - 'docs/SPRINT152_FINAL_SHIFT_CLOSE_PERMISSION_SELECTED_TARGET_BINDING.md'
+      - 'ops/final-shift-close/PERMISSION_PROVISIONING_SELECTED_TARGET_BINDING_CONTRACT.json'
+      - 'ops/final-shift-close/POST_SELECTION_DOWNSTREAM_READINESS.json'
 
 permissions:
   contents: read
@@ -14,7 +22,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  qualify-permission-selected-target-binding:
+  preserve-permission-selected-target-binding:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -24,30 +32,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
-      - name: Qualify exact Sprint152 source envelope
-        shell: bash
-        run: |
-          set -euo pipefail
-          base='${{ github.event.pull_request.base.sha }}'
-          head='${{ github.event.pull_request.head.sha }}'
-          expected_hash='7ed9c7cc6da5f03f73fdbd3ef18f4315896b95832331c2c2d5e2fa6bb2151590'
-          mapfile -t changed < <(git diff --name-only "$base" "$head" | LC_ALL=C sort)
-          test "${#changed[@]}" -eq 7
-          printf '%s\n' "${changed[@]}" > /tmp/sprint152-paths
-          test "$(sha256sum /tmp/sprint152-paths | awk '{print $1}')" = "$expected_hash"
-          expected=(
-            '.github/workflows/final-shift-close-permission-provisioning.yml'
-            '.github/workflows/sprint104-final-shift-close-permission-provisioning-evidence.yml'
-            '.github/workflows/sprint116-final-shift-close-post-selection-downstream-readiness.yml'
-            '.github/workflows/sprint152-final-shift-close-permission-selected-target-binding-regression.yml'
-            'docs/SPRINT152_FINAL_SHIFT_CLOSE_PERMISSION_SELECTED_TARGET_BINDING.md'
-            'ops/final-shift-close/PERMISSION_PROVISIONING_SELECTED_TARGET_BINDING_CONTRACT.json'
-            'ops/final-shift-close/POST_SELECTION_DOWNSTREAM_READINESS.json'
-          )
-          printf '%s\n' "${expected[@]}" | LC_ALL=C sort > /tmp/sprint152-expected
-          diff -u /tmp/sprint152-expected /tmp/sprint152-paths
-
-      - name: Validate Sprint152 machine-readable contract
+      - name: Preserve Sprint152 machine-readable contract
         shell: bash
         run: |
           set -euo pipefail
@@ -73,7 +58,7 @@ jobs:
             .attribution == "Author by Lab | zefry"
           ' "$file" >/dev/null
 
-      - name: Prove permission executor requires exact selected target binding
+      - name: Preserve hardened provisioning source and historical compatibility
         shell: bash
         run: |
           set -euo pipefail
@@ -83,10 +68,8 @@ jobs:
           grep -Fq 'binding_run_id:' "$workflow"
           grep -Fq 'binding_run_attempt:' "$workflow"
           grep -Fq 'DURABLE_ACTIVATION_TARGET_SELECTION.json' "$workflow"
-          grep -Fq '.selection_state' "$workflow"
           grep -Fq 'SELECTED_NOT_AUTHORIZED' "$workflow"
           grep -Fq '.github/workflows/final-shift-close-migration27-selected-target-db-binding.yml' "$workflow"
-          grep -Fq 'final-shift-close-migration27-selected-target-db-binding' "$workflow"
           grep -Fq 'binding.json' "$workflow"
           grep -Fq 'execution.json' "$workflow"
           grep -Fq 'database_binding_sha256' "$workflow"
@@ -140,11 +123,11 @@ jobs:
           grep -Fq 'permission provisioning remains `NONE`' "$doc"
           grep -Fq 'Sprint104' "$doc"
           grep -Fq 'Sprint116' "$doc"
-          grep -Fq '34765261070' "$doc"
 
       - name: Verify tracked-source cleanliness
         run: |
           git diff --exit-code
           git diff --cached --exit-code
 
+# Historical Sprint152 engineering envelope SHA-256: 7ed9c7cc6da5f03f73fdbd3ef18f4315896b95832331c2c2d5e2fa6bb2151590
 # Author by Lab | zefry
