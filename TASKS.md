@@ -76,22 +76,19 @@ No real capability evidence, target persistence/activation, migration execution,
 
 After reconciliation is squash merged and verified, Sprint149 bounded discovery from canonical post-Sprint148; no implementation objective or source envelope is preselected.
 
-## Post-Sprint148 canonical reconciliation
+## Post-Sprint148 canonical reconciliation closure scope
 
-- [x] Prepare Sprint148 workflow successor-compatible historical conversion
-- [x] Advance `PROJECT_MANIFEST.md` to Sprint148 engineering truth
-- [x] Advance `README.md` to Sprint148 current status
-- [x] Record Sprint148 closure in `CHANGELOG.md`
-- [x] Advance `TASKS.md`
-- [ ] Advance `ROADMAP.md` to Sprint149 next position
-- [ ] Commit successor-compatible Sprint148 workflow conversion
-- [ ] Open reconciliation PR with exact six-path envelope
-- [ ] Exact-head reconciliation CI qualification
-- [ ] Repository-native reconciliation Product Owner authority
-- [ ] Final race and reconciliation squash merge
-- [ ] Post-merge canonical verification and Sprint148 CLOSED declaration
+The reconciliation publication is intentionally bounded to the historical Sprint148 workflow plus the five canonical root documents. Its frozen sorted newline-terminated six-path envelope SHA-256 is `5c315771e9777b9d5a5b428a206c7cec711e14a7851a83c685a5a5cfb378dfc5`.
 
-GitHub PR/CI state remains authoritative for the transient publication status of this reconciliation until it is squash merged.
+The merged reconciliation must preserve these canonical outcomes:
+
+- Sprint148 workflow is historical/successor-compatible while preserving owned executable regression, contract assertions, dependencies, and NO-GO checks;
+- `PROJECT_MANIFEST.md` references engineering commit `7a07a3163842e60332ccd3e3780d4e970280d46c`, not the documentation reconciliation SHA;
+- README, CHANGELOG, TASKS, and ROADMAP agree that Sprint148 engineering is complete;
+- operational JSON remains authoritative and unchanged;
+- the next position is Sprint149 bounded discovery only.
+
+GitHub PR, exact-head CI, repository-native Product Owner authority, final race, squash merge, and post-merge verification remain the publication gates for this reconciliation branch; they are not represented here as durable project work items.
 
 ## Next bounded engineering
 
