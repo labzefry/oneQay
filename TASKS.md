@@ -1,12 +1,12 @@
 # oneQay Tasks
 
-**Current engineering checkpoint:** post-Sprint152 reconciliation
-**Canonical engineering commit:** `c6abc9356ad329c1a2273a71a4a8ca0e50822825`
+**Current engineering checkpoint:** post-Sprint153 reconciliation
+**Canonical engineering commit:** `e42ea89fca2b3974e7fa9b0a95fa31a901e9840c`
 **Canonical status authority:** `PROJECT_MANIFEST.md`
 
 This file separates completed source engineering, next bounded engineering, and operational actions that remain unauthorized.
 
-## Completed through Sprint152
+## Completed through Sprint153
 
 - [x] Core modular-monolith architecture and repository governance foundation
 - [x] Tenant-context-first and deny-by-default authorization foundations
@@ -20,43 +20,46 @@ This file separates completed source engineering, next bounded engineering, and 
 - [x] Target-bound durable-runtime capability-evidence identity qualification — Sprint148
 - [x] Trusted target-bound capability-evidence producer source materialization — Sprint149
 - [x] Full nine-component selected-runtime dependency-envelope qualification source — Sprint150
-- [x] Target-bound dependency-envelope evidence construction source foundation — Sprint151
+- [x] Target-bound dependency-envelope evidence deterministic construction source foundation — Sprint151
 - [x] Permission provisioning selected-target database-binding source hardening — Sprint152
-- [x] Sprint152 PR #722 squash merged
-- [x] Sprint152 exact-head PR qualification — 38/38 successful
-- [x] Sprint152 repository-native Product Owner merge-authority run `34765603014` successful
-- [x] Sprint152 canonical engineering commit `c6abc9356ad329c1a2273a71a4a8ca0e50822825`
-- [x] Sprint152 post-merge engineering NO-GO verification completed
+- [x] Trusted protected-environment dependency-envelope evidence producer source materialization — Sprint153
+- [x] Sprint153 PR #724 squash merged
+- [x] Sprint153 exact-head PR qualification — 38/38 successful
+- [x] Sprint153 repository-native Product Owner merge-authority run `34767471668` successful
+- [x] Sprint153 canonical engineering commit `e42ea89fca2b3974e7fa9b0a95fa31a901e9840c`
+- [x] Sprint153 post-merge engineering NO-GO verification completed
 
-## Sprint152 closure evidence
+## Sprint153 closure evidence
 
-- Objective: `PERMISSION_PROVISIONING_SELECTED_TARGET_DATABASE_BINDING`
-- Final engineering head: `70c30e407271c0e78439143230159f7b1c63f291`
-- Engineering envelope: seven paths
-- Engineering envelope SHA-256: `7ed9c7cc6da5f03f73fdbd3ef18f4315896b95832331c2c2d5e2fa6bb2151590`
+- Objective: `DURABLE_RUNTIME_TARGET_BOUND_DEPENDENCY_ENVELOPE_EVIDENCE_PRODUCER`
+- Final engineering head: `44a17e4590df58472114aad547dd1cd3087f8e96`
+- Initial engineering envelope: five paths, SHA-256 `4d184a18b6d9814474233bda0bf4761e7045ebfb0a8cda5ea56b6b296cef627b`
+- CI-proven Sprint151 compatibility conflict: run `34767104436`
+- Final engineering envelope: six paths
+- Final engineering envelope SHA-256: `7269a0e5f8927c2763411d0700b0f456cdcb0781f1d198179966a97a7b934a79`
 - Reconciliation envelope: six paths
-- Reconciliation envelope SHA-256: `bd3613c19baad6d74925a78dd72dcaf8121fbec842ace3e9279beaf8ecf8b971`
-- Permission selected-target binding source: `MATERIALIZED_NOT_DISPATCHED`
-- Permission selected-target binding evidence: `NONE`
-- Permission provisioning: `NONE`
+- Reconciliation envelope SHA-256: `6a0fd4267f940c02d23e95ce4085e89cdf25a52186d95619e1b1da89488dfc46`
+- Dependency-evidence source foundation: `MATERIALIZED_SOURCE_ONLY`
+- Dependency-evidence producer source: `MATERIALIZED_NOT_DISPATCHED`
+- Dependency-evidence producer dispatch: `NOT_PERFORMED`
+- Real dependency-envelope evidence: `NONE`
 - Runtime allowlist change: `NOT_IMPLEMENTED`
-- Sprint104 and Sprint116 historical regressions are successor-compatible while preserving owned security and NO-GO invariants.
 
 ## Next bounded engineering
 
-### Sprint153 — bounded discovery after Sprint152 closure
+### Sprint154 — bounded discovery after Sprint153 closure
 
-After post-Sprint152 reconciliation closes, the next engineering activity must:
+After post-Sprint153 reconciliation closes, the next engineering activity must:
 
-- identify the smallest material non-duplicative production-readiness gap from canonical post-Sprint152;
+- identify the smallest material non-duplicative production-readiness gap from canonical post-Sprint153;
 - prove the invariant is not already owned by historical regressions, source contracts, or current foundations;
 - prioritize genuine durable-runtime readiness prerequisites without operational mutation;
-- freeze a bounded source envelope before implementation;
+- freeze the smallest meaningful bounded source envelope before implementation;
 - remain fail-closed and deny-by-default;
 - qualify exact head before merge;
 - preserve the six-field sprint documentation rule.
 
-No Sprint153 implementation is preselected.
+No Sprint154 implementation is preselected.
 
 ## Operational blockers / separate authority required
 
@@ -66,7 +69,7 @@ No Sprint153 implementation is preselected.
 - [ ] Execute selected-target-bound Final Shift Close permission provisioning — `NONE`
 - [ ] Dispatch trusted capability-evidence producer — `NOT_PERFORMED`
 - [ ] Produce real target-bound durable-runtime capability evidence — `NONE`
-- [ ] Materialize a separately qualified dispatchable dependency-envelope evidence producer — `NOT_IMPLEMENTED`
+- [ ] Dispatch trusted dependency-envelope evidence producer — `NOT_PERFORMED`
 - [ ] Produce real target-bound dependency-envelope evidence — `NONE`
 - [ ] Widen selected durable runtime class in runtime allowlist — `NOT_IMPLEMENTED`
 - [ ] Materialize/authorize Final Shift Close feature activation — `INACTIVE`
