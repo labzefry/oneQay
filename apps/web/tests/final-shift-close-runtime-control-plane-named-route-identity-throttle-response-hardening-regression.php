@@ -40,7 +40,13 @@ $make = static function (string $method, string $path, ?string $name, array $met
 $throttled = static fn (int $limit, string $body): Closure => static fn (Request $request): Response => new Response(
     $body,
     429,
-    ['Retry-After' => '60', 'X-RateLimit-Limit' => (string) $limit, 'X-Sprint144-Probe' => 'preserved'],
+    [
+        'Retry-After' => '60',
+        'X-RateLimit-Limit' => (string) $limit,
+        'X-RateLimit-Remaining' => '0',
+        'X-RateLimit-Reset' => '1999999999',
+        'X-Sprint144-Probe' => 'preserved',
+    ],
 );
 
 $frameworkOwned = static function (Response $response, string $body, string $case) use ($assert): void {
@@ -58,6 +64,9 @@ $hardened = static function (Response $response, int $limit, string $case) use (
     $assert($response->headers->get('X-Content-Type-Options') === 'nosniff', $case.' nosniff');
     $assert($response->headers->get('X-Robots-Tag') === 'noindex, nofollow, noarchive', $case.' robots');
     $assert((int) $response->headers->get('X-RateLimit-Limit') === $limit, $case.' limit');
+    $assert($response->headers->get('X-RateLimit-Remaining') === '0', $case.' remaining');
+    $assert(ctype_digit((string) $response->headers->get('Retry-After')), $case.' retry-after');
+    $assert(ctype_digit((string) $response->headers->get('X-RateLimit-Reset')), $case.' reset');
 };
 
 $body = 'materialization-shadow';
