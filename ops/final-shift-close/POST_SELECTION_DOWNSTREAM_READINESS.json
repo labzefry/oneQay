@@ -127,7 +127,7 @@
   "sprint148_extension": {
     "bounded_objective": "DURABLE_RUNTIME_TARGET_BOUND_CAPABILITY_EVIDENCE_IDENTITY_BINDING",
     "contract_path": "ops/final-shift-close/DURABLE_RUNTIME_CAPABILITY_EVIDENCE_BINDING_CONTRACT.json",
-    "source_envelope_sha256": "57ba389d323f4c2be1e37708fa86324f2731acda53ae3f7b7133d806f0f3c895",
+    "source_envelope_sha256": "f7d9cfb173b54ac863cc70f10b9ae3df2f6715a4abdae0c7c32cbdb399bda5a6",
     "source_only": true,
     "real_capability_evidence": "NONE",
     "operational_execution": "NOT_PERFORMED"
