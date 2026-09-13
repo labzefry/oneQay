@@ -33,9 +33,7 @@ final class HardenFinalShiftCloseRuntimeControlPlaneThrottleResponseMiddleware
 
         if ($expectedThrottleLimit === null
             || $response->getStatusCode() !== 429
-            || ! $response->headers->has('Retry-After')
-            || ! $response->headers->has('X-RateLimit-Limit')
-            || $response->headers->get('X-RateLimit-Limit') !== $expectedThrottleLimit
+            || ! $this->hasCanonicalThrottleRejectionMetadata($response, $expectedThrottleLimit)
         ) {
             return $response;
         }
@@ -47,6 +45,25 @@ final class HardenFinalShiftCloseRuntimeControlPlaneThrottleResponseMiddleware
         $response->headers->set('X-Robots-Tag', 'noindex, nofollow, noarchive');
 
         return $response;
+    }
+
+    private function hasCanonicalThrottleRejectionMetadata(Response $response, string $expectedThrottleLimit): bool
+    {
+        if ($response->headers->get('X-RateLimit-Limit') !== $expectedThrottleLimit
+            || $response->headers->get('X-RateLimit-Remaining') !== '0'
+        ) {
+            return false;
+        }
+
+        $retryAfter = $response->headers->get('Retry-After');
+        $reset = $response->headers->get('X-RateLimit-Reset');
+
+        return is_string($retryAfter)
+            && $retryAfter !== ''
+            && ctype_digit($retryAfter)
+            && is_string($reset)
+            && $reset !== ''
+            && ctype_digit($reset);
     }
 
     private function canonicalThrottleLimit(Request $request): ?string
