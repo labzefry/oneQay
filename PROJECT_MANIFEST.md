@@ -1,11 +1,11 @@
 # oneQay Project Manifest
 
-**Product:** oneQay — The Future of Intelligent Business Management  
-**Repository owner / attribution:** Lab | zefry  
-**Default branch:** `main`  
-**Canonical engineering checkpoint:** Sprint155  
-**Canonical engineering commit:** `1e84e1b3e07915a1d20b56fe768b0d1454f901d2`  
-**Latest engineering PR:** #728 — `Sprint155: add feature activation source handoff envelope`  
+**Product:** oneQay — The Future of Intelligent Business Management
+**Repository owner / attribution:** Lab | zefry
+**Default branch:** `main`
+**Canonical engineering checkpoint:** Sprint155
+**Canonical engineering commit:** `1e84e1b3e07915a1d20b56fe768b0d1454f901d2`
+**Latest engineering PR:** #728 — `Sprint155: add feature activation source handoff envelope`
 **Status date:** 2026-09-14
 
 > This file is the canonical human-readable source of truth for current oneQay project status. Machine-readable operational state remains authoritative for operational gates.
