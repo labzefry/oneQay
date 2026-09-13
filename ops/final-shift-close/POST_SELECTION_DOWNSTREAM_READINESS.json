@@ -54,9 +54,12 @@
     "durable_runtime_capability_evidence_binding": {
       "source_path": "apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeCapabilityEvidence.php",
       "contract_path": "ops/final-shift-close/DURABLE_RUNTIME_CAPABILITY_EVIDENCE_BINDING_CONTRACT.json",
+      "producer_source_path": ".github/workflows/final-shift-close-durable-runtime-capability-evidence.yml",
+      "producer_contract_path": "ops/final-shift-close/DURABLE_RUNTIME_CAPABILITY_EVIDENCE_PRODUCER_CONTRACT.json",
       "source_materialized": true,
       "real_capability_evidence_present": false,
-      "trusted_evidence_producer_materialized": false,
+      "trusted_evidence_producer_materialized": true,
+      "producer_dispatch": "NOT_PERFORMED",
       "current_eligibility": "NOT_ELIGIBLE_NO_SELECTED_TARGET_OR_REAL_CAPABILITY_EVIDENCE",
       "required_before_eligibility": [
         "EXACT_SPRINT110_QUALIFIED_READINESS_ATTESTATION",
@@ -108,6 +111,7 @@
     "EXECUTE_AND_PROVE_MIGRATION27_ON_SELECTED_TARGET",
     "BIND_AND_QUALIFY_PERMISSION_PROVISIONING_TO_SAME_SELECTED_TARGET",
     "PROVISION_AND_PROVE_POS_SHIFT_CLOSE_ON_SELECTED_TARGET",
+    "PRODUCE_TARGET_BOUND_DURABLE_RUNTIME_CAPABILITY_EVIDENCE",
     "QUALIFY_TARGET_BOUND_DURABLE_RUNTIME_CAPABILITY_EVIDENCE_IDENTITY",
     "QUALIFY_FULL_DURABLE_RUNTIME_ENVELOPE_FOR_SELECTED_RUNTIME_CLASS",
     "MATERIALIZE_SELECTED_TARGET_BOUND_FEATURE_ACTIVATION_EXECUTOR",
@@ -119,6 +123,8 @@
     "RUN_PERMISSION_PROVISIONING_AGAINST_UNBOUND_DB_SECRETS",
     "ASSUME_GITHUB_ENVIRONMENT_NAME_EQUALS_SELECTED_RUNTIME_IDENTITY",
     "TREAT_SPRINT110_BOOLEAN_CAPABILITY_CLAIMS_AS_TARGET_BOUND_EVIDENCE",
+    "DISPATCH_CAPABILITY_EVIDENCE_PRODUCER_WITHOUT_SELECTED_NOT_AUTHORIZED_TARGET",
+    "TREAT_CAPABILITY_EVIDENCE_PRODUCER_SOURCE_AS_REAL_CAPABILITY_EVIDENCE",
     "WIDEN_FINAL_SHIFT_CLOSE_RUNTIME_ALLOWLIST_BEFORE_FULL_DEPENDENCY_QUALIFICATION",
     "TREAT_SELECTED_NOT_AUTHORIZED_AS_ACTIVATION_AUTHORITY",
     "TREAT_STATE_JSON_AS_LIVE_RUNTIME_EVIDENCE"
@@ -132,6 +138,16 @@
     "real_capability_evidence": "NONE",
     "operational_execution": "NOT_PERFORMED"
   },
+  "sprint149_extension": {
+    "bounded_objective": "DURABLE_RUNTIME_TARGET_BOUND_CAPABILITY_EVIDENCE_PRODUCER",
+    "contract_path": "ops/final-shift-close/DURABLE_RUNTIME_CAPABILITY_EVIDENCE_PRODUCER_CONTRACT.json",
+    "producer_workflow_path": ".github/workflows/final-shift-close-durable-runtime-capability-evidence.yml",
+    "source_envelope_sha256": "51f9cc22db6b1d6b072a1ee649ce2d474fad2f457346d949a1aece67f6a1eb6b",
+    "source_only": true,
+    "producer_source": "MATERIALIZED_NOT_DISPATCHED",
+    "real_capability_evidence": "NONE",
+    "operational_execution": "NOT_PERFORMED"
+  },
   "canonical_boundaries": {
     "producer_dispatch": "NOT_PERFORMED",
     "real_attestation": "NONE",
@@ -140,7 +156,8 @@
     "selection_persistence_execution": "NOT_PERFORMED",
     "selected_target": "NONE",
     "real_capability_evidence": "NONE",
-    "trusted_capability_evidence_producer": "NOT_IMPLEMENTED",
+    "trusted_capability_evidence_producer": "MATERIALIZED_NOT_DISPATCHED",
+    "capability_evidence_producer_dispatch": "NOT_PERFORMED",
     "migration27_execution": "NOT_PERFORMED",
     "permission_provisioning": "NONE",
     "runtime_allowlist_change": "NOT_IMPLEMENTED",
