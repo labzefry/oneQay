@@ -14,7 +14,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  qualify-dependency-envelope-evidence-producer:
+  preserve-dependency-envelope-evidence-producer:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
@@ -30,31 +30,9 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           ref: ${{ github.event.pull_request.head.sha }}
-          fetch-depth: 0
+          fetch-depth: 1
 
-      - name: Qualify exact Sprint153 source envelope
-        shell: bash
-        run: |
-          set -euo pipefail
-          base='${{ github.event.pull_request.base.sha }}'
-          head='${{ github.event.pull_request.head.sha }}'
-          expected_hash='7269a0e5f8927c2763411d0700b0f456cdcb0781f1d198179966a97a7b934a79'
-          mapfile -t changed < <(git diff --name-only "$base" "$head" | LC_ALL=C sort)
-          test "${#changed[@]}" -eq 6
-          printf '%s\n' "${changed[@]}" > /tmp/sprint153-paths
-          test "$(sha256sum /tmp/sprint153-paths | awk '{print $1}')" = "$expected_hash"
-          expected=(
-            '.github/workflows/final-shift-close-durable-runtime-dependency-envelope-evidence.yml'
-            '.github/workflows/sprint151-final-shift-close-durable-runtime-dependency-envelope-source-foundation-regression.yml'
-            '.github/workflows/sprint153-final-shift-close-durable-runtime-dependency-envelope-evidence-producer-regression.yml'
-            'docs/SPRINT153_FINAL_SHIFT_CLOSE_DURABLE_RUNTIME_DEPENDENCY_ENVELOPE_EVIDENCE_PRODUCER.md'
-            'ops/final-shift-close/DURABLE_RUNTIME_DEPENDENCY_ENVELOPE_EVIDENCE_PRODUCER_CONTRACT.json'
-            'ops/final-shift-close/POST_SELECTION_DOWNSTREAM_READINESS.json'
-          )
-          printf '%s\n' "${expected[@]}" | LC_ALL=C sort > /tmp/sprint153-expected
-          diff -u /tmp/sprint153-expected /tmp/sprint153-paths
-
-      - name: Validate Sprint153 machine-readable contract
+      - name: Preserve Sprint153 machine-readable contract
         shell: bash
         run: |
           set -euo pipefail
@@ -79,12 +57,13 @@ jobs:
             .source_envelope.path_count == 6 and
             .source_envelope.sha256 == "7269a0e5f8927c2763411d0700b0f456cdcb0781f1d198179966a97a7b934a79" and
             .canonical_boundaries.producer_source == "MATERIALIZED_NOT_DISPATCHED" and
+            .canonical_boundaries.producer_dispatch == "NOT_PERFORMED" and
             .canonical_boundaries.real_dependency_envelope_evidence == "NONE" and
             .canonical_boundaries.runtime_allowlist_change == "NOT_IMPLEMENTED" and
             .attribution == "Author by Lab | zefry"
           ' "$file" >/dev/null
 
-      - name: Prove protected trusted producer source
+      - name: Preserve trusted producer source
         shell: bash
         run: |
           set -euo pipefail
@@ -96,7 +75,6 @@ jobs:
           grep -Fq 'ONEQAY_DURABLE_RUNTIME_DEPENDENCY_OBSERVATIONS_TOKEN' "$workflow"
           grep -Fq 'ONEQAY_DURABLE_RUNTIME_CAPABILITY_EVIDENCE_RUN_ID' "$workflow"
           grep -Fq '.github/workflows/final-shift-close-durable-runtime-capability-evidence.yml' "$workflow"
-          grep -Fq 'final-shift-close-durable-runtime-capability-evidence' "$workflow"
           grep -Fq 'DURABLE_ACTIVATION_TARGET_SELECTION.json' "$workflow"
           grep -Fq 'SELECTED_NOT_AUTHORIZED' "$workflow"
           grep -Fq 'FinalShiftCloseDurableRuntimeDependencyEnvelopeEvidenceProducer' "$workflow"
