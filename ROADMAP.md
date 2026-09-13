@@ -1,7 +1,7 @@
 # oneQay Roadmap
 
-**Roadmap checkpoint:** post-Sprint149 reconciliation
-**Canonical engineering baseline:** `662a892c3269d945579594da03121bce960c9074`
+**Roadmap checkpoint:** post-Sprint150 reconciliation
+**Canonical engineering baseline:** `d743a054092231729fa0e33cd34538f9d1e81787`
 **Current state authority:** `PROJECT_MANIFEST.md`
 
 This roadmap describes sequencing and gates. It does **not** grant operational authority. Completed roadmap items are bounded repository objectives, not evidence of deployment or activation.
@@ -27,37 +27,40 @@ This roadmap describes sequencing and gates. It does **not** grant operational a
 
 Representative completed milestones include Sprint55 expected-cash derivation, Sprint64 cash-variance source foundation, Sprint70 durable cash-variance explanation, and Sprint80 scoped reviewer authorization.
 
-## Horizon D — Final Shift Close source/readiness chain — completed through Sprint149 engineering boundary
+## Horizon D — Final Shift Close source/readiness chain — completed through Sprint150 engineering boundary
 
 - [x] Source-only migration #27 materialization — Sprint88
 - [x] Application-readiness contract — Sprint89
+- [x] Nine-component runtime dependency inventory / allowlist block — Sprint107
 - [x] Durable-runtime readiness capability shape — Sprint110
 - [x] Exact selected-target identity and deterministic selection fingerprint — Sprint111
 - [x] Source-only attestation producer/ingestion, selection persistence and binding readiness — Sprint113–Sprint117
 - [x] Canonical runtime-control-plane and HTTP/throttle hardening — Sprint130–Sprint147
 - [x] Target-bound durable-runtime capability-evidence identity qualification — Sprint148
 - [x] Trusted protected-environment target-bound capability-evidence producer source — Sprint149
+- [x] Exact selected-runtime-class full nine-component dependency-envelope qualifier — Sprint150
 
-### Sprint149 evidence
+### Sprint150 evidence
 
-- PR #716 squash merged at canonical engineering commit `662a892c3269d945579594da03121bce960c9074`.
-- Final engineering head `449832afd18117c58fb034ad23c9d4217bd3cd1e`.
-- Exact-head CI: 34/34 successful.
-- Repository-native Product Owner authority run: `34759693893` successful.
-- Engineering envelope: eight paths, SHA-256 `8acea0b1cc826dedbe2dd55f38b4aa24fd4854a96ee32dde9f7552d22d239a91`.
-- Reconciliation envelope: six paths, SHA-256 `f97c59e253a6d3d47ff84f026690e700c3c85c2b9e8baf9ec00bfb57c1663c7e`.
-- Producer source is `MATERIALIZED_NOT_DISPATCHED`; real capability evidence remains `NONE`.
+- PR #718 squash merged at canonical engineering commit `d743a054092231729fa0e33cd34538f9d1e81787`.
+- Final engineering head `7102733080735f4591bb17df76bdec928975e826`.
+- Exact-head CI: 35/35 successful.
+- Repository-native Product Owner authority run: `34761524119` successful.
+- Engineering envelope: six paths, SHA-256 `9f261895ab0373af5d6d385c3db3f93e5e510061b8e843e4110ecce992d9a0e6`.
+- Reconciliation envelope: six paths, SHA-256 `578765b03de34048670791017fcffe8680b65e6bede9f57d22affb255f5ee43f`.
+- Dependency-envelope qualifier source is materialized, but real dependency evidence remains `NONE` and dependency-evidence producer remains `NOT_IMPLEMENTED`.
+- Runtime allowlist remains `local/test/ci`; no selected runtime class was enabled.
 
 Migration #27 remains `NOT_EXECUTED`; completion of this engineering horizon does not authorize operational use.
 
-## Horizon E — Sprint150+ bounded engineering — next
+## Horizon E — Sprint151+ bounded engineering — next
 
-Status: **BOUNDED DISCOVERY NEXT AFTER SPRINT149 CLOSURE**.
+Status: **BOUNDED DISCOVERY NEXT AFTER SPRINT150 CLOSURE**.
 
 Selection rules:
 
 1. prove a material non-duplicative gap exists before adding source;
-2. check historical regressions before creating a new invariant owner;
+2. check historical regressions and machine-readable contracts before creating a new invariant owner;
 3. prioritize production-readiness prerequisites toward a qualified isolated non-production durable target without operational mutation;
 4. freeze the smallest meaningful bounded source envelope;
 5. stay fail-closed and deny-by-default;
@@ -66,7 +69,7 @@ Selection rules:
 8. document Purpose / Why, Objective / Gap, What changed, Evidence / Qualification, Operational boundaries / NO-GO, and Next position;
 9. reconcile canonical project-state documentation at closure.
 
-No roadmap text pre-authorizes a specific Sprint150 implementation.
+No roadmap text pre-authorizes a specific Sprint151 implementation.
 
 ## Horizon F — Operational qualification — blocked / separate authority
 
@@ -74,6 +77,8 @@ No roadmap text pre-authorizes a specific Sprint150 implementation.
 - [ ] Selected target — currently `null`
 - [ ] Trusted capability-evidence producer dispatch — `NOT_PERFORMED`
 - [ ] Real target-bound capability evidence — `NONE`
+- [ ] Trusted dependency-envelope evidence producer — `NOT_IMPLEMENTED`
+- [ ] Real target-bound dependency-envelope evidence — `NONE`
 - [ ] Migration #27 execution — `NOT_EXECUTED`
 - [ ] Permission provisioning — `NONE`
 - [ ] Runtime allowlist change for selected durable runtime — `NOT_IMPLEMENTED`
