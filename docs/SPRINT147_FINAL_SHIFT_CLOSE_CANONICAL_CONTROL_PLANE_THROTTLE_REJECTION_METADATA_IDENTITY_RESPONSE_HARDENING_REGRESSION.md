@@ -28,32 +28,36 @@ Missing metadata, nonzero or numeric-alias remaining values, empty values, and n
 ## What changed
 
 - `HardenFinalShiftCloseRuntimeControlPlaneThrottleResponseMiddleware` now delegates response metadata qualification to a dedicated canonical throttle-rejection metadata predicate.
+- The hardener requires explicit presence of the canonical framework rate-limit headers before evaluating their values.
 - The hardener requires exact `X-RateLimit-Remaining: 0` in addition to the Sprint146 exact canonical ceiling.
 - `Retry-After` and `X-RateLimit-Reset` must both be non-empty decimal strings.
 - A dedicated Sprint147 direct-middleware regression covers materialization POST and DB-attestation GET/HEAD across canonical and malformed/missing metadata cases.
+- The historical Sprint144 named-route identity regression fixture now carries the canonical throttle-rejection metadata shape established by Sprint142 so its owned route-identity assertions remain executable under the stricter response identity boundary.
 - Sprint146 throttle-budget identity remains preserved as the immediate historical ownership boundary.
 - Sprint142 real HTTP-kernel evidence remains the source of truth for the canonical framework metadata shape.
 
 ## Evidence / Qualification
 
-Sprint147 is CI-only bounded source engineering. Its exact five-path source envelope is:
+Sprint147 is CI-only bounded source engineering. Its exact six-path source envelope is:
 
 1. `.github/workflows/sprint147-final-shift-close-canonical-control-plane-throttle-rejection-metadata-identity-response-hardening-regression.yml`
 2. `apps/web/app/Delivery/Http/Middleware/HardenFinalShiftCloseRuntimeControlPlaneThrottleResponseMiddleware.php`
-3. `apps/web/tests/final-shift-close-runtime-control-plane-throttle-rejection-metadata-identity-response-hardening-regression.php`
-4. `docs/SPRINT147_FINAL_SHIFT_CLOSE_CANONICAL_CONTROL_PLANE_THROTTLE_REJECTION_METADATA_IDENTITY_RESPONSE_HARDENING_REGRESSION.md`
-5. `ops/final-shift-close/CANONICAL_RUNTIME_CONTROL_PLANE_THROTTLE_REJECTION_METADATA_IDENTITY_RESPONSE_HARDENING_REGRESSION_CONTRACT.json`
+3. `apps/web/tests/final-shift-close-runtime-control-plane-named-route-identity-throttle-response-hardening-regression.php`
+4. `apps/web/tests/final-shift-close-runtime-control-plane-throttle-rejection-metadata-identity-response-hardening-regression.php`
+5. `docs/SPRINT147_FINAL_SHIFT_CLOSE_CANONICAL_CONTROL_PLANE_THROTTLE_REJECTION_METADATA_IDENTITY_RESPONSE_HARDENING_REGRESSION.md`
+6. `ops/final-shift-close/CANONICAL_RUNTIME_CONTROL_PLANE_THROTTLE_REJECTION_METADATA_IDENTITY_RESPONSE_HARDENING_REGRESSION_CONTRACT.json`
 
 Frozen sorted newline-terminated envelope SHA-256:
 
-`db14c7f9b8c061a8f67c08c7d6fe6ed7474e0265e66cd35192ccfbf3409c4717`
+`ffd176da808eda16fccdf0375fcae2fd5bcc1cfc4b931aca6492ca31eb9b1d40`
 
 Qualification requires:
 
-- exact-head checkout and exact five-path envelope lock;
+- exact-head checkout and exact six-path envelope lock;
 - machine-readable Sprint147 contract validation;
 - Sprint147 direct-middleware malformed/missing metadata regression;
 - Sprint146 throttle-budget identity regression preservation;
+- Sprint144 named-route identity regression preservation with successor-compatible canonical metadata fixture;
 - Sprint142 real HTTP-kernel throttle-response evidence preservation;
 - PHP syntax, Composer validation/install/audit, and tracked-source cleanliness;
 - canonical lifecycle NO-GO assertions;
