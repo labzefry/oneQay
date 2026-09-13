@@ -1,7 +1,7 @@
 # oneQay Roadmap
 
-**Roadmap checkpoint:** post-Sprint152 reconciliation
-**Canonical engineering baseline:** `c6abc9356ad329c1a2273a71a4a8ca0e50822825`
+**Roadmap checkpoint:** post-Sprint153 reconciliation
+**Canonical engineering baseline:** `e42ea89fca2b3974e7fa9b0a95fa31a901e9840c`
 **Current state authority:** `PROJECT_MANIFEST.md`
 
 This roadmap describes sequencing and gates. It does **not** grant operational authority. Completed roadmap items are bounded repository objectives, not evidence of deployment or activation.
@@ -27,7 +27,7 @@ This roadmap describes sequencing and gates. It does **not** grant operational a
 
 Representative completed milestones include Sprint55 expected-cash derivation, Sprint64 cash-variance source foundation, Sprint70 durable cash-variance explanation, and Sprint80 scoped reviewer authorization.
 
-## Horizon D — Final Shift Close source/readiness chain — completed through Sprint152 engineering boundary
+## Horizon D — Final Shift Close source/readiness chain — completed through Sprint153 engineering boundary
 
 - [x] Source-only migration #27 materialization — Sprint88
 - [x] Application-readiness contract — Sprint89
@@ -40,25 +40,26 @@ Representative completed milestones include Sprint55 expected-cash derivation, S
 - [x] Target-bound durable-runtime capability-evidence identity qualification — Sprint148
 - [x] Trusted protected-environment target-bound capability-evidence producer source — Sprint149
 - [x] Exact selected-runtime-class full nine-component dependency-envelope qualifier — Sprint150
-- [x] Target-bound dependency-envelope evidence construction source foundation — Sprint151
+- [x] Target-bound dependency-envelope evidence deterministic construction source foundation — Sprint151
 - [x] Permission provisioning selected-target database-binding hardening — Sprint152
+- [x] Trusted protected-environment dependency-envelope evidence producer source — Sprint153
 
-### Sprint152 evidence
+### Sprint153 evidence
 
-- PR #722 squash merged at canonical engineering commit `c6abc9356ad329c1a2273a71a4a8ca0e50822825`.
-- Final engineering head `70c30e407271c0e78439143230159f7b1c63f291`.
+- PR #724 squash merged at canonical engineering commit `e42ea89fca2b3974e7fa9b0a95fa31a901e9840c`.
+- Final engineering head `44a17e4590df58472114aad547dd1cd3087f8e96`.
 - Exact-head CI: 38/38 successful.
-- Repository-native Product Owner authority run: `34765603014` successful.
-- Engineering envelope: seven paths, SHA-256 `7ed9c7cc6da5f03f73fdbd3ef18f4315896b95832331c2c2d5e2fa6bb2151590`.
-- Reconciliation envelope: six paths, SHA-256 `bd3613c19baad6d74925a78dd72dcaf8121fbec842ace3e9279beaf8ecf8b971`.
-- Permission selected-target binding source is `MATERIALIZED_NOT_DISPATCHED`; real binding evidence remains `NONE`; permission provisioning remains `NONE`.
+- Repository-native Product Owner authority run: `34767471668` successful.
+- Engineering envelope: six paths, SHA-256 `7269a0e5f8927c2763411d0700b0f456cdcb0781f1d198179966a97a7b934a79`.
+- Reconciliation envelope: six paths, SHA-256 `6a0fd4267f940c02d23e95ce4085e89cdf25a52186d95619e1b1da89488dfc46`.
+- Dependency producer source is `MATERIALIZED_NOT_DISPATCHED`; dispatch remains `NOT_PERFORMED`; real dependency evidence remains `NONE`.
 - Runtime allowlist remains `local/test/ci`; no selected runtime class was enabled.
 
 Migration #27 remains `NOT_EXECUTED`; completion of this engineering horizon does not authorize operational use.
 
-## Horizon E — Sprint153+ bounded engineering — next
+## Horizon E — Sprint154+ bounded engineering — next
 
-Status: **BOUNDED DISCOVERY NEXT AFTER SPRINT152 CLOSURE**.
+Status: **BOUNDED DISCOVERY NEXT AFTER SPRINT153 CLOSURE**.
 
 Selection rules:
 
@@ -72,7 +73,7 @@ Selection rules:
 8. document Purpose / Why, Objective / Gap, What changed, Evidence / Qualification, Operational boundaries / NO-GO, and Next position;
 9. reconcile canonical project-state documentation at closure.
 
-No roadmap text pre-authorizes a specific Sprint153 implementation.
+No roadmap text pre-authorizes a specific Sprint154 implementation.
 
 ## Horizon F — Operational qualification — blocked / separate authority
 
@@ -83,7 +84,7 @@ No roadmap text pre-authorizes a specific Sprint153 implementation.
 - [ ] Selected-target-bound permission provisioning — `NONE`
 - [ ] Trusted capability-evidence producer dispatch — `NOT_PERFORMED`
 - [ ] Real target-bound capability evidence — `NONE`
-- [ ] Dispatchable dependency-envelope evidence producer — `NOT_IMPLEMENTED`
+- [ ] Trusted dependency-envelope evidence producer dispatch — `NOT_PERFORMED`
 - [ ] Real target-bound dependency-envelope evidence — `NONE`
 - [ ] Runtime allowlist change for selected durable runtime — `NOT_IMPLEMENTED`
 - [ ] Feature activation — `INACTIVE`
