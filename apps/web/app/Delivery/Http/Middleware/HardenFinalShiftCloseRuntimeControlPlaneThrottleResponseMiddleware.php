@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Delivery\Http\Middleware;
 
+use App\Delivery\Http\Pos\FinalShiftCloseRuntimeBindingManifestMaterializationController;
+use App\Delivery\Http\Pos\FinalShiftCloseRuntimeDbBindingAttestationController;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
@@ -50,11 +52,14 @@ final class HardenFinalShiftCloseRuntimeControlPlaneThrottleResponseMiddleware
         }
 
         $routeName = $route->getName();
+        $routeActionName = $route->getActionName();
 
         return ($routeName === self::MATERIALIZATION_ROUTE_NAME
+                && $routeActionName === FinalShiftCloseRuntimeBindingManifestMaterializationController::class.'@__invoke'
                 && $request->isMethod('POST')
                 && $request->is(self::MATERIALIZATION_PATH))
             || ($routeName === self::DB_ATTESTATION_ROUTE_NAME
+                && $routeActionName === FinalShiftCloseRuntimeDbBindingAttestationController::class.'@__invoke'
                 && ($request->isMethod('GET') || $request->isMethod('HEAD'))
                 && $request->is(self::DB_ATTESTATION_PATH));
     }
