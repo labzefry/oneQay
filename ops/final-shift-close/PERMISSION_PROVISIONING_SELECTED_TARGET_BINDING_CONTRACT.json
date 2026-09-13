@@ -29,11 +29,12 @@
     "no_default_grant_preserved": true,
     "caller_supplied_target_identity_forbidden": true,
     "new_binding_producer_forbidden": true,
-    "sprint104_historical_workflow_successor_compatible_required": true
+    "sprint104_historical_workflow_successor_compatible_required": true,
+    "sprint116_historical_workflow_successor_compatible_required": true
   },
   "source_envelope": {
-    "path_count": 6,
-    "sha256": "052599d3aeb31aacaa4f139cac6ea1b0cd677a86a1c25358136d69b8f5f650c9"
+    "path_count": 7,
+    "sha256": "7ed9c7cc6da5f03f73fdbd3ef18f4315896b95832331c2c2d5e2fa6bb2151590"
   },
   "canonical_boundaries": {
     "current_selection_state": "BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET",
