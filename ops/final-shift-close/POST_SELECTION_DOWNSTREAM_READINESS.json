@@ -129,7 +129,7 @@
     "bounded_objective": "PERMISSION_PROVISIONING_SELECTED_TARGET_DATABASE_BINDING",
     "contract_path": "ops/final-shift-close/PERMISSION_PROVISIONING_SELECTED_TARGET_BINDING_CONTRACT.json",
     "workflow_path": ".github/workflows/final-shift-close-permission-provisioning.yml",
-    "source_envelope_sha256": "10b79aec054c69df9208dbabf014ac2ed885701a0046d6d950a0623783007fac",
+    "source_envelope_sha256": "052599d3aeb31aacaa4f139cac6ea1b0cd677a86a1c25358136d69b8f5f650c9",
     "source_only": true,
     "selected_target_binding_source": "MATERIALIZED_NOT_DISPATCHED",
     "provisioning_workflow_dispatch": "NOT_PERFORMED",
