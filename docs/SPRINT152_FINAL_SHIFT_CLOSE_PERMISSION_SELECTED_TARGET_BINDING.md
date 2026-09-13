@@ -18,15 +18,19 @@ Sprint152 hardens `.github/workflows/final-shift-close-permission-provisioning.y
 
 No new database-binding producer is introduced. The existing permission semantics remain bounded to one existing same-tenant non-protected role, preserve the canonical migration #27 prerequisite, and preserve `NO_DEFAULT_GRANT` assignment boundaries.
 
-Initial exact-head CI proved the historical Sprint104 permission-provisioning regression still owned its original full three-path PR envelope. Sprint152 therefore expands by exactly one path to make that historical workflow successor-compatible while preserving the original Sprint104 fingerprint and all of its transaction, evidence-lifecycle, runtime-boundary, and NO-GO assertions.
+Initial exact-head CI proved the historical Sprint104 permission-provisioning regression still owned its original full three-path PR envelope. Sprint152 therefore expanded by exactly one path to make Sprint104 successor-compatible while preserving the original Sprint104 fingerprint and all transaction, evidence-lifecycle, runtime-boundary, and NO-GO assertions.
 
-Final frozen engineering envelope: six paths. Sorted newline-terminated SHA-256: `052599d3aeb31aacaa4f139cac6ea1b0cd677a86a1c25358136d69b8f5f650c9`.
+The next exact head proved two remaining compatibility details: Sprint104 was looking for its historical fingerprint in a document that never owned that fingerprint, and Sprint116 still required the pre-Sprint152 permission eligibility state plus the absence of selected-target source binding. Sprint104 now preserves its historical fingerprint in its workflow itself. Sprint116 now accepts the successor state only when selected-target binding source is materialized while binding evidence remains absent and execution remains `NOT_PERFORMED`.
+
+Final frozen engineering envelope: seven paths. Sorted newline-terminated SHA-256: `7ed9c7cc6da5f03f73fdbd3ef18f4315896b95832331c2c2d5e2fa6bb2151590`.
 
 ## Evidence / Qualification
 
-The exact-head Sprint152 regression validates the six-path envelope, machine-readable contract, required workflow inputs and binding artifact identity, selected-target prerequisite, pre-mutation database fingerprint readback, `hash_equals()` comparison, migration #27 prerequisite, Sprint104 successor compatibility, downstream fail-closed state, and unchanged operational NO-GO values.
+The exact-head Sprint152 regression validates the seven-path envelope, machine-readable contract, required workflow inputs and binding artifact identity, selected-target prerequisite, pre-mutation database fingerprint readback, `hash_equals()` comparison, migration #27 prerequisite, Sprint104 and Sprint116 successor compatibility, downstream fail-closed state, and unchanged operational NO-GO values.
 
-The initial five-path exact head passed the active Sprint152 regression but produced a CI-proven Sprint104 historical envelope conflict in run `34765046079`. The bounded compatibility correction changes only the historical Sprint104 workflow ownership and does not weaken its semantic controls.
+The initial five-path exact head passed the active Sprint152 regression but produced a CI-proven Sprint104 historical envelope conflict in run `34765046079`. The bounded compatibility correction removed only historical full-envelope ownership.
+
+The six-path correction head then produced a CI-proven Sprint104 fingerprint-location assertion issue and a Sprint116 successor-state conflict in run `34765261070`. The final bounded expansion adds only the Sprint116 historical workflow and preserves its original post-selection readiness fingerprint while recognizing the stronger source-bound-but-evidence-absent permission state.
 
 Sprint152 does not dispatch the provisioning workflow or the Sprint118 binding producer. Real selected-target database-binding evidence remains `NONE` because canonical target selection is still blocked and no operational producer run is performed.
 
