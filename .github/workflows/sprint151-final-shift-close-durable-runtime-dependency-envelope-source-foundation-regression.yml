@@ -88,7 +88,7 @@ jobs:
           php tests/pos-final-shift-close-durable-runtime-readiness.php
           php tests/pos-final-shift-close-durable-runtime-target-selection.php
 
-      - name: Preserve downstream and operational NO-GO boundaries
+      - name: Preserve downstream and operational NO-GO progression
         shell: bash
         run: |
           set -euo pipefail
@@ -101,7 +101,13 @@ jobs:
             .sprint151_extension.dispatchable_dependency_evidence_producer == "NOT_IMPLEMENTED" and
             .sprint151_extension.real_dependency_envelope_evidence == "NONE" and
             .canonical_boundaries.dependency_evidence_source_foundation == "MATERIALIZED_SOURCE_ONLY" and
-            .canonical_boundaries.dependency_evidence_producer == "NOT_IMPLEMENTED" and
+            (
+              .canonical_boundaries.dependency_evidence_producer == "NOT_IMPLEMENTED" or
+              (
+                .canonical_boundaries.dependency_evidence_producer == "MATERIALIZED_NOT_DISPATCHED" and
+                .canonical_boundaries.dependency_evidence_producer_dispatch == "NOT_PERFORMED"
+              )
+            ) and
             .canonical_boundaries.real_dependency_envelope_evidence == "NONE" and
             .canonical_boundaries.runtime_allowlist_change == "NOT_IMPLEMENTED"
           ' "$downstream" >/dev/null
