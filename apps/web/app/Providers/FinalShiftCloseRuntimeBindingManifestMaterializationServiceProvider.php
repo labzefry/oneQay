@@ -7,10 +7,14 @@ namespace App\Providers;
 use App\Application\Pos\FinalShiftCloseRuntimeBindingManifestMaterializer;
 use App\Application\Pos\FinalShiftCloseRuntimeBindingManifestWriter;
 use App\Application\Pos\FinalShiftCloseRuntimeControlPlaneTokenPolicy;
+use App\Delivery\Http\Middleware\HardenFinalShiftCloseRuntimeControlPlaneThrottleResponseMiddleware;
 use App\Delivery\Http\Middleware\RequireFinalShiftCloseRuntimeBindingMaterializationTokenMiddleware;
 use App\Infrastructure\Pos\FilesystemFinalShiftCloseRuntimeBindingManifestWriter;
+use Illuminate\Contracts\Http\Kernel as HttpKernel;
+use Illuminate\Foundation\Http\Kernel as FoundationHttpKernel;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
+use LogicException;
 
 // Author by Lab | zefry
 final class FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider extends ServiceProvider
@@ -42,6 +46,14 @@ final class FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider 
 
     public function boot(): void
     {
+        $kernel = $this->app->make(HttpKernel::class);
+
+        if (! $kernel instanceof FoundationHttpKernel) {
+            throw new LogicException('Final Shift Close runtime control-plane throttle response hardening requires the canonical Laravel HTTP kernel.');
+        }
+
+        $kernel->pushMiddleware(HardenFinalShiftCloseRuntimeControlPlaneThrottleResponseMiddleware::class);
+
         if (! $this->deliveryEnabled()) {
             return;
         }
