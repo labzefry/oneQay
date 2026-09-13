@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "feature": "final-shift-close",
+  "sprint": 155,
+  "contract_state": "MATERIALIZED_SOURCE_ONLY",
+  "bounded_objective": "FINAL_SHIFT_CLOSE_FEATURE_ACTIVATION_TRANSPORT_SOURCE_FOUNDATION",
+  "source_path": "apps/web/app/Application/Pos/FinalShiftCloseFeatureActivationTransportEnvelope.php",
+  "future_executor_workflow_path": ".github/workflows/final-shift-close-feature-activation.yml",
+  "source_requirements": {
+    "exact_sprint154_activation_plan_required": true,
+    "exact_target_binding_required": true,
+    "target_bound_capability_qualification_required": true,
+    "authenticated_configuration_channel_capability_required": true,
+    "read_before_write_read_after_capability_required": true,
+    "non_mutating_health_attestation_capability_required": true,
+    "verified_flag_rollback_capability_required": true,
+    "runtime_flag": "ONEQAY_POS_SHIFT_CLOSE_ENABLED",
+    "required_pre_activation_value": false,
+    "desired_activation_value": true,
+    "rollback_value": false,
+    "transport_envelope_must_be_secret_free": true,
+    "concrete_adapter": "NOT_IMPLEMENTED",
+    "network_dispatch": "NOT_PERFORMED",
+    "provider_runtime_allowlist_change_in_sprint155": "FORBIDDEN",
+    "feature_activation_in_sprint155": "FORBIDDEN",
+    "operational_dispatch_in_sprint155": "FORBIDDEN"
+  },
+  "source_envelope": {
+    "path_count": 6,
+    "sorted_newline_terminated": true,
+    "sha256": "072cbe2bafe732a834d0418f3499dc5d4f07fec30fbfc9e6c6b84f1c771100de",
+    "paths": [
+      ".github/workflows/sprint155-final-shift-close-feature-activation-transport-source-foundation-regression.yml",
+      "apps/web/app/Application/Pos/FinalShiftCloseFeatureActivationTransportEnvelope.php",
+      "apps/web/tests/pos-final-shift-close-feature-activation-transport-envelope.php",
+      "docs/SPRINT155_FINAL_SHIFT_CLOSE_FEATURE_ACTIVATION_TRANSPORT_SOURCE_FOUNDATION.md",
+      "ops/final-shift-close/FEATURE_ACTIVATION_TRANSPORT_SOURCE_FOUNDATION_CONTRACT.json",
+      "ops/final-shift-close/POST_SELECTION_DOWNSTREAM_READINESS.json"
+    ]
+  },
+  "canonical_boundaries": {
+    "activation_executor_source_foundation": "MATERIALIZED_SOURCE_ONLY",
+    "activation_transport_source_foundation": "MATERIALIZED_SOURCE_ONLY",
+    "concrete_configuration_mutation_transport": "NOT_IMPLEMENTED",
+    "dispatchable_feature_activation_executor": "NOT_IMPLEMENTED",
+    "executor_dispatch": "NOT_PERFORMED",
+    "selected_target": "NONE",
+    "migration27_execution": "NOT_PERFORMED",
+    "permission_provisioning": "NONE",
+    "real_capability_evidence": "NONE",
+    "real_dependency_envelope_evidence": "NONE",
+    "runtime_allowlist_change": "NOT_IMPLEMENTED",
+    "feature_activation": "INACTIVE",
+    "deployment_authority": "NOT_GRANTED",
+    "technical_preview_activation": "NOT_AUTHORIZED",
+    "production_activation": "NOT_AUTHORIZED",
+    "updater_activation": "INACTIVE"
+  },
+  "attribution": "Author by Lab | zefry"
+}
