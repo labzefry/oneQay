@@ -8,14 +8,14 @@ Enterprise-oriented business-management platform built with a Modular Monolith F
 
 ## Current canonical status
 
-The latest closed **engineering** sprint is **Sprint141**.
+The latest closed **engineering** sprint is **Sprint142**.
 
-- Canonical engineering commit: `81d4d19c61e99746495bec804c0e7d8a9778a257`
-- Latest engineering PR: #699 — `Sprint141: canonical HTTP auth rejection response regression`
-- Sprint141 pull-request qualification: **25/25 workflow runs successful** on the exact authorized head
-- Sprint141 Product Owner merge-authority workflow run: `34709040922` successful
-- Sprint141 merge: squash merged with exact-head guard
-- Next engineering position: **Sprint142 bounded discovery**, not yet treated as started or complete
+- Canonical engineering commit: `61a6d68b45303a796c5eb7c2afa78b16e740da53`
+- Latest engineering PR: #701 — `Sprint142: canonical control-plane throttle rejection response hardening`
+- Sprint142 pull-request qualification: **26/26 workflow runs successful** on the exact authorized head
+- Sprint142 Product Owner merge-authority workflow run: `34744364161` successful
+- Sprint142 merge: squash merged with exact-head guard
+- Next engineering position: **Sprint143 bounded discovery**, not yet treated as started or complete
 
 For the full current project state, use **[`PROJECT_MANIFEST.md`](PROJECT_MANIFEST.md)** as the canonical human-readable source of truth.
 
@@ -29,10 +29,10 @@ Material canonical progress includes:
 - POS foundations for shift/register opening, sale completion/payment/receipt evidence, and catalog preparation;
 - JRN-010 prerequisite work covering expected cash, immutable sale-to-shift binding, cash variance, explanation/adjudication, maker-checker, and reviewer authorization;
 - Final Shift Close source/readiness work including source-only migration #27 and application/runtime readiness contracts;
-- runtime-binding manifest, database-binding attestation, authorization, token-policy, middleware/controller, delivery-gate, authenticated HTTP, throttle, authentication-order, direct auth-rejection response hardening, and composed HTTP auth-rejection propagation chains;
-- Sprint130–Sprint141 canonical control-plane qualification while production filesystem/database side-effect adapters remain operationally inactive.
+- runtime-binding manifest, database-binding attestation, authorization, token-policy, middleware/controller, delivery-gate, authenticated HTTP, throttle, authentication-order, auth-rejection hardening, HTTP-kernel propagation, and authenticated throttle-rejection response-hardening chains;
+- Sprint130–Sprint142 canonical control-plane qualification while production filesystem/database side-effect adapters remain operationally inactive.
 
-Sprint141 specifically proves the Sprint140 authentication-rejection hardening survives the real registered routes and Laravel HTTP kernel. Missing, malformed, and structurally canonical-valid mismatched bearer credentials retain materialization HTTP `401` and DB-attestation cloaked HTTP `404`; rejection bodies remain empty and retain private/no-store, no-cache, nosniff, and robot-exclusion metadata without reflecting bearer fixtures or synthetic internal paths. Controllers and side-effect application services remain unresolved for those rejected requests, preserving Sprint139 auth-before-throttle and Sprint140 direct-middleware ownership.
+Sprint142 specifically hardens authenticated HTTP `429` throttle rejections for the two Final Shift Close control-plane route/method pairs without changing token policy, route registration, auth-before-throttle ordering, or the existing materialization `1/min` and DB-attestation `2/min` limits. The hardened responses keep Laravel rate-limit metadata (`Retry-After`, `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`) while becoming empty-body, private/no-store, no-cache, nosniff, and robot-excluded. An unrelated throttled route remains outside this hardening scope.
 
 Detailed chronology is in [`CHANGELOG.md`](CHANGELOG.md), current work is in [`TASKS.md`](TASKS.md), and future sequencing is in [`ROADMAP.md`](ROADMAP.md).
 
