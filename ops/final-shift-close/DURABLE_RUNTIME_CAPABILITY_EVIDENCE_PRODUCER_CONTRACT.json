@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "feature": "final-shift-close",
+  "sprint": 149,
+  "contract_state": "MATERIALIZED_SOURCE_ONLY_NOT_DISPATCHED",
+  "bounded_objective": "DURABLE_RUNTIME_TARGET_BOUND_CAPABILITY_EVIDENCE_PRODUCER",
+  "purpose": "MATERIALIZE_A_TRUSTED_PROTECTED_ENVIRONMENT_PRODUCER_FOR_EXACT_SPRINT148_TARGET_BOUND_CAPABILITY_EVIDENCE_WITHOUT_OPERATIONAL_EXECUTION",
+  "producer_workflow_path": ".github/workflows/final-shift-close-durable-runtime-capability-evidence.yml",
+  "producer_repository": "labzefry/oneQay",
+  "producer_ref": "refs/heads/main",
+  "producer_environment": "final-shift-close-durable-runtime-capability-evidence",
+  "producer_event": "workflow_dispatch",
+  "caller_supplied_target_inputs": false,
+  "evidence_status_context": "final-shift-close-durable-runtime-capability-evidence",
+  "evidence_artifact": "final-shift-close-durable-runtime-capability-evidence",
+  "evidence_artifact_entries": [
+    "attestation.json",
+    "evidence.json",
+    "producer.json"
+  ],
+  "evidence_artifact_retention_days": 30,
+  "required_protected_environment_secrets": [
+    "ONEQAY_DURABLE_RUNTIME_CAPABILITY_EVIDENCE_URL",
+    "ONEQAY_DURABLE_RUNTIME_CAPABILITY_EVIDENCE_TOKEN",
+    "ONEQAY_DURABLE_RUNTIME_CAPABILITY_EVIDENCE_PROTECTION_ASSERTION"
+  ],
+  "required_protected_environment_variables": [
+    "ONEQAY_DURABLE_RUNTIME_ENVIRONMENT_ID",
+    "ONEQAY_DURABLE_RUNTIME_CLASS"
+  ],
+  "producer_requirements": {
+    "dispatch_source_must_equal_current_canonical_main": true,
+    "persisted_target_state_must_equal_selected_not_authorized": true,
+    "persisted_target_must_include_trusted_ingestion_binding": true,
+    "protected_environment_identity_must_equal_persisted_selected_target": true,
+    "authenticated_https_observation_endpoint_required": true,
+    "sprint110_attestation_must_requalify": true,
+    "sprint111_selection_identity_must_recompute": true,
+    "recomputed_target_must_match_persisted_selected_target": true,
+    "exact_sprint148_capability_set_required": true,
+    "each_observation_requires_capability_specific_evidence_payload_sha256": true,
+    "raw_sprint110_boolean_claims_are_not_capability_evidence": true,
+    "each_produced_evidence_identity_is_derived_from_target_binding_and_capability_payload_digest": true,
+    "sprint148_qualifier_must_accept_produced_evidence": true,
+    "produced_artifact_must_be_secret_free": true,
+    "pending_status_precedes_artifact_publish": true,
+    "success_status_follows_successful_artifact_publish": true,
+    "source_merge_does_not_dispatch_producer": true,
+    "source_merge_does_not_persist_target_selection": true,
+    "source_merge_does_not_change_runtime_allowlist": true,
+    "source_merge_does_not_grant_activation_authority": true
+  },
+  "required_capability_evidence_kinds": {
+    "authenticated_configuration_mutation_channel": "AUTHENTICATED_CONFIGURATION_CHANNEL_IDENTITY_EVIDENCE",
+    "read_before_write_read_after": "READ_BEFORE_WRITE_READ_AFTER_VERIFICATION_EVIDENCE",
+    "non_mutating_health_attestation": "NON_MUTATING_HEALTH_ATTESTATION_EVIDENCE",
+    "verified_flag_rollback": "VERIFIED_FLAG_ROLLBACK_EVIDENCE"
+  },
+  "action_pins": {
+    "actions_checkout": "11bd71901bbe5b1630ceea73d27597364c9af683",
+    "actions_upload_artifact": "ea165f8d65b6e75b540449e92b4886f43607fa02"
+  },
+  "source_envelope": {
+    "path_count": 7,
+    "sorted_newline_terminated": true,
+    "sha256": "51f9cc22db6b1d6b072a1ee649ce2d474fad2f457346d949a1aece67f6a1eb6b",
+    "paths": [
+      ".github/workflows/final-shift-close-durable-runtime-capability-evidence.yml",
+      ".github/workflows/sprint149-final-shift-close-durable-runtime-capability-evidence-producer-regression.yml",
+      "apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeCapabilityEvidenceProducer.php",
+      "apps/web/tests/pos-final-shift-close-durable-runtime-capability-evidence-producer.php",
+      "docs/SPRINT149_FINAL_SHIFT_CLOSE_DURABLE_RUNTIME_CAPABILITY_EVIDENCE_PRODUCER.md",
+      "ops/final-shift-close/DURABLE_RUNTIME_CAPABILITY_EVIDENCE_PRODUCER_CONTRACT.json",
+      "ops/final-shift-close/POST_SELECTION_DOWNSTREAM_READINESS.json"
+    ]
+  },
+  "canonical_boundaries": {
+    "producer_source": "MATERIALIZED_NOT_DISPATCHED",
+    "producer_dispatch": "NOT_PERFORMED",
+    "real_capability_evidence": "NONE",
+    "selection_persistence_execution": "NOT_PERFORMED",
+    "selected_target": "NONE",
+    "migration27_execution": "NOT_PERFORMED",
+    "permission_provisioning": "NONE",
+    "runtime_allowlist_change": "NOT_IMPLEMENTED",
+    "feature_activation_executor": "NOT_IMPLEMENTED",
+    "feature_activation": "INACTIVE",
+    "deployment_authority": "NOT_GRANTED",
+    "technical_preview_activation": "NOT_AUTHORIZED",
+    "production_activation": "NOT_AUTHORIZED",
+    "updater_activation": "INACTIVE"
+  },
+  "attribution": "Author by Lab | zefry"
+}
