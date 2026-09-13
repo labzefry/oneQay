@@ -49,7 +49,11 @@ final class HardenFinalShiftCloseRuntimeControlPlaneThrottleResponseMiddleware
 
     private function hasCanonicalThrottleRejectionMetadata(Response $response, string $expectedThrottleLimit): bool
     {
-        if ($response->headers->get('X-RateLimit-Limit') !== $expectedThrottleLimit
+        if (! $response->headers->has('Retry-After')
+            || ! $response->headers->has('X-RateLimit-Limit')
+            || ! $response->headers->has('X-RateLimit-Remaining')
+            || ! $response->headers->has('X-RateLimit-Reset')
+            || $response->headers->get('X-RateLimit-Limit') !== $expectedThrottleLimit
             || $response->headers->get('X-RateLimit-Remaining') !== '0'
         ) {
             return false;
