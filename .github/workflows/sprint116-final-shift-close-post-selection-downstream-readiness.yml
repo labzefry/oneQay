@@ -54,7 +54,20 @@ jobs:
           test "$(jq -r '.selection_prerequisite.current_selected_target' "$contract")" = 'null'
           test "$(jq -r '.selection_prerequisite.current_eligibility' "$contract")" = 'BLOCKED_SELECTION_NOT_PERSISTED'
           test "$(jq -r '.downstream_components.migration27_execution.current_eligibility' "$contract")" = 'NOT_ELIGIBLE_SELECTED_TARGET_BINDING_MISSING'
-          test "$(jq -r '.downstream_components.permission_provisioning.current_eligibility' "$contract")" = 'NOT_ELIGIBLE_SELECTED_TARGET_BINDING_MISSING'
+          permission_eligibility="$(jq -r '.downstream_components.permission_provisioning.current_eligibility' "$contract")"
+          case "$permission_eligibility" in
+            NOT_ELIGIBLE_SELECTED_TARGET_BINDING_MISSING)
+              ;;
+            NOT_ELIGIBLE_SELECTED_TARGET_BINDING_EVIDENCE_MISSING)
+              test "$(jq -r '.downstream_components.permission_provisioning.selected_target_binding_source_materialized' "$contract")" = 'true'
+              test "$(jq -r '.downstream_components.permission_provisioning.selected_target_binding_present' "$contract")" = 'false'
+              test "$(jq -r '.downstream_components.permission_provisioning.selected_target_binding_execution' "$contract")" = 'NOT_PERFORMED'
+              ;;
+            *)
+              echo "Unexpected permission provisioning eligibility successor state: $permission_eligibility" >&2
+              exit 1
+              ;;
+          esac
           test "$(jq -r '.downstream_components.feature_activation.current_eligibility' "$contract")" = 'NOT_ELIGIBLE_EXECUTOR_NOT_IMPLEMENTED'
           test "$(jq -r '.downstream_components.runtime_allowlist.current_eligibility' "$contract")" = 'NOT_ELIGIBLE_SELECTED_RUNTIME_NOT_QUALIFIED'
           test "$(jq -r '.source_envelope_sha256' "$contract")" = '6583f7e9e4b1cce966f166c4e650e42e8c106b9c5354e75adceb10ace5688c18'
@@ -84,16 +97,21 @@ jobs:
           test "$(jq -r '.permission_provisioning.state' "$state")" = 'NONE'
           test "$(jq -r '.feature_activation.state' "$state")" = 'INACTIVE'
 
-      - name: Preserve selected-target binding NO-GO
+      - name: Preserve selected-target binding fail-closed progression
         shell: bash
         run: |
           set -euo pipefail
           migration=.github/workflows/final-shift-close-migration27-execution.yml
           permission=.github/workflows/final-shift-close-permission-provisioning.yml
-          ! grep -Fq 'DURABLE_ACTIVATION_TARGET_SELECTION.json' "$migration"
-          ! grep -Fq 'selection_fingerprint_sha256' "$migration"
-          ! grep -Fq 'DURABLE_ACTIVATION_TARGET_SELECTION.json' "$permission"
-          ! grep -Fq 'selection_fingerprint_sha256' "$permission"
+          contract=ops/final-shift-close/POST_SELECTION_DOWNSTREAM_READINESS.json
+          grep -Fq 'DURABLE_ACTIVATION_TARGET_SELECTION.json' "$migration"
+          grep -Fq 'selection_fingerprint_sha256' "$migration"
+          grep -Fq 'final-shift-close-migration27-selected-target-db-binding.yml' "$migration"
+          grep -Fq 'DURABLE_ACTIVATION_TARGET_SELECTION.json' "$permission"
+          grep -Fq 'selection_fingerprint_sha256' "$permission"
+          grep -Fq 'final-shift-close-migration27-selected-target-db-binding.yml' "$permission"
+          test "$(jq -r '.downstream_components.permission_provisioning.selected_target_binding_present' "$contract")" = 'false'
+          test "$(jq -r '.downstream_components.permission_provisioning.selected_target_binding_execution' "$contract")" = 'NOT_PERFORMED'
           test ! -e .github/workflows/final-shift-close-feature-activation.yml
 
       - name: Preserve runtime allowlist and downstream fail-closed ordering

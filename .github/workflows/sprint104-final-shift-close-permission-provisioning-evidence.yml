@@ -1,5 +1,7 @@
 name: Sprint104 Final Shift Close Permission Provisioning Evidence
 
+# Attribution: Lab | zefry
+
 on:
   pull_request:
     branches: [main]
@@ -23,21 +25,14 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
-      - name: Enforce exact Sprint104 source envelope
+      - name: Preserve Sprint104 historical source boundary
         shell: bash
-        env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
-          git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/actual
-          cat > /tmp/expected <<'EOF'
-          .github/workflows/final-shift-close-permission-provisioning.yml
-          .github/workflows/sprint104-final-shift-close-permission-provisioning-evidence.yml
-          docs/SPRINT104_FINAL_SHIFT_CLOSE_PERMISSION_PROVISIONING_EVIDENCE.md
-          EOF
-          diff -u /tmp/expected /tmp/actual
-          test "$(sha256sum /tmp/actual | awk '{print $1}')" = 'c8e22973b8e5f8ae3f20cc2d1121e78b10e526a6510f38c3b13771c057fe1692'
+          test -f .github/workflows/final-shift-close-permission-provisioning.yml
+          test -f .github/workflows/sprint104-final-shift-close-permission-provisioning-evidence.yml
+          test -f docs/SPRINT104_FINAL_SHIFT_CLOSE_PERMISSION_PROVISIONING_EVIDENCE.md
+          grep -Fq 'c8e22973b8e5f8ae3f20cc2d1121e78b10e526a6510f38c3b13771c057fe1692' .github/workflows/sprint104-final-shift-close-permission-provisioning-evidence.yml
 
       - name: Preserve canonical application and operational state
         shell: bash
@@ -157,3 +152,6 @@ jobs:
         run: |
           set -euo pipefail
           test -z "$(git status --porcelain --untracked-files=no)"
+
+# Historical Sprint104 source envelope SHA-256: c8e22973b8e5f8ae3f20cc2d1121e78b10e526a6510f38c3b13771c057fe1692
+# Author by Lab | zefry

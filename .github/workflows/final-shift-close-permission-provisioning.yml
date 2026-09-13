@@ -1,5 +1,7 @@
 name: Final Shift Close Permission Provisioning Evidence
 
+# Attribution: Lab | zefry
+
 on:
   workflow_dispatch:
     inputs:
@@ -9,6 +11,14 @@ on:
         type: string
       target_head_sha:
         description: 'Exact 40-character state-transition PR head SHA'
+        required: true
+        type: string
+      binding_run_id:
+        description: 'Exact successful selected-target database-binding workflow run ID'
+        required: true
+        type: string
+      binding_run_attempt:
+        description: 'Exact successful selected-target database-binding workflow run attempt'
         required: true
         type: string
       tenant_id:
@@ -33,6 +43,13 @@ permissions:
   pull-requests: read
   statuses: write
   actions: read
+
+env:
+  TARGET_SELECTION_FILE: ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+  BINDING_WORKFLOW_PATH: .github/workflows/final-shift-close-migration27-selected-target-db-binding.yml
+  BINDING_ARTIFACT_NAME: final-shift-close-migration27-selected-target-db-binding
+  BINDING_EVIDENCE_CONTEXT: final-shift-close-migration27-selected-target-db-binding-evidence
+  DATABASE_BINDING_ALGORITHM: SHA256_CANONICAL_JSON_DATABASE_HOSTNAME_PORT_V1
 
 concurrency:
   group: final-shift-close-permission-${{ inputs.target_pr_number }}
@@ -64,7 +81,7 @@ jobs:
           ref: ${{ github.sha }}
           fetch-depth: 1
 
-      - name: Validate canonical main and exact target transition
+      - name: Validate canonical selected target and exact permission transition
         id: preflight
         shell: bash
         env:
@@ -73,6 +90,8 @@ jobs:
           REPOSITORY: ${{ github.repository }}
           TARGET_PR: ${{ inputs.target_pr_number }}
           TARGET_HEAD: ${{ inputs.target_head_sha }}
+          BINDING_RUN_ID: ${{ inputs.binding_run_id }}
+          BINDING_RUN_ATTEMPT: ${{ inputs.binding_run_attempt }}
           TENANT_ID: ${{ inputs.tenant_id }}
           ACTOR_ID: ${{ inputs.actor_identity_id }}
           ACTOR_ORG: ${{ inputs.actor_organization_id }}
@@ -81,8 +100,11 @@ jobs:
           set -euo pipefail
 
           [[ "$GITHUB_REF" == 'refs/heads/main' ]]
+          [[ "$GITHUB_REPOSITORY" == 'labzefry/oneQay' ]]
           [[ "$TARGET_PR" =~ ^[1-9][0-9]*$ ]]
           [[ "$TARGET_HEAD" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$BINDING_RUN_ID" =~ ^[1-9][0-9]*$ ]]
+          [[ "$BINDING_RUN_ATTEMPT" =~ ^[1-9][0-9]*$ ]]
           [[ "$TENANT_ID" =~ ^[a-z0-9][a-z0-9_-]{0,63}$ ]]
           [[ "$ACTOR_ID" =~ ^[a-z0-9][a-z0-9_-]{0,95}$ ]]
           [[ "$ACTOR_ORG" =~ ^[a-z0-9][a-z0-9_-]{0,63}$ ]]
@@ -104,6 +126,46 @@ jobs:
             echo "Dispatch source is not current canonical main: $GITHUB_SHA != $main_sha" >&2
             exit 1
           }
+
+          jq -e 'type == "object"' "$TARGET_SELECTION_FILE" >/dev/null
+          [[ "$(jq -r '.selection_state' "$TARGET_SELECTION_FILE")" == 'SELECTED_NOT_AUTHORIZED' ]] || {
+            echo 'Permission provisioning requires a canonical durable target in SELECTED_NOT_AUTHORIZED state.' >&2
+            exit 1
+          }
+          [[ "$(jq -r '.selected_target | type' "$TARGET_SELECTION_FILE")" == 'object' ]]
+
+          selected_environment="$(jq -r '.selected_target.environment_id // ""' "$TARGET_SELECTION_FILE")"
+          selected_runtime="$(jq -r '.selected_target.runtime_class // ""' "$TARGET_SELECTION_FILE")"
+          selected_source="$(jq -r '.selected_target.exact_running_source_commit // ""' "$TARGET_SELECTION_FILE")"
+          selected_artifact="$(jq -r '.selected_target.exact_running_artifact_sha256 // ""' "$TARGET_SELECTION_FILE")"
+          selected_attestation="$(jq -r '.selected_target.readiness_attestation_sha256 // ""' "$TARGET_SELECTION_FILE")"
+          selected_selection_fingerprint="$(jq -r '.selected_target.selection_fingerprint_sha256 // ""' "$TARGET_SELECTION_FILE")"
+          selected_ingestion_run_id="$(jq -r '.selected_target.trusted_ingestion.run_id // ""' "$TARGET_SELECTION_FILE")"
+          selected_ingestion_run_attempt="$(jq -r '.selected_target.trusted_ingestion.run_attempt // ""' "$TARGET_SELECTION_FILE")"
+          selected_ingestion_fingerprint="$(jq -r '.selected_target.trusted_ingestion.ingestion_fingerprint_sha256 // ""' "$TARGET_SELECTION_FILE")"
+
+          [[ "$selected_environment" =~ ^[a-z0-9][a-z0-9._:-]{7,127}$ ]]
+          [[ "$selected_runtime" =~ ^[a-z0-9][a-z0-9._:-]{7,127}$ ]]
+          [[ "$selected_source" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$selected_artifact" =~ ^[0-9a-f]{64}$ ]]
+          [[ "$selected_attestation" =~ ^[0-9a-f]{64}$ ]]
+          [[ "$selected_selection_fingerprint" =~ ^[0-9a-f]{64}$ ]]
+          [[ "$selected_ingestion_run_id" =~ ^[1-9][0-9]*$ ]]
+          [[ "$selected_ingestion_run_attempt" =~ ^[1-9][0-9]*$ ]]
+          [[ "$selected_ingestion_fingerprint" =~ ^[0-9a-f]{64}$ ]]
+
+          case "$selected_runtime" in
+            local|test|testing|ci|preview|synthetic-preview|production|prod)
+              echo 'Canonical selected runtime class is not eligible for bounded permission provisioning.' >&2
+              exit 1
+              ;;
+          esac
+
+          selected_compare="$(api "$API_URL/repos/$REPOSITORY/compare/$selected_source...$GITHUB_SHA")"
+          selected_status="$(jq -r '.status' <<<"$selected_compare")"
+          selected_behind="$(jq -r '.behind_by' <<<"$selected_compare")"
+          [[ "$selected_status" == 'ahead' || "$selected_status" == 'identical' ]]
+          [[ "$selected_behind" == '0' ]]
 
           pr_json="$(api "$API_URL/repos/$REPOSITORY/pulls/$TARGET_PR")"
           [[ "$(jq -r '.state' <<<"$pr_json")" == 'open' ]]
@@ -172,12 +234,146 @@ jobs:
           require_workflow_success 'PHP Foundation Regression'
           require_workflow_success 'M7.1 Application Regression'
 
+          printf '%s' "$selected_environment" > /tmp/selected-environment.txt
+          printf '%s' "$selected_runtime" > /tmp/selected-runtime.txt
+          printf '%s' "$selected_source" > /tmp/selected-source.txt
+          printf '%s' "$selected_artifact" > /tmp/selected-artifact.txt
+          printf '%s' "$selected_attestation" > /tmp/selected-attestation.txt
+          printf '%s' "$selected_selection_fingerprint" > /tmp/selected-selection-fingerprint.txt
+          printf '%s' "$selected_ingestion_run_id" > /tmp/selected-ingestion-run-id.txt
+          printf '%s' "$selected_ingestion_run_attempt" > /tmp/selected-ingestion-run-attempt.txt
+          printf '%s' "$selected_ingestion_fingerprint" > /tmp/selected-ingestion-fingerprint.txt
+
           echo "target_head=$TARGET_HEAD" >> "$GITHUB_OUTPUT"
           echo 'verified=true' >> "$GITHUB_OUTPUT"
-          echo 'Exact permission provisioning target and prerequisite authorities qualified.'
+          echo 'Exact permission transition, selected target, and prerequisite authorities qualified.'
+
+      - name: Resolve exact selected-target database-binding evidence
+        id: binding
+        if: ${{ steps.preflight.outputs.verified == 'true' }}
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          API_URL: ${{ github.api_url }}
+          REPOSITORY: ${{ github.repository }}
+          BINDING_RUN_ID: ${{ inputs.binding_run_id }}
+          BINDING_RUN_ATTEMPT: ${{ inputs.binding_run_attempt }}
+        run: |
+          set -euo pipefail
+
+          api() {
+            curl --fail-with-body --silent --show-error \
+              --header 'Accept: application/vnd.github+json' \
+              --header "Authorization: Bearer $GH_TOKEN" \
+              --header 'X-GitHub-Api-Version: 2022-11-28' \
+              "$1"
+          }
+
+          run="$(api "$API_URL/repos/$REPOSITORY/actions/runs/$BINDING_RUN_ID")"
+          [[ "$(jq -r '.path' <<<"$run")" == "$BINDING_WORKFLOW_PATH" ]]
+          [[ "$(jq -r '.event' <<<"$run")" == 'workflow_dispatch' ]]
+          [[ "$(jq -r '.head_branch' <<<"$run")" == 'main' ]]
+          [[ "$(jq -r '.status' <<<"$run")" == 'completed' ]]
+          [[ "$(jq -r '.conclusion' <<<"$run")" == 'success' ]]
+          [[ "$(jq -r '.run_attempt' <<<"$run")" == "$BINDING_RUN_ATTEMPT" ]]
+          binding_head="$(jq -r '.head_sha' <<<"$run")"
+          [[ "$binding_head" =~ ^[0-9a-f]{40}$ ]]
+
+          compare="$(api "$API_URL/repos/$REPOSITORY/compare/$binding_head...$GITHUB_SHA")"
+          compare_status="$(jq -r '.status' <<<"$compare")"
+          compare_behind="$(jq -r '.behind_by' <<<"$compare")"
+          [[ "$compare_status" == 'ahead' || "$compare_status" == 'identical' ]]
+          [[ "$compare_behind" == '0' ]]
+
+          artifacts="$(api "$API_URL/repos/$REPOSITORY/actions/runs/$BINDING_RUN_ID/artifacts?per_page=100")"
+          matches="$(jq --arg n "$BINDING_ARTIFACT_NAME" '[.artifacts[] | select(.name == $n and .expired == false)]' <<<"$artifacts")"
+          [[ "$(jq 'length' <<<"$matches")" == '1' ]]
+          artifact_id="$(jq -r '.[0].id' <<<"$matches")"
+          artifact_size="$(jq -r '.[0].size_in_bytes' <<<"$matches")"
+          [[ "$artifact_id" =~ ^[1-9][0-9]*$ ]]
+          (( artifact_size > 0 && artifact_size <= 262144 ))
+
+          curl --fail-with-body --silent --show-error --location \
+            --header 'Accept: application/vnd.github+json' \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header 'X-GitHub-Api-Version: 2022-11-28' \
+            "$API_URL/repos/$REPOSITORY/actions/artifacts/$artifact_id/zip" \
+            --output /tmp/permission-selected-target-binding.zip
+          (( $(wc -c < /tmp/permission-selected-target-binding.zip) <= 262144 ))
+
+          unzip -Z1 /tmp/permission-selected-target-binding.zip | LC_ALL=C sort > /tmp/binding-actual-entries
+          cat > /tmp/binding-expected-entries <<'EOF'
+          binding.json
+          execution.json
+          EOF
+          diff -u /tmp/binding-expected-entries /tmp/binding-actual-entries
+          mkdir /tmp/permission-selected-target-binding
+          unzip -qq /tmp/permission-selected-target-binding.zip -d /tmp/permission-selected-target-binding
+          for f in binding.json execution.json; do
+            (( $(wc -c < "/tmp/permission-selected-target-binding/$f") > 1 ))
+            (( $(wc -c < "/tmp/permission-selected-target-binding/$f") <= 32768 ))
+            jq -e 'type == "object"' "/tmp/permission-selected-target-binding/$f" >/dev/null
+          done
+
+          binding=/tmp/permission-selected-target-binding/binding.json
+          execution=/tmp/permission-selected-target-binding/execution.json
+          selected_environment="$(cat /tmp/selected-environment.txt)"
+          selected_runtime="$(cat /tmp/selected-runtime.txt)"
+          selected_source="$(cat /tmp/selected-source.txt)"
+          selected_artifact="$(cat /tmp/selected-artifact.txt)"
+          selected_attestation="$(cat /tmp/selected-attestation.txt)"
+          selected_selection_fingerprint="$(cat /tmp/selected-selection-fingerprint.txt)"
+          selected_ingestion_run_id="$(cat /tmp/selected-ingestion-run-id.txt)"
+          selected_ingestion_run_attempt="$(cat /tmp/selected-ingestion-run-attempt.txt)"
+          selected_ingestion_fingerprint="$(cat /tmp/selected-ingestion-fingerprint.txt)"
+
+          [[ "$(jq -r '.schema_version' "$binding")" == '1' ]]
+          [[ "$(jq -r '.feature' "$binding")" == 'final-shift-close' ]]
+          [[ "$(jq -r '.binding_state' "$binding")" == 'VERIFIED_SELECTED_TARGET_DATABASE' ]]
+          [[ "$(jq -r '.environment_id' "$binding")" == "$selected_environment" ]]
+          [[ "$(jq -r '.runtime_class' "$binding")" == "$selected_runtime" ]]
+          [[ "$(jq -r '.exact_running_source_commit' "$binding")" == "$selected_source" ]]
+          [[ "$(jq -r '.exact_running_artifact_sha256' "$binding")" == "$selected_artifact" ]]
+          [[ "$(jq -r '.readiness_attestation_sha256' "$binding")" == "$selected_attestation" ]]
+          [[ "$(jq -r '.selection_fingerprint_sha256' "$binding")" == "$selected_selection_fingerprint" ]]
+          [[ "$(jq -r '.trusted_ingestion.run_id' "$binding")" == "$selected_ingestion_run_id" ]]
+          [[ "$(jq -r '.trusted_ingestion.run_attempt' "$binding")" == "$selected_ingestion_run_attempt" ]]
+          [[ "$(jq -r '.trusted_ingestion.ingestion_fingerprint_sha256' "$binding")" == "$selected_ingestion_fingerprint" ]]
+          [[ "$(jq -r '.migration27_state' "$binding")" == 'NOT_EXECUTED' ]]
+          [[ "$(jq -r '.database_binding_algorithm' "$binding")" == "$DATABASE_BINDING_ALGORITHM" ]]
+          [[ "$(jq -r '.secrets_embedded' "$binding")" == 'false' ]]
+          database_binding="$(jq -r '.database_binding_sha256 // ""' "$binding")"
+          [[ "$database_binding" =~ ^[0-9a-f]{64}$ ]]
+
+          [[ "$(jq -r '.schema_version' "$execution")" == '1' ]]
+          [[ "$(jq -r '.feature' "$execution")" == 'final-shift-close' ]]
+          [[ "$(jq -r '.workflow_path' "$execution")" == "$BINDING_WORKFLOW_PATH" ]]
+          [[ "$(jq -r '.repository' "$execution")" == 'labzefry/oneQay' ]]
+          [[ "$(jq -r '.ref' "$execution")" == 'refs/heads/main' ]]
+          [[ "$(jq -r '.source_commit' "$execution")" == "$binding_head" ]]
+          [[ "$(jq -r '.run_id' "$execution")" == "$BINDING_RUN_ID" ]]
+          [[ "$(jq -r '.run_attempt' "$execution")" == "$BINDING_RUN_ATTEMPT" ]]
+          [[ "$(jq -r '.database_binding_sha256' "$execution")" == "$database_binding" ]]
+          [[ "$(jq -r '.selection_fingerprint_sha256' "$execution")" == "$selected_selection_fingerprint" ]]
+          [[ "$(jq -r '.evidence_context' "$execution")" == "$BINDING_EVIDENCE_CONTEXT" ]]
+          [[ "$(jq -r '.evidence_state' "$execution")" == 'success' ]]
+          [[ "$(jq -r '.secrets_embedded' "$execution")" == 'false' ]]
+
+          expected_target="$GITHUB_SERVER_URL/$REPOSITORY/actions/runs/$BINDING_RUN_ID"
+          statuses="$(api "$API_URL/repos/$REPOSITORY/commits/$selected_source/statuses?per_page=100")"
+          exact="$(jq -r --arg c "$BINDING_EVIDENCE_CONTEXT" --arg u "$expected_target" \
+            '[.[] | select(.context == $c and .state == "success" and .target_url == $u)][0].state // ""' <<<"$statuses")"
+          [[ "$exact" == 'success' ]] || {
+            echo 'Exact selected-target database-binding evidence status is not success.' >&2
+            exit 1
+          }
+
+          echo "expected_db_binding=$database_binding" >> "$GITHUB_OUTPUT"
+          echo 'verified=true' >> "$GITHUB_OUTPUT"
+          echo 'Exact selected-target database-binding evidence qualified for permission provisioning.'
 
       - name: Publish pending provisioning evidence
-        if: ${{ steps.preflight.outputs.verified == 'true' }}
+        if: ${{ steps.preflight.outputs.verified == 'true' && steps.binding.outputs.verified == 'true' }}
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
@@ -189,7 +385,7 @@ jobs:
           payload="$(jq -n \
             --arg state pending \
             --arg context "$EVIDENCE_CONTEXT" \
-            --arg description 'Scoped pos.shift.close provisioning is in progress' \
+            --arg description 'Selected-target-bound pos.shift.close provisioning is in progress' \
             --arg target_url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
             '{state:$state,context:$context,description:$description,target_url:$target_url}')"
           curl --fail-with-body --silent --show-error \
@@ -200,12 +396,13 @@ jobs:
             "$API_URL/repos/$REPOSITORY/statuses/$TARGET_HEAD" \
             --data "$payload" >/dev/null
 
-      - name: Execute bounded production-class provisioning transaction
+      - name: Execute bounded selected-target permission provisioning transaction
         id: execute
-        if: ${{ steps.preflight.outputs.verified == 'true' }}
+        if: ${{ steps.preflight.outputs.verified == 'true' && steps.binding.outputs.verified == 'true' }}
         shell: bash
         env:
           TARGET_HEAD: ${{ steps.preflight.outputs.target_head }}
+          EXPECTED_DB_BINDING: ${{ steps.binding.outputs.expected_db_binding }}
           TENANT_ID: ${{ inputs.tenant_id }}
           ACTOR_ID: ${{ inputs.actor_identity_id }}
           ACTOR_ORG: ${{ inputs.actor_organization_id }}
@@ -218,12 +415,14 @@ jobs:
             "$ONEQAY_DB_PORT" \
             "$ONEQAY_DB_DATABASE" \
             "$ONEQAY_DB_USERNAME" \
-            "$ONEQAY_DB_PASSWORD"; do
+            "$ONEQAY_DB_PASSWORD" \
+            "$EXPECTED_DB_BINDING"; do
             [[ -n "$value" ]] || {
-              echo 'Required permission provisioning environment secret is missing.' >&2
+              echo 'Required permission provisioning environment secret or selected-target binding is missing.' >&2
               exit 1
             }
           done
+          [[ "$EXPECTED_DB_BINDING" =~ ^[0-9a-f]{64}$ ]]
 
           composer install \
             --working-dir=apps/web \
@@ -249,6 +448,31 @@ jobs:
           }
           if (filter_var(getenv('ONEQAY_PERSISTENCE_ENABLED') ?: false, FILTER_VALIDATE_BOOL)) {
               throw new RuntimeException('Application persistence must remain disabled during the isolated operational provisioning ceremony.');
+          }
+
+          $identity = $db->selectOne('SELECT DATABASE() AS database_name, @@hostname AS server_hostname, @@port AS server_port');
+          if (! is_object($identity)) {
+              throw new RuntimeException('Selected-target database identity readback failed before permission mutation.');
+          }
+          $databaseName = trim((string) ($identity->database_name ?? ''));
+          $serverHostname = trim((string) ($identity->server_hostname ?? ''));
+          $serverPort = (int) ($identity->server_port ?? 0);
+          if ($databaseName === '' || $serverHostname === '' || $serverPort < 1 || $serverPort > 65535) {
+              throw new RuntimeException('Selected-target database identity readback is incomplete before permission mutation.');
+          }
+          $bindingPayload = [
+              'database_name' => $databaseName,
+              'server_hostname' => $serverHostname,
+              'server_port' => $serverPort,
+          ];
+          ksort($bindingPayload, SORT_STRING);
+          $actualBinding = hash('sha256', json_encode(
+              $bindingPayload,
+              JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR,
+          ));
+          $expectedBinding = (string) getenv('EXPECTED_DB_BINDING');
+          if (! hash_equals($expectedBinding, $actualBinding)) {
+              throw new RuntimeException('Permission provisioning database credentials are not bound to the exact selected durable target.');
           }
 
           $tenant = App\Domain\Tenancy\TenantId::fromString((string) getenv('TENANT_ID'));
@@ -452,10 +676,10 @@ jobs:
           }, 1);
           PHP
 
-          echo 'Scoped pos.shift.close production-class provisioning transaction and journal verification succeeded.'
+          echo 'Selected-target-bound pos.shift.close provisioning transaction and journal verification succeeded.'
 
       - name: Publish final provisioning evidence
-        if: ${{ always() && steps.preflight.outputs.verified == 'true' }}
+        if: ${{ always() && steps.preflight.outputs.verified == 'true' && steps.binding.outputs.verified == 'true' }}
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
@@ -467,10 +691,10 @@ jobs:
           set -euo pipefail
           if [[ "$EXECUTE_OUTCOME" == 'success' ]]; then
             state=success
-            description='Scoped pos.shift.close provisioning verified'
+            description='Selected-target-bound pos.shift.close provisioning verified'
           else
             state=failure
-            description='Scoped pos.shift.close provisioning failed closed'
+            description='Selected-target-bound pos.shift.close provisioning failed closed'
           fi
 
           payload="$(jq -n \
@@ -488,3 +712,5 @@ jobs:
             --data "$payload" >/dev/null
 
           [[ "$state" == 'success' ]]
+
+# Author by Lab | zefry

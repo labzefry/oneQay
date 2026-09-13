@@ -34,10 +34,13 @@
     },
     "permission_provisioning": {
       "source_path": ".github/workflows/final-shift-close-permission-provisioning.yml",
+      "binding_contract_path": "ops/final-shift-close/PERMISSION_PROVISIONING_SELECTED_TARGET_BINDING_CONTRACT.json",
       "source_materialized": true,
+      "selected_target_binding_source_materialized": true,
       "selected_target_binding_present": false,
-      "current_eligibility": "NOT_ELIGIBLE_SELECTED_TARGET_BINDING_MISSING",
-      "required_before_eligibility": ["MIGRATION27_EXECUTED_ON_SAME_SELECTED_TARGET", "EXACT_SELECTED_TARGET_RECORD", "DATABASE_ENDPOINT_OR_CONTROL_CHANNEL_BOUND_TO_SELECTED_ENVIRONMENT_ID", "PRE_MUTATION_RUNTIME_IDENTITY_READBACK", "EXACT_RUNNING_SOURCE_AND_ARTIFACT_PROVENANCE_MATCH_SELECTED_TARGET", "NO_DEFAULT_GRANT_PRESERVED"]
+      "selected_target_binding_execution": "NOT_PERFORMED",
+      "current_eligibility": "NOT_ELIGIBLE_SELECTED_TARGET_BINDING_EVIDENCE_MISSING",
+      "required_before_eligibility": ["MIGRATION27_EXECUTED_ON_SAME_SELECTED_TARGET", "EXACT_SELECTED_TARGET_RECORD", "EXACT_SPRINT118_SELECTED_TARGET_DATABASE_BINDING_EVIDENCE", "PRE_MUTATION_DATABASE_IDENTITY_READBACK_MATCHES_TRUSTED_BINDING", "EXACT_RUNNING_SOURCE_AND_ARTIFACT_PROVENANCE_MATCH_SELECTED_TARGET", "NO_DEFAULT_GRANT_PRESERVED"]
     },
     "durable_runtime_capability_evidence_binding": {
       "source_path": "apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeCapabilityEvidence.php",
@@ -122,6 +125,18 @@
     "runtime_allowlist_change": "NOT_IMPLEMENTED",
     "operational_execution": "NOT_PERFORMED"
   },
+  "sprint152_extension": {
+    "bounded_objective": "PERMISSION_PROVISIONING_SELECTED_TARGET_DATABASE_BINDING",
+    "contract_path": "ops/final-shift-close/PERMISSION_PROVISIONING_SELECTED_TARGET_BINDING_CONTRACT.json",
+    "workflow_path": ".github/workflows/final-shift-close-permission-provisioning.yml",
+    "source_envelope_sha256": "7ed9c7cc6da5f03f73fdbd3ef18f4315896b95832331c2c2d5e2fa6bb2151590",
+    "source_only": true,
+    "selected_target_binding_source": "MATERIALIZED_NOT_DISPATCHED",
+    "provisioning_workflow_dispatch": "NOT_PERFORMED",
+    "real_selected_target_database_binding_evidence": "NONE",
+    "permission_provisioning": "NONE",
+    "operational_execution": "NOT_PERFORMED"
+  },
   "canonical_boundaries": {
     "producer_dispatch": "NOT_PERFORMED",
     "real_attestation": "NONE",
@@ -136,6 +151,8 @@
     "dependency_evidence_source_foundation": "MATERIALIZED_SOURCE_ONLY",
     "dependency_evidence_producer": "NOT_IMPLEMENTED",
     "migration27_execution": "NOT_PERFORMED",
+    "permission_provisioning_selected_target_binding_source": "MATERIALIZED_NOT_DISPATCHED",
+    "permission_provisioning_selected_target_binding_evidence": "NONE",
     "permission_provisioning": "NONE",
     "runtime_allowlist_change": "NOT_IMPLEMENTED",
     "feature_activation_executor": "NOT_IMPLEMENTED",
