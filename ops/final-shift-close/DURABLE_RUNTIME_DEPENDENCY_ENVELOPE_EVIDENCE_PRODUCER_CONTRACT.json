@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "feature": "final-shift-close",
+  "sprint": 153,
+  "contract_state": "MATERIALIZED_SOURCE_ONLY_NOT_DISPATCHED",
+  "bounded_objective": "DURABLE_RUNTIME_TARGET_BOUND_DEPENDENCY_ENVELOPE_EVIDENCE_PRODUCER",
+  "producer_workflow_path": ".github/workflows/final-shift-close-durable-runtime-dependency-envelope-evidence.yml",
+  "producer_environment": "final-shift-close-durable-runtime-dependency-envelope-evidence",
+  "artifact_name": "final-shift-close-durable-runtime-dependency-envelope-evidence",
+  "status_context": "final-shift-close-durable-runtime-dependency-envelope-evidence",
+  "source_foundation_path": "apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeDependencyEnvelopeEvidenceProducer.php",
+  "qualification_source_path": "apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeDependencyEnvelope.php",
+  "trusted_capability_producer_workflow_path": ".github/workflows/final-shift-close-durable-runtime-capability-evidence.yml",
+  "required_component_count": 9,
+  "source_requirements": {
+    "workflow_dispatch_only": true,
+    "caller_target_inputs_forbidden": true,
+    "protected_environment_required": true,
+    "exact_main_source_required": true,
+    "persisted_selected_not_authorized_target_required": true,
+    "protected_environment_target_identity_match_required": true,
+    "exact_successful_trusted_capability_producer_run_required": true,
+    "trusted_capability_artifact_required": true,
+    "authenticated_https_dependency_observation_channel_required": true,
+    "exact_nine_component_observations_required": true,
+    "sprint151_source_foundation_reuse_required": true,
+    "sprint150_final_qualification_required": true,
+    "synthetic_mixing_forbidden": true,
+    "secret_free_output_required": true,
+    "runtime_allowlist_change_forbidden": true,
+    "activation_authority_grant_forbidden": true,
+    "producer_dispatch_during_sprint153_forbidden": true
+  },
+  "source_envelope": {
+    "path_count": 5,
+    "sorted_newline_terminated": true,
+    "sha256": "4d184a18b6d9814474233bda0bf4761e7045ebfb0a8cda5ea56b6b296cef627b",
+    "paths": [
+      ".github/workflows/final-shift-close-durable-runtime-dependency-envelope-evidence.yml",
+      ".github/workflows/sprint153-final-shift-close-durable-runtime-dependency-envelope-evidence-producer-regression.yml",
+      "docs/SPRINT153_FINAL_SHIFT_CLOSE_DURABLE_RUNTIME_DEPENDENCY_ENVELOPE_EVIDENCE_PRODUCER.md",
+      "ops/final-shift-close/DURABLE_RUNTIME_DEPENDENCY_ENVELOPE_EVIDENCE_PRODUCER_CONTRACT.json",
+      "ops/final-shift-close/POST_SELECTION_DOWNSTREAM_READINESS.json"
+    ]
+  },
+  "canonical_boundaries": {
+    "producer_source": "MATERIALIZED_NOT_DISPATCHED",
+    "producer_dispatch": "NOT_PERFORMED",
+    "real_dependency_envelope_evidence": "NONE",
+    "selected_target": "NONE",
+    "migration27_execution": "NOT_PERFORMED",
+    "permission_provisioning": "NONE",
+    "runtime_allowlist_change": "NOT_IMPLEMENTED",
+    "feature_activation_executor": "NOT_IMPLEMENTED",
+    "feature_activation": "INACTIVE",
+    "deployment_authority": "NOT_GRANTED",
+    "technical_preview_activation": "NOT_AUTHORIZED",
+    "production_activation": "NOT_AUTHORIZED",
+    "updater_activation": "INACTIVE"
+  },
+  "attribution": "Author by Lab | zefry"
+}
