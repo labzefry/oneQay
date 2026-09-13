@@ -51,13 +51,15 @@
     "sprint111_durable_runtime_target_selection_identity": "PRESERVED",
     "sprint113_attestation_producer_source_only_boundary": "PRESERVED",
     "sprint114_trusted_ingestion_executor_source_only_boundary": "PRESERVED",
+    "sprint116_post_selection_downstream_readiness": "SUCCESSOR_COMPATIBLE_AFTER_CI_PROVEN_ENVELOPE_CONFLICT",
     "sprint117_selected_target_database_binding_boundary": "PRESERVED"
   },
   "source_envelope": {
-    "path_count": 6,
+    "path_count": 7,
     "sorted_newline_terminated": true,
-    "sha256": "57ba389d323f4c2be1e37708fa86324f2731acda53ae3f7b7133d806f0f3c895",
+    "sha256": "f7d9cfb173b54ac863cc70f10b9ae3df2f6715a4abdae0c7c32cbdb399bda5a6",
     "paths": [
+      ".github/workflows/sprint116-final-shift-close-post-selection-downstream-readiness.yml",
       ".github/workflows/sprint148-final-shift-close-durable-runtime-capability-evidence-binding-regression.yml",
       "apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeCapabilityEvidence.php",
       "apps/web/tests/pos-final-shift-close-durable-runtime-capability-evidence-binding.php",
