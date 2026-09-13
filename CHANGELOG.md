@@ -4,42 +4,37 @@ This changelog records **material canonical progress**, not every intermediate c
 
 Current project-state authority: [`PROJECT_MANIFEST.md`](PROJECT_MANIFEST.md).
 
+## 2026-09-13 — Sprint149 closed
+
+**Sprint149: durable runtime target-bound capability evidence producer**
+
+- **Purpose / Why:** Sprint148 established exact target-bound capability-evidence identity qualification but intentionally left real capability evidence absent and the trusted producer unimplemented.
+- **Objective / Gap:** materialize a trusted protected-environment producer source that can obtain capability-specific observation digests, recompute Sprint110/Sprint111 identity, bind all four Sprint148 evidence kinds to the exact target, and require final Sprint148 qualification in a future separately authorized execution.
+- **What changed:** added `FinalShiftCloseDurableRuntimeCapabilityEvidenceProducer`, dedicated executable regression coverage, protected producer workflow source, `DURABLE_RUNTIME_CAPABILITY_EVIDENCE_PRODUCER_CONTRACT.json`, post-selection readiness integration, active exact-head workflow, and the required six-section Sprint149 document.
+- Initial seven-path exact-head CI proved historical Sprint148 still froze successor-owned producer materialization; Sprint149 therefore expanded to eight paths only to make that historical workflow successor-compatible while preserving its owned evidence-binding and NO-GO invariants.
+- Engineering PR #716 squash merged.
+- Canonical engineering commit: `662a892c3269d945579594da03121bce960c9074`.
+- Parent canonical post-Sprint148 reconciliation checkpoint: `c595da17fd023a9eb2ebd3f046e6f17940430a03`.
+- Final exact engineering head: `449832afd18117c58fb034ad23c9d4217bd3cd1e`.
+- Exact-head pull-request qualification: **34/34 successful**.
+- Repository-native Product Owner merge-authority run `34759693893` successful.
+- Final engineering envelope: eight paths; SHA-256 `8acea0b1cc826dedbe2dd55f38b4aa24fd4854a96ee32dde9f7552d22d239a91`.
+- Post-Sprint149 canonical reconciliation envelope: six paths; SHA-256 `f97c59e253a6d3d47ff84f026690e700c3c85c2b9e8baf9ec00bfb57c1663c7e`.
+- **Operational boundaries / NO-GO:** producer source materialized but not dispatched; no real capability evidence, target persistence/activation, migration execution, permission provisioning, runtime allowlist change, feature activation, deployment/release, Technical Preview activation, Production activation, or updater activation.
+- **Next position:** Sprint150 bounded discovery from canonical post-Sprint149 after reconciliation is squash merged and verified; no objective or source envelope is preselected.
+
 ## 2026-09-13 — Sprint148 closed
 
-**Sprint148: durable runtime target-bound capability evidence identity binding**
-
-- **Purpose / Why:** Sprint110 established canonical durable-runtime capability claims and Sprint111 bound qualified readiness to an exact target identity, but the capability booleans were not capability-specific evidence proving those capabilities for the exact selected target.
-- **Objective / Gap:** require capability-specific evidence for authenticated configuration mutation, read-before/write/read-after verification, non-mutating health attestation, and verified rollback to be individually verified, secret-free, digest-qualified, and bound to the exact Sprint111 target identity before any future runtime-allowlist eligibility.
-- **What changed:** added `FinalShiftCloseDurableRuntimeCapabilityEvidence`, dedicated executable Sprint148 regression coverage, `DURABLE_RUNTIME_CAPABILITY_EVIDENCE_BINDING_CONTRACT.json`, post-selection readiness integration, an exact-head workflow, and the detailed six-section Sprint148 description.
-- Exact-head CI proved historical Sprint116 still locked successor PRs to its original full three-path envelope; Sprint148 expanded from six to seven paths only to convert that workflow to successor-compatible historical regression while preserving its owned post-selection and NO-GO invariants.
-- Engineering PR #714 squash merged.
-- Canonical engineering commit: `7a07a3163842e60332ccd3e3780d4e970280d46c`.
-- Parent canonical post-Sprint147 reconciliation checkpoint: `54e209c6ef50b1f42c38fd30c7e6e12d757a8cd9`.
-- Final exact engineering head before merge: `eba8687297e7b82bf5adfcd770d86233139b0454`.
-- Exact-head pull-request qualification: **33/33 successful**.
-- Repository-native Product Owner merge-authority run `34756294306` successful.
-- Final engineering envelope: seven paths; SHA-256 `f7d9cfb173b54ac863cc70f10b9ae3df2f6715a4abdae0c7c32cbdb399bda5a6`.
-- Post-Sprint148 canonical reconciliation envelope: six paths; SHA-256 `5c315771e9777b9d5a5b428a206c7cec711e14a7851a83c685a5a5cfb378dfc5`.
-- **Operational boundaries / NO-GO:** no real capability evidence, trusted evidence producer, target persistence/activation, migration execution, permission provisioning, feature activation, runtime-token provisioning, runtime allowlist change, operational manifest/DB invocation, deployment/release, Technical Preview activation, Production activation, or updater activation.
-- **Next position:** Sprint149 bounded discovery from canonical post-Sprint148 after this reconciliation is squash merged and verified; no objective or envelope is preselected.
+- PR #714 squash merged at engineering commit `7a07a3163842e60332ccd3e3780d4e970280d46c`.
+- Added exact target-bound durable-runtime capability-evidence identity qualification.
+- Final exact-head qualification: 33/33 successful; Product Owner authority run `34756294306` successful.
+- Engineering envelope SHA-256: `f7d9cfb173b54ac863cc70f10b9ae3df2f6715a4abdae0c7c32cbdb399bda5a6`.
 
 ## 2026-09-13 — Sprint147 closed
 
-**Sprint147: canonical throttle rejection metadata identity response hardening**
-
-- **Purpose / Why:** Sprint146 secured canonical request identity plus exact per-route throttle ceiling, but any response with the right ceiling could still be rewritten without proving the full canonical throttle-rejection metadata shape.
-- **Objective / Gap:** require `X-RateLimit-Remaining: 0`, decimal non-empty `Retry-After`, and decimal non-empty `X-RateLimit-Reset` in addition to the previously qualified request identity and throttle ceiling.
-- **What changed:** added canonical throttle-rejection metadata validation to the hardener, dedicated Sprint147 regression coverage, successor-compatible Sprint144 fixture metadata, machine-readable contract, active exact-head workflow, and the required six-section Sprint description.
-- Missing/nonzero/numeric-alias remaining values and missing/empty/nondigit retry/reset metadata remain framework-owned.
-- Engineering PR #711 squash merged.
-- Canonical engineering commit: `50a3ba99b8f5628381d9df63f4f6a0e1020d550a`.
-- Parent canonical documentation checkpoint: `f4984081a30c4251d57acd143ec090b17ca181ff`.
-- Final exact-head SHA before merge: `513d95dbb4d5ab95a8f6c3282f8911cf339a9697`.
-- Exact-head qualification: 31/31 workflow runs successful.
-- Product Owner merge-authority run `34752002084` successful.
-- Engineering envelope: six paths; SHA-256 `ffd176da808eda16fccdf0375fcae2fd5bcc1cfc4b931aca6492ca31eb9b1d40`.
-- **Operational boundaries / NO-GO:** no migration execution, permission provisioning, feature activation, runtime-token provisioning, operational manifest/DB invocation, deployment/release, durable-target activation, Technical Preview activation, Production activation, or updater activation.
-- **Next position:** Sprint148 bounded discovery from canonical post-Sprint147; no objective or envelope is preselected.
+- PR #711 squash merged at engineering commit `50a3ba99b8f5628381d9df63f4f6a0e1020d550a`.
+- Added canonical throttle-rejection metadata identity response hardening.
+- Exact-head qualification: 31/31 successful; Product Owner authority run `34752002084` successful.
 
 ## 2026-09-13 — Sprint146 closed
 
@@ -57,7 +52,6 @@ Current project-state authority: [`PROJECT_MANIFEST.md`](PROJECT_MANIFEST.md).
 
 - PR #705 squash merged at engineering commit `98840c29c21bcf6b1d81cb2afe21d07eb720e120`.
 - Tightened throttle-response ownership to canonical route name + exact method + exact path.
-- Same-path/method noncanonical routes remain framework-owned.
 - Exact-head qualification: 28/28 successful; Product Owner authority run `34748118905` successful.
 
 ## 2026-09-13 — Sprint143 closed
@@ -72,18 +66,9 @@ Current project-state authority: [`PROJECT_MANIFEST.md`](PROJECT_MANIFEST.md).
 - Hardened authenticated throttle rejections while preserving framework rate-limit metadata.
 - Exact-head qualification: 26/26 successful; Product Owner authority run `34744364161` successful.
 
-## Sprint139–Sprint141 control-plane hardening
+## Sprint130–Sprint141 canonical control-plane qualification
 
-- Sprint139 — authentication-before-throttle hardening and budget-isolation regression.
-- Sprint140 — direct middleware authentication-rejection response hardening.
-- Sprint141 — registered-route HTTP-kernel propagation of the hardened rejection contract.
-
-## Sprint130–Sprint138 canonical control-plane qualification
-
-- Sprint130 — canonical runtime control-plane token policy.
-- Sprint131–Sprint133 — middleware/controller positive and fail-closed regressions.
-- Sprint134–Sprint135 — delivery-gate and registration metadata qualification.
-- Sprint136–Sprint138 — authenticated HTTP positive, fail-closed, and throttle qualification.
+Sprint130 established the canonical runtime-control-plane token policy. Sprint131–Sprint138 qualified middleware/controller, delivery-gate/registration metadata, and authenticated HTTP positive/fail-closed/throttle behavior. Sprint139–Sprint141 hardened authentication-before-throttle and rejection propagation.
 
 ## Earlier material engineering history
 
@@ -91,15 +76,12 @@ Final Shift Close milestones include Sprint88 source-only migration #27, Sprint8
 
 ## Current lifecycle boundary
 
-Machine-readable authority remains in:
+Machine-readable authority remains in `ops/final-shift-close/STATE.json` and `ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json`.
 
-- `ops/final-shift-close/STATE.json`
-- `ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json`
-
-Current high-level values remain migration #27 `NOT_EXECUTED`, permission provisioning `NONE`, feature `INACTIVE`, deployment `NOT_GRANTED`, preview/production `NOT_AUTHORIZED`, updater `INACTIVE`, durable target selection blocked, selected target `null`, runtime allowlist change `NOT_IMPLEMENTED`, and real target-bound capability evidence `NONE`.
+Current high-level values remain migration #27 `NOT_EXECUTED`, permission provisioning `NONE`, feature `INACTIVE`, deployment `NOT_GRANTED`, preview/production `NOT_AUTHORIZED`, updater `INACTIVE`, durable target selection blocked, selected target `null`, runtime allowlist change `NOT_IMPLEMENTED`, real target-bound capability evidence `NONE`, trusted capability-evidence producer `MATERIALIZED_NOT_DISPATCHED`, and producer dispatch `NOT_PERFORMED`.
 
 ## Sprint description standard
 
-Each material sprint must record: **Purpose / Why; Objective / Gap; What changed; Evidence / Qualification; Operational boundaries / NO-GO; Next position**.
+Each material sprint records: **Purpose / Why; Objective / Gap; What changed; Evidence / Qualification; Operational boundaries / NO-GO; Next position**.
 
 Author by Lab | zefry

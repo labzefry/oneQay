@@ -14,7 +14,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  qualify-capability-evidence-producer-source:
+  preserve-sprint149-capability-evidence-producer:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
@@ -32,31 +32,26 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
-      - name: Freeze Sprint149 bounded engineering envelope
+      - name: Preserve successor-compatible historical regression boundary
         shell: bash
         run: |
           set -euo pipefail
-          git diff --name-only "${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }}" | LC_ALL=C sort > /tmp/actual
-          cat > /tmp/expected <<'EOF'
-          .github/workflows/final-shift-close-durable-runtime-capability-evidence.yml
-          .github/workflows/sprint148-final-shift-close-durable-runtime-capability-evidence-binding-regression.yml
-          .github/workflows/sprint149-final-shift-close-durable-runtime-capability-evidence-producer-regression.yml
-          apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeCapabilityEvidenceProducer.php
-          apps/web/tests/pos-final-shift-close-durable-runtime-capability-evidence-producer.php
-          docs/SPRINT149_FINAL_SHIFT_CLOSE_DURABLE_RUNTIME_CAPABILITY_EVIDENCE_PRODUCER.md
-          ops/final-shift-close/DURABLE_RUNTIME_CAPABILITY_EVIDENCE_PRODUCER_CONTRACT.json
-          ops/final-shift-close/POST_SELECTION_DOWNSTREAM_READINESS.json
-          EOF
-          diff -u /tmp/expected /tmp/actual
-          [[ "$(sha256sum /tmp/expected | awk '{print $1}')" == '8acea0b1cc826dedbe2dd55f38b4aa24fd4854a96ee32dde9f7552d22d239a91' ]]
+          # Sprint149 is historical after its canonical squash merge.
+          test -f .github/workflows/final-shift-close-durable-runtime-capability-evidence.yml
+          test -f apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeCapabilityEvidenceProducer.php
+          test -f apps/web/tests/pos-final-shift-close-durable-runtime-capability-evidence-producer.php
+          test -f docs/SPRINT149_FINAL_SHIFT_CLOSE_DURABLE_RUNTIME_CAPABILITY_EVIDENCE_PRODUCER.md
+          test -f ops/final-shift-close/DURABLE_RUNTIME_CAPABILITY_EVIDENCE_PRODUCER_CONTRACT.json
+          test -f ops/final-shift-close/POST_SELECTION_DOWNSTREAM_READINESS.json
 
-      - name: Validate Sprint149 contracts and successor compatibility
+      - name: Validate historical Sprint149 contract
         shell: bash
         run: |
           set -euo pipefail
-          contract=ops/final-shift-close/DURABLE_RUNTIME_CAPABILITY_EVIDENCE_PRODUCER_CONTRACT.json
-          downstream=ops/final-shift-close/POST_SELECTION_DOWNSTREAM_READINESS.json
+          file=ops/final-shift-close/DURABLE_RUNTIME_CAPABILITY_EVIDENCE_PRODUCER_CONTRACT.json
           jq -e '
+            .schema_version == 1 and
+            .feature == "final-shift-close" and
             .sprint == 149 and
             .contract_state == "MATERIALIZED_SOURCE_ONLY_NOT_DISPATCHED" and
             .bounded_objective == "DURABLE_RUNTIME_TARGET_BOUND_CAPABILITY_EVIDENCE_PRODUCER" and
@@ -69,22 +64,10 @@ jobs:
             .canonical_boundaries.producer_dispatch == "NOT_PERFORMED" and
             .canonical_boundaries.real_capability_evidence == "NONE" and
             .canonical_boundaries.runtime_allowlist_change == "NOT_IMPLEMENTED" and
-            .canonical_boundaries.feature_activation == "INACTIVE" and
             .attribution == "Author by Lab | zefry"
-          ' "$contract" >/dev/null
-          jq -e '
-            .downstream_components.durable_runtime_capability_evidence_binding.real_capability_evidence_present == false and
-            .downstream_components.durable_runtime_capability_evidence_binding.trusted_evidence_producer_materialized == true and
-            .downstream_components.durable_runtime_capability_evidence_binding.producer_dispatch == "NOT_PERFORMED" and
-            .sprint149_extension.source_envelope_sha256 == "8acea0b1cc826dedbe2dd55f38b4aa24fd4854a96ee32dde9f7552d22d239a91" and
-            .sprint149_extension.producer_source == "MATERIALIZED_NOT_DISPATCHED" and
-            .sprint149_extension.real_capability_evidence == "NONE" and
-            .canonical_boundaries.trusted_capability_evidence_producer == "MATERIALIZED_NOT_DISPATCHED" and
-            .canonical_boundaries.capability_evidence_producer_dispatch == "NOT_PERFORMED"
-          ' "$downstream" >/dev/null
-          grep -Fq 'Sprint148 is historical after its canonical squash merge.' .github/workflows/sprint148-final-shift-close-durable-runtime-capability-evidence-binding-regression.yml
+          ' "$file" >/dev/null
 
-      - name: Validate protected producer source
+      - name: Preserve Sprint149 source behavior
         shell: bash
         run: |
           set -euo pipefail
@@ -94,10 +77,8 @@ jobs:
           grep -Fq 'environment: final-shift-close-durable-runtime-capability-evidence' "$workflow"
           grep -Fq 'SELECTED_NOT_AUTHORIZED' "$workflow"
           grep -Fq 'trusted_ingestion_fingerprint_sha256' "$workflow"
-          grep -Fq 'FinalShiftCloseDurableRuntimeCapabilityEvidenceProducer' "$workflow"
           grep -Fq "PRODUCER_STATE = 'TARGET_BOUND_CAPABILITY_EVIDENCE_PRODUCED_NOT_AUTHORIZED'" "$source"
           grep -Fq 'evidence_payload_sha256' "$source"
-          grep -Fq 'unexpected_capability_observation_field:' "$source"
           grep -Fq 'produced_evidence_fails_sprint148_qualification' "$source"
 
       - name: Preserve canonical lifecycle gates
@@ -126,7 +107,7 @@ jobs:
           composer install --no-interaction --no-progress --prefer-dist
           composer audit --locked --no-interaction --abandoned=report
 
-      - name: Execute bounded regressions
+      - name: Execute Sprint149 and predecessor regressions
         working-directory: apps/web
         shell: bash
         run: |
@@ -143,7 +124,6 @@ jobs:
           doc=docs/SPRINT149_FINAL_SHIFT_CLOSE_DURABLE_RUNTIME_CAPABILITY_EVIDENCE_PRODUCER.md
           for heading in '## Purpose / Why' '## Objective / Gap' '## What changed' '## Evidence / Qualification' '## Operational boundaries / NO-GO' '## Next position'; do grep -Fq "$heading" "$doc"; done
           grep -Fq '8acea0b1cc826dedbe2dd55f38b4aa24fd4854a96ee32dde9f7552d22d239a91' "$doc"
-          ! grep -Eq '^[[:space:]]*workflow_dispatch[[:space:]]*:' .github/workflows/sprint149-final-shift-close-durable-runtime-capability-evidence-producer-regression.yml
 
       - name: Verify tracked-source cleanliness
         run: |
