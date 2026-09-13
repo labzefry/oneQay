@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "feature": "final-shift-close",
+  "sprint": 145,
+  "bounded_objective": "CANONICAL_CONTROL_PLANE_ACTION_IDENTITY_THROTTLE_RESPONSE_HARDENING_REGRESSION",
+  "execution_mode": "CI_ONLY_SYNTHETIC_DIRECT_MIDDLEWARE_ACTION_IDENTITY_QUALIFICATION",
+  "qualification": {
+    "new_executable_gap": "CANONICAL_NAME_METHOD_PATH_WITH_NONCANONICAL_ACTION_MUST_REMAIN_FRAMEWORK_OWNED",
+    "ownership_signal": "ROUTE_NAME_PLUS_ACTION_PLUS_METHOD_PLUS_PATH",
+    "route_registration_changed": false,
+    "route_middleware_stack_changed": false,
+    "authentication_before_throttle_preserved": true,
+    "throttle_limits_changed": false,
+    "materialization_method_ownership": [
+      "POST"
+    ],
+    "db_attestation_method_ownership": [
+      "GET",
+      "HEAD"
+    ],
+    "materialization_action_identity": "App\\Delivery\\Http\\Pos\\FinalShiftCloseRuntimeBindingManifestMaterializationController@__invoke",
+    "db_attestation_action_identity": "App\\Delivery\\Http\\Pos\\FinalShiftCloseRuntimeDbBindingAttestationController@__invoke",
+    "canonical_route_name_match_required": true,
+    "canonical_action_match_required": true,
+    "canonical_path_match_required": true,
+    "noncanonical_action_materialization_post_framework_owned": true,
+    "noncanonical_action_db_get_framework_owned": true,
+    "noncanonical_action_db_head_framework_owned": true,
+    "canonical_materialization_post_hardened": true,
+    "canonical_db_attestation_get_hardened": true,
+    "canonical_db_attestation_head_hardened": true,
+    "throttle_rejection_status": 429,
+    "canonical_throttle_rejection_body": "EMPTY",
+    "privacy_security_headers_preserved": true,
+    "framework_rate_limit_metadata_preserved": true,
+    "framework_owned_shadow_response_not_rewritten": true
+  },
+  "historical_ownership": {
+    "sprint135_route_registration_action_metadata": "PRESERVED",
+    "sprint144_named_route_identity_throttle_response_hardening": "PRESERVED",
+    "sprint145_action_identity_throttle_response_hardening": "OWNED"
+  },
+  "source_envelope": {
+    "path_count": 5,
+    "sha256": "1316090a005bae669963dfa13152ec84f37ea9f90947b97b0e33869e0ec84bf4"
+  },
+  "canonical_boundaries": {
+    "migration27_execution": "NOT_PERFORMED",
+    "permission_provisioning": "NONE",
+    "feature_activation": "INACTIVE",
+    "selected_target": null,
+    "runtime_token_provisioning": "NOT_PERFORMED",
+    "runtime_manifest_materialization": "NOT_PERFORMED",
+    "operational_database_access": "NOT_PERFORMED",
+    "deployment_authority": "NOT_GRANTED",
+    "technical_preview": "NO-GO",
+    "production": "NO-GO",
+    "updater": "INACTIVE"
+  },
+  "attribution": "Author by Lab | zefry"
+}
