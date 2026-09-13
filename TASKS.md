@@ -1,12 +1,12 @@
 # oneQay Tasks
 
-**Current engineering checkpoint:** post-Sprint146
-**Canonical engineering commit:** `a5e4aec8c142e7478a0e58d2d732dbf106393b06`
+**Current engineering checkpoint:** post-Sprint147
+**Canonical engineering commit:** `50a3ba99b8f5628381d9df63f4f6a0e1020d550a`
 **Canonical status authority:** `PROJECT_MANIFEST.md`
 
 This file separates **completed source engineering**, **next bounded engineering**, and **operational actions that remain unauthorized**.
 
-## Completed through Sprint146
+## Completed through Sprint147
 
 - [x] Core modular-monolith architecture and repository governance foundation
 - [x] Tenant-context-first and deny-by-default authorization foundations
@@ -27,38 +27,40 @@ This file separates **completed source engineering**, **next bounded engineering
 - [x] Named-route identity ownership hardening — Sprint144
 - [x] Canonical controller-action identity ownership hardening — Sprint145
 - [x] Canonical per-route throttle-budget identity ownership hardening — Sprint146
-- [x] Sprint146 PR #709 squash merged
-- [x] Sprint146 exact-head PR qualification — 30/30 successful
-- [x] Sprint146 Product Owner merge-authority run `34750648988` successful
-- [x] Sprint146 canonical engineering commit `a5e4aec8c142e7478a0e58d2d732dbf106393b06`
-- [x] Sprint146 post-merge engineering NO-GO verification completed
+- [x] Canonical throttle-rejection metadata identity ownership hardening — Sprint147
+- [x] Sprint147 PR #711 squash merged
+- [x] Sprint147 exact-head PR qualification — 31/31 successful
+- [x] Sprint147 Product Owner merge-authority run `34752002084` successful
+- [x] Sprint147 canonical engineering commit `50a3ba99b8f5628381d9df63f4f6a0e1020d550a`
+- [x] Sprint147 post-merge engineering NO-GO verification completed
 
-## Sprint146 description
+## Sprint147 description
 
 ### Purpose / Why
 
-Sprint145 secured throttle-response request ownership using route name + canonical controller action + exact method + exact path, but the response-side hardener still accepted any present `X-RateLimit-Limit` value.
+Sprint146 secured throttle-response ownership using canonical request identity plus exact per-route rate-limit ceilings, but the hardener still did not require the complete framework throttle-rejection metadata shape before rewriting a `429` response.
 
 ### Objective / Gap
 
-Require the previously qualified canonical request identity plus the exact canonical rate-limit ceiling: materialization POST `1`, DB-attestation GET/HEAD `2`.
+Require the previously qualified request identity and exact canonical limit plus `X-RateLimit-Remaining: 0`, decimal non-empty `Retry-After`, and decimal non-empty `X-RateLimit-Reset`.
 
 ### What changed
 
-- Added canonical per-route throttle-limit constants and exact-string response matching.
-- Added a Sprint146 executable regression proving mismatched, arbitrary, and numeric-alias ceilings remain framework-owned.
-- Added Sprint146 contract, workflow, and detailed six-section description.
-- Preserved Sprint145 action identity and Sprint142 real HTTP-kernel throttle evidence.
+- Added canonical throttle-rejection metadata validation to the hardener.
+- Preserved explicit framework metadata-presence guards.
+- Added Sprint147 executable regression coverage for materialization POST and DB-attestation GET/HEAD.
+- Made the historical Sprint144 named-route fixture successor-compatible with the canonical metadata shape proved by Sprint142.
+- Added Sprint147 contract, workflow, and detailed six-section description.
 
 ### Evidence / Qualification
 
-- PR #709, merged.
-- Final authorized engineering head `b520b8e8c565a96b4c41e7838a68492f4b836066`.
-- 30/30 exact-head workflows successful.
-- Product Owner authority run `34750648988` successful.
-- Canonical engineering commit `a5e4aec8c142e7478a0e58d2d732dbf106393b06`.
-- Engineering envelope: five paths.
-- Engineering envelope SHA-256 `bbc0da27fe84ca8a1fafcf4b76bcf9e1f42e595c01d35544a94793c1a7fec161`.
+- PR #711, merged.
+- Final authorized engineering head `513d95dbb4d5ab95a8f6c3282f8911cf339a9697`.
+- 31/31 exact-head workflows successful.
+- Product Owner authority run `34752002084` successful.
+- Canonical engineering commit `50a3ba99b8f5628381d9df63f4f6a0e1020d550a`.
+- Engineering envelope: six paths.
+- Engineering envelope SHA-256 `ffd176da808eda16fccdf0375fcae2fd5bcc1cfc4b931aca6492ca31eb9b1d40`.
 
 ### Operational boundaries / NO-GO
 
@@ -66,37 +68,37 @@ No migration execution, permission provisioning, feature activation, runtime-tok
 
 ### Next position
 
-Sprint147 bounded discovery from canonical post-Sprint146; no implementation objective or source envelope is preselected.
+Sprint148 bounded discovery from canonical post-Sprint147; no implementation objective or source envelope is preselected.
 
-## Post-Sprint146 canonical reconciliation
+## Post-Sprint147 canonical reconciliation
 
-- [x] Make Sprint146 workflow successor-compatible while preserving owned regression
-- [x] Advance `PROJECT_MANIFEST.md` to Sprint146 engineering truth
-- [x] Advance `README.md` to Sprint146 current status
-- [x] Record Sprint146 closure in `CHANGELOG.md`
+- [x] Make Sprint147 workflow successor-compatible while preserving owned regression
+- [x] Advance `PROJECT_MANIFEST.md` to Sprint147 engineering truth
+- [x] Advance `README.md` to Sprint147 current status
+- [x] Record Sprint147 closure in `CHANGELOG.md`
 - [x] Advance `TASKS.md`
-- [x] Advance `ROADMAP.md` to Sprint147 next position
+- [x] Advance `ROADMAP.md` to Sprint148 next position
 - [x] Preserve mandatory sprint-description format
 
 GitHub PR/CI state remains authoritative for the transient publication status of this reconciliation until it is squash merged.
 
 ## Next bounded engineering
 
-### Sprint147 — bounded discovery next
+### Sprint148 — bounded discovery next
 
-Sprint147 is **not** considered started or complete merely because it is named here.
+Sprint148 is **not** considered started or complete merely because it is named here.
 
 The next engineering activity must:
 
-- identify the smallest non-duplicative remaining executable gap from canonical post-Sprint146;
-- preserve Sprint130–Sprint146 ownership and historical regressions;
+- identify the smallest non-duplicative remaining executable gap from canonical post-Sprint147;
+- preserve Sprint130–Sprint147 ownership and historical regressions;
 - freeze a bounded envelope before implementation;
 - remain fail-closed and deny-by-default;
 - keep all operational actions outside scope unless separately authorized;
 - qualify exact head before merge;
 - document Purpose / Why, Objective / Gap, What changed, Evidence / Qualification, Operational boundaries / NO-GO, and Next position.
 
-No Sprint147 implementation is preselected.
+No Sprint148 implementation is preselected.
 
 ## Operational blockers / separate authority required
 

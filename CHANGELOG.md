@@ -4,25 +4,29 @@ This changelog records **material canonical progress**, not every intermediate c
 
 Current project-state authority: [`PROJECT_MANIFEST.md`](PROJECT_MANIFEST.md).
 
+## 2026-09-13 — Sprint147 closed
+
+**Sprint147: canonical throttle rejection metadata identity response hardening**
+
+- **Purpose / Why:** Sprint146 secured canonical request identity plus exact per-route throttle ceiling, but any response with the right ceiling could still be rewritten without proving the full canonical throttle-rejection metadata shape.
+- **Objective / Gap:** require `X-RateLimit-Remaining: 0`, decimal non-empty `Retry-After`, and decimal non-empty `X-RateLimit-Reset` in addition to the previously qualified request identity and throttle ceiling.
+- **What changed:** added canonical throttle-rejection metadata validation to the hardener, dedicated Sprint147 regression coverage, successor-compatible Sprint144 fixture metadata, machine-readable contract, active exact-head workflow, and the required six-section Sprint description.
+- Missing/nonzero/numeric-alias remaining values and missing/empty/nondigit retry/reset metadata remain framework-owned.
+- Engineering PR #711 squash merged.
+- Canonical engineering commit: `50a3ba99b8f5628381d9df63f4f6a0e1020d550a`.
+- Parent canonical documentation checkpoint: `f4984081a30c4251d57acd143ec090b17ca181ff`.
+- Final exact-head SHA before merge: `513d95dbb4d5ab95a8f6c3282f8911cf339a9697`.
+- Exact-head qualification: 31/31 workflow runs successful.
+- Product Owner merge-authority run `34752002084` successful.
+- Engineering envelope: six paths; SHA-256 `ffd176da808eda16fccdf0375fcae2fd5bcc1cfc4b931aca6492ca31eb9b1d40`.
+- **Operational boundaries / NO-GO:** no migration execution, permission provisioning, feature activation, runtime-token provisioning, operational manifest/DB invocation, deployment/release, durable-target activation, Technical Preview activation, Production activation, or updater activation.
+- **Next position:** Sprint148 bounded discovery from canonical post-Sprint147; no objective or envelope is preselected.
+
 ## 2026-09-13 — Sprint146 closed
 
-**Sprint146: canonical throttle budget identity response hardening**
-
-- **Purpose / Why:** Sprint145 secured canonical request identity for throttle-response ownership, but any present `X-RateLimit-Limit` value could still qualify the response for rewriting.
-- **Objective / Gap:** require exact canonical per-route throttle ceiling in addition to route name + controller action + exact method + exact path.
-- **What changed:** added exact budget resolution/matching to the throttle-response hardener, a dedicated Sprint146 executable regression, a machine-readable contract, active exact-head workflow, and the required six-section Sprint description.
-- Materialization POST canonical ceiling: `1`.
-- DB-attestation GET/HEAD canonical ceiling: `2`.
-- Cross-budget, arbitrary, and numeric-alias ceilings remain framework-owned.
-- Engineering PR #709 squash merged.
-- Canonical engineering commit: `a5e4aec8c142e7478a0e58d2d732dbf106393b06`.
-- Parent canonical documentation checkpoint: `ebaf16c64245c67e9ecf8cac613696e5661a02ac`.
-- Final exact-head SHA before merge: `b520b8e8c565a96b4c41e7838a68492f4b836066`.
-- Exact-head qualification: 30/30 workflow runs successful.
-- Product Owner merge-authority run `34750648988` successful.
-- Engineering envelope: five paths; SHA-256 `bbc0da27fe84ca8a1fafcf4b76bcf9e1f42e595c01d35544a94793c1a7fec161`.
-- **Operational boundaries / NO-GO:** no migration execution, permission provisioning, feature activation, runtime-token provisioning, operational manifest/DB invocation, deployment/release, durable-target activation, Technical Preview activation, Production activation, or updater activation.
-- **Next position:** Sprint147 bounded discovery from canonical post-Sprint146; no objective or envelope is preselected.
+- PR #709 squash merged at engineering commit `a5e4aec8c142e7478a0e58d2d732dbf106393b06`.
+- Added exact canonical per-route throttle-budget identity to response ownership.
+- Exact-head qualification: 30/30 successful; Product Owner authority run `34750648988` successful.
 
 ## 2026-09-13 — Sprint145 closed
 
