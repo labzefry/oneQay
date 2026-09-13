@@ -1,11 +1,11 @@
 # oneQay Project Manifest
 
-**Product:** oneQay — The Future of Intelligent Business Management  
-**Repository owner / attribution:** Lab | zefry  
-**Default branch:** `main`  
-**Canonical engineering checkpoint:** Sprint154  
-**Canonical engineering commit:** `5349acbffd1c90087d37a1a0f74ce0ffd7e87773`  
-**Latest engineering PR:** #726 — `Sprint154: materialize feature activation executor source foundation`  
+**Product:** oneQay — The Future of Intelligent Business Management
+**Repository owner / attribution:** Lab | zefry
+**Default branch:** `main`
+**Canonical engineering checkpoint:** Sprint154
+**Canonical engineering commit:** `5349acbffd1c90087d37a1a0f74ce0ffd7e87773`
+**Latest engineering PR:** #726 — `Sprint154: materialize feature activation executor source foundation`
 **Status date:** 2026-09-14
 
 > This file is the canonical human-readable source of truth for current oneQay project status. Machine-readable operational state remains authoritative for operational gates.
