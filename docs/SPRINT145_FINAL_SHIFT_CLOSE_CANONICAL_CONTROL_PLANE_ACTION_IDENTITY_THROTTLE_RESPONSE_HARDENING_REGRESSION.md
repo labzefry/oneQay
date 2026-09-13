@@ -23,7 +23,7 @@ Canonical controller actions remain the existing materialization and DB-attestat
 
 The Sprint145 regression proves that noncanonical actions remain framework-owned for materialization POST and DB-attestation GET/HEAD, while canonical controller actions continue to receive the established empty-body privacy/security hardening for framework `429` responses. Existing rate-limit metadata and unrelated framework headers remain preserved.
 
-The regression directly invokes the middleware and does not dispatch either canonical controller.
+The regression directly invokes the middleware and does not dispatch either canonical controller. Direct `Illuminate\Routing\Route` controller fixtures explicitly provide matching `uses` and `controller` action metadata so the test mirrors the controller-action conversion normally performed by Laravel's Router before constructing a registered route.
 
 ## Successor compatibility
 
