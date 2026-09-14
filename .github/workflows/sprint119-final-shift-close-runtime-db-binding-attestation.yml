@@ -70,7 +70,6 @@ jobs:
             apps/web/config/final_shift_close_runtime_db_binding_attestation.php \
             apps/web/config/final_shift_close_runtime_binding_materialization.php \
             apps/web/bootstrap/app.php \
-            apps/web/bootstrap/providers.php \
             apps/web/config/oneqay.php \
             apps/web/database/migrations \
             .github/workflows/final-shift-close-migration27-selected-target-db-binding.yml \
