@@ -43,9 +43,10 @@ jobs:
           git diff --name-only "$base" "$head" | LC_ALL=C sort > /tmp/sprint156-paths
           count="$(wc -l < /tmp/sprint156-paths | tr -d ' ')"
           fingerprint="$(sha256sum /tmp/sprint156-paths | awk '{print $1}')"
-          [[ "$count" == '20' ]]
-          [[ "$fingerprint" == 'dde7c26865a6100104aaf49a033cb4d2994aa94bb2ce4a93639e37c1ee6800f0' ]]
+          [[ "$count" == '21' ]]
+          [[ "$fingerprint" == '9e9aabf18e1845b3378013756b28fc2ffe8d61c744a19ea6fd85bdef2428c8f0' ]]
           cat > /tmp/sprint156-expected <<'EOF'
+          .github/workflows/sprint119-final-shift-close-runtime-db-binding-attestation.yml
           .github/workflows/sprint120-final-shift-close-runtime-binding-manifest-writer.yml
           .github/workflows/sprint125-final-shift-close-runtime-db-binding-attestation-control-plane-regression.yml
           .github/workflows/sprint127-final-shift-close-runtime-binding-manifest-control-plane-regression.yml
