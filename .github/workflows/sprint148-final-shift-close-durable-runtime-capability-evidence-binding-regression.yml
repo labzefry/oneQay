@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: sprint148-durable-runtime-capability-evidence-${{ github.event.pull_request.number || github.ref }}
+  group: sprint148-durable-runtime-capability-evidence-${{ github.event.pull_request.number || github.ref }}-${{ github.event.pull_request.head.sha || github.sha }}
   cancel-in-progress: true
 
 jobs:
