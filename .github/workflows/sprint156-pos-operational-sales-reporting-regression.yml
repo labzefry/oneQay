@@ -44,9 +44,10 @@ jobs:
           count="$(wc -l < /tmp/sprint156-paths | tr -d ' ')"
           fingerprint="$(sha256sum /tmp/sprint156-paths | awk '{print $1}')"
           [[ "$count" == '14' ]]
-          [[ "$fingerprint" == 'cdd519c7eaddd6a74d13cf9cde7f67b9c53fae94b4049bd81071d17b124f52c3' ]]
+          [[ "$fingerprint" == '79e32eb35dfdd42fd1997259b422ddef72b27cb160697e48179a16b09c1b62f3' ]]
           cat > /tmp/sprint156-expected <<'EOF'
           .github/workflows/sprint120-final-shift-close-runtime-binding-manifest-writer.yml
+          .github/workflows/sprint125-final-shift-close-runtime-db-binding-attestation-control-plane-regression.yml
           .github/workflows/sprint129-final-shift-close-historical-regression-successor-compatibility.yml
           .github/workflows/sprint156-pos-operational-sales-reporting-regression.yml
           apps/web/app/Application/Pos/PosOperationalSalesSummary.php
@@ -56,7 +57,6 @@ jobs:
           apps/web/app/Infrastructure/Pos/LaravelPosOperationalSalesSummaryRepository.php
           apps/web/app/Providers/PosOperationalReportingServiceProvider.php
           apps/web/bootstrap/providers.php
-          apps/web/composer.json
           apps/web/config/pos_operational_reporting.php
           apps/web/resources/js/pages/Pos/SalesSummary.vue
           apps/web/tests/pos-operational-reporting.php
@@ -103,6 +103,7 @@ jobs:
             done
           cd apps/web
           composer test
+          php tests/pos-operational-reporting.php
 
       - name: Setup exact Node LTS
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
