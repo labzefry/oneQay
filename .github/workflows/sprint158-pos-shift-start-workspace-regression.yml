@@ -1,0 +1,149 @@
+name: Sprint158 POS Shift Start Workspace Regression
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint158-pos-shift-start-${{ github.event.pull_request.number || github.ref }}-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  qualify-sprint158-pos-shift-start-workspace:
+    name: qualify-sprint158-pos-shift-start-workspace
+    runs-on: ubuntu-latest
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:Y2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2M=
+      APP_DEBUG: "false"
+      APP_URL: http://localhost
+      ONEQAY_RUNTIME_CLASS: ci
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Lock exact Sprint158 engineering envelope
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin main
+          base="${{ github.event.pull_request.base.sha || '700f2133032047d213d38e2e0317641599831a9f' }}"
+          head="${{ github.event.pull_request.head.sha || github.sha }}"
+          git diff --name-only "$base" "$head" | LC_ALL=C sort > /tmp/sprint158-paths
+          count="$(wc -l < /tmp/sprint158-paths | tr -d ' ')"
+          fingerprint="$(sha256sum /tmp/sprint158-paths | awk '{print $1}')"
+          [[ "$count" == '11' ]]
+          [[ "$fingerprint" == '3828b5914b64b4862ce4d39ff037261b796c232e5ac7c6fb001913a096ac1666' ]]
+          cat > /tmp/sprint158-expected <<'EOF'
+          .github/workflows/sprint158-pos-shift-start-workspace-regression.yml
+          apps/web/app/Application/Pos/PosShiftStartWorkspaceRepository.php
+          apps/web/app/Application/Pos/PosShiftStartWorkspaceSnapshot.php
+          apps/web/app/Application/Pos/ViewPosShiftStartWorkspace.php
+          apps/web/app/Delivery/Http/Pos/PosShiftStartWorkspaceController.php
+          apps/web/app/Infrastructure/Pos/LaravelPosShiftStartWorkspaceRepository.php
+          apps/web/app/Providers/FinalShiftCloseServiceProvider.php
+          apps/web/app/Providers/PosShiftStartWorkspaceServiceProvider.php
+          apps/web/config/pos_shift_start_workspace.php
+          apps/web/resources/js/pages/Pos/ShiftStart.vue
+          apps/web/tests/pos-shift-start-workspace.php
+          EOF
+          diff -u /tmp/sprint158-expected /tmp/sprint158-paths
+
+      - name: Preserve canonical mutation owners and Final Shift Close operational NO-GO
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="${{ github.event.pull_request.base.sha || '700f2133032047d213d38e2e0317641599831a9f' }}"
+          head="${{ github.event.pull_request.head.sha || github.sha }}"
+          git diff --quiet "$base" "$head" -- \
+            ops/final-shift-close/STATE.json \
+            ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json \
+            ops/final-shift-close/POST_SELECTION_DOWNSTREAM_READINESS.json \
+            apps/web/routes/web.php \
+            apps/web/bootstrap/providers.php \
+            apps/web/composer.json
+          [[ "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" == 'NOT_EXECUTED' ]]
+          [[ "$(jq -r '.permission_provisioning.state' ops/final-shift-close/STATE.json)" == 'NONE' ]]
+          [[ "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" == 'INACTIVE' ]]
+          [[ "$(jq -r '.selection_state' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" == 'BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET' ]]
+          [[ "$(jq -r '.selected_target' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" == 'null' ]]
+          grep -Fq -- "->name('pos.shifts.open')" apps/web/routes/web.php
+          grep -Fq -- "->name('pos.shifts.opening-cash')" apps/web/routes/web.php
+
+      - name: Validate PHP runtime and locked dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -r 'if (PHP_VERSION_ID < 80200 || PHP_VERSION_ID >= 80600) { fwrite(STDERR, "Sprint158 requires governed PHP 8.2-8.5 compatibility.\n"); exit(1); }'
+          test -f apps/web/composer.lock
+          test -f apps/web/package-lock.json
+          cd apps/web
+          composer validate --no-check-publish
+          composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Validate Sprint158 PHP syntax and executable regressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          find apps/web/app apps/web/bootstrap apps/web/config apps/web/routes apps/web/tests \
+            -type f -name '*.php' -print0 |
+            while IFS= read -r -d '' file; do
+              php -l "$file"
+            done
+          cd apps/web
+          composer test
+          php tests/pos-operational-reporting.php
+          php tests/pos-cashier-workspace.php
+          php tests/pos-shift-start-workspace.php
+
+      - name: Setup exact Node LTS
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: 24.19.0
+
+      - name: Type-check and build shift-start UI
+        working-directory: apps/web
+        run: |
+          npm ci --ignore-scripts --no-fund
+          npm run type-check
+          npm run build
+
+      - name: Prove existing shift authorities and read-only workspace boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq 'PosPermission::openShift()' apps/web/app/Application/Pos/ViewPosShiftStartWorkspace.php
+          grep -Fq 'PosPermission::recordShiftOpeningCash()' apps/web/app/Application/Pos/ViewPosShiftStartWorkspace.php
+          grep -Fq "where('tenant_id', \$context->tenantId())" apps/web/app/Infrastructure/Pos/LaravelPosShiftStartWorkspaceRepository.php
+          grep -Fq "where('organization_id', \$context->organizationId())" apps/web/app/Infrastructure/Pos/LaravelPosShiftStartWorkspaceRepository.php
+          grep -Fq "where('outlet_id', \$context->outletId())" apps/web/app/Infrastructure/Pos/LaravelPosShiftStartWorkspaceRepository.php
+          grep -Fq "where('device_id', \$context->deviceId())" apps/web/app/Infrastructure/Pos/LaravelPosShiftStartWorkspaceRepository.php
+          grep -Fq "route('pos.shifts.open', [], false)" apps/web/app/Delivery/Http/Pos/PosShiftStartWorkspaceController.php
+          grep -Fq "route('pos.shifts.opening-cash', [], false)" apps/web/app/Delivery/Http/Pos/PosShiftStartWorkspaceController.php
+          grep -Fq 'ONEQAY_POS_SHIFT_START_WORKSPACE_ENABLED' apps/web/config/pos_shift_start_workspace.php
+          grep -Fq '$this->app->register(PosShiftStartWorkspaceServiceProvider::class);' apps/web/app/Providers/FinalShiftCloseServiceProvider.php
+          ! grep -Fq 'PosShiftStartWorkspaceServiceProvider' apps/web/bootstrap/providers.php
+          ! grep -R -n -E 'insert\(|update\(|delete\(|increment\(|decrement\(|statement\(' \
+            apps/web/app/Application/Pos/PosShiftStartWorkspaceRepository.php \
+            apps/web/app/Application/Pos/PosShiftStartWorkspaceSnapshot.php \
+            apps/web/app/Application/Pos/ViewPosShiftStartWorkspace.php \
+            apps/web/app/Delivery/Http/Pos/PosShiftStartWorkspaceController.php \
+            apps/web/app/Infrastructure/Pos/LaravelPosShiftStartWorkspaceRepository.php
+
+      - name: Verify tracked-source cleanliness
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --exit-code
+          test -z "$(git status --porcelain)"
