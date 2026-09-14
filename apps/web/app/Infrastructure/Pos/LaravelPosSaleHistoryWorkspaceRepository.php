@@ -45,7 +45,7 @@ final readonly class LaravelPosSaleHistoryWorkspaceRepository implements PosSale
 
             $recentSales = [];
             foreach ($recentRows as $row) {
-                $sale = $this->mapSale($row);
+                $sale = $this->mapSale($row, $context);
                 $recentSales[] = $this->historySummary($sale);
             }
 
@@ -56,11 +56,8 @@ final readonly class LaravelPosSaleHistoryWorkspaceRepository implements PosSale
                     ->first($this->saleColumns());
 
                 if ($selectedRow !== null) {
-                    $sale = $this->mapSale($selectedRow);
-                    $selectedReceipt = $this->receipt(
-                        $context,
-                        $sale,
-                    );
+                    $sale = $this->mapSale($selectedRow, $context);
+                    $selectedReceipt = $this->receipt($context, $sale);
                 }
             }
 
@@ -133,7 +130,7 @@ final readonly class LaravelPosSaleHistoryWorkspaceRepository implements PosSale
     }
 
     /** @return array<string, mixed> */
-    private function mapSale(object $row): array
+    private function mapSale(object $row, PosExecutionContext $context): array
     {
         $saleId = $this->requiredString($row->sale_id ?? null);
         if (preg_match(self::SALE_ID_PATTERN, $saleId) !== 1) {
@@ -164,12 +161,10 @@ final readonly class LaravelPosSaleHistoryWorkspaceRepository implements PosSale
         $refundedAt = null;
 
         if ($voidId !== null) {
-            if (! hash_equals($this->requiredString($row->void_organization_id ?? null), $this->requiredString($row->void_organization_id ?? null))
-                || $this->requiredString($row->void_outlet_id ?? null) === '') {
-                throw new PosTransactionViolation();
-            }
             $voidedAt = $this->safePositiveInteger($row->voided_at_unix ?? null);
-            if ($voidedAt < $completedAt
+            if (! hash_equals($context->organizationId(), $this->requiredString($row->void_organization_id ?? null))
+                || ! hash_equals($context->outletId(), $this->requiredString($row->void_outlet_id ?? null))
+                || $voidedAt < $completedAt
                 || $this->safeNonNegativeInteger($row->reversed_atomic ?? null) !== $applied
                 || ! hash_equals($currency, $this->currency($row->void_currency ?? null))
                 || $scale !== $this->scale($row->void_currency_scale ?? null)
@@ -185,7 +180,9 @@ final readonly class LaravelPosSaleHistoryWorkspaceRepository implements PosSale
             }
             $refundVoidId = $this->requiredString($row->refund_void_id ?? null);
             $refundedAt = $this->safePositiveInteger($row->refunded_at_unix ?? null);
-            if (! hash_equals($voidId, $refundVoidId)
+            if (! hash_equals($context->organizationId(), $this->requiredString($row->refund_organization_id ?? null))
+                || ! hash_equals($context->outletId(), $this->requiredString($row->refund_outlet_id ?? null))
+                || ! hash_equals($voidId, $refundVoidId)
                 || $voidedAt === null
                 || $refundedAt < $voidedAt
                 || $this->safeNonNegativeInteger($row->refunded_atomic ?? null) !== $applied
