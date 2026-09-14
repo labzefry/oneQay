@@ -14,8 +14,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  qualify-sprint160-pos-sale-history-detail-workspace:
-    name: qualify-sprint160-pos-sale-history-detail-workspace
+  preserve-sprint160-pos-sale-history-detail-workspace:
+    name: preserve-sprint160-pos-sale-history-detail-workspace
     runs-on: ubuntu-latest
     env:
       APP_NAME: oneQay
@@ -33,46 +33,24 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: Lock exact Sprint160 engineering envelope
+      - name: Preserve successor-compatible Sprint160 source contract
         shell: bash
         run: |
           set -euo pipefail
-          git fetch --no-tags origin main
-          base="${{ github.event.pull_request.base.sha || 'd4931eb7822d844cf74b3a60e593c35b00b1cfce' }}"
-          head="${{ github.event.pull_request.head.sha || github.sha }}"
-          git diff --name-only "$base" "$head" | LC_ALL=C sort > /tmp/sprint160-paths
-          count="$(wc -l < /tmp/sprint160-paths | tr -d ' ')"
-          fingerprint="$(sha256sum /tmp/sprint160-paths | awk '{print $1}')"
-          [[ "$count" == '10' ]]
-          [[ "$fingerprint" == 'f60bd3698cbc28cfccdf8b79c446e5e138203246afdb16aaea1c5637aa327181' ]]
-          cat > /tmp/sprint160-expected <<'EOF'
-          .github/workflows/sprint160-pos-sale-history-detail-workspace-regression.yml
-          apps/web/app/Application/Pos/PosSaleHistoryWorkspaceRepository.php
-          apps/web/app/Application/Pos/PosSaleHistoryWorkspaceSnapshot.php
-          apps/web/app/Application/Pos/ViewPosSaleHistoryWorkspace.php
-          apps/web/app/Delivery/Http/Pos/PosSaleHistoryWorkspaceController.php
-          apps/web/app/Infrastructure/Pos/LaravelPosSaleHistoryWorkspaceRepository.php
-          apps/web/app/Providers/PosOperationalReportingServiceProvider.php
-          apps/web/config/pos_operational_reporting.php
-          apps/web/resources/js/pages/Pos/SaleHistory.vue
-          apps/web/tests/pos-sale-history-workspace.php
-          EOF
-          diff -u /tmp/sprint160-expected /tmp/sprint160-paths
+          test -f apps/web/app/Application/Pos/PosSaleHistoryWorkspaceRepository.php
+          test -f apps/web/app/Application/Pos/PosSaleHistoryWorkspaceSnapshot.php
+          test -f apps/web/app/Application/Pos/ViewPosSaleHistoryWorkspace.php
+          test -f apps/web/app/Delivery/Http/Pos/PosSaleHistoryWorkspaceController.php
+          test -f apps/web/app/Infrastructure/Pos/LaravelPosSaleHistoryWorkspaceRepository.php
+          test -f apps/web/resources/js/pages/Pos/SaleHistory.vue
+          test -f apps/web/tests/pos-sale-history-workspace.php
+          grep -Fq "ONEQAY_POS_SALE_HISTORY_WORKSPACE_ENABLED" apps/web/config/pos_operational_reporting.php
+          grep -Fq "Route::get('/pos/reporting/sales-history/{sale_id?}'" apps/web/app/Providers/PosOperationalReportingServiceProvider.php
 
-      - name: Preserve canonical mutation owners and operational NO-GO
+      - name: Preserve current operational NO-GO
         shell: bash
         run: |
           set -euo pipefail
-          base="${{ github.event.pull_request.base.sha || 'd4931eb7822d844cf74b3a60e593c35b00b1cfce' }}"
-          head="${{ github.event.pull_request.head.sha || github.sha }}"
-          git diff --quiet "$base" "$head" -- \
-            ops/final-shift-close/STATE.json \
-            ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json \
-            ops/final-shift-close/POST_SELECTION_DOWNSTREAM_READINESS.json \
-            apps/web/routes/web.php \
-            apps/web/bootstrap/providers.php \
-            apps/web/composer.json \
-            apps/web/database/migrations
           [[ "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" == 'NOT_EXECUTED' ]]
           [[ "$(jq -r '.permission_provisioning.state' ops/final-shift-close/STATE.json)" == 'NONE' ]]
           [[ "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" == 'INACTIVE' ]]
@@ -94,7 +72,7 @@ jobs:
           composer validate --no-check-publish
           composer install --no-interaction --no-progress --prefer-dist
 
-      - name: Validate Sprint160 PHP syntax and executable regressions
+      - name: Execute application and POS sale-history regressions
         shell: bash
         run: |
           set -euo pipefail
@@ -123,13 +101,11 @@ jobs:
           npm run type-check
           npm run build
 
-      - name: Prove read-only reporting authority and immutable receipt boundary
+      - name: Preserve reporting authority and immutable read-only boundary
         shell: bash
         run: |
           set -euo pipefail
           grep -Fq "private const VIEW_PERMISSION = 'pos.reporting.sales-summary.view';" apps/web/app/Application/Pos/ViewPosSaleHistoryWorkspace.php
-          grep -Fq "Route::get('/pos/reporting/sales-history/{sale_id?}'" apps/web/app/Providers/PosOperationalReportingServiceProvider.php
-          grep -Fq "ONEQAY_POS_SALE_HISTORY_WORKSPACE_ENABLED" apps/web/config/pos_operational_reporting.php
           grep -Fq "where('sales.tenant_id', \$context->tenantId())" apps/web/app/Infrastructure/Pos/LaravelPosSaleHistoryWorkspaceRepository.php
           grep -Fq "where('sales.organization_id', \$context->organizationId())" apps/web/app/Infrastructure/Pos/LaravelPosSaleHistoryWorkspaceRepository.php
           grep -Fq "where('sales.outlet_id', \$context->outletId())" apps/web/app/Infrastructure/Pos/LaravelPosSaleHistoryWorkspaceRepository.php
