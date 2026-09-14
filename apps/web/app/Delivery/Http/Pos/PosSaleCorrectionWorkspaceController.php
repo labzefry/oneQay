@@ -28,6 +28,13 @@ final class PosSaleCorrectionWorkspaceController
 
         try {
             $snapshot = $this->workspace->view();
+            $sales = array_map(
+                static fn (array $sale): array => [
+                    ...$sale,
+                    'amount_atomic' => (string) $sale['amount_atomic'],
+                ],
+                $snapshot->sales(),
+            );
 
             return Inertia::render('Pos/SaleCorrections', [
                 'scope' => [
@@ -40,7 +47,7 @@ final class PosSaleCorrectionWorkspaceController
                     'can_void' => $snapshot->canVoid(),
                     'can_cash_refund' => $snapshot->canCashRefund(),
                 ],
-                'sales' => $snapshot->sales(),
+                'sales' => $sales,
                 'void_endpoint' => route('pos.sales.void', [], false),
                 'cash_refund_endpoint' => route('pos.sales.cash-refund', [], false),
                 'csrf_token' => csrf_token(),
