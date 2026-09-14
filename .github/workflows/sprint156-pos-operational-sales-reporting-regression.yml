@@ -43,8 +43,8 @@ jobs:
           git diff --name-only "$base" "$head" | LC_ALL=C sort > /tmp/sprint156-paths
           count="$(wc -l < /tmp/sprint156-paths | tr -d ' ')"
           fingerprint="$(sha256sum /tmp/sprint156-paths | awk '{print $1}')"
-          [[ "$count" == '23' ]]
-          [[ "$fingerprint" == 'f8ddc96072b324b43dec852da61223f593a863c4321df240d864a853396ff6e7' ]]
+          [[ "$count" == '24' ]]
+          [[ "$fingerprint" == '34c6dab2c898ddd9133aaa6d5413ca7b345127020d8f04fe54f861a4d1a5e79c' ]]
           cat > /tmp/sprint156-expected <<'EOF'
           .github/workflows/sprint119-final-shift-close-runtime-db-binding-attestation.yml
           .github/workflows/sprint120-final-shift-close-runtime-binding-manifest-writer.yml
@@ -56,6 +56,7 @@ jobs:
           .github/workflows/sprint131-final-shift-close-canonical-control-plane-positive-path-regression.yml
           .github/workflows/sprint132-final-shift-close-canonical-control-plane-controller-positive-path-regression.yml
           .github/workflows/sprint133-final-shift-close-canonical-control-plane-controller-fail-closed-regression.yml
+          .github/workflows/sprint148-final-shift-close-durable-runtime-capability-evidence-binding-regression.yml
           .github/workflows/sprint156-pos-operational-sales-reporting-regression.yml
           .github/workflows/sprint96-final-shift-close-runtime-wiring.yml
           .github/workflows/sprint97-final-shift-close-http-delivery.yml
