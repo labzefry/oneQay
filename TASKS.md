@@ -1,7 +1,7 @@
 # oneQay Tasks
 
-**Current engineering checkpoint:** Sprint157 closed  
-**Canonical engineering commit:** `b4d21b208a0580f4b40565b028dd6aed9bb190b8`  
+**Current engineering checkpoint:** Sprint157 closed
+**Canonical engineering commit:** `b4d21b208a0580f4b40565b028dd6aed9bb190b8`
 **Canonical status authority:** `PROJECT_MANIFEST.md`
 
 This file separates completed source engineering, next bounded engineering, and operational actions that remain separately gated.
