@@ -1,0 +1,152 @@
+name: Sprint160 POS Sale History Detail Workspace Regression
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint160-pos-sale-history-${{ github.event.pull_request.number || github.ref }}-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  qualify-sprint160-pos-sale-history-detail-workspace:
+    name: qualify-sprint160-pos-sale-history-detail-workspace
+    runs-on: ubuntu-latest
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:Y2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2M=
+      APP_DEBUG: "false"
+      APP_URL: http://localhost
+      ONEQAY_RUNTIME_CLASS: ci
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Lock exact Sprint160 engineering envelope
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin main
+          base="${{ github.event.pull_request.base.sha || 'd4931eb7822d844cf74b3a60e593c35b00b1cfce' }}"
+          head="${{ github.event.pull_request.head.sha || github.sha }}"
+          git diff --name-only "$base" "$head" | LC_ALL=C sort > /tmp/sprint160-paths
+          count="$(wc -l < /tmp/sprint160-paths | tr -d ' ')"
+          fingerprint="$(sha256sum /tmp/sprint160-paths | awk '{print $1}')"
+          [[ "$count" == '10' ]]
+          [[ "$fingerprint" == 'f60bd3698cbc28cfccdf8b79c446e5e138203246afdb16aaea1c5637aa327181' ]]
+          cat > /tmp/sprint160-expected <<'EOF'
+          .github/workflows/sprint160-pos-sale-history-detail-workspace-regression.yml
+          apps/web/app/Application/Pos/PosSaleHistoryWorkspaceRepository.php
+          apps/web/app/Application/Pos/PosSaleHistoryWorkspaceSnapshot.php
+          apps/web/app/Application/Pos/ViewPosSaleHistoryWorkspace.php
+          apps/web/app/Delivery/Http/Pos/PosSaleHistoryWorkspaceController.php
+          apps/web/app/Infrastructure/Pos/LaravelPosSaleHistoryWorkspaceRepository.php
+          apps/web/app/Providers/PosOperationalReportingServiceProvider.php
+          apps/web/config/pos_operational_reporting.php
+          apps/web/resources/js/pages/Pos/SaleHistory.vue
+          apps/web/tests/pos-sale-history-workspace.php
+          EOF
+          diff -u /tmp/sprint160-expected /tmp/sprint160-paths
+
+      - name: Preserve canonical mutation owners and operational NO-GO
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="${{ github.event.pull_request.base.sha || 'd4931eb7822d844cf74b3a60e593c35b00b1cfce' }}"
+          head="${{ github.event.pull_request.head.sha || github.sha }}"
+          git diff --quiet "$base" "$head" -- \
+            ops/final-shift-close/STATE.json \
+            ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json \
+            ops/final-shift-close/POST_SELECTION_DOWNSTREAM_READINESS.json \
+            apps/web/routes/web.php \
+            apps/web/bootstrap/providers.php \
+            apps/web/composer.json \
+            apps/web/database/migrations
+          [[ "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" == 'NOT_EXECUTED' ]]
+          [[ "$(jq -r '.permission_provisioning.state' ops/final-shift-close/STATE.json)" == 'NONE' ]]
+          [[ "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" == 'INACTIVE' ]]
+          [[ "$(jq -r '.deployment_authority' ops/final-shift-close/STATE.json)" == 'NOT_GRANTED' ]]
+          [[ "$(jq -r '.technical_preview_activation' ops/final-shift-close/STATE.json)" == 'NOT_AUTHORIZED' ]]
+          [[ "$(jq -r '.production_activation' ops/final-shift-close/STATE.json)" == 'NOT_AUTHORIZED' ]]
+          [[ "$(jq -r '.updater_activation' ops/final-shift-close/STATE.json)" == 'INACTIVE' ]]
+          [[ "$(jq -r '.selection_state' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" == 'BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET' ]]
+          [[ "$(jq -r '.selected_target' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" == 'null' ]]
+
+      - name: Validate PHP runtime and locked dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -r 'if (PHP_VERSION_ID < 80200 || PHP_VERSION_ID >= 80600) { fwrite(STDERR, "Sprint160 requires governed PHP 8.2-8.5 compatibility.\n"); exit(1); }'
+          test -f apps/web/composer.lock
+          test -f apps/web/package-lock.json
+          cd apps/web
+          composer validate --no-check-publish
+          composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Validate Sprint160 PHP syntax and executable regressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          find apps/web/app apps/web/bootstrap apps/web/config apps/web/routes apps/web/tests \
+            -type f -name '*.php' -print0 |
+            while IFS= read -r -d '' file; do
+              php -l "$file"
+            done
+          cd apps/web
+          composer test
+          php tests/pos-operational-reporting.php
+          php tests/pos-cashier-workspace.php
+          php tests/pos-shift-start-workspace.php
+          php tests/pos-sale-correction-workspace.php
+          php tests/pos-sale-history-workspace.php
+
+      - name: Setup exact Node LTS
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: 24.19.0
+
+      - name: Type-check and build sale history UI
+        working-directory: apps/web
+        run: |
+          npm ci --ignore-scripts --no-fund
+          npm run type-check
+          npm run build
+
+      - name: Prove read-only reporting authority and immutable receipt boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq "private const VIEW_PERMISSION = 'pos.reporting.sales-summary.view';" apps/web/app/Application/Pos/ViewPosSaleHistoryWorkspace.php
+          grep -Fq "Route::get('/pos/reporting/sales-history/{sale_id?}'" apps/web/app/Providers/PosOperationalReportingServiceProvider.php
+          grep -Fq "ONEQAY_POS_SALE_HISTORY_WORKSPACE_ENABLED" apps/web/config/pos_operational_reporting.php
+          grep -Fq "where('sales.tenant_id', \$context->tenantId())" apps/web/app/Infrastructure/Pos/LaravelPosSaleHistoryWorkspaceRepository.php
+          grep -Fq "where('sales.organization_id', \$context->organizationId())" apps/web/app/Infrastructure/Pos/LaravelPosSaleHistoryWorkspaceRepository.php
+          grep -Fq "where('sales.outlet_id', \$context->outletId())" apps/web/app/Infrastructure/Pos/LaravelPosSaleHistoryWorkspaceRepository.php
+          grep -Fq "oneqay_pos_sale_lines" apps/web/app/Infrastructure/Pos/LaravelPosSaleHistoryWorkspaceRepository.php
+          ! grep -Fq "oneqay_pos_sale_catalog_items" apps/web/app/Infrastructure/Pos/LaravelPosSaleHistoryWorkspaceRepository.php
+          grep -Fq "total_atomic: string" apps/web/resources/js/pages/Pos/SaleHistory.vue
+          grep -Fq "line_total_atomic: string" apps/web/resources/js/pages/Pos/SaleHistory.vue
+          ! grep -R -n -E 'insert\(|update\(|delete\(|increment\(|decrement\(|statement\(' \
+            apps/web/app/Application/Pos/PosSaleHistoryWorkspaceRepository.php \
+            apps/web/app/Application/Pos/PosSaleHistoryWorkspaceSnapshot.php \
+            apps/web/app/Application/Pos/ViewPosSaleHistoryWorkspace.php \
+            apps/web/app/Delivery/Http/Pos/PosSaleHistoryWorkspaceController.php \
+            apps/web/app/Infrastructure/Pos/LaravelPosSaleHistoryWorkspaceRepository.php
+
+      - name: Verify tracked-source cleanliness
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --exit-code
+          test -z "$(git status --porcelain)"
