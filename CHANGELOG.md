@@ -4,105 +4,63 @@ This changelog records **material canonical progress**, not every intermediate c
 
 Current project-state authority: [`PROJECT_MANIFEST.md`](PROJECT_MANIFEST.md).
 
+## 2026-09-14 — Sprint161 closed
+
+**Sprint161: operational POS catalog and opening-inventory setup workspace**
+
+- **Purpose / Why:** canonical POS catalog preparation and one-time inventory baseline already existed as secure APIs, but operational users had no guarded UI to make a product sale-ready.
+- **Objective / Gap:** `POS_CATALOG_INVENTORY_SETUP_WORKSPACE`.
+- Added tenant/outlet-scoped catalog, sellable state, price, available quantity, prior-baseline state, sale-history state, and baseline eligibility visibility.
+- Reused existing deny-by-default `pos.catalog.prepare` and `pos.inventory.baseline` permissions and named mutation endpoints.
+- Preserved explicit catalog preparation → opening inventory sequence; no composite mutation or second stock engine was added.
+- Added manual authoritative-refresh lock after mutation success or network ambiguity; no automatic retry.
+- Added Local/Test/CI-only guarded delivery with persistence/session/capability gates and explicit workspace feature arming.
+- Added Vue/Inertia operational setup UI and executable SQLite regression.
+- Initial exact head `6cbb218d204e7e84ff6701328f6d884ccf5699ec` failed Sprint161 regression because malformed lower-case persisted currency was normalized into uppercase instead of rejected.
+- Corrected final exact head `fbe8e91df756855d38b8c6656b17f27b4cc32585` requires persisted currency to already be canonical uppercase and fails closed otherwise.
+- Complete surfaced final exact-head PR-triggered matrix: successful.
+- Sprint161 regression run `34853239912`: successful.
+- M7.1, Governance Required Checks, PHP Foundation, Sprint156–Sprint160, Sprint126/Sprint148, and all other surfaced historical runs: successful.
+- Repository-native exact-head Product Owner merge authority: successful.
+- Engineering envelope: exactly 11 paths; SHA-256 `66d7c616fbe8ae0e6c3c262fc8054db26bcbaa67e07ed77000363041b056f613`.
+- Engineering PR #740 squash merged at `33080c0b5f5c6f66e9994ad7f05ba78dea241294`.
+- Post-merge verification proved exactly one squash commit over post-Sprint160 canonical main and exactly the qualified 11-path delta.
+- Post-Sprint161 reconciliation envelope: six paths; SHA-256 `fd24a20017a13eca06d93ade217b6c0a68db07c205b218b8d9c201122c6e7ccc`.
+- **Operational boundaries / NO-GO:** selected target remains `null`; migration #27 remains `NOT_EXECUTED`; permission provisioning remains `NONE`; feature activation remains `INACTIVE`; deployment authority remains `NOT_GRANTED`; Technical Preview/Production remain `NOT_AUTHORIZED`; updater remains `INACTIVE`.
+- **Next position:** Sprint162 bounded discovery from canonical post-Sprint161; no objective or source envelope is preselected.
+
 ## 2026-09-14 — Sprint160 closed
 
 **Sprint160: immutable POS sale history and receipt detail workspace**
 
-- **Purpose / Why:** canonical POS already persisted immutable sale headers and line items, but operational users had no line-level historical receipt drill-down.
-- **Objective / Gap:** `POS_SALE_HISTORY_DETAIL_WORKSPACE`.
-- **What changed:** added bounded latest-50 sale history, exact canonical sale lookup, immutable sale-line receipt detail, guarded reporting delivery, explicit history feature arming, Vue/Inertia history UI, and executable SQLite integrity regression.
-- Reused existing deny-by-default reporting permission `pos.reporting.sales-summary.view`; no new permission provisioning dependency was introduced.
-- Extended existing `PosOperationalReportingServiceProvider`; no new global provider was introduced.
-- Exact lookup remains tenant + organization + outlet scoped and does not disclose foreign-scope receipt existence.
-- Receipt validation fails closed on malformed line sequence, quantity, unit-price multiplication, line-total sum, currency/scale mismatch, correction amount/tender mismatch, invalid void/refund ordering, or correction evidence outside verified organization/outlet scope.
-- Legitimate historical `shift_id=null` remains preserved rather than inventing a shift binding.
-- Atomic money values are delivered as strings to preserve unsigned-big-integer precision in the browser.
-- Mutable current catalog names are intentionally not joined into historical receipts.
-- Sale completion, void, refund, routes, global provider registry, Composer metadata, database migrations, and machine-readable operational state remained unchanged.
-- Engineering PR #738 squash merged.
-- Parent canonical post-Sprint159 checkpoint: `d4931eb7822d844cf74b3a60e593c35b00b1cfce`.
-- Final exact engineering head: `d159aa26c748c5a624f0f71fe6c135f0d4f36be9`.
-- Complete surfaced exact-head PR-triggered matrix: successful.
-- Sprint160 regression run `34847797273`: successful.
-- M7.1 Application Regression run `34847797253`: successful.
-- Governance Required Checks run `34847797404`: successful.
-- PHP Foundation Regression run `34847797433`: successful.
-- Sprint156 `34847797352`, Sprint157 `34847797227`, Sprint158 `34847797400`, Sprint159 `34847797361`, Sprint126 `34847797292`, and Sprint148 `34847797341`: successful.
-- Repository-native exact-head Product Owner merge authority: successful.
-- Engineering envelope: exactly 10 paths; SHA-256 `f60bd3698cbc28cfccdf8b79c446e5e138203246afdb16aaea1c5637aa327181`.
-- Canonical engineering squash: `e6ef6e77d8a2d0dea16d7c17dde78bece904b78b`.
-- Post-merge verification proved exactly one squash commit above `d4931eb7822d844cf74b3a60e593c35b00b1cfce` and exactly the qualified 10-path delta.
-- Post-Sprint160 reconciliation envelope: six paths; SHA-256 `388c671587b1d0e21206260c5f0003fb215d606df494eaa528b1e6d839de7847`.
-- **Operational boundaries / NO-GO:** target selection remains blocked/null; migration #27 remains `NOT_EXECUTED`; permission provisioning remains `NONE`; real capability/dependency evidence remains `NONE`; Final Shift Close runtime allowlist remains Local/Test/CI; feature activation remains `INACTIVE`; deployment authority remains `NOT_GRANTED`; Technical Preview/Production remain `NOT_AUTHORIZED`; updater remains `INACTIVE`.
-- **Next position:** Sprint161 bounded discovery from canonical post-Sprint160; no objective or source envelope is preselected.
+- Added read-only latest-50 sale history and exact sale receipt lookup over canonical persistence.
+- Added immutable line-level receipt validation, correction evidence validation, foreign-scope non-disclosure, and precision-safe atomic money strings.
+- Reused existing reporting authority; no mutation engine or migration was introduced.
+- Engineering PR #738 squash merged at `e6ef6e77d8a2d0dea16d7c17dde78bece904b78b`.
 
 ## 2026-09-14 — Sprint159 closed
 
-**Sprint159: operational POS sale correction workspace**
-
-- **Purpose / Why:** canonical POS already had authoritative full-sale void and full CASH refund APIs but no operational correction workspace.
-- **Objective / Gap:** `POS_SALE_CORRECTION_WORKSPACE`.
-- **What changed:** added validated correction read models, exact tenant + organization + outlet batch reads, original sale device and shift visibility, independent void/refund permission gating, dedicated guarded provider/controller, explicit workspace config, Vue/Inertia correction UI, and executable SQLite regression.
-- CASH correction remains explicit two-stage `COMPLETED → VOIDED → REFUNDED`; no composite server mutation was introduced.
-- MANUAL_EXTERNAL sales may be voided but are marked for external settlement rather than in-app CASH refund.
-- Impossible or mismatched void/refund evidence fails closed.
-- No arbitrary client refund amount or automatic network retry was introduced.
-- Existing `VoidSale`, `RecordCashRefund`, `pos.sales.void`, and `pos.sales.cash-refund` remain mutation authorities.
-- `routes/web.php`, global provider registry, Composer manifest, database migrations, and operational state remained unchanged.
-- Engineering PR #736 squash merged.
-- Parent canonical post-Sprint158 checkpoint: `6a23eefcc10a60d306d969834c594c73a7b7d2bf`.
-- Final exact engineering head: `475c4d8fb9a1e17467e71c77fb837351d77e48e2`.
-- Complete surfaced exact-head PR-triggered matrix: successful.
-- Sprint159 regression run `34818568216`: successful.
-- M7.1 Application Regression run `34818568151`: successful.
-- Governance Required Checks run `34818568451`: successful.
-- PHP Foundation Regression run `34818568650`: successful.
-- Sprint96 `34818568084`, Sprint97 `34818569245`, Sprint126 `34818568682`, Sprint148 `34818568207`, Sprint156 `34818568303`, Sprint157 `34818568110`, and Sprint158 `34818568571`: successful.
-- Repository-native exact-head Product Owner merge authority: successful.
-- Engineering envelope: exactly 11 paths; SHA-256 `6a5f49136334f99c182220a7db89a7869611be8a5b65a6cd3fe4c73fcc40cf00`.
-- Canonical engineering squash: `e4e6a0f55bbb3b6fd4126df66f4815e281ad0dc4`.
-- Post-merge verification proved exactly one squash commit over `6a23eefcc10a60d306d969834c594c73a7b7d2bf` and exactly the qualified 11-path delta.
-- Post-Sprint159 reconciliation envelope: six paths; SHA-256 `e7ebee58804975f9d64bc3061c13dccd4c1212877fe73cb75072163e101070dc`.
-- **Operational boundaries / NO-GO:** target selection remains blocked/null; migration #27 remains `NOT_EXECUTED`; permission provisioning remains `NONE`; real capability/dependency evidence remains `NONE`; Final Shift Close runtime allowlist remains Local/Test/CI; feature activation remains `INACTIVE`; deployment authority remains `NOT_GRANTED`; Technical Preview/Production remain `NOT_AUTHORIZED`; updater remains `INACTIVE`.
-- **Next position:** Sprint160 bounded discovery from canonical post-Sprint159; no objective or source envelope is preselected.
+- Added operational sale correction workspace over canonical void and CASH-refund authorities.
+- Engineering PR #736 squash merged at `e4e6a0f55bbb3b6fd4126df66f4815e281ad0dc4`.
 
 ## 2026-09-14 — Sprint158 closed
 
-**Sprint158: operational POS shift-start workspace**
-
-- Added exact tenant + organization + outlet + device shift-start status over existing shift-opening and opening-cash authorities.
-- Added resumable three-state UI: shift required, opening cash required, ready for cashier.
-- Required existing `pos.shift.open` and `pos.shift.opening-cash.record` permissions.
+- Added resumable exact-device shift-start workspace over canonical shift-opening and opening-cash authorities.
 - Engineering PR #734 squash merged at `d6eb8f7f359584130deea9ec0ed3572add3c05aa`.
-- Final engineering head `1e2a0ae959a88870ae4728f46f07b08ae0c08a2c`; complete exact-head matrix and Product Owner authority successful.
-- Engineering envelope SHA-256: `3828b5914b64b4862ce4d39ff037261b796c232e5ac7c6fb001913a096ac1666`.
-- Reconciliation envelope SHA-256: `0257dde337eee65e156c49f59b54a61506b47866babb2c68a8bcc3a1a2e3321f`.
 
 ## 2026-09-14 — Sprint157 closed
 
-**Sprint157: operational POS cashier sale-entry workspace**
-
-- Added scoped cashier workspace read models, active positive-stock catalog, exact-device active-shift readiness, guarded Vue/Inertia cashier UI, and executable regression.
-- Reused canonical `pos.sales.complete` mutation authority and existing deny-by-default sale permission.
+- Added operational POS cashier sale-entry workspace over canonical sale completion authority.
 - Engineering PR #732 squash merged at `b4d21b208a0580f4b40565b028dd6aed9bb190b8`.
 
 ## 2026-09-14 — Sprint156 closed
 
-**Sprint156: POS operational sales reporting**
-
-- Added read-only tenant + organization + outlet scoped operational sales reporting using canonical POS persistence.
-- Preserved currency and currency-scale boundaries and deny-by-default authorization.
+- Added read-only tenant + organization + outlet scoped operational sales reporting.
 - Engineering PR #730 squash merged at `259cc00037ee0d3fb909cbcf2c87d39ffb26f9b9`.
-
-## 2026-09-14 — Sprint155 closed
-
-- Added deterministic source-only Final Shift Close activation transport handoff envelope and executable regression.
-- Engineering PR #728 squash merged at `1e84e1b3e07915a1d20b56fe768b0d1454f901d2`.
-- Concrete configuration-mutation transport and dispatchable activation executor remained `NOT_IMPLEMENTED`; feature activation remained `INACTIVE`.
 
 ## Earlier material engineering history
 
-Sprint88–Sprint155 established the Final Shift Close source/readiness chain through migration source materialization, runtime dependency/readiness, selected-target identity, attestation/selection binding, DB binding/control-plane hardening, target-bound capability/dependency evidence foundations, permission-provisioning binding, and feature-activation source foundations. Earlier work also established architecture/governance, authentication/session hardening, POS sale/payment/receipt/catalog/inventory foundations, full-sale void/refund, cash/variance evidence, and regression-preservation controls.
+Sprint88–Sprint155 established the Final Shift Close source/readiness chain through migration source materialization, runtime dependency/readiness, selected-target identity, attestation/selection binding, DB binding/control-plane hardening, capability/dependency evidence foundations, permission-provisioning binding, and source-only activation foundations. Earlier work established architecture/governance, authentication/session hardening, POS sale/payment/receipt/catalog/inventory foundations, full-sale void/refund, and cash/variance evidence.
 
 ## Current lifecycle boundary
 
