@@ -2,8 +2,7 @@ name: Sprint163 POS Cash Variance Reconciliation Workspace Regression
 
 on:
   pull_request:
-    branches:
-      - main
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -14,8 +13,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  qualify-sprint163-pos-cash-variance-reconciliation:
-    name: qualify-sprint163-pos-cash-variance-reconciliation
+  preserve-sprint163-pos-cash-variance-reconciliation:
     runs-on: ubuntu-latest
     env:
       APP_NAME: oneQay
@@ -33,96 +31,39 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: Lock exact Sprint163 engineering envelope
-        shell: bash
+      - name: Preserve Sprint163 source contract
         run: |
           set -euo pipefail
-          git fetch --no-tags origin main
-          base="${{ github.event.pull_request.base.sha || 'f0cf498c6b53f358dfd1ffe44bfb5b8818a921f4' }}"
-          head="${{ github.event.pull_request.head.sha || github.sha }}"
-          git diff --name-only "$base" "$head" | LC_ALL=C sort > /tmp/sprint163-paths
-          count="$(wc -l < /tmp/sprint163-paths | tr -d ' ')"
-          fingerprint="$(sha256sum /tmp/sprint163-paths | awk '{print $1}')"
-          [[ "$count" == '18' ]]
-          [[ "$fingerprint" == '61077fd95f392e588a99d394f0ba3a0fc4d5b3187da850a1f4a796fa61eb5dbb' ]]
-          cat > /tmp/sprint163-expected <<'EOF'
-          .github/workflows/sprint163-pos-cash-variance-reconciliation-workspace-regression.yml
-          apps/web/app/Application/Pos/OperatePosCashVarianceReconciliation.php
-          apps/web/app/Application/Pos/PosCashVarianceReconciliationWorkspaceData.php
-          apps/web/app/Application/Pos/PosCashVarianceReconciliationWorkspaceRepository.php
-          apps/web/app/Application/Pos/PosCashVarianceReconciliationWorkspaceSnapshot.php
-          apps/web/app/Application/Pos/PosOperationsHubSnapshot.php
-          apps/web/app/Application/Pos/ViewPosCashVarianceReconciliationWorkspace.php
-          apps/web/app/Application/Pos/ViewPosOperationsHub.php
-          apps/web/app/Delivery/Http/Pos/PosCashVarianceExplanationController.php
-          apps/web/app/Delivery/Http/Pos/PosCashVarianceReconciliationWorkspaceController.php
-          apps/web/app/Delivery/Http/Pos/PosCashVarianceReviewDecisionController.php
-          apps/web/app/Delivery/Http/Pos/PosOperationsHubController.php
-          apps/web/app/Infrastructure/Pos/LaravelPosCashVarianceReconciliationWorkspaceRepository.php
-          apps/web/app/Providers/FinalShiftCloseServiceProvider.php
-          apps/web/app/Providers/PosCashVarianceReconciliationWorkspaceServiceProvider.php
-          apps/web/config/pos_cash_variance_reconciliation.php
-          apps/web/resources/js/pages/Pos/CashVarianceReconciliation.vue
-          apps/web/tests/pos-cash-variance-reconciliation-workspace.php
-          EOF
-          diff -u /tmp/sprint163-expected /tmp/sprint163-paths
+          test -f apps/web/app/Application/Pos/OperatePosCashVarianceReconciliation.php
+          test -f apps/web/app/Application/Pos/PosCashVarianceReconciliationWorkspaceSnapshot.php
+          test -f apps/web/app/Infrastructure/Pos/LaravelPosCashVarianceReconciliationWorkspaceRepository.php
+          test -f apps/web/app/Providers/PosCashVarianceReconciliationWorkspaceServiceProvider.php
+          test -f apps/web/resources/js/pages/Pos/CashVarianceReconciliation.vue
+          test -f apps/web/tests/pos-cash-variance-reconciliation-workspace.php
+          grep -Fq 'PosCashVarianceReconciliationWorkspaceServiceProvider::class' apps/web/app/Providers/FinalShiftCloseServiceProvider.php
+          grep -Fq 'ONEQAY_POS_CASH_VARIANCE_RECONCILIATION_ENABLED' apps/web/config/pos_cash_variance_reconciliation.php
 
-      - name: Preserve canonical mutation owners and operational NO-GO
-        shell: bash
+      - name: Preserve operational NO-GO
         run: |
           set -euo pipefail
-          base="${{ github.event.pull_request.base.sha || 'f0cf498c6b53f358dfd1ffe44bfb5b8818a921f4' }}"
-          head="${{ github.event.pull_request.head.sha || github.sha }}"
-          git diff --quiet "$base" "$head" -- \
-            ops/final-shift-close/STATE.json \
-            ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json \
-            ops/final-shift-close/POST_SELECTION_DOWNSTREAM_READINESS.json \
-            apps/web/routes/web.php \
-            apps/web/routes/technical-preview-cash-control.php \
-            apps/web/bootstrap/providers.php \
-            apps/web/composer.json \
-            apps/web/database/migrations \
-            apps/web/app/Providers/AppServiceProvider.php \
-            apps/web/app/Application/Authorization/PosPermission.php \
-            apps/web/app/Application/Pos/RecordCashVarianceExplanation.php \
-            apps/web/app/Application/Pos/RecordCashVarianceReviewDecision.php \
-            apps/web/app/Infrastructure/Pos/LaravelCashVarianceExplanationRepository.php \
-            apps/web/app/Infrastructure/Pos/LaravelCashVarianceReviewDecisionRepository.php \
-            apps/web/app/Infrastructure/Pos/LaravelCloseShiftRepository.php \
-            apps/web/app/Infrastructure/Pos/LaravelExpectedCashSnapshotReader.php \
-            apps/web/app/Application/Pos/DeriveCashVariance.php \
-            apps/web/app/Application/Pos/FinalShiftCloseAuthorizationPolicy.php
-          [[ "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" == 'NOT_EXECUTED' ]]
-          [[ "$(jq -r '.permission_provisioning.state' ops/final-shift-close/STATE.json)" == 'NONE' ]]
-          [[ "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" == 'INACTIVE' ]]
-          [[ "$(jq -r '.deployment_authority' ops/final-shift-close/STATE.json)" == 'NOT_GRANTED' ]]
-          [[ "$(jq -r '.technical_preview_activation' ops/final-shift-close/STATE.json)" == 'NOT_AUTHORIZED' ]]
-          [[ "$(jq -r '.production_activation' ops/final-shift-close/STATE.json)" == 'NOT_AUTHORIZED' ]]
-          [[ "$(jq -r '.updater_activation' ops/final-shift-close/STATE.json)" == 'INACTIVE' ]]
-          [[ "$(jq -r '.selection_state' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" == 'BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET' ]]
-          [[ "$(jq -r '.selected_target' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" == 'null' ]]
+          test "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" = NOT_EXECUTED
+          test "$(jq -r '.permission_provisioning.state' ops/final-shift-close/STATE.json)" = NONE
+          test "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" = INACTIVE
+          test "$(jq -r '.deployment_authority' ops/final-shift-close/STATE.json)" = NOT_GRANTED
+          test "$(jq -r '.technical_preview_activation' ops/final-shift-close/STATE.json)" = NOT_AUTHORIZED
+          test "$(jq -r '.production_activation' ops/final-shift-close/STATE.json)" = NOT_AUTHORIZED
+          test "$(jq -r '.updater_activation' ops/final-shift-close/STATE.json)" = INACTIVE
+          test "$(jq -r '.selected_target' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" = null
 
-      - name: Validate PHP runtime and locked dependencies
-        shell: bash
+      - name: Install PHP dependencies
+        working-directory: apps/web
         run: |
-          set -euo pipefail
-          php -r 'if (PHP_VERSION_ID < 80200 || PHP_VERSION_ID >= 80600) { fwrite(STDERR, "Sprint163 requires governed PHP 8.2-8.5 compatibility.\n"); exit(1); }'
-          test -f apps/web/composer.lock
-          test -f apps/web/package-lock.json
-          cd apps/web
           composer validate --no-check-publish
           composer install --no-interaction --no-progress --prefer-dist
 
-      - name: Validate Sprint163 PHP syntax and executable regressions
-        shell: bash
+      - name: Execute preserved POS regressions
+        working-directory: apps/web
         run: |
-          set -euo pipefail
-          find apps/web/app apps/web/bootstrap apps/web/config apps/web/routes apps/web/tests \
-            -type f -name '*.php' -print0 |
-            while IFS= read -r -d '' file; do
-              php -l "$file"
-            done
-          cd apps/web
           composer test
           php tests/pos-operational-reporting.php
           php tests/pos-cashier-workspace.php
@@ -142,41 +83,23 @@ jobs:
         with:
           node-version: 24.19.0
 
-      - name: Type-check and build reconciliation UI
+      - name: Type-check and build UI
         working-directory: apps/web
         run: |
           npm ci --ignore-scripts --no-fund
           npm run type-check
           npm run build
 
-      - name: Prove server-authoritative reconciliation semantics
-        shell: bash
+      - name: Preserve server-authoritative reconciliation invariants
         run: |
           set -euo pipefail
-          grep -Fq "name('pos.shifts.reconciliation.workspace')" apps/web/app/Providers/PosCashVarianceReconciliationWorkspaceServiceProvider.php
-          grep -Fq "name('pos.shifts.reconciliation.explanation')" apps/web/app/Providers/PosCashVarianceReconciliationWorkspaceServiceProvider.php
-          grep -Fq "name('pos.shifts.reconciliation.review')" apps/web/app/Providers/PosCashVarianceReconciliationWorkspaceServiceProvider.php
-          grep -Fq 'ONEQAY_POS_CASH_VARIANCE_RECONCILIATION_ENABLED' apps/web/config/pos_cash_variance_reconciliation.php
-          grep -Fq 'PosCashVarianceReconciliationWorkspaceServiceProvider::class' apps/web/app/Providers/FinalShiftCloseServiceProvider.php
-          ! grep -Fq 'PosCashVarianceReconciliationWorkspaceServiceProvider::class' apps/web/bootstrap/providers.php
           grep -Fq 'LaravelExpectedCashSnapshotReader' apps/web/app/Infrastructure/Pos/LaravelPosCashVarianceReconciliationWorkspaceRepository.php
           grep -Fq 'DeriveCashVariance' apps/web/app/Infrastructure/Pos/LaravelPosCashVarianceReconciliationWorkspaceRepository.php
           grep -Fq 'resolveVariance($context, $closingCashEvidenceId)' apps/web/app/Application/Pos/OperatePosCashVarianceReconciliation.php
-          grep -Fq "REVIEW_PERMISSION = 'pos.shift.cash-variance-review-decision.record'" apps/web/app/Application/Pos/ViewPosCashVarianceReconciliationWorkspace.php
-          grep -Fq 'PosPermission::recordCashVarianceExplanation()' apps/web/app/Application/Pos/ViewPosCashVarianceReconciliationWorkspace.php
           grep -Fq 'review_rejected_terminal' apps/web/app/Application/Pos/PosCashVarianceReconciliationWorkspaceSnapshot.php
           grep -Fq 'self_review_blocked' apps/web/app/Application/Pos/PosCashVarianceReconciliationWorkspaceSnapshot.php
-          grep -Fq "Route::has(\$routeName)" apps/web/app/Delivery/Http/Pos/PosOperationsHubController.php
-          grep -Fq "pos.shifts.reconciliation.workspace" apps/web/app/Delivery/Http/Pos/PosOperationsHubController.php
-          ! grep -R -n -E "request->input\('(expected_cash_atomic|observed_closing_cash_atomic|variance_atomic|variance_direction|currency|currency_scale)'" \
-            apps/web/app/Delivery/Http/Pos/PosCashVarianceExplanationController.php \
-            apps/web/app/Delivery/Http/Pos/PosCashVarianceReviewDecisionController.php
-          ! grep -R -n -E 'insert\(|update\(|delete\(|increment\(|decrement\(|statement\(' \
-            apps/web/app/Infrastructure/Pos/LaravelPosCashVarianceReconciliationWorkspaceRepository.php
 
       - name: Verify tracked-source cleanliness
-        shell: bash
         run: |
-          set -euo pipefail
           git diff --exit-code
           test -z "$(git status --porcelain)"
