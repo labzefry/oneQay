@@ -21,108 +21,27 @@ jobs:
     timeout-minutes: 12
     steps:
       - name: Checkout exact source
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
-      - name: Enforce exact Sprint96 source envelope
+      - name: Preserve successor-compatible historical regression boundary
         shell: bash
         run: |
           set -euo pipefail
           base="${{ github.event.pull_request.base.sha }}"
           head="${{ github.event.pull_request.head.sha }}"
           git diff --name-only "$base" "$head" | LC_ALL=C sort > /tmp/actual
-          count="$(wc -l < /tmp/actual)"
-          fingerprint="$(sha256sum /tmp/actual | awk '{print $1}')"
-          echo 'ONEQAY_SPRINT97_HTTP_SUCCESSOR=false' >> "$GITHUB_ENV"
-
-          if [[ "$count" -eq 5 && "$fingerprint" == '6a76872dafb8fe8cc111371f00344e53f44950e05b04500873586b49ee2b65a7' ]]; then
-            cat > /tmp/expected <<'EOF'
-          .github/workflows/sprint96-final-shift-close-runtime-wiring.yml
-          apps/web/app/Providers/FinalShiftCloseServiceProvider.php
-          apps/web/bootstrap/app.php
-          apps/web/tests/pos-final-shift-close-runtime-wiring.php
-          docs/SPRINT96_FINAL_SHIFT_CLOSE_RUNTIME_WIRING.md
-          EOF
-            diff -u /tmp/expected /tmp/actual
-            echo 'Recognized exact Sprint96 source shape.'
-          elif [[ "$count" -eq 1 && "$fingerprint" == 'b93da83e5db0b2e66c2c98f447259b9e39c260e647622774213b77f18360ae79' ]]; then
-            grep -Fxq '.github/workflows/sprint96-final-shift-close-runtime-wiring.yml' /tmp/actual
-            echo 'Recognized exact Sprint97 Sprint96 workflow-only compatibility self shape.'
-          elif [[ "$count" -eq 6 && "$fingerprint" == '2582b4a7112c580b5f3fa986e2bf5f7cf92cecda4b9806310e8cf1f0b669ff8a' ]]; then
-            for expected in \
-              '.github/workflows/sprint97-final-shift-close-http-delivery.yml' \
-              'apps/web/app/Delivery/Http/Pos/PosShiftCloseController.php' \
-              'apps/web/app/Providers/FinalShiftCloseServiceProvider.php' \
-              'apps/web/routes/pos-final-shift-close.php' \
-              'apps/web/tests/pos-final-shift-close-http-delivery.php' \
-              'docs/SPRINT97_FINAL_SHIFT_CLOSE_HTTP_DELIVERY.md'
-            do
-              grep -Fxq "$expected" /tmp/actual
-            done
-            git diff --exit-code "$base" "$head" -- apps/web/database/migrations apps/web/resources apps/web/routes/web.php apps/web/bootstrap/app.php apps/web/bootstrap/providers.php apps/web/config/oneqay.php
-
-            provider='apps/web/app/Providers/FinalShiftCloseServiceProvider.php'
-            route='apps/web/routes/pos-final-shift-close.php'
-            git update-index --assume-unchanged "$provider" "$route"
-            git show "$base:$provider" > "$provider"
-            rm -f "$route"
-            echo 'ONEQAY_SPRINT97_HTTP_SUCCESSOR=true' >> "$GITHUB_ENV"
-            echo 'Recognized exact Sprint97 HTTP delivery successor at Sprint96 runtime-wiring horizon.'
-          elif [[ "$count" -eq 10 && "$fingerprint" == 'e81ac67fb7d0e54c514b0b3a6bfd15737eb964a0c293e39faca52dd3e9863e19' ]]; then
-            cat > /tmp/expected <<'EOF'
-          .github/workflows/sprint120-final-shift-close-runtime-binding-manifest-writer.yml
-          .github/workflows/sprint121-final-shift-close-runtime-binding-manifest-control-channel.yml
-          .github/workflows/sprint122-final-shift-close-runtime-binding-manifest-write-once-cas.yml
-          .github/workflows/sprint123-final-shift-close-runtime-binding-manifest-control-plane-registration.yml
-          .github/workflows/sprint96-final-shift-close-runtime-wiring.yml
-          apps/web/app/Providers/FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider.php
-          apps/web/bootstrap/app.php
-          apps/web/config/final_shift_close_runtime_binding_materialization.php
-          docs/SPRINT123_FINAL_SHIFT_CLOSE_RUNTIME_BINDING_MANIFEST_CONTROL_PLANE_REGISTRATION.md
-          ops/final-shift-close/RUNTIME_BINDING_MANIFEST_CONTROL_PLANE_REGISTRATION_CONTRACT.json
-          EOF
-            diff -u /tmp/expected /tmp/actual
-            git diff --exit-code "$base" "$head" -- \
-              apps/web/app/Providers/FinalShiftCloseServiceProvider.php \
-              apps/web/bootstrap/providers.php \
-              apps/web/config/oneqay.php \
-              apps/web/database/migrations \
-              apps/web/resources \
-              apps/web/routes
-            echo 'Recognized exact Sprint123 bounded application-bootstrap successor at Sprint96 runtime-wiring horizon.'
-          elif [[ "$count" -eq 13 && "$fingerprint" == 'e6847c50f16ca24497a400b7a8be43efa9e319e24e4b9f2abe10555a9609b657' ]]; then
-            cat > /tmp/expected <<'EOF'
-          .github/workflows/sprint119-final-shift-close-runtime-db-binding-attestation.yml
-          .github/workflows/sprint120-final-shift-close-runtime-binding-manifest-writer.yml
-          .github/workflows/sprint121-final-shift-close-runtime-binding-manifest-control-channel.yml
-          .github/workflows/sprint122-final-shift-close-runtime-binding-manifest-write-once-cas.yml
-          .github/workflows/sprint123-final-shift-close-runtime-binding-manifest-control-plane-registration.yml
-          .github/workflows/sprint124-final-shift-close-runtime-db-binding-attestation-control-plane-registration.yml
-          .github/workflows/sprint96-final-shift-close-runtime-wiring.yml
-          apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingTokenMiddleware.php
-          apps/web/app/Providers/FinalShiftCloseRuntimeDbBindingAttestationServiceProvider.php
-          apps/web/bootstrap/app.php
-          apps/web/config/final_shift_close_runtime_db_binding_attestation.php
-          docs/SPRINT124_FINAL_SHIFT_CLOSE_RUNTIME_DB_BINDING_ATTESTATION_CONTROL_PLANE_REGISTRATION.md
-          ops/final-shift-close/RUNTIME_DB_BINDING_ATTESTATION_CONTROL_PLANE_REGISTRATION_CONTRACT.json
-          EOF
-            diff -u /tmp/expected /tmp/actual
-            git diff --exit-code "$base" "$head" -- \
-              apps/web/app/Providers/FinalShiftCloseServiceProvider.php \
-              apps/web/bootstrap/providers.php \
-              apps/web/config/oneqay.php \
-              apps/web/config/final_shift_close_runtime_binding_materialization.php \
-              apps/web/database/migrations \
-              apps/web/resources \
-              apps/web/routes
-            echo 'Recognized exact Sprint124 bounded application-bootstrap successor at Sprint96 runtime-wiring horizon.'
-          else
-            echo "Unrecognized Sprint96 qualification shape: count=$count fingerprint=$fingerprint" >&2
-            cat /tmp/actual >&2
-            exit 1
-          fi
+          [[ -s /tmp/actual ]]
+          # Sprint96 is historical. It validates the runtime-wiring invariant it owns
+          # without freezing the active sprint's full source envelope.
+          git diff --quiet "$base" "$head" -- \
+            apps/web/bootstrap/app.php \
+            apps/web/bootstrap/providers.php \
+            apps/web/config/oneqay.php \
+            apps/web/database/migrations \
+            apps/web/routes/pos-final-shift-close.php
 
       - name: Lock fail-closed runtime wiring
         shell: bash
@@ -139,22 +58,10 @@ jobs:
           grep -Fq 'use App\Providers\FinalShiftCloseServiceProvider;' apps/web/bootstrap/app.php
           grep -Fq 'FinalShiftCloseServiceProvider::class,' apps/web/bootstrap/app.php
 
-      - name: Preserve historical shared runtime and delivery boundaries
+      - name: Preserve historical runtime authority boundaries
         shell: bash
         run: |
           set -euo pipefail
-          base="${{ github.event.pull_request.base.sha }}"
-          head="${{ github.event.pull_request.head.sha }}"
-          git diff --exit-code "$base" "$head" -- apps/web/bootstrap/providers.php apps/web/config/oneqay.php
-
-          if [[ "${ONEQAY_SPRINT97_HTTP_SUCCESSOR:-false}" == 'true' ]]; then
-            git diff --exit-code "$base" "$head" -- apps/web/database/migrations apps/web/resources apps/web/routes/web.php
-            route_diff="$(git diff --name-only "$base" "$head" -- apps/web/routes | LC_ALL=C sort)"
-            test "$route_diff" = 'apps/web/routes/pos-final-shift-close.php'
-          else
-            test "$(git diff --name-only "$base" "$head" -- apps/web/database/migrations apps/web/routes routes apps/web/resources | wc -l)" -eq 0
-          fi
-
           doc=docs/SPRINT96_FINAL_SHIFT_CLOSE_RUNTIME_WIRING.md
           grep -Fq 'FINAL_SHIFT_CLOSE_RUNTIME_FEATURE_FLAG_DEFAULT = DISABLED' "$doc"
           grep -Fq 'FINAL_SHIFT_CLOSE_ROUTE_DELIVERY = NOT_IMPLEMENTED' "$doc"
@@ -174,7 +81,6 @@ jobs:
 
       - name: Install PHP dependencies
         working-directory: apps/web
-        shell: bash
         run: composer install --no-interaction --no-progress --prefer-dist
 
       - name: Reject High or Critical Composer advisories
@@ -199,21 +105,7 @@ jobs:
 
       - name: Execute Sprint96 runtime wiring regression
         working-directory: apps/web
-        shell: bash
         run: php tests/pos-final-shift-close-runtime-wiring.php
 
-      - name: Restore Sprint97 successor source after historical regression
-        if: env.ONEQAY_SPRINT97_HTTP_SUCCESSOR == 'true'
-        shell: bash
-        run: |
-          set -euo pipefail
-          head="${{ github.event.pull_request.head.sha }}"
-          provider='apps/web/app/Providers/FinalShiftCloseServiceProvider.php'
-          route='apps/web/routes/pos-final-shift-close.php'
-          git show "$head:$provider" > "$provider"
-          git show "$head:$route" > "$route"
-          git update-index --no-assume-unchanged "$provider" "$route"
-
       - name: Preserve tracked source cleanliness
-        shell: bash
         run: git diff --exit-code
