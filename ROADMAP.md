@@ -1,7 +1,7 @@
 # oneQay Roadmap
 
-**Roadmap checkpoint:** post-Sprint161 canonical reconciliation
-**Canonical engineering baseline:** `33080c0b5f5c6f66e9994ad7f05ba78dea241294`
+**Roadmap checkpoint:** post-Sprint162 canonical reconciliation
+**Canonical engineering baseline:** `332bcff11b40307d350c7ce5b3a6c08913c4251c`
 **Current state authority:** `PROJECT_MANIFEST.md`
 
 This roadmap describes sequencing and gates. It does **not** grant operational authority. Completed roadmap items are bounded repository objectives, not evidence of deployment or activation.
@@ -32,7 +32,7 @@ Sprint88–Sprint155 established migration source materialization, runtime depen
 
 Operational execution remains separately gated. Migration #27 remains `NOT_EXECUTED`, selected target remains `null`, permissions remain `NONE`, and feature activation remains `INACTIVE`.
 
-## Horizon D — Product-readiness POS operational surfaces — Sprint156–Sprint161 completed
+## Horizon D — Product-readiness POS operational surfaces — Sprint156–Sprint162 completed
 
 - [x] Sprint156 — read-only operational sales reporting
 - [x] Sprint157 — cashier sale-entry workspace over canonical sale authority
@@ -40,39 +40,48 @@ Operational execution remains separately gated. Migration #27 remains `NOT_EXECU
 - [x] Sprint159 — operational sale correction workspace over void/refund authorities
 - [x] Sprint160 — immutable sale history and receipt-detail workspace
 - [x] Sprint161 — operational catalog and opening-inventory setup workspace
+- [x] Sprint162 — guarded POS operations hub over existing delivered route and permission owners
 
-## Horizon E — Catalog and opening-inventory setup — Sprint161 completed
+## Horizon E — Guarded POS operations navigation — Sprint162 completed
 
-- [x] Prove canonical catalog-preparation and inventory-baseline mutation authorities before adding UI source
-- [x] Reuse existing `pos.catalog.prepare` and `pos.inventory.baseline` permissions deny-by-default
-- [x] Reuse existing named POST mutation endpoints
-- [x] Materialize tenant/outlet-scoped catalog and stock snapshot
-- [x] Preserve precision-safe atomic price, currency, scale, stock, and sellable state
-- [x] Derive baseline eligibility from canonical mutation conditions
-- [x] Preserve explicit catalog → opening-inventory sequence
-- [x] Avoid composite mutation, second stock engine, hidden retry, or migration
-- [x] Lock further mutation after success or network ambiguity until authoritative refresh
-- [x] Fail closed on malformed persisted currency rather than normalizing it
-- [x] Gate delivery to Local/Test/CI plus persistence/session/capability flags and explicit workspace arming
-- [x] Add Vue/Inertia setup workspace and executable SQLite regression
-- [x] Disqualify initial exact head after CI exposed malformed-currency normalization defect
-- [x] Qualify corrected exact engineering head successfully
+- [x] Prove there was no existing shared frontend layout, POS home route, or central navigation owner before adding source
+- [x] Prove no canonical restock/stock-adjustment application authority existed to expose safely instead
+- [x] Add one read-only `/pos` operational entry point without creating mutation or persistence authority
+- [x] Preserve exact verified tenant, organization, outlet, and device scope
+- [x] Reuse existing POS permissions only; introduce no hub-specific permission
+- [x] Preserve Shift Start authorization as `pos.shift.open` AND `pos.shift.opening-cash.record`
+- [x] Preserve Cashier authorization as `pos.sale.complete`
+- [x] Preserve Sales Summary / Sale History authorization as `pos.reporting.sales-summary.view`
+- [x] Preserve Corrections authorization as `pos.sale.void` OR `pos.sale.refund`
+- [x] Preserve Catalog & Opening Stock authorization as `pos.catalog.prepare` AND `pos.inventory.baseline`
+- [x] Preserve Shift Close authorization as `pos.shift.close`
+- [x] Require `Route::has()` in addition to permission before exposing each destination
+- [x] Keep every target workspace's own authorization gate intact
+- [x] Deny hub access when current context has no qualifying POS capability
+- [x] Add `ONEQAY_POS_OPERATIONS_HUB_ENABLED`, default false
+- [x] Gate delivery to Local/Test/CI + persistence + exact session controls + explicit hub arming
+- [x] Register through bounded child provider rather than global provider registry
+- [x] Add responsive Vue/Inertia read-only operations UI
+- [x] Add executable permission-composition and route-discovery regression
+- [x] Qualify exact engineering head successfully with no correction commit required
 - [x] Obtain repository-native Product Owner merge authority
-- [x] Squash merge engineering PR #740 at `33080c0b5f5c6f66e9994ad7f05ba78dea241294`
+- [x] Squash merge engineering PR #742 at `332bcff11b40307d350c7ce5b3a6c08913c4251c`
 
-### Sprint161 evidence
+### Sprint162 evidence
 
-- Parent canonical post-Sprint160 checkpoint: `92d932020ef95bdc26460a4944841d141d6fad5b`.
-- Initial disqualified head: `6cbb218d204e7e84ff6701328f6d884ccf5699ec`.
-- Final engineering head: `fbe8e91df756855d38b8c6656b17f27b4cc32585`.
-- Sprint161 regression run `34853239912`: successful.
-- Complete surfaced final exact-head PR-triggered matrix: successful.
-- Engineering envelope: 11 paths, SHA-256 `66d7c616fbe8ae0e6c3c262fc8054db26bcbaa67e07ed77000363041b056f613`.
-- Reconciliation envelope: six paths, SHA-256 `fd24a20017a13eca06d93ade217b6c0a68db07c205b218b8d9c201122c6e7ccc`.
+- Parent canonical post-Sprint161 checkpoint: `e0330761a325a5f9e5faa4c5c0089b6868f979c8`.
+- Final engineering head: `2d75efbdb4b3eb2b98ad7973866fa6576b1ffd79`.
+- Sprint162 regression run `34857221294`: successful.
+- M7.1 run `34857221166`: successful.
+- Governance Required Checks run `34857221221`: successful.
+- PHP Foundation Regression run `34857220990`: successful.
+- Sprint156–Sprint161 and all other surfaced final exact-head PR-triggered runs: successful.
+- Engineering envelope: 9 paths, SHA-256 `afadd8577d794fffc100b8ab98d77dfc55599ead9d32963c1ef84ee8a086afd2`.
+- Reconciliation envelope: six paths, SHA-256 `66500e314da09a14dbc35624dc0e0468c6ca3707bcf0a91261b4f850b207b734`.
 
-## Horizon F — Sprint162+ bounded engineering — next
+## Horizon F — Sprint163+ bounded engineering — next
 
-Status: **BOUNDED DISCOVERY NEXT AFTER SPRINT161 CLOSURE**.
+Status: **BOUNDED DISCOVERY NEXT AFTER SPRINT162 CLOSURE**.
 
 Selection rules:
 
@@ -81,13 +90,14 @@ Selection rules:
 3. prioritize security/data/tenant/auth/transaction/deployment blockers and business completeness over low-value abstraction;
 4. recognize when the true blocker is external/operational and avoid inventing another source-only layer;
 5. reuse existing canonical POS/domain/authorization contracts rather than duplicating authority;
-6. distinguish one-time inventory baseline from any future restock/adjustment need; Sprint161 grants no new stock-adjustment authority;
-7. freeze the smallest meaningful bounded source envelope;
-8. stay fail-closed, deny-by-default, and tenant-isolated;
-9. avoid target persistence, producer dispatch, migration execution, permission provisioning, activation, deployment, and allowlist widening unless separately authorized;
-10. qualify exact head in CI before merge and reconcile canonical project-state documentation at closure.
+6. treat the Sprint162 `/pos` hub as navigation only, never as an authorization bypass, capability activator, or new permission owner;
+7. distinguish one-time inventory baseline from any future restock/adjustment need; Sprint161/Sprint162 grant no stock-adjustment authority;
+8. freeze the smallest meaningful bounded source envelope;
+9. stay fail-closed, deny-by-default, and tenant-isolated;
+10. avoid target persistence, producer dispatch, migration execution, permission provisioning, activation, deployment, and allowlist widening unless separately authorized;
+11. qualify exact head in CI before merge and reconcile canonical project-state documentation at closure.
 
-No roadmap text pre-authorizes a specific Sprint162 implementation.
+No roadmap text pre-authorizes a specific Sprint163 objective or implementation.
 
 ## Horizon G — Operational qualification — blocked / separate authority
 
