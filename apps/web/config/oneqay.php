@@ -118,14 +118,6 @@ return [
         ),
     ],
 
-    'pos_operational_reporting' => [
-        // Sprint156 read-only reporting remains Local/Test/CI-only and fail-closed unless explicitly armed.
-        'enabled' => filter_var(
-            env('ONEQAY_POS_OPERATIONAL_REPORTING_ENABLED', false),
-            FILTER_VALIDATE_BOOL,
-        ),
-    ],
-
     'system_update' => [
         // Backend control-plane visibility/checking may only be enabled explicitly.
         'control_plane_enabled' => filter_var(
