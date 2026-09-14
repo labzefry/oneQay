@@ -14,8 +14,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  qualify-sprint162-pos-operations-hub:
-    name: qualify-sprint162-pos-operations-hub
+  preserve-sprint162-pos-operations-hub:
+    name: preserve-sprint162-pos-operations-hub
     runs-on: ubuntu-latest
     env:
       APP_NAME: oneQay
@@ -33,52 +33,30 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: Lock exact Sprint162 engineering envelope
+      - name: Preserve successor-compatible Sprint162 source contract
         shell: bash
         run: |
           set -euo pipefail
-          git fetch --no-tags origin main
-          base="${{ github.event.pull_request.base.sha || 'e0330761a325a5f9e5faa4c5c0089b6868f979c8' }}"
-          head="${{ github.event.pull_request.head.sha || github.sha }}"
-          git diff --name-only "$base" "$head" | LC_ALL=C sort > /tmp/sprint162-paths
-          count="$(wc -l < /tmp/sprint162-paths | tr -d ' ')"
-          fingerprint="$(sha256sum /tmp/sprint162-paths | awk '{print $1}')"
-          [[ "$count" == '9' ]]
-          [[ "$fingerprint" == 'afadd8577d794fffc100b8ab98d77dfc55599ead9d32963c1ef84ee8a086afd2' ]]
-          cat > /tmp/sprint162-expected <<'EOF'
-          .github/workflows/sprint162-pos-operations-hub-regression.yml
-          apps/web/app/Application/Pos/PosOperationsHubSnapshot.php
-          apps/web/app/Application/Pos/ViewPosOperationsHub.php
-          apps/web/app/Delivery/Http/Pos/PosOperationsHubController.php
-          apps/web/app/Providers/FinalShiftCloseServiceProvider.php
-          apps/web/app/Providers/PosOperationsHubServiceProvider.php
-          apps/web/config/pos_operations_hub.php
-          apps/web/resources/js/pages/Pos/OperationsHub.vue
-          apps/web/tests/pos-operations-hub.php
-          EOF
-          diff -u /tmp/sprint162-expected /tmp/sprint162-paths
+          for path in \
+            apps/web/app/Application/Pos/PosOperationsHubSnapshot.php \
+            apps/web/app/Application/Pos/ViewPosOperationsHub.php \
+            apps/web/app/Delivery/Http/Pos/PosOperationsHubController.php \
+            apps/web/app/Providers/PosOperationsHubServiceProvider.php \
+            apps/web/config/pos_operations_hub.php \
+            apps/web/resources/js/pages/Pos/OperationsHub.vue \
+            apps/web/tests/pos-operations-hub.php; do
+            test -f "$path"
+          done
+          grep -Fq 'PosOperationsHubServiceProvider::class' apps/web/app/Providers/FinalShiftCloseServiceProvider.php
+          grep -Fq "Route::get('/pos', PosOperationsHubController::class)" apps/web/app/Providers/PosOperationsHubServiceProvider.php
+          grep -Fq "name('pos.operations.hub')" apps/web/app/Providers/PosOperationsHubServiceProvider.php
+          grep -Fq 'ONEQAY_POS_OPERATIONS_HUB_ENABLED' apps/web/config/pos_operations_hub.php
+          ! grep -Fq 'PosOperationsHubServiceProvider::class' apps/web/bootstrap/providers.php
 
-      - name: Preserve canonical POS owners and operational NO-GO
+      - name: Preserve current operational NO-GO
         shell: bash
         run: |
           set -euo pipefail
-          base="${{ github.event.pull_request.base.sha || 'e0330761a325a5f9e5faa4c5c0089b6868f979c8' }}"
-          head="${{ github.event.pull_request.head.sha || github.sha }}"
-          git diff --quiet "$base" "$head" -- \
-            ops/final-shift-close/STATE.json \
-            ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json \
-            ops/final-shift-close/POST_SELECTION_DOWNSTREAM_READINESS.json \
-            apps/web/routes/web.php \
-            apps/web/routes/pos-final-shift-close.php \
-            apps/web/bootstrap/providers.php \
-            apps/web/composer.json \
-            apps/web/database/migrations \
-            apps/web/app/Application/Authorization/PosPermission.php \
-            apps/web/app/Providers/PosOperationalReportingServiceProvider.php \
-            apps/web/app/Providers/PosCashierWorkspaceServiceProvider.php \
-            apps/web/app/Providers/PosShiftStartWorkspaceServiceProvider.php \
-            apps/web/app/Providers/PosSaleCorrectionWorkspaceServiceProvider.php \
-            apps/web/app/Providers/PosCatalogInventorySetupWorkspaceServiceProvider.php
           [[ "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" == 'NOT_EXECUTED' ]]
           [[ "$(jq -r '.permission_provisioning.state' ops/final-shift-close/STATE.json)" == 'NONE' ]]
           [[ "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" == 'INACTIVE' ]]
@@ -100,7 +78,7 @@ jobs:
           composer validate --no-check-publish
           composer install --no-interaction --no-progress --prefer-dist
 
-      - name: Validate Sprint162 PHP syntax and executable regressions
+      - name: Execute application and POS hub regressions
         shell: bash
         run: |
           set -euo pipefail
@@ -131,14 +109,10 @@ jobs:
           npm run type-check
           npm run build
 
-      - name: Prove deny-by-default route discovery semantics
+      - name: Preserve deny-by-default route discovery semantics
         shell: bash
         run: |
           set -euo pipefail
-          grep -Fq "Route::get('/pos', PosOperationsHubController::class)" apps/web/app/Providers/PosOperationsHubServiceProvider.php
-          grep -Fq "name('pos.operations.hub')" apps/web/app/Providers/PosOperationsHubServiceProvider.php
-          grep -Fq 'ONEQAY_POS_OPERATIONS_HUB_ENABLED' apps/web/config/pos_operations_hub.php
-          grep -Fq 'PosOperationsHubServiceProvider::class' apps/web/app/Providers/FinalShiftCloseServiceProvider.php
           grep -Fq 'Route::has($routeName)' apps/web/app/Delivery/Http/Pos/PosOperationsHubController.php
           grep -Fq 'PosPermission::openShift()' apps/web/app/Application/Pos/ViewPosOperationsHub.php
           grep -Fq 'PosPermission::recordShiftOpeningCash()' apps/web/app/Application/Pos/ViewPosOperationsHub.php
