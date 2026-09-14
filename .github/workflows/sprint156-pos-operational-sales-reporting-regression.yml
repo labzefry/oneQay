@@ -43,12 +43,13 @@ jobs:
           git diff --name-only "$base" "$head" | LC_ALL=C sort > /tmp/sprint156-paths
           count="$(wc -l < /tmp/sprint156-paths | tr -d ' ')"
           fingerprint="$(sha256sum /tmp/sprint156-paths | awk '{print $1}')"
-          [[ "$count" == '15' ]]
-          [[ "$fingerprint" == '83cb5b3338abfae912919ee8d645c3829825f8e4a299007917af9187b131aa19' ]]
+          [[ "$count" == '16' ]]
+          [[ "$fingerprint" == '60cb4694b619112f9e38c0b35cea8b3a1a789f2a0e3a71cf264ec123ac976582' ]]
           cat > /tmp/sprint156-expected <<'EOF'
           .github/workflows/sprint120-final-shift-close-runtime-binding-manifest-writer.yml
           .github/workflows/sprint125-final-shift-close-runtime-db-binding-attestation-control-plane-regression.yml
           .github/workflows/sprint127-final-shift-close-runtime-binding-manifest-control-plane-regression.yml
+          .github/workflows/sprint128-final-shift-close-runtime-control-plane-token-character-policy.yml
           .github/workflows/sprint129-final-shift-close-historical-regression-successor-compatibility.yml
           .github/workflows/sprint156-pos-operational-sales-reporting-regression.yml
           apps/web/app/Application/Pos/PosOperationalSalesSummary.php
