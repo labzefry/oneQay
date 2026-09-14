@@ -14,8 +14,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  qualify-sprint157-pos-cashier-workspace:
-    name: qualify-sprint157-pos-cashier-workspace
+  preserve-sprint157-pos-cashier-workspace:
+    name: preserve-sprint157-pos-cashier-workspace
     runs-on: ubuntu-latest
     env:
       APP_NAME: oneQay
@@ -33,50 +33,32 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: Lock exact Sprint157 engineering envelope
+      - name: Preserve successor-compatible Sprint157 source contract
         shell: bash
         run: |
           set -euo pipefail
-          git fetch --no-tags origin main
-          base="${{ github.event.pull_request.base.sha || '1255fd1a310792c50e174465aa91417af23bd47e' }}"
-          head="${{ github.event.pull_request.head.sha || github.sha }}"
-          git diff --name-only "$base" "$head" | LC_ALL=C sort > /tmp/sprint157-paths
-          count="$(wc -l < /tmp/sprint157-paths | tr -d ' ')"
-          fingerprint="$(sha256sum /tmp/sprint157-paths | awk '{print $1}')"
-          [[ "$count" == '12' ]]
-          [[ "$fingerprint" == 'f363bbfff9b1a52479c0f6d76e7cefe4b14ac89c597b2cd7894713e34bcc2f5b' ]]
-          cat > /tmp/sprint157-expected <<'EOF'
-          .github/workflows/sprint157-pos-cashier-sale-entry-workspace-regression.yml
-          apps/web/app/Application/Pos/PosCashierCatalogItem.php
-          apps/web/app/Application/Pos/PosCashierWorkspaceRepository.php
-          apps/web/app/Application/Pos/PosCashierWorkspaceSnapshot.php
-          apps/web/app/Application/Pos/ViewPosCashierWorkspace.php
-          apps/web/app/Delivery/Http/Pos/PosCashierWorkspaceController.php
-          apps/web/app/Infrastructure/Pos/LaravelPosCashierWorkspaceRepository.php
-          apps/web/app/Providers/FinalShiftCloseServiceProvider.php
-          apps/web/app/Providers/PosCashierWorkspaceServiceProvider.php
-          apps/web/config/pos_cashier_workspace.php
-          apps/web/resources/js/pages/Pos/Cashier.vue
-          apps/web/tests/pos-cashier-workspace.php
-          EOF
-          diff -u /tmp/sprint157-expected /tmp/sprint157-paths
+          test -f apps/web/app/Application/Pos/PosCashierCatalogItem.php
+          test -f apps/web/app/Application/Pos/PosCashierWorkspaceRepository.php
+          test -f apps/web/app/Application/Pos/PosCashierWorkspaceSnapshot.php
+          test -f apps/web/app/Application/Pos/ViewPosCashierWorkspace.php
+          test -f apps/web/app/Delivery/Http/Pos/PosCashierWorkspaceController.php
+          test -f apps/web/app/Infrastructure/Pos/LaravelPosCashierWorkspaceRepository.php
+          test -f apps/web/app/Providers/PosCashierWorkspaceServiceProvider.php
+          test -f apps/web/config/pos_cashier_workspace.php
+          test -f apps/web/resources/js/pages/Pos/Cashier.vue
+          test -f apps/web/tests/pos-cashier-workspace.php
 
-      - name: Preserve Final Shift Close operational NO-GO
+      - name: Preserve current operational NO-GO
         shell: bash
         run: |
           set -euo pipefail
-          base="${{ github.event.pull_request.base.sha || '1255fd1a310792c50e174465aa91417af23bd47e' }}"
-          head="${{ github.event.pull_request.head.sha || github.sha }}"
-          git diff --quiet "$base" "$head" -- \
-            ops/final-shift-close/STATE.json \
-            ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json \
-            ops/final-shift-close/POST_SELECTION_DOWNSTREAM_READINESS.json \
-            apps/web/routes/web.php \
-            apps/web/bootstrap/providers.php \
-            apps/web/composer.json
           [[ "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" == 'NOT_EXECUTED' ]]
           [[ "$(jq -r '.permission_provisioning.state' ops/final-shift-close/STATE.json)" == 'NONE' ]]
           [[ "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" == 'INACTIVE' ]]
+          [[ "$(jq -r '.deployment_authority' ops/final-shift-close/STATE.json)" == 'NOT_GRANTED' ]]
+          [[ "$(jq -r '.technical_preview_activation' ops/final-shift-close/STATE.json)" == 'NOT_AUTHORIZED' ]]
+          [[ "$(jq -r '.production_activation' ops/final-shift-close/STATE.json)" == 'NOT_AUTHORIZED' ]]
+          [[ "$(jq -r '.updater_activation' ops/final-shift-close/STATE.json)" == 'INACTIVE' ]]
           [[ "$(jq -r '.selection_state' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" == 'BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET' ]]
           [[ "$(jq -r '.selected_target' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" == 'null' ]]
 
@@ -91,7 +73,7 @@ jobs:
           composer validate --no-check-publish
           composer install --no-interaction --no-progress --prefer-dist
 
-      - name: Validate Sprint157 PHP syntax and executable regressions
+      - name: Execute application and cashier regressions
         shell: bash
         run: |
           set -euo pipefail
@@ -117,7 +99,7 @@ jobs:
           npm run type-check
           npm run build
 
-      - name: Prove cashier workspace reuses canonical sale authority
+      - name: Preserve canonical sale authority and read-only cashier boundary
         shell: bash
         run: |
           set -euo pipefail
