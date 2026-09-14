@@ -1,12 +1,12 @@
 # CURRENT CANONICAL OVERRIDE — Sprint163
 
-**Canonical engineering checkpoint:** Sprint163  
-**Canonical engineering commit:** `a920e63c1a1d2623664b416422c3d5a471e389a6`  
-**Latest engineering PR:** #744 — `Sprint163: add operational cash variance reconciliation workspace`  
-**Final engineering head:** `61a506f44315e7ac18ec08672bd9cb2aee81c838`  
-**Sprint163 regression:** `34862683840` — successful  
-**Engineering envelope:** 18 paths — `61077fd95f392e588a99d394f0ba3a0fc4d5b3187da850a1f4a796fa61eb5dbb`  
-**Reconciliation envelope:** 6 paths — `dd1e8acc008bbe3ca8491cff12b0327f204d63e0820286af0da786acc5f8d4f2`  
+**Canonical engineering checkpoint:** Sprint163
+**Canonical engineering commit:** `a920e63c1a1d2623664b416422c3d5a471e389a6`
+**Latest engineering PR:** #744 — `Sprint163: add operational cash variance reconciliation workspace`
+**Final engineering head:** `61a506f44315e7ac18ec08672bd9cb2aee81c838`
+**Sprint163 regression:** `34862683840` — successful
+**Engineering envelope:** 18 paths — `61077fd95f392e588a99d394f0ba3a0fc4d5b3187da850a1f4a796fa61eb5dbb`
+**Reconciliation envelope:** 6 paths — `dd1e8acc008bbe3ca8491cff12b0327f204d63e0820286af0da786acc5f8d4f2`
 **Next position:** Sprint164 bounded discovery; no objective preselected.
 
 Sprint163 materialized `POS_CASH_VARIANCE_RECONCILIATION_WORKSPACE` over existing durable cash-variance explanation/reviewer authorities. Variance subjects remain server-authoritative, same-outlet review may cross devices, maker-checker separation remains enforced, and terminal `REVIEW_REJECTED` remains explicit. No new migration, permission identifier, adjudication engine, stock-adjustment authority, or Final Shift Close rule was introduced.
