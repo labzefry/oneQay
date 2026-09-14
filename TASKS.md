@@ -1,57 +1,59 @@
 # oneQay Tasks
 
-**Current engineering checkpoint:** Sprint158 closed
-**Canonical engineering commit:** `d6eb8f7f359584130deea9ec0ed3572add3c05aa`
+**Current engineering checkpoint:** Sprint159 closed
+**Canonical engineering commit:** `e4e6a0f55bbb3b6fd4126df66f4815e281ad0dc4`
 **Canonical status authority:** `PROJECT_MANIFEST.md`
 
 This file separates completed source engineering, next bounded engineering, and operational actions that remain separately gated.
 
-## Completed through Sprint158
+## Completed through Sprint159
 
 - [x] Core modular-monolith architecture and repository governance foundation
 - [x] Tenant-context-first and deny-by-default authorization foundations
 - [x] Versioned REST / correlation / idempotency governance foundations
+- [x] POS shift/register, sale/payment/receipt, catalog, inventory, full-sale void/refund, cash-variance, adjudication, and reviewer-control foundations
 - [x] Final Shift Close source/readiness chain through Sprint155 without operational activation
 - [x] Read-only POS operational sales reporting — Sprint156
 - [x] Operational POS cashier sale-entry workspace — Sprint157
 - [x] Operational POS shift-start workspace — Sprint158
-- [x] Exact tenant + organization + outlet + device shift-start scope
-- [x] Existing `pos.shift.open` permission reuse
-- [x] Existing `pos.shift.opening-cash.record` permission reuse
-- [x] Canonical `/pos/shifts/open` mutation owner preserved
-- [x] Canonical `/pos/shifts/opening-cash` mutation owner preserved
-- [x] Resumable shift-open → opening-cash → cashier-ready flow
-- [x] Partial-completion state preserved without opening a second shift
-- [x] No hidden automatic mutation retry
-- [x] Currency/scale-aware opening-cash input with server Money authority preserved
-- [x] Guarded Local/Test/CI delivery with persistence, session, capability, and explicit feature gates
-- [x] Vue/Inertia shift-start workspace
-- [x] Executable SQLite exact-scope/resumability/fail-closed regression
-- [x] Sprint158 engineering PR #734 squash merged
-- [x] Sprint158 complete exact-head PR-triggered matrix successful
-- [x] Sprint158 regression run `34816888058` successful
-- [x] M7.1 run `34816888381` successful
-- [x] Governance run `34816888368` successful
-- [x] PHP Foundation run `34816887952` successful
-- [x] Sprint96/Sprint97/Sprint126/Sprint148/Sprint156/Sprint157 regressions successful on the exact head
+- [x] Operational POS sale correction workspace — Sprint159
+- [x] Correction tenant + organization + outlet scope preservation
+- [x] Original sale device visibility without artificial same-device correction restriction
+- [x] Original-shift active-state eligibility preservation
+- [x] Existing deny-by-default `pos.sale.void` and `pos.sale.refund` permission reuse
+- [x] Existing canonical void and CASH-refund mutation path reuse; no second correction engine
+- [x] Full-sale evidence amount/currency/scale/tender integrity validation
+- [x] Explicit `COMPLETED → VOIDED → REFUNDED` CASH correction sequencing
+- [x] MANUAL_EXTERNAL void → external-settlement boundary
+- [x] Explicit no-auto-retry and uncertain-state refresh behavior
+- [x] Guarded Local/Test/CI correction delivery with explicit feature arming
+- [x] Vue/Inertia correction workspace
+- [x] Executable SQLite scope/permission/state/evidence/fail-closed regression
+- [x] Sprint159 engineering PR #736 squash merged
+- [x] Sprint159 complete surfaced exact-head PR-triggered matrix successful
+- [x] Sprint159 regression run `34818568216` successful
+- [x] M7.1 run `34818568151` successful
+- [x] Governance run `34818568451` successful
+- [x] PHP Foundation run `34818568650` successful
+- [x] Sprint96/Sprint97/Sprint126/Sprint148/Sprint156/Sprint157/Sprint158 preservation regressions successful on exact head
 - [x] Repository-native exact-head Product Owner merge authority successful
-- [x] Sprint158 engineering squash `d6eb8f7f359584130deea9ec0ed3572add3c05aa`
-- [x] Engineering merge verified as exactly one commit / 11 paths over post-Sprint157 canonical main
+- [x] Sprint159 engineering squash `e4e6a0f55bbb3b6fd4126df66f4815e281ad0dc4`
+- [x] Engineering merge verified as exactly one commit / 11 paths over post-Sprint158 canonical main
 - [x] Post-engineering machine-readable operational NO-GO verification completed
-- [x] Sprint158 workflow reconciled to successor-compatible historical regression ownership
-- [x] Sprint158 canonical six-path reconciliation materialized
+- [x] Sprint159 workflow reconciled to successor-compatible historical regression ownership
+- [x] Sprint159 canonical six-path reconciliation materialized
 
-## Sprint158 engineering evidence
+## Sprint159 engineering evidence
 
-- Objective: `POS_SHIFT_START_WORKSPACE`
-- Parent canonical checkpoint: `700f2133032047d213d38e2e0317641599831a9f`
-- Final engineering head: `1e2a0ae959a88870ae4728f46f07b08ae0c08a2c`
-- Engineering PR: #734
+- Objective: `POS_SALE_CORRECTION_WORKSPACE`
+- Parent canonical checkpoint: `6a23eefcc10a60d306d969834c594c73a7b7d2bf`
+- Final engineering head: `475c4d8fb9a1e17467e71c77fb837351d77e48e2`
+- Engineering PR: #736
 - Engineering envelope: 11 paths
-- Engineering envelope SHA-256: `3828b5914b64b4862ce4d39ff037261b796c232e5ac7c6fb001913a096ac1666`
-- Engineering squash: `d6eb8f7f359584130deea9ec0ed3572add3c05aa`
+- Engineering envelope SHA-256: `6a5f49136334f99c182220a7db89a7869611be8a5b65a6cd3fe4c73fcc40cf00`
+- Engineering squash: `e4e6a0f55bbb3b6fd4126df66f4815e281ad0dc4`
 - Reconciliation envelope: six paths
-- Reconciliation envelope SHA-256: `0257dde337eee65e156c49f59b54a61506b47866babb2c68a8bcc3a1a2e3321f`
+- Reconciliation envelope SHA-256: `e7ebee58804975f9d64bc3061c13dccd4c1212877fe73cb75072163e101070dc`
 - Operational mutation: `NOT_PERFORMED`
 - Final Shift Close runtime allowlist: Local/Test/CI only
 - Migration #27: `NOT_EXECUTED`
@@ -60,20 +62,20 @@ This file separates completed source engineering, next bounded engineering, and 
 
 ## Next bounded engineering
 
-### Sprint159 — bounded discovery after Sprint158 closure
+### Sprint160 — bounded discovery after Sprint159 closure
 
 The next engineering activity must:
 
-- identify the smallest material non-duplicative P0/P1 production-readiness or business-completeness gap from canonical post-Sprint158;
+- identify the smallest material non-duplicative P0/P1 production-readiness or business-completeness gap from canonical post-Sprint159;
 - inspect existing source/contracts/regressions before creating a new invariant owner;
 - prefer product value over additional abstraction where external operational prerequisites remain the true blocker;
-- reuse canonical shift, cashier, sale, catalog, stock, and authorization owners rather than duplicating them;
+- preserve canonical shift/sale/catalog/stock/void/refund/authorization owners rather than duplicating them;
 - freeze the smallest meaningful bounded source envelope before implementation;
 - remain fail-closed, deny-by-default, tenant-isolated, and exact-context scoped;
 - qualify exact head before merge;
 - preserve the six-section sprint documentation rule.
 
-No Sprint159 implementation is preselected.
+No Sprint160 implementation is preselected.
 
 ## Operational blockers / separate authority required
 
