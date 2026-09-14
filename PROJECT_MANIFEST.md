@@ -3,9 +3,9 @@
 **Product:** oneQay — The Future of Intelligent Business Management
 **Repository owner / attribution:** Lab | zefry
 **Default branch:** `main`
-**Canonical engineering checkpoint:** Sprint155
-**Canonical engineering commit:** `1e84e1b3e07915a1d20b56fe768b0d1454f901d2`
-**Latest engineering PR:** #728 — `Sprint155: add feature activation source handoff envelope`
+**Canonical engineering checkpoint:** Sprint156
+**Canonical engineering commit:** `259cc00037ee0d3fb909cbcf2c87d39ffb26f9b9`
+**Latest engineering PR:** #730 — `Sprint156: add tenant-scoped POS operational sales reporting`
 **Status date:** 2026-09-14
 
 > This file is the canonical human-readable source of truth for current oneQay project status. Machine-readable operational state remains authoritative for operational gates.
@@ -14,29 +14,27 @@
 
 oneQay remains an actively engineered enterprise business-management platform using Modular Monolith First, Clean Architecture, DDD, first-class tenant context, deny-by-default authorization, and fail-closed engineering controls.
 
-Sprint155 materialized a deterministic **source-only feature-activation transport handoff envelope** between the Sprint154 activation execution plan and previously qualified target-capability identity. It does not implement a concrete configuration-mutation adapter, network dispatch, runtime allowlist widening, or feature activation.
+Sprint156 closed the bounded P1 business-completeness gap `POS_OPERATIONAL_SALES_REPORTING` with a read-only tenant + organization + outlet scoped sales-summary surface over canonical POS sale, void, and cash-refund data. Currency and currency-scale boundaries remain explicit, authorization remains deny-by-default, and delivery remains fail-closed outside Local/Test/CI plus explicit feature arming.
 
-The executable Sprint155 regression is registered through the existing M7.1 application harness. This gives direct CI coverage without introducing a new operational workflow, dependency script, credential path, endpoint, or dispatch surface.
+Sprint156 also repaired historical regression ownership only where exact-head CI proved successor incompatibility. The global provider registry remains canonical; reporting is composed from the existing POS composition root. Historical Final Shift Close and POS workflows continue executing their substantive owned regressions rather than freezing unrelated successor PR shapes. Sprint148 additionally isolates qualification concurrency by exact head so stale runs cannot deadlock a new qualified head.
 
 ### Canonical state summary
 
 | Area | Current canonical state |
 | --- | --- |
-| Latest completed engineering sprint | Sprint155 |
-| Canonical engineering commit | `1e84e1b3e07915a1d20b56fe768b0d1454f901d2` |
-| Latest engineering PR | #728, squash merged |
-| Sprint155 final engineering head | `4871e0ade60e8ac5e6f44b2bc27f0319ca150e63` |
-| Sprint155 exact-head CI | 36/36 pull-request workflow runs successful |
-| Sprint155 Product Owner authority | run `34775351008`, successful repository-native verification |
-| Sprint155 engineering envelope | 3 paths; SHA-256 `29619b928a422615647184c5316d9679dd4c4d582d759e89e8704e335ed982cb` |
-| Post-Sprint155 reconciliation envelope | 6 paths; SHA-256 `323efb8b04badda3874aa7542285499b7be7b8df139cc86fd43b294aac7f8a38` |
-| Activation executor source foundation | `MATERIALIZED_SOURCE_ONLY` |
-| Source-only activation transport handoff envelope | `MATERIALIZED_SOURCE_ONLY` |
-| Concrete configuration-mutation transport | `NOT_IMPLEMENTED` |
-| Dispatchable feature-activation executor | `NOT_IMPLEMENTED` |
-| Network / executor dispatch | `NOT_PERFORMED` |
+| Latest completed engineering sprint | Sprint156 |
+| Canonical engineering commit | `259cc00037ee0d3fb909cbcf2c87d39ffb26f9b9` |
+| Latest engineering PR | #730, squash merged |
+| Sprint156 final engineering head | `5e460d1c7c5174cc831106ade3e3fa6309acba4d` |
+| Sprint156 exact-head CI | Complete PR-triggered matrix successful |
+| Sprint156 Product Owner authority | `product-owner-merge-authority=success` for exact engineering head |
+| Sprint156 engineering envelope | 24 paths; SHA-256 `34c6dab2c898ddd9133aaa6d5413ca7b345127020d8f04fe54f861a4d1a5e79c` |
+| Post-Sprint156 reconciliation envelope | 6 paths; SHA-256 `adba5b23ef33aeb360ebb4090b3f848fc2a3704807a60026c1344b2e0d1a54f4` |
+| POS operational sales reporting | Materialized as read-only Local/Test/CI delivery |
+| Reporting authorization | `pos.reporting.sales-summary.view`, deny-by-default |
+| Reporting scope | Tenant + organization + outlet |
+| Reporting currency handling | Currency + currency scale preserved; no cross-currency aggregation |
 | Runtime allowlist | `local`, `test`, `ci` only |
-| Runtime allowlist change | `NOT_IMPLEMENTED` |
 | Durable activation target | `BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET` |
 | Selected activation target | `null` |
 | Final Shift Close migration #27 | `NOT_EXECUTED` |
@@ -53,9 +51,9 @@ The executable Sprint155 regression is registered through the existing M7.1 appl
 
 ### Platform, governance, and POS foundation
 
-The repository has established modular-monolith architecture, tenant isolation, deny-by-default authorization, first-party session and privileged-authentication foundations, versioned REST governance, CI/governance controls, exact-head qualification, and repository-native Product Owner merge authorization.
+The repository has established modular-monolith architecture, tenant isolation, deny-by-default authorization, first-party session and privileged-authentication foundations, versioned REST governance, deterministic CI/governance controls, exact-head qualification, and repository-native Product Owner merge authorization.
 
-Bounded POS work includes shift/register opening, sale completion/payment/receipt evidence, tenant/outlet-scoped catalog preparation, durable idempotency preservation, cash-variance and adjudication foundations, and historical regression compatibility.
+Bounded POS work includes shift/register opening, sale completion/payment/receipt evidence, tenant/outlet-scoped catalog preparation, durable idempotency preservation, cash-variance and adjudication foundations, Final Shift Close source/readiness controls, and now tenant-scoped operational sales reporting.
 
 ### Final Shift Close engineering chain
 
@@ -66,59 +64,69 @@ Bounded POS work includes shift/register opening, sale completion/payment/receip
 - Sprint119–Sprint147 — runtime DB-binding/materialization control plane plus canonical HTTP/auth/throttle hardening.
 - Sprint148 — exact target-bound capability-evidence identity qualification.
 - Sprint149 — trusted capability-evidence producer source materialization without dispatch.
-- Sprint150 — exact selected-runtime full nine-component dependency-envelope qualification.
+- Sprint150 — exact selected-runtime full dependency-envelope qualification.
 - Sprint151 — deterministic target-bound dependency-envelope evidence construction source foundation.
 - Sprint152 — selected-target database binding for permission provisioning.
 - Sprint153 — trusted protected-environment dependency-envelope evidence producer source without dispatch.
 - Sprint154 — selected-target-bound feature-activation execution-plan source foundation.
-- Sprint155 — deterministic source-only activation transport handoff envelope plus executable regression in the existing M7.1 harness.
+- Sprint155 — deterministic source-only activation transport handoff envelope.
+- Sprint156 — product-readiness pivot to read-only POS operational sales reporting plus bounded historical regression successor compatibility.
 
-## 3. Sprint155 description and closure evidence
+## 3. Sprint156 description and closure evidence
 
 ### Purpose / Why
 
-Post-Sprint154 had a deterministic activation execution plan, but no bounded source object that could bind that plan to the already-qualified target-capability identity while preserving the explicit absence of a concrete adapter and network dispatch.
-
-Discovery also proved there was still no repository-native dispatchable Final Shift Close activation workflow or concrete configuration-mutation transport. Sprint155 therefore remained source-only.
+Post-Sprint155 discovery showed the remaining Final Shift Close blockers were external operational/runtime prerequisites rather than missing source abstraction. Continuing that chain would not materially shorten the path to a usable product. Canonical scope still required reporting, analytics, and a BI-like operational surface, while no operational sales-reporting owner existed.
 
 ### Objective / Gap
 
-Bounded objective: `FINAL_SHIFT_CLOSE_FEATURE_ACTIVATION_TRANSPORT_SOURCE_FOUNDATION`.
+Bounded objective: `POS_OPERATIONAL_SALES_REPORTING`.
 
-The objective was to materialize a deterministic handoff envelope that validates exact target identity, selection fingerprint, capability evidence identity, ordered activation-plan semantics, and fail-closed NO-GO states without creating any operational transport or mutation surface.
+The objective was to provide one cohesive read-only sales-summary surface using canonical POS persistence while preserving tenant isolation, organization/outlet scope, currency boundaries, deny-by-default authorization, and all operational NO-GO state.
 
 ### What changed
 
-- Added `FinalShiftCloseFeatureActivationTransportEnvelope.php`.
-- Added executable regression `pos-final-shift-close-feature-activation-transport-envelope.php`.
-- Registered that regression through `apps/web/tests/persistence.php`, so the existing M7.1 `composer test` path executes it.
-- The final engineering envelope intentionally remained three paths after connector safety guards rejected proposed dedicated operationally suggestive workflow/document/metadata artifacts. No guard bypass was attempted.
-- Post-engineering reconciliation added a non-operational source-contract preservation workflow that only installs locked PHP dependencies, validates PHP syntax, and runs the existing application regression suite.
+- Added application summary model, repository contract, and authorized query service.
+- Added Laravel read repository over canonical sale/void/cash-refund tables.
+- Added guarded HTTP controller and dedicated reporting service provider.
+- Added Inertia/Vue sales-summary dashboard.
+- Added fail-closed `ONEQAY_POS_OPERATIONAL_REPORTING_ENABLED` configuration.
+- Added executable SQLite regression covering tenant/outlet isolation, multi-currency grouping, state precedence, and persistence/runtime/feature fail-closed behavior.
+- Preserved canonical Composer dependency metadata; the Sprint156 workflow executes canonical application tests plus the dedicated reporting regression.
+- Restored the global provider registry to canonical state and composed reporting from the existing POS provider boundary.
+- Corrected stale historical workflow ownership only where exact-head CI proved successor incompatibility; substantive runtime/security regressions remain active.
+- Corrected Sprint148 concurrency scheduling to exact-head isolation without changing its substantive qualification steps.
 
 ### Evidence / Qualification
 
-- Engineering PR: #728, squash merged.
-- Parent canonical post-Sprint154 checkpoint: `056d0300af925c9e8adf04a11a107cc4f5fde196`.
-- Final exact engineering head: `4871e0ade60e8ac5e6f44b2bc27f0319ca150e63`.
-- Exact-head pull-request qualification: **36/36 successful**.
-- PHP Foundation Regression: run `34774606244`, successful.
-- M7.1 Application Regression: run `34774606266`, successful.
-- M7.1 logs explicitly reported `Final Shift Close feature activation transport envelope regression passed.`
-- Repository-native Product Owner merge-authority run: `34775351008`, successful.
-- Engineering envelope: three paths; SHA-256 `29619b928a422615647184c5316d9679dd4c4d582d759e89e8704e335ed982cb`.
-- Canonical engineering squash commit: `1e84e1b3e07915a1d20b56fe768b0d1454f901d2`.
-- Post-merge verification: exactly one squash commit above `056d0300af925c9e8adf04a11a107cc4f5fde196`, with exactly the three engineering paths.
-- Post-Sprint155 reconciliation envelope: six paths; SHA-256 `323efb8b04badda3874aa7542285499b7be7b8df139cc86fd43b294aac7f8a38`.
+- Engineering PR: #730, squash merged.
+- Parent canonical post-Sprint155 checkpoint: `4f939acd6cbcc3c49a45cba549a082c789cabd44`.
+- Final exact engineering head: `5e460d1c7c5174cc831106ade3e3fa6309acba4d`.
+- Complete exact-head PR-triggered matrix: **successful**.
+- Sprint156 reporting regression run `34813484159`: successful.
+- M7.1 Application Regression run `34813484204`: successful.
+- Governance Required Checks run `34813484278`: successful.
+- PHP Foundation Regression run `34813484276`: successful.
+- Sprint96 runtime regression run `34813484081`: successful.
+- Sprint97 HTTP delivery regression run `34813484181`: successful.
+- Sprint126 token-hardening regression run `34813484356`: successful.
+- Sprint148 capability-evidence regression run `34813484102`: successful after exact-head concurrency isolation.
+- Repository-native Product Owner authorization comment: exact PR #730 and head `5e460d1c7c5174cc831106ade3e3fa6309acba4d`.
+- `product-owner-merge-authority`: successful — exact-head authority verified.
+- Engineering envelope: 24 paths; SHA-256 `34c6dab2c898ddd9133aaa6d5413ca7b345127020d8f04fe54f861a4d1a5e79c`.
+- Canonical engineering squash commit: `259cc00037ee0d3fb909cbcf2c87d39ffb26f9b9`.
+- Post-merge verification: exactly one squash commit above `4f939acd6cbcc3c49a45cba549a082c789cabd44`, with exactly the 24 qualified engineering paths.
+- Post-Sprint156 reconciliation envelope: six paths; SHA-256 `adba5b23ef33aeb360ebb4090b3f848fc2a3704807a60026c1344b2e0d1a54f4`.
 
 ### Operational boundaries / NO-GO
 
-Sprint155 does not persist a target, dispatch a producer or executor, implement a concrete configuration-mutation adapter, perform network dispatch, execute migration #27, provision permissions, produce real capability/dependency evidence, widen the runtime allowlist, activate Final Shift Close, deploy/release, activate Technical Preview/Production, or activate the updater.
+Sprint156 does not select or persist a durable target, dispatch capability/dependency producers, execute migration #27, provision permissions, produce real target-bound capability/dependency evidence, widen the runtime allowlist, activate Final Shift Close, grant deployment authority, activate Technical Preview/Production, or activate the updater.
 
-Machine-readable state after the engineering merge still records target selection blocked with `selected_target=null`, migration #27 `NOT_EXECUTED`, permission provisioning `NONE`, feature activation `INACTIVE`, deployment authority `NOT_GRANTED`, Technical Preview and Production `NOT_AUTHORIZED`, and updater `INACTIVE`.
+Machine-readable state after engineering merge still records target selection blocked with `selected_target=null`, migration #27 `NOT_EXECUTED`, permission provisioning `NONE`, feature activation `INACTIVE`, deployment authority `NOT_GRANTED`, Technical Preview and Production `NOT_AUTHORIZED`, and updater `INACTIVE`.
 
 ### Next position
 
-After post-Sprint155 reconciliation is squash merged and verified, the next engineering position is **Sprint156 bounded discovery from canonical post-Sprint155**. No Sprint156 objective, implementation, or source envelope is preselected.
+After post-Sprint156 reconciliation is squash merged and verified, the next engineering position is **Sprint157 bounded discovery from canonical post-Sprint156**. No Sprint157 objective, implementation, or source envelope is preselected.
 
 ## 4. Operational truth — NO-GO remains authoritative
 
@@ -130,11 +138,7 @@ Current machine-readable state remains:
 - target selection: `BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET`;
 - capability-evidence producer dispatch: `NOT_PERFORMED`; real capability evidence: `NONE`;
 - dependency-evidence producer dispatch: `NOT_PERFORMED`; real dependency evidence: `NONE`;
-- activation executor source foundation: `MATERIALIZED_SOURCE_ONLY`;
-- source-only activation transport handoff envelope: materialized as engineering source only;
-- dispatchable feature-activation executor: `NOT_IMPLEMENTED`;
-- concrete configuration-mutation transport: `NOT_IMPLEMENTED`;
-- runtime allowlist change: `NOT_IMPLEMENTED`;
+- runtime allowlist remains Local/Test/CI only;
 - feature activation: `INACTIVE`;
 - deployment authority: `NOT_GRANTED`;
 - Technical Preview / Production activation: `NOT_AUTHORIZED`;
