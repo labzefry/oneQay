@@ -1,0 +1,162 @@
+name: Sprint162 POS Operations Hub Regression
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint162-pos-operations-hub-${{ github.event.pull_request.number || github.ref }}-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  qualify-sprint162-pos-operations-hub:
+    name: qualify-sprint162-pos-operations-hub
+    runs-on: ubuntu-latest
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:Y2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2M=
+      APP_DEBUG: "false"
+      APP_URL: http://localhost
+      ONEQAY_RUNTIME_CLASS: ci
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Lock exact Sprint162 engineering envelope
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin main
+          base="${{ github.event.pull_request.base.sha || 'e0330761a325a5f9e5faa4c5c0089b6868f979c8' }}"
+          head="${{ github.event.pull_request.head.sha || github.sha }}"
+          git diff --name-only "$base" "$head" | LC_ALL=C sort > /tmp/sprint162-paths
+          count="$(wc -l < /tmp/sprint162-paths | tr -d ' ')"
+          fingerprint="$(sha256sum /tmp/sprint162-paths | awk '{print $1}')"
+          [[ "$count" == '9' ]]
+          [[ "$fingerprint" == 'afadd8577d794fffc100b8ab98d77dfc55599ead9d32963c1ef84ee8a086afd2' ]]
+          cat > /tmp/sprint162-expected <<'EOF'
+          .github/workflows/sprint162-pos-operations-hub-regression.yml
+          apps/web/app/Application/Pos/PosOperationsHubSnapshot.php
+          apps/web/app/Application/Pos/ViewPosOperationsHub.php
+          apps/web/app/Delivery/Http/Pos/PosOperationsHubController.php
+          apps/web/app/Providers/FinalShiftCloseServiceProvider.php
+          apps/web/app/Providers/PosOperationsHubServiceProvider.php
+          apps/web/config/pos_operations_hub.php
+          apps/web/resources/js/pages/Pos/OperationsHub.vue
+          apps/web/tests/pos-operations-hub.php
+          EOF
+          diff -u /tmp/sprint162-expected /tmp/sprint162-paths
+
+      - name: Preserve canonical POS owners and operational NO-GO
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="${{ github.event.pull_request.base.sha || 'e0330761a325a5f9e5faa4c5c0089b6868f979c8' }}"
+          head="${{ github.event.pull_request.head.sha || github.sha }}"
+          git diff --quiet "$base" "$head" -- \
+            ops/final-shift-close/STATE.json \
+            ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json \
+            ops/final-shift-close/POST_SELECTION_DOWNSTREAM_READINESS.json \
+            apps/web/routes/web.php \
+            apps/web/routes/pos-final-shift-close.php \
+            apps/web/bootstrap/providers.php \
+            apps/web/composer.json \
+            apps/web/database/migrations \
+            apps/web/app/Application/Authorization/PosPermission.php \
+            apps/web/app/Providers/PosOperationalReportingServiceProvider.php \
+            apps/web/app/Providers/PosCashierWorkspaceServiceProvider.php \
+            apps/web/app/Providers/PosShiftStartWorkspaceServiceProvider.php \
+            apps/web/app/Providers/PosSaleCorrectionWorkspaceServiceProvider.php \
+            apps/web/app/Providers/PosCatalogInventorySetupWorkspaceServiceProvider.php
+          [[ "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" == 'NOT_EXECUTED' ]]
+          [[ "$(jq -r '.permission_provisioning.state' ops/final-shift-close/STATE.json)" == 'NONE' ]]
+          [[ "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" == 'INACTIVE' ]]
+          [[ "$(jq -r '.deployment_authority' ops/final-shift-close/STATE.json)" == 'NOT_GRANTED' ]]
+          [[ "$(jq -r '.technical_preview_activation' ops/final-shift-close/STATE.json)" == 'NOT_AUTHORIZED' ]]
+          [[ "$(jq -r '.production_activation' ops/final-shift-close/STATE.json)" == 'NOT_AUTHORIZED' ]]
+          [[ "$(jq -r '.updater_activation' ops/final-shift-close/STATE.json)" == 'INACTIVE' ]]
+          [[ "$(jq -r '.selection_state' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" == 'BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET' ]]
+          [[ "$(jq -r '.selected_target' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" == 'null' ]]
+
+      - name: Validate PHP runtime and locked dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -r 'if (PHP_VERSION_ID < 80200 || PHP_VERSION_ID >= 80600) { fwrite(STDERR, "Sprint162 requires governed PHP 8.2-8.5 compatibility.\n"); exit(1); }'
+          test -f apps/web/composer.lock
+          test -f apps/web/package-lock.json
+          cd apps/web
+          composer validate --no-check-publish
+          composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Validate Sprint162 PHP syntax and executable regressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          find apps/web/app apps/web/bootstrap apps/web/config apps/web/routes apps/web/tests \
+            -type f -name '*.php' -print0 |
+            while IFS= read -r -d '' file; do
+              php -l "$file"
+            done
+          cd apps/web
+          composer test
+          php tests/pos-operational-reporting.php
+          php tests/pos-cashier-workspace.php
+          php tests/pos-shift-start-workspace.php
+          php tests/pos-sale-correction-workspace.php
+          php tests/pos-sale-history-workspace.php
+          php tests/pos-catalog-inventory-setup-workspace.php
+          php tests/pos-operations-hub.php
+
+      - name: Setup exact Node LTS
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: 24.19.0
+
+      - name: Type-check and build POS operations hub UI
+        working-directory: apps/web
+        run: |
+          npm ci --ignore-scripts --no-fund
+          npm run type-check
+          npm run build
+
+      - name: Prove deny-by-default route discovery semantics
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq "Route::get('/pos', PosOperationsHubController::class)" apps/web/app/Providers/PosOperationsHubServiceProvider.php
+          grep -Fq "name('pos.operations.hub')" apps/web/app/Providers/PosOperationsHubServiceProvider.php
+          grep -Fq 'ONEQAY_POS_OPERATIONS_HUB_ENABLED' apps/web/config/pos_operations_hub.php
+          grep -Fq 'PosOperationsHubServiceProvider::class' apps/web/app/Providers/FinalShiftCloseServiceProvider.php
+          grep -Fq 'Route::has($routeName)' apps/web/app/Delivery/Http/Pos/PosOperationsHubController.php
+          grep -Fq 'PosPermission::openShift()' apps/web/app/Application/Pos/ViewPosOperationsHub.php
+          grep -Fq 'PosPermission::recordShiftOpeningCash()' apps/web/app/Application/Pos/ViewPosOperationsHub.php
+          grep -Fq 'PosPermission::completeSale()' apps/web/app/Application/Pos/ViewPosOperationsHub.php
+          grep -Fq 'pos.reporting.sales-summary.view' apps/web/app/Application/Pos/ViewPosOperationsHub.php
+          grep -Fq 'PosPermission::voidSale()' apps/web/app/Application/Pos/ViewPosOperationsHub.php
+          grep -Fq 'PosPermission::refundSale()' apps/web/app/Application/Pos/ViewPosOperationsHub.php
+          grep -Fq 'PosPermission::prepareCatalog()' apps/web/app/Application/Pos/ViewPosOperationsHub.php
+          grep -Fq 'PosPermission::inventoryBaseline()' apps/web/app/Application/Pos/ViewPosOperationsHub.php
+          grep -Fq 'FinalShiftClosePermission::identifier()' apps/web/app/Application/Pos/ViewPosOperationsHub.php
+          ! grep -R -n -E 'insert\(|update\(|delete\(|increment\(|decrement\(|statement\(' \
+            apps/web/app/Application/Pos/PosOperationsHubSnapshot.php \
+            apps/web/app/Application/Pos/ViewPosOperationsHub.php \
+            apps/web/app/Delivery/Http/Pos/PosOperationsHubController.php
+
+      - name: Verify tracked-source cleanliness
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --exit-code
+          test -z "$(git status --porcelain)"
