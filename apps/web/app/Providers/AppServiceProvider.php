@@ -50,7 +50,6 @@ use App\Application\Pos\DurablePosSaleRepository;
 use App\Application\Pos\EstablishInventoryBaseline;
 use App\Application\Pos\InventoryBaselineClock;
 use App\Application\Pos\InventoryBaselineRepository;
-use App\Application\Pos\PosOperationalSalesSummaryRepository;
 use App\Application\Pos\PosSaleClock;
 use App\Application\Pos\RecordCashRefund;
 use App\Application\Pos\RecordShiftOpeningCash;
@@ -62,11 +61,8 @@ use App\Application\Pos\ShiftOpeningClock;
 use App\Application\Pos\ShiftOpeningRepository;
 use App\Application\Pos\ShiftOpeningCashRepository;
 use App\Application\Pos\ShiftClosingCashRepository;
-use App\Application\Pos\ViewPosOperationalSalesSummary;
 use App\Application\Tenancy\TenantContextStore;
 use App\Application\Tenancy\TenantMembershipVerifier;
-use App\Delivery\Http\Middleware\RequirePosSessionContextMiddleware;
-use App\Delivery\Http\Pos\PosOperationalSalesSummaryController;
 use App\Infrastructure\Access\LaravelDurableOrganizationalAccessRepository;
 use App\Infrastructure\Authorization\LaravelDurablePolicyAdministrationRepository;
 use App\Infrastructure\Authorization\LaravelDurableRolePermissionRepository;
@@ -92,7 +88,6 @@ use App\Infrastructure\Organization\RequestOrganizationalContextStore;
 use App\Infrastructure\Pos\LaravelCatalogPreparationRepository;
 use App\Infrastructure\Pos\LaravelDurablePosSaleRepository;
 use App\Infrastructure\Pos\LaravelInventoryBaselineRepository;
-use App\Infrastructure\Pos\LaravelPosOperationalSalesSummaryRepository;
 use App\Infrastructure\Pos\LaravelSaleCashRefundRepository;
 use App\Infrastructure\Pos\LaravelShiftOpeningRepository;
 use App\Infrastructure\Pos\LaravelShiftOpeningCashRepository;
@@ -103,7 +98,6 @@ use App\Infrastructure\Tenancy\LaravelTenantMembershipVerifier;
 use App\Infrastructure\Tenancy\RequestTenantContextStore;
 use Illuminate\Contracts\Encryption\Encrypter;
 use Illuminate\Database\Connection;
-use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 
 // Author by Lab | zefry
@@ -378,20 +372,6 @@ final class AppServiceProvider extends ServiceProvider
             $app->make(InventoryBaselineClock::class),
         ));
 
-        $this->app->scoped(PosOperationalSalesSummaryRepository::class, function ($app): PosOperationalSalesSummaryRepository {
-            return new LaravelPosOperationalSalesSummaryRepository(
-                $this->connection($app),
-                $this->persistenceEnabled(),
-                $this->runtimeClass(),
-                (bool) config('oneqay.pos_operational_reporting.enabled', false),
-            );
-        });
-        $this->app->scoped(ViewPosOperationalSalesSummary::class, fn ($app): ViewPosOperationalSalesSummary => new ViewPosOperationalSalesSummary(
-            $app->make(PosOperationalSalesSummaryRepository::class),
-            $app->make(OrganizationalContextStore::class),
-            $app->make(DurableScopedAuthorizationPolicy::class),
-        ));
-
         $this->app->scoped(PrivilegedTotpEngine::class, static fn (): PrivilegedTotpEngine => new OtphpPrivilegedTotpEngine());
         $this->app->scoped(PrivilegedTotpClock::class, static fn (): PrivilegedTotpClock => new class implements PrivilegedTotpClock { public function nowUnix(): int { return time(); } });
         $this->app->scoped(PrivilegedTotpRecoveryClock::class, static fn (): PrivilegedTotpRecoveryClock => new class implements PrivilegedTotpRecoveryClock { public function nowUnix(): int { return time(); } });
@@ -412,8 +392,6 @@ final class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        $this->registerPosOperationalReportingRoute();
-
         $technicalPreviewEnabled = filter_var(env('ONEQAY_TECHNICAL_PREVIEW_ENABLED', false), FILTER_VALIDATE_BOOL);
         if ($technicalPreviewEnabled) {
             return;
@@ -424,20 +402,6 @@ final class AppServiceProvider extends ServiceProvider
         // Restore durable authentication verification for normal Local/Test/CI runtime.
         $this->app->scoped(TenantMembershipVerifier::class, fn ($app): TenantMembershipVerifier => new LaravelTenantMembershipVerifier($app->make(DurableOrganizationalAccessRepository::class)));
         $this->app->scoped(OrganizationalRelationshipVerifier::class, fn ($app): OrganizationalRelationshipVerifier => new LaravelOrganizationalRelationshipVerifier($app->make(DurableOrganizationalAccessRepository::class)));
-    }
-
-    private function registerPosOperationalReportingRoute(): void
-    {
-        $runtimeClass = strtolower(trim($this->runtimeClass()));
-        if (! in_array($runtimeClass, ['local', 'test', 'ci'], true)
-            || ! $this->sessionControlEnabled()
-            || ! (bool) config('oneqay.pos_operational_reporting.enabled', false)) {
-            return;
-        }
-
-        Route::get('/pos/reporting/sales-summary', PosOperationalSalesSummaryController::class)
-            ->middleware(['session.active', 'throttle:30,1', 'throttle:300,60', RequirePosSessionContextMiddleware::class])
-            ->name('pos.reporting.sales-summary');
     }
 
     private function connection($app): Connection
