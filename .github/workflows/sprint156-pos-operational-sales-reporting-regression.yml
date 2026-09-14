@@ -43,19 +43,21 @@ jobs:
           git diff --name-only "$base" "$head" | LC_ALL=C sort > /tmp/sprint156-paths
           count="$(wc -l < /tmp/sprint156-paths | tr -d ' ')"
           fingerprint="$(sha256sum /tmp/sprint156-paths | awk '{print $1}')"
-          [[ "$count" == '12' ]]
-          [[ "$fingerprint" == '4e8d46feeb4b21194b024ea17c6b534f69f004308d31091b4385780a05bdd69e' ]]
+          [[ "$count" == '14' ]]
+          [[ "$fingerprint" == 'cdd519c7eaddd6a74d13cf9cde7f67b9c53fae94b4049bd81071d17b124f52c3' ]]
           cat > /tmp/sprint156-expected <<'EOF'
+          .github/workflows/sprint120-final-shift-close-runtime-binding-manifest-writer.yml
+          .github/workflows/sprint129-final-shift-close-historical-regression-successor-compatibility.yml
           .github/workflows/sprint156-pos-operational-sales-reporting-regression.yml
-          apps/web/app/Application/Authorization/PosPermission.php
           apps/web/app/Application/Pos/PosOperationalSalesSummary.php
           apps/web/app/Application/Pos/PosOperationalSalesSummaryRepository.php
           apps/web/app/Application/Pos/ViewPosOperationalSalesSummary.php
           apps/web/app/Delivery/Http/Pos/PosOperationalSalesSummaryController.php
           apps/web/app/Infrastructure/Pos/LaravelPosOperationalSalesSummaryRepository.php
-          apps/web/app/Providers/AppServiceProvider.php
+          apps/web/app/Providers/PosOperationalReportingServiceProvider.php
+          apps/web/bootstrap/providers.php
           apps/web/composer.json
-          apps/web/config/oneqay.php
+          apps/web/config/pos_operational_reporting.php
           apps/web/resources/js/pages/Pos/SalesSummary.vue
           apps/web/tests/pos-operational-reporting.php
           EOF
@@ -118,11 +120,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          grep -Fq "VIEW_OPERATIONAL_SALES_SUMMARY = 'pos.reporting.sales-summary.view'" apps/web/app/Application/Authorization/PosPermission.php
+          grep -Fq "private const VIEW_PERMISSION = 'pos.reporting.sales-summary.view';" apps/web/app/Application/Pos/ViewPosOperationalSalesSummary.php
           grep -Fq "where('tenant_id', \$context->tenantId())" apps/web/app/Infrastructure/Pos/LaravelPosOperationalSalesSummaryRepository.php
           grep -Fq "where('organization_id', \$context->organizationId())" apps/web/app/Infrastructure/Pos/LaravelPosOperationalSalesSummaryRepository.php
           grep -Fq "where('outlet_id', \$context->outletId())" apps/web/app/Infrastructure/Pos/LaravelPosOperationalSalesSummaryRepository.php
-          grep -Fq "ONEQAY_POS_OPERATIONAL_REPORTING_ENABLED" apps/web/config/oneqay.php
+          grep -Fq "ONEQAY_POS_OPERATIONAL_REPORTING_ENABLED" apps/web/config/pos_operational_reporting.php
           ! grep -R -n -E 'insert\(|update\(|delete\(|statement\(' \
             apps/web/app/Application/Pos/PosOperationalSalesSummary.php \
             apps/web/app/Application/Pos/PosOperationalSalesSummaryRepository.php \
