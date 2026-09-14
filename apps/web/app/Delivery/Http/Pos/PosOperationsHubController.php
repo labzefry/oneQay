@@ -60,6 +60,7 @@ final class PosOperationsHubController
     {
         $candidates = [
             [$snapshot->canCatalogInventorySetup(), 'pos.catalog-inventory.setup', 'catalog_inventory', 'Catalog & Opening Stock', 'Prepare sale items and establish one-time opening inventory.', 'SETUP'],
+            [$snapshot->canInventoryReplenishment(), 'pos.inventory.replenishment.workspace', 'inventory_replenishment', 'Inventory Replenishment', 'Receive positive stock after the canonical opening baseline with immutable evidence.', 'STOCK'],
             [$snapshot->canShiftStart(), 'pos.shift-start.workspace', 'shift_start', 'Start Shift', 'Open the exact device shift and record opening cash evidence.', 'SHIFT'],
             [$snapshot->canCashier(), 'pos.cashier.workspace', 'cashier', 'Cashier', 'Run sale entry on the active exact-device shift.', 'SELL'],
             [$snapshot->canReporting(), 'pos.reporting.sales-summary', 'sales_summary', 'Sales Summary', 'Review current operational sales counters and totals.', 'REVIEW'],
