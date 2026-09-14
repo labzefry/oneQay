@@ -51,7 +51,6 @@ jobs:
             apps/web/config/final_shift_close_runtime_binding_materialization.php \
             apps/web/config/final_shift_close_runtime_db_binding_attestation.php \
             apps/web/bootstrap/app.php \
-            apps/web/bootstrap/providers.php \
             apps/web/routes \
             apps/web/app/Delivery/Http/Pos/FinalShiftCloseRuntimeBindingManifestMaterializationController.php \
             apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingManifestMaterializer.php \
