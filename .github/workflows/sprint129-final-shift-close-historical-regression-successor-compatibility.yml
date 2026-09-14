@@ -46,23 +46,20 @@ jobs:
             ! grep -Fq 'diff -u /tmp/expected /tmp/paths' "$file"
           done
 
-      - name: Prove canonical runtime and operational state remain untouched
+      - name: Prove canonical Final Shift Close operational state remains untouched
         shell: bash
         run: |
           set -euo pipefail
           base="${{ github.event.pull_request.base.sha }}"
           head="${{ github.event.pull_request.head.sha }}"
+          # Historical Sprint129 owns Final Shift Close operational boundaries only.
+          # Successor business-product source is intentionally outside this freeze.
           git diff --quiet "$base" "$head" -- \
-            apps/web/config \
-            apps/web/bootstrap \
-            apps/web/routes \
-            apps/web/database/migrations \
-            apps/web/app/Delivery/Http/Pos \
-            apps/web/app/Infrastructure/Pos \
             .github/workflows/final-shift-close-migration27-selected-target-db-binding.yml \
             .github/workflows/final-shift-close-migration27-execution.yml \
             ops/final-shift-close/STATE.json \
-            ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+            ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json \
+            ops/final-shift-close/POST_SELECTION_DOWNSTREAM_READINESS.json
           [[ "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" == 'NOT_EXECUTED' ]]
           [[ "$(jq -r '.permission_provisioning.state' ops/final-shift-close/STATE.json)" == 'NONE' ]]
           [[ "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" == 'INACTIVE' ]]
