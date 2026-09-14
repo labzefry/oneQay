@@ -1,11 +1,11 @@
 # oneQay Project Manifest
 
-**Product:** oneQay — The Future of Intelligent Business Management  
-**Repository owner / attribution:** Lab | zefry  
-**Default branch:** `main`  
-**Canonical engineering checkpoint:** Sprint157  
-**Canonical engineering commit:** `b4d21b208a0580f4b40565b028dd6aed9bb190b8`  
-**Latest engineering PR:** #732 — `Sprint157: add operational POS cashier sale-entry workspace`  
+**Product:** oneQay — The Future of Intelligent Business Management
+**Repository owner / attribution:** Lab | zefry
+**Default branch:** `main`
+**Canonical engineering checkpoint:** Sprint157
+**Canonical engineering commit:** `b4d21b208a0580f4b40565b028dd6aed9bb190b8`
+**Latest engineering PR:** #732 — `Sprint157: add operational POS cashier sale-entry workspace`
 **Status date:** 2026-09-14
 
 > This file is the canonical human-readable source of truth for current oneQay project status. Machine-readable operational state remains authoritative for operational gates.
