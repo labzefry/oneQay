@@ -1,5 +1,25 @@
 # Changelog
 
+## 2026-09-14 — Sprint163 closed
+
+**Sprint163: operational cash variance reconciliation workspace**
+
+- **Purpose / Why:** Final Shift Close already required explanation plus independent accepted review for non-zero cash variance, but operational POS delivery did not expose those existing durable authorities.
+- **Objective / Gap:** `POS_CASH_VARIANCE_RECONCILIATION_WORKSPACE`.
+- Added tenant + organization + outlet scoped, same-outlet cross-device reconciliation workspace.
+- Rebuilt selected variance subjects server-side from canonical closing evidence using the existing expected-cash reader and `DeriveCashVariance`; browser requests cannot supply authoritative variance inputs.
+- Reused existing explanation and reviewer permissions; no new permission identifier was created.
+- Preserved maker-checker separation and terminal `REVIEW_REJECTED` semantics.
+- Added guarded workspace/explanation/review routes, Operations Hub discovery, Vue/Inertia UI, and executable reconciliation regression.
+- Exact engineering head `61a506f44315e7ac18ec08672bd9cb2aee81c838` completed the surfaced PR-triggered matrix successfully; Sprint163 run `34862683840` succeeded.
+- Engineering envelope: 18 paths; SHA-256 `61077fd95f392e588a99d394f0ba3a0fc4d5b3187da850a1f4a796fa61eb5dbb`.
+- Engineering PR #744 squash merged at `a920e63c1a1d2623664b416422c3d5a471e389a6`.
+- Reconciliation envelope: six paths; SHA-256 `dd1e8acc008bbe3ca8491cff12b0327f204d63e0820286af0da786acc5f8d4f2`.
+- **Operational boundaries / NO-GO:** selected target `null`; migration #27 `NOT_EXECUTED`; permission provisioning `NONE`; feature activation `INACTIVE`; deployment authority `NOT_GRANTED`; Technical Preview/Production `NOT_AUTHORIZED`; updater `INACTIVE`.
+- **Next position:** Sprint164 bounded discovery; no objective or source envelope preselected.
+
+---
+
 This changelog records **material canonical progress**, not every intermediate compatibility or CI-only commit. Detailed provenance remains in merged pull requests, Git history, workflows, tests, and machine-readable contracts.
 
 Current project-state authority: [`PROJECT_MANIFEST.md`](PROJECT_MANIFEST.md).

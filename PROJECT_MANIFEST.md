@@ -1,3 +1,22 @@
+# CURRENT CANONICAL OVERRIDE — Sprint163
+
+**Canonical engineering checkpoint:** Sprint163
+**Canonical engineering commit:** `a920e63c1a1d2623664b416422c3d5a471e389a6`
+**Latest engineering PR:** #744 — `Sprint163: add operational cash variance reconciliation workspace`
+**Final engineering head:** `61a506f44315e7ac18ec08672bd9cb2aee81c838`
+**Sprint163 regression:** `34862683840` — successful
+**Engineering envelope:** 18 paths — `61077fd95f392e588a99d394f0ba3a0fc4d5b3187da850a1f4a796fa61eb5dbb`
+**Reconciliation envelope:** 6 paths — `dd1e8acc008bbe3ca8491cff12b0327f204d63e0820286af0da786acc5f8d4f2`
+**Next position:** Sprint164 bounded discovery; no objective preselected.
+
+Sprint163 materialized `POS_CASH_VARIANCE_RECONCILIATION_WORKSPACE` over existing durable cash-variance explanation/reviewer authorities. Variance subjects remain server-authoritative, same-outlet review may cross devices, maker-checker separation remains enforced, and terminal `REVIEW_REJECTED` remains explicit. No new migration, permission identifier, adjudication engine, stock-adjustment authority, or Final Shift Close rule was introduced.
+
+Operational NO-GO remains unchanged: selected target `null`; migration #27 `NOT_EXECUTED`; permission provisioning `NONE`; feature activation `INACTIVE`; deployment authority `NOT_GRANTED`; Technical Preview/Production `NOT_AUTHORIZED`; updater `INACTIVE`.
+
+> The retained Sprint162 manifest snapshot below is historical context. This Sprint163 override is the current canonical human-readable checkpoint. Machine-readable operational state remains authoritative.
+
+---
+
 # oneQay Project Manifest
 
 **Product:** oneQay — The Future of Intelligent Business Management
@@ -75,71 +94,39 @@ Discovery also confirmed only the one-time inventory-baseline mutation authority
 
 - Added `PosOperationsHubSnapshot` carrying exact tenant, organization, outlet, and device scope plus access booleans only.
 - Added `ViewPosOperationsHub` using existing durable permissions; no hub-specific permission was introduced.
-- Preserved target authorization composition:
-  - Shift Start = `pos.shift.open` AND `pos.shift.opening-cash.record`;
-  - Cashier = `pos.sale.complete`;
-  - Sales Summary / Sale History = `pos.reporting.sales-summary.view`;
-  - Corrections = `pos.sale.void` OR `pos.sale.refund`;
-  - Catalog & Opening Stock = `pos.catalog.prepare` AND `pos.inventory.baseline`;
-  - Shift Close = `pos.shift.close`.
+- Preserved target authorization composition.
 - Denied hub access when the current verified context has no qualifying POS authority.
-- Added a second fail-closed filter requiring every visible destination to satisfy `Route::has()`; disabled/unregistered feature surfaces are never emitted as links.
-- Added `/pos` named route `pos.operations.hub` through a dedicated child provider, leaving the global provider registry unchanged.
+- Added fail-closed named-route discovery.
+- Added `/pos` through a dedicated child provider, leaving the global provider registry unchanged.
 - Added fail-closed `ONEQAY_POS_OPERATIONS_HUB_ENABLED`, default false.
 - Restricted delivery to Local/Test/CI, persistence enabled, exact session controls, and explicit hub arming.
-- Added responsive Vue/Inertia read-only navigation UI.
-- Added executable permission-composition regression proving AND/OR semantics, no permission broadening, exact scope preservation, no-access denial, and canonical route identities.
-- Left all existing POS mutation owners, target workspace route owners, `PosPermission.php`, migrations, Composer metadata, and operational state unchanged.
+- Added responsive Vue/Inertia read-only navigation UI and executable permission-composition regression.
 
 ### Evidence / Qualification
 
 - Parent canonical post-Sprint161 checkpoint: `e0330761a325a5f9e5faa4c5c0089b6868f979c8`.
 - Engineering PR: #742, squash merged.
 - Final exact engineering head: `2d75efbdb4b3eb2b98ad7973866fa6576b1ffd79`.
-- Sprint162 regression run `34857221294`: successful on the exact head.
-- M7.1 Application Regression run `34857221166`: successful.
-- Governance Required Checks run `34857221221`: successful.
-- PHP Foundation Regression run `34857220990`: successful.
-- Sprint156–Sprint161 and all other surfaced PR-triggered historical runs: successful.
-- Repository-native Product Owner merge authority: successful for PR #742 and the exact head.
-- Engineering envelope: exactly 9 paths; SHA-256 `afadd8577d794fffc100b8ab98d77dfc55599ead9d32963c1ef84ee8a086afd2`.
 - Canonical engineering squash: `332bcff11b40307d350c7ce5b3a6c08913c4251c`.
-- Post-merge verification: exactly one squash commit above post-Sprint161 canonical main and exactly the qualified 9 engineering paths.
-- Post-Sprint162 reconciliation envelope: exactly six canonical paths; SHA-256 `66500e314da09a14dbc35624dc0e0468c6ca3707bcf0a91261b4f850b207b734`.
 
 ### Operational boundaries / NO-GO
 
-Sprint162 does not select or persist a durable target, dispatch capability/dependency producers, execute migration #27, provision permissions, create real target-bound evidence, widen the runtime allowlist, activate Final Shift Close, grant deployment authority, activate Technical Preview/Production, or activate the updater.
-
-Machine-readable state remains target selection blocked with `selected_target=null`, migration #27 `NOT_EXECUTED`, permission provisioning `NONE`, feature activation `INACTIVE`, deployment authority `NOT_GRANTED`, Technical Preview and Production `NOT_AUTHORIZED`, and updater `INACTIVE`.
+Sprint162 did not select a durable target, execute migration #27, provision permissions, activate Final Shift Close, grant deployment authority, activate Technical Preview/Production, or activate the updater.
 
 ### Next position
 
-The next engineering position is **Sprint163 bounded discovery from canonical post-Sprint162**. No Sprint163 objective, implementation, or source envelope is preselected.
+Historical Sprint162 next position was Sprint163 bounded discovery. Current next position is superseded by the Sprint163 override above.
 
 ## 4. Operational truth — NO-GO remains authoritative
 
-Machine-readable operational authority remains in:
-
-- `ops/final-shift-close/STATE.json`;
-- `ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json`;
-- `ops/final-shift-close/POST_SELECTION_DOWNSTREAM_READINESS.json`.
-
-No source-only engineering or reconciliation text constitutes operational authorization.
+Machine-readable operational authority remains in `ops/final-shift-close/STATE.json`, `ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json`, and `ops/final-shift-close/POST_SELECTION_DOWNSTREAM_READINESS.json`.
 
 ## 5. Documentation responsibility model
 
-- `PROJECT_MANIFEST.md` — canonical human-readable current project/lifecycle state;
-- `README.md` — concise entry-point summary;
-- `CHANGELOG.md` — material chronology;
-- `TASKS.md` — current completed/pending workboard;
-- `ROADMAP.md` — forward sequencing and lifecycle gates;
-- `docs/SPRINT*.md` — detailed historical bounded-sprint evidence where materialized;
-- `ops/final-shift-close/*.json` — machine-readable operational authority;
-- merged PRs and Git history — immutable implementation provenance.
+`PROJECT_MANIFEST.md` is the canonical human-readable state; README, CHANGELOG, TASKS, and ROADMAP are reconciled summaries; merged PRs and Git history preserve implementation provenance.
 
 ## 6. Mandatory sprint description and update rule
 
-Every material sprint records **Purpose / Why, Objective / Gap, What changed, Evidence / Qualification, Operational boundaries / NO-GO, and Next position**. Every material closed sprint reconciles this manifest and the four root summary documents while the just-closed sprint preservation workflow remains successor-compatible.
+Every material sprint records **Purpose / Why, Objective / Gap, What changed, Evidence / Qualification, Operational boundaries / NO-GO, and Next position**.
 
 Author by Lab | zefry

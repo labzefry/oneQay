@@ -8,22 +8,36 @@ Enterprise-oriented business-management platform built with Modular Monolith Fir
 
 ## Current canonical status
 
-The latest completed **engineering** sprint is **Sprint162**.
+The latest completed **engineering** sprint is **Sprint163**.
 
-- Canonical engineering commit: `332bcff11b40307d350c7ce5b3a6c08913c4251c`
-- Engineering PR: #742 — `Sprint162: add guarded POS operations hub`
-- Final engineering head: `2d75efbdb4b3eb2b98ad7973866fa6576b1ffd79`
+- Canonical engineering commit: `a920e63c1a1d2623664b416422c3d5a471e389a6`
+- Engineering PR: #744 — `Sprint163: add operational cash variance reconciliation workspace`
+- Final engineering head: `61a506f44315e7ac18ec08672bd9cb2aee81c838`
 - Complete surfaced exact-head PR-triggered qualification: successful
-- Sprint162 regression run `34857221294`: successful
-- M7.1 run `34857221166`: successful
-- Governance Required Checks run `34857221221`: successful
-- PHP Foundation Regression run `34857220990`: successful
-- Repository-native `product-owner-merge-authority`: successful for the exact engineering head
-- Sprint162 engineering envelope: 9 paths, SHA-256 `afadd8577d794fffc100b8ab98d77dfc55599ead9d32963c1ef84ee8a086afd2`
-- Post-Sprint162 reconciliation envelope: six paths, SHA-256 `66500e314da09a14dbc35624dc0e0468c6ca3707bcf0a91261b4f850b207b734`
-- Next engineering position: **Sprint163 bounded discovery**, with no preselected objective or source envelope
+- Sprint163 regression run `34862683840`: successful
+- M7.1 run `34862683797`: successful
+- Governance Required Checks run `34862683787`: successful
+- PHP Foundation Regression run `34862683497`: successful
+- Repository-native Product Owner merge authorization: published for the exact engineering head
+- Sprint163 engineering envelope: 18 paths, SHA-256 `61077fd95f392e588a99d394f0ba3a0fc4d5b3187da850a1f4a796fa61eb5dbb`
+- Post-Sprint163 reconciliation envelope: six paths, SHA-256 `dd1e8acc008bbe3ca8491cff12b0327f204d63e0820286af0da786acc5f8d4f2`
+- Next engineering position: **Sprint164 bounded discovery**, with no preselected objective or source envelope
 
 For the full current project state, use **[`PROJECT_MANIFEST.md`](PROJECT_MANIFEST.md)** as the canonical human-readable source of truth.
+
+## Sprint163 — operational cash variance reconciliation workspace
+
+**Purpose / Why:** Final Shift Close already required a non-zero cash variance to have an explanation and independently accepted review, but normal operational POS delivery had no durable workspace for those existing authorities.
+
+**Objective / Gap:** `POS_CASH_VARIANCE_RECONCILIATION_WORKSPACE`.
+
+**What changed:** Sprint163 added a tenant + organization + outlet scoped, same-outlet cross-device reconciliation workspace over the existing durable explanation/reviewer authorities. Selected variance subjects are rebuilt server-side from canonical closing-cash evidence through the existing expected-cash reader and variance derivation owner; browser requests cannot supply the authoritative variance inputs. Maker-checker separation and terminal `REVIEW_REJECTED` semantics remain intact. No new migration, permission identifier, adjudication engine, stock-adjustment authority, or Final Shift Close rule was introduced.
+
+**Evidence / Qualification:** PR #744; exact engineering head `61a506f44315e7ac18ec08672bd9cb2aee81c838`; complete surfaced exact-head matrix successful; Product Owner merge authorization published; engineering squash `a920e63c1a1d2623664b416422c3d5a471e389a6`.
+
+**Operational boundaries / NO-GO:** selected durable target remains `null`; migration #27 remains `NOT_EXECUTED`; permissions remain `NONE`; feature activation remains `INACTIVE`; deployment authority remains `NOT_GRANTED`; Technical Preview/Production remain `NOT_AUTHORIZED`; updater remains `INACTIVE`.
+
+**Next position:** Sprint164 bounded discovery from canonical post-Sprint163; no objective, implementation, or source envelope is preselected.
 
 ## Sprint162 — guarded POS operations hub
 
@@ -39,14 +53,12 @@ The hub covers currently delivered Catalog & Opening Stock, Shift Start, Cashier
 
 **Operational boundaries / NO-GO:** selected durable target remains `null`; migration #27 remains `NOT_EXECUTED`; permissions remain `NONE`; feature activation remains `INACTIVE`; deployment authority remains `NOT_GRANTED`; Technical Preview/Production remain `NOT_AUTHORIZED`; updater remains `INACTIVE`.
 
-**Next position:** Sprint163 bounded discovery from canonical post-Sprint162; no objective, implementation, or source envelope is preselected.
-
 ## What the repository has reached
 
 Material canonical progress includes:
 
 - modular-monolith architecture, tenant isolation, authorization, API governance, CI/governance, exact-head merge controls, and historical-regression preservation;
-- POS shift/register, sale/payment/receipt, catalog, inventory baseline, durable stock mutation, sale void/refund, cash variance/adjudication, operational reporting, cashier sale entry, shift start, sale correction, immutable sale history/receipt detail, catalog/opening-inventory setup, and guarded POS operations navigation;
+- POS shift/register, sale/payment/receipt, catalog, inventory baseline, durable stock mutation, sale void/refund, cash variance/adjudication, operational reporting, cashier sale entry, shift start, sale correction, immutable sale history/receipt detail, catalog/opening-inventory setup, guarded POS operations navigation, and operational cash-variance reconciliation;
 - Final Shift Close source/readiness controls through Sprint155 without operational activation.
 
 ## Operational status remains intentionally gated
