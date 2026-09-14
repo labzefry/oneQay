@@ -76,7 +76,7 @@ final readonly class LaravelPosCatalogInventorySetupWorkspaceRepository implemen
                 $productId = $this->requiredString($row->product_id ?? null);
                 $displayName = $this->requiredString($row->display_name ?? null);
                 $unitPriceAtomic = $this->unsignedString($row->unit_price_atomic ?? null);
-                $currency = strtoupper($this->requiredString($row->currency ?? null));
+                $currency = $this->requiredString($row->currency ?? null);
                 $scale = $this->smallInteger($row->currency_scale ?? null, 0, 6);
                 $availableQuantity = $this->unsignedString($row->available_quantity ?? null);
                 $sellable = $this->boolean($row->active ?? null);
