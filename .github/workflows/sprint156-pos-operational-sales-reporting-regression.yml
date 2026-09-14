@@ -44,7 +44,7 @@ jobs:
           count="$(wc -l < /tmp/sprint156-paths | tr -d ' ')"
           fingerprint="$(sha256sum /tmp/sprint156-paths | awk '{print $1}')"
           [[ "$count" == '21' ]]
-          [[ "$fingerprint" == '9e9aabf18e1845b3378013756b28fc2ffe8d61c744a19ea6fd85bdef2428c8f0' ]]
+          [[ "$fingerprint" == 'c54e821cc4603b08450ac0e99ac93c17ba84580a02c2aa4ace2f26d52ab392ab' ]]
           cat > /tmp/sprint156-expected <<'EOF'
           .github/workflows/sprint119-final-shift-close-runtime-db-binding-attestation.yml
           .github/workflows/sprint120-final-shift-close-runtime-binding-manifest-writer.yml
@@ -62,8 +62,8 @@ jobs:
           apps/web/app/Application/Pos/ViewPosOperationalSalesSummary.php
           apps/web/app/Delivery/Http/Pos/PosOperationalSalesSummaryController.php
           apps/web/app/Infrastructure/Pos/LaravelPosOperationalSalesSummaryRepository.php
+          apps/web/app/Providers/FinalShiftCloseServiceProvider.php
           apps/web/app/Providers/PosOperationalReportingServiceProvider.php
-          apps/web/bootstrap/providers.php
           apps/web/config/pos_operational_reporting.php
           apps/web/resources/js/pages/Pos/SalesSummary.vue
           apps/web/tests/pos-operational-reporting.php
@@ -133,6 +133,8 @@ jobs:
           grep -Fq "where('organization_id', \$context->organizationId())" apps/web/app/Infrastructure/Pos/LaravelPosOperationalSalesSummaryRepository.php
           grep -Fq "where('outlet_id', \$context->outletId())" apps/web/app/Infrastructure/Pos/LaravelPosOperationalSalesSummaryRepository.php
           grep -Fq "ONEQAY_POS_OPERATIONAL_REPORTING_ENABLED" apps/web/config/pos_operational_reporting.php
+          grep -Fq '$this->app->register(PosOperationalReportingServiceProvider::class);' apps/web/app/Providers/FinalShiftCloseServiceProvider.php
+          ! grep -Fq 'PosOperationalReportingServiceProvider' apps/web/bootstrap/providers.php
           ! grep -R -n -E 'insert\(|update\(|delete\(|statement\(' \
             apps/web/app/Application/Pos/PosOperationalSalesSummary.php \
             apps/web/app/Application/Pos/PosOperationalSalesSummaryRepository.php \
