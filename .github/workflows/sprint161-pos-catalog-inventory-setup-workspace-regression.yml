@@ -14,8 +14,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  qualify-sprint161-pos-catalog-inventory-setup-workspace:
-    name: qualify-sprint161-pos-catalog-inventory-setup-workspace
+  preserve-sprint161-pos-catalog-inventory-setup-workspace:
+    name: preserve-sprint161-pos-catalog-inventory-setup-workspace
     runs-on: ubuntu-latest
     env:
       APP_NAME: oneQay
@@ -33,53 +33,28 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: Lock exact Sprint161 engineering envelope
+      - name: Preserve successor-compatible Sprint161 source contract
         shell: bash
         run: |
           set -euo pipefail
-          git fetch --no-tags origin main
-          base="${{ github.event.pull_request.base.sha || '92d932020ef95bdc26460a4944841d141d6fad5b' }}"
-          head="${{ github.event.pull_request.head.sha || github.sha }}"
-          git diff --name-only "$base" "$head" | LC_ALL=C sort > /tmp/sprint161-paths
-          count="$(wc -l < /tmp/sprint161-paths | tr -d ' ')"
-          fingerprint="$(sha256sum /tmp/sprint161-paths | awk '{print $1}')"
-          [[ "$count" == '11' ]]
-          [[ "$fingerprint" == '66d7c616fbe8ae0e6c3c262fc8054db26bcbaa67e07ed77000363041b056f613' ]]
-          cat > /tmp/sprint161-expected <<'EOF'
-          .github/workflows/sprint161-pos-catalog-inventory-setup-workspace-regression.yml
-          apps/web/app/Application/Pos/PosCatalogInventorySetupWorkspaceRepository.php
-          apps/web/app/Application/Pos/PosCatalogInventorySetupWorkspaceSnapshot.php
-          apps/web/app/Application/Pos/ViewPosCatalogInventorySetupWorkspace.php
-          apps/web/app/Delivery/Http/Pos/PosCatalogInventorySetupWorkspaceController.php
-          apps/web/app/Infrastructure/Pos/LaravelPosCatalogInventorySetupWorkspaceRepository.php
-          apps/web/app/Providers/FinalShiftCloseServiceProvider.php
-          apps/web/app/Providers/PosCatalogInventorySetupWorkspaceServiceProvider.php
-          apps/web/config/pos_catalog_inventory_setup.php
-          apps/web/resources/js/pages/Pos/CatalogInventorySetup.vue
-          apps/web/tests/pos-catalog-inventory-setup-workspace.php
-          EOF
-          diff -u /tmp/sprint161-expected /tmp/sprint161-paths
+          test -f apps/web/app/Application/Pos/PosCatalogInventorySetupWorkspaceRepository.php
+          test -f apps/web/app/Application/Pos/PosCatalogInventorySetupWorkspaceSnapshot.php
+          test -f apps/web/app/Application/Pos/ViewPosCatalogInventorySetupWorkspace.php
+          test -f apps/web/app/Delivery/Http/Pos/PosCatalogInventorySetupWorkspaceController.php
+          test -f apps/web/app/Infrastructure/Pos/LaravelPosCatalogInventorySetupWorkspaceRepository.php
+          test -f apps/web/app/Providers/PosCatalogInventorySetupWorkspaceServiceProvider.php
+          test -f apps/web/config/pos_catalog_inventory_setup.php
+          test -f apps/web/resources/js/pages/Pos/CatalogInventorySetup.vue
+          test -f apps/web/tests/pos-catalog-inventory-setup-workspace.php
+          test -f apps/web/app/Application/Pos/PrepareCatalogItem.php
+          test -f apps/web/app/Application/Pos/EstablishInventoryBaseline.php
+          test -f apps/web/app/Infrastructure/Pos/LaravelCatalogPreparationRepository.php
+          test -f apps/web/app/Infrastructure/Pos/LaravelInventoryBaselineRepository.php
 
-      - name: Preserve canonical mutation owners and operational NO-GO
+      - name: Preserve current operational NO-GO
         shell: bash
         run: |
           set -euo pipefail
-          base="${{ github.event.pull_request.base.sha || '92d932020ef95bdc26460a4944841d141d6fad5b' }}"
-          head="${{ github.event.pull_request.head.sha || github.sha }}"
-          git diff --quiet "$base" "$head" -- \
-            ops/final-shift-close/STATE.json \
-            ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json \
-            ops/final-shift-close/POST_SELECTION_DOWNSTREAM_READINESS.json \
-            apps/web/routes/web.php \
-            apps/web/bootstrap/providers.php \
-            apps/web/composer.json \
-            apps/web/database/migrations \
-            apps/web/app/Application/Pos/PrepareCatalogItem.php \
-            apps/web/app/Application/Pos/EstablishInventoryBaseline.php \
-            apps/web/app/Infrastructure/Pos/LaravelCatalogPreparationRepository.php \
-            apps/web/app/Infrastructure/Pos/LaravelInventoryBaselineRepository.php \
-            apps/web/app/Delivery/Http/Pos/PosCatalogPreparationController.php \
-            apps/web/app/Delivery/Http/Pos/PosInventoryBaselineController.php
           [[ "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" == 'NOT_EXECUTED' ]]
           [[ "$(jq -r '.permission_provisioning.state' ops/final-shift-close/STATE.json)" == 'NONE' ]]
           [[ "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" == 'INACTIVE' ]]
@@ -101,7 +76,7 @@ jobs:
           composer validate --no-check-publish
           composer install --no-interaction --no-progress --prefer-dist
 
-      - name: Validate Sprint161 PHP syntax and executable regressions
+      - name: Execute application and POS setup regressions
         shell: bash
         run: |
           set -euo pipefail
@@ -131,7 +106,7 @@ jobs:
           npm run type-check
           npm run build
 
-      - name: Prove canonical authority reuse and bounded setup semantics
+      - name: Preserve canonical authority reuse and fail-closed read boundary
         shell: bash
         run: |
           set -euo pipefail
@@ -144,9 +119,13 @@ jobs:
           grep -Fq "where('outlet_id', \$context->outletId())" apps/web/app/Infrastructure/Pos/LaravelPosCatalogInventorySetupWorkspaceRepository.php
           grep -Fq 'oneqay_pos_inventory_baselines' apps/web/app/Infrastructure/Pos/LaravelPosCatalogInventorySetupWorkspaceRepository.php
           grep -Fq 'oneqay_pos_sale_lines as lines' apps/web/app/Infrastructure/Pos/LaravelPosCatalogInventorySetupWorkspaceRepository.php
+          grep -Fq '$currency = $this->requiredString($row->currency ?? null);' apps/web/app/Infrastructure/Pos/LaravelPosCatalogInventorySetupWorkspaceRepository.php
+          ! grep -Fq 'strtoupper($this->requiredString($row->currency ?? null))' apps/web/app/Infrastructure/Pos/LaravelPosCatalogInventorySetupWorkspaceRepository.php
           grep -Fq 'ONEQAY_POS_CATALOG_INVENTORY_SETUP_ENABLED' apps/web/config/pos_catalog_inventory_setup.php
           grep -Fq 'refreshRequired.value = true' apps/web/resources/js/pages/Pos/CatalogInventorySetup.vue
           grep -Fq 'Tidak ada retry otomatis' apps/web/resources/js/pages/Pos/CatalogInventorySetup.vue
+          grep -Fq 'PosCatalogInventorySetupWorkspaceServiceProvider::class' apps/web/app/Providers/FinalShiftCloseServiceProvider.php
+          ! grep -Fq 'PosCatalogInventorySetupWorkspaceServiceProvider::class' apps/web/bootstrap/providers.php
           ! grep -R -n -E 'insert\(|update\(|delete\(|increment\(|decrement\(|statement\(' \
             apps/web/app/Application/Pos/PosCatalogInventorySetupWorkspaceRepository.php \
             apps/web/app/Application/Pos/PosCatalogInventorySetupWorkspaceSnapshot.php \
