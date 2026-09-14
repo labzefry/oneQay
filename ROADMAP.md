@@ -1,7 +1,7 @@
 # oneQay Roadmap
 
-**Roadmap checkpoint:** post-Sprint156 canonical reconciliation
-**Canonical engineering baseline:** `259cc00037ee0d3fb909cbcf2c87d39ffb26f9b9`
+**Roadmap checkpoint:** post-Sprint157 canonical reconciliation  
+**Canonical engineering baseline:** `b4d21b208a0580f4b40565b028dd6aed9bb190b8`  
 **Current state authority:** `PROJECT_MANIFEST.md`
 
 This roadmap describes sequencing and gates. It does **not** grant operational authority. Completed roadmap items are bounded repository objectives, not evidence of deployment or activation.
@@ -21,74 +21,77 @@ This roadmap describes sequencing and gates. It does **not** grant operational a
 - [x] Sale/payment/receipt evidence foundations
 - [x] Tenant/outlet-scoped catalog preparation
 - [x] Shift/register opening foundation
+- [x] Inventory baseline and durable stock mutation authority
 - [x] Durable idempotency and scoped authorization preservation
 - [x] Cash variance/adjudication/reviewer foundations
 
 ## Horizon C — Final Shift Close source/readiness chain — source-ready through Sprint155
 
-- [x] Source-only migration #27 materialization — Sprint88
-- [x] Runtime dependency inventory / allowlist block — Sprint107
-- [x] Durable-runtime readiness and selected-target identity — Sprint110–Sprint111
-- [x] Attestation/ingestion, selection persistence, and migration selected-target binding readiness — Sprint113–Sprint118
-- [x] Runtime DB-binding/materialization control-plane hardening — Sprint119–Sprint129
-- [x] Canonical runtime-control-plane and HTTP/throttle hardening — Sprint130–Sprint147
-- [x] Target-bound capability-evidence identity and producer source — Sprint148–Sprint149
-- [x] Selected-runtime dependency-envelope qualification/evidence foundations — Sprint150–Sprint153
-- [x] Feature-activation execution-plan source foundation — Sprint154
-- [x] Deterministic source-only feature-activation transport handoff envelope — Sprint155
+Sprint88–Sprint155 established migration source materialization, runtime dependency/readiness, selected-target identity, attestation/selection binding, DB binding/control-plane hardening, capability/dependency evidence foundations, permission-provisioning binding, and feature-activation source foundations.
 
 Operational execution remains separately gated. Migration #27 remains `NOT_EXECUTED`, selected target remains `null`, permissions remain `NONE`, and feature activation remains `INACTIVE`.
 
-## Horizon D — Product-readiness operational reporting — Sprint156 engineering complete
+## Horizon D — Product-readiness operational reporting — Sprint156 completed
 
-- [x] Select a non-duplicative product-value gap instead of extending source abstraction where external runtime prerequisites are the true blocker
-- [x] Materialize read-only POS operational sales reporting
-- [x] Scope reporting by tenant + organization + outlet
-- [x] Preserve currency and currency-scale boundaries
-- [x] Apply deny-by-default reporting authorization
-- [x] Gate delivery to Local/Test/CI plus explicit feature arming
-- [x] Add Vue/Inertia operational dashboard
-- [x] Add executable SQLite isolation/multi-currency/state/fail-closed regression
-- [x] Restore canonical global provider registry and compose reporting through existing POS composition root
-- [x] Repair stale historical successor-envelope ownership while preserving substantive regressions
-- [x] Make Sprint148 qualification concurrency exact-head isolated
-- [x] Qualify exact engineering head successfully
+- [x] Read-only POS operational sales reporting
+- [x] Tenant + organization + outlet scope
+- [x] Currency and currency-scale boundary preservation
+- [x] Deny-by-default reporting authorization
+- [x] Guarded Local/Test/CI delivery and Vue/Inertia dashboard
+- [x] Executable reporting regression
+- [x] Historical successor-compatible regression preservation
+- [x] Engineering PR #730 squash merged at `259cc00037ee0d3fb909cbcf2c87d39ffb26f9b9`
+
+## Horizon E — Operational cashier usability — Sprint157 completed
+
+- [x] Prove canonical sale/catalog/stock/shift authority existed before adding UI source
+- [x] Materialize scoped cashier workspace read models
+- [x] Bind cashier catalog to tenant/outlet and exact-device active-shift readiness
+- [x] Expose only active positive-stock server catalog items
+- [x] Reuse existing deny-by-default `pos.sale.complete` authorization
+- [x] Preserve canonical `/pos/sales` / `CompleteSale` mutation authority
+- [x] Reject mixed currency/scale cart state
+- [x] Validate CASH and MANUAL_EXTERNAL tender input while keeping server rules authoritative
+- [x] Avoid automatic hidden retry on network failure
+- [x] Gate cashier delivery to Local/Test/CI plus persistence/session/sale-completion and explicit workspace arming
+- [x] Add Vue/Inertia cashier workspace
+- [x] Add executable SQLite scope/readiness/fail-closed regression
+- [x] Qualify complete exact engineering head successfully
 - [x] Obtain repository-native Product Owner merge authority
-- [x] Squash merge engineering PR #730 at `259cc00037ee0d3fb909cbcf2c87d39ffb26f9b9`
+- [x] Squash merge engineering PR #732 at `b4d21b208a0580f4b40565b028dd6aed9bb190b8`
 
-### Sprint156 evidence
+### Sprint157 evidence
 
-- Parent canonical post-Sprint155 checkpoint: `4f939acd6cbcc3c49a45cba549a082c789cabd44`.
-- Final engineering head: `5e460d1c7c5174cc831106ade3e3fa6309acba4d`.
+- Parent canonical post-Sprint156 checkpoint: `1255fd1a310792c50e174465aa91417af23bd47e`.
+- Final engineering head: `0ff14cf95aa54cd798fe5d1b5611c2890757e5b3`.
 - Complete exact-head PR-triggered matrix: successful.
-- Sprint156 regression run `34813484159`: successful.
-- M7.1 run `34813484204`: successful.
-- Governance run `34813484278`: successful.
-- PHP Foundation run `34813484276`: successful.
-- Sprint96, Sprint97, Sprint126, and Sprint148 regressions all successful on the exact engineering head.
-- Engineering envelope: 24 paths, SHA-256 `34c6dab2c898ddd9133aaa6d5413ca7b345127020d8f04fe54f861a4d1a5e79c`.
-- Reconciliation envelope: six paths, SHA-256 `adba5b23ef33aeb360ebb4090b3f848fc2a3704807a60026c1344b2e0d1a54f4`.
+- Sprint157 regression run `34815027880`: successful.
+- M7.1 run `34815027865`: successful.
+- Governance run `34815027920`: successful.
+- PHP Foundation run `34815027969`: successful.
+- Engineering envelope: 12 paths, SHA-256 `f363bbfff9b1a52479c0f6d76e7cefe4b14ac89c597b2cd7894713e34bcc2f5b`.
+- Reconciliation envelope: six paths, SHA-256 `4393c47067856f6d426cc2ce3f976bda78a72c13adaedb47ff53cc93f2c4ca1c`.
 
-## Horizon E — Sprint157+ bounded engineering — next after Sprint156 reconciliation
+## Horizon F — Sprint158+ bounded engineering — next
 
-Status: **BOUNDED DISCOVERY NEXT AFTER SPRINT156 CLOSURE**.
+Status: **BOUNDED DISCOVERY NEXT AFTER SPRINT157 CLOSURE**.
 
 Selection rules:
 
-1. prove a material non-duplicative gap exists before adding source;
+1. prove a material non-duplicative P0/P1 gap exists before adding source;
 2. inspect historical regressions, machine-readable contracts, and current source foundations before creating a new invariant owner;
-3. prioritize P0 security/data/tenant/auth/transaction/deployment blockers and P1 business completeness over low-value abstraction;
+3. prioritize security/data/tenant/auth/transaction/deployment blockers and business completeness over low-value abstraction;
 4. recognize when the true blocker is external/operational and avoid inventing another source-only layer;
-5. freeze the smallest meaningful bounded source envelope;
-6. stay fail-closed, deny-by-default, and tenant-isolated;
-7. avoid target persistence, producer dispatch, migration execution, permission provisioning, activation, deployment, and allowlist widening unless separately authorized;
-8. qualify exact head in CI before merge;
-9. document Purpose / Why, Objective / Gap, What changed, Evidence / Qualification, Operational boundaries / NO-GO, and Next position;
+5. reuse existing canonical sale/catalog/stock/authorization contracts rather than duplicating authority;
+6. freeze the smallest meaningful bounded source envelope;
+7. stay fail-closed, deny-by-default, and tenant-isolated;
+8. avoid target persistence, producer dispatch, migration execution, permission provisioning, activation, deployment, and allowlist widening unless separately authorized;
+9. qualify exact head in CI before merge;
 10. reconcile canonical project-state documentation at closure.
 
-No roadmap text pre-authorizes a specific Sprint157 implementation.
+No roadmap text pre-authorizes a specific Sprint158 implementation.
 
-## Horizon F — Operational qualification — blocked / separate authority
+## Horizon G — Operational qualification — blocked / separate authority
 
 - [ ] Qualified non-synthetic durable runtime target — missing
 - [ ] Selected target — currently `null`
@@ -99,21 +102,21 @@ No roadmap text pre-authorizes a specific Sprint157 implementation.
 - [ ] Real target-bound capability evidence — `NONE`
 - [ ] Trusted dependency-envelope evidence producer dispatch — `NOT_PERFORMED`
 - [ ] Real target-bound dependency-envelope evidence — `NONE`
-- [ ] Runtime allowlist widening for a selected durable runtime — not authorized
+- [ ] Final Shift Close runtime allowlist widening for a selected durable runtime — not authorized
 - [ ] Feature activation — `INACTIVE`
 - [ ] Deployment authority — `NOT_GRANTED`
 
 Current target selection remains `BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET`.
 
-## Horizon G — Technical Preview activation — NO-GO
+## Horizon H — Technical Preview activation — NO-GO
 
 Technical Preview activation remains `NOT_AUTHORIZED`.
 
-## Horizon H — Production activation — NO-GO
+## Horizon I — Production activation — NO-GO
 
 Production activation remains `NOT_AUTHORIZED`.
 
-## Horizon I — Updater/release activation — inactive
+## Horizon J — Updater/release activation — inactive
 
 Updater activation remains `INACTIVE`. Release/deployment procedures do not establish authority or evidence that a release occurred.
 
