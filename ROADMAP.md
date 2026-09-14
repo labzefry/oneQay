@@ -1,7 +1,7 @@
 # oneQay Roadmap
 
-**Roadmap checkpoint:** post-Sprint157 canonical reconciliation
-**Canonical engineering baseline:** `b4d21b208a0580f4b40565b028dd6aed9bb190b8`
+**Roadmap checkpoint:** post-Sprint158 canonical reconciliation
+**Canonical engineering baseline:** `d6eb8f7f359584130deea9ec0ed3572add3c05aa`
 **Current state authority:** `PROJECT_MANIFEST.md`
 
 This roadmap describes sequencing and gates. It does **not** grant operational authority. Completed roadmap items are bounded repository objectives, not evidence of deployment or activation.
@@ -21,6 +21,7 @@ This roadmap describes sequencing and gates. It does **not** grant operational a
 - [x] Sale/payment/receipt evidence foundations
 - [x] Tenant/outlet-scoped catalog preparation
 - [x] Shift/register opening foundation
+- [x] Opening-cash evidence foundation
 - [x] Inventory baseline and durable stock mutation authority
 - [x] Durable idempotency and scoped authorization preservation
 - [x] Cash variance/adjudication/reviewer foundations
@@ -60,21 +61,41 @@ Operational execution remains separately gated. Migration #27 remains `NOT_EXECU
 - [x] Obtain repository-native Product Owner merge authority
 - [x] Squash merge engineering PR #732 at `b4d21b208a0580f4b40565b028dd6aed9bb190b8`
 
-### Sprint157 evidence
+## Horizon F — Operational shift-start usability — Sprint158 completed
 
-- Parent canonical post-Sprint156 checkpoint: `1255fd1a310792c50e174465aa91417af23bd47e`.
-- Final engineering head: `0ff14cf95aa54cd798fe5d1b5611c2890757e5b3`.
+- [x] Prove canonical shift-opening and opening-cash mutation authorities existed before adding workspace source
+- [x] Materialize exact-context read-only shift-start workspace snapshot and repository
+- [x] Scope shift and opening-cash evidence by tenant + organization + outlet + device
+- [x] Reuse existing deny-by-default `pos.shift.open` authorization
+- [x] Reuse existing deny-by-default `pos.shift.opening-cash.record` authorization
+- [x] Preserve canonical `/pos/shifts/open` / `OpenShift` mutation authority
+- [x] Preserve canonical `/pos/shifts/opening-cash` / `RecordShiftOpeningCash` mutation authority
+- [x] Preserve partial completion so an opened shift can resume opening-cash evidence without opening a second shift
+- [x] Avoid automatic hidden retry for uncertain mutation outcomes
+- [x] Preserve Money atomic-units, currency, and currency-scale boundaries
+- [x] Gate shift-start delivery to Local/Test/CI plus persistence/session/capability checks and explicit workspace arming
+- [x] Add Vue/Inertia three-state shift-start workspace
+- [x] Add executable SQLite exact-scope/resumability/fail-closed regression
+- [x] Qualify complete exact engineering head successfully
+- [x] Obtain repository-native Product Owner merge authority
+- [x] Squash merge engineering PR #734 at `d6eb8f7f359584130deea9ec0ed3572add3c05aa`
+
+### Sprint158 evidence
+
+- Parent canonical post-Sprint157 checkpoint: `700f2133032047d213d38e2e0317641599831a9f`.
+- Final engineering head: `1e2a0ae959a88870ae4728f46f07b08ae0c08a2c`.
 - Complete exact-head PR-triggered matrix: successful.
-- Sprint157 regression run `34815027880`: successful.
-- M7.1 run `34815027865`: successful.
-- Governance run `34815027920`: successful.
-- PHP Foundation run `34815027969`: successful.
-- Engineering envelope: 12 paths, SHA-256 `f363bbfff9b1a52479c0f6d76e7cefe4b14ac89c597b2cd7894713e34bcc2f5b`.
-- Reconciliation envelope: six paths, SHA-256 `4393c47067856f6d426cc2ce3f976bda78a72c13adaedb47ff53cc93f2c4ca1c`.
+- Sprint158 regression run `34816888058`: successful.
+- M7.1 run `34816888381`: successful.
+- Governance run `34816888368`: successful.
+- PHP Foundation run `34816887952`: successful.
+- Sprint96, Sprint97, Sprint126, Sprint148, Sprint156, and Sprint157 regressions all successful on the exact engineering head.
+- Engineering envelope: 11 paths, SHA-256 `3828b5914b64b4862ce4d39ff037261b796c232e5ac7c6fb001913a096ac1666`.
+- Reconciliation envelope: six paths, SHA-256 `0257dde337eee65e156c49f59b54a61506b47866babb2c68a8bcc3a1a2e3321f`.
 
-## Horizon F — Sprint158+ bounded engineering — next
+## Horizon G — Sprint159+ bounded engineering — next
 
-Status: **BOUNDED DISCOVERY NEXT AFTER SPRINT157 CLOSURE**.
+Status: **BOUNDED DISCOVERY NEXT AFTER SPRINT158 CLOSURE**.
 
 Selection rules:
 
@@ -82,16 +103,16 @@ Selection rules:
 2. inspect historical regressions, machine-readable contracts, and current source foundations before creating a new invariant owner;
 3. prioritize security/data/tenant/auth/transaction/deployment blockers and business completeness over low-value abstraction;
 4. recognize when the true blocker is external/operational and avoid inventing another source-only layer;
-5. reuse existing canonical sale/catalog/stock/authorization contracts rather than duplicating authority;
+5. reuse existing canonical shift/cashier/sale/catalog/stock/authorization contracts rather than duplicating authority;
 6. freeze the smallest meaningful bounded source envelope;
-7. stay fail-closed, deny-by-default, and tenant-isolated;
+7. stay fail-closed, deny-by-default, tenant-isolated, and exact-context scoped;
 8. avoid target persistence, producer dispatch, migration execution, permission provisioning, activation, deployment, and allowlist widening unless separately authorized;
 9. qualify exact head in CI before merge;
 10. reconcile canonical project-state documentation at closure.
 
-No roadmap text pre-authorizes a specific Sprint158 implementation.
+No roadmap text pre-authorizes a specific Sprint159 implementation.
 
-## Horizon G — Operational qualification — blocked / separate authority
+## Horizon H — Operational qualification — blocked / separate authority
 
 - [ ] Qualified non-synthetic durable runtime target — missing
 - [ ] Selected target — currently `null`
@@ -108,15 +129,15 @@ No roadmap text pre-authorizes a specific Sprint158 implementation.
 
 Current target selection remains `BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET`.
 
-## Horizon H — Technical Preview activation — NO-GO
+## Horizon I — Technical Preview activation — NO-GO
 
 Technical Preview activation remains `NOT_AUTHORIZED`.
 
-## Horizon I — Production activation — NO-GO
+## Horizon J — Production activation — NO-GO
 
 Production activation remains `NOT_AUTHORIZED`.
 
-## Horizon J — Updater/release activation — inactive
+## Horizon K — Updater/release activation — inactive
 
 Updater activation remains `INACTIVE`. Release/deployment procedures do not establish authority or evidence that a release occurred.
 
