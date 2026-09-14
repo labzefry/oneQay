@@ -8,42 +8,45 @@ Enterprise-oriented business-management platform built with Modular Monolith Fir
 
 ## Current canonical status
 
-The latest completed **engineering** sprint is **Sprint161**.
+The latest completed **engineering** sprint is **Sprint162**.
 
-- Canonical engineering commit: `33080c0b5f5c6f66e9994ad7f05ba78dea241294`
-- Engineering PR: #740 — `Sprint161: add operational catalog inventory setup workspace`
-- Final engineering head: `fbe8e91df756855d38b8c6656b17f27b4cc32585`
+- Canonical engineering commit: `332bcff11b40307d350c7ce5b3a6c08913c4251c`
+- Engineering PR: #742 — `Sprint162: add guarded POS operations hub`
+- Final engineering head: `2d75efbdb4b3eb2b98ad7973866fa6576b1ffd79`
 - Complete surfaced exact-head PR-triggered qualification: successful
-- Sprint161 regression run `34853239912`: successful
+- Sprint162 regression run `34857221294`: successful
+- M7.1 run `34857221166`: successful
+- Governance Required Checks run `34857221221`: successful
+- PHP Foundation Regression run `34857220990`: successful
 - Repository-native `product-owner-merge-authority`: successful for the exact engineering head
-- Sprint161 engineering envelope: 11 paths, SHA-256 `66d7c616fbe8ae0e6c3c262fc8054db26bcbaa67e07ed77000363041b056f613`
-- Post-Sprint161 reconciliation envelope: six paths, SHA-256 `fd24a20017a13eca06d93ade217b6c0a68db07c205b218b8d9c201122c6e7ccc`
-- Next engineering position: **Sprint162 bounded discovery**, with no preselected objective or source envelope
+- Sprint162 engineering envelope: 9 paths, SHA-256 `afadd8577d794fffc100b8ab98d77dfc55599ead9d32963c1ef84ee8a086afd2`
+- Post-Sprint162 reconciliation envelope: six paths, SHA-256 `66500e314da09a14dbc35624dc0e0468c6ca3707bcf0a91261b4f850b207b734`
+- Next engineering position: **Sprint163 bounded discovery**, with no preselected objective or source envelope
 
 For the full current project state, use **[`PROJECT_MANIFEST.md`](PROJECT_MANIFEST.md)** as the canonical human-readable source of truth.
 
-## Sprint161 — operational catalog and opening-inventory setup
+## Sprint162 — guarded POS operations hub
 
-**Purpose / Why:** canonical oneQay already had catalog preparation and one-time inventory-baseline mutation engines, but both were API-only while cashier operations depended on products being prepared with opening stock.
+**Purpose / Why:** Sprint156–Sprint161 produced seven secure operational POS destinations, but the product had no shared frontend layout, POS home route, or common authorized navigation surface. Operational users otherwise had to know individual URLs.
 
-**Objective / Gap:** `POS_CATALOG_INVENTORY_SETUP_WORKSPACE` — provide an operational path to make products sale-ready without duplicating canonical mutation authority.
+**Objective / Gap:** `POS_OPERATIONS_HUB` — provide one read-only POS entry point without weakening or duplicating existing target authorization.
 
-**What changed:** Sprint161 added a tenant/outlet-scoped catalog and stock snapshot, exact baseline-eligibility state, reuse of existing `pos.catalog.prepare` and `pos.inventory.baseline` permissions/endpoints, an explicit two-step setup UI, manual authoritative-refresh lock after mutation success or network ambiguity, feature arming, child-provider delivery, and executable regression. No composite mutation, migration, stock-adjustment engine, or automatic retry was introduced.
+**What changed:** Sprint162 added a guarded `/pos` hub that preserves exact tenant/organization/outlet/device scope and composes existing permissions only. Each visible destination must pass both the current context's canonical permission requirement and `Route::has()`; target pages then authorize again independently. No hub-specific permission, mutation authority, persistence model, migration, or stock-adjustment engine was introduced.
 
-The first exact-head candidate correctly failed CI because lower-case persisted currency was being normalized rather than rejected. The corrected final head requires persisted currency to already be canonical uppercase, preserving fail-closed evidence integrity.
+The hub covers currently delivered Catalog & Opening Stock, Shift Start, Cashier, Sales Summary, Sale History, Sale Corrections, and Shift Close surfaces according to their existing permission semantics and feature-delivery gates.
 
-**Evidence / Qualification:** PR #740; final engineering head `fbe8e91df756855d38b8c6656b17f27b4cc32585`; complete surfaced exact-head matrix successful; Product Owner authority successful; engineering squash `33080c0b5f5c6f66e9994ad7f05ba78dea241294`.
+**Evidence / Qualification:** PR #742; exact engineering head `2d75efbdb4b3eb2b98ad7973866fa6576b1ffd79`; complete surfaced exact-head matrix successful; Product Owner authority successful; engineering squash `332bcff11b40307d350c7ce5b3a6c08913c4251c`.
 
 **Operational boundaries / NO-GO:** selected durable target remains `null`; migration #27 remains `NOT_EXECUTED`; permissions remain `NONE`; feature activation remains `INACTIVE`; deployment authority remains `NOT_GRANTED`; Technical Preview/Production remain `NOT_AUTHORIZED`; updater remains `INACTIVE`.
 
-**Next position:** Sprint162 bounded discovery from canonical post-Sprint161; no objective, implementation, or source envelope is preselected.
+**Next position:** Sprint163 bounded discovery from canonical post-Sprint162; no objective, implementation, or source envelope is preselected.
 
 ## What the repository has reached
 
 Material canonical progress includes:
 
 - modular-monolith architecture, tenant isolation, authorization, API governance, CI/governance, exact-head merge controls, and historical-regression preservation;
-- POS shift/register, sale/payment/receipt, catalog, inventory baseline, durable stock mutation, sale void/refund, cash variance/adjudication, operational reporting, cashier sale entry, shift start, sale correction, immutable sale history/receipt detail, and catalog/opening-inventory setup;
+- POS shift/register, sale/payment/receipt, catalog, inventory baseline, durable stock mutation, sale void/refund, cash variance/adjudication, operational reporting, cashier sale entry, shift start, sale correction, immutable sale history/receipt detail, catalog/opening-inventory setup, and guarded POS operations navigation;
 - Final Shift Close source/readiness controls through Sprint155 without operational activation.
 
 ## Operational status remains intentionally gated

@@ -4,30 +4,40 @@ This changelog records **material canonical progress**, not every intermediate c
 
 Current project-state authority: [`PROJECT_MANIFEST.md`](PROJECT_MANIFEST.md).
 
+## 2026-09-14 — Sprint162 closed
+
+**Sprint162: guarded POS operations hub**
+
+- **Purpose / Why:** Sprint156–Sprint161 delivered seven independently guarded POS pages, but there was no common POS home route, frontend layout, or authorized navigation owner.
+- **Objective / Gap:** `POS_OPERATIONS_HUB`.
+- Added exact tenant/organization/outlet/device operations-hub snapshot and application query.
+- Reused only existing permissions; no hub-specific permission was introduced.
+- Preserved canonical access composition: Shift Start requires open-shift + opening-cash; Cashier requires complete-sale; reporting/history reuse reporting view; corrections use void OR refund; catalog/opening-stock requires catalog + baseline; Shift Close reuses `pos.shift.close`.
+- Added fail-closed named-route filtering with `Route::has()` so disabled or unregistered feature surfaces never become links.
+- Target workspaces retain and re-run their own authorization gates.
+- Added `/pos` / `pos.operations.hub` through a child provider; global provider registry remained unchanged.
+- Added `ONEQAY_POS_OPERATIONS_HUB_ENABLED`, default false, with Local/Test/CI + persistence + exact-session delivery gates.
+- Added responsive Vue/Inertia read-only operations UI and executable permission-composition regression.
+- Discovery confirmed no canonical restock/stock-adjustment application authority; Sprint162 deliberately did not invent one.
+- Complete surfaced exact-head PR-triggered matrix: successful on `2d75efbdb4b3eb2b98ad7973866fa6576b1ffd79`.
+- Sprint162 regression run `34857221294`: successful.
+- M7.1 `34857221166`, Governance `34857221221`, PHP Foundation `34857220990`, Sprint156–Sprint161, and all other surfaced historical runs: successful.
+- Repository-native exact-head Product Owner merge authority: successful.
+- Engineering envelope: exactly 9 paths; SHA-256 `afadd8577d794fffc100b8ab98d77dfc55599ead9d32963c1ef84ee8a086afd2`.
+- Engineering PR #742 squash merged at `332bcff11b40307d350c7ce5b3a6c08913c4251c`.
+- Post-merge verification proved exactly one squash commit over post-Sprint161 canonical main and exactly the qualified 9-path delta.
+- Post-Sprint162 reconciliation envelope: six paths; SHA-256 `66500e314da09a14dbc35624dc0e0468c6ca3707bcf0a91261b4f850b207b734`.
+- **Operational boundaries / NO-GO:** selected target remains `null`; migration #27 remains `NOT_EXECUTED`; permission provisioning remains `NONE`; feature activation remains `INACTIVE`; deployment authority remains `NOT_GRANTED`; Technical Preview/Production remain `NOT_AUTHORIZED`; updater remains `INACTIVE`.
+- **Next position:** Sprint163 bounded discovery from canonical post-Sprint162; no objective or source envelope is preselected.
+
 ## 2026-09-14 — Sprint161 closed
 
 **Sprint161: operational POS catalog and opening-inventory setup workspace**
 
-- **Purpose / Why:** canonical POS catalog preparation and one-time inventory baseline already existed as secure APIs, but operational users had no guarded UI to make a product sale-ready.
-- **Objective / Gap:** `POS_CATALOG_INVENTORY_SETUP_WORKSPACE`.
-- Added tenant/outlet-scoped catalog, sellable state, price, available quantity, prior-baseline state, sale-history state, and baseline eligibility visibility.
-- Reused existing deny-by-default `pos.catalog.prepare` and `pos.inventory.baseline` permissions and named mutation endpoints.
-- Preserved explicit catalog preparation → opening inventory sequence; no composite mutation or second stock engine was added.
-- Added manual authoritative-refresh lock after mutation success or network ambiguity; no automatic retry.
-- Added Local/Test/CI-only guarded delivery with persistence/session/capability gates and explicit workspace feature arming.
-- Added Vue/Inertia operational setup UI and executable SQLite regression.
-- Initial exact head `6cbb218d204e7e84ff6701328f6d884ccf5699ec` failed Sprint161 regression because malformed lower-case persisted currency was normalized into uppercase instead of rejected.
-- Corrected final exact head `fbe8e91df756855d38b8c6656b17f27b4cc32585` requires persisted currency to already be canonical uppercase and fails closed otherwise.
-- Complete surfaced final exact-head PR-triggered matrix: successful.
-- Sprint161 regression run `34853239912`: successful.
-- M7.1, Governance Required Checks, PHP Foundation, Sprint156–Sprint160, Sprint126/Sprint148, and all other surfaced historical runs: successful.
-- Repository-native exact-head Product Owner merge authority: successful.
-- Engineering envelope: exactly 11 paths; SHA-256 `66d7c616fbe8ae0e6c3c262fc8054db26bcbaa67e07ed77000363041b056f613`.
+- Added guarded catalog/opening-stock operational workspace over existing canonical catalog-preparation and one-time inventory-baseline authorities.
+- Reused `pos.catalog.prepare` and `pos.inventory.baseline`; preserved explicit two-step setup and authoritative refresh after mutation outcomes.
+- Initial exact-head CI caught malformed persisted-currency normalization; corrected final head fails closed instead.
 - Engineering PR #740 squash merged at `33080c0b5f5c6f66e9994ad7f05ba78dea241294`.
-- Post-merge verification proved exactly one squash commit over post-Sprint160 canonical main and exactly the qualified 11-path delta.
-- Post-Sprint161 reconciliation envelope: six paths; SHA-256 `fd24a20017a13eca06d93ade217b6c0a68db07c205b218b8d9c201122c6e7ccc`.
-- **Operational boundaries / NO-GO:** selected target remains `null`; migration #27 remains `NOT_EXECUTED`; permission provisioning remains `NONE`; feature activation remains `INACTIVE`; deployment authority remains `NOT_GRANTED`; Technical Preview/Production remain `NOT_AUTHORIZED`; updater remains `INACTIVE`.
-- **Next position:** Sprint162 bounded discovery from canonical post-Sprint161; no objective or source envelope is preselected.
 
 ## 2026-09-14 — Sprint160 closed
 
