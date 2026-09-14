@@ -30,6 +30,7 @@ final class FinalShiftCloseServiceProvider extends ServiceProvider
         $this->app->register(PosCashierWorkspaceServiceProvider::class);
         $this->app->register(PosShiftStartWorkspaceServiceProvider::class);
         $this->app->register(PosSaleCorrectionWorkspaceServiceProvider::class);
+        $this->app->register(PosCatalogInventorySetupWorkspaceServiceProvider::class);
 
         $this->app->scoped(LaravelExpectedCashSnapshotReader::class, function ($app): LaravelExpectedCashSnapshotReader {
             return new LaravelExpectedCashSnapshotReader($this->connection($app));
