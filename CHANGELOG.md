@@ -4,36 +4,47 @@ This changelog records **material canonical progress**, not every intermediate c
 
 Current project-state authority: [`PROJECT_MANIFEST.md`](PROJECT_MANIFEST.md).
 
+## 2026-09-14 — Sprint158 closed
+
+**Sprint158: operational POS shift-start workspace**
+
+- **Purpose / Why:** Sprint157 delivered real cashier sale entry, but no operational UI existed to establish its required exact-device active shift and opening-cash evidence even though both backend mutation contracts already existed.
+- **Objective / Gap:** `POS_SHIFT_START_WORKSPACE`.
+- **What changed:** added a scoped read-only shift-start snapshot/repository, exact-context Laravel reader, authorized query service, guarded provider/controller, fail-closed config, Vue/Inertia three-stage workspace, and executable SQLite regression.
+- Requires both existing deny-by-default permissions `pos.shift.open` and `pos.shift.opening-cash.record`.
+- Reads active shift and opening-cash evidence only for the exact tenant + organization + outlet + device context.
+- Reuses canonical POST `/pos/shifts/open` and POST `/pos/shifts/opening-cash`; no composite mutation engine was introduced.
+- Preserves partial completion: a successfully opened shift remains active while opening-cash evidence can be resumed independently.
+- No automatic network retry was introduced; uncertain results require authoritative status refresh before resubmission.
+- Opening-cash client conversion remains integer/scale aware while server Money validation remains final.
+- `routes/web.php`, global provider registry, Composer manifest, database migrations, and operational state remained unchanged.
+- Engineering PR #734 squash merged.
+- Parent canonical post-Sprint157 checkpoint: `700f2133032047d213d38e2e0317641599831a9f`.
+- Final exact engineering head: `1e2a0ae959a88870ae4728f46f07b08ae0c08a2c`.
+- Complete exact-head PR-triggered matrix: successful.
+- Sprint158 regression run `34816888058`: successful.
+- M7.1 Application Regression run `34816888381`: successful.
+- Governance Required Checks run `34816888368`: successful.
+- PHP Foundation Regression run `34816887952`: successful.
+- Sprint96 run `34816888176`, Sprint97 run `34816888300`, Sprint126 run `34816888435`, Sprint148 run `34816888194`, Sprint156 run `34816888289`, and Sprint157 run `34816888205`: successful.
+- Repository-native exact-head Product Owner merge authority: successful.
+- Engineering envelope: exactly 11 paths; SHA-256 `3828b5914b64b4862ce4d39ff037261b796c232e5ac7c6fb001913a096ac1666`.
+- Canonical engineering squash: `d6eb8f7f359584130deea9ec0ed3572add3c05aa`.
+- Post-merge verification proved exactly one squash commit over `700f2133032047d213d38e2e0317641599831a9f` and exactly the qualified 11-path delta.
+- Post-Sprint158 reconciliation envelope: six paths; SHA-256 `0257dde337eee65e156c49f59b54a61506b47866babb2c68a8bcc3a1a2e3321f`.
+- **Operational boundaries / NO-GO:** target selection remains blocked/null; migration #27 remains `NOT_EXECUTED`; permission provisioning remains `NONE`; real capability/dependency evidence remains `NONE`; Final Shift Close runtime allowlist remains Local/Test/CI; feature activation remains `INACTIVE`; deployment authority remains `NOT_GRANTED`; Technical Preview/Production remain `NOT_AUTHORIZED`; updater remains `INACTIVE`.
+- **Next position:** Sprint159 bounded discovery from canonical post-Sprint158; no objective or source envelope is preselected.
+
 ## 2026-09-14 — Sprint157 closed
 
 **Sprint157: operational POS cashier sale-entry workspace**
 
-- **Purpose / Why:** canonical POS already had authoritative sale completion, catalog, stock, shift, authorization, idempotency, and receipt semantics, but no real operational cashier workspace.
-- **Objective / Gap:** `POS_CASHIER_SALE_ENTRY_WORKSPACE`.
-- **What changed:** added scoped cashier read models, read-only workspace repository, exact-device active-shift readiness, dedicated guarded provider/controller, fail-closed workspace config, Vue/Inertia cashier UI, and executable SQLite regression.
-- Cashier catalog is tenant/outlet scoped and exposes only active positive-stock items.
-- Authorization reuses existing deny-by-default `pos.sale.complete` permission.
-- Checkout posts to the existing canonical `pos.sales.complete` endpoint; `CompleteSale` and `LaravelDurablePosSaleRepository` remain mutation authority.
-- Cart prevents mixed currency/scale and does not accept arbitrary client-side prices.
-- CASH and MANUAL_EXTERNAL tender rules are validated in the UI while authoritative server rules remain final.
-- No automatic network retry was introduced.
-- `routes/web.php`, global provider registry, Composer manifest, database migrations, and operational state remained unchanged.
-- Engineering PR #732 squash merged.
-- Parent canonical post-Sprint156 checkpoint: `1255fd1a310792c50e174465aa91417af23bd47e`.
-- Final exact engineering head: `0ff14cf95aa54cd798fe5d1b5611c2890757e5b3`.
-- Complete exact-head PR-triggered matrix: successful.
-- Sprint157 regression run `34815027880`: successful.
-- M7.1 Application Regression run `34815027865`: successful.
-- Governance Required Checks run `34815027920`: successful.
-- PHP Foundation Regression run `34815027969`: successful.
-- Sprint96 run `34815028008`, Sprint97 run `34815027894`, Sprint126 run `34815027942`, Sprint148 run `34815027851`, and Sprint156 run `34815027870`: successful.
-- Repository-native exact-head Product Owner merge authority: successful.
-- Engineering envelope: exactly 12 paths; SHA-256 `f363bbfff9b1a52479c0f6d76e7cefe4b14ac89c597b2cd7894713e34bcc2f5b`.
-- Canonical engineering squash: `b4d21b208a0580f4b40565b028dd6aed9bb190b8`.
-- Post-merge verification proved exactly one squash commit over `1255fd1a310792c50e174465aa91417af23bd47e` and exactly the qualified 12-path delta.
-- Post-Sprint157 reconciliation envelope: six paths; SHA-256 `4393c47067856f6d426cc2ce3f976bda78a72c13adaedb47ff53cc93f2c4ca1c`.
-- **Operational boundaries / NO-GO:** target selection remains blocked/null; migration #27 remains `NOT_EXECUTED`; permission provisioning remains `NONE`; real capability/dependency evidence remains `NONE`; Final Shift Close runtime allowlist remains Local/Test/CI; feature activation remains `INACTIVE`; deployment authority remains `NOT_GRANTED`; Technical Preview/Production remain `NOT_AUTHORIZED`; updater remains `INACTIVE`.
-- **Next position:** Sprint158 bounded discovery from canonical post-Sprint157; no objective or source envelope is preselected.
+- Added exact-context cashier read models, active positive-stock catalog delivery, guarded Vue/Inertia cashier workspace, and executable SQLite regression.
+- Reused existing `pos.sale.complete` authorization and canonical sale mutation authority; no second transaction engine was introduced.
+- Engineering PR #732 squash merged at `b4d21b208a0580f4b40565b028dd6aed9bb190b8`.
+- Final engineering head `0ff14cf95aa54cd798fe5d1b5611c2890757e5b3`; complete exact-head matrix and Product Owner authority successful.
+- Engineering envelope SHA-256: `f363bbfff9b1a52479c0f6d76e7cefe4b14ac89c597b2cd7894713e34bcc2f5b`.
+- Reconciliation envelope SHA-256: `4393c47067856f6d426cc2ce3f976bda78a72c13adaedb47ff53cc93f2c4ca1c`.
 
 ## 2026-09-14 — Sprint156 closed
 
@@ -41,12 +52,7 @@ Current project-state authority: [`PROJECT_MANIFEST.md`](PROJECT_MANIFEST.md).
 
 - Added read-only tenant + organization + outlet scoped operational sales reporting using canonical POS persistence.
 - Preserved currency and currency-scale boundaries and deny-by-default authorization.
-- Added guarded delivery, Vue/Inertia dashboard, and executable SQLite regression.
-- Corrected historical workflow successor compatibility only where exact-head CI proved stale ownership.
 - Engineering PR #730 squash merged at `259cc00037ee0d3fb909cbcf2c87d39ffb26f9b9`.
-- Final engineering head `5e460d1c7c5174cc831106ade3e3fa6309acba4d`; complete exact-head matrix and Product Owner authority successful.
-- Engineering envelope SHA-256: `34c6dab2c898ddd9133aaa6d5413ca7b345127020d8f04fe54f861a4d1a5e79c`.
-- Reconciliation envelope SHA-256: `adba5b23ef33aeb360ebb4090b3f848fc2a3704807a60026c1344b2e0d1a54f4`.
 
 ## 2026-09-14 — Sprint155 closed
 
