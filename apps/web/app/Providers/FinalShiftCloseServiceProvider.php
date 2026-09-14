@@ -28,6 +28,7 @@ final class FinalShiftCloseServiceProvider extends ServiceProvider
         // Child providers remain independently fail-closed and own their delivery gates.
         $this->app->register(PosOperationalReportingServiceProvider::class);
         $this->app->register(PosCashierWorkspaceServiceProvider::class);
+        $this->app->register(PosShiftStartWorkspaceServiceProvider::class);
 
         $this->app->scoped(LaravelExpectedCashSnapshotReader::class, function ($app): LaravelExpectedCashSnapshotReader {
             return new LaravelExpectedCashSnapshotReader($this->connection($app));
