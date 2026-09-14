@@ -43,8 +43,8 @@ jobs:
           git diff --name-only "$base" "$head" | LC_ALL=C sort > /tmp/sprint156-paths
           count="$(wc -l < /tmp/sprint156-paths | tr -d ' ')"
           fingerprint="$(sha256sum /tmp/sprint156-paths | awk '{print $1}')"
-          [[ "$count" == '21' ]]
-          [[ "$fingerprint" == 'c54e821cc4603b08450ac0e99ac93c17ba84580a02c2aa4ace2f26d52ab392ab' ]]
+          [[ "$count" == '23' ]]
+          [[ "$fingerprint" == 'f8ddc96072b324b43dec852da61223f593a863c4321df240d864a853396ff6e7' ]]
           cat > /tmp/sprint156-expected <<'EOF'
           .github/workflows/sprint119-final-shift-close-runtime-db-binding-attestation.yml
           .github/workflows/sprint120-final-shift-close-runtime-binding-manifest-writer.yml
@@ -57,6 +57,8 @@ jobs:
           .github/workflows/sprint132-final-shift-close-canonical-control-plane-controller-positive-path-regression.yml
           .github/workflows/sprint133-final-shift-close-canonical-control-plane-controller-fail-closed-regression.yml
           .github/workflows/sprint156-pos-operational-sales-reporting-regression.yml
+          .github/workflows/sprint96-final-shift-close-runtime-wiring.yml
+          .github/workflows/sprint97-final-shift-close-http-delivery.yml
           apps/web/app/Application/Pos/PosOperationalSalesSummary.php
           apps/web/app/Application/Pos/PosOperationalSalesSummaryRepository.php
           apps/web/app/Application/Pos/ViewPosOperationalSalesSummary.php
