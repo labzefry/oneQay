@@ -1,0 +1,148 @@
+name: Sprint157 POS Cashier Sale Entry Workspace Regression
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint157-pos-cashier-${{ github.event.pull_request.number || github.ref }}-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  qualify-sprint157-pos-cashier-workspace:
+    name: qualify-sprint157-pos-cashier-workspace
+    runs-on: ubuntu-latest
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:Y2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2M=
+      APP_DEBUG: "false"
+      APP_URL: http://localhost
+      ONEQAY_RUNTIME_CLASS: ci
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Lock exact Sprint157 engineering envelope
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin main
+          base="${{ github.event.pull_request.base.sha || '1255fd1a310792c50e174465aa91417af23bd47e' }}"
+          head="${{ github.event.pull_request.head.sha || github.sha }}"
+          git diff --name-only "$base" "$head" | LC_ALL=C sort > /tmp/sprint157-paths
+          count="$(wc -l < /tmp/sprint157-paths | tr -d ' ')"
+          fingerprint="$(sha256sum /tmp/sprint157-paths | awk '{print $1}')"
+          [[ "$count" == '12' ]]
+          [[ "$fingerprint" == 'f363bbfff9b1a52479c0f6d76e7cefe4b14ac89c597b2cd7894713e34bcc2f5b' ]]
+          cat > /tmp/sprint157-expected <<'EOF'
+          .github/workflows/sprint157-pos-cashier-sale-entry-workspace-regression.yml
+          apps/web/app/Application/Pos/PosCashierCatalogItem.php
+          apps/web/app/Application/Pos/PosCashierWorkspaceRepository.php
+          apps/web/app/Application/Pos/PosCashierWorkspaceSnapshot.php
+          apps/web/app/Application/Pos/ViewPosCashierWorkspace.php
+          apps/web/app/Delivery/Http/Pos/PosCashierWorkspaceController.php
+          apps/web/app/Infrastructure/Pos/LaravelPosCashierWorkspaceRepository.php
+          apps/web/app/Providers/FinalShiftCloseServiceProvider.php
+          apps/web/app/Providers/PosCashierWorkspaceServiceProvider.php
+          apps/web/config/pos_cashier_workspace.php
+          apps/web/resources/js/pages/Pos/Cashier.vue
+          apps/web/tests/pos-cashier-workspace.php
+          EOF
+          diff -u /tmp/sprint157-expected /tmp/sprint157-paths
+
+      - name: Preserve Final Shift Close operational NO-GO
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="${{ github.event.pull_request.base.sha || '1255fd1a310792c50e174465aa91417af23bd47e' }}"
+          head="${{ github.event.pull_request.head.sha || github.sha }}"
+          git diff --quiet "$base" "$head" -- \
+            ops/final-shift-close/STATE.json \
+            ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json \
+            ops/final-shift-close/POST_SELECTION_DOWNSTREAM_READINESS.json \
+            apps/web/routes/web.php \
+            apps/web/bootstrap/providers.php \
+            apps/web/composer.json
+          [[ "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" == 'NOT_EXECUTED' ]]
+          [[ "$(jq -r '.permission_provisioning.state' ops/final-shift-close/STATE.json)" == 'NONE' ]]
+          [[ "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" == 'INACTIVE' ]]
+          [[ "$(jq -r '.selection_state' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" == 'BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET' ]]
+          [[ "$(jq -r '.selected_target' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" == 'null' ]]
+
+      - name: Validate PHP runtime and locked dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -r 'if (PHP_VERSION_ID < 80200 || PHP_VERSION_ID >= 80600) { fwrite(STDERR, "Sprint157 requires governed PHP 8.2-8.5 compatibility.\n"); exit(1); }'
+          test -f apps/web/composer.lock
+          test -f apps/web/package-lock.json
+          cd apps/web
+          composer validate --no-check-publish
+          composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Validate Sprint157 PHP syntax and executable regressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          find apps/web/app apps/web/bootstrap apps/web/config apps/web/routes apps/web/tests \
+            -type f -name '*.php' -print0 |
+            while IFS= read -r -d '' file; do
+              php -l "$file"
+            done
+          cd apps/web
+          composer test
+          php tests/pos-operational-reporting.php
+          php tests/pos-cashier-workspace.php
+
+      - name: Setup exact Node LTS
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: 24.19.0
+
+      - name: Type-check and build cashier UI
+        working-directory: apps/web
+        run: |
+          npm ci --ignore-scripts --no-fund
+          npm run type-check
+          npm run build
+
+      - name: Prove cashier workspace reuses canonical sale authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq 'PosPermission::completeSale()' apps/web/app/Application/Pos/ViewPosCashierWorkspace.php
+          grep -Fq "where('tenant_id', \$context->tenantId())" apps/web/app/Infrastructure/Pos/LaravelPosCashierWorkspaceRepository.php
+          grep -Fq "where('outlet_id', \$context->outletId())" apps/web/app/Infrastructure/Pos/LaravelPosCashierWorkspaceRepository.php
+          grep -Fq "where('device_id', \$context->deviceId())" apps/web/app/Infrastructure/Pos/LaravelPosCashierWorkspaceRepository.php
+          grep -Fq "where('active', true)" apps/web/app/Infrastructure/Pos/LaravelPosCashierWorkspaceRepository.php
+          grep -Fq "where('available_quantity', '>', 0)" apps/web/app/Infrastructure/Pos/LaravelPosCashierWorkspaceRepository.php
+          grep -Fq "route('pos.sales.complete', [], false)" apps/web/app/Delivery/Http/Pos/PosCashierWorkspaceController.php
+          grep -Fq 'ONEQAY_POS_CASHIER_WORKSPACE_ENABLED' apps/web/config/pos_cashier_workspace.php
+          grep -Fq "config('oneqay.pos_sale_completion.enabled', false)" apps/web/app/Providers/PosCashierWorkspaceServiceProvider.php
+          grep -Fq '$this->app->register(PosCashierWorkspaceServiceProvider::class);' apps/web/app/Providers/FinalShiftCloseServiceProvider.php
+          ! grep -Fq 'PosCashierWorkspaceServiceProvider' apps/web/bootstrap/providers.php
+          ! grep -R -n -E 'insert\(|update\(|delete\(|increment\(|decrement\(|statement\(' \
+            apps/web/app/Application/Pos/PosCashierCatalogItem.php \
+            apps/web/app/Application/Pos/PosCashierWorkspaceRepository.php \
+            apps/web/app/Application/Pos/PosCashierWorkspaceSnapshot.php \
+            apps/web/app/Application/Pos/ViewPosCashierWorkspace.php \
+            apps/web/app/Delivery/Http/Pos/PosCashierWorkspaceController.php \
+            apps/web/app/Infrastructure/Pos/LaravelPosCashierWorkspaceRepository.php
+
+      - name: Verify tracked-source cleanliness
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --exit-code
+          test -z "$(git status --porcelain)"
