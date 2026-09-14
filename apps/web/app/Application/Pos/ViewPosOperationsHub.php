@@ -35,6 +35,13 @@ final readonly class ViewPosOperationsHub
             || $this->authorization->allows($verified, PosPermission::refundSale());
         $canCatalogInventorySetup = $this->authorization->allows($verified, PosPermission::prepareCatalog())
             && $this->authorization->allows($verified, PosPermission::inventoryBaseline());
+        $canCashVarianceReconciliation = $this->authorization->allows(
+            $verified,
+            PosPermission::recordCashVarianceExplanation(),
+        ) || $this->authorization->allows(
+            $verified,
+            PermissionIdentifier::fromString(ViewPosCashVarianceReconciliationWorkspace::REVIEW_PERMISSION),
+        );
         $canShiftClose = $this->authorization->allows($verified, FinalShiftClosePermission::identifier());
 
         $snapshot = new PosOperationsHubSnapshot(
@@ -47,6 +54,7 @@ final readonly class ViewPosOperationsHub
             $canReporting,
             $canCorrections,
             $canCatalogInventorySetup,
+            $canCashVarianceReconciliation,
             $canShiftClose,
         );
 

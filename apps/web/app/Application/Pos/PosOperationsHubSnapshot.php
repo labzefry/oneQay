@@ -19,6 +19,7 @@ final readonly class PosOperationsHubSnapshot
         private bool $canReporting,
         private bool $canCorrections,
         private bool $canCatalogInventorySetup,
+        private bool $canCashVarianceReconciliation,
         private bool $canShiftClose,
     ) {
         foreach ([$tenantId, $organizationId, $outletId, $deviceId] as $value) {
@@ -37,6 +38,7 @@ final readonly class PosOperationsHubSnapshot
     public function canReporting(): bool { return $this->canReporting; }
     public function canCorrections(): bool { return $this->canCorrections; }
     public function canCatalogInventorySetup(): bool { return $this->canCatalogInventorySetup; }
+    public function canCashVarianceReconciliation(): bool { return $this->canCashVarianceReconciliation; }
     public function canShiftClose(): bool { return $this->canShiftClose; }
 
     public function hasAnyAccess(): bool
@@ -46,6 +48,7 @@ final readonly class PosOperationsHubSnapshot
             || $this->canReporting
             || $this->canCorrections
             || $this->canCatalogInventorySetup
+            || $this->canCashVarianceReconciliation
             || $this->canShiftClose;
     }
 }
