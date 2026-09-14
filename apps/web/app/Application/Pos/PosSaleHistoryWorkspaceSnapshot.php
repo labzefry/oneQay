@@ -20,7 +20,7 @@ final readonly class PosSaleHistoryWorkspaceSnapshot
      *   scale:int,
      *   tender_category:string,
      *   state:string,
-     *   shift_id:string,
+     *   shift_id:?string,
      *   device_id:string,
      *   voided_at_unix:?int,
      *   refunded_at_unix:?int
@@ -36,7 +36,7 @@ final readonly class PosSaleHistoryWorkspaceSnapshot
      *   applied_atomic:string,
      *   change_atomic:string,
      *   state:string,
-     *   shift_id:string,
+     *   shift_id:?string,
      *   device_id:string,
      *   void_id:?string,
      *   voided_at_unix:?int,
