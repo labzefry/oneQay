@@ -14,8 +14,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  qualify-sprint159-pos-sale-correction-workspace:
-    name: qualify-sprint159-pos-sale-correction-workspace
+  preserve-sprint159-pos-sale-correction-workspace:
+    name: preserve-sprint159-pos-sale-correction-workspace
     runs-on: ubuntu-latest
     env:
       APP_NAME: oneQay
@@ -33,55 +33,37 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: Lock exact Sprint159 engineering envelope
+      - name: Preserve successor-compatible Sprint159 source contract
         shell: bash
         run: |
           set -euo pipefail
-          git fetch --no-tags origin main
-          base="${{ github.event.pull_request.base.sha || '6a23eefcc10a60d306d969834c594c73a7b7d2bf' }}"
-          head="${{ github.event.pull_request.head.sha || github.sha }}"
-          git diff --name-only "$base" "$head" | LC_ALL=C sort > /tmp/sprint159-paths
-          count="$(wc -l < /tmp/sprint159-paths | tr -d ' ')"
-          fingerprint="$(sha256sum /tmp/sprint159-paths | awk '{print $1}')"
-          [[ "$count" == '11' ]]
-          [[ "$fingerprint" == '6a5f49136334f99c182220a7db89a7869611be8a5b65a6cd3fe4c73fcc40cf00' ]]
-          cat > /tmp/sprint159-expected <<'EOF'
-          .github/workflows/sprint159-pos-sale-correction-workspace-regression.yml
-          apps/web/app/Application/Pos/PosSaleCorrectionWorkspaceRepository.php
-          apps/web/app/Application/Pos/PosSaleCorrectionWorkspaceSnapshot.php
-          apps/web/app/Application/Pos/ViewPosSaleCorrectionWorkspace.php
-          apps/web/app/Delivery/Http/Pos/PosSaleCorrectionWorkspaceController.php
-          apps/web/app/Infrastructure/Pos/LaravelPosSaleCorrectionWorkspaceRepository.php
-          apps/web/app/Providers/FinalShiftCloseServiceProvider.php
-          apps/web/app/Providers/PosSaleCorrectionWorkspaceServiceProvider.php
-          apps/web/config/pos_sale_correction_workspace.php
-          apps/web/resources/js/pages/Pos/SaleCorrections.vue
-          apps/web/tests/pos-sale-correction-workspace.php
-          EOF
-          diff -u /tmp/sprint159-expected /tmp/sprint159-paths
+          test -f apps/web/app/Application/Pos/PosSaleCorrectionWorkspaceRepository.php
+          test -f apps/web/app/Application/Pos/PosSaleCorrectionWorkspaceSnapshot.php
+          test -f apps/web/app/Application/Pos/ViewPosSaleCorrectionWorkspace.php
+          test -f apps/web/app/Delivery/Http/Pos/PosSaleCorrectionWorkspaceController.php
+          test -f apps/web/app/Infrastructure/Pos/LaravelPosSaleCorrectionWorkspaceRepository.php
+          test -f apps/web/app/Providers/PosSaleCorrectionWorkspaceServiceProvider.php
+          test -f apps/web/config/pos_sale_correction_workspace.php
+          test -f apps/web/resources/js/pages/Pos/SaleCorrections.vue
+          test -f apps/web/tests/pos-sale-correction-workspace.php
+          grep -Fq '$this->app->register(PosSaleCorrectionWorkspaceServiceProvider::class);' apps/web/app/Providers/FinalShiftCloseServiceProvider.php
+          grep -Fq -- "->name('pos.sales.void')" apps/web/routes/web.php
+          grep -Fq -- "->name('pos.sales.cash-refund')" apps/web/routes/web.php
+          ! grep -Fq 'PosSaleCorrectionWorkspaceServiceProvider' apps/web/bootstrap/providers.php
 
-      - name: Preserve canonical mutation owners and operational NO-GO
+      - name: Preserve current operational NO-GO
         shell: bash
         run: |
           set -euo pipefail
-          base="${{ github.event.pull_request.base.sha || '6a23eefcc10a60d306d969834c594c73a7b7d2bf' }}"
-          head="${{ github.event.pull_request.head.sha || github.sha }}"
-          git diff --quiet "$base" "$head" -- \
-            ops/final-shift-close/STATE.json \
-            ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json \
-            ops/final-shift-close/POST_SELECTION_DOWNSTREAM_READINESS.json \
-            apps/web/routes/web.php \
-            apps/web/bootstrap/providers.php \
-            apps/web/composer.json \
-            apps/web/database/migrations
           [[ "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" == 'NOT_EXECUTED' ]]
           [[ "$(jq -r '.permission_provisioning.state' ops/final-shift-close/STATE.json)" == 'NONE' ]]
           [[ "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" == 'INACTIVE' ]]
           [[ "$(jq -r '.deployment_authority' ops/final-shift-close/STATE.json)" == 'NOT_GRANTED' ]]
+          [[ "$(jq -r '.technical_preview_activation' ops/final-shift-close/STATE.json)" == 'NOT_AUTHORIZED' ]]
+          [[ "$(jq -r '.production_activation' ops/final-shift-close/STATE.json)" == 'NOT_AUTHORIZED' ]]
+          [[ "$(jq -r '.updater_activation' ops/final-shift-close/STATE.json)" == 'INACTIVE' ]]
           [[ "$(jq -r '.selection_state' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" == 'BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET' ]]
           [[ "$(jq -r '.selected_target' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" == 'null' ]]
-          grep -Fq -- "->name('pos.sales.void')" apps/web/routes/web.php
-          grep -Fq -- "->name('pos.sales.cash-refund')" apps/web/routes/web.php
 
       - name: Validate PHP runtime and locked dependencies
         shell: bash
@@ -94,7 +76,7 @@ jobs:
           composer validate --no-check-publish
           composer install --no-interaction --no-progress --prefer-dist
 
-      - name: Validate Sprint159 PHP syntax and executable regressions
+      - name: Execute application and POS correction regressions
         shell: bash
         run: |
           set -euo pipefail
@@ -115,14 +97,14 @@ jobs:
         with:
           node-version: 24.19.0
 
-      - name: Type-check and build sale correction UI
+      - name: Type-check and build correction UI
         working-directory: apps/web
         run: |
           npm ci --ignore-scripts --no-fund
           npm run type-check
           npm run build
 
-      - name: Prove correction authority reuse and read-only workspace boundary
+      - name: Preserve canonical correction authorities and read-only boundary
         shell: bash
         run: |
           set -euo pipefail
@@ -135,8 +117,6 @@ jobs:
           grep -Fq "where('outlet_id', \$context->outletId())" apps/web/app/Infrastructure/Pos/LaravelPosSaleCorrectionWorkspaceRepository.php
           grep -Fq "where('active_slot', 1)" apps/web/app/Infrastructure/Pos/LaravelPosSaleCorrectionWorkspaceRepository.php
           grep -Fq 'ONEQAY_POS_SALE_CORRECTION_WORKSPACE_ENABLED' apps/web/config/pos_sale_correction_workspace.php
-          grep -Fq '$this->app->register(PosSaleCorrectionWorkspaceServiceProvider::class);' apps/web/app/Providers/FinalShiftCloseServiceProvider.php
-          ! grep -Fq 'PosSaleCorrectionWorkspaceServiceProvider' apps/web/bootstrap/providers.php
           ! grep -R -n -E 'insert\(|update\(|delete\(|increment\(|decrement\(|statement\(' \
             apps/web/app/Application/Pos/PosSaleCorrectionWorkspaceRepository.php \
             apps/web/app/Application/Pos/PosSaleCorrectionWorkspaceSnapshot.php \
