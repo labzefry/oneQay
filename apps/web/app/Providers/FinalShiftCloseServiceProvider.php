@@ -25,8 +25,9 @@ final class FinalShiftCloseServiceProvider extends ServiceProvider
     public function register(): void
     {
         // Keep bounded POS capability wiring out of the global provider registry.
-        // The reporting provider remains independently fail-closed and owns its own delivery gate.
+        // Child providers remain independently fail-closed and own their delivery gates.
         $this->app->register(PosOperationalReportingServiceProvider::class);
+        $this->app->register(PosCashierWorkspaceServiceProvider::class);
 
         $this->app->scoped(LaravelExpectedCashSnapshotReader::class, function ($app): LaravelExpectedCashSnapshotReader {
             return new LaravelExpectedCashSnapshotReader($this->connection($app));
