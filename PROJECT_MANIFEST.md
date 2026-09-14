@@ -3,9 +3,9 @@
 **Product:** oneQay — The Future of Intelligent Business Management
 **Repository owner / attribution:** Lab | zefry
 **Default branch:** `main`
-**Canonical engineering checkpoint:** Sprint157
-**Canonical engineering commit:** `b4d21b208a0580f4b40565b028dd6aed9bb190b8`
-**Latest engineering PR:** #732 — `Sprint157: add operational POS cashier sale-entry workspace`
+**Canonical engineering checkpoint:** Sprint158
+**Canonical engineering commit:** `d6eb8f7f359584130deea9ec0ed3572add3c05aa`
+**Latest engineering PR:** #734 — `Sprint158: add operational POS shift-start workspace`
 **Status date:** 2026-09-14
 
 > This file is the canonical human-readable source of truth for current oneQay project status. Machine-readable operational state remains authoritative for operational gates.
@@ -14,27 +14,28 @@
 
 oneQay remains an actively engineered enterprise business-management platform using Modular Monolith First, Clean Architecture, DDD, first-class tenant context, deny-by-default authorization, and fail-closed engineering controls.
 
-Sprint157 closed the bounded P1 product-usability gap `POS_CASHIER_SALE_ENTRY_WORKSPACE`. Canonical POS sale completion, catalog, stock, active-shift, authorization, idempotency, and receipt semantics already existed; Sprint157 added a real operational cashier surface over those existing authorities rather than creating a second transaction engine.
+Sprint158 closed the bounded P1 product-usability gap `POS_SHIFT_START_WORKSPACE`. Sprint157 had already made cashier sale entry operational, but cashier readiness still depended on an active exact-device shift and opening-cash evidence. Canonical shift-opening and opening-cash mutation contracts already existed; Sprint158 added a real operational, resumable start-of-shift workspace over those authorities rather than creating another mutation engine.
 
-The cashier workspace reads only the authorized tenant/outlet catalog, exposes only active positive-stock items, binds shift readiness to the exact tenant + organization + outlet + device, reuses `pos.sale.complete`, preserves currency/scale boundaries, and submits checkout to the existing canonical sale endpoint. Server-side sale completion remains authoritative for price, stock, active shift, Money rules, persistence, idempotency, tender semantics, sale/event writes, and receipt/change calculation.
+The workspace requires both existing `pos.shift.open` and `pos.shift.opening-cash.record` permissions, reads exact tenant + organization + outlet + device state, and presents three states: shift required, opening cash required, and ready for cashier. Existing `OpenShift`, `RecordShiftOpeningCash`, and their Laravel repositories remain authoritative for transaction, idempotency, persistence, Money, active-shift, and evidence semantics.
 
 ### Canonical state summary
 
 | Area | Current canonical state |
 | --- | --- |
-| Latest completed engineering sprint | Sprint157 |
-| Canonical engineering commit | `b4d21b208a0580f4b40565b028dd6aed9bb190b8` |
-| Latest engineering PR | #732, squash merged |
-| Sprint157 final engineering head | `0ff14cf95aa54cd798fe5d1b5611c2890757e5b3` |
-| Sprint157 exact-head CI | Complete PR-triggered matrix successful |
-| Sprint157 Product Owner authority | `product-owner-merge-authority=success` for exact engineering head |
-| Sprint157 engineering envelope | 12 paths; SHA-256 `f363bbfff9b1a52479c0f6d76e7cefe4b14ac89c597b2cd7894713e34bcc2f5b` |
-| Post-Sprint157 reconciliation envelope | 6 paths; SHA-256 `4393c47067856f6d426cc2ce3f976bda78a72c13adaedb47ff53cc93f2c4ca1c` |
-| POS cashier workspace | Materialized as guarded Local/Test/CI delivery |
-| Cashier authorization | Existing `pos.sale.complete`, deny-by-default |
-| Cashier scope | Tenant + organization + outlet + device |
-| Catalog authority | Server-supplied active, positive-stock scoped catalog |
-| Sale mutation authority | Existing canonical `/pos/sales` / `CompleteSale` path |
+| Latest completed engineering sprint | Sprint158 |
+| Canonical engineering commit | `d6eb8f7f359584130deea9ec0ed3572add3c05aa` |
+| Latest engineering PR | #734, squash merged |
+| Sprint158 final engineering head | `1e2a0ae959a88870ae4728f46f07b08ae0c08a2c` |
+| Sprint158 exact-head CI | Complete PR-triggered matrix successful |
+| Sprint158 Product Owner authority | `product-owner-merge-authority=success` for exact engineering head |
+| Sprint158 engineering envelope | 11 paths; SHA-256 `3828b5914b64b4862ce4d39ff037261b796c232e5ac7c6fb001913a096ac1666` |
+| Post-Sprint158 reconciliation envelope | 6 paths; SHA-256 `0257dde337eee65e156c49f59b54a61506b47866babb2c68a8bcc3a1a2e3321f` |
+| POS shift-start workspace | Materialized as guarded Local/Test/CI delivery |
+| Shift-start authorization | Existing `pos.shift.open` + `pos.shift.opening-cash.record`, deny-by-default |
+| Shift-start scope | Tenant + organization + outlet + device |
+| Shift-opening mutation authority | Existing canonical `/pos/shifts/open` / `OpenShift` path |
+| Opening-cash mutation authority | Existing canonical `/pos/shifts/opening-cash` / `RecordShiftOpeningCash` path |
+| POS cashier workspace | Materialized through Sprint157 |
 | POS operational sales reporting | Materialized read-only through Sprint156 |
 | Runtime allowlist | `local`, `test`, `ci` only |
 | Durable activation target | `BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET` |
@@ -55,7 +56,7 @@ The cashier workspace reads only the authorized tenant/outlet catalog, exposes o
 
 The repository has established modular-monolith architecture, tenant isolation, deny-by-default authorization, first-party session and privileged-authentication foundations, versioned REST governance, deterministic CI/governance controls, exact-head qualification, and repository-native Product Owner merge authorization.
 
-Bounded POS work now includes shift/register opening, sale completion/payment/receipt evidence, catalog preparation, inventory baseline, durable idempotency, cash variance/adjudication, Final Shift Close source/readiness controls, operational sales reporting, and a guarded cashier sale-entry workspace.
+Bounded POS work now includes shift/register opening, opening-cash evidence, sale completion/payment/receipt evidence, catalog preparation, inventory baseline, durable idempotency, cash variance/adjudication, Final Shift Close source/readiness controls, operational sales reporting, cashier sale entry, and an operational shift-start workspace.
 
 ### Final Shift Close engineering chain
 
@@ -65,56 +66,60 @@ Sprint88 through Sprint155 established the source/readiness chain from migration
 
 - Sprint156 — read-only tenant + organization + outlet scoped POS operational sales reporting.
 - Sprint157 — operational POS cashier sale-entry workspace over existing canonical transaction authority.
+- Sprint158 — operational POS shift-start workspace over existing canonical shift-opening and opening-cash mutation authorities.
 
-## 3. Sprint157 description and closure evidence
+## 3. Sprint158 description and closure evidence
 
 ### Purpose / Why
 
-Post-Sprint156 discovery showed the authoritative sale engine and catalog/inventory foundations existed, but a real operational cashier workspace did not. Sale entry was API-only or synthetic Technical Preview interaction, which left a material usability gap on the shortest path to a usable product.
+Post-Sprint157 discovery showed cashier sale entry was usable only after an active exact-device shift existed, but no operational page existed to open that shift and record its opening cash. The required backend mutation contracts and permissions already existed, making an operational start-of-shift surface the shortest non-duplicative path to a usable cashier journey.
 
 ### Objective / Gap
 
-Bounded objective: `POS_CASHIER_SALE_ENTRY_WORKSPACE`.
+Bounded objective: `POS_SHIFT_START_WORKSPACE`.
 
 ### What changed
 
-- Added cashier catalog item and workspace snapshot application read models.
-- Added a scoped read-only repository and authorized `ViewPosCashierWorkspace` service.
-- Added a Laravel read repository over existing shift and sale-catalog persistence.
-- Added a dedicated fail-closed cashier provider and GET `/pos/cashier` Inertia delivery.
-- Added `ONEQAY_POS_CASHIER_WORKSPACE_ENABLED`, default false.
-- Added a Vue/Inertia cashier UI with product search, stock-bounded quantities, active-shift readiness, single currency/scale cart, CASH/MANUAL_EXTERNAL tender validation, and explicit no-auto-retry behavior.
-- Reused the existing named `pos.sales.complete` endpoint and existing `PosPermission::completeSale()` authorization.
-- Added disposable SQLite regression covering scope isolation, exact-device shift binding, sellable-stock filtering, currency/scale preservation, and runtime/feature/persistence fail-closed behavior.
-- Left `routes/web.php`, global provider registry, Composer manifest, migrations, and all authoritative operational state unchanged.
+- Added `PosShiftStartWorkspaceSnapshot`, read-only repository contract, and authorized query service.
+- Added exact-scope Laravel read repository over `oneqay_pos_shifts` and `oneqay_pos_shift_opening_cash_evidence`.
+- Required both existing `PosPermission::openShift()` and `PosPermission::recordShiftOpeningCash()` permissions.
+- Added dedicated fail-closed GET `/pos/shift-start` delivery and `ONEQAY_POS_SHIFT_START_WORKSPACE_ENABLED`, default false.
+- Composed the provider through the existing bounded POS composition root; global provider registry remains unchanged.
+- Added Vue/Inertia three-stage operational flow: open shift, record opening cash, enter cashier.
+- Reused existing POST `/pos/shifts/open` and POST `/pos/shifts/opening-cash` mutation owners; no composite mutation was introduced.
+- Preserved partial completion explicitly: a successful shift opening remains authoritative even if opening-cash submission fails or becomes uncertain.
+- Added no-auto-retry guidance so uncertain network outcomes require authoritative status refresh before resubmission.
+- Added scale-aware integer Money input conversion with client safe-integer guard while server Money validation remains final.
+- Added disposable SQLite regression covering exact-device isolation, no-shift state, active-shift/no-evidence resumability, exact evidence binding, currency/scale preservation, and fail-closed persistence/runtime/capability states.
+- Left `routes/web.php`, global provider registry, Composer manifest, migrations, and operational state unchanged.
 
 ### Evidence / Qualification
 
-- Engineering PR: #732, squash merged.
-- Parent canonical post-Sprint156 checkpoint: `1255fd1a310792c50e174465aa91417af23bd47e`.
-- Final exact engineering head: `0ff14cf95aa54cd798fe5d1b5611c2890757e5b3`.
+- Engineering PR: #734, squash merged.
+- Parent canonical post-Sprint157 checkpoint: `700f2133032047d213d38e2e0317641599831a9f`.
+- Final exact engineering head: `1e2a0ae959a88870ae4728f46f07b08ae0c08a2c`.
 - Complete exact-head PR-triggered matrix: **successful**.
-- Sprint157 cashier regression run `34815027880`: successful.
-- M7.1 Application Regression run `34815027865`: successful.
-- Governance Required Checks run `34815027920`: successful.
-- PHP Foundation Regression run `34815027969`: successful.
-- Sprint96 run `34815028008`, Sprint97 run `34815027894`, Sprint126 run `34815027942`, Sprint148 run `34815027851`, and Sprint156 run `34815027870`: successful.
-- Repository-native Product Owner authorization: exact PR #732 and exact engineering head.
+- Sprint158 shift-start regression run `34816888058`: successful.
+- M7.1 Application Regression run `34816888381`: successful.
+- Governance Required Checks run `34816888368`: successful.
+- PHP Foundation Regression run `34816887952`: successful.
+- Sprint96 run `34816888176`, Sprint97 run `34816888300`, Sprint126 run `34816888435`, Sprint148 run `34816888194`, Sprint156 run `34816888289`, and Sprint157 run `34816888205`: successful.
+- Repository-native Product Owner authorization: exact PR #734 and exact engineering head.
 - `product-owner-merge-authority`: successful — exact-head authority verified.
-- Engineering envelope: 12 paths; SHA-256 `f363bbfff9b1a52479c0f6d76e7cefe4b14ac89c597b2cd7894713e34bcc2f5b`.
-- Canonical engineering squash commit: `b4d21b208a0580f4b40565b028dd6aed9bb190b8`.
-- Post-merge verification: exactly one squash commit above `1255fd1a310792c50e174465aa91417af23bd47e`, with exactly the 12 qualified engineering paths.
-- Post-Sprint157 reconciliation envelope: six paths; SHA-256 `4393c47067856f6d426cc2ce3f976bda78a72c13adaedb47ff53cc93f2c4ca1c`.
+- Engineering envelope: 11 paths; SHA-256 `3828b5914b64b4862ce4d39ff037261b796c232e5ac7c6fb001913a096ac1666`.
+- Canonical engineering squash commit: `d6eb8f7f359584130deea9ec0ed3572add3c05aa`.
+- Post-merge verification: exactly one squash commit above `700f2133032047d213d38e2e0317641599831a9f`, with exactly the 11 qualified engineering paths.
+- Post-Sprint158 reconciliation envelope: six paths; SHA-256 `0257dde337eee65e156c49f59b54a61506b47866babb2c68a8bcc3a1a2e3321f`.
 
 ### Operational boundaries / NO-GO
 
-Sprint157 does not select or persist a durable target, dispatch capability/dependency producers, execute migration #27, provision permissions, produce real target-bound capability/dependency evidence, widen the Final Shift Close runtime allowlist, activate Final Shift Close, grant deployment authority, activate Technical Preview/Production, or activate the updater.
+Sprint158 does not select or persist a durable target, dispatch capability/dependency producers, execute migration #27, provision permissions, produce real target-bound capability/dependency evidence, widen the Final Shift Close runtime allowlist, activate Final Shift Close, grant deployment authority, activate Technical Preview/Production, or activate the updater.
 
 Machine-readable state remains target selection blocked with `selected_target=null`, migration #27 `NOT_EXECUTED`, permission provisioning `NONE`, feature activation `INACTIVE`, deployment authority `NOT_GRANTED`, Technical Preview and Production `NOT_AUTHORIZED`, and updater `INACTIVE`.
 
 ### Next position
 
-The next engineering position is **Sprint158 bounded discovery from canonical post-Sprint157**. No Sprint158 objective, implementation, or source envelope is preselected.
+The next engineering position is **Sprint159 bounded discovery from canonical post-Sprint158**. No Sprint159 objective, implementation, or source envelope is preselected.
 
 ## 4. Operational truth — NO-GO remains authoritative
 
