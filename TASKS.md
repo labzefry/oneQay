@@ -1,97 +1,78 @@
 # oneQay Tasks
 
-**Current engineering checkpoint:** Sprint156 engineering merged; post-Sprint156 canonical reconciliation
-**Canonical engineering commit:** `259cc00037ee0d3fb909cbcf2c87d39ffb26f9b9`
+**Current engineering checkpoint:** Sprint157 closed
+**Canonical engineering commit:** `b4d21b208a0580f4b40565b028dd6aed9bb190b8`
 **Canonical status authority:** `PROJECT_MANIFEST.md`
 
-This file separates completed source engineering, closure reconciliation, next bounded engineering, and operational actions that remain separately gated.
+This file separates completed source engineering, next bounded engineering, and operational actions that remain separately gated.
 
-## Completed through Sprint156 engineering
+## Completed through Sprint157
 
 - [x] Core modular-monolith architecture and repository governance foundation
 - [x] Tenant-context-first and deny-by-default authorization foundations
 - [x] Versioned REST / correlation / idempotency governance foundations
-- [x] POS shift/register, sale/payment/receipt, catalog, cash-variance, adjudication, and reviewer-control foundations
+- [x] POS shift/register, sale/payment/receipt, catalog, inventory, cash-variance, adjudication, and reviewer-control foundations
 - [x] Final Shift Close source/readiness chain through Sprint155 without operational activation
 - [x] Read-only POS operational sales reporting — Sprint156
-- [x] Tenant + organization + outlet reporting isolation
-- [x] Currency + currency-scale boundary preservation
-- [x] Deny-by-default reporting permission `pos.reporting.sales-summary.view`
-- [x] Guarded Local/Test/CI reporting delivery with explicit feature arming
-- [x] Vue/Inertia operational sales-summary surface
-- [x] Executable SQLite reporting regression
-- [x] Global provider registry restored to canonical state
-- [x] Reporting composed through existing POS composition root
-- [x] Stale historical regression ownership narrowed while substantive regressions remain active
-- [x] Sprint96 runtime and Sprint97 HTTP regression successor compatibility
-- [x] Sprint148 exact-head concurrency isolation and substantive evidence-binding regression preservation
-- [x] Sprint156 engineering PR #730 squash merged
-- [x] Sprint156 exact-head PR-triggered matrix successful
-- [x] Sprint156 reporting regression run `34813484159` successful
-- [x] M7.1 run `34813484204` successful
-- [x] Governance run `34813484278` successful
-- [x] PHP Foundation run `34813484276` successful
-- [x] Sprint96 run `34813484081` successful
-- [x] Sprint97 run `34813484181` successful
-- [x] Sprint126 run `34813484356` successful
-- [x] Sprint148 run `34813484102` successful
+- [x] Operational POS cashier sale-entry workspace — Sprint157
+- [x] Cashier tenant + organization + outlet + device scope preservation
+- [x] Exact-device active-shift readiness
+- [x] Active positive-stock catalog filtering
+- [x] Existing deny-by-default `pos.sale.complete` permission reuse
+- [x] Canonical `/pos/sales` mutation path reuse; no second transaction engine
+- [x] Currency + currency-scale safe cart boundary
+- [x] CASH and MANUAL_EXTERNAL tender UI validation with server authority preserved
+- [x] Explicit no-auto-retry behavior for network failure
+- [x] Guarded Local/Test/CI cashier delivery with explicit feature arming
+- [x] Vue/Inertia cashier workspace
+- [x] Executable SQLite cashier isolation/readiness/fail-closed regression
+- [x] Sprint157 engineering PR #732 squash merged
+- [x] Sprint157 complete exact-head PR-triggered matrix successful
+- [x] Sprint157 regression run `34815027880` successful
+- [x] M7.1 run `34815027865` successful
+- [x] Governance run `34815027920` successful
+- [x] PHP Foundation run `34815027969` successful
+- [x] Sprint96/Sprint97/Sprint126/Sprint148/Sprint156 preservation regressions successful on the exact head
 - [x] Repository-native exact-head Product Owner merge authority successful
-- [x] Sprint156 engineering squash `259cc00037ee0d3fb909cbcf2c87d39ffb26f9b9`
-- [x] Engineering merge verified as exactly one commit / 24 paths over post-Sprint155 canonical main
+- [x] Sprint157 engineering squash `b4d21b208a0580f4b40565b028dd6aed9bb190b8`
+- [x] Engineering merge verified as exactly one commit / 12 paths over post-Sprint156 canonical main
 - [x] Post-engineering machine-readable operational NO-GO verification completed
+- [x] Sprint157 workflow reconciled to successor-compatible historical regression ownership
+- [x] Sprint157 canonical six-path reconciliation materialized
 
-## Sprint156 engineering evidence
+## Sprint157 engineering evidence
 
-- Objective: `POS_OPERATIONAL_SALES_REPORTING`
-- Parent canonical checkpoint: `4f939acd6cbcc3c49a45cba549a082c789cabd44`
-- Final engineering head: `5e460d1c7c5174cc831106ade3e3fa6309acba4d`
-- Engineering PR: #730
-- Engineering envelope: 24 paths
-- Engineering envelope SHA-256: `34c6dab2c898ddd9133aaa6d5413ca7b345127020d8f04fe54f861a4d1a5e79c`
-- Engineering squash: `259cc00037ee0d3fb909cbcf2c87d39ffb26f9b9`
+- Objective: `POS_CASHIER_SALE_ENTRY_WORKSPACE`
+- Parent canonical checkpoint: `1255fd1a310792c50e174465aa91417af23bd47e`
+- Final engineering head: `0ff14cf95aa54cd798fe5d1b5611c2890757e5b3`
+- Engineering PR: #732
+- Engineering envelope: 12 paths
+- Engineering envelope SHA-256: `f363bbfff9b1a52479c0f6d76e7cefe4b14ac89c597b2cd7894713e34bcc2f5b`
+- Engineering squash: `b4d21b208a0580f4b40565b028dd6aed9bb190b8`
 - Reconciliation envelope: six paths
-- Reconciliation envelope SHA-256: `adba5b23ef33aeb360ebb4090b3f848fc2a3704807a60026c1344b2e0d1a54f4`
+- Reconciliation envelope SHA-256: `4393c47067856f6d426cc2ce3f976bda78a72c13adaedb47ff53cc93f2c4ca1c`
 - Operational mutation: `NOT_PERFORMED`
-- Runtime allowlist: Local/Test/CI only
+- Final Shift Close runtime allowlist: Local/Test/CI only
 - Migration #27: `NOT_EXECUTED`
 - Permission provisioning: `NONE`
 - Feature activation: `INACTIVE`
 
-## Current reconciliation work
-
-- [x] Create reconciliation branch from exact engineering squash `259cc00037ee0d3fb909cbcf2c87d39ffb26f9b9`
-- [x] Convert Sprint156 workflow from active full-envelope lock to historical successor-compatible regression owner
-- [x] Preserve reporting executable regression, UI build, scoped authorization, read-only semantics, and operational NO-GO in the historical workflow
-- [x] Freeze six-path reconciliation envelope and hash
-- [x] Reconcile `PROJECT_MANIFEST.md`
-- [x] Reconcile `README.md`
-- [x] Reconcile `CHANGELOG.md`
-- [x] Reconcile `TASKS.md`
-- [x] Reconcile `ROADMAP.md`
-- [ ] Open exact six-path reconciliation PR
-- [ ] Require all exact-head reconciliation CI successful
-- [ ] Obtain repository-native Product Owner exact-head authority
-- [ ] Complete final race and squash merge reconciliation PR
-- [ ] Verify engineering-to-reconciliation delta is exactly one commit / six paths
-- [ ] Verify `PROJECT_MANIFEST.md` references engineering squash `259cc00037ee0d3fb909cbcf2c87d39ffb26f9b9`, not reconciliation SHA
-- [ ] Verify machine-readable operational NO-GO remains unchanged
-- [ ] Declare Sprint156 CLOSED
-
 ## Next bounded engineering
 
-### Sprint157 — bounded discovery after Sprint156 closure
+### Sprint158 — bounded discovery after Sprint157 closure
 
-After post-Sprint156 reconciliation closes, the next engineering activity must:
+The next engineering activity must:
 
-- identify the smallest material non-duplicative production-readiness or business-completeness gap from canonical post-Sprint156;
+- identify the smallest material non-duplicative P0/P1 production-readiness or business-completeness gap from canonical post-Sprint157;
 - inspect existing source/contracts/regressions before creating a new invariant owner;
-- prefer product value and P0/P1 readiness work over further abstraction where external operational prerequisites remain the true blocker;
+- prefer product value over additional abstraction where external operational prerequisites remain the true blocker;
+- preserve canonical sale/catalog/stock/authorization owners rather than duplicating them;
 - freeze the smallest meaningful bounded source envelope before implementation;
-- remain fail-closed, deny-by-default, and tenant-isolated;
+- remain fail-closed, deny-by-default, tenant-isolated, and exact-context scoped;
 - qualify exact head before merge;
 - preserve the six-section sprint documentation rule.
 
-No Sprint157 implementation is preselected.
+No Sprint158 implementation is preselected.
 
 ## Operational blockers / separate authority required
 
@@ -103,8 +84,7 @@ No Sprint157 implementation is preselected.
 - [ ] Produce real target-bound durable-runtime capability evidence — `NONE`
 - [ ] Dispatch trusted dependency-envelope evidence producer — `NOT_PERFORMED`
 - [ ] Produce real target-bound dependency-envelope evidence — `NONE`
-- [ ] Materialize/qualify any still-required operational activation transport under separate authority
-- [ ] Widen selected durable runtime class in runtime allowlist — not authorized
+- [ ] Widen selected durable runtime class in Final Shift Close runtime allowlist — not authorized
 - [ ] Execute Final Shift Close feature activation — `INACTIVE`
 - [ ] Grant deployment authority — `NOT_GRANTED`
 - [ ] Authorize Technical Preview activation — `NOT_AUTHORIZED`
