@@ -18,7 +18,6 @@ final class PosPermission
     public const VOID_SALE = 'pos.sale.void';
     public const REFUND_SALE = 'pos.sale.refund';
     public const INVENTORY_BASELINE = 'pos.inventory.baseline';
-    public const VIEW_OPERATIONAL_SALES_SUMMARY = 'pos.reporting.sales-summary.view';
 
     public static function completeSale(): PermissionIdentifier
     {
@@ -63,10 +62,5 @@ final class PosPermission
     public static function inventoryBaseline(): PermissionIdentifier
     {
         return PermissionIdentifier::fromString(self::INVENTORY_BASELINE);
-    }
-
-    public static function viewOperationalSalesSummary(): PermissionIdentifier
-    {
-        return PermissionIdentifier::fromString(self::VIEW_OPERATIONAL_SALES_SUMMARY);
     }
 }
