@@ -4,6 +4,38 @@ This changelog records **material canonical progress**, not every intermediate c
 
 Current project-state authority: [`PROJECT_MANIFEST.md`](PROJECT_MANIFEST.md).
 
+## 2026-09-14 — Sprint160 closed
+
+**Sprint160: immutable POS sale history and receipt detail workspace**
+
+- **Purpose / Why:** canonical POS already persisted immutable sale headers and line items, but operational users had no line-level historical receipt drill-down.
+- **Objective / Gap:** `POS_SALE_HISTORY_DETAIL_WORKSPACE`.
+- **What changed:** added bounded latest-50 sale history, exact canonical sale lookup, immutable sale-line receipt detail, guarded reporting delivery, explicit history feature arming, Vue/Inertia history UI, and executable SQLite integrity regression.
+- Reused existing deny-by-default reporting permission `pos.reporting.sales-summary.view`; no new permission provisioning dependency was introduced.
+- Extended existing `PosOperationalReportingServiceProvider`; no new global provider was introduced.
+- Exact lookup remains tenant + organization + outlet scoped and does not disclose foreign-scope receipt existence.
+- Receipt validation fails closed on malformed line sequence, quantity, unit-price multiplication, line-total sum, currency/scale mismatch, correction amount/tender mismatch, invalid void/refund ordering, or correction evidence outside verified organization/outlet scope.
+- Legitimate historical `shift_id=null` remains preserved rather than inventing a shift binding.
+- Atomic money values are delivered as strings to preserve unsigned-big-integer precision in the browser.
+- Mutable current catalog names are intentionally not joined into historical receipts.
+- Sale completion, void, refund, routes, global provider registry, Composer metadata, database migrations, and machine-readable operational state remained unchanged.
+- Engineering PR #738 squash merged.
+- Parent canonical post-Sprint159 checkpoint: `d4931eb7822d844cf74b3a60e593c35b00b1cfce`.
+- Final exact engineering head: `d159aa26c748c5a624f0f71fe6c135f0d4f36be9`.
+- Complete surfaced exact-head PR-triggered matrix: successful.
+- Sprint160 regression run `34847797273`: successful.
+- M7.1 Application Regression run `34847797253`: successful.
+- Governance Required Checks run `34847797404`: successful.
+- PHP Foundation Regression run `34847797433`: successful.
+- Sprint156 `34847797352`, Sprint157 `34847797227`, Sprint158 `34847797400`, Sprint159 `34847797361`, Sprint126 `34847797292`, and Sprint148 `34847797341`: successful.
+- Repository-native exact-head Product Owner merge authority: successful.
+- Engineering envelope: exactly 10 paths; SHA-256 `f60bd3698cbc28cfccdf8b79c446e5e138203246afdb16aaea1c5637aa327181`.
+- Canonical engineering squash: `e6ef6e77d8a2d0dea16d7c17dde78bece904b78b`.
+- Post-merge verification proved exactly one squash commit above `d4931eb7822d844cf74b3a60e593c35b00b1cfce` and exactly the qualified 10-path delta.
+- Post-Sprint160 reconciliation envelope: six paths; SHA-256 `388c671587b1d0e21206260c5f0003fb215d606df494eaa528b1e6d839de7847`.
+- **Operational boundaries / NO-GO:** target selection remains blocked/null; migration #27 remains `NOT_EXECUTED`; permission provisioning remains `NONE`; real capability/dependency evidence remains `NONE`; Final Shift Close runtime allowlist remains Local/Test/CI; feature activation remains `INACTIVE`; deployment authority remains `NOT_GRANTED`; Technical Preview/Production remain `NOT_AUTHORIZED`; updater remains `INACTIVE`.
+- **Next position:** Sprint161 bounded discovery from canonical post-Sprint160; no objective or source envelope is preselected.
+
 ## 2026-09-14 — Sprint159 closed
 
 **Sprint159: operational POS sale correction workspace**
@@ -50,7 +82,7 @@ Current project-state authority: [`PROJECT_MANIFEST.md`](PROJECT_MANIFEST.md).
 
 **Sprint157: operational POS cashier sale-entry workspace**
 
-- Added scoped cashier read models, active positive-stock catalog, exact-device active-shift readiness, guarded Vue/Inertia cashier UI, and executable regression.
+- Added scoped cashier workspace read models, active positive-stock catalog, exact-device active-shift readiness, guarded Vue/Inertia cashier UI, and executable regression.
 - Reused canonical `pos.sales.complete` mutation authority and existing deny-by-default sale permission.
 - Engineering PR #732 squash merged at `b4d21b208a0580f4b40565b028dd6aed9bb190b8`.
 
