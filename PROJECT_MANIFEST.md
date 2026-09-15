@@ -7,51 +7,50 @@
 
 ## Current canonical engineering checkpoint
 
-**Canonical engineering checkpoint:** Sprint173
-**Objective:** `INSTALLATION_RELEASE_RUNTIME_REQUIREMENTS_READINESS`
-**Canonical engineering commit:** `933b06d0790834fb830ca9a55b443db69eca65f0`
-**Engineering PR:** #771 — `Sprint173: govern installation runtime requirements by release manifest v2`
-**Final engineering head:** `494503122ebf273fbfcc0791c5afca0e24bb5b29`
-**Sprint173 regression:** `34991613421` — successful
-**Governance Required Checks:** `34991613429` — successful
-**PHP Foundation Regression:** `34991613314` — successful
-**M7.1 Application Regression:** `34991613882` — successful
-**Engineering envelope:** 3 paths — `83593746e455ea2aa7353482e6b1c35faac4c740b2b9bb897e93bcc71fc1748b`
-**Sprint169 successor-compatibility correction:** PR #769 — squash `e28c2b01aa76ad770896c6eb21b398e8cb188fdb`
-**Canonical reconciliation envelope:** 6 paths — `319054712753f696394ff98959688230e9091065fcdae394f7231bd9b6a01ab6`
-**Next position:** Sprint174 bounded discovery from the fully reconciled Sprint173 checkpoint; no objective preselected.
+**Canonical engineering checkpoint:** Sprint174
+**Objective:** `INSTALLATION_RELEASE_COMPATIBILITY_POLICY_READINESS`
+**Canonical engineering commit:** `3937cfc56d2615262160c9592d204715eb80ec89`
+**Engineering PR:** #773 — `Sprint174: add governed release compatibility policy readiness`
+**Final engineering head:** `6db7c94a7eef99f5f1281f11c524a7d7e32d1968`
+**Sprint174 regression:** `34996139756` — successful
+**Governance Required Checks:** `34996139846` — successful
+**PHP Foundation Regression:** `34996138931` — successful
+**M7.1 Application Regression:** `34996140085` — successful
+**Engineering envelope:** 3 paths — `1f4a5333d32f79e57ac51d8c9ea8b1a1b3b0342d58b6439fbfe127d3a235aa91`
+**Canonical reconciliation envelope:** 6 paths — `c620402ddfb186f47fd0994f5751c3453811f08ca870400478442a1f9095075b`
+**Previous canonical checkpoint:** Sprint173 reconciliation `34b2c4ddca636c3d36f4697ef4eb3f962cef211e`
+**Next position:** Sprint175 bounded discovery from the fully reconciled Sprint174 checkpoint; no objective preselected.
 
-> `933b06d0790834fb830ca9a55b443db69eca65f0` is the canonical Sprint173 engineering evidence. Neither the Sprint169 compatibility correction nor the reconciliation squash may replace it as the canonical engineering commit.
+> `3937cfc56d2615262160c9592d204715eb80ec89` is the canonical Sprint174 engineering evidence. The future Sprint174 reconciliation squash must not replace it as the canonical engineering commit.
 
 ## 1. Purpose / Why
 
-Sprint173 closes a release/installer correctness gap proven from `INSTALLER.md` and `RELEASE.md`: PHP minimum version and required extensions must be versioned by the governed release manifest, not owned as unversioned installer hardcode. The prior readiness owner still embedded its own required-extension list and fixed PHP minimum, which could drift from an immutable release artifact's actual runtime contract.
+Sprint174 closes a governed release-contract gap proven from `RELEASE.md`: installation readiness previously validated release identity, runtime requirements, artifact integrity, and migration classification, but did not fail closed on the full compatibility policy required to decide whether an immutable release is safe for an existing installation context.
 
 ## 2. What changed
 
-- Reused canonical `App\Infrastructure\Installation\SecureInstallationReadiness`; no parallel installer or release-readiness owner was introduced.
-- Added governed manifest `runtime_requirements` containing bounded `php_min` and `php_extensions` requirements.
-- Removed installer-owned `REQUIRED_EXTENSIONS` hardcode.
-- PHP version and loaded-extension readiness now derive from the governed release manifest supplied to the assessment.
-- Runtime requirements validate a bounded semantic PHP version shape, a non-empty extension set, safe extension identifiers, a maximum of 64 entries, and case-insensitive duplicate rejection.
-- Missing, malformed, duplicated, or unsafe runtime requirements fail closed without echoing untrusted runtime values.
-- Changing a valid manifest runtime contract changes readiness without source modification.
-- Existing environment/key/debug/HTTPS, filesystem-write, governed artifact identity/integrity, deterministic database compatibility, and redaction controls remain preserved.
+- Reused canonical `App\Infrastructure\Installation\SecureInstallationReadiness`; no parallel release validator or installer owner was introduced.
+- Governed Release Manifest v1 now requires a bounded `compatibility_policy`.
+- Compatibility policy requires release version, build/provenance reference, supported-current-version range, deployment compatibility, rollback compatibility, public-bootstrap/layout compatibility, and release-notes reference.
+- Release version and supported-current-version range use bounded semantic-version validation; inverted ranges fail closed.
+- Build provenance and release-notes references use bounded safe-reference validation.
+- Deployment and public-bootstrap/layout compatibility values use bounded uppercase policy tokens.
+- Rollback compatibility is constrained to `NO_SCHEMA_CHANGE_ROLLBACK_SAFE`, consistent with the current no-schema-change release boundary.
+- Missing or malformed policy makes both release-manifest readiness and artifact-integrity readiness fail closed without echoing untrusted policy values.
+- Existing PHP/runtime, environment/key/debug/HTTPS, filesystem-write, governed artifact identity/integrity, deterministic database compatibility, and redaction controls remain preserved.
 - No artifact download/extraction, network/database connection, environment/schema/configuration mutation, migration/seeder execution, credential or administrator provisioning, installer exposure, release publication, updater activation, deployment, Technical Preview, Production, durable-target selection, or producer dispatch was introduced.
 
 ## 3. Evidence / Qualification
 
-- Parent corrected canonical base: `e28c2b01aa76ad770896c6eb21b398e8cb188fdb`.
-- Exact engineering head: `494503122ebf273fbfcc0791c5afca0e24bb5b29`.
-- Dedicated Sprint173 run `34991613421`: successful.
-- Governance `34991613429`, PHP Foundation `34991613314`, and M7.1 `34991613882`: successful.
-- Surfaced Sprint169–Sprint172, POS successor, and Final Shift Close historical controls completed successfully on the exact engineering head.
+- Canonical parent: `34b2c4ddca636c3d36f4697ef4eb3f962cef211e`.
+- Exact engineering head: `6db7c94a7eef99f5f1281f11c524a7d7e32d1968`.
+- Dedicated Sprint174 run `34996139756`: successful.
+- Governance `34996139846`, PHP Foundation `34996138931`, and M7.1 `34996140085`: successful.
+- Surfaced Sprint169–Sprint173, POS successor, and Final Shift Close historical controls completed successfully on the exact engineering head.
 - Repository-native Product Owner merge authority verified on the exact engineering head.
-- Engineering PR #771 squash merged at `933b06d0790834fb830ca9a55b443db69eca65f0`.
-- Engineering envelope: exactly 3 paths; SHA-256 `83593746e455ea2aa7353482e6b1c35faac4c740b2b9bb897e93bcc71fc1748b`.
-- Superseded PR #768 surfaced a stale Sprint169 workflow assertion requiring `REQUIRED_EXTENSIONS` and was closed unmerged.
-- Workflow-only correction PR #769 squash merged at `e28c2b01aa76ad770896c6eb21b398e8cb188fdb`; application source and operational state were unchanged.
-- Canonical reconciliation envelope: exactly 6 paths; SHA-256 `319054712753f696394ff98959688230e9091065fcdae394f7231bd9b6a01ab6`.
+- Engineering PR #773 squash merged at `3937cfc56d2615262160c9592d204715eb80ec89`.
+- Engineering envelope: exactly 3 paths; SHA-256 `1f4a5333d32f79e57ac51d8c9ea8b1a1b3b0342d58b6439fbfe127d3a235aa91`.
+- Canonical reconciliation envelope: exactly 6 paths; SHA-256 `c620402ddfb186f47fd0994f5751c3453811f08ca870400478442a1f9095075b`.
 
 ## 4. Operational boundaries / NO-GO
 
@@ -69,11 +68,11 @@ Machine-readable operational authority under `ops/final-shift-close/` remains au
 - Technical Preview / Production: `NOT_AUTHORIZED`;
 - updater: `INACTIVE`.
 
-Runtime manifest readiness does not grant release publication, artifact transport/extraction, database execution, migration, administrator creation, environment mutation, installer exposure, deployment, updater activation, or runtime activation authority.
+Release compatibility-policy readiness grants no authority to publish, transport, extract, install, migrate, provision, expose, update, deploy, or activate any runtime.
 
 ## 5. Next position
 
-Begin Sprint174 bounded discovery only after Sprint173 canonical reconciliation closes. Prioritize the smallest material non-duplicative P0/P1 business-completeness or production-readiness gap. Do not preselect download/extraction, database execution, administrator creation, environment mutation, migration/seeder execution, installer exposure, updater activation, deployment, or operational activation.
+Begin Sprint175 bounded discovery only after Sprint174 canonical reconciliation closes. Prioritize the smallest material non-duplicative P0/P1 business-completeness or production-readiness gap. Host/platform capability readiness remains a candidate from installer Step 2, but it is not preselected; live canonical evidence must prove the next objective.
 
 ## Documentation responsibility
 
