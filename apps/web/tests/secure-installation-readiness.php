@@ -22,11 +22,21 @@ $productionEnvironment = [
     'APP_KEY' => 'base64:secure-installation-key',
     'APP_URL' => 'https://oneqay.example.test',
     'APP_DEBUG' => 'false',
-    'DB_CONNECTION' => 'mysql',
-    'DB_HOST' => '127.0.0.1',
-    'DB_DATABASE' => 'oneqay',
-    'DB_USERNAME' => 'oneqay',
-    'DB_PASSWORD' => 'must-never-appear-in-output',
+    'ONEQAY_DB_DRIVER' => 'mysql',
+    'ONEQAY_DB_HOST' => '127.0.0.1',
+    'ONEQAY_DB_DATABASE' => 'oneqay',
+    'ONEQAY_DB_USERNAME' => 'oneqay',
+    'ONEQAY_DB_PASSWORD' => 'must-never-appear-in-output',
+];
+$databaseState = [
+    'connected' => true,
+    'engine' => 'mysql',
+    'server_version' => '8.0.36',
+    'charset' => 'utf8mb4',
+    'timezone' => '+00:00',
+    'schema_state' => 'empty',
+    'least_privilege' => true,
+    'connection_detail' => 'database-secret-must-never-appear',
 ];
 $releaseManifest = [
     'schema_version' => 1,
@@ -49,13 +59,15 @@ $artifactState = [
     'sha256' => str_repeat('b', 64),
 ];
 
-$ready = $subject->assess($productionEnvironment, $extensions, '8.3.0', $writablePaths, $releaseManifest, $artifactState);
+$ready = $subject->assess($productionEnvironment, $extensions, '8.3.0', $writablePaths, $releaseManifest, $artifactState, $databaseState);
 assert($ready['ready'] === true);
+assert($ready['checks']['database_compatibility']['ready'] === true);
 assert($ready['checks']['filesystem_write']['ready'] === true);
 assert($ready['checks']['release_manifest']['ready'] === true);
 assert($ready['checks']['artifact_integrity']['ready'] === true);
 $encodedReady = json_encode($ready, JSON_THROW_ON_ERROR);
 assert(! str_contains($encodedReady, 'must-never-appear-in-output'));
+assert(! str_contains($encodedReady, 'database-secret-must-never-appear'));
 assert(! str_contains($encodedReady, 'manifest-secret-must-never-appear'));
 assert(! str_contains($encodedReady, str_repeat('b', 64)));
 
@@ -64,54 +76,112 @@ $missingDatabase = $subject->assess([
     'APP_KEY' => 'base64:secure-installation-key',
     'APP_URL' => 'https://oneqay.example.test',
     'APP_DEBUG' => 'false',
-], $extensions, '8.3.0', $writablePaths, $releaseManifest, $artifactState);
+], $extensions, '8.3.0', $writablePaths, $releaseManifest, $artifactState, $databaseState);
 assert($missingDatabase['ready'] === false);
 assert($missingDatabase['checks']['environment']['ready'] === false);
+assert($missingDatabase['checks']['database_compatibility']['ready'] === false);
 
-$unsafeProduction = $subject->assess([
+$legacyDatabaseKeys = [
     'APP_ENV' => 'production',
-    'APP_KEY' => 'changeme',
-    'APP_URL' => 'http://oneqay.example.test',
-    'APP_DEBUG' => 'true',
+    'APP_KEY' => 'base64:secure-installation-key',
+    'APP_URL' => 'https://oneqay.example.test',
+    'APP_DEBUG' => 'false',
     'DB_CONNECTION' => 'mysql',
     'DB_HOST' => '127.0.0.1',
     'DB_DATABASE' => 'oneqay',
     'DB_USERNAME' => 'oneqay',
-], $extensions, '8.3.0', $writablePaths, $releaseManifest, $artifactState);
-assert($unsafeProduction['ready'] === false);
-assert($unsafeProduction['checks']['application_key']['ready'] === false);
-assert($unsafeProduction['checks']['production_debug']['ready'] === false);
-assert($unsafeProduction['checks']['production_https']['ready'] === false);
+];
+$legacyDatabaseFailure = $subject->assess($legacyDatabaseKeys, $extensions, '8.3.0', $writablePaths, $releaseManifest, $artifactState, $databaseState);
+assert($legacyDatabaseFailure['ready'] === false);
+assert($legacyDatabaseFailure['checks']['environment']['ready'] === false);
+assert($legacyDatabaseFailure['checks']['database_compatibility']['ready'] === false);
 
-$missingExtension = $subject->assess([
-    'APP_ENV' => 'testing',
-    'APP_KEY' => 'base64:secure-installation-key',
-    'APP_URL' => 'http://localhost',
-    'APP_DEBUG' => 'false',
-    'DB_CONNECTION' => 'sqlite',
-    'DB_HOST' => 'localhost',
-    'DB_DATABASE' => ':memory:',
-    'DB_USERNAME' => 'test',
-], array_values(array_filter($extensions, static fn (string $extension): bool => $extension !== 'openssl')), '8.3.0', $writablePaths, $releaseManifest, $artifactState);
+$unsafeProduction = $productionEnvironment;
+$unsafeProduction['APP_KEY'] = 'changeme';
+$unsafeProduction['APP_URL'] = 'http://oneqay.example.test';
+$unsafeProduction['APP_DEBUG'] = 'true';
+$unsafeProductionFailure = $subject->assess($unsafeProduction, $extensions, '8.3.0', $writablePaths, $releaseManifest, $artifactState, $databaseState);
+assert($unsafeProductionFailure['ready'] === false);
+assert($unsafeProductionFailure['checks']['application_key']['ready'] === false);
+assert($unsafeProductionFailure['checks']['production_debug']['ready'] === false);
+assert($unsafeProductionFailure['checks']['production_https']['ready'] === false);
+
+$missingExtension = $subject->assess($productionEnvironment, array_values(array_filter($extensions, static fn (string $extension): bool => $extension !== 'openssl')), '8.3.0', $writablePaths, $releaseManifest, $artifactState, $databaseState);
 assert($missingExtension['ready'] === false);
 assert($missingExtension['checks']['php_extensions']['ready'] === false);
 
-$oldPhp = $subject->assess([
-    'APP_ENV' => 'testing',
-    'APP_KEY' => 'base64:secure-installation-key',
-    'APP_URL' => 'http://localhost',
-    'APP_DEBUG' => 'false',
-    'DB_CONNECTION' => 'sqlite',
-    'DB_HOST' => 'localhost',
-    'DB_DATABASE' => ':memory:',
-    'DB_USERNAME' => 'test',
-], $extensions, '8.1.0', $writablePaths, $releaseManifest, $artifactState);
+$oldPhp = $subject->assess($productionEnvironment, $extensions, '8.1.0', $writablePaths, $releaseManifest, $artifactState, $databaseState);
 assert($oldPhp['ready'] === false);
 assert($oldPhp['checks']['php_version']['ready'] === false);
 
+$disconnectedDatabase = $databaseState;
+$disconnectedDatabase['connected'] = false;
+$disconnectedFailure = $subject->assess($productionEnvironment, $extensions, '8.3.0', $writablePaths, $releaseManifest, $artifactState, $disconnectedDatabase);
+assert($disconnectedFailure['ready'] === false);
+assert($disconnectedFailure['checks']['database_compatibility']['ready'] === false);
+
+$foreignEngine = $databaseState;
+$foreignEngine['engine'] = 'postgresql';
+$engineFailure = $subject->assess($productionEnvironment, $extensions, '8.3.0', $writablePaths, $releaseManifest, $artifactState, $foreignEngine);
+assert($engineFailure['ready'] === false);
+assert($engineFailure['checks']['database_compatibility']['ready'] === false);
+assert(! str_contains(json_encode($engineFailure, JSON_THROW_ON_ERROR), 'postgresql'));
+
+$invalidVersion = $databaseState;
+$invalidVersion['server_version'] = 'unknown-version-secret';
+$versionFailure = $subject->assess($productionEnvironment, $extensions, '8.3.0', $writablePaths, $releaseManifest, $artifactState, $invalidVersion);
+assert($versionFailure['ready'] === false);
+assert($versionFailure['checks']['database_compatibility']['ready'] === false);
+assert(! str_contains(json_encode($versionFailure, JSON_THROW_ON_ERROR), 'unknown-version-secret'));
+
+$wrongCharset = $databaseState;
+$wrongCharset['charset'] = 'latin1';
+$charsetFailure = $subject->assess($productionEnvironment, $extensions, '8.3.0', $writablePaths, $releaseManifest, $artifactState, $wrongCharset);
+assert($charsetFailure['ready'] === false);
+assert($charsetFailure['checks']['database_compatibility']['ready'] === false);
+
+$wrongTimezone = $databaseState;
+$wrongTimezone['timezone'] = '+07:00';
+$timezoneFailure = $subject->assess($productionEnvironment, $extensions, '8.3.0', $writablePaths, $releaseManifest, $artifactState, $wrongTimezone);
+assert($timezoneFailure['ready'] === false);
+assert($timezoneFailure['checks']['database_compatibility']['ready'] === false);
+
+$unknownSchema = $databaseState;
+$unknownSchema['schema_state'] = 'foreign';
+$schemaStateFailure = $subject->assess($productionEnvironment, $extensions, '8.3.0', $writablePaths, $releaseManifest, $artifactState, $unknownSchema);
+assert($schemaStateFailure['ready'] === false);
+assert($schemaStateFailure['checks']['database_compatibility']['ready'] === false);
+
+$overPrivileged = $databaseState;
+$overPrivileged['least_privilege'] = false;
+$privilegeFailure = $subject->assess($productionEnvironment, $extensions, '8.3.0', $writablePaths, $releaseManifest, $artifactState, $overPrivileged);
+assert($privilegeFailure['ready'] === false);
+assert($privilegeFailure['checks']['database_compatibility']['ready'] === false);
+
+$missingDatabaseState = $databaseState;
+unset($missingDatabaseState['schema_state']);
+$missingDatabaseStateFailure = $subject->assess($productionEnvironment, $extensions, '8.3.0', $writablePaths, $releaseManifest, $artifactState, $missingDatabaseState);
+assert($missingDatabaseStateFailure['ready'] === false);
+assert($missingDatabaseStateFailure['checks']['database_compatibility']['ready'] === false);
+assert(str_contains($missingDatabaseStateFailure['checks']['database_compatibility']['reason'], 'schema_state'));
+
+$mariaDbState = $databaseState;
+$mariaDbState['engine'] = 'mariadb';
+$mariaDbState['server_version'] = '10.11.6-MariaDB';
+$mariaDbState['schema_state'] = 'recognized';
+$mariaDbReady = $subject->assess($productionEnvironment, $extensions, '8.3.0', $writablePaths, $releaseManifest, $artifactState, $mariaDbState);
+assert($mariaDbReady['ready'] === true);
+assert($mariaDbReady['checks']['database_compatibility']['ready'] === true);
+
+$unsupportedConfiguredDriver = $productionEnvironment;
+$unsupportedConfiguredDriver['ONEQAY_DB_DRIVER'] = 'pgsql';
+$driverFailure = $subject->assess($unsupportedConfiguredDriver, $extensions, '8.3.0', $writablePaths, $releaseManifest, $artifactState, $databaseState);
+assert($driverFailure['ready'] === false);
+assert($driverFailure['checks']['database_compatibility']['ready'] === false);
+
 $unwritable = $writablePaths;
 $unwritable['storage/framework/views'] = false;
-$filesystemFailure = $subject->assess($productionEnvironment, $extensions, '8.3.0', $unwritable, $releaseManifest, $artifactState);
+$filesystemFailure = $subject->assess($productionEnvironment, $extensions, '8.3.0', $unwritable, $releaseManifest, $artifactState, $databaseState);
 assert($filesystemFailure['ready'] === false);
 assert($filesystemFailure['checks']['filesystem_write']['ready'] === false);
 assert(str_contains($filesystemFailure['checks']['filesystem_write']['reason'], 'storage/framework/views'));
@@ -119,51 +189,51 @@ assert(! str_contains($filesystemFailure['checks']['filesystem_write']['reason']
 
 $missingPathState = $writablePaths;
 unset($missingPathState['storage/logs']);
-$missingPath = $subject->assess($productionEnvironment, $extensions, '8.3.0', $missingPathState, $releaseManifest, $artifactState);
+$missingPath = $subject->assess($productionEnvironment, $extensions, '8.3.0', $missingPathState, $releaseManifest, $artifactState, $databaseState);
 assert($missingPath['ready'] === false);
 assert(str_contains($missingPath['checks']['filesystem_write']['reason'], 'storage/logs'));
 
-$missingManifest = $subject->assess($productionEnvironment, $extensions, '8.3.0', $writablePaths, null, null);
+$missingManifest = $subject->assess($productionEnvironment, $extensions, '8.3.0', $writablePaths, null, null, $databaseState);
 assert($missingManifest['ready'] === false);
 assert($missingManifest['checks']['release_manifest']['ready'] === false);
 assert($missingManifest['checks']['artifact_integrity']['ready'] === false);
 
 $unsupportedSchema = $releaseManifest;
 $unsupportedSchema['schema_version'] = 2;
-$schemaFailure = $subject->assess($productionEnvironment, $extensions, '8.3.0', $writablePaths, $unsupportedSchema, $artifactState);
+$schemaFailure = $subject->assess($productionEnvironment, $extensions, '8.3.0', $writablePaths, $unsupportedSchema, $artifactState, $databaseState);
 assert($schemaFailure['ready'] === false);
 assert($schemaFailure['checks']['release_manifest']['ready'] === false);
 
 $foreignRepository = $releaseManifest;
 $foreignRepository['repository'] = 'someone/else';
-$repositoryFailure = $subject->assess($productionEnvironment, $extensions, '8.3.0', $writablePaths, $foreignRepository, $artifactState);
+$repositoryFailure = $subject->assess($productionEnvironment, $extensions, '8.3.0', $writablePaths, $foreignRepository, $artifactState, $databaseState);
 assert($repositoryFailure['ready'] === false);
 assert($repositoryFailure['checks']['release_manifest']['ready'] === false);
 assert(! str_contains(json_encode($repositoryFailure, JSON_THROW_ON_ERROR), 'someone/else'));
 
 $schemaChangingRelease = $releaseManifest;
 $schemaChangingRelease['migration_classification'] = 'REQUIRES_MIGRATION';
-$migrationFailure = $subject->assess($productionEnvironment, $extensions, '8.3.0', $writablePaths, $schemaChangingRelease, $artifactState);
+$migrationFailure = $subject->assess($productionEnvironment, $extensions, '8.3.0', $writablePaths, $schemaChangingRelease, $artifactState, $databaseState);
 assert($migrationFailure['ready'] === false);
 assert($migrationFailure['checks']['release_manifest']['ready'] === false);
 
 $unsafeFilename = $releaseManifest;
 $unsafeFilename['artifact_filename'] = '../oneqay.tar.gz';
-$filenameFailure = $subject->assess($productionEnvironment, $extensions, '8.3.0', $writablePaths, $unsafeFilename, $artifactState);
+$filenameFailure = $subject->assess($productionEnvironment, $extensions, '8.3.0', $writablePaths, $unsafeFilename, $artifactState, $databaseState);
 assert($filenameFailure['ready'] === false);
 assert($filenameFailure['checks']['release_manifest']['ready'] === false);
 assert(! str_contains(json_encode($filenameFailure, JSON_THROW_ON_ERROR), '../oneqay.tar.gz'));
 
 $digestMismatch = $artifactState;
 $digestMismatch['sha256'] = str_repeat('c', 64);
-$digestFailure = $subject->assess($productionEnvironment, $extensions, '8.3.0', $writablePaths, $releaseManifest, $digestMismatch);
+$digestFailure = $subject->assess($productionEnvironment, $extensions, '8.3.0', $writablePaths, $releaseManifest, $digestMismatch, $databaseState);
 assert($digestFailure['ready'] === false);
 assert($digestFailure['checks']['artifact_integrity']['ready'] === false);
 assert(! str_contains(json_encode($digestFailure, JSON_THROW_ON_ERROR), str_repeat('c', 64)));
 
 $sizeMismatch = $artifactState;
 $sizeMismatch['size'] = 1048575;
-$sizeFailure = $subject->assess($productionEnvironment, $extensions, '8.3.0', $writablePaths, $releaseManifest, $sizeMismatch);
+$sizeFailure = $subject->assess($productionEnvironment, $extensions, '8.3.0', $writablePaths, $releaseManifest, $sizeMismatch, $databaseState);
 assert($sizeFailure['ready'] === false);
 assert($sizeFailure['checks']['artifact_integrity']['ready'] === false);
 
