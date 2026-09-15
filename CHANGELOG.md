@@ -1,42 +1,34 @@
 # Changelog
 
-## 2026-09-15 — Sprint168 closed
+## 2026-09-15 — Sprint169 closed
 
-**Sprint168: POS shift history performance workspace**
+**Sprint169: Secure Installation Readiness Foundation**
 
-- **Purpose / Why:** Sprint167 closed live exact-device shift visibility, but operators still lacked durable read-only historical visibility across closed outlet shifts and devices.
-- **Objective / Gap:** `POS_SHIFT_HISTORY_PERFORMANCE_WORKSPACE`.
-- Added exact tenant + organization + outlet closed-shift history with deliberate same-outlet cross-device scope.
-- Eligible history requires `active_slot IS NULL` and exactly one canonical Final Shift Close evidence row.
-- Lists the newest 50 closed shifts; selected shift defaults to newest when omitted.
-- Validates opener/closer/device/open-close/cutoff identity and expected/observed/variance/review arithmetic.
-- Derives selected-shift completed-sale, full-sale-void, and CASH-refund performance by tender + currency + scale.
-- Active net value equals gross minus full-sale void; CASH refund remains separate and is not subtracted twice.
-- Legacy null-shift sales inside the shift window fail closed.
-- Foreign-scope/outside-window evidence, malformed tender/evidence, inconsistent void/refund evidence, numeric overflow, more than 64 buckets, or missing close evidence fail closed.
-- Reused existing `pos.reporting.sales-summary.view`; no new permission or provisioning was introduced.
-- Added guarded `GET /pos/reporting/shift-history/{shiftId?}` / `pos.reporting.shift-history` behind default-false `ONEQAY_POS_SHIFT_HISTORY_PERFORMANCE_ENABLED`.
-- Delivery remains Local/Test/CI + persistence + operational-reporting + exact-session gated and depends on existing `ONEQAY_POS_SHIFT_CLOSE_ENABLED` source/runtime readiness.
-- POS Operations Hub discovery remains permission + `Route::has()` guarded.
-- Added responsive Vue/Inertia read-only UI and focused SQLite regression.
-- Shared permission registry, global routes/providers, schema/migrations, existing mutation owners, Final Shift Close provider, deployment, and updater remained untouched.
-- Exact engineering head `05652fc5b11fdad7bb11e9c992f79d6f5436e29d` completed the surfaced PR-triggered matrix successfully.
-- Sprint168 regression `34921162121`, M7.1 `34921161920`, Governance `34921162056`, PHP Foundation `34921162098`, POS successor regressions, and surfaced Final Shift Close historical controls succeeded.
-- Repository-native exact-head Product Owner merge authority verified successfully.
-- Engineering envelope: 12 paths; SHA-256 `d42a5a7d8568766e524ff662107ffdb35452d4f9ac00f26cdc8e419d36bc3c25`.
-- Engineering PR #754 squash merged at `d3703a6b18f478acd812e7892c3871ce3aaf7bfa`.
-- Canonical reconciliation envelope: six paths; SHA-256 `350fd16d111bb398c34a63e1519cc02206bcc373378a9366768c198ccf8146b5`.
-- **Operational boundaries / NO-GO:** selected target remains `null`; migration #27 `NOT_EXECUTED`; permission provisioning `NONE`; feature activation `INACTIVE`; deployment authority `NOT_GRANTED`; Technical Preview/Production `NOT_AUTHORIZED`; updater `INACTIVE`.
-- **Next position:** Sprint169 bounded discovery from canonical post-Sprint168; no objective or source envelope preselected.
+- **Objective:** `SECURE_INSTALLATION_READINESS_FOUNDATION`.
+- Established canonical installation infrastructure owner `App\Infrastructure\Installation\SecureInstallationReadiness`.
+- Added deterministic, read-only and fail-closed checks for PHP >= 8.2, required PHP extensions, required environment configuration, application-key readiness, production debug posture, and HTTPS production URL posture.
+- Readiness output is redacted; supplied database credentials are not echoed.
+- Missing configuration, placeholder key, missing extension, unsupported runtime, production debug mode, or insecure production URL fail readiness.
+- Added focused PHP regression and dedicated Sprint169 preservation workflow.
+- No installer route, environment mutation, administrator creation, migration execution, permission provisioning, deployment, updater activation, or operational activation was introduced.
+- Exact engineering head `5d2b27404352da7f81723f08977de34aef00faf7` completed surfaced PR-triggered qualification successfully.
+- Sprint169 regression `34936197402`, Governance `34936197759`, PHP Foundation `34936197571`, and M7.1 `34936197394` succeeded.
+- Repository-native Product Owner merge authorization applied to the exact engineering head.
+- Engineering envelope: 3 paths; SHA-256 `2bfeedcabc1a09617876a6ce0719cb31a3246c157ad78472feda5db18f9c4fd1`.
+- Engineering PR #756 squash merged at `2a53d9db9547340bd4d791b34fabb80ec600fc8b`.
+- Canonical reconciliation envelope: 6 paths; SHA-256 `7f6b2b61e87d8891dc3c4d1a047ac92f9209d3286c445e77518f796179ce4d93`.
+- **Operational NO-GO preserved:** migration #27 `NOT_EXECUTED`; permission provisioning `NONE`; selected durable target `null`; feature activation `INACTIVE`; deployment `NOT_GRANTED`; Technical Preview/Production `NOT_AUTHORIZED`; updater `INACTIVE`.
+- **Next position:** Sprint170 bounded discovery from canonical post-Sprint169, prioritizing material P0/P1 production-readiness or business-completeness work.
 
 ## Recent material progression
 
-- **Sprint167:** read-only current exact-device active-shift performance; engineering squash `dbdf0aa90a6d6127cf10113ec8c1092b8780504f`.
-- **Sprint166:** read-only product/currency sales performance; engineering squash `e2758d0170a081953aaae11711ecc1ec3c0f8e78`.
-- **Sprint165:** read-only inventory accountability; engineering squash `dc6340c04ac710bd38966d897b27e23fd92c0a41`.
-- **Sprint164:** positive-only inventory replenishment; engineering squash `d37ecdfa16d3f024de840871aa202af4fb5ee7d1`.
-- **Sprint163:** operational cash-variance reconciliation workspace; engineering squash `a920e63c1a1d2623664b416422c3d5a471e389a6`.
-- **Sprint162:** guarded POS operations hub; engineering squash `332bcff11b40307d350c7ce5b3a6c08913c4251c`.
+- **Sprint168:** closed-shift historical POS performance; engineering squash `d3703a6b18f478acd812e7892c3871ce3aaf7bfa`.
+- **Sprint167:** live active-shift POS performance.
+- **Sprint166:** product-level sales performance.
+- **Sprint165:** inventory accountability.
+- **Sprint164:** positive-only inventory replenishment.
+- **Sprint163:** cash-variance reconciliation.
+- **Sprint162:** guarded POS operations hub.
 - **Sprint156–Sprint161:** operational reporting, cashier, shift start, sale correction, immutable sale history/receipt detail, and catalog/opening-inventory setup.
 - **Sprint88–Sprint155:** Final Shift Close source/readiness chain; operational execution did not occur.
 
