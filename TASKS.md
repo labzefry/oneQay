@@ -1,32 +1,35 @@
 # oneQay Tasks
 
-**Current canonical engineering checkpoint:** Sprint169 closed
-**Canonical engineering commit:** `2a53d9db9547340bd4d791b34fabb80ec600fc8b`
-**Latest engineering PR:** #756 — `Sprint169: secure installation readiness foundation`
+**Current canonical engineering checkpoint:** Sprint170 closed  
+**Canonical engineering commit:** `aa46ad0752f8ae2da145eb0c0f6324a3c5be6f25`  
+**Latest engineering PR:** #758 — `Sprint170: add installation filesystem readiness`  
 **Canonical status authority:** `PROJECT_MANIFEST.md`
 
-## Completed Sprint169 state
+## Completed Sprint170 state
 
-Sprint169 materialized `SECURE_INSTALLATION_READINESS_FOUNDATION` as the first bounded executable installer-readiness source owner.
+Sprint170 materialized `INSTALLATION_FILESYSTEM_READINESS` as the next bounded installer production-readiness prerequisite.
 
-- [x] Canonical installation infrastructure owner established.
-- [x] PHP minimum-version readiness check.
-- [x] Required PHP-extension readiness check.
-- [x] Required environment-configuration presence check.
-- [x] Application key missing/placeholder fail-closed behavior.
-- [x] Production debug posture validation.
-- [x] Production HTTPS URL validation.
-- [x] Redacted readiness result; database credential sentinel absent from output.
-- [x] Read-only/non-destructive source contract.
+- [x] Canonical `SecureInstallationReadiness` owner reused.
+- [x] Required writable path set restricted to canonical Laravel runtime directories only.
+- [x] `bootstrap/cache` readiness qualified.
+- [x] `storage/framework/cache` readiness qualified.
+- [x] `storage/framework/sessions` readiness qualified.
+- [x] `storage/framework/views` readiness qualified.
+- [x] `storage/logs` readiness qualified.
+- [x] Missing path fails closed.
+- [x] Non-writable path fails closed.
+- [x] Relative-path evidence only; no secret leakage.
+- [x] Read-only implementation; no permission or directory mutation.
+- [x] Existing Sprint169 runtime/config/security readiness preserved.
 - [x] Focused PHP regression.
-- [x] Dedicated preservation workflow.
+- [x] Dedicated exact-envelope workflow.
 - [x] Exact-head PR qualification successful.
-- [x] Repository-native Product Owner merge authority applied.
-- [x] PR #756 squash merged at `2a53d9db9547340bd4d791b34fabb80ec600fc8b`.
+- [x] Repository-native Product Owner merge authority verified.
+- [x] PR #758 squash merged at `aa46ad0752f8ae2da145eb0c0f6324a3c5be6f25`.
 
-Engineering envelope: 3 paths; SHA-256 `2bfeedcabc1a09617876a6ce0719cb31a3246c157ad78472feda5db18f9c4fd1`.
+Engineering envelope: 3 paths; SHA-256 `7a86c9fbe8d4e87bbcdc3bf72ad618649d9d2cebfe20e2eba51f841ef685b877`.
 
-Canonical reconciliation envelope: 6 paths; SHA-256 `7f6b2b61e87d8891dc3c4d1a047ac92f9209d3286c445e77518f796179ce4d93`.
+Canonical reconciliation envelope: 6 paths; SHA-256 `76de10f095cf53b630f96da884ebf6c1f4e581c4dc0f773312415c7788669b98`.
 
 ## Preserved lifecycle state
 
@@ -34,6 +37,6 @@ Machine-readable operational state under `ops/final-shift-close/` remains author
 
 ## Next engineering position
 
-Begin **Sprint170 bounded discovery** only from fully reconciled Sprint169. Prioritize the smallest material non-duplicative P0/P1 business-completeness or production-readiness gap. Continue installation readiness only through a coherent bounded prerequisite such as deterministic writable-path/package/application prerequisite qualification; do not expose an installer or infer deployment/migration authority.
+Begin **Sprint171 bounded discovery** only from fully reconciled Sprint170. Prioritize the smallest material non-duplicative P0/P1 business-completeness or production-readiness gap. For installer progression, package/application prerequisite qualification is a candidate only after the gap is proven; do not preselect the objective and do not expose an installer or infer deployment/migration authority.
 
 Author by Lab | zefry
