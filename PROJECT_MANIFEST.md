@@ -7,49 +7,50 @@
 
 ## Current canonical engineering checkpoint
 
-**Canonical engineering checkpoint:** Sprint171
-**Objective:** `INSTALLATION_GOVERNED_RELEASE_ARTIFACT_READINESS`
-**Canonical engineering commit:** `cbf26a53c1a784b8e6eda65cc1d047c90ea590e8`
-**Engineering PR:** #760 — `Sprint171: add governed release artifact installation readiness`
-**Final engineering head:** `b2dbd36edb75174a944a77cc547811938e772ed0`
-**Sprint171 regression:** `34968787888` — successful
-**Governance Required Checks:** `34968787247` — successful
-**PHP Foundation Regression:** `34968787525` — successful
-**M7.1 Application Regression:** `34968787729` — successful
-**Engineering envelope:** 3 paths — `cf2f56c6ba42404726fe225a559b7262580191a9bf1c8b03c4ebf39fe2f29d88`
-**Workflow compatibility correction:** PR #762 — squash `1e568085d6b9743eb05c73fb9a78c019b8d82f04`
-**Canonical reconciliation envelope:** 6 paths — `a8627a615280e7592638964a5d7f496f77310ef28f085439f2ba584d6a97d301`
-**Next position:** Sprint172 bounded discovery from the fully reconciled Sprint171 checkpoint; no objective preselected.
+**Canonical engineering checkpoint:** Sprint172
+**Objective:** `INSTALLATION_DATABASE_CONFIGURATION_COMPATIBILITY_READINESS`
+**Canonical engineering commit:** `636a07130650f2d3119d450f35cfcfaf2868898e`
+**Engineering PR:** #764 — `Sprint172: add database configuration compatibility readiness`
+**Final engineering head:** `ab9716dc64c77a69da2c20fbafcc800d1114ef93`
+**Sprint172 regression:** `34979406742` — successful
+**Governance Required Checks:** `34979406633` — successful
+**PHP Foundation Regression:** `34979406379` — successful
+**M7.1 Application Regression:** `34979406335` — successful
+**Engineering envelope:** 3 paths — `c0a1726ad384717f91889af2f2ce0f433cfdae7a64b3be62dc6fadde16104d16`
+**Workflow compatibility correction:** PR #766 — squash `24fe2664eb294fe0142775ff0116006e0909f999`
+**Canonical reconciliation envelope:** 6 paths — `d43b48ac559bdee72e785c9187f4dec04bdce55be84d76baa0d76d28b5a6f304`
+**Next position:** Sprint173 bounded discovery from the fully reconciled Sprint172 checkpoint; no objective preselected.
 
-> `cbf26a53c1a784b8e6eda65cc1d047c90ea590e8` is the canonical Sprint171 engineering evidence. Neither the workflow-compatibility correction nor the reconciliation squash may replace it as the canonical engineering commit.
+> `636a07130650f2d3119d450f35cfcfaf2868898e` is the canonical Sprint172 engineering evidence. Neither the workflow-compatibility correction nor the reconciliation squash may replace it as the canonical engineering commit.
 
 ## 1. Purpose / Why
 
-Sprint171 closes the next material installer production-readiness prerequisite after filesystem readiness. The repository already defines a governed immutable release contract in `RELEASE.md` and ADR-009, but installation readiness had no executable boundary proving that a candidate manifest and observed artifact identity satisfy the minimum trusted release requirements before any download, extraction, or activation work.
+Sprint172 closes a material installer correctness gap discovered after Sprint171. The canonical Laravel database configuration reads `ONEQAY_DB_*`, while the preflight readiness contract still required stale `DB_*` keys. That mismatch could allow installation readiness to appear green for database configuration the application would not actually consume. `INSTALLER.md` also requires database connection/compatibility, charset, timezone, schema-state, and least-privilege checks before installation proceeds.
 
 ## 2. What changed
 
-- Extended canonical `App\Infrastructure\Installation\SecureInstallationReadiness`; no parallel installer or updater owner was introduced.
-- Added fail-closed installer-facing governed release manifest readiness for schema version, canonical product/repository identity, release ID/channel/source commit, safe artifact filename/type/size/SHA-256, migration classification, and `Lab | zefry` attribution.
-- Initial readiness accepts only manifest schema version `1` and migration classification `NO_SCHEMA_CHANGE`.
-- Added observed artifact identity verification for exact filename, byte size, and SHA-256 equality with the governed manifest.
-- Artifact digest comparison uses constant-time `hash_equals` after normalized hexadecimal validation.
-- Invalid or incomplete manifest/artifact state fails closed without echoing untrusted values, digests, filesystem paths, or supplied secrets.
-- Existing PHP runtime, extension, required environment, application-key, production-debug, HTTPS, and filesystem-write readiness remains preserved.
-- No arbitrary URL, network download, archive extraction, external signature/provenance verification claim, environment mutation, migration execution, administrator creation, installer route, deployment, updater activation, or production activation was introduced.
+- Reused canonical `App\Infrastructure\Installation\SecureInstallationReadiness`; no parallel installer or database-readiness owner was introduced.
+- Replaced stale installer-facing `DB_CONNECTION`, `DB_HOST`, `DB_DATABASE`, and `DB_USERNAME` requirements with canonical `ONEQAY_DB_DRIVER`, `ONEQAY_DB_HOST`, `ONEQAY_DB_DATABASE`, and `ONEQAY_DB_USERNAME` configuration keys.
+- Added deterministic observed database compatibility facts for connection state, engine, server-version shape, charset, timezone, schema state, and least-privilege posture.
+- Initial supported configured driver remains `mysql`; observed engine identity may be MySQL or MariaDB.
+- Requires `utf8mb4`, UTC / `+00:00`, recognized or empty schema state, and least-privilege evidence.
+- Invalid, incomplete, disconnected, unsupported-engine, incompatible-charset/timezone/schema, or non-least-privilege evidence fails closed without echoing database credentials or arbitrary server facts.
+- Existing Sprint169–Sprint171 runtime, environment, application-key, production-debug, HTTPS, filesystem-write, governed release manifest, artifact integrity, and redaction readiness remains preserved.
+- No PDO/network connection, database/schema/configuration mutation, migration execution, credential provisioning, installer route, release publication, artifact transport/extraction, updater activation, deployment, or production activation was introduced.
 
 ## 3. Evidence / Qualification
 
-- Parent canonical post-Sprint170 checkpoint: `ceeb02048236a0a88b2a5f725576ecc23b001d07`.
-- Exact engineering head: `b2dbd36edb75174a944a77cc547811938e772ed0`.
-- Dedicated Sprint171 run `34968787888`: successful.
-- Governance `34968787247`, PHP Foundation `34968787525`, and M7.1 `34968787729`: successful.
+- Parent canonical post-Sprint171 checkpoint: `920f31126c9560e6b94b132dfeeace0d0773f1ab`.
+- Exact engineering head: `ab9716dc64c77a69da2c20fbafcc800d1114ef93`.
+- Dedicated Sprint172 run `34979406742`: successful.
+- Governance `34979406633`, PHP Foundation `34979406379`, and M7.1 `34979406335`: successful.
 - Surfaced POS successor and Final Shift Close historical controls completed successfully on the exact engineering head.
 - Repository-native Product Owner merge authority verified on the exact engineering head.
-- Engineering PR #760 squash merged at `cbf26a53c1a784b8e6eda65cc1d047c90ea590e8`.
-- Engineering envelope: exactly 3 paths; SHA-256 `cf2f56c6ba42404726fe225a559b7262580191a9bf1c8b03c4ebf39fe2f29d88`.
-- Successor-compatibility debt surfaced by initial reconciliation PR #761 was corrected through workflow-only PR #762, squash `1e568085d6b9743eb05c73fb9a78c019b8d82f04`; application source and operational state were unchanged.
-- Canonical reconciliation envelope: exactly 6 paths; SHA-256 `a8627a615280e7592638964a5d7f496f77310ef28f085439f2ba584d6a97d301`.
+- Engineering PR #764 squash merged at `636a07130650f2d3119d450f35cfcfaf2868898e`.
+- Engineering envelope: exactly 3 paths; SHA-256 `c0a1726ad384717f91889af2f2ce0f433cfdae7a64b3be62dc6fadde16104d16`.
+- Initial reconciliation PR #765 surfaced stale Sprint171 successor-document evidence assumptions and was closed unmerged.
+- Workflow-only compatibility correction PR #766 squash merged at `24fe2664eb294fe0142775ff0116006e0909f999`; application source, Sprint172 engineering evidence, and operational state were unchanged.
+- Canonical reconciliation envelope: exactly 6 paths; SHA-256 `d43b48ac559bdee72e785c9187f4dec04bdce55be84d76baa0d76d28b5a6f304`.
 
 ## 4. Operational boundaries / NO-GO
 
@@ -67,11 +68,11 @@ Machine-readable operational authority under `ops/final-shift-close/` remains au
 - Technical Preview / Production: `NOT_AUTHORIZED`;
 - updater: `INACTIVE`.
 
-Release publication, artifact download/extraction, signature/provenance verification, installer exposure, deployment, and runtime activation remain separately gated. Sprint171 grants none of those authorities.
+Database connection execution, database mutation, migration execution, credential provisioning, installer exposure, release publication, artifact transport/extraction, deployment, and runtime activation remain separately gated. Sprint172 grants none of those authorities.
 
 ## 5. Next position
 
-Begin Sprint172 bounded discovery only after Sprint171 canonical reconciliation closes. Prioritize the smallest material non-duplicative P0/P1 business-completeness or production-readiness gap. Continue installer/release progression only where live repository discovery proves the next missing prerequisite; do not preselect download, extraction, activation, migration, privileged updater UI, or deployment work.
+Begin Sprint173 bounded discovery only after Sprint172 canonical reconciliation closes. Prioritize the smallest material non-duplicative P0/P1 business-completeness or production-readiness gap. Continue installer progression only where live repository evidence proves the next missing prerequisite; do not preselect database execution, administrator creation, environment mutation, migration/seeder execution, installer exposure, updater activation, deployment, or operational activation.
 
 ## Documentation responsibility
 
