@@ -55,8 +55,20 @@ final class SecureInstallationReadiness
         'artifact_size',
         'artifact_sha256',
         'runtime_requirements',
+        'compatibility_policy',
         'migration_classification',
         'attribution',
+    ];
+
+    /** @var list<string> */
+    private const REQUIRED_COMPATIBILITY_POLICY_KEYS = [
+        'release_version',
+        'build_provenance_ref',
+        'supported_current_version_range',
+        'deployment_compatibility',
+        'rollback_compatibility',
+        'public_bootstrap_layout_compatibility',
+        'release_notes_reference',
     ];
 
     /** @var list<string> */
@@ -181,9 +193,9 @@ final class SecureInstallationReadiness
         $manifestReady = $missingManifestKeys === [] && $this->isValidReleaseManifest($manifest);
         $checks['release_manifest'] = $this->check(
             $manifestReady,
-            'Governed release manifest identity, runtime requirements, and policy are valid.',
+            'Governed release manifest identity, runtime requirements, compatibility policy, and release policy are valid.',
             $missingManifestKeys === []
-                ? 'Governed release manifest identity, runtime requirements, or policy are invalid.'
+                ? 'Governed release manifest identity, runtime requirements, compatibility policy, or release policy are invalid.'
                 : 'Governed release manifest is incomplete: '.implode(', ', $missingManifestKeys).'.'
         );
 
@@ -303,6 +315,9 @@ final class SecureInstallationReadiness
         $runtimeRequirements = is_array($manifest['runtime_requirements'])
             ? $manifest['runtime_requirements']
             : [];
+        $compatibilityPolicy = is_array($manifest['compatibility_policy'])
+            ? $manifest['compatibility_policy']
+            : [];
 
         return $manifest['schema_version'] === 1
             && $manifest['product'] === 'oneQay'
@@ -316,8 +331,64 @@ final class SecureInstallationReadiness
             && $manifest['artifact_size'] > 0
             && preg_match('/\A[0-9a-f]{64}\z/i', $artifactSha256) === 1
             && $this->isValidRuntimeRequirements($runtimeRequirements)
+            && $this->isValidCompatibilityPolicy($compatibilityPolicy)
             && $manifest['migration_classification'] === 'NO_SCHEMA_CHANGE'
             && $manifest['attribution'] === 'Lab | zefry';
+    }
+
+    /** @param array<string, mixed> $policy */
+    private function isValidCompatibilityPolicy(array $policy): bool
+    {
+        if ($this->missingKeys($policy, self::REQUIRED_COMPATIBILITY_POLICY_KEYS) !== []) {
+            return false;
+        }
+
+        $range = $policy['supported_current_version_range'];
+        if (! is_array($range)
+            || ! isset($range['min'], $range['max'])
+            || ! is_string($range['min'])
+            || ! is_string($range['max'])) {
+            return false;
+        }
+
+        $releaseVersion = trim((string) $policy['release_version']);
+        $minimumCurrentVersion = trim($range['min']);
+        $maximumCurrentVersion = trim($range['max']);
+
+        return $this->isValidSemanticVersion($releaseVersion)
+            && $this->isSafeReference($policy['build_provenance_ref'])
+            && $this->isValidSemanticVersion($minimumCurrentVersion)
+            && $this->isValidSemanticVersion($maximumCurrentVersion)
+            && version_compare($minimumCurrentVersion, $maximumCurrentVersion, '<=')
+            && $this->isPolicyToken($policy['deployment_compatibility'])
+            && $policy['rollback_compatibility'] === 'NO_SCHEMA_CHANGE_ROLLBACK_SAFE'
+            && $this->isPolicyToken($policy['public_bootstrap_layout_compatibility'])
+            && $this->isSafeReference($policy['release_notes_reference']);
+    }
+
+    private function isValidSemanticVersion(string $version): bool
+    {
+        return preg_match('/\A\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?\z/', $version) === 1;
+    }
+
+    private function isPolicyToken(mixed $value): bool
+    {
+        return is_string($value)
+            && preg_match('/\A[A-Z][A-Z0-9_]{0,63}\z/', trim($value)) === 1;
+    }
+
+    private function isSafeReference(mixed $value): bool
+    {
+        if (! is_string($value)) {
+            return false;
+        }
+
+        $reference = trim($value);
+
+        return $reference !== ''
+            && strlen($reference) <= 255
+            && ! str_contains($reference, '..')
+            && preg_match('/\A[A-Za-z0-9][A-Za-z0-9._:\/@+#=-]{0,254}\z/', $reference) === 1;
     }
 
     private function isSafeArtifactFilename(string $filename): bool
