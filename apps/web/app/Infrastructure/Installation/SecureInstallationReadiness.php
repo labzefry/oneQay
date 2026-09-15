@@ -17,13 +17,27 @@ final class SecureInstallationReadiness
     /** @var list<string> */
     private const REQUIRED_ENVIRONMENT_KEYS = ['APP_ENV', 'APP_KEY', 'APP_URL', 'DB_CONNECTION', 'DB_HOST', 'DB_DATABASE', 'DB_USERNAME'];
 
+    /** @var list<string> */
+    private const REQUIRED_WRITABLE_PATHS = [
+        'bootstrap/cache',
+        'storage/framework/cache',
+        'storage/framework/sessions',
+        'storage/framework/views',
+        'storage/logs',
+    ];
+
     /**
      * @param array<string, mixed> $environment
      * @param list<string>|null $loadedExtensions
+     * @param array<string, bool>|null $writablePaths Deterministic override keyed by canonical relative path.
      * @return array{ready: bool, checks: array<string, array{ready: bool, reason: string}>}
      */
-    public function assess(array $environment, ?array $loadedExtensions = null, ?string $phpVersion = null): array
-    {
+    public function assess(
+        array $environment,
+        ?array $loadedExtensions = null,
+        ?string $phpVersion = null,
+        ?array $writablePaths = null
+    ): array {
         $extensions = array_map('strtolower', $loadedExtensions ?? get_loaded_extensions());
         $version = $phpVersion ?? PHP_VERSION;
         $checks = [];
@@ -77,10 +91,35 @@ final class SecureInstallationReadiness
             'Production installation requires an HTTPS application URL.'
         );
 
+        $pathStates = $writablePaths ?? $this->inspectWritablePaths();
+        $unwritablePaths = array_values(array_filter(
+            self::REQUIRED_WRITABLE_PATHS,
+            static fn (string $path): bool => ($pathStates[$path] ?? false) !== true
+        ));
+        $checks['filesystem_write'] = $this->check(
+            $unwritablePaths === [],
+            'Only required runtime paths are writable.',
+            'Required runtime paths are missing or not writable: '.implode(', ', $unwritablePaths).'.'
+        );
+
         return [
             'ready' => ! in_array(false, array_column($checks, 'ready'), true),
             'checks' => $checks,
         ];
+    }
+
+    /** @return array<string, bool> */
+    private function inspectWritablePaths(): array
+    {
+        $applicationRoot = dirname(__DIR__, 3);
+        $states = [];
+
+        foreach (self::REQUIRED_WRITABLE_PATHS as $relativePath) {
+            $absolutePath = $applicationRoot.DIRECTORY_SEPARATOR.str_replace('/', DIRECTORY_SEPARATOR, $relativePath);
+            $states[$relativePath] = is_dir($absolutePath) && is_writable($absolutePath);
+        }
+
+        return $states;
     }
 
     /** @return array{ready: bool, reason: string} */
