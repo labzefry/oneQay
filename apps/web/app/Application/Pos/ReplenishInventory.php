@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Pos;
 
 use App\Application\Authorization\DurableScopedAuthorizationPolicy;
-use App\Application\Authorization\PosPermission;
+use App\Application\Authorization\PermissionIdentifier;
 use App\Application\Organization\OrganizationalContextStore;
 use App\Application\Persistence\PersistenceTransaction;
 use InvalidArgumentException;
@@ -13,6 +13,7 @@ use InvalidArgumentException;
 // Author by Lab | zefry
 final readonly class ReplenishInventory
 {
+    public const REPLENISH_PERMISSION = 'pos.inventory.replenish';
     private const IDENTIFIER_PATTERN = '/\A[A-Za-z0-9][A-Za-z0-9._:-]{7,127}\z/';
 
     public function __construct(
@@ -33,7 +34,10 @@ final readonly class ReplenishInventory
 
         $verified = $this->contexts->current();
         $context = PosExecutionContext::fromVerified($verified);
-        $this->authorization->require($verified, PosPermission::inventoryReplenish());
+        $this->authorization->require(
+            $verified,
+            PermissionIdentifier::fromString(self::REPLENISH_PERMISSION),
+        );
 
         $occurredAtUnix = $this->clock->nowUnix();
         if ($occurredAtUnix <= 0) {
