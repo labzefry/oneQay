@@ -65,6 +65,7 @@ final class PosOperationsHubController
             [$snapshot->canShiftStart(), 'pos.shift-start.workspace', 'shift_start', 'Start Shift', 'Open the exact device shift and record opening cash evidence.', 'SHIFT'],
             [$snapshot->canCashier(), 'pos.cashier.workspace', 'cashier', 'Cashier', 'Run sale entry on the active exact-device shift.', 'SELL'],
             [$snapshot->canReporting(), 'pos.reporting.sales-summary', 'sales_summary', 'Sales Summary', 'Review current operational sales counters and totals.', 'REVIEW'],
+            [$snapshot->canReporting(), 'pos.reporting.product-performance', 'product_sales_performance', 'Product Sales Performance', 'Review product-level gross, full-void, and net active quantities and values.', 'REVIEW'],
             [$snapshot->canReporting(), 'pos.reporting.sales-history', 'sale_history', 'Sale History', 'Inspect immutable receipt and correction evidence.', 'REVIEW'],
             [$snapshot->canCorrections(), 'pos.sales.corrections.workspace', 'corrections', 'Sale Corrections', 'Perform only the void or refund actions granted to this context.', 'CONTROL'],
             [$snapshot->canCashVarianceReconciliation(), 'pos.shifts.reconciliation.workspace', 'cash_variance_reconciliation', 'Cash Variance Reconciliation', 'Explain and independently review non-zero closing-cash variance before final shift close.', 'CONTROL'],
