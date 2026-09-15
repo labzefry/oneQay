@@ -20,6 +20,7 @@ final readonly class PosOperationsHubSnapshot
         private bool $canCorrections,
         private bool $canCatalogInventorySetup,
         private bool $canInventoryReplenishment,
+        private bool $canInventoryAccountability,
         private bool $canCashVarianceReconciliation,
         private bool $canShiftClose,
     ) {
@@ -40,6 +41,7 @@ final readonly class PosOperationsHubSnapshot
     public function canCorrections(): bool { return $this->canCorrections; }
     public function canCatalogInventorySetup(): bool { return $this->canCatalogInventorySetup; }
     public function canInventoryReplenishment(): bool { return $this->canInventoryReplenishment; }
+    public function canInventoryAccountability(): bool { return $this->canInventoryAccountability; }
     public function canCashVarianceReconciliation(): bool { return $this->canCashVarianceReconciliation; }
     public function canShiftClose(): bool { return $this->canShiftClose; }
 
@@ -51,6 +53,7 @@ final readonly class PosOperationsHubSnapshot
             || $this->canCorrections
             || $this->canCatalogInventorySetup
             || $this->canInventoryReplenishment
+            || $this->canInventoryAccountability
             || $this->canCashVarianceReconciliation
             || $this->canShiftClose;
     }

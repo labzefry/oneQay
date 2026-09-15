@@ -17,6 +17,9 @@ final class PosOperationsHubServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        // Inventory accountability is a bounded read-only POS operations child capability.
+        $this->app->register(PosInventoryAccountabilityWorkspaceServiceProvider::class);
+
         // Inventory replenishment is a bounded POS operations child capability.
         // Its provider owns independent fail-closed delivery and mutation gates.
         $this->app->register(PosInventoryReplenishmentWorkspaceServiceProvider::class);
