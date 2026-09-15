@@ -1,3 +1,26 @@
+# CURRENT CANONICAL OVERRIDE — Sprint164
+
+**Canonical engineering checkpoint:** Sprint164
+**Canonical engineering commit:** `d37ecdfa16d3f024de840871aa202af4fb5ee7d1`
+**Latest engineering PR:** #746 — `Sprint164: add POS inventory replenishment foundation workspace`
+**Final engineering head:** `45cf298b799b134d0e17bdf19cc751814fe3ae2a`
+**Sprint164 regression:** `34912504801` — successful
+**Engineering envelope:** 22 paths — `b826b746e18bc39025735e10fe645ad559eceab992801190a654624462811f8e`
+**Reconciliation envelope:** 6 paths — `19c035b85a4698f60a78cbb70ccd0c1b82835c47073f5dcb2e2443f49c88f0fa`
+**Next position:** Sprint165 bounded discovery after Sprint164 reconciliation closes; no objective preselected.
+
+Sprint164 materialized `POS_INVENTORY_REPLENISHMENT_FOUNDATION_WORKSPACE` to close the normal post-baseline receiving gap without inventing arbitrary stock correction. Replenishment is positive-only, requires the canonical opening baseline and an active exact tenant/outlet product, uses stable operation identity plus immutable before/received/after evidence, and is protected by a dedicated deny-by-default `pos.inventory.replenish` authority with no automatic grant or provisioning.
+
+Migration #28 is module-owned at `apps/web/database/module-migrations/pos/0000_00_00_000028_create_pos_inventory_replenishment_foundation.php` and is discovered through the bounded replenishment provider. The canonical global migration horizon remains unchanged through migration #27. Existing sale completion remains the stock-decrement owner; full-sale void remains the stock-restoration owner; cash refund does not restore stock again; one-time opening inventory baseline remains unchanged.
+
+Engineering PR #746 completed the latest reopened exact-head qualification matrix successfully after two deliberately disqualified intermediate heads were corrected. The final qualified head `45cf298b799b134d0e17bdf19cc751814fe3ae2a` received repository-native Product Owner merge authority and squash merged at `d37ecdfa16d3f024de840871aa202af4fb5ee7d1`.
+
+Operational NO-GO remains unchanged: selected target `null`; migration #27 `NOT_EXECUTED`; permission provisioning `NONE`; feature activation `INACTIVE`; deployment authority `NOT_GRANTED`; Technical Preview/Production `NOT_AUTHORIZED`; updater `INACTIVE`.
+
+> The retained Sprint163 manifest snapshot below is historical context. This Sprint164 override is the current canonical human-readable checkpoint. Machine-readable operational state remains authoritative.
+
+---
+
 # CURRENT CANONICAL OVERRIDE — Sprint163
 
 **Canonical engineering checkpoint:** Sprint163
@@ -115,7 +138,7 @@ Sprint162 did not select a durable target, execute migration #27, provision perm
 
 ### Next position
 
-Historical Sprint162 next position was Sprint163 bounded discovery. Current next position is superseded by the Sprint163 override above.
+Historical Sprint162 next position was Sprint163 bounded discovery. Current next position is superseded by the Sprint164 override above.
 
 ## 4. Operational truth — NO-GO remains authoritative
 
