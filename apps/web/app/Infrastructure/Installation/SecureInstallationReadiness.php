@@ -15,7 +15,26 @@ final class SecureInstallationReadiness
     private const REQUIRED_EXTENSIONS = ['ctype', 'curl', 'dom', 'fileinfo', 'filter', 'hash', 'mbstring', 'openssl', 'pdo', 'session', 'tokenizer', 'xml'];
 
     /** @var list<string> */
-    private const REQUIRED_ENVIRONMENT_KEYS = ['APP_ENV', 'APP_KEY', 'APP_URL', 'DB_CONNECTION', 'DB_HOST', 'DB_DATABASE', 'DB_USERNAME'];
+    private const REQUIRED_ENVIRONMENT_KEYS = [
+        'APP_ENV',
+        'APP_KEY',
+        'APP_URL',
+        'ONEQAY_DB_DRIVER',
+        'ONEQAY_DB_HOST',
+        'ONEQAY_DB_DATABASE',
+        'ONEQAY_DB_USERNAME',
+    ];
+
+    /** @var list<string> */
+    private const REQUIRED_DATABASE_STATE_KEYS = [
+        'connected',
+        'engine',
+        'server_version',
+        'charset',
+        'timezone',
+        'schema_state',
+        'least_privilege',
+    ];
 
     /** @var list<string> */
     private const REQUIRED_WRITABLE_PATHS = [
@@ -51,6 +70,7 @@ final class SecureInstallationReadiness
      * @param array<string, bool>|null $writablePaths Deterministic override keyed by canonical relative path.
      * @param array<string, mixed>|null $releaseManifest Installer-facing governed release manifest projection.
      * @param array<string, mixed>|null $artifactState Deterministic observed artifact identity and digest facts.
+     * @param array<string, mixed>|null $databaseState Deterministic observed database connectivity and compatibility facts.
      * @return array{ready: bool, checks: array<string, array{ready: bool, reason: string}>}
      */
     public function assess(
@@ -59,7 +79,8 @@ final class SecureInstallationReadiness
         ?string $phpVersion = null,
         ?array $writablePaths = null,
         ?array $releaseManifest = null,
-        ?array $artifactState = null
+        ?array $artifactState = null,
+        ?array $databaseState = null
     ): array {
         $extensions = array_map('strtolower', $loadedExtensions ?? get_loaded_extensions());
         $version = $phpVersion ?? PHP_VERSION;
@@ -112,6 +133,18 @@ final class SecureInstallationReadiness
             $appEnvironment !== 'production' || $scheme === 'https',
             'Application URL transport posture is acceptable.',
             'Production installation requires an HTTPS application URL.'
+        );
+
+        $observedDatabase = $databaseState ?? [];
+        $missingDatabaseKeys = $this->missingKeys($observedDatabase, self::REQUIRED_DATABASE_STATE_KEYS);
+        $databaseReady = $missingDatabaseKeys === []
+            && $this->isValidDatabaseState($environment, $observedDatabase);
+        $checks['database_compatibility'] = $this->check(
+            $databaseReady,
+            'Observed database connectivity and compatibility satisfy the installation contract.',
+            $missingDatabaseKeys === []
+                ? 'Observed database connectivity or compatibility does not satisfy the installation contract.'
+                : 'Observed database compatibility facts are incomplete: '.implode(', ', $missingDatabaseKeys).'.'
         );
 
         $pathStates = $writablePaths ?? $this->inspectWritablePaths();
@@ -186,6 +219,29 @@ final class SecureInstallationReadiness
                 return is_string($values[$key]) && trim($values[$key]) === '';
             }
         ));
+    }
+
+    /**
+     * @param array<string, mixed> $environment
+     * @param array<string, mixed> $database
+     */
+    private function isValidDatabaseState(array $environment, array $database): bool
+    {
+        $configuredDriver = strtolower(trim((string) ($environment['ONEQAY_DB_DRIVER'] ?? '')));
+        $engine = strtolower(trim((string) $database['engine']));
+        $serverVersion = trim((string) $database['server_version']);
+        $charset = strtolower(trim((string) $database['charset']));
+        $timezone = strtoupper(trim((string) $database['timezone']));
+        $schemaState = strtolower(trim((string) $database['schema_state']));
+
+        return $database['connected'] === true
+            && $configuredDriver === 'mysql'
+            && in_array($engine, ['mysql', 'mariadb'], true)
+            && preg_match('/\A\d+\.\d+(?:\.\d+)?(?:[-+._A-Za-z0-9]*)?\z/', $serverVersion) === 1
+            && $charset === 'utf8mb4'
+            && in_array($timezone, ['UTC', '+00:00'], true)
+            && in_array($schemaState, ['empty', 'recognized'], true)
+            && $database['least_privilege'] === true;
     }
 
     /** @param array<string, mixed> $manifest */
