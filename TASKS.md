@@ -1,40 +1,39 @@
 # oneQay Tasks
 
-**Current canonical engineering checkpoint:** Sprint165 closed
-**Canonical engineering commit:** `dc6340c04ac710bd38966d897b27e23fd92c0a41`
-**Latest engineering PR:** #748 — `Sprint165: add POS inventory accountability workspace`
+**Current canonical engineering checkpoint:** Sprint166 closed
+**Canonical engineering commit:** `e2758d0170a081953aaae11711ecc1ec3c0f8e78`
+**Latest engineering PR:** #750 — `Sprint166: add POS product sales performance workspace`
 **Canonical status authority:** `PROJECT_MANIFEST.md`
 
-## Completed Sprint165 state
+## Completed Sprint166 state
 
-Sprint165 materialized `POS_INVENTORY_ACCOUNTABILITY_WORKSPACE` as a read-only accountability layer over existing immutable stock evidence.
+Sprint166 materialized `POS_PRODUCT_SALES_PERFORMANCE_WORKSPACE` as a bounded read-only product/currency reporting surface over immutable completed-sale and full-sale-void evidence.
 
-Engineering PR #748 squash merged at `dc6340c04ac710bd38966d897b27e23fd92c0a41` after complete exact-head qualification and repository-native Product Owner merge authorization.
+- [x] Exact tenant + organization + outlet isolation.
+- [x] Gross sold quantity/value from immutable completed sale lines.
+- [x] Full-sale-void quantity/value subtracted exactly once.
+- [x] CASH refund excluded from a second subtraction.
+- [x] Historical currency/scale buckets preserved separately.
+- [x] Inactive catalog products retained when immutable history exists.
+- [x] Orphaned/corrupt/overflowing/negative/inconsistent aggregate evidence fails closed.
+- [x] Output bounded to 250 buckets with explicit truncation.
+- [x] Existing `pos.reporting.sales-summary.view` reused; no new permission/provisioning.
+- [x] Default-false guarded route and feature flag.
+- [x] POS Operations Hub discoverability remains permission + `Route::has()` guarded.
+- [x] No schema/migration/mutation/global-owner changes.
+- [x] Exact engineering head qualification complete and successful.
+- [x] PR #750 squash merged at `e2758d0170a081953aaae11711ecc1ec3c0f8e78`.
 
-Engineering envelope: exactly 14 paths with sorted newline SHA-256 `d83945325461acdd9db7f1ab02bb908a1e0e263a6f680e2f0acf1f3256978786`.
+Engineering envelope: 12 paths; SHA-256 `3687acbd962b494a354c705c43eda5a71c1de426b5691d9b0f13b1620af2e228`.
 
-Canonical reconciliation envelope: exactly six paths with sorted newline SHA-256 `2f10216f9f2c86a188a924c66a8473c17cd5310da47bd768a8ab1bb0f4a17533`.
+Canonical reconciliation envelope: six paths; SHA-256 `d887f8bcf393ad56a74d481e64aa3963c8678012f87025dcbf93ef8bde5ea4c8`.
 
-## Completed accountability invariants
+## Preserved lifecycle state
 
-- Current stock is accepted only when `opening + replenishment + full-sale-void restoration - completed sale quantity` equals canonical persisted stock.
-- Reconciliation is aggregate/commutative; timestamps do not determine accounting truth.
-- CASH refunds do not restore inventory.
-- Inactive but baselined products remain visible for historical accountability.
-- Foreign tenant/outlet evidence, orphan evidence, malformed quantities, overflow, and current-stock mismatch fail closed.
-- Workspace is read-only; no insert/update/delete/increment/decrement path exists in its repository.
-- Access reuses existing `pos.inventory.baseline` OR `pos.inventory.replenish`; no new permission or provisioning exists.
-- Delivery remains default-off and Local/Test/CI only with persistence and exact session controls.
-- No migration, arbitrary stock adjustment, stocktake mutation, purchasing/supplier flow, transfer flow, negative adjustment, global route/provider edit, shared permission-registry edit, or Final Shift Close owner change was introduced.
-
-## Lifecycle state
-
-Machine-readable operational state under `ops/final-shift-close/` remains authoritative and unchanged: target selection remains blocked, selected target `null`, migration #27 `NOT_EXECUTED`, permission provisioning `NONE`, feature activation `INACTIVE`, deployment authority `NOT_GRANTED`, Technical Preview/Production `NOT_AUTHORIZED`, updater `INACTIVE`.
+Machine-readable operational state under `ops/final-shift-close/` remains authoritative and unchanged: selected target `null`; migration #27 `NOT_EXECUTED`; permission provisioning `NONE`; real target-bound capability/dependency evidence absent; producer dispatch not performed; feature activation `INACTIVE`; deployment authority `NOT_GRANTED`; Technical Preview/Production `NOT_AUTHORIZED`; updater `INACTIVE`.
 
 ## Next engineering position
 
-Begin **Sprint166 bounded discovery** from the fully reconciled post-Sprint165 checkpoint. Do not preselect the objective. Select the smallest material non-duplicative P0/P1 production-readiness or business-completeness gap from current source/contracts/regressions.
-
-Do not infer stock-adjustment, stocktake, purchasing, supplier, transfer, or negative-inventory authority from Sprint165; each requires separate bounded justification if later selected.
+Begin **Sprint167 bounded discovery** only from the fully reconciled Sprint166 canonical checkpoint. Do not preselect the objective. Select the smallest material non-duplicative P0/P1 production-readiness or business-completeness gap from live source/contracts/regressions and reuse existing canonical owners wherever possible.
 
 Author by Lab | zefry
