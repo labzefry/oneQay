@@ -1,24 +1,24 @@
 # oneQay Project Manifest
 
-**Product:** oneQay — The Future of Intelligent Business Management  
-**Repository owner / attribution:** Lab | zefry  
-**Default branch:** `main`  
+**Product:** oneQay — The Future of Intelligent Business Management
+**Repository owner / attribution:** Lab | zefry
+**Default branch:** `main`
 **Status date:** 2026-09-15
 
 ## Current canonical engineering checkpoint
 
-**Canonical engineering checkpoint:** Sprint173  
-**Objective:** `INSTALLATION_RELEASE_RUNTIME_REQUIREMENTS_READINESS`  
-**Canonical engineering commit:** `933b06d0790834fb830ca9a55b443db69eca65f0`  
-**Engineering PR:** #771 — `Sprint173: govern installation runtime requirements by release manifest v2`  
-**Final engineering head:** `494503122ebf273fbfcc0791c5afca0e24bb5b29`  
-**Sprint173 regression:** `34991613421` — successful  
-**Governance Required Checks:** `34991613429` — successful  
-**PHP Foundation Regression:** `34991613314` — successful  
-**M7.1 Application Regression:** `34991613882` — successful  
-**Engineering envelope:** 3 paths — `83593746e455ea2aa7353482e6b1c35faac4c740b2b9bb897e93bcc71fc1748b`  
-**Sprint169 successor-compatibility correction:** PR #769 — squash `e28c2b01aa76ad770896c6eb21b398e8cb188fdb`  
-**Canonical reconciliation envelope:** 6 paths — `319054712753f696394ff98959688230e9091065fcdae394f7231bd9b6a01ab6`  
+**Canonical engineering checkpoint:** Sprint173
+**Objective:** `INSTALLATION_RELEASE_RUNTIME_REQUIREMENTS_READINESS`
+**Canonical engineering commit:** `933b06d0790834fb830ca9a55b443db69eca65f0`
+**Engineering PR:** #771 — `Sprint173: govern installation runtime requirements by release manifest v2`
+**Final engineering head:** `494503122ebf273fbfcc0791c5afca0e24bb5b29`
+**Sprint173 regression:** `34991613421` — successful
+**Governance Required Checks:** `34991613429` — successful
+**PHP Foundation Regression:** `34991613314` — successful
+**M7.1 Application Regression:** `34991613882` — successful
+**Engineering envelope:** 3 paths — `83593746e455ea2aa7353482e6b1c35faac4c740b2b9bb897e93bcc71fc1748b`
+**Sprint169 successor-compatibility correction:** PR #769 — squash `e28c2b01aa76ad770896c6eb21b398e8cb188fdb`
+**Canonical reconciliation envelope:** 6 paths — `319054712753f696394ff98959688230e9091065fcdae394f7231bd9b6a01ab6`
 **Next position:** Sprint174 bounded discovery from the fully reconciled Sprint173 checkpoint; no objective preselected.
 
 > `933b06d0790834fb830ca9a55b443db69eca65f0` is the canonical Sprint173 engineering evidence. Neither the Sprint169 compatibility correction nor the reconciliation squash may replace it as the canonical engineering commit.
