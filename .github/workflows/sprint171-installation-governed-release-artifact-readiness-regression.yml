@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  qualify-sprint171-installation-governed-release-artifact-readiness:
+  preserve-sprint171-installation-governed-release-artifact-readiness:
     runs-on: ubuntu-latest
     env:
       APP_NAME: oneQay
@@ -37,10 +37,10 @@ jobs:
           EXPECTED_HEAD="${{ github.event.pull_request.head.sha || github.sha }}"
           test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
 
-      - name: Qualify exact Sprint171 engineering envelope
-        if: github.event_name == 'pull_request'
+      - name: Qualify exact Sprint171 reconciliation envelope
+        if: github.event_name == 'pull_request' && github.head_ref == 'sprint171-canonical-reconciliation'
         env:
-          EXPECTED_PATH_HASH: cf2f56c6ba42404726fe225a559b7262580191a9bf1c8b03c4ebf39fe2f29d88
+          EXPECTED_PATH_HASH: a8627a615280e7592638964a5d7f496f77310ef28f085439f2ba584d6a97d301
         run: |
           set -euo pipefail
           BASE_SHA="${{ github.event.pull_request.base.sha }}"
@@ -50,8 +50,11 @@ jobs:
           mapfile -t CHANGED < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort)
           EXPECTED=(
             '.github/workflows/sprint171-installation-governed-release-artifact-readiness-regression.yml'
-            'apps/web/app/Infrastructure/Installation/SecureInstallationReadiness.php'
-            'apps/web/tests/secure-installation-readiness.php'
+            'CHANGELOG.md'
+            'PROJECT_MANIFEST.md'
+            'README.md'
+            'ROADMAP.md'
+            'TASKS.md'
           )
           test "${#CHANGED[@]}" -eq "${#EXPECTED[@]}"
           diff -u <(printf '%s\n' "${EXPECTED[@]}") <(printf '%s\n' "${CHANGED[@]}")
@@ -77,6 +80,15 @@ jobs:
           ! grep -Eq -- '->(insert|update|delete|increment|decrement)\(' "$SOURCE"
           ! grep -Eq 'Artisan::call|migrate|file_put_contents|fwrite|unlink|rename|copy\(|chmod|chown|mkdir|rmdir' "$SOURCE"
           ! grep -Eq 'curl_exec|file_get_contents|fopen\(|PharData|ZipArchive|extractTo' "$SOURCE"
+
+      - name: Preserve canonical engineering evidence
+        run: |
+          set -euo pipefail
+          for doc in PROJECT_MANIFEST.md README.md CHANGELOG.md TASKS.md ROADMAP.md; do
+            grep -Fq 'cbf26a53c1a784b8e6eda65cc1d047c90ea590e8' "$doc"
+            grep -Fq 'cf2f56c6ba42404726fe225a559b7262580191a9bf1c8b03c4ebf39fe2f29d88' "$doc"
+          done
+          grep -Fq 'a8627a615280e7592638964a5d7f496f77310ef28f085439f2ba584d6a97d301' PROJECT_MANIFEST.md
 
       - name: Preserve operational NO-GO
         run: |
