@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  qualify-sprint175-installation-governed-host-platform-requirements-readiness:
+  preserve-sprint175-installation-governed-host-platform-requirements-readiness:
     runs-on: ubuntu-latest
     env:
       APP_NAME: oneQay
@@ -58,6 +58,30 @@ jobs:
           ACTUAL_HASH="$(printf '%s\n' "${CHANGED[@]}" | sha256sum | awk '{print $1}')"
           test "$ACTUAL_HASH" = "$EXPECTED_PATH_HASH"
 
+      - name: Qualify exact Sprint175 reconciliation envelope
+        if: github.event_name == 'pull_request' && github.head_ref == 'sprint175-canonical-reconciliation'
+        env:
+          EXPECTED_PATH_HASH: be033502c6e72d211415751966e6dc48e3453ce6fae6003d57b3da807cee1460
+        run: |
+          set -euo pipefail
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          test "$(git rev-parse HEAD)" = "$HEAD_SHA"
+          git cat-file -e "${BASE_SHA}^{commit}"
+          mapfile -t CHANGED < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort)
+          EXPECTED=(
+            '.github/workflows/sprint175-installation-governed-host-platform-requirements-readiness-regression.yml'
+            'CHANGELOG.md'
+            'PROJECT_MANIFEST.md'
+            'README.md'
+            'ROADMAP.md'
+            'TASKS.md'
+          )
+          test "${#CHANGED[@]}" -eq "${#EXPECTED[@]}"
+          diff -u <(printf '%s\n' "${EXPECTED[@]}") <(printf '%s\n' "${CHANGED[@]}")
+          ACTUAL_HASH="$(printf '%s\n' "${CHANGED[@]}" | sha256sum | awk '{print $1}')"
+          test "$ACTUAL_HASH" = "$EXPECTED_PATH_HASH"
+
       - name: Preserve Sprint175 source contract
         run: |
           set -euo pipefail
@@ -87,6 +111,13 @@ jobs:
           ! grep -Eq 'shell_exec|proc_open|popen\(|passthru\(|system\(|exec\(' "$SOURCE"
           ! grep -Eq 'Artisan::call|file_put_contents|fwrite|unlink|rename|copy\(|chmod|chown|mkdir|rmdir' "$SOURCE"
           ! grep -Eq -- '->(insert|update|delete|increment|decrement)\(' "$SOURCE"
+
+      - name: Preserve canonical engineering evidence
+        run: |
+          set -euo pipefail
+          for DOC in PROJECT_MANIFEST.md README.md CHANGELOG.md TASKS.md ROADMAP.md; do
+            grep -Fq '6357d883fe04ec0515f9d21c6adc0ee907787cde' "$DOC"
+          done
 
       - name: Preserve operational NO-GO
         run: |
