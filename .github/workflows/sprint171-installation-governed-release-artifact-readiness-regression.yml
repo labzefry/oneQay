@@ -38,7 +38,7 @@ jobs:
           test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
 
       - name: Qualify exact Sprint171 engineering envelope
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && github.head_ref == 'sprint171-installation-governed-release-artifact-readiness'
         env:
           EXPECTED_PATH_HASH: cf2f56c6ba42404726fe225a559b7262580191a9bf1c8b03c4ebf39fe2f29d88
         run: |

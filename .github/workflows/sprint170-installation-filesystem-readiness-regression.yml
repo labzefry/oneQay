@@ -61,6 +61,26 @@ jobs:
           ACTUAL_HASH="$(printf '%s\n' "${CHANGED[@]}" | sha256sum | awk '{print $1}')"
           test "$ACTUAL_HASH" = "$EXPECTED_PATH_HASH"
 
+      - name: Qualify Sprint170 and Sprint171 successor compatibility correction
+        if: github.event_name == 'pull_request' && github.head_ref == 'sprint171-sprint170-successor-compatibility'
+        env:
+          EXPECTED_PATH_HASH: a645af2614c2f2f088850ac53e746741145eb901f66926812063285843c9eb78
+        run: |
+          set -euo pipefail
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          test "$(git rev-parse HEAD)" = "$HEAD_SHA"
+          git cat-file -e "${BASE_SHA}^{commit}"
+          mapfile -t CHANGED < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort)
+          EXPECTED=(
+            '.github/workflows/sprint170-installation-filesystem-readiness-regression.yml'
+            '.github/workflows/sprint171-installation-governed-release-artifact-readiness-regression.yml'
+          )
+          test "${#CHANGED[@]}" -eq "${#EXPECTED[@]}"
+          diff -u <(printf '%s\n' "${EXPECTED[@]}") <(printf '%s\n' "${CHANGED[@]}")
+          ACTUAL_HASH="$(printf '%s\n' "${CHANGED[@]}" | sha256sum | awk '{print $1}')"
+          test "$ACTUAL_HASH" = "$EXPECTED_PATH_HASH"
+
       - name: Preserve Sprint170 source contract
         run: |
           set -euo pipefail
@@ -78,7 +98,8 @@ jobs:
           ! grep -Eq 'Artisan::call|migrate|file_put_contents|fwrite|unlink|rename|copy\(' apps/web/app/Infrastructure/Installation/SecureInstallationReadiness.php
           ! grep -Eq 'chmod|chown|mkdir|rmdir' apps/web/app/Infrastructure/Installation/SecureInstallationReadiness.php
 
-      - name: Preserve canonical engineering evidence
+      - name: Preserve canonical Sprint170 engineering evidence
+        if: github.event_name == 'pull_request' && github.head_ref == 'sprint170-canonical-reconciliation'
         run: |
           set -euo pipefail
           grep -Fq 'aa46ad0752f8ae2da145eb0c0f6324a3c5be6f25' PROJECT_MANIFEST.md
