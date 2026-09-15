@@ -1,23 +1,23 @@
 # oneQay Project Manifest
 
-**Product:** oneQay — The Future of Intelligent Business Management  
-**Repository owner / attribution:** Lab | zefry  
-**Default branch:** `main`  
+**Product:** oneQay — The Future of Intelligent Business Management
+**Repository owner / attribution:** Lab | zefry
+**Default branch:** `main`
 **Status date:** 2026-09-15
 
 ## Current canonical engineering checkpoint
 
-**Canonical engineering checkpoint:** Sprint170  
-**Objective:** `INSTALLATION_FILESYSTEM_READINESS`  
-**Canonical engineering commit:** `aa46ad0752f8ae2da145eb0c0f6324a3c5be6f25`  
-**Engineering PR:** #758 — `Sprint170: add installation filesystem readiness`  
-**Final engineering head:** `00acde00e301f3f8aa3bf83b6b04f864d71d0dcd`  
-**Sprint170 regression:** `34944847584` — successful  
-**Governance Required Checks:** `34944847461` — successful  
-**PHP Foundation Regression:** `34944847737` — successful  
-**M7.1 Application Regression:** `34944847844` — successful  
-**Engineering envelope:** 3 paths — `7a86c9fbe8d4e87bbcdc3bf72ad618649d9d2cebfe20e2eba51f841ef685b877`  
-**Canonical reconciliation envelope:** 6 paths — `76de10f095cf53b630f96da884ebf6c1f4e581c4dc0f773312415c7788669b98`  
+**Canonical engineering checkpoint:** Sprint170
+**Objective:** `INSTALLATION_FILESYSTEM_READINESS`
+**Canonical engineering commit:** `aa46ad0752f8ae2da145eb0c0f6324a3c5be6f25`
+**Engineering PR:** #758 — `Sprint170: add installation filesystem readiness`
+**Final engineering head:** `00acde00e301f3f8aa3bf83b6b04f864d71d0dcd`
+**Sprint170 regression:** `34944847584` — successful
+**Governance Required Checks:** `34944847461` — successful
+**PHP Foundation Regression:** `34944847737` — successful
+**M7.1 Application Regression:** `34944847844` — successful
+**Engineering envelope:** 3 paths — `7a86c9fbe8d4e87bbcdc3bf72ad618649d9d2cebfe20e2eba51f841ef685b877`
+**Canonical reconciliation envelope:** 6 paths — `76de10f095cf53b630f96da884ebf6c1f4e581c4dc0f773312415c7788669b98`
 **Next position:** Sprint171 bounded discovery from the fully reconciled Sprint170 checkpoint; no objective preselected.
 
 > `aa46ad0752f8ae2da145eb0c0f6324a3c5be6f25` is the canonical Sprint170 engineering evidence. The reconciliation squash must never replace it as the canonical engineering commit.
