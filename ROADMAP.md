@@ -1,31 +1,31 @@
 # oneQay Roadmap
 
-**Roadmap checkpoint:** Sprint169 closed canonically
-**Canonical engineering baseline:** `2a53d9db9547340bd4d791b34fabb80ec600fc8b`
+**Roadmap checkpoint:** Sprint170 closed canonically
+**Canonical engineering baseline:** `aa46ad0752f8ae2da145eb0c0f6324a3c5be6f25`
 **Current state authority:** `PROJECT_MANIFEST.md`
 
-## Completed Sprint169 horizon
+## Completed Sprint170 horizon
 
-Sprint169 closed the first executable installation-readiness source gap with `SECURE_INSTALLATION_READINESS_FOUNDATION`.
+Sprint170 closed `INSTALLATION_FILESYSTEM_READINESS`, extending the secure installer-readiness path with deterministic, read-only, fail-closed verification of the minimum Laravel runtime write surface required by oneQay.
 
-The capability is deterministic, read-only, redacted, and fail closed. It qualifies minimum PHP runtime, required extensions, required environment configuration, application-key readiness, production debug posture, and HTTPS production URL posture without exposing an installer route or mutating runtime state.
+The capability qualifies `bootstrap/cache`, `storage/framework/cache`, `storage/framework/sessions`, `storage/framework/views`, and `storage/logs`. Missing or non-writable required paths prevent readiness. It does not perform `chmod`, `chown`, directory creation, environment mutation, migration execution, administrator bootstrap, or installer exposure.
 
-Engineering PR #756 squash merged at `2a53d9db9547340bd4d791b34fabb80ec600fc8b`. Engineering envelope: 3 paths, SHA-256 `2bfeedcabc1a09617876a6ce0719cb31a3246c157ad78472feda5db18f9c4fd1`.
+Engineering PR #758 squash merged at `aa46ad0752f8ae2da145eb0c0f6324a3c5be6f25`. Engineering envelope: 3 paths, SHA-256 `7a86c9fbe8d4e87bbcdc3bf72ad618649d9d2cebfe20e2eba51f841ef685b877`.
 
-Canonical reconciliation envelope: 6 paths, SHA-256 `7f6b2b61e87d8891dc3c4d1a047ac92f9209d3286c445e77518f796179ce4d93`.
+Canonical reconciliation envelope: 6 paths, SHA-256 `76de10f095cf53b630f96da884ebf6c1f4e581c4dc0f773312415c7788669b98`.
 
-## Product progression through Sprint169
+## Product progression through Sprint170
 
-The product now combines the existing tenant/security/API/POS operational foundations with a canonical installation infrastructure owner capable of non-destructive preflight readiness assessment. This is intentionally not yet a web wizard, deployment mechanism, environment writer, migration runner, or administrator bootstrapper.
+The product now combines the existing tenant/security/API/POS operational foundations with a canonical installation-readiness owner that qualifies runtime/configuration/security posture and the exact runtime filesystem write surface needed by the Laravel application. This is still intentionally not a web wizard, deployment mechanism, environment writer, migration runner, or administrator bootstrapper.
 
 ## Operational boundary
 
 Machine-readable operational state under `ops/final-shift-close/` remains authoritative. Selected durable target remains `null`; migration #27 remains `NOT_EXECUTED`; permission provisioning remains `NONE`; producer dispatch remains not performed; runtime allowlist remains Local/Test/CI; Final Shift Close remains inactive; deployment/Technical Preview/Production remain unauthorized; updater remains inactive.
 
-## Sprint170 selection rule
+## Sprint171 selection rule
 
-Begin Sprint170 bounded discovery from fully reconciled Sprint169. Prioritize the smallest material non-duplicative P0/P1 production-readiness or business-completeness gap rather than returning to mechanical dashboard expansion.
+Begin Sprint171 bounded discovery from fully reconciled Sprint170. Prioritize the smallest material non-duplicative P0/P1 production-readiness or business-completeness gap rather than returning to mechanical dashboard expansion.
 
-For installation readiness, the preferred next bounded direction is to close a coherent prerequisite gap—such as deterministic writable-path/package/application prerequisite qualification—before any installer exposure or state-changing setup step. Any deployment, migration execution, environment mutation, administrator bootstrap, or operational activation requires separate authority.
+For installer progression, package/application prerequisite qualification is a reasonable candidate only if live repository discovery proves it is the next canonical gap. No deployment, migration execution, environment mutation, administrator bootstrap, installer exposure, or operational activation is authorized by this roadmap position.
 
 Author by Lab | zefry

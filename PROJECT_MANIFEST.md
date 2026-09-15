@@ -7,43 +7,49 @@
 
 ## Current canonical engineering checkpoint
 
-**Canonical engineering checkpoint:** Sprint169
-**Objective:** `SECURE_INSTALLATION_READINESS_FOUNDATION`
-**Canonical engineering commit:** `2a53d9db9547340bd4d791b34fabb80ec600fc8b`
-**Engineering PR:** #756 — `Sprint169: secure installation readiness foundation`
-**Final engineering head:** `5d2b27404352da7f81723f08977de34aef00faf7`
-**Sprint169 regression:** `34936197402` — successful
-**Governance Required Checks:** `34936197759` — successful
-**PHP Foundation Regression:** `34936197571` — successful
-**M7.1 Application Regression:** `34936197394` — successful
-**Engineering envelope:** 3 paths — `2bfeedcabc1a09617876a6ce0719cb31a3246c157ad78472feda5db18f9c4fd1`
-**Canonical reconciliation envelope:** 6 paths — `7f6b2b61e87d8891dc3c4d1a047ac92f9209d3286c445e77518f796179ce4d93`
-**Next position:** Sprint170 bounded discovery from the fully reconciled Sprint169 checkpoint; no objective preselected.
+**Canonical engineering checkpoint:** Sprint170
+**Objective:** `INSTALLATION_FILESYSTEM_READINESS`
+**Canonical engineering commit:** `aa46ad0752f8ae2da145eb0c0f6324a3c5be6f25`
+**Engineering PR:** #758 — `Sprint170: add installation filesystem readiness`
+**Final engineering head:** `00acde00e301f3f8aa3bf83b6b04f864d71d0dcd`
+**Sprint170 regression:** `34944847584` — successful
+**Governance Required Checks:** `34944847461` — successful
+**PHP Foundation Regression:** `34944847737` — successful
+**M7.1 Application Regression:** `34944847844` — successful
+**Engineering envelope:** 3 paths — `7a86c9fbe8d4e87bbcdc3bf72ad618649d9d2cebfe20e2eba51f841ef685b877`
+**Canonical reconciliation envelope:** 6 paths — `76de10f095cf53b630f96da884ebf6c1f4e581c4dc0f773312415c7788669b98`
+**Next position:** Sprint171 bounded discovery from the fully reconciled Sprint170 checkpoint; no objective preselected.
 
-> `2a53d9db9547340bd4d791b34fabb80ec600fc8b` is the canonical Sprint169 engineering evidence. The reconciliation squash must never replace it as the canonical engineering commit.
+> `aa46ad0752f8ae2da145eb0c0f6324a3c5be6f25` is the canonical Sprint170 engineering evidence. The reconciliation squash must never replace it as the canonical engineering commit.
 
 ## 1. Purpose / Why
 
-Sprint169 deliberately shifted production-readiness work away from repeated read-only operational dashboards. The repository had a detailed installer specification but no executable canonical installer infrastructure owner. This Sprint establishes the first bounded, non-destructive installation-readiness foundation without exposing or activating an installer.
+Sprint170 closes the next material installer production-readiness prerequisite after Sprint169. The repository now verifies that only the canonical Laravel runtime directories required by oneQay exist and are writable before installation can be considered ready, without mutating permissions or exposing an installer surface.
 
 ## 2. What changed
 
-- Added canonical `App\Infrastructure\Installation\SecureInstallationReadiness` owner.
-- Added deterministic read-only preflight for minimum PHP runtime, required PHP extensions, required environment configuration, application-key readiness, production debug posture, and production HTTPS URL posture.
-- Readiness output is deliberately redacted and does not echo database credentials or other supplied secrets.
-- Placeholder/missing application key, missing configuration, missing required extensions, unsupported PHP, production debug, or non-HTTPS production URL fail closed.
-- Added focused source regression and dedicated Sprint169 workflow.
-- No installer route, administrator creation, environment-file mutation, migration execution, permission provisioning, deployment, updater activation, or operational activation was introduced.
+- Extended the canonical `App\Infrastructure\Installation\SecureInstallationReadiness` owner; no duplicate installer owner was introduced.
+- Added fail-closed filesystem readiness for exactly:
+  - `bootstrap/cache`;
+  - `storage/framework/cache`;
+  - `storage/framework/sessions`;
+  - `storage/framework/views`;
+  - `storage/logs`.
+- Missing or non-writable required paths fail readiness with relative-path evidence only.
+- Normal execution inspects canonical application-root paths read-only; deterministic injected path state is available for regression qualification.
+- Existing PHP runtime, extension, environment, application-key, production-debug, HTTPS, and secret-redaction behavior remains preserved.
+- No `chmod`, `chown`, `mkdir`, environment mutation, migration execution, administrator creation, installer route, deployment, updater, or production activation was introduced.
 
 ## 3. Evidence / Qualification
 
-- Parent canonical post-Sprint168 checkpoint: `4b9240e6cfb0f4680066aef190d5a1cf03fc8515`.
-- Exact engineering head: `5d2b27404352da7f81723f08977de34aef00faf7`.
-- Dedicated Sprint169 run `34936197402`: successful.
-- Governance `34936197759`, PHP Foundation `34936197571`, and M7.1 `34936197394`: successful.
-- Repository-native Product Owner merge authority applied to the exact engineering head.
-- Engineering PR #756 squash merged at `2a53d9db9547340bd4d791b34fabb80ec600fc8b`.
-- Engineering envelope: exactly 3 paths; SHA-256 `2bfeedcabc1a09617876a6ce0719cb31a3246c157ad78472feda5db18f9c4fd1`.
+- Parent canonical post-Sprint169 checkpoint: `eb19f848057549cec1bb42d10a79426e1a683fe9`.
+- Exact engineering head: `00acde00e301f3f8aa3bf83b6b04f864d71d0dcd`.
+- Dedicated Sprint170 run `34944847584`: successful.
+- Governance `34944847461`, PHP Foundation `34944847737`, and M7.1 `34944847844`: successful.
+- Repository-native Product Owner merge authority verified on the exact engineering head.
+- Engineering PR #758 squash merged at `aa46ad0752f8ae2da145eb0c0f6324a3c5be6f25`.
+- Engineering envelope: exactly 3 paths; SHA-256 `7a86c9fbe8d4e87bbcdc3bf72ad618649d9d2cebfe20e2eba51f841ef685b877`.
+- Canonical reconciliation envelope: exactly 6 paths; SHA-256 `76de10f095cf53b630f96da884ebf6c1f4e581c4dc0f773312415c7788669b98`.
 
 ## 4. Operational boundaries / NO-GO
 
@@ -61,11 +67,11 @@ Machine-readable operational authority under `ops/final-shift-close/` remains au
 - Technical Preview / Production: `NOT_AUTHORIZED`;
 - updater: `INACTIVE`.
 
-Sprint169 is source readiness only and grants none of those operational authorities.
+Sprint170 is source readiness only and grants none of those operational authorities.
 
 ## 5. Next position
 
-Begin Sprint170 bounded discovery only after Sprint169 canonical reconciliation closes. Prioritize the smallest material non-duplicative P0/P1 business-completeness or production-readiness gap. For installation readiness, prefer a coherent next end-to-end prerequisite such as deterministic writable-path/package/application prerequisite qualification rather than exposing a web installer or executing migrations. Do not infer deployment or runtime activation authority.
+Begin Sprint171 bounded discovery only after Sprint170 canonical reconciliation closes. Prioritize the smallest material non-duplicative P0/P1 business-completeness or production-readiness gap. For installer progression, prove the next prerequisite before freezing scope; package/application prerequisite qualification is a candidate, but no Sprint171 objective is preselected. Do not infer deployment, migration execution, environment mutation, administrator bootstrap, or runtime activation authority.
 
 ## Documentation responsibility
 
