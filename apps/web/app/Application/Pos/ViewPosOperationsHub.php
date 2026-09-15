@@ -33,7 +33,8 @@ final readonly class ViewPosOperationsHub
         );
         $canCorrections = $this->authorization->allows($verified, PosPermission::voidSale())
             || $this->authorization->allows($verified, PosPermission::refundSale());
-        $canCatalogInventorySetup = $this->authorization->allows($verified, PosPermission::prepareCatalog())
+        $canCatalogChangeHistory = $this->authorization->allows($verified, PosPermission::prepareCatalog());
+        $canCatalogInventorySetup = $canCatalogChangeHistory
             && $this->authorization->allows($verified, PosPermission::inventoryBaseline());
         $canInventoryReplenishment = $this->authorization->allows(
             $verified,
@@ -60,6 +61,7 @@ final readonly class ViewPosOperationsHub
             $canReporting,
             $canCorrections,
             $canCatalogInventorySetup,
+            $canCatalogChangeHistory,
             $canInventoryReplenishment,
             $canInventoryAccountability,
             $canCashVarianceReconciliation,
