@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  qualify-sprint174-installation-release-compatibility-policy-readiness:
+  preserve-sprint174-installation-release-compatibility-policy-readiness:
     runs-on: ubuntu-latest
     env:
       APP_NAME: oneQay
@@ -58,6 +58,30 @@ jobs:
           ACTUAL_HASH="$(printf '%s\n' "${CHANGED[@]}" | sha256sum | awk '{print $1}')"
           test "$ACTUAL_HASH" = "$EXPECTED_PATH_HASH"
 
+      - name: Qualify exact Sprint174 reconciliation envelope
+        if: github.event_name == 'pull_request' && github.head_ref == 'sprint174-canonical-reconciliation'
+        env:
+          EXPECTED_PATH_HASH: c620402ddfb186f47fd0994f5751c3453811f08ca870400478442a1f9095075b
+        run: |
+          set -euo pipefail
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          test "$(git rev-parse HEAD)" = "$HEAD_SHA"
+          git cat-file -e "${BASE_SHA}^{commit}"
+          mapfile -t CHANGED < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort)
+          EXPECTED=(
+            '.github/workflows/sprint174-installation-release-compatibility-policy-readiness-regression.yml'
+            'CHANGELOG.md'
+            'PROJECT_MANIFEST.md'
+            'README.md'
+            'ROADMAP.md'
+            'TASKS.md'
+          )
+          test "${#CHANGED[@]}" -eq "${#EXPECTED[@]}"
+          diff -u <(printf '%s\n' "${EXPECTED[@]}") <(printf '%s\n' "${CHANGED[@]}")
+          ACTUAL_HASH="$(printf '%s\n' "${CHANGED[@]}" | sha256sum | awk '{print $1}')"
+          test "$ACTUAL_HASH" = "$EXPECTED_PATH_HASH"
+
       - name: Preserve Sprint174 source contract
         run: |
           set -euo pipefail
@@ -85,6 +109,16 @@ jobs:
           ! grep -Eq 'new[[:space:]]+PDO|PDO::|mysqli|DB::connection|curl_exec|file_get_contents|fopen\(|PharData|ZipArchive|extractTo' "$SOURCE"
           ! grep -Eq -- '->(insert|update|delete|increment|decrement)\(' "$SOURCE"
           ! grep -Eq 'Artisan::call|migrate|file_put_contents|fwrite|unlink|rename|copy\(|chmod|chown|mkdir|rmdir' "$SOURCE"
+
+      - name: Preserve canonical engineering evidence
+        if: github.event_name == 'pull_request' && github.head_ref == 'sprint174-canonical-reconciliation'
+        run: |
+          set -euo pipefail
+          for doc in PROJECT_MANIFEST.md README.md CHANGELOG.md TASKS.md ROADMAP.md; do
+            grep -Fq '3937cfc56d2615262160c9592d204715eb80ec89' "$doc"
+            grep -Fq '1f4a5333d32f79e57ac51d8c9ea8b1a1b3b0342d58b6439fbfe127d3a235aa91' "$doc"
+          done
+          grep -Fq 'c620402ddfb186f47fd0994f5751c3453811f08ca870400478442a1f9095075b' PROJECT_MANIFEST.md
 
       - name: Preserve operational NO-GO
         run: |
