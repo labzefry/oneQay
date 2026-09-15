@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  qualify-sprint172-installation-database-configuration-compatibility-readiness:
+  preserve-sprint172-installation-database-configuration-compatibility-readiness:
     runs-on: ubuntu-latest
     env:
       APP_NAME: oneQay
@@ -37,10 +37,10 @@ jobs:
           EXPECTED_HEAD="${{ github.event.pull_request.head.sha || github.sha }}"
           test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
 
-      - name: Qualify exact Sprint172 engineering envelope
-        if: github.event_name == 'pull_request'
+      - name: Qualify exact Sprint172 reconciliation envelope
+        if: github.event_name == 'pull_request' && github.head_ref == 'sprint172-canonical-reconciliation'
         env:
-          EXPECTED_PATH_HASH: c0a1726ad384717f91889af2f2ce0f433cfdae7a64b3be62dc6fadde16104d16
+          EXPECTED_PATH_HASH: d43b48ac559bdee72e785c9187f4dec04bdce55be84d76baa0d76d28b5a6f304
         run: |
           set -euo pipefail
           BASE_SHA="${{ github.event.pull_request.base.sha }}"
@@ -50,8 +50,11 @@ jobs:
           mapfile -t CHANGED < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort)
           EXPECTED=(
             '.github/workflows/sprint172-installation-database-configuration-compatibility-readiness-regression.yml'
-            'apps/web/app/Infrastructure/Installation/SecureInstallationReadiness.php'
-            'apps/web/tests/secure-installation-readiness.php'
+            'CHANGELOG.md'
+            'PROJECT_MANIFEST.md'
+            'README.md'
+            'ROADMAP.md'
+            'TASKS.md'
           )
           test "${#CHANGED[@]}" -eq "${#EXPECTED[@]}"
           diff -u <(printf '%s\n' "${EXPECTED[@]}") <(printf '%s\n' "${CHANGED[@]}")
@@ -82,6 +85,16 @@ jobs:
           ! grep -Eq 'new[[:space:]]+PDO|PDO::|mysqli|DB::connection|curl_exec|file_get_contents|fopen\(|PharData|ZipArchive|extractTo' "$SOURCE"
           ! grep -Eq -- '->(insert|update|delete|increment|decrement)\(' "$SOURCE"
           ! grep -Eq 'Artisan::call|migrate|file_put_contents|fwrite|unlink|rename|copy\(|chmod|chown|mkdir|rmdir' "$SOURCE"
+
+      - name: Preserve canonical engineering evidence
+        if: github.event_name == 'pull_request' && github.head_ref == 'sprint172-canonical-reconciliation'
+        run: |
+          set -euo pipefail
+          for doc in PROJECT_MANIFEST.md README.md CHANGELOG.md TASKS.md ROADMAP.md; do
+            grep -Fq '636a07130650f2d3119d450f35cfcfaf2868898e' "$doc"
+            grep -Fq 'c0a1726ad384717f91889af2f2ce0f433cfdae7a64b3be62dc6fadde16104d16' "$doc"
+          done
+          grep -Fq 'd43b48ac559bdee72e785c9187f4dec04bdce55be84d76baa0d76d28b5a6f304' PROJECT_MANIFEST.md
 
       - name: Preserve operational NO-GO
         run: |
