@@ -31,7 +31,6 @@ final class FinalShiftCloseServiceProvider extends ServiceProvider
         $this->app->register(PosShiftStartWorkspaceServiceProvider::class);
         $this->app->register(PosSaleCorrectionWorkspaceServiceProvider::class);
         $this->app->register(PosCatalogInventorySetupWorkspaceServiceProvider::class);
-        $this->app->register(PosInventoryReplenishmentWorkspaceServiceProvider::class);
         $this->app->register(PosCashVarianceReconciliationWorkspaceServiceProvider::class);
         $this->app->register(PosOperationsHubServiceProvider::class);
 
