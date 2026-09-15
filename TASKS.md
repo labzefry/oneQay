@@ -1,37 +1,36 @@
 # oneQay Tasks
 
-**Current canonical engineering checkpoint:** Sprint173 closed
-**Canonical engineering commit:** `933b06d0790834fb830ca9a55b443db69eca65f0`
-**Latest engineering PR:** #771 — `Sprint173: govern installation runtime requirements by release manifest v2`
+**Current canonical engineering checkpoint:** Sprint174 closed
+**Canonical engineering commit:** `3937cfc56d2615262160c9592d204715eb80ec89`
+**Latest engineering PR:** #773 — `Sprint174: add governed release compatibility policy readiness`
 **Canonical status authority:** `PROJECT_MANIFEST.md`
 
-## Completed Sprint173 state
+## Completed Sprint174 state
 
-Sprint173 materialized `INSTALLATION_RELEASE_RUNTIME_REQUIREMENTS_READINESS` as the next bounded installer/release production-readiness correctness prerequisite.
+Sprint174 materialized `INSTALLATION_RELEASE_COMPATIBILITY_POLICY_READINESS` as the next bounded release/installer correctness prerequisite.
 
 - [x] Canonical `SecureInstallationReadiness` owner reused.
-- [x] Governed release manifest requires `runtime_requirements`.
-- [x] `php_min` is validated and drives PHP runtime readiness.
-- [x] `php_extensions` is validated and drives loaded-extension readiness.
-- [x] Installer-owned `REQUIRED_EXTENSIONS` hardcode removed.
-- [x] Empty/oversized extension sets fail closed.
-- [x] Unsafe extension identifiers fail closed.
-- [x] Case-insensitive duplicate extension requirements fail closed.
-- [x] Missing/malformed runtime requirements fail both runtime and release-manifest readiness.
-- [x] Runtime failure output does not echo untrusted requirement values.
-- [x] Existing environment/key/debug/HTTPS, filesystem, artifact integrity, database compatibility, and redaction readiness preserved.
-- [x] No artifact transport/extraction, network/database execution, configuration/schema mutation, migration/seeder execution, administrator provisioning, installer exposure, deployment, or updater activation.
-- [x] Superseded PR #768 closed unmerged after stale Sprint169 workflow coupling surfaced.
-- [x] Sprint169 workflow-only successor correction PR #769 squash merged at `e28c2b01aa76ad770896c6eb21b398e8cb188fdb`.
+- [x] Governed Release Manifest v1 requires `compatibility_policy`.
+- [x] Release version validates with bounded semantic-version rules.
+- [x] Build/provenance reference validates as a bounded safe reference.
+- [x] Supported-current-version range requires valid ordered `min` and `max` semantic versions.
+- [x] Deployment compatibility uses a controlled policy token.
+- [x] Rollback compatibility requires `NO_SCHEMA_CHANGE_ROLLBACK_SAFE`.
+- [x] Public-bootstrap/layout compatibility uses a controlled policy token.
+- [x] Release-notes reference validates as a bounded safe reference.
+- [x] Missing/malformed policy fails release-manifest and artifact-integrity readiness.
+- [x] Failure output does not echo untrusted policy values.
+- [x] Existing runtime requirements, environment/key/debug/HTTPS, filesystem, artifact integrity, database compatibility, attribution, and redaction readiness preserved.
+- [x] No artifact publication/transport/extraction, network/database execution, configuration/schema mutation, migration/seeder execution, administrator provisioning, installer exposure, deployment, or updater activation.
 - [x] Focused PHP regression.
 - [x] Dedicated exact-envelope workflow.
 - [x] Exact-head engineering qualification successful.
 - [x] Repository-native Product Owner merge authority verified.
-- [x] Engineering PR #771 squash merged at `933b06d0790834fb830ca9a55b443db69eca65f0`.
+- [x] Engineering PR #773 squash merged at `3937cfc56d2615262160c9592d204715eb80ec89`.
 
-Engineering envelope: 3 paths; SHA-256 `83593746e455ea2aa7353482e6b1c35faac4c740b2b9bb897e93bcc71fc1748b`.
+Engineering envelope: 3 paths; SHA-256 `1f4a5333d32f79e57ac51d8c9ea8b1a1b3b0342d58b6439fbfe127d3a235aa91`.
 
-Canonical reconciliation envelope: 6 paths; SHA-256 `319054712753f696394ff98959688230e9091065fcdae394f7231bd9b6a01ab6`.
+Canonical reconciliation envelope: 6 paths; SHA-256 `c620402ddfb186f47fd0994f5751c3453811f08ca870400478442a1f9095075b`.
 
 ## Preserved lifecycle state
 
@@ -39,6 +38,6 @@ Machine-readable operational state under `ops/final-shift-close/` remains author
 
 ## Next engineering position
 
-Begin **Sprint174 bounded discovery** only from fully reconciled Sprint173. Prioritize the smallest material non-duplicative P0/P1 business-completeness or production-readiness gap. Do not preselect artifact transport/extraction, database execution, administrator creation, environment mutation, migration/seeder execution, installer exposure, privileged updater UI, deployment, or operational activation; prove the next canonical gap first.
+Begin **Sprint175 bounded discovery** only from fully reconciled Sprint174. Prioritize the smallest material non-duplicative P0/P1 business-completeness or production-readiness gap. Host/platform capability readiness remains a candidate but must not be preselected without live canonical evidence. No artifact transport/extraction, database execution, administrator creation, environment mutation, migration/seeder execution, installer exposure, privileged updater UI, deployment, or operational activation is pre-authorized.
 
 Author by Lab | zefry
