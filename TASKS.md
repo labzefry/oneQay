@@ -1,35 +1,40 @@
 # oneQay Tasks
 
-**Current canonical engineering checkpoint:** Sprint164 closed
-**Canonical engineering commit:** `d37ecdfa16d3f024de840871aa202af4fb5ee7d1`
-**Latest engineering PR:** #746 — `Sprint164: add POS inventory replenishment foundation workspace`
+**Current canonical engineering checkpoint:** Sprint165 closed
+**Canonical engineering commit:** `dc6340c04ac710bd38966d897b27e23fd92c0a41`
+**Latest engineering PR:** #748 — `Sprint165: add POS inventory accountability workspace`
 **Canonical status authority:** `PROJECT_MANIFEST.md`
 
-## Completed Sprint164 state
+## Completed Sprint165 state
 
-Sprint164 materialized `POS_INVENTORY_REPLENISHMENT_FOUNDATION_WORKSPACE` as positive-only ongoing receiving after the canonical one-time inventory baseline.
+Sprint165 materialized `POS_INVENTORY_ACCOUNTABILITY_WORKSPACE` as a read-only accountability layer over existing immutable stock evidence.
 
-Engineering PR #746 squash merged at `d37ecdfa16d3f024de840871aa202af4fb5ee7d1` after complete exact-head qualification and repository-native Product Owner merge authorization.
+Engineering PR #748 squash merged at `dc6340c04ac710bd38966d897b27e23fd92c0a41` after complete exact-head qualification and repository-native Product Owner merge authorization.
 
-Engineering envelope: exactly 22 paths with sorted newline SHA-256 `b826b746e18bc39025735e10fe645ad559eceab992801190a654624462811f8e`.
+Engineering envelope: exactly 14 paths with sorted newline SHA-256 `d83945325461acdd9db7f1ab02bb908a1e0e263a6f680e2f0acf1f3256978786`.
 
-Canonical reconciliation envelope: exactly six paths with sorted newline SHA-256 `19c035b85a4698f60a78cbb70ccd0c1b82835c47073f5dcb2e2443f49c88f0fa`.
+Canonical reconciliation envelope: exactly six paths with sorted newline SHA-256 `2f10216f9f2c86a188a924c66a8473c17cd5310da47bd768a8ab1bb0f4a17533`.
 
-## Preserved product boundaries
+## Completed accountability invariants
 
-- Replenishment accepts positive received quantity only; it is not a general stock adjustment/decrement authority.
-- A canonical opening inventory baseline must already exist for the exact tenant/outlet/product.
-- The catalog item must remain active.
-- `pos.inventory.replenish` is deny-by-default and is not auto-granted or provisioned.
-- Migration #28 is module-owned under `database/module-migrations/pos` and is discovered by the bounded provider; the canonical global migration horizon remains through #27.
-- Sale completion remains stock decrement owner; full-sale void remains stock restoration owner; cash refund does not restore stock twice.
+- Current stock is accepted only when `opening + replenishment + full-sale-void restoration - completed sale quantity` equals canonical persisted stock.
+- Reconciliation is aggregate/commutative; timestamps do not determine accounting truth.
+- CASH refunds do not restore inventory.
+- Inactive but baselined products remain visible for historical accountability.
+- Foreign tenant/outlet evidence, orphan evidence, malformed quantities, overflow, and current-stock mismatch fail closed.
+- Workspace is read-only; no insert/update/delete/increment/decrement path exists in its repository.
+- Access reuses existing `pos.inventory.baseline` OR `pos.inventory.replenish`; no new permission or provisioning exists.
+- Delivery remains default-off and Local/Test/CI only with persistence and exact session controls.
+- No migration, arbitrary stock adjustment, stocktake mutation, purchasing/supplier flow, transfer flow, negative adjustment, global route/provider edit, shared permission-registry edit, or Final Shift Close owner change was introduced.
 
 ## Lifecycle state
 
-Machine-readable operational state under `ops/final-shift-close/` remains authoritative and unchanged: selected target `null`, migration #27 `NOT_EXECUTED`, permission provisioning `NONE`, feature activation `INACTIVE`, deployment authority `NOT_GRANTED`, Technical Preview/Production `NOT_AUTHORIZED`, updater `INACTIVE`.
+Machine-readable operational state under `ops/final-shift-close/` remains authoritative and unchanged: target selection remains blocked, selected target `null`, migration #27 `NOT_EXECUTED`, permission provisioning `NONE`, feature activation `INACTIVE`, deployment authority `NOT_GRANTED`, Technical Preview/Production `NOT_AUTHORIZED`, updater `INACTIVE`.
 
 ## Next engineering position
 
-Begin **Sprint165 bounded discovery** from the canonical post-Sprint164 checkpoint. Do not preselect the objective. Select the smallest material non-duplicative P0/P1 production-readiness or business-completeness gap from current source/contracts/regressions.
+Begin **Sprint166 bounded discovery** from the fully reconciled post-Sprint165 checkpoint. Do not preselect the objective. Select the smallest material non-duplicative P0/P1 production-readiness or business-completeness gap from current source/contracts/regressions.
+
+Do not infer stock-adjustment, stocktake, purchasing, supplier, transfer, or negative-inventory authority from Sprint165; each requires separate bounded justification if later selected.
 
 Author by Lab | zefry
