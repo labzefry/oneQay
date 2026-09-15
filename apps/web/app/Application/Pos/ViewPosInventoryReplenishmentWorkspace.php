@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Pos;
 
 use App\Application\Authorization\DurableScopedAuthorizationPolicy;
-use App\Application\Authorization\PosPermission;
+use App\Application\Authorization\PermissionIdentifier;
 use App\Application\Organization\OrganizationalContextStore;
 
 // Author by Lab | zefry
@@ -21,7 +21,10 @@ final readonly class ViewPosInventoryReplenishmentWorkspace
     {
         $verified = $this->contexts->current();
         $context = PosExecutionContext::fromVerified($verified);
-        $this->authorization->require($verified, PosPermission::inventoryReplenish());
+        $this->authorization->require(
+            $verified,
+            PermissionIdentifier::fromString(ReplenishInventory::REPLENISH_PERMISSION),
+        );
 
         return $this->workspace->read($context);
     }
