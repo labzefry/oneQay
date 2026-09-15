@@ -1,31 +1,33 @@
 # oneQay Roadmap
 
-**Roadmap checkpoint:** Sprint170 closed canonically
-**Canonical engineering baseline:** `aa46ad0752f8ae2da145eb0c0f6324a3c5be6f25`
+**Roadmap checkpoint:** Sprint171 closed canonically
+**Canonical engineering baseline:** `cbf26a53c1a784b8e6eda65cc1d047c90ea590e8`
 **Current state authority:** `PROJECT_MANIFEST.md`
 
-## Completed Sprint170 horizon
+## Completed Sprint171 horizon
 
-Sprint170 closed `INSTALLATION_FILESYSTEM_READINESS`, extending the secure installer-readiness path with deterministic, read-only, fail-closed verification of the minimum Laravel runtime write surface required by oneQay.
+Sprint171 closed `INSTALLATION_GOVERNED_RELEASE_ARTIFACT_READINESS`, extending secure installation readiness with a deterministic, fail-closed governed release manifest and observed artifact identity boundary before any future runtime release mutation.
 
-The capability qualifies `bootstrap/cache`, `storage/framework/cache`, `storage/framework/sessions`, `storage/framework/views`, and `storage/logs`. Missing or non-writable required paths prevent readiness. It does not perform `chmod`, `chown`, directory creation, environment mutation, migration execution, administrator bootstrap, or installer exposure.
+The capability accepts only manifest schema version 1, canonical `oneQay` / `labzefry/oneQay` identity, supported release channels, immutable source-commit form, safe artifact identity, positive byte size, SHA-256, `NO_SCHEMA_CHANGE`, and `Lab | zefry` attribution. Observed artifact filename, size, and digest must match exactly.
 
-Engineering PR #758 squash merged at `aa46ad0752f8ae2da145eb0c0f6324a3c5be6f25`. Engineering envelope: 3 paths, SHA-256 `7a86c9fbe8d4e87bbcdc3bf72ad618649d9d2cebfe20e2eba51f841ef685b877`.
+Engineering PR #760 squash merged at `cbf26a53c1a784b8e6eda65cc1d047c90ea590e8`. Engineering envelope: 3 paths, SHA-256 `cf2f56c6ba42404726fe225a559b7262580191a9bf1c8b03c4ebf39fe2f29d88`.
 
-Canonical reconciliation envelope: 6 paths, SHA-256 `76de10f095cf53b630f96da884ebf6c1f4e581c4dc0f773312415c7788669b98`.
+Canonical reconciliation envelope: 6 paths, SHA-256 `a8627a615280e7592638964a5d7f496f77310ef28f085439f2ba584d6a97d301`.
 
-## Product progression through Sprint170
+## Product progression through Sprint171
 
-The product now combines the existing tenant/security/API/POS operational foundations with a canonical installation-readiness owner that qualifies runtime/configuration/security posture and the exact runtime filesystem write surface needed by the Laravel application. This is still intentionally not a web wizard, deployment mechanism, environment writer, migration runner, or administrator bootstrapper.
+The product now combines the existing tenant/security/API/POS operational foundations with a canonical installation-readiness owner that qualifies runtime/configuration/security posture, required filesystem write surfaces, and governed release artifact identity/integrity prerequisites. It remains intentionally separate from artifact transport, extraction, staging, activation, privileged updater mutation, and deployment.
 
 ## Operational boundary
 
 Machine-readable operational state under `ops/final-shift-close/` remains authoritative. Selected durable target remains `null`; migration #27 remains `NOT_EXECUTED`; permission provisioning remains `NONE`; producer dispatch remains not performed; runtime allowlist remains Local/Test/CI; Final Shift Close remains inactive; deployment/Technical Preview/Production remain unauthorized; updater remains inactive.
 
-## Sprint171 selection rule
+Release publication, artifact download/extraction, external signature/provenance verification, migration execution, installer exposure, and runtime activation remain separately gated.
 
-Begin Sprint171 bounded discovery from fully reconciled Sprint170. Prioritize the smallest material non-duplicative P0/P1 production-readiness or business-completeness gap rather than returning to mechanical dashboard expansion.
+## Sprint172 selection rule
 
-For installer progression, package/application prerequisite qualification is a reasonable candidate only if live repository discovery proves it is the next canonical gap. No deployment, migration execution, environment mutation, administrator bootstrap, installer exposure, or operational activation is authorized by this roadmap position.
+Begin Sprint172 bounded discovery from fully reconciled Sprint171. Prioritize the smallest material non-duplicative P0/P1 production-readiness or business-completeness gap rather than mechanically extending the installer or returning to dashboard expansion.
+
+No artifact transport, extraction, updater control-plane mutation, privileged updater UI, deployment, migration, or operational activation objective is preselected. Live repository evidence must prove the next bounded gap first.
 
 Author by Lab | zefry
