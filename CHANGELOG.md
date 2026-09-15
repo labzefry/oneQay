@@ -1,5 +1,33 @@
 # Changelog
 
+## 2026-09-15 — Sprint164 closed
+
+**Sprint164: POS inventory replenishment foundation workspace**
+
+- **Purpose / Why:** the canonical opening inventory baseline is intentionally one-time, while normal sales continually reduce stock; a durable positive receiving path was required to avoid direct database manipulation after stock depletion.
+- **Objective / Gap:** `POS_INVENTORY_REPLENISHMENT_FOUNDATION_WORKSPACE`.
+- Added dedicated deny-by-default `pos.inventory.replenish` authority without automatic role grant or permission provisioning.
+- Added positive-only replenishment command/service/repository with exact tenant/organization/outlet/device binding, stable operation ID, semantic fingerprint replay protection, baseline prerequisite, active-catalog prerequisite, locked overflow-safe stock transition, and immutable before/received/after evidence.
+- Added module-owned migration #28 at `apps/web/database/module-migrations/pos/0000_00_00_000028_create_pos_inventory_replenishment_foundation.php`; the bounded provider loads this path for Laravel migration discovery while the canonical global migration directory remains unchanged through migration #27.
+- Preserved existing stock ownership: sale completion decrements stock; full-sale void restores stock from immutable sale lines; cash refund does not restore stock again; opening inventory baseline remains one-time initialization.
+- Added guarded read workspace, recent immutable replenishment evidence, Operations Hub discoverability, Vue/Inertia UI, authoritative refresh after success or network ambiguity, and no automatic retry.
+- Initial head `d3bc0996cef8d7e0343e779472cea7db932beddd` was disqualified because unnecessary shared-owner edits triggered stale historical exact-shape gates.
+- Correction head `595548919732d28dffb266e597cacde0759384c8` was disqualified because placing migration #28 in the global migration directory triggered historical migration-horizon gates.
+- Final qualified engineering head `45cf298b799b134d0e17bdf19cc751814fe3ae2a` used bounded permission ownership plus module-owned schema and completed the latest reopened surfaced matrix successfully.
+- Sprint164 regression run `34912504801`, M7.1 `34912504799`, Governance `34912504817`, PHP Foundation `34912504836`, POS successor regressions, and surfaced Final Shift Close historical runs succeeded.
+- Repository-native exact-head Product Owner merge authority verified successfully.
+- Engineering envelope: 22 paths; SHA-256 `b826b746e18bc39025735e10fe645ad559eceab992801190a654624462811f8e`.
+- Engineering PR #746 squash merged at `d37ecdfa16d3f024de840871aa202af4fb5ee7d1`.
+- Reconciliation envelope: six paths; SHA-256 `19c035b85a4698f60a78cbb70ccd0c1b82835c47073f5dcb2e2443f49c88f0fa`.
+- **Operational boundaries / NO-GO:** selected target `null`; migration #27 `NOT_EXECUTED`; permission provisioning `NONE`; Final Shift Close feature activation `INACTIVE`; deployment authority `NOT_GRANTED`; Technical Preview/Production `NOT_AUTHORIZED`; updater `INACTIVE`.
+- **Next position:** Sprint165 bounded discovery; no objective or source envelope preselected. Future arbitrary stock correction/decrement/transfer authority is not implied by Sprint164 and requires separate bounded justification.
+
+---
+
+This changelog records **material canonical progress**, not every intermediate compatibility or CI-only commit. Detailed provenance remains in merged pull requests, Git history, workflows, tests, and machine-readable contracts.
+
+Current project-state authority: [`PROJECT_MANIFEST.md`](PROJECT_MANIFEST.md).
+
 ## 2026-09-14 — Sprint163 closed
 
 **Sprint163: operational cash variance reconciliation workspace**
@@ -17,12 +45,6 @@
 - Reconciliation envelope: six paths; SHA-256 `dd1e8acc008bbe3ca8491cff12b0327f204d63e0820286af0da786acc5f8d4f2`.
 - **Operational boundaries / NO-GO:** selected target `null`; migration #27 `NOT_EXECUTED`; permission provisioning `NONE`; feature activation `INACTIVE`; deployment authority `NOT_GRANTED`; Technical Preview/Production `NOT_AUTHORIZED`; updater `INACTIVE`.
 - **Next position:** Sprint164 bounded discovery; no objective or source envelope preselected.
-
----
-
-This changelog records **material canonical progress**, not every intermediate compatibility or CI-only commit. Detailed provenance remains in merged pull requests, Git history, workflows, tests, and machine-readable contracts.
-
-Current project-state authority: [`PROJECT_MANIFEST.md`](PROJECT_MANIFEST.md).
 
 ## 2026-09-14 — Sprint162 closed
 
