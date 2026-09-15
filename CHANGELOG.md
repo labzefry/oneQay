@@ -1,29 +1,30 @@
 # Changelog
 
-## 2026-09-15 — Sprint171 closed
+## 2026-09-15 — Sprint172 closed
 
-**Sprint171: Installation Governed Release Artifact Readiness**
+**Sprint172: Installation Database Configuration Compatibility Readiness**
 
-- **Objective:** `INSTALLATION_GOVERNED_RELEASE_ARTIFACT_READINESS`.
-- Extended canonical `App\Infrastructure\Installation\SecureInstallationReadiness`; no parallel installer or updater owner was introduced.
-- Added deterministic, fail-closed readiness for Governed Release Manifest v1 identity/policy and observed artifact filename/size/SHA-256 equality.
-- Requires canonical `oneQay` / `labzefry/oneQay` identity, supported release channel, 40-hex source commit, safe artifact identity, positive byte size, 64-hex SHA-256, `NO_SCHEMA_CHANGE`, and `Lab | zefry` attribution.
-- Invalid, incomplete, schema-changing, foreign-identity, unsafe-filename, size-mismatch, or digest-mismatch evidence fails readiness without echoing untrusted values.
-- Existing PHP runtime, extension, required environment, application-key, production-debug, HTTPS, filesystem-write, and secret-redaction readiness remains preserved.
-- No network download, arbitrary URL, archive extraction, external signature/provenance verification claim, environment mutation, administrator creation, migration execution, installer route, release publication, deployment, updater activation, or operational activation was introduced.
-- Exact engineering head `b2dbd36edb75174a944a77cc547811938e772ed0` completed surfaced PR-triggered qualification successfully.
-- Sprint171 regression `34968787888`, Governance `34968787247`, PHP Foundation `34968787525`, and M7.1 `34968787729` succeeded.
+- **Objective:** `INSTALLATION_DATABASE_CONFIGURATION_COMPATIBILITY_READINESS`.
+- Reused canonical `App\Infrastructure\Installation\SecureInstallationReadiness`; no parallel installer/database-readiness owner was introduced.
+- Corrected installer preflight from stale `DB_*` requirements to canonical `ONEQAY_DB_DRIVER`, `ONEQAY_DB_HOST`, `ONEQAY_DB_DATABASE`, and `ONEQAY_DB_USERNAME` keys actually consumed by the application.
+- Added deterministic observed database compatibility readiness for connection state, MySQL/MariaDB engine identity, server-version form, `utf8mb4`, UTC / `+00:00`, empty/recognized schema state, and least-privilege posture.
+- Missing, disconnected, incompatible, or non-least-privilege database evidence fails closed without echoing credentials or arbitrary server facts.
+- Existing Sprint169–Sprint171 runtime, environment, application-key, production-debug, HTTPS, filesystem-write, governed release manifest, artifact integrity, and redaction readiness remains preserved.
+- No PDO/network connection, database/schema/configuration mutation, migration execution, credential provisioning, installer route, release publication, artifact transport/extraction, deployment, updater activation, or operational activation was introduced.
+- Exact engineering head `ab9716dc64c77a69da2c20fbafcc800d1114ef93` completed surfaced PR-triggered qualification successfully.
+- Sprint172 regression `34979406742`, Governance `34979406633`, PHP Foundation `34979406379`, and M7.1 `34979406335` succeeded.
 - Repository-native Product Owner merge authorization verified on the exact engineering head.
-- Engineering envelope: 3 paths; SHA-256 `cf2f56c6ba42404726fe225a559b7262580191a9bf1c8b03c4ebf39fe2f29d88`.
-- Engineering PR #760 squash merged at `cbf26a53c1a784b8e6eda65cc1d047c90ea590e8`.
-- Initial reconciliation PR #761 surfaced stale successor-workflow assumptions and was closed unmerged.
-- Workflow-only successor-compatibility correction PR #762 squash merged at `1e568085d6b9743eb05c73fb9a78c019b8d82f04`; application source and operational state were unchanged.
-- Canonical reconciliation envelope: 6 paths; SHA-256 `a8627a615280e7592638964a5d7f496f77310ef28f085439f2ba584d6a97d301`.
+- Engineering envelope: 3 paths; SHA-256 `c0a1726ad384717f91889af2f2ce0f433cfdae7a64b3be62dc6fadde16104d16`.
+- Engineering PR #764 squash merged at `636a07130650f2d3119d450f35cfcfaf2868898e`.
+- Initial reconciliation PR #765 surfaced stale Sprint171 successor-document evidence assumptions and was closed unmerged.
+- Workflow-only compatibility correction PR #766 squash merged at `24fe2664eb294fe0142775ff0116006e0909f999`; application source and operational state were unchanged.
+- Canonical reconciliation envelope: 6 paths; SHA-256 `d43b48ac559bdee72e785c9187f4dec04bdce55be84d76baa0d76d28b5a6f304`.
 - **Operational NO-GO preserved:** migration #27 `NOT_EXECUTED`; permission provisioning `NONE`; selected durable target `null`; feature activation `INACTIVE`; deployment `NOT_GRANTED`; Technical Preview/Production `NOT_AUTHORIZED`; updater `INACTIVE`.
-- **Next position:** Sprint172 bounded discovery from canonical post-Sprint171, prioritizing material P0/P1 production-readiness or business-completeness work with no objective preselected.
+- **Next position:** Sprint173 bounded discovery from canonical post-Sprint172, prioritizing material P0/P1 production-readiness or business-completeness work with no objective preselected.
 
 ## Recent material progression
 
+- **Sprint171:** governed release artifact installation readiness; engineering squash `cbf26a53c1a784b8e6eda65cc1d047c90ea590e8`.
 - **Sprint170:** installation filesystem readiness; engineering squash `aa46ad0752f8ae2da145eb0c0f6324a3c5be6f25`.
 - **Sprint169:** secure installation readiness foundation; engineering squash `2a53d9db9547340bd4d791b34fabb80ec600fc8b`.
 - **Sprint168:** closed-shift historical POS performance; engineering squash `d3703a6b18f478acd812e7892c3871ce3aaf7bfa`.
