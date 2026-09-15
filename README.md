@@ -8,34 +8,34 @@ Enterprise-oriented business-management platform built with Modular Monolith Fir
 
 ## Current canonical status
 
-The latest completed engineering sprint is **Sprint172 — Installation Database Configuration Compatibility Readiness**.
+The latest completed engineering sprint is **Sprint173 — Installation Release Runtime Requirements Readiness**.
 
-- Canonical engineering commit: `636a07130650f2d3119d450f35cfcfaf2868898e`
-- Engineering PR: #764
-- Final engineering head: `ab9716dc64c77a69da2c20fbafcc800d1114ef93`
-- Sprint172 regression `34979406742`: successful
-- Governance `34979406633`: successful
-- PHP Foundation `34979406379`: successful
-- M7.1 `34979406335`: successful
-- Engineering envelope: 3 paths, SHA-256 `c0a1726ad384717f91889af2f2ce0f433cfdae7a64b3be62dc6fadde16104d16`
-- Workflow compatibility correction: PR #766, squash `24fe2664eb294fe0142775ff0116006e0909f999`
-- Reconciliation envelope: 6 paths, SHA-256 `d43b48ac559bdee72e785c9187f4dec04bdce55be84d76baa0d76d28b5a6f304`
+- Canonical engineering commit: `933b06d0790834fb830ca9a55b443db69eca65f0`
+- Engineering PR: #771
+- Final engineering head: `494503122ebf273fbfcc0791c5afca0e24bb5b29`
+- Sprint173 regression `34991613421`: successful
+- Governance `34991613429`: successful
+- PHP Foundation `34991613314`: successful
+- M7.1 `34991613882`: successful
+- Engineering envelope: 3 paths, SHA-256 `83593746e455ea2aa7353482e6b1c35faac4c740b2b9bb897e93bcc71fc1748b`
+- Sprint169 successor-compatibility correction: PR #769, squash `e28c2b01aa76ad770896c6eb21b398e8cb188fdb`
+- Reconciliation envelope: 6 paths, SHA-256 `319054712753f696394ff98959688230e9091065fcdae394f7231bd9b6a01ab6`
 
 For the full project state, use [`PROJECT_MANIFEST.md`](PROJECT_MANIFEST.md) as the canonical human-readable source of truth.
 
-## Sprint172 — Database configuration compatibility readiness
+## Sprint173 — Release runtime requirements readiness
 
-Sprint172 corrects a material installation-readiness mismatch: the application consumes canonical `ONEQAY_DB_*` configuration, while preflight previously required stale `DB_*` keys. The canonical readiness owner now validates the configuration names the application actually uses and accepts deterministic observed database compatibility facts before any future database execution work.
+Sprint173 moves PHP runtime compatibility ownership into the governed release manifest. `runtime_requirements.php_min` and `runtime_requirements.php_extensions` now define the release-specific PHP minimum and extension set used by canonical installation readiness instead of an installer-owned hardcoded extension list.
 
-The readiness contract requires configured `mysql`, observed MySQL or MariaDB engine identity, valid server-version form, `utf8mb4`, UTC / `+00:00`, an `empty` or `recognized` schema state, and least-privilege evidence. Missing or incompatible facts fail closed without echoing credentials or arbitrary server evidence.
+Runtime requirements are validated fail-closed: malformed PHP versions, empty or oversized extension sets, invalid extension identifiers, case-insensitive duplicates, missing requirements, or unsatisfied observed runtime facts prevent readiness. Failure output does not echo untrusted runtime values.
 
-Existing Sprint169–Sprint171 runtime, configuration, HTTPS, filesystem, governed release manifest, artifact integrity, and redaction checks remain preserved. Sprint172 does not open a database connection, mutate schema/configuration, execute migrations, provision credentials, expose the installer, activate the updater, or deploy anything.
+Existing secure environment, application-key, production-debug/HTTPS, filesystem-write, governed release artifact identity/integrity, database compatibility, and redaction checks remain preserved. Sprint173 does not download/extract artifacts, open a database connection, mutate configuration/schema, execute migrations/seeders, create an administrator, expose the installer, activate the updater, or deploy anything.
 
-The initial Sprint172 reconciliation attempt correctly surfaced stale Sprint171 successor-document evidence assumptions. Workflow-only correction PR #766 repaired that historical preservation contract without changing application source, Sprint172 engineering evidence, or operational authority.
+Superseded PR #768 correctly exposed stale Sprint169 workflow coupling to `REQUIRED_EXTENSIONS`. Workflow-only correction PR #769 repaired that historical preservation invariant before Sprint173 was rebuilt and qualified through PR #771.
 
 ## Product progression
 
-The canonical product chain includes tenant isolation, deny-by-default authorization, API/session governance, POS register/shift/sale operations, immutable payment/receipt evidence, catalog and inventory controls, operational reporting and reconciliation, guarded POS workspaces, and a bounded secure installation-readiness foundation covering runtime, canonical configuration, filesystem, governed release artifact identity/integrity, and deterministic database compatibility prerequisites.
+The product combines tenant/security/API/POS operational foundations with a canonical secure installation-readiness owner covering governed release runtime requirements, canonical configuration, filesystem write surfaces, immutable artifact identity/integrity, and deterministic database compatibility prerequisites.
 
 ## Operational status remains intentionally gated
 
@@ -43,6 +43,6 @@ Migration #27 remains `NOT_EXECUTED`; permission provisioning `NONE`; durable ac
 
 ## Next engineering position
 
-Sprint173 begins only after Sprint172 canonical reconciliation. Select the smallest material P0/P1 business-completeness or production-readiness gap and reuse canonical owners. No database execution, migration/seeder execution, administrator creation, environment mutation, installer exposure, updater activation, deployment, or operational activation is pre-authorized.
+Sprint174 begins only after Sprint173 canonical reconciliation. Select the smallest material P0/P1 business-completeness or production-readiness gap and reuse canonical owners. No artifact transport/extraction, database execution, migration/seeder execution, administrator creation, environment mutation, installer exposure, updater activation, deployment, or operational activation is pre-authorized.
 
 Author by Lab | zefry
