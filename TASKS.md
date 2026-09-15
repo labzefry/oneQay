@@ -1,19 +1,19 @@
 # oneQay Tasks
 
-**Current engineering checkpoint:** Sprint164 engineering merged
+**Current canonical engineering checkpoint:** Sprint164 closed
 **Canonical engineering commit:** `d37ecdfa16d3f024de840871aa202af4fb5ee7d1`
 **Latest engineering PR:** #746 — `Sprint164: add POS inventory replenishment foundation workspace`
 **Canonical status authority:** `PROJECT_MANIFEST.md`
 
-## Engineering state
+## Completed Sprint164 state
 
 Sprint164 materialized `POS_INVENTORY_REPLENISHMENT_FOUNDATION_WORKSPACE` as positive-only ongoing receiving after the canonical one-time inventory baseline.
 
-Engineering PR #746 is squash merged at `d37ecdfa16d3f024de840871aa202af4fb5ee7d1` after exact-head qualification and repository-native Product Owner merge authorization.
+Engineering PR #746 squash merged at `d37ecdfa16d3f024de840871aa202af4fb5ee7d1` after complete exact-head qualification and repository-native Product Owner merge authorization.
 
-The engineering envelope is exactly 22 paths with sorted newline SHA-256 `b826b746e18bc39025735e10fe645ad559eceab992801190a654624462811f8e`.
+Engineering envelope: exactly 22 paths with sorted newline SHA-256 `b826b746e18bc39025735e10fe645ad559eceab992801190a654624462811f8e`.
 
-The canonical reconciliation target is exactly six paths with sorted newline SHA-256 `19c035b85a4698f60a78cbb70ccd0c1b82835c47073f5dcb2e2443f49c88f0fa`.
+Canonical reconciliation envelope: exactly six paths with sorted newline SHA-256 `19c035b85a4698f60a78cbb70ccd0c1b82835c47073f5dcb2e2443f49c88f0fa`.
 
 ## Preserved product boundaries
 
@@ -30,6 +30,6 @@ Machine-readable operational state under `ops/final-shift-close/` remains author
 
 ## Next engineering position
 
-After Sprint164 canonical reconciliation is fully qualified and merged, begin **Sprint165 bounded discovery** from the canonical post-Sprint164 checkpoint. Do not preselect the objective. Select the smallest material non-duplicative P0/P1 production-readiness or business-completeness gap from current source/contracts/regressions.
+Begin **Sprint165 bounded discovery** from the canonical post-Sprint164 checkpoint. Do not preselect the objective. Select the smallest material non-duplicative P0/P1 production-readiness or business-completeness gap from current source/contracts/regressions.
 
 Author by Lab | zefry
