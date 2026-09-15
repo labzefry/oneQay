@@ -1,44 +1,48 @@
 # oneQay Roadmap
 
-**Roadmap checkpoint:** Sprint165 closed canonically
-**Canonical engineering baseline:** `dc6340c04ac710bd38966d897b27e23fd92c0a41`
+**Roadmap checkpoint:** Sprint166 closed canonically
+**Canonical engineering baseline:** `e2758d0170a081953aaae11711ecc1ec3c0f8e78`
 **Current state authority:** `PROJECT_MANIFEST.md`
 
-## Completed Sprint165 horizon
+## Completed Sprint166 horizon
 
-Sprint165 closed the material inventory-accountability visibility gap with `POS_INVENTORY_ACCOUNTABILITY_WORKSPACE`.
+Sprint166 closed the product-level operational reporting gap with `POS_PRODUCT_SALES_PERFORMANCE_WORKSPACE`.
 
-The workspace is read-only and derives expected current stock from canonical immutable evidence: opening baseline + positive replenishment + full-sale void restoration - completed sale lines. Persisted catalog stock must match exactly or the workspace fails closed. Reconciliation does not infer causality from same-second timestamps; timestamps order display only.
+The capability is read-only and exact tenant + organization + outlet scoped. It derives product/currency performance from immutable completed-sale lines, reports gross and full-sale-void quantities/values plus net active results, keeps historical currency/scale boundaries separate, retains inactive catalog history, fails closed on corrupt/orphaned/inconsistent evidence, and bounds output to 250 buckets with explicit truncation.
 
-The capability reuses existing `pos.inventory.baseline` OR `pos.inventory.replenish` authority. It does not add a permission, migration, schema, arbitrary adjustment engine, stocktake mutation, purchasing/supplier domain, transfer capability, or negative stock mutation.
+CASH refund is not subtracted a second time because the canonical refund path follows a full-sale void. The workspace reuses existing `pos.reporting.sales-summary.view`, adds no permission or provisioning, and remains default-false and Local/Test/CI gated.
 
-Engineering PR #748 squash merged at `dc6340c04ac710bd38966d897b27e23fd92c0a41`. Engineering envelope: 14 paths, SHA-256 `d83945325461acdd9db7f1ab02bb908a1e0e263a6f680e2f0acf1f3256978786`.
+Engineering PR #750 squash merged at `e2758d0170a081953aaae11711ecc1ec3c0f8e78`. Engineering envelope: 12 paths, SHA-256 `3687acbd962b494a354c705c43eda5a71c1de426b5691d9b0f13b1620af2e228`.
 
-Canonical reconciliation envelope: six paths, SHA-256 `2f10216f9f2c86a188a924c66a8473c17cd5310da47bd768a8ab1bb0f4a17533`.
+Canonical reconciliation envelope: six paths, SHA-256 `d887f8bcf393ad56a74d481e64aa3963c8678012f87025dcbf93ef8bde5ea4c8`.
 
-## Product progression through Sprint165
+## Product progression through Sprint166
 
-The current guarded POS operational surface includes reporting, cashier sale entry, shift start, sale corrections, immutable sale history/receipt detail, catalog/opening-inventory setup, Operations Hub navigation, cash-variance reconciliation, positive inventory replenishment, and inventory accountability.
+The bounded operational POS chain now includes:
 
-Inventory lifecycle boundaries are explicit:
-- opening baseline = one-time initialization;
-- replenishment = positive stock receipt after baseline;
-- completed sale = stock decrement;
-- full-sale void = sold-stock restoration;
-- CASH refund = financial correction without a second stock restoration;
-- accountability = read-only reconciliation across those existing owners.
+- operational sales reporting;
+- cashier sale entry;
+- shift start;
+- sale correction;
+- immutable sale history and receipt detail;
+- catalog/opening-inventory setup;
+- guarded POS operations navigation;
+- cash-variance reconciliation;
+- positive inventory replenishment;
+- inventory accountability;
+- product-level sales performance.
+
+Future pricing analytics, margin/cost accounting, purchasing/supplier workflows, arbitrary stock adjustment, stocktake mutation, and inventory transfer remain separate possible bounded domains and are not authorized by Sprint166.
 
 ## Operational boundary
 
-Machine-readable operational state under `ops/final-shift-close/` remains authoritative. No roadmap text grants operational authority. Selected durable target remains `null`; migration #27 execution remains `NOT_EXECUTED`; permission provisioning remains `NONE`; Final Shift Close remains inactive; deployment/Technical Preview/Production remain unauthorized; updater remains inactive.
+Machine-readable operational state under `ops/final-shift-close/` remains authoritative. Selected durable target remains `null`; migration #27 remains `NOT_EXECUTED`; permission provisioning remains `NONE`; real target-bound capability/dependency evidence remains absent; producer dispatch remains not performed; runtime allowlist remains Local/Test/CI; Final Shift Close remains inactive; deployment/Technical Preview/Production remain unauthorized; updater remains inactive.
 
-## Sprint166 selection rule
+## Sprint167 selection rule
 
-Begin Sprint166 bounded discovery only from the fully reconciled Sprint165 canonical checkpoint. Do not preselect the objective, source envelope, permission, migration, or mutation authority.
+Begin Sprint167 bounded discovery from the fully reconciled Sprint166 canonical checkpoint. Do not preselect an objective.
 
-Prioritize the smallest material non-duplicative P0/P1 production-readiness or business-completeness gap after inspecting current source/contracts/regressions. Reuse existing canonical shift, sale, catalog, inventory, replenishment, accountability, void/refund, authorization, reporting, and reconciliation owners.
-
-Potential future domains such as arbitrary stock correction, stocktake, supplier purchasing, goods receiving beyond bounded replenishment, inter-outlet transfer, or negative inventory mutation are **not** authorized by Sprint165 and must not be selected without independent bounded evidence that the gap is both material and not already owned.
+Prioritize the smallest material non-duplicative P0/P1 production-readiness or business-completeness gap. Reuse canonical shift, sale, catalog, inventory, void/refund, authorization, reporting, reconciliation, replenishment, accountability, and product-performance owners. Any new mutation authority or operational activation requires separate bounded justification and authorization.
 
 Preserve fail-closed behavior, deny-by-default authorization, tenant/outlet isolation, exact-head CI, source-only operational posture, and the six-path canonical reconciliation model.
 
