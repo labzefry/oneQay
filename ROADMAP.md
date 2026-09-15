@@ -1,24 +1,24 @@
 # oneQay Roadmap
 
-**Roadmap checkpoint:** Sprint167 closed canonically
-**Canonical engineering baseline:** `dbdf0aa90a6d6127cf10113ec8c1092b8780504f`
+**Roadmap checkpoint:** Sprint168 closed canonically
+**Canonical engineering baseline:** `d3703a6b18f478acd812e7892c3871ce3aaf7bfa`
 **Current state authority:** `PROJECT_MANIFEST.md`
 
-## Completed Sprint167 horizon
+## Completed Sprint168 horizon
 
-Sprint167 closed the live exact-device shift visibility gap with `POS_ACTIVE_SHIFT_PERFORMANCE_WORKSPACE`.
+Sprint168 closed the closed-shift historical visibility gap with `POS_SHIFT_HISTORY_PERFORMANCE_WORKSPACE`.
 
-The capability is read-only and exact tenant + organization + outlet + device scoped. It reads only the current `active_slot=1` shift, derives tender/currency/scale performance from immutable shift-bound sales, reports completed/full-void/active/cash-refund counts plus gross/full-void/active-net/refunded-cash values, and treats no active shift as a valid explicit empty state.
+The capability is read-only and exact tenant + organization + outlet scoped, with deliberate same-outlet cross-device visibility. It lists the newest 50 closed shifts that have exactly one canonical Final Shift Close evidence row, validates close identity and cash-variance/review arithmetic, and derives selected-shift sale performance from immutable shift-bound completed-sale, full-sale-void, and CASH-refund evidence.
 
-Active net equals gross minus full-sale void. CASH refund remains separate and is not deducted twice. Legacy null-shift sales at/after opening, scope mismatch, malformed tender/evidence modes, inconsistent full-void/refund evidence, overflow, and excessive bucket count fail closed.
+Active net equals gross minus full-sale void. CASH refund remains separate and is not deducted twice. Missing close evidence, legacy null-shift sales inside the shift window, foreign-scope/outside-window evidence, malformed tender/evidence, inconsistent full-void/refund evidence, overflow, and excessive bucket count fail closed.
 
-The workspace reuses existing `pos.reporting.sales-summary.view`, adds no permission or provisioning, and remains default-false and Local/Test/CI gated.
+The workspace reuses existing `pos.reporting.sales-summary.view`, adds no permission or provisioning, and remains default-false and Local/Test/CI gated with existing Final Shift Close source/runtime readiness dependency.
 
-Engineering PR #752 squash merged at `dbdf0aa90a6d6127cf10113ec8c1092b8780504f`. Engineering envelope: 12 paths, SHA-256 `e9ca990e36ce896428bc749d19cf47025ce0525fd707f5e330d5d1cfbbfc8b48`.
+Engineering PR #754 squash merged at `d3703a6b18f478acd812e7892c3871ce3aaf7bfa`. Engineering envelope: 12 paths, SHA-256 `d42a5a7d8568766e524ff662107ffdb35452d4f9ac00f26cdc8e419d36bc3c25`.
 
-Canonical reconciliation envelope: six paths, SHA-256 `2fd60a53d8996d41452cb10036d350a14a4d95a2943e897c233d29f3eac32b14`.
+Canonical reconciliation envelope: six paths, SHA-256 `350fd16d111bb398c34a63e1519cc02206bcc373378a9366768c198ccf8146b5`.
 
-## Product progression through Sprint167
+## Product progression through Sprint168
 
 The bounded operational POS chain now includes:
 
@@ -33,19 +33,20 @@ The bounded operational POS chain now includes:
 - positive inventory replenishment;
 - inventory accountability;
 - product-level sales performance;
-- live active-shift performance.
+- live active-shift performance;
+- closed-shift historical performance.
 
-Shift-history analytics, pricing/margin accounting, customer/discount/payment domains, purchasing/supplier workflows, arbitrary stock adjustment, stocktake mutation, and inventory transfer remain separate possible bounded domains and are not authorized by Sprint167.
+Pricing/margin accounting, customer/discount/payment domains, purchasing/supplier workflows, arbitrary stock adjustment, stocktake mutation, inventory transfer, and operational activation remain separate possible bounded domains and are not authorized by Sprint168.
 
 ## Operational boundary
 
 Machine-readable operational state under `ops/final-shift-close/` remains authoritative. Selected durable target remains `null`; migration #27 remains `NOT_EXECUTED`; permission provisioning remains `NONE`; real target-bound capability/dependency evidence remains absent; producer dispatch remains not performed; runtime allowlist remains Local/Test/CI; Final Shift Close remains inactive; deployment/Technical Preview/Production remain unauthorized; updater remains inactive.
 
-## Sprint168 selection rule
+## Sprint169 selection rule
 
-Begin Sprint168 bounded discovery from the fully reconciled Sprint167 canonical checkpoint. Do not preselect an objective.
+Begin Sprint169 bounded discovery from the fully reconciled Sprint168 canonical checkpoint. Do not preselect an objective.
 
-Prioritize the smallest material non-duplicative P0/P1 production-readiness or business-completeness gap. Reuse canonical shift, sale, catalog, inventory, void/refund, authorization, reporting, reconciliation, replenishment, accountability, product-performance, and active-shift-performance owners. Any new mutation authority or operational activation requires separate bounded justification and authorization.
+Prioritize the smallest material non-duplicative P0/P1 production-readiness or business-completeness gap. Reuse canonical shift, sale, catalog, inventory, void/refund, authorization, reporting, reconciliation, replenishment, accountability, product-performance, active-shift-performance, and shift-history-performance owners. Any new mutation authority or operational activation requires separate bounded justification and authorization.
 
 Preserve fail-closed behavior, deny-by-default authorization, tenant/outlet/device isolation, exact-head CI, source-only operational posture, and the six-path canonical reconciliation model.
 
