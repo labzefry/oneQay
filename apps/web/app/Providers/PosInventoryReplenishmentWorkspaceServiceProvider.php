@@ -65,6 +65,9 @@ final class PosInventoryReplenishmentWorkspaceServiceProvider extends ServicePro
 
     public function boot(): void
     {
+        // Keep Sprint164 schema discovery module-owned and independent from delivery activation.
+        $this->loadMigrationsFrom(base_path('database/module-migrations/pos'));
+
         $runtimeClass = strtolower(trim((string) config('oneqay.runtime_class', '')));
         $sessionControlEnabled = (bool) config('oneqay.session_control.enabled', false)
             && (int) config('oneqay.session_control.idle_ttl_seconds', 0) === 7200
