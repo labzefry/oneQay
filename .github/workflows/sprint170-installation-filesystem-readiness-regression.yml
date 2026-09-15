@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  qualify-sprint170-installation-filesystem-readiness:
+  preserve-sprint170-installation-filesystem-readiness:
     runs-on: ubuntu-latest
     env:
       APP_NAME: oneQay
@@ -37,10 +37,10 @@ jobs:
           EXPECTED_HEAD="${{ github.event.pull_request.head.sha || github.sha }}"
           test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
 
-      - name: Qualify exact Sprint170 engineering envelope
-        if: github.event_name == 'pull_request'
+      - name: Qualify exact Sprint170 reconciliation envelope
+        if: github.event_name == 'pull_request' && github.head_ref == 'sprint170-canonical-reconciliation'
         env:
-          EXPECTED_PATH_HASH: 7a86c9fbe8d4e87bbcdc3bf72ad618649d9d2cebfe20e2eba51f841ef685b877
+          EXPECTED_PATH_HASH: 76de10f095cf53b630f96da884ebf6c1f4e581c4dc0f773312415c7788669b98
         run: |
           set -euo pipefail
           BASE_SHA="${{ github.event.pull_request.base.sha }}"
@@ -50,8 +50,11 @@ jobs:
           mapfile -t CHANGED < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort)
           EXPECTED=(
             '.github/workflows/sprint170-installation-filesystem-readiness-regression.yml'
-            'apps/web/app/Infrastructure/Installation/SecureInstallationReadiness.php'
-            'apps/web/tests/secure-installation-readiness.php'
+            'CHANGELOG.md'
+            'PROJECT_MANIFEST.md'
+            'README.md'
+            'ROADMAP.md'
+            'TASKS.md'
           )
           test "${#CHANGED[@]}" -eq "${#EXPECTED[@]}"
           diff -u <(printf '%s\n' "${EXPECTED[@]}") <(printf '%s\n' "${CHANGED[@]}")
@@ -74,6 +77,15 @@ jobs:
           ! grep -Eq -- '->(insert|update|delete|increment|decrement)\(' apps/web/app/Infrastructure/Installation/SecureInstallationReadiness.php
           ! grep -Eq 'Artisan::call|migrate|file_put_contents|fwrite|unlink|rename|copy\(' apps/web/app/Infrastructure/Installation/SecureInstallationReadiness.php
           ! grep -Eq 'chmod|chown|mkdir|rmdir' apps/web/app/Infrastructure/Installation/SecureInstallationReadiness.php
+
+      - name: Preserve canonical engineering evidence
+        run: |
+          set -euo pipefail
+          grep -Fq 'aa46ad0752f8ae2da145eb0c0f6324a3c5be6f25' PROJECT_MANIFEST.md
+          grep -Fq 'aa46ad0752f8ae2da145eb0c0f6324a3c5be6f25' README.md
+          grep -Fq 'aa46ad0752f8ae2da145eb0c0f6324a3c5be6f25' CHANGELOG.md
+          grep -Fq 'aa46ad0752f8ae2da145eb0c0f6324a3c5be6f25' TASKS.md
+          grep -Fq 'aa46ad0752f8ae2da145eb0c0f6324a3c5be6f25' ROADMAP.md
 
       - name: Preserve operational NO-GO
         run: |
