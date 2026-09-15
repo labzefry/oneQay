@@ -37,16 +37,43 @@ jobs:
           EXPECTED_HEAD="${{ github.event.pull_request.head.sha || github.sha }}"
           test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
 
+      - name: Qualify Sprint169 successor compatibility correction
+        if: github.event_name == 'pull_request' && github.head_ref == 'sprint173-sprint169-successor-compatibility'
+        env:
+          EXPECTED_PATH_HASH: c837d511e941de7f04e0369fa6d050f7e49a0c58b645c7d6f2c4b97c6cd4f829
+        run: |
+          set -euo pipefail
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          test "$(git rev-parse HEAD)" = "$HEAD_SHA"
+          git cat-file -e "${BASE_SHA}^{commit}"
+          mapfile -t CHANGED < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort)
+          EXPECTED=(
+            '.github/workflows/sprint169-secure-installation-readiness-foundation-regression.yml'
+          )
+          test "${#CHANGED[@]}" -eq "${#EXPECTED[@]}"
+          diff -u <(printf '%s\n' "${EXPECTED[@]}") <(printf '%s\n' "${CHANGED[@]}")
+          ACTUAL_HASH="$(printf '%s\n' "${CHANGED[@]}" | sha256sum | awk '{print $1}')"
+          test "$ACTUAL_HASH" = "$EXPECTED_PATH_HASH"
+
       - name: Preserve Sprint169 source contract
         run: |
           set -euo pipefail
-          test -f apps/web/app/Infrastructure/Installation/SecureInstallationReadiness.php
-          test -f apps/web/tests/secure-installation-readiness.php
-          grep -Fq 'Author by Lab | zefry' apps/web/app/Infrastructure/Installation/SecureInstallationReadiness.php
-          grep -Fq 'REQUIRED_EXTENSIONS' apps/web/app/Infrastructure/Installation/SecureInstallationReadiness.php
-          grep -Fq 'REQUIRED_ENVIRONMENT_KEYS' apps/web/app/Infrastructure/Installation/SecureInstallationReadiness.php
-          ! grep -Eq -- '->(insert|update|delete|increment|decrement)\(' apps/web/app/Infrastructure/Installation/SecureInstallationReadiness.php
-          ! grep -Eq 'Artisan::call|migrate|file_put_contents|fwrite|unlink|rename|copy\(' apps/web/app/Infrastructure/Installation/SecureInstallationReadiness.php
+          SOURCE=apps/web/app/Infrastructure/Installation/SecureInstallationReadiness.php
+          TEST=apps/web/tests/secure-installation-readiness.php
+          test -f "$SOURCE"
+          test -f "$TEST"
+          grep -Fq 'Author by Lab | zefry' "$SOURCE"
+          grep -Fq 'REQUIRED_ENVIRONMENT_KEYS' "$SOURCE"
+          grep -Fq "'php_version'" "$SOURCE"
+          grep -Fq "'php_extensions'" "$SOURCE"
+          grep -Fq "'environment'" "$SOURCE"
+          grep -Fq "'application_key'" "$SOURCE"
+          grep -Fq "'production_debug'" "$SOURCE"
+          grep -Fq "'production_https'" "$SOURCE"
+          grep -Fq 'public function assess' "$SOURCE"
+          ! grep -Eq -- '->(insert|update|delete|increment|decrement)\(' "$SOURCE"
+          ! grep -Eq 'Artisan::call|migrate|file_put_contents|fwrite|unlink|rename|copy\(|chmod|chown|mkdir|rmdir' "$SOURCE"
 
       - name: Preserve operational NO-GO
         run: |
