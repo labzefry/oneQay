@@ -1,37 +1,36 @@
 # oneQay Tasks
 
-**Current canonical engineering checkpoint:** Sprint171 closed
-**Canonical engineering commit:** `cbf26a53c1a784b8e6eda65cc1d047c90ea590e8`
-**Latest engineering PR:** #760 — `Sprint171: add governed release artifact installation readiness`
+**Current canonical engineering checkpoint:** Sprint172 closed
+**Canonical engineering commit:** `636a07130650f2d3119d450f35cfcfaf2868898e`
+**Latest engineering PR:** #764 — `Sprint172: add database configuration compatibility readiness`
 **Canonical status authority:** `PROJECT_MANIFEST.md`
 
-## Completed Sprint171 state
+## Completed Sprint172 state
 
-Sprint171 materialized `INSTALLATION_GOVERNED_RELEASE_ARTIFACT_READINESS` as the next bounded installer/release production-readiness prerequisite.
+Sprint172 materialized `INSTALLATION_DATABASE_CONFIGURATION_COMPATIBILITY_READINESS` as the next bounded installer production-readiness correctness prerequisite.
 
 - [x] Canonical `SecureInstallationReadiness` owner reused.
-- [x] Governed Release Manifest schema version 1 required.
-- [x] Canonical product and repository identity required.
-- [x] Release ID/channel/source-commit form validated.
-- [x] Safe artifact filename/type/positive byte size required.
-- [x] Artifact SHA-256 format validated.
-- [x] Initial migration classification restricted to `NO_SCHEMA_CHANGE`.
-- [x] Attribution restricted to `Lab | zefry`.
-- [x] Observed artifact filename, size, and SHA-256 must exactly match the manifest.
-- [x] Foreign identity, unsupported schema, schema-changing release, unsafe filename, digest mismatch, and size mismatch fail closed.
-- [x] Untrusted values, supplied secrets, and artifact digests are not echoed in readiness output.
-- [x] Existing Sprint169/Sprint170 runtime, configuration, HTTPS, key, filesystem, and redaction readiness preserved.
-- [x] No network download, archive extraction, signature/provenance claim, environment mutation, migration execution, installer route, deployment, or updater activation.
+- [x] Stale installer-facing `DB_*` readiness keys removed from the canonical environment contract.
+- [x] Canonical `ONEQAY_DB_DRIVER`, `ONEQAY_DB_HOST`, `ONEQAY_DB_DATABASE`, and `ONEQAY_DB_USERNAME` requirements aligned with application configuration.
+- [x] Deterministic observed database facts added for connection state, engine, server version, charset, timezone, schema state, and least-privilege posture.
+- [x] Configured driver restricted to `mysql` for the initial contract.
+- [x] Observed engine identity accepts MySQL or MariaDB.
+- [x] `utf8mb4` required.
+- [x] UTC / `+00:00` timezone required.
+- [x] Schema state restricted to `empty` or `recognized`.
+- [x] Least-privilege evidence required.
+- [x] Missing/incompatible database evidence fails closed without credential or arbitrary server-detail leakage.
+- [x] Existing Sprint169–Sprint171 runtime, configuration, filesystem, governed release manifest, artifact integrity, and redaction readiness preserved.
+- [x] No PDO/network database connection, schema/config mutation, migration execution, credential provisioning, installer route, deployment, or updater activation.
 - [x] Focused PHP regression.
 - [x] Dedicated exact-envelope workflow.
 - [x] Exact-head PR qualification successful.
 - [x] Repository-native Product Owner merge authority verified.
-- [x] PR #760 squash merged at `cbf26a53c1a784b8e6eda65cc1d047c90ea590e8`.
-- [x] Initial reconciliation compatibility debt corrected through workflow-only PR #762, squash `1e568085d6b9743eb05c73fb9a78c019b8d82f04`.
+- [x] PR #764 squash merged at `636a07130650f2d3119d450f35cfcfaf2868898e`.
 
-Engineering envelope: 3 paths; SHA-256 `cf2f56c6ba42404726fe225a559b7262580191a9bf1c8b03c4ebf39fe2f29d88`.
+Engineering envelope: 3 paths; SHA-256 `c0a1726ad384717f91889af2f2ce0f433cfdae7a64b3be62dc6fadde16104d16`.
 
-Canonical reconciliation envelope: 6 paths; SHA-256 `a8627a615280e7592638964a5d7f496f77310ef28f085439f2ba584d6a97d301`.
+Canonical reconciliation envelope: 6 paths; SHA-256 `d43b48ac559bdee72e785c9187f4dec04bdce55be84d76baa0d76d28b5a6f304`.
 
 ## Preserved lifecycle state
 
@@ -39,6 +38,6 @@ Machine-readable operational state under `ops/final-shift-close/` remains author
 
 ## Next engineering position
 
-Begin **Sprint172 bounded discovery** only from fully reconciled Sprint171. Prioritize the smallest material non-duplicative P0/P1 business-completeness or production-readiness gap. Do not preselect artifact download/extraction, installer exposure, migration execution, privileged updater UI, deployment, or operational activation; prove the next canonical gap first.
+Begin **Sprint173 bounded discovery** only from fully reconciled Sprint172. Prioritize the smallest material non-duplicative P0/P1 business-completeness or production-readiness gap. Do not preselect database execution, administrator creation, environment mutation, migration/seeder execution, installer exposure, privileged updater UI, deployment, or operational activation; prove the next canonical gap first.
 
 Author by Lab | zefry
