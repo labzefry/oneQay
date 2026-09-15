@@ -26,17 +26,40 @@ final class SecureInstallationReadiness
         'storage/logs',
     ];
 
+    /** @var list<string> */
+    private const REQUIRED_RELEASE_MANIFEST_KEYS = [
+        'schema_version',
+        'product',
+        'repository',
+        'release_id',
+        'release_channel',
+        'source_commit',
+        'artifact_filename',
+        'artifact_type',
+        'artifact_size',
+        'artifact_sha256',
+        'migration_classification',
+        'attribution',
+    ];
+
+    /** @var list<string> */
+    private const REQUIRED_ARTIFACT_STATE_KEYS = ['filename', 'size', 'sha256'];
+
     /**
      * @param array<string, mixed> $environment
      * @param list<string>|null $loadedExtensions
      * @param array<string, bool>|null $writablePaths Deterministic override keyed by canonical relative path.
+     * @param array<string, mixed>|null $releaseManifest Installer-facing governed release manifest projection.
+     * @param array<string, mixed>|null $artifactState Deterministic observed artifact identity and digest facts.
      * @return array{ready: bool, checks: array<string, array{ready: bool, reason: string}>}
      */
     public function assess(
         array $environment,
         ?array $loadedExtensions = null,
         ?string $phpVersion = null,
-        ?array $writablePaths = null
+        ?array $writablePaths = null,
+        ?array $releaseManifest = null,
+        ?array $artifactState = null
     ): array {
         $extensions = array_map('strtolower', $loadedExtensions ?? get_loaded_extensions());
         $version = $phpVersion ?? PHP_VERSION;
@@ -102,6 +125,30 @@ final class SecureInstallationReadiness
             'Required runtime paths are missing or not writable: '.implode(', ', $unwritablePaths).'.'
         );
 
+        $manifest = $releaseManifest ?? [];
+        $missingManifestKeys = $this->missingKeys($manifest, self::REQUIRED_RELEASE_MANIFEST_KEYS);
+        $manifestReady = $missingManifestKeys === [] && $this->isValidReleaseManifest($manifest);
+        $checks['release_manifest'] = $this->check(
+            $manifestReady,
+            'Governed release manifest identity and policy are valid.',
+            $missingManifestKeys === []
+                ? 'Governed release manifest identity or policy is invalid.'
+                : 'Governed release manifest is incomplete: '.implode(', ', $missingManifestKeys).'.'
+        );
+
+        $observedArtifact = $artifactState ?? [];
+        $missingArtifactKeys = $this->missingKeys($observedArtifact, self::REQUIRED_ARTIFACT_STATE_KEYS);
+        $artifactReady = $manifestReady
+            && $missingArtifactKeys === []
+            && $this->artifactMatchesManifest($manifest, $observedArtifact);
+        $checks['artifact_integrity'] = $this->check(
+            $artifactReady,
+            'Observed release artifact identity and SHA-256 match the governed manifest.',
+            $missingArtifactKeys === []
+                ? 'Observed release artifact identity or SHA-256 does not match the governed manifest.'
+                : 'Observed release artifact facts are incomplete: '.implode(', ', $missingArtifactKeys).'.'
+        );
+
         return [
             'ready' => ! in_array(false, array_column($checks, 'ready'), true),
             'checks' => $checks,
@@ -120,6 +167,76 @@ final class SecureInstallationReadiness
         }
 
         return $states;
+    }
+
+    /**
+     * @param array<string, mixed> $values
+     * @param list<string> $requiredKeys
+     * @return list<string>
+     */
+    private function missingKeys(array $values, array $requiredKeys): array
+    {
+        return array_values(array_filter(
+            $requiredKeys,
+            static function (string $key) use ($values): bool {
+                if (! array_key_exists($key, $values) || $values[$key] === null) {
+                    return true;
+                }
+
+                return is_string($values[$key]) && trim($values[$key]) === '';
+            }
+        ));
+    }
+
+    /** @param array<string, mixed> $manifest */
+    private function isValidReleaseManifest(array $manifest): bool
+    {
+        $releaseId = (string) $manifest['release_id'];
+        $channel = strtolower((string) $manifest['release_channel']);
+        $sourceCommit = (string) $manifest['source_commit'];
+        $artifactFilename = (string) $manifest['artifact_filename'];
+        $artifactType = (string) $manifest['artifact_type'];
+        $artifactSha256 = (string) $manifest['artifact_sha256'];
+
+        return $manifest['schema_version'] === 1
+            && $manifest['product'] === 'oneQay'
+            && $manifest['repository'] === 'labzefry/oneQay'
+            && preg_match('/\A[A-Za-z0-9][A-Za-z0-9._-]{0,127}\z/', $releaseId) === 1
+            && in_array($channel, ['internal', 'preview', 'stable'], true)
+            && preg_match('/\A[0-9a-f]{40}\z/i', $sourceCommit) === 1
+            && $this->isSafeArtifactFilename($artifactFilename)
+            && preg_match('/\A[A-Za-z0-9][A-Za-z0-9._+-]{0,31}\z/', $artifactType) === 1
+            && is_int($manifest['artifact_size'])
+            && $manifest['artifact_size'] > 0
+            && preg_match('/\A[0-9a-f]{64}\z/i', $artifactSha256) === 1
+            && $manifest['migration_classification'] === 'NO_SCHEMA_CHANGE'
+            && $manifest['attribution'] === 'Lab | zefry';
+    }
+
+    private function isSafeArtifactFilename(string $filename): bool
+    {
+        return $filename !== ''
+            && strlen($filename) <= 255
+            && ! str_contains($filename, '/')
+            && ! str_contains($filename, '\\')
+            && ! str_contains($filename, "\0")
+            && $filename !== '.'
+            && $filename !== '..';
+    }
+
+    /**
+     * @param array<string, mixed> $manifest
+     * @param array<string, mixed> $artifact
+     */
+    private function artifactMatchesManifest(array $manifest, array $artifact): bool
+    {
+        return is_string($artifact['filename'])
+            && is_int($artifact['size'])
+            && is_string($artifact['sha256'])
+            && $artifact['filename'] === $manifest['artifact_filename']
+            && $artifact['size'] === $manifest['artifact_size']
+            && preg_match('/\A[0-9a-f]{64}\z/i', $artifact['sha256']) === 1
+            && hash_equals(strtolower((string) $manifest['artifact_sha256']), strtolower($artifact['sha256']));
     }
 
     /** @return array{ready: bool, reason: string} */
