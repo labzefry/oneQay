@@ -8,31 +8,31 @@ Enterprise-oriented business-management platform built with Modular Monolith Fir
 
 ## Current canonical status
 
-The latest completed engineering sprint is **Sprint174 — Installation Release Compatibility Policy Readiness**.
+The latest completed engineering sprint is **Sprint175 — Installation Governed Host Platform Requirements Readiness**.
 
-- Canonical engineering commit: `3937cfc56d2615262160c9592d204715eb80ec89`
-- Engineering PR: #773
-- Final engineering head: `6db7c94a7eef99f5f1281f11c524a7d7e32d1968`
-- Sprint174 regression `34996139756`: successful
-- Governance `34996139846`: successful
-- PHP Foundation `34996138931`: successful
-- M7.1 `34996140085`: successful
-- Engineering envelope: 3 paths, SHA-256 `1f4a5333d32f79e57ac51d8c9ea8b1a1b3b0342d58b6439fbfe127d3a235aa91`
-- Reconciliation envelope: 6 paths, SHA-256 `c620402ddfb186f47fd0994f5751c3453811f08ca870400478442a1f9095075b`
+- Canonical engineering commit: `6357d883fe04ec0515f9d21c6adc0ee907787cde`
+- Engineering PR: #775
+- Final engineering head: `7eebbdb2a71b4cb35dafac58e6df2c955866264c`
+- Sprint175 regression `34998600504`: successful
+- Governance `34998600362`: successful
+- PHP Foundation `34998600326`: successful
+- M7.1 `34998600367`: successful
+- Engineering envelope: 3 paths, SHA-256 `3b06f39902fda4e43096b622cffad62ad4308652f760a300c44d5a54616ef8e0`
+- Reconciliation envelope: 6 paths, SHA-256 `be033502c6e72d211415751966e6dc48e3453ce6fae6003d57b3da807cee1460`
 
 For the full project state, use [`PROJECT_MANIFEST.md`](PROJECT_MANIFEST.md) as the canonical human-readable source of truth.
 
-## Sprint174 — Release compatibility policy readiness
+## Sprint175 — Governed host/platform requirements readiness
 
-Sprint174 extends the governed release manifest so installation readiness cannot accept an immutable artifact without the compatibility metadata required by the release contract. The manifest now requires a bounded `compatibility_policy` covering release version, build/provenance reference, supported-current-version range, deployment compatibility, rollback compatibility, public-bootstrap/layout compatibility, and release-notes reference.
+Sprint175 moves installer Step 2 host/platform requirements into the governed release manifest. The release contract now defines supported OS families and web-server interfaces, minimum memory/execution-time/free-disk requirements, plus the required capability set for HTTPS, DNS, time synchronization, outbound allowlisting, scheduler, archive support, temporary-directory readiness, and required tools.
 
-Compatibility policy validates fail closed. Semantic versions and version ranges must be bounded and ordered; references must be safe; deployment and public-layout values must use controlled policy tokens; rollback compatibility remains constrained to `NO_SCHEMA_CHANGE_ROLLBACK_SAFE`. Missing or malformed policy also prevents artifact-integrity readiness, and failure output does not echo untrusted policy values.
+The canonical readiness owner evaluates deterministic observed host facts and fails closed when requirements are missing, malformed, unsupported, or insufficient. It does not probe DNS/network services, execute shell commands, mutate cron/scheduler/filesystem/configuration, install packages, or extract artifacts. Failure output does not echo untrusted host values.
 
-Existing secure environment, application-key, production-debug/HTTPS, filesystem-write, governed runtime requirements, artifact identity/integrity, deterministic database compatibility, and redaction checks remain preserved. Sprint174 does not publish, download, extract, install, migrate, provision, expose, update, deploy, or activate anything.
+Existing secure environment, application-key, production-debug/HTTPS, filesystem-write, governed PHP/runtime requirements, artifact identity/integrity, release compatibility policy, database compatibility, and redaction checks remain preserved.
 
 ## Product progression
 
-The product combines tenant/security/API/POS operational foundations with a canonical secure installation-readiness owner covering governed release identity, runtime requirements, compatibility policy, canonical configuration, filesystem write surfaces, immutable artifact identity/integrity, and deterministic database compatibility prerequisites.
+The product combines tenant/security/API/POS operational foundations with a canonical secure installation-readiness owner covering governed release identity, runtime requirements, host/platform requirements, compatibility policy, canonical configuration, filesystem write surfaces, immutable artifact identity/integrity, and deterministic database compatibility prerequisites.
 
 ## Operational status remains intentionally gated
 
@@ -40,6 +40,6 @@ Migration #27 remains `NOT_EXECUTED`; permission provisioning `NONE`; durable ac
 
 ## Next engineering position
 
-Sprint175 begins only after Sprint174 canonical reconciliation. Select the smallest material P0/P1 business-completeness or production-readiness gap and reuse canonical owners. Host/platform capability readiness remains a candidate but is not preselected. No artifact transport/extraction, database execution, migration/seeder execution, administrator creation, environment mutation, installer exposure, updater activation, deployment, or operational activation is pre-authorized.
+Sprint176 begins only after Sprint175 canonical reconciliation. Select the smallest material P0/P1 business-completeness or production-readiness blocker proven by live canonical evidence. No host probing, artifact transport/extraction, production database execution, migration/seeder execution, administrator creation, environment mutation, installer exposure, updater activation, deployment, or operational activation is pre-authorized.
 
 Author by Lab | zefry
