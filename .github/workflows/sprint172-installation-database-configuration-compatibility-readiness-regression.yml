@@ -40,7 +40,7 @@ jobs:
       - name: Qualify exact Sprint172 engineering envelope
         if: github.event_name == 'pull_request'
         env:
-          EXPECTED_PATH_HASH: 88b29ca7969e8c7e1f5c30435ac6c32aca996de156bf14eb2d88fee230689c51
+          EXPECTED_PATH_HASH: c0a1726ad384717f91889af2f2ce0f433cfdae7a64b3be62dc6fadde16104d16
         run: |
           set -euo pipefail
           BASE_SHA="${{ github.event.pull_request.base.sha }}"
