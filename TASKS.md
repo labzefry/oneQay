@@ -1,36 +1,32 @@
 # oneQay Tasks
 
-**Current canonical engineering checkpoint:** Sprint174 closed
-**Canonical engineering commit:** `3937cfc56d2615262160c9592d204715eb80ec89`
-**Latest engineering PR:** #773 — `Sprint174: add governed release compatibility policy readiness`
+**Current canonical engineering checkpoint:** Sprint175 closed
+**Canonical engineering commit:** `6357d883fe04ec0515f9d21c6adc0ee907787cde`
+**Latest engineering PR:** #775 — `Sprint175: add governed host platform requirements readiness`
 **Canonical status authority:** `PROJECT_MANIFEST.md`
 
-## Completed Sprint174 state
+## Completed Sprint175 state
 
-Sprint174 materialized `INSTALLATION_RELEASE_COMPATIBILITY_POLICY_READINESS` as the next bounded release/installer correctness prerequisite.
+Sprint175 materialized `INSTALLATION_GOVERNED_HOST_PLATFORM_REQUIREMENTS_READINESS` as a bounded installer/release production-readiness prerequisite.
 
 - [x] Canonical `SecureInstallationReadiness` owner reused.
-- [x] Governed Release Manifest v1 requires `compatibility_policy`.
-- [x] Release version validates with bounded semantic-version rules.
-- [x] Build/provenance reference validates as a bounded safe reference.
-- [x] Supported-current-version range requires valid ordered `min` and `max` semantic versions.
-- [x] Deployment compatibility uses a controlled policy token.
-- [x] Rollback compatibility requires `NO_SCHEMA_CHANGE_ROLLBACK_SAFE`.
-- [x] Public-bootstrap/layout compatibility uses a controlled policy token.
-- [x] Release-notes reference validates as a bounded safe reference.
-- [x] Missing/malformed policy fails release-manifest and artifact-integrity readiness.
-- [x] Failure output does not echo untrusted policy values.
-- [x] Existing runtime requirements, environment/key/debug/HTTPS, filesystem, artifact integrity, database compatibility, attribution, and redaction readiness preserved.
-- [x] No artifact publication/transport/extraction, network/database execution, configuration/schema mutation, migration/seeder execution, administrator provisioning, installer exposure, deployment, or updater activation.
-- [x] Focused PHP regression.
+- [x] Governed Release Manifest v1 requires `host_requirements`.
+- [x] Supported OS families and web-server interfaces are governed by release metadata.
+- [x] Minimum memory, execution-time budget, and free disk are governed by release metadata.
+- [x] Canonical required capabilities cover HTTPS, DNS, time sync, outbound allowlist, scheduler, archive, temp directory, and required tools.
+- [x] Deterministic observed host facts are assessed read-only.
+- [x] Missing, malformed, unsupported, or insufficient host facts fail closed.
+- [x] Failure output does not echo untrusted host values.
+- [x] No host probing, shell/command execution, network/DNS call, scheduler mutation, package installation, archive extraction, or filesystem mutation was introduced.
+- [x] Existing runtime requirements, environment/key/debug/HTTPS, filesystem, artifact integrity, release compatibility policy, database compatibility, attribution, and redaction readiness preserved.
 - [x] Dedicated exact-envelope workflow.
 - [x] Exact-head engineering qualification successful.
 - [x] Repository-native Product Owner merge authority verified.
-- [x] Engineering PR #773 squash merged at `3937cfc56d2615262160c9592d204715eb80ec89`.
+- [x] Engineering PR #775 squash merged at `6357d883fe04ec0515f9d21c6adc0ee907787cde`.
 
-Engineering envelope: 3 paths; SHA-256 `1f4a5333d32f79e57ac51d8c9ea8b1a1b3b0342d58b6439fbfe127d3a235aa91`.
+Engineering envelope: 3 paths; SHA-256 `3b06f39902fda4e43096b622cffad62ad4308652f760a300c44d5a54616ef8e0`.
 
-Canonical reconciliation envelope: 6 paths; SHA-256 `c620402ddfb186f47fd0994f5751c3453811f08ca870400478442a1f9095075b`.
+Canonical reconciliation envelope: 6 paths; SHA-256 `be033502c6e72d211415751966e6dc48e3453ce6fae6003d57b3da807cee1460`.
 
 ## Preserved lifecycle state
 
@@ -38,6 +34,6 @@ Machine-readable operational state under `ops/final-shift-close/` remains author
 
 ## Next engineering position
 
-Begin **Sprint175 bounded discovery** only from fully reconciled Sprint174. Prioritize the smallest material non-duplicative P0/P1 business-completeness or production-readiness gap. Host/platform capability readiness remains a candidate but must not be preselected without live canonical evidence. No artifact transport/extraction, database execution, administrator creation, environment mutation, migration/seeder execution, installer exposure, privileged updater UI, deployment, or operational activation is pre-authorized.
+Begin **Sprint176 bounded discovery** only from fully reconciled Sprint175. Prioritize the smallest material non-duplicative P0/P1 blocker to real merchant end-to-end or production-ready installation. Do not preselect more installer checks, host probing, artifact transport/extraction, production database execution, administrator creation, environment mutation, migration/seeder execution, installer exposure, updater activation, deployment, or operational activation; prove the next canonical gap first.
 
 Author by Lab | zefry
