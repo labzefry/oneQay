@@ -66,6 +66,7 @@ final class PosOperationsHubController
             [$snapshot->canCashier(), 'pos.cashier.workspace', 'cashier', 'Cashier', 'Run sale entry on the active exact-device shift.', 'SELL'],
             [$snapshot->canReporting(), 'pos.reporting.sales-summary', 'sales_summary', 'Sales Summary', 'Review current operational sales counters and totals.', 'REVIEW'],
             [$snapshot->canReporting(), 'pos.reporting.active-shift-performance', 'active_shift_performance', 'Active Shift Performance', 'Monitor exact-device live shift sales, full voids, cash refunds, and active net value.', 'REVIEW'],
+            [$snapshot->canReporting(), 'pos.reporting.shift-history', 'shift_history_performance', 'Shift History Performance', 'Review closed outlet shifts, final cash variance, and immutable shift-bound sales performance.', 'REVIEW'],
             [$snapshot->canReporting(), 'pos.reporting.product-performance', 'product_sales_performance', 'Product Sales Performance', 'Review product-level gross, full-void, and net active quantities and values.', 'REVIEW'],
             [$snapshot->canReporting(), 'pos.reporting.sales-history', 'sale_history', 'Sale History', 'Inspect immutable receipt and correction evidence.', 'REVIEW'],
             [$snapshot->canCorrections(), 'pos.sales.corrections.workspace', 'corrections', 'Sale Corrections', 'Perform only the void or refund actions granted to this context.', 'CONTROL'],

@@ -1,0 +1,147 @@
+name: Sprint168 POS Shift History Performance Workspace Regression
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint168-pos-shift-history-performance-${{ github.event.pull_request.number || github.ref }}-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  qualify-sprint168-pos-shift-history-performance:
+    runs-on: ubuntu-latest
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWE=
+      APP_DEBUG: "false"
+      APP_URL: http://localhost
+      ONEQAY_RUNTIME_CLASS: ci
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Qualify exact Sprint168 engineering envelope
+        if: github.event_name == 'pull_request'
+        env:
+          EXPECTED_PATH_HASH: d42a5a7d8568766e524ff662107ffdb35452d4f9ac00f26cdc8e419d36bc3c25
+          EXPECTED_PATH_COUNT: "12"
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "${{ github.base_ref }}"
+          git diff --name-only "origin/${{ github.base_ref }}...HEAD" | LC_ALL=C sort > /tmp/s168-paths.txt
+          test "$(wc -l < /tmp/s168-paths.txt | tr -d ' ')" = "$EXPECTED_PATH_COUNT"
+          test "$(sha256sum /tmp/s168-paths.txt | awk '{print $1}')" = "$EXPECTED_PATH_HASH"
+          cat > /tmp/s168-expected.txt <<'EOF'
+          .github/workflows/sprint168-pos-shift-history-performance-workspace-regression.yml
+          apps/web/app/Application/Pos/PosShiftHistoryPerformanceWorkspaceRepository.php
+          apps/web/app/Application/Pos/PosShiftHistoryPerformanceWorkspaceSnapshot.php
+          apps/web/app/Application/Pos/ViewPosShiftHistoryPerformanceWorkspace.php
+          apps/web/app/Delivery/Http/Pos/PosOperationsHubController.php
+          apps/web/app/Delivery/Http/Pos/PosShiftHistoryPerformanceWorkspaceController.php
+          apps/web/app/Infrastructure/Pos/LaravelPosShiftHistoryPerformanceWorkspaceRepository.php
+          apps/web/app/Providers/PosOperationsHubServiceProvider.php
+          apps/web/app/Providers/PosShiftHistoryPerformanceWorkspaceServiceProvider.php
+          apps/web/config/pos_shift_history_performance.php
+          apps/web/resources/js/pages/Pos/ShiftHistoryPerformance.vue
+          apps/web/tests/pos-shift-history-performance-workspace.php
+          EOF
+          sed -i 's/^          //' /tmp/s168-expected.txt
+          diff -u /tmp/s168-expected.txt /tmp/s168-paths.txt
+          git diff --quiet "origin/${{ github.base_ref }}...HEAD" -- apps/web/app/Application/Authorization/PosPermission.php
+          git diff --quiet "origin/${{ github.base_ref }}...HEAD" -- apps/web/app/Providers/FinalShiftCloseServiceProvider.php
+          git diff --quiet "origin/${{ github.base_ref }}...HEAD" -- apps/web/app/Providers/PosOperationalReportingServiceProvider.php
+          git diff --quiet "origin/${{ github.base_ref }}...HEAD" -- apps/web/config/pos_operational_reporting.php
+          git diff --quiet "origin/${{ github.base_ref }}...HEAD" -- apps/web/routes/web.php apps/web/bootstrap/providers.php
+          git diff --quiet "origin/${{ github.base_ref }}...HEAD" -- apps/web/database/migrations apps/web/database/module-migrations
+          git diff --quiet "origin/${{ github.base_ref }}...HEAD" -- apps/web/app/Infrastructure/Pos/LaravelShiftOpeningRepository.php
+          git diff --quiet "origin/${{ github.base_ref }}...HEAD" -- apps/web/app/Infrastructure/Pos/LaravelCloseShiftRepository.php
+          git diff --quiet "origin/${{ github.base_ref }}...HEAD" -- apps/web/app/Infrastructure/Pos/LaravelDurablePosSaleRepository.php
+          git diff --quiet "origin/${{ github.base_ref }}...HEAD" -- apps/web/app/Infrastructure/Pos/LaravelSaleCashRefundRepository.php
+
+      - name: Preserve operational NO-GO
+        run: |
+          set -euo pipefail
+          test "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" = NOT_EXECUTED
+          test "$(jq -r '.permission_provisioning.state' ops/final-shift-close/STATE.json)" = NONE
+          test "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" = INACTIVE
+          test "$(jq -r '.deployment_authority' ops/final-shift-close/STATE.json)" = NOT_GRANTED
+          test "$(jq -r '.technical_preview_activation' ops/final-shift-close/STATE.json)" = NOT_AUTHORIZED
+          test "$(jq -r '.production_activation' ops/final-shift-close/STATE.json)" = NOT_AUTHORIZED
+          test "$(jq -r '.updater_activation' ops/final-shift-close/STATE.json)" = INACTIVE
+          test "$(jq -r '.selection_state' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" = BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET
+          test "$(jq -r '.selected_target' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" = null
+
+      - name: Preserve read-only shift history performance contract
+        run: |
+          set -euo pipefail
+          grep -Fq "pos.reporting.sales-summary.view" apps/web/app/Application/Pos/ViewPosShiftHistoryPerformanceWorkspace.php
+          grep -Fq "oneqay_pos_shifts" apps/web/app/Infrastructure/Pos/LaravelPosShiftHistoryPerformanceWorkspaceRepository.php
+          grep -Fq "oneqay_pos_shift_close_evidence" apps/web/app/Infrastructure/Pos/LaravelPosShiftHistoryPerformanceWorkspaceRepository.php
+          grep -Fq "oneqay_pos_sales" apps/web/app/Infrastructure/Pos/LaravelPosShiftHistoryPerformanceWorkspaceRepository.php
+          grep -Fq "oneqay_pos_sale_voids" apps/web/app/Infrastructure/Pos/LaravelPosShiftHistoryPerformanceWorkspaceRepository.php
+          grep -Fq "oneqay_pos_sale_cash_refunds" apps/web/app/Infrastructure/Pos/LaravelPosShiftHistoryPerformanceWorkspaceRepository.php
+          ! grep -Eq -- '->(insert|update|delete|increment|decrement)\(' apps/web/app/Infrastructure/Pos/LaravelPosShiftHistoryPerformanceWorkspaceRepository.php
+          grep -Fq "ONEQAY_POS_SHIFT_HISTORY_PERFORMANCE_ENABLED" apps/web/config/pos_shift_history_performance.php
+          grep -Fq "ONEQAY_POS_SHIFT_CLOSE_ENABLED" apps/web/app/Providers/PosShiftHistoryPerformanceWorkspaceServiceProvider.php
+          grep -Fq "PosShiftHistoryPerformanceWorkspaceServiceProvider::class" apps/web/app/Providers/PosOperationsHubServiceProvider.php
+          grep -Fq "pos.reporting.shift-history" apps/web/app/Providers/PosShiftHistoryPerformanceWorkspaceServiceProvider.php
+          grep -Fq "pos.reporting.shift-history" apps/web/app/Delivery/Http/Pos/PosOperationsHubController.php
+          grep -Fq 'Route::has($routeName)' apps/web/app/Delivery/Http/Pos/PosOperationsHubController.php
+
+      - name: Install PHP dependencies
+        working-directory: apps/web
+        run: |
+          composer validate --no-check-publish
+          composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Validate PHP syntax
+        working-directory: apps/web
+        run: |
+          find app config database routes tests -name '*.php' -print0 | xargs -0 -n1 php -l >/tmp/php-lint.log
+          cat /tmp/php-lint.log
+
+      - name: Execute canonical and POS regressions
+        working-directory: apps/web
+        run: |
+          composer test
+          php tests/pos-operational-reporting.php
+          php tests/pos-cashier-workspace.php
+          php tests/pos-shift-start-workspace.php
+          php tests/pos-sale-correction-workspace.php
+          php tests/pos-sale-history-workspace.php
+          php tests/pos-catalog-inventory-setup-workspace.php
+          php tests/pos-operations-hub.php
+          php tests/pos-cash-variance-reconciliation-workspace.php
+          php tests/pos-inventory-replenishment-workspace.php
+          php tests/pos-inventory-accountability-workspace.php
+          php tests/pos-product-sales-performance-workspace.php
+          php tests/pos-active-shift-performance-workspace.php
+          php tests/pos-shift-history-performance-workspace.php
+
+      - name: Setup exact Node LTS
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: 24.19.0
+
+      - name: Type-check and build shift history performance UI
+        working-directory: apps/web
+        run: |
+          npm ci --ignore-scripts --no-fund
+          npm run type-check
+          npm run build
+
+      - name: Verify tracked-source cleanliness
+        run: |
+          git diff --exit-code
+          test -z "$(git status --porcelain)"
