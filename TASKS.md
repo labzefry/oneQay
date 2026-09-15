@@ -1,38 +1,32 @@
 # oneQay Tasks
 
-**Current canonical engineering checkpoint:** Sprint168 closed
-**Canonical engineering commit:** `d3703a6b18f478acd812e7892c3871ce3aaf7bfa`
-**Latest engineering PR:** #754 — `Sprint168: add POS shift history performance workspace`
+**Current canonical engineering checkpoint:** Sprint169 closed
+**Canonical engineering commit:** `2a53d9db9547340bd4d791b34fabb80ec600fc8b`
+**Latest engineering PR:** #756 — `Sprint169: secure installation readiness foundation`
 **Canonical status authority:** `PROJECT_MANIFEST.md`
 
-## Completed Sprint168 state
+## Completed Sprint169 state
 
-Sprint168 materialized `POS_SHIFT_HISTORY_PERFORMANCE_WORKSPACE` as a bounded read-only closed-shift reporting surface over canonical Final Shift Close and immutable shift-bound sale evidence.
+Sprint169 materialized `SECURE_INSTALLATION_READINESS_FOUNDATION` as the first bounded executable installer-readiness source owner.
 
-- [x] Exact tenant + organization + outlet scope.
-- [x] Same-outlet cross-device historical visibility.
-- [x] Closed shifts only (`active_slot IS NULL`).
-- [x] Exactly one canonical Final Shift Close evidence row required per eligible shift.
-- [x] Newest 50 closed shifts bounded list.
-- [x] Optional selected shift defaults to newest eligible shift.
-- [x] Opener/closer/device/open-close/cutoff identity validation.
-- [x] Expected/observed/variance/review arithmetic validation.
-- [x] Immutable completed-sale, full-sale-void, and CASH-refund performance by tender + currency + scale.
-- [x] Active net = gross minus full-sale void; CASH refund not subtracted twice.
-- [x] Legacy null-shift sales inside the selected shift window fail closed.
-- [x] Foreign-scope/outside-window/corrupt/inconsistent evidence and overflow fail closed.
-- [x] Performance bucket count bounded to 64.
-- [x] Existing `pos.reporting.sales-summary.view` reused; no new permission/provisioning.
-- [x] Default-false guarded route and feature flag.
-- [x] Existing `ONEQAY_POS_SHIFT_CLOSE_ENABLED` source/runtime dependency preserved.
-- [x] POS Operations Hub discoverability remains permission + `Route::has()` guarded.
-- [x] No schema/migration/mutation/global-owner changes.
-- [x] Exact engineering head qualification complete and successful.
-- [x] PR #754 squash merged at `d3703a6b18f478acd812e7892c3871ce3aaf7bfa`.
+- [x] Canonical installation infrastructure owner established.
+- [x] PHP minimum-version readiness check.
+- [x] Required PHP-extension readiness check.
+- [x] Required environment-configuration presence check.
+- [x] Application key missing/placeholder fail-closed behavior.
+- [x] Production debug posture validation.
+- [x] Production HTTPS URL validation.
+- [x] Redacted readiness result; database credential sentinel absent from output.
+- [x] Read-only/non-destructive source contract.
+- [x] Focused PHP regression.
+- [x] Dedicated preservation workflow.
+- [x] Exact-head PR qualification successful.
+- [x] Repository-native Product Owner merge authority applied.
+- [x] PR #756 squash merged at `2a53d9db9547340bd4d791b34fabb80ec600fc8b`.
 
-Engineering envelope: 12 paths; SHA-256 `d42a5a7d8568766e524ff662107ffdb35452d4f9ac00f26cdc8e419d36bc3c25`.
+Engineering envelope: 3 paths; SHA-256 `2bfeedcabc1a09617876a6ce0719cb31a3246c157ad78472feda5db18f9c4fd1`.
 
-Canonical reconciliation envelope: six paths; SHA-256 `350fd16d111bb398c34a63e1519cc02206bcc373378a9366768c198ccf8146b5`.
+Canonical reconciliation envelope: 6 paths; SHA-256 `7f6b2b61e87d8891dc3c4d1a047ac92f9209d3286c445e77518f796179ce4d93`.
 
 ## Preserved lifecycle state
 
@@ -40,6 +34,6 @@ Machine-readable operational state under `ops/final-shift-close/` remains author
 
 ## Next engineering position
 
-Begin **Sprint169 bounded discovery** only from the fully reconciled Sprint168 canonical checkpoint. Do not preselect the objective. Select the smallest material non-duplicative P0/P1 production-readiness or business-completeness gap from live source/contracts/regressions and reuse existing canonical owners wherever possible. Do not infer new mutation or operational authority.
+Begin **Sprint170 bounded discovery** only from fully reconciled Sprint169. Prioritize the smallest material non-duplicative P0/P1 business-completeness or production-readiness gap. Continue installation readiness only through a coherent bounded prerequisite such as deterministic writable-path/package/application prerequisite qualification; do not expose an installer or infer deployment/migration authority.
 
 Author by Lab | zefry
