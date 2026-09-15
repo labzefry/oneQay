@@ -60,6 +60,7 @@ final class PosOperationsHubController
     {
         $candidates = [
             [$snapshot->canCatalogInventorySetup(), 'pos.catalog-inventory.setup', 'catalog_inventory', 'Catalog & Opening Stock', 'Prepare sale items and establish one-time opening inventory.', 'SETUP'],
+            [$snapshot->canCatalogChangeHistory(), 'pos.catalog.history', 'catalog_change_history', 'Catalog Change History', 'Audit immutable catalog creation, price, name, and sellable-state changes across this outlet.', 'REVIEW'],
             [$snapshot->canInventoryReplenishment(), 'pos.inventory.replenishment.workspace', 'inventory_replenishment', 'Inventory Replenishment', 'Receive positive stock after the canonical opening baseline with immutable evidence.', 'STOCK'],
             [$snapshot->canInventoryAccountability(), 'pos.inventory.accountability.workspace', 'inventory_accountability', 'Inventory Accountability', 'Reconcile current stock against canonical opening, receiving, sale, and void evidence.', 'REVIEW'],
             [$snapshot->canShiftStart(), 'pos.shift-start.workspace', 'shift_start', 'Start Shift', 'Open the exact device shift and record opening cash evidence.', 'SHIFT'],
