@@ -1,0 +1,75 @@
+name: Sprint169 Secure Installation Readiness Foundation Regression
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint169-secure-installation-readiness-${{ github.event.pull_request.number || github.ref }}-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  preserve-sprint169-secure-installation-readiness:
+    runs-on: ubuntu-latest
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWE=
+      APP_DEBUG: "false"
+      APP_URL: http://localhost
+      ONEQAY_RUNTIME_CLASS: ci
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Preserve Sprint169 bounded source contract
+        run: |
+          set -euo pipefail
+          test -f apps/web/app/Infrastructure/Installation/SecureInstallationReadiness.php
+          test -f apps/web/tests/secure-installation-readiness.php
+          grep -Fq 'Author by Lab | zefry' apps/web/app/Infrastructure/Installation/SecureInstallationReadiness.php
+          grep -Fq 'REQUIRED_EXTENSIONS' apps/web/app/Infrastructure/Installation/SecureInstallationReadiness.php
+          grep -Fq 'REQUIRED_ENVIRONMENT_KEYS' apps/web/app/Infrastructure/Installation/SecureInstallationReadiness.php
+          ! grep -Eq -- '->(insert|update|delete|increment|decrement)\(' apps/web/app/Infrastructure/Installation/SecureInstallationReadiness.php
+          ! grep -Eq 'Artisan::call|migrate|file_put_contents|fwrite|unlink|rename|copy\(' apps/web/app/Infrastructure/Installation/SecureInstallationReadiness.php
+
+      - name: Preserve operational NO-GO
+        run: |
+          set -euo pipefail
+          test "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" = NOT_EXECUTED
+          test "$(jq -r '.permission_provisioning.state' ops/final-shift-close/STATE.json)" = NONE
+          test "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" = INACTIVE
+          test "$(jq -r '.deployment_authority' ops/final-shift-close/STATE.json)" = NOT_GRANTED
+          test "$(jq -r '.technical_preview_activation' ops/final-shift-close/STATE.json)" = NOT_AUTHORIZED
+          test "$(jq -r '.production_activation' ops/final-shift-close/STATE.json)" = NOT_AUTHORIZED
+          test "$(jq -r '.updater_activation' ops/final-shift-close/STATE.json)" = INACTIVE
+          test "$(jq -r '.selection_state' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" = BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET
+          test "$(jq -r '.selected_target' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" = null
+
+      - name: Install PHP dependencies
+        working-directory: apps/web
+        run: |
+          composer validate --no-check-publish
+          composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Validate and execute readiness regression
+        working-directory: apps/web
+        run: |
+          php -l app/Infrastructure/Installation/SecureInstallationReadiness.php
+          php -l tests/secure-installation-readiness.php
+          php -d zend.assertions=1 -d assert.exception=1 tests/secure-installation-readiness.php
+          composer test
+
+      - name: Verify tracked-source cleanliness
+        run: |
+          git diff --exit-code
+          test -z "$(git status --porcelain)"
