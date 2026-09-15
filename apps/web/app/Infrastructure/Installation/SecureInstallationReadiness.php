@@ -12,9 +12,6 @@ namespace App\Infrastructure\Installation;
 final class SecureInstallationReadiness
 {
     /** @var list<string> */
-    private const REQUIRED_EXTENSIONS = ['ctype', 'curl', 'dom', 'fileinfo', 'filter', 'hash', 'mbstring', 'openssl', 'pdo', 'session', 'tokenizer', 'xml'];
-
-    /** @var list<string> */
     private const REQUIRED_ENVIRONMENT_KEYS = [
         'APP_ENV',
         'APP_KEY',
@@ -57,6 +54,7 @@ final class SecureInstallationReadiness
         'artifact_type',
         'artifact_size',
         'artifact_sha256',
+        'runtime_requirements',
         'migration_classification',
         'attribution',
     ];
@@ -82,24 +80,45 @@ final class SecureInstallationReadiness
         ?array $artifactState = null,
         ?array $databaseState = null
     ): array {
-        $extensions = array_map('strtolower', $loadedExtensions ?? get_loaded_extensions());
+        $manifest = $releaseManifest ?? [];
+        $runtimeRequirements = is_array($manifest['runtime_requirements'] ?? null)
+            ? $manifest['runtime_requirements']
+            : [];
+        $runtimeRequirementsReady = $this->isValidRuntimeRequirements($runtimeRequirements);
+        $extensions = array_values(array_unique(array_map(
+            static fn (string $extension): string => strtolower($extension),
+            $loadedExtensions ?? get_loaded_extensions()
+        )));
         $version = $phpVersion ?? PHP_VERSION;
         $checks = [];
 
+        $minimumPhpVersion = $runtimeRequirementsReady
+            ? (string) $runtimeRequirements['php_min']
+            : null;
         $checks['php_version'] = $this->check(
-            version_compare($version, '8.2.0', '>='),
-            'PHP runtime satisfies the minimum supported version.',
-            'PHP runtime is below the minimum supported version.'
+            $minimumPhpVersion !== null && version_compare($version, $minimumPhpVersion, '>='),
+            'PHP runtime satisfies the governed release requirement.',
+            $minimumPhpVersion === null
+                ? 'Governed PHP runtime requirements are unavailable or invalid.'
+                : 'PHP runtime is below the governed release minimum.'
         );
 
+        $requiredExtensions = $runtimeRequirementsReady
+            ? array_map(
+                static fn (string $extension): string => strtolower($extension),
+                $runtimeRequirements['php_extensions']
+            )
+            : [];
         $missingExtensions = array_values(array_filter(
-            self::REQUIRED_EXTENSIONS,
+            $requiredExtensions,
             static fn (string $extension): bool => ! in_array($extension, $extensions, true)
         ));
         $checks['php_extensions'] = $this->check(
-            $missingExtensions === [],
-            'Required PHP extensions are available.',
-            'Required PHP extensions are missing: '.implode(', ', $missingExtensions).'.'
+            $runtimeRequirementsReady && $missingExtensions === [],
+            'Loaded PHP extensions satisfy the governed release requirements.',
+            $runtimeRequirementsReady
+                ? 'Loaded PHP extensions do not satisfy the governed release requirements.'
+                : 'Governed PHP extension requirements are unavailable or invalid.'
         );
 
         $missingEnvironment = array_values(array_filter(
@@ -158,14 +177,13 @@ final class SecureInstallationReadiness
             'Required runtime paths are missing or not writable: '.implode(', ', $unwritablePaths).'.'
         );
 
-        $manifest = $releaseManifest ?? [];
         $missingManifestKeys = $this->missingKeys($manifest, self::REQUIRED_RELEASE_MANIFEST_KEYS);
         $manifestReady = $missingManifestKeys === [] && $this->isValidReleaseManifest($manifest);
         $checks['release_manifest'] = $this->check(
             $manifestReady,
-            'Governed release manifest identity and policy are valid.',
+            'Governed release manifest identity, runtime requirements, and policy are valid.',
             $missingManifestKeys === []
-                ? 'Governed release manifest identity or policy is invalid.'
+                ? 'Governed release manifest identity, runtime requirements, or policy are invalid.'
                 : 'Governed release manifest is incomplete: '.implode(', ', $missingManifestKeys).'.'
         );
 
@@ -221,6 +239,35 @@ final class SecureInstallationReadiness
         ));
     }
 
+    /** @param array<string, mixed> $requirements */
+    private function isValidRuntimeRequirements(array $requirements): bool
+    {
+        if (! isset($requirements['php_min'], $requirements['php_extensions'])
+            || ! is_string($requirements['php_min'])
+            || ! is_array($requirements['php_extensions'])
+            || preg_match('/\A\d+\.\d+(?:\.\d+)?\z/', trim($requirements['php_min'])) !== 1
+            || $requirements['php_extensions'] === []
+            || count($requirements['php_extensions']) > 64) {
+            return false;
+        }
+
+        $normalized = [];
+        foreach ($requirements['php_extensions'] as $extension) {
+            if (! is_string($extension)) {
+                return false;
+            }
+
+            $name = strtolower(trim($extension));
+            if (preg_match('/\A[a-z][a-z0-9_]{0,63}\z/', $name) !== 1 || isset($normalized[$name])) {
+                return false;
+            }
+
+            $normalized[$name] = true;
+        }
+
+        return true;
+    }
+
     /**
      * @param array<string, mixed> $environment
      * @param array<string, mixed> $database
@@ -253,6 +300,9 @@ final class SecureInstallationReadiness
         $artifactFilename = (string) $manifest['artifact_filename'];
         $artifactType = (string) $manifest['artifact_type'];
         $artifactSha256 = (string) $manifest['artifact_sha256'];
+        $runtimeRequirements = is_array($manifest['runtime_requirements'])
+            ? $manifest['runtime_requirements']
+            : [];
 
         return $manifest['schema_version'] === 1
             && $manifest['product'] === 'oneQay'
@@ -265,6 +315,7 @@ final class SecureInstallationReadiness
             && is_int($manifest['artifact_size'])
             && $manifest['artifact_size'] > 0
             && preg_match('/\A[0-9a-f]{64}\z/i', $artifactSha256) === 1
+            && $this->isValidRuntimeRequirements($runtimeRequirements)
             && $manifest['migration_classification'] === 'NO_SCHEMA_CHANGE'
             && $manifest['attribution'] === 'Lab | zefry';
     }
