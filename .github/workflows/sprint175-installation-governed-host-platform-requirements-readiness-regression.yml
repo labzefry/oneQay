@@ -1,0 +1,121 @@
+name: Sprint175 Installation Governed Host Platform Requirements Readiness Regression
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint175-installation-governed-host-platform-requirements-readiness-${{ github.event.pull_request.number || github.ref }}-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  qualify-sprint175-installation-governed-host-platform-requirements-readiness:
+    runs-on: ubuntu-latest
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWE=
+      APP_DEBUG: "false"
+      APP_URL: http://localhost
+      ONEQAY_RUNTIME_CLASS: ci
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Verify exact checked-out head
+        run: |
+          set -euo pipefail
+          EXPECTED_HEAD="${{ github.event.pull_request.head.sha || github.sha }}"
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+
+      - name: Qualify exact Sprint175 engineering envelope
+        if: github.event_name == 'pull_request' && github.head_ref == 'sprint175-installation-governed-host-platform-requirements-readiness'
+        env:
+          EXPECTED_PATH_HASH: 3b06f39902fda4e43096b622cffad62ad4308652f760a300c44d5a54616ef8e0
+        run: |
+          set -euo pipefail
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          test "$(git rev-parse HEAD)" = "$HEAD_SHA"
+          git cat-file -e "${BASE_SHA}^{commit}"
+          mapfile -t CHANGED < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort)
+          EXPECTED=(
+            '.github/workflows/sprint175-installation-governed-host-platform-requirements-readiness-regression.yml'
+            'apps/web/app/Infrastructure/Installation/SecureInstallationReadiness.php'
+            'apps/web/tests/secure-installation-readiness.php'
+          )
+          test "${#CHANGED[@]}" -eq "${#EXPECTED[@]}"
+          diff -u <(printf '%s\n' "${EXPECTED[@]}") <(printf '%s\n' "${CHANGED[@]}")
+          ACTUAL_HASH="$(printf '%s\n' "${CHANGED[@]}" | sha256sum | awk '{print $1}')"
+          test "$ACTUAL_HASH" = "$EXPECTED_PATH_HASH"
+
+      - name: Preserve Sprint175 source contract
+        run: |
+          set -euo pipefail
+          SOURCE=apps/web/app/Infrastructure/Installation/SecureInstallationReadiness.php
+          TEST=apps/web/tests/secure-installation-readiness.php
+          test -f "$SOURCE"
+          test -f "$TEST"
+          grep -Fq 'Author by Lab | zefry' "$SOURCE"
+          grep -Fq "'host_requirements'" "$SOURCE"
+          grep -Fq 'REQUIRED_HOST_REQUIREMENT_KEYS' "$SOURCE"
+          grep -Fq 'REQUIRED_HOST_STATE_KEYS' "$SOURCE"
+          grep -Fq 'REQUIRED_HOST_CAPABILITIES' "$SOURCE"
+          grep -Fq 'isValidHostRequirements' "$SOURCE"
+          grep -Fq 'hostMatchesRequirements' "$SOURCE"
+          grep -Fq 'isValidTokenList' "$SOURCE"
+          grep -Fq "'host_platform'" "$SOURCE"
+          grep -Fq "'outbound_allowlist'" "$SOURCE"
+          grep -Fq "'scheduler'" "$SOURCE"
+          grep -Fq "'archive'" "$SOURCE"
+          grep -Fq "'temp_directory'" "$SOURCE"
+          grep -Fq "'required_tools'" "$SOURCE"
+          grep -Fq "'runtime_requirements'" "$SOURCE"
+          grep -Fq "'compatibility_policy'" "$SOURCE"
+          grep -Fq 'REQUIRED_DATABASE_STATE_KEYS' "$SOURCE"
+          grep -Fq 'hash_equals' "$SOURCE"
+          ! grep -Eq 'curl_exec|curl_multi_exec|fsockopen|pfsockopen|gethostbyname|gethostbynamel|dns_get_record|stream_socket_client' "$SOURCE"
+          ! grep -Eq 'shell_exec|proc_open|popen\(|passthru\(|system\(|exec\(' "$SOURCE"
+          ! grep -Eq 'Artisan::call|file_put_contents|fwrite|unlink|rename|copy\(|chmod|chown|mkdir|rmdir' "$SOURCE"
+          ! grep -Eq -- '->(insert|update|delete|increment|decrement)\(' "$SOURCE"
+
+      - name: Preserve operational NO-GO
+        run: |
+          set -euo pipefail
+          test "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" = NOT_EXECUTED
+          test "$(jq -r '.permission_provisioning.state' ops/final-shift-close/STATE.json)" = NONE
+          test "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" = INACTIVE
+          test "$(jq -r '.deployment_authority' ops/final-shift-close/STATE.json)" = NOT_GRANTED
+          test "$(jq -r '.technical_preview_activation' ops/final-shift-close/STATE.json)" = NOT_AUTHORIZED
+          test "$(jq -r '.production_activation' ops/final-shift-close/STATE.json)" = NOT_AUTHORIZED
+          test "$(jq -r '.updater_activation' ops/final-shift-close/STATE.json)" = INACTIVE
+          test "$(jq -r '.selection_state' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" = BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET
+          test "$(jq -r '.selected_target' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" = null
+
+      - name: Install PHP dependencies
+        working-directory: apps/web
+        run: |
+          composer validate --no-check-publish
+          composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Validate and execute readiness regression
+        working-directory: apps/web
+        run: |
+          php -l app/Infrastructure/Installation/SecureInstallationReadiness.php
+          php -l tests/secure-installation-readiness.php
+          php -d zend.assertions=1 -d assert.exception=1 tests/secure-installation-readiness.php
+          composer test
+
+      - name: Verify tracked-source cleanliness
+        run: |
+          git diff --exit-code
+          test -z "$(git status --porcelain)"

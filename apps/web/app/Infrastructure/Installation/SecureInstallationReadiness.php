@@ -55,9 +55,42 @@ final class SecureInstallationReadiness
         'artifact_size',
         'artifact_sha256',
         'runtime_requirements',
+        'host_requirements',
         'compatibility_policy',
         'migration_classification',
         'attribution',
+    ];
+
+    /** @var list<string> */
+    private const REQUIRED_HOST_REQUIREMENT_KEYS = [
+        'os_families',
+        'web_server_interfaces',
+        'memory_bytes_min',
+        'execution_time_seconds_min',
+        'disk_bytes_min',
+        'required_capabilities',
+    ];
+
+    /** @var list<string> */
+    private const REQUIRED_HOST_STATE_KEYS = [
+        'os_family',
+        'web_server_interface',
+        'memory_bytes',
+        'execution_time_seconds',
+        'disk_free_bytes',
+        'capabilities',
+    ];
+
+    /** @var list<string> */
+    private const REQUIRED_HOST_CAPABILITIES = [
+        'https',
+        'dns',
+        'time_sync',
+        'outbound_allowlist',
+        'scheduler',
+        'archive',
+        'temp_directory',
+        'required_tools',
     ];
 
     /** @var list<string> */
@@ -81,6 +114,7 @@ final class SecureInstallationReadiness
      * @param array<string, mixed>|null $releaseManifest Installer-facing governed release manifest projection.
      * @param array<string, mixed>|null $artifactState Deterministic observed artifact identity and digest facts.
      * @param array<string, mixed>|null $databaseState Deterministic observed database connectivity and compatibility facts.
+     * @param array<string, mixed>|null $hostPlatformState Deterministic observed host/platform facts; no probing is performed here.
      * @return array{ready: bool, checks: array<string, array{ready: bool, reason: string}>}
      */
     public function assess(
@@ -90,13 +124,18 @@ final class SecureInstallationReadiness
         ?array $writablePaths = null,
         ?array $releaseManifest = null,
         ?array $artifactState = null,
-        ?array $databaseState = null
+        ?array $databaseState = null,
+        ?array $hostPlatformState = null
     ): array {
         $manifest = $releaseManifest ?? [];
         $runtimeRequirements = is_array($manifest['runtime_requirements'] ?? null)
             ? $manifest['runtime_requirements']
             : [];
         $runtimeRequirementsReady = $this->isValidRuntimeRequirements($runtimeRequirements);
+        $hostRequirements = is_array($manifest['host_requirements'] ?? null)
+            ? $manifest['host_requirements']
+            : [];
+        $hostRequirementsReady = $this->isValidHostRequirements($hostRequirements);
         $extensions = array_values(array_unique(array_map(
             static fn (string $extension): string => strtolower($extension),
             $loadedExtensions ?? get_loaded_extensions()
@@ -131,6 +170,21 @@ final class SecureInstallationReadiness
             $runtimeRequirementsReady
                 ? 'Loaded PHP extensions do not satisfy the governed release requirements.'
                 : 'Governed PHP extension requirements are unavailable or invalid.'
+        );
+
+        $observedHost = $hostPlatformState ?? [];
+        $missingHostStateKeys = $this->missingKeys($observedHost, self::REQUIRED_HOST_STATE_KEYS);
+        $hostReady = $hostRequirementsReady
+            && $missingHostStateKeys === []
+            && $this->hostMatchesRequirements($hostRequirements, $observedHost);
+        $checks['host_platform'] = $this->check(
+            $hostReady,
+            'Observed host/platform capabilities satisfy the governed release requirements.',
+            ! $hostRequirementsReady
+                ? 'Governed host/platform requirements are unavailable or invalid.'
+                : ($missingHostStateKeys === []
+                    ? 'Observed host/platform capabilities do not satisfy the governed release requirements.'
+                    : 'Observed host/platform facts are incomplete: '.implode(', ', $missingHostStateKeys).'.')
         );
 
         $missingEnvironment = array_values(array_filter(
@@ -193,9 +247,9 @@ final class SecureInstallationReadiness
         $manifestReady = $missingManifestKeys === [] && $this->isValidReleaseManifest($manifest);
         $checks['release_manifest'] = $this->check(
             $manifestReady,
-            'Governed release manifest identity, runtime requirements, compatibility policy, and release policy are valid.',
+            'Governed release manifest identity, runtime requirements, host requirements, compatibility policy, and release policy are valid.',
             $missingManifestKeys === []
-                ? 'Governed release manifest identity, runtime requirements, compatibility policy, or release policy are invalid.'
+                ? 'Governed release manifest identity, runtime requirements, host requirements, compatibility policy, or release policy are invalid.'
                 : 'Governed release manifest is incomplete: '.implode(', ', $missingManifestKeys).'.'
         );
 
@@ -280,6 +334,109 @@ final class SecureInstallationReadiness
         return true;
     }
 
+    /** @param array<string, mixed> $requirements */
+    private function isValidHostRequirements(array $requirements): bool
+    {
+        if ($this->missingKeys($requirements, self::REQUIRED_HOST_REQUIREMENT_KEYS) !== []
+            || ! is_array($requirements['os_families'])
+            || ! is_array($requirements['web_server_interfaces'])
+            || ! is_int($requirements['memory_bytes_min'])
+            || ! is_int($requirements['execution_time_seconds_min'])
+            || ! is_int($requirements['disk_bytes_min'])
+            || ! is_array($requirements['required_capabilities'])
+            || $requirements['memory_bytes_min'] <= 0
+            || $requirements['execution_time_seconds_min'] <= 0
+            || $requirements['execution_time_seconds_min'] > 3600
+            || $requirements['disk_bytes_min'] <= 0
+            || ! $this->isValidTokenList($requirements['os_families'], 16)
+            || ! $this->isValidTokenList($requirements['web_server_interfaces'], 16)
+            || ! $this->isValidTokenList($requirements['required_capabilities'], 16)) {
+            return false;
+        }
+
+        $capabilities = array_map(
+            static fn (string $capability): string => strtolower(trim($capability)),
+            $requirements['required_capabilities']
+        );
+        sort($capabilities);
+        $requiredCapabilities = self::REQUIRED_HOST_CAPABILITIES;
+        sort($requiredCapabilities);
+
+        return $capabilities === $requiredCapabilities;
+    }
+
+    /**
+     * @param array<string, mixed> $requirements
+     * @param array<string, mixed> $observed
+     */
+    private function hostMatchesRequirements(array $requirements, array $observed): bool
+    {
+        if (! is_string($observed['os_family'])
+            || ! is_string($observed['web_server_interface'])
+            || ! is_int($observed['memory_bytes'])
+            || ! is_int($observed['execution_time_seconds'])
+            || ! is_int($observed['disk_free_bytes'])
+            || ! is_array($observed['capabilities'])
+            || $observed['memory_bytes'] < 0
+            || $observed['execution_time_seconds'] < 0
+            || $observed['disk_free_bytes'] < 0) {
+            return false;
+        }
+
+        $osFamily = strtolower(trim($observed['os_family']));
+        $webServerInterface = strtolower(trim($observed['web_server_interface']));
+        $allowedOsFamilies = array_map(
+            static fn (string $value): string => strtolower(trim($value)),
+            $requirements['os_families']
+        );
+        $allowedInterfaces = array_map(
+            static fn (string $value): string => strtolower(trim($value)),
+            $requirements['web_server_interfaces']
+        );
+
+        if (! in_array($osFamily, $allowedOsFamilies, true)
+            || ! in_array($webServerInterface, $allowedInterfaces, true)
+            || $observed['memory_bytes'] < $requirements['memory_bytes_min']
+            || ($observed['execution_time_seconds'] !== 0
+                && $observed['execution_time_seconds'] < $requirements['execution_time_seconds_min'])
+            || $observed['disk_free_bytes'] < $requirements['disk_bytes_min']) {
+            return false;
+        }
+
+        foreach ($requirements['required_capabilities'] as $capability) {
+            $name = strtolower(trim($capability));
+            if (($observed['capabilities'][$name] ?? false) !== true) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /** @param list<mixed> $values */
+    private function isValidTokenList(array $values, int $maximum): bool
+    {
+        if ($values === [] || count($values) > $maximum) {
+            return false;
+        }
+
+        $normalized = [];
+        foreach ($values as $value) {
+            if (! is_string($value)) {
+                return false;
+            }
+
+            $token = strtolower(trim($value));
+            if (preg_match('/\A[a-z][a-z0-9._-]{0,63}\z/', $token) !== 1 || isset($normalized[$token])) {
+                return false;
+            }
+
+            $normalized[$token] = true;
+        }
+
+        return true;
+    }
+
     /**
      * @param array<string, mixed> $environment
      * @param array<string, mixed> $database
@@ -315,6 +472,9 @@ final class SecureInstallationReadiness
         $runtimeRequirements = is_array($manifest['runtime_requirements'])
             ? $manifest['runtime_requirements']
             : [];
+        $hostRequirements = is_array($manifest['host_requirements'])
+            ? $manifest['host_requirements']
+            : [];
         $compatibilityPolicy = is_array($manifest['compatibility_policy'])
             ? $manifest['compatibility_policy']
             : [];
@@ -331,6 +491,7 @@ final class SecureInstallationReadiness
             && $manifest['artifact_size'] > 0
             && preg_match('/\A[0-9a-f]{64}\z/i', $artifactSha256) === 1
             && $this->isValidRuntimeRequirements($runtimeRequirements)
+            && $this->isValidHostRequirements($hostRequirements)
             && $this->isValidCompatibilityPolicy($compatibilityPolicy)
             && $manifest['migration_classification'] === 'NO_SCHEMA_CHANGE'
             && $manifest['attribution'] === 'Lab | zefry';
