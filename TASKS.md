@@ -1,8 +1,8 @@
 # oneQay Tasks
 
-**Current canonical engineering checkpoint:** Sprint167 closed  
-**Canonical engineering commit:** `dbdf0aa90a6d6127cf10113ec8c1092b8780504f`  
-**Latest engineering PR:** #752 — `Sprint167: add POS active shift performance workspace`  
+**Current canonical engineering checkpoint:** Sprint167 closed
+**Canonical engineering commit:** `dbdf0aa90a6d6127cf10113ec8c1092b8780504f`
+**Latest engineering PR:** #752 — `Sprint167: add POS active shift performance workspace`
 **Canonical status authority:** `PROJECT_MANIFEST.md`
 
 ## Completed Sprint167 state
