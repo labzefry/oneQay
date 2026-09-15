@@ -61,10 +61,10 @@ jobs:
           ACTUAL_HASH="$(printf '%s\n' "${CHANGED[@]}" | sha256sum | awk '{print $1}')"
           test "$ACTUAL_HASH" = "$EXPECTED_PATH_HASH"
 
-      - name: Qualify Sprint170 successor compatibility correction
+      - name: Qualify Sprint170 and Sprint171 successor compatibility correction
         if: github.event_name == 'pull_request' && github.head_ref == 'sprint171-sprint170-successor-compatibility'
         env:
-          EXPECTED_PATH_HASH: 7e50e9fd1ee46ac7bd4c1fa7f8f45d5e0392d1571aebac3aaf7318ec18a3cbee
+          EXPECTED_PATH_HASH: a645af2614c2f2f088850ac53e746741145eb901f66926812063285843c9eb78
         run: |
           set -euo pipefail
           BASE_SHA="${{ github.event.pull_request.base.sha }}"
@@ -74,6 +74,7 @@ jobs:
           mapfile -t CHANGED < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort)
           EXPECTED=(
             '.github/workflows/sprint170-installation-filesystem-readiness-regression.yml'
+            '.github/workflows/sprint171-installation-governed-release-artifact-readiness-regression.yml'
           )
           test "${#CHANGED[@]}" -eq "${#EXPECTED[@]}"
           diff -u <(printf '%s\n' "${EXPECTED[@]}") <(printf '%s\n' "${CHANGED[@]}")
