@@ -31,7 +31,13 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: Preserve Sprint169 bounded source contract
+      - name: Verify exact checked-out head
+        run: |
+          set -euo pipefail
+          EXPECTED_HEAD="${{ github.event.pull_request.head.sha || github.sha }}"
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+
+      - name: Preserve Sprint169 source contract
         run: |
           set -euo pipefail
           test -f apps/web/app/Infrastructure/Installation/SecureInstallationReadiness.php
