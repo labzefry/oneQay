@@ -8,38 +8,40 @@ Enterprise-oriented business-management platform built with Modular Monolith Fir
 
 ## Current canonical status
 
-The latest completed **engineering** sprint is **Sprint166**.
+The latest completed **engineering** sprint is **Sprint167**.
 
-- Canonical engineering commit: `e2758d0170a081953aaae11711ecc1ec3c0f8e78`
-- Engineering PR: #750 — `Sprint166: add POS product sales performance workspace`
-- Final engineering head: `7f8de2dc2639938a02f5413a1a1edbbb0b7e925f`
+- Canonical engineering commit: `dbdf0aa90a6d6127cf10113ec8c1092b8780504f`
+- Engineering PR: #752 — `Sprint167: add POS active shift performance workspace`
+- Final engineering head: `05047a7f04650b52c4035e4ca40171609fa8db10`
 - Complete surfaced exact-head PR-triggered qualification: successful
-- Sprint166 regression run `34917171015`: successful
-- M7.1 run `34917171092`: successful
-- Governance Required Checks run `34917171084`: successful
-- PHP Foundation Regression run `34917171083`: successful
+- Sprint167 regression run `34919045197`: successful
+- M7.1 run `34919045660`: successful
+- Governance Required Checks run `34919045650`: successful
+- PHP Foundation Regression run `34919045018`: successful
 - Repository-native Product Owner merge authorization: `success` on the exact engineering head
-- Sprint166 engineering envelope: 12 paths, SHA-256 `3687acbd962b494a354c705c43eda5a71c1de426b5691d9b0f13b1620af2e228`
-- Post-Sprint166 reconciliation envelope: six paths, SHA-256 `d887f8bcf393ad56a74d481e64aa3963c8678012f87025dcbf93ef8bde5ea4c8`
-- Next engineering position: **Sprint167 bounded discovery**, with no preselected objective
+- Sprint167 engineering envelope: 12 paths, SHA-256 `e9ca990e36ce896428bc749d19cf47025ce0525fd707f5e330d5d1cfbbfc8b48`
+- Post-Sprint167 reconciliation envelope: six paths, SHA-256 `2fd60a53d8996d41452cb10036d350a14a4d95a2943e897c233d29f3eac32b14`
+- Next engineering position: **Sprint168 bounded discovery**, with no preselected objective
 
 For the full current project state, use **[`PROJECT_MANIFEST.md`](PROJECT_MANIFEST.md)** as the canonical human-readable source of truth.
 
-## Sprint166 — POS product sales performance workspace
+## Sprint167 — POS active shift performance workspace
 
-**Purpose / Why:** Existing operational sales reporting was outlet-aggregate only. Sprint166 adds product-level visibility without introducing a second reporting authority or any new mutation path.
+**Purpose / Why:** Outlet reporting did not explain the live exact-device shift, while cash-variance reconciliation focused only on closing-cash control. Sprint167 adds read-only current-shift visibility without introducing any new mutation or permission owner.
 
-**Objective / Gap:** `POS_PRODUCT_SALES_PERFORMANCE_WORKSPACE`.
+**Objective / Gap:** `POS_ACTIVE_SHIFT_PERFORMANCE_WORKSPACE`.
 
-**What changed:** A guarded read-only workspace now derives product/currency performance from immutable completed sale lines and full-sale void evidence. It reports gross, voided, and net active quantity/value; preserves historical currency/scale boundaries; keeps inactive catalog products visible when historical evidence exists; fails closed on orphan/corrupt/inconsistent evidence; and bounds output to 250 buckets with explicit truncation.
+The workspace reads only the current exact-device `active_slot=1` shift and derives tender/currency performance from immutable shift-bound sales. It exposes completed, voided, active, and cash-refunded counts plus gross, full-void, active-net, and refunded-cash values. Active net equals gross minus full-sale void; CASH refund remains separate and is not deducted twice.
 
-CASH refund is not subtracted a second time because canonical CASH refund follows an already-recorded full-sale void. Access reuses existing `pos.reporting.sales-summary.view`; delivery is default-false through `ONEQAY_POS_PRODUCT_SALES_PERFORMANCE_ENABLED` and remains Local/Test/CI + persistence + existing reporting + exact-session gated.
+A missing active shift is a valid empty state. Legacy null-shift sales at/after shift opening, cross-scope evidence, malformed tender/evidence modes, inconsistent void/refund evidence, overflow, or more than 64 buckets fail closed.
 
-No migration, schema change, sale or stock mutation, stocktake, arbitrary adjustment, supplier/purchasing, transfer, new permission, permission provisioning, global route/provider change, or existing Sales Summary ownership change was introduced.
+Access reuses `pos.reporting.sales-summary.view`. Delivery remains default-false through `ONEQAY_POS_ACTIVE_SHIFT_PERFORMANCE_ENABLED`, Local/Test/CI + persistence + operational-reporting + exact-session gated, and discoverable from the Operations Hub only when `Route::has()` confirms delivery.
 
-## Product state through Sprint166
+No migration, schema change, sale/shift/stock mutation, new permission, permission provisioning, global route/provider change, Final Shift Close operational execution, deployment, or updater activation was introduced.
 
-Material canonical progress includes tenant isolation, deny-by-default authorization, session/authentication foundations, API governance, exact-head CI/governance, repository-native Product Owner merge authorization, POS shift/register operations, durable sale/payment/receipt evidence, catalog and opening inventory, positive replenishment, inventory accountability, void/refund controls, cash variance/adjudication, operational reporting, cashier, shift start, sale corrections, immutable sale history, guarded POS navigation, and product-level sales performance.
+## Product state through Sprint167
+
+Material canonical progress includes tenant isolation, deny-by-default authorization, session/authentication foundations, API governance, exact-head CI/governance, repository-native Product Owner merge authorization, POS shift/register operations, durable sale/payment/receipt evidence, catalog/opening inventory, positive replenishment, inventory accountability, void/refund controls, cash variance/adjudication, operational reporting, cashier, shift start, sale corrections, immutable sale history, guarded POS navigation, product-level sales performance, and live active-shift performance.
 
 ## Operational status remains intentionally gated
 
@@ -71,6 +73,6 @@ Machine-readable operational authority remains in `ops/final-shift-close/*.json`
 
 ## Next position
 
-Sprint167 starts with bounded discovery from the fully reconciled Sprint166 checkpoint. Do not preselect an objective or infer new operational authority.
+Sprint168 starts with bounded discovery from the fully reconciled Sprint167 checkpoint. Do not preselect an objective or infer new mutation/operational authority.
 
 Author by Lab | zefry
