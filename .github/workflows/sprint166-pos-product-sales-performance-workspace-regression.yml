@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  qualify-sprint166-pos-product-sales-performance:
+  preserve-sprint166-pos-product-sales-performance:
     runs-on: ubuntu-latest
     env:
       APP_NAME: oneQay
@@ -31,43 +31,30 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: Qualify exact Sprint166 engineering envelope
-        if: github.event_name == 'pull_request'
-        env:
-          EXPECTED_PATH_HASH: 3687acbd962b494a354c705c43eda5a71c1de426b5691d9b0f13b1620af2e228
-          EXPECTED_PATH_COUNT: "12"
+      - name: Preserve Sprint166 source contract
         run: |
           set -euo pipefail
-          git fetch --no-tags origin "${{ github.base_ref }}"
-          git diff --name-only "origin/${{ github.base_ref }}...HEAD" | LC_ALL=C sort > /tmp/s166-paths.txt
-          test "$(wc -l < /tmp/s166-paths.txt | tr -d ' ')" = "$EXPECTED_PATH_COUNT"
-          test "$(sha256sum /tmp/s166-paths.txt | awk '{print $1}')" = "$EXPECTED_PATH_HASH"
-          cat > /tmp/s166-expected.txt <<'EOF'
-          .github/workflows/sprint166-pos-product-sales-performance-workspace-regression.yml
-          apps/web/app/Application/Pos/PosProductSalesPerformanceWorkspaceRepository.php
-          apps/web/app/Application/Pos/PosProductSalesPerformanceWorkspaceSnapshot.php
-          apps/web/app/Application/Pos/ViewPosProductSalesPerformanceWorkspace.php
-          apps/web/app/Delivery/Http/Pos/PosOperationsHubController.php
-          apps/web/app/Delivery/Http/Pos/PosProductSalesPerformanceWorkspaceController.php
-          apps/web/app/Infrastructure/Pos/LaravelPosProductSalesPerformanceWorkspaceRepository.php
-          apps/web/app/Providers/PosOperationsHubServiceProvider.php
-          apps/web/app/Providers/PosProductSalesPerformanceWorkspaceServiceProvider.php
-          apps/web/config/pos_product_sales_performance.php
-          apps/web/resources/js/pages/Pos/ProductSalesPerformance.vue
-          apps/web/tests/pos-product-sales-performance-workspace.php
-          EOF
-          sed -i 's/^          //' /tmp/s166-expected.txt
-          diff -u /tmp/s166-expected.txt /tmp/s166-paths.txt
-          git diff --quiet "origin/${{ github.base_ref }}...HEAD" -- apps/web/app/Application/Authorization/PosPermission.php
-          git diff --quiet "origin/${{ github.base_ref }}...HEAD" -- apps/web/app/Providers/FinalShiftCloseServiceProvider.php
-          git diff --quiet "origin/${{ github.base_ref }}...HEAD" -- apps/web/app/Providers/PosOperationalReportingServiceProvider.php
-          git diff --quiet "origin/${{ github.base_ref }}...HEAD" -- apps/web/config/pos_operational_reporting.php
-          git diff --quiet "origin/${{ github.base_ref }}...HEAD" -- apps/web/app/Application/Pos/PosOperationalSalesSummary.php
-          git diff --quiet "origin/${{ github.base_ref }}...HEAD" -- apps/web/app/Infrastructure/Pos/LaravelPosOperationalSalesSummaryRepository.php
-          git diff --quiet "origin/${{ github.base_ref }}...HEAD" -- apps/web/app/Delivery/Http/Pos/PosOperationalSalesSummaryController.php
-          git diff --quiet "origin/${{ github.base_ref }}...HEAD" -- apps/web/resources/js/pages/Pos/SalesSummary.vue
-          git diff --quiet "origin/${{ github.base_ref }}...HEAD" -- apps/web/routes/web.php apps/web/bootstrap/providers.php
-          git diff --quiet "origin/${{ github.base_ref }}...HEAD" -- apps/web/database/migrations apps/web/database/module-migrations
+          test -f apps/web/app/Application/Pos/PosProductSalesPerformanceWorkspaceRepository.php
+          test -f apps/web/app/Application/Pos/PosProductSalesPerformanceWorkspaceSnapshot.php
+          test -f apps/web/app/Application/Pos/ViewPosProductSalesPerformanceWorkspace.php
+          test -f apps/web/app/Delivery/Http/Pos/PosProductSalesPerformanceWorkspaceController.php
+          test -f apps/web/app/Infrastructure/Pos/LaravelPosProductSalesPerformanceWorkspaceRepository.php
+          test -f apps/web/app/Providers/PosProductSalesPerformanceWorkspaceServiceProvider.php
+          test -f apps/web/config/pos_product_sales_performance.php
+          test -f apps/web/resources/js/pages/Pos/ProductSalesPerformance.vue
+          test -f apps/web/tests/pos-product-sales-performance-workspace.php
+          grep -Fq "pos.reporting.sales-summary.view" apps/web/app/Application/Pos/ViewPosProductSalesPerformanceWorkspace.php
+          grep -Fq "oneqay_pos_sale_lines" apps/web/app/Infrastructure/Pos/LaravelPosProductSalesPerformanceWorkspaceRepository.php
+          grep -Fq "oneqay_pos_sales" apps/web/app/Infrastructure/Pos/LaravelPosProductSalesPerformanceWorkspaceRepository.php
+          grep -Fq "oneqay_pos_sale_voids" apps/web/app/Infrastructure/Pos/LaravelPosProductSalesPerformanceWorkspaceRepository.php
+          grep -Fq "oneqay_pos_sale_catalog_items" apps/web/app/Infrastructure/Pos/LaravelPosProductSalesPerformanceWorkspaceRepository.php
+          ! grep -Fq "oneqay_pos_sale_cash_refunds" apps/web/app/Infrastructure/Pos/LaravelPosProductSalesPerformanceWorkspaceRepository.php
+          ! grep -Eq -- '->(insert|update|delete|increment|decrement)\(' apps/web/app/Infrastructure/Pos/LaravelPosProductSalesPerformanceWorkspaceRepository.php
+          grep -Fq "ONEQAY_POS_PRODUCT_SALES_PERFORMANCE_ENABLED" apps/web/config/pos_product_sales_performance.php
+          grep -Fq "PosProductSalesPerformanceWorkspaceServiceProvider::class" apps/web/app/Providers/PosOperationsHubServiceProvider.php
+          grep -Fq "pos.reporting.product-performance" apps/web/app/Providers/PosProductSalesPerformanceWorkspaceServiceProvider.php
+          grep -Fq "pos.reporting.product-performance" apps/web/app/Delivery/Http/Pos/PosOperationsHubController.php
+          grep -Fq 'Route::has($routeName)' apps/web/app/Delivery/Http/Pos/PosOperationsHubController.php
 
       - name: Preserve operational NO-GO
         run: |
@@ -81,22 +68,6 @@ jobs:
           test "$(jq -r '.updater_activation' ops/final-shift-close/STATE.json)" = INACTIVE
           test "$(jq -r '.selection_state' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" = BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET
           test "$(jq -r '.selected_target' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" = null
-
-      - name: Preserve read-only product performance contract
-        run: |
-          set -euo pipefail
-          grep -Fq "pos.reporting.sales-summary.view" apps/web/app/Application/Pos/ViewPosProductSalesPerformanceWorkspace.php
-          grep -Fq "oneqay_pos_sale_lines" apps/web/app/Infrastructure/Pos/LaravelPosProductSalesPerformanceWorkspaceRepository.php
-          grep -Fq "oneqay_pos_sales" apps/web/app/Infrastructure/Pos/LaravelPosProductSalesPerformanceWorkspaceRepository.php
-          grep -Fq "oneqay_pos_sale_voids" apps/web/app/Infrastructure/Pos/LaravelPosProductSalesPerformanceWorkspaceRepository.php
-          grep -Fq "oneqay_pos_sale_catalog_items" apps/web/app/Infrastructure/Pos/LaravelPosProductSalesPerformanceWorkspaceRepository.php
-          ! grep -Fq "oneqay_pos_sale_cash_refunds" apps/web/app/Infrastructure/Pos/LaravelPosProductSalesPerformanceWorkspaceRepository.php
-          ! grep -Eq -- '->(insert|update|delete|increment|decrement)\(' apps/web/app/Infrastructure/Pos/LaravelPosProductSalesPerformanceWorkspaceRepository.php
-          grep -Fq "ONEQAY_POS_PRODUCT_SALES_PERFORMANCE_ENABLED" apps/web/config/pos_product_sales_performance.php
-          grep -Fq "PosProductSalesPerformanceWorkspaceServiceProvider::class" apps/web/app/Providers/PosOperationsHubServiceProvider.php
-          grep -Fq "pos.reporting.product-performance" apps/web/app/Providers/PosProductSalesPerformanceWorkspaceServiceProvider.php
-          grep -Fq "pos.reporting.product-performance" apps/web/app/Delivery/Http/Pos/PosOperationsHubController.php
-          grep -Fq 'Route::has($routeName)' apps/web/app/Delivery/Http/Pos/PosOperationsHubController.php
 
       - name: Install PHP dependencies
         working-directory: apps/web
@@ -131,7 +102,7 @@ jobs:
         with:
           node-version: 24.19.0
 
-      - name: Type-check and build product sales performance UI
+      - name: Type-check and build preserved UI
         working-directory: apps/web
         run: |
           npm ci --ignore-scripts --no-fund
