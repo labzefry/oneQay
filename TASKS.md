@@ -1,8 +1,8 @@
 # oneQay Tasks
 
-**Current canonical engineering checkpoint:** Sprint173 closed  
-**Canonical engineering commit:** `933b06d0790834fb830ca9a55b443db69eca65f0`  
-**Latest engineering PR:** #771 — `Sprint173: govern installation runtime requirements by release manifest v2`  
+**Current canonical engineering checkpoint:** Sprint173 closed
+**Canonical engineering commit:** `933b06d0790834fb830ca9a55b443db69eca65f0`
+**Latest engineering PR:** #771 — `Sprint173: govern installation runtime requirements by release manifest v2`
 **Canonical status authority:** `PROJECT_MANIFEST.md`
 
 ## Completed Sprint173 state
