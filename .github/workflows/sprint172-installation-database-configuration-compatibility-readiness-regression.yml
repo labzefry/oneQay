@@ -38,7 +38,7 @@ jobs:
           test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
 
       - name: Qualify exact Sprint172 engineering envelope
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && github.head_ref == 'sprint172-installation-database-configuration-compatibility-readiness'
         env:
           EXPECTED_PATH_HASH: c0a1726ad384717f91889af2f2ce0f433cfdae7a64b3be62dc6fadde16104d16
         run: |
@@ -52,6 +52,26 @@ jobs:
             '.github/workflows/sprint172-installation-database-configuration-compatibility-readiness-regression.yml'
             'apps/web/app/Infrastructure/Installation/SecureInstallationReadiness.php'
             'apps/web/tests/secure-installation-readiness.php'
+          )
+          test "${#CHANGED[@]}" -eq "${#EXPECTED[@]}"
+          diff -u <(printf '%s\n' "${EXPECTED[@]}") <(printf '%s\n' "${CHANGED[@]}")
+          ACTUAL_HASH="$(printf '%s\n' "${CHANGED[@]}" | sha256sum | awk '{print $1}')"
+          test "$ACTUAL_HASH" = "$EXPECTED_PATH_HASH"
+
+      - name: Qualify Sprint171 and Sprint172 successor compatibility correction
+        if: github.event_name == 'pull_request' && github.head_ref == 'sprint172-sprint171-successor-compatibility'
+        env:
+          EXPECTED_PATH_HASH: 5e14de894ed2024b97d010d369c615d03566ef2a70565821650ff192c747d11e
+        run: |
+          set -euo pipefail
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          test "$(git rev-parse HEAD)" = "$HEAD_SHA"
+          git cat-file -e "${BASE_SHA}^{commit}"
+          mapfile -t CHANGED < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort)
+          EXPECTED=(
+            '.github/workflows/sprint171-installation-governed-release-artifact-readiness-regression.yml'
+            '.github/workflows/sprint172-installation-database-configuration-compatibility-readiness-regression.yml'
           )
           test "${#CHANGED[@]}" -eq "${#EXPECTED[@]}"
           diff -u <(printf '%s\n' "${EXPECTED[@]}") <(printf '%s\n' "${CHANGED[@]}")
