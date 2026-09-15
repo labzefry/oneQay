@@ -53,6 +53,18 @@ $releaseManifest = [
         'php_min' => '8.2.0',
         'php_extensions' => $extensions,
     ],
+    'compatibility_policy' => [
+        'release_version' => '0.1.0',
+        'build_provenance_ref' => 'github-actions:34991613421',
+        'supported_current_version_range' => [
+            'min' => '0.0.0',
+            'max' => '0.1.0',
+        ],
+        'deployment_compatibility' => 'WEB_RUNTIME_V1',
+        'rollback_compatibility' => 'NO_SCHEMA_CHANGE_ROLLBACK_SAFE',
+        'public_bootstrap_layout_compatibility' => 'PUBLIC_BOOTSTRAP_V1',
+        'release_notes_reference' => 'CHANGELOG.md#sprint174',
+    ],
     'migration_classification' => 'NO_SCHEMA_CHANGE',
     'attribution' => 'Lab | zefry',
     'operator_token' => 'manifest-secret-must-never-appear',
@@ -280,5 +292,53 @@ $sizeMismatch['size'] = 1048575;
 $sizeFailure = $subject->assess($productionEnvironment, $extensions, '8.3.0', $writablePaths, $releaseManifest, $sizeMismatch, $databaseState);
 assert($sizeFailure['ready'] === false);
 assert($sizeFailure['checks']['artifact_integrity']['ready'] === false);
+
+$missingCompatibilityPolicy = $releaseManifest;
+unset($missingCompatibilityPolicy['compatibility_policy']);
+$missingCompatibilityPolicyFailure = $subject->assess($productionEnvironment, $extensions, '8.3.0', $writablePaths, $missingCompatibilityPolicy, $artifactState, $databaseState);
+assert($missingCompatibilityPolicyFailure['ready'] === false);
+assert($missingCompatibilityPolicyFailure['checks']['release_manifest']['ready'] === false);
+assert($missingCompatibilityPolicyFailure['checks']['artifact_integrity']['ready'] === false);
+
+$missingProvenance = $releaseManifest;
+unset($missingProvenance['compatibility_policy']['build_provenance_ref']);
+$missingProvenanceFailure = $subject->assess($productionEnvironment, $extensions, '8.3.0', $writablePaths, $missingProvenance, $artifactState, $databaseState);
+assert($missingProvenanceFailure['ready'] === false);
+assert($missingProvenanceFailure['checks']['release_manifest']['ready'] === false);
+
+$invalidReleaseVersion = $releaseManifest;
+$invalidReleaseVersion['compatibility_policy']['release_version'] = 'v0.1';
+$invalidReleaseVersionFailure = $subject->assess($productionEnvironment, $extensions, '8.3.0', $writablePaths, $invalidReleaseVersion, $artifactState, $databaseState);
+assert($invalidReleaseVersionFailure['ready'] === false);
+assert($invalidReleaseVersionFailure['checks']['release_manifest']['ready'] === false);
+assert(! str_contains(json_encode($invalidReleaseVersionFailure, JSON_THROW_ON_ERROR), 'v0.1'));
+
+$invertedVersionRange = $releaseManifest;
+$invertedVersionRange['compatibility_policy']['supported_current_version_range'] = [
+    'min' => '0.2.0',
+    'max' => '0.1.0',
+];
+$invertedVersionRangeFailure = $subject->assess($productionEnvironment, $extensions, '8.3.0', $writablePaths, $invertedVersionRange, $artifactState, $databaseState);
+assert($invertedVersionRangeFailure['ready'] === false);
+assert($invertedVersionRangeFailure['checks']['release_manifest']['ready'] === false);
+
+$unsafeProvenance = $releaseManifest;
+$unsafeProvenance['compatibility_policy']['build_provenance_ref'] = 'https://example.test/../secret-provenance';
+$unsafeProvenanceFailure = $subject->assess($productionEnvironment, $extensions, '8.3.0', $writablePaths, $unsafeProvenance, $artifactState, $databaseState);
+assert($unsafeProvenanceFailure['ready'] === false);
+assert($unsafeProvenanceFailure['checks']['release_manifest']['ready'] === false);
+assert(! str_contains(json_encode($unsafeProvenanceFailure, JSON_THROW_ON_ERROR), 'secret-provenance'));
+
+$unsafeRollbackPolicy = $releaseManifest;
+$unsafeRollbackPolicy['compatibility_policy']['rollback_compatibility'] = 'SCHEMA_CHANGE_ROLLBACK_REQUIRED';
+$unsafeRollbackPolicyFailure = $subject->assess($productionEnvironment, $extensions, '8.3.0', $writablePaths, $unsafeRollbackPolicy, $artifactState, $databaseState);
+assert($unsafeRollbackPolicyFailure['ready'] === false);
+assert($unsafeRollbackPolicyFailure['checks']['release_manifest']['ready'] === false);
+
+$unsafeDeploymentPolicy = $releaseManifest;
+$unsafeDeploymentPolicy['compatibility_policy']['deployment_compatibility'] = 'web runtime v1';
+$unsafeDeploymentPolicyFailure = $subject->assess($productionEnvironment, $extensions, '8.3.0', $writablePaths, $unsafeDeploymentPolicy, $artifactState, $databaseState);
+assert($unsafeDeploymentPolicyFailure['ready'] === false);
+assert($unsafeDeploymentPolicyFailure['checks']['release_manifest']['ready'] === false);
 
 echo "secure installation readiness regression passed\n";
