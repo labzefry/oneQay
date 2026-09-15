@@ -1,7 +1,7 @@
 # oneQay Roadmap
 
-**Roadmap checkpoint:** Sprint170 closed canonically  
-**Canonical engineering baseline:** `aa46ad0752f8ae2da145eb0c0f6324a3c5be6f25`  
+**Roadmap checkpoint:** Sprint170 closed canonically
+**Canonical engineering baseline:** `aa46ad0752f8ae2da145eb0c0f6324a3c5be6f25`
 **Current state authority:** `PROJECT_MANIFEST.md`
 
 ## Completed Sprint170 horizon
