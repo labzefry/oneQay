@@ -8,67 +8,38 @@ Enterprise-oriented business-management platform built with Modular Monolith Fir
 
 ## Current canonical status
 
-The latest completed **engineering** sprint is **Sprint168**.
+The latest completed engineering sprint is **Sprint169 — Secure Installation Readiness Foundation**.
 
-- Canonical engineering commit: `d3703a6b18f478acd812e7892c3871ce3aaf7bfa`
-- Engineering PR: #754 — `Sprint168: add POS shift history performance workspace`
-- Final engineering head: `05652fc5b11fdad7bb11e9c992f79d6f5436e29d`
-- Complete surfaced exact-head PR-triggered qualification: successful
-- Sprint168 regression run `34921162121`: successful
-- M7.1 run `34921161920`: successful
-- Governance Required Checks run `34921162056`: successful
-- PHP Foundation Regression run `34921162098`: successful
-- Repository-native Product Owner merge authorization: `success` on the exact engineering head
-- Sprint168 engineering envelope: 12 paths, SHA-256 `d42a5a7d8568766e524ff662107ffdb35452d4f9ac00f26cdc8e419d36bc3c25`
-- Post-Sprint168 reconciliation envelope: six paths, SHA-256 `350fd16d111bb398c34a63e1519cc02206bcc373378a9366768c198ccf8146b5`
-- Next engineering position: **Sprint169 bounded discovery**, with no preselected objective
+- Canonical engineering commit: `2a53d9db9547340bd4d791b34fabb80ec600fc8b`
+- Engineering PR: #756
+- Final engineering head: `5d2b27404352da7f81723f08977de34aef00faf7`
+- Sprint169 regression `34936197402`: successful
+- Governance `34936197759`: successful
+- PHP Foundation `34936197571`: successful
+- M7.1 `34936197394`: successful
+- Engineering envelope: 3 paths, SHA-256 `2bfeedcabc1a09617876a6ce0719cb31a3246c157ad78472feda5db18f9c4fd1`
+- Reconciliation envelope: 6 paths, SHA-256 `7f6b2b61e87d8891dc3c4d1a047ac92f9209d3286c445e77518f796179ce4d93`
 
-For the full current project state, use **[`PROJECT_MANIFEST.md`](PROJECT_MANIFEST.md)** as the canonical human-readable source of truth.
+For the full project state, use [`PROJECT_MANIFEST.md`](PROJECT_MANIFEST.md) as the canonical human-readable source of truth.
 
-## Sprint168 — POS shift history performance workspace
+## Sprint169 — Secure installation readiness foundation
 
-Sprint168 adds a read-only historical workspace for closed outlet shifts. It deliberately supports same-outlet cross-device visibility, requires exactly one canonical Final Shift Close evidence row for every eligible closed shift, and derives selected-shift performance only from immutable shift-bound sale, full-sale-void, and CASH-refund evidence.
+Sprint169 establishes the first executable canonical installation-readiness owner while remaining strictly source-only and non-destructive. It performs deterministic fail-closed checks for supported PHP runtime, required extensions, required environment configuration, application-key readiness, production debug posture, and HTTPS production URL posture.
 
-Active net value equals gross minus full-sale void; CASH refund remains separately reported and is not deducted twice. Missing close evidence, legacy null-shift sales inside the shift window, foreign-scope/outside-window evidence, malformed tender/evidence, inconsistent void/refund evidence, overflow, or excessive bucket count fail closed.
+The readiness result is redacted and never returns supplied database credentials. Missing or placeholder configuration, unsupported runtime, missing extensions, production debug mode, or insecure production URL prevents readiness.
 
-Access reuses `pos.reporting.sales-summary.view`. Delivery remains default-false through `ONEQAY_POS_SHIFT_HISTORY_PERFORMANCE_ENABLED`, Local/Test/CI + persistence + operational-reporting + exact-session gated, and depends on existing `ONEQAY_POS_SHIFT_CLOSE_ENABLED` source/runtime readiness. Operations Hub discovery remains guarded by reporting authority and `Route::has()`.
+No installer route is exposed. No `.env` mutation, administrator bootstrap, migration execution, permission provisioning, deployment, Technical Preview/Production activation, durable-target selection, producer dispatch, runtime allowlist widening, Final Shift Close activation, or updater activation is authorized by Sprint169.
 
-No migration, schema change, shift/sale/cash/stock mutation, new permission, provisioning, global route/provider change, Final Shift Close provider change, deployment, Technical Preview/Production activation, or updater activation was introduced.
+## Product progression
 
-## Product state through Sprint168
-
-Material canonical progress includes tenant isolation, deny-by-default authorization, session/authentication foundations, API governance, exact-head CI/governance, repository-native Product Owner merge authorization, POS shift/register operations, durable sale/payment/receipt evidence, catalog/opening inventory, positive replenishment, inventory accountability, void/refund controls, cash variance/adjudication, operational reporting, cashier, shift start, sale corrections, immutable sale history, guarded POS navigation, product-level sales performance, live active-shift performance, and closed-shift historical performance.
+The canonical product chain includes tenant isolation, deny-by-default authorization, API/session governance, POS register/shift/sale operations, immutable payment/receipt evidence, catalog and inventory controls, operational reporting and reconciliation, guarded POS workspaces, and now the first bounded secure installation-readiness source foundation.
 
 ## Operational status remains intentionally gated
 
-| Gate | State |
-| --- | --- |
-| Migration #27 execution | `NOT_EXECUTED` |
-| Permission provisioning | `NONE` |
-| Durable activation target | `BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET` |
-| Selected target | `null` |
-| Real capability evidence | absent |
-| Real dependency-envelope evidence | absent |
-| Final Shift Close runtime allowlist | Local/Test/CI only |
-| Feature activation | `INACTIVE` |
-| Deployment authority | `NOT_GRANTED` |
-| Technical Preview activation | `NOT_AUTHORIZED` |
-| Production activation | `NOT_AUTHORIZED` |
-| Updater activation | `INACTIVE` |
+Migration #27 remains `NOT_EXECUTED`; permission provisioning `NONE`; durable activation target `BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET`; selected target `null`; Final Shift Close `INACTIVE`; deployment `NOT_GRANTED`; Technical Preview and Production `NOT_AUTHORIZED`; updater `INACTIVE`.
 
-Machine-readable operational authority remains in `ops/final-shift-close/*.json`.
+## Next engineering position
 
-## Technology baseline
-
-- Backend: Laravel / PHP
-- Frontend: Vue 3 + Inertia + Vite
-- Database: MySQL-compatible
-- Architecture: Modular Monolith First, Clean Architecture, DDD, module-owned schema
-- Authorization: tenant-context first, deny-by-default
-- API governance: versioned REST, stable error envelope, correlation ID, tenant context, idempotency, cursor pagination, signed webhooks, replay protection
-
-## Next position
-
-Sprint169 starts with bounded discovery from the fully reconciled Sprint168 checkpoint. Do not preselect an objective or infer new mutation/operational authority.
+Sprint170 starts only after Sprint169 canonical reconciliation. Select the smallest material P0/P1 business-completeness or production-readiness gap and reuse canonical owners. Installation work must remain bounded and must not infer deployment or operational activation authority.
 
 Author by Lab | zefry
