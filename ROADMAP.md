@@ -1,30 +1,44 @@
 # oneQay Roadmap
 
-**Roadmap checkpoint:** Sprint164 closed canonically
-**Canonical engineering baseline:** `d37ecdfa16d3f024de840871aa202af4fb5ee7d1`
+**Roadmap checkpoint:** Sprint165 closed canonically
+**Canonical engineering baseline:** `dc6340c04ac710bd38966d897b27e23fd92c0a41`
 **Current state authority:** `PROJECT_MANIFEST.md`
 
-## Completed Sprint164 horizon
+## Completed Sprint165 horizon
 
-Sprint164 closed the material post-baseline inventory gap with `POS_INVENTORY_REPLENISHMENT_FOUNDATION_WORKSPACE`.
+Sprint165 closed the material inventory-accountability visibility gap with `POS_INVENTORY_ACCOUNTABILITY_WORKSPACE`.
 
-The capability is intentionally bounded to positive receiving/replenishment. It requires an existing canonical opening baseline and active exact tenant/outlet catalog product, records immutable before/received/after evidence, uses stable idempotent operation identity, and is protected by dedicated deny-by-default `pos.inventory.replenish` authority with no automatic grant.
+The workspace is read-only and derives expected current stock from canonical immutable evidence: opening baseline + positive replenishment + full-sale void restoration - completed sale lines. Persisted catalog stock must match exactly or the workspace fails closed. Reconciliation does not infer causality from same-second timestamps; timestamps order display only.
 
-Migration #28 is module-owned under `apps/web/database/module-migrations/pos/` and is loaded by the bounded replenishment provider. The canonical global migration directory remains unchanged through migration #27.
+The capability reuses existing `pos.inventory.baseline` OR `pos.inventory.replenish` authority. It does not add a permission, migration, schema, arbitrary adjustment engine, stocktake mutation, purchasing/supplier domain, transfer capability, or negative stock mutation.
 
-Engineering PR #746 squash merged at `d37ecdfa16d3f024de840871aa202af4fb5ee7d1`. Engineering envelope: 22 paths, SHA-256 `b826b746e18bc39025735e10fe645ad559eceab992801190a654624462811f8e`.
+Engineering PR #748 squash merged at `dc6340c04ac710bd38966d897b27e23fd92c0a41`. Engineering envelope: 14 paths, SHA-256 `d83945325461acdd9db7f1ab02bb908a1e0e263a6f680e2f0acf1f3256978786`.
 
-Canonical reconciliation envelope: six paths, SHA-256 `19c035b85a4698f60a78cbb70ccd0c1b82835c47073f5dcb2e2443f49c88f0fa`.
+Canonical reconciliation envelope: six paths, SHA-256 `2f10216f9f2c86a188a924c66a8473c17cd5310da47bd768a8ab1bb0f4a17533`.
+
+## Product progression through Sprint165
+
+The current guarded POS operational surface includes reporting, cashier sale entry, shift start, sale corrections, immutable sale history/receipt detail, catalog/opening-inventory setup, Operations Hub navigation, cash-variance reconciliation, positive inventory replenishment, and inventory accountability.
+
+Inventory lifecycle boundaries are explicit:
+- opening baseline = one-time initialization;
+- replenishment = positive stock receipt after baseline;
+- completed sale = stock decrement;
+- full-sale void = sold-stock restoration;
+- CASH refund = financial correction without a second stock restoration;
+- accountability = read-only reconciliation across those existing owners.
 
 ## Operational boundary
 
 Machine-readable operational state under `ops/final-shift-close/` remains authoritative. No roadmap text grants operational authority. Selected durable target remains `null`; migration #27 execution remains `NOT_EXECUTED`; permission provisioning remains `NONE`; Final Shift Close remains inactive; deployment/Technical Preview/Production remain unauthorized; updater remains inactive.
 
-## Sprint165 selection rule
+## Sprint166 selection rule
 
-Begin Sprint165 bounded discovery from the fully reconciled Sprint164 canonical checkpoint. Do not preselect the objective.
+Begin Sprint166 bounded discovery only from the fully reconciled Sprint165 canonical checkpoint. Do not preselect the objective, source envelope, permission, migration, or mutation authority.
 
-Prioritize the smallest material non-duplicative P0/P1 production-readiness or business-completeness gap. Reuse canonical shift, sale, catalog, inventory, void/refund, authorization, reporting, reconciliation, and replenishment owners. Any future inventory correction/decrement/transfer authority must be separately justified; Sprint164 grants only positive replenishment and does not authorize arbitrary stock adjustment.
+Prioritize the smallest material non-duplicative P0/P1 production-readiness or business-completeness gap after inspecting current source/contracts/regressions. Reuse existing canonical shift, sale, catalog, inventory, replenishment, accountability, void/refund, authorization, reporting, and reconciliation owners.
+
+Potential future domains such as arbitrary stock correction, stocktake, supplier purchasing, goods receiving beyond bounded replenishment, inter-outlet transfer, or negative inventory mutation are **not** authorized by Sprint165 and must not be selected without independent bounded evidence that the gap is both material and not already owned.
 
 Preserve fail-closed behavior, deny-by-default authorization, tenant/outlet isolation, exact-head CI, source-only operational posture, and the six-path canonical reconciliation model.
 
