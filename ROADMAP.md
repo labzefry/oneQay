@@ -1,6 +1,6 @@
 # oneQay Roadmap
 
-**Roadmap checkpoint:** Sprint164 engineering merged; canonical reconciliation in progress
+**Roadmap checkpoint:** Sprint164 closed canonically
 **Canonical engineering baseline:** `d37ecdfa16d3f024de840871aa202af4fb5ee7d1`
 **Current state authority:** `PROJECT_MANIFEST.md`
 
@@ -14,7 +14,7 @@ Migration #28 is module-owned under `apps/web/database/module-migrations/pos/` a
 
 Engineering PR #746 squash merged at `d37ecdfa16d3f024de840871aa202af4fb5ee7d1`. Engineering envelope: 22 paths, SHA-256 `b826b746e18bc39025735e10fe645ad559eceab992801190a654624462811f8e`.
 
-Canonical reconciliation remains exactly six paths with SHA-256 `19c035b85a4698f60a78cbb70ccd0c1b82835c47073f5dcb2e2443f49c88f0fa`.
+Canonical reconciliation envelope: six paths, SHA-256 `19c035b85a4698f60a78cbb70ccd0c1b82835c47073f5dcb2e2443f49c88f0fa`.
 
 ## Operational boundary
 
@@ -22,7 +22,7 @@ Machine-readable operational state under `ops/final-shift-close/` remains author
 
 ## Sprint165 selection rule
 
-Begin Sprint165 bounded discovery only from the fully reconciled Sprint164 canonical checkpoint. Do not preselect the objective.
+Begin Sprint165 bounded discovery from the fully reconciled Sprint164 canonical checkpoint. Do not preselect the objective.
 
 Prioritize the smallest material non-duplicative P0/P1 production-readiness or business-completeness gap. Reuse canonical shift, sale, catalog, inventory, void/refund, authorization, reporting, reconciliation, and replenishment owners. Any future inventory correction/decrement/transfer authority must be separately justified; Sprint164 grants only positive replenishment and does not authorize arbitrary stock adjustment.
 
