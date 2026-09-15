@@ -1,0 +1,155 @@
+name: Sprint164 POS Inventory Replenishment Foundation Workspace Regression
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint164-pos-inventory-replenishment-${{ github.event.pull_request.number || github.ref }}-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  qualify-sprint164-pos-inventory-replenishment:
+    runs-on: ubuntu-latest
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3c=
+      APP_DEBUG: "false"
+      APP_URL: http://localhost
+      ONEQAY_RUNTIME_CLASS: ci
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Qualify exact Sprint164 engineering envelope
+        if: github.event_name == 'pull_request'
+        env:
+          EXPECTED_PATH_HASH: b826b746e18bc39025735e10fe645ad559eceab992801190a654624462811f8e
+          EXPECTED_PATH_COUNT: "22"
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "${{ github.base_ref }}"
+          git diff --name-only "origin/${{ github.base_ref }}...HEAD" | LC_ALL=C sort > /tmp/s164-paths.txt
+          test "$(wc -l < /tmp/s164-paths.txt | tr -d ' ')" = "$EXPECTED_PATH_COUNT"
+          test "$(sha256sum /tmp/s164-paths.txt | awk '{print $1}')" = "$EXPECTED_PATH_HASH"
+          cat > /tmp/s164-expected.txt <<'EOF'
+          .github/workflows/sprint164-pos-inventory-replenishment-foundation-workspace-regression.yml
+          apps/web/app/Application/Pos/InventoryReplenishmentClock.php
+          apps/web/app/Application/Pos/InventoryReplenishmentCommand.php
+          apps/web/app/Application/Pos/InventoryReplenishmentRepository.php
+          apps/web/app/Application/Pos/InventoryReplenishmentResult.php
+          apps/web/app/Application/Pos/PosInventoryReplenishmentWorkspaceRepository.php
+          apps/web/app/Application/Pos/PosInventoryReplenishmentWorkspaceSnapshot.php
+          apps/web/app/Application/Pos/PosOperationsHubSnapshot.php
+          apps/web/app/Application/Pos/ReplenishInventory.php
+          apps/web/app/Application/Pos/ViewPosInventoryReplenishmentWorkspace.php
+          apps/web/app/Application/Pos/ViewPosOperationsHub.php
+          apps/web/app/Delivery/Http/Pos/PosInventoryReplenishmentController.php
+          apps/web/app/Delivery/Http/Pos/PosInventoryReplenishmentWorkspaceController.php
+          apps/web/app/Delivery/Http/Pos/PosOperationsHubController.php
+          apps/web/app/Infrastructure/Pos/LaravelInventoryReplenishmentRepository.php
+          apps/web/app/Infrastructure/Pos/LaravelPosInventoryReplenishmentWorkspaceRepository.php
+          apps/web/app/Providers/PosInventoryReplenishmentWorkspaceServiceProvider.php
+          apps/web/app/Providers/PosOperationsHubServiceProvider.php
+          apps/web/config/pos_inventory_replenishment.php
+          apps/web/database/module-migrations/pos/0000_00_00_000028_create_pos_inventory_replenishment_foundation.php
+          apps/web/resources/js/pages/Pos/InventoryReplenishment.vue
+          apps/web/tests/pos-inventory-replenishment-workspace.php
+          EOF
+          sed -i 's/^          //' /tmp/s164-expected.txt
+          diff -u /tmp/s164-expected.txt /tmp/s164-paths.txt
+          git diff --quiet "origin/${{ github.base_ref }}...HEAD" -- apps/web/app/Application/Authorization/PosPermission.php
+          git diff --quiet "origin/${{ github.base_ref }}...HEAD" -- apps/web/app/Providers/FinalShiftCloseServiceProvider.php
+          git diff --quiet "origin/${{ github.base_ref }}...HEAD" -- apps/web/routes/web.php apps/web/bootstrap/providers.php
+          git diff --quiet "origin/${{ github.base_ref }}...HEAD" -- apps/web/database/migrations
+
+      - name: Preserve operational NO-GO and source-only migration posture
+        run: |
+          set -euo pipefail
+          test "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" = NOT_EXECUTED
+          test "$(jq -r '.permission_provisioning.state' ops/final-shift-close/STATE.json)" = NONE
+          test "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" = INACTIVE
+          test "$(jq -r '.deployment_authority' ops/final-shift-close/STATE.json)" = NOT_GRANTED
+          test "$(jq -r '.technical_preview_activation' ops/final-shift-close/STATE.json)" = NOT_AUTHORIZED
+          test "$(jq -r '.production_activation' ops/final-shift-close/STATE.json)" = NOT_AUTHORIZED
+          test "$(jq -r '.updater_activation' ops/final-shift-close/STATE.json)" = INACTIVE
+          test "$(jq -r '.selected_target' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" = null
+          test -f apps/web/database/module-migrations/pos/0000_00_00_000028_create_pos_inventory_replenishment_foundation.php
+          grep -Fq "loadMigrationsFrom(base_path('database/module-migrations/pos'))" apps/web/app/Providers/PosInventoryReplenishmentWorkspaceServiceProvider.php
+          ! git diff "origin/${{ github.base_ref || 'main' }}...HEAD" --name-only | grep -Eq '^ops/final-shift-close/|^apps/web/routes/web.php$|^apps/web/bootstrap/providers.php$'
+
+      - name: Preserve positive-only replenishment authority
+        run: |
+          set -euo pipefail
+          grep -Fq "public const REPLENISH_PERMISSION = 'pos.inventory.replenish';" apps/web/app/Application/Pos/ReplenishInventory.php
+          grep -Fq 'PermissionIdentifier::fromString(self::REPLENISH_PERMISSION)' apps/web/app/Application/Pos/ReplenishInventory.php
+          grep -Fq 'replenishedQuantity <= 0' apps/web/app/Application/Pos/InventoryReplenishmentCommand.php
+          grep -Fq "oneqay_pos_inventory_baselines" apps/web/app/Infrastructure/Pos/LaravelInventoryReplenishmentRepository.php
+          grep -Fq "where('active', true)" apps/web/app/Infrastructure/Pos/LaravelInventoryReplenishmentRepository.php
+          grep -Fq "oneqay_pos_inventory_replenishments" apps/web/app/Infrastructure/Pos/LaravelInventoryReplenishmentRepository.php
+          grep -Fq "where('available_quantity', \$before)" apps/web/app/Infrastructure/Pos/LaravelInventoryReplenishmentRepository.php
+          ! grep -Eq "decrement\(|replenished_quantity[^\n]*-" apps/web/app/Infrastructure/Pos/LaravelInventoryReplenishmentRepository.php
+          grep -Fq "ONEQAY_POS_INVENTORY_REPLENISHMENT_ENABLED" apps/web/config/pos_inventory_replenishment.php
+          grep -Fq "PosInventoryReplenishmentWorkspaceServiceProvider::class" apps/web/app/Providers/PosOperationsHubServiceProvider.php
+
+      - name: Install PHP dependencies
+        working-directory: apps/web
+        run: |
+          composer validate --no-check-publish
+          composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Validate PHP syntax
+        working-directory: apps/web
+        run: |
+          find app config database routes tests -name '*.php' -print0 | xargs -0 -n1 php -l >/tmp/php-lint.log
+          cat /tmp/php-lint.log
+
+      - name: Execute canonical and POS regressions
+        working-directory: apps/web
+        run: |
+          composer test
+          php tests/pos-operational-reporting.php
+          php tests/pos-cashier-workspace.php
+          php tests/pos-shift-start-workspace.php
+          php tests/pos-sale-correction-workspace.php
+          php tests/pos-sale-history-workspace.php
+          php tests/pos-catalog-inventory-setup-workspace.php
+          php tests/pos-operations-hub.php
+          php tests/pos-cash-variance-reconciliation-workspace.php
+          php tests/pos-inventory-replenishment-workspace.php
+
+      - name: Setup exact Node LTS
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: 24.19.0
+
+      - name: Type-check and build replenishment UI
+        working-directory: apps/web
+        run: |
+          npm ci --ignore-scripts --no-fund
+          npm run type-check
+          npm run build
+
+      - name: Preserve route discovery and no-auto-grant boundaries
+        run: |
+          set -euo pipefail
+          grep -Fq 'PermissionIdentifier::fromString(ReplenishInventory::REPLENISH_PERMISSION)' apps/web/app/Application/Pos/ViewPosInventoryReplenishmentWorkspace.php
+          grep -Fq 'PermissionIdentifier::fromString(ReplenishInventory::REPLENISH_PERMISSION)' apps/web/app/Application/Pos/ViewPosOperationsHub.php
+          grep -Fq "Route::has(\$routeName)" apps/web/app/Delivery/Http/Pos/PosOperationsHubController.php
+          grep -Fq "pos.inventory.replenishment.workspace" apps/web/app/Delivery/Http/Pos/PosOperationsHubController.php
+          ! git diff "origin/${{ github.base_ref || 'main' }}...HEAD" --name-only | grep -Eq 'authorization.*seed|permission.*seed|policy.*seed'
+
+      - name: Verify tracked-source cleanliness
+        run: |
+          git diff --exit-code
+          test -z "$(git status --porcelain)"
