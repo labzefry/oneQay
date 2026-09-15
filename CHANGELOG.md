@@ -1,93 +1,61 @@
 # Changelog
 
+## 2026-09-15 — Sprint165 closed
+
+**Sprint165: POS inventory accountability workspace**
+
+- **Purpose / Why:** canonical opening baseline, replenishment, sale decrement, and full-sale void restoration evidence existed, but there was no operational read model proving current stock reconciled to those immutable sources.
+- **Objective / Gap:** `POS_INVENTORY_ACCOUNTABILITY_WORKSPACE`.
+- Added read-only tenant + organization + outlet inventory accountability.
+- For every baselined product, the server derives `opening + replenishment + full-sale-void restoration - completed sale quantity` and requires exact equality with canonical current catalog stock.
+- Made balance derivation aggregate/commutative so same-second event ordering cannot invent causality; timestamps are used only for deterministic presentation.
+- Explicitly excluded CASH refund evidence from stock restoration because canonical cash refund does not restore inventory.
+- Preserved inactive but baselined products for historical accountability.
+- Added up to 200 recent immutable movement entries spanning opening baseline, replenishment, completed-sale decrement, and full-sale void restoration.
+- Reused existing inventory authorities only: `pos.inventory.baseline` OR `pos.inventory.replenish`; no new permission identifier or provisioning was introduced.
+- Added guarded `GET /pos/inventory/accountability` / `pos.inventory.accountability.workspace` delivery, default-false `ONEQAY_POS_INVENTORY_ACCOUNTABILITY_ENABLED`, Local/Test/CI restriction, persistence/session gates, target re-authorization, and Operations Hub `Route::has()` discovery.
+- Added fail-closed checks for corrupt/orphan evidence, scope leakage, overflow, unsupported runtime, disabled feature state, and persisted-stock mismatch.
+- Added no migration, schema change, arbitrary stock adjustment, stocktake mutation, supplier/purchasing flow, transfer flow, negative inventory authority, global route/provider change, shared permission-registry change, or Final Shift Close owner change.
+- Exact engineering head `553b7b07b6b30ae37ebd36a041e2cf85ffa09c03` completed the surfaced PR-triggered matrix successfully.
+- Sprint165 regression run `34915204475`, M7.1 `34915204297`, Governance `34915204324`, PHP Foundation `34915204303`, POS successor regressions, and surfaced Final Shift Close historical controls succeeded.
+- Repository-native exact-head Product Owner merge authority verified successfully.
+- Engineering envelope: 14 paths; SHA-256 `d83945325461acdd9db7f1ab02bb908a1e0e263a6f680e2f0acf1f3256978786`.
+- Engineering PR #748 squash merged at `dc6340c04ac710bd38966d897b27e23fd92c0a41`.
+- Canonical reconciliation envelope: six paths; SHA-256 `2f10216f9f2c86a188a924c66a8473c17cd5310da47bd768a8ab1bb0f4a17533`.
+- **Operational boundaries / NO-GO:** selected target `null`; migration #27 `NOT_EXECUTED`; permission provisioning `NONE`; Final Shift Close feature activation `INACTIVE`; deployment authority `NOT_GRANTED`; Technical Preview/Production `NOT_AUTHORIZED`; updater `INACTIVE`.
+- **Next position:** Sprint166 bounded discovery; no objective, permission, migration, mutation authority, or source envelope preselected.
+
 ## 2026-09-15 — Sprint164 closed
 
 **Sprint164: POS inventory replenishment foundation workspace**
 
-- **Purpose / Why:** the canonical opening inventory baseline is intentionally one-time, while normal sales continually reduce stock; a durable positive receiving path was required to avoid direct database manipulation after stock depletion.
-- **Objective / Gap:** `POS_INVENTORY_REPLENISHMENT_FOUNDATION_WORKSPACE`.
-- Added dedicated deny-by-default `pos.inventory.replenish` authority without automatic role grant or permission provisioning.
-- Added positive-only replenishment command/service/repository with exact tenant/organization/outlet/device binding, stable operation ID, semantic fingerprint replay protection, baseline prerequisite, active-catalog prerequisite, locked overflow-safe stock transition, and immutable before/received/after evidence.
-- Added module-owned migration #28 at `apps/web/database/module-migrations/pos/0000_00_00_000028_create_pos_inventory_replenishment_foundation.php`; the bounded provider loads this path for Laravel migration discovery while the canonical global migration directory remains unchanged through migration #27.
-- Preserved existing stock ownership: sale completion decrements stock; full-sale void restores stock from immutable sale lines; cash refund does not restore stock again; opening inventory baseline remains one-time initialization.
-- Added guarded read workspace, recent immutable replenishment evidence, Operations Hub discoverability, Vue/Inertia UI, authoritative refresh after success or network ambiguity, and no automatic retry.
-- Initial head `d3bc0996cef8d7e0343e779472cea7db932beddd` was disqualified because unnecessary shared-owner edits triggered stale historical exact-shape gates.
-- Correction head `595548919732d28dffb266e597cacde0759384c8` was disqualified because placing migration #28 in the global migration directory triggered historical migration-horizon gates.
-- Final qualified engineering head `45cf298b799b134d0e17bdf19cc751814fe3ae2a` used bounded permission ownership plus module-owned schema and completed the latest reopened surfaced matrix successfully.
-- Sprint164 regression run `34912504801`, M7.1 `34912504799`, Governance `34912504817`, PHP Foundation `34912504836`, POS successor regressions, and surfaced Final Shift Close historical runs succeeded.
-- Repository-native exact-head Product Owner merge authority verified successfully.
+- Added positive-only ongoing inventory replenishment after the canonical one-time opening baseline.
+- Added dedicated deny-by-default `pos.inventory.replenish` authority with no automatic grant or provisioning.
+- Added stable operation identity, replay protection, active-product/baseline prerequisites, locked overflow-safe stock transition, and immutable before/received/after evidence.
+- Added module-owned migration #28 under `apps/web/database/module-migrations/pos/`; global migration horizon remains through #27.
+- Preserved sale completion as decrement owner, full-sale void as restoration owner, and cash refund as non-restoring.
 - Engineering envelope: 22 paths; SHA-256 `b826b746e18bc39025735e10fe645ad559eceab992801190a654624462811f8e`.
 - Engineering PR #746 squash merged at `d37ecdfa16d3f024de840871aa202af4fb5ee7d1`.
 - Reconciliation envelope: six paths; SHA-256 `19c035b85a4698f60a78cbb70ccd0c1b82835c47073f5dcb2e2443f49c88f0fa`.
-- **Operational boundaries / NO-GO:** selected target `null`; migration #27 `NOT_EXECUTED`; permission provisioning `NONE`; Final Shift Close feature activation `INACTIVE`; deployment authority `NOT_GRANTED`; Technical Preview/Production `NOT_AUTHORIZED`; updater `INACTIVE`.
-- **Next position:** Sprint165 bounded discovery; no objective or source envelope preselected. Future arbitrary stock correction/decrement/transfer authority is not implied by Sprint164 and requires separate bounded justification.
-
----
-
-This changelog records **material canonical progress**, not every intermediate compatibility or CI-only commit. Detailed provenance remains in merged pull requests, Git history, workflows, tests, and machine-readable contracts.
-
-Current project-state authority: [`PROJECT_MANIFEST.md`](PROJECT_MANIFEST.md).
 
 ## 2026-09-14 — Sprint163 closed
 
-**Sprint163: operational cash variance reconciliation workspace**
-
-- **Purpose / Why:** Final Shift Close already required explanation plus independent accepted review for non-zero cash variance, but operational POS delivery did not expose those existing durable authorities.
-- **Objective / Gap:** `POS_CASH_VARIANCE_RECONCILIATION_WORKSPACE`.
-- Added tenant + organization + outlet scoped, same-outlet cross-device reconciliation workspace.
-- Rebuilt selected variance subjects server-side from canonical closing evidence using the existing expected-cash reader and `DeriveCashVariance`; browser requests cannot supply authoritative variance inputs.
-- Reused existing explanation and reviewer permissions; no new permission identifier was created.
-- Preserved maker-checker separation and terminal `REVIEW_REJECTED` semantics.
-- Added guarded workspace/explanation/review routes, Operations Hub discovery, Vue/Inertia UI, and executable reconciliation regression.
-- Exact engineering head `61a506f44315e7ac18ec08672bd9cb2aee81c838` completed the surfaced PR-triggered matrix successfully; Sprint163 run `34862683840` succeeded.
-- Engineering envelope: 18 paths; SHA-256 `61077fd95f392e588a99d394f0ba3a0fc4d5b3187da850a1f4a796fa61eb5dbb`.
+- Materialized `POS_CASH_VARIANCE_RECONCILIATION_WORKSPACE` over existing explanation/reviewer authorities while preserving server-authoritative variance subjects, maker-checker separation, and terminal rejection semantics.
 - Engineering PR #744 squash merged at `a920e63c1a1d2623664b416422c3d5a471e389a6`.
-- Reconciliation envelope: six paths; SHA-256 `dd1e8acc008bbe3ca8491cff12b0327f204d63e0820286af0da786acc5f8d4f2`.
-- **Operational boundaries / NO-GO:** selected target `null`; migration #27 `NOT_EXECUTED`; permission provisioning `NONE`; feature activation `INACTIVE`; deployment authority `NOT_GRANTED`; Technical Preview/Production `NOT_AUTHORIZED`; updater `INACTIVE`.
-- **Next position:** Sprint164 bounded discovery; no objective or source envelope preselected.
 
 ## 2026-09-14 — Sprint162 closed
 
-**Sprint162: guarded POS operations hub**
-
-- **Purpose / Why:** Sprint156–Sprint161 delivered seven independently guarded POS pages, but there was no common POS home route, frontend layout, or authorized navigation owner.
-- **Objective / Gap:** `POS_OPERATIONS_HUB`.
-- Added exact tenant/organization/outlet/device operations-hub snapshot and application query.
-- Reused only existing permissions; no hub-specific permission was introduced.
-- Preserved canonical access composition: Shift Start requires open-shift + opening-cash; Cashier requires complete-sale; reporting/history reuse reporting view; corrections use void OR refund; catalog/opening-stock requires catalog + baseline; Shift Close reuses `pos.shift.close`.
-- Added fail-closed named-route filtering with `Route::has()` so disabled or unregistered feature surfaces never become links.
-- Target workspaces retain and re-run their own authorization gates.
-- Added `/pos` / `pos.operations.hub` through a child provider; global provider registry remained unchanged.
-- Added `ONEQAY_POS_OPERATIONS_HUB_ENABLED`, default false, with Local/Test/CI + persistence + exact-session delivery gates.
-- Added responsive Vue/Inertia read-only operations UI and executable permission-composition regression.
-- Discovery confirmed no canonical restock/stock-adjustment application authority; Sprint162 deliberately did not invent one.
-- Complete surfaced exact-head PR-triggered matrix: successful on `2d75efbdb4b3eb2b98ad7973866fa6576b1ffd79`.
-- Sprint162 regression run `34857221294`: successful.
-- M7.1 `34857221166`, Governance `34857221221`, PHP Foundation `34857220990`, Sprint156–Sprint161, and all other surfaced historical runs: successful.
-- Repository-native exact-head Product Owner merge authority: successful.
-- Engineering envelope: exactly 9 paths; SHA-256 `afadd8577d794fffc100b8ab98d77dfc55599ead9d32963c1ef84ee8a086afd2`.
+- Added guarded read-only POS operations hub using existing permissions and delivered named-route discovery.
 - Engineering PR #742 squash merged at `332bcff11b40307d350c7ce5b3a6c08913c4251c`.
-- Post-merge verification proved exactly one squash commit over post-Sprint161 canonical main and exactly the qualified 9-path delta.
-- Post-Sprint162 reconciliation envelope: six paths; SHA-256 `66500e314da09a14dbc35624dc0e0468c6ca3707bcf0a91261b4f850b207b734`.
-- **Operational boundaries / NO-GO:** selected target remains `null`; migration #27 remains `NOT_EXECUTED`; permission provisioning remains `NONE`; feature activation remains `INACTIVE`; deployment authority remains `NOT_GRANTED`; Technical Preview/Production remain `NOT_AUTHORIZED`; updater remains `INACTIVE`.
-- **Next position:** Sprint163 bounded discovery from canonical post-Sprint162; no objective or source envelope is preselected.
 
 ## 2026-09-14 — Sprint161 closed
 
-**Sprint161: operational POS catalog and opening-inventory setup workspace**
-
-- Added guarded catalog/opening-stock operational workspace over existing canonical catalog-preparation and one-time inventory-baseline authorities.
-- Reused `pos.catalog.prepare` and `pos.inventory.baseline`; preserved explicit two-step setup and authoritative refresh after mutation outcomes.
-- Initial exact-head CI caught malformed persisted-currency normalization; corrected final head fails closed instead.
+- Added guarded catalog/opening-stock operational workspace over existing catalog-preparation and one-time inventory-baseline authorities.
 - Engineering PR #740 squash merged at `33080c0b5f5c6f66e9994ad7f05ba78dea241294`.
 
 ## 2026-09-14 — Sprint160 closed
 
-**Sprint160: immutable POS sale history and receipt detail workspace**
-
-- Added read-only latest-50 sale history and exact sale receipt lookup over canonical persistence.
-- Added immutable line-level receipt validation, correction evidence validation, foreign-scope non-disclosure, and precision-safe atomic money strings.
-- Reused existing reporting authority; no mutation engine or migration was introduced.
+- Added read-only immutable sale history and receipt detail with correction evidence validation and foreign-scope non-disclosure.
 - Engineering PR #738 squash merged at `e6ef6e77d8a2d0dea16d7c17dde78bece904b78b`.
 
 ## 2026-09-14 — Sprint159 closed
@@ -120,8 +88,6 @@ Machine-readable authority remains in `ops/final-shift-close/STATE.json`, `ops/f
 
 Current values remain migration #27 `NOT_EXECUTED`, permission provisioning `NONE`, target selection blocked with selected target `null`, real capability evidence `NONE`, real dependency-envelope evidence `NONE`, feature activation `INACTIVE`, deployment authority `NOT_GRANTED`, Technical Preview/Production `NOT_AUTHORIZED`, and updater `INACTIVE`.
 
-## Sprint description standard
-
-Each material sprint records: **Purpose / Why; Objective / Gap; What changed; Evidence / Qualification; Operational boundaries / NO-GO; Next position**.
+Each material sprint records **Purpose / Why; Objective / Gap; What changed; Evidence / Qualification; Operational boundaries / NO-GO; Next position**.
 
 Author by Lab | zefry
