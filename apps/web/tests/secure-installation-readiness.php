@@ -49,6 +49,10 @@ $releaseManifest = [
     'artifact_type' => 'tar.gz',
     'artifact_size' => 1048576,
     'artifact_sha256' => str_repeat('b', 64),
+    'runtime_requirements' => [
+        'php_min' => '8.2.0',
+        'php_extensions' => $extensions,
+    ],
     'migration_classification' => 'NO_SCHEMA_CHANGE',
     'attribution' => 'Lab | zefry',
     'operator_token' => 'manifest-secret-must-never-appear',
@@ -61,6 +65,8 @@ $artifactState = [
 
 $ready = $subject->assess($productionEnvironment, $extensions, '8.3.0', $writablePaths, $releaseManifest, $artifactState, $databaseState);
 assert($ready['ready'] === true);
+assert($ready['checks']['php_version']['ready'] === true);
+assert($ready['checks']['php_extensions']['ready'] === true);
 assert($ready['checks']['database_compatibility']['ready'] === true);
 assert($ready['checks']['filesystem_write']['ready'] === true);
 assert($ready['checks']['release_manifest']['ready'] === true);
@@ -113,6 +119,42 @@ assert($missingExtension['checks']['php_extensions']['ready'] === false);
 $oldPhp = $subject->assess($productionEnvironment, $extensions, '8.1.0', $writablePaths, $releaseManifest, $artifactState, $databaseState);
 assert($oldPhp['ready'] === false);
 assert($oldPhp['checks']['php_version']['ready'] === false);
+
+$raisedRuntimeManifest = $releaseManifest;
+$raisedRuntimeManifest['runtime_requirements']['php_min'] = '8.4.0';
+$raisedRuntimeFailure = $subject->assess($productionEnvironment, $extensions, '8.3.0', $writablePaths, $raisedRuntimeManifest, $artifactState, $databaseState);
+assert($raisedRuntimeFailure['ready'] === false);
+assert($raisedRuntimeFailure['checks']['php_version']['ready'] === false);
+assert($raisedRuntimeFailure['checks']['release_manifest']['ready'] === true);
+
+$governedSubsetManifest = $releaseManifest;
+$governedSubsetManifest['runtime_requirements']['php_extensions'] = ['openssl', 'pdo'];
+$governedSubsetReady = $subject->assess($productionEnvironment, ['openssl', 'pdo'], '8.3.0', $writablePaths, $governedSubsetManifest, $artifactState, $databaseState);
+assert($governedSubsetReady['ready'] === true);
+assert($governedSubsetReady['checks']['php_extensions']['ready'] === true);
+assert($governedSubsetReady['checks']['release_manifest']['ready'] === true);
+
+$missingRuntimeManifest = $releaseManifest;
+unset($missingRuntimeManifest['runtime_requirements']);
+$missingRuntimeFailure = $subject->assess($productionEnvironment, $extensions, '8.3.0', $writablePaths, $missingRuntimeManifest, $artifactState, $databaseState);
+assert($missingRuntimeFailure['ready'] === false);
+assert($missingRuntimeFailure['checks']['php_version']['ready'] === false);
+assert($missingRuntimeFailure['checks']['php_extensions']['ready'] === false);
+assert($missingRuntimeFailure['checks']['release_manifest']['ready'] === false);
+
+$invalidRuntimeManifest = $releaseManifest;
+$invalidRuntimeManifest['runtime_requirements']['php_extensions'][] = 'bad/extension-secret';
+$invalidRuntimeFailure = $subject->assess($productionEnvironment, $extensions, '8.3.0', $writablePaths, $invalidRuntimeManifest, $artifactState, $databaseState);
+assert($invalidRuntimeFailure['ready'] === false);
+assert($invalidRuntimeFailure['checks']['php_extensions']['ready'] === false);
+assert($invalidRuntimeFailure['checks']['release_manifest']['ready'] === false);
+assert(! str_contains(json_encode($invalidRuntimeFailure, JSON_THROW_ON_ERROR), 'bad/extension-secret'));
+
+$duplicateRuntimeManifest = $releaseManifest;
+$duplicateRuntimeManifest['runtime_requirements']['php_extensions'] = ['openssl', 'OpenSSL'];
+$duplicateRuntimeFailure = $subject->assess($productionEnvironment, $extensions, '8.3.0', $writablePaths, $duplicateRuntimeManifest, $artifactState, $databaseState);
+assert($duplicateRuntimeFailure['ready'] === false);
+assert($duplicateRuntimeFailure['checks']['release_manifest']['ready'] === false);
 
 $disconnectedDatabase = $databaseState;
 $disconnectedDatabase['connected'] = false;
@@ -195,6 +237,8 @@ assert(str_contains($missingPath['checks']['filesystem_write']['reason'], 'stora
 
 $missingManifest = $subject->assess($productionEnvironment, $extensions, '8.3.0', $writablePaths, null, null, $databaseState);
 assert($missingManifest['ready'] === false);
+assert($missingManifest['checks']['php_version']['ready'] === false);
+assert($missingManifest['checks']['php_extensions']['ready'] === false);
 assert($missingManifest['checks']['release_manifest']['ready'] === false);
 assert($missingManifest['checks']['artifact_integrity']['ready'] === false);
 
