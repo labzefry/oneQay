@@ -1,8 +1,8 @@
 # oneQay Tasks
 
-**Current canonical engineering checkpoint:** Sprint170 closed  
-**Canonical engineering commit:** `aa46ad0752f8ae2da145eb0c0f6324a3c5be6f25`  
-**Latest engineering PR:** #758 — `Sprint170: add installation filesystem readiness`  
+**Current canonical engineering checkpoint:** Sprint170 closed
+**Canonical engineering commit:** `aa46ad0752f8ae2da145eb0c0f6324a3c5be6f25`
+**Latest engineering PR:** #758 — `Sprint170: add installation filesystem readiness`
 **Canonical status authority:** `PROJECT_MANIFEST.md`
 
 ## Completed Sprint170 state
