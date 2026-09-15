@@ -1,0 +1,116 @@
+name: Sprint172 Installation Database Configuration Compatibility Readiness Regression
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint172-installation-database-configuration-compatibility-readiness-${{ github.event.pull_request.number || github.ref }}-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  qualify-sprint172-installation-database-configuration-compatibility-readiness:
+    runs-on: ubuntu-latest
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWE=
+      APP_DEBUG: "false"
+      APP_URL: http://localhost
+      ONEQAY_RUNTIME_CLASS: ci
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Verify exact checked-out head
+        run: |
+          set -euo pipefail
+          EXPECTED_HEAD="${{ github.event.pull_request.head.sha || github.sha }}"
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+
+      - name: Qualify exact Sprint172 engineering envelope
+        if: github.event_name == 'pull_request'
+        env:
+          EXPECTED_PATH_HASH: 88b29ca7969e8c7e1f5c30435ac6c32aca996de156bf14eb2d88fee230689c51
+        run: |
+          set -euo pipefail
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          test "$(git rev-parse HEAD)" = "$HEAD_SHA"
+          git cat-file -e "${BASE_SHA}^{commit}"
+          mapfile -t CHANGED < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort)
+          EXPECTED=(
+            '.github/workflows/sprint172-installation-database-configuration-compatibility-readiness-regression.yml'
+            'apps/web/app/Infrastructure/Installation/SecureInstallationReadiness.php'
+            'apps/web/tests/secure-installation-readiness.php'
+          )
+          test "${#CHANGED[@]}" -eq "${#EXPECTED[@]}"
+          diff -u <(printf '%s\n' "${EXPECTED[@]}") <(printf '%s\n' "${CHANGED[@]}")
+          ACTUAL_HASH="$(printf '%s\n' "${CHANGED[@]}" | sha256sum | awk '{print $1}')"
+          test "$ACTUAL_HASH" = "$EXPECTED_PATH_HASH"
+
+      - name: Preserve Sprint172 source contract
+        run: |
+          set -euo pipefail
+          SOURCE=apps/web/app/Infrastructure/Installation/SecureInstallationReadiness.php
+          TEST=apps/web/tests/secure-installation-readiness.php
+          test -f "$SOURCE"
+          test -f "$TEST"
+          grep -Fq 'Author by Lab | zefry' "$SOURCE"
+          grep -Fq 'REQUIRED_DATABASE_STATE_KEYS' "$SOURCE"
+          grep -Fq "'ONEQAY_DB_DRIVER'" "$SOURCE"
+          grep -Fq "'ONEQAY_DB_HOST'" "$SOURCE"
+          grep -Fq "'ONEQAY_DB_DATABASE'" "$SOURCE"
+          grep -Fq "'ONEQAY_DB_USERNAME'" "$SOURCE"
+          grep -Fq "'database_compatibility'" "$SOURCE"
+          grep -Fq "'utf8mb4'" "$SOURCE"
+          grep -Fq "'mariadb'" "$SOURCE"
+          grep -Fq "'least_privilege'" "$SOURCE"
+          grep -Fq "'recognized'" "$SOURCE"
+          grep -Fq 'REQUIRED_RELEASE_MANIFEST_KEYS' "$SOURCE"
+          grep -Fq 'hash_equals' "$SOURCE"
+          ! grep -Fq "'DB_CONNECTION'" "$SOURCE"
+          ! grep -Eq 'new[[:space:]]+PDO|PDO::|mysqli|DB::connection|curl_exec|file_get_contents|fopen\(|PharData|ZipArchive|extractTo' "$SOURCE"
+          ! grep -Eq -- '->(insert|update|delete|increment|decrement)\(' "$SOURCE"
+          ! grep -Eq 'Artisan::call|migrate|file_put_contents|fwrite|unlink|rename|copy\(|chmod|chown|mkdir|rmdir' "$SOURCE"
+
+      - name: Preserve operational NO-GO
+        run: |
+          set -euo pipefail
+          test "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" = NOT_EXECUTED
+          test "$(jq -r '.permission_provisioning.state' ops/final-shift-close/STATE.json)" = NONE
+          test "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" = INACTIVE
+          test "$(jq -r '.deployment_authority' ops/final-shift-close/STATE.json)" = NOT_GRANTED
+          test "$(jq -r '.technical_preview_activation' ops/final-shift-close/STATE.json)" = NOT_AUTHORIZED
+          test "$(jq -r '.production_activation' ops/final-shift-close/STATE.json)" = NOT_AUTHORIZED
+          test "$(jq -r '.updater_activation' ops/final-shift-close/STATE.json)" = INACTIVE
+          test "$(jq -r '.selection_state' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" = BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET
+          test "$(jq -r '.selected_target' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" = null
+
+      - name: Install PHP dependencies
+        working-directory: apps/web
+        run: |
+          composer validate --no-check-publish
+          composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Validate and execute readiness regression
+        working-directory: apps/web
+        run: |
+          php -l app/Infrastructure/Installation/SecureInstallationReadiness.php
+          php -l tests/secure-installation-readiness.php
+          php -d zend.assertions=1 -d assert.exception=1 tests/secure-installation-readiness.php
+          composer test
+
+      - name: Verify tracked-source cleanliness
+        run: |
+          git diff --exit-code
+          test -z "$(git status --porcelain)"
