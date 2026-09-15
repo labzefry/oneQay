@@ -1,22 +1,22 @@
 # oneQay Project Manifest
 
-**Product:** oneQay — The Future of Intelligent Business Management  
-**Repository owner / attribution:** Lab | zefry  
-**Default branch:** `main`  
+**Product:** oneQay — The Future of Intelligent Business Management
+**Repository owner / attribution:** Lab | zefry
+**Default branch:** `main`
 **Status date:** 2026-09-15
 
 ## Current canonical engineering checkpoint
 
-**Canonical engineering checkpoint:** Sprint167  
-**Canonical engineering commit:** `dbdf0aa90a6d6127cf10113ec8c1092b8780504f`  
-**Latest engineering PR:** #752 — `Sprint167: add POS active shift performance workspace`  
-**Final engineering head:** `05047a7f04650b52c4035e4ca40171609fa8db10`  
-**Sprint167 regression:** `34919045197` — successful  
-**M7.1 Application Regression:** `34919045660` — successful  
-**Governance Required Checks:** `34919045650` — successful  
-**PHP Foundation Regression:** `34919045018` — successful  
-**Engineering envelope:** 12 paths — `e9ca990e36ce896428bc749d19cf47025ce0525fd707f5e330d5d1cfbbfc8b48`  
-**Canonical reconciliation envelope:** 6 paths — `2fd60a53d8996d41452cb10036d350a14a4d95a2943e897c233d29f3eac32b14`  
+**Canonical engineering checkpoint:** Sprint167
+**Canonical engineering commit:** `dbdf0aa90a6d6127cf10113ec8c1092b8780504f`
+**Latest engineering PR:** #752 — `Sprint167: add POS active shift performance workspace`
+**Final engineering head:** `05047a7f04650b52c4035e4ca40171609fa8db10`
+**Sprint167 regression:** `34919045197` — successful
+**M7.1 Application Regression:** `34919045660` — successful
+**Governance Required Checks:** `34919045650` — successful
+**PHP Foundation Regression:** `34919045018` — successful
+**Engineering envelope:** 12 paths — `e9ca990e36ce896428bc749d19cf47025ce0525fd707f5e330d5d1cfbbfc8b48`
+**Canonical reconciliation envelope:** 6 paths — `2fd60a53d8996d41452cb10036d350a14a4d95a2943e897c233d29f3eac32b14`
 **Next position:** Sprint168 bounded discovery from the fully reconciled Sprint167 checkpoint; no objective preselected.
 
 > `dbdf0aa90a6d6127cf10113ec8c1092b8780504f` is the canonical Sprint167 **engineering** evidence. The reconciliation squash must never replace it as the canonical engineering commit.
