@@ -17,6 +17,9 @@ final class PosOperationsHubServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        // Product sales performance is a bounded read-only reporting child capability.
+        $this->app->register(PosProductSalesPerformanceWorkspaceServiceProvider::class);
+
         // Inventory accountability is a bounded read-only POS operations child capability.
         $this->app->register(PosInventoryAccountabilityWorkspaceServiceProvider::class);
 
