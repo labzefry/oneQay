@@ -55,16 +55,21 @@ $assert = static function (bool $condition, string $message): void {
 
 $assert(extension_loaded('pdo_sqlite'), 'pdo_sqlite is required');
 
-$routeSource = (string) file_get_contents(__DIR__.'/../routes/console.php');
-$configSource = (string) file_get_contents(__DIR__.'/../config/oneqay.php');
+$commandSource = (string) file_get_contents(__DIR__.'/../app/Console/Commands/MerchantContextBootstrapCommand.php');
+$configSource = (string) file_get_contents(__DIR__.'/../config/merchant_context_bootstrap.php');
+$sharedConfigSource = (string) file_get_contents(__DIR__.'/../config/oneqay.php');
+$consoleRouteSource = (string) file_get_contents(__DIR__.'/../routes/console.php');
 $webSource = (string) file_get_contents(__DIR__.'/../routes/web.php');
-$assert(str_contains($routeSource, "Artisan::command('oneqay:merchant-context:bootstrap'"), 'guarded console command missing');
-$assert(! str_contains($routeSource, "oneqay:merchant-context:bootstrap {"), 'merchant bootstrap command accepts self-authorizing tuple arguments');
-$assert(str_contains($routeSource, "['local', 'test', 'ci']"), 'Local/Test/CI runtime guard missing');
-$assert(str_contains($routeSource, "config('oneqay.merchant_context_bootstrap.enabled', false)"), 'merchant bootstrap arm guard missing');
-$assert(str_contains($routeSource, "config('oneqay.merchant_context_bootstrap.grant', [])"), 'configured exact tuple is not the command authorization source');
-$assert(str_contains($configSource, "'merchant_context_bootstrap'"), 'merchant bootstrap config missing');
+$assert(str_contains($commandSource, "protected $signature = 'oneqay:merchant-context:bootstrap';"), 'dedicated guarded console command missing');
+$assert(! str_contains($commandSource, "oneqay:merchant-context:bootstrap {"), 'merchant bootstrap command accepts self-authorizing tuple arguments');
+$assert(str_contains($commandSource, "['local', 'test', 'ci']"), 'Local/Test/CI runtime guard missing');
+$assert(str_contains($commandSource, "config('merchant_context_bootstrap.enabled', false)"), 'merchant bootstrap arm guard missing');
+$assert(str_contains($commandSource, "config('merchant_context_bootstrap.grant', [])"), 'configured exact tuple is not the command authorization source');
+$assert(str_contains($commandSource, "config('oneqay.first_control_principal_credential_bootstrap.enabled', false)"), 'first-control credential arm dependency missing');
+$assert(str_contains($commandSource, "config('database.oneqay_persistence_enabled', false)"), 'persistence arm dependency missing');
 $assert(str_contains($configSource, "env('ONEQAY_MERCHANT_CONTEXT_BOOTSTRAP_ENABLED', false)"), 'merchant bootstrap config is not default-false');
+$assert(! str_contains($sharedConfigSource, 'merchant_context_bootstrap'), 'Sprint177 logic leaked into shared oneQay config');
+$assert(! str_contains($consoleRouteSource, 'oneqay:merchant-context:bootstrap'), 'Sprint177 logic leaked into shared console routes');
 $assert(! str_contains($webSource, 'merchant-context:bootstrap'), 'merchant bootstrap leaked into HTTP routes');
 
 $removeTree = null;
@@ -101,8 +106,8 @@ $app['config']->set('database.connections.s177_merchant_delivery', [
 $app['config']->set('database.oneqay_persistence_enabled', true);
 $app['config']->set('oneqay.runtime_class', 'ci');
 $app['config']->set('oneqay.first_control_principal_credential_bootstrap.enabled', true);
-$app['config']->set('oneqay.merchant_context_bootstrap.enabled', true);
-$app['config']->set('oneqay.merchant_context_bootstrap.grant', $grant);
+$app['config']->set('merchant_context_bootstrap.enabled', true);
+$app['config']->set('merchant_context_bootstrap.grant', $grant);
 
 /** @var \Illuminate\Database\DatabaseManager $manager */
 $manager = $app->make('db');
@@ -127,7 +132,7 @@ foreach ([
 
 $commands = Artisan::all();
 $command = $commands['oneqay:merchant-context:bootstrap'] ?? null;
-$assert($command !== null, 'armed CI merchant bootstrap command is not registered');
+$assert($command !== null, 'Laravel did not auto-discover the dedicated merchant bootstrap command');
 foreach (['tenant_id', 'identity_id', 'organization_id', 'outlet_id', 'device_id', 'provisioning_id'] as $argument) {
     $assert(! $command->getDefinition()->hasArgument($argument), 'command exposes self-authorizing argument '.$argument);
 }
@@ -148,6 +153,36 @@ $assertTenantAbsent = static function (string $tenantId) use ($assert, $connecti
     }
 };
 
+// Auto-discovery does not grant execution authority: disabled delivery must remain inert.
+$app['config']->set('merchant_context_bootstrap.enabled', false);
+$disabledTester = new CommandTester($command);
+$disabledStatus = $disabledTester->execute([], ['interactive' => false]);
+$disabledOutput = $disabledTester->getDisplay(true);
+$assert($disabledStatus !== 0, 'disabled merchant bootstrap unexpectedly succeeded');
+$assert(str_contains($disabledOutput, 'ONEQAY_MERCHANT_CONTEXT_BOOTSTRAP_FAILED'), 'disabled failure is not sanitized');
+$assertTenantAbsent($grant['tenant_id']);
+$app['config']->set('merchant_context_bootstrap.enabled', true);
+
+// Production/Preview-like runtime classes remain outside the source allowlist.
+$app['config']->set('oneqay.runtime_class', 'production');
+$runtimeTester = new CommandTester($command);
+$runtimeStatus = $runtimeTester->execute([], ['interactive' => false]);
+$runtimeOutput = $runtimeTester->getDisplay(true);
+$assert($runtimeStatus !== 0, 'production runtime merchant bootstrap unexpectedly succeeded');
+$assert(str_contains($runtimeOutput, 'ONEQAY_MERCHANT_CONTEXT_BOOTSTRAP_FAILED'), 'runtime denial is not sanitized');
+$assertTenantAbsent($grant['tenant_id']);
+$app['config']->set('oneqay.runtime_class', 'ci');
+
+// Persistence must be explicitly armed independently from delivery configuration.
+$app['config']->set('database.oneqay_persistence_enabled', false);
+$persistenceTester = new CommandTester($command);
+$persistenceStatus = $persistenceTester->execute([], ['interactive' => false]);
+$persistenceOutput = $persistenceTester->getDisplay(true);
+$assert($persistenceStatus !== 0, 'persistence-disabled merchant bootstrap unexpectedly succeeded');
+$assert(str_contains($persistenceOutput, 'ONEQAY_MERCHANT_CONTEXT_BOOTSTRAP_FAILED'), 'persistence denial is not sanitized');
+$assertTenantAbsent($grant['tenant_id']);
+$app['config']->set('database.oneqay_persistence_enabled', true);
+
 // Hidden password confirmation mismatch must fail before any merchant state is written.
 $mismatchPassword = 'Merchant-Delivery-Mismatch-S177!';
 $mismatchTester = new CommandTester($command);
@@ -162,16 +197,15 @@ $assertTenantAbsent($grant['tenant_id']);
 // Invalid configured authorization material must fail generically and cannot be replaced by command input.
 $invalidGrant = $grant;
 $invalidGrant['organization_id'] = ' malformed-organization ';
-$app['config']->set('oneqay.merchant_context_bootstrap.grant', $invalidGrant);
+$app['config']->set('merchant_context_bootstrap.grant', $invalidGrant);
 $invalidTester = new CommandTester($command);
-$invalidTester->setInputs(['Merchant-Invalid-Grant-S177!', 'Merchant-Invalid-Grant-S177!']);
-$invalidStatus = $invalidTester->execute([], ['interactive' => true]);
+$invalidStatus = $invalidTester->execute([], ['interactive' => false]);
 $invalidOutput = $invalidTester->getDisplay(true);
 $assert($invalidStatus !== 0, 'malformed configured grant unexpectedly succeeded');
 $assert(str_contains($invalidOutput, 'ONEQAY_MERCHANT_CONTEXT_BOOTSTRAP_FAILED'), 'malformed grant failure is not sanitized');
 $assert(! str_contains($invalidOutput, 'malformed-organization'), 'configured tuple leaked in malformed grant output');
 $assertTenantAbsent($grant['tenant_id']);
-$app['config']->set('oneqay.merchant_context_bootstrap.grant', $grant);
+$app['config']->set('merchant_context_bootstrap.grant', $grant);
 
 $password = '  Merchant Delivery S177 Secure!  ';
 $tester = new CommandTester($command);
