@@ -1,31 +1,34 @@
 # oneQay Roadmap
 
-**Roadmap checkpoint:** Sprint175 closed canonically
-**Canonical engineering baseline:** `6357d883fe04ec0515f9d21c6adc0ee907787cde`
+**Roadmap checkpoint:** Sprint176 closed canonically
+**Canonical engineering baseline:** `af2ed4db8e49c4a75f1e1b743986cc20f3e3b0ff`
+**Post-engineering compatibility correction:** `f745348e130adeef272c24c742e082305c940130` (Sprint175 historical successor preservation only)
 **Current state authority:** `PROJECT_MANIFEST.md`
 
-## Completed Sprint175 horizon
+## Completed Sprint176 horizon
 
-Sprint175 closed `INSTALLATION_GOVERNED_HOST_PLATFORM_REQUIREMENTS_READINESS`, moving installer Step 2 host/platform requirements into governed release metadata so target readiness cannot silently depend on hardcoded installer assumptions.
+Sprint176 closed `MERCHANT_CONTEXT_ATOMIC_BOOTSTRAP_FOUNDATION`, addressing the proven orchestration gap between already-existing secure durable primitives needed to establish a foundational merchant context.
 
-The governed release manifest now defines supported OS families and web-server interfaces, minimum memory/execution-time/free-disk requirements, and the canonical capability set for HTTPS, DNS, time synchronization, outbound allowlisting, scheduler, archive support, temporary-directory readiness, and required tools. Deterministic observed target facts fail closed when incomplete, malformed, unsupported, or insufficient.
+The bounded bootstrap foundation now requires exact preauthorization of the tenant/identity/organization/outlet/device/provisioning tuple and a fresh tenant. It atomically materializes the context graph, protected initial tenant administrator, and first control credential. A downstream credential failure rolls back the entire merchant bootstrap state.
 
-Engineering PR #775 squash merged at `6357d883fe04ec0515f9d21c6adc0ee907787cde`. Engineering envelope: 3 paths, SHA-256 `3b06f39902fda4e43096b622cffad62ad4308652f760a300c44d5a54616ef8e0`.
+Engineering PR #777 squash merged at `af2ed4db8e49c4a75f1e1b743986cc20f3e3b0ff`. Engineering envelope: 8 paths, SHA-256 `f1b48efc2a25623ae55c72b95407a19ef60b63f8dcb933f9d7f137f09a34b974`.
 
-Canonical reconciliation envelope: 6 paths, SHA-256 `be033502c6e72d211415751966e6dc48e3453ce6fae6003d57b3da807cee1460`.
+Canonical reconciliation envelope: 6 paths, SHA-256 `4cc815fdb1c6489ab34334a14033acfe1452b50874f48c9e867e6f6da3858b03`.
 
-## Product progression through Sprint175
+## Product progression through Sprint176
 
-The product combines tenant/security/API/POS operational foundations with a canonical installation-readiness owner that now qualifies governed release identity, PHP/runtime requirements, host/platform requirements, release compatibility policy, canonical configuration, filesystem write surfaces, immutable artifact identity/integrity, and deterministic database compatibility prerequisites. These checks remain intentionally separate from real host probing, artifact transport/extraction, database execution, schema mutation, migrations, administrator bootstrap, environment mutation, installer exposure, updater activation, and deployment.
+The product now combines tenant/security/API/POS operational foundations, governed installation-readiness controls, and an atomic merchant-context bootstrap foundation. The bootstrap remains source-only and deliberately unexposed: no provider binding, public route, controller, UI, real merchant provisioning, runtime widening, or operational activation is part of Sprint176.
+
+The independent Sprint175 historical-workflow correction merged after Sprint176 engineering qualification only hardens successor preservation and does not alter the Sprint176 application capability or its canonical engineering evidence.
 
 ## Operational boundary
 
 Machine-readable operational state under `ops/final-shift-close/` remains authoritative. Selected durable target remains `null`; migration #27 remains `NOT_EXECUTED`; permission provisioning remains `NONE`; producer dispatch remains not performed; runtime allowlist remains Local/Test/CI; Final Shift Close remains inactive; deployment/Technical Preview/Production remain unauthorized; updater remains inactive.
 
-## Sprint176 selection rule
+## Sprint177 selection rule
 
-Begin Sprint176 bounded discovery from fully reconciled Sprint175. Ask what now blocks a real merchant end-to-end or production-ready installation lifecycle, and prioritize the smallest material non-duplicative P0/P1 gap rather than mechanically adding readiness checks or returning to dashboard expansion.
+Begin Sprint177 bounded discovery from fully reconciled Sprint176. Ask what now blocks a real merchant end-to-end after the atomic merchant context can be formed in a guarded source-only path. Prioritize the smallest material non-duplicative P0/P1 gap. Business metadata, delivery/onboarding surface, or another blocker may only be selected if live canonical evidence proves it.
 
-No host probing, artifact transport/extraction, production database execution, administrator creation, environment mutation, migration/seeder execution, updater control-plane mutation, privileged updater UI, deployment, or operational activation objective is pre-authorized. Live repository evidence must prove the next bounded gap first.
+No real merchant provisioning, public onboarding exposure, runtime widening, migration execution, updater activation, deployment, Technical Preview, Production, durable-target selection, or producer dispatch is pre-authorized.
 
 Author by Lab | zefry
