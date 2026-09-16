@@ -311,8 +311,11 @@ try {
         'Sprint176 downstream bootstrap failure returned an unexpected error code.',
     );
 }
+$assert(
+    $connection->table('oneqay_tenants')->where('id', $rollback->tenantId->value())->doesntExist(),
+    'Sprint176 failed atomic rollback left durable tenant state.',
+);
 foreach ([
-    'oneqay_tenants',
     'oneqay_identities',
     'oneqay_organizations',
     'oneqay_identity_organizations',
