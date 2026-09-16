@@ -1,32 +1,35 @@
 # oneQay Tasks
 
-**Current canonical engineering checkpoint:** Sprint175 closed
-**Canonical engineering commit:** `6357d883fe04ec0515f9d21c6adc0ee907787cde`
-**Latest engineering PR:** #775 — `Sprint175: add governed host platform requirements readiness`
+**Current canonical engineering checkpoint:** Sprint176 closed
+**Canonical engineering commit:** `af2ed4db8e49c4a75f1e1b743986cc20f3e3b0ff`
+**Latest engineering PR:** #777 — `Sprint176: add atomic merchant context bootstrap foundation`
+**Post-engineering compatibility correction:** PR #779 — `f745348e130adeef272c24c742e082305c940130` (workflow-only Sprint175 successor preservation)
 **Canonical status authority:** `PROJECT_MANIFEST.md`
 
-## Completed Sprint175 state
+## Completed Sprint176 state
 
-Sprint175 materialized `INSTALLATION_GOVERNED_HOST_PLATFORM_REQUIREMENTS_READINESS` as a bounded installer/release production-readiness prerequisite.
+Sprint176 materialized `MERCHANT_CONTEXT_ATOMIC_BOOTSTRAP_FOUNDATION` as a bounded P0/P1 merchant-completeness foundation.
 
-- [x] Canonical `SecureInstallationReadiness` owner reused.
-- [x] Governed Release Manifest v1 requires `host_requirements`.
-- [x] Supported OS families and web-server interfaces are governed by release metadata.
-- [x] Minimum memory, execution-time budget, and free disk are governed by release metadata.
-- [x] Canonical required capabilities cover HTTPS, DNS, time sync, outbound allowlist, scheduler, archive, temp directory, and required tools.
-- [x] Deterministic observed host facts are assessed read-only.
-- [x] Missing, malformed, unsupported, or insufficient host facts fail closed.
-- [x] Failure output does not echo untrusted host values.
-- [x] No host probing, shell/command execution, network/DNS call, scheduler mutation, package installation, archive extraction, or filesystem mutation was introduced.
-- [x] Existing runtime requirements, environment/key/debug/HTTPS, filesystem, artifact integrity, release compatibility policy, database compatibility, attribution, and redaction readiness preserved.
-- [x] Dedicated exact-envelope workflow.
-- [x] Exact-head engineering qualification successful.
+- [x] Existing durable tenant/identity/organization/outlet/device persistence reused.
+- [x] Existing initial tenant administrator provisioning reused.
+- [x] Existing first control principal credential bootstrap reused.
+- [x] Exact tenant/identity/organization/outlet/device/provisioning tuple authorization added.
+- [x] Fresh-tenant state guard added.
+- [x] Graph + protected administrator + credential creation wrapped in one outer durable transaction.
+- [x] Downstream credential failure proven to roll back the complete bootstrap state.
+- [x] Invalid-password denial proven before mutation.
+- [x] Preview-runtime denial preserved; Local/Test/CI remains the only runtime allowlist.
+- [x] Plaintext password persistence prohibited and regression-tested.
+- [x] No provider, route, controller, UI, config activation, deployment, or operational exposure introduced.
+- [x] Dedicated exact-envelope workflow successful.
+- [x] Full surfaced CI matrix successful.
 - [x] Repository-native Product Owner merge authority verified.
-- [x] Engineering PR #775 squash merged at `6357d883fe04ec0515f9d21c6adc0ee907787cde`.
+- [x] Engineering PR #777 squash merged at `af2ed4db8e49c4a75f1e1b743986cc20f3e3b0ff`.
+- [x] Historical Sprint175 successor-preservation debt corrected independently without changing Sprint176 engineering evidence.
 
-Engineering envelope: 3 paths; SHA-256 `3b06f39902fda4e43096b622cffad62ad4308652f760a300c44d5a54616ef8e0`.
+Engineering envelope: 8 paths; SHA-256 `f1b48efc2a25623ae55c72b95407a19ef60b63f8dcb933f9d7f137f09a34b974`.
 
-Canonical reconciliation envelope: 6 paths; SHA-256 `be033502c6e72d211415751966e6dc48e3453ce6fae6003d57b3da807cee1460`.
+Canonical reconciliation envelope: 6 paths; SHA-256 `4cc815fdb1c6489ab34334a14033acfe1452b50874f48c9e867e6f6da3858b03`.
 
 ## Preserved lifecycle state
 
@@ -34,6 +37,6 @@ Machine-readable operational state under `ops/final-shift-close/` remains author
 
 ## Next engineering position
 
-Begin **Sprint176 bounded discovery** only from fully reconciled Sprint175. Prioritize the smallest material non-duplicative P0/P1 blocker to real merchant end-to-end or production-ready installation. Do not preselect more installer checks, host probing, artifact transport/extraction, production database execution, administrator creation, environment mutation, migration/seeder execution, installer exposure, updater activation, deployment, or operational activation; prove the next canonical gap first.
+Begin **Sprint177 bounded discovery** only from fully reconciled Sprint176. Ask what materially blocks a real merchant end-to-end now that atomic merchant-context creation exists. Prioritize the smallest non-duplicative P0/P1 business gap proven by live repository evidence. Do not pre-authorize public onboarding, real merchant provisioning, runtime widening, migrations, deployment, Technical Preview, Production, updater activation, durable-target selection, or producer dispatch.
 
 Author by Lab | zefry
