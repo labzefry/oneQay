@@ -40,7 +40,7 @@ jobs:
       - name: Qualify exact Sprint177 engineering envelope
         if: github.event_name == 'pull_request' && github.head_ref == 'sprint177-merchant-context-guarded-bootstrap-delivery-foundation'
         env:
-          EXPECTED_PATH_HASH: 352da10046fdc9080c8c79f6ef87a0f6d112f1898d0b381905a307155bafad98
+          EXPECTED_PATH_HASH: de509f025c78e8f2ed7d0335b81b6f423deb621c3f1d6bc54bba4a312635d872
         run: |
           set -euo pipefail
           BASE_SHA="${{ github.event.pull_request.base.sha }}"
@@ -50,8 +50,8 @@ jobs:
           mapfile -t CHANGED < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort)
           EXPECTED=(
             '.github/workflows/sprint177-merchant-context-guarded-bootstrap-delivery-foundation-regression.yml'
-            'apps/web/config/oneqay.php'
-            'apps/web/routes/console.php'
+            'apps/web/app/Console/Commands/MerchantContextBootstrapCommand.php'
+            'apps/web/config/merchant_context_bootstrap.php'
             'apps/web/tests/merchant-context-guarded-bootstrap-delivery.php'
           )
           test "${#CHANGED[@]}" -eq "${#EXPECTED[@]}"
@@ -62,28 +62,34 @@ jobs:
       - name: Preserve Sprint177 delivery contract
         run: |
           set -euo pipefail
-          CONFIG=apps/web/config/oneqay.php
+          CONFIG=apps/web/config/merchant_context_bootstrap.php
+          COMMAND=apps/web/app/Console/Commands/MerchantContextBootstrapCommand.php
+          SHARED_CONFIG=apps/web/config/oneqay.php
           CONSOLE=apps/web/routes/console.php
           WEB=apps/web/routes/web.php
           TEST=apps/web/tests/merchant-context-guarded-bootstrap-delivery.php
           ATOMIC=apps/web/app/Application/Bootstrap/MerchantContextBootstrapService.php
-          for FILE in "$CONFIG" "$CONSOLE" "$TEST" "$ATOMIC"; do
+          for FILE in "$CONFIG" "$COMMAND" "$SHARED_CONFIG" "$CONSOLE" "$TEST" "$ATOMIC"; do
             test -f "$FILE"
           done
           grep -Fq 'Author by Lab | zefry' "$CONFIG"
-          grep -Fq "'merchant_context_bootstrap'" "$CONFIG"
           grep -Fq "env('ONEQAY_MERCHANT_CONTEXT_BOOTSTRAP_ENABLED', false)" "$CONFIG"
           grep -Fq "'grant'" "$CONFIG"
-          grep -Fq "Artisan::command('oneqay:merchant-context:bootstrap'" "$CONSOLE"
-          ! grep -Fq 'oneqay:merchant-context:bootstrap {' "$CONSOLE"
-          grep -Fq "['local', 'test', 'ci']" "$CONSOLE"
-          grep -Fq "config('oneqay.merchant_context_bootstrap.enabled', false)" "$CONSOLE"
-          grep -Fq "config('oneqay.merchant_context_bootstrap.grant', [])" "$CONSOLE"
-          grep -Fq 'PreauthorizedMerchantContextBootstrapAuthority' "$CONSOLE"
-          grep -Fq 'LaravelMerchantContextBootstrapStateRepository' "$CONSOLE"
-          grep -Fq 'MerchantContextBootstrapService' "$CONSOLE"
-          grep -Fq 'ONEQAY_MERCHANT_CONTEXT_BOOTSTRAP_FAILED' "$CONSOLE"
-          grep -Fq 'ONEQAY_MERCHANT_CONTEXT_BOOTSTRAP|STATE=applied' "$CONSOLE"
+          grep -Fq 'Author by Lab | zefry' "$COMMAND"
+          grep -Fq "protected \$signature = 'oneqay:merchant-context:bootstrap';" "$COMMAND"
+          ! grep -Fq 'oneqay:merchant-context:bootstrap {' "$COMMAND"
+          grep -Fq "['local', 'test', 'ci']" "$COMMAND"
+          grep -Fq "config('merchant_context_bootstrap.enabled', false)" "$COMMAND"
+          grep -Fq "config('merchant_context_bootstrap.grant', [])" "$COMMAND"
+          grep -Fq "config('oneqay.first_control_principal_credential_bootstrap.enabled', false)" "$COMMAND"
+          grep -Fq "config('database.oneqay_persistence_enabled', false)" "$COMMAND"
+          grep -Fq 'PreauthorizedMerchantContextBootstrapAuthority' "$COMMAND"
+          grep -Fq 'LaravelMerchantContextBootstrapStateRepository' "$COMMAND"
+          grep -Fq 'MerchantContextBootstrapService' "$COMMAND"
+          grep -Fq 'ONEQAY_MERCHANT_CONTEXT_BOOTSTRAP_FAILED' "$COMMAND"
+          grep -Fq 'ONEQAY_MERCHANT_CONTEXT_BOOTSTRAP|STATE=applied' "$COMMAND"
+          ! grep -Fq 'merchant_context_bootstrap' "$SHARED_CONFIG"
+          ! grep -Fq 'oneqay:merchant-context:bootstrap' "$CONSOLE"
           ! grep -Fq 'merchant-context:bootstrap' "$WEB"
           ! grep -Eq 'Route::.*merchant.*bootstrap|merchant.*bootstrap.*Route::' "$WEB"
           grep -Fq 'Author by Lab | zefry' "$ATOMIC"
@@ -113,8 +119,8 @@ jobs:
       - name: Validate Sprint177 source
         working-directory: apps/web
         run: |
-          php -l config/oneqay.php
-          php -l routes/console.php
+          php -l app/Console/Commands/MerchantContextBootstrapCommand.php
+          php -l config/merchant_context_bootstrap.php
           php -l tests/merchant-context-guarded-bootstrap-delivery.php
 
       - name: Execute focused guarded delivery regression
