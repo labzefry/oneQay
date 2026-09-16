@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  qualify-sprint176-merchant-context-atomic-bootstrap-foundation:
+  preserve-sprint176-merchant-context-atomic-bootstrap-foundation:
     runs-on: ubuntu-latest
     env:
       APP_NAME: oneQay
@@ -37,26 +37,23 @@ jobs:
           EXPECTED_HEAD="${{ github.event.pull_request.head.sha || github.sha }}"
           test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
 
-      - name: Qualify exact Sprint176 engineering envelope
-        if: github.event_name == 'pull_request' && github.head_ref == 'sprint176-merchant-context-atomic-bootstrap-foundation'
+      - name: Qualify exact Sprint176 reconciliation envelope
+        if: github.event_name == 'pull_request' && github.head_ref == 'sprint176-canonical-reconciliation-v2'
         env:
-          EXPECTED_PATH_HASH: f1b48efc2a25623ae55c72b95407a19ef60b63f8dcb933f9d7f137f09a34b974
+          EXPECTED_PATH_HASH: 4cc815fdb1c6489ab34334a14033acfe1452b50874f48c9e867e6f6da3858b03
         run: |
           set -euo pipefail
           BASE_SHA="${{ github.event.pull_request.base.sha }}"
           HEAD_SHA="${{ github.event.pull_request.head.sha }}"
           test "$(git rev-parse HEAD)" = "$HEAD_SHA"
-          git cat-file -e "${BASE_SHA}^{commit}"
           mapfile -t CHANGED < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort)
           EXPECTED=(
             '.github/workflows/sprint176-merchant-context-atomic-bootstrap-foundation-regression.yml'
-            'apps/web/app/Application/Bootstrap/MerchantContextBootstrapAuthority.php'
-            'apps/web/app/Application/Bootstrap/MerchantContextBootstrapService.php'
-            'apps/web/app/Application/Bootstrap/MerchantContextBootstrapStateRepository.php'
-            'apps/web/app/Application/Bootstrap/MerchantContextBootstrapViolation.php'
-            'apps/web/app/Infrastructure/Bootstrap/LaravelMerchantContextBootstrapStateRepository.php'
-            'apps/web/app/Infrastructure/Bootstrap/PreauthorizedMerchantContextBootstrapAuthority.php'
-            'apps/web/tests/merchant-context-atomic-bootstrap.php'
+            'CHANGELOG.md'
+            'PROJECT_MANIFEST.md'
+            'README.md'
+            'ROADMAP.md'
+            'TASKS.md'
           )
           test "${#CHANGED[@]}" -eq "${#EXPECTED[@]}"
           diff -u <(printf '%s\n' "${EXPECTED[@]}") <(printf '%s\n' "${CHANGED[@]}")
@@ -99,6 +96,19 @@ jobs:
           ! grep -R -Eq 'use Illuminate\\|Illuminate\\' "$APP"
           ! grep -R -Eq 'production|preview' "$APP"
           ! grep -R -Eq 'Route::|routes/|Http\\Controllers' "$APP" "$INFRA"
+
+      - name: Preserve canonical Sprint176 engineering evidence
+        if: github.event_name == 'pull_request' && github.head_ref == 'sprint176-canonical-reconciliation-v2'
+        run: |
+          set -euo pipefail
+          for FILE in PROJECT_MANIFEST.md README.md CHANGELOG.md TASKS.md ROADMAP.md; do
+            grep -Fq 'af2ed4db8e49c4a75f1e1b743986cc20f3e3b0ff' "$FILE"
+            ! grep -Fq '${{ github.event.pull_request.head.sha }}' "$FILE"
+          done
+          grep -Fq 'Engineering PR: #777' PROJECT_MANIFEST.md
+          grep -Fq '775343389659754d85f870eca55f808a0b28eea5' PROJECT_MANIFEST.md
+          grep -Fq 'f1b48efc2a25623ae55c72b95407a19ef60b63f8dcb933f9d7f137f09a34b974' PROJECT_MANIFEST.md
+          grep -Fq '4cc815fdb1c6489ab34334a14033acfe1452b50874f48c9e867e6f6da3858b03' PROJECT_MANIFEST.md
 
       - name: Preserve operational NO-GO
         run: |
