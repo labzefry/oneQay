@@ -14,6 +14,23 @@ return [
         ),
     ],
 
+    'merchant_context_bootstrap' => [
+        // Sprint177 guarded merchant-context delivery is Local/Test/CI console-only and fail-closed unless explicitly armed.
+        'enabled' => filter_var(
+            env('ONEQAY_MERCHANT_CONTEXT_BOOTSTRAP_ENABLED', false),
+            FILTER_VALIDATE_BOOL,
+        ),
+        // This configured tuple is the authorization source. Console input must never mint its own grant.
+        'grant' => [
+            'tenant_id' => env('ONEQAY_MERCHANT_CONTEXT_BOOTSTRAP_TENANT_ID', ''),
+            'identity_id' => env('ONEQAY_MERCHANT_CONTEXT_BOOTSTRAP_IDENTITY_ID', ''),
+            'organization_id' => env('ONEQAY_MERCHANT_CONTEXT_BOOTSTRAP_ORGANIZATION_ID', ''),
+            'outlet_id' => env('ONEQAY_MERCHANT_CONTEXT_BOOTSTRAP_OUTLET_ID', ''),
+            'device_id' => env('ONEQAY_MERCHANT_CONTEXT_BOOTSTRAP_DEVICE_ID', ''),
+            'provisioning_id' => env('ONEQAY_MERCHANT_CONTEXT_BOOTSTRAP_PROVISIONING_ID', ''),
+        ],
+    ],
+
     'privileged_totp_mfa' => [
         // Local/Test/CI privileged TOTP MFA remains fail-closed unless explicitly armed.
         'enabled' => filter_var(
