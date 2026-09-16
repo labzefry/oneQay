@@ -3,54 +3,55 @@
 **Product:** oneQay — The Future of Intelligent Business Management
 **Repository owner / attribution:** Lab | zefry
 **Default branch:** `main`
-**Status date:** 2026-09-15
+**Status date:** 2026-09-16
 
 ## Current canonical engineering checkpoint
 
-**Canonical engineering checkpoint:** Sprint175
-**Objective:** `INSTALLATION_GOVERNED_HOST_PLATFORM_REQUIREMENTS_READINESS`
-**Canonical engineering commit:** `6357d883fe04ec0515f9d21c6adc0ee907787cde`
-**Engineering PR:** #775 — `Sprint175: add governed host platform requirements readiness`
-**Final engineering head:** `7eebbdb2a71b4cb35dafac58e6df2c955866264c`
-**Sprint175 regression:** `34998600504` — successful
-**Governance Required Checks:** `34998600362` — successful
-**PHP Foundation Regression:** `34998600326` — successful
-**M7.1 Application Regression:** `34998600367` — successful
-**Engineering envelope:** 3 paths — `3b06f39902fda4e43096b622cffad62ad4308652f760a300c44d5a54616ef8e0`
-**Canonical reconciliation envelope:** 6 paths — `be033502c6e72d211415751966e6dc48e3453ce6fae6003d57b3da807cee1460`
-**Previous canonical checkpoint:** Sprint174 reconciliation `6b41347fc3174893a0287462d6b68aaa6be99924`
-**Next position:** Sprint176 bounded discovery from the fully reconciled Sprint175 checkpoint; no objective preselected.
+**Canonical engineering checkpoint:** Sprint176
+**Objective:** `MERCHANT_CONTEXT_ATOMIC_BOOTSTRAP_FOUNDATION`
+**Canonical engineering commit:** `af2ed4db8e49c4a75f1e1b743986cc20f3e3b0ff`
+**Engineering PR:** #777 — `Sprint176: add atomic merchant context bootstrap foundation`
+**Final engineering head:** `775343389659754d85f870eca55f808a0b28eea5`
+**Sprint176 regression:** `35043179125` — successful
+**Governance Required Checks:** `35043179113` — successful
+**PHP Foundation Regression:** `35043179183` — successful
+**M7.1 Application Regression:** `35043178985` — successful
+**Engineering envelope:** 8 paths — `f1b48efc2a25623ae55c72b95407a19ef60b63f8dcb933f9d7f137f09a34b974`
+**Canonical reconciliation envelope:** 6 paths — `4cc815fdb1c6489ab34334a14033acfe1452b50874f48c9e867e6f6da3858b03`
+**Post-engineering compatibility correction:** PR #779 — `f745348e130adeef272c24c742e082305c940130` (Sprint175 historical preservation only; does not replace Sprint176 engineering evidence)
+**Previous canonical checkpoint:** Sprint175 reconciliation `dd2e5b017706e8ff4145a767b9c5e01199c3728f`
+**Next position:** Sprint177 bounded discovery only from the fully reconciled Sprint176 checkpoint; no objective preselected.
 
-> `6357d883fe04ec0515f9d21c6adc0ee907787cde` is the canonical Sprint175 engineering evidence. The Sprint175 reconciliation squash must not replace it as the canonical engineering commit.
+> `af2ed4db8e49c4a75f1e1b743986cc20f3e3b0ff` is the canonical Sprint176 engineering evidence. Neither the Sprint175 compatibility correction nor the Sprint176 reconciliation squash may replace it as the canonical engineering commit.
 
 ## 1. Purpose / Why
 
-Sprint175 closes the installer Step 2 host/platform readiness gap proven from `INSTALLER.md` and `RELEASE.md`. Host requirements are now governed by the immutable release contract instead of being hardcoded in the installer, while observed target facts are evaluated deterministically by the existing canonical readiness owner.
+Sprint176 closes a proven P0/P1 merchant end-to-end orchestration gap. The repository already had secure durable primitives for tenant/identity/organization/outlet/device persistence, initial tenant administrator provisioning, and first control principal credential bootstrap, but those primitives assumed prerequisite context and were not composed into one zero-context merchant bootstrap foundation.
 
 ## 2. What changed
 
-- Reused canonical `App\Infrastructure\Installation\SecureInstallationReadiness`; no parallel host inspector or installer owner was introduced.
-- Governed Release Manifest v1 now requires bounded `host_requirements`.
-- Host requirements cover supported OS families, web-server interfaces, minimum memory, minimum execution-time budget, minimum free disk, and a canonical required-capability set.
-- Required capabilities cover HTTPS, DNS, time synchronization, outbound allowlisting, scheduler, archive support, temporary-directory readiness, and required tools.
-- Observed host/platform state is supplied as deterministic facts; the readiness owner performs no shell, command, network, DNS, scheduler, archive, package-install, or filesystem mutation.
-- Missing, malformed, unsupported, or insufficient host facts fail closed.
-- Unlimited observed execution time is represented deterministically without weakening the governed minimum requirement.
-- Failure output does not echo untrusted host/platform values.
-- Existing PHP/runtime, environment/key/debug/HTTPS, filesystem-write, governed artifact identity/integrity, release compatibility-policy, deterministic database compatibility, attribution, and redaction controls remain preserved.
-- No artifact publication/download/extraction, database execution, environment/schema/configuration mutation, migration/seeder execution, credential or administrator provisioning, installer exposure, updater activation, deployment, Technical Preview, Production, durable-target selection, or producer dispatch was introduced.
+- Added a bounded `MerchantContextBootstrapService` application owner that composes existing canonical persistence, initial-administrator, and first-control-credential primitives rather than duplicating them.
+- Added an exact-tuple bootstrap authority covering tenant, identity, organization, outlet, device, and provisioning identity.
+- Added a fresh-tenant state guard so bootstrap fails closed rather than mutating an existing tenant.
+- Context graph creation, protected initial tenant administrator provisioning, and first control credential creation execute inside one outer durable transaction.
+- Downstream credential-stage failure rolls back tenant, identity, organization, membership, outlet, device, control-role assignment, provisioning journal, and credential state.
+- Password length follows the existing first-control-principal policy; plaintext password material is not persisted.
+- Application-layer bootstrap contracts remain framework-independent.
+- Runtime remains Local/Test/CI only. Preview and Production remain denied.
+- No service-provider binding, public route, controller, UI, installer exposure, config activation, production runtime widening, migration execution, deployment, or operational activation was introduced.
 
 ## 3. Evidence / Qualification
 
-- Canonical parent: `6b41347fc3174893a0287462d6b68aaa6be99924`.
-- Exact engineering head: `7eebbdb2a71b4cb35dafac58e6df2c955866264c`.
-- Dedicated Sprint175 run `34998600504`: successful.
-- Governance `34998600362`, PHP Foundation `34998600326`, and M7.1 `34998600367`: successful.
-- Surfaced Sprint169–Sprint174, POS successor, and Final Shift Close historical controls completed successfully on the exact engineering head.
+- Canonical parent before engineering: `dd2e5b017706e8ff4145a767b9c5e01199c3728f`.
+- Exact engineering head: `775343389659754d85f870eca55f808a0b28eea5`.
+- Dedicated Sprint176 run `35043179125`: successful, including exact 8-path/hash qualification and focused atomic bootstrap/rollback regression.
+- Governance `35043179113`, PHP Foundation `35043179183`, and M7.1 `35043178985`: successful.
+- Surfaced installation, POS-successor, and Final Shift Close preservation controls completed successfully on the exact engineering head.
 - Repository-native Product Owner merge authority verified on the exact engineering head.
-- Engineering PR #775 squash merged at `6357d883fe04ec0515f9d21c6adc0ee907787cde`.
-- Engineering envelope: exactly 3 paths; SHA-256 `3b06f39902fda4e43096b622cffad62ad4308652f760a300c44d5a54616ef8e0`.
-- Canonical reconciliation envelope: exactly 6 paths; SHA-256 `be033502c6e72d211415751966e6dc48e3453ce6fae6003d57b3da807cee1460`.
+- Engineering PR #777 squash merged at `af2ed4db8e49c4a75f1e1b743986cc20f3e3b0ff` with a verified GitHub signature.
+- Proven Sprint175 historical successor-compatibility debt was corrected independently by PR #779 and squash `f745348e130adeef272c24c742e082305c940130`; this correction is workflow-only provenance and does not replace Sprint176 engineering evidence.
+- Engineering envelope: exactly 8 paths; SHA-256 `f1b48efc2a25623ae55c72b95407a19ef60b63f8dcb933f9d7f137f09a34b974`.
+- Canonical reconciliation envelope: exactly 6 paths; SHA-256 `4cc815fdb1c6489ab34334a14033acfe1452b50874f48c9e867e6f6da3858b03`.
 
 ## 4. Operational boundaries / NO-GO
 
@@ -68,11 +69,11 @@ Machine-readable operational authority under `ops/final-shift-close/` remains au
 - Technical Preview / Production: `NOT_AUTHORIZED`;
 - updater: `INACTIVE`.
 
-Governed host/platform readiness grants no authority to probe a host, execute shell commands, open network/DNS connections, mutate scheduler/filesystem/configuration, install packages, transport/extract artifacts, connect to production databases, migrate, provision, expose an installer, update, deploy, or activate any runtime.
+Sprint176 grants no authority to expose merchant onboarding publicly, provision a real merchant, widen the runtime allowlist, execute migrations, deploy, activate Technical Preview/Production, select a durable target, or dispatch producers.
 
 ## 5. Next position
 
-Begin Sprint176 bounded discovery only after Sprint175 canonical reconciliation closes. Prioritize the smallest material non-duplicative P0/P1 business-completeness or production-readiness gap. Do not mechanically add further installer checks; live canonical evidence must prove the next blocker to a real merchant end-to-end path or production-ready installation lifecycle.
+Begin Sprint177 bounded discovery only after Sprint176 canonical reconciliation closes. Ask what still blocks a real merchant end-to-end after an atomic merchant-context foundation exists. Prioritize the smallest material P0/P1 gap; likely candidates must be proven from live repository evidence rather than preselected. Do not mechanically return to dashboards or readiness-only work.
 
 ## Documentation responsibility
 
