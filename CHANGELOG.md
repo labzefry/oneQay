@@ -1,31 +1,30 @@
 # Changelog
 
-## 2026-09-15 — Sprint175 closed
+## 2026-09-16 — Sprint176 closed
 
-**Sprint175: Installation Governed Host Platform Requirements Readiness**
+**Sprint176: Merchant Context Atomic Bootstrap Foundation**
 
-- **Objective:** `INSTALLATION_GOVERNED_HOST_PLATFORM_REQUIREMENTS_READINESS`.
-- Reused canonical `App\Infrastructure\Installation\SecureInstallationReadiness`; no parallel host inspector or installer owner was introduced.
-- Governed Release Manifest v1 now requires bounded `host_requirements`.
-- Governed requirements cover supported OS families, web-server interfaces, minimum memory, minimum execution-time budget, minimum free disk, and the canonical required-capability set.
-- Canonical capabilities cover HTTPS, DNS, time synchronization, outbound allowlisting, scheduler, archive, temporary-directory readiness, and required tools.
-- Observed host/platform facts are deterministic inputs to readiness; the source performs no host probing, DNS/network calls, shell execution, scheduler mutation, package installation, archive extraction, or filesystem mutation.
-- Missing, malformed, unsupported, or insufficient host/platform facts fail closed.
-- Unlimited observed execution time remains a deterministic accepted representation while finite execution-time budgets must satisfy the governed minimum.
-- Failure output does not echo untrusted host/platform values.
-- Existing runtime requirements, environment/key/debug/HTTPS, filesystem-write, artifact identity/integrity, release compatibility policy, database compatibility, attribution, and redaction readiness remain preserved.
-- No artifact publication/download/extraction, database execution, configuration/schema mutation, migration/seeder execution, credential/admin provisioning, installer exposure, updater activation, deployment, Technical Preview, Production, durable-target selection, or producer dispatch was introduced.
-- Exact engineering head `7eebbdb2a71b4cb35dafac58e6df2c955866264c` completed surfaced PR-triggered qualification successfully.
-- Sprint175 regression `34998600504`, Governance `34998600362`, PHP Foundation `34998600326`, and M7.1 `34998600367` succeeded.
+- **Objective:** `MERCHANT_CONTEXT_ATOMIC_BOOTSTRAP_FOUNDATION`.
+- Closed the proven merchant-context orchestration gap by composing existing durable graph, initial tenant administrator, and first control credential primitives.
+- Added exact-tuple bootstrap authorization for tenant, identity, organization, outlet, device, and provisioning identity.
+- Added a fresh-tenant guard; bootstrap fails closed for pre-existing tenant state.
+- Graph creation, protected initial administrator provisioning, and first credential creation execute inside one outer durable transaction.
+- Focused regression proves rollback of all merchant-context state when the downstream credential stage fails.
+- Invalid password is rejected before mutation; Preview runtime is denied; plaintext password material is not persisted.
+- Application bootstrap contracts remain framework-independent.
+- No service-provider binding, public route, controller, UI, installer exposure, production runtime widening, migration execution, deployment, Technical Preview, Production, updater activation, durable-target selection, or producer dispatch was introduced.
+- Exact engineering head `775343389659754d85f870eca55f808a0b28eea5` completed surfaced PR-triggered qualification successfully.
+- Sprint176 regression `35043179125`, Governance `35043179113`, PHP Foundation `35043179183`, and M7.1 `35043178985` succeeded.
 - Repository-native Product Owner merge authorization verified on the exact engineering head.
-- Engineering envelope: 3 paths; SHA-256 `3b06f39902fda4e43096b622cffad62ad4308652f760a300c44d5a54616ef8e0`.
-- Engineering PR #775 squash merged at `6357d883fe04ec0515f9d21c6adc0ee907787cde`.
-- Canonical reconciliation envelope: 6 paths; SHA-256 `be033502c6e72d211415751966e6dc48e3453ce6fae6003d57b3da807cee1460`.
+- Engineering envelope: 8 paths; SHA-256 `f1b48efc2a25623ae55c72b95407a19ef60b63f8dcb933f9d7f137f09a34b974`.
+- Engineering PR #777 squash merged at `af2ed4db8e49c4a75f1e1b743986cc20f3e3b0ff` with verified signature.
+- Canonical reconciliation envelope: 6 paths; SHA-256 `4cc815fdb1c6489ab34334a14033acfe1452b50874f48c9e867e6f6da3858b03`.
 - **Operational NO-GO preserved:** migration #27 `NOT_EXECUTED`; permission provisioning `NONE`; selected durable target `null`; feature activation `INACTIVE`; deployment `NOT_GRANTED`; Technical Preview/Production `NOT_AUTHORIZED`; updater `INACTIVE`.
-- **Next position:** Sprint176 bounded discovery from canonical post-Sprint175 with no objective preselected.
+- **Next position:** Sprint177 bounded discovery from canonical post-Sprint176 with no objective preselected.
 
 ## Recent material progression
 
+- **Sprint175:** governed host/platform requirements readiness; engineering squash `6357d883fe04ec0515f9d21c6adc0ee907787cde`.
 - **Sprint174:** governed release compatibility-policy readiness; engineering squash `3937cfc56d2615262160c9592d204715eb80ec89`.
 - **Sprint173:** governed release runtime-requirements readiness; engineering squash `933b06d0790834fb830ca9a55b443db69eca65f0`.
 - **Sprint172:** database configuration compatibility readiness; engineering squash `636a07130650f2d3119d450f35cfcfaf2868898e`.
