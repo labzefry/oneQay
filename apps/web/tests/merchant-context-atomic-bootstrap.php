@@ -19,6 +19,7 @@ use App\Infrastructure\Bootstrap\PreauthorizedMerchantContextBootstrapAuthority;
 use App\Infrastructure\Identity\LaravelFirstControlPrincipalCredentialBootstrapRepository;
 use App\Infrastructure\Persistence\LaravelDurableContextGraphRepository;
 use App\Infrastructure\Persistence\LaravelPersistenceTransaction;
+use Illuminate\Contracts\Http\Kernel;
 
 // Author by Lab | zefry
 require __DIR__.'/../vendor/autoload.php';
@@ -39,6 +40,10 @@ foreach ([
 }
 
 $app = require __DIR__.'/../bootstrap/app.php';
+/** @var Kernel $kernel */
+$kernel = $app->make(Kernel::class);
+$kernel->bootstrap();
+
 $assert = static function (bool $condition, string $message): void {
     if (! $condition) {
         throw new RuntimeException($message);
@@ -85,7 +90,7 @@ $manager->setDefaultConnection('s176_merchant_bootstrap');
 $connection = $manager->connection('s176_merchant_bootstrap');
 $connection->getPdo();
 
-$migrations = [
+foreach ([
     '0000_00_00_000001_create_foundational_context_graph.php',
     '0000_00_00_000002_create_organizational_access_grants.php',
     '0000_00_00_000003_create_scoped_role_permission_policy.php',
@@ -95,8 +100,7 @@ $migrations = [
     '0000_00_00_000007_create_identity_password_credentials.php',
     '0000_00_00_000008_create_initial_password_enrollments.php',
     '0000_00_00_000009_create_identity_totp_factors.php',
-];
-foreach ($migrations as $migration) {
+] as $migration) {
     (require __DIR__.'/../database/migrations/'.$migration)->up();
 }
 
@@ -107,32 +111,28 @@ $clock = new class implements PolicyAdministrationClock {
     }
 };
 
-$graph = static function (
+$graph = static fn (
     string $tenant,
     string $identity,
     string $organization,
     string $outlet,
     string $device,
-): DurableContextGraph {
-    return new DurableContextGraph(
-        TenantId::fromString($tenant),
-        PlatformIdentityId::fromString($identity),
-        OrganizationId::fromString($organization),
-        OutletId::fromString($outlet),
-        DeviceId::fromString($device),
-    );
-};
+): DurableContextGraph => new DurableContextGraph(
+    TenantId::fromString($tenant),
+    PlatformIdentityId::fromString($identity),
+    OrganizationId::fromString($organization),
+    OutletId::fromString($outlet),
+    DeviceId::fromString($device),
+);
 
-$grant = static function (DurableContextGraph $context, string $provisioningId): array {
-    return [
-        'tenant_id' => $context->tenantId->value(),
-        'identity_id' => $context->identityId->value(),
-        'organization_id' => $context->organizationId->value(),
-        'outlet_id' => $context->outletId->value(),
-        'device_id' => $context->deviceId->value(),
-        'provisioning_id' => $provisioningId,
-    ];
-};
+$grant = static fn (DurableContextGraph $context, string $provisioningId): array => [
+    'tenant_id' => $context->tenantId->value(),
+    'identity_id' => $context->identityId->value(),
+    'organization_id' => $context->organizationId->value(),
+    'outlet_id' => $context->outletId->value(),
+    'device_id' => $context->deviceId->value(),
+    'provisioning_id' => $provisioningId,
+];
 
 $service = static function (
     DurableContextGraph $context,
