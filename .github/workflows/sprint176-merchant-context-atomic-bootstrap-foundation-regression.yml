@@ -105,10 +105,11 @@ jobs:
             grep -Fq 'af2ed4db8e49c4a75f1e1b743986cc20f3e3b0ff' "$FILE"
             ! grep -Fq '${{ github.event.pull_request.head.sha }}' "$FILE"
           done
-          grep -Fq 'Engineering PR: #777' PROJECT_MANIFEST.md
+          grep -Fq '**Engineering PR:** #777' PROJECT_MANIFEST.md
           grep -Fq '775343389659754d85f870eca55f808a0b28eea5' PROJECT_MANIFEST.md
           grep -Fq 'f1b48efc2a25623ae55c72b95407a19ef60b63f8dcb933f9d7f137f09a34b974' PROJECT_MANIFEST.md
           grep -Fq '4cc815fdb1c6489ab34334a14033acfe1452b50874f48c9e867e6f6da3858b03' PROJECT_MANIFEST.md
+          grep -Fq 'f745348e130adeef272c24c742e082305c940130' PROJECT_MANIFEST.md
 
       - name: Preserve operational NO-GO
         run: |
