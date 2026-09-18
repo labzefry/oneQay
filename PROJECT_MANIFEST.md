@@ -7,48 +7,49 @@
 
 ## Current canonical engineering checkpoint
 
-**Canonical engineering checkpoint:** Sprint184
-**Objective:** `PREBOOT_INSTALLATION_CONFIGURATION_PREPARATION`
-**Canonical engineering commit:** `dfb65d2782a580108d8ccd9a6f9203720fa036b7`
-**Engineering PR:** #797 — `Sprint184: prepare secure preboot installation configuration`
-**Final engineering head:** `a22d98f18618be3ccf5ff8274ebf5528b33f01d7`
-**Exact-head qualification:** 72/72 successful
-**Canonical main-push M7.5 qualification:** run `35378584615` — SUCCESS
-**Engineering envelope:** 9 paths — `e2537851052c57b1ec3b7d2e99e1b5d0208fb3c54da207d5280682eb85c686a0`
+**Canonical engineering checkpoint:** Sprint185
+**Objective:** `PREBOOT_DATABASE_COMPATIBILITY_VERIFICATION`
+**Canonical engineering commit:** `c53c76fc86ef5be67dd999ac7fc7e08f84c82f01`
+**Engineering PR:** #799 — `Sprint185: verify database compatibility before pending configuration`
+**Final engineering head:** `bf17397f739eab4aae531ed6b6a1b0b5430ae98e`
+**Exact-head qualification:** 71/71 successful
+**Canonical main-push M7.5 qualification:** run `35382800589` — SUCCESS
+**Engineering envelope:** 10 paths — `775caa7723278af855b888f2c6bac592d9187e7b988619799f90e2e7a6950e99`
 **Canonical reconciliation envelope:** 8 paths — `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`
-**Previous canonical checkpoint:** Sprint183 reconciliation `15b8a048e5d604ddee0df41bf7964313334e36b9`
-**Next position:** Sprint185 bounded discovery from the fully reconciled Sprint184 checkpoint.
+**Previous canonical checkpoint:** Sprint184 reconciliation `d7401729266df97216ee8c5b04ff502177687461`
+**Next position:** Sprint186 bounded discovery from the fully reconciled Sprint185 checkpoint.
 
-> `dfb65d2782a580108d8ccd9a6f9203720fa036b7` is the canonical Sprint184 engineering evidence. The reconciliation squash must not replace it as the canonical engineering commit.
+> `c53c76fc86ef5be67dd999ac7fc7e08f84c82f01` is the canonical Sprint185 engineering evidence. The reconciliation squash must not replace it as the canonical engineering commit.
 
 ## 1. Purpose / Why
 
-Sprint184 closes the material gap between governed release readiness and an operator-capable installation setup step. Prior sprints could build, qualify, and preflight a governed release, but configuration preparation still required an external/manual process before the application runtime could be safely initialized.
+Sprint185 closes a material installation risk left after Sprint184: a syntactically valid database configuration could previously be accepted into `.env.pending` without proving that the target database was reachable and compatible with oneQay.
 
 ## 2. What changed
 
-- Added a secure pre-boot installation surface that can operate before Laravel runtime configuration is active.
-- Bound installation preparation to the exact immutable governed release identity.
-- Added a private, expiring, one-time installation authority whose submitted token is verified against a stored SHA-256 digest.
-- Added bounded validation for HTTPS application URL and MySQL-compatible runtime configuration.
-- Generates a fresh application key during configuration preparation.
-- Writes configuration only to the private shared `.env.pending` boundary through an atomic write.
-- Consumes the one-time authority after successful preparation and rejects replay once pending or active runtime configuration exists.
-- Packages `public-surface/install.php` and the private installation implementation inside the governed M7.5 release artifact.
-- Preserves Technical Preview, persistence, and system-update controls as disabled in the prepared configuration.
-- Preserves legacy M7.5 and Sprint32/Sprint33/Sprint34 historical qualification through exact-envelope compatibility only; application, authentication, recovery, and migration source semantics remain unchanged.
-- The operator-facing pre-boot surface is responsive and explicitly communicates migration, Technical Preview, and Production NO-GO.
+- Added a pre-boot database compatibility verifier that runs before pending runtime configuration is committed.
+- Verifies MySQL/MariaDB connectivity using the submitted installation configuration.
+- Verifies server-version shape, `utf8mb4`, UTC session posture, and schema ownership state.
+- Classifies schema state as `empty`, `recognized`, or `foreign` and rejects foreign/incompatible targets.
+- Verifies that the configured database principal is database-scoped and rejects global/admin-style privileges.
+- Preserves the still-valid one-time installation authority when database verification fails so an operator can correct the configuration and retry.
+- Commits `.env.pending` only after compatibility succeeds and binds safe verification facts into that pending configuration.
+- Exposes `PENDING_CONFIGURATION_VERIFIED` in the pre-boot installer.
+- Keeps `ONEQAY_INSTALLATION_ACTIVATION_AUTHORIZED=false`, persistence disabled, Technical Preview disabled, and updater control disabled.
+- Packages the verifier into the deterministic governed M7.5 release artifact.
+- Preserves M7.5 and Sprint32/Sprint33/Sprint34 historical qualification for the exact Sprint185 engineering envelope only; migration, authentication, and recovery application source semantics remain unchanged.
 
 ## 3. Evidence / Qualification
 
-- Canonical parent before Sprint184 engineering: `15b8a048e5d604ddee0df41bf7964313334e36b9`.
-- Final engineering head `a22d98f18618be3ccf5ff8274ebf5528b33f01d7` completed 72/72 pull-request workflows successfully.
-- Dedicated Sprint184 regression passed PHP/shell validity, authority/replay safety, pending-only configuration, governed artifact packaging, release binding, deterministic reproduction, and source cleanliness.
+- Canonical parent before Sprint185 engineering: `d7401729266df97216ee8c5b04ff502177687461`.
+- Final engineering head `bf17397f739eab4aae531ed6b6a1b0b5430ae98e` completed 71/71 pull-request workflows successfully.
+- Dedicated Sprint185 regression started an actual MySQL 8 service, created a database-scoped least-privilege installation principal, proved successful live compatibility verification, proved invalid credentials fail closed, preserved Sprint184 semantics, and confirmed no secret/exception leakage.
+- Governance, M7.5 release, Sprint32/Sprint33/Sprint34, Sprint172 installation database readiness, POS workspace, and Final Shift Close preservation regressions succeeded on the exact engineering head.
 - Repository-native Product Owner merge authority succeeded on the exact qualified head.
-- PR #797 squash merged at `dfb65d2782a580108d8ccd9a6f9203720fa036b7`.
-- Canonical main-push M7.5 run `35378584615` completed successfully.
-- Final engineering envelope: exactly nine paths; SHA-256 `e2537851052c57b1ec3b7d2e99e1b5d0208fb3c54da207d5280682eb85c686a0`.
-- Canonical reconciliation envelope: exactly eight paths; SHA-256 `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`.
+- PR #799 squash merged at `c53c76fc86ef5be67dd999ac7fc7e08f84c82f01`.
+- Canonical main-push M7.5 run `35382800589` completed successfully, including deterministic release packaging, installer-readiness sidecar materialization, manifest/checksum/no-schema-change verification, deterministic archive reproduction, artifact upload, and tracked-source cleanliness.
+- Final engineering envelope: exactly 10 paths; SHA-256 `775caa7723278af855b888f2c6bac592d9187e7b988619799f90e2e7a6950e99`.
+- Canonical reconciliation envelope: exactly 8 paths; SHA-256 `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`.
 
 ## 4. Operational boundaries / NO-GO
 
@@ -65,11 +66,11 @@ Machine-readable operational authority under `ops/final-shift-close/` remains au
 - Technical Preview / Production: `NOT_AUTHORIZED`;
 - updater: `INACTIVE`.
 
-Sprint184 prepares configuration only. It does not create an active `.env`, execute migrations, provision production permissions, select a durable target, activate the updater, deploy an artifact, or activate Technical Preview or Production.
+Sprint185 verifies database compatibility and prepares verified pending configuration only. It does not create active `.env`, mutate schema/business rows during verification, execute migrations, activate persistence, provision production permissions, select a durable target, deploy, activate the updater, or activate Technical Preview/Production.
 
 ## 5. Next position
 
-Begin Sprint185 bounded discovery from fully reconciled Sprint184. Select the smallest material P0/P1 blocker remaining after secure pre-boot configuration preparation, prioritizing completion of the governed installation/onboarding journey without crossing operational activation boundaries.
+Begin Sprint186 bounded discovery from fully reconciled Sprint185. Select the smallest material P0/P1 blocker after verified pending configuration that advances the governed installation/onboarding journey without implicitly granting operational activation.
 
 ## Documentation responsibility
 
