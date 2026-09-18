@@ -1,4 +1,5 @@
 # Author by Lab | zefry
+# Sprint182 final exact-head qualification trigger.
 name: Sprint182 Governed Release Installation Preflight Bridge Regression
 
 on:
