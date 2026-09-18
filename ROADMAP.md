@@ -1,7 +1,7 @@
 # oneQay Roadmap
 
-**Roadmap checkpoint:** Sprint177 engineering closed; canonical reconciliation in progress  
-**Canonical engineering baseline:** `6752af1eb957993a6080206d9a40f7163bd24be6`  
+**Roadmap checkpoint:** Sprint177 engineering closed; canonical reconciliation in progress
+**Canonical engineering baseline:** `6752af1eb957993a6080206d9a40f7163bd24be6`
 **Current state authority:** `PROJECT_MANIFEST.md`
 
 ## Completed Sprint177 engineering horizon
