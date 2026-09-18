@@ -7,56 +7,53 @@
 
 ## Current canonical engineering checkpoint
 
-**Canonical engineering checkpoint:** Sprint182
-**Objective:** `GOVERNED_RELEASE_INSTALLATION_PREFLIGHT_BRIDGE_FOUNDATION`
-**Canonical engineering commit:** `ceb8fd7839a5077d59247b2cbdd2ba30559c4d25`
-**Engineering PR:** #791 — `Sprint182: bridge governed release to installation preflight`
-**Final engineering head:** `cc6eba43ccd9dfd316f652aaf133a7372a86380b`
-**Exact-head pull-request qualification:** 68/68 successful
-**Engineering envelope:** 6 paths — `4968d9fcf35b7a17d67b1909cfd1dad93f2b08b7d82b8c6d30be4dc09f067be3`
-**Canonical reconciliation envelope:** 6 paths — `a78e4871e0852ac6c4f466b7f3278efde846a4ae84f5fe589123672e568aea35`
-**Previous canonical checkpoint:** Sprint181 reconciliation `2046f7ad4a27bc8b453cf773fcb1b6cd90042a3e`
-**Next position:** Sprint183 bounded discovery from the fully reconciled Sprint182 checkpoint.
+**Canonical engineering checkpoint:** Sprint183
+**Objective:** `GOVERNED_M7_5_RELEASE_WORKFLOW_EXECUTION_RESTORATION`
+**Canonical engineering commit:** `cd3facf81e3b1734353656da3ba5800607900fcb`
+**Initial engineering PR:** #793 — `Sprint183: restore governed M7.5 workflow execution`
+**Initial engineering squash:** `03804129dac67c85fea3540d421a9b49adc3eb13`
+**Corrective engineering PR:** #794 — `Sprint183: correct non-PR M7.5 historical compatibility`
+**Final engineering head:** `f3527999a500463e9eea3f8b9b22dec24a34e93e`
+**Exact-head corrective qualification:** 69/69 successful
+**Canonical main-push M7.5 qualification:** run `35369464318` — SUCCESS
+**Engineering envelope:** 1 path — `bcec6fc13a26f5c88f4408d76d362195ca9d546cc2df6d6c388a67640b93cce2`
+**Canonical reconciliation envelope:** 6 paths — `09fc0a9ae283def9c130b48fa756b17624ae0fbf3f87ad988c40605fcaf362c6`
+**Previous canonical checkpoint:** Sprint182 reconciliation `b876e8b0ce245d2d56697de4ebdc7c3fb695ff69`
+**Next position:** Sprint184 bounded discovery from the fully reconciled Sprint183 checkpoint.
 
-> `ceb8fd7839a5077d59247b2cbdd2ba30559c4d25` is the canonical Sprint182 engineering evidence. The Sprint182 reconciliation squash must not replace it as the canonical engineering commit.
+> `cd3facf81e3b1734353656da3ba5800607900fcb` is the canonical Sprint183 engineering evidence. The initial Sprint183 squash and the Sprint183 reconciliation squash must not replace it as the canonical engineering commit.
 
 ## 1. Purpose / Why
 
-Sprint182 closes the release-evidence gap between the governed M7.5 artifact builder and the Sprint181 installation-readiness wizard. Before Sprint182, the trusted release artifact and canonical Release Manifest v1 existed, but the installer-facing `release/manifest.json` contract required by `SecureInstallationReadiness` could not be derived and qualified from the governed artifact without manual projection.
+Sprint183 restores executable governed release automation. Sprint182 proved the release-artifact-to-installer-readiness bridge through a dedicated workflow, but the canonical M7.5 release workflow itself still failed GitHub Actions startup before a job could be created.
 
 ## 2. What changed
 
-- Preserved the canonical M7.5 archive builder and Release Manifest v1 contract.
-- Added `tools/build-installation-readiness-manifest.php` as the shared trusted-build projection.
-- The shared tool binds the installer-facing manifest to exact source SHA, release ID, artifact filename, byte size, and SHA-256.
-- Runtime requirements, host requirement policy, compatibility policy, `NO_SCHEMA_CHANGE` classification, and `Lab | zefry` attribution are emitted deterministically.
-- The sidecar is validated through the canonical `SecureInstallationReadiness` authority.
-- Build-time host/database fixtures are explicitly validator fixtures only; no runtime target capability or READY state is fabricated.
-- A deliberately tampered artifact digest must fail `artifact_integrity`.
-- M7.5 and the dedicated Sprint182 qualification use the same shared tool.
-- Dedicated Sprint182 qualification directly builds the governed artifact, generates the sidecar, validates the canonical manifest, and proves deterministic artifact + sidecar reproduction.
-- Sprint32/Sprint33/Sprint34 historical M7.5 isolation was extended through migration #27 only; migration source remains byte-preserved.
-- No deployment, migration execution, permission provisioning, updater activation, Technical Preview activation, Production activation, durable-target selection, or producer dispatch was introduced.
+- Preserved the canonical M7.5 release artifact behavior, Release Manifest v1 contract, and Sprint182 installer-readiness bridge.
+- Split the oversized historical Web regression command at the established composer-test boundary.
+- Persisted only the two compatibility booleans required across the split through `GITHUB_ENV`.
+- Kept every `run` command below the GitHub Actions command-size boundary that had prevented workflow startup.
+- Restored M7.5 as a real pull-request workflow; both split historical Web regression steps execute successfully.
+- Restored post-M7.4 historical compatibility by temporarily isolating newer POS persistence repositories only while M7.4 synthetic regression executes, then restoring them deterministically.
+- Post-merge main push of the initial engineering squash exposed a separate non-PR compatibility gap: current migrations #10–#27 were visible to historical M7.2 because PR-diff classification is unavailable on push.
+- Corrective PR #794 makes non-PR execution enter the same schema-free historical lane by isolating migrations #10–#27 for the historical checks and setting the same compatibility state used by the proven PR lane.
+- Migration and application source remain byte-preserved; these are workflow fixture-isolation changes only.
+- Final canonical main push M7.5 run `35369464318` completed successfully through historical regressions, packaging, installer sidecar materialization, manifest/artifact binding, deterministic reproduction, artifact upload, and tracked-source cleanliness.
 
 ## 3. Evidence / Qualification
 
-- Canonical parent before engineering: `2046f7ad4a27bc8b453cf773fcb1b6cd90042a3e`.
-- Exact engineering head: `cc6eba43ccd9dfd316f652aaf133a7372a86380b`.
-- All 68 pull-request-triggered workflow runs completed successfully on the exact engineering head.
-- Dedicated Sprint182 qualification completed successfully through real M7.5 artifact build, canonical readiness validation, tamper rejection, deterministic reproduction, and tracked-source cleanliness.
-- Sprint32, Sprint33, Sprint34, Sprint171, Sprint173, Sprint174, Sprint175, Sprint181, Governance, PHP Foundation, and M7.1 gates succeeded.
-- Repository-native Product Owner merge authority succeeded for the exact engineering head.
-- Engineering PR #791 squash merged at `ceb8fd7839a5077d59247b2cbdd2ba30559c4d25`.
-- Engineering envelope: exactly 6 paths; SHA-256 `4968d9fcf35b7a17d67b1909cfd1dad93f2b08b7d82b8c6d30be4dc09f067be3`.
-- Canonical reconciliation envelope: exactly 6 paths; SHA-256 `a78e4871e0852ac6c4f466b7f3278efde846a4ae84f5fe589123672e568aea35`.
+- Canonical parent before Sprint183 engineering: `b876e8b0ce245d2d56697de4ebdc7c3fb695ff69`.
+- Initial engineering head `798e2f1a223bbce7ed0032bb4996e292a337bb72` completed 69/69 pull-request workflows successfully.
+- Initial PR #793 squash merged at `03804129dac67c85fea3540d421a9b49adc3eb13`.
+- Main-push run after the initial squash started correctly but revealed non-PR historical fixture incompatibility; reconciliation was intentionally blocked.
+- Corrective head `f3527999a500463e9eea3f8b9b22dec24a34e93e` completed 69/69 pull-request workflows successfully.
+- Repository-native Product Owner merge authority succeeded on the exact corrective head.
+- Corrective PR #794 squash merged at `cd3facf81e3b1734353656da3ba5800607900fcb`.
+- Canonical main-push M7.5 run `35369464318` completed successfully.
+- Final engineering envelope: exactly one path; SHA-256 `bcec6fc13a26f5c88f4408d76d362195ca9d546cc2df6d6c388a67640b93cce2`.
+- Canonical reconciliation envelope: exactly six paths; SHA-256 `09fc0a9ae283def9c130b48fa756b17624ae0fbf3f87ad988c40605fcaf362c6`.
 
-## 4. Known pre-existing workflow state
-
-The legacy M7.5 push-event workflow startup failure was already present on canonical `main` before Sprint182, including at Sprint181 reconciliation `2046f7ad4a27bc8b453cf773fcb1b6cd90042a3e`. Sprint182 does not claim that historical startup defect as remediated. The dedicated Sprint182 workflow provides the active executable exact-head qualification for the governed artifact-to-installer bridge.
-
-This pre-existing CI debt should be evaluated during Sprint183 bounded discovery because it can block canonical automated release execution even though the Sprint182 bridge itself is proven executable.
-
-## 5. Operational boundaries / NO-GO
+## 4. Operational boundaries / NO-GO
 
 Machine-readable operational authority under `ops/final-shift-close/` remains authoritative and unchanged:
 
@@ -71,11 +68,11 @@ Machine-readable operational authority under `ops/final-shift-close/` remains au
 - Technical Preview / Production: `NOT_AUTHORIZED`;
 - updater: `INACTIVE`.
 
-A valid release/installer manifest is evidence only. It does not grant authority to write environment configuration, execute migrations/seeding, provision real identities/permissions, deploy, activate the updater, Technical Preview, or Production.
+Restored release automation is build and qualification evidence only. It does not grant authority to deploy the generated artifact, execute migrations, provision production permissions, activate the updater, Technical Preview, or Production.
 
-## 6. Next position
+## 5. Next position
 
-Begin Sprint183 bounded discovery from the fully reconciled Sprint182 state. First assess the pre-existing M7.5 workflow startup failure as a material installation/release automation blocker, then select the smallest end-to-end P0/P1 correction that preserves the Sprint182 bridge and operational NO-GO.
+Begin Sprint184 bounded discovery from fully reconciled Sprint183. Select the smallest material P0/P1 blocker remaining in the installation/onboarding journey now that governed M7.5 release automation and the installer-preflight bridge are executable.
 
 ## Documentation responsibility
 
