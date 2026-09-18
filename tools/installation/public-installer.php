@@ -2,12 +2,6 @@
 
 declare(strict_types=1);
 
-require __DIR__.'/oneqay-install/PrebootInstallationConfiguration.php';
-
-use OneQay\Installation\PrebootInstallationConfiguration;
-use RuntimeException;
-use Throwable;
-
 // Author by Lab | zefry
 
 header('Content-Type: text/html; charset=UTF-8');
@@ -24,9 +18,19 @@ if (($_SERVER['HTTPS'] ?? '') !== '' && strtolower((string) $_SERVER['HTTPS']) !
 
 $releaseId = '__ONEQAY_RELEASE_ID__';
 $accountHome = dirname(__DIR__, 2);
+$appRoot = $accountHome.'/oneqay-preview/releases/'.$releaseId.'/apps/web';
+$installerSource = $appRoot.'/app/Infrastructure/Installation/PrebootInstallationConfiguration.php';
 $sharedRoot = $accountHome.'/oneqay-preview/shared';
 
-$installer = new PrebootInstallationConfiguration($sharedRoot, $releaseId, time());
+if (! is_file($installerSource) || is_link($installerSource) || ! is_readable($installerSource)) {
+    http_response_code(503);
+    echo 'oneQay installer unavailable';
+    exit;
+}
+
+require $installerSource;
+
+$installer = new \App\Infrastructure\Installation\PrebootInstallationConfiguration($sharedRoot, $releaseId, time());
 $state = ['state' => 'UNAVAILABLE', 'can_prepare' => false, 'activation_authorized' => false];
 $result = null;
 $errorCode = null;
@@ -50,12 +54,12 @@ try {
         $result = $installer->prepare($_POST);
         $state = $installer->inspect();
     }
-} catch (RuntimeException $exception) {
+} catch (\RuntimeException $exception) {
     $errorCode = $exception->getMessage();
     if (! preg_match('/\A[a-z0-9_]{3,80}\z/', $errorCode)) {
         $errorCode = 'installation_request_denied';
     }
-} catch (Throwable) {
+} catch (\Throwable) {
     $errorCode = 'installation_request_denied';
 }
 
