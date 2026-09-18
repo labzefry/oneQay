@@ -1,25 +1,28 @@
 # Changelog
 
-## 2026-09-18 — Sprint178 closed canonically
+## 2026-09-18 — Sprint179 closed canonically
 
-**Sprint178: Merchant First-Party Application Entry Foundation**
+**Sprint179: Merchant Bootstrap Initial POS Operation Authorization Foundation**
 
-- Objective: `MERCHANT_FIRST_PARTY_APPLICATION_ENTRY_FOUNDATION`.
-- Connected existing first-party login/session authority to a guarded browser entry surface.
-- Reused the existing Foundation Inertia surface instead of adding a competing root route/controller.
-- Merchant entry is server-gated to Local/Test/CI with persistence and session control enabled.
-- Existing TOTP enrollment/challenge flow is reused without altering its security semantics.
-- Successful full session authority transitions to the existing `/pos` Operations Hub.
-- No public registration or implicit permission grant was introduced.
-- Final engineering exact head `ee0e2e8acc5238fa0cb2e3be56b6e58cf2092239` completed 60/60 surfaced PR-triggered workflow runs successfully.
-- Engineering envelope: 4 paths; SHA-256 `9d27ecd0802230d3484aa7ca424064313595e8174172eb889c2736250e2815c5`.
-- Engineering PR #783 squash merged at `8992c2ed1b6278d113e24e38a847bedeac345161`.
-- Canonical reconciliation envelope: 6 paths; SHA-256 `d994709453d1415d23d2bdfc8ecade257d8baa8b07b9aff98654a2b4cb6bb0f5`.
+- Objective: `MERCHANT_BOOTSTRAP_INITIAL_POS_OPERATION_AUTHORIZATION_FOUNDATION`.
+- Closed the proven bootstrap-to-POS authorization gap for the initial merchant principal.
+- Preserved Sprint176 atomic merchant-context bootstrap unchanged and wrapped it in a POS-ready outer transaction.
+- Added exact outlet/device access for the bootstrapped principal.
+- Added separate role `merchant-initial-pos-operator` instead of widening the protected control role.
+- Granted only catalog preparation, inventory baseline, shift open, opening cash, and sale completion permissions.
+- Assigned the operational role only at the exact bootstrapped device scope.
+- Sale void, refund, Final Shift Close, and broader role scopes remain denied by default.
+- Outer transaction regression proves rollback of context, credential, access, role, policy, and journal state when downstream POS authorization fails.
+- Final engineering exact head `94d1f2937a3ab71803738c2a2408170e63b6fcf1` completed 61/61 surfaced PR-triggered workflow runs successfully.
+- Engineering envelope: 4 paths; SHA-256 `33206447002d40b489742fdb7b0c50670705400d16c184e352aa64aeb1534feb`.
+- Engineering PR #785 squash merged at `fb0a886ac7f1447fa26f3eefcc808158d4ef044d`.
+- Canonical reconciliation envelope: 6 paths; SHA-256 `72d21048381af6505f8b6315141efef93f909e407d54377e3726d49f0c38ccff`.
 - Operational NO-GO remains unchanged.
-- Next position: Sprint179 bounded discovery from canonical post-Sprint178.
+- Next position: Sprint180 bounded discovery from canonical post-Sprint179.
 
 ## Recent material progression
 
+- **Sprint179:** atomic initial POS-ready merchant authorization; engineering squash `fb0a886ac7f1447fa26f3eefcc808158d4ef044d`.
 - **Sprint178:** guarded merchant first-party application entry; engineering squash `8992c2ed1b6278d113e24e38a847bedeac345161`.
 - **Sprint177:** guarded merchant-context bootstrap delivery; engineering squash `6752af1eb957993a6080206d9a40f7163bd24be6`.
 - **Sprint176:** atomic merchant-context bootstrap foundation; engineering squash `af2ed4db8e49c4a75f1e1b743986cc20f3e3b0ff`.

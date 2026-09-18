@@ -8,28 +8,28 @@ Enterprise-oriented business-management platform built with Modular Monolith Fir
 
 ## Current canonical status
 
-The latest completed engineering sprint is **Sprint178 — Merchant First-Party Application Entry Foundation**.
+The latest completed engineering sprint is **Sprint179 — Merchant Bootstrap Initial POS Operation Authorization Foundation**.
 
-- Canonical engineering commit: `8992c2ed1b6278d113e24e38a847bedeac345161`
-- Engineering PR: #783
-- Final engineering head: `ee0e2e8acc5238fa0cb2e3be56b6e58cf2092239`
-- Exact-head surfaced qualification: 60/60 successful
-- Engineering envelope: 4 paths, SHA-256 `9d27ecd0802230d3484aa7ca424064313595e8174172eb889c2736250e2815c5`
-- Reconciliation envelope: 6 paths, SHA-256 `d994709453d1415d23d2bdfc8ecade257d8baa8b07b9aff98654a2b4cb6bb0f5`
+- Canonical engineering commit: `fb0a886ac7f1447fa26f3eefcc808158d4ef044d`
+- Engineering PR: #785
+- Final engineering head: `94d1f2937a3ab71803738c2a2408170e63b6fcf1`
+- Exact-head surfaced qualification: 61/61 successful
+- Engineering envelope: 4 paths, SHA-256 `33206447002d40b489742fdb7b0c50670705400d16c184e352aa64aeb1534feb`
+- Reconciliation envelope: 6 paths, SHA-256 `72d21048381af6505f8b6315141efef93f909e407d54377e3726d49f0c38ccff`
 
 For the full project state, use [`PROJECT_MANIFEST.md`](PROJECT_MANIFEST.md) as the canonical human-readable source of truth.
 
-## Sprint178 — Merchant first-party application entry
+## Sprint179 — POS-ready merchant bootstrap authorization
 
-Sprint178 connects the existing first-party login/session-authority stack to the already-delivered POS Operations Hub through a guarded merchant-facing entry experience.
+Sprint179 closes the gap where a bootstrapped merchant could authenticate but still lacked the durable outlet/device access and POS permissions required by the existing Operations Hub.
 
-The final implementation deliberately reuses the existing Foundation surface. Server-rendered metadata enables merchant entry only for Local/Test/CI with persistence and session control available. Login, TOTP enrollment/challenge, session authority, and `/pos` remain owned by their existing canonical components.
+The final implementation keeps Sprint176 atomic bootstrap semantics authoritative, then wraps them in one outer transaction that records exact outlet/device access, creates a separate least-privilege initial POS operator role, grants only the first-operation POS permissions, and assigns that role at the exact bootstrapped device.
 
-No public registration, implicit permission provisioning, new authentication architecture, new POS capability, production runtime widening, migration execution, deployment, updater activation, Technical Preview/Production authorization, durable-target selection, or producer dispatch was added.
+The protected control-administrator role is not widened. Sale void, refund, Final Shift Close, Production activation, migration execution, deployment, and updater activation remain outside Sprint179.
 
 ## Product progression
 
-oneQay now combines governed installation readiness, atomic merchant-context bootstrap, guarded bootstrap delivery, first-party identity/session security, and a usable guarded browser entry into existing permission-filtered POS operations.
+oneQay now combines governed installation readiness, atomic merchant-context bootstrap, guarded first-party browser entry, durable exact-device access, and a minimally authorized path into real POS operations under Local/Test/CI qualification.
 
 ## Operational status remains intentionally gated
 
@@ -37,6 +37,6 @@ Migration #27 remains `NOT_EXECUTED`; permission provisioning `NONE`; durable ac
 
 ## Next engineering position
 
-Sprint179 begins with bounded discovery of the smallest material P0/P1 blocker still preventing a complete merchant journey. No operational authority is implied or pre-authorized.
+Sprint180 begins with bounded discovery of the smallest material P0/P1 blocker still preventing a complete merchant journey. No operational authority is implied or pre-authorized.
 
 Author by Lab | zefry
