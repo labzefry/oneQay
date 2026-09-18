@@ -1,0 +1,119 @@
+name: Sprint179 Merchant Bootstrap Initial POS Operation Authorization Foundation Regression
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint179-merchant-pos-ready-${{ github.event.pull_request.number || github.ref }}-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  qualify-sprint179-merchant-pos-ready:
+    name: qualify-sprint179-merchant-pos-ready
+    runs-on: ubuntu-latest
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:Y2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2M=
+      APP_DEBUG: "false"
+      APP_URL: http://localhost
+      ONEQAY_RUNTIME_CLASS: ci
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Qualify exact Sprint179 engineering envelope
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "${{ github.head_ref }}" == "sprint179-merchant-bootstrap-initial-pos-operation-authorization-foundation" ]]
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          mapfile -t paths < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort)
+          expected=(
+            ".github/workflows/sprint179-merchant-bootstrap-initial-pos-operation-authorization-foundation-regression.yml"
+            "apps/web/app/Application/Bootstrap/MerchantPosReadyBootstrapService.php"
+            "apps/web/app/Console/Commands/MerchantContextBootstrapCommand.php"
+            "apps/web/tests/merchant-pos-ready-bootstrap.php"
+          )
+          [[ "${#paths[@]}" -eq "${#expected[@]}" ]]
+          diff -u <(printf '%s\n' "${expected[@]}") <(printf '%s\n' "${paths[@]}")
+          actual_hash="$(printf '%s\n' "${paths[@]}" | sha256sum | awk '{print $1}')"
+          [[ "$actual_hash" == "33206447002d40b489742fdb7b0c50670705400d16c184e352aa64aeb1534feb" ]]
+
+      - name: Preserve Sprint176 and Sprint177 authority boundaries
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          git diff --quiet "$BASE_SHA" "$HEAD_SHA" --             apps/web/app/Application/Bootstrap/MerchantContextBootstrapService.php             apps/web/config/merchant_context_bootstrap.php             apps/web/routes/web.php
+          grep -Fq "protected \$signature = 'oneqay:merchant-context:bootstrap';" apps/web/app/Console/Commands/MerchantContextBootstrapCommand.php
+          ! grep -Fq "oneqay:merchant-context:bootstrap {" apps/web/app/Console/Commands/MerchantContextBootstrapCommand.php
+          grep -Fq 'MerchantContextBootstrapService' apps/web/app/Console/Commands/MerchantContextBootstrapCommand.php
+          grep -Fq 'MerchantPosReadyBootstrapService' apps/web/app/Console/Commands/MerchantContextBootstrapCommand.php
+
+      - name: Preserve exact-device least-privilege POS bootstrap contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          SERVICE=apps/web/app/Application/Bootstrap/MerchantPosReadyBootstrapService.php
+          grep -Fq "public const ROLE = 'merchant-initial-pos-operator';" "$SERVICE"
+          grep -Fq 'PosPermission::PREPARE_CATALOG' "$SERVICE"
+          grep -Fq 'PosPermission::INVENTORY_BASELINE' "$SERVICE"
+          grep -Fq 'PosPermission::OPEN_SHIFT' "$SERVICE"
+          grep -Fq 'PosPermission::RECORD_SHIFT_OPENING_CASH' "$SERVICE"
+          grep -Fq 'PosPermission::COMPLETE_SALE' "$SERVICE"
+          grep -Fq 'PolicyMutationOperation::ROLE_ASSIGN_DEVICE' "$SERVICE"
+          grep -Fq 'recordVerifiedContext($actor)' "$SERVICE"
+          grep -Fq 'return $this->transaction->run' "$SERVICE"
+          ! grep -Fq 'PosPermission::VOID_SALE' "$SERVICE"
+          ! grep -Fq 'PosPermission::REFUND_SALE' "$SERVICE"
+          ! grep -Fq 'FinalShiftClosePermission' "$SERVICE"
+
+      - name: Preserve operational NO-GO
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" == 'NOT_EXECUTED' ]]
+          [[ "$(jq -r '.permission_provisioning.state' ops/final-shift-close/STATE.json)" == 'NONE' ]]
+          [[ "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" == 'INACTIVE' ]]
+          [[ "$(jq -r '.deployment_authority' ops/final-shift-close/STATE.json)" == 'NOT_GRANTED' ]]
+          [[ "$(jq -r '.technical_preview_activation' ops/final-shift-close/STATE.json)" == 'NOT_AUTHORIZED' ]]
+          [[ "$(jq -r '.production_activation' ops/final-shift-close/STATE.json)" == 'NOT_AUTHORIZED' ]]
+          [[ "$(jq -r '.updater_activation' ops/final-shift-close/STATE.json)" == 'INACTIVE' ]]
+          [[ "$(jq -r '.selection_state' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" == 'BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET' ]]
+          [[ "$(jq -r '.selected_target' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" == 'null' ]]
+
+      - name: Validate PHP and execute merchant POS-ready regressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd apps/web
+          composer validate --no-check-publish
+          composer install --no-interaction --no-progress --prefer-dist
+          find app bootstrap config routes tests -type f -name '*.php' -print0 | while IFS= read -r -d '' file; do php -l "$file"; done
+          composer test
+          php tests/merchant-context-atomic-bootstrap.php
+          php tests/merchant-context-guarded-bootstrap-delivery.php
+          php tests/merchant-pos-ready-bootstrap.php
+          php tests/pos-operations-hub.php
+
+      - name: Verify tracked-source cleanliness
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --exit-code
+          test -z "$(git status --porcelain)"
