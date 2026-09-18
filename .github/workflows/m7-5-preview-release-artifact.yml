@@ -519,6 +519,233 @@ jobs:
           ONEQAY_BUILD_PROVENANCE: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}
         run: bash tools/build-m7-5-preview-release.sh "${{ steps.source.outputs.source_sha }}"
 
+      - name: Materialize governed installer-readiness sidecar
+        id: installation_preflight
+        shell: bash
+        env:
+          ONEQAY_BUILD_PROVENANCE: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}
+        run: |
+          set -euo pipefail
+          sidecar="dist/manifest.json"
+          source_sha="${{ steps.source.outputs.source_sha }}"
+          release_id="${{ steps.package.outputs.release_id }}"
+          artifact="${{ steps.package.outputs.archive_path }}"
+          archive_name="$(basename "$artifact")"
+          artifact_sha256="$(sha256sum "$artifact" | awk '{print $1}')"
+          artifact_size="$(wc -c < "$artifact" | tr -d '[:space:]')"
+          release_version="0.1.0-preview.${source_sha:0:12}"
+
+          cat > "$sidecar" <<JSON
+          {
+            "schema_version": 1,
+            "product": "oneQay",
+            "repository": "labzefry/oneQay",
+            "release_id": "$release_id",
+            "release_channel": "preview",
+            "source_commit": "$source_sha",
+            "artifact_filename": "$archive_name",
+            "artifact_type": "tar.gz",
+            "artifact_size": $artifact_size,
+            "artifact_sha256": "$artifact_sha256",
+            "runtime_requirements": {
+              "php_min": "8.2.0",
+              "php_extensions": [
+                "ctype",
+                "curl",
+                "dom",
+                "fileinfo",
+                "filter",
+                "hash",
+                "mbstring",
+                "openssl",
+                "pdo",
+                "session",
+                "tokenizer",
+                "xml"
+              ]
+            },
+            "host_requirements": {
+              "os_families": ["linux"],
+              "web_server_interfaces": ["fpm-fcgi", "cgi-fcgi", "apache2handler"],
+              "memory_bytes_min": 268435456,
+              "execution_time_seconds_min": 60,
+              "disk_bytes_min": 1073741824,
+              "required_capabilities": [
+                "https",
+                "dns",
+                "time_sync",
+                "outbound_allowlist",
+                "scheduler",
+                "archive",
+                "temp_directory",
+                "required_tools"
+              ]
+            },
+            "compatibility_policy": {
+              "release_version": "$release_version",
+              "build_provenance_ref": "$ONEQAY_BUILD_PROVENANCE",
+              "supported_current_version_range": {
+                "min": "0.0.0",
+                "max": "$release_version"
+              },
+              "deployment_compatibility": "TECHNICAL_PREVIEW_V1",
+              "rollback_compatibility": "NO_SCHEMA_CHANGE_ROLLBACK_SAFE",
+              "public_bootstrap_layout_compatibility": "M7_5_PREVIEW_PUBLIC_SURFACE_V1",
+              "release_notes_reference": "RELEASE.md#release-lifecycle"
+            },
+            "migration_classification": "NO_SCHEMA_CHANGE",
+            "attribution": "Lab | zefry"
+          }
+          JSON
+
+          export ONEQAY_INSTALLATION_SIDECAR="$sidecar"
+          export ONEQAY_INSTALLATION_ARTIFACT="$artifact"
+          export ONEQAY_INSTALLATION_SOURCE_SHA="$source_sha"
+
+          php <<'PHP'
+          <?php
+
+          declare(strict_types=1);
+
+          use App\Infrastructure\Installation\SecureInstallationReadiness;
+
+          require 'apps/web/vendor/autoload.php';
+
+          $sidecarPath = (string) getenv('ONEQAY_INSTALLATION_SIDECAR');
+          $artifactPath = (string) getenv('ONEQAY_INSTALLATION_ARTIFACT');
+          $sourceSha = (string) getenv('ONEQAY_INSTALLATION_SOURCE_SHA');
+
+          try {
+              $manifest = json_decode((string) file_get_contents($sidecarPath), true, 512, JSON_THROW_ON_ERROR);
+          } catch (Throwable $exception) {
+              fwrite(STDERR, "Installer-readiness sidecar JSON is invalid.\n");
+              exit(1);
+          }
+
+          if (! is_array($manifest)
+              || ($manifest['source_commit'] ?? null) !== $sourceSha
+              || ($manifest['artifact_filename'] ?? null) !== basename($artifactPath)) {
+              fwrite(STDERR, "Installer-readiness sidecar identity is not bound to the exact governed source/artifact.\n");
+              exit(1);
+          }
+
+          $size = filesize($artifactPath);
+          $sha256 = hash_file('sha256', $artifactPath);
+          if (! is_int($size) || $size <= 0 || ! is_string($sha256)) {
+              fwrite(STDERR, "Unable to observe governed artifact identity.\n");
+              exit(1);
+          }
+
+          $artifact = [
+              'filename' => basename($artifactPath),
+              'size' => $size,
+              'sha256' => $sha256,
+          ];
+
+          $runtime = is_array($manifest['runtime_requirements'] ?? null)
+              ? $manifest['runtime_requirements']
+              : [];
+          $extensions = is_array($runtime['php_extensions'] ?? null)
+              ? array_values(array_filter($runtime['php_extensions'], 'is_string'))
+              : [];
+          $hostRequirements = is_array($manifest['host_requirements'] ?? null)
+              ? $manifest['host_requirements']
+              : [];
+          $requiredCapabilities = is_array($hostRequirements['required_capabilities'] ?? null)
+              ? $hostRequirements['required_capabilities']
+              : [];
+          $capabilities = [];
+          foreach ($requiredCapabilities as $capability) {
+              if (is_string($capability)) {
+                  $capabilities[strtolower(trim($capability))] = true;
+              }
+          }
+
+          $subject = new SecureInstallationReadiness();
+          $environment = [
+              'APP_ENV' => 'production',
+              'APP_KEY' => 'base64:trusted-build-validator-key',
+              'APP_URL' => 'https://build-validator.oneqay.invalid',
+              'APP_DEBUG' => 'false',
+              'ONEQAY_DB_DRIVER' => 'mysql',
+              'ONEQAY_DB_HOST' => '127.0.0.1',
+              'ONEQAY_DB_DATABASE' => 'oneqay_validator',
+              'ONEQAY_DB_USERNAME' => 'oneqay_validator',
+          ];
+          $writable = [
+              'bootstrap/cache' => true,
+              'storage/framework/cache' => true,
+              'storage/framework/sessions' => true,
+              'storage/framework/views' => true,
+              'storage/logs' => true,
+          ];
+          $database = [
+              'connected' => true,
+              'engine' => 'mysql',
+              'server_version' => '8.0.36',
+              'charset' => 'utf8mb4',
+              'timezone' => '+00:00',
+              'schema_state' => 'empty',
+              'least_privilege' => true,
+          ];
+          $host = [
+              'os_family' => 'linux',
+              'web_server_interface' => 'fpm-fcgi',
+              'memory_bytes' => max(1, (int) ($hostRequirements['memory_bytes_min'] ?? 0)),
+              'execution_time_seconds' => max(1, (int) ($hostRequirements['execution_time_seconds_min'] ?? 0)),
+              'disk_free_bytes' => max(1, (int) ($hostRequirements['disk_bytes_min'] ?? 0)),
+              'capabilities' => $capabilities,
+          ];
+
+          $assessment = $subject->assess(
+              $environment,
+              $extensions,
+              (string) ($runtime['php_min'] ?? ''),
+              $writable,
+              $manifest,
+              $artifact,
+              $database,
+              $host,
+          );
+
+          foreach (['php_version', 'php_extensions', 'host_platform', 'release_manifest', 'artifact_integrity'] as $check) {
+              if (($assessment['checks'][$check]['ready'] ?? false) !== true) {
+                  fwrite(STDERR, "Installer-readiness sidecar rejected by canonical readiness authority: {$check}.\n");
+                  exit(1);
+              }
+          }
+
+          if (($assessment['ready'] ?? false) !== true) {
+              fwrite(STDERR, "Installer-readiness sidecar did not satisfy canonical validation fixtures.\n");
+              exit(1);
+          }
+
+          $tampered = $artifact;
+          $tampered['sha256'] = str_repeat('0', 64);
+          $tamperedAssessment = $subject->assess(
+              $environment,
+              $extensions,
+              (string) ($runtime['php_min'] ?? ''),
+              $writable,
+              $manifest,
+              $tampered,
+              $database,
+              $host,
+          );
+          if (($tamperedAssessment['checks']['artifact_integrity']['ready'] ?? true) !== false) {
+              fwrite(STDERR, "Tampered artifact digest did not fail closed.\n");
+              exit(1);
+          }
+
+          fwrite(STDOUT, "Installer-readiness sidecar validated through canonical readiness authority.\n");
+          PHP
+
+          {
+            echo "manifest_path=$sidecar"
+            echo "artifact_sha256=$artifact_sha256"
+            echo "artifact_size=$artifact_size"
+          } >> "$GITHUB_OUTPUT"
+
       - name: Verify manifest binding, checksum, public/private, and no-schema-change boundaries
         shell: bash
         run: |
@@ -530,9 +757,21 @@ jobs:
           php tools/validate-release-manifest.php \
             "${{ steps.package.outputs.manifest_path }}" \
             "${{ steps.package.outputs.archive_path }}"
-          php tools/validate-installation-readiness-manifest.php \
-            "${{ steps.package.outputs.installation_manifest_path }}" \
-            "${{ steps.package.outputs.archive_path }}"
+
+          sidecar="${{ steps.installation_preflight.outputs.manifest_path }}"
+          artifact="${{ steps.package.outputs.archive_path }}"
+          test "$(jq -r '.source_commit' "$sidecar")" = "${{ steps.source.outputs.source_sha }}"
+          test "$(jq -r '.artifact_filename' "$sidecar")" = "$(basename "$artifact")"
+          test "$(jq -r '.artifact_sha256' "$sidecar")" = "$(sha256sum "$artifact" | awk '{print $1}')"
+          test "$(jq -r '.artifact_size' "$sidecar")" = "$(wc -c < "$artifact" | tr -d '[:space:]')"
+          test "$(jq -r '.migration_classification' "$sidecar")" = 'NO_SCHEMA_CHANGE'
+          test "$(jq -r '.attribution' "$sidecar")" = 'Lab | zefry'
+          test "$(jq -r '.host_platform // empty' "$sidecar")" = ''
+          test "$(jq -r '.ready // empty' "$sidecar")" = ''
+          test "$(jq -r '.deployment_authorized // empty' "$sidecar")" = ''
+          test "$(jq -r '.host_requirements.required_capabilities | sort | join(",")' "$sidecar")" = \
+            'archive,dns,https,outbound_allowlist,required_tools,scheduler,temp_directory,time_sync'
+
           tar -tzf "${{ steps.package.outputs.archive_path }}" > /tmp/oneqay-release-list.txt
           grep -F "${{ steps.package.outputs.release_id }}/RELEASE.json" /tmp/oneqay-release-list.txt
           grep -F "${{ steps.package.outputs.release_id }}/public-surface/index.php" /tmp/oneqay-release-list.txt
@@ -562,20 +801,23 @@ jobs:
           set -euo pipefail
           first_sha="${{ steps.package.outputs.artifact_sha256 }}"
           first_size="${{ steps.package.outputs.artifact_size }}"
+          sidecar_sha="${{ steps.installation_preflight.outputs.artifact_sha256 }}"
+          sidecar_size="${{ steps.installation_preflight.outputs.artifact_size }}"
+
+          test "$sidecar_sha" = "$first_sha"
+          test "$sidecar_size" = "$first_size"
+
           bash tools/build-m7-5-preview-release.sh "${{ steps.source.outputs.source_sha }}"
           second_sha="$(sha256sum "${{ steps.package.outputs.archive_path }}" | awk '{print $1}')"
           second_size="$(wc -c < "${{ steps.package.outputs.archive_path }}" | tr -d '[:space:]')"
           test "$second_sha" = "$first_sha"
           test "$second_size" = "$first_size"
+          test "$(jq -r '.artifact_sha256' "${{ steps.installation_preflight.outputs.manifest_path }}")" = "$second_sha"
+          test "$(jq -r '.artifact_size' "${{ steps.installation_preflight.outputs.manifest_path }}")" = "$second_size"
+
           php tools/validate-release-manifest.php \
             "${{ steps.package.outputs.manifest_path }}" \
             "${{ steps.package.outputs.archive_path }}"
-          php tools/validate-installation-readiness-manifest.php \
-            "${{ steps.package.outputs.installation_manifest_path }}" \
-            "${{ steps.package.outputs.archive_path }}"
-          test "$(jq -r '.source_commit' "${{ steps.package.outputs.installation_manifest_path }}")" = "${{ steps.source.outputs.source_sha }}"
-          test "$(jq -r '.artifact_sha256' "${{ steps.package.outputs.installation_manifest_path }}")" = "$second_sha"
-          test "$(jq -r '.artifact_size' "${{ steps.package.outputs.installation_manifest_path }}")" = "$second_size"
           tar -tzf "${{ steps.package.outputs.archive_path }}" > /tmp/oneqay-release-list-reproduced.txt
           if grep -F '/apps/web/database/migrations/' /tmp/oneqay-release-list-reproduced.txt; then
             echo 'Reproduced Technical Preview artifact unexpectedly contains durable migrations.' >&2
@@ -589,7 +831,7 @@ jobs:
           path: |
             ${{ steps.package.outputs.archive_path }}
             ${{ steps.package.outputs.manifest_path }}
-            ${{ steps.package.outputs.installation_manifest_path }}
+            ${{ steps.installation_preflight.outputs.manifest_path }}
             ${{ steps.package.outputs.checksum_path }}
           if-no-files-found: error
           retention-days: 14
