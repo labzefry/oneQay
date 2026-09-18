@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  qualify-sprint177-merchant-context-guarded-bootstrap-delivery-foundation:
+  preserve-sprint177-merchant-context-guarded-bootstrap-delivery-foundation:
     runs-on: ubuntu-latest
     env:
       APP_NAME: oneQay
@@ -37,10 +37,10 @@ jobs:
           EXPECTED_HEAD="${{ github.event.pull_request.head.sha || github.sha }}"
           test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
 
-      - name: Qualify exact Sprint177 engineering envelope
-        if: github.event_name == 'pull_request' && github.head_ref == 'sprint177-merchant-context-guarded-bootstrap-delivery-foundation'
+      - name: Qualify exact Sprint177 reconciliation envelope
+        if: github.event_name == 'pull_request' && github.head_ref == 'sprint177-canonical-reconciliation'
         env:
-          EXPECTED_PATH_HASH: de509f025c78e8f2ed7d0335b81b6f423deb621c3f1d6bc54bba4a312635d872
+          EXPECTED_PATH_HASH: cf8df3335c6b40d148a86b3b9ad7a565400b727a88c62b26869f8a4a5481e78c
         run: |
           set -euo pipefail
           BASE_SHA="${{ github.event.pull_request.base.sha }}"
@@ -50,9 +50,11 @@ jobs:
           mapfile -t CHANGED < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort)
           EXPECTED=(
             '.github/workflows/sprint177-merchant-context-guarded-bootstrap-delivery-foundation-regression.yml'
-            'apps/web/app/Console/Commands/MerchantContextBootstrapCommand.php'
-            'apps/web/config/merchant_context_bootstrap.php'
-            'apps/web/tests/merchant-context-guarded-bootstrap-delivery.php'
+            'CHANGELOG.md'
+            'PROJECT_MANIFEST.md'
+            'README.md'
+            'ROADMAP.md'
+            'TASKS.md'
           )
           test "${#CHANGED[@]}" -eq "${#EXPECTED[@]}"
           diff -u <(printf '%s\n' "${EXPECTED[@]}") <(printf '%s\n' "${CHANGED[@]}")
@@ -96,6 +98,19 @@ jobs:
           grep -Fq '$this->transaction->run' "$ATOMIC"
           grep -Fq '$this->stateRepository->assertFresh' "$ATOMIC"
           grep -Fq '$this->credentialBootstrap->bootstrap' "$ATOMIC"
+
+      - name: Preserve canonical Sprint177 engineering evidence
+        if: github.event_name == 'pull_request' && github.head_ref == 'sprint177-canonical-reconciliation'
+        run: |
+          set -euo pipefail
+          for FILE in PROJECT_MANIFEST.md README.md CHANGELOG.md TASKS.md ROADMAP.md; do
+            grep -Fq '6752af1eb957993a6080206d9a40f7163bd24be6' "$FILE"
+            ! grep -Fq '${{ github.event.pull_request.head.sha }}' "$FILE"
+          done
+          grep -Fq '**Engineering PR:** #781' PROJECT_MANIFEST.md
+          grep -Fq '5a1b790414e2616ad6337224dc06392ee1154ec2' PROJECT_MANIFEST.md
+          grep -Fq 'de509f025c78e8f2ed7d0335b81b6f423deb621c3f1d6bc54bba4a312635d872' PROJECT_MANIFEST.md
+          grep -Fq 'cf8df3335c6b40d148a86b3b9ad7a565400b727a88c62b26869f8a4a5481e78c' PROJECT_MANIFEST.md
 
       - name: Preserve operational NO-GO
         run: |

@@ -8,32 +8,28 @@ Enterprise-oriented business-management platform built with Modular Monolith Fir
 
 ## Current canonical status
 
-The latest completed engineering sprint is **Sprint176 — Merchant Context Atomic Bootstrap Foundation**.
+The latest completed engineering sprint is **Sprint177 — Merchant Context Guarded Bootstrap Delivery Foundation**.
 
-- Canonical engineering commit: `af2ed4db8e49c4a75f1e1b743986cc20f3e3b0ff`
-- Engineering PR: #777
-- Final engineering head: `775343389659754d85f870eca55f808a0b28eea5`
-- Sprint176 regression `35043179125`: successful
-- Governance `35043179113`: successful
-- PHP Foundation `35043179183`: successful
-- M7.1 `35043178985`: successful
-- Engineering envelope: 8 paths, SHA-256 `f1b48efc2a25623ae55c72b95407a19ef60b63f8dcb933f9d7f137f09a34b974`
-- Reconciliation envelope: 6 paths, SHA-256 `4cc815fdb1c6489ab34334a14033acfe1452b50874f48c9e867e6f6da3858b03`
-- Post-engineering compatibility correction: PR #779, squash `f745348e130adeef272c24c742e082305c940130`; workflow-only Sprint175 successor preservation correction, not Sprint176 engineering evidence.
+- Canonical engineering commit: `6752af1eb957993a6080206d9a40f7163bd24be6`
+- Engineering PR: #781
+- Final engineering head: `5a1b790414e2616ad6337224dc06392ee1154ec2`
+- Exact-head surfaced qualification: 59/59 successful
+- Engineering envelope: 4 paths, SHA-256 `de509f025c78e8f2ed7d0335b81b6f423deb621c3f1d6bc54bba4a312635d872`
+- Reconciliation envelope: 6 paths, SHA-256 `cf8df3335c6b40d148a86b3b9ad7a565400b727a88c62b26869f8a4a5481e78c`
 
 For the full project state, use [`PROJECT_MANIFEST.md`](PROJECT_MANIFEST.md) as the canonical human-readable source of truth.
 
-## Sprint176 — Atomic merchant-context bootstrap foundation
+## Sprint177 — Guarded merchant-context bootstrap delivery
 
-Sprint176 composes the existing durable context graph, initial tenant administrator provisioning, and first control principal credential bootstrap into one bounded merchant bootstrap foundation. The exact tenant/identity/organization/outlet/device/provisioning tuple must be preauthorized, the target tenant must be fresh, and graph/admin/credential creation is protected by one outer durable transaction.
+Sprint177 makes the Sprint176 atomic merchant-context bootstrap executable through a dedicated console command while preserving strict authorization boundaries. The command takes no merchant tuple arguments; the exact tenant/identity/organization/outlet/device/provisioning tuple must come from separately configured preauthorization material.
 
-The focused regression proves successful materialization, exact-tuple denial, existing-tenant denial, invalid-password denial before mutation, Preview-runtime denial, password hashing, and total rollback when the downstream credential stage fails.
+Execution remains default-deny. Merchant bootstrap, first-control credential bootstrap, and persistence must all be armed, and only Local/Test/CI runtime classes are accepted. Password inputs are hidden, failures are sanitized, replay fails closed, and no secret or configured merchant tuple is emitted.
 
-The capability remains source-only and Local/Test/CI only. No provider binding, route, controller, UI, installer exposure, config activation, runtime widening, deployment, or operational activation was added.
+No HTTP onboarding route, controller, public UI, installer exposure, real merchant provisioning, production runtime widening, deployment, migration execution, updater activation, Technical Preview/Production authorization, durable-target selection, or producer dispatch was added.
 
 ## Product progression
 
-oneQay now combines tenant/security/API/POS foundations, secure installation-readiness controls, and an atomic merchant-context bootstrap foundation that can create the foundational tenant-to-device graph together with the first protected administrator and credential under fail-closed authorization.
+oneQay now combines tenant/security/API/POS foundations, governed installation readiness, atomic merchant-context creation, and a guarded non-public delivery mechanism for establishing that context under explicit Local/Test/CI authorization.
 
 ## Operational status remains intentionally gated
 
@@ -41,6 +37,6 @@ Migration #27 remains `NOT_EXECUTED`; permission provisioning `NONE`; durable ac
 
 ## Next engineering position
 
-Sprint177 begins only after Sprint176 canonical reconciliation. Select the smallest material P0/P1 blocker to a real merchant end-to-end journey proven by live canonical evidence. No real merchant provisioning, public onboarding exposure, production runtime widening, migration execution, deployment, updater activation, Technical Preview, Production, durable-target selection, or producer dispatch is pre-authorized.
+After Sprint177 canonical reconciliation closes, Sprint178 begins with bounded discovery of the smallest material P0/P1 blocker still preventing the real merchant end-to-end journey. No operational authority is implied or pre-authorized.
 
 Author by Lab | zefry

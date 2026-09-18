@@ -1,34 +1,31 @@
 # oneQay Roadmap
 
-**Roadmap checkpoint:** Sprint176 closed canonically
-**Canonical engineering baseline:** `af2ed4db8e49c4a75f1e1b743986cc20f3e3b0ff`
-**Post-engineering compatibility correction:** `f745348e130adeef272c24c742e082305c940130` (Sprint175 historical successor preservation only)
+**Roadmap checkpoint:** Sprint177 engineering closed; canonical reconciliation in progress
+**Canonical engineering baseline:** `6752af1eb957993a6080206d9a40f7163bd24be6`
 **Current state authority:** `PROJECT_MANIFEST.md`
 
-## Completed Sprint176 horizon
+## Completed Sprint177 engineering horizon
 
-Sprint176 closed `MERCHANT_CONTEXT_ATOMIC_BOOTSTRAP_FOUNDATION`, addressing the proven orchestration gap between already-existing secure durable primitives needed to establish a foundational merchant context.
+Sprint177 closed `MERCHANT_CONTEXT_GUARDED_BOOTSTRAP_DELIVERY_FOUNDATION`, addressing the proven delivery gap between Sprint176 atomic merchant-context orchestration and a deliberately guarded executable surface.
 
-The bounded bootstrap foundation now requires exact preauthorization of the tenant/identity/organization/outlet/device/provisioning tuple and a fresh tenant. It atomically materializes the context graph, protected initial tenant administrator, and first control credential. A downstream credential failure rolls back the entire merchant bootstrap state.
+The dedicated console command accepts no self-authorizing merchant tuple arguments. Exact authorization comes from configured preauthorization material, all relevant enablement gates are default-deny, runtime remains Local/Test/CI only, secret input is hidden, output is sanitized, and replay fails closed.
 
-Engineering PR #777 squash merged at `af2ed4db8e49c4a75f1e1b743986cc20f3e3b0ff`. Engineering envelope: 8 paths, SHA-256 `f1b48efc2a25623ae55c72b95407a19ef60b63f8dcb933f9d7f137f09a34b974`.
+Engineering PR #781 squash merged at `6752af1eb957993a6080206d9a40f7163bd24be6`. Engineering envelope: 4 paths, SHA-256 `de509f025c78e8f2ed7d0335b81b6f423deb621c3f1d6bc54bba4a312635d872`.
 
-Canonical reconciliation envelope: 6 paths, SHA-256 `4cc815fdb1c6489ab34334a14033acfe1452b50874f48c9e867e6f6da3858b03`.
+Canonical reconciliation envelope: 6 paths, SHA-256 `cf8df3335c6b40d148a86b3b9ad7a565400b727a88c62b26869f8a4a5481e78c`.
 
-## Product progression through Sprint176
+## Product progression through Sprint177
 
-The product now combines tenant/security/API/POS operational foundations, governed installation-readiness controls, and an atomic merchant-context bootstrap foundation. The bootstrap remains source-only and deliberately unexposed: no provider binding, public route, controller, UI, real merchant provisioning, runtime widening, or operational activation is part of Sprint176.
-
-The independent Sprint175 historical-workflow correction merged after Sprint176 engineering qualification only hardens successor preservation and does not alter the Sprint176 application capability or its canonical engineering evidence.
+The product now combines tenant/security/API/POS foundations, governed installation-readiness controls, atomic merchant-context creation, and a guarded Local/Test/CI-only console delivery mechanism. Sprint177 deliberately does not create public onboarding or real-environment activation.
 
 ## Operational boundary
 
 Machine-readable operational state under `ops/final-shift-close/` remains authoritative. Selected durable target remains `null`; migration #27 remains `NOT_EXECUTED`; permission provisioning remains `NONE`; producer dispatch remains not performed; runtime allowlist remains Local/Test/CI; Final Shift Close remains inactive; deployment/Technical Preview/Production remain unauthorized; updater remains inactive.
 
-## Sprint177 selection rule
+## Sprint178 selection rule
 
-Begin Sprint177 bounded discovery from fully reconciled Sprint176. Ask what now blocks a real merchant end-to-end after the atomic merchant context can be formed in a guarded source-only path. Prioritize the smallest material non-duplicative P0/P1 gap. Business metadata, delivery/onboarding surface, or another blocker may only be selected if live canonical evidence proves it.
+Begin Sprint178 bounded discovery only after Sprint177 canonical reconciliation closes. Determine from live canonical evidence what smallest material P0/P1 gap still blocks a real merchant end-to-end journey now that atomic context bootstrap has a guarded delivery mechanism. Do not preselect an objective.
 
-No real merchant provisioning, public onboarding exposure, runtime widening, migration execution, updater activation, deployment, Technical Preview, Production, durable-target selection, or producer dispatch is pre-authorized.
+No public onboarding exposure, real merchant provisioning, runtime widening, migration execution, updater activation, deployment, Technical Preview, Production, durable-target selection, or producer dispatch is pre-authorized.
 
 Author by Lab | zefry
