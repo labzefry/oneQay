@@ -176,7 +176,7 @@ try {
     $assert(! str_contains($pendingContent, $token), 'installation token leaked into verified pending configuration.');
     $assert(! file_exists($shared.DIRECTORY_SEPARATOR.'runtime'.DIRECTORY_SEPARATOR.'.env'), 'database verification created active runtime configuration.');
 
-    $publicInstaller = (string) file_get_contents(__DIR__.'/../../tools/installation/public-installer.php');
+    $publicInstaller = (string) file_get_contents(__DIR__.'/../../../tools/installation/public-installer.php');
     foreach ([
         'PrebootDatabaseCompatibilityVerification.php',
         'PENDING_CONFIGURATION_VERIFIED',
