@@ -8,28 +8,28 @@ Enterprise-oriented business-management platform built with Modular Monolith Fir
 
 ## Current canonical status
 
-The latest completed engineering sprint is **Sprint179 — Merchant Bootstrap Initial POS Operation Authorization Foundation**.
+The latest completed engineering sprint is **Sprint180 — Merchant Initial Context Assisted Sign-In Foundation**.
 
-- Canonical engineering commit: `fb0a886ac7f1447fa26f3eefcc808158d4ef044d`
-- Engineering PR: #785
-- Final engineering head: `94d1f2937a3ab71803738c2a2408170e63b6fcf1`
-- Exact-head surfaced qualification: 61/61 successful
-- Engineering envelope: 4 paths, SHA-256 `33206447002d40b489742fdb7b0c50670705400d16c184e352aa64aeb1534feb`
-- Reconciliation envelope: 6 paths, SHA-256 `72d21048381af6505f8b6315141efef93f909e407d54377e3726d49f0c38ccff`
+- Canonical engineering commit: `8451470f2eb37b45df53ac0d6f30e73c1e9cb5ad`
+- Engineering PR: #787
+- Final engineering head: `e4844d47cc99c8f655c09e358b224f45c29513e1`
+- Exact-head surfaced qualification: 62/62 successful
+- Engineering envelope: 4 paths, SHA-256 `2c122014511daaeb8ca1d5cbd2ee4bb184733ed1154e08c8e0000f3b758c9c6c`
+- Reconciliation envelope: 6 paths, SHA-256 `eb9b36e214455c09714f9d03f034e85aec06506d43b64be314b2b95b00b4f41b`
 
 For the full project state, use [`PROJECT_MANIFEST.md`](PROJECT_MANIFEST.md) as the canonical human-readable source of truth.
 
-## Sprint179 — POS-ready merchant bootstrap authorization
+## Sprint180 — Assisted initial merchant sign-in
 
-Sprint179 closes the gap where a bootstrapped merchant could authenticate but still lacked the durable outlet/device access and POS permissions required by the existing Operations Hub.
+Sprint180 removes manual entry of opaque tenant, identity, organization, outlet, and device IDs from the initial merchant sign-in experience.
 
-The final implementation keeps Sprint176 atomic bootstrap semantics authoritative, then wraps them in one outer transaction that records exact outlet/device access, creates a separate least-privilege initial POS operator role, grants only the first-operation POS permissions, and assigns that role at the exact bootstrapped device.
+The server supplies only the exact non-secret context fields already present in the guarded installation grant. `provisioning_id` is never serialized to the browser. Password verification, MFA, session authority, tenant isolation, organizational verification, and the `/pos` transition continue to use the existing canonical first-party authentication stack.
 
-The protected control-administrator role is not widened. Sale void, refund, Final Shift Close, Production activation, migration execution, deployment, and updater activation remain outside Sprint179.
+If the exact context is absent, malformed, or not permitted by the Local/Test/CI + persistence + session-control gates, merchant sign-in fails closed to the Foundation posture.
 
 ## Product progression
 
-oneQay now combines governed installation readiness, atomic merchant-context bootstrap, guarded first-party browser entry, durable exact-device access, and a minimally authorized path into real POS operations under Local/Test/CI qualification.
+oneQay now combines governed installation readiness, atomic POS-ready merchant bootstrap, first-party session security, and an initial merchant login journey that no longer requires copying internal platform identifiers.
 
 ## Operational status remains intentionally gated
 
@@ -37,6 +37,6 @@ Migration #27 remains `NOT_EXECUTED`; permission provisioning `NONE`; durable ac
 
 ## Next engineering position
 
-Sprint180 begins with bounded discovery of the smallest material P0/P1 blocker still preventing a complete merchant journey. No operational authority is implied or pre-authorized.
+Sprint181 begins with bounded discovery of the smallest material P0/P1 blocker still preventing a complete merchant journey. No operational authority is implied or pre-authorized.
 
 Author by Lab | zefry
