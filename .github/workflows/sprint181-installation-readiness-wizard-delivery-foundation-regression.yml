@@ -1,0 +1,167 @@
+name: Sprint181 Installation Readiness Wizard Delivery Foundation Regression
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint181-installation-readiness-wizard-\${{ github.event.pull_request.number || github.ref }}-\${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  qualify-sprint181-installation-readiness-wizard:
+    name: qualify-sprint181-installation-readiness-wizard
+    runs-on: ubuntu-latest
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:Y2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2M=
+      APP_DEBUG: "false"
+      APP_URL: http://localhost
+      ONEQAY_RUNTIME_CLASS: ci
+      ONEQAY_SYSTEM_UPDATE_CONTROL_PLANE_ENABLED: "false"
+      ONEQAY_DB_DATABASE: ""
+      ONEQAY_DB_USERNAME: ""
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: \${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Qualify exact Sprint181 engineering envelope
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "\${{ github.head_ref }}" == "sprint181-installation-readiness-wizard-delivery-foundation" ]]
+          BASE_SHA="\${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="\${{ github.event.pull_request.head.sha }}"
+          mapfile -t paths < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort)
+          expected=(
+            ".github/workflows/sprint181-installation-readiness-wizard-delivery-foundation-regression.yml"
+            "apps/web/app/Delivery/Http/SystemUpdate/SystemUpdatePageController.php"
+            "apps/web/resources/js/pages/System/UpdateDeployment.vue"
+            "apps/web/tests/installation-readiness-wizard-delivery.php"
+          )
+          [[ "\${#paths[@]}" -eq "\${#expected[@]}" ]]
+          diff -u <(printf '%s\n' "\${expected[@]}") <(printf '%s\n' "\${paths[@]}")
+          actual_hash="$(printf '%s\n' "\${paths[@]}" | sha256sum | awk '{print $1}')"
+          [[ "$actual_hash" == "dffcd90da1967e207fe5b65007c354ce0decb1f5d781db9733623cb9ca807e04" ]]
+
+      - name: Preserve read-only updater boundary
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE_SHA="\${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="\${{ github.event.pull_request.head.sha }}"
+          git diff --quiet "$BASE_SHA" "$HEAD_SHA" -- \
+            apps/web/routes/web.php \
+            apps/web/config/oneqay.php \
+            apps/web/app/Application/SystemUpdate/SystemUpdateControlPlane.php \
+            apps/web/app/Application/SystemUpdate/SystemUpdateControlPlaneStatus.php
+          grep -Fq "Inertia::render('System/UpdateDeployment'" apps/web/app/Delivery/Http/SystemUpdate/SystemUpdatePageController.php
+          grep -Fq -- '->status()->toSafeArray()' apps/web/app/Delivery/Http/SystemUpdate/SystemUpdatePageController.php
+          ! grep -Fq 'checkAvailability(' apps/web/app/Delivery/Http/SystemUpdate/SystemUpdatePageController.php
+          ! grep -Fq 'requestInstall(' apps/web/app/Delivery/Http/SystemUpdate/SystemUpdatePageController.php
+          ! grep -Eiq 'fetch\(|@click|<form|/system/update/(check|install)' apps/web/resources/js/pages/System/UpdateDeployment.vue
+
+      - name: Preserve read-only installation preflight contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          CONTROLLER=apps/web/app/Delivery/Http/SystemUpdate/SystemUpdatePageController.php
+          PAGE=apps/web/resources/js/pages/System/UpdateDeployment.vue
+          grep -Fq 'SecureInstallationReadiness' "$CONTROLLER"
+          grep -Fq 'loadGovernedReleaseManifest' "$CONTROLLER"
+          grep -Fq 'observeReleaseArtifact' "$CONTROLLER"
+          grep -Fq 'observeDatabaseState' "$CONTROLLER"
+          grep -Fq 'observeHostPlatformState' "$CONTROLLER"
+          grep -Fq "'actions_exposed' => false" "$CONTROLLER"
+          grep -Fq "'host_platform' => 'SERVER_OBSERVED_PARTIAL'" "$CONTROLLER"
+          grep -Fq "'time_sync' => false" "$CONTROLLER"
+          grep -Fq "'outbound_allowlist' => false" "$CONTROLLER"
+          grep -Fq "'scheduler' => false" "$CONTROLLER"
+          grep -Fq "'required_tools' => false" "$CONTROLLER"
+          ! grep -Eq 'Artisan::call|file_put_contents|unlink\(|rename\(|chmod\(|chown\(|mkdir\(' "$CONTROLLER"
+          ! grep -Eq -- '->(insert|update|delete|increment|decrement)\(' "$CONTROLLER"
+          grep -Fq 'Installation readiness wizard' "$PAGE"
+          grep -Fq 'Preflight instalasi — read only' "$PAGE"
+          grep -Fq 'installation_preflight.ready' "$PAGE"
+          grep -Fq 'Preflight only — no installation authority' "$PAGE"
+
+      - name: Preserve Sprint169 through Sprint175 readiness authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          SOURCE=apps/web/app/Infrastructure/Installation/SecureInstallationReadiness.php
+          TEST=apps/web/tests/secure-installation-readiness.php
+          test -f "$SOURCE"
+          test -f "$TEST"
+          grep -Fq 'public function assess' "$SOURCE"
+          grep -Fq "'database_compatibility'" "$SOURCE"
+          grep -Fq "'host_platform'" "$SOURCE"
+          grep -Fq "'release_manifest'" "$SOURCE"
+          grep -Fq "'artifact_integrity'" "$SOURCE"
+          ! grep -Eq -- '->(insert|update|delete|increment|decrement)\(' "$SOURCE"
+          ! grep -Eq 'Artisan::call|file_put_contents|fwrite|unlink|rename|chmod|chown|mkdir|rmdir' "$SOURCE"
+
+      - name: Preserve operational NO-GO
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" == 'NOT_EXECUTED' ]]
+          [[ "$(jq -r '.permission_provisioning.state' ops/final-shift-close/STATE.json)" == 'NONE' ]]
+          [[ "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" == 'INACTIVE' ]]
+          [[ "$(jq -r '.deployment_authority' ops/final-shift-close/STATE.json)" == 'NOT_GRANTED' ]]
+          [[ "$(jq -r '.technical_preview_activation' ops/final-shift-close/STATE.json)" == 'NOT_AUTHORIZED' ]]
+          [[ "$(jq -r '.production_activation' ops/final-shift-close/STATE.json)" == 'NOT_AUTHORIZED' ]]
+          [[ "$(jq -r '.updater_activation' ops/final-shift-close/STATE.json)" == 'INACTIVE' ]]
+          [[ "$(jq -r '.selection_state' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" == 'BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET' ]]
+          [[ "$(jq -r '.selected_target' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" == 'null' ]]
+
+      - name: Install PHP dependencies
+        working-directory: apps/web
+        run: |
+          composer validate --no-check-publish
+          composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Validate PHP and execute readiness regressions
+        working-directory: apps/web
+        run: |
+          set -euo pipefail
+          php -l app/Delivery/Http/SystemUpdate/SystemUpdatePageController.php
+          php -l tests/installation-readiness-wizard-delivery.php
+          php -l tests/read-only-update-deployment-ui.php
+          php -l tests/secure-installation-readiness.php
+          php -d zend.assertions=1 -d assert.exception=1 tests/secure-installation-readiness.php
+          php tests/read-only-update-deployment-ui.php
+          php tests/installation-readiness-wizard-delivery.php
+          composer test
+
+      - name: Setup exact Node LTS
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: 24.19.0
+
+      - name: Type-check and build read-only wizard
+        working-directory: apps/web
+        run: |
+          npm ci --ignore-scripts --no-fund
+          npm run type-check
+          npm run build
+
+      - name: Verify tracked-source cleanliness
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --exit-code
+          test -z "$(git status --porcelain)"
