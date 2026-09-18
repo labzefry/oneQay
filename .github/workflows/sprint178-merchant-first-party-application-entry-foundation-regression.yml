@@ -1,0 +1,108 @@
+name: Sprint178 Merchant First-Party Application Entry Foundation Regression
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint178-merchant-entry-${{ github.event.pull_request.number || github.ref }}-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  qualify-sprint178-merchant-entry:
+    name: qualify-sprint178-merchant-entry
+    runs-on: ubuntu-latest
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:Y2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2M=
+      APP_DEBUG: "false"
+      APP_URL: http://localhost
+      ONEQAY_RUNTIME_CLASS: ci
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Qualify exact Sprint178 envelope
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "${{ github.head_ref }}" == "sprint178-merchant-first-party-application-entry-foundation" ]]
+          git fetch origin main --no-tags
+          mapfile -t paths < <(git diff --name-only origin/main...HEAD | sort)
+          expected=(
+            ".github/workflows/sprint178-merchant-first-party-application-entry-foundation-regression.yml"
+            "apps/web/resources/js/pages/MerchantEntry.vue"
+            "apps/web/routes/web.php"
+            "apps/web/tests/merchant-first-party-application-entry.php"
+          )
+          [[ "${#paths[@]}" -eq "${#expected[@]}" ]]
+          printf '%s\n' "${paths[@]}" | diff -u <(printf '%s\n' "${expected[@]}") -
+          actual_hash="$(printf '%s\n' "${paths[@]}" | sha256sum | awk '{print $1}')"
+          [[ "$actual_hash" == "e34eec704d2e86756c08d25182721eb0eaaaa2e87ecb0285c95fad700ca35779" ]]
+
+      - name: Preserve guarded merchant entry contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq "Inertia::render('MerchantEntry'" apps/web/routes/web.php
+          grep -Fq "in_array(\$runtime, ['local', 'test', 'ci'], true)" apps/web/routes/web.php
+          grep -Fq "config('database.oneqay_persistence_enabled', false)" apps/web/routes/web.php
+          grep -Fq "config('oneqay.session_control.enabled', false)" apps/web/routes/web.php
+          grep -Fq "/auth/login" apps/web/resources/js/pages/MerchantEntry.vue
+          grep -Fq "/auth/mfa/totp/challenge" apps/web/resources/js/pages/MerchantEntry.vue
+          grep -Fq "window.location.assign(props.pos_url)" apps/web/resources/js/pages/MerchantEntry.vue
+          ! grep -Fq "Route::post('/register" apps/web/routes/web.php
+
+      - name: Preserve operational NO-GO
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" == 'NOT_EXECUTED' ]]
+          [[ "$(jq -r '.permission_provisioning.state' ops/final-shift-close/STATE.json)" == 'NONE' ]]
+          [[ "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" == 'INACTIVE' ]]
+          [[ "$(jq -r '.deployment_authority' ops/final-shift-close/STATE.json)" == 'NOT_GRANTED' ]]
+          [[ "$(jq -r '.technical_preview_activation' ops/final-shift-close/STATE.json)" == 'NOT_AUTHORIZED' ]]
+          [[ "$(jq -r '.production_activation' ops/final-shift-close/STATE.json)" == 'NOT_AUTHORIZED' ]]
+          [[ "$(jq -r '.updater_activation' ops/final-shift-close/STATE.json)" == 'INACTIVE' ]]
+
+      - name: Validate PHP and execute regressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd apps/web
+          composer validate --no-check-publish
+          composer install --no-interaction --no-progress --prefer-dist
+          find app bootstrap config routes tests -type f -name '*.php' -print0 | while IFS= read -r -d '' file; do php -l "$file"; done
+          composer test
+          php tests/first-party-session-establishment.php
+          php tests/merchant-first-party-application-entry.php
+          php tests/pos-operations-hub.php
+
+      - name: Setup exact Node LTS
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: 24.19.0
+
+      - name: Type-check and build merchant entry
+        working-directory: apps/web
+        run: |
+          npm ci --ignore-scripts --no-fund
+          npm run type-check
+          npm run build
+
+      - name: Verify tracked-source cleanliness
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --exit-code
+          test -z "$(git status --porcelain)"
