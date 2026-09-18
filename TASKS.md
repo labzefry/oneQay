@@ -1,49 +1,51 @@
 # oneQay Tasks
 
-**Current canonical engineering checkpoint:** Sprint180 closed
-**Canonical engineering commit:** `8451470f2eb37b45df53ac0d6f30e73c1e9cb5ad`
-**Latest engineering PR:** #787 — `Sprint180: add initial merchant context-assisted sign-in`
+**Current canonical engineering checkpoint:** Sprint181 closed
+**Canonical engineering commit:** `deb999fcd0694ba85c132d1b490bd90c0dc86309`
+**Latest engineering PR:** #789 — `Sprint181: deliver installation readiness wizard foundation`
 **Canonical status authority:** `PROJECT_MANIFEST.md`
 
-## Completed Sprint180 state
+## Completed Sprint181 state
 
-Sprint180 materialized `MERCHANT_INITIAL_CONTEXT_ASSISTED_SIGN_IN_FOUNDATION`.
+Sprint181 materialized `INSTALLATION_READINESS_WIZARD_DELIVERY_FOUNDATION`.
 
-- [x] Existing first-party login controller preserved unchanged.
-- [x] Existing first-party login route preserved unchanged.
-- [x] Existing MFA enrollment/challenge lifecycle preserved.
-- [x] Existing `/pos` transition preserved.
-- [x] Server-assisted exact merchant login context added.
-- [x] Only tenant/identity/organization/outlet/device context fields are browser-delivered.
-- [x] `provisioning_id` is not browser-delivered.
-- [x] Manual editing of opaque tenant/identity/organization/outlet/device IDs removed from initial merchant sign-in.
-- [x] Invalid or incomplete assisted context fails closed.
-- [x] Local/Test/CI + persistence + session-control gates preserved.
-- [x] Sprint178 entry regression preserved.
-- [x] Sprint179 POS-ready bootstrap regression preserved.
-- [x] Exact engineering head completed 62/62 surfaced PR-triggered workflows successfully.
+- [x] Existing `/system/update` read-only route reused.
+- [x] Updater install action remains hard-disabled.
+- [x] `SecureInstallationReadiness` reused as canonical evaluator.
+- [x] Runtime and filesystem facts observed server-side.
+- [x] Governed release manifest consumed only when actually present.
+- [x] Governed artifact filename/size/SHA-256 observed only when actually present.
+- [x] Database compatibility observation remains read-only and sanitized.
+- [x] Database grant evaluation does not expose raw grants to UI.
+- [x] Unprovable host capabilities remain fail-closed.
+- [x] Operator receives per-check READY/BLOCKED reasons.
+- [x] No form/fetch/install/migration/seeding/deployment action introduced.
+- [x] Read-only updater regression preserved.
+- [x] Privileged updater security preserved.
+- [x] Sprint169 and Sprint175 readiness authority preserved.
+- [x] Exact engineering head completed 66/66 surfaced workflows successfully.
 - [x] Repository-native exact-head Product Owner merge authority succeeded.
-- [x] Engineering PR #787 squash merged at `8451470f2eb37b45df53ac0d6f30e73c1e9cb5ad`.
+- [x] Engineering PR #789 squash merged at `deb999fcd0694ba85c132d1b490bd90c0dc86309`.
 - [x] Exact six-path canonical reconciliation envelope defined.
 
-Engineering envelope: 4 paths; SHA-256 `2c122014511daaeb8ca1d5cbd2ee4bb184733ed1154e08c8e0000f3b758c9c6c`.
+Engineering envelope: 4 paths; SHA-256 `dffcd90da1967e207fe5b65007c354ce0decb1f5d781db9733623cb9ca807e04`.
 
-Canonical reconciliation envelope: 6 paths; SHA-256 `eb9b36e214455c09714f9d03f034e85aec06506d43b64be314b2b95b00b4f41b`.
+Canonical reconciliation envelope: 6 paths; SHA-256 `4fd83153da1067e5fa7a3f8ed145af7e8cbde3c3cba24149a51cd10770d3d955`.
 
 ## Preserved lifecycle state
 
-Machine-readable operational state under `ops/final-shift-close/` remains authoritative and unchanged: selected target `null`; migration #27 `NOT_EXECUTED`; permission provisioning `NONE`; producer dispatch not performed; feature activation `INACTIVE`; deployment authority `NOT_GRANTED`; Technical Preview/Production `NOT_AUTHORIZED`; updater `INACTIVE`; runtime allowlist Local/Test/CI only.
+Machine-readable operational state remains authoritative and unchanged: selected target `null`; migration #27 `NOT_EXECUTED`; permission provisioning `NONE`; feature activation `INACTIVE`; deployment authority `NOT_GRANTED`; Technical Preview/Production `NOT_AUTHORIZED`; updater `INACTIVE`; runtime allowlist Local/Test/CI only.
 
-## Sprint180 canonical closure
+## Sprint181 canonical closure
 
 - [x] Engineering PR qualified and squash merged.
-- [x] Engineering evidence frozen at `8451470f2eb37b45df53ac0d6f30e73c1e9cb5ad`.
+- [x] Engineering evidence frozen at `deb999fcd0694ba85c132d1b490bd90c0dc86309`.
 - [x] Canonical reconciliation limited to workflow + five project-state documents.
-- [x] Reconciliation preserves the engineering commit rather than replacing it with the reconciliation squash.
+- [x] Reconciliation preserves engineering evidence rather than replacing it with reconciliation squash.
 - [x] Operational NO-GO remains unchanged.
 
 ## Next engineering position
 
-Begin **Sprint181 bounded discovery** only from the fully reconciled Sprint180 state. Select the smallest non-duplicative P0/P1 blocker proven by live repository evidence. No real merchant provisioning, runtime widening, migrations, deployment, Technical Preview, Production, updater activation, durable-target selection, producer dispatch, or operational permission provisioning is pre-authorized.
+Begin **Sprint182 bounded discovery** only from fully reconciled Sprint181. Select the smallest non-duplicative P0/P1 blocker that materially advances installation/onboarding/merchant completeness without crossing operational NO-GO.
 
 Author by Lab | zefry
