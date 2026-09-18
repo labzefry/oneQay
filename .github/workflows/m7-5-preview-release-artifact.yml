@@ -453,6 +453,15 @@ jobs:
               historical_migrations+=('database/migrations/0000_00_00_000017_create_pos_catalog_preparation_journal.php')
               echo 'Migration #17 included only in exact governed nine-workflow M7.5 historical fixture isolation.'
             fi
+            if [[ "$count" -eq 9 && "$fingerprint" == 'e2537851052c57b1ec3b7d2e99e1b5d0208fb3c54da207d5280682eb85c686a0' ]]; then
+              for sprint184_migration in database/migrations/0000_00_00_0000{17..27}_*.php; do
+                if [[ -f "$sprint184_migration" ]]; then
+                  historical_migrations+=("$sprint184_migration")
+                fi
+              done
+              sprint51_jrn008_preview_fixture=true
+              echo 'Migrations #17-#27 and post-M7.4 POS persistence successors isolated only from exact Sprint184 preboot installation configuration qualification.'
+            fi
           fi
           historical_backup='/tmp/oneqay-m7-5-historical-migrations'
           rm -rf "$historical_backup"
