@@ -16,6 +16,7 @@ use App\Application\Authorization\InitialTenantAdministratorProvisioningId;
 use App\Application\Organization\VerifiedOrganizationalContext;
 use App\Application\Persistence\DurableContextGraph;
 use App\Application\Persistence\PersistenceTransaction;
+use Throwable;
 
 // Author by Lab | zefry
 final readonly class MerchantPosReadyBootstrapService
@@ -43,7 +44,8 @@ final readonly class MerchantPosReadyBootstrapService
         InitialTenantAdministratorProvisioningId $provisioningId,
         #[\SensitiveParameter] string $password,
     ): string {
-        return $this->transaction->run(function () use ($graph, $provisioningId, $password): string {
+        try {
+            return $this->transaction->run(function () use ($graph, $provisioningId, $password): string {
             $outcome = $this->contextBootstrap->bootstrap($graph, $provisioningId, $password);
             if ($outcome !== MerchantContextBootstrapService::OUTCOME_APPLIED) {
                 throw new MerchantContextBootstrapViolation(
@@ -97,7 +99,15 @@ final readonly class MerchantPosReadyBootstrapService
                 }
             }
 
-            return MerchantContextBootstrapService::OUTCOME_APPLIED;
-        });
+                return MerchantContextBootstrapService::OUTCOME_APPLIED;
+            });
+        } catch (MerchantContextBootstrapViolation $exception) {
+            throw $exception;
+        } catch (Throwable) {
+            throw new MerchantContextBootstrapViolation(
+                MerchantContextBootstrapViolation::TRANSACTION_FAILURE,
+                'Merchant POS-ready bootstrap transaction failed.',
+            );
+        }
     }
 }
