@@ -1,28 +1,29 @@
 # Changelog
 
-## 2026-09-18 — Sprint177 engineering closed; canonical reconciliation in progress
+## 2026-09-18 — Sprint178 closed canonically
 
-**Sprint177: Merchant Context Guarded Bootstrap Delivery Foundation**
+**Sprint178: Merchant First-Party Application Entry Foundation**
 
-- Objective: `MERCHANT_CONTEXT_GUARDED_BOOTSTRAP_DELIVERY_FOUNDATION`.
-- Added a guarded, auto-discovered console delivery surface for the Sprint176 atomic merchant-context bootstrap.
-- Exact merchant tuple comes only from separately configured preauthorization material; command arguments cannot mint or alter it.
-- Merchant bootstrap, first-control credential bootstrap, and persistence are independently default-deny and must be explicitly armed.
-- Runtime remains Local/Test/CI only; Production-like runtime fails closed.
-- Hidden password confirmation, generic sanitized failures, no tuple/secret output, and replay denial are regression-proven.
-- No HTTP route, UI onboarding, real merchant provisioning, deployment, migration execution, Technical Preview/Production authorization, updater activation, durable-target selection, or producer dispatch was introduced.
-- Exact engineering head `5a1b790414e2616ad6337224dc06392ee1154ec2` completed 59/59 surfaced PR-triggered workflow runs successfully.
-- Engineering envelope: 4 paths; SHA-256 `de509f025c78e8f2ed7d0335b81b6f423deb621c3f1d6bc54bba4a312635d872`.
-- Engineering PR #781 squash merged at `6752af1eb957993a6080206d9a40f7163bd24be6`.
-- Canonical reconciliation envelope: 6 paths; SHA-256 `cf8df3335c6b40d148a86b3b9ad7a565400b727a88c62b26869f8a4a5481e78c`.
+- Objective: `MERCHANT_FIRST_PARTY_APPLICATION_ENTRY_FOUNDATION`.
+- Connected existing first-party login/session authority to a guarded browser entry surface.
+- Reused the existing Foundation Inertia surface instead of adding a competing root route/controller.
+- Merchant entry is server-gated to Local/Test/CI with persistence and session control enabled.
+- Existing TOTP enrollment/challenge flow is reused without altering its security semantics.
+- Successful full session authority transitions to the existing `/pos` Operations Hub.
+- No public registration or implicit permission grant was introduced.
+- Final engineering exact head `ee0e2e8acc5238fa0cb2e3be56b6e58cf2092239` completed 60/60 surfaced PR-triggered workflow runs successfully.
+- Engineering envelope: 4 paths; SHA-256 `9d27ecd0802230d3484aa7ca424064313595e8174172eb889c2736250e2815c5`.
+- Engineering PR #783 squash merged at `8992c2ed1b6278d113e24e38a847bedeac345161`.
+- Canonical reconciliation envelope: 6 paths; SHA-256 `d994709453d1415d23d2bdfc8ecade257d8baa8b07b9aff98654a2b4cb6bb0f5`.
 - Operational NO-GO remains unchanged.
-- Next position after reconciliation: Sprint178 bounded discovery from canonical post-Sprint177.
+- Next position: Sprint179 bounded discovery from canonical post-Sprint178.
 
 ## Recent material progression
 
+- **Sprint178:** guarded merchant first-party application entry; engineering squash `8992c2ed1b6278d113e24e38a847bedeac345161`.
+- **Sprint177:** guarded merchant-context bootstrap delivery; engineering squash `6752af1eb957993a6080206d9a40f7163bd24be6`.
 - **Sprint176:** atomic merchant-context bootstrap foundation; engineering squash `af2ed4db8e49c4a75f1e1b743986cc20f3e3b0ff`.
-- **Sprint175:** governed host/platform requirements readiness; engineering squash `6357d883fe04ec0515f9d21c6adc0ee907787cde`.
-- **Sprint169–Sprint174:** secure installation and governed release readiness.
+- **Sprint169–Sprint175:** secure installation and governed release readiness.
 - **Sprint162–Sprint168:** guarded POS operations and performance/accountability foundations.
 - **Sprint88–Sprint155:** Final Shift Close source/readiness chain; operational execution did not occur.
 
