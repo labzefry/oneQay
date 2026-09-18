@@ -1,0 +1,80 @@
+# Author by Lab | zefry
+name: Sprint182 Governed Release Installation Preflight Bridge Regression
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint182-governed-release-installation-preflight-bridge-${{ github.event.pull_request.number || github.ref }}-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  qualify-sprint182-envelope:
+    name: qualify-sprint182-envelope
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Qualify exact Sprint182 engineering envelope
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "${{ github.head_ref }}" == "sprint182-governed-release-installation-preflight-bridge-foundation" ]]
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          test "$(git rev-parse HEAD)" = "$HEAD_SHA"
+          mapfile -t paths < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort)
+          expected=(
+            ".github/workflows/m7-5-preview-release-artifact.yml"
+            ".github/workflows/sprint182-governed-release-installation-preflight-bridge-regression.yml"
+            ".github/workflows/sprint32-authentication-recovery-proof-regression.yml"
+            ".github/workflows/sprint33-recovery-bound-password-reset-regression.yml"
+            ".github/workflows/sprint34-authenticated-password-change-regression.yml"
+          )
+          [[ "${#paths[@]}" -eq "${#expected[@]}" ]]
+          diff -u <(printf '%s\n' "${expected[@]}") <(printf '%s\n' "${paths[@]}")
+          actual_hash="$(printf '%s\n' "${paths[@]}" | sha256sum | awk '{print $1}')"
+          [[ "$actual_hash" == "38a9d7204bf43e6388f2da36bd6c0beb65c83026c4bc2476cdcf7e4abf356e41" ]]
+
+      - name: Preserve M7.5 bridge and canonical readiness invocation
+        shell: bash
+        run: |
+          set -euo pipefail
+          WF=.github/workflows/m7-5-preview-release-artifact.yml
+          grep -Fq 'workflow_call:' "$WF"
+          grep -Fq 'Materialize governed installer-readiness sidecar' "$WF"
+          grep -Fq 'SecureInstallationReadiness' "$WF"
+          grep -Fq 'Tampered artifact digest did not fail closed.' "$WF"
+          grep -Fq 'steps.installation_preflight.outputs.manifest_path' "$WF"
+          grep -Fq '"migration_classification": "NO_SCHEMA_CHANGE"' "$WF"
+          grep -Fq '"attribution": "Lab | zefry"' "$WF"
+          grep -Fq "'BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET'" ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+
+      - name: Preserve operational NO-GO
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" == 'NOT_EXECUTED' ]]
+          [[ "$(jq -r '.permission_provisioning.state' ops/final-shift-close/STATE.json)" == 'NONE' ]]
+          [[ "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" == 'INACTIVE' ]]
+          [[ "$(jq -r '.deployment_authority' ops/final-shift-close/STATE.json)" == 'NOT_GRANTED' ]]
+          [[ "$(jq -r '.technical_preview_activation' ops/final-shift-close/STATE.json)" == 'NOT_AUTHORIZED' ]]
+          [[ "$(jq -r '.production_activation' ops/final-shift-close/STATE.json)" == 'NOT_AUTHORIZED' ]]
+          [[ "$(jq -r '.updater_activation' ops/final-shift-close/STATE.json)" == 'INACTIVE' ]]
+          [[ "$(jq -r '.selection_state' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" == 'BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET' ]]
+          [[ "$(jq -r '.selected_target' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" == 'null' ]]
+
+  execute-governed-m75-release-qualification:
+    name: execute-governed-m75-release-qualification
+    needs: qualify-sprint182-envelope
+    uses: ./.github/workflows/m7-5-preview-release-artifact.yml
