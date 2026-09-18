@@ -16,14 +16,21 @@ final class PrebootInstallationConfiguration
     private const MAX_AUTHORITY_BYTES = 4096;
     private const MAX_PASSWORD_BYTES = 1024;
 
+    /** @var Closure(array<string, mixed>): array<string, mixed> */
+    private readonly Closure $databaseVerification;
+
     public function __construct(
         private readonly string $sharedRoot,
         private readonly string $releaseId,
         private readonly int $nowUnix,
+        ?Closure $databaseVerification = null,
     ) {
         if (! preg_match('/\Am75-preview-[0-9a-f]{12}\z/i', $releaseId)) {
             throw new RuntimeException('invalid_release_identity');
         }
+
+        $this->databaseVerification = $databaseVerification
+            ?? static fn (array $configuration): array => (new PrebootDatabaseCompatibilityVerification())->verify($configuration);
     }
 
     /**
@@ -317,251 +324,7 @@ final class PrebootInstallationConfiguration
         return '"'.strtr($value, [
             '\\' => '\\\\',
             '"' => '\\"',
-            '
-    /** @return array<string, mixed>|null */
-    private function loadAuthority(): ?array
-    {
-        $path = $this->authorityPath();
-        if (! is_file($path) || is_link($path) || ! is_readable($path)) {
-            return null;
-        }
-
-        $size = filesize($path);
-        if (! is_int($size) || $size <= 0 || $size > self::MAX_AUTHORITY_BYTES) {
-            return null;
-        }
-
-        try {
-            $raw = file_get_contents($path);
-            if (! is_string($raw) || $raw === '') {
-                return null;
-            }
-            $decoded = json_decode($raw, true, 32, JSON_THROW_ON_ERROR);
-
-            return is_array($decoded) ? $decoded : null;
-        } catch (Throwable) {
-            return null;
-        }
-    }
-
-    /** @param array<string, mixed> $authority */
-    private function authorityIsStructurallyValid(array $authority): bool
-    {
-        return ($authority['schema_version'] ?? null) === self::AUTHORITY_SCHEMA_VERSION
-            && ($authority['product'] ?? null) === 'oneQay'
-            && ($authority['release_id'] ?? null) === $this->releaseId
-            && is_string($authority['token_sha256'] ?? null)
-            && preg_match('/\A[0-9a-f]{64}\z/i', (string) $authority['token_sha256']) === 1
-            && is_int($authority['expires_at'] ?? null)
-            && (int) $authority['expires_at'] > 0
-            && ($authority['activation_authorized'] ?? null) === false
-            && ($authority['attribution'] ?? null) === 'Lab | zefry';
-    }
-
-    private function assertPrivateBoundaryShape(): void
-    {
-        if ($this->sharedRoot === ''
-            || str_contains($this->sharedRoot, "\0")
-            || (file_exists($this->sharedRoot) && is_link($this->sharedRoot))) {
-            throw new RuntimeException('unsafe_shared_runtime_boundary');
-        }
-
-        foreach ([$this->activeEnvironmentPath(), $this->pendingEnvironmentPath(), $this->authorityPath()] as $path) {
-            if (is_link($path)) {
-                throw new RuntimeException('symlink_boundary_rejected');
-            }
-        }
-    }
-
-    private function requiredString(array $input, string $key, int $minimum, int $maximum): string
-    {
-        $value = $input[$key] ?? null;
-        if (! is_string($value)) {
-            throw new RuntimeException('invalid_'.$key);
-        }
-
-        $value = trim($value);
-        $length = strlen($value);
-        if ($length < $minimum || $length > $maximum) {
-            throw new RuntimeException('invalid_'.$key);
-        }
-
-        return $value;
-    }
-
-    private function requiredSecretString(array $input, string $key, int $minimum, int $maximum): string
-    {
-        $value = $input[$key] ?? null;
-        if (! is_string($value)) {
-            throw new RuntimeException('invalid_'.$key);
-        }
-
-        $length = strlen($value);
-        if ($length < $minimum || $length > $maximum) {
-            throw new RuntimeException('invalid_'.$key);
-        }
-
-        return $value;
-    }
-
-    /** @return array{state: string, can_prepare: bool, activation_authorized: false} */
-    private function state(string $state, bool $canPrepare): array
-    {
-        return [
-            'state' => $state,
-            'can_prepare' => $canPrepare,
-            'activation_authorized' => false,
-        ];
-    }
-
-    private function installDirectory(): string
-    {
-        return $this->sharedRoot.DIRECTORY_SEPARATOR.'install';
-    }
-
-    private function runtimeDirectory(): string
-    {
-        return $this->sharedRoot.DIRECTORY_SEPARATOR.'runtime';
-    }
-
-    private function authorityPath(): string
-    {
-        return $this->installDirectory().DIRECTORY_SEPARATOR.'authority.json';
-    }
-
-    private function activeEnvironmentPath(): string
-    {
-        return $this->runtimeDirectory().DIRECTORY_SEPARATOR.'.env';
-    }
-
-    private function pendingEnvironmentPath(): string
-    {
-        return $this->runtimeDirectory().DIRECTORY_SEPARATOR.'.env.pending';
-    }
-}
- => '\\
-    /** @return array<string, mixed>|null */
-    private function loadAuthority(): ?array
-    {
-        $path = $this->authorityPath();
-        if (! is_file($path) || is_link($path) || ! is_readable($path)) {
-            return null;
-        }
-
-        $size = filesize($path);
-        if (! is_int($size) || $size <= 0 || $size > self::MAX_AUTHORITY_BYTES) {
-            return null;
-        }
-
-        try {
-            $raw = file_get_contents($path);
-            if (! is_string($raw) || $raw === '') {
-                return null;
-            }
-            $decoded = json_decode($raw, true, 32, JSON_THROW_ON_ERROR);
-
-            return is_array($decoded) ? $decoded : null;
-        } catch (Throwable) {
-            return null;
-        }
-    }
-
-    /** @param array<string, mixed> $authority */
-    private function authorityIsStructurallyValid(array $authority): bool
-    {
-        return ($authority['schema_version'] ?? null) === self::AUTHORITY_SCHEMA_VERSION
-            && ($authority['product'] ?? null) === 'oneQay'
-            && ($authority['release_id'] ?? null) === $this->releaseId
-            && is_string($authority['token_sha256'] ?? null)
-            && preg_match('/\A[0-9a-f]{64}\z/i', (string) $authority['token_sha256']) === 1
-            && is_int($authority['expires_at'] ?? null)
-            && (int) $authority['expires_at'] > 0
-            && ($authority['activation_authorized'] ?? null) === false
-            && ($authority['attribution'] ?? null) === 'Lab | zefry';
-    }
-
-    private function assertPrivateBoundaryShape(): void
-    {
-        if ($this->sharedRoot === ''
-            || str_contains($this->sharedRoot, "\0")
-            || (file_exists($this->sharedRoot) && is_link($this->sharedRoot))) {
-            throw new RuntimeException('unsafe_shared_runtime_boundary');
-        }
-
-        foreach ([$this->activeEnvironmentPath(), $this->pendingEnvironmentPath(), $this->authorityPath()] as $path) {
-            if (is_link($path)) {
-                throw new RuntimeException('symlink_boundary_rejected');
-            }
-        }
-    }
-
-    private function requiredString(array $input, string $key, int $minimum, int $maximum): string
-    {
-        $value = $input[$key] ?? null;
-        if (! is_string($value)) {
-            throw new RuntimeException('invalid_'.$key);
-        }
-
-        $value = trim($value);
-        $length = strlen($value);
-        if ($length < $minimum || $length > $maximum) {
-            throw new RuntimeException('invalid_'.$key);
-        }
-
-        return $value;
-    }
-
-    private function requiredSecretString(array $input, string $key, int $minimum, int $maximum): string
-    {
-        $value = $input[$key] ?? null;
-        if (! is_string($value)) {
-            throw new RuntimeException('invalid_'.$key);
-        }
-
-        $length = strlen($value);
-        if ($length < $minimum || $length > $maximum) {
-            throw new RuntimeException('invalid_'.$key);
-        }
-
-        return $value;
-    }
-
-    /** @return array{state: string, can_prepare: bool, activation_authorized: false} */
-    private function state(string $state, bool $canPrepare): array
-    {
-        return [
-            'state' => $state,
-            'can_prepare' => $canPrepare,
-            'activation_authorized' => false,
-        ];
-    }
-
-    private function installDirectory(): string
-    {
-        return $this->sharedRoot.DIRECTORY_SEPARATOR.'install';
-    }
-
-    private function runtimeDirectory(): string
-    {
-        return $this->sharedRoot.DIRECTORY_SEPARATOR.'runtime';
-    }
-
-    private function authorityPath(): string
-    {
-        return $this->installDirectory().DIRECTORY_SEPARATOR.'authority.json';
-    }
-
-    private function activeEnvironmentPath(): string
-    {
-        return $this->runtimeDirectory().DIRECTORY_SEPARATOR.'.env';
-    }
-
-    private function pendingEnvironmentPath(): string
-    {
-        return $this->runtimeDirectory().DIRECTORY_SEPARATOR.'.env.pending';
-    }
-}
-,
+            '$' => '\\$',
         ]).'"';
     }
 
