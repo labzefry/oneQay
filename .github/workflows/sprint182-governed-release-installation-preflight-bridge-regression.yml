@@ -1,0 +1,185 @@
+# Author by Lab | zefry
+name: Sprint182 Governed Release Installation Preflight Bridge Regression
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint182-governed-release-installation-preflight-bridge-${{ github.event.pull_request.number || github.ref }}-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  qualify-sprint182-governed-release-installation-preflight-bridge:
+    name: qualify-sprint182-governed-release-installation-preflight-bridge
+    runs-on: ubuntu-latest
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:YmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmI=
+      APP_DEBUG: "false"
+      APP_URL: http://localhost
+      ONEQAY_RUNTIME_CLASS: ci
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Qualify exact Sprint182 engineering envelope
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "${{ github.head_ref }}" == "sprint182-governed-release-installation-preflight-bridge-foundation" ]]
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          test "$(git rev-parse HEAD)" = "$HEAD_SHA"
+          mapfile -t paths < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort)
+          expected=(
+            ".github/workflows/m7-5-preview-release-artifact.yml"
+            ".github/workflows/sprint182-governed-release-installation-preflight-bridge-regression.yml"
+            "apps/web/tests/governed-release-installation-preflight-bridge.php"
+            "tools/build-m7-5-preview-release.sh"
+            "tools/validate-installation-readiness-manifest.php"
+          )
+          [[ "${#paths[@]}" -eq "${#expected[@]}" ]]
+          diff -u <(printf '%s\n' "${expected[@]}") <(printf '%s\n' "${paths[@]}")
+          actual_hash="$(printf '%s\n' "${paths[@]}" | sha256sum | awk '{print $1}')"
+          [[ "$actual_hash" == "0aad8d938d6b659add8e503c55e6425edd47398cdd47cc221b65327515465f88" ]]
+
+      - name: Preserve canonical Release Manifest v1 authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f release/manifest-v1.schema.json
+          test -f tools/validate-release-manifest.php
+          php tools/validate-release-manifest.php --self-test
+          grep -Fq '"schema_id": "oneqay.release-manifest.v1"' release/manifest-v1.schema.json
+          grep -Fq '"migration_classification": {"type": "string", "const": "NO_SCHEMA_CHANGE"}' release/manifest-v1.schema.json
+          grep -Fq '"updater_activation": {"type": "string", "const": "DISABLED"}' release/manifest-v1.schema.json
+
+      - name: Preserve operational NO-GO
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" == 'NOT_EXECUTED' ]]
+          [[ "$(jq -r '.permission_provisioning.state' ops/final-shift-close/STATE.json)" == 'NONE' ]]
+          [[ "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" == 'INACTIVE' ]]
+          [[ "$(jq -r '.deployment_authority' ops/final-shift-close/STATE.json)" == 'NOT_GRANTED' ]]
+          [[ "$(jq -r '.technical_preview_activation' ops/final-shift-close/STATE.json)" == 'NOT_AUTHORIZED' ]]
+          [[ "$(jq -r '.production_activation' ops/final-shift-close/STATE.json)" == 'NOT_AUTHORIZED' ]]
+          [[ "$(jq -r '.updater_activation' ops/final-shift-close/STATE.json)" == 'INACTIVE' ]]
+          [[ "$(jq -r '.selection_state' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" == 'BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET' ]]
+          [[ "$(jq -r '.selected_target' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" == 'null' ]]
+
+      - name: Setup PHP 8.3 build runtime
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        with:
+          php-version: '8.3'
+          tools: composer:v2
+          coverage: none
+
+      - name: Setup exact Node LTS
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: 24.19.0
+
+      - name: Install locked application dependencies
+        working-directory: apps/web
+        run: |
+          set -euo pipefail
+          composer validate --no-check-publish
+          composer install --no-interaction --no-progress --prefer-dist
+          npm ci --ignore-scripts --no-fund
+          npm run type-check
+          npm run build
+
+      - name: Validate Sprint182 source and regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l tools/validate-installation-readiness-manifest.php
+          php -l apps/web/tests/governed-release-installation-preflight-bridge.php
+          bash -n tools/build-m7-5-preview-release.sh
+          (
+            cd apps/web
+            php tests/governed-release-installation-preflight-bridge.php
+            php -d zend.assertions=1 -d assert.exception=1 tests/secure-installation-readiness.php
+            composer test
+          )
+
+      - name: Build deterministic governed release and installer sidecar
+        id: package
+        shell: bash
+        env:
+          ONEQAY_BUILD_PROVENANCE: local://github-actions/sprint182/${{ github.run_id }}/${{ github.run_attempt }}
+        run: |
+          set -euo pipefail
+          bash tools/build-m7-5-preview-release.sh "${{ github.event.pull_request.head.sha || github.sha }}"
+          test -f dist/manifest.json
+
+      - name: Prove exact source and artifact binding
+        shell: bash
+        run: |
+          set -euo pipefail
+          sidecar="${{ steps.package.outputs.installation_manifest_path }}"
+          canonical="${{ steps.package.outputs.manifest_path }}"
+          artifact="${{ steps.package.outputs.archive_path }}"
+          head="${{ github.event.pull_request.head.sha || github.sha }}"
+
+          php tools/validate-release-manifest.php "$canonical" "$artifact"
+          php tools/validate-installation-readiness-manifest.php "$sidecar" "$artifact"
+
+          test "$(jq -r '.source_commit' "$sidecar")" = "$head"
+          test "$(jq -r '.source.commit_sha' "$canonical")" = "$head"
+          test "$(jq -r '.artifact_filename' "$sidecar")" = "$(basename "$artifact")"
+          test "$(jq -r '.artifact.filename' "$canonical")" = "$(basename "$artifact")"
+          test "$(jq -r '.artifact_sha256' "$sidecar")" = "$(sha256sum "$artifact" | awk '{print $1}')"
+          test "$(jq -r '.artifact.sha256' "$canonical")" = "$(sha256sum "$artifact" | awk '{print $1}')"
+          test "$(jq -r '.artifact_size' "$sidecar")" = "$(wc -c < "$artifact" | tr -d '[:space:]')"
+          test "$(jq -r '.artifact.size_bytes' "$canonical")" = "$(wc -c < "$artifact" | tr -d '[:space:]')"
+          test "$(jq -r '.migration_classification' "$sidecar")" = 'NO_SCHEMA_CHANGE'
+          test "$(jq -r '.compatibility.migration_classification' "$canonical")" = 'NO_SCHEMA_CHANGE'
+          test "$(jq -r '.compatibility.updater_activation' "$canonical")" = 'DISABLED'
+          test "$(jq -r '.attribution' "$sidecar")" = 'Lab | zefry'
+
+      - name: Prove host policy remains requirements not observed success
+        shell: bash
+        run: |
+          set -euo pipefail
+          sidecar="${{ steps.package.outputs.installation_manifest_path }}"
+          test "$(jq -r '.host_requirements.required_capabilities | sort | join(",")' "$sidecar")" = \
+            'archive,dns,https,outbound_allowlist,required_tools,scheduler,temp_directory,time_sync'
+          test "$(jq -r '.host_platform // empty' "$sidecar")" = ''
+          test "$(jq -r '.ready // empty' "$sidecar")" = ''
+          test "$(jq -r '.deployment_authorized // empty' "$sidecar")" = ''
+
+      - name: Prove tampered artifact fails closed
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp "${{ steps.package.outputs.installation_manifest_path }}" /tmp/sprint182-tampered-manifest.json
+          jq '.artifact_sha256 = "0000000000000000000000000000000000000000000000000000000000000000"' \
+            /tmp/sprint182-tampered-manifest.json > /tmp/sprint182-tampered-manifest.next.json
+          mv /tmp/sprint182-tampered-manifest.next.json /tmp/sprint182-tampered-manifest.json
+          if php tools/validate-installation-readiness-manifest.php \
+            /tmp/sprint182-tampered-manifest.json \
+            "${{ steps.package.outputs.archive_path }}"; then
+            echo 'Tampered installer sidecar unexpectedly passed validation.' >&2
+            exit 1
+          fi
+
+      - name: Verify tracked-source cleanliness
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --exit-code
