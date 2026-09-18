@@ -8,32 +8,30 @@ Enterprise-oriented business-management platform built with Modular Monolith Fir
 
 ## Current canonical status
 
-The latest completed engineering sprint is **Sprint182 — Governed Release Installation Preflight Bridge Foundation**.
+The latest completed engineering sprint is **Sprint183 — Governed M7.5 Release Workflow Execution Restoration**.
 
-- Canonical engineering commit: `ceb8fd7839a5077d59247b2cbdd2ba30559c4d25`
-- Engineering PR: #791
-- Final engineering head: `cc6eba43ccd9dfd316f652aaf133a7372a86380b`
-- Exact-head pull-request qualification: 68/68 successful
-- Engineering envelope: 6 paths, SHA-256 `4968d9fcf35b7a17d67b1909cfd1dad93f2b08b7d82b8c6d30be4dc09f067be3`
-- Reconciliation envelope: 6 paths, SHA-256 `a78e4871e0852ac6c4f466b7f3278efde846a4ae84f5fe589123672e568aea35`
+- Canonical engineering commit: `cd3facf81e3b1734353656da3ba5800607900fcb`
+- Initial engineering PR: #793
+- Corrective engineering PR: #794
+- Final engineering head: `f3527999a500463e9eea3f8b9b22dec24a34e93e`
+- Exact-head corrective qualification: 69/69 successful
+- Canonical main-push M7.5 run `35369464318`: SUCCESS
+- Engineering envelope: 1 path, SHA-256 `bcec6fc13a26f5c88f4408d76d362195ca9d546cc2df6d6c388a67640b93cce2`
+- Reconciliation envelope: 8 paths, SHA-256 `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`
 
 For the full project state, use [`PROJECT_MANIFEST.md`](PROJECT_MANIFEST.md) as the canonical human-readable source of truth.
 
-## Sprint182 — Governed artifact to installer preflight
+## Sprint183 — Governed M7.5 release automation
 
-Sprint182 connects the deterministic M7.5 release artifact to the Sprint181 installer-readiness contract through a shared trusted-build manifest builder.
+Sprint183 restores the canonical M7.5 release workflow as executable GitHub Actions automation.
 
-The generated installer manifest is bound to the exact source commit and artifact identity, validated by `SecureInstallationReadiness`, rejects digest tampering, and is reproduced deterministically in the dedicated Sprint182 qualification.
+The oversized historical Web regression shell command was split without changing release behavior. Historical compatibility state is carried across the split, post-M7.4 POS persistence successors are isolated only during the legacy synthetic regression, and non-PR execution now enters the same schema-free historical lane required by current main.
 
-No runtime host capability is fabricated. Host requirements remain policy until a target host can truthfully prove the required evidence.
+The final canonical main-push M7.5 run completed successfully through release packaging, Sprint182 installer-readiness sidecar generation, deterministic reproduction, artifact upload, and source-cleanliness verification.
 
 ## Product progression
 
-oneQay now combines governed release artifacts, an executable artifact-to-installer evidence bridge, operator-visible installation preflight, atomic POS-ready merchant bootstrap, context-assisted first-party sign-in, and permission-filtered POS operations.
-
-## Known pre-existing CI debt
-
-The legacy M7.5 push-event workflow startup failure predates Sprint182 and is not claimed as remediated. Dedicated Sprint182 qualification is the active executable proof of the release-to-installer bridge. Sprint183 bounded discovery should assess this release-automation blocker first.
+oneQay now has an executable governed release pipeline feeding the trusted installer-readiness evidence bridge and the operator-visible installation preflight, while preserving the merchant bootstrap/sign-in/POS progression.
 
 ## Operational status remains intentionally gated
 
@@ -41,6 +39,6 @@ Migration #27 remains `NOT_EXECUTED`; permission provisioning `NONE`; durable ac
 
 ## Next engineering position
 
-Sprint183 begins from the fully reconciled Sprint182 checkpoint and should prioritize the smallest material correction that restores canonical release automation without crossing operational activation boundaries.
+Sprint184 begins from the fully reconciled Sprint183 checkpoint and should select the smallest material P0/P1 blocker remaining in the installation/onboarding journey without crossing operational activation boundaries.
 
 Author by Lab | zefry

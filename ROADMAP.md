@@ -1,34 +1,32 @@
 # oneQay Roadmap
 
-**Roadmap checkpoint:** Sprint182 closed canonically
-**Canonical engineering baseline:** `ceb8fd7839a5077d59247b2cbdd2ba30559c4d25`
+**Roadmap checkpoint:** Sprint183 closed canonically
+**Canonical engineering baseline:** `cd3facf81e3b1734353656da3ba5800607900fcb`
 **Current state authority:** `PROJECT_MANIFEST.md`
 
-## Completed Sprint182 horizon
+## Completed Sprint183 horizon
 
-Sprint182 closed `GOVERNED_RELEASE_INSTALLATION_PREFLIGHT_BRIDGE_FOUNDATION`, converting the governed M7.5 release artifact into installer-facing evidence that the Sprint181 readiness engine can validate without inventing runtime target facts.
+Sprint183 closed `GOVERNED_M7_5_RELEASE_WORKFLOW_EXECUTION_RESTORATION`.
 
-The shared trusted-build tool binds source and artifact identity, emits deterministic runtime/host/compatibility policy, validates through `SecureInstallationReadiness`, rejects digest tampering, and reproduces deterministically.
+The canonical M7.5 GitHub Actions workflow now starts and executes successfully. The oversized historical Web regression command was split at the composer-test boundary, required compatibility state is persisted across steps, and post-M7.4 persistence successors are isolated only while the historical M7.4 synthetic regression executes.
 
-Engineering PR #791 squash merged at `ceb8fd7839a5077d59247b2cbdd2ba30559c4d25`. Engineering envelope: 6 paths, SHA-256 `4968d9fcf35b7a17d67b1909cfd1dad93f2b08b7d82b8c6d30be4dc09f067be3`.
+Initial PR #793 proved the restored pull-request lane and squash merged at `03804129dac67c85fea3540d421a9b49adc3eb13`. A post-merge main push then exposed a non-PR historical migration-horizon gap before reconciliation. Corrective PR #794 aligned non-PR schema-free qualification with the proven PR lane and squash merged at `cd3facf81e3b1734353656da3ba5800607900fcb`.
 
-Canonical reconciliation envelope: 6 paths, SHA-256 `a78e4871e0852ac6c4f466b7f3278efde846a4ae84f5fe589123672e568aea35`.
+Canonical main-push M7.5 run `35369464318` completed successfully. Final engineering envelope: one path, SHA-256 `bcec6fc13a26f5c88f4408d76d362195ca9d546cc2df6d6c388a67640b93cce2`.
 
-## Product progression through Sprint182
+Canonical reconciliation envelope: eight paths, SHA-256 `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`.
 
-The product now combines governed release artifacts, trusted installer evidence, operator-visible installation preflight, and the secure merchant bootstrap/sign-in/POS progression delivered through Sprint180.
+## Product progression through Sprint183
 
-## Known release-automation blocker
-
-The legacy M7.5 push-event workflow startup failure predates Sprint182 and remains separate canonical debt. Sprint182's dedicated workflow proves the bridge itself is executable; Sprint183 should first assess restoration of the canonical M7.5 automated release path as a material installation/release blocker.
+The product now has a working governed release automation chain feeding the Sprint182 trusted artifact-to-installer bridge and Sprint181 operator-visible installation readiness preflight.
 
 ## Operational boundary
 
 Machine-readable operational state under `ops/final-shift-close/` remains authoritative. Selected durable target remains `null`; migration #27 remains `NOT_EXECUTED`; permission provisioning remains `NONE`; producer dispatch remains not performed; runtime allowlist remains Local/Test/CI; Final Shift Close remains inactive; deployment/Technical Preview/Production remain unauthorized; updater remains inactive.
 
-## Sprint183 selection rule
+## Sprint184 selection rule
 
-Begin Sprint183 bounded discovery from fully reconciled Sprint182. Prefer the smallest end-to-end correction that restores governed release automation and closes a real installation journey blocker without granting operational activation.
+Begin Sprint184 bounded discovery from fully reconciled Sprint183. Determine the smallest material P0/P1 blocker still preventing a secure operator journey from governed release artifact through installation readiness toward an installable Technical Preview, without granting operational activation.
 
 No environment writes, migration execution, real permission provisioning, updater activation, deployment, Technical Preview, Production, durable-target selection, or producer dispatch is pre-authorized.
 
