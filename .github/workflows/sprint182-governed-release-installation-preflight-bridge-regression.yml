@@ -1,5 +1,4 @@
 # Author by Lab | zefry
-# Sprint182 final exact-head qualification trigger.
 name: Sprint182 Governed Release Installation Preflight Bridge Regression
 
 on:
@@ -15,11 +14,24 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  qualify-sprint182-envelope:
-    name: qualify-sprint182-envelope
+  qualify-sprint182-governed-release-installation-preflight-bridge:
+    name: qualify-sprint182-governed-release-installation-preflight-bridge
     runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:YmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmI=
+      APP_DEBUG: "false"
+      APP_URL: http://localhost
+      ONEQAY_RUNTIME_CLASS: ci
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+      LOG_CHANNEL: stderr
+      ONEQAY_BUILD_PROVENANCE: github-actions:${{ github.run_id }}:${{ github.run_attempt }}
+
     steps:
-      - name: Checkout exact source
+      - name: Checkout exact Sprint182 source
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           fetch-depth: 0
@@ -41,25 +53,12 @@ jobs:
             ".github/workflows/sprint32-authentication-recovery-proof-regression.yml"
             ".github/workflows/sprint33-recovery-bound-password-reset-regression.yml"
             ".github/workflows/sprint34-authenticated-password-change-regression.yml"
+            "tools/build-installation-readiness-manifest.php"
           )
           [[ "${#paths[@]}" -eq "${#expected[@]}" ]]
           diff -u <(printf '%s\n' "${expected[@]}") <(printf '%s\n' "${paths[@]}")
           actual_hash="$(printf '%s\n' "${paths[@]}" | sha256sum | awk '{print $1}')"
-          [[ "$actual_hash" == "38a9d7204bf43e6388f2da36bd6c0beb65c83026c4bc2476cdcf7e4abf356e41" ]]
-
-      - name: Preserve M7.5 bridge and canonical readiness invocation
-        shell: bash
-        run: |
-          set -euo pipefail
-          WF=.github/workflows/m7-5-preview-release-artifact.yml
-          grep -Fq 'workflow_call:' "$WF"
-          grep -Fq 'Materialize governed installer-readiness sidecar' "$WF"
-          grep -Fq 'SecureInstallationReadiness' "$WF"
-          grep -Fq 'Tampered artifact digest did not fail closed.' "$WF"
-          grep -Fq 'steps.installation_preflight.outputs.manifest_path' "$WF"
-          grep -Fq '"migration_classification": "NO_SCHEMA_CHANGE"' "$WF"
-          grep -Fq '"attribution": "Lab | zefry"' "$WF"
-          grep -Fq "'BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET'" ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+          [[ "$actual_hash" == "4968d9fcf35b7a17d67b1909cfd1dad93f2b08b7d82b8c6d30be4dc09f067be3" ]]
 
       - name: Preserve operational NO-GO
         shell: bash
@@ -75,7 +74,143 @@ jobs:
           [[ "$(jq -r '.selection_state' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" == 'BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET' ]]
           [[ "$(jq -r '.selected_target' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" == 'null' ]]
 
-  execute-governed-m75-release-qualification:
-    name: execute-governed-m75-release-qualification
-    needs: qualify-sprint182-envelope
-    uses: labzefry/oneQay/.github/workflows/m7-5-preview-release-artifact.yml@sprint182-governed-release-installation-preflight-bridge-foundation
+      - name: Setup PHP 8.3 build runtime
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        with:
+          php-version: '8.3'
+          tools: composer:v2
+          coverage: none
+
+      - name: Setup exact Node LTS
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: 24.19.0
+
+      - name: Validate release and installer manifest tooling
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l tools/build-installation-readiness-manifest.php
+          bash -n tools/build-m7-5-preview-release.sh
+          php tools/validate-release-manifest.php --self-test
+
+      - name: Preserve root Platform Foundation regression
+        run: |
+          composer validate --strict --no-check-publish
+          composer test
+
+      - name: Install locked production PHP dependencies
+        working-directory: apps/web
+        run: |
+          set -euo pipefail
+          composer validate --no-check-publish
+          composer install \
+            --no-dev \
+            --no-interaction \
+            --no-progress \
+            --prefer-dist \
+            --optimize-autoloader \
+            --classmap-authoritative
+
+      - name: Reject High or Critical Composer advisories
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          composer audit --locked --format=json > /tmp/oneqay-s182-composer-audit.json || true
+          php -r '$data=json_decode(file_get_contents("/tmp/oneqay-s182-composer-audit.json"),true,512,JSON_THROW_ON_ERROR); foreach (($data["advisories"] ?? []) as $package=>$items) { foreach ($items as $item) { if (in_array(strtolower((string)($item["severity"] ?? "")), ["high","critical"], true)) { fwrite(STDERR,"Blocking Composer advisory for {$package}.\n"); exit(1); } } }'
+
+      - name: Install locked frontend dependencies
+        working-directory: apps/web
+        run: npm ci --ignore-scripts --no-fund
+
+      - name: Type-check frontend
+        working-directory: apps/web
+        run: npm run type-check
+
+      - name: Build frontend assets
+        working-directory: apps/web
+        run: npm run build
+
+      - name: Build exact governed M7.5 artifact
+        id: package
+        shell: bash
+        run: |
+          set -euo pipefail
+          HEAD_SHA="${{ github.event.pull_request.head.sha || github.sha }}"
+          test "$(git rev-parse HEAD)" = "$HEAD_SHA"
+          bash tools/build-m7-5-preview-release.sh "$HEAD_SHA"
+
+      - name: Build and validate installer-readiness sidecar
+        id: sidecar
+        shell: bash
+        run: |
+          set -euo pipefail
+          artifact="${{ steps.package.outputs.archive_path }}"
+          source_sha="${{ github.event.pull_request.head.sha || github.sha }}"
+          release_id="${{ steps.package.outputs.release_id }}"
+          sidecar="dist/manifest.json"
+
+          php tools/build-installation-readiness-manifest.php \
+            "$artifact" \
+            "$source_sha" \
+            "$release_id" \
+            "$ONEQAY_BUILD_PROVENANCE" \
+            "$sidecar"
+
+          php tools/validate-release-manifest.php \
+            "${{ steps.package.outputs.manifest_path }}" \
+            "$artifact"
+
+          test "$(jq -r '.source_commit' "$sidecar")" = "$source_sha"
+          test "$(jq -r '.artifact_filename' "$sidecar")" = "$(basename "$artifact")"
+          test "$(jq -r '.artifact_sha256' "$sidecar")" = "$(sha256sum "$artifact" | awk '{print $1}')"
+          test "$(jq -r '.artifact_size' "$sidecar")" = "$(wc -c < "$artifact" | tr -d '[:space:]')"
+          test "$(jq -r '.migration_classification' "$sidecar")" = 'NO_SCHEMA_CHANGE'
+          test "$(jq -r '.attribution' "$sidecar")" = 'Lab | zefry'
+          test "$(jq -r '.host_platform // empty' "$sidecar")" = ''
+          test "$(jq -r '.ready // empty' "$sidecar")" = ''
+          test "$(jq -r '.deployment_authorized // empty' "$sidecar")" = ''
+          test "$(jq -r '.host_requirements.required_capabilities | sort | join(",")' "$sidecar")" = \
+            'archive,dns,https,outbound_allowlist,required_tools,scheduler,temp_directory,time_sync'
+
+          {
+            echo "artifact_sha256=$(sha256sum "$artifact" | awk '{print $1}')"
+            echo "artifact_size=$(wc -c < "$artifact" | tr -d '[:space:]')"
+            echo "sidecar_sha256=$(sha256sum "$sidecar" | awk '{print $1}')"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Prove deterministic artifact and sidecar reproduction
+        shell: bash
+        run: |
+          set -euo pipefail
+          source_sha="${{ github.event.pull_request.head.sha || github.sha }}"
+          artifact="${{ steps.package.outputs.archive_path }}"
+          sidecar="dist/manifest.json"
+
+          bash tools/build-m7-5-preview-release.sh "$source_sha"
+          test "$(sha256sum "$artifact" | awk '{print $1}')" = "${{ steps.sidecar.outputs.artifact_sha256 }}"
+          test "$(wc -c < "$artifact" | tr -d '[:space:]')" = "${{ steps.sidecar.outputs.artifact_size }}"
+
+          php tools/build-installation-readiness-manifest.php \
+            "$artifact" \
+            "$source_sha" \
+            "${{ steps.package.outputs.release_id }}" \
+            "$ONEQAY_BUILD_PROVENANCE" \
+            "$sidecar"
+
+          test "$(sha256sum "$sidecar" | awk '{print $1}')" = "${{ steps.sidecar.outputs.sidecar_sha256 }}"
+
+          php tools/validate-release-manifest.php \
+            "${{ steps.package.outputs.manifest_path }}" \
+            "$artifact"
+
+          tar -tzf "$artifact" > /tmp/oneqay-s182-release-list.txt
+          if grep -F '/apps/web/database/migrations/' /tmp/oneqay-s182-release-list.txt; then
+            echo 'Governed Technical Preview artifact unexpectedly contains durable migrations.' >&2
+            exit 1
+          fi
+
+      - name: Preserve tracked source cleanliness
+        shell: bash
+        run: git diff --exit-code
