@@ -1,8 +1,8 @@
 # oneQay Tasks
 
-**Current canonical engineering checkpoint:** Sprint184 closed  
-**Canonical engineering commit:** `dfb65d2782a580108d8ccd9a6f9203720fa036b7`  
-**Engineering PR:** #797 — `Sprint184: prepare secure preboot installation configuration`  
+**Current canonical engineering checkpoint:** Sprint184 closed
+**Canonical engineering commit:** `dfb65d2782a580108d8ccd9a6f9203720fa036b7`
+**Engineering PR:** #797 — `Sprint184: prepare secure preboot installation configuration`
 **Canonical status authority:** `PROJECT_MANIFEST.md`
 
 ## Completed Sprint184 state
