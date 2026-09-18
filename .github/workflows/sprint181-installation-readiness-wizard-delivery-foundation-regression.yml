@@ -36,25 +36,40 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: Qualify exact Sprint181 engineering envelope
-        if: github.event_name == 'pull_request'
+      - name: Qualify exact Sprint181 reconciliation envelope
+        if: github.event_name == 'pull_request' && github.head_ref == 'sprint181-canonical-reconciliation'
         shell: bash
         run: |
           set -euo pipefail
-          [[ "${{ github.head_ref }}" == "sprint181-installation-readiness-wizard-delivery-foundation" ]]
           BASE_SHA="${{ github.event.pull_request.base.sha }}"
           HEAD_SHA="${{ github.event.pull_request.head.sha }}"
           mapfile -t paths < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort)
           expected=(
             ".github/workflows/sprint181-installation-readiness-wizard-delivery-foundation-regression.yml"
-            "apps/web/app/Delivery/Http/SystemUpdate/SystemUpdatePageController.php"
-            "apps/web/resources/js/pages/System/UpdateDeployment.vue"
-            "apps/web/tests/installation-readiness-wizard-delivery.php"
+            "CHANGELOG.md"
+            "PROJECT_MANIFEST.md"
+            "README.md"
+            "ROADMAP.md"
+            "TASKS.md"
           )
           [[ "${#paths[@]}" -eq "${#expected[@]}" ]]
           diff -u <(printf '%s\n' "${expected[@]}") <(printf '%s\n' "${paths[@]}")
           actual_hash="$(printf '%s\n' "${paths[@]}" | sha256sum | awk '{print $1}')"
-          [[ "$actual_hash" == "dffcd90da1967e207fe5b65007c354ce0decb1f5d781db9733623cb9ca807e04" ]]
+          [[ "$actual_hash" == "4fd83153da1067e5fa7a3f8ed145af7e8cbde3c3cba24149a51cd10770d3d955" ]]
+
+      - name: Preserve canonical Sprint181 engineering evidence
+        if: github.event_name == 'pull_request' && github.head_ref == 'sprint181-canonical-reconciliation'
+        shell: bash
+        run: |
+          set -euo pipefail
+          for FILE in PROJECT_MANIFEST.md README.md CHANGELOG.md TASKS.md ROADMAP.md; do
+            grep -Fq 'deb999fcd0694ba85c132d1b490bd90c0dc86309' "$FILE"
+            ! grep -Fq '${{ github.event.pull_request.head.sha }}' "$FILE"
+          done
+          grep -Fq '**Engineering PR:** #789' PROJECT_MANIFEST.md
+          grep -Fq 'c12595cd88938adaea3f470b74c315b34732bf6b' PROJECT_MANIFEST.md
+          grep -Fq 'dffcd90da1967e207fe5b65007c354ce0decb1f5d781db9733623cb9ca807e04' PROJECT_MANIFEST.md
+          grep -Fq '4fd83153da1067e5fa7a3f8ed145af7e8cbde3c3cba24149a51cd10770d3d955' PROJECT_MANIFEST.md
 
       - name: Preserve read-only updater boundary
         if: github.event_name == 'pull_request'
