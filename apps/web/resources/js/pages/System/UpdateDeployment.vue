@@ -41,7 +41,7 @@ type InstallationPreflight = {
     release_manifest: 'MISSING' | 'OBSERVED'
     release_artifact: 'MISSING' | 'OBSERVED'
     database: 'NOT_CONFIGURED' | 'UNAVAILABLE' | 'OBSERVED'
-    host_platform: 'SERVER_OBSERVED_PARTIAL'
+    host_platform: 'SERVER_OBSERVED_PARTIAL' | 'SERVER_PLUS_TRUSTED_ATTESTATION'
   }
 }
 
