@@ -48,7 +48,6 @@ on:
       - 'tools/validate-release-manifest.php'
       - '.github/workflows/m7-5-preview-release-artifact.yml'
   workflow_dispatch:
-  workflow_call:
 
 permissions:
   contents: read
@@ -280,7 +279,7 @@ jobs:
             git diff --name-only "origin/$GITHUB_BASE_REF...HEAD" | sort > /tmp/s50-release-shape.txt
             count="$(wc -l < /tmp/s50-release-shape.txt)"
             fingerprint="$(sha256sum /tmp/s50-release-shape.txt | awk '{print $1}')"
-            if { [[ "$count" -eq 4 && "$fingerprint" == '6f4e1a3efe6e2dc8bcc5e213b88d968ead955d64074f159f52971e16a8a9abf8' ]] || [[ "$count" -eq 9 && "$fingerprint" == '890cb08631de804bc2936882f635be11dea52c1e022c4f5112389fd76744ce10' ]] || [[ "$count" -eq 6 && "$fingerprint" == 'cc40f08beda780e4aa4795f29aa7533bbde1029d11855d43f180812502c4d80b' ]] || [[ "$count" -eq 8 && "$fingerprint" == '3e5b516b17bfc4b2b4e8694248672ff7a4298a3e080e0617a70b1bb1d8aa6194' ]] || [[ "$count" -eq 9 && "$fingerprint" == 'c2a575ec728249a8a4b26c173229b26455eee92c7bd4c59026a1d4c064e2c442' ]] || [[ "$count" -eq 4 && "$fingerprint" == 'eaa9c44aed2728b0a508f6be91155f3f2021f7f3de1383164a54be611d3933cf' ]] || [[ "$count" -eq 13 && "$fingerprint" == 'dcc4ec5d3fdefa32271c50cebec7e2536c179b203a60c3fb5bed1aeb9f4a47fb' ]] || [[ "$count" -eq 20 && "$fingerprint" == 'c6cd387d5ea83d73382493ca78d219c0db35477e55c61a68e489a0329231f922' ]] || [[ "$count" -eq 7 && "$fingerprint" == 'ae57a65e64fa71509141c224012036c0d69920a48f6f323412d952f9234ba789' ]] || [[ "$count" -eq 5 && "$fingerprint" == 'f668cbbe0bd82b75171a34b410138d1c0c8c8c4196d14f964617e513f2aa59e3' ]] || [[ "$count" -eq 2 && "$fingerprint" == 'cce261e63125368c85fff8038d2571005da2385497e5a13e6f37f82bd3ca31a7' ]] || [[ "$count" -eq 1 && "$fingerprint" == 'bcec6fc13a26f5c88f4408d76d362195ca9d546cc2df6d6c388a67640b93cce2' ]] || [[ "$count" -eq 4 && "$fingerprint" == '2083c79345c4c86cd3417cc3db9ed0b7546c998a018c27a381102eaf4de9b6da' ]] || [[ "$count" -eq 5 && "$fingerprint" == '38a9d7204bf43e6388f2da36bd6c0beb65c83026c4bc2476cdcf7e4abf356e41' ]] || [[ "$count" -eq 5 && "$fingerprint" == '26d2d48f114c88d60dc302dccd8d41118bc730c309c9d79b71f5e516731a0b25' ]] || [[ "$count" -eq 14 && "$fingerprint" == '78628976e4dbfea29ecab4b40ec6bfbdf697564668ef028a5cb77a3b53466451' ]] || [[ "$count" -eq 30 && "$fingerprint" == 'cf8adb2328427a8e27e46f0efd9fe88db90f0401eba9cafd513944c7e040035e' ]] || [[ "$count" -eq 15 && "$fingerprint" == '325559599c79ba68340eac34569f8e5513aa4957b1ddf2515007b98b2cc1f15f' ]] || [[ "$count" -eq 14 && "$fingerprint" == 'ad4f6c62c820bdc59d7c1c8550ffeec0a4a0718ba4388a516418d50468d7e9d5' ]] || [[ "$count" -eq 14 && "$fingerprint" == '1d75fe26236e2bb56c113713e878e81d3df72cee9aa647b3f7759b9d1bec9164' ]] || [[ "$count" -eq 14 && "$fingerprint" == 'a0914d7db5c1636e909e331e8b72653bc9814eb74e3a3823d7db36bd3b73b624' ]] || [[ "$count" -eq 12 && "$fingerprint" == '77a408974add7f466ed746b8b47c10d5fec45c8073ab32e0450abd95f206bf1f' ]] || [[ "$count" -eq 30 && "$fingerprint" == '930cd1237722f4dd0af03e85d684ffa435adab6a1ae16db96d78243510fd85bc' ]] || [[ "$count" -eq 6 && "$fingerprint" == 'ee7e3bdc0de47cf8a762635a5ca69af1afde8cb2048363f4902b42a1290c9f14' ]] || [[ "$count" -eq 29 && "$fingerprint" == 'e56a3e2732f5d5b0b40dd3ae50ec25746cf18bc8bd556d25405e85642c789878' ]] || [[ "$count" -eq 20 && "$fingerprint" == 'b25a8747bd003c6952e86f97982ee7cfd504e9ffffda137fca52fb6dd597d663' ]] || [[ "$count" -eq 28 && "$fingerprint" == '3b97670674b60c636a23e52551b7ade69a3f545d5d0b4a861fa1c06eae5c0656' ]] || [[ "$count" -eq 19 && "$fingerprint" == '563d445adb1c6a2d7caf2fae5a0b694485cddfa5389fc61773ceaa19d978cf79' ]] || [[ "$count" -eq 3 && "$fingerprint" == 'ff356c1116ac1706431c3d6878425fd3d16b1c12512dce26cd942fbec85081b0' ]]; }; then
+            if { [[ "$count" -eq 4 && "$fingerprint" == '6f4e1a3efe6e2dc8bcc5e213b88d968ead955d64074f159f52971e16a8a9abf8' ]] || [[ "$count" -eq 9 && "$fingerprint" == '890cb08631de804bc2936882f635be11dea52c1e022c4f5112389fd76744ce10' ]] || [[ "$count" -eq 6 && "$fingerprint" == 'cc40f08beda780e4aa4795f29aa7533bbde1029d11855d43f180812502c4d80b' ]] || [[ "$count" -eq 8 && "$fingerprint" == '3e5b516b17bfc4b2b4e8694248672ff7a4298a3e080e0617a70b1bb1d8aa6194' ]] || [[ "$count" -eq 9 && "$fingerprint" == 'c2a575ec728249a8a4b26c173229b26455eee92c7bd4c59026a1d4c064e2c442' ]] || [[ "$count" -eq 4 && "$fingerprint" == 'eaa9c44aed2728b0a508f6be91155f3f2021f7f3de1383164a54be611d3933cf' ]] || [[ "$count" -eq 13 && "$fingerprint" == 'dcc4ec5d3fdefa32271c50cebec7e2536c179b203a60c3fb5bed1aeb9f4a47fb' ]] || [[ "$count" -eq 20 && "$fingerprint" == 'c6cd387d5ea83d73382493ca78d219c0db35477e55c61a68e489a0329231f922' ]] || [[ "$count" -eq 7 && "$fingerprint" == 'ae57a65e64fa71509141c224012036c0d69920a48f6f323412d952f9234ba789' ]] || [[ "$count" -eq 5 && "$fingerprint" == 'f668cbbe0bd82b75171a34b410138d1c0c8c8c4196d14f964617e513f2aa59e3' ]] || [[ "$count" -eq 2 && "$fingerprint" == 'cce261e63125368c85fff8038d2571005da2385497e5a13e6f37f82bd3ca31a7' ]] || [[ "$count" -eq 1 && "$fingerprint" == 'bcec6fc13a26f5c88f4408d76d362195ca9d546cc2df6d6c388a67640b93cce2' ]] || [[ "$count" -eq 4 && "$fingerprint" == '2083c79345c4c86cd3417cc3db9ed0b7546c998a018c27a381102eaf4de9b6da' ]] || [[ "$count" -eq 5 && "$fingerprint" == '38a9d7204bf43e6388f2da36bd6c0beb65c83026c4bc2476cdcf7e4abf356e41' ]] || [[ "$count" -eq 6 && "$fingerprint" == '4968d9fcf35b7a17d67b1909cfd1dad93f2b08b7d82b8c6d30be4dc09f067be3' ]] || [[ "$count" -eq 5 && "$fingerprint" == '26d2d48f114c88d60dc302dccd8d41118bc730c309c9d79b71f5e516731a0b25' ]] || [[ "$count" -eq 14 && "$fingerprint" == '78628976e4dbfea29ecab4b40ec6bfbdf697564668ef028a5cb77a3b53466451' ]] || [[ "$count" -eq 30 && "$fingerprint" == 'cf8adb2328427a8e27e46f0efd9fe88db90f0401eba9cafd513944c7e040035e' ]] || [[ "$count" -eq 15 && "$fingerprint" == '325559599c79ba68340eac34569f8e5513aa4957b1ddf2515007b98b2cc1f15f' ]] || [[ "$count" -eq 14 && "$fingerprint" == 'ad4f6c62c820bdc59d7c1c8550ffeec0a4a0718ba4388a516418d50468d7e9d5' ]] || [[ "$count" -eq 14 && "$fingerprint" == '1d75fe26236e2bb56c113713e878e81d3df72cee9aa647b3f7759b9d1bec9164' ]] || [[ "$count" -eq 14 && "$fingerprint" == 'a0914d7db5c1636e909e331e8b72653bc9814eb74e3a3823d7db36bd3b73b624' ]] || [[ "$count" -eq 12 && "$fingerprint" == '77a408974add7f466ed746b8b47c10d5fec45c8073ab32e0450abd95f206bf1f' ]] || [[ "$count" -eq 30 && "$fingerprint" == '930cd1237722f4dd0af03e85d684ffa435adab6a1ae16db96d78243510fd85bc' ]] || [[ "$count" -eq 6 && "$fingerprint" == 'ee7e3bdc0de47cf8a762635a5ca69af1afde8cb2048363f4902b42a1290c9f14' ]] || [[ "$count" -eq 29 && "$fingerprint" == 'e56a3e2732f5d5b0b40dd3ae50ec25746cf18bc8bd556d25405e85642c789878' ]] || [[ "$count" -eq 20 && "$fingerprint" == 'b25a8747bd003c6952e86f97982ee7cfd504e9ffffda137fca52fb6dd597d663' ]] || [[ "$count" -eq 28 && "$fingerprint" == '3b97670674b60c636a23e52551b7ade69a3f545d5d0b4a861fa1c06eae5c0656' ]] || [[ "$count" -eq 19 && "$fingerprint" == '563d445adb1c6a2d7caf2fae5a0b694485cddfa5389fc61773ceaa19d978cf79' ]] || [[ "$count" -eq 3 && "$fingerprint" == 'ff356c1116ac1706431c3d6878425fd3d16b1c12512dce26cd942fbec85081b0' ]]; }; then
               if [[ "$count" -eq 4 && "$fingerprint" == '6f4e1a3efe6e2dc8bcc5e213b88d968ead955d64074f159f52971e16a8a9abf8' ]]; then
                   for expected in \
                     '.github/workflows/sprint88-final-shift-close-migration-source-gate.yml' \
@@ -394,7 +393,7 @@ jobs:
               done
               sprint50_historical_compatibility=true
               echo 'Migrations #19-#27 isolated only from exact governed historical release-artifact regression.'
-              if [[ "$count" -eq 4 && "$fingerprint" == '6f4e1a3efe6e2dc8bcc5e213b88d968ead955d64074f159f52971e16a8a9abf8' ]] || [[ "$count" -eq 9 && "$fingerprint" == '890cb08631de804bc2936882f635be11dea52c1e022c4f5112389fd76744ce10' ]] || [[ "$count" -eq 6 && "$fingerprint" == 'cc40f08beda780e4aa4795f29aa7533bbde1029d11855d43f180812502c4d80b' ]] || [[ "$count" -eq 8 && "$fingerprint" == '3e5b516b17bfc4b2b4e8694248672ff7a4298a3e080e0617a70b1bb1d8aa6194' ]] || [[ "$count" -eq 9 && "$fingerprint" == 'c2a575ec728249a8a4b26c173229b26455eee92c7bd4c59026a1d4c064e2c442' ]] || [[ "$count" -eq 4 && "$fingerprint" == 'eaa9c44aed2728b0a508f6be91155f3f2021f7f3de1383164a54be611d3933cf' ]] || [[ "$count" -eq 13 && "$fingerprint" == 'dcc4ec5d3fdefa32271c50cebec7e2536c179b203a60c3fb5bed1aeb9f4a47fb' ]] || [[ "$count" -eq 20 && "$fingerprint" == 'c6cd387d5ea83d73382493ca78d219c0db35477e55c61a68e489a0329231f922' ]] || [[ "$count" -eq 7 && "$fingerprint" == 'ae57a65e64fa71509141c224012036c0d69920a48f6f323412d952f9234ba789' ]] || [[ "$count" -eq 5 && "$fingerprint" == 'f668cbbe0bd82b75171a34b410138d1c0c8c8c4196d14f964617e513f2aa59e3' ]] || [[ "$count" -eq 2 && "$fingerprint" == 'cce261e63125368c85fff8038d2571005da2385497e5a13e6f37f82bd3ca31a7' ]] || [[ "$count" -eq 1 && "$fingerprint" == 'bcec6fc13a26f5c88f4408d76d362195ca9d546cc2df6d6c388a67640b93cce2' ]] || [[ "$count" -eq 4 && "$fingerprint" == '2083c79345c4c86cd3417cc3db9ed0b7546c998a018c27a381102eaf4de9b6da' ]] || [[ "$count" -eq 5 && "$fingerprint" == '38a9d7204bf43e6388f2da36bd6c0beb65c83026c4bc2476cdcf7e4abf356e41' ]] || [[ "$count" -eq 5 && "$fingerprint" == '26d2d48f114c88d60dc302dccd8d41118bc730c309c9d79b71f5e516731a0b25' ]] || [[ "$count" -eq 15 && "$fingerprint" == '325559599c79ba68340eac34569f8e5513aa4957b1ddf2515007b98b2cc1f15f' ]] || [[ "$count" -eq 14 && "$fingerprint" == 'ad4f6c62c820bdc59d7c1c8550ffeec0a4a0718ba4388a516418d50468d7e9d5' ]] || [[ "$count" -eq 14 && "$fingerprint" == '1d75fe26236e2bb56c113713e878e81d3df72cee9aa647b3f7759b9d1bec9164' ]] || [[ "$count" -eq 14 && "$fingerprint" == 'a0914d7db5c1636e909e331e8b72653bc9814eb74e3a3823d7db36bd3b73b624' ]] || [[ "$count" -eq 12 && "$fingerprint" == '77a408974add7f466ed746b8b47c10d5fec45c8073ab32e0450abd95f206bf1f' ]] || [[ "$count" -eq 30 && "$fingerprint" == '930cd1237722f4dd0af03e85d684ffa435adab6a1ae16db96d78243510fd85bc' ]] || [[ "$count" -eq 6 && "$fingerprint" == 'ee7e3bdc0de47cf8a762635a5ca69af1afde8cb2048363f4902b42a1290c9f14' ]] || [[ "$count" -eq 29 && "$fingerprint" == 'e56a3e2732f5d5b0b40dd3ae50ec25746cf18bc8bd556d25405e85642c789878' ]] || [[ "$count" -eq 20 && "$fingerprint" == 'b25a8747bd003c6952e86f97982ee7cfd504e9ffffda137fca52fb6dd597d663' ]] || [[ "$count" -eq 19 && "$fingerprint" == '563d445adb1c6a2d7caf2fae5a0b694485cddfa5389fc61773ceaa19d978cf79' ]] || [[ "$count" -eq 3 && "$fingerprint" == 'ff356c1116ac1706431c3d6878425fd3d16b1c12512dce26cd942fbec85081b0' ]]; then
+              if [[ "$count" -eq 4 && "$fingerprint" == '6f4e1a3efe6e2dc8bcc5e213b88d968ead955d64074f159f52971e16a8a9abf8' ]] || [[ "$count" -eq 9 && "$fingerprint" == '890cb08631de804bc2936882f635be11dea52c1e022c4f5112389fd76744ce10' ]] || [[ "$count" -eq 6 && "$fingerprint" == 'cc40f08beda780e4aa4795f29aa7533bbde1029d11855d43f180812502c4d80b' ]] || [[ "$count" -eq 8 && "$fingerprint" == '3e5b516b17bfc4b2b4e8694248672ff7a4298a3e080e0617a70b1bb1d8aa6194' ]] || [[ "$count" -eq 9 && "$fingerprint" == 'c2a575ec728249a8a4b26c173229b26455eee92c7bd4c59026a1d4c064e2c442' ]] || [[ "$count" -eq 4 && "$fingerprint" == 'eaa9c44aed2728b0a508f6be91155f3f2021f7f3de1383164a54be611d3933cf' ]] || [[ "$count" -eq 13 && "$fingerprint" == 'dcc4ec5d3fdefa32271c50cebec7e2536c179b203a60c3fb5bed1aeb9f4a47fb' ]] || [[ "$count" -eq 20 && "$fingerprint" == 'c6cd387d5ea83d73382493ca78d219c0db35477e55c61a68e489a0329231f922' ]] || [[ "$count" -eq 7 && "$fingerprint" == 'ae57a65e64fa71509141c224012036c0d69920a48f6f323412d952f9234ba789' ]] || [[ "$count" -eq 5 && "$fingerprint" == 'f668cbbe0bd82b75171a34b410138d1c0c8c8c4196d14f964617e513f2aa59e3' ]] || [[ "$count" -eq 2 && "$fingerprint" == 'cce261e63125368c85fff8038d2571005da2385497e5a13e6f37f82bd3ca31a7' ]] || [[ "$count" -eq 1 && "$fingerprint" == 'bcec6fc13a26f5c88f4408d76d362195ca9d546cc2df6d6c388a67640b93cce2' ]] || [[ "$count" -eq 4 && "$fingerprint" == '2083c79345c4c86cd3417cc3db9ed0b7546c998a018c27a381102eaf4de9b6da' ]] || [[ "$count" -eq 5 && "$fingerprint" == '38a9d7204bf43e6388f2da36bd6c0beb65c83026c4bc2476cdcf7e4abf356e41' ]] || [[ "$count" -eq 6 && "$fingerprint" == '4968d9fcf35b7a17d67b1909cfd1dad93f2b08b7d82b8c6d30be4dc09f067be3' ]] || [[ "$count" -eq 5 && "$fingerprint" == '26d2d48f114c88d60dc302dccd8d41118bc730c309c9d79b71f5e516731a0b25' ]] || [[ "$count" -eq 15 && "$fingerprint" == '325559599c79ba68340eac34569f8e5513aa4957b1ddf2515007b98b2cc1f15f' ]] || [[ "$count" -eq 14 && "$fingerprint" == 'ad4f6c62c820bdc59d7c1c8550ffeec0a4a0718ba4388a516418d50468d7e9d5' ]] || [[ "$count" -eq 14 && "$fingerprint" == '1d75fe26236e2bb56c113713e878e81d3df72cee9aa647b3f7759b9d1bec9164' ]] || [[ "$count" -eq 14 && "$fingerprint" == 'a0914d7db5c1636e909e331e8b72653bc9814eb74e3a3823d7db36bd3b73b624' ]] || [[ "$count" -eq 12 && "$fingerprint" == '77a408974add7f466ed746b8b47c10d5fec45c8073ab32e0450abd95f206bf1f' ]] || [[ "$count" -eq 30 && "$fingerprint" == '930cd1237722f4dd0af03e85d684ffa435adab6a1ae16db96d78243510fd85bc' ]] || [[ "$count" -eq 6 && "$fingerprint" == 'ee7e3bdc0de47cf8a762635a5ca69af1afde8cb2048363f4902b42a1290c9f14' ]] || [[ "$count" -eq 29 && "$fingerprint" == 'e56a3e2732f5d5b0b40dd3ae50ec25746cf18bc8bd556d25405e85642c789878' ]] || [[ "$count" -eq 20 && "$fingerprint" == 'b25a8747bd003c6952e86f97982ee7cfd504e9ffffda137fca52fb6dd597d663' ]] || [[ "$count" -eq 19 && "$fingerprint" == '563d445adb1c6a2d7caf2fae5a0b694485cddfa5389fc61773ceaa19d978cf79' ]] || [[ "$count" -eq 3 && "$fingerprint" == 'ff356c1116ac1706431c3d6878425fd3d16b1c12512dce26cd942fbec85081b0' ]]; then
                 sprint51_jrn008_preview_fixture=true
                 echo 'Exact Sprint51/Sprint57/Sprint60 source, Preview fixture correction, or exact bounded self-qualification recognized.'
               fi
@@ -528,223 +527,21 @@ jobs:
         run: |
           set -euo pipefail
           sidecar="dist/manifest.json"
+          artifact="${{ steps.package.outputs.archive_path }}"
           source_sha="${{ steps.source.outputs.source_sha }}"
           release_id="${{ steps.package.outputs.release_id }}"
-          artifact="${{ steps.package.outputs.archive_path }}"
-          archive_name="$(basename "$artifact")"
-          artifact_sha256="$(sha256sum "$artifact" | awk '{print $1}')"
-          artifact_size="$(wc -c < "$artifact" | tr -d '[:space:]')"
-          release_version="0.1.0-preview.${source_sha:0:12}"
 
-          cat > "$sidecar" <<JSON
-          {
-            "schema_version": 1,
-            "product": "oneQay",
-            "repository": "labzefry/oneQay",
-            "release_id": "$release_id",
-            "release_channel": "preview",
-            "source_commit": "$source_sha",
-            "artifact_filename": "$archive_name",
-            "artifact_type": "tar.gz",
-            "artifact_size": $artifact_size,
-            "artifact_sha256": "$artifact_sha256",
-            "runtime_requirements": {
-              "php_min": "8.2.0",
-              "php_extensions": [
-                "ctype",
-                "curl",
-                "dom",
-                "fileinfo",
-                "filter",
-                "hash",
-                "mbstring",
-                "openssl",
-                "pdo",
-                "session",
-                "tokenizer",
-                "xml"
-              ]
-            },
-            "host_requirements": {
-              "os_families": ["linux"],
-              "web_server_interfaces": ["fpm-fcgi", "cgi-fcgi", "apache2handler"],
-              "memory_bytes_min": 268435456,
-              "execution_time_seconds_min": 60,
-              "disk_bytes_min": 1073741824,
-              "required_capabilities": [
-                "https",
-                "dns",
-                "time_sync",
-                "outbound_allowlist",
-                "scheduler",
-                "archive",
-                "temp_directory",
-                "required_tools"
-              ]
-            },
-            "compatibility_policy": {
-              "release_version": "$release_version",
-              "build_provenance_ref": "$ONEQAY_BUILD_PROVENANCE",
-              "supported_current_version_range": {
-                "min": "0.0.0",
-                "max": "$release_version"
-              },
-              "deployment_compatibility": "TECHNICAL_PREVIEW_V1",
-              "rollback_compatibility": "NO_SCHEMA_CHANGE_ROLLBACK_SAFE",
-              "public_bootstrap_layout_compatibility": "M7_5_PREVIEW_PUBLIC_SURFACE_V1",
-              "release_notes_reference": "RELEASE.md#release-lifecycle"
-            },
-            "migration_classification": "NO_SCHEMA_CHANGE",
-            "attribution": "Lab | zefry"
-          }
-          JSON
-
-          export ONEQAY_INSTALLATION_SIDECAR="$sidecar"
-          export ONEQAY_INSTALLATION_ARTIFACT="$artifact"
-          export ONEQAY_INSTALLATION_SOURCE_SHA="$source_sha"
-
-          php <<'PHP'
-          <?php
-
-          declare(strict_types=1);
-
-          use App\Infrastructure\Installation\SecureInstallationReadiness;
-
-          require 'apps/web/vendor/autoload.php';
-
-          $sidecarPath = (string) getenv('ONEQAY_INSTALLATION_SIDECAR');
-          $artifactPath = (string) getenv('ONEQAY_INSTALLATION_ARTIFACT');
-          $sourceSha = (string) getenv('ONEQAY_INSTALLATION_SOURCE_SHA');
-
-          try {
-              $manifest = json_decode((string) file_get_contents($sidecarPath), true, 512, JSON_THROW_ON_ERROR);
-          } catch (Throwable $exception) {
-              fwrite(STDERR, "Installer-readiness sidecar JSON is invalid.\n");
-              exit(1);
-          }
-
-          if (! is_array($manifest)
-              || ($manifest['source_commit'] ?? null) !== $sourceSha
-              || ($manifest['artifact_filename'] ?? null) !== basename($artifactPath)) {
-              fwrite(STDERR, "Installer-readiness sidecar identity is not bound to the exact governed source/artifact.\n");
-              exit(1);
-          }
-
-          $size = filesize($artifactPath);
-          $sha256 = hash_file('sha256', $artifactPath);
-          if (! is_int($size) || $size <= 0 || ! is_string($sha256)) {
-              fwrite(STDERR, "Unable to observe governed artifact identity.\n");
-              exit(1);
-          }
-
-          $artifact = [
-              'filename' => basename($artifactPath),
-              'size' => $size,
-              'sha256' => $sha256,
-          ];
-
-          $runtime = is_array($manifest['runtime_requirements'] ?? null)
-              ? $manifest['runtime_requirements']
-              : [];
-          $extensions = is_array($runtime['php_extensions'] ?? null)
-              ? array_values(array_filter($runtime['php_extensions'], 'is_string'))
-              : [];
-          $hostRequirements = is_array($manifest['host_requirements'] ?? null)
-              ? $manifest['host_requirements']
-              : [];
-          $requiredCapabilities = is_array($hostRequirements['required_capabilities'] ?? null)
-              ? $hostRequirements['required_capabilities']
-              : [];
-          $capabilities = [];
-          foreach ($requiredCapabilities as $capability) {
-              if (is_string($capability)) {
-                  $capabilities[strtolower(trim($capability))] = true;
-              }
-          }
-
-          $subject = new SecureInstallationReadiness();
-          $environment = [
-              'APP_ENV' => 'production',
-              'APP_KEY' => 'base64:trusted-build-validator-key',
-              'APP_URL' => 'https://build-validator.oneqay.invalid',
-              'APP_DEBUG' => 'false',
-              'ONEQAY_DB_DRIVER' => 'mysql',
-              'ONEQAY_DB_HOST' => '127.0.0.1',
-              'ONEQAY_DB_DATABASE' => 'oneqay_validator',
-              'ONEQAY_DB_USERNAME' => 'oneqay_validator',
-          ];
-          $writable = [
-              'bootstrap/cache' => true,
-              'storage/framework/cache' => true,
-              'storage/framework/sessions' => true,
-              'storage/framework/views' => true,
-              'storage/logs' => true,
-          ];
-          $database = [
-              'connected' => true,
-              'engine' => 'mysql',
-              'server_version' => '8.0.36',
-              'charset' => 'utf8mb4',
-              'timezone' => '+00:00',
-              'schema_state' => 'empty',
-              'least_privilege' => true,
-          ];
-          $host = [
-              'os_family' => 'linux',
-              'web_server_interface' => 'fpm-fcgi',
-              'memory_bytes' => max(1, (int) ($hostRequirements['memory_bytes_min'] ?? 0)),
-              'execution_time_seconds' => max(1, (int) ($hostRequirements['execution_time_seconds_min'] ?? 0)),
-              'disk_free_bytes' => max(1, (int) ($hostRequirements['disk_bytes_min'] ?? 0)),
-              'capabilities' => $capabilities,
-          ];
-
-          $assessment = $subject->assess(
-              $environment,
-              $extensions,
-              (string) ($runtime['php_min'] ?? ''),
-              $writable,
-              $manifest,
-              $artifact,
-              $database,
-              $host,
-          );
-
-          foreach (['php_version', 'php_extensions', 'host_platform', 'release_manifest', 'artifact_integrity'] as $check) {
-              if (($assessment['checks'][$check]['ready'] ?? false) !== true) {
-                  fwrite(STDERR, "Installer-readiness sidecar rejected by canonical readiness authority: {$check}.\n");
-                  exit(1);
-              }
-          }
-
-          if (($assessment['ready'] ?? false) !== true) {
-              fwrite(STDERR, "Installer-readiness sidecar did not satisfy canonical validation fixtures.\n");
-              exit(1);
-          }
-
-          $tampered = $artifact;
-          $tampered['sha256'] = str_repeat('0', 64);
-          $tamperedAssessment = $subject->assess(
-              $environment,
-              $extensions,
-              (string) ($runtime['php_min'] ?? ''),
-              $writable,
-              $manifest,
-              $tampered,
-              $database,
-              $host,
-          );
-          if (($tamperedAssessment['checks']['artifact_integrity']['ready'] ?? true) !== false) {
-              fwrite(STDERR, "Tampered artifact digest did not fail closed.\n");
-              exit(1);
-          }
-
-          fwrite(STDOUT, "Installer-readiness sidecar validated through canonical readiness authority.\n");
-          PHP
+          php tools/build-installation-readiness-manifest.php \
+            "$artifact" \
+            "$source_sha" \
+            "$release_id" \
+            "$ONEQAY_BUILD_PROVENANCE" \
+            "$sidecar"
 
           {
             echo "manifest_path=$sidecar"
-            echo "artifact_sha256=$artifact_sha256"
-            echo "artifact_size=$artifact_size"
+            echo "artifact_sha256=$(sha256sum "$artifact" | awk '{print $1}')"
+            echo "artifact_size=$(wc -c < "$artifact" | tr -d '[:space:]')"
           } >> "$GITHUB_OUTPUT"
 
       - name: Verify manifest binding, checksum, public/private, and no-schema-change boundaries
