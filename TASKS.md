@@ -1,8 +1,8 @@
 # oneQay Tasks
 
-**Current canonical engineering checkpoint:** Sprint177 engineering closed  
-**Canonical engineering commit:** `6752af1eb957993a6080206d9a40f7163bd24be6`  
-**Latest engineering PR:** #781 — `Sprint177: add guarded merchant context bootstrap delivery`  
+**Current canonical engineering checkpoint:** Sprint177 engineering closed
+**Canonical engineering commit:** `6752af1eb957993a6080206d9a40f7163bd24be6`
+**Latest engineering PR:** #781 — `Sprint177: add guarded merchant context bootstrap delivery`
 **Canonical status authority:** `PROJECT_MANIFEST.md`
 
 ## Completed Sprint177 engineering state
