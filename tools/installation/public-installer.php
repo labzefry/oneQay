@@ -21,6 +21,7 @@ $accountHome = dirname(__DIR__, 2);
 $appRoot = $accountHome.'/oneqay-preview/releases/'.$releaseId.'/apps/web';
 $installerSources = [
     $appRoot.'/app/Infrastructure/Installation/PrebootDatabaseCompatibilityVerification.php',
+    $appRoot.'/app/Infrastructure/Installation/PrebootInstallationActivationHandoff.php',
     $appRoot.'/app/Infrastructure/Installation/PrebootInstallationConfiguration.php',
 ];
 $sharedRoot = $accountHome.'/oneqay-preview/shared';
@@ -81,6 +82,7 @@ function stateTitle(string $state): string
 {
     return match ($state) {
         'READY_FOR_CONFIGURATION' => 'Ready to prepare configuration',
+        'PENDING_CONFIGURATION_VERIFIED_HANDOFF_READY' => 'Configuration verified — activation handoff ready',
         'PENDING_CONFIGURATION_VERIFIED' => 'Configuration verified and prepared',
         'PENDING_CONFIGURATION_PRESENT' => 'Configuration prepared',
         'ACTIVE_ENV_PRESENT' => 'Runtime already configured',
@@ -95,6 +97,7 @@ function stateDescription(string $state): string
 {
     return match ($state) {
         'READY_FOR_CONFIGURATION' => 'The private one-time installation authority is valid. Submit the secure runtime configuration below.',
+        'PENDING_CONFIGURATION_VERIFIED_HANDOFF_READY' => 'The verified pending configuration is bound to this exact governed release through a private digest-only activation handoff. Separate operational activation authority is still required.',
         'PENDING_CONFIGURATION_VERIFIED' => 'Database connectivity and compatibility were verified before the private pending runtime configuration was committed. Activation remains locked.',
         'PENDING_CONFIGURATION_PRESENT' => 'A private .env.pending file exists without Sprint185 database verification evidence. Activation remains locked.',
         'ACTIVE_ENV_PRESENT' => 'An active shared runtime environment already exists. This pre-boot installer will not overwrite it.',
@@ -192,8 +195,8 @@ function stateDescription(string $state): string
         <p class="eyebrow">Controlled installation preparation</p>
         <h1>Prepare runtime configuration</h1>
         <p class="lead">
-            This pre-boot surface verifies database connectivity and compatibility before preparing the private shared runtime configuration for the exact governed release.
-            It does not activate Technical Preview, run migrations, deploy a release, or grant Production authority.
+            This pre-boot surface verifies database connectivity and compatibility, prepares the private pending runtime configuration, and binds it to a non-activating handoff for the exact governed release.
+            The handoff is evidence only: it does not grant activation authority, activate Technical Preview, run migrations, deploy a release, or grant Production authority.
         </p>
 
         <div class="status">
@@ -206,7 +209,7 @@ function stateDescription(string $state): string
 
         <?php if ($prepared): ?>
             <div class="notice success">
-                Configuration was written to the private pending runtime boundary. Activation remains locked.
+                Configuration was verified and written to the private pending runtime boundary. A release-bound activation handoff was prepared without granting activation authority.
             </div>
         <?php elseif ($errorCode !== null): ?>
             <div class="notice error">
@@ -258,8 +261,8 @@ function stateDescription(string $state): string
 
                 <div class="actions">
                     <p>
-                        Submission first performs a read-only database compatibility verification, then creates <strong>.env.pending</strong> only when verification succeeds.
-                        No active <strong>.env</strong> is created by this step.
+                        Submission performs read-only database compatibility verification, creates <strong>.env.pending</strong> only after success, and writes a private digest-only activation handoff bound to this release.
+                        No active <strong>.env</strong> is created and no activation authority is granted by this step.
                     </p>
                     <button type="submit">Verify &amp; prepare configuration</button>
                 </div>
