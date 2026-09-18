@@ -45,12 +45,24 @@ final class PrebootInstallationConfiguration
         }
 
         if (is_file($this->pendingEnvironmentPath())) {
-            return $this->state(
-                $this->pendingConfigurationIsDatabaseVerified()
-                    ? 'PENDING_CONFIGURATION_VERIFIED'
-                    : 'PENDING_CONFIGURATION_PRESENT',
-                false,
-            );
+            $pendingEnvironment = $this->pendingEnvironmentContent();
+            if ($pendingEnvironment !== null
+                && $this->pendingConfigurationIsDatabaseVerified($pendingEnvironment)) {
+                $handoff = new PrebootInstallationActivationHandoff(
+                    $this->sharedRoot,
+                    $this->releaseId,
+                    $this->nowUnix,
+                );
+
+                return $this->state(
+                    $handoff->requestMatchesPending($pendingEnvironment)
+                        ? 'PENDING_CONFIGURATION_VERIFIED_HANDOFF_READY'
+                        : 'PENDING_CONFIGURATION_VERIFIED',
+                    false,
+                );
+            }
+
+            return $this->state('PENDING_CONFIGURATION_PRESENT', false);
         }
 
         $authority = $this->loadAuthority();
@@ -129,6 +141,16 @@ final class PrebootInstallationConfiguration
             }
 
             $content = $this->renderPendingEnvironment($configuration, $facts);
+            $handoff = new PrebootInstallationActivationHandoff(
+                $this->sharedRoot,
+                $this->releaseId,
+                $this->nowUnix,
+            );
+            $handoffContent = $handoff->buildRequest($content, $facts);
+            $handoffPath = $handoff->requestPath();
+            if (file_exists($handoffPath) || is_link($handoffPath)) {
+                throw new RuntimeException('activation_handoff_already_present');
+            }
 
             $runtimeDirectory = $this->runtimeDirectory();
             if (! is_dir($runtimeDirectory)
@@ -184,12 +206,61 @@ final class PrebootInstallationConfiguration
             }
             @chmod($pendingPath, 0600);
 
-            // Authority is single-use. Failure to remove it does not permit a second
-            // preparation because the pending configuration is itself a fail-closed lock.
+            $handoffTemporaryPath = $installDirectory
+                .DIRECTORY_SEPARATOR.'.activation-request.tmp.'.bin2hex(random_bytes(12));
+            $handoffHandle = @fopen($handoffTemporaryPath, 'x+b');
+            if (! is_resource($handoffHandle)) {
+                @unlink($pendingPath);
+                throw new RuntimeException('activation_handoff_temp_unavailable');
+            }
+
+            try {
+                @chmod($handoffTemporaryPath, 0600);
+                $handoffLength = strlen($handoffContent);
+                $handoffWritten = 0;
+                while ($handoffWritten < $handoffLength) {
+                    $result = fwrite($handoffHandle, substr($handoffContent, $handoffWritten));
+                    if ($result === false || $result === 0) {
+                        throw new RuntimeException('activation_handoff_write_failed');
+                    }
+                    $handoffWritten += $result;
+                }
+
+                if (! fflush($handoffHandle)) {
+                    throw new RuntimeException('activation_handoff_flush_failed');
+                }
+
+                if (function_exists('fsync')) {
+                    @fsync($handoffHandle);
+                }
+            } catch (Throwable $exception) {
+                fclose($handoffHandle);
+                @unlink($handoffTemporaryPath);
+                @unlink($pendingPath);
+                throw $exception;
+            }
+
+            fclose($handoffHandle);
+
+            if (! @rename($handoffTemporaryPath, $handoffPath)) {
+                @unlink($handoffTemporaryPath);
+                @unlink($pendingPath);
+                throw new RuntimeException('activation_handoff_commit_failed');
+            }
+            @chmod($handoffPath, 0600);
+
+            if (! $handoff->requestMatchesPending($content)) {
+                @unlink($handoffPath);
+                @unlink($pendingPath);
+                throw new RuntimeException('activation_handoff_verification_failed');
+            }
+
+            // Authority is single-use only after both pending configuration and
+            // non-activating handoff evidence are committed successfully.
             @unlink($this->authorityPath());
 
             return [
-                'state' => 'CONFIGURATION_PREPARED_PENDING_ACTIVATION',
+                'state' => 'CONFIGURATION_PREPARED_HANDOFF_READY',
                 'prepared' => true,
                 'activation_authorized' => false,
             ];
@@ -356,23 +427,25 @@ final class PrebootInstallationConfiguration
         ]);
     }
 
-    private function pendingConfigurationIsDatabaseVerified(): bool
+    private function pendingEnvironmentContent(): ?string
     {
         $path = $this->pendingEnvironmentPath();
         if (! is_file($path) || is_link($path) || ! is_readable($path)) {
-            return false;
+            return null;
         }
 
         $size = filesize($path);
         if (! is_int($size) || $size <= 0 || $size > 65536) {
-            return false;
+            return null;
         }
 
         $content = file_get_contents($path);
-        if (! is_string($content)) {
-            return false;
-        }
 
+        return is_string($content) ? $content : null;
+    }
+
+    private function pendingConfigurationIsDatabaseVerified(string $content): bool
+    {
         return str_contains($content, 'ONEQAY_INSTALLATION_DATABASE_VERIFIED="true"')
             && str_contains($content, 'ONEQAY_INSTALLATION_DATABASE_LEAST_PRIVILEGE="true"')
             && str_contains($content, 'ONEQAY_INSTALLATION_ACTIVATION_AUTHORIZED="false"');
@@ -426,7 +499,12 @@ final class PrebootInstallationConfiguration
             throw new RuntimeException('unsafe_shared_runtime_boundary');
         }
 
-        foreach ([$this->activeEnvironmentPath(), $this->pendingEnvironmentPath(), $this->authorityPath()] as $path) {
+        foreach ([
+            $this->activeEnvironmentPath(),
+            $this->pendingEnvironmentPath(),
+            $this->authorityPath(),
+            $this->activationHandoffPath(),
+        ] as $path) {
             if (is_link($path)) {
                 throw new RuntimeException('symlink_boundary_rejected');
             }
@@ -487,6 +565,11 @@ final class PrebootInstallationConfiguration
     private function authorityPath(): string
     {
         return $this->installDirectory().DIRECTORY_SEPARATOR.'authority.json';
+    }
+
+    private function activationHandoffPath(): string
+    {
+        return $this->installDirectory().DIRECTORY_SEPARATOR.'activation-request.json';
     }
 
     private function activeEnvironmentPath(): string
