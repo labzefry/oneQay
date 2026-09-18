@@ -19,16 +19,21 @@ if (($_SERVER['HTTPS'] ?? '') !== '' && strtolower((string) $_SERVER['HTTPS']) !
 $releaseId = '__ONEQAY_RELEASE_ID__';
 $accountHome = dirname(__DIR__, 2);
 $appRoot = $accountHome.'/oneqay-preview/releases/'.$releaseId.'/apps/web';
-$installerSource = $appRoot.'/app/Infrastructure/Installation/PrebootInstallationConfiguration.php';
+$installerSources = [
+    $appRoot.'/app/Infrastructure/Installation/PrebootDatabaseCompatibilityVerification.php',
+    $appRoot.'/app/Infrastructure/Installation/PrebootInstallationConfiguration.php',
+];
 $sharedRoot = $accountHome.'/oneqay-preview/shared';
 
-if (! is_file($installerSource) || is_link($installerSource) || ! is_readable($installerSource)) {
-    http_response_code(503);
-    echo 'oneQay installer unavailable';
-    exit;
-}
+foreach ($installerSources as $installerSource) {
+    if (! is_file($installerSource) || is_link($installerSource) || ! is_readable($installerSource)) {
+        http_response_code(503);
+        echo 'oneQay installer unavailable';
+        exit;
+    }
 
-require $installerSource;
+    require_once $installerSource;
+}
 
 $installer = new \App\Infrastructure\Installation\PrebootInstallationConfiguration($sharedRoot, $releaseId, time());
 $state = ['state' => 'UNAVAILABLE', 'can_prepare' => false, 'activation_authorized' => false];
@@ -76,6 +81,7 @@ function stateTitle(string $state): string
 {
     return match ($state) {
         'READY_FOR_CONFIGURATION' => 'Ready to prepare configuration',
+        'PENDING_CONFIGURATION_VERIFIED' => 'Configuration verified and prepared',
         'PENDING_CONFIGURATION_PRESENT' => 'Configuration prepared',
         'ACTIVE_ENV_PRESENT' => 'Runtime already configured',
         'AUTHORITY_MISSING' => 'Installation authority required',
@@ -89,7 +95,8 @@ function stateDescription(string $state): string
 {
     return match ($state) {
         'READY_FOR_CONFIGURATION' => 'The private one-time installation authority is valid. Submit the secure runtime configuration below.',
-        'PENDING_CONFIGURATION_PRESENT' => 'A private .env.pending file exists. Activation remains locked and requires separate operational authority.',
+        'PENDING_CONFIGURATION_VERIFIED' => 'Database connectivity and compatibility were verified before the private pending runtime configuration was committed. Activation remains locked.',
+        'PENDING_CONFIGURATION_PRESENT' => 'A private .env.pending file exists without Sprint185 database verification evidence. Activation remains locked.',
         'ACTIVE_ENV_PRESENT' => 'An active shared runtime environment already exists. This pre-boot installer will not overwrite it.',
         'AUTHORITY_MISSING' => 'Place a valid private authority.json in the shared install boundary before submitting configuration.',
         'AUTHORITY_EXPIRED' => 'The private installation authority is no longer valid. Provision a new one-time authority.',
@@ -185,7 +192,7 @@ function stateDescription(string $state): string
         <p class="eyebrow">Controlled installation preparation</p>
         <h1>Prepare runtime configuration</h1>
         <p class="lead">
-            This pre-boot surface prepares the private shared runtime configuration for the exact governed release.
+            This pre-boot surface verifies database connectivity and compatibility before preparing the private shared runtime configuration for the exact governed release.
             It does not activate Technical Preview, run migrations, deploy a release, or grant Production authority.
         </p>
 
@@ -251,10 +258,10 @@ function stateDescription(string $state): string
 
                 <div class="actions">
                     <p>
-                        Submission creates <strong>.env.pending</strong> with a fresh application key and disabled activation defaults.
+                        Submission first performs a read-only database compatibility verification, then creates <strong>.env.pending</strong> only when verification succeeds.
                         No active <strong>.env</strong> is created by this step.
                     </p>
-                    <button type="submit">Prepare configuration</button>
+                    <button type="submit">Verify &amp; prepare configuration</button>
                 </div>
             </form>
         <?php endif; ?>
