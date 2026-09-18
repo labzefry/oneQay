@@ -17,7 +17,7 @@ The latest completed engineering sprint is **Sprint183 — Governed M7.5 Release
 - Exact-head corrective qualification: 69/69 successful
 - Canonical main-push M7.5 run `35369464318`: SUCCESS
 - Engineering envelope: 1 path, SHA-256 `bcec6fc13a26f5c88f4408d76d362195ca9d546cc2df6d6c388a67640b93cce2`
-- Reconciliation envelope: 6 paths, SHA-256 `09fc0a9ae283def9c130b48fa756b17624ae0fbf3f87ad988c40605fcaf362c6`
+- Reconciliation envelope: 8 paths, SHA-256 `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`
 
 For the full project state, use [`PROJECT_MANIFEST.md`](PROJECT_MANIFEST.md) as the canonical human-readable source of truth.
 
