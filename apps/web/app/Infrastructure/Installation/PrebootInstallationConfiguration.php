@@ -34,7 +34,7 @@ final class PrebootInstallationConfiguration
     }
 
     /**
-     * @return array{state: string, can_prepare: bool, activation_handoff_ready: bool, activation_authorized: false}
+     * @return array{state: string, can_prepare: bool, activation_handoff_ready: bool, promotion_request_pending: bool, activation_authorized: false}
      */
     public function inspect(): array
     {
@@ -47,6 +47,7 @@ final class PrebootInstallationConfiguration
         if (is_file($this->pendingEnvironmentPath())) {
             $verified = $this->pendingConfigurationIsDatabaseVerified();
             $handoffReady = false;
+            $promotionRequestPending = false;
             if ($verified) {
                 $handoff = (new PrebootInstallationActivationReadiness(
                     $this->sharedRoot,
@@ -54,12 +55,22 @@ final class PrebootInstallationConfiguration
                     $this->nowUnix,
                 ))->inspect();
                 $handoffReady = ($handoff['ready'] ?? false) === true;
+
+                if ($handoffReady) {
+                    $request = (new PrebootRuntimeConfigurationPromotionRequest(
+                        $this->sharedRoot,
+                        $this->releaseId,
+                        $this->nowUnix,
+                    ))->inspect();
+                    $promotionRequestPending = ($request['request_ready'] ?? false) === true;
+                }
             }
 
             return $this->state(
                 $verified ? 'PENDING_CONFIGURATION_VERIFIED' : 'PENDING_CONFIGURATION_PRESENT',
                 false,
                 $handoffReady,
+                $promotionRequestPending,
             );
         }
 
@@ -81,7 +92,7 @@ final class PrebootInstallationConfiguration
 
     /**
      * @param array<string, mixed> $input
-     * @return array{state: string, prepared: true, activation_handoff_ready: true, activation_authorized: false}
+     * @return array{state: string, prepared: true, activation_handoff_ready: true, promotion_request_pending: true, activation_authorized: false}
      */
     public function prepare(array $input): array
     {
@@ -200,19 +211,29 @@ final class PrebootInstallationConfiguration
                     $this->releaseId,
                     $this->nowUnix,
                 ))->sealPendingEnvironment($content, $facts);
+
+                $promotionRequest = (new PrebootRuntimeConfigurationPromotionRequest(
+                    $this->sharedRoot,
+                    $this->releaseId,
+                    $this->nowUnix,
+                ))->create();
             } catch (Throwable $exception) {
+                @unlink($this->promotionRequestPath());
+                @unlink($this->activationReadinessPath());
                 @unlink($pendingPath);
                 throw $exception;
             }
 
-            // Authority is single-use only after both verified pending configuration
-            // and its exact-release activation-readiness handoff are committed.
+            // Authority is single-use only after verified pending configuration,
+            // exact-release handoff, and the non-authorizing promotion request
+            // are committed successfully.
             @unlink($this->authorityPath());
 
             return [
                 'state' => 'CONFIGURATION_PREPARED_PENDING_ACTIVATION',
                 'prepared' => true,
                 'activation_handoff_ready' => ($handoff['ready'] ?? false) === true,
+                'promotion_request_pending' => ($promotionRequest['state'] ?? null) === 'PROMOTION_REQUEST_PENDING_APPROVAL',
                 'activation_authorized' => false,
             ];
         } finally {
@@ -487,13 +508,18 @@ final class PrebootInstallationConfiguration
         return $value;
     }
 
-    /** @return array{state: string, can_prepare: bool, activation_handoff_ready: bool, activation_authorized: false} */
-    private function state(string $state, bool $canPrepare, bool $handoffReady = false): array
-    {
+    /** @return array{state: string, can_prepare: bool, activation_handoff_ready: bool, promotion_request_pending: bool, activation_authorized: false} */
+    private function state(
+        string $state,
+        bool $canPrepare,
+        bool $handoffReady = false,
+        bool $promotionRequestPending = false,
+    ): array {
         return [
             'state' => $state,
             'can_prepare' => $canPrepare,
             'activation_handoff_ready' => $handoffReady,
+            'promotion_request_pending' => $promotionRequestPending,
             'activation_authorized' => false,
         ];
     }
@@ -521,5 +547,15 @@ final class PrebootInstallationConfiguration
     private function pendingEnvironmentPath(): string
     {
         return $this->runtimeDirectory().DIRECTORY_SEPARATOR.'.env.pending';
+    }
+
+    private function activationReadinessPath(): string
+    {
+        return $this->installDirectory().DIRECTORY_SEPARATOR.'activation-readiness.json';
+    }
+
+    private function promotionRequestPath(): string
+    {
+        return $this->installDirectory().DIRECTORY_SEPARATOR.'runtime-configuration-promotion-request.json';
     }
 }
