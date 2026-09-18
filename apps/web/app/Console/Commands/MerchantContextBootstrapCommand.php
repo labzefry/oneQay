@@ -8,6 +8,7 @@ use App\Application\Authorization\InitialTenantAdministratorProvisioningId;
 use App\Application\Authorization\InitialTenantAdministratorProvisioningRepository;
 use App\Application\Authorization\PolicyAdministrationClock;
 use App\Application\Bootstrap\MerchantContextBootstrapService;
+use App\Application\Bootstrap\MerchantPosReadyBootstrapService;
 use App\Application\Identity\FirstControlPrincipalCredentialBootstrapService;
 use App\Application\Persistence\DurableContextGraph;
 use App\Application\Persistence\DurableContextGraphRepository;
@@ -83,7 +84,7 @@ final class MerchantContextBootstrapCommand extends Command
                 return $this->failClosed();
             }
 
-            $service = new MerchantContextBootstrapService(
+            $contextBootstrap = new MerchantContextBootstrapService(
                 new PreauthorizedMerchantContextBootstrapAuthority([$grant]),
                 new LaravelMerchantContextBootstrapStateRepository(
                     app('db')->connection(),
@@ -95,6 +96,13 @@ final class MerchantContextBootstrapCommand extends Command
                 app(FirstControlPrincipalCredentialBootstrapService::class),
                 app(PersistenceTransaction::class),
                 app(PolicyAdministrationClock::class),
+            );
+
+            $service = new MerchantPosReadyBootstrapService(
+                $contextBootstrap,
+                app(\App\Application\Access\DurableOrganizationalAccessService::class),
+                app(\App\Application\Authorization\DurablePolicyAdministrationService::class),
+                app(PersistenceTransaction::class),
             );
 
             $outcome = $service->bootstrap($graph, $provisioningId, $password);
