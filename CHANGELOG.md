@@ -17,7 +17,7 @@
 - Corrective PR #794 squash merged at `cd3facf81e3b1734353656da3ba5800607900fcb`; this is the canonical Sprint183 engineering evidence.
 - Canonical main-push M7.5 run `35369464318` completed successfully through packaging, installer sidecar generation, deterministic reproduction, artifact upload, and tracked-source cleanliness.
 - Final engineering envelope: 1 path; SHA-256 `bcec6fc13a26f5c88f4408d76d362195ca9d546cc2df6d6c388a67640b93cce2`.
-- Canonical reconciliation envelope: 6 paths; SHA-256 `09fc0a9ae283def9c130b48fa756b17624ae0fbf3f87ad988c40605fcaf362c6`.
+- Canonical reconciliation envelope: 8 paths; SHA-256 `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`.
 - No application/migration source bytes or operational authority changed.
 - Operational NO-GO remains unchanged.
 - Next position: Sprint184 bounded discovery from canonical post-Sprint183.
