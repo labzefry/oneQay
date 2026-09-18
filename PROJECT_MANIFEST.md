@@ -7,44 +7,45 @@
 
 ## Current canonical engineering checkpoint
 
-**Canonical engineering checkpoint:** Sprint177
-**Objective:** `MERCHANT_CONTEXT_GUARDED_BOOTSTRAP_DELIVERY_FOUNDATION`
-**Canonical engineering commit:** `6752af1eb957993a6080206d9a40f7163bd24be6`
-**Engineering PR:** #781 — `Sprint177: add guarded merchant context bootstrap delivery`
-**Final engineering head:** `5a1b790414e2616ad6337224dc06392ee1154ec2`
-**Exact-head surfaced qualification:** 59/59 successful
-**Engineering envelope:** 4 paths — `de509f025c78e8f2ed7d0335b81b6f423deb621c3f1d6bc54bba4a312635d872`
-**Canonical reconciliation envelope:** 6 paths — `cf8df3335c6b40d148a86b3b9ad7a565400b727a88c62b26869f8a4a5481e78c`
-**Previous canonical checkpoint:** Sprint176 reconciliation `9330e223a85a2e258fcdbb5001a40d8520e99472`
-**Next position:** Sprint178 bounded discovery only after Sprint177 canonical reconciliation closes.
+**Canonical engineering checkpoint:** Sprint178
+**Objective:** `MERCHANT_FIRST_PARTY_APPLICATION_ENTRY_FOUNDATION`
+**Canonical engineering commit:** `8992c2ed1b6278d113e24e38a847bedeac345161`
+**Engineering PR:** #783 — `Sprint178: add merchant first-party application entry`
+**Final engineering head:** `ee0e2e8acc5238fa0cb2e3be56b6e58cf2092239`
+**Exact-head surfaced qualification:** 60/60 successful
+**Engineering envelope:** 4 paths — `9d27ecd0802230d3484aa7ca424064313595e8174172eb889c2736250e2815c5`
+**Canonical reconciliation envelope:** 6 paths — `d994709453d1415d23d2bdfc8ecade257d8baa8b07b9aff98654a2b4cb6bb0f5`
+**Previous canonical checkpoint:** Sprint177 reconciliation `80746f4ed048bca7474eba50d6b24be253cf9d46`
+**Next position:** Sprint179 bounded discovery from the fully reconciled Sprint178 checkpoint.
 
-> `6752af1eb957993a6080206d9a40f7163bd24be6` is the canonical Sprint177 engineering evidence. The later Sprint177 reconciliation squash must not replace it as the canonical engineering commit.
+> `8992c2ed1b6278d113e24e38a847bedeac345161` is the canonical Sprint178 engineering evidence. The Sprint178 reconciliation squash must not replace it as the canonical engineering commit.
 
 ## 1. Purpose / Why
 
-Sprint177 closes the proven delivery gap after Sprint176 atomic merchant-context bootstrap by providing a deliberately guarded console execution surface without creating public onboarding or operational authority.
+Sprint178 closes the proven merchant usability gap between the existing first-party authentication/session authority foundation and the already-delivered POS Operations Hub. A bootstrapped merchant now has a guarded browser entry surface instead of requiring direct API-level interaction.
 
 ## 2. What changed
 
-- Added the auto-discovered `oneqay:merchant-context:bootstrap` console command.
-- Added dedicated default-deny merchant bootstrap configuration and exact preauthorized grant material.
-- The command accepts no tenant, identity, organization, outlet, device, or provisioning tuple arguments.
-- Merchant bootstrap, first-control credential bootstrap, and persistence must each be explicitly armed.
-- Runtime remains restricted to Local/Test/CI.
-- Password and confirmation use hidden console inputs; plaintext secrets and merchant tuple material are not emitted.
-- Existing Sprint176 fresh-tenant, atomic transaction, protected administrator, credential, and rollback semantics remain authoritative.
-- Disabled delivery, Production-like runtime, disabled persistence, password mismatch, malformed grant, replay, and output-redaction behavior are regression-tested.
-- No HTTP route, controller, UI onboarding surface, installer exposure, production runtime widening, migration execution, deployment, updater activation, durable-target selection, or producer dispatch was introduced.
+- Reused the existing `Foundation` Inertia surface rather than adding a competing route/controller.
+- Added server-rendered merchant-entry bootstrap metadata only when Local/Test/CI runtime, persistence, and session control are enabled.
+- Added merchant sign-in UI that calls the existing first-party login endpoint.
+- Reused existing TOTP enrollment and challenge endpoints and their pending-session semantics.
+- Successful full session authority transitions to the existing `/pos` Operations Hub.
+- Public self-registration, implicit permission grants, new authentication architecture, and new POS capability were not introduced.
+- Production-like runtime retains the prior Foundation posture.
+- The initial engineering shape that touched the shared root route was superseded before merge; the final envelope leaves `apps/web/routes/web.php` unchanged.
+- No migration execution, permission provisioning, deployment, Technical Preview/Production authorization, updater activation, durable-target selection, or producer dispatch occurred.
 
 ## 3. Evidence / Qualification
 
-- Canonical parent before engineering: `9330e223a85a2e258fcdbb5001a40d8520e99472`.
-- Exact engineering head: `5a1b790414e2616ad6337224dc06392ee1154ec2`.
-- All 59 surfaced PR-triggered workflow runs completed successfully on the exact engineering head.
+- Canonical parent before engineering: `80746f4ed048bca7474eba50d6b24be253cf9d46`.
+- Exact engineering head: `ee0e2e8acc5238fa0cb2e3be56b6e58cf2092239`.
+- All 60 surfaced PR-triggered workflow runs completed successfully on the exact engineering head.
+- Dedicated Sprint178 regression, Governance, PHP Foundation, and M7.1 qualification succeeded.
 - Repository-native Product Owner merge authority succeeded for the exact engineering head.
-- Engineering PR #781 squash merged at `6752af1eb957993a6080206d9a40f7163bd24be6`.
-- Engineering envelope: exactly 4 paths; SHA-256 `de509f025c78e8f2ed7d0335b81b6f423deb621c3f1d6bc54bba4a312635d872`.
-- Canonical reconciliation envelope: exactly 6 paths; SHA-256 `cf8df3335c6b40d148a86b3b9ad7a565400b727a88c62b26869f8a4a5481e78c`.
+- Engineering PR #783 squash merged at `8992c2ed1b6278d113e24e38a847bedeac345161`.
+- Engineering envelope: exactly 4 paths; SHA-256 `9d27ecd0802230d3484aa7ca424064313595e8174172eb889c2736250e2815c5`.
+- Canonical reconciliation envelope: exactly 6 paths; SHA-256 `d994709453d1415d23d2bdfc8ecade257d8baa8b07b9aff98654a2b4cb6bb0f5`.
 
 ## 4. Operational boundaries / NO-GO
 
@@ -61,11 +62,11 @@ Machine-readable operational authority under `ops/final-shift-close/` remains au
 - Technical Preview / Production: `NOT_AUTHORIZED`;
 - updater: `INACTIVE`.
 
-Sprint177 grants no authority to provision a real merchant, expose public onboarding, widen runtime authorization, execute migrations, deploy, activate Technical Preview/Production, select a durable target, or dispatch producers.
+Sprint178 grants no authority to expose public self-registration, provision a real merchant, widen runtime authorization, execute migrations, deploy, activate Technical Preview/Production, select a durable target, or dispatch producers.
 
 ## 5. Next position
 
-After canonical reconciliation closes, begin Sprint178 bounded discovery from Sprint177. Identify the smallest material P0/P1 blocker remaining in the real merchant end-to-end journey from live canonical evidence; do not preselect an objective or widen operational authority.
+Begin Sprint179 bounded discovery from the fully reconciled Sprint178 state. Identify the smallest material P0/P1 blocker in the merchant end-to-end journey using live canonical evidence. Do not preselect the objective and do not widen operational authority.
 
 ## Documentation responsibility
 
