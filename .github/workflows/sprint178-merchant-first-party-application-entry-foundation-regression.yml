@@ -13,8 +13,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  qualify-sprint178-merchant-entry:
-    name: qualify-sprint178-merchant-entry
+  preserve-sprint178-merchant-entry:
+    name: preserve-sprint178-merchant-entry
     runs-on: ubuntu-latest
     env:
       APP_NAME: oneQay
@@ -32,23 +32,40 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: Qualify exact Sprint178 envelope
+      - name: Qualify exact Sprint178 reconciliation envelope
+        if: github.event_name == 'pull_request' && github.head_ref == 'sprint178-canonical-reconciliation'
         shell: bash
         run: |
           set -euo pipefail
-          [[ "${{ github.head_ref }}" == "sprint178-merchant-first-party-application-entry-foundation" ]]
-          git fetch origin main --no-tags
-          mapfile -t paths < <(git diff --name-only origin/main...HEAD | sort)
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          mapfile -t paths < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort)
           expected=(
             ".github/workflows/sprint178-merchant-first-party-application-entry-foundation-regression.yml"
-            "apps/web/resources/js/pages/Foundation.vue"
-            "apps/web/resources/views/app.blade.php"
-            "apps/web/tests/merchant-first-party-application-entry.php"
+            "CHANGELOG.md"
+            "PROJECT_MANIFEST.md"
+            "README.md"
+            "ROADMAP.md"
+            "TASKS.md"
           )
           [[ "${#paths[@]}" -eq "${#expected[@]}" ]]
-          printf '%s\n' "${paths[@]}" | diff -u <(printf '%s\n' "${expected[@]}") -
+          diff -u <(printf '%s\n' "${expected[@]}") <(printf '%s\n' "${paths[@]}")
           actual_hash="$(printf '%s\n' "${paths[@]}" | sha256sum | awk '{print $1}')"
-          [[ "$actual_hash" == "9d27ecd0802230d3484aa7ca424064313595e8174172eb889c2736250e2815c5" ]]
+          [[ "$actual_hash" == "d994709453d1415d23d2bdfc8ecade257d8baa8b07b9aff98654a2b4cb6bb0f5" ]]
+
+      - name: Preserve canonical Sprint178 engineering evidence
+        if: github.event_name == 'pull_request' && github.head_ref == 'sprint178-canonical-reconciliation'
+        shell: bash
+        run: |
+          set -euo pipefail
+          for FILE in PROJECT_MANIFEST.md README.md CHANGELOG.md TASKS.md ROADMAP.md; do
+            grep -Fq '8992c2ed1b6278d113e24e38a847bedeac345161' "$FILE"
+            ! grep -Fq '${{ github.event.pull_request.head.sha }}' "$FILE"
+          done
+          grep -Fq '**Engineering PR:** #783' PROJECT_MANIFEST.md
+          grep -Fq 'ee0e2e8acc5238fa0cb2e3be56b6e58cf2092239' PROJECT_MANIFEST.md
+          grep -Fq '9d27ecd0802230d3484aa7ca424064313595e8174172eb889c2736250e2815c5' PROJECT_MANIFEST.md
+          grep -Fq 'd994709453d1415d23d2bdfc8ecade257d8baa8b07b9aff98654a2b4cb6bb0f5' PROJECT_MANIFEST.md
 
       - name: Preserve guarded merchant entry contract
         shell: bash
@@ -74,6 +91,8 @@ jobs:
           [[ "$(jq -r '.technical_preview_activation' ops/final-shift-close/STATE.json)" == 'NOT_AUTHORIZED' ]]
           [[ "$(jq -r '.production_activation' ops/final-shift-close/STATE.json)" == 'NOT_AUTHORIZED' ]]
           [[ "$(jq -r '.updater_activation' ops/final-shift-close/STATE.json)" == 'INACTIVE' ]]
+          [[ "$(jq -r '.selection_state' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" == 'BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET' ]]
+          [[ "$(jq -r '.selected_target' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" == 'null' ]]
 
       - name: Validate PHP and execute regressions
         shell: bash

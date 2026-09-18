@@ -8,28 +8,28 @@ Enterprise-oriented business-management platform built with Modular Monolith Fir
 
 ## Current canonical status
 
-The latest completed engineering sprint is **Sprint177 — Merchant Context Guarded Bootstrap Delivery Foundation**.
+The latest completed engineering sprint is **Sprint178 — Merchant First-Party Application Entry Foundation**.
 
-- Canonical engineering commit: `6752af1eb957993a6080206d9a40f7163bd24be6`
-- Engineering PR: #781
-- Final engineering head: `5a1b790414e2616ad6337224dc06392ee1154ec2`
-- Exact-head surfaced qualification: 59/59 successful
-- Engineering envelope: 4 paths, SHA-256 `de509f025c78e8f2ed7d0335b81b6f423deb621c3f1d6bc54bba4a312635d872`
-- Reconciliation envelope: 6 paths, SHA-256 `cf8df3335c6b40d148a86b3b9ad7a565400b727a88c62b26869f8a4a5481e78c`
+- Canonical engineering commit: `8992c2ed1b6278d113e24e38a847bedeac345161`
+- Engineering PR: #783
+- Final engineering head: `ee0e2e8acc5238fa0cb2e3be56b6e58cf2092239`
+- Exact-head surfaced qualification: 60/60 successful
+- Engineering envelope: 4 paths, SHA-256 `9d27ecd0802230d3484aa7ca424064313595e8174172eb889c2736250e2815c5`
+- Reconciliation envelope: 6 paths, SHA-256 `d994709453d1415d23d2bdfc8ecade257d8baa8b07b9aff98654a2b4cb6bb0f5`
 
 For the full project state, use [`PROJECT_MANIFEST.md`](PROJECT_MANIFEST.md) as the canonical human-readable source of truth.
 
-## Sprint177 — Guarded merchant-context bootstrap delivery
+## Sprint178 — Merchant first-party application entry
 
-Sprint177 makes the Sprint176 atomic merchant-context bootstrap executable through a dedicated console command while preserving strict authorization boundaries. The command takes no merchant tuple arguments; the exact tenant/identity/organization/outlet/device/provisioning tuple must come from separately configured preauthorization material.
+Sprint178 connects the existing first-party login/session-authority stack to the already-delivered POS Operations Hub through a guarded merchant-facing entry experience.
 
-Execution remains default-deny. Merchant bootstrap, first-control credential bootstrap, and persistence must all be armed, and only Local/Test/CI runtime classes are accepted. Password inputs are hidden, failures are sanitized, replay fails closed, and no secret or configured merchant tuple is emitted.
+The final implementation deliberately reuses the existing Foundation surface. Server-rendered metadata enables merchant entry only for Local/Test/CI with persistence and session control available. Login, TOTP enrollment/challenge, session authority, and `/pos` remain owned by their existing canonical components.
 
-No HTTP onboarding route, controller, public UI, installer exposure, real merchant provisioning, production runtime widening, deployment, migration execution, updater activation, Technical Preview/Production authorization, durable-target selection, or producer dispatch was added.
+No public registration, implicit permission provisioning, new authentication architecture, new POS capability, production runtime widening, migration execution, deployment, updater activation, Technical Preview/Production authorization, durable-target selection, or producer dispatch was added.
 
 ## Product progression
 
-oneQay now combines tenant/security/API/POS foundations, governed installation readiness, atomic merchant-context creation, and a guarded non-public delivery mechanism for establishing that context under explicit Local/Test/CI authorization.
+oneQay now combines governed installation readiness, atomic merchant-context bootstrap, guarded bootstrap delivery, first-party identity/session security, and a usable guarded browser entry into existing permission-filtered POS operations.
 
 ## Operational status remains intentionally gated
 
@@ -37,6 +37,6 @@ Migration #27 remains `NOT_EXECUTED`; permission provisioning `NONE`; durable ac
 
 ## Next engineering position
 
-After Sprint177 canonical reconciliation closes, Sprint178 begins with bounded discovery of the smallest material P0/P1 blocker still preventing the real merchant end-to-end journey. No operational authority is implied or pre-authorized.
+Sprint179 begins with bounded discovery of the smallest material P0/P1 blocker still preventing a complete merchant journey. No operational authority is implied or pre-authorized.
 
 Author by Lab | zefry
