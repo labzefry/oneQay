@@ -1,51 +1,59 @@
 # oneQay Tasks
 
-**Current canonical engineering checkpoint:** Sprint181 closed
-**Canonical engineering commit:** `deb999fcd0694ba85c132d1b490bd90c0dc86309`
-**Latest engineering PR:** #789 — `Sprint181: deliver installation readiness wizard foundation`
+**Current canonical engineering checkpoint:** Sprint182 closed
+**Canonical engineering commit:** `ceb8fd7839a5077d59247b2cbdd2ba30559c4d25`
+**Latest engineering PR:** #791 — `Sprint182: bridge governed release to installation preflight`
 **Canonical status authority:** `PROJECT_MANIFEST.md`
 
-## Completed Sprint181 state
+## Completed Sprint182 state
 
-Sprint181 materialized `INSTALLATION_READINESS_WIZARD_DELIVERY_FOUNDATION`.
+Sprint182 materialized `GOVERNED_RELEASE_INSTALLATION_PREFLIGHT_BRIDGE_FOUNDATION`.
 
-- [x] Existing `/system/update` read-only route reused.
-- [x] Updater install action remains hard-disabled.
-- [x] `SecureInstallationReadiness` reused as canonical evaluator.
-- [x] Runtime and filesystem facts observed server-side.
-- [x] Governed release manifest consumed only when actually present.
-- [x] Governed artifact filename/size/SHA-256 observed only when actually present.
-- [x] Database compatibility observation remains read-only and sanitized.
-- [x] Database grant evaluation does not expose raw grants to UI.
-- [x] Unprovable host capabilities remain fail-closed.
-- [x] Operator receives per-check READY/BLOCKED reasons.
-- [x] No form/fetch/install/migration/seeding/deployment action introduced.
-- [x] Read-only updater regression preserved.
-- [x] Privileged updater security preserved.
-- [x] Sprint169 and Sprint175 readiness authority preserved.
-- [x] Exact engineering head completed 66/66 surfaced workflows successfully.
+- [x] Canonical M7.5 archive builder preserved.
+- [x] Canonical Release Manifest v1 preserved.
+- [x] Shared trusted-build installer-manifest builder added.
+- [x] Exact source SHA and release ID bound.
+- [x] Artifact filename, byte size, and SHA-256 bound.
+- [x] Runtime requirements emitted deterministically.
+- [x] Host requirements emitted as policy, not fabricated observations.
+- [x] Compatibility policy emitted deterministically.
+- [x] `NO_SCHEMA_CHANGE` preserved.
+- [x] `Lab | zefry` attribution preserved.
+- [x] `SecureInstallationReadiness` used as canonical validation authority.
+- [x] Tampered artifact digest fails closed.
+- [x] Deterministic artifact reproduction proven.
+- [x] Deterministic installer-manifest reproduction proven.
+- [x] Sprint32/Sprint33/Sprint34 historical migration isolation extended through #27 only.
+- [x] Migration source remains byte-preserved.
+- [x] Dedicated Sprint182 executable qualification succeeds.
+- [x] Exact engineering head completed 68/68 pull-request workflows successfully.
 - [x] Repository-native exact-head Product Owner merge authority succeeded.
-- [x] Engineering PR #789 squash merged at `deb999fcd0694ba85c132d1b490bd90c0dc86309`.
+- [x] Engineering PR #791 squash merged at `ceb8fd7839a5077d59247b2cbdd2ba30559c4d25`.
 - [x] Exact six-path canonical reconciliation envelope defined.
 
-Engineering envelope: 4 paths; SHA-256 `dffcd90da1967e207fe5b65007c354ce0decb1f5d781db9733623cb9ca807e04`.
+Engineering envelope: 6 paths; SHA-256 `4968d9fcf35b7a17d67b1909cfd1dad93f2b08b7d82b8c6d30be4dc09f067be3`.
 
-Canonical reconciliation envelope: 6 paths; SHA-256 `4fd83153da1067e5fa7a3f8ed145af7e8cbde3c3cba24149a51cd10770d3d955`.
+Canonical reconciliation envelope: 6 paths; SHA-256 `a78e4871e0852ac6c4f466b7f3278efde846a4ae84f5fe589123672e568aea35`.
 
 ## Preserved lifecycle state
 
 Machine-readable operational state remains authoritative and unchanged: selected target `null`; migration #27 `NOT_EXECUTED`; permission provisioning `NONE`; feature activation `INACTIVE`; deployment authority `NOT_GRANTED`; Technical Preview/Production `NOT_AUTHORIZED`; updater `INACTIVE`; runtime allowlist Local/Test/CI only.
 
-## Sprint181 canonical closure
+## Known pre-existing blocker
+
+- [ ] Legacy M7.5 push-event workflow startup failure remains pre-existing canonical debt.
+- [ ] Sprint183 bounded discovery should first assess whether restoring the canonical M7.5 automated release path is the largest remaining P0/P1 installation blocker.
+
+## Sprint182 canonical closure
 
 - [x] Engineering PR qualified and squash merged.
-- [x] Engineering evidence frozen at `deb999fcd0694ba85c132d1b490bd90c0dc86309`.
-- [x] Canonical reconciliation limited to workflow + five project-state documents.
+- [x] Engineering evidence frozen at `ceb8fd7839a5077d59247b2cbdd2ba30559c4d25`.
+- [x] Canonical reconciliation limited to Sprint182 workflow + five project-state documents.
 - [x] Reconciliation preserves engineering evidence rather than replacing it with reconciliation squash.
 - [x] Operational NO-GO remains unchanged.
 
 ## Next engineering position
 
-Begin **Sprint182 bounded discovery** only from fully reconciled Sprint181. Select the smallest non-duplicative P0/P1 blocker that materially advances installation/onboarding/merchant completeness without crossing operational NO-GO.
+Begin **Sprint183 bounded discovery** only from fully reconciled Sprint182.
 
 Author by Lab | zefry
