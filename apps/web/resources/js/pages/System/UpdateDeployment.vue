@@ -27,15 +27,46 @@ type UiBoundary = {
   production_ready: false
 }
 
+type InstallationCheck = {
+  ready: boolean
+  reason: string
+}
+
+type InstallationPreflight = {
+  mode: 'READ_ONLY'
+  ready: boolean
+  actions_exposed: false
+  checks: Record<string, InstallationCheck>
+  evidence: {
+    release_manifest: 'MISSING' | 'OBSERVED'
+    release_artifact: 'MISSING' | 'OBSERVED'
+    database: 'NOT_CONFIGURED' | 'UNAVAILABLE' | 'OBSERVED'
+    host_platform: 'SERVER_OBSERVED_PARTIAL'
+  }
+}
+
 // Author by Lab | zefry
 const props = defineProps<{
   status: UpdateStatus
   ui: UiBoundary
+  installation_preflight: InstallationPreflight
 }>()
 
 const displayValue = (value: string | null): string => value ?? '—'
 const compactCommit = (value: string | null): string => value ? `${value.slice(0, 12)}…` : '—'
 const yesNo = (value: boolean): string => value ? 'Ya' : 'Tidak'
+const readinessLabel = (ready: boolean): string => ready ? 'READY' : 'BLOCKED'
+
+const installationSteps = [
+  { key: 'runtime', title: 'Runtime & host', checks: ['php_version', 'php_extensions', 'host_platform'] },
+  { key: 'configuration', title: 'Secure configuration', checks: ['environment', 'application_key', 'production_debug', 'production_https'] },
+  { key: 'database', title: 'Database compatibility', checks: ['database_compatibility'] },
+  { key: 'filesystem', title: 'Filesystem', checks: ['filesystem_write'] },
+  { key: 'release', title: 'Governed release', checks: ['release_manifest', 'artifact_integrity'] },
+] as const
+
+const stepReady = (checks: readonly string[]): boolean =>
+  checks.every((key) => props.installation_preflight.checks[key]?.ready === true)
 </script>
 
 <template>
@@ -167,6 +198,60 @@ const yesNo = (value: boolean): string => value ? 'Ya' : 'Tidak'
             </p>
           </aside>
         </article>
+      </section>
+
+      <section class="installation-wizard" aria-label="Installation readiness wizard">
+        <div class="wizard-heading">
+          <div>
+            <p class="panel-kicker">Installation readiness wizard</p>
+            <h2>Preflight instalasi — read only</h2>
+            <p>
+              Wizard ini hanya membaca evidence server dan governed release package. Tidak ada penulisan
+              konfigurasi, migration, seeding, deployment, atau aktivasi yang dijalankan.
+            </p>
+          </div>
+          <span class="readiness-badge" :data-ready="installation_preflight.ready">
+            {{ readinessLabel(installation_preflight.ready) }}
+          </span>
+        </div>
+
+        <div class="evidence-grid" aria-label="Installation evidence sources">
+          <div><span>Release manifest</span><strong>{{ installation_preflight.evidence.release_manifest }}</strong></div>
+          <div><span>Release artifact</span><strong>{{ installation_preflight.evidence.release_artifact }}</strong></div>
+          <div><span>Database</span><strong>{{ installation_preflight.evidence.database }}</strong></div>
+          <div><span>Host platform</span><strong>{{ installation_preflight.evidence.host_platform }}</strong></div>
+        </div>
+
+        <div class="wizard-steps">
+          <article v-for="(step, index) in installationSteps" :key="step.key" class="wizard-step" :data-ready="stepReady(step.checks)">
+            <div class="wizard-step-head">
+              <span class="step-number">{{ String(index + 1).padStart(2, '0') }}</span>
+              <div>
+                <p class="status-label">{{ readinessLabel(stepReady(step.checks)) }}</p>
+                <h3>{{ step.title }}</h3>
+              </div>
+            </div>
+
+            <dl class="check-list">
+              <div v-for="checkKey in step.checks" :key="checkKey">
+                <dt>{{ checkKey.replaceAll('_', ' ') }}</dt>
+                <dd>
+                  <strong>{{ readinessLabel(installation_preflight.checks[checkKey]?.ready === true) }}</strong>
+                  <small>{{ installation_preflight.checks[checkKey]?.reason ?? 'Readiness evidence unavailable.' }}</small>
+                </dd>
+              </div>
+            </dl>
+          </article>
+        </div>
+
+        <aside class="wizard-boundary">
+          <strong>Preflight only — no installation authority</strong>
+          <p>
+            READY hanya berarti evidence preflight memenuhi contract yang tersedia. Tombol instalasi tetap
+            hard-disabled; migration #27, permission provisioning, deployment, Technical Preview, Production,
+            dan updater activation tidak mendapat authority dari wizard ini.
+          </p>
+        </aside>
       </section>
 
       <section class="action-panel" aria-label="Read-only action boundary">
@@ -436,6 +521,167 @@ dd {
   font-size: 0.82rem;
 }
 
+.installation-wizard {
+  margin-top: 0.9rem;
+  padding: 1.25rem;
+  border: 1px solid #1d3147;
+  border-radius: 1rem;
+  background: #0b1827;
+}
+
+.wizard-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.25rem;
+}
+
+.wizard-heading p {
+  max-width: 48rem;
+  margin: 0.55rem 0 0;
+  color: #94a6bd;
+  font-size: 0.86rem;
+}
+
+.readiness-badge {
+  border: 1px solid #6c4145;
+  border-radius: 999px;
+  padding: 0.45rem 0.75rem;
+  background: #25161a;
+  color: #ffb4bc;
+  font-size: 0.74rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+.readiness-badge[data-ready="true"] {
+  border-color: #236b52;
+  background: #0d2a22;
+  color: #8ee0bd;
+}
+
+.evidence-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.65rem;
+  margin-top: 1rem;
+}
+
+.evidence-grid > div {
+  padding: 0.8rem;
+  border: 1px solid #1a2a3d;
+  border-radius: 0.75rem;
+  background: #091522;
+}
+
+.evidence-grid span,
+.evidence-grid strong {
+  display: block;
+}
+
+.evidence-grid span {
+  color: #8094ac;
+  font-size: 0.72rem;
+}
+
+.evidence-grid strong {
+  margin-top: 0.25rem;
+  overflow-wrap: anywhere;
+  font-size: 0.82rem;
+}
+
+.wizard-steps {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.65rem;
+  margin-top: 0.75rem;
+}
+
+.wizard-step {
+  padding: 0.85rem;
+  border: 1px solid #4a3438;
+  border-radius: 0.8rem;
+  background: #151216;
+}
+
+.wizard-step[data-ready="true"] {
+  border-color: #1e5b47;
+  background: #0c201b;
+}
+
+.wizard-step-head {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.step-number {
+  display: grid;
+  place-items: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 0.65rem;
+  background: #15283b;
+  color: #8ec8f5;
+  font-size: 0.75rem;
+  font-weight: 900;
+}
+
+.wizard-step h3 {
+  margin: 0.15rem 0 0;
+  font-size: 0.92rem;
+}
+
+.check-list {
+  margin: 0.7rem 0 0;
+}
+
+.check-list > div {
+  padding: 0.55rem 0;
+  border-top: 1px solid #263142;
+}
+
+.check-list dt {
+  text-transform: capitalize;
+}
+
+.check-list dd {
+  margin-top: 0.2rem;
+  text-align: left;
+}
+
+.check-list dd strong,
+.check-list dd small {
+  display: block;
+}
+
+.check-list dd strong {
+  color: #cfdbea;
+  font-size: 0.72rem;
+}
+
+.check-list dd small {
+  margin-top: 0.15rem;
+  color: #8296ad;
+  font-size: 0.7rem;
+  line-height: 1.35;
+}
+
+.wizard-boundary {
+  margin-top: 0.8rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid #463c2a;
+  border-radius: 0.8rem;
+  background: #1b180f;
+  color: #ecd49a;
+}
+
+.wizard-boundary p {
+  margin: 0.35rem 0 0;
+  color: #bea974;
+  font-size: 0.8rem;
+}
+
 .action-panel {
   margin-top: 0.9rem;
   padding: 1.25rem;
@@ -479,7 +725,12 @@ button:disabled {
 
 @media (max-width: 900px) {
   .status-grid,
-  .content-grid {
+  .content-grid,
+  .evidence-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .wizard-steps {
     grid-template-columns: 1fr 1fr;
   }
 
@@ -507,7 +758,9 @@ button:disabled {
   }
 
   .status-grid,
-  .content-grid {
+  .content-grid,
+  .evidence-grid,
+  .wizard-steps {
     grid-template-columns: 1fr;
   }
 
