@@ -78,4 +78,4 @@ jobs:
   execute-governed-m75-release-qualification:
     name: execute-governed-m75-release-qualification
     needs: qualify-sprint182-envelope
-    uses: ./.github/workflows/m7-5-preview-release-artifact.yml
+    uses: labzefry/oneQay/.github/workflows/m7-5-preview-release-artifact.yml@sprint182-governed-release-installation-preflight-bridge-foundation
