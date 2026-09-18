@@ -6,6 +6,7 @@ namespace App\Delivery\Http\SystemUpdate;
 
 use App\Application\SystemUpdate\SystemUpdateControlPlane;
 use App\Infrastructure\Installation\SecureInstallationReadiness;
+use App\Infrastructure\Installation\TrustedInstallationHostCapabilityEvidence;
 use Illuminate\Database\ConnectionInterface;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -17,6 +18,7 @@ final class SystemUpdatePageController
     public function __construct(
         private readonly SystemUpdateControlPlane $controlPlane,
         private readonly SecureInstallationReadiness $installationReadiness,
+        private readonly TrustedInstallationHostCapabilityEvidence $hostCapabilityEvidence,
     ) {
     }
 
@@ -26,6 +28,19 @@ final class SystemUpdatePageController
         $artifact = $this->observeReleaseArtifact($manifest);
         $database = $this->observeDatabaseState();
         $host = $this->observeHostPlatformState();
+        $hostEvidence = $manifest === null
+            ? null
+            : $this->hostCapabilityEvidence->load(
+                $this->hostCapabilityEvidencePath(),
+                $manifest,
+                $host,
+            );
+
+        if ($hostEvidence !== null) {
+            foreach ($hostEvidence as $capability => $ready) {
+                $host['capabilities'][$capability] = $ready;
+            }
+        }
 
         $preflight = $this->installationReadiness->assess(
             $this->environmentSnapshot(),
@@ -57,7 +72,9 @@ final class SystemUpdatePageController
                     'database' => $database === null
                         ? 'NOT_CONFIGURED'
                         : (($database['connected'] ?? false) === true ? 'OBSERVED' : 'UNAVAILABLE'),
-                    'host_platform' => 'SERVER_OBSERVED_PARTIAL',
+                    'host_platform' => $hostEvidence === null
+                        ? 'SERVER_OBSERVED_PARTIAL'
+                        : 'SERVER_PLUS_TRUSTED_ATTESTATION',
                 ],
             ],
         ]);
@@ -309,6 +326,11 @@ final class SystemUpdatePageController
         return $bytes > intdiv(PHP_INT_MAX, $multiplier)
             ? PHP_INT_MAX
             : $bytes * $multiplier;
+    }
+
+    private function hostCapabilityEvidencePath(): string
+    {
+        return $this->releaseDirectory().DIRECTORY_SEPARATOR.'host-platform-evidence.json';
     }
 
     private function releaseDirectory(): string
