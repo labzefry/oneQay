@@ -13,8 +13,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  qualify-sprint179-merchant-pos-ready:
-    name: qualify-sprint179-merchant-pos-ready
+  preserve-sprint179-merchant-pos-ready:
+    name: preserve-sprint179-merchant-pos-ready
     runs-on: ubuntu-latest
     env:
       APP_NAME: oneQay
@@ -32,38 +32,51 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: Qualify exact Sprint179 engineering envelope
-        if: github.event_name == 'pull_request'
+      - name: Qualify exact Sprint179 reconciliation envelope
+        if: github.event_name == 'pull_request' && github.head_ref == 'sprint179-canonical-reconciliation'
         shell: bash
         run: |
           set -euo pipefail
-          [[ "${{ github.head_ref }}" == "sprint179-merchant-bootstrap-initial-pos-operation-authorization-foundation" ]]
           BASE_SHA="${{ github.event.pull_request.base.sha }}"
           HEAD_SHA="${{ github.event.pull_request.head.sha }}"
           mapfile -t paths < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort)
           expected=(
             ".github/workflows/sprint179-merchant-bootstrap-initial-pos-operation-authorization-foundation-regression.yml"
-            "apps/web/app/Application/Bootstrap/MerchantPosReadyBootstrapService.php"
-            "apps/web/app/Console/Commands/MerchantContextBootstrapCommand.php"
-            "apps/web/tests/merchant-pos-ready-bootstrap.php"
+            "CHANGELOG.md"
+            "PROJECT_MANIFEST.md"
+            "README.md"
+            "ROADMAP.md"
+            "TASKS.md"
           )
           [[ "${#paths[@]}" -eq "${#expected[@]}" ]]
           diff -u <(printf '%s\n' "${expected[@]}") <(printf '%s\n' "${paths[@]}")
           actual_hash="$(printf '%s\n' "${paths[@]}" | sha256sum | awk '{print $1}')"
-          [[ "$actual_hash" == "33206447002d40b489742fdb7b0c50670705400d16c184e352aa64aeb1534feb" ]]
+          [[ "$actual_hash" == "72d21048381af6505f8b6315141efef93f909e407d54377e3726d49f0c38ccff" ]]
 
-      - name: Preserve Sprint176 and Sprint177 authority boundaries
-        if: github.event_name == 'pull_request'
+      - name: Preserve canonical Sprint179 engineering evidence
+        if: github.event_name == 'pull_request' && github.head_ref == 'sprint179-canonical-reconciliation'
         shell: bash
         run: |
           set -euo pipefail
-          BASE_SHA="${{ github.event.pull_request.base.sha }}"
-          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
-          git diff --quiet "$BASE_SHA" "$HEAD_SHA" --             apps/web/app/Application/Bootstrap/MerchantContextBootstrapService.php             apps/web/config/merchant_context_bootstrap.php             apps/web/routes/web.php
+          for FILE in PROJECT_MANIFEST.md README.md CHANGELOG.md TASKS.md ROADMAP.md; do
+            grep -Fq 'fb0a886ac7f1447fa26f3eefcc808158d4ef044d' "$FILE"
+            ! grep -Fq '${{ github.event.pull_request.head.sha }}' "$FILE"
+          done
+          grep -Fq '**Engineering PR:** #785' PROJECT_MANIFEST.md
+          grep -Fq '94d1f2937a3ab71803738c2a2408170e63b6fcf1' PROJECT_MANIFEST.md
+          grep -Fq '33206447002d40b489742fdb7b0c50670705400d16c184e352aa64aeb1534feb' PROJECT_MANIFEST.md
+          grep -Fq '72d21048381af6505f8b6315141efef93f909e407d54377e3726d49f0c38ccff' PROJECT_MANIFEST.md
+
+      - name: Preserve Sprint176 and Sprint177 authority boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
           grep -Fq "protected \$signature = 'oneqay:merchant-context:bootstrap';" apps/web/app/Console/Commands/MerchantContextBootstrapCommand.php
           ! grep -Fq "oneqay:merchant-context:bootstrap {" apps/web/app/Console/Commands/MerchantContextBootstrapCommand.php
           grep -Fq 'MerchantContextBootstrapService' apps/web/app/Console/Commands/MerchantContextBootstrapCommand.php
           grep -Fq 'MerchantPosReadyBootstrapService' apps/web/app/Console/Commands/MerchantContextBootstrapCommand.php
+          ! grep -Fq 'oneqay:merchant-context:bootstrap' apps/web/routes/console.php
+          ! grep -Fq 'merchant-context:bootstrap' apps/web/routes/web.php
 
       - name: Preserve exact-device least-privilege POS bootstrap contract
         shell: bash
