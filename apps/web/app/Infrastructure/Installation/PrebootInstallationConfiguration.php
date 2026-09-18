@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Installation;
 
+use Closure;
 use RuntimeException;
 use Throwable;
 
@@ -15,14 +16,21 @@ final class PrebootInstallationConfiguration
     private const MAX_AUTHORITY_BYTES = 4096;
     private const MAX_PASSWORD_BYTES = 1024;
 
+    /** @var Closure(array<string, mixed>): array<string, mixed> */
+    private readonly Closure $databaseVerification;
+
     public function __construct(
         private readonly string $sharedRoot,
         private readonly string $releaseId,
         private readonly int $nowUnix,
+        ?Closure $databaseVerification = null,
     ) {
         if (! preg_match('/\Am75-preview-[0-9a-f]{12}\z/i', $releaseId)) {
             throw new RuntimeException('invalid_release_identity');
         }
+
+        $this->databaseVerification = $databaseVerification
+            ?? static fn (array $configuration): array => (new PrebootDatabaseCompatibilityVerification())->verify($configuration);
     }
 
     /**
@@ -37,7 +45,12 @@ final class PrebootInstallationConfiguration
         }
 
         if (is_file($this->pendingEnvironmentPath())) {
-            return $this->state('PENDING_CONFIGURATION_PRESENT', false);
+            return $this->state(
+                $this->pendingConfigurationIsDatabaseVerified()
+                    ? 'PENDING_CONFIGURATION_VERIFIED'
+                    : 'PENDING_CONFIGURATION_PRESENT',
+                false,
+            );
         }
 
         $authority = $this->loadAuthority();
@@ -108,7 +121,14 @@ final class PrebootInstallationConfiguration
             }
 
             $configuration = $this->validatedConfiguration($input);
-            $content = $this->renderPendingEnvironment($configuration);
+            $verification = ($this->databaseVerification)($configuration);
+            $facts = is_array($verification['facts'] ?? null) ? $verification['facts'] : [];
+            if (($verification['ready'] ?? false) !== true
+                || ! $this->databaseVerificationFactsAreCompatible($facts)) {
+                throw new RuntimeException('database_compatibility_failed');
+            }
+
+            $content = $this->renderPendingEnvironment($configuration, $facts);
 
             $runtimeDirectory = $this->runtimeDirectory();
             if (! is_dir($runtimeDirectory)
@@ -252,8 +272,9 @@ final class PrebootInstallationConfiguration
      *   db_username: string,
      *   db_password: string
      * } $configuration
+     * @param array<string, mixed> $databaseFacts
      */
-    private function renderPendingEnvironment(array $configuration): string
+    private function renderPendingEnvironment(array $configuration, array $databaseFacts): string
     {
         $values = [
             'APP_NAME' => 'oneQay',
@@ -272,6 +293,14 @@ final class PrebootInstallationConfiguration
             'ONEQAY_DB_USERNAME' => $configuration['db_username'],
             'ONEQAY_DB_PASSWORD' => $configuration['db_password'],
             'ONEQAY_DB_SOCKET' => '',
+            'ONEQAY_INSTALLATION_DATABASE_VERIFIED' => 'true',
+            'ONEQAY_INSTALLATION_DATABASE_ENGINE' => (string) $databaseFacts['engine'],
+            'ONEQAY_INSTALLATION_DATABASE_SERVER_VERSION' => (string) $databaseFacts['server_version'],
+            'ONEQAY_INSTALLATION_DATABASE_CHARSET' => (string) $databaseFacts['charset'],
+            'ONEQAY_INSTALLATION_DATABASE_TIMEZONE' => (string) $databaseFacts['timezone'],
+            'ONEQAY_INSTALLATION_DATABASE_SCHEMA_STATE' => (string) $databaseFacts['schema_state'],
+            'ONEQAY_INSTALLATION_DATABASE_LEAST_PRIVILEGE' => 'true',
+            'ONEQAY_INSTALLATION_ACTIVATION_AUTHORIZED' => 'false',
             'SESSION_DRIVER' => 'file',
             'CACHE_STORE' => 'file',
             'LOG_CHANNEL' => 'stack',
@@ -297,6 +326,56 @@ final class PrebootInstallationConfiguration
             '"' => '\\"',
             '$' => '\\$',
         ]).'"';
+    }
+
+    /** @param array<string, mixed> $facts */
+    private function databaseVerificationFactsAreCompatible(array $facts): bool
+    {
+        foreach ([
+            'connected',
+            'engine',
+            'server_version',
+            'charset',
+            'timezone',
+            'schema_state',
+            'least_privilege',
+        ] as $requiredKey) {
+            if (! array_key_exists($requiredKey, $facts)) {
+                return false;
+            }
+        }
+
+        return (new PrebootDatabaseCompatibilityVerification())->factsAreCompatible([
+            'connected' => $facts['connected'] === true,
+            'engine' => is_string($facts['engine']) ? $facts['engine'] : '',
+            'server_version' => is_string($facts['server_version']) ? $facts['server_version'] : '',
+            'charset' => is_string($facts['charset']) ? $facts['charset'] : '',
+            'timezone' => is_string($facts['timezone']) ? $facts['timezone'] : '',
+            'schema_state' => is_string($facts['schema_state']) ? $facts['schema_state'] : '',
+            'least_privilege' => $facts['least_privilege'] === true,
+        ]);
+    }
+
+    private function pendingConfigurationIsDatabaseVerified(): bool
+    {
+        $path = $this->pendingEnvironmentPath();
+        if (! is_file($path) || is_link($path) || ! is_readable($path)) {
+            return false;
+        }
+
+        $size = filesize($path);
+        if (! is_int($size) || $size <= 0 || $size > 65536) {
+            return false;
+        }
+
+        $content = file_get_contents($path);
+        if (! is_string($content)) {
+            return false;
+        }
+
+        return str_contains($content, 'ONEQAY_INSTALLATION_DATABASE_VERIFIED="true"')
+            && str_contains($content, 'ONEQAY_INSTALLATION_DATABASE_LEAST_PRIVILEGE="true"')
+            && str_contains($content, 'ONEQAY_INSTALLATION_ACTIVATION_AUTHORIZED="false"');
     }
 
     /** @return array<string, mixed>|null */

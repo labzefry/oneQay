@@ -19,6 +19,20 @@ $install = $shared.DIRECTORY_SEPARATOR.'install';
 $releaseId = 'm75-preview-0123456789ab';
 $now = 1790000000;
 $token = 's184.'.str_repeat('A', 58);
+$verifiedDatabase = static function (array $configuration): array {
+    return [
+        'ready' => true,
+        'facts' => [
+            'connected' => true,
+            'engine' => 'mysql',
+            'server_version' => '8.0.36',
+            'charset' => 'utf8mb4',
+            'timezone' => '+00:00',
+            'schema_state' => 'empty',
+            'least_privilege' => true,
+        ],
+    ];
+};
 
 $remove = null;
 $remove = static function (string $path) use (&$remove): void {
@@ -52,7 +66,7 @@ try {
         LOCK_EX,
     ) !== false, 'authority fixture could not be written.');
 
-    $subject = new PrebootInstallationConfiguration($shared, $releaseId, $now);
+    $subject = new PrebootInstallationConfiguration($shared, $releaseId, $now, $verifiedDatabase);
     $state = $subject->inspect();
     $assert(($state['state'] ?? null) === 'READY_FOR_CONFIGURATION', 'valid authority did not permit preparation.');
     $assert(($state['activation_authorized'] ?? true) === false, 'inspection must never create activation authority.');
@@ -84,6 +98,14 @@ try {
         'ONEQAY_TECHNICAL_PREVIEW_ENABLED="false"',
         'ONEQAY_PERSISTENCE_ENABLED="false"',
         'ONEQAY_SYSTEM_UPDATE_CONTROL_PLANE_ENABLED="false"',
+        'ONEQAY_INSTALLATION_DATABASE_VERIFIED="true"',
+        'ONEQAY_INSTALLATION_DATABASE_ENGINE="mysql"',
+        'ONEQAY_INSTALLATION_DATABASE_SERVER_VERSION="8.0.36"',
+        'ONEQAY_INSTALLATION_DATABASE_CHARSET="utf8mb4"',
+        'ONEQAY_INSTALLATION_DATABASE_TIMEZONE="+00:00"',
+        'ONEQAY_INSTALLATION_DATABASE_SCHEMA_STATE="empty"',
+        'ONEQAY_INSTALLATION_DATABASE_LEAST_PRIVILEGE="true"',
+        'ONEQAY_INSTALLATION_ACTIVATION_AUTHORIZED="false"',
         '# PREPARED ONLY — activation requires separate operational authority.',
     ] as $marker) {
         $assert(str_contains($content, $marker), 'pending environment missing '.$marker);
@@ -91,6 +113,8 @@ try {
     $assert(! str_contains($content, $token), 'one-time authority value must not enter runtime configuration.');
     $assert(str_contains($content, 'ONEQAY_DB_PASSWORD=" synthetic-value-with-\\$-and-\\"quotes\\" "'), 'configuration value bytes were not preserved safely.');
     $assert(preg_match('/^APP_KEY="base64:[A-Za-z0-9+\\/]{43}="/m', $content) === 1, 'fresh application key was not generated.');
+    $postState = $subject->inspect();
+    $assert(($postState['state'] ?? null) === 'PENDING_CONFIGURATION_VERIFIED', 'verified pending configuration state was not exposed.');
 
     try {
         $subject->prepare([
@@ -115,7 +139,7 @@ try {
         json_encode($authority, JSON_THROW_ON_ERROR),
         LOCK_EX,
     ) !== false, 'invalid authority fixture could not be written.');
-    $invalid = new PrebootInstallationConfiguration($invalidShared, $releaseId, $now);
+    $invalid = new PrebootInstallationConfiguration($invalidShared, $releaseId, $now, $verifiedDatabase);
     try {
         $invalid->prepare([
             'installation_token' => 's184.'.str_repeat('B', 58),
