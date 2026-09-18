@@ -1,57 +1,50 @@
 # oneQay Project Manifest
 
-**Product:** oneQay — The Future of Intelligent Business Management
-**Repository owner / attribution:** Lab | zefry
-**Default branch:** `main`
-**Status date:** 2026-09-16
+**Product:** oneQay — The Future of Intelligent Business Management  
+**Repository owner / attribution:** Lab | zefry  
+**Default branch:** `main`  
+**Status date:** 2026-09-18
 
 ## Current canonical engineering checkpoint
 
-**Canonical engineering checkpoint:** Sprint176
-**Objective:** `MERCHANT_CONTEXT_ATOMIC_BOOTSTRAP_FOUNDATION`
-**Canonical engineering commit:** `af2ed4db8e49c4a75f1e1b743986cc20f3e3b0ff`
-**Engineering PR:** #777 — `Sprint176: add atomic merchant context bootstrap foundation`
-**Final engineering head:** `775343389659754d85f870eca55f808a0b28eea5`
-**Sprint176 regression:** `35043179125` — successful
-**Governance Required Checks:** `35043179113` — successful
-**PHP Foundation Regression:** `35043179183` — successful
-**M7.1 Application Regression:** `35043178985` — successful
-**Engineering envelope:** 8 paths — `f1b48efc2a25623ae55c72b95407a19ef60b63f8dcb933f9d7f137f09a34b974`
-**Canonical reconciliation envelope:** 6 paths — `4cc815fdb1c6489ab34334a14033acfe1452b50874f48c9e867e6f6da3858b03`
-**Post-engineering compatibility correction:** PR #779 — `f745348e130adeef272c24c742e082305c940130` (Sprint175 historical preservation only; does not replace Sprint176 engineering evidence)
-**Previous canonical checkpoint:** Sprint175 reconciliation `dd2e5b017706e8ff4145a767b9c5e01199c3728f`
-**Next position:** Sprint177 bounded discovery only from the fully reconciled Sprint176 checkpoint; no objective preselected.
+**Canonical engineering checkpoint:** Sprint177  
+**Objective:** `MERCHANT_CONTEXT_GUARDED_BOOTSTRAP_DELIVERY_FOUNDATION`  
+**Canonical engineering commit:** `6752af1eb957993a6080206d9a40f7163bd24be6`  
+**Engineering PR:** #781 — `Sprint177: add guarded merchant context bootstrap delivery`  
+**Final engineering head:** `5a1b790414e2616ad6337224dc06392ee1154ec2`  
+**Exact-head surfaced qualification:** 59/59 successful  
+**Engineering envelope:** 4 paths — `de509f025c78e8f2ed7d0335b81b6f423deb621c3f1d6bc54bba4a312635d872`  
+**Canonical reconciliation envelope:** 6 paths — `cf8df3335c6b40d148a86b3b9ad7a565400b727a88c62b26869f8a4a5481e78c`  
+**Previous canonical checkpoint:** Sprint176 reconciliation `9330e223a85a2e258fcdbb5001a40d8520e99472`  
+**Next position:** Sprint178 bounded discovery only after Sprint177 canonical reconciliation closes.
 
-> `af2ed4db8e49c4a75f1e1b743986cc20f3e3b0ff` is the canonical Sprint176 engineering evidence. Neither the Sprint175 compatibility correction nor the Sprint176 reconciliation squash may replace it as the canonical engineering commit.
+> `6752af1eb957993a6080206d9a40f7163bd24be6` is the canonical Sprint177 engineering evidence. The later Sprint177 reconciliation squash must not replace it as the canonical engineering commit.
 
 ## 1. Purpose / Why
 
-Sprint176 closes a proven P0/P1 merchant end-to-end orchestration gap. The repository already had secure durable primitives for tenant/identity/organization/outlet/device persistence, initial tenant administrator provisioning, and first control principal credential bootstrap, but those primitives assumed prerequisite context and were not composed into one zero-context merchant bootstrap foundation.
+Sprint177 closes the proven delivery gap after Sprint176 atomic merchant-context bootstrap by providing a deliberately guarded console execution surface without creating public onboarding or operational authority.
 
 ## 2. What changed
 
-- Added a bounded `MerchantContextBootstrapService` application owner that composes existing canonical persistence, initial-administrator, and first-control-credential primitives rather than duplicating them.
-- Added an exact-tuple bootstrap authority covering tenant, identity, organization, outlet, device, and provisioning identity.
-- Added a fresh-tenant state guard so bootstrap fails closed rather than mutating an existing tenant.
-- Context graph creation, protected initial tenant administrator provisioning, and first control credential creation execute inside one outer durable transaction.
-- Downstream credential-stage failure rolls back tenant, identity, organization, membership, outlet, device, control-role assignment, provisioning journal, and credential state.
-- Password length follows the existing first-control-principal policy; plaintext password material is not persisted.
-- Application-layer bootstrap contracts remain framework-independent.
-- Runtime remains Local/Test/CI only. Preview and Production remain denied.
-- No service-provider binding, public route, controller, UI, installer exposure, config activation, production runtime widening, migration execution, deployment, or operational activation was introduced.
+- Added the auto-discovered `oneqay:merchant-context:bootstrap` console command.
+- Added dedicated default-deny merchant bootstrap configuration and exact preauthorized grant material.
+- The command accepts no tenant, identity, organization, outlet, device, or provisioning tuple arguments.
+- Merchant bootstrap, first-control credential bootstrap, and persistence must each be explicitly armed.
+- Runtime remains restricted to Local/Test/CI.
+- Password and confirmation use hidden console inputs; plaintext secrets and merchant tuple material are not emitted.
+- Existing Sprint176 fresh-tenant, atomic transaction, protected administrator, credential, and rollback semantics remain authoritative.
+- Disabled delivery, Production-like runtime, disabled persistence, password mismatch, malformed grant, replay, and output-redaction behavior are regression-tested.
+- No HTTP route, controller, UI onboarding surface, installer exposure, production runtime widening, migration execution, deployment, updater activation, durable-target selection, or producer dispatch was introduced.
 
 ## 3. Evidence / Qualification
 
-- Canonical parent before engineering: `dd2e5b017706e8ff4145a767b9c5e01199c3728f`.
-- Exact engineering head: `775343389659754d85f870eca55f808a0b28eea5`.
-- Dedicated Sprint176 run `35043179125`: successful, including exact 8-path/hash qualification and focused atomic bootstrap/rollback regression.
-- Governance `35043179113`, PHP Foundation `35043179183`, and M7.1 `35043178985`: successful.
-- Surfaced installation, POS-successor, and Final Shift Close preservation controls completed successfully on the exact engineering head.
-- Repository-native Product Owner merge authority verified on the exact engineering head.
-- Engineering PR #777 squash merged at `af2ed4db8e49c4a75f1e1b743986cc20f3e3b0ff` with a verified GitHub signature.
-- Proven Sprint175 historical successor-compatibility debt was corrected independently by PR #779 and squash `f745348e130adeef272c24c742e082305c940130`; this correction is workflow-only provenance and does not replace Sprint176 engineering evidence.
-- Engineering envelope: exactly 8 paths; SHA-256 `f1b48efc2a25623ae55c72b95407a19ef60b63f8dcb933f9d7f137f09a34b974`.
-- Canonical reconciliation envelope: exactly 6 paths; SHA-256 `4cc815fdb1c6489ab34334a14033acfe1452b50874f48c9e867e6f6da3858b03`.
+- Canonical parent before engineering: `9330e223a85a2e258fcdbb5001a40d8520e99472`.
+- Exact engineering head: `5a1b790414e2616ad6337224dc06392ee1154ec2`.
+- All 59 surfaced PR-triggered workflow runs completed successfully on the exact engineering head.
+- Repository-native Product Owner merge authority succeeded for the exact engineering head.
+- Engineering PR #781 squash merged at `6752af1eb957993a6080206d9a40f7163bd24be6`.
+- Engineering envelope: exactly 4 paths; SHA-256 `de509f025c78e8f2ed7d0335b81b6f423deb621c3f1d6bc54bba4a312635d872`.
+- Canonical reconciliation envelope: exactly 6 paths; SHA-256 `cf8df3335c6b40d148a86b3b9ad7a565400b727a88c62b26869f8a4a5481e78c`.
 
 ## 4. Operational boundaries / NO-GO
 
@@ -61,7 +54,6 @@ Machine-readable operational authority under `ops/final-shift-close/` remains au
 - selected target: `null`;
 - migration #27: `NOT_EXECUTED`;
 - permission provisioning: `NONE`;
-- real target-bound capability/dependency evidence: absent;
 - producer dispatch: `NOT_PERFORMED`;
 - runtime allowlist: Local/Test/CI only;
 - feature activation: `INACTIVE`;
@@ -69,11 +61,11 @@ Machine-readable operational authority under `ops/final-shift-close/` remains au
 - Technical Preview / Production: `NOT_AUTHORIZED`;
 - updater: `INACTIVE`.
 
-Sprint176 grants no authority to expose merchant onboarding publicly, provision a real merchant, widen the runtime allowlist, execute migrations, deploy, activate Technical Preview/Production, select a durable target, or dispatch producers.
+Sprint177 grants no authority to provision a real merchant, expose public onboarding, widen runtime authorization, execute migrations, deploy, activate Technical Preview/Production, select a durable target, or dispatch producers.
 
 ## 5. Next position
 
-Begin Sprint177 bounded discovery only after Sprint176 canonical reconciliation closes. Ask what still blocks a real merchant end-to-end after an atomic merchant-context foundation exists. Prioritize the smallest material P0/P1 gap; likely candidates must be proven from live repository evidence rather than preselected. Do not mechanically return to dashboards or readiness-only work.
+After canonical reconciliation closes, begin Sprint178 bounded discovery from Sprint177. Identify the smallest material P0/P1 blocker remaining in the real merchant end-to-end journey from live canonical evidence; do not preselect an objective or widen operational authority.
 
 ## Documentation responsibility
 
