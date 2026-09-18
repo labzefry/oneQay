@@ -17,7 +17,7 @@
 **Exact-head corrective qualification:** 69/69 successful
 **Canonical main-push M7.5 qualification:** run `35369464318` — SUCCESS
 **Engineering envelope:** 1 path — `bcec6fc13a26f5c88f4408d76d362195ca9d546cc2df6d6c388a67640b93cce2`
-**Canonical reconciliation envelope:** 6 paths — `09fc0a9ae283def9c130b48fa756b17624ae0fbf3f87ad988c40605fcaf362c6`
+**Canonical reconciliation envelope:** 8 paths — `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`
 **Previous canonical checkpoint:** Sprint182 reconciliation `b876e8b0ce245d2d56697de4ebdc7c3fb695ff69`
 **Next position:** Sprint184 bounded discovery from the fully reconciled Sprint183 checkpoint.
 
@@ -51,7 +51,7 @@ Sprint183 restores executable governed release automation. Sprint182 proved the 
 - Corrective PR #794 squash merged at `cd3facf81e3b1734353656da3ba5800607900fcb`.
 - Canonical main-push M7.5 run `35369464318` completed successfully.
 - Final engineering envelope: exactly one path; SHA-256 `bcec6fc13a26f5c88f4408d76d362195ca9d546cc2df6d6c388a67640b93cce2`.
-- Canonical reconciliation envelope: exactly six paths; SHA-256 `09fc0a9ae283def9c130b48fa756b17624ae0fbf3f87ad988c40605fcaf362c6`.
+- Canonical reconciliation envelope: exactly eight paths; SHA-256 `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`.
 
 ## 4. Operational boundaries / NO-GO
 
