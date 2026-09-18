@@ -11,11 +11,11 @@ type MerchantLoginContext = {
   device_id: string
 }
 
-const enabled = document.querySelector('meta[name="oneqay-merchant-entry"]')?.getAttribute('content') === 'enabled'
+const entryFlag = document.querySelector('meta[name="oneqay-merchant-entry"]')?.getAttribute('content') === 'enabled'
 const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? ''
 
 const parseMerchantContext = (): MerchantLoginContext | null => {
-  if (!enabled) return null
+  if (!entryFlag) return null
   const node = document.getElementById('oneqay-merchant-login-context')
   if (!node?.textContent) return null
 
@@ -41,7 +41,7 @@ const parseMerchantContext = (): MerchantLoginContext | null => {
 }
 
 const merchantContext = parseMerchantContext()
-const contextReady = enabled && merchantContext !== null
+const enabled = entryFlag && merchantContext !== null
 const password = ref('')
 const code = ref('')
 const phase = ref<'login'|'challenge'|'enrollment'|'reenroll'>('login')
@@ -49,7 +49,7 @@ const busy = ref(false)
 const error = ref('')
 const provisioningUri = ref('')
 const secret = ref('')
-const ready = computed(() => contextReady && password.value.length > 0)
+const ready = computed(() => enabled && password.value.length > 0)
 
 async function post(url: string, body: Record<string, string>) {
   const response = await fetch(url, {
@@ -144,7 +144,7 @@ function reset() {
 </script>
 
 <template>
-  <main v-if="contextReady" class="entry">
+  <main v-if="enabled" class="entry">
     <section class="brand">
       <p class="eyebrow">oneQay · Merchant Workspace</p>
       <h1>Run your business from one secure workspace.</h1>
