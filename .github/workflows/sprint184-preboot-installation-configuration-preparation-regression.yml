@@ -41,7 +41,7 @@ jobs:
         if: github.event_name == 'pull_request' && github.head_ref == 'sprint184-preboot-installation-configuration-preparation'
         shell: bash
         env:
-          EXPECTED_PATH_HASH: b62f5e44b40399e6ae1a3416bb11bc010ed1f65f1ac1977696201c712bfe8c95
+          EXPECTED_PATH_HASH: 343ec0bf7870137345f620ebe6c6af5e2b264a7fd55a009ce729e8617bfce2d5
         run: |
           set -euo pipefail
           BASE_SHA="${{ github.event.pull_request.base.sha }}"
@@ -49,6 +49,7 @@ jobs:
           test "$(git rev-parse HEAD)" = "$HEAD_SHA"
           mapfile -t paths < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort)
           expected=(
+            ".github/workflows/m7-5-preview-release-artifact.yml"
             ".github/workflows/sprint184-preboot-installation-configuration-preparation-regression.yml"
             "apps/web/app/Infrastructure/Installation/PrebootInstallationConfiguration.php"
             "apps/web/tests/preboot-installation-configuration.php"
@@ -120,8 +121,8 @@ jobs:
           test "$(git rev-parse HEAD)" = "$HEAD_SHA"
           bash tools/build-m7-5-preview-release.sh "$HEAD_SHA"
 
-          release_id="${{ steps.package.outputs.release_id }}"
-          artifact="${{ steps.package.outputs.archive_path }}"
+          release_id="m75-preview-${HEAD_SHA:0:12}"
+          artifact="dist/${release_id}.tar.gz"
           test -f "$artifact"
           tar -tzf "$artifact" > /tmp/oneqay-s184-release-list.txt
 
