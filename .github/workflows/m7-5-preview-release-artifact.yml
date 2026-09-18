@@ -81,46 +81,6 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: Qualify Sprint183 owned envelope
-        if: github.event_name == 'pull_request'
-        shell: bash
-        run: |
-          set -euo pipefail
-          BASE_SHA="${{ github.event.pull_request.base.sha }}"
-          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
-          HEAD_REF="${{ github.head_ref }}"
-          test "$(git rev-parse HEAD)" = "$HEAD_SHA"
-
-          case "$HEAD_REF" in
-            sprint183-governed-m75-release-workflow-execution-restoration|sprint183-main-push-compatibility-correction)
-              expected=(
-                ".github/workflows/m7-5-preview-release-artifact.yml"
-              )
-              expected_hash="bcec6fc13a26f5c88f4408d76d362195ca9d546cc2df6d6c388a67640b93cce2"
-              ;;
-            sprint183-canonical-reconciliation)
-              expected=(
-                ".github/workflows/m7-5-preview-release-artifact.yml"
-                "CHANGELOG.md"
-                "PROJECT_MANIFEST.md"
-                "README.md"
-                "ROADMAP.md"
-                "TASKS.md"
-              )
-              expected_hash="09fc0a9ae283def9c130b48fa756b17624ae0fbf3f87ad988c40605fcaf362c6"
-              ;;
-            *)
-              echo "Successor PR outside Sprint183-owned exact envelope; preserving behavioral regression only."
-              exit 0
-              ;;
-          esac
-
-          mapfile -t paths < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort)
-          [[ "${#paths[@]}" -eq "${#expected[@]}" ]]
-          diff -u <(printf '%s\n' "${expected[@]}") <(printf '%s\n' "${paths[@]}")
-          actual_hash="$(printf '%s\n' "${paths[@]}" | sha256sum | awk '{print $1}')"
-          [[ "$actual_hash" == "$expected_hash" ]]
-
       - name: Preserve Sprint40 historical compatibility closure
         shell: bash
         run: |
@@ -318,7 +278,7 @@ jobs:
           sprint50_historical_compatibility=false
           sprint51_jrn008_preview_fixture=false
 
-          if [[ "$GITHUB_EVENT_NAME" != 'pull_request' || "${GITHUB_HEAD_REF:-}" == 'sprint183-canonical-reconciliation' ]]; then
+          if [[ "$GITHUB_EVENT_NAME" != 'pull_request' ]]; then
             for migration_to_isolate in database/migrations/0000_00_00_0000{10..27}_*.php; do
               if [[ -f "$migration_to_isolate" ]]; then
                 git update-index --assume-unchanged "$migration_to_isolate"
