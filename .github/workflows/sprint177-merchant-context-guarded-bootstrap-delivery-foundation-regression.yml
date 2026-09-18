@@ -1,0 +1,137 @@
+name: Sprint177 Merchant Context Guarded Bootstrap Delivery Foundation Regression
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint177-merchant-context-guarded-bootstrap-delivery-foundation-${{ github.event.pull_request.number || github.ref }}-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  qualify-sprint177-merchant-context-guarded-bootstrap-delivery-foundation:
+    runs-on: ubuntu-latest
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWE=
+      APP_DEBUG: "false"
+      APP_URL: http://localhost
+      ONEQAY_RUNTIME_CLASS: ci
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Verify exact checked-out head
+        run: |
+          set -euo pipefail
+          EXPECTED_HEAD="${{ github.event.pull_request.head.sha || github.sha }}"
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+
+      - name: Qualify exact Sprint177 engineering envelope
+        if: github.event_name == 'pull_request' && github.head_ref == 'sprint177-merchant-context-guarded-bootstrap-delivery-foundation'
+        env:
+          EXPECTED_PATH_HASH: de509f025c78e8f2ed7d0335b81b6f423deb621c3f1d6bc54bba4a312635d872
+        run: |
+          set -euo pipefail
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          test "$(git rev-parse HEAD)" = "$HEAD_SHA"
+          git cat-file -e "${BASE_SHA}^{commit}"
+          mapfile -t CHANGED < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort)
+          EXPECTED=(
+            '.github/workflows/sprint177-merchant-context-guarded-bootstrap-delivery-foundation-regression.yml'
+            'apps/web/app/Console/Commands/MerchantContextBootstrapCommand.php'
+            'apps/web/config/merchant_context_bootstrap.php'
+            'apps/web/tests/merchant-context-guarded-bootstrap-delivery.php'
+          )
+          test "${#CHANGED[@]}" -eq "${#EXPECTED[@]}"
+          diff -u <(printf '%s\n' "${EXPECTED[@]}") <(printf '%s\n' "${CHANGED[@]}")
+          ACTUAL_HASH="$(printf '%s\n' "${CHANGED[@]}" | sha256sum | awk '{print $1}')"
+          test "$ACTUAL_HASH" = "$EXPECTED_PATH_HASH"
+
+      - name: Preserve Sprint177 delivery contract
+        run: |
+          set -euo pipefail
+          CONFIG=apps/web/config/merchant_context_bootstrap.php
+          COMMAND=apps/web/app/Console/Commands/MerchantContextBootstrapCommand.php
+          SHARED_CONFIG=apps/web/config/oneqay.php
+          CONSOLE=apps/web/routes/console.php
+          WEB=apps/web/routes/web.php
+          TEST=apps/web/tests/merchant-context-guarded-bootstrap-delivery.php
+          ATOMIC=apps/web/app/Application/Bootstrap/MerchantContextBootstrapService.php
+          for FILE in "$CONFIG" "$COMMAND" "$SHARED_CONFIG" "$CONSOLE" "$TEST" "$ATOMIC"; do
+            test -f "$FILE"
+          done
+          grep -Fq 'Author by Lab | zefry' "$CONFIG"
+          grep -Fq "env('ONEQAY_MERCHANT_CONTEXT_BOOTSTRAP_ENABLED', false)" "$CONFIG"
+          grep -Fq "'grant'" "$CONFIG"
+          grep -Fq 'Author by Lab | zefry' "$COMMAND"
+          grep -Fq "protected \$signature = 'oneqay:merchant-context:bootstrap';" "$COMMAND"
+          ! grep -Fq 'oneqay:merchant-context:bootstrap {' "$COMMAND"
+          grep -Fq "['local', 'test', 'ci']" "$COMMAND"
+          grep -Fq "config('merchant_context_bootstrap.enabled', false)" "$COMMAND"
+          grep -Fq "config('merchant_context_bootstrap.grant', [])" "$COMMAND"
+          grep -Fq "config('oneqay.first_control_principal_credential_bootstrap.enabled', false)" "$COMMAND"
+          grep -Fq "config('database.oneqay_persistence_enabled', false)" "$COMMAND"
+          grep -Fq 'PreauthorizedMerchantContextBootstrapAuthority' "$COMMAND"
+          grep -Fq 'LaravelMerchantContextBootstrapStateRepository' "$COMMAND"
+          grep -Fq 'MerchantContextBootstrapService' "$COMMAND"
+          grep -Fq 'ONEQAY_MERCHANT_CONTEXT_BOOTSTRAP_FAILED' "$COMMAND"
+          grep -Fq 'ONEQAY_MERCHANT_CONTEXT_BOOTSTRAP|STATE=applied' "$COMMAND"
+          ! grep -Fq 'merchant_context_bootstrap' "$SHARED_CONFIG"
+          ! grep -Fq 'oneqay:merchant-context:bootstrap' "$CONSOLE"
+          ! grep -Fq 'merchant-context:bootstrap' "$WEB"
+          ! grep -Eq 'Route::.*merchant.*bootstrap|merchant.*bootstrap.*Route::' "$WEB"
+          grep -Fq 'Author by Lab | zefry' "$ATOMIC"
+          grep -Fq '$this->transaction->run' "$ATOMIC"
+          grep -Fq '$this->stateRepository->assertFresh' "$ATOMIC"
+          grep -Fq '$this->credentialBootstrap->bootstrap' "$ATOMIC"
+
+      - name: Preserve operational NO-GO
+        run: |
+          set -euo pipefail
+          test "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" = NOT_EXECUTED
+          test "$(jq -r '.permission_provisioning.state' ops/final-shift-close/STATE.json)" = NONE
+          test "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" = INACTIVE
+          test "$(jq -r '.deployment_authority' ops/final-shift-close/STATE.json)" = NOT_GRANTED
+          test "$(jq -r '.technical_preview_activation' ops/final-shift-close/STATE.json)" = NOT_AUTHORIZED
+          test "$(jq -r '.production_activation' ops/final-shift-close/STATE.json)" = NOT_AUTHORIZED
+          test "$(jq -r '.updater_activation' ops/final-shift-close/STATE.json)" = INACTIVE
+          test "$(jq -r '.selection_state' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" = BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET
+          test "$(jq -r '.selected_target' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" = null
+
+      - name: Install PHP dependencies
+        working-directory: apps/web
+        run: |
+          composer validate --no-check-publish
+          composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Validate Sprint177 source
+        working-directory: apps/web
+        run: |
+          php -l app/Console/Commands/MerchantContextBootstrapCommand.php
+          php -l config/merchant_context_bootstrap.php
+          php -l tests/merchant-context-guarded-bootstrap-delivery.php
+
+      - name: Execute focused guarded delivery regression
+        working-directory: apps/web
+        run: php -d zend.assertions=1 -d assert.exception=1 tests/merchant-context-guarded-bootstrap-delivery.php
+
+      - name: Execute application regression
+        working-directory: apps/web
+        run: composer test
+
+      - name: Verify tracked-source cleanliness
+        run: |
+          git diff --exit-code
+          test -z "$(git status --porcelain)"
