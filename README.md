@@ -8,29 +8,29 @@ Enterprise-oriented business-management platform built with Modular Monolith Fir
 
 ## Current canonical status
 
-The latest completed engineering sprint is **Sprint185 — Preboot Database Compatibility Verification**.
+The latest completed engineering sprint is **Sprint186 — Governed Activation-Readiness Handoff**.
 
-- Canonical engineering commit: `c53c76fc86ef5be67dd999ac7fc7e08f84c82f01`
-- Engineering PR: #799
-- Final engineering head: `bf17397f739eab4aae531ed6b6a1b0b5430ae98e`
-- Exact-head qualification: 71/71 successful
-- Canonical main-push M7.5 run `35382800589`: SUCCESS
-- Engineering envelope: 10 paths, SHA-256 `775caa7723278af855b888f2c6bac592d9187e7b988619799f90e2e7a6950e99`
+- Canonical engineering commit: `7cb9e59ede2908f44f4f0d7b2d1c855d885bf3ae`
+- Engineering PR: #802
+- Final engineering head: `3c6453cd54ac0bc907d85ec01d7410d2c48e19fb`
+- Exact-head qualification: 74/74 successful
+- Canonical main-push M7.5 run `35387074508`: SUCCESS
+- Engineering envelope: 10 paths, SHA-256 `6a948cea5e7d88f95abec930a0681f851df9d04a1eaaa835f4aac3de1e0c8102`
 - Reconciliation envelope: 8 paths, SHA-256 `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`
 
 For the full project state, use [`PROJECT_MANIFEST.md`](PROJECT_MANIFEST.md) as the canonical human-readable source of truth.
 
-## Sprint185 — Verified pending database configuration
+## Sprint186 — Sealed activation-readiness handoff
 
-The governed pre-boot installer now proves database compatibility before accepting pending runtime configuration.
+The governed installer now seals a verified pending configuration to the exact governed release.
 
-The verification uses the submitted database credentials to perform read-only checks for MySQL/MariaDB connectivity, server/version shape, `utf8mb4`, UTC, schema state, and database-scoped least privilege. A foreign or incompatible database fails closed and does not create `.env.pending`.
+After Sprint185 database compatibility succeeds, oneQay binds the release ID into `.env.pending` and writes a private `activation-readiness.json` containing the exact pending SHA-256/byte length and safe database evidence. Tampering or a release mismatch invalidates readiness.
 
-When verification succeeds, safe evidence is bound into the private pending configuration and the installer exposes `PENDING_CONFIGURATION_VERIFIED`. The step remains non-activating.
+The operator UI exposes the handoff as **SEALED / NOT AUTHORIZED**. This is deliberately evidence only: it does not activate the runtime.
 
 ## Product progression
 
-oneQay now has a governed chain from deterministic release artifact → installation readiness → operator preflight → secure pre-boot configuration → live database compatibility verification → verified pending runtime configuration.
+oneQay now has a governed chain from deterministic release artifact → installation readiness → operator preflight → secure configuration → live DB verification → verified pending configuration → tamper-evident exact-release activation handoff.
 
 ## Operational status remains intentionally gated
 
@@ -38,6 +38,6 @@ Migration #27 remains `NOT_EXECUTED`; permission provisioning `NONE`; durable ac
 
 ## Next engineering position
 
-Sprint186 begins from the fully reconciled Sprint185 checkpoint. Select the smallest material P0/P1 blocker that advances verified pending configuration toward a usable governed installation/onboarding journey without implicitly granting operational activation.
+Sprint187 begins from the fully reconciled Sprint186 checkpoint. Select the smallest material P0/P1 blocker that advances the sealed handoff toward a usable governed installation/onboarding journey without implicitly granting operational activation.
 
 Author by Lab | zefry
