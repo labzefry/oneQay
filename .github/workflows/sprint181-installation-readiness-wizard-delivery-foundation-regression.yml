@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: sprint181-installation-readiness-wizard-\${{ github.event.pull_request.number || github.ref }}-\${{ github.event.pull_request.head.sha || github.sha }}
+  group: sprint181-installation-readiness-wizard-${{ github.event.pull_request.number || github.ref }}-${{ github.event.pull_request.head.sha || github.sha }}
   cancel-in-progress: true
 
 jobs:
@@ -34,16 +34,16 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           fetch-depth: 0
-          ref: \${{ github.event.pull_request.head.sha || github.sha }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - name: Qualify exact Sprint181 engineering envelope
         if: github.event_name == 'pull_request'
         shell: bash
         run: |
           set -euo pipefail
-          [[ "\${{ github.head_ref }}" == "sprint181-installation-readiness-wizard-delivery-foundation" ]]
-          BASE_SHA="\${{ github.event.pull_request.base.sha }}"
-          HEAD_SHA="\${{ github.event.pull_request.head.sha }}"
+          [[ "${{ github.head_ref }}" == "sprint181-installation-readiness-wizard-delivery-foundation" ]]
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
           mapfile -t paths < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort)
           expected=(
             ".github/workflows/sprint181-installation-readiness-wizard-delivery-foundation-regression.yml"
@@ -51,9 +51,9 @@ jobs:
             "apps/web/resources/js/pages/System/UpdateDeployment.vue"
             "apps/web/tests/installation-readiness-wizard-delivery.php"
           )
-          [[ "\${#paths[@]}" -eq "\${#expected[@]}" ]]
-          diff -u <(printf '%s\n' "\${expected[@]}") <(printf '%s\n' "\${paths[@]}")
-          actual_hash="$(printf '%s\n' "\${paths[@]}" | sha256sum | awk '{print $1}')"
+          [[ "${#paths[@]}" -eq "${#expected[@]}" ]]
+          diff -u <(printf '%s\n' "${expected[@]}") <(printf '%s\n' "${paths[@]}")
+          actual_hash="$(printf '%s\n' "${paths[@]}" | sha256sum | awk '{print $1}')"
           [[ "$actual_hash" == "dffcd90da1967e207fe5b65007c354ce0decb1f5d781db9733623cb9ca807e04" ]]
 
       - name: Preserve read-only updater boundary
@@ -61,8 +61,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          BASE_SHA="\${{ github.event.pull_request.base.sha }}"
-          HEAD_SHA="\${{ github.event.pull_request.head.sha }}"
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
           git diff --quiet "$BASE_SHA" "$HEAD_SHA" -- \
             apps/web/routes/web.php \
             apps/web/config/oneqay.php \
