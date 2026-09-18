@@ -33,6 +33,7 @@ required_files=(
   "apps/web/public/.htaccess"
   "apps/web/public/build/manifest.json"
   "apps/web/vendor/autoload.php"
+  "apps/web/app/Infrastructure/Installation/PrebootInstallationActivationReadiness.php"
   "apps/web/app/Infrastructure/Installation/PrebootInstallationConfiguration.php"
   "release/manifest-v1.schema.json"
   "tools/installation/public-installer.php"
@@ -159,6 +160,7 @@ cat > "${stage_root}/RELEASE.json" <<JSON
     "public_entry": "install.php",
     "authority_relative_path": "oneqay-preview/shared/install/authority.json",
     "pending_environment_relative_path": "oneqay-preview/shared/runtime/.env.pending",
+    "activation_readiness_relative_path": "oneqay-preview/shared/install/activation-readiness.json",
     "activation_authorized": false
   },
   "attribution": "Lab | zefry"
@@ -252,6 +254,7 @@ fi
 
 for required_release_path in \
   "${release_id}/public-surface/install.php" \
+  "${release_id}/apps/web/app/Infrastructure/Installation/PrebootInstallationActivationReadiness.php" \
   "${release_id}/apps/web/app/Infrastructure/Installation/PrebootInstallationConfiguration.php"; do
   if ! grep -Fxq "$required_release_path" /tmp/oneqay-preview-release-contents.txt; then
     echo "Missing required pre-boot installation path: $required_release_path" >&2
@@ -261,6 +264,11 @@ done
 
 if ! grep -Fq '"activation_authorized": false' "${stage_root}/RELEASE.json"; then
   echo "Pre-boot installation metadata must preserve activation NO-GO." >&2
+  exit 1
+fi
+
+if ! grep -Fq '"activation_readiness_relative_path": "oneqay-preview/shared/install/activation-readiness.json"' "${stage_root}/RELEASE.json"; then
+  echo "Pre-boot installation metadata is missing governed activation-readiness handoff binding." >&2
   exit 1
 fi
 
