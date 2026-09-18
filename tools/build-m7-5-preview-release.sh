@@ -33,7 +33,9 @@ required_files=(
   "apps/web/public/.htaccess"
   "apps/web/public/build/manifest.json"
   "apps/web/vendor/autoload.php"
+  "apps/web/app/Infrastructure/Installation/PrebootInstallationConfiguration.php"
   "release/manifest-v1.schema.json"
+  "tools/installation/public-installer.php"
   "tools/validate-release-manifest.php"
 )
 
@@ -128,6 +130,14 @@ require \$appRoot.'/vendor/autoload.php';
 // Author by Lab | zefry
 PHP
 
+sed "s/__ONEQAY_RELEASE_ID__/${release_id}/g" \
+  tools/installation/public-installer.php > "${public_surface}/install.php"
+
+if grep -Fq '__ONEQAY_RELEASE_ID__' "${public_surface}/install.php"; then
+  echo "Pre-boot installer release binding was not materialized." >&2
+  exit 1
+fi
+
 cat > "${stage_root}/RELEASE.json" <<JSON
 {
   "payload_metadata_version": 1,
@@ -145,6 +155,12 @@ cat > "${stage_root}/RELEASE.json" <<JSON
   "shared_runtime_environment_profile": "PRIVATE_SHARED_DOTENV_V1",
   "shared_runtime_environment_relative_path": "oneqay-preview/shared/runtime/.env",
   "shared_runtime_secret_values_embedded": false,
+  "preboot_installation": {
+    "public_entry": "install.php",
+    "authority_relative_path": "oneqay-preview/shared/install/authority.json",
+    "pending_environment_relative_path": "oneqay-preview/shared/runtime/.env.pending",
+    "activation_authorized": false
+  },
   "attribution": "Lab | zefry"
 }
 JSON
@@ -231,6 +247,20 @@ fi
 
 if grep -F '/apps/web/database/migrations/' /tmp/oneqay-preview-release-contents.txt; then
   echo "Technical Preview release unexpectedly contains durable migration source." >&2
+  exit 1
+fi
+
+for required_release_path in \
+  "${release_id}/public-surface/install.php" \
+  "${release_id}/apps/web/app/Infrastructure/Installation/PrebootInstallationConfiguration.php"; do
+  if ! grep -Fxq "$required_release_path" /tmp/oneqay-preview-release-contents.txt; then
+    echo "Missing required pre-boot installation path: $required_release_path" >&2
+    exit 1
+  fi
+done
+
+if ! grep -Fq '"activation_authorized": false' "${stage_root}/RELEASE.json"; then
+  echo "Pre-boot installation metadata must preserve activation NO-GO." >&2
   exit 1
 fi
 
