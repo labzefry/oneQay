@@ -1,21 +1,21 @@
 # oneQay Project Manifest
 
-**Product:** oneQay — The Future of Intelligent Business Management  
-**Repository owner / attribution:** Lab | zefry  
-**Default branch:** `main`  
+**Product:** oneQay — The Future of Intelligent Business Management
+**Repository owner / attribution:** Lab | zefry
+**Default branch:** `main`
 **Status date:** 2026-09-18
 
 ## Current canonical engineering checkpoint
 
-**Canonical engineering checkpoint:** Sprint177  
-**Objective:** `MERCHANT_CONTEXT_GUARDED_BOOTSTRAP_DELIVERY_FOUNDATION`  
-**Canonical engineering commit:** `6752af1eb957993a6080206d9a40f7163bd24be6`  
-**Engineering PR:** #781 — `Sprint177: add guarded merchant context bootstrap delivery`  
-**Final engineering head:** `5a1b790414e2616ad6337224dc06392ee1154ec2`  
-**Exact-head surfaced qualification:** 59/59 successful  
-**Engineering envelope:** 4 paths — `de509f025c78e8f2ed7d0335b81b6f423deb621c3f1d6bc54bba4a312635d872`  
-**Canonical reconciliation envelope:** 6 paths — `cf8df3335c6b40d148a86b3b9ad7a565400b727a88c62b26869f8a4a5481e78c`  
-**Previous canonical checkpoint:** Sprint176 reconciliation `9330e223a85a2e258fcdbb5001a40d8520e99472`  
+**Canonical engineering checkpoint:** Sprint177
+**Objective:** `MERCHANT_CONTEXT_GUARDED_BOOTSTRAP_DELIVERY_FOUNDATION`
+**Canonical engineering commit:** `6752af1eb957993a6080206d9a40f7163bd24be6`
+**Engineering PR:** #781 — `Sprint177: add guarded merchant context bootstrap delivery`
+**Final engineering head:** `5a1b790414e2616ad6337224dc06392ee1154ec2`
+**Exact-head surfaced qualification:** 59/59 successful
+**Engineering envelope:** 4 paths — `de509f025c78e8f2ed7d0335b81b6f423deb621c3f1d6bc54bba4a312635d872`
+**Canonical reconciliation envelope:** 6 paths — `cf8df3335c6b40d148a86b3b9ad7a565400b727a88c62b26869f8a4a5481e78c`
+**Previous canonical checkpoint:** Sprint176 reconciliation `9330e223a85a2e258fcdbb5001a40d8520e99472`
 **Next position:** Sprint178 bounded discovery only after Sprint177 canonical reconciliation closes.
 
 > `6752af1eb957993a6080206d9a40f7163bd24be6` is the canonical Sprint177 engineering evidence. The later Sprint177 reconciliation squash must not replace it as the canonical engineering commit.
