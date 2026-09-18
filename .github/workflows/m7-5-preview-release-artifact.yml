@@ -37,6 +37,7 @@ on:
       - 'release/manifest-v1.schema.json'
       - 'tools/build-m7-5-preview-release.sh'
       - 'tools/validate-release-manifest.php'
+      - 'tools/build-installation-readiness-manifest.php'
       - '.github/workflows/m7-5-preview-release-artifact.yml'
   push:
     branches:
@@ -46,6 +47,7 @@ on:
       - 'release/manifest-v1.schema.json'
       - 'tools/build-m7-5-preview-release.sh'
       - 'tools/validate-release-manifest.php'
+      - 'tools/build-installation-readiness-manifest.php'
       - '.github/workflows/m7-5-preview-release-artifact.yml'
   workflow_dispatch:
 
