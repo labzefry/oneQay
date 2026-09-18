@@ -182,5 +182,6 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          rm -rf dist
           git diff --exit-code
           test -z "$(git status --porcelain)"
