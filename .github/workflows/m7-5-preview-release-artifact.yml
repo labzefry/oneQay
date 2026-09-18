@@ -530,6 +530,9 @@ jobs:
           php tools/validate-release-manifest.php \
             "${{ steps.package.outputs.manifest_path }}" \
             "${{ steps.package.outputs.archive_path }}"
+          php tools/validate-installation-readiness-manifest.php \
+            "${{ steps.package.outputs.installation_manifest_path }}" \
+            "${{ steps.package.outputs.archive_path }}"
           tar -tzf "${{ steps.package.outputs.archive_path }}" > /tmp/oneqay-release-list.txt
           grep -F "${{ steps.package.outputs.release_id }}/RELEASE.json" /tmp/oneqay-release-list.txt
           grep -F "${{ steps.package.outputs.release_id }}/public-surface/index.php" /tmp/oneqay-release-list.txt
@@ -567,6 +570,12 @@ jobs:
           php tools/validate-release-manifest.php \
             "${{ steps.package.outputs.manifest_path }}" \
             "${{ steps.package.outputs.archive_path }}"
+          php tools/validate-installation-readiness-manifest.php \
+            "${{ steps.package.outputs.installation_manifest_path }}" \
+            "${{ steps.package.outputs.archive_path }}"
+          test "$(jq -r '.source_commit' "${{ steps.package.outputs.installation_manifest_path }}")" = "${{ steps.source.outputs.source_sha }}"
+          test "$(jq -r '.artifact_sha256' "${{ steps.package.outputs.installation_manifest_path }}")" = "$second_sha"
+          test "$(jq -r '.artifact_size' "${{ steps.package.outputs.installation_manifest_path }}")" = "$second_size"
           tar -tzf "${{ steps.package.outputs.archive_path }}" > /tmp/oneqay-release-list-reproduced.txt
           if grep -F '/apps/web/database/migrations/' /tmp/oneqay-release-list-reproduced.txt; then
             echo 'Reproduced Technical Preview artifact unexpectedly contains durable migrations.' >&2
@@ -580,6 +589,7 @@ jobs:
           path: |
             ${{ steps.package.outputs.archive_path }}
             ${{ steps.package.outputs.manifest_path }}
+            ${{ steps.package.outputs.installation_manifest_path }}
             ${{ steps.package.outputs.checksum_path }}
           if-no-files-found: error
           retention-days: 14
