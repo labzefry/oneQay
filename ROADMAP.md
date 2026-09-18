@@ -1,31 +1,31 @@
 # oneQay Roadmap
 
-**Roadmap checkpoint:** Sprint177 engineering closed; canonical reconciliation in progress
-**Canonical engineering baseline:** `6752af1eb957993a6080206d9a40f7163bd24be6`
+**Roadmap checkpoint:** Sprint178 closed canonically
+**Canonical engineering baseline:** `8992c2ed1b6278d113e24e38a847bedeac345161`
 **Current state authority:** `PROJECT_MANIFEST.md`
 
-## Completed Sprint177 engineering horizon
+## Completed Sprint178 horizon
 
-Sprint177 closed `MERCHANT_CONTEXT_GUARDED_BOOTSTRAP_DELIVERY_FOUNDATION`, addressing the proven delivery gap between Sprint176 atomic merchant-context orchestration and a deliberately guarded executable surface.
+Sprint178 closed `MERCHANT_FIRST_PARTY_APPLICATION_ENTRY_FOUNDATION`, removing the proven usability gap between the existing first-party authentication/session-authority stack and the existing POS Operations Hub.
 
-The dedicated console command accepts no self-authorizing merchant tuple arguments. Exact authorization comes from configured preauthorization material, all relevant enablement gates are default-deny, runtime remains Local/Test/CI only, secret input is hidden, output is sanitized, and replay fails closed.
+The final implementation reuses the existing Foundation surface and enables merchant entry only under server-rendered Local/Test/CI + persistence + session-control gates. Existing login, TOTP enrollment/challenge, session authority, and `/pos` capabilities remain authoritative rather than being duplicated.
 
-Engineering PR #781 squash merged at `6752af1eb957993a6080206d9a40f7163bd24be6`. Engineering envelope: 4 paths, SHA-256 `de509f025c78e8f2ed7d0335b81b6f423deb621c3f1d6bc54bba4a312635d872`.
+Engineering PR #783 squash merged at `8992c2ed1b6278d113e24e38a847bedeac345161`. Engineering envelope: 4 paths, SHA-256 `9d27ecd0802230d3484aa7ca424064313595e8174172eb889c2736250e2815c5`.
 
-Canonical reconciliation envelope: 6 paths, SHA-256 `cf8df3335c6b40d148a86b3b9ad7a565400b727a88c62b26869f8a4a5481e78c`.
+Canonical reconciliation envelope: 6 paths, SHA-256 `d994709453d1415d23d2bdfc8ecade257d8baa8b07b9aff98654a2b4cb6bb0f5`.
 
-## Product progression through Sprint177
+## Product progression through Sprint178
 
-The product now combines tenant/security/API/POS foundations, governed installation-readiness controls, atomic merchant-context creation, and a guarded Local/Test/CI-only console delivery mechanism. Sprint177 deliberately does not create public onboarding or real-environment activation.
+The product now combines tenant/security/API/POS foundations, governed installation readiness, atomic and guarded merchant-context bootstrap, and a usable first-party merchant browser entry that reaches permission-filtered POS operations. Public self-registration and real-environment activation remain intentionally absent.
 
 ## Operational boundary
 
 Machine-readable operational state under `ops/final-shift-close/` remains authoritative. Selected durable target remains `null`; migration #27 remains `NOT_EXECUTED`; permission provisioning remains `NONE`; producer dispatch remains not performed; runtime allowlist remains Local/Test/CI; Final Shift Close remains inactive; deployment/Technical Preview/Production remain unauthorized; updater remains inactive.
 
-## Sprint178 selection rule
+## Sprint179 selection rule
 
-Begin Sprint178 bounded discovery only after Sprint177 canonical reconciliation closes. Determine from live canonical evidence what smallest material P0/P1 gap still blocks a real merchant end-to-end journey now that atomic context bootstrap has a guarded delivery mechanism. Do not preselect an objective.
+Begin Sprint179 bounded discovery from fully reconciled Sprint178. Determine from live canonical evidence the smallest material P0/P1 blocker remaining in the real merchant end-to-end journey. Do not preselect an objective and do not return to technical micro-sprints unless they are necessary inside a meaningful vertical business increment.
 
-No public onboarding exposure, real merchant provisioning, runtime widening, migration execution, updater activation, deployment, Technical Preview, Production, durable-target selection, or producer dispatch is pre-authorized.
+No public self-registration, real merchant provisioning, runtime widening, migration execution, updater activation, deployment, Technical Preview, Production, durable-target selection, or producer dispatch is pre-authorized.
 
 Author by Lab | zefry
