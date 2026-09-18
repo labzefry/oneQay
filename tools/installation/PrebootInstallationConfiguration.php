@@ -98,7 +98,7 @@ final class PrebootInstallationConfiguration
                 throw new RuntimeException('installation_authority_expired');
             }
 
-            $token = $this->requiredString($input, 'installation_token', 64, 256);
+            $token = $this->requiredString($input, 'installation_token', 32, 256);
             if (! preg_match('/\A[A-Za-z0-9._~-]{32,256}\z/', $token)
                 || ! hash_equals(
                     strtolower((string) $authority['token_sha256']),
@@ -197,7 +197,8 @@ final class PrebootInstallationConfiguration
         if (! is_array($parts)
             || strtolower((string) ($parts['scheme'] ?? '')) !== 'https'
             || trim((string) ($parts['host'] ?? '')) === ''
-            || isset($parts['user'], $parts['pass'])
+            || isset($parts['user'])
+            || isset($parts['pass'])
             || isset($parts['query'])
             || isset($parts['fragment'])) {
             throw new RuntimeException('invalid_app_url');
@@ -227,7 +228,7 @@ final class PrebootInstallationConfiguration
             throw new RuntimeException('invalid_database_username');
         }
 
-        $password = $this->requiredString($input, 'db_password', 1, self::MAX_PASSWORD_BYTES);
+        $password = $this->requiredSecretString($input, 'db_password', 1, self::MAX_PASSWORD_BYTES);
         if (preg_match('/[\x00\r\n]/', $password) === 1) {
             throw new RuntimeException('invalid_database_password');
         }
@@ -361,6 +362,21 @@ final class PrebootInstallationConfiguration
         }
 
         $value = trim($value);
+        $length = strlen($value);
+        if ($length < $minimum || $length > $maximum) {
+            throw new RuntimeException('invalid_'.$key);
+        }
+
+        return $value;
+    }
+
+    private function requiredSecretString(array $input, string $key, int $minimum, int $maximum): string
+    {
+        $value = $input[$key] ?? null;
+        if (! is_string($value)) {
+            throw new RuntimeException('invalid_'.$key);
+        }
+
         $length = strlen($value);
         if ($length < $minimum || $length > $maximum) {
             throw new RuntimeException('invalid_'.$key);
