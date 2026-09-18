@@ -205,7 +205,8 @@ jobs:
           grep -Fq "'technical_preview_authorized' => false" "$HANDOFF"
           grep -Fq "'production_authorized' => false" "$HANDOFF"
           grep -Fq "CONFIGURATION_PREPARED_HANDOFF_READY" "$CONFIG"
-          grep -Fq "PENDING_CONFIGURATION_VERIFIED_HANDOFF_READY" "$CONFIG"
+          grep -Fq "activation_handoff_ready" "$CONFIG"
+          grep -Fq "PENDING_CONFIGURATION_VERIFIED_HANDOFF_READY" "$PAGE"
           grep -Fq "activation-request.json" "$HANDOFF"
 
           ! grep -Eq 'Artisan::call|migrate|requestInstall\(|checkAvailability\(' "$HANDOFF" "$CONFIG" "$PAGE"
