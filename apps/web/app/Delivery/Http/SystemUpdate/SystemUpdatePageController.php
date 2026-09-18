@@ -280,7 +280,7 @@ final class SystemUpdatePageController
                 'time_sync' => false,
                 'outbound_allowlist' => false,
                 'scheduler' => false,
-                'archive' => class_exists(\ZipArchive::class) || class_exists(\PharData::class),
+                'archive' => extension_loaded('zip') || extension_loaded('phar'),
                 'temp_directory' => is_dir($temp) && is_writable($temp),
                 'required_tools' => false,
             ],
