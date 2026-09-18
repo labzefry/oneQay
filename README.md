@@ -8,30 +8,29 @@ Enterprise-oriented business-management platform built with Modular Monolith Fir
 
 ## Current canonical status
 
-The latest completed engineering sprint is **Sprint183 — Governed M7.5 Release Workflow Execution Restoration**.
+The latest completed engineering sprint is **Sprint184 — Preboot Installation Configuration Preparation**.
 
-- Canonical engineering commit: `cd3facf81e3b1734353656da3ba5800607900fcb`
-- Initial engineering PR: #793
-- Corrective engineering PR: #794
-- Final engineering head: `f3527999a500463e9eea3f8b9b22dec24a34e93e`
-- Exact-head corrective qualification: 69/69 successful
-- Canonical main-push M7.5 run `35369464318`: SUCCESS
-- Engineering envelope: 1 path, SHA-256 `bcec6fc13a26f5c88f4408d76d362195ca9d546cc2df6d6c388a67640b93cce2`
+- Canonical engineering commit: `dfb65d2782a580108d8ccd9a6f9203720fa036b7`
+- Engineering PR: #797
+- Final engineering head: `a22d98f18618be3ccf5ff8274ebf5528b33f01d7`
+- Exact-head qualification: 72/72 successful
+- Canonical main-push M7.5 run `35378584615`: SUCCESS
+- Engineering envelope: 9 paths, SHA-256 `e2537851052c57b1ec3b7d2e99e1b5d0208fb3c54da207d5280682eb85c686a0`
 - Reconciliation envelope: 8 paths, SHA-256 `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`
 
 For the full project state, use [`PROJECT_MANIFEST.md`](PROJECT_MANIFEST.md) as the canonical human-readable source of truth.
 
-## Sprint183 — Governed M7.5 release automation
+## Sprint184 — Secure pre-boot installation preparation
 
-Sprint183 restores the canonical M7.5 release workflow as executable GitHub Actions automation.
+Sprint184 adds the first governed installation step that can operate before the Laravel runtime is configured.
 
-The oversized historical Web regression shell command was split without changing release behavior. Historical compatibility state is carried across the split, post-M7.4 POS persistence successors are isolated only during the legacy synthetic regression, and non-PR execution now enters the same schema-free historical lane required by current main.
+The governed release now carries an operator-facing `install.php` bound to the exact immutable release. A private one-time authority gates configuration preparation, runtime values are validated, a fresh application key is generated, and only a private `.env.pending` file can be created. Replay is denied after pending or active configuration exists.
 
-The final canonical main-push M7.5 run completed successfully through release packaging, Sprint182 installer-readiness sidecar generation, deterministic reproduction, artifact upload, and source-cleanliness verification.
+The prepared environment keeps persistence, Technical Preview, and update-control activation disabled. No migration execution or deployment activation is performed.
 
 ## Product progression
 
-oneQay now has an executable governed release pipeline feeding the trusted installer-readiness evidence bridge and the operator-visible installation preflight, while preserving the merchant bootstrap/sign-in/POS progression.
+oneQay now has a continuous governed path from deterministic release artifact → installation-readiness evidence → operator-visible preflight → secure pre-boot runtime configuration preparation, while preserving merchant bootstrap/sign-in/POS progression and all activation boundaries.
 
 ## Operational status remains intentionally gated
 
@@ -39,6 +38,6 @@ Migration #27 remains `NOT_EXECUTED`; permission provisioning `NONE`; durable ac
 
 ## Next engineering position
 
-Sprint184 begins from the fully reconciled Sprint183 checkpoint and should select the smallest material P0/P1 blocker remaining in the installation/onboarding journey without crossing operational activation boundaries.
+Sprint185 begins from the fully reconciled Sprint184 checkpoint. Select the smallest material P0/P1 blocker that advances the installation/onboarding journey beyond pending configuration without implicitly granting operational activation.
 
 Author by Lab | zefry
