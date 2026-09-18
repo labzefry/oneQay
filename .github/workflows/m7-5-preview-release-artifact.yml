@@ -459,7 +459,8 @@ jobs:
                   historical_migrations+=("$sprint184_migration")
                 fi
               done
-              echo 'Migrations #17-#27 isolated only from exact Sprint184 preboot installation configuration qualification.'
+              sprint51_jrn008_preview_fixture=true
+              echo 'Migrations #17-#27 and post-M7.4 POS persistence successors isolated only from exact Sprint184 preboot installation configuration qualification.'
             fi
           fi
           historical_backup='/tmp/oneqay-m7-5-historical-migrations'
