@@ -1,33 +1,35 @@
 # oneQay Roadmap
 
-**Roadmap checkpoint:** Sprint183 closed canonically
-**Canonical engineering baseline:** `cd3facf81e3b1734353656da3ba5800607900fcb`
+**Roadmap checkpoint:** Sprint184 closed canonically  
+**Canonical engineering baseline:** `dfb65d2782a580108d8ccd9a6f9203720fa036b7`  
 **Current state authority:** `PROJECT_MANIFEST.md`
 
-## Completed Sprint183 horizon
+## Completed Sprint184 horizon
 
-Sprint183 closed `GOVERNED_M7_5_RELEASE_WORKFLOW_EXECUTION_RESTORATION`.
+Sprint184 closed `PREBOOT_INSTALLATION_CONFIGURATION_PREPARATION`.
 
-The canonical M7.5 GitHub Actions workflow now starts and executes successfully. The oversized historical Web regression command was split at the composer-test boundary, required compatibility state is persisted across steps, and post-M7.4 persistence successors are isolated only while the historical M7.4 synthetic regression executes.
+The governed installation journey now advances beyond read-only readiness into secure pre-boot runtime configuration preparation. The exact governed release carries an operator-facing installer that is release-bound, one-time-authority gated, fail-closed, replay resistant, and capable of generating a private pending runtime configuration before Laravel runtime boot.
 
-Initial PR #793 proved the restored pull-request lane and squash merged at `03804129dac67c85fea3540d421a9b49adc3eb13`. A post-merge main push then exposed a non-PR historical migration-horizon gap before reconciliation. Corrective PR #794 aligned non-PR schema-free qualification with the proven PR lane and squash merged at `cd3facf81e3b1734353656da3ba5800607900fcb`.
+The prepared configuration is intentionally non-active: it creates only `.env.pending`, keeps persistence and Technical Preview disabled, and does not execute migrations or grant deployment/Production authority.
 
-Canonical main-push M7.5 run `35369464318` completed successfully. Final engineering envelope: one path, SHA-256 `bcec6fc13a26f5c88f4408d76d362195ca9d546cc2df6d6c388a67640b93cce2`.
+Engineering PR #797 qualified at 72/72 on final head `a22d98f18618be3ccf5ff8274ebf5528b33f01d7` and squash merged at `dfb65d2782a580108d8ccd9a6f9203720fa036b7`.
+
+Canonical main-push M7.5 run `35378584615` completed successfully. Final engineering envelope: nine paths, SHA-256 `e2537851052c57b1ec3b7d2e99e1b5d0208fb3c54da207d5280682eb85c686a0`.
 
 Canonical reconciliation envelope: eight paths, SHA-256 `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`.
 
-## Product progression through Sprint183
+## Product progression through Sprint184
 
-The product now has a working governed release automation chain feeding the Sprint182 trusted artifact-to-installer bridge and Sprint181 operator-visible installation readiness preflight.
+The product now has a governed chain from release automation through trusted installation-readiness evidence and operator preflight to secure pending runtime configuration preparation.
 
 ## Operational boundary
 
 Machine-readable operational state under `ops/final-shift-close/` remains authoritative. Selected durable target remains `null`; migration #27 remains `NOT_EXECUTED`; permission provisioning remains `NONE`; producer dispatch remains not performed; runtime allowlist remains Local/Test/CI; Final Shift Close remains inactive; deployment/Technical Preview/Production remain unauthorized; updater remains inactive.
 
-## Sprint184 selection rule
+## Sprint185 selection rule
 
-Begin Sprint184 bounded discovery from fully reconciled Sprint183. Determine the smallest material P0/P1 blocker still preventing a secure operator journey from governed release artifact through installation readiness toward an installable Technical Preview, without granting operational activation.
+Begin Sprint185 bounded discovery from fully reconciled Sprint184. Select the smallest material P0/P1 blocker after pending configuration preparation that most directly advances toward a usable governed installation/onboarding experience.
 
-No environment writes, migration execution, real permission provisioning, updater activation, deployment, Technical Preview, Production, durable-target selection, or producer dispatch is pre-authorized.
+No environment activation, migration execution, real permission provisioning, updater activation, deployment, Technical Preview, Production, durable-target selection, or producer dispatch is pre-authorized.
 
 Author by Lab | zefry
