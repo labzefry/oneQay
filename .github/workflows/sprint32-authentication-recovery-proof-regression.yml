@@ -103,7 +103,7 @@ jobs:
           echo 'ONEQAY_SPRINT50_JRN007_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
           echo 'ONEQAY_SPRINT51_JRN008_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
           echo 'ONEQAY_SPRINT52_JRN007_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
-          if { [[ "$count" -eq 1 ]] && [[ "$fingerprint" == '261f147d880a37fe9137b28d9541724c6c5e3987138f3fb56d5465ff31dc7412' ]]; } || { [[ "$count" -eq 1 ]] && [[ "$fingerprint" == 'bcec6fc13a26f5c88f4408d76d362195ca9d546cc2df6d6c388a67640b93cce2' ]] || [[ "$count" -eq 4 && "$fingerprint" == '2083c79345c4c86cd3417cc3db9ed0b7546c998a018c27a381102eaf4de9b6da' ]] || [[ "$count" -eq 5 && "$fingerprint" == '38a9d7204bf43e6388f2da36bd6c0beb65c83026c4bc2476cdcf7e4abf356e41' ]]; }; then
+          if { [[ "$count" -eq 1 ]] && [[ "$fingerprint" == '261f147d880a37fe9137b28d9541724c6c5e3987138f3fb56d5465ff31dc7412' ]]; } || { [[ "$count" -eq 1 ]] && [[ "$fingerprint" == 'bcec6fc13a26f5c88f4408d76d362195ca9d546cc2df6d6c388a67640b93cce2' ]] || [[ "$count" -eq 4 && "$fingerprint" == '2083c79345c4c86cd3417cc3db9ed0b7546c998a018c27a381102eaf4de9b6da' ]] || [[ "$count" -eq 5 && "$fingerprint" == '38a9d7204bf43e6388f2da36bd6c0beb65c83026c4bc2476cdcf7e4abf356e41' ]] || [[ "$count" -eq 6 && "$fingerprint" == '4968d9fcf35b7a17d67b1909cfd1dad93f2b08b7d82b8c6d30be4dc09f067be3' ]]; }; then
             echo 'ONEQAY_SPRINT32_WORKFLOW_CORRECTION=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT53_JRN010_PREREQ_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT54_JRN010_PREREQ_SOURCE_SUCCESSOR=false' >> "$GITHUB_ENV"
