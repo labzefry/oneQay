@@ -34,19 +34,9 @@ use Inertia\Inertia;
 Route::get('/health/live', [HealthController::class, 'live'])->name('health.live');
 Route::get('/health/ready', [HealthController::class, 'ready'])->name('health.ready');
 
-Route::get('/', static function () {
-    $runtime = strtolower(trim((string) config('oneqay.runtime_class', '')));
-    if (! in_array($runtime, ['local', 'test', 'ci'], true)
-        || ! (bool) config('database.oneqay_persistence_enabled', false)
-        || ! (bool) config('oneqay.session_control.enabled', false)) {
-        return Inertia::render('Foundation', ['headline' => 'oneQay application foundation']);
-    }
-
-    return Inertia::render('MerchantEntry', [
-        'csrf_token' => csrf_token(),
-        'pos_url' => '/pos',
-    ]);
-})->name('foundation');
+Route::get('/', static fn () => Inertia::render('Foundation', [
+    'headline' => 'oneQay application foundation',
+]))->name('foundation');
 
 // Author by Lab | zefry
 $firstPartyAuthRuntime = strtolower(trim((string) config('oneqay.runtime_class', '')));
