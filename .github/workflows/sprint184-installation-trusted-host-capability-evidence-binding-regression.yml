@@ -50,6 +50,7 @@ jobs:
           mapfile -t paths < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort)
           expected=(
             ".github/workflows/m7-5-preview-release-artifact.yml"
+            ".github/workflows/sprint181-installation-readiness-wizard-delivery-foundation-regression.yml"
             ".github/workflows/sprint184-installation-trusted-host-capability-evidence-binding-regression.yml"
             ".github/workflows/sprint32-authentication-recovery-proof-regression.yml"
             ".github/workflows/sprint33-recovery-bound-password-reset-regression.yml"
@@ -62,7 +63,7 @@ jobs:
           [[ "${#paths[@]}" -eq "${#expected[@]}" ]]
           diff -u <(printf '%s\n' "${expected[@]}") <(printf '%s\n' "${paths[@]}")
           actual_hash="$(printf '%s\n' "${paths[@]}" | sha256sum | awk '{print $1}')"
-          [[ "$actual_hash" == "64e7ca5bc7a6513a1b40a43ec19090515a8ccaf244271fd3a1ea575214bc42c5" ]]
+          [[ "$actual_hash" == "af18386e9314e02ae2e1530d3f1704dceda9e08696d24dbe586907529a28c646" ]]
 
       - name: Preserve operational NO-GO
         shell: bash
