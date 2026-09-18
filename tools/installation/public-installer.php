@@ -21,6 +21,7 @@ $accountHome = dirname(__DIR__, 2);
 $appRoot = $accountHome.'/oneqay-preview/releases/'.$releaseId.'/apps/web';
 $installerSources = [
     $appRoot.'/app/Infrastructure/Installation/PrebootDatabaseCompatibilityVerification.php',
+    $appRoot.'/app/Infrastructure/Installation/PrebootInstallationActivationReadiness.php',
     $appRoot.'/app/Infrastructure/Installation/PrebootInstallationConfiguration.php',
 ];
 $sharedRoot = $accountHome.'/oneqay-preview/shared';
@@ -36,7 +37,12 @@ foreach ($installerSources as $installerSource) {
 }
 
 $installer = new \App\Infrastructure\Installation\PrebootInstallationConfiguration($sharedRoot, $releaseId, time());
-$state = ['state' => 'UNAVAILABLE', 'can_prepare' => false, 'activation_authorized' => false];
+$state = [
+    'state' => 'UNAVAILABLE',
+    'can_prepare' => false,
+    'activation_handoff_ready' => false,
+    'activation_authorized' => false,
+];
 $result = null;
 $errorCode = null;
 
@@ -70,6 +76,7 @@ try {
 
 $stateCode = (string) ($state['state'] ?? 'UNAVAILABLE');
 $canPrepare = ($state['can_prepare'] ?? false) === true;
+$handoffReady = ($state['activation_handoff_ready'] ?? false) === true;
 $prepared = is_array($result) && ($result['prepared'] ?? false) === true;
 
 function e(string $value): string
@@ -95,7 +102,7 @@ function stateDescription(string $state): string
 {
     return match ($state) {
         'READY_FOR_CONFIGURATION' => 'The private one-time installation authority is valid. Submit the secure runtime configuration below.',
-        'PENDING_CONFIGURATION_VERIFIED' => 'Database connectivity and compatibility were verified before the private pending runtime configuration was committed. Activation remains locked.',
+        'PENDING_CONFIGURATION_VERIFIED' => 'Database compatibility is verified and the pending runtime configuration is sealed to this exact governed release. Activation remains separately authorized and locked.',
         'PENDING_CONFIGURATION_PRESENT' => 'A private .env.pending file exists without Sprint185 database verification evidence. Activation remains locked.',
         'ACTIVE_ENV_PRESENT' => 'An active shared runtime environment already exists. This pre-boot installer will not overwrite it.',
         'AUTHORITY_MISSING' => 'Place a valid private authority.json in the shared install boundary before submitting configuration.',
@@ -168,7 +175,7 @@ function stateDescription(string $state): string
         .actions { margin-top: 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-top: 20px; border-top: 1px solid var(--line); }
         .actions p { margin: 0; color: var(--muted); font-size: 13px; max-width: 650px; line-height: 1.5; }
         button { border: 0; border-radius: 12px; background: var(--accent); color: white; padding: 12px 18px; font: inherit; font-weight: 800; cursor: pointer; }
-        .boundary { margin-top: 18px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        .boundary { margin-top: 18px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
         .boundary div { background: var(--soft); border: 1px solid var(--line); border-radius: 14px; padding: 14px; }
         .boundary span { display: block; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; font-weight: 800; }
         .boundary strong { display: block; margin-top: 5px; font-size: 13px; }
@@ -206,7 +213,11 @@ function stateDescription(string $state): string
 
         <?php if ($prepared): ?>
             <div class="notice success">
-                Configuration was written to the private pending runtime boundary. Activation remains locked.
+                Configuration was verified, sealed to the exact governed release, and written to the private pending runtime boundary. Activation remains locked.
+            </div>
+        <?php elseif ($handoffReady && $stateCode === 'PENDING_CONFIGURATION_VERIFIED'): ?>
+            <div class="notice success">
+                Activation-readiness handoff is sealed and tamper-evident. A separate operational authority is still required before any runtime activation.
             </div>
         <?php elseif ($errorCode !== null): ?>
             <div class="notice error">
@@ -267,6 +278,7 @@ function stateDescription(string $state): string
         <?php endif; ?>
 
         <div class="boundary" aria-label="Operational safety boundaries">
+            <div><span>Activation handoff</span><strong><?= $handoffReady ? 'SEALED / NOT AUTHORIZED' : 'NOT READY' ?></strong></div>
             <div><span>Migration</span><strong>NOT EXECUTED</strong></div>
             <div><span>Technical Preview</span><strong>NOT AUTHORIZED</strong></div>
             <div><span>Production</span><strong>NOT AUTHORIZED</strong></div>
