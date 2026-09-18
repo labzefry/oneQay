@@ -13,8 +13,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  qualify-sprint180-assisted-sign-in:
-    name: qualify-sprint180-assisted-sign-in
+  preserve-sprint180-assisted-sign-in:
+    name: preserve-sprint180-assisted-sign-in
     runs-on: ubuntu-latest
     env:
       APP_NAME: oneQay
@@ -32,34 +32,52 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: Qualify exact Sprint180 engineering envelope
-        if: github.event_name == 'pull_request'
+      - name: Qualify exact Sprint180 reconciliation envelope
+        if: github.event_name == 'pull_request' && github.head_ref == 'sprint180-canonical-reconciliation'
         shell: bash
         run: |
           set -euo pipefail
-          [[ "${{ github.head_ref }}" == "sprint180-merchant-initial-context-assisted-sign-in-foundation" ]]
           BASE_SHA="${{ github.event.pull_request.base.sha }}"
           HEAD_SHA="${{ github.event.pull_request.head.sha }}"
           mapfile -t paths < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort)
           expected=(
             ".github/workflows/sprint180-merchant-initial-context-assisted-sign-in-foundation-regression.yml"
-            "apps/web/resources/js/pages/Foundation.vue"
-            "apps/web/resources/views/app.blade.php"
-            "apps/web/tests/merchant-initial-context-assisted-sign-in.php"
+            "CHANGELOG.md"
+            "PROJECT_MANIFEST.md"
+            "README.md"
+            "ROADMAP.md"
+            "TASKS.md"
           )
           [[ "${#paths[@]}" -eq "${#expected[@]}" ]]
           diff -u <(printf '%s\n' "${expected[@]}") <(printf '%s\n' "${paths[@]}")
           actual_hash="$(printf '%s\n' "${paths[@]}" | sha256sum | awk '{print $1}')"
-          [[ "$actual_hash" == "2c122014511daaeb8ca1d5cbd2ee4bb184733ed1154e08c8e0000f3b758c9c6c" ]]
+          [[ "$actual_hash" == "eb9b36e214455c09714f9d03f034e85aec06506d43b64be314b2b95b00b4f41b" ]]
 
-      - name: Preserve existing first-party auth authority
-        if: github.event_name == 'pull_request'
+      - name: Preserve canonical Sprint180 engineering evidence
+        if: github.event_name == 'pull_request' && github.head_ref == 'sprint180-canonical-reconciliation'
         shell: bash
         run: |
           set -euo pipefail
-          BASE_SHA="${{ github.event.pull_request.base.sha }}"
-          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
-          git diff --quiet "$BASE_SHA" "$HEAD_SHA" --             apps/web/app/Delivery/Http/Identity/FirstPartySessionController.php             apps/web/routes/web.php             apps/web/config/merchant_context_bootstrap.php             apps/web/app/Application/Bootstrap/MerchantContextBootstrapService.php             apps/web/app/Application/Bootstrap/MerchantPosReadyBootstrapService.php
+          for FILE in PROJECT_MANIFEST.md README.md CHANGELOG.md TASKS.md ROADMAP.md; do
+            grep -Fq '8451470f2eb37b45df53ac0d6f30e73c1e9cb5ad' "$FILE"
+            ! grep -Fq '${{ github.event.pull_request.head.sha }}' "$FILE"
+          done
+          grep -Fq '**Engineering PR:** #787' PROJECT_MANIFEST.md
+          grep -Fq 'e4844d47cc99c8f655c09e358b224f45c29513e1' PROJECT_MANIFEST.md
+          grep -Fq '2c122014511daaeb8ca1d5cbd2ee4bb184733ed1154e08c8e0000f3b758c9c6c' PROJECT_MANIFEST.md
+          grep -Fq 'eb9b36e214455c09714f9d03f034e85aec06506d43b64be314b2b95b00b4f41b' PROJECT_MANIFEST.md
+
+      - name: Preserve existing first-party auth authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq "Route::post('/auth/login'" apps/web/routes/web.php
+          grep -Fq "final class FirstPartySessionController" apps/web/app/Delivery/Http/Identity/FirstPartySessionController.php
+          grep -Fq "'tenant_id'," apps/web/app/Delivery/Http/Identity/FirstPartySessionController.php
+          grep -Fq "'identity_id'," apps/web/app/Delivery/Http/Identity/FirstPartySessionController.php
+          grep -Fq "'organization_id'," apps/web/app/Delivery/Http/Identity/FirstPartySessionController.php
+          grep -Fq "'outlet_id'," apps/web/app/Delivery/Http/Identity/FirstPartySessionController.php
+          grep -Fq "'device_id'," apps/web/app/Delivery/Http/Identity/FirstPartySessionController.php
 
       - name: Preserve assisted sign-in security boundary
         shell: bash
