@@ -193,7 +193,9 @@ try {
     $assert(($activationPayload['release_id'] ?? null) === $releaseId, 'persisted handoff release binding mismatch.');
     $assert(($activationPayload['activation_authorized'] ?? true) === false, 'persisted handoff granted activation.');
     $assert(($activationPayload['activation_authority_required'] ?? false) === true, 'persisted handoff omitted authority requirement.');
-    $assert(($subject->inspect()['state'] ?? null) === 'PENDING_CONFIGURATION_VERIFIED_HANDOFF_READY', 'installer did not expose handoff-ready state.');
+    $inspected = $subject->inspect();
+    $assert(($inspected['state'] ?? null) === 'PENDING_CONFIGURATION_VERIFIED', 'canonical verified-pending state changed.');
+    $assert(($inspected['activation_handoff_ready'] ?? false) === true, 'installer did not expose handoff-ready metadata.');
 
     $lowerActivationRequest = strtolower($activationRequest);
     foreach ([strtolower($secretPassword), strtolower($appUrl), strtolower($dbHost), strtolower($token), 'app_key'] as $forbidden) {
@@ -206,9 +208,14 @@ try {
         json_encode($activationPayload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR).PHP_EOL,
         LOCK_EX,
     ) !== false, 'persisted handoff tamper fixture could not be written.');
+    $tamperedState = $subject->inspect();
     $assert(
-        ($subject->inspect()['state'] ?? null) === 'PENDING_CONFIGURATION_VERIFIED',
-        'tampered handoff did not fail closed to verified-pending state.',
+        ($tamperedState['state'] ?? null) === 'PENDING_CONFIGURATION_VERIFIED',
+        'tampered handoff changed canonical verified-pending state.',
+    );
+    $assert(
+        ($tamperedState['activation_handoff_ready'] ?? true) === false,
+        'tampered handoff did not fail closed by clearing handoff readiness.',
     );
 
     $staleShared = $staleRoot.DIRECTORY_SEPARATOR.'shared';

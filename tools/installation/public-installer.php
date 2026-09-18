@@ -69,7 +69,11 @@ try {
     $errorCode = 'installation_request_denied';
 }
 
-$stateCode = (string) ($state['state'] ?? 'UNAVAILABLE');
+$canonicalStateCode = (string) ($state['state'] ?? 'UNAVAILABLE');
+$handoffReady = ($state['activation_handoff_ready'] ?? false) === true;
+$stateCode = $handoffReady && $canonicalStateCode === 'PENDING_CONFIGURATION_VERIFIED'
+    ? 'PENDING_CONFIGURATION_VERIFIED_HANDOFF_READY'
+    : $canonicalStateCode;
 $canPrepare = ($state['can_prepare'] ?? false) === true;
 $prepared = is_array($result) && ($result['prepared'] ?? false) === true;
 

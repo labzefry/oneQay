@@ -55,10 +55,9 @@ final class PrebootInstallationConfiguration
                 );
 
                 return $this->state(
-                    $handoff->requestMatchesPending($pendingEnvironment)
-                        ? 'PENDING_CONFIGURATION_VERIFIED_HANDOFF_READY'
-                        : 'PENDING_CONFIGURATION_VERIFIED',
+                    'PENDING_CONFIGURATION_VERIFIED',
                     false,
+                    $handoff->requestMatchesPending($pendingEnvironment),
                 );
             }
 
@@ -542,13 +541,14 @@ final class PrebootInstallationConfiguration
         return $value;
     }
 
-    /** @return array{state: string, can_prepare: bool, activation_authorized: false} */
-    private function state(string $state, bool $canPrepare): array
+    /** @return array{state: string, can_prepare: bool, activation_authorized: false, activation_handoff_ready: bool} */
+    private function state(string $state, bool $canPrepare, bool $activationHandoffReady = false): array
     {
         return [
             'state' => $state,
             'can_prepare' => $canPrepare,
             'activation_authorized' => false,
+            'activation_handoff_ready' => $activationHandoffReady,
         ];
     }
 
