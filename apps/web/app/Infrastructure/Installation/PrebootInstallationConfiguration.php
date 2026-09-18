@@ -34,7 +34,7 @@ final class PrebootInstallationConfiguration
     }
 
     /**
-     * @return array{state: string, can_prepare: bool, activation_authorized: false}
+     * @return array{state: string, can_prepare: bool, activation_handoff_ready: bool, activation_authorized: false}
      */
     public function inspect(): array
     {
@@ -45,11 +45,21 @@ final class PrebootInstallationConfiguration
         }
 
         if (is_file($this->pendingEnvironmentPath())) {
+            $verified = $this->pendingConfigurationIsDatabaseVerified();
+            $handoffReady = false;
+            if ($verified) {
+                $handoff = (new PrebootInstallationActivationReadiness(
+                    $this->sharedRoot,
+                    $this->releaseId,
+                    $this->nowUnix,
+                ))->inspect();
+                $handoffReady = ($handoff['ready'] ?? false) === true;
+            }
+
             return $this->state(
-                $this->pendingConfigurationIsDatabaseVerified()
-                    ? 'PENDING_CONFIGURATION_VERIFIED'
-                    : 'PENDING_CONFIGURATION_PRESENT',
+                $verified ? 'PENDING_CONFIGURATION_VERIFIED' : 'PENDING_CONFIGURATION_PRESENT',
                 false,
+                $handoffReady,
             );
         }
 
@@ -71,7 +81,7 @@ final class PrebootInstallationConfiguration
 
     /**
      * @param array<string, mixed> $input
-     * @return array{state: string, prepared: true, activation_authorized: false}
+     * @return array{state: string, prepared: true, activation_handoff_ready: true, activation_authorized: false}
      */
     public function prepare(array $input): array
     {
@@ -184,13 +194,25 @@ final class PrebootInstallationConfiguration
             }
             @chmod($pendingPath, 0600);
 
-            // Authority is single-use. Failure to remove it does not permit a second
-            // preparation because the pending configuration is itself a fail-closed lock.
+            try {
+                $handoff = (new PrebootInstallationActivationReadiness(
+                    $this->sharedRoot,
+                    $this->releaseId,
+                    $this->nowUnix,
+                ))->sealPendingEnvironment($content, $facts);
+            } catch (Throwable $exception) {
+                @unlink($pendingPath);
+                throw $exception;
+            }
+
+            // Authority is single-use only after both verified pending configuration
+            // and its exact-release activation-readiness handoff are committed.
             @unlink($this->authorityPath());
 
             return [
                 'state' => 'CONFIGURATION_PREPARED_PENDING_ACTIVATION',
                 'prepared' => true,
+                'activation_handoff_ready' => ($handoff['ready'] ?? false) === true,
                 'activation_authorized' => false,
             ];
         } finally {
@@ -293,6 +315,7 @@ final class PrebootInstallationConfiguration
             'ONEQAY_DB_USERNAME' => $configuration['db_username'],
             'ONEQAY_DB_PASSWORD' => $configuration['db_password'],
             'ONEQAY_DB_SOCKET' => '',
+            'ONEQAY_INSTALLATION_RELEASE_ID' => $this->releaseId,
             'ONEQAY_INSTALLATION_DATABASE_VERIFIED' => 'true',
             'ONEQAY_INSTALLATION_DATABASE_ENGINE' => (string) $databaseFacts['engine'],
             'ONEQAY_INSTALLATION_DATABASE_SERVER_VERSION' => (string) $databaseFacts['server_version'],
@@ -464,12 +487,13 @@ final class PrebootInstallationConfiguration
         return $value;
     }
 
-    /** @return array{state: string, can_prepare: bool, activation_authorized: false} */
-    private function state(string $state, bool $canPrepare): array
+    /** @return array{state: string, can_prepare: bool, activation_handoff_ready: bool, activation_authorized: false} */
+    private function state(string $state, bool $canPrepare, bool $handoffReady = false): array
     {
         return [
             'state' => $state,
             'can_prepare' => $canPrepare,
+            'activation_handoff_ready' => $handoffReady,
             'activation_authorized' => false,
         ];
     }
