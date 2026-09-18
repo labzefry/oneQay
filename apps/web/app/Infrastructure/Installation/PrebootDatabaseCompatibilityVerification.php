@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Infrastructure\Installation;
 
 use PDO;
-use PDOException;
 use Throwable;
 
 // Author by Lab | zefry
@@ -59,7 +58,7 @@ final class PrebootDatabaseCompatibilityVerification
                 'ready' => $this->factsAreCompatible($facts),
                 'facts' => $facts,
             ];
-        } catch (PDOException|Throwable) {
+        } catch (Throwable) {
             return $this->unavailable();
         }
     }
