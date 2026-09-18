@@ -1,30 +1,34 @@
 # oneQay Roadmap
 
-**Roadmap checkpoint:** Sprint181 closed canonically
-**Canonical engineering baseline:** `deb999fcd0694ba85c132d1b490bd90c0dc86309`
+**Roadmap checkpoint:** Sprint182 closed canonically
+**Canonical engineering baseline:** `ceb8fd7839a5077d59247b2cbdd2ba30559c4d25`
 **Current state authority:** `PROJECT_MANIFEST.md`
 
-## Completed Sprint181 horizon
+## Completed Sprint182 horizon
 
-Sprint181 closed `INSTALLATION_READINESS_WIZARD_DELIVERY_FOUNDATION`, converting the earlier installation-readiness source foundations into a visible operator preflight without introducing installation mutation authority.
+Sprint182 closed `GOVERNED_RELEASE_INSTALLATION_PREFLIGHT_BRIDGE_FOUNDATION`, converting the governed M7.5 release artifact into installer-facing evidence that the Sprint181 readiness engine can validate without inventing runtime target facts.
 
-The existing system operations page now renders deterministic readiness checks for runtime/host, secure configuration, database, filesystem, release manifest, and artifact integrity. Missing or unprovable evidence remains BLOCKED.
+The shared trusted-build tool binds source and artifact identity, emits deterministic runtime/host/compatibility policy, validates through `SecureInstallationReadiness`, rejects digest tampering, and reproduces deterministically.
 
-Engineering PR #789 squash merged at `deb999fcd0694ba85c132d1b490bd90c0dc86309`. Engineering envelope: 4 paths, SHA-256 `dffcd90da1967e207fe5b65007c354ce0decb1f5d781db9733623cb9ca807e04`.
+Engineering PR #791 squash merged at `ceb8fd7839a5077d59247b2cbdd2ba30559c4d25`. Engineering envelope: 6 paths, SHA-256 `4968d9fcf35b7a17d67b1909cfd1dad93f2b08b7d82b8c6d30be4dc09f067be3`.
 
-Canonical reconciliation envelope: 6 paths, SHA-256 `4fd83153da1067e5fa7a3f8ed145af7e8cbde3c3cba24149a51cd10770d3d955`.
+Canonical reconciliation envelope: 6 paths, SHA-256 `a78e4871e0852ac6c4f466b7f3278efde846a4ae84f5fe589123672e568aea35`.
 
-## Product progression through Sprint181
+## Product progression through Sprint182
 
-The product now combines governed installer/readiness policy with an operator-usable read-only preflight, while preserving the secure merchant bootstrap/sign-in/POS progression delivered through Sprint180.
+The product now combines governed release artifacts, trusted installer evidence, operator-visible installation preflight, and the secure merchant bootstrap/sign-in/POS progression delivered through Sprint180.
+
+## Known release-automation blocker
+
+The legacy M7.5 push-event workflow startup failure predates Sprint182 and remains separate canonical debt. Sprint182's dedicated workflow proves the bridge itself is executable; Sprint183 should first assess restoration of the canonical M7.5 automated release path as a material installation/release blocker.
 
 ## Operational boundary
 
 Machine-readable operational state under `ops/final-shift-close/` remains authoritative. Selected durable target remains `null`; migration #27 remains `NOT_EXECUTED`; permission provisioning remains `NONE`; producer dispatch remains not performed; runtime allowlist remains Local/Test/CI; Final Shift Close remains inactive; deployment/Technical Preview/Production remain unauthorized; updater remains inactive.
 
-## Sprint182 selection rule
+## Sprint183 selection rule
 
-Begin Sprint182 bounded discovery from fully reconciled Sprint181. Determine the smallest material P0/P1 blocker remaining in the installation/onboarding/merchant journey. Prefer a meaningful operator vertical slice over another isolated technical foundation.
+Begin Sprint183 bounded discovery from fully reconciled Sprint182. Prefer the smallest end-to-end correction that restores governed release automation and closes a real installation journey blocker without granting operational activation.
 
 No environment writes, migration execution, real permission provisioning, updater activation, deployment, Technical Preview, Production, durable-target selection, or producer dispatch is pre-authorized.
 
