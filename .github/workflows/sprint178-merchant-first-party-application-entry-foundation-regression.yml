@@ -41,8 +41,8 @@ jobs:
           mapfile -t paths < <(git diff --name-only origin/main...HEAD | sort)
           expected=(
             ".github/workflows/sprint178-merchant-first-party-application-entry-foundation-regression.yml"
-            "apps/web/resources/js/pages/MerchantEntry.vue"
-            "apps/web/routes/web.php"
+            "apps/web/resources/js/pages/Foundation.vue"
+            "apps/web/resources/views/app.blade.php"
             "apps/web/tests/merchant-first-party-application-entry.php"
           )
           [[ "${#paths[@]}" -eq "${#expected[@]}" ]]
