@@ -24,7 +24,6 @@ archive_name="${release_id}.tar.gz"
 archive_path="dist/${archive_name}"
 checksum_path="${archive_path}.sha256"
 manifest_path="dist/${release_id}.manifest.json"
-installation_manifest_path="dist/manifest.json"
 
 required_files=(
   "apps/web/artisan"
@@ -36,7 +35,6 @@ required_files=(
   "apps/web/vendor/autoload.php"
   "release/manifest-v1.schema.json"
   "tools/validate-release-manifest.php"
-  "tools/validate-installation-readiness-manifest.php"
 )
 
 for required_file in "${required_files[@]}"; do
@@ -56,7 +54,7 @@ if [[ -e apps/web/bootstrap/cache/config.php ]]; then
   exit 1
 fi
 
-rm -rf dist/stage "$archive_path" "$checksum_path" "$manifest_path" "$installation_manifest_path"
+rm -rf dist/stage "$archive_path" "$checksum_path" "$manifest_path"
 mkdir -p "${stage_root}/apps" "$public_surface"
 
 cp -a apps/web "$private_app_root"
@@ -224,75 +222,6 @@ JSON
 
 php tools/validate-release-manifest.php "$manifest_path" "$archive_path"
 
-release_version="0.1.0-preview.${source_sha:0:12}"
-
-cat > "$installation_manifest_path" <<JSON
-{
-  "schema_version": 1,
-  "product": "oneQay",
-  "repository": "labzefry/oneQay",
-  "release_id": "${release_id}",
-  "release_channel": "preview",
-  "source_commit": "${source_sha}",
-  "artifact_filename": "${archive_name}",
-  "artifact_type": "tar.gz",
-  "artifact_size": ${artifact_size},
-  "artifact_sha256": "${artifact_sha256}",
-  "runtime_requirements": {
-    "php_min": "8.2.0",
-    "php_extensions": [
-      "ctype",
-      "curl",
-      "dom",
-      "fileinfo",
-      "filter",
-      "hash",
-      "mbstring",
-      "openssl",
-      "pdo",
-      "session",
-      "tokenizer",
-      "xml"
-    ]
-  },
-  "host_requirements": {
-    "os_families": ["linux"],
-    "web_server_interfaces": ["fpm-fcgi", "cgi-fcgi", "apache2handler"],
-    "memory_bytes_min": 268435456,
-    "execution_time_seconds_min": 60,
-    "disk_bytes_min": 1073741824,
-    "required_capabilities": [
-      "https",
-      "dns",
-      "time_sync",
-      "outbound_allowlist",
-      "scheduler",
-      "archive",
-      "temp_directory",
-      "required_tools"
-    ]
-  },
-  "compatibility_policy": {
-    "release_version": "${release_version}",
-    "build_provenance_ref": "${build_provenance}",
-    "supported_current_version_range": {
-      "min": "0.0.0",
-      "max": "${release_version}"
-    },
-    "deployment_compatibility": "TECHNICAL_PREVIEW_V1",
-    "rollback_compatibility": "NO_SCHEMA_CHANGE_ROLLBACK_SAFE",
-    "public_bootstrap_layout_compatibility": "M7_5_PREVIEW_PUBLIC_SURFACE_V1",
-    "release_notes_reference": "RELEASE.md#release-lifecycle"
-  },
-  "migration_classification": "NO_SCHEMA_CHANGE",
-  "attribution": "Lab | zefry"
-}
-JSON
-
-php tools/validate-installation-readiness-manifest.php \
-  "$installation_manifest_path" \
-  "$archive_path"
-
 tar -tzf "$archive_path" > /tmp/oneqay-preview-release-contents.txt
 
 if grep -E '(^|/)(\.env|\.git)(/|$)|(^|/)(node_modules)(/|$)' /tmp/oneqay-preview-release-contents.txt; then
@@ -311,13 +240,12 @@ if [[ -n "${GITHUB_OUTPUT:-}" ]]; then
     echo "archive_path=$archive_path"
     echo "checksum_path=$checksum_path"
     echo "manifest_path=$manifest_path"
-    echo "installation_manifest_path=$installation_manifest_path"
     echo "artifact_sha256=$artifact_sha256"
     echo "artifact_size=$artifact_size"
   } >> "$GITHUB_OUTPUT"
 fi
 
-printf 'Prepared governed release bundle %s from %s (%s bytes, sha256 %s) with installer-readiness sidecar %s\n' \
-  "$release_id" "$source_sha" "$artifact_size" "$artifact_sha256" "$installation_manifest_path"
+printf 'Prepared governed release bundle %s from %s (%s bytes, sha256 %s)\n' \
+  "$release_id" "$source_sha" "$artifact_size" "$artifact_sha256"
 
 # Author by Lab | zefry
