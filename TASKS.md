@@ -29,11 +29,11 @@ Sprint183 materialized `GOVERNED_M7_5_RELEASE_WORKFLOW_EXECUTION_RESTORATION`.
 - [x] Canonical main-push M7.5 run `35369464318` completed successfully.
 - [x] Governed release packaging, installer sidecar, deterministic reproduction, artifact upload, and cleanliness all succeeded on canonical main.
 - [x] No application or migration source bytes changed.
-- [x] Exact six-path canonical reconciliation envelope defined.
+- [x] Exact eight-path canonical reconciliation envelope defined.
 
 Final engineering envelope: 1 path; SHA-256 `bcec6fc13a26f5c88f4408d76d362195ca9d546cc2df6d6c388a67640b93cce2`.
 
-Canonical reconciliation envelope: 6 paths; SHA-256 `09fc0a9ae283def9c130b48fa756b17624ae0fbf3f87ad988c40605fcaf362c6`.
+Canonical reconciliation envelope: 8 paths; SHA-256 `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`.
 
 ## Preserved lifecycle state
 
@@ -46,7 +46,7 @@ Machine-readable operational state remains authoritative and unchanged: selected
 - [x] Corrective engineering PR qualified and squash merged.
 - [x] Final engineering evidence frozen at `cd3facf81e3b1734353656da3ba5800607900fcb`.
 - [x] Canonical main-push M7.5 qualification succeeded.
-- [x] Canonical reconciliation limited to M7.5 workflow + five project-state documents.
+- [x] Canonical reconciliation limited to Sprint32/Sprint33/Sprint34 compatibility workflows + five project-state documents.
 - [x] Reconciliation preserves final engineering evidence rather than replacing it with reconciliation squash.
 - [x] Operational NO-GO remains unchanged.
 
