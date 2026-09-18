@@ -37,28 +37,50 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: Qualify exact Sprint182 engineering envelope
+      - name: Qualify exact Sprint182 owned envelope
         if: github.event_name == 'pull_request'
         shell: bash
         run: |
           set -euo pipefail
-          [[ "${{ github.head_ref }}" == "sprint182-governed-release-installation-preflight-bridge-foundation" ]]
           BASE_SHA="${{ github.event.pull_request.base.sha }}"
           HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          HEAD_REF="${{ github.head_ref }}"
           test "$(git rev-parse HEAD)" = "$HEAD_SHA"
+
+          case "$HEAD_REF" in
+            sprint182-governed-release-installation-preflight-bridge-foundation)
+              expected=(
+                ".github/workflows/m7-5-preview-release-artifact.yml"
+                ".github/workflows/sprint182-governed-release-installation-preflight-bridge-regression.yml"
+                ".github/workflows/sprint32-authentication-recovery-proof-regression.yml"
+                ".github/workflows/sprint33-recovery-bound-password-reset-regression.yml"
+                ".github/workflows/sprint34-authenticated-password-change-regression.yml"
+                "tools/build-installation-readiness-manifest.php"
+              )
+              expected_hash="4968d9fcf35b7a17d67b1909cfd1dad93f2b08b7d82b8c6d30be4dc09f067be3"
+              ;;
+            sprint182-canonical-reconciliation)
+              expected=(
+                ".github/workflows/sprint182-governed-release-installation-preflight-bridge-regression.yml"
+                "CHANGELOG.md"
+                "PROJECT_MANIFEST.md"
+                "README.md"
+                "ROADMAP.md"
+                "TASKS.md"
+              )
+              expected_hash="a78e4871e0852ac6c4f466b7f3278efde846a4ae84f5fe589123672e568aea35"
+              ;;
+            *)
+              echo "Successor PR outside Sprint182-owned exact envelope; preserving behavioral regression only."
+              exit 0
+              ;;
+          esac
+
           mapfile -t paths < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort)
-          expected=(
-            ".github/workflows/m7-5-preview-release-artifact.yml"
-            ".github/workflows/sprint182-governed-release-installation-preflight-bridge-regression.yml"
-            ".github/workflows/sprint32-authentication-recovery-proof-regression.yml"
-            ".github/workflows/sprint33-recovery-bound-password-reset-regression.yml"
-            ".github/workflows/sprint34-authenticated-password-change-regression.yml"
-            "tools/build-installation-readiness-manifest.php"
-          )
           [[ "${#paths[@]}" -eq "${#expected[@]}" ]]
           diff -u <(printf '%s\n' "${expected[@]}") <(printf '%s\n' "${paths[@]}")
           actual_hash="$(printf '%s\n' "${paths[@]}" | sha256sum | awk '{print $1}')"
-          [[ "$actual_hash" == "4968d9fcf35b7a17d67b1909cfd1dad93f2b08b7d82b8c6d30be4dc09f067be3" ]]
+          [[ "$actual_hash" == "$expected_hash" ]]
 
       - name: Preserve operational NO-GO
         shell: bash
