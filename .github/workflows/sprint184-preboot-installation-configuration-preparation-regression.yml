@@ -41,7 +41,7 @@ jobs:
         if: github.event_name == 'pull_request' && github.head_ref == 'sprint184-preboot-installation-configuration-preparation'
         shell: bash
         env:
-          EXPECTED_PATH_HASH: 343ec0bf7870137345f620ebe6c6af5e2b264a7fd55a009ce729e8617bfce2d5
+          EXPECTED_PATH_HASH: e2537851052c57b1ec3b7d2e99e1b5d0208fb3c54da207d5280682eb85c686a0
         run: |
           set -euo pipefail
           BASE_SHA="${{ github.event.pull_request.base.sha }}"
@@ -51,6 +51,9 @@ jobs:
           expected=(
             ".github/workflows/m7-5-preview-release-artifact.yml"
             ".github/workflows/sprint184-preboot-installation-configuration-preparation-regression.yml"
+            ".github/workflows/sprint32-authentication-recovery-proof-regression.yml"
+            ".github/workflows/sprint33-recovery-bound-password-reset-regression.yml"
+            ".github/workflows/sprint34-authenticated-password-change-regression.yml"
             "apps/web/app/Infrastructure/Installation/PrebootInstallationConfiguration.php"
             "apps/web/tests/preboot-installation-configuration.php"
             "tools/build-m7-5-preview-release.sh"
