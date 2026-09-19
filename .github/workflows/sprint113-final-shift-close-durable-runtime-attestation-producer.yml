@@ -51,6 +51,8 @@ jobs:
             diff -u /tmp/expected /tmp/actual
           elif [[ "$count" -eq 9 && "$hash" == 'ebff1a00d0b06f16925cc0f0849b3c7cd38216ccccd659f0447f307d71face10' ]]; then
             echo 'Sprint209 exact bounded successor envelope recognized.'
+          elif [[ "$count" -eq 15 && "$hash" == '05d1621db51ccf3461470b3edd01fb734a992523ba2b3aee23c08d9878d66231' ]]; then
+            echo 'Sprint210 exact bounded successor envelope recognized.'
           else
             echo "Unexpected Sprint113/successor envelope: count=$count hash=$hash" >&2
             cat /tmp/actual >&2
@@ -82,6 +84,9 @@ jobs:
           test "$(jq -r '.deployment_evidence_contract' "$contract")" = 'ops/final-shift-close/DURABLE_STAGING_DEPLOYMENT_EVIDENCE_BINDING_CONTRACT.json'
           test "$(jq -r '.deployment_evidence_contract_requirements.evidence_state' "$contract")" = 'DEPLOYED_VERIFIED_NOT_SELECTED'
           test "$(jq -r '.qualification_requirements.deployment_evidence_must_qualify_before_attestation_fetch' "$contract")" = 'true'
+          test "$(jq -r '.qualification_requirements.provenance_carries_deployment_evidence_binding' "$contract")" = 'true'
+          test "$(jq -r '.qualification_requirements.provenance_deployment_binding_must_be_sha256' "$contract")" = 'true'
+          test "$(jq -r '.provenance_binding_fields | length' "$contract")" = '3'
           test "$(jq -r '.runtime_endpoint_contract.transport' "$contract")" = 'HTTPS_ONLY'
           test "$(jq -r '.runtime_endpoint_contract.max_response_bytes' "$contract")" = '32768'
           test "$(jq -r '.canonical_boundaries.producer_source' "$contract")" = 'MATERIALIZED_NOT_DISPATCHED'
@@ -118,6 +123,9 @@ jobs:
           grep -Fq 'REVIEW_GATED_V1' "$producer"
           grep -Fq 'REVIEW_GATED_DEPLOYMENT_EVIDENCE_V1' "$producer"
           grep -Fq 'tools/qualify-durable-staging-deployment-evidence.php' "$producer"
+          grep -Fq "'deployment_evidence_sha256' => \$deploymentEvidenceSha256" "$producer"
+          grep -Fq "'deployment_plan_fingerprint' => \$deploymentPlanFingerprint" "$producer"
+          grep -Fq "'deployment_authority_sha256' => \$deploymentAuthoritySha256" "$producer"
           grep -Fq '^https://' "$producer"
           grep -Fq -- "--proto '=https'" "$producer"
           grep -Fq -- '--tlsv1.2' "$producer"
