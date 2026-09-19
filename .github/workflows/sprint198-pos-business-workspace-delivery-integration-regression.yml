@@ -40,7 +40,7 @@ jobs:
         if: github.event_name == 'pull_request' && github.head_ref == 'sprint198-pos-business-workspace-delivery-integration'
         shell: bash
         env:
-          EXPECTED_PATH_HASH: 38aca01e04de94a2d619ecff9dc40ab2cd5922578873995da23222fc01887105
+          EXPECTED_PATH_HASH: f2e4ef3e74bf6a0a956d13d22d06be9e07f23ebcaacb4789f480521eb8feb904
         run: |
           set -euo pipefail
           BASE_SHA="${{ github.event.pull_request.base.sha }}"
@@ -48,6 +48,7 @@ jobs:
           test "$(git rev-parse HEAD)" = "$HEAD_SHA"
           mapfile -t paths < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort)
           expected=(
+            ".github/workflows/m7-4a-technical-preview-interaction-regression.yml"
             ".github/workflows/sprint126-final-shift-close-runtime-binding-manifest-control-plane-token-hardening.yml"
             ".github/workflows/sprint162-pos-operations-hub-regression.yml"
             ".github/workflows/sprint198-pos-business-workspace-delivery-integration-regression.yml"
