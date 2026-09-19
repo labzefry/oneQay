@@ -29,6 +29,7 @@ $installerSources = [
     $appRoot.'/app/Infrastructure/Installation/PrebootRuntimeConfigurationPostPromotionVerification.php',
     $appRoot.'/app/Infrastructure/Installation/PrebootInstallationCompletionHandoff.php',
     $appRoot.'/app/Infrastructure/Installation/PrebootTechnicalPreviewActivationRequest.php',
+    $appRoot.'/app/Infrastructure/Installation/PrebootTechnicalPreviewActivationAuthorityReadiness.php',
     $appRoot.'/app/Infrastructure/Installation/PrebootInstallationConfiguration.php',
 ];
 $sharedRoot = $accountHome.'/oneqay-preview/shared';
@@ -51,6 +52,7 @@ $execution = new \App\Infrastructure\Installation\PrebootRuntimeConfigurationPro
 $postPromotionVerification = new \App\Infrastructure\Installation\PrebootRuntimeConfigurationPostPromotionVerification($sharedRoot, $releaseId, $nowUnix);
 $completionHandoff = new \App\Infrastructure\Installation\PrebootInstallationCompletionHandoff($sharedRoot, $releaseId, $nowUnix);
 $technicalPreviewActivationRequest = new \App\Infrastructure\Installation\PrebootTechnicalPreviewActivationRequest($sharedRoot, $releaseId, $nowUnix);
+$technicalPreviewAuthorityReadiness = new \App\Infrastructure\Installation\PrebootTechnicalPreviewActivationAuthorityReadiness($sharedRoot, $releaseId, $nowUnix);
 $state = [
     'state' => 'UNAVAILABLE',
     'can_prepare' => false,
@@ -100,6 +102,16 @@ $technicalPreviewRequestState = [
     'request_ready' => false,
     'request_id' => '',
     'technical_preview_authorized' => false,
+];
+$technicalPreviewAuthorityResult = null;
+$technicalPreviewAuthorityState = [
+    'state' => 'TECHNICAL_PREVIEW_ACTIVATION_REQUEST_NOT_READY',
+    'authority_present' => false,
+    'token_required' => false,
+    'execution_ready' => false,
+    'request_id' => '',
+    'authority_id' => '',
+    'activation_executed' => false,
 ];
 $errorCode = null;
 
@@ -194,6 +206,17 @@ try {
             }
 
             $technicalPreviewRequestResult = $technicalPreviewActivationRequest->create();
+        } elseif ($action === 'qualify_technical_preview_activation_authority') {
+            $approvalToken = $_POST['technical_preview_approval_token'] ?? null;
+            $confirmation = $_POST['technical_preview_authority_confirmation'] ?? null;
+
+            if (! is_string($approvalToken)
+                || ! is_string($confirmation)
+                || ! hash_equals('QUALIFY_TECHNICAL_PREVIEW_ACTIVATION', $confirmation)) {
+                throw new RuntimeException('technical_preview_activation_authority_confirmation_invalid');
+            }
+
+            $technicalPreviewAuthorityResult = $technicalPreviewAuthorityReadiness->qualifyAndAttest($approvalToken);
         } else {
             throw new RuntimeException('unsupported_installation_action');
         }
@@ -201,6 +224,9 @@ try {
 
     if (($completionState['complete'] ?? false) === true) {
         $technicalPreviewRequestState = $technicalPreviewActivationRequest->inspect();
+        if (($technicalPreviewRequestState['request_ready'] ?? false) === true) {
+            $technicalPreviewAuthorityState = $technicalPreviewAuthorityReadiness->inspect();
+        }
     }
 } catch (\RuntimeException $exception) {
     $errorCode = $exception->getMessage();
@@ -246,6 +272,13 @@ $technicalPreviewRequestPending = ($technicalPreviewRequestState['request_ready'
     || (is_array($technicalPreviewRequestResult)
         && ($technicalPreviewRequestResult['state'] ?? null) === 'TECHNICAL_PREVIEW_ACTIVATION_REQUEST_PENDING_APPROVAL'
         && ($technicalPreviewRequestResult['technical_preview_authorized'] ?? true) === false);
+$technicalPreviewAuthorityCode = (string) ($technicalPreviewAuthorityState['state'] ?? 'TECHNICAL_PREVIEW_ACTIVATION_REQUEST_NOT_READY');
+$technicalPreviewAuthorityPresent = ($technicalPreviewAuthorityState['authority_present'] ?? false) === true;
+$technicalPreviewAuthorityTokenRequired = ($technicalPreviewAuthorityState['token_required'] ?? false) === true;
+$technicalPreviewExecutionReady = ($technicalPreviewAuthorityState['execution_ready'] ?? false) === true
+    || (is_array($technicalPreviewAuthorityResult)
+        && ($technicalPreviewAuthorityResult['state'] ?? null) === 'TECHNICAL_PREVIEW_ACTIVATION_EXECUTION_READY_NOT_EXECUTED'
+        && ($technicalPreviewAuthorityResult['activation_executed'] ?? true) === false);
 $prepared = is_array($result) && ($result['prepared'] ?? false) === true;
 
 function e(string $value): string
@@ -381,7 +414,11 @@ function stateDescription(string $state): string
             <span class="status-code"><?= e($stateCode) ?></span>
         </div>
 
-        <?php if ($technicalPreviewRequestPending): ?>
+        <?php if ($technicalPreviewExecutionReady): ?>
+            <div class="notice success">
+                Technical Preview activation authority is <strong>QUALIFIED / READY / NOT ACTIVATED</strong>. Durable readiness is exact-bound to the request, active runtime configuration, installation completion, separate authority, and target-preflight contract. No activation has been executed.
+            </div>
+        <?php elseif ($technicalPreviewRequestPending): ?>
             <div class="notice success">
                 Technical Preview activation request is <strong>PENDING APPROVAL / NOT AUTHORIZED</strong>. The private request is exact-bound to this governed release, active runtime configuration, and installation completion evidence. Separate operational authority is still required before any activation.
             </div>
@@ -600,6 +637,41 @@ function stateDescription(string $state): string
             </div>
         <?php endif; ?>
 
+        <?php if ($technicalPreviewRequestPending && $technicalPreviewAuthorityTokenRequired && ! $technicalPreviewExecutionReady): ?>
+            <div class="notice warning">
+                Separate Technical Preview authority is present and exact-bound, but it must be qualified with its out-of-band one-time token before execution readiness can be sealed. Qualification does not activate the application.
+            </div>
+            <form method="post" autocomplete="off">
+                <input type="hidden" name="action" value="qualify_technical_preview_activation_authority">
+                <div class="grid">
+                    <div class="field full">
+                        <label for="technical_preview_approval_token">Technical Preview approval token</label>
+                        <input id="technical_preview_approval_token" name="technical_preview_approval_token" type="password" required minlength="32" maxlength="256" autocomplete="one-time-code">
+                        <p class="help">Out-of-band token for the separately provisioned authority. It is never echoed or persisted in plaintext.</p>
+                    </div>
+                    <div class="field full">
+                        <label for="technical_preview_authority_confirmation">Authority qualification confirmation</label>
+                        <input id="technical_preview_authority_confirmation" name="technical_preview_authority_confirmation" type="text" required maxlength="64" autocomplete="off" placeholder="QUALIFY_TECHNICAL_PREVIEW_ACTIVATION">
+                        <p class="help">Type exactly <strong>QUALIFY_TECHNICAL_PREVIEW_ACTIVATION</strong>. This seals readiness evidence only; it does not flip the Preview runtime flag.</p>
+                    </div>
+                </div>
+                <div class="actions">
+                    <p>
+                        Qualification re-validates exact release/request/configuration/completion digests, authority lifetime, and one-time token before writing private 0600 readiness evidence. Target-environment preflight remains mandatory before any later activation execution.
+                    </p>
+                    <button type="submit">Qualify activation authority</button>
+                </div>
+            </form>
+        <?php elseif ($technicalPreviewRequestPending && ! $technicalPreviewAuthorityPresent && ! $technicalPreviewExecutionReady): ?>
+            <div class="notice">
+                Technical Preview authority status: <strong><?= e($technicalPreviewAuthorityCode) ?></strong>. A separately provisioned exact-bound operational authority is required before readiness qualification.
+            </div>
+        <?php elseif ($technicalPreviewRequestPending && $technicalPreviewAuthorityPresent && ! $technicalPreviewExecutionReady): ?>
+            <div class="notice error">
+                Technical Preview authority/readiness status: <strong><?= e($technicalPreviewAuthorityCode) ?></strong>. The installer remains fail-closed and no activation execution is available.
+            </div>
+        <?php endif; ?>
+
         <?php if ($promotionRequestPending && ! $promotionAuthorityTokenRequired && ! $promotionQualified && ! $runtimeConfigured): ?>
             <div class="notice">
                 Promotion authority status: <strong><?= e($promotionAuthorityState) ?></strong>. A separately provisioned exact-bound authority is required before qualification.
@@ -629,6 +701,8 @@ function stateDescription(string $state): string
             <div><span>Post-promotion verification</span><strong><?= $runtimeVerified ? 'VERIFIED / NOT ACTIVATED' : e($postPromotionVerificationCode) ?></strong></div>
             <div><span>Installation completion</span><strong><?= $installationComplete ? 'COMPLETE / NOT ACTIVATED' : e($completionCode) ?></strong></div>
             <div><span>Technical Preview activation request</span><strong><?= $technicalPreviewRequestPending ? 'PENDING APPROVAL / NOT AUTHORIZED' : e($technicalPreviewRequestCode) ?></strong></div>
+            <div><span>Technical Preview authority</span><strong><?= $technicalPreviewExecutionReady ? 'QUALIFIED / READY' : e($technicalPreviewAuthorityCode) ?></strong></div>
+            <div><span>Activation execution readiness</span><strong><?= $technicalPreviewExecutionReady ? 'READY / NOT EXECUTED' : 'NOT READY' ?></strong></div>
             <div><span>Migration</span><strong>NOT EXECUTED</strong></div>
             <div><span>Technical Preview</span><strong>NOT AUTHORIZED</strong></div>
             <div><span>Production</span><strong>NOT AUTHORIZED</strong></div>

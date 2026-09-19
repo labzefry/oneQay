@@ -1,0 +1,219 @@
+# Author by Lab | zefry
+name: Sprint195 Technical Preview Activation Authority Readiness Regression
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint195-technical-preview-activation-authority-readiness-${{ github.event.pull_request.number || github.ref }}-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  qualify-sprint195-technical-preview-activation-authority-readiness:
+    name: qualify-sprint195-technical-preview-activation-authority-readiness
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWE=
+      APP_DEBUG: "false"
+      APP_URL: http://localhost
+      ONEQAY_RUNTIME_CLASS: ci
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+      LOG_CHANNEL: stderr
+      ONEQAY_BUILD_PROVENANCE: github-actions:${{ github.run_id }}:${{ github.run_attempt }}
+
+    steps:
+      - name: Checkout exact Sprint195 source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Qualify exact Sprint195 engineering envelope
+        if: github.event_name == 'pull_request' && github.head_ref == 'sprint195-technical-preview-activation-authority-readiness'
+        shell: bash
+        env:
+          EXPECTED_PATH_HASH: b6b06d99b300fa67cc6341f098eff73c430b11c6d98444ebb75a352d3e7589c2
+        run: |
+          set -euo pipefail
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          test "$(git rev-parse HEAD)" = "$HEAD_SHA"
+          mapfile -t paths < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort)
+          expected=(
+            ".github/workflows/m7-5-preview-release-artifact.yml"
+            ".github/workflows/sprint195-technical-preview-activation-authority-readiness-regression.yml"
+            ".github/workflows/sprint32-authentication-recovery-proof-regression.yml"
+            ".github/workflows/sprint33-recovery-bound-password-reset-regression.yml"
+            ".github/workflows/sprint34-authenticated-password-change-regression.yml"
+            "apps/web/app/Infrastructure/Installation/PrebootTechnicalPreviewActivationAuthorityReadiness.php"
+            "apps/web/tests/preboot-technical-preview-activation-authority-readiness.php"
+            "tools/build-m7-5-preview-release.sh"
+            "tools/installation/public-installer.php"
+            "tools/installation/technical-preview-activation-authority.schema.json"
+            "tools/installation/technical-preview-activation-readiness.schema.json"
+          )
+          test "${#paths[@]}" -eq "${#expected[@]}"
+          diff -u <(printf '%s\n' "${expected[@]}") <(printf '%s\n' "${paths[@]}")
+          actual_hash="$(printf '%s\n' "${paths[@]}" | sha256sum | awk '{print $1}')"
+          test "$actual_hash" = "$EXPECTED_PATH_HASH"
+
+      - name: Preserve operational NO-GO
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" = NOT_EXECUTED
+          test "$(jq -r '.permission_provisioning.state' ops/final-shift-close/STATE.json)" = NONE
+          test "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" = INACTIVE
+          test "$(jq -r '.deployment_authority' ops/final-shift-close/STATE.json)" = NOT_GRANTED
+          test "$(jq -r '.technical_preview_activation' ops/final-shift-close/STATE.json)" = NOT_AUTHORIZED
+          test "$(jq -r '.production_activation' ops/final-shift-close/STATE.json)" = NOT_AUTHORIZED
+          test "$(jq -r '.updater_activation' ops/final-shift-close/STATE.json)" = INACTIVE
+          test "$(jq -r '.selection_state' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" = BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET
+          test "$(jq -r '.selected_target' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" = null
+
+      - name: Setup PHP 8.3 runtime
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        with:
+          php-version: '8.3'
+          extensions: pdo_mysql
+          tools: composer:v2
+          coverage: none
+
+      - name: Setup exact Node LTS
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: 24.19.0
+
+      - name: Validate Sprint195 source and schemas
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l apps/web/app/Infrastructure/Installation/PrebootTechnicalPreviewActivationAuthorityReadiness.php
+          php -l apps/web/tests/preboot-technical-preview-activation-authority-readiness.php
+          php -l tools/installation/public-installer.php
+          bash -n tools/build-m7-5-preview-release.sh
+          jq -e '.properties.authority_state.const == "GRANTED"' tools/installation/technical-preview-activation-authority.schema.json
+          jq -e '.properties.scope.const == "ENABLE_SYNTHETIC_TECHNICAL_PREVIEW_RUNTIME"' tools/installation/technical-preview-activation-authority.schema.json
+          jq -e '.properties.target_environment_preflight_required.const == true' tools/installation/technical-preview-activation-authority.schema.json
+          jq -e '.properties.persistence_authorized.const == false' tools/installation/technical-preview-activation-authority.schema.json
+          jq -e '.properties.production_authorized.const == false' tools/installation/technical-preview-activation-authority.schema.json
+          jq -e '.properties.readiness_state.const == "TECHNICAL_PREVIEW_ACTIVATION_EXECUTION_READY_NOT_EXECUTED"' tools/installation/technical-preview-activation-readiness.schema.json
+          jq -e '.properties.activation_executed.const == false' tools/installation/technical-preview-activation-readiness.schema.json
+          jq -e '.properties.execution_contract.properties.target_environment_preflight_required.const == true' tools/installation/technical-preview-activation-readiness.schema.json
+          jq -e '.properties.migration_execution_authorized.const == false' tools/installation/technical-preview-activation-readiness.schema.json
+
+      - name: Install locked application dependencies
+        working-directory: apps/web
+        run: |
+          set -euo pipefail
+          composer validate --no-check-publish
+          composer install --no-interaction --no-progress --prefer-dist
+          npm ci --ignore-scripts --no-fund
+          npm run type-check
+          npm run build
+
+      - name: Preserve Sprint184 through Sprint194 installation regressions
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -d zend.assertions=1 -d assert.exception=1 tests/preboot-installation-configuration.php
+          php -d zend.assertions=1 -d assert.exception=1 tests/preboot-database-compatibility-verification.php
+          php -d zend.assertions=1 -d assert.exception=1 tests/preboot-installation-activation-readiness.php
+          php -d zend.assertions=1 -d assert.exception=1 tests/preboot-runtime-configuration-promotion-request.php
+          php -d zend.assertions=1 -d assert.exception=1 tests/preboot-runtime-configuration-promotion-qualification.php
+          php -d zend.assertions=1 -d assert.exception=1 tests/preboot-runtime-configuration-promotion-readiness.php
+          php -d zend.assertions=1 -d assert.exception=1 tests/preboot-runtime-configuration-promotion-execution.php
+          php -d zend.assertions=1 -d assert.exception=1 tests/preboot-runtime-configuration-promotion-operator-delivery.php
+          php -d zend.assertions=1 -d assert.exception=1 tests/preboot-runtime-configuration-post-promotion-verification.php
+          php -d zend.assertions=1 -d assert.exception=1 tests/preboot-installation-completion-handoff.php
+          php -d zend.assertions=1 -d assert.exception=1 tests/preboot-technical-preview-activation-request.php
+
+      - name: Execute Sprint195 authority readiness regression
+        working-directory: apps/web
+        run: php -d zend.assertions=1 -d assert.exception=1 tests/preboot-technical-preview-activation-authority-readiness.php
+
+      - name: Preserve canonical Sprint85 activation readiness evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq 'TECHNICAL_ACTIVATION_READINESS = PASS_FOR_SEPARATE_ACTIVATION_REQUEST' docs/SPRINT85_TECHNICAL_PREVIEW_ACTIVATION_READINESS_EVIDENCE_GATE.md
+          grep -Fq 'ACTIVATION_AUTHORITY = NOT_GRANTED' docs/SPRINT85_TECHNICAL_PREVIEW_ACTIVATION_READINESS_EVIDENCE_GATE.md
+          grep -Fq 'Mandatory target-environment preflight after separate authority' docs/SPRINT85_TECHNICAL_PREVIEW_ACTIVATION_READINESS_EVIDENCE_GATE.md
+          grep -Fq 'Failure of any target-environment preflight condition must leave activation disabled' docs/SPRINT85_TECHNICAL_PREVIEW_ACTIVATION_READINESS_EVIDENCE_GATE.md
+
+      - name: Build governed release with authority readiness capability
+        shell: bash
+        run: |
+          set -euo pipefail
+          HEAD_SHA="${{ github.event.pull_request.head.sha || github.sha }}"
+          bash tools/build-m7-5-preview-release.sh "$HEAD_SHA"
+          release_id="m75-preview-${HEAD_SHA:0:12}"
+          artifact="dist/${release_id}.tar.gz"
+          test -f "$artifact"
+
+          tar -tzf "$artifact" > /tmp/oneqay-s195-release-list.txt
+          grep -Fxq "$release_id/apps/web/app/Infrastructure/Installation/PrebootTechnicalPreviewActivationAuthorityReadiness.php" /tmp/oneqay-s195-release-list.txt
+          grep -Fxq "$release_id/installation/technical-preview-activation-authority.schema.json" /tmp/oneqay-s195-release-list.txt
+          grep -Fxq "$release_id/installation/technical-preview-activation-readiness.schema.json" /tmp/oneqay-s195-release-list.txt
+          ! grep -F '/apps/web/database/migrations/' /tmp/oneqay-s195-release-list.txt
+
+          tar -xOzf "$artifact" "$release_id/RELEASE.json" > /tmp/oneqay-s195-release.json
+          grep -Fq '"technical_preview_activation_authority_relative_path": "oneqay-preview/shared/install/technical-preview-activation-authority.json"' /tmp/oneqay-s195-release.json
+          grep -Fq '"technical_preview_activation_authority_schema_relative_path": "installation/technical-preview-activation-authority.schema.json"' /tmp/oneqay-s195-release.json
+          grep -Fq '"technical_preview_activation_authority_max_lifetime_seconds": 900' /tmp/oneqay-s195-release.json
+          grep -Fq '"technical_preview_activation_readiness_relative_path": "oneqay-preview/shared/install/technical-preview-activation-readiness.json"' /tmp/oneqay-s195-release.json
+          grep -Fq '"technical_preview_activation_readiness_schema_relative_path": "installation/technical-preview-activation-readiness.schema.json"' /tmp/oneqay-s195-release.json
+          grep -Fq '"technical_preview_activation_readiness_registration_state": "REGISTERED_GUARDED_OPERATOR_ACTION"' /tmp/oneqay-s195-release.json
+          grep -Fq '"technical_preview_activation_authority_action": "qualify_technical_preview_activation_authority"' /tmp/oneqay-s195-release.json
+          grep -Fq '"technical_preview_activation_authority_confirmation_required": true' /tmp/oneqay-s195-release.json
+          grep -Fq '"technical_preview_activation_readiness_state": "NOT_QUALIFIED_AT_BUILD"' /tmp/oneqay-s195-release.json
+          grep -Fq '"technical_preview_activation_execution_state": "NOT_EXECUTED"' /tmp/oneqay-s195-release.json
+          grep -Fq '"target_environment_preflight_required": true' /tmp/oneqay-s195-release.json
+          grep -Fq '"technical_preview_authorized": false' /tmp/oneqay-s195-release.json
+          grep -Fq '"activation_authorized": false' /tmp/oneqay-s195-release.json
+
+          tar -xOzf "$artifact" "$release_id/public-surface/install.php" > /tmp/oneqay-s195-install.php
+          php -l /tmp/oneqay-s195-install.php
+          grep -Fq 'qualify_technical_preview_activation_authority' /tmp/oneqay-s195-install.php
+          grep -Fq 'QUALIFY_TECHNICAL_PREVIEW_ACTIVATION' /tmp/oneqay-s195-install.php
+          grep -Fq 'QUALIFIED / READY / NOT ACTIVATED' /tmp/oneqay-s195-install.php
+
+      - name: Prove qualification-only lifecycle boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          ! grep -R --line-number --fixed-strings 'Artisan::call' \
+            apps/web/app/Infrastructure/Installation/PrebootTechnicalPreviewActivationAuthorityReadiness.php \
+            apps/web/tests/preboot-technical-preview-activation-authority-readiness.php \
+            tools/installation/public-installer.php
+          ! grep -Fq 'file_put_contents($this->activeEnvironmentPath()' apps/web/app/Infrastructure/Installation/PrebootTechnicalPreviewActivationAuthorityReadiness.php
+          ! grep -Fq 'unlink($this->activeEnvironmentPath()' apps/web/app/Infrastructure/Installation/PrebootTechnicalPreviewActivationAuthorityReadiness.php
+          ! grep -Fq 'ONEQAY_TECHNICAL_PREVIEW_ENABLED="true"' tools/installation/public-installer.php
+          test "$(jq -r '.technical_preview_activation' ops/final-shift-close/STATE.json)" = NOT_AUTHORIZED
+          test "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" = NOT_EXECUTED
+          test "$(jq -r '.permission_provisioning.state' ops/final-shift-close/STATE.json)" = NONE
+
+      - name: Confirm attribution and source cleanliness
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq 'Author by Lab | zefry' apps/web/app/Infrastructure/Installation/PrebootTechnicalPreviewActivationAuthorityReadiness.php
+          grep -Fq 'Lab | zefry' tools/installation/technical-preview-activation-authority.schema.json
+          grep -Fq 'Lab | zefry' tools/installation/technical-preview-activation-readiness.schema.json
+          ! grep -R -E 'ChatGPT|OpenAI|Copilot|Gemini' \
+            apps/web/app/Infrastructure/Installation/PrebootTechnicalPreviewActivationAuthorityReadiness.php \
+            apps/web/tests/preboot-technical-preview-activation-authority-readiness.php \
+            tools/installation/technical-preview-activation-authority.schema.json \
+            tools/installation/technical-preview-activation-readiness.schema.json \
+            tools/installation/public-installer.php \
+            tools/build-m7-5-preview-release.sh
