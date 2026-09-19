@@ -29,8 +29,14 @@ jobs:
       ATTESTATION_URL: ${{ secrets.ONEQAY_DURABLE_RUNTIME_ATTESTATION_URL }}
       ATTESTATION_TOKEN: ${{ secrets.ONEQAY_DURABLE_RUNTIME_ATTESTATION_TOKEN }}
       ENVIRONMENT_PROTECTION_ASSERTION: ${{ secrets.ONEQAY_DURABLE_RUNTIME_ATTESTATION_PROTECTION_ASSERTION }}
+      DEPLOYMENT_EVIDENCE_B64: ${{ secrets.ONEQAY_DURABLE_STAGING_DEPLOYMENT_EVIDENCE_B64 }}
+      DEPLOYMENT_EVIDENCE_PROTECTION_ASSERTION: ${{ secrets.ONEQAY_DURABLE_STAGING_DEPLOYMENT_EVIDENCE_PROTECTION_ASSERTION }}
       EXPECTED_ENVIRONMENT_ID: ${{ vars.ONEQAY_DURABLE_RUNTIME_ENVIRONMENT_ID }}
       EXPECTED_RUNTIME_CLASS: ${{ vars.ONEQAY_DURABLE_RUNTIME_CLASS }}
+      EXPECTED_RUNNING_SOURCE_COMMIT: ${{ vars.ONEQAY_DURABLE_RUNTIME_RUNNING_SOURCE_COMMIT }}
+      EXPECTED_RUNNING_ARTIFACT_SHA256: ${{ vars.ONEQAY_DURABLE_RUNTIME_RUNNING_ARTIFACT_SHA256 }}
+      EXPECTED_DEPLOYMENT_PLAN_FINGERPRINT: ${{ vars.ONEQAY_DURABLE_STAGING_DEPLOYMENT_PLAN_FINGERPRINT }}
+      EXPECTED_DEPLOYMENT_AUTHORITY_SHA256: ${{ vars.ONEQAY_DURABLE_STAGING_DEPLOYMENT_AUTHORITY_SHA256 }}
 
     steps:
       - name: Checkout canonical dispatch source only
@@ -53,8 +59,14 @@ jobs:
           [[ "$ATTESTATION_URL" =~ ^https://[^[:space:]]+$ ]]
           [[ -n "$ATTESTATION_TOKEN" ]]
           [[ "$ENVIRONMENT_PROTECTION_ASSERTION" == 'REVIEW_GATED_V1' ]]
-          [[ "$EXPECTED_ENVIRONMENT_ID" =~ ^[a-z0-9][a-z0-9._:-]{7,127}$ ]]
-          [[ "$EXPECTED_RUNTIME_CLASS" =~ ^[a-z0-9][a-z0-9._:-]{7,127}$ ]]
+          [[ -n "$DEPLOYMENT_EVIDENCE_B64" ]]
+          [[ "$DEPLOYMENT_EVIDENCE_PROTECTION_ASSERTION" == 'REVIEW_GATED_DEPLOYMENT_EVIDENCE_V1' ]]
+          [[ "$EXPECTED_ENVIRONMENT_ID" =~ ^[a-z0-9][a-z0-9-]{2,62}$ ]]
+          [[ "$EXPECTED_RUNTIME_CLASS" == 'durable-staging' ]]
+          [[ "$EXPECTED_RUNNING_SOURCE_COMMIT" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$EXPECTED_RUNNING_ARTIFACT_SHA256" =~ ^[0-9a-f]{64}$ ]]
+          [[ "$EXPECTED_DEPLOYMENT_PLAN_FINGERPRINT" =~ ^[0-9a-f]{64}$ ]]
+          [[ "$EXPECTED_DEPLOYMENT_AUTHORITY_SHA256" =~ ^[0-9a-f]{64}$ ]]
 
           case "$EXPECTED_RUNTIME_CLASS" in
             local|test|testing|ci|preview|synthetic-preview|production|prod)
@@ -72,6 +84,24 @@ jobs:
             echo "Attestation producer must run from current canonical main: $GITHUB_SHA != $main_sha" >&2
             exit 1
           }
+
+      - name: Qualify protected durable-staging deployment evidence
+        id: deployment
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          printf '%s' "$DEPLOYMENT_EVIDENCE_B64" | base64 --decode > /tmp/durable-staging-deployment-evidence.json
+          bytes="$(wc -c < /tmp/durable-staging-deployment-evidence.json)"
+          (( bytes > 1 && bytes <= 32768 ))
+          jq -e 'type == "object"' /tmp/durable-staging-deployment-evidence.json >/dev/null
+
+          php tools/qualify-durable-staging-deployment-evidence.php             /tmp/durable-staging-deployment-evidence.json             "$EXPECTED_ENVIRONMENT_ID"             "$EXPECTED_RUNTIME_CLASS"             "$EXPECTED_RUNNING_SOURCE_COMMIT"             "$EXPECTED_RUNNING_ARTIFACT_SHA256"             "$EXPECTED_DEPLOYMENT_PLAN_FINGERPRINT"             "$EXPECTED_DEPLOYMENT_AUTHORITY_SHA256"             > /tmp/durable-staging-deployment-evidence-qualification.json
+
+          jq -e '.qualification_state == "QUALIFIED_DEPLOYMENT_EVIDENCE_NOT_SELECTED"'             /tmp/durable-staging-deployment-evidence-qualification.json >/dev/null
+          test "$(jq -r '.selected_target' /tmp/durable-staging-deployment-evidence-qualification.json)" = null
+          test "$(jq -r '.producer_dispatch' /tmp/durable-staging-deployment-evidence-qualification.json)" = NOT_PERFORMED
+          echo "deployment_evidence_sha256=$(jq -r '.deployment_evidence_sha256' /tmp/durable-staging-deployment-evidence-qualification.json)" >> "$GITHUB_OUTPUT"
 
       - name: Fetch authenticated runtime readiness attestation
         shell: bash
@@ -104,6 +134,8 @@ jobs:
           ATTESTATION_FILE=/tmp/runtime-attestation.json \
           EXPECTED_ENVIRONMENT_ID="$EXPECTED_ENVIRONMENT_ID" \
           EXPECTED_RUNTIME_CLASS="$EXPECTED_RUNTIME_CLASS" \
+          EXPECTED_RUNNING_SOURCE_COMMIT="$EXPECTED_RUNNING_SOURCE_COMMIT" \
+          EXPECTED_RUNNING_ARTIFACT_SHA256="$EXPECTED_RUNNING_ARTIFACT_SHA256" \
           php <<'PHP'
           <?php
           declare(strict_types=1);
@@ -113,7 +145,10 @@ jobs:
           $path = getenv('ATTESTATION_FILE');
           $expectedEnvironment = getenv('EXPECTED_ENVIRONMENT_ID');
           $expectedRuntime = getenv('EXPECTED_RUNTIME_CLASS');
-          if (!is_string($path) || !is_string($expectedEnvironment) || !is_string($expectedRuntime)) {
+          $expectedSource = getenv('EXPECTED_RUNNING_SOURCE_COMMIT');
+          $expectedArtifact = getenv('EXPECTED_RUNNING_ARTIFACT_SHA256');
+          if (!is_string($path) || !is_string($expectedEnvironment) || !is_string($expectedRuntime)
+              || !is_string($expectedSource) || !is_string($expectedArtifact)) {
               throw new RuntimeException('Attestation producer environment is incomplete.');
           }
 
@@ -134,6 +169,12 @@ jobs:
           }
           if (($attestation['runtime_class'] ?? null) !== $expectedRuntime) {
               throw new RuntimeException('Runtime class does not match protected-environment configuration.');
+          }
+          if (($attestation['exact_running_source_commit'] ?? null) !== $expectedSource) {
+              throw new RuntimeException('Runtime source does not match qualified deployment evidence.');
+          }
+          if (($attestation['exact_running_artifact_sha256'] ?? null) !== $expectedArtifact) {
+              throw new RuntimeException('Runtime artifact does not match qualified deployment evidence.');
           }
           PHP
 

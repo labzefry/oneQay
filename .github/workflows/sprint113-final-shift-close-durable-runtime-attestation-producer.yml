@@ -39,14 +39,23 @@ jobs:
         run: |
           set -euo pipefail
           git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/actual
-          cat > /tmp/expected <<'EOF'
+          count="$(wc -l < /tmp/actual)"
+          hash="$(sha256sum /tmp/actual | awk '{print $1}')"
+          if [[ "$count" -eq 4 && "$hash" == '52aff2303fd78f5e2b8a75fb69ec8727fcaee480b787df6c8419042d1b68fe4f' ]]; then
+            cat > /tmp/expected <<'EOF'
           .github/workflows/final-shift-close-durable-runtime-attestation.yml
           .github/workflows/sprint113-final-shift-close-durable-runtime-attestation-producer.yml
           docs/SPRINT113_FINAL_SHIFT_CLOSE_DURABLE_RUNTIME_ATTESTATION_PRODUCER.md
           ops/final-shift-close/DURABLE_RUNTIME_ATTESTATION_PRODUCER_CONTRACT.json
           EOF
-          diff -u /tmp/expected /tmp/actual
-          test "$(sha256sum /tmp/actual | awk '{print $1}')" = '52aff2303fd78f5e2b8a75fb69ec8727fcaee480b787df6c8419042d1b68fe4f'
+            diff -u /tmp/expected /tmp/actual
+          elif [[ "$count" -eq 9 && "$hash" == 'ebff1a00d0b06f16925cc0f0849b3c7cd38216ccccd659f0447f307d71face10' ]]; then
+            echo 'Sprint209 exact bounded successor envelope recognized.'
+          else
+            echo "Unexpected Sprint113/successor envelope: count=$count hash=$hash" >&2
+            cat /tmp/actual >&2
+            exit 1
+          fi
 
       - name: Validate Sprint112 reservation and Sprint113 contract
         shell: bash
@@ -69,7 +78,10 @@ jobs:
           test "$(jq -r '.producer_event' "$contract")" = 'workflow_dispatch'
           test "$(jq -r '.caller_supplied_target_inputs' "$contract")" = 'false'
           test "$(jq -r '.evidence_status_target' "$contract")" = 'EXACT_RUNNING_SOURCE_COMMIT'
-          test "$(jq -r '.protected_environment_configuration' "$contract")" = 'REQUIRED_OUT_OF_BAND_NOT_MACHINE_VERIFIED_BY_SOURCE'
+          test "$(jq -r '.protected_environment_configuration' "$contract")" = 'REQUIRED_OUT_OF_BAND_WITH_SOURCE_VERIFIED_DEPLOYMENT_EVIDENCE'
+          test "$(jq -r '.deployment_evidence_contract' "$contract")" = 'ops/final-shift-close/DURABLE_STAGING_DEPLOYMENT_EVIDENCE_BINDING_CONTRACT.json'
+          test "$(jq -r '.deployment_evidence_contract_requirements.evidence_state' "$contract")" = 'DEPLOYED_VERIFIED_NOT_SELECTED'
+          test "$(jq -r '.qualification_requirements.deployment_evidence_must_qualify_before_attestation_fetch' "$contract")" = 'true'
           test "$(jq -r '.runtime_endpoint_contract.transport' "$contract")" = 'HTTPS_ONLY'
           test "$(jq -r '.runtime_endpoint_contract.max_response_bytes' "$contract")" = '32768'
           test "$(jq -r '.canonical_boundaries.producer_source' "$contract")" = 'MATERIALIZED_NOT_DISPATCHED'
@@ -95,9 +107,17 @@ jobs:
           grep -Fq 'secrets.ONEQAY_DURABLE_RUNTIME_ATTESTATION_URL' "$producer"
           grep -Fq 'secrets.ONEQAY_DURABLE_RUNTIME_ATTESTATION_TOKEN' "$producer"
           grep -Fq 'secrets.ONEQAY_DURABLE_RUNTIME_ATTESTATION_PROTECTION_ASSERTION' "$producer"
+          grep -Fq 'secrets.ONEQAY_DURABLE_STAGING_DEPLOYMENT_EVIDENCE_B64' "$producer"
+          grep -Fq 'secrets.ONEQAY_DURABLE_STAGING_DEPLOYMENT_EVIDENCE_PROTECTION_ASSERTION' "$producer"
           grep -Fq 'vars.ONEQAY_DURABLE_RUNTIME_ENVIRONMENT_ID' "$producer"
           grep -Fq 'vars.ONEQAY_DURABLE_RUNTIME_CLASS' "$producer"
+          grep -Fq 'vars.ONEQAY_DURABLE_RUNTIME_RUNNING_SOURCE_COMMIT' "$producer"
+          grep -Fq 'vars.ONEQAY_DURABLE_RUNTIME_RUNNING_ARTIFACT_SHA256' "$producer"
+          grep -Fq 'vars.ONEQAY_DURABLE_STAGING_DEPLOYMENT_PLAN_FINGERPRINT' "$producer"
+          grep -Fq 'vars.ONEQAY_DURABLE_STAGING_DEPLOYMENT_AUTHORITY_SHA256' "$producer"
           grep -Fq 'REVIEW_GATED_V1' "$producer"
+          grep -Fq 'REVIEW_GATED_DEPLOYMENT_EVIDENCE_V1' "$producer"
+          grep -Fq 'tools/qualify-durable-staging-deployment-evidence.php' "$producer"
           grep -Fq '^https://' "$producer"
           grep -Fq -- "--proto '=https'" "$producer"
           grep -Fq -- '--tlsv1.2' "$producer"
@@ -161,7 +181,7 @@ jobs:
           set -euo pipefail
           doc=docs/SPRINT113_FINAL_SHIFT_CLOSE_DURABLE_RUNTIME_ATTESTATION_PRODUCER.md
           grep -Fq 'DURABLE_RUNTIME_ATTESTATION_PRODUCER_SOURCE = MATERIALIZED_NOT_DISPATCHED' "$doc"
-          grep -Fq 'PROTECTED_ENVIRONMENT_CONFIGURATION = REQUIRED_OUT_OF_BAND_NOT_VERIFIED' "$doc"
+          grep -Fq 'PROTECTED_ENVIRONMENT_CONFIGURATION = REQUIRED_OUT_OF_BAND_WITH_SOURCE_VERIFIED_DEPLOYMENT_EVIDENCE' "$doc"
           grep -Fq 'REAL_DURABLE_RUNTIME_ATTESTATION = NONE' "$doc"
           grep -Fq 'TRUSTED_ATTESTATION_INGESTION_EXECUTION = NOT_IMPLEMENTED' "$doc"
           grep -Fq 'SELECTED_TARGET = NONE' "$doc"
