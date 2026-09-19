@@ -16,6 +16,7 @@
     "requested_runtime_envelope",
     "required_authority",
     "migration_execution_authorized",
+    "technical_preview_authorized",
     "persistence_authorized",
     "production_authorized",
     "updater_authorized",
@@ -80,6 +81,7 @@
       }
     },
     "migration_execution_authorized": { "const": false },
+    "technical_preview_authorized": { "const": false },
     "persistence_authorized": { "const": false },
     "production_authorized": { "const": false },
     "updater_authorized": { "const": false },
