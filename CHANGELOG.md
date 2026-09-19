@@ -1,6 +1,6 @@
 # Changelog
 
-## 2026-09-19 — Sprint197 engineering closed; canonical reconciliation
+## 2026-09-19 — Sprint197 closed canonically
 
 **Sprint197: Atomic Technical Preview Activation Health Rollback**
 
