@@ -44,7 +44,7 @@ jobs:
         if: github.event_name == 'pull_request' && github.head_ref == 'sprint199-merchant-account-security-self-service-workspace'
         shell: bash
         env:
-          EXPECTED_PATH_HASH: f2bfb20b69030181797ab935f4a7de407fb7143fd97431692da441f3c89b738f
+          EXPECTED_PATH_HASH: 2aba38a7f80dcc6178ce39f865789b4e20b26f2d3ebb96b1d307af0c628e77e4
         run: |
           set -euo pipefail
           BASE_SHA="${{ github.event.pull_request.base.sha }}"
@@ -54,6 +54,9 @@ jobs:
           expected=(
             ".github/workflows/m7-5-preview-release-artifact.yml"
             ".github/workflows/sprint199-merchant-account-security-self-service-workspace-regression.yml"
+            ".github/workflows/sprint32-authentication-recovery-proof-regression.yml"
+            ".github/workflows/sprint33-recovery-bound-password-reset-regression.yml"
+            ".github/workflows/sprint34-authenticated-password-change-regression.yml"
             "apps/web/app/Delivery/Http/Pos/PosOperationsHubController.php"
             "apps/web/resources/js/pages/Foundation.vue"
             "apps/web/resources/js/pages/Pos/OperationsHub.vue"
