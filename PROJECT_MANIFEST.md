@@ -7,60 +7,59 @@
 
 ## Current canonical engineering checkpoint
 
-**Canonical engineering checkpoint:** Sprint197
-**Objective:** `TECHNICAL_PREVIEW_ATOMIC_ACTIVATION_HEALTH_ROLLBACK`
-**Canonical engineering commit:** `0c74e535cfeb281edaff5a2967752baee0db5227`
-**Engineering PR:** #825 — `Sprint197: add atomic Technical Preview activation health rollback`
-**Final engineering head:** `027c84bb282aefd314d8da3d270c925ba5837841`
-**Exact-head qualification:** 85/85 successful
-**Dedicated Sprint197 qualification:** run `35428627303` — SUCCESS
-**Exact-head M7.5 qualification:** run `35428627419` — SUCCESS
-**M7.1 qualification:** run `35428627367` — SUCCESS
-**Governance qualification:** run `35428627552` — SUCCESS
-**PHP Foundation qualification:** run `35428627503` — SUCCESS
-**cPanel qualification:** run `35428627529` — SUCCESS
-**Shared-runtime qualification:** run `35428627836` — SUCCESS
-**Engineering envelope:** 11 paths — `08a73cc8338a51da3ed294b1a6c6a62986e0527100213414036d55b839b10a44`
+**Canonical engineering checkpoint:** Sprint198
+**Objective:** `POS_BUSINESS_WORKSPACE_GUARDED_DELIVERY_INTEGRATION`
+**Canonical engineering commit:** `da8b0a0579e7788b22a1ee1cd78130ff29cdd99a`
+**Engineering PR:** #827 — `Sprint198: integrate guarded POS business workspace delivery`
+**Final engineering head:** `4c6b5ba627bf8bf0d28b4360d10c8f249b66b73f`
+**Exact-head qualification:** 100/100 successful
+**Dedicated Sprint198 qualification:** run `35435832824` — SUCCESS
+**M7.5 Preview DB qualification:** run `35435832860` — SUCCESS
+**M7.5 Technical Preview Release Artifact:** run `35435832346` — SUCCESS
+**M7.4A qualification:** run `35435832619` — SUCCESS
+**M7.3 qualification:** run `35435832336` — SUCCESS
+**M7.2 qualification:** run `35435832339` — SUCCESS
+**M7.1 qualification:** run `35435832779` — SUCCESS
+**Governance qualification:** run `35435832362` — SUCCESS
+**PHP Foundation qualification:** run `35435832289` — SUCCESS
+**Engineering envelope:** 25 paths — `4e04f75c0df2b340b0a66ad5d2fa545d364a088740e0af92861909c4848d0a45`
 **Canonical reconciliation envelope:** 8 paths — `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`
-**Previous canonical checkpoint:** Sprint196 reconciliation `fafc5692697f2aa4ef2b23baff2adff52b205feb`
-**Next position:** Sprint198 business-first bounded discovery after canonical Sprint197 reconciliation.
+**Previous canonical checkpoint:** Sprint197 reconciliation `034c19876eeee9574ebe90d1c4db89d97bdd7d23`
+**Next position:** Sprint199 business-first bounded discovery after canonical Sprint198 reconciliation.
 
-> `0c74e535cfeb281edaff5a2967752baee0db5227` is the canonical Sprint197 engineering evidence. The reconciliation squash must not replace it.
+> `da8b0a0579e7788b22a1ee1cd78130ff29cdd99a` is the canonical Sprint198 engineering evidence. The reconciliation squash must not replace it.
 
 ## Purpose
 
-Sprint197 closes the next material Technical Preview readiness gap after Sprint196: a governed, atomic activation executor with bounded post-activation health qualification and automatic fail-closed rollback. This is repository source capability only; merging it did not activate a target host.
+Sprint198 closes a material business-usability gap after the Technical Preview activation lifecycle became source-complete: already-qualified POS workspaces are now integrated into the normal Laravel application bootstrap through one guarded aggregate provider, without weakening their independent fail-closed delivery gates.
 
 ## Delivered capability
 
-- Added `PrebootTechnicalPreviewActivationExecution`.
-- Requires a valid Sprint196 target preflight, exact release/request/authority/readiness bindings, unexpired authority, and the separately provisioned approval token.
-- Mutates only the exact disabled Preview runtime flag to enabled using an atomic environment-file replacement.
-- Performs bounded in-process HTTPS checks for liveness, readiness, and the Preview surface on the exact configured host.
-- Revalidates runtime policy and the private encrypted Secure file-session contract.
-- On any failed post-activation check or activation-commit error, restores the original environment byte-for-byte, verifies rollback, removes partial success evidence, and stores private recovery evidence.
-- On success, stores a private receipt bound to the exact evidence digests and records conceptual authority/readiness/preflight consumption.
-- Rejects wrong tokens, replay, tampered receipts/evidence, expired authority, invalid runtime envelopes, and unsafe lifecycle drift.
-- Packages the executor and success/recovery schemas into the governed M7.5 Technical Preview artifact.
-- Installer exposes `execute_technical_preview_activation` with exact confirmation `ACTIVATE_TECHNICAL_PREVIEW`.
-- Canonical repository NO-GO display remains distinct from a future host-local `ACTIVE / HEALTHY` execution receipt.
+- Registered `PosOperationsHubServiceProvider` in `bootstrap/providers.php` exactly once.
+- Aggregate provider registers the already-qualified POS business workspace providers without duplicating their business logic.
+- Preserved deny-by-default tenant, organization, outlet, device, session, authorization, persistence, feature, and runtime-class gates.
+- Delivered boot-level route integration for business workspaces whose prerequisites are already satisfied.
+- Preserved close-dependent Shift History and Cash Variance Reconciliation routes as unavailable while Final Shift Close remains canonically `INACTIVE`.
+- Added a dedicated Sprint198 integration regression plus evidence-driven historical compatibility for legacy executable horizons.
+- No schema change, permission grant, migration execution, live deployment, Preview activation, Production activation, updater activation, or durable-target selection was introduced.
 
 ## Qualification evidence
 
-- Final head `027c84bb282aefd314d8da3d270c925ba5837841` completed 85/85 PR-triggered workflows successfully.
-- Dedicated Sprint197, M7.5, M7.1, Governance, PHP Foundation, cPanel, shared-runtime, and historical preservation workflows succeeded.
-- Engineering PR #825 squash merged at `0c74e535cfeb281edaff5a2967752baee0db5227`.
-- Post-merge verification confirmed exactly one squash commit above `fafc5692697f2aa4ef2b23baff2adff52b205feb` with the frozen 11-path engineering envelope.
+- Final head `4c6b5ba627bf8bf0d28b4360d10c8f249b66b73f` completed 100/100 PR-triggered workflows successfully.
+- Dedicated Sprint198, M7.5 DB, M7.5 release, M7.4A, M7.3, M7.2, M7.1, Governance, PHP Foundation, Sprint29–31, Sprint126, Sprint162, and historical preservation workflows succeeded.
+- Product Owner merge authority resolved SUCCESS before the guarded squash merge.
+- Engineering PR #827 squash merged at `da8b0a0579e7788b22a1ee1cd78130ff29cdd99a`.
+- Post-merge verification confirmed exactly one squash commit above `034c19876eeee9574ebe90d1c4db89d97bdd7d23` with the frozen 25-path engineering envelope.
 - Operational NO-GO remained unchanged after engineering merge.
 
 ## Operational NO-GO
 
 Machine-readable state under `ops/final-shift-close/` remains authoritative and unchanged: migration #27 `NOT_EXECUTED`; permission provisioning `NONE`; Final Shift Close `INACTIVE`; deployment `NOT_GRANTED`; canonical Technical Preview/Production `NOT_AUTHORIZED`; updater `INACTIVE`; durable target selection `BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET`; selected target `null`; producer dispatch not performed.
 
-Sprint197 adds a guarded activation mechanism but does not itself grant live Technical Preview authority. No repository merge, reconciliation, test, or build step activates a host.
+Sprint198 integrates business delivery capability only. It does not grant or imply operational activation authority.
 
 ## Next position
 
-Begin Sprint198 from fully reconciled Sprint197. Select the smallest material P0/P1 business-completion blocker that remains after the guarded Technical Preview activation path is source-complete. Avoid splitting work into anti-granular lifecycle micro-sprints, and do not broaden operational authority without a separate explicit decision.
+Begin Sprint199 from fully reconciled Sprint198. Select the smallest material P0/P1 business-completion blocker that advances end-to-end merchant usability and eventual authorized Technical Preview/Production readiness. Prefer a complete bounded business slice over lifecycle-only micro-splitting, and preserve all canonical tenant, authorization, persistence, deployment, and NO-GO boundaries.
 
 Author by Lab | zefry

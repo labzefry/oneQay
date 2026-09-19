@@ -1,30 +1,32 @@
 # oneQay Roadmap
 
-**Roadmap checkpoint:** Sprint197 closed canonically
-**Canonical engineering baseline:** `0c74e535cfeb281edaff5a2967752baee0db5227`
+**Roadmap checkpoint:** Sprint198 closed canonically
+**Canonical engineering baseline:** `da8b0a0579e7788b22a1ee1cd78130ff29cdd99a`
 **Current state authority:** `PROJECT_MANIFEST.md`
 
-## Completed Sprint197 horizon
+## Completed Sprint198 horizon
 
-Sprint197 closed `TECHNICAL_PREVIEW_ATOMIC_ACTIVATION_HEALTH_ROLLBACK`.
+Sprint198 closed `POS_BUSINESS_WORKSPACE_GUARDED_DELIVERY_INTEGRATION`.
 
-The governed Technical Preview path now extends through an atomic activation executor that validates exact authority/preflight state, performs bounded post-activation health qualification, and restores the prior environment on any unhealthy result.
+The application now registers one guarded POS aggregate delivery provider that composes the already-qualified business workspace providers into the normal Laravel bootstrap while preserving each workspace's independent runtime, persistence, session, feature, permission, and prerequisite gates.
 
-Engineering PR #825 qualified at 85/85 on final head `027c84bb282aefd314d8da3d270c925ba5837841` and squash merged at `0c74e535cfeb281edaff5a2967752baee0db5227`.
+Engineering PR #827 qualified at 100/100 on final head `4c6b5ba627bf8bf0d28b4360d10c8f249b66b73f` and squash merged at `da8b0a0579e7788b22a1ee1cd78130ff29cdd99a`.
 
-Engineering envelope SHA-256: `08a73cc8338a51da3ed294b1a6c6a62986e0527100213414036d55b839b10a44`.
+Engineering envelope SHA-256: `4e04f75c0df2b340b0a66ad5d2fa545d364a088740e0af92861909c4848d0a45`.
 Canonical reconciliation envelope SHA-256: `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`.
 
-## Product progression
+## Business progression
 
-Governed release → readiness → secure setup → DB verification → pending config → sealed handoff → promotion request → authority qualification → execution readiness → atomic promotion → post-promotion verification → installation completion → Technical Preview request → Preview authority/readiness → target preflight → guarded atomic activation + bounded health rollback capability.
+The project has moved from source-complete Technical Preview lifecycle controls into business-first application delivery. POS operational workspaces are now integrated into application bootstrap without bypassing their fail-closed gates.
+
+Close-dependent Shift History and Cash Variance Reconciliation remain intentionally unavailable until their existing Final Shift Close prerequisite is separately authorized.
 
 ## Operational boundary
 
-Source capability is not operational activation. Canonical repository state remains Technical Preview `NOT_AUTHORIZED`; migration #27 `NOT_EXECUTED`; permission provisioning `NONE`; Final Shift Close `INACTIVE`; deployment/Production unauthorized; updater inactive; durable target blocked; selected target `null`.
+Source delivery capability is not operational activation. Canonical repository state remains migration #27 `NOT_EXECUTED`; permission provisioning `NONE`; Final Shift Close `INACTIVE`; deployment `NOT_GRANTED`; Technical Preview/Production `NOT_AUTHORIZED`; updater inactive; durable target blocked; selected target `null`.
 
-## Sprint198 selection rule
+## Sprint199 selection rule
 
-Choose the smallest material P0/P1 blocker that moves oneQay toward complete enterprise business usability and eventual authorized Technical Preview/Production readiness. Prefer an end-to-end bounded capability over another thin lifecycle-only micro-step. Preserve tenant isolation, deny-by-default behavior, rollback safety, and all canonical NO-GO boundaries.
+Choose the smallest material P0/P1 blocker that moves oneQay toward complete merchant end-to-end usability and eventual authorized Technical Preview/Production readiness. Prefer a bounded business outcome over anti-granular lifecycle chaining. Preserve tenant isolation, deny-by-default behavior, deterministic qualification, and all canonical NO-GO boundaries.
 
 Author by Lab | zefry
