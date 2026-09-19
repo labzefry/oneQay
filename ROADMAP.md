@@ -1,32 +1,32 @@
 # oneQay Roadmap
 
-**Roadmap checkpoint:** Sprint202 closed canonically
-**Canonical engineering baseline:** `09df0a239d894284a62dec2b5cc39754406eab5c`
+**Roadmap checkpoint:** Sprint203 closed canonically
+**Canonical engineering baseline:** `088dc0a38d80abc776cacc7052ddb3dbfdcf0c70`
 **Current state authority:** `PROJECT_MANIFEST.md`
 
-## Completed Sprint202 horizon
+## Completed Sprint203 horizon
 
-Sprint202 closed `MERCHANT_POS_AUTHORITATIVE_SALE_RECEIPT_CONTINUITY`.
+Sprint203 closed `DURABLE_STAGING_MERCHANT_CORE_BOUNDED_BRIDGE`.
 
-The cashier now receives authoritative completed-sale line data from the canonical sale receipt and presents a professional receipt with print and next-sale continuity.
+The already-qualified merchant core can now be composed for an explicitly armed non-production staging runtime without modifying the historical Local/Test/CI guards inside legacy repositories.
 
-Engineering PR #835 qualified at 89/89 on final head `33c8ecd3852b5507fada858cfe6de3fb3924cd35` and squash merged at `09df0a239d894284a62dec2b5cc39754406eab5c`.
+Engineering PR #839 qualified at 88/88 on final head `a1a2eb0a3ff63edabe1c9ab06a5f8494bbd9d963` and squash merged at `088dc0a38d80abc776cacc7052ddb3dbfdcf0c70`.
 
-Engineering envelope SHA-256: `d49048acc4a472d919471c56083ca4f2ac77e988ef67f6de99fb4a601cbbd684`.
+Engineering envelope SHA-256: `42c4cdd533a99adf2d0d5ba379e1e90575f0bd081ec08187107e9f7a0a03d766`.
 Canonical reconciliation envelope SHA-256: `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`.
 
-## Business progression
+## Production-readiness progression
 
-The merchant path now covers guided readiness into cashier operation and a usable post-checkout receipt. Financial receipt values are projected from the server-completed sale, while catalog display names remain presentation-only labels.
+The source path now extends beyond synthetic-only/local qualification into a bounded non-production staging compatibility surface for the merchant core. This is intentionally source readiness, not target deployment or activation.
 
-The implementation does not create a payment-provider integration, new persistence authority, browser receipt store, automatic sale retry, or operational activation path.
+Two broader Sprint203 attempts were rejected before merge because exact-head CI showed excessive historical regression cost. The final design keeps staging compatibility concentrated at an existing composition boundary and preserves repository-level historical guards.
 
 ## Operational boundary
 
-Source delivery capability is not operational activation. Canonical repository state remains migration #27 `NOT_EXECUTED`; permission provisioning `NONE`; Final Shift Close `INACTIVE`; deployment `NOT_GRANTED`; Technical Preview/Production `NOT_AUTHORIZED`; updater inactive; durable target blocked; selected target `null`.
+Canonical repository state remains migration #27 `NOT_EXECUTED`; permission provisioning `NONE`; Final Shift Close `INACTIVE`; deployment `NOT_GRANTED`; Technical Preview/Production `NOT_AUTHORIZED`; updater inactive; durable target blocked; selected target `null`.
 
-## Sprint203 selection rule
+## Sprint204 selection rule
 
-Choose the smallest material P0/P1 blocker that moves oneQay toward complete merchant end-to-end usability and eventual separately authorized Technical Preview/Production readiness. Prefer a bounded business outcome over anti-granular lifecycle chaining. Preserve tenant isolation, deny-by-default behavior, deterministic qualification, and all canonical NO-GO boundaries.
+Prioritize the durable-target blocker directly. Build the smallest coherent read-only qualification/readiness contract for a real non-synthetic staging target capable of supporting Sprint203. Qualification must be deterministic, non-secret, fail-closed, and evidence-producing, while target selection, deployment, migration execution, activation, and Production remain outside authority.
 
 Author by Lab | zefry
