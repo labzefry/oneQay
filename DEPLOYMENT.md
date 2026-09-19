@@ -1,5 +1,19 @@
 # oneQay Deployment Handbook
 
+## Durable-staging deployment evidence provenance continuity — Sprint210
+
+Sprint210 closes the remaining source-side continuity gap after Sprint209. The protected attestation producer already required exact deployment execution evidence before contacting the runtime, but those deployment bindings were not carried into the trusted provenance envelope consumed by Sprint112/Sprint114 ingestion.
+
+The producer now publishes three mandatory non-secret SHA-256 bindings in `provenance.json`:
+
+- `deployment_evidence_sha256`;
+- `deployment_plan_fingerprint`;
+- `deployment_authority_sha256`.
+
+The canonical provenance validator rejects missing, malformed, or zero digests. The deterministic ingestion record carries the same values under `deployment_binding`, and its fingerprint includes all three. Consequently a later accepted candidate cannot lose the evidence chain that links the running runtime to the exact Sprint207 plan and Sprint208 authority.
+
+This remains source-only trust continuity. Sprint210 does not create or deploy an environment, execute migration #27, provision permissions, select a target, dispatch the producer or ingestion executor, activate Final Shift Close, activate Technical Preview/Production, or activate the updater.
+
 ## Durable-staging deployment execution evidence binding — Sprint209
 
 Sprint209 closes the source-side trust gap between external execution of the Sprint207 operator plan and the protected durable-runtime attestation producer. Runtime readiness alone is no longer sufficient: before the producer can contact the readiness endpoint, protected deployment execution evidence must prove that the exact non-production target was deployed and verified against the exact source commit, artifact SHA-256, Sprint207 plan fingerprint, and Sprint208 deployment-authority SHA-256.
