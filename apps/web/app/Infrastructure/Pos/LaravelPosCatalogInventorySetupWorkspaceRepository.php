@@ -125,7 +125,7 @@ final readonly class LaravelPosCatalogInventorySetupWorkspaceRepository implemen
             || ! $this->workspaceEnabled
             || ! $this->catalogPreparationEnabled
             || ! $this->inventoryBaselineEnabled
-            || ! in_array(strtolower(trim($this->runtimeClass)), ['local', 'test', 'ci'], true)) {
+            || ! in_array(strtolower(trim($this->runtimeClass)), ['local', 'test', 'ci', 'staging'], true)) {
             throw new PosTransactionViolation();
         }
     }
