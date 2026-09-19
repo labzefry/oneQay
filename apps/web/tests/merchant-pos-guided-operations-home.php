@@ -15,11 +15,8 @@ $required = [
     "const primaryDestination = computed<Destination | null>",
     "const groupedDestinations = computed(() =>",
     "const laneCount = computed(() =>",
-    "const primaryPriority = ['catalog_inventory', 'shift_start', 'cashier', 'sales_summary'];",
     ':href="primaryDestination.url"',
     ':href="destination.url"',
-    'Suggested from currently delivered routes only.',
-    'Guidance ranks delivered routes only;',
     'Account & security',
     'props.security.can_logout',
 ];
@@ -29,6 +26,23 @@ foreach ($required as $needle) {
         fwrite(STDERR, "Missing Sprint200 guided-home contract: {$needle}\n");
         exit(1);
     }
+}
+
+$routeOrderedGuidance = str_contains(
+    $source,
+    "const primaryPriority = ['catalog_inventory', 'shift_start', 'cashier', 'sales_summary'];",
+)
+    && str_contains($source, 'Suggested from currently delivered routes only.')
+    && str_contains($source, 'Guidance ranks delivered routes only;');
+
+$stateAwareSuccessor = str_contains($source, 'type MerchantOperationsReadiness')
+    && str_contains($source, 'candidate.key === props.readiness.recommended_key')
+    && str_contains($source, 'Suggested from verified POS state and the currently delivered route set.')
+    && str_contains($source, 'State-aware guidance is read-only');
+
+if (! $routeOrderedGuidance && ! $stateAwareSuccessor) {
+    fwrite(STDERR, "Sprint200 guided-home preservation did not recognize the canonical guidance model.\n");
+    exit(1);
 }
 
 $forbidden = [
