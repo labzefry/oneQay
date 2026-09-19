@@ -8,26 +8,26 @@ Enterprise-oriented multi-tenant business-management platform built with Modular
 
 ## Current canonical status
 
-Latest completed engineering sprint: **Sprint190 — Runtime Configuration Atomic Promotion Executor**.
+Latest completed engineering sprint: **Sprint191 — Governed Runtime Configuration Promotion Operator Delivery**.
 
-- Canonical engineering commit: `a7d71df2201e7940082d6e1e469698ec84f1224c`
-- Engineering PR: #811
-- Final engineering head: `c3e166f14c0de5f038602813407c208f2d526a3c`
-- Exact-head qualification: 78/78 successful
-- Canonical M7.5 main-push run `35416546056`: SUCCESS
-- Engineering envelope SHA-256: `3efa46f499d6f2df2d5b64f31eb35630366e43e6b037213297e3457bf0170d7f`
+- Canonical engineering commit: `be117525ca3b0a426de63a2831a6379654a25271`
+- Engineering PR: #813
+- Final engineering head: `b252b840cfca3f66de6d41a703343c0b4f6362d8`
+- Exact-head qualification: 79/79 successful
+- Canonical M7.5 main-push run `35417458132`: SUCCESS
+- Engineering envelope SHA-256: `737cf389ad902aabb59f9c35eb87237ae07de7bb9e8034ddb8f837ed89c2e5f0`
 
 See `PROJECT_MANIFEST.md` for canonical project state.
 
-## Sprint190 capability
+## Sprint191 capability
 
-oneQay now contains a complete atomic pending-to-active runtime configuration executor with exact-bound authority/readiness validation, exact-byte promotion, read-back verification, rollback, private execution receipt, and replay denial.
+oneQay now delivers the atomic runtime configuration promotion executor through a guarded pre-boot operator flow. The action is available only after durable readiness, requires promotion-token re-entry and the exact `PROMOTE_RUNTIME_CONFIGURATION` confirmation phrase, and reports promoted configuration as **NOT ACTIVATED**.
 
-The executor remains **source-only / NOT_REGISTERED**. The public installer exposes no execution action, and no runtime promotion was performed by Sprint190.
+Repository engineering/CI still performs no live server promotion.
 
 ## Product progression
 
-Governed release → installation readiness → secure configuration → DB verification → pending config → sealed handoff → promotion request → authority qualification → durable execution readiness → dormant atomic promotion executor.
+Governed release → installation readiness → secure configuration → DB verification → pending config → sealed handoff → promotion request → authority qualification → durable execution readiness → atomic promotion executor → guarded operator delivery.
 
 ## Operational boundary
 
@@ -35,6 +35,6 @@ Migration #27 remains `NOT_EXECUTED`; permission provisioning `NONE`; feature ac
 
 ## Next
 
-Sprint191 begins from fully reconciled Sprint190 and targets the next material installation/onboarding blocker without implicit activation authority.
+Sprint192 begins from fully reconciled Sprint191 and targets the next material installation/onboarding blocker without implicit activation authority.
 
 Author by Lab | zefry
