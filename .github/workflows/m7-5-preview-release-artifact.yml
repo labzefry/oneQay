@@ -522,6 +522,28 @@ jobs:
               sprint51_jrn008_preview_fixture=true
               echo 'Exact Sprint201 state-aware guided operations envelope recognized for historical M7.5 preservation.'
             fi
+            if [[ "${{ github.head_ref }}" == 'sprint205-governed-durable-staging-release-artifact-foundation' && "$count" -eq 9 && "$fingerprint" == '958492e789d583ddd73f803b5a82fa857e25692f372117492d04e25ac82a5a65' ]]; then
+              for expected in \
+                '.github/workflows/m7-5-preview-release-artifact.yml' \
+                '.github/workflows/sprint205-governed-durable-staging-release-artifact-regression.yml' \
+                '.github/workflows/sprint32-authentication-recovery-proof-regression.yml' \
+                '.github/workflows/sprint33-recovery-bound-password-reset-regression.yml' \
+                '.github/workflows/sprint34-authenticated-password-change-regression.yml' \
+                'ops/final-shift-close/DURABLE_STAGING_RELEASE_ARTIFACT_CONTRACT.json' \
+                'release/durable-staging-manifest-v1.schema.json' \
+                'tools/build-durable-staging-release.sh' \
+                'tools/validate-durable-staging-release-manifest.php'
+              do
+                grep -Fxq "$expected" /tmp/m75-nine-paths
+              done
+              for migration in database/migrations/0000_00_00_0000{17..27}_*.php; do
+                if [[ -f "$migration" ]]; then
+                  historical_migrations+=("$migration")
+                fi
+              done
+              sprint51_jrn008_preview_fixture=true
+              echo 'Exact Sprint205 durable staging artifact envelope recognized while preserving Preview no-schema-change behavior.'
+            fi
             if [[ "${{ github.head_ref }}" == 'sprint202-merchant-pos-authoritative-sale-receipt-continuity' && "$count" -eq 9 && "$fingerprint" == 'd49048acc4a472d919471c56083ca4f2ac77e988ef67f6de99fb4a601cbbd684' ]]; then
               for expected in \
                 '.github/workflows/m7-5-preview-release-artifact.yml' \

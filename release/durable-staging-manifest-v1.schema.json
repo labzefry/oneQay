@@ -1,0 +1,189 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oneqay.invalid/contracts/durable-staging-release-manifest-v1.schema.json",
+  "title": "oneQay Durable Staging Release Manifest v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "manifest_version",
+    "schema_id",
+    "product",
+    "release",
+    "source",
+    "build",
+    "artifact",
+    "runtime",
+    "migration",
+    "attestation_binding",
+    "operational_boundary",
+    "attribution"
+  ],
+  "properties": {
+    "manifest_version": {"type": "integer", "const": 1},
+    "schema_id": {"type": "string", "const": "oneqay.durable-staging-release-manifest.v1"},
+    "product": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "repository"],
+      "properties": {
+        "name": {"type": "string", "const": "oneQay"},
+        "repository": {"type": "string", "const": "labzefry/oneQay"}
+      }
+    },
+    "release": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "channel",
+        "environment",
+        "production",
+        "synthetic_fixture_runtime",
+        "production_data_allowed"
+      ],
+      "properties": {
+        "id": {"type": "string", "pattern": "^durable-staging-[0-9a-f]{12}$"},
+        "channel": {"type": "string", "const": "STAGING"},
+        "environment": {"type": "string", "const": "DURABLE_STAGING"},
+        "production": {"type": "boolean", "const": false},
+        "synthetic_fixture_runtime": {"type": "boolean", "const": false},
+        "production_data_allowed": {"type": "boolean", "const": false}
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["commit_sha"],
+      "properties": {
+        "commit_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"}
+      }
+    },
+    "build": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider", "source_date_epoch", "provenance_reference"],
+      "properties": {
+        "provider": {"type": "string", "const": "GITHUB_ACTIONS_OR_EQUIVALENT_TRUSTED_CI"},
+        "source_date_epoch": {"type": "integer", "minimum": 1},
+        "provenance_reference": {"type": "string", "minLength": 1, "maxLength": 1024}
+      }
+    },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["filename", "format", "media_type", "size_bytes", "sha256"],
+      "properties": {
+        "filename": {"type": "string", "pattern": "^durable-staging-[0-9a-f]{12}\\.tar\\.gz$"},
+        "format": {"type": "string", "const": "tar.gz"},
+        "media_type": {"type": "string", "const": "application/gzip"},
+        "size_bytes": {"type": "integer", "minimum": 1},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "runtime": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "required_runtime_class",
+        "php_constraint",
+        "build_php",
+        "build_node",
+        "runtime_build_tools_required"
+      ],
+      "properties": {
+        "required_runtime_class": {"type": "string", "const": "durable-staging"},
+        "php_constraint": {"type": "string", "const": "^8.2"},
+        "build_php": {"type": "string", "const": "8.3"},
+        "build_node": {"type": "string", "const": "24.19.0"},
+        "runtime_build_tools_required": {"type": "boolean", "const": false}
+      }
+    },
+    "migration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_included",
+        "expected_count",
+        "latest_migration",
+        "execution_state",
+        "execution_authorized"
+      ],
+      "properties": {
+        "source_included": {"type": "boolean", "const": true},
+        "expected_count": {"type": "integer", "const": 27},
+        "latest_migration": {
+          "type": "string",
+          "const": "0000_00_00_000027_create_pos_shift_close_evidence_foundation.php"
+        },
+        "execution_state": {"type": "string", "const": "NOT_EXECUTED_BY_ARTIFACT_BUILD"},
+        "execution_authorized": {"type": "boolean", "const": false}
+      }
+    },
+    "attestation_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "readiness_endpoint",
+        "source_commit_environment_key",
+        "artifact_sha256_environment_key",
+        "attestation_token_environment_key",
+        "environment_values_embedded"
+      ],
+      "properties": {
+        "readiness_endpoint": {
+          "type": "string",
+          "const": "/internal/oneqay/durable-runtime/readiness"
+        },
+        "source_commit_environment_key": {
+          "type": "string",
+          "const": "ONEQAY_RUNNING_SOURCE_COMMIT"
+        },
+        "artifact_sha256_environment_key": {
+          "type": "string",
+          "const": "ONEQAY_RUNNING_ARTIFACT_SHA256"
+        },
+        "attestation_token_environment_key": {
+          "type": "string",
+          "const": "ONEQAY_DURABLE_RUNTIME_ATTESTATION_TOKEN"
+        },
+        "environment_values_embedded": {"type": "boolean", "const": false}
+      }
+    },
+    "operational_boundary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "environment_creation",
+        "environment_deployment",
+        "migration27_execution",
+        "permission_provisioning",
+        "feature_activation",
+        "deployment_authority",
+        "technical_preview_activation",
+        "production_activation",
+        "updater_activation",
+        "target_selection",
+        "selected_target",
+        "producer_dispatch"
+      ],
+      "properties": {
+        "environment_creation": {"type": "string", "const": "NOT_PERFORMED"},
+        "environment_deployment": {"type": "string", "const": "NOT_PERFORMED"},
+        "migration27_execution": {"type": "string", "const": "NOT_PERFORMED"},
+        "permission_provisioning": {"type": "string", "const": "NONE"},
+        "feature_activation": {"type": "string", "const": "INACTIVE"},
+        "deployment_authority": {"type": "string", "const": "NOT_GRANTED"},
+        "technical_preview_activation": {"type": "string", "const": "NOT_AUTHORIZED"},
+        "production_activation": {"type": "string", "const": "NOT_AUTHORIZED"},
+        "updater_activation": {"type": "string", "const": "INACTIVE"},
+        "target_selection": {
+          "type": "string",
+          "const": "BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET"
+        },
+        "selected_target": {"type": "null"},
+        "producer_dispatch": {"type": "string", "const": "NOT_PERFORMED"}
+      }
+    },
+    "attribution": {"type": "string", "const": "Lab | zefry"}
+  }
+}
