@@ -1,5 +1,27 @@
 # Changelog
 
+## 2026-09-19 — Sprint199 closed canonically
+
+**Sprint199: Merchant Account Security Self-Service Workspace**
+
+- Added merchant-facing Account & Security controls to the POS Operations Hub while reusing existing first-party authentication authority.
+- Added authenticated password change with mandatory fresh sign-in after success.
+- Added password recovery-code rotation and privileged authenticator recovery-code rotation using existing governed endpoints.
+- Added Foundation sign-in password recovery and lost-authenticator replacement flows through existing restricted recovery sessions.
+- Refreshed XSRF from the current cookie after recovery proof regenerates the session, preserving multi-step CSRF correctness.
+- Kept recovery material response-only; no sensitive recovery values are persisted to localStorage or sessionStorage.
+- Kept capability discovery server-derived from existing route registration; no new permission, schema, authentication engine, or authority was introduced.
+- Final engineering head `b7be9bc6c268aa6a332c0e709e417c6384d08800`: 85/85 PR-triggered workflows SUCCESS.
+- Engineering PR #829 squash merged at `f2692018b261a723b9b360efe650969926adb2d2`.
+- Dedicated Sprint199 run `35438535934`, M7.5 release `35438535597`, Sprint32 `35438535499`, Sprint33 `35438535463`, Sprint34 `35438535446`, M7.1 `35438535440`, Governance `35438535437`, PHP Foundation `35438535925`, Sprint162 `35438535268`, and Sprint180 `35438536093`: SUCCESS.
+- Product Owner merge authority run `35439039225`: SUCCESS.
+- Engineering path hash: `2aba38a7f80dcc6178ce39f865789b4e20b26f2d3ebb96b1d307af0c628e77e4`.
+- Canonical reconciliation path hash: `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`.
+- Operational NO-GO unchanged.
+- Next position: Sprint200 business-first bounded discovery.
+
+Author by Lab | zefry
+
 ## 2026-09-19 — Sprint198 closed canonically
 
 **Sprint198: Guarded POS Business Workspace Delivery Integration**
