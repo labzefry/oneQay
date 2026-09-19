@@ -183,7 +183,9 @@ cat > "${stage_root}/RELEASE.json" <<JSON
     "promotion_readiness_schema_relative_path": "installation/runtime-configuration-promotion-readiness.schema.json",
     "promotion_execution_receipt_relative_path": "oneqay-preview/shared/install/runtime-configuration-promotion-execution.json",
     "promotion_execution_schema_relative_path": "installation/runtime-configuration-promotion-execution.schema.json",
-    "promotion_executor_registration_state": "NOT_REGISTERED",
+    "promotion_executor_registration_state": "REGISTERED_GUARDED_OPERATOR_ACTION",
+    "promotion_operator_action": "execute_runtime_promotion",
+    "promotion_operator_confirmation_required": true,
     "promotion_execution_state": "NOT_EXECUTED",
     "promotion_authorized": false,
     "activation_authorized": false
@@ -312,7 +314,9 @@ if ! grep -Fq '"promotion_request_relative_path": "oneqay-preview/shared/install
   || ! grep -Fq '"promotion_readiness_schema_relative_path": "installation/runtime-configuration-promotion-readiness.schema.json"' "${stage_root}/RELEASE.json" \
   || ! grep -Fq '"promotion_execution_receipt_relative_path": "oneqay-preview/shared/install/runtime-configuration-promotion-execution.json"' "${stage_root}/RELEASE.json" \
   || ! grep -Fq '"promotion_execution_schema_relative_path": "installation/runtime-configuration-promotion-execution.schema.json"' "${stage_root}/RELEASE.json" \
-  || ! grep -Fq '"promotion_executor_registration_state": "NOT_REGISTERED"' "${stage_root}/RELEASE.json" \
+  || ! grep -Fq '"promotion_executor_registration_state": "REGISTERED_GUARDED_OPERATOR_ACTION"' "${stage_root}/RELEASE.json" \
+  || ! grep -Fq '"promotion_operator_action": "execute_runtime_promotion"' "${stage_root}/RELEASE.json" \
+  || ! grep -Fq '"promotion_operator_confirmation_required": true' "${stage_root}/RELEASE.json" \
   || ! grep -Fq '"promotion_execution_state": "NOT_EXECUTED"' "${stage_root}/RELEASE.json" \
   || ! grep -Fq '"promotion_authorized": false' "${stage_root}/RELEASE.json"; then
   echo "Pre-boot installation metadata must preserve governed promotion request/authority boundaries." >&2
