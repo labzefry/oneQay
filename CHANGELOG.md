@@ -1,5 +1,27 @@
 # Changelog
 
+## 2026-09-19 — Sprint200 closed canonically
+
+**Sprint200: Merchant POS Guided Operations Home**
+
+- Turned the POS Operations Hub into a guided merchant operations home while preserving all existing server-side authorization boundaries.
+- Added a compact command summary for delivered workspaces, business lanes, and the active outlet context.
+- Moved full tenant, organization, outlet, and device identifiers behind explicit technical-context disclosure so internal IDs no longer dominate the merchant experience.
+- Added a suggested starting workspace derived only from the already server-delivered destination list.
+- Grouped delivered destinations into setup, shift, sell, stock, review, and control lanes for faster daily navigation.
+- Preserved Sprint199 Account & Security self-service in the same enterprise workspace.
+- Explicitly kept guidance advisory-only: destination authorization, prerequisites, persistence, and mutation eligibility remain enforced inside each workspace.
+- Final engineering head `cf9d49063d9040b83729a48eaa298e5f67f98a45`: 86/86 PR-triggered workflows SUCCESS.
+- Engineering PR #831 squash merged at `9c9c211416d216a396880d6e439e6d13c1438b73`.
+- Dedicated Sprint200 run `35439890798`, M7.5 release `35439890767`, Sprint32 `35439891065`, Sprint33 `35439890470`, Sprint34 `35439890729`, M7.1 `35439890803`, Governance `35439890548`, PHP Foundation `35439890784`, Sprint162 `35439891289`, and Sprint199 preservation `35439890492`: SUCCESS.
+- Product Owner merge authority run `35440079418`: SUCCESS.
+- Engineering path hash: `c8c07a41fba8ae22eabde78ceaeeed8ae88d0a5906bcc1429348d384a061682f`.
+- Canonical reconciliation path hash: `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`.
+- Operational NO-GO unchanged.
+- Next position: Sprint201 business-first bounded discovery.
+
+Author by Lab | zefry
+
 ## 2026-09-19 — Sprint199 closed canonically
 
 **Sprint199: Merchant Account Security Self-Service Workspace**
