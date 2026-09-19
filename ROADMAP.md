@@ -1,30 +1,30 @@
 # oneQay Roadmap
 
-**Roadmap checkpoint:** Sprint196 closed canonically
-**Canonical engineering baseline:** `9948aeadc562b6188453872f09bd3afb754dd0c0`
+**Roadmap checkpoint:** Sprint197 closed canonically
+**Canonical engineering baseline:** `0c74e535cfeb281edaff5a2967752baee0db5227`
 **Current state authority:** `PROJECT_MANIFEST.md`
 
-## Completed Sprint196 horizon
+## Completed Sprint197 horizon
 
-Sprint196 closed `TECHNICAL_PREVIEW_TARGET_ENVIRONMENT_PREFLIGHT`.
+Sprint197 closed `TECHNICAL_PREVIEW_ATOMIC_ACTIVATION_HEALTH_ROLLBACK`.
 
-The installation journey now progresses from Technical Preview authority/readiness to a guarded target-host qualification that validates the bounded HTTPS single-instance Synthetic Preview envelope without activating the application.
+The governed Technical Preview path now extends through an atomic activation executor that validates exact authority/preflight state, performs bounded post-activation health qualification, and restores the prior environment on any unhealthy result.
 
-Engineering PR #823 qualified at 84/84 on final head `afc443420ddef9283c7f575ce311b97fc026e658` and squash merged at `9948aeadc562b6188453872f09bd3afb754dd0c0`.
+Engineering PR #825 qualified at 85/85 on final head `027c84bb282aefd314d8da3d270c925ba5837841` and squash merged at `0c74e535cfeb281edaff5a2967752baee0db5227`.
 
-Engineering envelope SHA-256: `bb875f82e7cfc7a8347bf6d92f916f6124eb5b095e27f9582189ebec5c74e904`.
+Engineering envelope SHA-256: `08a73cc8338a51da3ed294b1a6c6a62986e0527100213414036d55b839b10a44`.
 Canonical reconciliation envelope SHA-256: `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`.
 
 ## Product progression
 
-Governed release → readiness → secure setup → DB verification → pending config → sealed handoff → promotion request → authority qualification → execution readiness → atomic promotion → post-promotion verification → installation completion → Technical Preview activation request → Technical Preview authority qualification → activation execution readiness → target-environment preflight.
+Governed release → readiness → secure setup → DB verification → pending config → sealed handoff → promotion request → authority qualification → execution readiness → atomic promotion → post-promotion verification → installation completion → Technical Preview request → Preview authority/readiness → target preflight → guarded atomic activation + bounded health rollback capability.
 
 ## Operational boundary
 
-A passed preflight is not activation. Canonical repository state remains Technical Preview `NOT_AUTHORIZED`; migration #27 `NOT_EXECUTED`; permission provisioning `NONE`; Final Shift Close `INACTIVE`; deployment/Production unauthorized; updater inactive; durable target blocked; selected target `null`.
+Source capability is not operational activation. Canonical repository state remains Technical Preview `NOT_AUTHORIZED`; migration #27 `NOT_EXECUTED`; permission provisioning `NONE`; Final Shift Close `INACTIVE`; deployment/Production unauthorized; updater inactive; durable target blocked; selected target `null`.
 
-## Sprint197 selection rule
+## Sprint198 selection rule
 
-Select the smallest material P0/P1 blocker after target preflight. Verify repository-native activation, post-activation health, and rollback boundaries before choosing the next implementation. Do not execute or pre-authorize live Technical Preview activation.
+Choose the smallest material P0/P1 blocker that moves oneQay toward complete enterprise business usability and eventual authorized Technical Preview/Production readiness. Prefer an end-to-end bounded capability over another thin lifecycle-only micro-step. Preserve tenant isolation, deny-by-default behavior, rollback safety, and all canonical NO-GO boundaries.
 
 Author by Lab | zefry
