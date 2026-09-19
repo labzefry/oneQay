@@ -23,6 +23,7 @@ $installerSources = [
     $appRoot.'/app/Infrastructure/Installation/PrebootDatabaseCompatibilityVerification.php',
     $appRoot.'/app/Infrastructure/Installation/PrebootInstallationActivationReadiness.php',
     $appRoot.'/app/Infrastructure/Installation/PrebootRuntimeConfigurationPromotionRequest.php',
+    $appRoot.'/app/Infrastructure/Installation/PrebootRuntimeConfigurationPromotionQualification.php',
     $appRoot.'/app/Infrastructure/Installation/PrebootInstallationConfiguration.php',
 ];
 $sharedRoot = $accountHome.'/oneqay-preview/shared';
@@ -37,7 +38,9 @@ foreach ($installerSources as $installerSource) {
     require_once $installerSource;
 }
 
-$installer = new \App\Infrastructure\Installation\PrebootInstallationConfiguration($sharedRoot, $releaseId, time());
+$nowUnix = time();
+$installer = new \App\Infrastructure\Installation\PrebootInstallationConfiguration($sharedRoot, $releaseId, $nowUnix);
+$qualification = new \App\Infrastructure\Installation\PrebootRuntimeConfigurationPromotionQualification($sharedRoot, $releaseId, $nowUnix);
 $state = [
     'state' => 'UNAVAILABLE',
     'can_prepare' => false,
@@ -45,11 +48,22 @@ $state = [
     'promotion_request_pending' => false,
     'activation_authorized' => false,
 ];
+$qualificationState = [
+    'state' => 'PROMOTION_REQUEST_NOT_READY',
+    'authority_present' => false,
+    'token_required' => false,
+    'promotion_qualified' => false,
+    'promotion_executed' => false,
+];
 $result = null;
+$qualificationResult = null;
 $errorCode = null;
 
 try {
     $state = $installer->inspect();
+    if (($state['promotion_request_pending'] ?? false) === true) {
+        $qualificationState = $qualification->inspect();
+    }
 
     $method = strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET'));
     if (! in_array($method, ['GET', 'POST'], true)) {
@@ -64,8 +78,25 @@ try {
             throw new RuntimeException('invalid_request_size');
         }
 
-        $result = $installer->prepare($_POST);
-        $state = $installer->inspect();
+        $action = (string) ($_POST['action'] ?? 'prepare_configuration');
+
+        if ($action === 'prepare_configuration') {
+            $result = $installer->prepare($_POST);
+            $state = $installer->inspect();
+            if (($state['promotion_request_pending'] ?? false) === true) {
+                $qualificationState = $qualification->inspect();
+            }
+        } elseif ($action === 'qualify_promotion_authority') {
+            $approvalToken = $_POST['approval_token'] ?? null;
+            if (! is_string($approvalToken)) {
+                throw new RuntimeException('promotion_authority_denied');
+            }
+
+            $qualificationResult = $qualification->qualify($approvalToken);
+            $qualificationState = $qualification->inspect();
+        } else {
+            throw new RuntimeException('unsupported_installation_action');
+        }
     }
 } catch (\RuntimeException $exception) {
     $errorCode = $exception->getMessage();
@@ -80,6 +111,12 @@ $stateCode = (string) ($state['state'] ?? 'UNAVAILABLE');
 $canPrepare = ($state['can_prepare'] ?? false) === true;
 $handoffReady = ($state['activation_handoff_ready'] ?? false) === true;
 $promotionRequestPending = ($state['promotion_request_pending'] ?? false) === true;
+$promotionAuthorityState = (string) ($qualificationState['state'] ?? 'PROMOTION_REQUEST_NOT_READY');
+$promotionAuthorityPresent = ($qualificationState['authority_present'] ?? false) === true;
+$promotionAuthorityTokenRequired = ($qualificationState['token_required'] ?? false) === true;
+$promotionQualified = is_array($qualificationResult)
+    && ($qualificationResult['promotion_qualified'] ?? false) === true
+    && ($qualificationResult['promotion_executed'] ?? true) === false;
 $prepared = is_array($result) && ($result['prepared'] ?? false) === true;
 
 function e(string $value): string
@@ -178,7 +215,7 @@ function stateDescription(string $state): string
         .actions { margin-top: 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-top: 20px; border-top: 1px solid var(--line); }
         .actions p { margin: 0; color: var(--muted); font-size: 13px; max-width: 650px; line-height: 1.5; }
         button { border: 0; border-radius: 12px; background: var(--accent); color: white; padding: 12px 18px; font: inherit; font-weight: 800; cursor: pointer; }
-        .boundary { margin-top: 18px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
+        .boundary { margin-top: 18px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
         .boundary div { background: var(--soft); border: 1px solid var(--line); border-radius: 14px; padding: 14px; }
         .boundary span { display: block; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; font-weight: 800; }
         .boundary strong { display: block; margin-top: 5px; font-size: 13px; }
@@ -214,7 +251,11 @@ function stateDescription(string $state): string
             <span class="status-code"><?= e($stateCode) ?></span>
         </div>
 
-        <?php if ($prepared): ?>
+        <?php if ($promotionQualified): ?>
+            <div class="notice success">
+                Promotion authority is <strong>QUALIFIED / NOT EXECUTED</strong>. Exact request, release, pending digest, handoff digest, authority lifetime, and one-time approval token all match. Active <strong>.env</strong> remains unchanged.
+            </div>
+        <?php elseif ($prepared): ?>
             <div class="notice success">
                 Configuration was verified, sealed to the exact governed release, and a private promotion request was created for separate approval. Runtime promotion remains locked.
             </div>
@@ -234,6 +275,7 @@ function stateDescription(string $state): string
 
         <?php if ($canPrepare): ?>
             <form method="post" autocomplete="off">
+                <input type="hidden" name="action" value="prepare_configuration">
                 <div class="grid">
                     <div class="field full">
                         <label for="app_url">Application HTTPS URL</label>
@@ -284,9 +326,41 @@ function stateDescription(string $state): string
             </form>
         <?php endif; ?>
 
+        <?php if ($promotionRequestPending && $promotionAuthorityTokenRequired): ?>
+            <form method="post" autocomplete="off">
+                <input type="hidden" name="action" value="qualify_promotion_authority">
+                <div class="grid">
+                    <div class="field full">
+                        <label for="approval_token">Promotion approval token</label>
+                        <input id="approval_token" name="approval_token" type="password" required minlength="32" maxlength="256" autocomplete="one-time-code">
+                        <p class="help">Out-of-band one-time token bound to the private promotion authority for this exact release and request. Qualification does not execute promotion.</p>
+                    </div>
+                </div>
+                <div class="actions">
+                    <p>
+                        This step verifies authority only. It does not copy <strong>.env.pending</strong> to <strong>.env</strong>, execute migrations, or enable Technical Preview.
+                    </p>
+                    <button type="submit">Qualify promotion authority</button>
+                </div>
+            </form>
+        <?php endif; ?>
+
+        <?php if ($promotionRequestPending && ! $promotionAuthorityTokenRequired && ! $promotionQualified): ?>
+            <div class="notice">
+                Promotion authority status: <strong><?= e($promotionAuthorityState) ?></strong>. A separately provisioned exact-bound authority is required before qualification.
+            </div>
+        <?php endif; ?>
+
         <div class="boundary" aria-label="Operational safety boundaries">
             <div><span>Activation handoff</span><strong><?= $handoffReady ? 'SEALED / NOT AUTHORIZED' : 'NOT READY' ?></strong></div>
             <div><span>Promotion request</span><strong><?= $promotionRequestPending ? 'PENDING APPROVAL' : 'NOT READY' ?></strong></div>
+            <div><span>Promotion authority</span><strong><?=
+                $promotionQualified
+                    ? 'QUALIFIED / NOT EXECUTED'
+                    : ($promotionAuthorityTokenRequired
+                        ? 'TOKEN REQUIRED'
+                        : ($promotionAuthorityPresent ? 'PRESENT / INVALID' : 'NOT GRANTED'))
+            ?></strong></div>
             <div><span>Migration</span><strong>NOT EXECUTED</strong></div>
             <div><span>Technical Preview</span><strong>NOT AUTHORIZED</strong></div>
             <div><span>Production</span><strong>NOT AUTHORIZED</strong></div>
