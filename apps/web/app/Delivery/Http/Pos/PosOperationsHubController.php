@@ -7,6 +7,7 @@ namespace App\Delivery\Http\Pos;
 use App\Application\Authorization\DurableAuthorizationViolation;
 use App\Application\Pos\PosAccessViolation;
 use App\Application\Pos\PosOperationsHubSnapshot;
+use App\Application\Pos\ViewPosMerchantOperationsReadiness;
 use App\Application\Pos\ViewPosOperationsHub;
 use App\Delivery\Http\SafeErrorEnvelope;
 use Illuminate\Http\JsonResponse;
@@ -18,7 +19,10 @@ use Inertia\Response;
 // Author by Lab | zefry
 final class PosOperationsHubController
 {
-    public function __construct(private readonly ViewPosOperationsHub $hub) {}
+    public function __construct(
+        private readonly ViewPosOperationsHub $hub,
+        private readonly ViewPosMerchantOperationsReadiness $readiness,
+    ) {}
 
     public function __invoke(Request $request): Response|JsonResponse
     {
@@ -36,6 +40,14 @@ final class PosOperationsHubController
                 );
             }
 
+            $readiness = $this->readiness->view(
+                $snapshot,
+                array_values(array_map(
+                    static fn (array $destination): string => $destination['key'],
+                    $destinations,
+                )),
+            );
+
             return Inertia::render('Pos/OperationsHub', [
                 'scope' => [
                     'tenant_id' => $snapshot->tenantId(),
@@ -44,6 +56,14 @@ final class PosOperationsHubController
                     'device_id' => $snapshot->deviceId(),
                 ],
                 'destinations' => $destinations,
+                'readiness' => [
+                    'state' => $readiness->state(),
+                    'recommended_key' => $readiness->recommendedKey(),
+                    'catalog_item_count' => $readiness->catalogItemCount(),
+                    'sellable_item_count' => $readiness->sellableItemCount(),
+                    'shift_active' => $readiness->shiftActive(),
+                    'opening_cash_ready' => $readiness->openingCashReady(),
+                ],
                 'security' => [
                     'can_change_password' => Route::has('auth.password.change'),
                     'can_rotate_password_recovery_codes' => Route::has('auth.recovery.codes.rotate'),
