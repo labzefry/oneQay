@@ -8,28 +8,29 @@ Enterprise-oriented multi-tenant business-management platform built with Modular
 
 ## Current canonical status
 
-Latest completed engineering sprint: **Sprint197 — Atomic Technical Preview Activation Health Rollback**.
+Latest completed engineering sprint: **Sprint198 — Guarded POS Business Workspace Delivery Integration**.
 
-- Canonical engineering commit: `0c74e535cfeb281edaff5a2967752baee0db5227`
-- Engineering PR: #825
-- Final engineering head: `027c84bb282aefd314d8da3d270c925ba5837841`
-- Exact-head qualification: 85/85 successful
-- Dedicated Sprint197 run `35428627303`: SUCCESS
-- Exact-head M7.5 run `35428627419`: SUCCESS
-- Engineering envelope SHA-256: `08a73cc8338a51da3ed294b1a6c6a62986e0527100213414036d55b839b10a44`
-- Reconciliation envelope SHA-256: `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`
+- Canonical engineering commit: `da8b0a0579e7788b22a1ee1cd78130ff29cdd99a`
+- Engineering PR: #827
+- Final engineering head: `4c6b5ba627bf8bf0d28b4360d10c8f249b66b73f`
+- Exact-head qualification: 100/100 successful
+- Dedicated Sprint198 run `35435832824`: SUCCESS
+- M7.5 DB run `35435832860`: SUCCESS
+- M7.4A run `35435832619`: SUCCESS
+- Engineering envelope SHA-256: `4e04f75c0df2b340b0a66ad5d2fa545d364a088740e0af92861909c4848d0a45`
+- Reconciliation envelope SHA-256: `c0cffa516ac414b5e780c572c74d99e6cf06dd2e8c691553e28c485116e74682`
 
 See `PROJECT_MANIFEST.md` for canonical project state.
 
-## Sprint197 capability
+## Sprint198 capability
 
-oneQay now has a guarded atomic Synthetic Technical Preview activation executor. After exact authority/token/preflight validation, it can change only the Preview enable flag, immediately qualify liveness/readiness/Preview surface/runtime/session health, and automatically restore the original environment byte-for-byte if health fails. Success and rollback evidence are private and digest-bound.
+oneQay now integrates its already-qualified POS business workspaces into the normal Laravel application bootstrap through a guarded aggregate provider. Eligible workspaces become discoverable through application delivery only when their existing runtime, persistence, session, feature, authorization, and prerequisite contracts are satisfied.
 
-This is source capability, not live activation authority.
+Close-dependent Shift History and Cash Variance Reconciliation delivery remains blocked while canonical Final Shift Close is `INACTIVE`.
 
 ## Product progression
 
-Governed release → installation readiness → secure configuration → DB verification → pending config → sealed handoff → promotion request → authority qualification → execution readiness → atomic promotion → post-promotion verification → installation completion → Technical Preview activation request → activation authority qualification → activation execution readiness → target-environment preflight → guarded atomic activation + health rollback capability.
+Governed release → installation/readiness lifecycle → guarded Technical Preview activation capability → integrated guarded POS business workspace delivery.
 
 ## Operational boundary
 
@@ -37,6 +38,6 @@ Migration #27 remains `NOT_EXECUTED`; permission provisioning `NONE`; Final Shif
 
 ## Next
 
-Sprint198 starts from fully reconciled Sprint197 and selects the next material P0/P1 business-completion blocker without micro-splitting the lifecycle or implicitly granting operational authority.
+Sprint199 starts from fully reconciled Sprint198 and selects the next material P0/P1 business-completion blocker. Prefer an end-to-end merchant-facing capability over another thin lifecycle-only step, while preserving tenant isolation, deny-by-default behavior, and all operational NO-GO boundaries.
 
 Author by Lab | zefry
