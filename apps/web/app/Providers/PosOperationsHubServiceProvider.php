@@ -30,6 +30,7 @@ use App\Delivery\Http\Pos\PosShiftStartWorkspaceController;
 use Closure;
 use Illuminate\Console\Command;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
@@ -89,6 +90,8 @@ final class PosOperationsHubServiceProvider extends ServiceProvider
         $runtimeClass = strtolower(trim((string) config('oneqay.runtime_class', '')));
         $sessionControlEnabled = $this->sessionControlEnabled();
 
+        $this->registerDurableStagingReadinessRoute($runtimeClass);
+
         if (in_array($runtimeClass, ['local', 'test', 'ci'], true)
             && (bool) config('database.oneqay_persistence_enabled', false)
             && $sessionControlEnabled
@@ -109,6 +112,20 @@ final class PosOperationsHubServiceProvider extends ServiceProvider
             ->prependMiddleware(DurableStagingMerchantCoreRequestBridge::class);
 
         $this->registerStagingMerchantCoreRoutes();
+    }
+
+    private function registerDurableStagingReadinessRoute(string $runtimeClass): void
+    {
+        if (! DurableStagingMerchantCoreBridge::readinessEndpointArmedFor($runtimeClass)) {
+            return;
+        }
+
+        Route::get(
+            '/internal/oneqay/durable-runtime/readiness',
+            DurableStagingRuntimeReadinessAttestationController::class,
+        )
+            ->middleware(['throttle:5,1', 'throttle:30,60'])
+            ->name('internal.durable-runtime.readiness');
     }
 
     private function stagingCoreDeliveryEnabled(string $runtimeClass, bool $sessionControlEnabled): bool
@@ -259,13 +276,25 @@ final class PosOperationsHubServiceProvider extends ServiceProvider
 // core request/command boundary. Production and unknown runtimes never qualify.
 final class DurableStagingMerchantCoreBridge
 {
+    public const QUALIFIABLE_RUNTIME_CLASS = 'durable-staging';
+
     public static function armedFor(string $runtimeClass): bool
     {
-        return strtolower(trim($runtimeClass)) === 'staging'
+        return in_array(
+            strtolower(trim($runtimeClass)),
+            ['staging', self::QUALIFIABLE_RUNTIME_CLASS],
+            true,
+        )
             && filter_var(
                 env('ONEQAY_DURABLE_STAGING_RUNTIME_ENABLED', false),
                 FILTER_VALIDATE_BOOL,
             );
+    }
+
+    public static function readinessEndpointArmedFor(string $runtimeClass): bool
+    {
+        return strtolower(trim($runtimeClass)) === self::QUALIFIABLE_RUNTIME_CLASS
+            && self::armedFor($runtimeClass);
     }
 }
 
@@ -307,7 +336,10 @@ final class DurableStagingMerchantCoreRequestBridge
         }
 
         $originalRuntime = config('oneqay.runtime_class');
-        $request->attributes->set('oneqay.external_runtime_class', 'staging');
+        $request->attributes->set(
+            'oneqay.external_runtime_class',
+            strtolower(trim($runtimeClass)),
+        );
         $request->attributes->set('oneqay.runtime_compatibility_bridge', 'merchant-core-ci');
 
         config(['oneqay.runtime_class' => 'ci']);
@@ -325,6 +357,105 @@ final class DurableStagingMerchantCoreRequestBridge
         $normalizedPath = $path === '' ? '/' : '/'.$path;
 
         return strtoupper($request->method()).' '.$normalizedPath;
+    }
+}
+
+final class DurableStagingRuntimeReadinessAttestationController
+{
+    private const RUNTIME_MODEL = 'NON_SYNTHETIC_DURABLE_RUNTIME';
+    private const ENVIRONMENT_ISOLATION = 'ISOLATED_NON_PRODUCTION';
+    private const ACTIVATION_AUTHORITY_BINDING = 'SEPARATE_EXPLICIT_ACTIVATION_AUTHORITY';
+
+    public function __invoke(Request $request): JsonResponse
+    {
+        $runtimeClass = strtolower(trim((string) config('oneqay.runtime_class', '')));
+        if (! DurableStagingMerchantCoreBridge::readinessEndpointArmedFor($runtimeClass)) {
+            abort(404);
+        }
+
+        $expectedToken = env('ONEQAY_DURABLE_RUNTIME_ATTESTATION_TOKEN');
+        $providedToken = $request->bearerToken();
+        if (! is_string($expectedToken)
+            || strlen($expectedToken) < 32
+            || ! is_string($providedToken)
+            || ! hash_equals($expectedToken, $providedToken)) {
+            return response()->json([
+                'error' => ['code' => 'DURABLE_RUNTIME_ATTESTATION_UNAUTHORIZED'],
+            ], 401, ['Cache-Control' => 'no-store, private']);
+        }
+
+        $persistenceEnabled = (bool) config('database.oneqay_persistence_enabled', false);
+        $sessionEnabled = (bool) config('oneqay.session_control.enabled', false)
+            && (int) config('oneqay.session_control.idle_ttl_seconds', 0) === 7200
+            && (int) config('oneqay.session_control.absolute_ttl_seconds', 0) === 43200;
+        $posPersistenceEnabled = $persistenceEnabled
+            && (bool) config('oneqay.pos_sale_completion.enabled', false)
+            && (bool) config('pos_cashier_workspace.enabled', false);
+
+        $payload = [
+            'schema_version' => 1,
+            'environment_id' => trim((string) env('ONEQAY_DURABLE_RUNTIME_ENVIRONMENT_ID', '')),
+            'runtime_class' => DurableStagingMerchantCoreBridge::QUALIFIABLE_RUNTIME_CLASS,
+            'runtime_model' => self::RUNTIME_MODEL,
+            'environment_isolation' => self::ENVIRONMENT_ISOLATION,
+            'serving_application_runtime' => true,
+            'synthetic_fixture_runtime' => false,
+            'production_traffic_served' => $this->environmentFlag(
+                'ONEQAY_DURABLE_STAGING_PRODUCTION_TRAFFIC_SERVED',
+                false,
+            ),
+            'durable_persistence_enabled' => $persistenceEnabled,
+            'durable_session_control_enabled' => $sessionEnabled,
+            'durable_authorization_enabled' => $this->environmentFlag(
+                'ONEQAY_DURABLE_STAGING_AUTHORIZATION_ENABLED',
+                false,
+            ),
+            'durable_transaction_boundary_enabled' => $this->environmentFlag(
+                'ONEQAY_DURABLE_STAGING_TRANSACTION_BOUNDARY_ENABLED',
+                false,
+            ),
+            'durable_pos_persistence_enabled' => $posPersistenceEnabled,
+            'exact_running_source_commit' => trim((string) env('ONEQAY_RUNNING_SOURCE_COMMIT', '')),
+            'exact_running_artifact_sha256' => trim((string) env('ONEQAY_RUNNING_ARTIFACT_SHA256', '')),
+            'authenticated_configuration_mutation_channel' => $this->environmentFlag(
+                'ONEQAY_DURABLE_STAGING_AUTHENTICATED_CONFIGURATION_CHANNEL',
+                false,
+            ),
+            'read_before_write_read_after_supported' => $this->environmentFlag(
+                'ONEQAY_DURABLE_STAGING_READ_BEFORE_WRITE_READ_AFTER',
+                false,
+            ),
+            'non_mutating_health_attestation_supported' => true,
+            'verified_flag_rollback_supported' => $this->environmentFlag(
+                'ONEQAY_DURABLE_STAGING_VERIFIED_FLAG_ROLLBACK',
+                false,
+            ),
+            'activation_authority_binding' => self::ACTIVATION_AUTHORITY_BINDING,
+            'feature_activation_state' => $this->environmentFlag(
+                'ONEQAY_POS_SHIFT_CLOSE_ENABLED',
+                false,
+            ) ? 'ACTIVE' : 'INACTIVE',
+            'secrets_embedded' => false,
+        ];
+
+        return response()->json(
+            $payload,
+            200,
+            [
+                'Cache-Control' => 'no-store, private',
+                'Pragma' => 'no-cache',
+                'X-oneQay-Readiness' => 'durable-staging-source-attestation',
+            ],
+            JSON_UNESCAPED_SLASHES,
+        );
+    }
+
+    private function environmentFlag(string $key, bool $default): bool
+    {
+        return filter_var(
+            env($key, $default),
+            FILTER_VALIDATE_BOOL,
+        );
     }
 }
 
