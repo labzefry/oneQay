@@ -43,6 +43,56 @@ const totpRecoveryTotpCode = ref('');
 const passwordRecoveryCodes = ref<string[]>([]);
 const totpRecoveryCodes = ref<string[]>([]);
 
+const technicalContextOpen = ref(false);
+
+const categoryMeta: Record<string, { label: string; description: string; order: number }> = {
+    SETUP: { label: 'Get ready', description: 'Prepare catalog and opening stock before daily selling.', order: 10 },
+    SHIFT: { label: 'Shift operations', description: 'Open, operate, and close the exact device shift when available.', order: 20 },
+    SELL: { label: 'Sell', description: 'Run the active cashier workspace for this device context.', order: 30 },
+    STOCK: { label: 'Stock movement', description: 'Receive and account for inventory using governed evidence.', order: 40 },
+    REVIEW: { label: 'Performance & history', description: 'Review authorized sales, shift, product, and inventory views.', order: 50 },
+    CONTROL: { label: 'Corrections & controls', description: 'Use guarded correction and reconciliation workspaces only when delivered.', order: 60 },
+};
+
+const primaryPriority = ['catalog_inventory', 'shift_start', 'cashier', 'sales_summary'];
+
+const primaryDestination = computed<Destination | null>(() => {
+    for (const key of primaryPriority) {
+        const destination = props.destinations.find((candidate) => candidate.key === key);
+        if (destination) return destination;
+    }
+
+    return props.destinations[0] ?? null;
+});
+
+const groupedDestinations = computed(() => {
+    const groups = new Map<string, Destination[]>();
+
+    for (const destination of props.destinations) {
+        const existing = groups.get(destination.category) ?? [];
+        existing.push(destination);
+        groups.set(destination.category, existing);
+    }
+
+    return Array.from(groups.entries())
+        .map(([category, destinations]) => {
+            const meta = categoryMeta[category] ?? {
+                label: category,
+                description: 'Authorized workspace group for the current context.',
+                order: 999,
+            };
+
+            return { category, destinations, ...meta };
+        })
+        .sort((left, right) => left.order - right.order || left.label.localeCompare(right.label));
+});
+
+const laneCount = computed(() => new Set(props.destinations.map((destination) => destination.category)).size);
+
+function compactRef(value: string): string {
+    return value.length <= 14 ? value : `${value.slice(0, 7)}…${value.slice(-5)}`;
+}
+
 const passwordChangeReady = computed(
     () =>
         changeCurrentPassword.value.length > 0 &&
@@ -211,8 +261,8 @@ async function copyCodes(codes: string[]) {
                 <p class="eyebrow">oneQay · Point of Sale</p>
                 <h1>POS Operations</h1>
                 <p class="subtitle">
-                    Satu pintu untuk workspace POS yang sedang delivered dan diizinkan pada konteks ini.
-                    Setiap workspace tetap melakukan pemeriksaan otorisasi sendiri.
+                    A secure command center for the POS workspaces delivered to this merchant context.
+                    Navigation stays permission-filtered and every destination still enforces its own authorization contract.
                 </p>
             </div>
             <div class="hero-actions">
@@ -223,18 +273,52 @@ async function copyCodes(codes: string[]) {
                     Sign out
                 </button>
                 <div class="scope-card">
-                    <span>Outlet aktif</span>
-                    <strong>{{ props.scope.outlet_id }}</strong>
-                    <small>Device · {{ props.scope.device_id }}</small>
+                    <span>Active operating context</span>
+                    <strong>{{ compactRef(props.scope.outlet_id) }}</strong>
+                    <small>Device · {{ compactRef(props.scope.device_id) }}</small>
                 </div>
             </div>
         </header>
 
-        <section class="context-strip" aria-label="Current POS context">
+        <section class="command-strip" aria-label="Merchant operations summary">
+            <div class="command-metric">
+                <span>Workspaces available</span>
+                <strong>{{ props.destinations.length }}</strong>
+                <small>Delivered to this context</small>
+            </div>
+            <div class="command-metric">
+                <span>Business lanes</span>
+                <strong>{{ laneCount }}</strong>
+                <small>Grouped for faster navigation</small>
+            </div>
+            <div class="command-metric">
+                <span>Outlet context</span>
+                <strong class="mono">{{ compactRef(props.scope.outlet_id) }}</strong>
+                <small>Server-bound operating scope</small>
+            </div>
+            <button class="context-toggle" type="button" @click="technicalContextOpen = !technicalContextOpen">
+                {{ technicalContextOpen ? 'Hide technical context' : 'Technical context' }}
+            </button>
+        </section>
+
+        <section v-if="technicalContextOpen" class="context-strip" aria-label="Current POS technical context">
             <div><span>Tenant</span><strong>{{ props.scope.tenant_id }}</strong></div>
             <div><span>Organization</span><strong>{{ props.scope.organization_id }}</strong></div>
             <div><span>Outlet</span><strong>{{ props.scope.outlet_id }}</strong></div>
             <div><span>Device</span><strong>{{ props.scope.device_id }}</strong></div>
+        </section>
+
+        <section v-if="primaryDestination" class="next-action" aria-label="Suggested starting workspace">
+            <div>
+                <p class="eyebrow">Guided start</p>
+                <h2>{{ primaryDestination.title }}</h2>
+                <p>{{ primaryDestination.description }}</p>
+                <small>
+                    Suggested from currently delivered routes only. Completion state and mutation eligibility
+                    are verified inside the destination workspace.
+                </small>
+            </div>
+            <a class="primary-action" :href="primaryDestination.url">Open suggested workspace <span aria-hidden="true">→</span></a>
         </section>
 
         <section v-if="securityOpen" class="security-panel" aria-label="Account and security">
@@ -298,29 +382,42 @@ async function copyCodes(codes: string[]) {
                 <span class="count">{{ props.destinations.length }} available</span>
             </div>
 
-            <div class="workspace-grid">
-                <a
-                    v-for="destination in props.destinations"
-                    :key="destination.key"
-                    class="workspace-card"
-                    :href="destination.url"
-                >
-                    <div class="card-topline">
-                        <span class="category">{{ destination.category }}</span>
-                        <span class="arrow" aria-hidden="true">→</span>
+            <div class="workspace-groups">
+                <section v-for="group in groupedDestinations" :key="group.category" class="workspace-group">
+                    <div class="group-heading">
+                        <div>
+                            <span class="category">{{ group.category }}</span>
+                            <h3>{{ group.label }}</h3>
+                            <p>{{ group.description }}</p>
+                        </div>
+                        <span class="group-count">{{ group.destinations.length }}</span>
                     </div>
-                    <h3>{{ destination.title }}</h3>
-                    <p>{{ destination.description }}</p>
-                    <span class="open-label">Open workspace</span>
-                </a>
+
+                    <div class="workspace-grid">
+                        <a
+                            v-for="destination in group.destinations"
+                            :key="destination.key"
+                            class="workspace-card"
+                            :href="destination.url"
+                        >
+                            <div class="card-topline">
+                                <span class="category">{{ destination.category }}</span>
+                                <span class="arrow" aria-hidden="true">→</span>
+                            </div>
+                            <h3>{{ destination.title }}</h3>
+                            <p>{{ destination.description }}</p>
+                            <span class="open-label">Open workspace</span>
+                        </a>
+                    </div>
+                </section>
             </div>
         </section>
 
         <aside class="safety-note">
             <strong>Fail-closed navigation</strong>
             <p>
-                Hub ini tidak memberikan permission dan tidak mengaktifkan capability. Tautan hanya muncul bila
-                route target sedang terdaftar dan permission current context memenuhi requirement workspace tersebut.
+                This home does not grant permissions or activate capabilities. Guidance ranks delivered routes only;
+                each destination remains responsible for authorization, prerequisites, persistence, and mutation eligibility.
             </p>
         </aside>
 
@@ -338,11 +435,14 @@ h1 { margin:5px 0 9px; font-size:clamp(2.1rem,4vw,3.2rem); letter-spacing:-.045e
 .eyebrow { margin:0; color:#526175; font-size:.74rem; font-weight:800; text-transform:uppercase; letter-spacing:.12em; }
 .scope-card,.context-strip,.workspace-panel,.safety-note,.security-panel { background:#fff; border:1px solid #e4e8ef; border-radius:18px; box-shadow:0 8px 24px rgba(16,24,40,.04); }
 .scope-card { padding:17px 20px; min-width:260px; }.scope-card span,.scope-card small{display:block;color:#667085;font-size:.76rem}.scope-card strong{display:block;margin:5px 0;font-size:1.05rem;word-break:break-word}
-.context-strip { max-width:1152px; margin:0 auto 20px; padding:16px 24px; display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:18px; }.context-strip span{display:block;color:#98a2b3;font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;font-weight:700}.context-strip strong{display:block;margin-top:5px;font-size:.82rem;word-break:break-all}
+.command-strip{max-width:1152px;margin:0 auto 20px;padding:16px 18px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) auto;gap:12px;align-items:stretch;background:#fff;border:1px solid #e4e8ef;border-radius:18px;box-shadow:0 8px 24px rgba(16,24,40,.04)}.command-metric{padding:10px 12px;border-right:1px solid #eef2f6}.command-metric span,.command-metric small{display:block;color:#667085;font-size:.68rem}.command-metric span{text-transform:uppercase;letter-spacing:.08em;font-weight:800}.command-metric strong{display:block;margin:5px 0 3px;font-size:1.05rem}.context-toggle{align-self:center;background:#f2f4f7;color:#344054;white-space:nowrap}
+.context-strip { max-width:1152px; margin:0 auto 20px; padding:16px 24px; display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:18px; background:#fff; border:1px solid #e4e8ef; border-radius:18px; box-shadow:0 8px 24px rgba(16,24,40,.04); }.context-strip span{display:block;color:#98a2b3;font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;font-weight:700}.context-strip strong{display:block;margin-top:5px;font-size:.82rem;word-break:break-all}
+.next-action{max-width:1152px;margin:0 auto 20px;padding:24px 26px;display:flex;align-items:center;justify-content:space-between;gap:28px;background:linear-gradient(135deg,#172033,#27364f);color:#fff;border-radius:18px;box-shadow:0 16px 34px rgba(16,24,40,.14)}.next-action h2{font-size:1.35rem;margin:5px 0 7px}.next-action p{margin:0 0 8px;color:#d0d5dd;line-height:1.55;max-width:720px}.next-action small{display:block;color:#98a2b3;max-width:760px;line-height:1.45}.next-action .eyebrow{color:#b8c5d8}.primary-action{display:inline-flex;align-items:center;gap:12px;flex:0 0 auto;text-decoration:none;background:#fff;color:#172033;border-radius:12px;padding:12px 16px;font-size:.78rem;font-weight:900}
 .security-panel{max-width:1152px;margin:0 auto 20px;padding:24px}.security-heading{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;margin-bottom:18px}.security-heading h2{margin:4px 0 5px}.security-heading p{margin:0;color:#667085;max-width:720px;line-height:1.55;font-size:.82rem}.secure-badge{background:#ecfdf3;color:#067647;border:1px solid #abefc6;border-radius:999px;padding:7px 10px;font-size:.7rem;font-weight:850}.security-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.security-card{border:1px solid #e4e8ef;border-radius:15px;padding:18px;background:#fbfcfd;display:grid;gap:11px}.security-card h3{margin:0}.security-card p{margin:0 0 3px;color:#667085;font-size:.79rem;line-height:1.5}.security-kicker{font-size:.65rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:#667085}.security-card label{display:grid;gap:5px;font-size:.72rem;font-weight:750;color:#475467}.security-card input{border:1px solid #d0d5dd;border-radius:9px;padding:9px 10px;font:inherit}.security-card button:not(.secondary){background:#172033;color:#fff}.codes{display:grid;gap:6px;background:#f2f4f7;border-radius:10px;padding:10px}.codes code{font-size:.72rem;overflow-wrap:anywhere}.notice,.error{margin:14px 0 0;border-radius:10px;padding:10px 12px;font-size:.78rem}.notice{background:#ecfdf3;color:#067647}.error{background:#fff1f0;color:#b42318}
 .workspace-panel { max-width:1152px; margin:0 auto 20px; padding:26px; }.panel-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px}h2{margin:4px 0 0;font-size:1.25rem}.count{padding:7px 11px;border-radius:999px;background:#eef2f6;font-size:.74rem;font-weight:800}
+.workspace-groups{display:grid;gap:24px}.workspace-group{display:grid;gap:12px}.group-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;padding:0 2px}.group-heading h3{margin:3px 0 4px;font-size:1rem}.group-heading p{margin:0;color:#667085;font-size:.78rem;line-height:1.45}.group-count{min-width:30px;height:30px;display:grid;place-items:center;border-radius:999px;background:#f2f4f7;color:#475467;font-size:.72rem;font-weight:900}
 .workspace-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; }.workspace-card{display:flex;min-height:170px;flex-direction:column;text-decoration:none;color:inherit;border:1px solid #e4e8ef;border-radius:15px;padding:19px;background:#fbfcfd;transition:transform .15s ease,box-shadow .15s ease,border-color .15s ease}.workspace-card:hover,.workspace-card:focus-visible{transform:translateY(-2px);border-color:#c8d1de;box-shadow:0 12px 28px rgba(16,24,40,.08);outline:none}.card-topline{display:flex;justify-content:space-between;align-items:center}.category{font-size:.67rem;font-weight:900;letter-spacing:.11em;color:#667085}.arrow{font-size:1.25rem}.workspace-card h3{margin:20px 0 7px;font-size:1.05rem}.workspace-card p{margin:0;color:#667085;font-size:.83rem;line-height:1.55;flex:1}.open-label{margin-top:18px;font-size:.74rem;font-weight:800}
 .safety-note { max-width:1152px; margin:0 auto; padding:18px 22px; display:grid; grid-template-columns:190px 1fr; gap:18px; align-items:start }.safety-note strong{font-size:.84rem}.safety-note p{margin:0;color:#667085;font-size:.8rem;line-height:1.55}footer{max-width:1200px;margin:14px auto 0;color:#98a2b3;font-size:.72rem}.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
-@media (max-width:980px){.security-grid{grid-template-columns:1fr}.workspace-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.context-strip{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media (max-width:640px){.hub-shell{padding:20px 14px}.hero{align-items:stretch;flex-direction:column}.hero-actions{grid-template-columns:1fr 1fr}.scope-card{min-width:0}.context-strip,.workspace-grid{grid-template-columns:1fr}.workspace-panel,.security-panel{padding:18px}.panel-heading,.security-heading{align-items:flex-start;flex-direction:column}.safety-note{grid-template-columns:1fr}}
+@media (max-width:980px){.command-strip{grid-template-columns:repeat(2,minmax(0,1fr))}.command-metric{border-right:0}.security-grid{grid-template-columns:1fr}.workspace-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.context-strip{grid-template-columns:repeat(2,minmax(0,1fr))}.next-action{align-items:flex-start;flex-direction:column}.primary-action{width:100%;justify-content:space-between;box-sizing:border-box}}
+@media (max-width:640px){.hub-shell{padding:20px 14px}.hero{align-items:stretch;flex-direction:column}.hero-actions{grid-template-columns:1fr 1fr}.scope-card{min-width:0}.command-strip,.context-strip,.workspace-grid{grid-template-columns:1fr}.context-toggle{width:100%}.workspace-panel,.security-panel,.next-action{padding:18px}.panel-heading,.security-heading,.group-heading{align-items:flex-start;flex-direction:column}.safety-note{grid-template-columns:1fr}}
 </style>
