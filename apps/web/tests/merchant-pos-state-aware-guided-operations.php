@@ -5,8 +5,6 @@ declare(strict_types=1);
 // Author by Lab | zefry
 
 use App\Application\Pos\PosMerchantOperationsReadinessSnapshot;
-use InvalidArgumentException;
-
 require_once __DIR__.'/../app/Application/Pos/PosMerchantOperationsReadinessSnapshot.php';
 
 $ready = new PosMerchantOperationsReadinessSnapshot(
@@ -39,7 +37,7 @@ try {
     );
     fwrite(STDERR, "Unavailable guidance accepted a recommendation.\n");
     exit(1);
-} catch (InvalidArgumentException) {
+} catch (\InvalidArgumentException) {
 }
 
 $service = file_get_contents(__DIR__.'/../app/Application/Pos/ViewPosMerchantOperationsReadiness.php');
