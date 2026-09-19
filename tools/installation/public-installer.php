@@ -25,6 +25,7 @@ $installerSources = [
     $appRoot.'/app/Infrastructure/Installation/PrebootRuntimeConfigurationPromotionRequest.php',
     $appRoot.'/app/Infrastructure/Installation/PrebootRuntimeConfigurationPromotionQualification.php',
     $appRoot.'/app/Infrastructure/Installation/PrebootRuntimeConfigurationPromotionReadiness.php',
+    $appRoot.'/app/Infrastructure/Installation/PrebootRuntimeConfigurationPromotionExecution.php',
     $appRoot.'/app/Infrastructure/Installation/PrebootInstallationConfiguration.php',
 ];
 $sharedRoot = $accountHome.'/oneqay-preview/shared';
@@ -43,6 +44,7 @@ $nowUnix = time();
 $installer = new \App\Infrastructure\Installation\PrebootInstallationConfiguration($sharedRoot, $releaseId, $nowUnix);
 $qualification = new \App\Infrastructure\Installation\PrebootRuntimeConfigurationPromotionQualification($sharedRoot, $releaseId, $nowUnix);
 $readiness = new \App\Infrastructure\Installation\PrebootRuntimeConfigurationPromotionReadiness($sharedRoot, $releaseId, $nowUnix);
+$execution = new \App\Infrastructure\Installation\PrebootRuntimeConfigurationPromotionExecution($sharedRoot, $releaseId, $nowUnix);
 $state = [
     'state' => 'UNAVAILABLE',
     'can_prepare' => false,
@@ -67,6 +69,7 @@ $readinessState = [
 $result = null;
 $qualificationResult = null;
 $readinessResult = null;
+$executionResult = null;
 $errorCode = null;
 
 try {
@@ -107,6 +110,22 @@ try {
             $readinessResult = $readiness->attest($approvalToken);
             $qualificationState = $qualification->inspect();
             $readinessState = $readiness->inspect();
+        } elseif ($action === 'execute_runtime_promotion') {
+            $approvalToken = $_POST['approval_token'] ?? null;
+            $confirmation = $_POST['promotion_confirmation'] ?? null;
+
+            if (! is_string($approvalToken) || ! is_string($confirmation)) {
+                throw new RuntimeException('promotion_execution_denied');
+            }
+
+            if (! hash_equals('PROMOTE_RUNTIME_CONFIGURATION', $confirmation)) {
+                throw new RuntimeException('promotion_execution_confirmation_invalid');
+            }
+
+            $executionResult = $execution->execute($approvalToken);
+            $state = $installer->inspect();
+            $qualificationState = $qualification->inspect();
+            $readinessState = $readiness->inspect();
         } else {
             throw new RuntimeException('unsupported_installation_action');
         }
@@ -135,6 +154,11 @@ $promotionExecutionReady = ($readinessState['execution_ready'] ?? false) === tru
         && ($readinessResult['state'] ?? null) === 'PROMOTION_EXECUTION_READY_NOT_EXECUTED'
         && ($readinessResult['promotion_executed'] ?? true) === false);
 $promotionReadinessState = (string) ($readinessState['state'] ?? 'PROMOTION_READINESS_MISSING');
+$runtimePromoted = is_array($executionResult)
+    && ($executionResult['state'] ?? null) === 'RUNTIME_CONFIGURATION_PROMOTED_NOT_ACTIVATED'
+    && ($executionResult['technical_preview_authorized'] ?? true) === false
+    && ($executionResult['production_authorized'] ?? true) === false;
+$runtimeConfigured = $runtimePromoted || $stateCode === 'ACTIVE_ENV_PRESENT';
 $prepared = is_array($result) && ($result['prepared'] ?? false) === true;
 
 function e(string $value): string
@@ -213,6 +237,7 @@ function stateDescription(string $state): string
         .status-code { font: 700 12px ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--accent); white-space: nowrap; }
         .notice { margin-top: 18px; padding: 14px 16px; border-radius: 14px; font-size: 14px; line-height: 1.55; }
         .notice.success { background: #edf8f1; color: var(--success); border: 1px solid #ccebd7; }
+        .notice.warning { background: #fff8e6; color: var(--warning); border: 1px solid #ead9a6; }
         .notice.error { background: #fff1f1; color: var(--danger); border: 1px solid #f0cccc; }
         .grid { margin-top: 22px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
         .field { display: grid; gap: 7px; }
@@ -269,7 +294,11 @@ function stateDescription(string $state): string
             <span class="status-code"><?= e($stateCode) ?></span>
         </div>
 
-        <?php if ($promotionExecutionReady): ?>
+        <?php if ($runtimePromoted): ?>
+            <div class="notice success">
+                Runtime configuration is <strong>PROMOTED / NOT ACTIVATED</strong>. The active <strong>.env</strong> matches the verified pending configuration exactly. Migration, Technical Preview, Production, deployment, and updater authority remain unchanged.
+            </div>
+        <?php elseif ($promotionExecutionReady): ?>
             <div class="notice success">
                 Promotion is <strong>EXECUTION READY / NOT EXECUTED</strong>. Durable private readiness evidence is sealed to the exact release, request, authority, pending configuration, and handoff. Active <strong>.env</strong> remains unchanged.
             </div>
@@ -348,7 +377,7 @@ function stateDescription(string $state): string
             </form>
         <?php endif; ?>
 
-        <?php if ($promotionRequestPending && $promotionAuthorityTokenRequired): ?>
+        <?php if ($promotionRequestPending && $promotionAuthorityTokenRequired && ! $promotionExecutionReady): ?>
             <form method="post" autocomplete="off">
                 <input type="hidden" name="action" value="qualify_promotion_authority">
                 <div class="grid">
@@ -367,7 +396,34 @@ function stateDescription(string $state): string
             </form>
         <?php endif; ?>
 
-        <?php if ($promotionRequestPending && ! $promotionAuthorityTokenRequired && ! $promotionQualified): ?>
+        <?php if ($promotionExecutionReady && ! $runtimePromoted): ?>
+            <div class="notice warning">
+                This is the final configuration-promotion step only. It creates the active runtime <strong>.env</strong> from the exact verified pending bytes, but it does <strong>not</strong> run migrations or activate Technical Preview/Production.
+            </div>
+            <form method="post" autocomplete="off">
+                <input type="hidden" name="action" value="execute_runtime_promotion">
+                <div class="grid">
+                    <div class="field full">
+                        <label for="execution_approval_token">Promotion approval token</label>
+                        <input id="execution_approval_token" name="approval_token" type="password" required minlength="32" maxlength="256" autocomplete="one-time-code">
+                        <p class="help">Re-enter the out-of-band token. The executor re-validates exact authority and readiness immediately before promotion.</p>
+                    </div>
+                    <div class="field full">
+                        <label for="promotion_confirmation">Explicit confirmation</label>
+                        <input id="promotion_confirmation" name="promotion_confirmation" type="text" required maxlength="64" autocomplete="off" placeholder="PROMOTE_RUNTIME_CONFIGURATION">
+                        <p class="help">Type exactly <strong>PROMOTE_RUNTIME_CONFIGURATION</strong>. This prevents accidental promotion from a stale or unintended operator session.</p>
+                    </div>
+                </div>
+                <div class="actions">
+                    <p>
+                        Promotion preserves verified configuration bytes exactly and writes a private execution receipt. Application activation remains separately governed.
+                    </p>
+                    <button type="submit">Promote runtime configuration</button>
+                </div>
+            </form>
+        <?php endif; ?>
+
+        <?php if ($promotionRequestPending && ! $promotionAuthorityTokenRequired && ! $promotionQualified && ! $runtimeConfigured): ?>
             <div class="notice">
                 Promotion authority status: <strong><?= e($promotionAuthorityState) ?></strong>. A separately provisioned exact-bound authority is required before qualification.
             </div>
@@ -377,15 +433,22 @@ function stateDescription(string $state): string
             <div><span>Activation handoff</span><strong><?= $handoffReady ? 'SEALED / NOT AUTHORIZED' : 'NOT READY' ?></strong></div>
             <div><span>Promotion request</span><strong><?= $promotionRequestPending ? 'PENDING APPROVAL' : 'NOT READY' ?></strong></div>
             <div><span>Promotion authority</span><strong><?=
-                $promotionExecutionReady
-                    ? 'QUALIFIED / ATTESTED'
-                    : ($promotionQualified
-                        ? 'QUALIFIED / NOT EXECUTED'
-                        : ($promotionAuthorityTokenRequired
-                            ? 'TOKEN REQUIRED'
-                            : ($promotionAuthorityPresent ? 'PRESENT / INVALID' : 'NOT GRANTED')))
+                $runtimePromoted
+                    ? 'CONSUMED / RECEIPT-BOUND'
+                    : ($promotionExecutionReady
+                        ? 'QUALIFIED / ATTESTED'
+                        : ($promotionQualified
+                            ? 'QUALIFIED / NOT EXECUTED'
+                            : ($promotionAuthorityTokenRequired
+                                ? 'TOKEN REQUIRED'
+                                : ($promotionAuthorityPresent ? 'PRESENT / INVALID' : 'NOT GRANTED'))))
             ?></strong></div>
-            <div><span>Execution readiness</span><strong><?= $promotionExecutionReady ? 'READY / NOT EXECUTED' : e($promotionReadinessState) ?></strong></div>
+            <div><span>Execution readiness</span><strong><?=
+                $runtimePromoted
+                    ? 'CONSUMED / PROMOTED'
+                    : ($promotionExecutionReady ? 'READY / NOT EXECUTED' : e($promotionReadinessState))
+            ?></strong></div>
+            <div><span>Runtime configuration</span><strong><?= $runtimeConfigured ? 'ACTIVE / NOT ACTIVATED' : 'NOT ACTIVE' ?></strong></div>
             <div><span>Migration</span><strong>NOT EXECUTED</strong></div>
             <div><span>Technical Preview</span><strong>NOT AUTHORIZED</strong></div>
             <div><span>Production</span><strong>NOT AUTHORIZED</strong></div>

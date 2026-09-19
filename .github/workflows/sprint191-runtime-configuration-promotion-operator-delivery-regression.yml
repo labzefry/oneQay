@@ -1,5 +1,5 @@
 # Author by Lab | zefry
-name: Sprint190 Runtime Configuration Atomic Promotion Executor Regression
+name: Sprint191 Runtime Configuration Promotion Operator Delivery Regression
 
 on:
   pull_request:
@@ -10,12 +10,12 @@ permissions:
   contents: read
 
 concurrency:
-  group: sprint190-runtime-configuration-atomic-promotion-executor-${{ github.event.pull_request.number || github.ref }}-${{ github.event.pull_request.head.sha || github.sha }}
+  group: sprint191-runtime-configuration-promotion-operator-delivery-${{ github.event.pull_request.number || github.ref }}-${{ github.event.pull_request.head.sha || github.sha }}
   cancel-in-progress: true
 
 jobs:
-  qualify-sprint190-runtime-configuration-atomic-promotion-executor:
-    name: qualify-sprint190-runtime-configuration-atomic-promotion-executor
+  qualify-sprint191-runtime-configuration-promotion-operator-delivery:
+    name: qualify-sprint191-runtime-configuration-promotion-operator-delivery
     runs-on: ubuntu-latest
     timeout-minutes: 60
     env:
@@ -31,17 +31,17 @@ jobs:
       ONEQAY_BUILD_PROVENANCE: github-actions:${{ github.run_id }}:${{ github.run_attempt }}
 
     steps:
-      - name: Checkout exact Sprint190 source
+      - name: Checkout exact Sprint191 source
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: Qualify exact Sprint190 engineering envelope
-        if: github.event_name == 'pull_request' && github.head_ref == 'sprint190-runtime-configuration-atomic-promotion-executor'
+      - name: Qualify exact Sprint191 engineering envelope
+        if: github.event_name == 'pull_request' && github.head_ref == 'sprint191-runtime-configuration-promotion-operator-delivery'
         shell: bash
         env:
-          EXPECTED_PATH_HASH: 3efa46f499d6f2df2d5b64f31eb35630366e43e6b037213297e3457bf0170d7f
+          EXPECTED_PATH_HASH: 737cf389ad902aabb59f9c35eb87237ae07de7bb9e8034ddb8f837ed89c2e5f0
         run: |
           set -euo pipefail
           BASE_SHA="${{ github.event.pull_request.base.sha }}"
@@ -51,13 +51,14 @@ jobs:
           expected=(
             ".github/workflows/m7-5-preview-release-artifact.yml"
             ".github/workflows/sprint190-runtime-configuration-atomic-promotion-executor-regression.yml"
+            ".github/workflows/sprint191-runtime-configuration-promotion-operator-delivery-regression.yml"
             ".github/workflows/sprint32-authentication-recovery-proof-regression.yml"
             ".github/workflows/sprint33-recovery-bound-password-reset-regression.yml"
             ".github/workflows/sprint34-authenticated-password-change-regression.yml"
-            "apps/web/app/Infrastructure/Installation/PrebootRuntimeConfigurationPromotionExecution.php"
             "apps/web/tests/preboot-runtime-configuration-promotion-execution.php"
+            "apps/web/tests/preboot-runtime-configuration-promotion-operator-delivery.php"
             "tools/build-m7-5-preview-release.sh"
-            "tools/installation/runtime-configuration-promotion-execution.schema.json"
+            "tools/installation/public-installer.php"
           )
           test "${#paths[@]}" -eq "${#expected[@]}"
           diff -u <(printf '%s\n' "${expected[@]}") <(printf '%s\n' "${paths[@]}")
@@ -91,17 +92,14 @@ jobs:
         with:
           node-version: 24.19.0
 
-      - name: Validate Sprint190 source and execution schema
+      - name: Validate Sprint191 source contracts
         shell: bash
         run: |
           set -euo pipefail
-          php -l apps/web/app/Infrastructure/Installation/PrebootRuntimeConfigurationPromotionExecution.php
+          php -l tools/installation/public-installer.php
           php -l apps/web/tests/preboot-runtime-configuration-promotion-execution.php
+          php -l apps/web/tests/preboot-runtime-configuration-promotion-operator-delivery.php
           bash -n tools/build-m7-5-preview-release.sh
-          jq -e '.properties.execution_state.const == "RUNTIME_CONFIGURATION_PROMOTED_NOT_ACTIVATED"' tools/installation/runtime-configuration-promotion-execution.schema.json
-          jq -e '.properties.technical_preview_authorized.const == false' tools/installation/runtime-configuration-promotion-execution.schema.json
-          jq -e '.properties.production_authorized.const == false' tools/installation/runtime-configuration-promotion-execution.schema.json
-          jq -e '.properties.pending_environment_state.const == "REMOVED_AFTER_VERIFIED_PROMOTION"' tools/installation/runtime-configuration-promotion-execution.schema.json
 
       - name: Install locked application dependencies
         working-directory: apps/web
@@ -113,7 +111,7 @@ jobs:
           npm run type-check
           npm run build
 
-      - name: Preserve Sprint184 through Sprint189 installation regressions
+      - name: Preserve Sprint184 through Sprint190 installation regressions
         working-directory: apps/web
         shell: bash
         run: |
@@ -124,12 +122,13 @@ jobs:
           php -d zend.assertions=1 -d assert.exception=1 tests/preboot-runtime-configuration-promotion-request.php
           php -d zend.assertions=1 -d assert.exception=1 tests/preboot-runtime-configuration-promotion-qualification.php
           php -d zend.assertions=1 -d assert.exception=1 tests/preboot-runtime-configuration-promotion-readiness.php
+          php -d zend.assertions=1 -d assert.exception=1 tests/preboot-runtime-configuration-promotion-execution.php
 
-      - name: Execute Sprint190 atomic promotion executor regression
+      - name: Execute Sprint191 guarded operator delivery regression
         working-directory: apps/web
-        run: php -d zend.assertions=1 -d assert.exception=1 tests/preboot-runtime-configuration-promotion-execution.php
+        run: php -d zend.assertions=1 -d assert.exception=1 tests/preboot-runtime-configuration-promotion-operator-delivery.php
 
-      - name: Build governed release with dormant Sprint190 executor
+      - name: Build governed release with guarded promotion operator delivery
         shell: bash
         run: |
           set -euo pipefail
@@ -139,54 +138,46 @@ jobs:
           artifact="dist/${release_id}.tar.gz"
           test -f "$artifact"
 
-          tar -tzf "$artifact" > /tmp/oneqay-s190-release-list.txt
-          grep -Fxq "$release_id/apps/web/app/Infrastructure/Installation/PrebootRuntimeConfigurationPromotionExecution.php" /tmp/oneqay-s190-release-list.txt
-          grep -Fxq "$release_id/installation/runtime-configuration-promotion-execution.schema.json" /tmp/oneqay-s190-release-list.txt
-          ! grep -F '/apps/web/database/migrations/' /tmp/oneqay-s190-release-list.txt
+          tar -tzf "$artifact" > /tmp/oneqay-s191-release-list.txt
+          grep -Fxq "$release_id/public-surface/install.php" /tmp/oneqay-s191-release-list.txt
+          grep -Fxq "$release_id/apps/web/app/Infrastructure/Installation/PrebootRuntimeConfigurationPromotionExecution.php" /tmp/oneqay-s191-release-list.txt
+          ! grep -F '/apps/web/database/migrations/' /tmp/oneqay-s191-release-list.txt
 
-          tar -xOzf "$artifact" "$release_id/RELEASE.json" > /tmp/oneqay-s190-release.json
-          grep -Fq '"promotion_execution_receipt_relative_path": "oneqay-preview/shared/install/runtime-configuration-promotion-execution.json"' /tmp/oneqay-s190-release.json
-          grep -Fq '"promotion_execution_schema_relative_path": "installation/runtime-configuration-promotion-execution.schema.json"' /tmp/oneqay-s190-release.json
-          grep -Fq '"promotion_execution_state": "NOT_EXECUTED"' /tmp/oneqay-s190-release.json
-          grep -Fq '"activation_authorized": false' /tmp/oneqay-s190-release.json
+          tar -xOzf "$artifact" "$release_id/RELEASE.json" > /tmp/oneqay-s191-release.json
+          grep -Fq '"promotion_executor_registration_state": "REGISTERED_GUARDED_OPERATOR_ACTION"' /tmp/oneqay-s191-release.json
+          grep -Fq '"promotion_operator_action": "execute_runtime_promotion"' /tmp/oneqay-s191-release.json
+          grep -Fq '"promotion_operator_confirmation_required": true' /tmp/oneqay-s191-release.json
+          grep -Fq '"promotion_execution_state": "NOT_EXECUTED"' /tmp/oneqay-s191-release.json
+          grep -Fq '"promotion_authorized": false' /tmp/oneqay-s191-release.json
+          grep -Fq '"activation_authorized": false' /tmp/oneqay-s191-release.json
 
-          tar -xOzf "$artifact" "$release_id/public-surface/install.php" > /tmp/oneqay-s190-install.php
-          if grep -Fq 'execute_runtime_promotion' /tmp/oneqay-s190-install.php; then
-            grep -Fq '"promotion_executor_registration_state": "REGISTERED_GUARDED_OPERATOR_ACTION"' /tmp/oneqay-s190-release.json
-            grep -Fq '"promotion_operator_action": "execute_runtime_promotion"' /tmp/oneqay-s190-release.json
-            grep -Fq '"promotion_operator_confirmation_required": true' /tmp/oneqay-s190-release.json
-            grep -Fq 'PrebootRuntimeConfigurationPromotionExecution.php' /tmp/oneqay-s190-install.php
-            grep -Fq 'PROMOTE_RUNTIME_CONFIGURATION' /tmp/oneqay-s190-install.php
-          else
-            grep -Fq '"promotion_executor_registration_state": "NOT_REGISTERED"' /tmp/oneqay-s190-release.json
-            ! grep -Fq 'PrebootRuntimeConfigurationPromotionExecution.php' /tmp/oneqay-s190-install.php
-          fi
+          tar -xOzf "$artifact" "$release_id/public-surface/install.php" > /tmp/oneqay-s191-install.php
+          php -l /tmp/oneqay-s191-install.php
+          grep -Fq 'PrebootRuntimeConfigurationPromotionExecution.php' /tmp/oneqay-s191-install.php
+          grep -Fq 'execute_runtime_promotion' /tmp/oneqay-s191-install.php
+          grep -Fq 'PROMOTE_RUNTIME_CONFIGURATION' /tmp/oneqay-s191-install.php
+          grep -Fq 'PROMOTED / NOT ACTIVATED' /tmp/oneqay-s191-install.php
 
-      - name: Preserve governed executor registration boundary
+      - name: Preserve explicit operator-confirmation boundary
         shell: bash
         run: |
           set -euo pipefail
-          EXECUTOR=apps/web/app/Infrastructure/Installation/PrebootRuntimeConfigurationPromotionExecution.php
           PAGE=tools/installation/public-installer.php
+          EXECUTOR=apps/web/app/Infrastructure/Installation/PrebootRuntimeConfigurationPromotionExecution.php
 
-          grep -Fq "RUNTIME_CONFIGURATION_PROMOTED_NOT_ACTIVATED" "$EXECUTOR"
-          grep -Fq "'technical_preview_authorized' => false" "$EXECUTOR"
-          grep -Fq "'production_authorized' => false" "$EXECUTOR"
-          grep -Fq "'deployment_authorized' => false" "$EXECUTOR"
-          grep -Fq "active_environment_already_present" "$EXECUTOR"
-          grep -Fq "promotion_execution_readiness_required" "$EXECUTOR"
+          grep -Fq '<?php if ($promotionExecutionReady && ! $runtimePromoted): ?>' "$PAGE"
+          grep -Fq 'name="action" value="execute_runtime_promotion"' "$PAGE"
+          grep -Fq 'id="execution_approval_token" name="approval_token" type="password"' "$PAGE"
+          grep -Fq 'name="promotion_confirmation"' "$PAGE"
+          grep -Fq "hash_equals('PROMOTE_RUNTIME_CONFIGURATION', \$confirmation)" "$PAGE"
+          grep -Fq '$executionResult = $execution->execute($approvalToken);' "$PAGE"
+          grep -Fq 'PROMOTED / NOT ACTIVATED' "$PAGE"
+          grep -Fq 'ACTIVE / NOT ACTIVATED' "$PAGE"
 
-          if grep -Fq 'execute_runtime_promotion' "$PAGE"; then
-            grep -Fq 'PrebootRuntimeConfigurationPromotionExecution.php' "$PAGE"
-            grep -Fq '<?php if ($promotionExecutionReady && ! $runtimePromoted): ?>' "$PAGE"
-            grep -Fq 'PROMOTE_RUNTIME_CONFIGURATION' "$PAGE"
-            grep -Fq '$executionResult = $execution->execute($approvalToken);' "$PAGE"
-          else
-            ! grep -Fq 'PrebootRuntimeConfigurationPromotionExecution.php' "$PAGE"
-          fi
-
-          ! grep -Eq 'Artisan::call|requestInstall\(|checkAvailability\(' "$EXECUTOR"
-          ! grep -Eq -- '->(insert|update|delete|increment|decrement)\(' "$EXECUTOR"
+          test "$(grep -Fc '$execution->execute($approvalToken)' "$PAGE")" -eq 1
+          ! grep -Fq '<?= e($approvalToken)' "$PAGE"
+          ! grep -Eq 'Artisan::call|requestInstall\(|checkAvailability\(' "$PAGE" "$EXECUTOR"
+          ! grep -Eq -- '->(insert|update|delete|increment|decrement)\(' "$PAGE" "$EXECUTOR"
 
       - name: Verify tracked-source cleanliness
         shell: bash
