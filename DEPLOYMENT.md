@@ -1,5 +1,29 @@
 # oneQay Deployment Handbook
 
+## Durable-staging deployment execution evidence binding — Sprint209
+
+Sprint209 closes the source-side trust gap between external execution of the Sprint207 operator plan and the protected durable-runtime attestation producer. Runtime readiness alone is no longer sufficient: before the producer can contact the readiness endpoint, protected deployment execution evidence must prove that the exact non-production target was deployed and verified against the exact source commit, artifact SHA-256, Sprint207 plan fingerprint, and Sprint208 deployment-authority SHA-256.
+
+The evidence contract is `tools/deployment/durable-staging-deployment-evidence.schema.json` and is qualified by:
+
+```text
+php tools/qualify-durable-staging-deployment-evidence.php \
+  <deployment-evidence.json> \
+  <environment-id> \
+  durable-staging \
+  <running-source-commit> \
+  <running-artifact-sha256> \
+  <deployment-plan-fingerprint> \
+  <deployment-authority-sha256>
+```
+
+Evidence must prove preflight success, previous-release preservation, immutable release extraction, public-only document-root validation, external runtime configuration binding, provenance readback, read-before-write/read-after configuration verification, non-mutating health attestation, and rollback-path verification.
+
+For the existing protected GitHub Environment `final-shift-close-durable-runtime-attestation`, Sprint209 additionally requires protected deployment-evidence material and exact binding variables. The workflow decodes evidence only into a private temporary file, qualifies it first, and only then fetches the authenticated runtime readiness endpoint. Caller-supplied target inputs remain prohibited.
+
+Sprint209 does not create or deploy an environment, execute migration #27, provision permissions, select a durable target, dispatch the producer, activate Final Shift Close, activate Technical Preview/Production, or activate the updater. The canonical machine-readable contract is `ops/final-shift-close/DURABLE_STAGING_DEPLOYMENT_EVIDENCE_BINDING_CONTRACT.json`.
+
+
 ## Durable-staging deployment authority binding — Sprint208
 
 Sprint208 adds the missing governance binding between a real isolated non-production target and the Sprint207 operator deployment plan. It does **not** grant deployment authority. It creates a deterministic authority request, validates a separately issued short-lived authority plus one-time approval token, and emits the exact qualified operator-target descriptor consumed by Sprint207 planning.
