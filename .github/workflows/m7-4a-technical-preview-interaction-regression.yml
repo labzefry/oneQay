@@ -322,12 +322,15 @@ jobs:
           count="$(wc -l < /tmp/s70-historical-paths)"
           fingerprint="$(sha256sum /tmp/s70-historical-paths | awk '{print $1}')"
           recognized=false
-          if [[ "${{ github.head_ref }}" == 'sprint198-pos-business-workspace-delivery-integration' && "$count" -eq 7 && "$fingerprint" == 'f2e4ef3e74bf6a0a956d13d22d06be9e07f23ebcaacb4789f480521eb8feb904' ]]; then
+          if [[ "${{ github.head_ref }}" == 'sprint198-pos-business-workspace-delivery-integration' && "$count" -eq 10 && "$fingerprint" == '72b49bd85f24eb5d5a462087801b8758e0c829a7551204599587e8bf9f4a62a9' ]]; then
             for expected in \
               '.github/workflows/m7-4a-technical-preview-interaction-regression.yml' \
               '.github/workflows/sprint126-final-shift-close-runtime-binding-manifest-control-plane-token-hardening.yml' \
               '.github/workflows/sprint162-pos-operations-hub-regression.yml' \
               '.github/workflows/sprint198-pos-business-workspace-delivery-integration-regression.yml' \
+              '.github/workflows/sprint32-authentication-recovery-proof-regression.yml' \
+              '.github/workflows/sprint33-recovery-bound-password-reset-regression.yml' \
+              '.github/workflows/sprint34-authenticated-password-change-regression.yml' \
               'apps/web/app/Providers/PosOperationsHubServiceProvider.php' \
               'apps/web/bootstrap/providers.php' \
               'apps/web/tests/pos-business-workspace-delivery-integration.php'
