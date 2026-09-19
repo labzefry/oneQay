@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "oneqay.technical-preview-activation-request.v1",
+  "title": "oneQay Technical Preview Activation Request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "product",
+    "request_state",
+    "request_id",
+    "release_id",
+    "active_environment_sha256",
+    "installation_completion_sha256",
+    "requested_operation",
+    "requested_runtime_envelope",
+    "required_authority",
+    "migration_execution_authorized",
+    "persistence_authorized",
+    "production_authorized",
+    "updater_authorized",
+    "deployment_authorized",
+    "attribution"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "product": { "const": "oneQay" },
+    "request_state": { "const": "TECHNICAL_PREVIEW_ACTIVATION_REQUEST_PENDING_APPROVAL" },
+    "request_id": { "type": "string", "pattern": "^technical-preview-activation-request-[0-9a-f]{24}$" },
+    "release_id": { "type": "string", "pattern": "^m75-preview-[0-9a-f]{12}$" },
+    "active_environment_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "installation_completion_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "requested_operation": { "const": "ENABLE_SYNTHETIC_TECHNICAL_PREVIEW_RUNTIME" },
+    "requested_runtime_envelope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "runtime_class",
+        "technical_preview_enabled",
+        "session_driver",
+        "session_lifetime_minutes",
+        "session_encrypt",
+        "session_secure_cookie",
+        "session_cookie",
+        "persistence_enabled",
+        "system_update_control_plane_enabled"
+      ],
+      "properties": {
+        "runtime_class": { "const": "preview" },
+        "technical_preview_enabled": { "const": true },
+        "session_driver": { "const": "file" },
+        "session_lifetime_minutes": { "const": 60 },
+        "session_encrypt": { "const": true },
+        "session_secure_cookie": { "const": true },
+        "session_cookie": { "const": "oneqay-preview-session" },
+        "persistence_enabled": { "const": false },
+        "system_update_control_plane_enabled": { "const": false }
+      }
+    },
+    "required_authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "state",
+        "relative_path",
+        "exact_release_required",
+        "exact_active_environment_required",
+        "exact_completion_required",
+        "single_use_required",
+        "separate_operational_authority_required"
+      ],
+      "properties": {
+        "state": { "const": "NOT_GRANTED" },
+        "relative_path": { "const": "oneqay-preview/shared/install/technical-preview-activation-authority.json" },
+        "exact_release_required": { "const": true },
+        "exact_active_environment_required": { "const": true },
+        "exact_completion_required": { "const": true },
+        "single_use_required": { "const": true },
+        "separate_operational_authority_required": { "const": true }
+      }
+    },
+    "migration_execution_authorized": { "const": false },
+    "persistence_authorized": { "const": false },
+    "production_authorized": { "const": false },
+    "updater_authorized": { "const": false },
+    "deployment_authorized": { "const": false },
+    "attribution": { "const": "Lab | zefry" }
+  }
+}
