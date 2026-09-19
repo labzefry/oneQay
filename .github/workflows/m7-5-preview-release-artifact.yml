@@ -449,6 +449,26 @@ jobs:
             git -C ../.. diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | sort > /tmp/m75-nine-paths
             count="$(wc -l < /tmp/m75-nine-paths)"
             fingerprint="$(sha256sum /tmp/m75-nine-paths | awk '{print $1}')"
+            if [[ "${{ github.head_ref }}" == 'sprint199-merchant-account-security-self-service-workspace' && "$count" -eq 7 && "$fingerprint" == 'f2bfb20b69030181797ab935f4a7de407fb7143fd97431692da441f3c89b738f' ]]; then
+              for expected in \
+                '.github/workflows/m7-5-preview-release-artifact.yml' \
+                '.github/workflows/sprint199-merchant-account-security-self-service-workspace-regression.yml' \
+                'apps/web/app/Delivery/Http/Pos/PosOperationsHubController.php' \
+                'apps/web/resources/js/pages/Foundation.vue' \
+                'apps/web/resources/js/pages/Pos/OperationsHub.vue' \
+                'apps/web/resources/views/app.blade.php' \
+                'apps/web/tests/merchant-account-security-self-service.php'
+              do
+                grep -Fxq "$expected" /tmp/m75-nine-paths
+              done
+              for migration in database/migrations/0000_00_00_0000{17..27}_*.php; do
+                if [[ -f "$migration" ]]; then
+                  historical_migrations+=("$migration")
+                fi
+              done
+              sprint51_jrn008_preview_fixture=true
+              echo 'Exact Sprint199 envelope recognized for historical M7.5 preservation.'
+            fi
             if [[ "${{ github.head_ref }}" == 'sprint198-pos-business-workspace-delivery-integration' && "$count" -eq 25 && "$fingerprint" == '4e04f75c0df2b340b0a66ad5d2fa545d364a088740e0af92861909c4848d0a45' ]]; then
               for expected in \
                 '.github/workflows/m7-2-tenant-isolation-regression.yml' \
