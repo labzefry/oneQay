@@ -40,7 +40,7 @@ jobs:
         if: github.event_name == 'pull_request' && github.head_ref == 'sprint201-merchant-pos-state-aware-guided-operations'
         shell: bash
         env:
-          EXPECTED_PATH_HASH: c90b77ec0565bf8a017f72f5f8c6f338b3a9f11c37fd245add97a16ba809366e
+          EXPECTED_PATH_HASH: 42c4cdd533a99adf2d0d5ba379e1e90575f0bd081ec08187107e9f7a0a03d766
         run: |
           set -euo pipefail
           BASE_SHA="${{ github.event.pull_request.base.sha }}"
@@ -58,6 +58,7 @@ jobs:
             "apps/web/app/Delivery/Http/Pos/PosOperationsHubController.php"
             "apps/web/app/Providers/PosOperationsHubServiceProvider.php"
             "apps/web/resources/js/pages/Pos/OperationsHub.vue"
+            "apps/web/tests/merchant-pos-guided-operations-home.php"
             "apps/web/tests/merchant-pos-state-aware-guided-operations.php"
           )
           test "${#paths[@]}" -eq "${#expected[@]}"
