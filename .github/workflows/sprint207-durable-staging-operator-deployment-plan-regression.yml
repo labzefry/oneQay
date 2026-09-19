@@ -1,0 +1,311 @@
+# Author by Lab | zefry
+name: Sprint207 Durable Staging Operator Deployment Plan Regression
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint207-durable-staging-operator-deployment-plan-${{ github.event.pull_request.number || github.ref }}-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  qualify-sprint207-durable-staging-operator-deployment-plan:
+    name: qualify-sprint207-durable-staging-operator-deployment-plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout exact Sprint207 source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Qualify exact Sprint207 engineering envelope
+        if: github.event_name == 'pull_request' && github.head_ref == 'sprint207-durable-staging-operator-deployment-plan'
+        shell: bash
+        env:
+          EXPECTED_PATH_HASH: bd138c83785e61f45b0b3066f3e1904942af23df8a34f6392b67dd966a5fa19a
+        run: |
+          set -euo pipefail
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          test "$(git rev-parse HEAD)" = "$HEAD_SHA"
+          mapfile -t paths < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort)
+          expected=(
+            ".github/workflows/sprint207-durable-staging-operator-deployment-plan-regression.yml"
+            "DEPLOYMENT.md"
+            "ops/final-shift-close/DURABLE_STAGING_OPERATOR_DEPLOYMENT_PLAN_CONTRACT.json"
+            "tools/deployment/durable-staging-operator-deployment-plan.schema.json"
+            "tools/deployment/durable-staging-operator-target.schema.json"
+            "tools/prepare-durable-staging-operator-deployment-plan.php"
+          )
+          test "${#paths[@]}" -eq "${#expected[@]}"
+          diff -u <(printf '%s\n' "${expected[@]}") <(printf '%s\n' "${paths[@]}")
+          test "$(printf '%s\n' "${paths[@]}" | sha256sum | awk '{print $1}')" = "$EXPECTED_PATH_HASH"
+
+      - name: Preserve canonical operational NO-GO
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" = NOT_EXECUTED
+          test "$(jq -r '.permission_provisioning.state' ops/final-shift-close/STATE.json)" = NONE
+          test "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" = INACTIVE
+          test "$(jq -r '.deployment_authority' ops/final-shift-close/STATE.json)" = NOT_GRANTED
+          test "$(jq -r '.technical_preview_activation' ops/final-shift-close/STATE.json)" = NOT_AUTHORIZED
+          test "$(jq -r '.production_activation' ops/final-shift-close/STATE.json)" = NOT_AUTHORIZED
+          test "$(jq -r '.updater_activation' ops/final-shift-close/STATE.json)" = INACTIVE
+          test "$(jq -r '.selection_state' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" = BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET
+          test "$(jq -r '.selected_target' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" = null
+
+      - name: Setup governed PHP runtime
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        with:
+          php-version: '8.3'
+          coverage: none
+
+      - name: Validate Sprint207 source contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l tools/prepare-durable-staging-operator-deployment-plan.php
+          jq -e '.contract_state == "SOURCE_READY_PLAN_PREPARATION_ONLY_NOT_DEPLOYED"' ops/final-shift-close/DURABLE_STAGING_OPERATOR_DEPLOYMENT_PLAN_CONTRACT.json
+          jq -e '.authority_binding.authority_source == "EXTERNAL_SEPARATE_OPERATIONAL_AUTHORITY"' ops/final-shift-close/DURABLE_STAGING_OPERATOR_DEPLOYMENT_PLAN_CONTRACT.json
+          jq -e '.authority_binding.migration_execution_allowed == false' ops/final-shift-close/DURABLE_STAGING_OPERATOR_DEPLOYMENT_PLAN_CONTRACT.json
+          jq -e '.canonical_boundaries.environment_deployment == "NOT_PERFORMED"' ops/final-shift-close/DURABLE_STAGING_OPERATOR_DEPLOYMENT_PLAN_CONTRACT.json
+          jq -e '.canonical_boundaries.migration27_execution == "NOT_PERFORMED"' ops/final-shift-close/DURABLE_STAGING_OPERATOR_DEPLOYMENT_PLAN_CONTRACT.json
+          jq -e '.properties.runtime_class.const == "durable-staging"' tools/deployment/durable-staging-operator-target.schema.json
+          jq -e '.properties.deployment_authority.properties.migration_execution_allowed.const == false' tools/deployment/durable-staging-operator-target.schema.json
+          jq -e '.properties.plan_state.const == "QUALIFIED_FOR_EXTERNAL_OPERATOR_EXECUTION_NOT_EXECUTED"' tools/deployment/durable-staging-operator-deployment-plan.schema.json
+          jq -e '.properties.operational_boundary.properties.environment_deployment.const == "NOT_PERFORMED"' tools/deployment/durable-staging-operator-deployment-plan.schema.json
+
+      - name: Prepare exact-head operator fixtures
+        shell: bash
+        run: |
+          set -euo pipefail
+          HEAD_SHA="${{ github.event.pull_request.head.sha || github.sha }}"
+          release_id="durable-staging-${HEAD_SHA:0:12}"
+          artifact_sha="$(printf 'artifact:%s' "$HEAD_SHA" | sha256sum | awk '{print $1}')"
+          manifest_sha="$(printf 'manifest:%s' "$HEAD_SHA" | sha256sum | awk '{print $1}')"
+          authority_sha="$(printf 'authority:%s' "$HEAD_SHA" | sha256sum | awk '{print $1}')"
+
+          jq -n \
+            --arg release "$release_id" \
+            --arg source "$HEAD_SHA" \
+            --arg artifact "$artifact_sha" \
+            --arg manifest "$manifest_sha" \
+            '{
+              schema_version: 1,
+              handoff_state: "VALIDATED_FOR_EXTERNAL_DEPLOYMENT_NOT_AUTHORIZED",
+              product: {name:"oneQay", repository:"labzefry/oneQay"},
+              artifact: {
+                release_id:$release,
+                source_commit:$source,
+                artifact_filename:($release + ".tar.gz"),
+                artifact_sha256:$artifact,
+                artifact_size_bytes:123,
+                manifest_sha256:$manifest
+              },
+              runtime: {
+                release_channel:"STAGING",
+                release_environment:"DURABLE_STAGING",
+                required_runtime_class:"durable-staging",
+                production:false,
+                production_data_allowed:false,
+                synthetic_fixture_runtime:false,
+                environment_values_embedded:false
+              },
+              migration: {
+                source_included:true,
+                expected_count:27,
+                latest_migration:"0000_00_00_000027_create_pos_shift_close_evidence_foundation.php",
+                execution_state:"NOT_PERFORMED",
+                execution_authorized:false
+              },
+              deployment: {
+                execution_state:"NOT_PERFORMED",
+                archive_extraction_state:"NOT_PERFORMED",
+                runtime_configuration_mutation_state:"NOT_PERFORMED",
+                active_release_pointer_mutation_state:"NOT_PERFORMED",
+                authority_state:"NOT_GRANTED"
+              },
+              required_external_bindings:[
+                "ONEQAY_RUNTIME_CLASS",
+                "ONEQAY_RUNNING_SOURCE_COMMIT",
+                "ONEQAY_RUNNING_ARTIFACT_SHA256",
+                "ONEQAY_DURABLE_RUNTIME_ENVIRONMENT_ID",
+                "ONEQAY_DURABLE_RUNTIME_ATTESTATION_TOKEN",
+                "ONEQAY_DURABLE_STAGING_RUNTIME_ENABLED"
+              ],
+              operational_boundary: {
+                environment_creation:"NOT_PERFORMED",
+                environment_deployment:"NOT_PERFORMED",
+                migration27_execution:"NOT_PERFORMED",
+                permission_provisioning:"NONE",
+                feature_activation:"INACTIVE",
+                technical_preview_activation:"NOT_AUTHORIZED",
+                production_activation:"NOT_AUTHORIZED",
+                updater_activation:"INACTIVE",
+                target_selection:"BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET",
+                selected_target:null,
+                producer_dispatch:"NOT_PERFORMED"
+              },
+              attribution:"Lab | zefry"
+            }' > /tmp/sprint207-handoff.json
+
+          jq -n \
+            --arg release "$release_id" \
+            --arg artifact "$artifact_sha" \
+            --arg authority "$authority_sha" \
+            '{
+              schema_version:1,
+              target_state:"OPERATOR_TARGET_DECLARED",
+              environment_id:"durable-staging-ci-01",
+              runtime_class:"durable-staging",
+              production:false,
+              production_data_allowed:false,
+              synthetic_fixture_runtime:false,
+              filesystem:{
+                deployment_root:"/srv/oneqay",
+                release_root:"/srv/oneqay/releases",
+                shared_runtime_root:"/srv/oneqay/shared/runtime",
+                active_release_pointer:"/srv/oneqay/active-release.json"
+              },
+              capabilities:{
+                durable_database_persistence:true,
+                durable_session:true,
+                authorization:true,
+                transaction_durability:true,
+                pos_durability:true,
+                authenticated_configuration_channel:true,
+                read_before_write:true,
+                read_after_write:true,
+                non_mutating_health_attestation:true,
+                verified_rollback:true
+              },
+              configuration:{
+                secret_values_embedded:false,
+                required_binding_presence:{
+                  ONEQAY_RUNTIME_CLASS:true,
+                  ONEQAY_RUNNING_SOURCE_COMMIT:true,
+                  ONEQAY_RUNNING_ARTIFACT_SHA256:true,
+                  ONEQAY_DURABLE_RUNTIME_ENVIRONMENT_ID:true,
+                  ONEQAY_DURABLE_RUNTIME_ATTESTATION_TOKEN:true,
+                  ONEQAY_DURABLE_STAGING_RUNTIME_ENABLED:true
+                }
+              },
+              deployment_authority:{
+                state:"EXTERNALLY_GRANTED_FOR_EXACT_TARGET",
+                authority_id:"sprint207-ci-authority",
+                authority_sha256:$authority,
+                environment_id:"durable-staging-ci-01",
+                release_id:$release,
+                artifact_sha256:$artifact,
+                deployment_allowed:true,
+                migration_execution_allowed:false,
+                production_allowed:false
+              },
+              attribution:"Lab | zefry"
+            }' > /tmp/sprint207-target.json
+
+      - name: Produce deterministic secret-free operator deployment plan
+        shell: bash
+        run: |
+          set -euo pipefail
+          php tools/prepare-durable-staging-operator-deployment-plan.php \
+            /tmp/sprint207-handoff.json /tmp/sprint207-target.json /tmp/sprint207-plan-1.json
+          php tools/prepare-durable-staging-operator-deployment-plan.php \
+            /tmp/sprint207-handoff.json /tmp/sprint207-target.json /tmp/sprint207-plan-2.json
+          diff -u /tmp/sprint207-plan-1.json /tmp/sprint207-plan-2.json
+
+          PLAN=/tmp/sprint207-plan-1.json
+          jq -e '.plan_state == "QUALIFIED_FOR_EXTERNAL_OPERATOR_EXECUTION_NOT_EXECUTED"' "$PLAN"
+          jq -e '.target.runtime_class == "durable-staging"' "$PLAN"
+          jq -e '.authority_binding.deployment_allowed == true' "$PLAN"
+          jq -e '.authority_binding.migration_execution_allowed == false' "$PLAN"
+          jq -e '.readback_expectations.durable_staging_runtime_enabled == true' "$PLAN"
+          jq -e '.rollback.required == true' "$PLAN"
+          jq -e '.rollback.database_rollback_implied == false' "$PLAN"
+          jq -e '.migration.execution_state == "NOT_PERFORMED"' "$PLAN"
+          jq -e '.migration.execution_authorized == false' "$PLAN"
+          jq -e '.operational_boundary.environment_deployment == "NOT_PERFORMED"' "$PLAN"
+          jq -e '.operational_boundary.archive_extraction == "NOT_PERFORMED"' "$PLAN"
+          jq -e '.operational_boundary.runtime_configuration_mutation == "NOT_PERFORMED"' "$PLAN"
+          jq -e '.operational_boundary.active_release_pointer_mutation == "NOT_PERFORMED"' "$PLAN"
+          jq -e '.operational_boundary.selected_target == null' "$PLAN"
+          test "$(stat -c '%a' "$PLAN")" = 600
+
+      - name: Fail closed on authority target and safety drift
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          jq '.deployment_authority.artifact_sha256 = ("0" * 64)' \
+            /tmp/sprint207-target.json > /tmp/sprint207-bad-artifact.json
+          if php tools/prepare-durable-staging-operator-deployment-plan.php \
+            /tmp/sprint207-handoff.json /tmp/sprint207-bad-artifact.json /tmp/sprint207-should-not-exist.json; then
+            echo "Accepted mismatched authority artifact binding." >&2
+            exit 1
+          fi
+
+          jq '.production = true' \
+            /tmp/sprint207-target.json > /tmp/sprint207-production.json
+          if php tools/prepare-durable-staging-operator-deployment-plan.php \
+            /tmp/sprint207-handoff.json /tmp/sprint207-production.json /tmp/sprint207-should-not-exist.json; then
+            echo "Accepted Production target." >&2
+            exit 1
+          fi
+
+          jq '.deployment_authority.migration_execution_allowed = true' \
+            /tmp/sprint207-target.json > /tmp/sprint207-migration-authority.json
+          if php tools/prepare-durable-staging-operator-deployment-plan.php \
+            /tmp/sprint207-handoff.json /tmp/sprint207-migration-authority.json /tmp/sprint207-should-not-exist.json; then
+            echo "Accepted migration execution authority." >&2
+            exit 1
+          fi
+
+          jq '.filesystem.release_root = "/srv/oneqay/../escape"' \
+            /tmp/sprint207-target.json > /tmp/sprint207-path-traversal.json
+          if php tools/prepare-durable-staging-operator-deployment-plan.php \
+            /tmp/sprint207-handoff.json /tmp/sprint207-path-traversal.json /tmp/sprint207-should-not-exist.json; then
+            echo "Accepted unsafe release path." >&2
+            exit 1
+          fi
+
+          jq 'del(.configuration.required_binding_presence.ONEQAY_DURABLE_RUNTIME_ATTESTATION_TOKEN)' \
+            /tmp/sprint207-target.json > /tmp/sprint207-missing-binding.json
+          if php tools/prepare-durable-staging-operator-deployment-plan.php \
+            /tmp/sprint207-handoff.json /tmp/sprint207-missing-binding.json /tmp/sprint207-should-not-exist.json; then
+            echo "Accepted missing required binding." >&2
+            exit 1
+          fi
+
+      - name: Prove planner has no deployment side effects
+        shell: bash
+        run: |
+          set -euo pipefail
+          TOOL=tools/prepare-durable-staging-operator-deployment-plan.php
+          ! grep -Eq 'Artisan::call|php artisan migrate|migrate --force|PDO\(|mysqli_|curl_exec|ssh |scp |rsync |tar -x|system\(|shell_exec\(|proc_open\(' "$TOOL"
+          ! grep -Eq 'SystemUpdateActivationCoordinator|FilesystemSystemUpdateActiveReleasePointerStore' "$TOOL"
+          jq -e '.canonical_boundaries.environment_deployment == "NOT_PERFORMED"' ops/final-shift-close/DURABLE_STAGING_OPERATOR_DEPLOYMENT_PLAN_CONTRACT.json
+
+      - name: Preserve Sprint206 handoff and Preview boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          jq -e '.handoff_output.state == "VALIDATED_FOR_EXTERNAL_DEPLOYMENT_NOT_AUTHORIZED"' ops/final-shift-close/DURABLE_STAGING_DEPLOYMENT_HANDOFF_CONTRACT.json
+          jq -e '.canonical_boundaries.deployment_authority == "NOT_GRANTED"' ops/final-shift-close/DURABLE_STAGING_DEPLOYMENT_HANDOFF_CONTRACT.json
+          grep -Fq "/\\Am75-preview-[0-9a-f]{12}\\z/" apps/web/app/Application/SystemUpdate/SystemUpdateReleaseIdentity.php
+          ! grep -Fq "durable-staging" apps/web/app/Application/SystemUpdate/SystemUpdateReleaseIdentity.php
+
+      - name: Confirm tracked source cleanliness
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --exit-code
+          test -z "$(git status --porcelain)"
