@@ -13,6 +13,7 @@ use App\Application\Identity\FirstControlPrincipalCredentialBootstrapService;
 use App\Application\Persistence\DurableContextGraph;
 use App\Application\Persistence\DurableContextGraphRepository;
 use App\Application\Persistence\PersistenceTransaction;
+use App\Application\Runtime\DurableStagingRuntimeBridge;
 use App\Domain\Device\DeviceId;
 use App\Domain\Identity\PlatformIdentityId;
 use App\Domain\Organization\OrganizationId;
@@ -31,17 +32,28 @@ final class MerchantContextBootstrapCommand extends Command
     protected $signature = 'oneqay:merchant-context:bootstrap';
 
     /** @var string */
-    protected $description = 'Atomically establish one exact preauthorized merchant context in an explicitly armed Local/Test/CI runtime.';
+    protected $description = 'Atomically establish one exact preauthorized merchant context in an explicitly armed Local/Test/CI/Staging runtime.';
 
     public function handle(): int
     {
         try {
-            $runtimeClass = strtolower(trim((string) config('oneqay.runtime_class', '')));
+            $runtimeClass = DurableStagingRuntimeBridge::externalRuntime(
+                (string) config('oneqay.runtime_class', ''),
+            );
+            $stagingRuntimeArmed = (bool) config('oneqay.durable_staging_runtime.enabled', false);
+            $runtimeAllowed = DurableStagingRuntimeBridge::deliveryAllowed(
+                $runtimeClass,
+                $stagingRuntimeArmed,
+            );
+            $repositoryRuntimeClass = DurableStagingRuntimeBridge::repositoryRuntimeClass(
+                $runtimeClass,
+                $stagingRuntimeArmed,
+            );
             $merchantBootstrapArmed = (bool) config('merchant_context_bootstrap.enabled', false);
             $credentialBootstrapArmed = (bool) config('oneqay.first_control_principal_credential_bootstrap.enabled', false);
             $persistenceEnabled = (bool) config('database.oneqay_persistence_enabled', false);
 
-            if (! in_array($runtimeClass, ['local', 'test', 'ci'], true)
+            if (! $runtimeAllowed
                 || ! $merchantBootstrapArmed
                 || ! $credentialBootstrapArmed
                 || ! $persistenceEnabled) {
@@ -89,7 +101,7 @@ final class MerchantContextBootstrapCommand extends Command
                 new LaravelMerchantContextBootstrapStateRepository(
                     app('db')->connection(),
                     $persistenceEnabled && $merchantBootstrapArmed,
-                    $runtimeClass,
+                    $repositoryRuntimeClass,
                 ),
                 app(DurableContextGraphRepository::class),
                 app(InitialTenantAdministratorProvisioningRepository::class),
