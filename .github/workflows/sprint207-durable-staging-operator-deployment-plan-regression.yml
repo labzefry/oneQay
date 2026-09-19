@@ -279,6 +279,8 @@ jobs:
           diff -u /tmp/sprint207-plan-1.json /tmp/sprint207-plan-2.json
 
           PLAN=/tmp/sprint207-plan-1.json
+          target_descriptor_sha="$(jq -r '.deployment_authority.target_descriptor_sha256' /tmp/sprint207-target.json)"
+          expires_at_unix="$(jq -r '.deployment_authority.expires_at_unix' /tmp/sprint207-target.json)"
           jq -e '.plan_state == "QUALIFIED_FOR_EXTERNAL_OPERATOR_EXECUTION_NOT_EXECUTED"' "$PLAN"
           jq -e '.target.runtime_class == "durable-staging"' "$PLAN"
           jq -e '.authority_binding.deployment_allowed == true' "$PLAN"
