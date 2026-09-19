@@ -265,8 +265,31 @@ try {
         $assert(! str_contains($source, $forbidden), 'execution source contains forbidden primitive '.$forbidden.'.');
     }
 
-    $assert(! str_contains($publicInstaller, 'PrebootRuntimeConfigurationPromotionExecution.php'), 'public installer registered Sprint190 executor.');
-    $assert(! str_contains($publicInstaller, 'execute_promotion'), 'public installer exposes Sprint190 execution action.');
+    $executorRegistered = str_contains($publicInstaller, 'PrebootRuntimeConfigurationPromotionExecution.php');
+
+    if ($executorRegistered) {
+        $assert(
+            str_contains($publicInstaller, "} elseif (\$action === 'execute_runtime_promotion') {"),
+            'successor registration is not bound to the governed execution action.',
+        );
+        $assert(
+            str_contains($publicInstaller, "hash_equals('PROMOTE_RUNTIME_CONFIGURATION', \$confirmation)"),
+            'successor registration lacks explicit confirmation guard.',
+        );
+        $assert(
+            str_contains($publicInstaller, '<?php if ($promotionExecutionReady && ! $runtimePromoted): ?>'),
+            'successor registration is not gated by durable readiness.',
+        );
+        $assert(
+            substr_count($publicInstaller, '$execution->execute($approvalToken)') === 1,
+            'successor registration must expose exactly one executor invocation.',
+        );
+    } else {
+        $assert(
+            ! str_contains($publicInstaller, 'execute_runtime_promotion'),
+            'dormant Sprint190 boundary exposes an execution action.',
+        );
+    }
 
     fwrite(STDOUT, "Sprint190 runtime configuration atomic promotion executor regression passed.\n");
 } finally {
