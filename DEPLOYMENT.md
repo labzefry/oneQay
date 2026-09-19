@@ -1,5 +1,54 @@
 # oneQay Deployment Handbook
 
+## Canonical durable-staging operator deployment planning — Sprint207
+
+Sprint207 closes the repository-side gap between the validated Sprint206 `durable-staging` handoff and an operator who already has a real isolated non-production target plus separate operational deployment authority.
+
+The operator path is intentionally separate from the existing `m75-preview-*` installer/update lifecycle. The Technical Preview path remains `preview` / `NO_SCHEMA_CHANGE` and is not widened to accept durable-staging artifacts.
+
+### Inputs
+
+The planning flow requires:
+
+1. the exact Sprint206 deployment handoff for a governed `durable-staging-*` artifact;
+2. an operator-owned target descriptor conforming to `tools/deployment/durable-staging-operator-target.schema.json`;
+3. external deployment authority bound to the exact environment ID, release ID, and artifact SHA-256;
+4. confirmation that the target is isolated, non-production, non-synthetic, and has durable database/session/authorization/transaction/POS capability;
+5. presence of the required external runtime bindings without embedding secret values in repository artifacts.
+
+Prepare the deployment plan with:
+
+```text
+php tools/prepare-durable-staging-operator-deployment-plan.php \
+  <deployment-handoff.json> \
+  <operator-target.json> \
+  <deployment-plan.json>
+```
+
+The generated plan is deterministic for the exact inputs and remains secret-free. It binds the exact artifact/source/manifest identity, exact target environment, filesystem scope, and external authority fingerprint.
+
+### Required execution sequence after separate operational authority
+
+The generated plan defines the required operator sequence:
+
+1. revalidate the exact artifact and Sprint206 handoff;
+2. read the current active release and preserve the rollback target before mutation;
+3. preflight private deployment paths and a public-only document root;
+4. extract only into the new immutable release directory;
+5. bind runtime configuration and secrets through the authenticated external channel;
+6. verify running source commit, artifact SHA-256, runtime class, and environment ID;
+7. perform read-before-write/read-after configuration verification;
+8. run the non-mutating durable-runtime health attestation;
+9. prove the rollback path before accepting the deployment;
+10. persist deployment/readback evidence.
+
+The planner itself performs none of those operational mutations. It does not create the environment, extract the archive, write runtime configuration, change the active-release pointer, execute migration #27, provision permissions, activate Final Shift Close, dispatch the protected producer, select a durable target, activate the updater, or authorize Technical Preview/Production.
+
+Migration source #1–#27 remains packaged for durable staging, but migration execution is still a separate operational boundary and remains `NOT_PERFORMED` / unauthorized by this planning capability. Application rollback also does not imply database or migration rollback; those must be separately proven before any schema-changing execution.
+
+The canonical machine-readable contract is `ops/final-shift-close/DURABLE_STAGING_OPERATOR_DEPLOYMENT_PLAN_CONTRACT.json`.
+
+
 ## Canonical post-Sprint48 JRN-005 source publication reconciliation — 2026-09-01
 
 This current-facing section supersedes older post-Sprint47/current-state wording retained below as historical provenance. It records canonical source and CI evidence only and creates no new implementation or lifecycle authority.
