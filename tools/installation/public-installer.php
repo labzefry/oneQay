@@ -24,6 +24,7 @@ $installerSources = [
     $appRoot.'/app/Infrastructure/Installation/PrebootInstallationActivationReadiness.php',
     $appRoot.'/app/Infrastructure/Installation/PrebootRuntimeConfigurationPromotionRequest.php',
     $appRoot.'/app/Infrastructure/Installation/PrebootRuntimeConfigurationPromotionQualification.php',
+    $appRoot.'/app/Infrastructure/Installation/PrebootRuntimeConfigurationPromotionReadiness.php',
     $appRoot.'/app/Infrastructure/Installation/PrebootInstallationConfiguration.php',
 ];
 $sharedRoot = $accountHome.'/oneqay-preview/shared';
@@ -41,6 +42,7 @@ foreach ($installerSources as $installerSource) {
 $nowUnix = time();
 $installer = new \App\Infrastructure\Installation\PrebootInstallationConfiguration($sharedRoot, $releaseId, $nowUnix);
 $qualification = new \App\Infrastructure\Installation\PrebootRuntimeConfigurationPromotionQualification($sharedRoot, $releaseId, $nowUnix);
+$readiness = new \App\Infrastructure\Installation\PrebootRuntimeConfigurationPromotionReadiness($sharedRoot, $releaseId, $nowUnix);
 $state = [
     'state' => 'UNAVAILABLE',
     'can_prepare' => false,
@@ -55,14 +57,23 @@ $qualificationState = [
     'promotion_qualified' => false,
     'promotion_executed' => false,
 ];
+$readinessState = [
+    'state' => 'PROMOTION_READINESS_MISSING',
+    'execution_ready' => false,
+    'request_id' => '',
+    'authority_id' => '',
+    'promotion_executed' => false,
+];
 $result = null;
 $qualificationResult = null;
+$readinessResult = null;
 $errorCode = null;
 
 try {
     $state = $installer->inspect();
     if (($state['promotion_request_pending'] ?? false) === true) {
         $qualificationState = $qualification->inspect();
+        $readinessState = $readiness->inspect();
     }
 
     $method = strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET'));
@@ -93,7 +104,9 @@ try {
             }
 
             $qualificationResult = $qualification->qualify($approvalToken);
+            $readinessResult = $readiness->attest($approvalToken);
             $qualificationState = $qualification->inspect();
+            $readinessState = $readiness->inspect();
         } else {
             throw new RuntimeException('unsupported_installation_action');
         }
@@ -117,6 +130,11 @@ $promotionAuthorityTokenRequired = ($qualificationState['token_required'] ?? fal
 $promotionQualified = is_array($qualificationResult)
     && ($qualificationResult['promotion_qualified'] ?? false) === true
     && ($qualificationResult['promotion_executed'] ?? true) === false;
+$promotionExecutionReady = ($readinessState['execution_ready'] ?? false) === true
+    || (is_array($readinessResult)
+        && ($readinessResult['state'] ?? null) === 'PROMOTION_EXECUTION_READY_NOT_EXECUTED'
+        && ($readinessResult['promotion_executed'] ?? true) === false);
+$promotionReadinessState = (string) ($readinessState['state'] ?? 'PROMOTION_READINESS_MISSING');
 $prepared = is_array($result) && ($result['prepared'] ?? false) === true;
 
 function e(string $value): string
@@ -251,7 +269,11 @@ function stateDescription(string $state): string
             <span class="status-code"><?= e($stateCode) ?></span>
         </div>
 
-        <?php if ($promotionQualified): ?>
+        <?php if ($promotionExecutionReady): ?>
+            <div class="notice success">
+                Promotion is <strong>EXECUTION READY / NOT EXECUTED</strong>. Durable private readiness evidence is sealed to the exact release, request, authority, pending configuration, and handoff. Active <strong>.env</strong> remains unchanged.
+            </div>
+        <?php elseif ($promotionQualified): ?>
             <div class="notice success">
                 Promotion authority is <strong>QUALIFIED / NOT EXECUTED</strong>. Exact request, release, pending digest, handoff digest, authority lifetime, and one-time approval token all match. Active <strong>.env</strong> remains unchanged.
             </div>
@@ -338,7 +360,7 @@ function stateDescription(string $state): string
                 </div>
                 <div class="actions">
                     <p>
-                        This step verifies authority only. It does not copy <strong>.env.pending</strong> to <strong>.env</strong>, execute migrations, or enable Technical Preview.
+                        This step verifies authority and seals durable execution-readiness evidence only. It does not copy <strong>.env.pending</strong> to <strong>.env</strong>, execute migrations, or enable Technical Preview.
                     </p>
                     <button type="submit">Qualify promotion authority</button>
                 </div>
@@ -355,12 +377,15 @@ function stateDescription(string $state): string
             <div><span>Activation handoff</span><strong><?= $handoffReady ? 'SEALED / NOT AUTHORIZED' : 'NOT READY' ?></strong></div>
             <div><span>Promotion request</span><strong><?= $promotionRequestPending ? 'PENDING APPROVAL' : 'NOT READY' ?></strong></div>
             <div><span>Promotion authority</span><strong><?=
-                $promotionQualified
-                    ? 'QUALIFIED / NOT EXECUTED'
-                    : ($promotionAuthorityTokenRequired
-                        ? 'TOKEN REQUIRED'
-                        : ($promotionAuthorityPresent ? 'PRESENT / INVALID' : 'NOT GRANTED'))
+                $promotionExecutionReady
+                    ? 'QUALIFIED / ATTESTED'
+                    : ($promotionQualified
+                        ? 'QUALIFIED / NOT EXECUTED'
+                        : ($promotionAuthorityTokenRequired
+                            ? 'TOKEN REQUIRED'
+                            : ($promotionAuthorityPresent ? 'PRESENT / INVALID' : 'NOT GRANTED')))
             ?></strong></div>
+            <div><span>Execution readiness</span><strong><?= $promotionExecutionReady ? 'READY / NOT EXECUTED' : e($promotionReadinessState) ?></strong></div>
             <div><span>Migration</span><strong>NOT EXECUTED</strong></div>
             <div><span>Technical Preview</span><strong>NOT AUTHORIZED</strong></div>
             <div><span>Production</span><strong>NOT AUTHORIZED</strong></div>
