@@ -106,6 +106,11 @@ try {
         'ONEQAY_INSTALLATION_DATABASE_SCHEMA_STATE="empty"',
         'ONEQAY_INSTALLATION_DATABASE_LEAST_PRIVILEGE="true"',
         'ONEQAY_INSTALLATION_ACTIVATION_AUTHORIZED="false"',
+        'SESSION_DRIVER="file"',
+        'SESSION_LIFETIME="60"',
+        'SESSION_ENCRYPT="true"',
+        'SESSION_SECURE_COOKIE="true"',
+        'SESSION_COOKIE="oneqay-preview-session"',
         '# PREPARED ONLY — activation requires separate operational authority.',
     ] as $marker) {
         $assert(str_contains($content, $marker), 'pending environment missing '.$marker);
