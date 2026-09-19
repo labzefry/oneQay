@@ -387,7 +387,9 @@ final class PrebootTechnicalPreviewTargetEnvironmentPreflight
     /** @param array<string,mixed> $release */
     private function releaseContractIsExact(array $release): bool
     {
-        $activation = is_array($release['activation'] ?? null) ? $release['activation'] : [];
+        $activation = is_array($release['preboot_installation'] ?? null)
+            ? $release['preboot_installation']
+            : [];
 
         return ($release['product'] ?? null) === 'oneQay'
             && ($release['environment'] ?? null) === 'TECHNICAL_PREVIEW'
