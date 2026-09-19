@@ -67,6 +67,7 @@ function dsAuthorityRequestSafePath(mixed $value, string $code): string
         || strlen($value) > 4096
         || ! str_starts_with($value, '/')
         || $value === '/'
+        || str_ends_with($value, '/')
         || str_contains($value, "\0")
         || str_contains($value, '\\')
         || preg_match('#(?:^|/)\\.{1,2}(?:/|$)#', $value) === 1
