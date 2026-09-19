@@ -201,3 +201,44 @@ foreach ($historicalRuntimeGuards as $relative) {
 }
 
 echo "Sprint203 bounded durable staging merchant core bridge regression passed.\n";
+
+
+// Sprint204 durable staging readiness attestation delivery.
+$sprint204Required = [
+    "QUALIFIABLE_RUNTIME_CLASS = 'durable-staging'",
+    'readinessEndpointArmedFor',
+    '/internal/oneqay/durable-runtime/readiness',
+    'DurableStagingRuntimeReadinessAttestationController',
+    'ONEQAY_DURABLE_RUNTIME_ATTESTATION_TOKEN',
+    'ONEQAY_DURABLE_RUNTIME_ENVIRONMENT_ID',
+    'ONEQAY_RUNNING_SOURCE_COMMIT',
+    'ONEQAY_RUNNING_ARTIFACT_SHA256',
+    'ONEQAY_DURABLE_STAGING_AUTHENTICATED_CONFIGURATION_CHANNEL',
+    'ONEQAY_DURABLE_STAGING_READ_BEFORE_WRITE_READ_AFTER',
+    'ONEQAY_DURABLE_STAGING_VERIFIED_FLAG_ROLLBACK',
+    "'non_mutating_health_attestation_supported' => true",
+    "'activation_authority_binding' => self::ACTIVATION_AUTHORITY_BINDING",
+    "'secrets_embedded' => false",
+    "hash_equals(\$expectedToken, \$providedToken)",
+    "'Cache-Control' => 'no-store, private'",
+];
+
+foreach ($sprint204Required as $needle) {
+    if (! str_contains($provider, $needle)) {
+        fwrite(STDERR, "Missing Sprint204 readiness attestation contract: {$needle}\n");
+        exit(1);
+    }
+}
+
+foreach ([
+    "'runtime_class' => 'staging'",
+    "'runtime_class' => 'production'",
+    'ONEQAY_DURABLE_RUNTIME_ATTESTATION_TOKEN' . "' =>",
+] as $forbidden) {
+    if (str_contains($provider, $forbidden)) {
+        fwrite(STDERR, "Forbidden Sprint204 readiness attestation source detected: {$forbidden}\n");
+        exit(1);
+    }
+}
+
+echo "Sprint204 durable staging readiness attestation delivery regression passed.\n";

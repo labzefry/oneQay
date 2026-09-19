@@ -1,5 +1,7 @@
 <?php
 
+// Sprint204 durable staging readiness attestation compatibility anchor — Lab | zefry
+
 // Sprint203 bounded staging bridge compatibility anchor — Lab | zefry
 
 declare(strict_types=1);
