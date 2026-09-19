@@ -43,7 +43,7 @@ Route::get('/', static fn () => Inertia::render('Foundation', [
 $firstPartyAuthRuntime = DurableStagingRuntimeBridge::externalRuntime(
     (string) config('oneqay.runtime_class', ''),
 );
-$localTestCiRuntime = $merchantRuntimeAllowed;
+$localTestCiRuntime = in_array($firstPartyAuthRuntime, ['local', 'test', 'ci'], true);
 $merchantRuntimeAllowed = DurableStagingRuntimeBridge::deliveryAllowed(
     $firstPartyAuthRuntime,
     (bool) config('oneqay.durable_staging_runtime.enabled', false),
