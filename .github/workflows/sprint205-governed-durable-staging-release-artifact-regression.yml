@@ -1,0 +1,205 @@
+# Author by Lab | zefry
+name: Sprint205 Governed Durable Staging Release Artifact Regression
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint205-governed-durable-staging-release-artifact-${{ github.event.pull_request.number || github.ref }}-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  qualify-sprint205-governed-durable-staging-release-artifact:
+    name: qualify-sprint205-governed-durable-staging-release-artifact
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWE=
+      APP_DEBUG: "false"
+      APP_URL: http://localhost
+      ONEQAY_RUNTIME_CLASS: ci
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+      LOG_CHANNEL: stderr
+      ONEQAY_BUILD_PROVENANCE: github-actions:${{ github.run_id }}:${{ github.run_attempt }}
+
+    steps:
+      - name: Checkout exact Sprint205 source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Qualify exact Sprint205 engineering envelope
+        if: github.event_name == 'pull_request' && github.head_ref == 'sprint205-governed-durable-staging-release-artifact-foundation'
+        shell: bash
+        env:
+          EXPECTED_PATH_HASH: 958492e789d583ddd73f803b5a82fa857e25692f372117492d04e25ac82a5a65
+        run: |
+          set -euo pipefail
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          test "$(git rev-parse HEAD)" = "$HEAD_SHA"
+          mapfile -t paths < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort)
+          expected=(
+            ".github/workflows/m7-5-preview-release-artifact.yml"
+            ".github/workflows/sprint205-governed-durable-staging-release-artifact-regression.yml"
+            ".github/workflows/sprint32-authentication-recovery-proof-regression.yml"
+            ".github/workflows/sprint33-recovery-bound-password-reset-regression.yml"
+            ".github/workflows/sprint34-authenticated-password-change-regression.yml"
+            "ops/final-shift-close/DURABLE_STAGING_RELEASE_ARTIFACT_CONTRACT.json"
+            "release/durable-staging-manifest-v1.schema.json"
+            "tools/build-durable-staging-release.sh"
+            "tools/validate-durable-staging-release-manifest.php"
+          )
+          test "${#paths[@]}" -eq "${#expected[@]}"
+          diff -u <(printf '%s\n' "${expected[@]}") <(printf '%s\n' "${paths[@]}")
+          actual_hash="$(printf '%s\n' "${paths[@]}" | sha256sum | awk '{print $1}')"
+          test "$actual_hash" = "$EXPECTED_PATH_HASH"
+
+      - name: Preserve canonical operational NO-GO
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" = NOT_EXECUTED
+          test "$(jq -r '.permission_provisioning.state' ops/final-shift-close/STATE.json)" = NONE
+          test "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" = INACTIVE
+          test "$(jq -r '.deployment_authority' ops/final-shift-close/STATE.json)" = NOT_GRANTED
+          test "$(jq -r '.technical_preview_activation' ops/final-shift-close/STATE.json)" = NOT_AUTHORIZED
+          test "$(jq -r '.production_activation' ops/final-shift-close/STATE.json)" = NOT_AUTHORIZED
+          test "$(jq -r '.updater_activation' ops/final-shift-close/STATE.json)" = INACTIVE
+          test "$(jq -r '.selection_state' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" = BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET
+          test "$(jq -r '.selected_target' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" = null
+
+      - name: Setup governed PHP runtime
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        with:
+          php-version: '8.3'
+          extensions: pdo_mysql
+          tools: composer:v2
+          coverage: none
+
+      - name: Setup exact Node LTS
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: 24.19.0
+
+      - name: Validate Sprint205 source contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash -n tools/build-durable-staging-release.sh
+          php -l tools/validate-durable-staging-release-manifest.php
+          jq -e '.contract_state == "MATERIALIZED_SOURCE_ONLY_NOT_DEPLOYED"' ops/final-shift-close/DURABLE_STAGING_RELEASE_ARTIFACT_CONTRACT.json
+          jq -e '.release_identity.required_runtime_class == "durable-staging"' ops/final-shift-close/DURABLE_STAGING_RELEASE_ARTIFACT_CONTRACT.json
+          jq -e '.artifact_requirements.expected_migration_count == 27' ops/final-shift-close/DURABLE_STAGING_RELEASE_ARTIFACT_CONTRACT.json
+          jq -e '.canonical_boundaries.environment_deployment == "NOT_PERFORMED"' ops/final-shift-close/DURABLE_STAGING_RELEASE_ARTIFACT_CONTRACT.json
+          jq -e '.properties.release.properties.channel.const == "STAGING"' release/durable-staging-manifest-v1.schema.json
+          jq -e '.properties.release.properties.environment.const == "DURABLE_STAGING"' release/durable-staging-manifest-v1.schema.json
+          jq -e '.properties.runtime.properties.required_runtime_class.const == "durable-staging"' release/durable-staging-manifest-v1.schema.json
+          jq -e '.properties.migration.properties.execution_authorized.const == false' release/durable-staging-manifest-v1.schema.json
+          php tools/validate-durable-staging-release-manifest.php --self-test
+
+      - name: Install locked build dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          composer validate --strict --no-check-publish
+          composer test
+          cd apps/web
+          composer validate --no-check-publish
+          composer install --no-interaction --no-progress --prefer-dist
+          npm ci --ignore-scripts --no-fund
+          npm run type-check
+          npm run build
+
+      - name: Prove builder cannot perform deployment or migration execution
+        shell: bash
+        run: |
+          set -euo pipefail
+          ! grep -Fq 'php artisan migrate' tools/build-durable-staging-release.sh
+          ! grep -Fq 'Artisan::call' tools/build-durable-staging-release.sh
+          ! grep -Fq 'workflow_dispatch' tools/build-durable-staging-release.sh
+          ! grep -Fq 'ONEQAY_DURABLE_RUNTIME_ATTESTATION_TOKEN=' tools/build-durable-staging-release.sh
+          jq -e '.artifact_requirements.migration_execution_performed_by_builder == false' ops/final-shift-close/DURABLE_STAGING_RELEASE_ARTIFACT_CONTRACT.json
+          jq -e '.qualification_requirements.deployment_requires_separate_operational_authority == true' ops/final-shift-close/DURABLE_STAGING_RELEASE_ARTIFACT_CONTRACT.json
+
+      - name: Build exact durable staging artifact
+        id: durable_build_one
+        shell: bash
+        run: |
+          set -euo pipefail
+          HEAD_SHA="${{ github.event.pull_request.head.sha || github.sha }}"
+          bash tools/build-durable-staging-release.sh "$HEAD_SHA"
+          release_id="durable-staging-${HEAD_SHA:0:12}"
+          cp "dist/${release_id}.manifest.json" /tmp/sprint205-first-manifest.json
+          cp "dist/${release_id}.tar.gz.sha256" /tmp/sprint205-first-artifact.sha256
+
+      - name: Validate durable staging artifact shape and boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          HEAD_SHA="${{ github.event.pull_request.head.sha || github.sha }}"
+          release_id="durable-staging-${HEAD_SHA:0:12}"
+          artifact="dist/${release_id}.tar.gz"
+          manifest="dist/${release_id}.manifest.json"
+          php tools/validate-durable-staging-release-manifest.php "$manifest" "$artifact"
+          tar -tzf "$artifact" > /tmp/sprint205-artifact-list.txt
+          test "$(grep -Ec "/apps/web/database/migrations/[^/]+\.php$" /tmp/sprint205-artifact-list.txt)" -eq 27
+          grep -Fq "/apps/web/database/migrations/0000_00_00_000027_create_pos_shift_close_evidence_foundation.php" /tmp/sprint205-artifact-list.txt
+          ! grep -E '(^|/)(\.env|\.git)(/|$)|(^|/)(node_modules|tests)(/|$)' /tmp/sprint205-artifact-list.txt
+          jq -e --arg sha "$HEAD_SHA" '.source.commit_sha == $sha' "$manifest"
+          jq -e '.release.channel == "STAGING"' "$manifest"
+          jq -e '.release.environment == "DURABLE_STAGING"' "$manifest"
+          jq -e '.release.production == false' "$manifest"
+          jq -e '.release.synthetic_fixture_runtime == false' "$manifest"
+          jq -e '.release.production_data_allowed == false' "$manifest"
+          jq -e '.runtime.required_runtime_class == "durable-staging"' "$manifest"
+          jq -e '.migration.source_included == true and .migration.expected_count == 27' "$manifest"
+          jq -e '.migration.execution_authorized == false' "$manifest"
+          jq -e '.operational_boundary.environment_deployment == "NOT_PERFORMED"' "$manifest"
+          jq -e '.operational_boundary.migration27_execution == "NOT_PERFORMED"' "$manifest"
+          jq -e '.operational_boundary.selected_target == null' "$manifest"
+          jq -e '.operational_boundary.producer_dispatch == "NOT_PERFORMED"' "$manifest"
+
+      - name: Prove exact artifact reproducibility
+        shell: bash
+        run: |
+          set -euo pipefail
+          HEAD_SHA="${{ github.event.pull_request.head.sha || github.sha }}"
+          rm -rf dist
+          bash tools/build-durable-staging-release.sh "$HEAD_SHA"
+          release_id="durable-staging-${HEAD_SHA:0:12}"
+          diff -u /tmp/sprint205-first-artifact.sha256 "dist/${release_id}.tar.gz.sha256"
+          diff -u /tmp/sprint205-first-manifest.json "dist/${release_id}.manifest.json"
+
+      - name: Preserve Technical Preview no-schema-change artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          HEAD_SHA="${{ github.event.pull_request.head.sha || github.sha }}"
+          rm -rf dist
+          bash tools/build-m7-5-preview-release.sh "$HEAD_SHA"
+          preview_id="m75-preview-${HEAD_SHA:0:12}"
+          preview_artifact="dist/${preview_id}.tar.gz"
+          preview_manifest="dist/${preview_id}.manifest.json"
+          tar -tzf "$preview_artifact" > /tmp/sprint205-preview-artifact-list.txt
+          ! grep -F '/apps/web/database/migrations/' /tmp/sprint205-preview-artifact-list.txt
+          jq -e '.release.channel == "PREVIEW"' "$preview_manifest"
+          jq -e '.release.environment == "TECHNICAL_PREVIEW"' "$preview_manifest"
+          jq -e '.compatibility.migration_classification == "NO_SCHEMA_CHANGE"' "$preview_manifest"
+
+      - name: Confirm tracked source cleanliness
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf dist
+          git diff --exit-code
+          test -z "$(git status --porcelain)"
