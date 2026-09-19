@@ -39,7 +39,7 @@ $cashierRequired = [
     'Authoritative receipt',
     'Financial lines below come from the server-completed sale receipt',
     'receipt.lines',
-    'receipt.line_total',
+    'line.line_total',
     'Print receipt',
     'Next sale',
     'window.print()',
