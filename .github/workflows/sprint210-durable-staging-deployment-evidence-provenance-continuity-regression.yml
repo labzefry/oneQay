@@ -1,0 +1,152 @@
+# Author by Lab | zefry
+name: Sprint210 Durable Staging Deployment Evidence Provenance Continuity Regression
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint210-durable-staging-deployment-evidence-provenance-continuity-${{ github.event.pull_request.number || github.ref }}-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  qualify-sprint210-deployment-evidence-provenance-continuity:
+    name: qualify-sprint210-deployment-evidence-provenance-continuity
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Lock exact Sprint210 engineering envelope
+        if: github.event_name == 'pull_request' && github.head_ref == 'sprint210-durable-staging-deployment-evidence-provenance-continuity'
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/actual
+          cat > /tmp/expected <<'EOF'
+          .github/workflows/final-shift-close-durable-runtime-attestation.yml
+          .github/workflows/sprint112-final-shift-close-durable-runtime-attestation-ingestion.yml
+          .github/workflows/sprint113-final-shift-close-durable-runtime-attestation-producer.yml
+          .github/workflows/sprint114-final-shift-close-durable-runtime-attestation-ingestion-execution.yml
+          .github/workflows/sprint210-durable-staging-deployment-evidence-provenance-continuity-regression.yml
+          DEPLOYMENT.md
+          apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeAttestationIngestion.php
+          apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeAttestationProvenance.php
+          apps/web/tests/pos-final-shift-close-durable-runtime-attestation-ingestion.php
+          docs/SPRINT112_FINAL_SHIFT_CLOSE_DURABLE_RUNTIME_ATTESTATION_INGESTION.md
+          docs/SPRINT113_FINAL_SHIFT_CLOSE_DURABLE_RUNTIME_ATTESTATION_PRODUCER.md
+          docs/SPRINT114_FINAL_SHIFT_CLOSE_DURABLE_RUNTIME_ATTESTATION_INGESTION_EXECUTION.md
+          ops/final-shift-close/DURABLE_RUNTIME_ATTESTATION_INGESTION_CONTRACT.json
+          ops/final-shift-close/DURABLE_RUNTIME_ATTESTATION_INGESTION_EXECUTION_CONTRACT.json
+          ops/final-shift-close/DURABLE_RUNTIME_ATTESTATION_PRODUCER_CONTRACT.json
+          EOF
+          diff -u /tmp/expected /tmp/actual
+          test "$(sha256sum /tmp/actual | awk '{print $1}')" = '05d1621db51ccf3461470b3edd01fb734a992523ba2b3aee23c08d9878d66231'
+
+      - name: Preserve canonical operational NO-GO
+        shell: bash
+        run: |
+          set -euo pipefail
+          state=ops/final-shift-close/STATE.json
+          selection=ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+          test "$(jq -r '.migration27.state' "$state")" = NOT_EXECUTED
+          test "$(jq -r '.permission_provisioning.state' "$state")" = NONE
+          test "$(jq -r '.feature_activation.state' "$state")" = INACTIVE
+          test "$(jq -r '.deployment_authority' "$state")" = NOT_GRANTED
+          test "$(jq -r '.technical_preview_activation' "$state")" = NOT_AUTHORIZED
+          test "$(jq -r '.production_activation' "$state")" = NOT_AUTHORIZED
+          test "$(jq -r '.updater_activation' "$state")" = INACTIVE
+          test "$(jq -r '.selection_state' "$selection")" = BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET
+          test "$(jq -r '.selected_target' "$selection")" = null
+
+      - name: Setup PHP 8.3
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        with:
+          php-version: '8.3'
+          coverage: none
+
+      - name: Validate provenance and ingestion source
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l app/Application/Pos/FinalShiftCloseDurableRuntimeAttestationProvenance.php
+          php -l app/Application/Pos/FinalShiftCloseDurableRuntimeAttestationIngestion.php
+          php -l tests/pos-final-shift-close-durable-runtime-attestation-ingestion.php
+          php tests/pos-final-shift-close-durable-runtime-attestation-ingestion.php
+
+      - name: Prove producer publishes deployment binding into provenance
+        shell: bash
+        run: |
+          set -euo pipefail
+          producer=.github/workflows/final-shift-close-durable-runtime-attestation.yml
+          grep -Fq 'DEPLOYMENT_EVIDENCE_SHA256="${{ steps.deployment.outputs.deployment_evidence_sha256 }}"' "$producer"
+          grep -Fq 'DEPLOYMENT_PLAN_FINGERPRINT="$EXPECTED_DEPLOYMENT_PLAN_FINGERPRINT"' "$producer"
+          grep -Fq 'DEPLOYMENT_AUTHORITY_SHA256="$EXPECTED_DEPLOYMENT_AUTHORITY_SHA256"' "$producer"
+          grep -Fq "'deployment_evidence_sha256' => \$deploymentEvidenceSha256" "$producer"
+          grep -Fq "'deployment_plan_fingerprint' => \$deploymentPlanFingerprint" "$producer"
+          grep -Fq "'deployment_authority_sha256' => \$deploymentAuthoritySha256" "$producer"
+
+      - name: Prove provenance validator requires deployment binding
+        shell: bash
+        run: |
+          set -euo pipefail
+          provenance=apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeAttestationProvenance.php
+          grep -Fq "'deployment_evidence_sha256'," "$provenance"
+          grep -Fq "'deployment_plan_fingerprint'," "$provenance"
+          grep -Fq "'deployment_authority_sha256'," "$provenance"
+          grep -Fq "'deployment_binding_invalid:'" "$provenance"
+          grep -Fq 'private function sha64' "$provenance"
+
+      - name: Prove ingestion carries and fingerprints deployment binding
+        shell: bash
+        run: |
+          set -euo pipefail
+          ingestion=apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeAttestationIngestion.php
+          grep -Fq "'deployment_binding' => [" "$ingestion"
+          grep -Fq "\$deploymentEvidenceSha256," "$ingestion"
+          grep -Fq "\$deploymentPlanFingerprint," "$ingestion"
+          grep -Fq "\$deploymentAuthoritySha256," "$ingestion"
+          test "$(grep -Fc "\$deploymentEvidenceSha256" "$ingestion")" -ge 3
+          test "$(grep -Fc "\$deploymentPlanFingerprint" "$ingestion")" -ge 3
+          test "$(grep -Fc "\$deploymentAuthoritySha256" "$ingestion")" -ge 3
+
+      - name: Validate source contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          producer=ops/final-shift-close/DURABLE_RUNTIME_ATTESTATION_PRODUCER_CONTRACT.json
+          ingestion=ops/final-shift-close/DURABLE_RUNTIME_ATTESTATION_INGESTION_CONTRACT.json
+          execution=ops/final-shift-close/DURABLE_RUNTIME_ATTESTATION_INGESTION_EXECUTION_CONTRACT.json
+          jq -e . "$producer" >/dev/null
+          jq -e . "$ingestion" >/dev/null
+          jq -e . "$execution" >/dev/null
+          test "$(jq '.provenance_binding_fields | length' "$producer")" = 3
+          test "$(jq -r '.qualification_requirements.provenance_carries_deployment_evidence_binding' "$producer")" = true
+          test "$(jq -r '.qualification_requirements.deployment_evidence_binding_required' "$ingestion")" = true
+          test "$(jq -r '.qualification_requirements.ingestion_fingerprint_binds_deployment_evidence' "$ingestion")" = true
+          test "$(jq -r '.qualification_requirements.sprint210_deployment_evidence_provenance_continuity_reused' "$execution")" = true
+          test "$(jq -r '.qualification_requirements.ingestion_output_must_carry_deployment_binding' "$execution")" = true
+
+      - name: Preserve source-only lifecycle boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          ! grep -R -E 'Artisan::call|php artisan migrate|kubectl|rsync|scp |ssh '             apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeAttestationProvenance.php             apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeAttestationIngestion.php
+          test "$(jq -r '.canonical_boundaries.producer_dispatch' ops/final-shift-close/DURABLE_STAGING_DEPLOYMENT_EVIDENCE_BINDING_CONTRACT.json)" = NOT_PERFORMED
+          test "$(jq -r '.selected_target' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" = null
+          ! grep -R -E 'ChatGPT|OpenAI|Copilot|Gemini'             apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeAttestationProvenance.php             apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeAttestationIngestion.php             .github/workflows/final-shift-close-durable-runtime-attestation.yml
+
+      - name: Confirm tracked source cleanliness
+        run: git diff --exit-code
