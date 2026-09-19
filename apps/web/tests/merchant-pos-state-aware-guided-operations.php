@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 // Author by Lab | zefry
 
-require_once __DIR__.'/../app/Application/Pos/PosMerchantOperationsReadinessSnapshot.php';
-
 use App\Application\Pos\PosMerchantOperationsReadinessSnapshot;
 use InvalidArgumentException;
+
+require_once __DIR__.'/../app/Application/Pos/PosMerchantOperationsReadinessSnapshot.php';
 
 $ready = new PosMerchantOperationsReadinessSnapshot(
     PosMerchantOperationsReadinessSnapshot::STATE_CASHIER_READY,
