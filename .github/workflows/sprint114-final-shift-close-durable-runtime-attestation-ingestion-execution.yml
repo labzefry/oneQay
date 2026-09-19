@@ -43,7 +43,7 @@ jobs:
           hash="$(sha256sum /tmp/actual | awk '{print $1}')"
           if [[ "$count" -eq 4 && "$hash" == '96c4d6b2ac2f285eefecc0e009ff27905bd9f836a19ae390521424a43aae03b3' ]]; then
             echo 'Historical Sprint114 exact envelope recognized.'
-          elif [[ "$count" -eq 15 && "$hash" == '05d1621db51ccf3461470b3edd01fb734a992523ba2b3aee23c08d9878d66231' ]]; then
+          elif [[ "$count" -eq 16 && "$hash" == 'bab60c7ccab42be3363ff57bb08f253e2814c3670b61c156c5cd700351849da4' ]]; then
             echo 'Sprint210 exact bounded successor envelope recognized.'
           else
             echo "Unexpected Sprint114/successor envelope: count=$count hash=$hash" >&2
