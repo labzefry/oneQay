@@ -11,7 +11,11 @@ ONEQAY_TECHNICAL_PREVIEW_ENABLED=false
 # bounded deployed Synthetic Technical Preview envelope while keeping Preview disabled:
 # ONEQAY_RUNTIME_CLASS=preview
 # ONEQAY_TECHNICAL_PREVIEW_ENABLED=true
+# ONEQAY_PREVIEW_INSTANCE_MODE=single
+# ONEQAY_PREVIEW_DATA_CLASS=synthetic
+# ONEQAY_PRODUCTION_DATA_ALLOWED=false
 # SESSION_DRIVER=file
+# SESSION_FILES=/private/shared/runtime/sessions
 # SESSION_LIFETIME=60
 # SESSION_ENCRYPT=true
 # SESSION_SECURE_COOKIE=true
