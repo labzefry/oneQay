@@ -2,7 +2,7 @@
   "schema_version": 1,
   "feature": "final-shift-close",
   "contract_state": "MATERIALIZED_SOURCE_ONLY_NOT_DISPATCHED",
-  "purpose": "PRODUCE_TRUSTED_DURABLE_RUNTIME_READINESS_ATTESTATION_EVIDENCE",
+  "purpose": "PRODUCE_TRUSTED_DURABLE_RUNTIME_READINESS_ATTESTATION_EVIDENCE_ONLY_AFTER_EXACT_DEPLOYMENT_EXECUTION_EVIDENCE_QUALIFIES",
   "supersedes_sprint112_producer_state": true,
   "producer_workflow_path": ".github/workflows/final-shift-close-durable-runtime-attestation.yml",
   "producer_repository": "labzefry/oneQay",
@@ -15,17 +15,40 @@
   "evidence_bundle_artifact": "final-shift-close-durable-runtime-attestation",
   "evidence_bundle_retention_days": 30,
   "readiness_contract": "SPRINT110_FINAL_SHIFT_CLOSE_DURABLE_RUNTIME_READINESS",
+  "deployment_evidence_contract": "ops/final-shift-close/DURABLE_STAGING_DEPLOYMENT_EVIDENCE_BINDING_CONTRACT.json",
+  "deployment_evidence_schema": "tools/deployment/durable-staging-deployment-evidence.schema.json",
+  "deployment_evidence_qualifier": "tools/qualify-durable-staging-deployment-evidence.php",
   "ingestion_contract": "SPRINT112_FINAL_SHIFT_CLOSE_DURABLE_RUNTIME_ATTESTATION_INGESTION",
-  "protected_environment_configuration": "REQUIRED_OUT_OF_BAND_NOT_MACHINE_VERIFIED_BY_SOURCE",
+  "protected_environment_configuration": "REQUIRED_OUT_OF_BAND_WITH_SOURCE_VERIFIED_DEPLOYMENT_EVIDENCE",
   "required_protected_environment_secrets": [
     "ONEQAY_DURABLE_RUNTIME_ATTESTATION_URL",
     "ONEQAY_DURABLE_RUNTIME_ATTESTATION_TOKEN",
-    "ONEQAY_DURABLE_RUNTIME_ATTESTATION_PROTECTION_ASSERTION"
+    "ONEQAY_DURABLE_RUNTIME_ATTESTATION_PROTECTION_ASSERTION",
+    "ONEQAY_DURABLE_STAGING_DEPLOYMENT_EVIDENCE_B64",
+    "ONEQAY_DURABLE_STAGING_DEPLOYMENT_EVIDENCE_PROTECTION_ASSERTION"
   ],
   "required_protected_environment_variables": [
     "ONEQAY_DURABLE_RUNTIME_ENVIRONMENT_ID",
-    "ONEQAY_DURABLE_RUNTIME_CLASS"
+    "ONEQAY_DURABLE_RUNTIME_CLASS",
+    "ONEQAY_DURABLE_RUNTIME_RUNNING_SOURCE_COMMIT",
+    "ONEQAY_DURABLE_RUNTIME_RUNNING_ARTIFACT_SHA256",
+    "ONEQAY_DURABLE_STAGING_DEPLOYMENT_PLAN_FINGERPRINT",
+    "ONEQAY_DURABLE_STAGING_DEPLOYMENT_AUTHORITY_SHA256"
   ],
+  "deployment_evidence_contract_requirements": {
+    "protected_secret_transport": "BASE64_JSON",
+    "max_decoded_bytes": 32768,
+    "protection_assertion": "REVIEW_GATED_DEPLOYMENT_EVIDENCE_V1",
+    "evidence_state": "DEPLOYED_VERIFIED_NOT_SELECTED",
+    "exact_environment_binding": true,
+    "exact_runtime_binding": true,
+    "exact_running_source_binding": true,
+    "exact_running_artifact_binding": true,
+    "exact_plan_fingerprint_binding": true,
+    "exact_authority_sha256_binding": true,
+    "all_execution_verifications_required": true,
+    "operational_no_go_must_remain_preserved": true
+  },
   "runtime_endpoint_contract": {
     "transport": "HTTPS_ONLY",
     "authentication": "BEARER_TOKEN_FROM_PROTECTED_ENVIRONMENT_SECRET",
@@ -38,10 +61,13 @@
   },
   "qualification_requirements": {
     "dispatch_source_must_equal_current_canonical_main": true,
+    "deployment_evidence_must_qualify_before_attestation_fetch": true,
     "runtime_class_must_not_be_disallowed_by_sprint110": true,
     "sprint110_readiness_must_qualify": true,
-    "runtime_environment_id_must_match_protected_environment_variable": true,
-    "runtime_class_must_match_protected_environment_variable": true,
+    "runtime_environment_id_must_match_qualified_deployment_evidence": true,
+    "runtime_class_must_match_qualified_deployment_evidence": true,
+    "running_source_commit_must_match_qualified_deployment_evidence": true,
+    "running_artifact_sha256_must_match_qualified_deployment_evidence": true,
     "running_source_commit_must_exist_in_repository": true,
     "running_source_commit_must_be_in_canonical_main_history": true,
     "provenance_must_match_sprint112_contract": true,
@@ -58,6 +84,7 @@
   },
   "canonical_boundaries": {
     "producer_source": "MATERIALIZED_NOT_DISPATCHED",
+    "deployment_evidence_qualification": "SOURCE_READY_NOT_EXECUTED",
     "real_attestation": "NONE",
     "trusted_ingestion_execution": "NOT_IMPLEMENTED",
     "selected_target": "NONE",
