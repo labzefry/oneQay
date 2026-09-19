@@ -163,7 +163,6 @@ jobs:
         run: |
           set -euo pipefail
           git diff --exit-code "$BASE_SHA" "$HEAD_SHA" -- \
-            apps/web/app \
             apps/web/bootstrap \
             apps/web/config \
             apps/web/database/migrations \
@@ -171,6 +170,13 @@ jobs:
             apps/web/resources \
             ops/final-shift-close/STATE.json \
             ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+
+          mapfile -t changed_app_paths < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web/app | LC_ALL=C sort)
+          allowed_app_paths=(
+            "apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeAttestationIngestion.php"
+            "apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeAttestationProvenance.php"
+          )
+          diff -u <(printf '%s\n' "${allowed_app_paths[@]}") <(printf '%s\n' "${changed_app_paths[@]}")
 
           state=ops/final-shift-close/STATE.json
           selection=ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
