@@ -4,11 +4,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     @php
-        $merchantRuntimeAllowed = in_array(
-            strtolower(trim((string) config('oneqay.runtime_class', ''))),
-            ['local', 'test', 'ci', 'staging'],
-            true,
-        );
+        $merchantRuntimeClass = strtolower(trim((string) config('oneqay.runtime_class', '')));
+        $merchantRuntimeAllowed = in_array($merchantRuntimeClass, ['local', 'test', 'ci'], true)
+            || ($merchantRuntimeClass === 'staging'
+                && (bool) config('oneqay.durable_staging_runtime.enabled', false));
         $merchantGrant = config('merchant_context_bootstrap.grant', []);
         $merchantLoginContext = [];
 
