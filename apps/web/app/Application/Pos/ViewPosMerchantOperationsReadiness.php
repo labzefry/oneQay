@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace App\Application\Pos;
 
-use App\Application\Authorization\DurableAuthorizationViolation;
-use App\Application\Pos\PosAccessViolation;
-
 // Author by Lab | zefry
 final readonly class ViewPosMerchantOperationsReadiness
 {
