@@ -88,6 +88,8 @@ try {
             => $appRoot.DIRECTORY_SEPARATOR.'app'.DIRECTORY_SEPARATOR.'Infrastructure'.DIRECTORY_SEPARATOR.'SystemUpdate'.DIRECTORY_SEPARATOR.'Activation'.DIRECTORY_SEPARATOR.'FilesystemSystemUpdateDeploymentLockManager.php',
         __DIR__.'/../config/technical-preview.php'
             => $appRoot.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'technical-preview.php',
+        __DIR__.'/../config/session.php'
+            => $appRoot.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'session.php',
     ];
     foreach ($fixtureCopies as $sourcePath => $targetPath) {
         if (! copy($sourcePath, $targetPath)) {
