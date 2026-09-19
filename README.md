@@ -8,29 +8,30 @@ Enterprise-oriented multi-tenant business-management platform built with Modular
 
 ## Current canonical status
 
-Latest completed engineering sprint: **Sprint198 — Guarded POS Business Workspace Delivery Integration**.
+Latest completed engineering sprint: **Sprint199 — Merchant Account Security Self-Service Workspace**.
 
-- Canonical engineering commit: `da8b0a0579e7788b22a1ee1cd78130ff29cdd99a`
-- Engineering PR: #827
-- Final engineering head: `4c6b5ba627bf8bf0d28b4360d10c8f249b66b73f`
-- Exact-head qualification: 100/100 successful
-- Dedicated Sprint198 run `35435832824`: SUCCESS
-- M7.5 DB run `35435832860`: SUCCESS
-- M7.4A run `35435832619`: SUCCESS
-- Engineering envelope SHA-256: `4e04f75c0df2b340b0a66ad5d2fa545d364a088740e0af92861909c4848d0a45`
-- Reconciliation envelope SHA-256: `c0cffa516ac414b5e780c572c74d99e6cf06dd2e8c691553e28c485116e74682`
+- Canonical engineering commit: `f2692018b261a723b9b360efe650969926adb2d2`
+- Engineering PR: #829
+- Final engineering head: `b7be9bc6c268aa6a332c0e709e417c6384d08800`
+- Exact-head qualification: 85/85 successful
+- Dedicated Sprint199 run `35438535934`: SUCCESS
+- M7.5 release run `35438535597`: SUCCESS
+- M7.1 run `35438535440`: SUCCESS
+- Governance run `35438535437`: SUCCESS
+- Engineering envelope SHA-256: `2aba38a7f80dcc6178ce39f865789b4e20b26f2d3ebb96b1d307af0c628e77e4`
+- Reconciliation envelope SHA-256: `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`
 
 See `PROJECT_MANIFEST.md` for canonical project state.
 
-## Sprint198 capability
+## Sprint199 capability
 
-oneQay now integrates its already-qualified POS business workspaces into the normal Laravel application bootstrap through a guarded aggregate provider. Eligible workspaces become discoverable through application delivery only when their existing runtime, persistence, session, feature, authorization, and prerequisite contracts are satisfied.
+oneQay now exposes existing first-party account-security authority as a coherent merchant self-service experience. The POS Operations Hub provides password change, recovery-code rotation, authenticator recovery-code rotation, and sign-out, while the Foundation sign-in surface provides password recovery and lost-authenticator replacement.
 
-Close-dependent Shift History and Cash Variance Reconciliation delivery remains blocked while canonical Final Shift Close is `INACTIVE`.
+The implementation reuses existing application services and routes, keeps capability discovery server-derived, refreshes CSRF correctly after recovery-session regeneration, and does not persist recovery material in browser storage.
 
 ## Product progression
 
-Governed release → installation/readiness lifecycle → guarded Technical Preview activation capability → integrated guarded POS business workspace delivery.
+Governed release → installation/readiness lifecycle → guarded Technical Preview activation capability → integrated POS business workspace delivery → merchant account-security self-service.
 
 ## Operational boundary
 
@@ -38,6 +39,6 @@ Migration #27 remains `NOT_EXECUTED`; permission provisioning `NONE`; Final Shif
 
 ## Next
 
-Sprint199 starts from fully reconciled Sprint198 and selects the next material P0/P1 business-completion blocker. Prefer an end-to-end merchant-facing capability over another thin lifecycle-only step, while preserving tenant isolation, deny-by-default behavior, and all operational NO-GO boundaries.
+Sprint200 starts from fully reconciled Sprint199 and selects the next material P0/P1 end-to-end business-completion blocker. Prefer a coherent merchant-facing outcome over another thin lifecycle-only step while preserving tenant isolation, deny-by-default behavior, deterministic qualification, and all operational NO-GO boundaries.
 
 Author by Lab | zefry
