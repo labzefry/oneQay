@@ -1,37 +1,35 @@
 # oneQay Roadmap
 
-**Roadmap checkpoint:** Sprint186 closed canonically
-**Canonical engineering baseline:** `7cb9e59ede2908f44f4f0d7b2d1c855d885bf3ae`
+**Roadmap checkpoint:** Sprint187 closed canonically
+**Canonical engineering baseline:** `a327883e588e671491bb2a0cdfc03568e904dd8f`
 **Current state authority:** `PROJECT_MANIFEST.md`
 
-## Completed Sprint186 horizon
+## Completed Sprint187 horizon
 
-Sprint186 closed `GOVERNED_ACTIVATION_READINESS_HANDOFF`.
+Sprint187 closed `GOVERNED_RUNTIME_CONFIGURATION_PROMOTION_REQUEST`.
 
-The governed installation journey now advances beyond verified pending database configuration into a private tamper-evident handoff suitable for a future separately authorized activation step.
+The installation journey now advances beyond a sealed exact-release handoff into a durable, reviewable request for future runtime configuration promotion.
 
-The handoff binds the exact governed release ID, pending environment SHA-256 and byte length, and safe database compatibility evidence. Any pending-file tampering or release mismatch invalidates readiness.
+The request is bound to the exact release, pending-environment digest, and handoff digest. It remains `PENDING_APPROVAL` and contains no authority to promote, migrate, deploy, or activate product features.
 
-The operator UI shows the handoff as `SEALED / NOT AUTHORIZED`; readiness never implies runtime activation.
+Engineering PR #804 qualified at 75/75 on final head `ff7f6f58c487955ec43dcdaf3b01cdf7cdc02c28` and squash merged at `a327883e588e671491bb2a0cdfc03568e904dd8f`.
 
-Engineering PR #802 qualified at 74/74 on final head `3c6453cd54ac0bc907d85ec01d7410d2c48e19fb` and squash merged at `7cb9e59ede2908f44f4f0d7b2d1c855d885bf3ae`.
-
-Canonical main-push M7.5 run `35387074508` completed successfully. Final engineering envelope: 10 paths, SHA-256 `6a948cea5e7d88f95abec930a0681f851df9d04a1eaaa835f4aac3de1e0c8102`.
+Canonical main-push M7.5 run `35388478453` completed successfully. Final engineering envelope: 10 paths, SHA-256 `e022e387816a78f400b0780ba1eefc6c1d8880ec51fb7ce31dd93f72f5726f8f`.
 
 Canonical reconciliation envelope: 8 paths, SHA-256 `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`.
 
-## Product progression through Sprint186
+## Product progression through Sprint187
 
-The product now has a governed path from deterministic release generation through installation readiness, secure pre-boot setup, live database compatibility proof, verified pending configuration, and tamper-evident exact-release activation handoff.
+oneQay now has a governed path from release generation through readiness, secure setup, database compatibility, verified pending configuration, exact-release handoff, and a separately reviewable promotion request.
 
 ## Operational boundary
 
-Machine-readable operational state under `ops/final-shift-close/` remains authoritative. Selected durable target remains `null`; migration #27 remains `NOT_EXECUTED`; permission provisioning remains `NONE`; producer dispatch remains not performed; runtime allowlist remains Local/Test/CI; Final Shift Close remains inactive; deployment/Technical Preview/Production remain unauthorized; updater remains inactive.
+Machine-readable operational state remains authoritative. Selected durable target stays `null`; migration #27 stays `NOT_EXECUTED`; permission provisioning remains `NONE`; feature activation remains `INACTIVE`; deployment/Technical Preview/Production remain unauthorized; updater remains inactive.
 
-## Sprint187 selection rule
+## Sprint188 selection rule
 
-Begin Sprint187 bounded discovery from fully reconciled Sprint186. Select the smallest material P0/P1 blocker after sealed handoff that most directly advances toward a usable governed installation/onboarding experience.
+Begin Sprint188 bounded discovery from fully reconciled Sprint187. Select the smallest material P0/P1 blocker after the promotion request that most directly advances toward a usable governed installation/onboarding experience.
 
-No active environment promotion, migration execution, real permission provisioning, updater activation, deployment, Technical Preview, Production, durable-target selection, or producer dispatch is pre-authorized.
+No promotion authority, active environment promotion, migration execution, real permission provisioning, updater activation, deployment, Technical Preview, Production, durable-target selection, or producer dispatch is pre-authorized.
 
 Author by Lab | zefry
