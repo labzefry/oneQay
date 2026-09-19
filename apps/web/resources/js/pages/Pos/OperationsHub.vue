@@ -17,6 +17,15 @@ type SecurityCapabilities = {
     can_logout: boolean;
 };
 
+type MerchantOperationsReadiness = {
+    state: 'guidance_unavailable' | 'setup_required' | 'shift_required' | 'cashier_ready' | 'review_available' | 'routes_only';
+    recommended_key: string | null;
+    catalog_item_count: number | null;
+    sellable_item_count: number | null;
+    shift_active: boolean | null;
+    opening_cash_ready: boolean | null;
+};
+
 const props = defineProps<{
     scope: {
         tenant_id: string;
@@ -25,6 +34,7 @@ const props = defineProps<{
         device_id: string;
     };
     destinations: Destination[];
+    readiness: MerchantOperationsReadiness;
     security: SecurityCapabilities;
     correlation_id: string;
 }>();
@@ -54,16 +64,45 @@ const categoryMeta: Record<string, { label: string; description: string; order: 
     CONTROL: { label: 'Corrections & controls', description: 'Use guarded correction and reconciliation workspaces only when delivered.', order: 60 },
 };
 
-const primaryPriority = ['catalog_inventory', 'shift_start', 'cashier', 'sales_summary'];
-
 const primaryDestination = computed<Destination | null>(() => {
-    for (const key of primaryPriority) {
-        const destination = props.destinations.find((candidate) => candidate.key === key);
-        if (destination) return destination;
-    }
+    if (props.readiness.recommended_key === null) return null;
 
-    return props.destinations[0] ?? null;
+    return props.destinations.find(
+        (candidate) => candidate.key === props.readiness.recommended_key,
+    ) ?? null;
 });
+
+const readinessLabel = computed(() => {
+    const labels: Record<MerchantOperationsReadiness['state'], string> = {
+        guidance_unavailable: 'Guidance unavailable',
+        setup_required: 'Setup required',
+        shift_required: 'Shift preparation required',
+        cashier_ready: 'Ready to sell',
+        review_available: 'Review available',
+        routes_only: 'Authorized routes available',
+    };
+
+    return labels[props.readiness.state];
+});
+
+const readinessMessage = computed(() => {
+    const messages: Record<MerchantOperationsReadiness['state'], string> = {
+        guidance_unavailable: 'Business-state guidance could not be verified safely. Use the authorized workspace list directly.',
+        setup_required: 'Catalog or sellable stock still needs preparation before the merchant can proceed to daily selling.',
+        shift_required: 'The exact device shift or opening-cash evidence is not ready for cashier operations yet.',
+        cashier_ready: 'Catalog, sellable stock, active shift, and opening-cash readiness are verified for this context.',
+        review_available: 'No guarded mutation step is recommended. Authorized reporting remains available.',
+        routes_only: 'Authorized destinations are available, but the current state does not support a guarded next-step recommendation.',
+    };
+
+    return messages[props.readiness.state];
+});
+
+function readinessValue(value: number | boolean | null, booleanTrue: string, booleanFalse: string): string {
+    if (value === null) return 'Not verified';
+    if (typeof value === 'number') return String(value);
+    return value ? booleanTrue : booleanFalse;
+}
 
 const groupedDestinations = computed(() => {
     const groups = new Map<string, Destination[]>();
@@ -308,17 +347,39 @@ async function copyCodes(codes: string[]) {
             <div><span>Device</span><strong>{{ props.scope.device_id }}</strong></div>
         </section>
 
+        <section class="readiness-panel" aria-label="Current merchant operating readiness">
+            <div class="readiness-heading">
+                <div>
+                    <p class="eyebrow">Operating readiness</p>
+                    <h2>{{ readinessLabel }}</h2>
+                    <p>{{ readinessMessage }}</p>
+                </div>
+                <span class="readiness-state">{{ props.readiness.state.replaceAll('_', ' ') }}</span>
+            </div>
+            <div class="readiness-grid">
+                <div><span>Catalog items</span><strong>{{ readinessValue(props.readiness.catalog_item_count, '', '') }}</strong></div>
+                <div><span>Sellable items</span><strong>{{ readinessValue(props.readiness.sellable_item_count, '', '') }}</strong></div>
+                <div><span>Active shift</span><strong>{{ readinessValue(props.readiness.shift_active, 'Ready', 'Not active') }}</strong></div>
+                <div><span>Opening cash</span><strong>{{ readinessValue(props.readiness.opening_cash_ready, 'Ready', 'Not ready') }}</strong></div>
+            </div>
+        </section>
+
         <section v-if="primaryDestination" class="next-action" aria-label="Suggested starting workspace">
             <div>
                 <p class="eyebrow">Guided start</p>
                 <h2>{{ primaryDestination.title }}</h2>
                 <p>{{ primaryDestination.description }}</p>
                 <small>
-                    Suggested from currently delivered routes only. Completion state and mutation eligibility
-                    are verified inside the destination workspace.
+                    Suggested from verified POS state and the currently delivered route set. The destination
+                    still revalidates authorization, prerequisites, persistence, and mutation eligibility.
                 </small>
             </div>
             <a class="primary-action" :href="primaryDestination.url">Open suggested workspace <span aria-hidden="true">→</span></a>
+        </section>
+
+        <section v-else class="guidance-fallback" aria-label="No state-aware recommendation">
+            <strong>No guarded next action is being recommended.</strong>
+            <p>Use the authorized workspace groups below. oneQay will not infer a business mutation step when readiness evidence is incomplete or unavailable.</p>
         </section>
 
         <section v-if="securityOpen" class="security-panel" aria-label="Account and security">
@@ -416,8 +477,9 @@ async function copyCodes(codes: string[]) {
         <aside class="safety-note">
             <strong>Fail-closed navigation</strong>
             <p>
-                This home does not grant permissions or activate capabilities. Guidance ranks delivered routes only;
-                each destination remains responsible for authorization, prerequisites, persistence, and mutation eligibility.
+                This home does not grant permissions or activate capabilities. State-aware guidance is read-only,
+                recommends only an already delivered route, and each destination remains responsible for authorization,
+                prerequisites, persistence, and mutation eligibility.
             </p>
         </aside>
 
@@ -433,16 +495,17 @@ button{border:0;border-radius:11px;padding:10px 14px;font:inherit;font-size:.76r
 h1 { margin:5px 0 9px; font-size:clamp(2.1rem,4vw,3.2rem); letter-spacing:-.045em; }
 .subtitle { max-width:720px; margin:0; color:#667085; line-height:1.65; }
 .eyebrow { margin:0; color:#526175; font-size:.74rem; font-weight:800; text-transform:uppercase; letter-spacing:.12em; }
-.scope-card,.context-strip,.workspace-panel,.safety-note,.security-panel { background:#fff; border:1px solid #e4e8ef; border-radius:18px; box-shadow:0 8px 24px rgba(16,24,40,.04); }
+.scope-card,.context-strip,.workspace-panel,.safety-note,.security-panel,.readiness-panel,.guidance-fallback { background:#fff; border:1px solid #e4e8ef; border-radius:18px; box-shadow:0 8px 24px rgba(16,24,40,.04); }
 .scope-card { padding:17px 20px; min-width:260px; }.scope-card span,.scope-card small{display:block;color:#667085;font-size:.76rem}.scope-card strong{display:block;margin:5px 0;font-size:1.05rem;word-break:break-word}
 .command-strip{max-width:1152px;margin:0 auto 20px;padding:16px 18px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) auto;gap:12px;align-items:stretch;background:#fff;border:1px solid #e4e8ef;border-radius:18px;box-shadow:0 8px 24px rgba(16,24,40,.04)}.command-metric{padding:10px 12px;border-right:1px solid #eef2f6}.command-metric span,.command-metric small{display:block;color:#667085;font-size:.68rem}.command-metric span{text-transform:uppercase;letter-spacing:.08em;font-weight:800}.command-metric strong{display:block;margin:5px 0 3px;font-size:1.05rem}.context-toggle{align-self:center;background:#f2f4f7;color:#344054;white-space:nowrap}
 .context-strip { max-width:1152px; margin:0 auto 20px; padding:16px 24px; display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:18px; background:#fff; border:1px solid #e4e8ef; border-radius:18px; box-shadow:0 8px 24px rgba(16,24,40,.04); }.context-strip span{display:block;color:#98a2b3;font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;font-weight:700}.context-strip strong{display:block;margin-top:5px;font-size:.82rem;word-break:break-all}
+.readiness-panel{max-width:1152px;margin:0 auto 20px;padding:22px 24px}.readiness-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:16px}.readiness-heading h2{margin:4px 0 6px}.readiness-heading p{margin:0;color:#667085;max-width:760px;font-size:.82rem;line-height:1.55}.readiness-state{padding:7px 10px;border-radius:999px;background:#eef2f6;color:#475467;font-size:.68rem;font-weight:850;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}.readiness-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.readiness-grid div{padding:13px 14px;border:1px solid #eef2f6;border-radius:12px;background:#fbfcfd}.readiness-grid span{display:block;color:#98a2b3;font-size:.67rem;text-transform:uppercase;letter-spacing:.07em;font-weight:800}.readiness-grid strong{display:block;margin-top:6px;font-size:.92rem}.guidance-fallback{max-width:1152px;margin:0 auto 20px;padding:18px 22px}.guidance-fallback strong{display:block;font-size:.84rem}.guidance-fallback p{margin:5px 0 0;color:#667085;font-size:.79rem;line-height:1.55}
 .next-action{max-width:1152px;margin:0 auto 20px;padding:24px 26px;display:flex;align-items:center;justify-content:space-between;gap:28px;background:linear-gradient(135deg,#172033,#27364f);color:#fff;border-radius:18px;box-shadow:0 16px 34px rgba(16,24,40,.14)}.next-action h2{font-size:1.35rem;margin:5px 0 7px}.next-action p{margin:0 0 8px;color:#d0d5dd;line-height:1.55;max-width:720px}.next-action small{display:block;color:#98a2b3;max-width:760px;line-height:1.45}.next-action .eyebrow{color:#b8c5d8}.primary-action{display:inline-flex;align-items:center;gap:12px;flex:0 0 auto;text-decoration:none;background:#fff;color:#172033;border-radius:12px;padding:12px 16px;font-size:.78rem;font-weight:900}
 .security-panel{max-width:1152px;margin:0 auto 20px;padding:24px}.security-heading{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;margin-bottom:18px}.security-heading h2{margin:4px 0 5px}.security-heading p{margin:0;color:#667085;max-width:720px;line-height:1.55;font-size:.82rem}.secure-badge{background:#ecfdf3;color:#067647;border:1px solid #abefc6;border-radius:999px;padding:7px 10px;font-size:.7rem;font-weight:850}.security-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.security-card{border:1px solid #e4e8ef;border-radius:15px;padding:18px;background:#fbfcfd;display:grid;gap:11px}.security-card h3{margin:0}.security-card p{margin:0 0 3px;color:#667085;font-size:.79rem;line-height:1.5}.security-kicker{font-size:.65rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:#667085}.security-card label{display:grid;gap:5px;font-size:.72rem;font-weight:750;color:#475467}.security-card input{border:1px solid #d0d5dd;border-radius:9px;padding:9px 10px;font:inherit}.security-card button:not(.secondary){background:#172033;color:#fff}.codes{display:grid;gap:6px;background:#f2f4f7;border-radius:10px;padding:10px}.codes code{font-size:.72rem;overflow-wrap:anywhere}.notice,.error{margin:14px 0 0;border-radius:10px;padding:10px 12px;font-size:.78rem}.notice{background:#ecfdf3;color:#067647}.error{background:#fff1f0;color:#b42318}
 .workspace-panel { max-width:1152px; margin:0 auto 20px; padding:26px; }.panel-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px}h2{margin:4px 0 0;font-size:1.25rem}.count{padding:7px 11px;border-radius:999px;background:#eef2f6;font-size:.74rem;font-weight:800}
 .workspace-groups{display:grid;gap:24px}.workspace-group{display:grid;gap:12px}.group-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;padding:0 2px}.group-heading h3{margin:3px 0 4px;font-size:1rem}.group-heading p{margin:0;color:#667085;font-size:.78rem;line-height:1.45}.group-count{min-width:30px;height:30px;display:grid;place-items:center;border-radius:999px;background:#f2f4f7;color:#475467;font-size:.72rem;font-weight:900}
 .workspace-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; }.workspace-card{display:flex;min-height:170px;flex-direction:column;text-decoration:none;color:inherit;border:1px solid #e4e8ef;border-radius:15px;padding:19px;background:#fbfcfd;transition:transform .15s ease,box-shadow .15s ease,border-color .15s ease}.workspace-card:hover,.workspace-card:focus-visible{transform:translateY(-2px);border-color:#c8d1de;box-shadow:0 12px 28px rgba(16,24,40,.08);outline:none}.card-topline{display:flex;justify-content:space-between;align-items:center}.category{font-size:.67rem;font-weight:900;letter-spacing:.11em;color:#667085}.arrow{font-size:1.25rem}.workspace-card h3{margin:20px 0 7px;font-size:1.05rem}.workspace-card p{margin:0;color:#667085;font-size:.83rem;line-height:1.55;flex:1}.open-label{margin-top:18px;font-size:.74rem;font-weight:800}
 .safety-note { max-width:1152px; margin:0 auto; padding:18px 22px; display:grid; grid-template-columns:190px 1fr; gap:18px; align-items:start }.safety-note strong{font-size:.84rem}.safety-note p{margin:0;color:#667085;font-size:.8rem;line-height:1.55}footer{max-width:1200px;margin:14px auto 0;color:#98a2b3;font-size:.72rem}.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
-@media (max-width:980px){.command-strip{grid-template-columns:repeat(2,minmax(0,1fr))}.command-metric{border-right:0}.security-grid{grid-template-columns:1fr}.workspace-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.context-strip{grid-template-columns:repeat(2,minmax(0,1fr))}.next-action{align-items:flex-start;flex-direction:column}.primary-action{width:100%;justify-content:space-between;box-sizing:border-box}}
-@media (max-width:640px){.hub-shell{padding:20px 14px}.hero{align-items:stretch;flex-direction:column}.hero-actions{grid-template-columns:1fr 1fr}.scope-card{min-width:0}.command-strip,.context-strip,.workspace-grid{grid-template-columns:1fr}.context-toggle{width:100%}.workspace-panel,.security-panel,.next-action{padding:18px}.panel-heading,.security-heading,.group-heading{align-items:flex-start;flex-direction:column}.safety-note{grid-template-columns:1fr}}
+@media (max-width:980px){.command-strip{grid-template-columns:repeat(2,minmax(0,1fr))}.command-metric{border-right:0}.readiness-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.security-grid{grid-template-columns:1fr}.workspace-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.context-strip{grid-template-columns:repeat(2,minmax(0,1fr))}.next-action{align-items:flex-start;flex-direction:column}.primary-action{width:100%;justify-content:space-between;box-sizing:border-box}}
+@media (max-width:640px){.hub-shell{padding:20px 14px}.hero{align-items:stretch;flex-direction:column}.hero-actions{grid-template-columns:1fr 1fr}.scope-card{min-width:0}.command-strip,.context-strip,.readiness-grid,.workspace-grid{grid-template-columns:1fr}.context-toggle{width:100%}.workspace-panel,.security-panel,.next-action,.readiness-panel{padding:18px}.panel-heading,.security-heading,.readiness-heading,.group-heading{align-items:flex-start;flex-direction:column}.safety-note{grid-template-columns:1fr}}
 </style>

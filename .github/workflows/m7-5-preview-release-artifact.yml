@@ -1,3 +1,4 @@
+# Sprint201 state-aware guided merchant operations compatibility anchor — Lab | zefry
 # Sprint200 guided merchant operations home compatibility anchor — Lab | zefry
 # Sprint57 immutable sale-to-shift binding compatibility predecessor — Lab | zefry
 # Sprint54 bounded 12-workflow source-preservation correction — Lab | zefry
@@ -492,6 +493,31 @@ jobs:
               done
               sprint51_jrn008_preview_fixture=true
               echo 'Exact Sprint200 guided-home envelope recognized for historical M7.5 preservation.'
+            fi
+            if [[ "${{ github.head_ref }}" == 'sprint201-merchant-pos-state-aware-guided-operations' && "$count" -eq 12 && "$fingerprint" == '42c4cdd533a99adf2d0d5ba379e1e90575f0bd081ec08187107e9f7a0a03d766' ]]; then
+              for expected in \
+                '.github/workflows/m7-5-preview-release-artifact.yml' \
+                '.github/workflows/sprint201-merchant-pos-state-aware-guided-operations-regression.yml' \
+                '.github/workflows/sprint32-authentication-recovery-proof-regression.yml' \
+                '.github/workflows/sprint33-recovery-bound-password-reset-regression.yml' \
+                '.github/workflows/sprint34-authenticated-password-change-regression.yml' \
+                'apps/web/app/Application/Pos/PosMerchantOperationsReadinessSnapshot.php' \
+                'apps/web/app/Application/Pos/ViewPosMerchantOperationsReadiness.php' \
+                'apps/web/app/Delivery/Http/Pos/PosOperationsHubController.php' \
+                'apps/web/app/Providers/PosOperationsHubServiceProvider.php' \
+                'apps/web/resources/js/pages/Pos/OperationsHub.vue' \
+                'apps/web/tests/merchant-pos-guided-operations-home.php' \
+                'apps/web/tests/merchant-pos-state-aware-guided-operations.php'
+              do
+                grep -Fxq "$expected" /tmp/m75-nine-paths
+              done
+              for migration in database/migrations/0000_00_00_0000{17..27}_*.php; do
+                if [[ -f "$migration" ]]; then
+                  historical_migrations+=("$migration")
+                fi
+              done
+              sprint51_jrn008_preview_fixture=true
+              echo 'Exact Sprint201 state-aware guided operations envelope recognized for historical M7.5 preservation.'
             fi
             if [[ "${{ github.head_ref }}" == 'sprint198-pos-business-workspace-delivery-integration' && "$count" -eq 25 && "$fingerprint" == '4e04f75c0df2b340b0a66ad5d2fa545d364a088740e0af92861909c4848d0a45' ]]; then
               for expected in \

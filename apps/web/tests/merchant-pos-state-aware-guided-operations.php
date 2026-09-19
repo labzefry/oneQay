@@ -1,0 +1,133 @@
+<?php
+
+declare(strict_types=1);
+
+// Author by Lab | zefry
+
+use App\Application\Pos\PosMerchantOperationsReadinessSnapshot;
+require_once __DIR__.'/../app/Application/Pos/PosMerchantOperationsReadinessSnapshot.php';
+
+$ready = new PosMerchantOperationsReadinessSnapshot(
+    PosMerchantOperationsReadinessSnapshot::STATE_CASHIER_READY,
+    'cashier',
+    12,
+    8,
+    true,
+    true,
+);
+
+if ($ready->state() !== 'cashier_ready'
+    || $ready->recommendedKey() !== 'cashier'
+    || $ready->catalogItemCount() !== 12
+    || $ready->sellableItemCount() !== 8
+    || $ready->shiftActive() !== true
+    || $ready->openingCashReady() !== true) {
+    fwrite(STDERR, "Sprint201 readiness snapshot did not preserve valid state.\n");
+    exit(1);
+}
+
+try {
+    new PosMerchantOperationsReadinessSnapshot(
+        PosMerchantOperationsReadinessSnapshot::STATE_GUIDANCE_UNAVAILABLE,
+        'cashier',
+        null,
+        null,
+        null,
+        null,
+    );
+    fwrite(STDERR, "Unavailable guidance accepted a recommendation.\n");
+    exit(1);
+} catch (\InvalidArgumentException) {
+}
+
+$service = file_get_contents(__DIR__.'/../app/Application/Pos/ViewPosMerchantOperationsReadiness.php');
+$controller = file_get_contents(__DIR__.'/../app/Delivery/Http/Pos/PosOperationsHubController.php');
+$provider = file_get_contents(__DIR__.'/../app/Providers/PosOperationsHubServiceProvider.php');
+$vue = file_get_contents(__DIR__.'/../resources/js/pages/Pos/OperationsHub.vue');
+
+foreach ([
+    'service' => $service,
+    'controller' => $controller,
+    'provider' => $provider,
+    'vue' => $vue,
+] as $label => $source) {
+    if (! is_string($source) || $source === '') {
+        fwrite(STDERR, "Unable to load Sprint201 {$label} source.\n");
+        exit(1);
+    }
+}
+
+$serviceRequired = [
+    "isset(\$delivered['catalog_inventory'])",
+    "isset(\$delivered['shift_start'])",
+    "isset(\$delivered['cashier'])",
+    "isset(\$delivered['sales_summary'])",
+    'catch (PosTransactionViolation)',
+    'STATE_GUIDANCE_UNAVAILABLE',
+    'STATE_SETUP_REQUIRED',
+    'STATE_SHIFT_REQUIRED',
+    'STATE_CASHIER_READY',
+    'STATE_REVIEW_AVAILABLE',
+];
+foreach ($serviceRequired as $needle) {
+    if (! str_contains($service, $needle)) {
+        fwrite(STDERR, "Missing Sprint201 readiness service contract: {$needle}\n");
+        exit(1);
+    }
+}
+
+$controllerRequired = [
+    'ViewPosMerchantOperationsReadiness',
+    "'readiness' => [",
+    "'recommended_key' => \$readiness->recommendedKey()",
+    "static fn (array \$destination): string => \$destination['key']",
+];
+foreach ($controllerRequired as $needle) {
+    if (! str_contains($controller, $needle)) {
+        fwrite(STDERR, "Missing Sprint201 controller contract: {$needle}\n");
+        exit(1);
+    }
+}
+
+$providerRequired = [
+    'ViewPosMerchantOperationsReadiness::class',
+    'ViewPosCatalogInventorySetupWorkspace::class',
+    'ViewPosShiftStartWorkspace::class',
+    'ViewPosCashierWorkspace::class',
+];
+foreach ($providerRequired as $needle) {
+    if (! str_contains($provider, $needle)) {
+        fwrite(STDERR, "Missing Sprint201 provider contract: {$needle}\n");
+        exit(1);
+    }
+}
+
+$vueRequired = [
+    'type MerchantOperationsReadiness',
+    'props.readiness.recommended_key === null',
+    'candidate.key === props.readiness.recommended_key',
+    'Operating readiness',
+    'No guarded next action is being recommended.',
+    'State-aware guidance is read-only',
+];
+foreach ($vueRequired as $needle) {
+    if (! str_contains($vue, $needle)) {
+        fwrite(STDERR, "Missing Sprint201 guided UX contract: {$needle}\n");
+        exit(1);
+    }
+}
+
+foreach (['localStorage', 'sessionStorage', 'permission = true', 'can_mutate'] as $needle) {
+    if (str_contains($service.$controller.$vue, $needle)) {
+        fwrite(STDERR, "Forbidden Sprint201 source detected: {$needle}\n");
+        exit(1);
+    }
+}
+
+if (str_contains($vue, "props.destinations[0] ?? null")
+    || str_contains($vue, "primaryPriority")) {
+    fwrite(STDERR, "Sprint201 retained route-order fallback guidance instead of state-aware recommendation.\n");
+    exit(1);
+}
+
+echo "Sprint201 merchant POS state-aware guided operations regression passed.\n";
