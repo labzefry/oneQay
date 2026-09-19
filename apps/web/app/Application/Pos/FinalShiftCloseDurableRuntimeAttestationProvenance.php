@@ -37,6 +37,9 @@ final class FinalShiftCloseDurableRuntimeAttestationProvenance
         'runtime_class',
         'exact_running_source_commit',
         'exact_running_artifact_sha256',
+        'deployment_evidence_sha256',
+        'deployment_plan_fingerprint',
+        'deployment_authority_sha256',
         'evidence_status_context',
         'evidence_status_state',
         'secrets_embedded',
@@ -110,6 +113,16 @@ final class FinalShiftCloseDurableRuntimeAttestationProvenance
             }
         }
 
+        foreach ([
+            'deployment_evidence_sha256',
+            'deployment_plan_fingerprint',
+            'deployment_authority_sha256',
+        ] as $field) {
+            if (! $this->sha64($provenance[$field] ?? null)) {
+                $violations[] = 'deployment_binding_invalid:'.$field;
+            }
+        }
+
         if (($provenance['evidence_status_context'] ?? null) !== self::EVIDENCE_STATUS_CONTEXT) {
             $violations[] = 'evidence_status_context_invalid';
         }
@@ -165,5 +178,12 @@ final class FinalShiftCloseDurableRuntimeAttestationProvenance
         return is_string($value)
             && preg_match('/\A[0-9a-f]{40}\z/', $value) === 1
             && $value !== str_repeat('0', 40);
+    }
+
+    private function sha64(mixed $value): bool
+    {
+        return is_string($value)
+            && preg_match('/\A[0-9a-f]{64}\z/', $value) === 1
+            && $value !== str_repeat('0', 64);
     }
 }
