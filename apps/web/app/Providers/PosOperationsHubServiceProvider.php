@@ -6,7 +6,11 @@ namespace App\Providers;
 
 use App\Application\Authorization\DurableScopedAuthorizationPolicy;
 use App\Application\Organization\OrganizationalContextStore;
+use App\Application\Pos\ViewPosCashierWorkspace;
+use App\Application\Pos\ViewPosCatalogInventorySetupWorkspace;
+use App\Application\Pos\ViewPosMerchantOperationsReadiness;
 use App\Application\Pos\ViewPosOperationsHub;
+use App\Application\Pos\ViewPosShiftStartWorkspace;
 use App\Delivery\Http\Middleware\RequirePosSessionContextMiddleware;
 use App\Delivery\Http\Pos\PosOperationsHubController;
 use Illuminate\Support\Facades\Route;
@@ -47,6 +51,12 @@ final class PosOperationsHubServiceProvider extends ServiceProvider
         $this->app->scoped(ViewPosOperationsHub::class, fn ($app): ViewPosOperationsHub => new ViewPosOperationsHub(
             $app->make(OrganizationalContextStore::class),
             $app->make(DurableScopedAuthorizationPolicy::class),
+        ));
+
+        $this->app->scoped(ViewPosMerchantOperationsReadiness::class, fn ($app): ViewPosMerchantOperationsReadiness => new ViewPosMerchantOperationsReadiness(
+            $app->make(ViewPosCatalogInventorySetupWorkspace::class),
+            $app->make(ViewPosShiftStartWorkspace::class),
+            $app->make(ViewPosCashierWorkspace::class),
         ));
     }
 
