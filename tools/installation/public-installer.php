@@ -26,6 +26,7 @@ $installerSources = [
     $appRoot.'/app/Infrastructure/Installation/PrebootRuntimeConfigurationPromotionQualification.php',
     $appRoot.'/app/Infrastructure/Installation/PrebootRuntimeConfigurationPromotionReadiness.php',
     $appRoot.'/app/Infrastructure/Installation/PrebootRuntimeConfigurationPromotionExecution.php',
+    $appRoot.'/app/Infrastructure/Installation/PrebootRuntimeConfigurationPostPromotionVerification.php',
     $appRoot.'/app/Infrastructure/Installation/PrebootInstallationConfiguration.php',
 ];
 $sharedRoot = $accountHome.'/oneqay-preview/shared';
@@ -45,6 +46,7 @@ $installer = new \App\Infrastructure\Installation\PrebootInstallationConfigurati
 $qualification = new \App\Infrastructure\Installation\PrebootRuntimeConfigurationPromotionQualification($sharedRoot, $releaseId, $nowUnix);
 $readiness = new \App\Infrastructure\Installation\PrebootRuntimeConfigurationPromotionReadiness($sharedRoot, $releaseId, $nowUnix);
 $execution = new \App\Infrastructure\Installation\PrebootRuntimeConfigurationPromotionExecution($sharedRoot, $releaseId, $nowUnix);
+$postPromotionVerification = new \App\Infrastructure\Installation\PrebootRuntimeConfigurationPostPromotionVerification($sharedRoot, $releaseId, $nowUnix);
 $state = [
     'state' => 'UNAVAILABLE',
     'can_prepare' => false,
@@ -70,6 +72,15 @@ $result = null;
 $qualificationResult = null;
 $readinessResult = null;
 $executionResult = null;
+$postPromotionVerificationResult = null;
+$postPromotionVerificationState = [
+    'state' => 'POST_PROMOTION_VERIFICATION_NOT_READY',
+    'verified' => false,
+    'request_id' => '',
+    'authority_id' => '',
+    'active_environment_sha256' => '',
+    'activation_authorized' => false,
+];
 $errorCode = null;
 
 try {
@@ -77,6 +88,9 @@ try {
     if (($state['promotion_request_pending'] ?? false) === true) {
         $qualificationState = $qualification->inspect();
         $readinessState = $readiness->inspect();
+    }
+    if (($state['state'] ?? null) === 'ACTIVE_ENV_PRESENT') {
+        $postPromotionVerificationState = $postPromotionVerification->inspect();
     }
 
     $method = strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET'));
@@ -124,8 +138,18 @@ try {
 
             $executionResult = $execution->execute($approvalToken);
             $state = $installer->inspect();
-            $qualificationState = $qualification->inspect();
-            $readinessState = $readiness->inspect();
+            $postPromotionVerificationResult = $postPromotionVerification->verify();
+            $postPromotionVerificationState = $postPromotionVerification->inspect();
+        } elseif ($action === 'verify_promoted_runtime_configuration') {
+            $confirmation = $_POST['verification_confirmation'] ?? null;
+            if (! is_string($confirmation)
+                || ! hash_equals('VERIFY_RUNTIME_CONFIGURATION', $confirmation)) {
+                throw new RuntimeException('post_promotion_verification_confirmation_invalid');
+            }
+
+            $postPromotionVerificationResult = $postPromotionVerification->verify();
+            $state = $installer->inspect();
+            $postPromotionVerificationState = $postPromotionVerification->inspect();
         } else {
             throw new RuntimeException('unsupported_installation_action');
         }
@@ -159,6 +183,11 @@ $runtimePromoted = is_array($executionResult)
     && ($executionResult['technical_preview_authorized'] ?? true) === false
     && ($executionResult['production_authorized'] ?? true) === false;
 $runtimeConfigured = $runtimePromoted || $stateCode === 'ACTIVE_ENV_PRESENT';
+$postPromotionVerificationCode = (string) ($postPromotionVerificationState['state'] ?? 'POST_PROMOTION_VERIFICATION_NOT_READY');
+$runtimeVerified = ($postPromotionVerificationState['verified'] ?? false) === true
+    || (is_array($postPromotionVerificationResult)
+        && ($postPromotionVerificationResult['state'] ?? null) === 'RUNTIME_CONFIGURATION_VERIFIED_NOT_ACTIVATED'
+        && ($postPromotionVerificationResult['activation_authorized'] ?? true) === false);
 $prepared = is_array($result) && ($result['prepared'] ?? false) === true;
 
 function e(string $value): string
@@ -294,9 +323,17 @@ function stateDescription(string $state): string
             <span class="status-code"><?= e($stateCode) ?></span>
         </div>
 
-        <?php if ($runtimePromoted): ?>
+        <?php if ($runtimeVerified): ?>
             <div class="notice success">
-                Runtime configuration is <strong>PROMOTED / NOT ACTIVATED</strong>. The active <strong>.env</strong> matches the verified pending configuration exactly. Migration, Technical Preview, Production, deployment, and updater authority remain unchanged.
+                Runtime configuration is <strong>VERIFIED / NOT ACTIVATED</strong>. Active <strong>.env</strong> is exact-bound to the private promotion execution receipt and the governed release. Migration, Technical Preview, Production, deployment, and updater authority remain unchanged.
+            </div>
+        <?php elseif ($errorCode !== null): ?>
+            <div class="notice error">
+                Request denied safely. Code: <strong><?= e($errorCode) ?></strong>
+            </div>
+        <?php elseif ($runtimePromoted): ?>
+            <div class="notice warning">
+                Runtime configuration is <strong>PROMOTED / NOT ACTIVATED</strong>, but post-promotion verification is not yet complete. Application activation remains locked.
             </div>
         <?php elseif ($promotionExecutionReady): ?>
             <div class="notice success">
@@ -317,10 +354,6 @@ function stateDescription(string $state): string
         <?php elseif ($handoffReady && $stateCode === 'PENDING_CONFIGURATION_VERIFIED'): ?>
             <div class="notice success">
                 Activation-readiness handoff is sealed and tamper-evident. A separate operational authority is still required before any runtime promotion.
-            </div>
-        <?php elseif ($errorCode !== null): ?>
-            <div class="notice error">
-                Request denied safely. Code: <strong><?= e($errorCode) ?></strong>
             </div>
         <?php endif; ?>
 
@@ -423,6 +456,32 @@ function stateDescription(string $state): string
             </form>
         <?php endif; ?>
 
+        <?php if ($runtimeConfigured && ! $runtimeVerified && $postPromotionVerificationCode === 'RUNTIME_CONFIGURATION_VERIFICATION_REQUIRED'): ?>
+            <div class="notice warning">
+                Active runtime configuration exists, but the exact post-promotion verification evidence is missing. Activation remains locked until the active configuration and execution receipt are re-verified.
+            </div>
+            <form method="post" autocomplete="off">
+                <input type="hidden" name="action" value="verify_promoted_runtime_configuration">
+                <div class="grid">
+                    <div class="field full">
+                        <label for="verification_confirmation">Verification confirmation</label>
+                        <input id="verification_confirmation" name="verification_confirmation" type="text" required maxlength="64" autocomplete="off" placeholder="VERIFY_RUNTIME_CONFIGURATION">
+                        <p class="help">Type exactly <strong>VERIFY_RUNTIME_CONFIGURATION</strong>. This verifies evidence only and does not activate the application.</p>
+                    </div>
+                </div>
+                <div class="actions">
+                    <p>
+                        Verification checks the private execution receipt, exact active configuration SHA-256, release binding, pending-file absence, and all fail-closed runtime flags.
+                    </p>
+                    <button type="submit">Verify promoted runtime configuration</button>
+                </div>
+            </form>
+        <?php elseif ($runtimeConfigured && ! $runtimeVerified && $postPromotionVerificationCode === 'RUNTIME_CONFIGURATION_VERIFICATION_INVALID'): ?>
+            <div class="notice error">
+                Post-promotion verification is <strong>INVALID</strong>. The installer has failed closed; application activation remains unavailable until the private runtime evidence is repaired through a governed recovery process.
+            </div>
+        <?php endif; ?>
+
         <?php if ($promotionRequestPending && ! $promotionAuthorityTokenRequired && ! $promotionQualified && ! $runtimeConfigured): ?>
             <div class="notice">
                 Promotion authority status: <strong><?= e($promotionAuthorityState) ?></strong>. A separately provisioned exact-bound authority is required before qualification.
@@ -449,6 +508,7 @@ function stateDescription(string $state): string
                     : ($promotionExecutionReady ? 'READY / NOT EXECUTED' : e($promotionReadinessState))
             ?></strong></div>
             <div><span>Runtime configuration</span><strong><?= $runtimeConfigured ? 'ACTIVE / NOT ACTIVATED' : 'NOT ACTIVE' ?></strong></div>
+            <div><span>Post-promotion verification</span><strong><?= $runtimeVerified ? 'VERIFIED / NOT ACTIVATED' : e($postPromotionVerificationCode) ?></strong></div>
             <div><span>Migration</span><strong>NOT EXECUTED</strong></div>
             <div><span>Technical Preview</span><strong>NOT AUTHORIZED</strong></div>
             <div><span>Production</span><strong>NOT AUTHORIZED</strong></div>
