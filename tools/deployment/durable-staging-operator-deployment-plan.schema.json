@@ -135,6 +135,11 @@
         "state",
         "authority_id",
         "authority_sha256",
+        "expires_at_unix",
+        "authorized_at_unix",
+        "target_descriptor_sha256",
+        "request_sha256",
+        "request_id",
         "deployment_allowed",
         "migration_execution_allowed",
         "production_allowed"
@@ -144,7 +149,8 @@
           "const": "EXTERNAL_AUTHORITY_BOUND_TO_EXACT_TARGET"
         },
         "authority_id": {
-          "type": "string"
+          "type": "string",
+          "pattern": "^durable-staging-deployment-authority-[0-9a-f]{24}$"
         },
         "authority_sha256": {
           "type": "string",
@@ -158,6 +164,26 @@
         },
         "production_allowed": {
           "const": false
+        },
+        "request_id": {
+          "type": "string",
+          "pattern": "^durable-staging-deployment-request-[0-9a-f]{24}$"
+        },
+        "request_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "target_descriptor_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "authorized_at_unix": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "expires_at_unix": {
+          "type": "integer",
+          "minimum": 1
         }
       }
     },
