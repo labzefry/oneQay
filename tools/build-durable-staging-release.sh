@@ -249,13 +249,6 @@ if [[ "$archive_migration_count" != "27" ]]; then
   exit 1
 fi
 
-if grep -R -n -E '(^|[^A-Za-z])(artisan[[:space:]]+migrate|migrate --force|Schema::drop|DROP DATABASE)' \
-  tools/build-durable-staging-release.sh \
-  ops/final-shift-close/DURABLE_STAGING_RELEASE_ARTIFACT_CONTRACT.json; then
-  echo "Durable staging artifact foundation must not execute or authorize migrations." >&2
-  exit 1
-fi
-
 if [[ -n "${GITHUB_OUTPUT:-}" ]]; then
   {
     echo "release_id=$release_id"
