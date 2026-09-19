@@ -76,7 +76,7 @@ final readonly class LaravelFirstPartyCredentialEpochRepository implements First
             );
         }
 
-        if (! in_array(strtolower(trim($this->runtimeClass)), ['local', 'test', 'ci'], true)) {
+        if (! in_array(strtolower(trim($this->runtimeClass)), ['local', 'test', 'ci', 'staging'], true)) {
             throw new DurablePersistenceViolation(
                 DurablePersistenceViolation::RUNTIME_DENIED,
                 'Durable persistence runtime is not authorized.',
