@@ -298,7 +298,7 @@ final class FirstPartySessionController
     private function requireAllowedRuntime(): void
     {
         $runtime = strtolower(trim((string) config('oneqay.runtime_class', '')));
-        abort_unless(in_array($runtime, ['local', 'test', 'ci'], true), 404);
+        abort_unless(in_array($runtime, ['local', 'test', 'ci', 'staging'], true), 404);
     }
 
     private function clearRequestContexts(): void
