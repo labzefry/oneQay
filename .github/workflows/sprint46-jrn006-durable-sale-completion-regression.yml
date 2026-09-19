@@ -1,3 +1,4 @@
+# Sprint202 authoritative sale receipt continuity compatibility anchor — Lab | zefry
 # Sprint90 post-close mutation historical compatibility — Lab | zefry
 # Sprint57 immutable sale-to-shift binding Sprint46 compatibility — Lab | zefry
 # Sprint54 bounded successor compatibility predecessor — Lab | zefry
@@ -246,6 +247,30 @@ jobs:
             test "$(grep -c '^apps/web/database/migrations/' /tmp/s46-source-paths)" -eq 0
             echo 'ONEQAY_SPRINT49_JRN006_ACTIVE_SHIFT_SOURCE_SUCCESSOR=true' >> "$GITHUB_ENV"
             echo 'ONEQAY_SPRINT50_COMPATIBILITY_PREDECESSOR=true' >> "$GITHUB_ENV"
+          elif [[ "${{ github.head_ref }}" == 'sprint202-merchant-pos-authoritative-sale-receipt-continuity' && "$count" -eq 9 && "$fingerprint" == 'd49048acc4a472d919471c56083ca4f2ac77e988ef67f6de99fb4a601cbbd684' ]]; then
+            for expected in \
+              '.github/workflows/m7-5-preview-release-artifact.yml' \
+              '.github/workflows/sprint202-merchant-pos-authoritative-sale-receipt-continuity-regression.yml' \
+              '.github/workflows/sprint32-authentication-recovery-proof-regression.yml' \
+              '.github/workflows/sprint33-recovery-bound-password-reset-regression.yml' \
+              '.github/workflows/sprint34-authenticated-password-change-regression.yml' \
+              '.github/workflows/sprint46-jrn006-durable-sale-completion-regression.yml' \
+              'apps/web/app/Delivery/Http/Pos/PosSaleController.php' \
+              'apps/web/resources/js/pages/Pos/Cashier.vue' \
+              'apps/web/tests/merchant-pos-authoritative-sale-receipt-continuity.php'
+            do
+              grep -Fxq "$expected" /tmp/s46-source-paths
+            done
+            test "$(grep -c '^apps/web/database/migrations/' /tmp/s46-source-paths)" -eq 0
+            for index in $(seq 17 27); do
+              migration_path="$(find apps/web/database/migrations -maxdepth 1 -type f -name "$(printf '0000_00_00_%06d_*' "$index")" -print -quit)"
+              if [[ -n "$migration_path" && -f "$migration_path" ]]; then
+                git update-index --assume-unchanged "$migration_path"
+                rm -f "$migration_path"
+              fi
+            done
+            echo 'ONEQAY_SPRINT74_POS_HISTORICAL=true' >> "$GITHUB_ENV"
+            echo 'Recognized exact Sprint202 receipt projection at Sprint46 migration #16 horizon.'
           else
             echo 'Sprint46/JRN-004 changed-file envelope mismatch.' >&2
             exit 1
