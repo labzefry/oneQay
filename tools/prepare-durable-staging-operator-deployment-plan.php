@@ -276,7 +276,7 @@ function dsPlanValidateTarget(array $target, array $identity): array
     dsPlanAssertLiteral($authority['state'] ?? null, 'EXTERNALLY_GRANTED_FOR_EXACT_TARGET', 'target_authority_state_invalid');
     $authorityId = dsPlanAssertPattern(
         $authority['authority_id'] ?? null,
-        '/\\A[a-zA-Z0-9._~-]{16,128}\\z/',
+        '/\\Adurable-staging-deployment-authority-[0-9a-f]{24}\\z/',
         'target_authority_id_invalid',
     );
     $authoritySha256 = dsPlanAssertPattern(
@@ -284,6 +284,61 @@ function dsPlanValidateTarget(array $target, array $identity): array
         '/\\A[0-9a-f]{64}\\z/',
         'target_authority_sha256_invalid',
     );
+    $requestId = dsPlanAssertPattern(
+        $authority['request_id'] ?? null,
+        '/\\Adurable-staging-deployment-request-[0-9a-f]{24}\\z/',
+        'target_authority_request_id_invalid',
+    );
+    $requestSha256 = dsPlanAssertPattern(
+        $authority['request_sha256'] ?? null,
+        '/\\A[0-9a-f]{64}\\z/',
+        'target_authority_request_sha256_invalid',
+    );
+    $targetDescriptorSha256 = dsPlanAssertPattern(
+        $authority['target_descriptor_sha256'] ?? null,
+        '/\\A[0-9a-f]{64}\\z/',
+        'target_authority_target_descriptor_sha256_invalid',
+    );
+
+    $authorizedAt = $authority['authorized_at_unix'] ?? null;
+    $expiresAt = $authority['expires_at_unix'] ?? null;
+    if (! is_int($authorizedAt)
+        || ! is_int($expiresAt)
+        || $authorizedAt <= 0
+        || $expiresAt <= $authorizedAt
+        || ($expiresAt - $authorizedAt) > 900
+    ) {
+        dsPlanFail('target_authority_time_window_invalid');
+    }
+    $nowUnix = time();
+    if ($nowUnix < $authorizedAt || $nowUnix >= $expiresAt) {
+        dsPlanFail('target_authority_expired_or_not_current');
+    }
+
+    $candidateProjection = [
+        'schema_version' => 1,
+        'target_state' => 'OPERATOR_TARGET_CANDIDATE',
+        'environment_id' => $environmentId,
+        'runtime_class' => 'durable-staging',
+        'production' => false,
+        'production_data_allowed' => false,
+        'synthetic_fixture_runtime' => false,
+        'filesystem' => [
+            'deployment_root' => $deploymentRoot,
+            'release_root' => $releaseRoot,
+            'shared_runtime_root' => $sharedRuntimeRoot,
+            'active_release_pointer' => $activePointer,
+        ],
+        'capabilities' => $target['capabilities'],
+        'configuration' => $target['configuration'],
+        'attribution' => 'Lab | zefry',
+    ];
+    dsPlanAssertLiteral(
+        $targetDescriptorSha256,
+        hash('sha256', dsPlanCanonicalJson($candidateProjection)),
+        'target_authority_target_descriptor_mismatch',
+    );
+
     dsPlanAssertLiteral($authority['environment_id'] ?? null, $environmentId, 'target_authority_environment_mismatch');
     dsPlanAssertLiteral($authority['release_id'] ?? null, $identity['release_id'], 'target_authority_release_mismatch');
     dsPlanAssertLiteral($authority['artifact_sha256'] ?? null, $identity['artifact_sha256'], 'target_authority_artifact_mismatch');
@@ -299,6 +354,11 @@ function dsPlanValidateTarget(array $target, array $identity): array
         'active_release_pointer' => $activePointer,
         'authority_id' => $authorityId,
         'authority_sha256' => $authoritySha256,
+        'request_id' => $requestId,
+        'request_sha256' => $requestSha256,
+        'target_descriptor_sha256' => $targetDescriptorSha256,
+        'authorized_at_unix' => $authorizedAt,
+        'expires_at_unix' => $expiresAt,
     ];
 }
 
@@ -341,6 +401,11 @@ function dsPlanPrepare(string $handoffPath, string $targetPath): array
             'state' => 'EXTERNAL_AUTHORITY_BOUND_TO_EXACT_TARGET',
             'authority_id' => $validatedTarget['authority_id'],
             'authority_sha256' => $validatedTarget['authority_sha256'],
+            'request_id' => $validatedTarget['request_id'],
+            'request_sha256' => $validatedTarget['request_sha256'],
+            'target_descriptor_sha256' => $validatedTarget['target_descriptor_sha256'],
+            'authorized_at_unix' => $validatedTarget['authorized_at_unix'],
+            'expires_at_unix' => $validatedTarget['expires_at_unix'],
             'deployment_allowed' => true,
             'migration_execution_allowed' => false,
             'production_allowed' => false,
