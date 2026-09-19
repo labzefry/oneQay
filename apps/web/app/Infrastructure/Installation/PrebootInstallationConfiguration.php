@@ -149,8 +149,6 @@ final class PrebootInstallationConfiguration
                 throw new RuntimeException('database_compatibility_failed');
             }
 
-            $content = $this->renderPendingEnvironment($configuration, $facts);
-
             $runtimeDirectory = $this->runtimeDirectory();
             if (! is_dir($runtimeDirectory)
                 && ! @mkdir($runtimeDirectory, 0700, true)
@@ -160,6 +158,24 @@ final class PrebootInstallationConfiguration
             if (is_link($runtimeDirectory)) {
                 throw new RuntimeException('runtime_directory_symlink_rejected');
             }
+            @chmod($runtimeDirectory, 0700);
+
+            $sessionDirectory = $this->sessionDirectory();
+            if (! is_dir($sessionDirectory)
+                && ! @mkdir($sessionDirectory, 0700, true)
+                && ! is_dir($sessionDirectory)) {
+                throw new RuntimeException('preview_session_directory_unavailable');
+            }
+            if (is_link($sessionDirectory)) {
+                throw new RuntimeException('preview_session_directory_symlink_rejected');
+            }
+            @chmod($sessionDirectory, 0700);
+            $sessionPermissions = fileperms($sessionDirectory);
+            if (is_int($sessionPermissions) && ($sessionPermissions & 0077) !== 0) {
+                throw new RuntimeException('preview_session_directory_permissions_invalid');
+            }
+
+            $content = $this->renderPendingEnvironment($configuration, $facts);
 
             $pendingPath = $this->pendingEnvironmentPath();
             if (file_exists($pendingPath) || is_link($pendingPath)) {
@@ -346,6 +362,7 @@ final class PrebootInstallationConfiguration
             'ONEQAY_INSTALLATION_DATABASE_LEAST_PRIVILEGE' => 'true',
             'ONEQAY_INSTALLATION_ACTIVATION_AUTHORIZED' => 'false',
             'SESSION_DRIVER' => 'file',
+            'SESSION_FILES' => $this->sessionDirectory(),
             'SESSION_LIFETIME' => '60',
             'SESSION_ENCRYPT' => 'true',
             'SESSION_SECURE_COOKIE' => 'true',
@@ -536,6 +553,11 @@ final class PrebootInstallationConfiguration
     private function runtimeDirectory(): string
     {
         return $this->sharedRoot.DIRECTORY_SEPARATOR.'runtime';
+    }
+
+    private function sessionDirectory(): string
+    {
+        return $this->runtimeDirectory().DIRECTORY_SEPARATOR.'sessions';
     }
 
     private function authorityPath(): string
