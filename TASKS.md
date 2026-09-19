@@ -1,34 +1,33 @@
 # oneQay Tasks
 
-**Current canonical engineering checkpoint:** Sprint201 closed canonically
-**Canonical engineering commit:** `cec54de9ff3d056f5981165616584c343b0152c2`
-**Engineering PR:** #833
+**Current canonical engineering checkpoint:** Sprint202 closed canonically
+**Canonical engineering commit:** `09df0a239d894284a62dec2b5cc39754406eab5c`
+**Engineering PR:** #835
 **Canonical status authority:** `PROJECT_MANIFEST.md`
 
-## Sprint201 completed
+## Sprint202 completed
 
-- [x] Replace route-order-only POS guidance with state-aware operational guidance.
-- [x] Reuse existing authorized Catalog & Opening Stock, Shift Start, and Cashier read models.
-- [x] Recommend catalog setup when catalog/sellable inventory is not ready.
-- [x] Recommend Shift Start when the exact device shift or opening-cash evidence is incomplete.
-- [x] Recommend Cashier only after sellable inventory, active shift, and opening-cash readiness are verified.
-- [x] Use Sales Summary only as a read-only review fallback.
-- [x] Withhold the next-action recommendation when readiness evidence cannot be read safely.
-- [x] Recommend only destinations already delivered to the current merchant context.
-- [x] Preserve the separately authorized workspace list and destination-level authorization.
-- [x] Preserve Sprint200 guided-home regression through an explicit canonical successor contract instead of a generic bypass.
-- [x] Introduce no new route, permission, role, schema, bootstrap authority, persistence authority, or activation authority.
-- [x] Complete 87/87 exact-head engineering qualification.
+- [x] Return authoritative completed-sale receipt lines to the cashier.
+- [x] Project product ID, quantity, unit price, and line total from the server receipt.
+- [x] Preserve organization, outlet, register/device, total, tender, change, evidence mode, and correlation context.
+- [x] Render a professional post-checkout receipt.
+- [x] Add print-receipt and next-sale continuity.
+- [x] Use catalog snapshot only for presentation labels.
+- [x] Preserve no-auto-retry checkout behavior.
+- [x] Avoid localStorage/sessionStorage receipt persistence.
+- [x] Preserve Sprint46 historical sale-completion horizon with exact successor isolation rather than generic bypass.
+- [x] Introduce no new route, permission, role, schema, migration, payment provider, persistence authority, bootstrap authority, or activation authority.
+- [x] Complete 89/89 exact-head engineering qualification.
 - [x] Product Owner merge authority SUCCESS.
-- [x] Engineering squash `cec54de9ff3d056f5981165616584c343b0152c2`.
+- [x] Engineering squash `09df0a239d894284a62dec2b5cc39754406eab5c`.
 - [x] Operational NO-GO preserved.
 
-Engineering envelope SHA-256: `42c4cdd533a99adf2d0d5ba379e1e90575f0bd081ec08187107e9f7a0a03d766`.
+Engineering envelope SHA-256: `d49048acc4a472d919471c56083ca4f2ac77e988ef67f6de99fb4a601cbbd684`.
 
 Canonical reconciliation envelope SHA-256: `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`.
 
 ## Next
 
-After canonical reconciliation, begin **Sprint202 business-first bounded discovery**. Select the next material P0/P1 merchant end-to-end blocker and avoid anti-granular lifecycle chaining. Do not assume migration, permission, updater, deployment, durable-target, live Technical Preview, Production, persistence, Final Shift Close, or producer-dispatch authority.
+After canonical reconciliation, begin **Sprint203 business-first bounded discovery**. Select the next material P0/P1 merchant end-to-end blocker and avoid anti-granular lifecycle chaining. Do not assume migration, permission, updater, deployment, durable-target, live Technical Preview, Production, persistence, Final Shift Close, payment-provider, or producer-dispatch authority.
 
 Author by Lab | zefry
