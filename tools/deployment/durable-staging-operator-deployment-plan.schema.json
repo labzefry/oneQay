@@ -1,0 +1,362 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oneqay.invalid/contracts/durable-staging-operator-deployment-plan.schema.json",
+  "title": "oneQay Durable Staging Operator Deployment Plan",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "plan_fingerprint",
+    "schema_version",
+    "plan_state",
+    "product",
+    "artifact",
+    "target",
+    "authority_binding",
+    "preflight",
+    "execution_order",
+    "readback_expectations",
+    "rollback",
+    "migration",
+    "required_evidence",
+    "operational_boundary",
+    "attribution"
+  ],
+  "properties": {
+    "plan_fingerprint": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "schema_version": {
+      "type": "integer",
+      "const": 1
+    },
+    "plan_state": {
+      "type": "string",
+      "const": "QUALIFIED_FOR_EXTERNAL_OPERATOR_EXECUTION_NOT_EXECUTED"
+    },
+    "product": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "repository"
+      ],
+      "properties": {
+        "name": {
+          "const": "oneQay"
+        },
+        "repository": {
+          "const": "labzefry/oneQay"
+        }
+      }
+    },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "release_id",
+        "source_commit",
+        "artifact_filename",
+        "artifact_sha256",
+        "manifest_sha256"
+      ],
+      "properties": {
+        "release_id": {
+          "type": "string",
+          "pattern": "^durable-staging-[0-9a-f]{12}$"
+        },
+        "source_commit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "artifact_filename": {
+          "type": "string",
+          "pattern": "^durable-staging-[0-9a-f]{12}\\.tar\\.gz$"
+        },
+        "artifact_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "manifest_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "environment_id",
+        "runtime_class",
+        "production",
+        "production_data_allowed",
+        "synthetic_fixture_runtime",
+        "deployment_root",
+        "release_directory",
+        "shared_runtime_root",
+        "active_release_pointer"
+      ],
+      "properties": {
+        "environment_id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]{2,62}$"
+        },
+        "runtime_class": {
+          "const": "durable-staging"
+        },
+        "production": {
+          "const": false
+        },
+        "production_data_allowed": {
+          "const": false
+        },
+        "synthetic_fixture_runtime": {
+          "const": false
+        },
+        "deployment_root": {
+          "type": "string"
+        },
+        "release_directory": {
+          "type": "string"
+        },
+        "shared_runtime_root": {
+          "type": "string"
+        },
+        "active_release_pointer": {
+          "type": "string"
+        }
+      }
+    },
+    "authority_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "state",
+        "authority_id",
+        "authority_sha256",
+        "deployment_allowed",
+        "migration_execution_allowed",
+        "production_allowed"
+      ],
+      "properties": {
+        "state": {
+          "const": "EXTERNAL_AUTHORITY_BOUND_TO_EXACT_TARGET"
+        },
+        "authority_id": {
+          "type": "string"
+        },
+        "authority_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "deployment_allowed": {
+          "const": true
+        },
+        "migration_execution_allowed": {
+          "const": false
+        },
+        "production_allowed": {
+          "const": false
+        }
+      }
+    },
+    "preflight": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "required_before_mutation",
+        "checks"
+      ],
+      "properties": {
+        "required_before_mutation": {
+          "const": true
+        },
+        "checks": {
+          "type": "array",
+          "minItems": 9,
+          "maxItems": 9,
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "execution_order": {
+      "type": "array",
+      "minItems": 10,
+      "maxItems": 10,
+      "uniqueItems": true,
+      "items": {
+        "type": "string"
+      }
+    },
+    "readback_expectations": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "environment_id",
+        "runtime_class",
+        "running_source_commit",
+        "running_artifact_sha256",
+        "durable_staging_runtime_enabled",
+        "production_data_allowed"
+      ],
+      "properties": {
+        "environment_id": {
+          "type": "string"
+        },
+        "runtime_class": {
+          "const": "durable-staging"
+        },
+        "running_source_commit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "running_artifact_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "durable_staging_runtime_enabled": {
+          "const": true
+        },
+        "production_data_allowed": {
+          "const": false
+        }
+      }
+    },
+    "rollback": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "required",
+        "previous_active_release_must_be_preserved",
+        "rollback_must_be_verified_before_acceptance",
+        "database_rollback_implied",
+        "migration_rollback_implied"
+      ],
+      "properties": {
+        "required": {
+          "const": true
+        },
+        "previous_active_release_must_be_preserved": {
+          "const": true
+        },
+        "rollback_must_be_verified_before_acceptance": {
+          "const": true
+        },
+        "database_rollback_implied": {
+          "const": false
+        },
+        "migration_rollback_implied": {
+          "const": false
+        }
+      }
+    },
+    "migration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_included",
+        "expected_count",
+        "execution_state",
+        "execution_authorized"
+      ],
+      "properties": {
+        "source_included": {
+          "const": true
+        },
+        "expected_count": {
+          "const": 27
+        },
+        "execution_state": {
+          "const": "NOT_PERFORMED"
+        },
+        "execution_authorized": {
+          "const": false
+        }
+      }
+    },
+    "required_evidence": {
+      "type": "array",
+      "minItems": 6,
+      "maxItems": 6,
+      "uniqueItems": true,
+      "items": {
+        "type": "string"
+      }
+    },
+    "operational_boundary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "plan_preparation",
+        "environment_creation",
+        "environment_deployment",
+        "archive_extraction",
+        "runtime_configuration_mutation",
+        "active_release_pointer_mutation",
+        "migration27_execution",
+        "permission_provisioning",
+        "feature_activation",
+        "technical_preview_activation",
+        "production_activation",
+        "updater_activation",
+        "target_selection",
+        "selected_target",
+        "producer_dispatch"
+      ],
+      "properties": {
+        "plan_preparation": {
+          "const": "PERFORMED"
+        },
+        "environment_creation": {
+          "const": "NOT_PERFORMED"
+        },
+        "environment_deployment": {
+          "const": "NOT_PERFORMED"
+        },
+        "archive_extraction": {
+          "const": "NOT_PERFORMED"
+        },
+        "runtime_configuration_mutation": {
+          "const": "NOT_PERFORMED"
+        },
+        "active_release_pointer_mutation": {
+          "const": "NOT_PERFORMED"
+        },
+        "migration27_execution": {
+          "const": "NOT_PERFORMED"
+        },
+        "permission_provisioning": {
+          "const": "NONE"
+        },
+        "feature_activation": {
+          "const": "INACTIVE"
+        },
+        "technical_preview_activation": {
+          "const": "NOT_AUTHORIZED"
+        },
+        "production_activation": {
+          "const": "NOT_AUTHORIZED"
+        },
+        "updater_activation": {
+          "const": "INACTIVE"
+        },
+        "target_selection": {
+          "const": "BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET"
+        },
+        "selected_target": {
+          "type": "null"
+        },
+        "producer_dispatch": {
+          "const": "NOT_PERFORMED"
+        }
+      }
+    },
+    "attribution": {
+      "const": "Lab | zefry"
+    }
+  }
+}

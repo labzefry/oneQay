@@ -1,0 +1,254 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oneqay.invalid/contracts/durable-staging-operator-target.schema.json",
+  "title": "oneQay Durable Staging Operator Target",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "target_state",
+    "environment_id",
+    "runtime_class",
+    "production",
+    "production_data_allowed",
+    "synthetic_fixture_runtime",
+    "filesystem",
+    "capabilities",
+    "configuration",
+    "deployment_authority",
+    "attribution"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "integer",
+      "const": 1
+    },
+    "target_state": {
+      "type": "string",
+      "const": "OPERATOR_TARGET_DECLARED"
+    },
+    "environment_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]{2,62}$"
+    },
+    "runtime_class": {
+      "type": "string",
+      "const": "durable-staging"
+    },
+    "production": {
+      "type": "boolean",
+      "const": false
+    },
+    "production_data_allowed": {
+      "type": "boolean",
+      "const": false
+    },
+    "synthetic_fixture_runtime": {
+      "type": "boolean",
+      "const": false
+    },
+    "filesystem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "deployment_root",
+        "release_root",
+        "shared_runtime_root",
+        "active_release_pointer"
+      ],
+      "properties": {
+        "deployment_root": {
+          "type": "string",
+          "pattern": "^/[^\\\\\\u0000]*$",
+          "minLength": 2,
+          "maxLength": 4096
+        },
+        "release_root": {
+          "type": "string",
+          "pattern": "^/[^\\\\\\u0000]*$",
+          "minLength": 2,
+          "maxLength": 4096
+        },
+        "shared_runtime_root": {
+          "type": "string",
+          "pattern": "^/[^\\\\\\u0000]*$",
+          "minLength": 2,
+          "maxLength": 4096
+        },
+        "active_release_pointer": {
+          "type": "string",
+          "pattern": "^/[^\\\\\\u0000]*$",
+          "minLength": 2,
+          "maxLength": 4096
+        }
+      }
+    },
+    "capabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "durable_database_persistence",
+        "durable_session",
+        "authorization",
+        "transaction_durability",
+        "pos_durability",
+        "authenticated_configuration_channel",
+        "read_before_write",
+        "read_after_write",
+        "non_mutating_health_attestation",
+        "verified_rollback"
+      ],
+      "properties": {
+        "durable_database_persistence": {
+          "type": "boolean",
+          "const": true
+        },
+        "durable_session": {
+          "type": "boolean",
+          "const": true
+        },
+        "authorization": {
+          "type": "boolean",
+          "const": true
+        },
+        "transaction_durability": {
+          "type": "boolean",
+          "const": true
+        },
+        "pos_durability": {
+          "type": "boolean",
+          "const": true
+        },
+        "authenticated_configuration_channel": {
+          "type": "boolean",
+          "const": true
+        },
+        "read_before_write": {
+          "type": "boolean",
+          "const": true
+        },
+        "read_after_write": {
+          "type": "boolean",
+          "const": true
+        },
+        "non_mutating_health_attestation": {
+          "type": "boolean",
+          "const": true
+        },
+        "verified_rollback": {
+          "type": "boolean",
+          "const": true
+        }
+      }
+    },
+    "configuration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "secret_values_embedded",
+        "required_binding_presence"
+      ],
+      "properties": {
+        "secret_values_embedded": {
+          "type": "boolean",
+          "const": false
+        },
+        "required_binding_presence": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "ONEQAY_RUNTIME_CLASS",
+            "ONEQAY_RUNNING_SOURCE_COMMIT",
+            "ONEQAY_RUNNING_ARTIFACT_SHA256",
+            "ONEQAY_DURABLE_RUNTIME_ENVIRONMENT_ID",
+            "ONEQAY_DURABLE_RUNTIME_ATTESTATION_TOKEN",
+            "ONEQAY_DURABLE_STAGING_RUNTIME_ENABLED"
+          ],
+          "properties": {
+            "ONEQAY_RUNTIME_CLASS": {
+              "type": "boolean",
+              "const": true
+            },
+            "ONEQAY_RUNNING_SOURCE_COMMIT": {
+              "type": "boolean",
+              "const": true
+            },
+            "ONEQAY_RUNNING_ARTIFACT_SHA256": {
+              "type": "boolean",
+              "const": true
+            },
+            "ONEQAY_DURABLE_RUNTIME_ENVIRONMENT_ID": {
+              "type": "boolean",
+              "const": true
+            },
+            "ONEQAY_DURABLE_RUNTIME_ATTESTATION_TOKEN": {
+              "type": "boolean",
+              "const": true
+            },
+            "ONEQAY_DURABLE_STAGING_RUNTIME_ENABLED": {
+              "type": "boolean",
+              "const": true
+            }
+          }
+        }
+      }
+    },
+    "deployment_authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "state",
+        "authority_id",
+        "authority_sha256",
+        "environment_id",
+        "release_id",
+        "artifact_sha256",
+        "deployment_allowed",
+        "migration_execution_allowed",
+        "production_allowed"
+      ],
+      "properties": {
+        "state": {
+          "type": "string",
+          "const": "EXTERNALLY_GRANTED_FOR_EXACT_TARGET"
+        },
+        "authority_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._~-]{16,128}$"
+        },
+        "authority_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "environment_id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]{2,62}$"
+        },
+        "release_id": {
+          "type": "string",
+          "pattern": "^durable-staging-[0-9a-f]{12}$"
+        },
+        "artifact_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "deployment_allowed": {
+          "type": "boolean",
+          "const": true
+        },
+        "migration_execution_allowed": {
+          "type": "boolean",
+          "const": false
+        },
+        "production_allowed": {
+          "type": "boolean",
+          "const": false
+        }
+      }
+    },
+    "attribution": {
+      "type": "string",
+      "const": "Lab | zefry"
+    }
+  }
+}
