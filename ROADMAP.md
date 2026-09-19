@@ -13,7 +13,7 @@ The application now registers one guarded POS aggregate delivery provider that c
 Engineering PR #827 qualified at 100/100 on final head `4c6b5ba627bf8bf0d28b4360d10c8f249b66b73f` and squash merged at `da8b0a0579e7788b22a1ee1cd78130ff29cdd99a`.
 
 Engineering envelope SHA-256: `4e04f75c0df2b340b0a66ad5d2fa545d364a088740e0af92861909c4848d0a45`.
-Canonical reconciliation envelope SHA-256: `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`.
+Canonical reconciliation envelope SHA-256: `c0cffa516ac414b5e780c572c74d99e6cf06dd2e8c691553e28c485116e74682`.
 
 ## Business progression
 

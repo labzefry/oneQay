@@ -23,7 +23,7 @@
 **Governance qualification:** run `35435832362` — SUCCESS
 **PHP Foundation qualification:** run `35435832289` — SUCCESS
 **Engineering envelope:** 25 paths — `4e04f75c0df2b340b0a66ad5d2fa545d364a088740e0af92861909c4848d0a45`
-**Canonical reconciliation envelope:** 8 paths — `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`
+**Canonical reconciliation envelope:** 9 paths — `c0cffa516ac414b5e780c572c74d99e6cf06dd2e8c691553e28c485116e74682`
 **Previous canonical checkpoint:** Sprint197 reconciliation `034c19876eeee9574ebe90d1c4db89d97bdd7d23`
 **Next position:** Sprint199 business-first bounded discovery after canonical Sprint198 reconciliation.
 
@@ -40,7 +40,7 @@ Sprint198 closes a material business-usability gap after the Technical Preview a
 - Preserved deny-by-default tenant, organization, outlet, device, session, authorization, persistence, feature, and runtime-class gates.
 - Delivered boot-level route integration for business workspaces whose prerequisites are already satisfied.
 - Preserved close-dependent Shift History and Cash Variance Reconciliation routes as unavailable while Final Shift Close remains canonically `INACTIVE`.
-- Added a dedicated Sprint198 integration regression plus evidence-driven historical compatibility for legacy executable horizons.
+- Added a dedicated Sprint198 integration regression plus evidence-driven historical compatibility for legacy executable horizons.\n- Canonical reconciliation includes one evidence-driven Sprint162 forward-compatibility correction so post-Sprint198 bases preserve the newly canonical provider registration while pre-Sprint198 bases remain fail-closed.
 - No schema change, permission grant, migration execution, live deployment, Preview activation, Production activation, updater activation, or durable-target selection was introduced.
 
 ## Qualification evidence
