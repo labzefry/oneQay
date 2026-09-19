@@ -146,7 +146,7 @@ final readonly class LaravelDurableRolePermissionRepository implements DurableRo
         }
 
         $runtime = strtolower(trim($this->runtimeClass));
-        if (! in_array($runtime, ['local', 'test', 'ci'], true)) {
+        if (! in_array($runtime, ['local', 'test', 'ci', 'staging'], true)) {
             throw new DurableAuthorizationViolation(
                 DurableAuthorizationViolation::RUNTIME_DENIED,
                 'Durable authorization runtime is not authorized.',
