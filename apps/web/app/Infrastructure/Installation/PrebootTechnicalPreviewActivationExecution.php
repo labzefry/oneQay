@@ -369,7 +369,7 @@ final class PrebootTechnicalPreviewActivationExecution
             && ($authority['migration_execution_authorized'] ?? null) === false
             && is_string($authority['approval_token_sha256'] ?? null)
             && hash_equals((string) $authority['approval_token_sha256'], hash('sha256', $approvalToken))
-            && hash_equals(hash('sha256', $preflightRaw), (string) ($this->decodeJson($preflightRaw)['target_preflight_sha256'] ?? hash('sha256', $preflightRaw))) === false;
+            && $this->isSha256($preflight['target_fingerprint'] ?? null);
     }
 
     /** @param array<string,mixed> $health */
