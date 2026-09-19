@@ -1,8 +1,8 @@
 # oneQay Tasks
 
-**Current canonical engineering checkpoint:** Sprint204 closed canonically  
-**Canonical engineering commit:** `a5672b315a320092c6fa8cc74d984cb70f4e18ae`  
-**Engineering PR:** #841  
+**Current canonical engineering checkpoint:** Sprint204 closed canonically
+**Canonical engineering commit:** `a5672b315a320092c6fa8cc74d984cb70f4e18ae`
+**Engineering PR:** #841
 **Canonical status authority:** `PROJECT_MANIFEST.md`
 
 ## Sprint204 completed
