@@ -101,7 +101,7 @@ $assert(
     'Sprint198 must not activate Final Shift Close delivery.',
 );
 $assert(
-    $routes->getByName('preview.home') === null,
+    $routes->getByName('preview.index') === null,
     'Sprint198 must not activate Technical Preview routes.',
 );
 
