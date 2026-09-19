@@ -17,6 +17,7 @@ use App\Application\Organization\EnterOrganizationalContext;
 use App\Application\Organization\OrganizationalAccessViolation;
 use App\Application\Organization\OrganizationalContextStore;
 use App\Application\Organization\VerifiedOrganizationalContext;
+use App\Application\Runtime\DurableStagingRuntimeBridge;
 use App\Application\Tenancy\MissingTenantContext;
 use App\Application\Tenancy\TenantContextStore;
 use App\Delivery\Http\SafeErrorEnvelope;
@@ -297,8 +298,10 @@ final class FirstPartySessionController
 
     private function requireAllowedRuntime(): void
     {
-        $runtime = strtolower(trim((string) config('oneqay.runtime_class', '')));
-        abort_unless(in_array($runtime, ['local', 'test', 'ci'], true), 404);
+        abort_unless(DurableStagingRuntimeBridge::deliveryAllowed(
+            (string) config('oneqay.runtime_class', ''),
+            (bool) config('oneqay.durable_staging_runtime.enabled', false),
+        ), 404);
     }
 
     private function clearRequestContexts(): void
