@@ -1,6 +1,6 @@
 # oneQay Roadmap
 
-**Roadmap checkpoint:** Sprint195 engineering complete; canonical reconciliation in progress  
+**Roadmap checkpoint:** Sprint195 closed canonically  
 **Canonical engineering baseline:** `022b1667ce25a9f4b86a71c95b2c59ad37793d4e`  
 **Current state authority:** `PROJECT_MANIFEST.md`
 
