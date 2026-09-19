@@ -201,7 +201,8 @@ jobs:
               },
               attribution:"Lab | zefry"
             }' > /tmp/sprint207-target-candidate.canonical.json
-          target_descriptor_sha="$(sha256sum /tmp/sprint207-target-candidate.canonical.json | awk '{print $1}')"
+          target_descriptor_canonical="$(cat /tmp/sprint207-target-candidate.canonical.json)"
+          target_descriptor_sha="$(printf '%s' "$target_descriptor_canonical" | sha256sum | awk '{print $1}')"
 
           jq -n \
             --arg release "$release_id" \
