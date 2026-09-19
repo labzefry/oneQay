@@ -934,7 +934,8 @@ function stateDescription(string $state): string
             <div><span>Target environment preflight</span><strong><?= $technicalPreviewActiveHealthy ? 'CONSUMED / RECEIPT-BOUND' : ($technicalPreviewTargetPreflightPassed ? 'PREFLIGHT PASSED / NOT ACTIVATED' : e($technicalPreviewTargetPreflightCode)) ?></strong></div>
             <div><span>Activation health</span><strong><?= $technicalPreviewActiveHealthy ? 'ACTIVE / HEALTHY' : e($technicalPreviewActivationExecutionCode) ?></strong></div>
             <div><span>Migration</span><strong>NOT EXECUTED</strong></div>
-            <div><span>Technical Preview</span><strong><?= $technicalPreviewActiveHealthy ? 'ACTIVE / SYNTHETIC ONLY' : 'NOT AUTHORIZED' ?></strong></div>
+            <div><span>Technical Preview</span><strong>NOT AUTHORIZED</strong></div>
+            <div><span>Runtime Preview activation</span><strong><?= $technicalPreviewActiveHealthy ? 'ACTIVE / SYNTHETIC ONLY' : 'NOT EXECUTED' ?></strong></div>
             <div><span>Production</span><strong>NOT AUTHORIZED</strong></div>
         </div>
     </section>
