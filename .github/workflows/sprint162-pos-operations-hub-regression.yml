@@ -82,11 +82,11 @@ jobs:
             )
             diff -u <(printf '%s\n' "${expected[@]}") <(printf '%s\n' "${changed[@]}")
             test "$(grep -Fc 'App\Providers\PosOperationsHubServiceProvider::class' apps/web/bootstrap/providers.php)" -eq 1
-          elif grep -Fq 'App\\Providers\\PosOperationsHubServiceProvider::class' apps/web/bootstrap/providers.php; then
+          elif grep -Fq 'App\Providers\PosOperationsHubServiceProvider::class' apps/web/bootstrap/providers.php; then
             if [[ "${{ github.event_name }}" == 'pull_request' ]]; then
-              git show "${{ github.event.pull_request.base.sha }}:apps/web/bootstrap/providers.php" | grep -Fq 'App\\Providers\\PosOperationsHubServiceProvider::class'
+              git show "${{ github.event.pull_request.base.sha }}:apps/web/bootstrap/providers.php" | grep -Fq 'App\Providers\PosOperationsHubServiceProvider::class'
             fi
-            test "$(grep -Fc 'App\\Providers\\PosOperationsHubServiceProvider::class' apps/web/bootstrap/providers.php)" -eq 1
+            test "$(grep -Fc 'App\Providers\PosOperationsHubServiceProvider::class' apps/web/bootstrap/providers.php)" -eq 1
           else
             ! grep -Fq 'PosOperationsHubServiceProvider::class' apps/web/bootstrap/providers.php
           fi
