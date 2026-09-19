@@ -93,6 +93,10 @@ jobs:
           artifact_sha="$(printf 'artifact:%s' "$HEAD_SHA" | sha256sum | awk '{print $1}')"
           manifest_sha="$(printf 'manifest:%s' "$HEAD_SHA" | sha256sum | awk '{print $1}')"
           authority_sha="$(printf 'authority:%s' "$HEAD_SHA" | sha256sum | awk '{print $1}')"
+          request_sha="$(printf 'request:%s' "$HEAD_SHA" | sha256sum | awk '{print $1}')"
+          now_unix="$(date +%s)"
+          authorized_at_unix="$((now_unix - 10))"
+          expires_at_unix="$((now_unix + 600))"
 
           jq -n \
             --arg release "$release_id" \
@@ -158,10 +162,56 @@ jobs:
               attribution:"Lab | zefry"
             }' > /tmp/sprint207-handoff.json
 
+          jq -S -c -n '{
+              schema_version:1,
+              target_state:"OPERATOR_TARGET_CANDIDATE",
+              environment_id:"durable-staging-ci-01",
+              runtime_class:"durable-staging",
+              production:false,
+              production_data_allowed:false,
+              synthetic_fixture_runtime:false,
+              filesystem:{
+                deployment_root:"/srv/oneqay",
+                release_root:"/srv/oneqay/releases",
+                shared_runtime_root:"/srv/oneqay/shared/runtime",
+                active_release_pointer:"/srv/oneqay/active-release.json"
+              },
+              capabilities:{
+                durable_database_persistence:true,
+                durable_session:true,
+                authorization:true,
+                transaction_durability:true,
+                pos_durability:true,
+                authenticated_configuration_channel:true,
+                read_before_write:true,
+                read_after_write:true,
+                non_mutating_health_attestation:true,
+                verified_rollback:true
+              },
+              configuration:{
+                secret_values_embedded:false,
+                required_binding_presence:{
+                  ONEQAY_RUNTIME_CLASS:true,
+                  ONEQAY_RUNNING_SOURCE_COMMIT:true,
+                  ONEQAY_RUNNING_ARTIFACT_SHA256:true,
+                  ONEQAY_DURABLE_RUNTIME_ENVIRONMENT_ID:true,
+                  ONEQAY_DURABLE_RUNTIME_ATTESTATION_TOKEN:true,
+                  ONEQAY_DURABLE_STAGING_RUNTIME_ENABLED:true
+                }
+              },
+              attribution:"Lab | zefry"
+            }' > /tmp/sprint207-target-candidate.canonical.json
+          target_descriptor_canonical="$(cat /tmp/sprint207-target-candidate.canonical.json)"
+          target_descriptor_sha="$(printf '%s' "$target_descriptor_canonical" | sha256sum | awk '{print $1}')"
+
           jq -n \
             --arg release "$release_id" \
             --arg artifact "$artifact_sha" \
             --arg authority "$authority_sha" \
+            --arg request_sha "$request_sha" \
+            --arg target_descriptor_sha "$target_descriptor_sha" \
+            --argjson authorized_at_unix "$authorized_at_unix" \
+            --argjson expires_at_unix "$expires_at_unix" \
             '{
               schema_version:1,
               target_state:"OPERATOR_TARGET_DECLARED",
@@ -201,8 +251,13 @@ jobs:
               },
               deployment_authority:{
                 state:"EXTERNALLY_GRANTED_FOR_EXACT_TARGET",
-                authority_id:"sprint207-ci-authority",
+                authority_id:"durable-staging-deployment-authority-0123456789abcdef01234567",
                 authority_sha256:$authority,
+                request_id:"durable-staging-deployment-request-0123456789abcdef01234567",
+                request_sha256:$request_sha,
+                target_descriptor_sha256:$target_descriptor_sha,
+                authorized_at_unix:$authorized_at_unix,
+                expires_at_unix:$expires_at_unix,
                 environment_id:"durable-staging-ci-01",
                 release_id:$release,
                 artifact_sha256:$artifact,
@@ -224,9 +279,14 @@ jobs:
           diff -u /tmp/sprint207-plan-1.json /tmp/sprint207-plan-2.json
 
           PLAN=/tmp/sprint207-plan-1.json
+          target_descriptor_sha="$(jq -r '.deployment_authority.target_descriptor_sha256' /tmp/sprint207-target.json)"
+          expires_at_unix="$(jq -r '.deployment_authority.expires_at_unix' /tmp/sprint207-target.json)"
           jq -e '.plan_state == "QUALIFIED_FOR_EXTERNAL_OPERATOR_EXECUTION_NOT_EXECUTED"' "$PLAN"
           jq -e '.target.runtime_class == "durable-staging"' "$PLAN"
           jq -e '.authority_binding.deployment_allowed == true' "$PLAN"
+          jq -e '.authority_binding.request_id == "durable-staging-deployment-request-0123456789abcdef01234567"' "$PLAN"
+          jq -e '.authority_binding.target_descriptor_sha256 == $expected' --arg expected "$target_descriptor_sha" "$PLAN"
+          jq -e '.authority_binding.expires_at_unix == $expected' --argjson expected "$expires_at_unix" "$PLAN"
           jq -e '.authority_binding.migration_execution_allowed == false' "$PLAN"
           jq -e '.readback_expectations.durable_staging_runtime_enabled == true' "$PLAN"
           jq -e '.rollback.required == true' "$PLAN"
@@ -258,6 +318,23 @@ jobs:
           if php tools/prepare-durable-staging-operator-deployment-plan.php \
             /tmp/sprint207-handoff.json /tmp/sprint207-production.json /tmp/sprint207-should-not-exist.json; then
             echo "Accepted Production target." >&2
+            exit 1
+          fi
+
+          jq '.deployment_authority.expires_at_unix = (.deployment_authority.authorized_at_unix + 1)' \
+            /tmp/sprint207-target.json > /tmp/sprint207-expired-authority.json
+          sleep 2
+          if php tools/prepare-durable-staging-operator-deployment-plan.php \
+            /tmp/sprint207-handoff.json /tmp/sprint207-expired-authority.json /tmp/sprint207-should-not-exist.json; then
+            echo "Accepted expired authority." >&2
+            exit 1
+          fi
+
+          jq '.deployment_authority.target_descriptor_sha256 = ("0" * 64)' \
+            /tmp/sprint207-target.json > /tmp/sprint207-target-descriptor-drift.json
+          if php tools/prepare-durable-staging-operator-deployment-plan.php \
+            /tmp/sprint207-handoff.json /tmp/sprint207-target-descriptor-drift.json /tmp/sprint207-should-not-exist.json; then
+            echo "Accepted target descriptor authority drift." >&2
             exit 1
           fi
 

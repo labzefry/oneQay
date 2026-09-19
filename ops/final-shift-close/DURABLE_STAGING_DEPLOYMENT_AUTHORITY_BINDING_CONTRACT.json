@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "feature": "durable-staging-deployment-authority-binding",
+  "contract_state": "SOURCE_READY_AUTHORITY_BINDING_ONLY_NOT_DEPLOYED",
+  "purpose": "CREATE_AN_EXACT_TARGET_DEPLOYMENT_REQUEST_VALIDATE_SEPARATE_SHORT_LIVED_AUTHORITY_AND_EMIT_A_QUALIFIED_SPRINT207_OPERATOR_TARGET_WITHOUT_DEPLOYMENT",
+  "predecessor_plan_contract": "ops/final-shift-close/DURABLE_STAGING_OPERATOR_DEPLOYMENT_PLAN_CONTRACT.json",
+  "target_candidate_schema_path": "tools/deployment/durable-staging-operator-target-candidate.schema.json",
+  "request_schema_path": "tools/deployment/durable-staging-deployment-authority-request.schema.json",
+  "authority_schema_path": "tools/deployment/durable-staging-deployment-authority.schema.json",
+  "request_tool_path": "tools/prepare-durable-staging-deployment-authority-request.php",
+  "authority_qualification_tool_path": "tools/qualify-durable-staging-deployment-authority.php",
+  "authority_policy": {
+    "source": "EXTERNAL_SEPARATE_OPERATIONAL_AUTHORITY",
+    "maximum_lifetime_seconds": 900,
+    "approval_token_required": true,
+    "exact_request_required": true,
+    "exact_target_descriptor_required": true,
+    "exact_environment_required": true,
+    "exact_release_required": true,
+    "exact_artifact_required": true,
+    "deployment_allowed": true,
+    "migration_execution_allowed": false,
+    "production_allowed": false,
+    "technical_preview_activation_allowed": false,
+    "updater_activation_allowed": false,
+    "target_selection_allowed": false,
+    "producer_dispatch_allowed": false
+  },
+  "qualified_target": {
+    "output_schema_path": "tools/deployment/durable-staging-operator-target.schema.json",
+    "authority_expiry_must_be_revalidated_by_planner": true,
+    "secret_values_embedded": false
+  },
+  "canonical_boundaries": {
+    "environment_creation": "NOT_PERFORMED",
+    "environment_deployment": "NOT_PERFORMED",
+    "archive_extraction": "NOT_PERFORMED",
+    "runtime_configuration_mutation": "NOT_PERFORMED",
+    "active_release_pointer_mutation": "NOT_PERFORMED",
+    "migration27_execution": "NOT_PERFORMED",
+    "permission_provisioning": "NONE",
+    "feature_activation": "INACTIVE",
+    "technical_preview_activation": "NOT_AUTHORIZED",
+    "production_activation": "NOT_AUTHORIZED",
+    "updater_activation": "INACTIVE",
+    "durable_target_selection": "BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET",
+    "selected_target": null,
+    "producer_dispatch": "NOT_PERFORMED"
+  },
+  "attribution": "Lab | zefry"
+}

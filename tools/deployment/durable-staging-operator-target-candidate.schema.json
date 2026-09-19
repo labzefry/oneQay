@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://oneqay.invalid/contracts/durable-staging-operator-target.schema.json",
-  "title": "oneQay Durable Staging Operator Target",
+  "$id": "https://oneqay.invalid/contracts/durable-staging-operator-target-candidate.schema.json",
+  "title": "oneQay Durable Staging Operator Target Candidate",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -15,7 +15,6 @@
     "filesystem",
     "capabilities",
     "configuration",
-    "deployment_authority",
     "attribution"
   ],
   "properties": {
@@ -25,7 +24,7 @@
     },
     "target_state": {
       "type": "string",
-      "const": "OPERATOR_TARGET_DECLARED"
+      "const": "OPERATOR_TARGET_CANDIDATE"
     },
     "environment_id": {
       "type": "string",
@@ -190,84 +189,6 @@
               "const": true
             }
           }
-        }
-      }
-    },
-    "deployment_authority": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "state",
-        "authority_id",
-        "authority_sha256",
-        "expires_at_unix",
-        "authorized_at_unix",
-        "target_descriptor_sha256",
-        "request_sha256",
-        "request_id",
-        "environment_id",
-        "release_id",
-        "artifact_sha256",
-        "deployment_allowed",
-        "migration_execution_allowed",
-        "production_allowed"
-      ],
-      "properties": {
-        "state": {
-          "type": "string",
-          "const": "EXTERNALLY_GRANTED_FOR_EXACT_TARGET"
-        },
-        "authority_id": {
-          "type": "string",
-          "pattern": "^durable-staging-deployment-authority-[0-9a-f]{24}$"
-        },
-        "authority_sha256": {
-          "type": "string",
-          "pattern": "^[0-9a-f]{64}$"
-        },
-        "environment_id": {
-          "type": "string",
-          "pattern": "^[a-z0-9][a-z0-9-]{2,62}$"
-        },
-        "release_id": {
-          "type": "string",
-          "pattern": "^durable-staging-[0-9a-f]{12}$"
-        },
-        "artifact_sha256": {
-          "type": "string",
-          "pattern": "^[0-9a-f]{64}$"
-        },
-        "deployment_allowed": {
-          "type": "boolean",
-          "const": true
-        },
-        "migration_execution_allowed": {
-          "type": "boolean",
-          "const": false
-        },
-        "production_allowed": {
-          "type": "boolean",
-          "const": false
-        },
-        "request_id": {
-          "type": "string",
-          "pattern": "^durable-staging-deployment-request-[0-9a-f]{24}$"
-        },
-        "request_sha256": {
-          "type": "string",
-          "pattern": "^[0-9a-f]{64}$"
-        },
-        "target_descriptor_sha256": {
-          "type": "string",
-          "pattern": "^[0-9a-f]{64}$"
-        },
-        "authorized_at_unix": {
-          "type": "integer",
-          "minimum": 1
-        },
-        "expires_at_unix": {
-          "type": "integer",
-          "minimum": 1
         }
       }
     },
