@@ -418,7 +418,14 @@ final class AppServiceProvider extends ServiceProvider
 
     private function runtimeClass(): string
     {
-        return (string) config('oneqay.runtime_class', '');
+        $runtime = strtolower(trim((string) config('oneqay.runtime_class', '')));
+
+        if ($runtime === 'staging'
+            && ! (bool) config('oneqay.durable_staging_runtime.enabled', false)) {
+            return 'staging-denied';
+        }
+
+        return $runtime;
     }
 
     private function totpRecoveryEnabled(): bool
