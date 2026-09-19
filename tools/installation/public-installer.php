@@ -30,6 +30,7 @@ $installerSources = [
     $appRoot.'/app/Infrastructure/Installation/PrebootInstallationCompletionHandoff.php',
     $appRoot.'/app/Infrastructure/Installation/PrebootTechnicalPreviewActivationRequest.php',
     $appRoot.'/app/Infrastructure/Installation/PrebootTechnicalPreviewActivationAuthorityReadiness.php',
+    $appRoot.'/app/Infrastructure/Installation/PrebootTechnicalPreviewTargetEnvironmentPreflight.php',
     $appRoot.'/app/Infrastructure/Installation/PrebootInstallationConfiguration.php',
 ];
 $sharedRoot = $accountHome.'/oneqay-preview/shared';
@@ -53,6 +54,13 @@ $postPromotionVerification = new \App\Infrastructure\Installation\PrebootRuntime
 $completionHandoff = new \App\Infrastructure\Installation\PrebootInstallationCompletionHandoff($sharedRoot, $releaseId, $nowUnix);
 $technicalPreviewActivationRequest = new \App\Infrastructure\Installation\PrebootTechnicalPreviewActivationRequest($sharedRoot, $releaseId, $nowUnix);
 $technicalPreviewAuthorityReadiness = new \App\Infrastructure\Installation\PrebootTechnicalPreviewActivationAuthorityReadiness($sharedRoot, $releaseId, $nowUnix);
+$technicalPreviewTargetPreflight = new \App\Infrastructure\Installation\PrebootTechnicalPreviewTargetEnvironmentPreflight(
+    $sharedRoot,
+    $releaseId,
+    $nowUnix,
+    $appRoot,
+    __DIR__,
+);
 $state = [
     'state' => 'UNAVAILABLE',
     'can_prepare' => false,
@@ -112,6 +120,15 @@ $technicalPreviewAuthorityState = [
     'request_id' => '',
     'authority_id' => '',
     'activation_executed' => false,
+];
+$technicalPreviewTargetPreflightResult = null;
+$technicalPreviewTargetPreflightState = [
+    'state' => 'TECHNICAL_PREVIEW_TARGET_PREFLIGHT_NOT_READY',
+    'preflight_ready' => false,
+    'preflight_passed' => false,
+    'activation_executed' => false,
+    'request_id' => '',
+    'authority_id' => '',
 ];
 $errorCode = null;
 
@@ -217,6 +234,14 @@ try {
             }
 
             $technicalPreviewAuthorityResult = $technicalPreviewAuthorityReadiness->qualifyAndAttest($approvalToken);
+        } elseif ($action === 'run_technical_preview_target_preflight') {
+            $confirmation = $_POST['technical_preview_target_preflight_confirmation'] ?? null;
+            if (! is_string($confirmation)
+                || ! hash_equals('RUN_TECHNICAL_PREVIEW_TARGET_PREFLIGHT', $confirmation)) {
+                throw new RuntimeException('technical_preview_target_preflight_confirmation_invalid');
+            }
+
+            $technicalPreviewTargetPreflightResult = $technicalPreviewTargetPreflight->run($_SERVER);
         } else {
             throw new RuntimeException('unsupported_installation_action');
         }
@@ -226,6 +251,9 @@ try {
         $technicalPreviewRequestState = $technicalPreviewActivationRequest->inspect();
         if (($technicalPreviewRequestState['request_ready'] ?? false) === true) {
             $technicalPreviewAuthorityState = $technicalPreviewAuthorityReadiness->inspect();
+            if (($technicalPreviewAuthorityState['execution_ready'] ?? false) === true) {
+                $technicalPreviewTargetPreflightState = $technicalPreviewTargetPreflight->inspect();
+            }
         }
     }
 } catch (\RuntimeException $exception) {
@@ -279,6 +307,12 @@ $technicalPreviewExecutionReady = ($technicalPreviewAuthorityState['execution_re
     || (is_array($technicalPreviewAuthorityResult)
         && ($technicalPreviewAuthorityResult['state'] ?? null) === 'TECHNICAL_PREVIEW_ACTIVATION_EXECUTION_READY_NOT_EXECUTED'
         && ($technicalPreviewAuthorityResult['activation_executed'] ?? true) === false);
+$technicalPreviewTargetPreflightCode = (string) ($technicalPreviewTargetPreflightState['state'] ?? 'TECHNICAL_PREVIEW_TARGET_PREFLIGHT_NOT_READY');
+$technicalPreviewTargetPreflightReady = ($technicalPreviewTargetPreflightState['preflight_ready'] ?? false) === true;
+$technicalPreviewTargetPreflightPassed = ($technicalPreviewTargetPreflightState['preflight_passed'] ?? false) === true
+    || (is_array($technicalPreviewTargetPreflightResult)
+        && ($technicalPreviewTargetPreflightResult['state'] ?? null) === 'TECHNICAL_PREVIEW_TARGET_ENVIRONMENT_PREFLIGHT_PASSED_NOT_ACTIVATED'
+        && ($technicalPreviewTargetPreflightResult['activation_executed'] ?? true) === false);
 $prepared = is_array($result) && ($result['prepared'] ?? false) === true;
 
 function e(string $value): string
@@ -672,6 +706,36 @@ function stateDescription(string $state): string
             </div>
         <?php endif; ?>
 
+        <?php if ($technicalPreviewExecutionReady && $technicalPreviewTargetPreflightReady && ! $technicalPreviewTargetPreflightPassed): ?>
+            <div class="notice warning">
+                Technical Preview authority is qualified, but target-environment preflight remains mandatory. The action below performs read-only HTTPS, dedicated-host, single-instance, private persistent session, runtime-envelope, off-switch, synthetic/no-schema-change, health-contract, and rollback/recovery checks. It does not activate Preview.
+            </div>
+            <form method="post" autocomplete="off">
+                <input type="hidden" name="action" value="run_technical_preview_target_preflight">
+                <div class="grid">
+                    <div class="field full">
+                        <label for="technical_preview_target_preflight_confirmation">Target preflight confirmation</label>
+                        <input id="technical_preview_target_preflight_confirmation" name="technical_preview_target_preflight_confirmation" type="text" required maxlength="64" autocomplete="off" placeholder="RUN_TECHNICAL_PREVIEW_TARGET_PREFLIGHT">
+                        <p class="help">Type exactly <strong>RUN_TECHNICAL_PREVIEW_TARGET_PREFLIGHT</strong>. Only private non-secret preflight evidence is written.</p>
+                    </div>
+                </div>
+                <div class="actions">
+                    <p>
+                        Preflight must be executed over HTTPS on the exact configured Preview host. Failure leaves Technical Preview disabled and writes no successful evidence.
+                    </p>
+                    <button type="submit">Run target environment preflight</button>
+                </div>
+            </form>
+        <?php elseif ($technicalPreviewTargetPreflightPassed): ?>
+            <div class="notice success">
+                Technical Preview target environment is <strong>PREFLIGHT PASSED / NOT ACTIVATED</strong>. HTTPS, host binding, single-instance posture, private persistent sessions, runtime envelope, off-switch, release metadata, and recovery/health contracts are qualified. Activation remains a separate governed step.
+            </div>
+        <?php elseif ($technicalPreviewExecutionReady && in_array($technicalPreviewTargetPreflightCode, ['TECHNICAL_PREVIEW_TARGET_PREFLIGHT_INVALID', 'TECHNICAL_PREVIEW_TARGET_PREFLIGHT_AUTHORITY_EXPIRED'], true)): ?>
+            <div class="notice error">
+                Technical Preview target preflight status: <strong><?= e($technicalPreviewTargetPreflightCode) ?></strong>. The installer remains fail-closed and activation execution is unavailable.
+            </div>
+        <?php endif; ?>
+
         <?php if ($promotionRequestPending && ! $promotionAuthorityTokenRequired && ! $promotionQualified && ! $runtimeConfigured): ?>
             <div class="notice">
                 Promotion authority status: <strong><?= e($promotionAuthorityState) ?></strong>. A separately provisioned exact-bound authority is required before qualification.
@@ -703,6 +767,7 @@ function stateDescription(string $state): string
             <div><span>Technical Preview activation request</span><strong><?= $technicalPreviewRequestPending ? 'PENDING APPROVAL / NOT AUTHORIZED' : e($technicalPreviewRequestCode) ?></strong></div>
             <div><span>Technical Preview authority</span><strong><?= $technicalPreviewExecutionReady ? 'QUALIFIED / READY' : e($technicalPreviewAuthorityCode) ?></strong></div>
             <div><span>Activation execution readiness</span><strong><?= $technicalPreviewExecutionReady ? 'READY / NOT EXECUTED' : 'NOT READY' ?></strong></div>
+            <div><span>Target environment preflight</span><strong><?= $technicalPreviewTargetPreflightPassed ? 'PREFLIGHT PASSED / NOT ACTIVATED' : e($technicalPreviewTargetPreflightCode) ?></strong></div>
             <div><span>Migration</span><strong>NOT EXECUTED</strong></div>
             <div><span>Technical Preview</span><strong>NOT AUTHORIZED</strong></div>
             <div><span>Production</span><strong>NOT AUTHORIZED</strong></div>
