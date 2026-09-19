@@ -313,7 +313,7 @@ final readonly class LaravelInitialTenantAdministratorProvisioningRepository imp
             );
         }
 
-        if (! in_array(strtolower(trim($this->runtimeClass)), ['local', 'test', 'ci'], true)) {
+        if (! in_array(strtolower(trim($this->runtimeClass)), ['local', 'test', 'ci', 'staging'], true)) {
             throw new InitialTenantAdministratorProvisioningViolation(
                 InitialTenantAdministratorProvisioningViolation::RUNTIME_DENIED,
                 'Initial tenant administrator provisioning runtime is not authorized.',
@@ -330,7 +330,7 @@ final readonly class LaravelInitialTenantAdministratorProvisioningRepository imp
             );
         }
 
-        if (! in_array(strtolower(trim($this->runtimeClass)), ['local', 'test', 'ci'], true)) {
+        if (! in_array(strtolower(trim($this->runtimeClass)), ['local', 'test', 'ci', 'staging'], true)) {
             throw new DurablePersistenceViolation(
                 DurablePersistenceViolation::RUNTIME_DENIED,
                 'Durable persistence runtime is not authorized.',
