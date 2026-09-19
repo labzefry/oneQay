@@ -190,7 +190,7 @@ jobs:
         run: |
           set -euo pipefail
           TOOL=tools/prepare-durable-staging-deployment-handoff.php
-          ! grep -Eq 'Artisan::call|php artisan migrate|migrate --force|PDO\(|mysqli_|curl_exec|file_get_contents\([[:space:]]*["'\''']https?://' "$TOOL"
+          ! grep -Eq 'Artisan::call|php artisan migrate|migrate --force|PDO\(|mysqli_|curl_exec|https?://' "$TOOL"
           ! grep -Eq 'rename\([^,]+,[^)]*releases|current-release\.json|deployment-state/locks|ONEQAY_DURABLE_RUNTIME_ATTESTATION_TOKEN=' "$TOOL"
           ! grep -Eq 'SystemUpdateActivationCoordinator|FilesystemSystemUpdateReleaseStore|FilesystemSystemUpdateActiveReleasePointerStore' "$TOOL"
 
