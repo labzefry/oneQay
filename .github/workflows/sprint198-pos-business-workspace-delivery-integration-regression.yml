@@ -40,7 +40,7 @@ jobs:
         if: github.event_name == 'pull_request' && github.head_ref == 'sprint198-pos-business-workspace-delivery-integration'
         shell: bash
         env:
-          EXPECTED_PATH_HASH: 72b49bd85f24eb5d5a462087801b8758e0c829a7551204599587e8bf9f4a62a9
+          EXPECTED_PATH_HASH: 785aec1672635ef48a9c418d350b7b4de7347da8dfb685c4ab308ec79eb9b8a2
         run: |
           set -euo pipefail
           BASE_SHA="${{ github.event.pull_request.base.sha }}"
@@ -52,6 +52,7 @@ jobs:
             ".github/workflows/sprint126-final-shift-close-runtime-binding-manifest-control-plane-token-hardening.yml"
             ".github/workflows/sprint162-pos-operations-hub-regression.yml"
             ".github/workflows/sprint198-pos-business-workspace-delivery-integration-regression.yml"
+            ".github/workflows/sprint28-initial-password-enrollment-regression.yml"
             ".github/workflows/sprint32-authentication-recovery-proof-regression.yml"
             ".github/workflows/sprint33-recovery-bound-password-reset-regression.yml"
             ".github/workflows/sprint34-authenticated-password-change-regression.yml"
