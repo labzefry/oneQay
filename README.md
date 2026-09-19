@@ -2,42 +2,39 @@
 
 **oneQay — The Future of Intelligent Business Management**
 
-Enterprise-oriented business-management platform built with Modular Monolith First, Clean Architecture, DDD, first-class tenant context, deny-by-default authorization, module-owned schema, and fail-closed engineering controls.
+Enterprise-oriented multi-tenant business-management platform built with Modular Monolith First, Clean Architecture, DDD, tenant-first boundaries, deny-by-default authorization, and governed fail-closed delivery.
 
 **Repository / Product Owner attribution:** Lab | zefry
 
 ## Current canonical status
 
-The latest completed engineering sprint is **Sprint188 — Governed Runtime Promotion Qualification Foundation**.
+Latest completed engineering sprint: **Sprint189 — Governed Runtime Promotion Execution Readiness**.
 
-- Canonical engineering commit: `1d8e13871bc86ed51312c8e6dae5651018452f97`
-- Engineering PR: #806
-- Final engineering head: `f194edacc2300ac155dd6fb88d0fadf2819f50ae`
-- Exact-head qualification: 76/76 successful
-- Canonical main-push M7.5 run `35413516260`: SUCCESS
-- Engineering envelope: 10 paths, SHA-256 `cd3306762c9f36c76154a989d8b464ad8c2ec0fbf7833c3e6a0d065afbf064b0`
-- Reconciliation envelope: 8 paths, SHA-256 `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`
+- Canonical engineering commit: `68eda614a6acc79b2cccf812d0091ebad96afad1`
+- Engineering PR: #809
+- Final engineering head: `2e25bdc7cc69108f89b231f65e7b0445e36f8c7e`
+- Exact-head qualification: 77/77 successful
+- Canonical M7.5 main-push run `35415102205`: SUCCESS
+- Engineering envelope SHA-256: `d1c5161eed0ca32659bb6c9e47f897c7ee02447c1af8424d87550d5436a89523`
 
-For the full project state, use [`PROJECT_MANIFEST.md`](PROJECT_MANIFEST.md).
+See `PROJECT_MANIFEST.md` for canonical project state.
 
-## Sprint188 — Authority qualification, not execution
+## Sprint189 capability
 
-After Sprint187 creates the exact-bound promotion request, oneQay can now qualify a separately provisioned private promotion authority.
+oneQay now persists private, exact-bound execution-readiness evidence after promotion authority qualification. The evidence binds release/request/authority plus all relevant source digests, expires with the authority, is tamper-sensitive, and defines safe future executor semantics.
 
-Authority must bind the exact release, request, pending configuration, activation-readiness handoff, and promotion-request bytes; it has a maximum 900-second lifetime, requires single-use semantics, and requires an out-of-band one-time token.
-
-Successful qualification produces only **PROMOTION_QUALIFIED_NOT_EXECUTED**. It does not create active `.env` or perform runtime promotion.
+The maximum state remains **EXECUTION READY / NOT EXECUTED**. Active `.env` is not created.
 
 ## Product progression
 
-oneQay now has a governed chain from deterministic release artifact → installation readiness → secure pre-boot configuration → live database verification → verified pending configuration → exact-release handoff → reviewable promotion request → exact-bound promotion authority qualification.
+Governed release → installation readiness → secure configuration → database verification → verified pending configuration → exact-release handoff → promotion request → authority qualification → durable execution-readiness evidence.
 
-## Operational status remains intentionally gated
+## Operational boundary
 
-Migration #27 remains `NOT_EXECUTED`; permission provisioning `NONE`; durable activation target remains blocked with selected target `null`; Final Shift Close remains `INACTIVE`; deployment `NOT_GRANTED`; Technical Preview and Production `NOT_AUTHORIZED`; updater `INACTIVE`.
+Migration #27 remains `NOT_EXECUTED`; permission provisioning `NONE`; feature activation `INACTIVE`; deployment `NOT_GRANTED`; Technical Preview/Production `NOT_AUTHORIZED`; updater `INACTIVE`; selected durable target remains `null`.
 
-## Next engineering position
+## Next
 
-Sprint189 begins from the fully reconciled Sprint188 checkpoint. Select the next material blocker after authority qualification without implicitly executing promotion or granting broader operational authority.
+Sprint190 begins from fully reconciled Sprint189 and targets the next material installation/onboarding blocker without implicit activation authority.
 
 Author by Lab | zefry

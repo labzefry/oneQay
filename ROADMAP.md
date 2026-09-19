@@ -1,37 +1,32 @@
 # oneQay Roadmap
 
-**Roadmap checkpoint:** Sprint188 closed canonically
-**Canonical engineering baseline:** `1d8e13871bc86ed51312c8e6dae5651018452f97`
+**Roadmap checkpoint:** Sprint189 closed canonically
+**Canonical engineering baseline:** `68eda614a6acc79b2cccf812d0091ebad96afad1`
 **Current state authority:** `PROJECT_MANIFEST.md`
 
-## Completed Sprint188 horizon
+## Completed Sprint189 horizon
 
-Sprint188 closed `GOVERNED_RUNTIME_PROMOTION_QUALIFICATION_FOUNDATION`.
+Sprint189 closed `GOVERNED_RUNTIME_PROMOTION_EXECUTION_READINESS`.
 
-The governed installation journey now advances from a reviewable promotion request into exact-bound promotion-authority qualification.
+The installation journey now has durable, private, exact-bound execution-readiness evidence after authority qualification. This closes the ephemeral qualification gap while keeping runtime promotion itself unexecuted.
 
-The authority contract binds the exact release, request identity, pending-environment digest, activation-readiness digest, and promotion-request digest; it is time-bounded, single-use by contract, and requires an out-of-band one-time token.
+Engineering PR #809 qualified at 77/77 on final head `2e25bdc7cc69108f89b231f65e7b0445e36f8c7e` and squash merged at `68eda614a6acc79b2cccf812d0091ebad96afad1`.
 
-Successful qualification is explicitly `PROMOTION_QUALIFIED_NOT_EXECUTED`. No active runtime configuration is created.
+Canonical M7.5 main-push run `35415102205` succeeded.
 
-Engineering PR #806 qualified at 76/76 on final head `f194edacc2300ac155dd6fb88d0fadf2819f50ae` and squash merged at `1d8e13871bc86ed51312c8e6dae5651018452f97`.
+Engineering envelope SHA-256: `d1c5161eed0ca32659bb6c9e47f897c7ee02447c1af8424d87550d5436a89523`.
+Canonical reconciliation envelope SHA-256: `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`.
 
-Canonical main-push M7.5 run `35413516260` completed successfully. Final engineering envelope: 10 paths, SHA-256 `cd3306762c9f36c76154a989d8b464ad8c2ec0fbf7833c3e6a0d065afbf064b0`.
+## Product progression
 
-Canonical reconciliation envelope: 8 paths, SHA-256 `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`.
-
-## Product progression through Sprint188
-
-oneQay now has a governed path from release generation through readiness, secure setup, database compatibility, verified pending configuration, exact-release handoff, promotion request, and separately qualified promotion authority.
+Governed release → readiness → secure setup → DB verification → pending config → sealed handoff → promotion request → authority qualification → durable execution readiness.
 
 ## Operational boundary
 
-Machine-readable operational state remains authoritative. Selected durable target stays `null`; migration #27 stays `NOT_EXECUTED`; permission provisioning remains `NONE`; feature activation remains `INACTIVE`; deployment/Technical Preview/Production remain unauthorized; updater remains inactive.
+Active promotion remains unexecuted. Migration #27 remains `NOT_EXECUTED`; permission provisioning `NONE`; feature activation `INACTIVE`; deployment/Technical Preview/Production unauthorized; updater inactive; selected durable target `null`.
 
-## Sprint189 selection rule
+## Sprint190 selection rule
 
-Begin Sprint189 bounded discovery from fully reconciled Sprint188. Select the smallest material P0/P1 blocker after qualification that most directly advances toward a usable governed installation/onboarding experience.
-
-No active environment promotion, migration execution, real permission provisioning, updater activation, deployment, Technical Preview, Production, durable-target selection, or producer dispatch is pre-authorized.
+Select the smallest material P0/P1 blocker after durable execution readiness. Do not cross operational activation authority implicitly.
 
 Author by Lab | zefry
