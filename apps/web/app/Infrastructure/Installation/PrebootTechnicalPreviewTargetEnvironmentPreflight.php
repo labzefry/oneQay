@@ -407,8 +407,9 @@ final class PrebootTechnicalPreviewTargetEnvironmentPreflight
         $provider = $this->appRoot.DIRECTORY_SEPARATOR.'app'.DIRECTORY_SEPARATOR.'Providers'.DIRECTORY_SEPARATOR.'TechnicalPreviewServiceProvider.php';
         $policy = $this->appRoot.DIRECTORY_SEPARATOR.'app'.DIRECTORY_SEPARATOR.'Application'.DIRECTORY_SEPARATOR.'Preview'.DIRECTORY_SEPARATOR.'TechnicalPreviewRuntimePolicy.php';
         $config = $this->appRoot.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'technical-preview.php';
+        $sessionConfig = $this->appRoot.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'session.php';
 
-        foreach ([$provider, $policy, $config] as $path) {
+        foreach ([$provider, $policy, $config, $sessionConfig] as $path) {
             if (! is_file($path) || is_link($path) || ! is_readable($path)) {
                 return false;
             }
@@ -417,13 +418,15 @@ final class PrebootTechnicalPreviewTargetEnvironmentPreflight
         $providerSource = (string) file_get_contents($provider);
         $policySource = (string) file_get_contents($policy);
         $configSource = (string) file_get_contents($config);
+        $sessionConfigSource = (string) file_get_contents($sessionConfig);
 
         return str_contains($providerSource, 'removeDeniedPreviewRoutesAfterApplicationBoot')
             && str_contains($policySource, 'DEPLOYED_SESSION_DRIVER')
             && str_contains($configSource, "'domain' => null")
             && str_contains($configSource, "'path' => '/'")
             && str_contains($configSource, "'same_site' => 'lax'")
-            && str_contains($configSource, "'http_only' => true");
+            && str_contains($configSource, "'http_only' => true")
+            && str_contains($sessionConfigSource, "env('SESSION_FILES'");
     }
 
     private function postActivationHealthContractAvailable(): bool
