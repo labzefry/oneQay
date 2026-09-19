@@ -61,6 +61,7 @@ use App\Application\Pos\ShiftOpeningClock;
 use App\Application\Pos\ShiftOpeningRepository;
 use App\Application\Pos\ShiftOpeningCashRepository;
 use App\Application\Pos\ShiftClosingCashRepository;
+use App\Application\Runtime\DurableStagingRuntimeBridge;
 use App\Application\Tenancy\TenantContextStore;
 use App\Application\Tenancy\TenantMembershipVerifier;
 use App\Infrastructure\Access\LaravelDurableOrganizationalAccessRepository;
@@ -418,7 +419,10 @@ final class AppServiceProvider extends ServiceProvider
 
     private function runtimeClass(): string
     {
-        return (string) config('oneqay.runtime_class', '');
+        return DurableStagingRuntimeBridge::repositoryRuntimeClass(
+            (string) config('oneqay.runtime_class', ''),
+            (bool) config('oneqay.durable_staging_runtime.enabled', false),
+        );
     }
 
     private function totpRecoveryEnabled(): bool
