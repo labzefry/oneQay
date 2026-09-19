@@ -1,5 +1,27 @@
 # Changelog
 
+## 2026-09-19 — Sprint204 closed canonically
+
+**Sprint204: Durable Staging Runtime Readiness Attestation Delivery**
+
+- Added an authenticated, read-only durable-runtime readiness endpoint at `GET /internal/oneqay/durable-runtime/readiness` for the canonical non-production runtime class `durable-staging`.
+- Endpoint registration remains fail-closed and requires both exact `durable-staging` identity and `ONEQAY_DURABLE_STAGING_RUNTIME_ENABLED=true`.
+- Preserved the historical `staging` merchant-core compatibility alias without treating that alias as durable-target qualification identity.
+- Readiness payload matches the existing Sprint110 contract and exposes only secret-free environment/runtime posture, durability capabilities, source/artifact provenance, health/readback/rollback support, and inactive feature state.
+- Bearer authentication is mandatory through `ONEQAY_DURABLE_RUNTIME_ATTESTATION_TOKEN`; the token is never returned and responses are `no-store, private`.
+- Platform capability declarations remain false unless explicitly supplied by the external staging environment.
+- Existing producer, ingestion, target-selection, migration, permission, activation, deployment, updater, Technical Preview, and Production workflows remain undispatched/inactive.
+- Final engineering head `f849d3902c026105ae9e21088b45a05b6d71dcaa`: 88/88 PR-triggered workflows SUCCESS.
+- Engineering PR #841 squash merged at `a5672b315a320092c6fa8cc74d984cb70f4e18ae`.
+- Sprint204 bounded readiness qualification `35450150420`, M7.5 `35450150933`, Sprint32 `35450150321`, Sprint33 `35450150417`, Sprint34 `35450150397`, M7.1 `35450150370`, Governance `35450150921`, and PHP Foundation `35450150402`: SUCCESS.
+- Product Owner merge authority status `product-owner-merge-authority`: SUCCESS.
+- Engineering path hash: `42c4cdd533a99adf2d0d5ba379e1e90575f0bd081ec08187107e9f7a0a03d766`.
+- Canonical reconciliation path hash: `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`.
+- Operational NO-GO unchanged; no real durable staging target was selected, deployed, mutated, or queried by a protected producer.
+- Next position: qualify a real isolated non-synthetic staging environment only after its external runtime, provenance, authenticated mutation/readback, health, and rollback prerequisites actually exist; do not manufacture replacement source work merely to simulate target availability.
+
+Author by Lab | zefry
+
 ## 2026-09-19 — Sprint203 closed canonically
 
 **Sprint203: Durable Staging Merchant Core Bounded Bridge**
