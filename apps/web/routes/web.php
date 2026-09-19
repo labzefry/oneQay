@@ -40,7 +40,8 @@ Route::get('/', static fn () => Inertia::render('Foundation', [
 
 // Author by Lab | zefry
 $firstPartyAuthRuntime = strtolower(trim((string) config('oneqay.runtime_class', '')));
-$merchantRuntimeAllowed = in_array($firstPartyAuthRuntime, ['local', 'test', 'ci'], true)
+$localTestCiRuntime = in_array($firstPartyAuthRuntime, ['local', 'test', 'ci'], true);
+$merchantRuntimeAllowed = $localTestCiRuntime
     || ($firstPartyAuthRuntime === 'staging'
         && (bool) config('oneqay.durable_staging_runtime.enabled', false));
 $sessionControlEnabled = (bool) config('oneqay.session_control.enabled', false)
@@ -156,7 +157,7 @@ if ($merchantRuntimeAllowed
         ->middleware(['session.active', 'throttle:30,1', 'throttle:300,60', RequirePosSessionContextMiddleware::class])
         ->name('pos.sales.complete');
 
-    if ((bool) config('oneqay.pos_sale_void.enabled', false)) {
+    if ($localTestCiRuntime && (bool) config('oneqay.pos_sale_void.enabled', false)) {
         Route::post('/pos/sales/void', PosSaleVoidController::class)
             ->middleware(['session.active', 'throttle:10,1', 'throttle:100,60', RequirePosSessionContextMiddleware::class])
             ->name('pos.sales.void');
@@ -169,7 +170,7 @@ if ($merchantRuntimeAllowed
     }
 }
 
-if ($merchantRuntimeAllowed
+if ($localTestCiRuntime
     && $sessionControlEnabled
     && (bool) config('oneqay.pos_sale_cash_refund.enabled', false)) {
     Route::post('/pos/sales/cash-refund', PosSaleCashRefundController::class)
@@ -193,7 +194,7 @@ if ($merchantRuntimeAllowed
         ->name('pos.shifts.opening-cash');
 }
 
-if ($merchantRuntimeAllowed
+if ($localTestCiRuntime
     && $sessionControlEnabled
     && (bool) config('oneqay.pos_shift_closing_cash_evidence.enabled', false)) {
     Route::post('/pos/shifts/closing-cash', PosShiftClosingCashController::class)
