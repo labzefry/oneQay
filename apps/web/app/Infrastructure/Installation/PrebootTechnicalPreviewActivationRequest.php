@@ -16,9 +16,14 @@ final class PrebootTechnicalPreviewActivationRequest
     public function __construct(
         private readonly string $sharedRoot,
         private readonly string $releaseId,
+        private readonly int $nowUnix,
     ) {
         if (! preg_match('/\Am75-preview-[0-9a-f]{12}\z/i', $releaseId)) {
             throw new RuntimeException('invalid_release_identity');
+        }
+
+        if ($nowUnix <= 0) {
+            throw new RuntimeException('invalid_activation_request_clock');
         }
     }
 
@@ -108,6 +113,7 @@ final class PrebootTechnicalPreviewActivationRequest
             'release_id' => $this->releaseId,
             'active_environment_sha256' => $context['active_sha256'],
             'installation_completion_sha256' => $context['completion_sha256'],
+            'created_at_unix' => $this->nowUnix,
             'requested_operation' => 'ENABLE_SYNTHETIC_TECHNICAL_PREVIEW_RUNTIME',
             'requested_runtime_envelope' => [
                 'runtime_class' => 'preview',
@@ -219,6 +225,8 @@ final class PrebootTechnicalPreviewActivationRequest
             && ($request['release_id'] ?? null) === $this->releaseId
             && ($request['active_environment_sha256'] ?? null) === $context['active_sha256']
             && ($request['installation_completion_sha256'] ?? null) === $context['completion_sha256']
+            && is_int($request['created_at_unix'] ?? null)
+            && ($request['created_at_unix'] ?? 0) > 0
             && ($request['requested_operation'] ?? null) === 'ENABLE_SYNTHETIC_TECHNICAL_PREVIEW_RUNTIME'
             && ($envelope['runtime_class'] ?? null) === 'preview'
             && ($envelope['technical_preview_enabled'] ?? null) === true
