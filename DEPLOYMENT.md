@@ -1,5 +1,48 @@
 # oneQay Deployment Handbook
 
+## Durable-staging deployment authority binding — Sprint208
+
+Sprint208 adds the missing governance binding between a real isolated non-production target and the Sprint207 operator deployment plan. It does **not** grant deployment authority. It creates a deterministic authority request, validates a separately issued short-lived authority plus one-time approval token, and emits the exact qualified operator-target descriptor consumed by Sprint207 planning.
+
+The lifecycle is:
+
+1. prepare an operator target **candidate** with no authority embedded;
+2. create a deterministic deployment-authority request bound to the exact Sprint206 handoff, artifact, release, source, environment ID, filesystem/capability descriptor, and candidate SHA-256;
+3. obtain separate external operational authority for that exact request;
+4. provide the approval token through STDIN, never argv or repository content;
+5. qualify the authority only while its lifetime is current and at most 900 seconds;
+6. emit a private `0600` qualified target descriptor containing only authority metadata/digests, never the token;
+7. create the Sprint207 operator deployment plan while that exact authority is still current.
+
+Create the request:
+
+```text
+php tools/prepare-durable-staging-deployment-authority-request.php \
+  <deployment-handoff.json> \
+  <target-candidate.json> \
+  <deployment-authority-request.json>
+```
+
+Qualify separately granted authority:
+
+```text
+printf '%s' "$ONEQAY_DEPLOYMENT_APPROVAL_TOKEN" | \
+php tools/qualify-durable-staging-deployment-authority.php \
+  <deployment-handoff.json> \
+  <target-candidate.json> \
+  <deployment-authority-request.json> \
+  <deployment-authority.json> \
+  <current-unix-time> \
+  <qualified-operator-target.json>
+```
+
+Then feed the qualified target to the Sprint207 planner. The planner now reconstructs the target-candidate fingerprint and rejects authority that is expired/not-yet-valid, longer than the 900-second policy, or drifted from the exact request/target.
+
+Authority scope is deliberately narrow: exact durable-staging deployment only. It does not authorize migration #27, Production, Technical Preview activation, updater activation, durable-target selection, producer dispatch, permission provisioning, or Final Shift Close activation.
+
+The canonical machine-readable contract is `ops/final-shift-close/DURABLE_STAGING_DEPLOYMENT_AUTHORITY_BINDING_CONTRACT.json`.
+
+
 ## Canonical durable-staging operator deployment planning — Sprint207
 
 Sprint207 closes the repository-side gap between the validated Sprint206 `durable-staging` handoff and an operator who already has a real isolated non-production target plus separate operational deployment authority.
