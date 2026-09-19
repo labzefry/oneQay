@@ -418,7 +418,7 @@ final readonly class LaravelDurablePolicyAdministrationRepository implements Dur
             throw new DurablePolicyAdministrationViolation(DurablePolicyAdministrationViolation::PERSISTENCE_DISABLED, 'Durable policy administration is disabled.');
         }
         $runtime = strtolower(trim($this->runtimeClass));
-        if (! in_array($runtime, ['local', 'test', 'ci'], true)) {
+        if (! in_array($runtime, ['local', 'test', 'ci', 'staging'], true)) {
             throw new DurablePolicyAdministrationViolation(DurablePolicyAdministrationViolation::RUNTIME_DENIED, 'Durable policy administration runtime is not authorized.');
         }
     }
@@ -429,7 +429,7 @@ final readonly class LaravelDurablePolicyAdministrationRepository implements Dur
             throw new DurablePersistenceViolation(DurablePersistenceViolation::PERSISTENCE_DISABLED, 'Durable persistence is disabled.');
         }
         $runtime = strtolower(trim($this->runtimeClass));
-        if (! in_array($runtime, ['local', 'test', 'ci'], true)) {
+        if (! in_array($runtime, ['local', 'test', 'ci', 'staging'], true)) {
             throw new DurablePersistenceViolation(DurablePersistenceViolation::RUNTIME_DENIED, 'Durable persistence runtime is not authorized.');
         }
     }
