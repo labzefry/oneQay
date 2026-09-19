@@ -31,6 +31,7 @@ $installerSources = [
     $appRoot.'/app/Infrastructure/Installation/PrebootTechnicalPreviewActivationRequest.php',
     $appRoot.'/app/Infrastructure/Installation/PrebootTechnicalPreviewActivationAuthorityReadiness.php',
     $appRoot.'/app/Infrastructure/Installation/PrebootTechnicalPreviewTargetEnvironmentPreflight.php',
+    $appRoot.'/app/Infrastructure/Installation/PrebootTechnicalPreviewActivationExecution.php',
     $appRoot.'/app/Infrastructure/Installation/PrebootInstallationConfiguration.php',
 ];
 $sharedRoot = $accountHome.'/oneqay-preview/shared';
@@ -60,6 +61,109 @@ $technicalPreviewTargetPreflight = new \App\Infrastructure\Installation\PrebootT
     $nowUnix,
     $appRoot,
     __DIR__,
+);
+$technicalPreviewHealthProbe = static function (
+    string $expectedHost,
+    string $expectedSessionDirectory,
+    string $expectedReleaseId,
+) use ($appRoot, $sharedRoot): array {
+    $failed = static fn (): array => [
+        'liveness_passed' => false,
+        'readiness_passed' => false,
+        'preview_surface_passed' => false,
+        'runtime_policy_passed' => false,
+        'session_contract_passed' => false,
+    ];
+
+    try {
+        $autoloadPath = $appRoot.'/vendor/autoload.php';
+        $bootstrapPath = $appRoot.'/bootstrap/app.php';
+        if (! is_file($autoloadPath)
+            || is_link($autoloadPath)
+            || ! is_readable($autoloadPath)
+            || ! is_file($bootstrapPath)
+            || is_link($bootstrapPath)
+            || ! is_readable($bootstrapPath)) {
+            return $failed();
+        }
+
+        require_once $autoloadPath;
+        $application = require $bootstrapPath;
+        if (! $application instanceof \Illuminate\Foundation\Application) {
+            return $failed();
+        }
+
+        $application->useEnvironmentPath($sharedRoot.'/runtime');
+        $application->loadEnvironmentFrom('.env');
+
+        /** @var \Illuminate\Contracts\Http\Kernel $kernel */
+        $kernel = $application->make(\Illuminate\Contracts\Http\Kernel::class);
+        $request = static fn (string $path): \Illuminate\Http\Request => \Illuminate\Http\Request::create(
+            'https://'.$expectedHost.$path,
+            'GET',
+            [],
+            [],
+            [],
+            [
+                'HTTPS' => 'on',
+                'SERVER_PORT' => '443',
+                'HTTP_HOST' => $expectedHost,
+                'SERVER_NAME' => $expectedHost,
+                'REQUEST_SCHEME' => 'https',
+            ],
+        );
+
+        $liveRequest = $request('/health/live');
+        $liveResponse = $kernel->handle($liveRequest);
+        $livenessPassed = $liveResponse->getStatusCode() === 200;
+        $kernel->terminate($liveRequest, $liveResponse);
+
+        $readyRequest = $request('/health/ready');
+        $readyResponse = $kernel->handle($readyRequest);
+        $readinessPassed = $readyResponse->getStatusCode() === 200;
+        $kernel->terminate($readyRequest, $readyResponse);
+
+        $previewRequest = $request('/technical-preview');
+        $previewResponse = $kernel->handle($previewRequest);
+        $previewSurfacePassed = $previewResponse->getStatusCode() === 200;
+        $kernel->terminate($previewRequest, $previewResponse);
+
+        $runtimePolicyPassed = (bool) config('technical-preview.enabled', false)
+            && (bool) config('oneqay.technical_preview.enabled', false)
+            && strtolower(trim((string) config('technical-preview.runtime_class', ''))) === 'preview'
+            && strtolower(trim((string) config('oneqay.runtime_class', ''))) === 'preview'
+            && (string) env('ONEQAY_INSTALLATION_RELEASE_ID', '') === $expectedReleaseId
+            && filter_var(env('ONEQAY_PRODUCTION_DATA_ALLOWED', true), FILTER_VALIDATE_BOOL) === false
+            && filter_var(env('ONEQAY_PERSISTENCE_ENABLED', true), FILTER_VALIDATE_BOOL) === false;
+
+        $sessionContractPassed = strtolower(trim((string) config('session.driver', ''))) === 'file'
+            && (string) config('session.files', '') === $expectedSessionDirectory
+            && (int) config('session.lifetime', 0) > 0
+            && (int) config('session.lifetime', 0) <= 60
+            && (bool) config('session.encrypt', false) === true
+            && (bool) config('session.secure', false) === true
+            && (bool) config('session.http_only', false) === true
+            && strtolower(trim((string) config('session.same_site', ''))) === 'lax'
+            && config('session.domain') === null
+            && (string) config('session.path', '') === '/'
+            && hash_equals('oneqay-preview-session', (string) config('session.cookie', ''));
+
+        return [
+            'liveness_passed' => $livenessPassed,
+            'readiness_passed' => $readinessPassed,
+            'preview_surface_passed' => $previewSurfacePassed,
+            'runtime_policy_passed' => $runtimePolicyPassed,
+            'session_contract_passed' => $sessionContractPassed,
+        ];
+    } catch (\Throwable) {
+        return $failed();
+    }
+};
+$technicalPreviewActivationExecution = new \App\Infrastructure\Installation\PrebootTechnicalPreviewActivationExecution(
+    $sharedRoot,
+    $releaseId,
+    $nowUnix,
+    $technicalPreviewHealthProbe,
 );
 $state = [
     'state' => 'UNAVAILABLE',
@@ -126,6 +230,15 @@ $technicalPreviewTargetPreflightState = [
     'state' => 'TECHNICAL_PREVIEW_TARGET_PREFLIGHT_NOT_READY',
     'preflight_ready' => false,
     'preflight_passed' => false,
+    'activation_executed' => false,
+    'request_id' => '',
+    'authority_id' => '',
+];
+$technicalPreviewActivationExecutionResult = null;
+$technicalPreviewActivationExecutionState = [
+    'state' => 'TECHNICAL_PREVIEW_ACTIVATION_NOT_READY',
+    'execution_ready' => false,
+    'active_healthy' => false,
     'activation_executed' => false,
     'request_id' => '',
     'authority_id' => '',
@@ -242,6 +355,16 @@ try {
             }
 
             $technicalPreviewTargetPreflightResult = $technicalPreviewTargetPreflight->run($_SERVER);
+        } elseif ($action === 'execute_technical_preview_activation') {
+            $approvalToken = $_POST['technical_preview_activation_token'] ?? null;
+            $confirmation = $_POST['technical_preview_activation_confirmation'] ?? null;
+            if (! is_string($approvalToken)
+                || ! is_string($confirmation)
+                || ! hash_equals('ACTIVATE_TECHNICAL_PREVIEW', $confirmation)) {
+                throw new RuntimeException('technical_preview_activation_execution_confirmation_invalid');
+            }
+
+            $technicalPreviewActivationExecutionResult = $technicalPreviewActivationExecution->execute($approvalToken);
         } else {
             throw new RuntimeException('unsupported_installation_action');
         }
@@ -256,6 +379,7 @@ try {
             }
         }
     }
+    $technicalPreviewActivationExecutionState = $technicalPreviewActivationExecution->inspect();
 } catch (\RuntimeException $exception) {
     $errorCode = $exception->getMessage();
     if (! preg_match('/\A[a-z0-9_]{3,80}\z/', $errorCode)) {
@@ -313,6 +437,12 @@ $technicalPreviewTargetPreflightPassed = ($technicalPreviewTargetPreflightState[
     || (is_array($technicalPreviewTargetPreflightResult)
         && ($technicalPreviewTargetPreflightResult['state'] ?? null) === 'TECHNICAL_PREVIEW_TARGET_ENVIRONMENT_PREFLIGHT_PASSED_NOT_ACTIVATED'
         && ($technicalPreviewTargetPreflightResult['activation_executed'] ?? true) === false);
+$technicalPreviewActivationExecutionCode = (string) ($technicalPreviewActivationExecutionState['state'] ?? 'TECHNICAL_PREVIEW_ACTIVATION_NOT_READY');
+$technicalPreviewActivationReady = ($technicalPreviewActivationExecutionState['execution_ready'] ?? false) === true;
+$technicalPreviewActiveHealthy = ($technicalPreviewActivationExecutionState['active_healthy'] ?? false) === true
+    || (is_array($technicalPreviewActivationExecutionResult)
+        && ($technicalPreviewActivationExecutionResult['state'] ?? null) === 'TECHNICAL_PREVIEW_ACTIVE_HEALTHY'
+        && ($technicalPreviewActivationExecutionResult['activation_executed'] ?? false) === true);
 $prepared = is_array($result) && ($result['prepared'] ?? false) === true;
 
 function e(string $value): string
@@ -448,7 +578,11 @@ function stateDescription(string $state): string
             <span class="status-code"><?= e($stateCode) ?></span>
         </div>
 
-        <?php if ($technicalPreviewExecutionReady): ?>
+        <?php if ($technicalPreviewActiveHealthy): ?>
+            <div class="notice success">
+                Synthetic Technical Preview is <strong>ACTIVE / HEALTHY</strong>. Activation is receipt-bound to the exact release, request, authority, readiness, target preflight, and post-activation health checks. Migration, persistence, Production, updater, and general deployment authority remain unchanged.
+            </div>
+        <?php elseif ($technicalPreviewExecutionReady): ?>
             <div class="notice success">
                 Technical Preview activation authority is <strong>QUALIFIED / READY / NOT ACTIVATED</strong>. Durable readiness is exact-bound to the request, active runtime configuration, installation completion, separate authority, and target-preflight contract. No activation has been executed.
             </div>
@@ -726,10 +860,40 @@ function stateDescription(string $state): string
                     <button type="submit">Run target environment preflight</button>
                 </div>
             </form>
-        <?php elseif ($technicalPreviewTargetPreflightPassed): ?>
+        <?php elseif ($technicalPreviewTargetPreflightPassed && ! $technicalPreviewActiveHealthy): ?>
             <div class="notice success">
-                Technical Preview target environment is <strong>PREFLIGHT PASSED / NOT ACTIVATED</strong>. HTTPS, host binding, single-instance posture, private persistent sessions, runtime envelope, off-switch, release metadata, and recovery/health contracts are qualified. Activation remains a separate governed step.
+                Technical Preview target environment is <strong>PREFLIGHT PASSED / NOT ACTIVATED</strong>. HTTPS, host binding, single-instance posture, private persistent sessions, runtime envelope, off-switch, release metadata, and recovery/health contracts are qualified.
             </div>
+            <?php if ($technicalPreviewActivationReady): ?>
+                <div class="notice warning">
+                    The next action changes only the exact Technical Preview enable flag, immediately performs bounded liveness, readiness, Preview-surface, runtime-policy, and session-contract health checks, and automatically restores the original environment if any health check fails.
+                </div>
+                <form method="post" autocomplete="off">
+                    <input type="hidden" name="action" value="execute_technical_preview_activation">
+                    <div class="grid">
+                        <div class="field full">
+                            <label for="technical_preview_activation_token">Technical Preview approval token</label>
+                            <input id="technical_preview_activation_token" name="technical_preview_activation_token" type="password" required minlength="32" maxlength="256" autocomplete="one-time-code">
+                            <p class="help">Re-enter the separately provisioned one-time token. It is verified by SHA-256 binding and is never persisted in plaintext.</p>
+                        </div>
+                        <div class="field full">
+                            <label for="technical_preview_activation_confirmation">Activation confirmation</label>
+                            <input id="technical_preview_activation_confirmation" name="technical_preview_activation_confirmation" type="text" required maxlength="64" autocomplete="off" placeholder="ACTIVATE_TECHNICAL_PREVIEW">
+                            <p class="help">Type exactly <strong>ACTIVATE_TECHNICAL_PREVIEW</strong>. Any unhealthy post-activation state is rolled back automatically.</p>
+                        </div>
+                    </div>
+                    <div class="actions">
+                        <p>
+                            This action does not run migrations, enable persistence, authorize Production, activate the updater, or grant general deployment authority.
+                        </p>
+                        <button type="submit">Activate Technical Preview with health rollback</button>
+                    </div>
+                </form>
+            <?php else: ?>
+                <div class="notice error">
+                    Activation execution status: <strong><?= e($technicalPreviewActivationExecutionCode) ?></strong>. The installer remains fail-closed.
+                </div>
+            <?php endif; ?>
         <?php elseif ($technicalPreviewExecutionReady && in_array($technicalPreviewTargetPreflightCode, ['TECHNICAL_PREVIEW_TARGET_PREFLIGHT_INVALID', 'TECHNICAL_PREVIEW_TARGET_PREFLIGHT_AUTHORITY_EXPIRED'], true)): ?>
             <div class="notice error">
                 Technical Preview target preflight status: <strong><?= e($technicalPreviewTargetPreflightCode) ?></strong>. The installer remains fail-closed and activation execution is unavailable.
@@ -767,9 +931,11 @@ function stateDescription(string $state): string
             <div><span>Technical Preview activation request</span><strong><?= $technicalPreviewRequestPending ? 'PENDING APPROVAL / NOT AUTHORIZED' : e($technicalPreviewRequestCode) ?></strong></div>
             <div><span>Technical Preview authority</span><strong><?= $technicalPreviewExecutionReady ? 'QUALIFIED / READY' : e($technicalPreviewAuthorityCode) ?></strong></div>
             <div><span>Activation execution readiness</span><strong><?= $technicalPreviewExecutionReady ? 'READY / NOT EXECUTED' : 'NOT READY' ?></strong></div>
-            <div><span>Target environment preflight</span><strong><?= $technicalPreviewTargetPreflightPassed ? 'PREFLIGHT PASSED / NOT ACTIVATED' : e($technicalPreviewTargetPreflightCode) ?></strong></div>
+            <div><span>Target environment preflight</span><strong><?= $technicalPreviewActiveHealthy ? 'CONSUMED / RECEIPT-BOUND' : ($technicalPreviewTargetPreflightPassed ? 'PREFLIGHT PASSED / NOT ACTIVATED' : e($technicalPreviewTargetPreflightCode)) ?></strong></div>
+            <div><span>Activation health</span><strong><?= $technicalPreviewActiveHealthy ? 'ACTIVE / HEALTHY' : e($technicalPreviewActivationExecutionCode) ?></strong></div>
             <div><span>Migration</span><strong>NOT EXECUTED</strong></div>
             <div><span>Technical Preview</span><strong>NOT AUTHORIZED</strong></div>
+            <div><span>Runtime Preview activation</span><strong><?= $technicalPreviewActiveHealthy ? 'ACTIVE / SYNTHETIC ONLY' : 'NOT EXECUTED' ?></strong></div>
             <div><span>Production</span><strong>NOT AUTHORIZED</strong></div>
         </div>
     </section>

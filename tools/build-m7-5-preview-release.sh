@@ -43,6 +43,7 @@ required_files=(
   "apps/web/app/Infrastructure/Installation/PrebootTechnicalPreviewActivationRequest.php"
   "apps/web/app/Infrastructure/Installation/PrebootTechnicalPreviewActivationAuthorityReadiness.php"
   "apps/web/app/Infrastructure/Installation/PrebootTechnicalPreviewTargetEnvironmentPreflight.php"
+  "apps/web/app/Infrastructure/Installation/PrebootTechnicalPreviewActivationExecution.php"
   "apps/web/app/Infrastructure/Installation/PrebootInstallationConfiguration.php"
   "release/manifest-v1.schema.json"
   "tools/installation/runtime-configuration-promotion-authority.schema.json"
@@ -54,6 +55,8 @@ required_files=(
   "tools/installation/technical-preview-activation-authority.schema.json"
   "tools/installation/technical-preview-activation-readiness.schema.json"
   "tools/installation/technical-preview-target-environment-preflight.schema.json"
+  "tools/installation/technical-preview-activation-execution.schema.json"
+  "tools/installation/technical-preview-activation-recovery.schema.json"
   "tools/installation/public-installer.php"
   "tools/validate-release-manifest.php"
 )
@@ -170,6 +173,10 @@ cp tools/installation/technical-preview-activation-readiness.schema.json \
   "${stage_root}/installation/technical-preview-activation-readiness.schema.json"
 cp tools/installation/technical-preview-target-environment-preflight.schema.json \
   "${stage_root}/installation/technical-preview-target-environment-preflight.schema.json"
+cp tools/installation/technical-preview-activation-execution.schema.json \
+  "${stage_root}/installation/technical-preview-activation-execution.schema.json"
+cp tools/installation/technical-preview-activation-recovery.schema.json \
+  "${stage_root}/installation/technical-preview-activation-recovery.schema.json"
 
 if grep -Fq '__ONEQAY_RELEASE_ID__' "${public_surface}/install.php"; then
   echo "Pre-boot installer release binding was not materialized." >&2
@@ -244,6 +251,15 @@ cat > "${stage_root}/RELEASE.json" <<JSON
     "technical_preview_target_preflight_action": "run_technical_preview_target_preflight",
     "technical_preview_target_preflight_confirmation_required": true,
     "technical_preview_target_preflight_state": "NOT_PERFORMED_AT_BUILD",
+    "technical_preview_activation_execution_receipt_relative_path": "oneqay-preview/shared/install/technical-preview-activation-execution.json",
+    "technical_preview_activation_execution_schema_relative_path": "installation/technical-preview-activation-execution.schema.json",
+    "technical_preview_activation_recovery_directory_relative_path": "oneqay-preview/shared/install/technical-preview-activation-attempts",
+    "technical_preview_activation_recovery_schema_relative_path": "installation/technical-preview-activation-recovery.schema.json",
+    "technical_preview_activation_executor_registration_state": "REGISTERED_GUARDED_OPERATOR_ACTION",
+    "technical_preview_activation_operator_action": "execute_technical_preview_activation",
+    "technical_preview_activation_confirmation_required": true,
+    "technical_preview_post_activation_health_required": true,
+    "technical_preview_automatic_rollback_required": true,
     "technical_preview_session_profile": "PRIVATE_SHARED_FILE_SESSION_V1",
     "technical_preview_session_relative_path": "oneqay-preview/shared/runtime/sessions",
     "promotion_execution_state": "NOT_EXECUTED",
@@ -352,6 +368,7 @@ for required_release_path in \
   "${release_id}/apps/web/app/Infrastructure/Installation/PrebootTechnicalPreviewActivationRequest.php" \
   "${release_id}/apps/web/app/Infrastructure/Installation/PrebootTechnicalPreviewActivationAuthorityReadiness.php" \
   "${release_id}/apps/web/app/Infrastructure/Installation/PrebootTechnicalPreviewTargetEnvironmentPreflight.php" \
+  "${release_id}/apps/web/app/Infrastructure/Installation/PrebootTechnicalPreviewActivationExecution.php" \
   "${release_id}/apps/web/app/Infrastructure/Installation/PrebootInstallationConfiguration.php" \
   "${release_id}/installation/runtime-configuration-promotion-authority.schema.json" \
   "${release_id}/installation/runtime-configuration-promotion-readiness.schema.json" \
@@ -361,7 +378,9 @@ for required_release_path in \
   "${release_id}/installation/technical-preview-activation-request.schema.json" \
   "${release_id}/installation/technical-preview-activation-authority.schema.json" \
   "${release_id}/installation/technical-preview-activation-readiness.schema.json" \
-  "${release_id}/installation/technical-preview-target-environment-preflight.schema.json"; do
+  "${release_id}/installation/technical-preview-target-environment-preflight.schema.json" \
+  "${release_id}/installation/technical-preview-activation-execution.schema.json" \
+  "${release_id}/installation/technical-preview-activation-recovery.schema.json"; do
   if ! grep -Fxq "$required_release_path" /tmp/oneqay-preview-release-contents.txt; then
     echo "Missing required pre-boot installation path: $required_release_path" >&2
     exit 1
@@ -424,6 +443,15 @@ if ! grep -Fq '"promotion_request_relative_path": "oneqay-preview/shared/install
   || ! grep -Fq '"technical_preview_target_preflight_action": "run_technical_preview_target_preflight"' "${stage_root}/RELEASE.json" \
   || ! grep -Fq '"technical_preview_target_preflight_confirmation_required": true' "${stage_root}/RELEASE.json" \
   || ! grep -Fq '"technical_preview_target_preflight_state": "NOT_PERFORMED_AT_BUILD"' "${stage_root}/RELEASE.json" \
+  || ! grep -Fq '"technical_preview_activation_execution_receipt_relative_path": "oneqay-preview/shared/install/technical-preview-activation-execution.json"' "${stage_root}/RELEASE.json" \
+  || ! grep -Fq '"technical_preview_activation_execution_schema_relative_path": "installation/technical-preview-activation-execution.schema.json"' "${stage_root}/RELEASE.json" \
+  || ! grep -Fq '"technical_preview_activation_recovery_directory_relative_path": "oneqay-preview/shared/install/technical-preview-activation-attempts"' "${stage_root}/RELEASE.json" \
+  || ! grep -Fq '"technical_preview_activation_recovery_schema_relative_path": "installation/technical-preview-activation-recovery.schema.json"' "${stage_root}/RELEASE.json" \
+  || ! grep -Fq '"technical_preview_activation_executor_registration_state": "REGISTERED_GUARDED_OPERATOR_ACTION"' "${stage_root}/RELEASE.json" \
+  || ! grep -Fq '"technical_preview_activation_operator_action": "execute_technical_preview_activation"' "${stage_root}/RELEASE.json" \
+  || ! grep -Fq '"technical_preview_activation_confirmation_required": true' "${stage_root}/RELEASE.json" \
+  || ! grep -Fq '"technical_preview_post_activation_health_required": true' "${stage_root}/RELEASE.json" \
+  || ! grep -Fq '"technical_preview_automatic_rollback_required": true' "${stage_root}/RELEASE.json" \
   || ! grep -Fq '"technical_preview_session_profile": "PRIVATE_SHARED_FILE_SESSION_V1"' "${stage_root}/RELEASE.json" \
   || ! grep -Fq '"technical_preview_session_relative_path": "oneqay-preview/shared/runtime/sessions"' "${stage_root}/RELEASE.json" \
   || ! grep -Fq '"promotion_execution_state": "NOT_EXECUTED"' "${stage_root}/RELEASE.json" \

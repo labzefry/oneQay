@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "oneqay.technical-preview-activation-recovery.v1",
+  "title": "oneQay Technical Preview Activation Recovery Evidence",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "product",
+    "recovery_state",
+    "attempt_id",
+    "release_id",
+    "request_id",
+    "authority_id",
+    "safe_code",
+    "previous_environment_sha256",
+    "attempted_environment_sha256",
+    "activation_readiness_sha256",
+    "target_preflight_sha256",
+    "activation_authority_sha256",
+    "attempted_at_unix",
+    "rollback_verified",
+    "activation_executed",
+    "post_activation_health_passed",
+    "authority_consumed",
+    "readiness_consumed",
+    "preflight_consumed",
+    "migration_execution_authorized",
+    "persistence_authorized",
+    "production_authorized",
+    "updater_authorized",
+    "deployment_authorized",
+    "attribution"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "product": { "const": "oneQay" },
+    "recovery_state": { "const": "TECHNICAL_PREVIEW_ACTIVATION_ROLLED_BACK" },
+    "attempt_id": {
+      "type": "string",
+      "pattern": "^technical-preview-activation-attempt-[0-9a-f]{24}$"
+    },
+    "release_id": {
+      "type": "string",
+      "pattern": "^m75-preview-[0-9a-f]{12}$"
+    },
+    "request_id": {
+      "type": "string",
+      "pattern": "^technical-preview-activation-request-[0-9a-f]{24}$"
+    },
+    "authority_id": {
+      "type": "string",
+      "pattern": "^technical-preview-authority-[0-9a-f]{24}$"
+    },
+    "safe_code": {
+      "enum": ["post_activation_health_failed", "activation_commit_failed"]
+    },
+    "previous_environment_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "attempted_environment_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "activation_readiness_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "target_preflight_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "activation_authority_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "attempted_at_unix": { "type": "integer", "minimum": 1 },
+    "rollback_verified": { "const": true },
+    "activation_executed": { "const": false },
+    "post_activation_health_passed": { "const": false },
+    "authority_consumed": { "const": false },
+    "readiness_consumed": { "const": false },
+    "preflight_consumed": { "const": false },
+    "migration_execution_authorized": { "const": false },
+    "persistence_authorized": { "const": false },
+    "production_authorized": { "const": false },
+    "updater_authorized": { "const": false },
+    "deployment_authorized": { "const": false },
+    "attribution": { "const": "Lab | zefry" }
+  }
+}
