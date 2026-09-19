@@ -1,0 +1,196 @@
+# Author by Lab | zefry
+name: Sprint193 Installation Completion Handoff Regression
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint193-installation-completion-handoff-${{ github.event.pull_request.number || github.ref }}-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  qualify-sprint193-installation-completion-handoff:
+    name: qualify-sprint193-installation-completion-handoff
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWE=
+      APP_DEBUG: "false"
+      APP_URL: http://localhost
+      ONEQAY_RUNTIME_CLASS: ci
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+      LOG_CHANNEL: stderr
+      ONEQAY_BUILD_PROVENANCE: github-actions:${{ github.run_id }}:${{ github.run_attempt }}
+
+    steps:
+      - name: Checkout exact Sprint193 source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Qualify exact Sprint193 engineering envelope
+        if: github.event_name == 'pull_request' && github.head_ref == 'sprint193-installation-completion-handoff'
+        shell: bash
+        env:
+          EXPECTED_PATH_HASH: 3e75e1d85d11cd924f7146cf7f88c272df3f4a7ad6add4c1d9a4ed7b1dcac741
+        run: |
+          set -euo pipefail
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          test "$(git rev-parse HEAD)" = "$HEAD_SHA"
+          mapfile -t paths < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort)
+          expected=(
+            ".github/workflows/m7-5-preview-release-artifact.yml"
+            ".github/workflows/sprint193-installation-completion-handoff-regression.yml"
+            ".github/workflows/sprint32-authentication-recovery-proof-regression.yml"
+            ".github/workflows/sprint33-recovery-bound-password-reset-regression.yml"
+            ".github/workflows/sprint34-authenticated-password-change-regression.yml"
+            "apps/web/app/Infrastructure/Installation/PrebootInstallationCompletionHandoff.php"
+            "apps/web/tests/preboot-installation-completion-handoff.php"
+            "tools/build-m7-5-preview-release.sh"
+            "tools/installation/installation-completion-handoff.schema.json"
+            "tools/installation/public-installer.php"
+          )
+          test "${#paths[@]}" -eq "${#expected[@]}"
+          diff -u <(printf '%s\n' "${expected[@]}") <(printf '%s\n' "${paths[@]}")
+          actual_hash="$(printf '%s\n' "${paths[@]}" | sha256sum | awk '{print $1}')"
+          test "$actual_hash" = "$EXPECTED_PATH_HASH"
+
+      - name: Preserve operational NO-GO
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" = NOT_EXECUTED
+          test "$(jq -r '.permission_provisioning.state' ops/final-shift-close/STATE.json)" = NONE
+          test "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" = INACTIVE
+          test "$(jq -r '.deployment_authority' ops/final-shift-close/STATE.json)" = NOT_GRANTED
+          test "$(jq -r '.technical_preview_activation' ops/final-shift-close/STATE.json)" = NOT_AUTHORIZED
+          test "$(jq -r '.production_activation' ops/final-shift-close/STATE.json)" = NOT_AUTHORIZED
+          test "$(jq -r '.updater_activation' ops/final-shift-close/STATE.json)" = INACTIVE
+          test "$(jq -r '.selection_state' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" = BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET
+          test "$(jq -r '.selected_target' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" = null
+
+      - name: Setup PHP 8.3 runtime
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        with:
+          php-version: '8.3'
+          extensions: pdo_mysql
+          tools: composer:v2
+          coverage: none
+
+      - name: Setup exact Node LTS
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: 24.19.0
+
+      - name: Validate Sprint193 source and completion schema
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l apps/web/app/Infrastructure/Installation/PrebootInstallationCompletionHandoff.php
+          php -l apps/web/tests/preboot-installation-completion-handoff.php
+          php -l tools/installation/public-installer.php
+          bash -n tools/build-m7-5-preview-release.sh
+          jq -e '.properties.completion_state.const == "INSTALLATION_CONFIGURATION_COMPLETE_NOT_ACTIVATED"' tools/installation/installation-completion-handoff.schema.json
+          jq -e '.properties.installer_reentry_state.const == "READ_ONLY_COMPLETION"' tools/installation/installation-completion-handoff.schema.json
+          jq -e '.properties.technical_preview_authorized.const == false' tools/installation/installation-completion-handoff.schema.json
+          jq -e '.properties.production_authorized.const == false' tools/installation/installation-completion-handoff.schema.json
+
+      - name: Install locked application dependencies
+        working-directory: apps/web
+        run: |
+          set -euo pipefail
+          composer validate --no-check-publish
+          composer install --no-interaction --no-progress --prefer-dist
+          npm ci --ignore-scripts --no-fund
+          npm run type-check
+          npm run build
+
+      - name: Preserve Sprint184 through Sprint192 installation regressions
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -d zend.assertions=1 -d assert.exception=1 tests/preboot-installation-configuration.php
+          php -d zend.assertions=1 -d assert.exception=1 tests/preboot-database-compatibility-verification.php
+          php -d zend.assertions=1 -d assert.exception=1 tests/preboot-installation-activation-readiness.php
+          php -d zend.assertions=1 -d assert.exception=1 tests/preboot-runtime-configuration-promotion-request.php
+          php -d zend.assertions=1 -d assert.exception=1 tests/preboot-runtime-configuration-promotion-qualification.php
+          php -d zend.assertions=1 -d assert.exception=1 tests/preboot-runtime-configuration-promotion-readiness.php
+          php -d zend.assertions=1 -d assert.exception=1 tests/preboot-runtime-configuration-promotion-execution.php
+          php -d zend.assertions=1 -d assert.exception=1 tests/preboot-runtime-configuration-promotion-operator-delivery.php
+          php -d zend.assertions=1 -d assert.exception=1 tests/preboot-runtime-configuration-post-promotion-verification.php
+
+      - name: Execute Sprint193 installation completion handoff regression
+        working-directory: apps/web
+        run: php -d zend.assertions=1 -d assert.exception=1 tests/preboot-installation-completion-handoff.php
+
+      - name: Build governed release with installation completion handoff
+        shell: bash
+        run: |
+          set -euo pipefail
+          HEAD_SHA="${{ github.event.pull_request.head.sha || github.sha }}"
+          bash tools/build-m7-5-preview-release.sh "$HEAD_SHA"
+          release_id="m75-preview-${HEAD_SHA:0:12}"
+          artifact="dist/${release_id}.tar.gz"
+          test -f "$artifact"
+
+          tar -tzf "$artifact" > /tmp/oneqay-s193-release-list.txt
+          grep -Fxq "$release_id/apps/web/app/Infrastructure/Installation/PrebootInstallationCompletionHandoff.php" /tmp/oneqay-s193-release-list.txt
+          grep -Fxq "$release_id/installation/installation-completion-handoff.schema.json" /tmp/oneqay-s193-release-list.txt
+          ! grep -F '/apps/web/database/migrations/' /tmp/oneqay-s193-release-list.txt
+
+          tar -xOzf "$artifact" "$release_id/RELEASE.json" > /tmp/oneqay-s193-release.json
+          grep -Fq '"installation_completion_relative_path": "oneqay-preview/shared/install/installation-completion.json"' /tmp/oneqay-s193-release.json
+          grep -Fq '"installation_completion_schema_relative_path": "installation/installation-completion-handoff.schema.json"' /tmp/oneqay-s193-release.json
+          grep -Fq '"installation_completion_registration_state": "AUTO_SEAL_WITH_GUARDED_RETRY"' /tmp/oneqay-s193-release.json
+          grep -Fq '"installation_completion_retry_action": "seal_installation_completion"' /tmp/oneqay-s193-release.json
+          grep -Fq '"installation_completion_confirmation_required": true' /tmp/oneqay-s193-release.json
+          grep -Fq '"installation_completion_state": "NOT_PERFORMED_AT_BUILD"' /tmp/oneqay-s193-release.json
+          grep -Fq '"activation_authorized": false' /tmp/oneqay-s193-release.json
+
+          tar -xOzf "$artifact" "$release_id/public-surface/install.php" > /tmp/oneqay-s193-install.php
+          php -l /tmp/oneqay-s193-install.php
+          grep -Fq 'PrebootInstallationCompletionHandoff.php' /tmp/oneqay-s193-install.php
+          grep -Fq 'seal_installation_completion' /tmp/oneqay-s193-install.php
+          grep -Fq 'SEAL_INSTALLATION_COMPLETION' /tmp/oneqay-s193-install.php
+          grep -Fq 'COMPLETE / NOT ACTIVATED' /tmp/oneqay-s193-install.php
+
+      - name: Preserve complete-not-activated boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          COMPLETE=apps/web/app/Infrastructure/Installation/PrebootInstallationCompletionHandoff.php
+          PAGE=tools/installation/public-installer.php
+
+          grep -Fq "INSTALLATION_CONFIGURATION_COMPLETE_NOT_ACTIVATED" "$COMPLETE"
+          grep -Fq "'technical_preview_authorized' => false" "$COMPLETE"
+          grep -Fq "'persistence_authorized' => false" "$COMPLETE"
+          grep -Fq "'production_authorized' => false" "$COMPLETE"
+          grep -Fq "'deployment_authorized' => false" "$COMPLETE"
+          grep -Fq "seal_installation_completion" "$PAGE"
+          grep -Fq "SEAL_INSTALLATION_COMPLETION" "$PAGE"
+          grep -Fq "COMPLETE / NOT ACTIVATED" "$PAGE"
+          grep -Fq "Migration</span><strong>NOT EXECUTED" "$PAGE"
+          grep -Fq "Technical Preview</span><strong>NOT AUTHORIZED" "$PAGE"
+          grep -Fq "Production</span><strong>NOT AUTHORIZED" "$PAGE"
+
+          ! grep -Eq 'Artisan::call|requestInstall\(|checkAvailability\(' "$COMPLETE" "$PAGE"
+          ! grep -Eq -- '->(insert|update|delete|increment|decrement)\(' "$COMPLETE" "$PAGE"
+
+      - name: Verify tracked-source cleanliness
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf dist
+          git diff --exit-code
+          test -z "$(git status --porcelain)"

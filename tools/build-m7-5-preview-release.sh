@@ -39,12 +39,14 @@ required_files=(
   "apps/web/app/Infrastructure/Installation/PrebootRuntimeConfigurationPromotionReadiness.php"
   "apps/web/app/Infrastructure/Installation/PrebootRuntimeConfigurationPromotionExecution.php"
   "apps/web/app/Infrastructure/Installation/PrebootRuntimeConfigurationPostPromotionVerification.php"
+  "apps/web/app/Infrastructure/Installation/PrebootInstallationCompletionHandoff.php"
   "apps/web/app/Infrastructure/Installation/PrebootInstallationConfiguration.php"
   "release/manifest-v1.schema.json"
   "tools/installation/runtime-configuration-promotion-authority.schema.json"
   "tools/installation/runtime-configuration-promotion-readiness.schema.json"
   "tools/installation/runtime-configuration-promotion-execution.schema.json"
   "tools/installation/runtime-configuration-post-promotion-verification.schema.json"
+  "tools/installation/installation-completion-handoff.schema.json"
   "tools/installation/public-installer.php"
   "tools/validate-release-manifest.php"
 )
@@ -151,6 +153,8 @@ cp tools/installation/runtime-configuration-promotion-execution.schema.json \
   "${stage_root}/installation/runtime-configuration-promotion-execution.schema.json"
 cp tools/installation/runtime-configuration-post-promotion-verification.schema.json \
   "${stage_root}/installation/runtime-configuration-post-promotion-verification.schema.json"
+cp tools/installation/installation-completion-handoff.schema.json \
+  "${stage_root}/installation/installation-completion-handoff.schema.json"
 
 if grep -Fq '__ONEQAY_RELEASE_ID__' "${public_surface}/install.php"; then
   echo "Pre-boot installer release binding was not materialized." >&2
@@ -196,6 +200,12 @@ cat > "${stage_root}/RELEASE.json" <<JSON
     "post_promotion_verification_action": "verify_promoted_runtime_configuration",
     "post_promotion_verification_confirmation_required": true,
     "post_promotion_verification_state": "NOT_PERFORMED_AT_BUILD",
+    "installation_completion_relative_path": "oneqay-preview/shared/install/installation-completion.json",
+    "installation_completion_schema_relative_path": "installation/installation-completion-handoff.schema.json",
+    "installation_completion_registration_state": "AUTO_SEAL_WITH_GUARDED_RETRY",
+    "installation_completion_retry_action": "seal_installation_completion",
+    "installation_completion_confirmation_required": true,
+    "installation_completion_state": "NOT_PERFORMED_AT_BUILD",
     "promotion_execution_state": "NOT_EXECUTED",
     "promotion_authorized": false,
     "activation_authorized": false
@@ -297,11 +307,13 @@ for required_release_path in \
   "${release_id}/apps/web/app/Infrastructure/Installation/PrebootRuntimeConfigurationPromotionReadiness.php" \
   "${release_id}/apps/web/app/Infrastructure/Installation/PrebootRuntimeConfigurationPromotionExecution.php" \
   "${release_id}/apps/web/app/Infrastructure/Installation/PrebootRuntimeConfigurationPostPromotionVerification.php" \
+  "${release_id}/apps/web/app/Infrastructure/Installation/PrebootInstallationCompletionHandoff.php" \
   "${release_id}/apps/web/app/Infrastructure/Installation/PrebootInstallationConfiguration.php" \
   "${release_id}/installation/runtime-configuration-promotion-authority.schema.json" \
   "${release_id}/installation/runtime-configuration-promotion-readiness.schema.json" \
   "${release_id}/installation/runtime-configuration-promotion-execution.schema.json" \
-  "${release_id}/installation/runtime-configuration-post-promotion-verification.schema.json"; do
+  "${release_id}/installation/runtime-configuration-post-promotion-verification.schema.json" \
+  "${release_id}/installation/installation-completion-handoff.schema.json"; do
   if ! grep -Fxq "$required_release_path" /tmp/oneqay-preview-release-contents.txt; then
     echo "Missing required pre-boot installation path: $required_release_path" >&2
     exit 1
@@ -335,6 +347,12 @@ if ! grep -Fq '"promotion_request_relative_path": "oneqay-preview/shared/install
   || ! grep -Fq '"post_promotion_verification_action": "verify_promoted_runtime_configuration"' "${stage_root}/RELEASE.json" \
   || ! grep -Fq '"post_promotion_verification_confirmation_required": true' "${stage_root}/RELEASE.json" \
   || ! grep -Fq '"post_promotion_verification_state": "NOT_PERFORMED_AT_BUILD"' "${stage_root}/RELEASE.json" \
+  || ! grep -Fq '"installation_completion_relative_path": "oneqay-preview/shared/install/installation-completion.json"' "${stage_root}/RELEASE.json" \
+  || ! grep -Fq '"installation_completion_schema_relative_path": "installation/installation-completion-handoff.schema.json"' "${stage_root}/RELEASE.json" \
+  || ! grep -Fq '"installation_completion_registration_state": "AUTO_SEAL_WITH_GUARDED_RETRY"' "${stage_root}/RELEASE.json" \
+  || ! grep -Fq '"installation_completion_retry_action": "seal_installation_completion"' "${stage_root}/RELEASE.json" \
+  || ! grep -Fq '"installation_completion_confirmation_required": true' "${stage_root}/RELEASE.json" \
+  || ! grep -Fq '"installation_completion_state": "NOT_PERFORMED_AT_BUILD"' "${stage_root}/RELEASE.json" \
   || ! grep -Fq '"promotion_execution_state": "NOT_EXECUTED"' "${stage_root}/RELEASE.json" \
   || ! grep -Fq '"promotion_authorized": false' "${stage_root}/RELEASE.json"; then
   echo "Pre-boot installation metadata must preserve governed promotion request/authority boundaries." >&2
