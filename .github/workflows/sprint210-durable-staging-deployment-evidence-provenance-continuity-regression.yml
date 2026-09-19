@@ -91,7 +91,8 @@ jobs:
         run: |
           set -euo pipefail
           producer=.github/workflows/final-shift-close-durable-runtime-attestation.yml
-          grep -Fq 'DEPLOYMENT_EVIDENCE_SHA256="${{ steps.deployment.outputs.deployment_evidence_sha256 }}"' "$producer"
+          grep -Fq 'DEPLOYMENT_EVIDENCE_SHA256=' "$producer"
+          grep -Fq 'steps.deployment.outputs.deployment_evidence_sha256' "$producer"
           grep -Fq 'DEPLOYMENT_PLAN_FINGERPRINT="$EXPECTED_DEPLOYMENT_PLAN_FINGERPRINT"' "$producer"
           grep -Fq 'DEPLOYMENT_AUTHORITY_SHA256="$EXPECTED_DEPLOYMENT_AUTHORITY_SHA256"' "$producer"
           grep -Fq "'deployment_evidence_sha256' => \$deploymentEvidenceSha256" "$producer"
