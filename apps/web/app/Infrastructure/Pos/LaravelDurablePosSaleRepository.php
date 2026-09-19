@@ -507,7 +507,7 @@ final readonly class LaravelDurablePosSaleRepository implements DurablePosSaleRe
             throw new PosTransactionViolation();
         }
 
-        if (! in_array(strtolower(trim($this->runtimeClass)), ['local', 'test', 'ci'], true)) {
+        if (! in_array(strtolower(trim($this->runtimeClass)), ['local', 'test', 'ci', 'staging'], true)) {
             throw new PosTransactionViolation();
         }
     }
@@ -518,7 +518,7 @@ final readonly class LaravelDurablePosSaleRepository implements DurablePosSaleRe
             throw new PosTransactionViolation();
         }
 
-        if (! in_array(strtolower(trim($this->runtimeClass)), ['local', 'test', 'ci'], true)) {
+        if (! in_array(strtolower(trim($this->runtimeClass)), ['local', 'test', 'ci', 'staging'], true)) {
             throw new PosTransactionViolation();
         }
     }
