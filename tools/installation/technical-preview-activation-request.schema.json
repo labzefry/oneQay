@@ -12,6 +12,7 @@
     "release_id",
     "active_environment_sha256",
     "installation_completion_sha256",
+    "created_at_unix",
     "requested_operation",
     "requested_runtime_envelope",
     "required_authority",
@@ -31,6 +32,7 @@
     "release_id": { "type": "string", "pattern": "^m75-preview-[0-9a-f]{12}$" },
     "active_environment_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
     "installation_completion_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "created_at_unix": { "type": "integer", "minimum": 1 },
     "requested_operation": { "const": "ENABLE_SYNTHETIC_TECHNICAL_PREVIEW_RUNTIME" },
     "requested_runtime_envelope": {
       "type": "object",
