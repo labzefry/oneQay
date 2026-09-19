@@ -1,5 +1,25 @@
 # Changelog
 
+## 2026-09-19 — Sprint202 closed canonically
+
+**Sprint202: Merchant POS Authoritative Sale Receipt Continuity**
+
+- Closed the post-checkout merchant usability gap with server-authoritative completed-sale receipt lines.
+- Sale completion now projects product ID, quantity, unit price, line total, organization, outlet, and register/device context from the canonical completed receipt.
+- Cashier renders a professional authoritative receipt, print action, and clean next-sale continuation without browser persistence.
+- Catalog data is used only as an already-loaded display-name label; server receipt data remains authoritative for financial values.
+- Failed checkout still has no automatic retry, preserving visible idempotency and duplicate-sale safety.
+- Final engineering head `33c8ecd3852b5507fada858cfe6de3fb3924cd35`: 89/89 PR-triggered workflows SUCCESS.
+- Engineering PR #835 squash merged at `09df0a239d894284a62dec2b5cc39754406eab5c`.
+- Dedicated Sprint202 run `35444413243`, Sprint46 preservation `35444413057`, Sprint201 preservation `35444413281`, Sprint200 preservation `35444413718`, Sprint157 cashier `35444413136`, M7.5 `35444413550`, Sprint32 `35444413030`, Sprint33 `35444413212`, Sprint34 `35444413324`, M7.1 `35444413162`, Governance `35444413754`, and PHP Foundation `35444413157`: SUCCESS.
+- Product Owner merge authority run `35444667944`: SUCCESS.
+- Engineering path hash: `d49048acc4a472d919471c56083ca4f2ac77e988ef67f6de99fb4a601cbbd684`.
+- Canonical reconciliation path hash: `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`.
+- Operational NO-GO unchanged.
+- Next position: Sprint203 business-first bounded discovery.
+
+Author by Lab | zefry
+
 ## 2026-09-19 — Sprint201 closed canonically
 
 **Sprint201: Merchant POS State-Aware Guided Operations**
