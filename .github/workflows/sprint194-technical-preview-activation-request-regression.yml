@@ -173,9 +173,8 @@ jobs:
         run: |
           set -euo pipefail
           ! grep -R --line-number --fixed-strings 'Artisan::call' apps/web/app/Infrastructure/Installation/PrebootTechnicalPreviewActivationRequest.php apps/web/tests/preboot-technical-preview-activation-request.php tools/installation/public-installer.php
-          ! grep -R --line-number --fixed-strings 'Artisan::call' apps/web/app/Infrastructure/Installation/PrebootTechnicalPreviewActivationRequest.php apps/web/tests/preboot-technical-preview-activation-request.php tools/installation/public-installer.php
-          ! grep -Fq "file_put_contents(\$this->activeEnvironmentPath()" apps/web/app/Infrastructure/Installation/PrebootTechnicalPreviewActivationRequest.php
-          ! grep -Fq "unlink(\$this->activeEnvironmentPath()" apps/web/app/Infrastructure/Installation/PrebootTechnicalPreviewActivationRequest.php
+          ! grep -Fq 'file_put_contents($this->activeEnvironmentPath()' apps/web/app/Infrastructure/Installation/PrebootTechnicalPreviewActivationRequest.php
+          ! grep -Fq 'unlink($this->activeEnvironmentPath()' apps/web/app/Infrastructure/Installation/PrebootTechnicalPreviewActivationRequest.php
           test "$(jq -r '.technical_preview_activation' ops/final-shift-close/STATE.json)" = NOT_AUTHORIZED
           test "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" = NOT_EXECUTED
 
