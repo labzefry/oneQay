@@ -1,5 +1,26 @@
 # Changelog
 
+## 2026-09-20 — Sprint209 closed canonically
+
+**Sprint209: Durable Staging Deployment Evidence Binding Foundation**
+
+- Closed the source-side trust gap between external Sprint207 operator-plan execution and the protected durable-runtime attestation producer.
+- Added a strict deployment-execution evidence schema and fail-closed qualifier bound to exact environment ID, runtime class, running source commit, running artifact SHA-256, Sprint207 deployment-plan fingerprint, and Sprint208 deployment-authority SHA-256.
+- Deployment evidence must prove preflight, previous active-release preservation, immutable release extraction, public-document-root verification, external runtime configuration binding, provenance readback, read-before-write/read-after configuration verification, non-mutating health attestation, and rollback-path verification.
+- The protected attestation producer now requires protected deployment evidence to qualify before it contacts the readiness endpoint; runtime readiness alone is no longer sufficient.
+- Caller-supplied target inputs remain prohibited. Runtime attestation source/artifact identity must equal the protected deployment-evidence binding.
+- No deployment, migration, permission provisioning, target selection, producer dispatch, Final Shift Close activation, Technical Preview/Production activation, or updater activation is performed.
+- Final engineering head `3372abb10eb5f883ff410d25e0defbaad827207c`: 89/89 PR-triggered workflows SUCCESS.
+- Engineering PR #852 squash merged at `55b652f8b62e05cb8254ec74bb10f2e507abb641`.
+- Sprint209 qualification `35462884340`, Sprint113 preservation `35462884439`, Sprint208 preservation `35462885132`, Sprint207 preservation `35462884363`, M7.1 `35462884334`, Governance `35462884291`, and PHP Foundation `35462884380`: SUCCESS.
+- Product Owner merge authority status `product-owner-merge-authority`: SUCCESS.
+- Engineering path hash: `ebff1a00d0b06f16925cc0f0849b3c7cd38216ccccd659f0447f307d71face10`.
+- Canonical reconciliation path hash: `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`.
+- Operational NO-GO unchanged.
+- Next position: materialize a real isolated non-production durable-staging target under separate authority, produce exact Sprint209 deployment evidence after external plan execution, then permit the protected runtime attestation producer to run only against that bound evidence.
+
+Author by Lab | zefry
+
 ## 2026-09-20 — Sprint208 closed canonically
 
 **Sprint208: Durable Staging Deployment Authority Binding Foundation**
