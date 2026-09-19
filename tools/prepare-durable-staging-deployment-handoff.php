@@ -238,11 +238,14 @@ function handoffPrepare(
         'NOT_PERFORMED',
         'artifact_migration_boundary_invalid',
     );
-    handoffAssertLiteral(
-        $manifest['operational_boundary']['selected_target'] ?? 'non-null',
-        null,
-        'artifact_selected_target_forbidden',
-    );
+    $artifactBoundary = $manifest['operational_boundary'] ?? null;
+    if (
+        ! is_array($artifactBoundary)
+        || ! array_key_exists('selected_target', $artifactBoundary)
+        || $artifactBoundary['selected_target'] !== null
+    ) {
+        handoffFail('artifact_selected_target_forbidden');
+    }
     handoffAssertLiteral(
         $manifest['operational_boundary']['producer_dispatch'] ?? null,
         'NOT_PERFORMED',
