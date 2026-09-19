@@ -33,7 +33,6 @@ $environment = [
     'ONEQAY_POS_SHIFT_OPENING_ENABLED' => 'true',
     'ONEQAY_POS_SHIFT_OPENING_CASH_EVIDENCE_ENABLED' => 'true',
     'ONEQAY_POS_SHIFT_CLOSING_CASH_EVIDENCE_ENABLED' => 'true',
-    'ONEQAY_POS_SHIFT_CLOSE_ENABLED' => 'true',
     'ONEQAY_POS_INVENTORY_BASELINE_ENABLED' => 'true',
     'ONEQAY_POS_OPERATIONS_HUB_ENABLED' => 'true',
     'ONEQAY_POS_SHIFT_START_WORKSPACE_ENABLED' => 'true',
@@ -77,7 +76,6 @@ $expectedRoutes = [
     'pos.reporting.sales-summary',
     'pos.reporting.sales-history',
     'pos.reporting.active-shift-performance',
-    'pos.reporting.shift-history',
     'pos.reporting.product-performance',
     'pos.sales.corrections.workspace',
     'pos.shifts.reconciliation.workspace',
@@ -97,6 +95,10 @@ foreach ($expectedRoutes as $routeName) {
     );
 }
 
+$assert(
+    $routes->getByName('pos.reporting.shift-history') === null,
+    'Sprint198 must preserve the Shift History Final Shift Close prerequisite while canonical Final Shift Close remains inactive.',
+);
 $assert(
     $routes->getByName('pos.shifts.close.page') === null,
     'Sprint198 must not activate Final Shift Close delivery.',
