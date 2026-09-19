@@ -219,7 +219,7 @@ final readonly class LaravelFirstControlPrincipalCredentialBootstrapRepository i
             );
         }
 
-        if (! in_array(strtolower(trim($this->runtimeClass)), ['local', 'test', 'ci'], true)) {
+        if (! in_array(strtolower(trim($this->runtimeClass)), ['local', 'test', 'ci', 'staging'], true)) {
             throw new DurablePersistenceViolation(
                 DurablePersistenceViolation::RUNTIME_DENIED,
                 'First control principal bootstrap runtime is not authorized.',
