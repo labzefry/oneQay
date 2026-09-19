@@ -1,24 +1,26 @@
 # Changelog
 
-## 2026-09-19 — Sprint194 closed canonically
+## 2026-09-19 — Sprint195 closed engineering / canonical reconciliation
 
-**Sprint194: Guarded Technical Preview Activation Request**
+**Sprint195: Technical Preview Activation Authority Readiness**
 
-- Added a private Technical Preview activation request after valid installation completion.
-- Bound the request to exact release ID, active runtime environment SHA-256, and installation-completion SHA-256.
-- Added deterministic request identity, audit creation time, private 0600 evidence, atomic write semantics, exact replay idempotency, and fail-closed tamper handling.
-- Added explicit operator confirmation `REQUEST_TECHNICAL_PREVIEW_ACTIVATION`.
-- Installer reports `PENDING APPROVAL / NOT AUTHORIZED` and does not activate the application.
-- Governed M7.5 package includes activation-request source/schema and request metadata.
-- Final engineering head `af1027156209977a75d24f54fec031f86bedf8f6`: 82/82 SUCCESS.
-- Engineering PR #819 squash merged at `7e3e58d7be012ee5d797acb879cfb9f9a1e829dc`.
-- Dedicated Sprint194 run `35423991024`: SUCCESS.
-- Exact-head M7.5 run `35423990554`: SUCCESS.
-- Canonical main-push M7.5 run `35424129329`: SUCCESS.
-- Post-merge shared-runtime `35424129284`, cPanel `35424129292`, and Sprint155 `35424129446`: SUCCESS.
-- Engineering path hash: `a85b8ceffbf533ea5f3aff7555dba90129c2c851bb8d9bb8ed427ce2e572f804`.
+- Added exact-bound qualification for separately provisioned Synthetic Technical Preview activation authority.
+- Authority is bound to release ID, activation request, active runtime environment SHA-256, installation-completion SHA-256, and authority lifetime.
+- Added one-time out-of-band approval-token qualification with maximum 900-second authority lifetime.
+- Added private 0600 durable execution-readiness evidence with atomic write and exact replay idempotency.
+- Readiness state is `TECHNICAL_PREVIEW_ACTIVATION_EXECUTION_READY_NOT_EXECUTED`.
+- Preserved mandatory target-environment preflight: HTTPS, single instance, private file-session storage, runtime-envelope revalidation, Preview off-switch, post-activation health, rollback/recovery, synthetic-only operation, and no schema migration requirement.
+- Installer adds guarded `qualify_technical_preview_activation_authority` with exact confirmation `QUALIFY_TECHNICAL_PREVIEW_ACTIVATION`.
+- Operator surface reports `QUALIFIED / READY / NOT ACTIVATED`.
+- Governed M7.5 packages authority/readiness source and schemas without creating operational authority at build time.
+- Final engineering head `11ec883590d05d28aeeac08a0286a3e149db00e7`: 83/83 SUCCESS.
+- Engineering PR #821 squash merged at `022b1667ce25a9f4b86a71c95b2c59ad37793d4e`.
+- Dedicated Sprint195 run `35425205497`: SUCCESS.
+- Exact-head M7.5 run `35425205248`: SUCCESS.
+- M7.1 run `35425205249`, Governance `35425205459`, PHP Foundation `35425205135`, cPanel `35425205076`, and shared-runtime `35425205240`: SUCCESS.
+- Engineering path hash: `b6b06d99b300fa67cc6341f098eff73c430b11c6d98444ebb75a352d3e7589c2`.
 - Reconciliation path hash: `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`.
 - Operational NO-GO unchanged.
-- Next position: Sprint195 bounded discovery.
+- Next position: Sprint196 bounded discovery.
 
 Author by Lab | zefry
