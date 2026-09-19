@@ -1,5 +1,27 @@
 # Changelog
 
+## 2026-09-19 — Sprint203 closed canonically
+
+**Sprint203: Durable Staging Merchant Core Bounded Bridge**
+
+- Added the first bounded source-level bridge from Local/Test/CI into an explicitly armed non-production `staging` merchant-core runtime.
+- Preserved all legacy repository Local/Test/CI runtime guards; no mass source allowlist widening was merged.
+- External runtime identity remains `staging`; an effective `ci` compatibility class is projected only inside the exact merchant-core request/bootstrap boundary after `ONEQAY_DURABLE_STAGING_RUNTIME_ENABLED=true`.
+- Added staging merchant bootstrap wrapper `oneqay:merchant-context:bootstrap-staging`, delegating to the existing preauthorized atomic bootstrap authority.
+- Enabled the coherent merchant-core staging surface: sign-in/session, account-security/MFA/recovery routes when already enabled, POS Operations Hub, Catalog & Opening Stock, Shift Start/opening cash, Cashier, and durable sale completion.
+- Sale void, cash refund, closing-cash mutation, Final Shift Close, updater, deployment, Technical Preview activation, Production activation, target selection, and producer dispatch remain excluded.
+- Rejected two broader designs before merge: PR #837 (38-path direct runtime widening; 65 historical regressions) and PR #838 (13-path composition bridge; 43 historical compatibility failures). Both were closed superseded and never merged.
+- Final engineering head `a1a2eb0a3ff63edabe1c9ab06a5f8494bbd9d963`: 88/88 PR-triggered workflows SUCCESS.
+- Engineering PR #839 squash merged at `088dc0a38d80abc776cacc7052ddb3dbfdcf0c70`.
+- Sprint201 bounded staging qualification `35448422360`, M7.5 `35448421896`, Sprint32 `35448421898`, Sprint33 `35448421945`, Sprint34 `35448421814`, Sprint202 preservation `35448422502`, Sprint200 preservation `35448422030`, M7.1 `35448422369`, Governance `35448421657`, and PHP Foundation `35448421843`: SUCCESS.
+- Product Owner merge authority run `35448835144`: SUCCESS.
+- Engineering path hash: `42c4cdd533a99adf2d0d5ba379e1e90575f0bd081ec08187107e9f7a0a03d766`.
+- Canonical reconciliation path hash: `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`.
+- Operational NO-GO unchanged; no external staging target was selected, deployed, or activated.
+- Next position: Sprint204 durable non-synthetic staging target qualification/readiness discovery.
+
+Author by Lab | zefry
+
 ## 2026-09-19 — Sprint202 closed canonically
 
 **Sprint202: Merchant POS Authoritative Sale Receipt Continuity**
