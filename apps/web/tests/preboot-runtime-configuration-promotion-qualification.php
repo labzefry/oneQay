@@ -190,8 +190,8 @@ try {
     $tamperedRequest['created_at_unix'] = $now + 1;
     $writeJson($requestPath, $tamperedRequest);
     $assert(
-        ($qualification->inspect()['state'] ?? null) === 'PROMOTION_REQUEST_NOT_READY',
-        'tampered promotion request remained authority-qualifiable.',
+        ($qualification->inspect()['state'] ?? null) === 'PROMOTION_AUTHORITY_INVALID',
+        'tampered promotion request did not invalidate exact authority binding.',
     );
 
     if (file_put_contents($requestPath, $requestRaw, LOCK_EX) === false) {
