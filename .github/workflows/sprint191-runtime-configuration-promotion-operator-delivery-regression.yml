@@ -1,0 +1,188 @@
+# Author by Lab | zefry
+name: Sprint191 Runtime Configuration Promotion Operator Delivery Regression
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint191-runtime-configuration-promotion-operator-delivery-${{ github.event.pull_request.number || github.ref }}-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  qualify-sprint191-runtime-configuration-promotion-operator-delivery:
+    name: qualify-sprint191-runtime-configuration-promotion-operator-delivery
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWE=
+      APP_DEBUG: "false"
+      APP_URL: http://localhost
+      ONEQAY_RUNTIME_CLASS: ci
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+      LOG_CHANNEL: stderr
+      ONEQAY_BUILD_PROVENANCE: github-actions:${{ github.run_id }}:${{ github.run_attempt }}
+
+    steps:
+      - name: Checkout exact Sprint191 source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Qualify exact Sprint191 engineering envelope
+        if: github.event_name == 'pull_request' && github.head_ref == 'sprint191-runtime-configuration-promotion-operator-delivery'
+        shell: bash
+        env:
+          EXPECTED_PATH_HASH: 737cf389ad902aabb59f9c35eb87237ae07de7bb9e8034ddb8f837ed89c2e5f0
+        run: |
+          set -euo pipefail
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          test "$(git rev-parse HEAD)" = "$HEAD_SHA"
+          mapfile -t paths < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort)
+          expected=(
+            ".github/workflows/m7-5-preview-release-artifact.yml"
+            ".github/workflows/sprint190-runtime-configuration-atomic-promotion-executor-regression.yml"
+            ".github/workflows/sprint191-runtime-configuration-promotion-operator-delivery-regression.yml"
+            ".github/workflows/sprint32-authentication-recovery-proof-regression.yml"
+            ".github/workflows/sprint33-recovery-bound-password-reset-regression.yml"
+            ".github/workflows/sprint34-authenticated-password-change-regression.yml"
+            "apps/web/tests/preboot-runtime-configuration-promotion-execution.php"
+            "apps/web/tests/preboot-runtime-configuration-promotion-operator-delivery.php"
+            "tools/build-m7-5-preview-release.sh"
+            "tools/installation/public-installer.php"
+          )
+          test "${#paths[@]}" -eq "${#expected[@]}"
+          diff -u <(printf '%s\n' "${expected[@]}") <(printf '%s\n' "${paths[@]}")
+          actual_hash="$(printf '%s\n' "${paths[@]}" | sha256sum | awk '{print $1}')"
+          test "$actual_hash" = "$EXPECTED_PATH_HASH"
+
+      - name: Preserve operational NO-GO
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" = NOT_EXECUTED
+          test "$(jq -r '.permission_provisioning.state' ops/final-shift-close/STATE.json)" = NONE
+          test "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" = INACTIVE
+          test "$(jq -r '.deployment_authority' ops/final-shift-close/STATE.json)" = NOT_GRANTED
+          test "$(jq -r '.technical_preview_activation' ops/final-shift-close/STATE.json)" = NOT_AUTHORIZED
+          test "$(jq -r '.production_activation' ops/final-shift-close/STATE.json)" = NOT_AUTHORIZED
+          test "$(jq -r '.updater_activation' ops/final-shift-close/STATE.json)" = INACTIVE
+          test "$(jq -r '.selection_state' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" = BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET
+          test "$(jq -r '.selected_target' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" = null
+
+      - name: Setup PHP 8.3 runtime
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        with:
+          php-version: '8.3'
+          extensions: pdo_mysql
+          tools: composer:v2
+          coverage: none
+
+      - name: Setup exact Node LTS
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: 24.19.0
+
+      - name: Validate Sprint191 source contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l tools/installation/public-installer.php
+          php -l apps/web/tests/preboot-runtime-configuration-promotion-execution.php
+          php -l apps/web/tests/preboot-runtime-configuration-promotion-operator-delivery.php
+          bash -n tools/build-m7-5-preview-release.sh
+
+      - name: Install locked application dependencies
+        working-directory: apps/web
+        run: |
+          set -euo pipefail
+          composer validate --no-check-publish
+          composer install --no-interaction --no-progress --prefer-dist
+          npm ci --ignore-scripts --no-fund
+          npm run type-check
+          npm run build
+
+      - name: Preserve Sprint184 through Sprint190 installation regressions
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -d zend.assertions=1 -d assert.exception=1 tests/preboot-installation-configuration.php
+          php -d zend.assertions=1 -d assert.exception=1 tests/preboot-database-compatibility-verification.php
+          php -d zend.assertions=1 -d assert.exception=1 tests/preboot-installation-activation-readiness.php
+          php -d zend.assertions=1 -d assert.exception=1 tests/preboot-runtime-configuration-promotion-request.php
+          php -d zend.assertions=1 -d assert.exception=1 tests/preboot-runtime-configuration-promotion-qualification.php
+          php -d zend.assertions=1 -d assert.exception=1 tests/preboot-runtime-configuration-promotion-readiness.php
+          php -d zend.assertions=1 -d assert.exception=1 tests/preboot-runtime-configuration-promotion-execution.php
+
+      - name: Execute Sprint191 guarded operator delivery regression
+        working-directory: apps/web
+        run: php -d zend.assertions=1 -d assert.exception=1 tests/preboot-runtime-configuration-promotion-operator-delivery.php
+
+      - name: Build governed release with guarded promotion operator delivery
+        shell: bash
+        run: |
+          set -euo pipefail
+          HEAD_SHA="${{ github.event.pull_request.head.sha || github.sha }}"
+          bash tools/build-m7-5-preview-release.sh "$HEAD_SHA"
+          release_id="m75-preview-${HEAD_SHA:0:12}"
+          artifact="dist/${release_id}.tar.gz"
+          test -f "$artifact"
+
+          tar -tzf "$artifact" > /tmp/oneqay-s191-release-list.txt
+          grep -Fxq "$release_id/public-surface/install.php" /tmp/oneqay-s191-release-list.txt
+          grep -Fxq "$release_id/apps/web/app/Infrastructure/Installation/PrebootRuntimeConfigurationPromotionExecution.php" /tmp/oneqay-s191-release-list.txt
+          ! grep -F '/apps/web/database/migrations/' /tmp/oneqay-s191-release-list.txt
+
+          tar -xOzf "$artifact" "$release_id/RELEASE.json" > /tmp/oneqay-s191-release.json
+          grep -Fq '"promotion_executor_registration_state": "REGISTERED_GUARDED_OPERATOR_ACTION"' /tmp/oneqay-s191-release.json
+          grep -Fq '"promotion_operator_action": "execute_runtime_promotion"' /tmp/oneqay-s191-release.json
+          grep -Fq '"promotion_operator_confirmation_required": true' /tmp/oneqay-s191-release.json
+          grep -Fq '"promotion_execution_state": "NOT_EXECUTED"' /tmp/oneqay-s191-release.json
+          grep -Fq '"promotion_authorized": false' /tmp/oneqay-s191-release.json
+          grep -Fq '"activation_authorized": false' /tmp/oneqay-s191-release.json
+
+          tar -xOzf "$artifact" "$release_id/public-surface/install.php" > /tmp/oneqay-s191-install.php
+          php -l /tmp/oneqay-s191-install.php
+          grep -Fq 'PrebootRuntimeConfigurationPromotionExecution.php' /tmp/oneqay-s191-install.php
+          grep -Fq 'execute_runtime_promotion' /tmp/oneqay-s191-install.php
+          grep -Fq 'PROMOTE_RUNTIME_CONFIGURATION' /tmp/oneqay-s191-install.php
+          grep -Fq 'PROMOTED / NOT ACTIVATED' /tmp/oneqay-s191-install.php
+
+      - name: Preserve explicit operator-confirmation boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          PAGE=tools/installation/public-installer.php
+          EXECUTOR=apps/web/app/Infrastructure/Installation/PrebootRuntimeConfigurationPromotionExecution.php
+
+          grep -Fq '<?php if ($promotionExecutionReady && ! $runtimePromoted): ?>' "$PAGE"
+          grep -Fq 'name="action" value="execute_runtime_promotion"' "$PAGE"
+          grep -Fq 'id="execution_approval_token" name="approval_token" type="password"' "$PAGE"
+          grep -Fq 'name="promotion_confirmation"' "$PAGE"
+          grep -Fq "hash_equals('PROMOTE_RUNTIME_CONFIGURATION', \$confirmation)" "$PAGE"
+          grep -Fq '$executionResult = $execution->execute($approvalToken);' "$PAGE"
+          grep -Fq 'PROMOTED / NOT ACTIVATED' "$PAGE"
+          grep -Fq 'ACTIVE / NOT ACTIVATED' "$PAGE"
+
+          test "$(grep -Fc '$execution->execute($approvalToken)' "$PAGE")" -eq 1
+          ! grep -Fq '<?= e($approvalToken)' "$PAGE"
+          ! grep -Eq 'Artisan::call|requestInstall\(|checkAvailability\(' "$PAGE" "$EXECUTOR"
+          ! grep -Eq -- '->(insert|update|delete|increment|decrement)\(' "$PAGE" "$EXECUTOR"
+
+      - name: Verify tracked-source cleanliness
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf dist
+          git diff --exit-code
+          test -z "$(git status --porcelain)"
