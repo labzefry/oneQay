@@ -37,11 +37,14 @@ final class MerchantContextBootstrapCommand extends Command
     {
         try {
             $runtimeClass = strtolower(trim((string) config('oneqay.runtime_class', '')));
+            $runtimeAllowed = in_array($runtimeClass, ['local', 'test', 'ci'], true)
+                || ($runtimeClass === 'staging'
+                    && (bool) config('oneqay.durable_staging_runtime.enabled', false));
             $merchantBootstrapArmed = (bool) config('merchant_context_bootstrap.enabled', false);
             $credentialBootstrapArmed = (bool) config('oneqay.first_control_principal_credential_bootstrap.enabled', false);
             $persistenceEnabled = (bool) config('database.oneqay_persistence_enabled', false);
 
-            if (! in_array($runtimeClass, ['local', 'test', 'ci', 'staging'], true)
+            if (! $runtimeAllowed
                 || ! $merchantBootstrapArmed
                 || ! $credentialBootstrapArmed
                 || ! $persistenceEnabled) {
