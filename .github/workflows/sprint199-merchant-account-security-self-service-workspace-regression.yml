@@ -1,0 +1,170 @@
+# Author by Lab | zefry
+name: Sprint199 Merchant Account Security Self-Service Workspace Regression
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint199-merchant-account-security-self-service-${{ github.event.pull_request.number || github.ref }}-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  qualify-sprint199-merchant-account-security-self-service:
+    name: qualify-sprint199-merchant-account-security-self-service
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWE=
+      APP_DEBUG: "false"
+      APP_URL: http://127.0.0.1
+      ONEQAY_RUNTIME_CLASS: ci
+      ONEQAY_PERSISTENCE_ENABLED: "true"
+      ONEQAY_AUTHENTICATION_SESSION_CONTROL_ENABLED: "true"
+      ONEQAY_AUTHENTICATION_RECOVERY_ENABLED: "true"
+      ONEQAY_PRIVILEGED_TOTP_MFA_ENABLED: "true"
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+      LOG_CHANNEL: stderr
+
+    steps:
+      - name: Checkout exact Sprint199 source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Qualify exact Sprint199 engineering envelope
+        if: github.event_name == 'pull_request' && github.head_ref == 'sprint199-merchant-account-security-self-service-workspace'
+        shell: bash
+        env:
+          EXPECTED_PATH_HASH: 2aba38a7f80dcc6178ce39f865789b4e20b26f2d3ebb96b1d307af0c628e77e4
+        run: |
+          set -euo pipefail
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          test "$(git rev-parse HEAD)" = "$HEAD_SHA"
+          mapfile -t paths < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort)
+          expected=(
+            ".github/workflows/m7-5-preview-release-artifact.yml"
+            ".github/workflows/sprint199-merchant-account-security-self-service-workspace-regression.yml"
+            ".github/workflows/sprint32-authentication-recovery-proof-regression.yml"
+            ".github/workflows/sprint33-recovery-bound-password-reset-regression.yml"
+            ".github/workflows/sprint34-authenticated-password-change-regression.yml"
+            "apps/web/app/Delivery/Http/Pos/PosOperationsHubController.php"
+            "apps/web/resources/js/pages/Foundation.vue"
+            "apps/web/resources/js/pages/Pos/OperationsHub.vue"
+            "apps/web/resources/views/app.blade.php"
+            "apps/web/tests/merchant-account-security-self-service.php"
+          )
+          test "${#paths[@]}" -eq "${#expected[@]}"
+          diff -u <(printf '%s\n' "${expected[@]}") <(printf '%s\n' "${paths[@]}")
+          actual_hash="$(printf '%s\n' "${paths[@]}" | sha256sum | awk '{print $1}')"
+          test "$actual_hash" = "$EXPECTED_PATH_HASH"
+
+      - name: Preserve operational NO-GO
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" = NOT_EXECUTED
+          test "$(jq -r '.permission_provisioning.state' ops/final-shift-close/STATE.json)" = NONE
+          test "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" = INACTIVE
+          test "$(jq -r '.deployment_authority' ops/final-shift-close/STATE.json)" = NOT_GRANTED
+          test "$(jq -r '.technical_preview_activation' ops/final-shift-close/STATE.json)" = NOT_AUTHORIZED
+          test "$(jq -r '.production_activation' ops/final-shift-close/STATE.json)" = NOT_AUTHORIZED
+          test "$(jq -r '.updater_activation' ops/final-shift-close/STATE.json)" = INACTIVE
+          test "$(jq -r '.selection_state' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" = BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET
+          test "$(jq -r '.selected_target' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" = null
+
+      - name: Setup PHP 8.3 runtime
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        with:
+          php-version: '8.3'
+          extensions: pdo_mysql, pdo_sqlite
+          tools: composer:v2
+          coverage: none
+
+      - name: Validate Sprint199 source contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l apps/web/app/Delivery/Http/Pos/PosOperationsHubController.php
+          php -l apps/web/tests/merchant-account-security-self-service.php
+          php apps/web/tests/merchant-account-security-self-service.php
+          ! grep -R -E 'ChatGPT|OpenAI|Copilot|Gemini' \
+            apps/web/app/Delivery/Http/Pos/PosOperationsHubController.php \
+            apps/web/resources/js/pages/Foundation.vue \
+            apps/web/resources/js/pages/Pos/OperationsHub.vue \
+            apps/web/resources/views/app.blade.php \
+            apps/web/tests/merchant-account-security-self-service.php
+
+      - name: Install locked application dependencies
+        working-directory: apps/web
+        run: |
+          composer validate --no-check-publish
+          composer install --no-interaction --no-progress --prefer-dist
+          composer audit --locked --abandoned=report
+
+      - name: Preserve canonical identity and merchant regressions
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          historical_backup='/tmp/oneqay-sprint199-identity-migrations'
+          rm -rf "$historical_backup"
+          mkdir -p "$historical_backup"
+
+          restore_identity_migrations() {
+            local backup
+            for backup in "$historical_backup"/*.php; do
+              if [[ -f "$backup" ]]; then
+                mv "$backup" "database/migrations/$(basename "$backup")"
+              fi
+            done
+          }
+
+          for migration in database/migrations/0000_00_00_0000{12..27}_*.php; do
+            if [[ -f "$migration" ]]; then
+              mv "$migration" "$historical_backup/$(basename "$migration")"
+            fi
+          done
+          trap restore_identity_migrations EXIT
+
+          php tests/authenticated-password-change.php
+          php tests/authentication-recovery-proof.php
+          php tests/recovery-bound-password-reset.php
+
+          migration12="$historical_backup/0000_00_00_000012_add_totp_factor_epoch_and_recovery_authority.php"
+          test -f "$migration12"
+          mv "$migration12" database/migrations/
+          php tests/privileged-totp-recovery.php
+
+          restore_identity_migrations
+          trap - EXIT
+
+          php tests/merchant-initial-context-assisted-sign-in.php
+          php tests/pos-operations-hub.php
+
+      - name: Setup exact Node LTS
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: 24.19.0
+
+      - name: Type-check and build merchant security UI
+        working-directory: apps/web
+        run: |
+          npm ci --ignore-scripts --no-fund
+          npm run type-check
+          npm run build
+
+      - name: Confirm source cleanliness
+        shell: bash
+        run: |
+          git diff --exit-code
+          test -z "$(git status --porcelain)"
