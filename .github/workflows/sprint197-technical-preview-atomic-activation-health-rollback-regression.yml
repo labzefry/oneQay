@@ -1,0 +1,240 @@
+# Author by Lab | zefry
+name: Sprint197 Technical Preview Atomic Activation Health Rollback Regression
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint197-technical-preview-atomic-activation-health-rollback-${{ github.event.pull_request.number || github.ref }}-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  qualify-sprint197-technical-preview-atomic-activation-health-rollback:
+    name: qualify-sprint197-technical-preview-atomic-activation-health-rollback
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWE=
+      APP_DEBUG: "false"
+      APP_URL: http://localhost
+      ONEQAY_RUNTIME_CLASS: ci
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+      LOG_CHANNEL: stderr
+      ONEQAY_BUILD_PROVENANCE: github-actions:${{ github.run_id }}:${{ github.run_attempt }}
+
+    steps:
+      - name: Checkout exact Sprint197 source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Qualify exact Sprint197 engineering envelope
+        if: github.event_name == 'pull_request' && github.head_ref == 'sprint197-technical-preview-atomic-activation-health-rollback'
+        shell: bash
+        env:
+          EXPECTED_PATH_HASH: 08a73cc8338a51da3ed294b1a6c6a62986e0527100213414036d55b839b10a44
+        run: |
+          set -euo pipefail
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          test "$(git rev-parse HEAD)" = "$HEAD_SHA"
+          mapfile -t paths < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort)
+          expected=(
+            ".github/workflows/m7-5-preview-release-artifact.yml"
+            ".github/workflows/sprint197-technical-preview-atomic-activation-health-rollback-regression.yml"
+            ".github/workflows/sprint32-authentication-recovery-proof-regression.yml"
+            ".github/workflows/sprint33-recovery-bound-password-reset-regression.yml"
+            ".github/workflows/sprint34-authenticated-password-change-regression.yml"
+            "apps/web/app/Infrastructure/Installation/PrebootTechnicalPreviewActivationExecution.php"
+            "apps/web/tests/preboot-technical-preview-activation-execution.php"
+            "tools/build-m7-5-preview-release.sh"
+            "tools/installation/public-installer.php"
+            "tools/installation/technical-preview-activation-execution.schema.json"
+            "tools/installation/technical-preview-activation-recovery.schema.json"
+          )
+          test "${#paths[@]}" -eq "${#expected[@]}"
+          diff -u <(printf '%s\n' "${expected[@]}") <(printf '%s\n' "${paths[@]}")
+          actual_hash="$(printf '%s\n' "${paths[@]}" | sha256sum | awk '{print $1}')"
+          test "$actual_hash" = "$EXPECTED_PATH_HASH"
+
+      - name: Preserve operational NO-GO
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" = NOT_EXECUTED
+          test "$(jq -r '.permission_provisioning.state' ops/final-shift-close/STATE.json)" = NONE
+          test "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" = INACTIVE
+          test "$(jq -r '.deployment_authority' ops/final-shift-close/STATE.json)" = NOT_GRANTED
+          test "$(jq -r '.technical_preview_activation' ops/final-shift-close/STATE.json)" = NOT_AUTHORIZED
+          test "$(jq -r '.production_activation' ops/final-shift-close/STATE.json)" = NOT_AUTHORIZED
+          test "$(jq -r '.updater_activation' ops/final-shift-close/STATE.json)" = INACTIVE
+          test "$(jq -r '.selection_state' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" = BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET
+          test "$(jq -r '.selected_target' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" = null
+
+      - name: Setup PHP 8.3 runtime
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        with:
+          php-version: '8.3'
+          extensions: pdo_mysql
+          tools: composer:v2
+          coverage: none
+
+      - name: Setup exact Node LTS
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: 24.19.0
+
+      - name: Validate Sprint197 source schemas and guarded installer
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l apps/web/app/Infrastructure/Installation/PrebootTechnicalPreviewActivationExecution.php
+          php -l apps/web/tests/preboot-technical-preview-activation-execution.php
+          php -l tools/installation/public-installer.php
+          bash -n tools/build-m7-5-preview-release.sh
+          jq -e '.properties.execution_state.const == "TECHNICAL_PREVIEW_ACTIVE_HEALTHY"' tools/installation/technical-preview-activation-execution.schema.json
+          jq -e '.properties.post_activation_health_passed.const == true' tools/installation/technical-preview-activation-execution.schema.json
+          jq -e '.properties.production_authorized.const == false' tools/installation/technical-preview-activation-execution.schema.json
+          jq -e '.properties.recovery_state.const == "TECHNICAL_PREVIEW_ACTIVATION_ROLLED_BACK"' tools/installation/technical-preview-activation-recovery.schema.json
+          jq -e '.properties.rollback_verified.const == true' tools/installation/technical-preview-activation-recovery.schema.json
+          jq -e '.properties.activation_executed.const == false' tools/installation/technical-preview-activation-recovery.schema.json
+          grep -Fq 'execute_technical_preview_activation' tools/installation/public-installer.php
+          grep -Fq 'ACTIVATE_TECHNICAL_PREVIEW' tools/installation/public-installer.php
+          grep -Fq 'ACTIVE / HEALTHY' tools/installation/public-installer.php
+          grep -Fq 'technical_preview_automatic_rollback_required' tools/build-m7-5-preview-release.sh
+
+      - name: Validate installer-prepared Preview runtime envelope
+        shell: bash
+        run: |
+          set -euo pipefail
+          config=apps/web/app/Infrastructure/Installation/PrebootInstallationConfiguration.php
+          grep -Fq "'ONEQAY_RUNTIME_CLASS' => 'preview'" "$config"
+          grep -Fq "'ONEQAY_TECHNICAL_PREVIEW_ENABLED' => 'false'" "$config"
+          grep -Fq "'ONEQAY_PREVIEW_INSTANCE_MODE' => 'single'" "$config"
+          grep -Fq "'ONEQAY_PREVIEW_DATA_CLASS' => 'synthetic'" "$config"
+          grep -Fq "'ONEQAY_PRODUCTION_DATA_ALLOWED' => 'false'" "$config"
+          grep -Fq "'SESSION_DRIVER' => 'file'" "$config"
+          grep -Fq "'SESSION_FILES' => \$this->sessionDirectory()" "$config"
+          grep -Fq "'SESSION_LIFETIME' => '60'" "$config"
+          grep -Fq "'SESSION_ENCRYPT' => 'true'" "$config"
+          grep -Fq "'SESSION_SECURE_COOKIE' => 'true'" "$config"
+          grep -Fq "'SESSION_COOKIE' => 'oneqay-preview-session'" "$config"
+          grep -Fq "env('SESSION_FILES'" apps/web/config/session.php
+
+      - name: Install locked application dependencies
+        working-directory: apps/web
+        run: |
+          set -euo pipefail
+          composer validate --no-check-publish
+          composer install --no-interaction --no-progress --prefer-dist
+          npm ci --ignore-scripts --no-fund
+          npm run type-check
+          npm run build
+
+      - name: Preserve Sprint184 through Sprint195 installation regressions
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -d zend.assertions=1 -d assert.exception=1 tests/preboot-installation-configuration.php
+          php -d zend.assertions=1 -d assert.exception=1 tests/preboot-database-compatibility-verification.php
+          php -d zend.assertions=1 -d assert.exception=1 tests/preboot-installation-activation-readiness.php
+          php -d zend.assertions=1 -d assert.exception=1 tests/preboot-runtime-configuration-promotion-request.php
+          php -d zend.assertions=1 -d assert.exception=1 tests/preboot-runtime-configuration-promotion-qualification.php
+          php -d zend.assertions=1 -d assert.exception=1 tests/preboot-runtime-configuration-promotion-readiness.php
+          php -d zend.assertions=1 -d assert.exception=1 tests/preboot-runtime-configuration-promotion-execution.php
+          php -d zend.assertions=1 -d assert.exception=1 tests/preboot-runtime-configuration-promotion-operator-delivery.php
+          php -d zend.assertions=1 -d assert.exception=1 tests/preboot-runtime-configuration-post-promotion-verification.php
+          php -d zend.assertions=1 -d assert.exception=1 tests/preboot-installation-completion-handoff.php
+          php -d zend.assertions=1 -d assert.exception=1 tests/preboot-technical-preview-activation-request.php
+          php -d zend.assertions=1 -d assert.exception=1 tests/preboot-technical-preview-activation-authority-readiness.php
+
+      - name: Execute Sprint197 target environment preflight regression
+        working-directory: apps/web
+        run: php -d zend.assertions=1 -d assert.exception=1 tests/preboot-technical-preview-target-environment-preflight.php
+
+      - name: Preserve canonical Sprint85 target preflight contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq 'Mandatory target-environment preflight after separate authority' docs/SPRINT85_TECHNICAL_PREVIEW_ACTIVATION_READINESS_EVIDENCE_GATE.md
+          grep -Fq 'exactly one intended Preview application instance' docs/SPRINT85_TECHNICAL_PREVIEW_ACTIVATION_READINESS_EVIDENCE_GATE.md
+          grep -Fq 'HTTPS/TLS available before enabling the Secure session cookie' docs/SPRINT85_TECHNICAL_PREVIEW_ACTIVATION_READINESS_EVIDENCE_GATE.md
+          grep -Fq 'private persistent session directory exists' docs/SPRINT85_TECHNICAL_PREVIEW_ACTIVATION_READINESS_EVIDENCE_GATE.md
+          grep -Fq 'Failure of any target-environment preflight condition must leave activation disabled' docs/SPRINT85_TECHNICAL_PREVIEW_ACTIVATION_READINESS_EVIDENCE_GATE.md
+
+      - name: Build governed release with target preflight capability
+        shell: bash
+        run: |
+          set -euo pipefail
+          HEAD_SHA="${{ github.event.pull_request.head.sha || github.sha }}"
+          bash tools/build-m7-5-preview-release.sh "$HEAD_SHA"
+          release_id="m75-preview-${HEAD_SHA:0:12}"
+          artifact="dist/${release_id}.tar.gz"
+          test -f "$artifact"
+
+          tar -tzf "$artifact" > /tmp/oneqay-s196-release-list.txt
+          grep -Fxq "$release_id/apps/web/app/Infrastructure/Installation/PrebootTechnicalPreviewTargetEnvironmentPreflight.php" /tmp/oneqay-s196-release-list.txt
+          grep -Fxq "$release_id/installation/technical-preview-target-environment-preflight.schema.json" /tmp/oneqay-s196-release-list.txt
+          ! grep -F '/apps/web/database/migrations/' /tmp/oneqay-s196-release-list.txt
+
+          tar -xOzf "$artifact" "$release_id/RELEASE.json" > /tmp/oneqay-s196-release.json
+          grep -Fq '"technical_preview_target_preflight_relative_path": "oneqay-preview/shared/install/technical-preview-target-environment-preflight.json"' /tmp/oneqay-s196-release.json
+          grep -Fq '"technical_preview_target_preflight_schema_relative_path": "installation/technical-preview-target-environment-preflight.schema.json"' /tmp/oneqay-s196-release.json
+          grep -Fq '"technical_preview_target_preflight_registration_state": "REGISTERED_GUARDED_OPERATOR_ACTION"' /tmp/oneqay-s196-release.json
+          grep -Fq '"technical_preview_target_preflight_action": "run_technical_preview_target_preflight"' /tmp/oneqay-s196-release.json
+          grep -Fq '"technical_preview_target_preflight_confirmation_required": true' /tmp/oneqay-s196-release.json
+          grep -Fq '"technical_preview_target_preflight_state": "NOT_PERFORMED_AT_BUILD"' /tmp/oneqay-s196-release.json
+          grep -Fq '"technical_preview_session_profile": "PRIVATE_SHARED_FILE_SESSION_V1"' /tmp/oneqay-s196-release.json
+          grep -Fq '"technical_preview_session_relative_path": "oneqay-preview/shared/runtime/sessions"' /tmp/oneqay-s196-release.json
+          grep -Fq '"technical_preview_activation_execution_state": "NOT_EXECUTED"' /tmp/oneqay-s196-release.json
+          grep -Fq '"technical_preview_authorized": false' /tmp/oneqay-s196-release.json
+          grep -Fq '"activation_authorized": false' /tmp/oneqay-s196-release.json
+
+          tar -xOzf "$artifact" "$release_id/public-surface/install.php" > /tmp/oneqay-s196-install.php
+          php -l /tmp/oneqay-s196-install.php
+          grep -Fq 'run_technical_preview_target_preflight' /tmp/oneqay-s196-install.php
+          grep -Fq 'RUN_TECHNICAL_PREVIEW_TARGET_PREFLIGHT' /tmp/oneqay-s196-install.php
+          grep -Fq 'PREFLIGHT PASSED / NOT ACTIVATED' /tmp/oneqay-s196-install.php
+
+      - name: Prove preflight-only lifecycle boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          ! grep -R --line-number --fixed-strings 'Artisan::call' \
+            apps/web/app/Infrastructure/Installation/PrebootTechnicalPreviewTargetEnvironmentPreflight.php \
+            apps/web/tests/preboot-technical-preview-target-environment-preflight.php \
+            tools/installation/public-installer.php
+          ! grep -Fq 'file_put_contents($this->activeEnvironmentPath()' apps/web/app/Infrastructure/Installation/PrebootTechnicalPreviewTargetEnvironmentPreflight.php
+          ! grep -Fq 'rename($this->activeEnvironmentPath()' apps/web/app/Infrastructure/Installation/PrebootTechnicalPreviewTargetEnvironmentPreflight.php
+          ! grep -Fq 'ONEQAY_TECHNICAL_PREVIEW_ENABLED="true"' tools/installation/public-installer.php
+          grep -Fq "'ONEQAY_TECHNICAL_PREVIEW_ENABLED' => 'false'" apps/web/app/Infrastructure/Installation/PrebootInstallationConfiguration.php
+          test "$(jq -r '.technical_preview_activation' ops/final-shift-close/STATE.json)" = NOT_AUTHORIZED
+          test "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" = NOT_EXECUTED
+          test "$(jq -r '.permission_provisioning.state' ops/final-shift-close/STATE.json)" = NONE
+
+      - name: Confirm attribution and source cleanliness
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq 'Author by Lab | zefry' apps/web/app/Infrastructure/Installation/PrebootTechnicalPreviewTargetEnvironmentPreflight.php
+          grep -Fq 'Lab | zefry' tools/installation/technical-preview-target-environment-preflight.schema.json
+          ! grep -R -E 'ChatGPT|OpenAI|Copilot|Gemini' \
+            apps/web/app/Infrastructure/Installation/PrebootInstallationConfiguration.php \
+            apps/web/app/Infrastructure/Installation/PrebootTechnicalPreviewTargetEnvironmentPreflight.php \
+            apps/web/config/session.php \
+            apps/web/environment.example \
+            apps/web/tests/preboot-installation-configuration.php \
+            apps/web/tests/preboot-technical-preview-target-environment-preflight.php \
+            tools/installation/technical-preview-target-environment-preflight.schema.json \
+            tools/installation/public-installer.php \
+            tools/build-m7-5-preview-release.sh
