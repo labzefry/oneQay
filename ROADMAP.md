@@ -1,25 +1,25 @@
 # oneQay Roadmap
 
-**Roadmap checkpoint:** Sprint208 closed canonically
-**Canonical engineering baseline:** `20e835262f8163d45101ab00a818881421085d2e`
+**Roadmap checkpoint:** Sprint209 closed canonically
+**Canonical engineering baseline:** `55b652f8b62e05cb8254ec74bb10f2e507abb641`
 **Current state authority:** `PROJECT_MANIFEST.md`
 
-## Completed Sprint208 horizon
+## Completed Sprint209 horizon
 
-Sprint208 closed `DURABLE_STAGING_DEPLOYMENT_AUTHORITY_BINDING_FOUNDATION`.
+Sprint209 closed `DURABLE_STAGING_DEPLOYMENT_EVIDENCE_BINDING_FOUNDATION`.
 
-The repository now has an auditable path from governed durable-staging artifact/handoff through exact-target planning to a request-bound, short-lived, separately issued deployment authority. The authority chain remains fail-closed and non-operational until an external operator executes the plan on a real isolated target.
+The repository now requires protected deployment execution evidence before a real durable-runtime readiness endpoint can enter the attestation chain. Exact target/source/artifact identity is bound to the Sprint207 deployment plan and Sprint208 authority, with mandatory preflight, readback, health, and rollback verification.
 
-Engineering PR #849 qualified at 87/87 on final head `67aa2e73a0433585a34b76df4c7bec97b578aefe` and squash merged at `20e835262f8163d45101ab00a818881421085d2e`.
+Engineering PR #852 qualified at 89/89 on final head `3372abb10eb5f883ff410d25e0defbaad827207c` and squash merged at `55b652f8b62e05cb8254ec74bb10f2e507abb641`.
 
-Engineering envelope SHA-256: `5852e772a37b334987cdf5bcca0327a4e1b90d18a6affa02d6a9c3f44b6bf616`.
+Engineering envelope SHA-256: `ebff1a00d0b06f16925cc0f0849b3c7cd38216ccccd659f0447f307d71face10`.
 Canonical reconciliation envelope SHA-256: `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`.
 
 ## Production-readiness progression
 
-Sprint203 supplied the bounded merchant-core staging bridge, Sprint204 authenticated durable-runtime readiness, Sprint205 the governed durable-staging artifact, Sprint206 validated handoff, Sprint207 deterministic operator planning, and Sprint208 exact request-bound deployment authority qualification.
+Sprint203 supplied the merchant-core staging bridge, Sprint204 runtime readiness, Sprint205 governed durable artifact, Sprint206 validated handoff, Sprint207 deterministic operator planning, Sprint208 request-bound deployment authority, and Sprint209 deployment-execution evidence binding.
 
-Source packaging, handoff, plan generation, and authority binding are no longer the immediate blocker. A real non-production durable-staging environment remains required.
+The source chain is now closed through the protected attestation producer gate. A real isolated non-production runtime and separate operational authority remain required.
 
 ## Operational boundary
 
@@ -27,8 +27,6 @@ Canonical state remains migration #27 `NOT_EXECUTED`; permission provisioning `N
 
 ## Next material horizon
 
-Under separate operational authority, materialize the real durable-staging target, generate its exact authority request, qualify matching short-lived authority, execute the operator plan externally, and prove running source/artifact identity, configuration readback, non-mutating health, and rollback.
-
-Only after real target qualification should protected attestation producer → ingestion → target selection run. Open another engineering sprint only if targeted discovery or real deployment exposes a concrete missing source capability.
+Materialize the real durable-staging target under separate authority, execute the exact Sprint207 operator plan, create Sprint209 deployment evidence, configure protected environment bindings, dispatch the protected attestation producer, then use the existing ingestion chain. Open another engineering sprint only if real execution proves a concrete missing source capability.
 
 Author by Lab | zefry
