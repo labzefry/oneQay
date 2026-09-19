@@ -322,12 +322,13 @@ jobs:
           count="$(wc -l < /tmp/s70-historical-paths)"
           fingerprint="$(sha256sum /tmp/s70-historical-paths | awk '{print $1}')"
           recognized=false
-          if [[ "${{ github.head_ref }}" == 'sprint198-pos-business-workspace-delivery-integration' && "$count" -eq 11 && "$fingerprint" == '785aec1672635ef48a9c418d350b7b4de7347da8dfb685c4ab308ec79eb9b8a2' ]]; then
+          if [[ "${{ github.head_ref }}" == 'sprint198-pos-business-workspace-delivery-integration' && "$count" -eq 12 && "$fingerprint" == '8c2f1d07aa2475d070ed4b699a9f5442dad4d6f3d48173d421a7e120bec9cfa8' ]]; then
             for expected in \
               '.github/workflows/m7-4a-technical-preview-interaction-regression.yml' \
               '.github/workflows/sprint126-final-shift-close-runtime-binding-manifest-control-plane-token-hardening.yml' \
               '.github/workflows/sprint162-pos-operations-hub-regression.yml' \
               '.github/workflows/sprint198-pos-business-workspace-delivery-integration-regression.yml' \
+              '.github/workflows/sprint25-policy-administration-delivery-regression.yml' \
               '.github/workflows/sprint28-initial-password-enrollment-regression.yml' \
               '.github/workflows/sprint32-authentication-recovery-proof-regression.yml' \
               '.github/workflows/sprint33-recovery-bound-password-reset-regression.yml' \
