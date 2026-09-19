@@ -1,6 +1,6 @@
 # oneQay Tasks
 
-**Current canonical engineering checkpoint:** Sprint197 engineering closed; reconciliation in progress
+**Current canonical engineering checkpoint:** Sprint197 closed canonically
 **Canonical engineering commit:** `0c74e535cfeb281edaff5a2967752baee0db5227`
 **Engineering PR:** #825
 **Canonical status authority:** `PROJECT_MANIFEST.md`
