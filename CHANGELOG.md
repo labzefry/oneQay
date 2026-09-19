@@ -1,26 +1,24 @@
 # Changelog
 
-## 2026-09-19 — Sprint195 closed canonically
+## 2026-09-19 — Sprint196 closed canonically
 
-**Sprint195: Technical Preview Activation Authority Readiness**
+**Sprint196: Technical Preview Target Environment Preflight**
 
-- Added exact-bound qualification for separately provisioned Synthetic Technical Preview activation authority.
-- Authority is bound to release ID, activation request, active runtime environment SHA-256, installation-completion SHA-256, and authority lifetime.
-- Added one-time out-of-band approval-token qualification with maximum 900-second authority lifetime.
-- Added private 0600 durable execution-readiness evidence with atomic write and exact replay idempotency.
-- Readiness state is `TECHNICAL_PREVIEW_ACTIVATION_EXECUTION_READY_NOT_EXECUTED`.
-- Preserved mandatory target-environment preflight: HTTPS, single instance, private file-session storage, runtime-envelope revalidation, Preview off-switch, post-activation health, rollback/recovery, synthetic-only operation, and no schema migration requirement.
-- Installer adds guarded `qualify_technical_preview_activation_authority` with exact confirmation `QUALIFY_TECHNICAL_PREVIEW_ACTIVATION`.
-- Operator surface reports `QUALIFIED / READY / NOT ACTIVATED`.
-- Governed M7.5 packages authority/readiness source and schemas without creating operational authority at build time.
-- Final engineering head `11ec883590d05d28aeeac08a0286a3e149db00e7`: 83/83 SUCCESS.
-- Engineering PR #821 squash merged at `022b1667ce25a9f4b86a71c95b2c59ad37793d4e`.
-- Dedicated Sprint195 run `35425205497`: SUCCESS.
-- Exact-head M7.5 run `35425205248`: SUCCESS.
-- M7.1 run `35425205249`, Governance `35425205459`, PHP Foundation `35425205135`, cPanel `35425205076`, and shared-runtime `35425205240`: SUCCESS.
-- Engineering path hash: `b6b06d99b300fa67cc6341f098eff73c430b11c6d98444ebb75a352d3e7589c2`.
+- Corrected the installer-prepared deployed Preview session envelope while Technical Preview remains disabled.
+- Added single-instance and synthetic-only runtime posture plus Production-data prohibition.
+- Added private persistent shared file sessions with 60-minute lifetime, encryption, Secure cookie, and dedicated `oneqay-preview-session`.
+- Added guarded read-only target-environment preflight after Sprint195 activation execution-readiness.
+- Preflight validates HTTPS, exact host binding, single-instance posture, private session storage outside public root, exact runtime envelope, Preview off-switch, governed release metadata, config-cache cleanliness, health/recovery contracts, and Production-data prohibition.
+- Added private 0600 non-secret preflight evidence with exact replay idempotency and fail-closed tamper handling.
+- Preflight state is `TECHNICAL_PREVIEW_TARGET_ENVIRONMENT_PREFLIGHT_PASSED_NOT_ACTIVATED`.
+- Installer exposes `RUN_TECHNICAL_PREVIEW_TARGET_PREFLIGHT` and reports `PREFLIGHT PASSED / NOT ACTIVATED`.
+- Final engineering head `afc443420ddef9283c7f575ce311b97fc026e658`: 84/84 SUCCESS.
+- Engineering PR #823 squash merged at `9948aeadc562b6188453872f09bd3afb754dd0c0`.
+- Dedicated Sprint196 run `35426685626`: SUCCESS.
+- M7.5 `35426685578`, M7.1 `35426686129`, Governance `35426686140`, PHP Foundation `35426685380`, cPanel `35426685589`, and shared-runtime `35426685604`: SUCCESS.
+- Engineering path hash: `bb875f82e7cfc7a8347bf6d92f916f6124eb5b095e27f9582189ebec5c74e904`.
 - Reconciliation path hash: `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`.
 - Operational NO-GO unchanged.
-- Next position: Sprint196 bounded discovery.
+- Next position: Sprint197 business-first bounded discovery.
 
 Author by Lab | zefry
