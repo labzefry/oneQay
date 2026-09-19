@@ -1,5 +1,28 @@
 # Changelog
 
+## 2026-09-19 — Sprint201 closed canonically
+
+**Sprint201: Merchant POS State-Aware Guided Operations**
+
+- Upgraded the Sprint200 guided merchant POS home from route-order guidance into state-aware operational guidance.
+- Reused already-authorized Catalog & Opening Stock, Shift Start, and Cashier read models; no new business-state authority was introduced.
+- Recommends Catalog & Opening Stock when catalog or sellable inventory is not ready.
+- Recommends Shift Start when the exact device shift or opening-cash readiness is incomplete.
+- Recommends Cashier only when sellable inventory, active shift, and opening-cash readiness are verified.
+- Uses Sales Summary only as a read-only fallback when no guarded mutation step is recommended.
+- Withholds any recommendation when readiness evidence cannot be read safely while preserving the separately authorized workspace list.
+- Updated Sprint200 preservation so the canonical state-aware successor remains compatible without weakening shared safety invariants.
+- Final engineering head `d5a1fb81ed725052cd89f98a72c0eefeba93a946`: 87/87 PR-triggered workflows SUCCESS.
+- Engineering PR #833 squash merged at `cec54de9ff3d056f5981165616584c343b0152c2`.
+- Dedicated Sprint201 run `35442031183`, Sprint200 preservation `35442031497`, Sprint199 preservation `35442031296`, M7.5 release `35442031110`, Sprint32 `35442030463`, Sprint33 `35442030778`, Sprint34 `35442030406`, M7.1 `35442030479`, Governance `35442030465`, PHP Foundation `35442030320`, and Sprint162 `35442030524`: SUCCESS.
+- Product Owner merge authority run `35442955614`: SUCCESS.
+- Engineering path hash: `42c4cdd533a99adf2d0d5ba379e1e90575f0bd081ec08187107e9f7a0a03d766`.
+- Canonical reconciliation path hash: `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`.
+- Operational NO-GO unchanged.
+- Next position: Sprint202 business-first bounded discovery.
+
+Author by Lab | zefry
+
 ## 2026-09-19 — Sprint200 closed canonically
 
 **Sprint200: Merchant POS Guided Operations Home**
