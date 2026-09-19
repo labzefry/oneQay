@@ -89,6 +89,11 @@ try {
     $active = $shared.DIRECTORY_SEPARATOR.'runtime'.DIRECTORY_SEPARATOR.'.env';
     $assert(is_file($pending), 'pending environment was not written.');
     $assert(! file_exists($active), 'active environment must not be created.');
+    $sessionDirectory = $shared.DIRECTORY_SEPARATOR.'runtime'.DIRECTORY_SEPARATOR.'sessions';
+    $assert(is_dir($sessionDirectory), 'private persistent Preview session directory was not prepared.');
+    $assert(! is_link($sessionDirectory), 'Preview session directory must not be a symlink.');
+    $sessionPermissions = fileperms($sessionDirectory);
+    $assert(is_int($sessionPermissions) && ($sessionPermissions & 0077) === 0, 'Preview session directory permissions are not private.');
     $assert(! file_exists($install.DIRECTORY_SEPARATOR.'authority.json'), 'single-use authority was not consumed.');
 
     $content = (string) file_get_contents($pending);
@@ -96,6 +101,9 @@ try {
         'APP_ENV="production"',
         'ONEQAY_RUNTIME_CLASS="preview"',
         'ONEQAY_TECHNICAL_PREVIEW_ENABLED="false"',
+        'ONEQAY_PREVIEW_INSTANCE_MODE="single"',
+        'ONEQAY_PREVIEW_DATA_CLASS="synthetic"',
+        'ONEQAY_PRODUCTION_DATA_ALLOWED="false"',
         'ONEQAY_PERSISTENCE_ENABLED="false"',
         'ONEQAY_SYSTEM_UPDATE_CONTROL_PLANE_ENABLED="false"',
         'ONEQAY_INSTALLATION_DATABASE_VERIFIED="true"',
@@ -106,6 +114,12 @@ try {
         'ONEQAY_INSTALLATION_DATABASE_SCHEMA_STATE="empty"',
         'ONEQAY_INSTALLATION_DATABASE_LEAST_PRIVILEGE="true"',
         'ONEQAY_INSTALLATION_ACTIVATION_AUTHORIZED="false"',
+        'SESSION_DRIVER="file"',
+        'SESSION_FILES="'.$shared.DIRECTORY_SEPARATOR.'runtime'.DIRECTORY_SEPARATOR.'sessions"',
+        'SESSION_LIFETIME="60"',
+        'SESSION_ENCRYPT="true"',
+        'SESSION_SECURE_COOKIE="true"',
+        'SESSION_COOKIE="oneqay-preview-session"',
         '# PREPARED ONLY — activation requires separate operational authority.',
     ] as $marker) {
         $assert(str_contains($content, $marker), 'pending environment missing '.$marker);

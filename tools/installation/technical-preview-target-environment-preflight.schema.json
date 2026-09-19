@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "oneqay.technical-preview-target-environment-preflight.v1",
+  "title": "oneQay Technical Preview Target Environment Preflight",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "product",
+    "preflight_state",
+    "release_id",
+    "request_id",
+    "authority_id",
+    "target_fingerprint",
+    "activation_readiness_sha256",
+    "active_environment_sha256",
+    "release_manifest_sha256",
+    "host_identity_sha256",
+    "session_directory_identity_sha256",
+    "checked_at_unix",
+    "authority_expires_at_unix",
+    "checks",
+    "post_activation_health_check_required",
+    "post_activation_health_check_executed",
+    "authority_consumed",
+    "readiness_consumed",
+    "activation_executed",
+    "migration_execution_authorized",
+    "persistence_authorized",
+    "production_authorized",
+    "updater_authorized",
+    "deployment_authorized",
+    "attribution"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "product": { "const": "oneQay" },
+    "preflight_state": {
+      "const": "TECHNICAL_PREVIEW_TARGET_ENVIRONMENT_PREFLIGHT_PASSED_NOT_ACTIVATED"
+    },
+    "release_id": {
+      "type": "string",
+      "pattern": "^m75-preview-[0-9a-f]{12}$"
+    },
+    "request_id": {
+      "type": "string",
+      "pattern": "^technical-preview-activation-request-[0-9a-f]{24}$"
+    },
+    "authority_id": {
+      "type": "string",
+      "pattern": "^technical-preview-authority-[0-9a-f]{24}$"
+    },
+    "target_fingerprint": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "activation_readiness_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "active_environment_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "release_manifest_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "host_identity_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "session_directory_identity_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "checked_at_unix": { "type": "integer", "minimum": 1 },
+    "authority_expires_at_unix": { "type": "integer", "minimum": 1 },
+    "checks": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "https_tls_active",
+        "dedicated_host_binding",
+        "single_instance_target",
+        "private_persistent_session_directory",
+        "runtime_envelope_exact",
+        "preview_off_switch_verified",
+        "release_synthetic_no_schema_change",
+        "stale_config_cache_absent",
+        "preview_route_off_switch_contract_available",
+        "post_activation_health_contract_available",
+        "rollback_recovery_contract_available",
+        "production_data_forbidden"
+      ],
+      "properties": {
+        "https_tls_active": { "const": true },
+        "dedicated_host_binding": { "const": true },
+        "single_instance_target": { "const": true },
+        "private_persistent_session_directory": { "const": true },
+        "runtime_envelope_exact": { "const": true },
+        "preview_off_switch_verified": { "const": true },
+        "release_synthetic_no_schema_change": { "const": true },
+        "stale_config_cache_absent": { "const": true },
+        "preview_route_off_switch_contract_available": { "const": true },
+        "post_activation_health_contract_available": { "const": true },
+        "rollback_recovery_contract_available": { "const": true },
+        "production_data_forbidden": { "const": true }
+      }
+    },
+    "post_activation_health_check_required": { "const": true },
+    "post_activation_health_check_executed": { "const": false },
+    "authority_consumed": { "const": false },
+    "readiness_consumed": { "const": false },
+    "activation_executed": { "const": false },
+    "migration_execution_authorized": { "const": false },
+    "persistence_authorized": { "const": false },
+    "production_authorized": { "const": false },
+    "updater_authorized": { "const": false },
+    "deployment_authorized": { "const": false },
+    "attribution": { "const": "Lab | zefry" }
+  }
+}
