@@ -8,32 +8,32 @@ Enterprise-oriented multi-tenant business-management platform built with Modular
 
 ## Current canonical status
 
-Latest completed engineering sprint: **Sprint195 — Technical Preview Activation Authority Readiness**.
+Latest completed engineering sprint: **Sprint196 — Technical Preview Target Environment Preflight**.
 
-- Canonical engineering commit: `022b1667ce25a9f4b86a71c95b2c59ad37793d4e`
-- Engineering PR: #821
-- Final engineering head: `11ec883590d05d28aeeac08a0286a3e149db00e7`
-- Exact-head qualification: 83/83 successful
-- Dedicated Sprint195 run `35425205497`: SUCCESS
-- Exact-head M7.5 run `35425205248`: SUCCESS
-- Engineering envelope SHA-256: `b6b06d99b300fa67cc6341f098eff73c430b11c6d98444ebb75a352d3e7589c2`
+- Canonical engineering commit: `9948aeadc562b6188453872f09bd3afb754dd0c0`
+- Engineering PR: #823
+- Final engineering head: `afc443420ddef9283c7f575ce311b97fc026e658`
+- Exact-head qualification: 84/84 successful
+- Dedicated Sprint196 run `35426685626`: SUCCESS
+- Exact-head M7.5 run `35426685578`: SUCCESS
+- Engineering envelope SHA-256: `bb875f82e7cfc7a8347bf6d92f916f6124eb5b095e27f9582189ebec5c74e904`
 
 See `PROJECT_MANIFEST.md` for canonical project state.
 
-## Sprint195 capability
+## Sprint196 capability
 
-oneQay can now validate an exact-bound, separately provisioned Synthetic Technical Preview activation authority and seal private durable execution-readiness evidence. Qualification requires an out-of-band one-time token, preserves the Sprint85 target-environment preflight contract, and stops at **QUALIFIED / READY / NOT ACTIVATED**.
+oneQay now prepares the complete bounded single-instance Synthetic Technical Preview session envelope and can run a guarded read-only target-environment preflight over the exact HTTPS host. Successful preflight produces private non-secret evidence and stops at **PREFLIGHT PASSED / NOT ACTIVATED**.
 
 ## Product progression
 
-Governed release → installation readiness → secure configuration → DB verification → pending config → sealed handoff → promotion request → authority qualification → execution readiness → atomic promotion → post-promotion verification → installation completion handoff → Technical Preview activation request → Technical Preview authority qualification → activation execution readiness.
+Governed release → installation readiness → secure configuration → DB verification → pending config → sealed handoff → promotion request → authority qualification → execution readiness → atomic promotion → post-promotion verification → installation completion → Technical Preview activation request → activation authority qualification → activation execution readiness → target-environment preflight.
 
 ## Operational boundary
 
-Migration #27 remains `NOT_EXECUTED`; permission provisioning `NONE`; Final Shift Close feature activation `INACTIVE`; deployment `NOT_GRANTED`; Technical Preview/Production `NOT_AUTHORIZED`; updater `INACTIVE`; durable target remains blocked and selected target remains `null`.
+Migration #27 remains `NOT_EXECUTED`; permission provisioning `NONE`; Final Shift Close `INACTIVE`; deployment `NOT_GRANTED`; Technical Preview/Production `NOT_AUTHORIZED`; updater `INACTIVE`; durable target remains blocked and selected target remains `null`.
 
 ## Next
 
-Sprint196 begins after canonical Sprint195 reconciliation and targets the next material blocker toward safe first application operation. Target-environment preflight and any later activation execution remain separately governed and require live-repository proof before selection.
+Sprint197 starts from fully reconciled Sprint196 and verifies the next material blocker after target preflight. Technical Preview activation remains a separate governed action and is not pre-authorized.
 
 Author by Lab | zefry
