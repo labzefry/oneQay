@@ -62,7 +62,7 @@ jobs:
               "apps/web/tests/pos-business-workspace-delivery-integration.php"
             )
             diff -u <(printf '%s\n' "${expected[@]}") <(printf '%s\n' "${changed[@]}")
-            test "$(grep -Fc 'App\\Providers\\PosOperationsHubServiceProvider::class' apps/web/bootstrap/providers.php)" -eq 1
+            test "$(grep -Fc 'App\Providers\PosOperationsHubServiceProvider::class' apps/web/bootstrap/providers.php)" -eq 1
           else
             ! grep -Fq 'PosOperationsHubServiceProvider::class' apps/web/bootstrap/providers.php
           fi
