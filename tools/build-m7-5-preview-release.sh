@@ -36,9 +36,11 @@ required_files=(
   "apps/web/app/Infrastructure/Installation/PrebootInstallationActivationReadiness.php"
   "apps/web/app/Infrastructure/Installation/PrebootRuntimeConfigurationPromotionRequest.php"
   "apps/web/app/Infrastructure/Installation/PrebootRuntimeConfigurationPromotionQualification.php"
+  "apps/web/app/Infrastructure/Installation/PrebootRuntimeConfigurationPromotionReadiness.php"
   "apps/web/app/Infrastructure/Installation/PrebootInstallationConfiguration.php"
   "release/manifest-v1.schema.json"
   "tools/installation/runtime-configuration-promotion-authority.schema.json"
+  "tools/installation/runtime-configuration-promotion-readiness.schema.json"
   "tools/installation/public-installer.php"
   "tools/validate-release-manifest.php"
 )
@@ -139,6 +141,8 @@ sed "s/__ONEQAY_RELEASE_ID__/${release_id}/g" \
 
 cp tools/installation/runtime-configuration-promotion-authority.schema.json \
   "${stage_root}/installation/runtime-configuration-promotion-authority.schema.json"
+cp tools/installation/runtime-configuration-promotion-readiness.schema.json \
+  "${stage_root}/installation/runtime-configuration-promotion-readiness.schema.json"
 
 if grep -Fq '__ONEQAY_RELEASE_ID__' "${public_surface}/install.php"; then
   echo "Pre-boot installer release binding was not materialized." >&2
@@ -171,6 +175,9 @@ cat > "${stage_root}/RELEASE.json" <<JSON
     "promotion_authority_relative_path": "oneqay-preview/shared/install/runtime-configuration-promotion-authority.json",
     "promotion_authority_schema_relative_path": "installation/runtime-configuration-promotion-authority.schema.json",
     "promotion_authority_max_lifetime_seconds": 900,
+    "promotion_readiness_relative_path": "oneqay-preview/shared/install/runtime-configuration-promotion-readiness.json",
+    "promotion_readiness_schema_relative_path": "installation/runtime-configuration-promotion-readiness.schema.json",
+    "promotion_execution_state": "NOT_EXECUTED",
     "promotion_authorized": false,
     "activation_authorized": false
   },
@@ -268,8 +275,10 @@ for required_release_path in \
   "${release_id}/apps/web/app/Infrastructure/Installation/PrebootInstallationActivationReadiness.php" \
   "${release_id}/apps/web/app/Infrastructure/Installation/PrebootRuntimeConfigurationPromotionRequest.php" \
   "${release_id}/apps/web/app/Infrastructure/Installation/PrebootRuntimeConfigurationPromotionQualification.php" \
+  "${release_id}/apps/web/app/Infrastructure/Installation/PrebootRuntimeConfigurationPromotionReadiness.php" \
   "${release_id}/apps/web/app/Infrastructure/Installation/PrebootInstallationConfiguration.php" \
-  "${release_id}/installation/runtime-configuration-promotion-authority.schema.json"; do
+  "${release_id}/installation/runtime-configuration-promotion-authority.schema.json" \
+  "${release_id}/installation/runtime-configuration-promotion-readiness.schema.json"; do
   if ! grep -Fxq "$required_release_path" /tmp/oneqay-preview-release-contents.txt; then
     echo "Missing required pre-boot installation path: $required_release_path" >&2
     exit 1
@@ -290,6 +299,9 @@ if ! grep -Fq '"promotion_request_relative_path": "oneqay-preview/shared/install
   || ! grep -Fq '"promotion_authority_relative_path": "oneqay-preview/shared/install/runtime-configuration-promotion-authority.json"' "${stage_root}/RELEASE.json" \
   || ! grep -Fq '"promotion_authority_schema_relative_path": "installation/runtime-configuration-promotion-authority.schema.json"' "${stage_root}/RELEASE.json" \
   || ! grep -Fq '"promotion_authority_max_lifetime_seconds": 900' "${stage_root}/RELEASE.json" \
+  || ! grep -Fq '"promotion_readiness_relative_path": "oneqay-preview/shared/install/runtime-configuration-promotion-readiness.json"' "${stage_root}/RELEASE.json" \
+  || ! grep -Fq '"promotion_readiness_schema_relative_path": "installation/runtime-configuration-promotion-readiness.schema.json"' "${stage_root}/RELEASE.json" \
+  || ! grep -Fq '"promotion_execution_state": "NOT_EXECUTED"' "${stage_root}/RELEASE.json" \
   || ! grep -Fq '"promotion_authorized": false' "${stage_root}/RELEASE.json"; then
   echo "Pre-boot installation metadata must preserve governed promotion request/authority boundaries." >&2
   exit 1
