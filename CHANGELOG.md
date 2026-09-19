@@ -1,5 +1,26 @@
 # Changelog
 
+## 2026-09-19 — Sprint206 closed canonically
+
+**Sprint206: Durable Staging Deployment Handoff Foundation**
+
+- Added a trusted, machine-readable deployment handoff between the governed Sprint205 durable-staging artifact and a future external deployment operator.
+- Handoff validation binds exact source commit, release ID, artifact filename, artifact SHA-256, artifact size, manifest SHA-256, runtime class, release metadata, and canonical migration source #1–#27.
+- Archive inspection fails closed on absolute paths, traversal, backslash paths, symlink/hardlink entries, forbidden secret-bearing file shapes, repository metadata, `node_modules`, tests, missing required runtime paths, and migration-count drift.
+- The handoff is deterministic and secret-free; it carries only required external binding names, never runtime secret values.
+- Existing Preview-only `SystemUpdate*` control-plane semantics remain unchanged: `m75-preview-*`, `NO_SCHEMA_CHANGE`, and no `durable-staging` widening.
+- No runtime extraction, environment creation/deployment, runtime configuration mutation, active-release pointer mutation, migration execution, target selection, producer dispatch, permission provisioning, or feature activation is performed by Sprint206.
+- Final engineering head `d8946bac37dd6a4c6b84f1a800ee1361f65aac23`: 90/90 PR-triggered workflows SUCCESS.
+- Engineering PR #845 squash merged at `9fa3af317485fadd8844115260483c4926447695`.
+- Sprint206 handoff qualification `35454628797`, M7.5 `35454629597`, Sprint32 `35454628846`, Sprint33 `35454629150`, Sprint34 `35454629576`, M7.1 `35454628771`, Governance `35454629599`, and PHP Foundation `35454628660`: SUCCESS.
+- Product Owner merge authority status `product-owner-merge-authority`: SUCCESS.
+- Engineering path hash: `2afad04ec60d7bce178795c8606922ee0dc38c7e672f16350902fe33b5760e3c`.
+- Canonical reconciliation path hash: `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`.
+- Operational NO-GO unchanged; a validated handoff is not deployment authority and no real durable target has been created or selected.
+- Next position: use the Sprint205 artifact plus Sprint206 validated handoff only under separate operational authority to materialize an isolated non-production `durable-staging` runtime, then qualify it through the existing readiness/producer/ingestion chain.
+
+Author by Lab | zefry
+
 ## 2026-09-19 — Sprint205 closed canonically
 
 **Sprint205: Governed Durable Staging Release Artifact Foundation**
