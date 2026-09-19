@@ -369,7 +369,110 @@ final class PrebootTechnicalPreviewActivationExecution
             && ($authority['migration_execution_authorized'] ?? null) === false
             && is_string($authority['approval_token_sha256'] ?? null)
             && hash_equals((string) $authority['approval_token_sha256'], hash('sha256', $approvalToken))
-            && $this->isSha256($preflight['target_fingerprint'] ?? null);
+            && $this->readinessContractIsValid($readiness)
+            && $this->preflightContractIsValid($preflight)
+            && $this->authorityContractIsValid($authority);
+    }
+
+    /** @param array<string,mixed> $readiness */
+    private function readinessContractIsValid(array $readiness): bool
+    {
+        $contract = is_array($readiness['execution_contract'] ?? null) ? $readiness['execution_contract'] : [];
+
+        return ($readiness['schema_version'] ?? null) === 1
+            && ($readiness['product'] ?? null) === 'oneQay'
+            && ($readiness['authority_qualified'] ?? null) === true
+            && $this->isSha256($readiness['qualification_fingerprint'] ?? null)
+            && $this->isSha256($readiness['installation_completion_sha256'] ?? null)
+            && $this->isSha256($readiness['activation_request_sha256'] ?? null)
+            && ($readiness['persistence_authorized'] ?? null) === false
+            && ($readiness['migration_execution_authorized'] ?? null) === false
+            && ($readiness['production_authorized'] ?? null) === false
+            && ($readiness['updater_authorized'] ?? null) === false
+            && ($readiness['deployment_authorized'] ?? null) === false
+            && ($readiness['attribution'] ?? null) === 'Lab | zefry'
+            && $this->allTrue($contract, [
+                'target_environment_preflight_required',
+                'https_required',
+                'single_instance_required',
+                'private_file_session_directory_required',
+                'runtime_envelope_revalidation_required',
+                'preview_off_switch_verification_required',
+                'post_activation_health_check_required',
+                'rollback_recovery_required',
+                'synthetic_data_only',
+                'production_data_forbidden',
+                'consume_authority_on_success',
+                'consume_readiness_on_success',
+            ])
+            && ($contract['migration_execution_required'] ?? null) === false;
+    }
+
+    /** @param array<string,mixed> $preflight */
+    private function preflightContractIsValid(array $preflight): bool
+    {
+        $checks = is_array($preflight['checks'] ?? null) ? $preflight['checks'] : [];
+
+        return ($preflight['schema_version'] ?? null) === 1
+            && ($preflight['product'] ?? null) === 'oneQay'
+            && $this->isSha256($preflight['target_fingerprint'] ?? null)
+            && $this->isSha256($preflight['release_manifest_sha256'] ?? null)
+            && $this->isSha256($preflight['host_identity_sha256'] ?? null)
+            && $this->isSha256($preflight['session_directory_identity_sha256'] ?? null)
+            && is_int($preflight['checked_at_unix'] ?? null)
+            && ($preflight['authority_consumed'] ?? null) === false
+            && ($preflight['readiness_consumed'] ?? null) === false
+            && ($preflight['migration_execution_authorized'] ?? null) === false
+            && ($preflight['persistence_authorized'] ?? null) === false
+            && ($preflight['production_authorized'] ?? null) === false
+            && ($preflight['updater_authorized'] ?? null) === false
+            && ($preflight['deployment_authorized'] ?? null) === false
+            && ($preflight['attribution'] ?? null) === 'Lab | zefry'
+            && $this->allTrue($checks, [
+                'https_tls_active',
+                'dedicated_host_binding',
+                'single_instance_target',
+                'private_persistent_session_directory',
+                'runtime_envelope_exact',
+                'preview_off_switch_verified',
+                'release_synthetic_no_schema_change',
+                'stale_config_cache_absent',
+                'preview_route_off_switch_contract_available',
+                'post_activation_health_contract_available',
+                'rollback_recovery_contract_available',
+                'production_data_forbidden',
+            ]);
+    }
+
+    /** @param array<string,mixed> $authority */
+    private function authorityContractIsValid(array $authority): bool
+    {
+        return ($authority['schema_version'] ?? null) === 1
+            && ($authority['product'] ?? null) === 'oneQay'
+            && preg_match('/\Atechnical-preview-authority-[0-9a-f]{24}\z/', (string) ($authority['authority_id'] ?? '')) === 1
+            && preg_match('/\Atechnical-preview-activation-request-[0-9a-f]{24}\z/', (string) ($authority['request_id'] ?? '')) === 1
+            && $this->isSha256($authority['installation_completion_sha256'] ?? null)
+            && $this->isSha256($authority['activation_request_sha256'] ?? null)
+            && $this->isSha256($authority['approval_token_sha256'] ?? null)
+            && ($authority['updater_authorized'] ?? null) === false
+            && ($authority['deployment_authorized'] ?? null) === false
+            && ($authority['target_environment_preflight_required'] ?? null) === true
+            && ($authority['attribution'] ?? null) === 'Lab | zefry';
+    }
+
+    /**
+     * @param array<string,mixed> $payload
+     * @param list<string> $keys
+     */
+    private function allTrue(array $payload, array $keys): bool
+    {
+        foreach ($keys as $key) {
+            if (($payload[$key] ?? null) !== true) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /** @param array<string,mixed> $health */
@@ -401,12 +504,25 @@ final class PrebootTechnicalPreviewActivationExecution
             return false;
         }
 
+        $readiness = $this->decodeJson($readinessRaw);
+        $preflight = $this->decodeJson($preflightRaw);
+        $authority = $this->decodeJson($authorityRaw);
+        if ($readiness === null || $preflight === null || $authority === null) {
+            return false;
+        }
+
         $health = is_array($receipt['health'] ?? null) ? $receipt['health'] : [];
 
         return ($receipt['schema_version'] ?? null) === self::RECEIPT_SCHEMA_VERSION
             && ($receipt['product'] ?? null) === 'oneQay'
             && ($receipt['execution_state'] ?? null) === 'TECHNICAL_PREVIEW_ACTIVE_HEALTHY'
             && ($receipt['release_id'] ?? null) === $this->releaseId
+            && ($receipt['request_id'] ?? null) === ($readiness['request_id'] ?? null)
+            && ($receipt['request_id'] ?? null) === ($preflight['request_id'] ?? null)
+            && ($receipt['request_id'] ?? null) === ($authority['request_id'] ?? null)
+            && ($receipt['authority_id'] ?? null) === ($readiness['authority_id'] ?? null)
+            && ($receipt['authority_id'] ?? null) === ($preflight['authority_id'] ?? null)
+            && ($receipt['authority_id'] ?? null) === ($authority['authority_id'] ?? null)
             && is_string($receipt['attempt_id'] ?? null)
             && preg_match('/\Atechnical-preview-activation-attempt-[0-9a-f]{24}\z/', (string) $receipt['attempt_id']) === 1
             && $this->isSha256($receipt['activation_fingerprint'] ?? null)
@@ -414,7 +530,12 @@ final class PrebootTechnicalPreviewActivationExecution
             && ($receipt['activation_readiness_sha256'] ?? null) === hash('sha256', $readinessRaw)
             && ($receipt['target_preflight_sha256'] ?? null) === hash('sha256', $preflightRaw)
             && ($receipt['activation_authority_sha256'] ?? null) === hash('sha256', $authorityRaw)
-            && str_contains($activeRaw, 'ONEQAY_TECHNICAL_PREVIEW_ENABLED="true"')
+            && $this->isSha256($receipt['previous_environment_sha256'] ?? null)
+            && is_int($receipt['activated_at_unix'] ?? null)
+            && is_int($receipt['authority_expires_at_unix'] ?? null)
+            && ($receipt['authority_expires_at_unix'] ?? null) === ($readiness['authority_expires_at_unix'] ?? null)
+            && substr_count($activeRaw, 'ONEQAY_TECHNICAL_PREVIEW_ENABLED="true"') === 1
+            && ! str_contains($activeRaw, 'ONEQAY_TECHNICAL_PREVIEW_ENABLED="false"')
             && ($receipt['post_activation_health_passed'] ?? null) === true
             && $this->healthResultIsHealthy($health)
             && ($receipt['authority_consumed'] ?? null) === true
@@ -516,8 +637,17 @@ final class PrebootTechnicalPreviewActivationExecution
 
         try {
             @chmod($temporary, 0600);
-            if (fwrite($handle, $json) !== strlen($json) || ! fflush($handle)) {
-                throw new RuntimeException('technical_preview_activation_evidence_write_failed');
+            $length = strlen($json);
+            $written = 0;
+            while ($written < $length) {
+                $result = fwrite($handle, substr($json, $written));
+                if ($result === false || $result === 0) {
+                    throw new RuntimeException('technical_preview_activation_evidence_write_failed');
+                }
+                $written += $result;
+            }
+            if (! fflush($handle)) {
+                throw new RuntimeException('technical_preview_activation_evidence_flush_failed');
             }
             if (function_exists('fsync')) {
                 @fsync($handle);
