@@ -200,6 +200,11 @@
         "state",
         "authority_id",
         "authority_sha256",
+        "expires_at_unix",
+        "authorized_at_unix",
+        "target_descriptor_sha256",
+        "request_sha256",
+        "request_id",
         "environment_id",
         "release_id",
         "artifact_sha256",
@@ -214,7 +219,7 @@
         },
         "authority_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9._~-]{16,128}$"
+          "pattern": "^durable-staging-deployment-authority-[0-9a-f]{24}$"
         },
         "authority_sha256": {
           "type": "string",
@@ -243,6 +248,26 @@
         "production_allowed": {
           "type": "boolean",
           "const": false
+        },
+        "request_id": {
+          "type": "string",
+          "pattern": "^durable-staging-deployment-request-[0-9a-f]{24}$"
+        },
+        "request_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "target_descriptor_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "authorized_at_unix": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "expires_at_unix": {
+          "type": "integer",
+          "minimum": 1
         }
       }
     },
