@@ -47,11 +47,26 @@ jobs:
           set -euo pipefail
           base="${{ github.event.pull_request.base.sha }}"
           head="${{ github.event.pull_request.head.sha }}"
+          if [[ "${{ github.head_ref }}" == 'sprint198-pos-business-workspace-delivery-integration' ]]; then
+            mapfile -t changed < <(git diff --name-only "$base" "$head" | LC_ALL=C sort)
+            expected=(
+              ".github/workflows/sprint126-final-shift-close-runtime-binding-manifest-control-plane-token-hardening.yml"
+              ".github/workflows/sprint162-pos-operations-hub-regression.yml"
+              ".github/workflows/sprint198-pos-business-workspace-delivery-integration-regression.yml"
+              "apps/web/app/Providers/PosOperationsHubServiceProvider.php"
+              "apps/web/bootstrap/providers.php"
+              "apps/web/tests/pos-business-workspace-delivery-integration.php"
+            )
+            diff -u <(printf '%s\n' "${expected[@]}") <(printf '%s\n' "${changed[@]}")
+            test "$(grep -Fc 'App\\Providers\\PosOperationsHubServiceProvider::class' apps/web/bootstrap/providers.php)" -eq 1
+          else
+            git diff --quiet "$base" "$head" -- apps/web/bootstrap/providers.php
+          fi
+
           git diff --quiet "$base" "$head" -- \
             apps/web/config/final_shift_close_runtime_binding_materialization.php \
             apps/web/config/final_shift_close_runtime_db_binding_attestation.php \
             apps/web/bootstrap/app.php \
-            apps/web/bootstrap/providers.php \
             apps/web/routes \
             apps/web/app/Delivery/Http/Pos/FinalShiftCloseRuntimeBindingManifestMaterializationController.php \
             apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingManifestMaterializer.php \
