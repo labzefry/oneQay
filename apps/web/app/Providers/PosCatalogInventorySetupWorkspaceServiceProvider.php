@@ -6,6 +6,7 @@ namespace App\Providers;
 
 use App\Application\Authorization\DurableScopedAuthorizationPolicy;
 use App\Application\Organization\OrganizationalContextStore;
+use App\Application\Runtime\DurableStagingRuntimeBridge;
 use App\Application\Pos\PosCatalogInventorySetupWorkspaceRepository;
 use App\Application\Pos\ViewPosCatalogInventorySetupWorkspace;
 use App\Delivery\Http\Middleware\RequirePosSessionContextMiddleware;
@@ -27,7 +28,10 @@ final class PosCatalogInventorySetupWorkspaceServiceProvider extends ServiceProv
             return new LaravelPosCatalogInventorySetupWorkspaceRepository(
                 $connection,
                 (bool) config('database.oneqay_persistence_enabled', false),
-                (string) config('oneqay.runtime_class', ''),
+                DurableStagingRuntimeBridge::repositoryRuntimeClass(
+                    (string) config('oneqay.runtime_class', ''),
+                    (bool) config('oneqay.durable_staging_runtime.enabled', false),
+                ),
                 (bool) config('pos_catalog_inventory_setup.enabled', false),
                 (bool) config('oneqay.pos_catalog_preparation.enabled', false),
                 (bool) config('oneqay.pos_inventory_baseline.enabled', false),
@@ -43,12 +47,18 @@ final class PosCatalogInventorySetupWorkspaceServiceProvider extends ServiceProv
 
     public function boot(): void
     {
-        $runtimeClass = strtolower(trim((string) config('oneqay.runtime_class', '')));
+        $runtimeClass = DurableStagingRuntimeBridge::externalRuntime(
+            (string) config('oneqay.runtime_class', ''),
+        );
+        $runtimeAllowed = DurableStagingRuntimeBridge::deliveryAllowed(
+            $runtimeClass,
+            (bool) config('oneqay.durable_staging_runtime.enabled', false),
+        );
         $sessionControlEnabled = (bool) config('oneqay.session_control.enabled', false)
             && (int) config('oneqay.session_control.idle_ttl_seconds', 0) === 7200
             && (int) config('oneqay.session_control.absolute_ttl_seconds', 0) === 43200;
 
-        if (! in_array($runtimeClass, ['local', 'test', 'ci'], true)
+        if (! $runtimeAllowed
             || ! (bool) config('database.oneqay_persistence_enabled', false)
             || ! $sessionControlEnabled
             || ! (bool) config('oneqay.pos_catalog_preparation.enabled', false)
