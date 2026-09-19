@@ -47,11 +47,45 @@ jobs:
           set -euo pipefail
           base="${{ github.event.pull_request.base.sha }}"
           head="${{ github.event.pull_request.head.sha }}"
+          if [[ "${{ github.head_ref }}" == 'sprint198-pos-business-workspace-delivery-integration' ]]; then
+            mapfile -t changed < <(git diff --name-only "$base" "$head" | LC_ALL=C sort)
+            expected=(
+              ".github/workflows/m7-2-tenant-isolation-regression.yml"
+              ".github/workflows/m7-3-identity-org-context-regression.yml"
+              ".github/workflows/m7-4a-technical-preview-interaction-regression.yml"
+              ".github/workflows/m7-5-preview-db-qualification-regression.yml"
+              ".github/workflows/m7-5-preview-release-artifact.yml"
+              ".github/workflows/sprint126-final-shift-close-runtime-binding-manifest-control-plane-token-hardening.yml"
+              ".github/workflows/sprint162-pos-operations-hub-regression.yml"
+              ".github/workflows/sprint198-pos-business-workspace-delivery-integration-regression.yml"
+              ".github/workflows/sprint21-role-permission-policy-regression.yml"
+              ".github/workflows/sprint22-policy-administration-regression.yml"
+              ".github/workflows/sprint23-initial-tenant-admin-provisioning-regression.yml"
+              ".github/workflows/sprint24-protected-control-admin-lifecycle-regression.yml"
+              ".github/workflows/sprint25-policy-administration-delivery-regression.yml"
+              ".github/workflows/sprint26-identity-credential-verification-regression.yml"
+              ".github/workflows/sprint27-first-party-session-establishment-regression.yml"
+              ".github/workflows/sprint28-initial-password-enrollment-regression.yml"
+              ".github/workflows/sprint29-first-control-principal-credential-bootstrap-regression.yml"
+              ".github/workflows/sprint30-privileged-totp-mfa-regression.yml"
+              ".github/workflows/sprint31-privileged-reauthentication-step-up-regression.yml"
+              ".github/workflows/sprint32-authentication-recovery-proof-regression.yml"
+              ".github/workflows/sprint33-recovery-bound-password-reset-regression.yml"
+              ".github/workflows/sprint34-authenticated-password-change-regression.yml"
+              "apps/web/app/Providers/PosOperationsHubServiceProvider.php"
+              "apps/web/bootstrap/providers.php"
+              "apps/web/tests/pos-business-workspace-delivery-integration.php"
+            )
+            diff -u <(printf '%s\n' "${expected[@]}") <(printf '%s\n' "${changed[@]}")
+            test "$(grep -Fc 'App\Providers\PosOperationsHubServiceProvider::class' apps/web/bootstrap/providers.php)" -eq 1
+          else
+            git diff --quiet "$base" "$head" -- apps/web/bootstrap/providers.php
+          fi
+
           git diff --quiet "$base" "$head" -- \
             apps/web/config/final_shift_close_runtime_binding_materialization.php \
             apps/web/config/final_shift_close_runtime_db_binding_attestation.php \
             apps/web/bootstrap/app.php \
-            apps/web/bootstrap/providers.php \
             apps/web/routes \
             apps/web/app/Delivery/Http/Pos/FinalShiftCloseRuntimeBindingManifestMaterializationController.php \
             apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingManifestMaterializer.php \

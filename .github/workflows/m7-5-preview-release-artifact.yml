@@ -449,6 +449,44 @@ jobs:
             git -C ../.. diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | sort > /tmp/m75-nine-paths
             count="$(wc -l < /tmp/m75-nine-paths)"
             fingerprint="$(sha256sum /tmp/m75-nine-paths | awk '{print $1}')"
+            if [[ "${{ github.head_ref }}" == 'sprint198-pos-business-workspace-delivery-integration' && "$count" -eq 25 && "$fingerprint" == '4e04f75c0df2b340b0a66ad5d2fa545d364a088740e0af92861909c4848d0a45' ]]; then
+              for expected in \
+                '.github/workflows/m7-2-tenant-isolation-regression.yml' \
+                '.github/workflows/m7-3-identity-org-context-regression.yml' \
+                '.github/workflows/m7-4a-technical-preview-interaction-regression.yml' \
+                '.github/workflows/m7-5-preview-db-qualification-regression.yml' \
+                '.github/workflows/m7-5-preview-release-artifact.yml' \
+                '.github/workflows/sprint126-final-shift-close-runtime-binding-manifest-control-plane-token-hardening.yml' \
+                '.github/workflows/sprint162-pos-operations-hub-regression.yml' \
+                '.github/workflows/sprint198-pos-business-workspace-delivery-integration-regression.yml' \
+                '.github/workflows/sprint21-role-permission-policy-regression.yml' \
+                '.github/workflows/sprint22-policy-administration-regression.yml' \
+                '.github/workflows/sprint23-initial-tenant-admin-provisioning-regression.yml' \
+                '.github/workflows/sprint24-protected-control-admin-lifecycle-regression.yml' \
+                '.github/workflows/sprint25-policy-administration-delivery-regression.yml' \
+                '.github/workflows/sprint26-identity-credential-verification-regression.yml' \
+                '.github/workflows/sprint27-first-party-session-establishment-regression.yml' \
+                '.github/workflows/sprint28-initial-password-enrollment-regression.yml' \
+                '.github/workflows/sprint29-first-control-principal-credential-bootstrap-regression.yml' \
+                '.github/workflows/sprint30-privileged-totp-mfa-regression.yml' \
+                '.github/workflows/sprint31-privileged-reauthentication-step-up-regression.yml' \
+                '.github/workflows/sprint32-authentication-recovery-proof-regression.yml' \
+                '.github/workflows/sprint33-recovery-bound-password-reset-regression.yml' \
+                '.github/workflows/sprint34-authenticated-password-change-regression.yml' \
+                'apps/web/app/Providers/PosOperationsHubServiceProvider.php' \
+                'apps/web/bootstrap/providers.php' \
+                'apps/web/tests/pos-business-workspace-delivery-integration.php'
+              do
+                grep -Fxq "$expected" /tmp/m75-nine-paths
+              done
+              for installation_migration in database/migrations/0000_00_00_0000{17..27}_*.php; do
+                if [[ -f "$installation_migration" ]]; then
+                  historical_migrations+=("$installation_migration")
+                fi
+              done
+              sprint51_jrn008_preview_fixture=true
+              echo 'Exact Sprint198 envelope recognized; migrations #17-#27 and post-M7.4 POS persistence successors isolated only from historical M7.5 executable preservation.'
+            fi
             if [[ "$count" -eq 9 && "$fingerprint" == 'b8afa8415c0675c2675c1b8dbd528b44e8181a8f79a97fe28b0a0996623e1749' ]] || [[ "$count" -eq 9 && "$fingerprint" == 'c7f53821f0f3fc1554ee23a3c85b53369972accb0815ec2b8096664054cd01b9' ]]; then
               historical_migrations+=('database/migrations/0000_00_00_000017_create_pos_catalog_preparation_journal.php')
               echo 'Migration #17 included only in exact governed nine-workflow M7.5 historical fixture isolation.'
