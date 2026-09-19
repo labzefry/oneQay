@@ -245,9 +245,13 @@ jobs:
           count="$(wc -l < /tmp/s70-historical-paths)"
           fingerprint="$(sha256sum /tmp/s70-historical-paths | awk '{print $1}')"
           recognized=false
-          if [[ "${{ github.head_ref }}" == 'sprint198-pos-business-workspace-delivery-integration' && "$count" -eq 18 && "$fingerprint" == '81f7131e0d464b834798e2a8ef051b0f39f05fbe44b664e980318de7d424aac5' ]]; then
+          if [[ "${{ github.head_ref }}" == 'sprint198-pos-business-workspace-delivery-integration' && "$count" -eq 25 && "$fingerprint" == '4e04f75c0df2b340b0a66ad5d2fa545d364a088740e0af92861909c4848d0a45' ]]; then
             for expected in \
+              '.github/workflows/m7-2-tenant-isolation-regression.yml' \
+              '.github/workflows/m7-3-identity-org-context-regression.yml' \
               '.github/workflows/m7-4a-technical-preview-interaction-regression.yml' \
+              '.github/workflows/m7-5-preview-db-qualification-regression.yml' \
+              '.github/workflows/m7-5-preview-release-artifact.yml' \
               '.github/workflows/sprint126-final-shift-close-runtime-binding-manifest-control-plane-token-hardening.yml' \
               '.github/workflows/sprint162-pos-operations-hub-regression.yml' \
               '.github/workflows/sprint198-pos-business-workspace-delivery-integration-regression.yml' \
@@ -259,6 +263,9 @@ jobs:
               '.github/workflows/sprint26-identity-credential-verification-regression.yml' \
               '.github/workflows/sprint27-first-party-session-establishment-regression.yml' \
               '.github/workflows/sprint28-initial-password-enrollment-regression.yml' \
+              '.github/workflows/sprint29-first-control-principal-credential-bootstrap-regression.yml' \
+              '.github/workflows/sprint30-privileged-totp-mfa-regression.yml' \
+              '.github/workflows/sprint31-privileged-reauthentication-step-up-regression.yml' \
               '.github/workflows/sprint32-authentication-recovery-proof-regression.yml' \
               '.github/workflows/sprint33-recovery-bound-password-reset-regression.yml' \
               '.github/workflows/sprint34-authenticated-password-change-regression.yml' \
