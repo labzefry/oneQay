@@ -87,7 +87,7 @@ jobs:
           test "$(jq -r '.feature_activation_state' "$contract")" = 'INACTIVE'
           test "$(jq -r '.runtime_allowlist_change' "$contract")" = 'NOT_IMPLEMENTED'
           test "$(jq -r '.persistence_state' "$contract")" = 'NOT_PERFORMED'
-          test "$(jq '.required_provenance_fields | length' "$contract")" = '19'
+          test "$(jq '.required_provenance_fields | length' "$contract")" = '22'
 
           test "$(jq -r '.trusted_producer_contract.producer_state' "$contract")" = 'NOT_IMPLEMENTED'
           test "$(jq -r '.trusted_producer_contract.evidence_source' "$contract")" = 'GITHUB_ACTIONS_PROTECTED_ENVIRONMENT'
