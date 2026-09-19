@@ -69,7 +69,9 @@ Only after deployment evidence qualifies is the runtime readiness endpoint fetch
 After qualification, the workflow creates two secret-free JSON files:
 
 1. `attestation.json` — exact Sprint110 readiness attestation;
-2. `provenance.json` — Sprint112-compatible provenance including producer source SHA, run ID, run attempt, attestation SHA-256, runtime/build binding, and evidence context.
+2. `provenance.json` — Sprint112-compatible provenance including producer source SHA, run ID, run attempt, attestation SHA-256, runtime/build binding, deployment-evidence SHA-256, Sprint207 deployment-plan fingerprint, Sprint208 deployment-authority SHA-256, and evidence context.
+
+Sprint210 makes those three deployment bindings mandatory provenance fields and validates them as non-zero lowercase SHA-256 values before publication. This closes continuity from the protected Sprint209 deployment-evidence gate into Sprint112/Sprint114 ingestion.
 
 The workflow publishes `pending` status first, uploads the evidence bundle, and only then publishes `success` to the exact running source commit. A failure before the final status cannot satisfy Sprint112 ingestion because the required latest evidence state is not `success`.
 
