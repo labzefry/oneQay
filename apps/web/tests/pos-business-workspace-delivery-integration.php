@@ -78,9 +78,6 @@ $expectedRoutes = [
     'pos.reporting.active-shift-performance',
     'pos.reporting.product-performance',
     'pos.sales.corrections.workspace',
-    'pos.shifts.reconciliation.workspace',
-    'pos.shifts.reconciliation.explanation',
-    'pos.shifts.reconciliation.review',
 ];
 
 foreach ($expectedRoutes as $routeName) {
@@ -98,6 +95,12 @@ foreach ($expectedRoutes as $routeName) {
 $assert(
     $routes->getByName('pos.reporting.shift-history') === null,
     'Sprint198 must preserve the Shift History Final Shift Close prerequisite while canonical Final Shift Close remains inactive.',
+);
+$assert(
+    $routes->getByName('pos.shifts.reconciliation.workspace') === null
+        && $routes->getByName('pos.shifts.reconciliation.explanation') === null
+        && $routes->getByName('pos.shifts.reconciliation.review') === null,
+    'Sprint198 must preserve Cash Variance Reconciliation Final Shift Close prerequisites while canonical Final Shift Close remains inactive.',
 );
 $assert(
     $routes->getByName('pos.shifts.close.page') === null,
