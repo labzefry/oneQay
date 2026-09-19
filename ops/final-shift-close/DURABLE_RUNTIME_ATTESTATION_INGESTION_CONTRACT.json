@@ -39,6 +39,9 @@
     "runtime_class",
     "exact_running_source_commit",
     "exact_running_artifact_sha256",
+    "deployment_evidence_sha256",
+    "deployment_plan_fingerprint",
+    "deployment_authority_sha256",
     "evidence_status_context",
     "evidence_status_state",
     "secrets_embedded"
@@ -59,7 +62,10 @@
     "ingestion_is_deterministic": true,
     "ingestion_is_unpersisted": true,
     "ingestion_does_not_select_target": true,
-    "ingestion_does_not_grant_activation_authority": true
+    "ingestion_does_not_grant_activation_authority": true,
+    "deployment_evidence_binding_required": true,
+    "deployment_evidence_binding_must_be_sha256": true,
+    "ingestion_fingerprint_binds_deployment_evidence": true
   },
   "canonical_boundaries": {
     "real_attestation": "NONE",
