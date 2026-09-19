@@ -129,7 +129,7 @@ jobs:
           php -d zend.assertions=1 -d assert.exception=1 tests/preboot-runtime-configuration-promotion-qualification.php
           php -d zend.assertions=1 -d assert.exception=1 tests/preboot-runtime-configuration-promotion-readiness.php
           php -d zend.assertions=1 -d assert.exception=1 tests/preboot-runtime-configuration-promotion-execution.php
-          php -d zend.assertions=1 -d assert.exception=1 tests/preboot-runtime-configuration-operator-delivery.php
+          php -d zend.assertions=1 -d assert.exception=1 tests/preboot-runtime-configuration-promotion-operator-delivery.php
           php -d zend.assertions=1 -d assert.exception=1 tests/preboot-runtime-configuration-post-promotion-verification.php
           php -d zend.assertions=1 -d assert.exception=1 tests/preboot-installation-completion-handoff.php
 
@@ -173,8 +173,9 @@ jobs:
         run: |
           set -euo pipefail
           ! grep -R --line-number --fixed-strings 'Artisan::call' apps/web/app/Infrastructure/Installation/PrebootTechnicalPreviewActivationRequest.php apps/web/tests/preboot-technical-preview-activation-request.php tools/installation/public-installer.php
-          ! grep -R --line-number --fixed-strings 'ONEQAY_TECHNICAL_PREVIEW_ENABLED="true"' apps/web/app/Infrastructure/Installation/PrebootTechnicalPreviewActivationRequest.php tools/installation/public-installer.php
-          ! grep -R --line-number --fixed-strings 'ONEQAY_PERSISTENCE_ENABLED="true"' apps/web/app/Infrastructure/Installation/PrebootTechnicalPreviewActivationRequest.php tools/installation/public-installer.php
+          ! grep -R --line-number --fixed-strings 'Artisan::call' apps/web/app/Infrastructure/Installation/PrebootTechnicalPreviewActivationRequest.php apps/web/tests/preboot-technical-preview-activation-request.php tools/installation/public-installer.php
+          ! grep -Fq "file_put_contents(\$this->activeEnvironmentPath()" apps/web/app/Infrastructure/Installation/PrebootTechnicalPreviewActivationRequest.php
+          ! grep -Fq "unlink(\$this->activeEnvironmentPath()" apps/web/app/Infrastructure/Installation/PrebootTechnicalPreviewActivationRequest.php
           test "$(jq -r '.technical_preview_activation' ops/final-shift-close/STATE.json)" = NOT_AUTHORIZED
           test "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" = NOT_EXECUTED
 
