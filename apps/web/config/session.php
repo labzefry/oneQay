@@ -7,7 +7,7 @@ return [
     'lifetime' => (int) env('SESSION_LIFETIME', 120),
     'expire_on_close' => false,
     'encrypt' => false,
-    'files' => storage_path('framework/sessions'),
+    'files' => env('SESSION_FILES', storage_path('framework/sessions')),
     'connection' => null,
     'table' => 'sessions',
     'store' => null,
