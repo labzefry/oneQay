@@ -218,6 +218,9 @@ jobs:
           PRODUCER_SOURCE_COMMIT="$GITHUB_SHA" \
           PRODUCER_RUN_ID="$GITHUB_RUN_ID" \
           PRODUCER_RUN_ATTEMPT="$GITHUB_RUN_ATTEMPT" \
+          DEPLOYMENT_EVIDENCE_SHA256="${{ steps.deployment.outputs.deployment_evidence_sha256 }}" \
+          DEPLOYMENT_PLAN_FINGERPRINT="$EXPECTED_DEPLOYMENT_PLAN_FINGERPRINT" \
+          DEPLOYMENT_AUTHORITY_SHA256="$EXPECTED_DEPLOYMENT_AUTHORITY_SHA256" \
           php <<'PHP'
           <?php
           declare(strict_types=1);
@@ -227,9 +230,30 @@ jobs:
           $sourceCommit = getenv('PRODUCER_SOURCE_COMMIT');
           $runId = getenv('PRODUCER_RUN_ID');
           $runAttempt = getenv('PRODUCER_RUN_ATTEMPT');
-          foreach ([$attestationPath, $provenancePath, $sourceCommit, $runId, $runAttempt] as $value) {
+          $deploymentEvidenceSha256 = getenv('DEPLOYMENT_EVIDENCE_SHA256');
+          $deploymentPlanFingerprint = getenv('DEPLOYMENT_PLAN_FINGERPRINT');
+          $deploymentAuthoritySha256 = getenv('DEPLOYMENT_AUTHORITY_SHA256');
+          foreach ([
+              $attestationPath,
+              $provenancePath,
+              $sourceCommit,
+              $runId,
+              $runAttempt,
+              $deploymentEvidenceSha256,
+              $deploymentPlanFingerprint,
+              $deploymentAuthoritySha256,
+          ] as $value) {
               if (!is_string($value) || $value === '') {
                   throw new RuntimeException('Evidence materialization input is missing.');
+              }
+          }
+          foreach ([
+              'deployment_evidence_sha256' => $deploymentEvidenceSha256,
+              'deployment_plan_fingerprint' => $deploymentPlanFingerprint,
+              'deployment_authority_sha256' => $deploymentAuthoritySha256,
+          ] as $field => $value) {
+              if (preg_match('/\\A[0-9a-f]{64}\\z/', $value) !== 1 || $value === str_repeat('0', 64)) {
+                  throw new RuntimeException('Invalid deployment provenance binding: '.$field);
               }
           }
 
@@ -265,6 +289,9 @@ jobs:
               'runtime_class' => $attestation['runtime_class'],
               'exact_running_source_commit' => $attestation['exact_running_source_commit'],
               'exact_running_artifact_sha256' => $attestation['exact_running_artifact_sha256'],
+              'deployment_evidence_sha256' => $deploymentEvidenceSha256,
+              'deployment_plan_fingerprint' => $deploymentPlanFingerprint,
+              'deployment_authority_sha256' => $deploymentAuthoritySha256,
               'evidence_status_context' => 'final-shift-close-durable-runtime-attestation-evidence',
               'evidence_status_state' => 'success',
               'secrets_embedded' => false,
@@ -278,6 +305,9 @@ jobs:
 
           jq -e . /tmp/final-shift-close-attestation/attestation.json >/dev/null
           jq -e . /tmp/final-shift-close-attestation/provenance.json >/dev/null
+          test "$(jq -r '.deployment_evidence_sha256' /tmp/final-shift-close-attestation/provenance.json)" = "${{ steps.deployment.outputs.deployment_evidence_sha256 }}"
+          test "$(jq -r '.deployment_plan_fingerprint' /tmp/final-shift-close-attestation/provenance.json)" = "$EXPECTED_DEPLOYMENT_PLAN_FINGERPRINT"
+          test "$(jq -r '.deployment_authority_sha256' /tmp/final-shift-close-attestation/provenance.json)" = "$EXPECTED_DEPLOYMENT_AUTHORITY_SHA256"
           ! grep -Fq "$ATTESTATION_TOKEN" /tmp/final-shift-close-attestation/attestation.json
           ! grep -Fq "$ATTESTATION_TOKEN" /tmp/final-shift-close-attestation/provenance.json
           echo "running_source=$(jq -r '.exact_running_source_commit' /tmp/runtime-attestation.json)" >> "$GITHUB_OUTPUT"
