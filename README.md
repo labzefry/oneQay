@@ -8,34 +8,33 @@ Enterprise-oriented multi-tenant business-management platform built with Modular
 
 ## Current canonical status
 
-Latest completed engineering sprint: **Sprint208 — Durable Staging Deployment Authority Binding Foundation**.
+Latest completed engineering sprint: **Sprint209 — Durable Staging Deployment Evidence Binding Foundation**.
 
-- Canonical engineering commit: `20e835262f8163d45101ab00a818881421085d2e`
-- Engineering PR: #849
-- Final engineering head: `67aa2e73a0433585a34b76df4c7bec97b578aefe`
-- Exact-head qualification: 87/87 successful
-- Sprint208 run `35460395244`: SUCCESS
-- Sprint207 preservation `35460395614`: SUCCESS
-- Sprint206 preservation `35460396295`: SUCCESS
-- M7.1 `35460395688`: SUCCESS
-- Governance `35460395483`: SUCCESS
-- PHP Foundation `35460396111`: SUCCESS
-- Engineering envelope SHA-256: `5852e772a37b334987cdf5bcca0327a4e1b90d18a6affa02d6a9c3f44b6bf616`
+- Canonical engineering commit: `55b652f8b62e05cb8254ec74bb10f2e507abb641`
+- Engineering PR: #852
+- Final engineering head: `3372abb10eb5f883ff410d25e0defbaad827207c`
+- Exact-head qualification: 89/89 successful
+- Sprint209 run `35462884340`: SUCCESS
+- Sprint113 preservation `35462884439`: SUCCESS
+- Sprint208 preservation `35462885132`: SUCCESS
+- Sprint207 preservation `35462884363`: SUCCESS
+- M7.1 `35462884334`: SUCCESS
+- Governance `35462884291`: SUCCESS
+- PHP Foundation `35462884380`: SUCCESS
+- Engineering envelope SHA-256: `ebff1a00d0b06f16925cc0f0849b3c7cd38216ccccd659f0447f307d71face10`
 - Reconciliation envelope SHA-256: `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`
 
 See `PROJECT_MANIFEST.md` for canonical project state.
 
-## Sprint208 capability
+## Sprint209 capability
 
-oneQay now has a governed request/authority binding chain for a real durable-staging deployment target. A deterministic request binds the exact artifact and target candidate; a separately issued short-lived authority must match that request and is verified with an approval token before a qualified operator target can be emitted.
+oneQay now requires exact deployment execution evidence before the protected durable-runtime attestation producer may contact a real target. Evidence binds the real target to the Sprint207 deployment plan and Sprint208 authority and proves preflight, immutable extraction, configuration/provenance readback, health, and rollback prerequisites.
 
-The Sprint207 deployment planner now also rejects expired/not-yet-valid authority and target-descriptor drift.
-
-This chain remains non-operational by itself: no environment is created, no artifact is extracted, no runtime configuration is changed, no active release pointer is switched, and no migration or activation is performed.
+A healthy readiness endpoint alone is therefore insufficient to enter the protected attestation chain.
 
 ## Product progression
 
-Governed release → installation/readiness lifecycle → guarded Technical Preview → merchant POS journey → durable staging merchant core → authenticated durable-runtime readiness → governed durable artifact → validated handoff → deterministic operator plan → exact request-bound deployment authority qualification.
+Governed release → installation/readiness lifecycle → guarded Technical Preview → merchant POS journey → durable staging merchant core → authenticated durable-runtime readiness → governed artifact → validated handoff → operator plan → request-bound deployment authority → deployment execution evidence binding → protected runtime attestation.
 
 ## Operational boundary
 
@@ -43,6 +42,6 @@ Migration #27 remains `NOT_EXECUTED`; permission provisioning `NONE`; Final Shif
 
 ## Next
 
-A real isolated non-production durable-staging target and separate operational authority are required. Prepare the target candidate, generate the exact authority request, obtain matching short-lived authority, qualify it, then execute the generated operator plan externally and collect provenance/readback/health/rollback evidence.
+Materialize the real isolated non-production durable-staging target under separate operational authority, execute the exact operator plan, produce Sprint209 deployment evidence, configure the protected environment bindings, then dispatch the protected durable-runtime attestation producer. No further source sprint should be opened unless real execution exposes another concrete repository-side gap.
 
 Author by Lab | zefry
