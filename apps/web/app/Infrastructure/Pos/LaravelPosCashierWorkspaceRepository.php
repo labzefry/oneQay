@@ -103,7 +103,7 @@ final readonly class LaravelPosCashierWorkspaceRepository implements PosCashierW
             throw new PosTransactionViolation();
         }
 
-        if (! in_array(strtolower(trim($this->runtimeClass)), ['local', 'test', 'ci'], true)) {
+        if (! in_array(strtolower(trim($this->runtimeClass)), ['local', 'test', 'ci', 'staging'], true)) {
             throw new PosTransactionViolation();
         }
     }
