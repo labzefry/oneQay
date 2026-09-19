@@ -28,6 +28,7 @@ $installerSources = [
     $appRoot.'/app/Infrastructure/Installation/PrebootRuntimeConfigurationPromotionExecution.php',
     $appRoot.'/app/Infrastructure/Installation/PrebootRuntimeConfigurationPostPromotionVerification.php',
     $appRoot.'/app/Infrastructure/Installation/PrebootInstallationCompletionHandoff.php',
+    $appRoot.'/app/Infrastructure/Installation/PrebootTechnicalPreviewActivationRequest.php',
     $appRoot.'/app/Infrastructure/Installation/PrebootInstallationConfiguration.php',
 ];
 $sharedRoot = $accountHome.'/oneqay-preview/shared';
@@ -49,6 +50,7 @@ $readiness = new \App\Infrastructure\Installation\PrebootRuntimeConfigurationPro
 $execution = new \App\Infrastructure\Installation\PrebootRuntimeConfigurationPromotionExecution($sharedRoot, $releaseId, $nowUnix);
 $postPromotionVerification = new \App\Infrastructure\Installation\PrebootRuntimeConfigurationPostPromotionVerification($sharedRoot, $releaseId, $nowUnix);
 $completionHandoff = new \App\Infrastructure\Installation\PrebootInstallationCompletionHandoff($sharedRoot, $releaseId, $nowUnix);
+$technicalPreviewActivationRequest = new \App\Infrastructure\Installation\PrebootTechnicalPreviewActivationRequest($sharedRoot, $releaseId, $nowUnix);
 $state = [
     'state' => 'UNAVAILABLE',
     'can_prepare' => false,
@@ -91,6 +93,13 @@ $completionState = [
     'authority_id' => '',
     'active_environment_sha256' => '',
     'activation_authorized' => false,
+];
+$technicalPreviewRequestResult = null;
+$technicalPreviewRequestState = [
+    'state' => 'TECHNICAL_PREVIEW_ACTIVATION_REQUEST_NOT_READY',
+    'request_ready' => false,
+    'request_id' => '',
+    'technical_preview_authorized' => false,
 ];
 $errorCode = null;
 
@@ -177,9 +186,21 @@ try {
             $state = $installer->inspect();
             $postPromotionVerificationState = $postPromotionVerification->inspect();
             $completionState = $completionHandoff->inspect();
+        } elseif ($action === 'create_technical_preview_activation_request') {
+            $confirmation = $_POST['technical_preview_request_confirmation'] ?? null;
+            if (! is_string($confirmation)
+                || ! hash_equals('REQUEST_TECHNICAL_PREVIEW_ACTIVATION', $confirmation)) {
+                throw new RuntimeException('technical_preview_activation_request_confirmation_invalid');
+            }
+
+            $technicalPreviewRequestResult = $technicalPreviewActivationRequest->create();
         } else {
             throw new RuntimeException('unsupported_installation_action');
         }
+    }
+
+    if (($completionState['complete'] ?? false) === true) {
+        $technicalPreviewRequestState = $technicalPreviewActivationRequest->inspect();
     }
 } catch (\RuntimeException $exception) {
     $errorCode = $exception->getMessage();
@@ -220,6 +241,11 @@ $installationComplete = ($completionState['complete'] ?? false) === true
     || (is_array($completionResult)
         && ($completionResult['state'] ?? null) === 'INSTALLATION_CONFIGURATION_COMPLETE_NOT_ACTIVATED'
         && ($completionResult['activation_authorized'] ?? true) === false);
+$technicalPreviewRequestCode = (string) ($technicalPreviewRequestState['state'] ?? 'TECHNICAL_PREVIEW_ACTIVATION_REQUEST_NOT_READY');
+$technicalPreviewRequestPending = ($technicalPreviewRequestState['request_ready'] ?? false) === true
+    || (is_array($technicalPreviewRequestResult)
+        && ($technicalPreviewRequestResult['state'] ?? null) === 'TECHNICAL_PREVIEW_ACTIVATION_REQUEST_PENDING_APPROVAL'
+        && ($technicalPreviewRequestResult['technical_preview_authorized'] ?? true) === false);
 $prepared = is_array($result) && ($result['prepared'] ?? false) === true;
 
 function e(string $value): string
@@ -355,7 +381,11 @@ function stateDescription(string $state): string
             <span class="status-code"><?= e($stateCode) ?></span>
         </div>
 
-        <?php if ($installationComplete): ?>
+        <?php if ($technicalPreviewRequestPending): ?>
+            <div class="notice success">
+                Technical Preview activation request is <strong>PENDING APPROVAL / NOT AUTHORIZED</strong>. The private request is exact-bound to this governed release, active runtime configuration, and installation completion evidence. Separate operational authority is still required before any activation.
+            </div>
+        <?php elseif ($installationComplete): ?>
             <div class="notice success">
                 Installation configuration is <strong>COMPLETE / NOT ACTIVATED</strong>. The completion handoff is private and exact-bound to the verified active runtime configuration, promotion execution receipt, and post-promotion verification evidence. Application activation remains separately governed.
             </div>
@@ -544,6 +574,32 @@ function stateDescription(string $state): string
             </div>
         <?php endif; ?>
 
+        <?php if ($installationComplete && ! $technicalPreviewRequestPending && $technicalPreviewRequestCode === 'TECHNICAL_PREVIEW_ACTIVATION_REQUEST_READY_TO_CREATE'): ?>
+            <div class="notice warning">
+                Installation is complete, but Technical Preview activation remains <strong>NOT AUTHORIZED</strong>. The action below creates only a private approval request; it does not change runtime flags, run migrations, enable persistence, deploy, or activate the application.
+            </div>
+            <form method="post" autocomplete="off">
+                <input type="hidden" name="action" value="create_technical_preview_activation_request">
+                <div class="grid">
+                    <div class="field full">
+                        <label for="technical_preview_request_confirmation">Activation request confirmation</label>
+                        <input id="technical_preview_request_confirmation" name="technical_preview_request_confirmation" type="text" required maxlength="64" autocomplete="off" placeholder="REQUEST_TECHNICAL_PREVIEW_ACTIVATION">
+                        <p class="help">Type exactly <strong>REQUEST_TECHNICAL_PREVIEW_ACTIVATION</strong>. This creates a request for separate operational approval only.</p>
+                    </div>
+                </div>
+                <div class="actions">
+                    <p>
+                        The request is bound to the exact release, active environment SHA-256, and installation completion SHA-256. Technical Preview remains disabled until a later, separately authorized capability validates and consumes explicit operational authority.
+                    </p>
+                    <button type="submit">Create activation request</button>
+                </div>
+            </form>
+        <?php elseif ($installationComplete && $technicalPreviewRequestCode === 'TECHNICAL_PREVIEW_ACTIVATION_REQUEST_INVALID'): ?>
+            <div class="notice error">
+                Technical Preview activation request evidence is <strong>INVALID</strong>. The installer remains fail-closed and activation is unavailable until governed recovery repairs the private request boundary.
+            </div>
+        <?php endif; ?>
+
         <?php if ($promotionRequestPending && ! $promotionAuthorityTokenRequired && ! $promotionQualified && ! $runtimeConfigured): ?>
             <div class="notice">
                 Promotion authority status: <strong><?= e($promotionAuthorityState) ?></strong>. A separately provisioned exact-bound authority is required before qualification.
@@ -572,6 +628,7 @@ function stateDescription(string $state): string
             <div><span>Runtime configuration</span><strong><?= $runtimeConfigured ? 'ACTIVE / NOT ACTIVATED' : 'NOT ACTIVE' ?></strong></div>
             <div><span>Post-promotion verification</span><strong><?= $runtimeVerified ? 'VERIFIED / NOT ACTIVATED' : e($postPromotionVerificationCode) ?></strong></div>
             <div><span>Installation completion</span><strong><?= $installationComplete ? 'COMPLETE / NOT ACTIVATED' : e($completionCode) ?></strong></div>
+            <div><span>Technical Preview activation request</span><strong><?= $technicalPreviewRequestPending ? 'PENDING APPROVAL / NOT AUTHORIZED' : e($technicalPreviewRequestCode) ?></strong></div>
             <div><span>Migration</span><strong>NOT EXECUTED</strong></div>
             <div><span>Technical Preview</span><strong>NOT AUTHORIZED</strong></div>
             <div><span>Production</span><strong>NOT AUTHORIZED</strong></div>
