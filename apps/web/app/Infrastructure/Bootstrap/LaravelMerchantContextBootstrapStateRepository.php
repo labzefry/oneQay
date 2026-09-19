@@ -53,7 +53,7 @@ final readonly class LaravelMerchantContextBootstrapStateRepository implements M
         }
 
         $runtime = strtolower(trim($this->runtimeClass));
-        if (! in_array($runtime, ['local', 'test', 'ci'], true)) {
+        if (! in_array($runtime, ['local', 'test', 'ci', 'staging'], true)) {
             throw new DurablePersistenceViolation(
                 DurablePersistenceViolation::RUNTIME_DENIED,
                 'Merchant context bootstrap runtime is not authorized.',
