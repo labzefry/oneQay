@@ -73,6 +73,9 @@ function sprint112ValidProvenance(
         'runtime_class' => $attestation['runtime_class'],
         'exact_running_source_commit' => $attestation['exact_running_source_commit'],
         'exact_running_artifact_sha256' => $attestation['exact_running_artifact_sha256'],
+        'deployment_evidence_sha256' => str_repeat('d', 64),
+        'deployment_plan_fingerprint' => str_repeat('e', 64),
+        'deployment_authority_sha256' => str_repeat('f', 64),
         'evidence_status_context' => 'final-shift-close-durable-runtime-attestation-evidence',
         'evidence_status_state' => 'success',
         'secrets_embedded' => false,
@@ -113,6 +116,18 @@ sprint112Assert(
 sprint112Assert(
     preg_match('/\A[0-9a-f]{64}\z/', (string) $first['provenance_sha256']) === 1,
     'Provenance digest must be lowercase SHA-256.',
+);
+sprint112Assert(
+    $first['deployment_binding']['deployment_evidence_sha256'] === $provenance['deployment_evidence_sha256'],
+    'Ingestion must carry exact deployment evidence digest.',
+);
+sprint112Assert(
+    $first['deployment_binding']['deployment_plan_fingerprint'] === $provenance['deployment_plan_fingerprint'],
+    'Ingestion must carry exact deployment plan fingerprint.',
+);
+sprint112Assert(
+    $first['deployment_binding']['deployment_authority_sha256'] === $provenance['deployment_authority_sha256'],
+    'Ingestion must carry exact deployment authority digest.',
 );
 sprint112Assert(
     preg_match('/\A[0-9a-f]{64}\z/', (string) $first['ingestion_fingerprint_sha256']) === 1,
@@ -161,6 +176,38 @@ $badRun = $provenance;
 $badRun['producer_run_id'] = 0;
 $cases['invalid run id'] = [$attestation, $badRun, 'producer_run_id_invalid'];
 
+$missingDeploymentEvidence = $provenance;
+unset($missingDeploymentEvidence['deployment_evidence_sha256']);
+$cases['missing deployment evidence binding'] = [
+    $attestation,
+    $missingDeploymentEvidence,
+    'missing_field:deployment_evidence_sha256',
+];
+
+$badDeploymentEvidence = $provenance;
+$badDeploymentEvidence['deployment_evidence_sha256'] = str_repeat('0', 64);
+$cases['invalid deployment evidence binding'] = [
+    $attestation,
+    $badDeploymentEvidence,
+    'deployment_binding_invalid:deployment_evidence_sha256',
+];
+
+$badDeploymentPlan = $provenance;
+$badDeploymentPlan['deployment_plan_fingerprint'] = 'not-a-sha256';
+$cases['invalid deployment plan binding'] = [
+    $attestation,
+    $badDeploymentPlan,
+    'deployment_binding_invalid:deployment_plan_fingerprint',
+];
+
+$badDeploymentAuthority = $provenance;
+$badDeploymentAuthority['deployment_authority_sha256'] = str_repeat('0', 64);
+$cases['invalid deployment authority binding'] = [
+    $attestation,
+    $badDeploymentAuthority,
+    'deployment_binding_invalid:deployment_authority_sha256',
+];
+
 foreach ($cases as $name => [$caseAttestation, $caseProvenance, $expectedViolation]) {
     $violations = $provenanceValidator->violations($caseAttestation, $caseProvenance);
     sprint112Assert(
@@ -195,6 +242,18 @@ $artifactDriftResult = $ingestion->ingest($artifactDrift, $artifactDriftProvenan
 sprint112Assert(
     $artifactDriftResult['ingestion_fingerprint_sha256'] !== $first['ingestion_fingerprint_sha256'],
     'Artifact provenance drift must change the ingestion fingerprint.',
+);
+
+$deploymentDrift = $provenance;
+$deploymentDrift['deployment_evidence_sha256'] = str_repeat('1', 64);
+$deploymentDriftResult = $ingestion->ingest($attestation, $deploymentDrift);
+sprint112Assert(
+    $deploymentDriftResult['ingestion_fingerprint_sha256'] !== $first['ingestion_fingerprint_sha256'],
+    'Deployment evidence drift must change the ingestion fingerprint.',
+);
+sprint112Assert(
+    $deploymentDriftResult['deployment_binding']['deployment_evidence_sha256'] === str_repeat('1', 64),
+    'Deployment evidence binding must be carried exactly into ingestion output.',
 );
 
 echo "Sprint112 durable runtime attestation ingestion regression: PASS\n";
