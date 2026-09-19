@@ -17,6 +17,17 @@ final class PosOperationsHubServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        // Sprint198 makes the existing POS operations hub the single guarded
+        // delivery aggregate for all already-qualified business workspaces.
+        // Every child provider retains its own Local/Test/CI, persistence,
+        // session-control, feature-flag, and permission gates.
+        $this->app->register(PosCatalogInventorySetupWorkspaceServiceProvider::class);
+        $this->app->register(PosShiftStartWorkspaceServiceProvider::class);
+        $this->app->register(PosCashierWorkspaceServiceProvider::class);
+        $this->app->register(PosSaleCorrectionWorkspaceServiceProvider::class);
+        $this->app->register(PosOperationalReportingServiceProvider::class);
+        $this->app->register(PosCashVarianceReconciliationWorkspaceServiceProvider::class);
+
         // Shift history performance is a bounded read-only reporting child capability.
         $this->app->register(PosShiftHistoryPerformanceWorkspaceServiceProvider::class);
 
