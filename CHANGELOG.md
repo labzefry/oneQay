@@ -1,5 +1,27 @@
 # Changelog
 
+## 2026-09-19 — Sprint205 closed canonically
+
+**Sprint205: Governed Durable Staging Release Artifact Foundation**
+
+- Added a dedicated governed `durable-staging` release artifact path without changing the existing Technical Preview artifact semantics.
+- The artifact is reproducibly bound to one exact source commit and exact SHA-256.
+- Canonical durable migration source #1–#27 is included in the staging artifact, while artifact build performs no migration execution and grants no migration authority.
+- Added a strict durable-staging manifest schema and validator with runtime identity, provenance binding, migration boundary, and operational NO-GO assertions.
+- Packaged runtime excludes secret-bearing environment files, cached runtime configuration, `node_modules`, and test suites.
+- Sprint204 readiness bindings for `ONEQAY_RUNNING_SOURCE_COMMIT`, `ONEQAY_RUNNING_ARTIFACT_SHA256`, and the protected attestation token are declared without embedding environment values.
+- Existing Technical Preview artifact remains `NO_SCHEMA_CHANGE` and continues excluding durable migration source.
+- Final engineering head `c5b560a03bfec152f2860e7612b18517fb75434b`: 89/89 PR-triggered workflows SUCCESS.
+- Engineering PR #843 squash merged at `5d9826e96adfb31d1e9b9389d222db180f84935c`.
+- Sprint205 artifact qualification `35453077896`, M7.5 `35453077950`, Sprint32 `35453077915`, Sprint33 `35453077942`, Sprint34 `35453078477`, M7.1 `35453078265`, Governance `35453077832`, and PHP Foundation `35453077934`: SUCCESS.
+- Product Owner merge authority status `product-owner-merge-authority`: SUCCESS.
+- Engineering path hash: `958492e789d583ddd73f803b5a82fa857e25692f372117492d04e25ac82a5a65`.
+- Canonical reconciliation path hash: `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`.
+- Operational NO-GO unchanged; no environment was created/deployed, no migration executed, no target selected, and no producer dispatched.
+- Next position: external realization of an isolated non-production `durable-staging` environment using the governed artifact, followed only by separately authorized qualification against the existing readiness/producer chain.
+
+Author by Lab | zefry
+
 ## 2026-09-19 — Sprint204 closed canonically
 
 **Sprint204: Durable Staging Runtime Readiness Attestation Delivery**

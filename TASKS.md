@@ -1,38 +1,40 @@
 # oneQay Tasks
 
-**Current canonical engineering checkpoint:** Sprint204 closed canonically
-**Canonical engineering commit:** `a5672b315a320092c6fa8cc74d984cb70f4e18ae`
-**Engineering PR:** #841
+**Current canonical engineering checkpoint:** Sprint205 closed canonically
+**Canonical engineering commit:** `5d9826e96adfb31d1e9b9389d222db180f84935c`
+**Engineering PR:** #843
 **Canonical status authority:** `PROJECT_MANIFEST.md`
 
-## Sprint204 completed
+## Sprint205 completed
 
-- [x] Preserve Sprint203 bounded merchant-core staging bridge and historical repository runtime guards.
-- [x] Establish canonical qualification identity `durable-staging` without converting the historical `staging` alias into qualification authority.
-- [x] Add authenticated read-only `GET /internal/oneqay/durable-runtime/readiness`.
-- [x] Require exact runtime identity plus `ONEQAY_DURABLE_STAGING_RUNTIME_ENABLED=true`.
-- [x] Emit the existing readiness contract shape with exact source/artifact provenance fields and fail-closed capability declarations.
-- [x] Keep bearer token secret and responses `no-store, private`.
-- [x] Preserve Final Shift Close inactive state and Production denial.
-- [x] Preserve downstream producer/ingestion/selection workflows as undispatched.
-- [x] Qualify final engineering head `f849d3902c026105ae9e21088b45a05b6d71dcaa` at 88/88 SUCCESS.
+- [x] Identify the missing governed artifact gap between Sprint204 source readiness and real durable staging.
+- [x] Preserve the existing Technical Preview manifest and builder semantics.
+- [x] Add a dedicated `durable-staging` release artifact contract.
+- [x] Add strict durable-staging manifest schema and validator.
+- [x] Bind artifact identity to exact source commit and exact SHA-256.
+- [x] Include canonical migration source #1–#27 without executing migrations.
+- [x] Exclude secret-bearing environment files, cached runtime configuration, `node_modules`, and test suites.
+- [x] Bind runtime provenance keys required by Sprint204 without embedding values.
+- [x] Prove deterministic artifact reproduction.
+- [x] Preserve Preview `NO_SCHEMA_CHANGE` behavior.
+- [x] Qualify final engineering head `c5b560a03bfec152f2860e7612b18517fb75434b` at 89/89 SUCCESS.
 - [x] Product Owner merge authority SUCCESS.
-- [x] Engineering squash `a5672b315a320092c6fa8cc74d984cb70f4e18ae`.
+- [x] Engineering squash `5d9826e96adfb31d1e9b9389d222db180f84935c`.
 - [x] Preserve operational NO-GO unchanged.
 
 ## Next material blocker
 
-- [ ] Materialize or identify an actual isolated non-synthetic `durable-staging` environment outside repository source.
-- [ ] Provide exact running source commit and artifact SHA-256 from that environment.
-- [ ] Provide durable persistence/session/authorization/transaction/POS behavior.
-- [ ] Provide authenticated configuration mutation with read-before-write/read-after verification.
-- [ ] Provide non-mutating health attestation and verified rollback.
-- [ ] Obtain separate operational authority before protected producer dispatch or target mutation.
-- [ ] Run existing producer → ingestion → selection ordering only when the real target and authority prerequisites are satisfied.
-- [ ] If qualification reveals a concrete source deficiency, open the next bounded engineering sprint for that deficiency only.
+- [ ] Obtain separate operational authority before creating or deploying a real staging environment.
+- [ ] Materialize an isolated non-production runtime using the governed durable-staging artifact.
+- [ ] Bind exact `ONEQAY_RUNNING_SOURCE_COMMIT` and `ONEQAY_RUNNING_ARTIFACT_SHA256` from deployed evidence.
+- [ ] Configure durable persistence/session/authorization/transaction/POS prerequisites without Production data.
+- [ ] Provide authenticated configuration mutation/readback, non-mutating health, and verified rollback.
+- [ ] Dispatch the protected attestation producer only after the target and authority prerequisites are satisfied.
+- [ ] Preserve selector ordering: attest → ingest → select-not-authorized → migration/permission evidence → later activation authority.
+- [ ] If real deployment reveals a concrete source deficiency, open the next bounded engineering sprint for that deficiency only.
 
 ## Still prohibited
 
-No target selection, deployment, migration #27 execution, permission provisioning, Final Shift Close activation, Technical Preview activation, Production activation, updater activation, or producer dispatch is authorized by Sprint204 source readiness.
+No real environment deployment, migration #27 execution, permission provisioning, target selection, producer dispatch, Final Shift Close activation, Technical Preview activation, Production activation, or updater activation is authorized by Sprint205 source readiness.
 
 Author by Lab | zefry
