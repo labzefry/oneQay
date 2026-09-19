@@ -1,5 +1,27 @@
 # Changelog
 
+## 2026-09-20 — Sprint208 closed canonically
+
+**Sprint208: Durable Staging Deployment Authority Binding Foundation**
+
+- Added the canonical governance bridge from Sprint207 exact-target planning to separate operational deployment authority.
+- Added an authority-free durable-staging target candidate schema, deterministic deployment-authority request schema/tool, and short-lived authority schema/qualifier.
+- Authority requests bind exact Sprint206 handoff identity, release/source/artifact/manifest, environment ID, and canonical target-descriptor SHA-256.
+- Authority qualification requires a matching external authority document plus approval token supplied through STDIN; approval-token values are never emitted into repository artifacts or qualified target output.
+- Authority lifetime is fail-closed and limited to at most 900 seconds. The Sprint207 planner now rejects not-yet-valid/expired authority and reconstructs the target candidate fingerprint to detect drift.
+- Qualified operator targets carry request/authority digests and timing metadata while preserving migration, Production, Technical Preview, updater, target-selection, and producer-dispatch denial.
+- Existing Technical Preview/SystemUpdate path remains separate and unchanged.
+- Final engineering head `67aa2e73a0433585a34b76df4c7bec97b578aefe`: 87/87 PR-triggered workflows SUCCESS.
+- Engineering PR #849 squash merged at `20e835262f8163d45101ab00a818881421085d2e`.
+- Sprint208 authority binding run `35460395244`, Sprint207 preservation `35460395614`, Sprint206 preservation `35460396295`, M7.1 `35460395688`, Governance `35460395483`, and PHP Foundation `35460396111`: SUCCESS.
+- Product Owner merge authority status `product-owner-merge-authority`: SUCCESS.
+- Engineering path hash: `5852e772a37b334987cdf5bcca0327a4e1b90d18a6affa02d6a9c3f44b6bf616`.
+- Canonical reconciliation path hash: `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`.
+- Operational NO-GO unchanged. Sprint208 source capability does not itself issue real deployment authority or deploy a target.
+- Next position: a real isolated non-production durable-staging target plus separately issued exact request-bound authority are required before generating/using the operator plan in an external runtime.
+
+Author by Lab | zefry
+
 ## 2026-09-20 — Sprint207 closed canonically
 
 **Sprint207: Durable Staging Operator Deployment Planning**
