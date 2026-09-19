@@ -36,6 +36,7 @@ jobs:
           git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/actual
           cat > /tmp/expected <<'EOF'
           .github/workflows/final-shift-close-durable-runtime-attestation.yml
+          .github/workflows/m7-5-preview-release-artifact.yml
           .github/workflows/sprint112-final-shift-close-durable-runtime-attestation-ingestion.yml
           .github/workflows/sprint113-final-shift-close-durable-runtime-attestation-producer.yml
           .github/workflows/sprint114-final-shift-close-durable-runtime-attestation-ingestion-execution.yml
@@ -52,7 +53,7 @@ jobs:
           ops/final-shift-close/DURABLE_RUNTIME_ATTESTATION_PRODUCER_CONTRACT.json
           EOF
           diff -u /tmp/expected /tmp/actual
-          test "$(sha256sum /tmp/actual | awk '{print $1}')" = '05d1621db51ccf3461470b3edd01fb734a992523ba2b3aee23c08d9878d66231'
+          test "$(sha256sum /tmp/actual | awk '{print $1}')" = 'bab60c7ccab42be3363ff57bb08f253e2814c3670b61c156c5cd700351849da4'
 
       - name: Preserve canonical operational NO-GO
         shell: bash
