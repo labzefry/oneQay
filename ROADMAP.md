@@ -1,7 +1,7 @@
 # oneQay Roadmap
 
-**Roadmap checkpoint:** Sprint195 closed canonically  
-**Canonical engineering baseline:** `022b1667ce25a9f4b86a71c95b2c59ad37793d4e`  
+**Roadmap checkpoint:** Sprint195 closed canonically
+**Canonical engineering baseline:** `022b1667ce25a9f4b86a71c95b2c59ad37793d4e`
 **Current state authority:** `PROJECT_MANIFEST.md`
 
 ## Completed Sprint195 horizon
@@ -14,7 +14,7 @@ Engineering PR #821 qualified at 83/83 on final head `11ec883590d05d28aeeac08a02
 
 Dedicated Sprint195 run `35425205497` and exact-head M7.5 run `35425205248` succeeded.
 
-Engineering envelope SHA-256: `b6b06d99b300fa67cc6341f098eff73c430b11c6d98444ebb75a352d3e7589c2`.  
+Engineering envelope SHA-256: `b6b06d99b300fa67cc6341f098eff73c430b11c6d98444ebb75a352d3e7589c2`.
 Canonical reconciliation envelope SHA-256: `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`.
 
 ## Product progression
