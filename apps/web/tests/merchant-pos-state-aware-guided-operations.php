@@ -131,3 +131,73 @@ if (str_contains($vue, "props.destinations[0] ?? null")
 }
 
 echo "Sprint201 merchant POS state-aware guided operations regression passed.\n";
+
+
+// Sprint203 bounded durable staging merchant-core bridge preservation.
+$sprint203Required = [
+    'ONEQAY_DURABLE_STAGING_RUNTIME_ENABLED',
+    'DurableStagingMerchantCoreBridge',
+    'DurableStagingMerchantCoreRequestBridge',
+    'DurableStagingMerchantContextBootstrapBridgeCommand',
+    'oneqay:merchant-context:bootstrap-staging',
+    "config(['oneqay.runtime_class' => 'ci'])",
+    "'GET /'",
+    "'POST /auth/login'",
+    "'GET /pos'",
+    "'POST /pos/catalog/preparation'",
+    "'POST /pos/inventory/baseline'",
+    "'POST /pos/shifts/open'",
+    "'POST /pos/shifts/opening-cash'",
+    "'POST /pos/sales'",
+    'merchantEntryContextComplete()',
+    'stagingCoreDeliveryEnabled',
+];
+
+foreach ($sprint203Required as $needle) {
+    if (! str_contains($provider, $needle)) {
+        fwrite(STDERR, "Missing Sprint203 durable staging bridge contract: {$needle}\n");
+        exit(1);
+    }
+}
+
+foreach ([
+    "'pos.sales.void'",
+    "'pos.sales.cash-refund'",
+    "'pos.shifts.closing-cash'",
+    "'pos.shifts.close'",
+    "['local', 'test', 'ci', 'staging']",
+    "['local', 'test', 'ci', 'production']",
+] as $forbidden) {
+    if (str_contains($provider, $forbidden)) {
+        fwrite(STDERR, "Forbidden Sprint203 staging bridge expansion detected: {$forbidden}\n");
+        exit(1);
+    }
+}
+
+$historicalRuntimeGuards = [
+    'Infrastructure/Persistence/LaravelPersistenceTransaction.php',
+    'Infrastructure/Access/LaravelDurableOrganizationalAccessRepository.php',
+    'Infrastructure/Authorization/LaravelDurableRolePermissionRepository.php',
+    'Infrastructure/Identity/LaravelFirstPartyIdentityCredentialVerifier.php',
+    'Infrastructure/Identity/LaravelFirstPartySessionAuthorityRepository.php',
+    'Infrastructure/Pos/LaravelDurablePosSaleRepository.php',
+    'Infrastructure/Pos/LaravelCatalogPreparationRepository.php',
+    'Infrastructure/Pos/LaravelInventoryBaselineRepository.php',
+    'Infrastructure/Pos/LaravelShiftOpeningRepository.php',
+    'Infrastructure/Pos/LaravelShiftOpeningCashRepository.php',
+    'Infrastructure/Pos/LaravelPosCatalogInventorySetupWorkspaceRepository.php',
+    'Infrastructure/Pos/LaravelPosShiftStartWorkspaceRepository.php',
+    'Infrastructure/Pos/LaravelPosCashierWorkspaceRepository.php',
+];
+
+foreach ($historicalRuntimeGuards as $relative) {
+    $source = file_get_contents(__DIR__.'/../app/'.$relative);
+    if (! is_string($source)
+        || ! str_contains($source, "['local', 'test', 'ci']")
+        || str_contains($source, "['local', 'test', 'ci', 'staging']")) {
+        fwrite(STDERR, "Sprint203 altered historical runtime guard unexpectedly: {$relative}\n");
+        exit(1);
+    }
+}
+
+echo "Sprint203 bounded durable staging merchant core bridge regression passed.\n";
