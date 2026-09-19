@@ -1,6 +1,6 @@
 # Changelog
 
-## 2026-09-19 — Sprint195 closed engineering / canonical reconciliation
+## 2026-09-19 — Sprint195 closed canonically
 
 **Sprint195: Technical Preview Activation Authority Readiness**
 
