@@ -1,3 +1,4 @@
+# Sprint203 bounded staging bridge compatibility anchor — Lab | zefry
 # Sprint202 authoritative sale receipt continuity compatibility anchor — Lab | zefry
 # Sprint201 state-aware guided merchant operations compatibility anchor — Lab | zefry
 # Sprint200 guided merchant operations home compatibility anchor — Lab | zefry
@@ -495,7 +496,7 @@ jobs:
               sprint51_jrn008_preview_fixture=true
               echo 'Exact Sprint200 guided-home envelope recognized for historical M7.5 preservation.'
             fi
-            if [[ "${{ github.head_ref }}" == 'sprint201-merchant-pos-state-aware-guided-operations' && "$count" -eq 12 && "$fingerprint" == '42c4cdd533a99adf2d0d5ba379e1e90575f0bd081ec08187107e9f7a0a03d766' ]]; then
+            if [[ ( "${{ github.head_ref }}" == 'sprint201-merchant-pos-state-aware-guided-operations' || "${{ github.head_ref }}" == 'sprint203-durable-staging-merchant-core-bounded-bridge' ) && "$count" -eq 12 && "$fingerprint" == '42c4cdd533a99adf2d0d5ba379e1e90575f0bd081ec08187107e9f7a0a03d766' ]]; then
               for expected in \
                 '.github/workflows/m7-5-preview-release-artifact.yml' \
                 '.github/workflows/sprint201-merchant-pos-state-aware-guided-operations-regression.yml' \

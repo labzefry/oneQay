@@ -66,6 +66,36 @@ jobs:
           actual_hash="$(printf '%s\n' "${paths[@]}" | sha256sum | awk '{print $1}')"
           test "$actual_hash" = "$EXPECTED_PATH_HASH"
 
+      - name: Qualify exact Sprint203 bounded compatibility envelope
+        if: github.event_name == 'pull_request' && github.head_ref == 'sprint203-durable-staging-merchant-core-bounded-bridge'
+        shell: bash
+        env:
+          EXPECTED_PATH_HASH: 42c4cdd533a99adf2d0d5ba379e1e90575f0bd081ec08187107e9f7a0a03d766
+        run: |
+          set -euo pipefail
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          test "$(git rev-parse HEAD)" = "$HEAD_SHA"
+          mapfile -t paths < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort)
+          expected=(
+            ".github/workflows/m7-5-preview-release-artifact.yml"
+            ".github/workflows/sprint201-merchant-pos-state-aware-guided-operations-regression.yml"
+            ".github/workflows/sprint32-authentication-recovery-proof-regression.yml"
+            ".github/workflows/sprint33-recovery-bound-password-reset-regression.yml"
+            ".github/workflows/sprint34-authenticated-password-change-regression.yml"
+            "apps/web/app/Application/Pos/PosMerchantOperationsReadinessSnapshot.php"
+            "apps/web/app/Application/Pos/ViewPosMerchantOperationsReadiness.php"
+            "apps/web/app/Delivery/Http/Pos/PosOperationsHubController.php"
+            "apps/web/app/Providers/PosOperationsHubServiceProvider.php"
+            "apps/web/resources/js/pages/Pos/OperationsHub.vue"
+            "apps/web/tests/merchant-pos-guided-operations-home.php"
+            "apps/web/tests/merchant-pos-state-aware-guided-operations.php"
+          )
+          test "${#paths[@]}" -eq "${#expected[@]}"
+          diff -u <(printf '%s\n' "${expected[@]}") <(printf '%s\n' "${paths[@]}")
+          actual_hash="$(printf '%s\n' "${paths[@]}" | sha256sum | awk '{print $1}')"
+          test "$actual_hash" = "$EXPECTED_PATH_HASH"
+
       - name: Preserve operational NO-GO
         shell: bash
         run: |
@@ -111,6 +141,41 @@ jobs:
           composer validate --no-check-publish
           composer install --no-interaction --no-progress --prefer-dist
           composer audit --locked --abandoned=report
+
+      - name: Qualify Sprint203 guarded staging merchant-core route surface
+        working-directory: apps/web
+        shell: bash
+        env:
+          ONEQAY_RUNTIME_CLASS: staging
+          ONEQAY_DURABLE_STAGING_RUNTIME_ENABLED: "true"
+          ONEQAY_PERSISTENCE_ENABLED: "true"
+          ONEQAY_AUTHENTICATION_SESSION_CONTROL_ENABLED: "true"
+          ONEQAY_POS_OPERATIONS_HUB_ENABLED: "true"
+          ONEQAY_POS_CATALOG_INVENTORY_SETUP_ENABLED: "true"
+          ONEQAY_POS_CATALOG_PREPARATION_ENABLED: "true"
+          ONEQAY_POS_INVENTORY_BASELINE_ENABLED: "true"
+          ONEQAY_POS_SHIFT_START_WORKSPACE_ENABLED: "true"
+          ONEQAY_POS_SHIFT_OPENING_ENABLED: "true"
+          ONEQAY_POS_SHIFT_OPENING_CASH_EVIDENCE_ENABLED: "true"
+          ONEQAY_POS_CASHIER_WORKSPACE_ENABLED: "true"
+          ONEQAY_POS_SALE_COMPLETION_ENABLED: "true"
+          ONEQAY_MERCHANT_CONTEXT_BOOTSTRAP_TENANT_ID: tenant-s203
+          ONEQAY_MERCHANT_CONTEXT_BOOTSTRAP_IDENTITY_ID: identity-s203
+          ONEQAY_MERCHANT_CONTEXT_BOOTSTRAP_ORGANIZATION_ID: organization-s203
+          ONEQAY_MERCHANT_CONTEXT_BOOTSTRAP_OUTLET_ID: outlet-s203
+          ONEQAY_MERCHANT_CONTEXT_BOOTSTRAP_DEVICE_ID: device-s203
+        run: |
+          set -euo pipefail
+          php artisan route:list --json > /tmp/sprint203-routes.json
+          for route_name in             auth.first-party.login             auth.first-party.logout             auth.password.change             pos.operations.hub             pos.catalog-inventory.setup             pos.shift-start.workspace             pos.cashier.workspace             pos.catalog.prepare             pos.inventory.baseline             pos.shifts.open             pos.shifts.opening-cash             pos.sales.complete
+          do
+            jq -e --arg name "$route_name" 'map(.name) | index($name) != null' /tmp/sprint203-routes.json >/dev/null
+          done
+          for forbidden_route in             pos.sales.void             pos.sales.cash-refund             pos.shifts.closing-cash             pos.shifts.close.page
+          do
+            jq -e --arg name "$forbidden_route" 'map(.name) | index($name) == null' /tmp/sprint203-routes.json >/dev/null
+          done
+          php artisan list --raw | grep -Fq 'oneqay:merchant-context:bootstrap-staging'
 
       - name: Preserve POS operations hub and state-aware guidance
         working-directory: apps/web

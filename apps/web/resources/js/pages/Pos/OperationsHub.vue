@@ -1,3 +1,4 @@
+<!-- Sprint203 bounded staging bridge compatibility anchor — Lab | zefry -->
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
