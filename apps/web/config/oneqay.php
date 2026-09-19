@@ -5,6 +5,16 @@
 return [
     'runtime_class' => env('ONEQAY_RUNTIME_CLASS'),
 
+    // Sprint203 source-only non-production staging bridge. Default deny.
+    // This flag does not grant deployment, target selection, Technical Preview,
+    // Production activation, Final Shift Close, updater, or producer-dispatch authority.
+    'durable_staging_runtime' => [
+        'enabled' => filter_var(
+            env('ONEQAY_DURABLE_STAGING_RUNTIME_ENABLED', false),
+            FILTER_VALIDATE_BOOL,
+        ),
+    ],
+
     // Author by Lab | zefry
     'first_control_principal_credential_bootstrap' => [
         // Local/Test/CI console bootstrap is denied unless explicitly armed.
