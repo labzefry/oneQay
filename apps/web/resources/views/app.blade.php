@@ -27,9 +27,17 @@
             && (bool) config('database.oneqay_persistence_enabled', false)
             && (bool) config('oneqay.session_control.enabled', false)
             && count($merchantLoginContext) === 5;
+
+        $passwordRecoveryEnabled = $merchantRuntimeAllowed
+            && (bool) config('oneqay.authentication_recovery.enabled', false)
+            && (int) config('oneqay.authentication_recovery.restricted_session_ttl_seconds', 0) === 600;
+        $totpRecoveryEnabled = $passwordRecoveryEnabled
+            && (bool) config('oneqay.privileged_totp_mfa.enabled', false);
     @endphp
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="oneqay-merchant-entry" content="{{ $merchantEntryEnabled ? 'enabled' : 'disabled' }}">
+    <meta name="oneqay-password-recovery" content="{{ $passwordRecoveryEnabled ? 'enabled' : 'disabled' }}">
+    <meta name="oneqay-totp-recovery" content="{{ $totpRecoveryEnabled ? 'enabled' : 'disabled' }}">
     @if ($merchantEntryEnabled)
         <script id="oneqay-merchant-login-context" type="application/json">{!! json_encode(
             $merchantLoginContext,

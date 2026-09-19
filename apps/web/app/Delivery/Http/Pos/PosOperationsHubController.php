@@ -44,6 +44,12 @@ final class PosOperationsHubController
                     'device_id' => $snapshot->deviceId(),
                 ],
                 'destinations' => $destinations,
+                'security' => [
+                    'can_change_password' => Route::has('auth.password.change'),
+                    'can_rotate_password_recovery_codes' => Route::has('auth.recovery.codes.rotate'),
+                    'can_rotate_totp_recovery_codes' => Route::has('auth.privileged-totp-recovery.codes.rotate'),
+                    'can_logout' => Route::has('auth.first-party.logout'),
+                ],
                 'correlation_id' => $correlationId,
             ]);
         } catch (DurableAuthorizationViolation|PosAccessViolation) {
