@@ -1,32 +1,32 @@
 # oneQay Roadmap
 
-**Roadmap checkpoint:** Sprint194 closed canonically
-**Canonical engineering baseline:** `7e3e58d7be012ee5d797acb879cfb9f9a1e829dc`
+**Roadmap checkpoint:** Sprint195 engineering complete; canonical reconciliation in progress  
+**Canonical engineering baseline:** `022b1667ce25a9f4b86a71c95b2c59ad37793d4e`  
 **Current state authority:** `PROJECT_MANIFEST.md`
 
-## Completed Sprint194 horizon
+## Completed Sprint195 horizon
 
-Sprint194 closed `GUARDED_TECHNICAL_PREVIEW_ACTIVATION_REQUEST`.
+Sprint195 closed engineering for `TECHNICAL_PREVIEW_ACTIVATION_AUTHORITY_READINESS`.
 
-The installation journey now progresses from complete/not-activated configuration to a private exact-bound Technical Preview activation request. This creates the governed approval handoff needed for a later separately authorized activation capability without crossing the current operational NO-GO.
+The installation/activation journey now progresses from a guarded activation request to exact-bound authority qualification and durable execution-readiness while preserving a hard stop before mandatory target-environment preflight and Technical Preview activation execution.
 
-Engineering PR #819 qualified at 82/82 on final head `af1027156209977a75d24f54fec031f86bedf8f6` and squash merged at `7e3e58d7be012ee5d797acb879cfb9f9a1e829dc`.
+Engineering PR #821 qualified at 83/83 on final head `11ec883590d05d28aeeac08a0286a3e149db00e7` and squash merged at `022b1667ce25a9f4b86a71c95b2c59ad37793d4e`.
 
-Canonical M7.5 main-push run `35424129329` succeeded.
+Dedicated Sprint195 run `35425205497` and exact-head M7.5 run `35425205248` succeeded.
 
-Engineering envelope SHA-256: `a85b8ceffbf533ea5f3aff7555dba90129c2c851bb8d9bb8ed427ce2e572f804`.
+Engineering envelope SHA-256: `b6b06d99b300fa67cc6341f098eff73c430b11c6d98444ebb75a352d3e7589c2`.  
 Canonical reconciliation envelope SHA-256: `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`.
 
 ## Product progression
 
-Governed release → readiness → secure setup → DB verification → pending config → sealed handoff → promotion request → authority qualification → execution readiness → atomic promotion → post-promotion verification → installation completion handoff → guarded Technical Preview activation request.
+Governed release → readiness → secure setup → DB verification → pending config → sealed handoff → promotion request → authority qualification → execution readiness → atomic promotion → post-promotion verification → installation completion → Technical Preview activation request → Technical Preview authority qualification → Technical Preview activation execution readiness.
 
 ## Operational boundary
 
-The activation request exists only as approval evidence. Migration #27 remains `NOT_EXECUTED`; permission provisioning `NONE`; feature activation `INACTIVE`; deployment/Technical Preview/Production remain unauthorized; updater inactive; selected durable target `null`.
+Execution-readiness is not activation. Canonical repository state remains Technical Preview `NOT_AUTHORIZED`; migration #27 `NOT_EXECUTED`; permission provisioning `NONE`; Final Shift Close `INACTIVE`; deployment/Production unauthorized; updater inactive; durable target blocked; selected target `null`.
 
-## Sprint195 selection rule
+## Sprint196 selection rule
 
-Select the smallest material P0/P1 blocker after the guarded activation request. Prefer a capability that advances safe application boot/readiness while preserving the separate operational authority boundary and without executing migration #27 or activating Technical Preview.
+Select the smallest material P0/P1 blocker after activation execution-readiness. Verify whether the mandatory target-environment preflight gate is the next missing capability before considering any activation executor. Do not perform live-host mutation or activation without separate operational authority.
 
 Author by Lab | zefry
