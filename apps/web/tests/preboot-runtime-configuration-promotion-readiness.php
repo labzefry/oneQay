@@ -253,8 +253,8 @@ try {
         $assert(! str_contains($publicInstaller, $forbidden), 'installer contains forbidden primitive '.$forbidden.'.');
     }
 
-    $assert(! str_contains($source, "rename($this->pendingEnvironmentPath()"), 'readiness source promotes pending environment.');
-    $assert(! str_contains($source, "copy($this->pendingEnvironmentPath()"), 'readiness source copies pending environment to active.');
+    $assert(! str_contains($source, 'rename($this->pendingEnvironmentPath()'), 'readiness source promotes pending environment.');
+    $assert(! str_contains($source, 'copy($this->pendingEnvironmentPath()'), 'readiness source copies pending environment to active.');
     $assert(str_contains($publicInstaller, 'EXECUTION READY / NOT EXECUTED'), 'installer UI does not expose durable readiness.');
 
     fwrite(STDOUT, "Sprint189 runtime promotion execution readiness regression passed.\n");
