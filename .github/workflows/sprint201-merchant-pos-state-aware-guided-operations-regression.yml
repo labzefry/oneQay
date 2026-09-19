@@ -96,6 +96,19 @@ jobs:
           actual_hash="$(printf '%s\n' "${paths[@]}" | sha256sum | awk '{print $1}')"
           test "$actual_hash" = "$EXPECTED_PATH_HASH"
 
+      - name: Qualify exact Sprint204 bounded compatibility envelope
+        if: github.event_name == 'pull_request' && github.head_ref == 'sprint204-durable-staging-runtime-readiness-attestation-delivery'
+        shell: bash
+        env:
+          EXPECTED_PATH_HASH: 42c4cdd533a99adf2d0d5ba379e1e90575f0bd081ec08187107e9f7a0a03d766
+        run: |
+          set -euo pipefail
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          mapfile -t paths < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort)
+          test "${#paths[@]}" -eq 12
+          test "$(printf '%s\n' "${paths[@]}" | sha256sum | awk '{print $1}')" = "$EXPECTED_PATH_HASH"
+
       - name: Preserve operational NO-GO
         shell: bash
         run: |
@@ -176,6 +189,22 @@ jobs:
             jq -e --arg name "$forbidden_route" 'map(.name) | index($name) == null' /tmp/sprint203-routes.json >/dev/null
           done
           php artisan list --raw | grep -Fq 'oneqay:merchant-context:bootstrap-staging'
+
+      - name: Qualify Sprint204 durable staging readiness route
+        working-directory: apps/web
+        shell: bash
+        env:
+          ONEQAY_RUNTIME_CLASS: durable-staging
+          ONEQAY_DURABLE_STAGING_RUNTIME_ENABLED: "true"
+          ONEQAY_DURABLE_RUNTIME_ATTESTATION_TOKEN: "0123456789abcdef0123456789abcdef"
+          ONEQAY_DURABLE_RUNTIME_ENVIRONMENT_ID: "oneqay-staging-01"
+          ONEQAY_RUNNING_SOURCE_COMMIT: "1111111111111111111111111111111111111111"
+          ONEQAY_RUNNING_ARTIFACT_SHA256: "2222222222222222222222222222222222222222222222222222222222222222"
+        run: |
+          set -euo pipefail
+          php artisan route:list --json > /tmp/sprint204-routes.json
+          jq -e 'map(.name) | index("internal.durable-runtime.readiness") != null' /tmp/sprint204-routes.json >/dev/null
+          php tests/merchant-pos-state-aware-guided-operations.php
 
       - name: Preserve POS operations hub and state-aware guidance
         working-directory: apps/web
