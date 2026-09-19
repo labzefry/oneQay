@@ -110,11 +110,13 @@ jobs:
           test "$(jq -r '.required_provenance_fields | index("deployment_plan_fingerprint") != null' "$contract")" = 'true'
           test "$(jq -r '.required_provenance_fields | index("deployment_authority_sha256") != null' "$contract")" = 'true'
 
-      - name: Prove trusted producer remains absent and reserved
+      - name: Prove trusted producer remains canonical and reserved
         shell: bash
         run: |
           set -euo pipefail
-          test ! -e .github/workflows/final-shift-close-durable-runtime-attestation.yml
+          test -f .github/workflows/final-shift-close-durable-runtime-attestation.yml
+          grep -Fq 'workflow_dispatch:' .github/workflows/final-shift-close-durable-runtime-attestation.yml
+          grep -Fq 'environment: final-shift-close-durable-runtime-attestation' .github/workflows/final-shift-close-durable-runtime-attestation.yml
           grep -Fq "PRODUCER_WORKFLOW_PATH = '.github/workflows/final-shift-close-durable-runtime-attestation.yml'" apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeAttestationProvenance.php
           grep -Fq "PRODUCER_ENVIRONMENT = 'final-shift-close-durable-runtime-attestation'" apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeAttestationProvenance.php
           grep -Fq "EVIDENCE_STATUS_CONTEXT = 'final-shift-close-durable-runtime-attestation-evidence'" apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeAttestationProvenance.php
