@@ -48,7 +48,7 @@ jobs:
         if: github.event_name == 'pull_request' && github.head_ref == 'sprint203-durable-staging-merchant-core-runtime-enablement'
         shell: bash
         env:
-          EXPECTED_PATH_HASH: 41175da8e63cf8df9ae5a34c6e3257972139d2341b5e7efae8f612a33b8e0f5b
+          EXPECTED_PATH_HASH: daf904ac3bd8c8224116dd5c70c015fe980e1bb6cdc2d4116a7945d0a20c3e00
         run: |
           set -euo pipefail
           BASE_SHA="${{ github.event.pull_request.base.sha }}"
@@ -64,6 +64,7 @@ jobs:
             "apps/web/app/Infrastructure/Authorization/LaravelDurableRolePermissionRepository.php"
             "apps/web/app/Infrastructure/Authorization/LaravelInitialTenantAdministratorProvisioningRepository.php"
             "apps/web/app/Infrastructure/Bootstrap/LaravelMerchantContextBootstrapStateRepository.php"
+            "apps/web/app/Infrastructure/Identity/LaravelAuthenticatedPasswordChangeRepository.php"
             "apps/web/app/Infrastructure/Identity/LaravelFirstControlPrincipalCredentialBootstrapRepository.php"
             "apps/web/app/Infrastructure/Identity/LaravelFirstPartyCredentialEpochRepository.php"
             "apps/web/app/Infrastructure/Identity/LaravelFirstPartyIdentityCredentialVerifier.php"
@@ -71,6 +72,9 @@ jobs:
             "apps/web/app/Infrastructure/Identity/LaravelFirstPartySessionAuthorityRepository.php"
             "apps/web/app/Infrastructure/Identity/LaravelPrivilegedTotpFactorEpochRepository.php"
             "apps/web/app/Infrastructure/Identity/LaravelPrivilegedTotpMfaRepository.php"
+            "apps/web/app/Infrastructure/Identity/LaravelPrivilegedTotpRecoveryRepository.php"
+            "apps/web/app/Infrastructure/Identity/LaravelRecoveryCodeRepository.php"
+            "apps/web/app/Infrastructure/Identity/LaravelRecoveryPasswordResetRepository.php"
             "apps/web/app/Infrastructure/Persistence/LaravelDurableContextGraphRepository.php"
             "apps/web/app/Infrastructure/Persistence/LaravelPersistenceTransaction.php"
             "apps/web/app/Infrastructure/Pos/LaravelCatalogPreparationRepository.php"
