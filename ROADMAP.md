@@ -1,7 +1,7 @@
 # oneQay Roadmap
 
-**Roadmap checkpoint:** Sprint204 closed canonically  
-**Canonical engineering baseline:** `a5672b315a320092c6fa8cc74d984cb70f4e18ae`  
+**Roadmap checkpoint:** Sprint204 closed canonically
+**Canonical engineering baseline:** `a5672b315a320092c6fa8cc74d984cb70f4e18ae`
 **Current state authority:** `PROJECT_MANIFEST.md`
 
 ## Completed Sprint204 horizon
@@ -12,7 +12,7 @@ The Sprint203 merchant-core staging bridge can now be paired with a canonical `d
 
 Engineering PR #841 qualified at 88/88 on final head `f849d3902c026105ae9e21088b45a05b6d71dcaa` and squash merged at `a5672b315a320092c6fa8cc74d984cb70f4e18ae`.
 
-Engineering envelope SHA-256: `42c4cdd533a99adf2d0d5ba379e1e90575f0bd081ec08187107e9f7a0a03d766`.  
+Engineering envelope SHA-256: `42c4cdd533a99adf2d0d5ba379e1e90575f0bd081ec08187107e9f7a0a03d766`.
 Canonical reconciliation envelope SHA-256: `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`.
 
 ## Production-readiness progression
