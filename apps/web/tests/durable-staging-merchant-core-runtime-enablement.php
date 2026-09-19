@@ -36,9 +36,11 @@ foreach ([
 }
 
 foreach ([
-    '$merchantRuntimeAllowed = in_array($firstPartyAuthRuntime',
+    '$localTestCiRuntime = in_array($firstPartyAuthRuntime',
+    '$merchantRuntimeAllowed = $localTestCiRuntime',
     "$firstPartyAuthRuntime === 'staging'",
     "config('oneqay.durable_staging_runtime.enabled', false)",
+    '$localTestCiRuntime && (bool) config(\'oneqay.pos_sale_void.enabled\', false)',
 ] as $needle) {
     if (! str_contains($routes, $needle)) {
         fwrite(STDERR, "Missing Sprint203 staging route gate: {$needle}\n");
@@ -121,6 +123,7 @@ $stagingAwareRepositories = [
     'app/Infrastructure/Authorization/LaravelInitialTenantAdministratorProvisioningRepository.php',
     'app/Infrastructure/Authorization/LaravelDurablePolicyAdministrationRepository.php',
     'app/Infrastructure/Bootstrap/LaravelMerchantContextBootstrapStateRepository.php',
+    'app/Infrastructure/Identity/LaravelAuthenticatedPasswordChangeRepository.php',
     'app/Infrastructure/Identity/LaravelFirstControlPrincipalCredentialBootstrapRepository.php',
     'app/Infrastructure/Identity/LaravelFirstPartyCredentialEpochRepository.php',
     'app/Infrastructure/Identity/LaravelFirstPartyIdentityCredentialVerifier.php',
@@ -128,6 +131,9 @@ $stagingAwareRepositories = [
     'app/Infrastructure/Identity/LaravelFirstPartySessionAuthorityRepository.php',
     'app/Infrastructure/Identity/LaravelPrivilegedTotpFactorEpochRepository.php',
     'app/Infrastructure/Identity/LaravelPrivilegedTotpMfaRepository.php',
+    'app/Infrastructure/Identity/LaravelPrivilegedTotpRecoveryRepository.php',
+    'app/Infrastructure/Identity/LaravelRecoveryCodeRepository.php',
+    'app/Infrastructure/Identity/LaravelRecoveryPasswordResetRepository.php',
     'app/Infrastructure/Pos/LaravelCatalogPreparationRepository.php',
     'app/Infrastructure/Pos/LaravelDurablePosSaleRepository.php',
     'app/Infrastructure/Pos/LaravelInventoryBaselineRepository.php',
