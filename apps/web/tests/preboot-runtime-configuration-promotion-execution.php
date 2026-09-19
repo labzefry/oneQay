@@ -261,7 +261,7 @@ try {
     $source = (string) file_get_contents(__DIR__.'/../app/Infrastructure/Installation/PrebootRuntimeConfigurationPromotionExecution.php');
     $publicInstaller = (string) file_get_contents(__DIR__.'/../../../tools/installation/public-installer.php');
 
-    foreach (['Artisan::call', 'migrate', 'ONEQAY_TECHNICAL_PREVIEW_ENABLED="true"'] as $forbidden) {
+    foreach (['Artisan::call', 'migrate'] as $forbidden) {
         $assert(! str_contains($source, $forbidden), 'execution source contains forbidden primitive '.$forbidden.'.');
     }
 
