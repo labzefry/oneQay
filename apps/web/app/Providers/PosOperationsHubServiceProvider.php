@@ -6,6 +6,7 @@ namespace App\Providers;
 
 use App\Application\Authorization\DurableScopedAuthorizationPolicy;
 use App\Application\Organization\OrganizationalContextStore;
+use App\Application\Runtime\DurableStagingRuntimeBridge;
 use App\Application\Pos\ViewPosCashierWorkspace;
 use App\Application\Pos\ViewPosCatalogInventorySetupWorkspace;
 use App\Application\Pos\ViewPosMerchantOperationsReadiness;
@@ -23,7 +24,7 @@ final class PosOperationsHubServiceProvider extends ServiceProvider
     {
         // Sprint198 makes the existing POS operations hub the single guarded
         // delivery aggregate for all already-qualified business workspaces.
-        // Every child provider retains its own Local/Test/CI, persistence,
+        // Every child provider retains its own runtime, persistence,
         // session-control, feature-flag, and permission gates.
         $this->app->register(PosCatalogInventorySetupWorkspaceServiceProvider::class);
         $this->app->register(PosShiftStartWorkspaceServiceProvider::class);
@@ -62,12 +63,18 @@ final class PosOperationsHubServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        $runtimeClass = strtolower(trim((string) config('oneqay.runtime_class', '')));
+        $runtimeClass = DurableStagingRuntimeBridge::externalRuntime(
+            (string) config('oneqay.runtime_class', ''),
+        );
+        $runtimeAllowed = DurableStagingRuntimeBridge::deliveryAllowed(
+            $runtimeClass,
+            (bool) config('oneqay.durable_staging_runtime.enabled', false),
+        );
         $sessionControlEnabled = (bool) config('oneqay.session_control.enabled', false)
             && (int) config('oneqay.session_control.idle_ttl_seconds', 0) === 7200
             && (int) config('oneqay.session_control.absolute_ttl_seconds', 0) === 43200;
 
-        if (! in_array($runtimeClass, ['local', 'test', 'ci'], true)
+        if (! $runtimeAllowed
             || ! (bool) config('database.oneqay_persistence_enabled', false)
             || ! $sessionControlEnabled
             || ! (bool) config('pos_operations_hub.enabled', false)) {
