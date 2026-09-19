@@ -8,29 +8,29 @@ Enterprise-oriented business-management platform built with Modular Monolith Fir
 
 ## Current canonical status
 
-The latest completed engineering sprint is **Sprint187 — Governed Runtime Configuration Promotion Request**.
+The latest completed engineering sprint is **Sprint188 — Governed Runtime Promotion Qualification Foundation**.
 
-- Canonical engineering commit: `a327883e588e671491bb2a0cdfc03568e904dd8f`
-- Engineering PR: #804
-- Final engineering head: `ff7f6f58c487955ec43dcdaf3b01cdf7cdc02c28`
-- Exact-head qualification: 75/75 successful
-- Canonical main-push M7.5 run `35388478453`: SUCCESS
-- Engineering envelope: 10 paths, SHA-256 `e022e387816a78f400b0780ba1eefc6c1d8880ec51fb7ce31dd93f72f5726f8f`
+- Canonical engineering commit: `1d8e13871bc86ed51312c8e6dae5651018452f97`
+- Engineering PR: #806
+- Final engineering head: `f194edacc2300ac155dd6fb88d0fadf2819f50ae`
+- Exact-head qualification: 76/76 successful
+- Canonical main-push M7.5 run `35413516260`: SUCCESS
+- Engineering envelope: 10 paths, SHA-256 `cd3306762c9f36c76154a989d8b464ad8c2ec0fbf7833c3e6a0d065afbf064b0`
 - Reconciliation envelope: 8 paths, SHA-256 `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`
 
 For the full project state, use [`PROJECT_MANIFEST.md`](PROJECT_MANIFEST.md).
 
-## Sprint187 — Promotion request, not promotion
+## Sprint188 — Authority qualification, not execution
 
-After Sprint186 seals the activation-readiness handoff, oneQay now materializes a private exact-bound runtime configuration promotion request.
+After Sprint187 creates the exact-bound promotion request, oneQay can now qualify a separately provisioned private promotion authority.
 
-The request binds the governed release, verified pending configuration digest, and handoff digest. It is deterministic, tamper-sensitive, secret-free, and remains `PENDING_APPROVAL`.
+Authority must bind the exact release, request, pending configuration, activation-readiness handoff, and promotion-request bytes; it has a maximum 900-second lifetime, requires single-use semantics, and requires an out-of-band one-time token.
 
-No promotion authority is fabricated and no active `.env` is created.
+Successful qualification produces only **PROMOTION_QUALIFIED_NOT_EXECUTED**. It does not create active `.env` or perform runtime promotion.
 
 ## Product progression
 
-oneQay now has a governed chain from deterministic release artifact → installation readiness → secure pre-boot configuration → live database verification → verified pending configuration → tamper-evident exact-release handoff → reviewable exact-bound promotion request.
+oneQay now has a governed chain from deterministic release artifact → installation readiness → secure pre-boot configuration → live database verification → verified pending configuration → exact-release handoff → reviewable promotion request → exact-bound promotion authority qualification.
 
 ## Operational status remains intentionally gated
 
@@ -38,6 +38,6 @@ Migration #27 remains `NOT_EXECUTED`; permission provisioning `NONE`; durable ac
 
 ## Next engineering position
 
-Sprint188 begins from the fully reconciled Sprint187 checkpoint. Select the smallest material blocker after the promotion request without implicitly granting or executing operational authority.
+Sprint189 begins from the fully reconciled Sprint188 checkpoint. Select the next material blocker after authority qualification without implicitly executing promotion or granting broader operational authority.
 
 Author by Lab | zefry
