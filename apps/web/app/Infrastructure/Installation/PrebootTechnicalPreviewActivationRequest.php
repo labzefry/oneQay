@@ -165,7 +165,7 @@ final class PrebootTechnicalPreviewActivationRequest
         $completionState = (new PrebootInstallationCompletionHandoff(
             $this->sharedRoot,
             $this->releaseId,
-            time(),
+            $this->nowUnix,
         ))->inspect();
 
         if (($completionState['state'] ?? null) !== 'INSTALLATION_CONFIGURATION_COMPLETE_NOT_ACTIVATED'
