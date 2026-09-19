@@ -72,9 +72,10 @@ function dsPlanAssertSafeAbsolutePath(mixed $value, string $code): string
         || $value === ''
         || strlen($value) > 4096
         || ! str_starts_with($value, '/')
+        || $value === '/'
         || str_contains($value, "\0")
         || str_contains($value, '\\')
-        || preg_match('#(?:^|/)\.\.(?:/|$)#', $value) === 1
+        || preg_match('#(?:^|/)\.{1,2}(?:/|$)#', $value) === 1
         || preg_match('#//+#', $value) === 1
     ) {
         dsPlanFail($code);
