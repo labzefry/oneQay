@@ -333,7 +333,7 @@ function stateDescription(string $state): string
             </div>
         <?php elseif ($runtimePromoted): ?>
             <div class="notice warning">
-                Runtime configuration was promoted, but post-promotion verification is not yet complete. Application activation remains locked.
+                Runtime configuration is <strong>PROMOTED / NOT ACTIVATED</strong>, but post-promotion verification is not yet complete. Application activation remains locked.
             </div>
         <?php elseif ($promotionExecutionReady): ?>
             <div class="notice success">
