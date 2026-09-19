@@ -6,7 +6,7 @@
     @php
         $merchantRuntimeAllowed = in_array(
             strtolower(trim((string) config('oneqay.runtime_class', ''))),
-            ['local', 'test', 'ci'],
+            ['local', 'test', 'ci', 'staging'],
             true,
         );
         $merchantGrant = config('merchant_context_bootstrap.grant', []);
