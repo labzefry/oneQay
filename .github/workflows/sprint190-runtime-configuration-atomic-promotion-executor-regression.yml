@@ -147,15 +147,22 @@ jobs:
           tar -xOzf "$artifact" "$release_id/RELEASE.json" > /tmp/oneqay-s190-release.json
           grep -Fq '"promotion_execution_receipt_relative_path": "oneqay-preview/shared/install/runtime-configuration-promotion-execution.json"' /tmp/oneqay-s190-release.json
           grep -Fq '"promotion_execution_schema_relative_path": "installation/runtime-configuration-promotion-execution.schema.json"' /tmp/oneqay-s190-release.json
-          grep -Fq '"promotion_executor_registration_state": "NOT_REGISTERED"' /tmp/oneqay-s190-release.json
           grep -Fq '"promotion_execution_state": "NOT_EXECUTED"' /tmp/oneqay-s190-release.json
           grep -Fq '"activation_authorized": false' /tmp/oneqay-s190-release.json
 
           tar -xOzf "$artifact" "$release_id/public-surface/install.php" > /tmp/oneqay-s190-install.php
-          ! grep -Fq 'PrebootRuntimeConfigurationPromotionExecution.php' /tmp/oneqay-s190-install.php
-          ! grep -Fq 'execute_promotion' /tmp/oneqay-s190-install.php
+          if grep -Fq 'execute_runtime_promotion' /tmp/oneqay-s190-install.php; then
+            grep -Fq '"promotion_executor_registration_state": "REGISTERED_GUARDED_OPERATOR_ACTION"' /tmp/oneqay-s190-release.json
+            grep -Fq '"promotion_operator_action": "execute_runtime_promotion"' /tmp/oneqay-s190-release.json
+            grep -Fq '"promotion_operator_confirmation_required": true' /tmp/oneqay-s190-release.json
+            grep -Fq 'PrebootRuntimeConfigurationPromotionExecution.php' /tmp/oneqay-s190-install.php
+            grep -Fq 'PROMOTE_RUNTIME_CONFIGURATION' /tmp/oneqay-s190-install.php
+          else
+            grep -Fq '"promotion_executor_registration_state": "NOT_REGISTERED"' /tmp/oneqay-s190-release.json
+            ! grep -Fq 'PrebootRuntimeConfigurationPromotionExecution.php' /tmp/oneqay-s190-install.php
+          fi
 
-      - name: Preserve dormant executor boundary
+      - name: Preserve governed executor registration boundary
         shell: bash
         run: |
           set -euo pipefail
@@ -169,8 +176,15 @@ jobs:
           grep -Fq "active_environment_already_present" "$EXECUTOR"
           grep -Fq "promotion_execution_readiness_required" "$EXECUTOR"
 
-          ! grep -Fq 'PrebootRuntimeConfigurationPromotionExecution.php' "$PAGE"
-          ! grep -Fq 'execute_promotion' "$PAGE"
+          if grep -Fq 'execute_runtime_promotion' "$PAGE"; then
+            grep -Fq 'PrebootRuntimeConfigurationPromotionExecution.php' "$PAGE"
+            grep -Fq '<?php if ($promotionExecutionReady && ! $runtimePromoted): ?>' "$PAGE"
+            grep -Fq 'PROMOTE_RUNTIME_CONFIGURATION' "$PAGE"
+            grep -Fq '$executionResult = $execution->execute($approvalToken);' "$PAGE"
+          else
+            ! grep -Fq 'PrebootRuntimeConfigurationPromotionExecution.php' "$PAGE"
+          fi
+
           ! grep -Eq 'Artisan::call|requestInstall\(|checkAvailability\(' "$EXECUTOR"
           ! grep -Eq -- '->(insert|update|delete|increment|decrement)\(' "$EXECUTOR"
 
