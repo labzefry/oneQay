@@ -158,9 +158,13 @@ jobs:
           php -d zend.assertions=1 -d assert.exception=1 tests/preboot-technical-preview-activation-request.php
           php -d zend.assertions=1 -d assert.exception=1 tests/preboot-technical-preview-activation-authority-readiness.php
 
-      - name: Execute Sprint197 target environment preflight regression
+      - name: Preserve Sprint196 preflight and execute Sprint197 activation rollback regression
         working-directory: apps/web
-        run: php -d zend.assertions=1 -d assert.exception=1 tests/preboot-technical-preview-target-environment-preflight.php
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -d zend.assertions=1 -d assert.exception=1 tests/preboot-technical-preview-target-environment-preflight.php
+          php -d zend.assertions=1 -d assert.exception=1 tests/preboot-technical-preview-activation-execution.php
 
       - name: Preserve canonical Sprint85 target preflight contract
         shell: bash
@@ -172,7 +176,7 @@ jobs:
           grep -Fq 'private persistent session directory exists' docs/SPRINT85_TECHNICAL_PREVIEW_ACTIVATION_READINESS_EVIDENCE_GATE.md
           grep -Fq 'Failure of any target-environment preflight condition must leave activation disabled' docs/SPRINT85_TECHNICAL_PREVIEW_ACTIVATION_READINESS_EVIDENCE_GATE.md
 
-      - name: Build governed release with target preflight capability
+      - name: Build governed release with guarded activation rollback capability
         shell: bash
         run: |
           set -euo pipefail
@@ -184,7 +188,10 @@ jobs:
 
           tar -tzf "$artifact" > /tmp/oneqay-s196-release-list.txt
           grep -Fxq "$release_id/apps/web/app/Infrastructure/Installation/PrebootTechnicalPreviewTargetEnvironmentPreflight.php" /tmp/oneqay-s196-release-list.txt
+          grep -Fxq "$release_id/apps/web/app/Infrastructure/Installation/PrebootTechnicalPreviewActivationExecution.php" /tmp/oneqay-s196-release-list.txt
           grep -Fxq "$release_id/installation/technical-preview-target-environment-preflight.schema.json" /tmp/oneqay-s196-release-list.txt
+          grep -Fxq "$release_id/installation/technical-preview-activation-execution.schema.json" /tmp/oneqay-s196-release-list.txt
+          grep -Fxq "$release_id/installation/technical-preview-activation-recovery.schema.json" /tmp/oneqay-s196-release-list.txt
           ! grep -F '/apps/web/database/migrations/' /tmp/oneqay-s196-release-list.txt
 
           tar -xOzf "$artifact" "$release_id/RELEASE.json" > /tmp/oneqay-s196-release.json
@@ -194,6 +201,13 @@ jobs:
           grep -Fq '"technical_preview_target_preflight_action": "run_technical_preview_target_preflight"' /tmp/oneqay-s196-release.json
           grep -Fq '"technical_preview_target_preflight_confirmation_required": true' /tmp/oneqay-s196-release.json
           grep -Fq '"technical_preview_target_preflight_state": "NOT_PERFORMED_AT_BUILD"' /tmp/oneqay-s196-release.json
+          grep -Fq '"technical_preview_activation_execution_receipt_relative_path": "oneqay-preview/shared/install/technical-preview-activation-execution.json"' /tmp/oneqay-s196-release.json
+          grep -Fq '"technical_preview_activation_execution_schema_relative_path": "installation/technical-preview-activation-execution.schema.json"' /tmp/oneqay-s196-release.json
+          grep -Fq '"technical_preview_activation_recovery_schema_relative_path": "installation/technical-preview-activation-recovery.schema.json"' /tmp/oneqay-s196-release.json
+          grep -Fq '"technical_preview_activation_operator_action": "execute_technical_preview_activation"' /tmp/oneqay-s196-release.json
+          grep -Fq '"technical_preview_activation_confirmation_required": true' /tmp/oneqay-s196-release.json
+          grep -Fq '"technical_preview_post_activation_health_required": true' /tmp/oneqay-s196-release.json
+          grep -Fq '"technical_preview_automatic_rollback_required": true' /tmp/oneqay-s196-release.json
           grep -Fq '"technical_preview_session_profile": "PRIVATE_SHARED_FILE_SESSION_V1"' /tmp/oneqay-s196-release.json
           grep -Fq '"technical_preview_session_relative_path": "oneqay-preview/shared/runtime/sessions"' /tmp/oneqay-s196-release.json
           grep -Fq '"technical_preview_activation_execution_state": "NOT_EXECUTED"' /tmp/oneqay-s196-release.json
@@ -205,36 +219,32 @@ jobs:
           grep -Fq 'run_technical_preview_target_preflight' /tmp/oneqay-s196-install.php
           grep -Fq 'RUN_TECHNICAL_PREVIEW_TARGET_PREFLIGHT' /tmp/oneqay-s196-install.php
           grep -Fq 'PREFLIGHT PASSED / NOT ACTIVATED' /tmp/oneqay-s196-install.php
+          grep -Fq 'execute_technical_preview_activation' /tmp/oneqay-s196-install.php
+          grep -Fq 'ACTIVATE_TECHNICAL_PREVIEW' /tmp/oneqay-s196-install.php
+          grep -Fq 'ACTIVE / HEALTHY' /tmp/oneqay-s196-install.php
 
-      - name: Prove preflight-only lifecycle boundary
+      - name: Prove activation rollback lifecycle boundary
         shell: bash
         run: |
           set -euo pipefail
-          ! grep -R --line-number --fixed-strings 'Artisan::call' \
-            apps/web/app/Infrastructure/Installation/PrebootTechnicalPreviewTargetEnvironmentPreflight.php \
-            apps/web/tests/preboot-technical-preview-target-environment-preflight.php \
-            tools/installation/public-installer.php
-          ! grep -Fq 'file_put_contents($this->activeEnvironmentPath()' apps/web/app/Infrastructure/Installation/PrebootTechnicalPreviewTargetEnvironmentPreflight.php
-          ! grep -Fq 'rename($this->activeEnvironmentPath()' apps/web/app/Infrastructure/Installation/PrebootTechnicalPreviewTargetEnvironmentPreflight.php
-          ! grep -Fq 'ONEQAY_TECHNICAL_PREVIEW_ENABLED="true"' tools/installation/public-installer.php
+          ! grep -R --line-number --fixed-strings 'Artisan::call'             apps/web/app/Infrastructure/Installation/PrebootTechnicalPreviewActivationExecution.php             apps/web/tests/preboot-technical-preview-activation-execution.php             tools/installation/public-installer.php
+          grep -Fq 'ONEQAY_TECHNICAL_PREVIEW_ENABLED="false"' apps/web/app/Infrastructure/Installation/PrebootTechnicalPreviewActivationExecution.php
+          grep -Fq 'ONEQAY_TECHNICAL_PREVIEW_ENABLED="true"' apps/web/app/Infrastructure/Installation/PrebootTechnicalPreviewActivationExecution.php
+          grep -Fq 'technical_preview_activation_failed_rolled_back' apps/web/app/Infrastructure/Installation/PrebootTechnicalPreviewActivationExecution.php
           grep -Fq "'ONEQAY_TECHNICAL_PREVIEW_ENABLED' => 'false'" apps/web/app/Infrastructure/Installation/PrebootInstallationConfiguration.php
           test "$(jq -r '.technical_preview_activation' ops/final-shift-close/STATE.json)" = NOT_AUTHORIZED
           test "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" = NOT_EXECUTED
           test "$(jq -r '.permission_provisioning.state' ops/final-shift-close/STATE.json)" = NONE
+          test "$(jq -r '.deployment_authority' ops/final-shift-close/STATE.json)" = NOT_GRANTED
+          test "$(jq -r '.production_activation' ops/final-shift-close/STATE.json)" = NOT_AUTHORIZED
+          test "$(jq -r '.updater_activation' ops/final-shift-close/STATE.json)" = INACTIVE
 
       - name: Confirm attribution and source cleanliness
         shell: bash
         run: |
           set -euo pipefail
-          grep -Fq 'Author by Lab | zefry' apps/web/app/Infrastructure/Installation/PrebootTechnicalPreviewTargetEnvironmentPreflight.php
-          grep -Fq 'Lab | zefry' tools/installation/technical-preview-target-environment-preflight.schema.json
-          ! grep -R -E 'ChatGPT|OpenAI|Copilot|Gemini' \
-            apps/web/app/Infrastructure/Installation/PrebootInstallationConfiguration.php \
-            apps/web/app/Infrastructure/Installation/PrebootTechnicalPreviewTargetEnvironmentPreflight.php \
-            apps/web/config/session.php \
-            apps/web/environment.example \
-            apps/web/tests/preboot-installation-configuration.php \
-            apps/web/tests/preboot-technical-preview-target-environment-preflight.php \
-            tools/installation/technical-preview-target-environment-preflight.schema.json \
-            tools/installation/public-installer.php \
-            tools/build-m7-5-preview-release.sh
+          grep -Fq 'Author by Lab | zefry' apps/web/app/Infrastructure/Installation/PrebootTechnicalPreviewActivationExecution.php
+          grep -Fq 'Lab | zefry' tools/installation/technical-preview-activation-execution.schema.json
+          grep -Fq 'Lab | zefry' tools/installation/technical-preview-activation-recovery.schema.json
+          ! grep -R -E 'ChatGPT|OpenAI|Copilot|Gemini'             apps/web/app/Infrastructure/Installation/PrebootTechnicalPreviewActivationExecution.php             apps/web/tests/preboot-technical-preview-activation-execution.php             tools/installation/technical-preview-activation-execution.schema.json             tools/installation/technical-preview-activation-recovery.schema.json             tools/installation/public-installer.php             tools/build-m7-5-preview-release.sh
+          git diff --exit-code
