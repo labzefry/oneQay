@@ -9,14 +9,28 @@ type CatalogItem = {
     unit_price: { atomic_units: string; currency: string; scale: number };
 };
 
+type ReceiptMoney = { atomic_units: number; currency: string; scale: number };
+
+type ReceiptLine = {
+    product_id: string;
+    quantity: number;
+    unit_price: ReceiptMoney;
+    line_total: ReceiptMoney;
+};
+
 type SaleReceipt = {
     status: 'completed';
     sale_id: string;
     operation_id: string;
-    total: { atomic_units: number; currency: string; scale: number };
+    tenant_id: string;
+    organization_id: string;
+    outlet_id: string;
+    register_context: { device_id: string };
+    lines: ReceiptLine[];
+    total: ReceiptMoney;
     tender_category: string;
     evidence_mode: string;
-    change: { atomic_units: number; currency: string; scale: number };
+    change: ReceiptMoney;
     correlation_id: string;
 };
 
@@ -64,7 +78,27 @@ const totalAtomic = computed(() => cartLines.value.reduce(
 
 const totalUnits = computed(() => cartLines.value.reduce((total, line) => total + line.quantity, 0));
 
-const formatAtomic = (atomic: string | bigint, currency: string, scale: number): string => {
+const catalogNames = new Map(props.catalog.map((item) => [item.product_id, item.display_name]));
+
+const receiptUnitCount = computed(() => receipt.value?.lines.reduce(
+    (total, line) => total + line.quantity,
+    0,
+) ?? 0);
+
+const receiptProductName = (productId: string): string => catalogNames.get(productId) ?? productId;
+
+const printReceipt = (): void => {
+    if (!receipt.value) return;
+    window.print();
+};
+
+const startNextSale = (): void => {
+    receipt.value = null;
+    message.value = '';
+    search.value = '';
+};
+
+const formatAtomic = (atomic: string | number | bigint, currency: string, scale: number): string => {
     const value = typeof atomic === 'bigint' ? atomic : BigInt(atomic);
     const base = 10n ** BigInt(scale);
     const whole = value / base;
@@ -294,12 +328,48 @@ const checkout = async (): Promise<void> => {
 
         <section v-if="message || receipt" class="result" aria-live="polite">
             <strong>{{ message }}</strong>
-            <div v-if="receipt" class="receipt-grid">
-                <span>Sale <b class="mono">{{ receipt.sale_id }}</b></span>
-                <span>Total <b>{{ formatAtomic(BigInt(receipt.total.atomic_units), receipt.total.currency, receipt.total.scale) }}</b></span>
-                <span>Change <b>{{ formatAtomic(BigInt(receipt.change.atomic_units), receipt.change.currency, receipt.change.scale) }}</b></span>
-                <span>Evidence <b>{{ receipt.evidence_mode }}</b></span>
-            </div>
+            <article v-if="receipt" class="receipt-card" aria-label="Authoritative sale receipt">
+                <div class="receipt-heading">
+                    <div>
+                        <p class="eyebrow">Authoritative receipt</p>
+                        <h2>Sale completed</h2>
+                        <p class="receipt-subtitle">Financial lines below come from the server-completed sale receipt, not from a client-side cart estimate.</p>
+                    </div>
+                    <span class="receipt-status">COMPLETED</span>
+                </div>
+
+                <div class="receipt-meta">
+                    <span>Sale <b class="mono">{{ receipt.sale_id }}</b></span>
+                    <span>Operation <b class="mono">{{ receipt.operation_id }}</b></span>
+                    <span>Outlet <b class="mono">{{ receipt.outlet_id }}</b></span>
+                    <span>Device <b class="mono">{{ receipt.register_context.device_id }}</b></span>
+                </div>
+
+                <div class="receipt-lines">
+                    <div v-for="line in receipt.lines" :key="line.product_id" class="receipt-line">
+                        <div>
+                            <strong>{{ receiptProductName(line.product_id) }}</strong>
+                            <small class="mono">{{ line.product_id }}</small>
+                        </div>
+                        <span>{{ line.quantity }} × {{ formatAtomic(line.unit_price.atomic_units, line.unit_price.currency, line.unit_price.scale) }}</span>
+                        <b>{{ formatAtomic(line.line_total.atomic_units, line.line_total.currency, line.line_total.scale) }}</b>
+                    </div>
+                </div>
+
+                <div class="receipt-totals">
+                    <span>Units <b>{{ receiptUnitCount }}</b></span>
+                    <span>Tender <b>{{ receipt.tender_category }}</b></span>
+                    <span>Total <b>{{ formatAtomic(receipt.total.atomic_units, receipt.total.currency, receipt.total.scale) }}</b></span>
+                    <span>Change <b>{{ formatAtomic(receipt.change.atomic_units, receipt.change.currency, receipt.change.scale) }}</b></span>
+                    <span>Evidence <b>{{ receipt.evidence_mode }}</b></span>
+                </div>
+
+                <div class="receipt-actions no-print">
+                    <button type="button" class="secondary" @click="printReceipt">Print receipt</button>
+                    <button type="button" @click="startNextSale">Next sale</button>
+                </div>
+                <p class="receipt-correlation">Receipt correlation: <span class="mono">{{ receipt.correlation_id }}</span></p>
+            </article>
         </section>
 
         <footer>Page correlation: <span class="mono">{{ props.correlation_id }}</span></footer>
@@ -307,5 +377,5 @@ const checkout = async (): Promise<void> => {
 </template>
 
 <style scoped>
-.cashier-shell{min-height:100vh;background:#f5f7fa;color:#172033;padding:28px;font-family:Inter,ui-sans-serif,system-ui,sans-serif}.hero{max-width:1380px;margin:0 auto 20px;display:flex;justify-content:space-between;gap:24px;align-items:flex-end}.eyebrow{margin:0;color:#526175;font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.12em}h1{margin:4px 0 7px;font-size:clamp(2rem,4vw,3rem);letter-spacing:-.04em}.subtitle{margin:0;color:#667085}.shift-card,.panel,.scope-strip,.result{background:#fff;border:1px solid #e4e8ef;border-radius:16px;box-shadow:0 8px 24px rgba(16,24,40,.04)}.shift-card{padding:14px 18px;min-width:230px;border-left:4px solid #d92d20}.shift-card[data-ready="true"]{border-left-color:#039855}.shift-card span,.shift-card small{display:block;color:#667085;font-size:.75rem}.shift-card strong{display:block;margin:3px 0}.scope-strip{max-width:1380px;margin:0 auto 18px;padding:14px 18px;display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.scope-strip span{display:block;color:#667085;font-size:.72rem}.scope-strip strong{font-size:.9rem}.workspace-grid{max-width:1380px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1.65fr) minmax(330px,.75fr);gap:18px;align-items:start}.panel{padding:20px}.panel-heading{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:16px}h2{margin:3px 0 0;font-size:1.18rem}.search,input,select{border:1px solid #d0d5dd;border-radius:10px;background:#fff;padding:10px 12px;font:inherit;color:#172033}.search{width:min(320px,48vw)}.catalog-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}.product-card{border:1px solid #e4e8ef;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:12px;justify-content:space-between;min-height:155px}.product-name{margin:0;font-weight:750}.muted{color:#98a2b3}.product-meta{display:flex;justify-content:space-between;gap:8px;align-items:end}.product-meta span{font-size:.75rem;color:#667085}button{border:0;border-radius:10px;padding:9px 12px;background:#172033;color:#fff;font-weight:700;cursor:pointer}button:disabled{opacity:.42;cursor:not-allowed}.cart-panel{position:sticky;top:18px}.pill{border-radius:999px;background:#eef2f6;padding:6px 9px;font-size:.75rem;font-weight:800}.cart-lines{display:grid;gap:10px}.cart-line{display:flex;justify-content:space-between;gap:10px;padding:11px 0;border-bottom:1px solid #edf0f4}.cart-line small{display:block;color:#667085;margin-top:3px}.qty{display:flex;align-items:center;gap:8px}.qty button{width:30px;height:30px;padding:0;background:#eef2f6;color:#172033}.total-row{display:flex;justify-content:space-between;align-items:center;padding:18px 0;margin-top:8px;font-size:1.06rem}.total-row strong{font-size:1.35rem}.cart-panel label{display:grid;gap:7px;margin:12px 0;color:#475467;font-size:.8rem;font-weight:700}.tender-row{display:grid;grid-template-columns:1fr auto;gap:8px}.secondary{background:#eef2f6;color:#172033}.checkout{width:100%;padding:13px;margin-top:8px}.guard-note{font-size:.72rem;color:#98a2b3;line-height:1.5}.empty{text-align:center;color:#98a2b3;padding:26px 10px}.result{max-width:1380px;margin:18px auto 0;padding:18px}.receipt-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px}.receipt-grid span{background:#f8fafc;border-radius:10px;padding:10px;font-size:.8rem}.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.76rem}footer{max-width:1380px;margin:12px auto;color:#98a2b3;font-size:.72rem}@media(max-width:900px){.cashier-shell{padding:18px 12px}.hero{align-items:stretch;flex-direction:column}.shift-card{min-width:0}.scope-strip{grid-template-columns:1fr}.workspace-grid{grid-template-columns:1fr}.cart-panel{position:static}.receipt-grid{grid-template-columns:1fr 1fr}}@media(max-width:560px){.panel-heading{align-items:stretch;flex-direction:column}.search{width:auto}.receipt-grid{grid-template-columns:1fr}}
+.cashier-shell{min-height:100vh;background:#f5f7fa;color:#172033;padding:28px;font-family:Inter,ui-sans-serif,system-ui,sans-serif}.hero{max-width:1380px;margin:0 auto 20px;display:flex;justify-content:space-between;gap:24px;align-items:flex-end}.eyebrow{margin:0;color:#526175;font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.12em}h1{margin:4px 0 7px;font-size:clamp(2rem,4vw,3rem);letter-spacing:-.04em}.subtitle{margin:0;color:#667085}.shift-card,.panel,.scope-strip,.result{background:#fff;border:1px solid #e4e8ef;border-radius:16px;box-shadow:0 8px 24px rgba(16,24,40,.04)}.shift-card{padding:14px 18px;min-width:230px;border-left:4px solid #d92d20}.shift-card[data-ready="true"]{border-left-color:#039855}.shift-card span,.shift-card small{display:block;color:#667085;font-size:.75rem}.shift-card strong{display:block;margin:3px 0}.scope-strip{max-width:1380px;margin:0 auto 18px;padding:14px 18px;display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.scope-strip span{display:block;color:#667085;font-size:.72rem}.scope-strip strong{font-size:.9rem}.workspace-grid{max-width:1380px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1.65fr) minmax(330px,.75fr);gap:18px;align-items:start}.panel{padding:20px}.panel-heading{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:16px}h2{margin:3px 0 0;font-size:1.18rem}.search,input,select{border:1px solid #d0d5dd;border-radius:10px;background:#fff;padding:10px 12px;font:inherit;color:#172033}.search{width:min(320px,48vw)}.catalog-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}.product-card{border:1px solid #e4e8ef;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:12px;justify-content:space-between;min-height:155px}.product-name{margin:0;font-weight:750}.muted{color:#98a2b3}.product-meta{display:flex;justify-content:space-between;gap:8px;align-items:end}.product-meta span{font-size:.75rem;color:#667085}button{border:0;border-radius:10px;padding:9px 12px;background:#172033;color:#fff;font-weight:700;cursor:pointer}button:disabled{opacity:.42;cursor:not-allowed}.cart-panel{position:sticky;top:18px}.pill{border-radius:999px;background:#eef2f6;padding:6px 9px;font-size:.75rem;font-weight:800}.cart-lines{display:grid;gap:10px}.cart-line{display:flex;justify-content:space-between;gap:10px;padding:11px 0;border-bottom:1px solid #edf0f4}.cart-line small{display:block;color:#667085;margin-top:3px}.qty{display:flex;align-items:center;gap:8px}.qty button{width:30px;height:30px;padding:0;background:#eef2f6;color:#172033}.total-row{display:flex;justify-content:space-between;align-items:center;padding:18px 0;margin-top:8px;font-size:1.06rem}.total-row strong{font-size:1.35rem}.cart-panel label{display:grid;gap:7px;margin:12px 0;color:#475467;font-size:.8rem;font-weight:700}.tender-row{display:grid;grid-template-columns:1fr auto;gap:8px}.secondary{background:#eef2f6;color:#172033}.checkout{width:100%;padding:13px;margin-top:8px}.guard-note{font-size:.72rem;color:#98a2b3;line-height:1.5}.empty{text-align:center;color:#98a2b3;padding:26px 10px}.result{max-width:1380px;margin:18px auto 0;padding:18px}.receipt-card{display:grid;gap:16px}.receipt-heading{display:flex;justify-content:space-between;gap:18px;align-items:flex-start}.receipt-heading h2{margin:4px 0 6px}.receipt-subtitle{margin:0;color:#667085;font-size:.8rem;line-height:1.5}.receipt-status{border-radius:999px;background:#ecfdf3;color:#067647;padding:7px 10px;font-size:.68rem;font-weight:900;letter-spacing:.08em}.receipt-meta,.receipt-totals{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}.receipt-meta span,.receipt-totals span{background:#f8fafc;border-radius:10px;padding:10px;font-size:.76rem}.receipt-meta b,.receipt-totals b{display:block;margin-top:4px}.receipt-lines{border:1px solid #e4e8ef;border-radius:12px;overflow:hidden}.receipt-line{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:16px;align-items:center;padding:12px 14px;border-bottom:1px solid #edf0f4}.receipt-line:last-child{border-bottom:0}.receipt-line small{display:block;margin-top:3px;color:#98a2b3}.receipt-actions{display:flex;justify-content:flex-end;gap:8px}.receipt-correlation{margin:0;color:#98a2b3;font-size:.72rem}.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.76rem}footer{max-width:1380px;margin:12px auto;color:#98a2b3;font-size:.72rem}@media(max-width:900px){.cashier-shell{padding:18px 12px}.hero{align-items:stretch;flex-direction:column}.shift-card{min-width:0}.scope-strip{grid-template-columns:1fr}.workspace-grid{grid-template-columns:1fr}.cart-panel{position:static}.receipt-meta,.receipt-totals{grid-template-columns:1fr 1fr}}@media(max-width:560px){.panel-heading,.receipt-heading{align-items:stretch;flex-direction:column}.search{width:auto}.receipt-meta,.receipt-totals{grid-template-columns:1fr}.receipt-line{grid-template-columns:1fr}.receipt-actions{justify-content:stretch}.receipt-actions button{flex:1}}@media print{body *{visibility:hidden}.receipt-card,.receipt-card *{visibility:visible}.receipt-card{position:absolute;left:0;top:0;width:100%;box-sizing:border-box;padding:24px;background:#fff}.no-print{display:none!important}}
 </style>

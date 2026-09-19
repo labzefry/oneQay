@@ -87,7 +87,28 @@ final class PosSaleController
                 'sale_id' => $receipt->saleId(),
                 'operation_id' => $receipt->operationId(),
                 'tenant_id' => $receipt->tenantId(),
+                'organization_id' => $receipt->organizationId(),
                 'outlet_id' => $receipt->outletId(),
+                'register_context' => [
+                    'device_id' => $receipt->deviceId(),
+                ],
+                'lines' => array_map(
+                    static fn ($line): array => [
+                        'product_id' => $line->productId()->value(),
+                        'quantity' => $line->quantity(),
+                        'unit_price' => [
+                            'atomic_units' => $line->unitPrice()->atomicUnits(),
+                            'currency' => $line->unitPrice()->currency(),
+                            'scale' => $line->unitPrice()->scale(),
+                        ],
+                        'line_total' => [
+                            'atomic_units' => $line->lineTotal()->atomicUnits(),
+                            'currency' => $line->lineTotal()->currency(),
+                            'scale' => $line->lineTotal()->scale(),
+                        ],
+                    ],
+                    $receipt->lines(),
+                ),
                 'total' => [
                     'atomic_units' => $receipt->total()->atomicUnits(),
                     'currency' => $receipt->total()->currency(),

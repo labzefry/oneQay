@@ -1,3 +1,4 @@
+# Sprint202 authoritative sale receipt continuity compatibility anchor — Lab | zefry
 # Sprint201 state-aware guided merchant operations compatibility anchor — Lab | zefry
 # Sprint200 guided merchant operations home compatibility anchor — Lab | zefry
 # Sprint57 immutable sale-to-shift binding compatibility predecessor — Lab | zefry
@@ -518,6 +519,28 @@ jobs:
               done
               sprint51_jrn008_preview_fixture=true
               echo 'Exact Sprint201 state-aware guided operations envelope recognized for historical M7.5 preservation.'
+            fi
+            if [[ "${{ github.head_ref }}" == 'sprint202-merchant-pos-authoritative-sale-receipt-continuity' && "$count" -eq 9 && "$fingerprint" == 'd49048acc4a472d919471c56083ca4f2ac77e988ef67f6de99fb4a601cbbd684' ]]; then
+              for expected in \
+                '.github/workflows/m7-5-preview-release-artifact.yml' \
+                '.github/workflows/sprint202-merchant-pos-authoritative-sale-receipt-continuity-regression.yml' \
+                '.github/workflows/sprint32-authentication-recovery-proof-regression.yml' \
+                '.github/workflows/sprint33-recovery-bound-password-reset-regression.yml' \
+                '.github/workflows/sprint34-authenticated-password-change-regression.yml' \
+                '.github/workflows/sprint46-jrn006-durable-sale-completion-regression.yml' \
+                'apps/web/app/Delivery/Http/Pos/PosSaleController.php' \
+                'apps/web/resources/js/pages/Pos/Cashier.vue' \
+                'apps/web/tests/merchant-pos-authoritative-sale-receipt-continuity.php'
+              do
+                grep -Fxq "$expected" /tmp/m75-nine-paths
+              done
+              for migration in database/migrations/0000_00_00_0000{17..27}_*.php; do
+                if [[ -f "$migration" ]]; then
+                  historical_migrations+=("$migration")
+                fi
+              done
+              sprint51_jrn008_preview_fixture=true
+              echo 'Exact Sprint202 authoritative sale receipt envelope recognized for historical M7.5 preservation.'
             fi
             if [[ "${{ github.head_ref }}" == 'sprint198-pos-business-workspace-delivery-integration' && "$count" -eq 25 && "$fingerprint" == '4e04f75c0df2b340b0a66ad5d2fa545d364a088740e0af92861909c4848d0a45' ]]; then
               for expected in \
