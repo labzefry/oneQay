@@ -23,7 +23,7 @@ final class PosOperationsHubServiceProvider extends ServiceProvider
     {
         // Sprint198 makes the existing POS operations hub the single guarded
         // delivery aggregate for all already-qualified business workspaces.
-        // Every child provider retains its own Local/Test/CI, persistence,
+        // Every child provider retains its own Local/Test/CI/Staging, persistence,
         // session-control, feature-flag, and permission gates.
         $this->app->register(PosCatalogInventorySetupWorkspaceServiceProvider::class);
         $this->app->register(PosShiftStartWorkspaceServiceProvider::class);
@@ -67,7 +67,7 @@ final class PosOperationsHubServiceProvider extends ServiceProvider
             && (int) config('oneqay.session_control.idle_ttl_seconds', 0) === 7200
             && (int) config('oneqay.session_control.absolute_ttl_seconds', 0) === 43200;
 
-        if (! in_array($runtimeClass, ['local', 'test', 'ci'], true)
+        if (! in_array($runtimeClass, ['local', 'test', 'ci', 'staging'], true)
             || ! (bool) config('database.oneqay_persistence_enabled', false)
             || ! $sessionControlEnabled
             || ! (bool) config('pos_operations_hub.enabled', false)) {
