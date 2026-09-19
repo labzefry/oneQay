@@ -31,7 +31,7 @@ final class MerchantContextBootstrapCommand extends Command
     protected $signature = 'oneqay:merchant-context:bootstrap';
 
     /** @var string */
-    protected $description = 'Atomically establish one exact preauthorized merchant context in an explicitly armed Local/Test/CI runtime.';
+    protected $description = 'Atomically establish one exact preauthorized merchant context in an explicitly armed Local/Test/CI/Staging runtime.';
 
     public function handle(): int
     {
@@ -41,7 +41,7 @@ final class MerchantContextBootstrapCommand extends Command
             $credentialBootstrapArmed = (bool) config('oneqay.first_control_principal_credential_bootstrap.enabled', false);
             $persistenceEnabled = (bool) config('database.oneqay_persistence_enabled', false);
 
-            if (! in_array($runtimeClass, ['local', 'test', 'ci'], true)
+            if (! in_array($runtimeClass, ['local', 'test', 'ci', 'staging'], true)
                 || ! $merchantBootstrapArmed
                 || ! $credentialBootstrapArmed
                 || ! $persistenceEnabled) {
