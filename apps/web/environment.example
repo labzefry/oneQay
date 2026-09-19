@@ -7,8 +7,8 @@ APP_URL=http://localhost
 ONEQAY_RUNTIME_CLASS=local
 ONEQAY_TECHNICAL_PREVIEW_ENABLED=false
 
-# Default Local/Test/CI session posture. A deployed Synthetic Technical Preview
-# must explicitly use the bounded Sprint82 envelope below before enablement:
+# Default Local/Test/CI session posture. The governed installer prepares the
+# bounded deployed Synthetic Technical Preview envelope while keeping Preview disabled:
 # ONEQAY_RUNTIME_CLASS=preview
 # ONEQAY_TECHNICAL_PREVIEW_ENABLED=true
 # SESSION_DRIVER=file
