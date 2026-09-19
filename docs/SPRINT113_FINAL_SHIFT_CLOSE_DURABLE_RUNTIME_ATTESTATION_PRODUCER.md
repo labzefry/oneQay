@@ -22,6 +22,8 @@ The producer is source-only in this Sprint. It is **not dispatched**, does not c
 
 The workflow refuses to run from a non-current `main` source. Runtime target identity is not accepted from dispatch input; it is bound to protected-environment variables and an authenticated HTTPS runtime attestation endpoint.
 
+Sprint209 strengthens this producer: before the runtime endpoint is contacted, protected durable-staging deployment execution evidence must qualify against the exact environment, running source, artifact SHA-256, Sprint207 deployment-plan fingerprint, and Sprint208 deployment-authority SHA-256. A readiness endpoint by itself is no longer sufficient evidence of an authorized deployment path.
+
 ## Protected environment prerequisites
 
 Before any future dispatch, the GitHub Environment must be configured outside repository source with appropriate review/protection controls. Sprint113 cannot machine-verify GitHub Environment reviewer configuration from repository source, so it does not claim that configuration exists.
@@ -31,25 +33,36 @@ Required environment secrets:
 - `ONEQAY_DURABLE_RUNTIME_ATTESTATION_URL`
 - `ONEQAY_DURABLE_RUNTIME_ATTESTATION_TOKEN`
 - `ONEQAY_DURABLE_RUNTIME_ATTESTATION_PROTECTION_ASSERTION`
+- `ONEQAY_DURABLE_STAGING_DEPLOYMENT_EVIDENCE_B64`
+- `ONEQAY_DURABLE_STAGING_DEPLOYMENT_EVIDENCE_PROTECTION_ASSERTION`
 
 Required environment variables:
 
 - `ONEQAY_DURABLE_RUNTIME_ENVIRONMENT_ID`
 - `ONEQAY_DURABLE_RUNTIME_CLASS`
+- `ONEQAY_DURABLE_RUNTIME_RUNNING_SOURCE_COMMIT`
+- `ONEQAY_DURABLE_RUNTIME_RUNNING_ARTIFACT_SHA256`
+- `ONEQAY_DURABLE_STAGING_DEPLOYMENT_PLAN_FINGERPRINT`
+- `ONEQAY_DURABLE_STAGING_DEPLOYMENT_AUTHORITY_SHA256`
 
-The protection assertion must equal `REVIEW_GATED_V1`. This is a fail-closed configuration sentinel; it is not a substitute for actual GitHub Environment reviewer/protection configuration.
+The attestation protection assertion must equal `REVIEW_GATED_V1`. The deployment-evidence protection assertion must equal `REVIEW_GATED_DEPLOYMENT_EVIDENCE_V1`. These are fail-closed sentinels and do not replace actual GitHub Environment reviewer/protection configuration.
+
+The deployment evidence is transported as base64-encoded JSON through the protected GitHub Environment secret, decoded only into a private temporary file, capped at 32 KiB, and validated by `tools/qualify-durable-staging-deployment-evidence.php`. The evidence itself must declare `secrets_embedded=false` and preserve all operational NO-GO boundaries.
 
 ## Runtime evidence contract
 
 The endpoint must be HTTPS and authenticated with the protected-environment bearer token. Its response is capped at 32 KiB and must be the exact 22-field Sprint110 readiness attestation.
 
-The current Sprint110 validator is executed against the response. In addition:
+Only after deployment evidence qualifies is the runtime readiness endpoint fetched. The current Sprint110 validator is then executed against the response. In addition:
 
 - environment identity must equal the protected-environment configured identity;
 - runtime class must equal the protected-environment configured class;
 - the runtime class must not be `local`, `test`, `testing`, `ci`, `preview`, `synthetic-preview`, `production`, or `prod`;
 - exact running source commit must exist in `labzefry/oneQay` and belong to canonical `main` history;
-- exact running artifact SHA-256 is bound from the runtime response and carried unchanged into provenance.
+- exact running artifact SHA-256 must equal the protected deployment-evidence binding;
+- exact running source commit must equal the protected deployment-evidence binding;
+- deployment evidence must prove preflight, immutable extraction, public-document-root validation, external configuration binding, provenance/readback checks, non-mutating health, and rollback-path verification;
+- exact running artifact SHA-256 is carried unchanged into provenance.
 
 ## Evidence production
 
@@ -83,7 +96,7 @@ Sprint113 does not:
 
 `DURABLE_RUNTIME_ATTESTATION_PRODUCER_SOURCE = MATERIALIZED_NOT_DISPATCHED`
 
-`PROTECTED_ENVIRONMENT_CONFIGURATION = REQUIRED_OUT_OF_BAND_NOT_VERIFIED`
+`PROTECTED_ENVIRONMENT_CONFIGURATION = REQUIRED_OUT_OF_BAND_WITH_SOURCE_VERIFIED_DEPLOYMENT_EVIDENCE`
 
 `REAL_DURABLE_RUNTIME_ATTESTATION = NONE`
 
