@@ -1,28 +1,28 @@
 # oneQay Project Manifest
 
-**Product:** oneQay — The Future of Intelligent Business Management  
-**Repository owner / attribution:** Lab | zefry  
-**Default branch:** `main`  
+**Product:** oneQay — The Future of Intelligent Business Management
+**Repository owner / attribution:** Lab | zefry
+**Default branch:** `main`
 **Status date:** 2026-09-19
 
 ## Current canonical engineering checkpoint
 
-**Canonical engineering checkpoint:** Sprint195  
-**Objective:** `TECHNICAL_PREVIEW_ACTIVATION_AUTHORITY_READINESS`  
-**Canonical engineering commit:** `022b1667ce25a9f4b86a71c95b2c59ad37793d4e`  
-**Engineering PR:** #821 — `Sprint195: qualify Technical Preview activation authority readiness`  
-**Final engineering head:** `11ec883590d05d28aeeac08a0286a3e149db00e7`  
-**Exact-head qualification:** 83/83 successful  
-**Dedicated Sprint195 qualification:** run `35425205497` — SUCCESS  
-**Exact-head M7.5 qualification:** run `35425205248` — SUCCESS  
-**M7.1 qualification:** run `35425205249` — SUCCESS  
-**Governance qualification:** run `35425205459` — SUCCESS  
-**PHP Foundation qualification:** run `35425205135` — SUCCESS  
-**cPanel qualification:** run `35425205076` — SUCCESS  
-**Shared-runtime qualification:** run `35425205240` — SUCCESS  
-**Engineering envelope:** 11 paths — `b6b06d99b300fa67cc6341f098eff73c430b11c6d98444ebb75a352d3e7589c2`  
-**Canonical reconciliation envelope:** 8 paths — `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`  
-**Previous canonical checkpoint:** Sprint194 reconciliation `e58d2450aa38df979d639603b7adaf421a6aa492`  
+**Canonical engineering checkpoint:** Sprint195
+**Objective:** `TECHNICAL_PREVIEW_ACTIVATION_AUTHORITY_READINESS`
+**Canonical engineering commit:** `022b1667ce25a9f4b86a71c95b2c59ad37793d4e`
+**Engineering PR:** #821 — `Sprint195: qualify Technical Preview activation authority readiness`
+**Final engineering head:** `11ec883590d05d28aeeac08a0286a3e149db00e7`
+**Exact-head qualification:** 83/83 successful
+**Dedicated Sprint195 qualification:** run `35425205497` — SUCCESS
+**Exact-head M7.5 qualification:** run `35425205248` — SUCCESS
+**M7.1 qualification:** run `35425205249` — SUCCESS
+**Governance qualification:** run `35425205459` — SUCCESS
+**PHP Foundation qualification:** run `35425205135` — SUCCESS
+**cPanel qualification:** run `35425205076` — SUCCESS
+**Shared-runtime qualification:** run `35425205240` — SUCCESS
+**Engineering envelope:** 11 paths — `b6b06d99b300fa67cc6341f098eff73c430b11c6d98444ebb75a352d3e7589c2`
+**Canonical reconciliation envelope:** 8 paths — `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`
+**Previous canonical checkpoint:** Sprint194 reconciliation `e58d2450aa38df979d639603b7adaf421a6aa492`
 **Next position:** Sprint196 bounded discovery after canonical Sprint195 reconciliation.
 
 > `022b1667ce25a9f4b86a71c95b2c59ad37793d4e` is the canonical Sprint195 engineering evidence. The reconciliation squash must not replace it.
