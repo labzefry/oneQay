@@ -41,16 +41,17 @@ jobs:
         run: |
           set -euo pipefail
           git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/actual
-          cat > /tmp/expected <<'EOF'
-          .github/workflows/sprint112-final-shift-close-durable-runtime-attestation-ingestion.yml
-          apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeAttestationIngestion.php
-          apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeAttestationProvenance.php
-          apps/web/tests/pos-final-shift-close-durable-runtime-attestation-ingestion.php
-          docs/SPRINT112_FINAL_SHIFT_CLOSE_DURABLE_RUNTIME_ATTESTATION_INGESTION.md
-          ops/final-shift-close/DURABLE_RUNTIME_ATTESTATION_INGESTION_CONTRACT.json
-          EOF
-          diff -u /tmp/expected /tmp/actual
-          test "$(sha256sum /tmp/actual | awk '{print $1}')" = 'a0f33e92877ee696ee8090a57bc52e0356dab03f915f37a67809da36643e62d2'
+          count="$(wc -l < /tmp/actual)"
+          hash="$(sha256sum /tmp/actual | awk '{print $1}')"
+          if [[ "$count" -eq 6 && "$hash" == 'a0f33e92877ee696ee8090a57bc52e0356dab03f915f37a67809da36643e62d2' ]]; then
+            echo 'Historical Sprint112 exact envelope recognized.'
+          elif [[ "$count" -eq 15 && "$hash" == '05d1621db51ccf3461470b3edd01fb734a992523ba2b3aee23c08d9878d66231' ]]; then
+            echo 'Sprint210 exact bounded successor envelope recognized.'
+          else
+            echo "Unexpected Sprint112/successor envelope: count=$count hash=$hash" >&2
+            cat /tmp/actual >&2
+            exit 1
+          fi
 
       - name: Validate Sprint110 and Sprint111 prerequisites
         shell: bash
@@ -102,6 +103,12 @@ jobs:
           test "$(jq -r '.qualification_requirements.ingestion_does_not_select_target' "$contract")" = 'true'
           test "$(jq -r '.qualification_requirements.ingestion_does_not_grant_activation_authority' "$contract")" = 'true'
           test "$(jq -r '.qualification_requirements.secrets_embedded' "$contract")" = 'false'
+          test "$(jq -r '.qualification_requirements.deployment_evidence_binding_required' "$contract")" = 'true'
+          test "$(jq -r '.qualification_requirements.deployment_evidence_binding_must_be_sha256' "$contract")" = 'true'
+          test "$(jq -r '.qualification_requirements.ingestion_fingerprint_binds_deployment_evidence' "$contract")" = 'true'
+          test "$(jq -r '.required_provenance_fields | index("deployment_evidence_sha256") != null' "$contract")" = 'true'
+          test "$(jq -r '.required_provenance_fields | index("deployment_plan_fingerprint") != null' "$contract")" = 'true'
+          test "$(jq -r '.required_provenance_fields | index("deployment_authority_sha256") != null' "$contract")" = 'true'
 
       - name: Prove trusted producer remains absent and reserved
         shell: bash
@@ -122,6 +129,8 @@ jobs:
           grep -Fq 'attestation_sha256_mismatch' "$provenance"
           grep -Fq 'attestation_binding_mismatch:' "$provenance"
           grep -Fq 'provenance_must_not_embed_secrets' "$provenance"
+          grep -Fq 'deployment_binding_invalid:' "$provenance"
+          grep -Fq "'deployment_binding' => [" "$ingestion"
           grep -Fq "EVIDENCE_STATUS_STATE = 'success'" "$provenance"
           grep -Fq 'FinalShiftCloseDurableRuntimeReadiness' "$ingestion"
           grep -Fq 'FinalShiftCloseDurableRuntimeAttestationProvenance' "$ingestion"
