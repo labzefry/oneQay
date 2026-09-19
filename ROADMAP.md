@@ -1,25 +1,25 @@
 # oneQay Roadmap
 
-**Roadmap checkpoint:** Sprint205 closed canonically
-**Canonical engineering baseline:** `5d9826e96adfb31d1e9b9389d222db180f84935c`
+**Roadmap checkpoint:** Sprint206 closed canonically
+**Canonical engineering baseline:** `9fa3af317485fadd8844115260483c4926447695`
 **Current state authority:** `PROJECT_MANIFEST.md`
 
-## Completed Sprint205 horizon
+## Completed Sprint206 horizon
 
-Sprint205 closed `GOVERNED_DURABLE_STAGING_RELEASE_ARTIFACT_FOUNDATION`.
+Sprint206 closed `DURABLE_STAGING_DEPLOYMENT_HANDOFF_FOUNDATION`.
 
-The repository can now build a deterministic `durable-staging` artifact that contains application runtime dependencies, compiled assets, and the canonical migration source set #1–#27 while preserving migration execution and deployment as separately governed operations.
+The repository now has a complete source-side path from durable-staging artifact construction to validated operator handoff. The handoff binds exact source/artifact identity, validates archive safety and migration source shape, and remains secret-free and non-mutating.
 
-Engineering PR #843 qualified at 89/89 on final head `c5b560a03bfec152f2860e7612b18517fb75434b` and squash merged at `5d9826e96adfb31d1e9b9389d222db180f84935c`.
+Engineering PR #845 qualified at 90/90 on final head `d8946bac37dd6a4c6b84f1a800ee1361f65aac23` and squash merged at `9fa3af317485fadd8844115260483c4926447695`.
 
-Engineering envelope SHA-256: `958492e789d583ddd73f803b5a82fa857e25692f372117492d04e25ac82a5a65`.
+Engineering envelope SHA-256: `2afad04ec60d7bce178795c8606922ee0dc38c7e672f16350902fe33b5760e3c`.
 Canonical reconciliation envelope SHA-256: `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`.
 
 ## Production-readiness progression
 
-Sprint203 supplied the bounded merchant-core staging bridge, Sprint204 supplied authenticated readiness attestation, and Sprint205 supplied the governed deployable artifact needed to materialize the same exact source on an external durable staging runtime.
+Sprint203 supplied the bounded merchant-core staging bridge, Sprint204 supplied authenticated runtime readiness, Sprint205 supplied the governed durable-staging artifact, and Sprint206 supplied validated operator handoff.
 
-Technical Preview remains independent and no-schema-change.
+At this point, source packaging and handoff are no longer the blocker. The remaining step requires a real isolated non-production runtime and separate operational authority.
 
 ## Operational boundary
 
@@ -27,8 +27,8 @@ Canonical state remains migration #27 `NOT_EXECUTED`; permission provisioning `N
 
 ## Next material horizon
 
-The next blocker is external environment realization, not another packaging abstraction. Provisioning/deployment must remain separately authorized. Once a real isolated `durable-staging` runtime exists, validate artifact/source identity, durable data/session/auth/transaction/POS behavior, configuration readback, health, and rollback. Only then may the protected producer/ingestion/selection chain be considered under separate operational authority.
+Materialize the real `durable-staging` environment only under separate operational authority. Deploy the exact validated artifact, externalize runtime configuration and secrets, establish durable persistence/session/authorization/transaction/POS prerequisites, verify source/artifact provenance, health/readback/rollback, then run the protected readiness producer and downstream ingestion/selection sequence.
 
-If deployment discovery exposes a concrete missing repository capability, address that capability as the next bounded engineering sprint. Otherwise keep the operational blocker explicit rather than manufacturing source work.
+Do not create another source micro-sprint unless real environment realization exposes a concrete missing repository capability.
 
 Author by Lab | zefry
