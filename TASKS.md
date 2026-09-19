@@ -1,42 +1,43 @@
 # oneQay Tasks
 
-**Current canonical engineering checkpoint:** Sprint206 closed canonically
-**Canonical engineering commit:** `9fa3af317485fadd8844115260483c4926447695`
-**Engineering PR:** #845
+**Current canonical engineering checkpoint:** Sprint207 closed canonically
+**Canonical engineering commit:** `2cfc55cf3dde9304b713ba9fb6f70509dd4dafda`
+**Engineering PR:** #847
 **Canonical status authority:** `PROJECT_MANIFEST.md`
 
-## Sprint206 completed
+## Sprint207 completed
 
-- [x] Identify the missing trusted handoff between the Sprint205 durable-staging artifact and a future external deployment operator.
-- [x] Preserve Preview-only `SystemUpdate*` semantics and `NO_SCHEMA_CHANGE` boundary.
-- [x] Add durable-staging deployment handoff source contract.
-- [x] Add strict machine-readable handoff schema.
-- [x] Validate exact release/source/artifact/manifest identity before handoff.
-- [x] Validate canonical migration source #1–#27 without executing migrations.
-- [x] Deny unsafe archive paths, links, secret file shapes, repository metadata, tests, `node_modules`, and migration-count drift.
-- [x] Emit deterministic secret-free deployment handoff evidence.
-- [x] Emit only required external binding names, never secret values.
-- [x] Prove source-commit and artifact-digest mismatch fail closed.
-- [x] Prove no runtime extraction, configuration mutation, pointer mutation, migration execution, deployment, target selection, or producer dispatch occurs.
-- [x] Qualify final engineering head `d8946bac37dd6a4c6b84f1a800ee1361f65aac23` at 90/90 SUCCESS.
+- [x] Prove the repository-side operator planning gap after Sprint206.
+- [x] Preserve Preview-only `SystemUpdate*` semantics and `NO_SCHEMA_CHANGE`.
+- [x] Add a strict durable-staging operator target contract/schema.
+- [x] Add a strict deterministic deployment-plan contract/schema.
+- [x] Bind exact release/source/artifact/manifest identity to exact target environment and external authority.
+- [x] Require durable database/session/authorization/transaction/POS capabilities.
+- [x] Require authenticated configuration channel and read-before-write/read-after verification.
+- [x] Require provenance readback, non-mutating health attestation, preserved rollback target, rollback verification, and deployment evidence.
+- [x] Reject Production/synthetic targets, migration authority, target/artifact/authority drift, missing bindings/capabilities, root-wide deployment, traversal/dot segments, and filesystem escape/collision.
+- [x] Produce deterministic secret-free deployment plans.
+- [x] Prove the planner performs no deployment/runtime mutation.
+- [x] Qualify final engineering head `b770e86b1a33e70a9272643f5abf04e1c150648c` at 86/86 SUCCESS.
 - [x] Product Owner merge authority SUCCESS.
-- [x] Engineering squash `9fa3af317485fadd8844115260483c4926447695`.
+- [x] Engineering squash `2cfc55cf3dde9304b713ba9fb6f70509dd4dafda`.
 - [x] Preserve operational NO-GO unchanged.
 
 ## Next material blocker
 
-- [ ] Obtain separate operational authority before creating or deploying a real staging environment.
-- [ ] Materialize an isolated non-production `durable-staging` runtime using the exact governed artifact named by the validated handoff.
-- [ ] Bind external runtime configuration/secrets without embedding them in release artifacts or handoff evidence.
-- [ ] Bind exact `ONEQAY_RUNNING_SOURCE_COMMIT` and `ONEQAY_RUNNING_ARTIFACT_SHA256` to deployed evidence.
+- [ ] Obtain separate operational authority before creating or deploying a real durable-staging environment.
+- [ ] Provide the exact external target descriptor bound to the exact release/artifact and authority evidence.
+- [ ] Execute the generated operator plan on an isolated non-production target.
+- [ ] Bind external runtime configuration/secrets without embedding them in repository artifacts or planning evidence.
+- [ ] Verify exact `ONEQAY_RUNNING_SOURCE_COMMIT`, `ONEQAY_RUNNING_ARTIFACT_SHA256`, runtime class, and environment ID.
 - [ ] Establish durable persistence/session/authorization/transaction/POS prerequisites without Production data.
-- [ ] Verify authenticated configuration mutation/readback, non-mutating health, and rollback capability.
+- [ ] Verify authenticated configuration readback, non-mutating health, and rollback evidence.
 - [ ] Dispatch the protected attestation producer only after real target and authority prerequisites are satisfied.
 - [ ] Preserve downstream ordering: attest → ingest → select-not-authorized → migration/permission evidence → later activation authority.
-- [ ] Open another engineering sprint only if real deployment exposes a concrete missing source capability.
+- [ ] Open another engineering sprint only if targeted discovery or real deployment exposes a concrete missing source capability.
 
 ## Still prohibited
 
-No real environment deployment, migration #27 execution, permission provisioning, target selection, producer dispatch, Final Shift Close activation, Technical Preview activation, Production activation, or updater activation is authorized by Sprint206 source readiness.
+No real environment deployment, migration #27 execution, permission provisioning, target selection, producer dispatch, Final Shift Close activation, Technical Preview activation, Production activation, or updater activation is authorized by Sprint207 engineering readiness.
 
 Author by Lab | zefry

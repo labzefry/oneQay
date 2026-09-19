@@ -1,5 +1,27 @@
 # Changelog
 
+## 2026-09-20 — Sprint207 closed canonically
+
+**Sprint207: Durable Staging Operator Deployment Planning**
+
+- Closed the proven repository-side operator gap between Sprint206 validated handoff and an externally authorized real durable-staging target without converting engineering readiness into operational authority.
+- Added strict machine-readable operator target and deployment-plan schemas for exact environment, artifact, authority, filesystem, capability, readback, and rollback bindings.
+- Added `tools/prepare-durable-staging-operator-deployment-plan.php` to produce a deterministic, secret-free, non-mutating operator plan from the exact Sprint206 handoff plus an exact externally authorized target descriptor.
+- Target validation fails closed on Production/synthetic posture, missing durability capabilities, missing required bindings, artifact/environment/authority drift, unsafe filesystem roots, traversal/dot segments, and path collisions/escape.
+- The plan requires pre-mutation readback, immutable release extraction, external configuration binding, exact running source/artifact verification, read-before-write/read-after verification, non-mutating health attestation, preserved rollback target, rollback verification, and deployment/readback evidence.
+- Existing Technical Preview/SystemUpdate semantics remain separate and unchanged: `m75-preview-*`, runtime class `preview`, and `NO_SCHEMA_CHANGE`.
+- The planner performs no environment creation/deployment, archive extraction, runtime configuration mutation, active-release pointer mutation, migration execution, target selection, producer dispatch, permission provisioning, or feature activation.
+- Final engineering head `b770e86b1a33e70a9272643f5abf04e1c150648c`: 86/86 PR-triggered workflows SUCCESS.
+- Engineering PR #847 squash merged at `2cfc55cf3dde9304b713ba9fb6f70509dd4dafda`.
+- Sprint207 qualification `35458897532`, Sprint206 preservation `35458897643`, M7.1 `35458897685`, Governance `35458897999`, and PHP Foundation `35458897673`: SUCCESS.
+- Product Owner merge authority status `product-owner-merge-authority`: SUCCESS.
+- Engineering path hash: `bd138c83785e61f45b0b3066f3e1904942af23df8a34f6392b67dd966a5fa19a`.
+- Canonical reconciliation path hash: `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`.
+- Operational NO-GO unchanged.
+- Next position: a real isolated non-production `durable-staging` target and separate operational authority are required before executing the operator plan; actual deployment results must satisfy provenance/readback/health/rollback evidence before protected producer dispatch or target selection.
+
+Author by Lab | zefry
+
 ## 2026-09-19 — Sprint206 closed canonically
 
 **Sprint206: Durable Staging Deployment Handoff Foundation**

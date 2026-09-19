@@ -8,32 +8,33 @@ Enterprise-oriented multi-tenant business-management platform built with Modular
 
 ## Current canonical status
 
-Latest completed engineering sprint: **Sprint206 — Durable Staging Deployment Handoff Foundation**.
+Latest completed engineering sprint: **Sprint207 — Durable Staging Operator Deployment Planning**.
 
-- Canonical engineering commit: `9fa3af317485fadd8844115260483c4926447695`
-- Engineering PR: #845
-- Final engineering head: `d8946bac37dd6a4c6b84f1a800ee1361f65aac23`
-- Exact-head qualification: 90/90 successful
-- Sprint206 handoff run `35454628797`: SUCCESS
-- M7.5 Preview preservation run `35454629597`: SUCCESS
-- M7.1 run `35454628771`: SUCCESS
-- Governance run `35454629599`: SUCCESS
-- Engineering envelope SHA-256: `2afad04ec60d7bce178795c8606922ee0dc38c7e672f16350902fe33b5760e3c`
+- Canonical engineering commit: `2cfc55cf3dde9304b713ba9fb6f70509dd4dafda`
+- Engineering PR: #847
+- Final engineering head: `b770e86b1a33e70a9272643f5abf04e1c150648c`
+- Exact-head qualification: 86/86 successful
+- Sprint207 plan run `35458897532`: SUCCESS
+- Sprint206 preservation run `35458897643`: SUCCESS
+- M7.1 run `35458897685`: SUCCESS
+- Governance run `35458897999`: SUCCESS
+- PHP Foundation run `35458897673`: SUCCESS
+- Engineering envelope SHA-256: `bd138c83785e61f45b0b3066f3e1904942af23df8a34f6392b67dd966a5fa19a`
 - Reconciliation envelope SHA-256: `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`
 
 See `PROJECT_MANIFEST.md` for canonical project state.
 
-## Sprint206 capability
+## Sprint207 capability
 
-oneQay can now transform an exact governed Sprint205 `durable-staging` artifact into a deterministic, machine-readable, secret-free deployment handoff after validating artifact/source/manifest identity and archive safety.
+oneQay can now bind an exact Sprint206 validated durable-staging handoff to an exact externally authorized isolated non-production target and generate a deterministic, secret-free, non-mutating operator deployment plan.
 
-The handoff is deliberately non-operational: it does not extract into a runtime, configure a host, switch an active release pointer, execute migrations, deploy an environment, select a target, or dispatch the protected readiness producer.
+The plan validates target/runtime/filesystem/capability/authority constraints and defines mandatory preflight, provenance readback, configuration readback, health, rollback, and deployment-evidence requirements.
 
-The existing Technical Preview/SystemUpdate path remains separate and `NO_SCHEMA_CHANGE`.
+The planner itself performs no deployment or runtime mutation. Existing Technical Preview/SystemUpdate behavior remains separate and `NO_SCHEMA_CHANGE`.
 
 ## Product progression
 
-Governed release → installation/readiness lifecycle → guarded Technical Preview → merchant POS journey → bounded durable staging merchant core → authenticated durable-runtime readiness → governed durable-staging artifact → validated external deployment handoff.
+Governed release → installation/readiness lifecycle → guarded Technical Preview → merchant POS journey → durable staging merchant core → authenticated durable-runtime readiness → governed durable-staging artifact → validated handoff → deterministic operator deployment planning.
 
 ## Operational boundary
 
@@ -41,6 +42,6 @@ Migration #27 remains `NOT_EXECUTED`; permission provisioning `NONE`; Final Shif
 
 ## Next
 
-The remaining blocker is operational, not repository packaging/handoff. A real isolated non-production `durable-staging` environment must be created and deployed under separate authority using the governed artifact and validated handoff, then qualified through the existing readiness/producer/ingestion contracts.
+A real isolated non-production `durable-staging` environment and separate operational authority are now required. Execute the exact generated operator plan externally, then verify provenance, configuration readback, non-mutating health, and rollback evidence before any protected producer dispatch or target selection.
 
 Author by Lab | zefry
