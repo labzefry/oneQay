@@ -54,6 +54,7 @@ jobs:
           if [[ "${{ github.head_ref }}" == 'sprint198-pos-business-workspace-delivery-integration' ]]; then
             mapfile -t changed < <(git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | LC_ALL=C sort)
             expected=(
+              ".github/workflows/m7-4a-technical-preview-interaction-regression.yml"
               ".github/workflows/sprint126-final-shift-close-runtime-binding-manifest-control-plane-token-hardening.yml"
               ".github/workflows/sprint162-pos-operations-hub-regression.yml"
               ".github/workflows/sprint198-pos-business-workspace-delivery-integration-regression.yml"
