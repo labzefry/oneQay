@@ -27,6 +27,7 @@ $installerSources = [
     $appRoot.'/app/Infrastructure/Installation/PrebootRuntimeConfigurationPromotionReadiness.php',
     $appRoot.'/app/Infrastructure/Installation/PrebootRuntimeConfigurationPromotionExecution.php',
     $appRoot.'/app/Infrastructure/Installation/PrebootRuntimeConfigurationPostPromotionVerification.php',
+    $appRoot.'/app/Infrastructure/Installation/PrebootInstallationCompletionHandoff.php',
     $appRoot.'/app/Infrastructure/Installation/PrebootInstallationConfiguration.php',
 ];
 $sharedRoot = $accountHome.'/oneqay-preview/shared';
@@ -47,6 +48,7 @@ $qualification = new \App\Infrastructure\Installation\PrebootRuntimeConfiguratio
 $readiness = new \App\Infrastructure\Installation\PrebootRuntimeConfigurationPromotionReadiness($sharedRoot, $releaseId, $nowUnix);
 $execution = new \App\Infrastructure\Installation\PrebootRuntimeConfigurationPromotionExecution($sharedRoot, $releaseId, $nowUnix);
 $postPromotionVerification = new \App\Infrastructure\Installation\PrebootRuntimeConfigurationPostPromotionVerification($sharedRoot, $releaseId, $nowUnix);
+$completionHandoff = new \App\Infrastructure\Installation\PrebootInstallationCompletionHandoff($sharedRoot, $releaseId, $nowUnix);
 $state = [
     'state' => 'UNAVAILABLE',
     'can_prepare' => false,
@@ -81,6 +83,15 @@ $postPromotionVerificationState = [
     'active_environment_sha256' => '',
     'activation_authorized' => false,
 ];
+$completionResult = null;
+$completionState = [
+    'state' => 'INSTALLATION_COMPLETION_NOT_READY',
+    'complete' => false,
+    'request_id' => '',
+    'authority_id' => '',
+    'active_environment_sha256' => '',
+    'activation_authorized' => false,
+];
 $errorCode = null;
 
 try {
@@ -91,6 +102,7 @@ try {
     }
     if (($state['state'] ?? null) === 'ACTIVE_ENV_PRESENT') {
         $postPromotionVerificationState = $postPromotionVerification->inspect();
+        $completionState = $completionHandoff->inspect();
     }
 
     $method = strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET'));
@@ -140,6 +152,8 @@ try {
             $state = $installer->inspect();
             $postPromotionVerificationResult = $postPromotionVerification->verify();
             $postPromotionVerificationState = $postPromotionVerification->inspect();
+            $completionResult = $completionHandoff->seal();
+            $completionState = $completionHandoff->inspect();
         } elseif ($action === 'verify_promoted_runtime_configuration') {
             $confirmation = $_POST['verification_confirmation'] ?? null;
             if (! is_string($confirmation)
@@ -150,6 +164,19 @@ try {
             $postPromotionVerificationResult = $postPromotionVerification->verify();
             $state = $installer->inspect();
             $postPromotionVerificationState = $postPromotionVerification->inspect();
+            $completionResult = $completionHandoff->seal();
+            $completionState = $completionHandoff->inspect();
+        } elseif ($action === 'seal_installation_completion') {
+            $confirmation = $_POST['completion_confirmation'] ?? null;
+            if (! is_string($confirmation)
+                || ! hash_equals('SEAL_INSTALLATION_COMPLETION', $confirmation)) {
+                throw new RuntimeException('installation_completion_confirmation_invalid');
+            }
+
+            $completionResult = $completionHandoff->seal();
+            $state = $installer->inspect();
+            $postPromotionVerificationState = $postPromotionVerification->inspect();
+            $completionState = $completionHandoff->inspect();
         } else {
             throw new RuntimeException('unsupported_installation_action');
         }
@@ -188,6 +215,11 @@ $runtimeVerified = ($postPromotionVerificationState['verified'] ?? false) === tr
     || (is_array($postPromotionVerificationResult)
         && ($postPromotionVerificationResult['state'] ?? null) === 'RUNTIME_CONFIGURATION_VERIFIED_NOT_ACTIVATED'
         && ($postPromotionVerificationResult['activation_authorized'] ?? true) === false);
+$completionCode = (string) ($completionState['state'] ?? 'INSTALLATION_COMPLETION_NOT_READY');
+$installationComplete = ($completionState['complete'] ?? false) === true
+    || (is_array($completionResult)
+        && ($completionResult['state'] ?? null) === 'INSTALLATION_CONFIGURATION_COMPLETE_NOT_ACTIVATED'
+        && ($completionResult['activation_authorized'] ?? true) === false);
 $prepared = is_array($result) && ($result['prepared'] ?? false) === true;
 
 function e(string $value): string
@@ -323,7 +355,11 @@ function stateDescription(string $state): string
             <span class="status-code"><?= e($stateCode) ?></span>
         </div>
 
-        <?php if ($runtimeVerified): ?>
+        <?php if ($installationComplete): ?>
+            <div class="notice success">
+                Installation configuration is <strong>COMPLETE / NOT ACTIVATED</strong>. The completion handoff is private and exact-bound to the verified active runtime configuration, promotion execution receipt, and post-promotion verification evidence. Application activation remains separately governed.
+            </div>
+        <?php elseif ($runtimeVerified): ?>
             <div class="notice success">
                 Runtime configuration is <strong>VERIFIED / NOT ACTIVATED</strong>. Active <strong>.env</strong> is exact-bound to the private promotion execution receipt and the governed release. Migration, Technical Preview, Production, deployment, and updater authority remain unchanged.
             </div>
@@ -482,6 +518,32 @@ function stateDescription(string $state): string
             </div>
         <?php endif; ?>
 
+        <?php if ($runtimeVerified && ! $installationComplete && $completionCode === 'INSTALLATION_COMPLETION_READY_TO_SEAL'): ?>
+            <div class="notice warning">
+                Runtime configuration verification succeeded, but installation completion evidence is not yet sealed. Application activation remains locked.
+            </div>
+            <form method="post" autocomplete="off">
+                <input type="hidden" name="action" value="seal_installation_completion">
+                <div class="grid">
+                    <div class="field full">
+                        <label for="completion_confirmation">Completion confirmation</label>
+                        <input id="completion_confirmation" name="completion_confirmation" type="text" required maxlength="64" autocomplete="off" placeholder="SEAL_INSTALLATION_COMPLETION">
+                        <p class="help">Type exactly <strong>SEAL_INSTALLATION_COMPLETION</strong>. This seals evidence only and does not activate the application.</p>
+                    </div>
+                </div>
+                <div class="actions">
+                    <p>
+                        Completion binds the active configuration, execution receipt, and post-promotion verification into a private read-only installation handoff.
+                    </p>
+                    <button type="submit">Seal installation completion</button>
+                </div>
+            </form>
+        <?php elseif ($runtimeConfigured && $completionCode === 'INSTALLATION_COMPLETION_INVALID'): ?>
+            <div class="notice error">
+                Installation completion evidence is <strong>INVALID</strong>. The installer remains fail-closed and application activation is unavailable.
+            </div>
+        <?php endif; ?>
+
         <?php if ($promotionRequestPending && ! $promotionAuthorityTokenRequired && ! $promotionQualified && ! $runtimeConfigured): ?>
             <div class="notice">
                 Promotion authority status: <strong><?= e($promotionAuthorityState) ?></strong>. A separately provisioned exact-bound authority is required before qualification.
@@ -509,6 +571,7 @@ function stateDescription(string $state): string
             ?></strong></div>
             <div><span>Runtime configuration</span><strong><?= $runtimeConfigured ? 'ACTIVE / NOT ACTIVATED' : 'NOT ACTIVE' ?></strong></div>
             <div><span>Post-promotion verification</span><strong><?= $runtimeVerified ? 'VERIFIED / NOT ACTIVATED' : e($postPromotionVerificationCode) ?></strong></div>
+            <div><span>Installation completion</span><strong><?= $installationComplete ? 'COMPLETE / NOT ACTIVATED' : e($completionCode) ?></strong></div>
             <div><span>Migration</span><strong>NOT EXECUTED</strong></div>
             <div><span>Technical Preview</span><strong>NOT AUTHORIZED</strong></div>
             <div><span>Production</span><strong>NOT AUTHORIZED</strong></div>
