@@ -263,6 +263,12 @@ try {
         $assert(! str_contains($processor, $forbidden), 'PROC-002 forbidden execution primitive '.$forbidden);
     }
 
+    $archiveGuard = strpos($processor, '$this->assertArchiveEntriesSafe($archive, $archivePath)');
+    $extractCall = strpos($processor, '$archive->extractTo($destination, null, false)');
+    $assert(is_int($archiveGuard) && is_int($extractCall) && $archiveGuard < $extractCall, 'PROC-003 archive guard precedes extraction');
+    $assert(str_contains($processor, 'CURLOPT_REDIR_PROTOCOLS => CURLPROTO_HTTPS'), 'PROC-004 HTTPS redirect policy required');
+    $assert(! str_contains($processor, 'stream_context_create'), 'PROC-005 no stream fallback for privileged HTTPS');
+
     $attestation = (string) file_get_contents(__DIR__.'/../app/Providers/PosOperationsHubServiceProvider.php');
     foreach ([
         '/internal/oneqay/durable-runtime/readiness',
