@@ -154,7 +154,10 @@ jobs:
           set -euo pipefail
           router=vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php
           test -f "$router"
-          php -S 127.0.0.1:8788 -t public "$router" > /tmp/oneqay-update-ui-http.log 2>&1 &
+          (
+            cd public
+            php -S 127.0.0.1:8788 ../vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php
+          ) > /tmp/oneqay-update-ui-http.log 2>&1 &
           server_pid=$!
           trap 'kill "$server_pid" 2>/dev/null || true' EXIT
 
