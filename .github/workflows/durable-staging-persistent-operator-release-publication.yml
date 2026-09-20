@@ -68,7 +68,7 @@ jobs:
           test "$(jq -r '.trigger_policy.main_branch_only' "$contract")" = true
           test "$(jq -r '.trigger_policy.automatic_push_publication_forbidden' "$contract")" = true
           test "$(jq -r '.publication_requirements.release_tag_must_not_preexist' "$contract")" = true
-          test "$(jq -r '.publication_requirements.asset_overwrite_allowed // false' "$contract")" = false
+          test "$(jq -r '.persistent_release.asset_overwrite_allowed' "$contract")" = false
           test "$(jq -r '.authority_boundary.persistent_repository_asset_publication_requires_separate_authority' "$contract")" = true
           test "$(jq -r '.authority_boundary.publication_is_not_deployment_authority' "$contract")" = true
           test "$(jq -r '.canonical_boundaries.environment_deployment' "$contract")" = NOT_PERFORMED

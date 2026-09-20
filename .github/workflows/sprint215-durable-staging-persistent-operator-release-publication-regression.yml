@@ -91,7 +91,7 @@ jobs:
           grep -Fq -- '--prerelease' "$w"
           grep -Fq 'Release tag already exists; refusing overwrite.' "$w"
           grep -Fq 'Git tag already exists; refusing reuse.' "$w"
-          grep -Fq 'test "$(jq ''.assets | length'' /tmp/release.json)" -eq 8' "$w" || grep -Fq "test "\$(jq '.assets | length' /tmp/release.json)" -eq 8" "$w"
+          grep -Fq "test \"\$(jq '.assets | length' /tmp/release.json)\" -eq 8" "$w"
           grep -Fq 'draft=false' "$w"
           ! grep -Fq -- '--clobber' "$w"
 
