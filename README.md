@@ -8,22 +8,33 @@ Enterprise-oriented multi-tenant business-management platform built with Modular
 
 ## Current canonical status
 
-Latest completed engineering sprint: **Sprint212 — cPanel No-SSH Durable Staging Target Qualification**.
+Latest completed engineering sprint: **Sprint213 — cPanel No-SSH Operator Qualification Kit Publication**.
 
-- Canonical engineering commit: `7adc0f34bbf1646400c344e7c6d1f89324db61d1`
-- Engineering PR: #859
-- Final engineering head: `d3f771daabcf9263069e6b7b23af6302b06dab45`
-- Exact-head qualification: 91/91 successful
-- Engineering envelope SHA-256: `73f2978a1a748f8314c58078b62653ee331a8b21dd08bef971952a795ed9550e`
+- Canonical engineering commit: `c8998c00e19c177ac535921dbc0ef1fa96b06583`
+- Engineering PR: #861
+- Final engineering head: `4c2ef5d73436e3660d0f6700a9bb3cfe46438289`
+- Exact-head qualification: 92/92 successful
+- Engineering envelope SHA-256: `7ccb0d202041e8968e7d526d6ee3fc7d76fd68048fc062993a8172b53a95e6be`
 - Reconciliation envelope SHA-256: `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`
 
-Sprint212 allows a real cPanel/shared-hosting target without SSH to be qualified through File Manager + one-shot Cron/PHP CLI and bridged into the existing Sprint208 target-candidate contract. It does not create a parallel deployment authority model.
+Sprint213 publishes a deterministic, secret-free ZIP containing the operator-side cPanel no-SSH qualification/governance chain, so a shared-hosting operator does not need Git or SSH to collect repository tools.
 
-## Published operator bundle
+## Published cPanel operator kit
 
-The current application bundle remains the Sprint211 durable-staging publication:
+- Publication run: `35494805706` — SUCCESS
+- Artifact ID: `10600262872`
+- Artifact name: `oneqay-cpanel-no-ssh-operator-kit-c8998c00e19c`
+- Inner ZIP SHA-256: `de485d82c7960683a90c605f4d220b09f85b6cc2282e18f52c43b82006949011`
+- Manifest SHA-256: `d9a0300c24e260d3d87533af6808185a269471cfdeea0e69b2310188b30f3fde`
+- Internal files: 20
+- Expiry: 20 October 2026
 
-- Publication run: `35487670967` — SUCCESS
+The kit contains no application runtime bytes and no granted deployment authority.
+
+## Governed application bundle
+
+The application release remains the Sprint211 durable-staging bundle:
+
 - Artifact ID: `10597712890`
 - Release ID: `durable-staging-e37300d5d1be`
 - Source: `e37300d5d1be6727cdb5d818b6365c6429f2af9d`
@@ -37,6 +48,6 @@ Migration #27 remains `NOT_EXECUTED`; permission provisioning `NONE`; Final Shif
 
 ## Next
 
-Issue #856 remains the consolidated operational gate. Qualify a real host next: either an operator-managed POSIX VM/VPS or a cPanel no-SSH host that passes Sprint212. Then request separate short-lived Sprint208 deployment authority and continue the canonical Sprint207/Sprint209 evidence chain.
+Issue #856 remains the operational gate. A cPanel no-SSH operator now retrieves the Sprint213 qualification kit plus the Sprint211 application bundle, qualifies the real host through File Manager + one-shot Cron/PHP CLI, then enters the existing Sprint208/Sprint207/Sprint209 chain. A POSIX VM/VPS remains a supported alternative.
 
 Author by Lab | zefry
