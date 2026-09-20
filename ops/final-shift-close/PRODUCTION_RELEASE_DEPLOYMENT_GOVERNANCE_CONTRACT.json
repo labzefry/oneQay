@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "feature": "production-release-deployment-governance-foundation",
+  "contract_state": "SOURCE_READY_PRODUCTION_RELEASE_AND_DEPLOYMENT_GOVERNANCE_NOT_DEPLOYED_NOT_ACTIVATED",
+  "purpose": "BUILD_A_DETERMINISTIC_SECRET_FREE_PRODUCTION_RELEASE_CANDIDATE_PROVE_APPLICATION_PAYLOAD_EQUIVALENCE_WITH_GOVERNED_STAGING_BYTES_AND_BIND_PRODUCTION_DEPLOYMENT_TO_SEPARATE_EXACT_AUTHORITY_WITHOUT_ACTIVATION",
+  "release": {
+    "builder_path": "tools/build-production-release.sh",
+    "manifest_schema_path": "release/production-manifest-v1.schema.json",
+    "manifest_validator_path": "tools/validate-production-release-manifest.php",
+    "handoff_tool_path": "tools/prepare-production-deployment-handoff.php",
+    "publication_workflow_path": ".github/workflows/production-release-candidate-publication.yml",
+    "persistent_prerelease": true,
+    "exact_application_payload_equivalence_with_staging_required": true,
+    "secret_values_embedded": false,
+    "migration_execution_performed": false
+  },
+  "governance": {
+    "tool_path": "tools/production-deployment-governance.php",
+    "staging_deployment_evidence_required": true,
+    "production_target_candidate_required": true,
+    "separate_external_authority_required": true,
+    "maximum_authority_lifetime_seconds": 900,
+    "exact_request_binding_required": true,
+    "exact_target_binding_required": true,
+    "exact_release_binding_required": true,
+    "exact_artifact_binding_required": true,
+    "production_deployment_allowed_only_after_authority": true,
+    "production_activation_separate": true,
+    "migration_execution_separate": true,
+    "target_selection_separate": true,
+    "producer_dispatch_separate": true
+  },
+  "production_readiness": {
+    "p95_server_response_target_ms": 750,
+    "tenant_isolation_verified_required": true,
+    "backup_restore_verified_required": true,
+    "tls_https_verified_required": true,
+    "observability_ready_required": true,
+    "incident_recovery_ready_required": true,
+    "verified_rollback_required": true,
+    "production_secrets_externalized_required": true
+  },
+  "canonical_boundaries": {
+    "environment_creation": "NOT_PERFORMED",
+    "environment_deployment": "NOT_PERFORMED",
+    "migration27_execution": "NOT_PERFORMED",
+    "permission_provisioning": "NONE",
+    "feature_activation": "INACTIVE",
+    "deployment_authority": "NOT_GRANTED",
+    "technical_preview_activation": "NOT_AUTHORIZED",
+    "production_activation": "NOT_AUTHORIZED",
+    "updater_activation": "INACTIVE",
+    "durable_target_selection": "BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET",
+    "selected_target": null,
+    "producer_dispatch": "NOT_PERFORMED"
+  },
+  "attribution": "Lab | zefry"
+}
