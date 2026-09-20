@@ -99,7 +99,7 @@ jobs:
             }
           '
           grep -Fq "'curl'" tools/cpanel/inspect-durable-staging-cpanel-no-ssh-target.php
-          grep -Fq "version_compare($libcurlVersion, '7.58.0', '<')" tools/cpanel/inspect-durable-staging-cpanel-no-ssh-target.php
+          grep -Fq "version_compare(\$libcurlVersion, '7.58.0', '<')" tools/cpanel/inspect-durable-staging-cpanel-no-ssh-target.php
           test "$(jq -r '.qualification_requirements.minimum_libcurl_version' ops/final-shift-close/DURABLE_STAGING_CPANEL_NO_SSH_TARGET_QUALIFICATION_CONTRACT.json)" = 7.58.0
           test "$(jq -r '.qualification_requirements.authorized_https_redirect_client_required' ops/final-shift-close/DURABLE_STAGING_CPANEL_NO_SSH_TARGET_QUALIFICATION_CONTRACT.json)" = true
 
