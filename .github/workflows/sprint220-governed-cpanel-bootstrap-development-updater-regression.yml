@@ -1,0 +1,148 @@
+# Author by Lab | zefry
+name: Sprint220 Governed cPanel Bootstrap Development Updater Regression
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint220-governed-cpanel-bootstrap-development-updater-${{ github.event.pull_request.number || github.ref }}-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  qualify-sprint220:
+    name: qualify-sprint220-governed-development-updater
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHQ=
+      APP_DEBUG: "false"
+      APP_URL: http://127.0.0.1:8788
+      ONEQAY_RUNTIME_CLASS: ci
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+      LOG_CHANNEL: stderr
+
+    steps:
+      - name: Checkout exact Sprint220 source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Preserve canonical operational NO-GO
+        shell: bash
+        run: |
+          set -euo pipefail
+          state=ops/final-shift-close/STATE.json
+          selection=ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+          test "$(jq -r '.migration27.state' "$state")" = NOT_EXECUTED
+          test "$(jq -r '.permission_provisioning.state' "$state")" = NONE
+          test "$(jq -r '.feature_activation.state' "$state")" = INACTIVE
+          test "$(jq -r '.deployment_authority' "$state")" = NOT_GRANTED
+          test "$(jq -r '.technical_preview_activation' "$state")" = NOT_AUTHORIZED
+          test "$(jq -r '.production_activation' "$state")" = NOT_AUTHORIZED
+          test "$(jq -r '.updater_activation' "$state")" = INACTIVE
+          test "$(jq -r '.selection_state' "$selection")" = BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET
+          test "$(jq -r '.selected_target' "$selection")" = null
+
+      - name: Setup governed PHP runtime
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        with:
+          php-version: '8.3'
+          extensions: curl,pdo_mysql,phar
+          tools: composer:v2
+          coverage: none
+
+      - name: Setup exact Node LTS
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: 24.19.0
+
+      - name: Install locked dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          composer validate --strict --no-check-publish
+          composer test
+          cd apps/web
+          composer validate --no-check-publish
+          composer install --no-interaction --no-progress --prefer-dist
+          npm ci --ignore-scripts --no-fund
+
+      - name: Validate Sprint220 PHP syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          find apps/web/app/Infrastructure/SystemUpdate/Development -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+          php -l apps/web/app/Delivery/Http/SystemUpdate/DevelopmentUpdateRequestController.php
+          php -l apps/web/app/Delivery/Http/SystemUpdate/DurableStagingRuntimeAttestationController.php
+          php -l apps/web/app/Console/Commands/ProcessGovernedDevelopmentUpdateCommand.php
+          php -l apps/web/tests/sprint220-governed-development-updater.php
+          php -l apps/web/config/oneqay.php
+          php -l apps/web/routes/web.php
+
+      - name: Run Sprint220 regression
+        working-directory: apps/web
+        run: php tests/sprint220-governed-development-updater.php
+
+      - name: Prove CLI and HTTP delivery surfaces
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          php artisan list --raw | grep -Fq 'oneqay:update:process-development'
+          php artisan route:list --path=system/update --json > /tmp/s220-update-routes.json
+          php artisan route:list --path=internal/oneqay/durable-runtime/readiness --json > /tmp/s220-attestation-routes.json
+          php -r '
+            $routes=json_decode(file_get_contents("/tmp/s220-update-routes.json"),true,512,JSON_THROW_ON_ERROR);
+            $names=array_column($routes,"name");
+            if(!in_array("system-update.development.request",$names,true)){fwrite(STDERR,"Missing governed development updater route.\n");exit(1);}
+            $att=json_decode(file_get_contents("/tmp/s220-attestation-routes.json"),true,512,JSON_THROW_ON_ERROR);
+            $attNames=array_column($att,"name");
+            if(!in_array("durable-staging.runtime-attestation",$attNames,true)){fwrite(STDERR,"Missing durable staging attestation route.\n");exit(1);}
+          '
+
+      - name: Prove updater safety boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          processor=apps/web/app/Infrastructure/SystemUpdate/Development/GovernedDevelopmentUpdateProcessor.php
+          request=apps/web/app/Infrastructure/SystemUpdate/Development/GovernedDevelopmentUpdateRequest.php
+          grep -Fq 'labzefry/oneQay' "$processor" "$request"
+          grep -Fq 'durable-staging-release-publication.yml' "$processor" "$request"
+          grep -Fq 'candidate_not_forward_from_running_source' "$processor"
+          grep -Fq 'rollback_path_verified' "$processor"
+          grep -Fq 'DEPLOYED_VERIFIED_NOT_SELECTED' "$processor"
+          grep -Fq "'migration27_execution' => 'NOT_PERFORMED'" "$processor"
+          grep -Fq "'production_activation' => 'NOT_AUTHORIZED'" "$processor"
+          grep -Fq "'updater_activation' => 'INACTIVE'" "$processor"
+          ! grep -Fq 'php artisan migrate' "$processor"
+          ! grep -Fq 'Artisan::call' "$processor"
+          ! grep -E '(^|[^A-Za-z_])(exec|shell_exec|system|passthru|proc_open|popen)[[:space:]]*\(' "$processor"
+
+      - name: Type-check and build enterprise UI
+        working-directory: apps/web
+        run: |
+          npm run type-check
+          npm run build
+
+      - name: Preserve generic production updater lock
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq "'install_enabled' => false" apps/web/config/oneqay.php
+          ! grep -Eq 'ONEQAY_SYSTEM_UPDATE_INSTALL|env\([^)]*INSTALL' apps/web/config/oneqay.php
+
+      - name: Confirm tracked source cleanliness
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --exit-code
+          test -z "$(git status --porcelain)"
