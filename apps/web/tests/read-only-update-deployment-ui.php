@@ -9,8 +9,9 @@ $controllerPath = $root.'/app/Delivery/Http/SystemUpdate/SystemUpdatePageControl
 $routePath = $root.'/routes/web.php';
 $configPath = $root.'/config/oneqay.php';
 $statusPath = $root.'/app/Application/SystemUpdate/SystemUpdateControlPlaneStatus.php';
+$providerPath = $root.'/app/Providers/SystemUpdateServiceProvider.php';
 
-$files = [$pagePath, $controllerPath, $routePath, $configPath, $statusPath];
+$files = [$pagePath, $controllerPath, $routePath, $configPath, $statusPath, $providerPath];
 foreach ($files as $file) {
     if (! is_file($file)) {
         fwrite(STDERR, "Missing updater UI contract file: {$file}\n");
@@ -23,12 +24,14 @@ $controller = (string) file_get_contents($controllerPath);
 $routes = (string) file_get_contents($routePath);
 $config = (string) file_get_contents($configPath);
 $status = (string) file_get_contents($statusPath);
+$provider = (string) file_get_contents($providerPath);
 
 $requiredPageMarkers = [
     'System',
     'Update &amp; Deployment',
     'READ_ONLY',
     'Installation controls are locked',
+    'Governed development delivery',
     'deployment_authorized',
     'activation_supported',
     'schema_change_supported',
@@ -43,12 +46,9 @@ foreach ($requiredPageMarkers as $marker) {
 }
 
 $forbiddenInteractivePatterns = [
-    'useForm(',
     'axios',
     'fetch(',
     '@click',
-    '<form',
-    '.post(',
     '.put(',
     '.patch(',
     '.delete(',
@@ -87,6 +87,17 @@ foreach (['checkAvailability(', 'requestInstall('] as $forbiddenControllerCall) 
 
 if (! str_contains($routes, "Route::get('/system/update', SystemUpdatePageController::class)->name('system-update.page');")) {
     fwrite(STDERR, "Missing read-only updater page route.\n");
+    exit(1);
+}
+
+if (! str_contains($provider, "Route::post('/system/update/development/request', DevelopmentUpdateRequestController::class)")) {
+    fwrite(STDERR, "Missing governed development updater request route.\n");
+    exit(1);
+}
+
+if (! str_contains($page, "/system/update/development/request")
+    || ! str_contains($page, "INSTALL_EXACT_GOVERNED_DEVELOPMENT_RELEASE")) {
+    fwrite(STDERR, "Governed development updater UI contract is missing.\n");
     exit(1);
 }
 

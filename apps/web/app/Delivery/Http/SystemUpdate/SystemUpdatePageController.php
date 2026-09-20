@@ -6,7 +6,9 @@ namespace App\Delivery\Http\SystemUpdate;
 
 use App\Application\SystemUpdate\SystemUpdateControlPlane;
 use App\Infrastructure\Installation\SecureInstallationReadiness;
+use App\Infrastructure\SystemUpdate\Development\GovernedDevelopmentUpdateRequest;
 use Illuminate\Database\ConnectionInterface;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 use Throwable;
@@ -17,10 +19,11 @@ final class SystemUpdatePageController
     public function __construct(
         private readonly SystemUpdateControlPlane $controlPlane,
         private readonly SecureInstallationReadiness $installationReadiness,
+        private readonly GovernedDevelopmentUpdateRequest $developmentUpdater,
     ) {
     }
 
-    public function __invoke(): Response
+    public function __invoke(Request $request): Response
     {
         $manifest = $this->loadGovernedReleaseManifest();
         $artifact = $this->observeReleaseArtifact($manifest);
@@ -40,6 +43,8 @@ final class SystemUpdatePageController
 
         return Inertia::render('System/UpdateDeployment', [
             'status' => $this->controlPlane->status()->toSafeArray(),
+            'development_updater' => $this->developmentUpdater->status(),
+            'development_update_feedback' => $request->session()->get('development_update_feedback'),
             'ui' => [
                 'mode' => 'READ_ONLY',
                 'install_action_exposed' => false,
