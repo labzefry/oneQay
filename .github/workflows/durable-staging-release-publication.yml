@@ -1,4 +1,5 @@
 # Author by Lab | zefry
+# Sprint216 same-source staging publication anchor — Lab | zefry
 name: Durable Staging Operator Artifact Publication
 
 on:

@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "feature": "production-release-deployment-governance",
+  "contract_state": "SOURCE_READY_PRODUCTION_RELEASE_DEPLOYMENT_GOVERNANCE_NOT_DEPLOYED_NOT_ACTIVATED",
+  "purpose": "PREPARE_DETERMINISTIC_PRODUCTION_CANDIDATE_AND_SAME_SOURCE_STAGING_TO_PRODUCTION_DEPLOYMENT_GOVERNANCE_WITHOUT_CHANGING_APPLICATION_RUNTIME_OR_AUTOMATICALLY_ACTIVATING_PRODUCTION_TRAFFIC",
+  "application_runtime_boundary": {
+    "source_runtime_behavior_changed": false,
+    "business_runtime_activation_ready": false,
+    "dark_deploy_only": true,
+    "dark_deploy_health_endpoint": "/health/live",
+    "later_business_runtime_activation_requires_separate_source_and_authority": true
+  },
+  "production_release": {
+    "channel": "PRODUCTION_CANDIDATE",
+    "environment": "PRODUCTION",
+    "required_runtime_class": "production",
+    "deterministic": true,
+    "secret_free": true,
+    "migration_source_included": true,
+    "migration_count": 27,
+    "migration_execution_performed_by_builder": false,
+    "deployment_performed_by_builder": false,
+    "traffic_activation_performed_by_builder": false
+  },
+  "same_source_staging": {
+    "canonical_main_push_must_publish_staging_artifact": true,
+    "exact_source_commit_match_required_for_promotion": true,
+    "verified_staging_deployment_evidence_required": true
+  },
+  "production_promotion": {
+    "exact_production_artifact_hash_required": true,
+    "exact_target_descriptor_required": true,
+    "separate_short_lived_authority_required": true,
+    "maximum_authority_lifetime_seconds": 900,
+    "deployment_may_be_authorized": true,
+    "production_scope_may_be_authorized": true,
+    "migration_execution_allowed": false,
+    "production_traffic_activation_allowed": false,
+    "target_selection_allowed": false,
+    "producer_dispatch_allowed": false
+  },
+  "production_acceptance": {
+    "preflight_required": true,
+    "immutable_release_required": true,
+    "exact_runtime_readback_required": true,
+    "non_mutating_dark_health_required": true,
+    "rollback_rehearsal_required": true,
+    "post_deployment_state": "PRODUCTION_DEPLOYED_VERIFIED_NOT_ACTIVATED"
+  },
+  "canonical_boundaries": {
+    "environment_creation": "NOT_PERFORMED",
+    "environment_deployment": "NOT_PERFORMED",
+    "migration27_execution": "NOT_PERFORMED",
+    "permission_provisioning": "NONE",
+    "feature_activation": "INACTIVE",
+    "deployment_authority": "NOT_GRANTED",
+    "technical_preview_activation": "NOT_AUTHORIZED",
+    "production_activation": "NOT_AUTHORIZED",
+    "updater_activation": "INACTIVE",
+    "durable_target_selection": "BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET",
+    "selected_target": null,
+    "producer_dispatch": "NOT_PERFORMED"
+  },
+  "attribution": "Lab | zefry"
+}

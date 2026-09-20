@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oneqay.invalid/contracts/production-deployment-authority.schema.json",
+  "title": "oneQay Production Deployment Authority",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "authority_state",
+    "authority_id",
+    "request_id",
+    "request_sha256",
+    "environment_id",
+    "target_descriptor_sha256",
+    "release_id",
+    "artifact_sha256",
+    "authorized_at_unix",
+    "expires_at_unix",
+    "approval_token",
+    "deployment_allowed",
+    "production_allowed",
+    "migration_execution_allowed",
+    "production_traffic_activation_allowed",
+    "target_selection_allowed",
+    "producer_dispatch_allowed",
+    "attribution"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "authority_state": {
+      "const": "GRANTED_FOR_EXACT_PRODUCTION_DEPLOYMENT_NOT_TRAFFIC_ACTIVATION"
+    },
+    "authority_id": {
+      "type": "string",
+      "pattern": "^production-deployment-authority-[0-9a-f]{24}$"
+    },
+    "request_id": {
+      "type": "string"
+    },
+    "request_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "environment_id": {
+      "type": "string"
+    },
+    "target_descriptor_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "release_id": {
+      "type": "string"
+    },
+    "artifact_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "authorized_at_unix": {
+      "type": "integer"
+    },
+    "expires_at_unix": {
+      "type": "integer"
+    },
+    "approval_token": {
+      "type": "string",
+      "minLength": 32,
+      "maxLength": 256
+    },
+    "deployment_allowed": {
+      "const": true
+    },
+    "production_allowed": {
+      "const": true
+    },
+    "migration_execution_allowed": {
+      "const": false
+    },
+    "production_traffic_activation_allowed": {
+      "const": false
+    },
+    "target_selection_allowed": {
+      "const": false
+    },
+    "producer_dispatch_allowed": {
+      "const": false
+    },
+    "attribution": {
+      "const": "Lab | zefry"
+    }
+  }
+}
