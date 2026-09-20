@@ -256,10 +256,18 @@ function cpanelBridgeRestore(array $state): void
         if (! is_file($indexBackup) || is_link($indexBackup)) {
             cpanelBridgeFail('public_index_backup_unavailable');
         }
-        if (! copy($indexBackup, $indexPath)) {
-            cpanelBridgeFail('public_index_restore_failed');
+        $indexRestore = dirname($indexPath).'/.oneqay-index-restore-'.bin2hex(random_bytes(8));
+        try {
+            if (! copy($indexBackup, $indexRestore)) {
+                cpanelBridgeFail('public_index_restore_stage_failed');
+            }
+            @chmod($indexRestore, 0644);
+            if (! rename($indexRestore, $indexPath)) {
+                cpanelBridgeFail('public_index_restore_failed');
+            }
+        } finally {
+            if (is_file($indexRestore)) @unlink($indexRestore);
         }
-        @chmod($indexPath, 0644);
     } elseif ((file_exists($indexPath) || is_link($indexPath)) && ! @unlink($indexPath)) {
         cpanelBridgeFail('public_index_remove_failed');
     }
