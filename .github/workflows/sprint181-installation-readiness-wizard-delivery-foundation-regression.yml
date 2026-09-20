@@ -87,7 +87,9 @@ jobs:
           grep -Fq -- '->status()->toSafeArray()' apps/web/app/Delivery/Http/SystemUpdate/SystemUpdatePageController.php
           ! grep -Fq 'checkAvailability(' apps/web/app/Delivery/Http/SystemUpdate/SystemUpdatePageController.php
           ! grep -Fq 'requestInstall(' apps/web/app/Delivery/Http/SystemUpdate/SystemUpdatePageController.php
-          ! grep -Eiq 'fetch\(|@click|<form|/system/update/(check|install)' apps/web/resources/js/pages/System/UpdateDeployment.vue
+          ! grep -Eiq 'fetch\(|@click|/system/update/(check|install)' apps/web/resources/js/pages/System/UpdateDeployment.vue
+          grep -Fq '/system/update/development/request' apps/web/resources/js/pages/System/UpdateDeployment.vue
+          grep -Fq 'SYNC_GOVERNED_DEVELOPMENT_RELEASE' apps/web/resources/js/pages/System/UpdateDeployment.vue
 
       - name: Preserve read-only installation preflight contract
         shell: bash
