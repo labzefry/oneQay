@@ -30,7 +30,17 @@
     "rollback_rehearsal_required": true,
     "post_rollback_reactivation_required": true,
     "post_reactivation_readiness_required": true,
-    "sprint209_evidence_written_only_after_all_checks_pass": true
+    "sprint209_evidence_written_only_after_all_checks_pass": true,
+    "authority_rechecked_before_each_pointer_mutation": true,
+    "presentation_mode_authority_bound": true,
+    "fixed_public_bridge_supported": true,
+    "fixed_public_bridge_private_app_source": true,
+    "fixed_public_bridge_public_surface": [
+      "index.php",
+      "build/"
+    ],
+    "fixed_public_bridge_htaccess_preserved": true,
+    "fixed_public_bridge_rollback_rehearsed": true
   },
   "initial_deployment_policy": {
     "active_pointer_may_be_absent_before_first_deployment": true,
@@ -58,7 +68,8 @@
     "production_activation": false,
     "updater_activation": false,
     "failure_after_pointer_mutation_restores_previous_active_state": true,
-    "inactive_failed_release_may_remain_for_forensic_cleanup": true
+    "inactive_failed_release_may_remain_for_forensic_cleanup": true,
+    "failure_after_public_bridge_mutation_restores_previous_public_surface": true
   },
   "evidence": {
     "schema": "tools/deployment/durable-staging-deployment-evidence.schema.json",
@@ -79,5 +90,6 @@
     "selected_target": null,
     "producer_dispatch": "NOT_PERFORMED"
   },
-  "attribution": "Lab | zefry"
+  "attribution": "Lab | zefry",
+  "bridge_path": "tools/cpanel/fixed-public-document-root-bridge.php"
 }
