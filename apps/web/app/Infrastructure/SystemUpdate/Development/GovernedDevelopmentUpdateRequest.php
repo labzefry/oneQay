@@ -18,14 +18,20 @@ final class GovernedDevelopmentUpdateRequest
         $enabled = $this->enabledForCurrentRuntime();
         $request = null;
         $result = null;
+        $candidate = null;
 
         if ($enabled) {
             try {
                 $request = $this->readJsonIfPresent($this->pendingPath());
                 $result = $this->readJsonIfPresent($this->lastResultPath());
+                $candidateRaw = $this->readJsonIfPresent($this->candidatePath());
+                if (is_array($candidateRaw)) {
+                    $candidate = $this->validateCandidate($candidateRaw, time(), null);
+                }
             } catch (Throwable) {
                 $request = null;
                 $result = null;
+                $candidate = null;
             }
         }
 
@@ -41,6 +47,16 @@ final class GovernedDevelopmentUpdateRequest
             'request_pending' => $pending,
             'request_id' => $pending && is_string($request['request_id'] ?? null) ? $request['request_id'] : null,
             'request_expires_at_unix' => $pending ? $request['expires_at_unix'] : null,
+            'candidate' => is_array($candidate) ? [
+                'state' => $candidate['candidate_state'],
+                'release_id' => $candidate['release_id'],
+                'source_commit' => $candidate['source_commit'],
+                'github_outer_sha256' => $candidate['github_outer_sha256'],
+                'fingerprint' => $candidate['candidate_fingerprint'],
+                'discovered_at_unix' => $candidate['discovered_at_unix'],
+                'expires_at_unix' => $candidate['expires_at_unix'],
+                'update_available' => $candidate['candidate_state'] === 'AVAILABLE',
+            ] : null,
             'last_result' => is_array($result) ? [
                 'state' => is_string($result['state'] ?? null) ? $result['state'] : null,
                 'release_id' => is_string($result['release_id'] ?? null) ? $result['release_id'] : null,
@@ -57,7 +73,7 @@ final class GovernedDevelopmentUpdateRequest
     }
 
     /** @return array<string,mixed> */
-    public function create(string $operatorToken, string $totpCode, int $nowUnix): array
+    public function create(string $operatorToken, string $totpCode, string $candidateFingerprint, int $nowUnix): array
     {
         $this->assertEnabledForCurrentRuntime();
 
@@ -98,10 +114,23 @@ final class GovernedDevelopmentUpdateRequest
             throw new DevelopmentUpdaterViolation('request_already_pending');
         }
 
+        if (preg_match('/\A[0-9a-f]{64}\z/', $candidateFingerprint) !== 1) {
+            throw new DevelopmentUpdaterViolation('candidate_fingerprint_invalid');
+        }
+        $candidate = $this->validateCandidate(
+            $this->readJsonIfPresent($this->candidatePath()),
+            $nowUnix,
+            $candidateFingerprint,
+        );
+        if (($candidate['candidate_state'] ?? null) !== 'AVAILABLE') {
+            throw new DevelopmentUpdaterViolation('candidate_not_available');
+        }
+
         $source = strtolower(trim((string) config('oneqay.development_updater.running_source_commit', '')));
         $artifact = strtolower(trim((string) config('oneqay.development_updater.running_artifact_sha256', '')));
         if (preg_match('/\A[0-9a-f]{40}\z/', $source) !== 1
-            || preg_match('/\A[0-9a-f]{64}\z/', $artifact) !== 1) {
+            || preg_match('/\A[0-9a-f]{64}\z/', $artifact) !== 1
+            || ($candidate['current_source_commit'] ?? null) !== $source) {
             throw new DevelopmentUpdaterViolation('running_release_identity_invalid');
         }
 
@@ -110,11 +139,17 @@ final class GovernedDevelopmentUpdateRequest
             'schema_version' => 1,
             'request_state' => 'PENDING',
             'request_id' => $requestId,
-            'scope' => 'SYNC_LATEST_GOVERNED_DURABLE_STAGING_RELEASE',
+            'scope' => 'INSTALL_EXACT_GOVERNED_DURABLE_STAGING_RELEASE',
             'requested_at_unix' => $nowUnix,
             'expires_at_unix' => $nowUnix + self::REQUEST_TTL_SECONDS,
             'current_source_commit' => $source,
             'current_artifact_sha256' => $artifact,
+            'candidate_fingerprint' => $candidate['candidate_fingerprint'],
+            'candidate_release_id' => $candidate['release_id'],
+            'candidate_source_commit' => $candidate['source_commit'],
+            'github_run_id' => $candidate['github_run_id'],
+            'github_artifact_id' => $candidate['github_artifact_id'],
+            'github_outer_sha256' => $candidate['github_outer_sha256'],
             'repository' => 'labzefry/oneQay',
             'workflow' => 'durable-staging-release-publication.yml',
             'production_allowed' => false,
@@ -159,7 +194,7 @@ final class GovernedDevelopmentUpdateRequest
 
         if (($request['schema_version'] ?? null) !== 1
             || ($request['request_state'] ?? null) !== 'PENDING'
-            || ($request['scope'] ?? null) !== 'SYNC_LATEST_GOVERNED_DURABLE_STAGING_RELEASE'
+            || ($request['scope'] ?? null) !== 'INSTALL_EXACT_GOVERNED_DURABLE_STAGING_RELEASE'
             || ($request['repository'] ?? null) !== 'labzefry/oneQay'
             || ($request['workflow'] ?? null) !== 'durable-staging-release-publication.yml'
             || ($request['production_allowed'] ?? null) !== false
@@ -182,6 +217,18 @@ final class GovernedDevelopmentUpdateRequest
             throw new DevelopmentUpdaterViolation('request_expired_or_invalid');
         }
 
+        if (preg_match('/\A[0-9a-f]{64}\z/', (string) ($request['candidate_fingerprint'] ?? '')) !== 1
+            || preg_match('/\Adurable-staging-[0-9a-f]{12}\z/', (string) ($request['candidate_release_id'] ?? '')) !== 1
+            || preg_match('/\A[0-9a-f]{40}\z/', (string) ($request['candidate_source_commit'] ?? '')) !== 1
+            || ! is_int($request['github_run_id'] ?? null)
+            || ($request['github_run_id'] ?? 0) <= 0
+            || ! is_int($request['github_artifact_id'] ?? null)
+            || ($request['github_artifact_id'] ?? 0) <= 0
+            || preg_match('/\A[0-9a-f]{64}\z/', (string) ($request['github_outer_sha256'] ?? '')) !== 1
+            || $request['candidate_release_id'] !== 'durable-staging-'.substr($request['candidate_source_commit'], 0, 12)) {
+            throw new DevelopmentUpdaterViolation('request_candidate_binding_invalid');
+        }
+
         $runningSource = strtolower(trim((string) config('oneqay.development_updater.running_source_commit', '')));
         $runningArtifact = strtolower(trim((string) config('oneqay.development_updater.running_artifact_sha256', '')));
         if (($request['current_source_commit'] ?? null) !== $runningSource
@@ -190,6 +237,114 @@ final class GovernedDevelopmentUpdateRequest
         }
 
         return $request;
+    }
+
+    /** @param array<string,mixed> $candidate */
+    public function storeCandidate(array $candidate, int $nowUnix): array
+    {
+        $this->assertEnabledForCurrentRuntime();
+        $this->ensurePrivateDirectory($this->privateRoot());
+
+        $source = strtolower((string) ($candidate['source_commit'] ?? ''));
+        $current = strtolower((string) ($candidate['current_source_commit'] ?? ''));
+        $releaseId = (string) ($candidate['release_id'] ?? '');
+        $runId = $candidate['github_run_id'] ?? null;
+        $artifactId = $candidate['github_artifact_id'] ?? null;
+        $outer = strtolower((string) ($candidate['github_outer_sha256'] ?? ''));
+
+        if ($nowUnix <= 0
+            || preg_match('/\A[0-9a-f]{40}\z/', $source) !== 1
+            || preg_match('/\A[0-9a-f]{40}\z/', $current) !== 1
+            || $releaseId !== 'durable-staging-'.substr($source, 0, 12)
+            || ! is_int($runId) || $runId <= 0
+            || ! is_int($artifactId) || $artifactId <= 0
+            || preg_match('/\A[0-9a-f]{64}\z/', $outer) !== 1) {
+            throw new DevelopmentUpdaterViolation('candidate_contract_invalid');
+        }
+
+        $state = hash_equals($current, $source) ? 'CURRENT' : 'AVAILABLE';
+        $payload = [
+            'schema_version' => 1,
+            'candidate_state' => $state,
+            'discovered_at_unix' => $nowUnix,
+            'expires_at_unix' => $nowUnix + 3600,
+            'release_id' => $releaseId,
+            'source_commit' => $source,
+            'current_source_commit' => $current,
+            'github_run_id' => $runId,
+            'github_artifact_id' => $artifactId,
+            'github_outer_sha256' => $outer,
+            'repository' => 'labzefry/oneQay',
+            'workflow' => 'durable-staging-release-publication.yml',
+            'production_allowed' => false,
+            'migration_execution_allowed' => false,
+            'attribution' => 'Lab | zefry',
+        ];
+        $payload['candidate_fingerprint'] = hash('sha256', $this->canonicalJson($payload));
+
+        $hmacKey = (string) config('oneqay.development_updater.request_hmac_key', '');
+        if (strlen($hmacKey) < 32 || strlen($hmacKey) > 4096) {
+            throw new DevelopmentUpdaterViolation('request_signing_key_invalid');
+        }
+        $payload['signature'] = hash_hmac('sha256', $this->canonicalJson($payload), $hmacKey);
+        $this->atomicWriteJson($this->candidatePath(), $payload);
+
+        return $payload;
+    }
+
+    /** @return array<string,mixed> */
+    private function validateCandidate(?array $candidate, int $nowUnix, ?string $expectedFingerprint): array
+    {
+        if (! is_array($candidate)) {
+            throw new DevelopmentUpdaterViolation('candidate_missing');
+        }
+
+        $signature = $candidate['signature'] ?? null;
+        if (! is_string($signature) || preg_match('/\A[0-9a-f]{64}\z/', $signature) !== 1) {
+            throw new DevelopmentUpdaterViolation('candidate_signature_invalid');
+        }
+
+        $unsigned = $candidate;
+        unset($unsigned['signature']);
+        $hmacKey = (string) config('oneqay.development_updater.request_hmac_key', '');
+        if (strlen($hmacKey) < 32
+            || ! hash_equals($signature, hash_hmac('sha256', $this->canonicalJson($unsigned), $hmacKey))) {
+            throw new DevelopmentUpdaterViolation('candidate_signature_invalid');
+        }
+
+        $fingerprint = $candidate['candidate_fingerprint'] ?? null;
+        $withoutFingerprint = $unsigned;
+        unset($withoutFingerprint['candidate_fingerprint']);
+        if (! is_string($fingerprint)
+            || preg_match('/\A[0-9a-f]{64}\z/', $fingerprint) !== 1
+            || ! hash_equals($fingerprint, hash('sha256', $this->canonicalJson($withoutFingerprint)))
+            || ($expectedFingerprint !== null && ! hash_equals($expectedFingerprint, $fingerprint))) {
+            throw new DevelopmentUpdaterViolation('candidate_fingerprint_mismatch');
+        }
+
+        if (($candidate['schema_version'] ?? null) !== 1
+            || ! in_array($candidate['candidate_state'] ?? null, ['AVAILABLE', 'CURRENT'], true)
+            || ($candidate['repository'] ?? null) !== 'labzefry/oneQay'
+            || ($candidate['workflow'] ?? null) !== 'durable-staging-release-publication.yml'
+            || ($candidate['production_allowed'] ?? null) !== false
+            || ($candidate['migration_execution_allowed'] ?? null) !== false
+            || ($candidate['attribution'] ?? null) !== 'Lab | zefry'
+            || preg_match('/\Adurable-staging-[0-9a-f]{12}\z/', (string) ($candidate['release_id'] ?? '')) !== 1
+            || preg_match('/\A[0-9a-f]{40}\z/', (string) ($candidate['source_commit'] ?? '')) !== 1
+            || preg_match('/\A[0-9a-f]{40}\z/', (string) ($candidate['current_source_commit'] ?? '')) !== 1
+            || ! is_int($candidate['github_run_id'] ?? null) || ($candidate['github_run_id'] ?? 0) <= 0
+            || ! is_int($candidate['github_artifact_id'] ?? null) || ($candidate['github_artifact_id'] ?? 0) <= 0
+            || preg_match('/\A[0-9a-f]{64}\z/', (string) ($candidate['github_outer_sha256'] ?? '')) !== 1
+            || $candidate['release_id'] !== 'durable-staging-'.substr($candidate['source_commit'], 0, 12)
+            || ! is_int($candidate['discovered_at_unix'] ?? null)
+            || ! is_int($candidate['expires_at_unix'] ?? null)
+            || $candidate['expires_at_unix'] !== $candidate['discovered_at_unix'] + 3600
+            || $nowUnix < $candidate['discovered_at_unix']
+            || $nowUnix > $candidate['expires_at_unix']) {
+            throw new DevelopmentUpdaterViolation('candidate_contract_invalid');
+        }
+
+        return $candidate;
     }
 
     /** @param array<string,mixed> $result */
@@ -227,6 +382,11 @@ final class GovernedDevelopmentUpdateRequest
     private function pendingPath(): string
     {
         return $this->privateRoot().'/requests/pending.json';
+    }
+
+    private function candidatePath(): string
+    {
+        return $this->privateRoot().'/candidate.json';
     }
 
     private function lastResultPath(): string
