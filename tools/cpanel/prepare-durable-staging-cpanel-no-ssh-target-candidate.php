@@ -138,13 +138,14 @@ function cpanelCandidatePrepare(array $profile): array
         $profile['filesystem']['document_root'] ?? null,
         'document_root_invalid',
     );
+    $profilePresentation = $profile['presentation'] ?? null;
     $presentationMode = cpanelCandidatePattern(
-        $profile['presentation']['mode'] ?? null,
+        is_array($profilePresentation) ? ($profilePresentation['mode'] ?? null) : 'ACTIVE_RELEASE_PUBLIC',
         '/\\A(?:ACTIVE_RELEASE_PUBLIC|FIXED_PUBLIC_BRIDGE)\\z/',
         'presentation_mode_invalid',
     );
     $presentationDocumentRoot = cpanelCandidateSafePath(
-        $profile['presentation']['document_root'] ?? null,
+        is_array($profilePresentation) ? ($profilePresentation['document_root'] ?? null) : $documentRoot,
         'presentation_document_root_invalid',
     );
     cpanelCandidateLiteral($presentationDocumentRoot, $documentRoot, 'presentation_document_root_mismatch');
