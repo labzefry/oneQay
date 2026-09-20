@@ -331,7 +331,7 @@ function dsAuthorityQualifyBuildTarget(array $candidate, array $artifact, array 
         'production_data_allowed'=>false,
         'synthetic_fixture_runtime'=>false,
         'filesystem'=>$candidate['filesystem'],
-        ...array_key_exists('presentation', $candidate) ? ['presentation'=>$candidate['presentation']] : [],
+        ...(array_key_exists('presentation', $candidate) ? ['presentation'=>$candidate['presentation']] : []),
         'capabilities'=>$candidate['capabilities'],
         'configuration'=>$candidate['configuration'],
         'deployment_authority'=>[
