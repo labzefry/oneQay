@@ -30,9 +30,18 @@
     "active_pointer_parent_writable": true,
     "atomic_rename_required": true,
     "symlink_required": true,
-    "document_root_must_equal_active_pointer_apps_web_public": true,
     "target_candidate_reuses_sprint208_schema": true,
-    "operator_capability_assertions_remain_subject_to_post_deployment_sprint209_and_runtime_evidence": true
+    "operator_capability_assertions_remain_subject_to_post_deployment_sprint209_and_runtime_evidence": true,
+    "document_root_modes": [
+      "ACTIVE_RELEASE_PUBLIC",
+      "FIXED_PUBLIC_BRIDGE"
+    ],
+    "active_release_public_requires_exact_pointer_public_path": true,
+    "fixed_public_bridge_requires_disjoint_private_public_roots": true,
+    "fixed_public_bridge_requires_writable_public_root": true,
+    "fixed_public_bridge_requires_existing_rewrite_to_index": true,
+    "fixed_public_bridge_requires_atomic_public_file_and_directory_rename": true,
+    "presentation_identity_must_be_authority_bound": true
   },
   "cpanel_constraints": {
     "dedicated_or_isolated_domain_tree_required": true,
