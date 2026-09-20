@@ -28,8 +28,10 @@ contract_path="ops/final-shift-close/DURABLE_STAGING_CPANEL_NO_SSH_OPERATOR_KIT_
 required_files=(
   "$contract_path"
   "ops/final-shift-close/DURABLE_STAGING_CPANEL_NO_SSH_TARGET_QUALIFICATION_CONTRACT.json"
+  "ops/final-shift-close/DURABLE_STAGING_CPANEL_NO_SSH_GUARDED_DEPLOYMENT_EXECUTION_CONTRACT.json"
   "tools/cpanel/inspect-durable-staging-cpanel-no-ssh-target.php"
   "tools/cpanel/prepare-durable-staging-cpanel-no-ssh-target-candidate.php"
+  "tools/cpanel/execute-durable-staging-cpanel-no-ssh-deployment.php"
   "tools/deployment/cpanel-no-ssh-durable-staging-target-profile.schema.json"
   "tools/deployment/durable-staging-deployment-handoff.schema.json"
   "tools/deployment/durable-staging-operator-target-candidate.schema.json"
@@ -249,7 +251,30 @@ Expected state:
 
 The plan itself performs no deployment.
 
-## Step 6 — External execution and Sprint209 evidence
+## Step 6 — Guarded cPanel no-SSH deployment execution
+
+Before authority expires, upload the exact Sprint211 archive into the private operator workspace and prepare a private Laravel runtime environment file under the qualified shared-runtime root. The runtime environment file must be owner-only (0600) and must not be stored in the application archive.
+
+Run the Sprint214 executor:
+
+```text
+<PHP_CLI> tools/cpanel/execute-durable-staging-cpanel-no-ssh-deployment.php \
+  <deployment-plan.json> \
+  <target-profile.json> \
+  <durable-staging-archive.tar.gz> \
+  <private-bindings.json> \
+  <private-runtime-env> \
+  <https-readiness-url> \
+  <deployment-evidence.json>
+```
+
+The executor revalidates the plan fingerprint and current authority, verifies the exact archive SHA-256, extracts the release only after authority validation, binds the private runtime environment by symlink, atomically activates the immutable release, fetches the authenticated HTTPS readiness attestation, rehearses rollback to the previous active state, reactivates the new release, fetches readiness again, and writes Sprint209-compatible deployment evidence only if every check succeeds.
+
+For an initial empty target, rollback rehearsal restores the previous **absent** active-pointer state before reactivating the new release. For an upgrade, rollback rehearsal restores the previous release symlink before reactivating the new release.
+
+If execution fails after active-pointer mutation, the executor attempts to restore the previous active state and emits no success evidence.
+
+## Step 7 — Sprint209 evidence qualification
 
 Execute the exact plan only under the separately granted deployment authority. Capture real preflight, previous-release, extraction, document-root, external-config, provenance, read-before/write/read-after, health, and rollback evidence.
 
