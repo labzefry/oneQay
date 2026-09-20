@@ -26,6 +26,28 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
+      - name: Lock exact Sprint214 engineering envelope
+        if: github.event_name == 'pull_request' && github.head_ref == 'sprint214-cpanel-no-ssh-guarded-deployment-execution'
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/actual
+          cat > /tmp/expected <<'EOF'
+          .github/workflows/cpanel-no-ssh-operator-qualification-kit-publication.yml
+          .github/workflows/sprint214-cpanel-no-ssh-guarded-deployment-execution-regression.yml
+          DEPLOYMENT.md
+          INSTALLER.md
+          ops/final-shift-close/DURABLE_STAGING_CPANEL_NO_SSH_GUARDED_DEPLOYMENT_EXECUTION_CONTRACT.json
+          ops/final-shift-close/DURABLE_STAGING_CPANEL_NO_SSH_OPERATOR_KIT_PUBLICATION_CONTRACT.json
+          tools/cpanel/build-cpanel-no-ssh-operator-qualification-kit.sh
+          tools/cpanel/execute-durable-staging-cpanel-no-ssh-deployment.php
+          EOF
+          diff -u /tmp/expected /tmp/actual
+          test "$(sha256sum /tmp/actual | awk '{print $1}')" = 'dd1abbfbd9c21d2372cc1b3957ea42bed438b224b88284ceb870df81e8b46347'
+
       - name: Setup governed PHP runtime
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
         with:
