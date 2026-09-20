@@ -1,5 +1,29 @@
 # Changelog
 
+## 2026-09-20 — Sprint218 closed canonically
+
+**Sprint218: Production Dark Deployment Execution Foundation**
+
+- Closed the Production execution gap without changing application runtime source or enabling Production business traffic.
+- Added real Production target inspection, target-profile/candidate binding, exact same-source staging prerequisite, short-lived Production deployment authority, deterministic deployment plan, guarded dark-deployment executor, evidence qualification, and deterministic Production operator kit publication.
+- Executor revalidates plan/authority/artifact, rechecks authority before each active-pointer mutation, performs immutable extraction, private 0600 runtime binding, atomic activation, HTTPS `/health/live` verification, rollback rehearsal, candidate reactivation, and emits only `PRODUCTION_DEPLOYMENT_EVIDENCE_CANDIDATE`.
+- Production evidence qualifier caps accepted state at `PRODUCTION_DEPLOYED_VERIFIED_NOT_ACTIVATED`.
+- `/health/ready` and first-party business routes remain outside Sprint218; application source is unchanged and business readiness/traffic activation remain separately gated.
+- Final engineering head `5d7e013cd941a01c7d44ac0940114ba852e354f2`: 97/97 PR-triggered workflows SUCCESS.
+- Dedicated Sprint218 run `35507277284`: SUCCESS.
+- Engineering PR #871 Product Owner merge authorization comment `5749467340`; merge-authority status SUCCESS.
+- Permanent engineering squash: `bca1957a61da0794737325438bd39e903ed7da19`.
+- Engineering path-set SHA-256: `8049c4b0b9dce606c9b66d464f99255a1d17043659fb20142d2c3d6a7984a5fa`.
+- Canonical reconciliation path-set SHA-256: `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`.
+- Production operator-kit publication run `35507555918`: SUCCESS; artifact ID `10604307277`.
+- Operator-kit Actions digest: `sha256:7163d5e85c5aaab189a18a3b3004ef7d0b6250fe2f278e4c723a136683acc756`.
+- Operator-kit inner ZIP SHA-256: `d39ee6768462a2ee71466afb6a7b2bbdc08a74c49c449e5a1d3ff4cfdc96c895`.
+- Operator-kit manifest SHA-256: `665f43102f6844fea463cc4ba64c5e459fcb1ff30cd1cfca1bf4154a2eadd22c`.
+- Current same-source staging artifact remains `10603323419`; cPanel staging kit remains `10603569410`; Production candidate remains `10603358335`.
+- Real staging/Production deployment remains unperformed; migration #27 and Production traffic activation remain unauthorized.
+
+Author by Lab | zefry
+
 ## 2026-09-20 — Sprint217 closed canonically
 
 **Sprint217: cPanel Same-Source Staging Rebind**
