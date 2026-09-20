@@ -1,5 +1,29 @@
 # Changelog
 
+## 2026-09-20 — Sprint213 closed canonically
+
+**Sprint213: cPanel No-SSH Operator Qualification Kit Publication**
+
+- Closed the post-Sprint212 delivery gap for cPanel operators without Git/SSH by publishing one deterministic qualification/governance ZIP.
+- The kit packages Sprint212 target inspection/candidate tooling, Sprint208 authority tooling, Sprint207 plan tooling, Sprint209 evidence qualification, schemas, non-secret templates, README, internal file hashes, and ZIP checksum.
+- Application runtime bytes remain excluded; the Sprint211 durable-staging bundle remains the governed application release.
+- Publication runs from canonical main only and proves byte-for-byte reproducibility before upload.
+- Final engineering head `4c2ef5d73436e3660d0f6700a9bb3cfe46438289`: 92/92 PR-triggered workflows SUCCESS.
+- Engineering PR #861 squash merged at `c8998c00e19c177ac535921dbc0ef1fa96b06583`.
+- Sprint213 dedicated qualification run `35494619337`: SUCCESS.
+- Product Owner authorization comment `5748175502`; authority status SUCCESS.
+- Engineering path hash: `7ccb0d202041e8968e7d526d6ee3fc7d76fd68048fc062993a8172b53a95e6be`.
+- Canonical reconciliation path hash: `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`.
+- Publication run `35494805706`: SUCCESS.
+- Published cPanel kit artifact ID `10600262872`: `oneqay-cpanel-no-ssh-operator-kit-c8998c00e19c`.
+- Inner ZIP SHA-256: `de485d82c7960683a90c605f4d220b09f85b6cc2282e18f52c43b82006949011`.
+- Kit manifest SHA-256: `d9a0300c24e260d3d87533af6808185a269471cfdeea0e69b2310188b30f3fde`.
+- Independent verification confirmed 20 internal files, no `apps/web` payload, no secret-bearing file shapes, no deployment authority, no migration execution, no target selection, and no producer dispatch.
+- Operational NO-GO unchanged.
+- Issue #856 remains the operational handoff for a real VM/VPS target or a real cPanel no-SSH host using the published kit.
+
+Author by Lab | zefry
+
 ## 2026-09-20 — Sprint212 closed canonically
 
 **Sprint212: cPanel No-SSH Durable Staging Target Qualification**
