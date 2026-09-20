@@ -1,5 +1,30 @@
 # Changelog
 
+## 2026-09-20 — Sprint219 closed canonically
+
+**Sprint219: cPanel Fixed Public Document Root Bridge**
+
+- Closed the concrete cPanel compatibility gap where a real shared-hosting layout keeps the public document root separate from the private immutable release tree.
+- Preserved the existing `ACTIVE_RELEASE_PUBLIC` mode and added explicit `FIXED_PUBLIC_BRIDGE` support without exposing Laravel source, `vendor/`, runtime environment, private bindings, approval tokens, or secrets under the public document root.
+- Bound presentation mode and exact public document-root path into the target descriptor hash, short-lived authority, qualified target, and deployment-plan fingerprint.
+- Added qualification for public/private path separation, existing rewrite-to-`index.php`, writable fixed public root, and atomic public file/directory rename.
+- Added rollback-safe public bridge activation covering generated `index.php`, release `build/` assets, private front-controller backup, private active-release pointer rollback, reactivation, and final evidence qualification.
+- Preserved legacy Sprint212/Sprint214 direct-mode fixtures by treating omitted presentation metadata as `ACTIVE_RELEASE_PUBLIC`; `FIXED_PUBLIC_BRIDGE` remains explicit.
+- Final engineering head `20df712296f179e46d46937a8c965ae05675a686`: 98/98 PR-triggered workflows SUCCESS.
+- Dedicated Sprint219 run `35510403647`: SUCCESS.
+- Engineering PR #873 Product Owner merge authorization comment `5749943007`; merge-authority status SUCCESS.
+- Permanent engineering squash: `d1f832c42ae6e4b2705e9b1c295d031880cc0113`.
+- Engineering path-set SHA-256: `476dcc4c82fe5b1a4924a3678797e32a28b838ab84bcbab79f36ccf2c33189e4`.
+- Canonical reconciliation path-set SHA-256: `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`.
+- Main-only cPanel operator-kit publication run `35512151565`: SUCCESS; artifact ID `10606042478`.
+- Current cPanel kit Actions outer digest: `sha256:24d64361ad4509cdd9ba2e69b688ae3ad1c0ee6d33d0c7a8c275815d620b5953`.
+- Current cPanel kit inner ZIP SHA-256: `9213ff3eaf1949d72787e3d5522321f93963ce623eef829f9e9e90e34fa2399d`.
+- Current same-source durable-staging application artifact remains `10603323419`; Production candidate remains `10603358335`; Production operator kit remains `10604307277`.
+- Historical `oneqay.n07.my.id` layout is requalification context only; no current host qualification or real deployment is claimed.
+- Real staging/Production deployment remains unperformed; migration #27, target selection, producer dispatch, Production traffic activation, and updater activation remain unauthorized.
+
+Author by Lab | zefry
+
 ## 2026-09-20 — Sprint218 closed canonically
 
 **Sprint218: Production Dark Deployment Execution Foundation**
