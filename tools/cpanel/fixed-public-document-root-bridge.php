@@ -76,7 +76,7 @@ function cpanelBridgeCopyTree(string $source, string $destination): void
 }
 
 /** @return array<string,mixed> */
-function cpanelBridgeInstall(string $documentRoot, string $activePointer, string $releaseDirectory, string $privateBackupRoot): array
+function cpanelBridgeInstall(string $documentRoot, string $activePointer, string $releaseDirectory, string $privateBackupRoot, bool $bindDirectRelease = false): array
 {
     if (! is_dir($documentRoot) || ! is_writable($documentRoot)) {
         cpanelBridgeFail('public_document_root_not_writable');
@@ -131,7 +131,8 @@ function cpanelBridgeInstall(string $documentRoot, string $activePointer, string
         cpanelBridgeFail('public_build_existing_shape_invalid');
     }
 
-    $appRootLiteral = var_export($activePointer.'/apps/web', true);
+    $servingRoot = $bindDirectRelease ? $releaseDirectory : $activePointer;
+    $appRootLiteral = var_export($servingRoot.'/apps/web', true);
     $bridge = <<<'PHP'
 <?php
 

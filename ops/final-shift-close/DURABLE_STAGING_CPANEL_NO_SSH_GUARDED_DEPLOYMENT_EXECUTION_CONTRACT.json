@@ -40,7 +40,12 @@
       "build/"
     ],
     "fixed_public_bridge_htaccess_preserved": true,
-    "fixed_public_bridge_rollback_rehearsed": true
+    "fixed_public_bridge_rollback_rehearsed": true,
+    "runtime_env_hardlink_fallback_allowed_for_fixed_public_bridge_when_php_symlink_unavailable": true,
+    "fixed_public_bridge_direct_release_activation_when_php_symlink_unavailable": true,
+    "fixed_public_bridge_direct_activation_skips_private_active_pointer_mutation": true,
+    "authority_rechecked_before_each_direct_public_bridge_activation": true,
+    "provider_disable_functions_policy_bypass_forbidden": true
   },
   "initial_deployment_policy": {
     "active_pointer_may_be_absent_before_first_deployment": true,
@@ -69,7 +74,8 @@
     "updater_activation": false,
     "failure_after_pointer_mutation_restores_previous_active_state": true,
     "inactive_failed_release_may_remain_for_forensic_cleanup": true,
-    "failure_after_public_bridge_mutation_restores_previous_public_surface": true
+    "failure_after_public_bridge_mutation_restores_previous_public_surface": true,
+    "php_disable_functions_override_forbidden": true
   },
   "evidence": {
     "schema": "tools/deployment/durable-staging-deployment-evidence.schema.json",

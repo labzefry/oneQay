@@ -175,10 +175,24 @@ function cpanelCandidatePrepare(array $profile): array
         'shared_runtime_root_writable',
         'active_pointer_parent_writable',
         'atomic_rename_supported',
-        'symlink_supported',
         'document_root_shape_valid',
     ] as $field) {
         cpanelCandidateBool($profile['filesystem'][$field] ?? null, true, 'filesystem_observation_failed_'.$field);
+    }
+
+    $symlinkSupported = $profile['filesystem']['symlink_supported'] ?? null;
+    $hardlinkSupported = $profile['filesystem']['hardlink_supported'] ?? false;
+    if (! is_bool($symlinkSupported) || ! is_bool($hardlinkSupported)) {
+        cpanelCandidateFail('filesystem_link_capability_invalid');
+    }
+    if ($presentationMode === 'ACTIVE_RELEASE_PUBLIC' && $symlinkSupported !== true) {
+        cpanelCandidateFail('filesystem_observation_failed_symlink_supported');
+    }
+    if ($presentationMode === 'FIXED_PUBLIC_BRIDGE'
+        && $symlinkSupported !== true
+        && $hardlinkSupported !== true
+    ) {
+        cpanelCandidateFail('fixed_public_runtime_binding_unavailable');
     }
 
     cpanelCandidateBool($profile['runtime']['php_version_supported'] ?? null, true, 'php_version_unsupported');
