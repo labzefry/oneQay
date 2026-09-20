@@ -41,6 +41,9 @@ jobs:
           .github/workflows/sprint113-final-shift-close-durable-runtime-attestation-producer.yml
           .github/workflows/sprint114-final-shift-close-durable-runtime-attestation-ingestion-execution.yml
           .github/workflows/sprint210-durable-staging-deployment-evidence-provenance-continuity-regression.yml
+          .github/workflows/sprint32-authentication-recovery-proof-regression.yml
+          .github/workflows/sprint33-recovery-bound-password-reset-regression.yml
+          .github/workflows/sprint34-authenticated-password-change-regression.yml
           DEPLOYMENT.md
           apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeAttestationIngestion.php
           apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeAttestationProvenance.php
@@ -53,7 +56,7 @@ jobs:
           ops/final-shift-close/DURABLE_RUNTIME_ATTESTATION_PRODUCER_CONTRACT.json
           EOF
           diff -u /tmp/expected /tmp/actual
-          test "$(sha256sum /tmp/actual | awk '{print $1}')" = 'bab60c7ccab42be3363ff57bb08f253e2814c3670b61c156c5cd700351849da4'
+          test "$(sha256sum /tmp/actual | awk '{print $1}')" = '0525c55ff45baf2893a22983a4ea53e50f1c195d92a49efc2a41ce92d2749205'
 
       - name: Preserve canonical operational NO-GO
         shell: bash
