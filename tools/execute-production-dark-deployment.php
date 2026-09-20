@@ -193,7 +193,18 @@ function prodExecValidatePlan(array $plan): array
         'shared_root'=>$sharedRoot,'active_pointer'=>$activePointer,'document_root'=>$documentRoot,
         'health_url'=>$healthUrl,'authority_id'=>$authorityId,'authority_sha256'=>$authoritySha,
         'request_id'=>$requestId,'request_sha256'=>$requestSha,
+        'authority_authorized_at'=>$from,'authority_expires_at'=>$to,
     ];
+}
+
+function prodExecRequireAuthorityCurrent(array $id): void
+{
+    $from=$id['authority_authorized_at'] ?? null;
+    $to=$id['authority_expires_at'] ?? null;
+    $now=time();
+    if (! is_int($from) || ! is_int($to) || $now < $from || $now >= $to) {
+        prodExecFail('authority_not_current_at_mutation');
+    }
 }
 
 /** @return array<string,mixed> */
@@ -437,6 +448,7 @@ function prodExecExecute(string $planPath,string $profilePath,string $archivePat
 
         prodExecExtract($archivePath,$id);
         $envHash=prodExecBindEnv($runtimeEnvPath,$id);
+        prodExecRequireAuthorityCurrent($id);
         prodExecAtomicPoint($active,$id['release_directory']);
         $mutated=true;
 
@@ -449,6 +461,7 @@ function prodExecExecute(string $planPath,string $profilePath,string $archivePat
         prodExecValidateHealthPayload($first);
 
         prodExecRestore($active,$previous);
+        prodExecRequireAuthorityCurrent($id);
         prodExecAtomicPoint($active,$id['release_directory']);
 
         $second=$healthFetcher($id['health_url']);
