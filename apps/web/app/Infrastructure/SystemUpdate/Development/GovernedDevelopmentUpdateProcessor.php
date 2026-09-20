@@ -569,11 +569,6 @@ final class GovernedDevelopmentUpdateProcessor
             }
             @chmod($destination, 0500);
 
-            $release = $this->releaseIdentity($destination);
-            if ($release['source_commit'] !== $source) {
-                throw new DevelopmentUpdaterViolation('candidate_source_readback_failed');
-            }
-
             if (preg_match('/\A[0-9a-f]{64}\z/', $artifactHash) !== 1) {
                 throw new DevelopmentUpdaterViolation('candidate_artifact_binding_invalid');
             }
