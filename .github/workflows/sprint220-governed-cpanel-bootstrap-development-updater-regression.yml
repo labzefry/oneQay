@@ -82,7 +82,6 @@ jobs:
           set -euo pipefail
           find apps/web/app/Infrastructure/SystemUpdate/Development -type f -name '*.php' -print0 | xargs -0 -n1 php -l
           php -l apps/web/app/Delivery/Http/SystemUpdate/DevelopmentUpdateRequestController.php
-          php -l apps/web/app/Delivery/Http/SystemUpdate/DurableStagingRuntimeAttestationController.php
           php -l apps/web/app/Console/Commands/ProcessGovernedDevelopmentUpdateCommand.php
           php -l apps/web/tests/sprint220-governed-development-updater.php
           php -l apps/web/config/oneqay.php
@@ -99,14 +98,14 @@ jobs:
           set -euo pipefail
           php artisan list --raw | grep -Fq 'oneqay:update:process-development'
           php artisan route:list --path=system/update --json > /tmp/s220-update-routes.json
-          php artisan route:list --path=internal/oneqay/durable-runtime/readiness --json > /tmp/s220-attestation-routes.json
+          ONEQAY_RUNTIME_CLASS=durable-staging ONEQAY_DURABLE_STAGING_RUNTIME_ENABLED=true php artisan route:list --path=internal/oneqay/durable-runtime/readiness --json > /tmp/s220-attestation-routes.json
           php -r '
             $routes=json_decode(file_get_contents("/tmp/s220-update-routes.json"),true,512,JSON_THROW_ON_ERROR);
             $names=array_column($routes,"name");
             if(!in_array("system-update.development.request",$names,true)){fwrite(STDERR,"Missing governed development updater route.\n");exit(1);}
             $att=json_decode(file_get_contents("/tmp/s220-attestation-routes.json"),true,512,JSON_THROW_ON_ERROR);
             $attNames=array_column($att,"name");
-            if(!in_array("durable-staging.runtime-attestation",$attNames,true)){fwrite(STDERR,"Missing durable staging attestation route.\n");exit(1);}
+            if(!in_array("internal.durable-runtime.readiness",$attNames,true)){fwrite(STDERR,"Missing durable staging attestation route.\n");exit(1);}
           '
 
       - name: Prove updater safety boundary
