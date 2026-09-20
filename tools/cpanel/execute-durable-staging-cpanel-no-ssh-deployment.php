@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+require_once __DIR__.'/fixed-public-document-root-bridge.php';
+
 // Author by Lab | zefry
 
 final class CpanelNoSshDeploymentExecutionException extends RuntimeException
@@ -253,6 +255,36 @@ function cpanelExecValidatePlan(array $plan): array
     cpanelExecNested($activePointer, $deploymentRoot, 'plan_active_pointer_escape');
     cpanelExecLiteral($releaseDirectory, $releaseRoot.'/'.$releaseId, 'plan_release_directory_mismatch');
 
+    $presentation = $plan['target']['presentation'] ?? null;
+    if ($presentation === null) {
+        $presentationMode = 'ACTIVE_RELEASE_PUBLIC';
+        $documentRoot = $activePointer.'/apps/web/public';
+    } else {
+        if (! is_array($presentation) || array_is_list($presentation) || count($presentation) !== 2) {
+            cpanelExecFail('plan_presentation_invalid');
+        }
+        $presentationMode = cpanelExecPattern(
+            $presentation['mode'] ?? null,
+            '/\\A(?:ACTIVE_RELEASE_PUBLIC|FIXED_PUBLIC_BRIDGE)\\z/',
+            'plan_presentation_mode_invalid',
+        );
+        $documentRoot = cpanelExecSafeAbsolutePath(
+            $presentation['document_root'] ?? null,
+            'plan_presentation_document_root_invalid',
+        );
+        if ($presentationMode === 'ACTIVE_RELEASE_PUBLIC') {
+            cpanelExecLiteral(
+                $documentRoot,
+                $activePointer.'/apps/web/public',
+                'plan_presentation_document_root_mismatch',
+            );
+        } elseif (str_starts_with($documentRoot.'/', $deploymentRoot.'/')
+            || str_starts_with($deploymentRoot.'/', $documentRoot.'/')
+        ) {
+            cpanelExecFail('plan_fixed_public_document_root_not_disjoint');
+        }
+    }
+
     cpanelExecLiteral(
         $plan['authority_binding']['state'] ?? null,
         'EXTERNAL_AUTHORITY_BOUND_TO_EXACT_TARGET',
@@ -331,6 +363,10 @@ function cpanelExecValidatePlan(array $plan): array
         'release_directory' => $releaseDirectory,
         'shared_root' => $sharedRoot,
         'active_pointer' => $activePointer,
+        'presentation_mode' => $presentationMode,
+        'document_root' => $documentRoot,
+        'authority_authorized_at' => $authorizedAt,
+        'authority_expires_at' => $expiresAt,
         'authority_id' => $authorityId,
         'authority_sha256' => $authoritySha256,
         'request_id' => $requestId,
@@ -365,11 +401,18 @@ function cpanelExecValidateProfile(array $profile, array $identity): array
         $profile['filesystem']['document_root'] ?? null,
         'profile_document_root_invalid',
     );
-    cpanelExecLiteral(
-        $documentRoot,
-        $identity['active_pointer'].'/apps/web/public',
-        'profile_document_root_shape_invalid',
+    $presentationMode = cpanelExecPattern(
+        $profile['presentation']['mode'] ?? null,
+        '/\\A(?:ACTIVE_RELEASE_PUBLIC|FIXED_PUBLIC_BRIDGE)\\z/',
+        'profile_presentation_mode_invalid',
     );
+    $presentationDocumentRoot = cpanelExecSafeAbsolutePath(
+        $profile['presentation']['document_root'] ?? null,
+        'profile_presentation_document_root_invalid',
+    );
+    cpanelExecLiteral($presentationMode, $identity['presentation_mode'], 'profile_presentation_mode_mismatch');
+    cpanelExecLiteral($presentationDocumentRoot, $identity['document_root'], 'profile_presentation_document_root_mismatch');
+    cpanelExecLiteral($documentRoot, $identity['document_root'], 'profile_document_root_mismatch');
 
     foreach ([
         'deployment_root_writable',
@@ -412,7 +455,10 @@ function cpanelExecValidateProfile(array $profile, array $identity): array
     cpanelExecBool($profile['secrets_embedded'] ?? null, false, 'profile_top_secret_forbidden');
     cpanelExecLiteral($profile['attribution'] ?? null, 'Lab | zefry', 'profile_attribution_invalid');
 
-    return ['document_root' => $documentRoot];
+    return [
+        'document_root' => $documentRoot,
+        'presentation_mode' => $presentationMode,
+    ];
 }
 
 /** @return array<string,string> */
