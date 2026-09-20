@@ -294,7 +294,7 @@ function cpanelProbeInspect(array $input, array $bindings, string $bindingPath):
         'document_root_invalid',
     );
     $documentRootMode = cpanelProbePattern(
-        $input['filesystem']['document_root_mode'] ?? null,
+        $input['filesystem']['document_root_mode'] ?? 'ACTIVE_RELEASE_PUBLIC',
         '/\\A(?:ACTIVE_RELEASE_PUBLIC|FIXED_PUBLIC_BRIDGE)\\z/',
         'document_root_mode_invalid',
     );
