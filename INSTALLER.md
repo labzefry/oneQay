@@ -1,5 +1,26 @@
 # oneQay Installer Specification
 
+## Production dark-deployment operator path — Sprint218
+
+Sprint218 adds a deterministic Production operator kit and guarded PHP CLI executor for a real isolated Production target.
+
+The kit contains operator governance/tools only. Application bytes remain in the separate exact Production candidate artifact `10603358335`. Verified durable-staging evidence for artifact `10603323419` and the same source commit is required before a Production deployment request may be prepared.
+
+The operator sequence is:
+
+1. observe the real Production target;
+2. prepare `PRODUCTION_TARGET_CANDIDATE`;
+3. prepare exact Production deployment authority request;
+4. obtain and qualify separate authority <= 900 seconds;
+5. generate the exact deployment plan;
+6. execute dark deployment;
+7. rehearse rollback and restore the candidate;
+8. qualify evidence to `PRODUCTION_DEPLOYED_VERIFIED_NOT_ACTIVATED`.
+
+The runtime environment and bindings remain private owner-only files outside the public document root. The executor verifies only `/health/live`; `/health/ready` and business traffic remain deliberately unavailable until a later source/authority gate.
+
+No migration, Production traffic activation, target selection, producer dispatch, or updater activation is implied by a successful dark deployment.
+
 ## Current cPanel same-source staging bundle — Sprint217
 
 The cPanel no-SSH operator path is now bound to the Sprint216 same-source durable-staging release rather than the historical Sprint211 bundle.
