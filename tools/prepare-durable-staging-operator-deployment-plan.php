@@ -360,7 +360,7 @@ function dsPlanValidateTarget(array $target, array $identity): array
             'shared_runtime_root' => $sharedRuntimeRoot,
             'active_release_pointer' => $activePointer,
         ],
-        ...$presentation !== null ? ['presentation' => $presentation] : [],
+        ...($presentation !== null ? ['presentation' => $presentation] : []),
         'capabilities' => $target['capabilities'],
         'configuration' => $target['configuration'],
         'attribution' => 'Lab | zefry',
