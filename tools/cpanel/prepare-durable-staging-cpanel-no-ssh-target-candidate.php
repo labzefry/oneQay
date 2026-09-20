@@ -181,7 +181,7 @@ function cpanelCandidatePrepare(array $profile): array
     }
 
     $symlinkSupported = $profile['filesystem']['symlink_supported'] ?? null;
-    $hardlinkSupported = $profile['filesystem']['hardlink_supported'] ?? null;
+    $hardlinkSupported = $profile['filesystem']['hardlink_supported'] ?? false;
     if (! is_bool($symlinkSupported) || ! is_bool($hardlinkSupported)) {
         cpanelCandidateFail('filesystem_link_capability_invalid');
     }
