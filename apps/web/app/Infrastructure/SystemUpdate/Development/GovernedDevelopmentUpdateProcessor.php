@@ -235,11 +235,17 @@ final class GovernedDevelopmentUpdateProcessor
                 throw new DevelopmentUpdaterViolation('candidate_release_already_present');
             }
 
+            // Exact short-lived operator authority must still be current before any deployment mutation.
+            $this->requests->requireCurrentPending(time());
+
             $this->extractCandidate($archivePath, $releaseRoot, $releaseId, $candidateSource, $candidateArtifact);
             $this->bindRuntimeEnvironment($candidateDirectory, $runtimeEnv);
 
             $previousEnv = $this->readPrivateRuntimeEnv($runtimeEnv);
             $candidateEnv = $this->rewriteRuntimeIdentity($previousEnv, $candidateSource, $candidateArtifact);
+
+            // Reverify again immediately before public/runtime/pointer mutation.
+            $this->requests->requireCurrentPending(time());
 
             if ($mode === 'ACTIVE_RELEASE_PUBLIC') {
                 if ($documentRoot !== $activePointer.'/apps/web/public') {
@@ -284,6 +290,8 @@ final class GovernedDevelopmentUpdateProcessor
                 (string) config('oneqay.development_updater.environment_id', ''),
             );
 
+            // Rollback rehearsal does not extend authority; exact authority must still be current.
+            $this->requests->requireCurrentPending(time());
             $this->atomicWriteBytes($runtimeEnv, $candidateEnv, 0600);
             $this->atomicPoint($activePointer, $candidateDirectory);
             $second = $attestationFetcher($attestationUrl, $attestationToken);
