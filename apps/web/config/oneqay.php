@@ -130,6 +130,43 @@ return [
         'install_enabled' => false,
     ],
 
+    // Sprint220: bounded non-production cPanel/GitHub updater. This does not enable
+    // the generic system updater, Production deployment, traffic activation, or migration execution.
+    'development_updater' => [
+        'enabled' => filter_var(env('ONEQAY_DEVELOPMENT_UPDATER_ENABLED', false), FILTER_VALIDATE_BOOL),
+        'private_root' => env('ONEQAY_DEVELOPMENT_UPDATER_PRIVATE_ROOT', ''),
+        'operator_token_sha256' => env('ONEQAY_DEVELOPMENT_UPDATER_OPERATOR_TOKEN_SHA256', ''),
+        'totp_secret' => env('ONEQAY_DEVELOPMENT_UPDATER_TOTP_SECRET', ''),
+        'request_hmac_key' => env('ONEQAY_DEVELOPMENT_UPDATER_REQUEST_HMAC_KEY', ''),
+        'github_token' => env('ONEQAY_DEVELOPMENT_UPDATER_GITHUB_TOKEN', ''),
+        'release_root' => env('ONEQAY_DEVELOPMENT_UPDATER_RELEASE_ROOT', ''),
+        'active_release_pointer' => env('ONEQAY_DEVELOPMENT_UPDATER_ACTIVE_RELEASE_POINTER', ''),
+        'runtime_env_path' => env('ONEQAY_DEVELOPMENT_UPDATER_RUNTIME_ENV_PATH', ''),
+        'document_root' => env('ONEQAY_DEVELOPMENT_UPDATER_DOCUMENT_ROOT', ''),
+        'document_root_mode' => env('ONEQAY_DEVELOPMENT_UPDATER_DOCUMENT_ROOT_MODE', 'FIXED_PUBLIC_BRIDGE'),
+        'attestation_url' => env('ONEQAY_DEVELOPMENT_UPDATER_ATTESTATION_URL', ''),
+        'attestation_token' => env('ONEQAY_DURABLE_RUNTIME_ATTESTATION_TOKEN', ''),
+        'environment_id' => env('ONEQAY_DURABLE_RUNTIME_ENVIRONMENT_ID', ''),
+        'running_source_commit' => env('ONEQAY_RUNNING_SOURCE_COMMIT', ''),
+        'running_artifact_sha256' => env('ONEQAY_RUNNING_ARTIFACT_SHA256', ''),
+    ],
+
+    'durable_runtime_attestation' => [
+        'enabled' => filter_var(env('ONEQAY_DURABLE_RUNTIME_ATTESTATION_ENABLED', false), FILTER_VALIDATE_BOOL),
+        'token' => env('ONEQAY_DURABLE_RUNTIME_ATTESTATION_TOKEN', ''),
+        'environment_id' => env('ONEQAY_DURABLE_RUNTIME_ENVIRONMENT_ID', ''),
+        'running_source_commit' => env('ONEQAY_RUNNING_SOURCE_COMMIT', ''),
+        'running_artifact_sha256' => env('ONEQAY_RUNNING_ARTIFACT_SHA256', ''),
+        'durable_persistence_enabled' => filter_var(env('ONEQAY_DURABLE_PERSISTENCE_ENABLED', false), FILTER_VALIDATE_BOOL),
+        'durable_session_control_enabled' => filter_var(env('ONEQAY_DURABLE_SESSION_CONTROL_ENABLED', false), FILTER_VALIDATE_BOOL),
+        'durable_authorization_enabled' => filter_var(env('ONEQAY_DURABLE_AUTHORIZATION_ENABLED', false), FILTER_VALIDATE_BOOL),
+        'durable_transaction_boundary_enabled' => filter_var(env('ONEQAY_DURABLE_TRANSACTION_BOUNDARY_ENABLED', false), FILTER_VALIDATE_BOOL),
+        'durable_pos_persistence_enabled' => filter_var(env('ONEQAY_DURABLE_POS_PERSISTENCE_ENABLED', false), FILTER_VALIDATE_BOOL),
+        'authenticated_configuration_mutation_channel' => filter_var(env('ONEQAY_DURABLE_AUTHENTICATED_CONFIGURATION_CHANNEL', false), FILTER_VALIDATE_BOOL),
+        'read_before_write_read_after_supported' => filter_var(env('ONEQAY_DURABLE_READ_BEFORE_WRITE_AFTER_SUPPORTED', false), FILTER_VALIDATE_BOOL),
+        'verified_flag_rollback_supported' => filter_var(env('ONEQAY_DURABLE_VERIFIED_ROLLBACK_SUPPORTED', false), FILTER_VALIDATE_BOOL),
+    ],
+
     // Technical Preview qualification only. This is not Production/business persistence.
     'preview_database_qualification' => [
         'enabled' => filter_var(env('ONEQAY_PREVIEW_DB_QUALIFICATION_ENABLED', false), FILTER_VALIDATE_BOOL),
