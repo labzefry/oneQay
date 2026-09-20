@@ -9,8 +9,9 @@ $controllerPath = $root.'/app/Delivery/Http/SystemUpdate/SystemUpdatePageControl
 $routePath = $root.'/routes/web.php';
 $configPath = $root.'/config/oneqay.php';
 $statusPath = $root.'/app/Application/SystemUpdate/SystemUpdateControlPlaneStatus.php';
+$providerPath = $root.'/app/Providers/SystemUpdateServiceProvider.php';
 
-$files = [$pagePath, $controllerPath, $routePath, $configPath, $statusPath];
+$files = [$pagePath, $controllerPath, $routePath, $configPath, $statusPath, $providerPath];
 foreach ($files as $file) {
     if (! is_file($file)) {
         fwrite(STDERR, "Missing updater UI contract file: {$file}\n");
@@ -23,6 +24,7 @@ $controller = (string) file_get_contents($controllerPath);
 $routes = (string) file_get_contents($routePath);
 $config = (string) file_get_contents($configPath);
 $status = (string) file_get_contents($statusPath);
+$provider = (string) file_get_contents($providerPath);
 
 $requiredPageMarkers = [
     'System',
@@ -88,7 +90,7 @@ if (! str_contains($routes, "Route::get('/system/update', SystemUpdatePageContro
     exit(1);
 }
 
-if (! str_contains($routes, "Route::post('/system/update/development/request', DevelopmentUpdateRequestController::class)")) {
+if (! str_contains($provider, "Route::post('/system/update/development/request', DevelopmentUpdateRequestController::class)")) {
     fwrite(STDERR, "Missing governed development updater request route.\n");
     exit(1);
 }
