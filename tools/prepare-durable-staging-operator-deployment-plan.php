@@ -241,6 +241,37 @@ function dsPlanValidateTarget(array $target, array $identity): array
         dsPlanFail('target_filesystem_collision');
     }
 
+    $presentation = $target['presentation'] ?? null;
+    if ($presentation !== null) {
+        if (! is_array($presentation) || array_is_list($presentation) || count($presentation) !== 2) {
+            dsPlanFail('target_presentation_invalid');
+        }
+        $presentationMode = dsPlanAssertPattern(
+            $presentation['mode'] ?? null,
+            '/\\A(?:ACTIVE_RELEASE_PUBLIC|FIXED_PUBLIC_BRIDGE)\\z/',
+            'target_presentation_mode_invalid',
+        );
+        $presentationDocumentRoot = dsPlanAssertSafeAbsolutePath(
+            $presentation['document_root'] ?? null,
+            'target_presentation_document_root_invalid',
+        );
+        if ($presentationMode === 'ACTIVE_RELEASE_PUBLIC') {
+            dsPlanAssertLiteral(
+                $presentationDocumentRoot,
+                $activePointer.'/apps/web/public',
+                'target_presentation_document_root_mismatch',
+            );
+        } elseif (str_starts_with($presentationDocumentRoot.'/', $deploymentRoot.'/')
+            || str_starts_with($deploymentRoot.'/', $presentationDocumentRoot.'/')
+        ) {
+            dsPlanFail('target_fixed_public_document_root_not_disjoint');
+        }
+        $presentation = [
+            'mode' => $presentationMode,
+            'document_root' => $presentationDocumentRoot,
+        ];
+    }
+
     $requiredCaps = [
         'durable_database_persistence',
         'durable_session',
@@ -329,6 +360,7 @@ function dsPlanValidateTarget(array $target, array $identity): array
             'shared_runtime_root' => $sharedRuntimeRoot,
             'active_release_pointer' => $activePointer,
         ],
+        ...$presentation !== null ? ['presentation' => $presentation] : [],
         'capabilities' => $target['capabilities'],
         'configuration' => $target['configuration'],
         'attribution' => 'Lab | zefry',
@@ -352,6 +384,7 @@ function dsPlanValidateTarget(array $target, array $identity): array
         'release_root' => $releaseRoot,
         'shared_runtime_root' => $sharedRuntimeRoot,
         'active_release_pointer' => $activePointer,
+        'presentation' => $presentation,
         'authority_id' => $authorityId,
         'authority_sha256' => $authoritySha256,
         'request_id' => $requestId,
@@ -371,6 +404,20 @@ function dsPlanPrepare(string $handoffPath, string $targetPath): array
     $validatedTarget = dsPlanValidateTarget($target, $identity);
 
     $releaseDirectory = $validatedTarget['release_root'].'/'.$identity['release_id'];
+    $planTarget = [
+        'environment_id' => $validatedTarget['environment_id'],
+        'runtime_class' => 'durable-staging',
+        'production' => false,
+        'production_data_allowed' => false,
+        'synthetic_fixture_runtime' => false,
+        'deployment_root' => $validatedTarget['deployment_root'],
+        'release_directory' => $releaseDirectory,
+        'shared_runtime_root' => $validatedTarget['shared_runtime_root'],
+        'active_release_pointer' => $validatedTarget['active_release_pointer'],
+    ];
+    if ($validatedTarget['presentation'] !== null) {
+        $planTarget['presentation'] = $validatedTarget['presentation'];
+    }
 
     $planCore = [
         'schema_version' => 1,
@@ -386,17 +433,7 @@ function dsPlanPrepare(string $handoffPath, string $targetPath): array
             'artifact_sha256' => $identity['artifact_sha256'],
             'manifest_sha256' => $identity['manifest_sha256'],
         ],
-        'target' => [
-            'environment_id' => $validatedTarget['environment_id'],
-            'runtime_class' => 'durable-staging',
-            'production' => false,
-            'production_data_allowed' => false,
-            'synthetic_fixture_runtime' => false,
-            'deployment_root' => $validatedTarget['deployment_root'],
-            'release_directory' => $releaseDirectory,
-            'shared_runtime_root' => $validatedTarget['shared_runtime_root'],
-            'active_release_pointer' => $validatedTarget['active_release_pointer'],
-        ],
+        'target' => $planTarget,
         'authority_binding' => [
             'state' => 'EXTERNAL_AUTHORITY_BOUND_TO_EXACT_TARGET',
             'authority_id' => $validatedTarget['authority_id'],
