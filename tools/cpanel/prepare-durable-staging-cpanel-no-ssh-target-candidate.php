@@ -138,17 +138,35 @@ function cpanelCandidatePrepare(array $profile): array
         $profile['filesystem']['document_root'] ?? null,
         'document_root_invalid',
     );
+    $presentationMode = cpanelCandidatePattern(
+        $profile['presentation']['mode'] ?? null,
+        '/\\A(?:ACTIVE_RELEASE_PUBLIC|FIXED_PUBLIC_BRIDGE)\\z/',
+        'presentation_mode_invalid',
+    );
+    $presentationDocumentRoot = cpanelCandidateSafePath(
+        $profile['presentation']['document_root'] ?? null,
+        'presentation_document_root_invalid',
+    );
+    cpanelCandidateLiteral($presentationDocumentRoot, $documentRoot, 'presentation_document_root_mismatch');
 
     foreach ([$releaseRoot, $sharedRoot, $activePointer] as $path) {
         if (! str_starts_with($path.'/', $deploymentRoot.'/')) {
             cpanelCandidateFail('filesystem_escape');
         }
     }
-    cpanelCandidateLiteral(
-        $documentRoot,
-        $activePointer.'/apps/web/public',
-        'document_root_shape_invalid',
-    );
+    if ($presentationMode === 'ACTIVE_RELEASE_PUBLIC') {
+        cpanelCandidateLiteral(
+            $documentRoot,
+            $activePointer.'/apps/web/public',
+            'document_root_shape_invalid',
+        );
+    } else {
+        if (str_starts_with($documentRoot.'/', $deploymentRoot.'/')
+            || str_starts_with($deploymentRoot.'/', $documentRoot.'/')
+        ) {
+            cpanelCandidateFail('fixed_public_document_root_not_disjoint');
+        }
+    }
 
     foreach ([
         'deployment_root_writable',
@@ -252,6 +270,10 @@ function cpanelCandidatePrepare(array $profile): array
             'release_root' => $releaseRoot,
             'shared_runtime_root' => $sharedRoot,
             'active_release_pointer' => $activePointer,
+        ],
+        'presentation' => [
+            'mode' => $presentationMode,
+            'document_root' => $documentRoot,
         ],
         'capabilities' => $assertions,
         'configuration' => [
