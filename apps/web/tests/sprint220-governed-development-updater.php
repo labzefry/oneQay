@@ -287,7 +287,9 @@ try {
     $assert(! str_contains($processor, 'stream_context_create'), 'PROC-005 no stream fallback for privileged HTTPS');
     $assert(str_contains($processor, 'rollback_recovery_failed'), 'PROC-005A rollback failure must be explicit');
     $assert(str_contains($processor, 'fixed_public_private_overlap_forbidden'), 'PROC-005B fixed-public private overlap rejected');
-    $assert(str_contains($processor, '$this->removeTree($candidateDirectory);'), 'PROC-005C failed candidate cleanup supports safe retry');
+    $assert(str_contains($processor, '$this->quarantineFailedCandidate($candidateDirectory);'), 'PROC-005C failed candidate quarantine supports safe retry');
+    $assert(str_contains($processor, 'failed_candidate_quarantine_unavailable'), 'PROC-005D quarantine fail-closed boundary present');
+    $assert(str_contains($processor, 'makeTreeRemovable'), 'PROC-005E quarantined immutable tree can be cleaned safely');
 
     $firstBuildSwap = strpos($processor, '$this->prepareFixedPublicBuild(');
     $rollbackBuildRestore = strpos($processor, '$this->restoreFixedPublicBuild($documentRoot, $buildBackup);');
