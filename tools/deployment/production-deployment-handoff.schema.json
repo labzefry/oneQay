@@ -1,0 +1,18 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://oneqay.invalid/contracts/production-deployment-handoff.schema.json",
+  "title":"oneQay Production Deployment Handoff","type":"object","additionalProperties":false,
+  "required":["schema_version","handoff_state","product","artifact","application_payload","staging_promotion_proof","runtime","migration","deployment","operational_boundary","attribution"],
+  "properties":{
+    "schema_version":{"const":1},"handoff_state":{"const":"VALIDATED_FOR_PRODUCTION_DEPLOYMENT_NOT_AUTHORIZED"},
+    "product":{"type":"object","additionalProperties":false,"required":["name","repository"],"properties":{"name":{"const":"oneQay"},"repository":{"const":"labzefry/oneQay"}}},
+    "artifact":{"type":"object","additionalProperties":false,"required":["release_id","source_commit","artifact_filename","artifact_sha256","manifest_sha256"],"properties":{"release_id":{"type":"string","pattern":"^production-[0-9a-f]{12}$"},"source_commit":{"type":"string","pattern":"^[0-9a-f]{40}$"},"artifact_filename":{"type":"string","pattern":"^production-[0-9a-f]{12}\\.tar\\.gz$"},"artifact_sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"},"manifest_sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"}}},
+    "application_payload":{"type":"object","additionalProperties":false,"required":["sha256","staging_equivalence_verified"],"properties":{"sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"},"staging_equivalence_verified":{"const":true}}},
+    "staging_promotion_proof":{"type":"object","additionalProperties":false,"required":["state","staging_artifact_id","staging_release_id","staging_source_commit","staging_artifact_sha256","application_payload_sha256"],"properties":{"state":{"const":"STAGING_APPLICATION_PAYLOAD_EQUIVALENCE_VERIFIED"},"staging_artifact_id":{"type":"integer","minimum":1},"staging_release_id":{"type":"string","pattern":"^durable-staging-[0-9a-f]{12}$"},"staging_source_commit":{"type":"string","pattern":"^[0-9a-f]{40}$"},"staging_artifact_sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"},"application_payload_sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"}}},
+    "runtime":{"type":"object","additionalProperties":false,"required":["required_runtime_class","production","production_data_allowed","synthetic_fixture_runtime"],"properties":{"required_runtime_class":{"const":"production"},"production":{"const":true},"production_data_allowed":{"const":true},"synthetic_fixture_runtime":{"const":false}}},
+    "migration":{"type":"object","additionalProperties":false,"required":["expected_count","execution_state","execution_authorized"],"properties":{"expected_count":{"const":27},"execution_state":{"const":"NOT_PERFORMED"},"execution_authorized":{"const":false}}},
+    "deployment":{"type":"object","additionalProperties":false,"required":["execution_state","authority_state","production_activation_state"],"properties":{"execution_state":{"const":"NOT_PERFORMED"},"authority_state":{"const":"NOT_GRANTED"},"production_activation_state":{"const":"NOT_AUTHORIZED"}}},
+    "operational_boundary":{"type":"object","additionalProperties":false,"required":["environment_deployment","migration27_execution","production_activation","selected_target","producer_dispatch"],"properties":{"environment_deployment":{"const":"NOT_PERFORMED"},"migration27_execution":{"const":"NOT_PERFORMED"},"production_activation":{"const":"NOT_AUTHORIZED"},"selected_target":{"type":"null"},"producer_dispatch":{"const":"NOT_PERFORMED"}}},
+    "attribution":{"const":"Lab | zefry"}
+  }
+}
