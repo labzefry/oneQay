@@ -1,5 +1,18 @@
 # oneQay Deployment Handbook
 
+## cPanel no-SSH operator qualification kit publication — Sprint213
+
+Sprint213 closes the delivery gap left after Sprint212: the cPanel no-SSH adapter existed in source, but the Sprint211 application bundle predates it and therefore could not provide the operator tools. Sprint213 publishes those governance/qualification tools as a separate deterministic ZIP without changing the application release.
+
+The main-only publication workflow rebuilds the kit twice for the exact source SHA and requires byte-identical ZIP, manifest, and checksum results before upload. The ZIP contains no `apps/web` application payload, environment-secret value, approval-token value, or granted deployment authority.
+
+The kit carries the operator-side chain from cPanel host observation through Sprint208 request/authority qualification, Sprint207 plan generation, and Sprint209 evidence qualification. This does not automate the external deployment itself: archive extraction, configuration binding, active-release switching, runtime readback, health verification, rollback verification, and deployment evidence must still occur against the real target under the separately granted Sprint208 authority.
+
+The application release remains the Sprint211 bundle identified in the Sprint213 contract. A later application release must update that reference and republish a qualified kit before operators treat it as current.
+
+Canonical contract: `ops/final-shift-close/DURABLE_STAGING_CPANEL_NO_SSH_OPERATOR_KIT_PUBLICATION_CONTRACT.json`.
+
+
 ## cPanel no-SSH durable-staging target qualification — Sprint212
 
 Sprint212 adds a source-only compatibility bridge for real cPanel/shared-hosting targets where SSH is unavailable. It preserves the canonical Sprint208/Sprint207 trust chain rather than creating a parallel deployment authority model.

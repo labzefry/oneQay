@@ -1,5 +1,31 @@
 # oneQay Installer Specification
 
+## cPanel no-SSH operator qualification kit publication — Sprint213
+
+Sprint213 packages the Sprint212 cPanel no-SSH qualification path into one operator-retrievable deterministic ZIP so a shared-hosting operator does not need Git, SSH, or manual raw-file collection from the repository.
+
+The kit is published only from canonical `main` through GitHub Actions and contains:
+
+- the Sprint212 cPanel target inspector;
+- the Sprint212 target-candidate bridge;
+- the cPanel observed-profile schema;
+- Sprint208 target-candidate, authority-request, authority, and qualified-target schemas/tools;
+- the Sprint207 deployment-plan builder and schema;
+- the Sprint209 deployment-evidence qualifier and schema;
+- non-secret target-input and private-bindings templates;
+- an operator README;
+- an internal per-file SHA-256 manifest;
+- an external ZIP SHA-256 sidecar.
+
+The ZIP deliberately does **not** contain oneQay application runtime bytes. The separately published Sprint211 durable-staging operator bundle remains the governed application release and provides the archive, manifest, checksum, and Sprint206 deployment handoff.
+
+For cPanel without SSH, the operator uses File Manager to upload/extract the qualification ZIP into a private workspace outside the document root. One-shot Cron Jobs run the PHP CLI commands from the kit README. Private bindings and short-lived approval-token material must use private host files and must never be embedded in the ZIP, repository, Cron command value, or public document root.
+
+The approval token may be stored only temporarily in a private file and piped to the Sprint208 authority qualifier through STDIN. Delete that token file immediately after the qualification attempt.
+
+Publication of the kit is not target creation, deployment authority, application deployment, migration authority, target selection, or producer-dispatch authority.
+
+
 ## cPanel no-SSH durable-staging qualification — Sprint212
 
 Sprint212 provides a fail-closed bridge for shared hosting/cPanel accounts that do not expose SSH or an interactive terminal. The supported operator channel is **cPanel File Manager + one-shot Cron Jobs + PHP CLI**. It does not add a public web installer route and does not grant deployment authority.

@@ -1,0 +1,153 @@
+# Author by Lab | zefry
+name: cPanel No-SSH Operator Qualification Kit Publication
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/cpanel-no-ssh-operator-qualification-kit-publication.yml'
+      - 'tools/cpanel/**'
+      - 'tools/deployment/cpanel-no-ssh-durable-staging-target-profile.schema.json'
+      - 'tools/deployment/durable-staging-deployment-handoff.schema.json'
+      - 'tools/deployment/durable-staging-operator-target-candidate.schema.json'
+      - 'tools/deployment/durable-staging-deployment-authority-request.schema.json'
+      - 'tools/deployment/durable-staging-deployment-authority.schema.json'
+      - 'tools/deployment/durable-staging-operator-target.schema.json'
+      - 'tools/deployment/durable-staging-operator-deployment-plan.schema.json'
+      - 'tools/deployment/durable-staging-deployment-evidence.schema.json'
+      - 'tools/prepare-durable-staging-deployment-authority-request.php'
+      - 'tools/qualify-durable-staging-deployment-authority.php'
+      - 'tools/prepare-durable-staging-operator-deployment-plan.php'
+      - 'tools/qualify-durable-staging-deployment-evidence.php'
+      - 'ops/final-shift-close/DURABLE_STAGING_CPANEL_NO_SSH_TARGET_QUALIFICATION_CONTRACT.json'
+      - 'ops/final-shift-close/DURABLE_STAGING_CPANEL_NO_SSH_OPERATOR_KIT_PUBLICATION_CONTRACT.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cpanel-no-ssh-operator-qualification-kit-publication-${{ github.sha }}
+  cancel-in-progress: false
+
+jobs:
+  publish-cpanel-no-ssh-operator-kit:
+    name: publish-cpanel-no-ssh-operator-kit
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout exact main source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.sha }}
+
+      - name: Prove exact main publication source
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = 'refs/heads/main'
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          git merge-base --is-ancestor "$GITHUB_SHA" origin/main || {
+            echo 'Publication source is not reachable from canonical main.' >&2
+            exit 1
+          }
+
+      - name: Preserve canonical operational NO-GO
+        shell: bash
+        run: |
+          set -euo pipefail
+          state=ops/final-shift-close/STATE.json
+          selection=ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+          test "$(jq -r '.migration27.state' "$state")" = NOT_EXECUTED
+          test "$(jq -r '.permission_provisioning.state' "$state")" = NONE
+          test "$(jq -r '.feature_activation.state' "$state")" = INACTIVE
+          test "$(jq -r '.deployment_authority' "$state")" = NOT_GRANTED
+          test "$(jq -r '.technical_preview_activation' "$state")" = NOT_AUTHORIZED
+          test "$(jq -r '.production_activation' "$state")" = NOT_AUTHORIZED
+          test "$(jq -r '.updater_activation' "$state")" = INACTIVE
+          test "$(jq -r '.selection_state' "$selection")" = BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET
+          test "$(jq -r '.selected_target' "$selection")" = null
+
+      - name: Validate publication contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          contract=ops/final-shift-close/DURABLE_STAGING_CPANEL_NO_SSH_OPERATOR_KIT_PUBLICATION_CONTRACT.json
+          jq -e . "$contract" >/dev/null
+          test "$(jq -r '.contract_state' "$contract")" = PUBLISHES_SECRET_FREE_CPANEL_NO_SSH_OPERATOR_KIT_NOT_DEPLOYED
+          test "$(jq -r '.publication_requirements.main_branch_only' "$contract")" = true
+          test "$(jq -r '.publication_requirements.deterministic_zip' "$contract")" = true
+          test "$(jq -r '.publication_requirements.reproducibility_verified_before_upload' "$contract")" = true
+          test "$(jq -r '.publication_requirements.secret_values_embedded' "$contract")" = false
+          test "$(jq -r '.publication_requirements.application_release_bytes_embedded' "$contract")" = false
+          test "$(jq -r '.publication_requirements.retention_days' "$contract")" = 30
+          test "$(jq -r '.authority_boundary.kit_is_not_deployment_authority' "$contract")" = true
+          test "$(jq -r '.canonical_boundaries.environment_deployment' "$contract")" = NOT_PERFORMED
+          test "$(jq -r '.canonical_boundaries.migration27_execution' "$contract")" = NOT_PERFORMED
+          test "$(jq -r '.canonical_boundaries.selected_target' "$contract")" = null
+          test "$(jq -r '.canonical_boundaries.producer_dispatch' "$contract")" = NOT_PERFORMED
+
+      - name: Build first exact cPanel operator kit
+        id: first
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash tools/cpanel/build-cpanel-no-ssh-operator-qualification-kit.sh "$GITHUB_SHA"
+          kit_id="cpanel-no-ssh-operator-kit-${GITHUB_SHA:0:12}"
+          cp "dist/${kit_id}.zip" /tmp/oneqay-cpanel-kit-first.zip
+          cp "dist/${kit_id}.manifest.json" /tmp/oneqay-cpanel-kit-first.manifest.json
+          cp "dist/${kit_id}.zip.sha256" /tmp/oneqay-cpanel-kit-first.zip.sha256
+          echo "kit_id=$kit_id" >> "$GITHUB_OUTPUT"
+          echo "zip=dist/${kit_id}.zip" >> "$GITHUB_OUTPUT"
+          echo "manifest=dist/${kit_id}.manifest.json" >> "$GITHUB_OUTPUT"
+          echo "checksum=dist/${kit_id}.zip.sha256" >> "$GITHUB_OUTPUT"
+
+      - name: Prove exact kit reproducibility
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf dist
+          bash tools/cpanel/build-cpanel-no-ssh-operator-qualification-kit.sh "$GITHUB_SHA"
+          kit_id="cpanel-no-ssh-operator-kit-${GITHUB_SHA:0:12}"
+          cmp /tmp/oneqay-cpanel-kit-first.zip "dist/${kit_id}.zip"
+          diff -u /tmp/oneqay-cpanel-kit-first.manifest.json "dist/${kit_id}.manifest.json"
+          diff -u /tmp/oneqay-cpanel-kit-first.zip.sha256 "dist/${kit_id}.zip.sha256"
+
+      - name: Prove kit is secret-free and contains no application release bytes
+        shell: bash
+        run: |
+          set -euo pipefail
+          kit_id="${{ steps.first.outputs.kit_id }}"
+          unzip -l "dist/${kit_id}.zip" > /tmp/oneqay-cpanel-kit-list.txt
+          grep -Fq "${kit_id}/tools/cpanel/inspect-durable-staging-cpanel-no-ssh-target.php" /tmp/oneqay-cpanel-kit-list.txt
+          grep -Fq "${kit_id}/tools/prepare-durable-staging-deployment-authority-request.php" /tmp/oneqay-cpanel-kit-list.txt
+          grep -Fq "${kit_id}/tools/prepare-durable-staging-operator-deployment-plan.php" /tmp/oneqay-cpanel-kit-list.txt
+          grep -Fq "${kit_id}/tools/qualify-durable-staging-deployment-evidence.php" /tmp/oneqay-cpanel-kit-list.txt
+          ! grep -Fq "/apps/web/" /tmp/oneqay-cpanel-kit-list.txt
+          ! grep -E '(^|/)(\.env|id_rsa|id_ed25519)(/|$)|\.(pem|key|p12|pfx)$' /tmp/oneqay-cpanel-kit-list.txt
+          test "$(jq -r '.secret_values_embedded' "dist/${kit_id}.manifest.json")" = false
+          test "$(jq -r '.deployment_authority' "dist/${kit_id}.manifest.json")" = NOT_GRANTED
+          test "$(jq -r '.selected_target' "dist/${kit_id}.manifest.json")" = null
+
+      - name: Upload governed cPanel no-SSH operator qualification kit
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: oneqay-${{ steps.first.outputs.kit_id }}
+          path: |
+            ${{ steps.first.outputs.zip }}
+            ${{ steps.first.outputs.manifest }}
+            ${{ steps.first.outputs.checksum }}
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 0
+
+      - name: Confirm tracked source remains unchanged
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf dist
+          git diff --exit-code
+          test -z "$(git status --porcelain)"
