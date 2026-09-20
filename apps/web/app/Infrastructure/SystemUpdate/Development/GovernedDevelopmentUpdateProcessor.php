@@ -131,6 +131,8 @@ final class GovernedDevelopmentUpdateProcessor
         $envMutated = false;
         $buildBackup = null;
         $buildMutated = false;
+        $candidateDirectory = null;
+        $candidateExtracted = false;
 
         try {
             $jsonFetcher ??= fn (string $url, string $token): array => $this->githubJson($url, $token);
@@ -249,6 +251,7 @@ final class GovernedDevelopmentUpdateProcessor
             $this->requests->requireCurrentPending(time());
 
             $this->extractCandidate($archivePath, $releaseRoot, $releaseId, $candidateSource, $candidateArtifact);
+            $candidateExtracted = true;
             $this->bindRuntimeEnvironment($candidateDirectory, $runtimeEnv);
 
             $previousEnv = $this->readPrivateRuntimeEnv($runtimeEnv);
@@ -357,10 +360,14 @@ final class GovernedDevelopmentUpdateProcessor
 
             return $result;
         } catch (Throwable $failure) {
+            $rollbackFailed = false;
+            $activeRestored = ! $pointerMutated;
+
             try {
                 if ($pointerMutated && is_string($previousRelease) && is_dir($previousRelease)) {
                     $activePointer = $this->safeConfiguredPath('active_release_pointer');
                     $this->atomicPoint($activePointer, $previousRelease);
+                    $activeRestored = realpath($activePointer) === realpath($previousRelease);
                 }
                 if ($envMutated && is_string($previousEnv)) {
                     $runtimeEnv = $this->safeConfiguredPath('runtime_env_path');
@@ -371,13 +378,27 @@ final class GovernedDevelopmentUpdateProcessor
                         $this->safeConfiguredPath('document_root'),
                         $buildBackup,
                     );
+                    $buildMutated = false;
+                    $buildBackup = null;
                 }
             } catch (Throwable) {
+                $rollbackFailed = true;
             }
 
-            $safeCode = $failure instanceof DevelopmentUpdaterViolation
-                ? $failure->safeCode()
-                : 'development_update_failed';
+            if (! $rollbackFailed
+                && $activeRestored
+                && $candidateExtracted
+                && is_string($candidateDirectory)
+                && is_dir($candidateDirectory)
+                && ! is_link($candidateDirectory)) {
+                $this->removeTree($candidateDirectory);
+            }
+
+            $safeCode = $rollbackFailed
+                ? 'rollback_recovery_failed'
+                : ($failure instanceof DevelopmentUpdaterViolation
+                    ? $failure->safeCode()
+                    : 'development_update_failed');
 
             $result = $this->safeResult(
                 'FAILED',
@@ -391,6 +412,10 @@ final class GovernedDevelopmentUpdateProcessor
             try {
                 $this->requests->complete($result);
             } catch (Throwable) {
+            }
+
+            if ($rollbackFailed) {
+                throw new DevelopmentUpdaterViolation('rollback_recovery_failed');
             }
 
             if ($failure instanceof DevelopmentUpdaterViolation) {
@@ -409,7 +434,10 @@ final class GovernedDevelopmentUpdateProcessor
     {
         $runtime = strtolower(trim((string) config('oneqay.runtime_class', '')));
         $appEnv = strtolower(trim((string) config('app.env', '')));
-        $productionDataAllowed = filter_var(env('ONEQAY_PRODUCTION_DATA_ALLOWED', false), FILTER_VALIDATE_BOOL);
+        $productionDataAllowed = (bool) config(
+            'oneqay.development_updater.production_data_allowed',
+            true,
+        );
         if (! (bool) config('oneqay.development_updater.enabled', false)
             || $runtime !== 'durable-staging'
             || $appEnv === 'production'
@@ -422,9 +450,25 @@ final class GovernedDevelopmentUpdateProcessor
             throw new DevelopmentUpdaterViolation('environment_id_invalid');
         }
 
-        foreach (['release_root', 'active_release_pointer', 'runtime_env_path', 'document_root'] as $key) {
-            $this->safeConfiguredPath($key);
+        $releaseRoot = $this->safeConfiguredPath('release_root');
+        $activePointer = $this->safeConfiguredPath('active_release_pointer');
+        $runtimeEnv = $this->safeConfiguredPath('runtime_env_path');
+        $documentRoot = $this->safeConfiguredPath('document_root');
+        $mode = strtoupper(trim((string) config('oneqay.development_updater.document_root_mode', '')));
+        if (! in_array($mode, ['ACTIVE_RELEASE_PUBLIC', 'FIXED_PUBLIC_BRIDGE'], true)) {
+            throw new DevelopmentUpdaterViolation('document_root_mode_invalid');
         }
+
+        if ($mode === 'ACTIVE_RELEASE_PUBLIC') {
+            if ($documentRoot !== $activePointer.'/apps/web/public') {
+                throw new DevelopmentUpdaterViolation('active_release_document_root_invalid');
+            }
+        } elseif ($this->pathsOverlap($documentRoot, $releaseRoot)
+            || $this->pathsOverlap($documentRoot, $activePointer)
+            || $this->pathsOverlap($documentRoot, $runtimeEnv)) {
+            throw new DevelopmentUpdaterViolation('fixed_public_private_overlap_forbidden');
+        }
+
         $this->configuredHttpsUrl('attestation_url');
     }
 
@@ -1354,6 +1398,16 @@ final class GovernedDevelopmentUpdateProcessor
             }
         }
         @rmdir($path);
+    }
+
+    private function pathsOverlap(string $left, string $right): bool
+    {
+        $left = rtrim(str_replace('\\', '/', $left), '/');
+        $right = rtrim(str_replace('\\', '/', $right), '/');
+
+        return $left === $right
+            || str_starts_with($left.'/', $right.'/')
+            || str_starts_with($right.'/', $left.'/');
     }
 
     private function safeConfiguredPath(string $key): string
