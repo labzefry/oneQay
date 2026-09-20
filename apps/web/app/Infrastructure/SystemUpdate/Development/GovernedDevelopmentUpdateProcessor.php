@@ -910,21 +910,26 @@ final class GovernedDevelopmentUpdateProcessor
         string $artifact,
         array $readback,
     ): array {
+        $authorityId = (string) ($request['deployment_authority_id'] ?? '');
+        $authoritySha = (string) ($request['deployment_authority_sha256'] ?? '');
+        $requestSha = (string) ($request['deployment_request_sha256'] ?? '');
+        if (preg_match('/\Adurable-staging-deployment-authority-[0-9a-f]{24}\z/', $authorityId) !== 1
+            || preg_match('/\A[0-9a-f]{64}\z/', $authoritySha) !== 1
+            || preg_match('/\A[0-9a-f]{64}\z/', $requestSha) !== 1) {
+            throw new DevelopmentUpdaterViolation('deployment_authority_evidence_binding_invalid');
+        }
+
         $fingerprint = hash('sha256', json_encode([
             'mode' => 'GOVERNED_DEVELOPMENT_UPDATER',
             'request_id' => $request['request_id'],
+            'request_sha256' => $requestSha,
+            'authority_id' => $authorityId,
+            'authority_sha256' => $authoritySha,
             'release_id' => $releaseId,
             'source_commit' => $source,
             'artifact_sha256' => $artifact,
             'environment_id' => config('oneqay.development_updater.environment_id'),
         ], JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR));
-        $authorityId = 'durable-staging-deployment-authority-'.substr(
-            hash('sha256', (string) ($request['signature'] ?? '').'|'.$source.'|'.$artifact),
-            0,
-            24,
-        );
-        $authoritySha = hash('sha256', $authorityId.'|'.$fingerprint);
-        $requestSha = hash('sha256', json_encode($request, JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR));
 
         return [
             'schema_version' => 1,
