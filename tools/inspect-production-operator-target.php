@@ -268,7 +268,9 @@ function prodTargetInspect(array $input, array $bindings, string $bindingPath): 
     }
     $actualAssertions = array_keys($assertions);
     sort($actualAssertions, SORT_STRING);
-    if ($actualAssertions !== $capabilities) {
+    $expectedAssertions = $capabilities;
+    sort($expectedAssertions, SORT_STRING);
+    if ($actualAssertions !== $expectedAssertions) {
         prodTargetFail('operator_assertion_set_invalid');
     }
     foreach ($capabilities as $capability) {
