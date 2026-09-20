@@ -186,9 +186,11 @@ function cpanelProbeFilesystemOperations(string $deploymentRoot): array
     $sourceFile = $probeRoot.'/rename-source';
     $targetFile = $probeRoot.'/rename-target';
     $linkPath = $probeRoot.'/link';
+    $hardLinkPath = $probeRoot.'/hard-link';
 
     $atomicRename = false;
     $symlink = false;
+    $hardlink = false;
 
     try {
         if (! mkdir($probeRoot, 0700) || ! mkdir($sourceDir, 0700) || ! mkdir($targetDir, 0700)) {
@@ -214,9 +216,26 @@ function cpanelProbeFilesystemOperations(string $deploymentRoot): array
         ) {
             $symlink = true;
         }
+
+        if (cpanelProbeFunctionAvailable('link')
+            && is_file($targetFile)
+            && @link($targetFile, $hardLinkPath)
+            && is_file($hardLinkPath)
+            && ! is_link($hardLinkPath)
+        ) {
+            $sourceInode = fileinode($targetFile);
+            $linkInode = fileinode($hardLinkPath);
+            $hardlink = is_int($sourceInode)
+                && is_int($linkInode)
+                && $sourceInode === $linkInode
+                && hash_equals(hash_file('sha256', $targetFile), hash_file('sha256', $hardLinkPath));
+        }
     } finally {
         if (is_link($linkPath)) {
             @unlink($linkPath);
+        }
+        if (is_file($hardLinkPath) && ! is_link($hardLinkPath)) {
+            @unlink($hardLinkPath);
         }
         if (is_file($sourceFile)) {
             @unlink($sourceFile);
@@ -238,6 +257,7 @@ function cpanelProbeFilesystemOperations(string $deploymentRoot): array
     return [
         'atomic_rename_supported' => $atomicRename,
         'symlink_supported' => $symlink,
+        'hardlink_supported' => $hardlink,
     ];
 }
 
@@ -366,8 +386,16 @@ function cpanelProbeInspect(array $input, array $bindings, string $bindingPath):
     if ($filesystemProbe['atomic_rename_supported'] !== true) {
         cpanelProbeFail('atomic_rename_unavailable');
     }
-    if ($filesystemProbe['symlink_supported'] !== true) {
+    if ($documentRootMode === 'ACTIVE_RELEASE_PUBLIC'
+        && $filesystemProbe['symlink_supported'] !== true
+    ) {
         cpanelProbeFail('symlink_unavailable');
+    }
+    if ($documentRootMode === 'FIXED_PUBLIC_BRIDGE'
+        && $filesystemProbe['symlink_supported'] !== true
+        && $filesystemProbe['hardlink_supported'] !== true
+    ) {
+        cpanelProbeFail('fixed_public_runtime_binding_unavailable');
     }
 
     $requiredBindingNames = [
@@ -460,7 +488,8 @@ function cpanelProbeInspect(array $input, array $bindings, string $bindingPath):
             'shared_runtime_root_writable' => true,
             'active_pointer_parent_writable' => true,
             'atomic_rename_supported' => true,
-            'symlink_supported' => true,
+            'symlink_supported' => $filesystemProbe['symlink_supported'] === true,
+            'hardlink_supported' => $filesystemProbe['hardlink_supported'] === true,
             'document_root_shape_valid' => true,
         ],
         'runtime' => [
