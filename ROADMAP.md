@@ -1,25 +1,27 @@
 # oneQay Roadmap
 
-**Roadmap checkpoint:** Sprint212 closed canonically
-**Canonical engineering baseline:** `7adc0f34bbf1646400c344e7c6d1f89324db61d1`
+**Roadmap checkpoint:** Sprint213 closed canonically
+**Canonical engineering baseline:** `c8998c00e19c177ac535921dbc0ef1fa96b06583`
 **Current state authority:** `PROJECT_MANIFEST.md`
 
-## Completed Sprint212 horizon
+## Completed Sprint213 horizon
 
-Sprint212 closed `CPANEL_NO_SSH_DURABLE_STAGING_TARGET_QUALIFICATION`.
+Sprint213 closed `CPANEL_NO_SSH_OPERATOR_QUALIFICATION_KIT_PUBLICATION`.
 
-The repository now supports a fail-closed target qualification path for real cPanel/shared-hosting environments without SSH. File Manager materializes private host files, a one-shot Cron Job invokes PHP CLI, the inspector records non-secret machine observations, and the candidate bridge produces the same Sprint208 target schema used by the POSIX/VPS path.
+The cPanel no-SSH qualification/governance chain is now published as one deterministic operator-retrievable ZIP from canonical main. The kit includes Sprint212 host qualification, Sprint208 authority tooling, Sprint207 planning, and Sprint209 evidence qualification without embedding application bytes, secrets, or authority.
 
-Engineering PR #859 qualified at 91/91 on final head `d3f771daabcf9263069e6b7b23af6302b06dab45` and squash merged at `7adc0f34bbf1646400c344e7c6d1f89324db61d1`.
+Engineering PR #861 qualified at 92/92 on final head `4c2ef5d73436e3660d0f6700a9bb3cfe46438289` and squash merged at `c8998c00e19c177ac535921dbc0ef1fa96b06583`.
+
+Publication run `35494805706` produced artifact `10600262872`, with independently verified inner ZIP SHA-256 `de485d82c7960683a90c605f4d220b09f85b6cc2282e18f52c43b82006949011`.
 
 ## Production-readiness progression
 
-Sprint203 supplied the merchant-core staging bridge, Sprint204 runtime readiness, Sprint205 reproducible durable artifact, Sprint206 validated handoff, Sprint207 deterministic operator planning, Sprint208 request-bound deployment authority, Sprint209 deployment-execution evidence qualification, Sprint210 provenance continuity, Sprint211 operator artifact publication, and Sprint212 cPanel no-SSH target qualification.
+Sprint203 supplied the merchant-core staging bridge, Sprint204 runtime readiness, Sprint205 reproducible durable artifact, Sprint206 validated handoff, Sprint207 deterministic operator planning, Sprint208 request-bound deployment authority, Sprint209 deployment-execution evidence qualification, Sprint210 provenance continuity, Sprint211 application artifact publication, Sprint212 cPanel no-SSH target qualification, and Sprint213 cPanel no-SSH operator-kit publication.
 
 ## Next material horizon
 
-Issue #856 remains the operational path. Materialize a real isolated target. If using cPanel without SSH, run the Sprint212 qualification bridge and fail closed if Cron/PHP CLI/symlink/document-root isolation requirements are unavailable. If qualification succeeds, continue with the canonical Sprint208 authority request, Sprint207 plan, external execution, Sprint209 evidence, protected attestation, and trusted ingestion.
+Issue #856 is now operational. Materialize a real isolated target. For cPanel without SSH, retrieve the Sprint213 kit and Sprint211 application bundle, run the fail-closed host qualification through File Manager + one-shot Cron/PHP CLI, then continue only with truthful Sprint208 authority binding and real Sprint207/Sprint209 execution evidence.
 
-Open another source sprint only if real target qualification or execution exposes a concrete repository-side blocker.
+Open another source sprint only if that real sequence exposes a concrete repository-side blocker.
 
 Author by Lab | zefry
