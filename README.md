@@ -8,28 +8,29 @@ Enterprise-oriented multi-tenant business-management platform built with Modular
 
 ## Current canonical status
 
-Latest completed engineering sprint: **Sprint213 — cPanel No-SSH Operator Qualification Kit Publication**.
+Latest completed engineering sprint: **Sprint214 — cPanel No-SSH Guarded Deployment Execution**.
 
-- Canonical engineering commit: `c8998c00e19c177ac535921dbc0ef1fa96b06583`
-- Engineering PR: #861
-- Final engineering head: `4c2ef5d73436e3660d0f6700a9bb3cfe46438289`
-- Exact-head qualification: 92/92 successful
-- Engineering envelope SHA-256: `7ccb0d202041e8968e7d526d6ee3fc7d76fd68048fc062993a8172b53a95e6be`
+- Canonical engineering commit: `270e8e954e389f61d32f49b89b87bed571866867`
+- Engineering PR: #863
+- Final engineering head: `d8822e6f2e3aee3b8550424c2e36c342b09fe101`
+- Exact-head qualification: 93/93 successful
+- Engineering envelope SHA-256: `dd1abbfbd9c21d2372cc1b3957ea42bed438b224b88284ceb870df81e8b46347`
 - Reconciliation envelope SHA-256: `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`
 
-Sprint213 publishes a deterministic, secret-free ZIP containing the operator-side cPanel no-SSH qualification/governance chain, so a shared-hosting operator does not need Git or SSH to collect repository tools.
+Sprint214 completes the source-side cPanel no-SSH execution chain: the published kit now contains an authority-bound PHP CLI executor that can turn the exact Sprint207 plan into Sprint209-compatible deployment evidence while remaining migration-free and fail-closed.
 
 ## Published cPanel operator kit
 
-- Publication run: `35494805706` — SUCCESS
-- Artifact ID: `10600262872`
-- Artifact name: `oneqay-cpanel-no-ssh-operator-kit-c8998c00e19c`
-- Inner ZIP SHA-256: `de485d82c7960683a90c605f4d220b09f85b6cc2282e18f52c43b82006949011`
-- Manifest SHA-256: `d9a0300c24e260d3d87533af6808185a269471cfdeea0e69b2310188b30f3fde`
-- Internal files: 20
+- Publication run: `35497396424` — SUCCESS
+- Artifact ID: `10601606508`
+- Artifact name: `oneqay-cpanel-no-ssh-operator-kit-270e8e954e38`
+- Actions digest: `sha256:58d3f85c262dadb2b2f9e37ab1852eec9a250f9075558cfa6ce3dd3756895f22`
+- Inner ZIP SHA-256: `e572c93f1a8fc55b1c67f0b1f8744a2b6dd3f3c811d0c83a91767fef8df1ae82`
+- Manifest SHA-256: `750375c512c3eab35530da902fbbf30eff63fb7dc59ad141f0a4e33fce5c97f9`
+- Manifest payload files: 22; ZIP regular files: 23 including `kit.manifest.json`
 - Expiry: 20 October 2026
 
-The kit contains no application runtime bytes and no granted deployment authority.
+The kit contains the Sprint214 executor and contract, but no application runtime bytes, real secrets, granted deployment authority, selected target, or producer dispatch.
 
 ## Governed application bundle
 
@@ -44,10 +45,10 @@ The application release remains the Sprint211 durable-staging bundle:
 
 ## Operational boundary
 
-Migration #27 remains `NOT_EXECUTED`; permission provisioning `NONE`; Final Shift Close `INACTIVE`; deployment `NOT_GRANTED`; Technical Preview/Production `NOT_AUTHORIZED`; updater `INACTIVE`; durable target remains blocked; selected target remains `null`; producer dispatch remains `NOT_PERFORMED`.
+Migration #27 remains `NOT_EXECUTED`; permission provisioning `NONE`; Final Shift Close `INACTIVE`; deployment authority `NOT_GRANTED`; Technical Preview/Production `NOT_AUTHORIZED`; updater `INACTIVE`; durable target selection remains blocked; selected target remains `null`; producer dispatch remains `NOT_PERFORMED`.
 
 ## Next
 
-Issue #856 remains the operational gate. A cPanel no-SSH operator now retrieves the Sprint213 qualification kit plus the Sprint211 application bundle, qualifies the real host through File Manager + one-shot Cron/PHP CLI, then enters the existing Sprint208/Sprint207/Sprint209 chain. A POSIX VM/VPS remains a supported alternative.
+Issue #856 is the operational gate. Qualify a real isolated VM/VPS or cPanel no-SSH host. For cPanel, use the Sprint214 kit and governed Sprint211 application bundle, then request separate short-lived Sprint208 deployment authority before running the exact Sprint207/Sprint214/Sprint209 chain. Do not open another source sprint unless real execution exposes a concrete source blocker.
 
 Author by Lab | zefry

@@ -1,27 +1,27 @@
 # oneQay Roadmap
 
-**Roadmap checkpoint:** Sprint213 closed canonically
-**Canonical engineering baseline:** `c8998c00e19c177ac535921dbc0ef1fa96b06583`
+**Roadmap checkpoint:** Sprint214 closed canonically
+**Canonical engineering baseline:** `270e8e954e389f61d32f49b89b87bed571866867`
 **Current state authority:** `PROJECT_MANIFEST.md`
 
-## Completed Sprint213 horizon
+## Completed Sprint214 horizon
 
-Sprint213 closed `CPANEL_NO_SSH_OPERATOR_QUALIFICATION_KIT_PUBLICATION`.
+Sprint214 closed `CPANEL_NO_SSH_GUARDED_DEPLOYMENT_EXECUTION`.
 
-The cPanel no-SSH qualification/governance chain is now published as one deterministic operator-retrievable ZIP from canonical main. The kit includes Sprint212 host qualification, Sprint208 authority tooling, Sprint207 planning, and Sprint209 evidence qualification without embedding application bytes, secrets, or authority.
+The cPanel no-SSH path now has a governed executor that validates current request-bound authority and the exact Sprint207 plan, checks the governed Sprint211 archive, performs immutable release extraction and atomic activation, verifies authenticated HTTPS readiness, rehearses rollback, reactivates the new release, verifies readiness again, and emits Sprint209-compatible evidence only after all checks pass.
 
-Engineering PR #861 qualified at 92/92 on final head `4c2ef5d73436e3660d0f6700a9bb3cfe46438289` and squash merged at `c8998c00e19c177ac535921dbc0ef1fa96b06583`.
+Engineering PR #863 qualified at 93/93 on final head `d8822e6f2e3aee3b8550424c2e36c342b09fe101` and squash merged at `270e8e954e389f61d32f49b89b87bed571866867`.
 
-Publication run `35494805706` produced artifact `10600262872`, with independently verified inner ZIP SHA-256 `de485d82c7960683a90c605f4d220b09f85b6cc2282e18f52c43b82006949011`.
+Publication run `35497396424` produced post-Sprint214 kit artifact `10601606508`, with independently verified inner ZIP SHA-256 `e572c93f1a8fc55b1c67f0b1f8744a2b6dd3f3c811d0c83a91767fef8df1ae82`.
 
 ## Production-readiness progression
 
-Sprint203 supplied the merchant-core staging bridge, Sprint204 runtime readiness, Sprint205 reproducible durable artifact, Sprint206 validated handoff, Sprint207 deterministic operator planning, Sprint208 request-bound deployment authority, Sprint209 deployment-execution evidence qualification, Sprint210 provenance continuity, Sprint211 application artifact publication, Sprint212 cPanel no-SSH target qualification, and Sprint213 cPanel no-SSH operator-kit publication.
+Sprint203 supplied the merchant-core staging bridge, Sprint204 runtime readiness, Sprint205 reproducible durable artifact, Sprint206 validated handoff, Sprint207 deterministic operator planning, Sprint208 request-bound deployment authority, Sprint209 deployment-execution evidence qualification, Sprint210 provenance continuity, Sprint211 application artifact publication, Sprint212 cPanel no-SSH target qualification, Sprint213 cPanel operator-kit publication, and Sprint214 guarded cPanel deployment execution.
 
 ## Next material horizon
 
-Issue #856 is now operational. Materialize a real isolated target. For cPanel without SSH, retrieve the Sprint213 kit and Sprint211 application bundle, run the fail-closed host qualification through File Manager + one-shot Cron/PHP CLI, then continue only with truthful Sprint208 authority binding and real Sprint207/Sprint209 execution evidence.
+The repository-side execution chain is now sufficient for a real target attempt. Issue #856 remains the operational handoff. Materialize and qualify a real isolated non-production target, then use separately issued authority for actual execution. If the target is cPanel without SSH, use the post-Sprint214 kit artifact `10601606508`; the stale Sprint213 kit is no longer the final kit for execution.
 
-Open another source sprint only if that real sequence exposes a concrete repository-side blocker.
+Do not create Sprint215 merely to continue activity. Open another source sprint only if real qualification/execution proves a concrete repository-side blocker.
 
 Author by Lab | zefry
