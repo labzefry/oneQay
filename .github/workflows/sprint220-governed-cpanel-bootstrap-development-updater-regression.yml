@@ -102,12 +102,14 @@ jobs:
         run: |
           set -euo pipefail
           php artisan config:cache
-          ONEQAY_DEVELOPMENT_UPDATER_ENABLED=false php -r '
+          ONEQAY_DEVELOPMENT_UPDATER_ENABLED=false ONEQAY_PRODUCTION_DATA_ALLOWED=true php -r '
             $app=require "bootstrap/app.php";
             $kernel=$app->make(Illuminate\Contracts\Console\Kernel::class);
             $kernel->bootstrap();
             if (config("oneqay_development_updater.enabled") !== true) { exit(1); }
             if (config("oneqay.development_updater.enabled") !== true) { exit(2); }
+            if (config("oneqay_development_updater.production_data_allowed") !== false) { exit(3); }
+            if (config("oneqay.development_updater.production_data_allowed") !== false) { exit(4); }
           '
           php artisan config:clear
 
@@ -141,6 +143,9 @@ jobs:
           grep -Fq 'authorized_candidate_drift' "$processor"
           grep -Fq 'assertArchiveEntriesSafe' "$processor"
           grep -Fq 'fixed_public_bridge_rollback_backup_missing' "$processor"
+          grep -Fq 'fixed_public_private_overlap_forbidden' "$processor"
+          grep -Fq 'rollback_recovery_failed' "$processor"
+          grep -Fq 'private_root_public_forbidden' "$request"
           grep -Fq 'CURLOPT_REDIR_PROTOCOLS' "$processor"
           ! grep -Fq 'stream_context_create' "$processor"
           grep -Fq 'trustedPublicationRunById' "$processor"
