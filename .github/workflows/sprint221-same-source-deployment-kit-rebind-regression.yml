@@ -1,0 +1,177 @@
+# Author by Lab | zefry
+name: Sprint221 Same-Source Deployment Kit Rebind Regression
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint221-same-source-deployment-kit-rebind-${{ github.event.pull_request.number || github.ref }}-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  qualify-sprint221:
+    name: qualify-sprint221-same-source-deployment-kit-rebind
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout exact Sprint221 source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Lock exact Sprint221 envelope
+        if: github.event_name == 'pull_request' && github.head_ref == 'sprint221-same-source-deployment-kit-rebind'
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          EXPECTED_PATH_HASH: b31ff94a195775d0ee92318e33640747a411b99ed0c03d72dd6fbb4b0c6baf1f
+        run: |
+          set -euo pipefail
+          git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/s221-paths
+          test "$(wc -l < /tmp/s221-paths)" -eq 11
+          test "$(sha256sum /tmp/s221-paths | awk '{print $1}')" = "$EXPECTED_PATH_HASH"
+          test -z "$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web)"
+          test -z "$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web/database/migrations)"
+
+      - name: Setup governed PHP runtime
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        with:
+          php-version: '8.3'
+          extensions: curl,pdo_mysql,phar
+          coverage: none
+
+      - name: Validate exact same-source release contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          staging=ops/final-shift-close/DURABLE_STAGING_CPANEL_NO_SSH_OPERATOR_KIT_PUBLICATION_CONTRACT.json
+          production=ops/final-shift-close/PRODUCTION_OPERATOR_KIT_PUBLICATION_CONTRACT.json
+          target=ops/final-shift-close/DURABLE_STAGING_CPANEL_NO_SSH_TARGET_QUALIFICATION_CONTRACT.json
+
+          jq -e . "$staging" "$production" "$target" >/dev/null
+
+          test "$(jq -r '.application_release_reference.publication_run_id' "$staging")" = 35522953555
+          test "$(jq -r '.application_release_reference.actions_artifact_id' "$staging")" = 10608272778
+          test "$(jq -r '.application_release_reference.actions_artifact_name' "$staging")" = oneqay-durable-staging-5be28a3c0017-operator-bundle
+          test "$(jq -r '.application_release_reference.actions_outer_digest' "$staging")" = sha256:1e0bd4b514f4c36afaf83e4dc9e2fbb012953edacdf3e56945a6e53aeb508db8
+          test "$(jq -r '.application_release_reference.source_commit' "$staging")" = 5be28a3c001738373588b58e9d29832c46402de1
+          test "$(jq -r '.application_release_reference.release_id' "$staging")" = durable-staging-5be28a3c0017
+          test "$(jq -r '.application_release_reference.artifact_sha256' "$staging")" = 66be23792478fb191f912571b35076c42783b9733cdb3fb514b549d22ec90dd7
+          test "$(jq -r '.application_release_reference.manifest_sha256' "$staging")" = d24c8961100be308599b469a2f87485c9a1646f57c435118990141c2f85f8ec9
+          test "$(jq -r '.application_release_reference.handoff_sha256' "$staging")" = 628a3b2aa2d0e165a641f32ee29edaee7e681dcdbd6f8e22bbd908b09c12af9a
+
+          test "$(jq -r '.production_release_reference.publication_run_id' "$production")" = 35522953560
+          test "$(jq -r '.production_release_reference.actions_artifact_id' "$production")" = 10608942942
+          test "$(jq -r '.production_release_reference.actions_artifact_name' "$production")" = oneqay-production-5be28a3c0017-operator-bundle
+          test "$(jq -r '.production_release_reference.actions_outer_digest' "$production")" = sha256:aeebe79ebf9f71848c9eb36d9d2e0e5cd265ff1c6ea034f3cdfc6ca469d05689
+          test "$(jq -r '.production_release_reference.source_commit' "$production")" = 5be28a3c001738373588b58e9d29832c46402de1
+          test "$(jq -r '.production_release_reference.release_id' "$production")" = production-5be28a3c0017
+          test "$(jq -r '.production_release_reference.artifact_sha256' "$production")" = 66601e38db9e5e71d061b19b75cd080adeac46958e86abc5f543230c2dd1366d
+          test "$(jq -r '.production_release_reference.manifest_sha256' "$production")" = b6a40c5fc212f8d6731ae03f0faf963390c630a8a9c815bf9979c38de8e16d87
+
+          staging_source="$(jq -r '.application_release_reference.source_commit' "$staging")"
+          production_source="$(jq -r '.production_release_reference.source_commit' "$production")"
+          test "$staging_source" = "$production_source"
+          test "$(jq -r '.same_source_production_context.source_commit' "$staging")" = "$staging_source"
+          test "$(jq -r '.staging_prerequisite_reference.source_commit' "$production")" = "$staging_source"
+          test "$(jq -r '.staging_prerequisite_reference.actions_artifact_id' "$production")" = 10608272778
+          test "$(jq -r '.same_source_production_context.actions_artifact_id' "$staging")" = 10608942942
+
+      - name: Qualify governed HTTPS client
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -r '
+            if (!extension_loaded("curl")) { fwrite(STDERR, "curl extension missing\n"); exit(1); }
+            $v=curl_version();
+            $version=is_array($v)&&is_string($v["version"]??null)?$v["version"]:"";
+            if ($version==="" || version_compare($version,"7.58.0","<")) {
+              fwrite(STDERR, "unsafe libcurl version: {$version}\n");
+              exit(1);
+            }
+          '
+          grep -Fq "'curl'" tools/cpanel/inspect-durable-staging-cpanel-no-ssh-target.php
+          grep -Fq "version_compare($libcurlVersion, '7.58.0', '<')" tools/cpanel/inspect-durable-staging-cpanel-no-ssh-target.php
+          test "$(jq -r '.qualification_requirements.minimum_libcurl_version' ops/final-shift-close/DURABLE_STAGING_CPANEL_NO_SSH_TARGET_QUALIFICATION_CONTRACT.json)" = 7.58.0
+          test "$(jq -r '.qualification_requirements.authorized_https_redirect_client_required' ops/final-shift-close/DURABLE_STAGING_CPANEL_NO_SSH_TARGET_QUALIFICATION_CONTRACT.json)" = true
+
+      - name: Prove stale release identities removed from current binding surfaces
+        shell: bash
+        run: |
+          set -euo pipefail
+          files=(
+            ops/final-shift-close/DURABLE_STAGING_CPANEL_NO_SSH_OPERATOR_KIT_PUBLICATION_CONTRACT.json
+            ops/final-shift-close/PRODUCTION_OPERATOR_KIT_PUBLICATION_CONTRACT.json
+            .github/workflows/sprint213-cpanel-no-ssh-operator-qualification-kit-publication-regression.yml
+            .github/workflows/production-operator-kit-publication.yml
+            .github/workflows/sprint218-production-dark-deployment-execution-regression.yml
+          )
+          ! grep -F '10603323419' "${files[@]}"
+          ! grep -F '10603358335' "${files[@]}"
+          ! grep -F 'd0b5becbf945c5192e797d512a704eb5aecc6eaa' "${files[@]}"
+
+      - name: Preserve canonical operational NO-GO
+        shell: bash
+        run: |
+          set -euo pipefail
+          state=ops/final-shift-close/STATE.json
+          selection=ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+          test "$(jq -r '.migration27.state' "$state")" = NOT_EXECUTED
+          test "$(jq -r '.permission_provisioning.state' "$state")" = NONE
+          test "$(jq -r '.feature_activation.state' "$state")" = INACTIVE
+          test "$(jq -r '.deployment_authority' "$state")" = NOT_GRANTED
+          test "$(jq -r '.technical_preview_activation' "$state")" = NOT_AUTHORIZED
+          test "$(jq -r '.production_activation' "$state")" = NOT_AUTHORIZED
+          test "$(jq -r '.updater_activation' "$state")" = INACTIVE
+          test "$(jq -r '.selection_state' "$selection")" = BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET
+          test "$(jq -r '.selected_target' "$selection")" = null
+
+      - name: Build cPanel kit deterministically
+        shell: bash
+        run: |
+          set -euo pipefail
+          head_sha="$(git rev-parse HEAD)"
+          bash tools/cpanel/build-cpanel-no-ssh-operator-qualification-kit.sh "$head_sha"
+          kit_id="cpanel-no-ssh-operator-kit-${head_sha:0:12}"
+          cp "dist/${kit_id}.zip" /tmp/s221-cpanel-first.zip
+          cp "dist/${kit_id}.manifest.json" /tmp/s221-cpanel-first.manifest.json
+          rm -rf dist
+          bash tools/cpanel/build-cpanel-no-ssh-operator-qualification-kit.sh "$head_sha"
+          cmp /tmp/s221-cpanel-first.zip "dist/${kit_id}.zip"
+          diff -u /tmp/s221-cpanel-first.manifest.json "dist/${kit_id}.manifest.json"
+          test "$(jq -r '.application_release_reference.actions_artifact_id' "dist/${kit_id}.manifest.json")" = 10608272778
+          test "$(jq -r '.application_release_reference.source_commit' "dist/${kit_id}.manifest.json")" = 5be28a3c001738373588b58e9d29832c46402de1
+          rm -rf dist
+
+      - name: Build Production kit deterministically
+        shell: bash
+        run: |
+          set -euo pipefail
+          head_sha="$(git rev-parse HEAD)"
+          bash tools/production/build-production-operator-kit.sh "$head_sha"
+          kit_id="production-operator-kit-${head_sha:0:12}"
+          cp "dist/${kit_id}.zip" /tmp/s221-production-first.zip
+          cp "dist/${kit_id}.manifest.json" /tmp/s221-production-first.manifest.json
+          rm -rf dist
+          bash tools/production/build-production-operator-kit.sh "$head_sha"
+          cmp /tmp/s221-production-first.zip "dist/${kit_id}.zip"
+          diff -u /tmp/s221-production-first.manifest.json "dist/${kit_id}.manifest.json"
+          test "$(jq -r '.production_release_reference.actions_artifact_id' "dist/${kit_id}.manifest.json")" = 10608942942
+          test "$(jq -r '.staging_prerequisite_reference.actions_artifact_id' "dist/${kit_id}.manifest.json")" = 10608272778
+          test "$(jq -r '.production_release_reference.source_commit' "dist/${kit_id}.manifest.json")" = 5be28a3c001738373588b58e9d29832c46402de1
+          rm -rf dist
+
+      - name: Confirm source cleanliness
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --exit-code
+          test -z "$(git status --porcelain)"
