@@ -117,6 +117,62 @@ function cpanelProbeFunctionAvailable(string $name): bool
 }
 
 /** @return array{atomic_rename_supported:bool,symlink_supported:bool} */
+/** @return array{atomic_public_swap_supported:bool,rewrite_to_index_verified:bool} */
+function cpanelProbeFixedPublicBridge(string $documentRoot): array
+{
+    if (! is_dir($documentRoot) || ! is_writable($documentRoot)) {
+        cpanelProbeFail('fixed_public_document_root_not_writable');
+    }
+
+    $htaccess = $documentRoot.'/.htaccess';
+    if (! is_file($htaccess) || is_link($htaccess) || ! is_readable($htaccess)) {
+        cpanelProbeFail('fixed_public_htaccess_unavailable');
+    }
+    $raw = file_get_contents($htaccess);
+    if (! is_string($raw)
+        || stripos($raw, 'RewriteEngine On') === false
+        || preg_match('/RewriteRule\\s+\\^\\s+index\\.php\\b/i', $raw) !== 1
+    ) {
+        cpanelProbeFail('fixed_public_rewrite_to_index_unverified');
+    }
+
+    $suffix = bin2hex(random_bytes(8));
+    $root = $documentRoot.'/.oneqay-public-probe-'.$suffix;
+    $sourceFile = $root.'/source';
+    $targetFile = $root.'/target';
+    $sourceDir = $root.'/dir-source';
+    $targetDir = $root.'/dir-target';
+    $atomic = false;
+
+    try {
+        if (! mkdir($root, 0700) || ! mkdir($sourceDir, 0700)) {
+            cpanelProbeFail('fixed_public_probe_create_failed');
+        }
+        if (file_put_contents($sourceFile, 'oneqay-public-bridge-probe', LOCK_EX) !== 26) {
+            cpanelProbeFail('fixed_public_probe_write_failed');
+        }
+        if (! rename($sourceFile, $targetFile) || ! rename($sourceDir, $targetDir)) {
+            cpanelProbeFail('fixed_public_atomic_rename_failed');
+        }
+        $atomic = is_file($targetFile) && is_dir($targetDir);
+    } finally {
+        if (is_file($sourceFile)) @unlink($sourceFile);
+        if (is_file($targetFile)) @unlink($targetFile);
+        if (is_dir($sourceDir)) @rmdir($sourceDir);
+        if (is_dir($targetDir)) @rmdir($targetDir);
+        if (is_dir($root)) @rmdir($root);
+    }
+
+    if (! $atomic) {
+        cpanelProbeFail('fixed_public_atomic_rename_unavailable');
+    }
+
+    return [
+        'atomic_public_swap_supported' => true,
+        'rewrite_to_index_verified' => true,
+    ];
+}
+
 function cpanelProbeFilesystemOperations(string $deploymentRoot): array
 {
     if (! is_dir($deploymentRoot) || ! is_writable($deploymentRoot)) {
@@ -237,6 +293,11 @@ function cpanelProbeInspect(array $input, array $bindings, string $bindingPath):
         $input['filesystem']['document_root'] ?? null,
         'document_root_invalid',
     );
+    $documentRootMode = cpanelProbePattern(
+        $input['filesystem']['document_root_mode'] ?? 'ACTIVE_RELEASE_PUBLIC',
+        '/\\A(?:ACTIVE_RELEASE_PUBLIC|FIXED_PUBLIC_BRIDGE)\\z/',
+        'document_root_mode_invalid',
+    );
 
     foreach ([$releaseRoot, $sharedRoot, $activePointer] as $path) {
         cpanelProbeNested($path, $deploymentRoot, 'filesystem_escape');
@@ -244,11 +305,21 @@ function cpanelProbeInspect(array $input, array $bindings, string $bindingPath):
     if (count(array_unique([$deploymentRoot, $releaseRoot, $sharedRoot, $activePointer], SORT_STRING)) !== 4) {
         cpanelProbeFail('filesystem_collision');
     }
-    cpanelProbeLiteral(
-        $documentRoot,
-        $activePointer.'/apps/web/public',
-        'document_root_must_follow_active_release_public',
-    );
+
+    if ($documentRootMode === 'ACTIVE_RELEASE_PUBLIC') {
+        cpanelProbeLiteral(
+            $documentRoot,
+            $activePointer.'/apps/web/public',
+            'document_root_must_follow_active_release_public',
+        );
+    } else {
+        if (str_starts_with($documentRoot.'/', $deploymentRoot.'/')
+            || str_starts_with($deploymentRoot.'/', $documentRoot.'/')
+        ) {
+            cpanelProbeFail('fixed_public_document_root_must_be_disjoint_from_private_deployment');
+        }
+        cpanelProbeFixedPublicBridge($documentRoot);
+    }
 
     foreach ([$deploymentRoot, $releaseRoot, $sharedRoot] as $path) {
         if (! is_dir($path)) {
@@ -393,6 +464,10 @@ function cpanelProbeInspect(array $input, array $bindings, string $bindingPath):
             'required_binding_presence' => $bindingPresence,
             'required_binding_identity_matches' => true,
             'secret_values_embedded' => false,
+        ],
+        'presentation' => [
+            'mode' => $documentRootMode,
+            'document_root' => $documentRoot,
         ],
         'operator_assertions' => $assertions,
         'secrets_embedded' => false,

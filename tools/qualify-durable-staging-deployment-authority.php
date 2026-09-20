@@ -161,6 +161,33 @@ function dsAuthorityQualifyCandidate(array $candidate): array
         dsAuthorityQualifyFail('candidate_filesystem_collision');
     }
 
+    $presentation = $candidate['presentation'] ?? null;
+    if ($presentation !== null) {
+        if (! is_array($presentation) || array_is_list($presentation) || count($presentation) !== 2) {
+            dsAuthorityQualifyFail('candidate_presentation_invalid');
+        }
+        $mode = dsAuthorityQualifyPattern(
+            $presentation['mode'] ?? null,
+            '/\\A(?:ACTIVE_RELEASE_PUBLIC|FIXED_PUBLIC_BRIDGE)\\z/',
+            'candidate_presentation_mode_invalid',
+        );
+        $documentRoot = dsAuthorityQualifySafePath(
+            $presentation['document_root'] ?? null,
+            'candidate_presentation_document_root_invalid',
+        );
+        if ($mode === 'ACTIVE_RELEASE_PUBLIC') {
+            dsAuthorityQualifyAssertLiteral(
+                $documentRoot,
+                $activePointer.'/apps/web/public',
+                'candidate_presentation_document_root_mismatch',
+            );
+        } elseif (str_starts_with($documentRoot.'/', $deploymentRoot.'/')
+            || str_starts_with($deploymentRoot.'/', $documentRoot.'/')
+        ) {
+            dsAuthorityQualifyFail('candidate_fixed_public_document_root_not_disjoint');
+        }
+    }
+
     foreach ([
         'durable_database_persistence','durable_session','authorization','transaction_durability',
         'pos_durability','authenticated_configuration_channel','read_before_write','read_after_write',
@@ -304,6 +331,7 @@ function dsAuthorityQualifyBuildTarget(array $candidate, array $artifact, array 
         'production_data_allowed'=>false,
         'synthetic_fixture_runtime'=>false,
         'filesystem'=>$candidate['filesystem'],
+        ...(array_key_exists('presentation', $candidate) ? ['presentation'=>$candidate['presentation']] : []),
         'capabilities'=>$candidate['capabilities'],
         'configuration'=>$candidate['configuration'],
         'deployment_authority'=>[

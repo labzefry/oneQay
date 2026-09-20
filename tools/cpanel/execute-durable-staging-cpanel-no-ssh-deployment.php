@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+require_once __DIR__.'/fixed-public-document-root-bridge.php';
+
 // Author by Lab | zefry
 
 final class CpanelNoSshDeploymentExecutionException extends RuntimeException
@@ -253,6 +255,36 @@ function cpanelExecValidatePlan(array $plan): array
     cpanelExecNested($activePointer, $deploymentRoot, 'plan_active_pointer_escape');
     cpanelExecLiteral($releaseDirectory, $releaseRoot.'/'.$releaseId, 'plan_release_directory_mismatch');
 
+    $presentation = $plan['target']['presentation'] ?? null;
+    if ($presentation === null) {
+        $presentationMode = 'ACTIVE_RELEASE_PUBLIC';
+        $documentRoot = $activePointer.'/apps/web/public';
+    } else {
+        if (! is_array($presentation) || array_is_list($presentation) || count($presentation) !== 2) {
+            cpanelExecFail('plan_presentation_invalid');
+        }
+        $presentationMode = cpanelExecPattern(
+            $presentation['mode'] ?? null,
+            '/\\A(?:ACTIVE_RELEASE_PUBLIC|FIXED_PUBLIC_BRIDGE)\\z/',
+            'plan_presentation_mode_invalid',
+        );
+        $documentRoot = cpanelExecSafeAbsolutePath(
+            $presentation['document_root'] ?? null,
+            'plan_presentation_document_root_invalid',
+        );
+        if ($presentationMode === 'ACTIVE_RELEASE_PUBLIC') {
+            cpanelExecLiteral(
+                $documentRoot,
+                $activePointer.'/apps/web/public',
+                'plan_presentation_document_root_mismatch',
+            );
+        } elseif (str_starts_with($documentRoot.'/', $deploymentRoot.'/')
+            || str_starts_with($deploymentRoot.'/', $documentRoot.'/')
+        ) {
+            cpanelExecFail('plan_fixed_public_document_root_not_disjoint');
+        }
+    }
+
     cpanelExecLiteral(
         $plan['authority_binding']['state'] ?? null,
         'EXTERNAL_AUTHORITY_BOUND_TO_EXACT_TARGET',
@@ -331,11 +363,25 @@ function cpanelExecValidatePlan(array $plan): array
         'release_directory' => $releaseDirectory,
         'shared_root' => $sharedRoot,
         'active_pointer' => $activePointer,
+        'presentation_mode' => $presentationMode,
+        'document_root' => $documentRoot,
+        'authority_authorized_at' => $authorizedAt,
+        'authority_expires_at' => $expiresAt,
         'authority_id' => $authorityId,
         'authority_sha256' => $authoritySha256,
         'request_id' => $requestId,
         'request_sha256' => $requestSha256,
     ];
+}
+
+function cpanelExecRequireAuthorityCurrent(array $identity): void
+{
+    $from = $identity['authority_authorized_at'] ?? null;
+    $to = $identity['authority_expires_at'] ?? null;
+    $now = time();
+    if (! is_int($from) || ! is_int($to) || $now < $from || $now >= $to) {
+        cpanelExecFail('authority_not_current_at_mutation');
+    }
 }
 
 /** @return array<string,mixed> */
@@ -365,11 +411,19 @@ function cpanelExecValidateProfile(array $profile, array $identity): array
         $profile['filesystem']['document_root'] ?? null,
         'profile_document_root_invalid',
     );
-    cpanelExecLiteral(
-        $documentRoot,
-        $identity['active_pointer'].'/apps/web/public',
-        'profile_document_root_shape_invalid',
+    $profilePresentation = $profile['presentation'] ?? null;
+    $presentationMode = cpanelExecPattern(
+        is_array($profilePresentation) ? ($profilePresentation['mode'] ?? null) : 'ACTIVE_RELEASE_PUBLIC',
+        '/\\A(?:ACTIVE_RELEASE_PUBLIC|FIXED_PUBLIC_BRIDGE)\\z/',
+        'profile_presentation_mode_invalid',
     );
+    $presentationDocumentRoot = cpanelExecSafeAbsolutePath(
+        is_array($profilePresentation) ? ($profilePresentation['document_root'] ?? null) : $documentRoot,
+        'profile_presentation_document_root_invalid',
+    );
+    cpanelExecLiteral($presentationMode, $identity['presentation_mode'], 'profile_presentation_mode_mismatch');
+    cpanelExecLiteral($presentationDocumentRoot, $identity['document_root'], 'profile_presentation_document_root_mismatch');
+    cpanelExecLiteral($documentRoot, $identity['document_root'], 'profile_document_root_mismatch');
 
     foreach ([
         'deployment_root_writable',
@@ -412,7 +466,10 @@ function cpanelExecValidateProfile(array $profile, array $identity): array
     cpanelExecBool($profile['secrets_embedded'] ?? null, false, 'profile_top_secret_forbidden');
     cpanelExecLiteral($profile['attribution'] ?? null, 'Lab | zefry', 'profile_attribution_invalid');
 
-    return ['document_root' => $documentRoot];
+    return [
+        'document_root' => $documentRoot,
+        'presentation_mode' => $presentationMode,
+    ];
 }
 
 /** @return array<string,string> */
@@ -917,6 +974,8 @@ function cpanelExecExecute(
     $activePointer = null;
     $previousState = ['state' => 'ABSENT', 'target' => null];
     $pointerMutated = false;
+    $bridgeState = null;
+    $bridgeMutated = false;
 
     try {
         $plan = cpanelExecLoadJson($planPath);
@@ -948,17 +1007,37 @@ function cpanelExecExecute(
         cpanelExecExtractRelease($archivePath, $identity);
         $runtimeEnvSha256 = cpanelExecBindRuntimeEnv($runtimeEnvPath, $identity);
 
+        $documentRoot = $profileIdentity['document_root'];
+        if ($identity['presentation_mode'] === 'FIXED_PUBLIC_BRIDGE') {
+            $bridgeState = cpanelBridgeInstall(
+                $documentRoot,
+                $activePointer,
+                $identity['release_directory'],
+                $identity['shared_root'],
+            );
+            $bridgeMutated = true;
+        }
+
+        cpanelExecRequireAuthorityCurrent($identity);
         cpanelExecAtomicPoint($activePointer, $identity['release_directory']);
         $pointerMutated = true;
 
-        $documentRoot = $profileIdentity['document_root'];
-        $resolvedDocumentRoot = realpath($documentRoot);
-        $expectedDocumentRoot = realpath($identity['release_directory'].'/apps/web/public');
-        if (! is_string($resolvedDocumentRoot)
-            || ! is_string($expectedDocumentRoot)
-            || $resolvedDocumentRoot !== $expectedDocumentRoot
-        ) {
-            cpanelExecFail('public_document_root_verification_failed');
+        if ($identity['presentation_mode'] === 'ACTIVE_RELEASE_PUBLIC') {
+            $resolvedDocumentRoot = realpath($documentRoot);
+            $expectedDocumentRoot = realpath($identity['release_directory'].'/apps/web/public');
+            if (! is_string($resolvedDocumentRoot)
+                || ! is_string($expectedDocumentRoot)
+                || $resolvedDocumentRoot !== $expectedDocumentRoot
+            ) {
+                cpanelExecFail('public_document_root_verification_failed');
+            }
+        } else {
+            if (! is_file($documentRoot.'/index.php')
+                || is_link($documentRoot.'/index.php')
+                || ! is_file($documentRoot.'/build/manifest.json')
+            ) {
+                cpanelExecFail('fixed_public_bridge_verification_failed');
+            }
         }
 
         $firstAttestation = $readinessFetcher(
@@ -971,6 +1050,24 @@ function cpanelExecExecute(
         cpanelExecValidateReadiness($firstAttestation, $identity);
 
         cpanelExecRestorePrevious($activePointer, $previousState);
+        if ($identity['presentation_mode'] === 'FIXED_PUBLIC_BRIDGE') {
+            if (! is_array($bridgeState)) {
+                cpanelExecFail('fixed_public_bridge_state_missing');
+            }
+            cpanelBridgeRestore($bridgeState);
+            cpanelBridgeFinalize($bridgeState);
+            $bridgeMutated = false;
+
+            $bridgeState = cpanelBridgeInstall(
+                $documentRoot,
+                $activePointer,
+                $identity['release_directory'],
+                $identity['shared_root'],
+            );
+            $bridgeMutated = true;
+        }
+
+        cpanelExecRequireAuthorityCurrent($identity);
         cpanelExecAtomicPoint($activePointer, $identity['release_directory']);
 
         $secondAttestation = $readinessFetcher(
@@ -1037,12 +1134,23 @@ function cpanelExecExecute(
         ];
 
         cpanelExecWriteJson($evidencePath, $evidence);
+        if ($bridgeMutated && is_array($bridgeState)) {
+            cpanelBridgeFinalize($bridgeState);
+            $bridgeMutated = false;
+        }
         $pointerMutated = false;
 
         return $evidence;
     } catch (Throwable $failure) {
         if ($pointerMutated && is_string($activePointer)) {
             cpanelExecRollbackBestEffort($activePointer, $previousState);
+        }
+        if ($bridgeMutated && is_array($bridgeState)) {
+            try {
+                cpanelBridgeRestore($bridgeState);
+                cpanelBridgeFinalize($bridgeState);
+            } catch (Throwable) {
+            }
         }
 
         if (is_file($evidencePath)) {

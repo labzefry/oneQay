@@ -32,6 +32,7 @@ required_files=(
   "tools/cpanel/inspect-durable-staging-cpanel-no-ssh-target.php"
   "tools/cpanel/prepare-durable-staging-cpanel-no-ssh-target-candidate.php"
   "tools/cpanel/execute-durable-staging-cpanel-no-ssh-deployment.php"
+  "tools/cpanel/fixed-public-document-root-bridge.php"
   "tools/deployment/cpanel-no-ssh-durable-staging-target-profile.schema.json"
   "tools/deployment/durable-staging-deployment-handoff.schema.json"
   "tools/deployment/durable-staging-operator-target-candidate.schema.json"
@@ -143,7 +144,8 @@ cat > "$stage_root/target-input.template.json" <<JSON
     "release_root": "<absolute-private-release-root>",
     "shared_runtime_root": "<absolute-private-shared-runtime-root>",
     "active_release_pointer": "<absolute-active-release-pointer>",
-    "document_root": "<active-release-pointer>/apps/web/public"
+    "document_root": "<active-release-pointer>/apps/web/public",
+    "document_root_mode": "ACTIVE_RELEASE_PUBLIC"
   },
   "operator_assertions": {
     "durable_database_persistence": false,
@@ -174,6 +176,13 @@ JSON
 
 cat > "$stage_root/README.md" <<'MARKDOWN'
 # oneQay cPanel No-SSH Operator Qualification Kit
+
+Document-root modes:
+
+- ACTIVE_RELEASE_PUBLIC: use when cPanel can point the domain directly to <active-release-pointer>/apps/web/public.
+- FIXED_PUBLIC_BRIDGE: use when cPanel keeps a fixed public document root outside the private deployment tree. Set filesystem.document_root to the real public root and filesystem.document_root_mode to FIXED_PUBLIC_BRIDGE. Qualification requires a writable public root, existing rewrite-to-index .htaccess, strict public/private path separation, and atomic file/directory rename support.
+
+The fixed-public executor writes only a minimal public index bridge plus build assets. Laravel source, vendor, runtime environment, bindings, and secrets remain under the private deployment tree. Rollback rehearsal restores both the private active pointer and public surface before reactivating the candidate.
 
 Author by Lab | zefry
 

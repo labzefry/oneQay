@@ -166,6 +166,33 @@ function dsAuthorityRequestValidateCandidate(array $candidate): array
         dsAuthorityRequestFail('candidate_filesystem_collision');
     }
 
+    $presentation = $candidate['presentation'] ?? null;
+    if ($presentation !== null) {
+        if (! is_array($presentation) || array_is_list($presentation) || count($presentation) !== 2) {
+            dsAuthorityRequestFail('candidate_presentation_invalid');
+        }
+        $mode = dsAuthorityRequestAssertPattern(
+            $presentation['mode'] ?? null,
+            '/\\A(?:ACTIVE_RELEASE_PUBLIC|FIXED_PUBLIC_BRIDGE)\\z/',
+            'candidate_presentation_mode_invalid',
+        );
+        $documentRoot = dsAuthorityRequestSafePath(
+            $presentation['document_root'] ?? null,
+            'candidate_presentation_document_root_invalid',
+        );
+        if ($mode === 'ACTIVE_RELEASE_PUBLIC') {
+            dsAuthorityRequestAssertLiteral(
+                $documentRoot,
+                $activePointer.'/apps/web/public',
+                'candidate_presentation_document_root_mismatch',
+            );
+        } elseif (str_starts_with($documentRoot.'/', $deploymentRoot.'/')
+            || str_starts_with($deploymentRoot.'/', $documentRoot.'/')
+        ) {
+            dsAuthorityRequestFail('candidate_fixed_public_document_root_not_disjoint');
+        }
+    }
+
     foreach ([
         'durable_database_persistence',
         'durable_session',

@@ -1,5 +1,30 @@
 # oneQay Deployment Handbook
 
+## cPanel fixed public document-root bridge — Sprint219
+
+Sprint219 adds a second fail-closed cPanel presentation mode for shared-hosting layouts where the domain document root is fixed outside the private release tree.
+
+Supported modes:
+
+- `ACTIVE_RELEASE_PUBLIC`: the existing mode; the domain document root is exactly `<active-release-pointer>/apps/web/public`.
+- `FIXED_PUBLIC_BRIDGE`: the private deployment/release/shared roots remain outside the public tree while the fixed public document root contains only a minimal generated `index.php` bridge, the current `build/` assets, and the operator-managed existing `.htaccess`.
+
+For `FIXED_PUBLIC_BRIDGE`, qualification requires:
+
+- the fixed public document root is real, writable, and disjoint from the private deployment tree;
+- the existing `.htaccess` is readable and proves rewrite-to-`index.php`;
+- atomic file and directory rename works in the public root;
+- PHP CLI, required extensions, private `0600` bindings, private release roots, private active pointer, symlink support, and all existing durable capabilities still pass;
+- presentation mode + exact public document-root path are carried into the target descriptor hash, short-lived authority, qualified target, and deployment-plan fingerprint.
+
+The executor never copies Laravel source, `vendor/`, `.env`, bindings, or secrets into the public root. It writes only the generated bridge front-controller and release `build/` assets. The existing `.htaccess` is preserved.
+
+Rollback rehearsal is two-dimensional: the private active-release pointer and the previous public surface are both restored, then the candidate public surface and candidate release are reactivated before final readiness evidence is accepted.
+
+Historical observed cPanel evidence for `oneqay.n07.my.id` used a private release tree separate from its fixed public document root. Sprint219 makes that layout representable by the governed current adapter, but historical observations are not treated as current qualification. The real host must run the current inspector again before any authority request.
+
+Sprint219 grants no deployment authority and performs no real host mutation by repository merge alone. Migration #27, target selection, producer dispatch, Technical Preview, Production traffic, Final Shift Close, and updater activation remain separately governed.
+
 ## Production dark deployment execution — Sprint218
 
 Sprint218 closes the source-side gap between the Sprint216 Production deployment plan/evidence contracts and real operator execution.

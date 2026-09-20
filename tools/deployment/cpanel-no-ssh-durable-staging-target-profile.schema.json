@@ -17,29 +17,53 @@
     "filesystem",
     "runtime",
     "configuration",
+    "presentation",
     "operator_assertions",
     "secrets_embedded",
     "attribution"
   ],
   "properties": {
-    "schema_version": { "const": 1 },
-    "profile_state": { "const": "CPANEL_NO_SSH_TARGET_PROFILE_OBSERVED" },
+    "schema_version": {
+      "const": 1
+    },
+    "profile_state": {
+      "const": "CPANEL_NO_SSH_TARGET_PROFILE_OBSERVED"
+    },
     "environment_id": {
       "type": "string",
       "pattern": "^[a-z0-9][a-z0-9-]{2,62}$"
     },
-    "runtime_class": { "const": "durable-staging" },
-    "production": { "const": false },
-    "production_data_allowed": { "const": false },
-    "synthetic_fixture_runtime": { "const": false },
-    "execution_channel": { "const": "CPANEL_CRON_PHP_CLI_NO_SSH" },
+    "runtime_class": {
+      "const": "durable-staging"
+    },
+    "production": {
+      "const": false
+    },
+    "production_data_allowed": {
+      "const": false
+    },
+    "synthetic_fixture_runtime": {
+      "const": false
+    },
+    "execution_channel": {
+      "const": "CPANEL_CRON_PHP_CLI_NO_SSH"
+    },
     "release_binding": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["source_commit", "artifact_sha256"],
+      "required": [
+        "source_commit",
+        "artifact_sha256"
+      ],
       "properties": {
-        "source_commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
-        "artifact_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+        "source_commit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "artifact_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
       }
     },
     "filesystem": {
@@ -57,21 +81,58 @@
         "active_pointer_parent_writable",
         "atomic_rename_supported",
         "symlink_supported",
-        "document_root_shape_valid"
+        "document_root_shape_valid",
+        "document_root_mode"
       ],
       "properties": {
-        "deployment_root": { "type": "string", "pattern": "^/[^\\\u0000]+$" },
-        "release_root": { "type": "string", "pattern": "^/[^\\\u0000]+$" },
-        "shared_runtime_root": { "type": "string", "pattern": "^/[^\\\u0000]+$" },
-        "active_release_pointer": { "type": "string", "pattern": "^/[^\\\u0000]+$" },
-        "document_root": { "type": "string", "pattern": "^/[^\\\u0000]+$" },
-        "deployment_root_writable": { "const": true },
-        "release_root_writable": { "const": true },
-        "shared_runtime_root_writable": { "const": true },
-        "active_pointer_parent_writable": { "const": true },
-        "atomic_rename_supported": { "const": true },
-        "symlink_supported": { "const": true },
-        "document_root_shape_valid": { "const": true }
+        "deployment_root": {
+          "type": "string",
+          "pattern": "^/[^\\\u0000]+$"
+        },
+        "release_root": {
+          "type": "string",
+          "pattern": "^/[^\\\u0000]+$"
+        },
+        "shared_runtime_root": {
+          "type": "string",
+          "pattern": "^/[^\\\u0000]+$"
+        },
+        "active_release_pointer": {
+          "type": "string",
+          "pattern": "^/[^\\\u0000]+$"
+        },
+        "document_root": {
+          "type": "string",
+          "pattern": "^/[^\\\u0000]+$"
+        },
+        "deployment_root_writable": {
+          "const": true
+        },
+        "release_root_writable": {
+          "const": true
+        },
+        "shared_runtime_root_writable": {
+          "const": true
+        },
+        "active_pointer_parent_writable": {
+          "const": true
+        },
+        "atomic_rename_supported": {
+          "const": true
+        },
+        "symlink_supported": {
+          "const": true
+        },
+        "document_root_shape_valid": {
+          "const": true
+        },
+        "document_root_mode": {
+          "type": "string",
+          "enum": [
+            "ACTIVE_RELEASE_PUBLIC",
+            "FIXED_PUBLIC_BRIDGE"
+          ]
+        }
       }
     },
     "runtime": {
@@ -84,10 +145,20 @@
         "pdo_mysql_available"
       ],
       "properties": {
-        "php_version": { "type": "string", "minLength": 3, "maxLength": 32 },
-        "php_version_supported": { "const": true },
-        "required_extensions_present": { "const": true },
-        "pdo_mysql_available": { "const": true }
+        "php_version": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 32
+        },
+        "php_version_supported": {
+          "const": true
+        },
+        "required_extensions_present": {
+          "const": true
+        },
+        "pdo_mysql_available": {
+          "const": true
+        }
       }
     },
     "configuration": {
@@ -100,7 +171,9 @@
         "secret_values_embedded"
       ],
       "properties": {
-        "binding_file_private": { "const": true },
+        "binding_file_private": {
+          "const": true
+        },
         "required_binding_presence": {
           "type": "object",
           "additionalProperties": false,
@@ -113,16 +186,32 @@
             "ONEQAY_DURABLE_STAGING_RUNTIME_ENABLED"
           ],
           "properties": {
-            "ONEQAY_RUNTIME_CLASS": { "const": true },
-            "ONEQAY_RUNNING_SOURCE_COMMIT": { "const": true },
-            "ONEQAY_RUNNING_ARTIFACT_SHA256": { "const": true },
-            "ONEQAY_DURABLE_RUNTIME_ENVIRONMENT_ID": { "const": true },
-            "ONEQAY_DURABLE_RUNTIME_ATTESTATION_TOKEN": { "const": true },
-            "ONEQAY_DURABLE_STAGING_RUNTIME_ENABLED": { "const": true }
+            "ONEQAY_RUNTIME_CLASS": {
+              "const": true
+            },
+            "ONEQAY_RUNNING_SOURCE_COMMIT": {
+              "const": true
+            },
+            "ONEQAY_RUNNING_ARTIFACT_SHA256": {
+              "const": true
+            },
+            "ONEQAY_DURABLE_RUNTIME_ENVIRONMENT_ID": {
+              "const": true
+            },
+            "ONEQAY_DURABLE_RUNTIME_ATTESTATION_TOKEN": {
+              "const": true
+            },
+            "ONEQAY_DURABLE_STAGING_RUNTIME_ENABLED": {
+              "const": true
+            }
           }
         },
-        "required_binding_identity_matches": { "const": true },
-        "secret_values_embedded": { "const": false }
+        "required_binding_identity_matches": {
+          "const": true
+        },
+        "secret_values_embedded": {
+          "const": false
+        }
       }
     },
     "operator_assertions": {
@@ -141,19 +230,64 @@
         "verified_rollback"
       ],
       "properties": {
-        "durable_database_persistence": { "const": true },
-        "durable_session": { "const": true },
-        "authorization": { "const": true },
-        "transaction_durability": { "const": true },
-        "pos_durability": { "const": true },
-        "authenticated_configuration_channel": { "const": true },
-        "read_before_write": { "const": true },
-        "read_after_write": { "const": true },
-        "non_mutating_health_attestation": { "const": true },
-        "verified_rollback": { "const": true }
+        "durable_database_persistence": {
+          "const": true
+        },
+        "durable_session": {
+          "const": true
+        },
+        "authorization": {
+          "const": true
+        },
+        "transaction_durability": {
+          "const": true
+        },
+        "pos_durability": {
+          "const": true
+        },
+        "authenticated_configuration_channel": {
+          "const": true
+        },
+        "read_before_write": {
+          "const": true
+        },
+        "read_after_write": {
+          "const": true
+        },
+        "non_mutating_health_attestation": {
+          "const": true
+        },
+        "verified_rollback": {
+          "const": true
+        }
       }
     },
-    "secrets_embedded": { "const": false },
-    "attribution": { "const": "Lab | zefry" }
+    "secrets_embedded": {
+      "const": false
+    },
+    "attribution": {
+      "const": "Lab | zefry"
+    },
+    "presentation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mode",
+        "document_root"
+      ],
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": [
+            "ACTIVE_RELEASE_PUBLIC",
+            "FIXED_PUBLIC_BRIDGE"
+          ]
+        },
+        "document_root": {
+          "type": "string",
+          "pattern": "^/[^\\\\\\u0000]+$"
+        }
+      }
+    }
   }
 }

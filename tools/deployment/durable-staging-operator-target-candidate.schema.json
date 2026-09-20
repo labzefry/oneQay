@@ -195,6 +195,29 @@
     "attribution": {
       "type": "string",
       "const": "Lab | zefry"
+    },
+    "presentation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mode",
+        "document_root"
+      ],
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": [
+            "ACTIVE_RELEASE_PUBLIC",
+            "FIXED_PUBLIC_BRIDGE"
+          ]
+        },
+        "document_root": {
+          "type": "string",
+          "pattern": "^/[^\\\\\\u0000]*$",
+          "minLength": 2,
+          "maxLength": 4096
+        }
+      }
     }
   }
 }
