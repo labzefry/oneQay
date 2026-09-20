@@ -1,0 +1,248 @@
+# Author by Lab | zefry
+name: Sprint212 cPanel No-SSH Durable Staging Target Qualification Regression
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint212-cpanel-no-ssh-durable-staging-target-qualification-${{ github.event.pull_request.number || github.ref }}-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  qualify-sprint212-cpanel-no-ssh-target:
+    name: qualify-sprint212-cpanel-no-ssh-target
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Show PHP runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          php --version
+          php -r 'foreach (["json","openssl","pdo","pdo_mysql","phar"] as $e) { if (!extension_loaded($e)) { fwrite(STDERR, "missing:$e\n"); exit(1); } }'
+
+      - name: Validate Sprint212 source syntax and contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l tools/cpanel/inspect-durable-staging-cpanel-no-ssh-target.php
+          php -l tools/cpanel/prepare-durable-staging-cpanel-no-ssh-target-candidate.php
+          jq -e . tools/deployment/cpanel-no-ssh-durable-staging-target-profile.schema.json >/dev/null
+          jq -e . ops/final-shift-close/DURABLE_STAGING_CPANEL_NO_SSH_TARGET_QUALIFICATION_CONTRACT.json >/dev/null
+
+          contract=ops/final-shift-close/DURABLE_STAGING_CPANEL_NO_SSH_TARGET_QUALIFICATION_CONTRACT.json
+          test "$(jq -r '.contract_state' "$contract")" = SOURCE_READY_CPANEL_NO_SSH_TARGET_QUALIFICATION_ONLY_NOT_DEPLOYED
+          test "$(jq -r '.supported_operator_channel' "$contract")" = CPANEL_CRON_PHP_CLI_NO_SSH
+          test "$(jq -r '.qualification_requirements.ssh_required' "$contract")" = false
+          test "$(jq -r '.qualification_requirements.private_binding_file_required' "$contract")" = true
+          test "$(jq -r '.qualification_requirements.atomic_rename_required' "$contract")" = true
+          test "$(jq -r '.qualification_requirements.symlink_required' "$contract")" = true
+          test "$(jq -r '.authority_boundary.separate_sprint208_operational_authority_required' "$contract")" = true
+          test "$(jq -r '.canonical_boundaries.environment_deployment' "$contract")" = NOT_PERFORMED
+          test "$(jq -r '.canonical_boundaries.migration27_execution' "$contract")" = NOT_PERFORMED
+          test "$(jq -r '.canonical_boundaries.selected_target' "$contract")" = null
+          test "$(jq -r '.canonical_boundaries.producer_dispatch' "$contract")" = NOT_PERFORMED
+
+      - name: Preserve canonical operational NO-GO
+        shell: bash
+        run: |
+          set -euo pipefail
+          state=ops/final-shift-close/STATE.json
+          selection=ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+          test "$(jq -r '.migration27.state' "$state")" = NOT_EXECUTED
+          test "$(jq -r '.permission_provisioning.state' "$state")" = NONE
+          test "$(jq -r '.feature_activation.state' "$state")" = INACTIVE
+          test "$(jq -r '.deployment_authority' "$state")" = NOT_GRANTED
+          test "$(jq -r '.technical_preview_activation' "$state")" = NOT_AUTHORIZED
+          test "$(jq -r '.production_activation' "$state")" = NOT_AUTHORIZED
+          test "$(jq -r '.updater_activation' "$state")" = INACTIVE
+          test "$(jq -r '.selection_state' "$selection")" = BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET
+          test "$(jq -r '.selected_target' "$selection")" = null
+
+      - name: Exercise cPanel no-SSH qualification bridge
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          root="$RUNNER_TEMP/oneqay-cpanel-s212"
+          deployment="$root/deployment"
+          release_root="$deployment/releases"
+          shared_root="$deployment/shared"
+          active_pointer="$deployment/current"
+          document_root="$active_pointer/apps/web/public"
+          private_root="$root/private"
+          mkdir -p "$release_root" "$shared_root" "$private_root"
+
+          cat > "$root/target-input.json" <<EOF
+          {
+            "schema_version": 1,
+            "target_class": "CPANEL_NO_SSH",
+            "execution_channel": "CPANEL_CRON_PHP_CLI_NO_SSH",
+            "environment_id": "cpanel-staging-ci",
+            "runtime_class": "durable-staging",
+            "production": false,
+            "production_data_allowed": false,
+            "synthetic_fixture_runtime": false,
+            "release_binding": {
+              "source_commit": "e37300d5d1be6727cdb5d818b6365c6429f2af9d",
+              "artifact_sha256": "faf6b4799648c0fe1d5ddcf4a55e0a39ba8bd0506e3e2ef3f4bb33f38495d079"
+            },
+            "filesystem": {
+              "deployment_root": "$deployment",
+              "release_root": "$release_root",
+              "shared_runtime_root": "$shared_root",
+              "active_release_pointer": "$active_pointer",
+              "document_root": "$document_root"
+            },
+            "operator_assertions": {
+              "durable_database_persistence": true,
+              "durable_session": true,
+              "authorization": true,
+              "transaction_durability": true,
+              "pos_durability": true,
+              "authenticated_configuration_channel": true,
+              "read_before_write": true,
+              "read_after_write": true,
+              "non_mutating_health_attestation": true,
+              "verified_rollback": true
+            },
+            "attribution": "Lab | zefry"
+          }
+          EOF
+
+          token='sprint212-ci-attestation-token-0123456789abcdef'
+          cat > "$private_root/bindings.json" <<EOF
+          {
+            "ONEQAY_RUNTIME_CLASS": "durable-staging",
+            "ONEQAY_RUNNING_SOURCE_COMMIT": "e37300d5d1be6727cdb5d818b6365c6429f2af9d",
+            "ONEQAY_RUNNING_ARTIFACT_SHA256": "faf6b4799648c0fe1d5ddcf4a55e0a39ba8bd0506e3e2ef3f4bb33f38495d079",
+            "ONEQAY_DURABLE_RUNTIME_ENVIRONMENT_ID": "cpanel-staging-ci",
+            "ONEQAY_DURABLE_RUNTIME_ATTESTATION_TOKEN": "$token",
+            "ONEQAY_DURABLE_STAGING_RUNTIME_ENABLED": "true"
+          }
+          EOF
+          chmod 0600 "$private_root/bindings.json"
+
+          php tools/cpanel/inspect-durable-staging-cpanel-no-ssh-target.php             "$root/target-input.json"             "$private_root/bindings.json"             "$private_root/target-profile.json"
+
+          test "$(jq -r '.profile_state' "$private_root/target-profile.json")" = CPANEL_NO_SSH_TARGET_PROFILE_OBSERVED
+          test "$(jq -r '.execution_channel' "$private_root/target-profile.json")" = CPANEL_CRON_PHP_CLI_NO_SSH
+          test "$(jq -r '.filesystem.atomic_rename_supported' "$private_root/target-profile.json")" = true
+          test "$(jq -r '.filesystem.symlink_supported' "$private_root/target-profile.json")" = true
+          test "$(jq -r '.configuration.required_binding_identity_matches' "$private_root/target-profile.json")" = true
+          test "$(jq -r '.configuration.secret_values_embedded' "$private_root/target-profile.json")" = false
+          ! grep -Fq "$token" "$private_root/target-profile.json"
+
+          php tools/cpanel/prepare-durable-staging-cpanel-no-ssh-target-candidate.php             "$private_root/target-profile.json"             "$private_root/target-candidate.json"
+
+          test "$(jq -r '.target_state' "$private_root/target-candidate.json")" = OPERATOR_TARGET_CANDIDATE
+          test "$(jq -r '.environment_id' "$private_root/target-candidate.json")" = cpanel-staging-ci
+          test "$(jq -r '.runtime_class' "$private_root/target-candidate.json")" = durable-staging
+          test "$(jq -r '.configuration.secret_values_embedded' "$private_root/target-candidate.json")" = false
+          ! grep -Fq "$token" "$private_root/target-candidate.json"
+
+          cat > "$private_root/handoff.json" <<'EOF'
+          {
+            "schema_version": 1,
+            "handoff_state": "VALIDATED_FOR_EXTERNAL_DEPLOYMENT_NOT_AUTHORIZED",
+            "product": {
+              "name": "oneQay",
+              "repository": "labzefry/oneQay"
+            },
+            "artifact": {
+              "release_id": "durable-staging-e37300d5d1be",
+              "source_commit": "e37300d5d1be6727cdb5d818b6365c6429f2af9d",
+              "artifact_filename": "durable-staging-e37300d5d1be.tar.gz",
+              "artifact_sha256": "faf6b4799648c0fe1d5ddcf4a55e0a39ba8bd0506e3e2ef3f4bb33f38495d079",
+              "artifact_size_bytes": 4766192,
+              "manifest_sha256": "ef968562f76801e425d02c33d3ecfc13556f271f05bff1ff9441c5a147b588f0"
+            },
+            "runtime": {
+              "required_runtime_class": "durable-staging",
+              "production": false,
+              "production_data_allowed": false,
+              "synthetic_fixture_runtime": false
+            },
+            "migration": {
+              "expected_count": 27,
+              "execution_state": "NOT_PERFORMED",
+              "execution_authorized": false
+            },
+            "deployment": {
+              "execution_state": "NOT_PERFORMED",
+              "authority_state": "NOT_GRANTED"
+            }
+          }
+          EOF
+
+          php tools/prepare-durable-staging-deployment-authority-request.php             "$private_root/handoff.json"             "$private_root/target-candidate.json"             "$private_root/authority-request.json"
+
+          test "$(jq -r '.request_state' "$private_root/authority-request.json")" = DURABLE_STAGING_DEPLOYMENT_AUTHORITY_REQUEST_PENDING_APPROVAL
+          test "$(jq -r '.environment_id' "$private_root/authority-request.json")" = cpanel-staging-ci
+          test "$(jq -r '.required_authority.maximum_lifetime_seconds' "$private_root/authority-request.json")" = 900
+          test "$(jq -r '.migration_execution_authorized' "$private_root/authority-request.json")" = false
+          test "$(jq -r '.production_authorized' "$private_root/authority-request.json")" = false
+          test "$(jq -r '.target_selection_authorized' "$private_root/authority-request.json")" = false
+          test "$(jq -r '.producer_dispatch_authorized' "$private_root/authority-request.json")" = false
+
+      - name: Prove private binding and fail-closed rejection
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          root="$RUNNER_TEMP/oneqay-cpanel-s212"
+          private_root="$root/private"
+
+          chmod 0644 "$private_root/bindings.json"
+          if php tools/cpanel/inspect-durable-staging-cpanel-no-ssh-target.php             "$root/target-input.json"             "$private_root/bindings.json"             "$private_root/should-not-exist.json"
+          then
+            echo "Publicly readable binding file was incorrectly accepted." >&2
+            exit 1
+          fi
+          test ! -e "$private_root/should-not-exist.json"
+          chmod 0600 "$private_root/bindings.json"
+
+          jq '.operator_assertions.verified_rollback = false'             "$private_root/target-profile.json" > "$private_root/rejected-profile.json"
+          if php tools/cpanel/prepare-durable-staging-cpanel-no-ssh-target-candidate.php             "$private_root/rejected-profile.json"             "$private_root/rejected-candidate.json"
+          then
+            echo "Unverified rollback was incorrectly accepted." >&2
+            exit 1
+          fi
+          test ! -e "$private_root/rejected-candidate.json"
+
+      - name: Prove adapter has no deployment or network side effects
+        shell: bash
+        run: |
+          set -euo pipefail
+          for file in             tools/cpanel/inspect-durable-staging-cpanel-no-ssh-target.php             tools/cpanel/prepare-durable-staging-cpanel-no-ssh-target-candidate.php
+          do
+            ! grep -E '(^|[^A-Za-z_])(exec|shell_exec|system|passthru|proc_open|popen)[[:space:]]*\(' "$file"
+            ! grep -E '(curl_init|fsockopen|stream_socket_client|https?://)' "$file"
+            ! grep -Fq 'artisan migrate' "$file"
+          done
+
+      - name: Prove application source remains untouched
+        if: github.event_name == 'pull_request'
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          test -z "$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web)"
+          test -z "$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web/database/migrations)"
+
+      - name: Confirm tracked source cleanliness
+        run: git diff --exit-code
