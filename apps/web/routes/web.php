@@ -24,6 +24,8 @@ use App\Delivery\Http\Pos\PosSaleVoidController;
 use App\Delivery\Http\Pos\PosShiftOpeningController;
 use App\Delivery\Http\Pos\PosShiftOpeningCashController;
 use App\Delivery\Http\Pos\PosShiftClosingCashController;
+use App\Delivery\Http\SystemUpdate\DevelopmentUpdateRequestController;
+use App\Delivery\Http\SystemUpdate\DurableStagingRuntimeAttestationController;
 use App\Delivery\Http\SystemUpdate\SystemUpdateControlPlaneController;
 use App\Delivery\Http\SystemUpdate\SystemUpdatePageController;
 use App\Delivery\Preview\TechnicalPreviewController;
@@ -218,7 +220,15 @@ Route::post('/administration/identities/{identity_id}/authentication-reactivatio
     ->middleware(['session.active', 'throttle:5,1', 'throttle:20,60', RequirePolicyAdministrationSessionContextMiddleware::class])
     ->name('identity.authentication-eligibility.reactivate');
 
+Route::get('/internal/oneqay/durable-runtime/readiness', DurableStagingRuntimeAttestationController::class)
+    ->middleware(['throttle:30,1', 'throttle:300,60'])
+    ->name('durable-staging.runtime-attestation');
+
 Route::get('/system/update', SystemUpdatePageController::class)->name('system-update.page');
+
+Route::post('/system/update/development/request', DevelopmentUpdateRequestController::class)
+    ->middleware(['throttle:5,1', 'throttle:20,60'])
+    ->name('system-update.development.request');
 
 Route::prefix('system/update')->controller(SystemUpdateControlPlaneController::class)->group(function (): void {
     Route::get('/status', 'status')->name('system-update.status');
