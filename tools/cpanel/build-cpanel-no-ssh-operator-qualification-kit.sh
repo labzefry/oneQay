@@ -55,19 +55,34 @@ done
 
 jq -e . "$contract_path" >/dev/null
 
+release_run_id="$(jq -r '.application_release_reference.publication_run_id' "$contract_path")"
+release_artifact_id="$(jq -r '.application_release_reference.actions_artifact_id' "$contract_path")"
+release_artifact_name="$(jq -r '.application_release_reference.actions_artifact_name' "$contract_path")"
+release_outer_digest="$(jq -r '.application_release_reference.actions_outer_digest' "$contract_path")"
+release_expires_at="$(jq -r '.application_release_reference.expires_at' "$contract_path")"
 release_id="$(jq -r '.application_release_reference.release_id' "$contract_path")"
 release_source="$(jq -r '.application_release_reference.source_commit' "$contract_path")"
+release_artifact_filename="$(jq -r '.application_release_reference.artifact_filename' "$contract_path")"
+release_artifact_size="$(jq -r '.application_release_reference.artifact_size_bytes' "$contract_path")"
 release_artifact_sha="$(jq -r '.application_release_reference.artifact_sha256' "$contract_path")"
 release_manifest_sha="$(jq -r '.application_release_reference.manifest_sha256' "$contract_path")"
-release_artifact_id="$(jq -r '.application_release_reference.actions_artifact_id' "$contract_path")"
+release_handoff_sha="$(jq -r '.application_release_reference.handoff_sha256' "$contract_path")"
 handoff_state="$(jq -r '.application_release_reference.handoff_state' "$contract_path")"
 
+[[ "$release_run_id" =~ ^[0-9]+$ ]]
+[[ "$release_artifact_id" =~ ^[0-9]+$ ]]
+[[ "$release_artifact_name" =~ ^oneqay-durable-staging-[0-9a-f]{12}-operator-bundle$ ]]
+[[ "$release_outer_digest" =~ ^sha256:[0-9a-f]{64}$ ]]
+[[ "$release_expires_at" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$ ]]
 [[ "$release_id" =~ ^durable-staging-[0-9a-f]{12}$ ]]
 [[ "$release_source" =~ ^[0-9a-f]{40}$ ]]
+[[ "$release_artifact_filename" == "$release_id.tar.gz" ]]
+[[ "$release_artifact_size" =~ ^[0-9]+$ ]]
 [[ "$release_artifact_sha" =~ ^[0-9a-f]{64}$ ]]
 [[ "$release_manifest_sha" =~ ^[0-9a-f]{64}$ ]]
-[[ "$release_artifact_id" =~ ^[0-9]+$ ]]
+[[ "$release_handoff_sha" =~ ^[0-9a-f]{64}$ ]]
 [[ "$handoff_state" == "VALIDATED_FOR_EXTERNAL_DEPLOYMENT_NOT_AUTHORIZED" ]]
+[[ "$release_id" == "durable-staging-${release_source:0:12}" ]]
 
 rm -rf "$stage_parent" "$zip_path" "$manifest_path" "$checksum_path"
 mkdir -p "$stage_root"
@@ -84,11 +99,18 @@ cat > "$stage_root/KIT.json" <<JSON
   "kit_id": "$kit_id",
   "kit_source_commit": "$source_sha",
   "application_release_reference": {
+    "publication_run_id": $release_run_id,
     "actions_artifact_id": $release_artifact_id,
+    "actions_artifact_name": "$release_artifact_name",
+    "actions_outer_digest": "$release_outer_digest",
+    "expires_at": "$release_expires_at",
     "release_id": "$release_id",
     "source_commit": "$release_source",
+    "artifact_filename": "$release_artifact_filename",
+    "artifact_size_bytes": $release_artifact_size,
     "artifact_sha256": "$release_artifact_sha",
     "manifest_sha256": "$release_manifest_sha",
+    "handoff_sha256": "$release_handoff_sha",
     "handoff_state": "$handoff_state"
   },
   "operator_channel": "CPANEL_FILE_MANAGER_PLUS_ONE_SHOT_CRON_PHP_CLI",
@@ -159,7 +181,7 @@ This kit is for a real isolated non-production cPanel/shared-hosting target wher
 
 ## Required companion bundle
 
-Use the application release identity recorded in `KIT.json`. Retrieve the separately published Sprint211 durable-staging operator bundle and keep its archive, manifest, SHA-256 sidecar, and deployment handoff together.
+Use only the application release identity recorded in `KIT.json`. Retrieve that exact separately published durable-staging operator bundle and keep its archive, manifest, SHA-256 sidecar, and deployment handoff together. Do not substitute an older bundle merely because it was used by an earlier Sprint.
 
 ## cPanel preparation
 
@@ -253,7 +275,7 @@ The plan itself performs no deployment.
 
 ## Step 6 — Guarded cPanel no-SSH deployment execution
 
-Before authority expires, upload the exact Sprint211 archive into the private operator workspace and prepare a private Laravel runtime environment file under the qualified shared-runtime root. The runtime environment file must be owner-only (0600) and must not be stored in the application archive.
+Before authority expires, upload the exact durable-staging archive identified in `KIT.json` into the private operator workspace and prepare a private Laravel runtime environment file under the qualified shared-runtime root. The runtime environment file must be owner-only (0600) and must not be stored in the application archive.
 
 Run the Sprint214 executor:
 
@@ -302,7 +324,7 @@ Stop if any real host fact, required capability, PHP feature, filesystem operati
 The kit does not authorize migration #27, permission provisioning, Final Shift Close activation, target selection, producer dispatch, Technical Preview, Production, or updater activation.
 MARKDOWN
 
-python3 - "$stage_root" "$manifest_path" "$kit_id" "$source_sha" "$release_id" "$release_source" "$release_artifact_sha" "$release_manifest_sha" "$release_artifact_id" <<'PY'
+python3 - "$stage_root" "$manifest_path" "$kit_id" "$source_sha" "$release_run_id" "$release_artifact_id" "$release_artifact_name" "$release_outer_digest" "$release_expires_at" "$release_id" "$release_source" "$release_artifact_filename" "$release_artifact_size" "$release_artifact_sha" "$release_manifest_sha" "$release_handoff_sha" "$handoff_state" <<'PY'
 import hashlib
 import json
 import pathlib
@@ -312,11 +334,19 @@ stage = pathlib.Path(sys.argv[1])
 manifest_path = pathlib.Path(sys.argv[2])
 kit_id = sys.argv[3]
 source_sha = sys.argv[4]
-release_id = sys.argv[5]
-release_source = sys.argv[6]
-release_artifact_sha = sys.argv[7]
-release_manifest_sha = sys.argv[8]
-release_artifact_id = int(sys.argv[9])
+release_run_id = int(sys.argv[5])
+release_artifact_id = int(sys.argv[6])
+release_artifact_name = sys.argv[7]
+release_outer_digest = sys.argv[8]
+release_expires_at = sys.argv[9]
+release_id = sys.argv[10]
+release_source = sys.argv[11]
+release_artifact_filename = sys.argv[12]
+release_artifact_size = int(sys.argv[13])
+release_artifact_sha = sys.argv[14]
+release_manifest_sha = sys.argv[15]
+release_handoff_sha = sys.argv[16]
+handoff_state = sys.argv[17]
 
 files = []
 for path in sorted(p for p in stage.rglob("*") if p.is_file()):
@@ -334,11 +364,19 @@ manifest = {
     "kit_id": kit_id,
     "kit_source_commit": source_sha,
     "application_release_reference": {
+        "publication_run_id": release_run_id,
         "actions_artifact_id": release_artifact_id,
+        "actions_artifact_name": release_artifact_name,
+        "actions_outer_digest": release_outer_digest,
+        "expires_at": release_expires_at,
         "release_id": release_id,
         "source_commit": release_source,
+        "artifact_filename": release_artifact_filename,
+        "artifact_size_bytes": release_artifact_size,
         "artifact_sha256": release_artifact_sha,
         "manifest_sha256": release_manifest_sha,
+        "handoff_sha256": release_handoff_sha,
+        "handoff_state": handoff_state,
     },
     "files": files,
     "secret_values_embedded": False,
