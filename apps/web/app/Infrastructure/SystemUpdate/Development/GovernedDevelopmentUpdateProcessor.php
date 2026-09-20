@@ -391,7 +391,7 @@ final class GovernedDevelopmentUpdateProcessor
                 && is_string($candidateDirectory)
                 && is_dir($candidateDirectory)
                 && ! is_link($candidateDirectory)) {
-                $this->removeTree($candidateDirectory);
+                $this->quarantineFailedCandidate($candidateDirectory);
             }
 
             $safeCode = $rollbackFailed
@@ -1373,6 +1373,54 @@ final class GovernedDevelopmentUpdateProcessor
                 throw new DevelopmentUpdaterViolation('copy_file_failed');
             }
         }
+    }
+
+    private function quarantineFailedCandidate(string $candidateDirectory): void
+    {
+        if (! is_dir($candidateDirectory) || is_link($candidateDirectory)) {
+            return;
+        }
+
+        $releaseRoot = dirname($candidateDirectory);
+        if (! is_dir($releaseRoot) || ! is_writable($releaseRoot)) {
+            throw new DevelopmentUpdaterViolation('failed_candidate_quarantine_unavailable');
+        }
+
+        $quarantine = $releaseRoot.'/.failed-'.basename($candidateDirectory).'-'.bin2hex(random_bytes(6));
+        if (file_exists($quarantine) || is_link($quarantine) || ! rename($candidateDirectory, $quarantine)) {
+            throw new DevelopmentUpdaterViolation('failed_candidate_quarantine_failed');
+        }
+
+        // Retry is now unblocked because the governed release ID path is free.
+        // Cleanup is best-effort only; a retained hidden quarantine is safer than
+        // restoring the failed candidate to its original release identity.
+        @chmod($quarantine, 0700);
+        $this->makeTreeRemovable($quarantine);
+        $this->removeTree($quarantine);
+    }
+
+    private function makeTreeRemovable(string $path): void
+    {
+        if (! is_dir($path) || is_link($path)) {
+            return;
+        }
+
+        $iterator = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($path, \FilesystemIterator::SKIP_DOTS),
+            RecursiveIteratorIterator::SELF_FIRST,
+        );
+        foreach ($iterator as $entry) {
+            $target = $entry->getPathname();
+            if (is_link($target)) {
+                continue;
+            }
+            if ($entry->isDir()) {
+                @chmod($target, 0700);
+            } elseif ($entry->isFile()) {
+                @chmod($target, 0600);
+            }
+        }
+        @chmod($path, 0700);
     }
 
     private function removeTree(string $path): void
