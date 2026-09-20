@@ -1,5 +1,31 @@
 # Changelog
 
+## 2026-09-20 — Sprint217 closed canonically
+
+**Sprint217: cPanel Same-Source Staging Rebind**
+
+- Closed the stale cPanel application-release binding that still pointed to Sprint211 while Production promotion requires verified durable-staging evidence from Sprint216 source.
+- Rebound the cPanel no-SSH operator kit to Sprint216 durable-staging artifact `10603323419`, source `d0b5becbf945c5192e797d512a704eb5aecc6eaa`.
+- Builder now consumes exact release identity from the governed contract instead of hardcoding a Sprint-number-specific companion bundle.
+- Added stronger release metadata to `KIT.json` and kit manifest: publication run, Actions artifact ID/name/digest, expiry, archive filename/size/SHA-256, manifest SHA-256, handoff SHA-256/state.
+- Updated historical Sprint213 regression to preserve the current governed binding and added dedicated Sprint217 regression that rejects stale Sprint211 release references.
+- Dedicated Sprint217 run `35505935195`: SUCCESS.
+- Final engineering head `21d0a4056c370e7e5358c43b3e7f5647cc7a9848`: 96/96 PR-triggered workflows SUCCESS.
+- Engineering PR #869 Product Owner merge authorization comment `5749323944`; authority status SUCCESS.
+- Engineering squash: `afb048c9b7edc53d13ad8f5fc1197a8874966450`.
+- Engineering path-set SHA-256: `d741d767942ac32eb8e0e1faeaf1bf2c2eade693b5ebdd142fc7d6ab5ff5fff9`.
+- Canonical reconciliation path-set SHA-256: `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`.
+- Main-only cPanel kit publication run `35506129034`: SUCCESS.
+- Current cPanel kit artifact ID `10603569410`: `oneqay-cpanel-no-ssh-operator-kit-afb048c9b7ed`.
+- Actions outer digest: `sha256:49914d2d469df5707f131a5ae35ef16071e432f3970da7bab32046ebccd59c69`.
+- Inner kit ZIP SHA-256: `910e1ec3f01d0dc0be515daefc7fd72648c35b37f08d7f3635fdfc380362a222`.
+- Kit manifest SHA-256: `fb1ed300f339cef03ef3b5f22aaecff63368feddd29e9300aa9e9053c7739147`.
+- Independent verification confirmed zero application payload entries, zero forbidden secret-bearing filename shapes, zero stale Sprint211 artifact/release references, and exact Sprint216 staging release identity.
+- Production release/target/authority/plan/evidence tooling exists, but no Production execution tool exists yet; this is the next concrete repository-side blocker.
+- Operational NO-GO remains unchanged.
+
+Author by Lab | zefry
+
 ## 2026-09-20 — Sprint216 closed canonically
 
 **Sprint216: Production Release Deployment Governance Foundation**
