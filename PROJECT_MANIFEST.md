@@ -5,75 +5,69 @@
 
 ## Canonical state
 
-**Canonical engineering checkpoint:** Sprint215
-**Objective:** `DURABLE_STAGING_PERSISTENT_OPERATOR_RELEASE_PUBLICATION_FOUNDATION`
-**Canonical engineering commit:** `759ba3d5d05d2bead51580be8d778b6f987b95c4`
-**Engineering PR:** #865 — `Sprint215: add persistent operator release publication foundation`
-**Final engineering head:** `c996794af12bc085213d91c1961bb71b3d351394`
+**Canonical engineering checkpoint:** Sprint216
+**Objective:** `PRODUCTION_RELEASE_DEPLOYMENT_GOVERNANCE_FOUNDATION`
+**Canonical engineering commit:** `d0b5becbf945c5192e797d512a704eb5aecc6eaa`
+**Engineering PR:** #867 — `Sprint216: add production release and deployment governance`
+**Final engineering head:** `3a9f4a9189094a16be2abf1939319b6807227634`
 **Exact-head qualification:** 94/94 successful
-**Sprint215 qualification:** run `35502047468` — SUCCESS
-**Product Owner merge authority:** comment `5748933469`; `product-owner-merge-authority` — SUCCESS
-**Engineering envelope:** 5 paths — `fb3923f0bce30e06695776cb75bdce6d649dd43dc183bc75df0f1b4fd6e828e7`
+**Sprint216 qualification:** run `35504883655` — SUCCESS
+**Product Owner merge authority:** comment `5749220088`; `product-owner-merge-authority` — SUCCESS
+**Engineering envelope:** 16 paths — `e1f0133337a2050cd789f2943101ab1acf7b29684c99d32ff3908ae6122fedd4`
 **Canonical reconciliation envelope:** 8 paths — `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`
-**Previous canonical checkpoint:** Sprint214 reconciliation `3eacfc54aca1c1d45217eb226e84f1a0d70aee50`
+**Previous canonical checkpoint:** Sprint215 reconciliation `0d1ab7ceabbf95d7305d8b089eb2dd526435bc22`
 
-> `759ba3d5d05d2bead51580be8d778b6f987b95c4` is the permanent canonical Sprint215 engineering evidence. The reconciliation squash must not replace it.
+> `d0b5becbf945c5192e797d512a704eb5aecc6eaa` is the permanent Sprint216 engineering evidence. The reconciliation squash must not replace it.
 
-## Persistent operator handoff publication foundation
+## Same-source durable-staging artifact
 
-Sprint215 adds an authority-gated persistent GitHub prerelease publication path for the exact existing governed operator assets.
+- publication run: `35505077172` — SUCCESS
+- artifact ID: `10603323419`
+- artifact: `oneqay-durable-staging-d0b5becbf945-operator-bundle`
+- Actions digest: `sha256:38e21fef3c32014f2d07cb7a3a2d970a37680371c99118b8c43b88cf196c25f5`
+- source: `d0b5becbf945c5192e797d512a704eb5aecc6eaa`
+- release: `durable-staging-d0b5becbf945`
+- application archive SHA-256: `e32a7de2c07c35306c03edff5d7d762782ef58449c92d4b88e5dd04b50d489a2`
+- manifest SHA-256: `6d8099ef3f0b18003c8e362cc1f315d01777b70f3a05b3948f16ff4a44092b9c`
+- deployment handoff SHA-256: `a9f33e8e5fa28abefdfb6397f350307e8954c486fbd43540a879b9c340c7ccad`
+- handoff: `VALIDATED_FOR_EXTERNAL_DEPLOYMENT_NOT_AUTHORIZED`
+- expires: `2026-10-20T10:27:02Z`
 
-**Reserved release tag:** `operator-handoff-e37300d5d1be-270e8e954e38`
-**Publication trigger:** manual `workflow_dispatch` only
-**Automatic push publication:** forbidden
-**Separate issue #856 publication authority:** required
-**Persistent release publication state:** `NOT_PERFORMED`
-**GitHub Releases at engineering closure:** none
+## Same-source Production candidate
 
-The workflow is draft-first and refuses existing release/tag reuse or asset overwrite. It verifies asset identities before draft publication and does not perform deployment.
+- publication run: `35505077185` — SUCCESS
+- artifact ID: `10603358335`
+- artifact: `oneqay-production-d0b5becbf945-operator-bundle`
+- Actions digest: `sha256:25bb2b386dc6ef4988ba4fb92f37507ebb51c3c713037e53e5df0afd085a085a`
+- source: `d0b5becbf945c5192e797d512a704eb5aecc6eaa`
+- release: `production-d0b5becbf945`
+- archive SHA-256: `cd1f96346d310aab3ac59398116499dae3e3df84a6af9ec1a13515d1e46568f1`
+- manifest SHA-256: `6b871b954e5a31b5ae7c0bb43afb0e5c8386d5bc6e6818494ed75597d5307b86`
+- business runtime activation ready: `false`
+- dark health endpoint: `/health/live`
+- Production traffic activation authorized: `false`
+- expires: `2026-10-20T10:27:04Z`
 
-## Governed application bundle
+Independent verification confirms 6,227 application regular files are byte-identical between staging and Production candidate. Both archives include exactly 27 migration source files, execute none, and contain zero forbidden secret-bearing filename shapes.
 
-- Actions artifact ID: `10597712890`
-- Actions artifact name: `oneqay-durable-staging-e37300d5d1be-operator-bundle`
-- Actions digest: `sha256:a0020b5378d3b2dedc0d447abd8dd09b896048243aabab329184e424281a0be3`
-- Release ID: `durable-staging-e37300d5d1be`
-- Source: `e37300d5d1be6727cdb5d818b6365c6429f2af9d`
-- Archive SHA-256: `faf6b4799648c0fe1d5ddcf4a55e0a39ba8bd0506e3e2ef3f4bb33f38495d079`
-- Manifest SHA-256: `ef968562f76801e425d02c33d3ecfc13556f271f05bff1ff9441c5a147b588f0`
-- Deployment handoff state: `VALIDATED_FOR_EXTERNAL_DEPLOYMENT_NOT_AUTHORIZED`
+## Production promotion governance
 
-## Governed cPanel no-SSH operator kit
+Production promotion requires verified same-source durable-staging evidence with state `DEPLOYED_VERIFIED_NOT_SELECTED`, an exact real Production target candidate, exact artifact binding, and separately issued authority with maximum lifetime 900 seconds.
 
-- Actions artifact ID: `10601606508`
-- Actions artifact name: `oneqay-cpanel-no-ssh-operator-kit-270e8e954e38`
-- Actions digest: `sha256:58d3f85c262dadb2b2f9e37ab1852eec9a250f9075558cfa6ce3dd3756895f22`
-- Source: `270e8e954e389f61d32f49b89b87bed571866867`
-- Inner ZIP SHA-256: `e572c93f1a8fc55b1c67f0b1f8744a2b6dd3f3c811d0c83a91767fef8df1ae82`
-- Manifest SHA-256: `750375c512c3eab35530da902fbbf30eff63fb7dc59ad141f0a4e33fce5c97f9`
+The Production deployment plan is dark-deploy only. Post-deployment evidence can reach `PRODUCTION_DEPLOYED_VERIFIED_NOT_ACTIVATED`; business/traffic activation is outside Sprint216 authority.
 
-## Delivered capability
+## Superseded packet
 
-- Persistent repository-retention publication can preserve the exact Sprint211/Sprint214 governed bytes beyond Actions retention.
-- Publication is bound to exact current main and exact issue #856 Product Owner authorization.
-- No payload rebuild is permitted in the persistence workflow.
-- Draft-first publication and no-overwrite semantics preserve immutability.
-- Publication authority remains separate from deployment/runtime authority.
+Sprint215 publication authority comment `5749026526` was bound to older Sprint211/Sprint214 artifacts and was intentionally not executed. Future promotion uses the Sprint216 same-source artifacts.
 
 ## Operational NO-GO
 
-Machine-readable state remains authoritative and unchanged: migration #27 `NOT_EXECUTED`; permission provisioning `NONE`; Final Shift Close `INACTIVE`; general deployment authority `NOT_GRANTED`; Technical Preview/Production `NOT_AUTHORIZED`; updater `INACTIVE`; durable target selection `BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET`; selected target `null`; producer dispatch `NOT_PERFORMED`.
-
-Persistent GitHub prerelease publication is also `NOT_PERFORMED` until separately authorized.
+Migration #27 remains `NOT_EXECUTED`; permission provisioning `NONE`; Final Shift Close `INACTIVE`; deployment authority `NOT_GRANTED`; Technical Preview/Production activation `NOT_AUTHORIZED`; updater `INACTIVE`; durable target selection blocked; selected target `null`; producer dispatch `NOT_PERFORMED`.
 
 ## Next position
 
-Issue #856 remains the single operational handoff.
+Issue #856 remains the single operational handoff. The immediate material blocker is a truthful real durable-staging target and verified Sprint216 staging deployment evidence.
 
-Two independent external actions remain:
-1. separately authorize and run the Sprint215 persistent repository publication before the Actions artifacts expire; and
-2. materialize/qualify a real isolated durable-staging target, then continue Sprint208 → Sprint207 → Sprint214 → Sprint209 under their separate authorities.
-
-Do not open Sprint216 merely to continue activity. Open another bounded source sprint only if persistent publication execution or real target qualification/execution proves a concrete repository-side defect.
+Do not open a successor sprint merely for activity. A successor is justified only by a concrete delivery/source blocker discovered from the new artifacts or real-target execution.
 
 Author by Lab | zefry
