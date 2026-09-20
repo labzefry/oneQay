@@ -182,7 +182,7 @@ Document-root modes:
 - ACTIVE_RELEASE_PUBLIC: use when cPanel can point the domain directly to <active-release-pointer>/apps/web/public.
 - FIXED_PUBLIC_BRIDGE: use when cPanel keeps a fixed public document root outside the private deployment tree. Set filesystem.document_root to the real public root and filesystem.document_root_mode to FIXED_PUBLIC_BRIDGE. Qualification requires a writable public root, existing rewrite-to-index .htaccess, strict public/private path separation, and atomic file/directory rename support.
 
-The fixed-public executor writes only a minimal public index bridge plus build assets. Laravel source, vendor, runtime environment, bindings, and secrets remain under the private deployment tree. Rollback rehearsal restores both the private active pointer and public surface before reactivating the candidate.
+The fixed-public executor writes only a minimal public index bridge plus build assets. Laravel source, vendor, runtime environment, bindings, and secrets remain under the private deployment tree. When PHP symlink() is available, the established active-pointer path is preserved. When the hosting provider disables PHP symlink() but PHP hard links are available, FIXED_PUBLIC_BRIDGE may use an authority-bound direct-release public bridge plus a private hard-link runtime binding; the provider disable_functions policy is never bypassed. Rollback rehearsal restores the previous public surface before reactivating the candidate. ACTIVE_RELEASE_PUBLIC still requires PHP symlink support.
 
 Author by Lab | zefry
 
@@ -299,9 +299,9 @@ Run the Sprint214 executor:
   <deployment-evidence.json>
 ```
 
-The executor revalidates the plan fingerprint and current authority, verifies the exact archive SHA-256, extracts the release only after authority validation, binds the private runtime environment by symlink, atomically activates the immutable release, fetches the authenticated HTTPS readiness attestation, rehearses rollback to the previous active state, reactivates the new release, fetches readiness again, and writes Sprint209-compatible deployment evidence only if every check succeeds.
+The executor revalidates the plan fingerprint and current authority, verifies the exact archive SHA-256, extracts the release only after authority validation, binds the private runtime environment without exposing its value, atomically activates the immutable release, fetches the authenticated HTTPS readiness attestation, rehearses rollback to the previous serving state, reactivates the new release, fetches readiness again, and writes Sprint209-compatible deployment evidence only if every check succeeds. ACTIVE_RELEASE_PUBLIC uses the existing symlink pointer model. FIXED_PUBLIC_BRIDGE uses the same model when PHP symlink() is available; if the provider disables PHP symlink(), the governed fallback requires PHP hard-link support for the private runtime binding and makes the fixed public bridge itself the authority-checked atomic activation surface.
 
-For an initial empty target, rollback rehearsal restores the previous **absent** active-pointer state before reactivating the new release. For an upgrade, rollback rehearsal restores the previous release symlink before reactivating the new release.
+For ACTIVE_RELEASE_PUBLIC and symlink-capable FIXED_PUBLIC_BRIDGE targets, the existing absent/previous-symlink rollback semantics remain unchanged. For the FIXED_PUBLIC_BRIDGE no-PHP-symlink fallback, rollback rehearsal restores the previous public index/build surface and then reactivates the exact immutable candidate release; the private active pointer is not mutated by that fallback.
 
 If execution fails after active-pointer mutation, the executor attempts to restore the previous active state and emits no success evidence.
 
