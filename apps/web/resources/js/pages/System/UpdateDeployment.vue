@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { ref } from 'vue'
+import { useForm } from '@inertiajs/vue3'
 type ReleaseCheck = {
   status: 'NOT_CHECKED' | 'UNAVAILABLE' | 'AVAILABLE'
   release_id: string | null
@@ -45,11 +47,41 @@ type InstallationPreflight = {
   }
 }
 
+type DevelopmentUpdaterResult = {
+  state: string | null
+  release_id: string | null
+  source_commit: string | null
+  completed_at_unix: number | null
+  safe_code: string | null
+}
+
+type DevelopmentUpdaterStatus = {
+  enabled: boolean
+  mode: 'GOVERNED_DEVELOPMENT_STAGING_ONLY'
+  request_pending: boolean
+  request_id: string | null
+  request_expires_at_unix: number | null
+  last_result: DevelopmentUpdaterResult | null
+  production_allowed: false
+  migration_execution_allowed: false
+  repository: 'labzefry/oneQay'
+  channel: 'STAGING'
+  attribution: string
+}
+
+type DevelopmentUpdateFeedback = {
+  state: 'REQUEST_ACCEPTED' | 'REQUEST_DENIED'
+  request_id: string | null
+  message: string
+} | null
+
 // Author by Lab | zefry
 const props = defineProps<{
   status: UpdateStatus
   ui: UiBoundary
   installation_preflight: InstallationPreflight
+  development_updater: DevelopmentUpdaterStatus
+  development_update_feedback: DevelopmentUpdateFeedback
 }>()
 
 const displayValue = (value: string | null): string => value ?? '—'
@@ -67,6 +99,28 @@ const installationSteps = [
 
 const stepReady = (checks: readonly string[]): boolean =>
   checks.every((key) => props.installation_preflight.checks[key]?.ready === true)
+
+const developmentConfirmation = ref(false)
+const developmentUpdateForm = useForm({
+  operator_token: '',
+  totp_code: '',
+  confirmation: '',
+})
+
+const submitDevelopmentUpdate = (): void => {
+  if (!developmentConfirmation.value || developmentUpdateForm.processing || props.development_updater.request_pending) {
+    return
+  }
+
+  developmentUpdateForm.confirmation = 'SYNC_GOVERNED_DEVELOPMENT_RELEASE'
+  developmentUpdateForm.post('/system/update/development/request', {
+    preserveScroll: true,
+    onFinish: () => {
+      developmentUpdateForm.reset('operator_token', 'totp_code', 'confirmation')
+      developmentConfirmation.value = false
+    },
+  })
+}
 </script>
 
 <template>
@@ -250,6 +304,102 @@ const stepReady = (checks: readonly string[]): boolean =>
             READY hanya berarti evidence preflight memenuhi contract yang tersedia. Tombol instalasi tetap
             hard-disabled; migration #27, permission provisioning, deployment, Technical Preview, Production,
             dan updater activation tidak mendapat authority dari wizard ini.
+          </p>
+        </aside>
+      </section>
+
+      <section v-if="development_updater.enabled" class="installation-wizard development-update-panel" aria-label="Governed development updater">
+        <div class="wizard-heading">
+          <div>
+            <p class="panel-kicker">Governed development delivery</p>
+            <h2>Sync update dari GitHub</h2>
+            <p>
+              Jalur ini hanya untuk runtime durable-staging. oneQay mengambil artifact resmi dari
+              <strong>{{ development_updater.repository }}</strong>, memverifikasi exact hash dan forward-only source,
+              lalu cPanel Cron melakukan switch release, attestation, rollback rehearsal, dan re-activation.
+            </p>
+          </div>
+          <span class="readiness-badge" :data-ready="!development_updater.request_pending">
+            {{ development_updater.request_pending ? 'PENDING' : 'READY' }}
+          </span>
+        </div>
+
+        <div class="development-boundary-grid">
+          <div><span>Channel</span><strong>{{ development_updater.channel }}</strong></div>
+          <div><span>Production</span><strong>LOCKED</strong></div>
+          <div><span>Migration</span><strong>NOT EXECUTED</strong></div>
+          <div><span>Worker</span><strong>cPanel Cron / PHP CLI</strong></div>
+        </div>
+
+        <div v-if="development_update_feedback" class="notice" :data-state="development_update_feedback.state">
+          <strong>{{ development_update_feedback.state }}</strong>
+          <p>{{ development_update_feedback.message }}</p>
+        </div>
+
+        <div v-if="development_updater.last_result" class="development-result">
+          <span>Last result</span>
+          <strong>{{ development_updater.last_result.state ?? 'UNKNOWN' }}</strong>
+          <small>
+            {{ development_updater.last_result.release_id ?? 'No release' }}
+            · {{ compactCommit(development_updater.last_result.source_commit) }}
+            · {{ development_updater.last_result.safe_code ?? 'no-code' }}
+          </small>
+        </div>
+
+        <form class="development-form" @submit.prevent="submitDevelopmentUpdate" autocomplete="off">
+          <label>
+            <span>Operator token</span>
+            <input
+              v-model="developmentUpdateForm.operator_token"
+              type="password"
+              minlength="32"
+              maxlength="1024"
+              required
+              autocomplete="current-password"
+              :disabled="development_updater.request_pending || developmentUpdateForm.processing"
+            >
+          </label>
+
+          <label>
+            <span>TOTP code</span>
+            <input
+              v-model="developmentUpdateForm.totp_code"
+              type="text"
+              inputmode="numeric"
+              pattern="[0-9]{6}"
+              minlength="6"
+              maxlength="6"
+              required
+              autocomplete="one-time-code"
+              :disabled="development_updater.request_pending || developmentUpdateForm.processing"
+            >
+          </label>
+
+          <label class="development-confirmation">
+            <input
+              v-model="developmentConfirmation"
+              type="checkbox"
+              :disabled="development_updater.request_pending || developmentUpdateForm.processing"
+            >
+            <span>Saya mengotorisasi sinkronisasi artifact STAGING resmi terbaru. Production dan migration tetap tidak diizinkan.</span>
+          </label>
+
+          <button
+            type="submit"
+            class="development-submit"
+            :disabled="!developmentConfirmation || development_updater.request_pending || developmentUpdateForm.processing"
+          >
+            {{ development_updater.request_pending ? 'Update request pending' : (developmentUpdateForm.processing ? 'Submitting…' : 'Sync governed update') }}
+          </button>
+        </form>
+
+        <aside class="wizard-boundary">
+          <strong>Browser tidak mengeksekusi deployment.</strong>
+          <p>
+            Tombol hanya membuat signed short-lived request. Worker
+            <code>php artisan oneqay:update:process-development</code> yang berjalan melalui private cPanel Cron
+            mengambil artifact GitHub, melakukan integrity checks, switch atomik, runtime attestation,
+            rollback rehearsal, dan menulis staging evidence yang dapat dipakai untuk same-source Production promotion.
           </p>
         </aside>
       </section>
@@ -682,6 +832,108 @@ dd {
   font-size: 0.8rem;
 }
 
+.development-boundary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.65rem;
+  margin-top: 1rem;
+}
+
+.development-boundary-grid > div,
+.development-result {
+  padding: 0.8rem;
+  border: 1px solid #1a2a3d;
+  border-radius: 0.75rem;
+  background: #091522;
+}
+
+.development-boundary-grid span,
+.development-boundary-grid strong,
+.development-result span,
+.development-result strong,
+.development-result small {
+  display: block;
+}
+
+.development-boundary-grid span,
+.development-result span,
+.development-result small {
+  color: #8094ac;
+  font-size: 0.72rem;
+}
+
+.development-boundary-grid strong,
+.development-result strong {
+  margin-top: 0.25rem;
+  overflow-wrap: anywhere;
+  font-size: 0.84rem;
+}
+
+.development-result {
+  margin-top: 0.75rem;
+}
+
+.development-result small {
+  margin-top: 0.3rem;
+}
+
+.development-form {
+  display: grid;
+  grid-template-columns: 1fr 0.55fr;
+  gap: 0.75rem;
+  margin-top: 0.9rem;
+}
+
+.development-form label > span {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: #9db0c5;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.development-form input[type="password"],
+.development-form input[type="text"] {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #294869;
+  border-radius: 0.7rem;
+  padding: 0.75rem 0.8rem;
+  background: #071522;
+  color: #e8eef7;
+  font: inherit;
+}
+
+.development-confirmation {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.8rem;
+  border: 1px solid #463c2a;
+  border-radius: 0.75rem;
+  background: #15140f;
+}
+
+.development-confirmation > span {
+  margin: 0 !important;
+  color: #c8b984 !important;
+  line-height: 1.45;
+}
+
+.development-submit {
+  grid-column: 1 / -1;
+  border-color: #2d668e;
+  background: #0c2940;
+  color: #d9ecfb;
+}
+
+.development-submit:disabled {
+  border-color: #314158;
+  background: #111a27;
+  color: #68798d;
+}
+
 .action-panel {
   margin-top: 0.9rem;
   padding: 1.25rem;
@@ -726,7 +978,8 @@ button:disabled {
 @media (max-width: 900px) {
   .status-grid,
   .content-grid,
-  .evidence-grid {
+  .evidence-grid,
+  .development-boundary-grid {
     grid-template-columns: 1fr 1fr;
   }
 
@@ -760,8 +1013,15 @@ button:disabled {
   .status-grid,
   .content-grid,
   .evidence-grid,
-  .wizard-steps {
+  .wizard-steps,
+  .development-boundary-grid,
+  .development-form {
     grid-template-columns: 1fr;
+  }
+
+  .development-confirmation,
+  .development-submit {
+    grid-column: auto;
   }
 
   .content-grid .panel {
