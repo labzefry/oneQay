@@ -16,7 +16,7 @@
 - Sprint215 dedicated regression run `35502047468`: SUCCESS.
 - Engineering PR #865 Product Owner merge authorization comment `5748933469`; `product-owner-merge-authority` SUCCESS.
 - Engineering squash: `759ba3d5d05d2bead51580be8d778b6f987b95c4`.
-- Engineering path-set SHA-256: `d3d341956be9fca5c9e4c9e9789918ac639f3dd59e1b75b24bcec123eb8ac6d2`.
+- Engineering path-set SHA-256: `fb3923f0bce30e06695776cb75bdce6d649dd43dc183bc75df0f1b4fd6e828e7`.
 - Canonical reconciliation path-set SHA-256: `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`.
 - Persistent release tag reserved by contract: `operator-handoff-e37300d5d1be-270e8e954e38`.
 - Persistent release publication state: `NOT_PERFORMED`.

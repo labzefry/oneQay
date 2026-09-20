@@ -13,7 +13,7 @@
 **Exact-head qualification:** 94/94 successful
 **Sprint215 qualification:** run `35502047468` — SUCCESS
 **Product Owner merge authority:** comment `5748933469`; `product-owner-merge-authority` — SUCCESS
-**Engineering envelope:** 5 paths — `d3d341956be9fca5c9e4c9e9789918ac639f3dd59e1b75b24bcec123eb8ac6d2`
+**Engineering envelope:** 5 paths — `fb3923f0bce30e06695776cb75bdce6d649dd43dc183bc75df0f1b4fd6e828e7`
 **Canonical reconciliation envelope:** 8 paths — `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`
 **Previous canonical checkpoint:** Sprint214 reconciliation `3eacfc54aca1c1d45217eb226e84f1a0d70aee50`
 

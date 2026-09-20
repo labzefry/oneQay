@@ -15,7 +15,7 @@ Latest completed engineering sprint: **Sprint215 — Durable Staging Persistent 
 - Final engineering head: `c996794af12bc085213d91c1961bb71b3d351394`
 - Exact-head qualification: 94/94 successful
 - Sprint215 regression: `35502047468` — SUCCESS
-- Engineering envelope SHA-256: `d3d341956be9fca5c9e4c9e9789918ac639f3dd59e1b75b24bcec123eb8ac6d2`
+- Engineering envelope SHA-256: `fb3923f0bce30e06695776cb75bdce6d649dd43dc183bc75df0f1b4fd6e828e7`
 - Reconciliation envelope SHA-256: `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`
 
 Sprint215 closes the repository-side retention gap that could otherwise make the exact Sprint211/Sprint214 operator inputs unavailable after 30-day Actions retention.
