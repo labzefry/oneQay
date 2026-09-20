@@ -125,12 +125,15 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if grep -R -n -E 'PharData|ZipArchive|curl_|Http::|Guzzle|shell_exec|proc_open|exec\(' \
+          network_matches="$(grep -R -n -E 'PharData|ZipArchive|curl_|Http::|Guzzle|shell_exec|proc_open|exec\(' \
             apps/web/app/Application/SystemUpdate \
             apps/web/app/Infrastructure/SystemUpdate \
             apps/web/app/Delivery/Http/SystemUpdate \
-            --exclude-dir=Security; then
-            echo 'Backend updater must not add remote download, archive extraction, or shell execution in this stage.' >&2
+            --exclude-dir=Security || true)"
+          unexpected_network="$(printf '%s\n' "$network_matches" | grep -v '^apps/web/app/Infrastructure/SystemUpdate/Development/' || true)"
+          if [ -n "$unexpected_network" ]; then
+            printf '%s\n' "$unexpected_network" >&2
+            echo 'Remote/archive capability is restricted to the separately tested Development updater boundary.' >&2
             exit 1
           fi
 
@@ -141,10 +144,12 @@ jobs:
             --exclude-dir=Security || true)"
 
           if [ -n "$mutation_matches" ]; then
-            unexpected="$(printf '%s\n' "$mutation_matches" | grep -v '^apps/web/app/Infrastructure/SystemUpdate/Activation/' || true)"
+            unexpected="$(printf '%s\n' "$mutation_matches" \
+              | grep -v '^apps/web/app/Infrastructure/SystemUpdate/Activation/' \
+              | grep -v '^apps/web/app/Infrastructure/SystemUpdate/Development/' || true)"
             if [ -n "$unexpected" ]; then
               printf '%s\n' "$unexpected" >&2
-              echo 'Filesystem mutation is allowed only inside the separately tested Activation infrastructure boundary.' >&2
+              echo 'Filesystem mutation is restricted to separately tested Activation/Development infrastructure boundaries.' >&2
               exit 1
             fi
           fi
