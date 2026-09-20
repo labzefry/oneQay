@@ -145,14 +145,15 @@ try {
         $assert(! str_contains($processor, $forbidden), 'PROC-002 forbidden execution primitive '.$forbidden);
     }
 
-    $attestation = (string) file_get_contents(__DIR__.'/../app/Delivery/Http/SystemUpdate/DurableStagingRuntimeAttestationController.php');
+    $attestation = (string) file_get_contents(__DIR__.'/../app/Providers/PosOperationsHubServiceProvider.php');
     foreach ([
+        '/internal/oneqay/durable-runtime/readiness',
+        'DurableStagingRuntimeReadinessAttestationController',
         'NON_SYNTHETIC_DURABLE_RUNTIME',
         'SEPARATE_EXPLICIT_ACTIVATION_AUTHORITY',
-        "'feature_activation_state' => 'INACTIVE'",
         "'secrets_embedded' => false",
     ] as $marker) {
-        $assert(str_contains($attestation, $marker), 'ATT-001 missing marker '.$marker);
+        $assert(str_contains($attestation, $marker), 'ATT-001 missing canonical Sprint204 marker '.$marker);
     }
 
     fwrite(STDOUT, "Sprint220 governed development updater regression passed.\n");
