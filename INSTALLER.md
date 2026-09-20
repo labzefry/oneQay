@@ -1,5 +1,46 @@
 # oneQay Installer Specification
 
+## cPanel no-SSH guarded deployment execution — Sprint214
+
+Sprint214 closes the execution gap after Sprint212 qualification and Sprint213 kit publication. A cPanel operator without SSH can now execute the exact Sprint207 plan through one-shot Cron/PHP CLI without a public web deployment endpoint.
+
+Before requesting short-lived Sprint208 authority, the operator may upload the exact Sprint211 application archive into a **private operator workspace** through File Manager. Uploading the archive to that private workspace does not activate or extract the release. Archive extraction into the qualified release root occurs only after the Sprint214 executor has revalidated the current authority and exact artifact SHA-256.
+
+The real execution command is:
+
+```text
+<PHP_CLI> tools/cpanel/execute-durable-staging-cpanel-no-ssh-deployment.php \
+  <deployment-plan.json> \
+  <target-profile.json> \
+  <durable-staging-archive.tar.gz> \
+  <private-bindings.json> \
+  <private-runtime-env> \
+  <https-readiness-url> \
+  <deployment-evidence.json>
+```
+
+The executor:
+
+- revalidates the deterministic Sprint207 plan fingerprint;
+- rejects expired/not-current authority;
+- verifies the exact archive SHA-256;
+- extracts into the immutable release root only after authority validation;
+- rejects any embedded `.env`;
+- binds the private Laravel runtime environment by symlink from the shared-runtime root;
+- atomically points the cPanel active-release symlink to the new release;
+- verifies that the domain document root resolves to the new release `apps/web/public`;
+- performs authenticated HTTPS readiness using the private attestation token;
+- rehearses rollback to the previous active state;
+- reactivates the new release and performs readiness again;
+- writes Sprint209-compatible `DEPLOYED_VERIFIED_NOT_SELECTED` evidence only after all checks succeed.
+
+For a first deployment to an empty target, the previous active state is `ABSENT`. Rollback rehearsal removes the new active pointer, verifies the original absent state, then reactivates the new release. For a rolling deployment, the previous active symlink target must remain inside the qualified release root and is restored during rollback rehearsal.
+
+If execution fails after active-pointer mutation, the executor attempts to restore the previous active state and does not emit successful deployment evidence. Failed inactive release directories may remain for controlled forensic cleanup.
+
+The runtime environment file and private binding file must be owner-only, remain under the qualified shared-runtime root, and stay outside the public document root. The readiness URL must be HTTPS. Migration #27 remains unexecuted.
+
+
 ## cPanel no-SSH operator qualification kit publication — Sprint213
 
 Sprint213 packages the Sprint212 cPanel no-SSH qualification path into one operator-retrievable deterministic ZIP so a shared-hosting operator does not need Git, SSH, or manual raw-file collection from the repository.
