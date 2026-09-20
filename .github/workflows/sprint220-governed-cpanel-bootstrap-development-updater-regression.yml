@@ -92,6 +92,24 @@ jobs:
         working-directory: apps/web
         run: php tests/sprint220-governed-development-updater.php
 
+      - name: Prove config-cache compatibility
+        working-directory: apps/web
+        shell: bash
+        env:
+          ONEQAY_DEVELOPMENT_UPDATER_ENABLED: "true"
+          ONEQAY_DEVELOPMENT_UPDATER_PRIVATE_ROOT: "/tmp/oneqay-s220-cache"
+        run: |
+          set -euo pipefail
+          php artisan config:cache
+          ONEQAY_DEVELOPMENT_UPDATER_ENABLED=false php -r '
+            $app=require "bootstrap/app.php";
+            $kernel=$app->make(Illuminate\Contracts\Console\Kernel::class);
+            $kernel->bootstrap();
+            if (config("oneqay_development_updater.enabled") !== true) { exit(1); }
+            if (config("oneqay.development_updater.enabled") !== true) { exit(2); }
+          '
+          php artisan config:clear
+
       - name: Prove CLI and HTTP delivery surfaces
         working-directory: apps/web
         shell: bash
@@ -120,6 +138,9 @@ jobs:
           grep -Fq 'durable-staging-release-publication.yml' "$processor" "$request"
           grep -Fq 'candidate_not_forward_from_running_source' "$processor"
           grep -Fq 'authorized_candidate_drift' "$processor"
+          grep -Fq 'assertArchiveEntriesSafe' "$processor"
+          grep -Fq 'CURLOPT_REDIR_PROTOCOLS' "$processor"
+          ! grep -Fq 'stream_context_create' "$processor"
           grep -Fq 'trustedPublicationRunById' "$processor"
           test "$(grep -c 'requireCurrentPending(time())' "$processor")" -ge 3
           grep -Fq 'INSTALL_EXACT_GOVERNED_DURABLE_STAGING_RELEASE' "$request"
