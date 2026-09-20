@@ -276,9 +276,9 @@ If execution fails after active-pointer mutation, the executor attempts to resto
 
 ## Step 7 — Sprint209 evidence qualification
 
-Execute the exact plan only under the separately granted deployment authority. Capture real preflight, previous-release, extraction, document-root, external-config, provenance, read-before/write/read-after, health, and rollback evidence.
+If Step 6 succeeds, the Sprint214 executor has already produced real deployment evidence from the authority-bound execution, runtime readback, HTTPS health checks, and rollback rehearsal.
 
-Then qualify the real deployment evidence:
+Qualify that evidence:
 
 ```text
 <PHP_CLI> tools/qualify-durable-staging-deployment-evidence.php \
