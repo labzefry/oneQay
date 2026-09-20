@@ -99,6 +99,16 @@ try {
 
     $service = new GovernedDevelopmentUpdateRequest();
 
+    $originalPrivateRoot = config('oneqay.development_updater.private_root');
+    config(['oneqay.development_updater.private_root' => public_path().'/.oneqay-s220-forbidden-private']);
+    try {
+        $service->privateRoot();
+        $assert(false, 'PATH-NEG-001 private root under public path must fail before creation');
+    } catch (DevelopmentUpdaterViolation $expected) {
+        $assert($expected->safeCode() === 'private_root_public_forbidden', 'PATH-NEG-001 public private-root fail closed');
+    }
+    config(['oneqay.development_updater.private_root' => $originalPrivateRoot]);
+
     $processorService = new GovernedDevelopmentUpdateProcessor($service);
     $discovery = $processorService->discover(
         static function (string $url, string $token): array {
@@ -204,6 +214,13 @@ try {
     $assert(($required['deployment_authority_sha256'] ?? null) === $created['deployment_authority_sha256'], 'REQ-022 validated authority hash enriched');
     $assert(($required['deployment_request_sha256'] ?? null) === $created['deployment_request_sha256'], 'REQ-023 validated request hash enriched');
 
+    try {
+        $service->requireCurrentPending($now + 900);
+        $assert(false, 'REQ-NEG-001 authority must be expired exactly at expires_at');
+    } catch (DevelopmentUpdaterViolation $expected) {
+        $assert($expected->safeCode() === 'request_expired_or_invalid', 'REQ-NEG-001 expiry boundary exact');
+    }
+
     $tamperedAuthority = $authorityPayload;
     $tamperedAuthority['production_allowed'] = true;
     file_put_contents(
@@ -223,9 +240,9 @@ try {
 
     try {
         $service->create('wrong-token', $totp($secret, $now), $candidate['candidate_fingerprint'], $now);
-        $assert(false, 'REQ-NEG-001 wrong token must fail');
+        $assert(false, 'REQ-NEG-004 wrong token must fail');
     } catch (DevelopmentUpdaterViolation $expected) {
-        $assert($expected->safeCode() === 'operator_authorization_denied', 'REQ-NEG-001 safe code');
+        $assert($expected->safeCode() === 'operator_authorization_denied', 'REQ-NEG-004 safe code');
     }
 
     $tampered = json_decode($raw, true, 64, JSON_THROW_ON_ERROR);
@@ -239,7 +256,7 @@ try {
 
     try {
         $service->requireCurrentPending($now + 1);
-        $assert(false, 'REQ-NEG-003 tamper must fail');
+        $assert(false, 'REQ-NEG-003 request tamper must fail');
     } catch (DevelopmentUpdaterViolation $expected) {
         $assert($expected->safeCode() === 'request_signature_invalid', 'REQ-NEG-003 signature fail closed');
     }
@@ -268,6 +285,9 @@ try {
     $assert(is_int($archiveGuard) && is_int($extractCall) && $archiveGuard < $extractCall, 'PROC-003 archive guard precedes extraction');
     $assert(str_contains($processor, 'CURLOPT_REDIR_PROTOCOLS => CURLPROTO_HTTPS'), 'PROC-004 HTTPS redirect policy required');
     $assert(! str_contains($processor, 'stream_context_create'), 'PROC-005 no stream fallback for privileged HTTPS');
+    $assert(str_contains($processor, 'rollback_recovery_failed'), 'PROC-005A rollback failure must be explicit');
+    $assert(str_contains($processor, 'fixed_public_private_overlap_forbidden'), 'PROC-005B fixed-public private overlap rejected');
+    $assert(str_contains($processor, '$this->removeTree($candidateDirectory);'), 'PROC-005C failed candidate cleanup supports safe retry');
 
     $firstBuildSwap = strpos($processor, '$this->prepareFixedPublicBuild(');
     $rollbackBuildRestore = strpos($processor, '$this->restoreFixedPublicBuild($documentRoot, $buildBackup);');
