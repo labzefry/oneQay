@@ -1,5 +1,35 @@
 # oneQay Installer Specification
 
+## cPanel no-SSH durable-staging qualification — Sprint212
+
+Sprint212 provides a fail-closed bridge for shared hosting/cPanel accounts that do not expose SSH or an interactive terminal. The supported operator channel is **cPanel File Manager + one-shot Cron Jobs + PHP CLI**. It does not add a public web installer route and does not grant deployment authority.
+
+The operator prepares, through File Manager, an isolated non-production target tree plus a private bindings file outside the domain document root. The bindings file must be readable only by the account owner (`0600` or stricter group/world exposure). A one-shot cPanel Cron entry runs:
+
+```text
+php tools/cpanel/inspect-durable-staging-cpanel-no-ssh-target.php \
+  <target-input.json> \
+  <private-bindings.json> \
+  <target-profile.json>
+```
+
+The inspector rejects unsupported PHP (< 8.2), missing `json`, `openssl`, `PDO`, `pdo_mysql`, or `Phar`, non-private binding files, path escapes/collisions, unwritable deployment roots, missing atomic rename, unavailable PHP symlink support, mismatched release/runtime identity, missing required bindings, and unconfirmed operator capabilities. Secret values are never emitted.
+
+A qualified profile is converted into the existing Sprint208 target-candidate schema:
+
+```text
+php tools/cpanel/prepare-durable-staging-cpanel-no-ssh-target-candidate.php \
+  <target-profile.json> \
+  <target-candidate.json>
+```
+
+The cPanel path is accepted only when the domain document root is shaped as `<active-release-pointer>/apps/web/public`, the deployment/release/shared roots are isolated from public serving, and the provider permits the required PHP, Cron, filesystem, and symlink semantics. A dedicated cPanel account or otherwise isolated domain tree is preferred so the parent `public_html` surface cannot expose private runtime material.
+
+If the provider disables Cron Jobs, PHP CLI, required extensions, symlink creation, atomic rename, or an isolated document-root layout, the host is **not qualified** under this adapter. The operator must choose another target class or introduce a separately reviewed bounded adapter; no compatibility value may be fabricated.
+
+Sprint212 performs qualification only. It does not create hosting, extract the durable artifact, mutate runtime configuration, update the active-release pointer, run migration #27, provision permissions, activate Final Shift Close, select a target, dispatch the producer, activate Technical Preview/Production, or activate the updater.
+
+
 ## Purpose
 
 Installer Wizard menyediakan pemasangan oneQay yang repeatable, secure, auditable, recoverable, dan dapat digunakan pada shared hosting/cPanel tanpa mengunci arsitektur pada lingkungan tersebut.
