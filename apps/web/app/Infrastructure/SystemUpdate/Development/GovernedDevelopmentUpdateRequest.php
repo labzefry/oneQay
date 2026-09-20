@@ -39,7 +39,7 @@ final class GovernedDevelopmentUpdateRequest
         $pending = is_array($request)
             && ($request['request_state'] ?? null) === 'PENDING'
             && is_int($request['expires_at_unix'] ?? null)
-            && $request['expires_at_unix'] >= $now;
+            && $request['expires_at_unix'] > $now;
 
         return [
             'enabled' => $enabled,
@@ -110,7 +110,7 @@ final class GovernedDevelopmentUpdateRequest
         if (is_array($existing)
             && ($existing['request_state'] ?? null) === 'PENDING'
             && is_int($existing['expires_at_unix'] ?? null)
-            && $existing['expires_at_unix'] >= $nowUnix) {
+            && $existing['expires_at_unix'] > $nowUnix) {
             throw new DevelopmentUpdaterViolation('request_already_pending');
         }
 
@@ -258,7 +258,7 @@ final class GovernedDevelopmentUpdateRequest
             || $requestedAt <= 0
             || $expiresAt !== $requestedAt + self::REQUEST_TTL_SECONDS
             || $nowUnix < $requestedAt
-            || $nowUnix > $expiresAt) {
+            || $nowUnix >= $expiresAt) {
             throw new DevelopmentUpdaterViolation('request_expired_or_invalid');
         }
 
@@ -421,7 +421,7 @@ final class GovernedDevelopmentUpdateRequest
             || ! is_int($candidate['expires_at_unix'] ?? null)
             || $candidate['expires_at_unix'] !== $candidate['discovered_at_unix'] + 3600
             || $nowUnix < $candidate['discovered_at_unix']
-            || $nowUnix > $candidate['expires_at_unix']) {
+            || $nowUnix >= $candidate['expires_at_unix']) {
             throw new DevelopmentUpdaterViolation('candidate_contract_invalid');
         }
 
@@ -463,14 +463,24 @@ final class GovernedDevelopmentUpdateRequest
             throw new DevelopmentUpdaterViolation('private_root_invalid');
         }
 
-        $public = realpath(public_path());
-        $candidate = realpath($path);
-        if (is_string($public) && is_string($candidate)
-            && ($candidate === $public || str_starts_with($candidate.'/', rtrim($public, '/').'/'))) {
+        $normalized = rtrim($path, '/');
+        $public = rtrim(str_replace('\\', '/', public_path()), '/');
+        $candidateLexical = rtrim(str_replace('\\', '/', $normalized), '/');
+        if ($candidateLexical === $public || str_starts_with($candidateLexical.'/', $public.'/')) {
             throw new DevelopmentUpdaterViolation('private_root_public_forbidden');
         }
 
-        return rtrim($path, '/');
+        $publicReal = realpath(public_path());
+        $candidateReal = realpath($normalized);
+        if (is_string($publicReal) && is_string($candidateReal)) {
+            $publicReal = rtrim(str_replace('\\', '/', $publicReal), '/');
+            $candidateReal = rtrim(str_replace('\\', '/', $candidateReal), '/');
+            if ($candidateReal === $publicReal || str_starts_with($candidateReal.'/', $publicReal.'/')) {
+                throw new DevelopmentUpdaterViolation('private_root_public_forbidden');
+            }
+        }
+
+        return $normalized;
     }
 
     private function pendingPath(): string
