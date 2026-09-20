@@ -61,12 +61,12 @@ jobs:
           contract=ops/final-shift-close/DURABLE_STAGING_CPANEL_NO_SSH_OPERATOR_KIT_PUBLICATION_CONTRACT.json
           jq -e . "$contract" >/dev/null
           test "$(jq -r '.contract_state' "$contract")" = PUBLISHES_SECRET_FREE_CPANEL_NO_SSH_OPERATOR_KIT_NOT_DEPLOYED
-          test "$(jq -r '.application_release_reference.actions_artifact_id' "$contract")" = 10603323419
-          test "$(jq -r '.application_release_reference.release_id' "$contract")" = durable-staging-d0b5becbf945
-          test "$(jq -r '.application_release_reference.publication_run_id' "$contract")" = 35505077172
-          test "$(jq -r '.application_release_reference.actions_artifact_name' "$contract")" = oneqay-durable-staging-d0b5becbf945-operator-bundle
-          test "$(jq -r '.application_release_reference.actions_outer_digest' "$contract")" = sha256:38e21fef3c32014f2d07cb7a3a2d970a37680371c99118b8c43b88cf196c25f5
-          test "$(jq -r '.application_release_reference.handoff_sha256' "$contract")" = a9f33e8e5fa28abefdfb6397f350307e8954c486fbd43540a879b9c340c7ccad
+          test "$(jq -r '.application_release_reference.actions_artifact_id' "$contract")" = 10608272778
+          test "$(jq -r '.application_release_reference.release_id' "$contract")" = durable-staging-5be28a3c0017
+          test "$(jq -r '.application_release_reference.publication_run_id' "$contract")" = 35522953555
+          test "$(jq -r '.application_release_reference.actions_artifact_name' "$contract")" = oneqay-durable-staging-5be28a3c0017-operator-bundle
+          test "$(jq -r '.application_release_reference.actions_outer_digest' "$contract")" = sha256:1e0bd4b514f4c36afaf83e4dc9e2fbb012953edacdf3e56945a6e53aeb508db8
+          test "$(jq -r '.application_release_reference.handoff_sha256' "$contract")" = 628a3b2aa2d0e165a641f32ee29edaee7e681dcdbd6f8e22bbd908b09c12af9a
           test "$(jq -r '.publication_requirements.deterministic_zip' "$contract")" = true
           test "$(jq -r '.publication_requirements.application_release_bytes_embedded' "$contract")" = false
           test "$(jq -r '.authority_boundary.kit_is_not_deployment_authority' "$contract")" = true
@@ -105,9 +105,9 @@ jobs:
           diff -u /tmp/kit-first.zip.sha256 "dist/${kit_id}.zip.sha256"
 
           test "$(jq -r '.kit_source_commit' "dist/${kit_id}.manifest.json")" = "$head_sha"
-          test "$(jq -r '.application_release_reference.release_id' "dist/${kit_id}.manifest.json")" = durable-staging-d0b5becbf945
-          test "$(jq -r '.application_release_reference.actions_artifact_id' "dist/${kit_id}.manifest.json")" = 10603323419
-          test "$(jq -r '.application_release_reference.handoff_sha256' "dist/${kit_id}.manifest.json")" = a9f33e8e5fa28abefdfb6397f350307e8954c486fbd43540a879b9c340c7ccad
+          test "$(jq -r '.application_release_reference.release_id' "dist/${kit_id}.manifest.json")" = durable-staging-5be28a3c0017
+          test "$(jq -r '.application_release_reference.actions_artifact_id' "dist/${kit_id}.manifest.json")" = 10608272778
+          test "$(jq -r '.application_release_reference.handoff_sha256' "dist/${kit_id}.manifest.json")" = 628a3b2aa2d0e165a641f32ee29edaee7e681dcdbd6f8e22bbd908b09c12af9a
           test "$(jq -r '.secret_values_embedded' "dist/${kit_id}.manifest.json")" = false
           test "$(jq -r '.deployment_authority' "dist/${kit_id}.manifest.json")" = NOT_GRANTED
           test "$(jq -r '.selected_target' "dist/${kit_id}.manifest.json")" = null
@@ -179,12 +179,12 @@ jobs:
               "repository": "labzefry/oneQay"
             },
             "artifact": {
-              "release_id": "durable-staging-d0b5becbf945",
-              "source_commit": "d0b5becbf945c5192e797d512a704eb5aecc6eaa",
-              "artifact_filename": "durable-staging-d0b5becbf945.tar.gz",
-              "artifact_sha256": "e32a7de2c07c35306c03edff5d7d762782ef58449c92d4b88e5dd04b50d489a2",
-              "artifact_size_bytes": 4765840,
-              "manifest_sha256": "6d8099ef3f0b18003c8e362cc1f315d01777b70f3a05b3948f16ff4a44092b9c"
+              "release_id": "durable-staging-5be28a3c0017",
+              "source_commit": "5be28a3c001738373588b58e9d29832c46402de1",
+              "artifact_filename": "durable-staging-5be28a3c0017.tar.gz",
+              "artifact_sha256": "66be23792478fb191f912571b35076c42783b9733cdb3fb514b549d22ec90dd7",
+              "artifact_size_bytes": 4786075,
+              "manifest_sha256": "d24c8961100be308599b469a2f87485c9a1646f57c435118990141c2f85f8ec9"
             },
             "runtime": {
               "required_runtime_class": "durable-staging",
