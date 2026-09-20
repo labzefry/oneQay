@@ -12,6 +12,7 @@
   "qualification_requirements": {
     "php_minimum": "8.2",
     "required_extensions": [
+      "curl",
       "json",
       "openssl",
       "pdo",
@@ -41,7 +42,9 @@
     "fixed_public_bridge_requires_writable_public_root": true,
     "fixed_public_bridge_requires_existing_rewrite_to_index": true,
     "fixed_public_bridge_requires_atomic_public_file_and_directory_rename": true,
-    "presentation_identity_must_be_authority_bound": true
+    "presentation_identity_must_be_authority_bound": true,
+    "minimum_libcurl_version": "7.58.0",
+    "authorized_https_redirect_client_required": true
   },
   "cpanel_constraints": {
     "dedicated_or_isolated_domain_tree_required": true,
