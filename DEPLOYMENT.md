@@ -1,5 +1,26 @@
 # oneQay Deployment Handbook
 
+## cPanel no-SSH guarded deployment execution — Sprint214
+
+Sprint214 adds the authority-bound execution surface required to turn a qualified cPanel no-SSH target and exact Sprint207 plan into actual deployment evidence. The implementation remains an operator-invoked PHP CLI tool distributed through the cPanel operator kit; no public deployment route is introduced.
+
+The executor treats the cPanel active-release pointer as a POSIX symlink to an immutable release directory. This cPanel-specific semantic is what makes the configured document root `<active-pointer>/apps/web/public` stable across release activation.
+
+Execution is allowed only while the Sprint208 authority embedded in the Sprint207 plan is current. The executor rehashes the plan core and rejects fingerprint drift, verifies target/profile identity, exact artifact SHA-256, private binding/runtime files, and qualified filesystem paths before extraction or pointer mutation.
+
+The Sprint211 archive may be pre-uploaded into a private File Manager workspace, but it is not extracted into the release root until authority validation succeeds. The executor uses PHP `PharData` to extract the already governed exact-hash archive, verifies release metadata, 27 migration source files, required runtime files, and absence of embedded runtime environment material.
+
+After extraction, the executor binds the private runtime environment from the shared-runtime root, atomically changes the active symlink, verifies public-document-root resolution, fetches authenticated HTTPS runtime readiness, rehearses rollback, reactivates the new release, and fetches readiness a second time.
+
+Initial deployment is supported without inventing a previous release: the previous active state may be `ABSENT`, and rollback is verified by restoring that absent state before reactivation. Rolling deployment restores the previous release symlink before reactivation.
+
+Successful execution emits the existing Sprint209 deployment-evidence schema and remains `DEPLOYED_VERIFIED_NOT_SELECTED`. The existing Sprint209 qualifier must still accept that evidence before protected runtime attestation can be configured/dispatched.
+
+Sprint214 source delivery does not itself execute against a real host. Migration #27, permission provisioning, target selection, producer dispatch, Final Shift Close activation, Technical Preview, Production, and updater activation remain outside this engineering authority.
+
+Canonical contract: `ops/final-shift-close/DURABLE_STAGING_CPANEL_NO_SSH_GUARDED_DEPLOYMENT_EXECUTION_CONTRACT.json`.
+
+
 ## cPanel no-SSH operator qualification kit publication — Sprint213
 
 Sprint213 closes the delivery gap left after Sprint212: the cPanel no-SSH adapter existed in source, but the Sprint211 application bundle predates it and therefore could not provide the operator tools. Sprint213 publishes those governance/qualification tools as a separate deterministic ZIP without changing the application release.
