@@ -1,5 +1,28 @@
 # oneQay Installer Specification
 
+## cPanel fixed-public compatibility — Sprint219
+
+Shared hosting may keep a domain on a fixed public document root while private releases live elsewhere. Sprint219 supports this without exposing the Laravel application tree.
+
+In `target-input.json` choose one of:
+
+- `filesystem.document_root_mode = ACTIVE_RELEASE_PUBLIC` with `filesystem.document_root = <active-release-pointer>/apps/web/public`; or
+- `filesystem.document_root_mode = FIXED_PUBLIC_BRIDGE` with `filesystem.document_root` set to the real fixed public document root.
+
+The fixed mode is accepted only when the inspector proves the public root is writable, disjoint from private deployment roots, retains an existing rewrite-to-`index.php` `.htaccess`, and supports atomic file/directory rename.
+
+The public bridge consists only of:
+
+- generated `index.php`, which resolves the private active release at request time;
+- `build/` static assets for the active candidate;
+- the pre-existing operator-managed `.htaccess`, which is never overwritten by the bridge.
+
+Application source, `vendor/`, bootstrap files, runtime environment, bindings, approval tokens, and credentials remain private.
+
+The mode and exact public path are authority-bound. Changing them after the authority request invalidates the target descriptor / deployment plan chain.
+
+Historical oneQay Technical Preview layout under the existing cPanel account may be used to prefill non-secret path values for requalification, but current qualification must still be executed on the live host before deployment authority can be requested.
+
 ## Production dark-deployment operator path — Sprint218
 
 Sprint218 adds a deterministic Production operator kit and guarded PHP CLI executor for a real isolated Production target.
