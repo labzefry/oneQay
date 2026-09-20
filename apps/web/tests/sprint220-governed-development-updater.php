@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Infrastructure\SystemUpdate\Development\DevelopmentUpdaterViolation;
+use App\Infrastructure\SystemUpdate\Development\GovernedDevelopmentUpdateProcessor;
 use App\Infrastructure\SystemUpdate\Development\GovernedDevelopmentUpdateRequest;
 use Illuminate\Contracts\Console\Kernel;
 
@@ -84,12 +85,61 @@ try {
         'oneqay.development_updater.request_hmac_key' => str_repeat('h', 64),
         'oneqay.development_updater.running_source_commit' => str_repeat('a', 40),
         'oneqay.development_updater.running_artifact_sha256' => str_repeat('b', 64),
+        'oneqay.development_updater.github_token' => str_repeat('g', 32),
+        'oneqay.development_updater.environment_id' => 'oneqay-staging-01',
+        'oneqay.development_updater.release_root' => $temp.'/releases',
+        'oneqay.development_updater.active_release_pointer' => $temp.'/active',
+        'oneqay.development_updater.runtime_env_path' => $temp.'/runtime.env',
+        'oneqay.development_updater.document_root' => $temp.'/public',
+        'oneqay.development_updater.attestation_url' => 'https://staging.example.invalid/internal/oneqay/durable-runtime/readiness',
     ]);
     putenv('ONEQAY_PRODUCTION_DATA_ALLOWED=false');
     $_ENV['ONEQAY_PRODUCTION_DATA_ALLOWED'] = 'false';
     $_SERVER['ONEQAY_PRODUCTION_DATA_ALLOWED'] = 'false';
 
     $service = new GovernedDevelopmentUpdateRequest();
+
+    $processorService = new GovernedDevelopmentUpdateProcessor($service);
+    $discovery = $processorService->discover(
+        static function (string $url, string $token): array {
+            if ($token !== str_repeat('g', 32)) {
+                throw new RuntimeException('unexpected GitHub token fixture');
+            }
+            if (str_contains($url, '/actions/workflows/durable-staging-release-publication.yml/runs?')) {
+                return [
+                    'workflow_runs' => [[
+                        'id' => 123456,
+                        'conclusion' => 'success',
+                        'head_branch' => 'main',
+                        'event' => 'push',
+                        'head_sha' => str_repeat('c', 40),
+                    ]],
+                ];
+            }
+            if (str_contains($url, '/compare/'.str_repeat('a', 40).'...'.str_repeat('c', 40))) {
+                return [
+                    'status' => 'ahead',
+                    'base_commit' => ['sha' => str_repeat('a', 40)],
+                    'merge_base_commit' => ['sha' => str_repeat('a', 40)],
+                ];
+            }
+            if (str_contains($url, '/actions/runs/123456/artifacts')) {
+                return [
+                    'artifacts' => [[
+                        'id' => 654321,
+                        'name' => 'oneqay-durable-staging-'.str_repeat('c', 12).'-operator-bundle',
+                        'expired' => false,
+                        'digest' => 'sha256:'.str_repeat('d', 64),
+                    ]],
+                ];
+            }
+
+            throw new RuntimeException('unexpected discovery URL: '.$url);
+        },
+    );
+    $assert(($discovery['state'] ?? null) === 'AVAILABLE', 'DISC-001 forward candidate discovered');
+    $assert(($discovery['release_id'] ?? null) === 'durable-staging-'.str_repeat('c', 12), 'DISC-002 exact release discovered');
+    $assert(preg_match('/\A[0-9a-f]{64}\z/', (string) ($discovery['candidate_fingerprint'] ?? '')) === 1, 'DISC-003 signed fingerprint materialized');
 
     $candidate = $service->storeCandidate([
         'release_id' => 'durable-staging-'.str_repeat('c', 12),
