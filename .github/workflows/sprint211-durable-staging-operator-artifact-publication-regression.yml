@@ -124,16 +124,32 @@ jobs:
             grep -Fq "$hash" "$workflow"
           done
 
-      - name: Prove application source remains untouched
+      - name: Prove application source remains untouched or exact Sprint220 bounded updater
         if: github.event_name == 'pull_request'
         shell: bash
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          HEAD_REF: ${{ github.head_ref }}
         run: |
           set -euo pipefail
-          test -z "$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web)"
           test -z "$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web/database/migrations)"
+          if [ "$HEAD_REF" = 'sprint220-governed-cpanel-bootstrap-development-updater' ]; then
+            git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web | LC_ALL=C sort > /tmp/s220-app-paths
+            test -s /tmp/s220-app-paths
+            while IFS= read -r changed; do
+              case "$changed" in
+                apps/web/app/Console/Commands/ProcessGovernedDevelopmentUpdateCommand.php|                apps/web/app/Delivery/Http/SystemUpdate/DevelopmentUpdateRequestController.php|                apps/web/app/Delivery/Http/SystemUpdate/SystemUpdatePageController.php|                apps/web/app/Infrastructure/SystemUpdate/Development/*|                apps/web/app/Providers/SystemUpdateServiceProvider.php|                apps/web/resources/js/pages/System/UpdateDeployment.vue|                apps/web/tests/read-only-update-deployment-ui.php|                apps/web/tests/sprint220-governed-development-updater.php)
+                  ;;
+                *)
+                  echo "Unexpected Sprint220 application path: $changed" >&2
+                  exit 1
+                  ;;
+              esac
+            done < /tmp/s220-app-paths
+          else
+            test -z "$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web)"
+          fi
 
       - name: Confirm tracked source cleanliness
         run: git diff --exit-code
