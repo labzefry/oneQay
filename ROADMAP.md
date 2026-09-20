@@ -1,35 +1,41 @@
 # oneQay Roadmap
 
-**Roadmap checkpoint:** Sprint216 closed canonically
-**Canonical engineering baseline:** `d0b5becbf945c5192e797d512a704eb5aecc6eaa`
+**Roadmap checkpoint:** Sprint217 closed canonically
+**Canonical engineering baseline:** `afb048c9b7edc53d13ad8f5fc1197a8874966450`
 **Current state authority:** `PROJECT_MANIFEST.md`
 
-## Completed Sprint216 horizon
+## Completed Sprint217 horizon
 
-Sprint216 closed `PRODUCTION_RELEASE_DEPLOYMENT_GOVERNANCE_FOUNDATION`.
+Sprint217 closed `CPANEL_SAME_SOURCE_STAGING_REBIND`.
 
-It adds a Production candidate artifact and Production deployment governance without modifying application runtime behavior or activating Production traffic.
+The cPanel no-SSH operator path is now aligned with Sprint216:
+- staging artifact `10603323419`;
+- cPanel kit `10603569410`;
+- application source `d0b5becbf945c5192e797d512a704eb5aecc6eaa`;
+- Production candidate `10603358335` from the same source.
 
-The canonical merge publishes:
-- same-source durable-staging artifact `10603323419`;
-- same-source Production candidate `10603358335`.
-
-Both are source-bound to `d0b5becbf945c5192e797d512a704eb5aecc6eaa`. Independent verification confirms byte-identical application payload files.
-
-Production promotion fails closed unless it receives verified durable-staging evidence from the same source, a real Production target candidate, and separate short-lived authority. The strongest accepted post-deployment state remains `PRODUCTION_DEPLOYED_VERIFIED_NOT_ACTIVATED`.
+This removes the stale Sprint211 release binding that previously prevented the current cPanel operator path from producing same-source staging evidence for Production promotion.
 
 ## Production-readiness progression
 
-Sprint203–Sprint215 established durable-staging readiness, governed artifacts, deployment planning/authority/evidence, cPanel no-SSH qualification/execution, and retention controls. Sprint216 adds a same-source staging→Production promotion boundary and dark Production deployment governance.
+Sprint203–Sprint217 now cover durable-staging readiness, deterministic release, authority-bound planning, deployment evidence, cPanel no-SSH target qualification/execution tooling, current-release operator-kit delivery, and same-source staging→Production promotion governance.
 
 ## Next material horizon
 
-1. Qualify a real durable-staging target.
-2. Deploy exact Sprint216 staging artifact `10603323419` under separate authority.
-3. Obtain verified deployment evidence for source `d0b5becbf945c5192e797d512a704eb5aecc6eaa`.
-4. Only then prepare the Production promotion request against artifact `10603358335`.
-5. Keep business/traffic activation separate until its source and authority requirements are explicitly closed.
+A concrete Production source gap remains: Production has release, target, authority, plan, and evidence tooling, but no execution tool.
 
-Issue #856 remains the single operational handoff.
+Next bounded engineering:
+`PRODUCTION_DARK_DEPLOYMENT_EXECUTION_FOUNDATION`
+
+Target outcome:
+1. exact Production plan/authority/artifact revalidation;
+2. immutable dark deployment;
+3. non-mutating `/health/live` verification;
+4. rollback rehearsal and reactivation;
+5. exact runtime provenance readback where available;
+6. evidence only as `PRODUCTION_DEPLOYED_VERIFIED_NOT_ACTIVATED`;
+7. no migration #27 and no Production traffic activation.
+
+Real staging and Production host execution remains under separate operational authority.
 
 Author by Lab | zefry
