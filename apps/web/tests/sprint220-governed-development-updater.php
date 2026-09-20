@@ -174,20 +174,52 @@ try {
     $assert(($created['state'] ?? null) === 'PENDING', 'REQ-001 request accepted');
     $assert(($created['production_allowed'] ?? true) === false, 'REQ-002 production denied');
     $assert(($created['migration_execution_allowed'] ?? true) === false, 'REQ-003 migration denied');
+    $assert(preg_match('/\Adurable-staging-deployment-authority-[0-9a-f]{24}\z/', (string) ($created['deployment_authority_id'] ?? '')) === 1, 'REQ-004 authority id materialized');
+    $assert(preg_match('/\A[0-9a-f]{64}\z/', (string) ($created['deployment_authority_sha256'] ?? '')) === 1, 'REQ-005 authority hash materialized');
+    $assert(preg_match('/\A[0-9a-f]{64}\z/', (string) ($created['deployment_request_sha256'] ?? '')) === 1, 'REQ-006 request hash materialized');
 
+    $authorityPath = $temp.'/requests/'.$created['request_id'].'.authority.json';
     $raw = (string) file_get_contents($temp.'/requests/pending.json');
+    $authorityRaw = (string) file_get_contents($authorityPath);
+    $assert(hash_file('sha256', $temp.'/requests/pending.json') === $created['deployment_request_sha256'], 'REQ-007 raw request hash exact');
+    $assert(hash_file('sha256', $authorityPath) === $created['deployment_authority_sha256'], 'REQ-008 raw authority hash exact');
+    $authorityPayload = json_decode($authorityRaw, true, 64, JSON_THROW_ON_ERROR);
+    $assert(($authorityPayload['request_sha256'] ?? null) === $created['deployment_request_sha256'], 'REQ-009 authority binds raw request hash');
+    $assert(($authorityPayload['candidate_fingerprint'] ?? null) === $candidate['candidate_fingerprint'], 'REQ-010 authority binds exact candidate');
+    $assert(($authorityPayload['expires_at_unix'] - $authorityPayload['authorized_at_unix']) === 900, 'REQ-011 authority TTL exact');
     foreach ([$operatorToken, $secret, $totp($secret, $now)] as $forbidden) {
-        $assert(! str_contains($raw, $forbidden), 'REQ-004 request contains no operator secret material');
+        $assert(! str_contains($raw, $forbidden), 'REQ-012 request contains no operator secret material');
+        $assert(! str_contains($authorityRaw, $forbidden), 'REQ-013 authority contains no operator secret material');
     }
 
     $required = $service->requireCurrentPending($now + 1);
-    $assert(($required['repository'] ?? null) === 'labzefry/oneQay', 'REQ-005 repository fixed');
-    $assert(($required['workflow'] ?? null) === 'durable-staging-release-publication.yml', 'REQ-006 workflow fixed');
-    $assert(($required['expires_at_unix'] - $required['requested_at_unix']) === 900, 'REQ-007 request TTL exact');
-    $assert(($required['scope'] ?? null) === 'INSTALL_EXACT_GOVERNED_DURABLE_STAGING_RELEASE', 'REQ-008 exact scope');
-    $assert(($required['candidate_fingerprint'] ?? null) === $candidate['candidate_fingerprint'], 'REQ-009 fingerprint bound');
-    $assert(($required['candidate_source_commit'] ?? null) === str_repeat('c', 40), 'REQ-010 source bound');
-    $assert(($required['github_artifact_id'] ?? null) === 654321, 'REQ-011 artifact bound');
+    $assert(($required['repository'] ?? null) === 'labzefry/oneQay', 'REQ-014 repository fixed');
+    $assert(($required['workflow'] ?? null) === 'durable-staging-release-publication.yml', 'REQ-015 workflow fixed');
+    $assert(($required['expires_at_unix'] - $required['requested_at_unix']) === 900, 'REQ-016 request TTL exact');
+    $assert(($required['scope'] ?? null) === 'INSTALL_EXACT_GOVERNED_DURABLE_STAGING_RELEASE', 'REQ-017 exact scope');
+    $assert(($required['candidate_fingerprint'] ?? null) === $candidate['candidate_fingerprint'], 'REQ-018 fingerprint bound');
+    $assert(($required['candidate_source_commit'] ?? null) === str_repeat('c', 40), 'REQ-019 source bound');
+    $assert(($required['github_artifact_id'] ?? null) === 654321, 'REQ-020 artifact bound');
+    $assert(($required['deployment_authority_id'] ?? null) === $created['deployment_authority_id'], 'REQ-021 validated authority id enriched');
+    $assert(($required['deployment_authority_sha256'] ?? null) === $created['deployment_authority_sha256'], 'REQ-022 validated authority hash enriched');
+    $assert(($required['deployment_request_sha256'] ?? null) === $created['deployment_request_sha256'], 'REQ-023 validated request hash enriched');
+
+    $tamperedAuthority = $authorityPayload;
+    $tamperedAuthority['production_allowed'] = true;
+    file_put_contents(
+        $authorityPath,
+        json_encode($tamperedAuthority, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR).PHP_EOL,
+        LOCK_EX,
+    );
+    chmod($authorityPath, 0600);
+    try {
+        $service->requireCurrentPending($now + 1);
+        $assert(false, 'REQ-NEG-002 authority tamper must fail');
+    } catch (DevelopmentUpdaterViolation $expected) {
+        $assert($expected->safeCode() === 'deployment_authority_binding_invalid', 'REQ-NEG-002 authority fail closed');
+    }
+    file_put_contents($authorityPath, $authorityRaw, LOCK_EX);
+    chmod($authorityPath, 0600);
 
     try {
         $service->create('wrong-token', $totp($secret, $now), $candidate['candidate_fingerprint'], $now);
