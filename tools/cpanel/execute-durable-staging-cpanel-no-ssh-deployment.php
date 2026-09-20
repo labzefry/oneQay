@@ -437,7 +437,7 @@ function cpanelExecValidateProfile(array $profile, array $identity): array
     }
 
     $symlinkSupported = $profile['filesystem']['symlink_supported'] ?? null;
-    $hardlinkSupported = $profile['filesystem']['hardlink_supported'] ?? null;
+    $hardlinkSupported = $profile['filesystem']['hardlink_supported'] ?? false;
     if (! is_bool($symlinkSupported) || ! is_bool($hardlinkSupported)) {
         cpanelExecFail('profile_filesystem_link_capability_invalid');
     }
