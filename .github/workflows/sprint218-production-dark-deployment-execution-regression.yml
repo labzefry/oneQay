@@ -95,8 +95,8 @@ jobs:
           cmp /tmp/s218-kit-first.zip "dist/${kit_id}.zip"
           diff -u /tmp/s218-kit-first.manifest.json "dist/${kit_id}.manifest.json"
           diff -u /tmp/s218-kit-first.sha256 "dist/${kit_id}.zip.sha256"
-          test "$(jq -r '.production_release_reference.actions_artifact_id' "dist/${kit_id}.manifest.json")" = 10603358335
-          test "$(jq -r '.staging_prerequisite_reference.actions_artifact_id' "dist/${kit_id}.manifest.json")" = 10603323419
+          test "$(jq -r '.production_release_reference.actions_artifact_id' "dist/${kit_id}.manifest.json")" = 10608942942
+          test "$(jq -r '.staging_prerequisite_reference.actions_artifact_id' "dist/${kit_id}.manifest.json")" = 10608272778
           test "$(jq -r '.production_release_reference.source_commit' "dist/${kit_id}.manifest.json")" = "$(jq -r '.staging_prerequisite_reference.source_commit' "dist/${kit_id}.manifest.json")"
           test "$(jq -r '.secret_values_embedded' "dist/${kit_id}.manifest.json")" = false
           test "$(jq -r '.application_release_bytes_embedded' "dist/${kit_id}.manifest.json")" = false
