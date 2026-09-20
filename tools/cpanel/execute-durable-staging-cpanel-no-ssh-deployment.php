@@ -431,10 +431,24 @@ function cpanelExecValidateProfile(array $profile, array $identity): array
         'shared_runtime_root_writable',
         'active_pointer_parent_writable',
         'atomic_rename_supported',
-        'symlink_supported',
         'document_root_shape_valid',
     ] as $field) {
         cpanelExecBool($profile['filesystem'][$field] ?? null, true, 'profile_filesystem_'.$field.'_invalid');
+    }
+
+    $symlinkSupported = $profile['filesystem']['symlink_supported'] ?? null;
+    $hardlinkSupported = $profile['filesystem']['hardlink_supported'] ?? null;
+    if (! is_bool($symlinkSupported) || ! is_bool($hardlinkSupported)) {
+        cpanelExecFail('profile_filesystem_link_capability_invalid');
+    }
+    if ($presentationMode === 'ACTIVE_RELEASE_PUBLIC' && $symlinkSupported !== true) {
+        cpanelExecFail('profile_filesystem_symlink_supported_invalid');
+    }
+    if ($presentationMode === 'FIXED_PUBLIC_BRIDGE'
+        && $symlinkSupported !== true
+        && $hardlinkSupported !== true
+    ) {
+        cpanelExecFail('profile_fixed_public_runtime_binding_unavailable');
     }
 
     cpanelExecBool($profile['runtime']['php_version_supported'] ?? null, true, 'profile_php_version_unsupported');
@@ -469,6 +483,8 @@ function cpanelExecValidateProfile(array $profile, array $identity): array
     return [
         'document_root' => $documentRoot,
         'presentation_mode' => $presentationMode,
+        'symlink_supported' => $symlinkSupported,
+        'hardlink_supported' => $hardlinkSupported,
     ];
 }
 
@@ -715,8 +731,11 @@ function cpanelExecExtractRelease(string $archivePath, array $identity): array
     }
 }
 
-function cpanelExecBindRuntimeEnv(string $runtimeEnvPath, array $identity): string
-{
+function cpanelExecBindRuntimeEnv(
+    string $runtimeEnvPath,
+    array $identity,
+    bool $allowHardlinkFallback = false,
+): string {
     $runtimeEnvReal = cpanelExecPrivateFile(
         $runtimeEnvPath,
         $identity['shared_root'],
@@ -738,12 +757,31 @@ function cpanelExecBindRuntimeEnv(string $runtimeEnvPath, array $identity): stri
         cpanelExecFail('release_runtime_env_path_occupied');
     }
 
-    if (! cpanelExecFunctionAvailable('symlink') || ! symlink($runtimeEnvReal, $envLink)) {
-        cpanelExecFail('runtime_env_symlink_failed');
+    $bound = false;
+    if (cpanelExecFunctionAvailable('symlink') && @symlink($runtimeEnvReal, $envLink)) {
+        if (! is_link($envLink) || realpath($envLink) !== $runtimeEnvReal) {
+            cpanelExecFail('runtime_env_symlink_verification_failed');
+        }
+        $bound = true;
+    } elseif ($allowHardlinkFallback
+        && cpanelExecFunctionAvailable('link')
+        && @link($runtimeEnvReal, $envLink)
+    ) {
+        if (! is_file($envLink) || is_link($envLink)) {
+            cpanelExecFail('runtime_env_hardlink_verification_failed');
+        }
+        $sourceInode = fileinode($runtimeEnvReal);
+        $boundInode = fileinode($envLink);
+        if (! is_int($sourceInode) || ! is_int($boundInode) || $sourceInode !== $boundInode) {
+            cpanelExecFail('runtime_env_hardlink_inode_mismatch');
+        }
+        $bound = true;
     }
 
-    if (! is_link($envLink) || realpath($envLink) !== $runtimeEnvReal) {
-        cpanelExecFail('runtime_env_symlink_verification_failed');
+    if (! $bound) {
+        cpanelExecFail($allowHardlinkFallback
+            ? 'runtime_env_link_binding_failed'
+            : 'runtime_env_symlink_failed');
     }
 
     $envHashAfter = hash_file('sha256', $envLink);
@@ -982,6 +1020,9 @@ function cpanelExecExecute(
         $profile = cpanelExecLoadJson($profilePath);
         $identity = cpanelExecValidatePlan($plan);
         $profileIdentity = cpanelExecValidateProfile($profile, $identity);
+        $fixedDirectFallback = $identity['presentation_mode'] === 'FIXED_PUBLIC_BRIDGE'
+            && $profileIdentity['symlink_supported'] === false
+            && $profileIdentity['hardlink_supported'] === true;
 
         foreach ([
             $identity['deployment_root'],
@@ -998,29 +1039,41 @@ function cpanelExecExecute(
         $bindings = cpanelExecValidateBindings(cpanelExecLoadJson($privateBindingsPath, true), $identity);
 
         $activePointer = $identity['active_pointer'];
-        $previousState = cpanelExecReadPreviousState(
-            $activePointer,
-            $identity['release_root'],
-            $identity['release_directory'],
-        );
+        if (! $fixedDirectFallback) {
+            $previousState = cpanelExecReadPreviousState(
+                $activePointer,
+                $identity['release_root'],
+                $identity['release_directory'],
+            );
+        }
 
         cpanelExecExtractRelease($archivePath, $identity);
-        $runtimeEnvSha256 = cpanelExecBindRuntimeEnv($runtimeEnvPath, $identity);
+        $runtimeEnvSha256 = cpanelExecBindRuntimeEnv(
+            $runtimeEnvPath,
+            $identity,
+            $fixedDirectFallback,
+        );
 
         $documentRoot = $profileIdentity['document_root'];
         if ($identity['presentation_mode'] === 'FIXED_PUBLIC_BRIDGE') {
+            if ($fixedDirectFallback) {
+                cpanelExecRequireAuthorityCurrent($identity);
+            }
             $bridgeState = cpanelBridgeInstall(
                 $documentRoot,
                 $activePointer,
                 $identity['release_directory'],
                 $identity['shared_root'],
+                $fixedDirectFallback,
             );
             $bridgeMutated = true;
         }
 
-        cpanelExecRequireAuthorityCurrent($identity);
-        cpanelExecAtomicPoint($activePointer, $identity['release_directory']);
-        $pointerMutated = true;
+        if (! $fixedDirectFallback) {
+            cpanelExecRequireAuthorityCurrent($identity);
+            cpanelExecAtomicPoint($activePointer, $identity['release_directory']);
+            $pointerMutated = true;
+        }
 
         if ($identity['presentation_mode'] === 'ACTIVE_RELEASE_PUBLIC') {
             $resolvedDocumentRoot = realpath($documentRoot);
@@ -1049,7 +1102,9 @@ function cpanelExecExecute(
         }
         cpanelExecValidateReadiness($firstAttestation, $identity);
 
-        cpanelExecRestorePrevious($activePointer, $previousState);
+        if (! $fixedDirectFallback) {
+            cpanelExecRestorePrevious($activePointer, $previousState);
+        }
         if ($identity['presentation_mode'] === 'FIXED_PUBLIC_BRIDGE') {
             if (! is_array($bridgeState)) {
                 cpanelExecFail('fixed_public_bridge_state_missing');
@@ -1058,17 +1113,23 @@ function cpanelExecExecute(
             cpanelBridgeFinalize($bridgeState);
             $bridgeMutated = false;
 
+            if ($fixedDirectFallback) {
+                cpanelExecRequireAuthorityCurrent($identity);
+            }
             $bridgeState = cpanelBridgeInstall(
                 $documentRoot,
                 $activePointer,
                 $identity['release_directory'],
                 $identity['shared_root'],
+                $fixedDirectFallback,
             );
             $bridgeMutated = true;
         }
 
-        cpanelExecRequireAuthorityCurrent($identity);
-        cpanelExecAtomicPoint($activePointer, $identity['release_directory']);
+        if (! $fixedDirectFallback) {
+            cpanelExecRequireAuthorityCurrent($identity);
+            cpanelExecAtomicPoint($activePointer, $identity['release_directory']);
+        }
 
         $secondAttestation = $readinessFetcher(
             $readinessUrl,
