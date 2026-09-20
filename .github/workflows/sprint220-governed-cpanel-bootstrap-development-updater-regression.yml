@@ -86,6 +86,7 @@ jobs:
           php -l apps/web/app/Console/Commands/ProcessGovernedDevelopmentUpdateCommand.php
           php -l apps/web/tests/sprint220-governed-development-updater.php
           php -l apps/web/config/oneqay.php
+          php -l apps/web/config/oneqay_development_updater.php
           php -l apps/web/routes/web.php
 
       - name: Run Sprint220 regression
