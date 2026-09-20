@@ -385,20 +385,27 @@ final class GovernedDevelopmentUpdateProcessor
                 $rollbackFailed = true;
             }
 
+            $quarantineFailed = false;
             if (! $rollbackFailed
                 && $activeRestored
                 && $candidateExtracted
                 && is_string($candidateDirectory)
                 && is_dir($candidateDirectory)
                 && ! is_link($candidateDirectory)) {
-                $this->quarantineFailedCandidate($candidateDirectory);
+                try {
+                    $this->quarantineFailedCandidate($candidateDirectory);
+                } catch (Throwable) {
+                    $quarantineFailed = true;
+                }
             }
 
             $safeCode = $rollbackFailed
                 ? 'rollback_recovery_failed'
-                : ($failure instanceof DevelopmentUpdaterViolation
-                    ? $failure->safeCode()
-                    : 'development_update_failed');
+                : ($quarantineFailed
+                    ? 'failed_candidate_quarantine_failed'
+                    : ($failure instanceof DevelopmentUpdaterViolation
+                        ? $failure->safeCode()
+                        : 'development_update_failed'));
 
             $result = $this->safeResult(
                 'FAILED',
@@ -416,6 +423,9 @@ final class GovernedDevelopmentUpdateProcessor
 
             if ($rollbackFailed) {
                 throw new DevelopmentUpdaterViolation('rollback_recovery_failed');
+            }
+            if ($quarantineFailed) {
+                throw new DevelopmentUpdaterViolation('failed_candidate_quarantine_failed');
             }
 
             if ($failure instanceof DevelopmentUpdaterViolation) {
