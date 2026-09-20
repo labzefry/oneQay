@@ -1,5 +1,25 @@
 # Changelog
 
+## 2026-09-20 — Sprint210 closed canonically
+
+**Sprint210: Durable Staging Deployment Evidence Provenance Continuity**
+
+- Closed the trust-continuity gap between Sprint209 protected deployment-evidence qualification, the protected attestation producer, trusted provenance validation, and Sprint112/Sprint114 deterministic ingestion.
+- Protected producer provenance now carries `deployment_evidence_sha256`, `deployment_plan_fingerprint`, and `deployment_authority_sha256`.
+- Provenance validation rejects missing, malformed, or zero deployment-binding digests.
+- Deterministic ingestion output carries the same three values under `deployment_binding`, and the ingestion fingerprint binds them.
+- Historical Sprint32–34 authentication and M7.5 migration-isolation workflows recognize the exact Sprint210 successor envelope without widening generic compatibility.
+- Final engineering head `18f32c5746a7fc08b49d432a6a63e01d8f14e059`: 96/96 PR-triggered workflows SUCCESS.
+- Engineering PR #854 squash merged at `bf00980add7e557e3fccf6683f916ac5389feffe`.
+- Key runs: Sprint210 `35486063195`, Sprint112 `35486063165`, Sprint113 `35486063600`, Sprint114 `35486063049`, Sprint32 `35486062945`, Sprint33 `35486063449`, Sprint34 `35486063667`, M7.1 `35486063097`, Governance `35486062923`, PHP Foundation `35486062980`: SUCCESS.
+- Product Owner merge authority status `product-owner-merge-authority`: SUCCESS.
+- Engineering path hash: `0525c55ff45baf2893a22983a4ea53e50f1c195d92a49efc2a41ce92d2749205`.
+- Canonical reconciliation path hash: `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`.
+- Operational NO-GO unchanged.
+- Next position: materialize a real isolated non-production durable-staging target under separate operational authority, execute the exact governed deployment plan, produce Sprint209 deployment evidence, configure protected producer bindings, then run producer and ingestion against real evidence.
+
+Author by Lab | zefry
+
 ## 2026-09-20 — Sprint209 closed canonically
 
 **Sprint209: Durable Staging Deployment Evidence Binding Foundation**
