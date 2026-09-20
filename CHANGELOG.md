@@ -1,5 +1,33 @@
 # Changelog
 
+## 2026-09-20 — Sprint214 closed canonically
+
+**Sprint214: cPanel No-SSH Guarded Deployment Execution**
+
+- Closed the remaining source-side execution gap between a qualified cPanel no-SSH target, the exact Sprint207 authority-bound plan, and canonical Sprint209 deployment evidence.
+- Added a fail-closed PHP CLI executor for the existing File Manager + one-shot Cron Jobs channel without introducing a public privileged deployer.
+- Executor validates the exact plan fingerprint, current <=900-second Sprint208 authority, target/environment/release bindings, and governed Sprint211 archive SHA-256 before extraction.
+- Supports both initial deployment from an absent active pointer and rolling deployment from a previous immutable release symlink.
+- Performs authenticated HTTPS readiness, rollback rehearsal, reactivation, and post-reactivation readiness; failures after pointer mutation restore the previous active state.
+- Remains migration-free and cannot select a target, dispatch the producer, activate Final Shift Close, Technical Preview, Production, or updater.
+- Final engineering head `d8822e6f2e3aee3b8550424c2e36c342b09fe101`: 93/93 PR-triggered workflows SUCCESS.
+- Engineering PR #863 squash merged at `270e8e954e389f61d32f49b89b87bed571866867`.
+- Key runs: Sprint214 `35497192974`, M7.1 `35497193597`, Governance `35497192918`, PHP Foundation `35497192904`: SUCCESS.
+- Product Owner authorization comment `5748437685`; authority status SUCCESS.
+- Engineering path hash: `dd1abbfbd9c21d2372cc1b3957ea42bed438b224b88284ceb870df81e8b46347`.
+- Canonical reconciliation path hash: `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`.
+- Main-only kit publication run `35497396424`: SUCCESS.
+- Published artifact ID `10601606508`: `oneqay-cpanel-no-ssh-operator-kit-270e8e954e38`.
+- Actions outer digest: `sha256:58d3f85c262dadb2b2f9e37ab1852eec9a250f9075558cfa6ce3dd3756895f22`.
+- Inner ZIP SHA-256: `e572c93f1a8fc55b1c67f0b1f8744a2b6dd3f3c811d0c83a91767fef8df1ae82`.
+- Kit manifest SHA-256: `750375c512c3eab35530da902fbbf30eff63fb7dc59ad141f0a4e33fce5c97f9`.
+- Independent verification confirmed the Sprint214 executor/contract are present, ZIP integrity is valid, application bytes and secret-bearing file shapes are absent, and no authority/target selection/producer dispatch is embedded.
+- The governed application release remains Sprint211 artifact `10597712890`; Sprint214 changes deployment tooling, not application runtime bytes.
+- Operational NO-GO remains unchanged.
+- Issue #856 remains the single operational handoff. No Sprint215 source work is justified unless a real target reveals a concrete repository-side blocker.
+
+Author by Lab | zefry
+
 ## 2026-09-20 — Sprint213 closed canonically
 
 **Sprint213: cPanel No-SSH Operator Qualification Kit Publication**

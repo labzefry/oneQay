@@ -5,48 +5,42 @@
 
 ## Canonical state
 
-**Canonical engineering checkpoint:** Sprint213
-**Objective:** `CPANEL_NO_SSH_OPERATOR_QUALIFICATION_KIT_PUBLICATION`
-**Canonical engineering commit:** `c8998c00e19c177ac535921dbc0ef1fa96b06583`
-**Engineering PR:** #861 — `Sprint213: publish cPanel no-SSH operator qualification kit`
-**Final engineering head:** `4c2ef5d73436e3660d0f6700a9bb3cfe46438289`
-**Exact-head qualification:** 92/92 successful
-**Sprint213 qualification:** run `35494619337` — SUCCESS
-**Sprint212 preservation:** run `35494619310` — SUCCESS
-**Sprint211 preservation:** run `35494619279` — SUCCESS
-**Sprint209 preservation:** run `35494619409` — SUCCESS
-**Sprint208 preservation:** run `35494618989` — SUCCESS
-**Sprint207 preservation:** run `35494619256` — SUCCESS
-**M7.1 qualification:** run `35494619181` — SUCCESS
-**Governance qualification:** run `35494619736` — SUCCESS
-**PHP Foundation qualification:** run `35494619251` — SUCCESS
-**Product Owner merge authority:** comment `5748175502`; `product-owner-merge-authority` — SUCCESS
-**Engineering envelope:** 6 paths — `7ccb0d202041e8968e7d526d6ee3fc7d76fd68048fc062993a8172b53a95e6be`
+**Canonical engineering checkpoint:** Sprint214
+**Objective:** `CPANEL_NO_SSH_GUARDED_DEPLOYMENT_EXECUTION`
+**Canonical engineering commit:** `270e8e954e389f61d32f49b89b87bed571866867`
+**Engineering PR:** #863 — `Sprint214: add guarded cPanel no-SSH deployment execution`
+**Final engineering head:** `d8822e6f2e3aee3b8550424c2e36c342b09fe101`
+**Exact-head qualification:** 93/93 successful
+**Sprint214 qualification:** run `35497192974` — SUCCESS
+**M7.1 qualification:** run `35497193597` — SUCCESS
+**Governance qualification:** run `35497192918` — SUCCESS
+**PHP Foundation qualification:** run `35497192904` — SUCCESS
+**Product Owner merge authority:** comment `5748437685`; `product-owner-merge-authority` — SUCCESS
+**Engineering envelope:** 8 paths — `dd1abbfbd9c21d2372cc1b3957ea42bed438b224b88284ceb870df81e8b46347`
 **Canonical reconciliation envelope:** 8 paths — `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`
-**Previous canonical checkpoint:** Sprint212 reconciliation `ab99cbb0852d8570480f155ca452dda0794ca989`
+**Previous canonical checkpoint:** Sprint213 reconciliation `99be46de7366395109edf23db8cc8068d4ca41d5`
 
-> `c8998c00e19c177ac535921dbc0ef1fa96b06583` is the permanent canonical Sprint213 engineering evidence. The reconciliation squash must not replace it.
+> `270e8e954e389f61d32f49b89b87bed571866867` is the permanent canonical Sprint214 engineering evidence. The reconciliation squash must not replace it.
 
-## Published cPanel no-SSH operator qualification kit
+## Published cPanel no-SSH operator kit
 
-**Publication run:** `35494805706` — SUCCESS
-**Actions artifact ID:** `10600262872`
-**Artifact name:** `oneqay-cpanel-no-ssh-operator-kit-c8998c00e19c`
-**Kit source commit:** `c8998c00e19c177ac535921dbc0ef1fa96b06583`
-**Actions artifact size:** 50,102 bytes
-**Actions artifact digest:** `sha256:834f5be1f3aee3d89396312eb15e348f8a85b6e89eb9a5a2fcdbeb223978cd5e`
-**Inner operator ZIP SHA-256:** `de485d82c7960683a90c605f4d220b09f85b6cc2282e18f52c43b82006949011`
-**Kit manifest SHA-256:** `d9a0300c24e260d3d87533af6808185a269471cfdeea0e69b2310188b30f3fde`
-**Internal file count:** 20
-**Expiry:** 2026-10-20T06:39:49Z
+**Publication run:** `35497396424` — SUCCESS
+**Actions artifact ID:** `10601606508`
+**Artifact name:** `oneqay-cpanel-no-ssh-operator-kit-270e8e954e38`
+**Kit source commit:** `270e8e954e389f61d32f49b89b87bed571866867`
+**Actions artifact size:** 61,862 bytes
+**Actions artifact digest:** `sha256:58d3f85c262dadb2b2f9e37ab1852eec9a250f9075558cfa6ce3dd3756895f22`
+**Inner operator ZIP SHA-256:** `e572c93f1a8fc55b1c67f0b1f8744a2b6dd3f3c811d0c83a91767fef8df1ae82`
+**Kit manifest SHA-256:** `750375c512c3eab35530da902fbbf30eff63fb7dc59ad141f0a4e33fce5c97f9`
+**Manifest payload file count:** 22
+**ZIP regular file count:** 23 including `kit.manifest.json`
+**Expiry:** 2026-10-20T07:38:10Z
 
-Independent downloaded-artifact verification confirmed the outer Actions digest, inner ZIP sidecar, ZIP integrity, 20-file manifest, absence of `apps/web` application bytes, absence of secret-bearing file shapes, `deployment_authority = NOT_GRANTED`, `migration27_execution = NOT_PERFORMED`, `selected_target = null`, and `producer_dispatch = NOT_PERFORMED`.
-
-The kit includes the Sprint212 cPanel host inspector/candidate bridge plus Sprint208 authority tooling, Sprint207 planning, Sprint209 evidence qualification, schemas, non-secret templates, README, and checksums.
+Independent downloaded-artifact verification confirmed the Actions digest, ZIP sidecar, ZIP integrity, Sprint214 executor and execution contract, absence of `apps/web` application bytes, absence of secret-bearing file shapes, `secret_values_embedded = false`, `deployment_authority = NOT_GRANTED`, `migration27_execution = NOT_PERFORMED`, `selected_target = null`, and `producer_dispatch = NOT_PERFORMED`.
 
 ## Current application release binding
 
-Sprint213 does not replace the governed application release. The cPanel kit remains bound to the Sprint211 application bundle:
+Sprint214 changes deployment tooling and publication content, not application runtime source. The governed application release therefore remains Sprint211:
 
 **Application Actions artifact ID:** `10597712890`
 **Release ID:** `durable-staging-e37300d5d1be`
@@ -57,20 +51,21 @@ Sprint213 does not replace the governed application release. The cPanel kit rema
 
 ## Delivered capability
 
-- A cPanel operator without SSH no longer needs to collect raw repository files manually.
-- Canonical main publishes one deterministic, secret-free ZIP carrying the operator-side qualification/governance chain.
-- The ZIP is rebuilt twice and must be byte-identical before publication.
-- The ZIP deliberately excludes application runtime bytes and granted authority.
-- Real host facts, secrets, short-lived approval token, deployment execution, runtime evidence, and target selection remain external operational concerns.
+- cPanel no-SSH qualification, authority preparation/qualification, exact operator planning, guarded deployment execution, and Sprint209 evidence qualification are now distributed together.
+- The executor rejects stale/expired authority, plan fingerprint drift, target/release drift, archive mismatch, unsafe active-pointer state, failed readiness, and failed rollback verification.
+- Deployment uses immutable release directories and atomic active-release pointer switching.
+- Initial and rolling deployment paths have explicit rollback semantics.
+- Runtime secrets remain private host material and are excluded from repository and kit evidence.
+- No deployment authority is embedded in the kit and no real host execution occurred during engineering/publication.
 
 ## Operational NO-GO
 
-Machine-readable state remains authoritative and unchanged: migration #27 `NOT_EXECUTED`; permission provisioning `NONE`; Final Shift Close `INACTIVE`; deployment `NOT_GRANTED`; Technical Preview/Production `NOT_AUTHORIZED`; updater `INACTIVE`; durable target selection `BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET`; selected target `null`; producer dispatch `NOT_PERFORMED`.
+Machine-readable state remains authoritative and unchanged: migration #27 `NOT_EXECUTED`; permission provisioning `NONE`; Final Shift Close `INACTIVE`; general deployment authority `NOT_GRANTED`; Technical Preview/Production `NOT_AUTHORIZED`; updater `INACTIVE`; durable target selection `BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET`; selected target `null`; producer dispatch `NOT_PERFORMED`.
 
 ## Next position
 
-Issue #856 remains the single operational handoff. For cPanel without SSH, retrieve the Sprint213 qualification kit plus the Sprint211 application bundle, upload the kit into a private File Manager workspace, run the one-shot Cron/PHP CLI qualification steps, and produce a truthful Sprint208 target candidate only if the real host passes. VM/VPS remains a valid alternative target class.
+Issue #856 remains the single operational handoff. The next material work is a real isolated target, not another speculative source sprint. For cPanel without SSH, use the Sprint214 kit to qualify the host, produce the canonical Sprint208 target candidate, obtain separately issued short-lived authority, generate the exact Sprint207 plan, upload the governed Sprint211 application archive, and run the Sprint214 executor while authority is valid. Then qualify the emitted Sprint209 evidence and continue protected runtime attestation/ingestion only under their separate authorities.
 
-Open another engineering sprint only if real qualification or real execution proves a concrete source-side defect or missing capability.
+Open Sprint215 only if this real sequence proves a concrete repository-side defect or missing capability.
 
 Author by Lab | zefry
