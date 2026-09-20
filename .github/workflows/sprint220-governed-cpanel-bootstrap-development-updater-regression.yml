@@ -140,6 +140,7 @@ jobs:
           grep -Fq 'candidate_not_forward_from_running_source' "$processor"
           grep -Fq 'authorized_candidate_drift' "$processor"
           grep -Fq 'assertArchiveEntriesSafe' "$processor"
+          grep -Fq 'fixed_public_bridge_rollback_backup_missing' "$processor"
           grep -Fq 'CURLOPT_REDIR_PROTOCOLS' "$processor"
           ! grep -Fq 'stream_context_create' "$processor"
           grep -Fq 'trustedPublicationRunById' "$processor"
