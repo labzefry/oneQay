@@ -269,6 +269,20 @@ try {
     $assert(str_contains($processor, 'CURLOPT_REDIR_PROTOCOLS => CURLPROTO_HTTPS'), 'PROC-004 HTTPS redirect policy required');
     $assert(! str_contains($processor, 'stream_context_create'), 'PROC-005 no stream fallback for privileged HTTPS');
 
+    $firstBuildSwap = strpos($processor, '$this->prepareFixedPublicBuild(');
+    $rollbackBuildRestore = strpos($processor, '$this->restoreFixedPublicBuild($documentRoot, $buildBackup);');
+    $secondBuildSwap = is_int($rollbackBuildRestore)
+        ? strpos($processor, '$this->prepareFixedPublicBuild(', $rollbackBuildRestore + 1)
+        : false;
+    $assert(
+        is_int($firstBuildSwap)
+        && is_int($rollbackBuildRestore)
+        && is_int($secondBuildSwap)
+        && $firstBuildSwap < $rollbackBuildRestore
+        && $rollbackBuildRestore < $secondBuildSwap,
+        'PROC-006 fixed public rollback rehearses full presentation surface',
+    );
+
     $attestation = (string) file_get_contents(__DIR__.'/../app/Providers/PosOperationsHubServiceProvider.php');
     foreach ([
         '/internal/oneqay/durable-runtime/readiness',
