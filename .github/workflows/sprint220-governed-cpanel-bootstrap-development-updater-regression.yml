@@ -121,6 +121,9 @@ jobs:
           grep -Fq 'candidate_not_forward_from_running_source' "$processor"
           grep -Fq 'authorized_candidate_drift' "$processor"
           grep -Fq 'trustedPublicationRunById' "$processor"
+          test "$(grep -c 'requireCurrentPending(time())' "$processor")" -ge 3
+          grep -Fq 'INSTALL_EXACT_GOVERNED_DURABLE_STAGING_RELEASE' "$request"
+          ! grep -Fq 'SYNC_LATEST_GOVERNED_DURABLE_STAGING_RELEASE' "$request"
           grep -Fq 'rollback_path_verified' "$processor"
           grep -Fq 'DEPLOYED_VERIFIED_NOT_SELECTED' "$processor"
           grep -Fq "'migration27_execution' => 'NOT_PERFORMED'" "$processor"
