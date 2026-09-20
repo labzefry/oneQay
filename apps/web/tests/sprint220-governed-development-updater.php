@@ -290,6 +290,17 @@ try {
     $assert(str_contains($processor, '$this->quarantineFailedCandidate($candidateDirectory);'), 'PROC-005C failed candidate quarantine supports safe retry');
     $assert(str_contains($processor, 'failed_candidate_quarantine_unavailable'), 'PROC-005D quarantine fail-closed boundary present');
     $assert(str_contains($processor, 'makeTreeRemovable'), 'PROC-005E quarantined immutable tree can be cleaned safely');
+    $quarantineFailureCode = strpos($processor, "'failed_candidate_quarantine_failed'");
+    $failureCompletion = strpos($processor, '$this->requests->complete($result);', $quarantineFailureCode ?: 0);
+    $quarantineThrow = strpos($processor, "throw new DevelopmentUpdaterViolation('failed_candidate_quarantine_failed');");
+    $assert(
+        is_int($quarantineFailureCode)
+        && is_int($failureCompletion)
+        && is_int($quarantineThrow)
+        && $quarantineFailureCode < $failureCompletion
+        && $failureCompletion < $quarantineThrow,
+        'PROC-005F quarantine failure persists terminal result before throw',
+    );
 
     $firstBuildSwap = strpos($processor, '$this->prepareFixedPublicBuild(');
     $rollbackBuildRestore = strpos($processor, '$this->restoreFixedPublicBuild($documentRoot, $buildBackup);');
