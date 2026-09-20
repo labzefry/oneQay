@@ -411,13 +411,14 @@ function cpanelExecValidateProfile(array $profile, array $identity): array
         $profile['filesystem']['document_root'] ?? null,
         'profile_document_root_invalid',
     );
+    $profilePresentation = $profile['presentation'] ?? null;
     $presentationMode = cpanelExecPattern(
-        $profile['presentation']['mode'] ?? null,
+        is_array($profilePresentation) ? ($profilePresentation['mode'] ?? null) : 'ACTIVE_RELEASE_PUBLIC',
         '/\\A(?:ACTIVE_RELEASE_PUBLIC|FIXED_PUBLIC_BRIDGE)\\z/',
         'profile_presentation_mode_invalid',
     );
     $presentationDocumentRoot = cpanelExecSafeAbsolutePath(
-        $profile['presentation']['document_root'] ?? null,
+        is_array($profilePresentation) ? ($profilePresentation['document_root'] ?? null) : $documentRoot,
         'profile_presentation_document_root_invalid',
     );
     cpanelExecLiteral($presentationMode, $identity['presentation_mode'], 'profile_presentation_mode_mismatch');
