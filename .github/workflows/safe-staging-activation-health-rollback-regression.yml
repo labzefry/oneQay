@@ -113,7 +113,7 @@ jobs:
             changed="$(git diff --name-only origin/main...HEAD)"
             test -z "$(printf '%s\n' "$changed" | grep -E '^apps/web/(routes/web\.php|config/oneqay\.php|app/Infrastructure/SystemUpdate/Activation/)' || true)"
             if [ "${{ github.head_ref }}" = 'sprint220-governed-cpanel-bootstrap-development-updater' ]; then
-              printf '%s\n' "$changed" | grep -E '^apps/web/(app/Providers/SystemUpdateServiceProvider\.php|app/Delivery/Http/SystemUpdate/|app/Infrastructure/SystemUpdate/Development/|app/Console/Commands/ProcessGovernedDevelopmentUpdateCommand\.php|resources/js/pages/System/UpdateDeployment\.vue|tests/(read-only-update-deployment-ui|sprint220-governed-development-updater)\.php)
+              printf '%s\n' "$changed" | grep -E '^apps/web/(app/Providers/SystemUpdateServiceProvider\.php|app/Delivery/Http/SystemUpdate/|app/Infrastructure/SystemUpdate/Development/|app/Console/Commands/(Discover|Process)GovernedDevelopmentUpdateCommand\.php|resources/js/pages/System/UpdateDeployment\.vue|tests/(read-only-update-deployment-ui|sprint220-governed-development-updater)\.php)
 
       - name: Reject database schema remote download and archive extraction coupling
         shell: bash
