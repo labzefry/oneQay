@@ -367,6 +367,16 @@ function prodExecBindEnv(string $runtimeEnvPath, array $id): string
     return $hash;
 }
 
+/** @param array<string,mixed> $value */
+function prodExecValidateHealthPayload(array $value): void
+{
+    prodExecEq($value['status'] ?? null, 'ok', 'health_status_invalid');
+    prodExecEq($value['service'] ?? null, 'oneqay-web', 'health_service_invalid');
+    if (! is_string($value['correlation_id'] ?? null) || $value['correlation_id'] === '') {
+        prodExecFail('health_correlation_invalid');
+    }
+}
+
 /** @return array<string,mixed> */
 function prodExecFetchHealth(string $url): array
 {
@@ -385,9 +395,7 @@ function prodExecFetchHealth(string $url): array
     if (strlen($body)<2 || strlen($body)>32768) prodExecFail('health_size_invalid');
     try { $v=json_decode($body,true,16,JSON_THROW_ON_ERROR); } catch (JsonException) { prodExecFail('health_json_invalid'); }
     if (! is_array($v) || array_is_list($v)) prodExecFail('health_shape_invalid');
-    prodExecEq($v['status']??null,'ok','health_status_invalid');
-    prodExecEq($v['service']??null,'oneqay-web','health_service_invalid');
-    if (! is_string($v['correlation_id']??null) || $v['correlation_id']==='') prodExecFail('health_correlation_invalid');
+    prodExecValidateHealthPayload($v);
     return $v;
 }
 
@@ -438,12 +446,14 @@ function prodExecExecute(string $planPath,string $profilePath,string $archivePat
 
         $first=$healthFetcher($id['health_url']);
         if (! is_array($first) || array_is_list($first)) prodExecFail('health_fetcher_shape_invalid');
+        prodExecValidateHealthPayload($first);
 
         prodExecRestore($active,$previous);
         prodExecAtomicPoint($active,$id['release_directory']);
 
         $second=$healthFetcher($id['health_url']);
         if (! is_array($second) || array_is_list($second)) prodExecFail('health_fetcher_shape_invalid');
+        prodExecValidateHealthPayload($second);
 
         $after=hash_file('sha256',$id['release_directory'].'/apps/web/.env');
         if (! is_string($after) || ! hash_equals($envHash,$after)) prodExecFail('runtime_env_post_reactivation_invalid');
