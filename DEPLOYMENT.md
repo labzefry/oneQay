@@ -1,5 +1,20 @@
 # oneQay Deployment Handbook
 
+## cPanel no-SSH durable-staging target qualification — Sprint212
+
+Sprint212 adds a source-only compatibility bridge for real cPanel/shared-hosting targets where SSH is unavailable. It preserves the canonical Sprint208/Sprint207 trust chain rather than creating a parallel deployment authority model.
+
+The supported no-SSH operator channel is cPanel File Manager for private file materialization plus a one-shot cPanel Cron Job that invokes PHP CLI. The target inspector writes only a non-secret observed profile. The candidate bridge then emits the same `OPERATOR_TARGET_CANDIDATE` consumed by the existing Sprint208 deployment-authority request tool.
+
+Qualification requires PHP >= 8.2; `json`, `openssl`, `PDO`, `pdo_mysql`, and `Phar`; private `0600` bindings outside the document root; writable deployment/release/shared roots; atomic rename; PHP symlink support; and a domain document root shaped as `<active-release-pointer>/apps/web/public`. Operator capability assertions remain provisional and must still be proven later by Sprint209 deployment evidence and durable-runtime readiness/capability evidence.
+
+The preferred cPanel layout is an isolated account/domain tree. Shared hosting that forces a document root or parent path which exposes runtime/configuration material, or that disables Cron/PHP CLI/symlink semantics, fails closed and is not treated as a durable-staging target.
+
+This capability does not deploy. After a real cPanel profile qualifies, the operator must still create the exact Sprint208 authority request, obtain a separate short-lived external authority (<= 900 seconds), qualify it, generate the Sprint207 plan, and execute that plan externally. Migration #27, permission provisioning, Final Shift Close, target selection, protected producer dispatch, Technical Preview, Production, and updater activation remain unauthorized.
+
+Canonical contract: `ops/final-shift-close/DURABLE_STAGING_CPANEL_NO_SSH_TARGET_QUALIFICATION_CONTRACT.json`.
+
+
 ## Durable-staging operator artifact publication — Sprint211
 
 Sprint211 materializes the missing operator-retrieval capability discovered after Sprint210. Sprint205 already proved that the durable-staging archive is deterministic and Sprint206 already validates a secret-free deployment handoff, but the durable archive was removed after regression and never persisted as an Actions artifact.
