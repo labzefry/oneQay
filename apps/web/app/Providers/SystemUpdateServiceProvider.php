@@ -8,7 +8,6 @@ use App\Application\SystemUpdate\SystemUpdateFeatureGate;
 use App\Application\SystemUpdate\SystemUpdateOperationStateStore;
 use App\Application\SystemUpdate\SystemUpdateReleaseAvailabilityProbe;
 use App\Delivery\Http\SystemUpdate\DevelopmentUpdateRequestController;
-use App\Delivery\Http\SystemUpdate\DurableStagingRuntimeAttestationController;
 use App\Infrastructure\SystemUpdate\ConfiguredSystemUpdateFeatureGate;
 use App\Infrastructure\SystemUpdate\DisabledSystemUpdateOperationStateStore;
 use App\Infrastructure\SystemUpdate\UnavailableSystemUpdateReleaseAvailabilityProbe;
@@ -39,19 +38,6 @@ final class SystemUpdateServiceProvider extends ServiceProvider
             'oneqay.development_updater.environment_id' => env('ONEQAY_DURABLE_RUNTIME_ENVIRONMENT_ID', ''),
             'oneqay.development_updater.running_source_commit' => env('ONEQAY_RUNNING_SOURCE_COMMIT', ''),
             'oneqay.development_updater.running_artifact_sha256' => env('ONEQAY_RUNNING_ARTIFACT_SHA256', ''),
-            'oneqay.durable_runtime_attestation.enabled' => filter_var(env('ONEQAY_DURABLE_RUNTIME_ATTESTATION_ENABLED', false), FILTER_VALIDATE_BOOL),
-            'oneqay.durable_runtime_attestation.token' => env('ONEQAY_DURABLE_RUNTIME_ATTESTATION_TOKEN', ''),
-            'oneqay.durable_runtime_attestation.environment_id' => env('ONEQAY_DURABLE_RUNTIME_ENVIRONMENT_ID', ''),
-            'oneqay.durable_runtime_attestation.running_source_commit' => env('ONEQAY_RUNNING_SOURCE_COMMIT', ''),
-            'oneqay.durable_runtime_attestation.running_artifact_sha256' => env('ONEQAY_RUNNING_ARTIFACT_SHA256', ''),
-            'oneqay.durable_runtime_attestation.durable_persistence_enabled' => filter_var(env('ONEQAY_DURABLE_PERSISTENCE_ENABLED', false), FILTER_VALIDATE_BOOL),
-            'oneqay.durable_runtime_attestation.durable_session_control_enabled' => filter_var(env('ONEQAY_DURABLE_SESSION_CONTROL_ENABLED', false), FILTER_VALIDATE_BOOL),
-            'oneqay.durable_runtime_attestation.durable_authorization_enabled' => filter_var(env('ONEQAY_DURABLE_AUTHORIZATION_ENABLED', false), FILTER_VALIDATE_BOOL),
-            'oneqay.durable_runtime_attestation.durable_transaction_boundary_enabled' => filter_var(env('ONEQAY_DURABLE_TRANSACTION_BOUNDARY_ENABLED', false), FILTER_VALIDATE_BOOL),
-            'oneqay.durable_runtime_attestation.durable_pos_persistence_enabled' => filter_var(env('ONEQAY_DURABLE_POS_PERSISTENCE_ENABLED', false), FILTER_VALIDATE_BOOL),
-            'oneqay.durable_runtime_attestation.authenticated_configuration_mutation_channel' => filter_var(env('ONEQAY_DURABLE_AUTHENTICATED_CONFIGURATION_CHANNEL', false), FILTER_VALIDATE_BOOL),
-            'oneqay.durable_runtime_attestation.read_before_write_read_after_supported' => filter_var(env('ONEQAY_DURABLE_READ_BEFORE_WRITE_AFTER_SUPPORTED', false), FILTER_VALIDATE_BOOL),
-            'oneqay.durable_runtime_attestation.verified_flag_rollback_supported' => filter_var(env('ONEQAY_DURABLE_VERIFIED_ROLLBACK_SUPPORTED', false), FILTER_VALIDATE_BOOL),
         ]);
 
         $this->app->scoped(
@@ -75,9 +61,6 @@ final class SystemUpdateServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        Route::get('/internal/oneqay/durable-runtime/readiness', DurableStagingRuntimeAttestationController::class)
-            ->middleware(['throttle:30,1', 'throttle:300,60'])
-            ->name('durable-staging.runtime-attestation');
 
         Route::post('/system/update/development/request', DevelopmentUpdateRequestController::class)
             ->middleware(['web', 'throttle:5,1', 'throttle:20,60'])
