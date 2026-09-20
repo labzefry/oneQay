@@ -23,6 +23,75 @@ final class GovernedDevelopmentUpdateProcessor
     }
 
     /**
+     * Discover a trusted exact staging publication without mutating the active runtime.
+     *
+     * @param null|callable(string,string):array<string,mixed> $jsonFetcher
+     * @return array<string,mixed>
+     */
+    public function discover(?callable $jsonFetcher = null): array
+    {
+        $this->assertProcessorConfiguration();
+        $jsonFetcher ??= fn (string $url, string $token): array => $this->githubJson($url, $token);
+
+        $githubToken = (string) config('oneqay.development_updater.github_token', '');
+        if (strlen($githubToken) < 20 || strlen($githubToken) > 4096) {
+            throw new DevelopmentUpdaterViolation('github_token_invalid');
+        }
+
+        $currentSource = strtolower(trim((string) config('oneqay.development_updater.running_source_commit', '')));
+        if (preg_match('/\A[0-9a-f]{40}\z/', $currentSource) !== 1) {
+            throw new DevelopmentUpdaterViolation('running_release_identity_invalid');
+        }
+
+        $run = $this->latestTrustedPublicationRun($jsonFetcher, $githubToken);
+        $candidateSource = $this->pattern(
+            $run['head_sha'] ?? null,
+            '/\A[0-9a-f]{40}\z/',
+            'publication_source_invalid',
+        );
+
+        if (! hash_equals($currentSource, $candidateSource)) {
+            $this->assertForwardOnly($jsonFetcher, $githubToken, $currentSource, $candidateSource);
+        }
+
+        $runId = $run['id'] ?? null;
+        if (! is_int($runId) || $runId <= 0) {
+            throw new DevelopmentUpdaterViolation('publication_run_id_invalid');
+        }
+
+        $artifact = $this->trustedArtifactForRun($jsonFetcher, $githubToken, $runId, $candidateSource);
+        $artifactId = $artifact['id'] ?? null;
+        if (! is_int($artifactId) || $artifactId <= 0) {
+            throw new DevelopmentUpdaterViolation('actions_artifact_id_invalid');
+        }
+        $outerDigest = $this->pattern(
+            str_replace('sha256:', '', (string) ($artifact['digest'] ?? '')),
+            '/\A[0-9a-f]{64}\z/',
+            'outer_digest_invalid',
+        );
+
+        $candidate = $this->requests->storeCandidate([
+            'release_id' => 'durable-staging-'.substr($candidateSource, 0, 12),
+            'source_commit' => $candidateSource,
+            'current_source_commit' => $currentSource,
+            'github_run_id' => $runId,
+            'github_artifact_id' => $artifactId,
+            'github_outer_sha256' => $outerDigest,
+        ], time());
+
+        return [
+            'state' => $candidate['candidate_state'],
+            'release_id' => $candidate['release_id'],
+            'source_commit' => $candidate['source_commit'],
+            'candidate_fingerprint' => $candidate['candidate_fingerprint'],
+            'expires_at_unix' => $candidate['expires_at_unix'],
+            'production_allowed' => false,
+            'migration_execution_allowed' => false,
+            'attribution' => 'Lab | zefry',
+        ];
+    }
+
+    /**
      * @param null|callable(string,string):array<string,mixed> $jsonFetcher
      * @param null|callable(string,string,string):void $downloader
      * @param null|callable(string,string):array<string,mixed> $attestationFetcher
@@ -78,43 +147,31 @@ final class GovernedDevelopmentUpdateProcessor
             $currentSource = (string) $request['current_source_commit'];
             $currentArtifact = (string) $request['current_artifact_sha256'];
 
-            $run = $this->latestTrustedPublicationRun($jsonFetcher, $githubToken);
-            $candidateSource = $this->pattern(
-                $run['head_sha'] ?? null,
-                '/\A[0-9a-f]{40}\z/',
-                'publication_source_invalid',
-            );
+            $candidateSource = (string) $request['candidate_source_commit'];
+            $runId = (int) $request['github_run_id'];
+            $artifactId = (int) $request['github_artifact_id'];
+            $outerDigest = (string) $request['github_outer_sha256'];
+            $releaseId = (string) $request['candidate_release_id'];
 
-            if (hash_equals($currentSource, $candidateSource)) {
-                $result = $this->safeResult(
-                    'NO_UPDATE',
-                    null,
-                    $currentSource,
-                    $currentArtifact,
-                    $now,
-                    'already_current',
-                );
-                $this->requests->complete($result);
-
-                return $result;
-            }
-
+            $run = $this->trustedPublicationRunById($jsonFetcher, $githubToken, $runId, $candidateSource);
             $this->assertForwardOnly($jsonFetcher, $githubToken, $currentSource, $candidateSource);
 
             $artifactMeta = $this->trustedArtifactForRun(
                 $jsonFetcher,
                 $githubToken,
-                (int) $run['id'],
+                $runId,
                 $candidateSource,
             );
-            $outerDigest = $this->pattern(
+            $observedArtifactId = $artifactMeta['id'] ?? null;
+            $observedOuterDigest = $this->pattern(
                 str_replace('sha256:', '', (string) ($artifactMeta['digest'] ?? '')),
                 '/\A[0-9a-f]{64}\z/',
                 'outer_digest_invalid',
             );
-            $artifactId = $artifactMeta['id'] ?? null;
-            if (! is_int($artifactId) || $artifactId <= 0) {
-                throw new DevelopmentUpdaterViolation('actions_artifact_id_invalid');
+            if (! is_int($observedArtifactId)
+                || $observedArtifactId !== $artifactId
+                || ! hash_equals($outerDigest, $observedOuterDigest)) {
+                throw new DevelopmentUpdaterViolation('authorized_candidate_drift');
             }
 
             $outerZip = $work.'/github-actions-artifact.zip';
@@ -132,7 +189,9 @@ final class GovernedDevelopmentUpdateProcessor
             }
             $this->extractArchive($outerZip, $bundle, 'outer_artifact_extraction_failed');
 
-            $releaseId = 'durable-staging-'.substr($candidateSource, 0, 12);
+            if ($releaseId !== 'durable-staging-'.substr($candidateSource, 0, 12)) {
+                throw new DevelopmentUpdaterViolation('authorized_release_id_invalid');
+            }
             $archiveName = $releaseId.'.tar.gz';
             $manifestName = $releaseId.'.manifest.json';
             $checksumName = $archiveName.'.sha256';
@@ -361,6 +420,28 @@ final class GovernedDevelopmentUpdateProcessor
         }
 
         throw new DevelopmentUpdaterViolation('trusted_publication_not_found');
+    }
+
+    private function trustedPublicationRunById(
+        callable $fetch,
+        string $token,
+        int $runId,
+        string $source,
+    ): array {
+        $run = $fetch(
+            'https://api.github.com/repos/labzefry/oneQay/actions/runs/'.$runId,
+            $token,
+        );
+
+        if (($run['id'] ?? null) !== $runId
+            || ($run['conclusion'] ?? null) !== 'success'
+            || ($run['head_branch'] ?? null) !== 'main'
+            || ($run['head_sha'] ?? null) !== $source
+            || ! in_array($run['event'] ?? null, ['push', 'workflow_dispatch'], true)) {
+            throw new DevelopmentUpdaterViolation('authorized_publication_run_invalid');
+        }
+
+        return $run;
     }
 
     private function trustedArtifactForRun(
