@@ -27,7 +27,7 @@ Historical oneQay Technical Preview layout under the existing cPanel account may
 
 Sprint218 adds a deterministic Production operator kit and guarded PHP CLI executor for a real isolated Production target.
 
-The kit contains operator governance/tools only. Application bytes remain in the separate exact Production candidate artifact `10603358335`. Verified durable-staging evidence for artifact `10603323419` and the same source commit is required before a Production deployment request may be prepared.
+The kit contains operator governance/tools only. Application bytes remain in the separate exact Production candidate artifact `10608942942`. Verified durable-staging evidence for artifact `10608272778` and the same source commit is required before a Production deployment request may be prepared.
 
 The operator sequence is:
 
@@ -44,20 +44,31 @@ The runtime environment and bindings remain private owner-only files outside the
 
 No migration, Production traffic activation, target selection, producer dispatch, or updater activation is implied by a successful dark deployment.
 
-## Current cPanel same-source staging bundle — Sprint217
+## Current cPanel same-source deployment bundle — Sprint221
 
-The cPanel no-SSH operator path is now bound to the Sprint216 same-source durable-staging release rather than the historical Sprint211 bundle.
+The cPanel no-SSH operator path is bound to the exact Sprint220 squash source `5be28a3c001738373588b58e9d29832c46402de1`.
 
-Current governed application release:
-- artifact ID `10603323419`
-- release `durable-staging-d0b5becbf945`
-- source `d0b5becbf945c5192e797d512a704eb5aecc6eaa`
-- archive SHA-256 `e32a7de2c07c35306c03edff5d7d762782ef58449c92d4b88e5dd04b50d489a2`
-- deployment handoff state `VALIDATED_FOR_EXTERNAL_DEPLOYMENT_NOT_AUTHORIZED`
+Current governed staging application release:
 
-The operator must always use the archive identity in the current kit `KIT.json`. No Sprint number is a substitute for exact release identity.
+- run `35522953555`
+- artifact ID `10608272778`
+- release `durable-staging-5be28a3c0017`
+- archive SHA-256 `66be23792478fb191f912571b35076c42783b9733cdb3fb514b549d22ec90dd7`
+- manifest SHA-256 `d24c8961100be308599b469a2f87485c9a1646f57c435118990141c2f85f8ec9`
+- deployment handoff SHA-256 `628a3b2aa2d0e165a641f32ee29edaee7e681dcdbd6f8e22bbd908b09c12af9a`
 
-This rebind is required so real durable-staging evidence can be produced for the same source as Production candidate artifact `10603358335`. It grants no deployment or Production activation authority.
+Same-source Production candidate:
+
+- run `35522953560`
+- artifact ID `10608942942`
+- release `production-5be28a3c0017`
+- archive SHA-256 `66601e38db9e5e71d061b19b75cd080adeac46958e86abc5f543230c2dd1366d`
+
+The operator must always use the archive identity in the current kit `KIT.json`. No Sprint number or historical artifact ID is a substitute for exact release identity.
+
+Before using the Sprint220 manual GitHub updater on cPanel, qualification must prove PHP `ext-curl` is loaded and libcurl is at least `7.58.0`. The GitHub credential remains in the private runtime environment only; it is not stored in the operator ZIP, public document root, database, or updater UI.
+
+Verified durable-staging evidence for this exact source is required before the Production candidate can be dark-deployed. This rebind grants no migration, Production traffic, target-selection, or producer-dispatch authority.
 
 ## cPanel no-SSH guarded deployment execution — Sprint214
 

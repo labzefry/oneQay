@@ -342,7 +342,7 @@ function cpanelProbeInspect(array $input, array $bindings, string $bindingPath):
         cpanelProbeFail('binding_file_inside_document_root');
     }
 
-    $requiredExtensions = ['json', 'openssl', 'pdo', 'pdo_mysql', 'phar'];
+    $requiredExtensions = ['curl', 'json', 'openssl', 'pdo', 'pdo_mysql', 'phar'];
     foreach ($requiredExtensions as $extension) {
         if (! extension_loaded($extension)) {
             cpanelProbeFail('required_php_extension_missing_'.$extension);
@@ -350,6 +350,16 @@ function cpanelProbeInspect(array $input, array $bindings, string $bindingPath):
     }
     if (PHP_VERSION_ID < 80200) {
         cpanelProbeFail('php_version_unsupported');
+    }
+
+    $curlInfo = function_exists('curl_version') ? curl_version() : false;
+    $libcurlVersion = is_array($curlInfo) && is_string($curlInfo['version'] ?? null)
+        ? $curlInfo['version']
+        : null;
+    if (! is_string($libcurlVersion)
+        || preg_match('/\A[0-9]+(?:\.[0-9]+){1,3}\z/', $libcurlVersion) !== 1
+        || version_compare($libcurlVersion, '7.58.0', '<')) {
+        cpanelProbeFail('libcurl_version_unsafe_for_authorized_redirects');
     }
 
     $filesystemProbe = cpanelProbeFilesystemOperations($deploymentRoot);

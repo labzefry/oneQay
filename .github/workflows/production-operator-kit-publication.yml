@@ -77,8 +77,8 @@ jobs:
           contract=ops/final-shift-close/PRODUCTION_OPERATOR_KIT_PUBLICATION_CONTRACT.json
           jq -e . "$contract" >/dev/null
           test "$(jq -r '.contract_state' "$contract")" = PUBLISHES_SECRET_FREE_PRODUCTION_DARK_DEPLOYMENT_OPERATOR_KIT_NOT_DEPLOYED_NOT_ACTIVATED
-          test "$(jq -r '.production_release_reference.actions_artifact_id' "$contract")" = 10603358335
-          test "$(jq -r '.staging_prerequisite_reference.actions_artifact_id' "$contract")" = 10603323419
+          test "$(jq -r '.production_release_reference.actions_artifact_id' "$contract")" = 10608942942
+          test "$(jq -r '.staging_prerequisite_reference.actions_artifact_id' "$contract")" = 10608272778
           test "$(jq -r '.production_release_reference.source_commit' "$contract")" = "$(jq -r '.staging_prerequisite_reference.source_commit' "$contract")"
           test "$(jq -r '.authority_boundary.production_traffic_activation_allowed' "$contract")" = false
 

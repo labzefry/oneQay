@@ -31,8 +31,8 @@ Sprint218 closes the source-side gap between the Sprint216 Production deployment
 
 The Production operator path remains fail-closed and dark:
 
-- exact Production candidate artifact `10603358335`;
-- same-source staging prerequisite `10603323419`;
+- exact Production candidate artifact `10608942942`;
+- same-source staging prerequisite `10608272778`;
 - exact real isolated Production target profile;
 - exact target candidate and authority request;
 - separately issued deployment authority valid for at most 900 seconds;
@@ -53,24 +53,35 @@ Migration #27 is not executed. Production business/traffic activation is not aut
 Canonical execution contract: `ops/final-shift-close/PRODUCTION_DARK_DEPLOYMENT_EXECUTION_CONTRACT.json`.
 Canonical kit contract: `ops/final-shift-close/PRODUCTION_OPERATOR_KIT_PUBLICATION_CONTRACT.json`.
 
-## Current cPanel same-source staging binding — Sprint217
+## Current cPanel same-source deployment binding — Sprint221
 
-Sprint217 supersedes the stale Sprint211 application-release reference inside the cPanel no-SSH operator kit. The current governed companion release is the Sprint216 same-source durable-staging artifact:
+Sprint221 rebinds the cPanel no-SSH staging and Production operator paths to the exact Sprint220 squash source `5be28a3c001738373588b58e9d29832c46402de1`.
 
-- Actions run: `35505077172`
-- Actions artifact ID: `10603323419`
-- Actions artifact name: `oneqay-durable-staging-d0b5becbf945-operator-bundle`
-- source commit: `d0b5becbf945c5192e797d512a704eb5aecc6eaa`
-- release ID: `durable-staging-d0b5becbf945`
-- archive SHA-256: `e32a7de2c07c35306c03edff5d7d762782ef58449c92d4b88e5dd04b50d489a2`
-- manifest SHA-256: `6d8099ef3f0b18003c8e362cc1f315d01777b70f3a05b3948f16ff4a44092b9c`
-- deployment handoff SHA-256: `a9f33e8e5fa28abefdfb6397f350307e8954c486fbd43540a879b9c340c7ccad`
+Current durable-staging release:
 
-Operators must follow the exact release identity recorded in the current kit `KIT.json`; an older release must never be substituted merely because it appeared in a historical Sprint section.
+- Actions run: `35522953555`
+- Actions artifact ID: `10608272778`
+- Actions artifact name: `oneqay-durable-staging-5be28a3c0017-operator-bundle`
+- Actions outer SHA-256: `1e0bd4b514f4c36afaf83e4dc9e2fbb012953edacdf3e56945a6e53aeb508db8`
+- release ID: `durable-staging-5be28a3c0017`
+- source commit: `5be28a3c001738373588b58e9d29832c46402de1`
+- archive SHA-256: `66be23792478fb191f912571b35076c42783b9733cdb3fb514b549d22ec90dd7`
+- manifest SHA-256: `d24c8961100be308599b469a2f87485c9a1646f57c435118990141c2f85f8ec9`
+- deployment handoff SHA-256: `628a3b2aa2d0e165a641f32ee29edaee7e681dcdbd6f8e22bbd908b09c12af9a`
 
-This staging artifact is the exact source peer of Production candidate artifact `10603358335`. Verified durable-staging deployment evidence for source `d0b5becbf945c5192e797d512a704eb5aecc6eaa` is required before Production promotion can proceed.
+Current same-source Production candidate:
 
-Sprint217 still does not create a host, grant deployment authority, run migration #27, select a target, dispatch the producer, or activate Production traffic.
+- Actions run: `35522953560`
+- Actions artifact ID: `10608942942`
+- release ID: `production-5be28a3c0017`
+- archive SHA-256: `66601e38db9e5e71d061b19b75cd080adeac46958e86abc5f543230c2dd1366d`
+- manifest SHA-256: `b6a40c5fc212f8d6731ae03f0faf963390c630a8a9c815bf9979c38de8e16d87`
+
+Operators must follow the exact release identity recorded in the current kit `KIT.json`; a historical Sprint artifact is never a substitute for the current binding. Verified durable-staging deployment evidence for source `5be28a3c001738373588b58e9d29832c46402de1` is mandatory before Production dark deployment may proceed.
+
+Because the Sprint220 governed updater downloads private GitHub Actions artifacts through authenticated HTTPS redirects, cPanel staging qualification now requires PHP `ext-curl` and libcurl version `>= 7.58.0` in addition to the existing PHP/runtime requirements. This qualification performs no network mutation and grants no deployment authority.
+
+Sprint221 does not create a host, execute migration #27, select a target, dispatch the producer, activate Production traffic, or enable Final Shift Close. Those boundaries remain separately governed.
 
 ## Persistent operator artifact retention — Sprint215 foundation
 

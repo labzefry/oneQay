@@ -52,7 +52,7 @@ jobs:
         run: |
           set -euo pipefail
           php --version
-          php -r 'foreach (["json","openssl","pdo","pdo_mysql","phar"] as $e) { if (!extension_loaded($e)) { fwrite(STDERR, "missing:$e\n"); exit(1); } }'
+          php -r 'foreach (["curl","json","openssl","pdo","pdo_mysql","phar"] as $e) { if (!extension_loaded($e)) { fwrite(STDERR, "missing:$e\n"); exit(1); } }'
 
       - name: Validate Sprint212 source syntax and contracts
         shell: bash
@@ -70,6 +70,9 @@ jobs:
           test "$(jq -r '.qualification_requirements.private_binding_file_required' "$contract")" = true
           test "$(jq -r '.qualification_requirements.atomic_rename_required' "$contract")" = true
           test "$(jq -r '.qualification_requirements.symlink_required' "$contract")" = true
+          test "$(jq -r '.qualification_requirements.minimum_libcurl_version' "$contract")" = 7.58.0
+          test "$(jq -r '.qualification_requirements.authorized_https_redirect_client_required' "$contract")" = true
+          grep -Fq "libcurl_version_unsafe_for_authorized_redirects" tools/cpanel/inspect-durable-staging-cpanel-no-ssh-target.php
           test "$(jq -r '.authority_boundary.separate_sprint208_operational_authority_required' "$contract")" = true
           test "$(jq -r '.canonical_boundaries.environment_deployment' "$contract")" = NOT_PERFORMED
           test "$(jq -r '.canonical_boundaries.migration27_execution' "$contract")" = NOT_PERFORMED
