@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "feature": "production-dark-deployment-execution",
+  "contract_state": "SOURCE_READY_AUTHORITY_BOUND_PRODUCTION_DARK_DEPLOYMENT_EXECUTOR_NOT_EXECUTED",
+  "purpose": "EXECUTE_AN_EXACT_AUTHORITY_BOUND_PRODUCTION_PLAN_ON_A_QUALIFIED_OPERATOR_TARGET_WITHOUT_MIGRATIONS_OR_PRODUCTION_TRAFFIC_ACTIVATION",
+  "executor_path": "tools/execute-production-dark-deployment.php",
+  "inspector_path": "tools/inspect-production-operator-target.php",
+  "candidate_bridge_path": "tools/prepare-production-operator-target-candidate.php",
+  "execution_channels": [
+    "PHP_CLI",
+    "CPANEL_CRON_PHP_CLI_NO_SSH"
+  ],
+  "execution_requirements": {
+    "exact_plan_fingerprint_revalidated": true,
+    "authority_must_be_current_at_execution": true,
+    "exact_archive_sha256_revalidated": true,
+    "archive_extracted_only_after_authority_validation": true,
+    "immutable_release_directory_required": true,
+    "private_runtime_env_required": true,
+    "private_runtime_env_permissions": "0600",
+    "runtime_env_bound_by_symlink": true,
+    "active_release_pointer_semantics": "SYMLINK_TO_IMMUTABLE_RELEASE_DIRECTORY",
+    "atomic_active_pointer_replacement_required": true,
+    "document_root_exact_readback_required": true,
+    "https_dark_health_path": "/health/live",
+    "rollback_rehearsal_required": true,
+    "post_rollback_reactivation_required": true,
+    "post_reactivation_dark_health_required": true,
+    "evidence_candidate_written_only_after_all_checks_pass": true
+  },
+  "safety": {
+    "public_web_executor": false,
+    "ssh_required": false,
+    "remote_archive_download": false,
+    "migration_execution": false,
+    "database_schema_mutation": false,
+    "permission_provisioning": false,
+    "production_business_runtime_activation": false,
+    "production_traffic_activation": false,
+    "target_selection": false,
+    "producer_dispatch": false,
+    "technical_preview_activation": false,
+    "final_shift_close_activation": false,
+    "updater_activation": false,
+    "failure_after_pointer_mutation_restores_previous_active_state": true
+  },
+  "evidence": {
+    "candidate_state": "PRODUCTION_DEPLOYMENT_EVIDENCE_CANDIDATE",
+    "qualified_state": "PRODUCTION_DEPLOYED_VERIFIED_NOT_ACTIVATED",
+    "qualifier": "tools/qualify-production-deployment-evidence.php",
+    "secrets_embedded": false
+  },
+  "canonical_boundaries": {
+    "real_environment_execution": "NOT_PERFORMED",
+    "migration27_execution": "NOT_PERFORMED",
+    "permission_provisioning": "NONE",
+    "feature_activation": "INACTIVE",
+    "technical_preview_activation": "NOT_AUTHORIZED",
+    "production_activation": "NOT_AUTHORIZED",
+    "production_traffic_activation": "NOT_AUTHORIZED",
+    "updater_activation": "INACTIVE",
+    "target_selection": "NOT_PERFORMED",
+    "selected_target": null,
+    "producer_dispatch": "NOT_PERFORMED"
+  },
+  "attribution": "Lab | zefry"
+}

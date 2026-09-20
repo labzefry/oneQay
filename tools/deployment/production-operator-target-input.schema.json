@@ -1,12 +1,11 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://oneqay.invalid/contracts/production-target-candidate.schema.json",
-  "title": "oneQay Production Target Candidate",
+  "$id": "https://oneqay.invalid/contracts/production-operator-target-input.schema.json",
+  "title": "oneQay Production Operator Target Input",
   "type": "object",
   "additionalProperties": false,
   "required": [
     "schema_version",
-    "target_state",
     "target_class",
     "execution_channel",
     "environment_id",
@@ -17,16 +16,12 @@
     "release_binding",
     "filesystem",
     "health",
-    "capabilities",
-    "configuration",
+    "operator_assertions",
     "attribution"
   ],
   "properties": {
     "schema_version": {
       "const": 1
-    },
-    "target_state": {
-      "const": "PRODUCTION_TARGET_CANDIDATE"
     },
     "target_class": {
       "enum": [
@@ -129,7 +124,7 @@
         }
       }
     },
-    "capabilities": {
+    "operator_assertions": {
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -174,47 +169,6 @@
         },
         "verified_rollback": {
           "const": true
-        }
-      }
-    },
-    "configuration": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "secret_values_embedded",
-        "required_binding_presence"
-      ],
-      "properties": {
-        "secret_values_embedded": {
-          "const": false
-        },
-        "required_binding_presence": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "ONEQAY_RUNTIME_CLASS",
-            "ONEQAY_RUNNING_SOURCE_COMMIT",
-            "ONEQAY_RUNNING_ARTIFACT_SHA256",
-            "ONEQAY_PRODUCTION_ENVIRONMENT_ID",
-            "ONEQAY_PRODUCTION_ATTESTATION_TOKEN"
-          ],
-          "properties": {
-            "ONEQAY_RUNTIME_CLASS": {
-              "const": true
-            },
-            "ONEQAY_RUNNING_SOURCE_COMMIT": {
-              "const": true
-            },
-            "ONEQAY_RUNNING_ARTIFACT_SHA256": {
-              "const": true
-            },
-            "ONEQAY_PRODUCTION_ENVIRONMENT_ID": {
-              "const": true
-            },
-            "ONEQAY_PRODUCTION_ATTESTATION_TOKEN": {
-              "const": true
-            }
-          }
         }
       }
     },

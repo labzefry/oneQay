@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oneqay.invalid/contracts/production-operator-target-profile.schema.json",
+  "title": "oneQay Production Operator Target Profile",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "profile_state",
+    "target_class",
+    "execution_channel",
+    "environment_id",
+    "runtime_class",
+    "production",
+    "production_data_allowed",
+    "isolated_environment",
+    "release_binding",
+    "filesystem",
+    "health",
+    "runtime",
+    "configuration",
+    "operator_assertions",
+    "secrets_embedded",
+    "attribution"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "profile_state": {
+      "const": "PRODUCTION_OPERATOR_TARGET_PROFILE_OBSERVED"
+    },
+    "target_class": {
+      "enum": [
+        "OPERATOR_MANAGED_FILESYSTEM",
+        "CPANEL_NO_SSH"
+      ]
+    },
+    "execution_channel": {
+      "enum": [
+        "PHP_CLI",
+        "CPANEL_CRON_PHP_CLI_NO_SSH"
+      ]
+    },
+    "environment_id": {
+      "type": "string"
+    },
+    "runtime_class": {
+      "const": "production"
+    },
+    "production": {
+      "const": true
+    },
+    "production_data_allowed": {
+      "const": true
+    },
+    "isolated_environment": {
+      "const": true
+    },
+    "release_binding": {
+      "type": "object"
+    },
+    "filesystem": {
+      "type": "object"
+    },
+    "health": {
+      "type": "object"
+    },
+    "runtime": {
+      "type": "object"
+    },
+    "configuration": {
+      "type": "object"
+    },
+    "operator_assertions": {
+      "type": "object"
+    },
+    "secrets_embedded": {
+      "const": false
+    },
+    "attribution": {
+      "const": "Lab | zefry"
+    }
+  }
+}

@@ -1,5 +1,33 @@
 # oneQay Deployment Handbook
 
+## Production dark deployment execution — Sprint218
+
+Sprint218 closes the source-side gap between the Sprint216 Production deployment plan/evidence contracts and real operator execution.
+
+The Production operator path remains fail-closed and dark:
+
+- exact Production candidate artifact `10603358335`;
+- same-source staging prerequisite `10603323419`;
+- exact real isolated Production target profile;
+- exact target candidate and authority request;
+- separately issued deployment authority valid for at most 900 seconds;
+- deterministic Production deployment plan;
+- immutable release extraction after authority validation;
+- private `0600` runtime configuration binding;
+- atomic active-release symlink activation;
+- exact document-root readback;
+- non-mutating HTTPS `/health/live` verification;
+- rollback rehearsal to the prior active state;
+- candidate reactivation and second liveness verification;
+- evidence candidate qualification to `PRODUCTION_DEPLOYED_VERIFIED_NOT_ACTIVATED`.
+
+The executor intentionally does not use `/health/ready` because Production business readiness remains a later source/authority gate. The canonical application source still denies first-party business routes outside Local/Test/CI.
+
+Migration #27 is not executed. Production business/traffic activation is not authorized. Target selection, producer dispatch, Final Shift Close activation, Technical Preview activation, and updater activation remain outside Sprint218 authority.
+
+Canonical execution contract: `ops/final-shift-close/PRODUCTION_DARK_DEPLOYMENT_EXECUTION_CONTRACT.json`.
+Canonical kit contract: `ops/final-shift-close/PRODUCTION_OPERATOR_KIT_PUBLICATION_CONTRACT.json`.
+
 ## Current cPanel same-source staging binding — Sprint217
 
 Sprint217 supersedes the stale Sprint211 application-release reference inside the cPanel no-SSH operator kit. The current governed companion release is the Sprint216 same-source durable-staging artifact:
