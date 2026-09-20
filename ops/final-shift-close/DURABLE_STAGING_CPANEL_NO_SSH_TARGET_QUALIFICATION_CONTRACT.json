@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "feature": "durable-staging-cpanel-no-ssh-target-qualification",
+  "contract_state": "SOURCE_READY_CPANEL_NO_SSH_TARGET_QUALIFICATION_ONLY_NOT_DEPLOYED",
+  "purpose": "QUALIFY_A_REAL_CPANEL_SHARED_HOSTING_TARGET_WITHOUT_SSH_AND_BRIDGE_OBSERVED_NON_SECRET_FACTS_INTO_THE_EXISTING_SPRINT208_OPERATOR_TARGET_CANDIDATE",
+  "profile_schema_path": "tools/deployment/cpanel-no-ssh-durable-staging-target-profile.schema.json",
+  "inspection_tool_path": "tools/cpanel/inspect-durable-staging-cpanel-no-ssh-target.php",
+  "candidate_tool_path": "tools/cpanel/prepare-durable-staging-cpanel-no-ssh-target-candidate.php",
+  "existing_target_candidate_schema_path": "tools/deployment/durable-staging-operator-target-candidate.schema.json",
+  "existing_authority_request_tool_path": "tools/prepare-durable-staging-deployment-authority-request.php",
+  "supported_operator_channel": "CPANEL_CRON_PHP_CLI_NO_SSH",
+  "qualification_requirements": {
+    "php_minimum": "8.2",
+    "required_extensions": [
+      "json",
+      "openssl",
+      "pdo",
+      "pdo_mysql",
+      "phar"
+    ],
+    "file_manager_used_for_private_file_materialization": true,
+    "cron_php_cli_required": true,
+    "ssh_required": false,
+    "private_binding_file_required": true,
+    "private_binding_file_max_group_world_permissions": "000",
+    "binding_values_never_emitted": true,
+    "deployment_root_writable": true,
+    "release_root_writable": true,
+    "shared_runtime_root_writable": true,
+    "active_pointer_parent_writable": true,
+    "atomic_rename_required": true,
+    "symlink_required": true,
+    "document_root_must_equal_active_pointer_apps_web_public": true,
+    "target_candidate_reuses_sprint208_schema": true,
+    "operator_capability_assertions_remain_subject_to_post_deployment_sprint209_and_runtime_evidence": true
+  },
+  "cpanel_constraints": {
+    "dedicated_or_isolated_domain_tree_required": true,
+    "main_domain_document_root_limit_must_be_considered": true,
+    "provider_feature_manager_may_disable_required_features": true,
+    "document_root_parent_must_not_expose_private_runtime_material": true,
+    "web_exposed_setup_script": false,
+    "remote_artifact_url_ingestion": false
+  },
+  "authority_boundary": {
+    "separate_sprint208_operational_authority_required": true,
+    "maximum_authority_lifetime_seconds": 900,
+    "migration_execution_allowed": false,
+    "production_allowed": false,
+    "technical_preview_activation_allowed": false,
+    "updater_activation_allowed": false,
+    "target_selection_allowed": false,
+    "producer_dispatch_allowed": false
+  },
+  "canonical_boundaries": {
+    "environment_creation": "NOT_PERFORMED",
+    "environment_deployment": "NOT_PERFORMED",
+    "archive_extraction": "NOT_PERFORMED",
+    "runtime_configuration_mutation": "NOT_PERFORMED",
+    "active_release_pointer_mutation": "NOT_PERFORMED",
+    "migration27_execution": "NOT_PERFORMED",
+    "permission_provisioning": "NONE",
+    "feature_activation": "INACTIVE",
+    "technical_preview_activation": "NOT_AUTHORIZED",
+    "production_activation": "NOT_AUTHORIZED",
+    "updater_activation": "INACTIVE",
+    "durable_target_selection": "BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET",
+    "selected_target": null,
+    "producer_dispatch": "NOT_PERFORMED"
+  },
+  "attribution": "Lab | zefry"
+}
