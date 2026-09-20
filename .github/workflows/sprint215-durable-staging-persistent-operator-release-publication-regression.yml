@@ -1,0 +1,108 @@
+# Author by Lab | zefry
+name: Sprint215 Durable Staging Persistent Operator Release Publication Regression
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/durable-staging-persistent-operator-release-publication.yml'
+      - '.github/workflows/sprint215-durable-staging-persistent-operator-release-publication-regression.yml'
+      - 'ops/final-shift-close/DURABLE_STAGING_PERSISTENT_OPERATOR_RELEASE_PUBLICATION_CONTRACT.json'
+      - 'RELEASE.md'
+      - 'DEPLOYMENT.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sprint215-persistent-release-publication:
+    name: sprint215-persistent-release-publication
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+      - name: Validate Sprint215 contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          c=ops/final-shift-close/DURABLE_STAGING_PERSISTENT_OPERATOR_RELEASE_PUBLICATION_CONTRACT.json
+          jq -e . "$c" >/dev/null
+          test "$(jq -r '.contract_state' "$c")" = PERSISTENT_RELEASE_PUBLICATION_AVAILABLE_NOT_EXECUTED
+          test "$(jq -r '.trigger_policy.workflow_dispatch_only' "$c")" = true
+          test "$(jq -r '.trigger_policy.main_branch_only' "$c")" = true
+          test "$(jq -r '.trigger_policy.automatic_push_publication_forbidden' "$c")" = true
+          test "$(jq -r '.persistent_release.prerelease' "$c")" = true
+          test "$(jq -r '.persistent_release.asset_overwrite_allowed' "$c")" = false
+          test "$(jq -r '.application_bundle.actions_artifact_id' "$c")" = 10597712890
+          test "$(jq -r '.cpanel_operator_kit.actions_artifact_id' "$c")" = 10601606508
+          test "$(jq -r '.application_bundle.archive_sha256' "$c")" = faf6b4799648c0fe1d5ddcf4a55e0a39ba8bd0506e3e2ef3f4bb33f38495d079
+          test "$(jq -r '.cpanel_operator_kit.zip_sha256' "$c")" = e572c93f1a8fc55b1c67f0b1f8744a2b6dd3f3c811d0c83a91767fef8df1ae82
+          test "$(jq -r '.authority_boundary.publication_is_not_deployment_authority' "$c")" = true
+          test "$(jq -r '.canonical_boundaries.migration27_execution' "$c")" = NOT_PERFORMED
+          test "$(jq -r '.canonical_boundaries.selected_target' "$c")" = null
+          test "$(jq -r '.canonical_boundaries.producer_dispatch' "$c")" = NOT_PERFORMED
+
+      - name: Prove publication workflow is manual and authority gated
+        shell: bash
+        run: |
+          set -euo pipefail
+          w=.github/workflows/durable-staging-persistent-operator-release-publication.yml
+          grep -Fq 'workflow_dispatch:' "$w"
+          ! grep -Eq '^[[:space:]]+push:' "$w"
+          ! grep -Eq '^[[:space:]]+pull_request:' "$w"
+          grep -Fq 'authority_comment_id:' "$w"
+          grep -Fq 'actions: read' "$w"
+          grep -Fq 'contents: write' "$w"
+          grep -Fq 'issues: read' "$w"
+          grep -Fq 'PERSISTENT OPERATOR RELEASE PUBLICATION AUTHORIZATION' "$w"
+          grep -Fq 'EXACT MAIN: $GITHUB_SHA' "$w"
+          grep -Fq 'PUBLICATION AUTHORITY: GRANTED' "$w"
+          grep -Fq 'DEPLOYMENT AUTHORITY: NOT_GRANTED' "$w"
+          grep -Fq 'MIGRATION #27 AUTHORITY: NOT_GRANTED' "$w"
+          grep -Fq 'PRODUCTION AUTHORITY: NOT_GRANTED' "$w"
+          grep -Fq 'TARGET SELECTION AUTHORITY: NOT_GRANTED' "$w"
+          grep -Fq 'PRODUCER DISPATCH AUTHORITY: NOT_GRANTED' "$w"
+
+      - name: Prove exact existing assets are preserved without rebuild
+        shell: bash
+        run: |
+          set -euo pipefail
+          w=.github/workflows/durable-staging-persistent-operator-release-publication.yml
+          grep -Fq 'actions/artifacts/$app_id/zip' "$w"
+          grep -Fq 'actions/artifacts/$kit_id/zip' "$w"
+          grep -Fq '.application_bundle.actions_artifact_digest' "$w"
+          grep -Fq '.cpanel_operator_kit.actions_artifact_digest' "$w"
+          grep -Fq '.application_bundle.archive_sha256' "$w"
+          grep -Fq '.cpanel_operator_kit.zip_sha256' "$w"
+          ! grep -Fq 'build-durable-staging-release.sh' "$w"
+          ! grep -Fq 'build-cpanel-no-ssh-operator-qualification-kit.sh' "$w"
+
+      - name: Prove draft-first immutable release behavior
+        shell: bash
+        run: |
+          set -euo pipefail
+          w=.github/workflows/durable-staging-persistent-operator-release-publication.yml
+          grep -Fq 'gh release create "$tag"' "$w"
+          grep -Fq -- '--draft' "$w"
+          grep -Fq -- '--prerelease' "$w"
+          grep -Fq 'Release tag already exists; refusing overwrite.' "$w"
+          grep -Fq 'Git tag already exists; refusing reuse.' "$w"
+          grep -Fq 'test "$(jq ''.assets | length'' /tmp/release.json)" -eq 8' "$w" || grep -Fq "test "\$(jq '.assets | length' /tmp/release.json)" -eq 8" "$w"
+          grep -Fq 'draft=false' "$w"
+          ! grep -Fq -- '--clobber' "$w"
+
+      - name: Prove workflow cannot perform deployment
+        shell: bash
+        run: |
+          set -euo pipefail
+          w=.github/workflows/durable-staging-persistent-operator-release-publication.yml
+          ! grep -Eiq 'artisan[[:space:]]+migrate|kubectl|helm[[:space:]]+upgrade|rsync[[:space:]]|scp[[:space:]]|ssh[[:space:]]' "$w"
+          grep -Fq 'NOT_EXECUTED' "$w"
+          grep -Fq 'NOT_GRANTED' "$w"
+          grep -Fq 'NOT_AUTHORIZED' "$w"
+          grep -Fq 'selected_target' "$w"
+          grep -Fq 'producer_dispatch' "$w"

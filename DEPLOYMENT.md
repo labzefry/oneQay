@@ -1,5 +1,16 @@
 # oneQay Deployment Handbook
 
+## Persistent operator artifact retention — Sprint215 foundation
+
+The real-host deployment chain depends on two exact governed payloads: Sprint211 application artifact `10597712890` and Sprint214 cPanel operator kit `10601606508`. Both Actions artifacts currently have 30-day retention. Sprint215 adds an authority-gated persistent GitHub prerelease publication path so operator retrieval does not silently become impossible after Actions retention expires.
+
+The persistence workflow never deploys. It downloads the exact existing Actions artifacts, verifies their outer Actions digests and governed inner SHA-256 identities, preserves the exact Sprint211 archive/manifest/checksum/handoff and Sprint214 kit/manifest/checksum, and publishes them only after a separate issue #856 publication authorization bound to the exact canonical main.
+
+Merge of Sprint215 does not publish the prerelease. Publication remains a separate repository action and remains distinct from Sprint208 deployment authority and all runtime/activation authorities.
+
+Canonical operational NO-GO remains unchanged.
+
+
 ## cPanel no-SSH guarded deployment execution — Sprint214
 
 Sprint214 adds the authority-bound execution surface required to turn a qualified cPanel no-SSH target and exact Sprint207 plan into actual deployment evidence. The implementation remains an operator-invoked PHP CLI tool distributed through the cPanel operator kit; no public deployment route is introduced.

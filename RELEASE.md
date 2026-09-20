@@ -1,5 +1,18 @@
 # oneQay Release Management
 
+## Persistent operator handoff release publication — Sprint215 foundation
+
+Sprint215 addresses a concrete retention gap: the governed Sprint211 application bundle and Sprint214 cPanel operator kit are currently available only as GitHub Actions artifacts with 30-day retention, while the repository has no persistent GitHub Release assets.
+
+The Sprint215 publication workflow is deliberately `workflow_dispatch`-only and fail-closed. It does not run on merge or push. A separate Product Owner publication-authorization comment in issue #856 must bind the exact current `main`, exact Sprint211/Sprint214 artifact IDs, and exact persistent release tag before publication can run.
+
+Publication reuses the already-governed bytes; it does not rebuild application or operator-kit payloads. The workflow verifies live Actions artifact identity/digest, exact inner payload SHA-256, checksum sidecars, and the Sprint206 handoff state, then creates a draft prerelease, verifies asset names and sizes, and only then publishes the prerelease. Existing release/tag reuse and asset overwrite are forbidden.
+
+This repository release is an operator-retrieval retention surface only. It does not grant deployment, migration #27, target selection, producer dispatch, Technical Preview, Production, or updater authority.
+
+Canonical contract: `ops/final-shift-close/DURABLE_STAGING_PERSISTENT_OPERATOR_RELEASE_PUBLICATION_CONTRACT.json`.
+
+
 ## Secure updater release-contract alignment — 2026-08-17
 
 ADR-009 defines the future updater-facing release-control-plane contract. Release packaging for that path follows **Build Once / Deploy Trusted Artifact** and must not require runtime Git checkout, Composer install, npm install, or frontend build on the target host.
