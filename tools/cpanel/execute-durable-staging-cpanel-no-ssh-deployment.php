@@ -900,22 +900,27 @@ function cpanelExecWriteJson(string $path, array $payload): void
     }
 }
 
-if (PHP_SAPI === 'cli' && realpath($_SERVER['SCRIPT_FILENAME'] ?? '') === __FILE__) {
-    if ($argc !== 8) {
-        fwrite(
-            STDERR,
-            "Usage: php tools/cpanel/execute-durable-staging-cpanel-no-ssh-deployment.php <deployment-plan.json> <target-profile.json> <artifact.tar.gz> <private-bindings.json> <private-runtime-env> <readiness-url> <deployment-evidence.json>\n",
-        );
-        exit(64);
-    }
-
+/**
+ * @param callable(string,string):array<string,mixed> $readinessFetcher
+ * @return array<string,mixed>
+ */
+function cpanelExecExecute(
+    string $planPath,
+    string $profilePath,
+    string $archivePath,
+    string $bindingsPath,
+    string $runtimeEnvPath,
+    string $readinessUrl,
+    string $evidencePath,
+    callable $readinessFetcher,
+): array {
     $activePointer = null;
     $previousState = ['state' => 'ABSENT', 'target' => null];
     $pointerMutated = false;
 
     try {
-        $plan = cpanelExecLoadJson($argv[1]);
-        $profile = cpanelExecLoadJson($argv[2]);
+        $plan = cpanelExecLoadJson($planPath);
+        $profile = cpanelExecLoadJson($profilePath);
         $identity = cpanelExecValidatePlan($plan);
         $profileIdentity = cpanelExecValidateProfile($profile, $identity);
 
@@ -930,8 +935,8 @@ if (PHP_SAPI === 'cli' && realpath($_SERVER['SCRIPT_FILENAME'] ?? '') === __FILE
             }
         }
 
-        $bindingsPath = cpanelExecPrivateFile($argv[4], $identity['shared_root'], 'private_bindings');
-        $bindings = cpanelExecValidateBindings(cpanelExecLoadJson($bindingsPath, true), $identity);
+        $privateBindingsPath = cpanelExecPrivateFile($bindingsPath, $identity['shared_root'], 'private_bindings');
+        $bindings = cpanelExecValidateBindings(cpanelExecLoadJson($privateBindingsPath, true), $identity);
 
         $activePointer = $identity['active_pointer'];
         $previousState = cpanelExecReadPreviousState(
@@ -940,8 +945,8 @@ if (PHP_SAPI === 'cli' && realpath($_SERVER['SCRIPT_FILENAME'] ?? '') === __FILE
             $identity['release_directory'],
         );
 
-        cpanelExecExtractRelease($argv[3], $identity);
-        $runtimeEnvSha256 = cpanelExecBindRuntimeEnv($argv[5], $identity);
+        cpanelExecExtractRelease($archivePath, $identity);
+        $runtimeEnvSha256 = cpanelExecBindRuntimeEnv($runtimeEnvPath, $identity);
 
         cpanelExecAtomicPoint($activePointer, $identity['release_directory']);
         $pointerMutated = true;
@@ -956,13 +961,25 @@ if (PHP_SAPI === 'cli' && realpath($_SERVER['SCRIPT_FILENAME'] ?? '') === __FILE
             cpanelExecFail('public_document_root_verification_failed');
         }
 
-        $firstAttestation = cpanelExecFetchReadiness($argv[6], $bindings['ONEQAY_DURABLE_RUNTIME_ATTESTATION_TOKEN']);
+        $firstAttestation = $readinessFetcher(
+            $readinessUrl,
+            $bindings['ONEQAY_DURABLE_RUNTIME_ATTESTATION_TOKEN'],
+        );
+        if (! is_array($firstAttestation) || array_is_list($firstAttestation)) {
+            cpanelExecFail('readiness_fetcher_shape_invalid');
+        }
         cpanelExecValidateReadiness($firstAttestation, $identity);
 
         cpanelExecRestorePrevious($activePointer, $previousState);
         cpanelExecAtomicPoint($activePointer, $identity['release_directory']);
 
-        $secondAttestation = cpanelExecFetchReadiness($argv[6], $bindings['ONEQAY_DURABLE_RUNTIME_ATTESTATION_TOKEN']);
+        $secondAttestation = $readinessFetcher(
+            $readinessUrl,
+            $bindings['ONEQAY_DURABLE_RUNTIME_ATTESTATION_TOKEN'],
+        );
+        if (! is_array($secondAttestation) || array_is_list($secondAttestation)) {
+            cpanelExecFail('readiness_fetcher_shape_invalid');
+        }
         cpanelExecValidateReadiness($secondAttestation, $identity);
 
         $runtimeEnvSha256After = hash_file('sha256', $identity['release_directory'].'/apps/web/.env');
@@ -1019,20 +1036,47 @@ if (PHP_SAPI === 'cli' && realpath($_SERVER['SCRIPT_FILENAME'] ?? '') === __FILE
             'attribution' => 'Lab | zefry',
         ];
 
-        cpanelExecWriteJson($argv[7], $evidence);
+        cpanelExecWriteJson($evidencePath, $evidence);
         $pointerMutated = false;
 
-        fwrite(STDOUT, "cpanel_no_ssh_durable_staging_deployed_verified_not_selected\n");
-        exit(0);
+        return $evidence;
     } catch (Throwable $failure) {
         if ($pointerMutated && is_string($activePointer)) {
             cpanelExecRollbackBestEffort($activePointer, $previousState);
         }
 
-        if (isset($argv[7]) && is_string($argv[7]) && is_file($argv[7])) {
-            @unlink($argv[7]);
+        if (is_file($evidencePath)) {
+            @unlink($evidencePath);
         }
 
+        throw $failure;
+    }
+}
+
+if (PHP_SAPI === 'cli' && realpath($_SERVER['SCRIPT_FILENAME'] ?? '') === __FILE__) {
+    if ($argc !== 8) {
+        fwrite(
+            STDERR,
+            "Usage: php tools/cpanel/execute-durable-staging-cpanel-no-ssh-deployment.php <deployment-plan.json> <target-profile.json> <artifact.tar.gz> <private-bindings.json> <private-runtime-env> <readiness-url> <deployment-evidence.json>\n",
+        );
+        exit(64);
+    }
+
+    try {
+        cpanelExecExecute(
+            $argv[1],
+            $argv[2],
+            $argv[3],
+            $argv[4],
+            $argv[5],
+            $argv[6],
+            $argv[7],
+            static fn (string $url, string $token): array => cpanelExecFetchReadiness($url, $token),
+        );
+
+        fwrite(STDOUT, "cpanel_no_ssh_durable_staging_deployed_verified_not_selected\n");
+        exit(0);
+    } catch (Throwable $failure) {
         $code = $failure instanceof CpanelNoSshDeploymentExecutionException
             ? $failure->getMessage()
             : 'unexpected_failure';
