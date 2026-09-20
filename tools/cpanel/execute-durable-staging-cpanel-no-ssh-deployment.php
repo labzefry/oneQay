@@ -383,6 +383,29 @@ function cpanelExecValidateProfile(array $profile, array $identity): array
         cpanelExecBool($profile['filesystem'][$field] ?? null, true, 'profile_filesystem_'.$field.'_invalid');
     }
 
+    cpanelExecBool($profile['runtime']['php_version_supported'] ?? null, true, 'profile_php_version_unsupported');
+    cpanelExecBool($profile['runtime']['required_extensions_present'] ?? null, true, 'profile_required_extensions_missing');
+    cpanelExecBool($profile['runtime']['pdo_mysql_available'] ?? null, true, 'profile_pdo_mysql_unavailable');
+
+    foreach ([
+        'durable_database_persistence',
+        'durable_session',
+        'authorization',
+        'transaction_durability',
+        'pos_durability',
+        'authenticated_configuration_channel',
+        'read_before_write',
+        'read_after_write',
+        'non_mutating_health_attestation',
+        'verified_rollback',
+    ] as $capability) {
+        cpanelExecBool(
+            $profile['operator_assertions'][$capability] ?? null,
+            true,
+            'profile_operator_capability_'.$capability.'_invalid',
+        );
+    }
+
     cpanelExecBool($profile['configuration']['binding_file_private'] ?? null, true, 'profile_binding_file_private_invalid');
     cpanelExecBool($profile['configuration']['required_binding_identity_matches'] ?? null, true, 'profile_binding_identity_invalid');
     cpanelExecBool($profile['configuration']['secret_values_embedded'] ?? null, false, 'profile_secret_forbidden');
