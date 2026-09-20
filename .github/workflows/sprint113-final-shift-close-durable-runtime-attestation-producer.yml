@@ -51,7 +51,7 @@ jobs:
             diff -u /tmp/expected /tmp/actual
           elif [[ "$count" -eq 9 && "$hash" == 'ebff1a00d0b06f16925cc0f0849b3c7cd38216ccccd659f0447f307d71face10' ]]; then
             echo 'Sprint209 exact bounded successor envelope recognized.'
-          elif [[ "$count" -eq 16 && "$hash" == 'bab60c7ccab42be3363ff57bb08f253e2814c3670b61c156c5cd700351849da4' ]]; then
+          elif [[ "$count" -eq 19 && "$hash" == '0525c55ff45baf2893a22983a4ea53e50f1c195d92a49efc2a41ce92d2749205' ]]; then
             echo 'Sprint210 exact bounded successor envelope recognized.'
           else
             echo "Unexpected Sprint113/successor envelope: count=$count hash=$hash" >&2
