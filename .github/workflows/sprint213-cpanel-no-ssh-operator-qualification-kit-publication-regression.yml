@@ -26,6 +26,26 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
+      - name: Lock exact Sprint213 engineering envelope
+        if: github.event_name == 'pull_request' && github.head_ref == 'sprint213-cpanel-no-ssh-operator-qualification-kit-publication'
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/actual
+          cat > /tmp/expected <<'EOF'
+          .github/workflows/cpanel-no-ssh-operator-qualification-kit-publication.yml
+          .github/workflows/sprint213-cpanel-no-ssh-operator-qualification-kit-publication-regression.yml
+          DEPLOYMENT.md
+          INSTALLER.md
+          ops/final-shift-close/DURABLE_STAGING_CPANEL_NO_SSH_OPERATOR_KIT_PUBLICATION_CONTRACT.json
+          tools/cpanel/build-cpanel-no-ssh-operator-qualification-kit.sh
+          EOF
+          diff -u /tmp/expected /tmp/actual
+          test "$(sha256sum /tmp/actual | awk '{print $1}')" = '7ccb0d202041e8968e7d526d6ee3fc7d76fd68048fc062993a8172b53a95e6be'
+
       - name: Validate Sprint213 source syntax and contract
         shell: bash
         run: |
