@@ -60,5 +60,39 @@
     "producer_dispatch": "NOT_PERFORMED",
     "updater_activation": "INACTIVE"
   },
-  "attribution": "Lab | zefry"
+  "attribution": "Lab | zefry",
+  "kit_contents": {
+    "production_target_input_schema": true,
+    "production_target_profile_schema": true,
+    "production_target_candidate_schema": true,
+    "production_target_inspector": true,
+    "production_target_candidate_bridge": true,
+    "production_authority_request_schema": true,
+    "production_authority_request_tool": true,
+    "production_authority_schema": true,
+    "production_authority_qualifier": true,
+    "production_plan_schema": true,
+    "production_plan_builder": true,
+    "production_dark_deployment_executor": true,
+    "production_evidence_schema": true,
+    "production_evidence_qualifier": true,
+    "non_secret_target_input_template": true,
+    "non_secret_private_bindings_template": true,
+    "operator_readme": true,
+    "kit_manifest": true,
+    "sha256_sidecar": true
+  },
+  "operator_requirements": {
+    "exact_production_release_identity_required": true,
+    "verified_same_source_staging_evidence_required": true,
+    "real_isolated_production_target_required": true,
+    "private_files_outside_document_root_required": true,
+    "private_file_permissions": "0600",
+    "deployment_plan_must_be_current_authority_bound": true,
+    "dark_health_endpoint": "/health/live",
+    "business_readiness_endpoint_not_used_for_dark_deploy": "/health/ready",
+    "rollback_rehearsal_required": true,
+    "candidate_restored_after_rehearsal": true,
+    "production_traffic_activation_separate": true
+  }
 }
