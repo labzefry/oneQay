@@ -29,6 +29,7 @@ $requiredPageMarkers = [
     'Update &amp; Deployment',
     'READ_ONLY',
     'Installation controls are locked',
+    'Governed development delivery',
     'deployment_authorized',
     'activation_supported',
     'schema_change_supported',
@@ -43,12 +44,9 @@ foreach ($requiredPageMarkers as $marker) {
 }
 
 $forbiddenInteractivePatterns = [
-    'useForm(',
     'axios',
     'fetch(',
     '@click',
-    '<form',
-    '.post(',
     '.put(',
     '.patch(',
     '.delete(',
@@ -87,6 +85,17 @@ foreach (['checkAvailability(', 'requestInstall('] as $forbiddenControllerCall) 
 
 if (! str_contains($routes, "Route::get('/system/update', SystemUpdatePageController::class)->name('system-update.page');")) {
     fwrite(STDERR, "Missing read-only updater page route.\n");
+    exit(1);
+}
+
+if (! str_contains($routes, "Route::post('/system/update/development/request', DevelopmentUpdateRequestController::class)")) {
+    fwrite(STDERR, "Missing governed development updater request route.\n");
+    exit(1);
+}
+
+if (! str_contains($page, "/system/update/development/request")
+    || ! str_contains($page, "SYNC_GOVERNED_DEVELOPMENT_RELEASE")) {
+    fwrite(STDERR, "Governed development updater UI contract is missing.\n");
     exit(1);
 }
 
