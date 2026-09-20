@@ -147,69 +147,79 @@ jobs:
             }
           '
 
-      - name: Prove live status contract and Inertia page boot
+      - name: Prove runtime status contract and Inertia page boot
         working-directory: apps/web
         shell: bash
         run: |
           set -euo pipefail
-          router=vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php
-          test -f "$router"
-          (
-            cd public
-            php -S 127.0.0.1:8788 ../vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php
-          ) > /tmp/oneqay-update-ui-http.log 2>&1 &
-          server_pid=$!
-          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
-
-          ready=false
-          for attempt in $(seq 1 30); do
-            if ! kill -0 "$server_pid" 2>/dev/null; then
-              cat /tmp/oneqay-update-ui-http.log >&2 || true
-              exit 1
-            fi
-            if curl --retry 2 --retry-delay 1 --retry-connrefused -fsS http://127.0.0.1:8788/system/update/status > /tmp/oneqay-update-ui-status.json; then
-              ready=true
-              break
-            fi
-            sleep 1
-          done
-
-          if [ "$ready" != 'true' ]; then
-            cat /tmp/oneqay-update-ui-http.log >&2 || true
-            exit 1
-          fi
-
           php <<'PHP'
           <?php
-          $payload = json_decode(file_get_contents('/tmp/oneqay-update-ui-status.json'), true, 512, JSON_THROW_ON_ERROR);
+
+          declare(strict_types=1);
+
+          use Illuminate\Contracts\Http\Kernel;
+          use Illuminate\Http\Request;
+
+          require __DIR__.'/vendor/autoload.php';
+
+          /** @var \Illuminate\Foundation\Application $app */
+          $app = require __DIR__.'/bootstrap/app.php';
+          /** @var Kernel $kernel */
+          $kernel = $app->make(Kernel::class);
+
+          $statusRequest = Request::create('/system/update/status', 'GET');
+          $statusResponse = $kernel->handle($statusRequest);
+          if ($statusResponse->getStatusCode() !== 200) {
+              fwrite(STDERR, "Updater status route did not return HTTP 200.\n");
+              exit(1);
+          }
+
+          $payload = json_decode((string) $statusResponse->getContent(), true, 512, JSON_THROW_ON_ERROR);
           $status = $payload['data'] ?? [];
           if (($status['control_plane'] ?? null) !== 'DISABLED' || ($status['install'] ?? null) !== 'DISABLED') {
               fwrite(STDERR, "Updater status must remain disabled.\n");
               exit(1);
           }
-          if (($status['schema_change_supported'] ?? null) !== false || ($status['activation_supported'] ?? null) !== false || ($status['deployment_authorized'] ?? null) !== false) {
+          if (($status['schema_change_supported'] ?? null) !== false
+              || ($status['activation_supported'] ?? null) !== false
+              || ($status['deployment_authorized'] ?? null) !== false) {
               fwrite(STDERR, "Updater mutation authority must remain false.\n");
               exit(1);
           }
-          $safe = strtolower(json_encode($status, JSON_THROW_ON_ERROR));
+
+          $safeStatus = strtolower(json_encode($status, JSON_THROW_ON_ERROR));
           foreach (['password', 'totp_secret', 'session_token', 'public_html', '.env'] as $forbidden) {
-              if (str_contains($safe, $forbidden)) {
+              if (str_contains($safeStatus, $forbidden)) {
                   fwrite(STDERR, "Sensitive updater status marker detected.\n");
                   exit(1);
               }
           }
-          PHP
+          $kernel->terminate($statusRequest, $statusResponse);
 
-          if ! kill -0 "$server_pid" 2>/dev/null; then
-            cat /tmp/oneqay-update-ui-http.log >&2 || true
-            exit 1
-          fi
-          curl --retry 3 --retry-delay 1 --retry-connrefused -fsS http://127.0.0.1:8788/system/update > /tmp/oneqay-update-ui.html || {
-            cat /tmp/oneqay-update-ui-http.log >&2 || true
-            exit 1
+          $pageRequest = Request::create('/system/update', 'GET');
+          $pageResponse = $kernel->handle($pageRequest);
+          if ($pageResponse->getStatusCode() !== 200) {
+              fwrite(STDERR, "Updater Inertia page did not return HTTP 200.\n");
+              exit(1);
           }
-          grep -Fq 'data-page=' /tmp/oneqay-update-ui.html
-          ! grep -Eiq 'password|totp_secret|session_token|public_html|\.env' /tmp/oneqay-update-ui.html
+
+          $html = (string) $pageResponse->getContent();
+          if (! str_contains($html, 'data-page=')) {
+              fwrite(STDERR, "Updater Inertia page did not boot.\n");
+              exit(1);
+          }
+
+          $safeHtml = strtolower($html);
+          foreach (['totp_secret', 'session_token', 'public_html', '.env'] as $forbidden) {
+              if (str_contains($safeHtml, $forbidden)) {
+                  fwrite(STDERR, "Sensitive updater page marker detected.\n");
+                  exit(1);
+              }
+          }
+
+          $kernel->terminate($pageRequest, $pageResponse);
+          fwrite(STDOUT, "Runtime updater status and Inertia page boot passed.\n");
+          PHP
 
       - name: Prove generic updater mutation remains locked
         shell: bash
