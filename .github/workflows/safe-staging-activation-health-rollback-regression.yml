@@ -125,7 +125,7 @@ jobs:
                     ;;
                 esac
               done < /tmp/s220-activation-app-paths
-            elif printf '%s\n' "$changed" | grep -E '^apps/web/(app/Providers/SystemUpdateServiceProvider\.php|app/Delivery/Http/SystemUpdate/)'; then
+            elif printf '%s\n' "$changed" | grep -E '^apps/web/(app/Providers/SystemUpdateServiceProvider\.php|config/oneqay_development_updater\.php|app/Delivery/Http/SystemUpdate/)'; then
               echo 'Activation foundation must not wire runtime HTTP/provider mutation outside a qualified successor.' >&2
               exit 1
             fi
