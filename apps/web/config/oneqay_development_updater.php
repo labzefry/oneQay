@@ -23,4 +23,8 @@ return [
     'environment_id' => env('ONEQAY_DURABLE_RUNTIME_ENVIRONMENT_ID', ''),
     'running_source_commit' => env('ONEQAY_RUNNING_SOURCE_COMMIT', ''),
     'running_artifact_sha256' => env('ONEQAY_RUNNING_ARTIFACT_SHA256', ''),
+    'production_data_allowed' => filter_var(
+        env('ONEQAY_PRODUCTION_DATA_ALLOWED', false),
+        FILTER_VALIDATE_BOOL,
+    ),
 ];
