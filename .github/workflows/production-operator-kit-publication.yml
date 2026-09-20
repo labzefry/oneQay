@@ -1,0 +1,133 @@
+# Author by Lab | zefry
+name: Production Dark Deployment Operator Kit Publication
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/production-operator-kit-publication.yml'
+      - 'tools/production/**'
+      - 'tools/execute-production-dark-deployment.php'
+      - 'tools/inspect-production-operator-target.php'
+      - 'tools/prepare-production-operator-target-candidate.php'
+      - 'tools/prepare-production-deployment-authority-request.php'
+      - 'tools/qualify-production-deployment-authority.php'
+      - 'tools/prepare-production-deployment-plan.php'
+      - 'tools/qualify-production-deployment-evidence.php'
+      - 'tools/deployment/production-*.schema.json'
+      - 'ops/final-shift-close/PRODUCTION_DARK_DEPLOYMENT_EXECUTION_CONTRACT.json'
+      - 'ops/final-shift-close/PRODUCTION_OPERATOR_KIT_PUBLICATION_CONTRACT.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-dark-deployment-operator-kit-${{ github.sha }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout exact main source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.sha }}
+
+      - name: Setup governed PHP runtime
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        with:
+          php-version: '8.3'
+          extensions: curl,pdo_mysql,phar
+          coverage: none
+
+      - name: Preserve operational NO-GO
+        shell: bash
+        run: |
+          set -euo pipefail
+          state=ops/final-shift-close/STATE.json
+          selection=ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+          test "$(jq -r '.migration27.state' "$state")" = NOT_EXECUTED
+          test "$(jq -r '.permission_provisioning.state' "$state")" = NONE
+          test "$(jq -r '.feature_activation.state' "$state")" = INACTIVE
+          test "$(jq -r '.deployment_authority' "$state")" = NOT_GRANTED
+          test "$(jq -r '.technical_preview_activation' "$state")" = NOT_AUTHORIZED
+          test "$(jq -r '.production_activation' "$state")" = NOT_AUTHORIZED
+          test "$(jq -r '.updater_activation' "$state")" = INACTIVE
+          test "$(jq -r '.selection_state' "$selection")" = BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET
+          test "$(jq -r '.selected_target' "$selection")" = null
+
+      - name: Validate source and contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash -n tools/production/build-production-operator-kit.sh
+          php -l tools/execute-production-dark-deployment.php
+          php -l tools/inspect-production-operator-target.php
+          php -l tools/prepare-production-operator-target-candidate.php
+          php -l tools/prepare-production-deployment-authority-request.php
+          php -l tools/qualify-production-deployment-authority.php
+          php -l tools/prepare-production-deployment-plan.php
+          php -l tools/qualify-production-deployment-evidence.php
+          contract=ops/final-shift-close/PRODUCTION_OPERATOR_KIT_PUBLICATION_CONTRACT.json
+          jq -e . "$contract" >/dev/null
+          test "$(jq -r '.contract_state' "$contract")" = PUBLISHES_SECRET_FREE_PRODUCTION_DARK_DEPLOYMENT_OPERATOR_KIT_NOT_DEPLOYED_NOT_ACTIVATED
+          test "$(jq -r '.production_release_reference.actions_artifact_id' "$contract")" = 10603358335
+          test "$(jq -r '.staging_prerequisite_reference.actions_artifact_id' "$contract")" = 10603323419
+          test "$(jq -r '.production_release_reference.source_commit' "$contract")" = "$(jq -r '.staging_prerequisite_reference.source_commit' "$contract")"
+          test "$(jq -r '.authority_boundary.production_traffic_activation_allowed' "$contract")" = false
+
+      - name: Build first exact Production operator kit
+        id: kit
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash tools/production/build-production-operator-kit.sh "$GITHUB_SHA"
+          kit_id="production-operator-kit-${GITHUB_SHA:0:12}"
+          cp "dist/${kit_id}.zip" /tmp/production-kit-first.zip
+          cp "dist/${kit_id}.manifest.json" /tmp/production-kit-first.manifest.json
+          cp "dist/${kit_id}.zip.sha256" /tmp/production-kit-first.sha256
+          echo "kit_id=$kit_id" >> "$GITHUB_OUTPUT"
+
+      - name: Prove deterministic kit
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf dist
+          bash tools/production/build-production-operator-kit.sh "$GITHUB_SHA"
+          kit_id="production-operator-kit-${GITHUB_SHA:0:12}"
+          cmp /tmp/production-kit-first.zip "dist/${kit_id}.zip"
+          diff -u /tmp/production-kit-first.manifest.json "dist/${kit_id}.manifest.json"
+          diff -u /tmp/production-kit-first.sha256 "dist/${kit_id}.zip.sha256"
+          unzip -l "dist/${kit_id}.zip" > /tmp/production-kit-list.txt
+          ! grep -Fq '/apps/web/' /tmp/production-kit-list.txt
+          ! grep -E '(^|/)(\.env|id_rsa|id_ed25519)(/|$)|\.(pem|key|p12|pfx)$' /tmp/production-kit-list.txt
+          test "$(jq -r '.secret_values_embedded' "dist/${kit_id}.manifest.json")" = false
+          test "$(jq -r '.application_release_bytes_embedded' "dist/${kit_id}.manifest.json")" = false
+          test "$(jq -r '.deployment_authority' "dist/${kit_id}.manifest.json")" = NOT_GRANTED
+          test "$(jq -r '.production_traffic_activation' "dist/${kit_id}.manifest.json")" = NOT_AUTHORIZED
+
+      - name: Upload governed Production operator kit
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: oneqay-${{ steps.kit.outputs.kit_id }}
+          path: |
+            dist/${{ steps.kit.outputs.kit_id }}.zip
+            dist/${{ steps.kit.outputs.kit_id }}.manifest.json
+            dist/${{ steps.kit.outputs.kit_id }}.zip.sha256
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 0
+
+      - name: Confirm tracked source cleanliness
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf dist
+          git diff --exit-code
+          test -z "$(git status --porcelain)"
