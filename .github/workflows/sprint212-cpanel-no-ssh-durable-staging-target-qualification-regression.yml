@@ -26,6 +26,27 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
+      - name: Lock exact Sprint212 engineering envelope
+        if: github.event_name == 'pull_request' && github.head_ref == 'sprint212-cpanel-no-ssh-durable-staging-target-qualification'
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/actual
+          cat > /tmp/expected <<'EOF'
+          .github/workflows/sprint212-cpanel-no-ssh-durable-staging-target-qualification-regression.yml
+          DEPLOYMENT.md
+          INSTALLER.md
+          ops/final-shift-close/DURABLE_STAGING_CPANEL_NO_SSH_TARGET_QUALIFICATION_CONTRACT.json
+          tools/cpanel/inspect-durable-staging-cpanel-no-ssh-target.php
+          tools/cpanel/prepare-durable-staging-cpanel-no-ssh-target-candidate.php
+          tools/deployment/cpanel-no-ssh-durable-staging-target-profile.schema.json
+          EOF
+          diff -u /tmp/expected /tmp/actual
+          test "$(sha256sum /tmp/actual | awk '{print $1}')" = '73f2978a1a748f8314c58078b62653ee331a8b21dd08bef971952a795ed9550e'
+
       - name: Show PHP runtime
         shell: bash
         run: |
