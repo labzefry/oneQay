@@ -103,6 +103,7 @@ jobs:
           set -euo pipefail
           php artisan config:cache
           ONEQAY_DEVELOPMENT_UPDATER_ENABLED=false ONEQAY_PRODUCTION_DATA_ALLOWED=true php -r '
+            require "vendor/autoload.php";
             $app=require "bootstrap/app.php";
             $kernel=$app->make(Illuminate\Contracts\Console\Kernel::class);
             $kernel->bootstrap();
