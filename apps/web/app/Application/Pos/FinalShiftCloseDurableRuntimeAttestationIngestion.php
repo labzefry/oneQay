@@ -46,6 +46,9 @@ final readonly class FinalShiftCloseDurableRuntimeAttestationIngestion
         $runtimeClass = (string) $attestation['runtime_class'];
         $sourceCommit = (string) $attestation['exact_running_source_commit'];
         $artifactSha256 = (string) $attestation['exact_running_artifact_sha256'];
+        $deploymentEvidenceSha256 = (string) $provenance['deployment_evidence_sha256'];
+        $deploymentPlanFingerprint = (string) $provenance['deployment_plan_fingerprint'];
+        $deploymentAuthoritySha256 = (string) $provenance['deployment_authority_sha256'];
 
         $ingestionFingerprint = hash('sha256', implode('|', [
             self::FEATURE,
@@ -54,6 +57,9 @@ final readonly class FinalShiftCloseDurableRuntimeAttestationIngestion
             $runtimeClass,
             $sourceCommit,
             $artifactSha256,
+            $deploymentEvidenceSha256,
+            $deploymentPlanFingerprint,
+            $deploymentAuthoritySha256,
             $attestationSha256,
             $provenanceSha256,
         ]));
@@ -67,6 +73,11 @@ final readonly class FinalShiftCloseDurableRuntimeAttestationIngestion
                 'runtime_class' => $runtimeClass,
                 'exact_running_source_commit' => $sourceCommit,
                 'exact_running_artifact_sha256' => $artifactSha256,
+            ],
+            'deployment_binding' => [
+                'deployment_evidence_sha256' => $deploymentEvidenceSha256,
+                'deployment_plan_fingerprint' => $deploymentPlanFingerprint,
+                'deployment_authority_sha256' => $deploymentAuthoritySha256,
             ],
             'readiness_attestation_sha256' => $attestationSha256,
             'provenance_sha256' => $provenanceSha256,

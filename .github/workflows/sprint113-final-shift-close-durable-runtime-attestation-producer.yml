@@ -51,6 +51,8 @@ jobs:
             diff -u /tmp/expected /tmp/actual
           elif [[ "$count" -eq 9 && "$hash" == 'ebff1a00d0b06f16925cc0f0849b3c7cd38216ccccd659f0447f307d71face10' ]]; then
             echo 'Sprint209 exact bounded successor envelope recognized.'
+          elif [[ "$count" -eq 19 && "$hash" == '0525c55ff45baf2893a22983a4ea53e50f1c195d92a49efc2a41ce92d2749205' ]]; then
+            echo 'Sprint210 exact bounded successor envelope recognized.'
           else
             echo "Unexpected Sprint113/successor envelope: count=$count hash=$hash" >&2
             cat /tmp/actual >&2
@@ -82,6 +84,9 @@ jobs:
           test "$(jq -r '.deployment_evidence_contract' "$contract")" = 'ops/final-shift-close/DURABLE_STAGING_DEPLOYMENT_EVIDENCE_BINDING_CONTRACT.json'
           test "$(jq -r '.deployment_evidence_contract_requirements.evidence_state' "$contract")" = 'DEPLOYED_VERIFIED_NOT_SELECTED'
           test "$(jq -r '.qualification_requirements.deployment_evidence_must_qualify_before_attestation_fetch' "$contract")" = 'true'
+          test "$(jq -r '.qualification_requirements.provenance_carries_deployment_evidence_binding' "$contract")" = 'true'
+          test "$(jq -r '.qualification_requirements.provenance_deployment_binding_must_be_sha256' "$contract")" = 'true'
+          test "$(jq -r '.provenance_binding_fields | length' "$contract")" = '3'
           test "$(jq -r '.runtime_endpoint_contract.transport' "$contract")" = 'HTTPS_ONLY'
           test "$(jq -r '.runtime_endpoint_contract.max_response_bytes' "$contract")" = '32768'
           test "$(jq -r '.canonical_boundaries.producer_source' "$contract")" = 'MATERIALIZED_NOT_DISPATCHED'
@@ -118,6 +123,9 @@ jobs:
           grep -Fq 'REVIEW_GATED_V1' "$producer"
           grep -Fq 'REVIEW_GATED_DEPLOYMENT_EVIDENCE_V1' "$producer"
           grep -Fq 'tools/qualify-durable-staging-deployment-evidence.php' "$producer"
+          grep -Fq "'deployment_evidence_sha256' => \$deploymentEvidenceSha256" "$producer"
+          grep -Fq "'deployment_plan_fingerprint' => \$deploymentPlanFingerprint" "$producer"
+          grep -Fq "'deployment_authority_sha256' => \$deploymentAuthoritySha256" "$producer"
           grep -Fq '^https://' "$producer"
           grep -Fq -- "--proto '=https'" "$producer"
           grep -Fq -- '--tlsv1.2' "$producer"
@@ -155,7 +163,6 @@ jobs:
         run: |
           set -euo pipefail
           git diff --exit-code "$BASE_SHA" "$HEAD_SHA" -- \
-            apps/web/app \
             apps/web/bootstrap \
             apps/web/config \
             apps/web/database/migrations \
@@ -163,6 +170,13 @@ jobs:
             apps/web/resources \
             ops/final-shift-close/STATE.json \
             ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+
+          mapfile -t changed_app_paths < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web/app | LC_ALL=C sort)
+          allowed_app_paths=(
+            "apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeAttestationIngestion.php"
+            "apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeAttestationProvenance.php"
+          )
+          diff -u <(printf '%s\n' "${allowed_app_paths[@]}") <(printf '%s\n' "${changed_app_paths[@]}")
 
           state=ops/final-shift-close/STATE.json
           selection=ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json

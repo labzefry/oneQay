@@ -61,7 +61,9 @@
     "success_status_follows_successful_ingestion_artifact_publish": true,
     "source_merge_does_not_dispatch_executor": true,
     "source_merge_does_not_persist_target_selection": true,
-    "source_merge_does_not_grant_activation_authority": true
+    "source_merge_does_not_grant_activation_authority": true,
+    "sprint210_deployment_evidence_provenance_continuity_reused": true,
+    "ingestion_output_must_carry_deployment_binding": true
   },
   "action_pins": {
     "actions_checkout": "11bd71901bbe5b1630ceea73d27597364c9af683",

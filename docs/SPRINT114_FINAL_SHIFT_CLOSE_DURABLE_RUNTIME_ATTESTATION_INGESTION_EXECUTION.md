@@ -70,7 +70,10 @@ The retrieved provenance must bind exactly to the resolved GitHub Actions run:
 - producer workflow path remains canonical;
 - producer ref remains `refs/heads/main`;
 - producer evidence status context remains `final-shift-close-durable-runtime-attestation-evidence`;
-- provenance declares success and contains no secrets.
+- provenance declares success and contains no secrets;
+- provenance carries a valid deployment-evidence SHA-256;
+- provenance carries the exact Sprint207 deployment-plan fingerprint;
+- provenance carries the exact Sprint208 deployment-authority SHA-256.
 
 The executor then checks the actual GitHub commit statuses for the attested running source. A matching success status must exist for the canonical producer evidence context **and** its `target_url` must point to the same exact producer run ID. This prevents an unrelated or stale success from satisfying ingestion.
 
@@ -82,7 +85,7 @@ The executor does not duplicate readiness or provenance semantics. It invokes th
 - `FinalShiftCloseDurableRuntimeAttestationProvenance`
 - `FinalShiftCloseDurableRuntimeAttestationIngestion`
 
-Therefore a retrieved artifact only reaches ingestion if the current Sprint110 readiness contract and Sprint112 provenance contract still accept it.
+Therefore a retrieved artifact only reaches ingestion if the current Sprint110 readiness contract and Sprint112 provenance contract still accept it. Sprint210 additionally requires the deployment-evidence / plan / authority binding to survive intact through provenance validation and into the deterministic ingestion record.
 
 ## Output boundary
 
@@ -95,7 +98,10 @@ The execution output must continue to report:
 - selected target = null;
 - activation authority = `NOT_GRANTED`;
 - feature activation = `INACTIVE`;
-- persistence = `NOT_PERFORMED`.
+- persistence = `NOT_PERFORMED`;
+- `deployment_binding.deployment_evidence_sha256` = exact producer provenance value;
+- `deployment_binding.deployment_plan_fingerprint` = exact producer provenance value;
+- `deployment_binding.deployment_authority_sha256` = exact producer provenance value.
 
 The executor creates a secret-free evidence artifact named:
 

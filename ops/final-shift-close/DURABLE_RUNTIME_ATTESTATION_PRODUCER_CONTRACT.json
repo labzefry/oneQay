@@ -76,7 +76,9 @@
     "success_status_must_follow_successful_bundle_publish": true,
     "source_merge_does_not_dispatch_producer": true,
     "source_merge_does_not_select_target": true,
-    "source_merge_does_not_grant_activation_authority": true
+    "source_merge_does_not_grant_activation_authority": true,
+    "provenance_carries_deployment_evidence_binding": true,
+    "provenance_deployment_binding_must_be_sha256": true
   },
   "action_pins": {
     "actions_checkout": "11bd71901bbe5b1630ceea73d27597364c9af683",
@@ -97,5 +99,10 @@
     "technical_preview_activation": "NOT_AUTHORIZED",
     "production_activation": "NOT_AUTHORIZED",
     "updater_activation": "INACTIVE"
-  }
+  },
+  "provenance_binding_fields": [
+    "deployment_evidence_sha256",
+    "deployment_plan_fingerprint",
+    "deployment_authority_sha256"
+  ]
 }

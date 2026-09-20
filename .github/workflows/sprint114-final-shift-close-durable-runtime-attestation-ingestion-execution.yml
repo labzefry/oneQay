@@ -39,14 +39,17 @@ jobs:
         run: |
           set -euo pipefail
           git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/actual
-          cat > /tmp/expected <<'EOF'
-          .github/workflows/final-shift-close-durable-runtime-attestation-ingestion.yml
-          .github/workflows/sprint114-final-shift-close-durable-runtime-attestation-ingestion-execution.yml
-          docs/SPRINT114_FINAL_SHIFT_CLOSE_DURABLE_RUNTIME_ATTESTATION_INGESTION_EXECUTION.md
-          ops/final-shift-close/DURABLE_RUNTIME_ATTESTATION_INGESTION_EXECUTION_CONTRACT.json
-          EOF
-          diff -u /tmp/expected /tmp/actual
-          test "$(sha256sum /tmp/actual | awk '{print $1}')" = '96c4d6b2ac2f285eefecc0e009ff27905bd9f836a19ae390521424a43aae03b3'
+          count="$(wc -l < /tmp/actual)"
+          hash="$(sha256sum /tmp/actual | awk '{print $1}')"
+          if [[ "$count" -eq 4 && "$hash" == '96c4d6b2ac2f285eefecc0e009ff27905bd9f836a19ae390521424a43aae03b3' ]]; then
+            echo 'Historical Sprint114 exact envelope recognized.'
+          elif [[ "$count" -eq 19 && "$hash" == '0525c55ff45baf2893a22983a4ea53e50f1c195d92a49efc2a41ce92d2749205' ]]; then
+            echo 'Sprint210 exact bounded successor envelope recognized.'
+          else
+            echo "Unexpected Sprint114/successor envelope: count=$count hash=$hash" >&2
+            cat /tmp/actual >&2
+            exit 1
+          fi
 
       - name: Validate Sprint110 through Sprint113 prerequisites
         shell: bash
@@ -97,6 +100,8 @@ jobs:
           test "$(jq -r '.feature_activation_state' "$contract")" = 'INACTIVE'
           test "$(jq -r '.persistence_state' "$contract")" = 'NOT_PERFORMED'
           test "$(jq -r '.runtime_allowlist_change' "$contract")" = 'NOT_IMPLEMENTED'
+          test "$(jq -r '.qualification_requirements.sprint210_deployment_evidence_provenance_continuity_reused' "$contract")" = 'true'
+          test "$(jq -r '.qualification_requirements.ingestion_output_must_carry_deployment_binding' "$contract")" = 'true'
           test "$(jq '.artifact_constraints.producer_bundle_entries | length' "$contract")" = '2'
           test "$(jq '.artifact_constraints.ingestion_bundle_entries | length' "$contract")" = '4'
 
@@ -165,6 +170,8 @@ jobs:
           grep -Fq "'NOT_GRANTED'" "$executor"
           grep -Fq "'INACTIVE'" "$executor"
           grep -Fq "'NOT_PERFORMED'" "$executor"
+          grep -Fq "'deployment_binding' => [" apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeAttestationIngestion.php
+          grep -Fq 'deployment_evidence_sha256' apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeAttestationProvenance.php
 
       - name: Prove ingestion evidence publication ordering
         shell: bash
@@ -186,7 +193,6 @@ jobs:
         run: |
           set -euo pipefail
           git diff --exit-code "$BASE_SHA" "$HEAD_SHA" -- \
-            apps/web/app \
             apps/web/bootstrap \
             apps/web/config \
             apps/web/database/migrations \
@@ -194,6 +200,13 @@ jobs:
             apps/web/resources \
             ops/final-shift-close/STATE.json \
             ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+
+          mapfile -t changed_app_paths < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web/app | LC_ALL=C sort)
+          allowed_app_paths=(
+            "apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeAttestationIngestion.php"
+            "apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeAttestationProvenance.php"
+          )
+          diff -u <(printf '%s\n' "${allowed_app_paths[@]}") <(printf '%s\n' "${changed_app_paths[@]}")
 
           state=ops/final-shift-close/STATE.json
           selection=ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json

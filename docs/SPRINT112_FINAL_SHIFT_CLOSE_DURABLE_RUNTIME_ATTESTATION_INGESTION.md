@@ -40,7 +40,10 @@ Future provenance must bind all of the following:
 8. exact running application source SHA;
 9. exact running artifact SHA-256;
 10. exact evidence context `final-shift-close-durable-runtime-attestation-evidence` in `success` state;
-11. explicit proof that no secret is embedded in the provenance envelope.
+11. deployment-evidence SHA-256 from the protected producer qualification;
+12. exact Sprint207 deployment-plan fingerprint;
+13. exact Sprint208 deployment-authority SHA-256;
+14. explicit proof that no secret is embedded in the provenance envelope.
 
 The producer named above is intentionally reserved but not implemented by Sprint112. Therefore Sprint112 does not claim that a real trusted runtime attestation exists.
 
@@ -61,6 +64,9 @@ The ingestion fingerprint binds:
 - runtime class;
 - exact running source commit;
 - exact running artifact SHA-256;
+- deployment-evidence SHA-256;
+- deployment-plan fingerprint;
+- deployment-authority SHA-256;
 - readiness-attestation SHA-256; and
 - provenance SHA-256.
 
@@ -78,6 +84,7 @@ Executable qualification rejects at minimum:
 - non-success evidence status;
 - wrong evidence status context;
 - runtime/build provenance drift;
+- missing or malformed deployment-evidence / plan / authority binding;
 - missing/invalid producer run identity;
 - secret-bearing provenance;
 - and any attestation that fails Sprint110 readiness qualification.
@@ -98,4 +105,6 @@ Sprint112 does not:
 - activate Technical Preview or Production;
 - release, cut over DNS, or activate the updater.
 
-A successor may materialize the protected-environment attestation producer only after preserving this provenance contract and the existing no-go operational boundaries.
+Sprint210 extends this provenance contract so an accepted candidate also carries the exact deployment-evidence, deployment-plan, and deployment-authority digests proven by the protected producer. This continuity remains unpersisted and does not select a target.
+
+A successor may materialize or consume the protected-environment attestation producer only after preserving this provenance contract and the existing no-go operational boundaries.
