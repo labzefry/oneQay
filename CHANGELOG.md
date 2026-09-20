@@ -1,5 +1,29 @@
 # Changelog
 
+## 2026-09-20 — Sprint211 closed canonically
+
+**Sprint211: Durable Staging Operator Artifact Publication**
+
+- Closed the concrete operator-retrieval gap discovered after Sprint210: Sprint205 durable artifact bytes were reproducibly built but removed after regression and never published.
+- Added canonical-main-only durable-staging publication workflow.
+- Reused Sprint205 deterministic builder and manifest validation.
+- Reused Sprint206 secret-free deployment handoff generation.
+- Published archive, manifest, SHA-256 sidecar, and deployment handoff as one 30-day GitHub Actions artifact.
+- Final engineering head `276acc9ab8fe61cb65632bce8e5f2dda9d411fc8`: 94/94 PR-triggered workflows SUCCESS.
+- Engineering PR #857 squash merged at `e37300d5d1be6727cdb5d818b6365c6429f2af9d`.
+- Publication run `35487670967`: SUCCESS.
+- Published bundle artifact ID `10597712890`: `oneqay-durable-staging-e37300d5d1be-operator-bundle`.
+- Release ID: `durable-staging-e37300d5d1be`.
+- Durable artifact SHA-256: `faf6b4799648c0fe1d5ddcf4a55e0a39ba8bd0506e3e2ef3f4bb33f38495d079`.
+- Durable manifest SHA-256: `ef968562f76801e425d02c33d3ecfc13556f271f05bff1ff9441c5a147b588f0`.
+- Operator handoff state: `VALIDATED_FOR_EXTERNAL_DEPLOYMENT_NOT_AUTHORIZED`.
+- Engineering path hash: `ebdfb33a02475c8292ac9968297d5ad5d7dbc4e58056af4bad488f8af03c33ff`.
+- Canonical reconciliation path hash: `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`.
+- Operational NO-GO unchanged.
+- Issue #856 remains the consolidated operational handoff; artifact materialization and Sprint206 handoff steps are complete, while real target materialization and separate deployment authority remain outstanding.
+
+Author by Lab | zefry
+
 ## 2026-09-20 — Sprint210 closed canonically
 
 **Sprint210: Durable Staging Deployment Evidence Provenance Continuity**
