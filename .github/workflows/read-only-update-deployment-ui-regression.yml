@@ -152,13 +152,17 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          php artisan serve --host=127.0.0.1 --port=8788 > /tmp/oneqay-update-ui-http.log 2>&1 &
+          php artisan serve --no-reload --host=127.0.0.1 --port=8788 > /tmp/oneqay-update-ui-http.log 2>&1 &
           server_pid=$!
           trap 'kill "$server_pid" 2>/dev/null || true' EXIT
 
           ready=false
-          for attempt in $(seq 1 20); do
-            if curl -fsS http://127.0.0.1:8788/system/update/status > /tmp/oneqay-update-ui-status.json; then
+          for attempt in $(seq 1 30); do
+            if ! kill -0 "$server_pid" 2>/dev/null; then
+              cat /tmp/oneqay-update-ui-http.log >&2 || true
+              exit 1
+            fi
+            if curl --retry 2 --retry-delay 1 --retry-connrefused -fsS http://127.0.0.1:8788/system/update/status > /tmp/oneqay-update-ui-status.json; then
               ready=true
               break
             fi
@@ -191,7 +195,14 @@ jobs:
           }
           PHP
 
-          curl -fsS http://127.0.0.1:8788/system/update > /tmp/oneqay-update-ui.html
+          if ! kill -0 "$server_pid" 2>/dev/null; then
+            cat /tmp/oneqay-update-ui-http.log >&2 || true
+            exit 1
+          fi
+          curl --retry 3 --retry-delay 1 --retry-connrefused -fsS http://127.0.0.1:8788/system/update > /tmp/oneqay-update-ui.html || {
+            cat /tmp/oneqay-update-ui-http.log >&2 || true
+            exit 1
+          }
           grep -Fq 'data-page=' /tmp/oneqay-update-ui.html
           ! grep -Eiq 'password|totp_secret|session_token|public_html|\.env' /tmp/oneqay-update-ui.html
 
