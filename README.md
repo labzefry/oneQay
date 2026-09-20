@@ -8,53 +8,46 @@ Enterprise-oriented multi-tenant business-management platform built with Modular
 
 ## Current canonical status
 
-Latest completed engineering sprint: **Sprint215 — Durable Staging Persistent Operator Release Publication Foundation**.
+Latest completed engineering sprint: **Sprint216 — Production Release Deployment Governance Foundation**.
 
-- Canonical engineering commit: `759ba3d5d05d2bead51580be8d778b6f987b95c4`
-- Engineering PR: #865
-- Final engineering head: `c996794af12bc085213d91c1961bb71b3d351394`
-- Exact-head qualification: 94/94 successful
-- Sprint215 regression: `35502047468` — SUCCESS
-- Engineering envelope SHA-256: `fb3923f0bce30e06695776cb75bdce6d649dd43dc183bc75df0f1b4fd6e828e7`
+- Canonical engineering commit: `d0b5becbf945c5192e797d512a704eb5aecc6eaa`
+- Engineering PR: #867
+- Final engineering head: `3a9f4a9189094a16be2abf1939319b6807227634`
+- Exact-head qualification: 94/94 SUCCESS
+- Sprint216 regression: `35504883655` — SUCCESS
+- Engineering envelope SHA-256: `e1f0133337a2050cd789f2943101ab1acf7b29684c99d32ff3908ae6122fedd4`
 - Reconciliation envelope SHA-256: `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`
 
-Sprint215 closes the repository-side retention gap that could otherwise make the exact Sprint211/Sprint214 operator inputs unavailable after 30-day Actions retention.
+Sprint216 preserves application runtime source while adding a governed dark Production deployment path and publishing staging/Production candidates from the same canonical source.
 
-## Persistent operator handoff
+## Current governed artifacts
 
-Reserved prerelease tag:
+Durable staging:
+- artifact ID `10603323419`
+- release `durable-staging-d0b5becbf945`
+- source `d0b5becbf945c5192e797d512a704eb5aecc6eaa`
+- archive SHA-256 `e32a7de2c07c35306c03edff5d7d762782ef58449c92d4b88e5dd04b50d489a2`
 
-`operator-handoff-e37300d5d1be-270e8e954e38`
+Production candidate:
+- artifact ID `10603358335`
+- release `production-d0b5becbf945`
+- source `d0b5becbf945c5192e797d512a704eb5aecc6eaa`
+- archive SHA-256 `cd1f96346d310aab3ac59398116499dae3e3df84a6af9ec1a13515d1e46568f1`
+- business runtime activation ready: `false`
+- Production traffic activation: `NOT_AUTHORIZED`
 
-The workflow is manual-only, authority-gated, draft-first, and no-overwrite. Merge does not publish the release.
+Independent verification confirms staging and Production candidate contain byte-identical application payload files.
 
-Persistent publication state: **NOT_PERFORMED**.
+## Promotion rule
 
-## Governed application bundle
-
-- Artifact ID: `10597712890`
-- Release ID: `durable-staging-e37300d5d1be`
-- Source: `e37300d5d1be6727cdb5d818b6365c6429f2af9d`
-- Artifact SHA-256: `faf6b4799648c0fe1d5ddcf4a55e0a39ba8bd0506e3e2ef3f4bb33f38495d079`
-- Manifest SHA-256: `ef968562f76801e425d02c33d3ecfc13556f271f05bff1ff9441c5a147b588f0`
-
-## Governed cPanel operator kit
-
-- Artifact ID: `10601606508`
-- Source: `270e8e954e389f61d32f49b89b87bed571866867`
-- Inner ZIP SHA-256: `e572c93f1a8fc55b1c67f0b1f8744a2b6dd3f3c811d0c83a91767fef8df1ae82`
-- Manifest SHA-256: `750375c512c3eab35530da902fbbf30eff63fb7dc59ad141f0a4e33fce5c97f9`
+Production promotion requires verified same-source durable-staging deployment evidence, an exact Production target candidate, and separate short-lived deployment authority. Production traffic activation remains a later separate gate.
 
 ## Operational boundary
 
-Migration #27 remains `NOT_EXECUTED`; permission provisioning `NONE`; Final Shift Close `INACTIVE`; deployment authority `NOT_GRANTED`; Technical Preview/Production `NOT_AUTHORIZED`; updater `INACTIVE`; target selection remains blocked; selected target remains `null`; producer dispatch remains `NOT_PERFORMED`.
+Migration #27 remains `NOT_EXECUTED`; permission provisioning `NONE`; Final Shift Close `INACTIVE`; deployment authority `NOT_GRANTED`; Technical Preview/Production activation `NOT_AUTHORIZED`; updater `INACTIVE`; selected target remains `null`; producer dispatch remains `NOT_PERFORMED`.
 
 ## Next
 
-Issue #856 is the single handoff.
-
-Separately authorize persistent repository publication before artifact expiry, and materialize/qualify a real isolated target for the Sprint208/Sprint207/Sprint214/Sprint209 deployment-evidence chain.
-
-Do not open another source sprint unless either real publication execution or real target execution exposes a concrete source blocker.
+Issue #856 is the single operational handoff. Materialize and qualify the real durable-staging target using Sprint216 artifact `10603323419`, then obtain verified deployment evidence before any Production promotion.
 
 Author by Lab | zefry
