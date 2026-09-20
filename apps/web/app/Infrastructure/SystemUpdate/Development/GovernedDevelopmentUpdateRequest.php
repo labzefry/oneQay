@@ -512,9 +512,9 @@ final class GovernedDevelopmentUpdateRequest
         $enabled = (bool) config('oneqay.development_updater.enabled', false);
         $runtime = strtolower(trim((string) config('oneqay.runtime_class', '')));
         $appEnv = strtolower(trim((string) config('app.env', '')));
-        $productionDataAllowed = filter_var(
-            env('ONEQAY_PRODUCTION_DATA_ALLOWED', false),
-            FILTER_VALIDATE_BOOL,
+        $productionDataAllowed = (bool) config(
+            'oneqay.development_updater.production_data_allowed',
+            true,
         );
 
         return $enabled
