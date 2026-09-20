@@ -96,7 +96,7 @@ if (! str_contains($provider, "Route::post('/system/update/development/request',
 }
 
 if (! str_contains($page, "/system/update/development/request")
-    || ! str_contains($page, "SYNC_GOVERNED_DEVELOPMENT_RELEASE")) {
+    || ! str_contains($page, "INSTALL_EXACT_GOVERNED_DEVELOPMENT_RELEASE")) {
     fwrite(STDERR, "Governed development updater UI contract is missing.\n");
     exit(1);
 }
