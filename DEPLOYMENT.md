@@ -1,5 +1,24 @@
 # oneQay Deployment Handbook
 
+## Current cPanel same-source staging binding — Sprint217
+
+Sprint217 supersedes the stale Sprint211 application-release reference inside the cPanel no-SSH operator kit. The current governed companion release is the Sprint216 same-source durable-staging artifact:
+
+- Actions run: `35505077172`
+- Actions artifact ID: `10603323419`
+- Actions artifact name: `oneqay-durable-staging-d0b5becbf945-operator-bundle`
+- source commit: `d0b5becbf945c5192e797d512a704eb5aecc6eaa`
+- release ID: `durable-staging-d0b5becbf945`
+- archive SHA-256: `e32a7de2c07c35306c03edff5d7d762782ef58449c92d4b88e5dd04b50d489a2`
+- manifest SHA-256: `6d8099ef3f0b18003c8e362cc1f315d01777b70f3a05b3948f16ff4a44092b9c`
+- deployment handoff SHA-256: `a9f33e8e5fa28abefdfb6397f350307e8954c486fbd43540a879b9c340c7ccad`
+
+Operators must follow the exact release identity recorded in the current kit `KIT.json`; an older release must never be substituted merely because it appeared in a historical Sprint section.
+
+This staging artifact is the exact source peer of Production candidate artifact `10603358335`. Verified durable-staging deployment evidence for source `d0b5becbf945c5192e797d512a704eb5aecc6eaa` is required before Production promotion can proceed.
+
+Sprint217 still does not create a host, grant deployment authority, run migration #27, select a target, dispatch the producer, or activate Production traffic.
+
 ## Persistent operator artifact retention — Sprint215 foundation
 
 The real-host deployment chain depends on two exact governed payloads: Sprint211 application artifact `10597712890` and Sprint214 cPanel operator kit `10601606508`. Both Actions artifacts currently have 30-day retention. Sprint215 adds an authority-gated persistent GitHub prerelease publication path so operator retrieval does not silently become impossible after Actions retention expires.
@@ -19,7 +38,7 @@ The executor treats the cPanel active-release pointer as a POSIX symlink to an i
 
 Execution is allowed only while the Sprint208 authority embedded in the Sprint207 plan is current. The executor rehashes the plan core and rejects fingerprint drift, verifies target/profile identity, exact artifact SHA-256, private binding/runtime files, and qualified filesystem paths before extraction or pointer mutation.
 
-The Sprint211 archive may be pre-uploaded into a private File Manager workspace, but it is not extracted into the release root until authority validation succeeds. The executor uses PHP `PharData` to extract the already governed exact-hash archive, verifies release metadata, 27 migration source files, required runtime files, and absence of embedded runtime environment material.
+The exact archive identified by the current cPanel kit may be pre-uploaded into a private File Manager workspace, but it is not extracted into the release root until authority validation succeeds. The executor uses PHP `PharData` to extract the already governed exact-hash archive, verifies release metadata, 27 migration source files, required runtime files, and absence of embedded runtime environment material.
 
 After extraction, the executor binds the private runtime environment from the shared-runtime root, atomically changes the active symlink, verifies public-document-root resolution, fetches authenticated HTTPS runtime readiness, rehearses rollback, reactivates the new release, and fetches readiness a second time.
 
@@ -40,7 +59,7 @@ The main-only publication workflow rebuilds the kit twice for the exact source S
 
 The kit carries the operator-side chain from cPanel host observation through Sprint208 request/authority qualification, Sprint207 plan generation, and Sprint209 evidence qualification. This does not automate the external deployment itself: archive extraction, configuration binding, active-release switching, runtime readback, health verification, rollback verification, and deployment evidence must still occur against the real target under the separately granted Sprint208 authority.
 
-The application release remains the Sprint211 bundle identified in the Sprint213 contract. A later application release must update that reference and republish a qualified kit before operators treat it as current.
+Historical Sprint213 initially referenced the Sprint211 bundle. The current release reference is governed by the latest cPanel kit contract and `KIT.json`; operators must not use the historical Sprint211 binding as the current release.
 
 Canonical contract: `ops/final-shift-close/DURABLE_STAGING_CPANEL_NO_SSH_OPERATOR_KIT_PUBLICATION_CONTRACT.json`.
 
