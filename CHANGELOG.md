@@ -1,5 +1,28 @@
 # Changelog
 
+## 2026-09-20 — Sprint212 closed canonically
+
+**Sprint212: cPanel No-SSH Durable Staging Target Qualification**
+
+- Closed the concrete source gap for declared shared-hosting/cPanel support when SSH is unavailable.
+- Added a machine-readable cPanel no-SSH target profile schema.
+- Added a private File Manager + one-shot Cron/PHP CLI target inspector.
+- Qualification fails closed on PHP < 8.2, missing required extensions, non-private binding files, path escape/collision, unwritable deployment roots, missing atomic rename, missing PHP symlink support, release/runtime identity mismatch, missing bindings, and unconfirmed operator capability assertions.
+- Added a deterministic bridge from the observed cPanel profile into the existing Sprint208 `OPERATOR_TARGET_CANDIDATE`.
+- Dedicated regression proves the candidate is accepted by the canonical Sprint208 deployment-authority request builder.
+- No public web installer endpoint, deployment mutation, migration execution, target selection, producer dispatch, or activation authority was added.
+- Final engineering head `d3f771daabcf9263069e6b7b23af6302b06dab45`: 91/91 PR-triggered workflows SUCCESS.
+- Engineering PR #859 squash merged at `7adc0f34bbf1646400c344e7c6d1f89324db61d1`.
+- Sprint212 qualification run `35493028325`: SUCCESS.
+- Product Owner authorization comment `5748011184`; authority status SUCCESS.
+- Engineering path hash: `73f2978a1a748f8314c58078b62653ee331a8b21dd08bef971952a795ed9550e`.
+- Canonical reconciliation path hash: `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`.
+- The current deployable application bundle remains the Sprint211 publication because Sprint212 changes qualification tooling, not application runtime source.
+- Operational NO-GO unchanged.
+- Issue #856 remains the operational handoff for a real VM/VPS or a real cPanel no-SSH host that passes Sprint212.
+
+Author by Lab | zefry
+
 ## 2026-09-20 — Sprint211 closed canonically
 
 **Sprint211: Durable Staging Operator Artifact Publication**
