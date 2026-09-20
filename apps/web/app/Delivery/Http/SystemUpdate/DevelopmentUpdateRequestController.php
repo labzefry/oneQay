@@ -21,22 +21,25 @@ final class DevelopmentUpdateRequestController
         $payload = $request->except('_token');
         $keys = array_keys($payload);
         sort($keys, SORT_STRING);
-        if ($keys !== ['confirmation', 'operator_token', 'totp_code']) {
+        if ($keys !== ['candidate_fingerprint', 'confirmation', 'operator_token', 'totp_code']) {
             return $this->denied();
         }
 
         $operatorToken = $payload['operator_token'] ?? null;
         $totpCode = $payload['totp_code'] ?? null;
         $confirmation = $payload['confirmation'] ?? null;
+        $candidateFingerprint = $payload['candidate_fingerprint'] ?? null;
         if (! is_string($operatorToken)
             || ! is_string($totpCode)
             || ! is_string($confirmation)
-            || ! hash_equals('SYNC_GOVERNED_DEVELOPMENT_RELEASE', $confirmation)) {
+            || ! is_string($candidateFingerprint)
+            || preg_match('/\A[0-9a-f]{64}\z/', $candidateFingerprint) !== 1
+            || ! hash_equals('INSTALL_EXACT_GOVERNED_DEVELOPMENT_RELEASE', $confirmation)) {
             return $this->denied();
         }
 
         try {
-            $result = $this->requests->create($operatorToken, $totpCode, time());
+            $result = $this->requests->create($operatorToken, $totpCode, $candidateFingerprint, time());
 
             return redirect()
                 ->route('system-update.page')
