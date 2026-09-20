@@ -32,11 +32,11 @@ jobs:
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-          EXPECTED_PATH_HASH: b31ff94a195775d0ee92318e33640747a411b99ed0c03d72dd6fbb4b0c6baf1f
+          EXPECTED_PATH_HASH: c18fc8a0d08e0195ab9621b94aee5a566dec75921af8721bdc32d938e9e5eab0
         run: |
           set -euo pipefail
           git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/s221-paths
-          test "$(wc -l < /tmp/s221-paths)" -eq 11
+          test "$(wc -l < /tmp/s221-paths)" -eq 12
           test "$(sha256sum /tmp/s221-paths | awk '{print $1}')" = "$EXPECTED_PATH_HASH"
           test -z "$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web)"
           test -z "$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web/database/migrations)"
