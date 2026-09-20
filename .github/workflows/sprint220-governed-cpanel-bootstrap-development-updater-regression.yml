@@ -82,6 +82,7 @@ jobs:
           set -euo pipefail
           find apps/web/app/Infrastructure/SystemUpdate/Development -type f -name '*.php' -print0 | xargs -0 -n1 php -l
           php -l apps/web/app/Delivery/Http/SystemUpdate/DevelopmentUpdateRequestController.php
+          php -l apps/web/app/Console/Commands/DiscoverGovernedDevelopmentUpdateCommand.php
           php -l apps/web/app/Console/Commands/ProcessGovernedDevelopmentUpdateCommand.php
           php -l apps/web/tests/sprint220-governed-development-updater.php
           php -l apps/web/config/oneqay.php
@@ -96,6 +97,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          php artisan list --raw | grep -Fq 'oneqay:update:discover-development'
           php artisan list --raw | grep -Fq 'oneqay:update:process-development'
           php artisan route:list --path=system/update --json > /tmp/s220-update-routes.json
           ONEQAY_RUNTIME_CLASS=durable-staging ONEQAY_DURABLE_STAGING_RUNTIME_ENABLED=true php artisan route:list --path=internal/oneqay/durable-runtime/readiness --json > /tmp/s220-attestation-routes.json
@@ -117,6 +119,8 @@ jobs:
           grep -Fq 'labzefry/oneQay' "$processor" "$request"
           grep -Fq 'durable-staging-release-publication.yml' "$processor" "$request"
           grep -Fq 'candidate_not_forward_from_running_source' "$processor"
+          grep -Fq 'authorized_candidate_drift' "$processor"
+          grep -Fq 'trustedPublicationRunById' "$processor"
           grep -Fq 'rollback_path_verified' "$processor"
           grep -Fq 'DEPLOYED_VERIFIED_NOT_SELECTED' "$processor"
           grep -Fq "'migration27_execution' => 'NOT_PERFORMED'" "$processor"
