@@ -197,8 +197,18 @@ final class GovernedDevelopmentUpdateProcessor
             $checksumName = $archiveName.'.sha256';
             $handoffName = $releaseId.'.deployment-handoff.json';
 
-            foreach ([$archiveName, $manifestName, $checksumName, $handoffName] as $expected) {
+            $expectedMembers = [$archiveName, $manifestName, $checksumName, $handoffName];
+            foreach ($expectedMembers as $expected) {
                 $this->assertRegularFile($bundle.'/'.$expected, 2, self::MAX_OUTER_BYTES, 'bundle_member_missing');
+            }
+            $actualMembers = array_values(array_filter(
+                scandir($bundle) ?: [],
+                static fn (string $entry): bool => $entry !== '.' && $entry !== '..',
+            ));
+            sort($actualMembers, SORT_STRING);
+            sort($expectedMembers, SORT_STRING);
+            if ($actualMembers !== $expectedMembers) {
+                throw new DevelopmentUpdaterViolation('bundle_member_set_invalid');
             }
 
             $archivePath = $bundle.'/'.$archiveName;
@@ -1102,78 +1112,42 @@ final class GovernedDevelopmentUpdateProcessor
         if (! is_dir($directory) || ! is_writable($directory)) {
             throw new DevelopmentUpdaterViolation('download_destination_invalid');
         }
+        if (! extension_loaded('curl') || ! function_exists('curl_init')) {
+            throw new DevelopmentUpdaterViolation('https_client_unavailable');
+        }
 
-        if (extension_loaded('curl') && function_exists('curl_init')) {
-            $handle = fopen($destination, 'wb');
-            if ($handle === false) {
-                throw new DevelopmentUpdaterViolation('download_open_failed');
-            }
-            $curl = curl_init($url);
-            if ($curl === false) {
-                fclose($handle);
-                throw new DevelopmentUpdaterViolation('download_client_failed');
-            }
+        $handle = fopen($destination, 'wb');
+        if ($handle === false) {
+            throw new DevelopmentUpdaterViolation('download_open_failed');
+        }
 
-            curl_setopt_array($curl, [
-                CURLOPT_FILE => $handle,
-                CURLOPT_FOLLOWLOCATION => true,
-                CURLOPT_MAXREDIRS => 3,
-                CURLOPT_CONNECTTIMEOUT => 10,
-                CURLOPT_TIMEOUT => 120,
-                CURLOPT_HTTPHEADER => $headers,
-                CURLOPT_SSL_VERIFYPEER => true,
-                CURLOPT_SSL_VERIFYHOST => 2,
-                CURLOPT_PROTOCOLS => CURLPROTO_HTTPS,
-            ]);
-            $ok = curl_exec($curl);
-            $status = curl_getinfo($curl, CURLINFO_RESPONSE_CODE);
-            curl_close($curl);
+        $curl = curl_init($url);
+        if ($curl === false) {
             fclose($handle);
+            throw new DevelopmentUpdaterViolation('download_client_failed');
+        }
 
-            if ($ok !== true || $status < 200 || $status >= 300) {
-                @unlink($destination);
-                throw new DevelopmentUpdaterViolation('download_failed');
-            }
-        } else {
-            if (! filter_var((string) ini_get('allow_url_fopen'), FILTER_VALIDATE_BOOLEAN)) {
-                throw new DevelopmentUpdaterViolation('https_client_unavailable');
-            }
+        curl_setopt_array($curl, [
+            CURLOPT_FILE => $handle,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_MAXREDIRS => 3,
+            CURLOPT_CONNECTTIMEOUT => 10,
+            CURLOPT_TIMEOUT => 120,
+            CURLOPT_HTTPHEADER => $headers,
+            CURLOPT_SSL_VERIFYPEER => true,
+            CURLOPT_SSL_VERIFYHOST => 2,
+            CURLOPT_PROTOCOLS => CURLPROTO_HTTPS,
+            CURLOPT_REDIR_PROTOCOLS => CURLPROTO_HTTPS,
+        ]);
 
-            $context = stream_context_create([
-                'http' => [
-                    'method' => 'GET',
-                    'header' => implode("\r\n", $headers)."\r\n",
-                    'timeout' => 120,
-                    'follow_location' => 1,
-                    'max_redirects' => 3,
-                    'ignore_errors' => false,
-                ],
-                'ssl' => [
-                    'verify_peer' => true,
-                    'verify_peer_name' => true,
-                    'allow_self_signed' => false,
-                ],
-            ]);
-            $input = @fopen($url, 'rb', false, $context);
-            $output = @fopen($destination, 'wb');
-            if ($input === false || $output === false) {
-                if (is_resource($input)) {
-                    fclose($input);
-                }
-                if (is_resource($output)) {
-                    fclose($output);
-                }
-                @unlink($destination);
-                throw new DevelopmentUpdaterViolation('download_failed');
-            }
+        $ok = curl_exec($curl);
+        $status = curl_getinfo($curl, CURLINFO_RESPONSE_CODE);
+        curl_close($curl);
+        fclose($handle);
 
-            $bytes = stream_copy_to_stream($input, $output, $maxBytes + 1);
-            fclose($input);
-            fclose($output);
-            if (! is_int($bytes) || $bytes <= 0 || $bytes > $maxBytes) {
-                @unlink($destination);
-                throw new DevelopmentUpdaterViolation('download_size_invalid');
-            }
+        if ($ok !== true || $status < 200 || $status >= 300) {
+            @unlink($destination);
+            throw new DevelopmentUpdaterViolation('download_failed');
         }
 
         $size = filesize($destination);
@@ -1188,9 +1162,62 @@ final class GovernedDevelopmentUpdateProcessor
     {
         try {
             $archive = new PharData($archivePath);
+            $this->assertArchiveEntriesSafe($archive, $archivePath);
             $archive->extractTo($destination, null, false);
+        } catch (DevelopmentUpdaterViolation $violation) {
+            throw $violation;
         } catch (Throwable) {
             throw new DevelopmentUpdaterViolation($safeCode);
+        }
+    }
+
+    private function assertArchiveEntriesSafe(PharData $archive, string $archivePath): void
+    {
+        $prefix = 'phar://'.str_replace('\\', '/', $archivePath).'/';
+        $count = 0;
+        $iterator = new RecursiveIteratorIterator($archive, RecursiveIteratorIterator::SELF_FIRST);
+
+        foreach ($iterator as $entry) {
+            $full = str_replace('\\', '/', $entry->getPathname());
+            if (! str_starts_with($full, $prefix)) {
+                throw new DevelopmentUpdaterViolation('archive_member_path_invalid');
+            }
+
+            $relative = substr($full, strlen($prefix));
+            if (! is_string($relative)
+                || $relative === ''
+                || strlen($relative) > 4096
+                || str_contains($relative, "\0")
+                || str_starts_with($relative, '/')
+                || str_contains($relative, '\\')) {
+                throw new DevelopmentUpdaterViolation('archive_member_path_invalid');
+            }
+
+            $segments = explode('/', rtrim($relative, '/'));
+            foreach ($segments as $segment) {
+                if ($segment === '' || $segment === '.' || $segment === '..') {
+                    throw new DevelopmentUpdaterViolation('archive_member_path_invalid');
+                }
+                if (in_array(strtolower($segment), ['.git', '.svn'], true)) {
+                    throw new DevelopmentUpdaterViolation('archive_repository_metadata_forbidden');
+                }
+            }
+
+            if ($entry->isLink()) {
+                throw new DevelopmentUpdaterViolation('archive_link_forbidden');
+            }
+            if (! $entry->isFile() && ! $entry->isDir()) {
+                throw new DevelopmentUpdaterViolation('archive_special_file_forbidden');
+            }
+
+            ++$count;
+            if ($count > 100000) {
+                throw new DevelopmentUpdaterViolation('archive_member_limit_exceeded');
+            }
+        }
+
+        if ($count < 1) {
+            throw new DevelopmentUpdaterViolation('archive_empty');
         }
     }
 
