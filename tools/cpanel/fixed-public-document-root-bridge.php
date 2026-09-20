@@ -76,7 +76,7 @@ function cpanelBridgeCopyTree(string $source, string $destination): void
 }
 
 /** @return array<string,mixed> */
-function cpanelBridgeInstall(string $documentRoot, string $activePointer, string $releaseDirectory): array
+function cpanelBridgeInstall(string $documentRoot, string $activePointer, string $releaseDirectory, string $privateBackupRoot): array
 {
     if (! is_dir($documentRoot) || ! is_writable($documentRoot)) {
         cpanelBridgeFail('public_document_root_not_writable');
@@ -102,13 +102,24 @@ function cpanelBridgeInstall(string $documentRoot, string $activePointer, string
         cpanelBridgeFail('public_build_source_missing');
     }
 
+    if (! is_dir($privateBackupRoot) || ! is_writable($privateBackupRoot)
+        || str_starts_with($privateBackupRoot.'/', $documentRoot.'/')
+    ) {
+        cpanelBridgeFail('private_public_bridge_backup_root_invalid');
+    }
+
     $suffix = bin2hex(random_bytes(8));
     $indexPath = $documentRoot.'/index.php';
     $buildPath = $documentRoot.'/build';
-    $indexBackup = $documentRoot.'/.oneqay-index-backup-'.$suffix;
+    $backupDir = rtrim($privateBackupRoot, '/').'/.oneqay-public-bridge-'.$suffix;
+    $indexBackup = $backupDir.'/index.php';
     $indexNext = $documentRoot.'/.oneqay-index-next-'.$suffix;
     $buildBackup = $documentRoot.'/.oneqay-build-backup-'.$suffix;
     $buildNext = $documentRoot.'/.oneqay-build-next-'.$suffix;
+
+    if (! mkdir($backupDir, 0700)) {
+        cpanelBridgeFail('private_public_bridge_backup_create_failed');
+    }
 
     $indexExisted = file_exists($indexPath) || is_link($indexPath);
     $buildExisted = file_exists($buildPath) || is_link($buildPath);
@@ -189,6 +200,7 @@ PHP;
             'document_root' => $documentRoot,
             'index_path' => $indexPath,
             'build_path' => $buildPath,
+            'backup_dir' => $backupDir,
             'index_backup' => $indexBackup,
             'build_backup' => $buildBackup,
             'index_existed' => $indexExisted,
@@ -200,6 +212,28 @@ PHP;
         if (is_dir($buildNext)) {
             try { cpanelBridgeRemoveTree($buildNext); } catch (Throwable) {}
         }
+
+        try {
+            if ($indexExisted && is_file($indexBackup)) {
+                @copy($indexBackup, $indexPath);
+                @chmod($indexPath, 0644);
+            } elseif (! $indexExisted && is_file($indexPath)) {
+                @unlink($indexPath);
+            }
+
+            if (is_dir($buildPath) && is_dir($buildBackup)) {
+                cpanelBridgeRemoveTree($buildPath);
+                @rename($buildBackup, $buildPath);
+            } elseif (! $buildExisted && is_dir($buildPath)) {
+                cpanelBridgeRemoveTree($buildPath);
+            } elseif ($buildExisted && ! is_dir($buildPath) && is_dir($buildBackup)) {
+                @rename($buildBackup, $buildPath);
+            }
+        } catch (Throwable) {
+        }
+
+        if (is_file($indexBackup)) @unlink($indexBackup);
+        if (is_dir($backupDir)) @rmdir($backupDir);
         throw $failure;
     }
 }
@@ -246,10 +280,14 @@ function cpanelBridgeRestore(array $state): void
 /** @param array<string,mixed> $state */
 function cpanelBridgeFinalize(array $state): void
 {
+    $backupDir = (string) ($state['backup_dir'] ?? '');
     $indexBackup = (string) ($state['index_backup'] ?? '');
     $buildBackup = (string) ($state['build_backup'] ?? '');
     if ($indexBackup !== '' && is_file($indexBackup)) {
         @unlink($indexBackup);
+    }
+    if ($backupDir !== '' && is_dir($backupDir)) {
+        @rmdir($backupDir);
     }
     if ($buildBackup !== '' && is_dir($buildBackup)) {
         cpanelBridgeRemoveTree($buildBackup);
