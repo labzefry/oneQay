@@ -1,51 +1,54 @@
 # oneQay Tasks
 
-**Current canonical engineering checkpoint:** Sprint216 closed canonically
-**Canonical engineering commit:** `d0b5becbf945c5192e797d512a704eb5aecc6eaa`
-**Engineering PR:** #867
+**Current canonical engineering checkpoint:** Sprint217 closed canonically
+**Canonical engineering commit:** `afb048c9b7edc53d13ad8f5fc1197a8874966450`
+**Engineering PR:** #869
 **Canonical status authority:** `PROJECT_MANIFEST.md`
 
-## Sprint216 completed
+## Sprint217 completed
 
-- [x] Prove durable-staging artifacts are not valid as Production artifacts.
-- [x] Preserve application source freeze while adding Production deployment governance.
-- [x] Add deterministic secret-free Production candidate builder/manifest validation.
-- [x] Add exact Production target candidate contract.
-- [x] Require verified same-source durable-staging deployment evidence.
-- [x] Add separate <=900-second Production deployment authority binding.
-- [x] Add deterministic dark Production deployment plan.
-- [x] Add Production deployment evidence qualification limited to `PRODUCTION_DEPLOYED_VERIFIED_NOT_ACTIVATED`.
-- [x] Keep migration #27 and Production business/traffic activation unauthorized.
-- [x] Qualify final engineering head at 94/94 SUCCESS.
-- [x] Publish same-source staging artifact `10603323419`.
-- [x] Publish same-source Production candidate `10603358335`.
-- [x] Independently verify Actions digests, archive checksums/integrity, migration count, secret filename absence, and byte-identical application payload files.
+- [x] Prove the cPanel kit was stale-bound to Sprint211.
+- [x] Rebind the kit contract to Sprint216 staging artifact `10603323419`.
+- [x] Include exact publication/artifact/digest/archive/manifest/handoff identity in kit metadata.
+- [x] Remove current operator instructions that select Sprint211 by Sprint number.
+- [x] Update historical Sprint213 regression to preserve current binding.
+- [x] Add dedicated Sprint217 regression.
+- [x] Prove current kit builds deterministically.
+- [x] Exercise packaged kit through cPanel target qualification and Sprint208 authority request.
+- [x] Qualify final engineering head at 96/96 SUCCESS.
+- [x] Publish current cPanel kit `10603569410`.
+- [x] Independently verify ZIP checksum, manifest, release binding, absence of stale Sprint211 refs, application bytes, and secret-bearing file shapes.
 
 ## Real durable-staging gate — issue #856
 
 - [ ] Materialize a real isolated durable-staging target.
-- [ ] Use Sprint216 staging artifact `10603323419`.
-- [ ] For cPanel no-SSH, ensure operator tooling is bound compatibly to the Sprint216 release before execution.
-- [ ] Run truthful target qualification.
-- [ ] Produce the exact Sprint208 target candidate.
-- [ ] Obtain separate deployment authority <=900 seconds.
-- [ ] Generate exact deployment plan.
-- [ ] Execute guarded staging deployment.
+- [ ] Use application artifact `10603323419`.
+- [ ] Use cPanel kit `10603569410` when the real target is cPanel no-SSH.
+- [ ] Run real target qualification.
+- [ ] Obtain separate Sprint208 deployment authority <=900 seconds.
+- [ ] Generate exact Sprint207 plan.
+- [ ] Run guarded Sprint214 staging executor.
 - [ ] Qualify deployment evidence as `DEPLOYED_VERIFIED_NOT_SELECTED`.
+
+## Next source blocker
+
+- [ ] Add bounded Production dark-deployment execution tool/adapter.
+- [ ] Revalidate exact Production plan, authority, target and artifact.
+- [ ] Preserve migration-free, traffic-inactive posture.
+- [ ] Verify dark health and rollback rehearsal.
+- [ ] Emit only Production deployment evidence candidate accepted as `PRODUCTION_DEPLOYED_VERIFIED_NOT_ACTIVATED`.
 
 ## Production promotion gate
 
-- [ ] Use Sprint216 Production candidate `10603358335`.
-- [ ] Require same-source verified staging evidence.
-- [ ] Materialize/qualify exact real Production target.
-- [ ] Prepare exact Production deployment authority request.
+- [ ] Use Production candidate `10603358335`.
+- [ ] Require verified same-source staging evidence.
+- [ ] Qualify exact real Production target.
 - [ ] Obtain separate Production deployment authority <=900 seconds.
-- [ ] Dark-deploy and verify rollback/health/provenance.
-- [ ] Qualify only to `PRODUCTION_DEPLOYED_VERIFIED_NOT_ACTIVATED`.
-- [ ] Keep Production business/traffic activation separately blocked until explicitly delivered and authorized.
+- [ ] Execute dark deployment only.
+- [ ] Keep Production traffic/business activation separately blocked.
 
 ## Still prohibited
 
-No migration #27 execution, permission provisioning, target selection, producer dispatch, Final Shift Close activation, Technical Preview activation, Production traffic activation, or updater activation is authorized by Sprint216 repository merge.
+No migration #27 execution, permission provisioning, target selection, producer dispatch, Final Shift Close activation, Technical Preview activation, Production traffic activation, or updater activation is authorized by Sprint217 repository merge.
 
 Author by Lab | zefry
