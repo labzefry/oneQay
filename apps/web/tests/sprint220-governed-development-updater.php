@@ -108,6 +108,13 @@ try {
         $assert(! str_contains($candidateRaw, $forbidden), 'CAND-004 candidate contains no operator secret material');
     }
 
+    try {
+        $service->create($operatorToken, $totp($secret, $now), str_repeat('f', 64), $now);
+        $assert(false, 'CAND-NEG-001 wrong candidate fingerprint must fail');
+    } catch (DevelopmentUpdaterViolation $expected) {
+        $assert($expected->safeCode() === 'candidate_fingerprint_mismatch', 'CAND-NEG-001 exact candidate binding');
+    }
+
     $created = $service->create(
         $operatorToken,
         $totp($secret, $now),
@@ -137,13 +144,6 @@ try {
         $assert(false, 'REQ-NEG-001 wrong token must fail');
     } catch (DevelopmentUpdaterViolation $expected) {
         $assert($expected->safeCode() === 'operator_authorization_denied', 'REQ-NEG-001 safe code');
-    }
-
-    try {
-        $service->create($operatorToken, $totp($secret, $now), str_repeat('f', 64), $now);
-        $assert(false, 'REQ-NEG-002 wrong candidate fingerprint must fail');
-    } catch (DevelopmentUpdaterViolation $expected) {
-        $assert(in_array($expected->safeCode(), ['candidate_fingerprint_mismatch', 'request_already_pending'], true), 'REQ-NEG-002 exact candidate binding');
     }
 
     $tampered = json_decode($raw, true, 64, JSON_THROW_ON_ERROR);
