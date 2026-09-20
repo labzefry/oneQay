@@ -1,5 +1,30 @@
 # Changelog
 
+## 2026-09-20 — Sprint215 closed canonically
+
+**Sprint215: Durable Staging Persistent Operator Release Publication Foundation**
+
+- Proved a concrete retention gap after Sprint214: the governed Sprint211 application bundle and Sprint214 cPanel operator kit existed only as 30-day GitHub Actions artifacts while the repository had no GitHub Releases.
+- Added a manual-only, fail-closed persistent operator handoff prerelease workflow.
+- The workflow reuses the exact already-governed bytes; it does not rebuild the Sprint211 application artifact or Sprint214 cPanel kit.
+- Publication verifies live Actions artifact identity, expiry, outer digest, exact inner SHA-256, checksum sidecars, and the Sprint206 deployment handoff state before any GitHub Release is created.
+- A separate Product Owner publication-authorization comment in issue #856 must bind exact current main, exact artifact IDs, and exact release tag.
+- Release creation is draft-first; asset names and sizes are verified before the draft is published as a prerelease.
+- Existing release/tag reuse and asset overwrite fail closed.
+- Merge of Sprint215 does not publish any GitHub Release and does not grant deployment authority.
+- Final engineering head `c996794af12bc085213d91c1961bb71b3d351394`: 94/94 PR-triggered workflows SUCCESS.
+- Sprint215 dedicated regression run `35502047468`: SUCCESS.
+- Engineering PR #865 Product Owner merge authorization comment `5748933469`; `product-owner-merge-authority` SUCCESS.
+- Engineering squash: `759ba3d5d05d2bead51580be8d778b6f987b95c4`.
+- Engineering path-set SHA-256: `d3d341956be9fca5c9e4c9e9789918ac639f3dd59e1b75b24bcec123eb8ac6d2`.
+- Canonical reconciliation path-set SHA-256: `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`.
+- Persistent release tag reserved by contract: `operator-handoff-e37300d5d1be-270e8e954e38`.
+- Persistent release publication state: `NOT_PERFORMED`.
+- GitHub Releases at engineering closure: none.
+- Operational NO-GO remains unchanged.
+
+Author by Lab | zefry
+
 ## 2026-09-20 — Sprint214 closed canonically
 
 **Sprint214: cPanel No-SSH Guarded Deployment Execution**
