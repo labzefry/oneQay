@@ -1012,6 +1012,7 @@ function cpanelExecExecute(
                 $documentRoot,
                 $activePointer,
                 $identity['release_directory'],
+                $identity['shared_root'],
             );
             $bridgeMutated = true;
         }
@@ -1060,6 +1061,7 @@ function cpanelExecExecute(
                 $documentRoot,
                 $activePointer,
                 $identity['release_directory'],
+                $identity['shared_root'],
             );
             $bridgeMutated = true;
         }
