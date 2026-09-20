@@ -131,8 +131,7 @@
             "ONEQAY_RUNNING_SOURCE_COMMIT",
             "ONEQAY_RUNNING_ARTIFACT_SHA256",
             "ONEQAY_PRODUCTION_ENVIRONMENT_ID",
-            "ONEQAY_PRODUCTION_ATTESTATION_TOKEN",
-            "ONEQAY_GOVERNED_BUSINESS_RUNTIME_ENABLED"
+            "ONEQAY_PRODUCTION_ATTESTATION_TOKEN"
           ],
           "properties": {
             "ONEQAY_RUNTIME_CLASS": {
@@ -148,9 +147,6 @@
               "const": true
             },
             "ONEQAY_PRODUCTION_ATTESTATION_TOKEN": {
-              "const": true
-            },
-            "ONEQAY_GOVERNED_BUSINESS_RUNTIME_ENABLED": {
               "const": true
             }
           }

@@ -1,22 +1,14 @@
 {
   "schema_version": 1,
-  "feature": "production-runtime-release-deployment-governance",
-  "contract_state": "SOURCE_READY_PRODUCTION_RUNTIME_AND_DEPLOYMENT_GOVERNANCE_NOT_DEPLOYED_NOT_ACTIVATED",
-  "purpose": "ENABLE_FAIL_CLOSED_DURABLE_STAGING_AND_PRODUCTION_BUSINESS_RUNTIME_ELIGIBILITY_AND_PREPARE_GOVERNED_PRODUCTION_RELEASE_DEPLOYMENT_WITHOUT_AUTOMATIC_DEPLOYMENT_OR_TRAFFIC_ACTIVATION",
-  "runtime_eligibility": {
-    "global_gate": "ONEQAY_GOVERNED_BUSINESS_RUNTIME_ENABLED",
-    "default_enabled": false,
-    "always_allowed": [
-      "local",
-      "test",
-      "ci"
-    ],
-    "governed_allowed": [
-      "durable-staging",
-      "production"
-    ],
-    "technical_preview_uses_separate_surface": true,
-    "per_feature_flags_still_required": true
+  "feature": "production-release-deployment-governance",
+  "contract_state": "SOURCE_READY_PRODUCTION_RELEASE_DEPLOYMENT_GOVERNANCE_NOT_DEPLOYED_NOT_ACTIVATED",
+  "purpose": "PREPARE_DETERMINISTIC_PRODUCTION_CANDIDATE_AND_SAME_SOURCE_STAGING_TO_PRODUCTION_DEPLOYMENT_GOVERNANCE_WITHOUT_CHANGING_APPLICATION_RUNTIME_OR_AUTOMATICALLY_ACTIVATING_PRODUCTION_TRAFFIC",
+  "application_runtime_boundary": {
+    "source_runtime_behavior_changed": false,
+    "business_runtime_activation_ready": false,
+    "dark_deploy_only": true,
+    "dark_deploy_health_endpoint": "/health/live",
+    "later_business_runtime_activation_requires_separate_source_and_authority": true
   },
   "production_release": {
     "channel": "PRODUCTION_CANDIDATE",
@@ -30,9 +22,12 @@
     "deployment_performed_by_builder": false,
     "traffic_activation_performed_by_builder": false
   },
+  "same_source_staging": {
+    "canonical_main_push_must_publish_staging_artifact": true,
+    "exact_source_commit_match_required_for_promotion": true,
+    "verified_staging_deployment_evidence_required": true
+  },
   "production_promotion": {
-    "verified_durable_staging_evidence_required": true,
-    "exact_source_commit_match_required": true,
     "exact_production_artifact_hash_required": true,
     "exact_target_descriptor_required": true,
     "separate_short_lived_authority_required": true,
@@ -48,7 +43,7 @@
     "preflight_required": true,
     "immutable_release_required": true,
     "exact_runtime_readback_required": true,
-    "non_mutating_health_required": true,
+    "non_mutating_dark_health_required": true,
     "rollback_rehearsal_required": true,
     "post_deployment_state": "PRODUCTION_DEPLOYED_VERIFIED_NOT_ACTIVATED"
   },

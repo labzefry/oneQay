@@ -139,8 +139,11 @@
         "required_runtime_class": {
           "const": "production"
         },
-        "governed_business_runtime_default_enabled": {
+        "business_runtime_activation_ready": {
           "const": false
+        },
+        "dark_deploy_health_endpoint": {
+          "const": "/health/live"
         },
         "php_constraint": {
           "const": "^8.2"
@@ -157,7 +160,8 @@
       },
       "required": [
         "required_runtime_class",
-        "governed_business_runtime_default_enabled",
+        "business_runtime_activation_ready",
+        "dark_deploy_health_endpoint",
         "php_constraint",
         "build_php",
         "build_node",

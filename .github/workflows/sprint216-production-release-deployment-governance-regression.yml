@@ -1,5 +1,5 @@
 # Author by Lab | zefry
-name: Sprint216 Production Runtime Deployment Governance Regression
+name: Sprint216 Production Release Deployment Governance Regression
 on:
   pull_request:
     branches: [main]
@@ -7,7 +7,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: sprint216-production-runtime-deployment-governance-${{ github.event.pull_request.number || github.ref }}-${{ github.event.pull_request.head.sha || github.sha }}
+  group: sprint216-production-release-deployment-governance-${{ github.event.pull_request.number || github.ref }}-${{ github.event.pull_request.head.sha || github.sha }}
   cancel-in-progress: true
 jobs:
   qualify:
@@ -29,12 +29,13 @@ jobs:
         with: {fetch-depth: 0, ref: "${{ github.event.pull_request.head.sha || github.sha }}"}
       - name: Exact envelope
         if: github.event_name == 'pull_request' && github.head_ref == 'sprint216-production-release-deployment-governance-foundation'
-        env: {EXPECTED_PATH_HASH: f5a80743fd99eb2160c801cfa9ecd25d529b2a8b1d985f41ec61da2e4095c8a0}
+        env: {EXPECTED_PATH_HASH: e1f0133337a2050cd789f2943101ab1acf7b29684c99d32ff3908ae6122fedd4}
         run: |
           set -euo pipefail
           mapfile -t paths < <(git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | LC_ALL=C sort)
-          test "${#paths[@]}" -eq 20
+          test "${#paths[@]}" -eq 16
           test "$(printf '%s\n' "${paths[@]}" | sha256sum | awk '{print $1}')" = "$EXPECTED_PATH_HASH"
+          test -z "$(git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" -- apps/web)"
       - name: Preserve NO-GO
         run: |
           set -euo pipefail
@@ -51,26 +52,17 @@ jobs:
       - name: Lint contracts
         run: |
           set -euo pipefail
-          php -l apps/web/app/Infrastructure/Runtime/GovernedBusinessRuntimePolicy.php
-          php -l apps/web/app/Infrastructure/Configuration/CriticalConfiguration.php
-          php -l apps/web/config/oneqay.php
-          php -l apps/web/routes/web.php
-          php -l apps/web/tests/governed-business-runtime-policy.php
           php -l tools/validate-production-release-manifest.php
           php -l tools/prepare-production-deployment-authority-request.php
           php -l tools/qualify-production-deployment-authority.php
           php -l tools/prepare-production-deployment-plan.php
           php -l tools/qualify-production-deployment-evidence.php
           bash -n tools/build-production-release.sh
-          jq -e '.contract_state == "SOURCE_READY_PRODUCTION_RUNTIME_AND_DEPLOYMENT_GOVERNANCE_NOT_DEPLOYED_NOT_ACTIVATED"' ops/final-shift-close/PRODUCTION_RELEASE_DEPLOYMENT_GOVERNANCE_CONTRACT.json
+          jq -e '.contract_state == "SOURCE_READY_PRODUCTION_RELEASE_DEPLOYMENT_GOVERNANCE_NOT_DEPLOYED_NOT_ACTIVATED"' ops/final-shift-close/PRODUCTION_RELEASE_DEPLOYMENT_GOVERNANCE_CONTRACT.json
+          jq -e '.application_runtime_boundary.source_runtime_behavior_changed == false' ops/final-shift-close/PRODUCTION_RELEASE_DEPLOYMENT_GOVERNANCE_CONTRACT.json
           jq -e '.properties.release.properties.channel.const == "PRODUCTION_CANDIDATE"' release/production-manifest-v1.schema.json
+          jq -e '.properties.runtime.properties.business_runtime_activation_ready.const == false' release/production-manifest-v1.schema.json
           jq -e '.properties.production_traffic_activation_allowed.const == false' tools/deployment/production-deployment-authority.schema.json
-      - name: Runtime fail closed
-        run: |
-          set -euo pipefail
-          php apps/web/tests/governed-business-runtime-policy.php
-          grep -Fq 'GovernedBusinessRuntimePolicy::allows' apps/web/routes/web.php
-          grep -Fq 'ONEQAY_GOVERNED_BUSINESS_RUNTIME_ENABLED' apps/web/config/oneqay.php
       - name: Install dependencies
         run: |
           set -euo pipefail
@@ -108,6 +100,7 @@ jobs:
           ! grep -R -E 'Artisan::call|php artisan migrate' tools/build-production-release.sh tools/prepare-production-deployment-authority-request.php tools/qualify-production-deployment-authority.php tools/prepare-production-deployment-plan.php tools/qualify-production-deployment-evidence.php
           jq -e '.production_promotion.migration_execution_allowed == false' ops/final-shift-close/PRODUCTION_RELEASE_DEPLOYMENT_GOVERNANCE_CONTRACT.json
           jq -e '.production_promotion.production_traffic_activation_allowed == false' ops/final-shift-close/PRODUCTION_RELEASE_DEPLOYMENT_GOVERNANCE_CONTRACT.json
+          jq -e '.application_runtime_boundary.business_runtime_activation_ready == false' ops/final-shift-close/PRODUCTION_RELEASE_DEPLOYMENT_GOVERNANCE_CONTRACT.json
       - name: Clean
         run: |
           rm -rf dist
