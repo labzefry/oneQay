@@ -1,5 +1,31 @@
 # Changelog
 
+## 2026-09-20 — Sprint216 closed canonically
+
+**Sprint216: Production Release Deployment Governance Foundation**
+
+- Proved the repository lacked a governed Production artifact/deployment path while durable-staging contracts explicitly forbid Production use.
+- Preserved the application runtime source byte-for-byte; Sprint216 does not enable Production business traffic.
+- Added a deterministic, secret-free Production candidate artifact with runtime class `production`, dark health `/health/live`, 27 migration source files, and migration execution disabled.
+- Added same-source staging publication so durable-staging evidence and Production promotion can bind the exact same canonical source commit.
+- Added exact Production target candidate, short-lived authority (maximum 900 seconds), deployment-plan, and post-deployment evidence contracts.
+- Production evidence can reach only `PRODUCTION_DEPLOYED_VERIFIED_NOT_ACTIVATED`; Production traffic activation remains separately unauthorized.
+- Final engineering head `3a9f4a9189094a16be2abf1939319b6807227634`: 94/94 PR-triggered workflows SUCCESS.
+- Sprint216 dedicated regression run `35504883655`: SUCCESS.
+- Engineering PR #867 Product Owner merge authorization comment `5749220088`; `product-owner-merge-authority` SUCCESS.
+- Permanent engineering squash: `d0b5becbf945c5192e797d512a704eb5aecc6eaa`.
+- Engineering path-set SHA-256: `e1f0133337a2050cd789f2943101ab1acf7b29684c99d32ff3908ae6122fedd4`.
+- Canonical reconciliation path-set SHA-256: `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`.
+- Same-source durable-staging publication run `35505077172`: SUCCESS; artifact ID `10603323419`.
+- Durable-staging application archive SHA-256: `e32a7de2c07c35306c03edff5d7d762782ef58449c92d4b88e5dd04b50d489a2`.
+- Same-source Production publication run `35505077185`: SUCCESS; artifact ID `10603358335`.
+- Production candidate archive SHA-256: `cd1f96346d310aab3ac59398116499dae3e3df84a6af9ec1a13515d1e46568f1`.
+- Independent verification proved 6,227 application regular files are byte-identical between staging and Production candidate; secret-bearing filename shapes are absent.
+- The earlier Sprint215 persistent-publication authorization bound to old Sprint211/Sprint214 artifacts is superseded for future promotion by the Sprint216 same-source artifacts.
+- Operational NO-GO remains unchanged.
+
+Author by Lab | zefry
+
 ## 2026-09-20 — Sprint215 closed canonically
 
 **Sprint215: Durable Staging Persistent Operator Release Publication Foundation**
