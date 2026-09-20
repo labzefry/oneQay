@@ -148,7 +148,7 @@ function cpanelProbeFixedPublicBridge(string $documentRoot): array
         if (! mkdir($root, 0700) || ! mkdir($sourceDir, 0700)) {
             cpanelProbeFail('fixed_public_probe_create_failed');
         }
-        if (file_put_contents($sourceFile, 'oneqay-public-bridge-probe', LOCK_EX) !== 27) {
+        if (file_put_contents($sourceFile, 'oneqay-public-bridge-probe', LOCK_EX) !== 26) {
             cpanelProbeFail('fixed_public_probe_write_failed');
         }
         if (! rename($sourceFile, $targetFile) || ! rename($sourceDir, $targetDir)) {
