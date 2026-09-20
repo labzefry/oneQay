@@ -29,15 +29,15 @@
 
 ## Published durable-staging operator bundle
 
-**Publication run:** `35487670967` — SUCCESS  
-**Actions artifact ID:** `10597712890`  
-**Artifact name:** `oneqay-durable-staging-e37300d5d1be-operator-bundle`  
-**Release ID:** `durable-staging-e37300d5d1be`  
-**Source commit:** `e37300d5d1be6727cdb5d818b6365c6429f2af9d`  
-**Durable artifact SHA-256:** `faf6b4799648c0fe1d5ddcf4a55e0a39ba8bd0506e3e2ef3f4bb33f38495d079`  
-**Durable manifest SHA-256:** `ef968562f76801e425d02c33d3ecfc13556f271f05bff1ff9441c5a147b588f0`  
-**Artifact size:** 4,766,192 bytes  
-**Expiry:** 2026-10-20T03:52:24Z  
+**Publication run:** `35487670967` — SUCCESS
+**Actions artifact ID:** `10597712890`
+**Artifact name:** `oneqay-durable-staging-e37300d5d1be-operator-bundle`
+**Release ID:** `durable-staging-e37300d5d1be`
+**Source commit:** `e37300d5d1be6727cdb5d818b6365c6429f2af9d`
+**Durable artifact SHA-256:** `faf6b4799648c0fe1d5ddcf4a55e0a39ba8bd0506e3e2ef3f4bb33f38495d079`
+**Durable manifest SHA-256:** `ef968562f76801e425d02c33d3ecfc13556f271f05bff1ff9441c5a147b588f0`
+**Artifact size:** 4,766,192 bytes
+**Expiry:** 2026-10-20T03:52:24Z
 **Deployment handoff state:** `VALIDATED_FOR_EXTERNAL_DEPLOYMENT_NOT_AUTHORIZED`
 
 The bundle contains the durable archive, release manifest, SHA-256 sidecar, and secret-free Sprint206 deployment handoff. Publication is not deployment authority.
