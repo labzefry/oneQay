@@ -1,10 +1,25 @@
 # oneQay Installer Specification
 
+## Current cPanel same-source staging bundle — Sprint217
+
+The cPanel no-SSH operator path is now bound to the Sprint216 same-source durable-staging release rather than the historical Sprint211 bundle.
+
+Current governed application release:
+- artifact ID `10603323419`
+- release `durable-staging-d0b5becbf945`
+- source `d0b5becbf945c5192e797d512a704eb5aecc6eaa`
+- archive SHA-256 `e32a7de2c07c35306c03edff5d7d762782ef58449c92d4b88e5dd04b50d489a2`
+- deployment handoff state `VALIDATED_FOR_EXTERNAL_DEPLOYMENT_NOT_AUTHORIZED`
+
+The operator must always use the archive identity in the current kit `KIT.json`. No Sprint number is a substitute for exact release identity.
+
+This rebind is required so real durable-staging evidence can be produced for the same source as Production candidate artifact `10603358335`. It grants no deployment or Production activation authority.
+
 ## cPanel no-SSH guarded deployment execution — Sprint214
 
 Sprint214 closes the execution gap after Sprint212 qualification and Sprint213 kit publication. A cPanel operator without SSH can now execute the exact Sprint207 plan through one-shot Cron/PHP CLI without a public web deployment endpoint.
 
-Before requesting short-lived Sprint208 authority, the operator may upload the exact Sprint211 application archive into a **private operator workspace** through File Manager. Uploading the archive to that private workspace does not activate or extract the release. Archive extraction into the qualified release root occurs only after the Sprint214 executor has revalidated the current authority and exact artifact SHA-256.
+Before requesting short-lived Sprint208 authority, the operator may upload the exact application archive identified by the current cPanel kit into a **private operator workspace** through File Manager. Uploading the archive to that private workspace does not activate or extract the release. Archive extraction into the qualified release root occurs only after the Sprint214 executor has revalidated the current authority and exact artifact SHA-256.
 
 The real execution command is:
 
@@ -58,7 +73,7 @@ The kit is published only from canonical `main` through GitHub Actions and conta
 - an internal per-file SHA-256 manifest;
 - an external ZIP SHA-256 sidecar.
 
-The ZIP deliberately does **not** contain oneQay application runtime bytes. The separately published Sprint211 durable-staging operator bundle remains the governed application release and provides the archive, manifest, checksum, and Sprint206 deployment handoff.
+The ZIP deliberately does **not** contain oneQay application runtime bytes. The current governed application release is the exact durable-staging bundle identified in `KIT.json`; it provides the archive, manifest, checksum, and deployment handoff. Historical Sprint211 references are not current release authority.
 
 For cPanel without SSH, the operator uses File Manager to upload/extract the qualification ZIP into a private workspace outside the document root. One-shot Cron Jobs run the PHP CLI commands from the kit README. Private bindings and short-lived approval-token material must use private host files and must never be embedded in the ZIP, repository, Cron command value, or public document root.
 
