@@ -1,32 +1,28 @@
 # oneQay Roadmap
 
-**Roadmap checkpoint:** Sprint209 closed canonically
-**Canonical engineering baseline:** `55b652f8b62e05cb8254ec74bb10f2e507abb641`
+**Roadmap checkpoint:** Sprint210 closed canonically
+**Canonical engineering baseline:** `bf00980add7e557e3fccf6683f916ac5389feffe`
 **Current state authority:** `PROJECT_MANIFEST.md`
 
-## Completed Sprint209 horizon
+## Completed Sprint210 horizon
 
-Sprint209 closed `DURABLE_STAGING_DEPLOYMENT_EVIDENCE_BINDING_FOUNDATION`.
+Sprint210 closed `DURABLE_STAGING_DEPLOYMENT_EVIDENCE_PROVENANCE_CONTINUITY`.
 
-The repository now requires protected deployment execution evidence before a real durable-runtime readiness endpoint can enter the attestation chain. Exact target/source/artifact identity is bound to the Sprint207 deployment plan and Sprint208 authority, with mandatory preflight, readback, health, and rollback verification.
+Deployment evidence qualified before producer execution is now carried as exact non-secret provenance through producer publication and trusted ingestion. Deterministic candidate fingerprints bind deployment evidence, plan, authority, attestation, and provenance.
 
-Engineering PR #852 qualified at 89/89 on final head `3372abb10eb5f883ff410d25e0defbaad827207c` and squash merged at `55b652f8b62e05cb8254ec74bb10f2e507abb641`.
+Engineering PR #854 qualified at 96/96 on final head `18f32c5746a7fc08b49d432a6a63e01d8f14e059` and squash merged at `bf00980add7e557e3fccf6683f916ac5389feffe`.
 
-Engineering envelope SHA-256: `ebff1a00d0b06f16925cc0f0849b3c7cd38216ccccd659f0447f307d71face10`.
+Engineering envelope SHA-256: `0525c55ff45baf2893a22983a4ea53e50f1c195d92a49efc2a41ce92d2749205`.
 Canonical reconciliation envelope SHA-256: `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`.
 
 ## Production-readiness progression
 
-Sprint203 supplied the merchant-core staging bridge, Sprint204 runtime readiness, Sprint205 governed durable artifact, Sprint206 validated handoff, Sprint207 deterministic operator planning, Sprint208 request-bound deployment authority, and Sprint209 deployment-execution evidence binding.
+Sprint203 supplied the merchant-core staging bridge, Sprint204 runtime readiness, Sprint205 governed durable artifact, Sprint206 validated handoff, Sprint207 deterministic operator planning, Sprint208 request-bound deployment authority, Sprint209 deployment-execution evidence qualification, and Sprint210 provenance continuity into trusted ingestion.
 
-The source chain is now closed through the protected attestation producer gate. A real isolated non-production runtime and separate operational authority remain required.
-
-## Operational boundary
-
-Canonical state remains migration #27 `NOT_EXECUTED`; permission provisioning `NONE`; Final Shift Close `INACTIVE`; deployment `NOT_GRANTED`; Technical Preview/Production `NOT_AUTHORIZED`; updater inactive; durable target blocked; selected target `null`; producer dispatch not performed.
+The remaining blocker is no longer an unproven source-chain gap. It is real isolated durable-staging execution under separate operational authority.
 
 ## Next material horizon
 
-Materialize the real durable-staging target under separate authority, execute the exact Sprint207 operator plan, create Sprint209 deployment evidence, configure protected environment bindings, dispatch the protected attestation producer, then use the existing ingestion chain. Open another engineering sprint only if real execution proves a concrete missing source capability.
+Materialize the real durable-staging target, execute the exact governed deployment plan, produce real deployment evidence, run the protected producer, and ingest real attestation evidence. Open another engineering sprint only if actual execution proves another missing source capability.
 
 Author by Lab | zefry
