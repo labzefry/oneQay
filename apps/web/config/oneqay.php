@@ -6,6 +6,14 @@ return [
     'runtime_class' => env('ONEQAY_RUNTIME_CLASS'),
 
     // Author by Lab | zefry
+    'governed_business_runtime' => [
+        'enabled' => filter_var(
+            env('ONEQAY_GOVERNED_BUSINESS_RUNTIME_ENABLED', false),
+            FILTER_VALIDATE_BOOL,
+        ),
+    ],
+
+    // Author by Lab | zefry
     'first_control_principal_credential_bootstrap' => [
         // Local/Test/CI console bootstrap is denied unless explicitly armed.
         'enabled' => filter_var(

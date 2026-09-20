@@ -1,0 +1,86 @@
+# Author by Lab | zefry
+name: Production Release Candidate Publication
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/web/**'
+      - 'release/production-manifest-v1.schema.json'
+      - 'tools/build-production-release.sh'
+      - 'tools/validate-production-release-manifest.php'
+      - 'ops/final-shift-close/PRODUCTION_RELEASE_DEPLOYMENT_GOVERNANCE_CONTRACT.json'
+      - '.github/workflows/production-release-candidate-publication.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: production-release-candidate-publication-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  publish:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWE=
+      APP_DEBUG: "false"
+      APP_URL: http://localhost
+      ONEQAY_RUNTIME_CLASS: ci
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+      LOG_CHANNEL: stderr
+      ONEQAY_BUILD_PROVENANCE: github-actions:${{ github.run_id }}:${{ github.run_attempt }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with: {fetch-depth: 0, ref: "${{ github.sha }}"}
+      - name: Preserve NO-GO
+        run: |
+          set -euo pipefail
+          test "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" = NOT_EXECUTED
+          test "$(jq -r '.production_activation' ops/final-shift-close/STATE.json)" = NOT_AUTHORIZED
+          test "$(jq -r '.updater_activation' ops/final-shift-close/STATE.json)" = INACTIVE
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        with: {php-version: '8.3', extensions: pdo_mysql, tools: composer:v2, coverage: none}
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with: {node-version: 24.19.0}
+      - name: Build dependencies
+        run: |
+          set -euo pipefail
+          composer validate --strict --no-check-publish
+          composer test
+          cd apps/web
+          composer validate --no-check-publish
+          composer install --no-interaction --no-progress --prefer-dist
+          npm ci --ignore-scripts --no-fund
+          npm run type-check
+          npm run build
+      - name: Build twice
+        id: prod
+        run: |
+          set -euo pipefail
+          bash tools/build-production-release.sh "$GITHUB_SHA"
+          id="production-${GITHUB_SHA:0:12}"
+          cp "dist/${id}.manifest.json" /tmp/manifest.json
+          cp "dist/${id}.tar.gz.sha256" /tmp/sha256
+          rm -rf dist
+          bash tools/build-production-release.sh "$GITHUB_SHA"
+          diff -u /tmp/manifest.json "dist/${id}.manifest.json"
+          diff -u /tmp/sha256 "dist/${id}.tar.gz.sha256"
+          echo "release_id=$id" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: oneqay-${{ steps.prod.outputs.release_id }}-operator-bundle
+          path: |
+            dist/${{ steps.prod.outputs.release_id }}.tar.gz
+            dist/${{ steps.prod.outputs.release_id }}.manifest.json
+            dist/${{ steps.prod.outputs.release_id }}.tar.gz.sha256
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 0
+      - name: Source clean
+        run: |
+          rm -rf dist
+          git diff --exit-code
+          test -z "$(git status --porcelain)"

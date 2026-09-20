@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oneqay.invalid/contracts/production-deployment-plan.schema.json",
+  "title": "oneQay Production Deployment Plan",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "plan_fingerprint",
+    "plan_state",
+    "artifact",
+    "staging_promotion_evidence",
+    "target",
+    "authority_binding",
+    "preflight",
+    "execution_order",
+    "readback_expectations",
+    "rollback",
+    "migration",
+    "traffic_activation",
+    "operational_boundary",
+    "attribution"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "plan_fingerprint": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "plan_state": {
+      "const": "QUALIFIED_FOR_PRODUCTION_DEPLOYMENT_NOT_EXECUTED_NOT_ACTIVATED"
+    },
+    "artifact": {
+      "type": "object"
+    },
+    "staging_promotion_evidence": {
+      "type": "object"
+    },
+    "target": {
+      "type": "object"
+    },
+    "authority_binding": {
+      "type": "object"
+    },
+    "preflight": {
+      "type": "object"
+    },
+    "execution_order": {
+      "type": "array",
+      "minItems": 8
+    },
+    "readback_expectations": {
+      "type": "object"
+    },
+    "rollback": {
+      "type": "object"
+    },
+    "migration": {
+      "type": "object"
+    },
+    "traffic_activation": {
+      "type": "object"
+    },
+    "operational_boundary": {
+      "type": "object"
+    },
+    "attribution": {
+      "const": "Lab | zefry"
+    }
+  }
+}

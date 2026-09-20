@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oneqay.invalid/contracts/production-deployment-authority-request.schema.json",
+  "title": "oneQay Production Deployment Authority Request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "request_state",
+    "request_id",
+    "requested_scope",
+    "release_id",
+    "source_commit",
+    "artifact_sha256",
+    "manifest_sha256",
+    "staging_evidence_sha256",
+    "environment_id",
+    "target_descriptor_sha256",
+    "required_authority",
+    "migration_execution_authorized",
+    "production_authorized",
+    "production_traffic_activation_authorized",
+    "target_selection_authorized",
+    "producer_dispatch_authorized",
+    "attribution"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "request_state": {
+      "const": "PRODUCTION_DEPLOYMENT_AUTHORITY_REQUEST_PENDING_APPROVAL"
+    },
+    "request_id": {
+      "type": "string",
+      "pattern": "^production-deployment-request-[0-9a-f]{24}$"
+    },
+    "requested_scope": {
+      "const": "DEPLOY_EXACT_PRODUCTION_ARTIFACT_TO_EXACT_PRODUCTION_TARGET_NOT_ACTIVATE_TRAFFIC"
+    },
+    "release_id": {
+      "type": "string",
+      "pattern": "^production-[0-9a-f]{12}$"
+    },
+    "source_commit": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "artifact_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "manifest_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "staging_evidence_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "environment_id": {
+      "type": "string"
+    },
+    "target_descriptor_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "required_authority": {
+      "type": "object",
+      "properties": {
+        "state": {
+          "const": "NOT_GRANTED"
+        },
+        "separate_operational_authority_required": {
+          "const": true
+        },
+        "approval_token_required": {
+          "const": true
+        },
+        "maximum_lifetime_seconds": {
+          "const": 900
+        }
+      },
+      "required": [
+        "state",
+        "separate_operational_authority_required",
+        "approval_token_required",
+        "maximum_lifetime_seconds"
+      ]
+    },
+    "migration_execution_authorized": {
+      "const": false
+    },
+    "production_authorized": {
+      "const": false
+    },
+    "production_traffic_activation_authorized": {
+      "const": false
+    },
+    "target_selection_authorized": {
+      "const": false
+    },
+    "producer_dispatch_authorized": {
+      "const": false
+    },
+    "attribution": {
+      "const": "Lab | zefry"
+    }
+  }
+}

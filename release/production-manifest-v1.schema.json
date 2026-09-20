@@ -1,0 +1,268 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oneqay.invalid/contracts/production-manifest-v1.schema.json",
+  "title": "oneQay Production Release Candidate Manifest v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "manifest_version",
+    "schema_id",
+    "product",
+    "release",
+    "source",
+    "build",
+    "artifact",
+    "runtime",
+    "migration",
+    "promotion_gate",
+    "operational_boundary",
+    "attribution"
+  ],
+  "properties": {
+    "manifest_version": {
+      "const": 1
+    },
+    "schema_id": {
+      "const": "oneqay.production-release-manifest.v1"
+    },
+    "product": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "const": "oneQay"
+        },
+        "repository": {
+          "const": "labzefry/oneQay"
+        }
+      },
+      "required": [
+        "name",
+        "repository"
+      ]
+    },
+    "release": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^production-[0-9a-f]{12}$"
+        },
+        "channel": {
+          "const": "PRODUCTION_CANDIDATE"
+        },
+        "environment": {
+          "const": "PRODUCTION"
+        },
+        "production": {
+          "const": true
+        },
+        "production_data_allowed": {
+          "const": true
+        }
+      },
+      "required": [
+        "id",
+        "channel",
+        "environment",
+        "production",
+        "production_data_allowed"
+      ]
+    },
+    "source": {
+      "type": "object",
+      "properties": {
+        "commit_sha": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "application_tree_sha": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        }
+      },
+      "required": [
+        "commit_sha",
+        "application_tree_sha"
+      ]
+    },
+    "build": {
+      "type": "object",
+      "properties": {
+        "provider": {
+          "const": "GITHUB_ACTIONS_OR_EQUIVALENT_TRUSTED_CI"
+        },
+        "source_date_epoch": {
+          "type": "integer"
+        },
+        "provenance_reference": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "provider",
+        "source_date_epoch",
+        "provenance_reference"
+      ]
+    },
+    "artifact": {
+      "type": "object",
+      "properties": {
+        "filename": {
+          "type": "string",
+          "pattern": "^production-[0-9a-f]{12}\\.tar\\.gz$"
+        },
+        "format": {
+          "const": "tar.gz"
+        },
+        "media_type": {
+          "const": "application/gzip"
+        },
+        "size_bytes": {
+          "type": "integer"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "filename",
+        "format",
+        "media_type",
+        "size_bytes",
+        "sha256"
+      ]
+    },
+    "runtime": {
+      "type": "object",
+      "properties": {
+        "required_runtime_class": {
+          "const": "production"
+        },
+        "governed_business_runtime_default_enabled": {
+          "const": false
+        },
+        "php_constraint": {
+          "const": "^8.2"
+        },
+        "build_php": {
+          "const": "8.3"
+        },
+        "build_node": {
+          "const": "24.19.0"
+        },
+        "runtime_build_tools_required": {
+          "const": false
+        }
+      },
+      "required": [
+        "required_runtime_class",
+        "governed_business_runtime_default_enabled",
+        "php_constraint",
+        "build_php",
+        "build_node",
+        "runtime_build_tools_required"
+      ]
+    },
+    "migration": {
+      "type": "object",
+      "properties": {
+        "source_included": {
+          "const": true
+        },
+        "expected_count": {
+          "const": 27
+        },
+        "latest_migration": {
+          "const": "0000_00_00_000027_create_pos_shift_close_evidence_foundation.php"
+        },
+        "execution_state": {
+          "const": "NOT_PERFORMED_BY_ARTIFACT_BUILD"
+        },
+        "execution_authorized": {
+          "const": false
+        }
+      },
+      "required": [
+        "source_included",
+        "expected_count",
+        "latest_migration",
+        "execution_state",
+        "execution_authorized"
+      ]
+    },
+    "promotion_gate": {
+      "type": "object",
+      "properties": {
+        "verified_durable_staging_evidence_required": {
+          "const": true
+        },
+        "same_source_commit_required": {
+          "const": true
+        },
+        "production_traffic_activation_authorized": {
+          "const": false
+        }
+      },
+      "required": [
+        "verified_durable_staging_evidence_required",
+        "same_source_commit_required",
+        "production_traffic_activation_authorized"
+      ]
+    },
+    "operational_boundary": {
+      "type": "object",
+      "properties": {
+        "environment_deployment": {
+          "const": "NOT_PERFORMED"
+        },
+        "migration27_execution": {
+          "const": "NOT_PERFORMED"
+        },
+        "permission_provisioning": {
+          "const": "NONE"
+        },
+        "feature_activation": {
+          "const": "INACTIVE"
+        },
+        "deployment_authority": {
+          "const": "NOT_GRANTED"
+        },
+        "technical_preview_activation": {
+          "const": "NOT_AUTHORIZED"
+        },
+        "production_activation": {
+          "const": "NOT_AUTHORIZED"
+        },
+        "updater_activation": {
+          "const": "INACTIVE"
+        },
+        "target_selection": {
+          "const": "NOT_PERFORMED"
+        },
+        "selected_target": {
+          "type": "null"
+        },
+        "producer_dispatch": {
+          "const": "NOT_PERFORMED"
+        }
+      },
+      "required": [
+        "environment_deployment",
+        "migration27_execution",
+        "permission_provisioning",
+        "feature_activation",
+        "deployment_authority",
+        "technical_preview_activation",
+        "production_activation",
+        "updater_activation",
+        "target_selection",
+        "selected_target",
+        "producer_dispatch"
+      ]
+    },
+    "attribution": {
+      "const": "Lab | zefry"
+    }
+  }
+}

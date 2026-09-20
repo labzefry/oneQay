@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oneqay.invalid/contracts/production-deployment-evidence.schema.json",
+  "title": "oneQay Production Deployment Evidence",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "evidence_state",
+    "environment_id",
+    "runtime_class",
+    "release_id",
+    "source_commit",
+    "artifact_sha256",
+    "deployment_plan_fingerprint",
+    "verification",
+    "runtime_readback",
+    "operational_boundary",
+    "secrets_embedded",
+    "attribution"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "evidence_state": {
+      "const": "PRODUCTION_DEPLOYED_VERIFIED_NOT_ACTIVATED"
+    },
+    "environment_id": {
+      "type": "string"
+    },
+    "runtime_class": {
+      "const": "production"
+    },
+    "release_id": {
+      "type": "string"
+    },
+    "source_commit": {
+      "type": "string"
+    },
+    "artifact_sha256": {
+      "type": "string"
+    },
+    "deployment_plan_fingerprint": {
+      "type": "string"
+    },
+    "verification": {
+      "type": "object"
+    },
+    "runtime_readback": {
+      "type": "object"
+    },
+    "operational_boundary": {
+      "type": "object"
+    },
+    "secrets_embedded": {
+      "const": false
+    },
+    "attribution": {
+      "const": "Lab | zefry"
+    }
+  }
+}
