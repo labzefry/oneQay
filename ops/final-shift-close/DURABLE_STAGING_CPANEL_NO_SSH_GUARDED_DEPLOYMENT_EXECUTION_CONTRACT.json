@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "feature": "durable-staging-cpanel-no-ssh-guarded-deployment-execution",
+  "contract_state": "SOURCE_READY_AUTHORITY_BOUND_CPANEL_NO_SSH_EXECUTOR_NOT_EXECUTED",
+  "purpose": "EXECUTE_AN_EXACT_SPRINT207_DURABLE_STAGING_PLAN_ON_A_QUALIFIED_CPANEL_NO_SSH_TARGET_VIA_PHP_CLI_WITH_ATOMIC_ACTIVATION_HTTPS_READINESS_ROLLBACK_REHEARSAL_AND_SPRINT209_EVIDENCE",
+  "executor_path": "tools/cpanel/execute-durable-staging-cpanel-no-ssh-deployment.php",
+  "predecessor_contracts": [
+    "ops/final-shift-close/DURABLE_STAGING_CPANEL_NO_SSH_TARGET_QUALIFICATION_CONTRACT.json",
+    "ops/final-shift-close/DURABLE_STAGING_DEPLOYMENT_AUTHORITY_BINDING_CONTRACT.json",
+    "ops/final-shift-close/DURABLE_STAGING_OPERATOR_DEPLOYMENT_PLAN_CONTRACT.json",
+    "ops/final-shift-close/DURABLE_STAGING_DEPLOYMENT_EVIDENCE_BINDING_CONTRACT.json"
+  ],
+  "execution_channel": "CPANEL_CRON_PHP_CLI_NO_SSH",
+  "execution_requirements": {
+    "exact_plan_fingerprint_revalidated": true,
+    "authority_must_be_current_at_execution": true,
+    "exact_archive_sha256_revalidated": true,
+    "archive_uploaded_to_private_workspace_before_execution": true,
+    "archive_extracted_only_after_authority_validation": true,
+    "immutable_release_directory_required": true,
+    "private_runtime_env_file_required": true,
+    "private_runtime_env_must_reside_under_shared_runtime_root": true,
+    "private_runtime_env_permissions": "0600",
+    "runtime_env_bound_by_symlink": true,
+    "active_release_pointer_semantics": "SYMLINK_TO_IMMUTABLE_RELEASE_DIRECTORY",
+    "atomic_active_pointer_replacement_required": true,
+    "https_readiness_required": true,
+    "bearer_token_read_from_private_bindings_only": true,
+    "readiness_secret_never_emitted": true,
+    "rollback_rehearsal_required": true,
+    "post_rollback_reactivation_required": true,
+    "post_reactivation_readiness_required": true,
+    "sprint209_evidence_written_only_after_all_checks_pass": true
+  },
+  "initial_deployment_policy": {
+    "active_pointer_may_be_absent_before_first_deployment": true,
+    "previous_active_state": "ABSENT",
+    "rollback_rehearsal": "REMOVE_NEW_POINTER_VERIFY_ABSENT_THEN_REACTIVATE_NEW_RELEASE",
+    "previous_active_release_preserved_evidence_semantics": "PREVIOUS_ACTIVE_STATE_PRESERVED_AND_RESTORABLE"
+  },
+  "rolling_deployment_policy": {
+    "existing_active_pointer_must_be_symlink": true,
+    "existing_target_must_be_inside_release_root": true,
+    "existing_target_must_differ_from_new_release": true,
+    "rollback_rehearsal": "ATOMically_RESTORE_PREVIOUS_SYMLINK_VERIFY_THEN_REACTIVATE_NEW_RELEASE"
+  },
+  "safety": {
+    "public_web_executor": false,
+    "shell_exec_required": false,
+    "ssh_required": false,
+    "remote_archive_download": false,
+    "migration_execution": false,
+    "database_schema_mutation": false,
+    "permission_provisioning": false,
+    "target_selection": false,
+    "producer_dispatch": false,
+    "technical_preview_activation": false,
+    "production_activation": false,
+    "updater_activation": false,
+    "failure_after_pointer_mutation_restores_previous_active_state": true,
+    "inactive_failed_release_may_remain_for_forensic_cleanup": true
+  },
+  "evidence": {
+    "schema": "tools/deployment/durable-staging-deployment-evidence.schema.json",
+    "state": "DEPLOYED_VERIFIED_NOT_SELECTED",
+    "qualifier": "tools/qualify-durable-staging-deployment-evidence.php",
+    "secrets_embedded": false
+  },
+  "canonical_boundaries": {
+    "source_delivery": "PERFORMED_BY_ENGINEERING_ONLY",
+    "real_environment_execution": "NOT_PERFORMED",
+    "migration27_execution": "NOT_PERFORMED",
+    "permission_provisioning": "NONE",
+    "feature_activation": "INACTIVE",
+    "technical_preview_activation": "NOT_AUTHORIZED",
+    "production_activation": "NOT_AUTHORIZED",
+    "updater_activation": "INACTIVE",
+    "durable_target_selection": "BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET",
+    "selected_target": null,
+    "producer_dispatch": "NOT_PERFORMED"
+  },
+  "attribution": "Lab | zefry"
+}

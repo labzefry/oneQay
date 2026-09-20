@@ -20,6 +20,7 @@ on:
       - 'tools/prepare-durable-staging-operator-deployment-plan.php'
       - 'tools/qualify-durable-staging-deployment-evidence.php'
       - 'ops/final-shift-close/DURABLE_STAGING_CPANEL_NO_SSH_TARGET_QUALIFICATION_CONTRACT.json'
+      - 'ops/final-shift-close/DURABLE_STAGING_CPANEL_NO_SSH_GUARDED_DEPLOYMENT_EXECUTION_CONTRACT.json'
       - 'ops/final-shift-close/DURABLE_STAGING_CPANEL_NO_SSH_OPERATOR_KIT_PUBLICATION_CONTRACT.json'
   workflow_dispatch:
 
@@ -126,6 +127,7 @@ jobs:
           grep -Fq "${kit_id}/tools/prepare-durable-staging-deployment-authority-request.php" /tmp/oneqay-cpanel-kit-list.txt
           grep -Fq "${kit_id}/tools/prepare-durable-staging-operator-deployment-plan.php" /tmp/oneqay-cpanel-kit-list.txt
           grep -Fq "${kit_id}/tools/qualify-durable-staging-deployment-evidence.php" /tmp/oneqay-cpanel-kit-list.txt
+          grep -Fq "${kit_id}/tools/cpanel/execute-durable-staging-cpanel-no-ssh-deployment.php" /tmp/oneqay-cpanel-kit-list.txt
           ! grep -Fq "/apps/web/" /tmp/oneqay-cpanel-kit-list.txt
           ! grep -E '(^|/)(\.env|id_rsa|id_ed25519)(/|$)|\.(pem|key|p12|pfx)$' /tmp/oneqay-cpanel-kit-list.txt
           test "$(jq -r '.secret_values_embedded' "dist/${kit_id}.manifest.json")" = false

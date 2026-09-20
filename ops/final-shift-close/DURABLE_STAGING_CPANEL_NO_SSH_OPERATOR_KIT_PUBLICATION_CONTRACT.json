@@ -37,7 +37,9 @@
     "non_secret_private_bindings_template": true,
     "operator_readme": true,
     "kit_manifest": true,
-    "sha256_sidecar": true
+    "sha256_sidecar": true,
+    "cpanel_guarded_deployment_executor": true,
+    "cpanel_guarded_deployment_execution_contract": true
   },
   "publication_requirements": {
     "main_branch_only": true,
@@ -58,7 +60,9 @@
     "approval_token_must_not_be_stored_in_repository_or_kit": true,
     "approval_token_private_file_pipe_to_stdin_allowed": true,
     "approval_token_private_file_must_be_deleted_after_use": true,
-    "deployment_remains_external_operator_action": true
+    "deployment_remains_external_operator_action": true,
+    "deployment_requires_guarded_sprint214_executor": true,
+    "real_execution_still_requires_current_sprint208_authority": true
   },
   "authority_boundary": {
     "kit_is_not_deployment_authority": true,
