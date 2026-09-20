@@ -91,7 +91,29 @@ try {
 
     $service = new GovernedDevelopmentUpdateRequest();
 
-    $created = $service->create($operatorToken, $totp($secret, $now), $now);
+    $candidate = $service->storeCandidate([
+        'release_id' => 'durable-staging-'.str_repeat('c', 12),
+        'source_commit' => str_repeat('c', 40),
+        'current_source_commit' => str_repeat('a', 40),
+        'github_run_id' => 123456,
+        'github_artifact_id' => 654321,
+        'github_outer_sha256' => str_repeat('d', 64),
+    ], $now);
+    $assert(($candidate['candidate_state'] ?? null) === 'AVAILABLE', 'CAND-001 update candidate available');
+    $assert(($candidate['expires_at_unix'] - $candidate['discovered_at_unix']) === 3600, 'CAND-002 discovery TTL exact');
+    $assert(preg_match('/\A[0-9a-f]{64}\z/', (string) ($candidate['candidate_fingerprint'] ?? '')) === 1, 'CAND-003 fingerprint exact');
+
+    $candidateRaw = (string) file_get_contents($temp.'/candidate.json');
+    foreach ([$operatorToken, $secret, $totp($secret, $now)] as $forbidden) {
+        $assert(! str_contains($candidateRaw, $forbidden), 'CAND-004 candidate contains no operator secret material');
+    }
+
+    $created = $service->create(
+        $operatorToken,
+        $totp($secret, $now),
+        $candidate['candidate_fingerprint'],
+        $now,
+    );
     $assert(($created['state'] ?? null) === 'PENDING', 'REQ-001 request accepted');
     $assert(($created['production_allowed'] ?? true) === false, 'REQ-002 production denied');
     $assert(($created['migration_execution_allowed'] ?? true) === false, 'REQ-003 migration denied');
@@ -105,12 +127,23 @@ try {
     $assert(($required['repository'] ?? null) === 'labzefry/oneQay', 'REQ-005 repository fixed');
     $assert(($required['workflow'] ?? null) === 'durable-staging-release-publication.yml', 'REQ-006 workflow fixed');
     $assert(($required['expires_at_unix'] - $required['requested_at_unix']) === 900, 'REQ-007 request TTL exact');
+    $assert(($required['scope'] ?? null) === 'INSTALL_EXACT_GOVERNED_DURABLE_STAGING_RELEASE', 'REQ-008 exact scope');
+    $assert(($required['candidate_fingerprint'] ?? null) === $candidate['candidate_fingerprint'], 'REQ-009 fingerprint bound');
+    $assert(($required['candidate_source_commit'] ?? null) === str_repeat('c', 40), 'REQ-010 source bound');
+    $assert(($required['github_artifact_id'] ?? null) === 654321, 'REQ-011 artifact bound');
 
     try {
-        $service->create('wrong-token', $totp($secret, $now), $now);
+        $service->create('wrong-token', $totp($secret, $now), $candidate['candidate_fingerprint'], $now);
         $assert(false, 'REQ-NEG-001 wrong token must fail');
     } catch (DevelopmentUpdaterViolation $expected) {
         $assert($expected->safeCode() === 'operator_authorization_denied', 'REQ-NEG-001 safe code');
+    }
+
+    try {
+        $service->create($operatorToken, $totp($secret, $now), str_repeat('f', 64), $now);
+        $assert(false, 'REQ-NEG-002 wrong candidate fingerprint must fail');
+    } catch (DevelopmentUpdaterViolation $expected) {
+        $assert(in_array($expected->safeCode(), ['candidate_fingerprint_mismatch', 'request_already_pending'], true), 'REQ-NEG-002 exact candidate binding');
     }
 
     $tampered = json_decode($raw, true, 64, JSON_THROW_ON_ERROR);
@@ -124,9 +157,9 @@ try {
 
     try {
         $service->requireCurrentPending($now + 1);
-        $assert(false, 'REQ-NEG-002 tamper must fail');
+        $assert(false, 'REQ-NEG-003 tamper must fail');
     } catch (DevelopmentUpdaterViolation $expected) {
-        $assert($expected->safeCode() === 'request_signature_invalid', 'REQ-NEG-002 signature fail closed');
+        $assert($expected->safeCode() === 'request_signature_invalid', 'REQ-NEG-003 signature fail closed');
     }
 
     $processor = (string) file_get_contents(__DIR__.'/../app/Infrastructure/SystemUpdate/Development/GovernedDevelopmentUpdateProcessor.php');
@@ -134,6 +167,9 @@ try {
         'https://api.github.com/repos/labzefry/oneQay/',
         'durable-staging-release-publication.yml',
         'candidate_not_forward_from_running_source',
+        'authorized_candidate_drift',
+        'trustedPublicationRunById',
+        'candidate_fingerprint',
         'migration_execution_allowed',
         'rollback_path_verified',
         'DEPLOYED_VERIFIED_NOT_SELECTED',
