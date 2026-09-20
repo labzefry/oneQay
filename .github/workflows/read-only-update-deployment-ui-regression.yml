@@ -195,12 +195,14 @@ jobs:
           grep -Fq 'data-page=' /tmp/oneqay-update-ui.html
           ! grep -Eiq 'password|totp_secret|session_token|public_html|\.env' /tmp/oneqay-update-ui.html
 
-      - name: Prove UI source exposes no mutation request
+      - name: Prove generic updater mutation remains locked
         shell: bash
         run: |
           set -euo pipefail
           ui=apps/web/resources/js/pages/System/UpdateDeployment.vue
-          ! grep -n -E 'useForm\(|axios|fetch\(|@click|<form|\.post\(|\.put\(|\.patch\(|\.delete\(|/system/update/(check|install)' "$ui"
+          ! grep -n -E 'axios|fetch\(|@click|\.put\(|\.patch\(|\.delete\(|/system/update/(check|install)' "$ui"
+          grep -Fq "/system/update/development/request" "$ui"
+          grep -Fq "SYNC_GOVERNED_DEVELOPMENT_RELEASE" "$ui"
           test "$(grep -c 'disabled' "$ui")" -ge 2
 
       - name: Confirm tracked source remains unchanged
