@@ -55,12 +55,24 @@ type DevelopmentUpdaterResult = {
   safe_code: string | null
 }
 
+type DevelopmentUpdaterCandidate = {
+  state: 'AVAILABLE' | 'CURRENT'
+  release_id: string
+  source_commit: string
+  github_outer_sha256: string
+  fingerprint: string
+  discovered_at_unix: number
+  expires_at_unix: number
+  update_available: boolean
+}
+
 type DevelopmentUpdaterStatus = {
   enabled: boolean
   mode: 'GOVERNED_DEVELOPMENT_STAGING_ONLY'
   request_pending: boolean
   request_id: string | null
   request_expires_at_unix: number | null
+  candidate: DevelopmentUpdaterCandidate | null
   last_result: DevelopmentUpdaterResult | null
   production_allowed: false
   migration_execution_allowed: false
@@ -104,19 +116,27 @@ const developmentConfirmation = ref(false)
 const developmentUpdateForm = useForm({
   operator_token: '',
   totp_code: '',
+  candidate_fingerprint: '',
   confirmation: '',
 })
 
 const submitDevelopmentUpdate = (): void => {
-  if (!developmentConfirmation.value || developmentUpdateForm.processing || props.development_updater.request_pending) {
+  const candidate = props.development_updater.candidate
+  if (
+    !developmentConfirmation.value
+    || developmentUpdateForm.processing
+    || props.development_updater.request_pending
+    || !candidate?.update_available
+  ) {
     return
   }
 
-  developmentUpdateForm.confirmation = 'SYNC_GOVERNED_DEVELOPMENT_RELEASE'
+  developmentUpdateForm.candidate_fingerprint = candidate.fingerprint
+  developmentUpdateForm.confirmation = 'INSTALL_EXACT_GOVERNED_DEVELOPMENT_RELEASE'
   developmentUpdateForm.post('/system/update/development/request', {
     preserveScroll: true,
     onFinish: () => {
-      developmentUpdateForm.reset('operator_token', 'totp_code', 'confirmation')
+      developmentUpdateForm.reset('operator_token', 'totp_code', 'candidate_fingerprint', 'confirmation')
       developmentConfirmation.value = false
     },
   })
@@ -331,6 +351,22 @@ const submitDevelopmentUpdate = (): void => {
           <div><span>Worker</span><strong>cPanel Cron / PHP CLI</strong></div>
         </div>
 
+        <div class="development-result">
+          <span>Discovered exact candidate</span>
+          <template v-if="development_updater.candidate">
+            <strong>{{ development_updater.candidate.release_id }}</strong>
+            <small>
+              source {{ compactCommit(development_updater.candidate.source_commit) }}
+              · fingerprint {{ development_updater.candidate.fingerprint.slice(0, 16) }}…
+              · {{ development_updater.candidate.update_available ? 'UPDATE AVAILABLE' : 'CURRENT' }}
+            </small>
+          </template>
+          <template v-else>
+            <strong>NOT DISCOVERED</strong>
+            <small>cPanel Cron must run <code>php artisan oneqay:update:discover-development</code> first.</small>
+          </template>
+        </div>
+
         <div v-if="development_update_feedback" class="notice" :data-state="development_update_feedback.state">
           <strong>{{ development_update_feedback.state }}</strong>
           <p>{{ development_update_feedback.message }}</p>
@@ -356,7 +392,7 @@ const submitDevelopmentUpdate = (): void => {
               maxlength="1024"
               required
               autocomplete="current-password"
-              :disabled="development_updater.request_pending || developmentUpdateForm.processing"
+              :disabled="development_updater.request_pending || developmentUpdateForm.processing || !development_updater.candidate?.update_available"
             >
           </label>
 
@@ -371,7 +407,7 @@ const submitDevelopmentUpdate = (): void => {
               maxlength="6"
               required
               autocomplete="one-time-code"
-              :disabled="development_updater.request_pending || developmentUpdateForm.processing"
+              :disabled="development_updater.request_pending || developmentUpdateForm.processing || !development_updater.candidate?.update_available"
             >
           </label>
 
@@ -379,27 +415,28 @@ const submitDevelopmentUpdate = (): void => {
             <input
               v-model="developmentConfirmation"
               type="checkbox"
-              :disabled="development_updater.request_pending || developmentUpdateForm.processing"
+              :disabled="development_updater.request_pending || developmentUpdateForm.processing || !development_updater.candidate?.update_available"
             >
-            <span>Saya mengotorisasi sinkronisasi artifact STAGING resmi terbaru. Production dan migration tetap tidak diizinkan.</span>
+            <span>Saya mengotorisasi exact release/fingerprint yang ditampilkan di atas. Production dan migration tetap tidak diizinkan.</span>
           </label>
 
           <button
             type="submit"
             class="development-submit"
-            :disabled="!developmentConfirmation || development_updater.request_pending || developmentUpdateForm.processing"
+            :disabled="!developmentConfirmation || !development_updater.candidate?.update_available || development_updater.request_pending || developmentUpdateForm.processing"
           >
-            {{ development_updater.request_pending ? 'Update request pending' : (developmentUpdateForm.processing ? 'Submitting…' : 'Sync governed update') }}
+            {{ development_updater.request_pending ? 'Update request pending' : (developmentUpdateForm.processing ? 'Submitting…' : 'Install exact governed candidate') }}
           </button>
         </form>
 
         <aside class="wizard-boundary">
           <strong>Browser tidak mengeksekusi deployment.</strong>
           <p>
-            Tombol hanya membuat signed short-lived request. Worker
-            <code>php artisan oneqay:update:process-development</code> yang berjalan melalui private cPanel Cron
-            mengambil artifact GitHub, melakukan integrity checks, switch atomik, runtime attestation,
-            rollback rehearsal, dan menulis staging evidence yang dapat dipakai untuk same-source Production promotion.
+            Cron discovery <code>php artisan oneqay:update:discover-development</code> hanya membaca trusted GitHub publication
+            dan materialize exact candidate. Tombol kemudian membuat signed short-lived authority yang terikat ke fingerprint itu.
+            Worker <code>php artisan oneqay:update:process-development</code> hanya boleh mengambil artifact/run/source yang sama,
+            melakukan integrity checks, switch atomik, runtime attestation, rollback rehearsal, dan menulis staging evidence
+            yang dapat dipakai untuk same-source Production promotion.
           </p>
         </aside>
       </section>
