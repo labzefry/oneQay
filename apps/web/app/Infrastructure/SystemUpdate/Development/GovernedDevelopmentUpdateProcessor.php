@@ -291,6 +291,15 @@ final class GovernedDevelopmentUpdateProcessor
 
             $this->atomicWriteBytes($runtimeEnv, $previousEnv, 0600);
             $this->atomicPoint($activePointer, $previousRelease);
+            if ($mode === 'FIXED_PUBLIC_BRIDGE') {
+                if (! is_string($buildBackup) || ! is_dir($buildBackup)) {
+                    throw new DevelopmentUpdaterViolation('fixed_public_bridge_rollback_backup_missing');
+                }
+                $this->restoreFixedPublicBuild($documentRoot, $buildBackup);
+                $buildBackup = null;
+                $buildMutated = false;
+            }
+
             $previousIdentity = $this->releaseIdentity($previousRelease);
             $previousAttestation = $attestationFetcher($attestationUrl, $attestationToken);
             $this->assertAttestation(
@@ -300,8 +309,17 @@ final class GovernedDevelopmentUpdateProcessor
                 (string) config('oneqay.development_updater.environment_id', ''),
             );
 
-            // Rollback rehearsal does not extend authority; exact authority must still be current.
+            // Rollback rehearsal does not extend authority; exact authority must still be current
+            // before candidate presentation/runtime is installed again.
             $this->requests->requireCurrentPending(time());
+            if ($mode === 'FIXED_PUBLIC_BRIDGE') {
+                $buildBackup = $this->prepareFixedPublicBuild(
+                    $documentRoot,
+                    $candidateDirectory.'/apps/web/public/build',
+                    $request['request_id'],
+                );
+                $buildMutated = true;
+            }
             $this->atomicWriteBytes($runtimeEnv, $candidateEnv, 0600);
             $this->atomicPoint($activePointer, $candidateDirectory);
             $second = $attestationFetcher($attestationUrl, $attestationToken);
