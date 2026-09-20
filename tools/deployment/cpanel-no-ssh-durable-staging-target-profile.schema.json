@@ -81,6 +81,7 @@
         "active_pointer_parent_writable",
         "atomic_rename_supported",
         "symlink_supported",
+        "hardlink_supported",
         "document_root_shape_valid",
         "document_root_mode"
       ],
@@ -121,7 +122,7 @@
           "const": true
         },
         "symlink_supported": {
-          "const": true
+          "type": "boolean"
         },
         "document_root_shape_valid": {
           "const": true
@@ -132,8 +133,56 @@
             "ACTIVE_RELEASE_PUBLIC",
             "FIXED_PUBLIC_BRIDGE"
           ]
+        },
+        "hardlink_supported": {
+          "type": "boolean"
         }
-      }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "document_root_mode": {
+                "const": "ACTIVE_RELEASE_PUBLIC"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "symlink_supported": {
+                "const": true
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "document_root_mode": {
+                "const": "FIXED_PUBLIC_BRIDGE"
+              }
+            }
+          },
+          "then": {
+            "anyOf": [
+              {
+                "properties": {
+                  "symlink_supported": {
+                    "const": true
+                  }
+                }
+              },
+              {
+                "properties": {
+                  "hardlink_supported": {
+                    "const": true
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ]
     },
     "runtime": {
       "type": "object",
