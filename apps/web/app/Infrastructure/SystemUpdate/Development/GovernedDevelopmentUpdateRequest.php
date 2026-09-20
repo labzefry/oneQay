@@ -135,6 +135,28 @@ final class GovernedDevelopmentUpdateRequest
         }
 
         $requestId = 'durable-staging-deployment-request-'.substr(bin2hex(random_bytes(16)), 0, 24);
+        $authorityId = 'durable-staging-deployment-authority-'.substr(bin2hex(random_bytes(16)), 0, 24);
+        $authority = [
+            'schema_version' => 1,
+            'authority_state' => 'EXTERNAL_DURABLE_STAGING_DEPLOYMENT_AUTHORITY_QUALIFIED_NOT_EXECUTED',
+            'authority_id' => $authorityId,
+            'request_id' => $requestId,
+            'candidate_fingerprint' => $candidate['candidate_fingerprint'],
+            'release_id' => $candidate['release_id'],
+            'source_commit' => $candidate['source_commit'],
+            'github_run_id' => $candidate['github_run_id'],
+            'github_artifact_id' => $candidate['github_artifact_id'],
+            'github_outer_sha256' => $candidate['github_outer_sha256'],
+            'authorized_at_unix' => $nowUnix,
+            'expires_at_unix' => $nowUnix + self::REQUEST_TTL_SECONDS,
+            'deployment_allowed' => true,
+            'production_allowed' => false,
+            'migration_execution_allowed' => false,
+            'production_traffic_activation_allowed' => false,
+            'attribution' => 'Lab | zefry',
+        ];
+        $authoritySha256 = hash('sha256', $this->canonicalJson($authority));
+
         $request = [
             'schema_version' => 1,
             'request_state' => 'PENDING',
@@ -150,6 +172,8 @@ final class GovernedDevelopmentUpdateRequest
             'github_run_id' => $candidate['github_run_id'],
             'github_artifact_id' => $candidate['github_artifact_id'],
             'github_outer_sha256' => $candidate['github_outer_sha256'],
+            'deployment_authority_id' => $authorityId,
+            'deployment_authority_sha256' => $authoritySha256,
             'repository' => 'labzefry/oneQay',
             'workflow' => 'durable-staging-release-publication.yml',
             'production_allowed' => false,
@@ -158,11 +182,14 @@ final class GovernedDevelopmentUpdateRequest
         ];
         $request['signature'] = hash_hmac('sha256', $this->canonicalJson($request), $hmacKey);
 
+        $this->atomicWriteJson($this->authorityPath($requestId), $authority);
         $this->atomicWriteJson($this->pendingPath(), $request);
 
         return [
             'state' => 'PENDING',
             'request_id' => $requestId,
+            'deployment_authority_id' => $authorityId,
+            'deployment_authority_sha256' => $authoritySha256,
             'expires_at_unix' => $request['expires_at_unix'],
             'production_allowed' => false,
             'migration_execution_allowed' => false,
@@ -225,8 +252,36 @@ final class GovernedDevelopmentUpdateRequest
             || ! is_int($request['github_artifact_id'] ?? null)
             || ($request['github_artifact_id'] ?? 0) <= 0
             || preg_match('/\A[0-9a-f]{64}\z/', (string) ($request['github_outer_sha256'] ?? '')) !== 1
+            || preg_match('/\Adurable-staging-deployment-authority-[0-9a-f]{24}\z/', (string) ($request['deployment_authority_id'] ?? '')) !== 1
+            || preg_match('/\A[0-9a-f]{64}\z/', (string) ($request['deployment_authority_sha256'] ?? '')) !== 1
             || $request['candidate_release_id'] !== 'durable-staging-'.substr($request['candidate_source_commit'], 0, 12)) {
             throw new DevelopmentUpdaterViolation('request_candidate_binding_invalid');
+        }
+
+        $authority = $this->readJsonIfPresent($this->authorityPath($requestId));
+        if (! is_array($authority)
+            || ($authority['schema_version'] ?? null) !== 1
+            || ($authority['authority_state'] ?? null) !== 'EXTERNAL_DURABLE_STAGING_DEPLOYMENT_AUTHORITY_QUALIFIED_NOT_EXECUTED'
+            || ($authority['authority_id'] ?? null) !== $request['deployment_authority_id']
+            || ($authority['request_id'] ?? null) !== $requestId
+            || ($authority['candidate_fingerprint'] ?? null) !== $request['candidate_fingerprint']
+            || ($authority['release_id'] ?? null) !== $request['candidate_release_id']
+            || ($authority['source_commit'] ?? null) !== $request['candidate_source_commit']
+            || ($authority['github_run_id'] ?? null) !== $request['github_run_id']
+            || ($authority['github_artifact_id'] ?? null) !== $request['github_artifact_id']
+            || ($authority['github_outer_sha256'] ?? null) !== $request['github_outer_sha256']
+            || ($authority['authorized_at_unix'] ?? null) !== $requestedAt
+            || ($authority['expires_at_unix'] ?? null) !== $expiresAt
+            || ($authority['deployment_allowed'] ?? null) !== true
+            || ($authority['production_allowed'] ?? null) !== false
+            || ($authority['migration_execution_allowed'] ?? null) !== false
+            || ($authority['production_traffic_activation_allowed'] ?? null) !== false
+            || ($authority['attribution'] ?? null) !== 'Lab | zefry'
+            || ! hash_equals(
+                (string) $request['deployment_authority_sha256'],
+                hash('sha256', $this->canonicalJson($authority)),
+            )) {
+            throw new DevelopmentUpdaterViolation('deployment_authority_binding_invalid');
         }
 
         $runningSource = strtolower(trim((string) config('oneqay.development_updater.running_source_commit', '')));
@@ -387,6 +442,15 @@ final class GovernedDevelopmentUpdateRequest
     private function candidatePath(): string
     {
         return $this->privateRoot().'/candidate.json';
+    }
+
+    private function authorityPath(string $requestId): string
+    {
+        if (preg_match('/\Adurable-staging-deployment-request-[0-9a-f]{24}\z/', $requestId) !== 1) {
+            throw new DevelopmentUpdaterViolation('authority_request_id_invalid');
+        }
+
+        return $this->privateRoot().'/requests/'.$requestId.'.authority.json';
     }
 
     private function lastResultPath(): string
