@@ -1,5 +1,24 @@
 # oneQay Deployment Handbook
 
+## Durable-staging operator artifact publication — Sprint211
+
+Sprint211 materializes the missing operator-retrieval capability discovered after Sprint210. Sprint205 already proved that the durable-staging archive is deterministic and Sprint206 already validates a secret-free deployment handoff, but the durable archive was removed after regression and never persisted as an Actions artifact.
+
+The new publication workflow:
+
+- runs only from canonical `main`;
+- rebuilds the exact durable-staging artifact for the triggering source SHA;
+- verifies Sprint205 reproducibility before publication;
+- validates the exact durable-staging manifest;
+- produces the existing Sprint206 secret-free deployment handoff;
+- publishes archive, manifest, SHA-256 sidecar, and handoff together as one GitHub Actions artifact;
+- retains the operator bundle for 30 days;
+- embeds no environment secrets and performs no deployment mutation.
+
+Publication is **not** deployment authority. It does not create a target, execute migration #27, provision permissions, mutate runtime configuration, select a target, dispatch the protected producer, or activate Final Shift Close / Technical Preview / Production / updater.
+
+Issue #856 remains the consolidated operational handoff. Once a published durable bundle and a real target both exist, the operator can proceed through Sprint208 authority request/qualification and Sprint207 plan execution without reconstructing release bytes manually.
+
 ## Durable-staging deployment evidence provenance continuity — Sprint210
 
 Sprint210 closes the remaining source-side continuity gap after Sprint209. The protected attestation producer already required exact deployment execution evidence before contacting the runtime, but those deployment bindings were not carried into the trusted provenance envelope consumed by Sprint112/Sprint114 ingestion.

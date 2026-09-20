@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "feature": "durable-staging-operator-artifact-publication",
+  "contract_state": "PUBLISHES_SECRET_FREE_OPERATOR_RETRIEVABLE_ARTIFACT_NOT_DEPLOYED",
+  "purpose": "MATERIALIZE_REPRODUCIBLE_DURABLE_STAGING_ARTIFACT_AND_SECRET_FREE_DEPLOYMENT_HANDOFF_FOR_OPERATOR_RETRIEVAL_WITHOUT_RUNTIME_MUTATION",
+  "publication_workflow_path": ".github/workflows/durable-staging-release-publication.yml",
+  "predecessor_contracts": [
+    "ops/final-shift-close/DURABLE_STAGING_RELEASE_ARTIFACT_CONTRACT.json",
+    "ops/final-shift-close/DURABLE_STAGING_DEPLOYMENT_HANDOFF_CONTRACT.json"
+  ],
+  "trigger_policy": {
+    "main_branch_only": true,
+    "push_main_supported": true,
+    "workflow_dispatch_supported": true,
+    "non_main_publication_forbidden": true
+  },
+  "bundle_contents": {
+    "durable_staging_archive": true,
+    "durable_staging_manifest": true,
+    "sha256_sidecar": true,
+    "secret_free_deployment_handoff": true
+  },
+  "publication_requirements": {
+    "exact_source_commit_bound": true,
+    "artifact_reproducibility_verified_before_upload": true,
+    "artifact_manifest_validated": true,
+    "deployment_handoff_validated": true,
+    "migration_source_count": 27,
+    "migration_execution_performed": false,
+    "secret_values_embedded": false,
+    "cached_runtime_configuration_embedded": false,
+    "retention_days": 30,
+    "github_actions_artifact_upload": true
+  },
+  "qualification_requirements": {
+    "sprint205_builder_reused": true,
+    "sprint205_manifest_validator_reused": true,
+    "sprint206_handoff_tool_reused": true,
+    "technical_preview_semantics_not_widened": true,
+    "published_bundle_is_not_deployment_authority": true,
+    "deployment_requires_separate_operational_authority": true,
+    "migration_execution_requires_separate_operational_authority": true,
+    "target_selection_requires_separate_authority": true,
+    "protected_attestation_producer_dispatch_requires_separate_operational_authority": true
+  },
+  "canonical_boundaries": {
+    "environment_creation": "NOT_PERFORMED",
+    "environment_deployment": "NOT_PERFORMED",
+    "deployment_authority": "NOT_GRANTED",
+    "migration27_execution": "NOT_PERFORMED",
+    "permission_provisioning": "NONE",
+    "feature_activation": "INACTIVE",
+    "technical_preview_activation": "NOT_AUTHORIZED",
+    "production_activation": "NOT_AUTHORIZED",
+    "updater_activation": "INACTIVE",
+    "durable_target_selection": "BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET",
+    "selected_target": null,
+    "producer_dispatch": "NOT_PERFORMED"
+  },
+  "attribution": "Lab | zefry"
+}
