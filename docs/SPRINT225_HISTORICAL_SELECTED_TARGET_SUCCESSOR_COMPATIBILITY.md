@@ -24,13 +24,13 @@ Those assertions are stale because PR #879 intentionally persisted the selected 
 
 ## Scope
 
-Sprint225 updates only the 87 historical workflow files that actually failed on PR #880, plus this note and the Sprint225 regression workflow.
+Sprint225 updates only the 91 historical workflow files that actually failed on PR #880, plus this note and the Sprint225 regression workflow.
 
-Path count: 89
+Path count: 93
 
 Sorted newline path-set SHA-256:
 
-b183716512de26c08f1416d5fb62e94d01cbd4e722b93c09668db2fd42f19dd3
+df514bc13c1cc808f6040595caaa3d436ddeebc5198df407c079da45f474e7d0
 
 No application source, database migration, runtime configuration, operational state file, target-selection file, deployment source, installer source, updater source, or documentation outside this Sprint225 note is changed.
 
@@ -59,7 +59,7 @@ PR #880 exact head used for failure classification:
 
 Observed classification:
 
-- 87 historical workflow failures were mapped one-to-one to their workflow files.
+- 87 initial historical failures were mapped one-to-one to their workflow files, then four second-order preservation gates (Sprint119, Sprint133, Sprint143, Sprint210) were added after the first closure run.
 - Failure steps were operational NO-GO/lifecycle preservation steps or historical producer immutability checks.
 - Sprint224 regression, Sprint118, Sprint117, Sprint103, Governance, and PHP Foundation were independently successful on that head.
 - The Sprint225 correction is therefore a CI successor-compatibility closure, not a product/runtime behavior change.

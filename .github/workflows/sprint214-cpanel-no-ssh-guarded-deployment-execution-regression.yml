@@ -462,9 +462,7 @@ jobs:
           php tools/qualify-durable-staging-deployment-evidence.php             "$EVIDENCE"             "$ENVIRONMENT_ID"             durable-staging             "$SOURCE_COMMIT"             "$ARTIFACT_SHA"             "$plan_fingerprint"             "$AUTHORITY_SHA"             > "$ROOT/evidence-qualification.json"
 
           test "$(jq -r '.qualification_state' "$ROOT/evidence-qualification.json")" = QUALIFIED_DEPLOYMENT_EVIDENCE_NOT_SELECTED
-          test "$(jq -r '.selected_target.environment_id' "$ROOT/evidence-qualification.json")" = 'oneqay-durable-staging-01'
-          test "$(jq -r '.selected_target.runtime_class' "$ROOT/evidence-qualification.json")" = 'durable-staging'
-          test "$(jq -r '.selected_target.selection_fingerprint_sha256' "$ROOT/evidence-qualification.json")" = '858280ea3575317e8d88eed7009c770530097e261c391b2869fa81ad7c8546ce'
+          test "$(jq -r '.selected_target' "$ROOT/evidence-qualification.json")" = null
           test "$(jq -r '.producer_dispatch' "$ROOT/evidence-qualification.json")" = NOT_PERFORMED
 
       - name: Exercise rolling pointer rollback semantics

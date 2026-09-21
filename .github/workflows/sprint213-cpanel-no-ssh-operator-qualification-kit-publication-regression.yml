@@ -112,9 +112,7 @@ jobs:
           test "$(jq -r '.application_release_reference.handoff_sha256' "dist/${kit_id}.manifest.json")" = 628a3b2aa2d0e165a641f32ee29edaee7e681dcdbd6f8e22bbd908b09c12af9a
           test "$(jq -r '.secret_values_embedded' "dist/${kit_id}.manifest.json")" = false
           test "$(jq -r '.deployment_authority' "dist/${kit_id}.manifest.json")" = NOT_GRANTED
-          test "$(jq -r '.selected_target.environment_id' "dist/${kit_id}.manifest.json")" = 'oneqay-durable-staging-01'
-          test "$(jq -r '.selected_target.runtime_class' "dist/${kit_id}.manifest.json")" = 'durable-staging'
-          test "$(jq -r '.selected_target.selection_fingerprint_sha256' "dist/${kit_id}.manifest.json")" = '858280ea3575317e8d88eed7009c770530097e261c391b2869fa81ad7c8546ce'
+          test "$(jq -r '.selected_target' "dist/${kit_id}.manifest.json")" = null
 
       - name: Validate self-contained ZIP contents
         shell: bash
