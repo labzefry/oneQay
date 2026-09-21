@@ -1,8 +1,20 @@
 {
   "schema_version": 1,
   "feature": "final-shift-close",
-  "selection_state": "BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET",
-  "selected_target": null,
+  "selection_state": "SELECTED_NOT_AUTHORIZED",
+  "selected_target": {
+    "environment_id": "oneqay-durable-staging-01",
+    "runtime_class": "durable-staging",
+    "exact_running_source_commit": "5be28a3c001738373588b58e9d29832c46402de1",
+    "exact_running_artifact_sha256": "66be23792478fb191f912571b35076c42783b9733cdb3fb514b549d22ec90dd7",
+    "readiness_attestation_sha256": "3a45a4de0328cb8e5e0ed5eafb907e0a41230974c03b21d03ed571b7a2d3564d",
+    "selection_fingerprint_sha256": "858280ea3575317e8d88eed7009c770530097e261c391b2869fa81ad7c8546ce",
+    "trusted_ingestion": {
+      "run_id": 35596214711,
+      "run_attempt": 1,
+      "ingestion_fingerprint_sha256": "783783bf1f37cd0354a86eb468078f5114ed6851df2e8df8073403bd1e8f2d79"
+    }
+  },
   "required_runtime_model": "NON_SYNTHETIC_DURABLE_RUNTIME",
   "candidate_evaluations": [
     {
