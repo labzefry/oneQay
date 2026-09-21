@@ -251,7 +251,8 @@ jobs:
           );
           $record = $ingestion->ingest($attestation, $provenance);
           if (($record['ingestion_state'] ?? null) !== 'ACCEPTED_NOT_SELECTED'
-              || ($record['selected_target'] ?? 'unexpected') !== null
+              || ! array_key_exists('selected_target', $record)
+              || $record['selected_target'] !== null
               || ($record['activation_authority_state'] ?? null) !== 'NOT_GRANTED'
               || ($record['feature_activation_state'] ?? null) !== 'INACTIVE'
               || ($record['persistence_state'] ?? null) !== 'NOT_PERFORMED') {

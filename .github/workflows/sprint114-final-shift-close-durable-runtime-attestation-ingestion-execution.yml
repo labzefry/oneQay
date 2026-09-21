@@ -45,6 +45,8 @@ jobs:
             echo 'Historical Sprint114 exact envelope recognized.'
           elif [[ "$count" -eq 19 && "$hash" == '0525c55ff45baf2893a22983a4ea53e50f1c195d92a49efc2a41ce92d2749205' ]]; then
             echo 'Sprint210 exact bounded successor envelope recognized.'
+          elif [[ "$count" -eq 3 && "$hash" == '9f56c2c9eea0f182ad0a1c5cac211d7153b7028dd4e5b797b352762ec337a071' ]]; then
+            echo 'Sprint223 exact bounded ingestion null-boundary correction envelope recognized.'
           else
             echo "Unexpected Sprint114/successor envelope: count=$count hash=$hash" >&2
             cat /tmp/actual >&2
@@ -206,7 +208,11 @@ jobs:
             "apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeAttestationIngestion.php"
             "apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeAttestationProvenance.php"
           )
-          diff -u <(printf '%s\n' "${allowed_app_paths[@]}") <(printf '%s\n' "${changed_app_paths[@]}")
+          if [[ "${#changed_app_paths[@]}" -eq 0 ]]; then
+            echo 'Workflow-only successor correction preserves application source.'
+          else
+            diff -u <(printf '%s\n' "${allowed_app_paths[@]}") <(printf '%s\n' "${changed_app_paths[@]}")
+          fi
 
           state=ops/final-shift-close/STATE.json
           selection=ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
