@@ -37,6 +37,7 @@ jobs:
       BINDING_DB_DATABASE: ${{ secrets.ONEQAY_MIGRATION27_BINDING_DB_DATABASE }}
       BINDING_DB_USERNAME: ${{ secrets.ONEQAY_MIGRATION27_BINDING_DB_USERNAME }}
       BINDING_DB_PASSWORD: ${{ secrets.ONEQAY_MIGRATION27_BINDING_DB_PASSWORD }}
+      BINDING_LOCAL_PROBE_B64: ${{ secrets.ONEQAY_MIGRATION27_BINDING_LOCAL_PROBE_B64 }}
 
     steps:
       - name: Checkout canonical dispatch source only
@@ -266,99 +267,232 @@ jobs:
       - name: Independently read database identity and verify migration27 is absent
         id: database
         shell: bash
+        env:
+          BINDING_LOCAL_PROBE_B64: ${{ secrets.ONEQAY_MIGRATION27_BINDING_LOCAL_PROBE_B64 }}
         run: |
           set -euo pipefail
           BINDING_ATTESTATION_FILE=/tmp/runtime-db-binding-attestation.json \
+          SELECTED_FILE="$TARGET_SELECTION_FILE" \
+          DATABASE_BINDING_ALGORITHM="$DATABASE_BINDING_ALGORITHM" \
           BINDING_DB_HOST="$BINDING_DB_HOST" \
           BINDING_DB_PORT="$BINDING_DB_PORT" \
           BINDING_DB_DATABASE="$BINDING_DB_DATABASE" \
           BINDING_DB_USERNAME="$BINDING_DB_USERNAME" \
           BINDING_DB_PASSWORD="$BINDING_DB_PASSWORD" \
+          BINDING_LOCAL_PROBE_B64="$BINDING_LOCAL_PROBE_B64" \
+          GITHUB_SHA="$GITHUB_SHA" \
           php <<'PHP'
           <?php
+          
           declare(strict_types=1);
-
-          if (! extension_loaded('pdo_mysql')) {
-              throw new RuntimeException('pdo_mysql is required for selected-target database binding.');
+          
+          function objectFromFile(string $path): array {
+              $raw = file_get_contents($path);
+              if ($raw === false) {
+                  throw new RuntimeException('Cannot read JSON object: '.$path);
+              }
+              $value = json_decode($raw, true, 32, JSON_THROW_ON_ERROR);
+              if (! is_array($value)) {
+                  throw new RuntimeException('Expected JSON object: '.$path);
+              }
+              return $value;
           }
-
+          
+          function canonicalJson(array $payload): string {
+              ksort($payload, SORT_STRING);
+              return json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
+          }
+          
+          function sha256Json(array $payload): string {
+              return hash('sha256', canonicalJson($payload));
+          }
+          
+          function verifyDatabaseReadback(PDO $pdo): string {
+              $identity = $pdo->query('SELECT DATABASE() AS database_name, @@hostname AS server_hostname, @@port AS server_port')->fetch(PDO::FETCH_ASSOC);
+              if (! is_array($identity)) {
+                  throw new RuntimeException('Selected-target database identity readback failed.');
+              }
+              $databaseName = trim((string) ($identity['database_name'] ?? ''));
+              $serverHostname = trim((string) ($identity['server_hostname'] ?? ''));
+              $serverPort = (int) ($identity['server_port'] ?? 0);
+              if ($databaseName === '' || $serverHostname === '' || $serverPort < 1 || $serverPort > 65535) {
+                  throw new RuntimeException('Selected-target database identity readback is incomplete.');
+              }
+          
+              $tableCheck = $pdo->prepare('SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?');
+              $tableCheck->execute(['migrations']);
+              if ((int) $tableCheck->fetchColumn() !== 1) {
+                  throw new RuntimeException('Canonical migrations table is missing on selected-target database.');
+              }
+              $tableCheck->execute(['oneqay_pos_shift_close_evidence']);
+              if ((int) $tableCheck->fetchColumn() !== 0) {
+                  throw new RuntimeException('Migration27 table already exists; refusing retrospective database-binding evidence.');
+              }
+          
+              $migrationCheck = $pdo->prepare('SELECT COUNT(*) FROM migrations WHERE migration = ?');
+              $migrationCheck->execute(['0000_00_00_000027_create_pos_shift_close_evidence_foundation']);
+              if ((int) $migrationCheck->fetchColumn() !== 0) {
+                  throw new RuntimeException('Migration27 is already recorded; refusing retrospective database-binding evidence.');
+              }
+          
+              return sha256Json([
+                  'database_name' => $databaseName,
+                  'server_hostname' => $serverHostname,
+                  'server_port' => $serverPort,
+              ]);
+          }
+          
           $host = (string) getenv('BINDING_DB_HOST');
           $port = (int) getenv('BINDING_DB_PORT');
           $database = (string) getenv('BINDING_DB_DATABASE');
           $username = (string) getenv('BINDING_DB_USERNAME');
           $password = (string) getenv('BINDING_DB_PASSWORD');
-          if ($host === '' || $port < 1 || $port > 65535 || $database === '' || $username === '' || $password === '') {
-              throw new RuntimeException('Selected-target DB binding credentials are incomplete.');
+          $probeB64 = (string) getenv('BINDING_LOCAL_PROBE_B64');
+          $githubSha = (string) getenv('GITHUB_SHA');
+          if ($host === '' || $port < 1 || $port > 65535 || $database === '' || $username === '' || $password === '' || preg_match('/\A[0-9a-f]{40}\z/D', $githubSha) !== 1) {
+              throw new RuntimeException('Selected-target DB binding credentials or source identity are incomplete.');
           }
-
-          $pdo = new PDO(
-              sprintf('mysql:host=%s;port=%d;dbname=%s;charset=utf8mb4', $host, $port, $database),
-              $username,
-              $password,
-              [
-                  PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                  PDO::ATTR_TIMEOUT => 5,
-                  PDO::ATTR_EMULATE_PREPARES => false,
-              ],
-          );
-
-          $identity = $pdo->query('SELECT DATABASE() AS database_name, @@hostname AS server_hostname, @@port AS server_port')->fetch(PDO::FETCH_ASSOC);
-          if (! is_array($identity)) {
-              throw new RuntimeException('Selected-target database identity readback failed.');
+          
+          $attestation = objectFromFile((string) getenv('BINDING_ATTESTATION_FILE'));
+          $selection = objectFromFile((string) getenv('SELECTED_FILE'));
+          $selected = $selection['selected_target'] ?? null;
+          if (! is_array($selected)) {
+              throw new RuntimeException('Canonical selected target is unavailable.');
           }
-          $databaseName = trim((string) ($identity['database_name'] ?? ''));
-          $serverHostname = trim((string) ($identity['server_hostname'] ?? ''));
-          $serverPort = (int) ($identity['server_port'] ?? 0);
-          if ($databaseName === '' || $serverHostname === '' || $serverPort < 1 || $serverPort > 65535) {
-              throw new RuntimeException('Selected-target database identity readback is incomplete.');
-          }
-
-          $tableCheck = $pdo->prepare(
-              'SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?'
-          );
-          $tableCheck->execute(['migrations']);
-          if ((int) $tableCheck->fetchColumn() !== 1) {
-              throw new RuntimeException('Canonical migrations table is missing on selected-target database.');
-          }
-          $tableCheck->execute(['oneqay_pos_shift_close_evidence']);
-          if ((int) $tableCheck->fetchColumn() !== 0) {
-              throw new RuntimeException('Migration27 table already exists; refusing retrospective database-binding evidence.');
-          }
-
-          $migration = '0000_00_00_000027_create_pos_shift_close_evidence_foundation';
-          $migrationCheck = $pdo->prepare('SELECT COUNT(*) FROM migrations WHERE migration = ?');
-          $migrationCheck->execute([$migration]);
-          if ((int) $migrationCheck->fetchColumn() !== 0) {
-              throw new RuntimeException('Migration27 is already recorded; refusing retrospective database-binding evidence.');
-          }
-
-          $bindingPayload = [
-              'database_name' => $databaseName,
-              'server_hostname' => $serverHostname,
-              'server_port' => $serverPort,
-          ];
-          ksort($bindingPayload, SORT_STRING);
-          $actualBinding = hash('sha256', json_encode(
-              $bindingPayload,
-              JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR,
-          ));
-
-          $attestationRaw = file_get_contents((string) getenv('BINDING_ATTESTATION_FILE'));
-          if ($attestationRaw === false) {
-              throw new RuntimeException('Runtime DB binding attestation cannot be read.');
-          }
-          $attestation = json_decode($attestationRaw, true, 32, JSON_THROW_ON_ERROR);
-          $runtimeBinding = is_array($attestation) ? ($attestation['database_binding_sha256'] ?? null) : null;
-          if (! is_string($runtimeBinding) || preg_match('/\A[0-9a-f]{64}\z/', $runtimeBinding) !== 1) {
+          $runtimeBinding = $attestation['database_binding_sha256'] ?? null;
+          if (! is_string($runtimeBinding) || preg_match('/\A[0-9a-f]{64}\z/D', $runtimeBinding) !== 1) {
               throw new RuntimeException('Runtime database binding fingerprint is unavailable.');
           }
+          
+          $pdo = null;
+          if (extension_loaded('pdo_mysql')) {
+              try {
+                  $pdo = new PDO(
+                      sprintf('mysql:host=%s;port=%d;dbname=%s;charset=utf8mb4', $host, $port, $database),
+                      $username,
+                      $password,
+                      [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_TIMEOUT => 5, PDO::ATTR_EMULATE_PREPARES => false],
+                  );
+              } catch (PDOException $e) {
+                  $pdo = null;
+              }
+          }
+          
+          $mode = 'DIRECT_PDO';
+          if ($pdo instanceof PDO) {
+              $actualBinding = verifyDatabaseReadback($pdo);
+          } else {
+              $mode = 'CPANEL_LOCAL_SIGNED_PDO';
+              if ($probeB64 === '') {
+                  throw new RuntimeException('Direct selected-target PDO is unavailable and cPanel-local signed DB readback evidence is not configured.');
+              }
+              if (strlen($probeB64) > 32768) {
+                  throw new RuntimeException('cPanel-local signed DB readback evidence is oversized.');
+              }
+              $probeRaw = base64_decode($probeB64, true);
+              if ($probeRaw === false || strlen($probeRaw) < 2 || strlen($probeRaw) > 32768) {
+                  throw new RuntimeException('cPanel-local signed DB readback evidence is invalid.');
+              }
+              $probe = json_decode($probeRaw, true, 32, JSON_THROW_ON_ERROR);
+              if (! is_array($probe)) {
+                  throw new RuntimeException('cPanel-local signed DB readback evidence must be an object.');
+              }
+          
+              $expectedProbeKeys = [
+                  'attestation_mode',
+                  'canonical_main_sha',
+                  'credential_binding_sha256',
+                  'database_binding_algorithm',
+                  'database_binding_sha256',
+                  'environment_id',
+                  'evidence_type',
+                  'exact_running_artifact_sha256',
+                  'exact_running_source_commit',
+                  'expires_at_unix',
+                  'hmac_sha256',
+                  'issued_at_unix',
+                  'migration27_state',
+                  'nonce',
+                  'readiness_attestation_sha256',
+                  'runtime_class',
+                  'schema_version',
+                  'secrets_embedded',
+                  'selection_fingerprint_sha256',
+              ];
+              $actualProbeKeys = array_keys($probe);
+              sort($expectedProbeKeys, SORT_STRING);
+              sort($actualProbeKeys, SORT_STRING);
+              if ($expectedProbeKeys !== $actualProbeKeys) {
+                  throw new RuntimeException('cPanel-local signed DB readback field set is not exact.');
+              }
+          
+              $issued = $probe['issued_at_unix'] ?? null;
+              $expires = $probe['expires_at_unix'] ?? null;
+              $now = time();
+              $probeChecks = [
+                  ($probe['schema_version'] ?? null) === 1,
+                  ($probe['evidence_type'] ?? null) === 'CPANEL_LOCAL_INDEPENDENT_PDO_READBACK',
+                  ($probe['canonical_main_sha'] ?? null) === $githubSha,
+                  ($probe['environment_id'] ?? null) === ($selected['environment_id'] ?? null),
+                  ($probe['runtime_class'] ?? null) === ($selected['runtime_class'] ?? null),
+                  ($probe['exact_running_source_commit'] ?? null) === ($selected['exact_running_source_commit'] ?? null),
+                  ($probe['exact_running_artifact_sha256'] ?? null) === ($selected['exact_running_artifact_sha256'] ?? null),
+                  ($probe['readiness_attestation_sha256'] ?? null) === ($selected['readiness_attestation_sha256'] ?? null),
+                  ($probe['selection_fingerprint_sha256'] ?? null) === ($selected['selection_fingerprint_sha256'] ?? null),
+                  ($probe['database_binding_algorithm'] ?? null) === getenv('DATABASE_BINDING_ALGORITHM'),
+                  ($probe['migration27_state'] ?? null) === 'NOT_EXECUTED',
+                  ($probe['attestation_mode'] ?? null) === 'READ_ONLY',
+                  ($probe['secrets_embedded'] ?? null) === false,
+                  is_int($issued),
+                  is_int($expires),
+                  is_int($issued) && $issued <= $now + 30,
+                  is_int($expires) && $expires >= $now,
+                  is_int($issued) && is_int($expires) && $expires > $issued && ($expires - $issued) <= 900,
+                  is_string($probe['nonce'] ?? null) && preg_match('/\A[0-9a-f]{32}\z/D', (string) $probe['nonce']) === 1,
+              ];
+              if (in_array(false, $probeChecks, true)) {
+                  throw new RuntimeException('cPanel-local signed DB readback identity, freshness, or state is invalid.');
+              }
+          
+              $credentialBinding = sha256Json([
+                  'database' => $database,
+                  'host' => $host,
+                  'port' => $port,
+                  'username' => $username,
+              ]);
+              if (! is_string($probe['credential_binding_sha256'] ?? null)
+                  || ! hash_equals($credentialBinding, (string) $probe['credential_binding_sha256'])) {
+                  throw new RuntimeException('cPanel-local DB readback credentials are not bound to the protected GitHub environment credentials.');
+              }
+          
+              $providedHmac = $probe['hmac_sha256'] ?? null;
+              if (! is_string($providedHmac) || preg_match('/\A[0-9a-f]{64}\z/D', $providedHmac) !== 1) {
+                  throw new RuntimeException('cPanel-local signed DB readback HMAC is invalid.');
+              }
+              unset($probe['hmac_sha256']);
+              $signingKey = hash_hmac('sha256', 'oneqay-migration27-cpanel-local-probe-v1', $password, true);
+              $expectedHmac = hash_hmac('sha256', canonicalJson($probe), $signingKey);
+              if (! hash_equals($expectedHmac, $providedHmac)) {
+                  throw new RuntimeException('cPanel-local signed DB readback authentication failed.');
+              }
+          
+              $probeBinding = $probe['database_binding_sha256'] ?? null;
+              if (! is_string($probeBinding) || preg_match('/\A[0-9a-f]{64}\z/D', $probeBinding) !== 1) {
+                  throw new RuntimeException('cPanel-local database binding fingerprint is invalid.');
+              }
+              $actualBinding = $probeBinding;
+          }
+          
           if (! hash_equals($runtimeBinding, $actualBinding)) {
               throw new RuntimeException('Protected runtime control channel and independent migration database connection do not identify the same database.');
           }
-
+          
           file_put_contents('/tmp/database-binding-sha256.txt', $actualBinding, LOCK_EX);
+          file_put_contents('/tmp/database-binding-readback-mode.txt', $mode, LOCK_EX);
           PHP
           echo "database_binding_sha256=$(cat /tmp/database-binding-sha256.txt)" >> "$GITHUB_OUTPUT"
+          echo "database_readback_mode=$(cat /tmp/database-binding-readback-mode.txt)" >> "$GITHUB_OUTPUT"
+          echo "DATABASE_READBACK_MODE=$(cat /tmp/database-binding-readback-mode.txt)"
 
       - name: Materialize secret-free selected-target database binding evidence
         id: bundle

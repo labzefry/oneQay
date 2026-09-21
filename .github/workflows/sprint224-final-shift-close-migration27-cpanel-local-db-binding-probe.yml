@@ -1,0 +1,185 @@
+name: Sprint224 Final Shift Close Migration27 cPanel Local DB Binding Probe
+
+# Attribution: Lab | zefry
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/final-shift-close-migration27-selected-target-db-binding.yml'
+      - '.github/workflows/sprint103-final-shift-close-migration27-execution-evidence.yml'
+      - '.github/workflows/sprint117-final-shift-close-migration27-selected-target-binding.yml'
+      - '.github/workflows/sprint118-final-shift-close-migration27-selected-target-db-binding.yml'
+      - '.github/workflows/sprint224-final-shift-close-migration27-cpanel-local-db-binding-probe.yml'
+      - 'docs/SPRINT224_FINAL_SHIFT_CLOSE_MIGRATION27_CPANEL_LOCAL_DB_BINDING_PROBE.md'
+      - 'ops/final-shift-close/MIGRATION27_SELECTED_TARGET_BINDING_CONTRACT.json'
+      - 'ops/final-shift-close/cpanel-migration27-local-db-binding-probe.php'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint224-migration27-cpanel-local-db-binding-probe-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qualify-cpanel-local-db-binding-probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout exact Sprint224 source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Lock exact Sprint224 source envelope
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/actual
+          cat > /tmp/expected <<'EOF'
+          .github/workflows/final-shift-close-migration27-selected-target-db-binding.yml
+          .github/workflows/sprint103-final-shift-close-migration27-execution-evidence.yml
+          .github/workflows/sprint117-final-shift-close-migration27-selected-target-binding.yml
+          .github/workflows/sprint118-final-shift-close-migration27-selected-target-db-binding.yml
+          .github/workflows/sprint224-final-shift-close-migration27-cpanel-local-db-binding-probe.yml
+          docs/SPRINT224_FINAL_SHIFT_CLOSE_MIGRATION27_CPANEL_LOCAL_DB_BINDING_PROBE.md
+          ops/final-shift-close/MIGRATION27_SELECTED_TARGET_BINDING_CONTRACT.json
+          ops/final-shift-close/cpanel-migration27-local-db-binding-probe.php
+          EOF
+          diff -u /tmp/expected /tmp/actual
+          test "$(sha256sum /tmp/actual | awk '{print $1}')" = '74238c669332056df20c094e88435e6830c19b213688aa31aa0590abd115e420'
+
+      - name: Preserve application artifact migration source and operational state
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git diff --exit-code "$BASE_SHA" "$HEAD_SHA" -- \
+            .github/workflows/final-shift-close-migration27-execution.yml \
+            apps/web/app \
+            apps/web/bootstrap \
+            apps/web/config \
+            apps/web/database/migrations \
+            apps/web/resources \
+            apps/web/routes \
+            ops/final-shift-close/STATE.json \
+            ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+
+          state=ops/final-shift-close/STATE.json
+          selection=ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+          test "$(jq -r '.migration27.state' "$state")" = 'NOT_EXECUTED'
+          test "$(jq -r '.permission_provisioning.state' "$state")" = 'NONE'
+          test "$(jq -r '.feature_activation.state' "$state")" = 'INACTIVE'
+          test "$(jq -r '.selection_state' "$selection")" = 'SELECTED_NOT_AUTHORIZED'
+          test "$(jq -r '.selected_target.environment_id' "$selection")" = 'oneqay-durable-staging-01'
+          test "$(jq -r '.selected_target.runtime_class' "$selection")" = 'durable-staging'
+          test "$(jq -r '.selected_target.exact_running_source_commit' "$selection")" = '5be28a3c001738373588b58e9d29832c46402de1'
+          test "$(jq -r '.selected_target.exact_running_artifact_sha256' "$selection")" = '66be23792478fb191f912571b35076c42783b9733cdb3fb514b549d22ec90dd7'
+          test "$(jq -r '.selected_target.selection_fingerprint_sha256' "$selection")" = '858280ea3575317e8d88eed7009c770530097e261c391b2869fa81ad7c8546ce'
+          test "$(git rev-parse "$HEAD_SHA:apps/web/database/migrations/0000_00_00_000027_create_pos_shift_close_evidence_foundation.php")" = 'a412560c2f340f4783a385aef729dbd074389a4c'
+
+      - name: Validate Sprint224 machine-readable compatibility contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          contract=ops/final-shift-close/MIGRATION27_SELECTED_TARGET_BINDING_CONTRACT.json
+          jq -e . "$contract" >/dev/null
+          test "$(jq -r '.binding_producer_independent_database_readback.driver' "$contract")" = 'pdo_mysql'
+          test "$(jq -r '.binding_producer_independent_database_readback.direct_mode' "$contract")" = 'GITHUB_HOSTED_PDO_PRIMARY'
+          test "$(jq -r '.binding_producer_independent_database_readback.direct_connection_failure_fallback' "$contract")" = 'CPANEL_LOCAL_SIGNED_PDO_READBACK'
+          test "$(jq -r '.binding_producer_independent_database_readback.fallback_activation_condition' "$contract")" = 'DIRECT_PDO_CONNECTION_UNAVAILABLE_ONLY'
+          test "$(jq -r '.binding_producer_independent_database_readback.fallback_environment_secret' "$contract")" = 'ONEQAY_MIGRATION27_BINDING_LOCAL_PROBE_B64'
+          test "$(jq -r '.binding_producer_independent_database_readback.fallback_ttl_seconds' "$contract")" = '900'
+          test "$(jq -r '.binding_producer_independent_database_readback.fallback_exact_current_main_required' "$contract")" = 'true'
+          test "$(jq -r '.binding_producer_independent_database_readback.fallback_selected_target_identity_exact_match' "$contract")" = 'true'
+          test "$(jq -r '.binding_producer_independent_database_readback.fallback_signature.algorithm' "$contract")" = 'HMAC_SHA256'
+          test "$(jq -r '.binding_producer_independent_database_readback.fallback_signature.context' "$contract")" = 'oneqay-migration27-cpanel-local-probe-v1'
+          test "$(jq -r '.binding_producer_independent_database_readback.fallback_signature.comparison' "$contract")" = 'hash_equals'
+          test "$(jq -r '.binding_producer_independent_database_readback.fallback_database_mutation' "$contract")" = 'false'
+          test "$(jq -r '.sprint224_cpanel_local_db_binding_compatibility.observed_failed_run_id' "$contract")" = '35604174103'
+          test "$(jq -r '.sprint224_cpanel_local_db_binding_compatibility.artifact_schema_changed' "$contract")" = 'false'
+          test "$(jq -r '.sprint224_cpanel_local_db_binding_compatibility.migration27_authority_changed' "$contract")" = 'false'
+          test "$(jq -r '.sprint224_cpanel_local_db_binding_compatibility.application_artifact_changed' "$contract")" = 'false'
+
+      - name: Lock direct PDO primary and cPanel-local fallback behavior
+        shell: bash
+        run: |
+          set -euo pipefail
+          producer=.github/workflows/final-shift-close-migration27-selected-target-db-binding.yml
+          grep -Fq 'ONEQAY_MIGRATION27_BINDING_LOCAL_PROBE_B64' "$producer"
+          grep -Fq "extension_loaded('pdo_mysql')" "$producer"
+          grep -Fq "mode = 'DIRECT_PDO'" "$producer"
+          grep -Fq "mode = 'CPANEL_LOCAL_SIGNED_PDO'" "$producer"
+          grep -Fq 'Direct selected-target PDO is unavailable and cPanel-local signed DB readback evidence is not configured.' "$producer"
+          grep -Fq 'CPANEL_LOCAL_INDEPENDENT_PDO_READBACK' "$producer"
+          grep -Fq '($expires - $issued) <= 900' "$producer"
+          grep -Fq 'oneqay-migration27-cpanel-local-probe-v1' "$producer"
+          grep -Fq 'hash_equals($expectedHmac, $providedHmac)' "$producer"
+          grep -Fq 'cPanel-local DB readback credentials are not bound to the protected GitHub environment credentials.' "$producer"
+          grep -Fq 'Protected runtime control channel and independent migration database connection do not identify the same database.' "$producer"
+          grep -Fq 'SELECT DATABASE() AS database_name, @@hostname AS server_hostname, @@port AS server_port' "$producer"
+          grep -Fq "execute(['migrations'])" "$producer"
+          grep -Fq "execute(['oneqay_pos_shift_close_evidence'])" "$producer"
+          grep -Fq '0000_00_00_000027_create_pos_shift_close_evidence_foundation' "$producer"
+
+      - name: Validate cPanel local probe source
+        shell: bash
+        run: |
+          set -euo pipefail
+          probe=ops/final-shift-close/cpanel-migration27-local-db-binding-probe.php
+          php -l "$probe"
+          grep -Fq 'CLI_ONLY' "$probe"
+          grep -Fq 'CPANEL_LOCAL_INDEPENDENT_PDO_READBACK' "$probe"
+          grep -Fq 'ONEQAY_PROBE_TTL_SECONDS = 900' "$probe"
+          grep -Fq 'SELECT DATABASE() AS database_name, @@hostname AS server_hostname, @@port AS server_port' "$probe"
+          grep -Fq "execute(['migrations'])" "$probe"
+          grep -Fq 'ONEQAY_MIGRATION27_TABLE' "$probe"
+          grep -Fq 'ONEQAY_MIGRATION27' "$probe"
+          grep -Fq 'credential_binding_sha256' "$probe"
+          grep -Fq "hash_hmac('sha256', ONEQAY_SIGNING_CONTEXT, \$password, true)" "$probe"
+          grep -Fq 'chmod($temp, 0600)' "$probe"
+          grep -Fq 'chmod($path, 0600)' "$probe"
+          grep -Fq "'attestation_mode' => 'READ_ONLY'" "$probe"
+          grep -Fq "'secrets_embedded' => false" "$probe"
+          ! grep -Eq '(INSERT[[:space:]]+INTO|UPDATE[[:space:]]|DELETE[[:space:]]+FROM|DROP[[:space:]]+TABLE|TRUNCATE[[:space:]]+TABLE|ALTER[[:space:]]+TABLE|CREATE[[:space:]]+TABLE)' "$probe"
+
+      - name: Preserve secret-free evidence artifact schema and no-go boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          producer=.github/workflows/final-shift-close-migration27-selected-target-db-binding.yml
+          grep -Fq 'binding.json' "$producer"
+          grep -Fq 'execution.json' "$producer"
+          grep -Fq 'binding_state:"VERIFIED_SELECTED_TARGET_DATABASE"' "$producer"
+          grep -Fq 'migration27_state:"NOT_EXECUTED"' "$producer"
+          grep -Fq 'secrets_embedded:false' "$producer"
+          grep -Fq 'final-shift-close-migration27-selected-target-db-binding-evidence' "$producer"
+          ! grep -Eq '(php artisan migrate|migrate:rollback|migrate:reset|migrate:refresh|migrate:fresh)' "$producer"
+          ! grep -Fq 'contents: write' "$producer"
+          ! grep -Fq 'deployments: write' "$producer"
+          ! grep -Fq 'ONEQAY_POS_SHIFT_CLOSE_ENABLED=true' "$producer"
+
+      - name: Lock Sprint224 evidence and current no-go
+        shell: bash
+        run: |
+          set -euo pipefail
+          doc=docs/SPRINT224_FINAL_SHIFT_CLOSE_MIGRATION27_CPANEL_LOCAL_DB_BINDING_PROBE.md
+          grep -Fq 'RUN_35604174103 = FAILED_REMOTE_PDO_CONNECTION_REFUSED' "$doc"
+          grep -Fq 'SPRINT224_CPANEL_LOCAL_DB_BINDING_PROBE = MATERIALIZED_SOURCE_ONLY' "$doc"
+          grep -Fq 'MIGRATION27_EXECUTION = NOT_PERFORMED' "$doc"
+          grep -Fq 'PERMISSION_PROVISIONING = NONE' "$doc"
+          grep -Fq 'FINAL_SHIFT_CLOSE = INACTIVE' "$doc"
+          grep -Fq 'PRODUCTION = NOT_AUTHORIZED' "$doc"
+
+      - name: Verify tracked-source cleanliness
+        shell: bash
+        run: git diff --exit-code
