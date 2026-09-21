@@ -61,8 +61,10 @@ jobs:
           test "$(jq -r '.technical_preview_activation' "$state")" = NOT_AUTHORIZED
           test "$(jq -r '.production_activation' "$state")" = NOT_AUTHORIZED
           test "$(jq -r '.updater_activation' "$state")" = INACTIVE
-          test "$(jq -r '.selection_state' "$selection")" = BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET
-          test "$(jq -r '.selected_target' "$selection")" = null
+          test "$(jq -r '.selection_state' "$selection")" = SELECTED_NOT_AUTHORIZED
+          test "$(jq -r '.selected_target.environment_id' "$selection")" = 'oneqay-durable-staging-01'
+          test "$(jq -r '.selected_target.runtime_class' "$selection")" = 'durable-staging'
+          test "$(jq -r '.selected_target.selection_fingerprint_sha256' "$selection")" = '858280ea3575317e8d88eed7009c770530097e261c391b2869fa81ad7c8546ce'
 
       - name: Setup PHP 8.3
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
@@ -142,7 +144,9 @@ jobs:
           EOF
           php tools/qualify-durable-staging-deployment-evidence.php             /tmp/evidence.json durable-staging-ci durable-staging "$source_commit" "$artifact_sha" "$plan_sha" "$authority_sha"             > /tmp/qualification.json
           jq -e '.qualification_state == "QUALIFIED_DEPLOYMENT_EVIDENCE_NOT_SELECTED"' /tmp/qualification.json >/dev/null
-          test "$(jq -r '.selected_target' /tmp/qualification.json)" = null
+          test "$(jq -r '.selected_target.environment_id' /tmp/qualification.json)" = 'oneqay-durable-staging-01'
+          test "$(jq -r '.selected_target.runtime_class' /tmp/qualification.json)" = 'durable-staging'
+          test "$(jq -r '.selected_target.selection_fingerprint_sha256' /tmp/qualification.json)" = '858280ea3575317e8d88eed7009c770530097e261c391b2869fa81ad7c8546ce'
           test "$(jq -r '.producer_dispatch' /tmp/qualification.json)" = NOT_PERFORMED
 
       - name: Prove fail-closed binding mismatches

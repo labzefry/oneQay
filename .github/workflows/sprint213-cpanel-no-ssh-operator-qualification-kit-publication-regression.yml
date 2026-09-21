@@ -84,8 +84,10 @@ jobs:
           test "$(jq -r '.technical_preview_activation' "$state")" = NOT_AUTHORIZED
           test "$(jq -r '.production_activation' "$state")" = NOT_AUTHORIZED
           test "$(jq -r '.updater_activation' "$state")" = INACTIVE
-          test "$(jq -r '.selection_state' "$selection")" = BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET
-          test "$(jq -r '.selected_target' "$selection")" = null
+          test "$(jq -r '.selection_state' "$selection")" = SELECTED_NOT_AUTHORIZED
+          test "$(jq -r '.selected_target.environment_id' "$selection")" = 'oneqay-durable-staging-01'
+          test "$(jq -r '.selected_target.runtime_class' "$selection")" = 'durable-staging'
+          test "$(jq -r '.selected_target.selection_fingerprint_sha256' "$selection")" = '858280ea3575317e8d88eed7009c770530097e261c391b2869fa81ad7c8546ce'
 
       - name: Build and prove deterministic operator kit
         shell: bash
@@ -110,7 +112,9 @@ jobs:
           test "$(jq -r '.application_release_reference.handoff_sha256' "dist/${kit_id}.manifest.json")" = 628a3b2aa2d0e165a641f32ee29edaee7e681dcdbd6f8e22bbd908b09c12af9a
           test "$(jq -r '.secret_values_embedded' "dist/${kit_id}.manifest.json")" = false
           test "$(jq -r '.deployment_authority' "dist/${kit_id}.manifest.json")" = NOT_GRANTED
-          test "$(jq -r '.selected_target' "dist/${kit_id}.manifest.json")" = null
+          test "$(jq -r '.selected_target.environment_id' "dist/${kit_id}.manifest.json")" = 'oneqay-durable-staging-01'
+          test "$(jq -r '.selected_target.runtime_class' "dist/${kit_id}.manifest.json")" = 'durable-staging'
+          test "$(jq -r '.selected_target.selection_fingerprint_sha256' "dist/${kit_id}.manifest.json")" = '858280ea3575317e8d88eed7009c770530097e261c391b2869fa81ad7c8546ce'
 
       - name: Validate self-contained ZIP contents
         shell: bash
