@@ -31,16 +31,17 @@ jobs:
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-          EXPECTED_PATH_HASH: cf0d7871b373709b00c0f696dae126be502e8dd34651ae49efc3d69669c22db1
+          EXPECTED_PATH_HASH: 9f56c2c9eea0f182ad0a1c5cac211d7153b7028dd4e5b797b352762ec337a071
         run: |
           set -euo pipefail
           git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/s223-paths
           cat > /tmp/s223-expected <<'EOF'
           .github/workflows/final-shift-close-durable-runtime-attestation-ingestion.yml
+          .github/workflows/sprint114-final-shift-close-durable-runtime-attestation-ingestion-execution.yml
           .github/workflows/sprint223-durable-runtime-ingestion-null-boundary-regression.yml
           EOF
           diff -u /tmp/s223-expected /tmp/s223-paths
-          test "$(wc -l < /tmp/s223-paths)" -eq 2
+          test "$(wc -l < /tmp/s223-paths)" -eq 3
           test "$(sha256sum /tmp/s223-paths | awk '{print $1}')" = "$EXPECTED_PATH_HASH"
           test -z "$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web)"
           test -z "$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web/database/migrations)"
@@ -62,6 +63,7 @@ jobs:
           grep -Fq "! array_key_exists('selected_target', \$record)" "$workflow"
           grep -Fq "\$record['selected_target'] !== null" "$workflow"
           ! grep -Fq "\$record['selected_target'] ?? 'unexpected'" "$workflow"
+          grep -Fq 'Sprint223 exact bounded ingestion null-boundary correction envelope recognized.' .github/workflows/sprint114-final-shift-close-durable-runtime-attestation-ingestion-execution.yml
 
       - name: Exercise exact ACCEPTED_NOT_SELECTED null boundary
         shell: bash
