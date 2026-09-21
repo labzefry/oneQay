@@ -1,0 +1,192 @@
+# Author by Lab | zefry
+name: Sprint223 Durable Runtime Ingestion Null Boundary Regression
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint223-durable-runtime-ingestion-null-boundary-${{ github.event.pull_request.number || github.ref }}-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  qualify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Lock exact Sprint223 envelope
+        if: github.event_name == 'pull_request' && github.head_ref == 'sprint223-durable-runtime-ingestion-null-boundary-correction'
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          EXPECTED_PATH_HASH: cf0d7871b373709b00c0f696dae126be502e8dd34651ae49efc3d69669c22db1
+        run: |
+          set -euo pipefail
+          git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/s223-paths
+          cat > /tmp/s223-expected <<'EOF'
+          .github/workflows/final-shift-close-durable-runtime-attestation-ingestion.yml
+          .github/workflows/sprint223-durable-runtime-ingestion-null-boundary-regression.yml
+          EOF
+          diff -u /tmp/s223-expected /tmp/s223-paths
+          test "$(wc -l < /tmp/s223-paths)" -eq 2
+          test "$(sha256sum /tmp/s223-paths | awk '{print $1}')" = "$EXPECTED_PATH_HASH"
+          test -z "$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web)"
+          test -z "$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web/database/migrations)"
+
+      - name: Setup governed PHP runtime
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        with:
+          php-version: '8.3'
+          coverage: none
+
+      - name: Validate trusted ingestion source
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeReadiness.php
+          php -l apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeAttestationProvenance.php
+          php -l apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeAttestationIngestion.php
+          workflow=.github/workflows/final-shift-close-durable-runtime-attestation-ingestion.yml
+          grep -Fq "! array_key_exists('selected_target', \$record)" "$workflow"
+          grep -Fq "\$record['selected_target'] !== null" "$workflow"
+          ! grep -Fq "\$record['selected_target'] ?? 'unexpected'" "$workflow"
+
+      - name: Exercise exact ACCEPTED_NOT_SELECTED null boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          php <<'PHP'
+          <?php
+          declare(strict_types=1);
+
+          require __DIR__.'/apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeReadiness.php';
+          require __DIR__.'/apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeAttestationProvenance.php';
+          require __DIR__.'/apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeAttestationIngestion.php';
+
+          use App\Application\Pos\FinalShiftCloseDurableRuntimeAttestationIngestion;
+          use App\Application\Pos\FinalShiftCloseDurableRuntimeAttestationProvenance;
+          use App\Application\Pos\FinalShiftCloseDurableRuntimeReadiness;
+
+          $attestation = [
+              'schema_version' => 1,
+              'environment_id' => 'oneqay-durable-staging-ci',
+              'runtime_class' => 'durable-staging',
+              'runtime_model' => FinalShiftCloseDurableRuntimeReadiness::RUNTIME_MODEL,
+              'environment_isolation' => FinalShiftCloseDurableRuntimeReadiness::ENVIRONMENT_ISOLATION,
+              'serving_application_runtime' => true,
+              'synthetic_fixture_runtime' => false,
+              'production_traffic_served' => false,
+              'durable_persistence_enabled' => true,
+              'durable_session_control_enabled' => true,
+              'durable_authorization_enabled' => true,
+              'durable_transaction_boundary_enabled' => true,
+              'durable_pos_persistence_enabled' => true,
+              'exact_running_source_commit' => str_repeat('a', 40),
+              'exact_running_artifact_sha256' => str_repeat('b', 64),
+              'authenticated_configuration_mutation_channel' => true,
+              'read_before_write_read_after_supported' => true,
+              'non_mutating_health_attestation_supported' => true,
+              'verified_flag_rollback_supported' => true,
+              'activation_authority_binding' => FinalShiftCloseDurableRuntimeReadiness::ACTIVATION_AUTHORITY_BINDING,
+              'feature_activation_state' => FinalShiftCloseDurableRuntimeReadiness::FEATURE_ACTIVATION_STATE,
+              'secrets_embedded' => false,
+          ];
+
+          $readiness = new FinalShiftCloseDurableRuntimeReadiness();
+          $provenanceQualifier = new FinalShiftCloseDurableRuntimeAttestationProvenance();
+          $provenance = [
+              'schema_version' => 1,
+              'feature' => FinalShiftCloseDurableRuntimeAttestationProvenance::FEATURE,
+              'evidence_source' => FinalShiftCloseDurableRuntimeAttestationProvenance::EVIDENCE_SOURCE,
+              'evidence_state' => FinalShiftCloseDurableRuntimeAttestationProvenance::EVIDENCE_STATE,
+              'producer_repository' => FinalShiftCloseDurableRuntimeAttestationProvenance::PRODUCER_REPOSITORY,
+              'producer_workflow_path' => FinalShiftCloseDurableRuntimeAttestationProvenance::PRODUCER_WORKFLOW_PATH,
+              'producer_environment' => FinalShiftCloseDurableRuntimeAttestationProvenance::PRODUCER_ENVIRONMENT,
+              'producer_ref' => FinalShiftCloseDurableRuntimeAttestationProvenance::PRODUCER_REF,
+              'producer_source_commit' => str_repeat('c', 40),
+              'producer_run_id' => 1,
+              'producer_run_attempt' => 1,
+              'attestation_sha256' => $provenanceQualifier->attestationSha256($attestation),
+              'environment_id' => $attestation['environment_id'],
+              'runtime_class' => $attestation['runtime_class'],
+              'exact_running_source_commit' => $attestation['exact_running_source_commit'],
+              'exact_running_artifact_sha256' => $attestation['exact_running_artifact_sha256'],
+              'deployment_evidence_sha256' => str_repeat('d', 64),
+              'deployment_plan_fingerprint' => str_repeat('e', 64),
+              'deployment_authority_sha256' => str_repeat('f', 64),
+              'evidence_status_context' => FinalShiftCloseDurableRuntimeAttestationProvenance::EVIDENCE_STATUS_CONTEXT,
+              'evidence_status_state' => FinalShiftCloseDurableRuntimeAttestationProvenance::EVIDENCE_STATUS_STATE,
+              'secrets_embedded' => false,
+          ];
+
+          $record = (new FinalShiftCloseDurableRuntimeAttestationIngestion(
+              $readiness,
+              $provenanceQualifier,
+          ))->ingest($attestation, $provenance);
+
+          if (($record['ingestion_state'] ?? null) !== FinalShiftCloseDurableRuntimeAttestationIngestion::INGESTION_STATE) {
+              throw new RuntimeException('ingestion_state_invalid');
+          }
+          if (!array_key_exists('selected_target', $record)) {
+              throw new RuntimeException('selected_target_key_missing');
+          }
+          if ($record['selected_target'] !== null) {
+              throw new RuntimeException('selected_target_must_be_null');
+          }
+          if (($record['activation_authority_state'] ?? null) !== 'NOT_GRANTED'
+              || ($record['feature_activation_state'] ?? null) !== 'INACTIVE'
+              || ($record['persistence_state'] ?? null) !== 'NOT_PERFORMED') {
+              throw new RuntimeException('source_only_boundary_invalid');
+          }
+
+          // Prove the live failure root cause: ?? cannot distinguish an existing null
+          // from an absent key, while array_key_exists() preserves that distinction.
+          if ((($record['selected_target'] ?? 'unexpected') !== null) !== true) {
+              throw new RuntimeException('legacy_null_coalescing_fixture_invalid');
+          }
+          if ((!array_key_exists('selected_target', $record) || $record['selected_target'] !== null) !== false) {
+              throw new RuntimeException('corrected_null_boundary_fixture_invalid');
+          }
+          PHP
+
+      - name: Preserve canonical operational NO-GO
+        shell: bash
+        run: |
+          set -euo pipefail
+          state=ops/final-shift-close/STATE.json
+          selection=ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+          test "$(jq -r '.migration27.state' "$state")" = NOT_EXECUTED
+          test "$(jq -r '.permission_provisioning.state' "$state")" = NONE
+          test "$(jq -r '.feature_activation.state' "$state")" = INACTIVE
+          test "$(jq -r '.deployment_authority' "$state")" = NOT_GRANTED
+          test "$(jq -r '.technical_preview_activation' "$state")" = NOT_AUTHORIZED
+          test "$(jq -r '.production_activation' "$state")" = NOT_AUTHORIZED
+          test "$(jq -r '.updater_activation' "$state")" = INACTIVE
+          test "$(jq -r '.selection_state' "$selection")" = BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET
+          test "$(jq -r '.selected_target' "$selection")" = null
+
+      - name: Confirm source-only corrective envelope
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            test -z "$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web)"
+            test -z "$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web/database/migrations)"
+          fi
+          git diff --exit-code
+          test -z "$(git status --porcelain)"
