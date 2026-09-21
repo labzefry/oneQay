@@ -1,0 +1,97 @@
+name: Sprint225 Historical Selected Target Successor Compatibility
+
+# Attribution: Lab | zefry
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/sprint225-historical-selected-target-successor-compatibility.yml'
+      - 'docs/SPRINT225_HISTORICAL_SELECTED_TARGET_SUCCESSOR_COMPATIBILITY.md'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint225-historical-selected-target-successor-compatibility-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qualify-historical-selected-target-successor-compatibility:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout exact Sprint225 source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Lock exact Sprint225 compatibility envelope
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/sprint225-paths
+          test "$(wc -l < /tmp/sprint225-paths | tr -d ' ')" = '94'
+          test "$(sha256sum /tmp/sprint225-paths | awk '{print $1}')" = 'c10f25c71f4f9aca703d897f0d78324e96fe0d2a14f35e0d09e697339f2be8ff'
+          test "$(grep -c '^\.github/workflows/sprint[0-9].*\.yml$' /tmp/sprint225-paths)" = '93'
+          grep -Fxq '.github/workflows/sprint225-historical-selected-target-successor-compatibility.yml' /tmp/sprint225-paths
+          grep -Fxq 'docs/SPRINT225_HISTORICAL_SELECTED_TARGET_SUCCESSOR_COMPATIBILITY.md' /tmp/sprint225-paths
+
+      - name: Preserve product runtime database and operational source
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git diff --exit-code "$BASE_SHA" "$HEAD_SHA" --             apps             database             config             routes             tools             release             ops/final-shift-close/STATE.json             ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json             .github/workflows/final-shift-close-migration27-selected-target-db-binding.yml             .github/workflows/final-shift-close-migration27-execution.yml             .github/workflows/final-shift-close-permission-provisioning.yml
+
+      - name: Lock current canonical selected target without granting activation
+        shell: bash
+        run: |
+          set -euo pipefail
+          state=ops/final-shift-close/STATE.json
+          selection=ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+          test "$(jq -r '.migration27.state' "$state")" = 'NOT_EXECUTED'
+          test "$(jq -r '.permission_provisioning.state' "$state")" = 'NONE'
+          test "$(jq -r '.feature_activation.state' "$state")" = 'INACTIVE'
+          test "$(jq -r '.deployment_authority' "$state")" = 'NOT_GRANTED'
+          test "$(jq -r '.technical_preview_activation' "$state")" = 'NOT_AUTHORIZED'
+          test "$(jq -r '.production_activation' "$state")" = 'NOT_AUTHORIZED'
+          test "$(jq -r '.updater_activation' "$state")" = 'INACTIVE'
+          test "$(jq -r '.selection_state' "$selection")" = 'SELECTED_NOT_AUTHORIZED'
+          test "$(jq -r '.selected_target.environment_id' "$selection")" = 'oneqay-durable-staging-01'
+          test "$(jq -r '.selected_target.runtime_class' "$selection")" = 'durable-staging'
+          test "$(jq -r '.selected_target.exact_running_source_commit' "$selection")" = '5be28a3c001738373588b58e9d29832c46402de1'
+          test "$(jq -r '.selected_target.exact_running_artifact_sha256' "$selection")" = '66be23792478fb191f912571b35076c42783b9733cdb3fb514b549d22ec90dd7'
+          test "$(jq -r '.selected_target.selection_fingerprint_sha256' "$selection")" = '858280ea3575317e8d88eed7009c770530097e261c391b2869fa81ad7c8546ce'
+
+      - name: Prove stale current-state assertions are removed from changed historical workflows
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep '^\.github/workflows/sprint' /tmp/sprint225-paths | grep -v 'sprint225-' > /tmp/historical-workflows
+          while IFS= read -r workflow; do
+            ! grep -Eq "jq -r '\.selection_state'.*BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET" "$workflow"
+            ! grep -Eq "jq -r '\.selected_target'.*(==|=)[[:space:]]*'?null'?" "$workflow"
+            ! grep -Eq '^[[:space:]]+\.github/workflows/final-shift-close-migration27-selected-target-db-binding\.yml \\$' "$workflow"
+          done < /tmp/historical-workflows
+
+      - name: Preserve historical contracts as provenance
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git diff --exit-code "$BASE_SHA" "$HEAD_SHA" -- ops docs/handbook
+          grep -Fq 'Historical workflow contracts remain historical provenance.' docs/SPRINT225_HISTORICAL_SELECTED_TARGET_SUCCESSOR_COMPATIBILITY.md
+
+      - name: Verify tracked source cleanliness
+        shell: bash
+        run: git diff --exit-code
