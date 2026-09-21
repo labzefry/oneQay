@@ -36,9 +36,9 @@ jobs:
         run: |
           set -euo pipefail
           git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/sprint225-paths
-          test "$(wc -l < /tmp/sprint225-paths | tr -d ' ')" = '93'
-          test "$(sha256sum /tmp/sprint225-paths | awk '{print $1}')" = 'df514bc13c1cc808f6040595caaa3d436ddeebc5198df407c079da45f474e7d0'
-          test "$(grep -c '^\.github/workflows/sprint[0-9].*\.yml$' /tmp/sprint225-paths)" = '92'
+          test "$(wc -l < /tmp/sprint225-paths | tr -d ' ')" = '94'
+          test "$(sha256sum /tmp/sprint225-paths | awk '{print $1}')" = 'c10f25c71f4f9aca703d897f0d78324e96fe0d2a14f35e0d09e697339f2be8ff'
+          test "$(grep -c '^\.github/workflows/sprint[0-9].*\.yml$' /tmp/sprint225-paths)" = '93'
           grep -Fxq '.github/workflows/sprint225-historical-selected-target-successor-compatibility.yml' /tmp/sprint225-paths
           grep -Fxq 'docs/SPRINT225_HISTORICAL_SELECTED_TARGET_SUCCESSOR_COMPATIBILITY.md' /tmp/sprint225-paths
 
