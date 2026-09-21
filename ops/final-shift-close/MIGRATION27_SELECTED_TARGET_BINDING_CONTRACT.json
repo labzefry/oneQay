@@ -35,7 +35,29 @@
     "migration27_table_must_not_exist": true,
     "migration27_record_must_not_exist": true,
     "runtime_reported_fingerprint_must_equal_independent_database_fingerprint": true,
-    "comparison": "hash_equals"
+    "comparison": "hash_equals",
+    "direct_mode": "GITHUB_HOSTED_PDO_PRIMARY",
+    "direct_connection_failure_fallback": "CPANEL_LOCAL_SIGNED_PDO_READBACK",
+    "fallback_activation_condition": "DIRECT_PDO_CONNECTION_UNAVAILABLE_ONLY",
+    "fallback_probe_source": "ops/final-shift-close/cpanel-migration27-local-db-binding-probe.php",
+    "fallback_environment_secret": "ONEQAY_MIGRATION27_BINDING_LOCAL_PROBE_B64",
+    "fallback_ttl_seconds": 900,
+    "fallback_exact_current_main_required": true,
+    "fallback_selected_target_identity_exact_match": true,
+    "fallback_credential_binding_fields": [
+      "host",
+      "port",
+      "database",
+      "username"
+    ],
+    "fallback_signature": {
+      "algorithm": "HMAC_SHA256",
+      "key_derivation": "HMAC_SHA256_CONTEXT_WITH_DB_PASSWORD",
+      "context": "oneqay-migration27-cpanel-local-probe-v1",
+      "comparison": "hash_equals"
+    },
+    "fallback_transport": "PROTECTED_ENVIRONMENT_SECRET_BASE64_JSON",
+    "fallback_database_mutation": false
   },
   "binding_artifact_name": "final-shift-close-migration27-selected-target-db-binding",
   "binding_evidence_context": "final-shift-close-migration27-selected-target-db-binding-evidence",
@@ -128,5 +150,14 @@
     "technical_preview_activation": "NOT_AUTHORIZED",
     "production_activation": "NOT_AUTHORIZED",
     "updater_activation": "INACTIVE"
+  },
+  "sprint224_cpanel_local_db_binding_compatibility": {
+    "observed_failed_run_id": 35604174103,
+    "observed_failure": "SQLSTATE_HY000_2002_CONNECTION_REFUSED",
+    "bounded_objective": "PRESERVE_INDEPENDENT_PDO_DB_BINDING_ON_CPANEL_WITHOUT_REMOTE_MYSQL_EXPOSURE",
+    "direct_remote_mysql_enablement_required": false,
+    "artifact_schema_changed": false,
+    "migration27_authority_changed": false,
+    "application_artifact_changed": false
   }
 }
