@@ -145,7 +145,7 @@ jobs:
           grep -Fq 'ONEQAY_MIGRATION27_TABLE' "$probe"
           grep -Fq 'ONEQAY_MIGRATION27' "$probe"
           grep -Fq 'credential_binding_sha256' "$probe"
-          grep -Fq "hash_hmac('sha256', ONEQAY_SIGNING_CONTEXT, $password, true)" "$probe"
+          grep -Fq "hash_hmac('sha256', ONEQAY_SIGNING_CONTEXT, \$password, true)" "$probe"
           grep -Fq 'chmod($temp, 0600)' "$probe"
           grep -Fq 'chmod($path, 0600)' "$probe"
           grep -Fq "'attestation_mode' => 'READ_ONLY'" "$probe"
