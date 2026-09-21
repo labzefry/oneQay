@@ -92,7 +92,7 @@ jobs:
             apps/web/app/Infrastructure/Pos/FilesystemFinalShiftCloseRuntimeBindingManifestWriter.php \
             apps/web/config/oneqay.php \
             apps/web/database/migrations \
-            .github/workflows/final-shift-close-migration27-selected-target-db-binding.yml \
+            ops/final-shift-close/STATE.json \
             .github/workflows/final-shift-close-migration27-execution.yml \
             ops/final-shift-close/STATE.json \
             ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json

@@ -92,8 +92,10 @@ jobs:
           test "$(jq -r '.technical_preview_activation' "$state")" = NOT_AUTHORIZED
           test "$(jq -r '.production_activation' "$state")" = NOT_AUTHORIZED
           test "$(jq -r '.updater_activation' "$state")" = INACTIVE
-          test "$(jq -r '.selection_state' "$selection")" = BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET
-          test "$(jq -r '.selected_target' "$selection")" = null
+          test "$(jq -r '.selection_state' "$selection")" = SELECTED_NOT_AUTHORIZED
+          test "$(jq -r '.selected_target.environment_id' "$selection")" = 'oneqay-durable-staging-01'
+          test "$(jq -r '.selected_target.runtime_class' "$selection")" = 'durable-staging'
+          test "$(jq -r '.selected_target.selection_fingerprint_sha256' "$selection")" = '858280ea3575317e8d88eed7009c770530097e261c391b2869fa81ad7c8546ce'
 
       - name: Exercise cPanel no-SSH qualification bridge
         shell: bash

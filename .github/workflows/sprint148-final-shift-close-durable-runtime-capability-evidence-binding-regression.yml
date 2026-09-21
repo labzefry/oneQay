@@ -109,8 +109,10 @@ jobs:
           [[ "$(jq -r '.technical_preview_activation' ops/final-shift-close/STATE.json)" == 'NOT_AUTHORIZED' ]]
           [[ "$(jq -r '.production_activation' ops/final-shift-close/STATE.json)" == 'NOT_AUTHORIZED' ]]
           [[ "$(jq -r '.updater_activation' ops/final-shift-close/STATE.json)" == 'INACTIVE' ]]
-          [[ "$(jq -r '.selection_state' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" == 'BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET' ]]
-          [[ "$(jq -r '.selected_target' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" == 'null' ]]
+          [[ "$(jq -r '.selection_state' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" == 'SELECTED_NOT_AUTHORIZED' ]]
+          [[ "$(jq -r '.selected_target.environment_id' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" == 'oneqay-durable-staging-01' ]]
+          [[ "$(jq -r '.selected_target.runtime_class' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" == 'durable-staging' ]]
+          [[ "$(jq -r '.selected_target.selection_fingerprint_sha256' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" == '858280ea3575317e8d88eed7009c770530097e261c391b2869fa81ad7c8546ce' ]]
 
       - name: Validate PHP and dependencies
         working-directory: apps/web
