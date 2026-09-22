@@ -50,5 +50,49 @@
     "production_activation": "NOT_AUTHORIZED",
     "updater_activation": "INACTIVE"
   },
-  "attribution": "Author by Lab | zefry"
+  "attribution": "Author by Lab | zefry",
+  "permission_provisioning_execution_adapter": {
+    "direct_mode": "GITHUB_HOSTED_LARAVEL_MYSQL_PRIMARY",
+    "direct_connection_unavailable_fallback": "CPANEL_LOCAL_SIGNED_PERMISSION_PROVISIONING_AND_POST_VERIFICATION",
+    "fallback_source": "ops/final-shift-close/cpanel-permission-provisioning-local-execution.php",
+    "verifier_source": "ops/final-shift-close/verify-cpanel-permission-provisioning-evidence.php",
+    "fallback_environment_secret": "ONEQAY_PERMISSION_LOCAL_PROVISIONING_B64",
+    "fallback_transport": "PROTECTED_ENVIRONMENT_SECRET_BASE64_JSON",
+    "fallback_ttl_seconds": 900,
+    "fallback_exact_current_main_required": true,
+    "fallback_exact_target_pr_and_head_required": true,
+    "fallback_exact_binding_run_id_and_attempt_required": true,
+    "fallback_selected_target_identity_exact_match": true,
+    "fallback_database_binding_sha256_exact_match": true,
+    "fallback_tenant_actor_organization_role_exact_match": true,
+    "fallback_permission_id": "pos.shift.close",
+    "fallback_migration27_state_required": "EXECUTED",
+    "fallback_policy_journal_verification_required": true,
+    "fallback_permission_grant_verification_required": true,
+    "fallback_role_assignment_boundary_unchanged_required": true,
+    "fallback_signature": {
+      "algorithm": "HMAC_SHA256",
+      "key_derivation": "HMAC_SHA256_CONTEXT_WITH_DB_PASSWORD",
+      "context": "oneqay-permission-cpanel-local-provisioning-v1",
+      "comparison": "hash_equals"
+    },
+    "remote_mysql_enablement_required": false
+  },
+  "sprint235_cpanel_local_execution_compatibility": {
+    "bounded_objective": "PROVISION_FINAL_SHIFT_CLOSE_PERMISSION_LOCALLY_ON_SELECTED_CPANEL_RUNTIME_WITH_SIGNED_SHORT_LIVED_EVIDENCE",
+    "selected_environment": "oneqay-durable-staging-01",
+    "selected_runtime_class": "durable-staging",
+    "direct_github_execution_preserved": true,
+    "cpanel_local_fallback_additive": true,
+    "remote_mysql_enablement_required": false,
+    "application_runtime_source_changed": false,
+    "migration_source_changed": false,
+    "state_transition_source_changed": false,
+    "permission_provisioning_authority_changed": false,
+    "feature_activation_authority_changed": false,
+    "default_grant_changed": false,
+    "production_authority_changed": false,
+    "technical_preview_authority_changed": false,
+    "updater_activation_changed": false
+  }
 }
