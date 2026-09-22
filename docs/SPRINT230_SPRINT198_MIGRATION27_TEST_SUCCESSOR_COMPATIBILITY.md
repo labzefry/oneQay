@@ -50,6 +50,10 @@ Path-set SHA-256:
 - database contents;
 - selected durable target.
 
+## CI evidence rule
+
+Only pull-request workflow runs attached to the exact final Sprint230 head are valid merge evidence. Push-only or superseded-head runs are not merge evidence.
+
 ## NO-GO preserved
 
 - migration #27 live execution = NOT_PERFORMED / NOT_AUTHORIZED
