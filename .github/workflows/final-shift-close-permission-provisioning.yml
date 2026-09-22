@@ -50,6 +50,9 @@ env:
   BINDING_ARTIFACT_NAME: final-shift-close-migration27-selected-target-db-binding
   BINDING_EVIDENCE_CONTEXT: final-shift-close-migration27-selected-target-db-binding-evidence
   DATABASE_BINDING_ALGORITHM: SHA256_CANONICAL_JSON_DATABASE_HOSTNAME_PORT_V1
+  LEGACY_BINDING_RUN_ID: '35685845647'
+  LEGACY_BINDING_ARTIFACT_ID: '10676756501'
+  LEGACY_BINDING_ARTIFACT_DIGEST: 'sha256:8f2cd339664d20a40a565543d520ab389b242a4690010def71d1bed7b3eac421'
 
 concurrency:
   group: final-shift-close-permission-${{ inputs.target_pr_number }}
@@ -290,8 +293,10 @@ jobs:
           [[ "$(jq 'length' <<<"$matches")" == '1' ]]
           artifact_id="$(jq -r '.[0].id' <<<"$matches")"
           artifact_size="$(jq -r '.[0].size_in_bytes' <<<"$matches")"
+          artifact_digest="$(jq -r '.[0].digest // ""' <<<"$matches")"
           [[ "$artifact_id" =~ ^[1-9][0-9]*$ ]]
           (( artifact_size > 0 && artifact_size <= 262144 ))
+          [[ "$artifact_digest" =~ ^sha256:[0-9a-f]{64}$ ]]
 
           curl --fail-with-body --silent --show-error --location \
             --header 'Accept: application/vnd.github+json' \
@@ -340,7 +345,15 @@ jobs:
           [[ "$(jq -r '.trusted_ingestion.run_attempt' "$binding")" == "$selected_ingestion_run_attempt" ]]
           [[ "$(jq -r '.trusted_ingestion.ingestion_fingerprint_sha256' "$binding")" == "$selected_ingestion_fingerprint" ]]
           [[ "$(jq -r '.migration27_state' "$binding")" == 'NOT_EXECUTED' ]]
-          [[ "$(jq -r '.database_binding_algorithm' "$binding")" == "$DATABASE_BINDING_ALGORITHM" ]]
+          binding_algorithm="$(jq -r '.database_binding_algorithm // ""' "$binding")"
+          if [[ -z "$binding_algorithm" ]]; then
+            [[ "$BINDING_RUN_ID" == "$LEGACY_BINDING_RUN_ID" ]]
+            [[ "$artifact_id" == "$LEGACY_BINDING_ARTIFACT_ID" ]]
+            [[ "$artifact_digest" == "$LEGACY_BINDING_ARTIFACT_DIGEST" ]]
+            echo 'Qualified exact legacy selected-target binding artifact without explicit algorithm field.'
+          else
+            [[ "$binding_algorithm" == "$DATABASE_BINDING_ALGORITHM" ]]
+          fi
           [[ "$(jq -r '.secrets_embedded' "$binding")" == 'false' ]]
           database_binding="$(jq -r '.database_binding_sha256 // ""' "$binding")"
           [[ "$database_binding" =~ ^[0-9a-f]{64}$ ]]
