@@ -2,7 +2,7 @@
   "schema_version": 1,
   "feature": "final-shift-close",
   "migration27": {
-    "state": "NOT_EXECUTED",
+    "state": "EXECUTED",
     "authority_context": "final-shift-close-migration27-execution-authority",
     "evidence_context": "final-shift-close-migration27-execution-evidence"
   },
