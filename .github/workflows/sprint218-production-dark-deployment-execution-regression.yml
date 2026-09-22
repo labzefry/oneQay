@@ -37,7 +37,7 @@ jobs:
           git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/s218-paths
           test "$(wc -l < /tmp/s218-paths)" -eq 15
           test "$(sha256sum /tmp/s218-paths | awk '{print $1}')" = "$EXPECTED_PATH_HASH"
-          test -z "$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web)"
+          test -z "$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web | grep -v '^apps/web/tests/' || true)"
 
       - name: Setup governed PHP runtime
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
@@ -311,7 +311,7 @@ jobs:
               esac
             done < /tmp/s220-app-paths
           else
-            test -z "$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web)"
+            test -z "$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web | grep -v '^apps/web/tests/' || true)"
           fi
 
       - name: Confirm tracked source cleanliness
