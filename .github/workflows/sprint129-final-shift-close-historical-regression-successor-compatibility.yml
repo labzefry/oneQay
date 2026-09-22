@@ -58,7 +58,7 @@ jobs:
             ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json \
             ops/final-shift-close/POST_SELECTION_DOWNSTREAM_READINESS.json
           [[ "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" =~ ^(NOT_EXECUTED|EXECUTED)$ ]]
-          [[ "$(jq -r '.permission_provisioning.state' ops/final-shift-close/STATE.json)" == 'NONE' ]]
+          permission_state="$(jq -r '.permission_provisioning.state' ops/final-shift-close/STATE.json)"; [[ "$permission_state" =~ ^(NONE|PROVISIONED)$ ]]; if [[ "$permission_state" == 'PROVISIONED' ]]; then [[ "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" == 'EXECUTED' ]]; fi
           [[ "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" == 'INACTIVE' ]]
           [[ "$(jq -r '.selection_state' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" == 'SELECTED_NOT_AUTHORIZED' ]]
           [[ "$(jq -r '.selected_target.environment_id' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" == 'oneqay-durable-staging-01' ]]
