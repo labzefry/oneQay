@@ -51,6 +51,7 @@ jobs:
       ONEQAY_DB_DATABASE: ${{ secrets.ONEQAY_MIGRATION27_DB_DATABASE }}
       ONEQAY_DB_USERNAME: ${{ secrets.ONEQAY_MIGRATION27_DB_USERNAME }}
       ONEQAY_DB_PASSWORD: ${{ secrets.ONEQAY_MIGRATION27_DB_PASSWORD }}
+      ONEQAY_MIGRATION27_LOCAL_EXECUTION_B64: ${{ secrets.ONEQAY_MIGRATION27_LOCAL_EXECUTION_B64 }}
       APP_ENV: production
       APP_DEBUG: 'false'
       MIGRATION_PATH: database/migrations/0000_00_00_000027_create_pos_shift_close_evidence_foundation.php
@@ -372,9 +373,96 @@ jobs:
             "$API_URL/repos/$REPOSITORY/statuses/$TARGET_HEAD" \
             --data "$payload" >/dev/null
 
+      - name: Verify cPanel-local migration27 execution evidence
+        id: local_execution
+        if: ${{ steps.preflight.outputs.verified == 'true' && steps.binding.outputs.verified == 'true' && env.ONEQAY_MIGRATION27_LOCAL_EXECUTION_B64 != '' }}
+        shell: bash
+        env:
+          EXPECTED_DB_BINDING: ${{ steps.binding.outputs.expected_db_binding }}
+          TARGET_PR: ${{ inputs.target_pr_number }}
+          TARGET_HEAD: ${{ inputs.target_head_sha }}
+          BINDING_RUN_ID: ${{ inputs.binding_run_id }}
+          BINDING_RUN_ATTEMPT: ${{ inputs.binding_run_attempt }}
+        run: |
+          set -euo pipefail
+
+          [[ -n "$ONEQAY_DB_PASSWORD" ]]
+          [[ "$EXPECTED_DB_BINDING" =~ ^[0-9a-f]{64}$ ]]
+
+          printf '%s' "$ONEQAY_MIGRATION27_LOCAL_EXECUTION_B64" | base64 --decode > /tmp/migration27-local-execution.json
+          (( $(wc -c < /tmp/migration27-local-execution.json) > 1 ))
+          (( $(wc -c < /tmp/migration27-local-execution.json) <= 32768 ))
+          jq -e 'type == "object"' /tmp/migration27-local-execution.json >/dev/null
+
+          evidence=/tmp/migration27-local-execution.json
+          selected_environment="$(cat /tmp/selected-environment.txt)"
+          selected_runtime="$(cat /tmp/selected-runtime.txt)"
+          selected_source="$(cat /tmp/selected-source.txt)"
+          selected_artifact="$(cat /tmp/selected-artifact.txt)"
+          selected_attestation="$(cat /tmp/selected-attestation.txt)"
+          selected_selection_fingerprint="$(cat /tmp/selected-selection-fingerprint.txt)"
+          selected_ingestion_run_id="$(cat /tmp/selected-ingestion-run-id.txt)"
+          selected_ingestion_run_attempt="$(cat /tmp/selected-ingestion-run-attempt.txt)"
+          selected_ingestion_fingerprint="$(cat /tmp/selected-ingestion-fingerprint.txt)"
+
+          [[ "$(jq -r '.schema_version' "$evidence")" == '1' ]]
+          [[ "$(jq -r '.evidence_type' "$evidence")" == 'CPANEL_LOCAL_MIGRATION27_EXECUTION' ]]
+          [[ "$(jq -r '.canonical_main_sha' "$evidence")" == "$GITHUB_SHA" ]]
+          [[ "$(jq -r '.target_pr_number' "$evidence")" == "$TARGET_PR" ]]
+          [[ "$(jq -r '.target_head_sha' "$evidence")" == "$TARGET_HEAD" ]]
+          [[ "$(jq -r '.binding_run_id' "$evidence")" == "$BINDING_RUN_ID" ]]
+          [[ "$(jq -r '.binding_run_attempt' "$evidence")" == "$BINDING_RUN_ATTEMPT" ]]
+          [[ "$(jq -r '.environment_id' "$evidence")" == "$selected_environment" ]]
+          [[ "$(jq -r '.runtime_class' "$evidence")" == "$selected_runtime" ]]
+          [[ "$(jq -r '.exact_running_source_commit' "$evidence")" == "$selected_source" ]]
+          [[ "$(jq -r '.exact_running_artifact_sha256' "$evidence")" == "$selected_artifact" ]]
+          [[ "$(jq -r '.readiness_attestation_sha256' "$evidence")" == "$selected_attestation" ]]
+          [[ "$(jq -r '.selection_fingerprint_sha256' "$evidence")" == "$selected_selection_fingerprint" ]]
+          [[ "$(jq -r '.trusted_ingestion_run_id' "$evidence")" == "$selected_ingestion_run_id" ]]
+          [[ "$(jq -r '.trusted_ingestion_run_attempt' "$evidence")" == "$selected_ingestion_run_attempt" ]]
+          [[ "$(jq -r '.trusted_ingestion_fingerprint_sha256' "$evidence")" == "$selected_ingestion_fingerprint" ]]
+          [[ "$(jq -r '.database_binding_sha256' "$evidence")" == "$EXPECTED_DB_BINDING" ]]
+          [[ "$(jq -r '.migration_blob_sha1' "$evidence")" == "$MIGRATION_BLOB_SHA" ]]
+          [[ "$(jq -r '.migration_name' "$evidence")" == "$MIGRATION_NAME" ]]
+          [[ "$(jq -r '.migration27_state' "$evidence")" == 'EXECUTED' ]]
+          [[ "$(jq -r '.attestation_mode' "$evidence")" == 'LOCAL_EXECUTION_AND_POST_SCHEMA_VERIFICATION' ]]
+          [[ "$(jq -r '.table_row_count' "$evidence")" == '0' ]]
+          [[ "$(jq -r '.required_indexes_verified' "$evidence")" == 'true' ]]
+          [[ "$(jq -r '.variance_review_check_verified' "$evidence")" == 'true' ]]
+          [[ "$(jq -r '.required_columns_verified' "$evidence")" == 'true' ]]
+          [[ "$(jq -r '.secrets_embedded' "$evidence")" == 'false' ]]
+          [[ "$(jq -r '.migration_batch' "$evidence")" =~ ^[1-9][0-9]*$ ]]
+          [[ "$(jq -r '.nonce' "$evidence")" =~ ^[0-9a-f]{32}$ ]]
+          [[ "$(jq -r '.hmac_sha256' "$evidence")" =~ ^[0-9a-f]{64}$ ]]
+
+          issued="$(jq -r '.issued_at_unix' "$evidence")"
+          expires="$(jq -r '.expires_at_unix' "$evidence")"
+          [[ "$issued" =~ ^[1-9][0-9]*$ ]]
+          [[ "$expires" =~ ^[1-9][0-9]*$ ]]
+          (( expires > issued ))
+          (( expires - issued <= 900 ))
+          now="$(date +%s)"
+          (( issued <= now + 60 ))
+          (( now <= expires ))
+
+          expected_hmac="$(php -r '
+            $payload = json_decode(file_get_contents($argv[1]), true, 32, JSON_THROW_ON_ERROR);
+            unset($payload["hmac_sha256"]);
+            ksort($payload, SORT_STRING);
+            $canonical = json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
+            $key = hash_hmac("sha256", "oneqay-migration27-cpanel-local-execution-v1", (string) getenv("ONEQAY_DB_PASSWORD"), true);
+            echo hash_hmac("sha256", $canonical, $key);
+          ' "$evidence")"
+          actual_hmac="$(jq -r '.hmac_sha256' "$evidence")"
+          php -r 'exit(hash_equals($argv[1], $argv[2]) ? 0 : 1);' "$expected_hmac" "$actual_hmac"
+
+          echo 'verified=true' >> "$GITHUB_OUTPUT"
+          echo 'mode=cpanel_local_signed_execution' >> "$GITHUB_OUTPUT"
+          echo 'Signed cPanel-local migration27 execution evidence qualified.'
+
       - name: Execute canonical migration27 and verify durable schema
         id: execute
-        if: ${{ steps.preflight.outputs.verified == 'true' && steps.binding.outputs.verified == 'true' }}
+        if: ${{ steps.preflight.outputs.verified == 'true' && steps.binding.outputs.verified == 'true' && steps.local_execution.outputs.verified != 'true' }}
         shell: bash
         env:
           EXPECTED_DB_BINDING: ${{ steps.binding.outputs.expected_db_binding }}
@@ -554,9 +642,10 @@ jobs:
           REPOSITORY: ${{ github.repository }}
           TARGET_HEAD: ${{ steps.preflight.outputs.target_head }}
           EXECUTE_OUTCOME: ${{ steps.execute.outcome }}
+          LOCAL_EXECUTION_VERIFIED: ${{ steps.local_execution.outputs.verified }}
         run: |
           set -euo pipefail
-          if [[ "$EXECUTE_OUTCOME" == 'success' ]]; then
+          if [[ "$LOCAL_EXECUTION_VERIFIED" == 'true' || "$EXECUTE_OUTCOME" == 'success' ]]; then
             state=success
             description='Migration27 execution verified against exact selected durable target'
           else
