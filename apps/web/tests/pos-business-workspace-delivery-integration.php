@@ -164,7 +164,17 @@ foreach ($defaultOffConfigs as $configFile => $environmentKey) {
 $statePath = __DIR__.'/../../../ops/final-shift-close/STATE.json';
 $state = json_decode((string) file_get_contents($statePath), true, 64, JSON_THROW_ON_ERROR);
 $assert(in_array(($state['migration27']['state'] ?? null), ['NOT_EXECUTED', 'EXECUTED'], true), 'Sprint198 migration #27 lifecycle state is invalid.');
-$assert(($state['permission_provisioning']['state'] ?? null) === 'NONE', 'Sprint198 crossed permission provisioning NO-GO.');
+$permissionProvisioningState = $state['permission_provisioning']['state'] ?? null;
+$assert(
+    in_array($permissionProvisioningState, ['NONE', 'PROVISIONED'], true),
+    'Sprint198 permission provisioning lifecycle state is invalid.',
+);
+if ($permissionProvisioningState === 'PROVISIONED') {
+    $assert(
+        ($state['migration27']['state'] ?? null) === 'EXECUTED',
+        'Sprint198 permission provisioning requires migration #27 EXECUTED.',
+    );
+}
 $assert(($state['feature_activation']['state'] ?? null) === 'INACTIVE', 'Sprint198 crossed Final Shift Close activation NO-GO.');
 $assert(($state['deployment_authority'] ?? null) === 'NOT_GRANTED', 'Sprint198 crossed deployment NO-GO.');
 $assert(($state['technical_preview_activation'] ?? null) === 'NOT_AUTHORIZED', 'Sprint198 crossed Technical Preview NO-GO.');
