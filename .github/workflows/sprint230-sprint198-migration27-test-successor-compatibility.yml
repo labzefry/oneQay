@@ -1,0 +1,89 @@
+name: Sprint230 Sprint198 Migration27 Test Successor Compatibility
+
+# Attribution: Lab | zefry
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/sprint230-sprint198-migration27-test-successor-compatibility.yml'
+      - 'apps/web/tests/pos-business-workspace-delivery-integration.php'
+      - 'docs/SPRINT230_SPRINT198_MIGRATION27_TEST_SUCCESSOR_COMPATIBILITY.md'
+
+permissions:
+  contents: read
+
+jobs:
+  qualify-sprint198-test-successor-compatibility:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact Sprint230 source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Lock exact Sprint230 envelope
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/paths
+          cat > /tmp/expected <<'EOF'
+          .github/workflows/sprint230-sprint198-migration27-test-successor-compatibility.yml
+          apps/web/tests/pos-business-workspace-delivery-integration.php
+          docs/SPRINT230_SPRINT198_MIGRATION27_TEST_SUCCESSOR_COMPATIBILITY.md
+          EOF
+          diff -u /tmp/expected /tmp/paths
+          test "$(sha256sum /tmp/paths | awk '{print $1}')" = '051a540d98890f41aff5443510ce46f6451207ee5ffbe632892011b6cdb46b0e'
+
+      - name: Preserve operational ownership and runtime source
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git diff --exit-code "$BASE_SHA" "$HEAD_SHA" --             apps/web/app             apps/web/bootstrap             apps/web/config             apps/web/database/migrations             apps/web/resources             apps/web/routes             ops/final-shift-close/STATE.json             ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json             .github/workflows/sprint102-final-shift-close-operational-sequencing-gate.yml             .github/workflows/final-shift-close-migration27-execution.yml             .github/workflows/final-shift-close-migration27-selected-target-db-binding.yml
+
+      - name: Qualify Sprint198 lifecycle-aware test
+        shell: bash
+        run: |
+          set -euo pipefail
+          f=apps/web/tests/pos-business-workspace-delivery-integration.php
+          php -l "$f"
+          grep -Fq "in_array(\$migration27State, ['NOT_EXECUTED', 'EXECUTED'], true)" "$f"
+          ! grep -Fq "=== 'NOT_EXECUTED', 'Sprint198 crossed migration #27 NO-GO.'" "$f"
+          grep -Fq "permission_provisioning" "$f"
+          grep -Fq "feature_activation" "$f"
+          grep -Fq "technical_preview_activation" "$f"
+          grep -Fq "production_activation" "$f"
+          grep -Fq "updater_activation" "$f"
+
+      - name: Execute Sprint198 regression on canonical base state
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          composer install --no-interaction --prefer-dist --no-progress
+          php -d zend.assertions=1 -d assert.exception=1 tests/pos-business-workspace-delivery-integration.php
+
+      - name: Preserve current operational state
+        shell: bash
+        run: |
+          set -euo pipefail
+          state=ops/final-shift-close/STATE.json
+          test "$(jq -r '.migration27.state' "$state")" = 'NOT_EXECUTED'
+          test "$(jq -r '.permission_provisioning.state' "$state")" = 'NONE'
+          test "$(jq -r '.feature_activation.state' "$state")" = 'INACTIVE'
+          test "$(jq -r '.technical_preview_activation' "$state")" = 'NOT_AUTHORIZED'
+          test "$(jq -r '.production_activation' "$state")" = 'NOT_AUTHORIZED'
+          test "$(jq -r '.updater_activation' "$state")" = 'INACTIVE'
+
+      - name: Verify tracked source cleanliness
+        shell: bash
+        run: git diff --exit-code
