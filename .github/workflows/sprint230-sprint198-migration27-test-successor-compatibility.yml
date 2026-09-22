@@ -1,4 +1,4 @@
-name: Sprint230 Sprint198 Migration27 Test Successor Compatibility
+name: Sprint230 Sprint198 Migration27 Harness Successor Compatibility
 
 # Attribution: Lab | zefry
 
@@ -7,15 +7,15 @@ on:
     branches:
       - main
     paths:
+      - '.github/workflows/sprint198-pos-business-workspace-delivery-integration-regression.yml'
       - '.github/workflows/sprint230-sprint198-migration27-test-successor-compatibility.yml'
-      - 'apps/web/tests/pos-business-workspace-delivery-integration.php'
       - 'docs/SPRINT230_SPRINT198_MIGRATION27_TEST_SUCCESSOR_COMPATIBILITY.md'
 
 permissions:
   contents: read
 
 jobs:
-  qualify-sprint198-test-successor-compatibility:
+  qualify-sprint198-harness-successor-compatibility:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -34,43 +34,43 @@ jobs:
           set -euo pipefail
           git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/paths
           cat > /tmp/expected <<'EOF'
+          .github/workflows/sprint198-pos-business-workspace-delivery-integration-regression.yml
           .github/workflows/sprint230-sprint198-migration27-test-successor-compatibility.yml
-          apps/web/tests/pos-business-workspace-delivery-integration.php
           docs/SPRINT230_SPRINT198_MIGRATION27_TEST_SUCCESSOR_COMPATIBILITY.md
           EOF
           diff -u /tmp/expected /tmp/paths
-          test "$(sha256sum /tmp/paths | awk '{print $1}')" = '051a540d98890f41aff5443510ce46f6451207ee5ffbe632892011b6cdb46b0e'
+          test "$(sha256sum /tmp/paths | awk '{print $1}')" = '67c8c29343b15a8ed99bc673605ad6d915e672ae43f06aa6944378c5d7b06b0b'
 
-      - name: Preserve operational ownership and runtime source
+      - name: Preserve application runtime and canonical operational ownership
         shell: bash
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
-          git diff --exit-code "$BASE_SHA" "$HEAD_SHA" --             apps/web/app             apps/web/bootstrap             apps/web/config             apps/web/database/migrations             apps/web/resources             apps/web/routes             ops/final-shift-close/STATE.json             ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json             .github/workflows/sprint102-final-shift-close-operational-sequencing-gate.yml             .github/workflows/final-shift-close-migration27-execution.yml             .github/workflows/final-shift-close-migration27-selected-target-db-binding.yml
+          git diff --exit-code "$BASE_SHA" "$HEAD_SHA" --             apps             ops/final-shift-close/STATE.json             ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json             .github/workflows/sprint102-final-shift-close-operational-sequencing-gate.yml             .github/workflows/final-shift-close-migration27-execution.yml             .github/workflows/final-shift-close-migration27-selected-target-db-binding.yml
 
-      - name: Qualify Sprint198 lifecycle-aware test
+      - name: Prove Sprint198 compatibility is harness-only
         shell: bash
         run: |
           set -euo pipefail
-          f=apps/web/tests/pos-business-workspace-delivery-integration.php
-          php -l "$f"
-          grep -Fq "in_array(\$migration27State, ['NOT_EXECUTED', 'EXECUTED'], true)" "$f"
-          ! grep -Fq "=== 'NOT_EXECUTED', 'Sprint198 crossed migration #27 NO-GO.'" "$f"
-          grep -Fq "permission_provisioning" "$f"
-          grep -Fq "feature_activation" "$f"
-          grep -Fq "technical_preview_activation" "$f"
-          grep -Fq "production_activation" "$f"
-          grep -Fq "updater_activation" "$f"
+          f=.github/workflows/sprint198-pos-business-workspace-delivery-integration-regression.yml
+          grep -Fq 'current_migration27="$(jq -r '"'"'.migration27.state'"'"' "$state")"' "$f"
+          grep -Fq '[[ "$current_migration27" =~ ^(NOT_EXECUTED|EXECUTED)$ ]]' "$f"
+          grep -Fq 'if [[ "$current_migration27" == '"'"'EXECUTED'"'"' ]]; then' "$f"
+          grep -Fq 'jq '"'"'.migration27.state = "NOT_EXECUTED"'"'"' "$state" > "$normalized"' "$f"
+          grep -Fq 'trap restore_state EXIT' "$f"
+          grep -Fq 'trap - EXIT' "$f"
+          grep -Fq 'git diff --exit-code -- "$state"' "$f"
 
-      - name: Execute Sprint198 regression on canonical base state
-        working-directory: apps/web
+      - name: Preserve canonical Sprint198 test source
         shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
-          composer install --no-interaction --prefer-dist --no-progress
-          php -d zend.assertions=1 -d assert.exception=1 tests/pos-business-workspace-delivery-integration.php
+          git diff --exit-code "$BASE_SHA" "$HEAD_SHA" --             apps/web/tests/pos-business-workspace-delivery-integration.php
 
       - name: Preserve current operational state
         shell: bash
