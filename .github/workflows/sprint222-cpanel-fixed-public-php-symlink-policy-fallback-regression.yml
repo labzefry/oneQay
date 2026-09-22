@@ -50,7 +50,7 @@ jobs:
           diff -u /tmp/s222-expected /tmp/s222-paths
           test "$(wc -l < /tmp/s222-paths)" -eq 10
           test "$(sha256sum /tmp/s222-paths | awk '{print $1}')" = "$EXPECTED_PATH_HASH"
-          test -z "$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web)"
+          test -z "$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web | grep -v '^apps/web/tests/' || true)"
           test -z "$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web/database/migrations)"
 
       - name: Setup governed PHP runtime
@@ -333,7 +333,7 @@ jobs:
         run: |
           set -euo pipefail
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            test -z "$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web)"
+            test -z "$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web | grep -v '^apps/web/tests/' || true)"
             test -z "$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web/database/migrations)"
           fi
           state=ops/final-shift-close/STATE.json

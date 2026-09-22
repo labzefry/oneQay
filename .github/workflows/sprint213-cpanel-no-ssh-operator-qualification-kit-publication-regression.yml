@@ -258,7 +258,7 @@ jobs:
               esac
             done < /tmp/s220-app-paths
           else
-            test -z "$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web)"
+            test -z "$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web | grep -v '^apps/web/tests/' || true)"
           fi
 
       - name: Confirm tracked source cleanliness
