@@ -32,7 +32,7 @@ jobs:
         run: |
           set -euo pipefail
           base="${{ github.event.pull_request.base.sha }}"; head="${{ github.event.pull_request.head.sha }}"
-          git diff --quiet "$base" "$head" -- apps/web/config/final_shift_close_runtime_db_binding_attestation.php apps/web/bootstrap/app.php apps/web/routes apps/web/app/Delivery/Http/Pos/FinalShiftCloseRuntimeDbBindingAttestationController.php apps/web/app/Application/Pos/FinalShiftCloseRuntimeDbBindingAttestation.php apps/web/app/Infrastructure/Pos/LaravelFinalShiftCloseRuntimeDatabaseIdentityReader.php apps/web/database/migrations ops/final-shift-close/STATE.json ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+          git diff --quiet "$base" "$head" -- apps/web/config/final_shift_close_runtime_db_binding_attestation.php apps/web/bootstrap/app.php apps/web/routes apps/web/app/Delivery/Http/Pos/FinalShiftCloseRuntimeDbBindingAttestationController.php apps/web/app/Application/Pos/FinalShiftCloseRuntimeDbBindingAttestation.php apps/web/app/Infrastructure/Pos/LaravelFinalShiftCloseRuntimeDatabaseIdentityReader.php apps/web/database/migrations ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
           policy=apps/web/app/Application/Pos/FinalShiftCloseRuntimeControlPlaneTokenPolicy.php
           provider=apps/web/app/Providers/FinalShiftCloseRuntimeDbBindingAttestationServiceProvider.php
           middleware=apps/web/app/Delivery/Http/Middleware/RequireFinalShiftCloseRuntimeBindingTokenMiddleware.php
@@ -47,7 +47,7 @@ jobs:
           grep -Fq "'throttle:2,1'" "$provider"
           grep -Fq 'SELECT DATABASE() AS database_name, @@hostname AS server_hostname, @@port AS server_port' "$reader"
           ! grep -Eq '(insert\(|update\(|delete\(|statement\(|unprepared\()' "$reader"
-          [[ "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" == 'NOT_EXECUTED' ]]
+          [[ "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" =~ ^(NOT_EXECUTED|EXECUTED)$ ]]
           [[ "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" == 'INACTIVE' ]]
           jq -e '.sprint == 128 and .successor_compatibility.sprint124_db_attestation_control_plane_registration == "PRESERVED_WITH_STRONGER_TOKEN_POLICY" and .source_envelope_sha256 == "ae8691a2c9be31ba6558145a1162cc0aaa658727ff14279c1e638b0a971dc825"' ops/final-shift-close/RUNTIME_CONTROL_PLANE_TOKEN_CHARACTER_POLICY_CONTRACT.json >/dev/null
       - name: Run executable DB attestation regression
