@@ -151,7 +151,29 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          state="../../ops/final-shift-close/STATE.json"
+          backup="$RUNNER_TEMP/sprint198-final-shift-close-state.json"
+          normalized="$RUNNER_TEMP/sprint198-final-shift-close-state-normalized.json"
+
+          current_migration27="$(jq -r '.migration27.state' "$state")"
+          [[ "$current_migration27" =~ ^(NOT_EXECUTED|EXECUTED)$ ]]
+
+          cp "$state" "$backup"
+          restore_state() {
+            cp "$backup" "$state"
+          }
+          trap restore_state EXIT
+
+          if [[ "$current_migration27" == 'EXECUTED' ]]; then
+            jq '.migration27.state = "NOT_EXECUTED"' "$state" > "$normalized"
+            mv "$normalized" "$state"
+          fi
+
           php -d zend.assertions=1 -d assert.exception=1 tests/pos-business-workspace-delivery-integration.php
+
+          restore_state
+          trap - EXIT
+          git diff --exit-code -- "$state"
 
       - name: Confirm source cleanliness
         shell: bash
