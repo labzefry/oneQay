@@ -1,0 +1,140 @@
+name: Sprint226 Final Shift Close Migration27 cPanel Local DB Env Binding Regression
+
+# Attribution: Lab | zefry
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/sprint226-final-shift-close-migration27-cpanel-local-db-env-binding-regression.yml'
+      - 'docs/SPRINT226_FINAL_SHIFT_CLOSE_MIGRATION27_CPANEL_LOCAL_DB_ENV_BINDING_CORRECTION.md'
+      - 'ops/final-shift-close/MIGRATION27_SELECTED_TARGET_BINDING_CONTRACT.json'
+      - 'ops/final-shift-close/cpanel-migration27-local-db-binding-probe.php'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint226-migration27-cpanel-local-db-env-binding-\${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qualify-canonical-oneqay-db-env-binding:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout exact Sprint226 source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: \${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Lock exact Sprint226 source envelope
+        shell: bash
+        env:
+          BASE_SHA: \${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: \${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/actual
+          cat > /tmp/expected <<'EOF'
+          .github/workflows/sprint226-final-shift-close-migration27-cpanel-local-db-env-binding-regression.yml
+          docs/SPRINT226_FINAL_SHIFT_CLOSE_MIGRATION27_CPANEL_LOCAL_DB_ENV_BINDING_CORRECTION.md
+          ops/final-shift-close/MIGRATION27_SELECTED_TARGET_BINDING_CONTRACT.json
+          ops/final-shift-close/cpanel-migration27-local-db-binding-probe.php
+          EOF
+          diff -u /tmp/expected /tmp/actual
+          test "$(sha256sum /tmp/actual | awk '{print $1}')" = '999522ea09e0e76ea27f203ef95ac39c410d44ec15297935691960e6aa36cae0'
+
+      - name: Preserve application runtime and operational state
+        shell: bash
+        env:
+          BASE_SHA: \${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: \${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git diff --exit-code "$BASE_SHA" "$HEAD_SHA" -- \
+            apps/web/app \
+            apps/web/bootstrap \
+            apps/web/config \
+            apps/web/database/migrations \
+            apps/web/resources \
+            apps/web/routes \
+            ops/final-shift-close/STATE.json \
+            ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json \
+            .github/workflows/final-shift-close-migration27-selected-target-db-binding.yml \
+            .github/workflows/final-shift-close-migration27-execution.yml
+
+      - name: Prove canonical application DB namespace
+        shell: bash
+        run: |
+          set -euo pipefail
+          config=apps/web/config/database.php
+          grep -Fq "env('ONEQAY_DB_HOST'" "$config"
+          grep -Fq "env('ONEQAY_DB_PORT'" "$config"
+          grep -Fq "env('ONEQAY_DB_DATABASE'" "$config"
+          grep -Fq "env('ONEQAY_DB_USERNAME'" "$config"
+          grep -Fq "env('ONEQAY_DB_PASSWORD'" "$config"
+
+      - name: Qualify corrected cPanel local probe env binding
+        shell: bash
+        run: |
+          set -euo pipefail
+          probe=ops/final-shift-close/cpanel-migration27-local-db-binding-probe.php
+          php -l "$probe"
+          grep -Fq "envRequired(\$env, 'ONEQAY_DB_HOST')" "$probe"
+          grep -Fq "envRequired(\$env, 'ONEQAY_DB_DATABASE')" "$probe"
+          grep -Fq "envRequired(\$env, 'ONEQAY_DB_USERNAME')" "$probe"
+          grep -Fq "envRequired(\$env, 'ONEQAY_DB_PASSWORD')" "$probe"
+          grep -Fq "\$env['ONEQAY_DB_PORT'] ?? '3306'" "$probe"
+          ! grep -Fq "envRequired(\$env, 'DB_HOST')" "$probe"
+          ! grep -Fq "envRequired(\$env, 'DB_DATABASE')" "$probe"
+          ! grep -Fq "envRequired(\$env, 'DB_USERNAME')" "$probe"
+          ! grep -Fq "envRequired(\$env, 'DB_PASSWORD')" "$probe"
+          ! grep -Fq "\$env['DB_PORT'] ?? '3306'" "$probe"
+          grep -Fq 'CPANEL_LOCAL_INDEPENDENT_PDO_READBACK' "$probe"
+          grep -Fq 'ONEQAY_PROBE_TTL_SECONDS = 900' "$probe"
+          grep -Fq 'SELECT DATABASE() AS database_name, @@hostname AS server_hostname, @@port AS server_port' "$probe"
+          grep -Fq "'attestation_mode' => 'READ_ONLY'" "$probe"
+          grep -Fq "'secrets_embedded' => false" "$probe"
+          ! grep -Eq '(INSERT[[:space:]]+INTO|UPDATE[[:space:]]|DELETE[[:space:]]+FROM|DROP[[:space:]]+TABLE|TRUNCATE[[:space:]]+TABLE|ALTER[[:space:]]+TABLE|CREATE[[:space:]]+TABLE)' "$probe"
+
+      - name: Lock Sprint226 machine-readable contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          contract=ops/final-shift-close/MIGRATION27_SELECTED_TARGET_BINDING_CONTRACT.json
+          jq -e . "$contract" >/dev/null
+          test "$(jq -r '.binding_producer_independent_database_readback.fallback_runtime_env_namespace' "$contract")" = 'ONEQAY_DB'
+          test "$(jq -r '.binding_producer_independent_database_readback.fallback_runtime_env_keys.host' "$contract")" = 'ONEQAY_DB_HOST'
+          test "$(jq -r '.binding_producer_independent_database_readback.fallback_runtime_env_keys.port' "$contract")" = 'ONEQAY_DB_PORT'
+          test "$(jq -r '.binding_producer_independent_database_readback.fallback_runtime_env_keys.database' "$contract")" = 'ONEQAY_DB_DATABASE'
+          test "$(jq -r '.binding_producer_independent_database_readback.fallback_runtime_env_keys.username' "$contract")" = 'ONEQAY_DB_USERNAME'
+          test "$(jq -r '.binding_producer_independent_database_readback.fallback_runtime_env_keys.password' "$contract")" = 'ONEQAY_DB_PASSWORD'
+          test "$(jq -r '.sprint226_cpanel_local_db_env_binding_correction.observed_diagnostic' "$contract")" = 'DB_HOST_PRESENT=NO'
+          test "$(jq -r '.sprint226_cpanel_local_db_env_binding_correction.application_runtime_source_changed' "$contract")" = 'false'
+          test "$(jq -r '.sprint226_cpanel_local_db_env_binding_correction.database_mutation' "$contract")" = 'false'
+          test "$(jq -r '.sprint226_cpanel_local_db_env_binding_correction.migration27_authority_changed' "$contract")" = 'false'
+
+      - name: Preserve canonical no-go state
+        shell: bash
+        run: |
+          set -euo pipefail
+          state=ops/final-shift-close/STATE.json
+          selection=ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+          test "$(jq -r '.migration27.state' "$state")" = 'NOT_EXECUTED'
+          test "$(jq -r '.permission_provisioning.state' "$state")" = 'NONE'
+          test "$(jq -r '.feature_activation.state' "$state")" = 'INACTIVE'
+          test "$(jq -r '.technical_preview_activation' "$state")" = 'NOT_AUTHORIZED'
+          test "$(jq -r '.production_activation' "$state")" = 'NOT_AUTHORIZED'
+          test "$(jq -r '.updater_activation' "$state")" = 'INACTIVE'
+          test "$(jq -r '.selection_state' "$selection")" = 'SELECTED_NOT_AUTHORIZED'
+          test "$(jq -r '.selected_target.environment_id' "$selection")" = 'oneqay-durable-staging-01'
+          test "$(jq -r '.selected_target.runtime_class' "$selection")" = 'durable-staging'
+          test "$(jq -r '.selected_target.selection_fingerprint_sha256' "$selection")" = '858280ea3575317e8d88eed7009c770530097e261c391b2869fa81ad7c8546ce'
+
+      - name: Verify tracked source cleanliness
+        shell: bash
+        run: git diff --exit-code
