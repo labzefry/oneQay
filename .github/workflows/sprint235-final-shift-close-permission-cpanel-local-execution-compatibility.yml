@@ -1,0 +1,136 @@
+name: Sprint235 Final Shift Close Permission cPanel Local Execution Compatibility
+
+# Attribution: Lab | zefry
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/final-shift-close-permission-provisioning.yml'
+      - '.github/workflows/sprint235-final-shift-close-permission-cpanel-local-execution-compatibility.yml'
+      - 'docs/SPRINT235_FINAL_SHIFT_CLOSE_PERMISSION_CPANEL_LOCAL_EXECUTION_COMPATIBILITY.md'
+      - 'ops/final-shift-close/PERMISSION_PROVISIONING_SELECTED_TARGET_BINDING_CONTRACT.json'
+      - 'ops/final-shift-close/cpanel-permission-provisioning-local-execution.php'
+      - 'ops/final-shift-close/verify-cpanel-permission-provisioning-evidence.php'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint235-permission-cpanel-local-execution-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qualify-permission-cpanel-local-execution:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+
+    steps:
+      - name: Checkout exact Sprint235 source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Lock exact Sprint235 envelope
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/actual
+          cat > /tmp/expected <<'EOF'
+          .github/workflows/final-shift-close-permission-provisioning.yml
+          .github/workflows/sprint235-final-shift-close-permission-cpanel-local-execution-compatibility.yml
+          docs/SPRINT235_FINAL_SHIFT_CLOSE_PERMISSION_CPANEL_LOCAL_EXECUTION_COMPATIBILITY.md
+          ops/final-shift-close/PERMISSION_PROVISIONING_SELECTED_TARGET_BINDING_CONTRACT.json
+          ops/final-shift-close/cpanel-permission-provisioning-local-execution.php
+          ops/final-shift-close/verify-cpanel-permission-provisioning-evidence.php
+          EOF
+          diff -u /tmp/expected /tmp/actual
+
+      - name: Preserve operational state application runtime and migrations
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git diff --exit-code "$BASE_SHA" "$HEAD_SHA" --             ops/final-shift-close/STATE.json             ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json             apps/web/app             apps/web/bootstrap             apps/web/config             apps/web/database/migrations             apps/web/resources             apps/web/routes             .github/workflows/sprint102-final-shift-close-operational-sequencing-gate.yml
+
+      - name: Qualify cPanel-local executor and verifier
+        shell: bash
+        run: |
+          set -euo pipefail
+          executor=ops/final-shift-close/cpanel-permission-provisioning-local-execution.php
+          verifier=ops/final-shift-close/verify-cpanel-permission-provisioning-evidence.php
+          php -l "$executor"
+          php -l "$verifier"
+
+          grep -Fq "CPANEL_LOCAL_PERMISSION_PROVISIONING" "$executor"
+          grep -Fq "ONEQAY_PERMISSION_LOCAL_TTL_SECONDS = 900" "$executor"
+          grep -Fq "LOCAL_PERMISSION_PROVISIONING_AND_POST_VERIFICATION" "$executor"
+          grep -Fq "oneqay-permission-cpanel-local-provisioning-v1" "$executor"
+          grep -Fq "AdministrationPermission::MANAGE" "$executor"
+          grep -Fq "FinalShiftClosePermission::identifier()" "$executor"
+          grep -Fq "oneqay_policy_mutations" "$executor"
+          grep -Fq "oneqay_role_permissions" "$executor"
+          grep -Fq "role_assignment_boundaries_unchanged' => true" "$executor"
+          grep -Fq "secrets_embedded' => false" "$executor"
+          ! grep -Eq '(migrate:rollback|migrate:reset|migrate:refresh|migrate:fresh|DROP[[:space:]]+TABLE|TRUNCATE[[:space:]]+TABLE)' "$executor"
+
+          grep -Fq "CPANEL_LOCAL_PERMISSION_PROVISIONING" "$verifier"
+          grep -Fq "oneqay-permission-cpanel-local-provisioning-v1" "$verifier"
+          grep -Fq "Local permission evidence TTL exceeds 900 seconds." "$verifier"
+          grep -Fq "hash_equals" "$verifier"
+
+      - name: Qualify additive GitHub verifier and preserved direct mode
+        shell: bash
+        run: |
+          set -euo pipefail
+          workflow=.github/workflows/final-shift-close-permission-provisioning.yml
+          grep -Fq 'workflow_dispatch:' "$workflow"
+          grep -Fq 'environment: final-shift-close-permission-provisioning' "$workflow"
+          grep -Fq 'ONEQAY_PERMISSION_LOCAL_PROVISIONING_B64' "$workflow"
+          grep -Fq 'Verify cPanel-local permission provisioning evidence' "$workflow"
+          grep -Fq 'verify-cpanel-permission-provisioning-evidence.php' "$workflow"
+          grep -Fq "steps.local_provisioning.outputs.verified != 'true'" "$workflow"
+          grep -Fq 'Execute bounded selected-target permission provisioning transaction' "$workflow"
+          grep -Fq 'LOCAL_VERIFIED:' "$workflow"
+          grep -Fq 'EXECUTE_OUTCOME:' "$workflow"
+          grep -Fq 'Selected-target-bound pos.shift.close provisioning verified' "$workflow"
+
+      - name: Lock machine-readable adapter contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          contract=ops/final-shift-close/PERMISSION_PROVISIONING_SELECTED_TARGET_BINDING_CONTRACT.json
+          jq -e . "$contract" >/dev/null
+          test "$(jq -r '.permission_provisioning_execution_adapter.direct_mode' "$contract")" = 'GITHUB_HOSTED_LARAVEL_MYSQL_PRIMARY'
+          test "$(jq -r '.permission_provisioning_execution_adapter.direct_connection_unavailable_fallback' "$contract")" = 'CPANEL_LOCAL_SIGNED_PERMISSION_PROVISIONING_AND_POST_VERIFICATION'
+          test "$(jq -r '.permission_provisioning_execution_adapter.fallback_source' "$contract")" = 'ops/final-shift-close/cpanel-permission-provisioning-local-execution.php'
+          test "$(jq -r '.permission_provisioning_execution_adapter.verifier_source' "$contract")" = 'ops/final-shift-close/verify-cpanel-permission-provisioning-evidence.php'
+          test "$(jq -r '.permission_provisioning_execution_adapter.fallback_environment_secret' "$contract")" = 'ONEQAY_PERMISSION_LOCAL_PROVISIONING_B64'
+          test "$(jq -r '.permission_provisioning_execution_adapter.fallback_ttl_seconds' "$contract")" = '900'
+          test "$(jq -r '.permission_provisioning_execution_adapter.remote_mysql_enablement_required' "$contract")" = 'false'
+          test "$(jq -r '.sprint235_cpanel_local_execution_compatibility.state_transition_source_changed' "$contract")" = 'false'
+          test "$(jq -r '.sprint235_cpanel_local_execution_compatibility.feature_activation_authority_changed' "$contract")" = 'false'
+
+      - name: Preserve current fail-closed state
+        shell: bash
+        run: |
+          set -euo pipefail
+          state=ops/final-shift-close/STATE.json
+          test "$(jq -r '.migration27.state' "$state")" = 'EXECUTED'
+          test "$(jq -r '.permission_provisioning.state' "$state")" = 'NONE'
+          test "$(jq -r '.permission_provisioning.default_grant' "$state")" = 'NONE'
+          test "$(jq -r '.feature_activation.state' "$state")" = 'INACTIVE'
+          test "$(jq -r '.technical_preview_activation' "$state")" = 'NOT_AUTHORIZED'
+          test "$(jq -r '.production_activation' "$state")" = 'NOT_AUTHORIZED'
+          test "$(jq -r '.updater_activation' "$state")" = 'INACTIVE'
+
+      - name: Verify tracked source cleanliness
+        shell: bash
+        run: git diff --exit-code
