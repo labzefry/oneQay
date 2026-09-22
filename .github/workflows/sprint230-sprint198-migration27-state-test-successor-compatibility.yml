@@ -1,0 +1,104 @@
+name: Sprint230 Sprint198 Migration27 State Test Successor Compatibility
+
+# Attribution: Lab | zefry
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/sprint230-sprint198-migration27-state-test-successor-compatibility.yml'
+      - 'apps/web/tests/pos-business-workspace-delivery-integration.php'
+      - 'docs/SPRINT230_SPRINT198_MIGRATION27_STATE_TEST_SUCCESSOR_COMPATIBILITY.md'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint230-sprint198-migration27-state-test-successor-compatibility-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qualify-sprint198-migration27-state-test-successor-compatibility:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout exact Sprint230 source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Lock exact Sprint230 envelope
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/actual
+          cat > /tmp/expected <<'EOF'
+          .github/workflows/sprint230-sprint198-migration27-state-test-successor-compatibility.yml
+          apps/web/tests/pos-business-workspace-delivery-integration.php
+          docs/SPRINT230_SPRINT198_MIGRATION27_STATE_TEST_SUCCESSOR_COMPATIBILITY.md
+          EOF
+          diff -u /tmp/expected /tmp/actual
+          test "$(sha256sum /tmp/actual | awk '{print $1}')" = 'dbbcb8aabec7e460a4d5ce8977a79f6dcebfa515ef2929ad13a752ddaa9520cb'
+
+      - name: Preserve operational state and transition ownership
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git diff --exit-code "$BASE_SHA" "$HEAD_SHA" --             ops/final-shift-close/STATE.json             ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json             .github/workflows/sprint102-final-shift-close-operational-sequencing-gate.yml             .github/workflows/final-shift-close-migration27-execution.yml             .github/workflows/final-shift-close-migration27-selected-target-db-binding.yml             apps/web/app             apps/web/database/migrations
+
+      - name: Qualify Sprint198 lifecycle assertion
+        shell: bash
+        run: |
+          set -euo pipefail
+          test_file=apps/web/tests/pos-business-workspace-delivery-integration.php
+          php -l "$test_file"
+          grep -Fq "in_array(($state['migration27']['state'] ?? null), ['NOT_EXECUTED', 'EXECUTED'], true)" "$test_file"
+          ! grep -Fq "($state['migration27']['state'] ?? null) === 'NOT_EXECUTED'" "$test_file"
+          grep -Fq "($state['permission_provisioning']['state'] ?? null) === 'NONE'" "$test_file"
+          grep -Fq "($state['feature_activation']['state'] ?? null) === 'INACTIVE'" "$test_file"
+          grep -Fq "($state['deployment_authority'] ?? null) === 'NOT_GRANTED'" "$test_file"
+          grep -Fq "($state['technical_preview_activation'] ?? null) === 'NOT_AUTHORIZED'" "$test_file"
+          grep -Fq "($state['production_activation'] ?? null) === 'NOT_AUTHORIZED'" "$test_file"
+
+      - name: Execute Sprint198 delivery integration regression
+        shell: bash
+        working-directory: apps/web
+        env:
+          APP_NAME: oneQay
+          APP_ENV: testing
+          APP_KEY: base64:YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWE=
+          APP_DEBUG: 'false'
+          APP_URL: http://127.0.0.1
+          ONEQAY_RUNTIME_CLASS: ci
+          SESSION_DRIVER: array
+          CACHE_STORE: array
+          LOG_CHANNEL: stderr
+        run: |
+          set -euo pipefail
+          composer install --no-interaction --prefer-dist --no-progress
+          php -d zend.assertions=1 -d assert.exception=1 tests/pos-business-workspace-delivery-integration.php
+
+      - name: Preserve canonical current state before execution
+        shell: bash
+        run: |
+          set -euo pipefail
+          state=ops/final-shift-close/STATE.json
+          test "$(jq -r '.migration27.state' "$state")" = 'NOT_EXECUTED'
+          test "$(jq -r '.permission_provisioning.state' "$state")" = 'NONE'
+          test "$(jq -r '.feature_activation.state' "$state")" = 'INACTIVE'
+          test "$(jq -r '.technical_preview_activation' "$state")" = 'NOT_AUTHORIZED'
+          test "$(jq -r '.production_activation' "$state")" = 'NOT_AUTHORIZED'
+          test "$(jq -r '.updater_activation' "$state")" = 'INACTIVE'
+
+      - name: Verify tracked source cleanliness
+        shell: bash
+        run: git diff --exit-code
