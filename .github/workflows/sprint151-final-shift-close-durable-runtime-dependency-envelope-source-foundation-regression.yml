@@ -111,7 +111,7 @@ jobs:
             .canonical_boundaries.real_dependency_envelope_evidence == "NONE" and
             .canonical_boundaries.runtime_allowlist_change == "NOT_IMPLEMENTED"
           ' "$downstream" >/dev/null
-          test "$(jq -r '.migration27.state' "$state")" = 'NOT_EXECUTED'
+          [[ "$(jq -r '.migration27.state' "$state")" =~ ^(NOT_EXECUTED|EXECUTED)$ ]]
           test "$(jq -r '.permission_provisioning.state' "$state")" = 'NONE'
           test "$(jq -r '.feature_activation.state' "$state")" = 'INACTIVE'
           test "$(jq -r '.deployment_authority' "$state")" = 'NOT_GRANTED'

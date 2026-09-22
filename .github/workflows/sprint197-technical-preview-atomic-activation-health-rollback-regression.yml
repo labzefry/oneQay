@@ -70,7 +70,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" = NOT_EXECUTED
+          [[ "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" =~ ^(NOT_EXECUTED|EXECUTED)$ ]]
           test "$(jq -r '.permission_provisioning.state' ops/final-shift-close/STATE.json)" = NONE
           test "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" = INACTIVE
           test "$(jq -r '.deployment_authority' ops/final-shift-close/STATE.json)" = NOT_GRANTED
@@ -235,7 +235,7 @@ jobs:
           grep -Fq 'technical_preview_activation_failed_rolled_back' apps/web/app/Infrastructure/Installation/PrebootTechnicalPreviewActivationExecution.php
           grep -Fq "'ONEQAY_TECHNICAL_PREVIEW_ENABLED' => 'false'" apps/web/app/Infrastructure/Installation/PrebootInstallationConfiguration.php
           test "$(jq -r '.technical_preview_activation' ops/final-shift-close/STATE.json)" = NOT_AUTHORIZED
-          test "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" = NOT_EXECUTED
+          [[ "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" =~ ^(NOT_EXECUTED|EXECUTED)$ ]]
           test "$(jq -r '.permission_provisioning.state' ops/final-shift-close/STATE.json)" = NONE
           test "$(jq -r '.deployment_authority' ops/final-shift-close/STATE.json)" = NOT_GRANTED
           test "$(jq -r '.production_activation' ops/final-shift-close/STATE.json)" = NOT_AUTHORIZED

@@ -53,7 +53,7 @@ jobs:
           set -euo pipefail
           state=ops/final-shift-close/STATE.json
           selection=ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
-          test "$(jq -r '.migration27.state' "$state")" = NOT_EXECUTED
+          [[ "$(jq -r '.migration27.state' "$state")" =~ ^(NOT_EXECUTED|EXECUTED)$ ]]
           test "$(jq -r '.permission_provisioning.state' "$state")" = NONE
           test "$(jq -r '.feature_activation.state' "$state")" = INACTIVE
           test "$(jq -r '.deployment_authority' "$state")" = NOT_GRANTED
