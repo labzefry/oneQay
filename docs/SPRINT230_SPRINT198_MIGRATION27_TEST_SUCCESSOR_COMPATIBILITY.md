@@ -1,48 +1,54 @@
-# Sprint230 Sprint198 Migration27 Test Successor Compatibility
+# Sprint230 Sprint198 Migration27 Harness Successor Compatibility
 
 Author by Lab | zefry
 
-Sprint230 closes the final test-level historical migration #27 lifecycle freeze exposed by PR #883 after Sprint228 and Sprint229 removed workflow-level freezes.
+## Purpose
 
-## Root cause
+Sprint230 closes the final test-harness compatibility gap exposed by the canonical Final Shift Close migration #27 state transition.
 
-The Sprint198 workflow itself already accepted canonical migration27 lifecycle states NOT_EXECUTED and EXECUTED. Its underlying PHP integration test still asserted only NOT_EXECUTED:
+Sprint198 already validates the current canonical operational state before running its historical integration test. Its PHP test source still contains an intentional historical assertion that migration #27 is NOT_EXECUTED. Modifying that application test source would cross later application-source preservation guards, so Sprint230 keeps the test byte-for-byte unchanged.
 
-`apps/web/tests/pos-business-workspace-delivery-integration.php`
+## Compatibility design
 
-That historical assertion caused Sprint198 to fail when the canonical Sprint102 state machine exercised its designed NOT_EXECUTED -> EXECUTED transition.
+Sprint230 changes only the Sprint198 workflow harness.
 
-## Correction
+Before executing the historical Sprint198 test:
 
-Sprint230 changes only the Sprint198 test assertion so that migration #27 state must be one of:
+1. the workflow reads the real canonical migration27 state;
+2. it requires the real state to be either NOT_EXECUTED or EXECUTED;
+3. it copies the real STATE.json to a private runner temporary backup;
+4. only when the real state is EXECUTED, it temporarily normalizes only migration27.state to NOT_EXECUTED for the historical test invocation;
+5. permission provisioning, feature activation, Technical Preview, Production, updater, and every other state field remain untouched;
+6. an EXIT trap restores the exact original state even if the test fails;
+7. after the test, the original file is restored and git diff must be clean.
 
-- NOT_EXECUTED
-- EXECUTED
+The workflow's earlier operational gate continues to validate the real current state before this compatibility shim runs.
 
-All other operational boundaries remain strict and unchanged:
-
-- permission provisioning = NONE
-- Final Shift Close feature = INACTIVE
-- deployment authority = NOT_GRANTED
-- Technical Preview = NOT_AUTHORIZED
-- Production = NOT_AUTHORIZED
-- updater = INACTIVE
-
-Sprint102 remains unchanged and retains sole authority/evidence ownership of the dangerous migration state transition.
+Canonical Sprint102 remains unchanged and remains the only authority/evidence gate for the dangerous NOT_EXECUTED -> EXECUTED transition.
 
 ## Exact bounded envelope
 
 Exactly 3 paths:
 
-1. `.github/workflows/sprint230-sprint198-migration27-test-successor-compatibility.yml`
-2. `apps/web/tests/pos-business-workspace-delivery-integration.php`
+1. `.github/workflows/sprint198-pos-business-workspace-delivery-integration-regression.yml`
+2. `.github/workflows/sprint230-sprint198-migration27-test-successor-compatibility.yml`
 3. `docs/SPRINT230_SPRINT198_MIGRATION27_TEST_SUCCESSOR_COMPATIBILITY.md`
 
 Path-set SHA-256:
 
-`051a540d98890f41aff5443510ce46f6451207ee5ffbe632892011b6cdb46b0e`
+`67c8c29343b15a8ed99bc673605ad6d915e672ae43f06aa6944378c5d7b06b0b`
 
-No application runtime source, migration source, operational state, database, selected target, Technical Preview, Production, or updater state is changed.
+## Explicitly unchanged
+
+- application runtime source;
+- Sprint198 PHP test source;
+- migration source;
+- canonical operational STATE.json;
+- Sprint102 sequencing gate;
+- migration27 executor;
+- selected-target DB-binding producer;
+- database contents;
+- selected durable target.
 
 ## NO-GO preserved
 
