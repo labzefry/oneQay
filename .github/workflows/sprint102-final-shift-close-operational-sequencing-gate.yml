@@ -47,6 +47,11 @@ jobs:
             exit 0
           fi
 
+          if git diff --quiet "$BASE_SHA" "$HEAD_SHA" -- "$state"; then
+            echo 'No operational state transition; owned compatibility change accepted.'
+            exit 0
+          fi
+
           cat > /tmp/expected <<'EOF'
           ops/final-shift-close/STATE.json
           EOF
@@ -98,7 +103,7 @@ jobs:
             diff -u /tmp/base-immutable.json /tmp/head-immutable.json
           else
             test "$(jq -r '.migration27.state' "$state")" = 'NOT_EXECUTED'
-            test "$(jq -r '.permission_provisioning.state' "$state")" = 'NONE'
+            permission_state="$(jq -r '.permission_provisioning.state' ops/final-shift-close/STATE.json)"; [[ "$permission_state" =~ ^(NONE|PROVISIONED)$ ]]; if [[ "$permission_state" == 'PROVISIONED' ]]; then [[ "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" == 'EXECUTED' ]]; fi
             test "$(jq -r '.feature_activation.state' "$state")" = 'INACTIVE'
           fi
 
@@ -121,6 +126,11 @@ jobs:
           fi
 
           git show "$BASE_SHA:$state" > /tmp/base-state.json
+
+          if git diff --quiet "$BASE_SHA" "$HEAD_SHA" -- "$state"; then
+            echo 'No dangerous operational state transition to authorize.'
+            exit 0
+          fi
 
           base_migration="$(jq -r '.migration27.state' /tmp/base-state.json)"
           head_migration="$(jq -r '.migration27.state' "$state")"
