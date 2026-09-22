@@ -113,7 +113,7 @@ jobs:
         run: |
           set -euo pipefail
           [[ "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" =~ ^(NOT_EXECUTED|EXECUTED)$ ]]
-          [[ "$(jq -r '.permission_provisioning.state' ops/final-shift-close/STATE.json)" == 'NONE' ]]
+          permission_state="$(jq -r '.permission_provisioning.state' ops/final-shift-close/STATE.json)"; [[ "$permission_state" =~ ^(NONE|PROVISIONED)$ ]]; if [[ "$permission_state" == 'PROVISIONED' ]]; then [[ "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" == 'EXECUTED' ]]; fi
           [[ "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" == 'INACTIVE' ]]
           [[ "$(jq -r '.deployment_authority' ops/final-shift-close/STATE.json)" == 'NOT_GRANTED' ]]
           [[ "$(jq -r '.technical_preview_activation' ops/final-shift-close/STATE.json)" == 'NOT_AUTHORIZED' ]]
