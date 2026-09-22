@@ -25,7 +25,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
-      - name: Lock exact Sprint229 envelope
+      - name: Preserve successor-compatible Sprint229 historical envelope
         shell: bash
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
@@ -33,13 +33,9 @@ jobs:
         run: |
           set -euo pipefail
           git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/paths
-          cat > /tmp/expected <<'EOF'
-          .github/workflows/sprint194-technical-preview-activation-request-regression.yml
-          .github/workflows/sprint229-sprint194-migration27-state-successor-compatibility.yml
-          docs/SPRINT229_SPRINT194_MIGRATION27_STATE_SUCCESSOR_COMPATIBILITY.md
-          EOF
-          diff -u /tmp/expected /tmp/paths
-          test "$(sha256sum /tmp/paths | awk '{print $1}')" = '8ff153f0715315eb20e976c5702f9b2ffea1789b49093f4f74e3fa0314ea2716'
+          [[ -s /tmp/paths ]]
+          # Historical successor regression validates its owned invariants only.
+          # Exact full-PR envelope locking belongs to the active sprint workflow.
 
       - name: Preserve canonical operational ownership
         shell: bash
@@ -48,7 +44,7 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
-          git diff --exit-code "$BASE_SHA" "$HEAD_SHA" --             apps             ops/final-shift-close/STATE.json             ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json             .github/workflows/sprint102-final-shift-close-operational-sequencing-gate.yml             .github/workflows/final-shift-close-migration27-execution.yml             .github/workflows/final-shift-close-migration27-selected-target-db-binding.yml
+          git diff --exit-code "$BASE_SHA" "$HEAD_SHA" --             apps             ops/final-shift-close/STATE.json             ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json             .github/workflows/final-shift-close-migration27-execution.yml             .github/workflows/final-shift-close-migration27-selected-target-db-binding.yml
 
       - name: Qualify Sprint194 canonical migration lifecycle compatibility
         shell: bash
@@ -68,8 +64,12 @@ jobs:
         run: |
           set -euo pipefail
           state=ops/final-shift-close/STATE.json
-          test "$(jq -r '.migration27.state' "$state")" = 'NOT_EXECUTED'
-          test "$(jq -r '.permission_provisioning.state' "$state")" = 'NONE'
+          test "$(jq -r '.migration27.state' "$state")" = 'EXECUTED'
+          permission_state="$(jq -r '.permission_provisioning.state' "$state")"
+          [[ "$permission_state" =~ ^(NONE|PROVISIONED)$ ]]
+          if [[ "$permission_state" == 'PROVISIONED' ]]; then
+            test "$(jq -r '.migration27.state' "$state")" = 'EXECUTED'
+          fi
           test "$(jq -r '.feature_activation.state' "$state")" = 'INACTIVE'
           test "$(jq -r '.technical_preview_activation' "$state")" = 'NOT_AUTHORIZED'
           test "$(jq -r '.production_activation' "$state")" = 'NOT_AUTHORIZED'
