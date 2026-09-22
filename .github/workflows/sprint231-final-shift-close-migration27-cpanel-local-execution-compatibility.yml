@@ -1,0 +1,133 @@
+name: Sprint231 Final Shift Close Migration27 cPanel Local Execution Compatibility
+
+# Attribution: Lab | zefry
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/final-shift-close-migration27-execution.yml'
+      - '.github/workflows/sprint231-final-shift-close-migration27-cpanel-local-execution-compatibility.yml'
+      - 'docs/SPRINT231_FINAL_SHIFT_CLOSE_MIGRATION27_CPANEL_LOCAL_EXECUTION_COMPATIBILITY.md'
+      - 'ops/final-shift-close/MIGRATION27_SELECTED_TARGET_BINDING_CONTRACT.json'
+      - 'ops/final-shift-close/cpanel-migration27-local-execution.php'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint231-migration27-cpanel-local-execution-compatibility-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qualify-cpanel-local-migration27-execution-compatibility:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+
+    steps:
+      - name: Checkout exact Sprint231 source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Lock exact Sprint231 source envelope
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/actual
+          cat > /tmp/expected <<'EOF'
+          .github/workflows/final-shift-close-migration27-execution.yml
+          .github/workflows/sprint231-final-shift-close-migration27-cpanel-local-execution-compatibility.yml
+          docs/SPRINT231_FINAL_SHIFT_CLOSE_MIGRATION27_CPANEL_LOCAL_EXECUTION_COMPATIBILITY.md
+          ops/final-shift-close/MIGRATION27_SELECTED_TARGET_BINDING_CONTRACT.json
+          ops/final-shift-close/cpanel-migration27-local-execution.php
+          EOF
+          diff -u /tmp/expected /tmp/actual
+          test "$(sha256sum /tmp/actual | awk '{print $1}')" = '5e9b356ab7a5e068bead7e13ab9de2f2f22ce6d97f351670931eaa43b433918a'
+
+      - name: Preserve operational state application runtime and migration source
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git diff --exit-code "$BASE_SHA" "$HEAD_SHA" --             ops/final-shift-close/STATE.json             ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json             apps/web/app             apps/web/bootstrap             apps/web/config             apps/web/database/migrations             apps/web/resources             apps/web/routes             .github/workflows/sprint102-final-shift-close-operational-sequencing-gate.yml             .github/workflows/final-shift-close-permission-provisioning.yml
+
+      - name: Qualify canonical cPanel local executor source
+        shell: bash
+        run: |
+          set -euo pipefail
+          local_executor=ops/final-shift-close/cpanel-migration27-local-execution.php
+          php -l "$local_executor"
+          grep -Fq "CPANEL_LOCAL_MIGRATION27_EXECUTION" "$local_executor"
+          grep -Fq "ONEQAY_MIGRATION27_LOCAL_EXECUTION_TTL_SECONDS = 900" "$local_executor"
+          grep -Fq "ONEQAY_MIGRATION27_GIT_BLOB_SHA1 = 'a412560c2f340f4783a385aef729dbd074389a4c'" "$local_executor"
+          grep -Fq "LOCAL_EXECUTION_AND_POST_SCHEMA_VERIFICATION" "$local_executor"
+          grep -Fq "hash_hmac(" "$local_executor"
+          grep -Fq "hash_equals(" "$local_executor"
+          grep -Fq "ONEQAY_DB_HOST" "$local_executor"
+          grep -Fq "ONEQAY_DB_DATABASE" "$local_executor"
+          grep -Fq "ONEQAY_DB_USERNAME" "$local_executor"
+          grep -Fq "ONEQAY_DB_PASSWORD" "$local_executor"
+          grep -Fq "SELECT DATABASE() AS database_name, @@hostname AS server_hostname, @@port AS server_port" "$local_executor"
+          grep -Fq "migration27_state' => 'EXECUTED'" "$local_executor"
+          grep -Fq "secrets_embedded' => false" "$local_executor"
+          ! grep -Eq '(migrate:rollback|migrate:reset|migrate:refresh|migrate:fresh|DROP[[:space:]]+TABLE|TRUNCATE[[:space:]]+TABLE|DELETE[[:space:]]+FROM)' "$local_executor"
+          test "$(git hash-object apps/web/database/migrations/0000_00_00_000027_create_pos_shift_close_evidence_foundation.php)" = 'a412560c2f340f4783a385aef729dbd074389a4c'
+
+      - name: Qualify additive GitHub execution verifier
+        shell: bash
+        run: |
+          set -euo pipefail
+          executor=.github/workflows/final-shift-close-migration27-execution.yml
+          grep -Fq 'workflow_dispatch:' "$executor"
+          grep -Fq 'environment: final-shift-close-migration27-execution' "$executor"
+          grep -Fq 'ONEQAY_MIGRATION27_LOCAL_EXECUTION_B64' "$executor"
+          grep -Fq 'Verify cPanel-local migration27 execution evidence' "$executor"
+          grep -Fq "CPANEL_LOCAL_MIGRATION27_EXECUTION" "$executor"
+          grep -Fq "LOCAL_EXECUTION_AND_POST_SCHEMA_VERIFICATION" "$executor"
+          grep -Fq "oneqay-migration27-cpanel-local-execution-v1" "$executor"
+          grep -Fq 'expires - issued <= 900' "$executor"
+          grep -Fq "steps.local_execution.outputs.verified != 'true'" "$executor"
+          grep -Fq "LOCAL_EXECUTION_VERIFIED" "$executor"
+          grep -Fq "php artisan migrate" "$executor"
+          grep -Fq "EXPECTED_DB_BINDING" "$executor"
+          grep -Fq "MIGRATION_BLOB_SHA: a412560c2f340f4783a385aef729dbd074389a4c" "$executor"
+          grep -Fq "final-shift-close-migration27-execution-evidence" "$executor"
+
+      - name: Lock machine-readable Sprint231 contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          contract=ops/final-shift-close/MIGRATION27_SELECTED_TARGET_BINDING_CONTRACT.json
+          jq -e . "$contract" >/dev/null
+          test "$(jq -r '.migration27_execution_adapter.direct_mode' "$contract")" = 'GITHUB_HOSTED_LARAVEL_MYSQL_PRIMARY'
+          test "$(jq -r '.migration27_execution_adapter.direct_connection_unavailable_fallback' "$contract")" = 'CPANEL_LOCAL_SIGNED_MIGRATION_EXECUTION_AND_POST_SCHEMA_VERIFICATION'
+          test "$(jq -r '.migration27_execution_adapter.fallback_source' "$contract")" = 'ops/final-shift-close/cpanel-migration27-local-execution.php'
+          test "$(jq -r '.migration27_execution_adapter.fallback_environment_secret' "$contract")" = 'ONEQAY_MIGRATION27_LOCAL_EXECUTION_B64'
+          test "$(jq -r '.migration27_execution_adapter.fallback_ttl_seconds' "$contract")" = '900'
+          test "$(jq -r '.migration27_execution_adapter.remote_mysql_enablement_required' "$contract")" = 'false'
+          test "$(jq -r '.sprint231_cpanel_local_execution_compatibility.migration_source_changed' "$contract")" = 'false'
+          test "$(jq -r '.sprint231_cpanel_local_execution_compatibility.state_transition_source_changed' "$contract")" = 'false'
+
+      - name: Preserve current no-go state
+        shell: bash
+        run: |
+          set -euo pipefail
+          state=ops/final-shift-close/STATE.json
+          test "$(jq -r '.migration27.state' "$state")" = 'NOT_EXECUTED'
+          test "$(jq -r '.permission_provisioning.state' "$state")" = 'NONE'
+          test "$(jq -r '.feature_activation.state' "$state")" = 'INACTIVE'
+          test "$(jq -r '.technical_preview_activation' "$state")" = 'NOT_AUTHORIZED'
+          test "$(jq -r '.production_activation' "$state")" = 'NOT_AUTHORIZED'
+          test "$(jq -r '.updater_activation' "$state")" = 'INACTIVE'
+
+      - name: Verify tracked source cleanliness
+        shell: bash
+        run: git diff --exit-code
