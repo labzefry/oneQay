@@ -91,7 +91,11 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
-          git diff -U0 "$BASE_SHA" "$HEAD_SHA" -- .github/workflows             | grep '^+' | grep -v '^+++' > /tmp/additions || true
+          : > /tmp/additions
+          while IFS= read -r workflow; do
+            git diff -U0 "$BASE_SHA" "$HEAD_SHA" -- "$workflow" \
+              | grep '^+' | grep -v '^+++' >> /tmp/additions || true
+          done < /tmp/historical-workflows
           ! grep -Eq '(php artisan migrate|migrate:rollback|migrate:reset|migrate:refresh|migrate:fresh|INSERT[[:space:]]+INTO|UPDATE[[:space:]]+.+SET|DELETE[[:space:]]+FROM|DROP[[:space:]]+TABLE|TRUNCATE[[:space:]]+TABLE|ALTER[[:space:]]+TABLE|CREATE[[:space:]]+TABLE)' /tmp/additions
 
       - name: Verify tracked source cleanliness
