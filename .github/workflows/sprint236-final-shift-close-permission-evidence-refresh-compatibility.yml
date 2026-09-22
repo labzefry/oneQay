@@ -1,0 +1,109 @@
+name: Sprint236 Final Shift Close Permission Evidence Refresh Compatibility
+
+# Attribution: Lab | zefry
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/final-shift-close-permission-provisioning.yml'
+      - '.github/workflows/sprint235-final-shift-close-permission-cpanel-local-execution-compatibility.yml'
+      - '.github/workflows/sprint236-final-shift-close-permission-evidence-refresh-compatibility.yml'
+      - 'docs/SPRINT236_FINAL_SHIFT_CLOSE_PERMISSION_EVIDENCE_REFRESH_COMPATIBILITY.md'
+      - 'ops/final-shift-close/PERMISSION_PROVISIONING_SELECTED_TARGET_BINDING_CONTRACT.json'
+      - 'ops/final-shift-close/cpanel-permission-provisioning-local-evidence-refresh.php'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint236-permission-evidence-refresh-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qualify-permission-evidence-refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+
+    steps:
+      - name: Checkout exact Sprint236 source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Preserve Sprint236 canonical foundation across successor work
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f .github/workflows/final-shift-close-permission-provisioning.yml
+          test -f .github/workflows/sprint235-final-shift-close-permission-cpanel-local-execution-compatibility.yml
+          test -f .github/workflows/sprint236-final-shift-close-permission-evidence-refresh-compatibility.yml
+          test -f docs/SPRINT236_FINAL_SHIFT_CLOSE_PERMISSION_EVIDENCE_REFRESH_COMPATIBILITY.md
+          test -f ops/final-shift-close/PERMISSION_PROVISIONING_SELECTED_TARGET_BINDING_CONTRACT.json
+          test -f ops/final-shift-close/cpanel-permission-provisioning-local-evidence-refresh.php
+
+      - name: Preserve operational state and application runtime
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git diff --exit-code "$BASE_SHA" "$HEAD_SHA" --             ops/final-shift-close/STATE.json             ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json             apps/web/app             apps/web/bootstrap             apps/web/config             apps/web/database/migrations             apps/web/resources             apps/web/routes             .github/workflows/sprint102-final-shift-close-operational-sequencing-gate.yml
+
+      - name: Qualify legacy binding compatibility
+        shell: bash
+        run: |
+          set -euo pipefail
+          workflow=.github/workflows/final-shift-close-permission-provisioning.yml
+          grep -Fq "LEGACY_BINDING_RUN_ID: '35685845647'" "$workflow"
+          grep -Fq "LEGACY_BINDING_ARTIFACT_ID: '10676756501'" "$workflow"
+          grep -Fq "sha256:8f2cd339664d20a40a565543d520ab389b242a4690010def71d1bed7b3eac421" "$workflow"
+          grep -Fq 'binding_algorithm="$(jq -r' "$workflow"
+          grep -Fq 'Qualified exact legacy selected-target binding artifact without explicit algorithm field.' "$workflow"
+          grep -Fq '[[ "$binding_algorithm" == "$DATABASE_BINDING_ALGORITHM" ]]' "$workflow"
+
+      - name: Qualify read-only evidence refresh
+        shell: bash
+        run: |
+          set -euo pipefail
+          refresh=ops/final-shift-close/cpanel-permission-provisioning-local-evidence-refresh.php
+          php -l "$refresh"
+          grep -Fq 'PRIOR_EVIDENCE_HMAC=PASS' "$refresh"
+          grep -Fq 'POLICY_JOURNAL_REATTESTATION=PASS' "$refresh"
+          grep -Fq 'ROLE_ASSIGNMENT_BOUNDARY_REATTESTATION=PASS' "$refresh"
+          grep -Fq 'DATABASE_MUTATION=NONE' "$refresh"
+          grep -Fq 'ONEQAY_REFRESH_TTL_SECONDS = 900' "$refresh"
+          grep -Fq 'oneqay-permission-cpanel-local-provisioning-v1' "$refresh"
+          ! grep -Eq '(->insert\(|->update\(|->delete\(|migrate:|DROP[[:space:]]+TABLE|TRUNCATE[[:space:]]+TABLE)' "$refresh"
+
+      - name: Lock machine-readable successor contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          c=ops/final-shift-close/PERMISSION_PROVISIONING_SELECTED_TARGET_BINDING_CONTRACT.json
+          jq -e . "$c" >/dev/null
+          test "$(jq -r '.binding_evidence_successor_compatibility.canonical_legacy_run_id' "$c")" = '35685845647'
+          test "$(jq -r '.binding_evidence_successor_compatibility.canonical_legacy_artifact_id' "$c")" = '10676756501'
+          test "$(jq -r '.binding_evidence_successor_compatibility.legacy_missing_algorithm_acceptance_scope' "$c")" = 'EXACT_CANONICAL_RUN_ARTIFACT_ID_DIGEST_ONLY'
+          test "$(jq -r '.permission_provisioning_execution_adapter.evidence_refresh_database_mutation' "$c")" = 'false'
+          test "$(jq -r '.sprint236_binding_and_evidence_refresh_compatibility.permission_grant_reexecuted' "$c")" = 'false'
+
+      - name: Preserve fail-closed state
+        shell: bash
+        run: |
+          set -euo pipefail
+          state=ops/final-shift-close/STATE.json
+          test "$(jq -r '.migration27.state' "$state")" = 'EXECUTED'
+          test "$(jq -r '.permission_provisioning.state' "$state")" = 'NONE'
+          test "$(jq -r '.permission_provisioning.default_grant' "$state")" = 'NONE'
+          test "$(jq -r '.feature_activation.state' "$state")" = 'INACTIVE'
+          test "$(jq -r '.technical_preview_activation' "$state")" = 'NOT_AUTHORIZED'
+          test "$(jq -r '.production_activation' "$state")" = 'NOT_AUTHORIZED'
+          test "$(jq -r '.updater_activation' "$state")" = 'INACTIVE'
+
+      - name: Verify tracked source cleanliness
+        shell: bash
+        run: git diff --exit-code
