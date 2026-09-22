@@ -8,6 +8,7 @@ on:
       - main
     paths:
       - '.github/workflows/final-shift-close-permission-provisioning.yml'
+      - '.github/workflows/sprint152-final-shift-close-permission-selected-target-binding-regression.yml'
       - '.github/workflows/sprint235-final-shift-close-permission-cpanel-local-execution-compatibility.yml'
       - 'docs/SPRINT235_FINAL_SHIFT_CLOSE_PERMISSION_CPANEL_LOCAL_EXECUTION_COMPATIBILITY.md'
       - 'ops/final-shift-close/PERMISSION_PROVISIONING_SELECTED_TARGET_BINDING_CONTRACT.json'
@@ -43,6 +44,7 @@ jobs:
           git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/actual
           cat > /tmp/expected <<'EOF'
           .github/workflows/final-shift-close-permission-provisioning.yml
+          .github/workflows/sprint152-final-shift-close-permission-selected-target-binding-regression.yml
           .github/workflows/sprint235-final-shift-close-permission-cpanel-local-execution-compatibility.yml
           docs/SPRINT235_FINAL_SHIFT_CLOSE_PERMISSION_CPANEL_LOCAL_EXECUTION_COMPATIBILITY.md
           ops/final-shift-close/PERMISSION_PROVISIONING_SELECTED_TARGET_BINDING_CONTRACT.json

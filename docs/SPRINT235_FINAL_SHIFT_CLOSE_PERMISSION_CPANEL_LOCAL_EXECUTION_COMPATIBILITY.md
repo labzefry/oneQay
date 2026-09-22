@@ -26,11 +26,18 @@ Provide one fail-closed permission provisioning path:
 ## Source envelope
 
 - `.github/workflows/final-shift-close-permission-provisioning.yml`
+- `.github/workflows/sprint152-final-shift-close-permission-selected-target-binding-regression.yml`
 - `.github/workflows/sprint235-final-shift-close-permission-cpanel-local-execution-compatibility.yml`
 - `docs/SPRINT235_FINAL_SHIFT_CLOSE_PERMISSION_CPANEL_LOCAL_EXECUTION_COMPATIBILITY.md`
 - `ops/final-shift-close/PERMISSION_PROVISIONING_SELECTED_TARGET_BINDING_CONTRACT.json`
 - `ops/final-shift-close/cpanel-permission-provisioning-local-execution.php`
 - `ops/final-shift-close/verify-cpanel-permission-provisioning-evidence.php`
+
+Path-set SHA-256:
+
+`bbc26f659fb298712363d36d7968fbc06a098c1a4df73bc5dff64130622bf523`
+
+Sprint152 remains historical provenance for its original source-only contract, while its operational-state assertions are successor-qualified to the exact currently selected durable target, migration #27 `EXECUTED`, permission provisioning `NONE`, and feature activation `INACTIVE`.
 
 ## Adapter contract
 
