@@ -57,7 +57,15 @@
       "comparison": "hash_equals"
     },
     "fallback_transport": "PROTECTED_ENVIRONMENT_SECRET_BASE64_JSON",
-    "fallback_database_mutation": false
+    "fallback_database_mutation": false,
+    "fallback_runtime_env_keys": {
+      "host": "ONEQAY_DB_HOST",
+      "port": "ONEQAY_DB_PORT",
+      "database": "ONEQAY_DB_DATABASE",
+      "username": "ONEQAY_DB_USERNAME",
+      "password": "ONEQAY_DB_PASSWORD"
+    },
+    "fallback_runtime_env_namespace": "ONEQAY_DB"
   },
   "binding_artifact_name": "final-shift-close-migration27-selected-target-db-binding",
   "binding_evidence_context": "final-shift-close-migration27-selected-target-db-binding-evidence",
@@ -159,5 +167,13 @@
     "artifact_schema_changed": false,
     "migration27_authority_changed": false,
     "application_artifact_changed": false
+  },
+  "sprint226_cpanel_local_db_env_binding_correction": {
+    "observed_diagnostic": "DB_HOST_PRESENT=NO",
+    "root_cause": "SPRINT224_LOCAL_PROBE_READ_GENERIC_DB_KEYS_INSTEAD_OF_CANONICAL_ONEQAY_DB_KEYS",
+    "canonical_database_config_source": "apps/web/config/database.php",
+    "application_runtime_source_changed": false,
+    "database_mutation": false,
+    "migration27_authority_changed": false
   }
 }
