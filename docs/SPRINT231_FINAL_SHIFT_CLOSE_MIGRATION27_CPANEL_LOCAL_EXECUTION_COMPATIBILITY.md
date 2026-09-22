@@ -26,13 +26,13 @@ For the selected cPanel shared-hosting runtime, Sprint231 adds an additive cPane
 2. selected-target database-binding evidence remains required;
 3. the migration is executed from the selected cPanel release itself;
 4. the local executor verifies the exact migration Git blob;
-5. the local executor verifies the exact selected-runtime binding manifest;
-6. the local executor verifies the trusted database binding before mutation;
-7. predecessor tables and migrations are verified before mutation;
-8. only migration #27 is executed;
-9. schema, ledger, table emptiness, required indexes, CHECK constraint, and required columns are verified after execution;
-10. a short-lived signed secret-free Base64 JSON evidence payload is produced;
-11. GitHub validates exact main, target PR/head, binding run/attempt, selected runtime identity, database binding, migration blob, TTL, HMAC, and post-schema assertions before publishing execution evidence success.
+6. the local executor verifies the exact selected-runtime binding manifest;
+7. the local executor verifies the trusted database binding before mutation;
+8. predecessor tables and migrations are verified before mutation;
+9. only migration #27 is executed;
+10. schema, ledger, table emptiness, required indexes, CHECK constraint, and required columns are verified after execution;
+11. a short-lived signed secret-free Base64 JSON evidence payload is produced;
+12. GitHub validates exact main, target PR/head, binding run/attempt, selected runtime identity, database binding, migration blob, TTL, HMAC, and post-schema assertions before publishing execution evidence success.
 
 Remote MySQL is not enabled and is not required.
 
@@ -90,33 +90,34 @@ TTL is at most 900 seconds.
 
 ## Exact Sprint231 final source envelope
 
-Sprint231 changes exactly nineteen paths:
+Sprint231 changes exactly twenty paths:
 
 1. `.github/workflows/final-shift-close-migration27-execution.yml`
 2. `.github/workflows/sprint103-final-shift-close-migration27-execution-evidence.yml`
 3. `.github/workflows/sprint117-final-shift-close-migration27-selected-target-binding.yml`
 4. `.github/workflows/sprint118-final-shift-close-migration27-selected-target-db-binding.yml`
-5. `.github/workflows/sprint125-final-shift-close-runtime-db-binding-attestation-control-plane-regression.yml`
-6. `.github/workflows/sprint126-final-shift-close-runtime-binding-manifest-control-plane-token-hardening.yml`
-7. `.github/workflows/sprint127-final-shift-close-runtime-binding-manifest-control-plane-regression.yml`
-8. `.github/workflows/sprint128-final-shift-close-runtime-control-plane-token-character-policy.yml`
-9. `.github/workflows/sprint129-final-shift-close-historical-regression-successor-compatibility.yml`
-10. `.github/workflows/sprint130-final-shift-close-canonical-runtime-control-plane-token-policy.yml`
-11. `.github/workflows/sprint131-final-shift-close-canonical-control-plane-positive-path-regression.yml`
-12. `.github/workflows/sprint132-final-shift-close-canonical-control-plane-controller-positive-path-regression.yml`
-13. `.github/workflows/sprint133-final-shift-close-canonical-control-plane-controller-fail-closed-regression.yml`
-14. `.github/workflows/sprint224-final-shift-close-migration27-cpanel-local-db-binding-probe.yml`
-15. `.github/workflows/sprint226-final-shift-close-migration27-cpanel-local-db-env-binding-regression.yml`
-16. `.github/workflows/sprint231-final-shift-close-migration27-cpanel-local-execution-compatibility.yml`
-17. `docs/SPRINT231_FINAL_SHIFT_CLOSE_MIGRATION27_CPANEL_LOCAL_EXECUTION_COMPATIBILITY.md`
-18. `ops/final-shift-close/MIGRATION27_SELECTED_TARGET_BINDING_CONTRACT.json`
-19. `ops/final-shift-close/cpanel-migration27-local-execution.php`
+6. `.github/workflows/sprint119-final-shift-close-runtime-db-binding-attestation.yml`
+6. `.github/workflows/sprint125-final-shift-close-runtime-db-binding-attestation-control-plane-regression.yml`
+7. `.github/workflows/sprint126-final-shift-close-runtime-binding-manifest-control-plane-token-hardening.yml`
+8. `.github/workflows/sprint127-final-shift-close-runtime-binding-manifest-control-plane-regression.yml`
+9. `.github/workflows/sprint128-final-shift-close-runtime-control-plane-token-character-policy.yml`
+10. `.github/workflows/sprint129-final-shift-close-historical-regression-successor-compatibility.yml`
+11. `.github/workflows/sprint130-final-shift-close-canonical-runtime-control-plane-token-policy.yml`
+12. `.github/workflows/sprint131-final-shift-close-canonical-control-plane-positive-path-regression.yml`
+13. `.github/workflows/sprint132-final-shift-close-canonical-control-plane-controller-positive-path-regression.yml`
+14. `.github/workflows/sprint133-final-shift-close-canonical-control-plane-controller-fail-closed-regression.yml`
+15. `.github/workflows/sprint224-final-shift-close-migration27-cpanel-local-db-binding-probe.yml`
+16. `.github/workflows/sprint226-final-shift-close-migration27-cpanel-local-db-env-binding-regression.yml`
+17. `.github/workflows/sprint231-final-shift-close-migration27-cpanel-local-execution-compatibility.yml`
+18. `docs/SPRINT231_FINAL_SHIFT_CLOSE_MIGRATION27_CPANEL_LOCAL_EXECUTION_COMPATIBILITY.md`
+19. `ops/final-shift-close/MIGRATION27_SELECTED_TARGET_BINDING_CONTRACT.json`
+20. `ops/final-shift-close/cpanel-migration27-local-execution.php`
 
 Final sorted-newline path-set SHA-256:
 
-`5f066ccb62f91840ee3440d02716e243e8a4bdf82be7e53a4b857d44dc87cf58`
+`13d5d58b226a5156ba65a370d76b6b51962b91a81f68f6d34295a7d6e706bde7`
 
-The 14 historical workflow changes only release the executor source from stale immutability envelopes or update exact successor path-set locks. They do not weaken Sprint102 authority ownership, operational state, migration source, application runtime, permission provisioning, or feature activation.
+The 15 historical workflow changes only release the executor source from stale immutability envelopes or update exact successor path-set locks. They do not weaken Sprint102 authority ownership, operational state, migration source, application runtime, permission provisioning, or feature activation.
 
 ## Target PR consequence
 
