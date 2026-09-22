@@ -33,23 +33,16 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
-      - name: Lock exact Sprint236 envelope
+      - name: Preserve Sprint236 canonical foundation across successor work
         shell: bash
-        env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
-          git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/actual
-          cat > /tmp/expected <<'EOF'
-          .github/workflows/final-shift-close-permission-provisioning.yml
-          .github/workflows/sprint235-final-shift-close-permission-cpanel-local-execution-compatibility.yml
-          .github/workflows/sprint236-final-shift-close-permission-evidence-refresh-compatibility.yml
-          docs/SPRINT236_FINAL_SHIFT_CLOSE_PERMISSION_EVIDENCE_REFRESH_COMPATIBILITY.md
-          ops/final-shift-close/PERMISSION_PROVISIONING_SELECTED_TARGET_BINDING_CONTRACT.json
-          ops/final-shift-close/cpanel-permission-provisioning-local-evidence-refresh.php
-          EOF
-          diff -u /tmp/expected /tmp/actual
+          test -f .github/workflows/final-shift-close-permission-provisioning.yml
+          test -f .github/workflows/sprint235-final-shift-close-permission-cpanel-local-execution-compatibility.yml
+          test -f .github/workflows/sprint236-final-shift-close-permission-evidence-refresh-compatibility.yml
+          test -f docs/SPRINT236_FINAL_SHIFT_CLOSE_PERMISSION_EVIDENCE_REFRESH_COMPATIBILITY.md
+          test -f ops/final-shift-close/PERMISSION_PROVISIONING_SELECTED_TARGET_BINDING_CONTRACT.json
+          test -f ops/final-shift-close/cpanel-permission-provisioning-local-evidence-refresh.php
 
       - name: Preserve operational state and application runtime
         shell: bash
