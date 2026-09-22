@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 // Author by Lab | zefry
 // Verifies signed short-lived cPanel-local permission provisioning evidence.
-// Secret values are read only from process environment and never printed.
+// Supports the original execution envelope and bounded successor-head reattestation.
 
 if (PHP_SAPI !== 'cli') {
     fwrite(STDERR, "RESULT=FAILED\nERROR=CLI_ONLY_REQUIRED\n");
@@ -48,6 +48,13 @@ function canonical(array $payload): string
     );
 }
 
+function assertHex(string $value, int $length): void
+{
+    if (preg_match('/\A[0-9a-f]{'.$length.'}\z/D', $value) !== 1) {
+        throw new RuntimeException('Hex identity boundary failed.');
+    }
+}
+
 try {
     $o = options($argv);
 
@@ -87,7 +94,12 @@ try {
         throw new RuntimeException('Local evidence is not an object.');
     }
 
-    $requiredKeys = [
+    $evidenceType = $evidence['evidence_type'] ?? null;
+    if (! is_string($evidenceType)) {
+        throw new RuntimeException('Local evidence type missing.');
+    }
+
+    $baseKeys = [
         'schema_version',
         'evidence_type',
         'canonical_main_sha',
@@ -124,10 +136,18 @@ try {
         'secrets_embedded',
         'hmac_sha256',
     ];
+
+    $successor = $evidenceType === 'CPANEL_LOCAL_PERMISSION_PROVISIONING_SUCCESSOR_REATTESTATION';
+    if ($successor) {
+        $baseKeys[] = 'mutation_origin_head_sha';
+    } elseif ($evidenceType !== 'CPANEL_LOCAL_PERMISSION_PROVISIONING') {
+        throw new RuntimeException('Unsupported local permission evidence type.');
+    }
+
     $actualKeys = array_keys($evidence);
-    sort($requiredKeys, SORT_STRING);
+    sort($baseKeys, SORT_STRING);
     sort($actualKeys, SORT_STRING);
-    if ($actualKeys !== $requiredKeys) {
+    if ($actualKeys !== $baseKeys) {
         throw new RuntimeException('Local permission evidence key-set mismatch.');
     }
 
@@ -155,15 +175,26 @@ try {
         throw new RuntimeException('Local permission evidence HMAC mismatch.');
     }
 
+    $mutationOriginHead = $targetHead;
+    $attestationMode = 'LOCAL_PERMISSION_PROVISIONING_AND_POST_VERIFICATION';
+    if ($successor) {
+        $mutationOriginHead = $evidence['mutation_origin_head_sha'] ?? '';
+        if (! is_string($mutationOriginHead)) {
+            throw new RuntimeException('Mutation origin head missing.');
+        }
+        assertHex($mutationOriginHead, 40);
+        $attestationMode = 'LOCAL_PERMISSION_PROVISIONING_SUCCESSOR_REATTESTATION';
+    }
+
     $expectedMutationId = 'fscperm_'.substr(
-        hash('sha256', $targetHead.'|'.$tenantId.'|'.$roleId),
+        hash('sha256', $mutationOriginHead.'|'.$tenantId.'|'.$roleId),
         0,
         55,
     );
 
     $expected = [
         'schema_version' => 1,
-        'evidence_type' => 'CPANEL_LOCAL_PERMISSION_PROVISIONING',
+        'evidence_type' => $evidenceType,
         'canonical_main_sha' => $canonicalMain,
         'target_pr_number' => $targetPr,
         'target_head_sha' => $targetHead,
@@ -190,7 +221,7 @@ try {
         'policy_journal_verified' => true,
         'permission_grant_verified' => true,
         'role_assignment_boundaries_unchanged' => true,
-        'attestation_mode' => 'LOCAL_PERMISSION_PROVISIONING_AND_POST_VERIFICATION',
+        'attestation_mode' => $attestationMode,
         'secrets_embedded' => false,
     ];
 
@@ -223,8 +254,13 @@ try {
     }
 
     fwrite(STDOUT, "RESULT=SUCCESS\n");
-    fwrite(STDOUT, "MODE=CPANEL_LOCAL_PERMISSION_EVIDENCE_VERIFICATION\n");
+    fwrite(STDOUT, "MODE=".($successor
+        ? "CPANEL_LOCAL_PERMISSION_SUCCESSOR_EVIDENCE_VERIFICATION"
+        : "CPANEL_LOCAL_PERMISSION_EVIDENCE_VERIFICATION")."\n");
     fwrite(STDOUT, "LOCAL_EXECUTION_VERIFIED=YES\n");
+    if ($successor) {
+        fwrite(STDOUT, "MUTATION_ORIGIN_HEAD={$mutationOriginHead}\n");
+    }
     exit(0);
 } catch (Throwable) {
     fwrite(STDERR, "RESULT=FAILED\n");
