@@ -1,0 +1,103 @@
+name: Sprint228 Migration27 State Successor Compatibility
+
+# Attribution: Lab | zefry
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/sprint228-migration27-state-successor-compatibility.yml'
+      - 'docs/SPRINT228_MIGRATION27_STATE_SUCCESSOR_COMPATIBILITY.md'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint228-migration27-state-successor-compatibility-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qualify-migration27-state-successor-compatibility:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+
+    steps:
+      - name: Checkout exact Sprint228 source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Lock exact Sprint228 compatibility envelope
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/sprint228-paths
+          test "$(wc -l < /tmp/sprint228-paths | tr -d ' ')" = '98'
+          test "$(sha256sum /tmp/sprint228-paths | awk '{print $1}')" = '25b99013f704a2d5fc255c67e182618e02501abf93d931ab7ec8905d2b2f10ca'
+          test "$(grep -c '^\.github/workflows/sprint[0-9].*\.yml$' /tmp/sprint228-paths)" = '97'
+          grep -Fxq '.github/workflows/sprint228-migration27-state-successor-compatibility.yml' /tmp/sprint228-paths
+          grep -Fxq 'docs/SPRINT228_MIGRATION27_STATE_SUCCESSOR_COMPATIBILITY.md' /tmp/sprint228-paths
+
+      - name: Preserve canonical operational and execution ownership
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git diff --exit-code "$BASE_SHA" "$HEAD_SHA" --             apps             ops/final-shift-close/STATE.json             ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json             .github/workflows/sprint102-final-shift-close-operational-sequencing-gate.yml             .github/workflows/final-shift-close-migration27-execution.yml             .github/workflows/final-shift-close-migration27-selected-target-db-binding.yml
+
+          state=ops/final-shift-close/STATE.json
+          test "$(jq -r '.migration27.state' "$state")" = 'NOT_EXECUTED'
+          test "$(jq -r '.permission_provisioning.state' "$state")" = 'NONE'
+          test "$(jq -r '.feature_activation.state' "$state")" = 'INACTIVE'
+          test "$(jq -r '.technical_preview_activation' "$state")" = 'NOT_AUTHORIZED'
+          test "$(jq -r '.production_activation' "$state")" = 'NOT_AUTHORIZED'
+          test "$(jq -r '.updater_activation' "$state")" = 'INACTIVE'
+
+      - name: Prove historical workflows no longer own migration27 transition state
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep '^\.github/workflows/sprint' /tmp/sprint228-paths             | grep -v 'sprint228-' > /tmp/historical-workflows
+          test "$(wc -l < /tmp/historical-workflows | tr -d ' ')" = '96'
+
+          while IFS= read -r workflow; do
+            ! grep -Eq "jq -r ['\"]\.migration27\.state['\"].*(==|=)[[:space:]]*['\"]?NOT_EXECUTED['\"]?" "$workflow"
+            ! grep -Eq "git diff[^\n]*ops/final-shift-close/STATE\.json" "$workflow"
+          done < /tmp/historical-workflows
+
+      - name: Preserve canonical Sprint102 transition authority and evidence gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          gate=.github/workflows/sprint102-final-shift-close-operational-sequencing-gate.yml
+          grep -Fq "final-shift-close-migration27-execution-authority" "$gate"
+          grep -Fq "final-shift-close-migration27-execution-evidence" "$gate"
+          grep -Fq "NOT_EXECUTED" "$gate"
+          grep -Fq "EXECUTED" "$gate"
+          grep -Fq "permission_provisioning" "$gate"
+          grep -Fq "feature_activation" "$gate"
+
+      - name: Reject operational mutation in compatibility additions
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          : > /tmp/additions
+          while IFS= read -r workflow; do
+            git diff -U0 "$BASE_SHA" "$HEAD_SHA" -- "$workflow" \
+              | grep '^+' | grep -v '^+++' >> /tmp/additions || true
+          done < /tmp/historical-workflows
+          ! grep -Eq '(php artisan migrate|migrate:rollback|migrate:reset|migrate:refresh|migrate:fresh|INSERT[[:space:]]+INTO|UPDATE[[:space:]]+.+SET|DELETE[[:space:]]+FROM|DROP[[:space:]]+TABLE|TRUNCATE[[:space:]]+TABLE|ALTER[[:space:]]+TABLE|CREATE[[:space:]]+TABLE)' /tmp/additions
+
+      - name: Verify tracked source cleanliness
+        shell: bash
+        run: git diff --exit-code
