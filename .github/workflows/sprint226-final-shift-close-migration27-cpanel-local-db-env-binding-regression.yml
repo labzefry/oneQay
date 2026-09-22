@@ -80,8 +80,7 @@ jobs:
             apps/web/routes \
             ops/final-shift-close/STATE.json \
             ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json \
-            .github/workflows/final-shift-close-migration27-selected-target-db-binding.yml \
-            .github/workflows/final-shift-close-migration27-execution.yml
+            .github/workflows/final-shift-close-migration27-selected-target-db-binding.yml
 
       - name: Prove canonical application DB namespace
         shell: bash
