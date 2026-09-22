@@ -372,6 +372,35 @@ jobs:
           echo 'verified=true' >> "$GITHUB_OUTPUT"
           echo 'Exact selected-target database-binding evidence qualified for permission provisioning.'
 
+
+      - name: Verify cPanel-local permission provisioning evidence
+        id: local_provisioning
+        if: ${{ steps.preflight.outputs.verified == 'true' && steps.binding.outputs.verified == 'true' }}
+        shell: bash
+        env:
+          LOCAL_EVIDENCE_B64: ${{ secrets.ONEQAY_PERMISSION_LOCAL_PROVISIONING_B64 }}
+          TARGET_PR: ${{ inputs.target_pr_number }}
+          TARGET_HEAD: ${{ inputs.target_head_sha }}
+          BINDING_RUN_ID: ${{ inputs.binding_run_id }}
+          BINDING_RUN_ATTEMPT: ${{ inputs.binding_run_attempt }}
+          TENANT_ID: ${{ inputs.tenant_id }}
+          ACTOR_ID: ${{ inputs.actor_identity_id }}
+          ACTOR_ORG: ${{ inputs.actor_organization_id }}
+          ROLE_ID: ${{ inputs.role_id }}
+          EXPECTED_DB_BINDING: ${{ steps.binding.outputs.expected_db_binding }}
+        run: |
+          set -euo pipefail
+          if [[ -z "$LOCAL_EVIDENCE_B64" ]]; then
+            echo 'verified=false' >> "$GITHUB_OUTPUT"
+            echo 'No cPanel-local permission evidence supplied; direct GitHub DB mode remains eligible.'
+            exit 0
+          fi
+
+          php ops/final-shift-close/verify-cpanel-permission-provisioning-evidence.php             --evidence-env=LOCAL_EVIDENCE_B64             --canonical-main="$GITHUB_SHA"             --target-pr="$TARGET_PR"             --target-head="$TARGET_HEAD"             --binding-run-id="$BINDING_RUN_ID"             --binding-run-attempt="$BINDING_RUN_ATTEMPT"             --environment-id="$(cat /tmp/selected-environment.txt)"             --runtime-class="$(cat /tmp/selected-runtime.txt)"             --running-source="$(cat /tmp/selected-source.txt)"             --running-artifact="$(cat /tmp/selected-artifact.txt)"             --readiness-attestation="$(cat /tmp/selected-attestation.txt)"             --selection-fingerprint="$(cat /tmp/selected-selection-fingerprint.txt)"             --ingestion-run-id="$(cat /tmp/selected-ingestion-run-id.txt)"             --ingestion-run-attempt="$(cat /tmp/selected-ingestion-run-attempt.txt)"             --ingestion-fingerprint="$(cat /tmp/selected-ingestion-fingerprint.txt)"             --database-binding="$EXPECTED_DB_BINDING"             --tenant-id="$TENANT_ID"             --actor-identity-id="$ACTOR_ID"             --actor-organization-id="$ACTOR_ORG"             --role-id="$ROLE_ID"
+
+          echo 'verified=true' >> "$GITHUB_OUTPUT"
+          echo 'Signed cPanel-local permission provisioning evidence verified.'
+
       - name: Publish pending provisioning evidence
         if: ${{ steps.preflight.outputs.verified == 'true' && steps.binding.outputs.verified == 'true' }}
         shell: bash
@@ -398,7 +427,7 @@ jobs:
 
       - name: Execute bounded selected-target permission provisioning transaction
         id: execute
-        if: ${{ steps.preflight.outputs.verified == 'true' && steps.binding.outputs.verified == 'true' }}
+        if: ${{ steps.preflight.outputs.verified == 'true' && steps.binding.outputs.verified == 'true' && steps.local_provisioning.outputs.verified != 'true' }}
         shell: bash
         env:
           TARGET_HEAD: ${{ steps.preflight.outputs.target_head }}
@@ -686,10 +715,11 @@ jobs:
           API_URL: ${{ github.api_url }}
           REPOSITORY: ${{ github.repository }}
           TARGET_HEAD: ${{ steps.preflight.outputs.target_head }}
+          LOCAL_VERIFIED: ${{ steps.local_provisioning.outputs.verified }}
           EXECUTE_OUTCOME: ${{ steps.execute.outcome }}
         run: |
           set -euo pipefail
-          if [[ "$EXECUTE_OUTCOME" == 'success' ]]; then
+          if [[ "$LOCAL_VERIFIED" == 'true' || "$EXECUTE_OUTCOME" == 'success' ]]; then
             state=success
             description='Selected-target-bound pos.shift.close provisioning verified'
           else
