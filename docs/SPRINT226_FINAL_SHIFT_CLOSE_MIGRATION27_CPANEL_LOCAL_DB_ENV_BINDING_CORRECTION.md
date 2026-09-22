@@ -50,16 +50,20 @@ Do not add duplicate generic `DB_*` values to the runtime .env.
 
 ## Exact bounded envelope
 
-Sprint226 changes exactly four paths:
+Sprint226 changes exactly eight paths:
 
-1. `.github/workflows/sprint226-final-shift-close-migration27-cpanel-local-db-env-binding-regression.yml`
-2. `docs/SPRINT226_FINAL_SHIFT_CLOSE_MIGRATION27_CPANEL_LOCAL_DB_ENV_BINDING_CORRECTION.md`
-3. `ops/final-shift-close/MIGRATION27_SELECTED_TARGET_BINDING_CONTRACT.json`
-4. `ops/final-shift-close/cpanel-migration27-local-db-binding-probe.php`
+1. `.github/workflows/sprint103-final-shift-close-migration27-execution-evidence.yml`
+2. `.github/workflows/sprint117-final-shift-close-migration27-selected-target-binding.yml`
+3. `.github/workflows/sprint118-final-shift-close-migration27-selected-target-db-binding.yml`
+4. `.github/workflows/sprint224-final-shift-close-migration27-cpanel-local-db-binding-probe.yml`
+5. `.github/workflows/sprint226-final-shift-close-migration27-cpanel-local-db-env-binding-regression.yml`
+6. `docs/SPRINT226_FINAL_SHIFT_CLOSE_MIGRATION27_CPANEL_LOCAL_DB_ENV_BINDING_CORRECTION.md`
+7. `ops/final-shift-close/MIGRATION27_SELECTED_TARGET_BINDING_CONTRACT.json`
+8. `ops/final-shift-close/cpanel-migration27-local-db-binding-probe.php`
 
 Sorted-newline path-set SHA-256:
 
-`999522ea09e0e76ea27f203ef95ac39c410d44ec15297935691960e6aa36cae0`
+`f3b3d0b1a3940171019eb58d793139341bb28461d43be8974d8ae4f93cff2354`
 
 No application runtime source, migration source, workflow producer schema, operational state, target-selection state, deployment, Technical Preview, Production, or updater source is changed.
 
