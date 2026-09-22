@@ -163,11 +163,7 @@ foreach ($defaultOffConfigs as $configFile => $environmentKey) {
 
 $statePath = __DIR__.'/../../../ops/final-shift-close/STATE.json';
 $state = json_decode((string) file_get_contents($statePath), true, 64, JSON_THROW_ON_ERROR);
-$migration27State = $state['migration27']['state'] ?? null;
-$assert(
-    in_array($migration27State, ['NOT_EXECUTED', 'EXECUTED'], true),
-    'Sprint198 encountered unsupported migration #27 lifecycle state.',
-);
+$assert(($state['migration27']['state'] ?? null) === 'NOT_EXECUTED', 'Sprint198 crossed migration #27 NO-GO.');
 $assert(($state['permission_provisioning']['state'] ?? null) === 'NONE', 'Sprint198 crossed permission provisioning NO-GO.');
 $assert(($state['feature_activation']['state'] ?? null) === 'INACTIVE', 'Sprint198 crossed Final Shift Close activation NO-GO.');
 $assert(($state['deployment_authority'] ?? null) === 'NOT_GRANTED', 'Sprint198 crossed deployment NO-GO.');
