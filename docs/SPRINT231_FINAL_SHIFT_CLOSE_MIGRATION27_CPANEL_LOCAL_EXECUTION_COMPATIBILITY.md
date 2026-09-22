@@ -88,21 +88,35 @@ The protected GitHub Environment secret carrying the short-lived evidence is:
 
 TTL is at most 900 seconds.
 
-## Exact Sprint231 initial source envelope
+## Exact Sprint231 final source envelope
 
-Sprint231 initially changes exactly five paths:
+Sprint231 changes exactly nineteen paths:
 
 1. `.github/workflows/final-shift-close-migration27-execution.yml`
-2. `.github/workflows/sprint231-final-shift-close-migration27-cpanel-local-execution-compatibility.yml`
-3. `docs/SPRINT231_FINAL_SHIFT_CLOSE_MIGRATION27_CPANEL_LOCAL_EXECUTION_COMPATIBILITY.md`
-4. `ops/final-shift-close/MIGRATION27_SELECTED_TARGET_BINDING_CONTRACT.json`
-5. `ops/final-shift-close/cpanel-migration27-local-execution.php`
+2. `.github/workflows/sprint103-final-shift-close-migration27-execution-evidence.yml`
+3. `.github/workflows/sprint117-final-shift-close-migration27-selected-target-binding.yml`
+4. `.github/workflows/sprint118-final-shift-close-migration27-selected-target-db-binding.yml`
+5. `.github/workflows/sprint125-final-shift-close-runtime-db-binding-attestation-control-plane-regression.yml`
+6. `.github/workflows/sprint126-final-shift-close-runtime-binding-manifest-control-plane-token-hardening.yml`
+7. `.github/workflows/sprint127-final-shift-close-runtime-binding-manifest-control-plane-regression.yml`
+8. `.github/workflows/sprint128-final-shift-close-runtime-control-plane-token-character-policy.yml`
+9. `.github/workflows/sprint129-final-shift-close-historical-regression-successor-compatibility.yml`
+10. `.github/workflows/sprint130-final-shift-close-canonical-runtime-control-plane-token-policy.yml`
+11. `.github/workflows/sprint131-final-shift-close-canonical-control-plane-positive-path-regression.yml`
+12. `.github/workflows/sprint132-final-shift-close-canonical-control-plane-controller-positive-path-regression.yml`
+13. `.github/workflows/sprint133-final-shift-close-canonical-control-plane-controller-fail-closed-regression.yml`
+14. `.github/workflows/sprint224-final-shift-close-migration27-cpanel-local-db-binding-probe.yml`
+15. `.github/workflows/sprint226-final-shift-close-migration27-cpanel-local-db-env-binding-regression.yml`
+16. `.github/workflows/sprint231-final-shift-close-migration27-cpanel-local-execution-compatibility.yml`
+17. `docs/SPRINT231_FINAL_SHIFT_CLOSE_MIGRATION27_CPANEL_LOCAL_EXECUTION_COMPATIBILITY.md`
+18. `ops/final-shift-close/MIGRATION27_SELECTED_TARGET_BINDING_CONTRACT.json`
+19. `ops/final-shift-close/cpanel-migration27-local-execution.php`
 
-Initial sorted-newline path-set SHA-256:
+Final sorted-newline path-set SHA-256:
 
-`5e9b356ab7a5e068bead7e13ab9de2f2f22ce6d97f351670931eaa43b433918a`
+`5f066ccb62f91840ee3440d02716e243e8a4bdf82be7e53a4b857d44dc87cf58`
 
-Historical workflow compatibility may be reconciled in the same Sprint231 PR if exact-head CI proves stale executor immutability assertions. Such reconciliation must not change operational state or weaken Sprint102 authority ownership.
+The 14 historical workflow changes only release the executor source from stale immutability envelopes or update exact successor path-set locks. They do not weaken Sprint102 authority ownership, operational state, migration source, application runtime, permission provisioning, or feature activation.
 
 ## Target PR consequence
 
