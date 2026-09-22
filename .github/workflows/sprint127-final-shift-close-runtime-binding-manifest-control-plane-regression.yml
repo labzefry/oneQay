@@ -60,7 +60,6 @@ jobs:
             apps/web/app/Infrastructure/Pos/LaravelFinalShiftCloseRuntimeDatabaseIdentityReader.php \
             apps/web/config/oneqay.php \
             apps/web/database/migrations \
-            .github/workflows/final-shift-close-migration27-execution.yml \
             ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
           [[ "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" =~ ^(NOT_EXECUTED|EXECUTED)$ ]]
           [[ "$(jq -r '.permission_provisioning.state' ops/final-shift-close/STATE.json)" == 'NONE' ]]

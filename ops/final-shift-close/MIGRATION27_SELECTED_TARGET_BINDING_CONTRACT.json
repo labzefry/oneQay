@@ -117,7 +117,10 @@
     "database_name_hostname_port_readback_required": true,
     "actual_database_binding_sha256_must_equal_trusted_binding_evidence": true,
     "binding_check_must_precede_migration_command": true,
-    "existing_migration27_ambiguity_remains_fail_closed": true
+    "existing_migration27_ambiguity_remains_fail_closed": true,
+    "cpanel_local_execution_must_verify_database_binding_before_mutation": true,
+    "cpanel_local_execution_must_verify_predecessor_tables_and_migrations": true,
+    "cpanel_local_execution_must_verify_exact_migration_blob": true
   },
   "target_state_transition_requirements": {
     "changed_file_count": 1,
@@ -175,5 +178,44 @@
     "application_runtime_source_changed": false,
     "database_mutation": false,
     "migration27_authority_changed": false
+  },
+  "migration27_execution_adapter": {
+    "direct_mode": "GITHUB_HOSTED_LARAVEL_MYSQL_PRIMARY",
+    "direct_connection_unavailable_fallback": "CPANEL_LOCAL_SIGNED_MIGRATION_EXECUTION_AND_POST_SCHEMA_VERIFICATION",
+    "fallback_source": "ops/final-shift-close/cpanel-migration27-local-execution.php",
+    "fallback_environment_secret": "ONEQAY_MIGRATION27_LOCAL_EXECUTION_B64",
+    "fallback_transport": "PROTECTED_ENVIRONMENT_SECRET_BASE64_JSON",
+    "fallback_ttl_seconds": 900,
+    "fallback_exact_current_main_required": true,
+    "fallback_exact_target_pr_and_head_required": true,
+    "fallback_exact_binding_run_id_and_attempt_required": true,
+    "fallback_selected_target_identity_exact_match": true,
+    "fallback_database_binding_sha256_exact_match": true,
+    "fallback_migration_blob_sha1_exact_match": true,
+    "fallback_post_schema_verification_required": true,
+    "fallback_signature": {
+      "algorithm": "HMAC_SHA256",
+      "key_derivation": "HMAC_SHA256_CONTEXT_WITH_DB_PASSWORD",
+      "context": "oneqay-migration27-cpanel-local-execution-v1",
+      "comparison": "hash_equals"
+    },
+    "remote_mysql_enablement_required": false
+  },
+  "sprint231_cpanel_local_execution_compatibility": {
+    "observed_failed_execution_runs": [
+      35695002979,
+      35695624097
+    ],
+    "first_failure": "REQUIRED_EXECUTION_ENVIRONMENT_SECRET_MISSING",
+    "second_failure": "SQLSTATE_HY000_2002_CONNECTION_REFUSED_FROM_GITHUB_HOSTED_RUNNER_TO_CPANEL_LOCALHOST",
+    "bounded_objective": "EXECUTE_MIGRATION27_LOCALLY_ON_SELECTED_CPANEL_RUNTIME_WITH_SIGNED_SHORT_LIVED_EVIDENCE",
+    "direct_github_execution_preserved": true,
+    "cpanel_local_fallback_additive": true,
+    "remote_mysql_enablement_required": false,
+    "application_runtime_source_changed": false,
+    "migration_source_changed": false,
+    "state_transition_source_changed": false,
+    "permission_provisioning_authority_changed": false,
+    "feature_activation_authority_changed": false
   }
 }
