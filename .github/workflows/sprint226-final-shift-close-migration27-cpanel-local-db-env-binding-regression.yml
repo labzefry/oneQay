@@ -16,7 +16,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: sprint226-migration27-cpanel-local-db-env-binding-\${{ github.event.pull_request.number || github.ref }}
+  group: sprint226-migration27-cpanel-local-db-env-binding-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -28,14 +28,14 @@ jobs:
       - name: Checkout exact Sprint226 source
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
-          ref: \${{ github.event.pull_request.head.sha }}
+          ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
       - name: Lock exact Sprint226 source envelope
         shell: bash
         env:
-          BASE_SHA: \${{ github.event.pull_request.base.sha }}
-          HEAD_SHA: \${{ github.event.pull_request.head.sha }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
           git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/actual
@@ -55,8 +55,8 @@ jobs:
       - name: Preserve application runtime and operational state
         shell: bash
         env:
-          BASE_SHA: \${{ github.event.pull_request.base.sha }}
-          HEAD_SHA: \${{ github.event.pull_request.head.sha }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
           git diff --exit-code "$BASE_SHA" "$HEAD_SHA" -- \
