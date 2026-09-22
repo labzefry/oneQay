@@ -48,6 +48,7 @@ jobs:
           .github/workflows/sprint103-final-shift-close-migration27-execution-evidence.yml
           .github/workflows/sprint117-final-shift-close-migration27-selected-target-binding.yml
           .github/workflows/sprint118-final-shift-close-migration27-selected-target-db-binding.yml
+          .github/workflows/sprint119-final-shift-close-runtime-db-binding-attestation.yml
           .github/workflows/sprint125-final-shift-close-runtime-db-binding-attestation-control-plane-regression.yml
           .github/workflows/sprint126-final-shift-close-runtime-binding-manifest-control-plane-token-hardening.yml
           .github/workflows/sprint127-final-shift-close-runtime-binding-manifest-control-plane-regression.yml
@@ -65,7 +66,7 @@ jobs:
           ops/final-shift-close/cpanel-migration27-local-execution.php
           EOF
           diff -u /tmp/expected /tmp/actual
-          test "$(sha256sum /tmp/actual | awk '{print $1}')" = '5f066ccb62f91840ee3440d02716e243e8a4bdf82be7e53a4b857d44dc87cf58'
+          test "$(sha256sum /tmp/actual | awk '{print $1}')" = '13d5d58b226a5156ba65a370d76b6b51962b91a81f68f6d34295a7d6e706bde7'
 
       - name: Preserve application artifact migration source and operational state
         shell: bash
