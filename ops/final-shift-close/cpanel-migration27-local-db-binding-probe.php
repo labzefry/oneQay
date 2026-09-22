@@ -204,13 +204,13 @@ try {
     assertHex($selectionFingerprint, 64);
 
     $env = dotenv($envPath);
-    $host = envRequired($env, 'DB_HOST');
-    $database = envRequired($env, 'DB_DATABASE');
-    $username = envRequired($env, 'DB_USERNAME');
-    $password = envRequired($env, 'DB_PASSWORD');
-    $portRaw = $env['DB_PORT'] ?? '3306';
+    $host = envRequired($env, 'ONEQAY_DB_HOST');
+    $database = envRequired($env, 'ONEQAY_DB_DATABASE');
+    $username = envRequired($env, 'ONEQAY_DB_USERNAME');
+    $password = envRequired($env, 'ONEQAY_DB_PASSWORD');
+    $portRaw = $env['ONEQAY_DB_PORT'] ?? '3306';
     if (! is_string($portRaw) || preg_match('/\A[1-9][0-9]{0,4}\z/D', $portRaw) !== 1) {
-        throw new RuntimeException('Runtime DB_PORT is invalid.');
+        throw new RuntimeException('Runtime ONEQAY_DB_PORT is invalid.');
     }
     $port = (int) $portRaw;
     if ($port < 1 || $port > 65535 || str_contains($host, ';') || preg_match('/\s/', $host) === 1 || str_contains($database, ';') || preg_match('/\s/', $database) === 1) {
