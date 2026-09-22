@@ -40,17 +40,28 @@ jobs:
           set -euo pipefail
           git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/actual
           cat > /tmp/expected <<'EOF'
+          .github/workflows/final-shift-close-migration27-execution.yml
           .github/workflows/sprint103-final-shift-close-migration27-execution-evidence.yml
           .github/workflows/sprint117-final-shift-close-migration27-selected-target-binding.yml
           .github/workflows/sprint118-final-shift-close-migration27-selected-target-db-binding.yml
+          .github/workflows/sprint125-final-shift-close-runtime-db-binding-attestation-control-plane-regression.yml
+          .github/workflows/sprint126-final-shift-close-runtime-binding-manifest-control-plane-token-hardening.yml
+          .github/workflows/sprint127-final-shift-close-runtime-binding-manifest-control-plane-regression.yml
+          .github/workflows/sprint128-final-shift-close-runtime-control-plane-token-character-policy.yml
+          .github/workflows/sprint129-final-shift-close-historical-regression-successor-compatibility.yml
+          .github/workflows/sprint130-final-shift-close-canonical-runtime-control-plane-token-policy.yml
+          .github/workflows/sprint131-final-shift-close-canonical-control-plane-positive-path-regression.yml
+          .github/workflows/sprint132-final-shift-close-canonical-control-plane-controller-positive-path-regression.yml
+          .github/workflows/sprint133-final-shift-close-canonical-control-plane-controller-fail-closed-regression.yml
           .github/workflows/sprint224-final-shift-close-migration27-cpanel-local-db-binding-probe.yml
           .github/workflows/sprint226-final-shift-close-migration27-cpanel-local-db-env-binding-regression.yml
-          docs/SPRINT226_FINAL_SHIFT_CLOSE_MIGRATION27_CPANEL_LOCAL_DB_ENV_BINDING_CORRECTION.md
+          .github/workflows/sprint231-final-shift-close-migration27-cpanel-local-execution-compatibility.yml
+          docs/SPRINT231_FINAL_SHIFT_CLOSE_MIGRATION27_CPANEL_LOCAL_EXECUTION_COMPATIBILITY.md
           ops/final-shift-close/MIGRATION27_SELECTED_TARGET_BINDING_CONTRACT.json
-          ops/final-shift-close/cpanel-migration27-local-db-binding-probe.php
+          ops/final-shift-close/cpanel-migration27-local-execution.php
           EOF
           diff -u /tmp/expected /tmp/actual
-          test "$(sha256sum /tmp/actual | awk '{print $1}')" = 'f3b3d0b1a3940171019eb58d793139341bb28461d43be8974d8ae4f93cff2354'
+          test "$(sha256sum /tmp/actual | awk '{print $1}')" = '5f066ccb62f91840ee3440d02716e243e8a4bdf82be7e53a4b857d44dc87cf58'
 
       - name: Preserve application runtime and operational state
         shell: bash
