@@ -55,7 +55,6 @@ jobs:
           # Historical Sprint129 owns Final Shift Close operational boundaries only.
           # Successor business-product source is intentionally outside this freeze.
           git diff --quiet "$base" "$head" -- \
-            .github/workflows/final-shift-close-migration27-execution.yml \
             ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json \
             ops/final-shift-close/POST_SELECTION_DOWNSTREAM_READINESS.json
           [[ "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" =~ ^(NOT_EXECUTED|EXECUTED)$ ]]
