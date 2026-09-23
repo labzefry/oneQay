@@ -7,6 +7,7 @@ use App\Delivery\Http\Middleware\RequireFirstPartySessionControlMutationContextM
 use App\Delivery\Http\Middleware\RequireVerifiedTenantContextMiddleware;
 use App\Delivery\Http\Middleware\SafeRequestObservationMiddleware;
 use App\Delivery\Http\Middleware\SecurityHeadersMiddleware;
+use App\Providers\FinalShiftCloseDurableStagingDeliveryServiceProvider;
 use App\Providers\FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider;
 use App\Providers\FinalShiftCloseRuntimeDbBindingAttestationServiceProvider;
 use App\Providers\FinalShiftCloseServiceProvider;
@@ -17,6 +18,7 @@ use Illuminate\Foundation\Configuration\Middleware;
 return Application::configure(basePath: dirname(__DIR__))
     ->withProviders([
         FinalShiftCloseServiceProvider::class,
+        FinalShiftCloseDurableStagingDeliveryServiceProvider::class,
         FinalShiftCloseRuntimeBindingManifestMaterializationServiceProvider::class,
         FinalShiftCloseRuntimeDbBindingAttestationServiceProvider::class,
     ])
