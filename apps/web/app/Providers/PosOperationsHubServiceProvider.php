@@ -69,6 +69,11 @@ final class PosOperationsHubServiceProvider extends ServiceProvider
         // Its provider owns independent fail-closed delivery and mutation gates.
         $this->app->register(PosInventoryReplenishmentWorkspaceServiceProvider::class);
 
+        // Sprint240 keeps durable Final Shift Close delivery inside the already-registered
+        // POS aggregate. The child provider remains fail-closed unless every staging,
+        // release-identity, persistence, session, sale-completion, and feature gate qualifies.
+        $this->app->register(FinalShiftCloseDurableStagingDeliveryServiceProvider::class);
+
         $this->app->scoped(ViewPosOperationsHub::class, fn ($app): ViewPosOperationsHub => new ViewPosOperationsHub(
             $app->make(OrganizationalContextStore::class),
             $app->make(DurableScopedAuthorizationPolicy::class),
@@ -325,6 +330,8 @@ final class DurableStagingMerchantCoreRequestBridge
         'POST /pos/shifts/open',
         'POST /pos/shifts/opening-cash',
         'POST /pos/sales',
+        'GET /pos/shifts/close',
+        'POST /pos/shifts/close',
     ];
 
     public function handle(Request $request, Closure $next): Response
