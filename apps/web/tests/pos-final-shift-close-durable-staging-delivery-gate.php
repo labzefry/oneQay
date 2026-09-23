@@ -67,12 +67,15 @@ expectTrue(! $gate->allows($badRelease, 'durable-staging', $source, $artifact, t
 
 $repo = dirname(__DIR__, 3);
 $provider = file_get_contents(__DIR__.'/../app/Providers/FinalShiftCloseDurableStagingDeliveryServiceProvider.php');
+$aggregate = file_get_contents(__DIR__.'/../app/Providers/PosOperationsHubServiceProvider.php');
 $legacyProvider = file_get_contents(__DIR__.'/../app/Providers/FinalShiftCloseServiceProvider.php');
 $bootstrap = file_get_contents(__DIR__.'/../bootstrap/app.php');
 $state = json_decode((string) file_get_contents($repo.'/ops/final-shift-close/STATE.json'), true, 32, JSON_THROW_ON_ERROR);
 $selection = json_decode((string) file_get_contents($repo.'/ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json'), true, 32, JSON_THROW_ON_ERROR);
 
 expectTrue(is_string($provider), 'Durable-staging delivery provider source is required.');
+expectTrue(is_string($aggregate), 'POS aggregate provider source is required.');
+expectTrue(str_contains($provider, 'DurableStagingMerchantCoreBridge::armedFor($runtimeClass)'), 'Provider must require the existing durable-staging bridge to be armed.');
 expectTrue(str_contains($provider, "dirname(base_path(), 2).DIRECTORY_SEPARATOR.'RELEASE.json'"), 'Provider must bind delivery to packaged RELEASE.json.');
 expectTrue(str_contains($provider, 'is_link($path)'), 'Provider must reject symlinked release metadata.');
 expectTrue(str_contains($provider, 'RELEASE_METADATA_MAX_BYTES'), 'Provider must bound release metadata size.');
@@ -81,7 +84,10 @@ expectTrue(str_contains($provider, "env('ONEQAY_RUNNING_ARTIFACT_SHA256', '')"),
 expectTrue(str_contains($provider, "env('ONEQAY_POS_SHIFT_CLOSE_ENABLED', false)"), 'Provider must retain explicit feature activation flag.');
 expectTrue(str_contains($provider, "'session.active'"), 'Provider must retain active-session middleware.');
 expectTrue(str_contains($provider, 'RequirePosSessionContextMiddleware::class'), 'Provider must retain POS session context middleware.');
-expectTrue(str_contains($bootstrap, 'FinalShiftCloseDurableStagingDeliveryServiceProvider::class,'), 'Durable-staging provider must be registered.');
+expectTrue(str_contains($aggregate, '$this->app->register(FinalShiftCloseDurableStagingDeliveryServiceProvider::class);'), 'Durable-staging provider must be registered through the existing POS aggregate.');
+expectTrue(str_contains($aggregate, "'GET /pos/shifts/close'"), 'Durable-staging compatibility bridge must allow the Final Shift Close page request.');
+expectTrue(str_contains($aggregate, "'POST /pos/shifts/close'"), 'Durable-staging compatibility bridge must allow the Final Shift Close mutation request.');
+expectTrue(! str_contains((string) $bootstrap, 'FinalShiftCloseDurableStagingDeliveryServiceProvider'), 'Historical bootstrap boundary must remain unchanged.');
 expectTrue(str_contains((string) $legacyProvider, "['local', 'test', 'ci']"), 'Historical local/test/CI delivery boundary must remain intact.');
 expectTrue(! str_contains((string) $legacyProvider, "'durable-staging'"), 'Historical provider must not be widened directly.');
 
