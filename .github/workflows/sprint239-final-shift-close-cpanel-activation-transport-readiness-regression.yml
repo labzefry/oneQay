@@ -1,0 +1,137 @@
+name: Sprint239 Final Shift Close cPanel Activation Transport Readiness Regression
+
+# Attribution: Lab | zefry
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint239-final-shift-close-cpanel-activation-transport-readiness-${{ github.event.pull_request.number || github.ref }}-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  qualify-sprint239-cpanel-activation-transport-readiness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+
+      - name: Validate Sprint239 exact engineering envelope when active
+        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref == 'sprint239-final-shift-close-cpanel-activation-transport-readiness' }}
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          expected_hash='fef6c595dd1c26345a8d0cea97dfdea0dace26bde37a9a64743c3dedf48a3e3a'
+          mapfile -t paths < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort)
+          expected=(
+            '.github/workflows/final-shift-close-feature-activation.yml'
+            '.github/workflows/sprint239-final-shift-close-cpanel-activation-transport-readiness-regression.yml'
+            'apps/web/tests/pos-final-shift-close-cpanel-activation-transport.php'
+            'docs/SPRINT239_FINAL_SHIFT_CLOSE_CPANEL_ACTIVATION_TRANSPORT_READINESS.md'
+            'ops/final-shift-close/FINAL_SHIFT_CLOSE_FEATURE_ACTIVATION_CPANEL_TRANSPORT_READINESS_CONTRACT.json'
+            'tools/cpanel/execute-final-shift-close-feature-activation.php'
+          )
+          [[ "${#paths[@]}" -eq "${#expected[@]}" ]]
+          diff -u <(printf '%s\n' "${expected[@]}") <(printf '%s\n' "${paths[@]}")
+          actual_hash="$(printf '%s\n' "${paths[@]}" | sha256sum | awk '{print $1}')"
+          [[ "$actual_hash" == "$expected_hash" ]]
+
+      - name: Validate PHP syntax and execute concrete transport regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l tools/cpanel/execute-final-shift-close-feature-activation.php
+          php -l apps/web/tests/pos-final-shift-close-cpanel-activation-transport.php
+          php apps/web/tests/pos-final-shift-close-cpanel-activation-transport.php
+
+      - name: Validate machine contract and governed dispatch source
+        shell: bash
+        run: |
+          set -euo pipefail
+          contract=ops/final-shift-close/FINAL_SHIFT_CLOSE_FEATURE_ACTIVATION_CPANEL_TRANSPORT_READINESS_CONTRACT.json
+          dispatch=.github/workflows/final-shift-close-feature-activation.yml
+          executor=tools/cpanel/execute-final-shift-close-feature-activation.php
+
+          jq -e '
+            .schema_version == 1 and
+            .feature == "final-shift-close" and
+            .sprint == 239 and
+            .contract_state == "MATERIALIZED_FAIL_CLOSED_TRANSPORT_READINESS" and
+            .bounded_objective == "FINAL_SHIFT_CLOSE_CPANEL_ACTIVATION_TRANSPORT_READINESS" and
+            .canonical_base_sha == "d8e53b27a4963b04469cac73d9ef9b65d30e4573" and
+            .concrete_adapter == "CPANEL_PRIVATE_FILE_ONE_SHOT_CRON_V1" and
+            .operator_channel.php_cli_only == true and
+            .operator_channel.public_privileged_route == false and
+            .operator_channel.plaintext_approval_token_in_repository_or_kit == false and
+            .operator_channel.authority_ttl_max_seconds == 900 and
+            .execution_contract.runtime_flag == "ONEQAY_POS_SHIFT_CLOSE_ENABLED" and
+            .execution_contract.exact_byte_runtime_configuration_rollback_required == true and
+            .dispatch_workflow.direct_target_mutation == false and
+            .dispatch_workflow.final_activation_evidence_status_published == false and
+            .current_runtime_delivery_boundary.durable_staging_allowlisted == false and
+            .current_runtime_delivery_boundary.provider_modified_in_sprint239 == false and
+            .operational_boundaries.feature_activation == "INACTIVE" and
+            .operational_boundaries.runtime_allowlist_change == "NOT_PERFORMED" and
+            .operational_boundaries.deployment_authority == "NOT_GRANTED" and
+            .operational_boundaries.technical_preview_activation == "NOT_AUTHORIZED" and
+            .operational_boundaries.production_activation == "NOT_AUTHORIZED" and
+            .operational_boundaries.updater_activation == "INACTIVE" and
+            .engineering_envelope.path_count == 6 and
+            .engineering_envelope.sorted_newline_path_set_sha256 == "fef6c595dd1c26345a8d0cea97dfdea0dace26bde37a9a64743c3dedf48a3e3a" and
+            .attribution == "Author by Lab | zefry"
+          ' "$contract" >/dev/null
+
+          grep -Fq 'workflow_dispatch:' "$dispatch"
+          grep -Fq 'environment: final-shift-close-feature-activation' "$dispatch"
+          grep -Fq "require_status_success 'product-owner-merge-authority'" "$dispatch"
+          grep -Fq "require_status_success 'final-shift-close-feature-activation-authority'" "$dispatch"
+          grep -Fq "'durable-staging'" "$dispatch"
+          grep -Fq 'activation dispatch remains fail-closed' "$dispatch"
+          grep -Fq 'final-shift-close-feature-activation-execution-ready' "$dispatch"
+          grep -Fq 'no target mutation performed' "$dispatch"
+          ! grep -Fq 'final-shift-close-feature-activation-evidence' "$dispatch"
+
+          grep -Fq 'CPANEL_PRIVATE_FILE_ONE_SHOT_CRON_V1' "$executor"
+          grep -Fq 'RESTORE_EXACT_PREWRITE_BYTES_ON_ANY_POST_WRITE_FAILURE' "$executor"
+          grep -Fq 'FLAG_TRUE_VERIFIED_HEALTHY_AWAITING_RUNTIME_ALLOWLIST' "$executor"
+          grep -Fq 'BLOCKED_BY_RUNTIME_ALLOWLIST' "$executor"
+          ! grep -Fq 'Artisan::call' "$executor"
+          ! grep -Fq 'migrate' "$executor"
+
+      - name: Preserve canonical operational NO-GO and historical provider boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          state=ops/final-shift-close/STATE.json
+          provider=apps/web/app/Providers/FinalShiftCloseServiceProvider.php
+
+          [[ "$(jq -r '.migration27.state' "$state")" == 'EXECUTED' ]]
+          [[ "$(jq -r '.permission_provisioning.state' "$state")" == 'PROVISIONED' ]]
+          [[ "$(jq -r '.permission_provisioning.permission_id' "$state")" == 'pos.shift.close' ]]
+          [[ "$(jq -r '.permission_provisioning.default_grant' "$state")" == 'NONE' ]]
+          [[ "$(jq -r '.feature_activation.state' "$state")" == 'INACTIVE' ]]
+          [[ "$(jq -r '.deployment_authority' "$state")" == 'NOT_GRANTED' ]]
+          [[ "$(jq -r '.technical_preview_activation' "$state")" == 'NOT_AUTHORIZED' ]]
+          [[ "$(jq -r '.production_activation' "$state")" == 'NOT_AUTHORIZED' ]]
+          [[ "$(jq -r '.updater_activation' "$state")" == 'INACTIVE' ]]
+
+          grep -Fq "['local', 'test', 'ci']" "$provider"
+          ! grep -Fq "'durable-staging'" "$provider"
+          grep -Fq "env('ONEQAY_POS_SHIFT_CLOSE_ENABLED', false)" "$provider"
+
+          echo 'Sprint239 Final Shift Close cPanel activation transport readiness regression passed.'
+
+# Author by Lab | zefry
