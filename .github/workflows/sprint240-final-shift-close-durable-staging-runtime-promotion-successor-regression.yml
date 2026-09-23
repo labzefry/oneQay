@@ -43,7 +43,7 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
-          expected_hash='b1470943b293c70e92924a4a6696c937b4d034a6bcccbcf13939d8059afab0b0'
+          expected_hash='4f93415d25a80f3c9bab442fb27a11b616f0854047c7176b71fd3d611dc8bd2e'
           printf '%s\n' \
             '.github/workflows/durable-staging-release-publication.yml' \
             '.github/workflows/durable-staging-runtime-promotion-kit.yml' \
@@ -51,7 +51,7 @@ jobs:
             '.github/workflows/sprint96-final-shift-close-runtime-wiring.yml' \
             'apps/web/app/Application/Pos/FinalShiftCloseDurableStagingDeliveryGate.php' \
             'apps/web/app/Providers/FinalShiftCloseDurableStagingDeliveryServiceProvider.php' \
-            'apps/web/bootstrap/app.php' \
+            'apps/web/app/Providers/PosOperationsHubServiceProvider.php' \
             'apps/web/tests/pos-final-shift-close-durable-staging-delivery-gate.php' \
             'docs/SPRINT240_FINAL_SHIFT_CLOSE_DURABLE_STAGING_RUNTIME_PROMOTION_SUCCESSOR.md' \
             'ops/final-shift-close/DURABLE_STAGING_OPERATOR_ARTIFACT_PUBLICATION_CONTRACT.json' \
@@ -67,6 +67,7 @@ jobs:
           set -euo pipefail
           php -l apps/web/app/Application/Pos/FinalShiftCloseDurableStagingDeliveryGate.php
           php -l apps/web/app/Providers/FinalShiftCloseDurableStagingDeliveryServiceProvider.php
+          php -l apps/web/app/Providers/PosOperationsHubServiceProvider.php
           php -l apps/web/bootstrap/app.php
           php -l apps/web/tests/pos-final-shift-close-durable-staging-delivery-gate.php
           jq -e . ops/final-shift-close/DURABLE_STAGING_RELEASE_ARTIFACT_CONTRACT.json >/dev/null
@@ -87,6 +88,7 @@ jobs:
           selection=ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
           legacy=apps/web/app/Providers/FinalShiftCloseServiceProvider.php
           successor=apps/web/app/Providers/FinalShiftCloseDurableStagingDeliveryServiceProvider.php
+          aggregate=apps/web/app/Providers/PosOperationsHubServiceProvider.php
 
           test "$(jq -r '.migration27.state' "$state")" = EXECUTED
           test "$(jq -r '.permission_provisioning.state' "$state")" = PROVISIONED
@@ -106,8 +108,13 @@ jobs:
 
           grep -Fq "['local', 'test', 'ci']" "$legacy"
           ! grep -Fq "'durable-staging'" "$legacy"
-          grep -Fq "DURABLE_STAGING_DELIVERY_SUCCESSOR_V1" apps/web/app/Application/Pos/FinalShiftCloseDurableStagingDeliveryGate.php
-          grep -Fq "ONEQAY_POS_SHIFT_CLOSE_ENABLED" "$successor"
+          grep -Fq 'DURABLE_STAGING_DELIVERY_SUCCESSOR_V1' apps/web/app/Application/Pos/FinalShiftCloseDurableStagingDeliveryGate.php
+          grep -Fq 'DurableStagingMerchantCoreBridge::armedFor($runtimeClass)' "$successor"
+          grep -Fq 'ONEQAY_POS_SHIFT_CLOSE_ENABLED' "$successor"
+          grep -Fq '$this->app->register(FinalShiftCloseDurableStagingDeliveryServiceProvider::class);' "$aggregate"
+          grep -Fq "'GET /pos/shifts/close'" "$aggregate"
+          grep -Fq "'POST /pos/shifts/close'" "$aggregate"
+          ! grep -Fq 'FinalShiftCloseDurableStagingDeliveryServiceProvider' apps/web/bootstrap/app.php
 
       - name: Validate publication and promotion workflows are non-executing
         shell: bash
@@ -155,11 +162,25 @@ jobs:
 
           common=(
             ONEQAY_RUNTIME_CLASS=durable-staging
+            ONEQAY_DURABLE_STAGING_RUNTIME_ENABLED=true
             ONEQAY_RUNNING_SOURCE_COMMIT="$source"
             ONEQAY_RUNNING_ARTIFACT_SHA256="$artifact"
             ONEQAY_PERSISTENCE_ENABLED=true
             ONEQAY_AUTHENTICATION_SESSION_CONTROL_ENABLED=true
+            ONEQAY_POS_OPERATIONS_HUB_ENABLED=true
+            ONEQAY_POS_CATALOG_INVENTORY_SETUP_ENABLED=true
+            ONEQAY_POS_CATALOG_PREPARATION_ENABLED=true
+            ONEQAY_POS_INVENTORY_BASELINE_ENABLED=true
+            ONEQAY_POS_SHIFT_START_WORKSPACE_ENABLED=true
+            ONEQAY_POS_SHIFT_OPENING_ENABLED=true
+            ONEQAY_POS_SHIFT_OPENING_CASH_EVIDENCE_ENABLED=true
+            ONEQAY_POS_CASHIER_WORKSPACE_ENABLED=true
             ONEQAY_POS_SALE_COMPLETION_ENABLED=true
+            ONEQAY_MERCHANT_CONTEXT_BOOTSTRAP_TENANT_ID=tenant-s240
+            ONEQAY_MERCHANT_CONTEXT_BOOTSTRAP_IDENTITY_ID=identity-s240
+            ONEQAY_MERCHANT_CONTEXT_BOOTSTRAP_ORGANIZATION_ID=organization-s240
+            ONEQAY_MERCHANT_CONTEXT_BOOTSTRAP_OUTLET_ID=outlet-s240
+            ONEQAY_MERCHANT_CONTEXT_BOOTSTRAP_DEVICE_ID=device-s240
           )
 
           output="$(env "${common[@]}" ONEQAY_POS_SHIFT_CLOSE_ENABLED=false php artisan route:list --json)"
@@ -185,7 +206,7 @@ jobs:
             }
           ' "$output"
 
-          output="$(env ONEQAY_RUNTIME_CLASS=durable-staging ONEQAY_RUNNING_SOURCE_COMMIT=cccccccccccccccccccccccccccccccccccccccc ONEQAY_RUNNING_ARTIFACT_SHA256="$artifact" ONEQAY_PERSISTENCE_ENABLED=true ONEQAY_AUTHENTICATION_SESSION_CONTROL_ENABLED=true ONEQAY_POS_SALE_COMPLETION_ENABLED=true ONEQAY_POS_SHIFT_CLOSE_ENABLED=true php artisan route:list --json)"
+          output="$(env "${common[@]}" ONEQAY_RUNNING_SOURCE_COMMIT=cccccccccccccccccccccccccccccccccccccccc ONEQAY_POS_SHIFT_CLOSE_ENABLED=true php artisan route:list --json)"
           php -r '
             $rows=json_decode($argv[1], true, 512, JSON_THROW_ON_ERROR);
             foreach ($rows as $row) {
@@ -204,6 +225,7 @@ jobs:
             .sprint == 240 and
             .contract_state == "MATERIALIZED_PROMOTION_READY_NOT_DEPLOYED_NOT_ACTIVATED" and
             .delivery_successor.legacy_provider_modified == false and
+            .delivery_successor.historical_bootstrap_modified == false and
             .delivery_successor.existing_enterprise_ui_reused == true and
             .artifact_publication.deployment_performed == false and
             .promotion_kit.application_deployment_performed == false and
@@ -212,7 +234,7 @@ jobs:
             .operational_boundaries.deployment_authority == "NOT_GRANTED" and
             .operational_boundaries.production_activation == "NOT_AUTHORIZED" and
             .engineering_envelope.path_count == 12 and
-            .engineering_envelope.sorted_newline_path_set_sha256 == "b1470943b293c70e92924a4a6696c937b4d034a6bcccbcf13939d8059afab0b0" and
+            .engineering_envelope.sorted_newline_path_set_sha256 == "4f93415d25a80f3c9bab442fb27a11b616f0854047c7176b71fd3d611dc8bd2e" and
             .attribution == "Author by Lab | zefry"
           ' "$contract" >/dev/null
           for heading in '## Purpose / Why' '## Objective / Gap' '## What changed' '## Evidence / Qualification' '## Enterprise UI/UX continuity' '## Operational boundaries / NO-GO' '## Next position'; do
