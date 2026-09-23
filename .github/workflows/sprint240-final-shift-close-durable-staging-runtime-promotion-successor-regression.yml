@@ -1,0 +1,225 @@
+name: Sprint240 Final Shift Close Durable-Staging Runtime Promotion Successor Regression
+
+# Attribution: Lab | zefry
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint240-final-shift-close-durable-staging-runtime-promotion-successor-${{ github.event.pull_request.number || github.ref }}-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  qualify-sprint240:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWE=
+      APP_DEBUG: 'false'
+      APP_URL: http://localhost
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+
+      - name: Lock exact Sprint240 engineering envelope when active
+        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref == 'sprint240-durable-staging-runtime-promotion-successor' }}
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          expected_hash='b1470943b293c70e92924a4a6696c937b4d034a6bcccbcf13939d8059afab0b0'
+          printf '%s\n' \
+            '.github/workflows/durable-staging-release-publication.yml' \
+            '.github/workflows/durable-staging-runtime-promotion-kit.yml' \
+            '.github/workflows/sprint240-final-shift-close-durable-staging-runtime-promotion-successor-regression.yml' \
+            '.github/workflows/sprint96-final-shift-close-runtime-wiring.yml' \
+            'apps/web/app/Application/Pos/FinalShiftCloseDurableStagingDeliveryGate.php' \
+            'apps/web/app/Providers/FinalShiftCloseDurableStagingDeliveryServiceProvider.php' \
+            'apps/web/bootstrap/app.php' \
+            'apps/web/tests/pos-final-shift-close-durable-staging-delivery-gate.php' \
+            'docs/SPRINT240_FINAL_SHIFT_CLOSE_DURABLE_STAGING_RUNTIME_PROMOTION_SUCCESSOR.md' \
+            'ops/final-shift-close/DURABLE_STAGING_OPERATOR_ARTIFACT_PUBLICATION_CONTRACT.json' \
+            'ops/final-shift-close/DURABLE_STAGING_RELEASE_ARTIFACT_CONTRACT.json' \
+            'ops/final-shift-close/DURABLE_STAGING_RUNTIME_PROMOTION_SUCCESSOR_CONTRACT.json' > /tmp/expected
+          git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/actual
+          diff -u /tmp/expected /tmp/actual
+          test "$(sha256sum /tmp/actual | awk '{print $1}')" = "$expected_hash"
+
+      - name: Validate PHP YAML JSON source
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l apps/web/app/Application/Pos/FinalShiftCloseDurableStagingDeliveryGate.php
+          php -l apps/web/app/Providers/FinalShiftCloseDurableStagingDeliveryServiceProvider.php
+          php -l apps/web/bootstrap/app.php
+          php -l apps/web/tests/pos-final-shift-close-durable-staging-delivery-gate.php
+          jq -e . ops/final-shift-close/DURABLE_STAGING_RELEASE_ARTIFACT_CONTRACT.json >/dev/null
+          jq -e . ops/final-shift-close/DURABLE_STAGING_OPERATOR_ARTIFACT_PUBLICATION_CONTRACT.json >/dev/null
+          jq -e . ops/final-shift-close/DURABLE_STAGING_RUNTIME_PROMOTION_SUCCESSOR_CONTRACT.json >/dev/null
+          ruby -e 'require "yaml"; YAML.load_file(ARGV[0])' .github/workflows/durable-staging-release-publication.yml
+          ruby -e 'require "yaml"; YAML.load_file(ARGV[0])' .github/workflows/durable-staging-runtime-promotion-kit.yml
+          ruby -e 'require "yaml"; YAML.load_file(ARGV[0])' .github/workflows/sprint96-final-shift-close-runtime-wiring.yml
+
+      - name: Execute durable-staging gate source regression
+        run: php apps/web/tests/pos-final-shift-close-durable-staging-delivery-gate.php
+
+      - name: Validate canonical operational and target identity preservation
+        shell: bash
+        run: |
+          set -euo pipefail
+          state=ops/final-shift-close/STATE.json
+          selection=ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+          legacy=apps/web/app/Providers/FinalShiftCloseServiceProvider.php
+          successor=apps/web/app/Providers/FinalShiftCloseDurableStagingDeliveryServiceProvider.php
+
+          test "$(jq -r '.migration27.state' "$state")" = EXECUTED
+          test "$(jq -r '.permission_provisioning.state' "$state")" = PROVISIONED
+          test "$(jq -r '.permission_provisioning.permission_id' "$state")" = pos.shift.close
+          test "$(jq -r '.permission_provisioning.default_grant' "$state")" = NONE
+          test "$(jq -r '.feature_activation.state' "$state")" = INACTIVE
+          test "$(jq -r '.deployment_authority' "$state")" = NOT_GRANTED
+          test "$(jq -r '.technical_preview_activation' "$state")" = NOT_AUTHORIZED
+          test "$(jq -r '.production_activation' "$state")" = NOT_AUTHORIZED
+          test "$(jq -r '.updater_activation' "$state")" = INACTIVE
+
+          test "$(jq -r '.selection_state' "$selection")" = SELECTED_NOT_AUTHORIZED
+          test "$(jq -r '.selected_target.environment_id' "$selection")" = oneqay-durable-staging-01
+          test "$(jq -r '.selected_target.runtime_class' "$selection")" = durable-staging
+          test "$(jq -r '.selected_target.exact_running_source_commit' "$selection")" = 5be28a3c001738373588b58e9d29832c46402de1
+          test "$(jq -r '.selected_target.exact_running_artifact_sha256' "$selection")" = 66be23792478fb191f912571b35076c42783b9733cdb3fb514b549d22ec90dd7
+
+          grep -Fq "['local', 'test', 'ci']" "$legacy"
+          ! grep -Fq "'durable-staging'" "$legacy"
+          grep -Fq "DURABLE_STAGING_DELIVERY_SUCCESSOR_V1" apps/web/app/Application/Pos/FinalShiftCloseDurableStagingDeliveryGate.php
+          grep -Fq "ONEQAY_POS_SHIFT_CLOSE_ENABLED" "$successor"
+
+      - name: Validate publication and promotion workflows are non-executing
+        shell: bash
+        run: |
+          set -euo pipefail
+          publication=.github/workflows/durable-staging-release-publication.yml
+          promotion=.github/workflows/durable-staging-runtime-promotion-kit.yml
+
+          grep -Fq "migration27.state' \"\$state\")\" = EXECUTED" "$publication"
+          grep -Fq "permission_provisioning.state' \"\$state\")\" = PROVISIONED" "$publication"
+          grep -Fq "feature_activation.state' \"\$state\")\" = INACTIVE" "$publication"
+          grep -Fq 'workflow_run:' "$promotion"
+          grep -Fq 'post_deployment_reattestation_required' "$promotion"
+          grep -Fq 'deployment_authority: "NOT_GRANTED"' "$promotion"
+          ! grep -Eq '(^|[[:space:]])php artisan migrate([[:space:]]|$)' "$publication" "$promotion"
+          ! grep -Fq 'ONEQAY_POS_SHIFT_CLOSE_ENABLED=true' "$publication" "$promotion"
+          ! grep -Fq 'git push' "$promotion"
+
+      - name: Install application dependencies
+        working-directory: apps/web
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Prove durable-staging routes absent until every gate is armed
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$(cd ../.. && pwd)"
+          source='aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+          artifact='bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
+          cat > "$root/RELEASE.json" <<EOF
+          {
+            "payload_metadata_version": 1,
+            "product": "oneQay",
+            "release_id": "durable-staging-aaaaaaaaaaaa",
+            "environment": "DURABLE_STAGING",
+            "required_runtime_class": "durable-staging",
+            "production": false,
+            "synthetic_fixture_runtime": false,
+            "production_data_allowed": false,
+            "source_commit": "$source"
+          }
+          EOF
+          trap 'rm -f "$root/RELEASE.json"' EXIT
+
+          common=(
+            ONEQAY_RUNTIME_CLASS=durable-staging
+            ONEQAY_RUNNING_SOURCE_COMMIT="$source"
+            ONEQAY_RUNNING_ARTIFACT_SHA256="$artifact"
+            ONEQAY_PERSISTENCE_ENABLED=true
+            ONEQAY_AUTHENTICATION_SESSION_CONTROL_ENABLED=true
+            ONEQAY_POS_SALE_COMPLETION_ENABLED=true
+          )
+
+          output="$(env "${common[@]}" ONEQAY_POS_SHIFT_CLOSE_ENABLED=false php artisan route:list --json)"
+          php -r '
+            $rows=json_decode($argv[1], true, 512, JSON_THROW_ON_ERROR);
+            foreach ($rows as $row) {
+              if (in_array(($row["name"] ?? ""), ["pos.shifts.close","pos.shifts.close.page"], true)) {
+                fwrite(STDERR, "Durable-staging Final Shift Close routes must stay absent while feature flag is false.\n");
+                exit(1);
+              }
+            }
+          ' "$output"
+
+          output="$(env "${common[@]}" ONEQAY_POS_SHIFT_CLOSE_ENABLED=true php artisan route:list --json)"
+          php -r '
+            $rows=json_decode($argv[1], true, 512, JSON_THROW_ON_ERROR);
+            $names=array_column($rows, "name");
+            foreach (["pos.shifts.close","pos.shifts.close.page"] as $required) {
+              if (!in_array($required, $names, true)) {
+                fwrite(STDERR, "Qualified durable-staging route missing: $required\n");
+                exit(1);
+              }
+            }
+          ' "$output"
+
+          output="$(env ONEQAY_RUNTIME_CLASS=durable-staging ONEQAY_RUNNING_SOURCE_COMMIT=cccccccccccccccccccccccccccccccccccccccc ONEQAY_RUNNING_ARTIFACT_SHA256="$artifact" ONEQAY_PERSISTENCE_ENABLED=true ONEQAY_AUTHENTICATION_SESSION_CONTROL_ENABLED=true ONEQAY_POS_SALE_COMPLETION_ENABLED=true ONEQAY_POS_SHIFT_CLOSE_ENABLED=true php artisan route:list --json)"
+          php -r '
+            $rows=json_decode($argv[1], true, 512, JSON_THROW_ON_ERROR);
+            foreach ($rows as $row) {
+              if (in_array(($row["name"] ?? ""), ["pos.shifts.close","pos.shifts.close.page"], true)) exit(1);
+            }
+          ' "$output"
+
+      - name: Validate Sprint240 contract and documentation
+        shell: bash
+        run: |
+          set -euo pipefail
+          contract=ops/final-shift-close/DURABLE_STAGING_RUNTIME_PROMOTION_SUCCESSOR_CONTRACT.json
+          doc=docs/SPRINT240_FINAL_SHIFT_CLOSE_DURABLE_STAGING_RUNTIME_PROMOTION_SUCCESSOR.md
+          jq -e '
+            .schema_version == 1 and
+            .sprint == 240 and
+            .contract_state == "MATERIALIZED_PROMOTION_READY_NOT_DEPLOYED_NOT_ACTIVATED" and
+            .delivery_successor.legacy_provider_modified == false and
+            .delivery_successor.existing_enterprise_ui_reused == true and
+            .artifact_publication.deployment_performed == false and
+            .promotion_kit.application_deployment_performed == false and
+            .promotion_kit.post_deployment_reattestation_required == true and
+            .operational_boundaries.feature_activation == "INACTIVE" and
+            .operational_boundaries.deployment_authority == "NOT_GRANTED" and
+            .operational_boundaries.production_activation == "NOT_AUTHORIZED" and
+            .engineering_envelope.path_count == 12 and
+            .engineering_envelope.sorted_newline_path_set_sha256 == "b1470943b293c70e92924a4a6696c937b4d034a6bcccbcf13939d8059afab0b0" and
+            .attribution == "Author by Lab | zefry"
+          ' "$contract" >/dev/null
+          for heading in '## Purpose / Why' '## Objective / Gap' '## What changed' '## Evidence / Qualification' '## Enterprise UI/UX continuity' '## Operational boundaries / NO-GO' '## Next position'; do
+            grep -Fq "$heading" "$doc"
+          done
+
+      - name: Confirm tracked source cleanliness
+        run: git diff --exit-code
+
+# Author by Lab | zefry
