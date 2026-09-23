@@ -8,9 +8,12 @@
   "delivery_successor": {
     "gate_path": "apps/web/app/Application/Pos/FinalShiftCloseDurableStagingDeliveryGate.php",
     "provider_path": "apps/web/app/Providers/FinalShiftCloseDurableStagingDeliveryServiceProvider.php",
+    "registration_aggregate_path": "apps/web/app/Providers/PosOperationsHubServiceProvider.php",
     "successor_marker": "DURABLE_STAGING_DELIVERY_SUCCESSOR_V1",
     "runtime_class": "durable-staging",
     "legacy_provider_modified": false,
+    "historical_bootstrap_modified": false,
+    "registered_through_existing_pos_aggregate": true,
     "feature_flag_default_remains_disabled": true,
     "release_identity_required": true,
     "running_source_identity_required": true,
@@ -18,6 +21,7 @@
     "persistence_required": true,
     "session_control_required": true,
     "sale_completion_required": true,
+    "durable_staging_bridge_arming_required": true,
     "existing_enterprise_ui_reused": true,
     "new_public_privileged_route": false
   },
@@ -61,7 +65,7 @@
   },
   "engineering_envelope": {
     "path_count": 12,
-    "sorted_newline_path_set_sha256": "b1470943b293c70e92924a4a6696c937b4d034a6bcccbcf13939d8059afab0b0",
+    "sorted_newline_path_set_sha256": "4f93415d25a80f3c9bab442fb27a11b616f0854047c7176b71fd3d611dc8bd2e",
     "paths": [
       ".github/workflows/durable-staging-release-publication.yml",
       ".github/workflows/durable-staging-runtime-promotion-kit.yml",
@@ -69,7 +73,7 @@
       ".github/workflows/sprint96-final-shift-close-runtime-wiring.yml",
       "apps/web/app/Application/Pos/FinalShiftCloseDurableStagingDeliveryGate.php",
       "apps/web/app/Providers/FinalShiftCloseDurableStagingDeliveryServiceProvider.php",
-      "apps/web/bootstrap/app.php",
+      "apps/web/app/Providers/PosOperationsHubServiceProvider.php",
       "apps/web/tests/pos-final-shift-close-durable-staging-delivery-gate.php",
       "docs/SPRINT240_FINAL_SHIFT_CLOSE_DURABLE_STAGING_RUNTIME_PROMOTION_SUCCESSOR.md",
       "ops/final-shift-close/DURABLE_STAGING_OPERATOR_ARTIFACT_PUBLICATION_CONTRACT.json",
