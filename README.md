@@ -8,55 +8,50 @@ Enterprise-oriented multi-tenant business-management platform built with Modular
 
 ## Current canonical status
 
-Latest completed engineering sprint: **Sprint219 — cPanel Fixed Public Document Root Bridge**.
+Current canonical main before this documentation reconciliation: `faff7d2c1a9e1bfe6f1f84cda416f5a62f0c63b2`.
 
-- Canonical engineering commit: `d1f832c42ae6e4b2705e9b1c295d031880cc0113`
-- Engineering PR: #873
-- Final engineering head: `20df712296f179e46d46937a8c965ae05675a686`
-- Exact-head qualification: 98/98 SUCCESS
-- Sprint219 regression: `35510403647` — SUCCESS
-- Engineering envelope SHA-256: `476dcc4c82fe5b1a4924a3678797e32a28b838ab84bcbab79f36ccf2c33189e4`
-- Reconciliation envelope SHA-256: `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`
+PR #889 (`Sprint232: transition Final Shift Close permission provisioning state`) is merged. Its squash parent is Sprint237 main `07bb6e474fd3217132828a0cd09737a87a9ef308`, and the merge commit is verified.
 
-Sprint219 removes the remaining cPanel fixed-document-root source incompatibility without changing application business source or granting runtime authority.
+Before merge:
+- exact engineering head `0ff4a1cd73bc04f462733e1ab76e8b4d1c012588`;
+- 102/102 PR-triggered exact-head workflows SUCCESS;
+- Sprint102 run `35761431103` attempt 2 SUCCESS;
+- permission provisioning evidence run `35872855919` SUCCESS;
+- exactly one changed path: `ops/final-shift-close/STATE.json`;
+- path-set SHA-256 `25254f999ec85014b9e591cb7bb2d72f65b745acfadc57bd7d6233c4e485f923`.
 
-## Governed deployment inputs
+## Durable staging baseline
 
-Durable staging:
-- application artifact `10603323419`
-- current cPanel no-SSH kit `10606042478`
-- staging application source `d0b5becbf945c5192e797d512a704eb5aecc6eaa`
-- cPanel kit source `d1f832c42ae6e4b2705e9b1c295d031880cc0113`
-- cPanel kit inner ZIP SHA-256 `9213ff3eaf1949d72787e3d5522321f93963ce623eef829f9e9e90e34fa2399d`
+Selected target: `oneqay-durable-staging-01` (`durable-staging`, `SELECTED_NOT_AUTHORIZED`).
 
-Production:
-- Production candidate `10603358335`
-- Production operator kit `10604307277`
-- Production candidate source `d0b5becbf945c5192e797d512a704eb5aecc6eaa`
-- Production archive SHA-256 `cd1f96346d310aab3ac59398116499dae3e3df84a6af9ec1a13515d1e46568f1`
+Running identity:
+- source `5be28a3c001738373588b58e9d29832c46402de1`;
+- artifact SHA-256 `66be23792478fb191f912571b35076c42783b9733cdb3fb514b549d22ec90dd7`;
+- selection fingerprint `858280ea3575317e8d88eed7009c770530097e261c391b2869fa81ad7c8546ce`.
 
-## cPanel fixed-public boundary
+Merchant bootstrap is complete. Migration #27 is `EXECUTED`. `pos.shift.close` is durably provisioned to `merchant-initial-pos-operator` with `default_grant = NONE`.
 
-A live cPanel target may now qualify through either:
-- `ACTIVE_RELEASE_PUBLIC`; or
-- `FIXED_PUBLIC_BRIDGE`.
+## Final Shift Close boundary
 
-Fixed-public mode keeps the application and runtime material private and exposes only the generated bridge front controller plus current build assets. Its exact presentation path is authority-bound and rollback is rehearsed across both public surface and private active-release pointer.
+Canonical state:
+- migration #27: `EXECUTED`;
+- permission provisioning: `PROVISIONED`;
+- Final Shift Close feature: `INACTIVE`;
+- deployment authority: `NOT_GRANTED`;
+- Technical Preview: `NOT_AUTHORIZED`;
+- Production: `NOT_AUTHORIZED`;
+- updater: `INACTIVE`.
 
-Historical `oneqay.n07.my.id` paths are not current qualification evidence; the current kit must observe the live host again.
+Do not replay merchant bootstrap, migration #27, or the permission grant.
 
-## Production dark-deployment boundary
+## Next material source blocker
 
-A separately authorized Production execution can verify exact target/artifact/plan/authority, deploy an immutable candidate, verify `/health/live`, rehearse rollback, restore the candidate, and qualify evidence only to `PRODUCTION_DEPLOYED_VERIFIED_NOT_ACTIVATED`.
+The repository already contains the Sprint154 feature-activation execution-plan source foundation, but no dispatchable `.github/workflows/final-shift-close-feature-activation.yml` exists. The Final Shift Close-specific selected-target configuration mutation transport is not yet materialized, while delivery remains runtime-allowlisted to `local`, `test`, and `ci`.
 
-It does not enable `/health/ready`, first-party Production business routes, migration #27, or Production traffic.
+The next meaningful engineering slice is to materialize a fail-closed, selected-target-bound activation executor/transport foundation with exact-head authority checks, read-before/write/read-after flag verification, health attestation, verified rollback, and regression qualification. This engineering work must not activate Final Shift Close or infer Technical Preview/Production/deployment authority.
 
-## Operational boundary
+## Operational NO-GO
 
-No real durable-staging or Production deployment has been performed. Migration #27 remains `NOT_EXECUTED`; permission provisioning `NONE`; Final Shift Close `INACTIVE`; deployment authority `NOT_GRANTED`; Production traffic activation `NOT_AUTHORIZED`; updater `INACTIVE`; selected target `null`; producer dispatch `NOT_PERFORMED`.
-
-## Next
-
-Issue #856 is the single operational handoff. Use cPanel kit `10606042478` to requalify the real staging host and produce same-source staging deployment evidence. Production dark deployment follows only after that evidence exists.
+Final Shift Close activation, deployment, Technical Preview, Production traffic, Production activation, updater activation, target reselection, Remote MySQL, a second migration #27 execution, and a second permission grant remain forbidden unless separately authorized where applicable.
 
 Author by Lab | zefry
