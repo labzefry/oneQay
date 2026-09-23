@@ -1,8 +1,8 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "feature": "durable-staging-release-artifact",
   "contract_state": "MATERIALIZED_SOURCE_ONLY_NOT_DEPLOYED",
-  "purpose": "BUILD_TRUSTED_REPRODUCIBLE_DURABLE_STAGING_ARTIFACT_WITH_MIGRATION_SOURCE_BUT_NO_MIGRATION_EXECUTION",
+  "purpose": "BUILD_TRUSTED_REPRODUCIBLE_CURRENT_MAIN_DURABLE_STAGING_SUCCESSOR_ARTIFACT_WITHOUT_RUNTIME_MUTATION",
   "builder_path": "tools/build-durable-staging-release.sh",
   "manifest_schema_path": "release/durable-staging-manifest-v1.schema.json",
   "manifest_validator_path": "tools/validate-durable-staging-release-manifest.php",
@@ -36,30 +36,30 @@
     "attestation_token_environment_key": "ONEQAY_DURABLE_RUNTIME_ATTESTATION_TOKEN",
     "artifact_does_not_embed_environment_values": true
   },
-  "qualification_requirements": {
-    "preview_release_builder_unchanged_semantically": true,
-    "technical_preview_remains_no_schema_change": true,
-    "durable_staging_artifact_contains_migrations": true,
-    "durable_staging_artifact_does_not_execute_migrations": true,
-    "artifact_sha256_is_deterministic_for_exact_source_and_build_inputs": true,
-    "manifest_is_bound_to_exact_artifact_sha256": true,
-    "deployment_requires_separate_operational_authority": true,
-    "migration_execution_requires_separate_operational_authority": true,
-    "protected_attestation_producer_dispatch_requires_separate_operational_authority": true
-  },
-  "canonical_boundaries": {
-    "environment_creation": "NOT_PERFORMED",
-    "environment_deployment": "NOT_PERFORMED",
-    "migration27_execution": "NOT_PERFORMED",
-    "permission_provisioning": "NONE",
+  "current_canonical_state": {
+    "migration27": "EXECUTED",
+    "permission_provisioning": "PROVISIONED",
+    "permission_id": "pos.shift.close",
+    "default_grant": "NONE",
     "feature_activation": "INACTIVE",
+    "selected_target_state": "SELECTED_NOT_AUTHORIZED",
+    "selected_environment_id": "oneqay-durable-staging-01",
+    "selected_runtime_class": "durable-staging",
+    "selected_running_source_commit": "5be28a3c001738373588b58e9d29832c46402de1",
     "deployment_authority": "NOT_GRANTED",
     "technical_preview_activation": "NOT_AUTHORIZED",
     "production_activation": "NOT_AUTHORIZED",
-    "updater_activation": "INACTIVE",
-    "durable_target_selection": "BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET",
-    "selected_target": null,
-    "producer_dispatch": "NOT_PERFORMED"
+    "updater_activation": "INACTIVE"
   },
-  "attribution": "Lab | zefry"
+  "successor_candidate_policy": {
+    "runtime_class": "durable-staging",
+    "candidate_source_must_be_current_main": true,
+    "current_selected_source_must_be_ancestor_of_candidate_source": true,
+    "deployment_performed_by_builder": false,
+    "selected_target_mutation_performed_by_builder": false,
+    "post_deployment_reattestation_required": true,
+    "post_deployment_selected_target_generation_update_required": true,
+    "feature_activation_authority_remains_separate": true
+  },
+  "attribution": "Author by Lab | zefry"
 }
