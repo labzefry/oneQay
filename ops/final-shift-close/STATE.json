@@ -7,7 +7,7 @@
     "evidence_context": "final-shift-close-migration27-execution-evidence"
   },
   "permission_provisioning": {
-    "state": "NONE",
+    "state": "PROVISIONED",
     "authority_context": "final-shift-close-permission-provisioning-authority",
     "evidence_context": "final-shift-close-permission-provisioning-evidence",
     "permission_id": "pos.shift.close",
