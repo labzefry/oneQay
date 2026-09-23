@@ -1,45 +1,47 @@
 # oneQay Roadmap
 
-**Roadmap checkpoint:** Sprint219 closed canonically
-**Canonical engineering baseline:** `d1f832c42ae6e4b2705e9b1c295d031880cc0113`
+**Roadmap checkpoint:** post-PR #889 canonical reconciliation
+**Canonical operational baseline:** `faff7d2c1a9e1bfe6f1f84cda416f5a62f0c63b2`
 **Current state authority:** `PROJECT_MANIFEST.md`
 
-## Completed Sprint219 horizon
+## Completed operational horizon
 
-Sprint219 closed `CPANEL_FIXED_PUBLIC_DOCROOT_BRIDGE`.
+The durable staging target `oneqay-durable-staging-01` is selected but not authorized for feature activation. Merchant bootstrap is complete, migration #27 is executed, and `pos.shift.close` is durably provisioned to `merchant-initial-pos-operator` with no default grant.
 
-The repository now supports both direct active-release public roots and fixed cPanel public roots while preserving private immutable releases, exact authority binding, deterministic rollback, and canonical deployment evidence.
+PR #889 closed the repository state transition to `permission_provisioning.state = PROVISIONED` after exact selected-target evidence run `35872855919` succeeded. Final Shift Close remains `INACTIVE`.
 
-Current staging execution inputs:
-- application artifact `10603323419`;
-- cPanel operator kit `10606042478`;
-- fixed-public bridge capability `FIXED_PUBLIC_BRIDGE`;
-- legacy/direct capability `ACTIVE_RELEASE_PUBLIC`.
+## Current production-readiness position
 
-Production inputs remain:
-- Production candidate `10603358335`;
-- Production operator kit `10604307277`.
+The repository has moved beyond the historical Sprint219 checkpoint recorded by the previous root documentation. Current canonical constraints are:
 
-## Production-readiness progression
+- migration #27: `EXECUTED`;
+- permission provisioning: `PROVISIONED`;
+- feature activation: `INACTIVE`;
+- deployment authority: `NOT_GRANTED`;
+- Technical Preview: `NOT_AUTHORIZED`;
+- Production: `NOT_AUTHORIZED`;
+- updater: `INACTIVE`.
 
-Sprint203–Sprint219 cover durable-staging readiness, deterministic releases, authority-bound planning, deployment evidence, cPanel no-SSH qualification/execution, same-source promotion governance, Production dark-deployment execution, and fixed-public cPanel compatibility.
+No replay of migration #27, merchant bootstrap, or permission provisioning is permitted.
 
-The remaining immediate blocker is truthful real-target execution evidence, not missing generic repository deployment tooling.
+## Next material engineering horizon
 
-## Next material horizon
+The immediate source-side blocker is feature-activation execution readiness, not another migration/permission compatibility loop.
 
-1. Retrieve cPanel kit `10606042478` and staging application artifact `10603323419`.
-2. Requalify the actual live cPanel host; do not substitute historical path observations for current evidence.
-3. Obtain exact short-lived staging deployment authority <=900 seconds.
-4. Execute guarded same-source staging deployment and qualify deployment evidence.
-5. Materialize/qualify a real isolated Production target.
-6. Use Production candidate `10603358335` and operator kit `10604307277`.
-7. Obtain separate Production deployment authority <=900 seconds.
-8. Dark-deploy and qualify to `PRODUCTION_DEPLOYED_VERIFIED_NOT_ACTIVATED`.
-9. Only after real deployment evidence exists, close remaining business-readiness, migration, and Production traffic-activation gates.
+1. Materialize a dispatchable Final Shift Close feature-activation executor that remains fail-closed without exact activation authority.
+2. Bind it to the already-selected durable target and exact running source/artifact identity.
+3. Materialize an authenticated configuration mutation transport scoped only to `ONEQAY_POS_SHIFT_CLOSE_ENABLED`.
+4. Require read-before/write/read-after verification.
+5. Require non-mutating health/route attestation on the same target.
+6. Require verified rollback to `false` on any post-write failure.
+7. Preserve deny-by-default, secret-free evidence, replay resistance, and exact-head/target binding.
+8. Qualify the full durable dependency envelope before widening the Final Shift Close runtime allowlist beyond `local`, `test`, and `ci`.
+9. Only after source readiness is complete may a separate exact-head Product Owner feature-activation authority be requested.
 
-Issue #856 remains the single operational handoff.
+## Authority boundary
 
-Do not open Sprint220 merely to continue activity. A successor engineering sprint requires a concrete defect or missing capability proven by real-host qualification/execution.
+Engineering readiness work does not authorize feature activation. Technical Preview activation, Production activation/traffic, deployment, updater activation, target reselection, Remote MySQL, and any repeat operational mutation remain separately prohibited.
+
+The roadmap must advance through business-completion blockers rather than anti-granular compatibility chains.
 
 Author by Lab | zefry
