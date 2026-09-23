@@ -14,14 +14,19 @@ Sprint240 does **not** deploy the application, replay migration #27, grant `pos.
 
 ## What changed
 
-The historical `FinalShiftCloseServiceProvider` remains byte-for-byte restricted to `local/test/ci`. A dedicated durable-staging provider reuses the same existing enterprise Final Shift Close route/UI delivery and only becomes eligible when all of the following are simultaneously true:
+The historical `FinalShiftCloseServiceProvider` and historical `bootstrap/app.php` remain unchanged. A dedicated durable-staging Final Shift Close child provider is registered through the already-existing `PosOperationsHubServiceProvider` durable-staging aggregate rather than by widening a historical bootstrap boundary.
 
+The successor reuses the same existing enterprise Final Shift Close route/UI delivery and only becomes eligible when all of the following are simultaneously true:
+
+- the existing durable-staging bridge is explicitly armed;
 - runtime class is exactly `durable-staging`;
 - packaged `RELEASE.json` identifies a non-production, non-synthetic durable-staging release;
 - runtime source identity matches that packaged release exactly;
 - runtime artifact identity is present as a 64-character SHA-256 binding;
 - durable persistence, active first-party session control, and POS sale completion are enabled;
 - `ONEQAY_POS_SHIFT_CLOSE_ENABLED=true`.
+
+The existing staging compatibility bridge gains only the exact `GET /pos/shifts/close` and `POST /pos/shifts/close` requests required by this already-governed Final Shift Close surface. Unknown, preview, production, stale-source, malformed-release, and feature-disabled conditions remain fail-closed.
 
 The durable-staging publication workflow now validates the **current** canonical state: migration #27 `EXECUTED`, permission `PROVISIONED`, feature `INACTIVE`, and selected target `SELECTED_NOT_AUTHORIZED`. It publishes a reproducible successor candidate from exact `main` without deployment.
 
@@ -33,13 +38,13 @@ Engineering base: `fd799f3c3f78d70f7c8428579e0f2ba364d61e17`
 
 Exact 12-path sorted-newline SHA-256:
 
-`b1470943b293c70e92924a4a6696c937b4d034a6bcccbcf13939d8059afab0b0`
+`4f93415d25a80f3c9bab442fb27a11b616f0854047c7176b71fd3d611dc8bd2e`
 
-Regression proves the durable-staging gate positive path, fail-closed negative paths, unchanged legacy provider boundary, unchanged canonical operational state, selected-target identity preservation, current-main artifact publication semantics, and non-executing promotion-kit semantics.
+Regression proves the durable-staging gate positive path, fail-closed negative paths, unchanged legacy Final Shift Close provider, unchanged bootstrap boundary, existing POS aggregate registration, unchanged canonical operational state, selected-target identity preservation, current-main artifact publication semantics, and non-executing promotion-kit semantics.
 
 ## Enterprise UI/UX continuity
 
-No separate staging-only UI is introduced. The successor reuses the existing Final Shift Close enterprise page and HTTP delivery so staging qualification exercises the same product UX intended for later governed promotion. No UI route is exposed unless all delivery gates and the explicit feature flag qualify.
+No separate staging-only UI is introduced. The successor reuses the existing Final Shift Close enterprise page and HTTP delivery so staging qualification exercises the same product UX intended for later governed promotion. No UI route is exposed unless all delivery gates and the explicit feature flag qualify. This avoids UX divergence between staging and the later governed Production promotion path.
 
 ## Operational boundaries / NO-GO
 
