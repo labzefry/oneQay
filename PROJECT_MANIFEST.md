@@ -5,96 +5,74 @@
 
 ## Canonical state
 
-**Canonical engineering checkpoint:** Sprint219
-**Objective:** `CPANEL_FIXED_PUBLIC_DOCROOT_BRIDGE`
-**Canonical engineering commit:** `d1f832c42ae6e4b2705e9b1c295d031880cc0113`
-**Engineering PR:** #873 — `Sprint219: support fixed public cPanel document roots`
-**Final engineering head:** `20df712296f179e46d46937a8c965ae05675a686`
-**Exact-head qualification:** 98/98 successful
-**Sprint219 qualification:** run `35510403647` — SUCCESS
-**Product Owner merge authority:** comment `5749943007`; `product-owner-merge-authority` — SUCCESS
-**Engineering envelope:** 18 paths — `476dcc4c82fe5b1a4924a3678797e32a28b838ab84bcbab79f36ccf2c33189e4`
-**Canonical reconciliation envelope:** 8 paths — `896f53a875a1356548262e9d0c8a994769f8a845d65f551049b9708f11811bb3`
-**Previous canonical checkpoint:** Sprint218 reconciliation `3cbf1af7ae56b893e5957b579c3a95645e553ea3`
+**Current canonical main:** `faff7d2c1a9e1bfe6f1f84cda416f5a62f0c63b2`
+**Current closure:** PR #889 — `Sprint232: transition Final Shift Close permission provisioning state`
+**PR #889 engineering head:** `0ff4a1cd73bc04f462733e1ab76e8b4d1c012588`
+**PR #889 squash parent:** `07bb6e474fd3217132828a0cd09737a87a9ef308`
+**Predecessor engineering checkpoint:** Sprint237 / PR #894 — permission successor-head reattestation
+**Repository signature:** VERIFIED / valid
 
-> `d1f832c42ae6e4b2705e9b1c295d031880cc0113` is the permanent Sprint219 engineering evidence. The reconciliation squash must not replace it.
+PR #889 closed the canonical state transition from `permission_provisioning.state = NONE` to `PROVISIONED` after migration #27 execution and exact selected-target permission evidence. The merge changed exactly `ops/final-shift-close/STATE.json` (+1/-1). Its sorted-newline path-set SHA-256 is `25254f999ec85014b9e591cb7bb2d72f65b745acfadc57bd7d6233c4e485f923`.
 
-## Current durable-staging inputs
+## Exact closure evidence
 
-- application publication run: `35505077172`
-- application artifact ID: `10603323419`
-- release: `durable-staging-d0b5becbf945`
-- source: `d0b5becbf945c5192e797d512a704eb5aecc6eaa`
-- archive SHA-256: `e32a7de2c07c35306c03edff5d7d762782ef58449c92d4b88e5dd04b50d489a2`
-- cPanel operator-kit publication run: `35512151565` — SUCCESS
-- cPanel operator kit ID: `10606042478`
-- cPanel kit name: `oneqay-cpanel-no-ssh-operator-kit-d1f832c42ae6`
-- cPanel kit source: `d1f832c42ae6e4b2705e9b1c295d031880cc0113`
-- cPanel kit Actions outer digest: `sha256:24d64361ad4509cdd9ba2e69b688ae3ad1c0ee6d33d0c7a8c275815d620b5953`
-- cPanel kit inner ZIP SHA-256: `9213ff3eaf1949d72787e3d5522321f93963ce623eef829f9e9e90e34fa2399d`
-- cPanel kit expiry: `2026-10-20T12:58:53Z`
-- deployment authority: `NOT_GRANTED`
-- selected target: `null`
+- PR-triggered exact-head workflow matrix before merge: `102/102` SUCCESS.
+- Sprint102 Operational Sequencing Gate run `35761431103`, attempt 2: SUCCESS.
+- permission provisioning evidence run `35872855919`: SUCCESS.
+- exact-head `product-owner-merge-authority`: SUCCESS.
+- exact-head `final-shift-close-permission-provisioning-authority`: SUCCESS.
+- exact-head `final-shift-close-permission-provisioning-evidence`: SUCCESS.
+- `final-shift-close-migration27-execution-authority`: intentional fail-closed after migration completion; do not replay migration #27.
+- `final-shift-close-feature-activation-authority`: intentional fail-closed; feature activation is not authorized.
 
-The Actions outer digest and governed inner kit ZIP SHA-256 are distinct integrity layers and must not be substituted for each other.
+## Durable selected target
 
-## Delivered cPanel target compatibility
+- environment: `oneqay-durable-staging-01`
+- runtime class: `durable-staging`
+- selection state: `SELECTED_NOT_AUTHORIZED`
+- exact running source: `5be28a3c001738373588b58e9d29832c46402de1`
+- exact running artifact SHA-256: `66be23792478fb191f912571b35076c42783b9733cdb3fb514b549d22ec90dd7`
+- readiness attestation SHA-256: `3a45a4de0328cb8e5e0ed5eafb907e0a41230974c03b21d03ed571b7a2d3564d`
+- selection fingerprint SHA-256: `858280ea3575317e8d88eed7009c770530097e261c391b2869fa81ad7c8546ce`
+- selected database binding run: `35685845647`
+- selected database binding SHA-256: `c9247f4200c8b55eb2d8e109185337a44b663dc44961d67cac51eded7ef54e0d`
 
-Sprint219 provides two explicit presentation modes:
+## Durable merchant baseline
 
-- `ACTIVE_RELEASE_PUBLIC`: domain document root equals `<active-release-pointer>/apps/web/public`.
-- `FIXED_PUBLIC_BRIDGE`: private releases remain outside the public tree while the public root receives only the governed bridge `index.php` and current `build/` assets; the existing operator-managed `.htaccess` is preserved.
+Canonical merchant tuple:
+- tenant `tenant-staging-001`
+- identity `identity-staging-admin-001`
+- organization `organization-staging-001`
+- outlet `outlet-staging-001`
+- device `device-staging-001`
+- provisioning `provisioning-staging-001`
 
-For fixed-public mode:
-- public/private paths must be disjoint;
-- rewrite-to-`index.php` must be observed;
-- atomic public file/directory rename must work;
-- exact presentation mode and public path are authority-bound;
-- front-controller backup remains private;
-- rollback rehearses both the public surface and private active-release pointer.
+Protected control role remains `authorization-policy-administrator` with `authorization.policy.manage`. Business role `merchant-initial-pos-operator` now durably has `pos.shift.close`; no second permission grant is allowed.
 
-Historical cPanel observations for `oneqay.n07.my.id` are only requalification inputs. The live host must run the current Sprint219 kit before it can become a current target candidate.
+## Current Final Shift Close operational state
 
-## Current Production candidate
+- `migration27.state = EXECUTED`
+- `permission_provisioning.state = PROVISIONED`
+- `permission_provisioning.permission_id = pos.shift.close`
+- `permission_provisioning.default_grant = NONE`
+- `feature_activation.state = INACTIVE`
+- `deployment_authority = NOT_GRANTED`
+- `technical_preview_activation = NOT_AUTHORIZED`
+- `production_activation = NOT_AUTHORIZED`
+- `updater_activation = INACTIVE`
 
-- publication run: `35505077185`
-- artifact ID: `10603358335`
-- release: `production-d0b5becbf945`
-- source: `d0b5becbf945c5192e797d512a704eb5aecc6eaa`
-- archive SHA-256: `cd1f96346d310aab3ac59398116499dae3e3df84a6af9ec1a13515d1e46568f1`
-- manifest SHA-256: `6b871b954e5a31b5ae7c0bb43afb0e5c8386d5bc6e6818494ed75597d5307b86`
-- business runtime activation ready: `false`
-- Production traffic activation: `NOT_AUTHORIZED`
+Migration #27, merchant bootstrap, and `pos.shift.close` provisioning are completed and must not be replayed.
 
-## Production operator kit
+## Next material engineering blocker
 
-- publication run: `35507555918` — SUCCESS
-- artifact ID: `10604307277`
-- artifact name: `oneqay-production-operator-kit-bca1957a61da`
-- kit source: `bca1957a61da0794737325438bd39e903ed7da19`
-- Actions digest: `sha256:7163d5e85c5aaab189a18a3b3004ef7d0b6250fe2f278e4c723a136683acc756`
-- inner ZIP SHA-256: `d39ee6768462a2ee71466afb6a7b2bbdc08a74c49c449e5a1d3ff4cfdc96c895`
-- Production traffic activation: `NOT_AUTHORIZED`
+The repository has the Sprint154 activation execution-plan source foundation, but the dispatchable Final Shift Close activation workflow `.github/workflows/final-shift-close-feature-activation.yml` is absent and the selected-target-bound configuration mutation transport remains unmaterialized for feature activation. `FinalShiftCloseServiceProvider` still enables delivery only for `local`, `test`, and `ci`.
+
+The next bounded source work must close the dispatchable selected-target-bound feature-activation executor / configuration-mutation transport readiness gap with read-before/write/read-after verification, non-mutating health attestation, verified rollback, exact-target and exact-head binding, and regression coverage. It must not activate the feature and must not widen the runtime allowlist until the full durable dependency envelope for the selected runtime class is qualified.
+
+Feature activation itself requires separate exact-head Product Owner authority and remains outside standing engineering authority.
 
 ## Operational NO-GO
 
-Real durable-staging deployment remains unperformed; verified real staging evidence is not materialized; real Production deployment remains unperformed; migration #27 remains `NOT_EXECUTED`; permission provisioning `NONE`; Final Shift Close `INACTIVE`; general deployment authority `NOT_GRANTED`; Technical Preview/Production traffic activation `NOT_AUTHORIZED`; updater `INACTIVE`; target selection blocked; selected target `null`; producer dispatch `NOT_PERFORMED`.
-
-## Next position
-
-Issue #856 remains the single operational handoff.
-
-The shortest valid route toward Production is now:
-
-1. retrieve cPanel kit artifact `10606042478` and durable-staging application artifact `10603323419`;
-2. requalify the live cPanel host with current on-host facts; use `FIXED_PUBLIC_BRIDGE` only when its real fixed public root is observed;
-3. obtain separate Sprint208 deployment authority <=900 seconds for the exact target/release;
-4. deploy the same-source staging artifact and qualify `DEPLOYED_VERIFIED_NOT_SELECTED` evidence;
-5. only after verified staging evidence exists, materialize/qualify the isolated Production target;
-6. use Production candidate `10603358335` and Production operator kit `10604307277`;
-7. dark-deploy and qualify only to `PRODUCTION_DEPLOYED_VERIFIED_NOT_ACTIVATED`;
-8. close business-readiness/migration/traffic-activation gates only from real deployment evidence.
-
-Do not open Sprint220 merely for activity. Open another bounded engineering sprint only if real-host qualification or execution proves a concrete repository-side missing capability or defect.
+Until separately authorized: Final Shift Close stays `INACTIVE`; deployment remains `NOT_GRANTED`; Technical Preview and Production remain `NOT_AUTHORIZED`; Production traffic remains unauthorized; updater remains `INACTIVE`; target reselection is forbidden; Remote MySQL remains closed; no second migration #27 execution; no second permission grant.
 
 Author by Lab | zefry
