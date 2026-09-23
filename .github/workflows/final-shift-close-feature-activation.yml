@@ -1,0 +1,461 @@
+name: Final Shift Close Feature Activation
+
+# Attribution: Lab | zefry
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_pr_number:
+        description: 'Exact future Final Shift Close state-transition PR number'
+        required: true
+        type: string
+      target_head_sha:
+        description: 'Exact 40-character state-transition PR head SHA'
+        required: true
+        type: string
+      capability_run_id:
+        description: 'Exact trusted durable-runtime capability evidence run ID'
+        required: true
+        type: string
+      capability_run_attempt:
+        description: 'Exact trusted durable-runtime capability evidence run attempt'
+        required: true
+        type: string
+      dependency_run_id:
+        description: 'Exact trusted durable-runtime dependency-envelope evidence run ID'
+        required: true
+        type: string
+      dependency_run_attempt:
+        description: 'Exact trusted durable-runtime dependency-envelope evidence run attempt'
+        required: true
+        type: string
+      approval_token_sha256:
+        description: 'SHA-256 of the separately held one-time operator approval token; never provide plaintext'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+  pull-requests: read
+  statuses: write
+
+env:
+  TARGET_SELECTION_FILE: ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+  STATE_FILE: ops/final-shift-close/STATE.json
+  CAPABILITY_WORKFLOW_PATH: .github/workflows/final-shift-close-durable-runtime-capability-evidence.yml
+  CAPABILITY_ARTIFACT_NAME: final-shift-close-durable-runtime-capability-evidence
+  DEPENDENCY_WORKFLOW_PATH: .github/workflows/final-shift-close-durable-runtime-dependency-envelope-evidence.yml
+  DEPENDENCY_ARTIFACT_NAME: final-shift-close-durable-runtime-dependency-envelope-evidence
+  EXECUTION_READY_STATUS_CONTEXT: final-shift-close-feature-activation-execution-ready
+  OPERATOR_KIT_NAME: final-shift-close-feature-activation-operator-kit
+  CONCRETE_ADAPTER: CPANEL_PRIVATE_FILE_ONE_SHOT_CRON_V1
+
+concurrency:
+  group: final-shift-close-feature-activation-${{ inputs.target_pr_number }}
+  cancel-in-progress: false
+
+jobs:
+  prepare-exact-target-bound-activation-executor:
+    if: ${{ github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: final-shift-close-feature-activation
+    env:
+      PROTECTION_ASSERTION: ${{ secrets.ONEQAY_FINAL_SHIFT_CLOSE_ACTIVATION_PROTECTION_ASSERTION }}
+
+    steps:
+      - name: Checkout canonical dispatch source only
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+
+      - name: Validate canonical source and exact activation authority boundary
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          API_URL: ${{ github.api_url }}
+          REPOSITORY: ${{ github.repository }}
+          TARGET_PR: ${{ inputs.target_pr_number }}
+          TARGET_HEAD: ${{ inputs.target_head_sha }}
+          APPROVAL_TOKEN_SHA256: ${{ inputs.approval_token_sha256 }}
+        run: |
+          set -euo pipefail
+
+          [[ "$GITHUB_REPOSITORY" == 'labzefry/oneQay' ]]
+          [[ "$GITHUB_REF" == 'refs/heads/main' ]]
+          [[ "$PROTECTION_ASSERTION" == 'REVIEW_GATED_V1' ]]
+          [[ "$TARGET_PR" =~ ^[1-9][0-9]*$ ]]
+          [[ "$TARGET_HEAD" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$APPROVAL_TOKEN_SHA256" =~ ^[0-9a-f]{64}$ ]]
+
+          api() {
+            curl --fail-with-body --silent --show-error \
+              --header 'Accept: application/vnd.github+json' \
+              --header "Authorization: Bearer $GH_TOKEN" \
+              --header 'X-GitHub-Api-Version: 2022-11-28' \
+              "$1"
+          }
+
+          main_sha="$(api "$API_URL/repos/$REPOSITORY/branches/main" | jq -r '.commit.sha')"
+          [[ "$main_sha" == "$GITHUB_SHA" ]] || {
+            echo 'Dispatch source is not current canonical main.' >&2
+            exit 1
+          }
+
+          jq -e '.schema_version == 1 and .feature == "final-shift-close"' "$STATE_FILE" >/dev/null
+          [[ "$(jq -r '.migration27.state' "$STATE_FILE")" == 'EXECUTED' ]]
+          [[ "$(jq -r '.permission_provisioning.state' "$STATE_FILE")" == 'PROVISIONED' ]]
+          [[ "$(jq -r '.permission_provisioning.permission_id' "$STATE_FILE")" == 'pos.shift.close' ]]
+          [[ "$(jq -r '.permission_provisioning.default_grant' "$STATE_FILE")" == 'NONE' ]]
+          [[ "$(jq -r '.feature_activation.state' "$STATE_FILE")" == 'INACTIVE' ]]
+          [[ "$(jq -r '.deployment_authority' "$STATE_FILE")" == 'NOT_GRANTED' ]]
+          [[ "$(jq -r '.technical_preview_activation' "$STATE_FILE")" == 'NOT_AUTHORIZED' ]]
+          [[ "$(jq -r '.production_activation' "$STATE_FILE")" == 'NOT_AUTHORIZED' ]]
+          [[ "$(jq -r '.updater_activation' "$STATE_FILE")" == 'INACTIVE' ]]
+
+          jq -e '.schema_version == 1 and .feature == "final-shift-close" and .selection_state == "SELECTED_NOT_AUTHORIZED"' "$TARGET_SELECTION_FILE" >/dev/null
+          [[ "$(jq -r '.selected_target.environment_id' "$TARGET_SELECTION_FILE")" == 'oneqay-durable-staging-01' ]]
+          [[ "$(jq -r '.selected_target.runtime_class' "$TARGET_SELECTION_FILE")" == 'durable-staging' ]]
+          [[ "$(jq -r '.selected_target.exact_running_source_commit' "$TARGET_SELECTION_FILE")" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$(jq -r '.selected_target.exact_running_artifact_sha256' "$TARGET_SELECTION_FILE")" =~ ^[0-9a-f]{64}$ ]]
+          [[ "$(jq -r '.selected_target.readiness_attestation_sha256' "$TARGET_SELECTION_FILE")" =~ ^[0-9a-f]{64}$ ]]
+          [[ "$(jq -r '.selected_target.selection_fingerprint_sha256' "$TARGET_SELECTION_FILE")" =~ ^[0-9a-f]{64}$ ]]
+
+          # Dispatch must remain impossible until a separately reviewed successor widens only
+          # the Final Shift Close delivery allowlist to the already-qualified durable runtime.
+          grep -Fq "'durable-staging'" apps/web/app/Providers/FinalShiftCloseServiceProvider.php || {
+            echo 'Final Shift Close durable-staging runtime allowlist successor is not materialized; activation dispatch remains fail-closed.' >&2
+            exit 1
+          }
+
+          pr="$(api "$API_URL/repos/$REPOSITORY/pulls/$TARGET_PR")"
+          [[ "$(jq -r '.state' <<<"$pr")" == 'open' ]]
+          [[ "$(jq -r '.draft' <<<"$pr")" == 'false' ]]
+          [[ "$(jq -r '.base.ref' <<<"$pr")" == 'main' ]]
+          [[ "$(jq -r '.base.sha' <<<"$pr")" == "$GITHUB_SHA" ]]
+          [[ "$(jq -r '.head.sha' <<<"$pr")" == "$TARGET_HEAD" ]]
+          [[ "$(jq -r '.head.repo.full_name' <<<"$pr")" == "$REPOSITORY" ]]
+
+          statuses="$(api "$API_URL/repos/$REPOSITORY/commits/$TARGET_HEAD/statuses?per_page=100")"
+          require_status_success() {
+            local context="$1"
+            local state
+            state="$(jq -r --arg context "$context" '[.[] | select(.context == $context)][0].state // "missing"' <<<"$statuses")"
+            [[ "$state" == 'success' ]] || {
+              echo "Required exact-head authority is not success: $context ($state)." >&2
+              exit 1
+            }
+          }
+          require_status_success 'product-owner-merge-authority'
+          require_status_success 'final-shift-close-feature-activation-authority'
+
+          runs="$(api "$API_URL/repos/$REPOSITORY/actions/runs?head_sha=$TARGET_HEAD&event=pull_request&per_page=100")"
+          for workflow in 'Governance Required Checks' 'PHP Foundation Regression' 'M7.1 Application Regression'; do
+            conclusion="$(jq -r --arg name "$workflow" '[.workflow_runs[] | select(.name == $name)][0].conclusion // "missing"' <<<"$runs")"
+            [[ "$conclusion" == 'success' ]] || {
+              echo "Required exact-head workflow is not success: $workflow ($conclusion)." >&2
+              exit 1
+            }
+          done
+
+      - name: Resolve trusted capability and dependency evidence artifacts
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          API_URL: ${{ github.api_url }}
+          REPOSITORY: ${{ github.repository }}
+          CAPABILITY_RUN_ID: ${{ inputs.capability_run_id }}
+          CAPABILITY_RUN_ATTEMPT: ${{ inputs.capability_run_attempt }}
+          DEPENDENCY_RUN_ID: ${{ inputs.dependency_run_id }}
+          DEPENDENCY_RUN_ATTEMPT: ${{ inputs.dependency_run_attempt }}
+        run: |
+          set -euo pipefail
+          [[ "$CAPABILITY_RUN_ID" =~ ^[1-9][0-9]*$ ]]
+          [[ "$CAPABILITY_RUN_ATTEMPT" =~ ^[1-9][0-9]*$ ]]
+          [[ "$DEPENDENCY_RUN_ID" =~ ^[1-9][0-9]*$ ]]
+          [[ "$DEPENDENCY_RUN_ATTEMPT" =~ ^[1-9][0-9]*$ ]]
+
+          api() {
+            curl --fail-with-body --silent --show-error \
+              --header 'Accept: application/vnd.github+json' \
+              --header "Authorization: Bearer $GH_TOKEN" \
+              --header 'X-GitHub-Api-Version: 2022-11-28' \
+              "$1"
+          }
+
+          resolve_artifact() {
+            local run_id="$1" attempt="$2" workflow_path="$3" artifact_name="$4" destination="$5" max_bytes="$6"
+            local run head compare status behind artifacts matches artifact_id size
+            run="$(api "$API_URL/repos/$REPOSITORY/actions/runs/$run_id")"
+            [[ "$(jq -r '.path' <<<"$run")" == "$workflow_path" ]]
+            [[ "$(jq -r '.event' <<<"$run")" == 'workflow_dispatch' ]]
+            [[ "$(jq -r '.head_branch' <<<"$run")" == 'main' ]]
+            [[ "$(jq -r '.status' <<<"$run")" == 'completed' ]]
+            [[ "$(jq -r '.conclusion' <<<"$run")" == 'success' ]]
+            [[ "$(jq -r '.run_attempt' <<<"$run")" == "$attempt" ]]
+            head="$(jq -r '.head_sha' <<<"$run")"
+            [[ "$head" =~ ^[0-9a-f]{40}$ ]]
+            compare="$(api "$API_URL/repos/$REPOSITORY/compare/$head...$GITHUB_SHA")"
+            status="$(jq -r '.status' <<<"$compare")"
+            behind="$(jq -r '.behind_by' <<<"$compare")"
+            [[ "$status" == 'ahead' || "$status" == 'identical' ]]
+            [[ "$behind" == '0' ]]
+
+            artifacts="$(api "$API_URL/repos/$REPOSITORY/actions/runs/$run_id/artifacts?per_page=100")"
+            matches="$(jq --arg name "$artifact_name" '[.artifacts[] | select(.name == $name and .expired == false)]' <<<"$artifacts")"
+            [[ "$(jq 'length' <<<"$matches")" == '1' ]]
+            artifact_id="$(jq -r '.[0].id' <<<"$matches")"
+            size="$(jq -r '.[0].size_in_bytes' <<<"$matches")"
+            [[ "$artifact_id" =~ ^[1-9][0-9]*$ ]]
+            (( size > 0 && size <= max_bytes ))
+
+            curl --fail-with-body --silent --show-error --location \
+              --header 'Accept: application/vnd.github+json' \
+              --header "Authorization: Bearer $GH_TOKEN" \
+              --header 'X-GitHub-Api-Version: 2022-11-28' \
+              "$API_URL/repos/$REPOSITORY/actions/artifacts/$artifact_id/zip" \
+              --output "$destination.zip"
+            (( $(wc -c < "$destination.zip") <= max_bytes ))
+            mkdir -p "$destination"
+            unzip -qq "$destination.zip" -d "$destination"
+          }
+
+          resolve_artifact "$CAPABILITY_RUN_ID" "$CAPABILITY_RUN_ATTEMPT" "$CAPABILITY_WORKFLOW_PATH" "$CAPABILITY_ARTIFACT_NAME" /tmp/fsc-capability 262144
+          resolve_artifact "$DEPENDENCY_RUN_ID" "$DEPENDENCY_RUN_ATTEMPT" "$DEPENDENCY_WORKFLOW_PATH" "$DEPENDENCY_ARTIFACT_NAME" /tmp/fsc-dependency 524288
+
+          printf '%s\n' attestation.json evidence.json producer.json | LC_ALL=C sort > /tmp/capability-expected
+          find /tmp/fsc-capability -maxdepth 1 -type f -printf '%f\n' | LC_ALL=C sort > /tmp/capability-actual
+          diff -u /tmp/capability-expected /tmp/capability-actual
+
+          printf '%s\n' attestation.json capability-evidence.json dependency-evidence.json producer.json qualification.json | LC_ALL=C sort > /tmp/dependency-expected
+          find /tmp/fsc-dependency -maxdepth 1 -type f -printf '%f\n' | LC_ALL=C sort > /tmp/dependency-actual
+          diff -u /tmp/dependency-expected /tmp/dependency-actual
+
+          for file in /tmp/fsc-capability/*.json /tmp/fsc-dependency/*.json; do
+            jq -e 'type == "object"' "$file" >/dev/null
+            (( $(wc -c < "$file") <= 131072 ))
+          done
+
+      - name: Build exact target-bound activation operator kit
+        shell: bash
+        env:
+          TARGET_PR: ${{ inputs.target_pr_number }}
+          TARGET_HEAD: ${{ inputs.target_head_sha }}
+          APPROVAL_TOKEN_SHA256: ${{ inputs.approval_token_sha256 }}
+        run: |
+          set -euo pipefail
+          umask 077
+          kit=/tmp/final-shift-close-feature-activation-operator-kit
+          mkdir -p "$kit"
+
+          STATE_FILE="$STATE_FILE" \
+          TARGET_SELECTION_FILE="$TARGET_SELECTION_FILE" \
+          CAPABILITY_ATTESTATION=/tmp/fsc-capability/attestation.json \
+          CAPABILITY_EVIDENCE=/tmp/fsc-capability/evidence.json \
+          DEPENDENCY_QUALIFICATION=/tmp/fsc-dependency/qualification.json \
+          OUTPUT_DIR="$kit" \
+          EXECUTOR_SOURCE_COMMIT="$GITHUB_SHA" \
+          TARGET_PR="$TARGET_PR" \
+          TARGET_HEAD="$TARGET_HEAD" \
+          APPROVAL_TOKEN_SHA256="$APPROVAL_TOKEN_SHA256" \
+          php <<'PHP'
+          <?php
+          declare(strict_types=1);
+
+          require __DIR__.'/apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeReadiness.php';
+          require __DIR__.'/apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeTargetSelection.php';
+          require __DIR__.'/apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeCapabilityEvidence.php';
+          require __DIR__.'/apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeDependencyEnvelope.php';
+          require __DIR__.'/apps/web/app/Application/Pos/FinalShiftCloseFeatureActivationExecutionPlan.php';
+          require __DIR__.'/apps/web/app/Application/Pos/FinalShiftCloseFeatureActivationTransportEnvelope.php';
+
+          use App\Application\Pos\FinalShiftCloseDurableRuntimeCapabilityEvidence;
+          use App\Application\Pos\FinalShiftCloseDurableRuntimeReadiness;
+          use App\Application\Pos\FinalShiftCloseDurableRuntimeTargetSelection;
+          use App\Application\Pos\FinalShiftCloseFeatureActivationExecutionPlan;
+          use App\Application\Pos\FinalShiftCloseFeatureActivationTransportEnvelope;
+
+          $readJson = static function (string $path): array {
+              $raw = file_get_contents($path);
+              if (!is_string($raw)) {
+                  throw new RuntimeException('activation_operator_input_unavailable');
+              }
+              $decoded = json_decode($raw, true, 64, JSON_THROW_ON_ERROR);
+              if (!is_array($decoded) || array_is_list($decoded)) {
+                  throw new RuntimeException('activation_operator_input_invalid');
+              }
+              return $decoded;
+          };
+          $write = static function (string $name, array $payload): void {
+              $dir = (string) getenv('OUTPUT_DIR');
+              $json = json_encode($payload, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR)."\n";
+              if (file_put_contents($dir.'/'.$name, $json, LOCK_EX) === false) {
+                  throw new RuntimeException('activation_operator_output_failed');
+              }
+              chmod($dir.'/'.$name, 0600);
+          };
+
+          $state = $readJson((string) getenv('STATE_FILE'));
+          $persisted = $readJson((string) getenv('TARGET_SELECTION_FILE'));
+          $attestation = $readJson((string) getenv('CAPABILITY_ATTESTATION'));
+          $capabilityEvidence = $readJson((string) getenv('CAPABILITY_EVIDENCE'));
+          $dependencyQualification = $readJson((string) getenv('DEPENDENCY_QUALIFICATION'));
+
+          $readiness = new FinalShiftCloseDurableRuntimeReadiness();
+          $selector = new FinalShiftCloseDurableRuntimeTargetSelection($readiness);
+          $capabilityQualifier = new FinalShiftCloseDurableRuntimeCapabilityEvidence($readiness, $selector);
+          $selection = $selector->select($attestation);
+          $capabilityQualification = $capabilityQualifier->qualify($selection, $attestation, $capabilityEvidence);
+
+          $persistedTarget = is_array($persisted['selected_target'] ?? null) ? $persisted['selected_target'] : [];
+          $selectedTarget = is_array($selection['selected_target'] ?? null) ? $selection['selected_target'] : [];
+          foreach (['environment_id','runtime_class','exact_running_source_commit','exact_running_artifact_sha256','readiness_attestation_sha256'] as $field) {
+              if (($persistedTarget[$field] ?? null) !== ($selectedTarget[$field] ?? null)) {
+                  throw new RuntimeException('persisted_target_binding_mismatch:'.$field);
+              }
+          }
+
+          $planBuilder = new FinalShiftCloseFeatureActivationExecutionPlan();
+          $planAuthority = [
+              'schema_version' => 1,
+              'feature' => 'final-shift-close',
+              'authority_state' => 'GRANTED',
+              'authority_context' => 'final-shift-close-feature-activation-authority',
+              'environment_id' => $selectedTarget['environment_id'],
+              'runtime_class' => $selectedTarget['runtime_class'],
+              'exact_running_source_commit' => $selectedTarget['exact_running_source_commit'],
+              'exact_running_artifact_sha256' => $selectedTarget['exact_running_artifact_sha256'],
+              'readiness_attestation_sha256' => $selectedTarget['readiness_attestation_sha256'],
+              'selection_fingerprint_sha256' => $selection['selection_fingerprint_sha256'],
+              'target_binding_sha256' => $planBuilder->targetBindingSha256($selection),
+              'dependency_envelope_sha256' => $dependencyQualification['dependency_envelope_sha256'] ?? null,
+              'executor_source_commit' => getenv('EXECUTOR_SOURCE_COMMIT'),
+              'secrets_embedded' => false,
+          ];
+          $plan = $planBuilder->qualify($state, $selection, $dependencyQualification, $planAuthority);
+          $transport = (new FinalShiftCloseFeatureActivationTransportEnvelope())->build($plan, $capabilityQualification);
+
+          if (($transport['concrete_adapter'] ?? null) !== 'NOT_IMPLEMENTED'
+              || ($transport['network_dispatch'] ?? null) !== 'NOT_PERFORMED'
+              || ($transport['feature_activation_state'] ?? null) !== 'INACTIVE') {
+              throw new RuntimeException('source_transport_boundary_drifted');
+          }
+
+          $now = time();
+          $operatorAuthority = [
+              'schema_version' => 1,
+              'feature' => 'final-shift-close',
+              'authority_state' => 'GRANTED',
+              'authority_context' => 'final-shift-close-feature-activation-authority',
+              'concrete_adapter' => 'CPANEL_PRIVATE_FILE_ONE_SHOT_CRON_V1',
+              'environment_id' => $selectedTarget['environment_id'],
+              'runtime_class' => $selectedTarget['runtime_class'],
+              'exact_running_source_commit' => $selectedTarget['exact_running_source_commit'],
+              'exact_running_artifact_sha256' => $selectedTarget['exact_running_artifact_sha256'],
+              'readiness_attestation_sha256' => $selectedTarget['readiness_attestation_sha256'],
+              'selection_fingerprint_sha256' => $selection['selection_fingerprint_sha256'],
+              'target_binding_sha256' => $plan['target_binding_sha256'],
+              'dependency_envelope_sha256' => $plan['dependency_envelope_sha256'],
+              'activation_plan_sha256' => $plan['activation_plan_sha256'],
+              'transport_envelope_sha256' => $transport['transport_envelope_sha256'],
+              'executor_source_commit' => getenv('EXECUTOR_SOURCE_COMMIT'),
+              'state_transition_pr_number' => (int) getenv('TARGET_PR'),
+              'state_transition_head_sha' => getenv('TARGET_HEAD'),
+              'approval_token_sha256' => getenv('APPROVAL_TOKEN_SHA256'),
+              'authorized_at_unix' => $now,
+              'expires_at_unix' => $now + 900,
+              'feature_activation_allowed' => true,
+              'migration_execution_allowed' => false,
+              'permission_provisioning_allowed' => false,
+              'deployment_allowed' => false,
+              'technical_preview_allowed' => false,
+              'production_allowed' => false,
+              'updater_allowed' => false,
+              'runtime_allowlist_change_allowed' => false,
+              'secrets_embedded' => false,
+              'attribution' => 'Lab | zefry',
+          ];
+
+          $runtimeManifest = [
+              'schema_version' => 1,
+              'feature' => 'final-shift-close',
+              'selection_state' => 'SELECTED_NOT_AUTHORIZED',
+              'environment_id' => $selectedTarget['environment_id'],
+              'runtime_class' => $selectedTarget['runtime_class'],
+              'exact_running_source_commit' => $selectedTarget['exact_running_source_commit'],
+              'exact_running_artifact_sha256' => $selectedTarget['exact_running_artifact_sha256'],
+              'readiness_attestation_sha256' => $selectedTarget['readiness_attestation_sha256'],
+              'selection_fingerprint_sha256' => $selection['selection_fingerprint_sha256'],
+              'trusted_ingestion' => $persistedTarget['trusted_ingestion'] ?? null,
+              'secrets_embedded' => false,
+          ];
+
+          $write('activation-plan.json', $plan);
+          $write('transport-envelope.json', $transport);
+          $write('plan-authority.json', $planAuthority);
+          $write('activation-authority.json', $operatorAuthority);
+          $write('runtime-manifest.json', $runtimeManifest);
+          PHP
+
+          cp tools/cpanel/execute-final-shift-close-feature-activation.php "$kit/"
+          chmod 0600 "$kit/execute-final-shift-close-feature-activation.php"
+          cat > "$kit/README.md" <<'EOF'
+          # Final Shift Close activation operator kit
+
+          Author by Lab | zefry
+
+          This kit is target-bound and authority-bound. It never contains the plaintext approval token.
+
+          Operational execution remains forbidden unless all exact bindings in `activation-authority.json` are current and the separately reviewed durable-staging runtime allowlist successor is already deployed on the exact selected target.
+
+          Use cPanel File Manager to keep the kit, runtime manifest, runtime environment, approval-token file, and output evidence outside the public document root. Use one-shot cPanel Cron Jobs with the qualified PHP CLI. Remove the Cron entry and plaintext approval-token file immediately after the attempt.
+
+          Invocation:
+
+          `<PHP_CLI> execute-final-shift-close-feature-activation.php transport-envelope.json activation-authority.json runtime-manifest.json <PRIVATE_RUNTIME_ENV> <PRIVATE_APPROVAL_TOKEN_FILE> <HTTPS_READINESS_URL> <PRIVATE_EXECUTION_EVIDENCE_JSON>`
+
+          The executor performs only the bounded `ONEQAY_POS_SHIFT_CLOSE_ENABLED=false -> true` mutation, exact readback, non-mutating authenticated readiness, and exact-byte rollback on any post-write failure. It does not execute migrations, provision permissions, deploy releases, widen runtime allowlists, activate Technical Preview/Production, or activate the updater.
+          EOF
+          chmod 0600 "$kit/README.md"
+
+          (
+            cd "$kit"
+            find . -maxdepth 1 -type f ! -name SHA256SUMS -printf '%f\n' | LC_ALL=C sort | xargs sha256sum > SHA256SUMS
+            chmod 0600 SHA256SUMS
+          )
+          (cd /tmp && zip -q -X -r final-shift-close-feature-activation-operator-kit.zip final-shift-close-feature-activation-operator-kit)
+          (( $(wc -c < /tmp/final-shift-close-feature-activation-operator-kit.zip) <= 1048576 ))
+
+      - name: Upload exact target-bound operator kit
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: final-shift-close-feature-activation-operator-kit
+          path: /tmp/final-shift-close-feature-activation-operator-kit.zip
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Publish execution-ready status only
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          API_URL: ${{ github.api_url }}
+          REPOSITORY: ${{ github.repository }}
+          TARGET_HEAD: ${{ inputs.target_head_sha }}
+        run: |
+          set -euo pipefail
+          payload="$(jq -n \
+            --arg state success \
+            --arg context "$EXECUTION_READY_STATUS_CONTEXT" \
+            --arg description 'Target-bound cPanel activation executor kit prepared; no target mutation performed' \
+            --arg target_url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+            '{state:$state,context:$context,description:$description,target_url:$target_url}')"
+          curl --fail-with-body --silent --show-error --request POST \
+            --header 'Accept: application/vnd.github+json' \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header 'X-GitHub-Api-Version: 2022-11-28' \
+            "$API_URL/repos/$REPOSITORY/statuses/$TARGET_HEAD" \
+            --data "$payload" >/dev/null
+
+# Author by Lab | zefry

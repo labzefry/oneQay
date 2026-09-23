@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "feature": "final-shift-close",
+  "sprint": 239,
+  "contract_state": "MATERIALIZED_FAIL_CLOSED_TRANSPORT_READINESS",
+  "bounded_objective": "FINAL_SHIFT_CLOSE_CPANEL_ACTIVATION_TRANSPORT_READINESS",
+  "canonical_base_sha": "d8e53b27a4963b04469cac73d9ef9b65d30e4573",
+  "concrete_adapter": "CPANEL_PRIVATE_FILE_ONE_SHOT_CRON_V1",
+  "operator_channel": {
+    "private_file_manager_workspace_required": true,
+    "one_shot_cpanel_cron_required": true,
+    "php_cli_only": true,
+    "public_privileged_route": false,
+    "plaintext_approval_token_in_repository_or_kit": false,
+    "approval_token_sha256_binding_required": true,
+    "authority_ttl_max_seconds": 900
+  },
+  "execution_contract": {
+    "runtime_flag": "ONEQAY_POS_SHIFT_CLOSE_ENABLED",
+    "required_pre_activation_value": false,
+    "desired_value": true,
+    "rollback_value": false,
+    "read_before_write_read_after_required": true,
+    "authenticated_https_health_attestation_required": true,
+    "exact_byte_runtime_configuration_rollback_required": true,
+    "exact_target_binding_required": true,
+    "exact_activation_plan_binding_required": true,
+    "exact_transport_envelope_binding_required": true,
+    "secrets_embedded": false
+  },
+  "dispatch_workflow": {
+    "path": ".github/workflows/final-shift-close-feature-activation.yml",
+    "event": "workflow_dispatch",
+    "protected_environment": "final-shift-close-feature-activation",
+    "prepares_operator_kit_only": true,
+    "direct_target_mutation": false,
+    "execution_ready_status_context": "final-shift-close-feature-activation-execution-ready",
+    "final_activation_evidence_status_published": false,
+    "current_fail_closed_gate": "FINAL_SHIFT_CLOSE_DURABLE_STAGING_RUNTIME_ALLOWLIST_SUCCESSOR_REQUIRED"
+  },
+  "source_dependencies": {
+    "activation_execution_plan": "apps/web/app/Application/Pos/FinalShiftCloseFeatureActivationExecutionPlan.php",
+    "activation_transport_envelope": "apps/web/app/Application/Pos/FinalShiftCloseFeatureActivationTransportEnvelope.php",
+    "capability_evidence_workflow": ".github/workflows/final-shift-close-durable-runtime-capability-evidence.yml",
+    "dependency_envelope_workflow": ".github/workflows/final-shift-close-durable-runtime-dependency-envelope-evidence.yml",
+    "selected_target": "ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json",
+    "canonical_state": "ops/final-shift-close/STATE.json"
+  },
+  "current_target": {
+    "environment_id": "oneqay-durable-staging-01",
+    "runtime_class": "durable-staging",
+    "selection_state": "SELECTED_NOT_AUTHORIZED"
+  },
+  "current_runtime_delivery_boundary": {
+    "provider": "apps/web/app/Providers/FinalShiftCloseServiceProvider.php",
+    "allowed_runtime_classes": [
+      "local",
+      "test",
+      "ci"
+    ],
+    "durable_staging_allowlisted": false,
+    "provider_modified_in_sprint239": false
+  },
+  "operational_boundaries": {
+    "migration27_execution": "NOT_PERFORMED",
+    "permission_provisioning": "NOT_PERFORMED",
+    "feature_activation": "INACTIVE",
+    "target_mutation": "NOT_PERFORMED",
+    "runtime_allowlist_change": "NOT_PERFORMED",
+    "deployment_authority": "NOT_GRANTED",
+    "technical_preview_activation": "NOT_AUTHORIZED",
+    "production_activation": "NOT_AUTHORIZED",
+    "updater_activation": "INACTIVE"
+  },
+  "engineering_envelope": {
+    "path_count": 6,
+    "sorted_newline_path_set_sha256": "fef6c595dd1c26345a8d0cea97dfdea0dace26bde37a9a64743c3dedf48a3e3a",
+    "paths": [
+      ".github/workflows/final-shift-close-feature-activation.yml",
+      ".github/workflows/sprint239-final-shift-close-cpanel-activation-transport-readiness-regression.yml",
+      "apps/web/tests/pos-final-shift-close-cpanel-activation-transport.php",
+      "docs/SPRINT239_FINAL_SHIFT_CLOSE_CPANEL_ACTIVATION_TRANSPORT_READINESS.md",
+      "ops/final-shift-close/FINAL_SHIFT_CLOSE_FEATURE_ACTIVATION_CPANEL_TRANSPORT_READINESS_CONTRACT.json",
+      "tools/cpanel/execute-final-shift-close-feature-activation.php"
+    ]
+  },
+  "next_gate": "SEPARATELY_REVIEWED_FINAL_SHIFT_CLOSE_DURABLE_STAGING_RUNTIME_ALLOWLIST_SUCCESSOR",
+  "attribution": "Author by Lab | zefry"
+}
