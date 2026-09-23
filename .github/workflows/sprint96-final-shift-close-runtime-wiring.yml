@@ -9,6 +9,7 @@ on:
       - '.github/workflows/sprint96-final-shift-close-runtime-wiring.yml'
       - 'apps/web/app/Providers/FinalShiftCloseServiceProvider.php'
       - 'apps/web/app/Providers/FinalShiftCloseDurableStagingDeliveryServiceProvider.php'
+      - 'apps/web/app/Providers/PosOperationsHubServiceProvider.php'
       - 'apps/web/app/Application/Pos/FinalShiftCloseDurableStagingDeliveryGate.php'
       - 'apps/web/bootstrap/app.php'
       - 'apps/web/tests/pos-final-shift-close-runtime-wiring.php'
@@ -29,16 +30,16 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
-      - name: Preserve historical provider boundary while allowing governed successor
+      - name: Preserve historical provider and bootstrap boundaries
         shell: bash
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
-          # Sprint96 remains historical: the original provider is not widened.
           git diff --exit-code "$BASE_SHA" "$HEAD_SHA" -- \
             apps/web/app/Providers/FinalShiftCloseServiceProvider.php \
+            apps/web/bootstrap/app.php \
             apps/web/bootstrap/providers.php \
             apps/web/config/oneqay.php \
             apps/web/database/migrations \
@@ -67,19 +68,23 @@ jobs:
           set -euo pipefail
           gate=apps/web/app/Application/Pos/FinalShiftCloseDurableStagingDeliveryGate.php
           provider=apps/web/app/Providers/FinalShiftCloseDurableStagingDeliveryServiceProvider.php
-          bootstrap=apps/web/bootstrap/app.php
+          aggregate=apps/web/app/Providers/PosOperationsHubServiceProvider.php
           state=ops/final-shift-close/STATE.json
           selection=ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
 
-          grep -Fq "DURABLE_STAGING_DELIVERY_SUCCESSOR_V1" "$gate"
-          grep -Fq "durable-staging" "$gate"
-          grep -Fq "ONEQAY_RUNNING_SOURCE_COMMIT" "$provider"
-          grep -Fq "ONEQAY_RUNNING_ARTIFACT_SHA256" "$provider"
-          grep -Fq "ONEQAY_POS_SHIFT_CLOSE_ENABLED" "$provider"
-          grep -Fq "RELEASE.json" "$provider"
+          grep -Fq 'DURABLE_STAGING_DELIVERY_SUCCESSOR_V1' "$gate"
+          grep -Fq 'durable-staging' "$gate"
+          grep -Fq 'DurableStagingMerchantCoreBridge::armedFor($runtimeClass)' "$provider"
+          grep -Fq 'ONEQAY_RUNNING_SOURCE_COMMIT' "$provider"
+          grep -Fq 'ONEQAY_RUNNING_ARTIFACT_SHA256' "$provider"
+          grep -Fq 'ONEQAY_POS_SHIFT_CLOSE_ENABLED' "$provider"
+          grep -Fq 'RELEASE.json' "$provider"
           grep -Fq "'session.active'" "$provider"
           grep -Fq 'RequirePosSessionContextMiddleware::class' "$provider"
-          grep -Fq "FinalShiftCloseDurableStagingDeliveryServiceProvider" "$bootstrap"
+          grep -Fq '$this->app->register(FinalShiftCloseDurableStagingDeliveryServiceProvider::class);' "$aggregate"
+          grep -Fq "'GET /pos/shifts/close'" "$aggregate"
+          grep -Fq "'POST /pos/shifts/close'" "$aggregate"
+          ! grep -Fq 'FinalShiftCloseDurableStagingDeliveryServiceProvider' apps/web/bootstrap/app.php
 
           test "$(jq -r '.migration27.state' "$state")" = EXECUTED
           test "$(jq -r '.permission_provisioning.state' "$state")" = PROVISIONED
@@ -112,6 +117,7 @@ jobs:
           php -l apps/web/app/Providers/FinalShiftCloseServiceProvider.php
           php -l apps/web/app/Application/Pos/FinalShiftCloseDurableStagingDeliveryGate.php
           php -l apps/web/app/Providers/FinalShiftCloseDurableStagingDeliveryServiceProvider.php
+          php -l apps/web/app/Providers/PosOperationsHubServiceProvider.php
           php -l apps/web/bootstrap/app.php
           php -l apps/web/tests/pos-final-shift-close-runtime-wiring.php
           php -l apps/web/tests/pos-final-shift-close-durable-staging-delivery-gate.php
