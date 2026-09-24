@@ -68,9 +68,9 @@ jobs:
           [[ "$(jq -r '.selected_target | type' "$TARGET_SELECTION_FILE")" == 'object' ]]
           [[ "$(jq -r '.selected_target.environment_id' "$TARGET_SELECTION_FILE")" == "$EXPECTED_ENVIRONMENT_ID" ]]
           [[ "$(jq -r '.selected_target.runtime_class' "$TARGET_SELECTION_FILE")" == "$EXPECTED_RUNTIME_CLASS" ]]
-          jq -e '.selected_target.trusted_ingestion_run_id | type == "number" and . > 0' "$TARGET_SELECTION_FILE" >/dev/null
-          jq -e '.selected_target.trusted_ingestion_run_attempt | type == "number" and . > 0' "$TARGET_SELECTION_FILE" >/dev/null
-          jq -e '.selected_target.trusted_ingestion_fingerprint_sha256 | type == "string" and test("^[0-9a-f]{64}$")' "$TARGET_SELECTION_FILE" >/dev/null
+          jq -e '.selected_target.trusted_ingestion.run_id | type == "number" and . > 0' "$TARGET_SELECTION_FILE" >/dev/null
+          jq -e '.selected_target.trusted_ingestion.run_attempt | type == "number" and . > 0' "$TARGET_SELECTION_FILE" >/dev/null
+          jq -e '.selected_target.trusted_ingestion.ingestion_fingerprint_sha256 | type == "string" and test("^[0-9a-f]{64}$")' "$TARGET_SELECTION_FILE" >/dev/null
 
       - name: Fetch authenticated target-bound capability observations
         shell: bash
