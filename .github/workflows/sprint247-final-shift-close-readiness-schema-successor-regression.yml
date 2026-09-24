@@ -1,0 +1,79 @@
+name: Sprint247 Final Shift Close Readiness Schema Successor Regression
+
+# Attribution: Lab | zefry
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'tools/cpanel/execute-final-shift-close-feature-activation-readiness-successor.php'
+      - 'apps/web/tests/pos-final-shift-close-readiness-schema-successor.php'
+      - '.github/workflows/sprint247-final-shift-close-readiness-schema-successor-regression.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint247-final-shift-close-readiness-schema-successor-${{ github.event.pull_request.number }}-${{ github.event.pull_request.head.sha }}
+  cancel-in-progress: true
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout exact pull request head
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Enforce exact Sprint247 envelope
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t paths < <(git diff --name-only "${{ github.event.pull_request.base.sha }}"..."${{ github.event.pull_request.head.sha }}" | LC_ALL=C sort)
+          expected=(
+            '.github/workflows/sprint247-final-shift-close-readiness-schema-successor-regression.yml'
+            'apps/web/tests/pos-final-shift-close-readiness-schema-successor.php'
+            'tools/cpanel/execute-final-shift-close-feature-activation-readiness-successor.php'
+          )
+          [[ "${#paths[@]}" -eq 3 ]]
+          diff -u <(printf '%s\n' "${expected[@]}") <(printf '%s\n' "${paths[@]}")
+
+      - name: Validate successor syntax and regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l tools/cpanel/execute-final-shift-close-feature-activation-readiness-successor.php
+          php -l apps/web/tests/pos-final-shift-close-readiness-schema-successor.php
+          php apps/web/tests/pos-final-shift-close-readiness-schema-successor.php
+
+      - name: Preserve operational boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          state=ops/final-shift-close/STATE.json
+          successor=tools/cpanel/execute-final-shift-close-feature-activation-readiness-successor.php
+
+          [[ "$(jq -r '.migration27.state' "$state")" == 'EXECUTED' ]]
+          [[ "$(jq -r '.permission_provisioning.state' "$state")" == 'PROVISIONED' ]]
+          [[ "$(jq -r '.permission_provisioning.permission_id' "$state")" == 'pos.shift.close' ]]
+          [[ "$(jq -r '.permission_provisioning.default_grant' "$state")" == 'NONE' ]]
+          [[ "$(jq -r '.feature_activation.state' "$state")" == 'INACTIVE' ]]
+          [[ "$(jq -r '.deployment_authority' "$state")" == 'NOT_GRANTED' ]]
+          [[ "$(jq -r '.technical_preview_activation' "$state")" == 'NOT_AUTHORIZED' ]]
+          [[ "$(jq -r '.production_activation' "$state")" == 'NOT_AUTHORIZED' ]]
+          [[ "$(jq -r '.updater_activation' "$state")" == 'INACTIVE' ]]
+
+          grep -Fq 'exact_running_source_commit' "$successor"
+          grep -Fq 'exact_running_artifact_sha256' "$successor"
+          grep -Fq "'feature_activation_state'" "$successor"
+          grep -Fq "'ACTIVE'" "$successor"
+          grep -Fq 'fscActivationExecuteReadinessSuccessor' "$successor"
+          ! grep -Fq 'Artisan::call' "$successor"
+          ! grep -Fq 'migrate' "$successor"
+
+          echo 'Sprint247 Final Shift Close readiness schema successor regression passed.'
+
+# Author by Lab | zefry
