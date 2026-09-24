@@ -1,8 +1,8 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "feature": "durable-staging-operator-artifact-publication",
   "contract_state": "PUBLISHES_SECRET_FREE_OPERATOR_RETRIEVABLE_ARTIFACT_NOT_DEPLOYED",
-  "purpose": "MATERIALIZE_REPRODUCIBLE_DURABLE_STAGING_ARTIFACT_AND_SECRET_FREE_DEPLOYMENT_HANDOFF_FOR_OPERATOR_RETRIEVAL_WITHOUT_RUNTIME_MUTATION",
+  "purpose": "PUBLISH_EXACT_CURRENT_MAIN_DURABLE_STAGING_SUCCESSOR_ARTIFACT_AND_SECRET_FREE_DEPLOYMENT_HANDOFF_WITHOUT_RUNTIME_MUTATION",
   "publication_workflow_path": ".github/workflows/durable-staging-release-publication.yml",
   "predecessor_contracts": [
     "ops/final-shift-close/DURABLE_STAGING_RELEASE_ARTIFACT_CONTRACT.json",
@@ -36,26 +36,41 @@
     "sprint205_builder_reused": true,
     "sprint205_manifest_validator_reused": true,
     "sprint206_handoff_tool_reused": true,
-    "technical_preview_semantics_not_widened": true,
     "published_bundle_is_not_deployment_authority": true,
     "deployment_requires_separate_operational_authority": true,
     "migration_execution_requires_separate_operational_authority": true,
     "target_selection_requires_separate_authority": true,
     "protected_attestation_producer_dispatch_requires_separate_operational_authority": true
   },
-  "canonical_boundaries": {
-    "environment_creation": "NOT_PERFORMED",
-    "environment_deployment": "NOT_PERFORMED",
-    "deployment_authority": "NOT_GRANTED",
-    "migration27_execution": "NOT_PERFORMED",
-    "permission_provisioning": "NONE",
+  "current_canonical_state": {
+    "migration27": "EXECUTED",
+    "permission_provisioning": "PROVISIONED",
+    "permission_id": "pos.shift.close",
+    "default_grant": "NONE",
     "feature_activation": "INACTIVE",
+    "selected_target_state": "SELECTED_NOT_AUTHORIZED",
+    "selected_environment_id": "oneqay-durable-staging-01",
+    "selected_runtime_class": "durable-staging",
+    "selected_running_source_commit": "5be28a3c001738373588b58e9d29832c46402de1",
+    "deployment_authority": "NOT_GRANTED",
     "technical_preview_activation": "NOT_AUTHORIZED",
     "production_activation": "NOT_AUTHORIZED",
-    "updater_activation": "INACTIVE",
-    "durable_target_selection": "BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET",
+    "updater_activation": "INACTIVE"
+  },
+  "canonical_boundaries": {
+    "semantics": "PUBLICATION_ACTION_SIDE_EFFECTS_ONLY_NOT_GLOBAL_CURRENT_STATE",
+    "environment_deployment": "NOT_PERFORMED",
+    "migration27_execution": "NOT_PERFORMED",
     "selected_target": null,
     "producer_dispatch": "NOT_PERFORMED"
   },
-  "attribution": "Lab | zefry"
+  "successor_candidate_policy": {
+    "publication_mutates_selected_target": false,
+    "publication_deploys_application": false,
+    "deployment_requires_separate_authority": true,
+    "post_deployment_reattestation_required": true,
+    "post_deployment_selected_target_generation_update_required": true,
+    "feature_activation_requires_separate_authority_and_evidence": true
+  },
+  "attribution": "Author by Lab | zefry"
 }

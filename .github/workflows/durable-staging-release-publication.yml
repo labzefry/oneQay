@@ -1,5 +1,5 @@
 # Author by Lab | zefry
-# Sprint216 same-source staging publication anchor — Lab | zefry
+# Sprint240 current-canonical-state successor — Lab | zefry
 name: Durable Staging Operator Artifact Publication
 
 on:
@@ -16,6 +16,7 @@ on:
       - 'ops/final-shift-close/DURABLE_STAGING_RELEASE_ARTIFACT_CONTRACT.json'
       - 'ops/final-shift-close/DURABLE_STAGING_DEPLOYMENT_HANDOFF_CONTRACT.json'
       - 'ops/final-shift-close/DURABLE_STAGING_OPERATOR_ARTIFACT_PUBLICATION_CONTRACT.json'
+      - 'ops/final-shift-close/DURABLE_STAGING_RUNTIME_PROMOTION_SUCCESSOR_CONTRACT.json'
   workflow_dispatch:
 
 permissions:
@@ -61,37 +62,67 @@ jobs:
             exit 1
           }
 
-      - name: Preserve canonical operational NO-GO
+      - name: Validate current canonical prerequisite state without operational mutation
         shell: bash
         run: |
           set -euo pipefail
           state=ops/final-shift-close/STATE.json
           selection=ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
-          test "$(jq -r '.migration27.state' "$state")" = NOT_EXECUTED
-          test "$(jq -r '.permission_provisioning.state' "$state")" = NONE
+
+          test "$(jq -r '.migration27.state' "$state")" = EXECUTED
+          test "$(jq -r '.permission_provisioning.state' "$state")" = PROVISIONED
+          test "$(jq -r '.permission_provisioning.permission_id' "$state")" = pos.shift.close
+          test "$(jq -r '.permission_provisioning.default_grant' "$state")" = NONE
           test "$(jq -r '.feature_activation.state' "$state")" = INACTIVE
           test "$(jq -r '.deployment_authority' "$state")" = NOT_GRANTED
           test "$(jq -r '.technical_preview_activation' "$state")" = NOT_AUTHORIZED
           test "$(jq -r '.production_activation' "$state")" = NOT_AUTHORIZED
           test "$(jq -r '.updater_activation' "$state")" = INACTIVE
-          test "$(jq -r '.selection_state' "$selection")" = BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET
-          test "$(jq -r '.selected_target' "$selection")" = null
 
-      - name: Validate publication contract
+          test "$(jq -r '.selection_state' "$selection")" = SELECTED_NOT_AUTHORIZED
+          test "$(jq -r '.selected_target.environment_id' "$selection")" = oneqay-durable-staging-01
+          test "$(jq -r '.selected_target.runtime_class' "$selection")" = durable-staging
+          selected_source="$(jq -r '.selected_target.exact_running_source_commit' "$selection")"
+          selected_artifact="$(jq -r '.selected_target.exact_running_artifact_sha256' "$selection")"
+          selected_attestation="$(jq -r '.selected_target.readiness_attestation_sha256' "$selection")"
+          [[ "$selected_source" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$selected_artifact" =~ ^[0-9a-f]{64}$ ]]
+          [[ "$selected_attestation" =~ ^[0-9a-f]{64}$ ]]
+          git merge-base --is-ancestor "$selected_source" "$GITHUB_SHA" || {
+            echo 'Current selected durable runtime source is not an ancestor of the successor publication source.' >&2
+            exit 1
+          }
+
+      - name: Validate publication contracts
         shell: bash
         run: |
           set -euo pipefail
-          contract=ops/final-shift-close/DURABLE_STAGING_OPERATOR_ARTIFACT_PUBLICATION_CONTRACT.json
-          jq -e . "$contract" >/dev/null
-          test "$(jq -r '.contract_state' "$contract")" = PUBLISHES_SECRET_FREE_OPERATOR_RETRIEVABLE_ARTIFACT_NOT_DEPLOYED
-          test "$(jq -r '.trigger_policy.main_branch_only' "$contract")" = true
-          test "$(jq -r '.publication_requirements.artifact_reproducibility_verified_before_upload' "$contract")" = true
-          test "$(jq -r '.publication_requirements.migration_execution_performed' "$contract")" = false
-          test "$(jq -r '.publication_requirements.secret_values_embedded' "$contract")" = false
-          test "$(jq -r '.publication_requirements.retention_days' "$contract")" = 30
-          test "$(jq -r '.qualification_requirements.published_bundle_is_not_deployment_authority' "$contract")" = true
-          test "$(jq -r '.canonical_boundaries.environment_deployment' "$contract")" = NOT_PERFORMED
-          test "$(jq -r '.canonical_boundaries.selected_target' "$contract")" = null
+          publication=ops/final-shift-close/DURABLE_STAGING_OPERATOR_ARTIFACT_PUBLICATION_CONTRACT.json
+          release=ops/final-shift-close/DURABLE_STAGING_RELEASE_ARTIFACT_CONTRACT.json
+          successor=ops/final-shift-close/DURABLE_STAGING_RUNTIME_PROMOTION_SUCCESSOR_CONTRACT.json
+          jq -e . "$publication" >/dev/null
+          jq -e . "$release" >/dev/null
+          jq -e . "$successor" >/dev/null
+
+          test "$(jq -r '.contract_state' "$publication")" = PUBLISHES_SECRET_FREE_OPERATOR_RETRIEVABLE_ARTIFACT_NOT_DEPLOYED
+          test "$(jq -r '.current_canonical_state.migration27' "$publication")" = EXECUTED
+          test "$(jq -r '.current_canonical_state.permission_provisioning' "$publication")" = PROVISIONED
+          test "$(jq -r '.current_canonical_state.feature_activation' "$publication")" = INACTIVE
+          test "$(jq -r '.current_canonical_state.selected_target_state' "$publication")" = SELECTED_NOT_AUTHORIZED
+          test "$(jq -r '.successor_candidate_policy.publication_mutates_selected_target' "$publication")" = false
+          test "$(jq -r '.successor_candidate_policy.deployment_requires_separate_authority' "$publication")" = true
+          test "$(jq -r '.successor_candidate_policy.post_deployment_reattestation_required' "$publication")" = true
+
+          test "$(jq -r '.contract_state' "$release")" = MATERIALIZED_SOURCE_ONLY_NOT_DEPLOYED
+          test "$(jq -r '.current_canonical_state.migration27' "$release")" = EXECUTED
+          test "$(jq -r '.current_canonical_state.permission_provisioning' "$release")" = PROVISIONED
+          test "$(jq -r '.current_canonical_state.feature_activation' "$release")" = INACTIVE
+          test "$(jq -r '.successor_candidate_policy.runtime_class' "$release")" = durable-staging
+          test "$(jq -r '.successor_candidate_policy.deployment_performed_by_builder' "$release")" = false
+
+          test "$(jq -r '.contract_state' "$successor")" = MATERIALIZED_PROMOTION_READY_NOT_DEPLOYED_NOT_ACTIVATED
+          test "$(jq -r '.operational_boundaries.deployment_authority' "$successor")" = NOT_GRANTED
+          test "$(jq -r '.operational_boundaries.feature_activation' "$successor")" = INACTIVE
 
       - name: Setup governed PHP runtime
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
@@ -149,16 +180,22 @@ jobs:
           release_id="durable-staging-${head_sha:0:12}"
           diff -u /tmp/oneqay-first-durable-manifest.json "dist/${release_id}.manifest.json"
           diff -u /tmp/oneqay-first-durable-artifact.sha256 "dist/${release_id}.tar.gz.sha256"
-          php tools/validate-durable-staging-release-manifest.php             "dist/${release_id}.manifest.json"             "dist/${release_id}.tar.gz"
+          php tools/validate-durable-staging-release-manifest.php \
+            "dist/${release_id}.manifest.json" \
+            "dist/${release_id}.tar.gz"
 
-      - name: Prepare secret-free Sprint206 deployment handoff
+      - name: Prepare secret-free deployment handoff
         id: handoff
         shell: bash
         run: |
           set -euo pipefail
           release_id="${{ steps.durable.outputs.release_id }}"
           handoff="dist/${release_id}.deployment-handoff.json"
-          php tools/prepare-durable-staging-deployment-handoff.php             "${{ steps.durable.outputs.manifest }}"             "${{ steps.durable.outputs.archive }}"             "$GITHUB_SHA"             "$handoff"
+          php tools/prepare-durable-staging-deployment-handoff.php \
+            "${{ steps.durable.outputs.manifest }}" \
+            "${{ steps.durable.outputs.archive }}" \
+            "$GITHUB_SHA" \
+            "$handoff"
           jq -e . "$handoff" >/dev/null
           test "$(jq -r '.handoff_state' "$handoff")" = VALIDATED_FOR_EXTERNAL_DEPLOYMENT_NOT_AUTHORIZED
           test "$(jq -r '.artifact.source_commit' "$handoff")" = "$GITHUB_SHA"

@@ -8,8 +8,12 @@ on:
     paths:
       - '.github/workflows/sprint96-final-shift-close-runtime-wiring.yml'
       - 'apps/web/app/Providers/FinalShiftCloseServiceProvider.php'
+      - 'apps/web/app/Providers/FinalShiftCloseDurableStagingDeliveryServiceProvider.php'
+      - 'apps/web/app/Providers/PosOperationsHubServiceProvider.php'
+      - 'apps/web/app/Application/Pos/FinalShiftCloseDurableStagingDeliveryGate.php'
       - 'apps/web/bootstrap/app.php'
       - 'apps/web/tests/pos-final-shift-close-runtime-wiring.php'
+      - 'apps/web/tests/pos-final-shift-close-durable-staging-delivery-gate.php'
       - 'docs/SPRINT96_FINAL_SHIFT_CLOSE_RUNTIME_WIRING.md'
 
 permissions:
@@ -26,24 +30,24 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
-      - name: Preserve successor-compatible historical regression boundary
+      - name: Preserve historical provider and bootstrap boundaries
         shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
-          base="${{ github.event.pull_request.base.sha }}"
-          head="${{ github.event.pull_request.head.sha }}"
-          git diff --name-only "$base" "$head" | LC_ALL=C sort > /tmp/actual
-          [[ -s /tmp/actual ]]
-          # Sprint96 is historical. It validates the runtime-wiring invariant it owns
-          # without freezing the active sprint's full source envelope.
-          git diff --quiet "$base" "$head" -- \
+          git diff --exit-code "$BASE_SHA" "$HEAD_SHA" -- \
+            apps/web/app/Providers/FinalShiftCloseServiceProvider.php \
             apps/web/bootstrap/app.php \
             apps/web/bootstrap/providers.php \
             apps/web/config/oneqay.php \
             apps/web/database/migrations \
             apps/web/routes/pos-final-shift-close.php
+          grep -Fq "['local', 'test', 'ci']" apps/web/app/Providers/FinalShiftCloseServiceProvider.php
+          ! grep -Fq "'durable-staging'" apps/web/app/Providers/FinalShiftCloseServiceProvider.php
 
-      - name: Lock fail-closed runtime wiring
+      - name: Lock fail-closed original runtime wiring
         shell: bash
         run: |
           set -euo pipefail
@@ -58,6 +62,41 @@ jobs:
           grep -Fq 'use App\Providers\FinalShiftCloseServiceProvider;' apps/web/bootstrap/app.php
           grep -Fq 'FinalShiftCloseServiceProvider::class,' apps/web/bootstrap/app.php
 
+      - name: Qualify durable-staging successor registration without feature activation
+        shell: bash
+        run: |
+          set -euo pipefail
+          gate=apps/web/app/Application/Pos/FinalShiftCloseDurableStagingDeliveryGate.php
+          provider=apps/web/app/Providers/FinalShiftCloseDurableStagingDeliveryServiceProvider.php
+          aggregate=apps/web/app/Providers/PosOperationsHubServiceProvider.php
+          state=ops/final-shift-close/STATE.json
+          selection=ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+
+          grep -Fq 'DURABLE_STAGING_DELIVERY_SUCCESSOR_V1' "$gate"
+          grep -Fq 'durable-staging' "$gate"
+          grep -Fq 'DurableStagingMerchantCoreBridge::armedFor($runtimeClass)' "$provider"
+          grep -Fq 'ONEQAY_RUNNING_SOURCE_COMMIT' "$provider"
+          grep -Fq 'ONEQAY_RUNNING_ARTIFACT_SHA256' "$provider"
+          grep -Fq 'ONEQAY_POS_SHIFT_CLOSE_ENABLED' "$provider"
+          grep -Fq 'RELEASE.json' "$provider"
+          grep -Fq "'session.active'" "$provider"
+          grep -Fq 'RequirePosSessionContextMiddleware::class' "$provider"
+          grep -Fq '$this->app->register(FinalShiftCloseDurableStagingDeliveryServiceProvider::class);' "$aggregate"
+          grep -Fq "'GET /pos/shifts/close'" "$aggregate"
+          grep -Fq "'POST /pos/shifts/close'" "$aggregate"
+          ! grep -Fq 'FinalShiftCloseDurableStagingDeliveryServiceProvider' apps/web/bootstrap/app.php
+
+          test "$(jq -r '.migration27.state' "$state")" = EXECUTED
+          test "$(jq -r '.permission_provisioning.state' "$state")" = PROVISIONED
+          test "$(jq -r '.feature_activation.state' "$state")" = INACTIVE
+          test "$(jq -r '.deployment_authority' "$state")" = NOT_GRANTED
+          test "$(jq -r '.technical_preview_activation' "$state")" = NOT_AUTHORIZED
+          test "$(jq -r '.production_activation' "$state")" = NOT_AUTHORIZED
+          test "$(jq -r '.updater_activation' "$state")" = INACTIVE
+          test "$(jq -r '.selection_state' "$selection")" = SELECTED_NOT_AUTHORIZED
+          test "$(jq -r '.selected_target.environment_id' "$selection")" = oneqay-durable-staging-01
+          test "$(jq -r '.selected_target.runtime_class' "$selection")" = durable-staging
+
       - name: Preserve historical runtime authority boundaries
         shell: bash
         run: |
@@ -71,13 +110,18 @@ jobs:
           grep -Fq 'PRODUCTION_AUTHORITY = NOT_GRANTED' "$doc"
           grep -Fq 'UPDATER_ACTIVATION_AUTHORITY = NOT_GRANTED' "$doc"
 
-      - name: Validate PHP syntax
+      - name: Validate PHP syntax and successor gate
         shell: bash
         run: |
           set -euo pipefail
           php -l apps/web/app/Providers/FinalShiftCloseServiceProvider.php
+          php -l apps/web/app/Application/Pos/FinalShiftCloseDurableStagingDeliveryGate.php
+          php -l apps/web/app/Providers/FinalShiftCloseDurableStagingDeliveryServiceProvider.php
+          php -l apps/web/app/Providers/PosOperationsHubServiceProvider.php
           php -l apps/web/bootstrap/app.php
           php -l apps/web/tests/pos-final-shift-close-runtime-wiring.php
+          php -l apps/web/tests/pos-final-shift-close-durable-staging-delivery-gate.php
+          php apps/web/tests/pos-final-shift-close-durable-staging-delivery-gate.php
 
       - name: Install PHP dependencies
         working-directory: apps/web

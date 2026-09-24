@@ -1,0 +1,102 @@
+{
+  "schema_version": 1,
+  "feature": "final-shift-close",
+  "sprint": 240,
+  "contract_state": "MATERIALIZED_PROMOTION_READY_NOT_DEPLOYED_NOT_ACTIVATED",
+  "bounded_objective": "FINAL_SHIFT_CLOSE_DURABLE_STAGING_RUNTIME_PROMOTION_SUCCESSOR",
+  "canonical_base_sha": "fd799f3c3f78d70f7c8428579e0f2ba364d61e17",
+  "delivery_successor": {
+    "gate_path": "apps/web/app/Application/Pos/FinalShiftCloseDurableStagingDeliveryGate.php",
+    "provider_path": "apps/web/app/Providers/FinalShiftCloseDurableStagingDeliveryServiceProvider.php",
+    "registration_aggregate_path": "apps/web/app/Providers/PosOperationsHubServiceProvider.php",
+    "successor_marker": "DURABLE_STAGING_DELIVERY_SUCCESSOR_V1",
+    "runtime_class": "durable-staging",
+    "legacy_provider_modified": false,
+    "historical_bootstrap_modified": false,
+    "registered_through_existing_pos_aggregate": true,
+    "feature_flag_default_remains_disabled": true,
+    "release_identity_required": true,
+    "running_source_identity_required": true,
+    "running_artifact_identity_required": true,
+    "persistence_required": true,
+    "session_control_required": true,
+    "sale_completion_required": true,
+    "durable_staging_bridge_arming_required": true,
+    "existing_enterprise_ui_reused": true,
+    "new_public_privileged_route": false
+  },
+  "artifact_publication": {
+    "workflow_path": ".github/workflows/durable-staging-release-publication.yml",
+    "exact_main_source": true,
+    "reproducible_artifact": true,
+    "secret_free": true,
+    "deployment_performed": false
+  },
+  "promotion_kit": {
+    "workflow_path": ".github/workflows/durable-staging-runtime-promotion-kit.yml",
+    "trigger": "workflow_run: Durable Staging Operator Artifact Publication success",
+    "upstream_artifact_exact_identity_required": true,
+    "application_deployment_performed": false,
+    "migration_execution_performed": false,
+    "selected_target_mutation_performed": false,
+    "feature_activation_performed": false,
+    "post_deployment_reattestation_required": true,
+    "post_deployment_selected_target_generation_update_required": true
+  },
+  "current_selected_target": {
+    "environment_id": "oneqay-durable-staging-01",
+    "runtime_class": "durable-staging",
+    "selection_state": "SELECTED_NOT_AUTHORIZED",
+    "running_source_commit": "5be28a3c001738373588b58e9d29832c46402de1",
+    "running_artifact_sha256": "66be23792478fb191f912571b35076c42783b9733cdb3fb514b549d22ec90dd7",
+    "readiness_attestation_sha256": "3a45a4de0328cb8e5e0ed5eafb907e0a41230974c03b21d03ed571b7a2d3564d",
+    "selection_fingerprint_sha256": "858280ea3575317e8d88eed7009c770530097e261c391b2869fa81ad7c8546ce"
+  },
+  "operational_boundaries": {
+    "migration27": "EXECUTED_NO_REPLAY",
+    "permission_provisioning": "PROVISIONED_NO_SECOND_GRANT",
+    "feature_activation": "INACTIVE",
+    "deployment_authority": "NOT_GRANTED",
+    "deployment_execution": "NOT_PERFORMED",
+    "technical_preview_activation": "NOT_AUTHORIZED",
+    "production_activation": "NOT_AUTHORIZED",
+    "updater_activation": "INACTIVE",
+    "target_reselection": "NOT_PERFORMED"
+  },
+  "engineering_envelope": {
+    "path_count": 19,
+    "sorted_newline_path_set_sha256": "95f5d2f4ad04d6c1813fcaf0f95a80b612f780d3f67ebd9d3d11122531d6864b",
+    "paths": [
+      ".github/workflows/durable-staging-release-publication.yml",
+      ".github/workflows/durable-staging-runtime-promotion-kit.yml",
+      ".github/workflows/sprint211-durable-staging-operator-artifact-publication-regression.yml",
+      ".github/workflows/sprint212-cpanel-no-ssh-durable-staging-target-qualification-regression.yml",
+      ".github/workflows/sprint213-cpanel-no-ssh-operator-qualification-kit-publication-regression.yml",
+      ".github/workflows/sprint214-cpanel-no-ssh-guarded-deployment-execution-regression.yml",
+      ".github/workflows/sprint218-production-dark-deployment-execution-regression.yml",
+      ".github/workflows/sprint222-cpanel-fixed-public-php-symlink-policy-fallback-regression.yml",
+      ".github/workflows/sprint223-durable-runtime-ingestion-null-boundary-regression.yml",
+      ".github/workflows/sprint240-final-shift-close-durable-staging-runtime-promotion-successor-regression.yml",
+      ".github/workflows/sprint96-final-shift-close-runtime-wiring.yml",
+      "apps/web/app/Application/Pos/FinalShiftCloseDurableStagingDeliveryGate.php",
+      "apps/web/app/Providers/FinalShiftCloseDurableStagingDeliveryServiceProvider.php",
+      "apps/web/app/Providers/PosOperationsHubServiceProvider.php",
+      "apps/web/tests/pos-final-shift-close-durable-staging-delivery-gate.php",
+      "docs/SPRINT240_FINAL_SHIFT_CLOSE_DURABLE_STAGING_RUNTIME_PROMOTION_SUCCESSOR.md",
+      "ops/final-shift-close/DURABLE_STAGING_OPERATOR_ARTIFACT_PUBLICATION_CONTRACT.json",
+      "ops/final-shift-close/DURABLE_STAGING_RELEASE_ARTIFACT_CONTRACT.json",
+      "ops/final-shift-close/DURABLE_STAGING_RUNTIME_PROMOTION_SUCCESSOR_CONTRACT.json"
+    ]
+  },
+  "next_operational_sequence": [
+    "PUBLISH_EXACT_MAIN_DURABLE_STAGING_SUCCESSOR_ARTIFACT",
+    "PUBLISH_BOUND_PROMOTION_KIT",
+    "SEPARATE_SHORT_LIVED_DEPLOYMENT_AUTHORITY",
+    "AUTHORIZED_DURABLE_STAGING_DEPLOYMENT",
+    "FRESH_RUNTIME_REATTESTATION",
+    "SELECTED_TARGET_GENERATION_UPDATE",
+    "SEPARATE_FEATURE_ACTIVATION_AUTHORITY_AND_EVIDENCE",
+    "DARK_PRODUCTION_PROMOTION_ONLY_AFTER_STAGING_EVIDENCE"
+  ],
+  "attribution": "Author by Lab | zefry"
+}
