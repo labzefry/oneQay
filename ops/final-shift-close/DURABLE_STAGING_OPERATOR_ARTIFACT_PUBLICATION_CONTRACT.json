@@ -32,6 +32,16 @@
     "retention_days": 30,
     "github_actions_artifact_upload": true
   },
+  "qualification_requirements": {
+    "sprint205_builder_reused": true,
+    "sprint205_manifest_validator_reused": true,
+    "sprint206_handoff_tool_reused": true,
+    "published_bundle_is_not_deployment_authority": true,
+    "deployment_requires_separate_operational_authority": true,
+    "migration_execution_requires_separate_operational_authority": true,
+    "target_selection_requires_separate_authority": true,
+    "protected_attestation_producer_dispatch_requires_separate_operational_authority": true
+  },
   "current_canonical_state": {
     "migration27": "EXECUTED",
     "permission_provisioning": "PROVISIONED",
@@ -46,6 +56,13 @@
     "technical_preview_activation": "NOT_AUTHORIZED",
     "production_activation": "NOT_AUTHORIZED",
     "updater_activation": "INACTIVE"
+  },
+  "canonical_boundaries": {
+    "semantics": "PUBLICATION_ACTION_SIDE_EFFECTS_ONLY_NOT_GLOBAL_CURRENT_STATE",
+    "environment_deployment": "NOT_PERFORMED",
+    "migration27_execution": "NOT_PERFORMED",
+    "selected_target": null,
+    "producer_dispatch": "NOT_PERFORMED"
   },
   "successor_candidate_policy": {
     "publication_mutates_selected_target": false,
