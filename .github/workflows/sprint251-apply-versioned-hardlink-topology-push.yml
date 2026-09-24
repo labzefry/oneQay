@@ -1,0 +1,41 @@
+name: Sprint251 One-Shot Versioned Hardlink Topology Applicator
+
+# Attribution: Lab | zefry
+
+on:
+  push:
+    branches:
+      - sprint251-final-shift-close-versioned-hardlink-topology
+    paths:
+      - '.github/workflows/sprint251-apply-versioned-hardlink-topology-push.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout exact branch head
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: sprint251-final-shift-close-versioned-hardlink-topology
+          fetch-depth: 0
+
+      - name: Apply bounded correction and remove temporary applicators
+        shell: bash
+        run: |
+          set -euo pipefail
+          python tools/ci/sprint251-apply-versioned-hardlink-topology.py
+          php -l tools/cpanel/execute-final-shift-close-feature-activation-readiness-successor.php
+          rm .github/workflows/sprint251-apply-versioned-hardlink-topology.yml
+          rm .github/workflows/sprint251-apply-versioned-hardlink-topology-push.yml
+          rm tools/ci/sprint251-apply-versioned-hardlink-topology.py
+          git config user.name 'Lab | zefry'
+          git config user.email 'lab.zefa@gmail.com'
+          git add -A
+          git commit -m 'Sprint251: support versioned runtime hardlink topology' -m 'Author by Lab | zefry'
+          git push origin HEAD:sprint251-final-shift-close-versioned-hardlink-topology
+
+# Author by Lab | zefry
