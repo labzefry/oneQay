@@ -1,0 +1,73 @@
+name: Sprint246 Final Shift Close Feature Activation Evidence Successor Regression
+
+# Attribution: Lab | zefry
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/final-shift-close-feature-activation-evidence.yml'
+      - '.github/workflows/sprint246-final-shift-close-feature-activation-evidence-successor-regression.yml'
+      - 'docs/SPRINT246_FINAL_SHIFT_CLOSE_FEATURE_ACTIVATION_EVIDENCE_SUCCESSOR.md'
+
+permissions:
+  contents: read
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout exact pull request head
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Enforce exact Sprint246 envelope
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --name-only "${{ github.event.pull_request.base.sha }}"..."${{ github.event.pull_request.head.sha }}" | LC_ALL=C sort > /tmp/actual
+          cat > /tmp/expected <<'EOF'
+          .github/workflows/final-shift-close-feature-activation-evidence.yml
+          .github/workflows/sprint246-final-shift-close-feature-activation-evidence-successor-regression.yml
+          docs/SPRINT246_FINAL_SHIFT_CLOSE_FEATURE_ACTIVATION_EVIDENCE_SUCCESSOR.md
+          EOF
+          diff -u /tmp/expected /tmp/actual
+          test "$(sha256sum /tmp/actual | awk '{print $1}')" = 'abcb289cb27ef151d320826a7a79e0c159333a2c0babda83e6f738a4c098838e'
+
+      - name: Verify evidence producer fail-closed boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          workflow=.github/workflows/final-shift-close-feature-activation-evidence.yml
+          grep -Fq 'environment: final-shift-close-feature-activation-evidence' "$workflow"
+          grep -Fq 'ONEQAY_FINAL_SHIFT_CLOSE_ACTIVATION_EVIDENCE_PROTECTION_ASSERTION' "$workflow"
+          grep -Fq 'ONEQAY_FINAL_SHIFT_CLOSE_ACTIVATION_EVIDENCE_URL' "$workflow"
+          grep -Fq 'ONEQAY_FINAL_SHIFT_CLOSE_ACTIVATION_EVIDENCE_TOKEN' "$workflow"
+          grep -Fq 'final-shift-close-feature-activation-execution-ready' "$workflow"
+          grep -Fq 'final-shift-close-feature-activation-authority' "$workflow"
+          grep -Fq 'product-owner-merge-authority' "$workflow"
+          grep -Fq 'FLAG_TRUE_VERIFIED_HEALTHY_AWAITING_RUNTIME_ALLOWLIST' "$workflow"
+          grep -Fq 'PREQUALIFIED_ALREADY_ARMED' "$workflow"
+          grep -Fq 'ONEQAY_POS_SHIFT_CLOSE_ENABLED' "$workflow"
+          grep -Fq 'runtime_allowlist_change=="NOT_PERFORMED"' "$workflow"
+          grep -Fq 'final-shift-close-feature-activation-evidence' "$workflow"
+          ! grep -Eq 'php artisan migrate|mysql |mysqldump |ssh |scp |rsync ' "$workflow"
+          ! grep -Fq 'ONEQAY_POS_SHIFT_CLOSE_ENABLED=true' "$workflow"
+
+      - name: Verify NO-GO successor documentation
+        shell: bash
+        run: |
+          set -euo pipefail
+          doc=docs/SPRINT246_FINAL_SHIFT_CLOSE_FEATURE_ACTIVATION_EVIDENCE_SUCCESSOR.md
+          grep -Fq 'does not mutate the runtime' "$doc"
+          grep -Fq 'migration #27' "$doc"
+          grep -Fq 'permission provisioning' "$doc"
+          grep -Fq 'Technical Preview' "$doc"
+          grep -Fq 'Production' "$doc"
+          grep -Fq 'updater' "$doc"
+          grep -Fq 'runtime allowlist' "$doc"
+          grep -Fq 'PR #903' "$doc"
+
+# Author by Lab | zefry
