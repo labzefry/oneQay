@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   export:
-    if: github.event.head_commit.message != 'Sprint240: export corrected workflow blobs'
+    if: ${{ !contains(github.event.head_commit.message, 'export corrected workflow blobs') }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
