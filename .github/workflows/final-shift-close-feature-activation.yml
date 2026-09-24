@@ -159,9 +159,26 @@ jobs:
           require_status_success 'product-owner-merge-authority'
           require_status_success 'final-shift-close-feature-activation-authority'
 
-          runs="$(api "$API_URL/repos/$REPOSITORY/actions/runs?head_sha=$TARGET_HEAD&event=pull_request&per_page=100")"
+          runs_file="$(mktemp)"
+          trap 'rm -f "$runs_file"' EXIT
+          : > "$runs_file"
+          page=1
+          while :; do
+            page_json="$(api "$API_URL/repos/$REPOSITORY/actions/runs?head_sha=$TARGET_HEAD&event=pull_request&per_page=100&page=$page")"
+            count="$(jq '.workflow_runs | length' <<<"$page_json")"
+            jq -c '.workflow_runs[]' <<<"$page_json" >> "$runs_file"
+            if (( count < 100 )); then
+              break
+            fi
+            page=$((page + 1))
+            (( page <= 20 )) || {
+              echo 'Exact-head workflow pagination exceeded fail-closed page bound.' >&2
+              exit 1
+            }
+          done
+
           for workflow in 'Governance Required Checks' 'PHP Foundation Regression' 'M7.1 Application Regression'; do
-            conclusion="$(jq -r --arg name "$workflow" '[.workflow_runs[] | select(.name == $name)][0].conclusion // "missing"' <<<"$runs")"
+            conclusion="$(jq -rs --arg name "$workflow" '[.[] | select(.name == $name)][0].conclusion // "missing"' "$runs_file")"
             [[ "$conclusion" == 'success' ]] || {
               echo "Required exact-head workflow is not success: $workflow ($conclusion)." >&2
               exit 1

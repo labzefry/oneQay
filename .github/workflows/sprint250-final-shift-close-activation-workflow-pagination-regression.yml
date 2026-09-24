@@ -1,0 +1,76 @@
+name: Sprint250 Final Shift Close Activation Workflow Pagination Regression
+
+# Attribution: Lab | zefry
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/final-shift-close-feature-activation.yml'
+      - '.github/workflows/sprint250-final-shift-close-activation-workflow-pagination-regression.yml'
+      - 'apps/web/tests/pos-final-shift-close-activation-workflow-pagination.php'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint250-final-shift-close-activation-workflow-pagination-${{ github.event.pull_request.number }}-${{ github.event.pull_request.head.sha }}
+  cancel-in-progress: true
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout exact pull request head
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Lock exact Sprint250 envelope
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t paths < <(git diff --name-only "${{ github.event.pull_request.base.sha }}"..."${{ github.event.pull_request.head.sha }}" | LC_ALL=C sort)
+          expected=(
+            '.github/workflows/final-shift-close-feature-activation.yml'
+            '.github/workflows/sprint250-final-shift-close-activation-workflow-pagination-regression.yml'
+            'apps/web/tests/pos-final-shift-close-activation-workflow-pagination.php'
+          )
+          [[ "${#paths[@]}" -eq 3 ]]
+          diff -u <(printf '%s\n' "${expected[@]}") <(printf '%s\n' "${paths[@]}")
+
+      - name: Validate bounded pagination regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l apps/web/tests/pos-final-shift-close-activation-workflow-pagination.php
+          php apps/web/tests/pos-final-shift-close-activation-workflow-pagination.php
+
+      - name: Prove activation pagination and operational boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          workflow=.github/workflows/final-shift-close-feature-activation.yml
+          state=ops/final-shift-close/STATE.json
+
+          grep -Fq 'runs_file="$(mktemp)"' "$workflow"
+          grep -Fq 'per_page=100&page=$page' "$workflow"
+          grep -Fq 'page=$((page + 1))' "$workflow"
+          grep -Fq '(( page <= 20 ))' "$workflow"
+          grep -Fq 'jq -rs --arg name "$workflow"' "$workflow"
+          ! grep -Fq 'actions/runs?head_sha=$TARGET_HEAD&event=pull_request&per_page=100")' "$workflow"
+
+          [[ "$(jq -r '.migration27.state' "$state")" == 'EXECUTED' ]]
+          [[ "$(jq -r '.permission_provisioning.state' "$state")" == 'PROVISIONED' ]]
+          [[ "$(jq -r '.permission_provisioning.default_grant' "$state")" == 'NONE' ]]
+          [[ "$(jq -r '.feature_activation.state' "$state")" == 'INACTIVE' ]]
+          [[ "$(jq -r '.deployment_authority' "$state")" == 'NOT_GRANTED' ]]
+          [[ "$(jq -r '.technical_preview_activation' "$state")" == 'NOT_AUTHORIZED' ]]
+          [[ "$(jq -r '.production_activation' "$state")" == 'NOT_AUTHORIZED' ]]
+          [[ "$(jq -r '.updater_activation' "$state")" == 'INACTIVE' ]]
+
+          echo 'Sprint250 bounded activation workflow pagination regression passed.'
+
+# Author by Lab | zefry
