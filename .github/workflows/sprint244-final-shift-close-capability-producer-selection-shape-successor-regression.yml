@@ -1,0 +1,94 @@
+name: Sprint244 Final Shift Close Capability Producer Selection Shape Successor Regression
+
+# Attribution: Lab | zefry
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/final-shift-close-durable-runtime-capability-evidence.yml'
+      - '.github/workflows/sprint244-final-shift-close-capability-producer-selection-shape-successor-regression.yml'
+      - 'docs/SPRINT244_FINAL_SHIFT_CLOSE_CAPABILITY_PRODUCER_SELECTION_SHAPE_SUCCESSOR.md'
+
+permissions:
+  contents: read
+
+jobs:
+  qualify-capability-producer-selection-shape-successor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact Sprint244 source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Lock exact Sprint244 envelope
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          cat > /tmp/expected <<'EOF'
+          .github/workflows/final-shift-close-durable-runtime-capability-evidence.yml
+          .github/workflows/sprint244-final-shift-close-capability-producer-selection-shape-successor-regression.yml
+          docs/SPRINT244_FINAL_SHIFT_CLOSE_CAPABILITY_PRODUCER_SELECTION_SHAPE_SUCCESSOR.md
+          EOF
+          git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/actual
+          diff -u /tmp/expected /tmp/actual
+
+      - name: Validate workflow YAML syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          ruby -e "require 'yaml'; YAML.safe_load(File.read('.github/workflows/final-shift-close-durable-runtime-capability-evidence.yml'), aliases: true)"
+          ruby -e "require 'yaml'; YAML.safe_load(File.read('.github/workflows/sprint244-final-shift-close-capability-producer-selection-shape-successor-regression.yml'), aliases: true)"
+
+      - name: Prove canonical nested trusted-ingestion binding
+        shell: bash
+        run: |
+          set -euo pipefail
+          workflow=.github/workflows/final-shift-close-durable-runtime-capability-evidence.yml
+          grep -Fq '.selected_target.trusted_ingestion.run_id' "$workflow"
+          grep -Fq '.selected_target.trusted_ingestion.run_attempt' "$workflow"
+          grep -Fq '.selected_target.trusted_ingestion.ingestion_fingerprint_sha256' "$workflow"
+          ! grep -Fq '.selected_target.trusted_ingestion_run_id' "$workflow"
+          ! grep -Fq '.selected_target.trusted_ingestion_run_attempt' "$workflow"
+          ! grep -Fq '.selected_target.trusted_ingestion_fingerprint_sha256' "$workflow"
+
+      - name: Prove persisted target shape and exact current generation
+        shell: bash
+        run: |
+          set -euo pipefail
+          selection=ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+          jq -e '.selection_state == "SELECTED_NOT_AUTHORIZED"' "$selection" >/dev/null
+          jq -e '.selected_target.trusted_ingestion | type == "object"' "$selection" >/dev/null
+          test "$(jq -r '.selected_target.environment_id' "$selection")" = 'oneqay-durable-staging-01'
+          test "$(jq -r '.selected_target.exact_running_source_commit' "$selection")" = '59b42137eed717aacc82080a46753440bb4d8537'
+          test "$(jq -r '.selected_target.exact_running_artifact_sha256' "$selection")" = '8ad4a33196eabd6248c9dfb35eb118e97759e5c17b32384a12b120258bce615c'
+          test "$(jq -r '.selected_target.trusted_ingestion.run_id' "$selection")" = '36008213090'
+          test "$(jq -r '.selected_target.trusted_ingestion.run_attempt' "$selection")" = '1'
+
+      - name: Preserve operational and application state
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          test -z "$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web ops/final-shift-close/STATE.json ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)"
+          test "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" = 'INACTIVE'
+          test "$(jq -r '.production_activation' ops/final-shift-close/STATE.json)" = 'NOT_AUTHORIZED'
+          test "$(jq -r '.technical_preview_activation' ops/final-shift-close/STATE.json)" = 'NOT_AUTHORIZED'
+
+      - name: Verify documentation boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          doc=docs/SPRINT244_FINAL_SHIFT_CLOSE_CAPABILITY_PRODUCER_SELECTION_SHAPE_SUCCESSOR.md
+          grep -Fq 'Author by Lab | zefry' "$doc"
+          grep -Fq 'feature activation remains NOT PERFORMED' "$doc"
+          grep -Fq 'Production remains NOT AUTHORIZED' "$doc"
+
+# Author by Lab | zefry
