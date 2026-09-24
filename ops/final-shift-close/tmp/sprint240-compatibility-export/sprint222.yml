@@ -1,0 +1,356 @@
+# Author by Lab | zefry
+name: Sprint222 cPanel Fixed Public PHP Symlink Policy Fallback Regression
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint222-cpanel-fixed-public-php-symlink-policy-fallback-${{ github.event.pull_request.number || github.ref }}-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  qualify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Lock exact Sprint222 envelope
+        if: github.event_name == 'pull_request' && github.head_ref == 'sprint222-cpanel-fixed-public-php-symlink-policy-fallback'
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          EXPECTED_PATH_HASH: c629ad09f3d6365112130d074048eb54236d91b9456c92b610a676d42d22f896
+        run: |
+          set -euo pipefail
+          git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/s222-paths
+          cat > /tmp/s222-expected <<'EOF'
+          .github/workflows/sprint222-cpanel-fixed-public-php-symlink-policy-fallback-regression.yml
+          ops/final-shift-close/DURABLE_STAGING_CPANEL_NO_SSH_GUARDED_DEPLOYMENT_EXECUTION_CONTRACT.json
+          ops/final-shift-close/DURABLE_STAGING_CPANEL_NO_SSH_OPERATOR_KIT_PUBLICATION_CONTRACT.json
+          ops/final-shift-close/DURABLE_STAGING_CPANEL_NO_SSH_TARGET_QUALIFICATION_CONTRACT.json
+          tools/cpanel/build-cpanel-no-ssh-operator-qualification-kit.sh
+          tools/cpanel/execute-durable-staging-cpanel-no-ssh-deployment.php
+          tools/cpanel/fixed-public-document-root-bridge.php
+          tools/cpanel/inspect-durable-staging-cpanel-no-ssh-target.php
+          tools/cpanel/prepare-durable-staging-cpanel-no-ssh-target-candidate.php
+          tools/deployment/cpanel-no-ssh-durable-staging-target-profile.schema.json
+          EOF
+          diff -u /tmp/s222-expected /tmp/s222-paths
+          test "$(wc -l < /tmp/s222-paths)" -eq 10
+          test "$(sha256sum /tmp/s222-paths | awk '{print $1}')" = "$EXPECTED_PATH_HASH"
+          test -z "$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web | grep -v '^apps/web/tests/' || true)"
+          test -z "$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web/database/migrations)"
+
+      - name: Setup governed PHP runtime
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        with:
+          php-version: '8.3'
+          extensions: curl,pdo_mysql,phar
+          coverage: none
+
+      - name: Validate source and contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l tools/cpanel/inspect-durable-staging-cpanel-no-ssh-target.php
+          php -l tools/cpanel/prepare-durable-staging-cpanel-no-ssh-target-candidate.php
+          php -l tools/cpanel/fixed-public-document-root-bridge.php
+          php -l tools/cpanel/execute-durable-staging-cpanel-no-ssh-deployment.php
+          bash -n tools/cpanel/build-cpanel-no-ssh-operator-qualification-kit.sh
+          jq -e . tools/deployment/cpanel-no-ssh-durable-staging-target-profile.schema.json >/dev/null
+          jq -e . ops/final-shift-close/DURABLE_STAGING_CPANEL_NO_SSH_TARGET_QUALIFICATION_CONTRACT.json >/dev/null
+          jq -e . ops/final-shift-close/DURABLE_STAGING_CPANEL_NO_SSH_GUARDED_DEPLOYMENT_EXECUTION_CONTRACT.json >/dev/null
+          jq -e . ops/final-shift-close/DURABLE_STAGING_CPANEL_NO_SSH_OPERATOR_KIT_PUBLICATION_CONTRACT.json >/dev/null
+
+          q=ops/final-shift-close/DURABLE_STAGING_CPANEL_NO_SSH_TARGET_QUALIFICATION_CONTRACT.json
+          x=ops/final-shift-close/DURABLE_STAGING_CPANEL_NO_SSH_GUARDED_DEPLOYMENT_EXECUTION_CONTRACT.json
+          k=ops/final-shift-close/DURABLE_STAGING_CPANEL_NO_SSH_OPERATOR_KIT_PUBLICATION_CONTRACT.json
+          jq -e '.qualification_requirements.active_release_public_symlink_required == true' "$q"
+          jq -e '.qualification_requirements.fixed_public_bridge_symlink_required == false' "$q"
+          jq -e '.qualification_requirements.fixed_public_bridge_php_hardlink_runtime_binding_fallback == true' "$q"
+          jq -e '.qualification_requirements.php_disable_functions_policy_must_not_be_bypassed == true' "$q"
+          jq -e '.execution_requirements.fixed_public_bridge_direct_release_activation_when_php_symlink_unavailable == true' "$x"
+          jq -e '.execution_requirements.fixed_public_bridge_direct_activation_skips_private_active_pointer_mutation == true' "$x"
+          jq -e '.execution_requirements.runtime_env_hardlink_fallback_allowed_for_fixed_public_bridge_when_php_symlink_unavailable == true' "$x"
+          jq -e '.safety.php_disable_functions_override_forbidden == true' "$x"
+          jq -e '.operator_requirements.fixed_public_bridge_php_symlink_policy_fallback_supported == true' "$k"
+          jq -e '.operator_requirements.php_disable_functions_policy_bypass_forbidden == true' "$k"
+
+      - name: Preserve canonical operational NO-GO
+        shell: bash
+        run: |
+          set -euo pipefail
+          state=ops/final-shift-close/STATE.json
+          selection=ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+          [[ "$(jq -r '.migration27.state' "$state")" =~ ^(NOT_EXECUTED|EXECUTED)$ ]]
+          permission_state="$(jq -r '.permission_provisioning.state' ops/final-shift-close/STATE.json)"; [[ "$permission_state" =~ ^(NONE|PROVISIONED)$ ]]; if [[ "$permission_state" == 'PROVISIONED' ]]; then [[ "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" == 'EXECUTED' ]]; fi
+          test "$(jq -r '.feature_activation.state' "$state")" = INACTIVE
+          test "$(jq -r '.deployment_authority' "$state")" = NOT_GRANTED
+          test "$(jq -r '.technical_preview_activation' "$state")" = NOT_AUTHORIZED
+          test "$(jq -r '.production_activation' "$state")" = NOT_AUTHORIZED
+          test "$(jq -r '.updater_activation' "$state")" = INACTIVE
+          test "$(jq -r '.selection_state' "$selection")" = SELECTED_NOT_AUTHORIZED
+          test "$(jq -r '.selected_target.environment_id' "$selection")" = 'oneqay-durable-staging-01'
+          test "$(jq -r '.selected_target.runtime_class' "$selection")" = 'durable-staging'
+          test "$(jq -r '.selected_target.selection_fingerprint_sha256' "$selection")" = '858280ea3575317e8d88eed7009c770530097e261c391b2869fa81ad7c8546ce'
+
+      - name: Qualify FIXED_PUBLIC_BRIDGE with PHP symlink disabled
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/s222"
+          deployment="$root/private/oneqay-staging"
+          release_root="$deployment/releases"
+          shared_root="$deployment/shared"
+          active="$deployment/current"
+          public_root="$root/public_html/oneqay.n07.my.id"
+          mkdir -p "$release_root" "$shared_root" "$public_root/build"
+
+          cat > "$public_root/.htaccess" <<'EOF'
+          <IfModule mod_rewrite.c>
+          RewriteEngine On
+          RewriteCond %{REQUEST_FILENAME} !-d
+          RewriteCond %{REQUEST_FILENAME} !-f
+          RewriteRule ^ index.php [L]
+          </IfModule>
+          EOF
+          printf '<?php echo "old-public";\n' > "$public_root/index.php"
+          printf '{"release":"old"}\n' > "$public_root/build/manifest.json"
+
+          source='aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+          artifact='bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
+          env_id='cpanel-s222-ci'
+          token='sprint222-private-attestation-token-0123456789abcdef'
+
+          cat > "$shared_root/private-bindings.json" <<EOF
+          {
+            "ONEQAY_RUNTIME_CLASS": "durable-staging",
+            "ONEQAY_RUNNING_SOURCE_COMMIT": "$source",
+            "ONEQAY_RUNNING_ARTIFACT_SHA256": "$artifact",
+            "ONEQAY_DURABLE_RUNTIME_ENVIRONMENT_ID": "$env_id",
+            "ONEQAY_DURABLE_RUNTIME_ATTESTATION_TOKEN": "$token",
+            "ONEQAY_DURABLE_STAGING_RUNTIME_ENABLED": "true"
+          }
+          EOF
+          chmod 0600 "$shared_root/private-bindings.json"
+
+          cat > "$root/target-input.json" <<EOF
+          {
+            "schema_version": 1,
+            "target_class": "CPANEL_NO_SSH",
+            "execution_channel": "CPANEL_CRON_PHP_CLI_NO_SSH",
+            "environment_id": "$env_id",
+            "runtime_class": "durable-staging",
+            "production": false,
+            "production_data_allowed": false,
+            "synthetic_fixture_runtime": false,
+            "release_binding": {
+              "source_commit": "$source",
+              "artifact_sha256": "$artifact"
+            },
+            "filesystem": {
+              "deployment_root": "$deployment",
+              "release_root": "$release_root",
+              "shared_runtime_root": "$shared_root",
+              "active_release_pointer": "$active",
+              "document_root": "$public_root",
+              "document_root_mode": "FIXED_PUBLIC_BRIDGE"
+            },
+            "operator_assertions": {
+              "durable_database_persistence": true,
+              "durable_session": true,
+              "authorization": true,
+              "transaction_durability": true,
+              "pos_durability": true,
+              "authenticated_configuration_channel": true,
+              "read_before_write": true,
+              "read_after_write": true,
+              "non_mutating_health_attestation": true,
+              "verified_rollback": true
+            },
+            "attribution": "Lab | zefry"
+          }
+          EOF
+
+          test "$(php -d disable_functions=symlink -r 'echo function_exists("symlink") ? "YES" : "NO";')" = NO
+
+          php -d disable_functions=symlink tools/cpanel/inspect-durable-staging-cpanel-no-ssh-target.php             "$root/target-input.json"             "$shared_root/private-bindings.json"             "$root/profile.json"
+
+          test "$(jq -r '.profile_state' "$root/profile.json")" = CPANEL_NO_SSH_TARGET_PROFILE_OBSERVED
+          test "$(jq -r '.presentation.mode' "$root/profile.json")" = FIXED_PUBLIC_BRIDGE
+          test "$(jq -r '.filesystem.symlink_supported' "$root/profile.json")" = false
+          test "$(jq -r '.filesystem.hardlink_supported' "$root/profile.json")" = true
+          ! grep -Fq "$token" "$root/profile.json"
+
+          php -d disable_functions=symlink tools/cpanel/prepare-durable-staging-cpanel-no-ssh-target-candidate.php             "$root/profile.json" "$root/candidate.json"
+          test "$(jq -r '.target_state' "$root/candidate.json")" = OPERATOR_TARGET_CANDIDATE
+          test "$(jq -r '.presentation.mode' "$root/candidate.json")" = FIXED_PUBLIC_BRIDGE
+
+          jq --arg doc "$active/apps/web/public"             '.filesystem.document_root=$doc | .filesystem.document_root_mode="ACTIVE_RELEASE_PUBLIC"'             "$root/target-input.json" > "$root/active-input.json"
+          if php -d disable_functions=symlink tools/cpanel/inspect-durable-staging-cpanel-no-ssh-target.php             "$root/active-input.json"             "$shared_root/private-bindings.json"             "$root/active-profile.json"             >"$root/active.out" 2>"$root/active.err"
+          then
+            echo "ACTIVE_RELEASE_PUBLIC incorrectly accepted without PHP symlink." >&2
+            exit 1
+          fi
+          grep -Fq 'cpanel_no_ssh_target_inspection_failed:symlink_unavailable' "$root/active.err"
+          test ! -e "$root/active-profile.json"
+
+      - name: Exercise hardlink runtime binding and direct public bridge rollback
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/s222"
+          deployment="$root/private/oneqay-staging"
+          release="$deployment/releases/durable-staging-aaaaaaaaaaaa"
+          shared="$deployment/shared"
+          active="$deployment/current"
+          public="$root/public_html/oneqay.n07.my.id"
+          mkdir -p "$release/apps/web/public/build"
+          printf '{"release":"candidate"}\n' > "$release/apps/web/public/build/manifest.json"
+          cat > "$shared/runtime.env" <<'EOF'
+          APP_NAME=oneQay
+          APP_ENV=staging
+          APP_DEBUG=false
+          EOF
+          chmod 0600 "$shared/runtime.env"
+
+          ROOT="$root" RELEASE="$release" SHARED="$shared" ACTIVE="$active" PUBLIC="$public"           php -d disable_functions=symlink <<'PHP'
+          <?php
+          declare(strict_types=1);
+
+          require 'tools/cpanel/execute-durable-staging-cpanel-no-ssh-deployment.php';
+
+          if (function_exists('symlink')) {
+              throw new RuntimeException('symlink_policy_fixture_invalid');
+          }
+
+          $release = (string) getenv('RELEASE');
+          $shared = (string) getenv('SHARED');
+          $active = (string) getenv('ACTIVE');
+          $public = (string) getenv('PUBLIC');
+
+          $identity = [
+              'shared_root' => $shared,
+              'release_directory' => $release,
+          ];
+          $hash = cpanelExecBindRuntimeEnv($shared.'/runtime.env', $identity, true);
+          $envPath = $release.'/apps/web/.env';
+          if (!is_file($envPath) || is_link($envPath)) {
+              throw new RuntimeException('hardlink_runtime_binding_shape_invalid');
+          }
+          $sourceInode = fileinode($shared.'/runtime.env');
+          $boundInode = fileinode($envPath);
+          if (!is_int($sourceInode) || !is_int($boundInode) || $sourceInode !== $boundInode) {
+              throw new RuntimeException('hardlink_runtime_binding_inode_invalid');
+          }
+          if (!hash_equals($hash, hash_file('sha256', $envPath))) {
+              throw new RuntimeException('hardlink_runtime_binding_hash_invalid');
+          }
+
+          $state = cpanelBridgeInstall($public, $active, $release, $shared, true);
+          $index = file_get_contents($public.'/index.php');
+          if (!is_string($index) || !str_contains($index, $release.'/apps/web')) {
+              throw new RuntimeException('direct_bridge_release_binding_missing');
+          }
+          if (str_contains($index, $active.'/apps/web')) {
+              throw new RuntimeException('direct_bridge_stale_pointer_binding_detected');
+          }
+          if (file_get_contents($public.'/build/manifest.json') !== "{\"release\":\"candidate\"}\n") {
+              throw new RuntimeException('direct_bridge_candidate_assets_missing');
+          }
+
+          cpanelBridgeRestore($state);
+          cpanelBridgeFinalize($state);
+          if (file_get_contents($public.'/index.php') !== "<?php echo \"old-public\";\n") {
+              throw new RuntimeException('direct_bridge_index_rollback_failed');
+          }
+          if (file_get_contents($public.'/build/manifest.json') !== "{\"release\":\"old\"}\n") {
+              throw new RuntimeException('direct_bridge_build_rollback_failed');
+          }
+          if (file_exists($active) || is_link($active)) {
+              throw new RuntimeException('direct_bridge_mutated_private_active_pointer');
+          }
+          PHP
+
+      - name: Prove fallback remains PHP-only and policy-respecting
+        shell: bash
+        run: |
+          set -euo pipefail
+          executor=tools/cpanel/execute-durable-staging-cpanel-no-ssh-deployment.php
+          inspector=tools/cpanel/inspect-durable-staging-cpanel-no-ssh-target.php
+          bridge=tools/cpanel/fixed-public-document-root-bridge.php
+          for file in "$executor" "$inspector" "$bridge"; do
+            ! grep -E '(^|[^A-Za-z_])(exec|shell_exec|system|passthru|proc_open|popen)[[:space:]]*\(' "$file"
+            ! grep -Fq 'artisan migrate' "$file"
+          done
+          grep -Fq 'fixedDirectFallback' "$executor"
+          grep -Fq 'runtime_env_hardlink' "$executor"
+          grep -Fq 'hardlink_supported' "$inspector"
+          ! grep -RIFq 'disable_functions=' tools/cpanel ops/final-shift-close
+
+      - name: Build deterministic operator kit with fallback
+        shell: bash
+        run: |
+          set -euo pipefail
+          head_sha="$(git rev-parse HEAD)"
+          bash tools/cpanel/build-cpanel-no-ssh-operator-qualification-kit.sh "$head_sha"
+          kit_id="cpanel-no-ssh-operator-kit-${head_sha:0:12}"
+          cp "dist/${kit_id}.zip" /tmp/s222-first.zip
+          cp "dist/${kit_id}.manifest.json" /tmp/s222-first.manifest.json
+          cp "dist/${kit_id}.zip.sha256" /tmp/s222-first.sha256
+          rm -rf dist
+          bash tools/cpanel/build-cpanel-no-ssh-operator-qualification-kit.sh "$head_sha"
+          cmp /tmp/s222-first.zip "dist/${kit_id}.zip"
+          diff -u /tmp/s222-first.manifest.json "dist/${kit_id}.manifest.json"
+          diff -u /tmp/s222-first.sha256 "dist/${kit_id}.zip.sha256"
+
+          root="$RUNNER_TEMP/s222-kit"
+          mkdir -p "$root"
+          unzip -q "dist/${kit_id}.zip" -d "$root"
+          kit="$root/${kit_id}"
+          grep -Fq 'provider disables PHP symlink()' "$kit/README.md"
+          grep -Fq 'ACTIVE_RELEASE_PUBLIC still requires PHP symlink support' "$kit/README.md"
+          jq -e '.operator_requirements.fixed_public_bridge_php_symlink_policy_fallback_supported == true'             "$kit/ops/final-shift-close/DURABLE_STAGING_CPANEL_NO_SSH_OPERATOR_KIT_PUBLICATION_CONTRACT.json"
+          ! find "$kit" -type f \( -name '.env' -o -name '*.pem' -o -name '*.key' -o -name '*.p12' -o -name '*.pfx' \) -print -quit | grep -q .
+
+      - name: Confirm no application or operational authority drift
+        if: github.event_name != 'pull_request' || github.head_ref != 'sprint240-durable-staging-runtime-promotion-successor'
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            test -z "$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web | grep -v '^apps/web/tests/' || true)"
+            test -z "$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web/database/migrations)"
+          fi
+          state=ops/final-shift-close/STATE.json
+          selection=ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+          test "$(jq -r '.deployment_authority' "$state")" = NOT_GRANTED
+          [[ "$(jq -r '.migration27.state' "$state")" =~ ^(NOT_EXECUTED|EXECUTED)$ ]]
+          test "$(jq -r '.production_activation' "$state")" = NOT_AUTHORIZED
+          test "$(jq -r '.selection_state' "$selection")" = SELECTED_NOT_AUTHORIZED
+          test "$(jq -r '.selected_target.environment_id' "$selection")" = 'oneqay-durable-staging-01'
+          test "$(jq -r '.selected_target.runtime_class' "$selection")" = 'durable-staging'
+          test "$(jq -r '.selected_target.selection_fingerprint_sha256' "$selection")" = '858280ea3575317e8d88eed7009c770530097e261c391b2869fa81ad7c8546ce'
+
+      - name: Confirm tracked source cleanliness
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf dist
+          git diff --exit-code
+          test -z "$(git status --porcelain)"
