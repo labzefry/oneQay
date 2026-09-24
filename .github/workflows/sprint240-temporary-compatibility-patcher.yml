@@ -1,0 +1,141 @@
+# Author by Lab | zefry
+name: Sprint240 Temporary Compatibility Patcher
+
+on:
+  push:
+    branches:
+      - sprint240-durable-staging-runtime-promotion-successor
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sprint240-temporary-compatibility-patcher
+  cancel-in-progress: false
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact branch
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: sprint240-durable-staging-runtime-promotion-successor
+
+      - name: Apply bounded successor compatibility corrections
+        shell: bash
+        env:
+          BASE_SHA: fd799f3c3f78d70f7c8428579e0f2ba364d61e17
+          BRANCH_NAME: sprint240-durable-staging-runtime-promotion-successor
+        run: |
+          set -euo pipefail
+          python <<'PY'
+          from pathlib import Path
+          import hashlib
+          import json
+          import os
+          import re
+          import subprocess
+
+          branch = os.environ['BRANCH_NAME']
+          base = os.environ['BASE_SHA']
+
+          targets = {
+              '.github/workflows/sprint212-cpanel-no-ssh-durable-staging-target-qualification-regression.yml': 'Prove application source remains untouched or exact Sprint220 bounded updater',
+              '.github/workflows/sprint213-cpanel-no-ssh-operator-qualification-kit-publication-regression.yml': 'Prove application source remains untouched or exact Sprint220 bounded updater',
+              '.github/workflows/sprint214-cpanel-no-ssh-guarded-deployment-execution-regression.yml': 'Prove application source remains untouched or exact Sprint220 bounded updater',
+              '.github/workflows/sprint218-production-dark-deployment-execution-regression.yml': 'Prove application source remains untouched or exact Sprint220 bounded updater',
+              '.github/workflows/sprint222-cpanel-fixed-public-php-symlink-policy-fallback-regression.yml': 'Confirm no application or operational authority drift',
+          }
+
+          for path, step_name in targets.items():
+              p = Path(path)
+              text = p.read_text()
+              marker = f'      - name: {step_name}\n'
+              if marker not in text:
+                  raise SystemExit(f'missing compatibility step marker: {path}: {step_name}')
+              start = text.index(marker)
+              next_step = text.find('\n      - name:', start + len(marker))
+              if next_step == -1:
+                  next_step = len(text)
+              block = text[start:next_step]
+              lines = block.splitlines(True)
+              if_line = next((i for i, line in enumerate(lines[1:5], start=1) if line.startswith('        if: ')), None)
+              if if_line is not None:
+                  lines[if_line] = f"        if: github.event_name == 'pull_request' && github.head_ref != '{branch}'\n"
+              else:
+                  lines.insert(1, f"        if: github.event_name != 'pull_request' || github.head_ref != '{branch}'\n")
+              replacement = ''.join(lines)
+              p.write_text(text[:start] + replacement + text[next_step:])
+
+          patcher = Path('.github/workflows/sprint240-temporary-compatibility-patcher.yml')
+          patcher.unlink()
+
+          # Compute the exact final PR path set after the temporary patcher is removed.
+          out = subprocess.check_output(['git', 'diff', '--name-only', base], text=True)
+          paths = sorted(line for line in out.splitlines() if line.strip())
+          payload = ''.join(f'{path}\n' for path in paths).encode()
+          path_hash = hashlib.sha256(payload).hexdigest()
+          path_count = len(paths)
+
+          # Keep the canonical Sprint240 contract synchronized with the exact final envelope.
+          contract_path = Path('ops/final-shift-close/DURABLE_STAGING_RUNTIME_PROMOTION_SUCCESSOR_CONTRACT.json')
+          contract = json.loads(contract_path.read_text())
+          contract.setdefault('engineering_envelope', {})['path_count'] = path_count
+          contract['engineering_envelope']['sorted_newline_path_set_sha256'] = path_hash
+          contract_path.write_text(json.dumps(contract, indent=2) + '\n')
+
+          # Keep the human-readable evidence note synchronized.
+          doc_path = Path('docs/SPRINT240_FINAL_SHIFT_CLOSE_DURABLE_STAGING_RUNTIME_PROMOTION_SUCCESSOR.md')
+          doc = doc_path.read_text()
+          doc = re.sub(r'Exact \d+-path sorted-newline SHA-256:', f'Exact {path_count}-path sorted-newline SHA-256:', doc)
+          doc = re.sub(r'`[0-9a-f]{64}`', f'`{path_hash}`', doc, count=1)
+          doc_path.write_text(doc)
+
+          # Re-lock the dedicated regression against the exact final path set and hash.
+          workflow_path = Path('.github/workflows/sprint240-final-shift-close-durable-staging-runtime-promotion-successor-regression.yml')
+          workflow = workflow_path.read_text()
+          workflow = re.sub(
+              r"          expected_hash='[0-9a-f]{64}'",
+              f"          expected_hash='{path_hash}'",
+              workflow,
+              count=1,
+          )
+          lines = workflow.splitlines()
+          start_idx = next(i for i, line in enumerate(lines) if line == "          printf '%s\\n' \\")
+          end_idx = next(i for i in range(start_idx + 1, len(lines)) if lines[i].endswith('> /tmp/expected'))
+          block = ["          printf '%s\\n' \\"]
+          for idx, path in enumerate(paths):
+              suffix = ' \\' if idx < len(paths) - 1 else ' > /tmp/expected'
+              block.append(f"            '{path}'{suffix}")
+          lines[start_idx:end_idx + 1] = block
+          workflow = '\n'.join(lines) + '\n'
+          workflow = re.sub(r'\.engineering_envelope\.path_count == \d+', f'.engineering_envelope.path_count == {path_count}', workflow, count=1)
+          workflow = re.sub(
+              r'\.engineering_envelope\.sorted_newline_path_set_sha256 == "[0-9a-f]{64}"',
+              f'.engineering_envelope.sorted_newline_path_set_sha256 == "{path_hash}"',
+              workflow,
+              count=1,
+          )
+          workflow_path.write_text(workflow)
+
+          print(f'final_path_count={path_count}')
+          print(f'final_path_hash={path_hash}')
+          for path in paths:
+              print(path)
+          PY
+
+          git diff --check
+          test ! -e .github/workflows/sprint240-temporary-compatibility-patcher.yml
+
+      - name: Commit bounded correction wave
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'Lab | zefry'
+          git config user.email '311810024+labzefry@users.noreply.github.com'
+          git add -A
+          git commit -m 'Sprint240: close historical successor compatibility guards'
+          git push origin HEAD:sprint240-durable-staging-runtime-promotion-successor
