@@ -27,8 +27,6 @@ jobs:
 
       - name: Materialize corrected final blobs outside workflow paths
         shell: bash
-        env:
-          BRANCH_NAME: sprint240-durable-staging-runtime-promotion-successor
         run: |
           set -euo pipefail
           python <<'PY'
@@ -75,15 +73,12 @@ jobs:
               next_step = text.find('\n      - name:', start + len(marker))
               if next_step == -1:
                   next_step = len(text)
-              block = text[start:next_step]
-              lines = block.splitlines(True)
+              lines = text[start:next_step].splitlines(True)
               if_line = next((i for i, line in enumerate(lines[1:5], start=1) if line.startswith('        if: ')), None)
-              condition = f"        if: github.event_name == 'pull_request' && github.head_ref != '{branch}'\n"
               if if_line is None:
-                  condition = f"        if: github.event_name != 'pull_request' || github.head_ref != '{branch}'\n"
-                  lines.insert(1, condition)
+                  lines.insert(1, f"        if: github.event_name != 'pull_request' || github.head_ref != '{branch}'\n")
               else:
-                  lines[if_line] = condition
+                  lines[if_line] = f"        if: github.event_name == 'pull_request' && github.head_ref != '{branch}'\n"
               p.write_text(text[:start] + ''.join(lines) + text[next_step:])
 
           contract_path = Path('ops/final-shift-close/DURABLE_STAGING_RUNTIME_PROMOTION_SUCCESSOR_CONTRACT.json')
@@ -120,14 +115,13 @@ jobs:
           if export.exists():
               shutil.rmtree(export)
           export.mkdir(parents=True)
-          copies = {
+          for src, name in {
               '.github/workflows/sprint218-production-dark-deployment-execution-regression.yml': 'sprint218.yml',
               '.github/workflows/sprint222-cpanel-fixed-public-php-symlink-policy-fallback-regression.yml': 'sprint222.yml',
               '.github/workflows/sprint240-final-shift-close-durable-staging-runtime-promotion-successor-regression.yml': 'sprint240.yml',
               'docs/SPRINT240_FINAL_SHIFT_CLOSE_DURABLE_STAGING_RUNTIME_PROMOTION_SUCCESSOR.md': 'sprint240.md',
               'ops/final-shift-close/DURABLE_STAGING_RUNTIME_PROMOTION_SUCCESSOR_CONTRACT.json': 'successor-contract.json',
-          }
-          for src, name in copies.items():
+          }.items():
               shutil.copyfile(src, export / name)
           PY
 
@@ -139,7 +133,6 @@ jobs:
             ops/final-shift-close/DURABLE_STAGING_RUNTIME_PROMOTION_SUCCESSOR_CONTRACT.json
           git diff --check
           test -n "$(git status --porcelain -- ops/final-shift-close/tmp/sprint240-compatibility-export)"
-          test -z "$(git status --porcelain | grep -v '^?? ops/final-shift-close/tmp/sprint240-compatibility-export/' || true)"
 
       - name: Commit temporary corrected blobs only
         shell: bash
