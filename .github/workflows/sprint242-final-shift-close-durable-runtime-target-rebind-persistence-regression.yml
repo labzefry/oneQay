@@ -1,0 +1,116 @@
+name: Sprint242 Final Shift Close Durable Runtime Target Rebind Persistence Regression
+
+# Attribution: Lab | zefry
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/final-shift-close-durable-runtime-target-rebind-persistence.yml'
+      - '.github/workflows/sprint242-final-shift-close-durable-runtime-target-rebind-persistence-regression.yml'
+      - 'docs/SPRINT242_FINAL_SHIFT_CLOSE_DURABLE_RUNTIME_TARGET_REBIND_PERSISTENCE.md'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint242-final-shift-close-durable-runtime-target-rebind-persistence-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qualify-rebind-persistence-successor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact Sprint242 source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Lock exact Sprint242 envelope
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/actual
+          cat > /tmp/expected <<'EOF'
+          .github/workflows/final-shift-close-durable-runtime-target-rebind-persistence.yml
+          .github/workflows/sprint242-final-shift-close-durable-runtime-target-rebind-persistence-regression.yml
+          docs/SPRINT242_FINAL_SHIFT_CLOSE_DURABLE_RUNTIME_TARGET_REBIND_PERSISTENCE.md
+          EOF
+          diff -u /tmp/expected /tmp/actual
+          test "$(sha256sum /tmp/actual | awk '{print $1}')" = '1d9aba779dcb80f3874a151db4fc0a865043808c1f7b23335b9975d697f9c815'
+
+      - name: Validate workflow YAML syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          ruby -e 'require "yaml"; YAML.load_file(ARGV[0], aliases: true)' .github/workflows/final-shift-close-durable-runtime-target-rebind-persistence.yml >/dev/null
+          ruby -e 'require "yaml"; YAML.load_file(ARGV[0], aliases: true)' .github/workflows/sprint242-final-shift-close-durable-runtime-target-rebind-persistence-regression.yml >/dev/null
+
+      - name: Prove manual-only operational surface
+        shell: bash
+        run: |
+          set -euo pipefail
+          workflow=.github/workflows/final-shift-close-durable-runtime-target-rebind-persistence.yml
+          grep -Fq 'workflow_dispatch:' "$workflow"
+          ! grep -Eq '^[[:space:]]+(push|pull_request):' "$workflow"
+          grep -Fq "if: \${{ github.ref == 'refs/heads/main' }}" "$workflow"
+
+      - name: Prove same-environment rebind invariants
+        shell: bash
+        run: |
+          set -euo pipefail
+          workflow=.github/workflows/final-shift-close-durable-runtime-target-rebind-persistence.yml
+          grep -Fq "selection_state' \"$TARGET_SELECTION_FILE\")\" == 'SELECTED_NOT_AUTHORIZED'" "$workflow" || grep -Fq "SELECTED_NOT_AUTHORIZED" "$workflow"
+          grep -Fq "oneqay-durable-staging-01" "$workflow"
+          grep -Fq "durable-staging" "$workflow"
+          grep -Fq 'Rebind must preserve exact environment_id and runtime_class.' "$workflow"
+          grep -Fq 'Rebind must advance target generation evidence.' "$workflow"
+          grep -Fq 'Target PR changes fields outside selected_target generation evidence.' "$workflow"
+          grep -Fq 'product-owner-merge-authority' "$workflow"
+          grep -Fq 'ACCEPTED_NOT_SELECTED' "$workflow"
+          grep -Fq 'QUALIFIED_REBIND_NOT_MERGED' "$workflow"
+          grep -Fq 'SAME_ENVIRONMENT_TARGET_PR_ONLY_NOT_MERGED_BY_EXECUTOR' "$workflow"
+          grep -Fq 'feature_activation_state:"INACTIVE"' "$workflow"
+          grep -Fq 'activation_authority_state:"NOT_GRANTED"' "$workflow"
+          grep -Fq 'runtime_allowlist_change:"NOT_PERFORMED"' "$workflow"
+
+      - name: Preserve initial-selection persistence provenance
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git diff --exit-code "$BASE_SHA" "$HEAD_SHA" -- .github/workflows/final-shift-close-durable-runtime-target-selection-persistence.yml
+
+      - name: Preserve application runtime and operational state
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git diff --exit-code "$BASE_SHA" "$HEAD_SHA" -- \
+            apps \
+            database \
+            config \
+            routes \
+            ops/final-shift-close/STATE.json \
+            ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+
+      - name: Verify documentation boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          doc=docs/SPRINT242_FINAL_SHIFT_CLOSE_DURABLE_RUNTIME_TARGET_REBIND_PERSISTENCE.md
+          grep -Fq 'same-environment generation rebind' "$doc"
+          grep -Fq '36014328179' "$doc"
+          grep -Fq 'Final Shift Close remains INACTIVE' "$doc"
+          grep -Fq 'Production remains NOT_AUTHORIZED' "$doc"
+          grep -Fq 'Author by Lab | zefry' "$doc"
