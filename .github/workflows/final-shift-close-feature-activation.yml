@@ -123,10 +123,18 @@ jobs:
           [[ "$(jq -r '.selected_target.readiness_attestation_sha256' "$TARGET_SELECTION_FILE")" =~ ^[0-9a-f]{64}$ ]]
           [[ "$(jq -r '.selected_target.selection_fingerprint_sha256' "$TARGET_SELECTION_FILE")" =~ ^[0-9a-f]{64}$ ]]
 
-          # Dispatch must remain impossible until a separately reviewed successor widens only
-          # the Final Shift Close delivery allowlist to the already-qualified durable runtime.
-          grep -Fq "'durable-staging'" apps/web/app/Providers/FinalShiftCloseServiceProvider.php || {
-            echo 'Final Shift Close durable-staging runtime allowlist successor is not materialized; activation dispatch remains fail-closed.' >&2
+          # Sprint240 deliberately keeps the historical local/test/ci provider unchanged.
+          # Durable-staging delivery is owned by the dedicated successor provider and
+          # its release/source/artifact-bound gate through the existing POS aggregate.
+          durable_provider=apps/web/app/Providers/FinalShiftCloseDurableStagingDeliveryServiceProvider.php
+          durable_gate=apps/web/app/Application/Pos/FinalShiftCloseDurableStagingDeliveryGate.php
+          aggregate_provider=apps/web/app/Providers/PosOperationsHubServiceProvider.php
+          grep -Fq 'FinalShiftCloseDurableStagingDeliveryGate' "$durable_provider"
+          grep -Fq 'DurableStagingMerchantCoreBridge::armedFor($runtimeClass)' "$durable_provider"
+          grep -Fq "DURABLE_STAGING_DELIVERY_SUCCESSOR_V1" "$durable_gate"
+          grep -Fq "private const RUNTIME_CLASS = 'durable-staging';" "$durable_gate"
+          grep -Fq '$this->app->register(FinalShiftCloseDurableStagingDeliveryServiceProvider::class);' "$aggregate_provider" || {
+            echo 'Final Shift Close durable-staging delivery successor is not materialized through the qualified POS aggregate; activation dispatch remains fail-closed.' >&2
             exit 1
           }
 
