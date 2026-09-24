@@ -1,0 +1,75 @@
+name: Sprint249 Final Shift Close Hardlink Preserving Activation Transport Regression
+
+# Attribution: Lab | zefry
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/sprint249-final-shift-close-hardlink-preserving-activation-transport-regression.yml'
+      - 'tools/cpanel/execute-final-shift-close-feature-activation-readiness-successor.php'
+      - 'apps/web/tests/pos-final-shift-close-hardlink-activation-transport.php'
+
+permissions:
+  contents: read
+
+jobs:
+  hardlink-preserving-activation-transport:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout exact pull request head
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Lock exact Sprint249 envelope
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          printf '%s\n' \
+            '.github/workflows/sprint249-final-shift-close-hardlink-preserving-activation-transport-regression.yml' \
+            'apps/web/tests/pos-final-shift-close-hardlink-activation-transport.php' \
+            'tools/cpanel/execute-final-shift-close-feature-activation-readiness-successor.php' \
+            | LC_ALL=C sort > /tmp/expected-paths
+          git diff --name-only "$BASE_SHA"...HEAD | LC_ALL=C sort > /tmp/actual-paths
+          diff -u /tmp/expected-paths /tmp/actual-paths
+          test "$(wc -l < /tmp/actual-paths)" -eq 3
+          git diff --check "$BASE_SHA"...HEAD
+
+      - name: Validate PHP syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l tools/cpanel/execute-final-shift-close-feature-activation-readiness-successor.php
+          php -l apps/web/tests/pos-final-shift-close-hardlink-activation-transport.php
+
+      - name: Prove hardlink preserving activation and exact rollback
+        shell: bash
+        run: |
+          set -euo pipefail
+          php apps/web/tests/pos-final-shift-close-hardlink-activation-transport.php
+
+      - name: Preserve existing activation transport contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          php apps/web/tests/pos-final-shift-close-cpanel-activation-transport.php
+          php apps/web/tests/pos-final-shift-close-readiness-schema-successor.php
+
+      - name: Preserve operational NO-GO boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          executor=tools/cpanel/execute-final-shift-close-feature-activation-readiness-successor.php
+          grep -Fq "'migration_execution_performed' => false" "$executor"
+          grep -Fq "'permission_provisioning_performed' => false" "$executor"
+          grep -Fq "'deployment_performed' => false" "$executor"
+          grep -Fq "'technical_preview_activated' => false" "$executor"
+          grep -Fq "'production_activated' => false" "$executor"
+          grep -Fq "'updater_activated' => false" "$executor"
+          grep -Fq "'runtime_allowlist_change' => 'NOT_PERFORMED'" "$executor"
