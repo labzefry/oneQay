@@ -193,11 +193,11 @@ jobs:
             test -z "$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web/database/migrations)"
             if [ "$HEAD_REF" = 'sprint240-durable-staging-runtime-promotion-successor' ]; then
               git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web | grep -v '^apps/web/tests/' | LC_ALL=C sort > /tmp/s240-app-paths
-              cat > /tmp/s240-app-expected <<'EOF'
-              apps/web/app/Application/Pos/FinalShiftCloseDurableStagingDeliveryGate.php
-              apps/web/app/Providers/FinalShiftCloseDurableStagingDeliveryServiceProvider.php
-              apps/web/app/Providers/PosOperationsHubServiceProvider.php
-              EOF
+              printf '%s\n' \
+                'apps/web/app/Application/Pos/FinalShiftCloseDurableStagingDeliveryGate.php' \
+                'apps/web/app/Providers/FinalShiftCloseDurableStagingDeliveryServiceProvider.php' \
+                'apps/web/app/Providers/PosOperationsHubServiceProvider.php' \
+                > /tmp/s240-app-expected
               diff -u /tmp/s240-app-expected /tmp/s240-app-paths
             else
               test -z "$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web | grep -v '^apps/web/tests/' || true)"
