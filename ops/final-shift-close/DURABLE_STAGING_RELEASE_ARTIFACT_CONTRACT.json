@@ -51,6 +51,10 @@
     "production_activation": "NOT_AUTHORIZED",
     "updater_activation": "INACTIVE"
   },
+  "canonical_boundaries": {
+    "semantics": "BUILDER_ACTION_SIDE_EFFECTS_ONLY_NOT_GLOBAL_CURRENT_STATE",
+    "environment_deployment": "NOT_PERFORMED"
+  },
   "successor_candidate_policy": {
     "runtime_class": "durable-staging",
     "candidate_source_must_be_current_main": true,
