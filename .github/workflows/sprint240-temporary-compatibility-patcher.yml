@@ -73,28 +73,24 @@ jobs:
           patcher = Path('.github/workflows/sprint240-temporary-compatibility-patcher.yml')
           patcher.unlink()
 
-          # Compute the exact final PR path set after the temporary patcher is removed.
           out = subprocess.check_output(['git', 'diff', '--name-only', base], text=True)
           paths = sorted(line for line in out.splitlines() if line.strip())
           payload = ''.join(f'{path}\n' for path in paths).encode()
           path_hash = hashlib.sha256(payload).hexdigest()
           path_count = len(paths)
 
-          # Keep the canonical Sprint240 contract synchronized with the exact final envelope.
           contract_path = Path('ops/final-shift-close/DURABLE_STAGING_RUNTIME_PROMOTION_SUCCESSOR_CONTRACT.json')
           contract = json.loads(contract_path.read_text())
           contract.setdefault('engineering_envelope', {})['path_count'] = path_count
           contract['engineering_envelope']['sorted_newline_path_set_sha256'] = path_hash
           contract_path.write_text(json.dumps(contract, indent=2) + '\n')
 
-          # Keep the human-readable evidence note synchronized.
           doc_path = Path('docs/SPRINT240_FINAL_SHIFT_CLOSE_DURABLE_STAGING_RUNTIME_PROMOTION_SUCCESSOR.md')
           doc = doc_path.read_text()
           doc = re.sub(r'Exact \d+-path sorted-newline SHA-256:', f'Exact {path_count}-path sorted-newline SHA-256:', doc)
           doc = re.sub(r'`[0-9a-f]{64}`', f'`{path_hash}`', doc, count=1)
           doc_path.write_text(doc)
 
-          # Re-lock the dedicated regression against the exact final path set and hash.
           workflow_path = Path('.github/workflows/sprint240-final-shift-close-durable-staging-runtime-promotion-successor-regression.yml')
           workflow = workflow_path.read_text()
           workflow = re.sub(
@@ -129,6 +125,20 @@ jobs:
 
           git diff --check
           test ! -e .github/workflows/sprint240-temporary-compatibility-patcher.yml
+
+      - name: Upload exact corrected files before connector handoff
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: sprint240-corrected-compatibility-files-${{ github.sha }}
+          path: |
+            .github/workflows/sprint218-production-dark-deployment-execution-regression.yml
+            .github/workflows/sprint222-cpanel-fixed-public-php-symlink-policy-fallback-regression.yml
+            .github/workflows/sprint240-final-shift-close-durable-staging-runtime-promotion-successor-regression.yml
+            docs/SPRINT240_FINAL_SHIFT_CLOSE_DURABLE_STAGING_RUNTIME_PROMOTION_SUCCESSOR.md
+            ops/final-shift-close/DURABLE_STAGING_RUNTIME_PROMOTION_SUCCESSOR_CONTRACT.json
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
 
       - name: Commit bounded correction wave
         shell: bash
