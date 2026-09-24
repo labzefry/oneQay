@@ -6,7 +6,7 @@ on:
   pull_request:
     branches: [main]
     paths:
-      - 'tools/cpanel/execute-final-shift-close-feature-activation-readiness-successor.php'
+      - 'tools/cpanel/repair-final-shift-close-versioned-runtime-env-binding.php'
       - 'apps/web/tests/pos-final-shift-close-versioned-hardlink-topology.php'
       - '.github/workflows/sprint251-final-shift-close-versioned-hardlink-topology-regression.yml'
 
@@ -32,7 +32,7 @@ jobs:
           expected=(
             '.github/workflows/sprint251-final-shift-close-versioned-hardlink-topology-regression.yml'
             'apps/web/tests/pos-final-shift-close-versioned-hardlink-topology.php'
-            'tools/cpanel/execute-final-shift-close-feature-activation-readiness-successor.php'
+            'tools/cpanel/repair-final-shift-close-versioned-runtime-env-binding.php'
           )
           test "${#changed[@]}" -eq 3
           diff -u <(printf '%s\n' "${expected[@]}") <(printf '%s\n' "${changed[@]}")
@@ -41,7 +41,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          php -l tools/cpanel/execute-final-shift-close-feature-activation-readiness-successor.php
+          php -l tools/cpanel/repair-final-shift-close-versioned-runtime-env-binding.php
           php -l apps/web/tests/pos-final-shift-close-versioned-hardlink-topology.php
 
       - name: Execute concrete versioned hardlink regression
