@@ -66,9 +66,9 @@ jobs:
         run: |
           set -euo pipefail
           workflow=.github/workflows/final-shift-close-durable-runtime-target-rebind-persistence.yml
-          grep -Fq "selection_state' \"$TARGET_SELECTION_FILE\")\" == 'SELECTED_NOT_AUTHORIZED'" "$workflow" || grep -Fq "SELECTED_NOT_AUTHORIZED" "$workflow"
-          grep -Fq "oneqay-durable-staging-01" "$workflow"
-          grep -Fq "durable-staging" "$workflow"
+          grep -Fq 'SELECTED_NOT_AUTHORIZED' "$workflow"
+          grep -Fq 'oneqay-durable-staging-01' "$workflow"
+          grep -Fq 'durable-staging' "$workflow"
           grep -Fq 'Rebind must preserve exact environment_id and runtime_class.' "$workflow"
           grep -Fq 'Rebind must advance target generation evidence.' "$workflow"
           grep -Fq 'Target PR changes fields outside selected_target generation evidence.' "$workflow"
