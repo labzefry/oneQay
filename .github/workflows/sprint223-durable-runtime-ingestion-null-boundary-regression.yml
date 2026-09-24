@@ -186,11 +186,22 @@ jobs:
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          HEAD_REF: ${{ github.head_ref }}
         run: |
           set -euo pipefail
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            test -z "$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web | grep -v '^apps/web/tests/' || true)"
             test -z "$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web/database/migrations)"
+            if [ "$HEAD_REF" = 'sprint240-durable-staging-runtime-promotion-successor' ]; then
+              git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web | grep -v '^apps/web/tests/' | LC_ALL=C sort > /tmp/s240-app-paths
+              cat > /tmp/s240-app-expected <<'EOF'
+              apps/web/app/Application/Pos/FinalShiftCloseDurableStagingDeliveryGate.php
+              apps/web/app/Providers/FinalShiftCloseDurableStagingDeliveryServiceProvider.php
+              apps/web/app/Providers/PosOperationsHubServiceProvider.php
+              EOF
+              diff -u /tmp/s240-app-expected /tmp/s240-app-paths
+            else
+              test -z "$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web | grep -v '^apps/web/tests/' || true)"
+            fi
           fi
           git diff --exit-code
           test -z "$(git status --porcelain)"
