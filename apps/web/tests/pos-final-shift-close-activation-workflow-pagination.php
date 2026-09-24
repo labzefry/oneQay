@@ -20,7 +20,7 @@ $appendNeedle = <<<'NEEDLE'
 jq -c '.workflow_runs[]' <<<"$page_json" >> "$runs_file"
 NEEDLE;
 $resolverNeedle = <<<'NEEDLE'
-jq -rs --arg name "$workflow" '[.[] | select(.name == $name)][0].conclusion // "missing"]' "$runs_file"
+jq -rs --arg name "$workflow" '[.[] | select(.name == $name)][0].conclusion // "missing"' "$runs_file"
 NEEDLE;
 
 $assert(str_contains($workflow, 'runs_file="$(mktemp)"'), 'activation workflow does not aggregate exact-head runs across pages');
@@ -28,7 +28,7 @@ $assert(str_contains($workflow, 'per_page=100&page=$page'), 'activation workflow
 $assert(str_contains($workflow, 'page=$((page + 1))'), 'activation workflow does not advance the pagination cursor');
 $assert(str_contains($workflow, '(( page <= 20 ))'), 'activation workflow pagination is not bounded fail-closed');
 $assert(str_contains($workflow, $appendNeedle), 'activation workflow does not append page runs to the bounded aggregate');
-$assert(str_contains($workflow, "jq -rs --arg name \"\$workflow\" '[.[] | select(.name == \$name)][0].conclusion // \"missing\"' \"\$runs_file\""), 'activation workflow does not resolve required workflow conclusions from the full aggregate');
+$assert(str_contains($workflow, $resolverNeedle), 'activation workflow does not resolve required workflow conclusions from the full aggregate');
 $assert(! str_contains($workflow, 'actions/runs?head_sha=$TARGET_HEAD&event=pull_request&per_page=100")'), 'legacy first-page-only exact-head workflow query remains');
 
 $required = ['Governance Required Checks', 'PHP Foundation Regression', 'M7.1 Application Regression'];
