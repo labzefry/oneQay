@@ -203,6 +203,8 @@ jobs:
           test "$(jq -r '.migration.execution_state' "$handoff")" = NOT_PERFORMED
           test "$(jq -r '.deployment.authority_state' "$handoff")" = NOT_GRANTED
           test "$(jq -r '.operational_boundary.environment_deployment' "$handoff")" = NOT_PERFORMED
+          test "$(jq -r '.operational_boundary.selected_target' "$handoff")" = null
+          test "$(jq -r '.operational_boundary.producer_dispatch' "$handoff")" = NOT_PERFORMED
           echo "handoff=$handoff" >> "$GITHUB_OUTPUT"
 
       - name: Prove operator bundle contains no embedded secrets
