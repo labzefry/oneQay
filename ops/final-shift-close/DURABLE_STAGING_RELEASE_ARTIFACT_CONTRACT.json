@@ -36,6 +36,9 @@
     "attestation_token_environment_key": "ONEQAY_DURABLE_RUNTIME_ATTESTATION_TOKEN",
     "artifact_does_not_embed_environment_values": true
   },
+  "qualification_requirements": {
+    "deployment_requires_separate_operational_authority": true
+  },
   "current_canonical_state": {
     "migration27": "EXECUTED",
     "permission_provisioning": "PROVISIONED",
