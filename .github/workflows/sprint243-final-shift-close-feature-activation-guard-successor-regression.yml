@@ -1,0 +1,104 @@
+name: Sprint243 Final Shift Close Feature Activation Guard Successor Regression
+
+# Attribution: Lab | zefry
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/final-shift-close-feature-activation.yml'
+      - '.github/workflows/sprint243-final-shift-close-feature-activation-guard-successor-regression.yml'
+      - 'docs/SPRINT243_FINAL_SHIFT_CLOSE_FEATURE_ACTIVATION_GUARD_SUCCESSOR.md'
+
+permissions:
+  contents: read
+
+jobs:
+  qualify-activation-guard-successor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact Sprint243 source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Lock exact Sprint243 envelope
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          cat > /tmp/expected <<'EOF'
+          .github/workflows/final-shift-close-feature-activation.yml
+          .github/workflows/sprint243-final-shift-close-feature-activation-guard-successor-regression.yml
+          docs/SPRINT243_FINAL_SHIFT_CLOSE_FEATURE_ACTIVATION_GUARD_SUCCESSOR.md
+          EOF
+          git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/actual
+          diff -u /tmp/expected /tmp/actual
+
+      - name: Validate workflow YAML syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          ruby -e "require 'yaml'; YAML.safe_load(File.read('.github/workflows/final-shift-close-feature-activation.yml'), aliases: true)"
+          ruby -e "require 'yaml'; YAML.safe_load(File.read('.github/workflows/sprint243-final-shift-close-feature-activation-guard-successor-regression.yml'), aliases: true)"
+
+      - name: Preserve historical provider boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          legacy=apps/web/app/Providers/FinalShiftCloseServiceProvider.php
+          grep -Fq "['local', 'test', 'ci']" "$legacy"
+          ! grep -Fq "['local', 'test', 'ci', 'durable-staging']" "$legacy"
+
+      - name: Prove Sprint240 durable-staging delivery successor
+        shell: bash
+        run: |
+          set -euo pipefail
+          provider=apps/web/app/Providers/FinalShiftCloseDurableStagingDeliveryServiceProvider.php
+          gate=apps/web/app/Application/Pos/FinalShiftCloseDurableStagingDeliveryGate.php
+          aggregate=apps/web/app/Providers/PosOperationsHubServiceProvider.php
+          grep -Fq 'FinalShiftCloseDurableStagingDeliveryGate' "$provider"
+          grep -Fq 'DurableStagingMerchantCoreBridge::armedFor($runtimeClass)' "$provider"
+          grep -Fq "DURABLE_STAGING_DELIVERY_SUCCESSOR_V1" "$gate"
+          grep -Fq "private const RUNTIME_CLASS = 'durable-staging';" "$gate"
+          grep -Fq '$this->app->register(FinalShiftCloseDurableStagingDeliveryServiceProvider::class);' "$aggregate"
+
+      - name: Prove activation guard follows successor architecture
+        shell: bash
+        run: |
+          set -euo pipefail
+          workflow=.github/workflows/final-shift-close-feature-activation.yml
+          ! grep -Fq "grep -Fq \"'durable-staging'\" apps/web/app/Providers/FinalShiftCloseServiceProvider.php" "$workflow"
+          grep -Fq 'FinalShiftCloseDurableStagingDeliveryServiceProvider.php' "$workflow"
+          grep -Fq 'FinalShiftCloseDurableStagingDeliveryGate.php' "$workflow"
+          grep -Fq 'PosOperationsHubServiceProvider.php' "$workflow"
+          grep -Fq 'DURABLE_STAGING_DELIVERY_SUCCESSOR_V1' "$workflow"
+          grep -Fq 'DurableStagingMerchantCoreBridge::armedFor($runtimeClass)' "$workflow"
+          grep -Fq '$this->app->register(FinalShiftCloseDurableStagingDeliveryServiceProvider::class);' "$workflow"
+
+      - name: Preserve operational state and target binding
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          test -z "$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- ops/final-shift-close/STATE.json ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json apps/web)"
+          test "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" = 'INACTIVE'
+          test "$(jq -r '.technical_preview_activation' ops/final-shift-close/STATE.json)" = 'NOT_AUTHORIZED'
+          test "$(jq -r '.production_activation' ops/final-shift-close/STATE.json)" = 'NOT_AUTHORIZED'
+          test "$(jq -r '.selected_target.environment_id' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" = 'oneqay-durable-staging-01'
+
+      - name: Verify documentation boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          doc=docs/SPRINT243_FINAL_SHIFT_CLOSE_FEATURE_ACTIVATION_GUARD_SUCCESSOR.md
+          grep -Fq 'Author by Lab | zefry' "$doc"
+          grep -Fq 'feature activation remains NOT PERFORMED' "$doc"
+          grep -Fq 'Production remains NOT AUTHORIZED' "$doc"
+
+# Author by Lab | zefry
