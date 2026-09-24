@@ -14,7 +14,8 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  patch:
+  export:
+    if: github.event.head_commit.message != 'Sprint240: export corrected workflow blobs'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -24,38 +25,52 @@ jobs:
           fetch-depth: 0
           ref: sprint240-durable-staging-runtime-promotion-successor
 
-      - name: Apply bounded successor compatibility corrections
+      - name: Materialize corrected final blobs outside workflow paths
         shell: bash
         env:
-          BASE_SHA: fd799f3c3f78d70f7c8428579e0f2ba364d61e17
           BRANCH_NAME: sprint240-durable-staging-runtime-promotion-successor
         run: |
           set -euo pipefail
           python <<'PY'
           from pathlib import Path
-          import hashlib
           import json
-          import os
           import re
-          import subprocess
+          import shutil
 
-          branch = os.environ['BRANCH_NAME']
-          base = os.environ['BASE_SHA']
+          branch = 'sprint240-durable-staging-runtime-promotion-successor'
+          path_hash = '95f5d2f4ad04d6c1813fcaf0f95a80b612f780d3f67ebd9d3d11122531d6864b'
+          paths = [
+              '.github/workflows/durable-staging-release-publication.yml',
+              '.github/workflows/durable-staging-runtime-promotion-kit.yml',
+              '.github/workflows/sprint211-durable-staging-operator-artifact-publication-regression.yml',
+              '.github/workflows/sprint212-cpanel-no-ssh-durable-staging-target-qualification-regression.yml',
+              '.github/workflows/sprint213-cpanel-no-ssh-operator-qualification-kit-publication-regression.yml',
+              '.github/workflows/sprint214-cpanel-no-ssh-guarded-deployment-execution-regression.yml',
+              '.github/workflows/sprint218-production-dark-deployment-execution-regression.yml',
+              '.github/workflows/sprint222-cpanel-fixed-public-php-symlink-policy-fallback-regression.yml',
+              '.github/workflows/sprint223-durable-runtime-ingestion-null-boundary-regression.yml',
+              '.github/workflows/sprint240-final-shift-close-durable-staging-runtime-promotion-successor-regression.yml',
+              '.github/workflows/sprint96-final-shift-close-runtime-wiring.yml',
+              'apps/web/app/Application/Pos/FinalShiftCloseDurableStagingDeliveryGate.php',
+              'apps/web/app/Providers/FinalShiftCloseDurableStagingDeliveryServiceProvider.php',
+              'apps/web/app/Providers/PosOperationsHubServiceProvider.php',
+              'apps/web/tests/pos-final-shift-close-durable-staging-delivery-gate.php',
+              'docs/SPRINT240_FINAL_SHIFT_CLOSE_DURABLE_STAGING_RUNTIME_PROMOTION_SUCCESSOR.md',
+              'ops/final-shift-close/DURABLE_STAGING_OPERATOR_ARTIFACT_PUBLICATION_CONTRACT.json',
+              'ops/final-shift-close/DURABLE_STAGING_RELEASE_ARTIFACT_CONTRACT.json',
+              'ops/final-shift-close/DURABLE_STAGING_RUNTIME_PROMOTION_SUCCESSOR_CONTRACT.json',
+          ]
 
           targets = {
-              '.github/workflows/sprint212-cpanel-no-ssh-durable-staging-target-qualification-regression.yml': 'Prove application source remains untouched or exact Sprint220 bounded updater',
-              '.github/workflows/sprint213-cpanel-no-ssh-operator-qualification-kit-publication-regression.yml': 'Prove application source remains untouched or exact Sprint220 bounded updater',
-              '.github/workflows/sprint214-cpanel-no-ssh-guarded-deployment-execution-regression.yml': 'Prove application source remains untouched or exact Sprint220 bounded updater',
               '.github/workflows/sprint218-production-dark-deployment-execution-regression.yml': 'Prove application source remains untouched or exact Sprint220 bounded updater',
               '.github/workflows/sprint222-cpanel-fixed-public-php-symlink-policy-fallback-regression.yml': 'Confirm no application or operational authority drift',
           }
-
           for path, step_name in targets.items():
               p = Path(path)
               text = p.read_text()
               marker = f'      - name: {step_name}\n'
               if marker not in text:
-                  raise SystemExit(f'missing compatibility step marker: {path}: {step_name}')
+                  raise SystemExit(f'missing compatibility marker: {path}')
               start = text.index(marker)
               next_step = text.find('\n      - name:', start + len(marker))
               if next_step == -1:
@@ -63,42 +78,31 @@ jobs:
               block = text[start:next_step]
               lines = block.splitlines(True)
               if_line = next((i for i, line in enumerate(lines[1:5], start=1) if line.startswith('        if: ')), None)
-              if if_line is not None:
-                  lines[if_line] = f"        if: github.event_name == 'pull_request' && github.head_ref != '{branch}'\n"
+              condition = f"        if: github.event_name == 'pull_request' && github.head_ref != '{branch}'\n"
+              if if_line is None:
+                  condition = f"        if: github.event_name != 'pull_request' || github.head_ref != '{branch}'\n"
+                  lines.insert(1, condition)
               else:
-                  lines.insert(1, f"        if: github.event_name != 'pull_request' || github.head_ref != '{branch}'\n")
-              replacement = ''.join(lines)
-              p.write_text(text[:start] + replacement + text[next_step:])
-
-          patcher = Path('.github/workflows/sprint240-temporary-compatibility-patcher.yml')
-          patcher.unlink()
-
-          out = subprocess.check_output(['git', 'diff', '--name-only', base], text=True)
-          paths = sorted(line for line in out.splitlines() if line.strip())
-          payload = ''.join(f'{path}\n' for path in paths).encode()
-          path_hash = hashlib.sha256(payload).hexdigest()
-          path_count = len(paths)
+                  lines[if_line] = condition
+              p.write_text(text[:start] + ''.join(lines) + text[next_step:])
 
           contract_path = Path('ops/final-shift-close/DURABLE_STAGING_RUNTIME_PROMOTION_SUCCESSOR_CONTRACT.json')
           contract = json.loads(contract_path.read_text())
-          contract.setdefault('engineering_envelope', {})['path_count'] = path_count
-          contract['engineering_envelope']['sorted_newline_path_set_sha256'] = path_hash
+          envelope = contract.setdefault('engineering_envelope', {})
+          envelope['path_count'] = len(paths)
+          envelope['sorted_newline_path_set_sha256'] = path_hash
+          envelope['paths'] = paths
           contract_path.write_text(json.dumps(contract, indent=2) + '\n')
 
           doc_path = Path('docs/SPRINT240_FINAL_SHIFT_CLOSE_DURABLE_STAGING_RUNTIME_PROMOTION_SUCCESSOR.md')
           doc = doc_path.read_text()
-          doc = re.sub(r'Exact \d+-path sorted-newline SHA-256:', f'Exact {path_count}-path sorted-newline SHA-256:', doc)
+          doc = re.sub(r'Exact \d+-path sorted-newline SHA-256:', f'Exact {len(paths)}-path sorted-newline SHA-256:', doc)
           doc = re.sub(r'`[0-9a-f]{64}`', f'`{path_hash}`', doc, count=1)
           doc_path.write_text(doc)
 
           workflow_path = Path('.github/workflows/sprint240-final-shift-close-durable-staging-runtime-promotion-successor-regression.yml')
           workflow = workflow_path.read_text()
-          workflow = re.sub(
-              r"          expected_hash='[0-9a-f]{64}'",
-              f"          expected_hash='{path_hash}'",
-              workflow,
-              count=1,
-          )
+          workflow = re.sub(r"          expected_hash='[0-9a-f]{64}'", f"          expected_hash='{path_hash}'", workflow, count=1)
           lines = workflow.splitlines()
           start_idx = next(i for i, line in enumerate(lines) if line == "          printf '%s\\n' \\")
           end_idx = next(i for i in range(start_idx + 1, len(lines)) if lines[i].endswith('> /tmp/expected'))
@@ -108,44 +112,41 @@ jobs:
               block.append(f"            '{path}'{suffix}")
           lines[start_idx:end_idx + 1] = block
           workflow = '\n'.join(lines) + '\n'
-          workflow = re.sub(r'\.engineering_envelope\.path_count == \d+', f'.engineering_envelope.path_count == {path_count}', workflow, count=1)
-          workflow = re.sub(
-              r'\.engineering_envelope\.sorted_newline_path_set_sha256 == "[0-9a-f]{64}"',
-              f'.engineering_envelope.sorted_newline_path_set_sha256 == "{path_hash}"',
-              workflow,
-              count=1,
-          )
+          workflow = re.sub(r'\.engineering_envelope\.path_count == \d+', f'.engineering_envelope.path_count == {len(paths)}', workflow, count=1)
+          workflow = re.sub(r'\.engineering_envelope\.sorted_newline_path_set_sha256 == "[0-9a-f]{64}"', f'.engineering_envelope.sorted_newline_path_set_sha256 == "{path_hash}"', workflow, count=1)
           workflow_path.write_text(workflow)
 
-          print(f'final_path_count={path_count}')
-          print(f'final_path_hash={path_hash}')
-          for path in paths:
-              print(path)
+          export = Path('ops/final-shift-close/tmp/sprint240-compatibility-export')
+          if export.exists():
+              shutil.rmtree(export)
+          export.mkdir(parents=True)
+          copies = {
+              '.github/workflows/sprint218-production-dark-deployment-execution-regression.yml': 'sprint218.yml',
+              '.github/workflows/sprint222-cpanel-fixed-public-php-symlink-policy-fallback-regression.yml': 'sprint222.yml',
+              '.github/workflows/sprint240-final-shift-close-durable-staging-runtime-promotion-successor-regression.yml': 'sprint240.yml',
+              'docs/SPRINT240_FINAL_SHIFT_CLOSE_DURABLE_STAGING_RUNTIME_PROMOTION_SUCCESSOR.md': 'sprint240.md',
+              'ops/final-shift-close/DURABLE_STAGING_RUNTIME_PROMOTION_SUCCESSOR_CONTRACT.json': 'successor-contract.json',
+          }
+          for src, name in copies.items():
+              shutil.copyfile(src, export / name)
           PY
 
-          git diff --check
-          test ! -e .github/workflows/sprint240-temporary-compatibility-patcher.yml
-
-      - name: Upload exact corrected files before connector handoff
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-        with:
-          name: sprint240-corrected-compatibility-files-${{ github.sha }}
-          path: |
-            .github/workflows/sprint218-production-dark-deployment-execution-regression.yml
-            .github/workflows/sprint222-cpanel-fixed-public-php-symlink-policy-fallback-regression.yml
-            .github/workflows/sprint240-final-shift-close-durable-staging-runtime-promotion-successor-regression.yml
-            docs/SPRINT240_FINAL_SHIFT_CLOSE_DURABLE_STAGING_RUNTIME_PROMOTION_SUCCESSOR.md
+          git checkout -- \
+            .github/workflows/sprint218-production-dark-deployment-execution-regression.yml \
+            .github/workflows/sprint222-cpanel-fixed-public-php-symlink-policy-fallback-regression.yml \
+            .github/workflows/sprint240-final-shift-close-durable-staging-runtime-promotion-successor-regression.yml \
+            docs/SPRINT240_FINAL_SHIFT_CLOSE_DURABLE_STAGING_RUNTIME_PROMOTION_SUCCESSOR.md \
             ops/final-shift-close/DURABLE_STAGING_RUNTIME_PROMOTION_SUCCESSOR_CONTRACT.json
-          if-no-files-found: error
-          retention-days: 1
-          compression-level: 0
+          git diff --check
+          test -n "$(git status --porcelain -- ops/final-shift-close/tmp/sprint240-compatibility-export)"
+          test -z "$(git status --porcelain | grep -v '^?? ops/final-shift-close/tmp/sprint240-compatibility-export/' || true)"
 
-      - name: Commit bounded correction wave
+      - name: Commit temporary corrected blobs only
         shell: bash
         run: |
           set -euo pipefail
           git config user.name 'Lab | zefry'
           git config user.email '311810024+labzefry@users.noreply.github.com'
-          git add -A
-          git commit -m 'Sprint240: close historical successor compatibility guards'
+          git add ops/final-shift-close/tmp/sprint240-compatibility-export
+          git commit -m 'Sprint240: export corrected workflow blobs'
           git push origin HEAD:sprint240-durable-staging-runtime-promotion-successor
