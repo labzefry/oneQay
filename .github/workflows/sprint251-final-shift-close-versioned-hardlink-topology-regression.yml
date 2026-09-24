@@ -1,0 +1,68 @@
+name: Sprint251 Final Shift Close Versioned Hardlink Topology Regression
+
+# Attribution: Lab | zefry
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'tools/cpanel/repair-final-shift-close-versioned-runtime-env-binding.php'
+      - 'apps/web/tests/pos-final-shift-close-versioned-hardlink-topology.php'
+      - '.github/workflows/sprint251-final-shift-close-versioned-hardlink-topology-regression.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact pull request head
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Lock exact Sprint251 envelope
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t changed < <(git diff --name-only "${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }}" | LC_ALL=C sort)
+          expected=(
+            '.github/workflows/sprint251-final-shift-close-versioned-hardlink-topology-regression.yml'
+            'apps/web/tests/pos-final-shift-close-versioned-hardlink-topology.php'
+            'tools/cpanel/repair-final-shift-close-versioned-runtime-env-binding.php'
+          )
+          test "${#changed[@]}" -eq 3
+          diff -u <(printf '%s\n' "${expected[@]}") <(printf '%s\n' "${changed[@]}")
+
+      - name: Validate PHP syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l tools/cpanel/repair-final-shift-close-versioned-runtime-env-binding.php
+          php -l apps/web/tests/pos-final-shift-close-versioned-hardlink-topology.php
+
+      - name: Execute concrete versioned hardlink regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          php apps/web/tests/pos-final-shift-close-versioned-hardlink-topology.php
+
+      - name: Preserve canonical operational NO-GO
+        shell: bash
+        run: |
+          set -euo pipefail
+          jq -e '
+            .migration27.state == "EXECUTED"
+            and .permission_provisioning.state == "PROVISIONED"
+            and .permission_provisioning.default_grant == "NONE"
+            and .feature_activation.state == "INACTIVE"
+            and .deployment_authority == "NOT_GRANTED"
+            and .technical_preview_activation == "NOT_AUTHORIZED"
+            and .production_activation == "NOT_AUTHORIZED"
+            and .updater_activation == "INACTIVE"
+          ' ops/final-shift-close/STATE.json >/dev/null
+
+# Author by Lab | zefry
