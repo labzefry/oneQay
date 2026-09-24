@@ -1,0 +1,81 @@
+name: Sprint248 Final Shift Close Operator Kit Successor Wiring Regression
+
+# Attribution: Lab | zefry
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/final-shift-close-feature-activation.yml'
+      - '.github/workflows/sprint248-final-shift-close-operator-kit-successor-wiring-regression.yml'
+      - 'apps/web/tests/pos-final-shift-close-operator-kit-successor-wiring.php'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint248-final-shift-close-operator-kit-successor-wiring-${{ github.event.pull_request.number }}-${{ github.event.pull_request.head.sha }}
+  cancel-in-progress: true
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout exact pull request head
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Enforce exact Sprint248 envelope
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t paths < <(git diff --name-only "${{ github.event.pull_request.base.sha }}"..."${{ github.event.pull_request.head.sha }}" | LC_ALL=C sort)
+          expected=(
+            '.github/workflows/final-shift-close-feature-activation.yml'
+            '.github/workflows/sprint248-final-shift-close-operator-kit-successor-wiring-regression.yml'
+            'apps/web/tests/pos-final-shift-close-operator-kit-successor-wiring.php'
+          )
+          [[ "${#paths[@]}" -eq 3 ]]
+          diff -u <(printf '%s\n' "${expected[@]}") <(printf '%s\n' "${paths[@]}")
+
+      - name: Validate bounded successor wiring regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l tools/cpanel/execute-final-shift-close-feature-activation.php
+          php -l tools/cpanel/execute-final-shift-close-feature-activation-readiness-successor.php
+          php -l apps/web/tests/pos-final-shift-close-operator-kit-successor-wiring.php
+          php apps/web/tests/pos-final-shift-close-operator-kit-successor-wiring.php
+
+      - name: Prove operator kit successor entry and operational boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          workflow=.github/workflows/final-shift-close-feature-activation.yml
+          state=ops/final-shift-close/STATE.json
+          successor=tools/cpanel/execute-final-shift-close-feature-activation-readiness-successor.php
+          base=tools/cpanel/execute-final-shift-close-feature-activation.php
+
+          grep -Fq 'cp tools/cpanel/execute-final-shift-close-feature-activation.php "$kit/"' "$workflow"
+          grep -Fq 'cp tools/cpanel/execute-final-shift-close-feature-activation-readiness-successor.php "$kit/"' "$workflow"
+          grep -Fq '<PHP_CLI> execute-final-shift-close-feature-activation-readiness-successor.php transport-envelope.json activation-authority.json runtime-manifest.json' "$workflow"
+          ! grep -Fq '<PHP_CLI> execute-final-shift-close-feature-activation.php transport-envelope.json activation-authority.json runtime-manifest.json' "$workflow"
+          grep -Fq "require_once __DIR__.'/execute-final-shift-close-feature-activation.php';" "$successor"
+          grep -Fq 'fscActivationFetchCanonicalDurableStagingReadiness' "$successor"
+          grep -Fq 'RESTORE_EXACT_PREWRITE_BYTES_ON_ANY_POST_WRITE_FAILURE' "$base"
+
+          [[ "$(jq -r '.migration27.state' "$state")" == 'EXECUTED' ]]
+          [[ "$(jq -r '.permission_provisioning.state' "$state")" == 'PROVISIONED' ]]
+          [[ "$(jq -r '.permission_provisioning.default_grant' "$state")" == 'NONE' ]]
+          [[ "$(jq -r '.feature_activation.state' "$state")" == 'INACTIVE' ]]
+          [[ "$(jq -r '.deployment_authority' "$state")" == 'NOT_GRANTED' ]]
+          [[ "$(jq -r '.technical_preview_activation' "$state")" == 'NOT_AUTHORIZED' ]]
+          [[ "$(jq -r '.production_activation' "$state")" == 'NOT_AUTHORIZED' ]]
+          [[ "$(jq -r '.updater_activation' "$state")" == 'INACTIVE' ]]
+
+          echo 'Sprint248 bounded operator-kit successor wiring regression passed.'
+
+# Author by Lab | zefry
