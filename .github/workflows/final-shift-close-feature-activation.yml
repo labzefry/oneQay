@@ -408,7 +408,10 @@ jobs:
           PHP
 
           cp tools/cpanel/execute-final-shift-close-feature-activation.php "$kit/"
-          chmod 0600 "$kit/execute-final-shift-close-feature-activation.php"
+          cp tools/cpanel/execute-final-shift-close-feature-activation-readiness-successor.php "$kit/"
+          chmod 0600 \
+            "$kit/execute-final-shift-close-feature-activation.php" \
+            "$kit/execute-final-shift-close-feature-activation-readiness-successor.php"
           cat > "$kit/README.md" <<'EOF'
           # Final Shift Close activation operator kit
 
@@ -422,12 +425,11 @@ jobs:
 
           Invocation:
 
-          `<PHP_CLI> execute-final-shift-close-feature-activation.php transport-envelope.json activation-authority.json runtime-manifest.json <PRIVATE_RUNTIME_ENV> <PRIVATE_APPROVAL_TOKEN_FILE> <HTTPS_READINESS_URL> <PRIVATE_EXECUTION_EVIDENCE_JSON>`
+          `<PHP_CLI> execute-final-shift-close-feature-activation-readiness-successor.php transport-envelope.json activation-authority.json runtime-manifest.json <PRIVATE_RUNTIME_ENV> <PRIVATE_APPROVAL_TOKEN_FILE> <HTTPS_READINESS_URL> <PRIVATE_EXECUTION_EVIDENCE_JSON>`
 
-          The executor performs only the bounded `ONEQAY_POS_SHIFT_CLOSE_ENABLED=false -> true` mutation, exact readback, non-mutating authenticated readiness, and exact-byte rollback on any post-write failure. It does not execute migrations, provision permissions, deploy releases, widen runtime allowlists, activate Technical Preview/Production, or activate the updater.
+          The readiness-successor executor requires the base executor in the same private operator-kit directory, maps the canonical durable-staging readiness schema, performs only the bounded `ONEQAY_POS_SHIFT_CLOSE_ENABLED=false -> true` mutation, exact readback, non-mutating authenticated readiness, and exact-byte rollback on any post-write failure. It does not execute migrations, provision permissions, deploy releases, widen runtime allowlists, activate Technical Preview/Production, or activate the updater.
           EOF
           chmod 0600 "$kit/README.md"
-
           (
             cd "$kit"
             find . -maxdepth 1 -type f ! -name SHA256SUMS -printf '%f\n' | LC_ALL=C sort | xargs sha256sum > SHA256SUMS
