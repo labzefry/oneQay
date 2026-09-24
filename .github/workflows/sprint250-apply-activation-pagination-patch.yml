@@ -1,12 +1,10 @@
 name: Sprint250 Apply Activation Pagination Correction
 
 # Attribution: Lab | zefry
-# Bounded transient applicator trigger.
 
 on:
-  push:
-    branches:
-      - sprint250-final-shift-close-activation-workflow-pagination
+  pull_request:
+    branches: [main]
     paths:
       - '.github/workflows/sprint250-apply-activation-pagination-patch.yml'
 
@@ -21,13 +19,16 @@ jobs:
       - name: Checkout exact Sprint250 branch
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
-          ref: sprint250-final-shift-close-activation-workflow-pagination
+          ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
       - name: Apply exact pagination correction and remove transient patch workflow
         shell: bash
+        env:
+          HEAD_BRANCH: ${{ github.event.pull_request.head.ref }}
         run: |
           set -euo pipefail
+          [[ "$HEAD_BRANCH" == 'sprint250-final-shift-close-activation-workflow-pagination' ]]
           python <<'PY'
           from pathlib import Path
 
@@ -87,6 +88,6 @@ jobs:
           git config user.email 'lab.zefa@gmail.com'
           git add -A
           git commit -m 'Sprint250: paginate activation workflow exact-head checks' -m 'Author by Lab | zefry'
-          git push origin HEAD:sprint250-final-shift-close-activation-workflow-pagination
+          git push origin HEAD:"$HEAD_BRANCH"
 
 # Author by Lab | zefry
