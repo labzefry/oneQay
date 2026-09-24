@@ -43,10 +43,17 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
-          expected_hash='4f93415d25a80f3c9bab442fb27a11b616f0854047c7176b71fd3d611dc8bd2e'
+          expected_hash='95f5d2f4ad04d6c1813fcaf0f95a80b612f780d3f67ebd9d3d11122531d6864b'
           printf '%s\n' \
             '.github/workflows/durable-staging-release-publication.yml' \
             '.github/workflows/durable-staging-runtime-promotion-kit.yml' \
+            '.github/workflows/sprint211-durable-staging-operator-artifact-publication-regression.yml' \
+            '.github/workflows/sprint212-cpanel-no-ssh-durable-staging-target-qualification-regression.yml' \
+            '.github/workflows/sprint213-cpanel-no-ssh-operator-qualification-kit-publication-regression.yml' \
+            '.github/workflows/sprint214-cpanel-no-ssh-guarded-deployment-execution-regression.yml' \
+            '.github/workflows/sprint218-production-dark-deployment-execution-regression.yml' \
+            '.github/workflows/sprint222-cpanel-fixed-public-php-symlink-policy-fallback-regression.yml' \
+            '.github/workflows/sprint223-durable-runtime-ingestion-null-boundary-regression.yml' \
             '.github/workflows/sprint240-final-shift-close-durable-staging-runtime-promotion-successor-regression.yml' \
             '.github/workflows/sprint96-final-shift-close-runtime-wiring.yml' \
             'apps/web/app/Application/Pos/FinalShiftCloseDurableStagingDeliveryGate.php' \
@@ -233,8 +240,8 @@ jobs:
             .operational_boundaries.feature_activation == "INACTIVE" and
             .operational_boundaries.deployment_authority == "NOT_GRANTED" and
             .operational_boundaries.production_activation == "NOT_AUTHORIZED" and
-            .engineering_envelope.path_count == 12 and
-            .engineering_envelope.sorted_newline_path_set_sha256 == "4f93415d25a80f3c9bab442fb27a11b616f0854047c7176b71fd3d611dc8bd2e" and
+            .engineering_envelope.path_count == 19 and
+            .engineering_envelope.sorted_newline_path_set_sha256 == "95f5d2f4ad04d6c1813fcaf0f95a80b612f780d3f67ebd9d3d11122531d6864b" and
             .attribution == "Author by Lab | zefry"
           ' "$contract" >/dev/null
           for heading in '## Purpose / Why' '## Objective / Gap' '## What changed' '## Evidence / Qualification' '## Enterprise UI/UX continuity' '## Operational boundaries / NO-GO' '## Next position'; do

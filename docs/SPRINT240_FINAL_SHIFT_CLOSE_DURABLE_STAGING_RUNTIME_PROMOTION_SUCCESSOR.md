@@ -36,9 +36,9 @@ A separate `workflow_run` successor packages the exact upstream artifact, manife
 
 Engineering base: `fd799f3c3f78d70f7c8428579e0f2ba364d61e17`
 
-Exact 12-path sorted-newline SHA-256:
+Exact 19-path sorted-newline SHA-256:
 
-`4f93415d25a80f3c9bab442fb27a11b616f0854047c7176b71fd3d611dc8bd2e`
+`95f5d2f4ad04d6c1813fcaf0f95a80b612f780d3f67ebd9d3d11122531d6864b`
 
 Regression proves the durable-staging gate positive path, fail-closed negative paths, unchanged legacy Final Shift Close provider, unchanged bootstrap boundary, existing POS aggregate registration, unchanged canonical operational state, selected-target identity preservation, current-main artifact publication semantics, and non-executing promotion-kit semantics.
 

@@ -64,11 +64,18 @@
     "target_reselection": "NOT_PERFORMED"
   },
   "engineering_envelope": {
-    "path_count": 12,
-    "sorted_newline_path_set_sha256": "4f93415d25a80f3c9bab442fb27a11b616f0854047c7176b71fd3d611dc8bd2e",
+    "path_count": 19,
+    "sorted_newline_path_set_sha256": "95f5d2f4ad04d6c1813fcaf0f95a80b612f780d3f67ebd9d3d11122531d6864b",
     "paths": [
       ".github/workflows/durable-staging-release-publication.yml",
       ".github/workflows/durable-staging-runtime-promotion-kit.yml",
+      ".github/workflows/sprint211-durable-staging-operator-artifact-publication-regression.yml",
+      ".github/workflows/sprint212-cpanel-no-ssh-durable-staging-target-qualification-regression.yml",
+      ".github/workflows/sprint213-cpanel-no-ssh-operator-qualification-kit-publication-regression.yml",
+      ".github/workflows/sprint214-cpanel-no-ssh-guarded-deployment-execution-regression.yml",
+      ".github/workflows/sprint218-production-dark-deployment-execution-regression.yml",
+      ".github/workflows/sprint222-cpanel-fixed-public-php-symlink-policy-fallback-regression.yml",
+      ".github/workflows/sprint223-durable-runtime-ingestion-null-boundary-regression.yml",
       ".github/workflows/sprint240-final-shift-close-durable-staging-runtime-promotion-successor-regression.yml",
       ".github/workflows/sprint96-final-shift-close-runtime-wiring.yml",
       "apps/web/app/Application/Pos/FinalShiftCloseDurableStagingDeliveryGate.php",
