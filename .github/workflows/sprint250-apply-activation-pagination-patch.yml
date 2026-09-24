@@ -1,6 +1,7 @@
 name: Sprint250 Apply Activation Pagination Correction
 
 # Attribution: Lab | zefry
+# Bounded transient applicator trigger.
 
 on:
   push:
