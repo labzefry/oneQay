@@ -1,0 +1,209 @@
+name: Final Shift Close Feature Activation Evidence
+
+# Attribution: Lab | zefry
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_pr_number:
+        required: true
+        type: string
+      target_head_sha:
+        required: true
+        type: string
+      activation_run_id:
+        required: true
+        type: string
+      activation_run_attempt:
+        required: true
+        type: string
+      dependency_run_id:
+        required: true
+        type: string
+      dependency_run_attempt:
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+  pull-requests: read
+  statuses: write
+
+env:
+  STATE_FILE: ops/final-shift-close/STATE.json
+  TARGET_FILE: ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+  ACTIVATION_WORKFLOW: .github/workflows/final-shift-close-feature-activation.yml
+  DEPENDENCY_WORKFLOW: .github/workflows/final-shift-close-durable-runtime-dependency-envelope-evidence.yml
+  EVIDENCE_CONTEXT: final-shift-close-feature-activation-evidence
+  EXECUTION_READY_CONTEXT: final-shift-close-feature-activation-execution-ready
+  EXPECTED_TARGET_BINDING_SHA256: f3b8fb932672414c7e81a0f1e4ed813a1088a60abdeea7ea285e6a2ec323e6e1
+  EXPECTED_DEPENDENCY_ENVELOPE_SHA256: 55a849abe859e8af5b23c09a3f9d4738a8d4ff7d797912aee15463fa89dc0064
+
+jobs:
+  qualify:
+    if: ${{ github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    environment: final-shift-close-feature-activation-evidence
+    env:
+      PROTECTION_ASSERTION: ${{ secrets.ONEQAY_FINAL_SHIFT_CLOSE_ACTIVATION_EVIDENCE_PROTECTION_ASSERTION }}
+      EVIDENCE_URL: ${{ secrets.ONEQAY_FINAL_SHIFT_CLOSE_ACTIVATION_EVIDENCE_URL }}
+      EVIDENCE_TOKEN: ${{ secrets.ONEQAY_FINAL_SHIFT_CLOSE_ACTIVATION_EVIDENCE_TOKEN }}
+      TARGET_PR: ${{ inputs.target_pr_number }}
+      TARGET_HEAD: ${{ inputs.target_head_sha }}
+      ACTIVATION_RUN_ID: ${{ inputs.activation_run_id }}
+      ACTIVATION_RUN_ATTEMPT: ${{ inputs.activation_run_attempt }}
+      DEPENDENCY_RUN_ID: ${{ inputs.dependency_run_id }}
+      DEPENDENCY_RUN_ATTEMPT: ${{ inputs.dependency_run_attempt }}
+
+    steps:
+      - name: Checkout canonical evidence producer source only
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+
+      - name: Validate exact canonical and operational boundaries
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          API_URL: ${{ github.api_url }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          [[ "$GITHUB_REPOSITORY" == 'labzefry/oneQay' ]]
+          [[ "$PROTECTION_ASSERTION" == 'REVIEW_GATED_V1' ]]
+          [[ "$EVIDENCE_URL" == https://* ]]
+          [[ -n "$EVIDENCE_TOKEN" ]]
+          [[ "$TARGET_PR" =~ ^[1-9][0-9]*$ ]]
+          [[ "$TARGET_HEAD" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$ACTIVATION_RUN_ID" =~ ^[1-9][0-9]*$ ]]
+          [[ "$ACTIVATION_RUN_ATTEMPT" =~ ^[1-9][0-9]*$ ]]
+          [[ "$DEPENDENCY_RUN_ID" =~ ^[1-9][0-9]*$ ]]
+          [[ "$DEPENDENCY_RUN_ATTEMPT" =~ ^[1-9][0-9]*$ ]]
+
+          api() {
+            curl --fail-with-body --silent --show-error \
+              -H 'Accept: application/vnd.github+json' \
+              -H "Authorization: Bearer $GH_TOKEN" \
+              -H 'X-GitHub-Api-Version: 2022-11-28' "$1"
+          }
+
+          main="$(api "$API_URL/repos/$REPOSITORY/branches/main" | jq -r '.commit.sha')"
+          [[ "$main" == "$GITHUB_SHA" ]]
+          [[ "$(jq -r '.migration27.state' "$STATE_FILE")" == 'EXECUTED' ]]
+          [[ "$(jq -r '.permission_provisioning.state' "$STATE_FILE")" == 'PROVISIONED' ]]
+          [[ "$(jq -r '.feature_activation.state' "$STATE_FILE")" == 'INACTIVE' ]]
+          [[ "$(jq -r '.technical_preview_activation' "$STATE_FILE")" == 'NOT_AUTHORIZED' ]]
+          [[ "$(jq -r '.production_activation' "$STATE_FILE")" == 'NOT_AUTHORIZED' ]]
+          [[ "$(jq -r '.updater_activation' "$STATE_FILE")" == 'INACTIVE' ]]
+          [[ "$(jq -r '.selection_state' "$TARGET_FILE")" == 'SELECTED_NOT_AUTHORIZED' ]]
+
+          pr="$(api "$API_URL/repos/$REPOSITORY/pulls/$TARGET_PR")"
+          [[ "$(jq -r '.state' <<<"$pr")" == 'open' ]]
+          [[ "$(jq -r '.draft' <<<"$pr")" == 'false' ]]
+          [[ "$(jq -r '.base.ref' <<<"$pr")" == 'main' ]]
+          [[ "$(jq -r '.base.sha' <<<"$pr")" == "$GITHUB_SHA" ]]
+          [[ "$(jq -r '.head.sha' <<<"$pr")" == "$TARGET_HEAD" ]]
+
+          files="$(api "$API_URL/repos/$REPOSITORY/pulls/$TARGET_PR/files?per_page=100")"
+          [[ "$(jq 'length' <<<"$files")" == '1' ]]
+          [[ "$(jq -r '.[0].filename' <<<"$files")" == 'ops/final-shift-close/STATE.json' ]]
+
+          statuses="$(api "$API_URL/repos/$REPOSITORY/commits/$TARGET_HEAD/statuses?per_page=100")"
+          for context in product-owner-merge-authority final-shift-close-feature-activation-authority "$EXECUTION_READY_CONTEXT"; do
+            [[ "$(jq -r --arg c "$context" '[.[]|select(.context==$c)][0].state // "missing"' <<<"$statuses")" == 'success' ]]
+          done
+
+          activation="$(api "$API_URL/repos/$REPOSITORY/actions/runs/$ACTIVATION_RUN_ID")"
+          [[ "$(jq -r '.path' <<<"$activation")" == "$ACTIVATION_WORKFLOW" ]]
+          [[ "$(jq -r '.event' <<<"$activation")" == 'workflow_dispatch' ]]
+          [[ "$(jq -r '.head_branch' <<<"$activation")" == 'main' ]]
+          [[ "$(jq -r '.head_sha' <<<"$activation")" == "$GITHUB_SHA" ]]
+          [[ "$(jq -r '.conclusion' <<<"$activation")" == 'success' ]]
+          [[ "$(jq -r '.run_attempt' <<<"$activation")" == "$ACTIVATION_RUN_ATTEMPT" ]]
+
+          dependency="$(api "$API_URL/repos/$REPOSITORY/actions/runs/$DEPENDENCY_RUN_ID")"
+          [[ "$(jq -r '.path' <<<"$dependency")" == "$DEPENDENCY_WORKFLOW" ]]
+          [[ "$(jq -r '.event' <<<"$dependency")" == 'workflow_dispatch' ]]
+          [[ "$(jq -r '.head_branch' <<<"$dependency")" == 'main' ]]
+          [[ "$(jq -r '.conclusion' <<<"$dependency")" == 'success' ]]
+          [[ "$(jq -r '.run_attempt' <<<"$dependency")" == "$DEPENDENCY_RUN_ATTEMPT" ]]
+
+      - name: Publish pending evidence status
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          API_URL: ${{ github.api_url }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          body="$(jq -n --arg context "$EVIDENCE_CONTEXT" --arg url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" '{state:"pending",context:$context,description:"Target-bound activation evidence qualification in progress",target_url:$url}')"
+          curl --fail-with-body --silent --show-error -X POST \
+            -H 'Accept: application/vnd.github+json' -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "$API_URL/repos/$REPOSITORY/statuses/$TARGET_HEAD" -d "$body" >/dev/null
+
+      - name: Fetch and verify authenticated target-bound activation evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          mkdir -p /tmp/fsc-activation-evidence
+          curl --fail-with-body --silent --show-error --proto '=https' --tlsv1.2 \
+            --connect-timeout 5 --max-time 30 -H 'Accept: application/json' \
+            -H "Authorization: Bearer $EVIDENCE_TOKEN" "$EVIDENCE_URL" \
+            -o /tmp/fsc-activation-evidence/source.json
+          (( $(wc -c < /tmp/fsc-activation-evidence/source.json) > 1 ))
+          (( $(wc -c < /tmp/fsc-activation-evidence/source.json) <= 262144 ))
+
+          env_id="$(jq -r '.selected_target.environment_id' "$TARGET_FILE")"
+          runtime="$(jq -r '.selected_target.runtime_class' "$TARGET_FILE")"
+          source="$(jq -r '.selected_target.exact_running_source_commit' "$TARGET_FILE")"
+          artifact="$(jq -r '.selected_target.exact_running_artifact_sha256' "$TARGET_FILE")"
+          selection="$(jq -r '.selected_target.selection_fingerprint_sha256' "$TARGET_FILE")"
+
+          jq -e \
+            --arg env "$env_id" --arg runtime "$runtime" --arg source "$source" --arg artifact "$artifact" \
+            --arg selection "$selection" --arg target "$EXPECTED_TARGET_BINDING_SHA256" \
+            --arg dependency "$EXPECTED_DEPENDENCY_ENVELOPE_SHA256" --argjson pr "$TARGET_PR" --arg head "$TARGET_HEAD" \
+            '.schema_version==1 and .feature=="final-shift-close" and .evidence_state=="TARGET_BOUND_FEATURE_ACTIVATION_EXECUTION_EVIDENCE" and .secrets_embedded==false and
+             .receipt.execution_state=="FLAG_TRUE_VERIFIED_HEALTHY_AWAITING_RUNTIME_ALLOWLIST" and
+             .receipt.environment_id==$env and .receipt.runtime_class==$runtime and .receipt.exact_running_source_commit==$source and .receipt.exact_running_artifact_sha256==$artifact and
+             .receipt.selection_fingerprint_sha256==$selection and .receipt.target_binding_sha256==$target and .receipt.dependency_envelope_sha256==$dependency and
+             .receipt.state_transition_pr_number==$pr and .receipt.state_transition_head_sha==$head and .receipt.flag_before==false and .receipt.flag_after==true and
+             .receipt.runtime_allowlist_change=="NOT_PERFORMED" and .receipt.feature_delivery_state=="BLOCKED_BY_RUNTIME_ALLOWLIST" and .receipt.secrets_embedded==false and
+             .runtime_context.environment_id==$env and .runtime_context.runtime_class==$runtime and .runtime_context.exact_running_source_commit==$source and .runtime_context.exact_running_artifact_sha256==$artifact and
+             .runtime_context.runtime_flag=="ONEQAY_POS_SHIFT_CLOSE_ENABLED" and .runtime_context.runtime_flag_value==true and .runtime_context.feature_activation_state=="ACTIVE" and
+             .runtime_context.durable_staging_runtime_enabled==true and .runtime_context.selected_source_allowlist_successor_verified==true and
+             .runtime_context.runtime_allowlist_state=="PREQUALIFIED_ALREADY_ARMED" and .runtime_context.runtime_allowlist_change=="NOT_PERFORMED" and .runtime_context.secrets_embedded==false' \
+            /tmp/fsc-activation-evidence/source.json >/dev/null
+
+          jq '{schema_version:1,feature:"final-shift-close",evidence_state:"FEATURE_ACTIVATION_EXECUTION_VERIFIED",receipt_sha256:.receipt.receipt_sha256,runtime_context:.runtime_context,secrets_embedded:false,attribution:"Lab | zefry"}' \
+            /tmp/fsc-activation-evidence/source.json > /tmp/fsc-activation-evidence/evidence.json
+          rm -f /tmp/fsc-activation-evidence/source.json
+
+      - name: Upload trusted feature activation evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: final-shift-close-feature-activation-evidence
+          path: /tmp/fsc-activation-evidence/evidence.json
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Publish success evidence status
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          API_URL: ${{ github.api_url }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          body="$(jq -n --arg context "$EVIDENCE_CONTEXT" --arg url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" '{state:"success",context:$context,description:"Authenticated target-bound feature activation execution evidence verified",target_url:$url}')"
+          curl --fail-with-body --silent --show-error -X POST \
+            -H 'Accept: application/vnd.github+json' -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "$API_URL/repos/$REPOSITORY/statuses/$TARGET_HEAD" -d "$body" >/dev/null
+
+# Author by Lab | zefry
