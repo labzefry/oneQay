@@ -1,0 +1,70 @@
+name: Sprint245 Final Shift Close Dependency Envelope Rebind Fingerprint Alignment Regression
+
+# Attribution: Lab | zefry
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/final-shift-close-durable-runtime-dependency-envelope-evidence.yml'
+      - '.github/workflows/sprint245-final-shift-close-dependency-envelope-rebind-fingerprint-alignment-regression.yml'
+      - 'docs/SPRINT245_FINAL_SHIFT_CLOSE_DEPENDENCY_ENVELOPE_REBIND_FINGERPRINT_ALIGNMENT.md'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint245-dependency-envelope-rebind-fingerprint-alignment-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout exact pull request head
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Enforce exact Sprint245 envelope
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --name-only "${{ github.event.pull_request.base.sha }}"..."${{ github.event.pull_request.head.sha }}" | LC_ALL=C sort > /tmp/actual
+          cat > /tmp/expected <<'EOF'
+          .github/workflows/final-shift-close-durable-runtime-dependency-envelope-evidence.yml
+          .github/workflows/sprint245-final-shift-close-dependency-envelope-rebind-fingerprint-alignment-regression.yml
+          docs/SPRINT245_FINAL_SHIFT_CLOSE_DEPENDENCY_ENVELOPE_REBIND_FINGERPRINT_ALIGNMENT.md
+          EOF
+          diff -u /tmp/expected /tmp/actual
+
+      - name: Verify canonical nested selection fingerprint binding
+        shell: bash
+        run: |
+          set -euo pipefail
+          workflow=.github/workflows/final-shift-close-durable-runtime-dependency-envelope-evidence.yml
+          grep -Fq "persisted['selected_target']['selection_fingerprint_sha256']" "$workflow"
+          ! grep -Fq "persisted['selection_fingerprint_sha256']" "$workflow"
+          grep -Fq "Persisted selection fingerprint does not match recomputed Sprint111 identity." "$workflow"
+          grep -Fq "selected_target.environment_id" "$workflow"
+          grep -Fq "selected_target.runtime_class" "$workflow"
+          grep -Fq "CAPABILITY_RUN_ID" "$workflow"
+          grep -Fq "CAPABILITY_RUN_ATTEMPT" "$workflow"
+          grep -Fq "DEPENDENCY_OBSERVATIONS_URL" "$workflow"
+          grep -Fq "DEPENDENCY_OBSERVATIONS_TOKEN" "$workflow"
+
+      - name: Verify NO-GO documentation boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          doc=docs/SPRINT245_FINAL_SHIFT_CLOSE_DEPENDENCY_ENVELOPE_REBIND_FINGERPRINT_ALIGNMENT.md
+          grep -Fq 'does not mutate the selected target' "$doc"
+          grep -Fq 'Final Shift Close feature state' "$doc"
+          grep -Fq 'Technical Preview' "$doc"
+          grep -Fq 'Production' "$doc"
+          grep -Fq 'updater state' "$doc"
+          grep -Fq '36022905748' "$doc"
+          grep -Fq 'attempt `2`' "$doc"
+
+# Author by Lab | zefry

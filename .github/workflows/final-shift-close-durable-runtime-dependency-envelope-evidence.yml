@@ -240,7 +240,7 @@ jobs:
           if (($persisted['selection_state'] ?? null) !== FinalShiftCloseDurableRuntimeTargetSelection::SELECTION_STATE) {
               throw new RuntimeException('Persisted target is not SELECTED_NOT_AUTHORIZED.');
           }
-          if (($persisted['selection_fingerprint_sha256'] ?? null) !== ($selection['selection_fingerprint_sha256'] ?? null)) {
+          if (($persisted['selected_target']['selection_fingerprint_sha256'] ?? null) !== ($selection['selection_fingerprint_sha256'] ?? null)) {
               throw new RuntimeException('Persisted selection fingerprint does not match recomputed Sprint111 identity.');
           }
           $persistedTarget = is_array($persisted['selected_target'] ?? null) ? $persisted['selected_target'] : [];
