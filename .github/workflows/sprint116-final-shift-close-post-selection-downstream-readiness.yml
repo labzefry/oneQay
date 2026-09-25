@@ -130,6 +130,7 @@ jobs:
           set -euo pipefail
           migration=.github/workflows/final-shift-close-migration27-execution.yml
           permission=.github/workflows/final-shift-close-permission-provisioning.yml
+          activation=.github/workflows/final-shift-close-feature-activation.yml
           contract=ops/final-shift-close/POST_SELECTION_DOWNSTREAM_READINESS.json
           grep -Fq 'DURABLE_ACTIVATION_TARGET_SELECTION.json' "$migration"
           grep -Fq 'selection_fingerprint_sha256' "$migration"
@@ -139,7 +140,14 @@ jobs:
           grep -Fq 'final-shift-close-migration27-selected-target-db-binding.yml' "$permission"
           test "$(jq -r '.downstream_components.permission_provisioning.selected_target_binding_present' "$contract")" = 'false'
           test "$(jq -r '.downstream_components.permission_provisioning.selected_target_binding_execution' "$contract")" = 'NOT_PERFORMED'
-          test ! -e .github/workflows/final-shift-close-feature-activation.yml
+          test -f "$activation"
+          grep -Fq 'workflow_dispatch:' "$activation"
+          grep -Fq 'target_pr_number:' "$activation"
+          grep -Fq 'target_head_sha:' "$activation"
+          grep -Fq 'approval_token_sha256:' "$activation"
+          grep -Fq 'environment: final-shift-close-feature-activation' "$activation"
+          grep -Fq "require_status_success 'product-owner-merge-authority'" "$activation"
+          grep -Fq "require_status_success 'final-shift-close-feature-activation-authority'" "$activation"
 
       - name: Preserve runtime allowlist and downstream fail-closed ordering
         shell: bash
