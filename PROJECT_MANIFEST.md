@@ -1,6 +1,6 @@
 # oneQay Project Manifest
 
-**Product:** oneQay — The Future of Intelligent Business Management  
+**Product:** oneQay — The Future of Intelligent Business Management
 **Repository / Product Owner attribution:** Lab | zefry
 
 ## Canonical state
