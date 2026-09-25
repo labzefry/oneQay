@@ -47,11 +47,11 @@ jobs:
 
           state=ops/final-shift-close/STATE.json
           selection=ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
-          contract=ops/final-shift-close/DURABLE_STAGING_RUNTIME_PROMOTION_SUCCESSOR_CONTRACT.json
+          contract=ops/final-shift-close/DURABLE_STAGING_POST_ACTIVATION_PROMOTION_SUCCESSOR_CONTRACT.json
 
           test "$(jq -r '.migration27.state' "$state")" = EXECUTED
           test "$(jq -r '.permission_provisioning.state' "$state")" = PROVISIONED
-          test "$(jq -r '.feature_activation.state' "$state")" = INACTIVE
+          test "$(jq -r '.feature_activation.state' "$state")" = ACTIVE
           test "$(jq -r '.deployment_authority' "$state")" = NOT_GRANTED
           test "$(jq -r '.technical_preview_activation' "$state")" = NOT_AUTHORIZED
           test "$(jq -r '.production_activation' "$state")" = NOT_AUTHORIZED
@@ -62,10 +62,12 @@ jobs:
           test "$(jq -r '.selected_target.runtime_class' "$selection")" = durable-staging
 
           jq -e . "$contract" >/dev/null
-          test "$(jq -r '.contract_state' "$contract")" = MATERIALIZED_PROMOTION_READY_NOT_DEPLOYED_NOT_ACTIVATED
-          test "$(jq -r '.promotion_kit.application_deployment_performed' "$contract")" = false
-          test "$(jq -r '.promotion_kit.feature_activation_performed' "$contract")" = false
-          test "$(jq -r '.promotion_kit.post_deployment_reattestation_required' "$contract")" = true
+          test "$(jq -r '.contract_state' "$contract")" = MATERIALIZED_POST_ACTIVATION_PROMOTION_READY_NOT_DEPLOYED
+          test "$(jq -r '.promotion_kit_successor.legacy_base_reused' "$contract")" = true
+          test "$(jq -r '.promotion_kit_successor.raw_readiness_must_report_active' "$contract")" = true
+          test "$(jq -r '.promotion_kit_successor.deployment_must_preserve_active_feature_state' "$contract")" = true
+          test "$(jq -r '.operational_boundaries.deployment_execution' "$contract")" = NOT_PERFORMED
+          test "$(jq -r '.operational_boundaries.feature_activation_mutation' "$contract")" = NOT_PERFORMED
 
       - name: Resolve exact upstream durable-staging artifact
         id: artifact
@@ -150,14 +152,18 @@ jobs:
           cp tools/cpanel/inspect-durable-staging-cpanel-no-ssh-target.php "$kit/tools/cpanel/"
           cp tools/cpanel/prepare-durable-staging-cpanel-no-ssh-target-candidate.php "$kit/tools/cpanel/"
           cp tools/cpanel/execute-durable-staging-cpanel-no-ssh-deployment.php "$kit/tools/cpanel/"
+          cp tools/cpanel/execute-durable-staging-cpanel-no-ssh-post-activation-deployment.php "$kit/tools/cpanel/"
           cp tools/cpanel/fixed-public-document-root-bridge.php "$kit/tools/cpanel/"
           cp tools/cpanel/execute-final-shift-close-feature-activation.php "$kit/tools/cpanel/"
           cp tools/prepare-durable-staging-deployment-authority-request.php "$kit/tools/"
           cp tools/qualify-durable-staging-deployment-authority.php "$kit/tools/"
           cp tools/prepare-durable-staging-operator-deployment-plan.php "$kit/tools/"
+          cp tools/prepare-durable-staging-post-activation-operator-deployment-plan.php "$kit/tools/"
           cp tools/qualify-durable-staging-deployment-evidence.php "$kit/tools/"
+          cp tools/qualify-durable-staging-post-activation-deployment-evidence.php "$kit/tools/"
           cp tools/deployment/durable-staging-*.schema.json "$kit/tools/deployment/"
           cp ops/final-shift-close/DURABLE_STAGING_RUNTIME_PROMOTION_SUCCESSOR_CONTRACT.json "$kit/ops/"
+          cp ops/final-shift-close/DURABLE_STAGING_POST_ACTIVATION_PROMOTION_SUCCESSOR_CONTRACT.json "$kit/ops/"
           cp ops/final-shift-close/STATE.json "$kit/ops/canonical-state-at-publication.json"
           cp ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json "$kit/ops/selected-target-before-promotion.json"
 
@@ -193,6 +199,8 @@ jobs:
                 migration_execution_performed: false,
                 permission_provisioning_performed: false,
                 feature_activation_performed: false,
+                canonical_feature_state: "ACTIVE",
+                feature_activation_must_remain_active: true,
                 technical_preview_activation: "NOT_AUTHORIZED",
                 production_activation: "NOT_AUTHORIZED",
                 updater_activation: "INACTIVE"
@@ -214,9 +222,9 @@ jobs:
 
           This kit is an operator handoff only. It does not grant deployment or feature-activation authority.
 
-          The candidate release is bound to the exact current-main source and must be deployed only after a separate, current, short-lived deployment authority is qualified. After deployment, produce a fresh durable-runtime attestation and update selected-target identity before any Final Shift Close activation attempt.
+          The candidate release is bound to the exact current-main source and must be deployed only after a separate, current, short-lived deployment authority is qualified. After deployment, prove the Final Shift Close flag remained ACTIVE, produce a fresh durable-runtime attestation, and update selected-target generation before any dark-production promotion decision.
 
-          Never reuse historical deployment authority, historical selected-target evidence, or a stale approval token.
+          Use prepare-durable-staging-post-activation-operator-deployment-plan.php and execute-durable-staging-cpanel-no-ssh-post-activation-deployment.php. Never reuse historical deployment authority, historical selected-target evidence, or a stale approval token.
           EOF
 
           (

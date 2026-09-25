@@ -1,0 +1,50 @@
+# Author by Lab | zefry
+name: Sprint252 Final Shift Close Post-Activation Runtime Promotion Regression
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        with:
+          php-version: '8.3'
+          coverage: none
+      - name: Prove post-activation successor boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" = ACTIVE
+          test "$(jq -r '.deployment_authority' ops/final-shift-close/STATE.json)" = NOT_GRANTED
+          test "$(jq -r '.technical_preview_activation' ops/final-shift-close/STATE.json)" = NOT_AUTHORIZED
+          test "$(jq -r '.production_activation' ops/final-shift-close/STATE.json)" = NOT_AUTHORIZED
+          test "$(jq -r '.updater_activation' ops/final-shift-close/STATE.json)" = INACTIVE
+          contract=ops/final-shift-close/DURABLE_STAGING_POST_ACTIVATION_PROMOTION_SUCCESSOR_CONTRACT.json
+          test "$(jq -r '.contract_state' "$contract")" = MATERIALIZED_POST_ACTIVATION_PROMOTION_READY_NOT_DEPLOYED
+          test "$(jq -r '.operational_boundaries.feature_activation' "$contract")" = ACTIVE
+          test "$(jq -r '.operational_boundaries.feature_activation_mutation' "$contract")" = NOT_PERFORMED
+          test "$(jq -r '.operational_boundaries.runtime_allowlist_change' "$contract")" = NOT_PERFORMED
+          test "$(jq -r '.properties.operational_boundary.properties.feature_activation.const' tools/deployment/durable-staging-post-activation-deployment-evidence.schema.json)" = ACTIVE
+          php -l tools/prepare-durable-staging-post-activation-operator-deployment-plan.php
+          php -l tools/cpanel/execute-durable-staging-cpanel-no-ssh-post-activation-deployment.php
+          php -l tools/qualify-durable-staging-post-activation-deployment-evidence.php
+          php apps/web/tests/pos-final-shift-close-post-activation-promotion-successor.php
+          grep -Fq 'feature_activation.state' .github/workflows/durable-staging-release-publication.yml
+          grep -Fq '= ACTIVE' .github/workflows/durable-staging-release-publication.yml
+          grep -Fq 'feature_activation.state' .github/workflows/durable-staging-runtime-promotion-kit.yml
+          grep -Fq '= ACTIVE' .github/workflows/durable-staging-runtime-promotion-kit.yml
+          grep -Fq 'execute-durable-staging-cpanel-no-ssh-post-activation-deployment.php' .github/workflows/durable-staging-runtime-promotion-kit.yml
+          grep -Fq 'prepare-durable-staging-post-activation-operator-deployment-plan.php' .github/workflows/durable-staging-runtime-promotion-kit.yml

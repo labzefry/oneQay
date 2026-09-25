@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "feature": "final-shift-close",
+  "sprint": 252,
+  "contract_state": "MATERIALIZED_POST_ACTIVATION_PROMOTION_READY_NOT_DEPLOYED",
+  "bounded_objective": "FINAL_SHIFT_CLOSE_POST_ACTIVATION_DURABLE_STAGING_PROMOTION_SUCCESSOR",
+  "canonical_base_sha": "2dd17971532fabf52ace576fb7cb4aff5556bac9",
+  "current_canonical_state": {
+    "migration27": "EXECUTED_NO_REPLAY",
+    "permission_provisioning": "PROVISIONED_NO_SECOND_GRANT",
+    "feature_activation": "ACTIVE",
+    "selected_target_state": "SELECTED_NOT_AUTHORIZED",
+    "selected_environment_id": "oneqay-durable-staging-01",
+    "selected_runtime_class": "durable-staging",
+    "selected_running_source_commit": "59b42137eed717aacc82080a46753440bb4d8537",
+    "selected_running_artifact_sha256": "8ad4a33196eabd6248c9dfb35eb118e97759e5c17b32384a12b120258bce615c",
+    "deployment_authority": "NOT_GRANTED",
+    "technical_preview_activation": "NOT_AUTHORIZED",
+    "production_activation": "NOT_AUTHORIZED",
+    "updater_activation": "INACTIVE"
+  },
+  "publication_successor": {
+    "workflow_path": ".github/workflows/durable-staging-release-publication.yml",
+    "current_main_source_required": true,
+    "current_feature_state_required": "ACTIVE",
+    "artifact_build_performs_feature_activation": false,
+    "artifact_build_performs_deployment": false
+  },
+  "promotion_kit_successor": {
+    "workflow_path": ".github/workflows/durable-staging-runtime-promotion-kit.yml",
+    "plan_entrypoint": "tools/prepare-durable-staging-post-activation-operator-deployment-plan.php",
+    "executor_entrypoint": "tools/cpanel/execute-durable-staging-cpanel-no-ssh-post-activation-deployment.php",
+    "evidence_qualifier": "tools/qualify-durable-staging-post-activation-deployment-evidence.php",
+    "evidence_schema": "tools/deployment/durable-staging-post-activation-deployment-evidence.schema.json",
+    "legacy_base_reused": true,
+    "raw_readiness_must_report_active": true,
+    "deployment_must_preserve_active_feature_state": true
+  },
+  "operational_boundaries": {
+    "migration27": "EXECUTED_NO_REPLAY",
+    "permission_provisioning": "PROVISIONED_NO_SECOND_GRANT",
+    "feature_activation": "ACTIVE",
+    "feature_activation_mutation": "NOT_PERFORMED",
+    "deployment_authority": "NOT_GRANTED",
+    "deployment_execution": "NOT_PERFORMED",
+    "target_reselection": "NOT_PERFORMED",
+    "runtime_allowlist_change": "NOT_PERFORMED",
+    "technical_preview_activation": "NOT_AUTHORIZED",
+    "production_activation": "NOT_AUTHORIZED",
+    "updater_activation": "INACTIVE"
+  },
+  "next_operational_sequence": [
+    "PUBLISH_EXACT_MAIN_POST_ACTIVATION_DURABLE_STAGING_ARTIFACT",
+    "PUBLISH_POST_ACTIVATION_PROMOTION_KIT",
+    "SEPARATE_SHORT_LIVED_DEPLOYMENT_AUTHORITY",
+    "AUTHORIZED_SAME_TARGET_DURABLE_STAGING_SOURCE_PROMOTION",
+    "VERIFY_FEATURE_REMAINS_ACTIVE",
+    "FRESH_RUNTIME_REATTESTATION",
+    "SELECTED_TARGET_GENERATION_UPDATE",
+    "DARK_PRODUCTION_READINESS_ONLY_AFTER_FRESH_STAGING_EVIDENCE"
+  ],
+  "attribution": "Author by Lab | zefry"
+}
