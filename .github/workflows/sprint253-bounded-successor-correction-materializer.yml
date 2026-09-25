@@ -1,7 +1,7 @@
 name: Sprint253 Bounded Successor Compatibility Correction Materializer
 
 # Attribution: Lab | zefry
-# Transient revision: PR exact-head execution
+# Transient revision: detached Git-data publication
 
 on:
   pull_request:
@@ -93,6 +93,7 @@ jobs:
         run: |
           set -euo pipefail
           python3 tools/sprint253-bounded-successor-correction.py
+          rm -rf tools/__pycache__
           python3 - <<'PY'
           from pathlib import Path
           for raw in (
@@ -110,16 +111,68 @@ jobs:
           test ! -e tools/sprint253-bounded-successor-correction.py
           test ! -e .github/workflows/sprint253-bounded-successor-correction-materializer.yml
 
-      - name: Commit bounded correction and retire transient machinery
+      - name: Create detached bounded correction commit object
         shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PARENT_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
-          git config user.name 'Lab | zefry'
-          git config user.email 'lab.zefa@gmail.com'
-          git add -A
-          git diff --cached --check
-          test -n "$(git diff --cached --name-only)"
-          git commit -m 'Sprint253: close active-state historical regression compatibility'
-          git push origin HEAD:sprint253-post-activation-historical-regression-successor-compatibility
+          python3 - <<'PY'
+          import json
+          import os
+          import subprocess
+          import urllib.request
+          from pathlib import Path
+
+          token = os.environ['GH_TOKEN']
+          repo = os.environ['REPO']
+          parent = os.environ['PARENT_SHA']
+
+          def api(path, payload):
+              body = json.dumps(payload).encode()
+              req = urllib.request.Request(
+                  f'https://api.github.com/repos/{repo}{path}',
+                  data=body,
+                  method='POST',
+                  headers={
+                      'Authorization': f'Bearer {token}',
+                      'Accept': 'application/vnd.github+json',
+                      'X-GitHub-Api-Version': '2022-11-28',
+                      'Content-Type': 'application/json',
+                  },
+              )
+              with urllib.request.urlopen(req) as response:
+                  return json.load(response)
+
+          base_tree = subprocess.check_output(['git', 'rev-parse', 'HEAD^{tree}'], text=True).strip()
+          changed = subprocess.check_output(['git', 'diff', '--name-only', '-z', 'HEAD'])
+          paths = [p.decode() for p in changed.split(b'\0') if p]
+          if not paths:
+              raise SystemExit('no bounded correction paths materialized')
+
+          entries = []
+          for raw in paths:
+              path = Path(raw)
+              mode = subprocess.check_output(['git', 'ls-tree', 'HEAD', '--', raw], text=True).split()[0]
+              if path.exists():
+                  entries.append({'path': raw, 'mode': mode, 'type': 'blob', 'content': path.read_text()})
+              else:
+                  entries.append({'path': raw, 'mode': mode, 'type': 'blob', 'sha': None})
+
+          tree = api('/git/trees', {'base_tree': base_tree, 'tree': entries})
+          identity = {'name': 'Lab | zefry', 'email': 'lab.zefa@gmail.com'}
+          commit = api('/git/commits', {
+              'message': 'Sprint253: close active-state historical regression compatibility',
+              'tree': tree['sha'],
+              'parents': [parent],
+              'author': identity,
+              'committer': identity,
+          })
+          print(f"DETACHED_COMMIT_SHA={commit['sha']}")
+          print(f"DETACHED_TREE_SHA={tree['sha']}")
+          print(f"DETACHED_PATH_COUNT={len(paths)}")
+          PY
 
 # Author by Lab | zefry
