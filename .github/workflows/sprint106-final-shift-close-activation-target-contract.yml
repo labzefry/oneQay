@@ -120,8 +120,12 @@ jobs:
           test -f "$activation"
           test -f apps/web/app/Application/Pos/FinalShiftCloseFeatureActivator.php
           grep -Fq 'workflow_dispatch:' "$activation"
-          grep -Fq 'execution_authorization_id' "$activation"
-          grep -Fq 'final-shift-close-feature-activation-evidence' "$activation"
+          grep -Fq 'target_pr_number:' "$activation"
+          grep -Fq 'target_head_sha:' "$activation"
+          grep -Fq 'approval_token_sha256:' "$activation"
+          grep -Fq 'environment: final-shift-close-feature-activation' "$activation"
+          grep -Fq "require_status_success 'product-owner-merge-authority'" "$activation"
+          grep -Fq "require_status_success 'final-shift-close-feature-activation-authority'" "$activation"
           grep -Fq 'FEATURE_ACTIVATION_EVIDENCE_PRODUCER = NOT_IMPLEMENTED' docs/SPRINT106_FINAL_SHIFT_CLOSE_ACTIVATION_TARGET_CONTRACT.md
           grep -Fq 'FEATURE_ACTIVATION_EXECUTION = NOT_PERFORMED' docs/SPRINT106_FINAL_SHIFT_CLOSE_ACTIVATION_TARGET_CONTRACT.md
           grep -Fq 'TECHNICAL_PREVIEW_ACTIVATION_AUTHORITY = NOT_GRANTED' docs/SPRINT106_FINAL_SHIFT_CLOSE_ACTIVATION_TARGET_CONTRACT.md
