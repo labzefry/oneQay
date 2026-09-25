@@ -1,5 +1,5 @@
 # Author by Lab | zefry
-# Sprint240 current-canonical-state successor — Lab | zefry
+# Sprint252 post-activation current-canonical-state successor — Lab | zefry
 name: Durable Staging Operator Artifact Publication
 
 on:
@@ -17,6 +17,7 @@ on:
       - 'ops/final-shift-close/DURABLE_STAGING_DEPLOYMENT_HANDOFF_CONTRACT.json'
       - 'ops/final-shift-close/DURABLE_STAGING_OPERATOR_ARTIFACT_PUBLICATION_CONTRACT.json'
       - 'ops/final-shift-close/DURABLE_STAGING_RUNTIME_PROMOTION_SUCCESSOR_CONTRACT.json'
+      - 'ops/final-shift-close/DURABLE_STAGING_POST_ACTIVATION_PROMOTION_SUCCESSOR_CONTRACT.json'
   workflow_dispatch:
 
 permissions:
@@ -73,7 +74,7 @@ jobs:
           test "$(jq -r '.permission_provisioning.state' "$state")" = PROVISIONED
           test "$(jq -r '.permission_provisioning.permission_id' "$state")" = pos.shift.close
           test "$(jq -r '.permission_provisioning.default_grant' "$state")" = NONE
-          test "$(jq -r '.feature_activation.state' "$state")" = INACTIVE
+          test "$(jq -r '.feature_activation.state' "$state")" = ACTIVE
           test "$(jq -r '.deployment_authority' "$state")" = NOT_GRANTED
           test "$(jq -r '.technical_preview_activation' "$state")" = NOT_AUTHORIZED
           test "$(jq -r '.production_activation' "$state")" = NOT_AUTHORIZED
@@ -99,7 +100,7 @@ jobs:
           set -euo pipefail
           publication=ops/final-shift-close/DURABLE_STAGING_OPERATOR_ARTIFACT_PUBLICATION_CONTRACT.json
           release=ops/final-shift-close/DURABLE_STAGING_RELEASE_ARTIFACT_CONTRACT.json
-          successor=ops/final-shift-close/DURABLE_STAGING_RUNTIME_PROMOTION_SUCCESSOR_CONTRACT.json
+          successor=ops/final-shift-close/DURABLE_STAGING_POST_ACTIVATION_PROMOTION_SUCCESSOR_CONTRACT.json
           jq -e . "$publication" >/dev/null
           jq -e . "$release" >/dev/null
           jq -e . "$successor" >/dev/null
@@ -107,7 +108,7 @@ jobs:
           test "$(jq -r '.contract_state' "$publication")" = PUBLISHES_SECRET_FREE_OPERATOR_RETRIEVABLE_ARTIFACT_NOT_DEPLOYED
           test "$(jq -r '.current_canonical_state.migration27' "$publication")" = EXECUTED
           test "$(jq -r '.current_canonical_state.permission_provisioning' "$publication")" = PROVISIONED
-          test "$(jq -r '.current_canonical_state.feature_activation' "$publication")" = INACTIVE
+          test "$(jq -r '.current_canonical_state.feature_activation' "$publication")" = ACTIVE
           test "$(jq -r '.current_canonical_state.selected_target_state' "$publication")" = SELECTED_NOT_AUTHORIZED
           test "$(jq -r '.successor_candidate_policy.publication_mutates_selected_target' "$publication")" = false
           test "$(jq -r '.successor_candidate_policy.deployment_requires_separate_authority' "$publication")" = true
@@ -116,13 +117,13 @@ jobs:
           test "$(jq -r '.contract_state' "$release")" = MATERIALIZED_SOURCE_ONLY_NOT_DEPLOYED
           test "$(jq -r '.current_canonical_state.migration27' "$release")" = EXECUTED
           test "$(jq -r '.current_canonical_state.permission_provisioning' "$release")" = PROVISIONED
-          test "$(jq -r '.current_canonical_state.feature_activation' "$release")" = INACTIVE
+          test "$(jq -r '.current_canonical_state.feature_activation' "$release")" = ACTIVE
           test "$(jq -r '.successor_candidate_policy.runtime_class' "$release")" = durable-staging
           test "$(jq -r '.successor_candidate_policy.deployment_performed_by_builder' "$release")" = false
 
-          test "$(jq -r '.contract_state' "$successor")" = MATERIALIZED_PROMOTION_READY_NOT_DEPLOYED_NOT_ACTIVATED
+          test "$(jq -r '.contract_state' "$successor")" = MATERIALIZED_POST_ACTIVATION_PROMOTION_READY_NOT_DEPLOYED
           test "$(jq -r '.operational_boundaries.deployment_authority' "$successor")" = NOT_GRANTED
-          test "$(jq -r '.operational_boundaries.feature_activation' "$successor")" = INACTIVE
+          test "$(jq -r '.operational_boundaries.feature_activation' "$successor")" = ACTIVE
 
       - name: Setup governed PHP runtime
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240

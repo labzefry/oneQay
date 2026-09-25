@@ -44,11 +44,11 @@
     "permission_provisioning": "PROVISIONED",
     "permission_id": "pos.shift.close",
     "default_grant": "NONE",
-    "feature_activation": "INACTIVE",
+    "feature_activation": "ACTIVE",
     "selected_target_state": "SELECTED_NOT_AUTHORIZED",
     "selected_environment_id": "oneqay-durable-staging-01",
     "selected_runtime_class": "durable-staging",
-    "selected_running_source_commit": "5be28a3c001738373588b58e9d29832c46402de1",
+    "selected_running_source_commit": "59b42137eed717aacc82080a46753440bb4d8537",
     "deployment_authority": "NOT_GRANTED",
     "technical_preview_activation": "NOT_AUTHORIZED",
     "production_activation": "NOT_AUTHORIZED",
@@ -66,7 +66,9 @@
     "selected_target_mutation_performed_by_builder": false,
     "post_deployment_reattestation_required": true,
     "post_deployment_selected_target_generation_update_required": true,
-    "feature_activation_authority_remains_separate": true
+    "feature_activation_authority_remains_separate": true,
+    "feature_activation_must_remain_active": true,
+    "post_activation_promotion_successor_contract": "ops/final-shift-close/DURABLE_STAGING_POST_ACTIVATION_PROMOTION_SUCCESSOR_CONTRACT.json"
   },
   "attribution": "Author by Lab | zefry"
 }
