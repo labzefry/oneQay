@@ -1,0 +1,103 @@
+name: Sprint254 Production Release Candidate Post-Activation Successor Regression
+
+# Attribution: Lab | zefry
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/production-release-candidate-publication.yml'
+      - '.github/workflows/sprint254-production-release-candidate-post-activation-successor-regression.yml'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/production-release-candidate-publication.yml'
+      - '.github/workflows/sprint254-production-release-candidate-post-activation-successor-regression.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint254-production-release-candidate-post-activation-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+
+      - name: Lock exact Sprint254 PR envelope
+        if: github.event_name == 'pull_request'
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          printf '%s\n' \
+            '.github/workflows/production-release-candidate-publication.yml' \
+            '.github/workflows/sprint254-production-release-candidate-post-activation-successor-regression.yml' \
+            | LC_ALL=C sort > /tmp/expected
+          git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/actual
+          diff -u /tmp/expected /tmp/actual
+
+      - name: Verify canonical post-activation state remains fail-closed for Production
+        shell: bash
+        run: |
+          set -euo pipefail
+          state=ops/final-shift-close/STATE.json
+          selection=ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+          jq -e . "$state" >/dev/null
+          jq -e . "$selection" >/dev/null
+          test "$(jq -r '.migration27.state' "$state")" = EXECUTED
+          test "$(jq -r '.permission_provisioning.state' "$state")" = PROVISIONED
+          test "$(jq -r '.permission_provisioning.permission_id' "$state")" = pos.shift.close
+          test "$(jq -r '.permission_provisioning.default_grant' "$state")" = NONE
+          test "$(jq -r '.feature_activation.state' "$state")" = ACTIVE
+          test "$(jq -r '.deployment_authority' "$state")" = NOT_GRANTED
+          test "$(jq -r '.technical_preview_activation' "$state")" = NOT_AUTHORIZED
+          test "$(jq -r '.production_activation' "$state")" = NOT_AUTHORIZED
+          test "$(jq -r '.updater_activation' "$state")" = INACTIVE
+          test "$(jq -r '.selection_state' "$selection")" = SELECTED_NOT_AUTHORIZED
+          test "$(jq -r '.selected_target.environment_id' "$selection")" = oneqay-durable-staging-01
+          test "$(jq -r '.selected_target.runtime_class' "$selection")" = durable-staging
+          test "$(jq -r '.selected_target.exact_running_source_commit' "$selection")" = 59b42137eed717aacc82080a46753440bb4d8537
+          test "$(jq -r '.selected_target.exact_running_artifact_sha256' "$selection")" = 8ad4a33196eabd6248c9dfb35eb118e97759e5c17b32384a12b120258bce615c
+
+      - name: Verify release-candidate publication is successor-aware and artifact-only
+        shell: bash
+        run: |
+          set -euo pipefail
+          workflow=.github/workflows/production-release-candidate-publication.yml
+          grep -Fq 'Preserve post-activation NO-GO' "$workflow"
+          grep -Fq "'.migration27.state'" "$workflow"
+          grep -Fq '= EXECUTED' "$workflow"
+          grep -Fq "'.permission_provisioning.state'" "$workflow"
+          grep -Fq '= PROVISIONED' "$workflow"
+          grep -Fq "'.feature_activation.state'" "$workflow"
+          grep -Fq '= ACTIVE' "$workflow"
+          grep -Fq "'.deployment_authority'" "$workflow"
+          grep -Fq '= NOT_GRANTED' "$workflow"
+          grep -Fq "'.production_activation'" "$workflow"
+          grep -Fq '= NOT_AUTHORIZED' "$workflow"
+          grep -Fq "'.updater_activation'" "$workflow"
+          grep -Fq '= INACTIVE' "$workflow"
+          grep -Fq "'.selection_state'" "$workflow"
+          grep -Fq '= SELECTED_NOT_AUTHORIZED' "$workflow"
+          grep -Fq 'bash tools/build-production-release.sh "$GITHUB_SHA"' "$workflow"
+          grep -Fq 'actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02' "$workflow"
+          ! grep -Fq '= NOT_EXECUTED' "$workflow"
+          ! grep -Fq 'execute-production-cpanel-no-ssh-dark-deployment.php' "$workflow"
+          ! grep -Fq 'production_activation = AUTHORIZED' "$workflow"
+
+      - name: Preserve source cleanliness
+        shell: bash
+        run: git diff --exit-code
+
+# Author by Lab | zefry
