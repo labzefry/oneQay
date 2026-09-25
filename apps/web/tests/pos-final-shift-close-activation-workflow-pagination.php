@@ -66,7 +66,7 @@ $assert($resolve($newestFirst, 'M7.1 Application Regression') === 'success', 'ne
 $assert(($state['migration27']['state'] ?? null) === 'EXECUTED', 'migration #27 state drifted');
 $assert(($state['permission_provisioning']['state'] ?? null) === 'PROVISIONED', 'permission provisioning state drifted');
 $assert(($state['permission_provisioning']['default_grant'] ?? null) === 'NONE', 'permission default grant drifted');
-$assert(($state['feature_activation']['state'] ?? null) === 'INACTIVE', 'engineering correction activated Final Shift Close');
+$assert(($state['feature_activation']['state'] ?? null) === 'ACTIVE', 'post-activation canonical state drifted');
 $assert(($state['deployment_authority'] ?? null) === 'NOT_GRANTED', 'deployment authority drifted');
 $assert(($state['technical_preview_activation'] ?? null) === 'NOT_AUTHORIZED', 'Technical Preview authority drifted');
 $assert(($state['production_activation'] ?? null) === 'NOT_AUTHORIZED', 'Production authority drifted');
