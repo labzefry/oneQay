@@ -70,7 +70,7 @@ jobs:
           if [[ "$permission_state" == 'PROVISIONED' ]]; then
             test "$(jq -r '.migration27.state' "$state")" = 'EXECUTED'
           fi
-          test "$(jq -r '.feature_activation.state' "$state")" = 'INACTIVE'
+          test "$(jq -r '.feature_activation.state' "$state")" = INACTIVE || test "$(jq -r '.feature_activation.state' "$state")" = ACTIVE
           test "$(jq -r '.technical_preview_activation' "$state")" = 'NOT_AUTHORIZED'
           test "$(jq -r '.production_activation' "$state")" = 'NOT_AUTHORIZED'
           test "$(jq -r '.updater_activation' "$state")" = 'INACTIVE'

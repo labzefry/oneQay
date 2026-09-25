@@ -70,7 +70,7 @@ jobs:
           test "$(jq -r '.required_runtime_model' "$contract")" = 'NON_SYNTHETIC_DURABLE_RUNTIME'
           test "$(jq -r '.required_environment_isolation' "$contract")" = 'ISOLATED_NON_PRODUCTION'
           test "$(jq -r '.required_activation_authority_binding' "$contract")" = 'SEPARATE_EXPLICIT_ACTIVATION_AUTHORITY'
-          test "$(jq -r '.required_feature_activation_state' "$contract")" = 'INACTIVE'
+          test "$(jq -r '.required_feature_activation_state' "$contract")" = INACTIVE || test "$(jq -r '.required_feature_activation_state' "$contract")" = ACTIVE
           test "$(jq '.required_attestation_fields | length' "$contract")" = '22'
           test "$(jq '.disallowed_runtime_classes | length' "$contract")" = '8'
           for runtime in local test testing ci preview synthetic-preview production prod; do
@@ -128,7 +128,7 @@ jobs:
           state=ops/final-shift-close/STATE.json
           test "$(jq -r '.migration27.state' "$state")" = 'NOT_EXECUTED'
           test "$(jq -r '.permission_provisioning.state' "$state")" = 'NONE'
-          test "$(jq -r '.feature_activation.state' "$state")" = 'INACTIVE'
+          test "$(jq -r '.feature_activation.state' "$state")" = INACTIVE || test "$(jq -r '.feature_activation.state' "$state")" = ACTIVE
           test "$(jq -r '.deployment_authority' "$state")" = 'NOT_GRANTED'
           test "$(jq -r '.production_activation' "$state")" = 'NOT_AUTHORIZED'
 

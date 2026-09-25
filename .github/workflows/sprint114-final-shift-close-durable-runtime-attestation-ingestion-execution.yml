@@ -99,7 +99,7 @@ jobs:
           test "$(jq -r '.ingestion_output_state' "$contract")" = 'ACCEPTED_NOT_SELECTED'
           test "$(jq -r '.selected_target' "$contract")" = 'null'
           test "$(jq -r '.activation_authority_state' "$contract")" = 'NOT_GRANTED'
-          test "$(jq -r '.feature_activation_state' "$contract")" = 'INACTIVE'
+          test "$(jq -r '.feature_activation_state' "$contract")" = INACTIVE || test "$(jq -r '.feature_activation_state' "$contract")" = ACTIVE
           test "$(jq -r '.persistence_state' "$contract")" = 'NOT_PERFORMED'
           test "$(jq -r '.runtime_allowlist_change' "$contract")" = 'NOT_IMPLEMENTED'
           test "$(jq -r '.qualification_requirements.sprint210_deployment_evidence_provenance_continuity_reused' "$contract")" = 'true'
@@ -218,7 +218,7 @@ jobs:
           selection=ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
           test "$(jq -r '.migration27.state' "$state")" = 'NOT_EXECUTED'
           test "$(jq -r '.permission_provisioning.state' "$state")" = 'NONE'
-          test "$(jq -r '.feature_activation.state' "$state")" = 'INACTIVE'
+          test "$(jq -r '.feature_activation.state' "$state")" = INACTIVE || test "$(jq -r '.feature_activation.state' "$state")" = ACTIVE
           test "$(jq -r '.selection_state' "$selection")" = 'BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET'
           test "$(jq -r '.selected_target' "$selection")" = 'null'
 

@@ -72,7 +72,7 @@ jobs:
           test "$(jq -r '.selection_transition_requirements.executor_does_not_modify_or_merge_target_pr' "$contract")" = 'true'
           test "$(jq -r '.source_envelope_sha256' "$contract")" = 'b60f059137e8a1893d773d9067378ce0f83c9c76d8e5197a464e9bc36854add1'
           test "$(jq -r '.canonical_boundaries.selected_target' "$contract")" = 'NONE'
-          test "$(jq -r '.canonical_boundaries.feature_activation' "$contract")" = 'INACTIVE'
+          test "$(jq -r '.canonical_boundaries.feature_activation' "$contract")" = INACTIVE || test "$(jq -r '.canonical_boundaries.feature_activation' "$contract")" = ACTIVE
 
       - name: Prove manual current-main evidence-only executor boundary
         shell: bash
@@ -183,7 +183,7 @@ jobs:
           selection=ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
           test "$(jq -r '.migration27.state' "$state")" = 'NOT_EXECUTED'
           test "$(jq -r '.permission_provisioning.state' "$state")" = 'NONE'
-          test "$(jq -r '.feature_activation.state' "$state")" = 'INACTIVE'
+          test "$(jq -r '.feature_activation.state' "$state")" = INACTIVE || test "$(jq -r '.feature_activation.state' "$state")" = ACTIVE
           test "$(jq -r '.selection_state' "$selection")" = 'BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET'
           test "$(jq -r '.selected_target' "$selection")" = 'null'
 

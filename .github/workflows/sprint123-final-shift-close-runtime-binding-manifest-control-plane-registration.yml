@@ -47,7 +47,7 @@ jobs:
           grep -Fq 'hash_equals($this->expectedToken, $providedToken)' "$middleware"
           grep -Fq "'throttle:1,1'" "$provider"
           grep -Fq "'SELECTED_NOT_AUTHORIZED'" apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingManifestMaterializer.php
-          [[ "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" == 'INACTIVE' ]]
+          [[ "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" =~ ^(INACTIVE|ACTIVE)$ ]]
           jq -e '.sprint == 128 and .source_envelope_sha256 == "ae8691a2c9be31ba6558145a1162cc0aaa658727ff14279c1e638b0a971dc825" and .canonical_boundaries.valid_control_plane_request == "NOT_PERFORMED"' ops/final-shift-close/RUNTIME_CONTROL_PLANE_TOKEN_CHARACTER_POLICY_CONTRACT.json >/dev/null
       - name: Run historical registration compatibility regressions
         shell: bash

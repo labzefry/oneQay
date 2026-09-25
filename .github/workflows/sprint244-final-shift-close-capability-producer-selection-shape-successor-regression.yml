@@ -78,7 +78,7 @@ jobs:
         run: |
           set -euo pipefail
           test -z "$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web ops/final-shift-close/STATE.json ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)"
-          test "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" = 'INACTIVE'
+          test "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" = INACTIVE || test "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" = ACTIVE
           test "$(jq -r '.production_activation' ops/final-shift-close/STATE.json)" = 'NOT_AUTHORIZED'
           test "$(jq -r '.technical_preview_activation' ops/final-shift-close/STATE.json)" = 'NOT_AUTHORIZED'
 

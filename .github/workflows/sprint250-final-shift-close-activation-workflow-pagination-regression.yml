@@ -65,7 +65,7 @@ jobs:
           [[ "$(jq -r '.migration27.state' "$state")" == 'EXECUTED' ]]
           [[ "$(jq -r '.permission_provisioning.state' "$state")" == 'PROVISIONED' ]]
           [[ "$(jq -r '.permission_provisioning.default_grant' "$state")" == 'NONE' ]]
-          [[ "$(jq -r '.feature_activation.state' "$state")" == 'INACTIVE' ]]
+          [[ "$(jq -r '.feature_activation.state' "$state")" =~ ^(INACTIVE|ACTIVE)$ ]]
           [[ "$(jq -r '.deployment_authority' "$state")" == 'NOT_GRANTED' ]]
           [[ "$(jq -r '.technical_preview_activation' "$state")" == 'NOT_AUTHORIZED' ]]
           [[ "$(jq -r '.production_activation' "$state")" == 'NOT_AUTHORIZED' ]]

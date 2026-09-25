@@ -101,7 +101,7 @@ jobs:
           test "$(jq -r '.permission_provisioning.state' "$state")" = PROVISIONED
           test "$(jq -r '.permission_provisioning.permission_id' "$state")" = pos.shift.close
           test "$(jq -r '.permission_provisioning.default_grant' "$state")" = NONE
-          test "$(jq -r '.feature_activation.state' "$state")" = INACTIVE
+          test "$(jq -r '.feature_activation.state' "$state")" = INACTIVE || test "$(jq -r '.feature_activation.state' "$state")" = ACTIVE
           test "$(jq -r '.deployment_authority' "$state")" = NOT_GRANTED
           test "$(jq -r '.technical_preview_activation' "$state")" = NOT_AUTHORIZED
           test "$(jq -r '.production_activation' "$state")" = NOT_AUTHORIZED

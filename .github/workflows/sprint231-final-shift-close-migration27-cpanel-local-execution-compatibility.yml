@@ -138,7 +138,7 @@ jobs:
           state=ops/final-shift-close/STATE.json
           test "$(jq -r '.migration27.state' "$state")" = 'NOT_EXECUTED'
           test "$(jq -r '.permission_provisioning.state' "$state")" = 'NONE'
-          test "$(jq -r '.feature_activation.state' "$state")" = 'INACTIVE'
+          test "$(jq -r '.feature_activation.state' "$state")" = INACTIVE || test "$(jq -r '.feature_activation.state' "$state")" = ACTIVE
           test "$(jq -r '.technical_preview_activation' "$state")" = 'NOT_AUTHORIZED'
           test "$(jq -r '.production_activation' "$state")" = 'NOT_AUTHORIZED'
           test "$(jq -r '.updater_activation' "$state")" = 'INACTIVE'

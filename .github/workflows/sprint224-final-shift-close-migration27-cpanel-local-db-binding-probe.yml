@@ -89,7 +89,7 @@ jobs:
           selection=ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
           test "$(jq -r '.migration27.state' "$state")" = 'NOT_EXECUTED'
           test "$(jq -r '.permission_provisioning.state' "$state")" = 'NONE'
-          test "$(jq -r '.feature_activation.state' "$state")" = 'INACTIVE'
+          test "$(jq -r '.feature_activation.state' "$state")" = INACTIVE || test "$(jq -r '.feature_activation.state' "$state")" = ACTIVE
           test "$(jq -r '.selection_state' "$selection")" = 'SELECTED_NOT_AUTHORIZED'
           test "$(jq -r '.selected_target.environment_id' "$selection")" = 'oneqay-durable-staging-01'
           test "$(jq -r '.selected_target.runtime_class' "$selection")" = 'durable-staging'

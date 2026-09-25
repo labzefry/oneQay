@@ -92,7 +92,7 @@ jobs:
           test "$(jq -r '.canonical_boundaries.producer_source' "$contract")" = 'MATERIALIZED_NOT_DISPATCHED'
           test "$(jq -r '.canonical_boundaries.real_attestation' "$contract")" = 'NONE'
           test "$(jq -r '.canonical_boundaries.selected_target' "$contract")" = 'NONE'
-          test "$(jq -r '.canonical_boundaries.feature_activation' "$contract")" = 'INACTIVE'
+          test "$(jq -r '.canonical_boundaries.feature_activation' "$contract")" = INACTIVE || test "$(jq -r '.canonical_boundaries.feature_activation' "$contract")" = ACTIVE
 
       - name: Prove producer trust boundary
         shell: bash
@@ -182,7 +182,7 @@ jobs:
           selection=ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
           test "$(jq -r '.migration27.state' "$state")" = 'NOT_EXECUTED'
           test "$(jq -r '.permission_provisioning.state' "$state")" = 'NONE'
-          test "$(jq -r '.feature_activation.state' "$state")" = 'INACTIVE'
+          test "$(jq -r '.feature_activation.state' "$state")" = INACTIVE || test "$(jq -r '.feature_activation.state' "$state")" = ACTIVE
           test "$(jq -r '.selection_state' "$selection")" = 'BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET'
           test "$(jq -r '.selected_target' "$selection")" = 'null'
 

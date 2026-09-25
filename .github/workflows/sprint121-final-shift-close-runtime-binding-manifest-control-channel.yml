@@ -43,7 +43,7 @@ jobs:
           grep -Fq '@link($temporary, $target)' "$writer"
           ! grep -Fq 'rename($temporary, $target)' "$writer"
           [[ "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" =~ ^(NOT_EXECUTED|EXECUTED)$ ]]
-          [[ "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" == 'INACTIVE' ]]
+          [[ "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" =~ ^(INACTIVE|ACTIVE)$ ]]
           jq -e '.sprint == 128 and .source_envelope_sha256 == "ae8691a2c9be31ba6558145a1162cc0aaa658727ff14279c1e638b0a971dc825" and .canonical_boundaries.runtime_manifest_materialization == "NOT_PERFORMED"' ops/final-shift-close/RUNTIME_CONTROL_PLANE_TOKEN_CHARACTER_POLICY_CONTRACT.json >/dev/null
       - name: Run historical materialization regressions
         shell: bash

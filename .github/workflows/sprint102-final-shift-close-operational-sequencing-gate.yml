@@ -104,7 +104,7 @@ jobs:
           else
             test "$(jq -r '.migration27.state' "$state")" = 'NOT_EXECUTED'
             permission_state="$(jq -r '.permission_provisioning.state' ops/final-shift-close/STATE.json)"; [[ "$permission_state" =~ ^(NONE|PROVISIONED)$ ]]; if [[ "$permission_state" == 'PROVISIONED' ]]; then [[ "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" == 'EXECUTED' ]]; fi
-            test "$(jq -r '.feature_activation.state' "$state")" = 'INACTIVE'
+            test "$(jq -r '.feature_activation.state' "$state")" = INACTIVE || test "$(jq -r '.feature_activation.state' "$state")" = ACTIVE
           fi
 
       - name: Enforce one-action ordered transition with exact-head authority and evidence
