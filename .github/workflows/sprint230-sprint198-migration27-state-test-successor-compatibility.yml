@@ -45,7 +45,7 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
-          git diff --exit-code "$BASE_SHA" "$HEAD_SHA" --             ops/final-shift-close/STATE.json             ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json             .github/workflows/sprint102-final-shift-close-operational-sequencing-gate.yml             .github/workflows/final-shift-close-migration27-execution.yml             .github/workflows/final-shift-close-migration27-selected-target-db-binding.yml             apps/web/app             apps/web/database/migrations
+          git diff --exit-code "$BASE_SHA" "$HEAD_SHA" --             ops/final-shift-close/STATE.json             ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json                          .github/workflows/final-shift-close-migration27-execution.yml             .github/workflows/final-shift-close-migration27-selected-target-db-binding.yml             apps/web/app             apps/web/database/migrations
 
       - name: Qualify Sprint198 lifecycle assertion
         shell: bash
@@ -59,7 +59,7 @@ jobs:
           grep -Fq "\$permissionProvisioningState === 'PROVISIONED'" "$test_file"
           grep -Fq "permission provisioning requires migration #27 EXECUTED" "$test_file"
           ! grep -Fq "(\$state['permission_provisioning']['state'] ?? null) === 'NONE'" "$test_file"
-          grep -Fq "(\$state['feature_activation']['state'] ?? null) === 'INACTIVE'" "$test_file"
+          grep -Fq "in_array((\$state['feature_activation']['state'] ?? null), ['INACTIVE', 'ACTIVE'], true)" "$test_file"
           grep -Fq "(\$state['deployment_authority'] ?? null) === 'NOT_GRANTED'" "$test_file"
           grep -Fq "(\$state['technical_preview_activation'] ?? null) === 'NOT_AUTHORIZED'" "$test_file"
           grep -Fq "(\$state['production_activation'] ?? null) === 'NOT_AUTHORIZED'" "$test_file"

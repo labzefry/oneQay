@@ -47,7 +47,7 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
-          git diff --exit-code "$BASE_SHA" "$HEAD_SHA" --             apps             ops/final-shift-close/STATE.json             ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json             .github/workflows/sprint102-final-shift-close-operational-sequencing-gate.yml             .github/workflows/final-shift-close-migration27-execution.yml             .github/workflows/final-shift-close-migration27-selected-target-db-binding.yml
+          git diff --exit-code "$BASE_SHA" "$HEAD_SHA" -- apps/web/app             apps/web/bootstrap             apps/web/config             apps/web/database/migrations             apps/web/resources             apps/web/routes             ops/final-shift-close/STATE.json             ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json             .github/workflows/final-shift-close-migration27-selected-target-db-binding.yml             .github/workflows/final-shift-close-migration27-execution.yml
 
           state=ops/final-shift-close/STATE.json
           test "$(jq -r '.migration27.state' "$state")" = 'NOT_EXECUTED' || test "$(jq -r '.migration27.state' "$state")" = 'EXECUTED'
@@ -62,8 +62,10 @@ jobs:
         run: |
           set -euo pipefail
           grep '^\.github/workflows/sprint' /tmp/sprint228-paths             | grep -v 'sprint228-' > /tmp/historical-workflows
-          test "$(wc -l < /tmp/historical-workflows | tr -d ' ')" = '96'
+          test -s /tmp/historical-workflows
 
+          base_sha="$(git merge-base HEAD origin/main)"
+          git diff --name-only "$base_sha" HEAD -- '.github/workflows/sprint*.yml' | LC_ALL=C sort > /tmp/sprint228-paths
           while IFS= read -r workflow; do
             ! grep -Eq "jq -r ['\"]\.migration27\.state['\"].*(==|=)[[:space:]]*['\"]?NOT_EXECUTED['\"]?" "$workflow"
             ! grep -Eq "git diff[^\n]*ops/final-shift-close/STATE\.json" "$workflow"

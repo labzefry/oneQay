@@ -89,15 +89,17 @@ jobs:
           ! jq -e '.feature_activation.source_sha' "$state" >/dev/null 2>&1
           ! jq -e '.feature_activation.configuration_revision' "$state" >/dev/null 2>&1
 
-      - name: Keep trusted activation evidence producer absent
+      - name: Validate trusted activation successor remains authority-bound
         shell: bash
         run: |
           set -euo pipefail
-          test ! -e .github/workflows/final-shift-close-feature-activation.yml
-          ! grep -R -Fq 'final-shift-close-feature-activation-evidence' .github/workflows \
-            --exclude='sprint101-final-shift-close-operational-authorization-gate.yml' \
-            --exclude='sprint102-final-shift-close-operational-sequencing-gate.yml' \
-            --exclude='sprint105-final-shift-close-feature-activation-readiness.yml'
+          activation=.github/workflows/final-shift-close-feature-activation.yml
+          test -f "$activation"
+          grep -Fq 'workflow_dispatch:' "$activation"
+          grep -Fq 'execution_authorization_id' "$activation"
+          grep -Fq 'final-shift-close-feature-activation-evidence' "$activation"
+          grep -Fq 'deployment_authority' "$activation"
+          grep -Fq 'NOT_GRANTED' "$activation
 
       - name: Lock future executor readiness contract
         shell: bash

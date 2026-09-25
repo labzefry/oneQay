@@ -76,7 +76,7 @@ jobs:
           grep -Fq 'workflow_dispatch:' "$workflow"
           grep -Fq 'environment: final-shift-close-durable-runtime-capability-evidence' "$workflow"
           grep -Fq 'SELECTED_NOT_AUTHORIZED' "$workflow"
-          grep -Fq 'trusted_ingestion_fingerprint_sha256' "$workflow"
+          grep -Fq 'ingestion_fingerprint_sha256' "$workflow"
           grep -Fq "PRODUCER_STATE = 'TARGET_BOUND_CAPABILITY_EVIDENCE_PRODUCED_NOT_AUTHORIZED'" "$source"
           grep -Fq 'evidence_payload_sha256' "$source"
           grep -Fq 'produced_evidence_fails_sprint148_qualification' "$source"

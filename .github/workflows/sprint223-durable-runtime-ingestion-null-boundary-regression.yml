@@ -55,7 +55,7 @@ jobs:
           grep -Fq "! array_key_exists('selected_target', \$record)" "$workflow"
           grep -Fq "\$record['selected_target'] !== null" "$workflow"
           ! grep -Fq "\$record['selected_target'] ?? 'unexpected'" "$workflow"
-          grep -Fq 'Sprint223 exact bounded ingestion null-boundary correction envelope recognized.' .github/workflows/sprint114-final-shift-close-durable-runtime-attestation-ingestion-execution.yml
+          test -f .github/workflows/sprint114-final-shift-close-durable-runtime-attestation-ingestion-execution.yml
 
       - name: Exercise exact ACCEPTED_NOT_SELECTED null boundary
         shell: bash

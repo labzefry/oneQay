@@ -75,7 +75,7 @@ jobs:
           test "$(jq -r '.canonical_boundaries.producer_source' "$contract")" = 'MATERIALIZED_NOT_DISPATCHED'
           test "$(jq -r '.canonical_boundaries.real_attestation' "$contract")" = 'NONE'
           test "$(jq -r '.canonical_boundaries.selected_target' "$contract")" = 'NONE'
-          test "$(jq -r '.canonical_boundaries.feature_activation' "$contract")" = INACTIVE || test "$(jq -r '.canonical_boundaries.feature_activation' "$contract")" = ACTIVE
+          test "$(jq -r '.canonical_boundaries.feature_activation' "$contract")" = INACTIVE
 
       - name: Prove producer trust boundary
         shell: bash
@@ -166,8 +166,20 @@ jobs:
           test "$(jq -r '.migration27.state' "$state")" = 'NOT_EXECUTED' || test "$(jq -r '.migration27.state' "$state")" = 'EXECUTED'
           test "$(jq -r '.permission_provisioning.state' "$state")" = 'NONE' || test "$(jq -r '.permission_provisioning.state' "$state")" = 'PROVISIONED'
           test "$(jq -r '.feature_activation.state' "$state")" = INACTIVE || test "$(jq -r '.feature_activation.state' "$state")" = ACTIVE
-          test "$(jq -r '.selection_state' "$selection")" = 'BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET'
-          test "$(jq -r '.selected_target' "$selection")" = 'null'
+          selection_state="$(jq -r '.selection_state' "$selection")"
+          case "$selection_state" in
+            BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET)
+              test "$(jq -r '.selected_target' "$selection")" = 'null'
+              ;;
+            SELECTED_NOT_AUTHORIZED)
+              test "$(jq -r '.selected_target.exact_running_source_commit' "$selection")" = '59b42137eed717aacc82080a46753440bb4d8537'
+              test "$(jq -r '.selected_target.exact_running_artifact_sha256' "$selection")" = '8ad4a33196eabd6248c9dfb35eb118e97759e5c17b32384a12b120258bce615c'
+              ;;
+            *)
+              echo "Unsupported selected-target successor state: $selection_state" >&2
+              exit 1
+              ;;
+          esac
 
           producer=.github/workflows/final-shift-close-durable-runtime-attestation.yml
           ! grep -Eq 'php artisan (migrate|db:)|ONEQAY_POS_SHIFT_CLOSE_ENABLED[=: ]+true' "$producer"

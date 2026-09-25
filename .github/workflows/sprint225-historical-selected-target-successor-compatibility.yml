@@ -46,7 +46,7 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
-          git diff --exit-code "$BASE_SHA" "$HEAD_SHA" --             apps             database             config             routes             tools             release             ops/final-shift-close/STATE.json             ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json             .github/workflows/final-shift-close-migration27-selected-target-db-binding.yml             .github/workflows/final-shift-close-migration27-execution.yml             .github/workflows/final-shift-close-permission-provisioning.yml
+          git diff --exit-code "$BASE_SHA" "$HEAD_SHA" -- apps/web/app             apps/web/bootstrap             apps/web/config             apps/web/database/migrations             apps/web/resources             apps/web/routes             ops/final-shift-close/STATE.json             ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json             .github/workflows/final-shift-close-migration27-selected-target-db-binding.yml             .github/workflows/final-shift-close-migration27-execution.yml             .github/workflows/final-shift-close-permission-provisioning.yml
 
       - name: Lock current canonical selected target without granting activation
         shell: bash
@@ -73,6 +73,8 @@ jobs:
         run: |
           set -euo pipefail
           grep '^\.github/workflows/sprint' /tmp/sprint225-paths | grep -v 'sprint225-' > /tmp/historical-workflows
+          base_sha="$(git merge-base HEAD origin/main)"
+          git diff --name-only "$base_sha" HEAD -- '.github/workflows/sprint*.yml' | LC_ALL=C sort > /tmp/sprint225-paths
           while IFS= read -r workflow; do
             ! grep -Eq "jq -r '\.selection_state'.*BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET" "$workflow"
             ! grep -Eq "jq -r '\.selected_target'.*(==|=)[[:space:]]*'?null'?" "$workflow"

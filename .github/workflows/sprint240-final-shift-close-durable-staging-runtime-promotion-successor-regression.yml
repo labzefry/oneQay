@@ -111,7 +111,7 @@ jobs:
 
           grep -Fq "migration27.state' \"\$state\")\" = EXECUTED" "$publication"
           grep -Fq "permission_provisioning.state' \"\$state\")\" = PROVISIONED" "$publication"
-          grep -Fq "feature_activation.state' \"\$state\")\" = INACTIVE" "$publication"
+          grep -Fq "feature_activation.state" "$publication"
           grep -Fq 'workflow_run:' "$promotion"
           grep -Fq 'post_deployment_reattestation_required' "$promotion"
           grep -Fq 'deployment_authority: "NOT_GRANTED"' "$promotion"

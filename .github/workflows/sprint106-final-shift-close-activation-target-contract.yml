@@ -112,11 +112,16 @@ jobs:
           grep -Fq "preg_match('/\\A[0-9a-f]{64}\\z/', \$artifactSha256)" apps/web/app/Application/SystemUpdate/SystemUpdateReleaseIdentity.php
           grep -Fq 'release_source_mismatch' apps/web/app/Application/SystemUpdate/SystemUpdateReleaseIdentity.php
 
-      - name: Keep activation execution fail-closed
+      - name: Validate activation successor remains fail-closed
         shell: bash
         run: |
           set -euo pipefail
-          test ! -e .github/workflows/final-shift-close-feature-activation.yml
+          activation=.github/workflows/final-shift-close-feature-activation.yml
+          test -f "$activation"
+          test -f apps/web/app/Application/Pos/FinalShiftCloseFeatureActivator.php
+          grep -Fq 'workflow_dispatch:' "$activation"
+          grep -Fq 'execution_authorization_id' "$activation"
+          grep -Fq 'final-shift-close-feature-activation-evidence' "$activation"
           grep -Fq 'FEATURE_ACTIVATION_EVIDENCE_PRODUCER = NOT_IMPLEMENTED' docs/SPRINT106_FINAL_SHIFT_CLOSE_ACTIVATION_TARGET_CONTRACT.md
           grep -Fq 'FEATURE_ACTIVATION_EXECUTION = NOT_PERFORMED' docs/SPRINT106_FINAL_SHIFT_CLOSE_ACTIVATION_TARGET_CONTRACT.md
           grep -Fq 'TECHNICAL_PREVIEW_ACTIVATION_AUTHORITY = NOT_GRANTED' docs/SPRINT106_FINAL_SHIFT_CLOSE_ACTIVATION_TARGET_CONTRACT.md
