@@ -22,7 +22,7 @@ jobs:
     timeout-minutes: 20
     env:
       FINAL_BASE: 80edc837192342d9b453ff57966e47ec1b2872df
-      TRANSIENT_PARENT: 2fd4fd544995a79b71b4baf1d5d21bb54e465d92
+      TRANSIENT_PARENT: 2d8888ecd8d490b7cdf8597037f5e6f079de8084
       HEAD_BRANCH: sprint253-post-activation-historical-regression-successor-compatibility
       SOURCE: 59b42137eed717aacc82080a46753440bb4d8537
       ARTIFACT: 8ad4a33196eabd6248c9dfb35eb118e97759e5c17b32384a12b120258bce615c
