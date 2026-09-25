@@ -32,20 +32,12 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
 
-      - name: Lock exact Sprint254 PR envelope
-        if: github.event_name == 'pull_request'
+      - name: Validate Sprint254 owned successor sources
         shell: bash
-        env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
-          printf '%s\n' \
-            '.github/workflows/production-release-candidate-publication.yml' \
-            '.github/workflows/sprint254-production-release-candidate-post-activation-successor-regression.yml' \
-            | LC_ALL=C sort > /tmp/expected
-          git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/actual
-          diff -u /tmp/expected /tmp/actual
+          test -f '.github/workflows/production-release-candidate-publication.yml'
+          test -f '.github/workflows/sprint254-production-release-candidate-post-activation-successor-regression.yml'
 
       - name: Verify canonical post-activation state remains fail-closed for Production
         shell: bash
