@@ -1,14 +1,14 @@
 name: Sprint253 Bounded Successor Compatibility Correction Materializer
 
 # Attribution: Lab | zefry
-# Transient revision: detached Git-data publication
+# Transient revision: deterministic bundle emission
 
 on:
   pull_request:
     branches: [main]
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   materialize:
@@ -111,68 +111,47 @@ jobs:
           test ! -e tools/sprint253-bounded-successor-correction.py
           test ! -e .github/workflows/sprint253-bounded-successor-correction-materializer.yml
 
-      - name: Create detached bounded correction commit object
+      - name: Emit deterministic bounded correction bundle
         shell: bash
         env:
-          GH_TOKEN: ${{ github.token }}
-          REPO: ${{ github.repository }}
           PARENT_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
           python3 - <<'PY'
+          import base64
+          import gzip
+          import hashlib
           import json
           import os
           import subprocess
-          import urllib.request
+          import textwrap
           from pathlib import Path
 
-          token = os.environ['GH_TOKEN']
-          repo = os.environ['REPO']
-          parent = os.environ['PARENT_SHA']
-
-          def api(path, payload):
-              body = json.dumps(payload).encode()
-              req = urllib.request.Request(
-                  f'https://api.github.com/repos/{repo}{path}',
-                  data=body,
-                  method='POST',
-                  headers={
-                      'Authorization': f'Bearer {token}',
-                      'Accept': 'application/vnd.github+json',
-                      'X-GitHub-Api-Version': '2022-11-28',
-                      'Content-Type': 'application/json',
-                  },
-              )
-              with urllib.request.urlopen(req) as response:
-                  return json.load(response)
-
-          base_tree = subprocess.check_output(['git', 'rev-parse', 'HEAD^{tree}'], text=True).strip()
           changed = subprocess.check_output(['git', 'diff', '--name-only', '-z', 'HEAD'])
           paths = [p.decode() for p in changed.split(b'\0') if p]
           if not paths:
               raise SystemExit('no bounded correction paths materialized')
 
-          entries = []
-          for raw in paths:
+          files = {}
+          for raw in sorted(paths):
               path = Path(raw)
-              mode = subprocess.check_output(['git', 'ls-tree', 'HEAD', '--', raw], text=True).split()[0]
-              if path.exists():
-                  entries.append({'path': raw, 'mode': mode, 'type': 'blob', 'content': path.read_text()})
-              else:
-                  entries.append({'path': raw, 'mode': mode, 'type': 'blob', 'sha': None})
+              files[raw] = base64.b64encode(path.read_bytes()).decode() if path.exists() else None
 
-          tree = api('/git/trees', {'base_tree': base_tree, 'tree': entries})
-          identity = {'name': 'Lab | zefry', 'email': 'lab.zefa@gmail.com'}
-          commit = api('/git/commits', {
-              'message': 'Sprint253: close active-state historical regression compatibility',
-              'tree': tree['sha'],
-              'parents': [parent],
-              'author': identity,
-              'committer': identity,
-          })
-          print(f"DETACHED_COMMIT_SHA={commit['sha']}")
-          print(f"DETACHED_TREE_SHA={tree['sha']}")
-          print(f"DETACHED_PATH_COUNT={len(paths)}")
+          payload = {
+              'parent': os.environ['PARENT_SHA'],
+              'paths': sorted(paths),
+              'files': files,
+          }
+          raw = json.dumps(payload, sort_keys=True, separators=(',', ':')).encode()
+          packed = gzip.compress(raw, compresslevel=9, mtime=0)
+          encoded = base64.b64encode(packed).decode()
+
+          print('BUNDLE_PATH_COUNT=' + str(len(paths)))
+          print('BUNDLE_PACKED_SHA256=' + hashlib.sha256(packed).hexdigest())
+          print('BUNDLE_RAW_SHA256=' + hashlib.sha256(raw).hexdigest())
+          print('BUNDLE_BASE64_BEGIN')
+          print('\n'.join(textwrap.wrap(encoded, 120)))
+          print('BUNDLE_BASE64_END')
           PY
 
 # Author by Lab | zefry
