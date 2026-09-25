@@ -1,5 +1,7 @@
 name: Sprint253 Final Shift Close Post-Activation Historical Regression Successor Compatibility
 
+# Attribution: Lab | zefry
+
 on:
   pull_request:
   push:
@@ -14,22 +16,59 @@ jobs:
   regression:
     runs-on: ubuntu-24.04
     steps:
-      - name: Checkout repository
+      - name: Checkout exact source
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
-      - name: Prove historical workflows accept active successor state
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+
+      - name: Prove bounded current-state successor compatibility
         shell: bash
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PUSH_BEFORE_SHA: ${{ github.event.before }}
+          PUSH_AFTER_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
-          python - <<'PY2'
+          python3 - <<'PY'
           from pathlib import Path
+          import os
           import re
+          import subprocess
+
+          old_fp = '858280ea3575317e8d88eed7009c770530097e261c391b2869fa81ad7c8546ce'
+          old_source = '5be28a3c001738373588b58e9d29832c46402de1'
+          old_artifact = '66be23792478fb191f912571b35076c42783b9733cdb3fb514b549d22ec90dd7'
+
+          base = os.environ.get('PR_BASE_SHA') or os.environ.get('PUSH_BEFORE_SHA')
+          head = os.environ.get('PR_HEAD_SHA') or os.environ.get('PUSH_AFTER_SHA')
+          if not base or not head or set(base) == {'0'}:
+              raise SystemExit('Unable to resolve bounded comparison range.')
+
+          changed = subprocess.check_output(
+              ['git', 'diff', '--name-only', base, head], text=True
+          ).splitlines()
+          workflows = [
+              Path(p) for p in changed
+              if p.startswith('.github/workflows/sprint')
+              and p.endswith('.yml')
+              and not Path(p).name.startswith('sprint253-')
+              and Path(p).exists()
+          ]
+          if not workflows:
+              raise SystemExit('No historical Sprint workflow is present in the Sprint253 compatibility envelope.')
+
           inactive = re.compile(r'\bINACTIVE\b')
           active = re.compile(r'\bACTIVE\b')
+          step_start = re.compile(r'^(\s*)- name:\s*')
           offenders = []
+
           def activation_related(line):
               lower = line.lower()
               return 'feature_activation' in lower or 'feature activation' in lower or '.feature_activation.state' in lower
-          def predecessor_only_guard(line):
+
+          def predecessor_only_activation(line):
               if not activation_related(line) or not inactive.search(line) or active.search(line):
                   return False
               stripped = line.strip()
@@ -37,16 +76,65 @@ jobs:
                   return False
               if '[[' in stripped and re.search(r'(?:==|=|=~)\s*[\'\"]?INACTIVE[\'\"]?', stripped):
                   return True
-              if re.search(r'\btest\s+.+?\s+=\s*[\'\"]?INACTIVE[\'\"]?(?:\s|;|$)', stripped):
-                  return True
-              return False
-          for path in sorted(Path('.github/workflows').glob('sprint*.yml')):
-              if path.name.startswith('sprint253-'):
-                  continue
-              for number, line in enumerate(path.read_text(encoding='utf-8').splitlines(), start=1):
-                  if predecessor_only_guard(line):
-                      offenders.append(f'{path}:{number}:{line.strip()}')
+              return bool(re.search(r'\btest\s+.+?\s+=\s*[\'\"]?INACTIVE[\'\"]?(?:\s|;|$)', stripped))
+
+          for path in sorted(workflows):
+              lines = path.read_text(encoding='utf-8').splitlines()
+              for number, line in enumerate(lines, start=1):
+                  if predecessor_only_activation(line):
+                      offenders.append(f'{path}:{number}:feature predecessor-only guard')
+                  if "jq -r '.migration27.state'" in line and 'NOT_EXECUTED' in line and 'EXECUTED' not in line.replace('NOT_EXECUTED', ''):
+                      offenders.append(f'{path}:{number}:migration predecessor-only guard')
+                  if "jq -r '.permission_provisioning.state'" in line and 'NONE' in line and 'PROVISIONED' not in line:
+                      offenders.append(f'{path}:{number}:permission predecessor-only guard')
+                  if "jq -r '.selected_target.selection_fingerprint_sha256'" in line and old_fp in line:
+                      offenders.append(f'{path}:{number}:stale selected-target fingerprint')
+                  if "jq -r '.selected_target.exact_running_source_commit'" in line and old_source in line:
+                      offenders.append(f'{path}:{number}:stale selected-target running source')
+                  if "jq -r '.selected_target.exact_running_artifact_sha256'" in line and old_artifact in line:
+                      offenders.append(f'{path}:{number}:stale selected-target running artifact')
+
+              starts = [i for i, line in enumerate(lines) if step_start.match(line)]
+              starts.append(len(lines))
+              for pos in range(max(0, len(starts) - 1)):
+                  start, end = starts[pos], starts[pos + 1]
+                  chunk = '\n'.join(lines[start:end])
+                  full_pr_diff = 'git diff --name-only' in chunk and (
+                      ('BASE_SHA' in chunk and 'HEAD_SHA' in chunk)
+                      or 'github.event.pull_request' in chunk
+                  )
+                  exact_global_lock = any(marker in chunk for marker in (
+                      'diff -u /tmp/expected',
+                      'sha256sum /tmp/',
+                      'wc -l < /tmp/',
+                  ))
+                  if full_pr_diff and exact_global_lock:
+                      offenders.append(f'{path}:exact full-PR historical envelope lock')
+
           if offenders:
               raise SystemExit('\n'.join(offenders))
-          print('POST_ACTIVATION_HISTORICAL_SUCCESSOR_COMPATIBILITY_OK')
-          PY2
+
+          print(f'SPRINT253_SUCCESSOR_COMPATIBILITY_OK workflows={len(workflows)}')
+          PY
+
+      - name: Preserve operational no-go boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          state=ops/final-shift-close/STATE.json
+          selection=ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+          test "$(jq -r '.migration27.state' "$state")" = 'EXECUTED'
+          test "$(jq -r '.permission_provisioning.state' "$state")" = 'PROVISIONED'
+          test "$(jq -r '.feature_activation.state' "$state")" = 'ACTIVE'
+          test "$(jq -r '.deployment_authority' "$state")" = 'NOT_GRANTED'
+          test "$(jq -r '.technical_preview_activation' "$state")" = 'NOT_AUTHORIZED'
+          test "$(jq -r '.production_activation' "$state")" = 'NOT_AUTHORIZED'
+          test "$(jq -r '.updater_activation' "$state")" = 'INACTIVE'
+          test "$(jq -r '.selection_state' "$selection")" = 'SELECTED_NOT_AUTHORIZED'
+          test "$(jq -r '.selected_target.exact_running_source_commit' "$selection")" = '59b42137eed717aacc82080a46753440bb4d8537'
+          test "$(jq -r '.selected_target.exact_running_artifact_sha256' "$selection")" = '8ad4a33196eabd6248c9dfb35eb118e97759e5c17b32384a12b120258bce615c'
+          test "$(jq -r '.selected_target.selection_fingerprint_sha256' "$selection")" = '6ecc487cb144e634455de69cc43aa39b1f6880a2256c4b1ab33387096513772b'
+
+      - name: Verify tracked source cleanliness
+        shell: bash
+        run: git diff --exit-code
