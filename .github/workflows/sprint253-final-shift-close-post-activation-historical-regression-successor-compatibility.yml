@@ -1,6 +1,7 @@
 name: Sprint253 Final Shift Close Post-Activation Historical Regression Successor Compatibility
 
 # Attribution: Lab | zefry
+# Final exact-head requalification anchor for the bounded successor-compatibility envelope.
 
 on:
   pull_request:
