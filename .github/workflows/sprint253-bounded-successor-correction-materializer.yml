@@ -1,14 +1,14 @@
 name: Sprint253 Bounded Successor Compatibility Correction Materializer
 
 # Attribution: Lab | zefry
-# Transient revision: deterministic bundle emission
+# Transient revision: deterministic blob export
 
 on:
   pull_request:
     branches: [main]
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   materialize:
@@ -111,47 +111,68 @@ jobs:
           test ! -e tools/sprint253-bounded-successor-correction.py
           test ! -e .github/workflows/sprint253-bounded-successor-correction-materializer.yml
 
-      - name: Emit deterministic bounded correction bundle
+      - name: Export deterministic materialized blob set
         shell: bash
         env:
           PARENT_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
           python3 - <<'PY'
-          import base64
-          import gzip
           import hashlib
           import json
           import os
+          import shutil
           import subprocess
-          import textwrap
           from pathlib import Path
 
           changed = subprocess.check_output(['git', 'diff', '--name-only', '-z', 'HEAD'])
-          paths = [p.decode() for p in changed.split(b'\0') if p]
-          if not paths:
-              raise SystemExit('no bounded correction paths materialized')
+          paths = sorted(p.decode() for p in changed.split(b'\0') if p)
+          if len(paths) != 28:
+              raise SystemExit(f'expected 28 bounded correction paths, found {len(paths)}')
 
-          files = {}
-          for raw in sorted(paths):
-              path = Path(raw)
-              files[raw] = base64.b64encode(path.read_bytes()).decode() if path.exists() else None
+          export = Path('.sprint253-export')
+          if export.exists():
+              shutil.rmtree(export)
+          export.mkdir()
 
-          payload = {
+          records = []
+          digest = hashlib.sha256()
+          for index, raw in enumerate(paths):
+              source = Path(raw)
+              record = {'index': index, 'path': raw, 'deleted': not source.exists()}
+              if source.exists():
+                  data = source.read_bytes()
+                  blob_name = f'{index:03d}.blob'
+                  (export / blob_name).write_bytes(data)
+                  record['export'] = blob_name
+                  record['sha256'] = hashlib.sha256(data).hexdigest()
+                  digest.update(raw.encode() + b'\0' + data + b'\0')
+              else:
+                  record['export'] = None
+                  record['sha256'] = None
+                  digest.update(raw.encode() + b'\0<DELETE>\0')
+              records.append(record)
+
+          manifest = {
               'parent': os.environ['PARENT_SHA'],
-              'paths': sorted(paths),
-              'files': files,
+              'path_count': len(paths),
+              'content_set_sha256': digest.hexdigest(),
+              'records': records,
           }
-          raw = json.dumps(payload, sort_keys=True, separators=(',', ':')).encode()
-          packed = gzip.compress(raw, compresslevel=9, mtime=0)
-          encoded = base64.b64encode(packed).decode()
-
-          print('BUNDLE_PATH_COUNT=' + str(len(paths)))
-          print('BUNDLE_PACKED_SHA256=' + hashlib.sha256(packed).hexdigest())
-          print('BUNDLE_RAW_SHA256=' + hashlib.sha256(raw).hexdigest())
-          print('BUNDLE_BASE64_BEGIN')
-          print('\n'.join(textwrap.wrap(encoded, 120)))
-          print('BUNDLE_BASE64_END')
+          (export / 'manifest.json').write_text(json.dumps(manifest, sort_keys=True, indent=2) + '\n')
+          print('EXPORT_PATH_COUNT=' + str(len(paths)))
+          print('EXPORT_CONTENT_SET_SHA256=' + manifest['content_set_sha256'])
+          print('EXPORT_PARENT_SHA=' + manifest['parent'])
           PY
+
+          git config user.name 'Lab | zefry'
+          git config user.email 'lab.zefa@gmail.com'
+          git add .sprint253-export
+          git diff --cached --check
+          test -n "$(git diff --cached --name-only)"
+          git commit -m 'Sprint253: export validated bounded correction blobs'
+          EXPORT_BRANCH="sprint253-bounded-correction-export-${PARENT_SHA:0:12}"
+          git push origin HEAD:"refs/heads/${EXPORT_BRANCH}"
+          echo "EXPORT_BRANCH=${EXPORT_BRANCH}"
 
 # Author by Lab | zefry
