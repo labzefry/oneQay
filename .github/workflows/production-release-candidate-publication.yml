@@ -35,12 +35,27 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with: {fetch-depth: 0, ref: "${{ github.sha }}"}
-      - name: Preserve NO-GO
+      - name: Preserve post-activation NO-GO
         run: |
           set -euo pipefail
-          test "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" = NOT_EXECUTED
-          test "$(jq -r '.production_activation' ops/final-shift-close/STATE.json)" = NOT_AUTHORIZED
-          test "$(jq -r '.updater_activation' ops/final-shift-close/STATE.json)" = INACTIVE
+          state=ops/final-shift-close/STATE.json
+          selection=ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+          jq -e . "$state" >/dev/null
+          jq -e . "$selection" >/dev/null
+          test "$(jq -r '.migration27.state' "$state")" = EXECUTED
+          test "$(jq -r '.permission_provisioning.state' "$state")" = PROVISIONED
+          test "$(jq -r '.permission_provisioning.permission_id' "$state")" = pos.shift.close
+          test "$(jq -r '.permission_provisioning.default_grant' "$state")" = NONE
+          test "$(jq -r '.feature_activation.state' "$state")" = ACTIVE
+          test "$(jq -r '.deployment_authority' "$state")" = NOT_GRANTED
+          test "$(jq -r '.technical_preview_activation' "$state")" = NOT_AUTHORIZED
+          test "$(jq -r '.production_activation' "$state")" = NOT_AUTHORIZED
+          test "$(jq -r '.updater_activation' "$state")" = INACTIVE
+          test "$(jq -r '.selection_state' "$selection")" = SELECTED_NOT_AUTHORIZED
+          test "$(jq -r '.selected_target.environment_id' "$selection")" = oneqay-durable-staging-01
+          test "$(jq -r '.selected_target.runtime_class' "$selection")" = durable-staging
+          test "$(jq -r '.selected_target.exact_running_source_commit' "$selection")" = 59b42137eed717aacc82080a46753440bb4d8537
+          test "$(jq -r '.selected_target.exact_running_artifact_sha256' "$selection")" = 8ad4a33196eabd6248c9dfb35eb118e97759e5c17b32384a12b120258bce615c
       - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
         with: {php-version: '8.3', extensions: pdo_mysql, tools: composer:v2, coverage: none}
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
