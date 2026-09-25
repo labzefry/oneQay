@@ -21,7 +21,8 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     env:
-      BASE_PARENT: 80edc837192342d9b453ff57966e47ec1b2872df
+      FINAL_BASE: 80edc837192342d9b453ff57966e47ec1b2872df
+      TRANSIENT_PARENT: 2fd4fd544995a79b71b4baf1d5d21bb54e465d92
       HEAD_BRANCH: sprint253-post-activation-historical-regression-successor-compatibility
       SOURCE: 59b42137eed717aacc82080a46753440bb4d8537
       ARTIFACT: 8ad4a33196eabd6248c9dfb35eb118e97759e5c17b32384a12b120258bce615c
@@ -40,11 +41,11 @@ jobs:
         run: |
           set -euo pipefail
           test "${GITHUB_HEAD_REF}" = "${HEAD_BRANCH}"
-          test "$(git rev-parse HEAD^)" = "${BASE_PARENT}"
+          test "$(git rev-parse HEAD^)" = "${TRANSIENT_PARENT}"
           test -f .github/workflows/sprint253-failure-batch-materializer.yml
           test -f tools/sprint253-failure-batch-correction.py
-          test "$(git diff --name-only "${BASE_PARENT}" HEAD | LC_ALL=C sort | wc -l)" = '2'
-          git diff --name-only "${BASE_PARENT}" HEAD | LC_ALL=C sort > /tmp/transient
+          test "$(git diff --name-only "${FINAL_BASE}" HEAD | LC_ALL=C sort | wc -l)" = '2'
+          git diff --name-only "${FINAL_BASE}" HEAD | LC_ALL=C sort > /tmp/transient
           printf '%s\n' \
             '.github/workflows/sprint253-failure-batch-materializer.yml' \
             'tools/sprint253-failure-batch-correction.py' | LC_ALL=C sort > /tmp/transient-expected
@@ -108,7 +109,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          git diff --exit-code "${BASE_PARENT}" -- \
+          git diff --exit-code "${FINAL_BASE}" -- \
             apps/web/app \
             apps/web/bootstrap \
             apps/web/config \
@@ -145,7 +146,7 @@ jobs:
           rm -rf tools/__pycache__
           git diff --check
 
-          git diff --name-only "${BASE_PARENT}" | LC_ALL=C sort > /tmp/final-paths
+          git diff --name-only "${FINAL_BASE}" | LC_ALL=C sort > /tmp/final-paths
           diff -u /tmp/expected /tmp/final-paths
           test "$(wc -l < /tmp/final-paths)" = '18'
 
@@ -155,7 +156,7 @@ jobs:
           git commit -m 'Sprint253: close exact-head compatibility failures' -m 'Author by Lab | zefry'
 
           test "$(git rev-parse HEAD^)" = "${GITHUB_SHA}"
-          git diff --name-only "${BASE_PARENT}" HEAD | LC_ALL=C sort > /tmp/committed-paths
+          git diff --name-only "${FINAL_BASE}" HEAD | LC_ALL=C sort > /tmp/committed-paths
           diff -u /tmp/expected /tmp/committed-paths
           test ! -e .github/workflows/sprint253-failure-batch-materializer.yml
           test ! -e tools/sprint253-failure-batch-correction.py
