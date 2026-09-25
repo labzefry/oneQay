@@ -50,6 +50,12 @@ jobs:
               raise SystemExit(f'expected one stale Sprint115 workflow path, found {text.count(old_s115)}')
           text = text.replace(old_s115, new_s115, 1)
 
+          strict_loop_guard = "    if text.count(marker) != 1:\n        raise SystemExit(f'{path}: expected one historical workflow loop')"
+          bounded_loop_guard = "    if text.count(marker) < 1:\n        raise SystemExit(f'{path}: expected at least one historical workflow loop')"
+          if text.count(strict_loop_guard) != 1:
+              raise SystemExit(f'expected one strict historical-loop guard, found {text.count(strict_loop_guard)}')
+          text = text.replace(strict_loop_guard, bounded_loop_guard, 1)
+
           marker = '# Transient materializer/script must not survive final PR tree.\n'
           if text.count(marker) != 1:
               raise SystemExit('expected one transient-retirement marker')
