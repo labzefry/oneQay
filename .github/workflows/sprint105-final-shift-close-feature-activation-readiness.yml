@@ -96,10 +96,14 @@ jobs:
           activation=.github/workflows/final-shift-close-feature-activation.yml
           test -f "$activation"
           grep -Fq 'workflow_dispatch:' "$activation"
-          grep -Fq 'execution_authorization_id' "$activation"
-          grep -Fq 'final-shift-close-feature-activation-evidence' "$activation"
-          grep -Fq 'deployment_authority' "$activation"
-          grep -Fq 'NOT_GRANTED' "$activation
+          grep -Fq 'target_pr_number:' "$activation"
+          grep -Fq 'target_head_sha:' "$activation"
+          grep -Fq 'approval_token_sha256:' "$activation"
+          grep -Fq 'environment: final-shift-close-feature-activation' "$activation"
+          grep -Fq "require_status_success 'product-owner-merge-authority'" "$activation"
+          grep -Fq "require_status_success 'final-shift-close-feature-activation-authority'" "$activation"
+          grep -Fq "'.deployment_authority'" "$activation"
+          grep -Fq 'NOT_GRANTED' "$activation"
 
       - name: Lock future executor readiness contract
         shell: bash
