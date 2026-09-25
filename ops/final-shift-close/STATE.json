@@ -14,7 +14,7 @@
     "default_grant": "NONE"
   },
   "feature_activation": {
-    "state": "INACTIVE",
+    "state": "ACTIVE",
     "authority_context": "final-shift-close-feature-activation-authority",
     "evidence_context": "final-shift-close-feature-activation-evidence",
     "runtime_flag": "ONEQAY_POS_SHIFT_CLOSE_ENABLED"
