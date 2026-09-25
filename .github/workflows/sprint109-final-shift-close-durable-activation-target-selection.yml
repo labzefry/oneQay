@@ -79,7 +79,7 @@ jobs:
           grep -Fq 'APP_ENV: testing' "$staging"
           grep -Fq 'ONEQAY_RUNTIME_CLASS: ci' "$staging"
           grep -Fq "'install_enabled' => false" "$staging"
-          grep -Fq 'Activation foundation must not wire runtime HTTP/config/provider mutation.' "$staging"
+          grep -Fq 'Activation foundation must not wire runtime HTTP/provider mutation outside a qualified successor.' "$staging"
           grep -Fq 'Run safe staging activation health rollback regression' "$staging"
 
       - name: Preserve current operational state and runtime source
