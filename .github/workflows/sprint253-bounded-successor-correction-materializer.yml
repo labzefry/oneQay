@@ -1,6 +1,7 @@
 name: Sprint253 Bounded Successor Compatibility Correction Materializer
 
 # Attribution: Lab | zefry
+# Transient revision: hardened successor payload
 
 on:
   push:
