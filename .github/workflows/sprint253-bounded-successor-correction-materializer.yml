@@ -1,31 +1,36 @@
 name: Sprint253 Bounded Successor Compatibility Correction Materializer
 
 # Attribution: Lab | zefry
-# Transient revision: hardened successor payload
+# Transient revision: PR exact-head execution
 
 on:
-  push:
-    branches:
-      - sprint253-post-activation-historical-regression-successor-compatibility
+  pull_request:
+    branches: [main]
 
 permissions:
   contents: write
 
 jobs:
   materialize:
+    if: github.event.pull_request.head.ref == 'sprint253-post-activation-historical-regression-successor-compatibility'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Checkout exact branch source
+      - name: Checkout exact PR head source
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
+          ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
       - name: Verify bounded lineage
         shell: bash
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
         run: |
           set -euo pipefail
-          test "$GITHUB_REF_NAME" = 'sprint253-post-activation-historical-regression-successor-compatibility'
+          test "$HEAD_REF" = 'sprint253-post-activation-historical-regression-successor-compatibility'
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
           git merge-base --is-ancestor fc6c94ee6f3da7702026c7db444d71b623ce7022 HEAD
           test -f tools/sprint253-bounded-successor-correction.py
 
