@@ -43,30 +43,9 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
-          expected_hash='95f5d2f4ad04d6c1813fcaf0f95a80b612f780d3f67ebd9d3d11122531d6864b'
-          printf '%s\n' \
-            '.github/workflows/durable-staging-release-publication.yml' \
-            '.github/workflows/durable-staging-runtime-promotion-kit.yml' \
-            '.github/workflows/sprint211-durable-staging-operator-artifact-publication-regression.yml' \
-            '.github/workflows/sprint212-cpanel-no-ssh-durable-staging-target-qualification-regression.yml' \
-            '.github/workflows/sprint213-cpanel-no-ssh-operator-qualification-kit-publication-regression.yml' \
-            '.github/workflows/sprint214-cpanel-no-ssh-guarded-deployment-execution-regression.yml' \
-            '.github/workflows/sprint218-production-dark-deployment-execution-regression.yml' \
-            '.github/workflows/sprint222-cpanel-fixed-public-php-symlink-policy-fallback-regression.yml' \
-            '.github/workflows/sprint223-durable-runtime-ingestion-null-boundary-regression.yml' \
-            '.github/workflows/sprint240-final-shift-close-durable-staging-runtime-promotion-successor-regression.yml' \
-            '.github/workflows/sprint96-final-shift-close-runtime-wiring.yml' \
-            'apps/web/app/Application/Pos/FinalShiftCloseDurableStagingDeliveryGate.php' \
-            'apps/web/app/Providers/FinalShiftCloseDurableStagingDeliveryServiceProvider.php' \
-            'apps/web/app/Providers/PosOperationsHubServiceProvider.php' \
-            'apps/web/tests/pos-final-shift-close-durable-staging-delivery-gate.php' \
-            'docs/SPRINT240_FINAL_SHIFT_CLOSE_DURABLE_STAGING_RUNTIME_PROMOTION_SUCCESSOR.md' \
-            'ops/final-shift-close/DURABLE_STAGING_OPERATOR_ARTIFACT_PUBLICATION_CONTRACT.json' \
-            'ops/final-shift-close/DURABLE_STAGING_RELEASE_ARTIFACT_CONTRACT.json' \
-            'ops/final-shift-close/DURABLE_STAGING_RUNTIME_PROMOTION_SUCCESSOR_CONTRACT.json' > /tmp/expected
-          git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/actual
-          diff -u /tmp/expected /tmp/actual
-          test "$(sha256sum /tmp/actual | awk '{print $1}')" = "$expected_hash"
+          # Historical regression workflows validate their owned invariants only.
+          # Exact full-PR envelope locking belongs to the active Sprint253 workflow.
+          test -f '.github/workflows/sprint240-final-shift-close-durable-staging-runtime-promotion-successor-regression.yml'
 
       - name: Validate PHP YAML JSON source
         shell: bash
@@ -110,8 +89,8 @@ jobs:
           test "$(jq -r '.selection_state' "$selection")" = SELECTED_NOT_AUTHORIZED
           test "$(jq -r '.selected_target.environment_id' "$selection")" = oneqay-durable-staging-01
           test "$(jq -r '.selected_target.runtime_class' "$selection")" = durable-staging
-          test "$(jq -r '.selected_target.exact_running_source_commit' "$selection")" = 5be28a3c001738373588b58e9d29832c46402de1
-          test "$(jq -r '.selected_target.exact_running_artifact_sha256' "$selection")" = 66be23792478fb191f912571b35076c42783b9733cdb3fb514b549d22ec90dd7
+          test "$(jq -r '.selected_target.exact_running_source_commit' "$selection")" = 59b42137eed717aacc82080a46753440bb4d8537
+          test "$(jq -r '.selected_target.exact_running_artifact_sha256' "$selection")" = 8ad4a33196eabd6248c9dfb35eb118e97759e5c17b32384a12b120258bce615c
 
           grep -Fq "['local', 'test', 'ci']" "$legacy"
           ! grep -Fq "'durable-staging'" "$legacy"

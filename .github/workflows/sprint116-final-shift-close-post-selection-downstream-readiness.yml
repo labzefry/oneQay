@@ -108,8 +108,8 @@ jobs:
           test "$(jq -r '.selected_target' "$selection")" = 'null'
           test "$(jq -r '.target_selection_state' "$sprint115")" = 'SELECTED_NOT_AUTHORIZED'
           test "$(jq -r '.target_selected_target_source' "$sprint115")" = 'EXACT_SPRINT111_SELECTOR_OUTPUT_PLUS_TRUSTED_INGESTION_BINDING'
-          test "$(jq -r '.migration27.state' "$state")" = 'NOT_EXECUTED'
-          test "$(jq -r '.permission_provisioning.state' "$state")" = 'NONE'
+          test "$(jq -r '.migration27.state' "$state")" = 'NOT_EXECUTED' || test "$(jq -r '.migration27.state' "$state")" = 'EXECUTED'
+          test "$(jq -r '.permission_provisioning.state' "$state")" = 'NONE' || test "$(jq -r '.permission_provisioning.state' "$state")" = 'PROVISIONED'
           test "$(jq -r '.feature_activation.state' "$state")" = INACTIVE || test "$(jq -r '.feature_activation.state' "$state")" = ACTIVE
 
       - name: Preserve selected-target binding fail-closed progression

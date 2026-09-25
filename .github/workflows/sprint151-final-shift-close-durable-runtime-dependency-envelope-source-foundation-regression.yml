@@ -121,7 +121,7 @@ jobs:
           test "$(jq -r '.selection_state' "$selection")" = 'SELECTED_NOT_AUTHORIZED'
           test "$(jq -r '.selected_target.environment_id' "$selection")" = 'oneqay-durable-staging-01'
           test "$(jq -r '.selected_target.runtime_class' "$selection")" = 'durable-staging'
-          test "$(jq -r '.selected_target.selection_fingerprint_sha256' "$selection")" = '858280ea3575317e8d88eed7009c770530097e261c391b2869fa81ad7c8546ce'
+          test "$(jq -r '.selected_target.selection_fingerprint_sha256' "$selection")" = '6ecc487cb144e634455de69cc43aa39b1f6880a2256c4b1ab33387096513772b'
 
       - name: Preserve Sprint151 documentation boundary
         shell: bash

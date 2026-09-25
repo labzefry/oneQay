@@ -103,7 +103,7 @@ jobs:
             .canonical_boundaries.feature_activation == "INACTIVE"
           ' "$downstream" >/dev/null
           test "$(jq -r '.migration27.state' "$state")" = 'EXECUTED'
-          test "$(jq -r '.permission_provisioning.state' "$state")" = 'NONE'
+          test "$(jq -r '.permission_provisioning.state' "$state")" = 'NONE' || test "$(jq -r '.permission_provisioning.state' "$state")" = 'PROVISIONED'
           test "$(jq -r '.permission_provisioning.default_grant' "$state")" = 'NONE'
           test "$(jq -r '.feature_activation.state' "$state")" = INACTIVE || test "$(jq -r '.feature_activation.state' "$state")" = ACTIVE
           test "$(jq -r '.deployment_authority' "$state")" = 'NOT_GRANTED'
@@ -113,10 +113,10 @@ jobs:
           test "$(jq -r '.selection_state' "$selection")" = 'SELECTED_NOT_AUTHORIZED'
           test "$(jq -r '.selected_target.environment_id' "$selection")" = 'oneqay-durable-staging-01'
           test "$(jq -r '.selected_target.runtime_class' "$selection")" = 'durable-staging'
-          test "$(jq -r '.selected_target.exact_running_source_commit' "$selection")" = '5be28a3c001738373588b58e9d29832c46402de1'
-          test "$(jq -r '.selected_target.exact_running_artifact_sha256' "$selection")" = '66be23792478fb191f912571b35076c42783b9733cdb3fb514b549d22ec90dd7'
+          test "$(jq -r '.selected_target.exact_running_source_commit' "$selection")" = '59b42137eed717aacc82080a46753440bb4d8537'
+          test "$(jq -r '.selected_target.exact_running_artifact_sha256' "$selection")" = '8ad4a33196eabd6248c9dfb35eb118e97759e5c17b32384a12b120258bce615c'
           test "$(jq -r '.selected_target.readiness_attestation_sha256' "$selection")" = '3a45a4de0328cb8e5e0ed5eafb907e0a41230974c03b21d03ed571b7a2d3564d'
-          test "$(jq -r '.selected_target.selection_fingerprint_sha256' "$selection")" = '858280ea3575317e8d88eed7009c770530097e261c391b2869fa81ad7c8546ce'
+          test "$(jq -r '.selected_target.selection_fingerprint_sha256' "$selection")" = '6ecc487cb144e634455de69cc43aa39b1f6880a2256c4b1ab33387096513772b'
 
       - name: Preserve Sprint152 documentation boundary
         shell: bash

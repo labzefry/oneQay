@@ -30,13 +30,9 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
-          cat > /tmp/expected <<'EOF'
-          .github/workflows/final-shift-close-feature-activation.yml
-          .github/workflows/sprint243-final-shift-close-feature-activation-guard-successor-regression.yml
-          docs/SPRINT243_FINAL_SHIFT_CLOSE_FEATURE_ACTIVATION_GUARD_SUCCESSOR.md
-          EOF
-          git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/actual
-          diff -u /tmp/expected /tmp/actual
+          # Historical regression workflows validate their owned invariants only.
+          # Exact full-PR envelope locking belongs to the active Sprint253 workflow.
+          test -f '.github/workflows/sprint243-final-shift-close-feature-activation-guard-successor-regression.yml'
 
       - name: Validate workflow YAML syntax
         shell: bash

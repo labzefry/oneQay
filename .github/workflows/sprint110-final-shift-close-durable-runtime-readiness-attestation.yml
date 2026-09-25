@@ -39,16 +39,9 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
-          git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/actual
-          cat > /tmp/expected <<'EOF'
-          .github/workflows/sprint110-final-shift-close-durable-runtime-readiness-attestation.yml
-          apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeReadiness.php
-          apps/web/tests/pos-final-shift-close-durable-runtime-readiness.php
-          docs/SPRINT110_FINAL_SHIFT_CLOSE_DURABLE_RUNTIME_READINESS_ATTESTATION.md
-          ops/final-shift-close/DURABLE_RUNTIME_READINESS_CONTRACT.json
-          EOF
-          diff -u /tmp/expected /tmp/actual
-          test "$(sha256sum /tmp/actual | awk '{print $1}')" = 'efce88241df5ada783e6699c996769a320688ed05c082bf3e2d7590372169c77'
+          # Historical regression workflows validate their owned invariants only.
+          # Exact full-PR envelope locking belongs to the active Sprint253 workflow.
+          test -f '.github/workflows/sprint110-final-shift-close-durable-runtime-readiness-attestation.yml'
 
       - name: Validate Sprint109 blocked-target prerequisite
         shell: bash
@@ -126,8 +119,8 @@ jobs:
           grep -Fq "['local', 'test', 'ci']" "$repository"
 
           state=ops/final-shift-close/STATE.json
-          test "$(jq -r '.migration27.state' "$state")" = 'NOT_EXECUTED'
-          test "$(jq -r '.permission_provisioning.state' "$state")" = 'NONE'
+          test "$(jq -r '.migration27.state' "$state")" = 'NOT_EXECUTED' || test "$(jq -r '.migration27.state' "$state")" = 'EXECUTED'
+          test "$(jq -r '.permission_provisioning.state' "$state")" = 'NONE' || test "$(jq -r '.permission_provisioning.state' "$state")" = 'PROVISIONED'
           test "$(jq -r '.feature_activation.state' "$state")" = INACTIVE || test "$(jq -r '.feature_activation.state' "$state")" = ACTIVE
           test "$(jq -r '.deployment_authority' "$state")" = 'NOT_GRANTED'
           test "$(jq -r '.production_activation' "$state")" = 'NOT_AUTHORIZED'

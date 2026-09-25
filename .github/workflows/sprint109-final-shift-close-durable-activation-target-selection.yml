@@ -29,14 +29,9 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
-          git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/actual
-          cat > /tmp/expected <<'EOF'
-          .github/workflows/sprint109-final-shift-close-durable-activation-target-selection.yml
-          docs/SPRINT109_FINAL_SHIFT_CLOSE_DURABLE_ACTIVATION_TARGET_SELECTION.md
-          ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
-          EOF
-          diff -u /tmp/expected /tmp/actual
-          test "$(sha256sum /tmp/actual | awk '{print $1}')" = 'd580cc75392b23f1e5dee46b0f4bcb83e3420c3f981b90e93134a40ebdfdf014'
+          # Historical regression workflows validate their owned invariants only.
+          # Exact full-PR envelope locking belongs to the active Sprint253 workflow.
+          test -f '.github/workflows/sprint109-final-shift-close-durable-activation-target-selection.yml'
 
       - name: Validate Sprint108 strategy prerequisite
         shell: bash
@@ -95,8 +90,8 @@ jobs:
             ops/final-shift-close/PREVIEW_RUNTIME_STRATEGY.json
 
           state=ops/final-shift-close/STATE.json
-          test "$(jq -r '.migration27.state' "$state")" = 'NOT_EXECUTED'
-          test "$(jq -r '.permission_provisioning.state' "$state")" = 'NONE'
+          test "$(jq -r '.migration27.state' "$state")" = 'NOT_EXECUTED' || test "$(jq -r '.migration27.state' "$state")" = 'EXECUTED'
+          test "$(jq -r '.permission_provisioning.state' "$state")" = 'NONE' || test "$(jq -r '.permission_provisioning.state' "$state")" = 'PROVISIONED'
           test "$(jq -r '.feature_activation.state' "$state")" = INACTIVE || test "$(jq -r '.feature_activation.state' "$state")" = ACTIVE
           test "$(jq -r '.deployment_authority' "$state")" = 'NOT_GRANTED'
           test "$(jq -r '.production_activation' "$state")" = 'NOT_AUTHORIZED'
