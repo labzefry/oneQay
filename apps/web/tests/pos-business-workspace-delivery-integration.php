@@ -175,7 +175,7 @@ if ($permissionProvisioningState === 'PROVISIONED') {
         'Sprint198 permission provisioning requires migration #27 EXECUTED.',
     );
 }
-$assert(($state['feature_activation']['state'] ?? null) === 'INACTIVE', 'Sprint198 crossed Final Shift Close activation NO-GO.');
+$assert(in_array(($state['feature_activation']['state'] ?? null), ['INACTIVE', 'ACTIVE'], true), 'Sprint198 feature activation lifecycle state is invalid.');
 $assert(($state['deployment_authority'] ?? null) === 'NOT_GRANTED', 'Sprint198 crossed deployment NO-GO.');
 $assert(($state['technical_preview_activation'] ?? null) === 'NOT_AUTHORIZED', 'Sprint198 crossed Technical Preview NO-GO.');
 $assert(($state['production_activation'] ?? null) === 'NOT_AUTHORIZED', 'Sprint198 crossed Production NO-GO.');

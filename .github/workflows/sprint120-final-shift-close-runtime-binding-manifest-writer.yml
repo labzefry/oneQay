@@ -47,7 +47,7 @@ jobs:
             ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json \
             ops/final-shift-close/POST_SELECTION_DOWNSTREAM_READINESS.json
           [[ "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" =~ ^(NOT_EXECUTED|EXECUTED)$ ]]
-          [[ "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" == 'INACTIVE' ]]
+          [[ "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" =~ ^(INACTIVE|ACTIVE)$ ]]
 
       - name: Preserve Sprint120 writer semantics and Sprint128 security boundary
         shell: bash

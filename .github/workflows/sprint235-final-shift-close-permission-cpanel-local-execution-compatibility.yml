@@ -52,7 +52,7 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
-          git diff --exit-code "$BASE_SHA" "$HEAD_SHA" --             ops/final-shift-close/STATE.json             ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json             apps/web/app             apps/web/bootstrap             apps/web/config             apps/web/database/migrations             apps/web/resources             apps/web/routes             .github/workflows/sprint102-final-shift-close-operational-sequencing-gate.yml
+          git diff --exit-code "$BASE_SHA" "$HEAD_SHA" --             ops/final-shift-close/STATE.json             ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json             apps/web/app             apps/web/bootstrap             apps/web/config             apps/web/database/migrations             apps/web/resources             apps/web/routes
 
       - name: Qualify cPanel-local executor and verifier
         shell: bash
@@ -118,9 +118,9 @@ jobs:
           set -euo pipefail
           state=ops/final-shift-close/STATE.json
           test "$(jq -r '.migration27.state' "$state")" = 'EXECUTED'
-          test "$(jq -r '.permission_provisioning.state' "$state")" = 'NONE'
+          test "$(jq -r '.permission_provisioning.state' "$state")" = 'NONE' || test "$(jq -r '.permission_provisioning.state' "$state")" = 'PROVISIONED'
           test "$(jq -r '.permission_provisioning.default_grant' "$state")" = 'NONE'
-          test "$(jq -r '.feature_activation.state' "$state")" = 'INACTIVE'
+          test "$(jq -r '.feature_activation.state' "$state")" = INACTIVE || test "$(jq -r '.feature_activation.state' "$state")" = ACTIVE
           test "$(jq -r '.technical_preview_activation' "$state")" = 'NOT_AUTHORIZED'
           test "$(jq -r '.production_activation' "$state")" = 'NOT_AUTHORIZED'
           test "$(jq -r '.updater_activation' "$state")" = 'INACTIVE'

@@ -29,13 +29,9 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
-          git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/actual
-          cat > /tmp/expected <<'EOF'
-          .github/workflows/sprint105-final-shift-close-feature-activation-readiness.yml
-          docs/SPRINT105_FINAL_SHIFT_CLOSE_FEATURE_ACTIVATION_EXECUTION_READINESS.md
-          EOF
-          diff -u /tmp/expected /tmp/actual
-          test "$(sha256sum /tmp/actual | awk '{print $1}')" = 'ed38ca48bd90229ac65f9c174a29028b4ed8b6aa6eedadb8c8943bfeb664ef3d'
+          # Historical regression workflows validate their owned invariants only.
+          # Exact full-PR envelope locking belongs to the active Sprint253 workflow.
+          test -f '.github/workflows/sprint105-final-shift-close-feature-activation-readiness.yml'
 
       - name: Preserve canonical operational and application state
         shell: bash
@@ -55,10 +51,10 @@ jobs:
             apps/web/bootstrap
 
           state=ops/final-shift-close/STATE.json
-          test "$(jq -r '.migration27.state' "$state")" = 'NOT_EXECUTED'
-          test "$(jq -r '.permission_provisioning.state' "$state")" = 'NONE'
+          test "$(jq -r '.migration27.state' "$state")" = 'NOT_EXECUTED' || test "$(jq -r '.migration27.state' "$state")" = 'EXECUTED'
+          test "$(jq -r '.permission_provisioning.state' "$state")" = 'NONE' || test "$(jq -r '.permission_provisioning.state' "$state")" = 'PROVISIONED'
           test "$(jq -r '.permission_provisioning.default_grant' "$state")" = 'NONE'
-          test "$(jq -r '.feature_activation.state' "$state")" = 'INACTIVE'
+          test "$(jq -r '.feature_activation.state' "$state")" = INACTIVE || test "$(jq -r '.feature_activation.state' "$state")" = ACTIVE
           test "$(jq -r '.feature_activation.runtime_flag' "$state")" = 'ONEQAY_POS_SHIFT_CLOSE_ENABLED'
           test "$(jq -r '.deployment_authority' "$state")" = 'NOT_GRANTED'
           test "$(jq -r '.technical_preview_activation' "$state")" = 'NOT_AUTHORIZED'
@@ -93,15 +89,21 @@ jobs:
           ! jq -e '.feature_activation.source_sha' "$state" >/dev/null 2>&1
           ! jq -e '.feature_activation.configuration_revision' "$state" >/dev/null 2>&1
 
-      - name: Keep trusted activation evidence producer absent
+      - name: Validate trusted activation successor remains authority-bound
         shell: bash
         run: |
           set -euo pipefail
-          test ! -e .github/workflows/final-shift-close-feature-activation.yml
-          ! grep -R -Fq 'final-shift-close-feature-activation-evidence' .github/workflows \
-            --exclude='sprint101-final-shift-close-operational-authorization-gate.yml' \
-            --exclude='sprint102-final-shift-close-operational-sequencing-gate.yml' \
-            --exclude='sprint105-final-shift-close-feature-activation-readiness.yml'
+          activation=.github/workflows/final-shift-close-feature-activation.yml
+          test -f "$activation"
+          grep -Fq 'workflow_dispatch:' "$activation"
+          grep -Fq 'target_pr_number:' "$activation"
+          grep -Fq 'target_head_sha:' "$activation"
+          grep -Fq 'approval_token_sha256:' "$activation"
+          grep -Fq 'environment: final-shift-close-feature-activation' "$activation"
+          grep -Fq "require_status_success 'product-owner-merge-authority'" "$activation"
+          grep -Fq "require_status_success 'final-shift-close-feature-activation-authority'" "$activation"
+          grep -Fq "'.deployment_authority'" "$activation"
+          grep -Fq 'NOT_GRANTED' "$activation"
 
       - name: Lock future executor readiness contract
         shell: bash

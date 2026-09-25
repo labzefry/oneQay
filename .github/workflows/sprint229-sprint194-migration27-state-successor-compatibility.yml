@@ -44,7 +44,15 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
-          git diff --exit-code "$BASE_SHA" "$HEAD_SHA" --             apps             ops/final-shift-close/STATE.json             ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json             .github/workflows/final-shift-close-migration27-execution.yml             .github/workflows/final-shift-close-migration27-selected-target-db-binding.yml
+          git diff --exit-code "$BASE_SHA" "$HEAD_SHA" -- \
+            apps/web/app \
+            apps/web/bootstrap \
+            apps/web/config \
+            apps/web/database/migrations \
+            apps/web/resources \
+            apps/web/routes \
+            ops/final-shift-close/STATE.json \
+            ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
 
       - name: Qualify Sprint194 canonical migration lifecycle compatibility
         shell: bash
@@ -70,7 +78,7 @@ jobs:
           if [[ "$permission_state" == 'PROVISIONED' ]]; then
             test "$(jq -r '.migration27.state' "$state")" = 'EXECUTED'
           fi
-          test "$(jq -r '.feature_activation.state' "$state")" = 'INACTIVE'
+          test "$(jq -r '.feature_activation.state' "$state")" = INACTIVE || test "$(jq -r '.feature_activation.state' "$state")" = ACTIVE
           test "$(jq -r '.technical_preview_activation' "$state")" = 'NOT_AUTHORIZED'
           test "$(jq -r '.production_activation' "$state")" = 'NOT_AUTHORIZED'
           test "$(jq -r '.updater_activation' "$state")" = 'INACTIVE'

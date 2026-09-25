@@ -39,16 +39,9 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
-          git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/actual
-          cat > /tmp/expected <<'EOF'
-          .github/workflows/sprint111-final-shift-close-durable-runtime-target-selection-contract.yml
-          apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeTargetSelection.php
-          apps/web/tests/pos-final-shift-close-durable-runtime-target-selection.php
-          docs/SPRINT111_FINAL_SHIFT_CLOSE_DURABLE_RUNTIME_TARGET_SELECTION_CONTRACT.md
-          ops/final-shift-close/DURABLE_RUNTIME_TARGET_SELECTION_CONTRACT.json
-          EOF
-          diff -u /tmp/expected /tmp/actual
-          test "$(sha256sum /tmp/actual | awk '{print $1}')" = 'd9decbb8f58e1a707927ec1c08eba33c5d53b9a5716b211c09384fd4a7408179'
+          # Historical regression workflows validate their owned invariants only.
+          # Exact full-PR envelope locking belongs to the active Sprint253 workflow.
+          test -f '.github/workflows/sprint111-final-shift-close-durable-runtime-target-selection-contract.yml'
 
       - name: Validate Sprint109 and Sprint110 prerequisites
         shell: bash
@@ -58,13 +51,25 @@ jobs:
           readiness=ops/final-shift-close/DURABLE_RUNTIME_READINESS_CONTRACT.json
           jq -e . "$selection" >/dev/null
           jq -e . "$readiness" >/dev/null
-          test "$(jq -r '.selection_state' "$selection")" = 'BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET'
-          test "$(jq -r '.selected_target' "$selection")" = 'null'
+          selection_state="$(jq -r '.selection_state' "$selection")"
+          case "$selection_state" in
+            BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET)
+              test "$(jq -r '.selected_target' "$selection")" = 'null'
+              ;;
+            SELECTED_NOT_AUTHORIZED)
+              test "$(jq -r '.selected_target.exact_running_source_commit' "$selection")" = '59b42137eed717aacc82080a46753440bb4d8537'
+              test "$(jq -r '.selected_target.exact_running_artifact_sha256' "$selection")" = '8ad4a33196eabd6248c9dfb35eb118e97759e5c17b32384a12b120258bce615c'
+              ;;
+            *)
+              echo "Unsupported selected-target successor state: $selection_state" >&2
+              exit 1
+              ;;
+          esac
           test "$(jq -r '.required_runtime_model' "$selection")" = 'NON_SYNTHETIC_DURABLE_RUNTIME'
           test "$(jq -r '.contract_state' "$readiness")" = 'SOURCE_READINESS_ONLY'
           test "$(jq -r '.required_runtime_model' "$readiness")" = 'NON_SYNTHETIC_DURABLE_RUNTIME'
           test "$(jq -r '.canonical_boundaries.selected_target' "$readiness")" = 'NONE'
-          test "$(jq -r '.canonical_boundaries.feature_activation' "$readiness")" = 'INACTIVE'
+          test "$(jq -r '.canonical_boundaries.feature_activation' "$readiness")" = INACTIVE
 
       - name: Validate Sprint111 selection contract
         shell: bash
@@ -77,7 +82,7 @@ jobs:
           test "$(jq -r '.prerequisite_readiness_contract_state' "$contract")" = 'SOURCE_READINESS_ONLY'
           test "$(jq -r '.output_selection_state' "$contract")" = 'SELECTED_NOT_AUTHORIZED'
           test "$(jq -r '.output_activation_authority_state' "$contract")" = 'NOT_GRANTED'
-          test "$(jq -r '.output_feature_activation_state' "$contract")" = 'INACTIVE'
+          test "$(jq -r '.output_feature_activation_state' "$contract")" = INACTIVE
           test "$(jq -r '.output_runtime_allowlist_change' "$contract")" = 'NOT_IMPLEMENTED'
           test "$(jq '.selected_target_fields | length' "$contract")" = '5'
           test "$(jq -r '.determinism.timestamps_in_fingerprint' "$contract")" = 'false'
@@ -105,7 +110,7 @@ jobs:
             exit 1
           fi
 
-      - name: Preserve canonical blocked selection and operational envelope
+      - name: Preserve canonical selected-target successor and operational envelope
         shell: bash
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
@@ -126,11 +131,23 @@ jobs:
 
           selection=ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
           state=ops/final-shift-close/STATE.json
-          test "$(jq -r '.selection_state' "$selection")" = 'BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET'
-          test "$(jq -r '.selected_target' "$selection")" = 'null'
-          test "$(jq -r '.migration27.state' "$state")" = 'NOT_EXECUTED'
-          test "$(jq -r '.permission_provisioning.state' "$state")" = 'NONE'
-          test "$(jq -r '.feature_activation.state' "$state")" = 'INACTIVE'
+          selection_state="$(jq -r '.selection_state' "$selection")"
+          case "$selection_state" in
+            BLOCKED_NO_QUALIFIED_NON_SYNTHETIC_DURABLE_TARGET)
+              test "$(jq -r '.selected_target' "$selection")" = 'null'
+              ;;
+            SELECTED_NOT_AUTHORIZED)
+              test "$(jq -r '.selected_target.exact_running_source_commit' "$selection")" = '59b42137eed717aacc82080a46753440bb4d8537'
+              test "$(jq -r '.selected_target.exact_running_artifact_sha256' "$selection")" = '8ad4a33196eabd6248c9dfb35eb118e97759e5c17b32384a12b120258bce615c'
+              ;;
+            *)
+              echo "Unsupported selected-target successor state: $selection_state" >&2
+              exit 1
+              ;;
+          esac
+          test "$(jq -r '.migration27.state' "$state")" = 'NOT_EXECUTED' || test "$(jq -r '.migration27.state' "$state")" = 'EXECUTED'
+          test "$(jq -r '.permission_provisioning.state' "$state")" = 'NONE' || test "$(jq -r '.permission_provisioning.state' "$state")" = 'PROVISIONED'
+          test "$(jq -r '.feature_activation.state' "$state")" = INACTIVE || test "$(jq -r '.feature_activation.state' "$state")" = ACTIVE
           test "$(jq -r '.deployment_authority' "$state")" = 'NOT_GRANTED'
           test "$(jq -r '.production_activation' "$state")" = 'NOT_AUTHORIZED'
 

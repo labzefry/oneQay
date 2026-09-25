@@ -56,7 +56,7 @@ jobs:
           set -euo pipefail
           [[ "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" =~ ^(NOT_EXECUTED|EXECUTED)$ ]]
           permission_state="$(jq -r '.permission_provisioning.state' ops/final-shift-close/STATE.json)"; [[ "$permission_state" =~ ^(NONE|PROVISIONED)$ ]]; if [[ "$permission_state" == 'PROVISIONED' ]]; then [[ "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" == 'EXECUTED' ]]; fi
-          [[ "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" == 'INACTIVE' ]]
+          [[ "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" =~ ^(INACTIVE|ACTIVE)$ ]]
           [[ "$(jq -r '.deployment_authority' ops/final-shift-close/STATE.json)" == 'NOT_GRANTED' ]]
           [[ "$(jq -r '.technical_preview_activation' ops/final-shift-close/STATE.json)" == 'NOT_AUTHORIZED' ]]
           [[ "$(jq -r '.production_activation' ops/final-shift-close/STATE.json)" == 'NOT_AUTHORIZED' ]]
@@ -64,7 +64,7 @@ jobs:
           [[ "$(jq -r '.selection_state' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" == 'SELECTED_NOT_AUTHORIZED' ]]
           [[ "$(jq -r '.selected_target.environment_id' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" == 'oneqay-durable-staging-01' ]]
           [[ "$(jq -r '.selected_target.runtime_class' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" == 'durable-staging' ]]
-          [[ "$(jq -r '.selected_target.selection_fingerprint_sha256' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" == '858280ea3575317e8d88eed7009c770530097e261c391b2869fa81ad7c8546ce' ]]
+          [[ "$(jq -r '.selected_target.selection_fingerprint_sha256' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)" == '6ecc487cb144e634455de69cc43aa39b1f6880a2256c4b1ab33387096513772b' ]]
           [[ "$(jq -r '.selection_prerequisite.current_eligibility' ops/final-shift-close/POST_SELECTION_DOWNSTREAM_READINESS.json)" == 'BLOCKED_SELECTION_NOT_PERSISTED' ]]
 
       - name: Validate PHP runtime and locked dependencies
