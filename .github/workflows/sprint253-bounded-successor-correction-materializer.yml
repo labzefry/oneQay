@@ -93,6 +93,17 @@ jobs:
         run: |
           set -euo pipefail
           python3 tools/sprint253-bounded-successor-correction.py
+          python3 - <<'PY'
+          from pathlib import Path
+          for raw in (
+              '.github/workflows/sprint235-final-shift-close-permission-cpanel-local-execution-compatibility.yml',
+              '.github/workflows/sprint236-final-shift-close-permission-evidence-refresh-compatibility.yml',
+          ):
+              path = Path(raw)
+              text = path.read_text()
+              suffix = '\n' if text.endswith('\n') else ''
+              path.write_text('\n'.join(line.rstrip(' \t') for line in text.splitlines()) + suffix)
+          PY
           git diff --check
           php -l apps/web/tests/pos-final-shift-close-durable-staging-delivery-gate.php
           php -l apps/web/tests/pos-business-workspace-delivery-integration.php
