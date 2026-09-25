@@ -1,0 +1,76 @@
+name: Sprint255 Production Operator Kit Exact-Source Successor Regression
+
+# Attribution: Lab | zefry
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/production-operator-kit-publication.yml'
+      - '.github/workflows/sprint255-production-operator-kit-exact-source-successor-regression.yml'
+      - 'apps/web/tests/sprint255-production-operator-kit-exact-source-successor.php'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/production-operator-kit-publication.yml'
+      - '.github/workflows/sprint255-production-operator-kit-exact-source-successor-regression.yml'
+      - 'apps/web/tests/sprint255-production-operator-kit-exact-source-successor.php'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint255-production-operator-kit-exact-source-successor-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+
+      - name: Validate Sprint255 owned successor sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f .github/workflows/production-operator-kit-publication.yml
+          test -f .github/workflows/sprint255-production-operator-kit-exact-source-successor-regression.yml
+          test -f apps/web/tests/sprint255-production-operator-kit-exact-source-successor.php
+
+      - name: Validate workflow syntax and regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l apps/web/tests/sprint255-production-operator-kit-exact-source-successor.php
+          php apps/web/tests/sprint255-production-operator-kit-exact-source-successor.php
+
+      - name: Preserve publication-only Production boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          workflow=.github/workflows/production-operator-kit-publication.yml
+          grep -Fq 'workflow_run:' "$workflow"
+          grep -Fq 'Durable Staging Operator Artifact Publication' "$workflow"
+          grep -Fq 'actions: read' "$workflow"
+          grep -Fq 'Resolve exact-source durable-staging prerequisite' "$workflow"
+          grep -Fq 'Resolve exact-source Production release candidate' "$workflow"
+          grep -Fq 'Bind runtime provenance without mutating tracked contract' "$workflow"
+          grep -Fq 'exact_source_artifact_pair_required: true' "$workflow"
+          grep -Fq 'deployment_authority' "$workflow"
+          grep -Fq 'NOT_GRANTED' "$workflow"
+          grep -Fq 'production_traffic_activation' "$workflow"
+          grep -Fq 'NOT_AUTHORIZED' "$workflow"
+          ! grep -Fq '10608942942' "$workflow"
+          ! grep -Fq '10608272778' "$workflow"
+          ! grep -Eq '^[[:space:]]*php[[:space:]]+tools/execute-production-dark-deployment\.php[[:space:]]+' "$workflow"
+
+      - name: Confirm tracked source cleanliness
+        shell: bash
+        run: git diff --exit-code
+
+# Author by Lab | zefry
