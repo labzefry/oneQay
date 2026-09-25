@@ -64,12 +64,11 @@ jobs:
           step_start = re.compile(r'^(\s*)- name:\s*')
           offenders = []
 
-          def activation_related(line):
-              lower = line.lower()
-              return 'feature_activation' in lower or 'feature activation' in lower or '.feature_activation.state' in lower
-
           def predecessor_only_activation(line):
-              if not activation_related(line) or not inactive.search(line) or active.search(line):
+              # Only canonical live-state assertions are successor-sensitive.
+              # Historical contract/source fields such as required_feature_activation_state
+              # remain valid provenance and must not be rewritten as if they were live state.
+              if '.feature_activation.state' not in line or not inactive.search(line) or active.search(line):
                   return False
               stripped = line.strip()
               if 'grep ' in stripped:
