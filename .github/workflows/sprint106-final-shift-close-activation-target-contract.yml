@@ -118,7 +118,8 @@ jobs:
           set -euo pipefail
           activation=.github/workflows/final-shift-close-feature-activation.yml
           test -f "$activation"
-          test -f apps/web/app/Application/Pos/FinalShiftCloseFeatureActivator.php
+          test -f apps/web/app/Application/Pos/FinalShiftCloseDurableStagingDeliveryGate.php
+          test -f apps/web/app/Providers/FinalShiftCloseDurableStagingDeliveryServiceProvider.php
           grep -Fq 'workflow_dispatch:' "$activation"
           grep -Fq 'target_pr_number:' "$activation"
           grep -Fq 'target_head_sha:' "$activation"
