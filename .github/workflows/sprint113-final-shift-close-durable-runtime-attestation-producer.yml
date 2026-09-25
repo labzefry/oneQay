@@ -159,7 +159,11 @@ jobs:
             "apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeAttestationIngestion.php"
             "apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeAttestationProvenance.php"
           )
-          diff -u <(printf '%s\n' "${allowed_app_paths[@]}") <(printf '%s\n' "${changed_app_paths[@]}")
+          if [[ "${#changed_app_paths[@]}" -eq 0 ]]; then
+            echo 'Workflow-only successor correction preserves application source.'
+          else
+            diff -u <(printf '%s\n' "${allowed_app_paths[@]}") <(printf '%s\n' "${changed_app_paths[@]}")
+          fi
 
           state=ops/final-shift-close/STATE.json
           selection=ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
