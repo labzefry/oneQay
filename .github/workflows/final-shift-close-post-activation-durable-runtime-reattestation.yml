@@ -1,0 +1,422 @@
+name: Final Shift Close Post-Activation Durable Runtime Reattestation
+
+# Attribution: Lab | zefry
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  statuses: write
+
+env:
+  EVIDENCE_STATUS_CONTEXT: final-shift-close-post-activation-durable-runtime-reattestation-evidence
+  PRODUCER_ENVIRONMENT: final-shift-close-durable-runtime-attestation
+  PRODUCER_WORKFLOW_PATH: .github/workflows/final-shift-close-post-activation-durable-runtime-reattestation.yml
+  ATTESTATION_ARTIFACT_NAME: final-shift-close-post-activation-durable-runtime-reattestation
+
+concurrency:
+  group: final-shift-close-post-activation-durable-runtime-reattestation
+  cancel-in-progress: false
+
+jobs:
+  reattest-durable-runtime:
+    if: ${{ github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: final-shift-close-durable-runtime-attestation
+    env:
+      ATTESTATION_URL: ${{ secrets.ONEQAY_DURABLE_RUNTIME_ATTESTATION_URL }}
+      ATTESTATION_TOKEN: ${{ secrets.ONEQAY_DURABLE_RUNTIME_ATTESTATION_TOKEN }}
+      ENVIRONMENT_PROTECTION_ASSERTION: ${{ secrets.ONEQAY_DURABLE_RUNTIME_ATTESTATION_PROTECTION_ASSERTION }}
+      DEPLOYMENT_EVIDENCE_B64: ${{ secrets.ONEQAY_DURABLE_STAGING_DEPLOYMENT_EVIDENCE_B64 }}
+      DEPLOYMENT_EVIDENCE_PROTECTION_ASSERTION: ${{ secrets.ONEQAY_DURABLE_STAGING_DEPLOYMENT_EVIDENCE_PROTECTION_ASSERTION }}
+      EXPECTED_ENVIRONMENT_ID: ${{ vars.ONEQAY_DURABLE_RUNTIME_ENVIRONMENT_ID }}
+      EXPECTED_RUNTIME_CLASS: ${{ vars.ONEQAY_DURABLE_RUNTIME_CLASS }}
+      EXPECTED_RUNNING_SOURCE_COMMIT: ${{ vars.ONEQAY_DURABLE_RUNTIME_RUNNING_SOURCE_COMMIT }}
+      EXPECTED_RUNNING_ARTIFACT_SHA256: ${{ vars.ONEQAY_DURABLE_RUNTIME_RUNNING_ARTIFACT_SHA256 }}
+      EXPECTED_DEPLOYMENT_PLAN_FINGERPRINT: ${{ vars.ONEQAY_DURABLE_STAGING_DEPLOYMENT_PLAN_FINGERPRINT }}
+      EXPECTED_DEPLOYMENT_AUTHORITY_SHA256: ${{ vars.ONEQAY_DURABLE_STAGING_DEPLOYMENT_AUTHORITY_SHA256 }}
+
+    steps:
+      - name: Checkout canonical dispatch source only
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+
+      - name: Validate canonical source and protected-environment inputs
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          API_URL: ${{ github.api_url }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          [[ "$GITHUB_REF" == 'refs/heads/main' ]]
+          [[ "$GITHUB_REPOSITORY" == 'labzefry/oneQay' ]]
+          [[ "$ATTESTATION_URL" =~ ^https://[^[:space:]]+$ ]]
+          [[ -n "$ATTESTATION_TOKEN" ]]
+          [[ "$ENVIRONMENT_PROTECTION_ASSERTION" == 'REVIEW_GATED_V1' ]]
+          [[ -n "$DEPLOYMENT_EVIDENCE_B64" ]]
+          [[ "$DEPLOYMENT_EVIDENCE_PROTECTION_ASSERTION" == 'REVIEW_GATED_DEPLOYMENT_EVIDENCE_V1' ]]
+          [[ "$EXPECTED_ENVIRONMENT_ID" =~ ^[a-z0-9][a-z0-9-]{2,62}$ ]]
+          [[ "$EXPECTED_RUNTIME_CLASS" == 'durable-staging' ]]
+          [[ "$EXPECTED_RUNNING_SOURCE_COMMIT" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$EXPECTED_RUNNING_ARTIFACT_SHA256" =~ ^[0-9a-f]{64}$ ]]
+          [[ "$EXPECTED_DEPLOYMENT_PLAN_FINGERPRINT" =~ ^[0-9a-f]{64}$ ]]
+          [[ "$EXPECTED_DEPLOYMENT_AUTHORITY_SHA256" =~ ^[0-9a-f]{64}$ ]]
+
+          case "$EXPECTED_RUNTIME_CLASS" in
+            local|test|testing|ci|preview|synthetic-preview|production|prod)
+              echo 'Configured runtime class is not an eligible isolated durable target.' >&2
+              exit 1
+              ;;
+          esac
+
+          main_sha="$(curl --fail-with-body --silent --show-error \
+            --header 'Accept: application/vnd.github+json' \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header 'X-GitHub-Api-Version: 2022-11-28' \
+            "$API_URL/repos/$REPOSITORY/branches/main" | jq -r '.commit.sha')"
+          [[ "$main_sha" == "$GITHUB_SHA" ]] || {
+            echo "Post-activation reattestation must run from current canonical main: $GITHUB_SHA != $main_sha" >&2
+            exit 1
+          }
+
+          test "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" = ACTIVE
+          test "$(jq -r '.production_activation' ops/final-shift-close/STATE.json)" = NOT_AUTHORIZED
+          test "$(jq -r '.updater_activation' ops/final-shift-close/STATE.json)" = INACTIVE
+
+      - name: Qualify protected post-activation deployment evidence
+        id: deployment
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+
+          printf '%s' "$DEPLOYMENT_EVIDENCE_B64" | base64 --decode > /tmp/durable-staging-post-activation-deployment-evidence.json
+          bytes="$(wc -c < /tmp/durable-staging-post-activation-deployment-evidence.json)"
+          (( bytes > 1 && bytes <= 32768 ))
+          jq -e 'type == "object"' /tmp/durable-staging-post-activation-deployment-evidence.json >/dev/null
+
+          php tools/qualify-durable-staging-post-activation-deployment-evidence.php \
+            /tmp/durable-staging-post-activation-deployment-evidence.json \
+            "$EXPECTED_ENVIRONMENT_ID" \
+            "$EXPECTED_RUNTIME_CLASS" \
+            "$EXPECTED_RUNNING_SOURCE_COMMIT" \
+            "$EXPECTED_RUNNING_ARTIFACT_SHA256" \
+            "$EXPECTED_DEPLOYMENT_PLAN_FINGERPRINT" \
+            "$EXPECTED_DEPLOYMENT_AUTHORITY_SHA256" \
+            > /tmp/durable-staging-post-activation-deployment-evidence-qualification.json
+
+          jq -e '.qualification_state == "QUALIFIED_POST_ACTIVATION_DEPLOYMENT_EVIDENCE_NOT_SELECTED"' \
+            /tmp/durable-staging-post-activation-deployment-evidence-qualification.json >/dev/null
+          test "$(jq -r '.feature_activation_state' /tmp/durable-staging-post-activation-deployment-evidence-qualification.json)" = ACTIVE
+          test "$(jq -r '.selected_target' /tmp/durable-staging-post-activation-deployment-evidence-qualification.json)" = null
+          test "$(jq -r '.producer_dispatch' /tmp/durable-staging-post-activation-deployment-evidence-qualification.json)" = NOT_PERFORMED
+
+          echo "deployment_evidence_sha256=$(jq -r '.deployment_evidence_sha256' /tmp/durable-staging-post-activation-deployment-evidence-qualification.json)" >> "$GITHUB_OUTPUT"
+
+      - name: Fetch authenticated runtime readiness attestation
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+
+          curl \
+            --proto '=https' \
+            --tlsv1.2 \
+            --connect-timeout 5 \
+            --max-time 20 \
+            --fail-with-body \
+            --silent \
+            --show-error \
+            --header 'Accept: application/json' \
+            --header "Authorization: Bearer $ATTESTATION_TOKEN" \
+            "$ATTESTATION_URL" > /tmp/runtime-attestation.json
+
+          bytes="$(wc -c < /tmp/runtime-attestation.json)"
+          (( bytes > 1 && bytes <= 32768 ))
+          jq -e 'type == "object"' /tmp/runtime-attestation.json >/dev/null
+
+      - name: Qualify post-activation runtime attestation
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          ATTESTATION_FILE=/tmp/runtime-attestation.json \
+          EXPECTED_ENVIRONMENT_ID="$EXPECTED_ENVIRONMENT_ID" \
+          EXPECTED_RUNTIME_CLASS="$EXPECTED_RUNTIME_CLASS" \
+          EXPECTED_RUNNING_SOURCE_COMMIT="$EXPECTED_RUNNING_SOURCE_COMMIT" \
+          EXPECTED_RUNNING_ARTIFACT_SHA256="$EXPECTED_RUNNING_ARTIFACT_SHA256" \
+          php <<'PHP'
+          <?php
+          declare(strict_types=1);
+
+          $path = getenv('ATTESTATION_FILE');
+          $expectedEnvironment = getenv('EXPECTED_ENVIRONMENT_ID');
+          $expectedRuntime = getenv('EXPECTED_RUNTIME_CLASS');
+          $expectedSource = getenv('EXPECTED_RUNNING_SOURCE_COMMIT');
+          $expectedArtifact = getenv('EXPECTED_RUNNING_ARTIFACT_SHA256');
+
+          foreach ([$path, $expectedEnvironment, $expectedRuntime, $expectedSource, $expectedArtifact] as $value) {
+              if (!is_string($value) || $value === '') {
+                  throw new RuntimeException('Post-activation reattestation environment is incomplete.');
+              }
+          }
+
+          $attestation = json_decode((string) file_get_contents($path), true, 32, JSON_THROW_ON_ERROR);
+          if (!is_array($attestation) || array_is_list($attestation)) {
+              throw new RuntimeException('Runtime attestation must decode to an object.');
+          }
+
+          $required = [
+              'schema_version',
+              'environment_id',
+              'runtime_class',
+              'runtime_model',
+              'environment_isolation',
+              'serving_application_runtime',
+              'synthetic_fixture_runtime',
+              'production_traffic_served',
+              'durable_persistence_enabled',
+              'durable_session_control_enabled',
+              'durable_authorization_enabled',
+              'durable_transaction_boundary_enabled',
+              'durable_pos_persistence_enabled',
+              'exact_running_source_commit',
+              'exact_running_artifact_sha256',
+              'authenticated_configuration_mutation_channel',
+              'read_before_write_read_after_supported',
+              'non_mutating_health_attestation_supported',
+              'verified_flag_rollback_supported',
+              'activation_authority_binding',
+              'feature_activation_state',
+              'secrets_embedded',
+          ];
+
+          $actual = array_keys($attestation);
+          sort($actual, SORT_STRING);
+          $expectedFields = $required;
+          sort($expectedFields, SORT_STRING);
+          if ($actual !== $expectedFields) {
+              throw new RuntimeException('Post-activation readiness field set is not exact.');
+          }
+
+          $exact = [
+              'schema_version' => 1,
+              'environment_id' => $expectedEnvironment,
+              'runtime_class' => $expectedRuntime,
+              'runtime_model' => 'NON_SYNTHETIC_DURABLE_RUNTIME',
+              'environment_isolation' => 'ISOLATED_NON_PRODUCTION',
+              'serving_application_runtime' => true,
+              'synthetic_fixture_runtime' => false,
+              'production_traffic_served' => false,
+              'durable_persistence_enabled' => true,
+              'durable_session_control_enabled' => true,
+              'durable_authorization_enabled' => true,
+              'durable_transaction_boundary_enabled' => true,
+              'durable_pos_persistence_enabled' => true,
+              'exact_running_source_commit' => $expectedSource,
+              'exact_running_artifact_sha256' => $expectedArtifact,
+              'authenticated_configuration_mutation_channel' => true,
+              'read_before_write_read_after_supported' => true,
+              'non_mutating_health_attestation_supported' => true,
+              'verified_flag_rollback_supported' => true,
+              'activation_authority_binding' => 'SEPARATE_EXPLICIT_ACTIVATION_AUTHORITY',
+              'feature_activation_state' => 'ACTIVE',
+              'secrets_embedded' => false,
+          ];
+
+          foreach ($exact as $field => $value) {
+              if (($attestation[$field] ?? null) !== $value) {
+                  throw new RuntimeException('Post-activation readiness mismatch: '.$field);
+              }
+          }
+          PHP
+
+      - name: Verify running source belongs to canonical main history
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          API_URL: ${{ github.api_url }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          running_source="$(jq -r '.exact_running_source_commit' /tmp/runtime-attestation.json)"
+          [[ "$running_source" =~ ^[0-9a-f]{40}$ ]]
+
+          curl --fail-with-body --silent --show-error \
+            --header 'Accept: application/vnd.github+json' \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header 'X-GitHub-Api-Version: 2022-11-28' \
+            "$API_URL/repos/$REPOSITORY/commits/$running_source" >/dev/null
+
+          compare="$(curl --fail-with-body --silent --show-error \
+            --header 'Accept: application/vnd.github+json' \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header 'X-GitHub-Api-Version: 2022-11-28' \
+            "$API_URL/repos/$REPOSITORY/compare/$running_source...$GITHUB_SHA")"
+          status="$(jq -r '.status' <<<"$compare")"
+          behind="$(jq -r '.behind_by' <<<"$compare")"
+          [[ "$status" == 'ahead' || "$status" == 'identical' ]]
+          [[ "$behind" == '0' ]]
+
+      - name: Materialize post-activation attestation provenance bundle
+        id: bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+
+          mkdir -p /tmp/final-shift-close-post-activation-reattestation
+          cp /tmp/runtime-attestation.json /tmp/final-shift-close-post-activation-reattestation/attestation.json
+
+          ATTESTATION_FILE=/tmp/runtime-attestation.json \
+          PROVENANCE_FILE=/tmp/final-shift-close-post-activation-reattestation/provenance.json \
+          PRODUCER_SOURCE_COMMIT="$GITHUB_SHA" \
+          PRODUCER_RUN_ID="$GITHUB_RUN_ID" \
+          PRODUCER_RUN_ATTEMPT="$GITHUB_RUN_ATTEMPT" \
+          DEPLOYMENT_EVIDENCE_SHA256="${{ steps.deployment.outputs.deployment_evidence_sha256 }}" \
+          DEPLOYMENT_PLAN_FINGERPRINT="$EXPECTED_DEPLOYMENT_PLAN_FINGERPRINT" \
+          DEPLOYMENT_AUTHORITY_SHA256="$EXPECTED_DEPLOYMENT_AUTHORITY_SHA256" \
+          php <<'PHP'
+          <?php
+          declare(strict_types=1);
+
+          $attestationPath = getenv('ATTESTATION_FILE');
+          $provenancePath = getenv('PROVENANCE_FILE');
+          $sourceCommit = getenv('PRODUCER_SOURCE_COMMIT');
+          $runId = getenv('PRODUCER_RUN_ID');
+          $runAttempt = getenv('PRODUCER_RUN_ATTEMPT');
+          $deploymentEvidenceSha256 = getenv('DEPLOYMENT_EVIDENCE_SHA256');
+          $deploymentPlanFingerprint = getenv('DEPLOYMENT_PLAN_FINGERPRINT');
+          $deploymentAuthoritySha256 = getenv('DEPLOYMENT_AUTHORITY_SHA256');
+
+          foreach ([
+              $attestationPath,
+              $provenancePath,
+              $sourceCommit,
+              $runId,
+              $runAttempt,
+              $deploymentEvidenceSha256,
+              $deploymentPlanFingerprint,
+              $deploymentAuthoritySha256,
+          ] as $value) {
+              if (!is_string($value) || $value === '') {
+                  throw new RuntimeException('Post-activation evidence materialization input is missing.');
+              }
+          }
+
+          $attestation = json_decode((string) file_get_contents($attestationPath), true, 32, JSON_THROW_ON_ERROR);
+          if (!is_array($attestation) || array_is_list($attestation)) {
+              throw new RuntimeException('Post-activation attestation must be an object.');
+          }
+
+          $canonical = $attestation;
+          ksort($canonical, SORT_STRING);
+          $attestationSha = hash('sha256', json_encode(
+              $canonical,
+              JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR,
+          ));
+
+          $provenance = [
+              'schema_version' => 1,
+              'feature' => 'final-shift-close',
+              'evidence_source' => 'GITHUB_ACTIONS_PROTECTED_ENVIRONMENT',
+              'evidence_state' => 'VERIFIED_POST_ACTIVATION',
+              'producer_repository' => 'labzefry/oneQay',
+              'producer_workflow_path' => '.github/workflows/final-shift-close-post-activation-durable-runtime-reattestation.yml',
+              'producer_environment' => 'final-shift-close-durable-runtime-attestation',
+              'producer_ref' => 'refs/heads/main',
+              'producer_source_commit' => $sourceCommit,
+              'producer_run_id' => (int) $runId,
+              'producer_run_attempt' => (int) $runAttempt,
+              'attestation_sha256' => $attestationSha,
+              'environment_id' => $attestation['environment_id'],
+              'runtime_class' => $attestation['runtime_class'],
+              'exact_running_source_commit' => $attestation['exact_running_source_commit'],
+              'exact_running_artifact_sha256' => $attestation['exact_running_artifact_sha256'],
+              'feature_activation_state' => 'ACTIVE',
+              'deployment_evidence_sha256' => $deploymentEvidenceSha256,
+              'deployment_plan_fingerprint' => $deploymentPlanFingerprint,
+              'deployment_authority_sha256' => $deploymentAuthoritySha256,
+              'evidence_status_context' => 'final-shift-close-post-activation-durable-runtime-reattestation-evidence',
+              'evidence_status_state' => 'success',
+              'secrets_embedded' => false,
+          ];
+
+          file_put_contents($provenancePath, json_encode(
+              $provenance,
+              JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR,
+          ).PHP_EOL, LOCK_EX);
+          PHP
+
+          jq -e . /tmp/final-shift-close-post-activation-reattestation/attestation.json >/dev/null
+          jq -e . /tmp/final-shift-close-post-activation-reattestation/provenance.json >/dev/null
+          test "$(jq -r '.feature_activation_state' /tmp/final-shift-close-post-activation-reattestation/provenance.json)" = ACTIVE
+          ! grep -Fq "$ATTESTATION_TOKEN" /tmp/final-shift-close-post-activation-reattestation/attestation.json
+          ! grep -Fq "$ATTESTATION_TOKEN" /tmp/final-shift-close-post-activation-reattestation/provenance.json
+
+          echo "running_source=$(jq -r '.exact_running_source_commit' /tmp/runtime-attestation.json)" >> "$GITHUB_OUTPUT"
+
+      - name: Publish pending evidence status
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          API_URL: ${{ github.api_url }}
+          REPOSITORY: ${{ github.repository }}
+          RUNNING_SOURCE: ${{ steps.bundle.outputs.running_source }}
+        run: |
+          set -euo pipefail
+
+          payload="$(jq -n \
+            --arg state pending \
+            --arg context "$EVIDENCE_STATUS_CONTEXT" \
+            --arg description 'Post-activation durable runtime reattestation evidence is being published' \
+            --arg target_url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+            '{state:$state,context:$context,description:$description,target_url:$target_url}')"
+
+          curl --fail-with-body --silent --show-error \
+            --request POST \
+            --header 'Accept: application/vnd.github+json' \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header 'X-GitHub-Api-Version: 2022-11-28' \
+            "$API_URL/repos/$REPOSITORY/statuses/$RUNNING_SOURCE" \
+            --data "$payload" >/dev/null
+
+      - name: Upload trusted post-activation reattestation bundle
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: final-shift-close-post-activation-durable-runtime-reattestation
+          path: /tmp/final-shift-close-post-activation-reattestation
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Publish success evidence status
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          API_URL: ${{ github.api_url }}
+          REPOSITORY: ${{ github.repository }}
+          RUNNING_SOURCE: ${{ steps.bundle.outputs.running_source }}
+        run: |
+          set -euo pipefail
+
+          payload="$(jq -n \
+            --arg state success \
+            --arg context "$EVIDENCE_STATUS_CONTEXT" \
+            --arg description 'Post-activation durable runtime reattestation verified and published' \
+            --arg target_url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+            '{state:$state,context:$context,description:$description,target_url:$target_url}')"
+
+          curl --fail-with-body --silent --show-error \
+            --request POST \
+            --header 'Accept: application/vnd.github+json' \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header 'X-GitHub-Api-Version: 2022-11-28' \
+            "$API_URL/repos/$REPOSITORY/statuses/$RUNNING_SOURCE" \
+            --data "$payload" >/dev/null
