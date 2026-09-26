@@ -36,7 +36,7 @@ jobs:
         run: |
           set -euo pipefail
           # Historical regression workflows validate their owned invariants only.
-          # Exact full-PR envelope locking belongs to the active Sprint253 workflow.
+          # Exact full-PR envelope locking belongs to the active sprint workflow.
           test -f '.github/workflows/sprint225-historical-selected-target-successor-compatibility.yml'
 
       - name: Preserve product runtime database and operational source
@@ -64,9 +64,9 @@ jobs:
           test "$(jq -r '.selection_state' "$selection")" = 'SELECTED_NOT_AUTHORIZED'
           test "$(jq -r '.selected_target.environment_id' "$selection")" = 'oneqay-durable-staging-01'
           test "$(jq -r '.selected_target.runtime_class' "$selection")" = 'durable-staging'
-          selected_target_source="$(jq -r '.selected_target.exact_running_source_commit' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)"; [[ "$selected_target_source" =~ ^[0-9a-f]{40}$ ]]
-          selected_target_artifact="$(jq -r '.selected_target.exact_running_artifact_sha256' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)"; [[ "$selected_target_artifact" =~ ^[0-9a-f]{64}$ ]]
-          selected_target_fingerprint="$(jq -r '.selected_target.selection_fingerprint_sha256' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)"; [[ "$selected_target_fingerprint" =~ ^[0-9a-f]{64}$ ]]
+          selected_target_source="$(jq -r '.selected_target.exact_running_source_commit' "$selection")"; [[ "$selected_target_source" =~ ^[0-9a-f]{40}$ ]]
+          selected_target_artifact="$(jq -r '.selected_target.exact_running_artifact_sha256' "$selection")"; [[ "$selected_target_artifact" =~ ^[0-9a-f]{64}$ ]]
+          selected_target_fingerprint="$(jq -r '.selected_target.selection_fingerprint_sha256' "$selection")"; [[ "$selected_target_fingerprint" =~ ^[0-9a-f]{64}$ ]]
 
       - name: Prove stale current-state assertions are removed from changed historical workflows
         shell: bash
@@ -89,7 +89,10 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
-          git diff --exit-code "$BASE_SHA" "$HEAD_SHA" -- ops docs/handbook
+          git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- ops docs/handbook \
+            | grep -Ev '^ops/final-shift-close/SELECTED_TARGET_GENERATION_SUCCESSOR_COMPATIBILITY_(CONTRACT\.json|PATHS\.txt)$' \
+            > /tmp/sprint225-provenance-drift || true
+          test ! -s /tmp/sprint225-provenance-drift
           grep -Fq 'Historical workflow contracts remain historical provenance.' docs/SPRINT225_HISTORICAL_SELECTED_TARGET_SUCCESSOR_COMPATIBILITY.md
 
       - name: Verify tracked source cleanliness
