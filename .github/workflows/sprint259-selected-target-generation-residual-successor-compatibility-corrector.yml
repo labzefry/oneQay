@@ -64,11 +64,9 @@ jobs:
               out = []
               in_diff = False
               removed = 0
-
               for line in lines:
                   stripped = line.strip()
                   starts_diff = 'git diff --quiet ' in line
-
                   if starts_diff:
                       in_diff = True
                       if target in line:
@@ -81,7 +79,6 @@ jobs:
                       if not line.rstrip().endswith('\\'):
                           in_diff = False
                       continue
-
                   if in_diff and target in line:
                       removed += 1
                       if not line.rstrip().endswith('\\'):
@@ -91,11 +88,9 @@ jobs:
                           out[-1] = previous[:-1].rstrip()
                           in_diff = False
                       continue
-
                   out.append(line)
                   if in_diff and stripped and not line.rstrip().endswith('\\'):
                       in_diff = False
-
               if removed < 1:
                   raise SystemExit(f'{path}: no selected-target immutability token found in historical git diff')
               path.write_text('\n'.join(out) + '\n', encoding='utf-8')
@@ -108,7 +103,6 @@ jobs:
           if old not in text:
               raise SystemExit('Sprint253 zero-workflow historical guard not found on canonical base')
           sprint253.write_text(text.replace(old, new, 1), encoding='utf-8')
-
           Path('.github/workflows/sprint259-selected-target-generation-residual-successor-compatibility-corrector.yml').unlink()
           PY
 
@@ -116,7 +110,6 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-
           git diff --name-only 1a3945dab87c51d3e5b79d655990bbe975ab152b | LC_ALL=C sort > /tmp/actual
           cat > /tmp/expected <<'EOF'
           .github/workflows/sprint120-final-shift-close-runtime-binding-manifest-writer.yml
@@ -134,15 +127,12 @@ jobs:
           .github/workflows/sprint132-final-shift-close-canonical-control-plane-controller-positive-path-regression.yml
           .github/workflows/sprint133-final-shift-close-canonical-control-plane-controller-fail-closed-regression.yml
           .github/workflows/sprint253-final-shift-close-post-activation-historical-regression-successor-compatibility.yml
-          .github/workflows/sprint259-selected-target-generation-residual-successor-compatibility-corrector.yml
           EOF
           LC_ALL=C sort -o /tmp/expected /tmp/expected
           diff -u /tmp/expected /tmp/actual
-
           ruby -e 'require "yaml"; ARGV.each { |f| YAML.load_file(f) }' \
             .github/workflows/sprint{120..133}-*.yml \
             .github/workflows/sprint253-final-shift-close-post-activation-historical-regression-successor-compatibility.yml
-
           python3 - <<'PY'
           from pathlib import Path
           target = 'ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json'
