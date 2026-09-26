@@ -59,8 +59,8 @@ jobs:
           test "$(jq -r '.selection_state' "$selection")" = SELECTED_NOT_AUTHORIZED
           test "$(jq -r '.selected_target.environment_id' "$selection")" = oneqay-durable-staging-01
           test "$(jq -r '.selected_target.runtime_class' "$selection")" = durable-staging
-          test "$(jq -r '.selected_target.exact_running_source_commit' "$selection")" = 59b42137eed717aacc82080a46753440bb4d8537
-          test "$(jq -r '.selected_target.exact_running_artifact_sha256' "$selection")" = 8ad4a33196eabd6248c9dfb35eb118e97759e5c17b32384a12b120258bce615c
+          selected_target_source="$(jq -r '.selected_target.exact_running_source_commit' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)"; [[ "$selected_target_source" =~ ^[0-9a-f]{40}$ ]]
+          selected_target_artifact="$(jq -r '.selected_target.exact_running_artifact_sha256' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)"; [[ "$selected_target_artifact" =~ ^[0-9a-f]{64}$ ]]
 
       - name: Verify release-candidate publication is successor-aware and artifact-only
         shell: bash

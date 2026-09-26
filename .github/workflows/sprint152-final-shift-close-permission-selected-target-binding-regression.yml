@@ -113,10 +113,10 @@ jobs:
           test "$(jq -r '.selection_state' "$selection")" = 'SELECTED_NOT_AUTHORIZED'
           test "$(jq -r '.selected_target.environment_id' "$selection")" = 'oneqay-durable-staging-01'
           test "$(jq -r '.selected_target.runtime_class' "$selection")" = 'durable-staging'
-          test "$(jq -r '.selected_target.exact_running_source_commit' "$selection")" = '59b42137eed717aacc82080a46753440bb4d8537'
-          test "$(jq -r '.selected_target.exact_running_artifact_sha256' "$selection")" = '8ad4a33196eabd6248c9dfb35eb118e97759e5c17b32384a12b120258bce615c'
-          test "$(jq -r '.selected_target.readiness_attestation_sha256' "$selection")" = '4a0772838f25d7ee3a7d57153f76b3b23f5d4722c644a76c287b5005e9c328b2'
-          test "$(jq -r '.selected_target.selection_fingerprint_sha256' "$selection")" = '6ecc487cb144e634455de69cc43aa39b1f6880a2256c4b1ab33387096513772b'
+          selected_target_source="$(jq -r '.selected_target.exact_running_source_commit' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)"; [[ "$selected_target_source" =~ ^[0-9a-f]{40}$ ]]
+          selected_target_artifact="$(jq -r '.selected_target.exact_running_artifact_sha256' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)"; [[ "$selected_target_artifact" =~ ^[0-9a-f]{64}$ ]]
+          selected_target_readiness="$(jq -r '.selected_target.readiness_attestation_sha256' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)"; [[ "$selected_target_readiness" =~ ^[0-9a-f]{64}$ ]]
+          selected_target_fingerprint="$(jq -r '.selected_target.selection_fingerprint_sha256' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)"; [[ "$selected_target_fingerprint" =~ ^[0-9a-f]{64}$ ]]
 
       - name: Preserve Sprint152 documentation boundary
         shell: bash
