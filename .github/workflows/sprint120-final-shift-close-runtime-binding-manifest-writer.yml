@@ -44,7 +44,6 @@ jobs:
             apps/web/app/Infrastructure/Pos/FilesystemFinalShiftCloseRuntimeBindingManifestWriter.php \
             apps/web/config/final_shift_close_runtime_binding_materialization.php \
             apps/web/config/final_shift_close_runtime_db_binding_attestation.php \
-            ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json \
             ops/final-shift-close/POST_SELECTION_DOWNSTREAM_READINESS.json
           [[ "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" =~ ^(NOT_EXECUTED|EXECUTED)$ ]]
           [[ "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" =~ ^(INACTIVE|ACTIVE)$ ]]

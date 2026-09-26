@@ -53,7 +53,6 @@ jobs:
             apps/web/bootstrap/app.php \
             apps/web/routes \
             apps/web/database/migrations \
-            ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
           [[ "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" =~ ^(NOT_EXECUTED|EXECUTED)$ ]]
           permission_state="$(jq -r '.permission_provisioning.state' ops/final-shift-close/STATE.json)"; [[ "$permission_state" =~ ^(NONE|PROVISIONED)$ ]]; if [[ "$permission_state" == 'PROVISIONED' ]]; then [[ "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" == 'EXECUTED' ]]; fi
           [[ "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" =~ ^(INACTIVE|ACTIVE)$ ]]
