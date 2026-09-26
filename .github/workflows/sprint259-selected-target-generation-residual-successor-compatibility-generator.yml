@@ -1,0 +1,155 @@
+name: Sprint259 Selected Target Generation Residual Successor Compatibility Generator
+
+# Attribution: Lab | zefry
+
+on:
+  push:
+    branches:
+      - sprint259-selected-target-generation-residual-successor-compatibility
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sprint259-selected-target-generation-residual-successor-compatibility-generator
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    if: ${{ github.actor != 'github-actions[bot]' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact generator head
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: sprint259-selected-target-generation-residual-successor-compatibility
+          fetch-depth: 0
+
+      - name: Apply bounded residual successor compatibility
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          target = 'ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json'
+          workflow_paths = [
+              Path(f'.github/workflows/sprint{s}-' + {
+                  120: 'final-shift-close-runtime-binding-manifest-writer.yml',
+                  121: 'final-shift-close-runtime-binding-manifest-control-channel.yml',
+                  122: 'final-shift-close-runtime-binding-manifest-write-once-cas.yml',
+                  123: 'final-shift-close-runtime-binding-manifest-control-plane-registration.yml',
+                  124: 'final-shift-close-runtime-db-binding-attestation-control-plane-registration.yml',
+                  125: 'final-shift-close-runtime-db-binding-attestation-control-plane-regression.yml',
+                  126: 'final-shift-close-runtime-binding-manifest-control-plane-token-hardening.yml',
+                  127: 'final-shift-close-runtime-binding-manifest-control-plane-regression.yml',
+                  128: 'final-shift-close-runtime-control-plane-token-character-policy.yml',
+                  129: 'final-shift-close-historical-regression-successor-compatibility.yml',
+                  130: 'final-shift-close-canonical-runtime-control-plane-token-policy.yml',
+                  131: 'final-shift-close-canonical-control-plane-positive-path-regression.yml',
+                  132: 'final-shift-close-canonical-control-plane-controller-positive-path-regression.yml',
+                  133: 'final-shift-close-canonical-control-plane-controller-fail-closed-regression.yml',
+              }[s]) for s in range(120, 134)
+          ]
+
+          changed = []
+          for path in workflow_paths:
+              text = path.read_text(encoding='utf-8')
+              lines = text.splitlines()
+              out = []
+              in_diff_quiet = False
+              removed = 0
+              for line in lines:
+                  stripped = line.strip()
+                  if 'git diff --quiet ' in line:
+                      in_diff_quiet = True
+                  if in_diff_quiet and target in line:
+                      removed += 1
+                      continue
+                  out.append(line)
+                  if in_diff_quiet and stripped and not stripped.endswith('\\'):
+                      in_diff_quiet = False
+              if removed < 1:
+                  raise SystemExit(f'{path}: expected immutable selected-target path was not found')
+              new_text = '\n'.join(out) + '\n'
+              path.write_text(new_text, encoding='utf-8')
+              changed.append((str(path), removed))
+
+          sprint253 = Path('.github/workflows/sprint253-final-shift-close-post-activation-historical-regression-successor-compatibility.yml')
+          text = sprint253.read_text(encoding='utf-8')
+          old = "          if not workflows:\n              raise SystemExit('No historical Sprint workflow is present in the Sprint253 compatibility envelope.')"
+          new = "          if not workflows:\n              print('SPRINT253_SUCCESSOR_COMPATIBILITY_OK workflows=0')"
+          if old not in text:
+              raise SystemExit('Sprint253 zero-historical-workflow compatibility guard not found')
+          sprint253.write_text(text.replace(old, new, 1), encoding='utf-8')
+          changed.append((str(sprint253), 1))
+
+          generator = Path('.github/workflows/sprint259-selected-target-generation-residual-successor-compatibility-generator.yml')
+          generator.unlink()
+
+          print('SPRINT259_GENERATED_PATHS=15')
+          for path, count in changed:
+              print(f'SPRINT259_GENERATED={path}:{count}')
+          PY
+
+      - name: Validate bounded generated diff
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --name-only | LC_ALL=C sort > /tmp/actual
+          cat > /tmp/expected <<'EOF'
+          .github/workflows/sprint120-final-shift-close-runtime-binding-manifest-writer.yml
+          .github/workflows/sprint121-final-shift-close-runtime-binding-manifest-control-channel.yml
+          .github/workflows/sprint122-final-shift-close-runtime-binding-manifest-write-once-cas.yml
+          .github/workflows/sprint123-final-shift-close-runtime-binding-manifest-control-plane-registration.yml
+          .github/workflows/sprint124-final-shift-close-runtime-db-binding-attestation-control-plane-registration.yml
+          .github/workflows/sprint125-final-shift-close-runtime-db-binding-attestation-control-plane-regression.yml
+          .github/workflows/sprint126-final-shift-close-runtime-binding-manifest-control-plane-token-hardening.yml
+          .github/workflows/sprint127-final-shift-close-runtime-binding-manifest-control-plane-regression.yml
+          .github/workflows/sprint128-final-shift-close-runtime-control-plane-token-character-policy.yml
+          .github/workflows/sprint129-final-shift-close-historical-regression-successor-compatibility.yml
+          .github/workflows/sprint130-final-shift-close-canonical-runtime-control-plane-token-policy.yml
+          .github/workflows/sprint131-final-shift-close-canonical-control-plane-positive-path-regression.yml
+          .github/workflows/sprint132-final-shift-close-canonical-control-plane-controller-positive-path-regression.yml
+          .github/workflows/sprint133-final-shift-close-canonical-control-plane-controller-fail-closed-regression.yml
+          .github/workflows/sprint253-final-shift-close-post-activation-historical-regression-successor-compatibility.yml
+          .github/workflows/sprint259-selected-target-generation-residual-successor-compatibility-generator.yml
+          EOF
+          LC_ALL=C sort -o /tmp/expected /tmp/expected
+          diff -u /tmp/expected /tmp/actual
+
+          # The generation file is deliberately mutable only through the active
+          # exact-evidence generation gate; historical workflows must no longer
+          # freeze it as part of their source ownership.
+          python3 - <<'PY'
+          from pathlib import Path
+          target = 'ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json'
+          for sprint in range(120, 134):
+              matches = list(Path('.github/workflows').glob(f'sprint{sprint}-*.yml'))
+              if len(matches) != 1:
+                  raise SystemExit(f'Sprint{sprint}: workflow resolution failed')
+              lines = matches[0].read_text(encoding='utf-8').splitlines()
+              in_diff = False
+              for n, line in enumerate(lines, 1):
+                  stripped = line.strip()
+                  if 'git diff --quiet ' in line:
+                      in_diff = True
+                  if in_diff and target in line:
+                      raise SystemExit(f'{matches[0]}:{n}: selected-target still frozen by historical git diff')
+                  if in_diff and stripped and not stripped.endswith('\\'):
+                      in_diff = False
+          s253 = Path('.github/workflows/sprint253-final-shift-close-post-activation-historical-regression-successor-compatibility.yml').read_text(encoding='utf-8')
+          if "SPRINT253_SUCCESSOR_COMPATIBILITY_OK workflows=0" not in s253:
+              raise SystemExit('Sprint253 zero-workflow successor compatibility missing')
+          PY
+
+      - name: Commit generated compatibility and remove generator
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'Lab | zefry'
+          git config user.email 'lab.zefry@users.noreply.github.com'
+          git add -A
+          git commit -m 'Sprint259: allow governed selected-target generation refresh' -m 'Author by Lab | zefry'
+          git push origin HEAD:sprint259-selected-target-generation-residual-successor-compatibility
