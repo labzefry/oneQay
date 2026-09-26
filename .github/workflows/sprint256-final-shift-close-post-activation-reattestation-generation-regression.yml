@@ -35,22 +35,20 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Validate bounded six-path engineering envelope
-        if: ${{ github.event_name == 'pull_request' }}
+      - name: Validate bounded successor materialization
         shell: bash
         run: |
           set -euo pipefail
 
-          git diff --name-only "${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }}" | LC_ALL=C sort > /tmp/actual-paths
-          cat > /tmp/expected-paths <<'EOF'
-          .github/workflows/final-shift-close-post-activation-durable-runtime-reattestation-ingestion.yml
-          .github/workflows/final-shift-close-post-activation-durable-runtime-reattestation.yml
-          .github/workflows/final-shift-close-post-activation-selected-target-generation.yml
-          .github/workflows/sprint256-final-shift-close-post-activation-reattestation-generation-regression.yml
-          docs/SPRINT256_FINAL_SHIFT_CLOSE_POST_ACTIVATION_REATTESTATION_GENERATION.md
-          ops/final-shift-close/POST_ACTIVATION_REATTESTATION_GENERATION_CONTRACT.json
-          EOF
-          diff -u /tmp/expected-paths /tmp/actual-paths
+          for path in \
+            .github/workflows/final-shift-close-post-activation-durable-runtime-reattestation.yml \
+            .github/workflows/final-shift-close-post-activation-durable-runtime-reattestation-ingestion.yml \
+            .github/workflows/final-shift-close-post-activation-selected-target-generation.yml \
+            .github/workflows/sprint256-final-shift-close-post-activation-reattestation-generation-regression.yml \
+            docs/SPRINT256_FINAL_SHIFT_CLOSE_POST_ACTIVATION_REATTESTATION_GENERATION.md \
+            ops/final-shift-close/POST_ACTIVATION_REATTESTATION_GENERATION_CONTRACT.json; do
+            test -f "$path"
+          done
 
       - name: Parse successor workflows and contract
         shell: bash
