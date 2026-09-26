@@ -1,0 +1,281 @@
+name: Sprint258 Selected Target Generation Successor Compatibility Generator
+
+# Attribution: Lab | zefry
+
+on:
+  push:
+    branches:
+      - sprint258-selected-target-generation-successor-compatibility
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sprint258-selected-target-generation-successor-compatibility-generator
+  cancel-in-progress: false
+
+jobs:
+  generate-compatibility-patch:
+    if: ${{ !contains(github.event.head_commit.message, '[compat-generated]') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout compatibility branch
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: sprint258-selected-target-generation-successor-compatibility
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Rewrite generation-frozen historical workflow assertions
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          python3 <<'PY'
+          from pathlib import Path
+          import json
+          import re
+
+          workflows = Path('.github/workflows')
+          generator = workflows / 'sprint258-selected-target-generation-successor-compatibility-generator.yml'
+          selection_path = 'ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json'
+
+          old = {
+              'source': '59b42137eed717aacc82080a46753440bb4d8537',
+              'artifact': '8ad4a33196eabd6248c9dfb35eb118e97759e5c17b32384a12b120258bce615c',
+              'readiness': '4a0772838f25d7ee3a7d57153f76b3b23f5d4722c644a76c287b5005e9c328b2',
+              'selection': '6ecc487cb144e634455de69cc43aa39b1f6880a2256c4b1ab33387096513772b',
+              'ingestion_run': '36008213090',
+              'ingestion_fingerprint': 'a007a97b2a00177cba48b8cae8365b9078f9dcbe7efab35c698848ff56e93ea8',
+          }
+
+          specs = [
+              ('.selected_target.exact_running_source_commit', old['source'], 'selected_target_source', r'^[0-9a-f]{40}$'),
+              ('.selected_target.exact_running_artifact_sha256', old['artifact'], 'selected_target_artifact', r'^[0-9a-f]{64}$'),
+              ('.selected_target.readiness_attestation_sha256', old['readiness'], 'selected_target_readiness', r'^[0-9a-f]{64}$'),
+              ('.selected_target.selection_fingerprint_sha256', old['selection'], 'selected_target_fingerprint', r'^[0-9a-f]{64}$'),
+              ('.selected_target.trusted_ingestion.run_id', old['ingestion_run'], 'selected_target_ingestion_run', r'^[1-9][0-9]*$'),
+              ('.selected_target.trusted_ingestion.ingestion_fingerprint_sha256', old['ingestion_fingerprint'], 'selected_target_ingestion_fingerprint', r'^[0-9a-f]{64}$'),
+          ]
+
+          changed = []
+          replacements = {key: 0 for key, _, _, _ in specs}
+          remaining_noncomment = []
+
+          for path in sorted(list(workflows.glob('*.yml')) + list(workflows.glob('*.yaml'))):
+              if path == generator:
+                  continue
+              text = path.read_text(encoding='utf-8')
+              if old['selection'] not in text:
+                  continue
+
+              lines = text.splitlines(keepends=True)
+              out = []
+              touched = False
+              for line in lines:
+                  replaced = False
+                  for field, literal, variable, regex in specs:
+                      if field in line and literal in line:
+                          indent = line[:len(line) - len(line.lstrip())]
+                          newline = '\n' if line.endswith('\n') else ''
+                          out.append(
+                              f"{indent}{variable}=\"$(jq -r '{field}' {selection_path})\"; "
+                              f"[[ \"${variable}\" =~ {regex} ]]{newline}"
+                          )
+                          replacements[field] += 1
+                          touched = True
+                          replaced = True
+                          break
+                  if replaced:
+                      continue
+
+                  if old['selection'] in line:
+                      if line.lstrip().startswith('#'):
+                          line = line.replace(old['selection'], '<historical-generation-fingerprint-not-pinned>')
+                          touched = True
+                      else:
+                          remaining_noncomment.append((str(path), line.rstrip()))
+                  out.append(line)
+
+              if touched:
+                  path.write_text(''.join(out), encoding='utf-8')
+                  changed.append(str(path))
+
+          if remaining_noncomment:
+              raise SystemExit('Unclassified historical generation assertions remain: ' + repr(remaining_noncomment[:8]))
+
+          if len(changed) != 98:
+              raise SystemExit(f'Expected exactly 98 historical workflow compatibility updates, observed {len(changed)}')
+
+          if replacements['.selected_target.selection_fingerprint_sha256'] != 98:
+              raise SystemExit(
+                  'Expected exactly 98 selected-target fingerprint assertions to be generalized, observed '
+                  + str(replacements['.selected_target.selection_fingerprint_sha256'])
+              )
+
+          report = {
+              'schema_version': 1,
+              'feature': 'final-shift-close',
+              'sprint': 258,
+              'compatibility_state': 'GENERATION_PIN_REMOVED_FROM_HISTORICAL_WORKFLOW_RUNTIME_ASSERTIONS',
+              'historical_workflows_updated': len(changed),
+              'replacement_counts': replacements,
+              'stable_invariants': {
+                  'selection_state': 'SELECTED_NOT_AUTHORIZED',
+                  'environment_id': 'oneqay-durable-staging-01',
+                  'runtime_class': 'durable-staging',
+                  'generation_fields': 'STRUCTURAL_VALIDITY_OWNED_BY_HISTORICAL_WORKFLOWS_EXACT_BINDING_OWNED_BY_ACTIVE_GENERATION_GATE'
+              },
+              'operational_boundaries': {
+                  'target_reselection': 'NOT_PERFORMED',
+                  'feature_activation_mutation': 'NOT_PERFORMED',
+                  'migration27_replay': 'NOT_PERFORMED',
+                  'permission_reprovisioning': 'NOT_PERFORMED',
+                  'production_activation': 'NOT_AUTHORIZED',
+                  'updater_activation': 'INACTIVE'
+              },
+              'attribution': 'Author by Lab | zefry'
+          }
+          Path('/tmp/sprint258-report.json').write_text(json.dumps(report, indent=2) + '\n', encoding='utf-8')
+          Path('/tmp/sprint258-paths.txt').write_text('\n'.join(changed) + '\n', encoding='utf-8')
+          PY
+
+          cat /tmp/sprint258-report.json
+
+      - name: Materialize permanent Sprint258 regression and contract
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          cp /tmp/sprint258-report.json ops/final-shift-close/SELECTED_TARGET_GENERATION_SUCCESSOR_COMPATIBILITY_CONTRACT.json
+
+          cat > .github/workflows/sprint258-selected-target-generation-successor-compatibility-regression.yml <<'EOF'
+          name: Sprint258 Selected Target Generation Successor Compatibility Regression
+
+          # Attribution: Lab | zefry
+
+          on:
+            pull_request:
+              branches:
+                - main
+
+          permissions:
+            contents: read
+
+          concurrency:
+            group: sprint258-selected-target-generation-successor-compatibility-regression-${{ github.event.pull_request.number || github.ref }}
+            cancel-in-progress: true
+
+          jobs:
+            qualify-successor-compatible-selected-target-generation:
+              runs-on: ubuntu-latest
+              timeout-minutes: 10
+              steps:
+                - name: Checkout exact PR source
+                  uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+                  with:
+                    ref: ${{ github.event.pull_request.head.sha }}
+                    fetch-depth: 0
+
+                - name: Validate selected-target stable identity and generation shape
+                  shell: bash
+                  run: |
+                    set -euo pipefail
+                    selection=ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+                    jq -e 'type == "object"' "$selection" >/dev/null
+                    test "$(jq -r '.selection_state' "$selection")" = SELECTED_NOT_AUTHORIZED
+                    test "$(jq -r '.selected_target.environment_id' "$selection")" = oneqay-durable-staging-01
+                    test "$(jq -r '.selected_target.runtime_class' "$selection")" = durable-staging
+                    source="$(jq -r '.selected_target.exact_running_source_commit' "$selection")"; [[ "$source" =~ ^[0-9a-f]{40}$ ]]
+                    artifact="$(jq -r '.selected_target.exact_running_artifact_sha256' "$selection")"; [[ "$artifact" =~ ^[0-9a-f]{64}$ ]]
+                    readiness="$(jq -r '.selected_target.readiness_attestation_sha256' "$selection")"; [[ "$readiness" =~ ^[0-9a-f]{64}$ ]]
+                    fingerprint="$(jq -r '.selected_target.selection_fingerprint_sha256' "$selection")"; [[ "$fingerprint" =~ ^[0-9a-f]{64}$ ]]
+                    ingestion_run="$(jq -r '.selected_target.trusted_ingestion.run_id' "$selection")"; [[ "$ingestion_run" =~ ^[1-9][0-9]*$ ]]
+                    ingestion_attempt="$(jq -r '.selected_target.trusted_ingestion.run_attempt' "$selection")"; [[ "$ingestion_attempt" =~ ^[1-9][0-9]*$ ]]
+                    ingestion_fp="$(jq -r '.selected_target.trusted_ingestion.ingestion_fingerprint_sha256' "$selection")"; [[ "$ingestion_fp" =~ ^[0-9a-f]{64}$ ]]
+
+                - name: Prove historical workflows no longer pin retired selection generation fingerprint
+                  shell: bash
+                  run: |
+                    set -euo pipefail
+                    retired_fp="6ecc487cb144e634455de69cc43aa39b1f6880a2"
+                    retired_fp+="256c4b1ab33387096513772b"
+                    if grep -RFn --include='*.yml' --include='*.yaml' "$retired_fp" .github/workflows; then
+                      echo 'Historical workflow still pins retired selected-target generation fingerprint.' >&2
+                      exit 1
+                    fi
+
+                - name: Validate Sprint258 compatibility contract
+                  shell: bash
+                  run: |
+                    set -euo pipefail
+                    contract=ops/final-shift-close/SELECTED_TARGET_GENERATION_SUCCESSOR_COMPATIBILITY_CONTRACT.json
+                    jq -e '
+                      .schema_version == 1 and
+                      .feature == "final-shift-close" and
+                      .sprint == 258 and
+                      .compatibility_state == "GENERATION_PIN_REMOVED_FROM_HISTORICAL_WORKFLOW_RUNTIME_ASSERTIONS" and
+                      .historical_workflows_updated == 98 and
+                      .stable_invariants.selection_state == "SELECTED_NOT_AUTHORIZED" and
+                      .stable_invariants.environment_id == "oneqay-durable-staging-01" and
+                      .stable_invariants.runtime_class == "durable-staging" and
+                      .operational_boundaries.target_reselection == "NOT_PERFORMED" and
+                      .operational_boundaries.feature_activation_mutation == "NOT_PERFORMED" and
+                      .operational_boundaries.production_activation == "NOT_AUTHORIZED" and
+                      .operational_boundaries.updater_activation == "INACTIVE" and
+                      .attribution == "Author by Lab | zefry"
+                    ' "$contract" >/dev/null
+
+                - name: Verify tracked source cleanliness
+                  shell: bash
+                  run: |
+                    set -euo pipefail
+                    git diff --exit-code
+                    git diff --cached --exit-code
+
+          # Author by Lab | zefry
+          EOF
+
+          cat > docs/SPRINT258_SELECTED_TARGET_GENERATION_SUCCESSOR_COMPATIBILITY.md <<'EOF'
+          # Sprint258 — Selected-Target Generation Successor Compatibility
+
+          Author by Lab | zefry
+
+          Sprint258 removes a historical CI coupling that incorrectly treated one prior durable-staging selected-target generation as immutable forever.
+
+          The selected durable target itself remains unchanged: environment `oneqay-durable-staging-01`, runtime class `durable-staging`, and selection state `SELECTED_NOT_AUTHORIZED`. What may legitimately advance after a governed same-target source promotion is the selected target generation: exact running source, artifact, readiness attestation, selection fingerprint, and trusted-ingestion evidence.
+
+          Historical regression workflows therefore continue to own stable operational invariants, but generation-specific fields are validated for canonical structural shape instead of being pinned to the retired generation values. Exact binding of a proposed fresh generation remains fail-closed in the active post-activation selected-target generation gate introduced by Sprint256.
+
+          This compatibility change performs no target reselection, runtime mutation, feature activation mutation, migration replay, permission reprovisioning, Production deployment or activation, updater activation, or producer dispatch. Historical documentation and machine-readable historical contracts remain provenance and are not rewritten.
+          EOF
+
+      - name: Remove one-shot generator before publication
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/sprint258-selected-target-generation-successor-compatibility-generator.yml
+
+      - name: Validate generated compatibility tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(wc -l < /tmp/sprint258-paths.txt)" = 98
+          jq -e '.historical_workflows_updated == 98' ops/final-shift-close/SELECTED_TARGET_GENERATION_SUCCESSOR_COMPATIBILITY_CONTRACT.json >/dev/null
+          ruby -e 'require "yaml"; Dir[".github/workflows/*.yml"].each { |f| YAML.load_file(f) }'
+          retired_fp="6ecc487cb144e634455de69cc43aa39b1f6880a2"
+          retired_fp+="256c4b1ab33387096513772b"
+          ! grep -RFn --include='*.yml' --include='*.yaml' "$retired_fp" .github/workflows
+          git status --short
+
+      - name: Commit generated successor compatibility patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'Lab | zefry'
+          git config user.email 'lab.zefry@users.noreply.github.com'
+          git add .github/workflows ops/final-shift-close/SELECTED_TARGET_GENERATION_SUCCESSOR_COMPATIBILITY_CONTRACT.json docs/SPRINT258_SELECTED_TARGET_GENERATION_SUCCESSOR_COMPATIBILITY.md
+          git commit -m 'Sprint258: make selected-target generation successor-compatible' -m 'Author by Lab | zefry' -m '[compat-generated]'
+          git push origin HEAD:sprint258-selected-target-generation-successor-compatibility
