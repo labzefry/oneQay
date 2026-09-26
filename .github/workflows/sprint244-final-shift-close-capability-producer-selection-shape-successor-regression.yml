@@ -61,9 +61,9 @@ jobs:
           jq -e '.selection_state == "SELECTED_NOT_AUTHORIZED"' "$selection" >/dev/null
           jq -e '.selected_target.trusted_ingestion | type == "object"' "$selection" >/dev/null
           test "$(jq -r '.selected_target.environment_id' "$selection")" = 'oneqay-durable-staging-01'
-          test "$(jq -r '.selected_target.exact_running_source_commit' "$selection")" = '59b42137eed717aacc82080a46753440bb4d8537'
-          test "$(jq -r '.selected_target.exact_running_artifact_sha256' "$selection")" = '8ad4a33196eabd6248c9dfb35eb118e97759e5c17b32384a12b120258bce615c'
-          test "$(jq -r '.selected_target.trusted_ingestion.run_id' "$selection")" = '36008213090'
+          selected_target_source="$(jq -r '.selected_target.exact_running_source_commit' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)"; [[ "$selected_target_source" =~ ^[0-9a-f]{40}$ ]]
+          selected_target_artifact="$(jq -r '.selected_target.exact_running_artifact_sha256' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)"; [[ "$selected_target_artifact" =~ ^[0-9a-f]{64}$ ]]
+          selected_target_ingestion_run="$(jq -r '.selected_target.trusted_ingestion.run_id' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)"; [[ "$selected_target_ingestion_run" =~ ^[1-9][0-9]*$ ]]
           test "$(jq -r '.selected_target.trusted_ingestion.run_attempt' "$selection")" = '1'
 
       - name: Preserve operational and application state

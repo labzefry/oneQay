@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "feature": "final-shift-close",
+  "sprint": 258,
+  "bounded_objective": "SELECTED_TARGET_GENERATION_SUCCESSOR_COMPATIBILITY",
+  "compatibility_state": "RETIRED_GENERATION_PIN_REMOVED_FROM_HISTORICAL_RUNTIME_ASSERTIONS",
+  "historical_workflows_updated": 110,
+  "replacement_counts": {
+    ".selected_target.exact_running_source_commit": 21,
+    ".selected_target.exact_running_artifact_sha256": 21,
+    ".selected_target.readiness_attestation_sha256": 1,
+    ".selected_target.selection_fingerprint_sha256": 100,
+    ".selected_target.trusted_ingestion.run_id": 1,
+    ".selected_target.trusted_ingestion.ingestion_fingerprint_sha256": 0
+  },
+  "stable_invariants": {
+    "selection_state": "SELECTED_NOT_AUTHORIZED",
+    "environment_id": "oneqay-durable-staging-01",
+    "runtime_class": "durable-staging",
+    "generation_fields": "STRUCTURAL_VALIDITY_IN_HISTORICAL_WORKFLOWS_EXACT_BINDING_IN_ACTIVE_GENERATION_GATE"
+  },
+  "operational_boundaries": {
+    "target_reselection": "NOT_PERFORMED",
+    "feature_activation_mutation": "NOT_PERFORMED",
+    "migration27_replay": "NOT_PERFORMED",
+    "permission_reprovisioning": "NOT_PERFORMED",
+    "technical_preview_activation": "NOT_AUTHORIZED",
+    "production_activation": "NOT_AUTHORIZED",
+    "updater_activation": "INACTIVE",
+    "producer_dispatch": "NOT_PERFORMED"
+  },
+  "attribution": "Author by Lab | zefry"
+}
