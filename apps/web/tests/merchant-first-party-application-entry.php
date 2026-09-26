@@ -11,7 +11,14 @@ $page=file_get_contents(__DIR__.'/../resources/js/pages/Foundation.vue');
 $routes=file_get_contents(__DIR__.'/../routes/web.php');
 $assert(is_string($blade)&&is_string($page)&&is_string($routes),'entry source missing');
 
-foreach (["meta name=\"csrf-token\"","meta name=\"oneqay-merchant-entry\"","['local', 'test', 'ci']","database.oneqay_persistence_enabled","oneqay.session_control.enabled"] as $needle) {
+foreach ([
+    "meta name=\"csrf-token\"",
+    "meta name=\"oneqay-merchant-entry\"",
+    "['local', 'test', 'ci']",
+    "request()->attributes->get('oneqay.runtime_compatibility_bridge') === 'merchant-core-ci'",
+    'database.oneqay_persistence_enabled',
+    'oneqay.session_control.enabled',
+] as $needle) {
     $assert(str_contains($blade,$needle),'guarded bootstrap metadata missing '.$needle);
 }
 foreach (['/auth/login','/auth/mfa/totp/challenge','/auth/mfa/totp/enrollment/start','/auth/mfa/totp/enrollment/confirm',"location.assign('/pos')"] as $needle) {
