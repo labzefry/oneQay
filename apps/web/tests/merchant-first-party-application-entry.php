@@ -16,6 +16,10 @@ foreach ([
     "meta name=\"oneqay-merchant-entry\"",
     "['local', 'test', 'ci']",
     "request()->attributes->get('oneqay.runtime_compatibility_bridge') === 'merchant-core-ci'",
+    "$runtimeClass === 'durable-staging'",
+    "env('ONEQAY_DURABLE_STAGING_RUNTIME_ENABLED', false)",
+    "Route::has('auth.first-party.login')",
+    "Route::has('pos.operations.hub')",
     'database.oneqay_persistence_enabled',
     'oneqay.session_control.enabled',
 ] as $needle) {
