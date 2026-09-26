@@ -1,0 +1,392 @@
+name: Final Shift Close Post-Activation Durable Runtime Reattestation Ingestion
+
+# Attribution: Lab | zefry
+
+on:
+  workflow_dispatch:
+    inputs:
+      producer_run_id:
+        description: Exact successful post-activation reattestation producer run ID
+        required: true
+        type: string
+      producer_run_attempt:
+        description: Exact successful producer run attempt
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+  statuses: write
+
+env:
+  PRODUCER_WORKFLOW_PATH: .github/workflows/final-shift-close-post-activation-durable-runtime-reattestation.yml
+  PRODUCER_ARTIFACT_NAME: final-shift-close-post-activation-durable-runtime-reattestation
+  PRODUCER_EVIDENCE_CONTEXT: final-shift-close-post-activation-durable-runtime-reattestation-evidence
+  INGESTION_EVIDENCE_CONTEXT: final-shift-close-post-activation-durable-runtime-reattestation-ingestion-evidence
+  INGESTION_ARTIFACT_NAME: final-shift-close-post-activation-durable-runtime-reattestation-ingestion
+
+concurrency:
+  group: final-shift-close-post-activation-durable-runtime-reattestation-ingestion
+  cancel-in-progress: false
+
+jobs:
+  ingest-post-activation-reattestation:
+    if: ${{ github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PRODUCER_RUN_ID: ${{ inputs.producer_run_id }}
+      PRODUCER_RUN_ATTEMPT: ${{ inputs.producer_run_attempt }}
+
+    steps:
+      - name: Checkout canonical ingestion source only
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+
+      - name: Validate current canonical main and producer identity
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          API_URL: ${{ github.api_url }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          [[ "$GITHUB_REF" == 'refs/heads/main' ]]
+          [[ "$GITHUB_REPOSITORY" == 'labzefry/oneQay' ]]
+          [[ "$PRODUCER_RUN_ID" =~ ^[1-9][0-9]{0,19}$ ]]
+          [[ "$PRODUCER_RUN_ATTEMPT" =~ ^[1-9][0-9]{0,5}$ ]]
+
+          main_sha="$(curl --fail-with-body --silent --show-error \
+            --header 'Accept: application/vnd.github+json' \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header 'X-GitHub-Api-Version: 2022-11-28' \
+            "$API_URL/repos/$REPOSITORY/branches/main" | jq -r '.commit.sha')"
+          [[ "$main_sha" == "$GITHUB_SHA" ]] || {
+            echo "Post-activation ingestion must run from current canonical main: $GITHUB_SHA != $main_sha" >&2
+            exit 1
+          }
+
+          test "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" = ACTIVE
+
+      - name: Resolve exact successful producer run
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          API_URL: ${{ github.api_url }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          run_json="$(curl --fail-with-body --silent --show-error \
+            --header 'Accept: application/vnd.github+json' \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header 'X-GitHub-Api-Version: 2022-11-28' \
+            "$API_URL/repos/$REPOSITORY/actions/runs/$PRODUCER_RUN_ID")"
+
+          [[ "$(jq -r '.id' <<<"$run_json")" == "$PRODUCER_RUN_ID" ]]
+          [[ "$(jq -r '.run_attempt' <<<"$run_json")" == "$PRODUCER_RUN_ATTEMPT" ]]
+          [[ "$(jq -r '.event' <<<"$run_json")" == workflow_dispatch ]]
+          [[ "$(jq -r '.path' <<<"$run_json")" == "$PRODUCER_WORKFLOW_PATH" ]]
+          [[ "$(jq -r '.head_branch' <<<"$run_json")" == main ]]
+          [[ "$(jq -r '.status' <<<"$run_json")" == completed ]]
+          [[ "$(jq -r '.conclusion' <<<"$run_json")" == success ]]
+          [[ "$(jq -r '.repository.full_name' <<<"$run_json")" == labzefry/oneQay ]]
+
+          producer_head="$(jq -r '.head_sha' <<<"$run_json")"
+          [[ "$producer_head" =~ ^[0-9a-f]{40}$ ]]
+
+          compare="$(curl --fail-with-body --silent --show-error \
+            --header 'Accept: application/vnd.github+json' \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header 'X-GitHub-Api-Version: 2022-11-28' \
+            "$API_URL/repos/$REPOSITORY/compare/$producer_head...$GITHUB_SHA")"
+          status="$(jq -r '.status' <<<"$compare")"
+          behind="$(jq -r '.behind_by' <<<"$compare")"
+          [[ "$status" == ahead || "$status" == identical ]]
+          [[ "$behind" == 0 ]]
+
+          printf '%s\n' "$producer_head" > /tmp/producer-head.txt
+
+      - name: Download exact producer artifact
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          API_URL: ${{ github.api_url }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          umask 077
+
+          artifacts="$(curl --fail-with-body --silent --show-error \
+            --header 'Accept: application/vnd.github+json' \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header 'X-GitHub-Api-Version: 2022-11-28' \
+            "$API_URL/repos/$REPOSITORY/actions/runs/$PRODUCER_RUN_ID/artifacts?name=$PRODUCER_ARTIFACT_NAME&per_page=100")"
+
+          [[ "$(jq '.total_count' <<<"$artifacts")" == 1 ]]
+          artifact="$(jq -c '.artifacts[0]' <<<"$artifacts")"
+          [[ "$(jq -r '.name' <<<"$artifact")" == "$PRODUCER_ARTIFACT_NAME" ]]
+          [[ "$(jq -r '.expired' <<<"$artifact")" == false ]]
+          size="$(jq -r '.size_in_bytes' <<<"$artifact")"
+          artifact_id="$(jq -r '.id' <<<"$artifact")"
+          [[ "$artifact_id" =~ ^[1-9][0-9]{0,19}$ ]]
+          (( size > 1 && size <= 262144 ))
+
+          curl \
+            --proto '=https' \
+            --proto-redir '=https' \
+            --tlsv1.2 \
+            --location \
+            --fail-with-body \
+            --silent \
+            --show-error \
+            --header 'Accept: application/vnd.github+json' \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header 'X-GitHub-Api-Version: 2022-11-28' \
+            "$API_URL/repos/$REPOSITORY/actions/artifacts/$artifact_id/zip" \
+            --output /tmp/post-activation-producer.zip
+
+          unzip -Z1 /tmp/post-activation-producer.zip | LC_ALL=C sort > /tmp/actual-entries
+          cat > /tmp/expected-entries <<'EOF'
+          attestation.json
+          provenance.json
+          EOF
+          diff -u /tmp/expected-entries /tmp/actual-entries
+
+          mkdir -p /tmp/post-activation-producer
+          unzip -qq /tmp/post-activation-producer.zip -d /tmp/post-activation-producer
+          jq -e 'type == "object"' /tmp/post-activation-producer/attestation.json >/dev/null
+          jq -e 'type == "object"' /tmp/post-activation-producer/provenance.json >/dev/null
+
+      - name: Bind producer metadata and ACTIVE evidence status
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          API_URL: ${{ github.api_url }}
+          REPOSITORY: ${{ github.repository }}
+          SERVER_URL: ${{ github.server_url }}
+        run: |
+          set -euo pipefail
+
+          attestation=/tmp/post-activation-producer/attestation.json
+          provenance=/tmp/post-activation-producer/provenance.json
+          producer_head="$(cat /tmp/producer-head.txt)"
+
+          test "$(jq -r '.producer_run_id' "$provenance")" = "$PRODUCER_RUN_ID"
+          test "$(jq -r '.producer_run_attempt' "$provenance")" = "$PRODUCER_RUN_ATTEMPT"
+          test "$(jq -r '.producer_source_commit' "$provenance")" = "$producer_head"
+          test "$(jq -r '.producer_workflow_path' "$provenance")" = "$PRODUCER_WORKFLOW_PATH"
+          test "$(jq -r '.producer_ref' "$provenance")" = refs/heads/main
+          test "$(jq -r '.evidence_state' "$provenance")" = VERIFIED_POST_ACTIVATION
+          test "$(jq -r '.feature_activation_state' "$provenance")" = ACTIVE
+          test "$(jq -r '.evidence_status_context' "$provenance")" = "$PRODUCER_EVIDENCE_CONTEXT"
+          test "$(jq -r '.evidence_status_state' "$provenance")" = success
+          test "$(jq -r '.secrets_embedded' "$provenance")" = false
+
+          test "$(jq -r '.feature_activation_state' "$attestation")" = ACTIVE
+          running_source="$(jq -r '.exact_running_source_commit' "$attestation")"
+          [[ "$running_source" =~ ^[0-9a-f]{40}$ ]]
+          test "$(jq -r '.exact_running_source_commit' "$provenance")" = "$running_source"
+
+          expected_target="$SERVER_URL/$REPOSITORY/actions/runs/$PRODUCER_RUN_ID"
+          statuses="$(curl --fail-with-body --silent --show-error \
+            --header 'Accept: application/vnd.github+json' \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header 'X-GitHub-Api-Version: 2022-11-28' \
+            "$API_URL/repos/$REPOSITORY/commits/$running_source/statuses?per_page=100")"
+          exact_state="$(jq -r --arg c "$PRODUCER_EVIDENCE_CONTEXT" --arg u "$expected_target" \
+            '[.[] | select(.context == $c and .target_url == $u)][0].state // ""' <<<"$statuses")"
+          [[ "$exact_state" == success ]]
+
+      - name: Materialize deterministic post-activation ingestion record
+        id: ingestion
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          mkdir -p /tmp/post-activation-ingestion
+
+          ATTESTATION_FILE=/tmp/post-activation-producer/attestation.json \
+          PROVENANCE_FILE=/tmp/post-activation-producer/provenance.json \
+          INGESTION_FILE=/tmp/post-activation-ingestion/ingestion.json \
+          php <<'PHP'
+          <?php
+          declare(strict_types=1);
+
+          $attestation = json_decode((string) file_get_contents((string) getenv('ATTESTATION_FILE')), true, 32, JSON_THROW_ON_ERROR);
+          $provenance = json_decode((string) file_get_contents((string) getenv('PROVENANCE_FILE')), true, 32, JSON_THROW_ON_ERROR);
+          if (!is_array($attestation) || array_is_list($attestation) || !is_array($provenance) || array_is_list($provenance)) {
+              throw new RuntimeException('Post-activation evidence bundle must contain objects.');
+          }
+          if (($attestation['feature_activation_state'] ?? null) !== 'ACTIVE'
+              || ($provenance['feature_activation_state'] ?? null) !== 'ACTIVE') {
+              throw new RuntimeException('Post-activation evidence must preserve ACTIVE feature state.');
+          }
+
+          $canonicalAttestation = $attestation;
+          ksort($canonicalAttestation, SORT_STRING);
+          $attestationSha = hash('sha256', json_encode(
+              $canonicalAttestation,
+              JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR,
+          ));
+
+          $canonicalProvenance = $provenance;
+          ksort($canonicalProvenance, SORT_STRING);
+          $provenanceSha = hash('sha256', json_encode(
+              $canonicalProvenance,
+              JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR,
+          ));
+
+          $fingerprint = hash('sha256', implode('|', [
+              'final-shift-close',
+              'ACCEPTED_NOT_SELECTED',
+              (string) $attestation['environment_id'],
+              (string) $attestation['runtime_class'],
+              (string) $attestation['exact_running_source_commit'],
+              (string) $attestation['exact_running_artifact_sha256'],
+              (string) $provenance['deployment_evidence_sha256'],
+              (string) $provenance['deployment_plan_fingerprint'],
+              (string) $provenance['deployment_authority_sha256'],
+              $attestationSha,
+              $provenanceSha,
+              'ACTIVE',
+          ]));
+
+          $record = [
+              'schema_version' => 1,
+              'feature' => 'final-shift-close',
+              'ingestion_state' => 'ACCEPTED_NOT_SELECTED',
+              'candidate_target' => [
+                  'environment_id' => $attestation['environment_id'],
+                  'runtime_class' => $attestation['runtime_class'],
+                  'exact_running_source_commit' => $attestation['exact_running_source_commit'],
+                  'exact_running_artifact_sha256' => $attestation['exact_running_artifact_sha256'],
+              ],
+              'deployment_binding' => [
+                  'deployment_evidence_sha256' => $provenance['deployment_evidence_sha256'],
+                  'deployment_plan_fingerprint' => $provenance['deployment_plan_fingerprint'],
+                  'deployment_authority_sha256' => $provenance['deployment_authority_sha256'],
+              ],
+              'readiness_attestation_sha256' => $attestationSha,
+              'provenance_sha256' => $provenanceSha,
+              'ingestion_fingerprint_sha256' => $fingerprint,
+              'canonical_selection_state' => 'SELECTED_NOT_AUTHORIZED',
+              'selected_target' => null,
+              'activation_authority_state' => 'NOT_GRANTED',
+              'feature_activation_state' => 'ACTIVE',
+              'runtime_allowlist_change' => 'NOT_PERFORMED',
+              'persistence_state' => 'NOT_PERFORMED',
+          ];
+
+          file_put_contents(
+              (string) getenv('INGESTION_FILE'),
+              json_encode($record, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR).PHP_EOL,
+              LOCK_EX,
+          );
+          PHP
+
+          cp /tmp/post-activation-producer/attestation.json /tmp/post-activation-ingestion/attestation.json
+          cp /tmp/post-activation-producer/provenance.json /tmp/post-activation-ingestion/provenance.json
+
+          echo "running_source=$(jq -r '.candidate_target.exact_running_source_commit' /tmp/post-activation-ingestion/ingestion.json)" >> "$GITHUB_OUTPUT"
+          echo "ingestion_fingerprint=$(jq -r '.ingestion_fingerprint_sha256' /tmp/post-activation-ingestion/ingestion.json)" >> "$GITHUB_OUTPUT"
+
+      - name: Materialize secret-free ingestion execution evidence
+        shell: bash
+        env:
+          INGESTION_FINGERPRINT: ${{ steps.ingestion.outputs.ingestion_fingerprint }}
+        run: |
+          set -euo pipefail
+
+          jq -n \
+            --arg feature final-shift-close \
+            --arg execution_state ACCEPTED_NOT_SELECTED \
+            --arg workflow_path '.github/workflows/final-shift-close-post-activation-durable-runtime-reattestation-ingestion.yml' \
+            --arg repository labzefry/oneQay \
+            --arg ref refs/heads/main \
+            --arg source_commit "$GITHUB_SHA" \
+            --arg run_id "$GITHUB_RUN_ID" \
+            --arg run_attempt "$GITHUB_RUN_ATTEMPT" \
+            --arg producer_run_id "$PRODUCER_RUN_ID" \
+            --arg producer_run_attempt "$PRODUCER_RUN_ATTEMPT" \
+            --arg ingestion_fingerprint "$INGESTION_FINGERPRINT" \
+            '{
+              schema_version:1,
+              feature:$feature,
+              execution_state:$execution_state,
+              ingestion_workflow_path:$workflow_path,
+              ingestion_repository:$repository,
+              ingestion_ref:$ref,
+              ingestion_source_commit:$source_commit,
+              ingestion_run_id:($run_id|tonumber),
+              ingestion_run_attempt:($run_attempt|tonumber),
+              producer_run_id:($producer_run_id|tonumber),
+              producer_run_attempt:($producer_run_attempt|tonumber),
+              ingestion_fingerprint_sha256:$ingestion_fingerprint,
+              selected_target:null,
+              activation_authority_state:"NOT_GRANTED",
+              feature_activation_state:"ACTIVE",
+              runtime_allowlist_change:"NOT_PERFORMED",
+              persistence_state:"NOT_PERFORMED",
+              secrets_embedded:false
+            }' > /tmp/post-activation-ingestion/execution.json
+
+      - name: Publish pending ingestion evidence status
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          API_URL: ${{ github.api_url }}
+          REPOSITORY: ${{ github.repository }}
+          RUNNING_SOURCE: ${{ steps.ingestion.outputs.running_source }}
+        run: |
+          set -euo pipefail
+          payload="$(jq -n \
+            --arg state pending \
+            --arg context "$INGESTION_EVIDENCE_CONTEXT" \
+            --arg description 'Post-activation durable runtime reattestation ingestion is being published' \
+            --arg target_url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+            '{state:$state,context:$context,description:$description,target_url:$target_url}')"
+
+          curl --fail-with-body --silent --show-error \
+            --request POST \
+            --header 'Accept: application/vnd.github+json' \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header 'X-GitHub-Api-Version: 2022-11-28' \
+            "$API_URL/repos/$REPOSITORY/statuses/$RUNNING_SOURCE" \
+            --data "$payload" >/dev/null
+
+      - name: Upload trusted post-activation ingestion evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: final-shift-close-post-activation-durable-runtime-reattestation-ingestion
+          path: /tmp/post-activation-ingestion
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Publish success ingestion evidence status
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          API_URL: ${{ github.api_url }}
+          REPOSITORY: ${{ github.repository }}
+          RUNNING_SOURCE: ${{ steps.ingestion.outputs.running_source }}
+        run: |
+          set -euo pipefail
+          payload="$(jq -n \
+            --arg state success \
+            --arg context "$INGESTION_EVIDENCE_CONTEXT" \
+            --arg description 'Post-activation durable runtime reattestation ingestion accepted and published' \
+            --arg target_url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+            '{state:$state,context:$context,description:$description,target_url:$target_url}')"
+
+          curl --fail-with-body --silent --show-error \
+            --request POST \
+            --header 'Accept: application/vnd.github+json' \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header 'X-GitHub-Api-Version: 2022-11-28' \
+            "$API_URL/repos/$REPOSITORY/statuses/$RUNNING_SOURCE" \
+            --data "$payload" >/dev/null

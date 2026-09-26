@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "feature": "final-shift-close",
+  "sprint": 256,
+  "contract_state": "MATERIALIZED_SUCCESSOR_NOT_DISPATCHED",
+  "bounded_objective": "POST_ACTIVATION_DURABLE_RUNTIME_REATTESTATION_AND_SELECTED_TARGET_GENERATION_SUCCESSOR",
+  "canonical_base_sha": "5a96825defb8a805b8b754f0d64fceb7e0826369",
+  "problem_statement": {
+    "post_activation_deployment_evidence_requires_active_feature_state": true,
+    "historical_attestation_producer_requires_inactive_feature_state": true,
+    "historical_ingestion_and_selection_chain_requires_inactive_feature_state": true,
+    "historical_workflows_are_not_modified": true
+  },
+  "feature_activation_state": "ACTIVE",
+  "producer_successor": {
+    "workflow_path": ".github/workflows/final-shift-close-post-activation-durable-runtime-reattestation.yml",
+    "trigger": "workflow_dispatch",
+    "protected_environment": "final-shift-close-durable-runtime-attestation",
+    "post_activation_deployment_evidence_qualifier": "tools/qualify-durable-staging-post-activation-deployment-evidence.php",
+    "raw_readiness_must_report_active": true,
+    "exact_source_and_artifact_binding_required": true,
+    "secret_values_embedded": false
+  },
+  "ingestion_successor": {
+    "workflow_path": ".github/workflows/final-shift-close-post-activation-durable-runtime-reattestation-ingestion.yml",
+    "trigger": "workflow_dispatch",
+    "trusted_producer_only": true,
+    "ingestion_state": "ACCEPTED_NOT_SELECTED",
+    "feature_activation_state": "ACTIVE",
+    "canonical_selection_state": "SELECTED_NOT_AUTHORIZED",
+    "persistence_state": "NOT_PERFORMED"
+  },
+  "target_generation": {
+    "workflow_path": ".github/workflows/final-shift-close-post-activation-selected-target-generation.yml",
+    "trigger": "workflow_dispatch",
+    "one_file_pr_required": true,
+    "mutable_path": "ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json",
+    "selection_state_preserved": "SELECTED_NOT_AUTHORIZED",
+    "same_environment_required": true,
+    "same_runtime_class_required": true,
+    "previous_running_source_must_be_ancestor_of_new_running_source": true,
+    "only_selected_target_generation_may_change": true,
+    "target_reselection": "NOT_PERFORMED",
+    "merge_performed_by_executor": false
+  },
+  "operational_boundaries": {
+    "migration27_replay": "NOT_PERFORMED",
+    "permission_reprovisioning": "NOT_PERFORMED",
+    "feature_activation_mutation": "NOT_PERFORMED",
+    "deployment_execution": "NOT_PERFORMED",
+    "target_reselection": "NOT_PERFORMED",
+    "runtime_allowlist_change": "NOT_PERFORMED",
+    "technical_preview_activation": "NOT_AUTHORIZED",
+    "production_deployment": "NOT_PERFORMED",
+    "production_activation": "NOT_AUTHORIZED",
+    "updater_activation": "INACTIVE"
+  },
+  "next_operational_sequence": [
+    "UPDATE_PROTECTED_POST_ACTIVATION_DEPLOYMENT_EVIDENCE_BINDINGS",
+    "DISPATCH_POST_ACTIVATION_RUNTIME_REATTESTATION",
+    "DISPATCH_TRUSTED_POST_ACTIVATION_INGESTION",
+    "PREPARE_ONE_FILE_SELECTED_TARGET_GENERATION_PR",
+    "QUALIFY_EXACT_GENERATION_PR",
+    "MERGE_GENERATION_ONLY_AFTER_QUALIFIED_EVIDENCE",
+    "DARK_PRODUCTION_READINESS_ONLY_AFTER_FRESH_STAGING_GENERATION"
+  ],
+  "attribution": "Author by Lab | zefry"
+}

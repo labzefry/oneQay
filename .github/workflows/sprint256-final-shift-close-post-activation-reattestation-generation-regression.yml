@@ -1,0 +1,113 @@
+name: Sprint256 Final Shift Close Post-Activation Reattestation Generation Regression
+
+# Attribution: Lab | zefry
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/final-shift-close-post-activation-durable-runtime-reattestation.yml'
+      - '.github/workflows/final-shift-close-post-activation-durable-runtime-reattestation-ingestion.yml'
+      - '.github/workflows/final-shift-close-post-activation-selected-target-generation.yml'
+      - '.github/workflows/sprint256-final-shift-close-post-activation-reattestation-generation-regression.yml'
+      - 'ops/final-shift-close/POST_ACTIVATION_REATTESTATION_GENERATION_CONTRACT.json'
+      - 'docs/SPRINT256_FINAL_SHIFT_CLOSE_POST_ACTIVATION_REATTESTATION_GENERATION.md'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/final-shift-close-post-activation-durable-runtime-reattestation.yml'
+      - '.github/workflows/final-shift-close-post-activation-durable-runtime-reattestation-ingestion.yml'
+      - '.github/workflows/final-shift-close-post-activation-selected-target-generation.yml'
+      - '.github/workflows/sprint256-final-shift-close-post-activation-reattestation-generation-regression.yml'
+      - 'ops/final-shift-close/POST_ACTIVATION_REATTESTATION_GENERATION_CONTRACT.json'
+      - 'docs/SPRINT256_FINAL_SHIFT_CLOSE_POST_ACTIVATION_REATTESTATION_GENERATION.md'
+
+permissions:
+  contents: read
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+
+      - name: Validate bounded successor materialization
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          for path in \
+            .github/workflows/final-shift-close-post-activation-durable-runtime-reattestation.yml \
+            .github/workflows/final-shift-close-post-activation-durable-runtime-reattestation-ingestion.yml \
+            .github/workflows/final-shift-close-post-activation-selected-target-generation.yml \
+            .github/workflows/sprint256-final-shift-close-post-activation-reattestation-generation-regression.yml \
+            docs/SPRINT256_FINAL_SHIFT_CLOSE_POST_ACTIVATION_REATTESTATION_GENERATION.md \
+            ops/final-shift-close/POST_ACTIVATION_REATTESTATION_GENERATION_CONTRACT.json; do
+            test -f "$path"
+          done
+
+      - name: Parse successor workflows and contract
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          ruby -e 'require "yaml"; ARGV.each { |f| YAML.load_file(f) }' \
+            .github/workflows/final-shift-close-post-activation-durable-runtime-reattestation.yml \
+            .github/workflows/final-shift-close-post-activation-durable-runtime-reattestation-ingestion.yml \
+            .github/workflows/final-shift-close-post-activation-selected-target-generation.yml \
+            .github/workflows/sprint256-final-shift-close-post-activation-reattestation-generation-regression.yml
+
+          jq -e . ops/final-shift-close/POST_ACTIVATION_REATTESTATION_GENERATION_CONTRACT.json >/dev/null
+
+      - name: Assert post-activation evidence and ACTIVE successor boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          producer=.github/workflows/final-shift-close-post-activation-durable-runtime-reattestation.yml
+          ingestion=.github/workflows/final-shift-close-post-activation-durable-runtime-reattestation-ingestion.yml
+          generation=.github/workflows/final-shift-close-post-activation-selected-target-generation.yml
+          contract=ops/final-shift-close/POST_ACTIVATION_REATTESTATION_GENERATION_CONTRACT.json
+
+          grep -Fq 'qualify-durable-staging-post-activation-deployment-evidence.php' "$producer"
+          grep -Fq 'QUALIFIED_POST_ACTIVATION_DEPLOYMENT_EVIDENCE_NOT_SELECTED' "$producer"
+          grep -Fq "feature_activation_state' => 'ACTIVE'" "$producer"
+          ! grep -Fq 'qualify-durable-staging-deployment-evidence.php' "$producer"
+
+          grep -Fq "feature_activation_state' => 'ACTIVE'" "$ingestion"
+          grep -Fq 'canonical_selection_state' "$ingestion"
+          grep -Fq 'SELECTED_NOT_AUTHORIZED' "$ingestion"
+          grep -Fq 'runtime_allowlist_change' "$ingestion"
+          grep -Fq 'NOT_PERFORMED' "$ingestion"
+
+          grep -Fq 'Generation update cannot reselect environment or runtime class.' "$generation"
+          grep -Fq 'Generation PR changes fields outside selected_target.' "$generation"
+          grep -Fq 'git merge-base --is-ancestor "$old_source" "$new_source"' "$generation"
+
+          test "$(jq -r '.contract_state' "$contract")" = MATERIALIZED_SUCCESSOR_NOT_DISPATCHED
+          test "$(jq -r '.feature_activation_state' "$contract")" = ACTIVE
+          test "$(jq -r '.target_generation.same_environment_required' "$contract")" = true
+          test "$(jq -r '.target_generation.same_runtime_class_required' "$contract")" = true
+          test "$(jq -r '.operational_boundaries.production_activation' "$contract")" = NOT_AUTHORIZED
+          test "$(jq -r '.operational_boundaries.updater_activation' "$contract")" = INACTIVE
+
+      - name: Preserve historical source-only workflows and no-live-mutation boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          test -f .github/workflows/final-shift-close-durable-runtime-attestation.yml
+          test -f .github/workflows/final-shift-close-durable-runtime-attestation-ingestion.yml
+          test -f .github/workflows/final-shift-close-durable-runtime-target-selection-persistence.yml
+          grep -Fq "FEATURE_ACTIVATION_STATE = 'INACTIVE'" apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeReadiness.php
+
+          contract=ops/final-shift-close/POST_ACTIVATION_REATTESTATION_GENERATION_CONTRACT.json
+          test "$(jq -r '.operational_boundaries.deployment_execution' "$contract")" = NOT_PERFORMED
+          test "$(jq -r '.operational_boundaries.feature_activation_mutation' "$contract")" = NOT_PERFORMED
+          test "$(jq -r '.operational_boundaries.target_reselection' "$contract")" = NOT_PERFORMED
+          test "$(jq -r '.operational_boundaries.runtime_allowlist_change' "$contract")" = NOT_PERFORMED
+          test "$(jq -r '.operational_boundaries.production_deployment' "$contract")" = NOT_PERFORMED
