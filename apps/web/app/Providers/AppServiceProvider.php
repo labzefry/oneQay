@@ -247,7 +247,7 @@ final class AppServiceProvider extends ServiceProvider
             $app->make(FirstPartyCredentialEpochRepository::class),
             $app->make(PrivilegedTotpFactorEpochRepository::class),
             $app->make(PrivilegedTotpMfaService::class),
-            $this->mfaOperationalEnabled(),
+            (bool) config('oneqay.privileged_totp_mfa.enabled', false),
             (int) config('oneqay.session_control.idle_ttl_seconds', 0),
             (int) config('oneqay.session_control.absolute_ttl_seconds', 0),
         ));
