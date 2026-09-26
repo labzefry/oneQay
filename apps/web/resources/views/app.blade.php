@@ -5,11 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     @php
         $runtimeClass = strtolower(trim((string) config('oneqay.runtime_class', '')));
+        $durableStagingPresentationAllowed = $runtimeClass === 'durable-staging'
+            && filter_var(
+                env('ONEQAY_DURABLE_STAGING_RUNTIME_ENABLED', false),
+                FILTER_VALIDATE_BOOL,
+            )
+            && \Illuminate\Support\Facades\Route::has('auth.first-party.login')
+            && \Illuminate\Support\Facades\Route::has('pos.operations.hub');
         $merchantRuntimeAllowed = in_array(
             $runtimeClass,
             ['local', 'test', 'ci'],
             true,
-        ) || request()->attributes->get('oneqay.runtime_compatibility_bridge') === 'merchant-core-ci';
+        )
+            || request()->attributes->get('oneqay.runtime_compatibility_bridge') === 'merchant-core-ci'
+            || $durableStagingPresentationAllowed;
         $merchantGrant = config('merchant_context_bootstrap.grant', []);
         $merchantLoginContext = [];
 
