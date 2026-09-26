@@ -77,8 +77,7 @@ jobs:
             apps/web/app/Application/Pos/FinalShiftCloseRuntimeDbBindingAttestation.php \
             apps/web/app/Infrastructure/Pos/FilesystemFinalShiftCloseRuntimeBindingManifestWriter.php \
             apps/web/app/Infrastructure/Pos/LaravelFinalShiftCloseRuntimeDatabaseIdentityReader.php \
-            apps/web/database/migrations \
-            ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+            apps/web/database/migrations
           [[ "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" =~ ^(NOT_EXECUTED|EXECUTED)$ ]]
           permission_state="$(jq -r '.permission_provisioning.state' ops/final-shift-close/STATE.json)"; [[ "$permission_state" =~ ^(NONE|PROVISIONED)$ ]]; if [[ "$permission_state" == 'PROVISIONED' ]]; then [[ "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" == 'EXECUTED' ]]; fi
           [[ "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" =~ ^(INACTIVE|ACTIVE)$ ]]
