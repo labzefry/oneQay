@@ -11,7 +11,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: sprint258-selected-target-generation-successor-compatibility-regression-916
+  group: sprint258-selected-target-generation-successor-compatibility-regression-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -22,7 +22,7 @@ jobs:
       - name: Checkout exact PR source
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
-          ref: ed664564627c3111a740d2f61134d917bcc81b4b
+          ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
       - name: Validate stable target identity and generation shape
@@ -52,6 +52,7 @@ jobs:
           python3 <<'PY'
           from pathlib import Path
 
+          self_path = Path('.github/workflows/sprint258-selected-target-generation-successor-compatibility-regression.yml')
           retired = {
               '.selected_target.exact_running_source_commit': '59b42137eed717aacc82080a46753440bb4d8537',
               '.selected_target.exact_running_artifact_sha256': '8ad4a33196eabd6248c9dfb35eb118e97759e5c17b32384a12b120258bce615c',
@@ -62,9 +63,10 @@ jobs:
           }
           failures = []
           for path in sorted(Path('.github/workflows').glob('*.y*ml')):
+              if path == self_path:
+                  continue
               for number, line in enumerate(path.read_text(encoding='utf-8').splitlines(), 1):
-                  stripped = line.lstrip()
-                  if stripped.startswith('#'):
+                  if line.lstrip().startswith('#'):
                       continue
                   for field, literal in retired.items():
                       if field in line and literal in line:
