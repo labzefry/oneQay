@@ -32,6 +32,7 @@ jobs:
         run: |
           set -euo pipefail
           base="${{ github.event.pull_request.base.sha }}"; head="${{ github.event.pull_request.head.sha }}"
+          git diff --quiet "$base" "$head" -- apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingManifestMaterializer.php apps/web/app/Infrastructure/Pos/FilesystemFinalShiftCloseRuntimeBindingManifestWriter.php apps/web/tests/final-shift-close-runtime-binding-manifest-writer.php apps/web/config/final_shift_close_runtime_binding_materialization.php apps/web/bootstrap/app.php apps/web/routes apps/web/database/migrations
           writer=apps/web/app/Infrastructure/Pos/FilesystemFinalShiftCloseRuntimeBindingManifestWriter.php
           test=apps/web/tests/final-shift-close-runtime-binding-manifest-writer.php
           grep -Fq 'flock($lock, LOCK_EX)' "$writer"
