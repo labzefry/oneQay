@@ -1,0 +1,307 @@
+name: Sprint266 Production Fixed-Public cPanel No-SSH Successor Regression
+
+# Attribution: Lab | zefry
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - .github/workflows/sprint266-production-fixed-public-cpanel-no-ssh-successor-regression.yml
+      - ops/final-shift-close/PRODUCTION_FIXED_PUBLIC_CPANEL_NO_SSH_SUCCESSOR_CONTRACT.json
+      - tools/deployment/production-fixed-public-cpanel-no-ssh-target-candidate.schema.json
+      - tools/deployment/production-fixed-public-cpanel-no-ssh-target-input.schema.json
+      - tools/deployment/production-fixed-public-cpanel-no-ssh-target-profile.schema.json
+      - tools/production/build-production-fixed-public-cpanel-no-ssh-operator-kit.sh
+      - tools/production/cpanel/execute-production-fixed-public-cpanel-no-ssh-dark-deployment.php
+      - tools/production/cpanel/inspect-production-fixed-public-cpanel-no-ssh-target.php
+      - tools/production/cpanel/prepare-production-fixed-public-cpanel-no-ssh-target-candidate.php
+      - tools/production/cpanel/prepare-production-fixed-public-deployment-authority-request.php
+      - tools/production/cpanel/prepare-production-fixed-public-deployment-plan.php
+      - tools/production/cpanel/qualify-production-fixed-public-deployment-evidence.php
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/sprint266-production-fixed-public-cpanel-no-ssh-successor-regression.yml
+      - ops/final-shift-close/PRODUCTION_FIXED_PUBLIC_CPANEL_NO_SSH_SUCCESSOR_CONTRACT.json
+      - tools/deployment/production-fixed-public-cpanel-no-ssh-target-candidate.schema.json
+      - tools/deployment/production-fixed-public-cpanel-no-ssh-target-input.schema.json
+      - tools/deployment/production-fixed-public-cpanel-no-ssh-target-profile.schema.json
+      - tools/production/build-production-fixed-public-cpanel-no-ssh-operator-kit.sh
+      - tools/production/cpanel/execute-production-fixed-public-cpanel-no-ssh-dark-deployment.php
+      - tools/production/cpanel/inspect-production-fixed-public-cpanel-no-ssh-target.php
+      - tools/production/cpanel/prepare-production-fixed-public-cpanel-no-ssh-target-candidate.php
+      - tools/production/cpanel/prepare-production-fixed-public-deployment-authority-request.php
+      - tools/production/cpanel/prepare-production-fixed-public-deployment-plan.php
+      - tools/production/cpanel/qualify-production-fixed-public-deployment-evidence.php
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint266-production-fixed-public-${{ github.event.pull_request.number || github.ref }}-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  qualify-production-fixed-public-successor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+
+      - name: Verify exact Sprint266 envelope
+        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref == 'sprint266-production-fixed-public-cpanel-no-ssh-successor' }}
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os, subprocess, sys
+          expected = sorted([
+              '.github/workflows/sprint266-production-fixed-public-cpanel-no-ssh-successor-regression.yml',
+              'ops/final-shift-close/PRODUCTION_FIXED_PUBLIC_CPANEL_NO_SSH_SUCCESSOR_CONTRACT.json',
+              'tools/deployment/production-fixed-public-cpanel-no-ssh-target-candidate.schema.json',
+              'tools/deployment/production-fixed-public-cpanel-no-ssh-target-input.schema.json',
+              'tools/deployment/production-fixed-public-cpanel-no-ssh-target-profile.schema.json',
+              'tools/production/build-production-fixed-public-cpanel-no-ssh-operator-kit.sh',
+              'tools/production/cpanel/execute-production-fixed-public-cpanel-no-ssh-dark-deployment.php',
+              'tools/production/cpanel/inspect-production-fixed-public-cpanel-no-ssh-target.php',
+              'tools/production/cpanel/prepare-production-fixed-public-cpanel-no-ssh-target-candidate.php',
+              'tools/production/cpanel/prepare-production-fixed-public-deployment-authority-request.php',
+              'tools/production/cpanel/prepare-production-fixed-public-deployment-plan.php',
+              'tools/production/cpanel/qualify-production-fixed-public-deployment-evidence.php',
+          ])
+          actual = sorted(subprocess.check_output([
+              'git','diff','--name-only','--diff-filter=ACMRT',os.environ['BASE_SHA'],os.environ['HEAD_SHA']
+          ], text=True).splitlines())
+          if actual != expected:
+              print('Sprint266 envelope mismatch', file=sys.stderr)
+              print('expected:', *expected, sep='\n  ', file=sys.stderr)
+              print('actual:', *actual, sep='\n  ', file=sys.stderr)
+              sys.exit(1)
+          print('SPRINT266_EXACT_12_PATH_ENVELOPE=PASS')
+          PY
+
+      - name: Lint successor sources and schemas
+        shell: bash
+        run: |
+          set -euo pipefail
+          php_files=(
+            tools/production/cpanel/inspect-production-fixed-public-cpanel-no-ssh-target.php
+            tools/production/cpanel/prepare-production-fixed-public-cpanel-no-ssh-target-candidate.php
+            tools/production/cpanel/prepare-production-fixed-public-deployment-authority-request.php
+            tools/production/cpanel/prepare-production-fixed-public-deployment-plan.php
+            tools/production/cpanel/execute-production-fixed-public-cpanel-no-ssh-dark-deployment.php
+            tools/production/cpanel/qualify-production-fixed-public-deployment-evidence.php
+            tools/qualify-production-deployment-authority.php
+            tools/cpanel/fixed-public-document-root-bridge.php
+          )
+          for file in "${php_files[@]}"; do php -l "$file"; done
+          bash -n tools/production/build-production-fixed-public-cpanel-no-ssh-operator-kit.sh
+          jq -e . ops/final-shift-close/PRODUCTION_FIXED_PUBLIC_CPANEL_NO_SSH_SUCCESSOR_CONTRACT.json >/dev/null
+          jq -e . tools/deployment/production-fixed-public-cpanel-no-ssh-target-input.schema.json >/dev/null
+          jq -e . tools/deployment/production-fixed-public-cpanel-no-ssh-target-profile.schema.json >/dev/null
+          jq -e . tools/deployment/production-fixed-public-cpanel-no-ssh-target-candidate.schema.json >/dev/null
+
+      - name: Reject child-process and policy-bypass execution
+        shell: bash
+        run: |
+          set -euo pipefail
+          files=(tools/production/cpanel/*.php)
+          if grep -En '\b(proc_open|shell_exec|system|passthru|exec)[[:space:]]*\(' "${files[@]}"; then
+            echo 'Forbidden child-process function found in Sprint266 Production successor.' >&2
+            exit 1
+          fi
+          grep -Fq 'provider_disable_functions_bypass_allowed' tools/production/cpanel/prepare-production-fixed-public-cpanel-no-ssh-target-candidate.php
+          grep -Fq "'provider_disable_functions_policy_respected'=>true" tools/production/cpanel/execute-production-fixed-public-cpanel-no-ssh-dark-deployment.php
+
+      - name: Exercise fixed-public qualification authority plan execution and evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/sprint266"
+          private="$root/private"
+          deployment="$private/production"
+          releases="$deployment/releases"
+          shared="$deployment/shared"
+          public="$root/public"
+          package="$root/package/production-505518f79e8a"
+          mkdir -p "$releases" "$shared" "$public" "$package/apps/web/public/build" "$package/apps/web/vendor" "$package/apps/web/bootstrap" "$package/apps/web/database/migrations"
+
+          cat > "$public/.htaccess" <<'EOF'
+          RewriteEngine On
+          RewriteRule ^ index.php [L]
+          EOF
+          printf '%s\n' '<?php echo "previous-public";' > "$public/index.php"
+          mkdir -p "$public/build"
+          printf '%s\n' '{"old":true}' > "$public/build/manifest.json"
+
+          printf '%s\n' '<?php' > "$package/apps/web/public/index.php"
+          cp "$public/.htaccess" "$package/apps/web/public/.htaccess"
+          printf '%s\n' '{"new":true}' > "$package/apps/web/public/build/manifest.json"
+          printf '%s\n' '<?php' > "$package/apps/web/vendor/autoload.php"
+          printf '%s\n' '<?php return null;' > "$package/apps/web/bootstrap/app.php"
+          for i in $(seq -w 1 27); do printf '%s\n' '<?php' > "$package/apps/web/database/migrations/${i}_migration.php"; done
+
+          cat > "$package/RELEASE.json" <<'JSON'
+          {
+            "product":"oneQay",
+            "release_id":"production-505518f79e8a",
+            "environment":"PRODUCTION",
+            "required_runtime_class":"production",
+            "production":true,
+            "production_data_allowed":true,
+            "source_commit":"505518f79e8a70f789b94f5074a040eae785aeb0",
+            "business_runtime_activation_ready":false,
+            "dark_deploy_health_endpoint":"/health/live",
+            "migration_count":27,
+            "migration_execution_state":"NOT_PERFORMED_BY_ARTIFACT_BUILD",
+            "migration_execution_authorized":false,
+            "production_traffic_activation":"NOT_AUTHORIZED",
+            "production_activation":"NOT_AUTHORIZED"
+          }
+          JSON
+
+          mkdir -p "$root/package"
+          tar -czf "$root/production.tar.gz" -C "$root/package" production-505518f79e8a
+          artifact_sha="$(sha256sum "$root/production.tar.gz" | awk '{print $1}')"
+
+          cat > "$shared/private-bindings.json" <<JSON
+          {"ONEQAY_PRODUCTION_ATTESTATION_TOKEN":"sprint266-private-attestation-token-0123456789abcdef","ONEQAY_PRODUCTION_ENVIRONMENT_ID":"oneqay-production-ci","ONEQAY_RUNNING_ARTIFACT_SHA256":"$artifact_sha","ONEQAY_RUNNING_SOURCE_COMMIT":"505518f79e8a70f789b94f5074a040eae785aeb0","ONEQAY_RUNTIME_CLASS":"production"}
+          JSON
+          chmod 0600 "$shared/private-bindings.json"
+          printf '%s\n' 'APP_ENV=production' 'APP_DEBUG=false' > "$shared/runtime.env"
+          chmod 0600 "$shared/runtime.env"
+
+          cat > "$root/target-input.json" <<JSON
+          {
+            "schema_version":1,
+            "target_class":"CPANEL_NO_SSH",
+            "execution_channel":"CPANEL_CRON_PHP_CLI_NO_SSH",
+            "environment_id":"oneqay-production-ci",
+            "runtime_class":"production",
+            "production":true,
+            "production_data_allowed":true,
+            "isolated_environment":true,
+            "release_binding":{"release_id":"production-505518f79e8a","source_commit":"505518f79e8a70f789b94f5074a040eae785aeb0","artifact_sha256":"$artifact_sha"},
+            "filesystem":{"deployment_root":"$deployment","release_root":"$releases","shared_runtime_root":"$shared","active_release_pointer":"$deployment/current","document_root":"$public","document_root_mode":"FIXED_PUBLIC_BRIDGE"},
+            "health":{"url":"https://production.example.invalid/health/live","path":"/health/live"},
+            "operator_assertions":{"durable_database_persistence":true,"durable_session":true,"authorization":true,"transaction_durability":true,"pos_durability":true,"authenticated_configuration_channel":true,"read_before_write":true,"read_after_write":true,"non_mutating_health_attestation":true,"verified_rollback":true},
+            "attribution":"Lab | zefry"
+          }
+          JSON
+
+          php -d disable_functions=symlink tools/production/cpanel/inspect-production-fixed-public-cpanel-no-ssh-target.php "$root/target-input.json" "$shared/private-bindings.json" "$root/profile.json"
+          jq -e '.profile_state=="PRODUCTION_FIXED_PUBLIC_CPANEL_NO_SSH_TARGET_PROFILE_OBSERVED" and .filesystem.document_root_mode=="FIXED_PUBLIC_BRIDGE" and .filesystem.symlink_supported==false and .filesystem.hardlink_supported==true and .filesystem.activation_strategy=="DIRECT_RELEASE_FIXED_PUBLIC_BRIDGE_WITH_HARDLINK_RUNTIME_BINDING"' "$root/profile.json"
+
+          php tools/production/cpanel/prepare-production-fixed-public-cpanel-no-ssh-target-candidate.php "$root/profile.json" "$root/candidate.json"
+          jq -e '.target_state=="PRODUCTION_FIXED_PUBLIC_CPANEL_NO_SSH_TARGET_CANDIDATE" and .safety.production_traffic_activation_allowed==false and .safety.shell_execution_allowed==false and .safety.ssh_required==false' "$root/candidate.json"
+
+          cat > "$root/manifest.json" <<JSON
+          {"source":{"commit_sha":"505518f79e8a70f789b94f5074a040eae785aeb0"},"release":{"id":"production-505518f79e8a","channel":"PRODUCTION_CANDIDATE","production":true},"runtime":{"required_runtime_class":"production","business_runtime_activation_ready":false,"dark_deploy_health_endpoint":"/health/live"},"migration":{"execution_authorized":false},"promotion_gate":{"verified_durable_staging_evidence_required":true,"same_source_commit_required":true,"production_traffic_activation_authorized":false},"artifact":{"filename":"production-505518f79e8a.tar.gz","sha256":"$artifact_sha"}}
+          JSON
+          cat > "$root/staging-evidence.json" <<'JSON'
+          {"evidence_state":"DEPLOYED_VERIFIED_NOT_SELECTED","runtime_class":"durable-staging","source_commit":"505518f79e8a70f789b94f5074a040eae785aeb0","verification":{"preflight_passed":true,"previous_active_release_preserved":true,"immutable_release_extracted":true,"public_document_root_verified":true,"external_runtime_configuration_bound":true,"provenance_readback_verified":true,"configuration_read_before_write_verified":true,"configuration_read_after_write_verified":true,"non_mutating_health_attestation_verified":true,"rollback_path_verified":true},"secrets_embedded":false}
+          JSON
+
+          php tools/production/cpanel/prepare-production-fixed-public-deployment-authority-request.php "$root/manifest.json" "$root/production.tar.gz" "$root/staging-evidence.json" "$root/candidate.json" "$root/request.json"
+          jq -e '.request_state=="PRODUCTION_DEPLOYMENT_AUTHORITY_REQUEST_PENDING_APPROVAL" and .requested_scope=="DEPLOY_EXACT_PRODUCTION_ARTIFACT_TO_EXACT_FIXED_PUBLIC_CPANEL_TARGET_NOT_ACTIVATE_TRAFFIC" and .production_authorized==false and .production_traffic_activation_authorized==false' "$root/request.json"
+
+          request_sha="$(sha256sum "$root/request.json" | awk '{print $1}')"
+          request_id="$(jq -r .request_id "$root/request.json")"
+          target_sha="$(jq -r .target_descriptor_sha256 "$root/request.json")"
+          now="$(date +%s)"
+          expires="$((now+600))"
+          cat > "$root/authority.json" <<JSON
+          {"authority_id":"production-deployment-authority-aaaaaaaaaaaaaaaaaaaaaaaa","authority_state":"GRANTED_FOR_EXACT_PRODUCTION_DEPLOYMENT_NOT_TRAFFIC_ACTIVATION","request_id":"$request_id","request_sha256":"$request_sha","environment_id":"oneqay-production-ci","target_descriptor_sha256":"$target_sha","release_id":"production-505518f79e8a","artifact_sha256":"$artifact_sha","deployment_allowed":true,"production_allowed":true,"migration_execution_allowed":false,"production_traffic_activation_allowed":false,"target_selection_allowed":false,"producer_dispatch_allowed":false,"authorized_at_unix":$now,"expires_at_unix":$expires,"approval_token":"sprint266-ci-approval-token-0123456789abcdef"}
+          JSON
+          chmod 0600 "$root/authority.json"
+          php tools/qualify-production-deployment-authority.php "$root/request.json" "$root/authority.json" "$root/authority-binding.json"
+          php tools/production/cpanel/prepare-production-fixed-public-deployment-plan.php "$root/manifest.json" "$root/request.json" "$root/authority-binding.json" "$root/candidate.json" "$root/plan.json"
+          jq -e '.plan_variant=="PRODUCTION_FIXED_PUBLIC_CPANEL_NO_SSH_SUCCESSOR_V1" and .target.document_root_mode=="FIXED_PUBLIC_BRIDGE" and .target.activation_strategy=="DIRECT_RELEASE_FIXED_PUBLIC_BRIDGE_WITH_HARDLINK_RUNTIME_BINDING" and .migration.execution_state=="ALREADY_EXECUTED_NO_REPLAY" and .traffic_activation.state=="NOT_AUTHORIZED" and .operational_boundary.feature_activation=="ACTIVE_PRESERVED_NO_REACTIVATION"' "$root/plan.json"
+
+          php -d disable_functions=symlink -r '
+            require "tools/production/cpanel/execute-production-fixed-public-cpanel-no-ssh-dark-deployment.php";
+            $fetch=static fn(string $url): array => ["status"=>"ok","service"=>"oneqay-web","correlation_id"=>"sprint266-ci"];
+            pfpExecExecute($argv[1],$argv[2],$argv[3],$argv[4],$argv[5],$argv[6],$fetch);
+          ' "$root/plan.json" "$root/profile.json" "$root/production.tar.gz" "$shared/private-bindings.json" "$shared/runtime.env" "$root/evidence-candidate.json"
+
+          jq -e '.evidence_state=="PRODUCTION_DEPLOYMENT_EVIDENCE_CANDIDATE" and .presentation.document_root_mode=="FIXED_PUBLIC_BRIDGE" and .presentation.php_symlink_supported==false and .presentation.php_hardlink_supported==true and .runtime_readback.production_traffic_active==false and .operational_boundary.migration27_execution=="ALREADY_EXECUTED_NO_REPLAY"' "$root/evidence-candidate.json"
+          grep -Fq 'production-505518f79e8a/apps/web' "$public/index.php"
+          test "$(cat "$public/build/manifest.json")" = '{"new":true}'
+
+          php tools/production/cpanel/qualify-production-fixed-public-deployment-evidence.php "$root/plan.json" "$root/evidence-candidate.json" "$root/evidence.json"
+          jq -e '.evidence_state=="PRODUCTION_DEPLOYED_VERIFIED_NOT_ACTIVATED" and .runtime_readback.production_traffic_active==false and .operational_boundary.feature_activation=="ACTIVE_PRESERVED_NO_REACTIVATION"' "$root/evidence.json"
+
+      - name: Verify fail-closed tamper resistance
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/sprint266"
+          jq '.filesystem.document_root_mode="ACTIVE_RELEASE_PUBLIC"' "$root/candidate.json" > "$root/candidate-tampered.json"
+          if php tools/production/cpanel/prepare-production-fixed-public-deployment-authority-request.php "$root/manifest.json" "$root/production.tar.gz" "$root/staging-evidence.json" "$root/candidate-tampered.json" "$root/request-tampered.json"; then
+            echo 'Tampered presentation mode was accepted.' >&2
+            exit 1
+          fi
+          cp "$root/plan.json" "$root/plan-tampered.json"
+          jq '.target.document_root="/tmp/forbidden"' "$root/plan.json" > "$root/plan-tampered.json"
+          if php -r 'require "tools/production/cpanel/execute-production-fixed-public-cpanel-no-ssh-dark-deployment.php"; pfpExecValidatePlan(pfpExecLoad($argv[1]));' "$root/plan-tampered.json"; then
+            echo 'Tampered plan fingerprint was accepted.' >&2
+            exit 1
+          fi
+
+      - name: Build deterministic operator kit
+        shell: bash
+        run: |
+          set -euo pipefail
+          out="$RUNNER_TEMP/sprint266-kit"
+          zip_path="$(bash tools/production/build-production-fixed-public-cpanel-no-ssh-operator-kit.sh "$out")"
+          test -f "$zip_path"
+          unzip -l "$zip_path" | grep -F 'tools/production/cpanel/inspect-production-fixed-public-cpanel-no-ssh-target.php'
+          unzip -l "$zip_path" | grep -F 'ops/final-shift-close/PRODUCTION_FIXED_PUBLIC_CPANEL_NO_SSH_SUCCESSOR_CONTRACT.json'
+          unzip -l "$zip_path" | grep -F 'private/private-bindings.template.json'
+          if unzip -p "$zip_path" | grep -Fq 'sprint266-private-attestation-token'; then
+            echo 'Runtime test secret leaked into operator kit.' >&2
+            exit 1
+          fi
+
+      - name: Preserve canonical state and target selection
+        shell: bash
+        run: |
+          set -euo pipefail
+          state=ops/final-shift-close/STATE.json
+          selected=ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+          test "$(jq -r '.migration27.state' "$state")" = EXECUTED
+          test "$(jq -r '.permission_provisioning.state' "$state")" = PROVISIONED
+          test "$(jq -r '.permission_provisioning.permission_id' "$state")" = pos.shift.close
+          test "$(jq -r '.permission_provisioning.default_grant' "$state")" = NONE
+          test "$(jq -r '.feature_activation.state' "$state")" = ACTIVE
+          test "$(jq -r '.deployment_authority' "$state")" = NOT_GRANTED
+          test "$(jq -r '.technical_preview_activation' "$state")" = NOT_AUTHORIZED
+          test "$(jq -r '.production_activation' "$state")" = NOT_AUTHORIZED
+          test "$(jq -r '.updater_activation' "$state")" = INACTIVE
+          test "$(jq -r '.selection_state' "$selected")" = SELECTED_NOT_AUTHORIZED
+          test "$(jq -r '.selected_target.environment_id' "$selected")" = oneqay-durable-staging-01
+          test "$(jq -r '.selected_target.exact_running_source_commit' "$selected")" = 505518f79e8a70f789b94f5074a040eae785aeb0
+          test "$(jq -r '.selected_target.exact_running_artifact_sha256' "$selected")" = 5b3030d5154e3b0938a944c5b6b0d33218078f37d8f066a4e9cc4067ff285451
+
+      - name: Report Sprint266 boundary
+        shell: bash
+        run: |
+          cat <<'EOF'
+          SPRINT266_PRODUCTION_FIXED_PUBLIC_CPANEL_NO_SSH_SUCCESSOR=PASS
+          PRODUCTION_DEPLOYMENT_EXECUTED=NO
+          PRODUCTION_DEPLOYMENT_AUTHORITY=NOT_GRANTED
+          PRODUCTION_BUSINESS_TRAFFIC=NOT_AUTHORIZED
+          MIGRATION27_REPLAY=NO
+          FEATURE_REACTIVATION=NO
+          TARGET_RESELECTION=NO
+          PRODUCER_DISPATCH=NO
+          Attribution=Lab | zefry
+          EOF

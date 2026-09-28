@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "feature": "final-shift-close",
+  "contract_state": "SOURCE_READY_PRODUCTION_FIXED_PUBLIC_CPANEL_NO_SSH_SUCCESSOR_NOT_EXECUTED",
+  "purpose": "QUALIFY_AND_GUARD_AN_EXACT_PRODUCTION_DARK_DEPLOYMENT_ON_CPANEL_NO_SSH_WITH_A_FIXED_PUBLIC_DOCUMENT_ROOT_WITHOUT_REQUIRING_PROVIDER_PHP_SYMLINK_SUPPORT",
+  "canonical_predecessor": "cf76e09907a945a3c3c24822ac1a214288900e1d",
+  "successor_tools": {
+    "inspector": "tools/production/cpanel/inspect-production-fixed-public-cpanel-no-ssh-target.php",
+    "candidate": "tools/production/cpanel/prepare-production-fixed-public-cpanel-no-ssh-target-candidate.php",
+    "authority_request": "tools/production/cpanel/prepare-production-fixed-public-deployment-authority-request.php",
+    "authority_qualifier_reused": "tools/qualify-production-deployment-authority.php",
+    "plan": "tools/production/cpanel/prepare-production-fixed-public-deployment-plan.php",
+    "executor": "tools/production/cpanel/execute-production-fixed-public-cpanel-no-ssh-dark-deployment.php",
+    "evidence_qualifier": "tools/production/cpanel/qualify-production-fixed-public-deployment-evidence.php",
+    "public_bridge_helper_reused": "tools/cpanel/fixed-public-document-root-bridge.php"
+  },
+  "presentation": {
+    "document_root_mode": "FIXED_PUBLIC_BRIDGE",
+    "public_root_must_be_disjoint_from_private_deployment": true,
+    "existing_rewrite_to_index_htaccess_required": true,
+    "atomic_public_file_and_directory_rename_required": true,
+    "public_surface_contains_only_bridge_and_build_assets": true,
+    "private_source_vendor_runtime_bindings_and_secrets_must_remain_outside_public_root": true
+  },
+  "runtime_binding": {
+    "php_symlink_supported_path": "ACTIVE_POINTER_PLUS_FIXED_PUBLIC_BRIDGE",
+    "php_symlink_unavailable_fallback": "DIRECT_RELEASE_FIXED_PUBLIC_BRIDGE_WITH_HARDLINK_RUNTIME_BINDING",
+    "hardlink_required_when_php_symlink_unavailable": true,
+    "shell_execution_required": false,
+    "ssh_required": false,
+    "provider_disable_functions_bypass_allowed": false
+  },
+  "deployment_safety": {
+    "exact_artifact_hash_required": true,
+    "same_source_verified_durable_staging_evidence_required": true,
+    "short_lived_separate_production_deployment_authority_required": true,
+    "authority_maximum_lifetime_seconds": 900,
+    "authority_rechecked_before_each_serving_mutation": true,
+    "immutable_release_extraction_required": true,
+    "private_runtime_configuration_required": true,
+    "fixed_public_rollback_rehearsal_required": true,
+    "candidate_reactivation_required_after_rollback_rehearsal": true,
+    "private_previous_surface_snapshot_required": true,
+    "migration27_replay_allowed": false,
+    "permission_reprovisioning_allowed": false,
+    "feature_reactivation_allowed": false,
+    "production_business_traffic_activation_allowed": false,
+    "target_reselection_allowed": false,
+    "producer_dispatch_allowed": false,
+    "updater_activation_allowed": false
+  },
+  "qualified_dark_deployment_ceiling": "PRODUCTION_DEPLOYED_VERIFIED_NOT_ACTIVATED",
+  "current_operational_boundary": {
+    "migration27": "EXECUTED_NO_REPLAY",
+    "permission_pos_shift_close": "PROVISIONED_DEFAULT_GRANT_NONE",
+    "final_shift_close": "ACTIVE_PRESERVED_NO_REACTIVATION",
+    "technical_preview": "NOT_AUTHORIZED",
+    "production_deployment_authority": "NOT_GRANTED",
+    "production_business_traffic": "NOT_AUTHORIZED",
+    "updater": "INACTIVE"
+  },
+  "attribution": "Lab | zefry"
+}
