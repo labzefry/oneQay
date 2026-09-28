@@ -1,0 +1,32 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://oneqay.invalid/contracts/production-fixed-public-cpanel-no-ssh-target-profile.schema.json",
+  "title":"oneQay Production Fixed-Public cPanel No-SSH Target Profile",
+  "type":"object",
+  "required":["schema_version","profile_state","target_class","execution_channel","environment_id","runtime_class","production","production_data_allowed","isolated_environment","release_binding","filesystem","health","runtime","configuration","operator_assertions","secrets_embedded","attribution"],
+  "properties": {
+    "schema_version":{"const":1},
+    "profile_state":{"const":"PRODUCTION_FIXED_PUBLIC_CPANEL_NO_SSH_TARGET_PROFILE_OBSERVED"},
+    "target_class":{"const":"CPANEL_NO_SSH"},
+    "execution_channel":{"const":"CPANEL_CRON_PHP_CLI_NO_SSH"},
+    "environment_id":{"type":"string","pattern":"^[a-z0-9][a-z0-9-]{2,62}$"},
+    "runtime_class":{"const":"production"},"production":{"const":true},"production_data_allowed":{"const":true},"isolated_environment":{"const":true},
+    "release_binding":{"type":"object","required":["release_id","source_commit","artifact_sha256"]},
+    "filesystem": {
+      "type":"object",
+      "required":["deployment_root","release_root","shared_runtime_root","active_release_pointer","document_root","document_root_mode","deployment_root_writable","release_root_writable","shared_runtime_root_writable","active_pointer_parent_writable","atomic_rename_supported","symlink_supported","hardlink_supported","atomic_public_swap_supported","rewrite_to_index_verified","public_private_paths_disjoint","activation_strategy"],
+      "properties": {
+        "document_root_mode":{"const":"FIXED_PUBLIC_BRIDGE"},
+        "deployment_root_writable":{"const":true},"release_root_writable":{"const":true},"shared_runtime_root_writable":{"const":true},"active_pointer_parent_writable":{"const":true},"atomic_rename_supported":{"const":true},
+        "symlink_supported":{"type":"boolean"},"hardlink_supported":{"type":"boolean"},"atomic_public_swap_supported":{"const":true},"rewrite_to_index_verified":{"const":true},"public_private_paths_disjoint":{"const":true},
+        "activation_strategy":{"enum":["ACTIVE_POINTER_PLUS_FIXED_PUBLIC_BRIDGE","DIRECT_RELEASE_FIXED_PUBLIC_BRIDGE_WITH_HARDLINK_RUNTIME_BINDING"]}
+      }
+    },
+    "health":{"type":"object","required":["url","path","https_required"],"properties":{"path":{"const":"/health/live"},"https_required":{"const":true}}},
+    "runtime":{"type":"object","required":["php_version_supported","required_extensions_present","https_client_available","php_symlink_available","php_hardlink_available"]},
+    "configuration":{"type":"object","required":["binding_file_private","required_binding_identity_matches","required_binding_presence","secret_values_embedded"],"properties":{"binding_file_private":{"const":true},"required_binding_identity_matches":{"const":true},"secret_values_embedded":{"const":false}}},
+    "operator_assertions":{"type":"object"},
+    "secrets_embedded":{"const":false},
+    "attribution":{"const":"Lab | zefry"}
+  }
+}
