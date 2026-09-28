@@ -55,6 +55,7 @@ jobs:
               '.github/workflows/sprint214-cpanel-no-ssh-guarded-deployment-execution-regression.yml',
               '.github/workflows/sprint218-production-dark-deployment-execution-regression.yml',
               '.github/workflows/sprint222-cpanel-fixed-public-php-symlink-policy-fallback-regression.yml',
+              '.github/workflows/sprint223-durable-runtime-ingestion-null-boundary-regression.yml',
               '.github/workflows/sprint253-final-shift-close-post-activation-historical-regression-successor-compatibility.yml',
               '.github/workflows/sprint264-durable-staging-merchant-core-route-bridge-delivery-regression.yml',
               'apps/web/app/Providers/DurableStagingMerchantCoreRouteBridgeServiceProvider.php',
