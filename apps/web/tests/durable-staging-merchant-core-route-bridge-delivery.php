@@ -67,9 +67,13 @@ if ($loginRoute === null) {
     exit(1);
 }
 
-$gathered = $loginRoute->gatherMiddleware();
+// Route::gatherMiddleware() returns the route's declared middleware names; it does
+// not expand middleware groups. The live HTTP router resolves the `web` group via
+// Router::gatherRouteMiddleware(), so the regression must inspect that same
+// effective pipeline instead of the unexpanded route declaration.
+$gathered = $router->gatherRouteMiddleware($loginRoute);
 if (! in_array(DurableStagingMerchantCoreRequestBridge::class, $gathered, true)) {
-    fwrite(STDERR, "Sprint264 login route did not gather the durable-staging compatibility bridge.\n");
+    fwrite(STDERR, "Sprint264 login route effective middleware did not include the durable-staging compatibility bridge.\n");
     exit(1);
 }
 
