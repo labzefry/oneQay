@@ -44,20 +44,37 @@ jobs:
       - name: Verify exact six-path reconciliation envelope when active
         if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref == 'sprint265-production-readiness-reconciliation-handoff' }}
         shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
-          mapfile -t changed < <(git diff --name-only --diff-filter=ACMRT "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | sort)
-          expected=(
-            .github/workflows/sprint265-production-readiness-reconciliation-regression.yml
-            PROJECT_MANIFEST.md
-            README.md
-            ROADMAP.md
-            TASKS.md
-            docs/SPRINT265_PRODUCTION_READINESS_RECONCILIATION_HANDOFF.md
-          )
-          printf '%s\n' "${expected[@]}" | sort > /tmp/expected-paths
-          printf '%s\n' "${changed[@]}" | sort > /tmp/actual-paths
-          diff -u /tmp/expected-paths /tmp/actual-paths
+          python3 - <<'PY'
+          import os
+          import subprocess
+          import sys
+
+          expected = sorted([
+              '.github/workflows/sprint265-production-readiness-reconciliation-regression.yml',
+              'PROJECT_MANIFEST.md',
+              'README.md',
+              'ROADMAP.md',
+              'TASKS.md',
+              'docs/SPRINT265_PRODUCTION_READINESS_RECONCILIATION_HANDOFF.md',
+          ])
+          actual = sorted(subprocess.check_output([
+              'git', 'diff', '--name-only', '--diff-filter=ACMRT',
+              os.environ['BASE_SHA'], os.environ['HEAD_SHA'],
+          ], text=True).splitlines())
+
+          if actual != expected:
+              print('Sprint265 exact reconciliation envelope mismatch.', file=sys.stderr)
+              print('expected:', *expected, sep='\n  ', file=sys.stderr)
+              print('actual:', *actual, sep='\n  ', file=sys.stderr)
+              raise SystemExit(1)
+
+          print('SPRINT265_EXACT_SIX_PATH_ENVELOPE=PASS')
+          PY
 
       - name: Verify canonical selected-target generation
         shell: bash
@@ -110,11 +127,9 @@ jobs:
             grep -Fq '505518f79e8a70f789b94f5074a040eae785aeb0' "$file"
             grep -Fq 'Production' "$file"
             grep -Fq 'NOT_AUTHORIZED' "$file"
-            if grep -Eiq 'Production (deployment|traffic).*(AUTHORIZED|GRANTED)' "$file"; then
-              echo "Unexpected Production authorization wording in $file" >&2
-              exit 1
-            fi
           done
+          grep -Fq 'Production deployment/traffic: `NOT_AUTHORIZED`' PROJECT_MANIFEST.md
+          grep -Fq 'Production deployment/traffic: `NOT_AUTHORIZED`' docs/SPRINT265_PRODUCTION_READINESS_RECONCILIATION_HANDOFF.md
           grep -Fq '8d343fd90b00390e73169c9def4d13e1cc24f2fe' docs/SPRINT265_PRODUCTION_READINESS_RECONCILIATION_HANDOFF.md
           grep -Fq '906fb0dd630fc1de95e23a5505999567e2f287b53da8cb8ec346f9d44e311695' docs/SPRINT265_PRODUCTION_READINESS_RECONCILIATION_HANDOFF.md
           grep -Fq 'PRODUCTION_DEPLOYED_VERIFIED_NOT_ACTIVATED' docs/SPRINT265_PRODUCTION_READINESS_RECONCILIATION_HANDOFF.md
