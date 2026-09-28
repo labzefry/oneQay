@@ -8,38 +8,68 @@ Enterprise-oriented multi-tenant business-management platform built with Modular
 
 ## Current canonical status
 
-Canonical entry for Sprint252: `2dd17971532fabf52ace576fb7cb4aff5556bac9`. PR #903 is squash merged and Final Shift Close is canonically `ACTIVE`.
+Post-activation durable-staging reconciliation is closed on canonical main `8d343fd90b00390e73169c9def4d13e1cc24f2fe` through PR #922.
 
-Trusted activation evidence:
-- runtime activation run `36121219541`: SUCCESS;
-- trusted activation evidence run `36121950330`, attempt 2: SUCCESS;
-- canonical state transition: `INACTIVE -> ACTIVE`;
-- migration #27 remains `EXECUTED`;
-- `pos.shift.close` remains `PROVISIONED` with `default_grant = NONE`.
+Final Shift Close remains canonically `ACTIVE`; migration #27 remains `EXECUTED`; permission `pos.shift.close` remains `PROVISIONED` with `default_grant = NONE`.
 
-## Durable staging baseline
+## Current selected durable target
 
-Selected target: `oneqay-durable-staging-01` (`durable-staging`, `SELECTED_NOT_AUTHORIZED`).
+Selection state remains `SELECTED_NOT_AUTHORIZED` for the already-selected target `oneqay-durable-staging-01` (`durable-staging`). This is a same-target generation reconciliation, not a target reselection.
 
-Running identity:
-- source `59b42137eed717aacc82080a46753440bb4d8537`;
-- artifact SHA-256 `8ad4a33196eabd6248c9dfb35eb118e97759e5c17b32384a12b120258bce615c`;
-- readiness attestation SHA-256 `4a0772838f25d7ee3a7d57153f76b3b23f5d4722c644a76c287b5005e9c328b2`;
-- selection fingerprint `6ecc487cb144e634455de69cc43aa39b1f6880a2256c4b1ab33387096513772b`.
+Current running generation:
+
+- source commit: `505518f79e8a70f789b94f5074a040eae785aeb0`;
+- durable-staging artifact SHA-256: `5b3030d5154e3b0938a944c5b6b0d33218078f37d8f066a4e9cc4067ff285451`;
+- readiness attestation SHA-256: `069a27b16ff81082bd3d746fe678dc966b8f2a61bb95c35f5ab4c0168f7d347e`;
+- selection fingerprint SHA-256: `bdce15c5053446119979efe6b9f72572857c06a0caa11d649b8ec54d7239a411`;
+- trusted ingestion run: `36413265200`, attempt `1`;
+- ingestion fingerprint SHA-256: `f9c9e205a7670ba4e69cdf6f82c32a17589c79880e048d9452213fd5cdafbd04`.
+
+Post-activation trust chain:
+
+- producer run `36407450933`: SUCCESS;
+- trusted ingestion run `36413265200`: SUCCESS;
+- selected-target generation qualification run `36414746533`: SUCCESS;
+- PR #922 squash merge: `8d343fd90b00390e73169c9def4d13e1cc24f2fe`.
+
+## Exact-source Production dark-deployment material
+
+The current staging generation has a same-source Production candidate and Production dark-deployment operator kit for source `505518f79e8a70f789b94f5074a040eae785aeb0`.
+
+Production candidate:
+
+- publication run `36380024637`;
+- Actions artifact ID `10952267537`;
+- Actions artifact name `oneqay-production-505518f79e8a-operator-bundle`;
+- Production archive SHA-256 `906fb0dd630fc1de95e23a5505999567e2f287b53da8cb8ec346f9d44e311695`.
+
+Production operator kit:
+
+- publication run `36380081412`;
+- Actions artifact ID `10952223291`;
+- Actions artifact name `oneqay-production-operator-kit-505518f79e8a`;
+- dark-deployment success ceiling `PRODUCTION_DEPLOYED_VERIFIED_NOT_ACTIVATED`.
+
+These artifacts are readiness material only. They do not grant Production deployment or traffic authority.
 
 ## Current operational boundary
 
 - Final Shift Close runtime flag: `ACTIVE`;
 - deployment authority: `NOT_GRANTED`;
 - Technical Preview: `NOT_AUTHORIZED`;
-- Production: `NOT_AUTHORIZED`;
+- Production deployment/traffic: `NOT_AUTHORIZED`;
 - updater: `INACTIVE`;
 - no migration #27 replay;
 - no permission reprovisioning;
-- no runtime allowlist widening.
+- no feature reactivation;
+- no target reselection.
 
-## Next material production-readiness blocker
+## Next production-readiness blocker
 
-Post-activation source promotion must preserve the already-active Final Shift Close state. Sprint252 introduces a governed successor for current-main durable-staging publication, deployment planning, cPanel execution, and deployment evidence qualification. Real deployment remains separately authorized. After a future authorized same-target source promotion, fresh staging re-attestation and selected-target generation reconciliation are required before dark-production readiness can advance.
+The next bounded step is Production target qualification/preflight against the exact-source Production candidate. No Production target is yet canonically qualified or selected.
+
+The existing Production dark-deployment adapter accepts cPanel/no-SSH execution but still requires a symlink-backed active-release pointer and a document root shaped as `<active-release-pointer>/apps/web/public`. The already-observed durable-staging cPanel target instead required `FIXED_PUBLIC_BRIDGE` with PHP symlink unavailable. Therefore Production must fail closed until the real Production target either proves the existing symlink/direct-document-root contract or a separately governed Production fixed-public-bridge successor is published.
+
+Production target qualification and any later deployment authority remain separate from this reconciliation.
 
 Author by Lab | zefry

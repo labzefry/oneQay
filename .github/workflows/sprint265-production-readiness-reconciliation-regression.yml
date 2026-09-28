@@ -1,0 +1,146 @@
+name: Sprint265 Production Readiness Reconciliation Regression
+
+# Attribution: Lab | zefry
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - README.md
+      - PROJECT_MANIFEST.md
+      - ROADMAP.md
+      - TASKS.md
+      - docs/SPRINT265_PRODUCTION_READINESS_RECONCILIATION_HANDOFF.md
+      - .github/workflows/sprint265-production-readiness-reconciliation-regression.yml
+  push:
+    branches: [main]
+    paths:
+      - README.md
+      - PROJECT_MANIFEST.md
+      - ROADMAP.md
+      - TASKS.md
+      - docs/SPRINT265_PRODUCTION_READINESS_RECONCILIATION_HANDOFF.md
+      - .github/workflows/sprint265-production-readiness-reconciliation-regression.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint265-production-readiness-reconciliation-${{ github.event.pull_request.number || github.ref }}-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  qualify-sprint265-reconciliation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+
+      - name: Verify exact six-path reconciliation envelope when active
+        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref == 'sprint265-production-readiness-reconciliation-handoff' }}
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os
+          import subprocess
+          import sys
+
+          expected = sorted([
+              '.github/workflows/sprint265-production-readiness-reconciliation-regression.yml',
+              'PROJECT_MANIFEST.md',
+              'README.md',
+              'ROADMAP.md',
+              'TASKS.md',
+              'docs/SPRINT265_PRODUCTION_READINESS_RECONCILIATION_HANDOFF.md',
+          ])
+          actual = sorted(subprocess.check_output([
+              'git', 'diff', '--name-only', '--diff-filter=ACMRT',
+              os.environ['BASE_SHA'], os.environ['HEAD_SHA'],
+          ], text=True).splitlines())
+
+          if actual != expected:
+              print('Sprint265 exact reconciliation envelope mismatch.', file=sys.stderr)
+              print('expected:', *expected, sep='\n  ', file=sys.stderr)
+              print('actual:', *actual, sep='\n  ', file=sys.stderr)
+              raise SystemExit(1)
+
+          print('SPRINT265_EXACT_SIX_PATH_ENVELOPE=PASS')
+          PY
+
+      - name: Verify canonical selected-target generation
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+          test "$(jq -r '.selection_state' "$file")" = SELECTED_NOT_AUTHORIZED
+          test "$(jq -r '.selected_target.environment_id' "$file")" = oneqay-durable-staging-01
+          test "$(jq -r '.selected_target.runtime_class' "$file")" = durable-staging
+          test "$(jq -r '.selected_target.exact_running_source_commit' "$file")" = 505518f79e8a70f789b94f5074a040eae785aeb0
+          test "$(jq -r '.selected_target.exact_running_artifact_sha256' "$file")" = 5b3030d5154e3b0938a944c5b6b0d33218078f37d8f066a4e9cc4067ff285451
+          test "$(jq -r '.selected_target.readiness_attestation_sha256' "$file")" = 069a27b16ff81082bd3d746fe678dc966b8f2a61bb95c35f5ab4c0168f7d347e
+          test "$(jq -r '.selected_target.selection_fingerprint_sha256' "$file")" = bdce15c5053446119979efe6b9f72572857c06a0caa11d649b8ec54d7239a411
+          test "$(jq -r '.selected_target.trusted_ingestion.run_id' "$file")" = 36413265200
+          test "$(jq -r '.selected_target.trusted_ingestion.run_attempt' "$file")" = 1
+          test "$(jq -r '.selected_target.trusted_ingestion.ingestion_fingerprint_sha256' "$file")" = f9c9e205a7670ba4e69cdf6f82c32a17589c79880e048d9452213fd5cdafbd04
+
+      - name: Preserve canonical operational boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=ops/final-shift-close/STATE.json
+          test "$(jq -r '.migration27.state' "$file")" = EXECUTED
+          test "$(jq -r '.permission_provisioning.state' "$file")" = PROVISIONED
+          test "$(jq -r '.permission_provisioning.permission_id' "$file")" = pos.shift.close
+          test "$(jq -r '.permission_provisioning.default_grant' "$file")" = NONE
+          test "$(jq -r '.feature_activation.state' "$file")" = ACTIVE
+          test "$(jq -r '.deployment_authority' "$file")" = NOT_GRANTED
+          test "$(jq -r '.technical_preview_activation' "$file")" = NOT_AUTHORIZED
+          test "$(jq -r '.production_activation' "$file")" = NOT_AUTHORIZED
+          test "$(jq -r '.updater_activation' "$file")" = INACTIVE
+
+      - name: Verify Production adapter remains authority-bound and traffic-dark
+        shell: bash
+        run: |
+          set -euo pipefail
+          contract=ops/final-shift-close/PRODUCTION_DARK_DEPLOYMENT_EXECUTION_CONTRACT.json
+          test "$(jq -r '.execution_requirements.active_release_pointer_semantics' "$contract")" = SYMLINK_TO_IMMUTABLE_RELEASE_DIRECTORY
+          test "$(jq -r '.safety.migration_execution' "$contract")" = false
+          test "$(jq -r '.safety.production_business_runtime_activation' "$contract")" = false
+          test "$(jq -r '.safety.production_traffic_activation' "$contract")" = false
+          test "$(jq -r '.evidence.qualified_state' "$contract")" = PRODUCTION_DEPLOYED_VERIFIED_NOT_ACTIVATED
+
+      - name: Verify reconciled documentation identities
+        shell: bash
+        run: |
+          set -euo pipefail
+          files=(README.md PROJECT_MANIFEST.md ROADMAP.md TASKS.md docs/SPRINT265_PRODUCTION_READINESS_RECONCILIATION_HANDOFF.md)
+          for file in "${files[@]}"; do
+            grep -Fq '505518f79e8a70f789b94f5074a040eae785aeb0' "$file"
+            grep -Fq 'Production' "$file"
+            grep -Fq 'NOT_AUTHORIZED' "$file"
+          done
+          grep -Fq 'Production deployment/traffic: `NOT_AUTHORIZED`' PROJECT_MANIFEST.md
+          grep -Fq 'Production deployment/traffic: `NOT_AUTHORIZED`' docs/SPRINT265_PRODUCTION_READINESS_RECONCILIATION_HANDOFF.md
+          grep -Fq '8d343fd90b00390e73169c9def4d13e1cc24f2fe' docs/SPRINT265_PRODUCTION_READINESS_RECONCILIATION_HANDOFF.md
+          grep -Fq '906fb0dd630fc1de95e23a5505999567e2f287b53da8cb8ec346f9d44e311695' docs/SPRINT265_PRODUCTION_READINESS_RECONCILIATION_HANDOFF.md
+          grep -Fq 'PRODUCTION_DEPLOYED_VERIFIED_NOT_ACTIVATED' docs/SPRINT265_PRODUCTION_READINESS_RECONCILIATION_HANDOFF.md
+
+      - name: Report reconciliation boundary
+        shell: bash
+        run: |
+          cat <<'EOF'
+          SPRINT265_PRODUCTION_READINESS_RECONCILIATION=PASS
+          PRODUCTION_DEPLOYMENT_AUTHORITY=NOT_GRANTED
+          PRODUCTION_TRAFFIC=NOT_AUTHORIZED
+          NEXT=QUALIFY_REAL_PRODUCTION_TARGET_OR_PUBLISH_FIXED_PUBLIC_BRIDGE_SUCCESSOR
+          Attribution=Lab | zefry
+          EOF
