@@ -1,0 +1,96 @@
+name: Sprint264 Durable-Staging Merchant-Core Route Bridge Delivery Regression
+
+# Attribution: Lab | zefry
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint264-durable-staging-merchant-core-route-bridge-${{ github.event.pull_request.number || github.ref }}-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  qualify-sprint264:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWE=
+      APP_DEBUG: 'false'
+      APP_URL: http://localhost
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+
+      - name: Lock exact Sprint264 engineering envelope when active
+        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref == 'sprint264-durable-staging-merchant-core-route-bridge-delivery' }}
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          cat > /tmp/sprint264-paths <<'EOF'
+          .github/workflows/sprint264-durable-staging-merchant-core-route-bridge-delivery-regression.yml
+          apps/web/app/Providers/DurableStagingMerchantCoreRouteBridgeServiceProvider.php
+          apps/web/bootstrap/providers.php
+          apps/web/tests/durable-staging-merchant-core-route-bridge-delivery.php
+          EOF
+          git diff --name-only "$BASE_SHA...$HEAD_SHA" | LC_ALL=C sort > /tmp/actual-paths
+          diff -u /tmp/sprint264-paths /tmp/actual-paths
+          test "$(sha256sum /tmp/actual-paths | awk '{print $1}')" = "afa5f1d8b4a4deb1cdf5922fed6dbde120d20ffd4fa2b9d6fc0e66a0fdd26aa8"
+
+      - name: Validate bounded PHP source
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l apps/web/app/Providers/DurableStagingMerchantCoreRouteBridgeServiceProvider.php
+          php -l apps/web/bootstrap/providers.php
+          php -l apps/web/tests/durable-staging-merchant-core-route-bridge-delivery.php
+
+      - name: Validate fail-closed successor wiring
+        shell: bash
+        run: |
+          set -euo pipefail
+          successor=apps/web/app/Providers/DurableStagingMerchantCoreRouteBridgeServiceProvider.php
+          providers=apps/web/bootstrap/providers.php
+          controller=apps/web/app/Delivery/Http/Identity/FirstPartySessionController.php
+          aggregate=apps/web/app/Providers/PosOperationsHubServiceProvider.php
+
+          grep -Fq 'DurableStagingMerchantCoreRouteBridgeServiceProvider::class' "$providers"
+          grep -Fq 'DurableStagingMerchantCoreBridge::armedFor($runtimeClass)' "$successor"
+          grep -Fq "prependMiddlewareToGroup(" "$successor"
+          grep -Fq "'web'" "$successor"
+          grep -Fq 'DurableStagingMerchantCoreRequestBridge::class' "$successor"
+          grep -Fq "in_array(\$runtime, ['local', 'test', 'ci'], true)" "$controller"
+          ! grep -Fq "['local', 'test', 'ci', 'durable-staging']" "$controller"
+          grep -Fq "'POST /auth/login'" "$aggregate"
+          grep -Fq "config(['oneqay.runtime_class' => 'ci'])" "$aggregate"
+          ! grep -Fq "'production'" "$successor"
+          ! grep -Fq 'artisan migrate' "$successor"
+
+      - name: Install application dependencies
+        working-directory: apps/web
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Execute route-scoped compatibility bridge regression
+        working-directory: apps/web
+        run: php tests/durable-staging-merchant-core-route-bridge-delivery.php
+
+      - name: Confirm tracked source cleanliness
+        run: git diff --exit-code
+
+# Author by Lab | zefry
