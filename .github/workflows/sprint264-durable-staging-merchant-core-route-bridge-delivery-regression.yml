@@ -48,6 +48,13 @@ jobs:
           import subprocess
 
           expected = sorted([
+              '.github/workflows/sprint126-final-shift-close-runtime-binding-manifest-control-plane-token-hardening.yml',
+              '.github/workflows/sprint211-durable-staging-operator-artifact-publication-regression.yml',
+              '.github/workflows/sprint212-cpanel-no-ssh-durable-staging-target-qualification-regression.yml',
+              '.github/workflows/sprint213-cpanel-no-ssh-operator-qualification-kit-publication-regression.yml',
+              '.github/workflows/sprint214-cpanel-no-ssh-guarded-deployment-execution-regression.yml',
+              '.github/workflows/sprint222-cpanel-fixed-public-php-symlink-policy-fallback-regression.yml',
+              '.github/workflows/sprint253-final-shift-close-post-activation-historical-regression-successor-compatibility.yml',
               '.github/workflows/sprint264-durable-staging-merchant-core-route-bridge-delivery-regression.yml',
               'apps/web/app/Providers/DurableStagingMerchantCoreRouteBridgeServiceProvider.php',
               'apps/web/bootstrap/providers.php',
