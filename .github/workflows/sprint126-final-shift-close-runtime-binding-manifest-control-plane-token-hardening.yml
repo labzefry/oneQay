@@ -78,6 +78,21 @@ jobs:
             )
             diff -u <(printf '%s\n' "${expected[@]}") <(printf '%s\n' "${changed[@]}")
             test "$(grep -Fc 'App\Providers\PosOperationsHubServiceProvider::class' apps/web/bootstrap/providers.php)" -eq 1
+          elif [[ "${{ github.head_ref }}" == 'sprint264-durable-staging-merchant-core-route-bridge-delivery' ]]; then
+            changed_app="$(git diff --name-only "$base" "$head" -- apps/web)"
+            test -n "$changed_app"
+            while IFS= read -r changed; do
+              case "$changed" in
+                apps/web/app/Providers/DurableStagingMerchantCoreRouteBridgeServiceProvider.php|apps/web/bootstrap/providers.php|apps/web/tests/durable-staging-merchant-core-route-bridge-delivery.php)
+                  ;;
+                *)
+                  echo "Unexpected Sprint264 application path: $changed" >&2
+                  exit 1
+                  ;;
+              esac
+            done <<< "$changed_app"
+            test "$(grep -Fc 'App\Providers\DurableStagingMerchantCoreRouteBridgeServiceProvider::class' apps/web/bootstrap/providers.php)" -eq 1
+            git diff --quiet "$base" "$head" -- apps/web/app/Providers/AppServiceProvider.php apps/web/routes/web.php apps/web/config/oneqay.php apps/web/database/migrations
           else
             git diff --quiet "$base" "$head" -- apps/web/bootstrap/providers.php
           fi
