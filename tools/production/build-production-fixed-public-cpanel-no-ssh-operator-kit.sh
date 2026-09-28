@@ -6,7 +6,7 @@ set -euo pipefail
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 out="${1:-$repo_root/build/production-fixed-public-cpanel-no-ssh-operator-kit}"
 rm -rf "$out"
-mkdir -p "$out/tools/production/cpanel" "$out/tools/cpanel" "$out/tools/deployment" "$out/input" "$out/private" "$out/output"
+mkdir -p "$out/tools/production/cpanel" "$out/tools/cpanel" "$out/tools/deployment" "$out/ops/final-shift-close" "$out/input" "$out/private" "$out/output"
 
 copy() { install -m 0644 "$repo_root/$1" "$out/$1"; }
 copy tools/production/cpanel/inspect-production-fixed-public-cpanel-no-ssh-target.php
