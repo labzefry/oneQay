@@ -113,8 +113,6 @@ jobs:
             echo "SPRINT253_STALE_${status^^}_CANCEL_REQUESTS=$cancelled"
           }
 
-          # Bound requests below the per-job API budget while preferentially
-          # removing stale runs that consume runner capacity ahead of exact head.
           cancel_batch in_progress 40
           cancel_batch queued 930
 
@@ -157,10 +155,6 @@ jobs:
           if not workflows:
               print('SPRINT253_SUCCESSOR_COMPATIBILITY_OK workflows=0')
 
-          # Sprint264 is a bounded real-host UAT delivery successor. These historical
-          # workflows may add only a branch-specific allowlist for the exact three
-          # application paths owned by Sprint264; their historical envelope locks are
-          # therefore not stale global locks for this exact successor branch.
           sprint264_compat_workflows = {
               '.github/workflows/sprint126-final-shift-close-runtime-binding-manifest-control-plane-token-hardening.yml',
               '.github/workflows/sprint211-durable-staging-operator-artifact-publication-regression.yml',
@@ -169,6 +163,7 @@ jobs:
               '.github/workflows/sprint214-cpanel-no-ssh-guarded-deployment-execution-regression.yml',
               '.github/workflows/sprint218-production-dark-deployment-execution-regression.yml',
               '.github/workflows/sprint222-cpanel-fixed-public-php-symlink-policy-fallback-regression.yml',
+              '.github/workflows/sprint223-durable-runtime-ingestion-null-boundary-regression.yml',
           }
 
           inactive = re.compile(r'\bINACTIVE\b')
@@ -177,9 +172,6 @@ jobs:
           offenders = []
 
           def predecessor_only_activation(line):
-              # Only canonical live-state assertions are successor-sensitive.
-              # Historical contract/source fields such as required_feature_activation_state
-              # remain valid provenance and must not be rewritten as if they were live state.
               if '.feature_activation.state' not in line or not inactive.search(line) or active.search(line):
                   return False
               stripped = line.strip()
