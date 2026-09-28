@@ -43,15 +43,24 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
-          cat > /tmp/sprint264-paths <<'EOF'
-          .github/workflows/sprint264-durable-staging-merchant-core-route-bridge-delivery-regression.yml
-          apps/web/app/Providers/DurableStagingMerchantCoreRouteBridgeServiceProvider.php
-          apps/web/bootstrap/providers.php
-          apps/web/tests/durable-staging-merchant-core-route-bridge-delivery.php
-          EOF
-          git diff --name-only "$BASE_SHA...$HEAD_SHA" | LC_ALL=C sort > /tmp/actual-paths
-          diff -u /tmp/sprint264-paths /tmp/actual-paths
-          test "$(sha256sum /tmp/actual-paths | awk '{print $1}')" = "afa5f1d8b4a4deb1cdf5922fed6dbde120d20ffd4fa2b9d6fc0e66a0fdd26aa8"
+          python3 - <<'PY'
+          import os
+          import subprocess
+
+          expected = sorted([
+              '.github/workflows/sprint264-durable-staging-merchant-core-route-bridge-delivery-regression.yml',
+              'apps/web/app/Providers/DurableStagingMerchantCoreRouteBridgeServiceProvider.php',
+              'apps/web/bootstrap/providers.php',
+              'apps/web/tests/durable-staging-merchant-core-route-bridge-delivery.php',
+          ])
+          actual = sorted(subprocess.check_output(
+              ['git', 'diff', '--name-only', os.environ['BASE_SHA'] + '...' + os.environ['HEAD_SHA']],
+              text=True,
+          ).splitlines())
+          if actual != expected:
+              raise SystemExit('Sprint264 exact engineering envelope mismatch:\nexpected=' + repr(expected) + '\nactual=' + repr(actual))
+          print('SPRINT264_EXACT_ENGINEERING_ENVELOPE=PASS')
+          PY
 
       - name: Validate bounded PHP source
         shell: bash
