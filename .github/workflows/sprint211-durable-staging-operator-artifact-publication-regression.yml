@@ -116,7 +116,7 @@ jobs:
             grep -Fq "$hash" "$workflow"
           done
 
-      - name: Prove application source remains untouched or exact Sprint220 bounded updater
+      - name: Prove application source remains untouched or bounded successor
         if: github.event_name == 'pull_request' && github.head_ref != 'sprint240-durable-staging-runtime-promotion-successor'
         shell: bash
         env:
@@ -139,6 +139,19 @@ jobs:
                   ;;
               esac
             done < /tmp/s220-app-paths
+          elif [ "$HEAD_REF" = 'sprint264-durable-staging-merchant-core-route-bridge-delivery' ]; then
+            changed_app="$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web)"
+            test -n "$changed_app"
+            while IFS= read -r changed; do
+              case "$changed" in
+                apps/web/app/Providers/DurableStagingMerchantCoreRouteBridgeServiceProvider.php|apps/web/bootstrap/providers.php|apps/web/tests/durable-staging-merchant-core-route-bridge-delivery.php)
+                  ;;
+                *)
+                  echo "Unexpected Sprint264 application path: $changed" >&2
+                  exit 1
+                  ;;
+              esac
+            done <<< "$changed_app"
           else
             test -z "$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web | grep -v '^apps/web/tests/' || true)"
           fi

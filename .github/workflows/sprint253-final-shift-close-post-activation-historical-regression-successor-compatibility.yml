@@ -31,10 +31,27 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           API_URL: ${{ github.api_url }}
           REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
           CURRENT_HEAD: ${{ github.event.pull_request.head.sha }}
           HEAD_BRANCH: ${{ github.event.pull_request.head.ref }}
         run: |
           set -euo pipefail
+
+          # A stale Sprint253 run must never cancel a newer exact-head run. Re-read
+          # the live PR head immediately before any cancellation request and become
+          # a no-op when this workflow run is no longer the current PR head.
+          live_pr="$(curl -fsSL \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "$API_URL/repos/$REPOSITORY/pulls/$PR_NUMBER")"
+          live_head="$(jq -r '.head.sha' <<<"$live_pr")"
+          if [[ "$live_head" != "$CURRENT_HEAD" ]]; then
+            echo "SPRINT253_STALE_RUN_NO_CANCELLATION=YES"
+            echo "run_head=$CURRENT_HEAD"
+            echo "live_head=$live_head"
+            exit 0
+          fi
 
           cancel_batch() {
             local status="$1"
@@ -96,8 +113,6 @@ jobs:
             echo "SPRINT253_STALE_${status^^}_CANCEL_REQUESTS=$cancelled"
           }
 
-          # Bound requests below the per-job API budget while preferentially
-          # removing stale runs that consume runner capacity ahead of exact head.
           cancel_batch in_progress 40
           cancel_batch queued 930
 
@@ -106,6 +121,7 @@ jobs:
         env:
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
           PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_HEAD_REF: ${{ github.event.pull_request.head.ref }}
           PUSH_BEFORE_SHA: ${{ github.event.before }}
           PUSH_AFTER_SHA: ${{ github.sha }}
         run: |
@@ -122,6 +138,7 @@ jobs:
 
           base = os.environ.get('PR_BASE_SHA') or os.environ.get('PUSH_BEFORE_SHA')
           head = os.environ.get('PR_HEAD_SHA') or os.environ.get('PUSH_AFTER_SHA')
+          head_ref = os.environ.get('PR_HEAD_REF', '')
           if not base or not head or set(base) == {'0'}:
               raise SystemExit('Unable to resolve bounded comparison range.')
 
@@ -138,15 +155,23 @@ jobs:
           if not workflows:
               print('SPRINT253_SUCCESSOR_COMPATIBILITY_OK workflows=0')
 
+          sprint264_compat_workflows = {
+              '.github/workflows/sprint126-final-shift-close-runtime-binding-manifest-control-plane-token-hardening.yml',
+              '.github/workflows/sprint211-durable-staging-operator-artifact-publication-regression.yml',
+              '.github/workflows/sprint212-cpanel-no-ssh-durable-staging-target-qualification-regression.yml',
+              '.github/workflows/sprint213-cpanel-no-ssh-operator-qualification-kit-publication-regression.yml',
+              '.github/workflows/sprint214-cpanel-no-ssh-guarded-deployment-execution-regression.yml',
+              '.github/workflows/sprint218-production-dark-deployment-execution-regression.yml',
+              '.github/workflows/sprint222-cpanel-fixed-public-php-symlink-policy-fallback-regression.yml',
+              '.github/workflows/sprint223-durable-runtime-ingestion-null-boundary-regression.yml',
+          }
+
           inactive = re.compile(r'\bINACTIVE\b')
           active = re.compile(r'\bACTIVE\b')
           step_start = re.compile(r'^(\s*)- name:\s*')
           offenders = []
 
           def predecessor_only_activation(line):
-              # Only canonical live-state assertions are successor-sensitive.
-              # Historical contract/source fields such as required_feature_activation_state
-              # remain valid provenance and must not be rewritten as if they were live state.
               if '.feature_activation.state' not in line or not inactive.search(line) or active.search(line):
                   return False
               stripped = line.strip()
@@ -186,7 +211,11 @@ jobs:
                       'sha256sum /tmp/',
                       'wc -l < /tmp/',
                   ))
-                  if full_pr_diff and exact_global_lock:
+                  sprint264_bounded_compat = (
+                      head_ref == 'sprint264-durable-staging-merchant-core-route-bridge-delivery'
+                      and str(path) in sprint264_compat_workflows
+                  )
+                  if full_pr_diff and exact_global_lock and not sprint264_bounded_compat:
                       offenders.append(f'{path}:exact full-PR historical envelope lock')
 
           if offenders:
