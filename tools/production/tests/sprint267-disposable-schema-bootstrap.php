@@ -129,10 +129,12 @@ function s267CiMain(): void
         sort($rows, SORT_STRING);
         s267Require($rows === $expectedNames, 'ci_migration_ledger_mismatch');
         $tables = $connection->getSchemaBuilder()->getTableListing();
-        s267Require(in_array('oneqay_pos_shift_close_evidence', $tables, true), 'ci_final_shift_close_table_missing');
+        s267Require($connection->getSchemaBuilder()->hasTable('oneqay_pos_shift_close_evidence'), 'ci_final_shift_close_table_missing');
         foreach ($tables as $table) {
-            if (!str_starts_with($table, 'oneqay_')) continue;
-            $count = (int)$connection->table($table)->count();
+            // Laravel 12 may schema-qualify getTableListing() names on SQLite.
+            $name = substr($table, (int)strrpos('.'.$table, '.'));
+            if (!str_starts_with($name, 'oneqay_')) continue;
+            $count = (int)$connection->table($name)->count();
             s267Require($count === 0, 'ci_unexpected_business_rows');
         }
         if ($driver === 'sqlite') {
