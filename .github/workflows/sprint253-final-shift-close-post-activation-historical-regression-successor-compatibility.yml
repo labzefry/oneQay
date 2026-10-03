@@ -160,6 +160,9 @@ jobs:
           sprint268_compat_workflows = {
               '.github/workflows/sprint30-privileged-totp-mfa-regression.yml',
               '.github/workflows/sprint31-privileged-reauthentication-step-up-regression.yml',
+              '.github/workflows/sprint32-authentication-recovery-proof-regression.yml',
+              '.github/workflows/sprint33-recovery-bound-password-reset-regression.yml',
+              '.github/workflows/sprint34-authenticated-password-change-regression.yml',
           }
 
           sprint264_compat_workflows = {
