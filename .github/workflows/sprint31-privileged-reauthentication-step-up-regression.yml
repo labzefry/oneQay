@@ -344,6 +344,8 @@ jobs:
           done
           test "$(find apps/web/database/migrations -maxdepth 1 -type f -name '*.php' | wc -l)" -eq 10
           echo 'SPRINT268_HISTORICAL_FIXTURE_HORIZON_10=PASS'
+          # Current source includes the bounded post-Sprint36 dual-scope controller.
+          echo 'ONEQAY_SPRINT36_SUCCESSOR=true' >> "$GITHUB_ENV"
           echo 'SPRINT268_APPROVED_APP_SOURCE_BOUNDARY=PASS'
 
       - name: Enforce exact Sprint 31 source envelope
