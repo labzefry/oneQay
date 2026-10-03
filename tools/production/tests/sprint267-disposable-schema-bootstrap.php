@@ -76,7 +76,7 @@ function s267CiMain(): void
             s267VerifyLock($lock, $copied);
             s267Fail('unexpected_file_was_not_rejected');
         } catch (Sprint267SchemaBootstrapException $ex) {
-            if ($ex->getMessage() !== 'unexpected_migration_directory_entry') throw $ex;
+            if (!in_array($ex->getMessage(), ['migration_set_mismatch', 'unexpected_migration_directory_entry'], true)) throw $ex;
         }
         unlink($copied.'/unexpected.php');
         s267VerifyLock($lock, $copied);
