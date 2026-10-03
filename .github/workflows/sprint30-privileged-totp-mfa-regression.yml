@@ -359,9 +359,12 @@ jobs:
           mapfile -t app_diff < <(git diff --name-only "$base...HEAD" -- apps/web | LC_ALL=C sort)
           expected=('apps/web/composer.json' 'apps/web/composer.lock')
           test "${app_diff[*]}" = "${expected[*]}"
+          git diff --exit-code 505518f79e8a70f789b94f5074a040eae785aeb0 HEAD -- apps/web/database/migrations
+          test "$(find apps/web/database/migrations -maxdepth 1 -type f -name '*.php' | wc -l)" -eq 27
           echo 'SPRINT268_SECURITY_ONLY_COMPOSER_BOUNDARY=PASS'
 
       - name: Enforce migration nine additive-only contract
+        if: !(github.event_name == 'pull_request' && github.head_ref == 'sprint268-security-dependency-remediation' && github.event.pull_request.number == 926)
         shell: bash
         run: |
           set -euo pipefail
