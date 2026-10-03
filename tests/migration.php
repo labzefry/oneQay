@@ -622,10 +622,10 @@ $throwsLaravelMaterialization(
     \OneQay\SchemaPlanning\LaravelMigrationMaterializationException::FRAMEWORK_TARGET_MISMATCH,
 );
 // Negative cases must fail before any migration is written or executed.
-foreach (['12.64.0', '12.70.0', '^12.69', '13.0.0'] as $disallowedLaravelTarget) {
+foreach (['12.64.0', '12.70.0', '^12.69', '13.0.0'] as $index => $disallowedLaravelTarget) {
     $disallowedComposer = json_encode(['require' => ['php' => '^8.2', 'laravel/framework' => $disallowedLaravelTarget]], JSON_THROW_ON_ERROR);
     $throwsLaravelMaterialization(
-        fn () => $s17Materializer->materialize($s16Generated, $disallowedComposer, $s17Parent, 'corr-materialization-s17-denied-' . str_replace('.', '-', $disallowedLaravelTarget)),
+        fn () => $s17Materializer->materialize($s16Generated, $disallowedComposer, $s17Parent, 'corr-materialization-s17-denied-' . $index),
         \OneQay\SchemaPlanning\LaravelMigrationMaterializationException::FRAMEWORK_TARGET_MISMATCH,
     );
 }

@@ -333,7 +333,7 @@ jobs:
           fi
 
       - name: Enforce exact Sprint 30 source envelope
-        if: (github.event_name == 'pull_request' && env.ONEQAY_SPRINT31_SUCCESSOR != 'true') && env.ONEQAY_SPRINT35_SUCCESSOR != 'true'
+        if: (github.event_name == 'pull_request' && env.ONEQAY_SPRINT31_SUCCESSOR != 'true') && env.ONEQAY_SPRINT35_SUCCESSOR != 'true' && !(github.head_ref == 'sprint268-security-dependency-remediation' && github.event.pull_request.number == 926)
         shell: bash
         run: |
           set -euo pipefail
@@ -348,11 +348,24 @@ jobs:
           mapfile -t composer_diff < <(git diff --name-only "origin/${{ github.base_ref }}...HEAD" -- apps/web/composer.json apps/web/composer.lock | sort)
           test "${composer_diff[*]}" = 'apps/web/composer.json apps/web/composer.lock'
 
+      - name: Verify Sprint268 security-only Composer successor
+        if: github.event_name == 'pull_request' && github.head_ref == 'sprint268-security-dependency-remediation' && github.event.pull_request.number == 926
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "${{ github.base_ref }}"
+          base="origin/${{ github.base_ref }}"
+          git diff --exit-code "$base...HEAD" -- apps/web/database/migrations
+          mapfile -t app_diff < <(git diff --name-only "$base...HEAD" -- apps/web | LC_ALL=C sort)
+          expected=('apps/web/composer.json' 'apps/web/composer.lock')
+          test "${app_diff[*]}" = "${expected[*]}"
+          echo 'SPRINT268_SECURITY_ONLY_COMPOSER_BOUNDARY=PASS'
+
       - name: Enforce migration nine additive-only contract
         shell: bash
         run: |
           set -euo pipefail
-          if [[ "${{ github.event_name }}" == 'pull_request' ]] && [[ "${ONEQAY_SPRINT31_SUCCESSOR:-false}" != 'true' ]]; then
+          if [[ "${{ github.event_name }}" == 'pull_request' ]] && [[ "${ONEQAY_SPRINT31_SUCCESSOR:-false}" != 'true' ]] && { [[ "${{ github.head_ref }}" != 'sprint268-security-dependency-remediation' ]] || [[ "${{ github.event.pull_request.number }}" != '926' ]]; }; then
             base="origin/${{ github.base_ref }}"
             for migration in \
               0000_00_00_000001_create_foundational_context_graph.php \
