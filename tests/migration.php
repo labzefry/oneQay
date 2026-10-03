@@ -566,6 +566,10 @@ $removeTree = static function (string $path) use (&$removeTree): void {
 };
 
 $s17Composer = (string) file_get_contents(__DIR__ . '/../apps/web/composer.json');
+$assert(\OneQay\SchemaPlanning\LaravelMigrationGenerationArtifact::FRAMEWORK_VERSION === '12.64.0', 'Historical Sprint 16 generation identity changed.');
+$approvedRuntimeComposer = json_decode($s17Composer, true, 64, JSON_THROW_ON_ERROR);
+$assert(($approvedRuntimeComposer['require']['laravel/framework'] ?? null) === '12.69.0', 'Security-patched Laravel runtime target changed.');
+$assert(($approvedRuntimeComposer['require']['php'] ?? null) === '^8.2', 'Approved PHP runtime requirement changed.');
 $s17Parent = rtrim(sys_get_temp_dir(), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'oneqay-s17-' . getmypid();
 $removeTree($s17Parent);
 $assert(@mkdir($s17Parent, 0700, false), 'Sprint 17 staging parent could not be created.');
@@ -615,6 +619,19 @@ $assert(count($s17Validated->files()) === 4, 'Sprint 17 validation file count ch
 
 $throwsLaravelMaterialization(
     fn () => $s17Materializer->materialize($s16Generated, '{bad-json', $s17Parent, 'corr-materialization-s17-bad-json'),
+    \OneQay\SchemaPlanning\LaravelMigrationMaterializationException::FRAMEWORK_TARGET_MISMATCH,
+);
+// Negative cases must fail before any migration is written or executed.
+foreach (['12.64.0', '12.70.0', '^12.69', '13.0.0'] as $index => $disallowedLaravelTarget) {
+    $disallowedComposer = json_encode(['require' => ['php' => '^8.2', 'laravel/framework' => $disallowedLaravelTarget]], JSON_THROW_ON_ERROR);
+    $throwsLaravelMaterialization(
+        fn () => $s17Materializer->materialize($s16Generated, $disallowedComposer, $s17Parent, 'corr-materialization-s17-denied-' . $index),
+        \OneQay\SchemaPlanning\LaravelMigrationMaterializationException::FRAMEWORK_TARGET_MISMATCH,
+    );
+}
+$wrongPhpComposer = json_encode(['require' => ['php' => '^8.1', 'laravel/framework' => '12.69.0']], JSON_THROW_ON_ERROR);
+$throwsLaravelMaterialization(
+    fn () => $s17Materializer->materialize($s16Generated, $wrongPhpComposer, $s17Parent, 'corr-materialization-s17-wrong-php'),
     \OneQay\SchemaPlanning\LaravelMigrationMaterializationException::FRAMEWORK_TARGET_MISMATCH,
 );
 $wrongComposer = json_encode(['require' => ['php' => '^8.2', 'laravel/framework' => '13.0.0']], JSON_THROW_ON_ERROR);

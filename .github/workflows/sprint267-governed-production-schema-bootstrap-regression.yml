@@ -69,7 +69,7 @@ jobs:
           ])
           actual = sorted(subprocess.check_output([
             'git','diff','--name-only','--diff-filter=ACMRT',
-            'c83d5131d7aaab19ddbd001223236aa424d2ea48','HEAD'
+            subprocess.check_output(['git','merge-base','HEAD','origin/main'], text=True).strip(),'HEAD'
           ], text=True).splitlines())
           assert actual == expected, f"Expected six paths; actual {actual!r}"
           print('SPRINT267_EXACT_SIX_PATH_ENVELOPE=PASS')

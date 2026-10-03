@@ -119,6 +119,8 @@ final readonly class LaravelMigrationMaterializationReport implements \JsonSeria
 final class GovernedLaravelMigrationMaterializer
 {
     private const EXPECTED_PHP_REQUIREMENT = '^8.2';
+    // The approved secure runtime target must not rewrite the immutable Sprint 16 artifact identity.
+    private const EXPECTED_RUNTIME_LARAVEL_VERSION = '12.69.0';
     private const WORKSPACE_ROOT = '.oneqay-migration-materialization';
 
     /** @var list<string> */
@@ -281,8 +283,8 @@ final class GovernedLaravelMigrationMaterializer
         $php = $decoded['require']['php'] ?? null;
         $laravel = $decoded['require']['laravel/framework'] ?? null;
         if (!is_string($php) || !hash_equals(self::EXPECTED_PHP_REQUIREMENT, $php)
-            || !is_string($laravel) || !hash_equals(LaravelMigrationGenerationArtifact::FRAMEWORK_VERSION, $laravel)) {
-            $this->fail(LaravelMigrationMaterializationException::FRAMEWORK_TARGET_MISMATCH, 'Application Composer framework target does not match Sprint 16.');
+            || !is_string($laravel) || !hash_equals(self::EXPECTED_RUNTIME_LARAVEL_VERSION, $laravel)) {
+            $this->fail(LaravelMigrationMaterializationException::FRAMEWORK_TARGET_MISMATCH, 'Application Composer runtime target does not match the approved security-patched Laravel version.');
         }
     }
 
