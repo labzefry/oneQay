@@ -1,0 +1,85 @@
+name: Sprint268 Dependency Security Remediation Regression
+# Author by Lab | zefry
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - apps/web/composer.json
+      - apps/web/composer.lock
+      - .github/workflows/sprint268-dependency-security-remediation-regression.yml
+  push:
+    branches: [main]
+    paths:
+      - apps/web/composer.json
+      - apps/web/composer.lock
+      - .github/workflows/sprint268-dependency-security-remediation-regression.yml
+permissions:
+  contents: read
+jobs:
+  audit-patched-dependencies:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact proposed source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+      - name: Verify three-path bounded security envelope
+        if: github.event_name == 'pull_request'
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import subprocess
+          expected = sorted([
+            'apps/web/composer.json',
+            'apps/web/composer.lock',
+            '.github/workflows/sprint268-dependency-security-remediation-regression.yml',
+          ])
+          actual = sorted(subprocess.check_output(
+            ['git','diff','--name-only','--diff-filter=ACMRT','c83d5131d7aaab19ddbd001223236aa424d2ea48','HEAD'],
+            text=True).splitlines())
+          assert actual==expected, f'Unsafe Sprint268 path envelope: {actual}'
+          print('SPRINT268_THREE_PATH_ENVELOPE=PASS')
+          PY
+      - name: Verify patched dependency floors and historical migration source preservation
+        run: |
+          set -euo pipefail
+          php -r '
+          $manifest=json_decode(file_get_contents("apps/web/composer.json"),true,512,JSON_THROW_ON_ERROR);
+          $lock=json_decode(file_get_contents("apps/web/composer.lock"),true,512,JSON_THROW_ON_ERROR);
+          $floors=["laravel/framework"=>"12.69.0","league/commonmark"=>"2.10.2","league/flysystem"=>"3.35.3"];
+          foreach($floors as $name=>$min) {
+              $found=false;
+              foreach($lock["packages"] as $pkg) {
+                  if($pkg["name"]!==$name) continue;
+                  if(!version_compare(ltrim($pkg["version"],"v"),$min,">=")) exit(1);
+                  $found=true;
+                  echo $name."=".$pkg["version"].PHP_EOL;
+              }
+              if(!$found) exit(1);
+          }
+          if($manifest["require"]["laravel/framework"]!=="12.69.0") exit(1);
+          '
+          git diff --exit-code 505518f79e8a70f789b94f5074a040eae785aeb0 HEAD -- apps/web/database/migrations
+          grep -Fq "public const FRAMEWORK_VERSION = '12.64.0';" src/SchemaPlanning/LaravelMigrationGeneration.php
+          echo 'SPRINT268_ORIGINAL_MIGRATION_SOURCE_PRESERVED=PASS'
+      - name: Verify Composer manifest lock and install
+        working-directory: apps/web
+        run: |
+          set -euo pipefail
+          composer validate --no-check-publish
+          composer install --no-interaction --prefer-dist --no-progress --no-scripts
+          composer audit --locked --format=plain
+          echo 'SPRINT268_COMPOSER_AUDIT=PASS'
+      - name: Run application regression on patched graph
+        working-directory: apps/web
+        run: |
+          set -euo pipefail
+          composer test
+          echo 'SPRINT268_APPLICATION_REGRESSION=PASS'
+      - name: Preserve Production operational boundary
+        run: |
+          jq -e '.migration27.state=="EXECUTED" and .permission_provisioning.default_grant=="NONE" and .feature_activation.state=="ACTIVE" and .deployment_authority=="NOT_GRANTED" and .technical_preview_activation=="NOT_AUTHORIZED" and .production_activation=="NOT_AUTHORIZED" and .updater_activation=="INACTIVE"' ops/final-shift-close/STATE.json
+          echo 'PRODUCTION_DEPLOYMENT=NOT_PERFORMED'
+          echo 'PRODUCTION_DATABASE_MUTATION=NOT_PERFORMED'
+          echo 'STAGING_MUTATION=NOT_PERFORMED'
