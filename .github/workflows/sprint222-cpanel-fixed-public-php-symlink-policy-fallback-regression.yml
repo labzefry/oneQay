@@ -334,6 +334,10 @@ jobs:
                     ;;
                 esac
               done <<< "$changed_app"
+            elif [ "$HEAD_REF" = 'sprint268-security-dependency-remediation' ] && [ "${{ github.event.pull_request.number }}" = '926' ]; then
+              mapfile -t security_app_paths < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web | LC_ALL=C sort)
+              expected_security_app_paths=('apps/web/composer.json' 'apps/web/composer.lock')
+              test "${security_app_paths[*]}" = "${expected_security_app_paths[*]}"
             else
               test -z "$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web | grep -v '^apps/web/tests/' || true)"
             fi

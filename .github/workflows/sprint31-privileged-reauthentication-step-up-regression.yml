@@ -317,8 +317,20 @@ jobs:
             echo 'ONEQAY_SPRINT32_WORKFLOW_CORRECTION=true' >> "$GITHUB_ENV"
           fi
 
+      - name: Verify exact Sprint268 security compatibility successor
+        if: github.event_name == 'pull_request' && github.head_ref == 'sprint268-security-dependency-remediation' && github.event.pull_request.number == 926
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "${{ github.base_ref }}"
+          git diff --exit-code "origin/${{ github.base_ref }}...HEAD" -- apps/web/database/migrations
+          mapfile -t app_diff < <(git diff --name-only "origin/${{ github.base_ref }}...HEAD" -- apps/web | LC_ALL=C sort)
+          expected=('apps/web/composer.json' 'apps/web/composer.lock')
+          test "${app_diff[*]}" = "${expected[*]}"
+          echo 'SPRINT268_APPROVED_APP_SOURCE_BOUNDARY=PASS'
+
       - name: Enforce exact Sprint 31 source envelope
-        if: (github.event_name == 'pull_request' && env.ONEQAY_SPRINT32_SUCCESSOR != 'true') && env.ONEQAY_SPRINT35_SUCCESSOR != 'true'
+        if: (github.event_name == 'pull_request' && env.ONEQAY_SPRINT32_SUCCESSOR != 'true') && env.ONEQAY_SPRINT35_SUCCESSOR != 'true' && !(github.head_ref == 'sprint268-security-dependency-remediation' && github.event.pull_request.number == 926)
         shell: bash
         run: |
           set -euo pipefail

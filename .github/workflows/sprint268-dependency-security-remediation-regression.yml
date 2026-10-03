@@ -8,6 +8,9 @@ on:
       - apps/web/composer.lock
       - src/SchemaPlanning/LaravelMigrationMaterialization.php
       - tests/migration.php
+      - .github/workflows/sprint253-final-shift-close-post-activation-historical-regression-successor-compatibility.yml
+      - .github/workflows/sprint222-cpanel-fixed-public-php-symlink-policy-fallback-regression.yml
+      - .github/workflows/sprint31-privileged-reauthentication-step-up-regression.yml
       - .github/workflows/sprint211-durable-staging-operator-artifact-publication-regression.yml
       - .github/workflows/sprint212-cpanel-no-ssh-durable-staging-target-qualification-regression.yml
       - .github/workflows/sprint213-cpanel-no-ssh-operator-qualification-kit-publication-regression.yml
@@ -23,6 +26,9 @@ on:
       - apps/web/composer.lock
       - src/SchemaPlanning/LaravelMigrationMaterialization.php
       - tests/migration.php
+      - .github/workflows/sprint253-final-shift-close-post-activation-historical-regression-successor-compatibility.yml
+      - .github/workflows/sprint222-cpanel-fixed-public-php-symlink-policy-fallback-regression.yml
+      - .github/workflows/sprint31-privileged-reauthentication-step-up-regression.yml
       - .github/workflows/sprint211-durable-staging-operator-artifact-publication-regression.yml
       - .github/workflows/sprint212-cpanel-no-ssh-durable-staging-target-qualification-regression.yml
       - .github/workflows/sprint213-cpanel-no-ssh-operator-qualification-kit-publication-regression.yml
@@ -42,7 +48,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           fetch-depth: 0
-      - name: Verify twelve-path bounded security and compatibility envelope
+      - name: Verify fifteen-path bounded security and compatibility envelope
         if: github.event_name == 'pull_request'
         run: |
           set -euo pipefail
@@ -54,6 +60,9 @@ jobs:
             '.github/workflows/sprint268-dependency-security-remediation-regression.yml',
             'src/SchemaPlanning/LaravelMigrationMaterialization.php',
             'tests/migration.php',
+            '.github/workflows/sprint31-privileged-reauthentication-step-up-regression.yml',
+            '.github/workflows/sprint222-cpanel-fixed-public-php-symlink-policy-fallback-regression.yml',
+            '.github/workflows/sprint253-final-shift-close-post-activation-historical-regression-successor-compatibility.yml',
             '.github/workflows/sprint211-durable-staging-operator-artifact-publication-regression.yml',
             '.github/workflows/sprint212-cpanel-no-ssh-durable-staging-target-qualification-regression.yml',
             '.github/workflows/sprint213-cpanel-no-ssh-operator-qualification-kit-publication-regression.yml',
@@ -66,7 +75,7 @@ jobs:
             ['git','diff','--name-only','--diff-filter=ACMRT','c83d5131d7aaab19ddbd001223236aa424d2ea48','HEAD'],
             text=True).splitlines())
           assert actual==expected, f'Unsafe Sprint268 path envelope: {actual}'
-          print('SPRINT268_TWELVE_PATH_ENVELOPE=PASS')
+          print('SPRINT268_FIFTEEN_PATH_ENVELOPE=PASS')
           PY
       - name: Verify patched dependency floors and historical migration source preservation
         run: |

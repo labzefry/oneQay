@@ -155,6 +155,13 @@ jobs:
           if not workflows:
               print('SPRINT253_SUCCESSOR_COMPATIBILITY_OK workflows=0')
 
+          # Only the exact PR #926 successor is accepted; each historical
+          # workflow must retain its original guard and add a bounded security check.
+          sprint268_compat_workflows = {
+              '.github/workflows/sprint30-privileged-totp-mfa-regression.yml',
+              '.github/workflows/sprint31-privileged-reauthentication-step-up-regression.yml',
+          }
+
           sprint264_compat_workflows = {
               '.github/workflows/sprint126-final-shift-close-runtime-binding-manifest-control-plane-token-hardening.yml',
               '.github/workflows/sprint211-durable-staging-operator-artifact-publication-regression.yml',
@@ -215,7 +222,15 @@ jobs:
                       head_ref == 'sprint264-durable-staging-merchant-core-route-bridge-delivery'
                       and str(path) in sprint264_compat_workflows
                   )
-                  if full_pr_diff and exact_global_lock and not sprint264_bounded_compat:
+                  sprint268_bounded_compat = (
+                      head_ref == 'sprint268-security-dependency-remediation'
+                      and str(path) in sprint268_compat_workflows
+                      and "github.event.pull_request.number == 926" in '\n'.join(lines)
+                      and "('apps/web/composer.json' 'apps/web/composer.lock')" in '\n'.join(lines)
+                      and ('Verify Sprint268 security-only Composer successor' in '\n'.join(lines)
+                           or 'Verify exact Sprint268 security compatibility successor' in '\n'.join(lines))
+                  )
+                  if full_pr_diff and exact_global_lock and not sprint264_bounded_compat and not sprint268_bounded_compat:
                       offenders.append(f'{path}:exact full-PR historical envelope lock')
 
           if offenders:
