@@ -6,12 +6,16 @@ on:
     paths:
       - apps/web/composer.json
       - apps/web/composer.lock
+      - src/SchemaPlanning/LaravelMigrationMaterialization.php
+      - tests/migration.php
       - .github/workflows/sprint268-dependency-security-remediation-regression.yml
   push:
     branches: [main]
     paths:
       - apps/web/composer.json
       - apps/web/composer.lock
+      - src/SchemaPlanning/LaravelMigrationMaterialization.php
+      - tests/migration.php
       - .github/workflows/sprint268-dependency-security-remediation-regression.yml
 permissions:
   contents: read
@@ -24,7 +28,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           fetch-depth: 0
-      - name: Verify three-path bounded security envelope
+      - name: Verify five-path bounded security and compatibility envelope
         if: github.event_name == 'pull_request'
         run: |
           set -euo pipefail
@@ -34,12 +38,14 @@ jobs:
             'apps/web/composer.json',
             'apps/web/composer.lock',
             '.github/workflows/sprint268-dependency-security-remediation-regression.yml',
+            'src/SchemaPlanning/LaravelMigrationMaterialization.php',
+            'tests/migration.php',
           ])
           actual = sorted(subprocess.check_output(
             ['git','diff','--name-only','--diff-filter=ACMRT','c83d5131d7aaab19ddbd001223236aa424d2ea48','HEAD'],
             text=True).splitlines())
           assert actual==expected, f'Unsafe Sprint268 path envelope: {actual}'
-          print('SPRINT268_THREE_PATH_ENVELOPE=PASS')
+          print('SPRINT268_FIVE_PATH_ENVELOPE=PASS')
           PY
       - name: Verify patched dependency floors and historical migration source preservation
         run: |
