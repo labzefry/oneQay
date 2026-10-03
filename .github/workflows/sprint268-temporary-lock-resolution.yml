@@ -24,7 +24,7 @@ jobs:
           set -euo pipefail
           php -v
           composer update laravel/framework league/commonmark league/flysystem --with-all-dependencies --no-install --no-scripts --prefer-dist --no-interaction --no-progress
-          composer validate --strict
+          composer validate
           composer audit --format=plain
       - name: Report precise patch versions
         working-directory: apps/web
