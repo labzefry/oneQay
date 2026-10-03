@@ -229,7 +229,7 @@ jobs:
                       head_ref == 'sprint268-security-dependency-remediation'
                       and str(path) in sprint268_compat_workflows
                       and "github.event.pull_request.number == 926" in '\n'.join(lines)
-                      and "('apps/web/composer.json' 'apps/web/composer.lock')" in '\n'.join(lines)
+                      and "('apps/web/composer.json' 'apps/web/composer.lock' 'apps/web/package-lock.json' 'apps/web/package.json')" in '\n'.join(lines)
                       and ('Verify Sprint268 security-only Composer successor' in '\n'.join(lines)
                            or 'Verify exact Sprint268 security compatibility successor' in '\n'.join(lines))
                   )

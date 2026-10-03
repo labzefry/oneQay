@@ -325,7 +325,7 @@ jobs:
           git fetch --no-tags origin "${{ github.base_ref }}"
           git diff --exit-code "origin/${{ github.base_ref }}...HEAD" -- apps/web/database/migrations
           mapfile -t app_diff < <(git diff --name-only "origin/${{ github.base_ref }}...HEAD" -- apps/web | LC_ALL=C sort)
-          expected=('apps/web/composer.json' 'apps/web/composer.lock')
+          expected=('apps/web/composer.json' 'apps/web/composer.lock' 'apps/web/package-lock.json' 'apps/web/package.json')
           test "${app_diff[*]}" = "${expected[*]}"
           git diff --exit-code 505518f79e8a70f789b94f5074a040eae785aeb0 HEAD -- apps/web/database/migrations
           test "$(find apps/web/database/migrations -maxdepth 1 -type f -name '*.php' | wc -l)" -eq 27
