@@ -6,6 +6,8 @@ on:
     paths:
       - apps/web/composer.json
       - apps/web/composer.lock
+      - apps/web/package.json
+      - apps/web/package-lock.json
       - src/SchemaPlanning/LaravelMigrationMaterialization.php
       - tests/migration.php
       - .github/workflows/sprint32-authentication-recovery-proof-regression.yml
@@ -27,6 +29,8 @@ on:
     paths:
       - apps/web/composer.json
       - apps/web/composer.lock
+      - apps/web/package.json
+      - apps/web/package-lock.json
       - src/SchemaPlanning/LaravelMigrationMaterialization.php
       - tests/migration.php
       - .github/workflows/sprint32-authentication-recovery-proof-regression.yml
@@ -54,7 +58,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           fetch-depth: 0
-      - name: Verify eighteen-path bounded security and compatibility envelope
+      - name: Verify twenty-path bounded security and compatibility envelope
         if: github.event_name == 'pull_request'
         run: |
           set -euo pipefail
@@ -63,6 +67,8 @@ jobs:
           expected = sorted([
             'apps/web/composer.json',
             'apps/web/composer.lock',
+            'apps/web/package.json',
+            'apps/web/package-lock.json',
             '.github/workflows/sprint268-dependency-security-remediation-regression.yml',
             'src/SchemaPlanning/LaravelMigrationMaterialization.php',
             'tests/migration.php',
@@ -84,7 +90,7 @@ jobs:
             ['git','diff','--name-only','--diff-filter=ACMRT','c83d5131d7aaab19ddbd001223236aa424d2ea48','HEAD'],
             text=True).splitlines())
           assert actual==expected, f'Unsafe Sprint268 path envelope: {actual}'
-          print('SPRINT268_EIGHTEEN_PATH_ENVELOPE=PASS')
+          print('SPRINT268_TWENTY_PATH_ENVELOPE=PASS')
           PY
       - name: Verify patched dependency floors and historical migration source preservation
         run: |
@@ -122,6 +128,21 @@ jobs:
           set -euo pipefail
           composer test
           echo 'SPRINT268_APPLICATION_REGRESSION=PASS'
+      - name: Setup security-patched Node runtime
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: 24.19.0
+      - name: Verify locked security-patched Axios and complete frontend checks
+        working-directory: apps/web
+        run: |
+          set -euo pipefail
+          node -e 'const p=require("./package.json"),l=require("./package-lock.json");if(p.dependencies.axios!=="1.20.0"||l.packages[""].dependencies.axios!=="1.20.0"||l.packages["node_modules/axios"].version!=="1.20.0")process.exit(1)'
+          npm ci --ignore-scripts --no-fund
+          npm audit --audit-level=high
+          npm run type-check
+          npm run build
+          echo 'SPRINT268_NPM_SECURITY_AND_FRONTEND_REGRESSION=PASS'
+
       - name: Preserve Production operational boundary
         run: |
           jq -e '.migration27.state=="EXECUTED" and .permission_provisioning.default_grant=="NONE" and .feature_activation.state=="ACTIVE" and .deployment_authority=="NOT_GRANTED" and .technical_preview_activation=="NOT_AUTHORIZED" and .production_activation=="NOT_AUTHORIZED" and .updater_activation=="INACTIVE"' ops/final-shift-close/STATE.json
