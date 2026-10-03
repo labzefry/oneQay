@@ -1,0 +1,46 @@
+name: Sprint268 Temporary Locked Dependency Resolution
+# Temporary CI-only lock regeneration. Delete before PR qualification.
+# Author by Lab | zefry
+on:
+  push:
+    branches: [sprint268-security-dependency-remediation]
+    paths:
+      - .github/workflows/sprint268-temporary-lock-resolution.yml
+permissions:
+  contents: write
+jobs:
+  regenerate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact security branch
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: sprint268-security-dependency-remediation
+          persist-credentials: true
+      - name: Install available safe locked dependency graph
+        working-directory: apps/web
+        run: |
+          set -euo pipefail
+          php -v
+          composer update laravel/framework league/commonmark league/flysystem --with-all-dependencies --no-install --no-scripts --prefer-dist --no-interaction --no-progress
+          composer validate --strict
+          composer audit --format=plain
+      - name: Report precise patch versions
+        working-directory: apps/web
+        run: |
+          set -euo pipefail
+          php -r '$d=json_decode(file_get_contents("composer.lock"),true);foreach($d["packages"] as $p){if(in_array($p["name"],["laravel/framework","league/commonmark","league/flysystem"],true))echo $p["name"]."=".$p["version"].PHP_EOL;}'
+      - name: Commit only regenerated lockfile
+        run: |
+          set -euo pipefail
+          git config user.name "Lab | zefry"
+          git config user.email "labzefry@users.noreply.github.com"
+          git add apps/web/composer.lock
+          if git diff --cached --quiet; then
+            echo 'SPRINT268_LOCKFILE_ALREADY_CURRENT=PASS'
+          else
+            git diff --cached --name-only | grep -x 'apps/web/composer.lock'
+            git commit -m "Sprint268: regenerate audited Composer lockfile" -m "Author by Lab | zefry"
+            git push origin HEAD:sprint268-security-dependency-remediation
+          fi
