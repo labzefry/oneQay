@@ -1,0 +1,133 @@
+{
+  "schema_version": 1,
+  "product": "oneQay",
+  "state": "EXACT_SOURCE_LOCK_ISOLATED_TEST_ONLY",
+  "canonical_predecessor": "c83d5131d7aaab19ddbd001223236aa424d2ea48",
+  "application_source_commit": "505518f79e8a70f789b94f5074a040eae785aeb0",
+  "production_release_id": "production-505518f79e8a",
+  "migration_count": 27,
+  "migration_dir": "apps/web/database/migrations",
+  "migrations": [
+    {
+      "filename": "0000_00_00_000001_create_foundational_context_graph.php",
+      "git_blob_sha": "db9a2686c52d36e07b05252777fb6218c1b6285b"
+    },
+    {
+      "filename": "0000_00_00_000002_create_organizational_access_grants.php",
+      "git_blob_sha": "cf1fe027d56aa2433345e6271da74bdfb565714b"
+    },
+    {
+      "filename": "0000_00_00_000003_create_scoped_role_permission_policy.php",
+      "git_blob_sha": "c59c056dea150178d2ddd7e9e014a303264fbb9e"
+    },
+    {
+      "filename": "0000_00_00_000004_create_policy_mutation_journal.php",
+      "git_blob_sha": "15607c786c85972b4e895dd0b6f1ef8ce7551d90"
+    },
+    {
+      "filename": "0000_00_00_000005_create_initial_tenant_administrator_provisioning_journal.php",
+      "git_blob_sha": "01cee462d2036b949b4ed814c0797230b1416b33"
+    },
+    {
+      "filename": "0000_00_00_000006_create_protected_control_administrator_mutation_journal.php",
+      "git_blob_sha": "e8629a0f408cbb1401379562160a24b4ad25a433"
+    },
+    {
+      "filename": "0000_00_00_000007_create_identity_password_credentials.php",
+      "git_blob_sha": "62eae42cee0aa4f65a1ac006edfd8b66dfcdf681"
+    },
+    {
+      "filename": "0000_00_00_000008_create_initial_password_enrollments.php",
+      "git_blob_sha": "ca7f00ea5001fd1b802113945850e60f4889337f"
+    },
+    {
+      "filename": "0000_00_00_000009_create_identity_totp_factors.php",
+      "git_blob_sha": "4a82747918fcc6fe0511cd960235d467a54cfdd5"
+    },
+    {
+      "filename": "0000_00_00_000010_create_identity_recovery_codes.php",
+      "git_blob_sha": "1894ccfdc8a877b82a2e5cc60724a47b95e937fb"
+    },
+    {
+      "filename": "0000_00_00_000011_add_credential_epoch_to_identity_password_credentials.php",
+      "git_blob_sha": "3ea9328ce9f9512b7ca6c5c23806f9b92162fd94"
+    },
+    {
+      "filename": "0000_00_00_000012_add_totp_factor_epoch_and_recovery_authority.php",
+      "git_blob_sha": "82cba3b11f26b86dcf977ef51304630e3b6dd80b"
+    },
+    {
+      "filename": "0000_00_00_000013_create_first_party_session_authority.php",
+      "git_blob_sha": "5184e6e6f69ec9058053f9cccbf422fc95383190"
+    },
+    {
+      "filename": "0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php",
+      "git_blob_sha": "a016d11a7d5d92ca3a09fa4f1a75fbb362f04be8"
+    },
+    {
+      "filename": "0000_00_00_000015_create_identity_authentication_eligibility_administration_journal.php",
+      "git_blob_sha": "df9c532ce75619508f56336a3251bb74e604205f"
+    },
+    {
+      "filename": "0000_00_00_000016_create_pos_sale_completion_foundation.php",
+      "git_blob_sha": "24299891913613bf1e6fdbb3a20ff5f74b617d6e"
+    },
+    {
+      "filename": "0000_00_00_000017_create_pos_catalog_preparation_journal.php",
+      "git_blob_sha": "3670a0899785aa51d9159a7f6f8161342607f30d"
+    },
+    {
+      "filename": "0000_00_00_000018_create_pos_shift_opening_foundation.php",
+      "git_blob_sha": "a9c992121598aeb54154a701f587ad2b4a988471"
+    },
+    {
+      "filename": "0000_00_00_000019_create_pos_sale_void_foundation.php",
+      "git_blob_sha": "75ce4f5137f57f916fec8d6e669968fad4a31d32"
+    },
+    {
+      "filename": "0000_00_00_000020_create_pos_inventory_baseline_foundation.php",
+      "git_blob_sha": "4881b93d58b014d2c02e43c86be532db85cb177c"
+    },
+    {
+      "filename": "0000_00_00_000021_create_pos_sale_cash_refund_foundation.php",
+      "git_blob_sha": "ec744e5cf4cc805060d44518b6e242b0a4652932"
+    },
+    {
+      "filename": "0000_00_00_000022_create_pos_shift_opening_cash_evidence_foundation.php",
+      "git_blob_sha": "ed38f95651800cb5edfc8b8a5770242a65a8f349"
+    },
+    {
+      "filename": "0000_00_00_000023_create_pos_shift_closing_cash_evidence_foundation.php",
+      "git_blob_sha": "fb5afce9d1a9f55acdcb4143c89ce612e65abd47"
+    },
+    {
+      "filename": "0000_00_00_000024_add_immutable_shift_binding_to_pos_sales.php",
+      "git_blob_sha": "1e2083e80d0439a956e7915678d93ca1ed35a3f3"
+    },
+    {
+      "filename": "0000_00_00_000025_create_pos_cash_variance_explanation_evidence_foundation.php",
+      "git_blob_sha": "5c63d48b07d88e8f39527646c581a87a318ae65b"
+    },
+    {
+      "filename": "0000_00_00_000026_create_pos_cash_variance_review_decision_evidence_foundation.php",
+      "git_blob_sha": "083a2e2a20e1a3ad8fa99601a58a84cffe63ede6"
+    },
+    {
+      "filename": "0000_00_00_000027_create_pos_shift_close_evidence_foundation.php",
+      "git_blob_sha": "a412560c2f340f4783a385aef729dbd074389a4c"
+    }
+  ],
+  "authority": {
+    "ci_disposable_database_only": true,
+    "production_database_execution_authorized": false,
+    "production_deployment_authorized": false,
+    "production_traffic_authorized": false,
+    "staging_mutation_authorized": false,
+    "target_reselection_authorized": false,
+    "feature_reactivation_authorized": false,
+    "permission_provisioning_authorized": false,
+    "producer_dispatch_authorized": false,
+    "updater_activation_authorized": false
+  },
+  "attribution": "Lab | zefry"
+}

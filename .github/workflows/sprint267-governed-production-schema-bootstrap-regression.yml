@@ -1,0 +1,167 @@
+name: Sprint267 Governed Production Schema Bootstrap Regression
+
+# Author by Lab | zefry
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - .github/workflows/sprint267-governed-production-schema-bootstrap-regression.yml
+      - docs/SPRINT267_GOVERNED_PRODUCTION_SCHEMA_BOOTSTRAP.md
+      - ops/final-shift-close/PRODUCTION_SCHEMA_BOOTSTRAP_SOURCE_LOCK.json
+      - tools/production/cpanel/governed-production-schema-bootstrap-foundation.php
+      - tools/production/cpanel/prepare-governed-production-schema-bootstrap-plan.php
+      - tools/production/tests/sprint267-disposable-schema-bootstrap.php
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/sprint267-governed-production-schema-bootstrap-regression.yml
+      - docs/SPRINT267_GOVERNED_PRODUCTION_SCHEMA_BOOTSTRAP.md
+      - ops/final-shift-close/PRODUCTION_SCHEMA_BOOTSTRAP_SOURCE_LOCK.json
+      - tools/production/cpanel/governed-production-schema-bootstrap-foundation.php
+      - tools/production/cpanel/prepare-governed-production-schema-bootstrap-plan.php
+      - tools/production/tests/sprint267-disposable-schema-bootstrap.php
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  qualify-sprint267:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: oneqay-s267-root-disposable-ci
+          MYSQL_DATABASE: oneqay_s267_ci
+          MYSQL_USER: oneqay_s267_ci
+          MYSQL_PASSWORD: oneqay-s267-disposable-ci-only
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -poneqay-s267-root-disposable-ci"
+          --health-interval=10s --health-timeout=5s --health-retries=10
+    env:
+      CI: 'true'
+      ONEQAY_SPRINT267_DISPOSABLE: 'true'
+      ONEQAY_SPRINT267_CI_MYSQL_PASSWORD: oneqay-s267-disposable-ci-only
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+
+      - name: Verify six-path reconciliation envelope
+        if: github.event_name == 'pull_request'
+        run: |
+          set -euo pipefail
+          if [ "$GITHUB_HEAD_REF" != 'sprint267-governed-production-schema-bootstrap' ]; then exit 0; fi
+          python3 - <<'PY'
+          import os, subprocess
+          expected = sorted([
+            '.github/workflows/sprint267-governed-production-schema-bootstrap-regression.yml',
+            'docs/SPRINT267_GOVERNED_PRODUCTION_SCHEMA_BOOTSTRAP.md',
+            'ops/final-shift-close/PRODUCTION_SCHEMA_BOOTSTRAP_SOURCE_LOCK.json',
+            'tools/production/cpanel/governed-production-schema-bootstrap-foundation.php',
+            'tools/production/cpanel/prepare-governed-production-schema-bootstrap-plan.php',
+            'tools/production/tests/sprint267-disposable-schema-bootstrap.php',
+          ])
+          actual = sorted(subprocess.check_output([
+            'git','diff','--name-only','--diff-filter=ACMRT',
+            subprocess.check_output(['git','merge-base','HEAD','origin/main'], text=True).strip(),'HEAD'
+          ], text=True).splitlines())
+          assert actual == expected, f"Expected six paths; actual {actual!r}"
+          print('SPRINT267_EXACT_SIX_PATH_ENVELOPE=PASS')
+          PY
+
+      - name: Verify exact original Git migration objects and lint
+        run: |
+          set -euo pipefail
+          php -l tools/production/cpanel/governed-production-schema-bootstrap-foundation.php
+          php -l tools/production/cpanel/prepare-governed-production-schema-bootstrap-plan.php
+          php -l tools/production/tests/sprint267-disposable-schema-bootstrap.php
+          jq -e '.application_source_commit=="505518f79e8a70f789b94f5074a040eae785aeb0" and .migration_count==27 and (.migrations|length)==27 and .authority.production_database_execution_authorized==false' ops/final-shift-close/PRODUCTION_SCHEMA_BOOTSTRAP_SOURCE_LOCK.json >/dev/null
+          python3 - <<'PY'
+          import json, subprocess, pathlib
+          data=json.loads(pathlib.Path('ops/final-shift-close/PRODUCTION_SCHEMA_BOOTSTRAP_SOURCE_LOCK.json').read_text())
+          source=data['application_source_commit']
+          subprocess.run(['git','merge-base','--is-ancestor',source,'HEAD'],check=True)
+          for row in data['migrations']:
+              path='apps/web/database/migrations/'+row['filename']
+              historical=subprocess.check_output(['git','rev-parse',source+':'+path],text=True).strip()
+              actual=subprocess.check_output(['git','hash-object',path],text=True).strip()
+              assert historical==row['git_blob_sha']==actual, path
+          print('SPRINT267_27_HISTORICAL_MIGRATION_BLOBS=PASS')
+          PY
+          if grep -En '\b(proc_open|shell_exec|system|passthru|exec)[[:space:]]*\(' tools/production/cpanel/governed-production-schema-bootstrap-foundation.php tools/production/cpanel/prepare-governed-production-schema-bootstrap-plan.php tools/production/tests/sprint267-disposable-schema-bootstrap.php; then
+            echo 'Child process execution is not permitted' >&2
+            exit 1
+          fi
+
+      - name: Test plan-only generation and nonempty database rejection
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/s267-private"
+          python3 - <<'PY'
+          import json, pathlib, os
+          lock=json.loads(pathlib.Path('ops/final-shift-close/PRODUCTION_SCHEMA_BOOTSTRAP_SOURCE_LOCK.json').read_text())
+          inv={
+            'schema_version':1,'product':'oneQay','environment_id':'oneqay-production-ci',
+            'release_source':lock['application_source_commit'],
+            'state':'READ_ONLY_INVENTORY_COMPLETE','code':'MYSQL_SCHEMA_REGISTRY_OBSERVED_READ_ONLY',
+            'database_inventory_only':True,'database_mutation_performed':False,
+            'staging_access_performed':False,'public_document_root_modified':False,
+            'production_schema_provisioned_by_this_check':False,
+            'production_target_qualified':False,'production_deployment_authorized':False,
+            'production_traffic_authorized':False,
+            'details':{
+              'schema_observation':'FRESH_EMPTY_PRODUCTION_DATABASE',
+              'expected_source_migration_count':27,'observed_base_table_count':0,
+              'migration_registry_present':False,'observed_unique_migration_count':0,
+              'missing_expected_migrations':[v['filename'][:-4] for v in lock['migrations']],
+              'unexpected_migration_count':0,'production_schema_provisioning_authorized':False
+            }
+          }
+          out=pathlib.Path(os.environ['RUNNER_TEMP'])/'s267-private'
+          (out/'inventory.json').write_text(json.dumps(inv))
+          inv['details']['observed_base_table_count']=1
+          (out/'nonempty.json').write_text(json.dumps(inv))
+          PY
+          php tools/production/cpanel/prepare-governed-production-schema-bootstrap-plan.php \
+            "$GITHUB_WORKSPACE/apps/web/database/migrations" "$RUNNER_TEMP/s267-private/inventory.json" "$RUNNER_TEMP/s267-private/plan.json"
+          jq -e '.state=="PRODUCTION_SCHEMA_BOOTSTRAP_PLAN_PREPARED_NOT_AUTHORIZED" and .migration_count==27 and .production_database_execution_authorized==false and .schema_provisioning_performed==false and .fresh_direct_db_preflight_required_before_any_future_execution==true' "$RUNNER_TEMP/s267-private/plan.json"
+          if php tools/production/cpanel/prepare-governed-production-schema-bootstrap-plan.php \
+            "$GITHUB_WORKSPACE/apps/web/database/migrations" "$RUNNER_TEMP/s267-private/nonempty.json" "$RUNNER_TEMP/s267-private/rejected.json"; then
+            echo 'Unsafe inventory accepted' >&2
+            exit 1
+          fi
+          test ! -f "$RUNNER_TEMP/s267-private/rejected.json"
+          echo 'SPRINT267_READ_ONLY_PLAN_FAIL_CLOSED=PASS'
+
+      - name: Install PHP extensions for disposable CI
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y php8.3-sqlite3 php8.3-mysql php8.3-mbstring php8.3-xml php8.3-curl unzip
+          php -m | grep -Ei 'pdo_sqlite|pdo_mysql'
+
+      - name: Install exact Laravel dependencies in isolated CI
+        working-directory: apps/web
+        run: composer install --no-interaction --prefer-dist --no-progress --no-scripts
+
+      - name: Execute 27 migrations on disposable SQLite only
+        env:
+          ONEQAY_SPRINT267_CI_DRIVER: sqlite
+        run: php tools/production/tests/sprint267-disposable-schema-bootstrap.php
+
+      - name: Execute 27 migrations on disposable isolated MySQL only
+        env:
+          ONEQAY_SPRINT267_CI_DRIVER: mysql
+        run: php tools/production/tests/sprint267-disposable-schema-bootstrap.php
+
+      - name: Preserve fail-closed canonical state
+        run: |
+          jq -e '.migration27.state=="EXECUTED" and .permission_provisioning.default_grant=="NONE" and .feature_activation.state=="ACTIVE" and .deployment_authority=="NOT_GRANTED" and .technical_preview_activation=="NOT_AUTHORIZED" and .production_activation=="NOT_AUTHORIZED" and .updater_activation=="INACTIVE"' ops/final-shift-close/STATE.json
+          echo 'SPRINT267_PRODUCTION_DATABASE_EXECUTION=NOT_PERFORMED'
+          echo 'SPRINT267_STAGING_MUTATION=NOT_PERFORMED'
