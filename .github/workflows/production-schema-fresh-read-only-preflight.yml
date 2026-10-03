@@ -1,0 +1,185 @@
+name: Production Schema Fresh Read-Only Preflight
+
+# Author by Lab | zefry
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - .github/workflows/production-schema-fresh-read-only-preflight.yml
+      - tools/production/cpanel/inspect-governed-production-schema-bootstrap-target.php
+      - tools/production/cpanel/governed-production-schema-bootstrap-foundation.php
+      - ops/final-shift-close/PRODUCTION_SCHEMA_BOOTSTRAP_SOURCE_LOCK.json
+      - docs/PRODUCTION_SCHEMA_FRESH_READ_ONLY_PREFLIGHT.md
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/production-schema-fresh-read-only-preflight.yml
+      - tools/production/cpanel/inspect-governed-production-schema-bootstrap-target.php
+      - tools/production/cpanel/governed-production-schema-bootstrap-foundation.php
+      - ops/final-shift-close/PRODUCTION_SCHEMA_BOOTSTRAP_SOURCE_LOCK.json
+      - docs/PRODUCTION_SCHEMA_FRESH_READ_ONLY_PREFLIGHT.md
+
+permissions:
+  contents: read
+
+jobs:
+  qualify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: disposable-preflight-root
+          MYSQL_DATABASE: oneqay_production_preflight_ci
+          MYSQL_USER: oneqay_preflight_ci
+          MYSQL_PASSWORD: disposable-preflight-ci-only
+        ports: [3306:3306]
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -pdisposable-preflight-root"
+          --health-interval=10s --health-timeout=5s --health-retries=10
+    steps:
+      - name: Checkout exact code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+
+      - name: Set up PHP CLI with MySQL
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        with:
+          php-version: '8.3'
+          extensions: pdo_mysql
+          coverage: none
+
+      - name: Validate read-only source boundaries
+        run: |
+          set -euo pipefail
+          php -l tools/production/cpanel/inspect-governed-production-schema-bootstrap-target.php
+          php -l tools/production/cpanel/governed-production-schema-bootstrap-foundation.php
+          jq -e '.migration_count==27 and (.migrations|length)==27 and .application_source_commit=="505518f79e8a70f789b94f5074a040eae785aeb0" and .authority.production_database_execution_authorized==false' ops/final-shift-close/PRODUCTION_SCHEMA_BOOTSTRAP_SOURCE_LOCK.json
+          git diff --quiet 505518f79e8a70f789b94f5074a040eae785aeb0 HEAD -- apps/web/database/migrations
+
+      - name: Verify disposable MySQL direct inventory and plan
+        env:
+          CI: 'true'
+          GITHUB_ACTIONS: 'true'
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/oneqay-schema-preflight"
+          public="$RUNNER_TEMP/oneqay-preflight-public"
+          mkdir -p "$root" "$public"
+          ROOT="$root" PUBLIC="$public" python3 - <<'PY'
+          import json, os, pathlib
+          root=pathlib.Path(os.environ['ROOT'])
+          target={
+            'schema_version':1,'product':'oneQay',
+            'environment_id':'oneqay-production-01','runtime_class':'production',
+            'expected_database_name':'oneqay_production_preflight_ci',
+            'private_operator_root':str(root),
+            'public_document_root':os.environ['PUBLIC'],
+            'migration_source_commit':'505518f79e8a70f789b94f5074a040eae785aeb0',
+            'schema_provisioning_authorized':False,
+            'production_deployment_authorized':False,
+            'production_traffic_authorized':False,
+            'attribution':'Lab | zefry'
+          }
+          credentials={
+            'host':'127.0.0.1','port':3306,
+            'database':'oneqay_production_preflight_ci',
+            'username':'oneqay_preflight_ci',
+            'password':'disposable-preflight-ci-only'
+          }
+          (root/'target.json').write_text(json.dumps(target))
+          (root/'credentials.json').write_text(json.dumps(credentials))
+          (root/'credentials.json').chmod(0o600)
+          PY
+          php tools/production/cpanel/inspect-governed-production-schema-bootstrap-target.php \
+            "$GITHUB_WORKSPACE/apps/web/database/migrations" \
+            "$root/target.json" "$root/credentials.json" "$root/inventory.json" "$root/plan.json"
+          jq -e '.state=="READ_ONLY_INVENTORY_COMPLETE" and .database_inventory_only==true and .database_mutation_performed==false and .observed_object_counts.objects==0 and .details.observed_base_table_count==0 and (.database_binding_sha256|length)==64' "$root/inventory.json"
+          jq -e '.state=="PRODUCTION_SCHEMA_BOOTSTRAP_PLAN_PREPARED_NOT_AUTHORIZED" and .production_database_execution_authorized==false and .migration_count==27' "$root/plan.json"
+          test "$(stat -c '%a' "$root/inventory.json")" = 600
+          test "$(stat -c '%a' "$root/plan.json")" = 600
+          echo 'SCHEMA_PREFLIGHT_DISPOSABLE_MYSQL_READ_ONLY=PASS'
+
+          # Make the disposable CI schema nonempty, then prove the Production
+          # inspector refuses it and never writes a successful plan.
+          php -r '$d=new PDO("mysql:host=127.0.0.1;port=3306;dbname=oneqay_production_preflight_ci","oneqay_preflight_ci","disposable-preflight-ci-only");$d->exec("CREATE TABLE preflight_reject_ci (id BIGINT PRIMARY KEY)");'
+          if php tools/production/cpanel/inspect-governed-production-schema-bootstrap-target.php \
+            "$GITHUB_WORKSPACE/apps/web/database/migrations" \
+            "$root/target.json" "$root/credentials.json" "$root/rejected-inventory.json" "$root/rejected-plan.json"; then
+            echo 'Nonempty schema was incorrectly accepted.' >&2
+            exit 1
+          fi
+          test ! -e "$root/rejected-inventory.json"
+          test ! -e "$root/rejected-plan.json"
+          chmod 0644 "$root/credentials.json"
+          if php tools/production/cpanel/inspect-governed-production-schema-bootstrap-target.php \
+            "$GITHUB_WORKSPACE/apps/web/database/migrations" \
+            "$root/target.json" "$root/credentials.json" "$root/bad-permissions-inventory.json" "$root/bad-permissions-plan.json"; then
+            echo 'Weak private credentials permission was accepted.' >&2
+            exit 1
+          fi
+          test ! -e "$root/bad-permissions-plan.json"
+          echo 'SCHEMA_PREFLIGHT_NONEMPTY_AND_PERMISSION_REJECTION=PASS'
+
+      - name: Package secret-free private cPanel inventory kit
+        if: success()
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import datetime, json, os, pathlib, shutil, zipfile
+          repo=pathlib.Path(os.environ['GITHUB_WORKSPACE'])
+          sha=os.environ['GITHUB_SHA']
+          kit='oneqay-production-schema-preflight-'+sha[:12]
+          root=repo/'dist'/kit
+          base=[
+            '.github/workflows/production-schema-fresh-read-only-preflight.yml',
+            'docs/PRODUCTION_SCHEMA_FRESH_READ_ONLY_PREFLIGHT.md',
+            'ops/final-shift-close/PRODUCTION_SCHEMA_BOOTSTRAP_SOURCE_LOCK.json',
+            'tools/production/cpanel/governed-production-schema-bootstrap-foundation.php',
+            'tools/production/cpanel/inspect-governed-production-schema-bootstrap-target.php'
+          ]
+          migrations=sorted((repo/'apps/web/database/migrations').glob('*.php'))
+          if len(migrations)!=27: raise SystemExit('migration_count_invalid')
+          for item in base + [p.relative_to(repo).as_posix() for p in migrations]:
+              path=root/item
+              path.parent.mkdir(parents=True,exist_ok=True)
+              shutil.copyfile(repo/item,path)
+          templates=root/'templates'
+          templates.mkdir(parents=True,exist_ok=True)
+          target={
+            'schema_version':1,'product':'oneQay',
+            'environment_id':'oneqay-production-01','runtime_class':'production',
+            'expected_database_name':'REPLACE_REAL_PRODUCTION_DATABASE_NAME',
+            'private_operator_root':'/REPLACE_REAL_PRIVATE_OPERATOR_ROOT',
+            'public_document_root':'/REPLACE_REAL_PUBLIC_DOCUMENT_ROOT',
+            'migration_source_commit':'505518f79e8a70f789b94f5074a040eae785aeb0',
+            'schema_provisioning_authorized':False,
+            'production_deployment_authorized':False,'production_traffic_authorized':False,
+            'attribution':'Lab | zefry'
+          }
+          creds={
+            'host':'REPLACE_REAL_DATABASE_HOST','port':3306,
+            'database':'REPLACE_REAL_PRODUCTION_DATABASE_NAME',
+            'username':'REPLACE_PRIVATE_READ_ONLY_DATABASE_USER',
+            'password':'REPLACE_PRIVATE_PASSWORD'
+          }
+          (templates/'target-input.template.json').write_text(json.dumps(target,indent=2)+'\n')
+          (templates/'private-db-credentials.template.json').write_text(json.dumps(creds,indent=2)+'\n')
+          out=repo/'dist'/(kit+'.zip')
+          with zipfile.ZipFile(out,'w',compression=zipfile.ZIP_DEFLATED) as archive:
+              for p in sorted(root.rglob('*')):
+                  if p.is_file(): archive.write(p,p.relative_to(repo/'dist').as_posix())
+          print('PREFLIGHT_KIT='+out.name)
+          print('MIGRATIONS_IN_KIT='+str(len(migrations)))
+          PY
+          sha256sum dist/oneqay-production-schema-preflight-*.zip
+
+      - name: Publish cPanel kit (no database credentials)
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: oneqay-production-schema-preflight-kit
+          path: dist/*.zip
+          retention-days: 30
+          if-no-files-found: error
