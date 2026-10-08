@@ -123,9 +123,17 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          files=(README.md PROJECT_MANIFEST.md ROADMAP.md TASKS.md docs/SPRINT265_PRODUCTION_READINESS_RECONCILIATION_HANDOFF.md)
-          for file in "${files[@]}"; do
+          # Verify the up-to-date operational checkpoint without rewriting immutable historical snapshots.
+          current_files=(PROJECT_MANIFEST.md ROADMAP.md docs/operations/PRODUCTION_GO_LIVE_HANDOFF_2026-10-08.md)
+          for file in "${current_files[@]}"; do
             grep -Fq 'a5e833bce4baa22c21a144c558a0ca123f1d0b1e' "$file"
+            grep -Fq 'Production' "$file"
+            grep -Fq 'NOT_AUTHORIZED' "$file"
+          done
+          # Sprint265 historical material must remain intact and explicitly NO-GO.
+          historical_files=(README.md TASKS.md docs/SPRINT265_PRODUCTION_READINESS_RECONCILIATION_HANDOFF.md)
+          for file in "${historical_files[@]}"; do
+            grep -Fq '505518f79e8a70f789b94f5074a040eae785aeb0' "$file"
             grep -Fq 'Production' "$file"
             grep -Fq 'NOT_AUTHORIZED' "$file"
           done
