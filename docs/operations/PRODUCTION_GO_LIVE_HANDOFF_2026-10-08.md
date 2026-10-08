@@ -7,6 +7,12 @@
 > Intended customer-facing primary business domain: https://oneqay.n07.my.id (temporary brand domain until Product Owner substitutes a different owned domain). This is the REQUIRED final-domain objective, NOT evidence that business traffic is currently authorized.
 > Live service status as last verified: qualified durable staging, NOT verified real-money Production.
 
+## I. 2026-10-08 continuation — governed fixed-public operator-kit engineering
+
+Scope in engineering branch `production-fixed-public-kit-and-source-lineage-20261008` (NOT Production execution): bundle the existing fixed-public cPanel/no-SSH Production successor PHP tools plus the bridge helper and source contract into the deterministic Production operator ZIP; include a non-secret fixed-public target template and explicit ZIP-path verification. On a manual workflow dispatch, bind the new tooling/kit commit to the **unchanged verified selected staging application source** and the corresponding Production RC, with explicit ancestry and artifact-source tests. The kit SHA and application source SHA are distinct provenance roles, never silently conflated.
+
+The last verified deployed application remains `a5e833bce4baa22c21a144c558a0ca123f1d0b1e`. This engineering change does not redeploy staging, publish a completed operator ZIP until CI runs, prove business transactions ready, approve Production authority, or switch traffic. NEVER target `/home/pekd7254/public_html/oneqay.n07.my.id` with fixed-public Production dark deployment while staging occupies it. A real isolated target, private Production DB/runtime binding, SSL health, short-lived exact deployment authority and separate live-business activation are still required. POS/login routes remain Local/Test/CI-gated in the current application source, so GO-LIVE remains NO-GO.
+
 ## A. Recovery is finished — immutable source and canonical trust chain
 
 - Exact application source serving qualified staging: a5e833bce4baa22c21a144c558a0ca123f1d0b1e.

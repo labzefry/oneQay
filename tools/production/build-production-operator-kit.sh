@@ -34,6 +34,14 @@ required_files=(
   "tools/prepare-production-deployment-plan.php"
   "tools/execute-production-dark-deployment.php"
   "tools/qualify-production-deployment-evidence.php"
+  "ops/final-shift-close/PRODUCTION_FIXED_PUBLIC_CPANEL_NO_SSH_SUCCESSOR_CONTRACT.json"
+  "tools/cpanel/fixed-public-document-root-bridge.php"
+  "tools/production/cpanel/inspect-production-fixed-public-cpanel-no-ssh-target.php"
+  "tools/production/cpanel/prepare-production-fixed-public-cpanel-no-ssh-target-candidate.php"
+  "tools/production/cpanel/prepare-production-fixed-public-deployment-authority-request.php"
+  "tools/production/cpanel/prepare-production-fixed-public-deployment-plan.php"
+  "tools/production/cpanel/execute-production-fixed-public-cpanel-no-ssh-dark-deployment.php"
+  "tools/production/cpanel/qualify-production-fixed-public-deployment-evidence.php"
 )
 
 for file in "${required_files[@]}"; do
@@ -88,6 +96,8 @@ cat > "$stage_root/KIT.json" <<JSON
   "kit_state": "PRODUCTION_DARK_DEPLOYMENT_OPERATOR_KIT_NOT_DEPLOYED_NOT_ACTIVATED",
   "kit_id": "$kit_id",
   "kit_source_commit": "$source_sha",
+  "supported_presentation_modes": ["ACTIVE_RELEASE_PUBLIC", "FIXED_PUBLIC_BRIDGE"],
+  "fixed_public_deployment_authority": "NOT_GRANTED",
   "production_release_reference": {
     "publication_run_id": $release_run_id,
     "actions_artifact_id": $release_artifact_id,
@@ -157,6 +167,46 @@ cat > "$stage_root/target-input.template.json" <<JSON
 }
 JSON
 
+cat > "$stage_root/target-fixed-public.template.json" <<JSON
+{
+  "schema_version": 1,
+  "target_class": "CPANEL_NO_SSH",
+  "execution_channel": "CPANEL_CRON_PHP_CLI_NO_SSH",
+  "environment_id": "<real-isolated-production-environment-id>",
+  "runtime_class": "production",
+  "production": true,
+  "production_data_allowed": true,
+  "isolated_environment": true,
+  "release_binding": {
+    "release_id": "$release_id",
+    "source_commit": "$release_source",
+    "artifact_sha256": "$release_sha"
+  },
+  "filesystem": {
+    "deployment_root": "<absolute-private-production-deployment-root>",
+    "release_root": "<absolute-private-production-release-root>",
+    "shared_runtime_root": "<absolute-private-production-shared-runtime-root>",
+    "active_release_pointer": "<absolute-private-production-active-pointer>",
+    "document_root_mode": "FIXED_PUBLIC_BRIDGE",
+    "document_root": "<verified-isolated-production-public-document-root-NOT-existing-staging>"
+  },
+  "health": {"url": "https://<verified-production-health-host>/health/live", "path": "/health/live"},
+  "operator_assertions": {
+    "durable_database_persistence": true,
+    "durable_session": true,
+    "authorization": true,
+    "transaction_durability": true,
+    "pos_durability": true,
+    "authenticated_configuration_channel": true,
+    "read_before_write": true,
+    "read_after_write": true,
+    "non_mutating_health_attestation": true,
+    "verified_rollback": true
+  },
+  "attribution": "Lab | zefry"
+}
+JSON
+
 cat > "$stage_root/private-bindings.template.json" <<JSON
 {
   "ONEQAY_PRODUCTION_ATTESTATION_TOKEN": "<private-production-attestation-token>",
@@ -190,6 +240,15 @@ Execution order:
 5. Build exact plan with tools/prepare-production-deployment-plan.php.
 6. Execute dark deployment with tools/execute-production-dark-deployment.php.
 7. Qualify evidence with tools/qualify-production-deployment-evidence.php.
+
+FIXED_PUBLIC_BRIDGE mode (cPanel with fixed document root / no SSH):
+- Use target-fixed-public.template.json; do not use the generic target template for this mode.
+- Only an independently observed ISOLATED Production public root is eligible. NEVER use the staging root currently serving oneqay.n07.my.id.
+- Follow the seven tools under tools/production/cpanel/: inspect target -> prepare candidate -> prepare authority request -> qualify separately issued authority using tools/qualify-production-deployment-authority.php -> prepare plan -> execute dark deployment -> qualify evidence.
+- tools/cpanel/fixed-public-document-root-bridge.php and the fixed-public successor contract are bundled.
+- Only proceed with verified real Production bindings, exact-source staging evidence, separately granted short-lived Production deployment authority, HTTPS /health/live, and rollback capability.
+- 'Dark deployment' can still replace index.php and build/ in the specified public root. Never point it at an occupied staging public root.
+- Kit publication does not grant permission to mutate the host or enable business transactions/traffic.
 
 Dark-deployment executor arguments:
   production-deployment-plan.json
