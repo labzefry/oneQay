@@ -1,5 +1,13 @@
 # oneQay Roadmap
 
+## NEXT ACTIVE PRODUCTION GO-LIVE HORIZON — 2026-10-08
+
+Current qualified staging release: a5e833bce4ba (Final Shift Close ACTIVE). The new trusted selected-target chain completed as PR #930, merged at 5224fdb74a31b590ec34f50f83d6ef78073f7678. No staging redeploy or migration replay is required. Same-source Production RC and generic operator kit published, but Production host qualification, exact authority, dark deployment, Production business runtime gates, traffic cutover and real transaction readiness are **NOT COMPLETED**. The intended public business domain is oneqay.n07.my.id, presently occupied by staging; preserve it until an explicitly qualified safe transition. Prior dates/releases below remain historical.
+
+**NEXT-CHAT START HERE:** [Verified Production go-live and recovery handoff (2026-10-08)](docs/operations/PRODUCTION_GO_LIVE_HANDOFF_2026-10-08.md). Priority: validate isolated Production target + live business transaction gates, then use governed fixed-public cPanel no-SSH kit, dark deployment, activation authority, transactional smoke tests and controlled domain cutover. Keep minimum essential steps; avoid duplicate reviews and source drift.
+
+---
+
 **Canonical main:** `8d343fd90b00390e73169c9def4d13e1cc24f2fe`
 
 ## Completed operational horizon
