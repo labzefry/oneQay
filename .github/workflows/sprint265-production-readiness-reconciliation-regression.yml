@@ -1,6 +1,7 @@
 name: Sprint265 Production Readiness Reconciliation Regression
 
 # Attribution: Lab | zefry
+# Post-PR930 exact selected-target generation compatibility: evidence remains SHA-bound.
 
 on:
   pull_request:
@@ -84,13 +85,13 @@ jobs:
           test "$(jq -r '.selection_state' "$file")" = SELECTED_NOT_AUTHORIZED
           test "$(jq -r '.selected_target.environment_id' "$file")" = oneqay-durable-staging-01
           test "$(jq -r '.selected_target.runtime_class' "$file")" = durable-staging
-          test "$(jq -r '.selected_target.exact_running_source_commit' "$file")" = 505518f79e8a70f789b94f5074a040eae785aeb0
-          test "$(jq -r '.selected_target.exact_running_artifact_sha256' "$file")" = 5b3030d5154e3b0938a944c5b6b0d33218078f37d8f066a4e9cc4067ff285451
-          test "$(jq -r '.selected_target.readiness_attestation_sha256' "$file")" = 069a27b16ff81082bd3d746fe678dc966b8f2a61bb95c35f5ab4c0168f7d347e
-          test "$(jq -r '.selected_target.selection_fingerprint_sha256' "$file")" = bdce15c5053446119979efe6b9f72572857c06a0caa11d649b8ec54d7239a411
-          test "$(jq -r '.selected_target.trusted_ingestion.run_id' "$file")" = 36413265200
+          test "$(jq -r '.selected_target.exact_running_source_commit' "$file")" = a5e833bce4baa22c21a144c558a0ca123f1d0b1e
+          test "$(jq -r '.selected_target.exact_running_artifact_sha256' "$file")" = 95e8157abaf365b2987943a820c01000dd152a3c9026271099014585cc22c587
+          test "$(jq -r '.selected_target.readiness_attestation_sha256' "$file")" = 7abd690f202269d6bc21d31f08ea21be815be940b7fca957b6e927832decfd68
+          test "$(jq -r '.selected_target.selection_fingerprint_sha256' "$file")" = 95b0c344b5e7b4f1ffe911239bd67410324f4b53e9283fec2d56e8a67229bcb4
+          test "$(jq -r '.selected_target.trusted_ingestion.run_id' "$file")" = 37773352841
           test "$(jq -r '.selected_target.trusted_ingestion.run_attempt' "$file")" = 1
-          test "$(jq -r '.selected_target.trusted_ingestion.ingestion_fingerprint_sha256' "$file")" = f9c9e205a7670ba4e69cdf6f82c32a17589c79880e048d9452213fd5cdafbd04
+          test "$(jq -r '.selected_target.trusted_ingestion.ingestion_fingerprint_sha256' "$file")" = 3863c8b2c9e90386f0ad8a02982300e3966db6bcbe2cb6d079dd9aab4978f5ab
 
       - name: Preserve canonical operational boundaries
         shell: bash
@@ -124,7 +125,7 @@ jobs:
           set -euo pipefail
           files=(README.md PROJECT_MANIFEST.md ROADMAP.md TASKS.md docs/SPRINT265_PRODUCTION_READINESS_RECONCILIATION_HANDOFF.md)
           for file in "${files[@]}"; do
-            grep -Fq '505518f79e8a70f789b94f5074a040eae785aeb0' "$file"
+            grep -Fq 'a5e833bce4baa22c21a144c558a0ca123f1d0b1e' "$file"
             grep -Fq 'Production' "$file"
             grep -Fq 'NOT_AUTHORIZED' "$file"
           done
