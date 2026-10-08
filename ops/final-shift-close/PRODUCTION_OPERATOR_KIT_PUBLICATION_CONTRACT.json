@@ -80,7 +80,11 @@
     "non_secret_private_bindings_template": true,
     "operator_readme": true,
     "kit_manifest": true,
-    "sha256_sidecar": true
+    "sha256_sidecar": true,
+    "fixed_public_cpanel_no_ssh_successor_contract": true,
+    "fixed_public_bridge_helper": true,
+    "fixed_public_operator_tools": true,
+    "fixed_public_non_secret_target_template": true
   },
   "operator_requirements": {
     "exact_production_release_identity_required": true,
@@ -93,6 +97,9 @@
     "business_readiness_endpoint_not_used_for_dark_deploy": "/health/ready",
     "rollback_rehearsal_required": true,
     "candidate_restored_after_rehearsal": true,
-    "production_traffic_activation_separate": true
+    "production_traffic_activation_separate": true,
+    "existing_staging_public_root_must_not_be_targeted": true,
+    "kit_source_may_differ_from_selected_staging_application_source": true,
+    "source_difference_requires_verified_ancestor_and_exact_release_refs": true
   }
 }
