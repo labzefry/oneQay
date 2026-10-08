@@ -1,5 +1,13 @@
 # oneQay Project Manifest
 
+## CURRENT OPERATIONAL CHECKPOINT — 2026-10-08 (supersedes historical values below)
+
+Canonical evidence baseline: post-selected-target PR #930 squash at 5224fdb74a31b590ec34f50f83d6ef78073f7678. Newly qualified deployed durable staging: source a5e833bce4baa22c21a144c558a0ca123f1d0b1e; environment oneqay-durable-staging-01; Final Shift Close ACTIVE. Reattestation run 37773074943 SUCCESS, trusted ingestion 37773352841 SUCCESS, generation run 37774113768 SUCCESS, PR #930 MERGED. Selected-target state SELECTED_NOT_AUTHORIZED; Production deployment/business traffic NOT_AUTHORIZED. Published same-source Production RC run 37761181710/artifact 11542731123 and generic operator kit run 37761262551/artifact 11542027944 remain dark artifacts, NOT host deployment. Customer-facing business go-live target: oneqay.n07.my.id, currently serving staging. **Do not deploy Production to its occupied public root without a qualified cutover/rollback plan or assume dark-deployment equals real POS readiness.**
+
+**Read the current dated authoritative handoff FIRST:** [Production go-live handoff (2026-10-08)](docs/operations/PRODUCTION_GO_LIVE_HANDOFF_2026-10-08.md). The historical snapshot below is retained as past evidence, not current runtime state.
+
+---
+
 **Product:** oneQay — The Future of Intelligent Business Management
 **Repository / Product Owner attribution:** Lab | zefry
 
