@@ -5,14 +5,14 @@
   "selected_target": {
     "environment_id": "oneqay-durable-staging-01",
     "runtime_class": "durable-staging",
-    "exact_running_source_commit": "64f4fcbe63f0ed67ad1e5f816ab286e3b3007846",
-    "exact_running_artifact_sha256": "537a73bb8cdc6ccfead9eb368bc1b40e3dbcab3d88ce3af7b7589aa9e74b27fc",
-    "readiness_attestation_sha256": "3456e81db95d306eec335909f6a25c5ac335b96193ae9d712a4c6822af6dccbf",
-    "selection_fingerprint_sha256": "5561822d15d2453a4856f9728825988cc7d9ae7b3564e7b3956118dcbb9fea07",
+    "exact_running_source_commit": "a5e833bce4baa22c21a144c558a0ca123f1d0b1e",
+    "exact_running_artifact_sha256": "95e8157abaf365b2987943a820c01000dd152a3c9026271099014585cc22c587",
+    "readiness_attestation_sha256": "7abd690f202269d6bc21d31f08ea21be815be940b7fca957b6e927832decfd68",
+    "selection_fingerprint_sha256": "95b0c344b5e7b4f1ffe911239bd67410324f4b53e9283fec2d56e8a67229bcb4",
     "trusted_ingestion": {
-      "run_id": 37756593526,
+      "run_id": 37773352841,
       "run_attempt": 1,
-      "ingestion_fingerprint_sha256": "4a6e18aea3e5c64ce9640e0d4404b91db14a180e9ecb7c4d43a8fe4680204c66"
+      "ingestion_fingerprint_sha256": "3863c8b2c9e90386f0ad8a02982300e3966db6bcbe2cb6d079dd9aab4978f5ab"
     }
   },
   "required_runtime_model": "NON_SYNTHETIC_DURABLE_RUNTIME",
