@@ -1,0 +1,48 @@
+name: One-time NPM Advisory Lock Regeneration
+
+on:
+  push:
+    branches:
+      - remediate-npm-high-advisories-20261008
+    paths:
+      - .github/workflows/oneqay-temporary-lock-regeneration-20261008.yml
+
+permissions:
+  contents: read
+
+jobs:
+  regenerate-and-verify:
+    if: github.ref == 'refs/heads/remediate-npm-high-advisories-20261008'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@v4
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Regenerate locked dependencies without npm scripts
+        working-directory: apps/web
+        run: |
+          set -euo pipefail
+          npm install vue@3.5.43 --save-exact --package-lock-only --ignore-scripts --no-fund
+          npm audit fix --package-lock-only --ignore-scripts --no-fund
+          npm ci --ignore-scripts --no-fund
+          npm audit --audit-level=high
+          npm ls vue @vue/server-renderer source-map-js
+      - name: Test application frontend
+        working-directory: apps/web
+        run: |
+          npm run type-check
+          npm run build
+      - name: Upload generated package manifest and lock
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: oneqay-npm-audit-lock-20261008
+          path: |
+            apps/web/package.json
+            apps/web/package-lock.json
+          if-no-files-found: error
+          retention-days: 2
