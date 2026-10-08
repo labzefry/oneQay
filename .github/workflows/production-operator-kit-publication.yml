@@ -27,6 +27,7 @@ jobs:
     timeout-minutes: 30
     env:
       SOURCE_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+      RELEASE_SOURCE_SHA: ${{ github.event.workflow_run.head_sha || '' }}
       STAGING_RUN_ID: ${{ github.event.workflow_run.id || '' }}
       REPOSITORY: ${{ github.repository }}
       API_URL: ${{ github.api_url }}
@@ -76,6 +77,17 @@ jobs:
           test "$(jq -r '.selection_state' "$selection")" = SELECTED_NOT_AUTHORIZED
           test "$(jq -r '.selected_target.environment_id' "$selection")" = oneqay-durable-staging-01
           test "$(jq -r '.selected_target.runtime_class' "$selection")" = durable-staging
+          # Manual dispatch ships updated tooling against the unchanged selected
+          # staging application source. No application-source relabeling.
+          if [[ -z "$RELEASE_SOURCE_SHA" ]]; then
+            RELEASE_SOURCE_SHA="$(jq -r '.selected_target.exact_running_source_commit' "$selection")"
+            echo "RELEASE_SOURCE_SHA=$RELEASE_SOURCE_SHA" >> "$GITHUB_ENV"
+          fi
+          [[ "$RELEASE_SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          git merge-base --is-ancestor "$RELEASE_SOURCE_SHA" "$SOURCE_SHA"
+          if [[ "${{ github.event_name }}" == workflow_dispatch ]]; then
+            test "$RELEASE_SOURCE_SHA" = "$(jq -r '.selected_target.exact_running_source_commit' "$selection")"
+          fi
 
           test "$(jq -r '.contract_state' "$contract")" = PUBLISHES_SECRET_FREE_PRODUCTION_DARK_DEPLOYMENT_OPERATOR_KIT_NOT_DEPLOYED_NOT_ACTIVATED
           test "$(jq -r '.authority_boundary.kit_is_not_deployment_authority' "$contract")" = true
@@ -94,6 +106,9 @@ jobs:
           php -l tools/qualify-production-deployment-authority.php
           php -l tools/prepare-production-deployment-plan.php
           php -l tools/qualify-production-deployment-evidence.php
+          for file in tools/production/cpanel/*.php tools/cpanel/fixed-public-document-root-bridge.php; do
+            php -l "$file"
+          done
 
       - name: Resolve exact-source durable-staging prerequisite
         id: staging
@@ -111,19 +126,19 @@ jobs:
 
           run_id="$STAGING_RUN_ID"
           if [[ -z "$run_id" ]]; then
-            runs="$(api "$API_URL/repos/$REPOSITORY/actions/runs?head_sha=$SOURCE_SHA&per_page=100")"
-            run_id="$(jq -r --arg source "$SOURCE_SHA" '[.workflow_runs[] | select(.path == ".github/workflows/durable-staging-release-publication.yml" and .head_sha == $source and .head_branch == "main" and .status == "completed" and .conclusion == "success" and .event != "pull_request")][0].id // empty' <<<"$runs")"
+            runs="$(api "$API_URL/repos/$REPOSITORY/actions/runs?head_sha=$RELEASE_SOURCE_SHA&per_page=100")"
+            run_id="$(jq -r --arg source "$RELEASE_SOURCE_SHA" '[.workflow_runs[] | select(.path == ".github/workflows/durable-staging-release-publication.yml" and .head_sha == $source and .head_branch == "main" and .status == "completed" and .conclusion == "success" and .event != "pull_request")][0].id // empty' <<<"$runs")"
           fi
           [[ "$run_id" =~ ^[1-9][0-9]*$ ]]
 
           run="$(api "$API_URL/repos/$REPOSITORY/actions/runs/$run_id")"
           test "$(jq -r '.path' <<<"$run")" = .github/workflows/durable-staging-release-publication.yml
           test "$(jq -r '.head_branch' <<<"$run")" = main
-          test "$(jq -r '.head_sha' <<<"$run")" = "$SOURCE_SHA"
+          test "$(jq -r '.head_sha' <<<"$run")" = "$RELEASE_SOURCE_SHA"
           test "$(jq -r '.status' <<<"$run")" = completed
           test "$(jq -r '.conclusion' <<<"$run")" = success
 
-          release_id="durable-staging-${SOURCE_SHA:0:12}"
+          release_id="durable-staging-${RELEASE_SOURCE_SHA:0:12}"
           expected_name="oneqay-${release_id}-operator-bundle"
           artifacts="$(api "$API_URL/repos/$REPOSITORY/actions/runs/$run_id/artifacts?per_page=100")"
           matches="$(jq --arg name "$expected_name" '[.artifacts[] | select(.name == $name and .expired == false)]' <<<"$artifacts")"
@@ -151,10 +166,10 @@ jobs:
           for file in "$archive" "$manifest" "$checksum" "$handoff"; do test -f "$file"; done
           php tools/validate-durable-staging-release-manifest.php "$manifest" "$archive"
           (cd /tmp/production-kit-staging && sha256sum -c "$(basename "$checksum")")
-          test "$(jq -r '.source.commit_sha' "$manifest")" = "$SOURCE_SHA"
+          test "$(jq -r '.source.commit_sha' "$manifest")" = "$RELEASE_SOURCE_SHA"
           test "$(jq -r '.runtime.required_runtime_class' "$manifest")" = durable-staging
           test "$(jq -r '.handoff_state' "$handoff")" = VALIDATED_FOR_EXTERNAL_DEPLOYMENT_NOT_AUTHORIZED
-          test "$(jq -r '.artifact.source_commit' "$handoff")" = "$SOURCE_SHA"
+          test "$(jq -r '.artifact.source_commit' "$handoff")" = "$RELEASE_SOURCE_SHA"
           test "$(jq -r '.deployment.authority_state' "$handoff")" = NOT_GRANTED
           artifact_sha="$(jq -r '.artifact.sha256' "$manifest")"
           [[ "$artifact_sha" =~ ^[0-9a-f]{64}$ ]]
@@ -181,8 +196,8 @@ jobs:
 
           run_id=''
           for attempt in $(seq 1 60); do
-            runs="$(api "$API_URL/repos/$REPOSITORY/actions/runs?head_sha=$SOURCE_SHA&per_page=100")"
-            candidate="$(jq -c --arg source "$SOURCE_SHA" '[.workflow_runs[] | select(.path == ".github/workflows/production-release-candidate-publication.yml" and .head_sha == $source and .head_branch == "main" and .event != "pull_request")][0] // {}' <<<"$runs")"
+            runs="$(api "$API_URL/repos/$REPOSITORY/actions/runs?head_sha=$RELEASE_SOURCE_SHA&per_page=100")"
+            candidate="$(jq -c --arg source "$RELEASE_SOURCE_SHA" '[.workflow_runs[] | select(.path == ".github/workflows/production-release-candidate-publication.yml" and .head_sha == $source and .head_branch == "main" and .event != "pull_request")][0] // {}' <<<"$runs")"
             candidate_id="$(jq -r '.id // empty' <<<"$candidate")"
             status="$(jq -r '.status // empty' <<<"$candidate")"
             conclusion="$(jq -r '.conclusion // empty' <<<"$candidate")"
@@ -203,10 +218,10 @@ jobs:
 
           run="$(api "$API_URL/repos/$REPOSITORY/actions/runs/$run_id")"
           test "$(jq -r '.path' <<<"$run")" = .github/workflows/production-release-candidate-publication.yml
-          test "$(jq -r '.head_sha' <<<"$run")" = "$SOURCE_SHA"
+          test "$(jq -r '.head_sha' <<<"$run")" = "$RELEASE_SOURCE_SHA"
           test "$(jq -r '.conclusion' <<<"$run")" = success
 
-          release_id="production-${SOURCE_SHA:0:12}"
+          release_id="production-${RELEASE_SOURCE_SHA:0:12}"
           expected_name="oneqay-${release_id}-operator-bundle"
           artifacts="$(api "$API_URL/repos/$REPOSITORY/actions/runs/$run_id/artifacts?per_page=100")"
           matches="$(jq --arg name "$expected_name" '[.artifacts[] | select(.name == $name and .expired == false)]' <<<"$artifacts")"
@@ -237,7 +252,7 @@ jobs:
           for file in "$archive" "$manifest" "$checksum"; do test -f "$file"; done
           (cd /tmp/production-kit-release && sha256sum -c "$(basename "$checksum")")
           test "$(jq -r '.release.id' "$manifest")" = "$release_id"
-          test "$(jq -r '.source.commit_sha' "$manifest")" = "$SOURCE_SHA"
+          test "$(jq -r '.source.commit_sha' "$manifest")" = "$RELEASE_SOURCE_SHA"
           test "$(jq -r '.release.channel' "$manifest")" = PRODUCTION_CANDIDATE
           test "$(jq -r '.release.production' "$manifest")" = true
           test "$(jq -r '.runtime.business_runtime_activation_ready' "$manifest")" = false
@@ -281,7 +296,7 @@ jobs:
             --arg production_outer_digest "${{ steps.production.outputs.outer_digest }}" \
             --arg production_expires_at "${{ steps.production.outputs.expires_at }}" \
             --arg production_release_id "${{ steps.production.outputs.release_id }}" \
-            --arg source "$SOURCE_SHA" \
+            --arg source "$RELEASE_SOURCE_SHA" \
             --arg production_filename "${{ steps.production.outputs.artifact_filename }}" \
             --argjson production_size "${{ steps.production.outputs.artifact_size }}" \
             --arg production_sha "${{ steps.production.outputs.artifact_sha }}" \
@@ -327,8 +342,8 @@ jobs:
             }' /tmp/production-operator-kit-contract-base.json > "$contract.tmp"
           mv "$contract.tmp" "$contract"
 
-          test "$(jq -r '.production_release_reference.source_commit' "$contract")" = "$SOURCE_SHA"
-          test "$(jq -r '.staging_prerequisite_reference.source_commit' "$contract")" = "$SOURCE_SHA"
+          test "$(jq -r '.production_release_reference.source_commit' "$contract")" = "$RELEASE_SOURCE_SHA"
+          test "$(jq -r '.staging_prerequisite_reference.source_commit' "$contract")" = "$RELEASE_SOURCE_SHA"
           test "$(jq -r '.runtime_successor_binding.feature_activation' "$contract")" = ACTIVE
           test "$(jq -r '.runtime_successor_binding.deployment_authority' "$contract")" = NOT_GRANTED
           test "$(jq -r '.authority_boundary.production_traffic_activation_allowed' "$contract")" = false
@@ -343,8 +358,8 @@ jobs:
           cp "dist/${kit_id}.zip" /tmp/production-kit-first.zip
           cp "dist/${kit_id}.manifest.json" /tmp/production-kit-first.manifest.json
           cp "dist/${kit_id}.zip.sha256" /tmp/production-kit-first.sha256
-          test "$(jq -r '.production_release_reference.source_commit' "dist/${kit_id}.manifest.json")" = "$SOURCE_SHA"
-          test "$(jq -r '.staging_prerequisite_reference.source_commit' "dist/${kit_id}.manifest.json")" = "$SOURCE_SHA"
+          test "$(jq -r '.production_release_reference.source_commit' "dist/${kit_id}.manifest.json")" = "$RELEASE_SOURCE_SHA"
+          test "$(jq -r '.staging_prerequisite_reference.source_commit' "dist/${kit_id}.manifest.json")" = "$RELEASE_SOURCE_SHA"
           test "$(jq -r '.production_release_reference.actions_artifact_id' "dist/${kit_id}.manifest.json")" = "${{ steps.production.outputs.artifact_id }}"
           test "$(jq -r '.staging_prerequisite_reference.actions_artifact_id' "dist/${kit_id}.manifest.json")" = "${{ steps.staging.outputs.artifact_id }}"
           echo "kit_id=$kit_id" >> "$GITHUB_OUTPUT"
@@ -360,6 +375,19 @@ jobs:
           diff -u /tmp/production-kit-first.manifest.json "dist/${kit_id}.manifest.json"
           diff -u /tmp/production-kit-first.sha256 "dist/${kit_id}.zip.sha256"
           unzip -l "dist/${kit_id}.zip" > /tmp/production-kit-list.txt
+          unzip -Z1 "dist/${kit_id}.zip" > /tmp/production-kit-paths.txt
+          for file in \
+            ops/final-shift-close/PRODUCTION_FIXED_PUBLIC_CPANEL_NO_SSH_SUCCESSOR_CONTRACT.json \
+            tools/cpanel/fixed-public-document-root-bridge.php \
+            tools/production/cpanel/inspect-production-fixed-public-cpanel-no-ssh-target.php \
+            tools/production/cpanel/prepare-production-fixed-public-cpanel-no-ssh-target-candidate.php \
+            tools/production/cpanel/prepare-production-fixed-public-deployment-authority-request.php \
+            tools/production/cpanel/prepare-production-fixed-public-deployment-plan.php \
+            tools/production/cpanel/execute-production-fixed-public-cpanel-no-ssh-dark-deployment.php \
+            tools/production/cpanel/qualify-production-fixed-public-deployment-evidence.php \
+            target-fixed-public.template.json; do
+            grep -Fx "${kit_id}/${file}" /tmp/production-kit-paths.txt
+          done
           ! grep -Fq '/apps/web/' /tmp/production-kit-list.txt
           ! grep -E '(^|/)(\.env|id_rsa|id_ed25519)(/|$)|\.(pem|key|p12|pfx)$' /tmp/production-kit-list.txt
           test "$(jq -r '.secret_values_embedded' "dist/${kit_id}.manifest.json")" = false
