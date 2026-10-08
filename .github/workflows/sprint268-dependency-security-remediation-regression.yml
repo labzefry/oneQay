@@ -58,13 +58,18 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           fetch-depth: 0
-      - name: Verify twenty-path bounded security and compatibility envelope
+      - name: Verify historical or exact bounded npm-security successor paths
         if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_REF: ${{ github.head_ref }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           set -euo pipefail
           python3 - <<'PY'
+          import os
           import subprocess
-          expected = sorted([
+          historical_expected = sorted([
             'apps/web/composer.json',
             'apps/web/composer.lock',
             'apps/web/package.json',
@@ -86,11 +91,36 @@ jobs:
             '.github/workflows/sprint223-durable-runtime-ingestion-null-boundary-regression.yml',
             '.github/workflows/sprint30-privileged-totp-mfa-regression.yml',
           ])
-          actual = sorted(subprocess.check_output(
-            ['git','diff','--name-only','--diff-filter=ACMRT','c83d5131d7aaab19ddbd001223236aa424d2ea48','HEAD'],
-            text=True).splitlines())
-          assert actual==expected, f'Unsafe Sprint268 path envelope: {actual}'
-          print('SPRINT268_TWENTY_PATH_ENVELOPE=PASS')
+
+          successor_expected = sorted([
+            ".github/workflows/sprint211-durable-staging-operator-artifact-publication-regression.yml",
+            ".github/workflows/sprint212-cpanel-no-ssh-durable-staging-target-qualification-regression.yml",
+            ".github/workflows/sprint213-cpanel-no-ssh-operator-qualification-kit-publication-regression.yml",
+            ".github/workflows/sprint214-cpanel-no-ssh-guarded-deployment-execution-regression.yml",
+            ".github/workflows/sprint218-production-dark-deployment-execution-regression.yml",
+            ".github/workflows/sprint222-cpanel-fixed-public-php-symlink-policy-fallback-regression.yml",
+            ".github/workflows/sprint223-durable-runtime-ingestion-null-boundary-regression.yml",
+            ".github/workflows/sprint268-dependency-security-remediation-regression.yml",
+            "apps/web/package-lock.json",
+            "apps/web/package.json",
+          ])
+          successor = (os.environ.get('HEAD_REF') == 'remediate-npm-high-advisories-20261008'
+                       and os.environ.get('PR_NUMBER') == '929')
+          if successor:
+              base = os.environ.get('BASE_SHA', '')
+              assert len(base) == 40 and all(ch in '0123456789abcdef' for ch in base)
+              actual = sorted(subprocess.check_output(
+                  ['git','diff','--name-only','--diff-filter=ACMRT',base,'HEAD'],
+                  text=True).splitlines())
+              assert actual == successor_expected, f'Unsafe bounded security successor paths: {actual}'
+              print('SPRINT268_NPM_SUCCESSOR_TEN_PATH_ENVELOPE=PASS')
+          else:
+              actual = sorted(subprocess.check_output(
+                  ['git','diff','--name-only','--diff-filter=ACMRT',
+                   'c83d5131d7aaab19ddbd001223236aa424d2ea48','HEAD'],
+                  text=True).splitlines())
+              assert actual == historical_expected, f'Unsafe Sprint268 historical paths: {actual}'
+              print('SPRINT268_TWENTY_PATH_ENVELOPE=PASS')
           PY
       - name: Verify patched dependency floors and historical migration source preservation
         run: |

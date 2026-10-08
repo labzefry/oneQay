@@ -290,6 +290,10 @@ jobs:
             mapfile -t security_app_paths < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web | LC_ALL=C sort)
             expected_security_app_paths=('apps/web/composer.json' 'apps/web/composer.lock' 'apps/web/package-lock.json' 'apps/web/package.json')
             test "${security_app_paths[*]}" = "${expected_security_app_paths[*]}"
+          elif [ "$HEAD_REF" = 'remediate-npm-high-advisories-20261008' ] && [ "${{ github.event.pull_request.number }}" = '929' ]; then
+            mapfile -t security_successor_paths < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web | LC_ALL=C sort)
+            expected_security_successor_paths=('apps/web/package-lock.json' 'apps/web/package.json')
+            test "${security_successor_paths[*]}" = "${expected_security_successor_paths[*]}"
           else
             test -z "$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web | grep -v '^apps/web/tests/' || true)"
           fi
