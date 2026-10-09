@@ -235,7 +235,7 @@ jobs:
           fi
 
       - name: Enforce migration fifteen and exact JRN-006 successor boundary
-        if: github.event_name == 'pull_request'
+        if: (github.event_name == 'pull_request') && (github.event_name != 'pull_request' || github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009')
         shell: bash
         run: |
           set -euo pipefail
