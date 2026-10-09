@@ -467,7 +467,7 @@ jobs:
           grep -Fq '$session->invalidate();' "$controller"
           grep -Fq '$session->regenerateToken();' "$controller"
           grep -Fq 'FirstPartySessionKeys::MFA_VERIFIED_AT' "$controller"
-          if [[ "${ONEQAY_SPRINT36_SUCCESSOR:-false}" == 'true' ]]; then
+          if [[ "${ONEQAY_SPRINT36_SUCCESSOR:-false}" == 'true' || "${{ github.head_ref }}" == 'production-merchant-commercial-go-live-integrated-20261009' ]]; then
             grep -Fq "private const POLICY_SCOPE = 'policy_administration'" "$controller"
             grep -Fq "private const SESSION_CONTROL_SCOPE = 'session_control'" "$controller"
           else

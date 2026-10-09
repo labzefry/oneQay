@@ -443,7 +443,7 @@ jobs:
           grep -Fq 'count($payload) !== 1' "$controller"
           grep -Fq "array_key_exists('mutation_id', \$payload)" "$controller"
           grep -Fq 'IDENTITY_AUTHENTICATION_ELIGIBILITY_ADMINISTRATION_REJECTED' "$controller"
-          if [[ "${ONEQAY_SPRINT43_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
+          if [[ "${ONEQAY_SPRINT43_SOURCE_SUCCESSOR:-false}" == 'true' || "${{ github.head_ref }}" == 'production-merchant-commercial-go-live-integrated-20261009' ]]; then
             grep -Fq "Route::post('/administration/identities/{identity_id}/authentication-reactivation'" apps/web/routes/web.php
             grep -Fq -- "->name('identity.authentication-eligibility.reactivate')" apps/web/routes/web.php
             ! grep -RInE 'authentication-(enablement|toggle)|identity\.authentication-eligibility\.(enable|toggle)|disablement-session|session-termination'               apps/web/routes/web.php               apps/web/app/Delivery/Http/Identity/FirstPartyIdentityEligibilityAdministrationController.php

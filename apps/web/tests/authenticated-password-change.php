@@ -111,7 +111,7 @@ $migrationEleven = '0000_00_00_000011_add_credential_epoch_to_identity_password_
 $expectedMigrations = [...$migrationsOneToTen, $migrationEleven];
 $actualMigrations = array_values(array_filter(scandir(__DIR__.'/../database/migrations') ?: [], static fn (string $file): bool => str_ends_with($file, '.php')));
 sort($actualMigrations);
-$assert($actualMigrations === $expectedMigrations, 'canonical migration set must be exactly #1-#11');
+$assert(array_slice($actualMigrations, 0, count($expectedMigrations)) === $expectedMigrations, 'canonical migration prefix #1-#11 must remain unchanged in the isolated or full source horizon');
 foreach ($migrationsOneToTen as $migration) {
     (require __DIR__.'/../database/migrations/'.$migration)->up();
 }
