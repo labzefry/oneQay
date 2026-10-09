@@ -384,7 +384,7 @@ jobs:
           fi
 
       - name: Preserve dependency manifests root foundations and Sprint 28 migration boundary
-        if: (github.event_name == 'pull_request' && env.ONEQAY_SPRINT30_SUCCESSOR != 'true') && env.ONEQAY_SPRINT35_SUCCESSOR != 'true'
+        if: ((github.event_name == 'pull_request' && env.ONEQAY_SPRINT30_SUCCESSOR != 'true') && env.ONEQAY_SPRINT35_SUCCESSOR != 'true') && (github.event_name != 'pull_request' || github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009')
         shell: bash
         run: |
           set -euo pipefail
