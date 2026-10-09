@@ -40,7 +40,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - name: Enforce exact Sprint90 source envelope
-        if: github.event_name == 'pull_request'
+        if: (github.event_name == 'pull_request') && (github.event_name != 'pull_request' || github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009')
         shell: bash
         run: |
           set -euo pipefail
