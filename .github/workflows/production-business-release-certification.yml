@@ -40,7 +40,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           fetch-depth: 0
-          ref: ${{ github.sha }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - name: PHP 8.3 and isolated database extensions
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
         with:
@@ -98,7 +98,7 @@ jobs:
           bash tools/build-production-business-release.sh "$GITHUB_SHA"
           id="production-${GITHUB_SHA:0:12}"
           test -s "dist/${id}.tar.gz"
-          sha256sum --check "dist/${id}.tar.gz.sha256" --ignore-missing || true
+          ( cd dist && sha256sum -c "${id}.tar.gz.sha256" )
           php tools/validate-production-business-release-manifest.php "dist/${id}.manifest.json" "dist/${id}.tar.gz"
           echo "release_id=$id" >> "$GITHUB_OUTPUT"
       - name: Publish immutable source-certification artifact (NOT a deployed host)
