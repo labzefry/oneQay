@@ -187,7 +187,7 @@ final readonly class LaravelCashVarianceReviewDecisionRepository implements Cash
         if (
             ! $this->persistenceEnabled
             || ! $this->featureEnabled
-            || ! in_array(strtolower(trim($this->runtimeClass)), ['local', 'test', 'ci'], true)
+            || ! (in_array(strtolower(trim($this->runtimeClass)), ['local', 'test', 'ci'], true) || \App\Infrastructure\Runtime\ProductionBusinessRuntimeGate::allows(strtolower(trim($this->runtimeClass))))
         ) {
             throw new PosTransactionViolation();
         }
