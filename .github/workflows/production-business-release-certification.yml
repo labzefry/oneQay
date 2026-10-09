@@ -1,0 +1,118 @@
+# Author by Lab | zefry
+name: Production Business Release Certification
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+    paths:
+      - 'apps/web/**'
+      - 'tools/build-production-business-release.sh'
+      - 'tools/validate-production-business-release-manifest.php'
+      - 'tools/production/tests/production-business-release-source-certification.php'
+      - 'release/production-business-manifest-v2.schema.json'
+      - '.github/workflows/production-business-release-certification.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+concurrency:
+  group: production-business-source-cert-${{ github.ref }}-${{ github.sha }}
+  cancel-in-progress: false
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWE=
+      APP_DEBUG: 'false'
+      APP_URL: http://localhost
+      ONEQAY_RUNTIME_CLASS: ci
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+      LOG_CHANNEL: stderr
+    steps:
+      - name: Checkout immutable source commit
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.sha }}
+      - name: PHP 8.3 and isolated database extensions
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        with:
+          php-version: '8.3'
+          extensions: pdo_mysql,pdo_sqlite,mbstring,openssl,phar
+          tools: composer:v2
+          coverage: none
+      - name: Node 24.19
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: 24.19.0
+      - name: Check successor source, schema, and denied substitutions
+        run: |
+          set -euo pipefail
+          bash -n tools/build-production-business-release.sh
+          php -l tools/validate-production-business-release-manifest.php
+          php -l tools/production/tests/production-business-release-source-certification.php
+          php -r 'json_decode(file_get_contents("release/production-business-manifest-v2.schema.json"), true, 64, JSON_THROW_ON_ERROR);'
+          php tools/production/tests/production-business-release-source-certification.php
+          grep -Fq '"business_runtime_activation_ready":false' tools/build-production-release.sh
+          grep -Fq '"business_runtime_activation_ready":true' tools/build-production-business-release.sh
+          grep -Fq 'production_traffic_activation_authorized":false' tools/build-production-business-release.sh
+          test "$(find apps/web/database/migrations -maxdepth 1 -name '*.php' | wc -l)" -eq 27
+      - name: Install locked Laravel and front-end dependencies
+        run: |
+          set -euo pipefail
+          cd apps/web
+          composer validate --no-check-publish
+          composer install --no-interaction --prefer-dist --no-progress
+          npm ci --ignore-scripts --no-fund
+          npm run type-check
+          npm run build
+      - name: Run POS, isolation and merchant source-certification regressions on PR
+        if: github.event_name == 'pull_request'
+        run: |
+          set -euo pipefail
+          php apps/web/tests/production-commercial-runtime-integration.php
+          php apps/web/tests/production-business-runtime-gate.php
+          php apps/web/tests/merchant-context-guarded-bootstrap-delivery.php
+          php apps/web/tests/merchant-pos-ready-bootstrap.php
+          php apps/web/tests/pos-catalog-preparation-durable.php
+          php apps/web/tests/pos-inventory-baseline-durable.php
+          php apps/web/tests/pos-shift-opening-durable.php
+          php apps/web/tests/pos-shift-opening-cash-durable.php
+          php apps/web/tests/pos-sale-completion-durable.php
+          php apps/web/tests/pos-shift-closing-cash-durable.php
+          php apps/web/tests/pos-final-shift-close-delivery-durable-integration.php
+          cd apps/web
+          composer test
+      - name: Certify source and package business-capable Production candidate
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        id: certified
+        run: |
+          set -euo pipefail
+          bash tools/build-production-business-release.sh "$GITHUB_SHA"
+          id="production-${GITHUB_SHA:0:12}"
+          test -s "dist/${id}.tar.gz"
+          sha256sum --check "dist/${id}.tar.gz.sha256" --ignore-missing || true
+          php tools/validate-production-business-release-manifest.php "dist/${id}.manifest.json" "dist/${id}.tar.gz"
+          echo "release_id=$id" >> "$GITHUB_OUTPUT"
+      - name: Publish immutable source-certification artifact (NOT a deployed host)
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: oneqay-certified-business-${{ steps.certified.outputs.release_id }}
+          path: |
+            dist/${{ steps.certified.outputs.release_id }}.tar.gz
+            dist/${{ steps.certified.outputs.release_id }}.manifest.json
+            dist/${{ steps.certified.outputs.release_id }}.tar.gz.sha256
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 0
+      - name: No tracked source mutation
+        run: |
+          git diff --exit-code
