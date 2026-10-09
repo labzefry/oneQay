@@ -134,7 +134,7 @@ final class PosCashVarianceReconciliationWorkspaceServiceProvider extends Servic
 
     private function deliveryEnabled(): bool
     {
-        return in_array(strtolower(trim($this->runtimeClass())), ['local', 'test', 'ci'], true)
+        return \App\Infrastructure\Runtime\ProductionBusinessRuntimeGate::allows(strtolower(trim($this->runtimeClass())))
             && $this->persistenceEnabled()
             && (bool) config('oneqay.session_control.enabled', false)
             && (int) config('oneqay.session_control.idle_ttl_seconds', 0) === 7200

@@ -69,7 +69,7 @@ final class PosOperationalReportingServiceProvider extends ServiceProvider
             && (int) config('oneqay.session_control.idle_ttl_seconds', 0) === 7200
             && (int) config('oneqay.session_control.absolute_ttl_seconds', 0) === 43200;
 
-        if (! in_array($runtimeClass, ['local', 'test', 'ci'], true)
+        if (! \App\Infrastructure\Runtime\ProductionBusinessRuntimeGate::allows($runtimeClass)
             || ! $sessionControlEnabled
             || ! (bool) config('pos_operational_reporting.enabled', false)) {
             return;
