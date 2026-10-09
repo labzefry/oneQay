@@ -294,7 +294,7 @@ final class PrivilegedTotpMfaController
     {
         $runtime = strtolower(trim((string) config('oneqay.runtime_class', '')));
         $enabled = (bool) config('oneqay.privileged_totp_mfa.enabled', false);
-        abort_unless($enabled && in_array($runtime, ['local', 'test', 'ci'], true), 404);
+        abort_unless($enabled && \App\Infrastructure\Runtime\ProductionBusinessRuntimeGate::allows($runtime), 404);
     }
 
     private function sessionControlEnabled(): bool

@@ -35,7 +35,7 @@ final class RequirePosSessionContextMiddleware
     {
         $runtime = strtolower(trim((string) config('oneqay.runtime_class', '')));
         abort_unless(
-            in_array($runtime, ['local', 'test', 'ci'], true)
+            \App\Infrastructure\Runtime\ProductionBusinessRuntimeGate::allows($runtime)
             && (bool) config('database.oneqay_persistence_enabled', false)
             && (bool) config('oneqay.session_control.enabled', false)
             && (bool) config('oneqay.pos_sale_completion.enabled', false),
