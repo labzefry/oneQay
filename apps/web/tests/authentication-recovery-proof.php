@@ -252,7 +252,7 @@ $expectedMigrations = [
     '0000_00_00_000010_create_identity_recovery_codes.php',
     '0000_00_00_000011_add_credential_epoch_to_identity_password_credentials.php',
 ];
-$assert($migrations === $expectedMigrations, 'Source migration set must be exactly #1 through #11.');
+$assert(array_slice($migrations, 0, count($expectedMigrations)) === $expectedMigrations && count($migrations) === 27, 'Migration #1-#11 preservation prefix and 27-core horizon must remain unchanged.');
 
 foreach ([
     "private const RECOVERY_STATE = 'password_reset_required'",
