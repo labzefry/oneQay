@@ -584,7 +584,7 @@ final readonly class LaravelPosShiftHistoryPerformanceWorkspaceRepository implem
         if (! $this->persistenceEnabled || ! $this->reportingEnabled || ! $this->featureEnabled || ! $this->shiftCloseEnabled) {
             throw new PosTransactionViolation();
         }
-        if (! in_array(strtolower(trim($this->runtimeClass)), ['local', 'test', 'ci'], true)) {
+        if (! (in_array(strtolower(trim($this->runtimeClass)), ['local', 'test', 'ci'], true) || \App\Infrastructure\Runtime\ProductionBusinessRuntimeGate::allows(strtolower(trim($this->runtimeClass))))) {
             throw new PosTransactionViolation();
         }
     }
