@@ -62,7 +62,7 @@ $s21Migrations = [
 ];
 $s21Actual = array_values(array_filter(scandir(__DIR__.'/../database/migrations') ?: [], static fn (string $file): bool => str_ends_with($file, '.php')));
 sort($s21Actual);
-$assert($s21Actual === $s21Migrations, 'Sprint 21 preservation requires exact nine-migration set through Sprint 30.');
+$assert(array_slice($s21Actual, 0, count($s21Migrations)) === $s21Migrations && count($s21Actual) === 27, 'Sprint 21 preservation requires unchanged first nine migrations plus canonical 27-migration horizon.');
 foreach ($s21Migrations as $migration) { (require __DIR__.'/../database/migrations/'.$migration)->up(); }
 
 foreach (['oneqay_roles', 'oneqay_role_permissions', 'oneqay_tenant_role_assignments', 'oneqay_organization_role_assignments', 'oneqay_outlet_role_assignments', 'oneqay_device_role_assignments', 'oneqay_policy_mutations', 'oneqay_initial_tenant_admin_provisionings', 'oneqay_protected_control_admin_mutations', 'oneqay_identity_password_credentials', 'oneqay_initial_password_enrollments'] as $table) {
