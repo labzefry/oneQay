@@ -97,10 +97,21 @@ $fullSprint34Migrations = [
 ];
 $actualMigrations = array_values(array_filter(scandir(__DIR__.'/../database/migrations') ?: [], static fn (string $file): bool => str_ends_with($file, '.php')));
 sort($actualMigrations);
-$fullSprint34 = $actualMigrations === $fullSprint34Migrations;
+// Run only the historical fixture horizon, even when current source ships 27
+// canonical core migrations. Verify the extra migration names exactly once.
+$modernCore = count($actualMigrations) === 27
+    && array_slice($actualMigrations, 0, count($fullSprint34Migrations)) === $fullSprint34Migrations;
+if ($modernCore) {
+    for ($index = 12; $index <= 27; $index++) {
+        $prefix = sprintf('0000_00_00_%06d_', $index);
+        $matches = array_values(array_filter($actualMigrations, static fn (string $file): bool => str_starts_with($file, $prefix)));
+        $assert(count($matches) === 1, 'canonical migration #'.$index.' must occur exactly once');
+    }
+}
+$fullSprint34 = $actualMigrations === $fullSprint34Migrations || $modernCore;
 $legacyIsolation = $actualMigrations === $legacyMigrations;
-$assert($fullSprint34 || $legacyIsolation, 'migration set must be exact Sprint34 #1-#11 or exact historical isolation #1-#9');
-foreach ($actualMigrations as $migration) {
+$assert($fullSprint34 || $legacyIsolation, 'historical #1-#9, #1-#11 or modern 27-core migration horizon required');
+foreach ($fullSprint34 ? $fullSprint34Migrations : $legacyMigrations as $migration) {
     (require __DIR__.'/../database/migrations/'.$migration)->up();
 }
 $assert($connection->getSchemaBuilder()->hasTable('oneqay_initial_password_enrollments'), 'Sprint 28 enrollment table missing during Sprint 27 preservation');

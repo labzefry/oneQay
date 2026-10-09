@@ -104,9 +104,19 @@ for ($index = 1; $index <= 15; $index++) {
     $assert(count($matches) === 1, 'migration #'.$index.' must exist exactly once');
     $expectedMigrations[] = $matches[0];
 }
-$assert($migrations === $expectedMigrations, 'migration set must remain exactly #1-#15');
-$assert(! array_filter($migrations, static fn (string $file): bool => str_contains($file, '000016')), 'migration #16 exists');
-foreach ($migrations as $migration) {
+// Preserve exactly the historical #1-#15 execution fixture without treating
+// newer canonical migrations as forbidden. Never replay #16-#27 in this test.
+$modernCore = count($migrations) === 27
+    && array_slice($migrations, 0, count($expectedMigrations)) === $expectedMigrations;
+if ($modernCore) {
+    for ($index = 16; $index <= 27; $index++) {
+        $prefix = sprintf('0000_00_00_%06d_', $index);
+        $matches = array_values(array_filter($migrations, static fn (string $file): bool => str_starts_with($file, $prefix)));
+        $assert(count($matches) === 1, 'canonical migration #'.$index.' must occur exactly once');
+    }
+}
+$assert($migrations === $expectedMigrations || $modernCore, 'historical #1-#15 prefix or exact modern 27-core schema required');
+foreach ($expectedMigrations as $migration) {
     (require __DIR__.'/../database/migrations/'.$migration)->up();
 }
 
