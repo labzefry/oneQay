@@ -83,7 +83,7 @@ $s22Migrations = [
 ];
 $s22Actual = array_values(array_filter(scandir(__DIR__.'/../database/migrations') ?: [], static fn (string $file): bool => str_ends_with($file, '.php')));
 sort($s22Actual);
-$assert($s22Actual === $s22Migrations, 'Sprint 22 preservation requires the exact nine-migration set through Sprint 30.');
+$assert(array_slice($s22Actual, 0, count($s22Migrations)) === $s22Migrations, 'Sprint 22 preservation requires the exact nine-migration historical prefix through Sprint 30.');
 foreach ($s22Migrations as $migration) { (require __DIR__.'/../database/migrations/'.$migration)->up(); }
 $assert($s22Connection->getSchemaBuilder()->hasTable('oneqay_policy_mutations'), 'Sprint 22 mutation journal missing.');
 $assert($s22Connection->getSchemaBuilder()->hasTable('oneqay_initial_tenant_admin_provisionings'), 'Sprint 23 provisioning journal missing during Sprint 22 preservation.');

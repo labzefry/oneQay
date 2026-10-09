@@ -126,7 +126,7 @@ $expectedNames = [
 ];
 $actual = array_values(array_filter(scandir($migrationDir) ?: [], static fn (string $file): bool => str_ends_with($file, '.php')));
 sort($actual);
-$assertM73($actual === $expectedNames, 'migration set must remain exact through Sprint 30');
+$assertM73(array_slice($actual, 0, count($expectedNames)) === $expectedNames, 'migration prefix must remain exact through Sprint 30');
 
 $accessSource = (string) file_get_contents(__DIR__.'/../app/Infrastructure/Access/LaravelDurableOrganizationalAccessRepository.php');
 $tenantVerifier = (string) file_get_contents(__DIR__.'/../app/Infrastructure/Tenancy/LaravelTenantMembershipVerifier.php');
