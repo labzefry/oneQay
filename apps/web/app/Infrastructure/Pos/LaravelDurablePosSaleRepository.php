@@ -37,6 +37,14 @@ final readonly class LaravelDurablePosSaleRepository implements DurablePosSaleRe
     {
         $this->assertCompletionOperational();
 
+        // Real-money Production processing currently supports recorded CASH tender only.
+        // MANUAL_EXTERNAL is evidence-only and cannot be represented as provider-settled money.
+        if (strtolower(trim($this->runtimeClass)) === 'production'
+            && $command->tenderCategory() !== TenderCategory::CASH) {
+            throw new PosTransactionViolation();
+        }
+
+
         $fingerprint = hash('sha256', implode('|', [
             $context->actorId(),
             $context->tenantId(),
