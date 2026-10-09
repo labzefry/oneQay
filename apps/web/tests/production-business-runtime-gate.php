@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-require_once dirname(__DIR__).'/app/Infrastructure/Runtime/ProductionBusinessRuntimeGate.php';
+require_once dirname(__DIR__, 3).'/tools/production/ProductionBusinessRuntimeGate.php';
 
-use App\Infrastructure\Runtime\ProductionBusinessRuntimeGate as Gate;
+use OneQay\Production\ProductionBusinessRuntimeGate as Gate;
 
 // Author by Lab | zefry
 $source=str_repeat('a',40);

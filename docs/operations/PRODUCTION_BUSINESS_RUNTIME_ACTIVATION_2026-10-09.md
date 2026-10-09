@@ -23,3 +23,7 @@ Operational Production business traffic remains NOT_AUTHORIZED. Do not run earli
 ## CI reconciliation 2026-10-09
 
 Initial PR #933 source-wide edits touched 67 existing application/view files and caused 88 historical CI failures. Failures included durable access boundary regression and exact source path governance. Rather than weaken the tests or pretend acceptance, all 67 modified app/view files were restored byte-for-byte from canonical main while retaining the new tested policy, dedicated test, workflow and checkpoint. The new policy is NOT wired into live HTTP routes. A future narrowly scoped provider/controller integration must preserve old contract tests or deliberately evolve them with functional proof and formal review. No host action needed; dark-only application RC unchanged.
+
+## Historical path governance and operator-only packaging
+
+Two cPanel regression jobs for Sprint212/214 explicitly reject any modified application source other than tests in an unrelated PR. To preserve those checks, the fail-closed business admission policy is now a standalone NOT-INSTALLED operator foundation at `tools/production/ProductionBusinessRuntimeGate.php`; it is **not** Laravel-autoloaded and cannot authorize existing routes. The previously added application class is deleted. A subsequent properly governed native Production application change must coordinate acceptance tests, durable transaction proving and release metadata certification. This PR remains production-traffic inactive.
