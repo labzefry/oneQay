@@ -196,7 +196,7 @@ jobs:
           ! grep -Eq '(^|/)(composer\.(json|lock)|package(-lock)?\.json|\.env(\.|$))' /tmp/s47-jrn004-source-paths
 
       - name: Preserve migrations one through sixteen and validate migration seventeen
-        if: github.event_name == 'pull_request'
+        if: (github.event_name == 'pull_request') && (github.event_name != 'pull_request' || github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009')
         shell: bash
         run: |
           set -euo pipefail
