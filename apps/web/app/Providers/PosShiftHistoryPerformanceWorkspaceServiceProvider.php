@@ -52,7 +52,7 @@ final class PosShiftHistoryPerformanceWorkspaceServiceProvider extends ServicePr
             && (int) config('oneqay.session_control.absolute_ttl_seconds', 0) === 43200;
         $shiftCloseEnabled = filter_var(env('ONEQAY_POS_SHIFT_CLOSE_ENABLED', false), FILTER_VALIDATE_BOOL);
 
-        if (! \App\Infrastructure\Runtime\ProductionBusinessRuntimeGate::allows($runtimeClass)
+        if (! in_array($runtimeClass, ['local', 'test', 'ci'], true)
             || ! (bool) config('database.oneqay_persistence_enabled', false)
             || ! $sessionControlEnabled
             || ! (bool) config('pos_operational_reporting.enabled', false)

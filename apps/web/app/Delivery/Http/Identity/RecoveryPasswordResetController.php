@@ -116,7 +116,7 @@ final class RecoveryPasswordResetController
         $enabled = (bool) config('oneqay.authentication_recovery.enabled', false);
         $ttl = (int) config('oneqay.authentication_recovery.restricted_session_ttl_seconds', 0);
         abort_unless($enabled && $ttl === self::RESTRICTED_SESSION_TTL_SECONDS
-            && \App\Infrastructure\Runtime\ProductionBusinessRuntimeGate::allows($runtime), 404);
+            && in_array($runtime, ['local', 'test', 'ci'], true), 404);
     }
 
     private function failed(string $correlationId): JsonResponse

@@ -54,6 +54,6 @@ final readonly class LaravelFirstPartyIdentityCredentialVerifier implements Firs
     private function storageAllowed(): bool
     {
         return $this->persistenceEnabled
-            && \App\Infrastructure\Runtime\ProductionBusinessRuntimeGate::allows(strtolower(trim($this->runtimeClass)));
+            && in_array(strtolower(trim($this->runtimeClass)), ['local', 'test', 'ci'], true);
     }
 }

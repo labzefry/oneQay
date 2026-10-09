@@ -124,7 +124,7 @@ final class AuthenticatedPasswordChangeController
     private function requireAllowedRuntime(): void
     {
         $runtime = strtolower(trim((string) config('oneqay.runtime_class', '')));
-        abort_unless(\App\Infrastructure\Runtime\ProductionBusinessRuntimeGate::allows($runtime), 404);
+        abort_unless(in_array($runtime, ['local', 'test', 'ci'], true), 404);
     }
 
     private function failed(string $correlationId): JsonResponse

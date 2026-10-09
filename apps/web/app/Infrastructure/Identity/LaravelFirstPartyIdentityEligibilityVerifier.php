@@ -54,7 +54,7 @@ final readonly class LaravelFirstPartyIdentityEligibilityVerifier implements Fir
     {
         return $this->persistenceEnabled
             && $this->sessionControlEnabled
-            && \App\Infrastructure\Runtime\ProductionBusinessRuntimeGate::allows(strtolower(trim($this->runtimeClass)));
+            && in_array(strtolower(trim($this->runtimeClass)), ['local', 'test', 'ci'], true);
     }
 
     private function canonicalEnabled(mixed $value): bool

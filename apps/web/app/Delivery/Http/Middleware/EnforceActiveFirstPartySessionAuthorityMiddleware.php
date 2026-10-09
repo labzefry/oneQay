@@ -157,6 +157,6 @@ final class EnforceActiveFirstPartySessionAuthorityMiddleware
         $enabled = (bool) config('oneqay.session_control.enabled', false);
         $ttl = (int) config('oneqay.session_control.idle_ttl_seconds', 0);
         $persistence = (bool) config('database.oneqay_persistence_enabled', false);
-        abort_unless($enabled && $persistence && $ttl === 7200 && \App\Infrastructure\Runtime\ProductionBusinessRuntimeGate::allows($runtime), 404);
+        abort_unless($enabled && $persistence && $ttl === 7200 && in_array($runtime, ['local', 'test', 'ci'], true), 404);
     }
 }

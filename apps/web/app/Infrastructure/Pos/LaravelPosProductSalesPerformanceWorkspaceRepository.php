@@ -127,7 +127,7 @@ final readonly class LaravelPosProductSalesPerformanceWorkspaceRepository implem
         if (! $this->persistenceEnabled
             || ! $this->reportingEnabled
             || ! $this->featureEnabled
-            || ! \App\Infrastructure\Runtime\ProductionBusinessRuntimeGate::allows(strtolower(trim($this->runtimeClass)))) {
+            || ! in_array(strtolower(trim($this->runtimeClass)), ['local', 'test', 'ci'], true)) {
             throw new PosTransactionViolation();
         }
     }

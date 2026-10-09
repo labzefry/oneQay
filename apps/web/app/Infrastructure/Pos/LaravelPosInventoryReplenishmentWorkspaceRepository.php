@@ -116,7 +116,7 @@ final readonly class LaravelPosInventoryReplenishmentWorkspaceRepository impleme
             throw new PosTransactionViolation();
         }
 
-        if (! \App\Infrastructure\Runtime\ProductionBusinessRuntimeGate::allows(strtolower(trim($this->runtimeClass)))) {
+        if (! in_array(strtolower(trim($this->runtimeClass)), ['local', 'test', 'ci'], true)) {
             throw new PosTransactionViolation();
         }
     }

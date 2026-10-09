@@ -10,7 +10,7 @@ Qualified durable staging oneqay.n07.my.id remains on a5e833bce4baa22c21a144c558
 ## Native business runtime work
 ProductionBusinessRuntimeGate preserves Local/Test/CI behavior, rejects all other runtimes by default, and allows native Production only with (1) a newly certified same-source release whose business_runtime_activation_ready is true, (2) private exact source/artifact/environment binding, (3) persistent session and durable DB flags, (4) explicit separate operator business-traffic authorization switches, and (5) APP_ENV production, APP_DEBUG false. No compatibility projection to CI, no privileged bootstrap broadening.
 
-This is guarded source enablement, NOT Production release certification or permission to transact. Current published production-a5e833bce4ba explicitly has business_runtime_activation_ready false, so remains denied regardless of .env changes.
+This is only an isolated policy foundation, not active source enablement, Production release certification or permission to transact. Current published production-a5e833bce4ba explicitly has business_runtime_activation_ready false, so remains denied regardless of .env changes.
 
 ## Next verifiable gates
 - Review CI and tenant/device authorization invariants; complete controlled Final Shift Close and live operational capabilities.
@@ -19,3 +19,7 @@ This is guarded source enablement, NOT Production release certification or permi
 - Govern isolated oneqaydev dark deployment through fixed-public cPanel no SSH, external exact-target time-bound deployment authority and rollback; separate explicit approval for real business traffic and final main-domain cutover.
 
 Operational Production business traffic remains NOT_AUTHORIZED. Do not run earlier host Cron again.
+
+## CI reconciliation 2026-10-09
+
+Initial PR #933 source-wide edits touched 67 existing application/view files and caused 88 historical CI failures. Failures included durable access boundary regression and exact source path governance. Rather than weaken the tests or pretend acceptance, all 67 modified app/view files were restored byte-for-byte from canonical main while retaining the new tested policy, dedicated test, workflow and checkpoint. The new policy is NOT wired into live HTTP routes. A future narrowly scoped provider/controller integration must preserve old contract tests or deliberately evolve them with functional proof and formal review. No host action needed; dark-only application RC unchanged.

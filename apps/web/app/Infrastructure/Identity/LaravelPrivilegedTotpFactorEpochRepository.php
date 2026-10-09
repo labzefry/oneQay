@@ -54,7 +54,7 @@ final readonly class LaravelPrivilegedTotpFactorEpochRepository implements Privi
         if (! $this->persistenceEnabled) {
             throw new DurablePersistenceViolation(DurablePersistenceViolation::PERSISTENCE_DISABLED, 'Durable persistence is disabled.');
         }
-        if (! \App\Infrastructure\Runtime\ProductionBusinessRuntimeGate::allows(strtolower(trim($this->runtimeClass)))) {
+        if (! in_array(strtolower(trim($this->runtimeClass)), ['local', 'test', 'ci'], true)) {
             throw new DurablePersistenceViolation(DurablePersistenceViolation::RUNTIME_DENIED, 'Durable persistence runtime is not authorized.');
         }
     }

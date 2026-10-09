@@ -473,7 +473,7 @@ final readonly class LaravelFirstPartySessionAuthorityRepository implements Firs
             );
         }
         if (! $this->persistenceEnabled
-            || ! \App\Infrastructure\Runtime\ProductionBusinessRuntimeGate::allows(strtolower(trim($this->runtimeClass)))) {
+            || ! in_array(strtolower(trim($this->runtimeClass)), ['local', 'test', 'ci'], true)) {
             $this->storageFailure();
         }
     }
