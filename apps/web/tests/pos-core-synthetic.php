@@ -547,6 +547,13 @@ foreach ([
             continue;
         }
 
+        // Infrastructure Laravel adapters may use durable database mechanics; only
+        // Domain/Application and synthetic adapters must remain persistence-free.
+        if (str_contains($file->getPathname(), DIRECTORY_SEPARATOR.'Infrastructure'.DIRECTORY_SEPARATOR.'Pos'.DIRECTORY_SEPARATOR)
+            && str_starts_with($file->getFilename(), 'Laravel')) {
+            continue;
+        }
+
         $content = (string) file_get_contents($file->getPathname());
         foreach (['Illuminate\\Database', 'Schema::', 'DB::', 'new PDO', 'mysqli_'] as $needle) {
             $assertM74(! str_contains($content, $needle), "M74-ARCH-002 {$file->getFilename()} must not introduce physical persistence");

@@ -94,7 +94,7 @@ $s24Migrations = [
 ];
 $s24Actual = array_values(array_filter(scandir(__DIR__.'/../database/migrations') ?: [], static fn (string $file): bool => str_ends_with($file, '.php')));
 sort($s24Actual);
-$assert($s24Actual === $s24Migrations, 'Sprint 24 preservation requires exact nine-migration set through Sprint 30.');
+$assert(array_slice($s24Actual, 0, count($s24Migrations)) === $s24Migrations && count($s24Actual) === 27, 'Sprint 24 preservation requires canonical nine-migration prefix within unchanged 27 core migrations.');
 foreach ($s24Migrations as $migration) { (require __DIR__.'/../database/migrations/'.$migration)->up(); }
 $assert($s24Connection->getSchemaBuilder()->hasTable('oneqay_protected_control_admin_mutations'), 'Sprint 24 lifecycle journal missing.');
 $assert($s24Connection->getSchemaBuilder()->hasTable('oneqay_identity_password_credentials'), 'Sprint 26 credential table missing during Sprint 24 preservation.');
