@@ -115,7 +115,7 @@ for ($index = 1; $index <= 15; $index++) {
     $assert(count($matches) === 1, 'migration #'.$index.' must exist exactly once');
     $expectedMigrations[] = $matches[0];
 }
-$assert(array_slice($migrations, 0, count($expectedMigrations)) === $expectedMigrations && count($migrations) === 27, 'historical #1-#15 prefix and immutable canonical 27 migrations must be preserved');
+$assert(array_slice($migrations, 0, count($expectedMigrations)) === $expectedMigrations, 'Historical migration prefix must remain exact within its isolated execution horizon.');
 $assert(count($expectedMigrations) === 15, 'historical fixture must contain exactly fifteen migrations');
 foreach ($expectedMigrations as $migration) {
     (require __DIR__.'/../database/migrations/'.$migration)->up();

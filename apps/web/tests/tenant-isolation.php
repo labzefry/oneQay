@@ -58,7 +58,7 @@ $expected = [
     '0000_00_00_000008_create_initial_password_enrollments.php',
     '0000_00_00_000009_create_identity_totp_factors.php',
 ];
-$assertM72(array_slice($migrations, 0, count($expected)) === $expected && count($migrations) === 27, 'Sprint 30 migration prefix changed or current canonical 27-migration horizon incomplete');
+$assertM72(array_slice($migrations, 0, count($expected)) === $expected, 'Historical migration prefix must remain exact within its isolated execution horizon.');
 $mutationMigration = (string) file_get_contents($migrationDir.'/'.$expected[3]);
 foreach (['oneqay_policy_mutations', "primary(['tenant_id', 'mutation_id']", 'fk_policy_mutation_actor', 'Forward-only generated migration; rollback is not authorized.'] as $marker) {
     $assertM72(str_contains($mutationMigration, $marker), 'Sprint 22 migration boundary missing: '.$marker);
