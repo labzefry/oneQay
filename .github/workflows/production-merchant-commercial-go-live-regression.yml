@@ -22,7 +22,7 @@ jobs:
       APP_DEBUG: 'false'
       APP_URL: http://localhost
       ONEQAY_RUNTIME_CLASS: ci
-      ONEQAY_PERSISTENCE_ENABLED: 'true'
+      ONEQAY_PERSISTENCE_ENABLED: 'false'
       SESSION_DRIVER: array
       CACHE_STORE: array
       LOG_CHANNEL: stderr
