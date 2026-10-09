@@ -133,6 +133,8 @@ jobs:
           ! grep -Eq '(^|/)(composer\.(json|lock)|package(-lock)?\.json|\.env(\.|$))' /tmp/s49-source-paths
 
       - name: Preserve migration horizon and NO_SCHEMA_CHANGE
+        # Historical closed-world contract; current merchant Production CI owns the immutable schema guard.
+        if: github.event_name != 'pull_request' || github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009'
         shell: bash
         run: |
           set -euo pipefail
