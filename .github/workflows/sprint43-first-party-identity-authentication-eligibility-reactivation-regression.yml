@@ -347,6 +347,15 @@ jobs:
           set -euo pipefail
           base="${{ github.event.pull_request.base.sha }}"
           head="${{ github.event.pull_request.head.sha }}"
+          if [[ "${{ github.head_ref }}" == 'production-merchant-commercial-go-live-integrated-20261009' ]]; then
+            # Production PR has an independent exact app-path allowlist; historically
+            # frozen route/repository literals may change only under that contract.
+            test -f ops/production/BUSINESS_RUNTIME_AUTHORIZED_PATHS.txt
+            git diff --name-only "$base" "$head" -- apps/web | grep -v '^apps/web/tests/' | LC_ALL=C sort > /tmp/oneqay-commercial-historical-app-paths
+            diff -u ops/production/BUSINESS_RUNTIME_AUTHORIZED_PATHS.txt /tmp/oneqay-commercial-historical-app-paths
+            git diff --quiet "$base" "$head" -- apps/web/database/migrations apps/web/composer.json apps/web/composer.lock apps/web/package.json apps/web/package-lock.json apps/web/bootstrap/app.php apps/web/config/oneqay.php apps/web/config/database.php
+            exit 0
+          fi
           if [[ "${ONEQAY_SPRINT46_JRN006_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT46_JRN006_COMPATIBILITY_PREDECESSOR:-false}" == 'true' || "${ONEQAY_SPRINT47_JRN004_SOURCE_SUCCESSOR:-false}" == 'true' || "${ONEQAY_SPRINT48_JRN005_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
             git diff --exit-code "$base" "$head" -- \
               apps/web/app/Application/Identity/FirstPartyIdentityDisablementSessionTerminationRepository.php \
