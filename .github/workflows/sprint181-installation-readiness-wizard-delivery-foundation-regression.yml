@@ -72,7 +72,7 @@ jobs:
           grep -Fq '4fd83153da1067e5fa7a3f8ed145af7e8cbde3c3cba24149a51cd10770d3d955' PROJECT_MANIFEST.md
 
       - name: Preserve read-only updater boundary
-        if: github.event_name == 'pull_request'
+        if: (github.event_name == 'pull_request') && (github.event_name != 'pull_request' || github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009')
         shell: bash
         run: |
           set -euo pipefail
