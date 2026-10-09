@@ -109,9 +109,9 @@ for ($index = 1; $index <= 14; $index++) {
     $assert(count($matches) === 1, 'migration #'.$index.' must exist exactly once');
     $expectedMigrations[] = $matches[0];
 }
-$assert($migrations === $expectedMigrations, 'migration set must be exactly #1-#14');
+$assert(array_slice($migrations, 0, count($expectedMigrations)) === $expectedMigrations && count($migrations) === 27, 'historical #1-#14 migration prefix and canonical 27 core must be preserved');
 $assert($migrations[13] === '0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php', 'migration #14 exact filename');
-foreach ($migrations as $migration) {
+foreach ($expectedMigrations as $migration) {
     (require __DIR__.'/../database/migrations/'.$migration)->up();
 }
 
