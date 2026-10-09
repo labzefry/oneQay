@@ -218,7 +218,7 @@ final class PrivilegedReauthenticationController
             (bool) config('oneqay.session_control.enabled', false)
             && (int) config('oneqay.session_control.idle_ttl_seconds', 0) === 7200
         );
-        abort_unless($stepUp && $mfa && $sessionControl && $freshness === 300 && in_array($runtime, ['local', 'test', 'ci'], true), 404);
+        abort_unless($stepUp && $mfa && $sessionControl && $freshness === 300 && (in_array($runtime, ['local', 'test', 'ci'], true) || \App\Infrastructure\Runtime\ProductionBusinessRuntimeGate::allows($runtime)), 404);
     }
 
     private function clearContexts(): void
