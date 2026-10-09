@@ -45,6 +45,28 @@ jobs:
           ! grep -Fq 'ProductionBusinessRuntimeGate::allows' apps/web/app/Application/Preview/TechnicalPreviewRuntimePolicy.php
           grep -Fq "!== TenderCategory::CASH" apps/web/app/Infrastructure/Pos/LaravelDurablePosSaleRepository.php
           test "$(find apps/web/database/migrations -maxdepth 1 -name '*.php' | wc -l)" -eq 27
+      - name: Verify exact authorized Production app pathset and immutable controls
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "$BASE_SHA"
+          git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web | grep -v '^apps/web/tests/' | LC_ALL=C sort > /tmp/production-app-actual-paths
+          diff -u ops/production/BUSINESS_RUNTIME_AUTHORIZED_PATHS.txt /tmp/production-app-actual-paths
+          git diff --quiet "$BASE_SHA" "$HEAD_SHA" -- apps/web/database/migrations apps/web/composer.json apps/web/composer.lock apps/web/package.json apps/web/package-lock.json apps/web/bootstrap/providers.php
+          git diff --quiet "$BASE_SHA" "$HEAD_SHA" -- ops/final-shift-close/STATE.json ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+          test "$(jq -r '.production_activation' ops/final-shift-close/STATE.json)" = NOT_AUTHORIZED
+          test "$(jq -r '.deployment_authority' ops/final-shift-close/STATE.json)" = NOT_GRANTED
+          grep -Fq "['local', 'test', 'ci']" apps/web/app/Console/Commands/MerchantContextBootstrapCommand.php
+          grep -Fq "['local', 'test', 'testing', 'ci']" apps/web/app/Application/Preview/TechnicalPreviewRuntimePolicy.php
+          grep -Fq "business_runtime_activation_ready" apps/web/app/Infrastructure/Runtime/ProductionBusinessRuntimeGate.php
+          grep -Fq "ONEQAY_PRODUCTION_BUSINESS_TRAFFIC_AUTHORIZED" apps/web/app/Infrastructure/Runtime/ProductionBusinessRuntimeGate.php
+          grep -Fq "ONEQAY_PRODUCTION_TRANSACTION_ACTIVATION_ENABLED" apps/web/app/Infrastructure/Runtime/ProductionBusinessRuntimeGate.php
+          ! find apps/web -type f -name '*.env' -print -quit | grep -q .
+          echo "commercial_production_exact_path_and_operational_boundaries_pass"
+
       - name: PHP lint for all application source
         run: |
           find apps/web/app -type f -name '*.php' -print0 | xargs -0 -n 1 php -l > "$RUNNER_TEMP/php-lint.log"
