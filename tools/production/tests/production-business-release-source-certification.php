@@ -48,12 +48,17 @@ $write = static function (array $value) use ($manifestPath): void {
     file_put_contents($manifestPath, json_encode($value, JSON_THROW_ON_ERROR));
 };
 $write($manifest);
-// Validate the generated Phar archive shape independently before the contract verifier.
-$probe = new PharData($archive);
-$assert($probe->offsetExists($id.'/RELEASE.json'), 'embedded_release_entry');
-$decoded = json_decode($probe[$id.'/RELEASE.json']->getContent(), true, 32, JSON_THROW_ON_ERROR);
-$assert(is_array($decoded) && ($decoded['release_id'] ?? null) === $id, 'embedded_release_json');
-unset($probe);
+// The production builder uses GNU tar/gzip; validate the fixture via the same member-read contract.
+$argv = ['tar','-xOzf',$archive,'--',$id.'/RELEASE.json'];
+$process = proc_open($argv,[0=>['pipe','r'],1=>['pipe','w'],2=>['pipe','w']],$streams);
+$assert(is_resource($process),'tar_member_probe');
+fclose($streams[0]);
+$bytes=stream_get_contents($streams[1],65537);
+fclose($streams[1]);
+fclose($streams[2]);
+$assert(proc_close($process)===0,'tar_member_read');
+$decoded=json_decode((string)$bytes,true,32,JSON_THROW_ON_ERROR);
+$assert(is_array($decoded)&&($decoded['release_id']??null)===$id,'embedded_release_json');
 pbmValidate($manifestPath, $archive);
 $denials = [
     static function (array &$m): void { $m['runtime']['business_runtime_activation_ready'] = false; },
