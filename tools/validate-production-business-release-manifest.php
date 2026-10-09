@@ -54,6 +54,7 @@ function pbmValidate(string $manifestPath, string $archivePath): void {
     pbmEq($m['attribution'] ?? null, 'Lab | zefry', 'attribution');
     pbmEq($m['artifact']['filename'] ?? null, $id.'.tar.gz', 'archive_name');
     pbmEq($m['artifact']['format'] ?? null, 'tar.gz', 'format');
+    pbmEq(basename($archivePath), $id.'.tar.gz', 'archive_filename');
     $sha = $m['artifact']['sha256'] ?? null;
     if (!is_string($sha) || preg_match('/\A[a-f0-9]{64}\z/', $sha) !== 1) pbmFail('sha_shape');
     if ($archivePath === '' || is_link($archivePath) || !is_file($archivePath) || !is_readable($archivePath)) pbmFail('archive');
