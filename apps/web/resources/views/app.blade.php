@@ -12,11 +12,11 @@
             )
             && \Illuminate\Support\Facades\Route::has('auth.first-party.login')
             && \Illuminate\Support\Facades\Route::has('pos.operations.hub');
-        $merchantRuntimeAllowed = in_array(
+        $merchantRuntimeAllowed = (in_array(
             $runtimeClass,
             ['local', 'test', 'ci'],
             true,
-        )
+        ) || \App\Infrastructure\Runtime\ProductionBusinessRuntimeGate::allows($runtimeClass))
             || request()->attributes->get('oneqay.runtime_compatibility_bridge') === 'merchant-core-ci'
             || $durableStagingPresentationAllowed;
         $merchantGrant = config('merchant_context_bootstrap.grant', []);
