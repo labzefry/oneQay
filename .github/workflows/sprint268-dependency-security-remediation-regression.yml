@@ -59,7 +59,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Verify historical or exact bounded npm-security successor paths
-        if: (github.event_name == 'pull_request') && (github.event_name != 'pull_request' || github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009')
+        if: (github.event_name == 'pull_request') && github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009' && github.head_ref != 'production-commercial-postmerge-sprint253-compat-20261009'
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_REF: ${{ github.head_ref }}
@@ -179,3 +179,19 @@ jobs:
           echo 'PRODUCTION_DEPLOYMENT=NOT_PERFORMED'
           echo 'PRODUCTION_DATABASE_MUTATION=NOT_PERFORMED'
           echo 'STAGING_MUTATION=NOT_PERFORMED'
+      - name: Assert exact postmerge compatibility-only source envelope
+        if: github.event_name == 'pull_request' && github.head_ref == 'production-commercial-postmerge-sprint253-compat-20261009'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git diff --name-only "$BASE_SHA" "$HEAD_SHA" | LC_ALL=C sort > /tmp/postmerge-actual
+          cat > /tmp/postmerge-expected <<'EOF'
+          .github/workflows/production-merchant-commercial-go-live-regression.yml
+          .github/workflows/sprint253-final-shift-close-post-activation-historical-regression-successor-compatibility.yml
+          .github/workflows/sprint268-dependency-security-remediation-regression.yml
+          EOF
+          diff -u /tmp/postmerge-expected /tmp/postmerge-actual
+          test "$(jq -r '.production_activation' ops/final-shift-close/STATE.json)" = NOT_AUTHORIZED
+          test "$(jq -r '.deployment_authority' ops/final-shift-close/STATE.json)" = NOT_GRANTED

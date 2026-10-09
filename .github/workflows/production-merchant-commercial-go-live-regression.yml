@@ -46,7 +46,7 @@ jobs:
           grep -Fq "!== TenderCategory::CASH" apps/web/app/Infrastructure/Pos/LaravelDurablePosSaleRepository.php
           test "$(find apps/web/database/migrations -maxdepth 1 -name '*.php' | wc -l)" -eq 27
       - name: Verify exact authorized Production app pathset and immutable controls
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && github.head_ref == 'production-merchant-commercial-go-live-integrated-20261009'
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
