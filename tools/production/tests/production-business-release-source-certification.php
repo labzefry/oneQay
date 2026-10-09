@@ -48,6 +48,12 @@ $write = static function (array $value) use ($manifestPath): void {
     file_put_contents($manifestPath, json_encode($value, JSON_THROW_ON_ERROR));
 };
 $write($manifest);
+// Validate the generated Phar archive shape independently before the contract verifier.
+$probe = new PharData($archive);
+$assert($probe->offsetExists($id.'/RELEASE.json'), 'embedded_release_entry');
+$decoded = json_decode($probe[$id.'/RELEASE.json']->getContent(), true, 32, JSON_THROW_ON_ERROR);
+$assert(is_array($decoded) && ($decoded['release_id'] ?? null) === $id, 'embedded_release_json');
+unset($probe);
 pbmValidate($manifestPath, $archive);
 $denials = [
     static function (array &$m): void { $m['runtime']['business_runtime_activation_ready'] = false; },
