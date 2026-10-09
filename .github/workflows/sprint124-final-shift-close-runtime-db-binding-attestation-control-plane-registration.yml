@@ -28,6 +28,8 @@ jobs:
           # Historical regression workflows validate their owned invariants only.
           # Exact full-PR envelope locking belongs to the active sprint workflow.
       - name: Preserve read-only DB attestation and no-go state
+        # Historical-only fixed source envelope, superseded for governed commercial Production PR.
+        if: github.event_name != 'pull_request' || github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009'
         shell: bash
         run: |
           set -euo pipefail

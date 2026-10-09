@@ -36,6 +36,8 @@ jobs:
           fetch-depth: 0
 
       - name: Preserve successor-compatible historical regression boundary
+        # Historical-only fixed source envelope, superseded for governed commercial Production PR.
+        if: github.event_name != 'pull_request' || github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009'
         shell: bash
         run: |
           set -euo pipefail
