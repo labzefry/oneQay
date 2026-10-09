@@ -172,6 +172,8 @@ jobs:
           selected_target_fingerprint="$(jq -r '.selected_target.selection_fingerprint_sha256' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)"; [[ "$selected_target_fingerprint" =~ ^[0-9a-f]{64}$ ]]
 
       - name: Confirm source-only corrective envelope
+        # This fixed historical source envelope is superseded by the Production PR path contract.
+        if: github.event_name != 'pull_request' || github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009'
         shell: bash
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.sha }}

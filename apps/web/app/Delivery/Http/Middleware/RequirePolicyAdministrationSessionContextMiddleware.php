@@ -47,7 +47,7 @@ final class RequirePolicyAdministrationSessionContextMiddleware
     public function handle(Request $request, Closure $next): Response
     {
         $runtime = strtolower(trim((string) config('oneqay.runtime_class', '')));
-        abort_unless(in_array($runtime, ['local', 'test', 'ci'], true), 404);
+        abort_unless((in_array($runtime, ['local', 'test', 'ci'], true) || \App\Infrastructure\Runtime\ProductionBusinessRuntimeGate::allows($runtime)), 404);
 
         try {
             $identityValue = $this->requiredSessionString($request, self::IDENTITY_SESSION);

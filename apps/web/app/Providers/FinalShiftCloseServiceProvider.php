@@ -109,7 +109,7 @@ final class FinalShiftCloseServiceProvider extends ServiceProvider
 
     private function deliveryEnabled(): bool
     {
-        return in_array(strtolower(trim($this->runtimeClass())), ['local', 'test', 'ci'], true)
+        return (in_array(strtolower(trim($this->runtimeClass())), ['local', 'test', 'ci'], true) || \App\Infrastructure\Runtime\ProductionBusinessRuntimeGate::allows(strtolower(trim($this->runtimeClass()))))
             && $this->persistenceEnabled()
             && (bool) config('oneqay.session_control.enabled', false)
             && (bool) config('oneqay.pos_sale_completion.enabled', false)

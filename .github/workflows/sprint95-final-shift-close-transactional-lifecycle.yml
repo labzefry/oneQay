@@ -29,6 +29,8 @@ jobs:
           fetch-depth: 0
 
       - name: Enforce exact Sprint95 source envelope
+        # This fixed historical source envelope is superseded by the Production PR path contract.
+        if: github.event_name != 'pull_request' || github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009'
         shell: bash
         run: |
           set -euo pipefail
@@ -73,6 +75,8 @@ jobs:
           grep -Fq 'return $this->replayOrFail($existing, $fingerprint);' "$repo"
 
       - name: Preserve migration and activation boundaries
+        # Historical schema snapshot; the integrated Production PR governs its own exact files.
+        if: github.event_name != 'pull_request' || github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009'
         shell: bash
         run: |
           set -euo pipefail

@@ -269,7 +269,7 @@ final class PrivilegedTotpRecoveryController
         $enabled = (bool) config('oneqay.authentication_recovery.enabled', false)
             && (bool) config('oneqay.privileged_totp_mfa.enabled', false);
         abort_unless($enabled && (int) config('oneqay.authentication_recovery.restricted_session_ttl_seconds', 0) === self::TTL
-            && in_array($runtime, ['local', 'test', 'ci'], true), 404);
+            && (in_array($runtime, ['local', 'test', 'ci'], true) || \App\Infrastructure\Runtime\ProductionBusinessRuntimeGate::allows($runtime)), 404);
     }
 
     private function correlationId(Request $request): string

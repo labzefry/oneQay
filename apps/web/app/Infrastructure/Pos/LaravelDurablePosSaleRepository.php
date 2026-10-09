@@ -37,6 +37,14 @@ final readonly class LaravelDurablePosSaleRepository implements DurablePosSaleRe
     {
         $this->assertCompletionOperational();
 
+        // Real-money Production processing currently supports recorded CASH tender only.
+        // MANUAL_EXTERNAL is evidence-only and cannot be represented as provider-settled money.
+        if (strtolower(trim($this->runtimeClass)) === 'production'
+            && $command->tenderCategory() !== TenderCategory::CASH) {
+            throw new PosTransactionViolation();
+        }
+
+
         $fingerprint = hash('sha256', implode('|', [
             $context->actorId(),
             $context->tenantId(),
@@ -507,7 +515,7 @@ final readonly class LaravelDurablePosSaleRepository implements DurablePosSaleRe
             throw new PosTransactionViolation();
         }
 
-        if (! in_array(strtolower(trim($this->runtimeClass)), ['local', 'test', 'ci'], true)) {
+        if (! (in_array(strtolower(trim($this->runtimeClass)), ['local', 'test', 'ci'], true) || \App\Infrastructure\Runtime\ProductionBusinessRuntimeGate::allows(strtolower(trim($this->runtimeClass))))) {
             throw new PosTransactionViolation();
         }
     }
@@ -518,7 +526,7 @@ final readonly class LaravelDurablePosSaleRepository implements DurablePosSaleRe
             throw new PosTransactionViolation();
         }
 
-        if (! in_array(strtolower(trim($this->runtimeClass)), ['local', 'test', 'ci'], true)) {
+        if (! (in_array(strtolower(trim($this->runtimeClass)), ['local', 'test', 'ci'], true) || \App\Infrastructure\Runtime\ProductionBusinessRuntimeGate::allows(strtolower(trim($this->runtimeClass))))) {
             throw new PosTransactionViolation();
         }
     }

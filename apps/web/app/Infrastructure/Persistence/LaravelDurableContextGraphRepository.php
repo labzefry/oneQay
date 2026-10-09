@@ -194,7 +194,7 @@ final readonly class LaravelDurableContextGraphRepository implements DurableCont
         }
 
         $runtime = strtolower(trim($this->runtimeClass));
-        if (! in_array($runtime, ['local', 'test', 'ci'], true)) {
+        if (! (in_array($runtime, ['local', 'test', 'ci'], true) || \App\Infrastructure\Runtime\ProductionBusinessRuntimeGate::allows($runtime))) {
             throw new DurablePersistenceViolation(
                 DurablePersistenceViolation::RUNTIME_DENIED,
                 'Durable persistence runtime is not authorized.',

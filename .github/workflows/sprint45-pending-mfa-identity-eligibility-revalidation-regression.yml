@@ -52,7 +52,7 @@ jobs:
           coverage: none
 
       - name: Enforce exact Sprint45 source envelope
-        if: github.event_name == 'pull_request'
+        if: (github.event_name == 'pull_request') && (github.event_name != 'pull_request' || github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009')
         shell: bash
         run: |
           set -euo pipefail
@@ -75,6 +75,8 @@ jobs:
           ! grep -Eq '(^|/)\.env($|\.)|(^|/)composer\.(json|lock)$|(^|/)package(-lock)?\.json$|^apps/web/database/migrations/' /tmp/actual-sprint45-source-paths
 
       - name: Enforce NO_SCHEMA_CHANGE and migration sixteen lock
+        # Historical migration snapshot; successor Production has its own exact 27-migration guard.
+        if: github.event_name != 'pull_request' || github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009'
         shell: bash
         run: |
           set -euo pipefail

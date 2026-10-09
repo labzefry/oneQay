@@ -97,7 +97,7 @@ final class PosOperationsHubServiceProvider extends ServiceProvider
 
         $this->registerDurableStagingReadinessRoute($runtimeClass);
 
-        if (in_array($runtimeClass, ['local', 'test', 'ci'], true)
+        if ((in_array($runtimeClass, ['local', 'test', 'ci'], true) || \App\Infrastructure\Runtime\ProductionBusinessRuntimeGate::allows($runtimeClass))
             && (bool) config('database.oneqay_persistence_enabled', false)
             && $sessionControlEnabled
             && (bool) config('pos_operations_hub.enabled', false)) {

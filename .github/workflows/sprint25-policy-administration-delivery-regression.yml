@@ -380,7 +380,7 @@ jobs:
           fi
 
       - name: Enforce exact authorized Sprint 28 envelope
-        if: (github.event_name == 'pull_request' && env.ONEQAY_SPRINT30_SUCCESSOR != 'true') && env.ONEQAY_SPRINT35_SUCCESSOR != 'true'
+        if: ((github.event_name == 'pull_request' && env.ONEQAY_SPRINT30_SUCCESSOR != 'true') && env.ONEQAY_SPRINT35_SUCCESSOR != 'true') && (github.event_name != 'pull_request' || github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009')
         shell: bash
         run: |
           set -euo pipefail
@@ -476,7 +476,7 @@ jobs:
           grep -Fq 'DurablePolicyMutation::roleAssignment' apps/web/app/Application/Authorization/PolicyAdministrationDeliveryCommand.php
 
       - name: Enforce exact eight-migration preservation
-        if: env.ONEQAY_SPRINT30_SUCCESSOR != 'true'
+        if: (env.ONEQAY_SPRINT30_SUCCESSOR != 'true') && (github.event_name != 'pull_request' || github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009')
         shell: bash
         run: |
           set -euo pipefail

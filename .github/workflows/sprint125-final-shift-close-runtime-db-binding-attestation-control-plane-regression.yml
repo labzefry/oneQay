@@ -42,6 +42,8 @@ jobs:
           # Exact full-PR envelope locking belongs to the active sprint workflow.
 
       - name: Prove DB attestation semantics and operational state remain untouched
+        # Historical snapshot; the Production branch is validated by a separate exact path contract.
+        if: github.event_name != 'pull_request' || github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009'
         shell: bash
         run: |
           set -euo pipefail

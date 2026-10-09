@@ -316,7 +316,7 @@ final readonly class LaravelPosSaleHistoryWorkspaceRepository implements PosSale
         if (! $this->persistenceEnabled
             || ! $this->reportingEnabled
             || ! $this->historyEnabled
-            || ! in_array(strtolower(trim($this->runtimeClass)), ['local', 'test', 'ci'], true)) {
+            || ! (in_array(strtolower(trim($this->runtimeClass)), ['local', 'test', 'ci'], true) || \App\Infrastructure\Runtime\ProductionBusinessRuntimeGate::allows(strtolower(trim($this->runtimeClass))))) {
             throw new PosTransactionViolation();
         }
     }

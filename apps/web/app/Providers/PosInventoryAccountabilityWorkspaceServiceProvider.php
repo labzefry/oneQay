@@ -49,7 +49,7 @@ final class PosInventoryAccountabilityWorkspaceServiceProvider extends ServicePr
             && (int) config('oneqay.session_control.idle_ttl_seconds', 0) === 7200
             && (int) config('oneqay.session_control.absolute_ttl_seconds', 0) === 43200;
 
-        if (! in_array($runtimeClass, ['local', 'test', 'ci'], true)
+        if (! (in_array($runtimeClass, ['local', 'test', 'ci'], true) || \App\Infrastructure\Runtime\ProductionBusinessRuntimeGate::allows($runtimeClass))
             || ! (bool) config('database.oneqay_persistence_enabled', false)
             || ! $sessionControlEnabled
             || ! (bool) config('pos_inventory_accountability.enabled', false)) {

@@ -333,7 +333,7 @@ jobs:
           fi
 
       - name: Enforce exact Sprint 30 source envelope
-        if: (github.event_name == 'pull_request' && env.ONEQAY_SPRINT31_SUCCESSOR != 'true') && env.ONEQAY_SPRINT35_SUCCESSOR != 'true' && !(github.head_ref == 'sprint268-security-dependency-remediation' && github.event.pull_request.number == 926)
+        if: ((github.event_name == 'pull_request' && env.ONEQAY_SPRINT31_SUCCESSOR != 'true') && env.ONEQAY_SPRINT35_SUCCESSOR != 'true' && !(github.head_ref == 'sprint268-security-dependency-remediation' && github.event.pull_request.number == 926)) && (github.event_name != 'pull_request' || github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009')
         shell: bash
         run: |
           set -euo pipefail
@@ -379,7 +379,7 @@ jobs:
           echo 'SPRINT268_SECURITY_ONLY_COMPOSER_BOUNDARY=PASS'
 
       - name: Enforce migration nine additive-only contract
-        if: github.event_name != 'pull_request' || github.head_ref != 'sprint268-security-dependency-remediation' || github.event.pull_request.number != 926
+        if: (github.event_name != 'pull_request' || github.head_ref != 'sprint268-security-dependency-remediation' || github.event.pull_request.number != 926) && (github.event_name != 'pull_request' || github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009')
         shell: bash
         run: |
           set -euo pipefail

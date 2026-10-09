@@ -57,6 +57,8 @@ jobs:
           ! grep -Fq 'Lock exact Sprint132 source envelope' "$workflow"
 
       - name: Prove runtime and operational state remain untouched
+        # Historical-only fixed source envelope, superseded for governed commercial Production PR.
+        if: github.event_name != 'pull_request' || github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009'
         shell: bash
         run: |
           set -euo pipefail

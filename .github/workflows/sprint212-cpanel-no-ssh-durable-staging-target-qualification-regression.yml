@@ -294,6 +294,21 @@ jobs:
             mapfile -t security_successor_paths < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web | LC_ALL=C sort)
             expected_security_successor_paths=('apps/web/package-lock.json' 'apps/web/package.json')
             test "${security_successor_paths[*]}" = "${expected_security_successor_paths[*]}"
+          elif [ "$HEAD_REF" = 'production-merchant-commercial-go-live-integrated-20261009' ]; then
+            # Exact PR app-path contract; deny unrelated app, migration and credential changes.
+            git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web | grep -v '^apps/web/tests/' | LC_ALL=C sort > /tmp/oneqay-prod-biz-actual-paths || true
+            test -s /tmp/oneqay-prod-biz-actual-paths
+            diff -u ops/production/BUSINESS_RUNTIME_AUTHORIZED_PATHS.txt /tmp/oneqay-prod-biz-actual-paths
+            test -z "$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web/database/migrations)"
+            while IFS= read -r changed; do
+              case "$changed" in
+                apps/web/app/Infrastructure/Runtime/ProductionBusinessRuntimeGate.php) grep -Fq 'business_runtime_activation_ready' "$changed" ;;
+                apps/web/app/*.php|apps/web/app/*/*.php|apps/web/app/*/*/*.php|apps/web/app/*/*/*/*.php|apps/web/routes/web.php|apps/web/resources/views/app.blade.php)
+                  grep -Fq 'ProductionBusinessRuntimeGate::allows' "$changed"
+                  grep -Fq "['local', 'test', 'ci']" "$changed" ;;
+                *) echo "Unexpected Production business app path: $changed" >&2; exit 1 ;;
+              esac
+            done < /tmp/oneqay-prod-biz-actual-paths
           else
             test -z "$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web | grep -v '^apps/web/tests/' || true)"
           fi

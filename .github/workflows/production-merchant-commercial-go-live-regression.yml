@@ -1,0 +1,93 @@
+# Author by Lab | zefry
+name: Production Merchant Commercial Go-Live Integration
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  merchant-commercial-runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      APP_NAME: oneQay
+      APP_ENV: testing
+      APP_KEY: base64:YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWE=
+      APP_DEBUG: 'false'
+      APP_URL: http://localhost
+      ONEQAY_RUNTIME_CLASS: ci
+      ONEQAY_PERSISTENCE_ENABLED: 'false'
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+      LOG_CHANNEL: stderr
+    steps:
+      - name: Checkout exact commit
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: PHP 8.3
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        with:
+          php-version: '8.3'
+          extensions: pdo_mysql,pdo_sqlite,mbstring,openssl
+          tools: composer:v2
+          coverage: none
+      - name: Verify no schema mutation or legacy staging cutover
+        run: |
+          test -f ops/production/BUSINESS_RUNTIME_AUTHORIZED_PATHS.txt
+          test "$(grep -c 'ProductionBusinessRuntimeGate::allows' apps/web/routes/web.php)" -eq 7
+          grep -Fq "['local', 'test', 'ci']" apps/web/app/Providers/FinalShiftCloseServiceProvider.php
+          ! grep -Fq 'ProductionBusinessRuntimeGate::allows' apps/web/app/Console/Commands/MerchantContextBootstrapCommand.php
+          ! grep -Fq 'ProductionBusinessRuntimeGate::allows' apps/web/app/Application/Preview/TechnicalPreviewRuntimePolicy.php
+          grep -Fq "!== TenderCategory::CASH" apps/web/app/Infrastructure/Pos/LaravelDurablePosSaleRepository.php
+          test "$(find apps/web/database/migrations -maxdepth 1 -name '*.php' | wc -l)" -eq 27
+      - name: Verify exact authorized Production app pathset and immutable controls
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "$BASE_SHA"
+          git fetch --no-tags origin "$HEAD_SHA"
+          git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web | grep -v '^apps/web/tests/' | LC_ALL=C sort > /tmp/production-app-actual-paths
+          diff -u ops/production/BUSINESS_RUNTIME_AUTHORIZED_PATHS.txt /tmp/production-app-actual-paths
+          git diff --quiet "$BASE_SHA" "$HEAD_SHA" -- apps/web/database/migrations apps/web/composer.json apps/web/composer.lock apps/web/package.json apps/web/package-lock.json apps/web/bootstrap/providers.php
+          git diff --quiet "$BASE_SHA" "$HEAD_SHA" -- ops/final-shift-close/STATE.json ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+          test "$(jq -r '.production_activation' ops/final-shift-close/STATE.json)" = NOT_AUTHORIZED
+          test "$(jq -r '.deployment_authority' ops/final-shift-close/STATE.json)" = NOT_GRANTED
+          grep -Fq "['local', 'test', 'ci']" apps/web/app/Console/Commands/MerchantContextBootstrapCommand.php
+          grep -Fq "['local', 'test', 'testing', 'ci']" apps/web/app/Application/Preview/TechnicalPreviewRuntimePolicy.php
+          grep -Fq "business_runtime_activation_ready" apps/web/app/Infrastructure/Runtime/ProductionBusinessRuntimeGate.php
+          grep -Fq "ONEQAY_PRODUCTION_BUSINESS_TRAFFIC_AUTHORIZED" apps/web/app/Infrastructure/Runtime/ProductionBusinessRuntimeGate.php
+          grep -Fq "ONEQAY_PRODUCTION_TRANSACTION_ACTIVATION_ENABLED" apps/web/app/Infrastructure/Runtime/ProductionBusinessRuntimeGate.php
+          ! find apps/web -type f -name '*.env' -print -quit | grep -q .
+          echo "commercial_production_exact_path_and_operational_boundaries_pass"
+
+      - name: PHP lint for all application source
+        run: |
+          find apps/web/app -type f -name '*.php' -print0 | xargs -0 -n 1 php -l > "$RUNNER_TEMP/php-lint.log"
+          php -l apps/web/routes/web.php
+          tail -n 2 "$RUNNER_TEMP/php-lint.log"
+      - name: Hardened production business admission regression
+        run: |
+          php apps/web/tests/production-commercial-runtime-integration.php
+          php apps/web/tests/production-business-runtime-gate.php
+      - name: Install dependencies without secrets
+        run: |
+          cd apps/web
+          composer validate --no-check-publish
+          composer install --no-interaction --prefer-dist --no-progress
+      - name: Full first-party Laravel contract and POS regressions
+        run: |
+          cd apps/web
+          composer test
+      - name: Keep dark release build governance unchanged
+        run: |
+          grep -Fq '"business_runtime_activation_ready":false' tools/build-production-release.sh
+          grep -Fq "prodManifestEq(" tools/validate-production-release-manifest.php
+          git diff --exit-code

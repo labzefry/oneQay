@@ -45,7 +45,10 @@ $assert(str_contains($routesSource, "'throttle:5,1', 'throttle:20,60'"), 'step-u
 $assert(str_contains($controllerSource, '$session->invalidate();'), 'successful step-up does not rotate session');
 $assert(str_contains($controllerSource, '$session->regenerateToken();'), 'successful step-up does not regenerate CSRF token');
 $assert(str_contains($controllerSource, 'FirstPartySessionKeys::MFA_VERIFIED_AT'), 'login-level MFA evidence is not preserved separately');
-$assert(str_contains($controllerSource, "private const SCOPE = 'policy_administration'"), 'exact step-up scope missing');
+$assert(str_contains($controllerSource, "private const POLICY_SCOPE = 'policy_administration'"), 'exact policy-administration scope missing');
+$assert(str_contains($controllerSource, "private const SESSION_CONTROL_SCOPE = 'session_control'"), 'separate session-control scope missing');
+$assert(str_contains($controllerSource, 'return $this->reauthenticateForScope($request, self::POLICY_SCOPE, false);'), 'policy step-up must retain its exact scope');
+$assert(str_contains($controllerSource, 'return $this->reauthenticateForScope($request, self::SESSION_CONTROL_SCOPE, true);'), 'session-control step-up must require its own scope');
 $assert(str_contains($controllerSource, 'FirstPartySessionKeys::pending()'), 'pending MFA state is not rejected');
 $assert(! str_contains($controllerSource, "'tenant_id' => \$payload"), 'controller trusts client-selected tenant context');
 $assert(str_contains($middlewareSource, 'STEP_UP_FRESHNESS_SECONDS = 300'), 'middleware freshness constant changed');
