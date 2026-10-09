@@ -289,7 +289,7 @@ final readonly class LaravelRecoveryCodeRepository implements RecoveryCodeReposi
             );
         }
 
-        if (! in_array(strtolower(trim($this->runtimeClass)), ['local', 'test', 'ci'], true)) {
+        if (! (in_array(strtolower(trim($this->runtimeClass)), ['local', 'test', 'ci'], true) || \App\Infrastructure\Runtime\ProductionBusinessRuntimeGate::allows(strtolower(trim($this->runtimeClass))))) {
             throw new DurablePersistenceViolation(
                 DurablePersistenceViolation::RUNTIME_DENIED,
                 'Durable persistence runtime is not authorized.',

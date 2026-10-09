@@ -441,7 +441,7 @@ final readonly class LaravelPrivilegedTotpMfaRepository implements PrivilegedTot
         }
 
         $runtime = strtolower(trim($this->runtimeClass));
-        if (! in_array($runtime, ['local', 'test', 'ci'], true)) {
+        if (! (in_array($runtime, ['local', 'test', 'ci'], true) || \App\Infrastructure\Runtime\ProductionBusinessRuntimeGate::allows($runtime))) {
             throw new PrivilegedTotpMfaViolation(
                 PrivilegedTotpMfaViolation::RUNTIME_DENIED,
                 'Privileged TOTP MFA runtime is not authorized.',
