@@ -48,6 +48,8 @@ jobs:
           # Exact full-PR envelope locking belongs to the active sprint workflow.
 
       - name: Prove runtime and operational state remain untouched
+        # Historical-only snapshot; new commercial PR uses exact production source path governance.
+        if: github.event_name != 'pull_request' || github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009'
         shell: bash
         run: |
           set -euo pipefail
