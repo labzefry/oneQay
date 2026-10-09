@@ -43,7 +43,7 @@ final readonly class LaravelPersistenceTransaction implements PersistenceTransac
         }
 
         $runtime = strtolower(trim($this->runtimeClass));
-        if (! in_array($runtime, ['local', 'test', 'ci'], true)) {
+        if (! \App\Infrastructure\Runtime\ProductionBusinessRuntimeGate::allows($runtime)) {
             throw new DurablePersistenceViolation(
                 DurablePersistenceViolation::RUNTIME_DENIED,
                 'Durable persistence runtime is not authorized.',

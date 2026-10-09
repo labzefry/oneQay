@@ -468,7 +468,7 @@ final readonly class LaravelFirstPartyIdentityEligibilityAdministrationRepositor
             );
         }
 
-        if (! in_array(strtolower(trim($this->runtimeClass)), ['local', 'test', 'ci'], true)) {
+        if (! \App\Infrastructure\Runtime\ProductionBusinessRuntimeGate::allows(strtolower(trim($this->runtimeClass)))) {
             throw new FirstPartyIdentityEligibilityAdministrationViolation(
                 FirstPartyIdentityEligibilityAdministrationViolation::RUNTIME_DENIED,
                 'Identity authentication eligibility administration runtime is not authorized.',
@@ -485,7 +485,7 @@ final readonly class LaravelFirstPartyIdentityEligibilityAdministrationRepositor
             );
         }
 
-        if (! in_array(strtolower(trim($this->runtimeClass)), ['local', 'test', 'ci'], true)) {
+        if (! \App\Infrastructure\Runtime\ProductionBusinessRuntimeGate::allows(strtolower(trim($this->runtimeClass)))) {
             throw new DurablePersistenceViolation(
                 DurablePersistenceViolation::RUNTIME_DENIED,
                 'Durable persistence runtime is not authorized.',

@@ -77,7 +77,7 @@ final readonly class LaravelFirstPartyIdentityDisablementSessionTerminationRepos
             );
         }
 
-        if (! in_array(strtolower(trim($this->runtimeClass)), ['local', 'test', 'ci'], true)) {
+        if (! \App\Infrastructure\Runtime\ProductionBusinessRuntimeGate::allows(strtolower(trim($this->runtimeClass)))) {
             throw new DurablePersistenceViolation(
                 DurablePersistenceViolation::RUNTIME_DENIED,
                 'Identity disablement session termination runtime is not authorized.',
