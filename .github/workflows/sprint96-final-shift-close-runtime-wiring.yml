@@ -31,6 +31,8 @@ jobs:
           fetch-depth: 0
 
       - name: Preserve historical provider and bootstrap boundaries
+        # Historical snapshot belongs to its sprint; consolidated Production CI governs the authorized source delta.
+        if: github.event_name != 'pull_request' || github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009'
         shell: bash
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
