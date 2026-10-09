@@ -60,13 +60,22 @@ function pbmValidate(string $manifestPath, string $archivePath): void {
     if ($archivePath === '' || is_link($archivePath) || !is_file($archivePath) || !is_readable($archivePath)) pbmFail('archive');
     pbmEq($m['artifact']['size_bytes'] ?? null, filesize($archivePath), 'size');
     if (!hash_equals($sha, hash_file('sha256', $archivePath))) pbmFail('sha_mismatch');
-    try {
-        $archive = new PharData($archivePath);
-        if (!$archive->offsetExists($id.'/RELEASE.json')) pbmFail('release_missing');
-        $raw = $archive[$id.'/RELEASE.json']->getContent();
-        if (!is_string($raw) || strlen($raw) > 65536) pbmFail('release_size');
-        $release = json_decode($raw, true, 32, JSON_THROW_ON_ERROR);
-    } catch (Throwable) { pbmFail('release_unreadable'); }
+    // Validate only the exact release metadata member. Use tar (the packaging tool)
+    // instead of PharData, whose gzip member reads vary across supported PHP builds.
+    // Array argv deliberately avoids shell interpolation; no extraction to disk occurs.
+    $command = ['tar', '-xOzf', $archivePath, '--', $id.'/RELEASE.json'];
+    $pipes = [];
+    $process = proc_open($command, [0=>['pipe','r'],1=>['pipe','w'],2=>['pipe','w']], $pipes);
+    if (!is_resource($process)) pbmFail('release_archive_tool');
+    fclose($pipes[0]);
+    $raw = stream_get_contents($pipes[1], 65537);
+    fclose($pipes[1]);
+    $error = stream_get_contents($pipes[2], 1024);
+    fclose($pipes[2]);
+    $exit = proc_close($process);
+    if ($exit !== 0 || !is_string($raw) || strlen($raw) < 2 || strlen($raw) > 65536) pbmFail('release_unreadable');
+    try { $release = json_decode($raw, true, 32, JSON_THROW_ON_ERROR); }
+    catch (Throwable) { pbmFail('release_json'); }
     if (!is_array($release) || array_is_list($release)) pbmFail('release_shape');
     foreach ([
         'release_id'=>$id,'source_commit'=>$source,'application_tree_sha'=>$tree,
