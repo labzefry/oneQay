@@ -226,7 +226,10 @@ final readonly class LaravelFirstControlPrincipalCredentialBootstrapRepository i
             );
         }
 
-        if (! $this->bootstrapEnabled) {
+        // The CLI preactivation scope is independently qualified and short-lived.
+        // Do not require a persistent production .env switch for first credentials.
+        if (! $this->bootstrapEnabled
+            && ! \App\Infrastructure\Bootstrap\ProductionMerchantProvisioningScope::allows($this->runtimeClass)) {
             $this->fail(
                 FirstControlPrincipalCredentialBootstrapViolation::FEATURE_DISABLED,
                 'First control principal credential bootstrap is disabled.',

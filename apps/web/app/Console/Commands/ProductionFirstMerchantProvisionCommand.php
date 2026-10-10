@@ -47,6 +47,9 @@ final class ProductionFirstMerchantProvisionCommand extends Command
                 || is_link($directory)) {
                 return $this->failClosed();
             }
+            // Fail before generating a private credential/once marker unless the
+            // exact source/host/persistence/traffic-off preconditions qualify.
+            ProductionMerchantProvisioningScope::execute(static fn (): bool => true);
             $credentialFile = $directory.'/oneqaydev-first-merchant-credential.json';
             if (file_exists($credentialFile) || is_link($credentialFile)) {
                 return $this->failClosed();
