@@ -1,0 +1,46 @@
+# Author by Lab | zefry
+name: oneQayDev Business Activation Read-Only Preflight
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'tools/production/cpanel/inspect-oneqaydev-business-activation.php'
+      - 'tools/production/tests/oneqaydev-business-activation-preflight.php'
+      - '.github/workflows/oneqaydev-business-activation-preflight.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'tools/production/cpanel/inspect-oneqaydev-business-activation.php'
+      - 'tools/production/tests/oneqaydev-business-activation-preflight.php'
+      - '.github/workflows/oneqaydev-business-activation-preflight.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout immutable commit
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: PHP 8.3
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        with:
+          php-version: '8.3'
+          extensions: pdo_mysql,json,curl
+          coverage: none
+      - name: Verify read-only scope and syntax
+        run: |
+          set -euo pipefail
+          php -l tools/production/cpanel/inspect-oneqaydev-business-activation.php
+          php -l tools/production/tests/oneqaydev-business-activation-preflight.php
+          php tools/production/tests/oneqaydev-business-activation-preflight.php
+          test ! -e apps/web/.env
+          test ! -e tools/production/cpanel/oneqaydev-business-authority.json
+          grep -Fq "business_traffic' => 'OFF'" tools/production/cpanel/inspect-oneqaydev-business-activation.php
+          grep -Fq "activation' => 'NOT_EXECUTED'" tools/production/cpanel/inspect-oneqaydev-business-activation.php
+      - name: No local checkout mutation
+        run: git diff --exit-code
