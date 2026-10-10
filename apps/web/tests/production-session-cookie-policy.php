@@ -2,6 +2,8 @@
 declare(strict_types=1);
 // Author by Lab | zefry — Production cookie policy verification.
 require_once dirname(__DIR__).'/vendor/autoload.php';
+// Bootstrap the path resolver used by the native Laravel storage_path helper.
+$app = new \Illuminate\Foundation\Application(dirname(__DIR__));
 if (!function_exists('env')) {
     function env(string $key, mixed $default = null): mixed {
         return array_key_exists($key, $_ENV) ? $_ENV[$key] : $default;
