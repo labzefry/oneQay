@@ -87,6 +87,29 @@ $previewViolations = CriticalConfiguration::violations([
 ]);
 $assert($previewViolations === [], 'preview runtime class must satisfy readiness with a valid non-debug configuration');
 
+// Production has its own strict configuration readiness, independent of the
+// separately qualified merchant/traffic ProductionBusinessRuntimeGate.
+$productionValues = [
+    'app_key' => $testKey,
+    'runtime_class' => 'production',
+    'app_debug' => false,
+    'app_env' => 'production',
+];
+$assert(CriticalConfiguration::violations($productionValues) === [], 'correctly configured Production must pass config readiness');
+$assert(CriticalConfiguration::isReady($productionValues), 'configured Production readiness must be true');
+$assert(in_array('runtime_class', CriticalConfiguration::violations(array_replace($productionValues, [
+    'app_env' => 'testing',
+])), true), 'Production must reject a non-Production APP_ENV');
+$assert(in_array('runtime_class', CriticalConfiguration::violations(array_replace($productionValues, [
+    'app_key' => 'base64:'.base64_encode('too-short'),
+])), true), 'Production must reject an undersized application key');
+$assert(in_array('app_debug', CriticalConfiguration::violations(array_replace($productionValues, [
+    'app_debug' => true,
+])), true), 'Production must deny debug mode');
+$assert(in_array('runtime_class', CriticalConfiguration::violations(array_replace($productionValues, [
+    'app_debug' => true,
+])), true), 'Production must remain configuration denied when debugging is enabled');
+
 $violations = CriticalConfiguration::violations([
     'app_key' => 'base64:REPLACE_WITH_A_LOCAL_OR_TEST_KEY',
     'runtime_class' => 'production',

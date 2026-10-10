@@ -21,7 +21,7 @@ final class CriticalConfiguration
             ? strtolower(trim($values['runtime_class']))
             : '';
 
-        if (! in_array($runtimeClass, ['local', 'test', 'ci', 'preview'], true)) {
+        if (! in_array($runtimeClass, ['local', 'test', 'ci', 'preview', 'production'], true)) {
             $violations[] = 'runtime_class';
         }
 
@@ -32,6 +32,21 @@ final class CriticalConfiguration
 
         if ($debug && ! in_array($environment, ['local', 'testing'], true)) {
             $violations[] = 'app_debug';
+        }
+
+        // Production readiness is configuration readiness, NOT permission to
+        // activate merchant traffic. ProductionBusinessRuntimeGate remains the
+        // separate deny-by-default authorization and release-source gate.
+        if ($runtimeClass === 'production') {
+            $decodedKey = str_starts_with($appKey, 'base64:')
+                ? base64_decode(substr($appKey, 7), true)
+                : false;
+            if ($environment !== 'production'
+                || $debug
+                || ! is_string($decodedKey)
+                || strlen($decodedKey) !== 32) {
+                $violations[] = 'runtime_class';
+            }
         }
 
         return array_values(array_unique($violations));

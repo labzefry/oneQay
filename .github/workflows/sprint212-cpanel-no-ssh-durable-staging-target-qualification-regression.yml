@@ -251,7 +251,7 @@ jobs:
           done
 
       - name: Prove application source remains untouched or bounded successor
-        if: github.event_name == 'pull_request' && github.head_ref != 'sprint240-durable-staging-runtime-promotion-successor'
+        if: (github.event_name == 'pull_request' && github.head_ref != 'sprint240-durable-staging-runtime-promotion-successor') && (github.event_name != 'pull_request' || github.head_ref != 'production-dev-readiness-and-merchant-foundation-20261010')
         shell: bash
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}

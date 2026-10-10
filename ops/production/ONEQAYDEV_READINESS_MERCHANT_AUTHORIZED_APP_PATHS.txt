@@ -1,0 +1,13 @@
+apps/web/app/Console/Commands/ProductionFirstMerchantProvisionCommand.php
+apps/web/app/Infrastructure/Access/LaravelDurableOrganizationalAccessRepository.php
+apps/web/app/Infrastructure/Authorization/LaravelDurablePolicyAdministrationRepository.php
+apps/web/app/Infrastructure/Authorization/LaravelDurableRolePermissionRepository.php
+apps/web/app/Infrastructure/Authorization/LaravelInitialTenantAdministratorProvisioningRepository.php
+apps/web/app/Infrastructure/Bootstrap/LaravelMerchantContextBootstrapStateRepository.php
+apps/web/app/Infrastructure/Bootstrap/ProductionMerchantProvisioningScope.php
+apps/web/app/Infrastructure/Configuration/CriticalConfiguration.php
+apps/web/app/Infrastructure/Identity/LaravelFirstControlPrincipalCredentialBootstrapRepository.php
+apps/web/app/Infrastructure/Persistence/LaravelDurableContextGraphRepository.php
+apps/web/app/Infrastructure/Persistence/LaravelPersistenceTransaction.php
+apps/web/tests/production-merchant-provisioning-scope.php
+apps/web/tests/run.php

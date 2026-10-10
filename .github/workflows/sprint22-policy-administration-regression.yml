@@ -384,7 +384,7 @@ jobs:
           fi
 
       - name: Preserve dependency manifests root foundations and Sprint 28 migration boundary
-        if: ((github.event_name == 'pull_request' && env.ONEQAY_SPRINT30_SUCCESSOR != 'true') && env.ONEQAY_SPRINT35_SUCCESSOR != 'true') && (github.event_name != 'pull_request' || github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009')
+        if: (((github.event_name == 'pull_request' && env.ONEQAY_SPRINT30_SUCCESSOR != 'true') && env.ONEQAY_SPRINT35_SUCCESSOR != 'true') && (github.event_name != 'pull_request' || github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009')) && (github.event_name != 'pull_request' || github.head_ref != 'production-dev-readiness-and-merchant-foundation-20261010')
         shell: bash
         run: |
           set -euo pipefail
@@ -441,7 +441,7 @@ jobs:
           grep -Fq 'PersistenceTransaction' apps/web/app/Application/Identity/InitialPasswordEnrollmentService.php
 
       - name: Enforce eight-migration protected-control and scope-containment boundaries
-        if: (env.ONEQAY_SPRINT30_SUCCESSOR != 'true') && (github.event_name != 'pull_request' || github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009')
+        if: ((env.ONEQAY_SPRINT30_SUCCESSOR != 'true') && (github.event_name != 'pull_request' || github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009')) && (github.event_name != 'pull_request' || github.head_ref != 'production-dev-readiness-and-merchant-foundation-20261010')
         shell: bash
         run: |
           set -euo pipefail

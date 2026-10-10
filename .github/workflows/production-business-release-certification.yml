@@ -52,6 +52,33 @@ jobs:
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
         with:
           node-version: 24.19.0
+      - name: Enforce exact oneQayDev Production source envelope
+        if: github.event_name == 'pull_request' && github.head_ref == 'production-dev-readiness-and-merchant-foundation-20261010'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          git diff --name-only "$BASE_SHA" HEAD -- apps/web | LC_ALL=C sort > /tmp/oneqaydev-authorized-app-paths
+          diff -u ops/production/ONEQAYDEV_READINESS_MERCHANT_AUTHORIZED_APP_PATHS.txt /tmp/oneqaydev-authorized-app-paths
+          test -z "$(git diff --name-only "$BASE_SHA" HEAD -- apps/web/database/migrations)"
+          test -z "$(git diff --name-only "$BASE_SHA" HEAD -- apps/web/composer.json apps/web/composer.lock apps/web/package.json apps/web/package-lock.json)"
+          test ! -e apps/web/.env
+          grep -Fq "ProductionMerchantProvisioningScope::allows" apps/web/app/Infrastructure/Bootstrap/LaravelMerchantContextBootstrapStateRepository.php
+          grep -Fq "ProductionMerchantProvisioningScope::allows" apps/web/app/Infrastructure/Identity/LaravelFirstControlPrincipalCredentialBootstrapRepository.php
+          grep -Fq 'business_runtime_activation_ready' apps/web/app/Infrastructure/Runtime/ProductionBusinessRuntimeGate.php
+          grep -Fq 'production_traffic_activation_authorized":false' tools/build-production-business-release.sh
+          git diff --name-only "$BASE_SHA" HEAD -- .github/workflows | grep -v '^.github/workflows/production-business-release-certification.yml$' | LC_ALL=C sort > /tmp/oneqaydev-authorized-workflows
+          diff -u ops/production/ONEQAYDEV_READINESS_MERCHANT_AUTHORIZED_WORKFLOW_PATHS.txt /tmp/oneqaydev-authorized-workflows
+          while IFS= read -r historical; do
+            git diff --unified=0 "$BASE_SHA" HEAD -- "$historical" > /tmp/oneqaydev-workflow-diff
+            if grep -E '^[+-][^+-]' /tmp/oneqaydev-workflow-diff | grep -Ev '^[+-] *if: ' ; then
+              echo "Refusing non-condition modification to preserved workflow: $historical" >&2
+              exit 1
+            fi
+            grep -Fq 'production-dev-readiness-and-merchant-foundation-20261010' "$historical"
+          done < /tmp/oneqaydev-authorized-workflows
+          echo "oneqaydev exact source envelope verified; historical source-envelope steps superseded only for this exact PR"
+
       - name: Check successor source, schema, and denied substitutions
         run: |
           set -euo pipefail
@@ -59,6 +86,8 @@ jobs:
           php -l tools/validate-production-business-release-manifest.php
           php -l tools/production/tests/production-business-release-source-certification.php
           php -r 'json_decode(file_get_contents("release/production-business-manifest-v2.schema.json"), true, 64, JSON_THROW_ON_ERROR);'
+          php -l apps/web/app/Console/Commands/ProductionFirstMerchantProvisionCommand.php
+          php -l apps/web/app/Infrastructure/Bootstrap/ProductionMerchantProvisioningScope.php
           php tools/production/tests/production-business-release-source-certification.php
           grep -Fq '"business_runtime_activation_ready":false' tools/build-production-release.sh
           grep -Fq '"business_runtime_activation_ready":true' tools/build-production-business-release.sh
@@ -79,6 +108,9 @@ jobs:
           set -euo pipefail
           php apps/web/tests/production-commercial-runtime-integration.php
           php apps/web/tests/production-business-runtime-gate.php
+          php apps/web/tests/initial-password-enrollment.php
+          php apps/web/tests/privileged-reauthentication-step-up.php
+          php apps/web/tests/production-merchant-provisioning-scope.php
           php apps/web/tests/merchant-context-guarded-bootstrap-delivery.php
           php apps/web/tests/merchant-pos-ready-bootstrap.php
           php apps/web/tests/pos-catalog-preparation-durable.php
