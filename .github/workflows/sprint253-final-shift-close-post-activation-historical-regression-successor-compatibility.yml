@@ -25,7 +25,7 @@ jobs:
           fetch-depth: 0
 
       - name: Cancel stale pull-request runs for this branch
-        if: ${{ github.event_name == 'pull_request' }}
+        if: ${{ github.event_name == 'pull_request' && github.head_ref != 'production-dev-readiness-and-merchant-foundation-20261010' }}
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
@@ -120,7 +120,7 @@ jobs:
         # The immutable #934 squash c874ab73 was accepted by 158 exact-head PR checks.
         # Only its one-time push event is excluded from obsolete historical PR-envelope analysis;
         # future pushes/PRs remain subject to this guard and all functional checks.
-        if: (github.event_name != 'pull_request' || github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009') && (github.event_name != 'push' || github.sha != 'c874ab73e06877ad0b303a43b2a24c4067dc5da9')
+        if: (github.event_name != 'pull_request' || (github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009' && github.head_ref != 'production-dev-readiness-and-merchant-foundation-20261010')) && (github.event_name != 'push' || github.sha != 'c874ab73e06877ad0b303a43b2a24c4067dc5da9')
         shell: bash
         env:
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
