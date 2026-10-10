@@ -67,6 +67,85 @@ jobs:
           grep -Fq "ProductionMerchantProvisioningScope::allows" apps/web/app/Infrastructure/Identity/LaravelFirstControlPrincipalCredentialBootstrapRepository.php
           grep -Fq 'business_runtime_activation_ready' apps/web/app/Infrastructure/Runtime/ProductionBusinessRuntimeGate.php
           grep -Fq 'production_traffic_activation_authorized":false' tools/build-production-business-release.sh
+          git diff --name-only "$BASE_SHA" HEAD -- .github/workflows | grep -v '^.github/workflows/production-business-release-certification.yml
+
+      - name: Check successor source, schema, and denied substitutions
+        run: |
+          set -euo pipefail
+          bash -n tools/build-production-business-release.sh
+          php -l tools/validate-production-business-release-manifest.php
+          php -l tools/production/tests/production-business-release-source-certification.php
+          php -r 'json_decode(file_get_contents("release/production-business-manifest-v2.schema.json"), true, 64, JSON_THROW_ON_ERROR);'
+          php -l apps/web/app/Console/Commands/ProductionFirstMerchantProvisionCommand.php
+          php -l apps/web/app/Infrastructure/Bootstrap/ProductionMerchantProvisioningScope.php
+          php tools/production/tests/production-business-release-source-certification.php
+          grep -Fq '"business_runtime_activation_ready":false' tools/build-production-release.sh
+          grep -Fq '"business_runtime_activation_ready":true' tools/build-production-business-release.sh
+          grep -Fq 'production_traffic_activation_authorized":false' tools/build-production-business-release.sh
+          test "$(find apps/web/database/migrations -maxdepth 1 -name '*.php' | wc -l)" -eq 27
+      - name: Install locked Laravel and front-end dependencies
+        run: |
+          set -euo pipefail
+          cd apps/web
+          composer validate --no-check-publish
+          composer install --no-interaction --prefer-dist --no-progress
+          npm ci --ignore-scripts --no-fund
+          npm run type-check
+          npm run build
+      - name: Run POS, isolation and merchant source-certification regressions on PR
+        if: github.event_name == 'pull_request'
+        run: |
+          set -euo pipefail
+          php apps/web/tests/production-commercial-runtime-integration.php
+          php apps/web/tests/production-business-runtime-gate.php
+          php apps/web/tests/production-merchant-provisioning-scope.php
+          php apps/web/tests/merchant-context-guarded-bootstrap-delivery.php
+          php apps/web/tests/merchant-pos-ready-bootstrap.php
+          php apps/web/tests/pos-catalog-preparation-durable.php
+          php apps/web/tests/pos-inventory-baseline-durable.php
+          php apps/web/tests/pos-shift-opening-durable.php
+          php apps/web/tests/pos-shift-opening-cash-durable.php
+          php apps/web/tests/pos-sale-completion-durable.php
+          php apps/web/tests/pos-shift-closing-cash-durable.php
+          php apps/web/tests/pos-final-shift-close-delivery-durable-integration.php
+          cd apps/web
+          composer test
+      - name: Certify source and package business-capable Production candidate
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        id: certified
+        run: |
+          set -euo pipefail
+          bash tools/build-production-business-release.sh "$GITHUB_SHA"
+          id="production-${GITHUB_SHA:0:12}"
+          test -s "dist/${id}.tar.gz"
+          ( cd dist && sha256sum -c "${id}.tar.gz.sha256" )
+          php tools/validate-production-business-release-manifest.php "dist/${id}.manifest.json" "dist/${id}.tar.gz"
+          echo "release_id=$id" >> "$GITHUB_OUTPUT"
+      - name: Publish immutable source-certification artifact (NOT a deployed host)
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: oneqay-certified-business-${{ steps.certified.outputs.release_id }}
+          path: |
+            dist/${{ steps.certified.outputs.release_id }}.tar.gz
+            dist/${{ steps.certified.outputs.release_id }}.manifest.json
+            dist/${{ steps.certified.outputs.release_id }}.tar.gz.sha256
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 0
+      - name: No tracked source mutation
+        run: |
+          git diff --exit-code
+ | LC_ALL=C sort > /tmp/oneqaydev-authorized-workflows
+          diff -u ops/production/ONEQAYDEV_READINESS_MERCHANT_AUTHORIZED_WORKFLOW_PATHS.txt /tmp/oneqaydev-authorized-workflows
+          while IFS= read -r historical; do
+            git diff --unified=0 "$BASE_SHA" HEAD -- "$historical" > /tmp/oneqaydev-workflow-diff
+            if grep -E '^[+-][^+-]' /tmp/oneqaydev-workflow-diff | grep -Ev '^[+-] *if: ' ; then
+              echo "Refusing non-condition modification to preserved workflow: $historical" >&2
+              exit 1
+            fi
+            grep -Fq 'production-dev-readiness-and-merchant-foundation-20261010' "$historical"
+          done < /tmp/oneqaydev-authorized-workflows
           echo "oneqaydev exact source envelope verified; historical source-envelope steps superseded only for this exact PR"
 
       - name: Check successor source, schema, and denied substitutions
