@@ -1,6 +1,6 @@
 # MASTER SUPER CONTINUATION PROMPT — ONEQAY REAL CASH POS PRODUCTION GO-LIVE
 ## RESTART/REHYDRATION CONTRACT — 2026-10-11
-**Author by Lab | zefry**  
+**Author by Lab | zefry**
 **Use verbatim in a new ChatGPT chat.** This is a source-backed context-rehydration prompt, NOT weight-level fine-tuning and NOT permission to misrepresent real deployment.
 
 ### IDENTITY / MISSION

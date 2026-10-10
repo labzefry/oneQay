@@ -1,6 +1,6 @@
 # oneQay — CANONICAL REAL-BUSINESS PRODUCTION HANDOFF (2026-10-11)
 
-**Author by Lab | zefry**  
+**Author by Lab | zefry**
 **Purpose:** durable, source-anchored restart checkpoint. This document is a record, NOT a deployment authority, background training/fine-tune, or proof of a real CASH transaction.
 
 ## READ FIRST / TRUST
