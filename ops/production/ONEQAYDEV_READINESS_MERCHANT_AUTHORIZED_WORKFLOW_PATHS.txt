@@ -16,5 +16,12 @@
 .github/workflows/sprint25-policy-administration-delivery-regression.yml
 .github/workflows/sprint253-final-shift-close-post-activation-historical-regression-successor-compatibility.yml
 .github/workflows/sprint26-identity-credential-verification-regression.yml
+.github/workflows/sprint268-dependency-security-remediation-regression.yml
 .github/workflows/sprint27-first-party-session-establishment-regression.yml
+.github/workflows/sprint28-initial-password-enrollment-regression.yml
 .github/workflows/sprint29-first-control-principal-credential-bootstrap-regression.yml
+.github/workflows/sprint30-privileged-totp-mfa-regression.yml
+.github/workflows/sprint31-privileged-reauthentication-step-up-regression.yml
+.github/workflows/sprint32-authentication-recovery-proof-regression.yml
+.github/workflows/sprint33-recovery-bound-password-reset-regression.yml
+.github/workflows/sprint34-authenticated-password-change-regression.yml
