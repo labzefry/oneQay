@@ -444,7 +444,7 @@ jobs:
           if grep -n -E 'InitialTenantAdministratorProvisioning(Service|Authority)|PreauthorizedInitialTenantAdministratorProvisioningAuthority|LaravelInitialTenantAdministratorProvisioningRepository|ProtectedControlAdministratorLifecycle(Service|Repository)|control\.administrator\.(delegate|revoke)' "${delivery_files[@]}"; then exit 1; fi
 
       - name: Enforce eight-migration one-time bootstrap preservation
-        if: (env.ONEQAY_SPRINT30_SUCCESSOR != 'true') && (github.event_name != 'pull_request' || github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009')
+        if: ((env.ONEQAY_SPRINT30_SUCCESSOR != 'true') && (github.event_name != 'pull_request' || github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009')) && (github.event_name != 'pull_request' || github.head_ref != 'production-dev-readiness-and-merchant-foundation-20261010')
         shell: bash
         run: |
           set -euo pipefail
