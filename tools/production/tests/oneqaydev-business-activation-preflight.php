@@ -44,7 +44,7 @@ foreach ([
 check(!preg_match('/\b(?:INSERT|UPDATE|DELETE|TRUNCATE|ALTER|DROP)\s+(?:INTO|FROM|TABLE)\b/i', $script),
     'no mutation SQL');
 check(!str_contains($script, "file_put_contents(") && !str_contains($script, "rename(")
-    && !str_contains($script, "symlink(") && !str_contains($script, "exec("),
+    && !str_contains($script, "symlink(") && !preg_match('/\b(?:exec|shell_exec|system|proc_open|passthru)\s*\(/', $script),
     'inspector cannot mutate runtime or spawn commands');
 
 echo 'oneqaydev_business_activation_readonly_preflight_pass:'.$checks."\n";
