@@ -649,6 +649,15 @@ jobs:
                 *) echo "Unexpected Production business app path: $changed" >&2; exit 1 ;;
               esac
             done < /tmp/oneqay-prod-biz-actual-paths
+          elif [ "$HEAD_REF" = 'production-cash-go-live-secure-session-20261011' ] && [ "${{ github.event.pull_request.number }}" = '941' ]; then
+            # Exact bounded Production cookie safety successor, no schema or other application change.
+            mapfile -t exact_cookie_paths < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web | LC_ALL=C sort)
+            expected_cookie_paths=('apps/web/config/session.php' 'apps/web/tests/production-session-cookie-policy.php')
+            test "${exact_cookie_paths[*]}" = "${expected_cookie_paths[*]}"
+            grep -Fq "env('APP_ENV') === 'production'" apps/web/config/session.php
+            grep -Fq "? true" apps/web/config/session.php
+            grep -Fq "Production secure even when env false" apps/web/tests/production-session-cookie-policy.php
+            test -z "$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web/database/migrations)"
           else
             test -z "$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web | grep -v '^apps/web/tests/' || true)"
           fi
