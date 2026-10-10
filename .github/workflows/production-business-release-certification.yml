@@ -108,6 +108,8 @@ jobs:
           set -euo pipefail
           php apps/web/tests/production-commercial-runtime-integration.php
           php apps/web/tests/production-business-runtime-gate.php
+          php apps/web/tests/initial-password-enrollment.php
+          php apps/web/tests/privileged-reauthentication-step-up.php
           php apps/web/tests/production-merchant-provisioning-scope.php
           php apps/web/tests/merchant-context-guarded-bootstrap-delivery.php
           php apps/web/tests/merchant-pos-ready-bootstrap.php
