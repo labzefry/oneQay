@@ -8,7 +8,7 @@
 - **OPERATOR-REPORTED:** first merchant provisioning command printed `ONEQAYDEV_FIRST_MERCHANT_APPLIED`, private credential file state `APPLIED`. GitHub cannot independently attest that host/database fact.
 - No evidence of actual on-host CASH sale, receipts, idempotency replay, session / MFA login, inventory, Final Shift Close, or user-authorized business traffic.
 - Existing staging `https://oneqay.n07.my.id` and `/home/pekd7254/oneqay-staging` strictly out of scope.
-- GitHub repository metadata returned public visibility in this session, despite historical "private" handoffs; do not commit secrets. 
+- GitHub repository metadata returned public visibility in this session, despite historical "private" handoffs; do not commit secrets.
 
 ## This delivery
 `tools/production/cpanel/inspect-oneqaydev-business-activation.php` is **single-file CLI-only, exact-domain/source/release-bound**. It does not contain any code to enable traffic or write runtime configuration, grant permissions, issue operational authority, touch staging, change migrations, or provision another merchant.
