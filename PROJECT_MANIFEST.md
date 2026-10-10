@@ -1,3 +1,5 @@
+> **Latest verified Production Go-Live handoff (2026-10-11):** [Canonical real-business checkpoint](docs/operations/PRODUCTION_GO_LIVE_CHECKPOINT_2026-10-11.md) · [Master continuation prompt](docs/operations/MASTER_CONTINUATION_PROMPT_ONEQAY_2026-10-11.md) · [oneQayDev cPanel upgrade handoff](docs/operations/ONEQAYDEV_CPANEL_UPGRADE_HANDOFF_2026-10-11.md). PR #938 is MERGED; certified application source `409ac6b2bdb80d31fbfb9425ddbb413a278b97e6`. **Actual cPanel on-host upgrade, merchant provisioning and real CASH transaction are NOT YET VERIFIED.** Older SHA/status text below is historical context. Never rerun migrations or touch occupied staging.
+
 # oneQay Project Manifest
 
 ## CURRENT OPERATIONAL CHECKPOINT — 2026-10-08 (supersedes historical values below)
