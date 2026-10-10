@@ -59,6 +59,8 @@ jobs:
           php -l tools/validate-production-business-release-manifest.php
           php -l tools/production/tests/production-business-release-source-certification.php
           php -r 'json_decode(file_get_contents("release/production-business-manifest-v2.schema.json"), true, 64, JSON_THROW_ON_ERROR);'
+          php -l apps/web/app/Console/Commands/ProductionFirstMerchantProvisionCommand.php
+          php -l apps/web/app/Infrastructure/Bootstrap/ProductionMerchantProvisioningScope.php
           php tools/production/tests/production-business-release-source-certification.php
           grep -Fq '"business_runtime_activation_ready":false' tools/build-production-release.sh
           grep -Fq '"business_runtime_activation_ready":true' tools/build-production-business-release.sh
@@ -79,6 +81,7 @@ jobs:
           set -euo pipefail
           php apps/web/tests/production-commercial-runtime-integration.php
           php apps/web/tests/production-business-runtime-gate.php
+          php apps/web/tests/production-merchant-provisioning-scope.php
           php apps/web/tests/merchant-context-guarded-bootstrap-delivery.php
           php apps/web/tests/merchant-pos-ready-bootstrap.php
           php apps/web/tests/pos-catalog-preparation-durable.php

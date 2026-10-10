@@ -3,7 +3,23 @@
 declare(strict_types=1);
 
 // Author by Lab | zefry. Must fail closed in CI and when unarmed.
+foreach ([
+    'APP_NAME' => 'oneQay',
+    'APP_ENV' => 'testing',
+    'APP_KEY' => 'base64:'.base64_encode(str_repeat('q', 32)),
+    'APP_DEBUG' => 'false',
+    'APP_URL' => 'http://localhost',
+    'ONEQAY_RUNTIME_CLASS' => 'ci',
+    'SESSION_DRIVER' => 'array',
+    'CACHE_STORE' => 'array',
+] as $key => $value) {
+    putenv($key.'='.$value);
+    $_ENV[$key] = $value;
+    $_SERVER[$key] = $value;
+}
 require __DIR__.'/../vendor/autoload.php';
+$app = require __DIR__.'/../bootstrap/app.php';
+$app->make(\Illuminate\Contracts\Http\Kernel::class)->bootstrap();
 
 use App\Infrastructure\Bootstrap\ProductionMerchantProvisioningScope;
 use App\Infrastructure\Configuration\CriticalConfiguration;
