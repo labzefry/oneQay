@@ -187,7 +187,7 @@ final readonly class LaravelDurableOrganizationalAccessRepository implements Dur
         }
 
         $runtime = strtolower(trim($this->runtimeClass));
-        if (! (in_array($runtime, ['local', 'test', 'ci'], true) || \App\Infrastructure\Runtime\ProductionBusinessRuntimeGate::allows($runtime))) {
+        if (! (in_array($runtime, ['local', 'test', 'ci'], true) || \App\Infrastructure\Runtime\ProductionBusinessRuntimeGate::allows($runtime) || \App\Infrastructure\Bootstrap\ProductionMerchantProvisioningScope::allows($runtime))) {
             throw new DurableOrganizationalAccessViolation(
                 DurableOrganizationalAccessViolation::RUNTIME_DENIED,
                 'Durable organizational access runtime is not authorized.',
