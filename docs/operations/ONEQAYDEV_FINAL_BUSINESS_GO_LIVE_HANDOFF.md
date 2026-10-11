@@ -142,3 +142,81 @@ Final Shift Close and audit/report evidence. Activation alone is
 Only completed real-host acceptance permits GO_LIVE_SUCCESS. Any cutover to
 the occupied staging domain needs fresh separate authority; updater stays
 INACTIVE.
+
+
+## Latest official successor and concrete activation operator
+
+PR942 was squash-merged as `192c8a3f719006ecdc5f8a4216d09c285b747e59`.
+Its exact head `6257ef2542d138fe780915493c9cf1f7e35073f4` qualified 116
+SUCCESS, one authority-conditioned SKIP and zero failed checks. Native
+engineering authority and protected-branch conditions passed without bypass.
+Certification run `38122104639` succeeded; release
+`production-192c8a3f7190`, artifact `11695427525`, 6,252 integrity files.
+Official TAR SHA-256:
+`ff1a4e92eba9d2e5c79c33acc8aa788d4561863541242d16674094704ac0325f`.
+The native execution record is
+<https://github.com/labzefry/oneQay/pull/942#issuecomment-6106806104>.
+Executed main check runs: 14 SUCCESS. GitHub also reports seven failed
+historical workflow records for unchanged files, already present on d78;
+these are not counted or represented as passed. A sampled record has zero
+jobs. They are outside this bounded correction.
+
+The preserved-binding successor upgrade package is prepared from the exact
+new official artifact. Local qualification passed successful preparation,
+idempotent replay, forced health-failure rollback to d78, source/merchant
+substitution rejection and refusal of premature traffic flags. HTTPS is
+substituted only in isolated QA. Last actual host evidence still reports
+installed d78 BUSINESS_OFF; the successor has not been installed by this
+Work session. The owner must run its direct PHP preparation Cron and return
+only the sanitized `upgrade-result.json`.
+
+`tools/production/cpanel/activate-oneqaydev-certified-business.php` is a
+separate CLI operator for that exact installed successor. Its source belongs
+to this tooling governance change; the certified application remains the
+unchanged official 192c source. No archive is relabelled after a tooling-only
+merge. The operator imports only the pinned preparation helper, validates
+all certified files, rejects cached config/routes, verifies prepared private
+bindings, and preserves the historical 409-bound merchant receipt.
+
+Before mutation it independently fetches an exact request-bound owner grant
+from GitHub over verified HTTPS. It requires native `labzefry` User / OWNER
+identity, a comment on PR942, an unedited creation timestamp, exact domain,
+source/archive and closed scope, and a 900-second activation window. A public comment ID or local
+locator does not grant authority. No grant is included in this delivery and
+an engineering merge comment is rejected. The request pins the operator,
+helper-derived host checks, expected health bridge, merchant receipt and
+qualified rollback directory/target.
+
+The operator performs only SELECTs to verify the existing database baseline,
+merchant tenant/identity/organization/outlet/device graph and password hash.
+It derives a new private business env while preserving all other bindings.
+It enables the two independent traffic flags and existing merchant entry
+context only after the independent grant qualifies; merchant bootstrap
+remains disabled. Native ProductionBusinessRuntimeGate, MFA/step-up, session
+policy and required routes must qualify before the public index/htaccess
+switch. It checks actual HTTPS health, merchant entry metadata, secure cookie
+and unauthenticated POS denial. Any switch/replay failure triggers rollback
+and records its verified or unverified outcome truthfully; revoked owner
+authority on replay closes public business access. Rollback preserves
+committed database records and does not pretend to undo transactions.
+
+Local integration used the exact official successor payload with fixture
+substitutions for GitHub responses, external HTTPS and database SELECTs. The
+real native Laravel gate, public HTTP merchant entry, secure session cookies,
+unauthenticated POS denial and file-session persistence passed. Explicit
+rollback, forced health/cookie failure, merge-authority-only refusal and
+revoked-authority replay restoration passed. These are not actual host or
+merchant CASH acceptance. The focused CI contract also checks valid native
+owner authority, 15 denied mutations, expiry and private atomic output.
+
+After source governance and the owner's successor preparation report, obtain
+one explicit separate business-traffic approval for the reviewable exact
+request. Then record its native owner comment and supply its non-secret comment ID
+for a single direct PHP activation Cron within 900 seconds. No additional
+authority-file upload is needed; native owner authentication and full request
+binding remain mandatory. A private JSON locator is also accepted. Give only one manual
+copy-paste instruction at a time. Do not issue business authority in advance
+of that owner approval. Activation reports
+`BUSINESS_ACTIVATED_ACCEPTANCE_PENDING` / `host_business_acceptance=NOT_VERIFIED`;
+actual login/MFA, authorized merchant CASH, receipt/replay, inventory, Final
+Shift Close and reporting evidence is still required for GO_LIVE_SUCCESS.
