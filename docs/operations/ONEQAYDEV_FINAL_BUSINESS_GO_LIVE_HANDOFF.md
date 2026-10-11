@@ -71,14 +71,15 @@ files. This was a local fixture; no host traffic was enabled.
 
 The successor changes only these two application paths:
 
-- `apps/web/bootstrap/app.php`
+- `apps/web/app/Providers/PosOperationsHubServiceProvider.php`
 - `apps/web/tests/production-session-web-pipeline.php`
 
-`session.active` is now a middleware group which resolves the existing `web`
-pipeline before the original authority middleware. This gives provider
+For qualified native Production, the POS provider resolves `session.active`
+as the existing `web` pipeline before the original authority middleware. This gives provider
 routes the canonical cookie, session and CSRF controls. Laravel deduplicates
 middleware when a route already belongs to `web`. The original authority,
-tenant, MFA, throttling and native Production gate remain in force.
+tenant, MFA, throttling and native Production gate remain in force. Bootstrap
+configuration, Local/Test/CI and staging registration are unchanged.
 
 The regression exercises eight real HTTP-kernel requests using isolated
 Production-shaped fixtures: unauthenticated GETs to POS, setup, shift start,

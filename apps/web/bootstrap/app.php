@@ -27,14 +27,8 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'tenant.verified' => RequireVerifiedTenantContextMiddleware::class,
+            'session.active' => EnforceActiveFirstPartySessionAuthorityMiddleware::class,
             'session.control-mutation' => RequireFirstPartySessionControlMutationContextMiddleware::class,
-        ]);
-        // Author by Lab | zefry. Provider-registered POS routes also need the
-        // complete web pipeline before evaluating or invalidating a session.
-        // Laravel removes duplicates when a route already belongs to web.
-        $middleware->group('session.active', [
-            'web',
-            EnforceActiveFirstPartySessionAuthorityMiddleware::class,
         ]);
         $middleware->append(CorrelationIdMiddleware::class);
         $middleware->append(SafeRequestObservationMiddleware::class);
