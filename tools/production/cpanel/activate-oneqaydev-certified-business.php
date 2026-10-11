@@ -128,11 +128,17 @@ function bHttps(string $url, string $accept): array {
     return ['status'=>$status,'body'=>$body,'headers'=>$headers];
 }
 function bAuthority(string $path, ?int $qualificationTime=null): array {
-    bPrivate($path);$locator=bJson($path);
-    bAssert(count($locator)===3 && ($locator['schema_version']??null)===1
-        && is_int($locator['approval_comment_id']??null) && $locator['approval_comment_id']>0,'AUTHORITY_LOCATOR_INVALID');
     bRequest();$sha=hash('sha256',bRead(B_REQUEST));
-    bAssert(($locator['request_sha256']??null)===$sha,'AUTHORITY_REQUEST_MISMATCH');
+    if(preg_match('/\A[1-9][0-9]{0,17}\z/D',$path)===1) {
+        // Public comment ID is a locator, never an authority token. The native
+        // owner grant must still bind this complete exact request over HTTPS.
+        $locator=['approval_comment_id'=>(int)$path];
+    } else {
+        bPrivate($path);$locator=bJson($path);
+        bAssert(count($locator)===3 && ($locator['schema_version']??null)===1
+            && is_int($locator['approval_comment_id']??null) && $locator['approval_comment_id']>0,'AUTHORITY_LOCATOR_INVALID');
+        bAssert(($locator['request_sha256']??null)===$sha,'AUTHORITY_REQUEST_MISMATCH');
+    }
     $response=bHttps('https://api.github.com/repos/labzefry/oneQay/issues/comments/'.$locator['approval_comment_id'],'application/vnd.github+json');
     bAssert($response['status']===200,'OWNER_AUTHORITY_LOOKUP_FAILED');
     $c=json_decode($response['body'],true,32,JSON_THROW_ON_ERROR);
@@ -395,7 +401,7 @@ function bReplay(string $authorityPath,array $r): array {
 }
 if(PHP_SAPI==='cli' && realpath($_SERVER['SCRIPT_FILENAME']??'')===__FILE__) {
     if(!in_array($argv[1]??'', ['activate','rollback'],true)
-        || (($argv[1]==='activate')?$argc!==3:$argc!==2)){fwrite(STDERR,"USAGE: php activate.php activate PRIVATE_AUTHORITY_LOCATOR | rollback\n");exit(64);}
+        || (($argv[1]==='activate')?$argc!==3:$argc!==2)){fwrite(STDERR,"USAGE: php activate.php activate OWNER_COMMENT_ID_OR_PRIVATE_LOCATOR | rollback\n");exit(64);}
     try {
         bLoad();$lock=@fopen(__DIR__.'/activation.lock','c');
         bAssert($lock!==false && @chmod(__DIR__.'/activation.lock',0600) && flock($lock,LOCK_EX|LOCK_NB),'ACTIVATION_LOCK_UNAVAILABLE');

@@ -181,7 +181,7 @@ bindings, and preserves the historical 409-bound merchant receipt.
 Before mutation it independently fetches an exact request-bound owner grant
 from GitHub over verified HTTPS. It requires native `labzefry` User / OWNER
 identity, a comment on PR942, an unedited creation timestamp, exact domain,
-source/archive and closed scope, and a 900-second activation window. A local
+source/archive and closed scope, and a 900-second activation window. A public comment ID or local
 locator does not grant authority. No grant is included in this delivery and
 an engineering merge comment is rejected. The request pins the operator,
 helper-derived host checks, expected health bridge, merchant receipt and
@@ -211,8 +211,10 @@ owner authority, 15 denied mutations, expiry and private atomic output.
 
 After source governance and the owner's successor preparation report, obtain
 one explicit separate business-traffic approval for the reviewable exact
-request. Then record its native owner comment and issue the private locator
-for a single controlled Cron within 900 seconds. Give only one manual
+request. Then record its native owner comment and supply its non-secret comment ID
+for a single direct PHP activation Cron within 900 seconds. No additional
+authority-file upload is needed; native owner authentication and full request
+binding remain mandatory. A private JSON locator is also accepted. Give only one manual
 copy-paste instruction at a time. Do not issue business authority in advance
 of that owner approval. Activation reports
 `BUSINESS_ACTIVATED_ACCEPTANCE_PENDING` / `host_business_acceptance=NOT_VERIFIED`;
