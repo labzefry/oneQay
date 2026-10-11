@@ -78,9 +78,13 @@ async function check(name, fn) { await fn(); checks.push(name); console.log(`MER
 async function open(url = '/pos', width = 1440, height = 1000) {
     if (page) await page.close();
     page = await browser.newPage({ viewport: { width, height } });
-    const errors = []; page.on('pageerror', (e) => errors.push(String(e)));
-    await page.goto(origin + url); await page.locator('.oq-sidebar').waitFor();
-    await page.locator('main').waitFor(); await page.waitForTimeout(100);
+    const errors = []; page.on('pageerror', (e) => { errors.push(String(e)); console.error('BROWSER_PAGE_ERROR', String(e)); });
+    page.on('console', (message) => { if (message.type() === 'error') console.error('BROWSER_CONSOLE_ERROR', message.text()); });
+    page.on('requestfailed', (request) => console.error('BROWSER_REQUEST_FAILED', request.url(), request.failure()));
+    await page.goto(origin + url);
+    try { await page.locator('.oq-sidebar').waitFor({ state: 'attached', timeout: 10000 }); await page.locator('main').waitFor({ timeout: 10000 }); }
+    catch (error) { await page.screenshot({ path: path.join(output, 'failure.png'), fullPage: true }); console.error('BROWSER_DOM', (await page.content()).slice(-8000)); throw error; }
+    await page.waitForTimeout(100);
     assert.equal(errors.length, 0, errors.join('\n'));
 }
 async function noOverflow() { assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1), false, 'Horizontal overflow'); }

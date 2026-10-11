@@ -110,7 +110,7 @@ jobs:
           node "$RUNNER_TEMP/oneqay-ui-browser/node_modules/playwright/cli.js" install --with-deps --only-shell chromium
           PLAYWRIGHT_MODULE="$RUNNER_TEMP/oneqay-ui-browser/node_modules/playwright/index.mjs" node tools/qa-merchant-enterprise-ui.mjs
       - name: Publish compiled enterprise workspace for local visual and interaction verification
-        if: github.event_name == 'pull_request' && github.head_ref == 'oneqaydev-enterprise-workspace-20261011'
+        if: always() && github.event_name == 'pull_request' && github.head_ref == 'oneqaydev-enterprise-workspace-20261011'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: oneqay-ui-preview-${{ github.event.pull_request.head.sha }}
