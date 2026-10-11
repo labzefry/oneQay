@@ -58,10 +58,12 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - name: Verify historical or exact bounded npm-security successor paths
         if: ((github.event_name == 'pull_request') && github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009' && github.head_ref != 'production-commercial-postmerge-sprint253-compat-20261009') && (github.event_name != 'pull_request' || github.head_ref != 'production-dev-readiness-and-merchant-foundation-20261010')
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           HEAD_REF: ${{ github.head_ref }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
@@ -106,6 +108,8 @@ jobs:
           ])
           successor = (os.environ.get('HEAD_REF') == 'remediate-npm-high-advisories-20261008'
                        and os.environ.get('PR_NUMBER') == '929')
+          session_successor = (os.environ.get('HEAD_REF') == 'production-cash-go-live-secure-session-20261011'
+                               and os.environ.get('PR_NUMBER') == '941')
           if successor:
               base = os.environ.get('BASE_SHA', '')
               assert len(base) == 40 and all(ch in '0123456789abcdef' for ch in base)
@@ -114,6 +118,33 @@ jobs:
                   text=True).splitlines())
               assert actual == successor_expected, f'Unsafe bounded security successor paths: {actual}'
               print('SPRINT268_NPM_SUCCESSOR_TEN_PATH_ENVELOPE=PASS')
+          elif session_successor:
+              # This PR changes no dependency graph. Audit and all regressions below still run.
+              session_expected = sorted([
+                  '.github/workflows/production-secure-session-cookie-regression.yml',
+                  '.github/workflows/sprint211-durable-staging-operator-artifact-publication-regression.yml',
+                  '.github/workflows/sprint212-cpanel-no-ssh-durable-staging-target-qualification-regression.yml',
+                  '.github/workflows/sprint213-cpanel-no-ssh-operator-qualification-kit-publication-regression.yml',
+                  '.github/workflows/sprint214-cpanel-no-ssh-guarded-deployment-execution-regression.yml',
+                  '.github/workflows/sprint218-production-dark-deployment-execution-regression.yml',
+                  '.github/workflows/sprint222-cpanel-fixed-public-php-symlink-policy-fallback-regression.yml',
+                  '.github/workflows/sprint223-durable-runtime-ingestion-null-boundary-regression.yml',
+                  '.github/workflows/sprint268-dependency-security-remediation-regression.yml',
+                  'apps/web/config/session.php',
+                  'apps/web/tests/production-session-cookie-policy.php',
+                  'docs/operations/ONEQAYDEV_COMMERCIAL_FINAL_ACTIVATION_2026-10-11.md',
+                  'docs/operations/ONEQAYDEV_FINAL_BUSINESS_GO_LIVE_HANDOFF.md',
+              ])
+              base = os.environ.get('BASE_SHA', '')
+              head = os.environ.get('HEAD_SHA', '')
+              assert all(len(s) == 40 and all(c in '0123456789abcdef' for c in s) for s in (base, head))
+              actual = sorted(subprocess.check_output(
+                  ['git', 'diff', '--name-only', base, head], text=True).splitlines())
+              assert actual == session_expected, f'Unsafe PR941 session correction paths: {actual}'
+              deleted = subprocess.check_output(
+                  ['git', 'diff', '--diff-filter=D', '--name-only', base, head], text=True)
+              assert not deleted, 'PR941 must not delete existing source'
+              print('SPRINT268_PR941_SESSION_THIRTEEN_PATH_ENVELOPE=PASS')
           else:
               actual = sorted(subprocess.check_output(
                   ['git','diff','--name-only','--diff-filter=ACMRT',

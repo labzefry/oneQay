@@ -56,6 +56,14 @@ Eight workflow YAML files parse successfully. PHP tests require GitHub CI
 because this Work container has no PHP executable. Do not substitute local
 Git-boundary results for PHP, MySQL or actual host acceptance.
 
+Updating the seven constraints also triggers Sprint268's dependency audit.
+Its initial run rejected the current source against an obsolete Sprint268
+baseline. For the exact PR941 branch and number, it now requires the complete
+13-file correction envelope and rejects deletions. Composer audit, npm audit,
+dependency floors, application tests, frontend checks and the original
+migration-source preservation check still execute. Dependency files are
+outside the permitted PR941 envelope.
+
 The final head, latest CI and merge result must be read from
 <https://github.com/labzefry/oneQay/pull/941>. A source file cannot embed
 its own final commit SHA; the final execution comment records the immutable
