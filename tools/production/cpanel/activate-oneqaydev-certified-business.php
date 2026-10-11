@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 /**
- * oneQayDev exact-installed-source business activation retry with a fresh web entry.
+ * oneQayDev exact-installed-source activation after a recorded pre-mutation expiry.
  * Author by Lab | zefry.
  * Requires an independently authenticated, exact-request Product Owner grant.
  * Never grants its own authority, provisions, migrates, writes SQL, or changes staging.
@@ -18,13 +18,17 @@ const B_MERCHANT_SHA = 'e1cddcd1f0334a85b073c0526ecbc6236ba530dbc3a671b00f4d5d18
 const B_HELPER_SHA = 'ec4930fdac26d265a48ad0ad56d9d74fdeb52c0bbc1a7ffd03eb8cb385e9c776';
 const B_HELPER = B_ROOT.'/oneqaydev-upgrade-192c8a3f7190/upgrade.php';
 const B_APP = B_ROOT.'/releases/'.B_RELEASE.'/apps/web';
-const B_ENV = B_ROOT.'/shared/production-business-runtime-192c8a3f7190-r2.env';
+const B_ENV = B_ROOT.'/shared/production-business-runtime-192c8a3f7190-r3.env';
 const B_PREVIOUS = B_ROOT.'/oneqaydev-business-activate-192c8a3f7190';
 const B_PREVIOUS_SHA = '8553e800a04f0583d5b2f129118edc5e426db60c2e7540d7267fe8ff3f385dc9';
 const B_PREVIOUS_REPORT_SHA = '620bf2311dada3cb950f83e390494ad639b6bcf3709537fe22b0cbd787170941';
-const B_ENTRY_NAME = 'oneqay-business-192c8a3f7190-r2.php';
+const B_STOPPED_RETRY = B_ROOT.'/oneqaydev-business-retry-192c8a3f7190';
+const B_STOPPED_RETRY_SHA = '8c79f9c6c20162c5267e5879e253b699a9ba13ff5705bc1b252fe2abbc764fbf';
+const B_STOPPED_REPORT_SHA = '3e8f6b1e237814f52a485ab1d09b48e8c3afbe19afbe65cc6d05c18914c1d813';
+const B_AUTHORITY_WINDOW = 3600;
+const B_ENTRY_NAME = 'oneqay-business-192c8a3f7190-r3.php';
 const B_ENTRY = B_PUBLIC.'/'.B_ENTRY_NAME;
-const B_BRIDGE_ID = 'production-192c8a3f7190-r2';
+const B_BRIDGE_ID = 'production-192c8a3f7190-r3';
 const B_PREPARED_ENV = B_ROOT.'/shared/production-runtime-192c8a3f7190.env';
 const B_MERCHANT = B_ROOT.'/shared/oneqaydev-first-merchant-credential.json';
 const B_REQUEST = __DIR__.'/authority-request.json';
@@ -68,7 +72,7 @@ function bLoad(): void {
     bAssert(realpath(B_ROOT)===B_ROOT && realpath(B_PUBLIC)===B_PUBLIC
         && realpath(B_ROOT.'/releases')===B_ROOT.'/releases'
         && realpath(B_STAGING)!==realpath(B_PUBLIC),'TARGET_PATH_ISOLATION_INVALID');
-    bAssert(realpath(__DIR__)===B_ROOT.'/oneqaydev-business-retry-192c8a3f7190'
+    bAssert(realpath(__DIR__)===B_ROOT.'/oneqaydev-business-final-192c8a3f7190'
         && !is_link(__DIR__),'OPERATOR_DIRECTORY_INVALID');
     bAssert(hash_equals(B_HELPER_SHA,hash('sha256',bRead(B_HELPER))),'PREPARED_HELPER_CHANGED');
     require_once B_HELPER;
@@ -84,11 +88,12 @@ function bRequest(): array {
         'expected_upgrade_rollback_bridge_sha256'=>'ff7b3888b72c163641baa95d41b2431dcdaee52a754ca0e17d6db2095e5df125',
         'operator_sha256'=>(string)hash_file('sha256',__FILE__),
         'previous_operator_sha256'=>B_PREVIOUS_SHA,'previous_activation_report_sha256'=>B_PREVIOUS_REPORT_SHA,
+        'stopped_retry_operator_sha256'=>B_STOPPED_RETRY_SHA,'stopped_retry_report_sha256'=>B_STOPPED_REPORT_SHA,
         'public_entry_filename'=>B_ENTRY_NAME,
         'transactions'=>'CASH_AUTHORIZED_MERCHANT_TEST_DATA_ONLY',
         'migrations_allowed'=>false,'merchant_reprovision_allowed'=>false,
         'staging_allowed'=>false,'updater_allowed'=>false,'external_payments_allowed'=>false,
-        'authority_window_seconds'=>900,'attribution'=>'Lab | zefry',
+        'authority_window_seconds'=>B_AUTHORITY_WINDOW,'attribution'=>'Lab | zefry',
     ];
     bAssert(count($r)===count($expected),'REQUEST_ENVELOPE_INVALID');
     foreach($expected as $k=>$v) bAssert(($r[$k]??null)===$v,'REQUEST_BINDING_INVALID');
@@ -102,7 +107,7 @@ function bApprovalBody(string $requestSha): string {
         ."BUSINESS_TRAFFIC: GRANTED\nTRANSACTIONS: CASH_AUTHORIZED_MERCHANT_TEST_DATA_ONLY\n"
         ."ROLLBACK: GRANTED\nMIGRATIONS: NOT_ALLOWED\nMERCHANT_REPROVISION: NOT_ALLOWED\n"
         ."STAGING: NOT_ALLOWED\nUPDATER: NOT_ALLOWED\nEXTERNAL_PAYMENTS: NOT_ALLOWED\n"
-        ."WINDOW_SECONDS: 900\nAuthor by Lab | zefry";
+        ."WINDOW_SECONDS: ".B_AUTHORITY_WINDOW."\nAuthor by Lab | zefry";
 }
 /** Only public GitHub's authenticated owner comment can supply approval. */
 function bQualifyApproval(array $c, int $id, string $requestSha, int $now): array {
@@ -118,8 +123,8 @@ function bQualifyApproval(array $c, int $id, string $requestSha, int $now): arra
     bAssert(is_string($created) && preg_match('/\A[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z\z/D',$created)===1
         && $updated===$created,'AUTHORITY_TIMESTAMP_INVALID');
     $start=strtotime($created);
-    bAssert(is_int($start) && $now>=$start && $now<=$start+900,'AUTHORITY_WINDOW_EXPIRED');
-    return ['approval_comment_id'=>$id,'request_sha256'=>$requestSha,'authorized_at_unix'=>$start,'expires_at_unix'=>$start+900];
+    bAssert(is_int($start) && $now>=$start && $now<=$start+B_AUTHORITY_WINDOW,'AUTHORITY_WINDOW_EXPIRED');
+    return ['approval_comment_id'=>$id,'request_sha256'=>$requestSha,'authorized_at_unix'=>$start,'expires_at_unix'=>$start+B_AUTHORITY_WINDOW];
 }
 function bHttps(string $url, string $accept): array {
     bAssert(str_starts_with($url,'https://oneqaydev.n07.my.id/')
@@ -193,9 +198,26 @@ function bIntegrity(): void {
     foreach(['config.php','routes-v7.php','routes.php'] as $cache)
         bAssert(!file_exists(B_APP.'/bootstrap/cache/'.$cache) && !is_link(B_APP.'/bootstrap/cache/'.$cache),'CACHED_RUNTIME_NOT_ALLOWED');
 }
+function bQualifyStoppedRetry(array $r): void {
+    $expected=['state'=>'STOPPED_FAIL_CLOSED','error_code'=>'AUTHORITY_WINDOW_EXPIRED',
+        'source_commit'=>B_SOURCE,'release_id'=>B_RELEASE,'host_business_acceptance'=>'NOT_VERIFIED',
+        'attribution'=>'Lab | zefry'];
+    bAssert(count($r)===count($expected),'STOPPED_RETRY_REPORT_INVALID');
+    foreach($expected as $k=>$v)bAssert(($r[$k]??null)===$v,'STOPPED_RETRY_REPORT_INVALID');
+}
+function bStoppedRetry(): void {
+    bPrivate(B_STOPPED_RETRY.'/activation-result.json');
+    bAssert(hash_equals(B_STOPPED_RETRY_SHA,hash('sha256',bRead(B_STOPPED_RETRY.'/activate.php')))
+        && hash_equals(B_STOPPED_REPORT_SHA,hash('sha256',bRead(B_STOPPED_RETRY.'/activation-result.json'))),
+        'STOPPED_RETRY_BINDING_CHANGED');
+    bQualifyStoppedRetry(bJson(B_STOPPED_RETRY.'/activation-result.json'));
+    foreach([B_STOPPED_RETRY.'/rollback',B_ROOT.'/shared/production-business-runtime-192c8a3f7190-r2.env',
+        B_PUBLIC.'/oneqay-business-192c8a3f7190-r2.php'] as $path)
+        bAssert(!file_exists($path) && !is_link($path),'STOPPED_RETRY_MUTATION_DETECTED');
+}
 function bPreconditions(): array {
     bAssert(time()<=(int)strtotime(B_EXPIRES),'OPERATOR_WINDOW_EXPIRED');
-    bRequest(); bIntegrity(); $m=bMerchant();bPrivate(B_PREPARED_ENV);
+    bRequest(); bStoppedRetry(); bIntegrity(); $m=bMerchant();bPrivate(B_PREPARED_ENV);
     bAssert(hash_equals(B_PREVIOUS_SHA,hash('sha256',bRead(B_PREVIOUS.'/activate.php')))
         && hash_equals(B_PREVIOUS_REPORT_SHA,hash('sha256',bRead(B_PREVIOUS.'/activation-result.json'))),'PREVIOUS_ATTEMPT_BINDING_CHANGED');
     $failed=bJson(B_PREVIOUS.'/activation-result.json');
