@@ -66,6 +66,7 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           HEAD_REF: ${{ github.head_ref }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
+          HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
         run: |
           set -euo pipefail
           python3 - <<'PY'
@@ -127,6 +128,17 @@ jobs:
               assert actual == pipeline_expected, f'Unsafe native Production session successor paths: {actual}'
               assert not subprocess.check_output(['git','diff','--diff-filter=D','--name-only',os.environ['BASE_SHA'],head], text=True)
               print('SPRINT268_NATIVE_PRODUCTION_SESSION_TWELVE_PATH_ENVELOPE=PASS')
+          elif (os.environ.get('HEAD_REF') == 'oneqaydev-enterprise-workspace-20261011'
+                and os.environ.get('BASE_SHA') == '2e2b80e966c3850c47d3b4ffc6ee8f4b8b5d3804'
+                and os.environ.get('HEAD_REPOSITORY') == 'labzefry/oneQay'):
+              # Presentation-only successor: audit and every behavioral regression remain enabled.
+              ui_expected = ['.github/workflows/production-business-release-certification.yml', '.github/workflows/sprint211-durable-staging-operator-artifact-publication-regression.yml', '.github/workflows/sprint212-cpanel-no-ssh-durable-staging-target-qualification-regression.yml', '.github/workflows/sprint213-cpanel-no-ssh-operator-qualification-kit-publication-regression.yml', '.github/workflows/sprint214-cpanel-no-ssh-guarded-deployment-execution-regression.yml', '.github/workflows/sprint218-production-dark-deployment-execution-regression.yml', '.github/workflows/sprint222-cpanel-fixed-public-php-symlink-policy-fallback-regression.yml', '.github/workflows/sprint223-durable-runtime-ingestion-null-boundary-regression.yml', '.github/workflows/sprint268-dependency-security-remediation-regression.yml', 'CHANGELOG.md', 'TASKS.md', 'UI_GUIDELINE.md', 'apps/web/resources/css/app.css', 'apps/web/resources/js/app.ts', 'apps/web/resources/js/components/WorkspaceIcon.vue', 'apps/web/resources/js/icons/LICENSE.LUCIDE.txt', 'apps/web/resources/js/icons/workspace-icons.json', 'apps/web/resources/js/layouts/MerchantShell.vue', 'apps/web/resources/js/pages/Pos/Cashier.vue', 'apps/web/resources/js/pages/Pos/OperationsHub.vue', 'docs/operations/ONEQAYDEV_ENTERPRISE_WORKSPACE_UI_2026-10-11.md', 'docs/operations/ONEQAYDEV_WORKSPACE_UPDATE_HANDOFF.md', 'tools/production/cpanel/update-oneqaydev-certified-workspace.php', 'tools/production/tests/oneqaydev-certified-workspace-update.php', 'tools/qa-merchant-enterprise-ui.mjs']
+              head = os.environ.get('HEAD_SHA', '')
+              assert len(head) == 40 and all(c in '0123456789abcdef' for c in head)
+              actual = sorted(subprocess.check_output(['git','diff','--name-only',os.environ['BASE_SHA'],head], text=True).splitlines())
+              assert actual == ui_expected, f'Unsafe enterprise workspace paths: {actual}'
+              assert not subprocess.check_output(['git','diff','--diff-filter=D','--name-only',os.environ['BASE_SHA'],head], text=True)
+              print('SPRINT268_ENTERPRISE_WORKSPACE_PRESENTATION_ENVELOPE=PASS')
           elif session_successor:
               # This PR changes no dependency graph. Audit and all regressions below still run.
               session_expected = sorted([
