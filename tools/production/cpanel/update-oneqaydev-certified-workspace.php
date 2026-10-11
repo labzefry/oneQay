@@ -116,6 +116,15 @@ function uPreconditions(array $r): array {
     uAssert(!file_exists($p['release'])&&!is_link($p['release'])&&!file_exists($p['env'])&&!is_link($p['env'])&&!file_exists($p['entry'])&&!is_link($p['entry'])&&!file_exists(U_BACKUP)&&!is_link(U_BACKUP),'UPDATE_ALREADY_PREPARED_NO_AUTOMATIC_RETRY');
     return ['raw_env'=>$raw,'merchant'=>$merchant,'database'=>$database,'staging_fingerprint'=>bStagingFingerprint(),'asset_sha256'=>oqHashTree(U_PUBLIC.'/build')];
 }
+function uBindExistingRuntime(string $env,string $target): void {
+    uAssert(is_file($env)&&!is_link($env)&&((int)fileperms($env)&0077)===0,'PRIVATE_RUNTIME_INVALID');
+    uAssert(!file_exists($target)&&!is_link($target),'RUNTIME_TARGET_ALREADY_EXISTS');
+    $linked=function_exists('link')&&@link($env,$target);
+    if(!$linked&&function_exists('symlink'))$linked=@symlink($env,$target);
+    uAssert($linked,'PRIVATE_LINK_CAPABILITY_UNAVAILABLE');
+    clearstatcache(true,$target);
+    uAssert(hash_equals((string)hash_file('sha256',$env),(string)hash_file('sha256',$target))&&((int)fileperms($target)&0077)===0,'PRIVATE_RUNTIME_READBACK_FAILED');
+}
 function uRuntime(array $r): void {
     $p=uPaths($r);require_once $p['app'].'/vendor/autoload.php';$app=require $p['app'].'/bootstrap/app.php';$app->make(\Illuminate\Contracts\Console\Kernel::class)->bootstrap();
     uAssert(config('app.env')==='production'&&config('app.debug')===false&&config('oneqay.runtime_class')==='production'&&config('database.oneqay_persistence_enabled')===true,'NEW_RUNTIME_CONFIG_INVALID');
@@ -161,7 +170,7 @@ function uApply(string $locator,array $r): array {
         $snap=['files'=>$files,'asset_sha256'=>$pre['asset_sha256'],'previous_env_sha256'=>U_OLD_ENV_SHA,'staging_fingerprint'=>$pre['staging_fingerprint']];uWrite(U_BACKUP.'/snapshot.json',json_encode($snap,JSON_UNESCAPED_SLASHES|JSON_THROW_ON_ERROR)."\n");
         uAssert(hash_equals($pre['asset_sha256'],oqHashTree(U_BACKUP.'/build')),'ROLLBACK_ASSET_READBACK_FAILED');foreach($files as $name=>$sha)uAssert(hash_equals($sha,(string)hash_file('sha256',U_BACKUP.'/'.$name)),'ROLLBACK_FILE_READBACK_FAILED');
         oqCopyTree(__DIR__.'/payload/'.$r['release_id'],$p['release']);uSourceFiles($r,U_ROOT.'/releases');uPresentationOnly($p['app']);
-        $env=uCandidateEnv($pre['raw_env'],$r);uWrite($p['env'],$env);uAssert(@symlink($p['env'],$p['app'].'/.env')||@link($p['env'],$p['app'].'/.env'),'NEW_PRIVATE_ENV_LINK_FAILED');
+        $env=uCandidateEnv($pre['raw_env'],$r);uWrite($p['env'],$env);uBindExistingRuntime($p['env'],$p['app'].'/.env');
         foreach(['config.php','routes-v7.php','routes.php'] as $file)uAssert(!file_exists($p['app'].'/bootstrap/cache/'.$file)&&!is_link($p['app'].'/bootstrap/cache/'.$file),'CACHED_RUNTIME_DENIED');
         uRuntime($r);uSourceFiles($r,U_ROOT.'/releases',true);$envSha=hash('sha256',$env);$bridge=uBridge($r,$envSha);$routing=uRouting($r,uRead(U_PUBLIC.'/.htaccess'));
         $token=bin2hex(random_bytes(6));$stage=U_PUBLIC.'/.oq-ui-build-'.$token;uUnionBuild(U_PUBLIC.'/build',$p['app'].'/public/build',$stage);$stageSha=oqHashTree($stage);

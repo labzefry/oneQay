@@ -7,8 +7,8 @@
 - [x] Production release `192c8a3f7190` activated on oneqaydev; host result SHA256 `ae75314557a4aa2b885bdbbf5df56f04837a690a72385e99c9f08dad778e2356` qualifies the native runtime gate, sessions, cookie security, merchant preservation, and isolated routing.
 - [x] Owner reports successful sign-in on 11 October 2026. This is owner-reported, not independently verified MFA/TOTP or CASH business acceptance.
 - [x] Implement shared merchant navigation, operational overview, and cashier presentation improvements using existing data and permissions.
-- [ ] Qualify compiled desktop/mobile presentation and transaction interactions, then certify the resulting immutable release.
-- [ ] Apply the certified presentation update with current merchant, sessions, configuration, data, and business-on rollback preserved.
+- [x] Qualify 19 compiled desktop/mobile presentation and transaction interaction scenarios; certify immutable source `091312accfd0` through main run `38139769412`.
+- [ ] Apply the certified presentation update with current merchant, sessions, configuration, data, and business-on rollback preserved. The first attempt stopped before public switch; exact disabled-symlink recovery is prepared and locally verified, pending owner-host execution.
 
 ## Completed and do not replay
 
