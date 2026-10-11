@@ -42,3 +42,28 @@ if(file_get_contents($file)!=='private fixture')throw new RuntimeException('Syml
 unlink($link);unlink($file);rmdir($dir);
 echo "PASS: exact independent owner grant, 15 negative authority cases, 900-second window and private atomic output.\n";
 
+// The original health index must remain intact; root and routed requests use the fresh filename.
+$native="RewriteEngine On\n    RewriteCond %{REQUEST_FILENAME} !-d\n    RewriteCond %{REQUEST_FILENAME} !-f\n    RewriteRule ^ index.php [L]\n";
+$handler="# php -- BEGIN cPanel-generated handler, do not edit\n<IfModule mime_module>\nAddHandler application/x-httpd-ea-php83 .php .php8 .phtml\n</IfModule>\n# php -- END cPanel-generated handler, do not edit\n";
+$rewrite=bRewriteFor($native,"DirectoryIndex index.html index.php\n".$handler);
+if(!str_contains($rewrite,'RewriteRule ^$ '.B_ENTRY_NAME.' [L]')
+    || !str_contains($rewrite,'RewriteRule ^ '.B_ENTRY_NAME.' [L]')
+    || !str_contains($rewrite,'DirectoryIndex '.B_ENTRY_NAME)
+    || !str_contains($rewrite,$handler))throw new RuntimeException('Fresh routing or qualified PHP handler not preserved');
+$bridge=bBridgeFor(str_repeat('a',64));
+if(!str_contains($bridge,var_export(B_ENV,true)) || !str_contains($bridge,'clearstatcache(true,$binding)')
+    || !str_contains($bridge,'hash_file(\'sha256\',$binding)')
+    || !str_contains($bridge,"ProductionBusinessRuntimeGate::allows('production')"))throw new RuntimeException('Cached bridge lacks bound-file/native gate');
+$r=['status'=>503,'body'=>'oneQayDev business activation not authorized','headers'=>''];
+$e=bEntryEvidence($r);
+if($e['bridge_identity']!=='MISSING' || !$e['known_health_only_response'])throw new RuntimeException('Old health bytecode was accepted');
+$r=['status'=>200,'body'=>'<meta name="oneqay-merchant-entry" content="enabled"><script id="oneqay-merchant-login-context">PRIVATE-MERCHANT-CONTEXT</script>',
+    'headers'=>"X-OneQay-Business-Bridge: ".B_BRIDGE_ID."\r\nX-OneQay-Entry-Phase: native-gate-passed\r\nSet-Cookie: oneqaydev-production-session=PRIVATE-COOKIE; path=/; secure; httponly; samesite=lax\r\n"];
+$e=bEntryEvidence($r);
+if($e['bridge_identity']!=='EXPECTED' || !$e['secure_session_cookie'] || !$e['merchant_entry_enabled']
+    || str_contains(json_encode($e,JSON_THROW_ON_ERROR),'PRIVATE-'))throw new RuntimeException('Evidence policy or confidentiality failed');
+$r['headers']="X-OneQay-Business-Bridge: ".B_BRIDGE_ID."\r\nX-OneQay-Entry-Phase: capability-denied\r\nX-OneQay-Missing-Capabilities: mbstring,PRIVATE-SECRET,pdo_mysql\r\n";
+$e=bEntryEvidence($r);
+if($e['missing_php_capabilities']!==['mbstring','pdo_mysql'] || str_contains(json_encode($e,JSON_THROW_ON_ERROR),'PRIVATE-'))throw new RuntimeException('Web capability diagnosis exposed untrusted values');
+echo "PASS: fresh root/routed entry, preserved cPanel PHP handler, cached-bytecode binding guard, stale-bridge rejection and confidential HTTP capability evidence.\n";
+

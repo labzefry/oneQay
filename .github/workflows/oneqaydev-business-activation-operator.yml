@@ -37,7 +37,7 @@ jobs:
           php -l tools/production/tests/oneqaydev-business-activation-authority.php
           php tools/production/tests/oneqaydev-business-activation-authority.php
       - name: Keep application, credentials and schema outside operator governance
-        if: github.event_name == 'pull_request' && github.head_ref == 'oneqaydev-business-activation-operator-20261011'
+        if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'oneqaydev-business-')
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
@@ -49,3 +49,4 @@ jobs:
           test ! -e tools/production/cpanel/credential.json
       - name: Source remains clean and no host authority is emitted
         run: git diff --exit-code
+

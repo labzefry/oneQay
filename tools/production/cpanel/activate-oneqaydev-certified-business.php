@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 /**
- * oneQayDev exact-installed-source business activation successor.
+ * oneQayDev exact-installed-source business activation retry with a fresh web entry.
  * Author by Lab | zefry.
  * Requires an independently authenticated, exact-request Product Owner grant.
  * Never grants its own authority, provisions, migrates, writes SQL, or changes staging.
@@ -18,7 +18,13 @@ const B_MERCHANT_SHA = 'e1cddcd1f0334a85b073c0526ecbc6236ba530dbc3a671b00f4d5d18
 const B_HELPER_SHA = 'ec4930fdac26d265a48ad0ad56d9d74fdeb52c0bbc1a7ffd03eb8cb385e9c776';
 const B_HELPER = B_ROOT.'/oneqaydev-upgrade-192c8a3f7190/upgrade.php';
 const B_APP = B_ROOT.'/releases/'.B_RELEASE.'/apps/web';
-const B_ENV = B_ROOT.'/shared/production-business-runtime-192c8a3f7190.env';
+const B_ENV = B_ROOT.'/shared/production-business-runtime-192c8a3f7190-r2.env';
+const B_PREVIOUS = B_ROOT.'/oneqaydev-business-activate-192c8a3f7190';
+const B_PREVIOUS_SHA = '8553e800a04f0583d5b2f129118edc5e426db60c2e7540d7267fe8ff3f385dc9';
+const B_PREVIOUS_REPORT_SHA = '620bf2311dada3cb950f83e390494ad639b6bcf3709537fe22b0cbd787170941';
+const B_ENTRY_NAME = 'oneqay-business-192c8a3f7190-r2.php';
+const B_ENTRY = B_PUBLIC.'/'.B_ENTRY_NAME;
+const B_BRIDGE_ID = 'production-192c8a3f7190-r2';
 const B_PREPARED_ENV = B_ROOT.'/shared/production-runtime-192c8a3f7190.env';
 const B_MERCHANT = B_ROOT.'/shared/oneqaydev-first-merchant-credential.json';
 const B_REQUEST = __DIR__.'/authority-request.json';
@@ -62,7 +68,7 @@ function bLoad(): void {
     bAssert(realpath(B_ROOT)===B_ROOT && realpath(B_PUBLIC)===B_PUBLIC
         && realpath(B_ROOT.'/releases')===B_ROOT.'/releases'
         && realpath(B_STAGING)!==realpath(B_PUBLIC),'TARGET_PATH_ISOLATION_INVALID');
-    bAssert(realpath(__DIR__)===B_ROOT.'/oneqaydev-business-activate-192c8a3f7190'
+    bAssert(realpath(__DIR__)===B_ROOT.'/oneqaydev-business-retry-192c8a3f7190'
         && !is_link(__DIR__),'OPERATOR_DIRECTORY_INVALID');
     bAssert(hash_equals(B_HELPER_SHA,hash('sha256',bRead(B_HELPER))),'PREPARED_HELPER_CHANGED');
     require_once B_HELPER;
@@ -77,6 +83,8 @@ function bRequest(): array {
         'rollback_snapshot_directory'=>B_BACKUP,'rollback_target_state'=>'HEALTH_READY_BUSINESS_OFF',
         'expected_upgrade_rollback_bridge_sha256'=>'ff7b3888b72c163641baa95d41b2431dcdaee52a754ca0e17d6db2095e5df125',
         'operator_sha256'=>(string)hash_file('sha256',__FILE__),
+        'previous_operator_sha256'=>B_PREVIOUS_SHA,'previous_activation_report_sha256'=>B_PREVIOUS_REPORT_SHA,
+        'public_entry_filename'=>B_ENTRY_NAME,
         'transactions'=>'CASH_AUTHORIZED_MERCHANT_TEST_DATA_ONLY',
         'migrations_allowed'=>false,'merchant_reprovision_allowed'=>false,
         'staging_allowed'=>false,'updater_allowed'=>false,'external_payments_allowed'=>false,
@@ -188,6 +196,20 @@ function bIntegrity(): void {
 function bPreconditions(): array {
     bAssert(time()<=(int)strtotime(B_EXPIRES),'OPERATOR_WINDOW_EXPIRED');
     bRequest(); bIntegrity(); $m=bMerchant();bPrivate(B_PREPARED_ENV);
+    bAssert(hash_equals(B_PREVIOUS_SHA,hash('sha256',bRead(B_PREVIOUS.'/activate.php')))
+        && hash_equals(B_PREVIOUS_REPORT_SHA,hash('sha256',bRead(B_PREVIOUS.'/activation-result.json'))),'PREVIOUS_ATTEMPT_BINDING_CHANGED');
+    $failed=bJson(B_PREVIOUS.'/activation-result.json');
+    foreach(['state'=>'ACTIVATION_FAILED_ROLLED_BACK','error_code'=>'MERCHANT_ENTRY_HTTPS_NOT_READY',
+        'business_traffic'=>'OFF','source_commit'=>B_SOURCE,'release_id'=>B_RELEASE,
+        'rollback'=>'FILES_AND_BUSINESS_OFF_VERIFIED','rollback_https'=>'PASS'] as $k=>$v)
+        bAssert(($failed[$k]??null)===$v,'PREVIOUS_SAFE_ROLLBACK_REQUIRED');
+    bAssert(!file_exists(B_ROOT.'/shared/production-business-runtime-192c8a3f7190.env')
+        && !is_link(B_ROOT.'/shared/production-business-runtime-192c8a3f7190.env')
+        && !file_exists(B_ENTRY) && !is_link(B_ENTRY),'PREVIOUS_BUSINESS_OR_RETRY_ENTRY_EXISTS');
+    $previousSnapshot=bJson(B_PREVIOUS.'/rollback/snapshot.json');
+    foreach(['index.php','.htaccess','index.html'] as $name)
+        bAssert(hash_equals((string)($previousSnapshot['files'][$name]??''),(string)hash_file('sha256',B_PUBLIC.'/'.$name)),'PREVIOUS_PUBLIC_ROLLBACK_CHANGED');
+    bAssert(hash_equals((string)($previousSnapshot['files']['prepared.env']??''),(string)hash_file('sha256',B_PREPARED_ENV)), 'PREVIOUS_PREPARED_ROLLBACK_CHANGED');
     $report=bJson(dirname(B_HELPER).'/upgrade-result.json');
     foreach(['state'=>'HEALTH_READY_BUSINESS_OFF','release_id'=>B_RELEASE,'source_commit'=>B_SOURCE,
         'domain'=>'oneqaydev.n07.my.id','source_integrity_files'=>6252,'merchant_preserved'=>true,
@@ -276,24 +298,80 @@ function bRuntime(array $grant): void {
     finally { bAssert($handler->destroy($id),'SESSION_PROBE_CLEANUP_FAILED'); }
 }
 function bBridge(): string {
-    return str_replace('__APP__',var_export(B_APP,true),<<<'BRIDGE'
+    bPrivate(B_ENV);
+    return bBridgeFor((string)hash_file('sha256',B_ENV));
+}
+function bBridgeFor(string $envSha): string {
+    bAssert(preg_match('/\A[0-9a-f]{64}\z/D',$envSha)===1,'BRIDGE_RUNTIME_DIGEST_INVALID');
+    return str_replace(['__APP__','__ENV__','__ENV_SHA__','__BRIDGE_ID__'],
+        [var_export(B_APP,true),var_export(B_ENV,true),var_export($envSha,true),B_BRIDGE_ID],<<<'BRIDGE'
 <?php
 // Author by Lab | zefry — exact-source oneQayDev native Production business bridge.
 declare(strict_types=1);
+ini_set('display_errors','0');
+header('X-OneQay-Business-Bridge: __BRIDGE_ID__');
+header('X-OneQay-Entry-Phase: started');
+header('Cache-Control: no-store');
 define('LARAVEL_START',microtime(true));
 $root=__APP__;
-if(realpath($root)!==$root){http_response_code(503);exit;}
+$binding=__ENV__;$bindingSha=__ENV_SHA__;
+clearstatcache(true,$binding);
+if(realpath($root)!==$root || !is_file($binding) || is_link($binding)
+    || !hash_equals($bindingSha,(string)hash_file('sha256',$binding))
+    || !hash_equals($bindingSha,(string)hash_file('sha256',$root.'/.env'))){
+    http_response_code(503);header('X-OneQay-Entry-Phase: binding-denied');exit;
+}
+header('X-OneQay-Entry-Phase: binding-verified');
+$missing=[];
+foreach(['mbstring','pdo_mysql','openssl','ctype','fileinfo','tokenizer'] as $extension)
+    if(!extension_loaded($extension))$missing[]=$extension;
+if($missing!==[]){
+    http_response_code(503);header('X-OneQay-Entry-Phase: capability-denied');
+    header('X-OneQay-Missing-Capabilities: '.implode(',',$missing));exit;
+}
 if(file_exists($maintenance=$root.'/storage/framework/maintenance.php'))require $maintenance;
 require $root.'/vendor/autoload.php';
+header('X-OneQay-Entry-Phase: autoloaded');
 $app=require $root.'/bootstrap/app.php';
 $kernel=$app->make(\Illuminate\Contracts\Http\Kernel::class);
 $kernel->bootstrap();
+header('X-OneQay-Entry-Phase: bootstrapped');
 if(!\App\Infrastructure\Runtime\ProductionBusinessRuntimeGate::allows('production')){
-    http_response_code(503);header('Cache-Control: no-store');echo 'oneQayDev business gate denied';exit;
+    http_response_code(503);header('X-OneQay-Entry-Phase: native-gate-denied');echo 'oneQayDev business gate denied';exit;
 }
+header('X-OneQay-Entry-Phase: native-gate-passed');
 $request=\Illuminate\Http\Request::capture();
 $response=$kernel->handle($request);$response->send();$kernel->terminate($request,$response);
 BRIDGE);
+}
+function bPublicHtaccess(?string $hosting=null): string {
+    $hosting??=bRead(B_BACKUP.'/.htaccess');
+    return bRewriteFor(bRead(B_APP.'/public/.htaccess'),$hosting);
+}
+function bRewriteFor(string $raw,string $hosting): string {
+    $needle='    RewriteCond %{REQUEST_FILENAME} !-d';
+    bAssert(substr_count($raw,$needle)===1 && substr_count($raw,'RewriteRule ^ index.php [L]')===1,'NATIVE_REWRITE_TEMPLATE_INVALID');
+    $raw=str_replace($needle,'    RewriteRule ^$ '.B_ENTRY_NAME." [L]\n"
+        .'    RewriteRule ^index\\.php$ '.B_ENTRY_NAME." [L]\n\n".$needle,$raw);
+    $raw=str_replace('RewriteRule ^ index.php [L]','RewriteRule ^ '.B_ENTRY_NAME.' [L]',$raw);
+    // Retain the already qualified cPanel PHP handler when replacing rewrite rules.
+    preg_match_all('/^# php -- BEGIN cPanel-generated handler[^\r\n]*\R.*?^# php -- END cPanel-generated handler[^\r\n]*(?:\R|$)/ms',$hosting,$blocks);
+    return 'DirectoryIndex '.B_ENTRY_NAME."\n".$raw."\n".implode("\n",$blocks[0]);
+}
+function bEntryEvidence(array $r): array {
+    $identity='MISSING';$phase='NOT_REPORTED';$missing=[];
+    if(preg_match('/^X-OneQay-Business-Bridge:\s*([^\r\n]+)\r?$/im',$r['headers'],$m))
+        $identity=trim($m[1])===B_BRIDGE_ID?'EXPECTED':'OTHER';
+    if(preg_match('/^X-OneQay-Entry-Phase:\s*(started|binding-denied|binding-verified|capability-denied|autoloaded|bootstrapped|native-gate-denied|native-gate-passed)\s*$/im',$r['headers'],$m))$phase=strtolower($m[1]);
+    if(preg_match('/^X-OneQay-Missing-Capabilities:\s*([^\r\n]+)\r?$/im',$r['headers'],$m))
+        $missing=array_values(array_intersect(['mbstring','pdo_mysql','openssl','ctype','fileinfo','tokenizer'],explode(',',trim($m[1]))));
+    return ['status'=>$r['status'],'bridge_identity'=>$identity,'entry_phase'=>$phase,
+        'missing_php_capabilities'=>$missing,
+        'body_sha256'=>hash('sha256',$r['body']),
+        'known_health_only_response'=>hash('sha256',$r['body'])==='b4c06c86a7faabb3a621394200f6311404a22ca4ba24f906467664cbb220123b',
+        'merchant_entry_enabled'=>preg_match('/<meta\s+name="oneqay-merchant-entry"\s+content="enabled"/',$r['body'])===1,
+        'login_context_present'=>str_contains($r['body'],'oneqay-merchant-login-context'),
+        'secure_session_cookie'=>preg_match('/^Set-Cookie:\s*oneqaydev-production-session=[^\r\n]*;\s*secure[^\r\n]*;\s*httponly[^\r\n]*;\s*samesite=lax/im',$r['headers'])===1];
 }
 function bStagingFingerprint(): string {
     $items=[];
@@ -316,15 +394,24 @@ function bSnapshot(array $pre): array {
     return $s;
 }
 function bPublicVerify(): void {
+    $GLOBALS['oneqay_business_https_evidence']=[];
     oqVerifyHttps('/health/live','ok');oqVerifyHttps('/health/ready','ready');
-    $r=bHttps('https://oneqaydev.n07.my.id/','text/html');
-    bAssert($r['status']===200 && preg_match('/<meta\s+name="oneqay-merchant-entry"\s+content="enabled"/',$r['body'])===1
-        && str_contains($r['body'],'oneqay-merchant-login-context'),'MERCHANT_ENTRY_HTTPS_NOT_READY');
-    bAssert(preg_match('/^Set-Cookie:\s*oneqaydev-production-session=[^\r\n]*;\s*secure[^\r\n]*;\s*httponly[^\r\n]*;\s*samesite=lax/im',$r['headers'])===1,'SECURE_SESSION_HTTPS_COOKIE_INVALID');
-    $r=bHttps('https://oneqaydev.n07.my.id/pos','application/json');
+    $probe=bin2hex(random_bytes(12));
+    $r=bHttps('https://oneqaydev.n07.my.id/?oneqay_deploy_probe='.$probe,'text/html');
+    $e=bEntryEvidence($r);$GLOBALS['oneqay_business_https_evidence']['merchant_entry']=$e;
+    bAssert($e['bridge_identity']==='EXPECTED','FRESH_BUSINESS_BRIDGE_NOT_SERVED');
+    bAssert($e['missing_php_capabilities']===[],'PHP_WEB_CAPABILITY_MISSING');
+    bAssert($e['status']===200 && $e['merchant_entry_enabled'] && $e['login_context_present'],'MERCHANT_ENTRY_HTTPS_NOT_READY');
+    bAssert($e['secure_session_cookie'],'SECURE_SESSION_HTTPS_COOKIE_INVALID');
+    $r=bHttps('https://oneqaydev.n07.my.id/pos?oneqay_deploy_probe='.$probe,'application/json');
+    $GLOBALS['oneqay_business_https_evidence']['unauthenticated_pos']=['status'=>$r['status']];
+    bAssert(bEntryEvidence($r)['bridge_identity']==='EXPECTED','FRESH_POS_BRIDGE_NOT_SERVED');
     bAssert(in_array($r['status'],[401,403],true),'UNAUTHENTICATED_POS_NOT_DENIED');
 }
 function bRestore(): array {
+    // Removing the bound private file disables even already cached fresh entry bytecode.
+    bAssert(!is_link(B_ENV),'CANDIDATE_ENV_SYMLINK_DENIED');
+    if(is_file(B_ENV))bAssert(@unlink(B_ENV),'CANDIDATE_ENV_CLOSE_FAILED');
     bAssert(hash_equals(B_BRIDGE,(string)hash_file('sha256',B_BACKUP.'/index.php')),'KNOWN_HEALTH_BRIDGE_BACKUP_CHANGED');
     bWrite(B_PUBLIC.'/index.php',bRead(B_BACKUP.'/index.php'),0644);
     bPrivate(B_BACKUP.'/snapshot.json');$s=bJson(B_BACKUP.'/snapshot.json');
@@ -339,7 +426,8 @@ function bRestore(): array {
     bAssert(hash_equals($s['merchant_sha256'],(string)hash_file('sha256',B_MERCHANT))
         && hash_equals($s['staging_fingerprint'],bStagingFingerprint())
         && hash_equals($s['public_asset_sha256'],oqHashTree(B_PUBLIC.'/build')),'ROLLBACK_PROTECTED_BINDING_CHANGED');
-    if(is_file(B_ENV) && !is_link(B_ENV))bAssert(@unlink(B_ENV),'CANDIDATE_ENV_CLEANUP_FAILED');
+    bAssert(!is_link(B_ENTRY),'RETRY_ENTRY_SYMLINK_DENIED');
+    if(is_file(B_ENTRY))bAssert(@unlink(B_ENTRY),'RETRY_ENTRY_CLEANUP_FAILED');
     $https='NOT_VERIFIED';
     try { oqVerifyHttps('/health/live','ok');oqVerifyHttps('/health/ready','ready');$https='PASS'; } catch(Throwable) {}
     return ['rollback'=>'FILES_AND_BUSINESS_OFF_VERIFIED','rollback_https'=>$https,'database_records'=>'PRESERVED_NOT_REVERTED'];
@@ -349,6 +437,7 @@ function bFailedRollback(Throwable $e): void {
     try {
         $rollback=bRestore();
         bReport(array_merge(['state'=>'ACTIVATION_FAILED_ROLLED_BACK','error_code'=>$code,'business_traffic'=>'OFF',
+            'activation_https_evidence'=>$GLOBALS['oneqay_business_https_evidence']??[],
             'release_id'=>B_RELEASE,'source_commit'=>B_SOURCE,'host_business_acceptance'=>'NOT_VERIFIED'], $rollback));
     } catch(Throwable) {
         try { bReport(['state'=>'ACTIVATION_FAILED_ROLLBACK_NOT_VERIFIED','error_code'=>$code,
@@ -364,10 +453,12 @@ function bActivate(string $authorityPath): array {
         bWrite(B_ENV,bCandidateEnv($pre['raw_env'],$pre['merchant']['merchant']));
         bBind(B_ENV);bRuntime($pre['merchant']['merchant']);
         bAssert(time()<=$authority['expires_at_unix'],'AUTHORITY_EXPIRED_BEFORE_SWITCH');
-        bWrite(B_PUBLIC.'/.htaccess',"DirectoryIndex index.php\n".bRead(B_APP.'/public/.htaccess'),0644);
-        bWrite(B_PUBLIC.'/index.php',bBridge(),0644);
+        bWrite(B_ENTRY,bBridge(),0644);
+        bWrite(B_PUBLIC.'/.htaccess',bPublicHtaccess(),0644);
         bPublicVerify();
-        bAssert(hash_equals(hash('sha256',bBridge()),(string)hash_file('sha256',B_PUBLIC.'/index.php'))
+        bAssert(hash_equals(hash('sha256',bBridge()),(string)hash_file('sha256',B_ENTRY))
+            && hash_equals(hash('sha256',bPublicHtaccess()),(string)hash_file('sha256',B_PUBLIC.'/.htaccess'))
+            && hash_equals(B_BRIDGE,(string)hash_file('sha256',B_PUBLIC.'/index.php'))
             && hash_equals(B_MERCHANT_SHA,(string)hash_file('sha256',B_MERCHANT))
             && hash_equals($snapshot['staging_fingerprint'],bStagingFingerprint())
             && hash_equals($pre['asset_sha256'],oqHashTree(B_PUBLIC.'/build')),'POST_SWITCH_PROTECTED_BINDING_CHANGED');
@@ -378,7 +469,9 @@ function bActivate(string $authorityPath): array {
             'session_storage_probe'=>'FILE_WRITE_READ_DELETE_PASS','merchant_preserved'=>true,'staging'=>'NOT_TOUCHED',
             'migrations'=>'NOT_TOUCHED','updater'=>'INACTIVE','external_payments'=>'NOT_PERFORMED',
             'rollback_snapshot_verified'=>true,'host_business_acceptance'=>'NOT_VERIFIED','go_live'=>'NOT_YET_PROVEN',
-            'bridge_sha256'=>(string)hash_file('sha256',B_PUBLIC.'/index.php'),
+            'public_entry_filename'=>B_ENTRY_NAME,'bridge_sha256'=>(string)hash_file('sha256',B_ENTRY),
+            'routing_sha256'=>(string)hash_file('sha256',B_PUBLIC.'/.htaccess'),
+            'activation_https_evidence'=>$GLOBALS['oneqay_business_https_evidence']??[],
             'runtime_sha256'=>(string)hash_file('sha256',B_ENV)],$db,$authority);
         bReport($result);return $result;
     } catch(Throwable $e) {
@@ -389,7 +482,9 @@ function bReplay(string $authorityPath,array $r): array {
     try {
         $historical=bAuthority($authorityPath,$r['authorized_at_unix']??0);
         foreach($historical as $k=>$v)bAssert(($r[$k]??null)===$v,'REPLAY_AUTHORITY_RECEIPT_CHANGED');
-        bAssert(hash_equals($r['bridge_sha256'],(string)hash_file('sha256',B_PUBLIC.'/index.php'))
+        bAssert(hash_equals($r['bridge_sha256'],(string)hash_file('sha256',B_ENTRY))
+            && hash_equals($r['routing_sha256'],(string)hash_file('sha256',B_PUBLIC.'/.htaccess'))
+            && hash_equals(B_BRIDGE,(string)hash_file('sha256',B_PUBLIC.'/index.php'))
             && hash_equals($r['runtime_sha256'],(string)hash_file('sha256',B_ENV))
             && hash_equals((string)hash_file('sha256',B_ENV),(string)hash_file('sha256',B_APP.'/.env'))
             && hash_equals(B_MERCHANT_SHA,(string)hash_file('sha256',B_MERCHANT)),'ACTIVE_REPLAY_BINDING_CHANGED');
