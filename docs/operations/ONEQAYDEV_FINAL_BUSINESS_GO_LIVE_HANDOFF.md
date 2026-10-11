@@ -4,125 +4,140 @@ Author by Lab | zefry
 
 ## Scope and authority
 
-Target: `https://oneqaydev.n07.my.id`, exclusively. Preserve the existing
-database, merchant, APP_KEY, credentials, migrations and protected staging
-`https://oneqay.n07.my.id`. Engineering authority through squash-and-merge
-is carried forward from the Product Owner's continuation instructions.
-Engineering merge authority does not grant host business activation.
+Only `https://oneqaydev.n07.my.id` and its isolated private deployment are
+authorized. Preserve the existing database, merchant, APP_KEY, credentials,
+migrations and protected staging `https://oneqay.n07.my.id`. The Product
+Owner's continuation instruction supplies engineering squash-and-merge
+authority. It does not independently authorize host business traffic.
 
-Do not repeat migrations, provision another merchant, enable an updater or
-use an external payment provider. Production acceptance must use authorized
-merchant test data, with no live customer data or invented evidence.
+No migration, merchant reprovision, updater activation, live customer data or
+external payment is permitted. Real acceptance must use authorized merchant
+test data and CASH. Never substitute CI or a local fixture for host proof.
 
-## Live repository checkpoint at entry, 2026-10-11
+## Completed source and certified upgrade
 
-- Verified main: `4439d08c75542c653ae919127991333c3432ea38`; PR #940 merged.
-- PR #941: open, ready, mergeable; verified initial head
-  `354018cb5e9be7fcc6396ebeb8f23285471441bd`.
-- Native Product Owner merge status succeeded for that initial head;
-  the owner comment is
-  <https://github.com/labzefry/oneQay/pull/941#issuecomment-6101477789>.
-- Exact-head checks: 108 succeeded, seven failed, one skipped.
-  The skipped source qualification is the independent operational-authority
-  workflow; it must not be represented as host acceptance.
-- Secure-cookie behavioral test and Production business source regression
-  succeeded on the initial head. No new certified archive exists at entry.
-- All seven failures occurred in historical application-path constraints:
-  Sprint211, Sprint212, Sprint213, Sprint214, Sprint218, Sprint222, Sprint223.
-  Their functional tests ran before rejecting the newly changed session config.
+PR941 was squash-merged as `d78bede01d46c6cb4154148ce361809e5da8ab0b`.
+The final PR head was `ccef4cef55ca85610d36a6c8e68c4b28f2cbcd9f`:
+116 checks succeeded, one authority-conditioned qualification was skipped,
+and none failed. Main's 15 checks succeeded. The native execution record is
+<https://github.com/labzefry/oneQay/pull/941#issuecomment-6106279537>.
 
-## Bounded source correction in PR #941
+That source makes Production session cookies Secure even when a stale binding
+requests false, retaining HttpOnly and SameSite=Lax. Seven historical
+application envelopes and Sprint268's bounded dependency-audit envelope were
+corrected without skipping functional, security or dependency checks.
 
-Production always requires Secure session cookies, including when a stale
-`SESSION_SECURE_COOKIE` binding is false. HttpOnly and SameSite=Lax remain
-required; isolated HTTP tests retain configurable Secure behavior.
+Production Business Release Certification `38117125557` succeeded. Installed
+release identity: `production-d78bede01d46`; artifact `11693586623`.
+Official archive SHA-256:
+`23c8759e53e3da942a400848ac5b6b6e43304b92b4b6d9183bb15dcf08a4870f`.
+No historical archive was patched or relabelled.
 
-Seven historical workflows now accept the exact PR941 branch and number
-only when its application diff consists of these two files:
+## Actual operator-reported host checkpoint, 2026-10-11
 
-- `apps/web/config/session.php`
-- `apps/web/tests/production-session-cookie-policy.php`
+The owner uploaded `upgrade-result (1).json`. It reports:
 
-Deletion is rejected. Extra application, dependency and migration paths
-remain rejected. Existing functional, rollback, deny-by-default, schema,
-runtime and source-cleanliness tests still execute. The focused session CI
-also validates this application envelope with immutable head checkout.
+- `HEALTH_READY_BUSINESS_OFF`, installed source/release exactly as above.
+- 6,252 source-integrity files checked; retained placeholder preserved.
+- Existing first merchant `EXISTING_APPLIED_PRESERVED`; receipt unchanged.
+- Secure session configuration verified; file write/read/delete probe passed.
+- 16 required runtime features prepared; both independent traffic flags OFF.
+- Migrations and staging `NOT_TOUCHED`; rollback snapshot verified.
+- Previous release `production-409ac6b2bdb8`.
+- Current health-only bridge SHA-256:
+  `ff7b3888b72c163641baa95d41b2431dcdaee52a754ca0e17d6db2095e5df125`.
+- Merchant receipt SHA-256:
+  `e1cddcd1f0334a85b073c0526ecbc6236ba530dbc3a671b00f4d5d18e4a3109a`.
+- Rollback directory:
+  `/home/pekd7254/oneqay-production-test/oneqaydev-upgrade-d78bede01d46/rollback`.
+- Business activation `NOT_AUTHORIZED`; actual business acceptance
+  `NOT_VERIFIED`.
 
-Local validation passed 63 actual Git-diff boundary checks across the seven
-workflow constraints: the authorized diff succeeds, while wrong branch,
-wrong PR, extra application/test paths, dependency changes, migration
-changes, deleted config and omitted behavioral regression are rejected.
-Eight workflow YAML files parse successfully. PHP tests require GitHub CI
-because this Work container has no PHP executable. Do not substitute local
-Git-boundary results for PHP, MySQL or actual host acceptance.
+These are owner-supplied host results, not direct cPanel observations by this
+Work session. There is still no verified real-host sign-in/MFA, CASH sale,
+receipt persistence/replay, inventory decrement, cash reconciliation, Final
+Shift Close or report acceptance. Final status remains BUSINESS_OFF.
 
-Updating the seven constraints also triggers Sprint268's dependency audit.
-Its initial run rejected the current source against an obsolete Sprint268
-baseline. For the exact PR941 branch and number, it now requires the complete
-13-file correction envelope and rejects deletions. Composer audit, npm audit,
-dependency floors, application tests, frontend checks and the original
-migration-source preservation check still execute. Dependency files are
-outside the permitted PR941 envelope.
+## Newly reproduced native HTTP defect and bounded correction
 
-The final head, latest CI and merge result must be read from
-<https://github.com/labzefry/oneQay/pull/941>. A source file cannot embed
-its own final commit SHA; the final execution comment records the immutable
-head and outcome. Refresh native exact-head authority only under the actual
-Product Owner instruction, without representing it as independent review.
+Activation-operator qualification booted the actual certified Laravel app
+through its HTTP kernel with native Production gates, durable file sessions
+and existing-merchant-shaped local context. The unmodified d78 POS entry
+returned HTTP 500: `Session store not set on request`. Provider-registered
+POS routes used `session.active` without Laravel's web/session pipeline.
+The prototype activation operator detected the failed unauthenticated-access
+check and restored the exact local health bridge, environment and public
+files. This was a local fixture; no host traffic was enabled.
 
-## Operator-reported host checkpoint
+The successor changes only these two application paths:
 
-The continuation attachment supersedes older repository handoffs which said
-the 409ac6b upgrade or first merchant had not yet run. These are operator
-reports, not new observations by this Work session:
+- `apps/web/bootstrap/app.php`
+- `apps/web/tests/production-session-web-pipeline.php`
 
-- Installed release: `production-409ac6b2bdb8`.
-- Certified source: `409ac6b2bdb80d31fbfb9425ddbb413a278b97e6`.
-- Certification run: `38066218900`, reported success.
-- Archive SHA-256:
-  `8ad336c2396fb5d6e95bcea80c574a305040c6ba4f570c9a2edea911186f3f3e`.
-- Upgrade: `HEALTH_READY_BUSINESS_OFF`; 6,252 integrity-checked files.
-- Merchant: `ONEQAYDEV_FIRST_MERCHANT_APPLIED`; private credential `APPLIED`.
-- MySQL SELECT passed; 43 tables and at least 27 migration receipts.
-- HTTPS health passed; staging untouched; business traffic OFF.
-- Latest preflight: `PREACTIVATION_BLOCKED`, nine required features missing,
-  `session_configuration_verified=false`.
-- No real-host CASH, receipt, stock, shift-close or reporting acceptance
-  has been verified in this execution.
+`session.active` is now a middleware group which resolves the existing `web`
+pipeline before the original authority middleware. This gives provider
+routes the canonical cookie, session and CSRF controls. Laravel deduplicates
+middleware when a route already belongs to `web`. The original authority,
+tenant, MFA, throttling and native Production gate remain in force.
 
-## Confirmed access limitation
+The regression exercises eight real HTTP-kernel requests using isolated
+Production-shaped fixtures: unauthenticated GETs to POS, setup, shift start,
+cashier, shift close and session inventory return 401; POST sale/login
+without CSRF return 419; cookies remain Secure/HttpOnly/SameSite=Lax despite
+a false Secure binding. Every registered `session.active` route must resolve
+StartSession and CSRF before authority, exactly once. No database or host
+acceptance is claimed. This Work session now has an isolated PHP 8.3 runtime
+for local checks; the earlier no-local-PHP limitation is superseded.
 
-Work Cloud Browser has no cPanel session. Opening the authorized target
-failed with `net::ERR_BLOCKED_BY_CLIENT` before a host page was available.
-No host configuration, bridge, source, database or credentials were modified.
-Do not infer host access from a successful GitHub connector operation.
+Production Business Release Certification runs this regression before any
+replacement archive is published. The same eight historical workflows
+accept only the exact successor branch, base source and bounded source
+paths. All existing functional and dependency checks still run. Dependencies
+and migration sources are unchanged. Final head, CI, merge and certification
+identities belong in the native PR execution record, because a source file
+cannot embed its own final commit SHA.
+
+## Access limitation and next host delivery
+
+The owner is signed in through their own browser; its cookies are not shared
+with Work Cloud Browser. The authorized cPanel login attempt returned a
+network error. Manual takeover was unavailable. The single requested retry
+returned `502 Bad Gateway / The remote server does not speak TLS`. Do not
+repeat credential attempts, downgrade TLS or claim authenticated host access.
 
 Private root: `/home/pekd7254/oneqay-production-test`.
 Public root: `/home/pekd7254/public_html/oneqaydev.n07.my.id`.
-Existing shared runtime: `/home/pekd7254/oneqay-production-test/shared`.
-Confirm actual paths on host before any mutation; keep secrets out of logs.
+Protected staging: `/home/pekd7254/public_html/oneqay.n07.my.id`.
 
-## Continuation sequence
+After successor source CI, exact-head engineering authority and squash merge,
+use only the newly certified official artifact. Deliver one preserved-binding
+upgrade from installed d78 to that source, keeping BUSINESS_OFF. Never patch
+the installed/certified d78 archive or run the obsolete 409-bound inspector.
+Provide a direct `/usr/local/bin/php ... > ... 2>&1` Cron command, not a shell
+`if` wrapper rejected by the owner's cPanel. Give one manual instruction at
+a time, then continue from its sanitized result. Remove temporary Cron after
+one execution. No private credentials, runtime env or TOTP material should
+be returned in chat or committed.
 
-1. Resolve PR941's bounded CI correction; verify every latest check and
-   native exact-head merge status. Squash only the verified head with
-   `Author by Lab | zefry`, without bypassing required checks.
-2. On merged main, await Production Business Release Certification. Use
-   only its exact-source artifact; record source, run, release and archive
-   SHA-256. Do not patch or relabel the previous certified archive.
-3. Prepare a recoverable cPanel upgrade package from that archive. Preserve
-   existing private bindings and the merchant; do not run migrations.
-4. With authenticated cPanel access, verify isolated paths, snapshots,
-   session persistence, feature dependencies and runtime-gate bindings.
-   Keep the two independent traffic-authorization flags disabled.
-5. Obtain the exact independent activation authority required by the
-   repository and target. Apply a recoverable switch only after host gates
-   qualify. On failure remain BUSINESS_OFF or execute qualified rollback.
-6. Verify login/MFA, tenant/outlet/device boundaries, catalog/inventory,
-   shift opening/cash evidence, authorized CASH sale, receipt persistence,
-   idempotency, inventory decrement, closing cash, Final Shift Close and
-   reporting on the host. Record sanitized actual evidence.
+## Remaining independent activation and real acceptance
 
-Final classification is BLOCKED while access or an essential gate is
-unavailable, BUSINESS_OFF after a verified inactive deployment, and
-GO_LIVE_SUCCESS only after authorized activation and actual acceptance.
+The existing contract
+`docs/operations/ONEQAYDEV_BUSINESS_ACTIVATION_READONLY_PREFLIGHT_2026-10-11.md`
+requires independently bound short-lived Product Owner host business-traffic
+authorization: exact domain, certified source/archive, private target,
+health-only bridge and rollback snapshot, with expiry. Prepare and qualify
+the concrete successor operator first; obtain that separate business grant
+only when the operator and host gates are ready. A merge comment is not a
+business grant. The operator must authenticate the native grant, preserve
+bindings, recheck dependencies and make one recoverable switch. On failure
+traffic stays OFF or verified rollback closes business access.
+
+After the controlled switch, record actual sign-in/MFA, tenant/outlet/device
+scope, catalog/inventory, opening shift/cash evidence, authorized CASH sale,
+durable receipt and replay protection, inventory decrement, closing cash,
+Final Shift Close and audit/report evidence. Activation alone is
+`BUSINESS_ACTIVATED_ACCEPTANCE_PENDING`, never GO_LIVE_SUCCESS.
+
+Only completed real-host acceptance permits GO_LIVE_SUCCESS. Any cutover to
+the occupied staging domain needs fresh separate authority; updater stays
+INACTIVE.
