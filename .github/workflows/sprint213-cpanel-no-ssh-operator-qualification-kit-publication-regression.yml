@@ -270,6 +270,13 @@ jobs:
             mapfile -t security_successor_paths < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web | LC_ALL=C sort)
             expected_security_successor_paths=('apps/web/package-lock.json' 'apps/web/package.json')
             test "${security_successor_paths[*]}" = "${expected_security_successor_paths[*]}"
+          elif [ "$HEAD_REF" = 'production-cash-go-live-secure-session-20261011' ] && [ "${{ github.event.pull_request.number }}" = '941' ]; then
+            # PR941 permits exactly the Secure-cookie config and its behavioral regression.
+            # All deployment, rollback, schema, and runtime regressions above still execute.
+            mapfile -t session_app_paths < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web | LC_ALL=C sort)
+            expected_session_app_paths=('apps/web/config/session.php' 'apps/web/tests/production-session-cookie-policy.php')
+            test "${session_app_paths[*]}" = "${expected_session_app_paths[*]}"
+            test -z "$(git diff --diff-filter=D --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web)"
           else
             test -z "$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web | grep -v '^apps/web/tests/' || true)"
           fi
