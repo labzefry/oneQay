@@ -66,7 +66,7 @@ const server = createServer(async (req, res) => {
         }
         const data = inertia(req.url);
         res.writeHead(200, { 'Content-Type': 'text/html' });
-        res.end(`<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">${entry.css.map((c) => `<link rel="stylesheet" href="/build/${c}">`).join('')}<script type="module" src="/build/${entry.file}"></script></head><body><div id="app" data-page="${htmlEscape(JSON.stringify(data))}"></div></body></html>`);
+        res.end(`<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">${entry.css.map((c) => `<link rel="stylesheet" href="/build/${c}">`).join('')}<script type="module" src="/build/${entry.file}"></script></head><body><script data-page="app" type="application/json">${JSON.stringify(data).replaceAll('<', '\\u003c')}</script><div id="app"></div></body></html>`);
     } catch (error) { res.writeHead(500); res.end(String(error)); }
 });
 await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
