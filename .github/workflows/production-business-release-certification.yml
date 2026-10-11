@@ -102,6 +102,12 @@ jobs:
           npm ci --ignore-scripts --no-fund
           npm run type-check
           npm run build
+      - name: Verify business-on workspace update and rollback boundaries
+        if: github.event_name == 'pull_request' && github.head_ref == 'oneqaydev-enterprise-workspace-20261011'
+        run: |
+          set -euo pipefail
+          php -l tools/production/cpanel/update-oneqaydev-certified-workspace.php
+          php -d zend.assertions=1 -d assert.exception=1 tools/production/tests/oneqaydev-certified-workspace-update.php
       - name: Check compiled enterprise workspace with isolated browser fixtures
         if: github.event_name == 'pull_request' && github.head_ref == 'oneqaydev-enterprise-workspace-20261011'
         run: |
