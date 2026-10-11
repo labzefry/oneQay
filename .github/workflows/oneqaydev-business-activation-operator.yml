@@ -1,0 +1,51 @@
+name: oneQayDev Governed Business Activation Operator
+# Author by Lab | zefry
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'tools/production/cpanel/activate-oneqaydev-certified-business.php'
+      - 'tools/production/tests/oneqaydev-business-activation-authority.php'
+      - '.github/workflows/oneqaydev-business-activation-operator.yml'
+      - 'docs/operations/ONEQAYDEV_FINAL_BUSINESS_GO_LIVE_HANDOFF.md'
+  push:
+    branches: [main]
+    paths:
+      - 'tools/production/cpanel/activate-oneqaydev-certified-business.php'
+      - 'tools/production/tests/oneqaydev-business-activation-authority.php'
+      - '.github/workflows/oneqaydev-business-activation-operator.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  qualify-activation-authority:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        with:
+          php-version: '8.3'
+          coverage: none
+      - name: Qualify exact independent owner grant and private atomic output
+        run: |
+          set -euo pipefail
+          php -l tools/production/cpanel/activate-oneqaydev-certified-business.php
+          php -l tools/production/tests/oneqaydev-business-activation-authority.php
+          php tools/production/tests/oneqaydev-business-activation-authority.php
+      - name: Keep application, credentials and schema outside operator governance
+        if: github.event_name == 'pull_request' && github.head_ref == 'oneqaydev-business-activation-operator-20261011'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          test -z "$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web)"
+          test -z "$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- ops/final-shift-close)"
+          test ! -e tools/production/cpanel/authority.json
+          test ! -e tools/production/cpanel/credential.json
+      - name: Source remains clean and no host authority is emitted
+        run: git diff --exit-code
