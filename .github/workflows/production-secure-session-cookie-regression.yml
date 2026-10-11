@@ -1,0 +1,61 @@
+# Author by Lab | zefry
+name: Production Secure Session Cookie Regression
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/web/config/session.php'
+      - 'apps/web/tests/production-session-cookie-policy.php'
+      - '.github/workflows/production-secure-session-cookie-regression.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/web/config/session.php'
+      - 'apps/web/tests/production-session-cookie-policy.php'
+      - '.github/workflows/production-secure-session-cookie-regression.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  secure-session:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Verify bounded PR941 session correction
+        if: github.event_name == 'pull_request' && github.event.pull_request.number == 941
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          set -euo pipefail
+          test "$HEAD_REF" = production-cash-go-live-secure-session-20261011
+          mapfile -t session_app_paths < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web | LC_ALL=C sort)
+          expected_session_app_paths=('apps/web/config/session.php' 'apps/web/tests/production-session-cookie-policy.php')
+          test "${session_app_paths[*]}" = "${expected_session_app_paths[*]}"
+          test -z "$(git diff --diff-filter=D --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web)"
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        with:
+          php-version: '8.3'
+          extensions: mbstring,openssl,pdo_mysql
+          tools: composer:v2
+          coverage: none
+      - name: Test secure Production cookie policy
+        run: |
+          set -euo pipefail
+          php -l apps/web/config/session.php
+          php -l apps/web/tests/production-session-cookie-policy.php
+          cd apps/web
+          composer install --no-interaction --prefer-dist --no-progress
+          php tests/production-session-cookie-policy.php
+      - name: Keep schema and source envelope unchanged
+        run: |
+          test "$(find apps/web/database/migrations -maxdepth 1 -name '*.php' | wc -l)" -eq 27
+          git diff --exit-code
