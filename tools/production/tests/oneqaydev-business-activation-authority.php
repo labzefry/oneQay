@@ -12,8 +12,9 @@ $comment=['id'=>123,'user'=>['login'=>'labzefry','type'=>'User'],'author_associa
     'issue_url'=>'https://api.github.com/repos/labzefry/oneQay/issues/942',
     'body'=>bApprovalBody($sha),'created_at'=>gmdate('Y-m-d\TH:i:s\Z',$now),
     'updated_at'=>gmdate('Y-m-d\TH:i:s\Z',$now)];
-$grant=bQualifyApproval($comment,123,$sha,$now+899);
-if($grant['expires_at_unix']!==$now+900)throw new RuntimeException('Window incorrectly bound');
+$grant=bQualifyApproval($comment,123,$sha,$now+B_AUTHORITY_WINDOW-1);
+if(B_AUTHORITY_WINDOW!==3600 || $grant['expires_at_unix']!==$now+3600)throw new RuntimeException('Window incorrectly bound');
+bQualifyApproval($comment,123,$sha,$now+3600);
 $mutations=[
     'wrong owner'=>static function(array $c):array{$c['user']['login']='someone-else';return $c;},
     'bot issuer'=>static function(array $c):array{$c['user']['type']='Bot';return $c;},
@@ -26,12 +27,13 @@ $mutations=[
     'different archive'=>static function(array $c):array{$c['body']=str_replace(B_ARCHIVE,str_repeat('c',64),$c['body']);return $c;},
     'revoked permission'=>static function(array $c):array{$c['body']=str_replace('BUSINESS_TRAFFIC: GRANTED','BUSINESS_TRAFFIC: REVOKED',$c['body']);return $c;},
     'edited approval'=>static function(array $c):array{$c['updated_at']=gmdate('Y-m-d\TH:i:s\Z',1791709201);return $c;},
+    'old fifteen-minute request'=>static function(array $c):array{$c['body']=str_replace('WINDOW_SECONDS: 3600','WINDOW_SECONDS: 900',$c['body']);return $c;},
 ];
 foreach($mutations as $label=>$mutate)expectDenied(static fn()=>bQualifyApproval($mutate($comment),123,$sha,$now),$label);
 expectDenied(static fn()=>bQualifyApproval($comment,124,$sha,$now),'wrong comment id');
 expectDenied(static fn()=>bQualifyApproval($comment,123,str_repeat('d',64),$now),'request substitution');
 expectDenied(static fn()=>bQualifyApproval($comment,123,$sha,$now-1),'future authority');
-expectDenied(static fn()=>bQualifyApproval($comment,123,$sha,$now+901),'expired authority');
+expectDenied(static fn()=>bQualifyApproval($comment,123,$sha,$now+3601),'expired authority');
 $dir=sys_get_temp_dir().'/oneqay-business-output-'.bin2hex(random_bytes(8));
 mkdir($dir,0700);$file=$dir.'/private.json';
 bWrite($file,'private fixture');clearstatcache();
@@ -40,7 +42,21 @@ $link=$dir.'/link';symlink($file,$link);
 expectDenied(static fn()=>bWrite($link,'unexpected'),'symlink output');
 if(file_get_contents($file)!=='private fixture')throw new RuntimeException('Symlink output changed target');
 unlink($link);unlink($file);rmdir($dir);
-echo "PASS: exact independent owner grant, 15 negative authority cases, 900-second window and private atomic output.\n";
+echo "PASS: exact independent owner grant, 16 negative authority cases, one-hour boundary and private atomic output.\n";
+
+$stopped=['state'=>'STOPPED_FAIL_CLOSED','error_code'=>'AUTHORITY_WINDOW_EXPIRED',
+    'source_commit'=>B_SOURCE,'release_id'=>B_RELEASE,'host_business_acceptance'=>'NOT_VERIFIED',
+    'attribution'=>'Lab | zefry'];
+bQualifyStoppedRetry($stopped);
+foreach(['state'=>'ACTIVATION_FAILED_ROLLED_BACK','error_code'=>'MERCHANT_ENTRY_HTTPS_NOT_READY',
+    'source_commit'=>str_repeat('f',40),'release_id'=>'production-other','host_business_acceptance'=>'PASS',
+    'attribution'=>'someone else','extra_field'=>true] as $k=>$v) {
+    $changed=$stopped;$changed[$k]=$v;
+    expectDenied(static fn()=>bQualifyStoppedRetry($changed),'stopped receipt '.$k);
+}
+$missing=$stopped;unset($missing['error_code']);
+expectDenied(static fn()=>bQualifyStoppedRetry($missing),'incomplete stopped receipt');
+echo "PASS: only the exact pre-mutation expiry receipt qualifies; changed, extra, incomplete and mutated-attempt states are denied.\n";
 
 // The original health index must remain intact; root and routed requests use the fresh filename.
 $native="RewriteEngine On\n    RewriteCond %{REQUEST_FILENAME} !-d\n    RewriteCond %{REQUEST_FILENAME} !-f\n    RewriteRule ^ index.php [L]\n";

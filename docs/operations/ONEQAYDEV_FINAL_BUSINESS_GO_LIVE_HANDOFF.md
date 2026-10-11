@@ -57,6 +57,28 @@ It qualifies their hashes, the restored OFF state, the same certified source,
 private merchant receipt, read-only database/schema/scope/password checks,
 native runtime/MFA/session policy, and a fresh 900-second owner grant.
 
+The owner subsequently returned `activation-result (1).json` with only
+STOPPED_FAIL_CLOSED / AUTHORITY_WINDOW_EXPIRED and acceptance NOT_VERIFIED.
+Its exact SHA-256 is
+`3e8f6b1e237814f52a485ab1d09b48e8c3afbe19afbe65cc6d05c18914c1d813`.
+The r2 operator validates authority before any activation mutation. This
+receipt is not rollback or live-host acceptance evidence.
+
+The final continuation runs from a new private directory
+`oneqaydev-business-final-192c8a3f7190`, leaving the r2 operator, request and
+expired receipt intact. It pins that operator's exact SHA-256
+`8c79f9c6c20162c5267e5879e253b699a9ba13ff5705bc1b252fe2abbc764fbf`,
+pins the complete stopped receipt, and rejects any existing r2 rollback,
+candidate environment or public entry. All original source, OFF state,
+merchant, read-only database, MFA, session and rollback checks still apply.
+Its candidate environment and public entry use r3 filenames and a new
+rollback snapshot. The independently authenticated exact-request native
+owner grant now binds a one-hour execution window, including the operator
+hash and both previous receipts; older 15-minute grants cannot qualify.
+No prior report is erased or reset and failed attempts are not retried
+automatically. An expired attempt can continue only through this separate,
+explicitly authorized, unchanged-host qualification.
+
 Root and routed requests explicitly use the new filename; the already
 qualified cPanel PHP handler is retained. The original health index remains
 unchanged. HTTPS success requires a fresh bridge identity, rendered login,
@@ -73,7 +95,7 @@ Upload the small retry package into the existing private root. After the
 native owner comment has been issued and verified, execute once:
 
 ```sh
-/usr/local/bin/php /home/pekd7254/oneqay-production-test/oneqaydev-business-retry-192c8a3f7190/activate.php activate OWNER_COMMENT_ID > /home/pekd7254/oneqay-production-test/oneqaydev-business-retry-192c8a3f7190/activation-run.log 2>&1
+/usr/local/bin/php /home/pekd7254/oneqay-production-test/oneqaydev-business-final-192c8a3f7190/activate.php activate OWNER_COMMENT_ID > /home/pekd7254/oneqay-production-test/oneqaydev-business-final-192c8a3f7190/activation-run.log 2>&1
 ```
 
 Remove the Cron after one execution. Return only its sanitized
