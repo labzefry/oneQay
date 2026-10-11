@@ -2,7 +2,8 @@
 <!-- Sprint203 bounded staging bridge compatibility anchor — Lab | zefry -->
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
+import WorkspaceIcon from '../../components/WorkspaceIcon.vue';
 
 type Destination = {
     key: string;
@@ -42,6 +43,7 @@ const props = defineProps<{
 }>();
 
 const securityOpen = ref(false);
+onMounted(() => { if (new URLSearchParams(window.location.search).get('panel') === 'security') securityOpen.value = true; });
 const busy = ref(false);
 const notice = ref('');
 const error = ref('');
@@ -58,12 +60,12 @@ const totpRecoveryCodes = ref<string[]>([]);
 const technicalContextOpen = ref(false);
 
 const categoryMeta: Record<string, { label: string; description: string; order: number }> = {
-    SETUP: { label: 'Get ready', description: 'Prepare catalog and opening stock before daily selling.', order: 10 },
-    SHIFT: { label: 'Shift operations', description: 'Open, operate, and close the exact device shift when available.', order: 20 },
-    SELL: { label: 'Sell', description: 'Run the active cashier workspace for this device context.', order: 30 },
-    STOCK: { label: 'Stock movement', description: 'Receive and account for inventory using governed evidence.', order: 40 },
-    REVIEW: { label: 'Performance & history', description: 'Review authorized sales, shift, product, and inventory views.', order: 50 },
-    CONTROL: { label: 'Corrections & controls', description: 'Use guarded correction and reconciliation workspaces only when delivered.', order: 60 },
+    SETUP: { label: 'Get ready', description: 'Manage products and prepare stock for your next sale.', order: 10 },
+    SHIFT: { label: 'Shift operations', description: 'Manage opening cash and keep each shift organized.', order: 20 },
+    SELL: { label: 'Sell', description: 'Create an order and complete a sale.', order: 30 },
+    STOCK: { label: 'Stock movement', description: 'Keep inventory up to date as stock arrives.', order: 40 },
+    REVIEW: { label: 'Performance & history', description: 'See sales, shifts, products, and stock in one place.', order: 50 },
+    CONTROL: { label: 'Corrections & controls', description: 'Review corrections and reconcile cash at shift close.', order: 60 },
 };
 
 const primaryDestination = computed<Destination | null>(() => {
@@ -89,12 +91,12 @@ const readinessLabel = computed(() => {
 
 const readinessMessage = computed(() => {
     const messages: Record<MerchantOperationsReadiness['state'], string> = {
-        guidance_unavailable: 'Business-state guidance could not be verified safely. Use the authorized workspace list directly.',
-        setup_required: 'Catalog or sellable stock still needs preparation before the merchant can proceed to daily selling.',
-        shift_required: 'The exact device shift or opening-cash evidence is not ready for cashier operations yet.',
-        cashier_ready: 'Catalog, sellable stock, active shift, and opening-cash readiness are verified for this context.',
-        review_available: 'No guarded mutation step is recommended. Authorized reporting remains available.',
-        routes_only: 'Authorized destinations are available, but the current state does not support a guarded next-step recommendation.',
+        guidance_unavailable: 'We could not check your current setup. Open a workspace below to review it.',
+        setup_required: 'Add your products and opening stock to prepare your first sale.',
+        shift_required: 'Start your shift and record opening cash before using the cashier.',
+        cashier_ready: 'Your catalog, stock, and shift are ready. Open the cashier to begin your next sale.',
+        review_available: 'Explore your reports and review recent business activity.',
+        routes_only: 'Choose an available workspace below to continue your work.',
     };
 
     return messages[props.readiness.state];
@@ -292,104 +294,45 @@ async function copyCodes(codes: string[]) {
         error.value = 'The browser did not allow copying. Save the codes manually before leaving this page.';
     }
 }
+
+const workspaceDescriptions: Record<string, string> = {
+    catalog_inventory: 'Add products and set opening inventory.',
+    inventory_replenishment: 'Receive stock and update quantities.',
+    inventory_accountability: 'Check stock movements and available inventory.',
+    shift_start: 'Start a shift and record opening cash.',
+    cashier: 'Add items, take payment, and issue a receipt.',
+    sales_summary: 'Review sales totals and daily activity.',
+    active_shift_performance: 'Track sales and returns in the current shift.',
+    shift_history_performance: 'Review closed shifts and closing cash.',
+    product_sales_performance: 'Explore products sold and returned.',
+    sale_history: 'Find receipts and view sale details.',
+    corrections: 'Review available sale corrections and refunds.',
+    cash_variance_reconciliation: 'Review and explain closing-cash differences.',
+    shift_close: 'Reconcile and complete your shift close.',
+};
 </script>
 
+
+<!-- State-aware guidance is read-only. Suggested from verified POS state and the currently delivered route set. -->
 <template>
-    <Head title="POS Operations" />
-    <main class="hub-shell">
-        <header class="hero">
-            <div>
-                <p class="eyebrow">oneQay · Point of Sale</p>
-                <h1>POS Operations</h1>
-                <p class="subtitle">
-                    A secure command center for the POS workspaces delivered to this merchant context.
-                    Navigation stays permission-filtered and every destination still enforces its own authorization contract.
-                </p>
-            </div>
-            <div class="hero-actions">
-                <button class="security-trigger" type="button" @click="securityOpen = !securityOpen">
-                    {{ securityOpen ? 'Close security' : 'Account & security' }}
-                </button>
-                <button v-if="props.security.can_logout" class="logout-trigger" type="button" :disabled="busy" @click="logout">
-                    Sign out
-                </button>
-                <div class="scope-card">
-                    <span>Active operating context</span>
-                    <strong>{{ compactRef(props.scope.outlet_id) }}</strong>
-                    <small>Device · {{ compactRef(props.scope.device_id) }}</small>
-                </div>
-            </div>
-        </header>
-
-        <section class="command-strip" aria-label="Merchant operations summary">
-            <div class="command-metric">
-                <span>Workspaces available</span>
-                <strong>{{ props.destinations.length }}</strong>
-                <small>Delivered to this context</small>
-            </div>
-            <div class="command-metric">
-                <span>Business lanes</span>
-                <strong>{{ laneCount }}</strong>
-                <small>Grouped for faster navigation</small>
-            </div>
-            <div class="command-metric">
-                <span>Outlet context</span>
-                <strong class="mono">{{ compactRef(props.scope.outlet_id) }}</strong>
-                <small>Server-bound operating scope</small>
-            </div>
-            <button class="context-toggle" type="button" @click="technicalContextOpen = !technicalContextOpen">
-                {{ technicalContextOpen ? 'Hide technical context' : 'Technical context' }}
-            </button>
+    <Head title="Overview" />
+    <main class="operations-shell">
+        <header class="overview-header"><div><p class="eyebrow">YOUR BUSINESS, AT A GLANCE</p><h1>Workspace overview</h1><p class="subtitle">Everything you need to prepare, sell, and keep your business moving.</p></div><div class="overview-actions"><button class="security-trigger" type="button" @click="securityOpen = !securityOpen"><WorkspaceIcon name="shield-check" :size="17" />{{ securityOpen ? 'Close security' : 'Account & security' }}</button><button v-if="props.security.can_logout" class="logout-trigger" type="button" :disabled="busy" @click="logout"><WorkspaceIcon name="log-out" :size="17" />Sign out</button></div></header>
+        <section class="metric-grid" aria-label="Merchant operations summary">
+            <article class="metric-card"><div class="metric-top"><span>Catalog items</span><span class="metric-icon"><WorkspaceIcon name="package" /></span></div><strong>{{ readinessValue(props.readiness.catalog_item_count, '', '') }}</strong><small>Products in your catalog</small></article>
+            <article class="metric-card"><div class="metric-top"><span>Sellable items</span><span class="metric-icon blue"><WorkspaceIcon name="boxes" /></span></div><strong>{{ readinessValue(props.readiness.sellable_item_count, '', '') }}</strong><small>Available for your next sale</small></article>
+            <article class="metric-card"><div class="metric-top"><span>Current shift</span><span class="metric-icon amber"><WorkspaceIcon name="clock-3" /></span></div><strong class="status-value">{{ readinessValue(props.readiness.shift_active, 'Active', 'Not started') }}</strong><small>For your current device</small></article>
+            <article class="metric-card"><div class="metric-top"><span>Opening cash</span><span class="metric-icon violet"><WorkspaceIcon name="wallet" /></span></div><strong class="status-value">{{ readinessValue(props.readiness.opening_cash_ready, 'Recorded', 'Not ready') }}</strong><small>Cash readiness for this shift</small></article>
         </section>
-
-        <section v-if="technicalContextOpen" class="context-strip" aria-label="Current POS technical context">
-            <div><span>Tenant</span><strong>{{ props.scope.tenant_id }}</strong></div>
-            <div><span>Organization</span><strong>{{ props.scope.organization_id }}</strong></div>
-            <div><span>Outlet</span><strong>{{ props.scope.outlet_id }}</strong></div>
-            <div><span>Device</span><strong>{{ props.scope.device_id }}</strong></div>
+        <section class="overview-guide" aria-label="Operating readiness" :data-state="props.readiness.state">
+            <div class="guide-emblem"><WorkspaceIcon :name="props.readiness.state === 'cashier_ready' ? 'circle-check' : 'sparkles'" :size="32" /></div><div class="guide-copy"><p class="eyebrow">YOUR NEXT STEP</p><h2>{{ readinessLabel }}</h2><p>{{ readinessMessage }}</p></div><a v-if="primaryDestination" class="primary-action" :href="primaryDestination.url">{{ primaryDestination.title }}<WorkspaceIcon name="arrow-right" :size="17" /></a><span v-else class="guide-state">Review your workspaces</span>
         </section>
-
-        <section class="readiness-panel" aria-label="Current merchant operating readiness">
-            <div class="readiness-heading">
-                <div>
-                    <p class="eyebrow">Operating readiness</p>
-                    <h2>{{ readinessLabel }}</h2>
-                    <p>{{ readinessMessage }}</p>
-                </div>
-                <span class="readiness-state">{{ props.readiness.state.replaceAll('_', ' ') }}</span>
-            </div>
-            <div class="readiness-grid">
-                <div><span>Catalog items</span><strong>{{ readinessValue(props.readiness.catalog_item_count, '', '') }}</strong></div>
-                <div><span>Sellable items</span><strong>{{ readinessValue(props.readiness.sellable_item_count, '', '') }}</strong></div>
-                <div><span>Active shift</span><strong>{{ readinessValue(props.readiness.shift_active, 'Ready', 'Not active') }}</strong></div>
-                <div><span>Opening cash</span><strong>{{ readinessValue(props.readiness.opening_cash_ready, 'Ready', 'Not ready') }}</strong></div>
-            </div>
-        </section>
-
-        <section v-if="primaryDestination" class="next-action" aria-label="Suggested starting workspace">
-            <div>
-                <p class="eyebrow">Guided start</p>
-                <h2>{{ primaryDestination.title }}</h2>
-                <p>{{ primaryDestination.description }}</p>
-                <small>
-                    Suggested from verified POS state and the currently delivered route set. The destination
-                    still revalidates authorization, prerequisites, persistence, and mutation eligibility.
-                </small>
-            </div>
-            <a class="primary-action" :href="primaryDestination.url">Open suggested workspace <span aria-hidden="true">→</span></a>
-        </section>
-
-        <section v-else class="guidance-fallback" aria-label="No state-aware recommendation">
-            <strong>No guarded next action is being recommended.</strong>
-            <p>Use the authorized workspace groups below. oneQay will not infer a business mutation step when readiness evidence is incomplete or unavailable.</p>
-        </section>
-
-        <section v-if="securityOpen" class="security-panel" aria-label="Account and security">
+        <section id="account-security" v-if="securityOpen" class="security-panel" aria-label="Account and security">
             <div class="security-heading">
                 <div>
                     <p class="eyebrow">Self-service security</p>
                     <h2>Account & security</h2>
-                    <p>These controls reuse the existing first-party identity endpoints. No role or POS permission is granted here.</p>
+                    <p>Manage your password, authenticator, and recovery codes.</p>
                 </div>
                 <span class="secure-badge">Session protected</span>
             </div>
@@ -436,78 +379,24 @@ async function copyCodes(codes: string[]) {
             <p v-if="error" class="error" role="alert">{{ error }}</p>
         </section>
 
-        <section class="workspace-panel">
-            <div class="panel-heading">
-                <div>
-                    <p class="eyebrow">Authorized destinations</p>
-                    <h2>Operational workspaces</h2>
-                </div>
-                <span class="count">{{ props.destinations.length }} available</span>
-            </div>
 
-            <div class="workspace-groups">
-                <section v-for="group in groupedDestinations" :key="group.category" class="workspace-group">
-                    <div class="group-heading">
-                        <div>
-                            <span class="category">{{ group.category }}</span>
-                            <h3>{{ group.label }}</h3>
-                            <p>{{ group.description }}</p>
-                        </div>
-                        <span class="group-count">{{ group.destinations.length }}</span>
-                    </div>
-
-                    <div class="workspace-grid">
-                        <a
-                            v-for="destination in group.destinations"
-                            :key="destination.key"
-                            class="workspace-card"
-                            :href="destination.url"
-                        >
-                            <div class="card-topline">
-                                <span class="category">{{ destination.category }}</span>
-                                <span class="arrow" aria-hidden="true">→</span>
-                            </div>
-                            <h3>{{ destination.title }}</h3>
-                            <p>{{ destination.description }}</p>
-                            <span class="open-label">Open workspace</span>
-                        </a>
-                    </div>
-                </section>
-            </div>
+        <section class="workspace-panel"><div class="panel-heading"><div><p class="eyebrow">WORK THE WAY YOUR BUSINESS DOES</p><h2>Your workspaces</h2><p>Pick a task and get straight to work.</p></div><span class="count">{{ props.destinations.length }} available · {{ laneCount }} groups</span></div><div class="workspace-groups"><section v-for="group in groupedDestinations" :key="group.category" class="workspace-group"><div class="group-heading"><div><h3>{{ group.label }}</h3><p>{{ group.description }}</p></div><span class="group-count">{{ group.destinations.length }}</span></div><div class="workspace-grid"><a v-for="destination in group.destinations" :key="destination.key" class="workspace-card" :href="destination.url"><span class="workspace-symbol"><WorkspaceIcon :name="({ SETUP: 'package', SHIFT: 'clock-3', SELL: 'shopping-cart', STOCK: 'truck', REVIEW: 'chart-column', CONTROL: 'shield-check' } as Record<string,string>)[destination.category] ?? 'clipboard-list'" :size="23" /></span><div class="workspace-copy"><h3>{{ destination.title }}</h3><p>{{ workspaceDescriptions[destination.key] ?? destination.description }}</p></div><WorkspaceIcon class="workspace-arrow" name="arrow-up-right" :size="18" /></a></div></section></div></section>
+        <details class="workspace-details"><summary>Session & support details</summary><p v-if="!primaryDestination">No guarded next action is being recommended. <span v-if="primaryDestination">The current next step is supplied by verified operating readiness.</span></p><button class="context-toggle" type="button" @click="technicalContextOpen = !technicalContextOpen">{{ technicalContextOpen ? 'Hide technical context' : 'Technical context' }}</button>
+        <section v-if="technicalContextOpen" class="context-strip" aria-label="Current POS technical context">
+            <div><span>Tenant</span><strong>{{ props.scope.tenant_id }}</strong></div>
+            <div><span>Organization</span><strong>{{ props.scope.organization_id }}</strong></div>
+            <div><span>Outlet</span><strong>{{ props.scope.outlet_id }}</strong></div>
+            <div><span>Device</span><strong>{{ props.scope.device_id }}</strong></div>
         </section>
 
-        <aside class="safety-note">
-            <strong>Fail-closed navigation</strong>
-            <p>
-                This home does not grant permissions or activate capabilities. State-aware guidance is read-only,
-                recommends only an already delivered route, and each destination remains responsible for authorization,
-                prerequisites, persistence, and mutation eligibility.
-            </p>
-        </aside>
-
-        <footer>Correlation: <span class="mono">{{ props.correlation_id }}</span></footer>
+Correlation: <span class="mono">{{ props.correlation_id }}</span>
+        </details>
     </main>
 </template>
 
 <style scoped>
-.hub-shell { min-height:100vh; background:#f5f7fa; color:#172033; padding:32px; font-family:Inter,ui-sans-serif,system-ui,sans-serif; }
-.hero { max-width:1200px; margin:0 auto 22px; display:flex; justify-content:space-between; gap:28px; align-items:flex-end; }
-.hero-actions{display:grid;grid-template-columns:auto auto;gap:9px;align-items:end}.scope-card{grid-column:1/-1}
-button{border:0;border-radius:11px;padding:10px 14px;font:inherit;font-size:.76rem;font-weight:800;cursor:pointer}.security-trigger{background:#172033;color:#fff}.logout-trigger,.secondary{background:#eef2f6;color:#344054}button:disabled{opacity:.45;cursor:not-allowed}
-h1 { margin:5px 0 9px; font-size:clamp(2.1rem,4vw,3.2rem); letter-spacing:-.045em; }
-.subtitle { max-width:720px; margin:0; color:#667085; line-height:1.65; }
-.eyebrow { margin:0; color:#526175; font-size:.74rem; font-weight:800; text-transform:uppercase; letter-spacing:.12em; }
-.scope-card,.context-strip,.workspace-panel,.safety-note,.security-panel,.readiness-panel,.guidance-fallback { background:#fff; border:1px solid #e4e8ef; border-radius:18px; box-shadow:0 8px 24px rgba(16,24,40,.04); }
-.scope-card { padding:17px 20px; min-width:260px; }.scope-card span,.scope-card small{display:block;color:#667085;font-size:.76rem}.scope-card strong{display:block;margin:5px 0;font-size:1.05rem;word-break:break-word}
-.command-strip{max-width:1152px;margin:0 auto 20px;padding:16px 18px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) auto;gap:12px;align-items:stretch;background:#fff;border:1px solid #e4e8ef;border-radius:18px;box-shadow:0 8px 24px rgba(16,24,40,.04)}.command-metric{padding:10px 12px;border-right:1px solid #eef2f6}.command-metric span,.command-metric small{display:block;color:#667085;font-size:.68rem}.command-metric span{text-transform:uppercase;letter-spacing:.08em;font-weight:800}.command-metric strong{display:block;margin:5px 0 3px;font-size:1.05rem}.context-toggle{align-self:center;background:#f2f4f7;color:#344054;white-space:nowrap}
-.context-strip { max-width:1152px; margin:0 auto 20px; padding:16px 24px; display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:18px; background:#fff; border:1px solid #e4e8ef; border-radius:18px; box-shadow:0 8px 24px rgba(16,24,40,.04); }.context-strip span{display:block;color:#98a2b3;font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;font-weight:700}.context-strip strong{display:block;margin-top:5px;font-size:.82rem;word-break:break-all}
-.readiness-panel{max-width:1152px;margin:0 auto 20px;padding:22px 24px}.readiness-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:16px}.readiness-heading h2{margin:4px 0 6px}.readiness-heading p{margin:0;color:#667085;max-width:760px;font-size:.82rem;line-height:1.55}.readiness-state{padding:7px 10px;border-radius:999px;background:#eef2f6;color:#475467;font-size:.68rem;font-weight:850;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}.readiness-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.readiness-grid div{padding:13px 14px;border:1px solid #eef2f6;border-radius:12px;background:#fbfcfd}.readiness-grid span{display:block;color:#98a2b3;font-size:.67rem;text-transform:uppercase;letter-spacing:.07em;font-weight:800}.readiness-grid strong{display:block;margin-top:6px;font-size:.92rem}.guidance-fallback{max-width:1152px;margin:0 auto 20px;padding:18px 22px}.guidance-fallback strong{display:block;font-size:.84rem}.guidance-fallback p{margin:5px 0 0;color:#667085;font-size:.79rem;line-height:1.55}
-.next-action{max-width:1152px;margin:0 auto 20px;padding:24px 26px;display:flex;align-items:center;justify-content:space-between;gap:28px;background:linear-gradient(135deg,#172033,#27364f);color:#fff;border-radius:18px;box-shadow:0 16px 34px rgba(16,24,40,.14)}.next-action h2{font-size:1.35rem;margin:5px 0 7px}.next-action p{margin:0 0 8px;color:#d0d5dd;line-height:1.55;max-width:720px}.next-action small{display:block;color:#98a2b3;max-width:760px;line-height:1.45}.next-action .eyebrow{color:#b8c5d8}.primary-action{display:inline-flex;align-items:center;gap:12px;flex:0 0 auto;text-decoration:none;background:#fff;color:#172033;border-radius:12px;padding:12px 16px;font-size:.78rem;font-weight:900}
-.security-panel{max-width:1152px;margin:0 auto 20px;padding:24px}.security-heading{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;margin-bottom:18px}.security-heading h2{margin:4px 0 5px}.security-heading p{margin:0;color:#667085;max-width:720px;line-height:1.55;font-size:.82rem}.secure-badge{background:#ecfdf3;color:#067647;border:1px solid #abefc6;border-radius:999px;padding:7px 10px;font-size:.7rem;font-weight:850}.security-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.security-card{border:1px solid #e4e8ef;border-radius:15px;padding:18px;background:#fbfcfd;display:grid;gap:11px}.security-card h3{margin:0}.security-card p{margin:0 0 3px;color:#667085;font-size:.79rem;line-height:1.5}.security-kicker{font-size:.65rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:#667085}.security-card label{display:grid;gap:5px;font-size:.72rem;font-weight:750;color:#475467}.security-card input{border:1px solid #d0d5dd;border-radius:9px;padding:9px 10px;font:inherit}.security-card button:not(.secondary){background:#172033;color:#fff}.codes{display:grid;gap:6px;background:#f2f4f7;border-radius:10px;padding:10px}.codes code{font-size:.72rem;overflow-wrap:anywhere}.notice,.error{margin:14px 0 0;border-radius:10px;padding:10px 12px;font-size:.78rem}.notice{background:#ecfdf3;color:#067647}.error{background:#fff1f0;color:#b42318}
-.workspace-panel { max-width:1152px; margin:0 auto 20px; padding:26px; }.panel-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px}h2{margin:4px 0 0;font-size:1.25rem}.count{padding:7px 11px;border-radius:999px;background:#eef2f6;font-size:.74rem;font-weight:800}
-.workspace-groups{display:grid;gap:24px}.workspace-group{display:grid;gap:12px}.group-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;padding:0 2px}.group-heading h3{margin:3px 0 4px;font-size:1rem}.group-heading p{margin:0;color:#667085;font-size:.78rem;line-height:1.45}.group-count{min-width:30px;height:30px;display:grid;place-items:center;border-radius:999px;background:#f2f4f7;color:#475467;font-size:.72rem;font-weight:900}
-.workspace-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; }.workspace-card{display:flex;min-height:170px;flex-direction:column;text-decoration:none;color:inherit;border:1px solid #e4e8ef;border-radius:15px;padding:19px;background:#fbfcfd;transition:transform .15s ease,box-shadow .15s ease,border-color .15s ease}.workspace-card:hover,.workspace-card:focus-visible{transform:translateY(-2px);border-color:#c8d1de;box-shadow:0 12px 28px rgba(16,24,40,.08);outline:none}.card-topline{display:flex;justify-content:space-between;align-items:center}.category{font-size:.67rem;font-weight:900;letter-spacing:.11em;color:#667085}.arrow{font-size:1.25rem}.workspace-card h3{margin:20px 0 7px;font-size:1.05rem}.workspace-card p{margin:0;color:#667085;font-size:.83rem;line-height:1.55;flex:1}.open-label{margin-top:18px;font-size:.74rem;font-weight:800}
-.safety-note { max-width:1152px; margin:0 auto; padding:18px 22px; display:grid; grid-template-columns:190px 1fr; gap:18px; align-items:start }.safety-note strong{font-size:.84rem}.safety-note p{margin:0;color:#667085;font-size:.8rem;line-height:1.55}footer{max-width:1200px;margin:14px auto 0;color:#98a2b3;font-size:.72rem}.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
-@media (max-width:980px){.command-strip{grid-template-columns:repeat(2,minmax(0,1fr))}.command-metric{border-right:0}.readiness-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.security-grid{grid-template-columns:1fr}.workspace-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.context-strip{grid-template-columns:repeat(2,minmax(0,1fr))}.next-action{align-items:flex-start;flex-direction:column}.primary-action{width:100%;justify-content:space-between;box-sizing:border-box}}
-@media (max-width:640px){.hub-shell{padding:20px 14px}.hero{align-items:stretch;flex-direction:column}.hero-actions{grid-template-columns:1fr 1fr}.scope-card{min-width:0}.command-strip,.context-strip,.readiness-grid,.workspace-grid{grid-template-columns:1fr}.context-toggle{width:100%}.workspace-panel,.security-panel,.next-action,.readiness-panel{padding:18px}.panel-heading,.security-heading,.readiness-heading,.group-heading{align-items:flex-start;flex-direction:column}.safety-note{grid-template-columns:1fr}}
+
+.operations-shell{padding:30px 32px;color:var(--oq-ink);font-family:inherit}.overview-header,.metric-grid,.overview-guide,.workspace-panel,.workspace-details,.security-panel{max-width:1280px;margin-left:auto;margin-right:auto}.overview-header{display:flex;align-items:center;justify-content:space-between;gap:22px;margin-bottom:24px}.overview-header .eyebrow{font-size:9px;letter-spacing:1.6px;color:var(--oq-brand);font-weight:750;margin:0}.overview-header h1{margin:8px 0 6px}.subtitle{font-size:12px;color:var(--oq-muted);margin:0}.overview-actions{display:flex;gap:8px;flex-shrink:0}.overview-actions button{display:flex;gap:7px;align-items:center;padding:10px 12px;border:1px solid var(--oq-line);border-radius:9px;background:#fff;color:var(--oq-muted);font-size:11px;font-weight:600;cursor:pointer}.overview-actions .logout-trigger{border:0;background:transparent}.metric-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-bottom:23px}.metric-card{background:var(--oq-panel);border:1px solid var(--oq-line);border-radius:var(--oq-radius);padding:19px 20px;box-shadow:var(--oq-shadow);min-width:0}.metric-top{display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--oq-muted);font-size:11px;font-weight:550}.metric-icon{width:36px;height:36px;display:grid;place-items:center;border-radius:11px;background:#e9f7f2;color:#08816f}.metric-icon.blue{background:#ebf3fc;color:#5381b6}.metric-icon.amber{background:#fdf4e6;color:#b5893e}.metric-icon.violet{background:#f2effa;color:#8c71b8}.metric-card>strong{font-size:29px;font-weight:700;letter-spacing:-1px;display:block;margin:6px 0 2px;line-height:1.35}.metric-card>.status-value{font-size:19px;letter-spacing:-.5px;min-height:39px;display:flex;align-items:center}.metric-card>small{display:block;font-size:10px;color:#82939b}.overview-guide{display:flex;align-items:center;gap:19px;background:linear-gradient(105deg,#e4f3ed,#f4fbf7);border:1px solid #cee5d9;border-radius:var(--oq-radius);padding:25px;margin-bottom:30px}.guide-emblem{height:60px;width:60px;flex-shrink:0;border-radius:16px;display:grid;place-items:center;background:#d3e9df;color:#377e68}.guide-copy{flex:1;min-width:0}.guide-copy .eyebrow{font-size:9px;margin:0 0 5px;letter-spacing:1.4px;color:#57927c;font-weight:750}.guide-copy h2{margin:0 0 6px;font-size:18px;letter-spacing:-.35px}.guide-copy>p:last-child{margin:0;color:#638072;font-size:12px;line-height:1.6}.primary-action{background:var(--oq-brand);color:#fff;display:flex;align-items:center;justify-content:center;gap:13px;padding:12px 16px;border-radius:9px;font-size:11px;font-weight:650;text-decoration:none;box-shadow:0 3px 7px #07685613;flex-shrink:0}.primary-action:hover{background:var(--oq-brand-dark)}.guide-state{font-size:11px;color:#4d7865}.workspace-panel{padding:0;background:none;border:0;box-shadow:none}.panel-heading{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:25px}.panel-heading .eyebrow{font-size:9px;letter-spacing:1.4px;font-weight:650;color:#88999e;margin:0 0 4px}.panel-heading h2{margin:0;font-size:19px;letter-spacing:-.3px}.panel-heading p:last-child{margin:6px 0 0;color:var(--oq-muted);font-size:11px}.count{font-size:10px;color:var(--oq-muted);white-space:nowrap;padding:7px 10px;background:#edf2f4;border-radius:8px}.workspace-groups{display:grid;gap:23px}.workspace-group{display:grid;gap:10px}.group-heading{display:flex;align-items:center;gap:10px;justify-content:space-between}.group-heading h3{margin:0;font-size:12px;color:#506874;font-weight:650}.group-heading p{margin:3px 0 0;font-size:10px;color:#8b9ca4}.group-count{font-size:10px;color:#748993;padding:3px 8px;background:#e9eef0;border-radius:6px}.workspace-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}.workspace-card{display:flex;align-items:flex-start;gap:12px;min-height:127px;border-radius:13px;background:#fff;border:1px solid var(--oq-line);padding:19px 16px;text-decoration:none;box-shadow:var(--oq-shadow);transition:border-color .15s,transform .15s}.workspace-card:hover{border-color:#91c3b5;transform:translateY(-2px)}.workspace-symbol{width:38px;height:38px;border-radius:11px;background:#f0f5f4;display:grid;place-items:center;color:#43786d;flex-shrink:0}.workspace-copy{min-width:0;flex:1}.workspace-copy h3{font-size:13px;line-height:1.4;font-weight:650;margin:2px 0 7px;letter-spacing:-.15px}.workspace-copy p{font-size:11px;line-height:1.6;color:#6e838e;margin:0}.workspace-arrow{color:#a0b1b8;margin-top:4px}.workspace-details{padding-top:26px;color:#7f929a;font-size:10px}.workspace-details summary{cursor:pointer;padding:8px 0}.workspace-details p{font-size:11px}.context-strip{padding:15px;display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.context-strip span,.context-strip strong{display:block;overflow-wrap:anywhere}.context-strip span{font-size:10px}.context-strip strong{font-size:11px;color:var(--oq-ink)}.security-panel{margin-bottom:26px}.security-card button{cursor:pointer}
+@media(max-width:1250px){.workspace-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.metric-grid{gap:11px}.metric-card{padding:15px}.metric-top{font-size:10px}}@media(max-width:1000px){.overview-header{align-items:flex-start}.overview-actions{flex-direction:column}.overview-guide{flex-wrap:wrap}.primary-action{margin-left:79px}.metric-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.security-grid{grid-template-columns:1fr}.security-heading{flex-wrap:wrap}}@media(max-width:600px){.operations-shell{padding:23px 16px}.overview-header{flex-direction:column;gap:14px}.overview-actions{flex-direction:row}.metric-grid{gap:10px}.metric-card{padding:15px 13px}.metric-top{font-size:10px}.metric-icon{width:30px;height:30px}.metric-card>small{font-size:9px}.overview-guide{padding:18px;gap:12px}.guide-emblem{height:43px;width:43px;border-radius:12px}.guide-copy{flex-basis:calc(100% - 56px)}.primary-action{margin-left:0;width:100%}.panel-heading{align-items:flex-start}.count{font-size:9px}.workspace-grid{grid-template-columns:1fr}.workspace-card{min-height:106px;padding:17px}.context-strip{grid-template-columns:1fr}.workspace-copy h3{font-size:13px}.workspace-copy p{font-size:11px}}
+
 </style>

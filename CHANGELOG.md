@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-10-11 — Merchant enterprise workspace presentation
+
+- Add a shared navy/teal application shell, role-filtered navigation, responsive drawer, local icons, and accessible keyboard focus to authenticated POS pages.
+- Replace the operations home with actual readiness metrics and clearer task cards; preserve server-authoritative recommendations and account/security actions.
+- Improve cashier product and checkout layout without changing money arithmetic, stock rules, operation IDs, CSRF, submission, receipt, or retry behavior. Pending carts/submissions require confirmation before navigation.
+- Preserve merchant, MFA, session, environment, database, dependencies, and migrations. Production update remains pending a certified artifact and owner-host execution.
+
+
 ## 2026-09-20 — Sprint219 closed canonically
 
 **Sprint219: cPanel Fixed Public Document Root Bridge**

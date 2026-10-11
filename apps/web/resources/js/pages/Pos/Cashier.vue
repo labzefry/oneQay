@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
+import WorkspaceIcon from '../../components/WorkspaceIcon.vue';
 
 type CatalogItem = {
     product_id: string;
@@ -243,13 +244,13 @@ const checkout = async (): Promise<void> => {
 </script>
 
 <template>
-    <Head title="Cashier Workspace" />
-    <main class="cashier-shell">
+    <Head title="Cashier" />
+    <main class="cashier-shell" :data-leave-confirmation="submitting || (cartLines.length > 0 && !receipt)">
         <header class="hero">
             <div>
                 <p class="eyebrow">oneQay · Point of Sale</p>
-                <h1>Cashier Workspace</h1>
-                <p class="subtitle">Catalog dan checkout menggunakan scope serta transaction contract yang sudah terverifikasi.</p>
+                <h1>Cashier</h1>
+                <p class="subtitle">Pilih produk, susun pesanan, dan terima pembayaran.</p>
             </div>
             <div class="shift-card" :data-ready="Boolean(props.active_shift_id)">
                 <span>Shift status</span>
@@ -258,23 +259,20 @@ const checkout = async (): Promise<void> => {
             </div>
         </header>
 
-        <section class="scope-strip">
-            <div><span>Outlet</span><strong>{{ props.scope.outlet_id }}</strong></div>
-            <div><span>Device</span><strong>{{ props.scope.device_id }}</strong></div>
-            <div><span>Catalog ready</span><strong>{{ catalog.length }} item</strong></div>
-        </section>
+        <section class="scope-strip" aria-label="Ringkasan kasir"><div><span>Produk tersedia</span><strong>{{ catalog.length }} produk</strong></div><div><span>Item dalam pesanan</span><strong>{{ totalUnits }} item</strong></div><div><span>Shift kasir</span><strong>{{ props.active_shift_id ? 'Aktif' : 'Belum dimulai' }}</strong></div></section>
 
         <div class="workspace-grid">
             <section class="panel catalog-panel">
                 <div class="panel-heading">
                     <div><p class="eyebrow">Sellable catalog</p><h2>Pilih produk</h2></div>
-                    <input v-model="search" class="search" type="search" placeholder="Cari nama / product ID" autocomplete="off">
+                    <input v-model="search" class="search" aria-label="Cari produk" type="search" placeholder="Cari nama / product ID" autocomplete="off">
                 </div>
                 <div class="catalog-grid">
                     <article v-for="item in visibleCatalog" :key="item.product_id" class="product-card">
+                        <div class="product-visual"><WorkspaceIcon name="package" :size="30" /></div>
                         <div>
                             <p class="product-name">{{ item.display_name }}</p>
-                            <p class="mono muted">{{ item.product_id }}</p>
+                            <details class="product-reference"><summary>ID produk</summary><small>{{ item.product_id }}</small></details>
                         </div>
                         <div class="product-meta">
                             <strong>{{ formatAtomic(item.unit_price.atomic_units, item.unit_price.currency, item.unit_price.scale) }}</strong>
@@ -282,7 +280,7 @@ const checkout = async (): Promise<void> => {
                         </div>
                         <button type="button" :disabled="!sameMoney(item) || (cart[item.product_id] ?? 0) >= item.available_quantity" @click="add(item)">Tambah</button>
                     </article>
-                    <p v-if="!visibleCatalog.length" class="empty">Tidak ada catalog aktif dan berstok dalam scope outlet ini.</p>
+                    <p v-if="!visibleCatalog.length" class="empty">Belum ada produk yang cocok. Periksa pencarian, katalog, dan stok produk Anda.</p>
                 </div>
             </section>
 
@@ -322,7 +320,7 @@ const checkout = async (): Promise<void> => {
                 <button class="checkout" type="button" :disabled="submitting || !props.active_shift_id || !cartLines.length" @click="checkout">
                     {{ submitting ? 'Memproses…' : 'Selesaikan transaksi' }}
                 </button>
-                <p class="guard-note">Checkout tidak melakukan retry otomatis. Server tetap menjadi authority untuk harga, stok, shift, permission, dan idempotency.</p>
+                <p class="guard-note">Periksa pesanan dan pembayaran sebelum menyelesaikan transaksi.</p>
             </aside>
         </div>
 
@@ -378,4 +376,7 @@ const checkout = async (): Promise<void> => {
 
 <style scoped>
 .cashier-shell{min-height:100vh;background:#f5f7fa;color:#172033;padding:28px;font-family:Inter,ui-sans-serif,system-ui,sans-serif}.hero{max-width:1380px;margin:0 auto 20px;display:flex;justify-content:space-between;gap:24px;align-items:flex-end}.eyebrow{margin:0;color:#526175;font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.12em}h1{margin:4px 0 7px;font-size:clamp(2rem,4vw,3rem);letter-spacing:-.04em}.subtitle{margin:0;color:#667085}.shift-card,.panel,.scope-strip,.result{background:#fff;border:1px solid #e4e8ef;border-radius:16px;box-shadow:0 8px 24px rgba(16,24,40,.04)}.shift-card{padding:14px 18px;min-width:230px;border-left:4px solid #d92d20}.shift-card[data-ready="true"]{border-left-color:#039855}.shift-card span,.shift-card small{display:block;color:#667085;font-size:.75rem}.shift-card strong{display:block;margin:3px 0}.scope-strip{max-width:1380px;margin:0 auto 18px;padding:14px 18px;display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.scope-strip span{display:block;color:#667085;font-size:.72rem}.scope-strip strong{font-size:.9rem}.workspace-grid{max-width:1380px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1.65fr) minmax(330px,.75fr);gap:18px;align-items:start}.panel{padding:20px}.panel-heading{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:16px}h2{margin:3px 0 0;font-size:1.18rem}.search,input,select{border:1px solid #d0d5dd;border-radius:10px;background:#fff;padding:10px 12px;font:inherit;color:#172033}.search{width:min(320px,48vw)}.catalog-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}.product-card{border:1px solid #e4e8ef;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:12px;justify-content:space-between;min-height:155px}.product-name{margin:0;font-weight:750}.muted{color:#98a2b3}.product-meta{display:flex;justify-content:space-between;gap:8px;align-items:end}.product-meta span{font-size:.75rem;color:#667085}button{border:0;border-radius:10px;padding:9px 12px;background:#172033;color:#fff;font-weight:700;cursor:pointer}button:disabled{opacity:.42;cursor:not-allowed}.cart-panel{position:sticky;top:18px}.pill{border-radius:999px;background:#eef2f6;padding:6px 9px;font-size:.75rem;font-weight:800}.cart-lines{display:grid;gap:10px}.cart-line{display:flex;justify-content:space-between;gap:10px;padding:11px 0;border-bottom:1px solid #edf0f4}.cart-line small{display:block;color:#667085;margin-top:3px}.qty{display:flex;align-items:center;gap:8px}.qty button{width:30px;height:30px;padding:0;background:#eef2f6;color:#172033}.total-row{display:flex;justify-content:space-between;align-items:center;padding:18px 0;margin-top:8px;font-size:1.06rem}.total-row strong{font-size:1.35rem}.cart-panel label{display:grid;gap:7px;margin:12px 0;color:#475467;font-size:.8rem;font-weight:700}.tender-row{display:grid;grid-template-columns:1fr auto;gap:8px}.secondary{background:#eef2f6;color:#172033}.checkout{width:100%;padding:13px;margin-top:8px}.guard-note{font-size:.72rem;color:#98a2b3;line-height:1.5}.empty{text-align:center;color:#98a2b3;padding:26px 10px}.result{max-width:1380px;margin:18px auto 0;padding:18px}.receipt-card{display:grid;gap:16px}.receipt-heading{display:flex;justify-content:space-between;gap:18px;align-items:flex-start}.receipt-heading h2{margin:4px 0 6px}.receipt-subtitle{margin:0;color:#667085;font-size:.8rem;line-height:1.5}.receipt-status{border-radius:999px;background:#ecfdf3;color:#067647;padding:7px 10px;font-size:.68rem;font-weight:900;letter-spacing:.08em}.receipt-meta,.receipt-totals{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}.receipt-meta span,.receipt-totals span{background:#f8fafc;border-radius:10px;padding:10px;font-size:.76rem}.receipt-meta b,.receipt-totals b{display:block;margin-top:4px}.receipt-lines{border:1px solid #e4e8ef;border-radius:12px;overflow:hidden}.receipt-line{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:16px;align-items:center;padding:12px 14px;border-bottom:1px solid #edf0f4}.receipt-line:last-child{border-bottom:0}.receipt-line small{display:block;margin-top:3px;color:#98a2b3}.receipt-actions{display:flex;justify-content:flex-end;gap:8px}.receipt-correlation{margin:0;color:#98a2b3;font-size:.72rem}.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.76rem}footer{max-width:1380px;margin:12px auto;color:#98a2b3;font-size:.72rem}@media(max-width:900px){.cashier-shell{padding:18px 12px}.hero{align-items:stretch;flex-direction:column}.shift-card{min-width:0}.scope-strip{grid-template-columns:1fr}.workspace-grid{grid-template-columns:1fr}.cart-panel{position:static}.receipt-meta,.receipt-totals{grid-template-columns:1fr 1fr}}@media(max-width:560px){.panel-heading,.receipt-heading{align-items:stretch;flex-direction:column}.search{width:auto}.receipt-meta,.receipt-totals{grid-template-columns:1fr}.receipt-line{grid-template-columns:1fr}.receipt-actions{justify-content:stretch}.receipt-actions button{flex:1}}@media print{body *{visibility:hidden}.receipt-card,.receipt-card *{visibility:visible}.receipt-card{position:absolute;left:0;top:0;width:100%;box-sizing:border-box;padding:24px;background:#fff}.no-print{display:none!important}}
+
+.cashier-shell{font-family:inherit;padding:30px 28px}.hero h1{margin:6px 0}.subtitle{font-size:12px}.eyebrow{font-size:10px;color:var(--oq-brand);letter-spacing:1.5px}.shift-card{box-shadow:none;border-radius:12px;background:#fff;min-width:190px}.scope-strip{border-radius:12px;box-shadow:none;border-color:var(--oq-line);padding:15px 20px}.scope-strip span{font-size:10px;color:var(--oq-muted)}.scope-strip strong{font-size:12px}.workspace-grid{grid-template-columns:minmax(0,1fr) minmax(295px,.52fr);gap:18px}.panel{border-color:var(--oq-line);border-radius:var(--oq-radius);box-shadow:var(--oq-shadow);padding:22px}.catalog-grid{grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:13px}.product-card{padding:15px;border-color:var(--oq-line);gap:11px;border-radius:12px;min-height:228px;transition:border-color .15s}.product-card:hover{border-color:#a2cbbb}.product-visual{min-height:66px;display:grid;place-items:center;background:#edf5f1;color:#82a799;border-radius:9px}.product-name{font-size:13px;font-weight:650;line-height:1.45}.product-reference{font-size:9px;color:#8d9ca5;margin-top:4px}.product-reference small{overflow-wrap:anywhere}.product-reference summary{cursor:pointer}.product-meta strong{font-size:13px;color:var(--oq-ink)}.product-meta span{font-size:10px}.product-card button{font-size:11px;background:#e9f5ef!important;color:#246951;border:1px solid #daeee3;border-radius:7px;min-height:36px}.product-card button:not(:disabled):hover{background:#d7ece1!important}.panel-heading h2{font-size:16px;letter-spacing:-.35px}.panel-heading .eyebrow{font-size:9px}.search,input,select{font-size:12px;padding:11px 12px;border-color:var(--oq-line);border-radius:8px}.search{width:min(230px,45%)}.cart-panel{top:20px}.cart-line{font-size:12px}.cart-line small{font-size:11px}.qty button{width:34px;height:34px;border-radius:8px}.qty{font-size:12px}.total-row{border-top:1px solid var(--oq-line);font-size:12px}.total-row strong{color:var(--oq-brand);font-size:24px;letter-spacing:-.7px}.checkout{border-radius:9px;min-height:46px;font-size:12px;box-shadow:0 3px 8px #05694d12}.cart-panel label{font-size:10px;line-height:1.7}.guard-note{color:var(--oq-muted);font-size:10px}.empty{padding:42px 16px;background:#f6f8f9;border:1px dashed var(--oq-line);border-radius:12px;font-size:12px;color:var(--oq-muted);grid-column:1/-1}.result{border-color:var(--oq-line);box-shadow:var(--oq-shadow)}.receipt-actions button{font-size:12px}.receipt-correlation{overflow-wrap:anywhere}
+@media(max-width:1200px){.workspace-grid{grid-template-columns:minmax(0,1fr) 295px}.catalog-grid{grid-template-columns:repeat(auto-fill,minmax(145px,1fr))}.panel{padding:17px}.product-meta{align-items:flex-start;flex-direction:column;gap:5px}.panel-heading{align-items:stretch;flex-direction:column}.search{width:100%}}@media(max-width:950px){.workspace-grid{grid-template-columns:1fr}.cart-panel{position:static}.catalog-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}.panel-heading{align-items:center;flex-direction:row}.search{width:min(250px,48%)}}@media(max-width:600px){.cashier-shell{padding:22px 16px}.hero{gap:14px}.scope-strip{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:13px}.scope-strip strong{font-size:11px}.catalog-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.product-card{padding:12px;min-height:218px}.product-name{font-size:12px}.product-meta strong{font-size:12px}.product-card button{min-height:42px}.search{width:100%}.panel-heading{align-items:stretch;flex-direction:column}.qty button{width:40px;height:40px}}
 </style>

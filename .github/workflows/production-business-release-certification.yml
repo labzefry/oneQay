@@ -102,6 +102,23 @@ jobs:
           npm ci --ignore-scripts --no-fund
           npm run type-check
           npm run build
+      - name: Check compiled enterprise workspace with isolated browser fixtures
+        if: github.event_name == 'pull_request' && github.head_ref == 'oneqaydev-enterprise-workspace-20261011'
+        run: |
+          set -euo pipefail
+          npm install --prefix "$RUNNER_TEMP/oneqay-ui-browser" --ignore-scripts --no-audit --no-fund playwright@1.62.1
+          node "$RUNNER_TEMP/oneqay-ui-browser/node_modules/playwright/cli.js" install --with-deps --only-shell chromium
+          PLAYWRIGHT_MODULE="$RUNNER_TEMP/oneqay-ui-browser/node_modules/playwright/index.mjs" node tools/qa-merchant-enterprise-ui.mjs
+      - name: Publish compiled enterprise workspace for local visual and interaction verification
+        if: github.event_name == 'pull_request' && github.head_ref == 'oneqaydev-enterprise-workspace-20261011'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: oneqay-ui-preview-${{ github.event.pull_request.head.sha }}
+          path: |
+            apps/web/public/build
+            dist/merchant-ui-qa
+          if-no-files-found: error
+          retention-days: 3
       - name: Verify native Production session and CSRF pipeline before certification
         run: |
           set -euo pipefail

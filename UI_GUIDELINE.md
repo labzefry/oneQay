@@ -17,7 +17,7 @@ Context aktif—tenant, company, outlet, register, business date—ditampilkan j
 
 ## Design tokens
 
-Token kanonis mencakup color, typography, spacing, radius, elevation, motion, breakpoint, z-index, dan icon sizing. Nilai token belum ditetapkan sampai brand/design exploration disetujui. Hardcoded style berulang dilarang.
+Token kanonis mencakup color, typography, spacing, radius, elevation, motion, breakpoint, z-index, dan icon sizing. Token web merchant light ditetapkan melalui pembaruan workspace tanggal 11 Oktober 2026 sesuai permintaan pemilik; surface lain mengikuti coverage masing-masing. Hardcoded style berulang dilarang.
 
 ## Color and status
 
@@ -97,3 +97,12 @@ Tetapkan budget untuk first load, interaction, bundle, image/font, API payload, 
 ## UX Definition of Done
 
 Flow dan role tervalidasi, component states lengkap, responsive/accessibility/localization diuji, loading-empty-error-offline tersedia, security consequence jelas, analytics/event tidak membocorkan data, serta UI_GUIDELINE/TASKS/CHANGELOG diperbarui.
+
+## Merchant workspace implementation — 2026-10-11
+
+- Light canvas `#f4f7f8`, ink `#152a35`, navy navigation `#112c35`, teal action `#087f6f`, line `#e2e9ed`, base card radius 16px. Canonical variables live in `apps/web/resources/css/app.css`.
+- Shared shell covers authenticated `Pos/*` pages; anonymous foundation/login keeps its existing layout. Desktop navigation becomes a keyboard-accessible drawer at 800px.
+- Navigation uses the current server-delivered destinations. Deep pages request only the same-origin read-only overview and discard stale, mismatched-scope, redirected, or denied responses. No client-invented grants or browser-stored context.
+- Overview displays actual catalog, sellable, shift, and opening-cash readiness. Unknown values remain unverified. No fabricated revenue, charts, stock, outlet names, product photos, or SKU.
+- The cashier preserves its existing transaction computation and transport. A pending cart or submission triggers confirmation before leaving. Print hides application navigation while retaining the receipt.
+- Icons are bundled Lucide SVG data; ISC attribution/license is retained. No external font or icon service is required. This release covers the light theme only.
