@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-11 — cPanel workspace update recovery
+
+- Reproduce the pre-switch `INTERNAL_ERROR` when PHP disables `symlink`; prefer guarded hard links and test actual disabled-function configurations.
+- Add a separately authorized recovery restricted to the exact failed source/report and untouched business-on checkpoint, preserving private environment, original evidence and merchant data.
+- Verify local recovery, replay, business-on rollback, tamper rejection and restoration after asset-check failure. Actual production recovery remains pending.
+
 ## 2026-10-11 — Merchant enterprise workspace presentation
 
 - Add a shared navy/teal application shell, role-filtered navigation, responsive drawer, local icons, and accessible keyboard focus to authenticated POS pages.

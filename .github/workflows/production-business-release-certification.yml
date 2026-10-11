@@ -102,6 +102,15 @@ jobs:
           npm ci --ignore-scripts --no-fund
           npm run type-check
           npm run build
+      - name: Verify cPanel disabled-link capabilities and bounded workspace recovery
+        run: |
+          set -euo pipefail
+          php -l tools/production/cpanel/recover-oneqaydev-certified-workspace.php
+          php -d zend.assertions=1 -d assert.exception=1 tools/production/tests/oneqaydev-certified-workspace-update.php
+          php tools/production/tests/oneqaydev-workspace-cpanel-link.php
+          php -d disable_functions=symlink tools/production/tests/oneqaydev-workspace-cpanel-link.php
+          php -d disable_functions=link tools/production/tests/oneqaydev-workspace-cpanel-link.php
+          php -d disable_functions=link,symlink tools/production/tests/oneqaydev-workspace-cpanel-link.php
       - name: Verify business-on workspace update and rollback boundaries
         if: github.event_name == 'pull_request' && github.head_ref == 'oneqaydev-enterprise-workspace-20261011'
         run: |
