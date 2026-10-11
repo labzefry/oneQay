@@ -93,6 +93,16 @@ final class PosOperationsHubServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $runtimeClass = strtolower(trim((string) config('oneqay.runtime_class', '')));
+        // Author by Lab | zefry. Native Production provider routes need the
+        // canonical web/session/CSRF pipeline before evaluating session authority.
+        // Group resolution precedes aliases; Laravel deduplicates existing web routes.
+        if ($runtimeClass === 'production'
+            && \App\Infrastructure\Runtime\ProductionBusinessRuntimeGate::allows($runtimeClass)) {
+            $this->app->make('router')->middlewareGroup('session.active', [
+                'web',
+                \App\Delivery\Http\Middleware\EnforceActiveFirstPartySessionAuthorityMiddleware::class,
+            ]);
+        }
         $sessionControlEnabled = $this->sessionControlEnabled();
 
         $this->registerDurableStagingReadinessRoute($runtimeClass);

@@ -118,6 +118,15 @@ jobs:
                   text=True).splitlines())
               assert actual == successor_expected, f'Unsafe bounded security successor paths: {actual}'
               print('SPRINT268_NPM_SUCCESSOR_TEN_PATH_ENVELOPE=PASS')
+          elif (os.environ.get('HEAD_REF') == 'production-cash-pos-session-pipeline-20261011'
+                and os.environ.get('BASE_SHA') == 'd78bede01d46c6cb4154148ce361809e5da8ab0b'):
+              pipeline_expected = ['.github/workflows/production-business-release-certification.yml', '.github/workflows/sprint211-durable-staging-operator-artifact-publication-regression.yml', '.github/workflows/sprint212-cpanel-no-ssh-durable-staging-target-qualification-regression.yml', '.github/workflows/sprint213-cpanel-no-ssh-operator-qualification-kit-publication-regression.yml', '.github/workflows/sprint214-cpanel-no-ssh-guarded-deployment-execution-regression.yml', '.github/workflows/sprint218-production-dark-deployment-execution-regression.yml', '.github/workflows/sprint222-cpanel-fixed-public-php-symlink-policy-fallback-regression.yml', '.github/workflows/sprint223-durable-runtime-ingestion-null-boundary-regression.yml', '.github/workflows/sprint268-dependency-security-remediation-regression.yml', 'apps/web/app/Providers/PosOperationsHubServiceProvider.php', 'apps/web/tests/production-session-web-pipeline.php', 'docs/operations/ONEQAYDEV_FINAL_BUSINESS_GO_LIVE_HANDOFF.md']
+              head = os.environ.get('HEAD_SHA', '')
+              assert len(head) == 40 and all(c in '0123456789abcdef' for c in head)
+              actual = sorted(subprocess.check_output(['git','diff','--name-only',os.environ['BASE_SHA'],head], text=True).splitlines())
+              assert actual == pipeline_expected, f'Unsafe native Production session successor paths: {actual}'
+              assert not subprocess.check_output(['git','diff','--diff-filter=D','--name-only',os.environ['BASE_SHA'],head], text=True)
+              print('SPRINT268_NATIVE_PRODUCTION_SESSION_TWELVE_PATH_ENVELOPE=PASS')
           elif session_successor:
               # This PR changes no dependency graph. Audit and all regressions below still run.
               session_expected = sorted([

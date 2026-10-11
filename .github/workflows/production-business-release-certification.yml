@@ -102,6 +102,12 @@ jobs:
           npm ci --ignore-scripts --no-fund
           npm run type-check
           npm run build
+      - name: Verify native Production session and CSRF pipeline before certification
+        run: |
+          set -euo pipefail
+          php -l apps/web/app/Providers/PosOperationsHubServiceProvider.php
+          php -l apps/web/tests/production-session-web-pipeline.php
+          php apps/web/tests/production-session-web-pipeline.php
       - name: Run POS, isolation and merchant source-certification regressions on PR
         if: github.event_name == 'pull_request'
         run: |

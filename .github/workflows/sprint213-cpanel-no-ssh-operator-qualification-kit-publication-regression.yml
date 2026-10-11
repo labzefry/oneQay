@@ -277,6 +277,13 @@ jobs:
             expected_session_app_paths=('apps/web/config/session.php' 'apps/web/tests/production-session-cookie-policy.php')
             test "${session_app_paths[*]}" = "${expected_session_app_paths[*]}"
             test -z "$(git diff --diff-filter=D --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web)"
+          elif [ "$HEAD_REF" = 'production-cash-pos-session-pipeline-20261011' ] && [ "$BASE_SHA" = 'd78bede01d46c6cb4154148ce361809e5da8ab0b' ] && [ "${{ github.event.pull_request.head.repo.full_name }}" = 'labzefry/oneQay' ]; then
+            # Exact successor fixes only native web/session ordering; all regressions still execute.
+            mapfile -t pipeline_app_paths < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web | LC_ALL=C sort)
+            expected_pipeline_paths=('apps/web/app/Providers/PosOperationsHubServiceProvider.php' 'apps/web/tests/production-session-web-pipeline.php')
+            test "${pipeline_app_paths[*]}" = "${expected_pipeline_paths[*]}"
+            test -z "$(git diff --diff-filter=D --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web)"
+            echo "Native Production web/session successor application envelope verified"
           else
             test -z "$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web | grep -v '^apps/web/tests/' || true)"
           fi
