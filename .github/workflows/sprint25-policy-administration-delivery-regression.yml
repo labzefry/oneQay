@@ -73,6 +73,14 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
+      - name: Verify exact bilingual presentation successor
+        if: github.event_name == 'pull_request' && github.head_ref == 'oneqaydev-bilingual-workspace-20261012' && github.event.pull_request.base.sha == '36b11e1e998f135a93a8d72a21bdb0aefabc3560' && github.event.pull_request.head.repo.full_name == 'labzefry/oneQay'
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash tools/qa-bilingual-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
+          echo 'ONEQAY_BILINGUAL_PRESENTATION=true' >> "$GITHUB_ENV"
+
       - name: Recognize exact Sprint 30 and Sprint 31 bounded successors
         if: github.event_name == 'pull_request'
         shell: bash
@@ -380,7 +388,7 @@ jobs:
           fi
 
       - name: Enforce exact authorized Sprint 28 envelope
-        if: (((github.event_name == 'pull_request' && env.ONEQAY_SPRINT30_SUCCESSOR != 'true') && env.ONEQAY_SPRINT35_SUCCESSOR != 'true') && (github.event_name != 'pull_request' || github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009')) && (github.event_name != 'pull_request' || github.head_ref != 'production-dev-readiness-and-merchant-foundation-20261010')
+        if: ((((github.event_name == 'pull_request' && env.ONEQAY_SPRINT30_SUCCESSOR != 'true') && env.ONEQAY_SPRINT35_SUCCESSOR != 'true') && (github.event_name != 'pull_request' || github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009')) && (github.event_name != 'pull_request' || github.head_ref != 'production-dev-readiness-and-merchant-foundation-20261010')) && env.ONEQAY_BILINGUAL_PRESENTATION != 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -476,7 +484,7 @@ jobs:
           grep -Fq 'DurablePolicyMutation::roleAssignment' apps/web/app/Application/Authorization/PolicyAdministrationDeliveryCommand.php
 
       - name: Enforce exact eight-migration preservation
-        if: ((env.ONEQAY_SPRINT30_SUCCESSOR != 'true') && (github.event_name != 'pull_request' || github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009')) && (github.event_name != 'pull_request' || github.head_ref != 'production-dev-readiness-and-merchant-foundation-20261010')
+        if: (((env.ONEQAY_SPRINT30_SUCCESSOR != 'true') && (github.event_name != 'pull_request' || github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009')) && (github.event_name != 'pull_request' || github.head_ref != 'production-dev-readiness-and-merchant-foundation-20261010')) && env.ONEQAY_BILINGUAL_PRESENTATION != 'true'
         shell: bash
         run: |
           set -euo pipefail
