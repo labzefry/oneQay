@@ -9,7 +9,7 @@ import { initializeLocale } from './i18n'
 initializeLocale()
 
 createInertiaApp({
-  layout: (name) => name.startsWith('Pos/') ? MerchantShell : LocalizedShell,
+  layout: (name) => (name.startsWith('Pos/') || name.startsWith('Business/')) ? MerchantShell : LocalizedShell,
   resolve: (name) => {
     const pages = import.meta.glob<{ default: DefineComponent }>('./pages/**/*.vue', { eager: true })
     const page = pages[`./pages/${name}.vue`]

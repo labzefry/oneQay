@@ -7,4 +7,5 @@ return [
     App\Providers\SystemUpdateServiceProvider::class,
     App\Providers\DurableStagingMerchantCoreRouteBridgeServiceProvider::class,
     App\Providers\PosOperationsHubServiceProvider::class,
+    App\Providers\BusinessManagementServiceProvider::class,
 ];
