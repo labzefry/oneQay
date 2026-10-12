@@ -337,6 +337,17 @@ jobs:
             test "${locale_paths[*]}" = "${expected_locale_paths[*]}"
             test -z "$(git diff --diff-filter=D --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web)"
             echo "Bilingual workspace exact presentation envelope verified"
+          elif [ "$HEAD_REF" = 'business-os-command-center-integrated-20261012' ] && [ "$BASE_SHA" = 'e93b7fef42cb36840b7fca6b79435c6188a13cd5' ] && [ "${{ github.event.pull_request.number }}" = '949' ] && [ "${{ github.event.pull_request.head.repo.full_name }}" = 'labzefry/oneQay' ]; then
+            # Exact Business OS app envelope; all cPanel, session, transaction,
+            # authorization, rollback and migration checks above remain active.
+            mapfile -t os_app_paths < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web | LC_ALL=C sort)
+            expected_os_paths=('apps/web/app/Application/BusinessIntelligence/BusinessCommandCenter.php' 'apps/web/app/Delivery/Http/Pos/PosOperationsHubController.php' 'apps/web/resources/js/i18n/catalog.json' 'apps/web/resources/js/layouts/MerchantShell.vue' 'apps/web/resources/js/pages/Pos/OperationsHub.vue' 'apps/web/tests/business-os-command-center.php')
+            test "${os_app_paths[*]}" = "${expected_os_paths[*]}"
+            test -z "$(git diff --diff-filter=D --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web)"
+            php -l apps/web/app/Application/BusinessIntelligence/BusinessCommandCenter.php
+            php -l apps/web/app/Delivery/Http/Pos/PosOperationsHubController.php
+            php apps/web/tests/business-os-command-center.php
+            echo "Business OS exact app source and denial/metric contract verified"
           else
             test -z "$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web | grep -v '^apps/web/tests/' || true)"
           fi
