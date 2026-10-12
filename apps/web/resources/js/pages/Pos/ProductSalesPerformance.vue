@@ -43,7 +43,7 @@ const atomic = (value: string, currency: string, scale: number): string => {
 </script>
 
 <template>
-    <Head :title="t(&quot;Product Sales Performance&quot;)" />
+    <Head :title="t('Product Sales Performance')" />
     <main class="page-shell">
         <header class="hero">
             <div>
@@ -57,7 +57,7 @@ const atomic = (value: string, currency: string, scale: number): string => {
         <section class="panel">
             <div class="panel-heading">
                 <div><p class="eyebrow">{{ t("Immutable performance") }}</p><h2>{{ t("Product / currency buckets") }}</h2></div>
-                <input v-model="search" :placeholder="t(&quot;Cari product ID / nama / currency&quot;)" />
+                <input v-model="search" :placeholder="t('Cari product ID / nama / currency')" />
             </div>
             <div class="table-wrap">
                 <table>

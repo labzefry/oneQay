@@ -175,7 +175,7 @@ const refreshPage = (): void => window.location.reload();
 </script>
 
 <template>
-    <Head :title="t(&quot;Cash Variance Reconciliation&quot;)" />
+    <Head :title="t('Cash Variance Reconciliation')" />
     <main class="shell">
         <header class="hero">
             <div>
@@ -248,7 +248,7 @@ const refreshPage = (): void => window.location.reload();
                                 <small>{{ timestamp(props.selected.explanation.recorded_at_unix) }} · {{ props.selected.explanation.evidence_id }}</small>
                             </div>
                             <template v-else-if="props.selected.can_record_explanation">
-                                <textarea v-model="explanationText" rows="5" maxlength="4096" :placeholder="t(&quot;Enter a factual explanation for the closing-cash variance.&quot;)" :disabled="busy || actionLocked" />
+                                <textarea v-model="explanationText" rows="5" maxlength="4096" :placeholder="t('Enter a factual explanation for the closing-cash variance.')" :disabled="busy || actionLocked" />
                                 <div class="action-row"><small>{{ utf8Length }} {{ t("/ 4096 UTF-8 bytes") }}</small><button :disabled="!explanationValid || busy || actionLocked" @click="recordExplanation">{{ t("Record explanation") }}</button></div>
                             </template>
                             <p v-else class="muted">{{ t("This actor does not have explanation authority, or explanation evidence already exists.") }}</p>

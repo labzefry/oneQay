@@ -316,19 +316,19 @@ const workspaceDescriptions: Record<string, string> = {
 
 <!-- State-aware guidance is read-only. Suggested from verified POS state and the currently delivered route set. -->
 <template>
-    <Head :title="t(&quot;Overview&quot;)" />
+    <Head :title="t('Overview')" />
     <main class="operations-shell">
         <header class="overview-header"><div><p class="eyebrow">{{ t("YOUR BUSINESS, AT A GLANCE") }}</p><h1>{{ t("Workspace overview") }}</h1><p class="subtitle">{{ t("Everything you need to prepare, sell, and keep your business moving.") }}</p></div><div class="overview-actions"><button class="security-trigger" type="button" @click="securityOpen = !securityOpen"><WorkspaceIcon name="shield-check" :size="17" />{{ t(securityOpen ? 'Close security' : 'Account & security') }}</button><button v-if="props.security.can_logout" class="logout-trigger" type="button" :disabled="busy" @click="logout"><WorkspaceIcon name="log-out" :size="17" />{{ t("Sign out") }}</button></div></header>
-        <section class="metric-grid" :aria-label="t(&quot;Merchant operations summary&quot;)">
+        <section class="metric-grid" :aria-label="t('Merchant operations summary')">
             <article class="metric-card"><div class="metric-top"><span>{{ t("Catalog items") }}</span><span class="metric-icon"><WorkspaceIcon name="package" /></span></div><strong>{{ t(readinessValue(props.readiness.catalog_item_count, '', '')) }}</strong><small>{{ t("Products in your catalog") }}</small></article>
             <article class="metric-card"><div class="metric-top"><span>{{ t("Sellable items") }}</span><span class="metric-icon blue"><WorkspaceIcon name="boxes" /></span></div><strong>{{ t(readinessValue(props.readiness.sellable_item_count, '', '')) }}</strong><small>{{ t("Available for your next sale") }}</small></article>
             <article class="metric-card"><div class="metric-top"><span>{{ t("Current shift") }}</span><span class="metric-icon amber"><WorkspaceIcon name="clock-3" /></span></div><strong class="status-value">{{ t(readinessValue(props.readiness.shift_active, 'Active', 'Not started')) }}</strong><small>{{ t("For your current device") }}</small></article>
             <article class="metric-card"><div class="metric-top"><span>{{ t("Opening cash") }}</span><span class="metric-icon violet"><WorkspaceIcon name="wallet" /></span></div><strong class="status-value">{{ t(readinessValue(props.readiness.opening_cash_ready, 'Recorded', 'Not ready')) }}</strong><small>{{ t("Cash readiness for this shift") }}</small></article>
         </section>
-        <section class="overview-guide" :aria-label="t(&quot;Operating readiness&quot;)" :data-state="props.readiness.state">
+        <section class="overview-guide" :aria-label="t('Operating readiness')" :data-state="props.readiness.state">
             <div class="guide-emblem"><WorkspaceIcon :name="props.readiness.state === 'cashier_ready' ? 'circle-check' : 'sparkles'" :size="32" /></div><div class="guide-copy"><p class="eyebrow">{{ t("YOUR NEXT STEP") }}</p><h2>{{ t(readinessLabel) }}</h2><p>{{ t(readinessMessage) }}</p></div><a v-if="primaryDestination" class="primary-action" :href="primaryDestination.url">{{ t(primaryDestination.title) }}<WorkspaceIcon name="arrow-right" :size="17" /></a><span v-else class="guide-state">{{ t("Review your workspaces") }}</span>
         </section>
-        <section id="account-security" v-if="securityOpen" class="security-panel" :aria-label="t(&quot;Account and security&quot;)">
+        <section id="account-security" v-if="securityOpen" class="security-panel" :aria-label="t('Account and security')">
             <div class="security-heading">
                 <div>
                     <p class="eyebrow">{{ t("Self-service security") }}</p>
@@ -383,7 +383,7 @@ const workspaceDescriptions: Record<string, string> = {
 
         <section class="workspace-panel"><div class="panel-heading"><div><p class="eyebrow">{{ t("WORK THE WAY YOUR BUSINESS DOES") }}</p><h2>{{ t("Your workspaces") }}</h2><p>{{ t("Pick a task and get straight to work.") }}</p></div><span class="count">{{ props.destinations.length }} {{ t("available ·") }} {{ laneCount }} {{ t("groups") }}</span></div><div class="workspace-groups"><section v-for="group in groupedDestinations" :key="group.category" class="workspace-group"><div class="group-heading"><div><h3>{{ t(group.label) }}</h3><p>{{ t(group.description) }}</p></div><span class="group-count">{{ group.destinations.length }}</span></div><div class="workspace-grid"><a v-for="destination in group.destinations" :key="destination.key" class="workspace-card" :href="destination.url"><span class="workspace-symbol"><WorkspaceIcon :name="({ SETUP: 'package', SHIFT: 'clock-3', SELL: 'shopping-cart', STOCK: 'truck', REVIEW: 'chart-column', CONTROL: 'shield-check' } as Record<string,string>)[destination.category] ?? 'clipboard-list'" :size="23" /></span><div class="workspace-copy"><h3>{{ t(destination.title) }}</h3><p>{{ t(workspaceDescriptions[destination.key] ?? destination.description) }}</p></div><WorkspaceIcon class="workspace-arrow" name="arrow-up-right" :size="18" /></a></div></section></div></section>
         <details class="workspace-details"><summary>{{ t("Session & support details") }}</summary><p v-if="!primaryDestination">{{ t("No guarded next action is being recommended.") }} <span v-if="primaryDestination">{{ t("The current next step is supplied by verified operating readiness.") }}</span></p><button class="context-toggle" type="button" @click="technicalContextOpen = !technicalContextOpen">{{ t(technicalContextOpen ? 'Hide technical context' : 'Technical context') }}</button>
-        <section v-if="technicalContextOpen" class="context-strip" :aria-label="t(&quot;Current POS technical context&quot;)">
+        <section v-if="technicalContextOpen" class="context-strip" :aria-label="t('Current POS technical context')">
             <div><span>{{ t("Tenant") }}</span><strong>{{ props.scope.tenant_id }}</strong></div>
             <div><span>{{ t("Organization") }}</span><strong>{{ props.scope.organization_id }}</strong></div>
             <div><span>{{ t("Outlet") }}</span><strong>{{ props.scope.outlet_id }}</strong></div>

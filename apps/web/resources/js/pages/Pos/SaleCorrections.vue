@@ -183,7 +183,7 @@ const submitCorrection = async (): Promise<void> => {
 </script>
 
 <template>
-    <Head :title="t(&quot;Sale Corrections&quot;)" />
+    <Head :title="t('Sale Corrections')" />
     <main class="shell">
         <header class="hero">
             <div>
@@ -220,7 +220,7 @@ const submitCorrection = async (): Promise<void> => {
                     <h2>{{ t("Koreksi transaksi") }}</h2>
                 </div>
                 <div class="filters">
-                    <input v-model="search" type="search" :placeholder="t(&quot;Cari sale ID / device&quot;)" autocomplete="off">
+                    <input v-model="search" type="search" :placeholder="t('Cari sale ID / device')" autocomplete="off">
                     <select v-model="stateFilter">
                         <option value="ALL">{{ t("Semua status") }}</option>
                         <option value="COMPLETED">{{ t("Completed") }}</option>

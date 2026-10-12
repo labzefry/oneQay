@@ -121,12 +121,12 @@ onBeforeUnmount(() => { request?.abort(); document.removeEventListener('keydown'
 <template>
     <div class="oq-app">
         <a class="oq-skip" href="#workspace-content">{{ t("Skip to workspace") }}</a>
-        <button v-if="mobileOpen" class="oq-backdrop no-print" type="button" :aria-label="t(&quot;Close navigation&quot;)" @click="mobileOpen = false" />
-        <aside id="workspace-navigation" ref="drawer" class="oq-sidebar no-print" :class="{ 'is-open': mobileOpen }" :inert="mobileViewport && !mobileOpen" :aria-label="t(&quot;Workspace navigation&quot;)">
-            <a class="oq-brand" href="/pos" :aria-label="t(&quot;oneQay overview&quot;)"><span class="oq-brand-mark">{{ t("Q") }}<span /></span><span>{{ t("oneQay") }}<small>{{ t("BUSINESS WORKSPACE") }}</small></span></a>
-            <button class="oq-mobile-close" type="button" :aria-label="t(&quot;Close navigation&quot;)" @click="mobileOpen = false"><WorkspaceIcon name="x" /></button>
+        <button v-if="mobileOpen" class="oq-backdrop no-print" type="button" :aria-label="t('Close navigation')" @click="mobileOpen = false" />
+        <aside id="workspace-navigation" ref="drawer" class="oq-sidebar no-print" :class="{ 'is-open': mobileOpen }" :inert="mobileViewport && !mobileOpen" :aria-label="t('Workspace navigation')">
+            <a class="oq-brand" href="/pos" :aria-label="t('oneQay overview')"><span class="oq-brand-mark">{{ t("Q") }}<span /></span><span>{{ t("oneQay") }}<small>{{ t("BUSINESS WORKSPACE") }}</small></span></a>
+            <button class="oq-mobile-close" type="button" :aria-label="t('Close navigation')" @click="mobileOpen = false"><WorkspaceIcon name="x" /></button>
             <div class="oq-workspace"><span class="oq-workspace-icon"><WorkspaceIcon name="store" /></span><div><strong>{{ t("Merchant workspace") }}</strong><small>{{ t("Your active outlet") }}</small></div></div>
-            <label class="oq-nav-search"><WorkspaceIcon name="search" :size="17" /><input v-model="search" type="search" :placeholder="t(&quot;Find a workspace&quot;)" :aria-label="t(&quot;Find a workspace&quot;)" /></label>
+            <label class="oq-nav-search"><WorkspaceIcon name="search" :size="17" /><input v-model="search" type="search" :placeholder="t('Find a workspace')" :aria-label="t('Find a workspace')" /></label>
             <nav class="oq-nav">
                 <a class="oq-nav-link" href="/pos" :aria-current="activePath === '/pos' ? 'page' : undefined"><WorkspaceIcon name="layout-dashboard" /><span>{{ t("Overview") }}</span></a>
                 <p v-if="loading" class="oq-nav-empty" role="status">{{ t("Loading navigation…") }}</p>
@@ -139,8 +139,8 @@ onBeforeUnmount(() => { request?.abort(); document.removeEventListener('keydown'
         </aside>
         <div class="oq-content" :inert="mobileViewport && mobileOpen">
             <header class="oq-topbar no-print">
-                <div class="oq-topbar-leading"><button ref="menu" type="button" class="oq-menu-button" :aria-label="t(&quot;Open navigation&quot;)" :aria-expanded="mobileOpen" aria-controls="workspace-navigation" @click="mobileOpen = !mobileOpen"><WorkspaceIcon name="menu" /></button><a href="/pos">{{ t("Workspace") }}</a><WorkspaceIcon name="chevron-right" :size="15" /><strong>{{ t(title) }}</strong></div>
-                <div class="oq-topbar-trailing"><LanguageSwitcher /><span class="oq-session"><WorkspaceIcon name="shield-check" :size="16" />{{ t("Merchant session") }}</span><a href="/pos?panel=security#account-security" class="oq-account" :aria-label="t(&quot;Open account and security&quot;)"><WorkspaceIcon name="settings" :size="18" /><span class="oq-avatar">{{ t("Q") }}</span></a></div>
+                <div class="oq-topbar-leading"><button ref="menu" type="button" class="oq-menu-button" :aria-label="t('Open navigation')" :aria-expanded="mobileOpen" aria-controls="workspace-navigation" @click="mobileOpen = !mobileOpen"><WorkspaceIcon name="menu" /></button><a href="/pos">{{ t("Workspace") }}</a><WorkspaceIcon name="chevron-right" :size="15" /><strong>{{ t(title) }}</strong></div>
+                <div class="oq-topbar-trailing"><LanguageSwitcher /><span class="oq-session"><WorkspaceIcon name="shield-check" :size="16" />{{ t("Merchant session") }}</span><a href="/pos?panel=security#account-security" class="oq-account" :aria-label="t('Open account and security')"><WorkspaceIcon name="settings" :size="18" /><span class="oq-avatar">{{ t("Q") }}</span></a></div>
             </header>
             <div id="workspace-content" class="oq-page" tabindex="-1"><slot /></div>
             <footer class="oq-app-footer no-print"><span>{{ t("oneQay · Intelligent business management") }}</span><span>{{ t("Lab | zefry") }}</span></footer>

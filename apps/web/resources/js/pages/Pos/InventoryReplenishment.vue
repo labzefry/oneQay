@@ -128,7 +128,7 @@ const replenish = async (): Promise<void> => {
 </script>
 
 <template>
-    <Head :title="t(&quot;Inventory Replenishment&quot;)" />
+    <Head :title="t('Inventory Replenishment')" />
     <main class="page-shell">
         <header class="hero">
             <div>
@@ -152,7 +152,7 @@ const replenish = async (): Promise<void> => {
                     <span class="badge">{{ t("Immutable evidence") }}</span>
                 </div>
                 <p class="helper">{{ t("Only active catalog items with an established opening baseline are eligible. The server locks current stock, records before/received/after evidence, and rejects unsafe overflow or replay mismatch.") }}</p>
-                <label>{{ t("Selected product") }}<input :value="selectedItem ? `${selectedItem.display_name} · ${selectedItem.product_id}` : ''" readonly :placeholder="t(&quot;Pilih produk dari authoritative snapshot&quot;)" /></label>
+                <label>{{ t("Selected product") }}<input :value="selectedItem ? `${selectedItem.display_name} · ${selectedItem.product_id}` : ''" readonly :placeholder="t('Pilih produk dari authoritative snapshot')" /></label>
                 <label>{{ t("Current authoritative stock") }}<input :value="selectedItem ? formatQuantity(selectedItem.available_quantity) : ''" readonly placeholder="—" /></label>
                 <label>{{ t("Received quantity") }}<input v-model="quantity" inputmode="numeric" placeholder="100" :disabled="submitting || refreshRequired || !selectedItem" /></label>
                 <button class="primary" type="button" :disabled="submitting || refreshRequired || !selectedItem" @click="replenish">{{ t("Record replenishment") }}</button>
@@ -177,7 +177,7 @@ const replenish = async (): Promise<void> => {
         <section class="panel inventory-panel">
             <div class="panel-heading inventory-heading">
                 <div><p class="eyebrow">{{ t("Authoritative snapshot") }}</p><h2>{{ t("Baseline-established active products") }}</h2></div>
-                <input v-model="search" :placeholder="t(&quot;Cari product ID / nama&quot;)" />
+                <input v-model="search" :placeholder="t('Cari product ID / nama')" />
             </div>
             <div class="table-wrap">
                 <table>

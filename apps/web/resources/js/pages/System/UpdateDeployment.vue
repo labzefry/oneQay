@@ -155,7 +155,7 @@ const submitDevelopmentUpdate = (): void => {
         <span class="mode-chip">{{ t(ui.mode) }}</span>
       </header>
 
-      <nav class="breadcrumb" :aria-label="t(&quot;Breadcrumb&quot;)">
+      <nav class="breadcrumb" :aria-label="t('Breadcrumb')">
         <span>{{ t("System") }}</span>
         <span aria-hidden="true">/</span>
         <strong>{{ t("Update & Deployment") }}</strong>
@@ -174,7 +174,7 @@ const submitDevelopmentUpdate = (): void => {
         </div>
       </section>
 
-      <section class="status-grid" :aria-label="t(&quot;Updater status summary&quot;)">
+      <section class="status-grid" :aria-label="t('Updater status summary')">
         <article class="status-card">
           <span class="status-label">{{ t("Control plane") }}</span>
           <strong>{{ t(status.control_plane) }}</strong>
@@ -266,7 +266,7 @@ const submitDevelopmentUpdate = (): void => {
         </article>
       </section>
 
-      <section class="installation-wizard" :aria-label="t(&quot;Installation readiness wizard&quot;)">
+      <section class="installation-wizard" :aria-label="t('Installation readiness wizard')">
         <div class="wizard-heading">
           <div>
             <p class="panel-kicker">{{ t("Installation readiness wizard") }}</p>
@@ -278,7 +278,7 @@ const submitDevelopmentUpdate = (): void => {
           </span>
         </div>
 
-        <div class="evidence-grid" :aria-label="t(&quot;Installation evidence sources&quot;)">
+        <div class="evidence-grid" :aria-label="t('Installation evidence sources')">
           <div><span>{{ t("Release manifest") }}</span><strong>{{ installation_preflight.evidence.release_manifest }}</strong></div>
           <div><span>{{ t("Release artifact") }}</span><strong>{{ installation_preflight.evidence.release_artifact }}</strong></div>
           <div><span>{{ t("Database") }}</span><strong>{{ installation_preflight.evidence.database }}</strong></div>
@@ -313,7 +313,7 @@ const submitDevelopmentUpdate = (): void => {
         </aside>
       </section>
 
-      <section v-if="development_updater.enabled" class="installation-wizard development-update-panel" :aria-label="t(&quot;Governed development updater&quot;)">
+      <section v-if="development_updater.enabled" class="installation-wizard development-update-panel" :aria-label="t('Governed development updater')">
         <div class="wizard-heading">
           <div>
             <p class="panel-kicker">{{ t("Governed development delivery") }}</p>
@@ -414,7 +414,7 @@ const submitDevelopmentUpdate = (): void => {
         </aside>
       </section>
 
-      <section class="action-panel" :aria-label="t(&quot;Read-only action boundary&quot;)">
+      <section class="action-panel" :aria-label="t('Read-only action boundary')">
         <div>
           <p class="panel-kicker">{{ t("Controlled actions") }}</p>
           <h2>{{ t("Installation controls are locked") }}</h2>

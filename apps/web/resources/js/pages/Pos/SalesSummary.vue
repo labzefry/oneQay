@@ -38,7 +38,7 @@ const timestamp = (unix: number): string => new Intl.DateTimeFormat('id-ID', {
 </script>
 
 <template>
-    <Head :title="t(&quot;Operational Sales Summary&quot;)" />
+    <Head :title="t('Operational Sales Summary')" />
     <main class="report-shell">
         <header class="hero">
             <div>
@@ -52,7 +52,7 @@ const timestamp = (unix: number): string => new Intl.DateTimeFormat('id-ID', {
             </div>
         </header>
 
-        <section class="metrics" :aria-label="t(&quot;Sales counters&quot;)">
+        <section class="metrics" :aria-label="t('Sales counters')">
             <article><span>{{ t("Completed sales") }}</span><strong>{{ props.counters.completed_sales }}</strong></article>
             <article><span>{{ t("Voided sales") }}</span><strong>{{ props.counters.voided_sales }}</strong></article>
             <article><span>{{ t("Cash refunded") }}</span><strong>{{ props.counters.cash_refunded_sales }}</strong></article>

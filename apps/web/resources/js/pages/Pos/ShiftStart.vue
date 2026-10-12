@@ -203,7 +203,7 @@ const recordOpeningCash = async (): Promise<void> => {
 </script>
 
 <template>
-    <Head :title="t(&quot;Shift Start Workspace&quot;)" />
+    <Head :title="t('Shift Start Workspace')" />
     <main class="shell">
         <header class="hero">
             <div>

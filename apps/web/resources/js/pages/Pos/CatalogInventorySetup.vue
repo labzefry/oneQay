@@ -229,7 +229,7 @@ const establishBaseline = async (): Promise<void> => {
 </script>
 
 <template>
-    <Head :title="t(&quot;Catalog &amp; Inventory Setup&quot;)" />
+    <Head :title="t('Catalog & Inventory Setup')" />
     <main class="setup-shell">
         <header class="hero">
             <div>
@@ -250,10 +250,10 @@ const establishBaseline = async (): Promise<void> => {
             <article class="panel">
                 <div class="panel-heading"><div><p class="eyebrow">{{ t("Step 1") }}</p><h2>{{ t("Catalog preparation") }}</h2></div><span class="badge">{{ t("Canonical POST") }}</span></div>
                 <div class="form-grid">
-                    <label>{{ t("Product ID") }}<input v-model="productId" maxlength="64" :placeholder="t(&quot;kopi-susu&quot;)" :disabled="submitting || refreshRequired" /></label>
-                    <label>{{ t("Nama produk") }}<input v-model="displayName" maxlength="160" :placeholder="t(&quot;Kopi Susu&quot;)" :disabled="submitting || refreshRequired" /></label>
+                    <label>{{ t("Product ID") }}<input v-model="productId" maxlength="64" :placeholder="t('kopi-susu')" :disabled="submitting || refreshRequired" /></label>
+                    <label>{{ t("Nama produk") }}<input v-model="displayName" maxlength="160" :placeholder="t('Kopi Susu')" :disabled="submitting || refreshRequired" /></label>
                     <label>{{ t("Harga major unit") }}<input v-model="unitPriceMajor" inputmode="decimal" placeholder="15000" :disabled="submitting || refreshRequired" /></label>
-                    <label>{{ t("Currency") }}<input v-model="currency" maxlength="3" :placeholder="t(&quot;IDR&quot;)" :disabled="submitting || refreshRequired" /></label>
+                    <label>{{ t("Currency") }}<input v-model="currency" maxlength="3" :placeholder="t('IDR')" :disabled="submitting || refreshRequired" /></label>
                     <label>{{ t("Scale") }}<input v-model.number="scale" type="number" min="0" max="6" :disabled="submitting || refreshRequired" /></label>
                     <label class="check"><input v-model="sellable" type="checkbox" :disabled="submitting || refreshRequired" /> {{ t("Sellable") }}</label>
                 </div>
@@ -263,7 +263,7 @@ const establishBaseline = async (): Promise<void> => {
             <article class="panel">
                 <div class="panel-heading"><div><p class="eyebrow">{{ t("Step 2") }}</p><h2>{{ t("Opening inventory") }}</h2></div><span class="badge">{{ t("One-time baseline") }}</span></div>
                 <p class="helper">{{ t("Hanya tersedia jika stok = 0, baseline belum pernah dicatat, dan produk belum memiliki sale history pada outlet ini.") }}</p>
-                <label>{{ t("Selected product") }}<input v-model="baselineProductId" readonly :placeholder="t(&quot;Pilih dari tabel&quot;)" /></label>
+                <label>{{ t("Selected product") }}<input v-model="baselineProductId" readonly :placeholder="t('Pilih dari tabel')" /></label>
                 <label>{{ t("Opening quantity") }}<input v-model="openingQuantity" inputmode="numeric" placeholder="100" :disabled="submitting || refreshRequired" /></label>
                 <button class="primary" type="button" :disabled="submitting || refreshRequired" @click="establishBaseline">{{ t("Establish opening stock") }}</button>
             </article>
@@ -273,7 +273,7 @@ const establishBaseline = async (): Promise<void> => {
             <div class="panel-heading inventory-heading">
                 <div><p class="eyebrow">{{ t("Authoritative snapshot") }}</p><h2>{{ t("Outlet catalog & stock") }}</h2></div>
                 <div class="filters">
-                    <input v-model="search" :placeholder="t(&quot;Cari product ID / nama&quot;)" />
+                    <input v-model="search" :placeholder="t('Cari product ID / nama')" />
                     <select v-model="stockFilter">
                         <option value="ALL">{{ t("Semua") }}</option>
                         <option value="READY">{{ t("Ready to sell") }}</option>

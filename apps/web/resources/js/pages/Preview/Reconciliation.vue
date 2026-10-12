@@ -168,7 +168,7 @@ const submitReview = (reviewOutcome: 'REVIEW_ACCEPTED' | 'REVIEW_REJECTED') => {
             v-model="explanationText"
             maxlength="4096"
             rows="5"
-            :placeholder="t(&quot;Jelaskan penyebab variance kas synthetic secara spesifik.&quot;)"
+            :placeholder="t('Jelaskan penyebab variance kas synthetic secara spesifik.')"
           />
           <button
             type="button"

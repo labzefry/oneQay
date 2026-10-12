@@ -245,7 +245,7 @@ const checkout = async (): Promise<void> => {
 </script>
 
 <template>
-    <Head :title="t(&quot;Cashier&quot;)" />
+    <Head :title="t('Cashier')" />
     <main class="cashier-shell" :data-leave-confirmation="submitting || (cartLines.length > 0 && !receipt)">
         <header class="hero">
             <div>
@@ -260,13 +260,13 @@ const checkout = async (): Promise<void> => {
             </div>
         </header>
 
-        <section class="scope-strip" :aria-label="t(&quot;Ringkasan kasir&quot;)"><div><span>{{ t("Produk tersedia") }}</span><strong>{{ catalog.length }} {{ t("produk") }}</strong></div><div><span>{{ t("Item dalam pesanan") }}</span><strong>{{ totalUnits }} {{ t("item") }}</strong></div><div><span>{{ t("Shift kasir") }}</span><strong>{{ t(props.active_shift_id ? 'Aktif' : 'Belum dimulai') }}</strong></div></section>
+        <section class="scope-strip" :aria-label="t('Ringkasan kasir')"><div><span>{{ t("Produk tersedia") }}</span><strong>{{ catalog.length }} {{ t("produk") }}</strong></div><div><span>{{ t("Item dalam pesanan") }}</span><strong>{{ totalUnits }} {{ t("item") }}</strong></div><div><span>{{ t("Shift kasir") }}</span><strong>{{ t(props.active_shift_id ? 'Aktif' : 'Belum dimulai') }}</strong></div></section>
 
         <div class="workspace-grid">
             <section class="panel catalog-panel">
                 <div class="panel-heading">
                     <div><p class="eyebrow">{{ t("Sellable catalog") }}</p><h2>{{ t("Pilih produk") }}</h2></div>
-                    <input v-model="search" class="search" :aria-label="t(&quot;Cari produk&quot;)" type="search" :placeholder="t(&quot;Cari nama / product ID&quot;)" autocomplete="off">
+                    <input v-model="search" class="search" :aria-label="t('Cari produk')" type="search" :placeholder="t('Cari nama / product ID')" autocomplete="off">
                 </div>
                 <div class="catalog-grid">
                     <article v-for="item in visibleCatalog" :key="item.product_id" class="product-card">
@@ -325,7 +325,7 @@ const checkout = async (): Promise<void> => {
 
         <section v-if="message || receipt" class="result" aria-live="polite">
             <strong>{{ t(message) }}</strong>
-            <article v-if="receipt" class="receipt-card" :aria-label="t(&quot;Authoritative sale receipt&quot;)">
+            <article v-if="receipt" class="receipt-card" :aria-label="t('Authoritative sale receipt')">
                 <div class="receipt-heading">
                     <div>
                         <p class="eyebrow">{{ t("Authoritative receipt") }}</p>

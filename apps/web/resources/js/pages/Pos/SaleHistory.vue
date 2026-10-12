@@ -76,7 +76,7 @@ const clearSelection = (): void => window.location.assign(props.history_base_url
 </script>
 
 <template>
-    <Head :title="t(&quot;Sales History&quot;)" />
+    <Head :title="t('Sales History')" />
     <main class="history-shell">
         <header class="hero">
             <div>
@@ -87,13 +87,13 @@ const clearSelection = (): void => window.location.assign(props.history_base_url
             <div class="scope-card"><span>{{ t("Outlet") }}</span><strong>{{ props.scope.outlet_id }}</strong></div>
         </header>
 
-        <section class="toolbar panel" :aria-label="t(&quot;Sale lookup&quot;)">
+        <section class="toolbar panel" :aria-label="t('Sale lookup')">
             <div>
                 <p class="eyebrow">{{ t("Exact receipt lookup") }}</p>
                 <h2>{{ t("Find a canonical sale") }}</h2>
             </div>
             <form class="lookup" @submit.prevent="submitLookup">
-                <input v-model="lookup" maxlength="29" autocomplete="off" spellcheck="false" :placeholder="t(&quot;sale-xxxxxxxxxxxxxxxxxxxxxxxx&quot;)" :aria-label="t(&quot;Canonical sale ID&quot;)" />
+                <input v-model="lookup" maxlength="29" autocomplete="off" spellcheck="false" :placeholder="t('sale-xxxxxxxxxxxxxxxxxxxxxxxx')" :aria-label="t('Canonical sale ID')" />
                 <button type="submit" :disabled="!salePattern.test(lookup.trim())">{{ t("Open receipt") }}</button>
             </form>
         </section>
@@ -144,7 +144,7 @@ const clearSelection = (): void => window.location.assign(props.history_base_url
         <section class="panel">
             <div class="panel-heading">
                 <div><p class="eyebrow">{{ t("Latest immutable transactions") }}</p><h2>{{ t("Recent sales") }}</h2></div>
-                <div class="filters" :aria-label="t(&quot;Status filter&quot;)">
+                <div class="filters" :aria-label="t('Status filter')">
                     <button v-for="state in ['ALL', 'COMPLETED', 'VOIDED', 'REFUNDED'] as const" :key="state" type="button" :class="{ active: filter === state }" @click="filter = state">{{ t(state) }}</button>
                 </div>
             </div>
