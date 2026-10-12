@@ -119,7 +119,7 @@ async function submit(): Promise<void> {
             const code=result?.error?.code??'';error.value=t(errorMessages[code]??'Check the entered values and your access, then try again.');return;
         }
         uncertain.value=false;pending.value=null;saved.value=true;dialog.value?.close();mode.value='';
-        router.reload({preserveScroll:true});
+        router.reload();
     } catch {uncertain.value=true;error.value=t('The result is not confirmed. Retry the same request to avoid duplicate records.');}
     finally{busy.value=false;}
 }

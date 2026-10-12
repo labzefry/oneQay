@@ -7,6 +7,8 @@ namespace App\Providers;
 use App\Application\Business\BusinessRepository;
 use App\Application\Pos\InventoryReplenishmentRepository;
 use App\Delivery\Http\Business\BusinessWorkspaceController;
+use App\Delivery\Http\Business\BusinessAccessController;
+use App\Delivery\Http\Middleware\RequirePolicyAdministrationSessionContextMiddleware;
 use App\Delivery\Http\Middleware\RequirePosSessionContextMiddleware;
 use App\Infrastructure\Business\LaravelBusinessRepository;
 use App\Infrastructure\Runtime\ProductionBusinessRuntimeGate;
@@ -32,6 +34,8 @@ final class BusinessManagementServiceProvider extends ServiceProvider
             || (int) config('oneqay.session_control.absolute_ttl_seconds', 0) !== 43200) return;
 
         Route::middleware(['web', 'session.active', 'throttle:60,1', RequirePosSessionContextMiddleware::class])->group(static function (): void {
+            Route::get('/pos/business/access', [BusinessAccessController::class, 'show'])->name('business.access');
+            Route::post('/pos/business/access/roles', [BusinessAccessController::class, 'apply'])->middleware(RequirePolicyAdministrationSessionContextMiddleware::class)->name('business.access.roles');
             Route::get('/pos/business/options/{resource}', [BusinessWorkspaceController::class, 'options'])->name('business.options');
             Route::get('/pos/business/{module}/export', [BusinessWorkspaceController::class, 'export'])->name('business.export');
             Route::get('/pos/business/{module}', [BusinessWorkspaceController::class, 'show'])->name('business.workspace');

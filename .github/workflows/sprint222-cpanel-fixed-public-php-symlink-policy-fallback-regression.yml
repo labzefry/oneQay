@@ -321,7 +321,9 @@ jobs:
           set -euo pipefail
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             test -z "$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web/database/migrations)"
-            if [ "$HEAD_REF" = 'sprint264-durable-staging-merchant-core-route-bridge-delivery' ]; then
+            if [ "$HEAD_REF" = 'enterprise-integrated-business-20261012' ] && [ "$BASE_SHA" = 'f3de67cd0426fb13cc51c4d88966a8a9923dcf24' ]; then
+              bash tools/qa-business-management-source-envelope.sh "$BASE_SHA" "$HEAD_SHA"
+            elif [ "$HEAD_REF" = 'sprint264-durable-staging-merchant-core-route-bridge-delivery' ]; then
               changed_app="$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web)"
               test -n "$changed_app"
               while IFS= read -r changed; do

@@ -19,6 +19,7 @@ final readonly class BusinessAccess
         'finance' => ['Finance', 'business.finance.view'],
         'people' => ['People', 'business.people.view'],
         'audit' => ['Activity log', 'business.audit.view'],
+        'access' => ['Business access', 'authorization.policy.manage'],
     ];
     public const ACTIONS = [
         'supplier.save' => 'business.suppliers.manage', 'customer.save' => 'business.customers.manage',

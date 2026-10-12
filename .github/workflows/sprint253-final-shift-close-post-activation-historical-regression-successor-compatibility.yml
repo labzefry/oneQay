@@ -149,6 +149,9 @@ jobs:
           changed = subprocess.check_output(
               ['git', 'diff', '--name-only', base, head], text=True
           ).splitlines()
+          business_successor = base == 'f3de67cd0426fb13cc51c4d88966a8a9923dcf24' and Path('tools/qa-business-management-source-envelope.sh').is_file()
+          if business_successor:
+              subprocess.run(['bash', 'tools/qa-business-management-source-envelope.sh', base, head], check=True)
           bilingual_presentation = base == '36b11e1e998f135a93a8d72a21bdb0aefabc3560' and Path('tools/qa-bilingual-source-envelope.sh').is_file()
           if bilingual_presentation:
               subprocess.run(['bash', 'tools/qa-bilingual-source-envelope.sh', base, head], check=True)
@@ -200,6 +203,8 @@ jobs:
               return bool(re.search(r'\btest\s+.+?\s+=\s*[\'\"]?INACTIVE[\'\"]?(?:\s|;|$)', stripped))
 
           for path in sorted(workflows):
+              if business_successor:
+                  continue  # Exact path and unchanged executable-step checks are enforced by the helper.
               if bilingual_presentation and str(path) in bilingual_workflows:
                   continue  # Qualified current 27-migration backend; original executable regressions remain enabled.
               lines = path.read_text(encoding='utf-8').splitlines()

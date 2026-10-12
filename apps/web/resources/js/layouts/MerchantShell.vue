@@ -38,6 +38,7 @@ const labels: Record<string, { title: string; icon: string }> = {
     business_finance: { title: 'Finance', icon: 'wallet' },
     business_people: { title: 'People', icon: 'users' },
     business_audit: { title: 'Activity log', icon: 'clipboard-list' },
+    business_access: { title: 'Business access', icon: 'shield-check' },
 };
 const categories = [
     { key: 'SETUP', title: 'Products' }, { key: 'SELL', title: 'Selling' },
