@@ -150,6 +150,38 @@ jobs:
               assert actual == expected, f'Unsafe bilingual paths: {actual}'
               assert not subprocess.check_output(['git','diff','--diff-filter=D','--name-only',os.environ['BASE_SHA'],head], text=True)
               print('SPRINT268_BILINGUAL_PRESENTATION_ENVELOPE=PASS')
+          elif (os.environ.get('HEAD_REF') == 'business-os-command-center-integrated-20261012'
+                and os.environ.get('PR_NUMBER') == '949'
+                and os.environ.get('HEAD_REPOSITORY') == 'labzefry/oneQay'
+                and os.environ.get('BASE_SHA') == 'e93b7fef42cb36840b7fca6b79435c6188a13cd5'):
+              # The dependency and historical security checks below remain active.
+              expected = sorted([
+                  ".github/workflows/business-os-command-center.yml",
+                  ".github/workflows/sprint211-durable-staging-operator-artifact-publication-regression.yml",
+                  ".github/workflows/sprint212-cpanel-no-ssh-durable-staging-target-qualification-regression.yml",
+                  ".github/workflows/sprint214-cpanel-no-ssh-guarded-deployment-execution-regression.yml",
+                  ".github/workflows/sprint213-cpanel-no-ssh-operator-qualification-kit-publication-regression.yml",
+                  ".github/workflows/sprint218-production-dark-deployment-execution-regression.yml",
+                  ".github/workflows/sprint222-cpanel-fixed-public-php-symlink-policy-fallback-regression.yml",
+                  ".github/workflows/sprint223-durable-runtime-ingestion-null-boundary-regression.yml",
+                  ".github/workflows/sprint268-dependency-security-remediation-regression.yml",
+                  "apps/web/app/Application/BusinessIntelligence/BusinessCommandCenter.php",
+                  "apps/web/app/Delivery/Http/Pos/PosOperationsHubController.php",
+                  "apps/web/resources/js/i18n/catalog.json",
+                  "apps/web/resources/js/layouts/MerchantShell.vue",
+                  "apps/web/resources/js/pages/Pos/OperationsHub.vue",
+                  "apps/web/tests/business-os-command-center.php",
+                  "docs/operations/ONEQAY_BUSINESS_OS_COMMAND_CENTER_2026-10-12.md",
+              ])
+              actual = sorted(subprocess.check_output([
+                  'git', 'diff', '--name-only', os.environ['BASE_SHA'], os.environ['HEAD_SHA']
+              ], text=True).splitlines())
+              assert actual == expected, f'Unsafe Business OS scope: {actual}'
+              assert not subprocess.check_output([
+                  'git', 'diff', '--diff-filter=D', '--name-only',
+                  os.environ['BASE_SHA'], os.environ['HEAD_SHA']
+              ], text=True), 'Source deletions are forbidden'
+              print('BUSINESS_OS_EXACT_SOURCE_ENVELOPE=PASS')
           elif session_successor:
               # This PR changes no dependency graph. Audit and all regressions below still run.
               session_expected = sorted([
