@@ -27,3 +27,19 @@ jobs:
       - name: Capability matrix evidence contract
         run: |
           php tools/qa-enterprise-capability-matrix.php
+      - name: Package owner-host read-only probe
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist/oneqay-business-os-host-readonly-preflight
+          cp tools/production/cpanel/inspect-oneqaydev-business-os-upgrade.php dist/oneqay-business-os-host-readonly-preflight/
+          cp docs/operations/ONEQAYDEV_BUSINESS_OS_HOST_PREFLIGHT_2026-10-12.md dist/oneqay-business-os-host-readonly-preflight/README.md
+          ( cd dist/oneqay-business-os-host-readonly-preflight && sha256sum inspect-oneqaydev-business-os-upgrade.php README.md > SHA256SUMS.txt )
+          test "$(find dist/oneqay-business-os-host-readonly-preflight -type f | wc -l)" -eq 3
+      - name: Publish read-only cPanel probe package
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: oneqay-business-os-host-readonly-preflight
+          path: dist/oneqay-business-os-host-readonly-preflight/
+          if-no-files-found: error
+          retention-days: 14
