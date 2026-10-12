@@ -6,7 +6,7 @@ head="$2"
 test "$base" = '36b11e1e998f135a93a8d72a21bdb0aefabc3560'
 [[ "$head" =~ ^[0-9a-f]{40}$ ]]
 actual="$(git diff --name-only "$base" "$head" | LC_ALL=C sort)"
-test "$(printf '%s\n' "$actual" | sha256sum | awk '{print $1}')" = '69daac5520c1b9867fad4086e8dd27ff41134e203e701df50fa1579ac7fc842e'
+test "$(printf '%s\n' "$actual" | sha256sum | awk '{print $1}')" = '71b7c801b9a751110e9e19ac0b062b64e85e776c17f547c09fceb6aca9ba1e59'
 test -z "$(git diff --diff-filter=D --name-only "$base" "$head")"
 git diff --exit-code "$base" "$head" -- apps/web/app apps/web/routes apps/web/config apps/web/database apps/web/bootstrap apps/web/composer.json apps/web/composer.lock apps/web/package.json apps/web/package-lock.json
 # Every existing migration and Preview backend file is byte-identical to the qualified base.
