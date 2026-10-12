@@ -134,6 +134,25 @@ jobs:
             dist/merchant-ui-qa
           if-no-files-found: error
           retention-days: 3
+      - name: Verify bilingual successor and compiled interface behavior
+        if: github.event_name == 'pull_request' && github.head_ref == 'oneqaydev-bilingual-workspace-20261012'
+        run: |
+          set -euo pipefail
+          php -l tools/production/cpanel/update-oneqaydev-bilingual-workspace.php
+          php -d zend.assertions=1 -d assert.exception=1 tools/production/tests/oneqaydev-bilingual-workspace.php
+          npm install --prefix "$RUNNER_TEMP/oneqay-ui-browser" --ignore-scripts --no-audit --no-fund playwright@1.62.1
+          node "$RUNNER_TEMP/oneqay-ui-browser/node_modules/playwright/cli.js" install --with-deps --only-shell chromium
+          PLAYWRIGHT_MODULE="$RUNNER_TEMP/oneqay-ui-browser/node_modules/playwright/index.mjs" node tools/qa-merchant-enterprise-ui.mjs
+      - name: Publish bilingual compiled interface verification
+        if: always() && github.event_name == 'pull_request' && github.head_ref == 'oneqaydev-bilingual-workspace-20261012'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: oneqay-bilingual-preview-${{ github.event.pull_request.head.sha }}
+          path: |
+            apps/web/public/build
+            dist/merchant-ui-qa
+          if-no-files-found: error
+          retention-days: 3
       - name: Verify native Production session and CSRF pipeline before certification
         run: |
           set -euo pipefail

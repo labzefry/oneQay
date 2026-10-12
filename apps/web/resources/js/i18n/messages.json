@@ -1,0 +1,52 @@
+[
+  [
+    "Transaksi ditolak ({value}).",
+    "Transaksi ditolak ({value}).",
+    "Sale rejected ({value})."
+  ],
+  [
+    "Pembukaan shift ditolak ({value}).",
+    "Pembukaan sif ditolak ({value}).",
+    "Shift opening rejected ({value})."
+  ],
+  [
+    "Kas awal belum tercatat ({value}). Shift tetap aktif; jangan membuka shift baru.",
+    "Kas awal belum tercatat ({value}). Sif tetap aktif; jangan membuka sif baru.",
+    "Opening cash was not recorded ({value}). The shift remains active; do not start another shift."
+  ],
+  [
+    "Request failed ({value}).",
+    "Permintaan gagal ({value}).",
+    "Request failed ({value})."
+  ],
+  [
+    "Koreksi ditolak server ({value}).",
+    "Koreksi ditolak server ({value}).",
+    "Correction rejected by the server ({value})."
+  ],
+  [
+    "Receiving target dipilih: {value}.",
+    "Produk penerimaan dipilih: {value}.",
+    "Stock receipt product selected: {value}."
+  ],
+  [
+    "Inventory replenishment ditolak ({value}).",
+    "Penerimaan stok ditolak ({value}).",
+    "Stock receipt rejected ({value})."
+  ],
+  [
+    "Stock diterima. Authoritative stock baru: {value}. Refresh diwajibkan sebelum mutation berikutnya.",
+    "Stok diterima. Stok terbaru dari server: {value}. Muat ulang sebelum perubahan berikutnya.",
+    "Stock received. Updated server stock: {value}. Refresh before the next change."
+  ],
+  [
+    "Catalog preparation ditolak ({value}).",
+    "Penyiapan katalog ditolak ({value}).",
+    "Catalog preparation rejected ({value})."
+  ],
+  [
+    "Inventory baseline ditolak ({value}).",
+    "Stok awal ditolak ({value}).",
+    "Opening stock rejected ({value})."
+  ]
+]

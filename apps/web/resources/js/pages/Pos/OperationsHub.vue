@@ -1,6 +1,7 @@
 <!-- Sprint204 durable staging readiness attestation compatibility anchor — Lab | zefry -->
 <!-- Sprint203 bounded staging bridge compatibility anchor — Lab | zefry -->
 <script setup lang="ts">
+import { t } from "../../i18n";
 import { Head } from '@inertiajs/vue3';
 import { computed, onMounted, ref } from 'vue';
 import WorkspaceIcon from '../../components/WorkspaceIcon.vue';
@@ -315,81 +316,79 @@ const workspaceDescriptions: Record<string, string> = {
 
 <!-- State-aware guidance is read-only. Suggested from verified POS state and the currently delivered route set. -->
 <template>
-    <Head title="Overview" />
+    <Head :title="t(&quot;Overview&quot;)" />
     <main class="operations-shell">
-        <header class="overview-header"><div><p class="eyebrow">YOUR BUSINESS, AT A GLANCE</p><h1>Workspace overview</h1><p class="subtitle">Everything you need to prepare, sell, and keep your business moving.</p></div><div class="overview-actions"><button class="security-trigger" type="button" @click="securityOpen = !securityOpen"><WorkspaceIcon name="shield-check" :size="17" />{{ securityOpen ? 'Close security' : 'Account & security' }}</button><button v-if="props.security.can_logout" class="logout-trigger" type="button" :disabled="busy" @click="logout"><WorkspaceIcon name="log-out" :size="17" />Sign out</button></div></header>
-        <section class="metric-grid" aria-label="Merchant operations summary">
-            <article class="metric-card"><div class="metric-top"><span>Catalog items</span><span class="metric-icon"><WorkspaceIcon name="package" /></span></div><strong>{{ readinessValue(props.readiness.catalog_item_count, '', '') }}</strong><small>Products in your catalog</small></article>
-            <article class="metric-card"><div class="metric-top"><span>Sellable items</span><span class="metric-icon blue"><WorkspaceIcon name="boxes" /></span></div><strong>{{ readinessValue(props.readiness.sellable_item_count, '', '') }}</strong><small>Available for your next sale</small></article>
-            <article class="metric-card"><div class="metric-top"><span>Current shift</span><span class="metric-icon amber"><WorkspaceIcon name="clock-3" /></span></div><strong class="status-value">{{ readinessValue(props.readiness.shift_active, 'Active', 'Not started') }}</strong><small>For your current device</small></article>
-            <article class="metric-card"><div class="metric-top"><span>Opening cash</span><span class="metric-icon violet"><WorkspaceIcon name="wallet" /></span></div><strong class="status-value">{{ readinessValue(props.readiness.opening_cash_ready, 'Recorded', 'Not ready') }}</strong><small>Cash readiness for this shift</small></article>
+        <header class="overview-header"><div><p class="eyebrow">{{ t("YOUR BUSINESS, AT A GLANCE") }}</p><h1>{{ t("Workspace overview") }}</h1><p class="subtitle">{{ t("Everything you need to prepare, sell, and keep your business moving.") }}</p></div><div class="overview-actions"><button class="security-trigger" type="button" @click="securityOpen = !securityOpen"><WorkspaceIcon name="shield-check" :size="17" />{{ t(securityOpen ? 'Close security' : 'Account & security') }}</button><button v-if="props.security.can_logout" class="logout-trigger" type="button" :disabled="busy" @click="logout"><WorkspaceIcon name="log-out" :size="17" />{{ t("Sign out") }}</button></div></header>
+        <section class="metric-grid" :aria-label="t(&quot;Merchant operations summary&quot;)">
+            <article class="metric-card"><div class="metric-top"><span>{{ t("Catalog items") }}</span><span class="metric-icon"><WorkspaceIcon name="package" /></span></div><strong>{{ t(readinessValue(props.readiness.catalog_item_count, '', '')) }}</strong><small>{{ t("Products in your catalog") }}</small></article>
+            <article class="metric-card"><div class="metric-top"><span>{{ t("Sellable items") }}</span><span class="metric-icon blue"><WorkspaceIcon name="boxes" /></span></div><strong>{{ t(readinessValue(props.readiness.sellable_item_count, '', '')) }}</strong><small>{{ t("Available for your next sale") }}</small></article>
+            <article class="metric-card"><div class="metric-top"><span>{{ t("Current shift") }}</span><span class="metric-icon amber"><WorkspaceIcon name="clock-3" /></span></div><strong class="status-value">{{ t(readinessValue(props.readiness.shift_active, 'Active', 'Not started')) }}</strong><small>{{ t("For your current device") }}</small></article>
+            <article class="metric-card"><div class="metric-top"><span>{{ t("Opening cash") }}</span><span class="metric-icon violet"><WorkspaceIcon name="wallet" /></span></div><strong class="status-value">{{ t(readinessValue(props.readiness.opening_cash_ready, 'Recorded', 'Not ready')) }}</strong><small>{{ t("Cash readiness for this shift") }}</small></article>
         </section>
-        <section class="overview-guide" aria-label="Operating readiness" :data-state="props.readiness.state">
-            <div class="guide-emblem"><WorkspaceIcon :name="props.readiness.state === 'cashier_ready' ? 'circle-check' : 'sparkles'" :size="32" /></div><div class="guide-copy"><p class="eyebrow">YOUR NEXT STEP</p><h2>{{ readinessLabel }}</h2><p>{{ readinessMessage }}</p></div><a v-if="primaryDestination" class="primary-action" :href="primaryDestination.url">{{ primaryDestination.title }}<WorkspaceIcon name="arrow-right" :size="17" /></a><span v-else class="guide-state">Review your workspaces</span>
+        <section class="overview-guide" :aria-label="t(&quot;Operating readiness&quot;)" :data-state="props.readiness.state">
+            <div class="guide-emblem"><WorkspaceIcon :name="props.readiness.state === 'cashier_ready' ? 'circle-check' : 'sparkles'" :size="32" /></div><div class="guide-copy"><p class="eyebrow">{{ t("YOUR NEXT STEP") }}</p><h2>{{ t(readinessLabel) }}</h2><p>{{ t(readinessMessage) }}</p></div><a v-if="primaryDestination" class="primary-action" :href="primaryDestination.url">{{ t(primaryDestination.title) }}<WorkspaceIcon name="arrow-right" :size="17" /></a><span v-else class="guide-state">{{ t("Review your workspaces") }}</span>
         </section>
-        <section id="account-security" v-if="securityOpen" class="security-panel" aria-label="Account and security">
+        <section id="account-security" v-if="securityOpen" class="security-panel" :aria-label="t(&quot;Account and security&quot;)">
             <div class="security-heading">
                 <div>
-                    <p class="eyebrow">Self-service security</p>
-                    <h2>Account & security</h2>
-                    <p>Manage your password, authenticator, and recovery codes.</p>
+                    <p class="eyebrow">{{ t("Self-service security") }}</p>
+                    <h2>{{ t("Account & security") }}</h2>
+                    <p>{{ t("Manage your password, authenticator, and recovery codes.") }}</p>
                 </div>
-                <span class="secure-badge">Session protected</span>
+                <span class="secure-badge">{{ t("Session protected") }}</span>
             </div>
 
             <div class="security-grid">
                 <form v-if="props.security.can_change_password" class="security-card" @submit.prevent="changePassword">
-                    <span class="security-kicker">Credential</span>
-                    <h3>Change password</h3>
-                    <p>A successful change invalidates the current session and requires a fresh sign-in.</p>
-                    <label>Current password<input v-model="changeCurrentPassword" type="password" autocomplete="current-password"></label>
-                    <label>New password<input v-model="changeNewPassword" type="password" autocomplete="new-password"></label>
-                    <label>Confirm new password<input v-model="changeNewPasswordConfirmation" type="password" autocomplete="new-password"></label>
-                    <label>MFA code when required<input v-model="changeTotpCode" inputmode="numeric" maxlength="6" autocomplete="one-time-code"></label>
-                    <button :disabled="busy || !passwordChangeReady">Change password</button>
+                    <span class="security-kicker">{{ t("Credential") }}</span>
+                    <h3>{{ t("Change password") }}</h3>
+                    <p>{{ t("A successful change invalidates the current session and requires a fresh sign-in.") }}</p>
+                    <label>{{ t("Current password") }}<input v-model="changeCurrentPassword" type="password" autocomplete="current-password"></label>
+                    <label>{{ t("New password") }}<input v-model="changeNewPassword" type="password" autocomplete="new-password"></label>
+                    <label>{{ t("Confirm new password") }}<input v-model="changeNewPasswordConfirmation" type="password" autocomplete="new-password"></label>
+                    <label>{{ t("MFA code when required") }}<input v-model="changeTotpCode" inputmode="numeric" maxlength="6" autocomplete="one-time-code"></label>
+                    <button :disabled="busy || !passwordChangeReady">{{ t("Change password") }}</button>
                 </form>
 
                 <form v-if="props.security.can_rotate_password_recovery_codes" class="security-card" @submit.prevent="rotatePasswordRecoveryCodes">
-                    <span class="security-kicker">Recovery</span>
-                    <h3>Password recovery codes</h3>
-                    <p>Rotate the single-use codes used to recover a forgotten password. Existing codes are replaced.</p>
-                    <label>Current password<input v-model="passwordRecoveryPassword" type="password" autocomplete="current-password"></label>
-                    <button :disabled="busy || passwordRecoveryPassword.length === 0">Generate new codes</button>
+                    <span class="security-kicker">{{ t("Recovery") }}</span>
+                    <h3>{{ t("Password recovery codes") }}</h3>
+                    <p>{{ t("Rotate the single-use codes used to recover a forgotten password. Existing codes are replaced.") }}</p>
+                    <label>{{ t("Current password") }}<input v-model="passwordRecoveryPassword" type="password" autocomplete="current-password"></label>
+                    <button :disabled="busy || passwordRecoveryPassword.length === 0">{{ t("Generate new codes") }}</button>
                     <div v-if="passwordRecoveryCodes.length" class="codes">
                         <code v-for="item in passwordRecoveryCodes" :key="item">{{ item }}</code>
-                        <button class="secondary" type="button" @click="copyCodes(passwordRecoveryCodes)">Copy codes</button>
+                        <button class="secondary" type="button" @click="copyCodes(passwordRecoveryCodes)">{{ t("Copy codes") }}</button>
                     </div>
                 </form>
 
                 <form v-if="props.security.can_rotate_totp_recovery_codes" class="security-card" @submit.prevent="rotateTotpRecoveryCodes">
-                    <span class="security-kicker">MFA recovery</span>
-                    <h3>Authenticator recovery codes</h3>
-                    <p>Generate replacement single-use codes for secure authenticator-factor recovery.</p>
-                    <label>Current password<input v-model="totpRecoveryPassword" type="password" autocomplete="current-password"></label>
-                    <label>Current 6-digit MFA code<input v-model="totpRecoveryTotpCode" inputmode="numeric" maxlength="6" autocomplete="one-time-code"></label>
-                    <button :disabled="busy || totpRecoveryPassword.length === 0 || !/^\d{6}$/.test(totpRecoveryTotpCode)">Generate authenticator codes</button>
+                    <span class="security-kicker">{{ t("MFA recovery") }}</span>
+                    <h3>{{ t("Authenticator recovery codes") }}</h3>
+                    <p>{{ t("Generate replacement single-use codes for secure authenticator-factor recovery.") }}</p>
+                    <label>{{ t("Current password") }}<input v-model="totpRecoveryPassword" type="password" autocomplete="current-password"></label>
+                    <label>{{ t("Current 6-digit MFA code") }}<input v-model="totpRecoveryTotpCode" inputmode="numeric" maxlength="6" autocomplete="one-time-code"></label>
+                    <button :disabled="busy || totpRecoveryPassword.length === 0 || !/^\d{6}$/.test(totpRecoveryTotpCode)">{{ t("Generate authenticator codes") }}</button>
                     <div v-if="totpRecoveryCodes.length" class="codes">
                         <code v-for="item in totpRecoveryCodes" :key="item">{{ item }}</code>
-                        <button class="secondary" type="button" @click="copyCodes(totpRecoveryCodes)">Copy codes</button>
+                        <button class="secondary" type="button" @click="copyCodes(totpRecoveryCodes)">{{ t("Copy codes") }}</button>
                     </div>
                 </form>
             </div>
 
-            <p v-if="notice" class="notice" role="status">{{ notice }}</p>
-            <p v-if="error" class="error" role="alert">{{ error }}</p>
+            <p v-if="notice" class="notice" role="status">{{ t(notice) }}</p>
+            <p v-if="error" class="error" role="alert">{{ t(error) }}</p>
         </section>
 
 
-        <section class="workspace-panel"><div class="panel-heading"><div><p class="eyebrow">WORK THE WAY YOUR BUSINESS DOES</p><h2>Your workspaces</h2><p>Pick a task and get straight to work.</p></div><span class="count">{{ props.destinations.length }} available · {{ laneCount }} groups</span></div><div class="workspace-groups"><section v-for="group in groupedDestinations" :key="group.category" class="workspace-group"><div class="group-heading"><div><h3>{{ group.label }}</h3><p>{{ group.description }}</p></div><span class="group-count">{{ group.destinations.length }}</span></div><div class="workspace-grid"><a v-for="destination in group.destinations" :key="destination.key" class="workspace-card" :href="destination.url"><span class="workspace-symbol"><WorkspaceIcon :name="({ SETUP: 'package', SHIFT: 'clock-3', SELL: 'shopping-cart', STOCK: 'truck', REVIEW: 'chart-column', CONTROL: 'shield-check' } as Record<string,string>)[destination.category] ?? 'clipboard-list'" :size="23" /></span><div class="workspace-copy"><h3>{{ destination.title }}</h3><p>{{ workspaceDescriptions[destination.key] ?? destination.description }}</p></div><WorkspaceIcon class="workspace-arrow" name="arrow-up-right" :size="18" /></a></div></section></div></section>
-        <details class="workspace-details"><summary>Session & support details</summary><p v-if="!primaryDestination">No guarded next action is being recommended. <span v-if="primaryDestination">The current next step is supplied by verified operating readiness.</span></p><button class="context-toggle" type="button" @click="technicalContextOpen = !technicalContextOpen">{{ technicalContextOpen ? 'Hide technical context' : 'Technical context' }}</button>
-        <section v-if="technicalContextOpen" class="context-strip" aria-label="Current POS technical context">
-            <div><span>Tenant</span><strong>{{ props.scope.tenant_id }}</strong></div>
-            <div><span>Organization</span><strong>{{ props.scope.organization_id }}</strong></div>
-            <div><span>Outlet</span><strong>{{ props.scope.outlet_id }}</strong></div>
-            <div><span>Device</span><strong>{{ props.scope.device_id }}</strong></div>
-        </section>
-
-Correlation: <span class="mono">{{ props.correlation_id }}</span>
+        <section class="workspace-panel"><div class="panel-heading"><div><p class="eyebrow">{{ t("WORK THE WAY YOUR BUSINESS DOES") }}</p><h2>{{ t("Your workspaces") }}</h2><p>{{ t("Pick a task and get straight to work.") }}</p></div><span class="count">{{ props.destinations.length }} {{ t("available ·") }} {{ laneCount }} {{ t("groups") }}</span></div><div class="workspace-groups"><section v-for="group in groupedDestinations" :key="group.category" class="workspace-group"><div class="group-heading"><div><h3>{{ t(group.label) }}</h3><p>{{ t(group.description) }}</p></div><span class="group-count">{{ group.destinations.length }}</span></div><div class="workspace-grid"><a v-for="destination in group.destinations" :key="destination.key" class="workspace-card" :href="destination.url"><span class="workspace-symbol"><WorkspaceIcon :name="({ SETUP: 'package', SHIFT: 'clock-3', SELL: 'shopping-cart', STOCK: 'truck', REVIEW: 'chart-column', CONTROL: 'shield-check' } as Record<string,string>)[destination.category] ?? 'clipboard-list'" :size="23" /></span><div class="workspace-copy"><h3>{{ t(destination.title) }}</h3><p>{{ t(workspaceDescriptions[destination.key] ?? destination.description) }}</p></div><WorkspaceIcon class="workspace-arrow" name="arrow-up-right" :size="18" /></a></div></section></div></section>
+        <details class="workspace-details"><summary>{{ t("Session & support details") }}</summary><p v-if="!primaryDestination">{{ t("No guarded next action is being recommended.") }} <span v-if="primaryDestination">{{ t("The current next step is supplied by verified operating readiness.") }}</span></p><button class="context-toggle" type="button" @click="technicalContextOpen = !technicalContextOpen">{{ t(technicalContextOpen ? 'Hide technical context' : 'Technical context') }}</button>
+        <section v-if="technicalContextOpen" class="context-strip" :aria-label="t(&quot;Current POS technical context&quot;)">
+            <div><span>{{ t("Tenant") }}</span><strong>{{ props.scope.tenant_id }}</strong></div>
+            <div><span>{{ t("Organization") }}</span><strong>{{ props.scope.organization_id }}</strong></div>
+            <div><span>{{ t("Outlet") }}</span><strong>{{ props.scope.outlet_id }}</strong></div>
+            <div><span>{{ t("Device") }}</span><strong>{{ props.scope.device_id }}</strong></div>
+        </section> {{ t("Correlation:") }} <span class="mono">{{ props.correlation_id }}</span>
         </details>
     </main>
 </template>

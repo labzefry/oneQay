@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from "../../i18n";
 import { Head } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 
@@ -75,59 +76,57 @@ const clearSelection = (): void => window.location.assign(props.history_base_url
 </script>
 
 <template>
-    <Head title="Sales History" />
+    <Head :title="t(&quot;Sales History&quot;)" />
     <main class="history-shell">
         <header class="hero">
             <div>
-                <p class="eyebrow">oneQay · Operational Intelligence</p>
-                <h1>Sales History</h1>
-                <p class="subtitle">Immutable transaction history and receipt drill-down for the authorized outlet.</p>
+                <p class="eyebrow">{{ t("oneQay · Operational Intelligence") }}</p>
+                <h1>{{ t("Sales History") }}</h1>
+                <p class="subtitle">{{ t("Immutable transaction history and receipt drill-down for the authorized outlet.") }}</p>
             </div>
-            <div class="scope-card"><span>Outlet</span><strong>{{ props.scope.outlet_id }}</strong></div>
+            <div class="scope-card"><span>{{ t("Outlet") }}</span><strong>{{ props.scope.outlet_id }}</strong></div>
         </header>
 
-        <section class="toolbar panel" aria-label="Sale lookup">
+        <section class="toolbar panel" :aria-label="t(&quot;Sale lookup&quot;)">
             <div>
-                <p class="eyebrow">Exact receipt lookup</p>
-                <h2>Find a canonical sale</h2>
+                <p class="eyebrow">{{ t("Exact receipt lookup") }}</p>
+                <h2>{{ t("Find a canonical sale") }}</h2>
             </div>
             <form class="lookup" @submit.prevent="submitLookup">
-                <input v-model="lookup" maxlength="29" autocomplete="off" spellcheck="false" placeholder="sale-xxxxxxxxxxxxxxxxxxxxxxxx" aria-label="Canonical sale ID" />
-                <button type="submit" :disabled="!salePattern.test(lookup.trim())">Open receipt</button>
+                <input v-model="lookup" maxlength="29" autocomplete="off" spellcheck="false" :placeholder="t(&quot;sale-xxxxxxxxxxxxxxxxxxxxxxxx&quot;)" :aria-label="t(&quot;Canonical sale ID&quot;)" />
+                <button type="submit" :disabled="!salePattern.test(lookup.trim())">{{ t("Open receipt") }}</button>
             </form>
         </section>
 
         <section v-if="props.selected_sale_id" class="panel detail-panel">
             <div class="panel-heading">
-                <div><p class="eyebrow">Immutable receipt</p><h2>{{ props.selected_sale_id }}</h2></div>
-                <button class="secondary" type="button" @click="clearSelection">Close detail</button>
+                <div><p class="eyebrow">{{ t("Immutable receipt") }}</p><h2>{{ props.selected_sale_id }}</h2></div>
+                <button class="secondary" type="button" @click="clearSelection">{{ t("Close detail") }}</button>
             </div>
 
-            <div v-if="!props.selected_found" class="notice">
-                No sale is available for this identifier in the currently authorized tenant, organization, and outlet scope.
-            </div>
+            <div v-if="!props.selected_found" class="notice"> {{ t("No sale is available for this identifier in the currently authorized tenant, organization, and outlet scope.") }} </div>
 
             <template v-else-if="props.selected_receipt">
                 <div class="receipt-grid">
-                    <article><span>Status</span><strong><span class="status" :data-state="props.selected_receipt.state">{{ props.selected_receipt.state }}</span></strong></article>
-                    <article><span>Completed</span><strong>{{ timestamp(props.selected_receipt.completed_at_unix) }}</strong></article>
-                    <article><span>Tender</span><strong>{{ props.selected_receipt.tender_category }}</strong></article>
-                    <article><span>Total</span><strong>{{ money(props.selected_receipt.total_atomic, props.selected_receipt.currency, props.selected_receipt.scale) }}</strong></article>
-                    <article><span>Applied</span><strong>{{ money(props.selected_receipt.applied_atomic, props.selected_receipt.currency, props.selected_receipt.scale) }}</strong></article>
-                    <article><span>Change</span><strong>{{ money(props.selected_receipt.change_atomic, props.selected_receipt.currency, props.selected_receipt.scale) }}</strong></article>
-                    <article><span>Original device</span><strong class="mono">{{ props.selected_receipt.device_id }}</strong></article>
-                    <article><span>Shift</span><strong class="mono">{{ props.selected_receipt.shift_id ?? 'Historical / unbound' }}</strong></article>
+                    <article><span>{{ t("Status") }}</span><strong><span class="status" :data-state="props.selected_receipt.state">{{ t(props.selected_receipt.state) }}</span></strong></article>
+                    <article><span>{{ t("Completed") }}</span><strong>{{ timestamp(props.selected_receipt.completed_at_unix) }}</strong></article>
+                    <article><span>{{ t("Tender") }}</span><strong>{{ t(props.selected_receipt.tender_category) }}</strong></article>
+                    <article><span>{{ t("Total") }}</span><strong>{{ money(props.selected_receipt.total_atomic, props.selected_receipt.currency, props.selected_receipt.scale) }}</strong></article>
+                    <article><span>{{ t("Applied") }}</span><strong>{{ money(props.selected_receipt.applied_atomic, props.selected_receipt.currency, props.selected_receipt.scale) }}</strong></article>
+                    <article><span>{{ t("Change") }}</span><strong>{{ money(props.selected_receipt.change_atomic, props.selected_receipt.currency, props.selected_receipt.scale) }}</strong></article>
+                    <article><span>{{ t("Original device") }}</span><strong class="mono">{{ props.selected_receipt.device_id }}</strong></article>
+                    <article><span>{{ t("Shift") }}</span><strong class="mono">{{ t(props.selected_receipt.shift_id ?? 'Historical / unbound') }}</strong></article>
                 </div>
 
                 <div class="evidence-strip">
-                    <div><span>Sale evidence</span><strong>{{ props.selected_receipt.evidence_mode }}</strong></div>
-                    <div><span>Void evidence</span><strong class="mono">{{ props.selected_receipt.void_id ?? 'None' }}</strong><small>{{ timestamp(props.selected_receipt.voided_at_unix) }}</small></div>
-                    <div><span>Cash refund evidence</span><strong class="mono">{{ props.selected_receipt.refund_id ?? 'None' }}</strong><small>{{ timestamp(props.selected_receipt.refunded_at_unix) }}</small></div>
+                    <div><span>{{ t("Sale evidence") }}</span><strong>{{ t(props.selected_receipt.evidence_mode) }}</strong></div>
+                    <div><span>{{ t("Void evidence") }}</span><strong class="mono">{{ t(props.selected_receipt.void_id ?? 'None') }}</strong><small>{{ timestamp(props.selected_receipt.voided_at_unix) }}</small></div>
+                    <div><span>{{ t("Cash refund evidence") }}</span><strong class="mono">{{ t(props.selected_receipt.refund_id ?? 'None') }}</strong><small>{{ timestamp(props.selected_receipt.refunded_at_unix) }}</small></div>
                 </div>
 
                 <div class="table-wrap receipt-lines">
                     <table>
-                        <thead><tr><th>#</th><th>Product ID</th><th class="numeric">Qty</th><th class="numeric">Unit price</th><th class="numeric">Line total</th></tr></thead>
+                        <thead><tr><th>#</th><th>{{ t("Product ID") }}</th><th class="numeric">{{ t("Qty") }}</th><th class="numeric">{{ t("Unit price") }}</th><th class="numeric">{{ t("Line total") }}</th></tr></thead>
                         <tbody>
                             <tr v-for="line in props.selected_receipt.lines" :key="line.line_no">
                                 <td>{{ line.line_no }}</td>
@@ -144,33 +143,33 @@ const clearSelection = (): void => window.location.assign(props.history_base_url
 
         <section class="panel">
             <div class="panel-heading">
-                <div><p class="eyebrow">Latest immutable transactions</p><h2>Recent sales</h2></div>
-                <div class="filters" aria-label="Status filter">
-                    <button v-for="state in ['ALL', 'COMPLETED', 'VOIDED', 'REFUNDED'] as const" :key="state" type="button" :class="{ active: filter === state }" @click="filter = state">{{ state }}</button>
+                <div><p class="eyebrow">{{ t("Latest immutable transactions") }}</p><h2>{{ t("Recent sales") }}</h2></div>
+                <div class="filters" :aria-label="t(&quot;Status filter&quot;)">
+                    <button v-for="state in ['ALL', 'COMPLETED', 'VOIDED', 'REFUNDED'] as const" :key="state" type="button" :class="{ active: filter === state }" @click="filter = state">{{ t(state) }}</button>
                 </div>
             </div>
             <div class="table-wrap">
                 <table>
-                    <thead><tr><th>Sale</th><th>Completed</th><th>Tender</th><th>Status</th><th>Shift</th><th class="numeric">Total</th><th></th></tr></thead>
+                    <thead><tr><th>{{ t("Sale") }}</th><th>{{ t("Completed") }}</th><th>{{ t("Tender") }}</th><th>{{ t("Status") }}</th><th>{{ t("Shift") }}</th><th class="numeric">{{ t("Total") }}</th><th></th></tr></thead>
                     <tbody>
                         <tr v-for="sale in filteredSales" :key="sale.sale_id">
                             <td class="mono">{{ sale.sale_id }}</td>
                             <td>{{ timestamp(sale.completed_at_unix) }}</td>
-                            <td>{{ sale.tender_category }}</td>
-                            <td><span class="status" :data-state="sale.state">{{ sale.state }}</span></td>
-                            <td class="mono">{{ sale.shift_id ?? 'Historical / unbound' }}</td>
+                            <td>{{ t(sale.tender_category) }}</td>
+                            <td><span class="status" :data-state="sale.state">{{ t(sale.state) }}</span></td>
+                            <td class="mono">{{ t(sale.shift_id ?? 'Historical / unbound') }}</td>
                             <td class="numeric strong">{{ money(sale.total_atomic, sale.currency, sale.scale) }}</td>
-                            <td class="numeric"><button class="link-button" type="button" @click="openSale(sale.sale_id)">Detail</button></td>
+                            <td class="numeric"><button class="link-button" type="button" @click="openSale(sale.sale_id)">{{ t("Detail") }}</button></td>
                         </tr>
-                        <tr v-if="!filteredSales.length"><td colspan="7" class="empty">No sale matches the current status filter.</td></tr>
+                        <tr v-if="!filteredSales.length"><td colspan="7" class="empty">{{ t("No sale matches the current status filter.") }}</td></tr>
                     </tbody>
                 </table>
             </div>
         </section>
 
         <footer>
-            <span>Read only · max 50 latest sales</span>
-            <span>Correlation: <span class="mono">{{ props.correlation_id }}</span></span>
+            <span>{{ t("Read only · max 50 latest sales") }}</span>
+            <span>{{ t("Correlation:") }} <span class="mono">{{ props.correlation_id }}</span></span>
         </footer>
     </main>
 </template>

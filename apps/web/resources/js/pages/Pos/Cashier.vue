@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from "../../i18n";
 import { Head } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import WorkspaceIcon from '../../components/WorkspaceIcon.vue';
@@ -244,50 +245,50 @@ const checkout = async (): Promise<void> => {
 </script>
 
 <template>
-    <Head title="Cashier" />
+    <Head :title="t(&quot;Cashier&quot;)" />
     <main class="cashier-shell" :data-leave-confirmation="submitting || (cartLines.length > 0 && !receipt)">
         <header class="hero">
             <div>
-                <p class="eyebrow">oneQay · Point of Sale</p>
-                <h1>Cashier</h1>
-                <p class="subtitle">Pilih produk, susun pesanan, dan terima pembayaran.</p>
+                <p class="eyebrow">{{ t("oneQay · Point of Sale") }}</p>
+                <h1>{{ t("Cashier") }}</h1>
+                <p class="subtitle">{{ t("Pilih produk, susun pesanan, dan terima pembayaran.") }}</p>
             </div>
             <div class="shift-card" :data-ready="Boolean(props.active_shift_id)">
-                <span>Shift status</span>
-                <strong>{{ props.active_shift_id ? 'ACTIVE' : 'NOT ACTIVE' }}</strong>
+                <span>{{ t("Shift status") }}</span>
+                <strong>{{ t(props.active_shift_id ? 'ACTIVE' : 'NOT ACTIVE') }}</strong>
                 <small v-if="props.active_shift_id" class="mono">{{ props.active_shift_id }}</small>
             </div>
         </header>
 
-        <section class="scope-strip" aria-label="Ringkasan kasir"><div><span>Produk tersedia</span><strong>{{ catalog.length }} produk</strong></div><div><span>Item dalam pesanan</span><strong>{{ totalUnits }} item</strong></div><div><span>Shift kasir</span><strong>{{ props.active_shift_id ? 'Aktif' : 'Belum dimulai' }}</strong></div></section>
+        <section class="scope-strip" :aria-label="t(&quot;Ringkasan kasir&quot;)"><div><span>{{ t("Produk tersedia") }}</span><strong>{{ catalog.length }} {{ t("produk") }}</strong></div><div><span>{{ t("Item dalam pesanan") }}</span><strong>{{ totalUnits }} {{ t("item") }}</strong></div><div><span>{{ t("Shift kasir") }}</span><strong>{{ t(props.active_shift_id ? 'Aktif' : 'Belum dimulai') }}</strong></div></section>
 
         <div class="workspace-grid">
             <section class="panel catalog-panel">
                 <div class="panel-heading">
-                    <div><p class="eyebrow">Sellable catalog</p><h2>Pilih produk</h2></div>
-                    <input v-model="search" class="search" aria-label="Cari produk" type="search" placeholder="Cari nama / product ID" autocomplete="off">
+                    <div><p class="eyebrow">{{ t("Sellable catalog") }}</p><h2>{{ t("Pilih produk") }}</h2></div>
+                    <input v-model="search" class="search" :aria-label="t(&quot;Cari produk&quot;)" type="search" :placeholder="t(&quot;Cari nama / product ID&quot;)" autocomplete="off">
                 </div>
                 <div class="catalog-grid">
                     <article v-for="item in visibleCatalog" :key="item.product_id" class="product-card">
                         <div class="product-visual"><WorkspaceIcon name="package" :size="30" /></div>
                         <div>
                             <p class="product-name">{{ item.display_name }}</p>
-                            <details class="product-reference"><summary>ID produk</summary><small>{{ item.product_id }}</small></details>
+                            <details class="product-reference"><summary>{{ t("ID produk") }}</summary><small>{{ item.product_id }}</small></details>
                         </div>
                         <div class="product-meta">
                             <strong>{{ formatAtomic(item.unit_price.atomic_units, item.unit_price.currency, item.unit_price.scale) }}</strong>
-                            <span>Stok {{ item.available_quantity }}</span>
+                            <span>{{ t("Stok") }} {{ item.available_quantity }}</span>
                         </div>
-                        <button type="button" :disabled="!sameMoney(item) || (cart[item.product_id] ?? 0) >= item.available_quantity" @click="add(item)">Tambah</button>
+                        <button type="button" :disabled="!sameMoney(item) || (cart[item.product_id] ?? 0) >= item.available_quantity" @click="add(item)">{{ t("Tambah") }}</button>
                     </article>
-                    <p v-if="!visibleCatalog.length" class="empty">Belum ada produk yang cocok. Periksa pencarian, katalog, dan stok produk Anda.</p>
+                    <p v-if="!visibleCatalog.length" class="empty">{{ t("Belum ada produk yang cocok. Periksa pencarian, katalog, dan stok produk Anda.") }}</p>
                 </div>
             </section>
 
             <aside class="panel cart-panel">
                 <div class="panel-heading">
-                    <div><p class="eyebrow">Current transaction</p><h2>Keranjang</h2></div>
-                    <span class="pill">{{ totalUnits }} unit</span>
+                    <div><p class="eyebrow">{{ t("Current transaction") }}</p><h2>{{ t("Keranjang") }}</h2></div>
+                    <span class="pill">{{ totalUnits }} {{ t("unit") }}</span>
                 </div>
 
                 <div v-if="cartLines.length" class="cart-lines">
@@ -296,51 +297,49 @@ const checkout = async (): Promise<void> => {
                         <div class="qty"><button type="button" @click="decrement(line.item)">−</button><span>{{ line.quantity }}</span><button type="button" :disabled="line.quantity >= line.item.available_quantity" @click="add(line.item)">+</button></div>
                     </div>
                 </div>
-                <p v-else class="empty">Keranjang masih kosong.</p>
+                <p v-else class="empty">{{ t("Keranjang masih kosong.") }}</p>
 
                 <div class="total-row">
-                    <span>Total</span>
+                    <span>{{ t("Total") }}</span>
                     <strong v-if="cartMoney">{{ formatAtomic(totalAtomic, cartMoney.currency, cartMoney.scale) }}</strong>
                     <strong v-else>—</strong>
                 </div>
 
-                <label>Tender
-                    <select v-model="tenderCategory">
-                        <option value="CASH">Cash</option>
-                        <option value="MANUAL_EXTERNAL">Manual external</option>
+                <label>{{ t("Tender") }} <select v-model="tenderCategory">
+                        <option value="CASH">{{ t("Cash") }}</option>
+                        <option value="MANUAL_EXTERNAL">{{ t("Manual external") }}</option>
                     </select>
                 </label>
-                <label>Nominal pembayaran
-                    <div class="tender-row">
+                <label>{{ t("Nominal pembayaran") }} <div class="tender-row">
                         <input v-model="tendered" inputmode="decimal" placeholder="0" autocomplete="off">
-                        <button type="button" class="secondary" :disabled="!cartMoney" @click="useExactTotal">Pas</button>
+                        <button type="button" class="secondary" :disabled="!cartMoney" @click="useExactTotal">{{ t("Pas") }}</button>
                     </div>
                 </label>
 
                 <button class="checkout" type="button" :disabled="submitting || !props.active_shift_id || !cartLines.length" @click="checkout">
-                    {{ submitting ? 'Memproses…' : 'Selesaikan transaksi' }}
+                    {{ t(submitting ? 'Memproses…' : 'Selesaikan transaksi') }}
                 </button>
-                <p class="guard-note">Periksa pesanan dan pembayaran sebelum menyelesaikan transaksi.</p>
+                <p class="guard-note">{{ t("Periksa pesanan dan pembayaran sebelum menyelesaikan transaksi.") }}</p>
             </aside>
         </div>
 
         <section v-if="message || receipt" class="result" aria-live="polite">
-            <strong>{{ message }}</strong>
-            <article v-if="receipt" class="receipt-card" aria-label="Authoritative sale receipt">
+            <strong>{{ t(message) }}</strong>
+            <article v-if="receipt" class="receipt-card" :aria-label="t(&quot;Authoritative sale receipt&quot;)">
                 <div class="receipt-heading">
                     <div>
-                        <p class="eyebrow">Authoritative receipt</p>
-                        <h2>Sale completed</h2>
-                        <p class="receipt-subtitle">Financial lines below come from the server-completed sale receipt, not from a client-side cart estimate.</p>
+                        <p class="eyebrow">{{ t("Authoritative receipt") }}</p>
+                        <h2>{{ t("Sale completed") }}</h2>
+                        <p class="receipt-subtitle">{{ t("Financial lines below come from the server-completed sale receipt, not from a client-side cart estimate.") }}</p>
                     </div>
-                    <span class="receipt-status">COMPLETED</span>
+                    <span class="receipt-status">{{ t("COMPLETED") }}</span>
                 </div>
 
                 <div class="receipt-meta">
-                    <span>Sale <b class="mono">{{ receipt.sale_id }}</b></span>
-                    <span>Operation <b class="mono">{{ receipt.operation_id }}</b></span>
-                    <span>Outlet <b class="mono">{{ receipt.outlet_id }}</b></span>
-                    <span>Device <b class="mono">{{ receipt.register_context.device_id }}</b></span>
+                    <span>{{ t("Sale") }} <b class="mono">{{ receipt.sale_id }}</b></span>
+                    <span>{{ t("Operation") }} <b class="mono">{{ receipt.operation_id }}</b></span>
+                    <span>{{ t("Outlet") }} <b class="mono">{{ receipt.outlet_id }}</b></span>
+                    <span>{{ t("Device") }} <b class="mono">{{ receipt.register_context.device_id }}</b></span>
                 </div>
 
                 <div class="receipt-lines">
@@ -355,22 +354,22 @@ const checkout = async (): Promise<void> => {
                 </div>
 
                 <div class="receipt-totals">
-                    <span>Units <b>{{ receiptUnitCount }}</b></span>
-                    <span>Tender <b>{{ receipt.tender_category }}</b></span>
-                    <span>Total <b>{{ formatAtomic(receipt.total.atomic_units, receipt.total.currency, receipt.total.scale) }}</b></span>
-                    <span>Change <b>{{ formatAtomic(receipt.change.atomic_units, receipt.change.currency, receipt.change.scale) }}</b></span>
-                    <span>Evidence <b>{{ receipt.evidence_mode }}</b></span>
+                    <span>{{ t("Units") }} <b>{{ receiptUnitCount }}</b></span>
+                    <span>{{ t("Tender") }} <b>{{ t(receipt.tender_category) }}</b></span>
+                    <span>{{ t("Total") }} <b>{{ formatAtomic(receipt.total.atomic_units, receipt.total.currency, receipt.total.scale) }}</b></span>
+                    <span>{{ t("Change") }} <b>{{ formatAtomic(receipt.change.atomic_units, receipt.change.currency, receipt.change.scale) }}</b></span>
+                    <span>{{ t("Evidence") }} <b>{{ t(receipt.evidence_mode) }}</b></span>
                 </div>
 
                 <div class="receipt-actions no-print">
-                    <button type="button" class="secondary" @click="printReceipt">Print receipt</button>
-                    <button type="button" @click="startNextSale">Next sale</button>
+                    <button type="button" class="secondary" @click="printReceipt">{{ t("Print receipt") }}</button>
+                    <button type="button" @click="startNextSale">{{ t("Next sale") }}</button>
                 </div>
-                <p class="receipt-correlation">Receipt correlation: <span class="mono">{{ receipt.correlation_id }}</span></p>
+                <p class="receipt-correlation">{{ t("Receipt correlation:") }} <span class="mono">{{ receipt.correlation_id }}</span></p>
             </article>
         </section>
 
-        <footer>Page correlation: <span class="mono">{{ props.correlation_id }}</span></footer>
+        <footer>{{ t("Page correlation:") }} <span class="mono">{{ props.correlation_id }}</span></footer>
     </main>
 </template>
 

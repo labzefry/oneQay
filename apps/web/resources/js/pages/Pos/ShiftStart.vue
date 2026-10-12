@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from "../../i18n";
 import { Head } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 
@@ -202,79 +203,79 @@ const recordOpeningCash = async (): Promise<void> => {
 </script>
 
 <template>
-    <Head title="Shift Start Workspace" />
+    <Head :title="t(&quot;Shift Start Workspace&quot;)" />
     <main class="shell">
         <header class="hero">
             <div>
-                <p class="eyebrow">oneQay · Point of Sale</p>
-                <h1>Shift Start Workspace</h1>
-                <p class="subtitle">Pembukaan register yang resumable, exact-device scoped, dan menggunakan mutation contract canonical.</p>
+                <p class="eyebrow">{{ t("oneQay · Point of Sale") }}</p>
+                <h1>{{ t("Shift Start Workspace") }}</h1>
+                <p class="subtitle">{{ t("Pembukaan register yang resumable, exact-device scoped, dan menggunakan mutation contract canonical.") }}</p>
             </div>
             <div class="status-card" :data-ready="readyForCashier">
-                <span>Operational readiness</span>
-                <strong>{{ readyForCashier ? 'READY FOR CASHIER' : activeShift ? 'OPENING CASH REQUIRED' : 'SHIFT REQUIRED' }}</strong>
-                <small>Step {{ step }} / 3</small>
+                <span>{{ t("Operational readiness") }}</span>
+                <strong>{{ t(readyForCashier ? 'READY FOR CASHIER' : activeShift ? 'OPENING CASH REQUIRED' : 'SHIFT REQUIRED') }}</strong>
+                <small>{{ t("Step") }} {{ t(step) }} / 3</small>
             </div>
         </header>
 
         <section class="scope-grid">
-            <div><span>Tenant</span><strong>{{ props.scope.tenant_id }}</strong></div>
-            <div><span>Organization</span><strong>{{ props.scope.organization_id }}</strong></div>
-            <div><span>Outlet</span><strong>{{ props.scope.outlet_id }}</strong></div>
-            <div><span>Device</span><strong>{{ props.scope.device_id }}</strong></div>
+            <div><span>{{ t("Tenant") }}</span><strong>{{ props.scope.tenant_id }}</strong></div>
+            <div><span>{{ t("Organization") }}</span><strong>{{ props.scope.organization_id }}</strong></div>
+            <div><span>{{ t("Outlet") }}</span><strong>{{ props.scope.outlet_id }}</strong></div>
+            <div><span>{{ t("Device") }}</span><strong>{{ props.scope.device_id }}</strong></div>
         </section>
 
         <section class="workflow">
             <article class="panel" :data-active="step === 1" :data-complete="Boolean(activeShift)">
-                <div class="panel-head"><span class="step">01</span><div><p class="eyebrow">Register lifecycle</p><h2>Buka shift</h2></div></div>
+                <div class="panel-head"><span class="step">01</span><div><p class="eyebrow">{{ t("Register lifecycle") }}</p><h2>{{ t("Buka shift") }}</h2></div></div>
                 <template v-if="!activeShift">
-                    <p>Server akan mengikat shift aktif ke tenant, organization, outlet, device, dan actor yang sedang terverifikasi.</p>
-                    <p class="operation">Operation ID <span>{{ shiftOperationId }}</span></p>
-                    <button type="button" :disabled="openingShift" @click="openShift">{{ openingShift ? 'Membuka shift…' : 'Buka shift sekarang' }}</button>
-                    <small class="guard">Tidak ada retry otomatis. Jika koneksi terputus setelah submit, refresh halaman sebelum mengulang.</small>
+                    <p>{{ t("Server akan mengikat shift aktif ke tenant, organization, outlet, device, dan actor yang sedang terverifikasi.") }}</p>
+                    <p class="operation">{{ t("Operation ID") }} <span>{{ shiftOperationId }}</span></p>
+                    <button type="button" :disabled="openingShift" @click="openShift">{{ t(openingShift ? 'Membuka shift…' : 'Buka shift sekarang') }}</button>
+                    <small class="guard">{{ t("Tidak ada retry otomatis. Jika koneksi terputus setelah submit, refresh halaman sebelum mengulang.") }}</small>
                 </template>
                 <template v-else>
-                    <div class="success-box"><strong>Shift aktif</strong><span class="mono">{{ activeShift.shift_id }}</span><small>Dibuka {{ formatTimestamp(activeShift.opened_at_unix) }}</small></div>
+                    <div class="success-box"><strong>{{ t("Shift aktif") }}</strong><span class="mono">{{ activeShift.shift_id }}</span><small>{{ t("Dibuka") }} {{ formatTimestamp(activeShift.opened_at_unix) }}</small></div>
                 </template>
             </article>
 
             <article class="panel" :data-active="step === 2" :data-complete="Boolean(activeShift?.opening_cash_evidence)">
-                <div class="panel-head"><span class="step">02</span><div><p class="eyebrow">Cash control</p><h2>Catat kas awal</h2></div></div>
-                <p v-if="!activeShift" class="muted">Tahap ini tersedia setelah shift aktif pada device ini.</p>
+                <div class="panel-head"><span class="step">02</span><div><p class="eyebrow">{{ t("Cash control") }}</p><h2>{{ t("Catat kas awal") }}</h2></div></div>
+                <p v-if="!activeShift" class="muted">{{ t("Tahap ini tersedia setelah shift aktif pada device ini.") }}</p>
                 <template v-else-if="!activeShift.opening_cash_evidence">
                     <div class="money-grid">
-                        <label>Currency<input v-model="currency" maxlength="3" autocomplete="off" @input="currency = currency.toUpperCase()"></label>
-                        <label>Scale<input v-model.number="currencyScale" type="number" min="0" max="6" step="1"></label>
-                        <label class="amount">Kas awal<input v-model="openingCashInput" inputmode="decimal" autocomplete="off" placeholder="0"></label>
+                        <label>{{ t("Currency") }}<input v-model="currency" maxlength="3" autocomplete="off" @input="currency = currency.toUpperCase()"></label>
+                        <label>{{ t("Scale") }}<input v-model.number="currencyScale" type="number" min="0" max="6" step="1"></label>
+                        <label class="amount">{{ t("Kas awal") }}<input v-model="openingCashInput" inputmode="decimal" autocomplete="off" placeholder="0"></label>
                     </div>
-                    <p class="operation">Operation ID <span>{{ cashOperationId }}</span></p>
-                    <button type="button" :disabled="recordingCash" @click="recordOpeningCash">{{ recordingCash ? 'Mencatat kas awal…' : 'Catat kas awal' }}</button>
-                    <small class="guard">Jika pencatatan gagal, shift tetap aktif. Jangan membuka shift baru; selesaikan evidence kas awal pada shift yang sama.</small>
+                    <p class="operation">{{ t("Operation ID") }} <span>{{ cashOperationId }}</span></p>
+                    <button type="button" :disabled="recordingCash" @click="recordOpeningCash">{{ t(recordingCash ? 'Mencatat kas awal…' : 'Catat kas awal') }}</button>
+                    <small class="guard">{{ t("Jika pencatatan gagal, shift tetap aktif. Jangan membuka shift baru; selesaikan evidence kas awal pada shift yang sama.") }}</small>
                 </template>
                 <template v-else>
-                    <div class="success-box"><strong>Opening cash recorded</strong><span>{{ formatAtomic(activeShift.opening_cash_evidence.amount.atomic_units, activeShift.opening_cash_evidence.amount.currency, activeShift.opening_cash_evidence.amount.scale) }}</span><small>{{ activeShift.opening_cash_evidence.evidence_mode }} · {{ formatTimestamp(activeShift.opening_cash_evidence.recorded_at_unix) }}</small></div>
+                    <div class="success-box"><strong>{{ t("Opening cash recorded") }}</strong><span>{{ formatAtomic(activeShift.opening_cash_evidence.amount.atomic_units, activeShift.opening_cash_evidence.amount.currency, activeShift.opening_cash_evidence.amount.scale) }}</span><small>{{ t(activeShift.opening_cash_evidence.evidence_mode) }} · {{ formatTimestamp(activeShift.opening_cash_evidence.recorded_at_unix) }}</small></div>
                 </template>
             </article>
 
             <article class="panel" :data-active="step === 3" :data-complete="readyForCashier">
-                <div class="panel-head"><span class="step">03</span><div><p class="eyebrow">Cashier readiness</p><h2>Mulai transaksi</h2></div></div>
-                <p v-if="!readyForCashier" class="muted">Cashier baru dinyatakan siap setelah active shift dan opening-cash evidence authoritative tersedia.</p>
+                <div class="panel-head"><span class="step">03</span><div><p class="eyebrow">{{ t("Cashier readiness") }}</p><h2>{{ t("Mulai transaksi") }}</h2></div></div>
+                <p v-if="!readyForCashier" class="muted">{{ t("Cashier baru dinyatakan siap setelah active shift dan opening-cash evidence authoritative tersedia.") }}</p>
                 <template v-else>
-                    <p>Register siap. Harga, stok, authorization, idempotency, dan receipt tetap ditentukan server pada sale contract canonical.</p>
-                    <a v-if="props.cashier_url" class="primary-link" :href="props.cashier_url">Buka Cashier Workspace</a>
-                    <p v-else class="muted">Cashier Workspace belum diaktifkan pada runtime ini.</p>
+                    <p>{{ t("Register siap. Harga, stok, authorization, idempotency, dan receipt tetap ditentukan server pada sale contract canonical.") }}</p>
+                    <a v-if="props.cashier_url" class="primary-link" :href="props.cashier_url">{{ t("Buka Cashier Workspace") }}</a>
+                    <p v-else class="muted">{{ t("Cashier Workspace belum diaktifkan pada runtime ini.") }}</p>
                 </template>
             </article>
         </section>
 
-        <section v-if="message" class="message" :data-kind="messageKind" aria-live="polite">{{ message }}</section>
+        <section v-if="message" class="message" :data-kind="messageKind" aria-live="polite">{{ t(message) }}</section>
 
         <section class="policy-note">
-            <strong>Fail-closed operating rule</strong>
-            <p>Page ini tidak menggabungkan dua mutation menjadi transaksi baru dan tidak melakukan hidden retry. Setiap tahap memakai endpoint, permission, idempotency, dan persistence authority yang sudah canonical.</p>
+            <strong>{{ t("Fail-closed operating rule") }}</strong>
+            <p>{{ t("Page ini tidak menggabungkan dua mutation menjadi transaksi baru dan tidak melakukan hidden retry. Setiap tahap memakai endpoint, permission, idempotency, dan persistence authority yang sudah canonical.") }}</p>
         </section>
 
-        <footer>Page correlation: <span class="mono">{{ props.correlation_id }}</span></footer>
+        <footer>{{ t("Page correlation:") }} <span class="mono">{{ props.correlation_id }}</span></footer>
     </main>
 </template>
 

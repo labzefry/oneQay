@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from "../../i18n";
 import { Head } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 
@@ -228,88 +229,88 @@ const establishBaseline = async (): Promise<void> => {
 </script>
 
 <template>
-    <Head title="Catalog & Inventory Setup" />
+    <Head :title="t(&quot;Catalog &amp; Inventory Setup&quot;)" />
     <main class="setup-shell">
         <header class="hero">
             <div>
-                <p class="eyebrow">oneQay · Product Operations</p>
-                <h1>Catalog & Inventory Setup</h1>
-                <p class="subtitle">Siapkan produk dan opening stock melalui mutation authority canonical. Tidak ada mutation gabungan atau retry otomatis.</p>
+                <p class="eyebrow">{{ t("oneQay · Product Operations") }}</p>
+                <h1>{{ t("Catalog & Inventory Setup") }}</h1>
+                <p class="subtitle">{{ t("Siapkan produk dan opening stock melalui mutation authority canonical. Tidak ada mutation gabungan atau retry otomatis.") }}</p>
             </div>
             <div class="scope-card">
-                <span>Outlet</span><strong>{{ props.scope.outlet_id }}</strong>
-                <small>Device {{ props.scope.device_id }}</small>
+                <span>{{ t("Outlet") }}</span><strong>{{ props.scope.outlet_id }}</strong>
+                <small>{{ t("Device") }} {{ props.scope.device_id }}</small>
             </div>
         </header>
 
-        <div v-if="message" class="notice" :data-refresh="refreshRequired">{{ message }}</div>
-        <button v-if="refreshRequired" class="refresh" type="button" @click="refreshAuthoritative">Refresh authoritative state</button>
+        <div v-if="message" class="notice" :data-refresh="refreshRequired">{{ t(message) }}</div>
+        <button v-if="refreshRequired" class="refresh" type="button" @click="refreshAuthoritative">{{ t("Refresh authoritative state") }}</button>
 
         <section class="grid">
             <article class="panel">
-                <div class="panel-heading"><div><p class="eyebrow">Step 1</p><h2>Catalog preparation</h2></div><span class="badge">Canonical POST</span></div>
+                <div class="panel-heading"><div><p class="eyebrow">{{ t("Step 1") }}</p><h2>{{ t("Catalog preparation") }}</h2></div><span class="badge">{{ t("Canonical POST") }}</span></div>
                 <div class="form-grid">
-                    <label>Product ID<input v-model="productId" maxlength="64" placeholder="kopi-susu" :disabled="submitting || refreshRequired" /></label>
-                    <label>Nama produk<input v-model="displayName" maxlength="160" placeholder="Kopi Susu" :disabled="submitting || refreshRequired" /></label>
-                    <label>Harga major unit<input v-model="unitPriceMajor" inputmode="decimal" placeholder="15000" :disabled="submitting || refreshRequired" /></label>
-                    <label>Currency<input v-model="currency" maxlength="3" placeholder="IDR" :disabled="submitting || refreshRequired" /></label>
-                    <label>Scale<input v-model.number="scale" type="number" min="0" max="6" :disabled="submitting || refreshRequired" /></label>
-                    <label class="check"><input v-model="sellable" type="checkbox" :disabled="submitting || refreshRequired" /> Sellable</label>
+                    <label>{{ t("Product ID") }}<input v-model="productId" maxlength="64" :placeholder="t(&quot;kopi-susu&quot;)" :disabled="submitting || refreshRequired" /></label>
+                    <label>{{ t("Nama produk") }}<input v-model="displayName" maxlength="160" :placeholder="t(&quot;Kopi Susu&quot;)" :disabled="submitting || refreshRequired" /></label>
+                    <label>{{ t("Harga major unit") }}<input v-model="unitPriceMajor" inputmode="decimal" placeholder="15000" :disabled="submitting || refreshRequired" /></label>
+                    <label>{{ t("Currency") }}<input v-model="currency" maxlength="3" :placeholder="t(&quot;IDR&quot;)" :disabled="submitting || refreshRequired" /></label>
+                    <label>{{ t("Scale") }}<input v-model.number="scale" type="number" min="0" max="6" :disabled="submitting || refreshRequired" /></label>
+                    <label class="check"><input v-model="sellable" type="checkbox" :disabled="submitting || refreshRequired" /> {{ t("Sellable") }}</label>
                 </div>
-                <button class="primary" type="button" :disabled="submitting || refreshRequired" @click="prepareCatalog">Save catalog state</button>
+                <button class="primary" type="button" :disabled="submitting || refreshRequired" @click="prepareCatalog">{{ t("Save catalog state") }}</button>
             </article>
 
             <article class="panel">
-                <div class="panel-heading"><div><p class="eyebrow">Step 2</p><h2>Opening inventory</h2></div><span class="badge">One-time baseline</span></div>
-                <p class="helper">Hanya tersedia jika stok = 0, baseline belum pernah dicatat, dan produk belum memiliki sale history pada outlet ini.</p>
-                <label>Selected product<input v-model="baselineProductId" readonly placeholder="Pilih dari tabel" /></label>
-                <label>Opening quantity<input v-model="openingQuantity" inputmode="numeric" placeholder="100" :disabled="submitting || refreshRequired" /></label>
-                <button class="primary" type="button" :disabled="submitting || refreshRequired" @click="establishBaseline">Establish opening stock</button>
+                <div class="panel-heading"><div><p class="eyebrow">{{ t("Step 2") }}</p><h2>{{ t("Opening inventory") }}</h2></div><span class="badge">{{ t("One-time baseline") }}</span></div>
+                <p class="helper">{{ t("Hanya tersedia jika stok = 0, baseline belum pernah dicatat, dan produk belum memiliki sale history pada outlet ini.") }}</p>
+                <label>{{ t("Selected product") }}<input v-model="baselineProductId" readonly :placeholder="t(&quot;Pilih dari tabel&quot;)" /></label>
+                <label>{{ t("Opening quantity") }}<input v-model="openingQuantity" inputmode="numeric" placeholder="100" :disabled="submitting || refreshRequired" /></label>
+                <button class="primary" type="button" :disabled="submitting || refreshRequired" @click="establishBaseline">{{ t("Establish opening stock") }}</button>
             </article>
         </section>
 
         <section class="panel inventory-panel">
             <div class="panel-heading inventory-heading">
-                <div><p class="eyebrow">Authoritative snapshot</p><h2>Outlet catalog & stock</h2></div>
+                <div><p class="eyebrow">{{ t("Authoritative snapshot") }}</p><h2>{{ t("Outlet catalog & stock") }}</h2></div>
                 <div class="filters">
-                    <input v-model="search" placeholder="Cari product ID / nama" />
+                    <input v-model="search" :placeholder="t(&quot;Cari product ID / nama&quot;)" />
                     <select v-model="stockFilter">
-                        <option value="ALL">Semua</option>
-                        <option value="READY">Ready to sell</option>
-                        <option value="ZERO">Stok nol</option>
-                        <option value="BASELINE_ELIGIBLE">Baseline eligible</option>
-                        <option value="INACTIVE">Inactive</option>
+                        <option value="ALL">{{ t("Semua") }}</option>
+                        <option value="READY">{{ t("Ready to sell") }}</option>
+                        <option value="ZERO">{{ t("Stok nol") }}</option>
+                        <option value="BASELINE_ELIGIBLE">{{ t("Baseline eligible") }}</option>
+                        <option value="INACTIVE">{{ t("Inactive") }}</option>
                     </select>
                 </div>
             </div>
             <div class="table-wrap">
                 <table>
-                    <thead><tr><th>Produk</th><th>Status</th><th>Harga</th><th class="numeric">Stock</th><th>Baseline</th><th>Aksi</th></tr></thead>
+                    <thead><tr><th>{{ t("Produk") }}</th><th>{{ t("Status") }}</th><th>{{ t("Harga") }}</th><th class="numeric">{{ t("Stock") }}</th><th>{{ t("Baseline") }}</th><th>{{ t("Aksi") }}</th></tr></thead>
                     <tbody>
                         <tr v-for="item in filteredItems" :key="item.product_id">
                             <td><strong>{{ item.display_name }}</strong><span class="mono block">{{ item.product_id }}</span></td>
-                            <td><span class="status" :data-state="item.sellable ? 'ACTIVE' : 'INACTIVE'">{{ item.sellable ? 'SELLABLE' : 'INACTIVE' }}</span></td>
+                            <td><span class="status" :data-state="item.sellable ? 'ACTIVE' : 'INACTIVE'">{{ t(item.sellable ? 'SELLABLE' : 'INACTIVE') }}</span></td>
                             <td>{{ formatAtomic(item.unit_price_atomic, item.currency, item.scale) }}</td>
                             <td class="numeric strong">{{ item.available_quantity }}</td>
                             <td>
-                                <span v-if="item.baseline_eligible" class="status" data-state="ELIGIBLE">ELIGIBLE</span>
-                                <span v-else-if="item.baseline_established" class="status" data-state="DONE">ESTABLISHED</span>
-                                <span v-else-if="item.sale_history_exists" class="status" data-state="LOCKED">SALE HISTORY</span>
-                                <span v-else class="status" data-state="LOCKED">NOT ELIGIBLE</span>
+                                <span v-if="item.baseline_eligible" class="status" data-state="ELIGIBLE">{{ t("ELIGIBLE") }}</span>
+                                <span v-else-if="item.baseline_established" class="status" data-state="DONE">{{ t("ESTABLISHED") }}</span>
+                                <span v-else-if="item.sale_history_exists" class="status" data-state="LOCKED">{{ t("SALE HISTORY") }}</span>
+                                <span v-else class="status" data-state="LOCKED">{{ t("NOT ELIGIBLE") }}</span>
                             </td>
                             <td class="actions">
-                                <button type="button" :disabled="submitting || refreshRequired" @click="editItem(item)">Edit catalog</button>
-                                <button type="button" :disabled="submitting || refreshRequired || !item.baseline_eligible" @click="chooseBaseline(item)">Opening stock</button>
+                                <button type="button" :disabled="submitting || refreshRequired" @click="editItem(item)">{{ t("Edit catalog") }}</button>
+                                <button type="button" :disabled="submitting || refreshRequired || !item.baseline_eligible" @click="chooseBaseline(item)">{{ t("Opening stock") }}</button>
                             </td>
                         </tr>
-                        <tr v-if="!filteredItems.length"><td colspan="6" class="empty">Tidak ada item yang sesuai filter.</td></tr>
+                        <tr v-if="!filteredItems.length"><td colspan="6" class="empty">{{ t("Tidak ada item yang sesuai filter.") }}</td></tr>
                     </tbody>
                 </table>
             </div>
-            <p class="footnote">Maksimum 250 item ditampilkan per authoritative snapshot. Stock setelah transaksi tetap dimutasi oleh sale/void/refund authorities yang sudah ada.</p>
+            <p class="footnote">{{ t("Maksimum 250 item ditampilkan per authoritative snapshot. Stock setelah transaksi tetap dimutasi oleh sale/void/refund authorities yang sudah ada.") }}</p>
         </section>
 
-        <footer>Correlation: <span class="mono">{{ props.correlation_id }}</span></footer>
+        <footer>{{ t("Correlation:") }} <span class="mono">{{ props.correlation_id }}</span></footer>
     </main>
 </template>
 

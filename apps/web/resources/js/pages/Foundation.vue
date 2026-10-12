@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from "../i18n";
 import { computed, ref } from 'vue'
 
 defineProps<{ headline: string }>()
@@ -283,117 +284,117 @@ async function confirmTotpRecovery() {
 <template>
   <main v-if="enabled" class="entry">
     <section class="brand">
-      <p class="eyebrow">oneQay · Merchant Workspace</p>
-      <h1>Run your business from one secure workspace.</h1>
-      <p>Your installation context is already bound by the server. Sign in without copying internal tenant, organization, outlet, or device identifiers.</p>
-      <div class="trust"><span>Context bound</span><span>Tenant isolated</span><span>Session controlled</span><span>Permission filtered</span></div>
+      <p class="eyebrow">{{ t("oneQay · Merchant Workspace") }}</p>
+      <h1>{{ t("Run your business from one secure workspace.") }}</h1>
+      <p>{{ t("Your installation context is already bound by the server. Sign in without copying internal tenant, organization, outlet, or device identifiers.") }}</p>
+      <div class="trust"><span>{{ t("Context bound") }}</span><span>{{ t("Tenant isolated") }}</span><span>{{ t("Session controlled") }}</span><span>{{ t("Permission filtered") }}</span></div>
     </section>
 
     <section class="card">
       <template v-if="phase === 'login'">
-        <p class="eyebrow">First-party access</p>
-        <h2>Sign in</h2>
-        <p class="muted">The authorized merchant context is selected automatically for this installation.</p>
-        <div class="context-ready"><strong>Installation context ready</strong><span>No internal IDs are required.</span></div>
+        <p class="eyebrow">{{ t("First-party access") }}</p>
+        <h2>{{ t("Sign in") }}</h2>
+        <p class="muted">{{ t("The authorized merchant context is selected automatically for this installation.") }}</p>
+        <div class="context-ready"><strong>{{ t("Installation context ready") }}</strong><span>{{ t("No internal IDs are required.") }}</span></div>
         <form @submit.prevent="login">
-          <label>Password<input v-model="password" type="password" required autocomplete="current-password"></label>
-          <button :disabled="!ready || busy">{{ busy ? 'Verifying…' : 'Continue securely' }}</button>
+          <label>{{ t("Password") }}<input v-model="password" type="password" required autocomplete="current-password"></label>
+          <button :disabled="!ready || busy">{{ t(busy ? 'Verifying…' : 'Continue securely') }}</button>
         </form>
         <div v-if="passwordRecoveryEnabled || totpRecoveryEnabled" class="recovery-actions">
-          <button v-if="passwordRecoveryEnabled" class="secondary" type="button" @click="phase = 'password-recovery-code'; error = ''">Recover password</button>
-          <button v-if="totpRecoveryEnabled" class="secondary" type="button" @click="phase = 'totp-recovery-code'; error = ''">Lost authenticator?</button>
+          <button v-if="passwordRecoveryEnabled" class="secondary" type="button" @click="phase = 'password-recovery-code'; error = ''">{{ t("Recover password") }}</button>
+          <button v-if="totpRecoveryEnabled" class="secondary" type="button" @click="phase = 'totp-recovery-code'; error = ''">{{ t("Lost authenticator?") }}</button>
         </div>
       </template>
 
       <template v-else-if="phase === 'challenge'">
-        <p class="eyebrow">Additional verification</p>
-        <h2>Authenticator code</h2>
-        <p class="muted">Application access remains locked until MFA succeeds.</p>
+        <p class="eyebrow">{{ t("Additional verification") }}</p>
+        <h2>{{ t("Authenticator code") }}</h2>
+        <p class="muted">{{ t("Application access remains locked until MFA succeeds.") }}</p>
         <form @submit.prevent="verify(false)">
-          <label>6-digit code<input v-model="code" inputmode="numeric" maxlength="6" autocomplete="one-time-code"></label>
-          <button :disabled="busy || !/^\d{6}$/.test(code)">Verify and open workspace</button>
+          <label>{{ t("6-digit code") }}<input v-model="code" inputmode="numeric" maxlength="6" autocomplete="one-time-code"></label>
+          <button :disabled="busy || !/^\d{6}$/.test(code)">{{ t("Verify and open workspace") }}</button>
         </form>
-        <button v-if="totpRecoveryEnabled" class="text-button" type="button" @click="phase = 'totp-recovery-code'; code = ''; error = ''">Use an authenticator recovery code</button>
+        <button v-if="totpRecoveryEnabled" class="text-button" type="button" @click="phase = 'totp-recovery-code'; code = ''; error = ''">{{ t("Use an authenticator recovery code") }}</button>
       </template>
 
       <template v-else-if="phase === 'enrollment'">
-        <p class="eyebrow">MFA enrollment</p>
-        <h2>Protect this account</h2>
-        <p class="muted">Add this one-time enrollment material to your authenticator, then confirm a 6-digit code.</p>
+        <p class="eyebrow">{{ t("MFA enrollment") }}</p>
+        <h2>{{ t("Protect this account") }}</h2>
+        <p class="muted">{{ t("Add this one-time enrollment material to your authenticator, then confirm a 6-digit code.") }}</p>
         <div class="secret">
-          <small>Provisioning URI</small><code>{{ provisioningUri }}</code>
-          <small>Secret</small><code>{{ secret }}</code>
+          <small>{{ t("Provisioning URI") }}</small><code>{{ provisioningUri }}</code>
+          <small>{{ t("Secret") }}</small><code>{{ secret }}</code>
         </div>
         <form @submit.prevent="verify(true)">
-          <label>6-digit code<input v-model="code" inputmode="numeric" maxlength="6" autocomplete="one-time-code"></label>
-          <button :disabled="busy || !/^\d{6}$/.test(code)">Confirm enrollment</button>
+          <label>{{ t("6-digit code") }}<input v-model="code" inputmode="numeric" maxlength="6" autocomplete="one-time-code"></label>
+          <button :disabled="busy || !/^\d{6}$/.test(code)">{{ t("Confirm enrollment") }}</button>
         </form>
       </template>
 
       <template v-else-if="phase === 'reenroll'">
-        <p class="eyebrow">Enrollment complete</p>
-        <h2>Sign in again</h2>
-        <p class="muted">The enrollment session was invalidated by design. Start a fresh sign-in to establish full session authority.</p>
-        <button @click="returnToLogin">Return to sign in</button>
+        <p class="eyebrow">{{ t("Enrollment complete") }}</p>
+        <h2>{{ t("Sign in again") }}</h2>
+        <p class="muted">{{ t("The enrollment session was invalidated by design. Start a fresh sign-in to establish full session authority.") }}</p>
+        <button @click="returnToLogin">{{ t("Return to sign in") }}</button>
       </template>
 
       <template v-else-if="phase === 'password-recovery-code'">
-        <p class="eyebrow">Account recovery</p>
-        <h2>Use a password recovery code</h2>
-        <p class="muted">Recovery codes are single-use. No tenant or identity identifier is accepted from the browser.</p>
+        <p class="eyebrow">{{ t("Account recovery") }}</p>
+        <h2>{{ t("Use a password recovery code") }}</h2>
+        <p class="muted">{{ t("Recovery codes are single-use. No tenant or identity identifier is accepted from the browser.") }}</p>
         <form @submit.prevent="provePasswordRecovery">
-          <label>Recovery code<input v-model="recoveryCode" autocomplete="one-time-code" spellcheck="false"></label>
-          <button :disabled="busy || recoveryCode.trim() === ''">Verify recovery code</button>
+          <label>{{ t("Recovery code") }}<input v-model="recoveryCode" autocomplete="one-time-code" spellcheck="false"></label>
+          <button :disabled="busy || recoveryCode.trim() === ''">{{ t("Verify recovery code") }}</button>
         </form>
-        <button class="text-button" type="button" @click="returnToLogin">Back to sign in</button>
+        <button class="text-button" type="button" @click="returnToLogin">{{ t("Back to sign in") }}</button>
       </template>
 
       <template v-else-if="phase === 'password-recovery-reset'">
-        <p class="eyebrow">Restricted recovery session</p>
-        <h2>Set a new password</h2>
-        <p class="muted">The server has bound this short-lived session to the verified recovery proof. The password must satisfy the canonical server policy.</p>
+        <p class="eyebrow">{{ t("Restricted recovery session") }}</p>
+        <h2>{{ t("Set a new password") }}</h2>
+        <p class="muted">{{ t("The server has bound this short-lived session to the verified recovery proof. The password must satisfy the canonical server policy.") }}</p>
         <form @submit.prevent="resetRecoveredPassword">
-          <label>New password<input v-model="recoveredPassword" type="password" autocomplete="new-password"></label>
-          <label>Confirm new password<input v-model="recoveredPasswordConfirmation" type="password" autocomplete="new-password"></label>
-          <button :disabled="busy || !recoveryPasswordReady">Reset password</button>
+          <label>{{ t("New password") }}<input v-model="recoveredPassword" type="password" autocomplete="new-password"></label>
+          <label>{{ t("Confirm new password") }}<input v-model="recoveredPasswordConfirmation" type="password" autocomplete="new-password"></label>
+          <button :disabled="busy || !recoveryPasswordReady">{{ t("Reset password") }}</button>
         </form>
       </template>
 
       <template v-else-if="phase === 'totp-recovery-code'">
-        <p class="eyebrow">Authenticator recovery</p>
-        <h2>Use an authenticator recovery code</h2>
-        <p class="muted">A valid single-use code opens only the bounded factor-replacement session.</p>
+        <p class="eyebrow">{{ t("Authenticator recovery") }}</p>
+        <h2>{{ t("Use an authenticator recovery code") }}</h2>
+        <p class="muted">{{ t("A valid single-use code opens only the bounded factor-replacement session.") }}</p>
         <form @submit.prevent="proveTotpRecovery">
-          <label>Recovery code<input v-model="recoveryCode" autocomplete="one-time-code" spellcheck="false"></label>
-          <button :disabled="busy || recoveryCode.trim() === ''">Start secure replacement</button>
+          <label>{{ t("Recovery code") }}<input v-model="recoveryCode" autocomplete="one-time-code" spellcheck="false"></label>
+          <button :disabled="busy || recoveryCode.trim() === ''">{{ t("Start secure replacement") }}</button>
         </form>
-        <button class="text-button" type="button" @click="returnToLogin">Back to sign in</button>
+        <button class="text-button" type="button" @click="returnToLogin">{{ t("Back to sign in") }}</button>
       </template>
 
       <template v-else>
-        <p class="eyebrow">Authenticator replacement</p>
-        <h2>Enroll the replacement factor</h2>
-        <p class="muted">Add this one-time material to your authenticator, then confirm the new 6-digit code. Completion requires a fresh login.</p>
+        <p class="eyebrow">{{ t("Authenticator replacement") }}</p>
+        <h2>{{ t("Enroll the replacement factor") }}</h2>
+        <p class="muted">{{ t("Add this one-time material to your authenticator, then confirm the new 6-digit code. Completion requires a fresh login.") }}</p>
         <div class="secret">
-          <small>Provisioning URI</small><code>{{ provisioningUri }}</code>
-          <small>Secret</small><code>{{ secret }}</code>
+          <small>{{ t("Provisioning URI") }}</small><code>{{ provisioningUri }}</code>
+          <small>{{ t("Secret") }}</small><code>{{ secret }}</code>
         </div>
         <form @submit.prevent="confirmTotpRecovery">
-          <label>6-digit code<input v-model="code" inputmode="numeric" maxlength="6" autocomplete="one-time-code"></label>
-          <button :disabled="busy || !/^\d{6}$/.test(code)">Confirm replacement</button>
+          <label>{{ t("6-digit code") }}<input v-model="code" inputmode="numeric" maxlength="6" autocomplete="one-time-code"></label>
+          <button :disabled="busy || !/^\d{6}$/.test(code)">{{ t("Confirm replacement") }}</button>
         </form>
       </template>
 
-      <p v-if="error" class="error" role="alert">{{ error }}</p>
-      <footer>No public registration · No implicit permission grant · Lab | zefry</footer>
+      <p v-if="error" class="error" role="alert">{{ t(error) }}</p>
+      <footer>{{ t("No public registration · No implicit permission grant · Lab | zefry") }}</footer>
     </section>
   </main>
 
   <main v-else class="foundation-shell">
     <section class="foundation-card" aria-labelledby="foundation-title">
-      <p class="eyebrow">Lab | zefry · M7.1</p>
-      <h1 id="foundation-title">{{ headline }}</h1>
-      <p>Merchant sign-in remains unavailable until the exact installation context and required Local/Test/CI security gates are valid.</p>
+      <p class="eyebrow">{{ t("Lab | zefry · M7.1") }}</p>
+      <h1 id="foundation-title">{{ t(headline) }}</h1>
+      <p>{{ t("Merchant sign-in remains unavailable until the exact installation context and required Local/Test/CI security gates are valid.") }}</p>
     </section>
   </main>
 </template>

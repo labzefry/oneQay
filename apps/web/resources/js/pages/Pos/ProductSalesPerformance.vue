@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from "../../i18n";
 import { Head } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 
@@ -42,39 +43,39 @@ const atomic = (value: string, currency: string, scale: number): string => {
 </script>
 
 <template>
-    <Head title="Product Sales Performance" />
+    <Head :title="t(&quot;Product Sales Performance&quot;)" />
     <main class="page-shell">
         <header class="hero">
             <div>
-                <p class="eyebrow">oneQay · Operational Intelligence</p>
-                <h1>Product Sales Performance</h1>
-                <p class="subtitle">Read-only product/currency performance from immutable completed-sale lines. Full-sale void is removed once; a later cash refund does not reduce product performance a second time.</p>
+                <p class="eyebrow">{{ t("oneQay · Operational Intelligence") }}</p>
+                <h1>{{ t("Product Sales Performance") }}</h1>
+                <p class="subtitle">{{ t("Read-only product/currency performance from immutable completed-sale lines. Full-sale void is removed once; a later cash refund does not reduce product performance a second time.") }}</p>
             </div>
-            <div class="scope-card"><span>Outlet</span><strong>{{ props.scope.outlet_id }}</strong><small>{{ props.scope.organization_id }}</small></div>
+            <div class="scope-card"><span>{{ t("Outlet") }}</span><strong>{{ props.scope.outlet_id }}</strong><small>{{ props.scope.organization_id }}</small></div>
         </header>
-        <div v-if="props.truncated" class="notice">Hasil dibatasi pada 250 product/currency buckets teratas berdasarkan gross sold quantity.</div>
+        <div v-if="props.truncated" class="notice">{{ t("Hasil dibatasi pada 250 product/currency buckets teratas berdasarkan gross sold quantity.") }}</div>
         <section class="panel">
             <div class="panel-heading">
-                <div><p class="eyebrow">Immutable performance</p><h2>Product / currency buckets</h2></div>
-                <input v-model="search" placeholder="Cari product ID / nama / currency" />
+                <div><p class="eyebrow">{{ t("Immutable performance") }}</p><h2>{{ t("Product / currency buckets") }}</h2></div>
+                <input v-model="search" :placeholder="t(&quot;Cari product ID / nama / currency&quot;)" />
             </div>
             <div class="table-wrap">
                 <table>
-                    <thead><tr><th>Produk</th><th>Currency</th><th class="numeric">Gross units</th><th class="numeric">Voided units</th><th class="numeric">Net active units</th><th class="numeric">Gross recorded</th><th class="numeric">Voided value</th><th class="numeric">Net active value</th></tr></thead>
+                    <thead><tr><th>{{ t("Produk") }}</th><th>{{ t("Currency") }}</th><th class="numeric">{{ t("Gross units") }}</th><th class="numeric">{{ t("Voided units") }}</th><th class="numeric">{{ t("Net active units") }}</th><th class="numeric">{{ t("Gross recorded") }}</th><th class="numeric">{{ t("Voided value") }}</th><th class="numeric">{{ t("Net active value") }}</th></tr></thead>
                     <tbody>
                         <tr v-for="row in filteredRows" :key="`${row.product_id}-${row.currency}-${row.scale}`">
                             <td><strong>{{ row.display_name }}</strong><span class="mono block">{{ row.product_id }}</span></td>
-                            <td><span class="currency">{{ row.currency }}</span><small>scale {{ row.scale }}</small></td>
+                            <td><span class="currency">{{ row.currency }}</span><small>{{ t("scale") }} {{ row.scale }}</small></td>
                             <td class="numeric">{{ quantity(row.gross_quantity) }}</td><td class="numeric voided">{{ quantity(row.voided_quantity) }}</td><td class="numeric strong">{{ quantity(row.net_quantity) }}</td>
                             <td class="numeric">{{ atomic(row.gross_atomic, row.currency, row.scale) }}</td><td class="numeric voided">{{ atomic(row.voided_atomic, row.currency, row.scale) }}</td><td class="numeric strong">{{ atomic(row.net_atomic, row.currency, row.scale) }}</td>
                         </tr>
-                        <tr v-if="!filteredRows.length"><td colspan="8" class="empty">Tidak ada product sales performance untuk filter ini.</td></tr>
+                        <tr v-if="!filteredRows.length"><td colspan="8" class="empty">{{ t("Tidak ada product sales performance untuk filter ini.") }}</td></tr>
                     </tbody>
                 </table>
             </div>
-            <p class="helper">Nama produk adalah current catalog label untuk product ID yang sama. Inactive catalog products tetap dipertahankan bila memiliki immutable sales history. Currency/scale historis tidak dicampur menjadi satu bucket.</p>
+            <p class="helper">{{ t("Nama produk adalah current catalog label untuk product ID yang sama. Inactive catalog products tetap dipertahankan bila memiliki immutable sales history. Currency/scale historis tidak dicampur menjadi satu bucket.") }}</p>
         </section>
-        <footer>Correlation: <span class="mono">{{ props.correlation_id }}</span></footer>
+        <footer>{{ t("Correlation:") }} <span class="mono">{{ props.correlation_id }}</span></footer>
     </main>
 </template>
 

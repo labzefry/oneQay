@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from "../../i18n";
 import { computed, ref } from 'vue'
 import { router } from '@inertiajs/vue3'
 
@@ -110,129 +111,129 @@ const submitReview = (reviewOutcome: 'REVIEW_ACCEPTED' | 'REVIEW_REJECTED') => {
   <main class="preview-shell">
     <section class="reconciliation-card">
       <header>
-        <p class="preview-eyebrow">{{ previewLabel }} · Langkah 3</p>
-        <h1>Rekonsiliasi Kas Synthetic</h1>
+        <p class="preview-eyebrow">{{ t(previewLabel) }} {{ t("· Langkah 3") }}</p>
+        <h1>{{ t("Rekonsiliasi Kas Synthetic") }}</h1>
         <p class="muted">{{ profile.label }} · {{ reconciliation.tenant_id }} · {{ reconciliation.outlet_id }}</p>
       </header>
 
       <div class="outcome" :data-direction="reconciliation.variance_direction">
-        <span>{{ reconciliation.variance_direction }}</span>
-        <strong>{{ outcomeLabel }}</strong>
+        <span>{{ t(reconciliation.variance_direction) }}</span>
+        <strong>{{ t(outcomeLabel) }}</strong>
         <b>{{ money(varianceMagnitude) }}</b>
       </div>
 
       <section class="equation">
         <article>
-          <small>Opening cash</small>
+          <small>{{ t("Opening cash") }}</small>
           <strong>{{ money(reconciliation.opening_cash_atomic) }}</strong>
         </article>
         <span>+</span>
         <article>
-          <small>Cash sales · {{ reconciliation.sale_count }} transaksi</small>
+          <small>{{ t("Cash sales ·") }} {{ reconciliation.sale_count }} {{ t("transaksi") }}</small>
           <strong>{{ money(reconciliation.cash_sales_atomic) }}</strong>
         </article>
         <span>−</span>
         <article class="refunds">
-          <small>Cash refunds · {{ reconciliation.refund_count }} refund</small>
+          <small>{{ t("Cash refunds ·") }} {{ reconciliation.refund_count }} {{ t("refund") }}</small>
           <strong>{{ money(reconciliation.cash_refunds_atomic) }}</strong>
         </article>
         <span>=</span>
         <article class="expected">
-          <small>Expected cash · server-derived</small>
+          <small>{{ t("Expected cash · server-derived") }}</small>
           <strong>{{ money(reconciliation.expected_cash_atomic) }}</strong>
         </article>
       </section>
 
       <section class="comparison">
-        <span>Void evidence <strong>{{ reconciliation.void_count }}</strong></span>
-        <span>Cash refund evidence <strong>{{ reconciliation.refund_count }}</strong></span>
-        <span>Expected cash <strong>{{ money(reconciliation.expected_cash_atomic) }}</strong></span>
-        <span>Observed closing cash <strong>{{ money(reconciliation.observed_closing_atomic) }}</strong></span>
-        <span>Variance <strong>{{ money(reconciliation.variance_atomic) }}</strong></span>
+        <span>{{ t("Void evidence") }} <strong>{{ reconciliation.void_count }}</strong></span>
+        <span>{{ t("Cash refund evidence") }} <strong>{{ reconciliation.refund_count }}</strong></span>
+        <span>{{ t("Expected cash") }} <strong>{{ money(reconciliation.expected_cash_atomic) }}</strong></span>
+        <span>{{ t("Observed closing cash") }} <strong>{{ money(reconciliation.observed_closing_atomic) }}</strong></span>
+        <span>{{ t("Variance") }} <strong>{{ money(reconciliation.variance_atomic) }}</strong></span>
       </section>
 
       <section v-if="!requiresReview" class="control-card match-card">
-        <p class="section-kicker">Variance control</p>
-        <h2>Tidak memerlukan explanation atau review</h2>
-        <p>Expected cash dan observed closing cash sama. Maker-checker hanya tersedia untuk variance OVER atau SHORT.</p>
+        <p class="section-kicker">{{ t("Variance control") }}</p>
+        <h2>{{ t("Tidak memerlukan explanation atau review") }}</h2>
+        <p>{{ t("Expected cash dan observed closing cash sama. Maker-checker hanya tersedia untuk variance OVER atau SHORT.") }}</p>
       </section>
 
       <section v-else class="control-card">
-        <p class="section-kicker">Maker · Operator</p>
-        <h2>Explanation variance</h2>
+        <p class="section-kicker">{{ t("Maker · Operator") }}</p>
+        <h2>{{ t("Explanation variance") }}</h2>
 
         <template v-if="!reconciliation.explanation">
-          <p class="muted">Operator wajib memberikan explanation sebelum independent reviewer dapat mengambil keputusan.</p>
+          <p class="muted">{{ t("Operator wajib memberikan explanation sebelum independent reviewer dapat mengambil keputusan.") }}</p>
           <textarea
             v-model="explanationText"
             maxlength="4096"
             rows="5"
-            placeholder="Jelaskan penyebab variance kas synthetic secara spesifik."
+            :placeholder="t(&quot;Jelaskan penyebab variance kas synthetic secara spesifik.&quot;)"
           />
           <button
             type="button"
             :disabled="submittingExplanation || explanationText.trim().length === 0"
             @click="submitExplanation"
           >
-            {{ submittingExplanation ? 'Menyimpan…' : 'Simpan explanation synthetic' }}
+            {{ t(submittingExplanation ? 'Menyimpan…' : 'Simpan explanation synthetic') }}
           </button>
         </template>
 
         <template v-else>
           <div class="evidence-block">
-            <span><small>Explanation evidence</small><code>{{ reconciliation.explanation.evidence_id }}</code></span>
-            <span><small>Maker actor</small><code>{{ reconciliation.explanation.actor_identity_id }}</code></span>
+            <span><small>{{ t("Explanation evidence") }}</small><code>{{ reconciliation.explanation.evidence_id }}</code></span>
+            <span><small>{{ t("Maker actor") }}</small><code>{{ reconciliation.explanation.actor_identity_id }}</code></span>
           </div>
           <blockquote>{{ reconciliation.explanation.explanation_text }}</blockquote>
         </template>
       </section>
 
       <section v-if="requiresReview && reconciliation.explanation" class="control-card reviewer-card">
-        <p class="section-kicker">Checker · Independent synthetic reviewer</p>
-        <h2>Review decision</h2>
+        <p class="section-kicker">{{ t("Checker · Independent synthetic reviewer") }}</p>
+        <h2>{{ t("Review decision") }}</h2>
 
         <template v-if="!reconciliation.review">
-          <p class="muted">Reviewer dipasangkan server-side pada tenant, organization, dan outlet yang sama. Identity reviewer tidak dapat dipilih dari public Preview sign-in dan harus berbeda dari maker.</p>
+          <p class="muted">{{ t("Reviewer dipasangkan server-side pada tenant, organization, dan outlet yang sama. Identity reviewer tidak dapat dipilih dari public Preview sign-in dan harus berbeda dari maker.") }}</p>
           <div class="review-actions">
             <button
               type="button"
               :disabled="submittingReview"
               @click="submitReview('REVIEW_ACCEPTED')"
-            >Terima explanation</button>
+            >{{ t("Terima explanation") }}</button>
             <button
               type="button"
               class="reject"
               :disabled="submittingReview"
               @click="submitReview('REVIEW_REJECTED')"
-            >Tolak explanation</button>
+            >{{ t("Tolak explanation") }}</button>
           </div>
         </template>
 
         <template v-else>
           <div class="review-result" :data-outcome="reconciliation.review.review_outcome">
-            <strong>{{ reviewLabel }}</strong>
-            <span><small>Review evidence</small><code>{{ reconciliation.review.review_evidence_id }}</code></span>
-            <span><small>Maker actor</small><code>{{ reconciliation.review.explanation_actor_identity_id }}</code></span>
-            <span><small>Reviewer actor</small><code>{{ reconciliation.review.reviewer_actor_identity_id }}</code></span>
+            <strong>{{ t(reviewLabel) }}</strong>
+            <span><small>{{ t("Review evidence") }}</small><code>{{ reconciliation.review.review_evidence_id }}</code></span>
+            <span><small>{{ t("Maker actor") }}</small><code>{{ reconciliation.review.explanation_actor_identity_id }}</code></span>
+            <span><small>{{ t("Reviewer actor") }}</small><code>{{ reconciliation.review.reviewer_actor_identity_id }}</code></span>
           </div>
         </template>
       </section>
 
       <section class="evidence">
-        <span><small>Shift</small><code>{{ reconciliation.shift_id }}</code></span>
-        <span><small>Opening evidence</small><code>{{ reconciliation.opening_cash_evidence_id }}</code></span>
-        <span><small>Closing evidence</small><code>{{ reconciliation.closing_cash_evidence_id }}</code></span>
-        <span><small>Cutoff unix</small><code>{{ reconciliation.cutoff_at_unix }}</code></span>
+        <span><small>{{ t("Shift") }}</small><code>{{ reconciliation.shift_id }}</code></span>
+        <span><small>{{ t("Opening evidence") }}</small><code>{{ reconciliation.opening_cash_evidence_id }}</code></span>
+        <span><small>{{ t("Closing evidence") }}</small><code>{{ reconciliation.closing_cash_evidence_id }}</code></span>
+        <span><small>{{ t("Cutoff unix") }}</small><code>{{ reconciliation.cutoff_at_unix }}</code></span>
       </section>
 
       <aside class="warning">
-        <strong>Not Production Ready</strong>
-        <span>Expected cash mengikuti lifecycle canonical: void tidak otomatis mengurangi kas; full CASH refund yang terikat ke void menjadi pengurang eksplisit. Explanation dan independent review di halaman ini adalah Synthetic Technical Preview session evidence saja. Review ACCEPT/REJECT bukan durable final Shift Close authority. Tidak ada migration execution, durable production ledger, deployment, atau Production activation.</span>
+        <strong>{{ t("Not Production Ready") }}</strong>
+        <span>{{ t("Expected cash mengikuti lifecycle canonical: void tidak otomatis mengurangi kas; full CASH refund yang terikat ke void menjadi pengurang eksplisit. Explanation dan independent review di halaman ini adalah Synthetic Technical Preview session evidence saja. Review ACCEPT/REJECT bukan durable final Shift Close authority. Tidak ada migration execution, durable production ledger, deployment, atau Production activation.") }}</span>
       </aside>
 
       <div class="actions">
-        <button type="button" @click="router.get('/technical-preview/pos')">Buka shift synthetic baru</button>
-        <button type="button" class="secondary" @click="router.post('/technical-preview/logout')">Keluar</button>
+        <button type="button" @click="router.get('/technical-preview/pos')">{{ t("Buka shift synthetic baru") }}</button>
+        <button type="button" class="secondary" @click="router.post('/technical-preview/logout')">{{ t("Keluar") }}</button>
       </div>
     </section>
   </main>

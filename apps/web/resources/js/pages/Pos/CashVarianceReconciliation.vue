@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from "../../i18n";
 import { Head, Link } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 
@@ -174,32 +175,32 @@ const refreshPage = (): void => window.location.reload();
 </script>
 
 <template>
-    <Head title="Cash Variance Reconciliation" />
+    <Head :title="t(&quot;Cash Variance Reconciliation&quot;)" />
     <main class="shell">
         <header class="hero">
             <div>
-                <p class="eyebrow">oneQay · Shift Control</p>
-                <h1>Cash Variance Reconciliation</h1>
-                <p class="subtitle">Explain non-zero closing-cash variance and route it through independent maker-checker review using server-authoritative evidence.</p>
+                <p class="eyebrow">{{ t("oneQay · Shift Control") }}</p>
+                <h1>{{ t("Cash Variance Reconciliation") }}</h1>
+                <p class="subtitle">{{ t("Explain non-zero closing-cash variance and route it through independent maker-checker review using server-authoritative evidence.") }}</p>
             </div>
             <div class="scope-card">
-                <span>Outlet</span><strong>{{ props.scope.outlet_id }}</strong>
-                <small>Actor {{ props.scope.actor_id }}</small>
+                <span>{{ t("Outlet") }}</span><strong>{{ props.scope.outlet_id }}</strong>
+                <small>{{ t("Actor") }} {{ props.scope.actor_id }}</small>
             </div>
         </header>
 
         <section class="notice">
-            <strong>Control boundary</strong>
-            <span>The browser never supplies expected cash, observed cash, variance, direction, currency, or scale. Those values are rebuilt from canonical persisted evidence on every action.</span>
+            <strong>{{ t("Control boundary") }}</strong>
+            <span>{{ t("The browser never supplies expected cash, observed cash, variance, direction, currency, or scale. Those values are rebuilt from canonical persisted evidence on every action.") }}</span>
         </section>
 
         <div class="layout">
             <aside class="panel case-list">
                 <div class="panel-heading">
-                    <div><p class="eyebrow">Active outlet shifts</p><h2>Closing evidence</h2></div>
+                    <div><p class="eyebrow">{{ t("Active outlet shifts") }}</p><h2>{{ t("Closing evidence") }}</h2></div>
                     <span class="count">{{ props.cases.length }}</span>
                 </div>
-                <p v-if="!props.cases.length" class="empty">No active shift has closing-cash evidence available for reconciliation.</p>
+                <p v-if="!props.cases.length" class="empty">{{ t("No active shift has closing-cash evidence available for reconciliation.") }}</p>
                 <Link
                     v-for="item in props.cases"
                     :key="item.closing_evidence_id"
@@ -208,97 +209,97 @@ const refreshPage = (): void => window.location.reload();
                     :class="{ selected: props.selected?.closing_evidence_id === item.closing_evidence_id }"
                 >
                     <div class="case-row"><strong>{{ item.shift_id }}</strong><span>{{ timestamp(item.recorded_at_unix) }}</span></div>
-                    <div class="case-row"><span>{{ item.device_id }}</span><span class="state">{{ item.review_outcome ?? (item.has_explanation ? 'WAITING REVIEW' : 'WAITING EXPLANATION') }}</span></div>
+                    <div class="case-row"><span>{{ item.device_id }}</span><span class="state">{{ t(item.review_outcome ?? (item.has_explanation ? 'WAITING REVIEW' : 'WAITING EXPLANATION')) }}</span></div>
                 </Link>
             </aside>
 
             <section class="panel detail">
-                <p v-if="!props.selected" class="empty">Select a closing-cash evidence case.</p>
+                <p v-if="!props.selected" class="empty">{{ t("Select a closing-cash evidence case.") }}</p>
                 <template v-else>
                     <div class="panel-heading">
-                        <div><p class="eyebrow">Server-authoritative subject</p><h2>{{ props.selected.shift_id }}</h2></div>
-                        <span class="direction" :data-direction="props.selected.variance_direction">{{ props.selected.variance_direction }}</span>
+                        <div><p class="eyebrow">{{ t("Server-authoritative subject") }}</p><h2>{{ props.selected.shift_id }}</h2></div>
+                        <span class="direction" :data-direction="props.selected.variance_direction">{{ t(props.selected.variance_direction) }}</span>
                     </div>
 
                     <div class="metric-grid">
-                        <article><span>Expected cash</span><strong>{{ formatMoney(props.selected.expected_cash_atomic, props.selected.currency, props.selected.currency_scale) }}</strong></article>
-                        <article><span>Observed closing</span><strong>{{ formatMoney(props.selected.observed_closing_cash_atomic, props.selected.currency, props.selected.currency_scale) }}</strong></article>
-                        <article><span>Variance</span><strong>{{ formatMoney(props.selected.variance_atomic, props.selected.currency, props.selected.currency_scale) }}</strong></article>
+                        <article><span>{{ t("Expected cash") }}</span><strong>{{ formatMoney(props.selected.expected_cash_atomic, props.selected.currency, props.selected.currency_scale) }}</strong></article>
+                        <article><span>{{ t("Observed closing") }}</span><strong>{{ formatMoney(props.selected.observed_closing_cash_atomic, props.selected.currency, props.selected.currency_scale) }}</strong></article>
+                        <article><span>{{ t("Variance") }}</span><strong>{{ formatMoney(props.selected.variance_atomic, props.selected.currency, props.selected.currency_scale) }}</strong></article>
                     </div>
 
                     <dl class="evidence-grid">
-                        <div><dt>Closing evidence</dt><dd>{{ props.selected.closing_evidence_id }}</dd></div>
-                        <div><dt>Device</dt><dd>{{ props.selected.device_id }}</dd></div>
-                        <div><dt>Opening actor</dt><dd>{{ props.selected.opener_actor_identity_id }}</dd></div>
-                        <div><dt>Closing actor</dt><dd>{{ props.selected.closing_actor_identity_id }}</dd></div>
+                        <div><dt>{{ t("Closing evidence") }}</dt><dd>{{ props.selected.closing_evidence_id }}</dd></div>
+                        <div><dt>{{ t("Device") }}</dt><dd>{{ props.selected.device_id }}</dd></div>
+                        <div><dt>{{ t("Opening actor") }}</dt><dd>{{ props.selected.opener_actor_identity_id }}</dd></div>
+                        <div><dt>{{ t("Closing actor") }}</dt><dd>{{ props.selected.closing_actor_identity_id }}</dd></div>
                     </dl>
 
                     <div v-if="props.selected.variance_direction === 'MATCH'" class="state-box success">
-                        <strong>No reconciliation required</strong>
-                        <span>Expected and observed cash match. No explanation or reviewer evidence is required by the variance prerequisite.</span>
+                        <strong>{{ t("No reconciliation required") }}</strong>
+                        <span>{{ t("Expected and observed cash match. No explanation or reviewer evidence is required by the variance prerequisite.") }}</span>
                     </div>
 
                     <div v-else class="workflow">
                         <article class="step-card">
-                            <div class="step-title"><span>1</span><div><h3>Explanation</h3><p>Maker evidence for the non-zero variance.</p></div></div>
+                            <div class="step-title"><span>1</span><div><h3>{{ t("Explanation") }}</h3><p>{{ t("Maker evidence for the non-zero variance.") }}</p></div></div>
                             <div v-if="props.selected.explanation" class="evidence-box">
                                 <strong>{{ props.selected.explanation.actor_identity_id }}</strong>
                                 <p>{{ props.selected.explanation.text }}</p>
                                 <small>{{ timestamp(props.selected.explanation.recorded_at_unix) }} · {{ props.selected.explanation.evidence_id }}</small>
                             </div>
                             <template v-else-if="props.selected.can_record_explanation">
-                                <textarea v-model="explanationText" rows="5" maxlength="4096" placeholder="Enter a factual explanation for the closing-cash variance." :disabled="busy || actionLocked" />
-                                <div class="action-row"><small>{{ utf8Length }} / 4096 UTF-8 bytes</small><button :disabled="!explanationValid || busy || actionLocked" @click="recordExplanation">Record explanation</button></div>
+                                <textarea v-model="explanationText" rows="5" maxlength="4096" :placeholder="t(&quot;Enter a factual explanation for the closing-cash variance.&quot;)" :disabled="busy || actionLocked" />
+                                <div class="action-row"><small>{{ utf8Length }} {{ t("/ 4096 UTF-8 bytes") }}</small><button :disabled="!explanationValid || busy || actionLocked" @click="recordExplanation">{{ t("Record explanation") }}</button></div>
                             </template>
-                            <p v-else class="muted">This actor does not have explanation authority, or explanation evidence already exists.</p>
+                            <p v-else class="muted">{{ t("This actor does not have explanation authority, or explanation evidence already exists.") }}</p>
                         </article>
 
                         <article class="step-card">
-                            <div class="step-title"><span>2</span><div><h3>Independent review</h3><p>A different actor reviews the explanation.</p></div></div>
+                            <div class="step-title"><span>2</span><div><h3>{{ t("Independent review") }}</h3><p>{{ t("A different actor reviews the explanation.") }}</p></div></div>
                             <div v-if="props.selected.review" class="evidence-box" :data-review="props.selected.review.outcome">
-                                <strong>{{ props.selected.review.outcome }}</strong>
-                                <p>Reviewer: {{ props.selected.review.reviewer_actor_identity_id }}</p>
+                                <strong>{{ t(props.selected.review.outcome) }}</strong>
+                                <p>{{ t("Reviewer:") }} {{ props.selected.review.reviewer_actor_identity_id }}</p>
                                 <small>{{ timestamp(props.selected.review.reviewed_at_unix) }} · {{ props.selected.review.review_evidence_id }}</small>
                             </div>
                             <div v-else-if="props.selected.self_review_blocked" class="state-box warning">
-                                <strong>Maker-checker separation required</strong>
-                                <span>The explanation author cannot review their own evidence. A different authorized actor must review it.</span>
+                                <strong>{{ t("Maker-checker separation required") }}</strong>
+                                <span>{{ t("The explanation author cannot review their own evidence. A different authorized actor must review it.") }}</span>
                             </div>
                             <div v-else-if="props.selected.can_record_review" class="review-actions">
-                                <button class="approve" :disabled="busy || actionLocked" @click="requestReview('REVIEW_ACCEPTED')">Accept review</button>
-                                <button class="reject" :disabled="busy || actionLocked" @click="requestReview('REVIEW_REJECTED')">Reject review</button>
+                                <button class="approve" :disabled="busy || actionLocked" @click="requestReview('REVIEW_ACCEPTED')">{{ t("Accept review") }}</button>
+                                <button class="reject" :disabled="busy || actionLocked" @click="requestReview('REVIEW_REJECTED')">{{ t("Reject review") }}</button>
                             </div>
-                            <p v-else class="muted">Review requires existing explanation evidence and independent reviewer authority.</p>
+                            <p v-else class="muted">{{ t("Review requires existing explanation evidence and independent reviewer authority.") }}</p>
                         </article>
                     </div>
 
                     <div v-if="props.selected.review_ready_for_final_close" class="state-box success">
-                        <strong>Variance prerequisite ready</strong>
-                        <span>The variance prerequisite is satisfied. Final shift close still revalidates all evidence and actor-separation rules independently.</span>
+                        <strong>{{ t("Variance prerequisite ready") }}</strong>
+                        <span>{{ t("The variance prerequisite is satisfied. Final shift close still revalidates all evidence and actor-separation rules independently.") }}</span>
                     </div>
                     <div v-if="props.selected.review_rejected_terminal" class="state-box danger">
-                        <strong>Rejected decision is terminal</strong>
-                        <span>No second independent decision is supported for this explanation evidence. Final shift close remains blocked for this subject.</span>
+                        <strong>{{ t("Rejected decision is terminal") }}</strong>
+                        <span>{{ t("No second independent decision is supported for this explanation evidence. Final shift close remains blocked for this subject.") }}</span>
                     </div>
                 </template>
             </section>
         </div>
 
         <section v-if="statusMessage || errorMessage" class="result-box" :class="{ error: !!errorMessage }">
-            <strong>{{ errorMessage ? 'Authoritative refresh required' : 'Action recorded' }}</strong>
-            <p>{{ errorMessage || statusMessage }}</p>
-            <button @click="refreshPage">Refresh authoritative state</button>
+            <strong>{{ t(errorMessage ? 'Authoritative refresh required' : 'Action recorded') }}</strong>
+            <p>{{ t(errorMessage || statusMessage) }}</p>
+            <button @click="refreshPage">{{ t("Refresh authoritative state") }}</button>
         </section>
 
-        <footer>Correlation: <span class="mono">{{ props.correlation_id }}</span></footer>
+        <footer>{{ t("Correlation:") }} <span class="mono">{{ props.correlation_id }}</span></footer>
 
         <div v-if="reviewConfirm" class="modal-backdrop" role="dialog" aria-modal="true">
             <div class="modal">
-                <p class="eyebrow">Independent review confirmation</p>
-                <h2>{{ reviewConfirm === 'REVIEW_ACCEPTED' ? 'Accept this variance explanation?' : 'Reject this variance explanation?' }}</h2>
-                <p v-if="reviewConfirm === 'REVIEW_ACCEPTED'">Acceptance becomes immutable reviewer evidence. Final shift close will still revalidate the complete subject and actor separation.</p>
-                <p v-else>Rejection is terminal for this explanation evidence. A second independent decision is not supported and final shift close will remain blocked.</p>
-                <div class="modal-actions"><button class="secondary" @click="reviewConfirm = null">Cancel</button><button :class="reviewConfirm === 'REVIEW_REJECTED' ? 'reject' : 'approve'" @click="submitReview">Confirm {{ reviewConfirm === 'REVIEW_ACCEPTED' ? 'acceptance' : 'rejection' }}</button></div>
+                <p class="eyebrow">{{ t("Independent review confirmation") }}</p>
+                <h2>{{ t(reviewConfirm === 'REVIEW_ACCEPTED' ? 'Accept this variance explanation?' : 'Reject this variance explanation?') }}</h2>
+                <p v-if="reviewConfirm === 'REVIEW_ACCEPTED'">{{ t("Acceptance becomes immutable reviewer evidence. Final shift close will still revalidate the complete subject and actor separation.") }}</p>
+                <p v-else>{{ t("Rejection is terminal for this explanation evidence. A second independent decision is not supported and final shift close will remain blocked.") }}</p>
+                <div class="modal-actions"><button class="secondary" @click="reviewConfirm = null">{{ t("Cancel") }}</button><button :class="reviewConfirm === 'REVIEW_REJECTED' ? 'reject' : 'approve'" @click="submitReview">{{ t("Confirm") }} {{ t(reviewConfirm === 'REVIEW_ACCEPTED' ? 'acceptance' : 'rejection') }}</button></div>
             </div>
         </div>
     </main>

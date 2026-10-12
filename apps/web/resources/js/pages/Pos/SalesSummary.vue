@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from "../../i18n";
 import { Head } from '@inertiajs/vue3';
 
 type GrossTotal = { currency: string; scale: number; gross_atomic: number };
@@ -37,29 +38,29 @@ const timestamp = (unix: number): string => new Intl.DateTimeFormat('id-ID', {
 </script>
 
 <template>
-    <Head title="Operational Sales Summary" />
+    <Head :title="t(&quot;Operational Sales Summary&quot;)" />
     <main class="report-shell">
         <header class="hero">
             <div>
-                <p class="eyebrow">oneQay · Operational Intelligence</p>
-                <h1>Sales Summary</h1>
-                <p class="subtitle">Read-only operational view for the currently authorized tenant and outlet.</p>
+                <p class="eyebrow">{{ t("oneQay · Operational Intelligence") }}</p>
+                <h1>{{ t("Sales Summary") }}</h1>
+                <p class="subtitle">{{ t("Read-only operational view for the currently authorized tenant and outlet.") }}</p>
             </div>
             <div class="scope-card">
-                <span>Outlet</span>
+                <span>{{ t("Outlet") }}</span>
                 <strong>{{ props.scope.outlet_id }}</strong>
             </div>
         </header>
 
-        <section class="metrics" aria-label="Sales counters">
-            <article><span>Completed sales</span><strong>{{ props.counters.completed_sales }}</strong></article>
-            <article><span>Voided sales</span><strong>{{ props.counters.voided_sales }}</strong></article>
-            <article><span>Cash refunded</span><strong>{{ props.counters.cash_refunded_sales }}</strong></article>
+        <section class="metrics" :aria-label="t(&quot;Sales counters&quot;)">
+            <article><span>{{ t("Completed sales") }}</span><strong>{{ props.counters.completed_sales }}</strong></article>
+            <article><span>{{ t("Voided sales") }}</span><strong>{{ props.counters.voided_sales }}</strong></article>
+            <article><span>{{ t("Cash refunded") }}</span><strong>{{ props.counters.cash_refunded_sales }}</strong></article>
         </section>
 
         <section class="panel">
             <div class="panel-heading">
-                <div><p class="eyebrow">Gross recorded value</p><h2>By currency</h2></div>
+                <div><p class="eyebrow">{{ t("Gross recorded value") }}</p><h2>{{ t("By currency") }}</h2></div>
             </div>
             <div v-if="props.gross_totals.length" class="gross-grid">
                 <div v-for="total in props.gross_totals" :key="`${total.currency}-${total.scale}`" class="gross-item">
@@ -67,32 +68,32 @@ const timestamp = (unix: number): string => new Intl.DateTimeFormat('id-ID', {
                     <strong>{{ money(total.gross_atomic, total.currency, total.scale) }}</strong>
                 </div>
             </div>
-            <p v-else class="empty">No completed sale has been recorded for this outlet.</p>
+            <p v-else class="empty">{{ t("No completed sale has been recorded for this outlet.") }}</p>
         </section>
 
         <section class="panel">
             <div class="panel-heading">
-                <div><p class="eyebrow">Latest activity</p><h2>Recent sales</h2></div>
-                <span class="read-only">Read only</span>
+                <div><p class="eyebrow">{{ t("Latest activity") }}</p><h2>{{ t("Recent sales") }}</h2></div>
+                <span class="read-only">{{ t("Read only") }}</span>
             </div>
             <div class="table-wrap">
                 <table>
-                    <thead><tr><th>Sale</th><th>Completed</th><th>Tender</th><th>Status</th><th class="numeric">Amount</th></tr></thead>
+                    <thead><tr><th>{{ t("Sale") }}</th><th>{{ t("Completed") }}</th><th>{{ t("Tender") }}</th><th>{{ t("Status") }}</th><th class="numeric">{{ t("Amount") }}</th></tr></thead>
                     <tbody>
                         <tr v-for="sale in props.recent_sales" :key="sale.sale_id">
                             <td class="mono">{{ sale.sale_id }}</td>
                             <td>{{ timestamp(sale.completed_at_unix) }}</td>
-                            <td>{{ sale.tender_category }}</td>
-                            <td><span class="status" :data-state="sale.state">{{ sale.state }}</span></td>
+                            <td>{{ t(sale.tender_category) }}</td>
+                            <td><span class="status" :data-state="sale.state">{{ t(sale.state) }}</span></td>
                             <td class="numeric strong">{{ money(sale.total_atomic, sale.currency, sale.scale) }}</td>
                         </tr>
-                        <tr v-if="!props.recent_sales.length"><td colspan="5" class="empty">No sales available.</td></tr>
+                        <tr v-if="!props.recent_sales.length"><td colspan="5" class="empty">{{ t("No sales available.") }}</td></tr>
                     </tbody>
                 </table>
             </div>
         </section>
 
-        <footer>Correlation: <span class="mono">{{ props.correlation_id }}</span></footer>
+        <footer>{{ t("Correlation:") }} <span class="mono">{{ props.correlation_id }}</span></footer>
     </main>
 </template>
 
