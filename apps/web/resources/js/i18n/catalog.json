@@ -3534,5 +3534,261 @@
   "Sale History": {
     "id": "Riwayat penjualan",
     "en": "Sale History"
+  },
+  "INTELLIGENT BUSINESS MANAGEMENT": {
+    "id": "MANAJEMEN BISNIS CERDAS",
+    "en": "INTELLIGENT BUSINESS MANAGEMENT"
+  },
+  "Business Command Center": {
+    "id": "Pusat Kendali Bisnis",
+    "en": "Business Command Center"
+  },
+  "Command Center": {
+    "id": "Pusat Kendali",
+    "en": "Command Center"
+  },
+  "INTELLIGENT BUSINESS OS": {
+    "id": "SISTEM OPERASI BISNIS CERDAS",
+    "en": "INTELLIGENT BUSINESS OS"
+  },
+  "Verified operational intelligence for the active outlet. No invented revenue, profit or AI predictions.": {
+    "id": "Intelijen operasional terverifikasi untuk outlet aktif. Tanpa angka pendapatan, laba, atau prediksi AI rekaan.",
+    "en": "Verified operational intelligence for the active outlet. No invented revenue, profit or AI predictions."
+  },
+  "Scoped business data": {
+    "id": "Data bisnis sesuai kewenangan",
+    "en": "Scoped business data"
+  },
+  "Recorded transactions": {
+    "id": "Transaksi tercatat",
+    "en": "Recorded transactions"
+  },
+  "All recorded completed sales, including later corrections": {
+    "id": "Seluruh penjualan yang tercatat, termasuk yang kemudian dikoreksi",
+    "en": "All recorded completed sales, including later corrections"
+  },
+  "Recorded correction count": {
+    "id": "Jumlah koreksi tercatat",
+    "en": "Recorded correction count"
+  },
+  "Recorded refund count": {
+    "id": "Jumlah pengembalian tercatat",
+    "en": "Recorded refund count"
+  },
+  "Reporting access": {
+    "id": "Akses pelaporan",
+    "en": "Reporting access"
+  },
+  "Available": {
+    "id": "Tersedia",
+    "en": "Available"
+  },
+  "Restricted": {
+    "id": "Terbatas",
+    "en": "Restricted"
+  },
+  "Unavailable": {
+    "id": "Tidak tersedia",
+    "en": "Unavailable"
+  },
+  "Data shown only when reporting is authorized": {
+    "id": "Data hanya tampil bila akses pelaporan diizinkan",
+    "en": "Data shown only when reporting is authorized"
+  },
+  "FINANCIAL VISIBILITY": {
+    "id": "VISIBILITAS KEUANGAN",
+    "en": "FINANCIAL VISIBILITY"
+  },
+  "Recorded gross by currency": {
+    "id": "Nilai bruto tercatat per mata uang",
+    "en": "Recorded gross by currency"
+  },
+  "Historical gross before full voids and cash refunds; not net revenue or profit.": {
+    "id": "Bruto historis sebelum pembatalan penuh dan pengembalian tunai; bukan pendapatan neto atau laba.",
+    "en": "Historical gross before full voids and cash refunds; not net revenue or profit."
+  },
+  "No completed sales recorded.": {
+    "id": "Belum ada penjualan selesai yang tercatat.",
+    "en": "No completed sales recorded."
+  },
+  "No authorized financial data to display.": {
+    "id": "Tidak ada data keuangan berwenang untuk ditampilkan.",
+    "en": "No authorized financial data to display."
+  },
+  "Open sales reporting": {
+    "id": "Buka laporan penjualan",
+    "en": "Open sales reporting"
+  },
+  "BUSINESS SIGNALS": {
+    "id": "SINYAL BISNIS",
+    "en": "BUSINESS SIGNALS"
+  },
+  "Operational attention": {
+    "id": "Perhatian operasional",
+    "en": "Operational attention"
+  },
+  "Deterministic signals from existing records, not AI-generated advice.": {
+    "id": "Sinyal berbasis catatan yang ada, bukan saran yang dibuat AI.",
+    "en": "Deterministic signals from existing records, not AI-generated advice."
+  },
+  "Complete your catalog and stock setup before selling.": {
+    "id": "Lengkapi katalog dan stok sebelum mulai menjual.",
+    "en": "Complete your catalog and stock setup before selling."
+  },
+  "Verify the active shift and opening cash before starting a sale.": {
+    "id": "Pastikan shift aktif dan kas awal sudah dicatat sebelum transaksi.",
+    "en": "Verify the active shift and opening cash before starting a sale."
+  },
+  "Cash refunds have been recorded. Review corrections and their audit trail.": {
+    "id": "Terdapat pengembalian tunai. Tinjau koreksi dan jejak auditnya.",
+    "en": "Cash refunds have been recorded. Review corrections and their audit trail."
+  },
+  "Voided sales exist. Review the sale correction history.": {
+    "id": "Terdapat transaksi dibatalkan. Tinjau riwayat koreksi penjualan.",
+    "en": "Voided sales exist. Review the sale correction history."
+  },
+  "Sales intelligence is only available to an authorized reporting role.": {
+    "id": "Intelijen penjualan hanya tersedia bagi peran yang memiliki izin pelaporan.",
+    "en": "Sales intelligence is only available to an authorized reporting role."
+  },
+  "Sales intelligence is temporarily unavailable. Figures have not been estimated.": {
+    "id": "Data intelijen penjualan sementara tidak tersedia. Tidak ada angka perkiraan.",
+    "en": "Sales intelligence is temporarily unavailable. Figures have not been estimated."
+  },
+  "Your live operational context is available. Explore the authorized business workspaces.": {
+    "id": "Konteks operasional aktif tersedia. Jelajahi ruang kerja bisnis sesuai hak akses.",
+    "en": "Your live operational context is available. Explore the authorized business workspaces."
+  },
+  "TRANSACTION ACTIVITY": {
+    "id": "AKTIVITAS TRANSAKSI",
+    "en": "TRANSACTION ACTIVITY"
+  },
+  "Recent business activity": {
+    "id": "Aktivitas bisnis terbaru",
+    "en": "Recent business activity"
+  },
+  "Last five from the authorized recent-sales read model": {
+    "id": "Lima transaksi terbaru dari data penjualan yang diizinkan",
+    "en": "Last five from the authorized recent-sales read model"
+  },
+  "There are no authorized recent sales to display.": {
+    "id": "Belum ada penjualan terbaru yang dapat ditampilkan.",
+    "en": "There are no authorized recent sales to display."
+  },
+  "Business OS capability directory": {
+    "id": "Direktori kapabilitas Business OS",
+    "en": "Business OS capability directory"
+  },
+  "CONNECTED BUSINESS PLATFORM": {
+    "id": "PLATFORM BISNIS TERINTEGRASI",
+    "en": "CONNECTED BUSINESS PLATFORM"
+  },
+  "Business Management Suite": {
+    "id": "Rangkaian Modul Manajemen Bisnis",
+    "en": "Business Management Suite"
+  },
+  "Available modules open existing authorized workspaces. Unavailable modules are not presented as finished functionality.": {
+    "id": "Modul tersedia membuka ruang kerja yang telah diizinkan. Modul yang belum tersedia tidak dinyatakan sebagai fitur selesai.",
+    "en": "Available modules open existing authorized workspaces. Unavailable modules are not presented as finished functionality."
+  },
+  "Operations": {
+    "id": "Operasional",
+    "en": "Operations"
+  },
+  "Management": {
+    "id": "Manajemen",
+    "en": "Management"
+  },
+  "Intelligence": {
+    "id": "Intelijen",
+    "en": "Intelligence"
+  },
+  "Platform": {
+    "id": "Platform",
+    "en": "Platform"
+  },
+  "Commerce & POS": {
+    "id": "Perdagangan & POS",
+    "en": "Commerce & POS"
+  },
+  "Sales, receipts and cashier operations": {
+    "id": "Penjualan, struk, dan operasional kasir",
+    "en": "Sales, receipts and cashier operations"
+  },
+  "Inventory Management": {
+    "id": "Manajemen Persediaan",
+    "en": "Inventory Management"
+  },
+  "Catalog, stock receiving and accountability": {
+    "id": "Katalog, penerimaan stok, dan akuntabilitas",
+    "en": "Catalog, stock receiving and accountability"
+  },
+  "Cash & Shift Control": {
+    "id": "Kontrol Kas & Shift",
+    "en": "Cash & Shift Control"
+  },
+  "Shift preparation, reconciliation and closing": {
+    "id": "Persiapan shift, rekonsiliasi, dan penutupan",
+    "en": "Shift preparation, reconciliation and closing"
+  },
+  "Business Reports": {
+    "id": "Laporan Bisnis",
+    "en": "Business Reports"
+  },
+  "Scoped operational sales and product performance": {
+    "id": "Pelaporan penjualan dan produk sesuai kewenangan",
+    "en": "Scoped operational sales and product performance"
+  },
+  "Procurement & Suppliers": {
+    "id": "Pengadaan & Pemasok",
+    "en": "Procurement & Suppliers"
+  },
+  "Purchase orders, supplier lifecycle and receiving": {
+    "id": "Pesanan pembelian, pengelolaan pemasok, dan penerimaan",
+    "en": "Purchase orders, supplier lifecycle and receiving"
+  },
+  "CRM & Customer Intelligence": {
+    "id": "CRM & Intelijen Pelanggan",
+    "en": "CRM & Customer Intelligence"
+  },
+  "Customers, relationships and retention": {
+    "id": "Pelanggan, hubungan, dan retensi",
+    "en": "Customers, relationships and retention"
+  },
+  "Finance & Accounting": {
+    "id": "Keuangan & Akuntansi",
+    "en": "Finance & Accounting"
+  },
+  "Ledger, payables, receivables and financial statements": {
+    "id": "Buku besar, utang, piutang, dan laporan keuangan",
+    "en": "Ledger, payables, receivables and financial statements"
+  },
+  "People & HR": {
+    "id": "SDM & Kepegawaian",
+    "en": "People & HR"
+  },
+  "Employees, attendance and payroll": {
+    "id": "Pegawai, kehadiran, dan penggajian",
+    "en": "Employees, attendance and payroll"
+  },
+  "AI Business Intelligence": {
+    "id": "Intelijen Bisnis AI",
+    "en": "AI Business Intelligence"
+  },
+  "Forecasts, recommendations and governed automation": {
+    "id": "Peramalan, rekomendasi, dan otomatisasi terkendali",
+    "en": "Forecasts, recommendations and governed automation"
+  },
+  "Integrations & Marketplace": {
+    "id": "Integrasi & Marketplace",
+    "en": "Integrations & Marketplace"
+  },
+  "Public APIs, partners and extensions": {
+    "id": "API publik, mitra, dan ekstensi",
+    "en": "Public APIs, partners and extensions"
+  },
+  "Not yet delivered": {
+    "id": "Belum tersedia",
+    "en": "Not yet delivered"
   }
 }

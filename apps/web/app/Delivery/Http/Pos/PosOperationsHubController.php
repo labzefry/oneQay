@@ -9,6 +9,9 @@ declare(strict_types=1);
 namespace App\Delivery\Http\Pos;
 
 use App\Application\Authorization\DurableAuthorizationViolation;
+use App\Application\BusinessIntelligence\BusinessCommandCenter;
+use App\Application\Pos\PosTransactionViolation;
+use App\Application\Pos\ViewPosOperationalSalesSummary;
 use App\Application\Pos\PosAccessViolation;
 use App\Application\Pos\PosOperationsHubSnapshot;
 use App\Application\Pos\ViewPosMerchantOperationsReadiness;
@@ -26,6 +29,7 @@ final class PosOperationsHubController
     public function __construct(
         private readonly ViewPosOperationsHub $hub,
         private readonly ViewPosMerchantOperationsReadiness $readiness,
+        private readonly ViewPosOperationalSalesSummary $sales,
     ) {}
 
     public function __invoke(Request $request): Response|JsonResponse
@@ -52,6 +56,22 @@ final class PosOperationsHubController
                 )),
             );
 
+            // Read financial facts only with the existing scoped reporting permission and
+            // delivered route. Unavailable never means zero, and denied stays hidden.
+            $hasReporting = $snapshot->canReporting()
+                && in_array('sales_summary', array_column($destinations, 'key'), true);
+            $salesSummary = null;
+            $reportStatus = $hasReporting ? 'unavailable' : 'restricted';
+            if ($hasReporting) {
+                try {
+                    $salesSummary = $this->sales->view();
+                    $reportStatus = 'available';
+                } catch (PosTransactionViolation|DurableAuthorizationViolation|PosAccessViolation) {
+                    // The main operational workspace must remain accessible if
+                    // optional analytics cannot be safely read.
+                }
+            }
+
             return Inertia::render('Pos/OperationsHub', [
                 'scope' => [
                     'tenant_id' => $snapshot->tenantId(),
@@ -60,6 +80,8 @@ final class PosOperationsHubController
                     'device_id' => $snapshot->deviceId(),
                 ],
                 'destinations' => $destinations,
+                'intelligence' => BusinessCommandCenter::reporting($salesSummary, $reportStatus),
+                'capabilities' => BusinessCommandCenter::capabilities($destinations),
                 'readiness' => [
                     'state' => $readiness->state(),
                     'recommended_key' => $readiness->recommendedKey(),

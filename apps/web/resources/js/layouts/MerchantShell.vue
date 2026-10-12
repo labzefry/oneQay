@@ -39,7 +39,7 @@ const categories = [
     { key: 'REVIEW', title: 'Insights' }, { key: 'CONTROL', title: 'Controls' },
 ];
 const titles: Record<string, string> = {
-    OperationsHub: 'Overview', Cashier: 'Cashier', CatalogInventorySetup: 'Catalog & stock',
+    OperationsHub: 'Business Command Center', Cashier: 'Cashier', CatalogInventorySetup: 'Catalog & stock',
     ShiftStart: 'Start shift', ShiftClose: 'Close shift', InventoryReplenishment: 'Receive stock',
     InventoryAccountability: 'Inventory overview', SalesSummary: 'Sales overview',
     ActiveShiftPerformance: 'Current shift', ShiftHistoryPerformance: 'Shift history',
@@ -123,12 +123,12 @@ onBeforeUnmount(() => { request?.abort(); document.removeEventListener('keydown'
         <a class="oq-skip" href="#workspace-content">{{ t("Skip to workspace") }}</a>
         <button v-if="mobileOpen" class="oq-backdrop no-print" type="button" :aria-label="t('Close navigation')" @click="mobileOpen = false" />
         <aside id="workspace-navigation" ref="drawer" class="oq-sidebar no-print" :class="{ 'is-open': mobileOpen }" :inert="mobileViewport && !mobileOpen" :aria-label="t('Workspace navigation')">
-            <a class="oq-brand" href="/pos" :aria-label="t('oneQay overview')"><span class="oq-brand-mark">{{ t("Q") }}<span /></span><span>{{ t("oneQay") }}<small>{{ t("BUSINESS WORKSPACE") }}</small></span></a>
+            <a class="oq-brand" href="/pos" :aria-label="t('oneQay overview')"><span class="oq-brand-mark">{{ t("Q") }}<span /></span><span>{{ t("oneQay") }}<small>{{ t("INTELLIGENT BUSINESS OS") }}</small></span></a>
             <button class="oq-mobile-close" type="button" :aria-label="t('Close navigation')" @click="mobileOpen = false"><WorkspaceIcon name="x" /></button>
             <div class="oq-workspace"><span class="oq-workspace-icon"><WorkspaceIcon name="store" /></span><div><strong>{{ t("Merchant workspace") }}</strong><small>{{ t("Your active outlet") }}</small></div></div>
             <label class="oq-nav-search"><WorkspaceIcon name="search" :size="17" /><input v-model="search" type="search" :placeholder="t('Find a workspace')" :aria-label="t('Find a workspace')" /></label>
             <nav class="oq-nav">
-                <a class="oq-nav-link" href="/pos" :aria-current="activePath === '/pos' ? 'page' : undefined"><WorkspaceIcon name="layout-dashboard" /><span>{{ t("Overview") }}</span></a>
+                <a class="oq-nav-link" href="/pos" :aria-current="activePath === '/pos' ? 'page' : undefined"><WorkspaceIcon name="layout-dashboard" /><span>{{ t("Command Center") }}</span></a>
                 <p v-if="loading" class="oq-nav-empty" role="status">{{ t("Loading navigation…") }}</p>
                 <section v-for="group in groups" :key="group.key" class="oq-nav-group"><h2>{{ t(group.title) }}</h2>
                     <a v-for="item in group.items" :key="item.key" class="oq-nav-link" :href="item.url" :aria-current="isActive(item.url) ? 'page' : undefined"><WorkspaceIcon :name="labels[item.key]?.icon ?? 'clipboard-list'" /><span>{{ t(labels[item.key]?.title ?? item.title) }}</span></a>
