@@ -551,6 +551,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          if [[ "${{ github.head_ref }}" == 'oneqaydev-bilingual-workspace-20261012' && "${{ github.event.pull_request.base.sha }}" == '36b11e1e998f135a93a8d72a21bdb0aefabc3560' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
+            bash tools/qa-bilingual-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
+            exit 0
+          fi
           git fetch --no-tags origin "${{ github.base_ref }}"
           base="origin/${{ github.base_ref }}"
           if [[ "${{ github.head_ref }}" == agent/sprint28-initial-password-enrollment ]]; then
@@ -696,3 +700,4 @@ jobs:
       - name: Run M7.4A Technical Preview interaction regression
         working-directory: apps/web
         run: php tests/technical-preview-interaction.php
+

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from "../../i18n";
 import { computed } from 'vue'
 import { router } from '@inertiajs/vue3'
 
@@ -69,15 +70,15 @@ const canRefund = computed(() => (
 <template>
   <main class="preview-shell">
     <section class="receipt-card">
-      <p class="preview-eyebrow">{{ previewLabel }}</p>
-      <h1>Receipt Preview</h1>
+      <p class="preview-eyebrow">{{ t(previewLabel) }}</p>
+      <h1>{{ t("Receipt Preview") }}</h1>
       <p class="muted">{{ profile.label }} · {{ receipt.tenant_id }} · {{ receipt.outlet_id }}</p>
 
       <div class="receipt-meta">
-        <span><b>Sale</b>{{ receipt.sale_id }}</span>
-        <span><b>Operation</b>{{ receipt.operation_id }}</span>
-        <span><b>Actor</b>{{ receipt.actor_id }}</span>
-        <span><b>Device</b>{{ receipt.device_id }}</span>
+        <span><b>{{ t("Sale") }}</b>{{ receipt.sale_id }}</span>
+        <span><b>{{ t("Operation") }}</b>{{ receipt.operation_id }}</span>
+        <span><b>{{ t("Actor") }}</b>{{ receipt.actor_id }}</span>
+        <span><b>{{ t("Device") }}</b>{{ receipt.device_id }}</span>
       </div>
 
       <div class="lines">
@@ -91,46 +92,46 @@ const canRefund = computed(() => (
       </div>
 
       <div class="summary">
-        <span>Total <strong>{{ money(receipt.total_atomic) }}</strong></span>
-        <span>Tender <strong>{{ receipt.tender_category }}</strong></span>
-        <span>Evidence <strong>{{ receipt.evidence_mode }}</strong></span>
-        <span>Change <strong>{{ money(receipt.change_atomic) }}</strong></span>
+        <span>{{ t("Total") }} <strong>{{ money(receipt.total_atomic) }}</strong></span>
+        <span>{{ t("Tender") }} <strong>{{ t(receipt.tender_category) }}</strong></span>
+        <span>{{ t("Evidence") }} <strong>{{ t(receipt.evidence_mode) }}</strong></span>
+        <span>{{ t("Change") }} <strong>{{ money(receipt.change_atomic) }}</strong></span>
       </div>
 
       <section class="adjustment" :data-status="receipt.adjustment.status">
         <div>
-          <small>Sale lifecycle</small>
-          <strong>{{ receipt.adjustment.status }}</strong>
+          <small>{{ t("Sale lifecycle") }}</small>
+          <strong>{{ t(receipt.adjustment.status) }}</strong>
         </div>
         <div v-if="receipt.adjustment.void_operation_id">
-          <small>Void evidence</small>
+          <small>{{ t("Void evidence") }}</small>
           <code>{{ receipt.adjustment.void_operation_id }}</code>
         </div>
         <div v-if="receipt.adjustment.refund_operation_id">
-          <small>Refund evidence</small>
+          <small>{{ t("Refund evidence") }}</small>
           <code>{{ receipt.adjustment.refund_operation_id }}</code>
         </div>
         <div v-if="receipt.adjustment.refund_amount_atomic > 0">
-          <small>Cash refund</small>
+          <small>{{ t("Cash refund") }}</small>
           <strong>{{ money(receipt.adjustment.refund_amount_atomic) }}</strong>
         </div>
       </section>
 
       <div class="correlation">
-        <small>Safe correlation reference</small>
+        <small>{{ t("Safe correlation reference") }}</small>
         <code>{{ receipt.correlation_id }}</code>
       </div>
 
       <aside class="warning">
-        <strong>Not Production Ready</strong>
-        <span>Void dan refund di halaman ini adalah synthetic Preview evidence. Void tidak mengurangi expected cash; hanya full CASH refund yang terikat ke void meng-offset cash sale. Tidak ada durable persistence, payment-provider verification, deployment, atau Production readiness.</span>
+        <strong>{{ t("Not Production Ready") }}</strong>
+        <span>{{ t("Void dan refund di halaman ini adalah synthetic Preview evidence. Void tidak mengurangi expected cash; hanya full CASH refund yang terikat ke void meng-offset cash sale. Tidak ada durable persistence, payment-provider verification, deployment, atau Production readiness.") }}</span>
       </aside>
 
       <div class="actions">
-        <button v-if="canVoid" type="button" @click="router.post('/technical-preview/sale/void')">Void sale synthetic</button>
-        <button v-if="canRefund" type="button" @click="router.post('/technical-preview/sale/refund')">Refund CASH penuh</button>
-        <button type="button" class="secondary" @click="router.get('/technical-preview/pos')">Kembali ke POS</button>
-        <button type="button" class="secondary" @click="router.post('/technical-preview/logout')">Keluar</button>
+        <button v-if="canVoid" type="button" @click="router.post('/technical-preview/sale/void')">{{ t("Void sale synthetic") }}</button>
+        <button v-if="canRefund" type="button" @click="router.post('/technical-preview/sale/refund')">{{ t("Refund CASH penuh") }}</button>
+        <button type="button" class="secondary" @click="router.get('/technical-preview/pos')">{{ t("Kembali ke POS") }}</button>
+        <button type="button" class="secondary" @click="router.post('/technical-preview/logout')">{{ t("Keluar") }}</button>
       </div>
     </section>
   </main>

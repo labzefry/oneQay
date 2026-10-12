@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from "../../i18n";
 import { ref } from 'vue'
 import { useForm } from '@inertiajs/vue3'
 type ReleaseCheck = {
@@ -148,57 +149,54 @@ const submitDevelopmentUpdate = (): void => {
     <div class="update-shell">
       <header class="topbar">
         <div>
-          <p class="brand">oneQay</p>
-          <p class="brand-subtitle">Platform Operations</p>
+          <p class="brand">{{ t("oneQay") }}</p>
+          <p class="brand-subtitle">{{ t("Platform Operations") }}</p>
         </div>
-        <span class="mode-chip">{{ ui.mode }}</span>
+        <span class="mode-chip">{{ t(ui.mode) }}</span>
       </header>
 
-      <nav class="breadcrumb" aria-label="Breadcrumb">
-        <span>System</span>
+      <nav class="breadcrumb" :aria-label="t('Breadcrumb')">
+        <span>{{ t("System") }}</span>
         <span aria-hidden="true">/</span>
-        <strong>Update &amp; Deployment</strong>
+        <strong>{{ t("Update & Deployment") }}</strong>
       </nav>
 
       <section class="hero">
         <div>
-          <p class="eyebrow">Governed updater control plane</p>
-          <h1>Update &amp; Deployment</h1>
-          <p class="hero-copy">
-            Halaman ini hanya menampilkan status operasional yang aman. Pemeriksaan release, instalasi,
-            aktivasi, rollback, dan deployment belum tersedia dari antarmuka ini.
-          </p>
+          <p class="eyebrow">{{ t("Governed updater control plane") }}</p>
+          <h1>{{ t("Update & Deployment") }}</h1>
+          <p class="hero-copy"> {{ t("Halaman ini hanya menampilkan status operasional yang aman. Pemeriksaan release, instalasi, aktivasi, rollback, dan deployment belum tersedia dari antarmuka ini.") }} </p>
         </div>
         <div class="hero-lock">
-          <span class="lock-label">Installation</span>
-          <strong>{{ status.install }}</strong>
-          <small>Hard-disabled by source policy</small>
+          <span class="lock-label">{{ t("Installation") }}</span>
+          <strong>{{ t(status.install) }}</strong>
+          <small>{{ t("Hard-disabled by source policy") }}</small>
         </div>
       </section>
 
-      <section class="status-grid" aria-label="Updater status summary">
+      <section class="status-grid" :aria-label="t('Updater status summary')">
         <article class="status-card">
-          <span class="status-label">Control plane</span>
-          <strong>{{ status.control_plane }}</strong>
-          <p>Backend status surface tersedia, tetapi tetap mengikuti feature gate.</p>
+          <span class="status-label">{{ t("Control plane") }}</span>
+          <strong>{{ t(status.control_plane) }}</strong>
+          <p>{{ t("Backend status surface tersedia, tetapi tetap mengikuti feature gate.") }}</p>
         </article>
 
         <article class="status-card">
-          <span class="status-label">Operation state</span>
-          <strong>{{ status.state }}</strong>
-          <p>Active operation: {{ yesNo(status.active_operation) }}</p>
+          <span class="status-label">{{ t("Operation state") }}</span>
+          <strong>{{ t(status.state) }}</strong>
+          <p>{{ t("Active operation:") }} {{ t(yesNo(status.active_operation)) }}</p>
         </article>
 
         <article class="status-card">
-          <span class="status-label">Release availability</span>
-          <strong>{{ status.release_check.status }}</strong>
-          <p>Tidak ada download atau staging yang dijalankan oleh halaman ini.</p>
+          <span class="status-label">{{ t("Release availability") }}</span>
+          <strong>{{ t(status.release_check.status) }}</strong>
+          <p>{{ t("Tidak ada download atau staging yang dijalankan oleh halaman ini.") }}</p>
         </article>
 
         <article class="status-card status-card--locked">
-          <span class="status-label">Deployment authority</span>
-          <strong>{{ status.deployment_authorized ? 'AUTHORIZED' : 'NOT AUTHORIZED' }}</strong>
-          <p>UI tidak dapat menciptakan lifecycle authority.</p>
+          <span class="status-label">{{ t("Deployment authority") }}</span>
+          <strong>{{ t(status.deployment_authorized ? 'AUTHORIZED' : 'NOT AUTHORIZED') }}</strong>
+          <p>{{ t("UI tidak dapat menciptakan lifecycle authority.") }}</p>
         </article>
       </section>
 
@@ -206,94 +204,85 @@ const submitDevelopmentUpdate = (): void => {
         <article class="panel">
           <div class="panel-heading">
             <div>
-              <p class="panel-kicker">Release status</p>
-              <h2>Governed release visibility</h2>
+              <p class="panel-kicker">{{ t("Release status") }}</p>
+              <h2>{{ t("Governed release visibility") }}</h2>
             </div>
-            <span class="state-pill">{{ status.release_check.status }}</span>
+            <span class="state-pill">{{ t(status.release_check.status) }}</span>
           </div>
 
           <dl class="detail-list">
             <div>
-              <dt>Release ID</dt>
+              <dt>{{ t("Release ID") }}</dt>
               <dd>{{ displayValue(status.release_check.release_id) }}</dd>
             </div>
             <div>
-              <dt>Version</dt>
+              <dt>{{ t("Version") }}</dt>
               <dd>{{ displayValue(status.release_check.version) }}</dd>
             </div>
             <div>
-              <dt>Channel</dt>
+              <dt>{{ t("Channel") }}</dt>
               <dd>{{ displayValue(status.release_check.channel) }}</dd>
             </div>
             <div>
-              <dt>Source commit</dt>
+              <dt>{{ t("Source commit") }}</dt>
               <dd class="mono">{{ compactCommit(status.release_check.source_commit) }}</dd>
             </div>
           </dl>
 
-          <div class="notice">
-            Release check action belum diekspos di UI read-only ini. Tidak ada network release client,
-            artifact download, atau package verification yang dipicu dari halaman ini.
-          </div>
+          <div class="notice"> {{ t("Release check action belum diekspos di UI read-only ini. Tidak ada network release client, artifact download, atau package verification yang dipicu dari halaman ini.") }} </div>
         </article>
 
         <article class="panel">
           <div class="panel-heading">
             <div>
-              <p class="panel-kicker">Safety boundary</p>
-              <h2>Deployment safeguards</h2>
+              <p class="panel-kicker">{{ t("Safety boundary") }}</p>
+              <h2>{{ t("Deployment safeguards") }}</h2>
             </div>
           </div>
 
           <dl class="boundary-list">
             <div>
-              <dt>Schema change support</dt>
-              <dd>{{ yesNo(status.schema_change_supported) }}</dd>
+              <dt>{{ t("Schema change support") }}</dt>
+              <dd>{{ t(yesNo(status.schema_change_supported)) }}</dd>
             </div>
             <div>
-              <dt>Activation support</dt>
-              <dd>{{ yesNo(status.activation_supported) }}</dd>
+              <dt>{{ t("Activation support") }}</dt>
+              <dd>{{ t(yesNo(status.activation_supported)) }}</dd>
             </div>
             <div>
-              <dt>Deployment authorized</dt>
-              <dd>{{ yesNo(status.deployment_authorized) }}</dd>
+              <dt>{{ t("Deployment authorized") }}</dt>
+              <dd>{{ t(yesNo(status.deployment_authorized)) }}</dd>
             </div>
             <div>
-              <dt>Operation ID</dt>
+              <dt>{{ t("Operation ID") }}</dt>
               <dd class="mono">{{ displayValue(status.operation_id) }}</dd>
             </div>
           </dl>
 
           <aside class="security-note">
-            <strong>Privileged security remains mandatory</strong>
-            <p>
-              Instalasi masa depan tetap membutuhkan platform-superadmin capability, fresh privileged
-              session, explicit re-authentication, TOTP step-up, CSRF, rate limiting, dan sanitized audit.
-            </p>
+            <strong>{{ t("Privileged security remains mandatory") }}</strong>
+            <p> {{ t("Instalasi masa depan tetap membutuhkan platform-superadmin capability, fresh privileged session, explicit re-authentication, TOTP step-up, CSRF, rate limiting, dan sanitized audit.") }} </p>
           </aside>
         </article>
       </section>
 
-      <section class="installation-wizard" aria-label="Installation readiness wizard">
+      <section class="installation-wizard" :aria-label="t('Installation readiness wizard')">
         <div class="wizard-heading">
           <div>
-            <p class="panel-kicker">Installation readiness wizard</p>
-            <h2>Preflight instalasi — read only</h2>
-            <p>
-              Wizard ini hanya membaca evidence server dan governed release package. Tidak ada penulisan
-              konfigurasi, migration, seeding, deployment, atau aktivasi yang dijalankan.
-            </p>
+            <p class="panel-kicker">{{ t("Installation readiness wizard") }}</p>
+            <h2>{{ t("Preflight instalasi — read only") }}</h2>
+            <p> {{ t("Wizard ini hanya membaca evidence server dan governed release package. Tidak ada penulisan konfigurasi, migration, seeding, deployment, atau aktivasi yang dijalankan.") }} </p>
           </div>
           <span class="readiness-badge" :data-ready="installation_preflight.ready">
-            {{ readinessLabel(installation_preflight.ready) }}
+            {{ t(readinessLabel(installation_preflight.ready)) }}
           </span>
         </div>
 
-        <div class="evidence-grid" aria-label="Installation evidence sources">
-          <div><span>Release manifest</span><strong>{{ installation_preflight.evidence.release_manifest }}</strong></div>
-          <div><span>Release artifact</span><strong>{{ installation_preflight.evidence.release_artifact }}</strong></div>
-          <div><span>Database</span><strong>{{ installation_preflight.evidence.database }}</strong></div>
-          <div><span>Host platform</span><strong>{{ installation_preflight.evidence.host_platform }}</strong></div>
+        <div class="evidence-grid" :aria-label="t('Installation evidence sources')">
+          <div><span>{{ t("Release manifest") }}</span><strong>{{ installation_preflight.evidence.release_manifest }}</strong></div>
+          <div><span>{{ t("Release artifact") }}</span><strong>{{ installation_preflight.evidence.release_artifact }}</strong></div>
+          <div><span>{{ t("Database") }}</span><strong>{{ installation_preflight.evidence.database }}</strong></div>
+          <div><span>{{ t("Host platform") }}</span><strong>{{ installation_preflight.evidence.host_platform }}</strong></div>
         </div>
 
         <div class="wizard-steps">
@@ -301,8 +290,8 @@ const submitDevelopmentUpdate = (): void => {
             <div class="wizard-step-head">
               <span class="step-number">{{ String(index + 1).padStart(2, '0') }}</span>
               <div>
-                <p class="status-label">{{ readinessLabel(stepReady(step.checks)) }}</p>
-                <h3>{{ step.title }}</h3>
+                <p class="status-label">{{ t(readinessLabel(stepReady(step.checks))) }}</p>
+                <h3>{{ t(step.title) }}</h3>
               </div>
             </div>
 
@@ -310,8 +299,8 @@ const submitDevelopmentUpdate = (): void => {
               <div v-for="checkKey in step.checks" :key="checkKey">
                 <dt>{{ checkKey.replaceAll('_', ' ') }}</dt>
                 <dd>
-                  <strong>{{ readinessLabel(installation_preflight.checks[checkKey]?.ready === true) }}</strong>
-                  <small>{{ installation_preflight.checks[checkKey]?.reason ?? 'Readiness evidence unavailable.' }}</small>
+                  <strong>{{ t(readinessLabel(installation_preflight.checks[checkKey]?.ready === true)) }}</strong>
+                  <small>{{ t(installation_preflight.checks[checkKey]?.reason ?? 'Readiness evidence unavailable.') }}</small>
                 </dd>
               </div>
             </dl>
@@ -319,72 +308,62 @@ const submitDevelopmentUpdate = (): void => {
         </div>
 
         <aside class="wizard-boundary">
-          <strong>Preflight only — no installation authority</strong>
-          <p>
-            READY hanya berarti evidence preflight memenuhi contract yang tersedia. Tombol instalasi tetap
-            hard-disabled; migration #27, permission provisioning, deployment, Technical Preview, Production,
-            dan updater activation tidak mendapat authority dari wizard ini.
-          </p>
+          <strong>{{ t("Preflight only — no installation authority") }}</strong>
+          <p> {{ t("READY hanya berarti evidence preflight memenuhi contract yang tersedia. Tombol instalasi tetap hard-disabled; migration #27, permission provisioning, deployment, Technical Preview, Production, dan updater activation tidak mendapat authority dari wizard ini.") }} </p>
         </aside>
       </section>
 
-      <section v-if="development_updater.enabled" class="installation-wizard development-update-panel" aria-label="Governed development updater">
+      <section v-if="development_updater.enabled" class="installation-wizard development-update-panel" :aria-label="t('Governed development updater')">
         <div class="wizard-heading">
           <div>
-            <p class="panel-kicker">Governed development delivery</p>
-            <h2>Sync update dari GitHub</h2>
-            <p>
-              Jalur ini hanya untuk runtime durable-staging. oneQay mengambil artifact resmi dari
-              <strong>{{ development_updater.repository }}</strong>, memverifikasi exact hash dan forward-only source,
-              lalu cPanel Cron melakukan switch release, attestation, rollback rehearsal, dan re-activation.
-            </p>
+            <p class="panel-kicker">{{ t("Governed development delivery") }}</p>
+            <h2>{{ t("Sync update dari GitHub") }}</h2>
+            <p> {{ t("Jalur ini hanya untuk runtime durable-staging. oneQay mengambil artifact resmi dari") }} <strong>{{ development_updater.repository }}</strong>{{ t(", memverifikasi exact hash dan forward-only source, lalu cPanel Cron melakukan switch release, attestation, rollback rehearsal, dan re-activation.") }} </p>
           </div>
           <span class="readiness-badge" :data-ready="!development_updater.request_pending">
-            {{ development_updater.request_pending ? 'PENDING' : 'READY' }}
+            {{ t(development_updater.request_pending ? 'PENDING' : 'READY') }}
           </span>
         </div>
 
         <div class="development-boundary-grid">
-          <div><span>Channel</span><strong>{{ development_updater.channel }}</strong></div>
-          <div><span>Production</span><strong>LOCKED</strong></div>
-          <div><span>Migration</span><strong>NOT EXECUTED</strong></div>
-          <div><span>Worker</span><strong>cPanel Cron / PHP CLI</strong></div>
+          <div><span>{{ t("Channel") }}</span><strong>{{ development_updater.channel }}</strong></div>
+          <div><span>{{ t("Production") }}</span><strong>{{ t("LOCKED") }}</strong></div>
+          <div><span>{{ t("Migration") }}</span><strong>{{ t("NOT EXECUTED") }}</strong></div>
+          <div><span>{{ t("Worker") }}</span><strong>{{ t("cPanel Cron / PHP CLI") }}</strong></div>
         </div>
 
         <div class="development-result">
-          <span>Discovered exact candidate</span>
+          <span>{{ t("Discovered exact candidate") }}</span>
           <template v-if="development_updater.candidate">
             <strong>{{ development_updater.candidate.release_id }}</strong>
-            <small>
-              source {{ compactCommit(development_updater.candidate.source_commit) }}
-              · fingerprint {{ development_updater.candidate.fingerprint.slice(0, 16) }}…
-              · {{ development_updater.candidate.update_available ? 'UPDATE AVAILABLE' : 'CURRENT' }}
+            <small> {{ t("source") }} {{ compactCommit(development_updater.candidate.source_commit) }} {{ t("· fingerprint") }} {{ development_updater.candidate.fingerprint.slice(0, 16) }}…
+              · {{ t(development_updater.candidate.update_available ? 'UPDATE AVAILABLE' : 'CURRENT') }}
             </small>
           </template>
           <template v-else>
-            <strong>NOT DISCOVERED</strong>
-            <small>cPanel Cron must run <code>php artisan oneqay:update:discover-development</code> first.</small>
+            <strong>{{ t("NOT DISCOVERED") }}</strong>
+            <small>{{ t("cPanel Cron must run") }} <code>{{ t("php artisan oneqay:update:discover-development") }}</code> {{ t("first.") }}</small>
           </template>
         </div>
 
         <div v-if="development_update_feedback" class="notice" :data-state="development_update_feedback.state">
-          <strong>{{ development_update_feedback.state }}</strong>
-          <p>{{ development_update_feedback.message }}</p>
+          <strong>{{ t(development_update_feedback.state) }}</strong>
+          <p>{{ t(development_update_feedback.message) }}</p>
         </div>
 
         <div v-if="development_updater.last_result" class="development-result">
-          <span>Last result</span>
-          <strong>{{ development_updater.last_result.state ?? 'UNKNOWN' }}</strong>
+          <span>{{ t("Last result") }}</span>
+          <strong>{{ t(development_updater.last_result.state ?? 'UNKNOWN') }}</strong>
           <small>
-            {{ development_updater.last_result.release_id ?? 'No release' }}
+            {{ t(development_updater.last_result.release_id ?? 'No release') }}
             · {{ compactCommit(development_updater.last_result.source_commit) }}
-            · {{ development_updater.last_result.safe_code ?? 'no-code' }}
+            · {{ t(development_updater.last_result.safe_code ?? 'no-code') }}
           </small>
         </div>
 
         <form class="development-form" @submit.prevent="submitDevelopmentUpdate" autocomplete="off">
           <label>
-            <span>Operator token</span>
+            <span>{{ t("Operator token") }}</span>
             <input
               v-model="developmentUpdateForm.operator_token"
               type="password"
@@ -397,7 +376,7 @@ const submitDevelopmentUpdate = (): void => {
           </label>
 
           <label>
-            <span>TOTP code</span>
+            <span>{{ t("TOTP code") }}</span>
             <input
               v-model="developmentUpdateForm.totp_code"
               type="text"
@@ -417,7 +396,7 @@ const submitDevelopmentUpdate = (): void => {
               type="checkbox"
               :disabled="development_updater.request_pending || developmentUpdateForm.processing || !development_updater.candidate?.update_available"
             >
-            <span>Saya mengotorisasi exact release/fingerprint yang ditampilkan di atas. Production dan migration tetap tidak diizinkan.</span>
+            <span>{{ t("Saya mengotorisasi exact release/fingerprint yang ditampilkan di atas. Production dan migration tetap tidak diizinkan.") }}</span>
           </label>
 
           <button
@@ -425,39 +404,30 @@ const submitDevelopmentUpdate = (): void => {
             class="development-submit"
             :disabled="!developmentConfirmation || !development_updater.candidate?.update_available || development_updater.request_pending || developmentUpdateForm.processing"
           >
-            {{ development_updater.request_pending ? 'Update request pending' : (developmentUpdateForm.processing ? 'Submitting…' : 'Install exact governed candidate') }}
+            {{ t(development_updater.request_pending ? 'Update request pending' : (developmentUpdateForm.processing ? 'Submitting…' : 'Install exact governed candidate')) }}
           </button>
         </form>
 
         <aside class="wizard-boundary">
-          <strong>Browser tidak mengeksekusi deployment.</strong>
-          <p>
-            Cron discovery <code>php artisan oneqay:update:discover-development</code> hanya membaca trusted GitHub publication
-            dan materialize exact candidate. Tombol kemudian membuat signed short-lived authority yang terikat ke fingerprint itu.
-            Worker <code>php artisan oneqay:update:process-development</code> hanya boleh mengambil artifact/run/source yang sama,
-            melakukan integrity checks, switch atomik, runtime attestation, rollback rehearsal, dan menulis staging evidence
-            yang dapat dipakai untuk same-source Production promotion.
-          </p>
+          <strong>{{ t("Browser tidak mengeksekusi deployment.") }}</strong>
+          <p> {{ t("Cron discovery") }} <code>{{ t("php artisan oneqay:update:discover-development") }}</code> {{ t("hanya membaca trusted GitHub publication dan materialize exact candidate. Tombol kemudian membuat signed short-lived authority yang terikat ke fingerprint itu. Worker") }} <code>{{ t("php artisan oneqay:update:process-development") }}</code> {{ t("hanya boleh mengambil artifact/run/source yang sama, melakukan integrity checks, switch atomik, runtime attestation, rollback rehearsal, dan menulis staging evidence yang dapat dipakai untuk same-source Production promotion.") }} </p>
         </aside>
       </section>
 
-      <section class="action-panel" aria-label="Read-only action boundary">
+      <section class="action-panel" :aria-label="t('Read-only action boundary')">
         <div>
-          <p class="panel-kicker">Controlled actions</p>
-          <h2>Installation controls are locked</h2>
-          <p>
-            Tahap ini tidak menyediakan aksi perubahan. Tombol di bawah hanya indikator visual dan tidak
-            memiliki event handler, form submission, atau request ke backend.
-          </p>
+          <p class="panel-kicker">{{ t("Controlled actions") }}</p>
+          <h2>{{ t("Installation controls are locked") }}</h2>
+          <p> {{ t("Tahap ini tidak menyediakan aksi perubahan. Tombol di bawah hanya indikator visual dan tidak memiliki event handler, form submission, atau request ke backend.") }} </p>
         </div>
         <div class="action-stack">
-          <button type="button" disabled>Check for updates — unavailable</button>
-          <button type="button" disabled>Install update — locked</button>
+          <button type="button" disabled>{{ t("Check for updates — unavailable") }}</button>
+          <button type="button" disabled>{{ t("Install update — locked") }}</button>
         </div>
       </section>
 
       <footer class="footer">
-        <span>Read-only operational view</span>
+        <span>{{ t("Read-only operational view") }}</span>
         <span>{{ status.attribution }}</span>
       </footer>
     </div>

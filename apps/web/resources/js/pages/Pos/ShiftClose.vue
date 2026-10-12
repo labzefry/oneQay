@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from "../../i18n";
 import axios, { AxiosError } from 'axios'
 import { computed, ref } from 'vue'
 
@@ -79,65 +80,56 @@ const closeShift = async (): Promise<void> => {
     <div class="shell">
       <header class="topbar">
         <div>
-          <p class="brand">oneQay</p>
-          <p class="muted">Final Shift Close</p>
+          <p class="brand">{{ t("oneQay") }}</p>
+          <p class="muted">{{ t("Final Shift Close") }}</p>
         </div>
-        <span class="state">{{ delivery.activation_state }}</span>
+        <span class="state">{{ t(delivery.activation_state) }}</span>
       </header>
 
       <section class="hero">
-        <p class="eyebrow">Privileged cash-control action</p>
-        <h1>Tutup shift final</h1>
-        <p>
-          Final Shift Close memakai state kas, reconciliation, review evidence, actor separation,
-          dan timestamp yang diturunkan server. UI ini tidak dapat mengirim nominal, variance,
-          reviewer, actor identity, shift ID, atau close timestamp.
-        </p>
+        <p class="eyebrow">{{ t("Privileged cash-control action") }}</p>
+        <h1>{{ t("Tutup shift final") }}</h1>
+        <p> {{ t("Final Shift Close memakai state kas, reconciliation, review evidence, actor separation, dan timestamp yang diturunkan server. UI ini tidak dapat mengirim nominal, variance, reviewer, actor identity, shift ID, atau close timestamp.") }} </p>
       </section>
 
       <section class="panel warning">
-        <strong>Aksi irreversible secara lifecycle</strong>
-        <p>
-          Setelah close berhasil, active slot shift dilepas secara atomik. Gunakan tombol ini hanya
-          setelah closing-cash evidence dan review variance—jika diperlukan—sudah selesai.
-        </p>
+        <strong>{{ t("Aksi irreversible secara lifecycle") }}</strong>
+        <p> {{ t("Setelah close berhasil, active slot shift dilepas secara atomik. Gunakan tombol ini hanya setelah closing-cash evidence dan review variance—jika diperlukan—sudah selesai.") }} </p>
       </section>
 
       <section v-if="result === null" class="panel action-panel">
         <div>
-          <p class="eyebrow">Stable operation</p>
+          <p class="eyebrow">{{ t("Stable operation") }}</p>
           <code>{{ operation }}</code>
-          <p class="muted">
-            Operation ID dipertahankan untuk retry yang identik. Retry tidak membuat close mutation kedua.
-          </p>
+          <p class="muted"> {{ t("Operation ID dipertahankan untuk retry yang identik. Retry tidak membuat close mutation kedua.") }} </p>
         </div>
         <button type="button" :disabled="processing" @click="closeShift">
-          {{ processing ? 'Memproses close…' : 'Konfirmasi Final Shift Close' }}
+          {{ t(processing ? 'Memproses close…' : 'Konfirmasi Final Shift Close') }}
         </button>
       </section>
 
       <section v-if="errorCode" class="panel error" role="alert">
-        <strong>Final Shift Close ditolak aman</strong>
+        <strong>{{ t("Final Shift Close ditolak aman") }}</strong>
         <p>{{ errorCode }}</p>
-        <p class="muted">Periksa prerequisite, authorization, reconciliation, dan separation-of-duties sebelum retry.</p>
+        <p class="muted">{{ t("Periksa prerequisite, authorization, reconciliation, dan separation-of-duties sebelum retry.") }}</p>
       </section>
 
       <section v-if="result" class="panel success" aria-live="polite">
-        <p class="eyebrow">Durable close evidence</p>
-        <h2>Shift berhasil ditutup</h2>
+        <p class="eyebrow">{{ t("Durable close evidence") }}</p>
+        <h2>{{ t("Shift berhasil ditutup") }}</h2>
         <dl>
-          <div><dt>Evidence</dt><dd><code>{{ result.evidence_id }}</code></dd></div>
-          <div><dt>Shift</dt><dd><code>{{ result.shift_id }}</code></dd></div>
-          <div><dt>Variance</dt><dd>{{ result.reconciliation.variance_direction }} · {{ money(result.reconciliation.variance_atomic, result.reconciliation.currency) }}</dd></div>
-          <div><dt>Expected cash</dt><dd>{{ money(result.reconciliation.expected_cash_atomic, result.reconciliation.currency) }}</dd></div>
-          <div><dt>Observed cash</dt><dd>{{ money(result.reconciliation.observed_closing_cash_atomic, result.reconciliation.currency) }}</dd></div>
-          <div><dt>Review outcome</dt><dd>{{ result.reconciliation.review_outcome ?? 'Not required' }}</dd></div>
+          <div><dt>{{ t("Evidence") }}</dt><dd><code>{{ result.evidence_id }}</code></dd></div>
+          <div><dt>{{ t("Shift") }}</dt><dd><code>{{ result.shift_id }}</code></dd></div>
+          <div><dt>{{ t("Variance") }}</dt><dd>{{ t(result.reconciliation.variance_direction) }} · {{ money(result.reconciliation.variance_atomic, result.reconciliation.currency) }}</dd></div>
+          <div><dt>{{ t("Expected cash") }}</dt><dd>{{ money(result.reconciliation.expected_cash_atomic, result.reconciliation.currency) }}</dd></div>
+          <div><dt>{{ t("Observed cash") }}</dt><dd>{{ money(result.reconciliation.observed_closing_cash_atomic, result.reconciliation.currency) }}</dd></div>
+          <div><dt>{{ t("Review outcome") }}</dt><dd>{{ t(result.reconciliation.review_outcome ?? 'Not required') }}</dd></div>
         </dl>
       </section>
 
       <footer>
-        <span>Production ready: {{ delivery.production_ready ? 'yes' : 'no' }}</span>
-        <span>Author by Lab | zefry</span>
+        <span>{{ t("Production ready:") }} {{ t(delivery.production_ready ? 'yes' : 'no') }}</span>
+        <span>{{ t("Author by Lab | zefry") }}</span>
       </footer>
     </div>
   </main>

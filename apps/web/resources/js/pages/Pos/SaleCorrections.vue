@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from "../../i18n";
 import { Head } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 
@@ -182,49 +183,49 @@ const submitCorrection = async (): Promise<void> => {
 </script>
 
 <template>
-    <Head title="Sale Corrections" />
+    <Head :title="t('Sale Corrections')" />
     <main class="shell">
         <header class="hero">
             <div>
-                <p class="eyebrow">oneQay · Point of Sale</p>
-                <h1>Sale Correction Workspace</h1>
-                <p class="subtitle">Void dan full CASH refund tetap memakai mutation authority canonical, idempotent, dan scoped.</p>
+                <p class="eyebrow">{{ t("oneQay · Point of Sale") }}</p>
+                <h1>{{ t("Sale Correction Workspace") }}</h1>
+                <p class="subtitle">{{ t("Void dan full CASH refund tetap memakai mutation authority canonical, idempotent, dan scoped.") }}</p>
             </div>
-            <button type="button" class="secondary refresh" @click="refresh">Refresh authoritative state</button>
+            <button type="button" class="secondary refresh" @click="refresh">{{ t("Refresh authoritative state") }}</button>
         </header>
 
         <section class="scope-strip">
-            <div><span>Outlet</span><strong>{{ props.scope.outlet_id }}</strong></div>
-            <div><span>Operator device</span><strong>{{ props.scope.device_id }}</strong></div>
-            <div><span>Void permission</span><strong>{{ props.permissions.can_void ? 'ALLOWED' : 'DENIED' }}</strong></div>
-            <div><span>Cash refund permission</span><strong>{{ props.permissions.can_cash_refund ? 'ALLOWED' : 'DENIED' }}</strong></div>
+            <div><span>{{ t("Outlet") }}</span><strong>{{ props.scope.outlet_id }}</strong></div>
+            <div><span>{{ t("Operator device") }}</span><strong>{{ props.scope.device_id }}</strong></div>
+            <div><span>{{ t("Void permission") }}</span><strong>{{ t(props.permissions.can_void ? 'ALLOWED' : 'DENIED') }}</strong></div>
+            <div><span>{{ t("Cash refund permission") }}</span><strong>{{ t(props.permissions.can_cash_refund ? 'ALLOWED' : 'DENIED') }}</strong></div>
         </section>
 
         <section class="summary-grid">
-            <article><span>Completed</span><strong>{{ counts.completed }}</strong></article>
-            <article><span>Voided</span><strong>{{ counts.voided }}</strong></article>
-            <article><span>Refunded</span><strong>{{ counts.refunded }}</strong></article>
+            <article><span>{{ t("Completed") }}</span><strong>{{ counts.completed }}</strong></article>
+            <article><span>{{ t("Voided") }}</span><strong>{{ counts.voided }}</strong></article>
+            <article><span>{{ t("Refunded") }}</span><strong>{{ counts.refunded }}</strong></article>
         </section>
 
         <section v-if="message" class="notice" :data-uncertain="uncertain" aria-live="polite">
-            <strong>{{ uncertain ? 'State verification required' : 'Workspace update' }}</strong>
-            <p>{{ message }}</p>
-            <button v-if="uncertain" type="button" class="secondary" @click="refresh">Refresh sekarang</button>
+            <strong>{{ t(uncertain ? 'State verification required' : 'Workspace update') }}</strong>
+            <p>{{ t(message) }}</p>
+            <button v-if="uncertain" type="button" class="secondary" @click="refresh">{{ t("Refresh sekarang") }}</button>
         </section>
 
         <section class="panel">
             <div class="toolbar">
                 <div>
-                    <p class="eyebrow">Recent scoped sales</p>
-                    <h2>Koreksi transaksi</h2>
+                    <p class="eyebrow">{{ t("Recent scoped sales") }}</p>
+                    <h2>{{ t("Koreksi transaksi") }}</h2>
                 </div>
                 <div class="filters">
-                    <input v-model="search" type="search" placeholder="Cari sale ID / device" autocomplete="off">
+                    <input v-model="search" type="search" :placeholder="t('Cari sale ID / device')" autocomplete="off">
                     <select v-model="stateFilter">
-                        <option value="ALL">Semua status</option>
-                        <option value="COMPLETED">Completed</option>
-                        <option value="VOIDED">Voided</option>
-                        <option value="REFUNDED">Refunded</option>
+                        <option value="ALL">{{ t("Semua status") }}</option>
+                        <option value="COMPLETED">{{ t("Completed") }}</option>
+                        <option value="VOIDED">{{ t("Voided") }}</option>
+                        <option value="REFUNDED">{{ t("Refunded") }}</option>
                     </select>
                 </div>
             </div>
@@ -233,7 +234,7 @@ const submitCorrection = async (): Promise<void> => {
                 <table>
                     <thead>
                         <tr>
-                            <th>Sale</th><th>Waktu</th><th>Nilai</th><th>Tender</th><th>Original device</th><th>Shift</th><th>Status</th><th>Aksi</th>
+                            <th>{{ t("Sale") }}</th><th>{{ t("Waktu") }}</th><th>{{ t("Nilai") }}</th><th>{{ t("Tender") }}</th><th>{{ t("Original device") }}</th><th>{{ t("Shift") }}</th><th>{{ t("Status") }}</th><th>{{ t("Aksi") }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -241,20 +242,20 @@ const submitCorrection = async (): Promise<void> => {
                             <td><strong class="mono">{{ sale.sale_id }}</strong></td>
                             <td>{{ formatTime(sale.completed_at_unix) }}</td>
                             <td><strong>{{ formatAtomic(sale.amount_atomic, sale.currency, sale.scale) }}</strong></td>
-                            <td>{{ sale.tender_category }}</td>
+                            <td>{{ t(sale.tender_category) }}</td>
                             <td class="mono">{{ sale.original_device_id }}</td>
-                            <td><span class="shift" :data-active="sale.shift_active">{{ sale.shift_active ? 'ACTIVE' : 'CLOSED' }}</span></td>
+                            <td><span class="shift" :data-active="sale.shift_active">{{ t(sale.shift_active ? 'ACTIVE' : 'CLOSED') }}</span></td>
                             <td>
-                                <span class="state" :data-state="sale.state">{{ sale.state }}</span>
-                                <small v-if="sale.external_settlement_required" class="external">External settlement required</small>
+                                <span class="state" :data-state="sale.state">{{ t(sale.state) }}</span>
+                                <small v-if="sale.external_settlement_required" class="external">{{ t("External settlement required") }}</small>
                             </td>
                             <td class="actions">
-                                <button v-if="sale.void_eligible" type="button" :disabled="submitting || uncertain" @click="begin(sale, 'void')">Void sale</button>
-                                <button v-else-if="sale.cash_refund_eligible" type="button" :disabled="submitting || uncertain" @click="begin(sale, 'refund')">Record cash refund</button>
-                                <span v-else class="muted">No action</span>
+                                <button v-if="sale.void_eligible" type="button" :disabled="submitting || uncertain" @click="begin(sale, 'void')">{{ t("Void sale") }}</button>
+                                <button v-else-if="sale.cash_refund_eligible" type="button" :disabled="submitting || uncertain" @click="begin(sale, 'refund')">{{ t("Record cash refund") }}</button>
+                                <span v-else class="muted">{{ t("No action") }}</span>
                             </td>
                         </tr>
-                        <tr v-if="!visibleSales.length"><td colspan="8" class="empty">Tidak ada sale yang cocok dengan filter.</td></tr>
+                        <tr v-if="!visibleSales.length"><td colspan="8" class="empty">{{ t("Tidak ada sale yang cocok dengan filter.") }}</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -262,24 +263,24 @@ const submitCorrection = async (): Promise<void> => {
 
         <div v-if="pending" class="modal-backdrop" @click.self="cancel">
             <section class="modal" role="dialog" aria-modal="true" aria-labelledby="correction-title">
-                <p class="eyebrow">Irreversible operational step</p>
-                <h2 id="correction-title">{{ pending.action === 'void' ? 'Konfirmasi full sale void' : 'Konfirmasi full CASH refund' }}</h2>
-                <p v-if="pending.action === 'void'">Void akan membalik seluruh sale dan mengembalikan stok sesuai business authority canonical. Untuk CASH, refund tunai tetap merupakan langkah kedua yang terpisah.</p>
-                <p v-else>Refund ini hanya mencatat full CASH refund setelah full sale void yang valid. Nominal berasal dari sale authoritative dan tidak dapat diubah dari UI.</p>
+                <p class="eyebrow">{{ t("Irreversible operational step") }}</p>
+                <h2 id="correction-title">{{ t(pending.action === 'void' ? 'Konfirmasi full sale void' : 'Konfirmasi full CASH refund') }}</h2>
+                <p v-if="pending.action === 'void'">{{ t("Void akan membalik seluruh sale dan mengembalikan stok sesuai business authority canonical. Untuk CASH, refund tunai tetap merupakan langkah kedua yang terpisah.") }}</p>
+                <p v-else>{{ t("Refund ini hanya mencatat full CASH refund setelah full sale void yang valid. Nominal berasal dari sale authoritative dan tidak dapat diubah dari UI.") }}</p>
                 <dl>
-                    <div><dt>Sale</dt><dd class="mono">{{ pending.sale.sale_id }}</dd></div>
-                    <div><dt>Nilai</dt><dd>{{ formatAtomic(pending.sale.amount_atomic, pending.sale.currency, pending.sale.scale) }}</dd></div>
-                    <div><dt>Tender</dt><dd>{{ pending.sale.tender_category }}</dd></div>
+                    <div><dt>{{ t("Sale") }}</dt><dd class="mono">{{ pending.sale.sale_id }}</dd></div>
+                    <div><dt>{{ t("Nilai") }}</dt><dd>{{ formatAtomic(pending.sale.amount_atomic, pending.sale.currency, pending.sale.scale) }}</dd></div>
+                    <div><dt>{{ t("Tender") }}</dt><dd>{{ t(pending.sale.tender_category) }}</dd></div>
                 </dl>
                 <div class="modal-actions">
-                    <button type="button" class="secondary" :disabled="submitting" @click="cancel">Batal</button>
-                    <button type="button" class="danger" :disabled="submitting" @click="submitCorrection">{{ submitting ? 'Memproses…' : 'Konfirmasi' }}</button>
+                    <button type="button" class="secondary" :disabled="submitting" @click="cancel">{{ t("Batal") }}</button>
+                    <button type="button" class="danger" :disabled="submitting" @click="submitCorrection">{{ t(submitting ? 'Memproses…' : 'Konfirmasi') }}</button>
                 </div>
-                <small>Tidak ada automatic retry. Bila respons jaringan tidak pasti, refresh state authoritative sebelum tindakan berikutnya.</small>
+                <small>{{ t("Tidak ada automatic retry. Bila respons jaringan tidak pasti, refresh state authoritative sebelum tindakan berikutnya.") }}</small>
             </section>
         </div>
 
-        <footer>Page correlation: <span class="mono">{{ props.correlation_id }}</span></footer>
+        <footer>{{ t("Page correlation:") }} <span class="mono">{{ props.correlation_id }}</span></footer>
     </main>
 </template>
 

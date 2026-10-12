@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from "../../i18n";
 import { Head } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 
@@ -127,40 +128,40 @@ const replenish = async (): Promise<void> => {
 </script>
 
 <template>
-    <Head title="Inventory Replenishment" />
+    <Head :title="t('Inventory Replenishment')" />
     <main class="page-shell">
         <header class="hero">
             <div>
-                <p class="eyebrow">oneQay · Inventory Operations</p>
-                <h1>Inventory Replenishment</h1>
-                <p class="subtitle">Receive positive stock against a product that already has canonical opening inventory. This workspace does not provide arbitrary stock correction or negative adjustment.</p>
+                <p class="eyebrow">{{ t("oneQay · Inventory Operations") }}</p>
+                <h1>{{ t("Inventory Replenishment") }}</h1>
+                <p class="subtitle">{{ t("Receive positive stock against a product that already has canonical opening inventory. This workspace does not provide arbitrary stock correction or negative adjustment.") }}</p>
             </div>
             <div class="scope-card">
-                <span>Outlet</span><strong>{{ props.scope.outlet_id }}</strong>
-                <small>Device {{ props.scope.device_id }}</small>
+                <span>{{ t("Outlet") }}</span><strong>{{ props.scope.outlet_id }}</strong>
+                <small>{{ t("Device") }} {{ props.scope.device_id }}</small>
             </div>
         </header>
 
-        <div v-if="message" class="notice" :data-refresh="refreshRequired">{{ message }}</div>
-        <button v-if="refreshRequired" class="refresh" type="button" @click="refreshAuthoritative">Refresh authoritative state</button>
+        <div v-if="message" class="notice" :data-refresh="refreshRequired">{{ t(message) }}</div>
+        <button v-if="refreshRequired" class="refresh" type="button" @click="refreshAuthoritative">{{ t("Refresh authoritative state") }}</button>
 
         <section class="grid">
             <article class="panel receive-panel">
                 <div class="panel-heading">
-                    <div><p class="eyebrow">Positive receiving</p><h2>Record received stock</h2></div>
-                    <span class="badge">Immutable evidence</span>
+                    <div><p class="eyebrow">{{ t("Positive receiving") }}</p><h2>{{ t("Record received stock") }}</h2></div>
+                    <span class="badge">{{ t("Immutable evidence") }}</span>
                 </div>
-                <p class="helper">Only active catalog items with an established opening baseline are eligible. The server locks current stock, records before/received/after evidence, and rejects unsafe overflow or replay mismatch.</p>
-                <label>Selected product<input :value="selectedItem ? `${selectedItem.display_name} · ${selectedItem.product_id}` : ''" readonly placeholder="Pilih produk dari authoritative snapshot" /></label>
-                <label>Current authoritative stock<input :value="selectedItem ? formatQuantity(selectedItem.available_quantity) : ''" readonly placeholder="—" /></label>
-                <label>Received quantity<input v-model="quantity" inputmode="numeric" placeholder="100" :disabled="submitting || refreshRequired || !selectedItem" /></label>
-                <button class="primary" type="button" :disabled="submitting || refreshRequired || !selectedItem" @click="replenish">Record replenishment</button>
+                <p class="helper">{{ t("Only active catalog items with an established opening baseline are eligible. The server locks current stock, records before/received/after evidence, and rejects unsafe overflow or replay mismatch.") }}</p>
+                <label>{{ t("Selected product") }}<input :value="selectedItem ? `${selectedItem.display_name} · ${selectedItem.product_id}` : ''" readonly :placeholder="t('Pilih produk dari authoritative snapshot')" /></label>
+                <label>{{ t("Current authoritative stock") }}<input :value="selectedItem ? formatQuantity(selectedItem.available_quantity) : ''" readonly placeholder="—" /></label>
+                <label>{{ t("Received quantity") }}<input v-model="quantity" inputmode="numeric" placeholder="100" :disabled="submitting || refreshRequired || !selectedItem" /></label>
+                <button class="primary" type="button" :disabled="submitting || refreshRequired || !selectedItem" @click="replenish">{{ t("Record replenishment") }}</button>
             </article>
 
             <article class="panel evidence-panel">
                 <div class="panel-heading">
-                    <div><p class="eyebrow">Audit evidence</p><h2>Recent replenishments</h2></div>
-                    <span class="badge">Latest 50</span>
+                    <div><p class="eyebrow">{{ t("Audit evidence") }}</p><h2>{{ t("Recent replenishments") }}</h2></div>
+                    <span class="badge">{{ t("Latest 50") }}</span>
                 </div>
                 <div class="evidence-list">
                     <div v-for="row in props.recent_replenishments" :key="row.replenishment_id" class="evidence-row">
@@ -168,33 +169,33 @@ const replenish = async (): Promise<void> => {
                         <div class="flow"><span>{{ formatQuantity(row.before_available_quantity) }}</span><b>+{{ formatQuantity(row.replenished_quantity) }}</b><span>→ {{ formatQuantity(row.after_available_quantity) }}</span></div>
                         <time>{{ formatUnix(row.occurred_at_unix) }}</time>
                     </div>
-                    <p v-if="!props.recent_replenishments.length" class="empty">Belum ada replenishment evidence pada outlet ini.</p>
+                    <p v-if="!props.recent_replenishments.length" class="empty">{{ t("Belum ada replenishment evidence pada outlet ini.") }}</p>
                 </div>
             </article>
         </section>
 
         <section class="panel inventory-panel">
             <div class="panel-heading inventory-heading">
-                <div><p class="eyebrow">Authoritative snapshot</p><h2>Baseline-established active products</h2></div>
-                <input v-model="search" placeholder="Cari product ID / nama" />
+                <div><p class="eyebrow">{{ t("Authoritative snapshot") }}</p><h2>{{ t("Baseline-established active products") }}</h2></div>
+                <input v-model="search" :placeholder="t('Cari product ID / nama')" />
             </div>
             <div class="table-wrap">
                 <table>
-                    <thead><tr><th>Produk</th><th class="numeric">Current stock</th><th>Aksi</th></tr></thead>
+                    <thead><tr><th>{{ t("Produk") }}</th><th class="numeric">{{ t("Current stock") }}</th><th>{{ t("Aksi") }}</th></tr></thead>
                     <tbody>
                         <tr v-for="item in filteredItems" :key="item.product_id">
                             <td><strong>{{ item.display_name }}</strong><span class="mono block">{{ item.product_id }}</span></td>
                             <td class="numeric strong">{{ formatQuantity(item.available_quantity) }}</td>
-                            <td><button type="button" :disabled="submitting || refreshRequired" @click="chooseItem(item)">Receive stock</button></td>
+                            <td><button type="button" :disabled="submitting || refreshRequired" @click="chooseItem(item)">{{ t("Receive stock") }}</button></td>
                         </tr>
-                        <tr v-if="!filteredItems.length"><td colspan="3" class="empty">Tidak ada active product dengan baseline yang sesuai filter.</td></tr>
+                        <tr v-if="!filteredItems.length"><td colspan="3" class="empty">{{ t("Tidak ada active product dengan baseline yang sesuai filter.") }}</td></tr>
                     </tbody>
                 </table>
             </div>
-            <p class="helper">Sale completion decrements stock; full-sale void restores stock from immutable sale lines. Cash refund follows an existing void and does not restore stock a second time.</p>
+            <p class="helper">{{ t("Sale completion decrements stock; full-sale void restores stock from immutable sale lines. Cash refund follows an existing void and does not restore stock a second time.") }}</p>
         </section>
 
-        <footer>Correlation: <span class="mono">{{ props.correlation_id }}</span></footer>
+        <footer>{{ t("Correlation:") }} <span class="mono">{{ props.correlation_id }}</span></footer>
     </main>
 </template>
 

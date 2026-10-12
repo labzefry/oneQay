@@ -28,7 +28,7 @@ $provider = (string) file_get_contents($providerPath);
 
 $requiredPageMarkers = [
     'System',
-    'Update &amp; Deployment',
+    'Update & Deployment',
     'READ_ONLY',
     'Installation controls are locked',
     'Governed development delivery',
@@ -123,3 +123,4 @@ foreach ([
 }
 
 echo "Read-only Update & Deployment UI regression passed.\n";
+

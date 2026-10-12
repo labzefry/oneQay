@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from "../../i18n";
 import { computed, reactive, ref } from 'vue'
 import { router, usePage } from '@inertiajs/vue3'
 
@@ -119,61 +120,57 @@ const closeShift = () => {
   <main class="preview-shell">
     <header class="preview-topbar">
       <div>
-        <p class="preview-eyebrow">{{ previewLabel }}</p>
-        <h1>Kasir Synthetic</h1>
+        <p class="preview-eyebrow">{{ t(previewLabel) }}</p>
+        <h1>{{ t("Kasir Synthetic") }}</h1>
         <p>{{ profile.label }} · {{ profile.tenant_id }} · {{ profile.outlet_id }}</p>
       </div>
-      <button class="secondary" type="button" @click="router.post('/technical-preview/logout')">Keluar</button>
+      <button class="secondary" type="button" @click="router.post('/technical-preview/logout')">{{ t("Keluar") }}</button>
     </header>
 
     <section class="shift-panel panel">
       <template v-if="!shift">
         <div>
-          <p class="preview-eyebrow">Langkah 1 · Cash control</p>
-          <h2>Buka shift kas synthetic</h2>
-          <p class="muted">Opening cash menjadi baseline server-side sebelum transaksi kas dapat dicatat di Preview.</p>
+          <p class="preview-eyebrow">{{ t("Langkah 1 · Cash control") }}</p>
+          <h2>{{ t("Buka shift kas synthetic") }}</h2>
+          <p class="muted">{{ t("Opening cash menjadi baseline server-side sebelum transaksi kas dapat dicatat di Preview.") }}</p>
         </div>
         <div class="shift-action">
-          <label>
-            Opening cash (IDR)
-            <input v-model.number="openingCashAtomic" type="number" min="0" max="1000000000" step="1" />
+          <label> {{ t("Opening cash (IDR)") }} <input v-model.number="openingCashAtomic" type="number" min="0" max="1000000000" step="1" />
           </label>
           <button type="button" :disabled="shiftProcessing" @click="openShift">
-            {{ shiftProcessing ? 'Membuka shift…' : 'Buka shift synthetic' }}
+            {{ t(shiftProcessing ? 'Membuka shift…' : 'Buka shift synthetic') }}
           </button>
         </div>
       </template>
       <template v-else>
         <div>
-          <p class="preview-eyebrow">Shift aktif · server-owned state</p>
+          <p class="preview-eyebrow">{{ t("Shift aktif · server-owned state") }}</p>
           <h2>{{ shift.shift_id }}</h2>
           <div class="shift-metrics">
-            <span><small>Opening cash</small><strong>{{ money(shift.opening_cash_atomic) }}</strong></span>
-            <span><small>Cash sales</small><strong>{{ money(shift.cash_sales_atomic) }}</strong></span>
-            <span><small>Transaksi tercatat</small><strong>{{ shift.sale_count }}</strong></span>
+            <span><small>{{ t("Opening cash") }}</small><strong>{{ money(shift.opening_cash_atomic) }}</strong></span>
+            <span><small>{{ t("Cash sales") }}</small><strong>{{ money(shift.cash_sales_atomic) }}</strong></span>
+            <span><small>{{ t("Transaksi tercatat") }}</small><strong>{{ shift.sale_count }}</strong></span>
           </div>
         </div>
         <div class="shift-action">
-          <label>
-            Observed closing cash (IDR)
-            <input v-model.number="observedClosingAtomic" type="number" min="0" max="1000000000" step="1" />
+          <label> {{ t("Observed closing cash (IDR)") }} <input v-model.number="observedClosingAtomic" type="number" min="0" max="1000000000" step="1" />
           </label>
           <button class="close" type="button" :disabled="shiftProcessing" @click="closeShift">
-            {{ shiftProcessing ? 'Merekonsiliasi…' : 'Tutup & rekonsiliasi kas' }}
+            {{ t(shiftProcessing ? 'Merekonsiliasi…' : 'Tutup & rekonsiliasi kas') }}
           </button>
         </div>
       </template>
-      <p v-if="shiftError" class="preview-error full">{{ shiftError }}</p>
+      <p v-if="shiftError" class="preview-error full">{{ t(shiftError) }}</p>
     </section>
 
     <section class="preview-grid">
       <div class="panel">
         <div class="section-title">
           <div>
-            <p class="preview-eyebrow">Langkah 2 · Transaksi</p>
-            <h2>Katalog</h2>
+            <p class="preview-eyebrow">{{ t("Langkah 2 · Transaksi") }}</p>
+            <h2>{{ t("Katalog") }}</h2>
           </div>
-          <span v-if="!shift" class="locked">Shift kas belum dibuka</span>
+          <span v-if="!shift" class="locked">{{ t("Shift kas belum dibuka") }}</span>
         </div>
         <article v-for="item in catalog" :key="item.product_id" class="catalog-item">
           <div>
@@ -191,37 +188,33 @@ const closeShift = () => {
 
       <aside class="panel checkout">
         <div>
-          <p class="preview-eyebrow">Server-authoritative total</p>
+          <p class="preview-eyebrow">{{ t("Server-authoritative total") }}</p>
           <strong class="total">{{ money(total) }}</strong>
-          <p class="muted">Server M7.4 menghitung ulang harga dan total dari catalog fixture terverifikasi.</p>
+          <p class="muted">{{ t("Server M7.4 menghitung ulang harga dan total dari catalog fixture terverifikasi.") }}</p>
         </div>
 
-        <label>
-          Tender
-          <select v-model="tenderCategory" :disabled="!shift" @change="tenderedAtomicUnits = total">
-            <option value="CASH">Cash</option>
-            <option value="MANUAL_EXTERNAL">Manual external (operator recorded)</option>
+        <label> {{ t("Tender") }} <select v-model="tenderCategory" :disabled="!shift" @change="tenderedAtomicUnits = total">
+            <option value="CASH">{{ t("Cash") }}</option>
+            <option value="MANUAL_EXTERNAL">{{ t("Manual external (operator recorded)") }}</option>
           </select>
         </label>
 
-        <label>
-          Nominal diterima (IDR)
-          <input v-model.number="tenderedAtomicUnits" type="number" min="0" step="1" :disabled="!shift" />
+        <label> {{ t("Nominal diterima (IDR)") }} <input v-model.number="tenderedAtomicUnits" type="number" min="0" step="1" :disabled="!shift" />
         </label>
 
-        <p v-if="saleError" class="preview-error">{{ saleError }}</p>
+        <p v-if="saleError" class="preview-error">{{ t(saleError) }}</p>
         <button type="button" :disabled="!shift || processing || cartLines.length === 0" @click="submit">
-          {{ processing ? 'Memproses synthetic sale…' : 'Selesaikan transaksi' }}
+          {{ t(processing ? 'Memproses synthetic sale…' : 'Selesaikan transaksi') }}
         </button>
 
         <div class="ledger-note">
-          <strong>Cash ledger Preview</strong>
-          <span>Hanya total receipt bertender CASH yang menambah cash sales. Uang kembalian tidak dihitung sebagai pendapatan kas dan MANUAL_EXTERNAL tidak menambah cash ledger.</span>
+          <strong>{{ t("Cash ledger Preview") }}</strong>
+          <span>{{ t("Hanya total receipt bertender CASH yang menambah cash sales. Uang kembalian tidak dihitung sebagai pendapatan kas dan MANUAL_EXTERNAL tidak menambah cash ledger.") }}</span>
         </div>
 
         <div class="warning">
-          <strong>Not Production Ready</strong>
-          <span>Tidak ada payment provider atau transaksi uang nyata. Shift, ledger, dan reconciliation ini synthetic session evidence—bukan durable production ledger.</span>
+          <strong>{{ t("Not Production Ready") }}</strong>
+          <span>{{ t("Tidak ada payment provider atau transaksi uang nyata. Shift, ledger, dan reconciliation ini synthetic session evidence—bukan durable production ledger.") }}</span>
         </div>
       </aside>
     </section>

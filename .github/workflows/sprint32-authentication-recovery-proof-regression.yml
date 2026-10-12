@@ -136,6 +136,14 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
+      - name: Verify exact bilingual presentation successor
+        if: github.event_name == 'pull_request' && github.head_ref == 'oneqaydev-bilingual-workspace-20261012' && github.event.pull_request.base.sha == '36b11e1e998f135a93a8d72a21bdb0aefabc3560' && github.event.pull_request.head.repo.full_name == 'labzefry/oneQay'
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash tools/qa-bilingual-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
+          echo 'ONEQAY_BILINGUAL_PRESENTATION=true' >> "$GITHUB_ENV"
+
       - name: Setup exact PHP runtime
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
         with:
@@ -361,7 +369,7 @@ jobs:
           echo 'SPRINT268_EXACT_COMPOSER_ONLY_SUCCESSOR=PASS'
 
       - name: Enforce exact Sprint 32 source envelope
-        if: ((github.event_name == 'pull_request' && env.ONEQAY_SPRINT33_SUCCESSOR != 'true' && env.ONEQAY_SPRINT32_WORKFLOW_CORRECTION != 'true' && !(github.head_ref == 'sprint268-security-dependency-remediation' && github.event.pull_request.number == 926)) && (github.event_name != 'pull_request' || github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009')) && (github.event_name != 'pull_request' || github.head_ref != 'production-dev-readiness-and-merchant-foundation-20261010')
+        if: (((github.event_name == 'pull_request' && env.ONEQAY_SPRINT33_SUCCESSOR != 'true' && env.ONEQAY_SPRINT32_WORKFLOW_CORRECTION != 'true' && !(github.head_ref == 'sprint268-security-dependency-remediation' && github.event.pull_request.number == 926)) && (github.event_name != 'pull_request' || github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009')) && (github.event_name != 'pull_request' || github.head_ref != 'production-dev-readiness-and-merchant-foundation-20261010')) && env.ONEQAY_BILINGUAL_PRESENTATION != 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -409,7 +417,7 @@ jobs:
           grep -Fq 'rm -f apps/web/database/migrations/0000_00_00_000010_create_identity_recovery_codes.php' "$release"
 
       - name: Enforce migration ten preservation or Sprint 32 additive-only contract
-        if: ((github.event_name != 'pull_request' || github.head_ref != 'sprint268-security-dependency-remediation' || github.event.pull_request.number != 926) && (github.event_name != 'pull_request' || github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009')) && (github.event_name != 'pull_request' || github.head_ref != 'production-dev-readiness-and-merchant-foundation-20261010')
+        if: (((github.event_name != 'pull_request' || github.head_ref != 'sprint268-security-dependency-remediation' || github.event.pull_request.number != 926) && (github.event_name != 'pull_request' || github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009')) && (github.event_name != 'pull_request' || github.head_ref != 'production-dev-readiness-and-merchant-foundation-20261010')) && env.ONEQAY_BILINGUAL_PRESENTATION != 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -690,3 +698,4 @@ jobs:
           set -euo pipefail
           git diff --exit-code
           test -z "$(git status --porcelain)"
+

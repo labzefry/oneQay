@@ -3,9 +3,13 @@ import '../css/app.css'
 import { createInertiaApp } from '@inertiajs/vue3'
 import { createApp, h, type DefineComponent } from 'vue'
 import MerchantShell from './layouts/MerchantShell.vue'
+import LocalizedShell from './layouts/LocalizedShell.vue'
+import { initializeLocale } from './i18n'
+
+initializeLocale()
 
 createInertiaApp({
-  layout: (name) => name.startsWith('Pos/') ? MerchantShell : null,
+  layout: (name) => name.startsWith('Pos/') ? MerchantShell : LocalizedShell,
   resolve: (name) => {
     const pages = import.meta.glob<{ default: DefineComponent }>('./pages/**/*.vue', { eager: true })
     const page = pages[`./pages/${name}.vue`]

@@ -1,0 +1,3538 @@
+{
+  "(max-width: 800px)": {
+    "id": "(max-width: 800px)",
+    "en": "(max-width: 800px)"
+  },
+  ", memverifikasi exact hash dan forward-only source, lalu cPanel Cron melakukan switch release, attestation, rollback rehearsal, dan re-activation.": {
+    "id": ", memeriksa hash dan urutan sumber, lalu Cron cPanel mengganti rilis, memverifikasi, menguji pemulihan, dan mengaktifkannya kembali.",
+    "en": ", verifies the exact hash and forward-only source, then cPanel Cron switches the release, verifies it, rehearses rollback, and reactivates it."
+  },
+  ". Any mismatch fails closed at the server instead of presenting a misleading balance.": {
+    "id": ". Jika ada ketidaksesuaian, server menghentikan proses agar saldo yang ditampilkan tidak menyesatkan.",
+    "en": ". Any mismatch fails closed at the server instead of presenting a misleading balance."
+  },
+  ". Nilai tenant/outlet di bawah ini hanya tampilan; server tetap memverifikasi hubungan identitas sebelum context digunakan.": {
+    "id": ". Identitas tenant dan outlet berikut hanya ditampilkan; server tetap memverifikasi hubungan identitas sebelum menggunakan konteksnya.",
+    "en": ". The tenant and outlet values below are display-only; the server verifies identity relationships before using the context."
+  },
+  "/ 4096 UTF-8 bytes": {
+    "id": "/ 4096 byte UTF-8",
+    "en": "/ 4096 UTF-8 bytes"
+  },
+  "6-digit code": {
+    "id": "Kode 6 digit",
+    "en": "6-digit code"
+  },
+  "; error = ": {
+    "id": "; error = ",
+    "en": "; error = "
+  },
+  "A different actor reviews the explanation.": {
+    "id": "Petugas lain meninjau penjelasan ini.",
+    "en": "A different actor reviews the explanation."
+  },
+  "A successful change invalidates the current session and requires a fresh sign-in.": {
+    "id": "Perubahan yang berhasil akan mengakhiri sesi saat ini dan mengharuskan Anda masuk kembali.",
+    "en": "A successful change invalidates the current session and requires a fresh sign-in."
+  },
+  "A valid single-use code opens only the bounded factor-replacement session.": {
+    "id": "Kode sekali pakai yang valid hanya membuka sesi terbatas untuk mengganti autentikator.",
+    "en": "A valid single-use code opens only the bounded factor-replacement session."
+  },
+  "ACTIVE": {
+    "id": "AKTIF",
+    "en": "ACTIVE"
+  },
+  "ALL": {
+    "id": "SEMUA",
+    "en": "ALL"
+  },
+  "AVAILABLE": {
+    "id": "TERSEDIA",
+    "en": "AVAILABLE"
+  },
+  "Accept": {
+    "id": "Terima",
+    "en": "Accept"
+  },
+  "Accept review": {
+    "id": "Terima tinjauan",
+    "en": "Accept review"
+  },
+  "Acceptance becomes immutable reviewer evidence. Final shift close will still revalidate the complete subject and actor separation.": {
+    "id": "Penerimaan menjadi bukti tinjauan yang tidak dapat diubah. Penutupan shift tetap memeriksa seluruh data dan pemisahan petugas.",
+    "en": "Acceptance becomes immutable reviewer evidence. Final shift close will still revalidate the complete subject and actor separation."
+  },
+  "Account & security": {
+    "id": "Akun & keamanan",
+    "en": "Account & security"
+  },
+  "Account and security": {
+    "id": "Akun dan keamanan",
+    "en": "Account and security"
+  },
+  "Account recovery": {
+    "id": "Pemulihan akun",
+    "en": "Account recovery"
+  },
+  "Activation support": {
+    "id": "Dukungan aktivasi",
+    "en": "Activation support"
+  },
+  "Active": {
+    "id": "Aktif",
+    "en": "Active"
+  },
+  "Active Shift Performance": {
+    "id": "Kinerja sif aktif",
+    "en": "Active Shift Performance"
+  },
+  "Active net": {
+    "id": "Penjualan bersih aktif",
+    "en": "Active net"
+  },
+  "Active net = gross − full-sale void. CASH refund is displayed separately and is not subtracted twice.": {
+    "id": "Penjualan bersih aktif = bruto − pembatalan seluruh penjualan. Pengembalian tunai ditampilkan terpisah dan tidak dikurangkan dua kali.",
+    "en": "Active net = gross − full-sale void. CASH refund is displayed separately and is not subtracted twice."
+  },
+  "Active net value = gross − full-sale void. Cash refund is shown separately and is not subtracted twice.": {
+    "id": "Nilai bersih aktif = bruto − pembatalan seluruh penjualan. Pengembalian tunai ditampilkan terpisah dan tidak dikurangkan dua kali.",
+    "en": "Active net value = gross − full-sale void. Cash refund is shown separately and is not subtracted twice."
+  },
+  "Active operation:": {
+    "id": "Operasi aktif:",
+    "en": "Active operation:"
+  },
+  "Active outlet shifts": {
+    "id": "Shift outlet aktif",
+    "en": "Active outlet shifts"
+  },
+  "Active sales": {
+    "id": "Penjualan aktif",
+    "en": "Active sales"
+  },
+  "Actor": {
+    "id": "Petugas",
+    "en": "Actor"
+  },
+  "Add items, take payment, and issue a receipt.": {
+    "id": "Tambahkan produk, terima pembayaran, dan terbitkan struk.",
+    "en": "Add items, take payment, and issue a receipt."
+  },
+  "Add products and set opening inventory.": {
+    "id": "Tambahkan produk dan tentukan stok awal.",
+    "en": "Add products and set opening inventory."
+  },
+  "Add this one-time enrollment material to your authenticator, then confirm a 6-digit code.": {
+    "id": "Tambahkan data pendaftaran sekali pakai ini ke aplikasi autentikator, lalu konfirmasikan kode 6 digit.",
+    "en": "Add this one-time enrollment material to your authenticator, then confirm a 6-digit code."
+  },
+  "Add this one-time material to your authenticator, then confirm the new 6-digit code. Completion requires a fresh login.": {
+    "id": "Tambahkan data sekali pakai ini ke aplikasi autentikator, lalu konfirmasikan kode 6 digit baru. Setelah selesai, masuk kembali.",
+    "en": "Add this one-time material to your authenticator, then confirm the new 6-digit code. Completion requires a fresh login."
+  },
+  "Add your products and opening stock to prepare your first sale.": {
+    "id": "Tambahkan produk dan stok awal untuk menyiapkan penjualan pertama.",
+    "en": "Add your products and opening stock to prepare your first sale."
+  },
+  "Additional verification": {
+    "id": "Verifikasi tambahan",
+    "en": "Additional verification"
+  },
+  "Aksi": {
+    "id": "Aksi",
+    "en": "Actions"
+  },
+  "Aksi irreversible secara lifecycle": {
+    "id": "Tindakan yang tidak dapat dibatalkan",
+    "en": "Irreversible lifecycle actions"
+  },
+  "Amount": {
+    "id": "Jumlah",
+    "en": "Amount"
+  },
+  "Application access remains locked until MFA succeeds.": {
+    "id": "Akses aplikasi tetap terkunci sampai verifikasi MFA berhasil.",
+    "en": "Application access remains locked until MFA succeeds."
+  },
+  "Applied": {
+    "id": "Diterapkan",
+    "en": "Applied"
+  },
+  "Audit evidence": {
+    "id": "Bukti audit",
+    "en": "Audit evidence"
+  },
+  "Authenticator code": {
+    "id": "Kode autentikator",
+    "en": "Authenticator code"
+  },
+  "Authenticator recovery": {
+    "id": "Pemulihan autentikator",
+    "en": "Authenticator recovery"
+  },
+  "Authenticator recovery codes": {
+    "id": "Kode pemulihan autentikator",
+    "en": "Authenticator recovery codes"
+  },
+  "Authenticator recovery codes could not be rotated safely.": {
+    "id": "Kode pemulihan autentikator belum dapat diganti dengan aman.",
+    "en": "Authenticator recovery codes could not be rotated safely."
+  },
+  "Authenticator recovery codes were not rotated.": {
+    "id": "Kode pemulihan autentikator belum diganti.",
+    "en": "Authenticator recovery codes were not rotated."
+  },
+  "Authenticator recovery could not be completed safely.": {
+    "id": "Pemulihan autentikator belum dapat diselesaikan dengan aman.",
+    "en": "Authenticator recovery could not be completed safely."
+  },
+  "Authenticator recovery proof was not accepted.": {
+    "id": "Bukti pemulihan autentikator tidak diterima.",
+    "en": "Authenticator recovery proof was not accepted."
+  },
+  "Authenticator replacement": {
+    "id": "Penggantian autentikator",
+    "en": "Authenticator replacement"
+  },
+  "Authenticator replacement could not be completed safely.": {
+    "id": "Penggantian autentikator belum dapat diselesaikan dengan aman.",
+    "en": "Authenticator replacement could not be completed safely."
+  },
+  "Authenticator replacement could not be started.": {
+    "id": "Penggantian autentikator belum dapat dimulai.",
+    "en": "Authenticator replacement could not be started."
+  },
+  "Authenticator replacement was not completed.": {
+    "id": "Penggantian autentikator belum selesai.",
+    "en": "Authenticator replacement was not completed."
+  },
+  "Author by": {
+    "id": "Author by",
+    "en": "Author by"
+  },
+  "Author by Lab | zefry": {
+    "id": "Author by Lab | zefry",
+    "en": "Author by Lab | zefry"
+  },
+  "Authoritative receipt": {
+    "id": "Struk resmi",
+    "en": "Authoritative receipt"
+  },
+  "Authoritative sale receipt": {
+    "id": "Struk penjualan resmi",
+    "en": "Authoritative sale receipt"
+  },
+  "Authoritative snapshot": {
+    "id": "Data terbaru dari server",
+    "en": "Authoritative snapshot"
+  },
+  "Authorized routes available": {
+    "id": "Menu sesuai hak akses tersedia",
+    "en": "Authorized routes available"
+  },
+  "Authorized workspace group for the current context.": {
+    "id": "Kelompok menu yang diizinkan untuk konteks saat ini.",
+    "en": "Authorized workspace group for the current context."
+  },
+  "Available for your next sale": {
+    "id": "Tersedia untuk penjualan berikutnya",
+    "en": "Available for your next sale"
+  },
+  "BASELINE_ELIGIBLE": {
+    "id": "DAPAT_DIISI_STOK_AWAL",
+    "en": "BASELINE_ELIGIBLE"
+  },
+  "BLOCKED": {
+    "id": "TERBLOKIR",
+    "en": "BLOCKED"
+  },
+  "BUSINESS WORKSPACE": {
+    "id": "RUANG KERJA BISNIS",
+    "en": "BUSINESS WORKSPACE"
+  },
+  "Back to POS Operations": {
+    "id": "Kembali ke Operasional POS",
+    "en": "Back to POS Operations"
+  },
+  "Back to sign in": {
+    "id": "Kembali ke halaman masuk",
+    "en": "Back to sign in"
+  },
+  "Backend status surface tersedia, tetapi tetap mengikuti feature gate.": {
+    "id": "Status server tersedia sesuai pengaturan aktivasi fitur.",
+    "en": "Backend status is available subject to the feature gate."
+  },
+  "Baseline": {
+    "id": "Data awal",
+    "en": "Baseline"
+  },
+  "Baseline eligible": {
+    "id": "Dapat diisi stok awal",
+    "en": "Baseline eligible"
+  },
+  "Baseline-established active products": {
+    "id": "Produk aktif dengan stok awal tercatat",
+    "en": "Baseline-established active products"
+  },
+  "Batal": {
+    "id": "Batal",
+    "en": "Cancel"
+  },
+  "Belum ada produk yang cocok. Periksa pencarian, katalog, dan stok produk Anda.": {
+    "id": "Belum ada produk yang cocok. Periksa pencarian, katalog, dan stok produk Anda.",
+    "en": "No products match. Check your search, catalog, and product stock."
+  },
+  "Belum ada replenishment evidence pada outlet ini.": {
+    "id": "Belum ada catatan penerimaan stok pada outlet ini.",
+    "en": "No stock receipt evidence exists for this outlet."
+  },
+  "Breadcrumb": {
+    "id": "Jejak navigasi",
+    "en": "Breadcrumb"
+  },
+  "Browser tidak mengeksekusi deployment.": {
+    "id": "Browser tidak menjalankan deployment.",
+    "en": "The browser does not execute deployment."
+  },
+  "Buka Cashier Workspace": {
+    "id": "Buka Kasir",
+    "en": "Open Cashier Workspace"
+  },
+  "Buka shift": {
+    "id": "Buka shift",
+    "en": "Open shift"
+  },
+  "Buka shift kas synthetic": {
+    "id": "Buka shift kas simulasi",
+    "en": "Open synthetic cash shift"
+  },
+  "Buka shift synthetic baru": {
+    "id": "Buka shift simulasi baru",
+    "en": "Open a new synthetic shift"
+  },
+  "By currency": {
+    "id": "Menurut mata uang",
+    "en": "By currency"
+  },
+  "CASH": {
+    "id": "TUNAI",
+    "en": "CASH"
+  },
+  "COMPLETED": {
+    "id": "SELESAI",
+    "en": "COMPLETED"
+  },
+  "CONTROL": {
+    "id": "KONTROL",
+    "en": "CONTROL"
+  },
+  "CURRENT": {
+    "id": "TERKINI",
+    "en": "CURRENT"
+  },
+  "Cancel": {
+    "id": "Batal",
+    "en": "Cancel"
+  },
+  "Canonical POST": {
+    "id": "POST resmi",
+    "en": "Canonical POST"
+  },
+  "Canonical sale ID": {
+    "id": "ID penjualan resmi",
+    "en": "Canonical sale ID"
+  },
+  "Cari nama / product ID": {
+    "id": "Cari nama / ID produk",
+    "en": "Search name / product ID"
+  },
+  "Cari product ID / nama": {
+    "id": "Cari ID produk / nama",
+    "en": "Search product ID / name"
+  },
+  "Cari product ID / nama / currency": {
+    "id": "Cari ID produk / nama / mata uang",
+    "en": "Search product ID / name / currency"
+  },
+  "Cari produk": {
+    "id": "Cari produk",
+    "en": "Search products"
+  },
+  "Cari sale ID / device": {
+    "id": "Cari ID penjualan / perangkat",
+    "en": "Search sale ID / device"
+  },
+  "Cash": {
+    "id": "Tunai",
+    "en": "Cash"
+  },
+  "Cash Variance Reconciliation": {
+    "id": "Rekonsiliasi Selisih Kas",
+    "en": "Cash Variance Reconciliation"
+  },
+  "Cash control": {
+    "id": "Kontrol kas",
+    "en": "Cash control"
+  },
+  "Cash ledger Preview": {
+    "id": "Pratinjau buku kas",
+    "en": "Cash ledger Preview"
+  },
+  "Cash readiness for this shift": {
+    "id": "Kesiapan kas untuk shift ini",
+    "en": "Cash readiness for this shift"
+  },
+  "Cash reconciliation": {
+    "id": "Rekonsiliasi kas",
+    "en": "Cash reconciliation"
+  },
+  "Cash refund": {
+    "id": "Pengembalian tunai",
+    "en": "Cash refund"
+  },
+  "Cash refund evidence": {
+    "id": "Bukti pengembalian tunai",
+    "en": "Cash refund evidence"
+  },
+  "Cash refund permission": {
+    "id": "Hak pengembalian tunai",
+    "en": "Cash refund permission"
+  },
+  "Cash refunded": {
+    "id": "Tunai dikembalikan",
+    "en": "Cash refunded"
+  },
+  "Cash refunds": {
+    "id": "Pengembalian tunai",
+    "en": "Cash refunds"
+  },
+  "Cash refunds ·": {
+    "id": "Pengembalian tunai ·",
+    "en": "Cash refunds ·"
+  },
+  "Cash sales": {
+    "id": "Penjualan tunai",
+    "en": "Cash sales"
+  },
+  "Cash sales ·": {
+    "id": "Penjualan tunai ·",
+    "en": "Cash sales ·"
+  },
+  "Cashier": {
+    "id": "Kasir",
+    "en": "Cashier"
+  },
+  "Cashier Workspace belum diaktifkan pada runtime ini.": {
+    "id": "Kasir belum diaktifkan pada lingkungan ini.",
+    "en": "Cashier Workspace is not enabled in this runtime."
+  },
+  "Cashier baru dinyatakan siap setelah active shift dan opening-cash evidence authoritative tersedia.": {
+    "id": "Kasir siap digunakan setelah server memverifikasi shift aktif dan kas awal.",
+    "en": "The cashier is ready only after the server verifies an active shift and opening cash evidence."
+  },
+  "Cashier readiness": {
+    "id": "Kesiapan kasir",
+    "en": "Cashier readiness"
+  },
+  "Catalog & Inventory Setup": {
+    "id": "Pengaturan Katalog & Stok",
+    "en": "Catalog & Inventory Setup"
+  },
+  "Catalog & opening stock": {
+    "id": "Katalog & stok awal",
+    "en": "Catalog & opening stock"
+  },
+  "Catalog & stock": {
+    "id": "Katalog & stok",
+    "en": "Catalog & stock"
+  },
+  "Catalog form loaded from authoritative workspace snapshot.": {
+    "id": "Formulir katalog dimuat dari data resmi server.",
+    "en": "Catalog form loaded from authoritative workspace snapshot."
+  },
+  "Catalog items": {
+    "id": "Produk katalog",
+    "en": "Catalog items"
+  },
+  "Catalog preparation": {
+    "id": "Persiapan katalog",
+    "en": "Catalog preparation"
+  },
+  "Catalog preparation berhasil. Refresh authoritative state diwajibkan sebelum langkah berikutnya.": {
+    "id": "Persiapan katalog berhasil. Muat ulang data dari server sebelum langkah berikutnya.",
+    "en": "Catalog preparation succeeded. Refresh the authoritative state before the next step."
+  },
+  "Catalog preparation ditolak oleh server.": {
+    "id": "Persiapan katalog ditolak oleh server.",
+    "en": "Catalog preparation was rejected by the server."
+  },
+  "Catat kas awal": {
+    "id": "Catat kas awal",
+    "en": "Record opening cash"
+  },
+  "Change": {
+    "id": "Kembalian",
+    "en": "Change"
+  },
+  "Change password": {
+    "id": "Ubah kata sandi",
+    "en": "Change password"
+  },
+  "Channel": {
+    "id": "Kanal",
+    "en": "Channel"
+  },
+  "Check for updates — unavailable": {
+    "id": "Periksa pembaruan — belum tersedia",
+    "en": "Check for updates — unavailable"
+  },
+  "Check stock movements and available inventory.": {
+    "id": "Periksa pergerakan dan ketersediaan stok.",
+    "en": "Check stock movements and available inventory."
+  },
+  "Checker · Independent synthetic reviewer": {
+    "id": "Pemeriksa · Peninjau simulasi independen",
+    "en": "Checker · Independent synthetic reviewer"
+  },
+  "Choose an available workspace below to continue your work.": {
+    "id": "Pilih menu yang tersedia di bawah untuk melanjutkan pekerjaan.",
+    "en": "Choose an available workspace below to continue your work."
+  },
+  "Close detail": {
+    "id": "Tutup detail",
+    "en": "Close detail"
+  },
+  "Close navigation": {
+    "id": "Tutup navigasi",
+    "en": "Close navigation"
+  },
+  "Close shift": {
+    "id": "Tutup shift",
+    "en": "Close shift"
+  },
+  "Closed": {
+    "id": "Ditutup",
+    "en": "Closed"
+  },
+  "Closing actor": {
+    "id": "Petugas penutup",
+    "en": "Closing actor"
+  },
+  "Closing evidence": {
+    "id": "Bukti penutupan",
+    "en": "Closing evidence"
+  },
+  "Completed": {
+    "id": "Selesai",
+    "en": "Completed"
+  },
+  "Completed sales": {
+    "id": "Penjualan selesai",
+    "en": "Completed sales"
+  },
+  "Confirm": {
+    "id": "Konfirmasi",
+    "en": "Confirm"
+  },
+  "Confirm enrollment": {
+    "id": "Konfirmasi pendaftaran",
+    "en": "Confirm enrollment"
+  },
+  "Confirm new password": {
+    "id": "Konfirmasi kata sandi baru",
+    "en": "Confirm new password"
+  },
+  "Confirm replacement": {
+    "id": "Konfirmasi penggantian",
+    "en": "Confirm replacement"
+  },
+  "Content-Type": {
+    "id": "Content-Type",
+    "en": "Content-Type"
+  },
+  "Context bound": {
+    "id": "Konteks terikat",
+    "en": "Context bound"
+  },
+  "Control boundary": {
+    "id": "Batas kontrol",
+    "en": "Control boundary"
+  },
+  "Control plane": {
+    "id": "Pusat kontrol",
+    "en": "Control plane"
+  },
+  "Controlled actions": {
+    "id": "Tindakan terkontrol",
+    "en": "Controlled actions"
+  },
+  "Controls": {
+    "id": "Kontrol",
+    "en": "Controls"
+  },
+  "Copy codes": {
+    "id": "Salin kode",
+    "en": "Copy codes"
+  },
+  "Corrections & controls": {
+    "id": "Koreksi & kontrol",
+    "en": "Corrections & controls"
+  },
+  "Correlation:": {
+    "id": "Korelasi:",
+    "en": "Correlation:"
+  },
+  "Create an order and complete a sale.": {
+    "id": "Buat pesanan dan selesaikan penjualan.",
+    "en": "Create an order and complete a sale."
+  },
+  "Credential": {
+    "id": "Kredensial",
+    "en": "Credential"
+  },
+  "Cron discovery": {
+    "id": "Deteksi cron",
+    "en": "Cron discovery"
+  },
+  "Currency": {
+    "id": "Mata uang",
+    "en": "Currency"
+  },
+  "Currency atau scale tidak valid.": {
+    "id": "Mata uang atau jumlah desimal tidak valid.",
+    "en": "Currency or scale is invalid."
+  },
+  "Currency harus menggunakan kode tiga huruf.": {
+    "id": "Mata uang harus menggunakan kode tiga huruf.",
+    "en": "Currency must use a three-letter code."
+  },
+  "Current": {
+    "id": "Saat ini",
+    "en": "Current"
+  },
+  "Current 6-digit MFA code": {
+    "id": "Kode MFA 6 digit saat ini",
+    "en": "Current 6-digit MFA code"
+  },
+  "Current POS technical context": {
+    "id": "Konteks teknis POS saat ini",
+    "en": "Current POS technical context"
+  },
+  "Current authoritative stock": {
+    "id": "Stok terkini dari server",
+    "en": "Current authoritative stock"
+  },
+  "Current password": {
+    "id": "Kata sandi saat ini",
+    "en": "Current password"
+  },
+  "Current shift": {
+    "id": "Shift saat ini",
+    "en": "Current shift"
+  },
+  "Current stock": {
+    "id": "Stok saat ini",
+    "en": "Current stock"
+  },
+  "Current transaction": {
+    "id": "Transaksi saat ini",
+    "en": "Current transaction"
+  },
+  "Cutoff": {
+    "id": "Batas waktu",
+    "en": "Cutoff"
+  },
+  "Cutoff unix": {
+    "id": "Batas waktu Unix",
+    "en": "Cutoff unix"
+  },
+  "DISABLED": {
+    "id": "NONAKTIF",
+    "en": "DISABLED"
+  },
+  "DORMANT_FAIL_CLOSED": {
+    "id": "NONAKTIF_TERKUNCI",
+    "en": "DORMANT_FAIL_CLOSED"
+  },
+  "Database": {
+    "id": "Basis data",
+    "en": "Database"
+  },
+  "Database compatibility": {
+    "id": "Kompatibilitas basis data",
+    "en": "Database compatibility"
+  },
+  "Deployment authority": {
+    "id": "Otorisasi deployment",
+    "en": "Deployment authority"
+  },
+  "Deployment authorized": {
+    "id": "Deployment diizinkan",
+    "en": "Deployment authorized"
+  },
+  "Deployment safeguards": {
+    "id": "Perlindungan deployment",
+    "en": "Deployment safeguards"
+  },
+  "Detail": {
+    "id": "Detail",
+    "en": "Detail"
+  },
+  "Device": {
+    "id": "Perangkat",
+    "en": "Device"
+  },
+  "Device context": {
+    "id": "Konteks perangkat",
+    "en": "Device context"
+  },
+  "Dibuka": {
+    "id": "Dibuka",
+    "en": "Opened"
+  },
+  "Direction": {
+    "id": "Arah",
+    "en": "Direction"
+  },
+  "Discovered exact candidate": {
+    "id": "Kandidat persis ditemukan",
+    "en": "Discovered exact candidate"
+  },
+  "Durable close evidence": {
+    "id": "Bukti penutupan tersimpan",
+    "en": "Durable close evidence"
+  },
+  "Duration": {
+    "id": "Durasi",
+    "en": "Duration"
+  },
+  "ELIGIBLE": {
+    "id": "MEMENUHI SYARAT",
+    "en": "ELIGIBLE"
+  },
+  "ENABLED": {
+    "id": "AKTIF",
+    "en": "ENABLED"
+  },
+  "ESTABLISHED": {
+    "id": "DITETAPKAN",
+    "en": "ESTABLISHED"
+  },
+  "Edit catalog": {
+    "id": "Ubah katalog",
+    "en": "Edit catalog"
+  },
+  "Enroll the replacement factor": {
+    "id": "Daftarkan autentikator pengganti",
+    "en": "Enroll the replacement factor"
+  },
+  "Enrollment complete": {
+    "id": "Pendaftaran selesai",
+    "en": "Enrollment complete"
+  },
+  "Enter a factual explanation for the closing-cash variance.": {
+    "id": "Masukkan penjelasan faktual mengenai selisih kas penutupan.",
+    "en": "Enter a factual explanation for the closing-cash variance."
+  },
+  "Escape": {
+    "id": "Escape",
+    "en": "Escape"
+  },
+  "Establish opening stock": {
+    "id": "Tetapkan stok awal",
+    "en": "Establish opening stock"
+  },
+  "Every product shown has passed an exact integrity equation:": {
+    "id": "Setiap produk yang ditampilkan telah lulus persamaan integritas:",
+    "en": "Every product shown has passed an exact integrity equation:"
+  },
+  "Everything you need to prepare, sell, and keep your business moving.": {
+    "id": "Semua yang Anda butuhkan untuk menyiapkan, menjual, dan menjalankan bisnis.",
+    "en": "Everything you need to prepare, sell, and keep your business moving."
+  },
+  "Evidence": {
+    "id": "Bukti",
+    "en": "Evidence"
+  },
+  "Exact receipt lookup": {
+    "id": "Pencarian struk tepat",
+    "en": "Exact receipt lookup"
+  },
+  "Expected": {
+    "id": "Seharusnya",
+    "en": "Expected"
+  },
+  "Expected and observed cash match. No explanation or reviewer evidence is required by the variance prerequisite.": {
+    "id": "Kas seharusnya sama dengan kas terhitung. Penjelasan dan tinjauan selisih tidak diperlukan.",
+    "en": "Expected and observed cash match. No explanation or reviewer evidence is required by the variance prerequisite."
+  },
+  "Expected cash": {
+    "id": "Kas seharusnya",
+    "en": "Expected cash"
+  },
+  "Expected cash dan observed closing cash sama. Maker-checker hanya tersedia untuk variance OVER atau SHORT.": {
+    "id": "Kas seharusnya sama dengan kas penutupan terhitung. Proses pembuat-pemeriksa hanya tersedia untuk selisih LEBIH atau KURANG.",
+    "en": "Expected cash matches observed closing cash. Maker-checker is available only for OVER or SHORT variances."
+  },
+  "Expected cash mengikuti lifecycle canonical: void tidak otomatis mengurangi kas; full CASH refund yang terikat ke void menjadi pengurang eksplisit. Explanation dan independent review di halaman ini adalah Synthetic Technical Preview session evidence saja. Review ACCEPT/REJECT bukan durable final Shift Close authority. Tidak ada migration execution, durable production ledger, deployment, atau Production activation.": {
+    "id": "Kas seharusnya mengikuti aturan transaksi: pembatalan tidak otomatis mengurangi kas; pengembalian tunai penuh yang terkait menjadi pengurang kas. Penjelasan dan tinjauan independen di halaman ini hanya bukti sesi Pratinjau Teknis Simulasi. Tinjauan TERIMA/TOLAK bukan otorisasi penutupan shift permanen. Tidak ada migrasi, buku besar produksi, deployment, atau aktivasi produksi.",
+    "en": "Expected cash follows canonical lifecycle rules: voiding does not automatically reduce cash; a linked full CASH refund is the explicit deduction. Explanations and independent reviews here are Synthetic Technical Preview session evidence only. ACCEPT/REJECT is not durable final shift-close authority. No migration, production ledger, deployment, or production activation occurs."
+  },
+  "Expected cash · server-derived": {
+    "id": "Kas seharusnya · dihitung server",
+    "en": "Expected cash · server-derived"
+  },
+  "Explain non-zero closing-cash variance and route it through independent maker-checker review using server-authoritative evidence.": {
+    "id": "Jelaskan selisih kas penutupan dan ajukan tinjauan independen pembuat-pemeriksa berdasarkan bukti resmi server.",
+    "en": "Explain non-zero closing-cash variance and route it through independent maker-checker review using server-authoritative evidence."
+  },
+  "Explanation": {
+    "id": "Penjelasan",
+    "en": "Explanation"
+  },
+  "Explanation diterima reviewer": {
+    "id": "Penjelasan diterima peninjau",
+    "en": "Explanation accepted by reviewer"
+  },
+  "Explanation ditolak reviewer": {
+    "id": "Penjelasan ditolak peninjau",
+    "en": "Explanation rejected by reviewer"
+  },
+  "Explanation evidence": {
+    "id": "Bukti penjelasan",
+    "en": "Explanation evidence"
+  },
+  "Explanation recorded. Refresh this workspace before any further reconciliation action.": {
+    "id": "Penjelasan dicatat. Muat ulang halaman sebelum melakukan rekonsiliasi berikutnya.",
+    "en": "Explanation recorded. Refresh this workspace before any further reconciliation action."
+  },
+  "Explanation variance": {
+    "id": "Penjelasan selisih",
+    "en": "Variance explanation"
+  },
+  "Explore products sold and returned.": {
+    "id": "Lihat produk terjual dan dikembalikan.",
+    "en": "Explore products sold and returned."
+  },
+  "Explore your reports and review recent business activity.": {
+    "id": "Lihat laporan dan tinjau aktivitas bisnis terbaru.",
+    "en": "Explore your reports and review recent business activity."
+  },
+  "External settlement required": {
+    "id": "Penyelesaian pembayaran eksternal diperlukan",
+    "en": "External settlement required"
+  },
+  "Fail-closed operating rule": {
+    "id": "Aturan penghentian aman",
+    "en": "Fail-closed operating rule"
+  },
+  "Filesystem": {
+    "id": "Sistem berkas",
+    "en": "Filesystem"
+  },
+  "Final Shift Close": {
+    "id": "Penutupan akhir sif",
+    "en": "Final Shift Close"
+  },
+  "Final Shift Close ditolak aman": {
+    "id": "Penutupan shift final ditolak dengan aman",
+    "en": "Final Shift Close safely rejected"
+  },
+  "Final Shift Close memakai state kas, reconciliation, review evidence, actor separation, dan timestamp yang diturunkan server. UI ini tidak dapat mengirim nominal, variance, reviewer, actor identity, shift ID, atau close timestamp.": {
+    "id": "Penutupan shift final menggunakan data kas, rekonsiliasi, bukti tinjauan, pemisahan petugas, dan waktu dari server. Halaman ini tidak dapat menentukan nominal, selisih, peninjau, identitas petugas, ID shift, atau waktu penutupan.",
+    "en": "Final Shift Close uses server-derived cash state, reconciliation, review evidence, actor separation, and timestamps. This UI cannot submit amounts, variance, reviewer or actor identities, shift ID, or close timestamp."
+  },
+  "Financial lines below come from the server-completed sale receipt, not from a client-side cart estimate.": {
+    "id": "Rincian keuangan berikut berasal dari struk penjualan yang sudah diselesaikan server, bukan perkiraan keranjang.",
+    "en": "Financial lines below come from the server-completed sale receipt, not from a client-side cart estimate."
+  },
+  "Find a canonical sale": {
+    "id": "Cari penjualan resmi",
+    "en": "Find a canonical sale"
+  },
+  "Find a workspace": {
+    "id": "Cari menu",
+    "en": "Find a workspace"
+  },
+  "Find receipts and view sale details.": {
+    "id": "Cari struk dan lihat detail penjualan.",
+    "en": "Find receipts and view sale details."
+  },
+  "First-party access": {
+    "id": "Akses akun merchant",
+    "en": "First-party access"
+  },
+  "For your current device": {
+    "id": "Untuk perangkat Anda saat ini",
+    "en": "For your current device"
+  },
+  "Full CASH refund berhasil dicatat.": {
+    "id": "Pengembalian tunai penuh berhasil dicatat.",
+    "en": "Full CASH refund was recorded successfully."
+  },
+  "Full voids": {
+    "id": "Pembatalan penuh",
+    "en": "Full voids"
+  },
+  "GET": {
+    "id": "GET",
+    "en": "GET"
+  },
+  "GOVERNED_DEVELOPMENT_STAGING_ONLY": {
+    "id": "HANYA_STAGING_PENGEMBANGAN_TERKELOLA",
+    "en": "GOVERNED_DEVELOPMENT_STAGING_ONLY"
+  },
+  "Generate authenticator codes": {
+    "id": "Buat kode autentikator",
+    "en": "Generate authenticator codes"
+  },
+  "Generate new codes": {
+    "id": "Buat kode baru",
+    "en": "Generate new codes"
+  },
+  "Generate replacement single-use codes for secure authenticator-factor recovery.": {
+    "id": "Buat kode pengganti sekali pakai untuk memulihkan autentikator dengan aman.",
+    "en": "Generate replacement single-use codes for secure authenticator-factor recovery."
+  },
+  "Get ready": {
+    "id": "Persiapan",
+    "en": "Get ready"
+  },
+  "Governed development delivery": {
+    "id": "Distribusi pengembangan terkelola",
+    "en": "Governed development delivery"
+  },
+  "Governed development updater": {
+    "id": "Pembaruan pengembangan terkelola",
+    "en": "Governed development updater"
+  },
+  "Governed release": {
+    "id": "Rilis terkelola",
+    "en": "Governed release"
+  },
+  "Governed release visibility": {
+    "id": "Informasi rilis terkelola",
+    "en": "Governed release visibility"
+  },
+  "Governed updater control plane": {
+    "id": "Pusat kontrol pembaruan terkelola",
+    "en": "Governed updater control plane"
+  },
+  "Gross": {
+    "id": "Bruto",
+    "en": "Gross"
+  },
+  "Gross recorded": {
+    "id": "Bruto tercatat",
+    "en": "Gross recorded"
+  },
+  "Gross recorded value": {
+    "id": "Nilai bruto tercatat",
+    "en": "Gross recorded value"
+  },
+  "Gross units": {
+    "id": "Unit bruto",
+    "en": "Gross units"
+  },
+  "Guidance unavailable": {
+    "id": "Panduan belum tersedia",
+    "en": "Guidance unavailable"
+  },
+  "Gunakan konteks synthetic ini": {
+    "id": "Gunakan konteks simulasi ini",
+    "en": "Use this synthetic context"
+  },
+  "Halaman ini hanya menampilkan status operasional yang aman. Pemeriksaan release, instalasi, aktivasi, rollback, dan deployment belum tersedia dari antarmuka ini.": {
+    "id": "Halaman ini hanya menampilkan status operasional yang aman. Pemeriksaan rilis, instalasi, aktivasi, pemulihan, dan deployment belum tersedia di sini.",
+    "en": "This page displays safe operational status only. Release checks, installation, activation, rollback, and deployment are not available through this interface."
+  },
+  "Hanya Local/Test/CI/explicit Preview. Tidak ada credential, payment provider, atau data Production.": {
+    "id": "Hanya Lokal/Uji/CI/Pratinjau yang diizinkan. Tidak memakai kredensial, penyedia pembayaran, atau data produksi.",
+    "en": "Only Local/Test/CI/explicit Preview. No production credentials, payment providers, or data."
+  },
+  "Hanya tersedia jika stok = 0, baseline belum pernah dicatat, dan produk belum memiliki sale history pada outlet ini.": {
+    "id": "Tersedia jika stok nol, stok awal belum dicatat, dan produk belum memiliki riwayat penjualan di outlet ini.",
+    "en": "Available only when stock is zero, no opening baseline exists, and the product has no sales history at this outlet."
+  },
+  "Hanya total receipt bertender CASH yang menambah cash sales. Uang kembalian tidak dihitung sebagai pendapatan kas dan MANUAL_EXTERNAL tidak menambah cash ledger.": {
+    "id": "Hanya total struk dengan pembayaran TUNAI yang menambah penjualan kas. Kembalian bukan pendapatan kas dan pembayaran eksternal manual tidak menambah buku kas.",
+    "en": "Only CASH receipt totals add to cash sales. Change is not cash revenue, and MANUAL_EXTERNAL does not add to the cash ledger."
+  },
+  "Hard-disabled by source policy": {
+    "id": "Dinonaktifkan oleh kebijakan sumber",
+    "en": "Hard-disabled by source policy"
+  },
+  "Harga": {
+    "id": "Harga",
+    "en": "Price"
+  },
+  "Harga major unit": {
+    "id": "Harga dalam satuan utama",
+    "en": "Price in major units"
+  },
+  "Harga tidak valid atau melampaui batas integer aman pada client.": {
+    "id": "Harga tidak valid atau melampaui batas bilangan aman.",
+    "en": "The price is invalid or exceeds the safe client integer limit."
+  },
+  "Hasil dibatasi pada 250 product/currency buckets teratas berdasarkan gross sold quantity.": {
+    "id": "Hasil dibatasi pada 250 kelompok produk/mata uang dengan jumlah penjualan bruto tertinggi.",
+    "en": "Results are limited to the top 250 product/currency groups by gross quantity sold."
+  },
+  "Host platform": {
+    "id": "Platform hosting",
+    "en": "Host platform"
+  },
+  "ID produk": {
+    "id": "ID produk",
+    "en": "Product ID"
+  },
+  "IDR": {
+    "id": "IDR",
+    "en": "IDR"
+  },
+  "IN": {
+    "id": "MASUK",
+    "en": "IN"
+  },
+  "INACTIVE": {
+    "id": "NONAKTIF",
+    "en": "INACTIVE"
+  },
+  "INSTALL_EXACT_GOVERNED_DEVELOPMENT_RELEASE": {
+    "id": "INSTALL_EXACT_GOVERNED_DEVELOPMENT_RELEASE",
+    "en": "INSTALL_EXACT_GOVERNED_DEVELOPMENT_RELEASE"
+  },
+  "Immutable evidence": {
+    "id": "Bukti tidak dapat diubah",
+    "en": "Immutable evidence"
+  },
+  "Immutable performance": {
+    "id": "Kinerja berdasarkan catatan tetap",
+    "en": "Immutable performance"
+  },
+  "Immutable receipt": {
+    "id": "Struk tidak dapat diubah",
+    "en": "Immutable receipt"
+  },
+  "Immutable transaction history and receipt drill-down for the authorized outlet.": {
+    "id": "Riwayat transaksi tetap dan detail struk untuk outlet yang diizinkan.",
+    "en": "Immutable transaction history and receipt drill-down for the authorized outlet."
+  },
+  "Inactive": {
+    "id": "Nonaktif",
+    "en": "Inactive"
+  },
+  "Independent review": {
+    "id": "Tinjauan independen",
+    "en": "Independent review"
+  },
+  "Independent review confirmation": {
+    "id": "Konfirmasi tinjauan independen",
+    "en": "Independent review confirmation"
+  },
+  "Insights": {
+    "id": "Analisis",
+    "en": "Insights"
+  },
+  "Instalasi masa depan tetap membutuhkan platform-superadmin capability, fresh privileged session, explicit re-authentication, TOTP step-up, CSRF, rate limiting, dan sanitized audit.": {
+    "id": "Instalasi memerlukan hak superadmin platform, sesi istimewa terbaru, autentikasi ulang, verifikasi TOTP, CSRF, pembatasan permintaan, dan audit tanpa data sensitif.",
+    "en": "Installation requires platform-superadmin capability, a fresh privileged session, explicit re-authentication, TOTP step-up, CSRF, rate limiting, and sanitized audit."
+  },
+  "Install update — locked": {
+    "id": "Pasang pembaruan — terkunci",
+    "en": "Install update — locked"
+  },
+  "Installation": {
+    "id": "Instalasi",
+    "en": "Installation"
+  },
+  "Installation context ready": {
+    "id": "Konteks instalasi siap",
+    "en": "Installation context ready"
+  },
+  "Installation controls are locked": {
+    "id": "Kontrol instalasi terkunci",
+    "en": "Installation controls are locked"
+  },
+  "Installation evidence sources": {
+    "id": "Sumber bukti instalasi",
+    "en": "Installation evidence sources"
+  },
+  "Installation readiness wizard": {
+    "id": "Panduan kesiapan instalasi",
+    "en": "Installation readiness wizard"
+  },
+  "Inventory": {
+    "id": "Persediaan",
+    "en": "Inventory"
+  },
+  "Inventory Accountability": {
+    "id": "Pertanggungjawaban stok",
+    "en": "Inventory Accountability"
+  },
+  "Inventory Replenishment": {
+    "id": "Penerimaan Stok",
+    "en": "Inventory Replenishment"
+  },
+  "Inventory baseline ditolak oleh server.": {
+    "id": "Pencatatan stok awal ditolak oleh server.",
+    "en": "The inventory baseline was rejected by the server."
+  },
+  "Inventory control": {
+    "id": "Kontrol persediaan",
+    "en": "Inventory control"
+  },
+  "Inventory overview": {
+    "id": "Ringkasan persediaan",
+    "en": "Inventory overview"
+  },
+  "Inventory replenishment ditolak oleh server.": {
+    "id": "Penerimaan stok ditolak oleh server.",
+    "en": "Inventory replenishment was rejected by the server."
+  },
+  "Irreversible operational step": {
+    "id": "Langkah operasional yang tidak dapat dibatalkan",
+    "en": "Irreversible operational step"
+  },
+  "Item dalam pesanan": {
+    "id": "Item dalam pesanan",
+    "en": "Order items"
+  },
+  "Jalur ini hanya untuk runtime durable-staging. oneQay mengambil artifact resmi dari": {
+    "id": "Jalur ini hanya untuk lingkungan staging persisten. oneQay mengambil artefak resmi dari",
+    "en": "This path is only for the durable-staging runtime. oneQay retrieves the official artifact from"
+  },
+  "Jelaskan penyebab variance kas synthetic secara spesifik.": {
+    "id": "Jelaskan penyebab selisih kas simulasi secara spesifik.",
+    "en": "Explain the specific cause of the synthetic cash variance."
+  },
+  "Jika pencatatan gagal, shift tetap aktif. Jangan membuka shift baru; selesaikan evidence kas awal pada shift yang sama.": {
+    "id": "Jika pencatatan gagal, shift tetap aktif. Jangan membuka shift baru; selesaikan pencatatan kas awal pada shift yang sama.",
+    "en": "If recording fails, the shift stays active. Do not open a new shift; complete the opening cash evidence on the same shift."
+  },
+  "Jumlah item telah mencapai stok tersedia.": {
+    "id": "Jumlah item telah mencapai stok tersedia.",
+    "en": "Item quantity has reached the available stock."
+  },
+  "Kas awal": {
+    "id": "Kas awal",
+    "en": "Opening cash"
+  },
+  "Kas awal belum tercatat. Shift tetap aktif; jangan membuka shift baru.": {
+    "id": "Kas awal belum tercatat. Shift tetap aktif; jangan membuka shift baru.",
+    "en": "Opening cash has not been recorded. The shift remains active; do not open a new shift."
+  },
+  "Kas awal tercatat. Shift siap digunakan untuk transaksi kasir.": {
+    "id": "Kas awal tercatat. Shift siap digunakan untuk transaksi kasir.",
+    "en": "Opening cash recorded. The shift is ready for cashier transactions."
+  },
+  "Kas kurang": {
+    "id": "Kas kurang",
+    "en": "Cash shortage"
+  },
+  "Kas lebih": {
+    "id": "Kas lebih",
+    "en": "Cash surplus"
+  },
+  "Kas sesuai": {
+    "id": "Kas sesuai",
+    "en": "Cash matches"
+  },
+  "Kasir Synthetic": {
+    "id": "Kasir Simulasi",
+    "en": "Synthetic Cashier"
+  },
+  "Katalog": {
+    "id": "Katalog",
+    "en": "Catalog"
+  },
+  "Keep inventory up to date as stock arrives.": {
+    "id": "Perbarui persediaan setiap kali stok diterima.",
+    "en": "Keep inventory up to date as stock arrives."
+  },
+  "Keluar": {
+    "id": "Keluar",
+    "en": "Sign out"
+  },
+  "Kembali ke POS": {
+    "id": "Kembali ke POS",
+    "en": "Back to POS"
+  },
+  "Kembali ke pemilihan identitas": {
+    "id": "Kembali ke pemilihan identitas",
+    "en": "Back to identity selection"
+  },
+  "Keranjang": {
+    "id": "Keranjang",
+    "en": "Cart"
+  },
+  "Keranjang masih kosong.": {
+    "id": "Keranjang masih kosong.",
+    "en": "Your cart is empty."
+  },
+  "Kopi Susu": {
+    "id": "Kopi Susu",
+    "en": "Milk Coffee"
+  },
+  "Koreksi ditolak server.": {
+    "id": "Koreksi ditolak server.",
+    "en": "The server rejected the correction."
+  },
+  "Koreksi transaksi": {
+    "id": "Koreksi transaksi",
+    "en": "Transaction corrections"
+  },
+  "LOCKED": {
+    "id": "TERKUNCI",
+    "en": "LOCKED"
+  },
+  "Lab | zefry": {
+    "id": "Lab | zefry",
+    "en": "Lab | zefry"
+  },
+  "Lab | zefry · M7.1": {
+    "id": "Lab | zefry · M7.1",
+    "en": "Lab | zefry · M7.1"
+  },
+  "Langkah 1 · Cash control": {
+    "id": "Langkah 1 · Kontrol kas",
+    "en": "Step 1 · Cash control"
+  },
+  "Langkah 2 · Transaksi": {
+    "id": "Langkah 2 · Transaksi",
+    "en": "Step 2 · Transactions"
+  },
+  "Lanjutkan dengan identitas synthetic": {
+    "id": "Lanjutkan dengan identitas simulasi",
+    "en": "Continue with a synthetic identity"
+  },
+  "Last result": {
+    "id": "Hasil terakhir",
+    "en": "Last result"
+  },
+  "Latest 50": {
+    "id": "50 terbaru",
+    "en": "Latest 50"
+  },
+  "Latest activity": {
+    "id": "Aktivitas terbaru",
+    "en": "Latest activity"
+  },
+  "Latest immutable transactions": {
+    "id": "Transaksi tetap terbaru",
+    "en": "Latest immutable transactions"
+  },
+  "Line total": {
+    "id": "Total baris",
+    "en": "Line total"
+  },
+  "Loading navigation…": {
+    "id": "Memuat navigasi…",
+    "en": "Loading navigation…"
+  },
+  "Lost authenticator?": {
+    "id": "Autentikator hilang?",
+    "en": "Lost authenticator?"
+  },
+  "MANUAL_EXTERNAL": {
+    "id": "EKSTERNAL MANUAL",
+    "en": "MANUAL_EXTERNAL"
+  },
+  "MATCH": {
+    "id": "SESUAI",
+    "en": "MATCH"
+  },
+  "MFA code when required": {
+    "id": "Kode MFA jika diperlukan",
+    "en": "MFA code when required"
+  },
+  "MFA enrollment": {
+    "id": "Pendaftaran MFA",
+    "en": "MFA enrollment"
+  },
+  "MFA recovery": {
+    "id": "Pemulihan MFA",
+    "en": "MFA recovery"
+  },
+  "MFA_CHALLENGE_REQUIRED": {
+    "id": "MFA_CHALLENGE_REQUIRED",
+    "en": "MFA_CHALLENGE_REQUIRED"
+  },
+  "MFA_ENROLLMENT_REQUIRED": {
+    "id": "MFA_ENROLLMENT_REQUIRED",
+    "en": "MFA_ENROLLMENT_REQUIRED"
+  },
+  "MISSING": {
+    "id": "BELUM ADA",
+    "en": "MISSING"
+  },
+  "Maker actor": {
+    "id": "Petugas pembuat",
+    "en": "Maker actor"
+  },
+  "Maker evidence for the non-zero variance.": {
+    "id": "Bukti penjelasan untuk selisih kas.",
+    "en": "Maker evidence for the non-zero variance."
+  },
+  "Maker · Operator": {
+    "id": "Pembuat · Operator",
+    "en": "Maker · Operator"
+  },
+  "Maker-checker separation required": {
+    "id": "Pembuat dan pemeriksa harus berbeda",
+    "en": "Maker-checker separation required"
+  },
+  "Maksimum 250 item ditampilkan per authoritative snapshot. Stock setelah transaksi tetap dimutasi oleh sale/void/refund authorities yang sudah ada.": {
+    "id": "Maksimal 250 item ditampilkan dari data resmi server. Stok setelah transaksi tetap diubah melalui proses penjualan, pembatalan, dan pengembalian yang sudah ada.",
+    "en": "Up to 250 items are shown per authoritative snapshot. Post-transaction stock remains controlled by the existing sale, void, and refund authorities."
+  },
+  "Manage opening cash and keep each shift organized.": {
+    "id": "Kelola kas awal dan atur setiap shift dengan baik.",
+    "en": "Manage opening cash and keep each shift organized."
+  },
+  "Manage products and prepare stock for your next sale.": {
+    "id": "Kelola produk dan siapkan stok untuk penjualan berikutnya.",
+    "en": "Manage products and prepare stock for your next sale."
+  },
+  "Manage your password, authenticator, and recovery codes.": {
+    "id": "Kelola kata sandi, autentikator, dan kode pemulihan Anda.",
+    "en": "Manage your password, authenticator, and recovery codes."
+  },
+  "Manual external": {
+    "id": "Eksternal manual",
+    "en": "Manual external"
+  },
+  "Manual external (operator recorded)": {
+    "id": "Eksternal manual (dicatat operator)",
+    "en": "Manual external (operator recorded)"
+  },
+  "Masuk ke oneQay Technical Preview": {
+    "id": "Masuk ke Pratinjau Teknis oneQay",
+    "en": "Sign in to oneQay Technical Preview"
+  },
+  "Merchant operations summary": {
+    "id": "Ringkasan operasional merchant",
+    "en": "Merchant operations summary"
+  },
+  "Merchant session": {
+    "id": "Sesi merchant",
+    "en": "Merchant session"
+  },
+  "Merchant sign-in remains unavailable until the exact installation context and required Local/Test/CI security gates are valid.": {
+    "id": "Login merchant belum tersedia sampai konteks instalasi dan persyaratan keamanan lingkungan yang berlaku dinyatakan valid.",
+    "en": "Merchant sign-in remains unavailable until the exact installation context and required Local/Test/CI security gates are valid."
+  },
+  "Merchant workspace": {
+    "id": "Ruang kerja merchant",
+    "en": "Merchant workspace"
+  },
+  "Migration": {
+    "id": "Migrasi",
+    "en": "Migration"
+  },
+  "Mulai transaksi": {
+    "id": "Mulai transaksi",
+    "en": "Start transaction"
+  },
+  "NOT DISCOVERED": {
+    "id": "BELUM DITEMUKAN",
+    "en": "NOT DISCOVERED"
+  },
+  "NOT ELIGIBLE": {
+    "id": "TIDAK MEMENUHI SYARAT",
+    "en": "NOT ELIGIBLE"
+  },
+  "NOT EXECUTED": {
+    "id": "BELUM DIJALANKAN",
+    "en": "NOT EXECUTED"
+  },
+  "NOT_CHECKED": {
+    "id": "BELUM_DIPERIKSA",
+    "en": "NOT_CHECKED"
+  },
+  "NOT_CONFIGURED": {
+    "id": "BELUM_DIKONFIGURASI",
+    "en": "NOT_CONFIGURED"
+  },
+  "Nama produk": {
+    "id": "Nama produk",
+    "en": "Product name"
+  },
+  "Nama produk adalah current catalog label untuk product ID yang sama. Inactive catalog products tetap dipertahankan bila memiliki immutable sales history. Currency/scale historis tidak dicampur menjadi satu bucket.": {
+    "id": "Nama produk mengikuti katalog saat ini untuk ID produk yang sama. Produk nonaktif tetap ditampilkan jika memiliki riwayat penjualan. Mata uang dan jumlah desimal historis tidak digabungkan.",
+    "en": "Product names use the current catalog label for the same product ID. Inactive products with immutable sales history remain visible. Historical currencies and scales are not combined into one group."
+  },
+  "Nama produk wajib diisi dan maksimal 160 karakter.": {
+    "id": "Nama produk wajib diisi dan maksimal 160 karakter.",
+    "en": "Product name is required and must not exceed 160 characters."
+  },
+  "Net active units": {
+    "id": "Unit bersih aktif",
+    "en": "Net active units"
+  },
+  "Net active value": {
+    "id": "Nilai bersih aktif",
+    "en": "Net active value"
+  },
+  "New authenticator recovery codes generated. Save them now; previous codes are no longer valid.": {
+    "id": "Kode pemulihan autentikator baru dibuat. Simpan sekarang; kode sebelumnya tidak berlaku lagi.",
+    "en": "New authenticator recovery codes generated. Save them now; previous codes are no longer valid."
+  },
+  "New password": {
+    "id": "Kata sandi baru",
+    "en": "New password"
+  },
+  "New password recovery codes generated. Save them now; they are shown only in this response.": {
+    "id": "Kode pemulihan kata sandi baru dibuat. Simpan sekarang; kode hanya ditampilkan pada respons ini.",
+    "en": "New password recovery codes generated. Save them now; they are shown only in this response."
+  },
+  "Newest 50 canonical closed shifts.": {
+    "id": "50 shift terbaru yang sudah ditutup secara resmi.",
+    "en": "Newest 50 canonical closed shifts."
+  },
+  "Next sale": {
+    "id": "Penjualan berikutnya",
+    "en": "Next sale"
+  },
+  "Nilai": {
+    "id": "Nilai",
+    "en": "Value"
+  },
+  "No action": {
+    "id": "Tidak ada tindakan",
+    "en": "No action"
+  },
+  "No active shift has closing-cash evidence available for reconciliation.": {
+    "id": "Belum ada shift aktif dengan bukti kas penutupan untuk direkonsiliasi.",
+    "en": "No active shift has closing-cash evidence available for reconciliation."
+  },
+  "No active shift on this device": {
+    "id": "Tidak ada shift aktif di perangkat ini",
+    "en": "No active shift on this device"
+  },
+  "No baselined inventory is available in this scope.": {
+    "id": "Belum ada persediaan dengan stok awal dalam cakupan ini.",
+    "en": "No baselined inventory is available in this scope."
+  },
+  "No closed shifts yet": {
+    "id": "Belum ada shift yang ditutup",
+    "en": "No closed shifts yet"
+  },
+  "No completed sale has been recorded for this outlet.": {
+    "id": "Belum ada penjualan selesai yang tercatat pada outlet ini.",
+    "en": "No completed sale has been recorded for this outlet."
+  },
+  "No completed sales are bound to the active shift yet.": {
+    "id": "Belum ada penjualan selesai yang terkait dengan shift aktif.",
+    "en": "No completed sales are bound to the active shift yet."
+  },
+  "No completed sales are bound to this closed shift.": {
+    "id": "Belum ada penjualan selesai yang terkait dengan shift yang ditutup ini.",
+    "en": "No completed sales are bound to this closed shift."
+  },
+  "No guarded next action is being recommended.": {
+    "id": "Tidak ada tindakan lanjutan yang direkomendasikan.",
+    "en": "No guarded next action is being recommended."
+  },
+  "No immutable inventory movement evidence is available.": {
+    "id": "Belum ada bukti pergerakan persediaan yang tersimpan.",
+    "en": "No immutable inventory movement evidence is available."
+  },
+  "No internal IDs are required.": {
+    "id": "Tidak perlu mengisi ID internal.",
+    "en": "No internal IDs are required."
+  },
+  "No matching workspace.": {
+    "id": "Menu tidak ditemukan.",
+    "en": "No matching workspace."
+  },
+  "No public registration · No implicit permission grant · Lab | zefry": {
+    "id": "Tanpa pendaftaran publik · Hak akses tidak diberikan otomatis · Lab | zefry",
+    "en": "No public registration · No implicit permission grant · Lab | zefry"
+  },
+  "No reconciliation required": {
+    "id": "Rekonsiliasi tidak diperlukan",
+    "en": "No reconciliation required"
+  },
+  "No sale is available for this identifier in the currently authorized tenant, organization, and outlet scope.": {
+    "id": "Penjualan dengan ID ini tidak tersedia dalam cakupan tenant, organisasi, dan outlet yang diizinkan.",
+    "en": "No sale is available for this identifier in the currently authorized tenant, organization, and outlet scope."
+  },
+  "No sale matches the current status filter.": {
+    "id": "Tidak ada penjualan yang sesuai dengan filter status.",
+    "en": "No sale matches the current status filter."
+  },
+  "No sales available.": {
+    "id": "Belum ada penjualan.",
+    "en": "No sales available."
+  },
+  "No second independent decision is supported for this explanation evidence. Final shift close remains blocked for this subject.": {
+    "id": "Penjelasan ini tidak mendukung keputusan independen kedua. Penutupan shift masih diblokir untuk data ini.",
+    "en": "No second independent decision is supported for this explanation evidence. Final shift close remains blocked for this subject."
+  },
+  "Nominal diterima (IDR)": {
+    "id": "Nominal diterima (IDR)",
+    "en": "Amount received (IDR)"
+  },
+  "Nominal kas awal tidak valid untuk currency scale yang dipilih atau melampaui batas aman client.": {
+    "id": "Nominal kas awal tidak valid untuk jumlah desimal mata uang yang dipilih atau melampaui batas aman.",
+    "en": "Opening cash is invalid for the selected currency scale or exceeds the safe client limit."
+  },
+  "Nominal pembayaran": {
+    "id": "Nominal pembayaran",
+    "en": "Payment amount"
+  },
+  "Nominal pembayaran lebih kecil dari total transaksi.": {
+    "id": "Nominal pembayaran lebih kecil dari total transaksi.",
+    "en": "The payment amount is less than the transaction total."
+  },
+  "Nominal pembayaran melampaui batas aman client; transaksi dibatalkan.": {
+    "id": "Nominal pembayaran melampaui batas aman; transaksi dibatalkan.",
+    "en": "The payment amount exceeds the safe client limit; the transaction was cancelled."
+  },
+  "Nominal pembayaran tidak sesuai scale currency transaksi.": {
+    "id": "Nominal pembayaran tidak sesuai jumlah desimal mata uang transaksi.",
+    "en": "The payment amount does not match the transaction currency scale."
+  },
+  "Not Production Ready": {
+    "id": "Belum Siap Produksi",
+    "en": "Not Production Ready"
+  },
+  "Not verified": {
+    "id": "Belum diverifikasi",
+    "en": "Not verified"
+  },
+  "OBSERVED": {
+    "id": "TERHITUNG",
+    "en": "OBSERVED"
+  },
+  "OPEN": {
+    "id": "TERBUKA",
+    "en": "OPEN"
+  },
+  "OUT": {
+    "id": "KELUAR",
+    "en": "OUT"
+  },
+  "OVER": {
+    "id": "LEBIH",
+    "en": "OVER"
+  },
+  "Observed cash": {
+    "id": "Kas terhitung",
+    "en": "Observed cash"
+  },
+  "Observed closing": {
+    "id": "Penutupan terhitung",
+    "en": "Observed closing"
+  },
+  "Observed closing cash": {
+    "id": "Kas penutupan terhitung",
+    "en": "Observed closing cash"
+  },
+  "Observed closing cash (IDR)": {
+    "id": "Kas penutupan terhitung (IDR)",
+    "en": "Observed closing cash (IDR)"
+  },
+  "One-time baseline": {
+    "id": "Stok awal sekali catat",
+    "en": "One-time baseline"
+  },
+  "Only active catalog items with an established opening baseline are eligible. The server locks current stock, records before/received/after evidence, and rejects unsafe overflow or replay mismatch.": {
+    "id": "Hanya produk katalog aktif dengan stok awal tercatat yang memenuhi syarat. Server mengunci stok, mencatat bukti sebelum/diterima/sesudah, serta menolak kelebihan batas atau pengulangan yang tidak cocok.",
+    "en": "Only active catalog items with an established opening baseline are eligible. The server locks current stock, records before/received/after evidence, and rejects unsafe overflow or replay mismatch."
+  },
+  "Open account and security": {
+    "id": "Buka akun dan keamanan",
+    "en": "Open account and security"
+  },
+  "Open navigation": {
+    "id": "Buka navigasi",
+    "en": "Open navigation"
+  },
+  "Open receipt": {
+    "id": "Buka struk",
+    "en": "Open receipt"
+  },
+  "Opened": {
+    "id": "Dibuka",
+    "en": "Opened"
+  },
+  "Opening": {
+    "id": "Pembukaan",
+    "en": "Opening"
+  },
+  "Opening actor": {
+    "id": "Petugas pembuka",
+    "en": "Opening actor"
+  },
+  "Opening baseline": {
+    "id": "Stok awal",
+    "en": "Opening baseline"
+  },
+  "Opening cash": {
+    "id": "Kas awal",
+    "en": "Opening cash"
+  },
+  "Opening cash (IDR)": {
+    "id": "Kas awal (IDR)",
+    "en": "Opening cash (IDR)"
+  },
+  "Opening cash menjadi baseline server-side sebelum transaksi kas dapat dicatat di Preview.": {
+    "id": "Kas awal menjadi data dasar server sebelum transaksi kas dapat dicatat di Pratinjau.",
+    "en": "Opening cash establishes the server-side baseline before Preview cash transactions can be recorded."
+  },
+  "Opening cash recorded": {
+    "id": "Kas awal tercatat",
+    "en": "Opening cash recorded"
+  },
+  "Opening evidence": {
+    "id": "Bukti pembukaan",
+    "en": "Opening evidence"
+  },
+  "Opening inventory": {
+    "id": "Persediaan awal",
+    "en": "Opening inventory"
+  },
+  "Opening inventory berhasil dicatat. Refresh authoritative state diwajibkan sebelum mutation berikutnya.": {
+    "id": "Persediaan awal berhasil dicatat. Muat ulang data resmi server sebelum perubahan berikutnya.",
+    "en": "Opening inventory was recorded successfully. Refresh the authoritative state before the next mutation."
+  },
+  "Opening quantity": {
+    "id": "Jumlah awal",
+    "en": "Opening quantity"
+  },
+  "Opening quantity harus bilangan bulat non-negatif.": {
+    "id": "Jumlah awal harus bilangan bulat nol atau positif.",
+    "en": "Opening quantity must be a non-negative integer."
+  },
+  "Opening quantity melampaui batas integer aman pada client.": {
+    "id": "Jumlah awal melampaui batas bilangan aman.",
+    "en": "Opening quantity exceeds the safe client integer limit."
+  },
+  "Opening stock": {
+    "id": "Stok awal",
+    "en": "Opening stock"
+  },
+  "Operating readiness": {
+    "id": "Kesiapan operasional",
+    "en": "Operating readiness"
+  },
+  "Operation": {
+    "id": "Operasi",
+    "en": "Operation"
+  },
+  "Operation ID": {
+    "id": "ID operasi",
+    "en": "Operation ID"
+  },
+  "Operation ID dipertahankan untuk retry yang identik. Retry tidak membuat close mutation kedua.": {
+    "id": "ID operasi dipertahankan untuk percobaan ulang yang identik. Percobaan ulang tidak membuat penutupan kedua.",
+    "en": "The operation ID is retained for an identical retry. Retrying does not create a second close mutation."
+  },
+  "Operation state": {
+    "id": "Status operasi",
+    "en": "Operation state"
+  },
+  "Operational Sales Summary": {
+    "id": "Ringkasan Penjualan Operasional",
+    "en": "Operational Sales Summary"
+  },
+  "Operational readiness": {
+    "id": "Kesiapan operasional",
+    "en": "Operational readiness"
+  },
+  "Operations Hub": {
+    "id": "Pusat Operasional",
+    "en": "Operations Hub"
+  },
+  "Operator device": {
+    "id": "Perangkat operator",
+    "en": "Operator device"
+  },
+  "Operator token": {
+    "id": "Token operator",
+    "en": "Operator token"
+  },
+  "Operator wajib memberikan explanation sebelum independent reviewer dapat mengambil keputusan.": {
+    "id": "Operator harus memberikan penjelasan sebelum peninjau independen dapat mengambil keputusan.",
+    "en": "The operator must provide an explanation before an independent reviewer can decide."
+  },
+  "Organization": {
+    "id": "Organisasi",
+    "en": "Organization"
+  },
+  "Original device": {
+    "id": "Perangkat asal",
+    "en": "Original device"
+  },
+  "Outlet": {
+    "id": "Outlet",
+    "en": "Outlet"
+  },
+  "Outlet catalog & stock": {
+    "id": "Katalog & stok outlet",
+    "en": "Outlet catalog & stock"
+  },
+  "Overview": {
+    "id": "Ringkasan",
+    "en": "Overview"
+  },
+  "POS · Historical control": {
+    "id": "POS · Kontrol riwayat",
+    "en": "POS · Historical control"
+  },
+  "POS · Live operations": {
+    "id": "POS · Operasional langsung",
+    "en": "POS · Live operations"
+  },
+  "POST": {
+    "id": "POST",
+    "en": "POST"
+  },
+  "POS_SHIFT_CLOSE_REJECTED": {
+    "id": "POS_SHIFT_CLOSE_REJECTED",
+    "en": "POS_SHIFT_CLOSE_REJECTED"
+  },
+  "Page correlation:": {
+    "id": "Korelasi halaman:",
+    "en": "Page correlation:"
+  },
+  "Page ini tidak menggabungkan dua mutation menjadi transaksi baru dan tidak melakukan hidden retry. Setiap tahap memakai endpoint, permission, idempotency, dan persistence authority yang sudah canonical.": {
+    "id": "Halaman ini tidak menggabungkan dua perubahan menjadi transaksi baru dan tidak mencoba ulang secara tersembunyi. Setiap tahap memakai endpoint, hak akses, idempotensi, dan penyimpanan resmi yang sudah ada.",
+    "en": "This page does not combine two mutations into a new transaction or retry silently. Each stage uses existing canonical endpoints, permissions, idempotency, and persistence authority."
+  },
+  "Pas": {
+    "id": "Pas",
+    "en": "Exact amount"
+  },
+  "Password": {
+    "id": "Kata sandi",
+    "en": "Password"
+  },
+  "Password change could not be completed safely.": {
+    "id": "Perubahan kata sandi belum dapat diselesaikan dengan aman.",
+    "en": "Password change could not be completed safely."
+  },
+  "Password change was not completed. Verify the current password, MFA code, and password policy.": {
+    "id": "Kata sandi belum diubah. Periksa kata sandi saat ini, kode MFA, dan kebijakan kata sandi.",
+    "en": "Password change was not completed. Verify the current password, MFA code, and password policy."
+  },
+  "Password recovery codes": {
+    "id": "Kode pemulihan kata sandi",
+    "en": "Password recovery codes"
+  },
+  "Password recovery codes could not be rotated safely.": {
+    "id": "Kode pemulihan kata sandi belum dapat diganti dengan aman.",
+    "en": "Password recovery codes could not be rotated safely."
+  },
+  "Password recovery codes were not rotated.": {
+    "id": "Kode pemulihan kata sandi belum diganti.",
+    "en": "Password recovery codes were not rotated."
+  },
+  "Password reset could not be completed safely.": {
+    "id": "Pengaturan ulang kata sandi belum dapat diselesaikan dengan aman.",
+    "en": "Password reset could not be completed safely."
+  },
+  "Password reset was not completed.": {
+    "id": "Kata sandi belum diatur ulang.",
+    "en": "Password reset was not completed."
+  },
+  "Pembukaan register yang resumable, exact-device scoped, dan menggunakan mutation contract canonical.": {
+    "id": "Pembukaan kasir dapat dilanjutkan, terikat ke perangkat ini, dan mengikuti proses resmi server.",
+    "en": "Resumable register opening, scoped to this exact device, using canonical mutation contracts."
+  },
+  "Pembukaan shift ditolak oleh server.": {
+    "id": "Pembukaan shift ditolak oleh server.",
+    "en": "The server rejected opening the shift."
+  },
+  "Performance & history": {
+    "id": "Kinerja & riwayat",
+    "en": "Performance & history"
+  },
+  "Periksa pesanan dan pembayaran sebelum menyelesaikan transaksi.": {
+    "id": "Periksa pesanan dan pembayaran sebelum menyelesaikan transaksi.",
+    "en": "Review the order and payment before completing the sale."
+  },
+  "Periksa prerequisite, authorization, reconciliation, dan separation-of-duties sebelum retry.": {
+    "id": "Periksa persyaratan, otorisasi, rekonsiliasi, dan pemisahan tugas sebelum mencoba lagi.",
+    "en": "Check prerequisites, authorization, reconciliation, and separation of duties before retrying."
+  },
+  "Permission filtered": {
+    "id": "Sesuai hak akses",
+    "en": "Permission filtered"
+  },
+  "Pick a task and get straight to work.": {
+    "id": "Pilih tugas dan mulai bekerja.",
+    "en": "Pick a task and get straight to work."
+  },
+  "Pilih dari tabel": {
+    "id": "Pilih dari tabel",
+    "en": "Select from table"
+  },
+  "Pilih identitas demo yang sudah di-allowlist server. Ini bukan autentikasi Production dan tidak menggunakan data pengguna nyata.": {
+    "id": "Pilih identitas demo yang diizinkan server. Ini bukan autentikasi produksi dan tidak menggunakan data pengguna nyata.",
+    "en": "Choose a demo identity allowed by the server. This is not production authentication and does not use real user data."
+  },
+  "Pilih konteks kerja": {
+    "id": "Pilih konteks kerja",
+    "en": "Select workspace context"
+  },
+  "Pilih produk": {
+    "id": "Pilih produk",
+    "en": "Select product"
+  },
+  "Pilih produk dari authoritative snapshot": {
+    "id": "Pilih produk dari data resmi server",
+    "en": "Select a product from the authoritative snapshot"
+  },
+  "Pilih produk yang eligible untuk opening inventory baseline.": {
+    "id": "Pilih produk yang memenuhi syarat pencatatan stok awal.",
+    "en": "Choose a product eligible for an opening inventory baseline."
+  },
+  "Pilih produk yang sudah memiliki opening inventory baseline.": {
+    "id": "Pilih produk yang sudah memiliki stok awal.",
+    "en": "Choose a product with an established opening inventory baseline."
+  },
+  "Pilih produk, susun pesanan, dan terima pembayaran.": {
+    "id": "Pilih produk, susun pesanan, dan terima pembayaran.",
+    "en": "Choose products, build an order, and accept payment."
+  },
+  "Platform Operations": {
+    "id": "Operasional Platform",
+    "en": "Platform Operations"
+  },
+  "Pos/OperationsHub": {
+    "id": "Pos/OperationsHub",
+    "en": "Pos/OperationsHub"
+  },
+  "Positive receiving": {
+    "id": "Penerimaan stok positif",
+    "en": "Positive receiving"
+  },
+  "Preflight instalasi — read only": {
+    "id": "Pemeriksaan awal instalasi — hanya baca",
+    "en": "Installation preflight — read only"
+  },
+  "Preflight only — no installation authority": {
+    "id": "Pemeriksaan awal saja — tanpa otorisasi instalasi",
+    "en": "Preflight only — no installation authority"
+  },
+  "Print receipt": {
+    "id": "Cetak struk",
+    "en": "Print receipt"
+  },
+  "Privileged cash-control action": {
+    "id": "Tindakan kontrol kas istimewa",
+    "en": "Privileged cash-control action"
+  },
+  "Privileged security remains mandatory": {
+    "id": "Keamanan akses istimewa tetap wajib",
+    "en": "Privileged security remains mandatory"
+  },
+  "Product": {
+    "id": "Produk",
+    "en": "Product"
+  },
+  "Product / currency buckets": {
+    "id": "Kelompok produk / mata uang",
+    "en": "Product / currency buckets"
+  },
+  "Product ID": {
+    "id": "ID produk",
+    "en": "Product ID"
+  },
+  "Product ID tidak valid.": {
+    "id": "ID produk tidak valid.",
+    "en": "Product ID is invalid."
+  },
+  "Product Sales Performance": {
+    "id": "Kinerja Penjualan Produk",
+    "en": "Product Sales Performance"
+  },
+  "Product performance": {
+    "id": "Kinerja produk",
+    "en": "Product performance"
+  },
+  "Production": {
+    "id": "Produksi",
+    "en": "Production"
+  },
+  "Production ready:": {
+    "id": "Siap produksi:",
+    "en": "Production ready:"
+  },
+  "Products": {
+    "id": "Produk",
+    "en": "Products"
+  },
+  "Products in your catalog": {
+    "id": "Produk dalam katalog Anda",
+    "en": "Products in your catalog"
+  },
+  "Produk": {
+    "id": "Produk",
+    "en": "Products"
+  },
+  "Produk dipilih untuk opening inventory baseline.": {
+    "id": "Produk dipilih untuk pencatatan stok awal.",
+    "en": "Product selected for the opening inventory baseline."
+  },
+  "Produk ini tidak memenuhi syarat opening inventory baseline.": {
+    "id": "Produk ini tidak memenuhi syarat pencatatan stok awal.",
+    "en": "This product is not eligible for an opening inventory baseline."
+  },
+  "Produk tersedia": {
+    "id": "Produk tersedia",
+    "en": "Available products"
+  },
+  "Protect this account": {
+    "id": "Lindungi akun ini",
+    "en": "Protect this account"
+  },
+  "Provisioning URI": {
+    "id": "URI pendaftaran",
+    "en": "Provisioning URI"
+  },
+  "Q": {
+    "id": "Q",
+    "en": "Q"
+  },
+  "Qty": {
+    "id": "Jumlah",
+    "en": "Qty"
+  },
+  "READY": {
+    "id": "SIAP",
+    "en": "READY"
+  },
+  "READY hanya berarti evidence preflight memenuhi contract yang tersedia. Tombol instalasi tetap hard-disabled; migration #27, permission provisioning, deployment, Technical Preview, Production, dan updater activation tidak mendapat authority dari wizard ini.": {
+    "id": "SIAP hanya berarti bukti pemeriksaan awal memenuhi persyaratan yang tersedia. Instalasi tetap dinonaktifkan; panduan ini tidak memberikan otorisasi migrasi #27, pemberian hak akses, deployment, Pratinjau Teknis, produksi, atau aktivasi pembaruan.",
+    "en": "READY means only that preflight evidence meets the available contract. Installation remains disabled; this wizard grants no authority for migration #27, permissions, deployment, Technical Preview, production, or updater activation."
+  },
+  "READ_ONLY": {
+    "id": "HANYA_BACA",
+    "en": "READ_ONLY"
+  },
+  "REFUNDED": {
+    "id": "DIKEMBALIKAN",
+    "en": "REFUNDED"
+  },
+  "REQUEST_ACCEPTED": {
+    "id": "PERMINTAAN_DITERIMA",
+    "en": "REQUEST_ACCEPTED"
+  },
+  "REQUEST_DENIED": {
+    "id": "PERMINTAAN_DITOLAK",
+    "en": "REQUEST_DENIED"
+  },
+  "REVIEW": {
+    "id": "TINJAUAN",
+    "en": "REVIEW"
+  },
+  "REVIEW_ACCEPTED": {
+    "id": "DITERIMA",
+    "en": "ACCEPTED"
+  },
+  "REVIEW_REJECTED": {
+    "id": "DITOLAK",
+    "en": "REJECTED"
+  },
+  "Read only": {
+    "id": "Hanya baca",
+    "en": "Read only"
+  },
+  "Read only · max 50 latest sales": {
+    "id": "Hanya baca · maksimal 50 penjualan terbaru",
+    "en": "Read only · max 50 latest sales"
+  },
+  "Read-only action boundary": {
+    "id": "Batas tindakan hanya baca",
+    "en": "Read-only action boundary"
+  },
+  "Read-only closed-shift accountability from immutable final-close, sale, full-void, and cash-refund evidence across devices in this outlet.": {
+    "id": "Pertanggungjawaban shift tertutup berdasarkan bukti tetap penutupan final, penjualan, pembatalan penuh, dan pengembalian tunai lintas perangkat pada outlet ini. Hanya baca.",
+    "en": "Read-only closed-shift accountability from immutable final-close, sale, full-void, and cash-refund evidence across devices in this outlet."
+  },
+  "Read-only exact-device performance from immutable shift-bound sale, full-void, and cash-refund evidence.": {
+    "id": "Kinerja perangkat ini berdasarkan bukti tetap penjualan, pembatalan penuh, dan pengembalian tunai yang terikat pada shift. Hanya baca.",
+    "en": "Read-only exact-device performance from immutable shift-bound sale, full-void, and cash-refund evidence."
+  },
+  "Read-only operational view": {
+    "id": "Tampilan operasional hanya baca",
+    "en": "Read-only operational view"
+  },
+  "Read-only operational view for the currently authorized tenant and outlet.": {
+    "id": "Tampilan operasional hanya baca untuk tenant dan outlet yang diizinkan saat ini.",
+    "en": "Read-only operational view for the currently authorized tenant and outlet."
+  },
+  "Read-only product/currency performance from immutable completed-sale lines. Full-sale void is removed once; a later cash refund does not reduce product performance a second time.": {
+    "id": "Kinerja produk/mata uang berdasarkan rincian penjualan selesai. Pembatalan penuh dikurangkan sekali; pengembalian tunai berikutnya tidak mengurangi kinerja produk dua kali. Hanya baca.",
+    "en": "Read-only product/currency performance from immutable completed-sale lines. Full-sale void is removed once; a later cash refund does not reduce product performance a second time."
+  },
+  "Read-only reconciliation of canonical opening stock, replenishment, sale decrement, and full-sale void restoration. Cash refunds never create a second stock movement.": {
+    "id": "Rekonsiliasi stok awal, penerimaan, pengurangan penjualan, dan pemulihan pembatalan penuh. Pengembalian tunai tidak membuat pergerakan stok kedua. Hanya baca.",
+    "en": "Read-only reconciliation of canonical opening stock, replenishment, sale decrement, and full-sale void restoration. Cash refunds never create a second stock movement."
+  },
+  "Ready to sell": {
+    "id": "Siap berjualan",
+    "en": "Ready to sell"
+  },
+  "Receipt Preview": {
+    "id": "Pratinjau Struk",
+    "en": "Receipt Preview"
+  },
+  "Receipt correlation:": {
+    "id": "Korelasi struk:",
+    "en": "Receipt correlation:"
+  },
+  "Receipts & history": {
+    "id": "Struk & riwayat",
+    "en": "Receipts & history"
+  },
+  "Receive positive stock against a product that already has canonical opening inventory. This workspace does not provide arbitrary stock correction or negative adjustment.": {
+    "id": "Terima stok positif untuk produk yang sudah memiliki stok awal resmi. Menu ini tidak menyediakan koreksi stok bebas atau penyesuaian negatif.",
+    "en": "Receive positive stock against a product that already has canonical opening inventory. This workspace does not provide arbitrary stock correction or negative adjustment."
+  },
+  "Receive stock": {
+    "id": "Terima stok",
+    "en": "Receive stock"
+  },
+  "Receive stock and update quantities.": {
+    "id": "Terima stok dan perbarui jumlahnya.",
+    "en": "Receive stock and update quantities."
+  },
+  "Received": {
+    "id": "Diterima",
+    "en": "Received"
+  },
+  "Received quantity": {
+    "id": "Jumlah diterima",
+    "en": "Received quantity"
+  },
+  "Received quantity harus bilangan bulat positif.": {
+    "id": "Jumlah diterima harus bilangan bulat positif.",
+    "en": "Received quantity must be a positive integer."
+  },
+  "Received quantity melampaui batas integer aman pada client.": {
+    "id": "Jumlah diterima melampaui batas bilangan aman.",
+    "en": "Received quantity exceeds the safe client integer limit."
+  },
+  "Recent closed shifts": {
+    "id": "Shift terbaru yang ditutup",
+    "en": "Recent closed shifts"
+  },
+  "Recent immutable stock evidence": {
+    "id": "Bukti stok tetap terbaru",
+    "en": "Recent immutable stock evidence"
+  },
+  "Recent replenishments": {
+    "id": "Penerimaan stok terbaru",
+    "en": "Recent replenishments"
+  },
+  "Recent sales": {
+    "id": "Penjualan terbaru",
+    "en": "Recent sales"
+  },
+  "Recent scoped sales": {
+    "id": "Penjualan terbaru dalam cakupan",
+    "en": "Recent scoped sales"
+  },
+  "Reconcile and complete your shift close.": {
+    "id": "Rekonsiliasi dan selesaikan penutupan shift.",
+    "en": "Reconcile and complete your shift close."
+  },
+  "Record cash refund": {
+    "id": "Catat pengembalian tunai",
+    "en": "Record cash refund"
+  },
+  "Record explanation": {
+    "id": "Catat penjelasan",
+    "en": "Record explanation"
+  },
+  "Record received stock": {
+    "id": "Catat stok diterima",
+    "en": "Record received stock"
+  },
+  "Record replenishment": {
+    "id": "Catat penerimaan stok",
+    "en": "Record replenishment"
+  },
+  "Recover password": {
+    "id": "Pulihkan kata sandi",
+    "en": "Recover password"
+  },
+  "Recovery": {
+    "id": "Pemulihan",
+    "en": "Recovery"
+  },
+  "Recovery code": {
+    "id": "Kode pemulihan",
+    "en": "Recovery code"
+  },
+  "Recovery codes are single-use. No tenant or identity identifier is accepted from the browser.": {
+    "id": "Kode pemulihan hanya sekali pakai. Browser tidak dapat menentukan identitas tenant atau akun.",
+    "en": "Recovery codes are single-use. No tenant or identity identifier is accepted from the browser."
+  },
+  "Recovery codes copied. Store them in a trusted password manager or other protected location.": {
+    "id": "Kode pemulihan disalin. Simpan di pengelola kata sandi tepercaya atau tempat terlindungi lainnya.",
+    "en": "Recovery codes copied. Store them in a trusted password manager or other protected location."
+  },
+  "Recovery proof could not be completed safely.": {
+    "id": "Verifikasi bukti pemulihan belum dapat diselesaikan dengan aman.",
+    "en": "Recovery proof could not be completed safely."
+  },
+  "Recovery proof was not accepted.": {
+    "id": "Bukti pemulihan tidak diterima.",
+    "en": "Recovery proof was not accepted."
+  },
+  "Refresh authoritative state": {
+    "id": "Muat ulang data server",
+    "en": "Refresh authoritative state"
+  },
+  "Refresh authoritative state diperlukan sebelum mutation berikutnya.": {
+    "id": "Muat ulang data resmi server sebelum perubahan berikutnya.",
+    "en": "Refresh the authoritative state before the next mutation."
+  },
+  "Refresh sekarang": {
+    "id": "Muat ulang sekarang",
+    "en": "Refresh now"
+  },
+  "Refund CASH penuh": {
+    "id": "Pengembalian tunai penuh",
+    "en": "Full CASH refund"
+  },
+  "Refund evidence": {
+    "id": "Bukti pengembalian",
+    "en": "Refund evidence"
+  },
+  "Refund ini hanya mencatat full CASH refund setelah full sale void yang valid. Nominal berasal dari sale authoritative dan tidak dapat diubah dari UI.": {
+    "id": "Proses ini hanya mencatat pengembalian tunai penuh setelah pembatalan penjualan penuh yang valid. Nominal berasal dari data resmi penjualan dan tidak dapat diubah di halaman ini.",
+    "en": "This records only a full CASH refund after a valid full sale void. The amount comes from the authoritative sale and cannot be changed in the UI."
+  },
+  "Refunded": {
+    "id": "Dikembalikan",
+    "en": "Refunded"
+  },
+  "Register lifecycle": {
+    "id": "Siklus kasir",
+    "en": "Register lifecycle"
+  },
+  "Register siap. Harga, stok, authorization, idempotency, dan receipt tetap ditentukan server pada sale contract canonical.": {
+    "id": "Kasir siap. Harga, stok, otorisasi, idempotensi, dan struk tetap ditentukan oleh server.",
+    "en": "Register ready. Prices, stock, authorization, idempotency, and receipts remain server-authoritative under the canonical sale contract."
+  },
+  "Reject review": {
+    "id": "Tolak tinjauan",
+    "en": "Reject review"
+  },
+  "Rejected decision is terminal": {
+    "id": "Keputusan penolakan bersifat final",
+    "en": "Rejected decision is terminal"
+  },
+  "Rejection is terminal for this explanation evidence. A second independent decision is not supported and final shift close will remain blocked.": {
+    "id": "Penolakan bersifat final untuk bukti penjelasan ini. Keputusan independen kedua tidak didukung dan penutupan shift tetap diblokir.",
+    "en": "Rejection is terminal for this explanation evidence. A second independent decision is not supported and final shift close will remain blocked."
+  },
+  "Rekonsiliasi Kas Synthetic": {
+    "id": "Rekonsiliasi Kas Simulasi",
+    "en": "Synthetic Cash Reconciliation"
+  },
+  "Release ID": {
+    "id": "ID rilis",
+    "en": "Release ID"
+  },
+  "Release artifact": {
+    "id": "Artefak rilis",
+    "en": "Release artifact"
+  },
+  "Release availability": {
+    "id": "Ketersediaan rilis",
+    "en": "Release availability"
+  },
+  "Release check action belum diekspos di UI read-only ini. Tidak ada network release client, artifact download, atau package verification yang dipicu dari halaman ini.": {
+    "id": "Pemeriksaan rilis belum tersedia pada halaman hanya baca ini. Halaman ini tidak memicu koneksi klien rilis, unduhan artefak, atau verifikasi paket.",
+    "en": "Release checking is not exposed in this read-only UI. This page does not trigger a release network client, artifact download, or package verification."
+  },
+  "Release manifest": {
+    "id": "Manifest rilis",
+    "en": "Release manifest"
+  },
+  "Release status": {
+    "id": "Status rilis",
+    "en": "Release status"
+  },
+  "Replenishment": {
+    "id": "Penerimaan stok",
+    "en": "Replenishment"
+  },
+  "Requester device": {
+    "id": "Perangkat pemohon",
+    "en": "Requester device"
+  },
+  "Reset password": {
+    "id": "Atur ulang kata sandi",
+    "en": "Reset password"
+  },
+  "Respons server berhasil, tetapi state lokal tidak dapat dicocokkan. Refresh wajib sebelum tindakan berikutnya.": {
+    "id": "Respons server berhasil, tetapi data lokal tidak cocok. Muat ulang sebelum tindakan berikutnya.",
+    "en": "The server succeeded, but local state could not be matched. Refresh before taking another action."
+  },
+  "Respons server tidak sesuai kontrak koreksi yang diharapkan. Refresh wajib sebelum retry.": {
+    "id": "Respons server tidak sesuai dengan kontrak koreksi. Muat ulang sebelum mencoba lagi.",
+    "en": "The server response does not match the expected correction contract. Refresh before retrying."
+  },
+  "Restored": {
+    "id": "Dipulihkan",
+    "en": "Restored"
+  },
+  "Restricted recovery session": {
+    "id": "Sesi pemulihan terbatas",
+    "en": "Restricted recovery session"
+  },
+  "Return to sign in": {
+    "id": "Kembali ke halaman masuk",
+    "en": "Return to sign in"
+  },
+  "Review": {
+    "id": "Tinjau",
+    "en": "Review"
+  },
+  "Review accepted. Refresh authoritatively before proceeding to final shift close.": {
+    "id": "Tinjauan diterima. Muat ulang data server sebelum melanjutkan penutupan shift final.",
+    "en": "Review accepted. Refresh authoritatively before proceeding to final shift close."
+  },
+  "Review and explain closing-cash differences.": {
+    "id": "Tinjau dan jelaskan selisih kas penutupan.",
+    "en": "Review and explain closing-cash differences."
+  },
+  "Review available": {
+    "id": "Tinjauan tersedia",
+    "en": "Review available"
+  },
+  "Review available sale corrections and refunds.": {
+    "id": "Tinjau koreksi penjualan dan pengembalian yang tersedia.",
+    "en": "Review available sale corrections and refunds."
+  },
+  "Review closed shifts and closing cash.": {
+    "id": "Tinjau shift tertutup dan kas penutupan.",
+    "en": "Review closed shifts and closing cash."
+  },
+  "Review corrections and reconcile cash at shift close.": {
+    "id": "Tinjau koreksi dan rekonsiliasi kas saat menutup shift.",
+    "en": "Review corrections and reconcile cash at shift close."
+  },
+  "Review decision": {
+    "id": "Keputusan tinjauan",
+    "en": "Review decision"
+  },
+  "Review evidence": {
+    "id": "Bukti tinjauan",
+    "en": "Review evidence"
+  },
+  "Review outcome": {
+    "id": "Hasil tinjauan",
+    "en": "Review outcome"
+  },
+  "Review rejected. This decision is terminal for the current explanation and final shift close remains blocked. Refresh authoritatively.": {
+    "id": "Tinjauan ditolak. Keputusan ini final untuk penjelasan saat ini dan penutupan shift tetap diblokir. Muat ulang data server.",
+    "en": "Review rejected. This decision is terminal for the current explanation and final shift close remains blocked. Refresh authoritatively."
+  },
+  "Review requires existing explanation evidence and independent reviewer authority.": {
+    "id": "Tinjauan memerlukan bukti penjelasan dan hak peninjau independen.",
+    "en": "Review requires existing explanation evidence and independent reviewer authority."
+  },
+  "Review sales totals and daily activity.": {
+    "id": "Tinjau total penjualan dan aktivitas harian.",
+    "en": "Review sales totals and daily activity."
+  },
+  "Review your workspaces": {
+    "id": "Lihat menu kerja Anda",
+    "en": "Review your workspaces"
+  },
+  "Reviewer actor": {
+    "id": "Petugas peninjau",
+    "en": "Reviewer actor"
+  },
+  "Reviewer dipasangkan server-side pada tenant, organization, dan outlet yang sama. Identity reviewer tidak dapat dipilih dari public Preview sign-in dan harus berbeda dari maker.": {
+    "id": "Peninjau dipasangkan oleh server pada tenant, organisasi, dan outlet yang sama. Identitas peninjau tidak dapat dipilih melalui login Pratinjau publik dan harus berbeda dari pembuat.",
+    "en": "The server pairs the reviewer within the same tenant, organization, and outlet. Reviewer identity cannot be selected through public Preview sign-in and must differ from the maker."
+  },
+  "Reviewer:": {
+    "id": "Peninjau:",
+    "en": "Reviewer:"
+  },
+  "Ringkasan kasir": {
+    "id": "Ringkasan kasir",
+    "en": "Cashier summary"
+  },
+  "Rotate the single-use codes used to recover a forgotten password. Existing codes are replaced.": {
+    "id": "Ganti kode sekali pakai untuk memulihkan kata sandi yang terlupa. Kode lama akan diganti.",
+    "en": "Rotate the single-use codes used to recover a forgotten password. Existing codes are replaced."
+  },
+  "Run your business from one secure workspace.": {
+    "id": "Kelola bisnis Anda dari satu ruang kerja yang aman.",
+    "en": "Run your business from one secure workspace."
+  },
+  "Runtime & host": {
+    "id": "Lingkungan & hosting",
+    "en": "Runtime & host"
+  },
+  "SALE HISTORY": {
+    "id": "RIWAYAT PENJUALAN",
+    "en": "SALE HISTORY"
+  },
+  "SELL": {
+    "id": "PENJUALAN",
+    "en": "SELL"
+  },
+  "SERVER_OBSERVED_PARTIAL": {
+    "id": "TERAMATI_SEBAGIAN_DI_SERVER",
+    "en": "SERVER_OBSERVED_PARTIAL"
+  },
+  "SETUP": {
+    "id": "PENGATURAN",
+    "en": "SETUP"
+  },
+  "SHIFT": {
+    "id": "SHIFT",
+    "en": "SHIFT"
+  },
+  "SHORT": {
+    "id": "KURANG",
+    "en": "SHORT"
+  },
+  "STAGING": {
+    "id": "STAGING",
+    "en": "STAGING"
+  },
+  "STOCK": {
+    "id": "STOK",
+    "en": "STOCK"
+  },
+  "Safe correlation reference": {
+    "id": "Referensi korelasi aman",
+    "en": "Safe correlation reference"
+  },
+  "Safety boundary": {
+    "id": "Batas keamanan",
+    "en": "Safety boundary"
+  },
+  "Sale": {
+    "id": "Penjualan",
+    "en": "Sale"
+  },
+  "Sale Correction Workspace": {
+    "id": "Menu Koreksi Penjualan",
+    "en": "Sale Correction Workspace"
+  },
+  "Sale Corrections": {
+    "id": "Koreksi Penjualan",
+    "en": "Sale Corrections"
+  },
+  "Sale berhasil di-void. Settlement tender eksternal tetap harus diselesaikan pada kanal eksternal.": {
+    "id": "Penjualan berhasil dibatalkan. Penyelesaian pembayaran eksternal tetap harus dilakukan di kanal eksternal.",
+    "en": "The sale was voided successfully. External tender settlement must still be completed through the external channel."
+  },
+  "Sale berhasil di-void. Untuk pengembalian tunai, lakukan langkah refund terpisah.": {
+    "id": "Penjualan berhasil dibatalkan. Untuk mengembalikan tunai, lakukan pengembalian secara terpisah.",
+    "en": "The sale was voided successfully. Perform a separate refund step to return cash."
+  },
+  "Sale completed": {
+    "id": "Penjualan selesai",
+    "en": "Sale completed"
+  },
+  "Sale completion decrements stock; full-sale void restores stock from immutable sale lines. Cash refund follows an existing void and does not restore stock a second time.": {
+    "id": "Penjualan selesai mengurangi stok; pembatalan penuh memulihkan stok dari rincian penjualan tetap. Pengembalian tunai mengikuti pembatalan dan tidak memulihkan stok dua kali.",
+    "en": "Sale completion decrements stock; full-sale void restores stock from immutable sale lines. Cash refund follows an existing void and does not restore stock a second time."
+  },
+  "Sale corrections": {
+    "id": "Koreksi penjualan",
+    "en": "Sale corrections"
+  },
+  "Sale evidence": {
+    "id": "Bukti penjualan",
+    "en": "Sale evidence"
+  },
+  "Sale lifecycle": {
+    "id": "Siklus penjualan",
+    "en": "Sale lifecycle"
+  },
+  "Sale lookup": {
+    "id": "Pencarian penjualan",
+    "en": "Sale lookup"
+  },
+  "Sale void restoration": {
+    "id": "Pemulihan stok pembatalan",
+    "en": "Sale void restoration"
+  },
+  "Sales History": {
+    "id": "Riwayat Penjualan",
+    "en": "Sales History"
+  },
+  "Sales Summary": {
+    "id": "Ringkasan penjualan",
+    "en": "Sales Summary"
+  },
+  "Sales counters": {
+    "id": "Jumlah penjualan",
+    "en": "Sales counters"
+  },
+  "Sales overview": {
+    "id": "Ringkasan penjualan",
+    "en": "Sales overview"
+  },
+  "Satu transaksi hanya boleh menggunakan satu currency dan scale.": {
+    "id": "Satu transaksi hanya boleh menggunakan satu mata uang dan jumlah desimal.",
+    "en": "A transaction may use only one currency and scale."
+  },
+  "Save catalog state": {
+    "id": "Simpan katalog",
+    "en": "Save catalog state"
+  },
+  "Saya mengotorisasi exact release/fingerprint yang ditampilkan di atas. Production dan migration tetap tidak diizinkan.": {
+    "id": "Saya mengotorisasi rilis dan sidik digital yang ditampilkan. Produksi dan migrasi tetap tidak diizinkan.",
+    "en": "I authorize the exact release and fingerprint displayed above. Production and migrations remain unauthorized."
+  },
+  "Scale": {
+    "id": "Jumlah desimal",
+    "en": "Scale"
+  },
+  "Schema change support": {
+    "id": "Dukungan perubahan skema",
+    "en": "Schema change support"
+  },
+  "Secret": {
+    "id": "Kunci rahasia",
+    "en": "Secret"
+  },
+  "Secure configuration": {
+    "id": "Konfigurasi aman",
+    "en": "Secure configuration"
+  },
+  "See sales, shifts, products, and stock in one place.": {
+    "id": "Lihat penjualan, shift, produk, dan stok dalam satu tempat.",
+    "en": "See sales, shifts, products, and stock in one place."
+  },
+  "Select a closing-cash evidence case.": {
+    "id": "Pilih bukti kas penutupan.",
+    "en": "Select a closing-cash evidence case."
+  },
+  "Selected product": {
+    "id": "Produk terpilih",
+    "en": "Selected product"
+  },
+  "Self-service security": {
+    "id": "Keamanan akun mandiri",
+    "en": "Self-service security"
+  },
+  "Sell": {
+    "id": "Jual",
+    "en": "Sell"
+  },
+  "Sellable": {
+    "id": "Dapat dijual",
+    "en": "Sellable"
+  },
+  "Sellable catalog": {
+    "id": "Katalog siap jual",
+    "en": "Sellable catalog"
+  },
+  "Sellable items": {
+    "id": "Produk siap jual",
+    "en": "Sellable items"
+  },
+  "Selling": {
+    "id": "Penjualan",
+    "en": "Selling"
+  },
+  "Semua": {
+    "id": "Semua",
+    "en": "All"
+  },
+  "Semua status": {
+    "id": "Semua status",
+    "en": "All statuses"
+  },
+  "Server M7.4 menghitung ulang harga dan total dari catalog fixture terverifikasi.": {
+    "id": "Server M7.4 menghitung ulang harga dan total dari katalog simulasi terverifikasi.",
+    "en": "The M7.4 server recalculates prices and totals from the verified catalog fixture."
+  },
+  "Server akan mengikat shift aktif ke tenant, organization, outlet, device, dan actor yang sedang terverifikasi.": {
+    "id": "Server mengikat shift aktif ke tenant, organisasi, outlet, perangkat, dan petugas yang terverifikasi.",
+    "en": "The server binds the active shift to the verified tenant, organization, outlet, device, and actor."
+  },
+  "Server-authoritative subject": {
+    "id": "Data utama dari server",
+    "en": "Server-authoritative subject"
+  },
+  "Server-authoritative total": {
+    "id": "Total dari server",
+    "en": "Server-authoritative total"
+  },
+  "Session & support details": {
+    "id": "Detail sesi & dukungan",
+    "en": "Session & support details"
+  },
+  "Session controlled": {
+    "id": "Sesi terkontrol",
+    "en": "Session controlled"
+  },
+  "Session protected": {
+    "id": "Sesi terlindungi",
+    "en": "Session protected"
+  },
+  "Set a new password": {
+    "id": "Atur kata sandi baru",
+    "en": "Set a new password"
+  },
+  "Setelah close berhasil, active slot shift dilepas secara atomik. Gunakan tombol ini hanya setelah closing-cash evidence dan review variance—jika diperlukan—sudah selesai.": {
+    "id": "Setelah penutupan berhasil, slot shift aktif dilepas secara atomik. Gunakan tombol ini setelah bukti kas penutupan dan tinjauan selisih, jika diperlukan, selesai.",
+    "en": "After closing succeeds, the active shift slot is released atomically. Use this button only after closing-cash evidence and any required variance review are complete."
+  },
+  "Setup required": {
+    "id": "Persiapan diperlukan",
+    "en": "Setup required"
+  },
+  "Shift": {
+    "id": "Shift",
+    "en": "Shift"
+  },
+  "Shift History Performance": {
+    "id": "Riwayat kinerja sif",
+    "en": "Shift History Performance"
+  },
+  "Shift ID": {
+    "id": "ID shift",
+    "en": "Shift ID"
+  },
+  "Shift Start Workspace": {
+    "id": "Persiapan Shift",
+    "en": "Shift Start Workspace"
+  },
+  "Shift aktif": {
+    "id": "Shift aktif",
+    "en": "Active shift"
+  },
+  "Shift aktif berhasil dibuka. Lanjutkan pencatatan kas awal; jangan membuka shift kedua.": {
+    "id": "Shift aktif berhasil dibuka. Lanjutkan pencatatan kas awal; jangan membuka shift kedua.",
+    "en": "The active shift opened successfully. Continue recording opening cash; do not open a second shift."
+  },
+  "Shift aktif pada device ini diperlukan sebelum transaksi dapat diproses.": {
+    "id": "Shift aktif pada perangkat ini diperlukan sebelum transaksi dapat diproses.",
+    "en": "An active shift on this device is required before transactions can be processed."
+  },
+  "Shift aktif · server-owned state": {
+    "id": "Shift aktif · data dari server",
+    "en": "Active shift · server-owned state"
+  },
+  "Shift berhasil ditutup": {
+    "id": "Shift berhasil ditutup",
+    "en": "Shift closed successfully"
+  },
+  "Shift history": {
+    "id": "Riwayat shift",
+    "en": "Shift history"
+  },
+  "Shift kas belum dibuka": {
+    "id": "Shift kas belum dibuka",
+    "en": "Cash shift has not been opened"
+  },
+  "Shift kasir": {
+    "id": "Shift kasir",
+    "en": "Cashier shift"
+  },
+  "Shift operations": {
+    "id": "Operasional shift",
+    "en": "Shift operations"
+  },
+  "Shift preparation required": {
+    "id": "Persiapan shift diperlukan",
+    "en": "Shift preparation required"
+  },
+  "Shift status": {
+    "id": "Status shift",
+    "en": "Shift status"
+  },
+  "Shifts": {
+    "id": "Shift",
+    "en": "Shifts"
+  },
+  "Siapkan produk dan opening stock melalui mutation authority canonical. Tidak ada mutation gabungan atau retry otomatis.": {
+    "id": "Siapkan produk dan stok awal melalui proses resmi. Tidak ada perubahan gabungan atau percobaan ulang otomatis.",
+    "en": "Prepare products and opening stock through canonical mutation authority. No combined mutations or automatic retries."
+  },
+  "Sign in": {
+    "id": "Masuk",
+    "en": "Sign in"
+  },
+  "Sign in again": {
+    "id": "Masuk kembali",
+    "en": "Sign in again"
+  },
+  "Sign out": {
+    "id": "Keluar",
+    "en": "Sign out"
+  },
+  "Sign out could not be completed safely.": {
+    "id": "Proses keluar belum dapat diselesaikan dengan aman.",
+    "en": "Sign out could not be completed safely."
+  },
+  "Sign out was not completed.": {
+    "id": "Proses keluar belum selesai.",
+    "en": "Sign out was not completed."
+  },
+  "Sign-in could not be completed safely.": {
+    "id": "Proses masuk belum dapat diselesaikan dengan aman.",
+    "en": "Sign-in could not be completed safely."
+  },
+  "Sign-in could not be completed. Verify the password and try again.": {
+    "id": "Proses masuk belum berhasil. Periksa kata sandi dan coba lagi.",
+    "en": "Sign-in could not be completed. Verify the password and try again."
+  },
+  "Skip to workspace": {
+    "id": "Langsung ke ruang kerja",
+    "en": "Skip to workspace"
+  },
+  "Sold": {
+    "id": "Terjual",
+    "en": "Sold"
+  },
+  "Source commit": {
+    "id": "Commit sumber",
+    "en": "Source commit"
+  },
+  "Stable operation": {
+    "id": "Operasi tetap",
+    "en": "Stable operation"
+  },
+  "Start a shift and record opening cash.": {
+    "id": "Mulai shift dan catat kas awal.",
+    "en": "Start a shift and record opening cash."
+  },
+  "Start secure replacement": {
+    "id": "Mulai penggantian aman",
+    "en": "Start secure replacement"
+  },
+  "Start shift": {
+    "id": "Mulai shift",
+    "en": "Start shift"
+  },
+  "Start your shift and record opening cash before using the cashier.": {
+    "id": "Mulai shift dan catat kas awal sebelum menggunakan kasir.",
+    "en": "Start your shift and record opening cash before using the cashier."
+  },
+  "Status": {
+    "id": "Status",
+    "en": "Status"
+  },
+  "Status filter": {
+    "id": "Filter status",
+    "en": "Status filter"
+  },
+  "Status koreksi tidak dapat dipastikan karena respons jaringan tidak diterima. Jangan retry sebelum refresh dan verifikasi state authoritative.": {
+    "id": "Status koreksi belum dapat dipastikan karena respons jaringan tidak diterima. Muat ulang dan periksa data resmi server sebelum mencoba lagi.",
+    "en": "Correction status is uncertain because the network response was not received. Refresh and verify the authoritative state before retrying."
+  },
+  "Status mutation tidak dapat dipastikan. Tidak ada retry otomatis; refresh authoritative state diwajibkan.": {
+    "id": "Status perubahan belum dapat dipastikan. Tidak ada percobaan ulang otomatis; muat ulang data resmi server.",
+    "en": "The mutation status is uncertain. There is no automatic retry; refresh the authoritative state."
+  },
+  "Status pembukaan shift belum dapat dipastikan. Tidak ada retry otomatis. Refresh halaman untuk membaca status authoritative sebelum mencoba lagi.": {
+    "id": "Status pembukaan shift belum dapat dipastikan. Tidak ada percobaan ulang otomatis. Muat ulang halaman untuk memeriksa data server sebelum mencoba lagi.",
+    "en": "The shift-opening status is uncertain. There is no automatic retry. Refresh the page to read the authoritative state before retrying."
+  },
+  "Status pencatatan kas awal belum dapat dipastikan. Tidak ada retry otomatis. Refresh halaman untuk membaca evidence authoritative sebelum mencoba lagi.": {
+    "id": "Status pencatatan kas awal belum dapat dipastikan. Tidak ada percobaan ulang otomatis. Muat ulang halaman untuk memeriksa bukti server sebelum mencoba lagi.",
+    "en": "The opening-cash recording status is uncertain. There is no automatic retry. Refresh the page to read authoritative evidence before retrying."
+  },
+  "Step": {
+    "id": "Langkah",
+    "en": "Step"
+  },
+  "Step 1": {
+    "id": "Langkah 1",
+    "en": "Step 1"
+  },
+  "Step 2": {
+    "id": "Langkah 2",
+    "en": "Step 2"
+  },
+  "Stock": {
+    "id": "Stok",
+    "en": "Stock"
+  },
+  "Stock accountability by product": {
+    "id": "Pertanggungjawaban stok per produk",
+    "en": "Stock accountability by product"
+  },
+  "Stock diterima. Refresh authoritative state diwajibkan sebelum mutation berikutnya.": {
+    "id": "Stok diterima. Muat ulang data resmi server sebelum perubahan berikutnya.",
+    "en": "Stock received. Refresh the authoritative state before the next mutation."
+  },
+  "Stock movement": {
+    "id": "Pergerakan stok",
+    "en": "Stock movement"
+  },
+  "Stok": {
+    "id": "Stok",
+    "en": "Stock"
+  },
+  "Stok nol": {
+    "id": "Stok nol",
+    "en": "Zero stock"
+  },
+  "Sync update dari GitHub": {
+    "id": "Sinkronkan pembaruan dari GitHub",
+    "en": "Sync update from GitHub"
+  },
+  "System": {
+    "id": "Sistem",
+    "en": "System"
+  },
+  "TOTP code": {
+    "id": "Kode TOTP",
+    "en": "TOTP code"
+  },
+  "Tab": {
+    "id": "Tab",
+    "en": "Tab"
+  },
+  "Tahap ini tersedia setelah shift aktif pada device ini.": {
+    "id": "Tahap ini tersedia setelah shift aktif di perangkat ini.",
+    "en": "This step is available after a shift becomes active on this device."
+  },
+  "Tahap ini tidak menyediakan aksi perubahan. Tombol di bawah hanya indikator visual dan tidak memiliki event handler, form submission, atau request ke backend.": {
+    "id": "Tahap ini tidak menyediakan tindakan perubahan. Tombol berikut hanya indikator visual dan tidak mengirim formulir atau permintaan ke server.",
+    "en": "This stage provides no mutation actions. The buttons below are visual indicators with no event handler, form submission, or backend request."
+  },
+  "Tambah": {
+    "id": "Tambah",
+    "en": "Add"
+  },
+  "Tambahkan minimal satu item ke transaksi.": {
+    "id": "Tambahkan minimal satu item ke transaksi.",
+    "en": "Add at least one item to the transaction."
+  },
+  "Tenant": {
+    "id": "Tenant",
+    "en": "Tenant"
+  },
+  "Tenant isolated": {
+    "id": "Tenant terisolasi",
+    "en": "Tenant isolated"
+  },
+  "Tender": {
+    "id": "Pembayaran",
+    "en": "Tender"
+  },
+  "Tender & currency performance": {
+    "id": "Kinerja pembayaran & mata uang",
+    "en": "Tender & currency performance"
+  },
+  "Tender MANUAL_EXTERNAL harus sama persis dengan total transaksi.": {
+    "id": "Pembayaran eksternal manual harus sama persis dengan total transaksi.",
+    "en": "MANUAL_EXTERNAL tender must exactly match the transaction total."
+  },
+  "Terima explanation": {
+    "id": "Terima penjelasan",
+    "en": "Accept explanation"
+  },
+  "The authorized merchant context is selected automatically for this installation.": {
+    "id": "Konteks merchant yang diizinkan dipilih otomatis untuk instalasi ini.",
+    "en": "The authorized merchant context is selected automatically for this installation."
+  },
+  "The browser did not allow copying. Save the codes manually before leaving this page.": {
+    "id": "Browser tidak mengizinkan penyalinan. Simpan kode secara manual sebelum meninggalkan halaman ini.",
+    "en": "The browser did not allow copying. Save the codes manually before leaving this page."
+  },
+  "The browser never supplies expected cash, observed cash, variance, direction, currency, or scale. Those values are rebuilt from canonical persisted evidence on every action.": {
+    "id": "Browser tidak menentukan kas seharusnya, kas terhitung, selisih, arah, mata uang, atau jumlah desimal. Nilai tersebut dihitung ulang dari bukti resmi yang tersimpan pada setiap tindakan.",
+    "en": "The browser never supplies expected cash, observed cash, variance, direction, currency, or scale. Those values are rebuilt from canonical persisted evidence on every action."
+  },
+  "The current next step is supplied by verified operating readiness.": {
+    "id": "Langkah berikutnya ditentukan dari kesiapan operasional yang sudah diverifikasi.",
+    "en": "The current next step is supplied by verified operating readiness."
+  },
+  "The enrollment session was invalidated by design. Start a fresh sign-in to establish full session authority.": {
+    "id": "Sesi pendaftaran telah diakhiri. Masuk kembali untuk memperoleh akses sesi penuh.",
+    "en": "The enrollment session was invalidated by design. Start a fresh sign-in to establish full session authority."
+  },
+  "The explanation author cannot review their own evidence. A different authorized actor must review it.": {
+    "id": "Pembuat penjelasan tidak dapat meninjau buktinya sendiri. Petugas lain yang berwenang harus meninjaunya.",
+    "en": "The explanation author cannot review their own evidence. A different authorized actor must review it."
+  },
+  "The network or server outcome may be uncertain. Refresh authoritatively before trying any action again.": {
+    "id": "Hasil jaringan atau server mungkin belum pasti. Muat ulang data server sebelum mencoba tindakan apa pun lagi.",
+    "en": "The network or server outcome may be uncertain. Refresh authoritatively before trying any action again."
+  },
+  "The server has bound this short-lived session to the verified recovery proof. The password must satisfy the canonical server policy.": {
+    "id": "Server mengikat sesi singkat ini pada bukti pemulihan yang terverifikasi. Kata sandi harus memenuhi kebijakan server.",
+    "en": "The server has bound this short-lived session to the verified recovery proof. The password must satisfy the canonical server policy."
+  },
+  "The variance prerequisite is satisfied. Final shift close still revalidates all evidence and actor-separation rules independently.": {
+    "id": "Persyaratan selisih terpenuhi. Penutupan shift final tetap memeriksa seluruh bukti dan pemisahan petugas secara independen.",
+    "en": "The variance prerequisite is satisfied. Final shift close still revalidates all evidence and actor-separation rules independently."
+  },
+  "This actor does not have explanation authority, or explanation evidence already exists.": {
+    "id": "Petugas ini tidak memiliki hak membuat penjelasan, atau bukti penjelasan sudah tersedia.",
+    "en": "This actor does not have explanation authority, or explanation evidence already exists."
+  },
+  "This is a valid empty state. Start a shift before expecting live shift-bound sales performance.": {
+    "id": "Belum ada data. Mulai shift untuk melihat kinerja penjualan shift aktif.",
+    "en": "This is a valid empty state. Start a shift before expecting live shift-bound sales performance."
+  },
+  "This outlet has no shift with canonical Final Shift Close evidence in the bounded history.": {
+    "id": "Outlet ini belum memiliki bukti penutupan shift final dalam riwayat yang ditampilkan.",
+    "en": "This outlet has no shift with canonical Final Shift Close evidence in the bounded history."
+  },
+  "Tidak": {
+    "id": "Tidak",
+    "en": "No"
+  },
+  "Tidak ada active product dengan baseline yang sesuai filter.": {
+    "id": "Tidak ada produk aktif dengan stok awal yang sesuai filter.",
+    "en": "No active product with an opening baseline matches the filter."
+  },
+  "Tidak ada automatic retry. Bila respons jaringan tidak pasti, refresh state authoritative sebelum tindakan berikutnya.": {
+    "id": "Tidak ada percobaan ulang otomatis. Jika respons jaringan tidak pasti, muat ulang data server sebelum tindakan berikutnya.",
+    "en": "There is no automatic retry. If the network response is uncertain, refresh the authoritative state before another action."
+  },
+  "Tidak ada download atau staging yang dijalankan oleh halaman ini.": {
+    "id": "Halaman ini tidak menjalankan unduhan atau proses staging.",
+    "en": "This page does not run downloads or staging operations."
+  },
+  "Tidak ada item yang sesuai filter.": {
+    "id": "Tidak ada item yang sesuai filter.",
+    "en": "No items match the filter."
+  },
+  "Tidak ada payment provider atau transaksi uang nyata. Shift, ledger, dan reconciliation ini synthetic session evidence—bukan durable production ledger.": {
+    "id": "Tidak ada penyedia pembayaran atau transaksi uang nyata. Shift, buku kas, dan rekonsiliasi ini hanya bukti sesi simulasi, bukan buku besar produksi.",
+    "en": "No payment provider or real money transaction is involved. These shifts, ledgers, and reconciliations are synthetic session evidence, not a durable production ledger."
+  },
+  "Tidak ada product sales performance untuk filter ini.": {
+    "id": "Tidak ada kinerja penjualan produk yang sesuai filter.",
+    "en": "No product sales performance matches this filter."
+  },
+  "Tidak ada retry otomatis. Jika koneksi terputus setelah submit, refresh halaman sebelum mengulang.": {
+    "id": "Tidak ada percobaan ulang otomatis. Jika koneksi terputus setelah pengiriman, muat ulang halaman sebelum mengulang.",
+    "en": "There is no automatic retry. If the connection drops after submission, refresh the page before retrying."
+  },
+  "Tidak ada sale yang cocok dengan filter.": {
+    "id": "Tidak ada penjualan yang sesuai filter.",
+    "en": "No sales match the filter."
+  },
+  "Tidak memerlukan explanation atau review": {
+    "id": "Tidak memerlukan penjelasan atau tinjauan",
+    "en": "No explanation or review required"
+  },
+  "Tolak explanation": {
+    "id": "Tolak penjelasan",
+    "en": "Reject explanation"
+  },
+  "Total": {
+    "id": "Total",
+    "en": "Total"
+  },
+  "Track sales and returns in the current shift.": {
+    "id": "Pantau penjualan dan pengembalian pada shift saat ini.",
+    "en": "Track sales and returns in the current shift."
+  },
+  "Transaksi berhasil diselesaikan.": {
+    "id": "Transaksi berhasil diselesaikan.",
+    "en": "Transaction completed successfully."
+  },
+  "Transaksi ditolak oleh server.": {
+    "id": "Transaksi ditolak oleh server.",
+    "en": "The server rejected the transaction."
+  },
+  "Transaksi tercatat": {
+    "id": "Transaksi tercatat",
+    "en": "Transaction recorded"
+  },
+  "Transaksi tidak dapat dikirim. Tidak ada retry otomatis untuk mencegah duplikasi yang tidak terlihat.": {
+    "id": "Transaksi tidak dapat dikirim. Tidak ada percobaan ulang otomatis untuk mencegah duplikasi tersembunyi.",
+    "en": "The transaction could not be sent. There is no automatic retry to prevent hidden duplicates."
+  },
+  "Tutup shift final": {
+    "id": "Tutup shift final",
+    "en": "Final shift close"
+  },
+  "UI tidak dapat menciptakan lifecycle authority.": {
+    "id": "Antarmuka tidak dapat menciptakan otorisasi tindakan.",
+    "en": "The UI cannot create lifecycle authority."
+  },
+  "UNAVAILABLE": {
+    "id": "TIDAK TERSEDIA",
+    "en": "UNAVAILABLE"
+  },
+  "Unit price": {
+    "id": "Harga satuan",
+    "en": "Unit price"
+  },
+  "Units": {
+    "id": "Unit",
+    "en": "Units"
+  },
+  "Up to 200 latest evidence movements. Ordering ties are display-only; reconciliation does not depend on timestamp order.": {
+    "id": "Maksimal 200 bukti pergerakan terbaru. Urutan yang sama hanya memengaruhi tampilan; rekonsiliasi tidak bergantung pada urutan waktu.",
+    "en": "Up to 200 latest evidence movements. Ordering ties are display-only; reconciliation does not depend on timestamp order."
+  },
+  "Update & Deployment": {
+    "id": "Pembaruan & Deployment",
+    "en": "Update & Deployment"
+  },
+  "Updater status summary": {
+    "id": "Ringkasan status pembaruan",
+    "en": "Updater status summary"
+  },
+  "Use a password recovery code": {
+    "id": "Gunakan kode pemulihan kata sandi",
+    "en": "Use a password recovery code"
+  },
+  "Use an authenticator recovery code": {
+    "id": "Gunakan kode pemulihan autentikator",
+    "en": "Use an authenticator recovery code"
+  },
+  "VOIDED": {
+    "id": "DIBATALKAN",
+    "en": "VOIDED"
+  },
+  "Variance": {
+    "id": "Selisih",
+    "en": "Variance"
+  },
+  "Variance control": {
+    "id": "Kontrol selisih",
+    "en": "Variance control"
+  },
+  "Variance explanation could not be confirmed.": {
+    "id": "Penjelasan selisih belum dapat dikonfirmasi.",
+    "en": "Variance explanation could not be confirmed."
+  },
+  "Variance prerequisite ready": {
+    "id": "Persyaratan selisih terpenuhi",
+    "en": "Variance prerequisite ready"
+  },
+  "Variance review could not be confirmed.": {
+    "id": "Tinjauan selisih belum dapat dikonfirmasi.",
+    "en": "Variance review could not be confirmed."
+  },
+  "Verification could not be completed safely.": {
+    "id": "Verifikasi belum dapat diselesaikan dengan aman.",
+    "en": "Verification could not be completed safely."
+  },
+  "Verification failed. No application access was granted.": {
+    "id": "Verifikasi gagal. Akses aplikasi belum diberikan.",
+    "en": "Verification failed. No application access was granted."
+  },
+  "Verify and open workspace": {
+    "id": "Verifikasi dan buka ruang kerja",
+    "en": "Verify and open workspace"
+  },
+  "Verify recovery code": {
+    "id": "Verifikasi kode pemulihan",
+    "en": "Verify recovery code"
+  },
+  "Version": {
+    "id": "Versi",
+    "en": "Version"
+  },
+  "Void akan membalik seluruh sale dan mengembalikan stok sesuai business authority canonical. Untuk CASH, refund tunai tetap merupakan langkah kedua yang terpisah.": {
+    "id": "Pembatalan membalik seluruh penjualan dan mengembalikan stok sesuai aturan bisnis. Untuk TUNAI, pengembalian dana tetap langkah kedua yang terpisah.",
+    "en": "Voiding reverses the entire sale and restores stock under canonical business authority. For CASH, the refund remains a separate second step."
+  },
+  "Void dan full CASH refund tetap memakai mutation authority canonical, idempotent, dan scoped.": {
+    "id": "Pembatalan dan pengembalian tunai penuh tetap memakai proses resmi yang idempoten dan sesuai cakupan.",
+    "en": "Voids and full CASH refunds continue to use canonical, idempotent, scoped mutation authority."
+  },
+  "Void dan refund di halaman ini adalah synthetic Preview evidence. Void tidak mengurangi expected cash; hanya full CASH refund yang terikat ke void meng-offset cash sale. Tidak ada durable persistence, payment-provider verification, deployment, atau Production readiness.": {
+    "id": "Pembatalan dan pengembalian di halaman ini hanya bukti Pratinjau simulasi. Pembatalan tidak mengurangi kas seharusnya; hanya pengembalian tunai penuh terkait yang mengurangi penjualan kas. Tidak ada penyimpanan permanen, verifikasi penyedia pembayaran, deployment, atau kesiapan produksi.",
+    "en": "Voids and refunds on this page are synthetic Preview evidence. Voiding does not reduce expected cash; only a linked full CASH refund offsets the cash sale. No durable persistence, payment-provider verification, deployment, or production readiness is provided."
+  },
+  "Void evidence": {
+    "id": "Bukti pembatalan",
+    "en": "Void evidence"
+  },
+  "Void permission": {
+    "id": "Hak pembatalan",
+    "en": "Void permission"
+  },
+  "Void sale": {
+    "id": "Batalkan penjualan",
+    "en": "Void sale"
+  },
+  "Void sale synthetic": {
+    "id": "Batalkan penjualan simulasi",
+    "en": "Void sale synthetic"
+  },
+  "Void value": {
+    "id": "Nilai pembatalan",
+    "en": "Void value"
+  },
+  "Voided": {
+    "id": "Dibatalkan",
+    "en": "Voided"
+  },
+  "Voided sales": {
+    "id": "Penjualan dibatalkan",
+    "en": "Voided sales"
+  },
+  "Voided units": {
+    "id": "Unit dibatalkan",
+    "en": "Voided units"
+  },
+  "Voided value": {
+    "id": "Nilai dibatalkan",
+    "en": "Voided value"
+  },
+  "WORK THE WAY YOUR BUSINESS DOES": {
+    "id": "BEKERJA SESUAI KEBUTUHAN BISNIS ANDA",
+    "en": "WORK THE WAY YOUR BUSINESS DOES"
+  },
+  "Waktu": {
+    "id": "Waktu",
+    "en": "Time"
+  },
+  "We could not check your current setup. Open a workspace below to review it.": {
+    "id": "Konfigurasi saat ini belum dapat diperiksa. Buka menu di bawah untuk meninjaunya.",
+    "en": "We could not check your current setup. Open a workspace below to review it."
+  },
+  "Wizard ini hanya membaca evidence server dan governed release package. Tidak ada penulisan konfigurasi, migration, seeding, deployment, atau aktivasi yang dijalankan.": {
+    "id": "Panduan ini hanya membaca bukti server dan paket rilis terkelola. Tidak ada perubahan konfigurasi, migrasi, pengisian data awal, deployment, atau aktivasi.",
+    "en": "This wizard only reads server evidence and governed release packages. It performs no configuration writes, migrations, seeding, deployment, or activation."
+  },
+  "Worker": {
+    "id": "Proses pelaksana",
+    "en": "Worker"
+  },
+  "Workspace": {
+    "id": "Ruang kerja",
+    "en": "Workspace"
+  },
+  "Workspace navigation": {
+    "id": "Navigasi ruang kerja",
+    "en": "Workspace navigation"
+  },
+  "Workspace overview": {
+    "id": "Ringkasan ruang kerja",
+    "en": "Workspace overview"
+  },
+  "X-CSRF-TOKEN": {
+    "id": "X-CSRF-TOKEN",
+    "en": "X-CSRF-TOKEN"
+  },
+  "X-Inertia": {
+    "id": "X-Inertia",
+    "en": "X-Inertia"
+  },
+  "X-Inertia-Version": {
+    "id": "X-Inertia-Version",
+    "en": "X-Inertia-Version"
+  },
+  "X-Requested-With": {
+    "id": "X-Requested-With",
+    "en": "X-Requested-With"
+  },
+  "X-XSRF-TOKEN": {
+    "id": "X-XSRF-TOKEN",
+    "en": "X-XSRF-TOKEN"
+  },
+  "XMLHttpRequest": {
+    "id": "XMLHttpRequest",
+    "en": "XMLHttpRequest"
+  },
+  "YOUR BUSINESS, AT A GLANCE": {
+    "id": "SEKILAS BISNIS ANDA",
+    "en": "YOUR BUSINESS, AT A GLANCE"
+  },
+  "YOUR NEXT STEP": {
+    "id": "LANGKAH BERIKUTNYA",
+    "en": "YOUR NEXT STEP"
+  },
+  "Ya": {
+    "id": "Ya",
+    "en": "Yes"
+  },
+  "You have an unfinished sale. Leave this workspace?": {
+    "id": "Ada penjualan yang belum selesai. Tinggalkan ruang kerja ini?",
+    "en": "You have an unfinished sale. Leave this workspace?"
+  },
+  "Your active outlet": {
+    "id": "Outlet aktif Anda",
+    "en": "Your active outlet"
+  },
+  "Your catalog, stock, and shift are ready. Open the cashier to begin your next sale.": {
+    "id": "Katalog, stok, dan shift sudah siap. Buka kasir untuk memulai penjualan berikutnya.",
+    "en": "Your catalog, stock, and shift are ready. Open the cashier to begin your next sale."
+  },
+  "Your installation context is already bound by the server. Sign in without copying internal tenant, organization, outlet, or device identifiers.": {
+    "id": "Konteks instalasi sudah terhubung ke server. Masuk tanpa menyalin identitas tenant, organisasi, outlet, atau perangkat.",
+    "en": "Your installation context is already bound by the server. Sign in without copying internal tenant, organization, outlet, or device identifiers."
+  },
+  "Your workspaces": {
+    "id": "Menu kerja Anda",
+    "en": "Your workspaces"
+  },
+  "ZERO": {
+    "id": "NOL",
+    "en": "ZERO"
+  },
+  "available ·": {
+    "id": "tersedia ·",
+    "en": "available ·"
+  },
+  "baselined product(s)": {
+    "id": "produk dengan stok awal",
+    "en": "baselined product(s)"
+  },
+  "bg-amber-950 text-amber-300": {
+    "id": "bg-amber-950 text-amber-300",
+    "en": "bg-amber-950 text-amber-300"
+  },
+  "bg-emerald-950 text-emerald-300": {
+    "id": "bg-emerald-950 text-emerald-300",
+    "en": "bg-emerald-950 text-emerald-300"
+  },
+  "border-cyan-500/60 bg-cyan-950/20": {
+    "id": "border-cyan-500/60 bg-cyan-950/20",
+    "en": "border-cyan-500/60 bg-cyan-950/20"
+  },
+  "border-slate-800 hover:bg-slate-800/60": {
+    "id": "border-slate-800 hover:bg-slate-800/60",
+    "en": "border-slate-800 hover:bg-slate-800/60"
+  },
+  "cPanel Cron / PHP CLI": {
+    "id": "Cron cPanel / PHP CLI",
+    "en": "cPanel Cron / PHP CLI"
+  },
+  "cPanel Cron must run": {
+    "id": "Cron cPanel harus menjalankan",
+    "en": "cPanel Cron must run"
+  },
+  "first.": {
+    "id": "terlebih dahulu.",
+    "en": "first."
+  },
+  "groups": {
+    "id": "kelompok",
+    "en": "groups"
+  },
+  "hanya boleh mengambil artifact/run/source yang sama, melakukan integrity checks, switch atomik, runtime attestation, rollback rehearsal, dan menulis staging evidence yang dapat dipakai untuk same-source Production promotion.": {
+    "id": "hanya boleh mengambil artefak, proses, dan sumber yang sama; memeriksa integritas; mengganti secara atomik; memverifikasi runtime; menguji pemulihan; dan menulis bukti staging untuk promosi produksi dari sumber yang sama.",
+    "en": "may retrieve only the same artifact, run, and source; check integrity; switch atomically; verify the runtime; rehearse rollback; and write staging evidence for same-source production promotion."
+  },
+  "hanya membaca trusted GitHub publication dan materialize exact candidate. Tombol kemudian membuat signed short-lived authority yang terikat ke fingerprint itu. Worker": {
+    "id": "hanya membaca publikasi GitHub tepercaya dan menyiapkan kandidat yang tepat. Tombol berikut membuat otorisasi bertanda tangan dengan masa berlaku singkat untuk sidik digital tersebut. Proses pelaksana",
+    "en": "only reads trusted GitHub publications and materializes the exact candidate. The button then creates signed, short-lived authority bound to that fingerprint. The worker"
+  },
+  "item": {
+    "id": "item",
+    "en": "item"
+  },
+  "kopi-susu": {
+    "id": "kopi-susu",
+    "en": "kopi-susu"
+  },
+  "oneQay": {
+    "id": "oneQay",
+    "en": "oneQay"
+  },
+  "oneQay menampilkan konteks synthetic yang tersedia untuk": {
+    "id": "oneQay menampilkan konteks simulasi yang tersedia untuk",
+    "en": "oneQay shows the synthetic contexts available for"
+  },
+  "oneQay overview": {
+    "id": "Ringkasan oneQay",
+    "en": "oneQay overview"
+  },
+  "oneQay · Intelligent business management": {
+    "id": "oneQay · Manajemen bisnis cerdas",
+    "en": "oneQay · Intelligent business management"
+  },
+  "oneQay · Inventory Operations": {
+    "id": "oneQay · Operasional Persediaan",
+    "en": "oneQay · Inventory Operations"
+  },
+  "oneQay · Merchant Workspace": {
+    "id": "oneQay · Ruang Kerja Merchant",
+    "en": "oneQay · Merchant Workspace"
+  },
+  "oneQay · Operational Intelligence": {
+    "id": "oneQay · Analisis Operasional",
+    "en": "oneQay · Operational Intelligence"
+  },
+  "oneQay · Point of Sale": {
+    "id": "oneQay · Kasir",
+    "en": "oneQay · Point of Sale"
+  },
+  "oneQay · Product Operations": {
+    "id": "oneQay · Operasional Produk",
+    "en": "oneQay · Product Operations"
+  },
+  "oneQay · Shift Control": {
+    "id": "oneQay · Kontrol Shift",
+    "en": "oneQay · Shift Control"
+  },
+  "opening + replenishment + void restoration − sold = current stock": {
+    "id": "stok awal + penerimaan + pemulihan pembatalan − terjual = stok saat ini",
+    "en": "opening + replenishment + void restoration − sold = current stock"
+  },
+  "php artisan oneqay:update:discover-development": {
+    "id": "php artisan oneqay:update:discover-development",
+    "en": "php artisan oneqay:update:discover-development"
+  },
+  "php artisan oneqay:update:process-development": {
+    "id": "php artisan oneqay:update:process-development",
+    "en": "php artisan oneqay:update:process-development"
+  },
+  "produk": {
+    "id": "produk",
+    "en": "products"
+  },
+  "refund": {
+    "id": "pengembalian",
+    "en": "refund"
+  },
+  "sale-xxxxxxxxxxxxxxxxxxxxxxxx": {
+    "id": "sale-xxxxxxxxxxxxxxxxxxxxxxxx",
+    "en": "sale-xxxxxxxxxxxxxxxxxxxxxxxx"
+  },
+  "scale": {
+    "id": "desimal",
+    "en": "scale"
+  },
+  "source": {
+    "id": "sumber",
+    "en": "source"
+  },
+  "transaksi": {
+    "id": "transaksi",
+    "en": "transactions"
+  },
+  "unit": {
+    "id": "unit",
+    "en": "unit"
+  },
+  "· Langkah 3": {
+    "id": "· Langkah 3",
+    "en": "· Step 3"
+  },
+  "· fingerprint": {
+    "id": "· sidik digital",
+    "en": "· fingerprint"
+  },
+  "· scale": {
+    "id": "· desimal",
+    "en": "· scale"
+  },
+  "ALLOWED": {
+    "id": "DIIZINKAN",
+    "en": "ALLOWED"
+  },
+  "AUTHORIZED": {
+    "id": "DIOTORISASI",
+    "en": "AUTHORIZED"
+  },
+  "Accept this variance explanation?": {
+    "id": "Terima penjelasan selisih ini?",
+    "en": "Accept this variance explanation?"
+  },
+  "Action recorded": {
+    "id": "Tindakan tercatat",
+    "en": "Action recorded"
+  },
+  "Aktif": {
+    "id": "Aktif",
+    "en": "Active"
+  },
+  "Authoritative refresh required": {
+    "id": "Muat ulang data dari server",
+    "en": "Authoritative refresh required"
+  },
+  "Belum dimulai": {
+    "id": "Belum dimulai",
+    "en": "Not started"
+  },
+  "Buka shift sekarang": {
+    "id": "Buka sif sekarang",
+    "en": "Start shift now"
+  },
+  "Buka shift synthetic": {
+    "id": "Buka sif simulasi",
+    "en": "Start simulated shift"
+  },
+  "CLOSED": {
+    "id": "DITUTUP",
+    "en": "CLOSED"
+  },
+  "Close security": {
+    "id": "Tutup keamanan",
+    "en": "Close security"
+  },
+  "Continue securely": {
+    "id": "Masuk dengan aman",
+    "en": "Continue securely"
+  },
+  "DENIED": {
+    "id": "DITOLAK",
+    "en": "DENIED"
+  },
+  "Hide technical context": {
+    "id": "Sembunyikan konteks teknis",
+    "en": "Hide technical context"
+  },
+  "Historical / unbound": {
+    "id": "Historis / belum terikat",
+    "en": "Historical / unbound"
+  },
+  "Install exact governed candidate": {
+    "id": "Pasang kandidat yang disetujui",
+    "en": "Install exact governed candidate"
+  },
+  "Konfirmasi": {
+    "id": "Konfirmasi",
+    "en": "Confirm"
+  },
+  "Konfirmasi Final Shift Close": {
+    "id": "Konfirmasi penutupan sif",
+    "en": "Confirm final shift close"
+  },
+  "Konfirmasi full CASH refund": {
+    "id": "Konfirmasi pengembalian seluruh pembayaran tunai",
+    "en": "Confirm full cash refund"
+  },
+  "Konfirmasi full sale void": {
+    "id": "Konfirmasi pembatalan seluruh penjualan",
+    "en": "Confirm full sale void"
+  },
+  "Membuka shift…": {
+    "id": "Membuka sif…",
+    "en": "Starting shift…"
+  },
+  "Memproses close…": {
+    "id": "Memproses penutupan…",
+    "en": "Closing shift…"
+  },
+  "Memproses synthetic sale…": {
+    "id": "Memproses penjualan simulasi…",
+    "en": "Processing simulated sale…"
+  },
+  "Memproses…": {
+    "id": "Memproses…",
+    "en": "Processing…"
+  },
+  "Mencatat kas awal…": {
+    "id": "Mencatat kas awal…",
+    "en": "Recording opening cash…"
+  },
+  "Menyimpan…": {
+    "id": "Menyimpan…",
+    "en": "Saving…"
+  },
+  "Merekonsiliasi…": {
+    "id": "Merekonsiliasi…",
+    "en": "Reconciling…"
+  },
+  "NOT ACTIVE": {
+    "id": "TIDAK AKTIF",
+    "en": "NOT ACTIVE"
+  },
+  "NOT AUTHORIZED": {
+    "id": "TIDAK DIOTORISASI",
+    "en": "NOT AUTHORIZED"
+  },
+  "No release": {
+    "id": "Belum ada rilis",
+    "en": "No release"
+  },
+  "None": {
+    "id": "Tidak ada",
+    "en": "None"
+  },
+  "Not ready": {
+    "id": "Belum siap",
+    "en": "Not ready"
+  },
+  "Not required": {
+    "id": "Tidak diperlukan",
+    "en": "Not required"
+  },
+  "Not started": {
+    "id": "Belum dimulai",
+    "en": "Not started"
+  },
+  "OPENING CASH REQUIRED": {
+    "id": "KAS AWAL DIPERLUKAN",
+    "en": "OPENING CASH REQUIRED"
+  },
+  "PENDING": {
+    "id": "MENUNGGU",
+    "en": "PENDING"
+  },
+  "READY FOR CASHIER": {
+    "id": "SIAP UNTUK KASIR",
+    "en": "READY FOR CASHIER"
+  },
+  "Readiness evidence unavailable.": {
+    "id": "Bukti kesiapan tidak tersedia.",
+    "en": "Readiness evidence unavailable."
+  },
+  "Recorded": {
+    "id": "Tercatat",
+    "en": "Recorded"
+  },
+  "Reject this variance explanation?": {
+    "id": "Tolak penjelasan selisih ini?",
+    "en": "Reject this variance explanation?"
+  },
+  "SELLABLE": {
+    "id": "DAPAT DIJUAL",
+    "en": "SELLABLE"
+  },
+  "SHIFT REQUIRED": {
+    "id": "SIF DIPERLUKAN",
+    "en": "SHIFT REQUIRED"
+  },
+  "Selesaikan transaksi": {
+    "id": "Selesaikan transaksi",
+    "en": "Complete sale"
+  },
+  "Simpan explanation synthetic": {
+    "id": "Simpan penjelasan simulasi",
+    "en": "Save simulated explanation"
+  },
+  "State verification required": {
+    "id": "Verifikasi status diperlukan",
+    "en": "State verification required"
+  },
+  "Submitting…": {
+    "id": "Mengirim…",
+    "en": "Submitting…"
+  },
+  "Technical context": {
+    "id": "Konteks teknis",
+    "en": "Technical context"
+  },
+  "Tutup & rekonsiliasi kas": {
+    "id": "Tutup dan rekonsiliasi kas",
+    "en": "Close and reconcile cash"
+  },
+  "UNKNOWN": {
+    "id": "BELUM DIKETAHUI",
+    "en": "UNKNOWN"
+  },
+  "UPDATE AVAILABLE": {
+    "id": "PEMBARUAN TERSEDIA",
+    "en": "UPDATE AVAILABLE"
+  },
+  "Update request pending": {
+    "id": "Permintaan pembaruan menunggu",
+    "en": "Update request pending"
+  },
+  "Verifying…": {
+    "id": "Memverifikasi…",
+    "en": "Verifying…"
+  },
+  "WAITING EXPLANATION": {
+    "id": "MENUNGGU PENJELASAN",
+    "en": "WAITING EXPLANATION"
+  },
+  "WAITING REVIEW": {
+    "id": "MENUNGGU PENINJAUAN",
+    "en": "WAITING REVIEW"
+  },
+  "Workspace update": {
+    "id": "Pembaruan ruang kerja",
+    "en": "Workspace update"
+  },
+  "acceptance": {
+    "id": "penerimaan",
+    "en": "acceptance"
+  },
+  "no": {
+    "id": "tidak",
+    "en": "no"
+  },
+  "rejection": {
+    "id": "penolakan",
+    "en": "rejection"
+  },
+  "yes": {
+    "id": "ya",
+    "en": "yes"
+  },
+  "Language": {
+    "id": "Bahasa",
+    "en": "Language"
+  },
+  "CARD": {
+    "id": "KARTU",
+    "en": "CARD"
+  },
+  "TRANSFER": {
+    "id": "TRANSFER",
+    "en": "TRANSFER"
+  },
+  "BALANCED": {
+    "id": "SEIMBANG",
+    "en": "BALANCED"
+  },
+  "EXACT": {
+    "id": "SESUAI",
+    "en": "EXACT"
+  },
+  "PRODUCTION": {
+    "id": "PRODUKSI",
+    "en": "PRODUCTION"
+  },
+  "SYNTHETIC": {
+    "id": "SIMULASI",
+    "en": "SIMULATED"
+  },
+  "LOCAL_TEST_CI": {
+    "id": "LOKAL / UJI / CI",
+    "en": "LOCAL / TEST / CI"
+  },
+  "NOT_INSTALLED": {
+    "id": "BELUM DIPASANG",
+    "en": "NOT INSTALLED"
+  },
+  "INSTALLED": {
+    "id": "TERPASANG",
+    "en": "INSTALLED"
+  },
+  "RUNNING": {
+    "id": "BERJALAN",
+    "en": "RUNNING"
+  },
+  "FAILED": {
+    "id": "GAGAL",
+    "en": "FAILED"
+  },
+  "SUCCEEDED": {
+    "id": "BERHASIL",
+    "en": "SUCCEEDED"
+  },
+  "oneQay application foundation": {
+    "id": "Fondasi aplikasi oneQay",
+    "en": "oneQay application foundation"
+  },
+  "Synthetic Technical Preview": {
+    "id": "Pratinjau teknis simulasi",
+    "en": "Synthetic Technical Preview"
+  },
+  "Catalog & Opening Stock": {
+    "id": "Katalog dan stok awal",
+    "en": "Catalog & Opening Stock"
+  },
+  "Start Shift": {
+    "id": "Mulai sif",
+    "en": "Start Shift"
+  },
+  "Sale History": {
+    "id": "Riwayat penjualan",
+    "en": "Sale History"
+  }
+}

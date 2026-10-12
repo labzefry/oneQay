@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from "../../i18n";
 import { useForm } from '@inertiajs/vue3'
 
 type PreviewContext = {
@@ -22,22 +23,20 @@ const submit = () => form.post('/technical-preview/context')
 <template>
   <main class="preview-shell">
     <section class="preview-card">
-      <p class="preview-eyebrow">{{ previewLabel }}</p>
-      <h1>Pilih konteks kerja</h1>
-      <p class="preview-copy">
-        oneQay menampilkan konteks synthetic yang tersedia untuk {{ props.profile.label }}. Nilai tenant/outlet di bawah ini hanya tampilan; server tetap memverifikasi hubungan identitas sebelum context digunakan.
-      </p>
+      <p class="preview-eyebrow">{{ t(previewLabel) }}</p>
+      <h1>{{ t("Pilih konteks kerja") }}</h1>
+      <p class="preview-copy"> {{ t("oneQay menampilkan konteks synthetic yang tersedia untuk") }} {{ props.profile.label }}{{ t(". Nilai tenant/outlet di bawah ini hanya tampilan; server tetap memverifikasi hubungan identitas sebelum context digunakan.") }} </p>
 
       <form class="context-form" @submit.prevent="submit">
         <button type="submit" :disabled="form.processing">
           <strong>{{ profile.tenant_id }}</strong>
           <span>{{ profile.organization_id }} · {{ profile.outlet_id }} · {{ profile.device_id }}</span>
-          <small>Gunakan konteks synthetic ini</small>
+          <small>{{ t("Gunakan konteks synthetic ini") }}</small>
         </button>
-        <p v-if="form.errors.selection" class="preview-error">{{ form.errors.selection }}</p>
+        <p v-if="form.errors.selection" class="preview-error">{{ t(form.errors.selection) }}</p>
       </form>
 
-      <a href="/technical-preview" class="back-link">Kembali ke pemilihan identitas</a>
+      <a href="/technical-preview" class="back-link">{{ t("Kembali ke pemilihan identitas") }}</a>
     </section>
   </main>
 </template>

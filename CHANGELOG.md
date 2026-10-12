@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-10-12 — Indonesian and English workspace
+
+- Implement an Indonesian default with a persistent English option on merchant entry, MFA/recovery, all POS workspaces, reports, preview screens, and system status.
+- Keep the chosen language reactive without reloading, preserve current forms and carts, and keep product names, identifiers, credentials, and API enum values unchanged.
+- Add a bounded certified successor operator from the successfully recovered `091312accfd0` BUSINESS_ON release. Preserve its exact runtime, merchant, sessions, union assets, protected staging, and rollback.
+- Verify compiled bilingual behavior and the existing financial/navigation fixtures before certification and direct cPanel deployment. Deployment is pending actual host evidence; business transaction acceptance remains unverified.
+
+
 ## 2026-10-11 — cPanel workspace update recovery
 
 - Reproduce the pre-switch `INTERNAL_ERROR` when PHP disables `symlink`; prefer guarded hard links and test actual disabled-function configurations.

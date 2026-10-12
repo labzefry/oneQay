@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from "../../i18n";
 import { useForm } from '@inertiajs/vue3'
 
 type PreviewProfile = {
@@ -25,11 +26,9 @@ const submit = () => {
 <template>
   <main class="preview-shell">
     <section class="preview-card">
-      <p class="preview-eyebrow">{{ previewLabel }}</p>
-      <h1>Masuk ke oneQay Technical Preview</h1>
-      <p class="preview-copy">
-        Pilih identitas demo yang sudah di-allowlist server. Ini bukan autentikasi Production dan tidak menggunakan data pengguna nyata.
-      </p>
+      <p class="preview-eyebrow">{{ t(previewLabel) }}</p>
+      <h1>{{ t("Masuk ke oneQay Technical Preview") }}</h1>
+      <p class="preview-copy"> {{ t("Pilih identitas demo yang sudah di-allowlist server. Ini bukan autentikasi Production dan tidak menggunakan data pengguna nyata.") }} </p>
 
       <form class="preview-form" @submit.prevent="submit">
         <label v-for="profile in profiles" :key="profile.principal_id" class="profile-option">
@@ -40,16 +39,14 @@ const submit = () => {
           </span>
         </label>
 
-        <p v-if="form.errors.principal" class="preview-error">{{ form.errors.principal }}</p>
+        <p v-if="form.errors.principal" class="preview-error">{{ t(form.errors.principal) }}</p>
 
-        <button type="submit" :disabled="form.processing || !form.principal">
-          Lanjutkan dengan identitas synthetic
-        </button>
+        <button type="submit" :disabled="form.processing || !form.principal"> {{ t("Lanjutkan dengan identitas synthetic") }} </button>
       </form>
 
       <aside class="preview-warning">
-        <strong>Not Production Ready</strong>
-        <span>Hanya Local/Test/CI/explicit Preview. Tidak ada credential, payment provider, atau data Production.</span>
+        <strong>{{ t("Not Production Ready") }}</strong>
+        <span>{{ t("Hanya Local/Test/CI/explicit Preview. Tidak ada credential, payment provider, atau data Production.") }}</span>
       </aside>
     </section>
   </main>
