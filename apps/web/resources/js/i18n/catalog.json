@@ -4622,5 +4622,13 @@
   "Your role does not allow this action.": {
     "en": "Your role does not allow this action.",
     "id": "Peran Anda tidak memiliki izin untuk tindakan ini."
+  },
+  "Find product by name or code": {
+    "id": "Cari produk berdasarkan nama atau kode",
+    "en": "Find product by name or code"
+  },
+  "Search products": {
+    "id": "Cari produk",
+    "en": "Search products"
   }
 }

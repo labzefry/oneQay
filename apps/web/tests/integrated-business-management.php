@@ -45,6 +45,8 @@ $seq=0;$run=static function(string $action,array $data,?string $operation=null)u
 $party=['code'=>'SUP-1','name'=>'Supplier alpha','email'=>'supplier@example.test','phone'=>'','address'=>'Fixture address','active'=>true,'marketing_consent'=>false,'consent_source'=>''];
 $reject(fn()=>$run('supplier.save',$party),'deny mutation with no grant');$assert($db->table('oneqay_business_partners')->count()===0,'denial must not write');
 $grants->permissions=array_values(array_unique([...array_values(BusinessAccess::ACTIONS),...array_column(BusinessAccess::MODULES,1),'pos.inventory.replenish']));
+$assert(count($business->options('products')['data'])===2,'purchasing product selector reads prepared POS catalog');
+$assert($business->options('products','coff')['data'][0]['product_id']==='coffee','product search uses display name or product code');
 $supplier=$run('supplier.save',$party,'business-test:stable-supplier');
 $replay=$run('supplier.save',$party,'business-test:stable-supplier');$assert($replay['id']===$supplier['id'],'stable replay returns identical record');
 $reject(fn()=>$run('supplier.save',array_merge($party,['name'=>'Changed']),'business-test:stable-supplier'),'different-payload replay denied');
@@ -115,7 +117,7 @@ $reject(fn()=>$run('invoice.settle',$settle),'cross-outlet mutation denied');
 $reject(fn()=>$run('supplier.save',$party,'business-test:stable-supplier'),'same-tenant operation cannot replay in another outlet');
 $store->setVerified($context());$grants->permissions=[];
 $reject(fn()=>$run('supplier.save',$party,'business-test:stable-supplier'),'revoked grant rejects even successful replay');
-$reject(fn()=>$business->workspace('finance'),'financial read denied without grant');$assert($access->modules()===[],'unauthorized navigation hidden');
+$reject(fn()=>$business->workspace('finance'),'financial read denied without grant');$reject(fn()=>$business->options('products'),'catalog selection requires purchasing permission');$assert($access->modules()===[],'unauthorized navigation hidden');
 $store->clear();$reject(fn()=>$business->workspace('suppliers'),'missing context denied');
 $reject(fn()=>BusinessInput::integer('9e2'),'scientific notation rejected');
 $reject(fn()=>BusinessInput::integer(1.1),'fractional atomic money rejected');

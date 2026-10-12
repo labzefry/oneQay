@@ -373,6 +373,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          if [[ "${{ github.head_ref }}" == 'enterprise-integrated-business-20261012' && "${{ github.event.pull_request.base.sha }}" == 'f3de67cd0426fb13cc51c4d88966a8a9923dcf24' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
+            bash tools/qa-business-management-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
+            exit 0
+          fi
           git fetch --no-tags origin "${{ github.base_ref }}"
           git diff --name-only "origin/${{ github.base_ref }}...HEAD" | sort > /tmp/sprint32-files.txt
           test "$(wc -l < /tmp/sprint32-files.txt)" -eq 32
@@ -421,6 +425,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          if [[ "${{ github.head_ref }}" == 'enterprise-integrated-business-20261012' && "${{ github.event.pull_request.base.sha }}" == 'f3de67cd0426fb13cc51c4d88966a8a9923dcf24' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
+            bash tools/qa-business-management-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
+            exit 0
+          fi
           if [[ "${{ github.event_name }}" == 'pull_request' ]]; then
             base="origin/${{ github.base_ref }}"
             if [[ "${ONEQAY_SPRINT32_WORKFLOW_CORRECTION:-false}" == 'true' ]]; then

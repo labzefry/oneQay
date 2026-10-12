@@ -92,6 +92,20 @@ final readonly class LaravelBusinessRepository implements BusinessRepository
         return ['data' => array_map($this->hydrate(...), array_slice($rows, 0, 50)), 'page' => $page, 'has_more' => $hasMore];
     }
 
+    public function catalogOptions(VerifiedOrganizationalContext $scope, string $search = '', int $page = 1): array
+    {
+        if ($page < 1 || $page > 10000) throw new BusinessViolation('INVALID_PAGE');
+        $term = '%'.str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], BusinessInput::text($search, 120, true)).'%';
+        $rows = $this->db->table('oneqay_pos_sale_catalog_items as c')->join('oneqay_pos_inventory_baselines as b', function ($join): void {
+            $join->on('b.tenant_id', '=', 'c.tenant_id')->on('b.outlet_id', '=', 'c.outlet_id')->on('b.product_id', '=', 'c.product_id');
+        })->where('c.tenant_id', $scope->tenantId()->value())->where('b.organization_id', $scope->organizationId()->value())
+            ->where('c.outlet_id', $scope->outletId()?->value())->where('c.active', true)
+            ->where(fn ($query) => $query->where('c.display_name', 'like', $term)->orWhere('c.product_id', 'like', $term))
+            ->orderBy('c.display_name')->orderBy('c.product_id')->offset(($page - 1) * 50)->limit(51)
+            ->get(['c.product_id', 'c.display_name', 'c.currency', 'c.currency_scale'])->all();
+        return ['data' => array_map(static fn ($row): array => (array) $row, array_slice($rows, 0, 50)), 'page' => $page, 'has_more' => count($rows) > 50];
+    }
+
     public function catalog(VerifiedOrganizationalContext $scope, string $productId): array
     {
         $item = $this->db->table('oneqay_pos_sale_catalog_items as c')->join('oneqay_pos_inventory_baselines as b', function ($j): void {

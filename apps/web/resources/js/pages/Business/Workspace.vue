@@ -5,15 +5,17 @@ import { router } from '@inertiajs/vue3';
 import { locale, t } from '../../i18n';
 import WorkspaceIcon from '../../components/WorkspaceIcon.vue';
 type Row = { id: string; version: number; [key: string]: any };
+type Product = { product_id: string; display_name: string; currency: string; currency_scale: number };
 type Page = { data: Row[]; page: number; has_more: boolean };
 type Field = { key: string; label: string; type?: string; required?: boolean; options?: { value: string; label: string }[] };
-const props = defineProps<{ module: string; title: string; records: Page; actions: string[]; modules: {key: string; title: string; url: string}[]; search: string; suppliers?: Row[]; partners?: Row[]; receipts?: Page; interactions?: Page; journals?: Page; attendance?: Page; leave?: Page; balances?: Row[]; accounts?: Record<string, [string,string]>; from?: string; to?: string; correlation_id: string }>();
+const props = defineProps<{ module: string; title: string; records: Page; actions: string[]; modules: {key: string; title: string; url: string}[]; search: string; products?: {data:Product[];page:number;has_more:boolean}; suppliers?: Row[]; partners?: Row[]; receipts?: Page; interactions?: Page; journals?: Page; attendance?: Page; leave?: Page; balances?: Row[]; accounts?: Record<string, [string,string]>; from?: string; to?: string; correlation_id: string }>();
 const search = ref(props.search); const reportFrom = ref(props.from ?? ''); const reportTo = ref(props.to ?? '');
 const selected = ref<Row | null>(null); const dialog = ref<HTMLDialogElement | null>(null); const form = reactive<Record<string, any>>({});
 const mode = ref(''); const fields = ref<Field[]>([]); const lines = ref<Record<string, any>[]>([]);
 const busy = ref(false); const uncertain = ref(false); const error = ref(''); const saved = ref(false);
 const pending = ref<{ operation_id: string; data: Record<string, any> } | null>(null);
 const optionQuery = ref(''); const optionPage = ref(1); const optionMore = ref(false); const optionLoading = ref(false);
+const products = ref<Product[]>(props.products?.data ?? []); const productQuery = ref(''); const productPage = ref(1); const productMore = ref(props.products?.has_more ?? false); const productLoading = ref(false);
 const choices = ref<Row[]>(props.suppliers ?? props.partners ?? []);
 const can = (action: string): boolean => props.actions.includes(action);
 const today = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
@@ -128,6 +130,17 @@ async function findChoices(next=false): Promise<void> {
     try {const p=next?optionPage.value+1:1;const response=await fetch(`/pos/business/options/${kind}?${new URLSearchParams({q:optionQuery.value,page:String(p)})}`,{credentials:'same-origin',headers:{Accept:'application/json'},cache:'no-store',redirect:'error'});if(!response.ok)throw new Error();const result=await response.json();choices.value=result.data;optionPage.value=p;optionMore.value=result.has_more;const field=fields.value.find(f=>f.key==='supplier_id'||f.key==='partner_id');if(field)field.options=choices.value.map(r=>({value:r.id,label:`${r.code} · ${r.name}`}));}
     catch{error.value=t('Could not load records. Try again.');}finally{optionLoading.value=false;}
 }
+async function findProducts(next=false): Promise<void> {
+    productLoading.value=true;
+    try {
+        const page=next?productPage.value+1:1;
+        const response=await fetch(`/pos/business/options/products?${new URLSearchParams({q:productQuery.value,page:String(page)})}`,{credentials:'same-origin',headers:{Accept:'application/json'},cache:'no-store',redirect:'error'});
+        if(!response.ok)throw new Error();const result=await response.json();
+        const selectedProducts=products.value.filter(product=>lines.value.some(line=>line.product_id===product.product_id));
+        products.value=Array.from(new Map([...selectedProducts,...result.data].map(product=>[product.product_id,product])).values());
+        productPage.value=page;productMore.value=result.has_more;
+    } catch{error.value=t('Could not load records. Try again.');}finally{productLoading.value=false;}
+}
 function beforeUnload(e:BeforeUnloadEvent):void {if(mode.value){e.preventDefault();e.returnValue='';}}
 window.addEventListener('beforeunload',beforeUnload);onBeforeUnmount(()=>window.removeEventListener('beforeunload',beforeUnload));
 </script>
@@ -170,10 +183,11 @@ window.addEventListener('beforeunload',beforeUnload);onBeforeUnmount(()=>window.
       <p v-if="mode==='customer.save'" class="notice">{{ t('Marketing consent must come from the customer. Leave it off when consent has not been obtained.') }}</p>
       <p v-if="mode==='purchase.create'" class="notice">{{ t('Use products from your POS catalog with opening stock configured. Costs are entered per unit.') }}</p>
       <div v-if="['purchase.create','invoice.create'].includes(mode)" class="option-search"><label>{{ t('Find supplier or customer') }}<input v-model="optionQuery" :disabled="busy||uncertain"/></label><button type="button" class="secondary" :disabled="optionLoading||busy||uncertain" @click="findChoices()">{{ t('Search') }}</button><button v-if="optionMore" type="button" class="secondary" :disabled="optionLoading||busy||uncertain" @click="findChoices(true)">{{ t('Next') }}</button></div>
+      <div v-if="mode==='purchase.create'" class="option-search"><label>{{ t('Find product by name or code') }}<input v-model="productQuery" :disabled="busy||uncertain" /></label><button type="button" class="secondary" :disabled="productLoading||busy||uncertain" @click="findProducts()">{{ t('Search products') }}</button><button v-if="productMore" type="button" class="secondary" :disabled="productLoading||busy||uncertain" @click="findProducts(true)">{{ t('Next') }}</button></div>
       <fieldset :disabled="busy||uncertain"><div class="form-grid"><label v-for="field in fields" :key="field.key" :class="{'full-width':field.type==='textarea','check':field.type==='checkbox'}"><span>{{ t(field.label) }}</span><select v-if="field.type==='select'" v-model="form[field.key]" :required="field.required"><option value="" disabled>{{ t('Select an option') }}</option><option v-for="opt in field.options" :key="opt.value" :value="opt.value">{{ t(opt.label) }}</option></select><textarea v-else-if="field.type==='textarea'" v-model="form[field.key]" :required="field.required" maxlength="2000" rows="3"/><input v-else-if="field.type==='checkbox'" v-model="form[field.key]" type="checkbox"/><input v-else v-model="form[field.key]" :type="field.type??'text'" :required="field.required" maxlength="254"/></label></div>
       <div v-if="lines.length" class="line-editor"><h3>{{ t(mode==='journal.post'?'Journal lines':'Order lines') }}</h3><div v-for="(line,index) in lines" :key="index" class="line-entry">
         <template v-if="mode==='journal.post'"><label>{{ t('Account') }}<select v-model="line.account"><option v-for="(account,code) in accounts" :key="code" :value="code">{{ code }} · {{ t(account[0]) }}</option></select></label><label>{{ t('Debit') }}<input v-model="line.debit" inputmode="decimal" required/></label><label>{{ t('Credit') }}<input v-model="line.credit" inputmode="decimal" required/></label></template>
-        <template v-else><label>{{ t('Product code') }}<input v-model="line.product_id" :readonly="mode==='purchase.receive'" required/><small v-if="line.name">{{ line.name }}</small></label><label>{{ t('Quantity') }}<input v-model="line.quantity" type="number" :min="mode==='purchase.receive'?0:1" :max="line.remaining??1000000" step="1" required/></label><label v-if="mode==='purchase.create'">{{ t('Unit cost') }}<input v-model="line.unit_cost" inputmode="decimal" required/></label></template>
+        <template v-else><label>{{ t('Product') }}<select v-if="mode==='purchase.create'" v-model="line.product_id" required><option value="" disabled>{{ t('Select an option') }}</option><option v-for="product in products" :key="product.product_id" :value="product.product_id">{{ product.display_name }} · {{ product.product_id }} · {{ product.currency }}</option></select><input v-else v-model="line.product_id" readonly required/><small v-if="line.name">{{ line.name }}</small></label><label>{{ t('Quantity') }}<input v-model="line.quantity" type="number" :min="mode==='purchase.receive'?0:1" :max="line.remaining??1000000" step="1" required/></label><label v-if="mode==='purchase.create'">{{ t('Unit cost') }}<input v-model="line.unit_cost" inputmode="decimal" required/></label></template>
         <button v-if="mode!=='purchase.receive'&&lines.length>1" type="button" class="text-button danger" @click="lines.splice(index,1)">{{ t('Remove') }}</button>
       </div><button v-if="mode!=='purchase.receive'&&lines.length<100" type="button" class="secondary" @click="lines.push(mode==='journal.post'?{account:'6000',debit:'0',credit:'0'}:{product_id:'',quantity:'1',unit_cost:'0'})">+ {{ t('Add line') }}</button></div>
       <p v-if="fields.length===0" class="notice">{{ t('Review this record before confirming the action.') }} <strong v-if="selected?.total_atomic">{{ money(selected.total_atomic,selected.scale,selected.currency) }}</strong></p>

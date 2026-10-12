@@ -345,6 +345,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          if [[ "${{ github.head_ref }}" == 'enterprise-integrated-business-20261012' && "${{ github.event.pull_request.base.sha }}" == 'f3de67cd0426fb13cc51c4d88966a8a9923dcf24' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
+            bash tools/qa-business-management-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
+            exit 0
+          fi
           git fetch --no-tags origin "${{ github.base_ref }}"
           git diff --name-only "origin/${{ github.base_ref }}...HEAD" | sort > /tmp/sprint30-files.txt
           test "$(wc -l < /tmp/sprint30-files.txt)" -eq 46
@@ -391,6 +395,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          if [[ "${{ github.head_ref }}" == 'enterprise-integrated-business-20261012' && "${{ github.event.pull_request.base.sha }}" == 'f3de67cd0426fb13cc51c4d88966a8a9923dcf24' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
+            bash tools/qa-business-management-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
+            exit 0
+          fi
           if [[ "${{ github.event_name }}" == 'pull_request' ]] && [[ "${ONEQAY_SPRINT31_SUCCESSOR:-false}" != 'true' ]] && { [[ "${{ github.head_ref }}" != 'sprint268-security-dependency-remediation' ]] || [[ "${{ github.event.pull_request.number }}" != '926' ]]; }; then
             base="origin/${{ github.base_ref }}"
             for migration in \

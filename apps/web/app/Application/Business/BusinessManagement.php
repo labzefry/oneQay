@@ -44,6 +44,7 @@ final readonly class BusinessManagement
         $result = ['module' => $module, 'title' => $definition[0], 'scope' => ['tenant_id' => $scope->tenantId()->value(), 'organization_id' => $scope->organizationId()->value(), 'outlet_id' => $scope->outletId()?->value(), 'device_id' => $scope->deviceId()?->value()], 'records' => $this->records->listing($scope, $resource, $filters, $page), 'actions' => $this->access->actions(), 'modules' => $this->access->modules(), 'search' => $search];
         if ($module === 'purchases') {
             $result['suppliers'] = $this->options('suppliers')['data'];
+            $result['products'] = $this->options('products');
             $result['receipts'] = $this->records->listing($scope, 'receipts', [], $page);
         } elseif ($module === 'customers') {
             $result['interactions'] = $this->records->listing($scope, 'interactions', [], $page);
@@ -65,8 +66,9 @@ final readonly class BusinessManagement
 
     public function options(string $kind, string $q = '', int $page = 1): array
     {
-        $permission = match ($kind) { 'suppliers' => 'business.purchases.view', 'partners' => 'business.finance.view', default => throw new BusinessViolation('UNKNOWN_RESOURCE', 404) };
+        $permission = match ($kind) { 'suppliers', 'products' => 'business.purchases.view', 'partners' => 'business.finance.view', default => throw new BusinessViolation('UNKNOWN_RESOURCE', 404) };
         $scope = $this->access->require($permission);
+        if ($kind === 'products') return $this->records->catalogOptions($scope, $q, $page);
         $filters = ['active' => true, 'q' => $q];
         if ($kind === 'suppliers') $filters['kind'] = 'SUPPLIER';
         $result = $this->records->listing($scope, 'partners', $filters, $page);

@@ -14,6 +14,7 @@ interface BusinessRepository
     public function create(VerifiedOrganizationalContext $scope, string $resource, array $data): array;
     public function update(VerifiedOrganizationalContext $scope, string $resource, string $id, int $version, array $data): array;
     public function listing(VerifiedOrganizationalContext $scope, string $resource, array $filters = [], int $page = 1): array;
+    public function catalogOptions(VerifiedOrganizationalContext $scope, string $search = '', int $page = 1): array;
     public function catalog(VerifiedOrganizationalContext $scope, string $productId): array;
     public function receiveStock(VerifiedOrganizationalContext $scope, string $operationId, string $productId, int $quantity, string $correlation): void;
     public function journalExists(VerifiedOrganizationalContext $scope, string $source): bool;
