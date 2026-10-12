@@ -1,0 +1,1668 @@
+{
+  "schema": "oneqay.enterprise-capability-matrix.v1",
+  "product": "oneQay",
+  "tagline": "The Future of Intelligent Business Management",
+  "attribution": "Lab | zefry",
+  "snapshot_date": "2026-10-12",
+  "baseline_main": "d15f2fc3f9aa9320670657d03b044e132bf812a2",
+  "last_evidenced_live_host_source": "e93b7fef42cb36840b7fca6b79435c6188a13cd5",
+  "host_report_status": "BUSINESS_WORKSPACE_UPDATED_ACCEPTANCE_PENDING",
+  "release_certification_run": 38236323278,
+  "certified_release": "production-d15f2fc3f9aa",
+  "certified_artifact_id": 11741255632,
+  "source_only_not_host_proof": true,
+  "authority": "Product direction != release/migration/host authority",
+  "evidence_level": "Source-tree existence plus indicated regression; per-capability full runtime acceptance not inferred",
+  "statuses": [
+    "MISSING",
+    "PARTIAL",
+    "IMPLEMENTED",
+    "CI_VERIFIED",
+    "RELEASE_CERTIFIED",
+    "DEPLOYED",
+    "ACCEPTANCE_VERIFIED",
+    "BLOCKED"
+  ],
+  "rows": [
+    {
+      "stage": "E0",
+      "id": "E0-01",
+      "name": "Tenant / Organization / Outlet / Device Context",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [
+        "apps/web/app/Application/Organization/VerifiedOrganizationalContext.php"
+      ],
+      "ui": [
+        "apps/web/resources/js/pages/Pos/OperationsHub.vue"
+      ],
+      "api": [
+        "apps/web/app/Providers/PosOperationsHubServiceProvider.php"
+      ],
+      "persistence": [
+        "apps/web/database/migrations/0000_00_00_000001_create_foundational_context_graph.php"
+      ],
+      "permission": "Verified server-derived context",
+      "tests": [
+        "apps/web/tests/identity-org-context.php"
+      ],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "production-d15f2fc3f9aa (certified source; capability-specific runtime acceptance not implied)",
+      "status": "CI_VERIFIED",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "Host acceptance pending",
+      "next_action": "Verify authorized active merchant scope"
+    },
+    {
+      "stage": "E0",
+      "id": "E0-02",
+      "name": "Tenant isolation and contextual authorization",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [
+        "apps/web/app/Application/Tenancy/TenantIsolationGuard.php"
+      ],
+      "ui": [],
+      "api": [
+        "apps/web/app/Providers/AppServiceProvider.php"
+      ],
+      "persistence": [
+        "apps/web/database/migrations/0000_00_00_000001_create_foundational_context_graph.php"
+      ],
+      "permission": "Deny by default tenant contexts",
+      "tests": [
+        "apps/web/tests/identity-org-context.php"
+      ],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "production-d15f2fc3f9aa (certified source; capability-specific runtime acceptance not implied)",
+      "status": "CI_VERIFIED",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "Full scope and host acceptance not verified",
+      "next_action": "Implement and verify end-to-end capability with tenant-safe data and owner acceptance"
+    },
+    {
+      "stage": "E0",
+      "id": "E0-03",
+      "name": "Identity and credential verification",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [
+        "apps/web/app/Application/Identity/VerifyFirstPartyIdentityCredential.php"
+      ],
+      "ui": [
+        "apps/web/resources/js/pages/Foundation.vue"
+      ],
+      "api": [
+        "apps/web/routes/web.php"
+      ],
+      "persistence": [
+        "apps/web/database/migrations/0000_00_00_000007_create_identity_password_credentials.php"
+      ],
+      "permission": "Authenticated identity",
+      "tests": [
+        "apps/web/tests/identity-credential-verification.php"
+      ],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "production-d15f2fc3f9aa (certified source; capability-specific runtime acceptance not implied)",
+      "status": "CI_VERIFIED",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "Full scope and host acceptance not verified",
+      "next_action": "Implement and verify end-to-end capability with tenant-safe data and owner acceptance"
+    },
+    {
+      "stage": "E0",
+      "id": "E0-04",
+      "name": "Privileged MFA / TOTP / recovery",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [
+        "apps/web/app/Application/Identity/PrivilegedTotpMfaService.php"
+      ],
+      "ui": [
+        "apps/web/resources/js/pages/Foundation.vue"
+      ],
+      "api": [
+        "apps/web/routes/web.php"
+      ],
+      "persistence": [
+        "apps/web/database/migrations/0000_00_00_000009_create_identity_totp_factors.php"
+      ],
+      "permission": "Privileged reauthentication",
+      "tests": [
+        "apps/web/tests/privileged-totp-mfa.php"
+      ],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "production-d15f2fc3f9aa (certified source; capability-specific runtime acceptance not implied)",
+      "status": "CI_VERIFIED",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "Real MFA acceptance pending",
+      "next_action": "Implement and verify end-to-end capability with tenant-safe data and owner acceptance"
+    },
+    {
+      "stage": "E0",
+      "id": "E0-05",
+      "name": "Secure sessions, lifecycle, revocation",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [
+        "apps/web/app/Application/Identity/FirstPartySessionAuthorityService.php"
+      ],
+      "ui": [],
+      "api": [
+        "apps/web/app/Providers/AppServiceProvider.php"
+      ],
+      "persistence": [
+        "apps/web/database/migrations/0000_00_00_000013_create_first_party_session_authority.php"
+      ],
+      "permission": "Session active and step-up controls",
+      "tests": [
+        "apps/web/tests/first-party-session-establishment.php",
+        "apps/web/tests/first-party-session-absolute-lifetime.php"
+      ],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "production-d15f2fc3f9aa (certified source; capability-specific runtime acceptance not implied)",
+      "status": "CI_VERIFIED",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "Full scope and host acceptance not verified",
+      "next_action": "Implement and verify end-to-end capability with tenant-safe data and owner acceptance"
+    },
+    {
+      "stage": "E0",
+      "id": "E0-06",
+      "name": "RBAC, policy administration and role separation",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [
+        "apps/web/app/Application/Authorization/DurableScopedAuthorizationPolicy.php"
+      ],
+      "ui": [],
+      "api": [
+        "apps/web/app/Providers/AppServiceProvider.php"
+      ],
+      "persistence": [
+        "apps/web/database/migrations/0000_00_00_000003_create_scoped_role_permission_policy.php"
+      ],
+      "permission": "PermissionIdentifier and scoped policy",
+      "tests": [
+        "apps/web/tests/authorization-persistence.php"
+      ],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "production-d15f2fc3f9aa (certified source; capability-specific runtime acceptance not implied)",
+      "status": "CI_VERIFIED",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "Full scope and host acceptance not verified",
+      "next_action": "Implement and verify end-to-end capability with tenant-safe data and owner acceptance"
+    },
+    {
+      "stage": "E0",
+      "id": "E0-07",
+      "name": "Initial merchant and tenancy bootstrap",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [
+        "apps/web/app/Application/Bootstrap/MerchantPosReadyBootstrapService.php"
+      ],
+      "ui": [],
+      "api": [
+        "apps/web/routes/console.php"
+      ],
+      "persistence": [
+        "apps/web/database/migrations/0000_00_00_000005_create_initial_tenant_administrator_provisioning_journal.php"
+      ],
+      "permission": "Explicit provisioner",
+      "tests": [
+        "apps/web/tests/merchant-pos-ready-bootstrap.php"
+      ],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "production-d15f2fc3f9aa (certified source; capability-specific runtime acceptance not implied)",
+      "status": "CI_VERIFIED",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "First merchant completed per historical host evidence; no replay",
+      "next_action": "Keep existing merchant; validate credentials only in host"
+    },
+    {
+      "stage": "E0",
+      "id": "E0-08",
+      "name": "Global master data beyond POS catalog",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [],
+      "ui": [],
+      "api": [],
+      "persistence": [],
+      "permission": "Not separately verified",
+      "tests": [],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "NOT_APPLICABLE",
+      "status": "MISSING",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "No independently delivered master-data module",
+      "next_action": "Implement and verify end-to-end capability with tenant-safe data and owner acceptance"
+    },
+    {
+      "stage": "E0",
+      "id": "E0-09",
+      "name": "Configuration / runtime feature gates",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [
+        "apps/web/app/Infrastructure/Configuration/CriticalConfiguration.php"
+      ],
+      "ui": [],
+      "api": [
+        "apps/web/app/Providers/AppServiceProvider.php"
+      ],
+      "persistence": [
+        "apps/web/config/oneqay.php"
+      ],
+      "permission": "Host-bound runtime gate",
+      "tests": [
+        "apps/web/tests/persistence.php"
+      ],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "production-d15f2fc3f9aa (certified source; capability-specific runtime acceptance not implied)",
+      "status": "CI_VERIFIED",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "Full scope and host acceptance not verified",
+      "next_action": "Implement and verify end-to-end capability with tenant-safe data and owner acceptance"
+    },
+    {
+      "stage": "E0",
+      "id": "E0-10",
+      "name": "Audit and immutable operational evidence",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [
+        "apps/web/app/Application/Authorization/DurablePolicyMutation.php"
+      ],
+      "ui": [],
+      "api": [
+        "apps/web/app/Providers/AppServiceProvider.php"
+      ],
+      "persistence": [
+        "apps/web/database/migrations/0000_00_00_000004_create_policy_mutation_journal.php"
+      ],
+      "permission": "Scoped policy mutation journals",
+      "tests": [
+        "apps/web/tests/policy-administration-delivery.php"
+      ],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "production-d15f2fc3f9aa (certified source; capability-specific runtime acceptance not implied)",
+      "status": "PARTIAL",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "Unified enterprise audit explorer not delivered",
+      "next_action": "Implement and verify end-to-end capability with tenant-safe data and owner acceptance"
+    },
+    {
+      "stage": "E0",
+      "id": "E0-11",
+      "name": "Correlation IDs and safe errors",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [
+        "apps/web/app/Application/Observability/CorrelationId.php"
+      ],
+      "ui": [],
+      "api": [
+        "apps/web/app/Delivery/Http/SafeErrorEnvelope.php"
+      ],
+      "persistence": [],
+      "permission": "Scoped request correlation",
+      "tests": [
+        "apps/web/tests/pos-operational-reporting.php"
+      ],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "production-d15f2fc3f9aa (certified source; capability-specific runtime acceptance not implied)",
+      "status": "CI_VERIFIED",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "Full scope and host acceptance not verified",
+      "next_action": "Implement and verify end-to-end capability with tenant-safe data and owner acceptance"
+    },
+    {
+      "stage": "E0",
+      "id": "E0-12",
+      "name": "Telemetry, logging, SLO and p95 measurement",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [
+        "apps/web/app/Delivery/Http/HealthController.php"
+      ],
+      "ui": [],
+      "api": [
+        "apps/web/routes/web.php"
+      ],
+      "persistence": [],
+      "permission": "Not separately verified",
+      "tests": [],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "production-d15f2fc3f9aa (certified source; capability-specific runtime acceptance not implied)",
+      "status": "PARTIAL",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "Live p95 <=750ms evidence missing",
+      "next_action": "Instrument and benchmark real host"
+    },
+    {
+      "stage": "E0",
+      "id": "E0-13",
+      "name": "Durable schema, migrations and integrity",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [
+        "apps/web/app/Infrastructure/Persistence/LaravelDurableContextGraphRepository.php"
+      ],
+      "ui": [],
+      "api": [
+        "apps/web/routes/console.php"
+      ],
+      "persistence": [
+        "apps/web/database/migrations/0000_00_00_000001_create_foundational_context_graph.php"
+      ],
+      "permission": "Schema and tenant constraints",
+      "tests": [
+        "apps/web/tests/persistence.php"
+      ],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "production-d15f2fc3f9aa (certified source; capability-specific runtime acceptance not implied)",
+      "status": "CI_VERIFIED",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "Host migration state cannot be derived from archive",
+      "next_action": "Never replay executed migration"
+    },
+    {
+      "stage": "E0",
+      "id": "E0-14",
+      "name": "Backup, restore and rollback acceptance",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [
+        "tools/production/cpanel/recover-oneqaydev-certified-workspace.php"
+      ],
+      "ui": [],
+      "api": [],
+      "persistence": [],
+      "permission": "Not separately verified",
+      "tests": [
+        "tools/production/tests/oneqaydev-certified-workspace-update.php"
+      ],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "production-d15f2fc3f9aa (certified source; capability-specific runtime acceptance not implied)",
+      "status": "PARTIAL",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "Host restore rehearsal and current rollback evidence incomplete",
+      "next_action": "Implement and verify end-to-end capability with tenant-safe data and owner acceptance"
+    },
+    {
+      "stage": "E0",
+      "id": "E0-15",
+      "name": "Installer and installation wizard",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [
+        "apps/web/app/Infrastructure/Installation/SecureInstallationReadiness.php"
+      ],
+      "ui": [
+        "apps/web/resources/js/pages/System/UpdateDeployment.vue"
+      ],
+      "api": [
+        "apps/web/routes/console.php"
+      ],
+      "persistence": [],
+      "permission": "Privileged governed installer",
+      "tests": [
+        "apps/web/tests/installation-readiness-wizard-delivery.php"
+      ],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "production-d15f2fc3f9aa (certified source; capability-specific runtime acceptance not implied)",
+      "status": "PARTIAL",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "On-host full reinstall/upgrade acceptance incomplete",
+      "next_action": "Implement and verify end-to-end capability with tenant-safe data and owner acceptance"
+    },
+    {
+      "stage": "E0",
+      "id": "E0-16",
+      "name": "Governed in-app updater",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [
+        "apps/web/app/Application/SystemUpdate/SystemUpdateControlPlane.php"
+      ],
+      "ui": [
+        "apps/web/resources/js/pages/System/UpdateDeployment.vue"
+      ],
+      "api": [
+        "apps/web/app/Providers/SystemUpdateServiceProvider.php"
+      ],
+      "persistence": [],
+      "permission": "Updater disabled until authority",
+      "tests": [
+        "apps/web/tests/backend-updater-control-plane.php"
+      ],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "production-d15f2fc3f9aa (certified source; capability-specific runtime acceptance not implied)",
+      "status": "PARTIAL",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "Do not enable updater without provider and rollback proof",
+      "next_action": "Implement and verify end-to-end capability with tenant-safe data and owner acceptance"
+    },
+    {
+      "stage": "E0",
+      "id": "E0-17",
+      "name": "Shared hosting business-on deployment binding",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [
+        "tools/production/cpanel/update-oneqaydev-bilingual-workspace.php"
+      ],
+      "ui": [],
+      "api": [],
+      "persistence": [],
+      "permission": "Explicit owner-host authority",
+      "tests": [
+        "tools/production/tests/oneqaydev-bilingual-workspace.php"
+      ],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "production-d15f2fc3f9aa (certified source; capability-specific runtime acceptance not implied)",
+      "status": "PARTIAL",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "Operator is presentation-only, incompatible with backend-changing Business OS",
+      "next_action": "Qualify new backend-capable exact-source update operator after read-only host preflight"
+    },
+    {
+      "stage": "E1",
+      "id": "E1-01",
+      "name": "POS catalog and product sellability",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [
+        "apps/web/app/Application/Pos/PrepareCatalogItem.php"
+      ],
+      "ui": [
+        "apps/web/resources/js/pages/Pos/CatalogInventorySetup.vue"
+      ],
+      "api": [
+        "apps/web/app/Providers/PosCatalogInventorySetupWorkspaceServiceProvider.php"
+      ],
+      "persistence": [
+        "apps/web/database/migrations/0000_00_00_000017_create_pos_catalog_preparation_journal.php"
+      ],
+      "permission": "pos.catalog.prepare",
+      "tests": [
+        "apps/web/tests/pos-catalog-preparation-durable.php"
+      ],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "production-d15f2fc3f9aa (certified source; capability-specific runtime acceptance not implied)",
+      "status": "CI_VERIFIED",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "Full scope and host acceptance not verified",
+      "next_action": "Implement and verify end-to-end capability with tenant-safe data and owner acceptance"
+    },
+    {
+      "stage": "E1",
+      "id": "E1-02",
+      "name": "Price and currency binding",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [
+        "apps/web/app/Application/Pos/CatalogPreparationCommand.php"
+      ],
+      "ui": [
+        "apps/web/resources/js/pages/Pos/CatalogInventorySetup.vue"
+      ],
+      "api": [
+        "apps/web/app/Providers/PosCatalogInventorySetupWorkspaceServiceProvider.php"
+      ],
+      "persistence": [
+        "apps/web/database/migrations/0000_00_00_000017_create_pos_catalog_preparation_journal.php"
+      ],
+      "permission": "Catalog preparation permission",
+      "tests": [
+        "apps/web/tests/pos-catalog-preparation-durable.php"
+      ],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "production-d15f2fc3f9aa (certified source; capability-specific runtime acceptance not implied)",
+      "status": "CI_VERIFIED",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "Full scope and host acceptance not verified",
+      "next_action": "Implement and verify end-to-end capability with tenant-safe data and owner acceptance"
+    },
+    {
+      "stage": "E1",
+      "id": "E1-03",
+      "name": "Opening inventory",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [
+        "apps/web/app/Application/Pos/EstablishInventoryBaseline.php"
+      ],
+      "ui": [
+        "apps/web/resources/js/pages/Pos/CatalogInventorySetup.vue"
+      ],
+      "api": [
+        "apps/web/app/Providers/PosCatalogInventorySetupWorkspaceServiceProvider.php"
+      ],
+      "persistence": [
+        "apps/web/database/migrations/0000_00_00_000020_create_pos_inventory_baseline_foundation.php"
+      ],
+      "permission": "pos.inventory.baseline",
+      "tests": [
+        "apps/web/tests/pos-inventory-baseline-durable.php"
+      ],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "production-d15f2fc3f9aa (certified source; capability-specific runtime acceptance not implied)",
+      "status": "CI_VERIFIED",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "Full scope and host acceptance not verified",
+      "next_action": "Implement and verify end-to-end capability with tenant-safe data and owner acceptance"
+    },
+    {
+      "stage": "E1",
+      "id": "E1-04",
+      "name": "Positive stock replenishment",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [
+        "apps/web/app/Application/Pos/ReplenishInventory.php"
+      ],
+      "ui": [
+        "apps/web/resources/js/pages/Pos/InventoryReplenishment.vue"
+      ],
+      "api": [
+        "apps/web/app/Providers/PosInventoryReplenishmentWorkspaceServiceProvider.php"
+      ],
+      "persistence": [
+        "apps/web/database/migrations/0000_00_00_000020_create_pos_inventory_baseline_foundation.php"
+      ],
+      "permission": "pos.inventory.replenishment",
+      "tests": [
+        "apps/web/tests/pos-inventory-replenishment-workspace.php"
+      ],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "production-d15f2fc3f9aa (certified source; capability-specific runtime acceptance not implied)",
+      "status": "CI_VERIFIED",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "Not equivalent to supplier purchase receiving",
+      "next_action": "Implement and verify end-to-end capability with tenant-safe data and owner acceptance"
+    },
+    {
+      "stage": "E1",
+      "id": "E1-05",
+      "name": "Shift and device register opening",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [
+        "apps/web/app/Application/Pos/OpenShift.php"
+      ],
+      "ui": [
+        "apps/web/resources/js/pages/Pos/ShiftStart.vue"
+      ],
+      "api": [
+        "apps/web/app/Providers/PosShiftStartWorkspaceServiceProvider.php"
+      ],
+      "persistence": [
+        "apps/web/database/migrations/0000_00_00_000018_create_pos_shift_opening_foundation.php"
+      ],
+      "permission": "pos.shift.open",
+      "tests": [
+        "apps/web/tests/pos-shift-opening-durable.php"
+      ],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "production-d15f2fc3f9aa (certified source; capability-specific runtime acceptance not implied)",
+      "status": "CI_VERIFIED",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "Full scope and host acceptance not verified",
+      "next_action": "Implement and verify end-to-end capability with tenant-safe data and owner acceptance"
+    },
+    {
+      "stage": "E1",
+      "id": "E1-06",
+      "name": "Opening cash",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [
+        "apps/web/app/Application/Pos/RecordShiftOpeningCash.php"
+      ],
+      "ui": [
+        "apps/web/resources/js/pages/Pos/ShiftStart.vue"
+      ],
+      "api": [
+        "apps/web/app/Providers/PosShiftStartWorkspaceServiceProvider.php"
+      ],
+      "persistence": [
+        "apps/web/database/migrations/0000_00_00_000022_create_pos_shift_opening_cash_evidence_foundation.php"
+      ],
+      "permission": "Opening-cash permission",
+      "tests": [
+        "apps/web/tests/pos-shift-opening-cash-durable.php"
+      ],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "production-d15f2fc3f9aa (certified source; capability-specific runtime acceptance not implied)",
+      "status": "CI_VERIFIED",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "Full scope and host acceptance not verified",
+      "next_action": "Implement and verify end-to-end capability with tenant-safe data and owner acceptance"
+    },
+    {
+      "stage": "E1",
+      "id": "E1-07",
+      "name": "CASH sale and durable receipt",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [
+        "apps/web/app/Application/Pos/CompleteSale.php"
+      ],
+      "ui": [
+        "apps/web/resources/js/pages/Pos/Cashier.vue"
+      ],
+      "api": [
+        "apps/web/app/Providers/PosCashierWorkspaceServiceProvider.php"
+      ],
+      "persistence": [
+        "apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php"
+      ],
+      "permission": "pos.sale.complete",
+      "tests": [
+        "apps/web/tests/pos-sale-completion-durable.php",
+        "apps/web/tests/pos-cashier-workspace.php"
+      ],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "production-d15f2fc3f9aa (certified source; capability-specific runtime acceptance not implied)",
+      "status": "CI_VERIFIED",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "Real on-host CASH sale unverified",
+      "next_action": "Implement and verify end-to-end capability with tenant-safe data and owner acceptance"
+    },
+    {
+      "stage": "E1",
+      "id": "E1-08",
+      "name": "Idempotency and replay conflict control",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [
+        "apps/web/app/Infrastructure/Pos/LaravelDurablePosSaleRepository.php"
+      ],
+      "ui": [
+        "apps/web/resources/js/pages/Pos/Cashier.vue"
+      ],
+      "api": [
+        "apps/web/app/Providers/PosCashierWorkspaceServiceProvider.php"
+      ],
+      "persistence": [
+        "apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php"
+      ],
+      "permission": "POS mutation authorization",
+      "tests": [
+        "apps/web/tests/pos-sale-completion-durable.php"
+      ],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "production-d15f2fc3f9aa (certified source; capability-specific runtime acceptance not implied)",
+      "status": "CI_VERIFIED",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "Host retry and conflict acceptance pending",
+      "next_action": "Implement and verify end-to-end capability with tenant-safe data and owner acceptance"
+    },
+    {
+      "stage": "E1",
+      "id": "E1-09",
+      "name": "Inventory decrement on completed sale",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [
+        "apps/web/app/Infrastructure/Pos/LaravelDurablePosSaleRepository.php"
+      ],
+      "ui": [
+        "apps/web/resources/js/pages/Pos/InventoryAccountability.vue"
+      ],
+      "api": [
+        "apps/web/app/Providers/PosInventoryAccountabilityWorkspaceServiceProvider.php"
+      ],
+      "persistence": [
+        "apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php"
+      ],
+      "permission": "Tenant/outlet stock boundaries",
+      "tests": [
+        "apps/web/tests/pos-inventory-accountability-workspace.php"
+      ],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "production-d15f2fc3f9aa (certified source; capability-specific runtime acceptance not implied)",
+      "status": "CI_VERIFIED",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "Full scope and host acceptance not verified",
+      "next_action": "Implement and verify end-to-end capability with tenant-safe data and owner acceptance"
+    },
+    {
+      "stage": "E1",
+      "id": "E1-10",
+      "name": "Void and cash refund corrections",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [
+        "apps/web/app/Application/Pos/VoidSale.php",
+        "apps/web/app/Application/Pos/RecordCashRefund.php"
+      ],
+      "ui": [
+        "apps/web/resources/js/pages/Pos/SaleCorrections.vue"
+      ],
+      "api": [
+        "apps/web/app/Providers/PosSaleCorrectionWorkspaceServiceProvider.php"
+      ],
+      "persistence": [
+        "apps/web/database/migrations/0000_00_00_000019_create_pos_sale_void_foundation.php",
+        "apps/web/database/migrations/0000_00_00_000021_create_pos_sale_cash_refund_foundation.php"
+      ],
+      "permission": "pos.sale.void / refund grants",
+      "tests": [
+        "apps/web/tests/pos-sale-void-durable.php",
+        "apps/web/tests/pos-sale-cash-refund-durable.php"
+      ],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "production-d15f2fc3f9aa (certified source; capability-specific runtime acceptance not implied)",
+      "status": "CI_VERIFIED",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "Full scope and host acceptance not verified",
+      "next_action": "Implement and verify end-to-end capability with tenant-safe data and owner acceptance"
+    },
+    {
+      "stage": "E1",
+      "id": "E1-11",
+      "name": "Closing cash and variance evidence",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [
+        "apps/web/app/Application/Pos/RecordShiftClosingCash.php"
+      ],
+      "ui": [
+        "apps/web/resources/js/pages/Pos/CashVarianceReconciliation.vue"
+      ],
+      "api": [
+        "apps/web/app/Providers/PosCashVarianceReconciliationWorkspaceServiceProvider.php"
+      ],
+      "persistence": [
+        "apps/web/database/migrations/0000_00_00_000023_create_pos_shift_closing_cash_evidence_foundation.php",
+        "apps/web/database/migrations/0000_00_00_000025_create_pos_cash_variance_explanation_evidence_foundation.php"
+      ],
+      "permission": "Shift/cash reconciliation grants",
+      "tests": [
+        "apps/web/tests/pos-shift-closing-cash-durable.php"
+      ],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "production-d15f2fc3f9aa (certified source; capability-specific runtime acceptance not implied)",
+      "status": "CI_VERIFIED",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "Full scope and host acceptance not verified",
+      "next_action": "Implement and verify end-to-end capability with tenant-safe data and owner acceptance"
+    },
+    {
+      "stage": "E1",
+      "id": "E1-12",
+      "name": "Final Shift Close durable lifecycle",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [
+        "apps/web/app/Application/Pos/CloseShift.php"
+      ],
+      "ui": [
+        "apps/web/resources/js/pages/Pos/ShiftClose.vue"
+      ],
+      "api": [
+        "apps/web/routes/pos-final-shift-close.php"
+      ],
+      "persistence": [
+        "apps/web/database/migrations/0000_00_00_000027_create_pos_shift_close_evidence_foundation.php"
+      ],
+      "permission": "pos.shift.close; default grant NONE",
+      "tests": [
+        "apps/web/tests/pos-final-shift-close-transactional-lifecycle.php"
+      ],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "production-d15f2fc3f9aa (certified source; capability-specific runtime acceptance not implied)",
+      "status": "CI_VERIFIED",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "Real end-to-end host close not verified",
+      "next_action": "Implement and verify end-to-end capability with tenant-safe data and owner acceptance"
+    },
+    {
+      "stage": "E1",
+      "id": "E1-13",
+      "name": "POS inventory accountability reporting",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [
+        "apps/web/app/Application/Pos/ViewPosInventoryAccountabilityWorkspace.php"
+      ],
+      "ui": [
+        "apps/web/resources/js/pages/Pos/InventoryAccountability.vue"
+      ],
+      "api": [
+        "apps/web/app/Providers/PosInventoryAccountabilityWorkspaceServiceProvider.php"
+      ],
+      "persistence": [
+        "apps/web/database/migrations/0000_00_00_000020_create_pos_inventory_baseline_foundation.php"
+      ],
+      "permission": "Scoped inventory read rights",
+      "tests": [
+        "apps/web/tests/pos-inventory-accountability-workspace.php"
+      ],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "production-d15f2fc3f9aa (certified source; capability-specific runtime acceptance not implied)",
+      "status": "CI_VERIFIED",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "Full scope and host acceptance not verified",
+      "next_action": "Implement and verify end-to-end capability with tenant-safe data and owner acceptance"
+    },
+    {
+      "stage": "E1",
+      "id": "E1-14",
+      "name": "Operational sales summary and history",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [
+        "apps/web/app/Application/Pos/ViewPosOperationalSalesSummary.php"
+      ],
+      "ui": [
+        "apps/web/resources/js/pages/Pos/SalesSummary.vue"
+      ],
+      "api": [
+        "apps/web/app/Providers/PosOperationalReportingServiceProvider.php"
+      ],
+      "persistence": [
+        "apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php"
+      ],
+      "permission": "pos.reporting.sales-summary.view",
+      "tests": [
+        "apps/web/tests/pos-operational-reporting.php"
+      ],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "production-d15f2fc3f9aa (certified source; capability-specific runtime acceptance not implied)",
+      "status": "CI_VERIFIED",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "Full scope and host acceptance not verified",
+      "next_action": "Implement and verify end-to-end capability with tenant-safe data and owner acceptance"
+    },
+    {
+      "stage": "E1",
+      "id": "E1-15",
+      "name": "Shift and product performance",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [
+        "apps/web/app/Application/Pos/ViewPosProductSalesPerformanceWorkspace.php"
+      ],
+      "ui": [
+        "apps/web/resources/js/pages/Pos/ProductSalesPerformance.vue"
+      ],
+      "api": [
+        "apps/web/app/Providers/PosProductSalesPerformanceWorkspaceServiceProvider.php"
+      ],
+      "persistence": [
+        "apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php"
+      ],
+      "permission": "POS reporting grant",
+      "tests": [
+        "apps/web/tests/pos-product-sales-performance-workspace.php"
+      ],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "production-d15f2fc3f9aa (certified source; capability-specific runtime acceptance not implied)",
+      "status": "CI_VERIFIED",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "Full scope and host acceptance not verified",
+      "next_action": "Implement and verify end-to-end capability with tenant-safe data and owner acceptance"
+    },
+    {
+      "stage": "E1",
+      "id": "E1-16",
+      "name": "External payment tender settlement",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [],
+      "ui": [],
+      "api": [],
+      "persistence": [],
+      "permission": "Not separately verified",
+      "tests": [],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "NOT_APPLICABLE",
+      "status": "MISSING",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "CASH-only is supported; external provider settlement deliberately absent",
+      "next_action": "Design provider contracts only after approval"
+    },
+    {
+      "stage": "E2",
+      "id": "E2-01",
+      "name": "Enterprise warehouse / transfers / counts",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [],
+      "ui": [],
+      "api": [],
+      "persistence": [],
+      "permission": "Not separately verified",
+      "tests": [],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "NOT_APPLICABLE",
+      "status": "MISSING",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "POS stock accountability is not full WMS",
+      "next_action": "Implement and verify end-to-end capability with tenant-safe data and owner acceptance"
+    },
+    {
+      "stage": "E2",
+      "id": "E2-02",
+      "name": "Supplier registry and lifecycle",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [],
+      "ui": [],
+      "api": [],
+      "persistence": [],
+      "permission": "Not separately verified",
+      "tests": [],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "NOT_APPLICABLE",
+      "status": "MISSING",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "Full scope and host acceptance not verified",
+      "next_action": "Implement and verify end-to-end capability with tenant-safe data and owner acceptance"
+    },
+    {
+      "stage": "E2",
+      "id": "E2-03",
+      "name": "Purchase requisition / PO / approval",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [],
+      "ui": [],
+      "api": [],
+      "persistence": [],
+      "permission": "Not separately verified",
+      "tests": [],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "NOT_APPLICABLE",
+      "status": "MISSING",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "Full scope and host acceptance not verified",
+      "next_action": "Implement and verify end-to-end capability with tenant-safe data and owner acceptance"
+    },
+    {
+      "stage": "E2",
+      "id": "E2-04",
+      "name": "PO-linked goods receiving and invoicing",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [],
+      "ui": [],
+      "api": [],
+      "persistence": [],
+      "permission": "Not separately verified",
+      "tests": [],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "NOT_APPLICABLE",
+      "status": "MISSING",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "Full scope and host acceptance not verified",
+      "next_action": "Implement and verify end-to-end capability with tenant-safe data and owner acceptance"
+    },
+    {
+      "stage": "E2",
+      "id": "E2-05",
+      "name": "Audited stock adjustment and inter-outlet transfer",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [],
+      "ui": [],
+      "api": [],
+      "persistence": [],
+      "permission": "Not separately verified",
+      "tests": [],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "NOT_APPLICABLE",
+      "status": "MISSING",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "Full scope and host acceptance not verified",
+      "next_action": "Implement and verify end-to-end capability with tenant-safe data and owner acceptance"
+    },
+    {
+      "stage": "E2",
+      "id": "E2-06",
+      "name": "Customer master and consent",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [],
+      "ui": [],
+      "api": [],
+      "persistence": [],
+      "permission": "Not separately verified",
+      "tests": [],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "NOT_APPLICABLE",
+      "status": "MISSING",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "Full scope and host acceptance not verified",
+      "next_action": "Implement and verify end-to-end capability with tenant-safe data and owner acceptance"
+    },
+    {
+      "stage": "E2",
+      "id": "E2-07",
+      "name": "CRM interaction, loyalty and retention",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [],
+      "ui": [],
+      "api": [],
+      "persistence": [],
+      "permission": "Not separately verified",
+      "tests": [],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "NOT_APPLICABLE",
+      "status": "MISSING",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "Full scope and host acceptance not verified",
+      "next_action": "Implement and verify end-to-end capability with tenant-safe data and owner acceptance"
+    },
+    {
+      "stage": "E2",
+      "id": "E2-08",
+      "name": "Accounting ledger / journal / COA",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [],
+      "ui": [],
+      "api": [],
+      "persistence": [],
+      "permission": "Not separately verified",
+      "tests": [],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "NOT_APPLICABLE",
+      "status": "MISSING",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "Full scope and host acceptance not verified",
+      "next_action": "Implement and verify end-to-end capability with tenant-safe data and owner acceptance"
+    },
+    {
+      "stage": "E2",
+      "id": "E2-09",
+      "name": "Payables / receivables / reconciled statements",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [],
+      "ui": [],
+      "api": [],
+      "persistence": [],
+      "permission": "Not separately verified",
+      "tests": [],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "NOT_APPLICABLE",
+      "status": "MISSING",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "Full scope and host acceptance not verified",
+      "next_action": "Implement and verify end-to-end capability with tenant-safe data and owner acceptance"
+    },
+    {
+      "stage": "E2",
+      "id": "E2-10",
+      "name": "Business workflow and notifications",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [],
+      "ui": [],
+      "api": [],
+      "persistence": [],
+      "permission": "Not separately verified",
+      "tests": [],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "NOT_APPLICABLE",
+      "status": "MISSING",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "Full scope and host acceptance not verified",
+      "next_action": "Implement and verify end-to-end capability with tenant-safe data and owner acceptance"
+    },
+    {
+      "stage": "E2",
+      "id": "E2-11",
+      "name": "Management BI beyond POS outlet",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [
+        "apps/web/app/Application/BusinessIntelligence/BusinessCommandCenter.php"
+      ],
+      "ui": [
+        "apps/web/resources/js/pages/Pos/OperationsHub.vue"
+      ],
+      "api": [
+        "apps/web/app/Providers/PosOperationsHubServiceProvider.php"
+      ],
+      "persistence": [
+        "apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php"
+      ],
+      "permission": "Existing reporting role only",
+      "tests": [
+        "apps/web/tests/business-os-command-center.php"
+      ],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "production-d15f2fc3f9aa (certified source; capability-specific runtime acceptance not implied)",
+      "status": "PARTIAL",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "No multi-outlet P&L, trends, filters, or BI semantic layer",
+      "next_action": "Introduce read models without extrapolated profit"
+    },
+    {
+      "stage": "E3",
+      "id": "E3-01",
+      "name": "Multi-unit organizational context",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [
+        "apps/web/app/Application/Organization/EnterOrganizationalContext.php"
+      ],
+      "ui": [],
+      "api": [
+        "apps/web/app/Providers/AppServiceProvider.php"
+      ],
+      "persistence": [
+        "apps/web/database/migrations/0000_00_00_000001_create_foundational_context_graph.php"
+      ],
+      "permission": "Scoped organizational context",
+      "tests": [
+        "apps/web/tests/identity-org-context.php"
+      ],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "production-d15f2fc3f9aa (certified source; capability-specific runtime acceptance not implied)",
+      "status": "PARTIAL",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "General cross-unit tenant governance not delivered",
+      "next_action": "Implement and verify end-to-end capability with tenant-safe data and owner acceptance"
+    },
+    {
+      "stage": "E3",
+      "id": "E3-02",
+      "name": "Enterprise delegated roles and segregation",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [
+        "apps/web/app/Application/Authorization/DurablePolicyAdministrationService.php"
+      ],
+      "ui": [],
+      "api": [
+        "apps/web/app/Providers/AppServiceProvider.php"
+      ],
+      "persistence": [
+        "apps/web/database/migrations/0000_00_00_000003_create_scoped_role_permission_policy.php"
+      ],
+      "permission": "Scoped policy grants",
+      "tests": [
+        "apps/web/tests/authorization-administration-persistence.php"
+      ],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "production-d15f2fc3f9aa (certified source; capability-specific runtime acceptance not implied)",
+      "status": "PARTIAL",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "No complete enterprise SoD matrix",
+      "next_action": "Implement and verify end-to-end capability with tenant-safe data and owner acceptance"
+    },
+    {
+      "stage": "E3",
+      "id": "E3-03",
+      "name": "Enterprise approval workflows",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [],
+      "ui": [],
+      "api": [],
+      "persistence": [],
+      "permission": "Not separately verified",
+      "tests": [],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "NOT_APPLICABLE",
+      "status": "MISSING",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "Full scope and host acceptance not verified",
+      "next_action": "Implement and verify end-to-end capability with tenant-safe data and owner acceptance"
+    },
+    {
+      "stage": "E3",
+      "id": "E3-04",
+      "name": "Consolidated cross-outlet financial views",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [],
+      "ui": [],
+      "api": [],
+      "persistence": [],
+      "permission": "Not separately verified",
+      "tests": [],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "NOT_APPLICABLE",
+      "status": "MISSING",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "Full scope and host acceptance not verified",
+      "next_action": "Implement and verify end-to-end capability with tenant-safe data and owner acceptance"
+    },
+    {
+      "stage": "E3",
+      "id": "E3-05",
+      "name": "Organization-wide configuration administration",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [
+        "apps/web/app/Infrastructure/Configuration/CriticalConfiguration.php"
+      ],
+      "ui": [],
+      "api": [
+        "apps/web/routes/web.php"
+      ],
+      "persistence": [],
+      "permission": "Not separately verified",
+      "tests": [
+        "apps/web/tests/authorization-persistence.php"
+      ],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "production-d15f2fc3f9aa (certified source; capability-specific runtime acceptance not implied)",
+      "status": "PARTIAL",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "No complete enterprise configuration workspace",
+      "next_action": "Implement and verify end-to-end capability with tenant-safe data and owner acceptance"
+    },
+    {
+      "stage": "E3",
+      "id": "E3-06",
+      "name": "Enterprise administrator console",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [
+        "apps/web/app/Application/Authorization/DurablePolicyAdministrationService.php"
+      ],
+      "ui": [
+        "apps/web/resources/js/pages/Foundation.vue"
+      ],
+      "api": [
+        "apps/web/routes/web.php"
+      ],
+      "persistence": [
+        "apps/web/database/migrations/0000_00_00_000003_create_scoped_role_permission_policy.php"
+      ],
+      "permission": "Privileged administration",
+      "tests": [
+        "apps/web/tests/policy-administration-delivery.php"
+      ],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "production-d15f2fc3f9aa (certified source; capability-specific runtime acceptance not implied)",
+      "status": "PARTIAL",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "No integrated enterprise platform console",
+      "next_action": "Implement and verify end-to-end capability with tenant-safe data and owner acceptance"
+    },
+    {
+      "stage": "E4",
+      "id": "E4-01",
+      "name": "Business Command Center outlet-scoped facts",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [
+        "apps/web/app/Application/BusinessIntelligence/BusinessCommandCenter.php"
+      ],
+      "ui": [
+        "apps/web/resources/js/pages/Pos/OperationsHub.vue"
+      ],
+      "api": [
+        "apps/web/app/Providers/PosOperationsHubServiceProvider.php"
+      ],
+      "persistence": [
+        "apps/web/database/migrations/0000_00_00_000016_create_pos_sale_completion_foundation.php"
+      ],
+      "permission": "Requires existing POS reporting grant",
+      "tests": [
+        "apps/web/tests/business-os-command-center.php"
+      ],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "production-d15f2fc3f9aa (certified source; capability-specific runtime acceptance not implied)",
+      "status": "RELEASE_CERTIFIED",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "Certified d15f; not deployed/accepted at host",
+      "next_action": "Implement and verify end-to-end capability with tenant-safe data and owner acceptance"
+    },
+    {
+      "stage": "E4",
+      "id": "E4-02",
+      "name": "Historical cohorts, trend, date filters",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [],
+      "ui": [],
+      "api": [],
+      "persistence": [],
+      "permission": "Not separately verified",
+      "tests": [],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "NOT_APPLICABLE",
+      "status": "MISSING",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "Full scope and host acceptance not verified",
+      "next_action": "Implement and verify end-to-end capability with tenant-safe data and owner acceptance"
+    },
+    {
+      "stage": "E4",
+      "id": "E4-03",
+      "name": "Predictive demand and inventory forecasts",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [],
+      "ui": [],
+      "api": [],
+      "persistence": [],
+      "permission": "Not separately verified",
+      "tests": [],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "NOT_APPLICABLE",
+      "status": "MISSING",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "Full scope and host acceptance not verified",
+      "next_action": "Implement and verify end-to-end capability with tenant-safe data and owner acceptance"
+    },
+    {
+      "stage": "E4",
+      "id": "E4-04",
+      "name": "AI assistant and policy gateway",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [],
+      "ui": [],
+      "api": [],
+      "persistence": [],
+      "permission": "Not separately verified",
+      "tests": [],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "NOT_APPLICABLE",
+      "status": "MISSING",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "Full scope and host acceptance not verified",
+      "next_action": "Implement and verify end-to-end capability with tenant-safe data and owner acceptance"
+    },
+    {
+      "stage": "E4",
+      "id": "E4-05",
+      "name": "AI recommendations with provenance / evaluation",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [],
+      "ui": [],
+      "api": [],
+      "persistence": [],
+      "permission": "Not separately verified",
+      "tests": [],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "NOT_APPLICABLE",
+      "status": "MISSING",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "Full scope and host acceptance not verified",
+      "next_action": "Implement and verify end-to-end capability with tenant-safe data and owner acceptance"
+    },
+    {
+      "stage": "E4",
+      "id": "E4-06",
+      "name": "Human-approved reversible AI automations",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [],
+      "ui": [],
+      "api": [],
+      "persistence": [],
+      "permission": "Not separately verified",
+      "tests": [],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "NOT_APPLICABLE",
+      "status": "MISSING",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "Full scope and host acceptance not verified",
+      "next_action": "Implement and verify end-to-end capability with tenant-safe data and owner acceptance"
+    },
+    {
+      "stage": "E4",
+      "id": "E4-07",
+      "name": "AI security / prompt injection defenses",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [],
+      "ui": [],
+      "api": [],
+      "persistence": [],
+      "permission": "Not separately verified",
+      "tests": [],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "NOT_APPLICABLE",
+      "status": "MISSING",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "Full scope and host acceptance not verified",
+      "next_action": "Implement and verify end-to-end capability with tenant-safe data and owner acceptance"
+    },
+    {
+      "stage": "E5",
+      "id": "E5-01",
+      "name": "Versioned public business API",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [],
+      "ui": [],
+      "api": [],
+      "persistence": [],
+      "permission": "Not separately verified",
+      "tests": [],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "NOT_APPLICABLE",
+      "status": "MISSING",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "Full scope and host acceptance not verified",
+      "next_action": "Implement and verify end-to-end capability with tenant-safe data and owner acceptance"
+    },
+    {
+      "stage": "E5",
+      "id": "E5-02",
+      "name": "Signed webhooks / event integration",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [],
+      "ui": [],
+      "api": [],
+      "persistence": [],
+      "permission": "Not separately verified",
+      "tests": [],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "NOT_APPLICABLE",
+      "status": "MISSING",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "Full scope and host acceptance not verified",
+      "next_action": "Implement and verify end-to-end capability with tenant-safe data and owner acceptance"
+    },
+    {
+      "stage": "E5",
+      "id": "E5-03",
+      "name": "External enterprise systems adapters",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [],
+      "ui": [],
+      "api": [],
+      "persistence": [],
+      "permission": "Not separately verified",
+      "tests": [],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "NOT_APPLICABLE",
+      "status": "MISSING",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "Full scope and host acceptance not verified",
+      "next_action": "Implement and verify end-to-end capability with tenant-safe data and owner acceptance"
+    },
+    {
+      "stage": "E5",
+      "id": "E5-04",
+      "name": "Marketplace, extension and plugin trust",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [],
+      "ui": [],
+      "api": [],
+      "persistence": [],
+      "permission": "Not separately verified",
+      "tests": [],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "NOT_APPLICABLE",
+      "status": "MISSING",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "Full scope and host acceptance not verified",
+      "next_action": "Implement and verify end-to-end capability with tenant-safe data and owner acceptance"
+    },
+    {
+      "stage": "E5",
+      "id": "E5-05",
+      "name": "Partner and developer portals",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [],
+      "ui": [],
+      "api": [],
+      "persistence": [],
+      "permission": "Not separately verified",
+      "tests": [],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "NOT_APPLICABLE",
+      "status": "MISSING",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "Full scope and host acceptance not verified",
+      "next_action": "Implement and verify end-to-end capability with tenant-safe data and owner acceptance"
+    },
+    {
+      "stage": "E5",
+      "id": "E5-06",
+      "name": "Localized merchant web workspace",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [
+        "apps/web/resources/js/i18n/index.ts"
+      ],
+      "ui": [
+        "apps/web/resources/js/pages/Pos/OperationsHub.vue"
+      ],
+      "api": [
+        "apps/web/routes/web.php"
+      ],
+      "persistence": [],
+      "permission": "Not separately verified",
+      "tests": [
+        "apps/web/tests/business-os-command-center.php"
+      ],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "production-d15f2fc3f9aa (certified source; capability-specific runtime acceptance not implied)",
+      "status": "CI_VERIFIED",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "Host bilingual report exists, d15 host not yet applied",
+      "next_action": "Implement and verify end-to-end capability with tenant-safe data and owner acceptance"
+    },
+    {
+      "stage": "E5",
+      "id": "E5-07",
+      "name": "Responsive browser UX",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [
+        "apps/web/resources/js/layouts/MerchantShell.vue"
+      ],
+      "ui": [
+        "apps/web/resources/js/pages/Pos/Cashier.vue"
+      ],
+      "api": [
+        "apps/web/routes/web.php"
+      ],
+      "persistence": [],
+      "permission": "Not separately verified",
+      "tests": [
+        "apps/web/tests/merchant-pos-guided-operations-home.php"
+      ],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "production-d15f2fc3f9aa (certified source; capability-specific runtime acceptance not implied)",
+      "status": "CI_VERIFIED",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "No current live browser visual acceptance for d15 source",
+      "next_action": "Implement and verify end-to-end capability with tenant-safe data and owner acceptance"
+    },
+    {
+      "stage": "E5",
+      "id": "E5-08",
+      "name": "PWA and offline POS",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [
+        "docs/adr/ADR-002-technical-preview-frontend-pwa.md"
+      ],
+      "ui": [
+        "apps/web/resources/js/pages/Foundation.vue"
+      ],
+      "api": [],
+      "persistence": [],
+      "permission": "Not separately verified",
+      "tests": [],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "production-d15f2fc3f9aa (certified source; capability-specific runtime acceptance not implied)",
+      "status": "PARTIAL",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "ADR directional; offline operation intentionally not finished",
+      "next_action": "Implement and verify end-to-end capability with tenant-safe data and owner acceptance"
+    },
+    {
+      "stage": "E5",
+      "id": "E5-09",
+      "name": "Android native channel",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [],
+      "ui": [],
+      "api": [],
+      "persistence": [],
+      "permission": "Not separately verified",
+      "tests": [],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "NOT_APPLICABLE",
+      "status": "MISSING",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "Full scope and host acceptance not verified",
+      "next_action": "Implement and verify end-to-end capability with tenant-safe data and owner acceptance"
+    },
+    {
+      "stage": "E5",
+      "id": "E5-10",
+      "name": "Public/customer-facing applications",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [],
+      "ui": [],
+      "api": [],
+      "persistence": [],
+      "permission": "Not separately verified",
+      "tests": [],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "NOT_APPLICABLE",
+      "status": "MISSING",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "Full scope and host acceptance not verified",
+      "next_action": "Implement and verify end-to-end capability with tenant-safe data and owner acceptance"
+    },
+    {
+      "stage": "E5",
+      "id": "E5-11",
+      "name": "Cross-domain file/document and search services",
+      "requirement": "docs/handbook/ENTERPRISE_VISION.md",
+      "code": [],
+      "ui": [],
+      "api": [],
+      "persistence": [],
+      "permission": "Not separately verified",
+      "tests": [],
+      "operational_dependency": "Authorized tenant/outlet/device context, host runtime, source/target release identity, and production gate where relevant.",
+      "release_artifact": "NOT_APPLICABLE",
+      "status": "MISSING",
+      "host_deployment": "NOT_VERIFIED_FOR_D15F; last reported host source production-e93b7fef42cb",
+      "acceptance_evidence": "NOT_VERIFIED_ON_REAL_HOST",
+      "blocker": "Full scope and host acceptance not verified",
+      "next_action": "Implement and verify end-to-end capability with tenant-safe data and owner acceptance"
+    }
+  ]
+}

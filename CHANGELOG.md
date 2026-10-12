@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-10-12 — Enterprise OS capability and backend-upgrade readiness
+- Reconciled main `d15f2fc3f9aa9320670657d03b044e132bf812a2`, production certification run `38236323278` SUCCESS, and last reported actual host `production-e93b7fef42cb` with `BUSINESS_WORKSPACE_UPDATED_ACCEPTANCE_PENDING`.
+- Published machine-readable/human E0–E5 capability inventory with code/UI/API/schema/auth/tests/releases/host proof/blockers separated; **no Business OS d15f host deployment claimed**.
+- Added source-owned read-only oneQayDev host-binding preflight with tamper, symlink, existing-target, stale-source and positive regression. This preflight is NOT an updater, deployment authority, or real business acceptance.
+- Historical rows below remain past checkpoints and must not be treated as newer than this reconciliation.
+
+
 ## 2026-10-12 — Indonesian and English workspace
 
 - Implement an Indonesian default with a persistent English option on merchant entry, MFA/recovery, all POS workspaces, reports, preview screens, and system status.

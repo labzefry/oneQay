@@ -1,5 +1,16 @@
 # oneQay Tasks
 
+## 2026-10-12 — Business OS delivery and real-host gate
+- [x] Merge PR #949 Business Command Center into `main=d15f2fc3f9aa9320670657d03b044e132bf812a2`.
+- [x] Certify source release `production-d15f2fc3f9aa`, run `38236323278` SUCCESS; artifact `11741255632`.
+- [x] Capture source-backed E0–E5 capability matrix in `docs/operations/ONEQAY_ENTERPRISE_CAPABILITY_MATRIX_2026-10-12.md`.
+- [x] Deliver no-secret/no-write oneQayDev read-only host-binding inspector with source regression.
+- [ ] Obtain owner-host read-only inspection evidence and inspect current live release; last user-reported host source is `e93b7fef42cb`, still acceptance pending.
+- [ ] Build and qualify backend-capable exact-source d15f successor update operator and rollback; previous bilingual operator must NOT be reused.
+- [ ] Deploy only with fresh applicable host owner authority, then test real authorized CASH shift/sale/idempotency/receipt/stock/closing and deny cases.
+- [ ] Implement remaining E2–E5 complete business workflows, not UI placeholders, in integrated vertical slices.
+
+
 ## 2026-10-12 — Indonesian and English workspace
 
 - Implement an Indonesian default with a persistent English option on merchant entry, MFA/recovery, all POS workspaces, reports, preview screens, and system status.

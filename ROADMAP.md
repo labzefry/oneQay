@@ -1,5 +1,8 @@
 # oneQay Roadmap
 
+> **Current 2026-10-12 dependency gate:** [Enterprise Capability Inventory E0–E5](docs/operations/ONEQAY_ENTERPRISE_CAPABILITY_MATRIX_2026-10-12.md) records actual source status. Main `d15f2fc3` is certified (run `38236323278`) but not deployed to oneQayDev; existing bilingual updater is presentation-only. Before E2–E5 release work, qualify the [read-only host preflight](docs/operations/ONEQAYDEV_BUSINESS_OS_HOST_PREFLIGHT_2026-10-12.md), backend-capable guarded operator, exact-source host deployment, and real POS transaction acceptance. E2–E5 remain directional capability goals, not delivered functions. Older roadmap statuses are historical.
+
+
 ## NEXT ACTIVE PRODUCTION GO-LIVE HORIZON — 2026-10-08
 
 Current qualified staging release: a5e833bce4ba, exact running source a5e833bce4baa22c21a144c558a0ca123f1d0b1e (Final Shift Close ACTIVE). The new trusted selected-target chain completed as PR #930, merged at 5224fdb74a31b590ec34f50f83d6ef78073f7678. No staging redeploy or migration replay is required. Same-source Production RC and generic operator kit published, but Production host qualification, exact authority, dark deployment, Production business runtime gates, traffic cutover and real transaction readiness are **NOT COMPLETED**. The intended public business domain is oneqay.n07.my.id, presently occupied by staging; preserve it until an explicitly qualified safe transition. Prior dates/releases below remain historical.
