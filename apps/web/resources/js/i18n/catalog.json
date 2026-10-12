@@ -4630,5 +4630,21 @@
   "Search products": {
     "id": "Cari produk",
     "en": "Search products"
+  },
+  "Search": {
+    "id": "Cari",
+    "en": "Search"
+  },
+  "Administration": {
+    "id": "Administrasi",
+    "en": "Administration"
+  },
+  "Back to workspace": {
+    "id": "Kembali ke ruang kerja",
+    "en": "Back to workspace"
+  },
+  "Access change": {
+    "id": "Perubahan akses",
+    "en": "Access change"
   }
 }

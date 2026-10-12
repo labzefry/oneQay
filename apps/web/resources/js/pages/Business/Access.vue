@@ -61,7 +61,7 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', beforeUnload));
                         <p class="hint">{{ t('The account must already belong to this organization and outlet.') }}</p>
                         <label>{{ t('Business role') }}<select v-model="role"><option v-for="(preset, key) in templates" :key="key" :value="key">{{ t(preset.title) }}</option></select></label>
                         <ul class="groups"><li v-for="group in groups" :key="group">{{ t(group) }}</li></ul>
-                        <label>{{ t('Change') }}<select v-model="action"><option value="assign">{{ t('Grant role') }}</option><option value="revoke">{{ t('Revoke role') }}</option></select></label>
+                        <label>{{ t('Access change') }}<select v-model="action"><option value="assign">{{ t('Grant role') }}</option><option value="revoke">{{ t('Revoke role') }}</option></select></label>
                     </fieldset>
                     <button type="submit" :disabled="busy || verifying">{{ t(busy ? 'Saving…' : uncertain ? 'Retry same request' : 'Save access') }}</button>
                 </form>
