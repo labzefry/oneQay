@@ -21,7 +21,7 @@ $reportPath = $private.'/oneqaydev-language-update-e93b7fef42cb/update-result.js
 $entry = $public.'/oneqay-business-e93b7fef42cb-ui.php';
 $routing = $public.'/.htaccess';
 
-foreach ([$root, $private, $public, $release, dirname($reportPath)] as $directory) {
+foreach ([$root, $private, $public, $private.'/releases', $release, dirname($reportPath)] as $directory) {
     $assert(mkdir($directory, 0700), 'Could not create temporary fixture directory.');
 }
 
