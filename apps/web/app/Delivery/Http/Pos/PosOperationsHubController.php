@@ -141,6 +141,9 @@ final class PosOperationsHubController
             ];
         }
 
+        if (Route::has('business.workspace')) {
+            $destinations = array_merge($destinations, app(\App\Application\Business\BusinessAccess::class)->modules());
+        }
         return $destinations;
     }
 }

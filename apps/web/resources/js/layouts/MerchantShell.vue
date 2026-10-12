@@ -32,11 +32,19 @@ const labels: Record<string, { title: string; icon: string }> = {
     corrections: { title: 'Sale corrections', icon: 'sliders-horizontal' },
     cash_variance_reconciliation: { title: 'Cash reconciliation', icon: 'wallet' },
     shift_close: { title: 'Close shift', icon: 'circle-check' },
+    business_suppliers: { title: 'Suppliers', icon: 'truck' },
+    business_purchases: { title: 'Purchasing', icon: 'clipboard-list' },
+    business_customers: { title: 'Customers', icon: 'users' },
+    business_finance: { title: 'Finance', icon: 'wallet' },
+    business_people: { title: 'People', icon: 'users' },
+    business_audit: { title: 'Activity log', icon: 'clipboard-list' },
+    business_access: { title: 'Business access', icon: 'shield-check' },
 };
 const categories = [
     { key: 'SETUP', title: 'Products' }, { key: 'SELL', title: 'Selling' },
     { key: 'SHIFT', title: 'Shifts' }, { key: 'STOCK', title: 'Inventory' },
     { key: 'REVIEW', title: 'Insights' }, { key: 'CONTROL', title: 'Controls' },
+    { key: 'MANAGE', title: 'Business management' },
 ];
 const titles: Record<string, string> = {
     OperationsHub: 'Business Command Center', Cashier: 'Cashier', CatalogInventorySetup: 'Catalog & stock',

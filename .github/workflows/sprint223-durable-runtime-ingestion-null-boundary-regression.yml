@@ -183,7 +183,9 @@ jobs:
           set -euo pipefail
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             test -z "$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web/database/migrations)"
-            if [ "$HEAD_REF" = 'sprint240-durable-staging-runtime-promotion-successor' ]; then
+            if [ "$HEAD_REF" = 'enterprise-integrated-business-20261012' ] && [ "$BASE_SHA" = 'f3de67cd0426fb13cc51c4d88966a8a9923dcf24' ]; then
+              bash tools/qa-business-management-source-envelope.sh "$BASE_SHA" "$HEAD_SHA"
+            elif [ "$HEAD_REF" = 'sprint240-durable-staging-runtime-promotion-successor' ]; then
               git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web | grep -v '^apps/web/tests/' | LC_ALL=C sort > /tmp/s240-app-paths
               printf '%s\n' \
                 'apps/web/app/Application/Pos/FinalShiftCloseDurableStagingDeliveryGate.php' \

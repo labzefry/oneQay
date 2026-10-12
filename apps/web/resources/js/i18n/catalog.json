@@ -3790,5 +3790,861 @@
   "Not yet delivered": {
     "id": "Belum tersedia",
     "en": "Not yet delivered"
+  },
+  "AP": {
+    "en": "AP",
+    "id": "Utang usaha"
+  },
+  "APPROVED": {
+    "en": "APPROVED",
+    "id": "Disetujui"
+  },
+  "AR": {
+    "en": "AR",
+    "id": "Piutang usaha"
+  },
+  "Access change denied. Check the identity, administrator authority and security verification.": {
+    "en": "Access change denied. Check the identity, administrator authority and security verification.",
+    "id": "Perubahan akses ditolak. Periksa identitas, kewenangan administrator, dan verifikasi keamanan."
+  },
+  "Account": {
+    "en": "Account",
+    "id": "Akun"
+  },
+  "Accounts payable": {
+    "en": "Accounts payable",
+    "id": "Utang usaha"
+  },
+  "Accounts receivable": {
+    "en": "Accounts receivable",
+    "id": "Piutang usaha"
+  },
+  "Actions": {
+    "en": "Actions",
+    "id": "Tindakan"
+  },
+  "Activity": {
+    "en": "Activity",
+    "id": "Aktivitas"
+  },
+  "Activity log": {
+    "en": "Activity log",
+    "id": "Riwayat aktivitas"
+  },
+  "Add customer": {
+    "en": "Add customer",
+    "id": "Tambah pelanggan"
+  },
+  "Add employee": {
+    "en": "Add employee",
+    "id": "Tambah pegawai"
+  },
+  "Add line": {
+    "en": "Add line",
+    "id": "Tambah baris"
+  },
+  "Add supplier": {
+    "en": "Add supplier",
+    "id": "Tambah pemasok"
+  },
+  "Address": {
+    "en": "Address",
+    "id": "Alamat"
+  },
+  "Amount is too large.": {
+    "en": "Amount is too large.",
+    "id": "Jumlah terlalu besar."
+  },
+  "Amount received or paid": {
+    "en": "Amount received or paid",
+    "id": "Jumlah diterima atau dibayar"
+  },
+  "Apply": {
+    "en": "Apply",
+    "id": "Terapkan"
+  },
+  "Approve": {
+    "en": "Approve",
+    "id": "Setujui"
+  },
+  "Approve leave": {
+    "en": "Approve leave",
+    "id": "Setujui izin"
+  },
+  "Approve purchase order": {
+    "en": "Approve purchase order",
+    "id": "Setujui pesanan pembelian"
+  },
+  "Approve this purchase order before receiving goods.": {
+    "en": "Approve this purchase order before receiving goods.",
+    "id": "Setujui pesanan pembelian sebelum menerima barang."
+  },
+  "Attendance": {
+    "en": "Attendance",
+    "id": "Kehadiran"
+  },
+  "Attendance notes": {
+    "en": "Attendance notes",
+    "id": "Catatan kehadiran"
+  },
+  "Balanced journals, payables and receivables": {
+    "en": "Balanced journals, payables and receivables",
+    "id": "Jurnal berimbang, utang, dan piutang"
+  },
+  "Bank": {
+    "en": "Bank",
+    "id": "Bank"
+  },
+  "Business access": {
+    "en": "Business access",
+    "id": "Akses bisnis"
+  },
+  "Business access saved. Open the workspace to refresh the available modules.": {
+    "en": "Business access saved. Open the workspace to refresh the available modules.",
+    "id": "Akses bisnis tersimpan. Buka ruang kerja untuk memperbarui modul yang tersedia."
+  },
+  "Business management": {
+    "en": "Business management",
+    "id": "Manajemen bisnis"
+  },
+  "Business manager": {
+    "en": "Business manager",
+    "id": "Manajer bisnis"
+  },
+  "Business modules": {
+    "en": "Business modules",
+    "id": "Modul bisnis"
+  },
+  "Business role": {
+    "en": "Business role",
+    "id": "Peran bisnis"
+  },
+  "Business storage is not available. No success has been confirmed.": {
+    "en": "Business storage is not available. No success has been confirmed.",
+    "id": "Penyimpanan data bisnis tidak tersedia. Hasil belum dikonfirmasi berhasil."
+  },
+  "Business viewer": {
+    "en": "Business viewer",
+    "id": "Pembaca bisnis"
+  },
+  "CANCELLED": {
+    "en": "CANCELLED",
+    "id": "Dibatalkan"
+  },
+  "CHAT": {
+    "en": "CHAT",
+    "id": "Percakapan"
+  },
+  "Cancel order": {
+    "en": "Cancel order",
+    "id": "Batalkan pesanan"
+  },
+  "Cancel purchase order": {
+    "en": "Cancel purchase order",
+    "id": "Batalkan pesanan pembelian"
+  },
+  "Check the entered values and your access, then try again.": {
+    "en": "Check the entered values and your access, then try again.",
+    "id": "Periksa data dan hak akses Anda, lalu coba lagi."
+  },
+  "Check the entered values.": {
+    "en": "Check the entered values.",
+    "id": "Periksa data yang dimasukkan."
+  },
+  "Check the work date and attendance times.": {
+    "en": "Check the work date and attendance times.",
+    "id": "Periksa tanggal kerja dan jam kehadiran."
+  },
+  "Clock in (WIB)": {
+    "en": "Clock in (WIB)",
+    "id": "Jam masuk (WIB)"
+  },
+  "Clock out (WIB)": {
+    "en": "Clock out (WIB)",
+    "id": "Jam pulang (WIB)"
+  },
+  "Close": {
+    "en": "Close",
+    "id": "Tutup"
+  },
+  "Code": {
+    "en": "Code",
+    "id": "Kode"
+  },
+  "Confirm and save": {
+    "en": "Confirm and save",
+    "id": "Konfirmasi dan simpan"
+  },
+  "Connected records for the business you run every day.": {
+    "en": "Connected records for the business you run every day.",
+    "id": "Data bisnis yang saling terhubung untuk operasional sehari-hari."
+  },
+  "Consent source": {
+    "en": "Consent source",
+    "id": "Sumber persetujuan"
+  },
+  "Conversation notes": {
+    "en": "Conversation notes",
+    "id": "Catatan interaksi"
+  },
+  "Cost of goods sold": {
+    "en": "Cost of goods sold",
+    "id": "Harga pokok penjualan"
+  },
+  "Could not load records. Try again.": {
+    "en": "Could not load records. Try again.",
+    "id": "Data belum dapat dimuat. Coba lagi."
+  },
+  "Create invoice": {
+    "en": "Create invoice",
+    "id": "Buat tagihan"
+  },
+  "Create purchase order": {
+    "en": "Create purchase order",
+    "id": "Buat pesanan pembelian"
+  },
+  "Create your first record, or change the search to see existing records.": {
+    "en": "Create your first record, or change the search to see existing records.",
+    "id": "Tambahkan data pertama Anda, atau ubah pencarian untuk melihat data yang sudah ada."
+  },
+  "Credit": {
+    "en": "Credit",
+    "id": "Kredit"
+  },
+  "Customer interactions": {
+    "en": "Customer interactions",
+    "id": "Interaksi pelanggan"
+  },
+  "Customer records, consent and interactions": {
+    "en": "Customer records, consent and interactions",
+    "id": "Data pelanggan, persetujuan, dan interaksi"
+  },
+  "Customer team": {
+    "en": "Customer team",
+    "id": "Tim pelanggan"
+  },
+  "Customers": {
+    "en": "Customers",
+    "id": "Pelanggan"
+  },
+  "DRAFT": {
+    "en": "DRAFT",
+    "id": "Draf"
+  },
+  "Debit": {
+    "en": "Debit",
+    "id": "Debit"
+  },
+  "Decimal places": {
+    "en": "Decimal places",
+    "id": "Angka desimal"
+  },
+  "Delivery reference": {
+    "en": "Delivery reference",
+    "id": "Nomor surat jalan"
+  },
+  "Department": {
+    "en": "Department",
+    "id": "Departemen"
+  },
+  "Description": {
+    "en": "Description",
+    "id": "Keterangan"
+  },
+  "Details": {
+    "en": "Details",
+    "id": "Rincian"
+  },
+  "Due date": {
+    "en": "Due date",
+    "id": "Jatuh tempo"
+  },
+  "EMAIL": {
+    "en": "EMAIL",
+    "id": "Email"
+  },
+  "Edit": {
+    "en": "Edit",
+    "id": "Ubah"
+  },
+  "Email": {
+    "en": "Email",
+    "id": "Email"
+  },
+  "Employee code": {
+    "en": "Employee code",
+    "id": "Kode pegawai"
+  },
+  "Employees, attendance and leave approvals": {
+    "en": "Employees, attendance and leave approvals",
+    "id": "Pegawai, kehadiran, dan persetujuan izin"
+  },
+  "Enter an amount without thousands separators.": {
+    "en": "Enter an amount without thousands separators.",
+    "id": "Masukkan jumlah tanpa pemisah ribuan."
+  },
+  "Export this page": {
+    "en": "Export this page",
+    "id": "Ekspor halaman ini"
+  },
+  "Finance": {
+    "en": "Finance",
+    "id": "Keuangan"
+  },
+  "Finance team": {
+    "en": "Finance team",
+    "id": "Tim keuangan"
+  },
+  "Find supplier or customer": {
+    "en": "Find supplier or customer",
+    "id": "Cari pemasok atau pelanggan"
+  },
+  "First day": {
+    "en": "First day",
+    "id": "Hari pertama"
+  },
+  "Follow-up date": {
+    "en": "Follow-up date",
+    "id": "Tanggal tindak lanjut"
+  },
+  "From": {
+    "en": "From",
+    "id": "Dari"
+  },
+  "Give existing team members access to business modules for this outlet.": {
+    "en": "Give existing team members access to business modules for this outlet.",
+    "id": "Berikan akses modul bisnis kepada anggota tim yang sudah terdaftar untuk outlet ini."
+  },
+  "Goods receipt ID (payables)": {
+    "en": "Goods receipt ID (payables)",
+    "id": "ID penerimaan barang (utang)"
+  },
+  "Goods receipts": {
+    "en": "Goods receipts",
+    "id": "Penerimaan barang"
+  },
+  "Goods received, not invoiced": {
+    "en": "Goods received, not invoiced",
+    "id": "Barang diterima, belum ditagih"
+  },
+  "Grant role": {
+    "en": "Grant role",
+    "id": "Berikan peran"
+  },
+  "IN_PERSON": {
+    "en": "IN_PERSON",
+    "id": "Tatap muka"
+  },
+  "Invoice": {
+    "en": "Invoice",
+    "id": "Tagihan"
+  },
+  "Invoice amount": {
+    "en": "Invoice amount",
+    "id": "Nilai tagihan"
+  },
+  "Invoice number": {
+    "en": "Invoice number",
+    "id": "Nomor tagihan"
+  },
+  "Invoice type": {
+    "en": "Invoice type",
+    "id": "Jenis tagihan"
+  },
+  "Issue date": {
+    "en": "Issue date",
+    "id": "Tanggal tagihan"
+  },
+  "Job title": {
+    "en": "Job title",
+    "id": "Jabatan"
+  },
+  "Journal debits and credits must be equal.": {
+    "en": "Journal debits and credits must be equal.",
+    "id": "Total debit dan kredit jurnal harus sama."
+  },
+  "Journal history": {
+    "en": "Journal history",
+    "id": "Riwayat jurnal"
+  },
+  "Journal lines": {
+    "en": "Journal lines",
+    "id": "Baris jurnal"
+  },
+  "Last day": {
+    "en": "Last day",
+    "id": "Hari terakhir"
+  },
+  "Leave": {
+    "en": "Leave",
+    "id": "Izin"
+  },
+  "Leave requests": {
+    "en": "Leave requests",
+    "id": "Pengajuan izin"
+  },
+  "Marketing consent": {
+    "en": "Marketing consent",
+    "id": "Persetujuan pemasaran"
+  },
+  "Marketing consent must come from the customer. Leave it off when consent has not been obtained.": {
+    "en": "Marketing consent must come from the customer. Leave it off when consent has not been obtained.",
+    "id": "Persetujuan pemasaran harus berasal dari pelanggan. Biarkan tidak dicentang jika belum mendapat persetujuan."
+  },
+  "NOTE": {
+    "en": "NOTE",
+    "id": "Catatan"
+  },
+  "Name": {
+    "en": "Name",
+    "id": "Nama"
+  },
+  "Next": {
+    "en": "Next",
+    "id": "Berikutnya"
+  },
+  "No": {
+    "en": "No",
+    "id": "Tidak"
+  },
+  "No posted journals in this period.": {
+    "en": "No posted journals in this period.",
+    "id": "Belum ada jurnal yang dibukukan pada periode ini."
+  },
+  "No records yet": {
+    "en": "No records yet",
+    "id": "Belum ada data"
+  },
+  "Notes": {
+    "en": "Notes",
+    "id": "Catatan"
+  },
+  "Open workspace": {
+    "en": "Open workspace",
+    "id": "Buka ruang kerja"
+  },
+  "Operating expenses": {
+    "en": "Operating expenses",
+    "id": "Beban operasional"
+  },
+  "Order ID": {
+    "en": "Order ID",
+    "id": "ID pesanan"
+  },
+  "Order lines": {
+    "en": "Order lines",
+    "id": "Rincian pesanan"
+  },
+  "Order reference": {
+    "en": "Order reference",
+    "id": "Nomor pesanan"
+  },
+  "Ordered": {
+    "en": "Ordered",
+    "id": "Dipesan"
+  },
+  "Owner equity": {
+    "en": "Owner equity",
+    "id": "Modal pemilik"
+  },
+  "PAID": {
+    "en": "PAID",
+    "id": "Lunas"
+  },
+  "PARTIAL": {
+    "en": "PARTIAL",
+    "id": "Sebagian"
+  },
+  "PHONE": {
+    "en": "PHONE",
+    "id": "Telepon"
+  },
+  "Page": {
+    "en": "Page",
+    "id": "Halaman"
+  },
+  "Paid": {
+    "en": "Paid",
+    "id": "Terbayar"
+  },
+  "Payment account": {
+    "en": "Payment account",
+    "id": "Akun pembayaran"
+  },
+  "Payment date": {
+    "en": "Payment date",
+    "id": "Tanggal pembayaran"
+  },
+  "Payment evidence reference": {
+    "en": "Payment evidence reference",
+    "id": "Referensi bukti pembayaran"
+  },
+  "Payroll expense": {
+    "en": "Payroll expense",
+    "id": "Beban gaji"
+  },
+  "People": {
+    "en": "People",
+    "id": "Pegawai"
+  },
+  "People team": {
+    "en": "People team",
+    "id": "Tim SDM"
+  },
+  "Phone": {
+    "en": "Phone",
+    "id": "Telepon"
+  },
+  "Post journal": {
+    "en": "Post journal",
+    "id": "Buat jurnal"
+  },
+  "Posted business journals in the selected period. POS transactions are not automatically included.": {
+    "en": "Posted business journals in the selected period. POS transactions are not automatically included.",
+    "id": "Jurnal bisnis yang dibukukan pada periode terpilih. Transaksi POS belum dimasukkan secara otomatis."
+  },
+  "Posting date": {
+    "en": "Posting date",
+    "id": "Tanggal pembukuan"
+  },
+  "Previous": {
+    "en": "Previous",
+    "id": "Sebelumnya"
+  },
+  "Product code": {
+    "en": "Product code",
+    "id": "Kode produk"
+  },
+  "Purchase order": {
+    "en": "Purchase order",
+    "id": "Pesanan pembelian"
+  },
+  "Purchasing": {
+    "en": "Purchasing",
+    "id": "Pembelian"
+  },
+  "Purchasing team": {
+    "en": "Purchasing team",
+    "id": "Tim pembelian"
+  },
+  "Quantity": {
+    "en": "Quantity",
+    "id": "Jumlah"
+  },
+  "RECEIVED": {
+    "en": "RECEIVED",
+    "id": "Diterima lengkap"
+  },
+  "REJECTED": {
+    "en": "REJECTED",
+    "id": "Ditolak"
+  },
+  "Reason": {
+    "en": "Reason",
+    "id": "Alasan"
+  },
+  "Receipt ID": {
+    "en": "Receipt ID",
+    "id": "ID penerimaan"
+  },
+  "Receive goods": {
+    "en": "Receive goods",
+    "id": "Terima barang"
+  },
+  "Received date": {
+    "en": "Received date",
+    "id": "Tanggal penerimaan"
+  },
+  "Record an actual payment that has already occurred. This does not transfer money.": {
+    "en": "Record an actual payment that has already occurred. This does not transfer money.",
+    "id": "Catat pembayaran yang benar-benar sudah dilakukan. Tindakan ini tidak memindahkan dana."
+  },
+  "Record attendance": {
+    "en": "Record attendance",
+    "id": "Catat kehadiran"
+  },
+  "Record interaction": {
+    "en": "Record interaction",
+    "id": "Catat interaksi"
+  },
+  "Record payment": {
+    "en": "Record payment",
+    "id": "Catat pembayaran"
+  },
+  "Recorded at": {
+    "en": "Recorded at",
+    "id": "Waktu pencatatan"
+  },
+  "Recorded by": {
+    "en": "Recorded by",
+    "id": "Dicatat oleh"
+  },
+  "Reference": {
+    "en": "Reference",
+    "id": "Referensi"
+  },
+  "Reject": {
+    "en": "Reject",
+    "id": "Tolak"
+  },
+  "Reject leave": {
+    "en": "Reject leave",
+    "id": "Tolak izin"
+  },
+  "Reject purchase order": {
+    "en": "Reject purchase order",
+    "id": "Tolak pesanan pembelian"
+  },
+  "Remove": {
+    "en": "Remove",
+    "id": "Hapus"
+  },
+  "Request leave": {
+    "en": "Request leave",
+    "id": "Ajukan izin"
+  },
+  "Retry same request": {
+    "en": "Retry same request",
+    "id": "Ulangi permintaan yang sama"
+  },
+  "Reversal date": {
+    "en": "Reversal date",
+    "id": "Tanggal pembalikan"
+  },
+  "Reverse journal": {
+    "en": "Reverse journal",
+    "id": "Balikkan jurnal"
+  },
+  "Review action": {
+    "en": "Review action",
+    "id": "Periksa tindakan"
+  },
+  "Review this record before confirming the action.": {
+    "en": "Review this record before confirming the action.",
+    "id": "Periksa data ini sebelum mengonfirmasi tindakan."
+  },
+  "Revoke role": {
+    "en": "Revoke role",
+    "id": "Cabut peran"
+  },
+  "Revoking this role preserves permissions granted by other roles.": {
+    "en": "Revoking this role preserves permissions granted by other roles.",
+    "id": "Pencabutan peran ini tidak mencabut hak akses yang diberikan oleh peran lain."
+  },
+  "SUBMITTED": {
+    "en": "SUBMITTED",
+    "id": "Diajukan"
+  },
+  "Save access": {
+    "en": "Save access",
+    "id": "Simpan akses"
+  },
+  "Save customer": {
+    "en": "Save customer",
+    "id": "Simpan pelanggan"
+  },
+  "Save employee": {
+    "en": "Save employee",
+    "id": "Simpan pegawai"
+  },
+  "Save supplier": {
+    "en": "Save supplier",
+    "id": "Simpan pemasok"
+  },
+  "Saved successfully.": {
+    "en": "Saved successfully.",
+    "id": "Berhasil disimpan."
+  },
+  "Saving…": {
+    "en": "Saving…",
+    "id": "Menyimpan…"
+  },
+  "Search records": {
+    "en": "Search records",
+    "id": "Cari data"
+  },
+  "Security verification": {
+    "en": "Security verification",
+    "id": "Verifikasi keamanan"
+  },
+  "Security verification failed. Check your password and authenticator code.": {
+    "en": "Security verification failed. Check your password and authenticator code.",
+    "id": "Verifikasi keamanan gagal. Periksa kata sandi dan kode autentikator Anda."
+  },
+  "Select an option": {
+    "en": "Select an option",
+    "id": "Pilih salah satu"
+  },
+  "Session expired. Reload this page and sign in again.": {
+    "en": "Session expired. Reload this page and sign in again.",
+    "id": "Sesi telah berakhir. Muat ulang halaman ini dan masuk kembali."
+  },
+  "Start date": {
+    "en": "Start date",
+    "id": "Tanggal mulai"
+  },
+  "Still working": {
+    "en": "Still working",
+    "id": "Belum pulang"
+  },
+  "Stock could not be received. Check the product and opening stock.": {
+    "en": "Stock could not be received. Check the product and opening stock.",
+    "id": "Stok belum dapat diterima. Periksa produk dan stok awal."
+  },
+  "Submit for approval": {
+    "en": "Submit for approval",
+    "id": "Ajukan persetujuan"
+  },
+  "Supplier": {
+    "en": "Supplier",
+    "id": "Pemasok"
+  },
+  "Supplier or customer": {
+    "en": "Supplier or customer",
+    "id": "Pemasok atau pelanggan"
+  },
+  "Suppliers": {
+    "en": "Suppliers",
+    "id": "Pemasok"
+  },
+  "Support reference": {
+    "en": "Support reference",
+    "id": "Referensi bantuan"
+  },
+  "Team member identity ID": {
+    "en": "Team member identity ID",
+    "id": "ID identitas anggota tim"
+  },
+  "Team permissions": {
+    "en": "Team permissions",
+    "id": "Hak akses tim"
+  },
+  "The account must already belong to this organization and outlet.": {
+    "en": "The account must already belong to this organization and outlet.",
+    "id": "Akun harus sudah terdaftar dalam organisasi dan outlet ini."
+  },
+  "The code or invoice reference already exists, or its related record is invalid.": {
+    "en": "The code or invoice reference already exists, or its related record is invalid.",
+    "id": "Kode atau nomor tagihan sudah digunakan, atau data terkait tidak valid."
+  },
+  "The due date must be on or after the invoice date.": {
+    "en": "The due date must be on or after the invoice date.",
+    "id": "Tanggal jatuh tempo tidak boleh sebelum tanggal tagihan."
+  },
+  "The payment exceeds the unpaid invoice balance.": {
+    "en": "The payment exceeds the unpaid invoice balance.",
+    "id": "Pembayaran melebihi sisa tagihan."
+  },
+  "The product must be active and have opening stock configured.": {
+    "en": "The product must be active and have opening stock configured.",
+    "id": "Produk harus aktif dan sudah memiliki stok awal."
+  },
+  "The purchase currency must match the selected products.": {
+    "en": "The purchase currency must match the selected products.",
+    "id": "Mata uang pembelian harus sama dengan produk yang dipilih."
+  },
+  "The received quantity exceeds the outstanding order.": {
+    "en": "The received quantity exceeds the outstanding order.",
+    "id": "Jumlah barang diterima melebihi sisa pesanan."
+  },
+  "The result is not confirmed. Retry the same request to avoid duplicate records.": {
+    "en": "The result is not confirmed. Retry the same request to avoid duplicate records.",
+    "id": "Hasil belum dikonfirmasi. Ulangi permintaan yang sama untuk menghindari pencatatan ganda."
+  },
+  "The result is uncertain. Retry the same request to prevent duplicate changes.": {
+    "en": "The result is uncertain. Retry the same request to prevent duplicate changes.",
+    "id": "Hasil belum dapat dipastikan. Ulangi permintaan yang sama untuk mencegah perubahan ganda."
+  },
+  "The supplier, amount and currency must match the goods receipt.": {
+    "en": "The supplier, amount and currency must match the goods receipt.",
+    "id": "Pemasok, jumlah, dan mata uang harus sesuai dengan penerimaan barang."
+  },
+  "This action is not available for the current order status.": {
+    "en": "This action is not available for the current order status.",
+    "id": "Tindakan ini tidak sesuai dengan status pesanan saat ini."
+  },
+  "This employee already has leave in the selected period.": {
+    "en": "This employee already has leave in the selected period.",
+    "id": "Pegawai ini sudah memiliki izin pada periode tersebut."
+  },
+  "This record changed. Refresh and review the latest version.": {
+    "en": "This record changed. Refresh and review the latest version.",
+    "id": "Data ini telah berubah. Muat ulang lalu periksa versi terbaru."
+  },
+  "This request identifier was already used with different data.": {
+    "en": "This request identifier was already used with different data.",
+    "id": "Identitas permintaan ini telah digunakan dengan data berbeda."
+  },
+  "To": {
+    "en": "To",
+    "id": "Sampai"
+  },
+  "Too many decimal places for this currency.": {
+    "en": "Too many decimal places for this currency.",
+    "id": "Angka desimal terlalu banyak untuk mata uang ini."
+  },
+  "Trial balance": {
+    "en": "Trial balance",
+    "id": "Neraca saldo"
+  },
+  "Type": {
+    "en": "Type",
+    "id": "Jenis"
+  },
+  "Unit cost": {
+    "en": "Unit cost",
+    "id": "Harga beli satuan"
+  },
+  "Up to 50 records per page": {
+    "en": "Up to 50 records per page",
+    "id": "Maksimal 50 data per halaman"
+  },
+  "Use products from your POS catalog with opening stock configured. Costs are entered per unit.": {
+    "en": "Use products from your POS catalog with opening stock configured. Costs are entered per unit.",
+    "id": "Gunakan produk dari katalog POS yang sudah memiliki stok awal. Harga beli dimasukkan per satuan."
+  },
+  "Verify session": {
+    "en": "Verify session",
+    "id": "Verifikasi sesi"
+  },
+  "Verify your administrator session before changing team permissions.": {
+    "en": "Verify your administrator session before changing team permissions.",
+    "id": "Verifikasi sesi administrator sebelum mengubah hak akses tim."
+  },
+  "Work date": {
+    "en": "Work date",
+    "id": "Tanggal kerja"
+  },
+  "Yes": {
+    "en": "Yes",
+    "id": "Ya"
+  },
+  "Your role does not allow this action.": {
+    "en": "Your role does not allow this action.",
+    "id": "Peran Anda tidak memiliki izin untuk tindakan ini."
+  },
+  "Find product by name or code": {
+    "id": "Cari produk berdasarkan nama atau kode",
+    "en": "Find product by name or code"
+  },
+  "Search products": {
+    "id": "Cari produk",
+    "en": "Search products"
+  },
+  "Search": {
+    "id": "Cari",
+    "en": "Search"
+  },
+  "Administration": {
+    "id": "Administrasi",
+    "en": "Administration"
+  },
+  "Back to workspace": {
+    "id": "Kembali ke ruang kerja",
+    "en": "Back to workspace"
+  },
+  "Access change": {
+    "id": "Perubahan akses",
+    "en": "Access change"
   }
 }

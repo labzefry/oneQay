@@ -95,6 +95,8 @@ jobs:
             done <<< "$changed_app"
             test "$(grep -Fc 'App\Providers\DurableStagingMerchantCoreRouteBridgeServiceProvider::class' apps/web/bootstrap/providers.php)" -eq 1
             git diff --quiet "$base" "$head" -- apps/web/app/Providers/AppServiceProvider.php apps/web/routes/web.php apps/web/config/oneqay.php apps/web/database/migrations
+          elif [[ "${{ github.head_ref }}" == 'enterprise-integrated-business-20261012' && "$base" == 'f3de67cd0426fb13cc51c4d88966a8a9923dcf24' ]]; then
+            bash tools/qa-business-management-source-envelope.sh "$base" "$head"
           else
             git diff --quiet "$base" "$head" -- apps/web/bootstrap/providers.php
           fi

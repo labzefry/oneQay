@@ -1,0 +1,67 @@
+# Author by Lab | zefry
+name: Integrated Business Management
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  business-management:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: synthetic-test-only
+          MYSQL_DATABASE: oneqay_business_test
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -psynthetic-test-only"
+          --health-interval=10s --health-timeout=5s --health-retries=10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        with:
+          php-version: '8.3'
+          extensions: pdo_sqlite, pdo_mysql
+          tools: composer:v2
+          coverage: none
+      - name: Install exact dependency set
+        working-directory: apps/web
+        run: composer install --no-interaction --no-progress --prefer-dist
+      - name: Real relational business flows, isolation, money and rollback
+        run: |
+          set -euo pipefail
+          php apps/web/tests/business-role-administration.php
+          php apps/web/tests/policy-administration-delivery.php
+          php apps/web/tests/privileged-reauthentication-step-up.php
+          php apps/web/tests/integrated-business-management.php
+          BUSINESS_TEST_ENGINE=mysql php apps/web/tests/integrated-business-management.php
+          php apps/web/tests/business-os-command-center.php
+          php apps/web/tests/pos-inventory-replenishment-workspace.php
+          php apps/web/tests/pos-operations-hub.php
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: 24.19.0
+      - name: Type check and compile localized business workspace
+        working-directory: apps/web
+        run: |
+          npm ci --ignore-scripts --no-fund
+          npm run type-check
+          npm run build
+      - name: Exercise compiled localized business forms and mobile layouts
+        run: |
+          npm install --prefix "$RUNNER_TEMP/oneqay-business-browser" --ignore-scripts --no-audit --no-fund playwright@1.62.1
+          node "$RUNNER_TEMP/oneqay-business-browser/node_modules/playwright/cli.js" install --with-deps --only-shell chromium
+          PLAYWRIGHT_MODULE="$RUNNER_TEMP/oneqay-business-browser/node_modules/playwright/index.mjs" node tools/qa-integrated-business-ui.mjs
+      - name: Publish reviewable compiled workspace
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: oneqay-integrated-business-preview-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            apps/web/public/build
+            dist/business-ui-qa
+          if-no-files-found: error
+          retention-days: 7

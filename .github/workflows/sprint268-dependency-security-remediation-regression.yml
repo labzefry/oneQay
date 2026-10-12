@@ -111,7 +111,12 @@ jobs:
                        and os.environ.get('PR_NUMBER') == '929')
           session_successor = (os.environ.get('HEAD_REF') == 'production-cash-go-live-secure-session-20261011'
                                and os.environ.get('PR_NUMBER') == '941')
-          if successor:
+          if (os.environ.get('HEAD_REF') == 'enterprise-integrated-business-20261012'
+              and os.environ.get('PR_NUMBER') == '951'
+              and os.environ.get('HEAD_REPOSITORY') == 'labzefry/oneQay'
+              and os.environ.get('BASE_SHA') == 'f3de67cd0426fb13cc51c4d88966a8a9923dcf24'):
+              subprocess.run(['bash', 'tools/qa-business-management-source-envelope.sh', os.environ['BASE_SHA'], os.environ['HEAD_SHA']], check=True)
+          elif successor:
               base = os.environ.get('BASE_SHA', '')
               assert len(base) == 40 and all(ch in '0123456789abcdef' for ch in base)
               actual = sorted(subprocess.check_output(
