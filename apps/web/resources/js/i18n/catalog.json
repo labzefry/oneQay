@@ -4646,5 +4646,13 @@
   "Access change": {
     "id": "Perubahan akses",
     "en": "Access change"
+  },
+  "Platform control": {
+    "id": "Kendali platform",
+    "en": "Platform control"
+  },
+  "Business activation and mail health": {
+    "id": "Aktivasi bisnis dan kesehatan email",
+    "en": "Business activation and mail health"
   }
 }

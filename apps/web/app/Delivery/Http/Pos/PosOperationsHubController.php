@@ -141,6 +141,9 @@ final class PosOperationsHubController
             ];
         }
 
+        if (Route::has('platform.control') && app(\App\Application\Platform\PlatformOwnerAccess::class)->allows()) {
+            $destinations[] = ['key'=>'platform_owner','title'=>'Platform control','description'=>'Business activation and mail health','url'=>'/platform','category'=>'CONTROL'];
+        }
         if (Route::has('business.workspace')) {
             $destinations = array_merge($destinations, app(\App\Application\Business\BusinessAccess::class)->modules());
         }

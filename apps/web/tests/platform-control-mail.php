@@ -99,3 +99,41 @@ $assert(!str_contains(json_encode($mail->report(1)),'owner@example.test'),'mail 
 $mail->heartbeat(time());$assert($mail->report(1)['heartbeat_at']>0,'cron heartbeat persisted');
 $assert($db->table('oneqay_platform_audit')->count()>=6,'owner actions audited');
 echo 'PLATFORM_CONTROL_MAIL_'.$engine.'_PASS assertions='.$n.PHP_EOL;
+
+// Actual session rows must remain revoked after suspend/resume, including another identity in the tenant.
+$sessionTenant=$context['tenant_id'];$sessionIdentity=$context['identity_id'];
+$db->table('oneqay_identity_first_party_sessions')->insert(['tenant_id'=>$sessionTenant,'authority_id'=>str_repeat('1',32),'public_handle'=>str_repeat('a',43),'identity_id'=>$sessionIdentity,'organization_id'=>$context['organization_id'],'outlet_id'=>$context['outlet_id'],'device_id'=>$context['device_id'],'credential_epoch'=>1,'factor_epoch'=>null,'issued_at_unix'=>time(),'last_seen_at_unix'=>time(),'expires_at_unix'=>time()+7200,'revoked_at_unix'=>null]);
+$service->command($command('suspend',5,'test-session-revoke'));$service->command($command('resume',6,'test-session-resume'));
+$assert($db->table('oneqay_identity_first_party_sessions')->where('tenant_id',$sessionTenant)->whereNull('revoked_at_unix')->count()===0,'old sessions never resurrect');
+$assert($store->loginBusiness('owner@example.test',null)['tenant_id']===$sessionTenant,'email resolves canonical business context');
+$assert($store->loginBusiness('unknown@example.test',null)===null,'unknown email does not disclose accounts');
+// Failed provisioning rolls back the account, activation state and audit atomically.
+$another=$service->command(array_merge($create,['operation_id'=>'test-create-rollback','email'=>'rollback@example.test']));
+$service->command(['operation_id'=>'test-invite-rollback','action'=>'invite','id'=>$another['id'],'version'=>1,'reason'=>'Rollback fixture']);
+$row=$store->business($another['id']);
+$badAccounts=new class implements App\Application\Platform\BusinessAccountProvisioner {
+    public function provision(array $business,#[SensitiveParameter] string $password):void{throw new PlatformViolation('SYNTHETIC_PROVISION_FAILURE',503);}
+    public function verifyPassword(array $business,#[SensitiveParameter] string $password):bool{return false;}
+    public function revokeTenantSessions(string $tenant,int $now):void{}
+};
+$failedService=new BusinessActivation($access,$store,$badAccounts,$mail,'https://oneqay.example.test');
+$raw=$db->table('oneqay_mail_messages')->where('tenant_id',$row['tenant_id'])->first();$body=json_decode($app->make('encrypter')->decryptString($raw->payload),true);preg_match('/#token=([0-9a-f]{64})/',$body['text'],$m);
+$reject(fn()=>$failedService->activate($m[1],'synthetic-password-failure'),'failed provisioning propagates safely');
+$assert($store->business($another['id'])['status']==='invited','activation remains redeemable after rollback');
+$assert(!$db->table('oneqay_tenants')->where('id',$row['tenant_id'])->exists(),'failed activation creates no tenant');
+// Terminal feedback binding and signature are enforced by the actual HTTP adapter.
+$app['config']->set('platform.feedback_secret',str_repeat('s',40));
+$controller=new App\Delivery\Http\Platform\PlatformController($access,$store,$service,$mail,new class implements App\Application\Notification\MailTransport {public function send(array $message):array{return ['accepted','SYNTHETIC'];}public function inspect():array{return [];}});
+$raw=json_encode(['event_id'=>'http-bounce','message_id'=>$claimed['id'],'recipient'=>'owner@example.test','type'=>'hard_bounce']);$stamp=(string)time();
+$req=Illuminate\Http\Request::create('/platform/mail/feedback','POST',[],[],[],['CONTENT_TYPE'=>'application/json'], $raw);
+$assert($controller->feedback($req)->getStatusCode()===401,'missing signature denied');
+$req->headers->set('X-OneQay-Timestamp',$stamp);$req->headers->set('X-OneQay-Signature',hash_hmac('sha256',$stamp.'.'.$raw,str_repeat('s',40)));
+$assert($controller->feedback($req)->getStatusCode()===200,'signed feedback accepted');
+$req->headers->set('X-OneQay-Timestamp',(string)(time()-301));$assert($controller->feedback($req)->getStatusCode()===401,'stale feedback denied');
+// Routes remain genuinely authenticated and use the canonical fresh step-up boundary.
+$routes=$app->make('router')->getRoutes();$route=$routes->match(Illuminate\Http\Request::create('/platform/businesses','POST'));
+$middleware=$route->gatherMiddleware();
+$assert(in_array('web',$middleware,true)&&in_array('session.active',$middleware,true),'owner route session and CSRF pipeline');
+$assert(in_array(App\Delivery\Http\Middleware\RequirePolicyAdministrationSessionContextMiddleware::class,$middleware,true),'canonical step-up middleware retained');
+$assert(in_array(App\Delivery\Http\Middleware\RequirePlatformSecurityMiddleware::class,$middleware,true),'platform ownership boundary retained');
+echo 'PLATFORM_CONTROL_MAIL_EXTENDED_'.$engine.'_PASS assertions='.$n.PHP_EOL;

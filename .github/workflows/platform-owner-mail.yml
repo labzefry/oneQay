@@ -48,6 +48,11 @@ jobs:
           npm ci --ignore-scripts --no-fund
           npm run type-check
           npm run build
+      - name: Exercise compiled control plane, stable retries, activation and mobile layouts
+        run: |
+          npm install --prefix "$RUNNER_TEMP/oneqay-platform-browser" --ignore-scripts --no-audit --no-fund playwright@1.62.1
+          node "$RUNNER_TEMP/oneqay-platform-browser/node_modules/playwright/cli.js" install --with-deps --only-shell chromium
+          PLAYWRIGHT_MODULE="$RUNNER_TEMP/oneqay-platform-browser/node_modules/playwright/index.mjs" node tools/qa-platform-owner-ui.mjs
       - name: Publish compiled review artifact
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

@@ -1,18 +1,21 @@
 <script setup lang="ts">
 // Author by Lab | zefry
-import { computed, ref } from 'vue';
+import { computed, onBeforeUnmount, ref } from 'vue';
 import { locale } from '../../i18n';
 const tr = (id: string, en: string) => locale.value === 'id' ? id : en;
 type Row = { id: string; name: string; email: string; status: string; version: number; tenant_id: string; created_at: number };
 type Message = { id: string; tenant_id: string; status: string; attempts: number; safe_code: string | null; created_at: number };
 type Settings = { version: number; enabled: boolean; host: string; port: number; username: string; from: string; from_name: string; dkim_selector: string; per_minute: number; password_configured: boolean };
 const props = defineProps<{ businesses: { total: number; rows: Row[]; audit: { id: number; action: string; reason: string; occurred_at: number }[] }; mail: { total: number; counts: Record<string, number>; heartbeat_at: number; paused_until: number; suppressed_recipients: number; oldest_queued_at: number | null; messages: Message[]; events: { id: string; message_id: string; event: string; safe_code: string; occurred_at: number }[] }; settings: Settings; feedback_configured: boolean; page: number; mail_page: number }>();
-const tab = ref(window.location.hash === '#mail' ? 'mail' : 'business'); const busy = ref(false); const uncertain = ref(false); const message = ref('');
+const tab = ref(['business','mail','smtp','security'].includes(window.location.hash.slice(1)) ? window.location.hash.slice(1) : 'business'); const busy = ref(false); const uncertain = ref(false); const message = ref('');
 const pending = ref<{ path: string; body: Record<string, unknown> } | null>(null);
 const name = ref(''); const email = ref(''); const language = ref('id'); const reason = ref('');
 const settings = ref({ ...props.settings, password: '' }); const password = ref(''); const code = ref('');
 const retryId = ref(''); const duplicate = ref(false); const inspection = ref<Record<string, unknown> | null>(null);
 const now = Math.floor(Date.now() / 1000);
+function preventLostRequest(event: BeforeUnloadEvent) { if (busy.value || uncertain.value) { event.preventDefault(); event.returnValue = ''; } }
+window.addEventListener('beforeunload', preventLostRequest);
+onBeforeUnmount(() => window.removeEventListener('beforeunload', preventLostRequest));
 const workerHealthy = computed(() => props.mail.heartbeat_at > now - 180);
 const date = (value: number) => new Date(value * 1000).toLocaleString(locale.value === 'id' ? 'id-ID' : 'en-GB');
 const statuses: Record<string, [string, string]> = { pending: ['Menunggu persetujuan', 'Pending approval'], invited: ['Undangan dikirim ke antrean', 'Invitation queued'], active: ['Aktif', 'Active'], suspended: ['Ditangguhkan', 'Suspended'], cancelled: ['Dibatalkan', 'Cancelled'], queued: ['Dalam antrean', 'Queued'], sending: ['Sedang dikirim', 'Sending'], accepted: ['Diterima SMTP', 'SMTP accepted'], delivered: ['Terkirim terkonfirmasi', 'Delivery confirmed'], retry: ['Menunggu coba ulang', 'Retry scheduled'], deferred: ['Ditunda oleh penyedia', 'Provider deferred'], failed: ['Gagal', 'Failed'], unknown: ['Hasil tidak pasti', 'Unknown outcome'], hard_bounce: ['Terpental permanen', 'Hard bounce'], complaint: ['Keluhan spam', 'Spam complaint'], suppressed: ['Dihentikan untuk penerima', 'Recipient suppressed'] };
@@ -20,13 +23,13 @@ const status = (key: string) => statuses[key]?.[locale.value === 'id' ? 0 : 1] ?
 function headers() { return { 'Content-Type': 'application/json', Accept: 'application/json', 'X-CSRF-TOKEN': document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content ?? '' }; }
 async function save(path: string, body: Record<string, unknown>) {
     if (busy.value) return;
-    pending.value ??= { path, body: JSON.parse(JSON.stringify(body)) }; busy.value = true; message.value = '';
+    pending.value ??= { path, body: JSON.parse(JSON.stringify({ operation_id: crypto.randomUUID(), ...body })) }; busy.value = true; message.value = '';
     try {
         const r = await fetch(pending.value.path, { method: 'POST', credentials: 'same-origin', headers: headers(), body: JSON.stringify(pending.value.body) });
         if (r.status >= 500) throw new Error('uncertain');
         if (!r.ok) { pending.value = null; uncertain.value = false; message.value = tr('Perubahan ditolak. Periksa isian, versi data, dan verifikasi keamanan. Jika sesi kedaluwarsa, muat ulang halaman.', 'Change denied. Check fields, data version, and security verification. Reload if your session expired.'); return; }
         const result = await r.json(); if (result.status !== 'saved') throw new Error('uncertain');
-        pending.value = null; uncertain.value = false; window.location.reload();
+        pending.value = null; uncertain.value = false; busy.value = false; window.location.replace('/platform#' + tab.value);
     } catch { uncertain.value = true; message.value = tr('Hasil belum pasti. Ulangi permintaan yang sama menggunakan tombol di bawah.', 'The result is uncertain. Retry the same request below.'); }
     finally { busy.value = false; }
 }
@@ -37,7 +40,7 @@ async function verify() {
     busy.value = true; message.value = '';
     try {
         const r = await fetch('/auth/reauthenticate/privileged', { method: 'POST', credentials: 'same-origin', headers: headers(), body: JSON.stringify({ password: password.value, code: code.value }) });
-        if (r.ok) window.location.reload(); else message.value = tr('Verifikasi gagal. MFA dan verifikasi ulang harus aktif untuk pemilik platform.', 'Verification failed. MFA and step-up must be enabled for the platform owner.');
+        if (r.ok) { busy.value = false; window.location.replace('/platform#' + tab.value); } else message.value = tr('Verifikasi gagal. MFA dan verifikasi ulang harus aktif untuk pemilik platform.', 'Verification failed. MFA and step-up must be enabled for the platform owner.');
     } catch { message.value = tr('Verifikasi belum berhasil.', 'Verification did not complete.'); }
     finally { password.value = ''; code.value = ''; busy.value = false; }
 }

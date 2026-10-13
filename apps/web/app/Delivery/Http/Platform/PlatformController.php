@@ -24,9 +24,9 @@ final readonly class PlatformController
     public function configure(Request $r):mixed
     {
         return $this->respond($r,function ()use($r):mixed {
-            $owner=$this->access->require();$input=$this->payload($r);$version=$input['version']??null;unset($input['version']);
+            $owner=$this->access->require();$input=$this->payload($r);$version=$input['version']??null;$operation=BusinessActivation::text($input['operation_id']??null,128);unset($input['version'],$input['operation_id']);
             if(!is_int($version))throw new PlatformViolation('INVALID_VERSION');
-            $this->mail->configure($input,$version,$owner->identityId()->value(),time());
+            $this->store->once($owner->tenantId()->value().'/'.$owner->identityId()->value(),$operation,['action'=>'mail.configure','version'=>$version,'settings_digest'=>hash('sha256',json_encode($input,JSON_THROW_ON_ERROR))],function()use($input,$version,$owner):array{$this->mail->configure($input,$version,$owner->identityId()->value(),time());return ['saved'=>true];});
             return response()->json(['status'=>'saved']);
         });
     }
@@ -35,8 +35,10 @@ final readonly class PlatformController
     {
         return $this->respond($r,function ()use($r):mixed {
             $owner=$this->access->require();$input=$this->payload($r);
-            if(array_diff(array_keys($input),['id','reason','accept_duplicate_risk']))throw new PlatformViolation('UNKNOWN_FIELDS');
-            $this->mail->retry(BusinessActivation::text($input['id']??null,32),$owner->identityId()->value(),BusinessActivation::text($input['reason']??null,300),($input['accept_duplicate_risk']??false)===true,time());
+            if(array_diff(array_keys($input),['id','reason','accept_duplicate_risk','operation_id']))throw new PlatformViolation('UNKNOWN_FIELDS');
+            $operation=BusinessActivation::text($input['operation_id']??null,128);
+            $this->store->once($owner->tenantId()->value().'/'.$owner->identityId()->value(),$operation,['action'=>'mail.retry','input'=>$input],function()use($input,$owner):array {
+            $this->mail->retry(BusinessActivation::text($input['id']??null,32),$owner->identityId()->value(),BusinessActivation::text($input['reason']??null,300),($input['accept_duplicate_risk']??false)===true,time()); return ['saved'=>true]; });
             return response()->json(['status'=>'saved']);
         });
     }

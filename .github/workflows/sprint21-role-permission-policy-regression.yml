@@ -411,6 +411,11 @@ jobs:
         if: (((env.ONEQAY_SPRINT30_SUCCESSOR != 'true') && (github.event_name != 'pull_request' || github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009')) && (github.event_name != 'pull_request' || github.head_ref != 'production-dev-readiness-and-merchant-foundation-20261010')) && env.ONEQAY_BILINGUAL_PRESENTATION != 'true'
         shell: bash
         run: |
+          # Exact platform activation/mail successor: preserve executable regressions and validate owned changes.
+          if [[ "${{ github.head_ref }}" == 'platform-owner-mail-20261013' && "${{ github.event.pull_request.base.sha }}" == '894750c6a59a4ac28f42d5da8d8eb426280a412b' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
+            bash tools/qa-platform-owner-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
+            exit 0
+          fi
           set -euo pipefail
           if [[ "${{ github.head_ref }}" == 'enterprise-integrated-business-20261012' && "${{ github.event.pull_request.base.sha }}" == 'f3de67cd0426fb13cc51c4d88966a8a9923dcf24' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
             bash tools/qa-business-management-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"

@@ -26,7 +26,7 @@ final readonly class BusinessActivation
                 if (!in_array($locale, ['id','en'], true)) throw new PlatformViolation('INVALID_LOCALE');
                 $business = $this->store->create([
                     'id' => bin2hex(random_bytes(16)), 'name' => self::text($input['name'] ?? null, 160),
-                    'email' => $email, 'locale' => $locale, 'status' => 'pending', 'version' => 1,
+                    'email' => strtolower($email), 'locale' => $locale, 'status' => 'pending', 'version' => 1,
                     'tenant_id' => 'business-'.bin2hex(random_bytes(12)),
                     'identity_id' => 'owner-'.bin2hex(random_bytes(12)),
                     'organization_id' => 'org-'.bin2hex(random_bytes(12)),

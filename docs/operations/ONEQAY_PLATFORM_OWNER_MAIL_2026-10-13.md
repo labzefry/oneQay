@@ -72,3 +72,11 @@ The dedicated workflow runs disposable SQLite and MySQL activation/credential/is
 At initial source preparation, native CI, host migration, cron installation, SMTP credentials, provider feedback connection, DNS alignment, received-message authentication and authenticated production acceptance are pending. Do not label these performed without evidence.
 
 Current release download remains a source-certified application artifact, not a database upgrade installer. An additive backend/schema successor operator and a current host binding report are still needed for this cPanel target.
+
+## First native qualification
+
+Initial PR #952 head `643fcb68b629a678a66064fe141fa67b8d426ffa`, run `38329177033`, job `115074750142`: **PASS** — 50 SQLite assertions, 50 MySQL assertions, existing atomic merchant bootstrap, 20 business-role assertions, existing privileged step-up regression, TypeScript and production Vite build. Subsequent login, compiled browser, HTTP feedback and session-revocation additions require their successor-head results; this initial result must not be projected onto later edits.
+
+The registered business owner uses `/business-login` with their email/password. If an email owns multiple businesses, the login form accepts the exact business ID as a discriminator. Canonical TOTP enrollment/challenge endpoints manage the factor; session/CSRF rotation reloads the sign-in page. The platform owner link appears in the existing workspace only for the privately bound owner, and backend authorization remains mandatory.
+
+Historical source-shape guards assumed migrations #1–#8 or old PR path sets. The exact-base platform compatibility helper verifies that historical migrations, existing behavioral regression steps, dependencies, source certification, runtime gates and operational state are unchanged. It permits only the explicitly listed module paths, three bounded provisioning-scope extensions and additive owner navigation. Existing executable tests remain enabled; no compatibility flag mislabels this work as presentation-only.

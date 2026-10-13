@@ -42,6 +42,8 @@ final class PlatformManagementServiceProvider extends ServiceProvider
             Route::get('/platform/mail/inspect',[PlatformController::class,'inspect'])->middleware('throttle:3,1');
         });
         Route::middleware(['web','throttle:10,1'])->group(function():void {
+            Route::get('/business-login',[\App\Delivery\Http\Platform\BusinessLoginController::class,'show']);
+            Route::post('/business-login',[\App\Delivery\Http\Platform\BusinessLoginController::class,'login'])->middleware(['throttle:5,1','throttle:20,60']);
             Route::get('/activate-business',fn()=>Inertia::render('Platform/Activate'))->name('platform.activate');
             Route::post('/activate-business',[PlatformController::class,'activate']);
         });

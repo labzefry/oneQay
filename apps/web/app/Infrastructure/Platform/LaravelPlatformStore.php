@@ -33,6 +33,13 @@ final readonly class LaravelPlatformStore implements PlatformStore
         if ($row === null) throw new PlatformViolation('BUSINESS_NOT_FOUND',404);
         return (array)$row;
     }
+    public function loginBusiness(string $email, ?string $id): ?array
+    {
+        $q=$this->db->table('oneqay_platform_businesses')->where('email',strtolower($email))->where('status','active');
+        if($id!==null && $id!=='')$q->where('id',$id);
+        $rows=$q->limit(2)->get();
+        return $rows->count()===1?(array)$rows->first():null;
+    }
     public function byToken(string $tokenHash): array
     {
         $row = $this->db->table('oneqay_platform_businesses')->where('token_hash',$tokenHash)->lockForUpdate()->first();
