@@ -12,7 +12,7 @@ function uModuleTables(): array {
 }
 /** Frozen historical DDL and migration receipts; no business row snapshots or private data. */
 function uSchemaSnapshot($db): array {
-    $schema=$db->getSchemaBuilder();$tables=$schema->getTableListing();sort($tables);$ddl=[];
+    $schema=$db->getSchemaBuilder();$tables=$schema->getTableListing(null,false);sort($tables);$ddl=[];
     foreach($tables as $table){uAssert(preg_match('/\A[A-Za-z0-9_]+\z/D',$table)===1,'DATABASE_TABLE_NAME_INVALID');
         if($db->getDriverName()==='mysql'){$row=(array)$db->selectOne('SHOW CREATE TABLE `'.$table.'`');$raw=array_values($row)[1];$raw=preg_replace('/ AUTO_INCREMENT=\d+/','',$raw);}
         else {$raw=(string)($db->selectOne('SELECT sql FROM sqlite_master WHERE type = ? AND name = ?',['table',$table])->sql??'');}

@@ -37,5 +37,7 @@ jobs:
           php -l tools/production/cpanel/update-oneqaydev-business-modules.php
           php -l tools/production/cpanel/install-oneqaydev-business-modules.php
           php tools/production/tests/oneqaydev-module-operator.php
-          php tools/production/tests/oneqaydev-business-modules.php
-          MODULE_TEST_ENGINE=mysql php tools/production/tests/oneqaydev-business-modules.php
+          php tools/production/tests/oneqaydev-business-modules.php | tee /tmp/module-sqlite.log
+          grep -Fxq 'BUSINESS_MODULE_UPGRADE_sqlite_PASS assertions=18' /tmp/module-sqlite.log
+          MODULE_TEST_ENGINE=mysql php tools/production/tests/oneqaydev-business-modules.php | tee /tmp/module-mysql.log
+          grep -Fxq 'BUSINESS_MODULE_UPGRADE_mysql_PASS assertions=18' /tmp/module-mysql.log
