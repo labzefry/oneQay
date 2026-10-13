@@ -8,4 +8,5 @@ return [
     App\Providers\DurableStagingMerchantCoreRouteBridgeServiceProvider::class,
     App\Providers\PosOperationsHubServiceProvider::class,
     App\Providers\BusinessManagementServiceProvider::class,
+    App\Providers\PlatformManagementServiceProvider::class,
 ];

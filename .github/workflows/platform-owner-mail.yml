@@ -1,0 +1,60 @@
+# Author by Lab | zefry
+name: Platform Owner and Reliable Mail
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  platform-owner-mail:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: synthetic-test-only
+          MYSQL_DATABASE: oneqay_platform_test
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -psynthetic-test-only"
+          --health-interval=10s --health-timeout=5s --health-retries=10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        with:
+          php-version: '8.3'
+          extensions: pdo_sqlite, pdo_mysql
+          tools: composer:v2
+          coverage: none
+      - name: Install locked dependencies
+        working-directory: apps/web
+        run: composer install --no-interaction --no-progress --prefer-dist
+      - name: Real SQL activation, canonical credential verification, queue and feedback
+        run: |
+          set -euo pipefail
+          php apps/web/tests/platform-control-mail.php
+          PLATFORM_TEST_ENGINE=mysql php apps/web/tests/platform-control-mail.php
+          php apps/web/tests/merchant-context-atomic-bootstrap.php
+          php apps/web/tests/business-role-administration.php
+          php apps/web/tests/privileged-reauthentication-step-up.php
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: 24.19.0
+      - name: Type check and compile bilingual control plane
+        working-directory: apps/web
+        run: |
+          npm ci --ignore-scripts --no-fund
+          npm run type-check
+          npm run build
+      - name: Publish compiled review artifact
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: platform-owner-mail-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            apps/web/public/build
+            dist/platform-ui-qa
+          if-no-files-found: ignore
+          retention-days: 7
