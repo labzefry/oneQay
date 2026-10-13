@@ -175,6 +175,14 @@ function uPublicVerify(array $r): array {
         if($key==='merchant_entry')uAssert($e['status']===200&&$e['merchant_entry_enabled']&&$e['login_context_present']&&$e['secure_session_cookie'],'NEW_MERCHANT_HTTPS_INVALID');else uAssert(in_array($e['status'],[401,403],true),'UNAUTHENTICATED_POS_NOT_DENIED');$evidence[$key]=$e;}
     $manifest=uJson($p['app'].'/public/build/manifest.json');$entry=$manifest['resources/js/app.ts']??null;uAssert(is_array($entry)&&is_string($entry['file']??null),'NEW_BUILD_ENTRY_INVALID');
     foreach(array_merge([$entry['file']],$entry['css']??[]) as $rel){uAssert(is_string($rel)&&preg_match('~\Aassets/[A-Za-z0-9._-]+\.(js|css)\z~D',$rel)===1,'ASSET_PATH_INVALID');$v=bHttps('https://oneqaydev.n07.my.id/build/'.$rel.'?oneqay_ui_probe='.$probe,'*/*');uAssert($v['status']===200&&hash_equals((string)hash_file('sha256',$p['app'].'/public/build/'.$rel),hash('sha256',$v['body'])),'NEW_ASSET_HTTPS_INVALID');}
+    if($r['source_commit']!==L_SOURCE){
+        foreach(['/business-login'=>200,'/activate-business'=>200,'/platform'=>401,'/pos/business/finance'=>401] as $url=>$expected){
+            $v=bHttps('https://oneqaydev.n07.my.id'.$url.'?oneqay_module_probe='.$probe,$expected===200?'text/html':'application/json');
+            uAssert($expected===200?$v['status']===200:in_array($v['status'],[401,403],true),'MODULE_HTTPS_ROUTE_INVALID');
+            uAssert(preg_match('/^X-OneQay-Business-Bridge:\s*'.preg_quote($p['bridge_id'],'/').'\s*\r?$/im',$v['headers'])===1,'MODULE_HTTPS_BRIDGE_INVALID');
+            $evidence[$url]=['status'=>$v['status'],'authenticated_acceptance'=>false];
+        }
+    }
     return $evidence;
 }
 function uUnionBuild(string $old,string $new,string $dest): void {
@@ -191,6 +199,7 @@ function uRestore(array $r): array {
     $p=uPaths($r);$temp=U_PUBLIC.'/.oq-ui-restore-'.bin2hex(random_bytes(6));oqCopyTree(U_BACKUP.'/build',$temp,0755);$failed=U_PUBLIC.'/.oq-ui-replaced-'.bin2hex(random_bytes(6));uAssert(@rename(U_PUBLIC.'/build',$failed),'ROLLBACK_BUILD_RENAME_FAILED');
     if(!@rename($temp,U_PUBLIC.'/build')){@rename($failed,U_PUBLIC.'/build');throw new WorkspaceUpdateStop('ROLLBACK_BUILD_PROMOTION_FAILED');}
     foreach($snapshot['files'] as $name=>$sha)uWrite(U_PUBLIC.'/'.$name,uRead(U_BACKUP.'/'.$name),0644);
+    if(is_file($p['entry']))uWrite($p['entry'],"<?php http_response_code(503); exit;\n",0644);
     lPreviousPublicVerify();uAssert(hash_equals($snapshot['staging_fingerprint'],bStagingFingerprint())&&hash_equals(B_MERCHANT_SHA,(string)hash_file('sha256',B_MERCHANT)),'ROLLBACK_PRESERVATION_FAILED');
     // Best-effort garbage cleanup never deletes either immutable release or runtime binding.
     try{oqRemoveTree($failed);}catch(Throwable){}
@@ -206,7 +215,7 @@ function uApply(string $locator,array $r): array {
         oqCopyTree(__DIR__.'/payload/'.$r['release_id'],$p['release']);uSourceFiles($r,U_ROOT.'/releases');uHistoricalSchema($p['app']);
         $env=uCandidateEnv($pre['raw_env'],$r);uWrite($p['env'],$env);uBindExistingRuntime($p['env'],$p['app'].'/.env');
         foreach(['config.php','routes-v7.php','routes.php'] as $file)uAssert(!file_exists($p['app'].'/bootstrap/cache/'.$file)&&!is_link($p['app'].'/bootstrap/cache/'.$file),'CACHED_RUNTIME_DENIED');
-        uRuntime($r);uInstallModules($r);uSourceFiles($r,U_ROOT.'/releases',true);$envSha=hash('sha256',$env);$bridge=uBridge($r,$envSha);$routing=uRouting($r,uRead(U_PUBLIC.'/.htaccess'));
+        uRuntime($r);uInstallModules($r);$pre['database']['previous_table_count']=$pre['database']['table_count'];$pre['database']['table_count']=count(uSchemaSnapshot(app('db')->connection())['ddl']);uSourceFiles($r,U_ROOT.'/releases',true);$envSha=hash('sha256',$env);$bridge=uBridge($r,$envSha);$routing=uRouting($r,uRead(U_PUBLIC.'/.htaccess'));
         $token=bin2hex(random_bytes(6));$stage=U_PUBLIC.'/.oq-ui-build-'.$token;uUnionBuild(U_PUBLIC.'/build',$p['app'].'/public/build',$stage);$stageSha=oqHashTree($stage);
         uAssert(hash_equals(U_OLD_ENV_SHA,(string)hash_file('sha256',L_ENV))&&hash_equals(B_MERCHANT_SHA,(string)hash_file('sha256',B_MERCHANT))&&hash_equals($pre['staging_fingerprint'],bStagingFingerprint()),'PRE_SWITCH_PRESERVATION_FAILED');
         uAssert(time()<=$grant['expires_at_unix'],'AUTHORITY_WINDOW_EXPIRED');uWrite($p['entry'],$bridge,0644);$previousBuild=U_PUBLIC.'/.oq-ui-old-build-'.$token;

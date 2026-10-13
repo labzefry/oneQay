@@ -69,7 +69,8 @@ try {
     foreach($backupFiles as $name=>$value){file_put_contents(U_BACKUP.'/'.$name,$value);file_put_contents(U_PUBLIC.'/'.$name,$name==='.htaccess'?'new-business-routing':$value);$hashes[$name]=hash('sha256',$value);}
     define('L_ASSET_UNION_SHA',oqHashTree($old));
     $snap=['files'=>$hashes,'asset_sha256'=>oqHashTree($old),'previous_env_sha256'=>U_OLD_ENV_SHA,'staging_fingerprint'=>bStagingFingerprint()];file_put_contents(U_BACKUP.'/snapshot.json',json_encode($snap,JSON_THROW_ON_ERROR));
-    $restored=uRestore($r);testUi($restored['rollback_target']==='BUSINESS_ON_PREVIOUS_CERTIFIED_RELEASE'&&oqHashTree(U_PUBLIC.'/build')===oqHashTree($old)&&!file_exists(U_PUBLIC.'/build/assets/new.js'),'ROLLBACK_RESTORES_OLD_ASSETS_AND_BUSINESS_ON');
+    file_put_contents($p['entry'],'candidate-business-bridge');
+    $restored=uRestore($r);testUi(str_contains(file_get_contents($p['entry']),'http_response_code(503)'),'ROLLBACK_DISABLES_CANDIDATE_DIRECT_ENTRY');testUi($restored['rollback_target']==='BUSINESS_ON_PREVIOUS_CERTIFIED_RELEASE'&&oqHashTree(U_PUBLIC.'/build')===oqHashTree($old)&&!file_exists(U_PUBLIC.'/build/assets/new.js'),'ROLLBACK_RESTORES_OLD_ASSETS_AND_BUSINESS_ON');
     testUi(hash_file('sha256',L_ENV)===U_OLD_ENV_SHA&&hash_file('sha256',B_MERCHANT)===B_MERCHANT_SHA,'ROLLBACK_PRESERVES_RUNTIME_MERCHANT');
     $snap['files']['.htaccess']=hash('sha256','health-off');file_put_contents(U_BACKUP.'/snapshot.json',json_encode($snap,JSON_THROW_ON_ERROR));deniedUi(fn()=>uRestore($r),'ROLLBACK_TARGET_NOT_PREVIOUS_BUSINESS_ON');
     testUi(str_contains($source,'uInstallModules($r)')&&!str_contains($source,'artisan migrate')&&!str_contains($source,'Artisan::call')&&!str_contains($source,'bCandidateEnv(')&&str_contains($source,"'BUSINESS_ON_PREVIOUS_CERTIFIED_RELEASE'"),'ONLY_BOUND_ADDITIVE_MODULE_INSTALL_PATH');
