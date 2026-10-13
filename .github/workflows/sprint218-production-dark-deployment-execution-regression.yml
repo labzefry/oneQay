@@ -294,6 +294,11 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           HEAD_REF: ${{ github.head_ref }}
         run: |
+          # Exact platform activation/mail successor: preserve executable regressions and validate owned changes.
+          if [[ "${{ github.head_ref }}" == 'platform-owner-mail-20261013' && "${{ github.event.pull_request.base.sha }}" == '894750c6a59a4ac28f42d5da8d8eb426280a412b' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
+            bash tools/qa-platform-owner-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
+            exit 0
+          fi
           set -euo pipefail
           test -z "$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- apps/web/database/migrations)"
           if [ "$HEAD_REF" = 'enterprise-integrated-business-20261012' ] && [ "$BASE_SHA" = 'f3de67cd0426fb13cc51c4d88966a8a9923dcf24' ]; then

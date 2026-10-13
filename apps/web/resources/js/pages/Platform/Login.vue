@@ -1,0 +1,26 @@
+<script setup lang="ts">
+// Author by Lab | zefry. Authentication and MFA are handled only by the canonical endpoints.
+import { ref } from 'vue';
+import { locale } from '../../i18n';
+const tr = (id: string, en: string) => locale.value === 'id' ? id : en;
+const props = defineProps<{ mfa_state?: string | null }>();
+const email = ref(''); const password = ref(''); const business = ref(''); const code = ref(''); const secret = ref('');
+const busy = ref(false); const message = ref('');
+function headers() { return { 'Content-Type': 'application/json', Accept: 'application/json', 'X-CSRF-TOKEN': document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content ?? '' }; }
+async function send(path: string, body: Record<string, string>, kind: string) {
+    busy.value = true; message.value = '';
+    try {
+        const r = await fetch(path, { method: 'POST', credentials: 'same-origin', headers: headers(), body: JSON.stringify(body) });
+        if (!r.ok) throw new Error();
+        const result = r.status === 204 ? {} : await r.json();
+        if (kind === 'enroll') { secret.value = result.secret; return; }
+        if (kind === 'confirm' || result.status === 'mfa_required') { window.location.replace('/business-login'); return; }
+        window.location.replace('/pos');
+    } catch { message.value = tr('Belum berhasil. Periksa identitas, kata sandi atau kode authenticator Anda.', 'Unable to complete. Check your account, password or authenticator code.'); }
+    finally { password.value = ''; code.value = ''; busy.value = false; }
+}
+</script>
+<template><main class="login"><section><span>ONEQAY BUSINESS</span><h1>{{ props.mfa_state ? tr('Verifikasi keamanan', 'Security verification') : tr('Masuk ke bisnis Anda', 'Sign in to your business') }}</h1><template v-if="props.mfa_state === 'enrollment_required'"><p>{{ tr('Tambahkan oneQay ke aplikasi authenticator dengan kunci berikut, lalu masukkan kode enam digit. Setelah konfirmasi, masuk kembali.', 'Add oneQay to your authenticator app using the following key, then enter the six-digit code. Sign in again after confirmation.') }}</p><button v-if="!secret" :disabled="busy" @click="send('/auth/mfa/totp/enrollment/start', {}, 'enroll')">{{ tr('Mulai penyiapan authenticator', 'Start authenticator setup') }}</button><template v-else><p class="secret">{{ secret }}</p><form @submit.prevent="send('/auth/mfa/totp/enrollment/confirm', { code }, 'confirm')"><label>{{ tr('Kode authenticator', 'Authenticator code') }}<input v-model="code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required autocomplete="one-time-code" /></label><button :disabled="busy">{{ tr('Konfirmasi authenticator', 'Confirm authenticator') }}</button></form></template></template><form v-else-if="props.mfa_state === 'challenge_required'" @submit.prevent="send('/auth/mfa/totp/challenge', { code }, 'challenge')"><label>{{ tr('Kode authenticator', 'Authenticator code') }}<input v-model="code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required autocomplete="one-time-code" /></label><button :disabled="busy">{{ tr('Verifikasi & masuk', 'Verify & sign in') }}</button></form><form v-else @submit.prevent="send('/business-login', { email, password, business_id: business }, 'login')"><fieldset :disabled="busy"><label>{{ tr('Email pemilik bisnis', 'Business owner email') }}<input v-model="email" type="email" required autocomplete="username" /></label><label>{{ tr('Kata sandi', 'Password') }}<input v-model="password" type="password" required autocomplete="current-password" /></label><details><summary>{{ tr('Memiliki lebih dari satu bisnis?', 'Have more than one business?') }}</summary><label>{{ tr('ID bisnis dari pemilik platform', 'Business ID from the platform owner') }}<input v-model="business" maxlength="32" /></label></details><button>{{ tr('Masuk', 'Sign in') }}</button></fieldset></form><p role="status">{{ message }}</p><footer>Author by Lab | zefry</footer></section></main></template>
+<style scoped>
+.login{display:grid;place-items:center;min-height:85vh;background:#f1f6f4;padding:32px 16px;font-family:system-ui;color:#183f3c}.login section{max-width:480px;width:100%;box-sizing:border-box;background:#fff;padding:36px;border:1px solid #dce8e1;border-radius:20px}.login span{font-size:11px;letter-spacing:2px;color:#31805e;font-weight:800}h1{font-size:29px;letter-spacing:-1px}p{line-height:1.8;font-size:13px;color:#617f75}label{display:flex;flex-direction:column;gap:9px;font-size:13px;font-weight:650;margin:22px 0}input{padding:13px;border:1px solid #bfd2c8;border-radius:9px;font:inherit}button{padding:14px 22px;background:#17694e;border:0;border-radius:9px;color:#fff;font-weight:700;cursor:pointer}button:disabled{opacity:.5}fieldset{border:0;margin:0;padding:0}details{font-size:12px;color:#668273;margin-bottom:22px}.secret{font:600 16px monospace;padding:15px;background:#eaf5ef;overflow-wrap:anywhere}footer{font-size:11px;color:#8b9a94;margin-top:25px}
+</style>
