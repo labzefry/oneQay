@@ -1,0 +1,41 @@
+# Author by Lab | zefry
+name: cPanel Additive Business Module Upgrade
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  cpanel-module-upgrade:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: synthetic-test-only
+          MYSQL_DATABASE: oneqay_modules_test
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -psynthetic-test-only"
+          --health-interval=10s --health-timeout=5s --health-retries=10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        with:
+          php-version: '8.3'
+          extensions: pdo_sqlite, pdo_mysql
+          tools: composer:v2
+          coverage: none
+      - name: Install locked dependencies
+        working-directory: apps/web
+        run: composer install --no-interaction --no-progress --prefer-dist
+      - name: Qualify operator, historical preservation and canonical owner grants
+        run: |
+          set -euo pipefail
+          php -l tools/production/cpanel/update-oneqaydev-business-modules.php
+          php -l tools/production/cpanel/install-oneqaydev-business-modules.php
+          php tools/production/tests/oneqaydev-module-operator.php
+          php tools/production/tests/oneqaydev-business-modules.php
+          MODULE_TEST_ENGINE=mysql php tools/production/tests/oneqaydev-business-modules.php
