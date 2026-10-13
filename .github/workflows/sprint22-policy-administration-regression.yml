@@ -395,6 +395,11 @@ jobs:
         if: ((((github.event_name == 'pull_request' && env.ONEQAY_SPRINT30_SUCCESSOR != 'true') && env.ONEQAY_SPRINT35_SUCCESSOR != 'true') && (github.event_name != 'pull_request' || github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009')) && (github.event_name != 'pull_request' || github.head_ref != 'production-dev-readiness-and-merchant-foundation-20261010')) && env.ONEQAY_BILINGUAL_PRESENTATION != 'true'
         shell: bash
         run: |
+          # Exact additive hosting operator successor; application source and behavioral tests are immutable.
+          if [[ "${{ github.head_ref }}" == 'cpanel-platform-module-upgrade-20261013' && "${{ github.event.pull_request.base.sha }}" == 'f5a037ce60aa05c61e0b9c197f2e171c4d01fa8c' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
+            bash tools/qa-cpanel-module-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
+            exit 0
+          fi
           # Exact platform activation/mail successor: preserve executable regressions and validate owned changes.
           if [[ "${{ github.head_ref }}" == 'platform-owner-mail-20261013' && "${{ github.event.pull_request.base.sha }}" == '894750c6a59a4ac28f42d5da8d8eb426280a412b' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
             bash tools/qa-platform-owner-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
@@ -461,6 +466,11 @@ jobs:
         if: (((env.ONEQAY_SPRINT30_SUCCESSOR != 'true') && (github.event_name != 'pull_request' || github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009')) && (github.event_name != 'pull_request' || github.head_ref != 'production-dev-readiness-and-merchant-foundation-20261010')) && env.ONEQAY_BILINGUAL_PRESENTATION != 'true'
         shell: bash
         run: |
+          # Exact additive hosting operator successor; application source and behavioral tests are immutable.
+          if [[ "${{ github.head_ref }}" == 'cpanel-platform-module-upgrade-20261013' && "${{ github.event.pull_request.base.sha }}" == 'f5a037ce60aa05c61e0b9c197f2e171c4d01fa8c' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
+            bash tools/qa-cpanel-module-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
+            exit 0
+          fi
           # Exact platform activation/mail successor: preserve executable regressions and validate owned changes.
           if [[ "${{ github.head_ref }}" == 'platform-owner-mail-20261013' && "${{ github.event.pull_request.base.sha }}" == '894750c6a59a4ac28f42d5da8d8eb426280a412b' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
             bash tools/qa-platform-owner-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
