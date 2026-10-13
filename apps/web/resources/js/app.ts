@@ -1,4 +1,5 @@
 import '../css/app.css'
+import './platform-invitation'
 
 import { createInertiaApp } from '@inertiajs/vue3'
 import { createApp, h, type DefineComponent } from 'vue'

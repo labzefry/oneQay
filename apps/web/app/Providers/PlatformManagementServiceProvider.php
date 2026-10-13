@@ -32,7 +32,7 @@ final class PlatformManagementServiceProvider extends ServiceProvider
     public function boot():void
     {
         $this->loadMigrationsFrom(base_path('database/module-migrations/platform'));
-        $this->commands([PlatformMailWorkCommand::class]);
+        $this->commands([PlatformMailWorkCommand::class,\App\Console\Commands\PlatformMailBounceCommand::class]);
         if(!config('platform.enabled',false)||!config('database.oneqay_persistence_enabled')||!config('oneqay.session_control.enabled')||!ProductionBusinessRuntimeGate::allows((string)config('oneqay.runtime_class')))return;
         Route::middleware(['web','session.active',RequirePosSessionContextMiddleware::class,RequirePlatformSecurityMiddleware::class,'throttle:30,1'])->group(function():void {
             Route::get('/platform',[PlatformController::class,'show'])->name('platform.control');

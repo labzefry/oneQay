@@ -137,3 +137,13 @@ $assert(in_array('web',$middleware,true)&&in_array('session.active',$middleware,
 $assert(in_array(App\Delivery\Http\Middleware\RequirePolicyAdministrationSessionContextMiddleware::class,$middleware,true),'canonical step-up middleware retained');
 $assert(in_array(App\Delivery\Http\Middleware\RequirePlatformSecurityMiddleware::class,$middleware,true),'platform ownership boundary retained');
 echo 'PLATFORM_CONTROL_MAIL_EXTENDED_'.$engine.'_PASS assertions='.$n.PHP_EOL;
+// A definitive mailbox-full bounce can retry, while provider delay must not duplicate mail.
+$clock=time()+3600;
+$soft=$mail->enqueue('mail-fixture','soft-bounce','soft@example.test','Synthetic mailbox full','Test',$clock);
+// Drain any pre-existing queued synthetic messages before the chosen message.
+$softJob=null;for($i=0;$i<10;$i++){ $candidate=$mail->claim($clock);if($candidate===null)break;$mail->finish($candidate,'accepted','SMTP_ACCEPTED',$clock);if($candidate['id']===$soft){$softJob=$candidate;break;} }
+$assert($softJob!==null,'soft-bounce fixture accepted');
+$mail->feedback(['event_id'=>'soft-failed','message_id'=>$soft,'recipient'=>'soft@example.test','type'=>'soft_bounce'],$clock+1);
+$assert($db->table('oneqay_mail_messages')->where('id',$soft)->value('status')==='retry','definitive soft bounce schedules retry');
+$assert(!$db->table('oneqay_mail_suppressions')->where('recipient_hash',hash('sha256','soft@example.test'))->exists(),'mailbox full is not permanent recipient suppression');
+echo 'PLATFORM_MAIL_SOFT_BOUNCE_'.$engine.'_PASS assertions='.$n.PHP_EOL;

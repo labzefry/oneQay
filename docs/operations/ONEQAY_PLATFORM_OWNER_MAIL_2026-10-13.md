@@ -80,3 +80,19 @@ Initial PR #952 head `643fcb68b629a678a66064fe141fa67b8d426ffa`, run `3832917703
 The registered business owner uses `/business-login` with their email/password. If an email owns multiple businesses, the login form accepts the exact business ID as a discriminator. Canonical TOTP enrollment/challenge endpoints manage the factor; session/CSRF rotation reloads the sign-in page. The platform owner link appears in the existing workspace only for the privately bound owner, and backend authorization remains mandatory.
 
 Historical source-shape guards assumed migrations #1–#8 or old PR path sets. The exact-base platform compatibility helper verifies that historical migrations, existing behavioral regression steps, dependencies, source certification, runtime gates and operational state are unchanged. It permits only the explicitly listed module paths, three bounded provisioning-scope extensions and additive owner navigation. Existing executable tests remain enabled; no compatibility flag mislabels this work as presentation-only.
+
+## Native cPanel bounce-mail path
+
+The optional `oneqay:mail:bounce` command reads one RFC3464 DSN from standard input. It never sends mail, prints message bodies or deletes inbox contents. Valid reports carry an exact per-message return address with a 96-bit HMAC capability, and the stored message's recipient must match. Arbitrary From headers are not trusted. Reports larger than 256 KiB, duplicate/ambiguous critical fields, unsupported encodings/actions and invalid tokens are rejected without creating a bounce loop. Storage failure exits with EX_TEMPFAIL 75 so the MTA can retry.
+
+Set `ONEQAY_MAIL_BOUNCE_ADDRESS=bounce@<same sender domain>` privately, with the same feedback secret. The mailbox local part must be 1–6 lowercase alphanumeric characters. Outgoing mail then uses a valid plus-addressed return path (at most 64 local-part bytes). **Before enabling this setting**, create the bounce mailbox and use cPanel Email Filters / Global Email Filters to pipe matching bounce-address reports to the deployed command, using the hosting PHP binary and verified active-release path. Test with an actual provider-generated DSN; providers that rewrite the envelope sender require their authenticated feedback adapter instead. No filter or mailbox has been installed automatically.
+
+Illustrative pipe target (replace active-release only after deployment):
+
+```text
+/usr/local/bin/php /home/pekd7254/oneqay-production-test/releases/<active-release>/apps/web/artisan oneqay:mail:bounce
+```
+
+A hard invalid-recipient DSN suppresses the address. Definitive failed mailbox-full 5.2.2 / temporary 4.x DSNs schedule a bounded retry. `delayed` remains provider-owned and does not duplicate its delivery attempt. Other permanent failures remain failed without misclassifying the recipient as invalid. Complaint feedback uses the signed provider endpoint.
+
+Primary implementation references: RFC3464 (https://www.rfc-editor.org/rfc/rfc3464), cPanel email filters (https://docs.cpanel.net/knowledge-base/email/how-to-configure-email-filters/), cPanel plus addressing (https://docs.cpanel.net/cpanel/email/manage-email-accounts/), Gmail sender guidelines (https://support.google.com/mail/answer/81126). DNS/authentication and provider reputation affect delivery; no inbox guarantee is offered.

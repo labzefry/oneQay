@@ -34,6 +34,7 @@ jobs:
       - name: Real SQL activation, canonical credential verification, queue and feedback
         run: |
           set -euo pipefail
+          php apps/web/tests/platform-dsn.php
           php apps/web/tests/platform-control-mail.php
           PLATFORM_TEST_ENGINE=mysql php apps/web/tests/platform-control-mail.php
           php apps/web/tests/merchant-context-atomic-bootstrap.php

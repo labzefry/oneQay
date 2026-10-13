@@ -25,8 +25,17 @@ final readonly class SmtpMailTransport implements MailTransport
         $email->getHeaders()->addIdHeader('Message-ID','oneqay-'.$message['id'].'@'.$domain);
         $email->getHeaders()->addTextHeader('X-OneQay-Message-ID',$message['id']);
         try {
-            $transport->send($email);
+            $bounce=(string)config('platform.bounce_address','');
+            $envelope=null;
+            if($bounce!==''){
+                if(substr($bounce,strrpos($bounce,'@')+1)!==$domain)return ['permanent','BOUNCE_SENDER_DOMAIN_MISMATCH'];
+                $address=(new \App\Application\Notification\DsnFeedback($bounce,(string)config('platform.feedback_secret','')))->returnAddress($message['id']);
+                $envelope=new \Symfony\Component\Mailer\Envelope(new Address($address),[new Address($message['recipient'])]);
+            }
+            $transport->send($email,$envelope);
             return ['accepted','SMTP_ACCEPTED'];
+        } catch (\App\Application\Platform\PlatformViolation) {
+            return ['permanent','INVALID_BOUNCE_CONFIGURATION'];
         } catch (TransportExceptionInterface $e) {
             // An explicit SMTP negative reply is safe to classify. Connection loss
             // after DATA is ambiguous and must never trigger blind duplicate delivery.
@@ -45,8 +54,14 @@ final readonly class SmtpMailTransport implements MailTransport
         if($c['host']==='' || $c['from']==='')return ['configured'=>false,'checked_at'=>time()];
         $domain=substr($c['from'],strrpos($c['from'],'@')+1);
         $txt=static function(string $name):array {
-            $records=@dns_get_record($name,DNS_TXT);
-            return $records===false?[]:array_column($records,'txt');
+            for($depth=0;$depth<5;++$depth){
+                $records=@dns_get_record($name,DNS_TXT | DNS_CNAME);
+                if($records===false)return [];
+                $values=array_column($records,'txt');if($values!==[])return $values;
+                $aliases=array_column($records,'target');if(count($aliases)!==1)return [];
+                $name=$aliases[0];
+            }
+            return [];
         };
         $spf=array_values(array_filter($txt($domain),fn($r)=>str_starts_with($r,'v=spf1 ')));
         $dkim=$txt($c['dkim_selector'].'._domainkey.'.$domain);

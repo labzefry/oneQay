@@ -2,9 +2,9 @@
 // Author by Lab | zefry
 import { ref } from 'vue';
 import { locale } from '../../i18n';
+import { consumeInvitationToken } from '../../platform-invitation';
 const tr = (id: string, en: string) => locale.value === 'id' ? id : en;
-const token = ref(new URLSearchParams(window.location.hash.slice(1)).get('token') ?? '');
-window.history.replaceState(null, '', '/activate-business');
+const token = ref(consumeInvitationToken());
 const password = ref(''); const confirm = ref(''); const busy = ref(false); const message = ref('');
 const context = ref<Record<string, string> | null>(null);
 async function activate() {

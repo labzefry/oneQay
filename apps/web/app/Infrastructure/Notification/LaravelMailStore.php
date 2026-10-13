@@ -86,7 +86,7 @@ final readonly class LaravelMailStore implements MailStore
         $id=BusinessActivation::text($event['message_id']??null,32);
         $eventId=BusinessActivation::text($event['event_id']??null,128);
         $type=$event['type']??null;
-        if(!in_array($type,['delivered','hard_bounce','complaint','deferred'],true))throw new PlatformViolation('INVALID_FEEDBACK');
+        if(!in_array($type,['delivered','hard_bounce','complaint','deferred','soft_bounce','failed'],true))throw new PlatformViolation('INVALID_FEEDBACK');
         $recipient=BusinessActivation::email($event['recipient']??null);
         $this->db->transaction(function () use ($id,$eventId,$type,$recipient,$now): void {
             $this->settings(true);
@@ -102,8 +102,8 @@ final readonly class LaravelMailStore implements MailStore
             if(in_array($type,['hard_bounce','complaint'],true))$this->suppress($row->recipient_hash,$type,$now);
             // Late/out-of-order events can never erase a complaint or hard bounce.
             if(in_array($row->status,['complaint','hard_bounce','suppressed'],true))return;
-            if($row->status==='delivered' && $type==='deferred')return;
-            $this->db->table('oneqay_mail_messages')->where('id',$id)->update(['status'=>$type,'lease'=>null,'lease_until'=>null,'updated_at'=>$now,'safe_code'=>'AUTHENTICATED_FEEDBACK']);
+            if($row->status==='delivered' && in_array($type,['deferred','soft_bounce','failed'],true))return;
+            $this->db->table('oneqay_mail_messages')->where('id',$id)->update(['status'=>$type==='soft_bounce'?((int)$row->attempts<5?'retry':'failed'):$type,'next_attempt_at'=>$now+min(21600,300*(2 ** max(0,(int)$row->attempts-1)))+random_int(0,30),'lease'=>null,'lease_until'=>null,'updated_at'=>$now,'safe_code'=>'AUTHENTICATED_FEEDBACK']);
             // deferred means the receiving provider owns retry; do not send a duplicate from our queue.
         });
     }

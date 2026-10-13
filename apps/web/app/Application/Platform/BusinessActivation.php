@@ -72,12 +72,12 @@ final readonly class BusinessActivation
         if (!preg_match('/\A[a-f0-9]{64}\z/', $token) || strlen($password) < 12 || strlen($password) > 72) throw new PlatformViolation('INVALID_ACTIVATION');
         return $this->store->transaction(function () use ($token, $password): array {
             $business = $this->store->byToken(hash('sha256', $token));
-            if ($business['status'] === 'active' && (int)$business['token_expires_at'] > time() && $this->accounts->verifyPassword($business, $password)) return array_intersect_key($business, array_flip(['tenant_id','identity_id','organization_id','outlet_id','device_id']));
+            if ($business['status'] === 'active' && (int)$business['token_expires_at'] > time() && $this->accounts->verifyPassword($business, $password)) return ['business_id'=>$business['id']]+array_intersect_key($business, array_flip(['tenant_id','identity_id','organization_id','outlet_id','device_id']));
             if ($business['status'] !== 'invited' || (int)$business['token_expires_at'] <= time()) throw new PlatformViolation('INVALID_ACTIVATION');
             $this->accounts->provision($business, $password);
             $this->store->update($business['id'], (int)$business['version'], ['status' => 'active', 'token_expires_at' => time() + 300, 'updated_at' => time()]);
             $this->store->audit('invitation-recipient', 'activated', $business['id'], 'Recipient set initial password', time());
-            return array_intersect_key($business, array_flip(['tenant_id','identity_id','organization_id','outlet_id','device_id']));
+            return ['business_id'=>$business['id']]+array_intersect_key($business, array_flip(['tenant_id','identity_id','organization_id','outlet_id','device_id']));
         });
     }
     public static function text(mixed $value, int $max): string
