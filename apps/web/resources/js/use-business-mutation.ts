@@ -6,7 +6,7 @@ export function useBusinessMutation() {
     let pending: {url:string;body:{operation_id:string;data:unknown}}|null=null;
     function clear():void {if(busy.value||uncertain.value)return;pending=null;error.value='';}
     async function submit(url:string,data:unknown):Promise<any|null> {
-        if(busy.value)return null;if(!pending)pending={url,body:{operation_id:`business:${crypto.randomUUID()}`,data:structuredClone(data)}};
+        if(busy.value)return null;if(!pending)pending={url,body:{operation_id:`business:${crypto.randomUUID()}`,data:JSON.parse(JSON.stringify(data))}};
         busy.value=true;error.value='';const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),30000);
         try {
             const token=document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content;if(!token)throw new Error();
