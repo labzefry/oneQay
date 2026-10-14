@@ -114,6 +114,6 @@ $assert(!$policy->allows($target,PermissionIdentifier::fromString('business.fina
 $roles->apply(array_merge($request,['operation_id'=>'business-role-manager','role'=>'oneqay-business-manager']));
 $store->scope=$target;
 $modules=array_column($access->modules(),'key');
-$assert(count($modules)===6&&!in_array('business_access',$modules,true),'Manager sees all six operational modules, no administrator page');
+$assert(count($modules)===8&&!in_array('business_access',$modules,true)&&!in_array('business_settings',$modules,true)&&in_array('business_products',$modules,true)&&in_array('business_reports',$modules,true),'Manager sees eight delivered operational modules, no administrator or settings page');
 $assert($policy->allows($target,PermissionIdentifier::fromString('pos.inventory.replenish')),'Manager can receive into existing POS inventory');
 echo 'Business role administration: '.$n." assertions passed on SQLite.\n";

@@ -1,3 +1,13 @@
+## 2026-10-14 — Catalog, reporting downloads and persistent currency successor
+
+Author by Lab | zefry. Target: oneqaydev.n07.my.id; predecessor application f5a037ce60aa05c61e0b9c197f2e171c4d01fa8c, host update-result SHA256 73f0176fb4e07713ffe6aa619e03964ef5d351db44961ede2286bab9cc9a7cf3.
+
+- Delivered source: reference-driven blue header and white grouped sidebar; product catalog/search/category/brand/variant/SKU/barcode/price fields; guarded CSV/XLSX import preview (500 rows) and all-or-nothing canonical catalog/opening-stock commit; PDF and real XLSX downloads across filtered pages (10,000-row bound); persistent organization currency/symbol/name settings; exact integer decimal formatting across POS and business views; dated sales trend from scoped correction-aware POS facts.
+- Currency defaults apply to new records. Existing financial/product currency is preserved; no FX conversion or mass relabelling. Wholesale/cost fields are stored catalog metadata, not an automatic checkout discount engine.
+- Only one new additive business-module migration creates preferences and product profiles. Historical migrations, merchant identities, credentials, existing stock and records must remain unchanged.
+- Local verification: 50 merchandising/SQL/file checks, 73 existing integrated-business checks, and 20 canonical role-administration checks passed on SQLite. Native MySQL and compiled-browser qualification are pending; no hosting deployment of this successor is claimed yet.
+- Olsera is a visual/navigation reference. External marketplace/GoFood services, payroll/tax automation, loyalty redemption, coupon pricing, and commission settlement are not delivered merely by adding a menu. Existing owner SMTP/worker setup and authenticated host acceptance remain pending.
+
 > **CURRENT 2026-10-12 ONEQAY BUSINESS OS CHECKPOINT:** Main `d15f2fc3f9aa9320670657d03b044e132bf812a2` (PR #949), source-certified release `production-d15f2fc3f9aa` (Actions run `38236323278`, SUCCESS). Last owner-reported live oneQayDev release `production-e93b7fef42cb` is `BUSINESS_WORKSPACE_UPDATED_ACCEPTANCE_PENDING`; Business OS d15f host deployment and real CASH/Final Shift Close acceptance have NOT been proven. See [E0–E5 capability inventory](docs/operations/ONEQAY_ENTERPRISE_CAPABILITY_MATRIX_2026-10-12.md) and [host read-only preflight](docs/operations/ONEQAYDEV_BUSINESS_OS_HOST_PREFLIGHT_2026-10-12.md). Older claims below are historical, not current.
 
 ## 2026-10-14 — Host receipt baseline and prepared-candidate recovery

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import NumericInput from "../../components/NumericInput.vue";
 import { t } from "../../i18n";
 import { Head } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
@@ -154,7 +155,7 @@ const replenish = async (): Promise<void> => {
                 <p class="helper">{{ t("Only active catalog items with an established opening baseline are eligible. The server locks current stock, records before/received/after evidence, and rejects unsafe overflow or replay mismatch.") }}</p>
                 <label>{{ t("Selected product") }}<input :value="selectedItem ? `${selectedItem.display_name} · ${selectedItem.product_id}` : ''" readonly :placeholder="t('Pilih produk dari authoritative snapshot')" /></label>
                 <label>{{ t("Current authoritative stock") }}<input :value="selectedItem ? formatQuantity(selectedItem.available_quantity) : ''" readonly placeholder="—" /></label>
-                <label>{{ t("Received quantity") }}<input v-model="quantity" inputmode="numeric" placeholder="100" :disabled="submitting || refreshRequired || !selectedItem" /></label>
+                <label>{{ t("Received quantity") }}<NumericInput :decimals="0" v-model="quantity" inputmode="numeric" placeholder="100" :disabled="submitting || refreshRequired || !selectedItem" /></label>
                 <button class="primary" type="button" :disabled="submitting || refreshRequired || !selectedItem" @click="replenish">{{ t("Record replenishment") }}</button>
             </article>
 

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import NumericInput from "../../components/NumericInput.vue";
+import { currencyPreferences, formatMoney as displayMoney } from "../../business-money";
 import { t } from "../../i18n";
 import { Head } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
@@ -35,8 +37,8 @@ const message = ref('');
 const productId = ref('');
 const displayName = ref('');
 const unitPriceMajor = ref('');
-const currency = ref('IDR');
-const scale = ref(0);
+const currency = ref(currencyPreferences.value.currency);
+const scale = ref(currencyPreferences.value.scale);
 const sellable = ref(true);
 const openingQuantity = ref('');
 const baselineProductId = ref('');
@@ -56,16 +58,7 @@ const filteredItems = computed(() => {
     });
 });
 
-const formatAtomic = (atomic: string, code: string, moneyScale: number): string => {
-    const value = BigInt(atomic);
-    const base = 10n ** BigInt(moneyScale);
-    const whole = value / base;
-    const fraction = value % base;
-    const wholeText = new Intl.NumberFormat('id-ID').format(whole);
-    return moneyScale === 0
-        ? `${code} ${wholeText}`
-        : `${code} ${wholeText},${fraction.toString().padStart(moneyScale, '0')}`;
-};
+const formatAtomic = (atomic: string, code: string, moneyScale: number) => displayMoney(atomic, code, moneyScale);
 
 const majorFromAtomic = (atomic: string, moneyScale: number): string => {
     const value = BigInt(atomic);
@@ -252,7 +245,7 @@ const establishBaseline = async (): Promise<void> => {
                 <div class="form-grid">
                     <label>{{ t("Product ID") }}<input v-model="productId" maxlength="64" :placeholder="t('kopi-susu')" :disabled="submitting || refreshRequired" /></label>
                     <label>{{ t("Nama produk") }}<input v-model="displayName" maxlength="160" :placeholder="t('Kopi Susu')" :disabled="submitting || refreshRequired" /></label>
-                    <label>{{ t("Harga major unit") }}<input v-model="unitPriceMajor" inputmode="decimal" placeholder="15000" :disabled="submitting || refreshRequired" /></label>
+                    <label>{{ t("Harga major unit") }}<NumericInput :decimals="scale" v-model="unitPriceMajor" inputmode="decimal" placeholder="15000" :disabled="submitting || refreshRequired" /></label>
                     <label>{{ t("Currency") }}<input v-model="currency" maxlength="3" :placeholder="t('IDR')" :disabled="submitting || refreshRequired" /></label>
                     <label>{{ t("Scale") }}<input v-model.number="scale" type="number" min="0" max="6" :disabled="submitting || refreshRequired" /></label>
                     <label class="check"><input v-model="sellable" type="checkbox" :disabled="submitting || refreshRequired" /> {{ t("Sellable") }}</label>
@@ -264,7 +257,7 @@ const establishBaseline = async (): Promise<void> => {
                 <div class="panel-heading"><div><p class="eyebrow">{{ t("Step 2") }}</p><h2>{{ t("Opening inventory") }}</h2></div><span class="badge">{{ t("One-time baseline") }}</span></div>
                 <p class="helper">{{ t("Hanya tersedia jika stok = 0, baseline belum pernah dicatat, dan produk belum memiliki sale history pada outlet ini.") }}</p>
                 <label>{{ t("Selected product") }}<input v-model="baselineProductId" readonly :placeholder="t('Pilih dari tabel')" /></label>
-                <label>{{ t("Opening quantity") }}<input v-model="openingQuantity" inputmode="numeric" placeholder="100" :disabled="submitting || refreshRequired" /></label>
+                <label>{{ t("Opening quantity") }}<NumericInput :decimals="0" v-model="openingQuantity" inputmode="numeric" placeholder="100" :disabled="submitting || refreshRequired" /></label>
                 <button class="primary" type="button" :disabled="submitting || refreshRequired" @click="establishBaseline">{{ t("Establish opening stock") }}</button>
             </article>
         </section>

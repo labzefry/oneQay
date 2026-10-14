@@ -1,10 +1,12 @@
 <!-- Sprint204 durable staging readiness attestation compatibility anchor — Lab | zefry -->
 <!-- Sprint203 bounded staging bridge compatibility anchor — Lab | zefry -->
 <script setup lang="ts">
+import { formatMoney as displayMoney } from "../../business-money";
 import { t } from "../../i18n";
 import { Head } from '@inertiajs/vue3';
 import { computed, onMounted, ref } from 'vue';
 import WorkspaceIcon from '../../components/WorkspaceIcon.vue';
+import SalesTrend from '../../components/SalesTrend.vue';
 
 
 type SaleFact = {
@@ -335,12 +337,7 @@ const businessSignals = computed(() => {
     if (signals.length === 0) signals.push('Your live operational context is available. Explore the authorized business workspaces.');
     return signals;
 });
-function commandMoney(atomic: number, currency: string, scale: number): string {
-    if (!Number.isSafeInteger(atomic) || !Number.isInteger(scale) || scale < 0 || scale > 3 || !/^[A-Z]{3}$/.test(currency)) return '—';
-    try {
-        return new Intl.NumberFormat('id-ID', { style: 'currency', currency, minimumFractionDigits: scale, maximumFractionDigits: scale }).format(atomic / 10 ** scale);
-    } catch { return '—'; }
-}
+function commandMoney(atomic: number, currency: string, scale: number): string { return displayMoney(atomic, currency, scale); }
 function commandDate(unix: number): string {
     return Number.isSafeInteger(unix) ? new Intl.DateTimeFormat('id-ID', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(unix * 1000)) : '—';
 }
@@ -367,7 +364,7 @@ const workspaceDescriptions: Record<string, string> = {
 <template>
     <Head :title="t('Overview')" />
     <main class="operations-shell">
-        <header class="overview-header"><div><p class="eyebrow">{{ t("YOUR BUSINESS, AT A GLANCE") }}</p><h1>{{ t("Workspace overview") }}</h1><p class="subtitle">{{ t("Everything you need to prepare, sell, and keep your business moving.") }}</p></div><div class="overview-actions"><button class="security-trigger" type="button" @click="securityOpen = !securityOpen"><WorkspaceIcon name="shield-check" :size="17" />{{ t(securityOpen ? 'Close security' : 'Account & security') }}</button><button v-if="props.security.can_logout" class="logout-trigger" type="button" :disabled="busy" @click="logout"><WorkspaceIcon name="log-out" :size="17" />{{ t("Sign out") }}</button></div></header>
+        <header class="overview-header"><div><p class="eyebrow">{{ t("YOUR BUSINESS, AT A GLANCE") }}</p><h1>{{ t("Business overview") }}</h1><p class="subtitle">{{ t("Everything you need to prepare, sell, and keep your business moving.") }}</p></div><div class="overview-actions"><button class="security-trigger" type="button" @click="securityOpen = !securityOpen"><WorkspaceIcon name="shield-check" :size="17" />{{ t(securityOpen ? 'Close security' : 'Account & security') }}</button><button v-if="props.security.can_logout" class="logout-trigger" type="button" :disabled="busy" @click="logout"><WorkspaceIcon name="log-out" :size="17" />{{ t("Sign out") }}</button></div></header>
         <section class="metric-grid" :aria-label="t('Merchant operations summary')">
             <article class="metric-card"><div class="metric-top"><span>{{ t("Catalog items") }}</span><span class="metric-icon"><WorkspaceIcon name="package" /></span></div><strong>{{ t(readinessValue(props.readiness.catalog_item_count, '', '')) }}</strong><small>{{ t("Products in your catalog") }}</small></article>
             <article class="metric-card"><div class="metric-top"><span>{{ t("Sellable items") }}</span><span class="metric-icon blue"><WorkspaceIcon name="boxes" /></span></div><strong>{{ t(readinessValue(props.readiness.sellable_item_count, '', '')) }}</strong><small>{{ t("Available for your next sale") }}</small></article>
@@ -437,19 +434,7 @@ const workspaceDescriptions: Record<string, string> = {
                 <p v-else class="os-empty">{{ t("There are no authorized recent sales to display.") }}</p>
             </section>
         </section>
-        <section class="os-suite" :aria-label="t('Business OS capability directory')">
-            <div class="os-section-heading"><div><p class="eyebrow">{{ t("CONNECTED BUSINESS PLATFORM") }}</p><h2>{{ t("Business Management Suite") }}</h2><p>{{ t("Available modules open existing authorized workspaces. Unavailable modules are not presented as finished functionality.") }}</p></div></div>
-            <div v-for="section in businessGroups" :key="section.group" class="os-suite-group">
-                <h3>{{ t(section.group) }}</h3>
-                <div class="os-module-grid">
-                    <component :is="module.url ? 'a' : 'div'" v-for="module in section.items" :key="module.key" :href="module.url || undefined" class="os-module" :class="{ 'os-module-disabled': !module.url }">
-                        <span class="os-module-symbol"><WorkspaceIcon :name="({ commerce: 'shopping-cart', inventory: 'boxes', cash_control: 'wallet', reports: 'chart-column', procurement: 'truck', crm: 'users', accounting: 'landmark', people: 'users-round', ai: 'sparkles', ecosystem: 'blocks' } as Record<string,string>)[module.key] || 'layout-grid'" :size="21" /></span>
-                        <span class="os-module-info"><strong>{{ t(module.title) }}</strong><small>{{ t(module.description) }}</small></span>
-                        <span class="os-module-state" :data-enabled="module.status === 'available'">{{ t(module.status === 'available' ? 'Available' : 'Not yet delivered') }}</span>
-                    </component>
-                </div>
-            </div>
-        </section>
+        <SalesTrend v-if="props.intelligence.status==='available'"/>
         <section class="overview-guide" :aria-label="t('Operating readiness')" :data-state="props.readiness.state">
             <div class="guide-emblem"><WorkspaceIcon :name="props.readiness.state === 'cashier_ready' ? 'circle-check' : 'sparkles'" :size="32" /></div><div class="guide-copy"><p class="eyebrow">{{ t("YOUR NEXT STEP") }}</p><h2>{{ t(readinessLabel) }}</h2><p>{{ t(readinessMessage) }}</p></div><a v-if="primaryDestination" class="primary-action" :href="primaryDestination.url">{{ t(primaryDestination.title) }}<WorkspaceIcon name="arrow-right" :size="17" /></a><span v-else class="guide-state">{{ t("Review your workspaces") }}</span>
         </section>

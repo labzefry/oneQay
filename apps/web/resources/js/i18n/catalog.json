@@ -400,7 +400,7 @@
     "en": "Cash refund permission"
   },
   "Cash refunded": {
-    "id": "Tunai dikembalikan",
+    "id": "Pengembalian tunai",
     "en": "Cash refunded"
   },
   "Cash refunds": {
@@ -1600,7 +1600,7 @@
     "en": "Opening inventory was recorded successfully. Refresh the authoritative state before the next mutation."
   },
   "Opening quantity": {
-    "id": "Jumlah awal",
+    "id": "Jumlah stok awal",
     "en": "Opening quantity"
   },
   "Opening quantity harus bilangan bulat non-negatif.": {
@@ -4404,8 +4404,8 @@
     "id": "Ajukan izin"
   },
   "Retry same request": {
-    "en": "Retry same request",
-    "id": "Ulangi permintaan yang sama"
+    "id": "Ulangi permintaan yang sama",
+    "en": "Retry same request"
   },
   "Reversal date": {
     "en": "Reversal date",
@@ -4460,8 +4460,8 @@
     "id": "Menyimpan…"
   },
   "Search records": {
-    "en": "Search records",
-    "id": "Cari data"
+    "id": "Cari data",
+    "en": "Search records"
   },
   "Security verification": {
     "en": "Security verification",
@@ -4654,5 +4654,401 @@
   "Business activation and mail health": {
     "id": "Aktivasi bisnis dan kesehatan email",
     "en": "Business activation and mail health"
+  },
+  "Products & inventory": {
+    "id": "Produk & inventori",
+    "en": "Products & inventory"
+  },
+  "Product catalog": {
+    "id": "Katalog produk",
+    "en": "Product catalog"
+  },
+  "Manage sale products, prices, categories, and opening stock.": {
+    "id": "Kelola produk jual, harga, kategori, dan stok awal.",
+    "en": "Manage sale products, prices, categories, and opening stock."
+  },
+  "Import products": {
+    "id": "Impor produk",
+    "en": "Import products"
+  },
+  "Add product": {
+    "id": "Tambah produk",
+    "en": "Add product"
+  },
+  "Categories": {
+    "id": "Kategori",
+    "en": "Categories"
+  },
+  "Brands": {
+    "id": "Merek",
+    "en": "Brands"
+  },
+  "Search product name, SKU or barcode": {
+    "id": "Cari nama produk, SKU, atau barcode",
+    "en": "Search product name, SKU or barcode"
+  },
+  "All categories": {
+    "id": "Semua kategori",
+    "en": "All categories"
+  },
+  "All brands": {
+    "id": "Semua merek",
+    "en": "All brands"
+  },
+  "All statuses": {
+    "id": "Semua status",
+    "en": "All statuses"
+  },
+  "Prices follow each product currency.": {
+    "id": "Harga mengikuti mata uang setiap produk.",
+    "en": "Prices follow each product currency."
+  },
+  "Download Excel": {
+    "id": "Unduh Excel",
+    "en": "Download Excel"
+  },
+  "Download PDF": {
+    "id": "Unduh PDF",
+    "en": "Download PDF"
+  },
+  "Barcode": {
+    "id": "Barcode",
+    "en": "Barcode"
+  },
+  "Brand / variant": {
+    "id": "Merek / varian",
+    "en": "Brand / variant"
+  },
+  "Cost price": {
+    "id": "Harga beli",
+    "en": "Cost price"
+  },
+  "Selling price": {
+    "id": "Harga jual",
+    "en": "Selling price"
+  },
+  "Wholesale price": {
+    "id": "Harga grosir",
+    "en": "Wholesale price"
+  },
+  "No products found": {
+    "id": "Tidak ada produk ditemukan",
+    "en": "No products found"
+  },
+  "Add a product or import your product list.": {
+    "id": "Tambah produk atau impor daftar produk Anda.",
+    "en": "Add a product or import your product list."
+  },
+  "View products": {
+    "id": "Lihat produk",
+    "en": "View products"
+  },
+  "Enter a category or brand when adding products.": {
+    "id": "Isi kategori atau merek saat menambahkan produk.",
+    "en": "Enter a category or brand when adding products."
+  },
+  "rows per page": {
+    "id": "baris per halaman",
+    "en": "rows per page"
+  },
+  "Edit product": {
+    "id": "Edit produk",
+    "en": "Edit product"
+  },
+  "decimal places": {
+    "id": "angka desimal",
+    "en": "decimal places"
+  },
+  "Product name": {
+    "id": "Nama produk",
+    "en": "Product name"
+  },
+  "Category": {
+    "id": "Kategori",
+    "en": "Category"
+  },
+  "Brand": {
+    "id": "Merek",
+    "en": "Brand"
+  },
+  "Variant": {
+    "id": "Varian",
+    "en": "Variant"
+  },
+  "Active and sellable": {
+    "id": "Aktif dan dapat dijual",
+    "en": "Active and sellable"
+  },
+  "Use digits and a decimal point; do not use thousands separators.": {
+    "id": "Gunakan angka dan titik desimal, tanpa pemisah ribuan.",
+    "en": "Use digits and a decimal point; do not use thousands separators."
+  },
+  "Receive additional stock through Inventory. Existing opening stock is preserved.": {
+    "id": "Terima stok tambahan melalui Inventori. Stok awal yang sudah ada tetap dipertahankan.",
+    "en": "Receive additional stock through Inventory. Existing opening stock is preserved."
+  },
+  "Save product": {
+    "id": "Simpan produk",
+    "en": "Save product"
+  },
+  "Product saved.": {
+    "id": "Produk tersimpan.",
+    "en": "Product saved."
+  },
+  "CSV or Excel (.xlsx), maximum 500 products per file.": {
+    "id": "CSV atau Excel (.xlsx), maksimal 500 produk per berkas.",
+    "en": "CSV or Excel (.xlsx), maximum 500 products per file."
+  },
+  "Download Excel template": {
+    "id": "Unduh template Excel",
+    "en": "Download Excel template"
+  },
+  "Fill every numeric field with digits. Use a decimal point for prices.": {
+    "id": "Isi setiap kolom numerik dengan angka. Gunakan titik desimal untuk harga.",
+    "en": "Fill every numeric field with digits. Use a decimal point for prices."
+  },
+  "Preview and correct every error before importing.": {
+    "id": "Periksa pratinjau dan perbaiki semua kesalahan sebelum impor.",
+    "en": "Preview and correct every error before importing."
+  },
+  "New products only. Existing products and opening stock are never overwritten by import.": {
+    "id": "Khusus produk baru. Impor tidak menimpa produk atau stok awal yang sudah ada.",
+    "en": "New products only. Existing products and opening stock are never overwritten by import."
+  },
+  "Choose product file": {
+    "id": "Pilih berkas produk",
+    "en": "Choose product file"
+  },
+  "Maximum file size: 2 MB.": {
+    "id": "Ukuran berkas maksimal: 2 MB.",
+    "en": "Maximum file size: 2 MB."
+  },
+  "rows inspected": {
+    "id": "baris diperiksa",
+    "en": "rows inspected"
+  },
+  "errors": {
+    "id": "kesalahan",
+    "en": "errors"
+  },
+  "Row": {
+    "id": "Baris",
+    "en": "Row"
+  },
+  "Preview shows the first 20 rows. All validated rows will be imported.": {
+    "id": "Pratinjau menampilkan 20 baris pertama. Semua baris valid akan diimpor.",
+    "en": "Preview shows the first 20 rows. All validated rows will be imported."
+  },
+  "Reading file…": {
+    "id": "Membaca berkas…",
+    "en": "Reading file…"
+  },
+  "Preview import": {
+    "id": "Pratinjau impor",
+    "en": "Preview import"
+  },
+  "Importing…": {
+    "id": "Mengimpor…",
+    "en": "Importing…"
+  },
+  "Import all valid products": {
+    "id": "Impor seluruh produk valid",
+    "en": "Import all valid products"
+  },
+  "products imported successfully.": {
+    "id": "produk berhasil diimpor.",
+    "en": "products imported successfully."
+  },
+  "Configuration": {
+    "id": "Konfigurasi",
+    "en": "Configuration"
+  },
+  "Business settings": {
+    "id": "Pengaturan bisnis",
+    "en": "Business settings"
+  },
+  "Permanent preferences for your business, shared across its outlets and devices.": {
+    "id": "Pengaturan bisnis yang tersimpan dan berlaku di seluruh outlet serta perangkat.",
+    "en": "Permanent preferences for your business, shared across its outlets and devices."
+  },
+  "Business & currency": {
+    "id": "Bisnis & mata uang",
+    "en": "Business & currency"
+  },
+  "Business name": {
+    "id": "Nama bisnis",
+    "en": "Business name"
+  },
+  "Default currency": {
+    "id": "Mata uang default",
+    "en": "Default currency"
+  },
+  "Currency symbol": {
+    "id": "Simbol mata uang",
+    "en": "Currency symbol"
+  },
+  "Display example": {
+    "id": "Contoh tampilan",
+    "en": "Display example"
+  },
+  "Settings saved permanently.": {
+    "id": "Pengaturan berhasil disimpan permanen.",
+    "en": "Settings saved permanently."
+  },
+  "Save settings": {
+    "id": "Simpan pengaturan",
+    "en": "Save settings"
+  },
+  "The selected currency is used for new products and new business forms. Existing prices and transactions keep their original currency; no exchange conversion is performed.": {
+    "id": "Mata uang pilihan digunakan untuk produk dan formulir bisnis baru. Harga serta transaksi lama tetap menggunakan mata uang aslinya; tidak dilakukan konversi kurs.",
+    "en": "The selected currency is used for new products and new business forms. Existing prices and transactions keep their original currency; no exchange conversion is performed."
+  },
+  "Reports & insights": {
+    "id": "Laporan & analitik",
+    "en": "Reports & insights"
+  },
+  "Reports": {
+    "id": "Laporan",
+    "en": "Reports"
+  },
+  "Download real PDF and Excel files for your authorized business records.": {
+    "id": "Unduh laporan PDF dan Excel sesuai akses bisnis Anda.",
+    "en": "Download real PDF and Excel files for your authorized business records."
+  },
+  "Sales and trial balance use the selected date range. Other reports export current records matching the search. Exports include all matching pages, up to 10,000 rows; narrow filters for larger reports.": {
+    "id": "Penjualan dan neraca saldo mengikuti rentang tanggal. Laporan lain mengekspor data terkini sesuai pencarian. Ekspor mencakup semua halaman yang cocok, maksimal 10.000 baris; persempit filter untuk laporan yang lebih besar.",
+    "en": "Sales and trial balance use the selected date range. Other reports export current records matching the search. Exports include all matching pages, up to 10,000 rows; narrow filters for larger reports."
+  },
+  "PRODUCT_ALREADY_EXISTS": {
+    "id": "Produk atau SKU sudah ada. Edit produk melalui katalog.",
+    "en": "PRODUCT_ALREADY_EXISTS"
+  },
+  "DUPLICATE_PRODUCT_IN_FILE": {
+    "id": "Produk atau SKU muncul lebih dari sekali di berkas.",
+    "en": "DUPLICATE_PRODUCT_IN_FILE"
+  },
+  "INVALID_PRODUCT_CODE": {
+    "id": "SKU harus berupa huruf, angka, tanda minus, atau garis bawah.",
+    "en": "INVALID_PRODUCT_CODE"
+  },
+  "INVALID_NUMBER": {
+    "id": "Nilai harus berupa angka tanpa pemisah ribuan dan tanpa notasi eksponen.",
+    "en": "INVALID_NUMBER"
+  },
+  "IMPORT_COLUMNS_INVALID": {
+    "id": "Kolom tidak sesuai template impor.",
+    "en": "IMPORT_COLUMNS_INVALID"
+  },
+  "IMPORT_FORMULAS_NOT_ALLOWED": {
+    "id": "Formula Excel tidak diperbolehkan. Gunakan nilai angka.",
+    "en": "IMPORT_FORMULAS_NOT_ALLOWED"
+  },
+  "IMPORT_VALIDATION_FAILED": {
+    "id": "Impor ditolak karena ada baris tidak valid.",
+    "en": "IMPORT_VALIDATION_FAILED"
+  },
+  "IMPORT_PREVIEW_CHANGED": {
+    "id": "Pengaturan atau isi impor berubah. Buat pratinjau ulang.",
+    "en": "IMPORT_PREVIEW_CHANGED"
+  },
+  "IMPORT_ROW_LIMIT": {
+    "id": "Maksimal 500 produk per berkas.",
+    "en": "IMPORT_ROW_LIMIT"
+  },
+  "IMPORT_SINGLE_SHEET_REQUIRED": {
+    "id": "Gunakan satu sheet sesuai template.",
+    "en": "IMPORT_SINGLE_SHEET_REQUIRED"
+  },
+  "IMPORT_UTF8_REQUIRED": {
+    "id": "Simpan CSV dalam format UTF-8.",
+    "en": "IMPORT_UTF8_REQUIRED"
+  },
+  "REPORT_ROW_LIMIT_SELECT_SMALLER_PERIOD": {
+    "id": "Laporan melebihi 10.000 baris. Persempit rentang tanggal.",
+    "en": "REPORT_ROW_LIMIT_SELECT_SMALLER_PERIOD"
+  },
+  "REPORT_ROW_LIMIT_NARROW_FILTER": {
+    "id": "Laporan melebihi 10.000 baris. Persempit pencarian.",
+    "en": "REPORT_ROW_LIMIT_NARROW_FILTER"
+  },
+  "SPREADSHEET_EXTENSION_REQUIRED": {
+    "id": "Ekstensi XML atau zlib PHP perlu diaktifkan di hosting.",
+    "en": "SPREADSHEET_EXTENSION_REQUIRED"
+  },
+  "Sales trend": {
+    "id": "Tren penjualan",
+    "en": "Sales trend"
+  },
+  "Sales before corrections": {
+    "id": "Penjualan sebelum koreksi",
+    "en": "Sales before corrections"
+  },
+  "Select period": {
+    "id": "Pilih periode",
+    "en": "Select period"
+  },
+  "Last 7 days": {
+    "id": "7 hari terakhir",
+    "en": "Last 7 days"
+  },
+  "Last 30 days": {
+    "id": "30 hari terakhir",
+    "en": "Last 30 days"
+  },
+  "No sales in this period.": {
+    "id": "Belum ada penjualan pada periode ini.",
+    "en": "No sales in this period."
+  },
+  "Could not load sales data.": {
+    "id": "Data penjualan belum dapat dimuat.",
+    "en": "Could not load sales data."
+  },
+  "Transactions & purchasing": {
+    "id": "Transaksi & pembelian",
+    "en": "Transactions & purchasing"
+  },
+  "Customers & suppliers": {
+    "id": "Pelanggan & pemasok",
+    "en": "Customers & suppliers"
+  },
+  "People & attendance": {
+    "id": "Karyawan & kehadiran",
+    "en": "People & attendance"
+  },
+  "Business configuration": {
+    "id": "Konfigurasi bisnis",
+    "en": "Business configuration"
+  },
+  "Marketing & customers": {
+    "id": "Marketing & pelanggan",
+    "en": "Marketing & customers"
+  },
+  "Catalog sections": {
+    "id": "Bagian katalog",
+    "en": "Catalog sections"
+  },
+  "products": {
+    "id": "produk",
+    "en": "products"
+  },
+  "Could not read the import file.": {
+    "id": "Berkas impor belum dapat dibaca.",
+    "en": "Could not read the import file."
+  },
+  "OPENING_STOCK_ALREADY_ESTABLISHED": {
+    "id": "Stok awal sudah ditetapkan. Gunakan penerimaan stok.",
+    "en": "OPENING_STOCK_ALREADY_ESTABLISHED"
+  },
+  "NUMBER_OUT_OF_RANGE": {
+    "id": "Angka di luar batas yang diperbolehkan.",
+    "en": "NUMBER_OUT_OF_RANGE"
+  },
+  "Business overview": {
+    "id": "Ringkasan bisnis",
+    "en": "Business overview"
+  },
+  "Stock & purchasing": {
+    "id": "Stok & pembelian",
+    "en": "Stock & purchasing"
   }
 }

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { formatMoney as displayMoney } from "../../business-money";
 import { t } from "../../i18n";
 import axios, { AxiosError } from 'axios'
 import { computed, ref } from 'vue'
@@ -43,11 +44,7 @@ const operation = computed(() => {
   return operationId.value
 })
 
-const money = (atomic: number, currency: string): string => new Intl.NumberFormat('id-ID', {
-  style: 'currency',
-  currency,
-  maximumFractionDigits: 0,
-}).format(atomic)
+const money = (atomic: number, currency: string) => displayMoney(atomic, currency, 0)
 
 const closeShift = async (): Promise<void> => {
   if (processing.value || result.value !== null) return

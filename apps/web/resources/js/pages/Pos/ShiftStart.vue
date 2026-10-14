@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import NumericInput from "../../components/NumericInput.vue";
+import { currencyPreferences, formatMoney as displayMoney } from "../../business-money";
 import { t } from "../../i18n";
 import { Head } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
@@ -52,8 +54,8 @@ const activeShift = ref<ActiveShift | null>(props.active_shift ? {
 } : null);
 const shiftOperationId = ref(`shift-open:${crypto.randomUUID()}`);
 const cashOperationId = ref(`shift-opening-cash:${crypto.randomUUID()}`);
-const currency = ref('IDR');
-const currencyScale = ref(0);
+const currency = ref(currencyPreferences.value.currency);
+const currencyScale = ref(currencyPreferences.value.scale);
 const openingCashInput = ref('0');
 const openingShift = ref(false);
 const recordingCash = ref(false);
@@ -72,14 +74,7 @@ const formatTimestamp = (unix: number): string => new Intl.DateTimeFormat('id-ID
     timeStyle: 'medium',
 }).format(new Date(unix * 1000));
 
-const formatAtomic = (atomic: string, code: string, scale: number): string => {
-    const value = BigInt(atomic);
-    const base = 10n ** BigInt(scale);
-    const whole = value / base;
-    const fraction = value % base;
-    const wholeText = new Intl.NumberFormat('id-ID').format(whole);
-    return scale === 0 ? `${code} ${wholeText}` : `${code} ${wholeText},${fraction.toString().padStart(scale, '0')}`;
-};
+const formatAtomic = (atomic: string, code: string, scale: number) => displayMoney(atomic, code, scale);
 
 const parseOpeningCashAtomic = (): number | null => {
     const scale = currencyScale.value;
@@ -246,7 +241,7 @@ const recordOpeningCash = async (): Promise<void> => {
                     <div class="money-grid">
                         <label>{{ t("Currency") }}<input v-model="currency" maxlength="3" autocomplete="off" @input="currency = currency.toUpperCase()"></label>
                         <label>{{ t("Scale") }}<input v-model.number="currencyScale" type="number" min="0" max="6" step="1"></label>
-                        <label class="amount">{{ t("Kas awal") }}<input v-model="openingCashInput" inputmode="decimal" autocomplete="off" placeholder="0"></label>
+                        <label class="amount">{{ t("Kas awal") }}<NumericInput :decimals="currencyScale" v-model="openingCashInput" inputmode="decimal" autocomplete="off" placeholder="0"/></label>
                     </div>
                     <p class="operation">{{ t("Operation ID") }} <span>{{ cashOperationId }}</span></p>
                     <button type="button" :disabled="recordingCash" @click="recordOpeningCash">{{ t(recordingCash ? 'Mencatat kas awal…' : 'Catat kas awal') }}</button>

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import NumericInput from "../../components/NumericInput.vue";
+import { formatMoney as displayMoney } from "../../business-money";
 import { t } from "../../i18n";
 import { Head } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
@@ -100,15 +102,7 @@ const startNextSale = (): void => {
     search.value = '';
 };
 
-const formatAtomic = (atomic: string | number | bigint, currency: string, scale: number): string => {
-    const value = typeof atomic === 'bigint' ? atomic : BigInt(atomic);
-    const base = 10n ** BigInt(scale);
-    const whole = value / base;
-    const fraction = value % base;
-    const wholeText = new Intl.NumberFormat('id-ID').format(whole);
-    if (scale === 0) return `${currency} ${wholeText}`;
-    return `${currency} ${wholeText},${fraction.toString().padStart(scale, '0')}`;
-};
+const formatAtomic = (atomic: string | number | bigint, currency: string, scale: number) => displayMoney(atomic, currency, scale);
 
 const sameMoney = (item: CatalogItem): boolean => {
     if (!cartMoney.value) return true;
@@ -311,7 +305,7 @@ const checkout = async (): Promise<void> => {
                     </select>
                 </label>
                 <label>{{ t("Nominal pembayaran") }} <div class="tender-row">
-                        <input v-model="tendered" inputmode="decimal" placeholder="0" autocomplete="off">
+                        <NumericInput :decimals="cartMoney?.scale??0" v-model="tendered" inputmode="decimal" placeholder="0" autocomplete="off"/>
                         <button type="button" class="secondary" :disabled="!cartMoney" @click="useExactTotal">{{ t("Pas") }}</button>
                     </div>
                 </label>

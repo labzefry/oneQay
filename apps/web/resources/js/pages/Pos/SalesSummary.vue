@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { formatMoney as displayMoney } from "../../business-money";
 import { t } from "../../i18n";
 import { Head } from '@inertiajs/vue3';
 
@@ -21,15 +22,7 @@ const props = defineProps<{
     correlation_id: string;
 }>();
 
-const money = (atomic: number, currency: string, scale: number): string => {
-    const divisor = 10 ** scale;
-    return new Intl.NumberFormat('id-ID', {
-        style: 'currency',
-        currency,
-        minimumFractionDigits: scale,
-        maximumFractionDigits: scale,
-    }).format(atomic / divisor);
-};
+const money = (atomic: number, currency: string, scale: number) => displayMoney(atomic, currency, scale);
 
 const timestamp = (unix: number): string => new Intl.DateTimeFormat('id-ID', {
     dateStyle: 'medium',

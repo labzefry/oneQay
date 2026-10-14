@@ -47,6 +47,7 @@ final readonly class BusinessWorkspaceController
 
     public function export(Request $request, string $module): mixed
     {
+        if (in_array($request->query('format'), ['pdf','xlsx'], true)) return app(MerchandisingController::class)->download($request, $module);
         return $this->respond($request, function () use ($request, $module): mixed {
             // Export precisely the filtered page, with an explicit bound and formula neutralization.
             $workspace = $this->business->workspace($module, BusinessInput::integer($request->query('page', '1'), 1, 10000), BusinessInput::text($request->query('q', ''), 120, true), $request->query('from'), $request->query('to'));

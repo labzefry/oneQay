@@ -1,0 +1,69 @@
+name: Merchandising Reports Currency
+# Author by Lab | zefry
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  merchandising:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: synthetic-test-only
+          MYSQL_DATABASE: oneqay_merchandising_test
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -psynthetic-test-only"
+          --health-interval=10s --health-timeout=5s --health-retries=10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        with:
+          php-version: '8.3'
+          extensions: pdo_mysql, pdo_sqlite, mbstring, dom
+          tools: composer:v2
+          coverage: none
+      - name: Install exact backend dependencies
+        working-directory: apps/web
+        run: composer install --no-interaction --no-progress --prefer-dist
+      - name: Relational import, atomic stock, isolation, currency and file correctness
+        run: |
+          set -euo pipefail
+          php apps/web/tests/business-role-administration.php
+          php apps/web/tests/integrated-business-management.php
+          MERCH_QA_OUTPUT=dist/merchandising-qa php apps/web/tests/merchandising-reports-currency.php
+          MERCH_TEST_ENGINE=mysql php apps/web/tests/merchandising-reports-currency.php
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: 24.19.0
+      - name: Type check and compile the actual application
+        working-directory: apps/web
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          npm run type-check
+          npm run build
+      - name: Compiled forms, stable retry, downloads and mobile layouts
+        run: |
+          set -euo pipefail
+          npm install --prefix "$RUNNER_TEMP/merch-browser" --ignore-scripts --no-audit --no-fund playwright@1.62.1
+          node "$RUNNER_TEMP/merch-browser/node_modules/playwright/cli.js" install --with-deps --only-shell chromium
+          PLAYWRIGHT_MODULE="$RUNNER_TEMP/merch-browser/node_modules/playwright/index.mjs" node tools/qa-merchandising-ui.mjs
+          PLAYWRIGHT_MODULE="$RUNNER_TEMP/merch-browser/node_modules/playwright/index.mjs" node tools/qa-integrated-business-ui.mjs
+      - name: Publish reviewable interface and actual file samples
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: oneqay-merchandising-qa-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            apps/web/public/build
+            dist/merchandising-qa
+            dist/merchandising-ui-qa
+          if-no-files-found: error
+          retention-days: 7

@@ -4,6 +4,8 @@ import { computed, nextTick, onBeforeUnmount, reactive, ref } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { locale, t } from '../../i18n';
 import WorkspaceIcon from '../../components/WorkspaceIcon.vue';
+import NumericInput from '../../components/NumericInput.vue';
+import { formatMoney, currencyPreferences } from '../../business-money';
 type Row = { id: string; version: number; [key: string]: any };
 type Product = { product_id: string; display_name: string; currency: string; currency_scale: number };
 type Page = { data: Row[]; page: number; has_more: boolean };
@@ -21,10 +23,7 @@ const can = (action: string): boolean => props.actions.includes(action);
 const today = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
 const recordName = (row: Row): string => String(row.name ?? row.reference ?? row.description ?? row.action ?? row.id);
 function money(atomic: unknown, scale = 0, currency = 'IDR'): string {
-    const value = String(atomic ?? '0'); if (!/^\d+$/.test(value)) return '—';
-    const padded = value.padStart(scale + 1, '0'); const major = scale ? padded.slice(0, -scale) : padded;
-    const grouped = major.replace(/\B(?=(\d{3})+(?!\d))/g, locale.value === 'id' ? '.' : ',');
-    return `${currency} ${grouped}${scale ? (locale.value === 'id' ? ',' : '.') + padded.slice(-scale) : ''}`;
+    return formatMoney(atomic, currency, scale);
 }
 function decimal(atomic: unknown, scale = 0): string { const v = String(atomic ?? '0').padStart(scale + 1, '0'); return scale ? `${v.slice(0,-scale)}.${v.slice(-scale)}` : v; }
 function atomic(value: unknown, scale: number): string {
@@ -45,7 +44,7 @@ function cell(row: Row, key: string): string {
     if (key.endsWith('_unix')) return new Intl.DateTimeFormat(locale.value === 'id' ? 'id-ID' : 'en-GB', {dateStyle:'medium',timeStyle:'short',timeZone:'Asia/Jakarta'}).format(new Date(row[key] * 1000));
     return t(String(row[key] ?? '—'));
 }
-const input = (key: string, label: string, type = 'text', required = true): Field => ({ key, label, type, required });
+const input = (key: string, label: string, type = 'text', required = true): Field => ({ key, label, type: key === 'amount' ? 'numeric' : type, required });
 const select = (key: string, label: string, options: {value:string;label:string}[]): Field => ({key,label,type:'select',options,required:true});
 const selectValues = (values: string[]) => values.map(value => ({value,label:value}));
 function open(action: string, row?: Row): void {
@@ -58,7 +57,7 @@ function open(action: string, row?: Row): void {
         if (row) for (const key of Object.keys(form)) form[key] = row[key];
     } else if (action === 'purchase.create') {
         fields.value = [select('supplier_id','Supplier',choices.value.filter(p=>p.kind==='SUPPLIER').map(p=>({value:p.id,label:`${p.code} · ${p.name}`}))),input('reference','Order reference'),input('currency','Currency'),select('scale','Decimal places',selectValues(['0','2','3','4','5','6'])),input('note','Notes','textarea',false)];
-        Object.assign(form,{supplier_id:'',reference:'',currency:'IDR',scale:'0',note:''}); lines.value=[{product_id:'',quantity:'1',unit_cost:'0'}];
+        Object.assign(form,{supplier_id:'',reference:'',currency:currencyPreferences.value.currency,scale:String(currencyPreferences.value.scale),note:''}); lines.value=[{product_id:'',quantity:'1',unit_cost:'0'}];
     } else if (action === 'purchase.receive' && row) {
         fields.value = [input('reference','Delivery reference'),input('received_date','Received date','date')];
         Object.assign(form,{reference:'',received_date:today()}); lines.value=row.lines.filter((l:any)=>l.quantity>l.received).map((l:any)=>({product_id:l.product_id,name:l.name,quantity:String(l.quantity-l.received),remaining:l.quantity-l.received}));
@@ -66,13 +65,13 @@ function open(action: string, row?: Row): void {
         fields.value=[select('channel','Channel',selectValues(['IN_PERSON','PHONE','EMAIL','CHAT','NOTE'])),input('note','Conversation notes','textarea'),input('follow_up_date','Follow-up date','date',false)]; Object.assign(form,{channel:'NOTE',note:'',follow_up_date:''});
     } else if (action === 'invoice.create') {
         fields.value=[select('kind','Invoice type',selectValues(['AP','AR'])),select('partner_id','Supplier or customer',choices.value.map(p=>({value:p.id,label:`${p.code} · ${p.name}`}))),input('receipt_id','Goods receipt ID (payables)','text',false),input('reference','Invoice number'),input('issue_date','Issue date','date'),input('due_date','Due date','date'),input('currency','Currency'),select('scale','Decimal places',selectValues(['0','2','3','4','5','6'])),input('amount','Invoice amount'),input('description','Description','textarea')];
-        Object.assign(form,{kind:'AR',partner_id:'',receipt_id:'',reference:'',issue_date:today(),due_date:today(),currency:'IDR',scale:'0',amount:'0',description:''});
+        Object.assign(form,{kind:'AR',partner_id:'',receipt_id:'',reference:'',issue_date:today(),due_date:today(),currency:currencyPreferences.value.currency,scale:String(currencyPreferences.value.scale),amount:'0',description:''});
     } else if (action === 'invoice.settle' && row) {
         fields.value=[input('amount','Amount received or paid'),input('paid_date','Payment date','date'),input('reference','Payment evidence reference'),select('cash_account','Payment account',[{value:'1000',label:'Cash'},{value:'1010',label:'Bank'}])];
         Object.assign(form,{amount:decimal(BigInt(row.total_atomic)-BigInt(row.paid_atomic),row.scale),paid_date:today(),reference:'',cash_account:'1000'});
     } else if (action === 'journal.post') {
         fields.value=[input('posting_date','Posting date','date'),input('description','Description'),input('currency','Currency'),select('scale','Decimal places',selectValues(['0','2','3','4','5','6']))];
-        Object.assign(form,{posting_date:today(),description:'',currency:'IDR',scale:'0'}); lines.value=[{account:'1000',debit:'0',credit:'0'},{account:'3000',debit:'0',credit:'0'}];
+        Object.assign(form,{posting_date:today(),description:'',currency:currencyPreferences.value.currency,scale:String(currencyPreferences.value.scale)}); lines.value=[{account:'1000',debit:'0',credit:'0'},{account:'3000',debit:'0',credit:'0'}];
     } else if (action === 'journal.reverse') {
         fields.value=[input('posting_date','Reversal date','date'),input('reason','Reason','textarea')]; Object.assign(form,{posting_date:today(),reason:''});
     } else if (action === 'employee.save') {
@@ -152,7 +151,7 @@ window.addEventListener('beforeunload',beforeUnload);onBeforeUnmount(()=>window.
     <p v-if="saved" role="status" class="success">{{ t('Saved successfully.') }}</p>
     <section class="biz-panel">
       <div class="toolbar"><form class="search" @submit.prevent="navigate()"><label class="sr-only" for="business-search">{{ t('Search records') }}</label><input id="business-search" v-model="search" :placeholder="t('Search records')" maxlength="120" /><button class="secondary">{{ t('Search') }}</button></form>
-        <div class="toolbar-actions"><a class="secondary" :href="exportUrl">{{ t('Export this page') }}</a>
+        <div class="toolbar-actions"><a class="secondary" :href="exportUrl+'&format=pdf'">{{ t('Download PDF') }}</a><a class="secondary" :href="exportUrl+'&format=xlsx'">{{ t('Download Excel') }}</a><a class="secondary" :href="exportUrl">{{ t('Export this page') }}</a>
           <button v-if="module==='suppliers'&&can('supplier.save')" @click="open('supplier.save')">+ {{ t('Add supplier') }}</button>
           <button v-if="module==='customers'&&can('customer.save')" @click="open('customer.save')">+ {{ t('Add customer') }}</button>
           <button v-if="module==='purchases'&&can('purchase.create')" @click="open('purchase.create')">+ {{ t('Purchase order') }}</button>
@@ -184,10 +183,10 @@ window.addEventListener('beforeunload',beforeUnload);onBeforeUnmount(()=>window.
       <p v-if="mode==='purchase.create'" class="notice">{{ t('Use products from your POS catalog with opening stock configured. Costs are entered per unit.') }}</p>
       <div v-if="['purchase.create','invoice.create'].includes(mode)" class="option-search"><label>{{ t('Find supplier or customer') }}<input v-model="optionQuery" :disabled="busy||uncertain"/></label><button type="button" class="secondary" :disabled="optionLoading||busy||uncertain" @click="findChoices()">{{ t('Search') }}</button><button v-if="optionMore" type="button" class="secondary" :disabled="optionLoading||busy||uncertain" @click="findChoices(true)">{{ t('Next') }}</button></div>
       <div v-if="mode==='purchase.create'" class="option-search"><label>{{ t('Find product by name or code') }}<input v-model="productQuery" :disabled="busy||uncertain" /></label><button type="button" class="secondary" :disabled="productLoading||busy||uncertain" @click="findProducts()">{{ t('Search products') }}</button><button v-if="productMore" type="button" class="secondary" :disabled="productLoading||busy||uncertain" @click="findProducts(true)">{{ t('Next') }}</button></div>
-      <fieldset :disabled="busy||uncertain"><div class="form-grid"><label v-for="field in fields" :key="field.key" :class="{'full-width':field.type==='textarea','check':field.type==='checkbox'}"><span>{{ t(field.label) }}</span><select v-if="field.type==='select'" v-model="form[field.key]" :required="field.required"><option value="" disabled>{{ t('Select an option') }}</option><option v-for="opt in field.options" :key="opt.value" :value="opt.value">{{ t(opt.label) }}</option></select><textarea v-else-if="field.type==='textarea'" v-model="form[field.key]" :required="field.required" maxlength="2000" rows="3"/><input v-else-if="field.type==='checkbox'" v-model="form[field.key]" type="checkbox"/><input v-else v-model="form[field.key]" :type="field.type??'text'" :required="field.required" maxlength="254"/></label></div>
+      <fieldset :disabled="busy||uncertain"><div class="form-grid"><label v-for="field in fields" :key="field.key" :class="{'full-width':field.type==='textarea','check':field.type==='checkbox'}"><span>{{ t(field.label) }}</span><select v-if="field.type==='select'" v-model="form[field.key]" :required="field.required"><option value="" disabled>{{ t('Select an option') }}</option><option v-for="opt in field.options" :key="opt.value" :value="opt.value">{{ t(opt.label) }}</option></select><textarea v-else-if="field.type==='textarea'" v-model="form[field.key]" :required="field.required" maxlength="2000" rows="3"/><input v-else-if="field.type==='checkbox'" v-model="form[field.key]" type="checkbox"/><NumericInput v-else-if="field.type==='numeric'" v-model="form[field.key]" :decimals="selected?.scale??Number(form.scale??0)"/><input v-else v-model="form[field.key]" :type="field.type??'text'" :required="field.required" maxlength="254"/></label></div>
       <div v-if="lines.length" class="line-editor"><h3>{{ t(mode==='journal.post'?'Journal lines':'Order lines') }}</h3><div v-for="(line,index) in lines" :key="index" class="line-entry">
-        <template v-if="mode==='journal.post'"><label>{{ t('Account') }}<select v-model="line.account"><option v-for="(account,code) in accounts" :key="code" :value="code">{{ code }} · {{ t(account[0]) }}</option></select></label><label>{{ t('Debit') }}<input v-model="line.debit" inputmode="decimal" required/></label><label>{{ t('Credit') }}<input v-model="line.credit" inputmode="decimal" required/></label></template>
-        <template v-else><label>{{ t('Product') }}<select v-if="mode==='purchase.create'" v-model="line.product_id" required><option value="" disabled>{{ t('Select an option') }}</option><option v-for="product in products" :key="product.product_id" :value="product.product_id">{{ product.display_name }} · {{ product.product_id }} · {{ product.currency }}</option></select><input v-else v-model="line.product_id" readonly required/><small v-if="line.name">{{ line.name }}</small></label><label>{{ t('Quantity') }}<input v-model="line.quantity" type="number" :min="mode==='purchase.receive'?0:1" :max="line.remaining??1000000" step="1" required/></label><label v-if="mode==='purchase.create'">{{ t('Unit cost') }}<input v-model="line.unit_cost" inputmode="decimal" required/></label></template>
+        <template v-if="mode==='journal.post'"><label>{{ t('Account') }}<select v-model="line.account"><option v-for="(account,code) in accounts" :key="code" :value="code">{{ code }} · {{ t(account[0]) }}</option></select></label><label>{{ t('Debit') }}<NumericInput :decimals="Number(form.scale??0)" v-model="line.debit" inputmode="decimal" required/></label><label>{{ t('Credit') }}<NumericInput :decimals="Number(form.scale??0)" v-model="line.credit" inputmode="decimal" required/></label></template>
+        <template v-else><label>{{ t('Product') }}<select v-if="mode==='purchase.create'" v-model="line.product_id" required><option value="" disabled>{{ t('Select an option') }}</option><option v-for="product in products" :key="product.product_id" :value="product.product_id">{{ product.display_name }} · {{ product.product_id }} · {{ product.currency }}</option></select><input v-else v-model="line.product_id" readonly required/><small v-if="line.name">{{ line.name }}</small></label><label>{{ t('Quantity') }}<NumericInput v-model="line.quantity" :min="mode==='purchase.receive'?0:1" :max="line.remaining??1000000" step="1" required/></label><label v-if="mode==='purchase.create'">{{ t('Unit cost') }}<NumericInput :decimals="Number(form.scale??0)" v-model="line.unit_cost" inputmode="decimal" required/></label></template>
         <button v-if="mode!=='purchase.receive'&&lines.length>1" type="button" class="text-button danger" @click="lines.splice(index,1)">{{ t('Remove') }}</button>
       </div><button v-if="mode!=='purchase.receive'&&lines.length<100" type="button" class="secondary" @click="lines.push(mode==='journal.post'?{account:'6000',debit:'0',credit:'0'}:{product_id:'',quantity:'1',unit_cost:'0'})">+ {{ t('Add line') }}</button></div>
       <p v-if="fields.length===0" class="notice">{{ t('Review this record before confirming the action.') }} <strong v-if="selected?.total_atomic">{{ money(selected.total_atomic,selected.scale,selected.currency) }}</strong></p>
