@@ -38,6 +38,11 @@ jobs:
           php -l tools/production/cpanel/install-oneqaydev-business-modules.php
           php tools/production/tests/oneqaydev-module-operator.php
           php tools/production/tests/oneqaydev-business-modules.php | tee /tmp/module-sqlite.log
-          grep -Fxq 'BUSINESS_MODULE_UPGRADE_sqlite_PASS assertions=18' /tmp/module-sqlite.log
+          grep -Fxq 'BUSINESS_MODULE_UPGRADE_sqlite_27_PASS assertions=18' /tmp/module-sqlite.log
           MODULE_TEST_ENGINE=mysql php tools/production/tests/oneqaydev-business-modules.php | tee /tmp/module-mysql.log
-          grep -Fxq 'BUSINESS_MODULE_UPGRADE_mysql_PASS assertions=18' /tmp/module-mysql.log
+          grep -Fxq 'BUSINESS_MODULE_UPGRADE_mysql_27_PASS assertions=18' /tmp/module-mysql.log
+          MODULE_TEST_PREINSTALLED_REPLENISHMENT=1 php tools/production/tests/oneqaydev-business-modules.php | tee /tmp/module-sqlite-28.log
+          grep -Fxq 'BUSINESS_MODULE_UPGRADE_sqlite_28_PASS assertions=22' /tmp/module-sqlite-28.log
+          mysql --host=127.0.0.1 --user=root --password=synthetic-test-only -e 'CREATE DATABASE oneqay_modules_28_test;'
+          MODULE_TEST_ENGINE=mysql MODULE_TEST_PREINSTALLED_REPLENISHMENT=1 php tools/production/tests/oneqaydev-business-modules.php | tee /tmp/module-mysql-28.log
+          grep -Fxq 'BUSINESS_MODULE_UPGRADE_mysql_28_PASS assertions=22' /tmp/module-mysql-28.log

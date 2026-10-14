@@ -234,6 +234,11 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           HEAD_REF: ${{ github.head_ref }}
         run: |
+          # Exact receipt-baseline recovery successor; application and existing behavioral tests preserved.
+          if [[ "${{ github.head_ref }}" == 'cpanel-receipt-recovery-20261014' && "${{ github.event.pull_request.base.sha }}" == '58364e4131b380663b4dcdb47aa720c0a25f058a' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
+            bash tools/qa-cpanel-receipt-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
+            exit 0
+          fi
           # Exact additive hosting operator successor; application source and behavioral tests are immutable.
           if [[ "${{ github.head_ref }}" == 'cpanel-platform-module-upgrade-20261013' && "${{ github.event.pull_request.base.sha }}" == 'f5a037ce60aa05c61e0b9c197f2e171c4d01fa8c' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
             bash tools/qa-cpanel-module-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"

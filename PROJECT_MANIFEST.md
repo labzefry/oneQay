@@ -1,5 +1,11 @@
 > **CURRENT 2026-10-12 ONEQAY BUSINESS OS CHECKPOINT:** Main `d15f2fc3f9aa9320670657d03b044e132bf812a2` (PR #949), source-certified release `production-d15f2fc3f9aa` (Actions run `38236323278`, SUCCESS). Last owner-reported live oneQayDev release `production-e93b7fef42cb` is `BUSINESS_WORKSPACE_UPDATED_ACCEPTANCE_PENDING`; Business OS d15f host deployment and real CASH/Final Shift Close acceptance have NOT been proven. See [E0–E5 capability inventory](docs/operations/ONEQAY_ENTERPRISE_CAPABILITY_MATRIX_2026-10-12.md) and [host read-only preflight](docs/operations/ONEQAYDEV_BUSINESS_OS_HOST_PREFLIGHT_2026-10-12.md). Older claims below are historical, not current.
 
+## 2026-10-14 — Host receipt baseline and prepared-candidate recovery
+
+Actual oneQayDev host evidence contains canonical historical migrations 1–27 plus previously installed inventory replenishment #28. The first f5a037 module attempt stopped at EXACT_HISTORICAL_RECEIPTS_REQUIRED before new module DDL or public switch. The bounded successor validates exact receipt names and existing replenishment schema, preserves #28 and installs only pending business/platform migrations. Recovery is restricted to the hash-bound observed stop, unchanged predecessor/backup, certified candidate/runtime and absence of any module-installation checkpoint. Qualification and later host execution must be recorded separately; no successful deploy is asserted by this entry.
+
+Author by Lab | zefry
+
 > **Latest verified Production Go-Live handoff (2026-10-11):** [Canonical real-business checkpoint](docs/operations/PRODUCTION_GO_LIVE_CHECKPOINT_2026-10-11.md) · [Master continuation prompt](docs/operations/MASTER_CONTINUATION_PROMPT_ONEQAY_2026-10-11.md) · [oneQayDev cPanel upgrade handoff](docs/operations/ONEQAYDEV_CPANEL_UPGRADE_HANDOFF_2026-10-11.md). PR #938 is MERGED; certified application source `409ac6b2bdb80d31fbfb9425ddbb413a278b97e6`. **Actual cPanel on-host upgrade, merchant provisioning and real CASH transaction are NOT YET VERIFIED.** Older SHA/status text below is historical context. Never rerun migrations or touch occupied staging.
 
 # oneQay Project Manifest
