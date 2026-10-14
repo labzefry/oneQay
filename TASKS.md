@@ -1,5 +1,11 @@
 # oneQay Tasks
 
+## 2026-10-14 — Host receipt baseline and prepared-candidate recovery
+
+Actual oneQayDev host evidence contains canonical historical migrations 1–27 plus previously installed inventory replenishment #28. The first f5a037 module attempt stopped at EXACT_HISTORICAL_RECEIPTS_REQUIRED before new module DDL or public switch. The bounded successor validates exact receipt names and existing replenishment schema, preserves #28 and installs only pending business/platform migrations. Recovery is restricted to the hash-bound observed stop, unchanged predecessor/backup, certified candidate/runtime and absence of any module-installation checkpoint. Qualification and later host execution must be recorded separately; no successful deploy is asserted by this entry.
+
+Author by Lab | zefry
+
 ## 2026-10-12 — Business OS delivery and real-host gate
 - [x] Merge PR #949 Business Command Center into `main=d15f2fc3f9aa9320670657d03b044e132bf812a2`.
 - [x] Certify source release `production-d15f2fc3f9aa`, run `38236323278` SUCCESS; artifact `11741255632`.

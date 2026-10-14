@@ -8,17 +8,29 @@ foreach(['APP_ENV'=>'testing','APP_KEY'=>'base64:'.base64_encode(str_repeat('m',
 $path=realpath(__DIR__.'/../../../apps/web');$app=require $path.'/bootstrap/app.php';$app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 set_exception_handler(static function(Throwable $e):void {fwrite(STDERR,get_class($e).': '.$e->getMessage()."\n");exit(1);});
 $engine=getenv('MODULE_TEST_ENGINE')?:'sqlite';
-$config=$engine==='mysql'?['driver'=>'mysql','host'=>'127.0.0.1','port'=>3306,'database'=>'oneqay_modules_test','username'=>'root','password'=>'synthetic-test-only','charset'=>'utf8mb4','collation'=>'utf8mb4_unicode_ci','prefix'=>'','strict'=>true]:['driver'=>'sqlite','database'=>':memory:','prefix'=>'','foreign_key_constraints'=>true];
+$config=$engine==='mysql'?['driver'=>'mysql','host'=>'127.0.0.1','port'=>3306,'database'=>getenv('MODULE_TEST_PREINSTALLED_REPLENISHMENT')==='1'?'oneqay_modules_28_test':'oneqay_modules_test','username'=>'root','password'=>'synthetic-test-only','charset'=>'utf8mb4','collation'=>'utf8mb4_unicode_ci','prefix'=>'','strict'=>true]:['driver'=>'sqlite','database'=>':memory:','prefix'=>'','foreign_key_constraints'=>true];
 $app['config']->set('database.default','module_test');$app['config']->set('database.connections.module_test',$config);
 $db=$app->make('db')->connection();$app->make('migration.repository')->createRepository();$app->make('migrator')->run([$path.'/database/migrations']);
 $owner=['id'=>str_repeat('a',32),'status'=>'invited','token_expires_at'=>time()+3600,'tenant_id'=>'existing-owner','identity_id'=>'existing-identity','organization_id'=>'existing-org','outlet_id'=>'existing-outlet','device_id'=>'existing-device'];
 $accounts=new App\Infrastructure\Platform\LaravelBusinessAccountProvisioner($app,new App\Infrastructure\Identity\LaravelTenantSessionRevoker($db));$accounts->provision($owner,'synthetic-owner-password');
 $credentials=$db->table('oneqay_identity_password_credentials')->get()->toJson();
 $n=0;$ok=function(bool $v,string $why)use(&$n){uAssert($v,$why);++$n;};
-$before=uSchemaSnapshot($db);$ok(count($before['receipts'])===27,'27 historical receipts');
+$preinstalled=getenv('MODULE_TEST_PREINSTALLED_REPLENISHMENT')==='1';
+if($preinstalled)$app->make('migrator')->run([uModulePaths($path)[0]],['step'=>true]);
+$before=uSchemaSnapshot($db);$ok(count($before['receipts'])===($preinstalled?28:27),'exact historical receipts');
+if($preinstalled){
+    $unknown=$db->table('migrations')->insertGetId(['migration'=>'unknown_historical_migration','batch'=>99]);
+    try{uModulePlan($db,$path,uSchemaSnapshot($db));throw new RuntimeException('unknown receipt accepted');}catch(RuntimeException $e){$ok($e->getMessage()==='EXACT_HISTORICAL_RECEIPTS_REQUIRED','unknown receipt rejected');}
+    $db->table('migrations')->where('id',$unknown)->delete();$ok(uSchemaSnapshot($db)===$before,'unknown receipt test preserves baseline');
+    $db->getSchemaBuilder()->table('oneqay_pos_inventory_replenishments',fn($t)=>$t->dropUnique('uq_pos_inventory_replenishments_operation'));
+    try{uModulePlan($db,$path,uSchemaSnapshot($db));throw new RuntimeException('unsafe existing schema accepted');}catch(RuntimeException $e){$ok($e->getMessage()==='REPLENISHMENT_INDEX_MISSING','existing tenant uniqueness mandatory');}
+    $db->getSchemaBuilder()->table('oneqay_pos_inventory_replenishments',fn($t)=>$t->unique(['tenant_id','operation_id'],'uq_pos_inventory_replenishments_operation'));
+    $ok(uModulePlan($db,$path,uSchemaSnapshot($db))['preserved_replenishment'],'schema contract restored');$before=uSchemaSnapshot($db);
+}
 try{uApplyModuleSchema($app,$path,fn($r)=>throw new RuntimeException('DURABLE_INTENT_FAILED'));throw new RuntimeException('checkpoint not enforced');}catch(RuntimeException $e){$ok($e->getMessage()==='DURABLE_INTENT_FAILED','no DDL before intent');}
 $ok(uSchemaSnapshot($db)===$before,'failed checkpoint preserves database');
 $states=[];$receipt=uApplyModuleSchema($app,$path,function($r)use(&$states){$states[]=$r['state'];});
+uAssert($receipt['installed_migration_count']===($preinstalled?2:3)&&$receipt['preserved_replenishment']===$preinstalled,'exact pending migration plan');
 $ok($states===['ADDITIVE_SCHEMA_STARTED','ADDITIVE_SCHEMA_APPLIED'],'durable schema checkpoints');
 $ok(count(uModuleTables())===20,'exactly twenty additive tables');
 $ok(count(uSchemaSnapshot($db)['receipts'])===30,'only three added migration receipts');
@@ -37,4 +49,4 @@ try{uGrantExistingOwnerBusinessAccess($app,$bad,str_repeat('b',40));throw new Ru
 $ok($app->make(App\Application\Organization\OrganizationalContextStore::class)->current()===null,'rejected context cleared');
 try{uApplyModuleSchema($app,$path,fn($r)=>null);throw new RuntimeException('schema replay allowed');}catch(RuntimeException $e){$ok($e->getMessage()==='EXACT_HISTORICAL_RECEIPTS_REQUIRED','schema replay fail closed');}
 $ok($credentials===$db->table('oneqay_identity_password_credentials')->get()->toJson(),'credentials remain unchanged after grants');
-echo 'BUSINESS_MODULE_UPGRADE_'.$engine.'_PASS assertions='.$n."\n";
+echo 'BUSINESS_MODULE_UPGRADE_'.$engine.'_'.($preinstalled?'28':'27').'_PASS assertions='.$n."\n";

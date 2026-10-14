@@ -26,6 +26,7 @@ const L_ASSET_UNION_SHA = '3f56733ed1b9b0b75a6b59a9e998d4fb728d310047c604a37993b
 const U_WINDOW = 3600;
 const U_REPORT = __DIR__.'/update-result.json';
 const U_BACKUP = __DIR__.'/rollback';
+const U_RECOVERY_REPORT_SHA = '0a96991c38a5545268c3ed1354b7e5a74f4d215a5c1d03eae8e0ab3997e2ec4a';
 final class WorkspaceUpdateStop extends RuntimeException {}
 function uAssert(bool $ok, string $code): void { if(!$ok)throw new WorkspaceUpdateStop($code); }
 function uRead(string $p,int $max=2000000): string {
@@ -138,15 +139,35 @@ function uBridge(array $r,string $envSha): string {
     $p=uPaths($r);$old=bBridgeFor($envSha);return str_replace([var_export(B_APP,true),var_export(B_ENV,true),B_BRIDGE_ID],[var_export($p['app'],true),var_export($p['env'],true),$p['bridge_id']],$old);
 }
 function uRouting(array $r,string $hosting): string { return str_replace(B_ENTRY_NAME,uPaths($r)['entry_name'],bRewriteFor(uRead(uPaths($r)['app'].'/public/.htaccess'),$hosting)); }
-function uPreconditions(array $r): array {
+function uPreconditions(array $r,bool $recover=false): array {
     bPrivate(L_ENV);uAssert(hash_equals(U_OLD_ENV_SHA,(string)hash_file('sha256',L_ENV))&&hash_equals(U_OLD_ENV_SHA,(string)hash_file('sha256',L_APP.'/.env')),'PREVIOUS_ENV_CHANGED');
     uAssert(hash_equals(U_OLD_ENTRY_SHA,hash('sha256',uRead(L_ENTRY)))&&hash_equals(U_OLD_ROUTING_SHA,hash('sha256',uRead(U_PUBLIC.'/.htaccess')))&&hash_equals(B_BRIDGE,hash('sha256',uRead(U_PUBLIC.'/index.php'))),'PREVIOUS_PUBLIC_BINDING_CHANGED');
     uAssert(hash_equals(U_OLD_REPORT_SHA,hash('sha256',uRead(L_PREVIOUS_REPORT))),'PREVIOUS_HOST_REPORT_CHANGED');
     $host=uJson(L_PREVIOUS_REPORT);uAssert(($host['state']??null)==='BUSINESS_WORKSPACE_UPDATED_ACCEPTANCE_PENDING'&&($host['source_commit']??null)===L_SOURCE,'PREVIOUS_BUSINESS_NOT_ACTIVE');
     lPreviousIntegrity();uAssert(hash_equals(L_ASSET_UNION_SHA,oqHashTree(U_PUBLIC.'/build')),'PREVIOUS_PUBLIC_ASSETS_CHANGED');lPreviousPublicVerify();$merchant=bMerchant();$raw=uRead(L_ENV);$database=bDatabase(oqReadEnv($raw),$merchant);
     uCheckPackage($r);uHistoricalSchema(__DIR__.'/payload/'.$r['release_id'].'/apps/web');$p=uPaths($r);
-    uAssert(!file_exists($p['release'])&&!is_link($p['release'])&&!file_exists($p['env'])&&!is_link($p['env'])&&!file_exists($p['entry'])&&!is_link($p['entry'])&&!file_exists(U_BACKUP)&&!is_link(U_BACKUP),'UPDATE_ALREADY_PREPARED_NO_AUTOMATIC_RETRY');
-    return ['raw_env'=>$raw,'merchant'=>$merchant,'database'=>$database,'staging_fingerprint'=>bStagingFingerprint(),'asset_sha256'=>oqHashTree(U_PUBLIC.'/build')];
+    $pre=['raw_env'=>$raw,'merchant'=>$merchant,'database'=>$database,'staging_fingerprint'=>bStagingFingerprint(),'asset_sha256'=>oqHashTree(U_PUBLIC.'/build')];
+    if($recover)uPreparedReceiptRecovery($r,$pre);
+    else uAssert(!file_exists($p['release'])&&!is_link($p['release'])&&!file_exists($p['env'])&&!is_link($p['env'])&&!file_exists($p['entry'])&&!is_link($p['entry'])&&!file_exists(U_BACKUP)&&!is_link(U_BACKUP),'UPDATE_ALREADY_PREPARED_NO_AUTOMATIC_RETRY');
+    return $pre;
+}
+function uReceiptRecoveryReport(array $report,string $sha,array $r): void {
+    uAssert(hash_equals(U_RECOVERY_REPORT_SHA,$sha),'RECOVERY_STOP_REPORT_CHANGED');
+    uAssert(($report['state']??null)==='STOPPED_FAIL_CLOSED'&&($report['error_code']??null)==='EXACT_HISTORICAL_RECEIPTS_REQUIRED'
+        &&($report['rollback_state']??null)==='PUBLIC_SWITCH_NOT_PERFORMED'&&($report['source_commit']??null)===$r['source_commit'],'RECOVERY_STOP_NOT_ELIGIBLE');
+}
+/** Only the exact receipt-count stop may recover; any started module DDL remains blocked. */
+function uPreparedReceiptRecovery(array $r,array $pre): void {
+    $raw=uRead(U_REPORT);uReceiptRecoveryReport(json_decode($raw,true,32,JSON_THROW_ON_ERROR),hash('sha256',$raw),$r);
+    uAssert(!file_exists(__DIR__.'/module-installation.json')&&!is_link(__DIR__.'/module-installation.json'),'MODULE_INSTALLATION_ALREADY_STARTED_NO_AUTOMATIC_RETRY');
+    $p=uPaths($r);uAssert(realpath($p['release'])===$p['release']&&realpath($p['app'])===$p['app']&&!file_exists($p['entry'])&&!is_link($p['entry']),'RECOVERY_PREPARED_PATHS_INVALID');
+    bPrivate($p['env']);uAssert(hash_equals(hash('sha256',uRead($p['env'])),(string)hash_file('sha256',$p['app'].'/.env'))&&((int)fileperms($p['app'].'/.env')&0077)===0,'RECOVERY_RUNTIME_BINDING_INVALID');
+    uSourceFiles($r,U_ROOT.'/releases',true);uHistoricalSchema($p['app']);
+    uAssert(realpath(U_BACKUP)===U_BACKUP,'RECOVERY_BACKUP_PATH_INVALID');$snapshot=uJson(U_BACKUP.'/snapshot.json');
+    uAssert(($snapshot['previous_env_sha256']??null)===U_OLD_ENV_SHA&&($snapshot['asset_sha256']??null)===$pre['asset_sha256']&&($snapshot['staging_fingerprint']??null)===$pre['staging_fingerprint'],'RECOVERY_BACKUP_BINDING_INVALID');
+    $files=$snapshot['files']??[];$names=array_keys($files);sort($names);$want=['.htaccess','index.php','index.html',L_ENTRY_NAME];sort($want);uAssert($names===$want,'RECOVERY_BACKUP_FILES_INVALID');
+    foreach($files as $name=>$sha)uAssert(is_string($sha)&&hash_equals($sha,hash('sha256',uRead(U_BACKUP.'/'.$name)))&&hash_equals($sha,hash('sha256',uRead(U_PUBLIC.'/'.$name))),'RECOVERY_PUBLIC_CHANGED');
+    uAssert(hash_equals($pre['asset_sha256'],oqHashTree(U_BACKUP.'/build')),'RECOVERY_BACKUP_ASSETS_CHANGED');
 }
 function uBindExistingRuntime(string $env,string $target): void {
     uAssert(is_file($env)&&!is_link($env)&&((int)fileperms($env)&0077)===0,'PRIVATE_RUNTIME_INVALID');
@@ -205,9 +226,13 @@ function uRestore(array $r): array {
     try{oqRemoveTree($failed);}catch(Throwable){}
     return ['rollback_target'=>'BUSINESS_ON_PREVIOUS_CERTIFIED_RELEASE','previous_source_commit'=>L_SOURCE,'merchant_preserved'=>true,'sessions_preserved'=>true,'module_schema_and_journals'=>'RETAINED','owner_business_role'=>'RETAINED_IF_GRANTED','rollback_https_verified'=>true];
 }
-function uApply(string $locator,array $r): array {
-    $grant=uAuthority($locator,$r);$pre=uPreconditions($r);uAssert(time()<=$grant['expires_at_unix'],'AUTHORITY_WINDOW_EXPIRED');$p=uPaths($r);$changed=false;$buildChanged=false;$previousBuild=null;
+function uApply(string $locator,array $r,bool $recover=false): array {
+    $grant=uAuthority($locator,$r);$pre=uPreconditions($r,$recover);uAssert(time()<=$grant['expires_at_unix'],'AUTHORITY_WINDOW_EXPIRED');$p=uPaths($r);$changed=false;$buildChanged=false;$previousBuild=null;
     try {
+        if($recover){$prior=uRead(U_REPORT);$archive=__DIR__.'/receipt-recovery-prior-result.json';
+            if(file_exists($archive)||is_link($archive))uAssert(hash_equals(U_RECOVERY_REPORT_SHA,hash('sha256',uRead($archive))),'RECOVERY_PRIOR_ARCHIVE_CHANGED');
+            else uWrite($archive,$prior);}
+        if(!$recover){
         uAssert(@mkdir(U_BACKUP,0700)&&@chmod(U_BACKUP,0700),'ROLLBACK_DIRECTORY_FAILED');$files=[];
         foreach(['.htaccess','index.php','index.html',L_ENTRY_NAME] as $name){$raw=uRead(U_PUBLIC.'/'.$name);uWrite(U_BACKUP.'/'.$name,$raw);$files[$name]=hash('sha256',$raw);}oqCopyTree(U_PUBLIC.'/build',U_BACKUP.'/build',0700);
         $snap=['files'=>$files,'asset_sha256'=>$pre['asset_sha256'],'previous_env_sha256'=>U_OLD_ENV_SHA,'staging_fingerprint'=>$pre['staging_fingerprint']];uWrite(U_BACKUP.'/snapshot.json',json_encode($snap,JSON_UNESCAPED_SLASHES|JSON_THROW_ON_ERROR)."\n");
@@ -215,7 +240,8 @@ function uApply(string $locator,array $r): array {
         oqCopyTree(__DIR__.'/payload/'.$r['release_id'],$p['release']);uSourceFiles($r,U_ROOT.'/releases');uHistoricalSchema($p['app']);
         $env=uCandidateEnv($pre['raw_env'],$r);uWrite($p['env'],$env);uBindExistingRuntime($p['env'],$p['app'].'/.env');
         foreach(['config.php','routes-v7.php','routes.php'] as $file)uAssert(!file_exists($p['app'].'/bootstrap/cache/'.$file)&&!is_link($p['app'].'/bootstrap/cache/'.$file),'CACHED_RUNTIME_DENIED');
-        uRuntime($r);uInstallModules($r);$pre['database']['previous_table_count']=$pre['database']['table_count'];$pre['database']['table_count']=count(uSchemaSnapshot(app('db')->connection())['ddl']);uSourceFiles($r,U_ROOT.'/releases',true);$envSha=hash('sha256',$env);$bridge=uBridge($r,$envSha);$routing=uRouting($r,uRead(U_PUBLIC.'/.htaccess'));
+        }else{$env=uRead($p['env']);}
+        uRuntime($r);$module=uInstallModules($r);$pre['database']['previous_table_count']=$pre['database']['table_count'];$pre['database']['table_count']=count(uSchemaSnapshot(app('db')->connection())['ddl']);uSourceFiles($r,U_ROOT.'/releases',true);$envSha=hash('sha256',$env);$bridge=uBridge($r,$envSha);$routing=uRouting($r,uRead(U_PUBLIC.'/.htaccess'));
         $token=bin2hex(random_bytes(6));$stage=U_PUBLIC.'/.oq-ui-build-'.$token;uUnionBuild(U_PUBLIC.'/build',$p['app'].'/public/build',$stage);$stageSha=oqHashTree($stage);
         uAssert(hash_equals(U_OLD_ENV_SHA,(string)hash_file('sha256',L_ENV))&&hash_equals(B_MERCHANT_SHA,(string)hash_file('sha256',B_MERCHANT))&&hash_equals($pre['staging_fingerprint'],bStagingFingerprint()),'PRE_SWITCH_PRESERVATION_FAILED');
         uAssert(time()<=$grant['expires_at_unix'],'AUTHORITY_WINDOW_EXPIRED');uWrite($p['entry'],$bridge,0644);$previousBuild=U_PUBLIC.'/.oq-ui-old-build-'.$token;
@@ -223,7 +249,7 @@ function uApply(string $locator,array $r): array {
         $changed=true;uWrite(U_PUBLIC.'/.htaccess',$routing,0644);$evidence=uPublicVerify($r);
         uAssert(hash_equals($stageSha,oqHashTree(U_PUBLIC.'/build'))&&hash_equals(hash('sha256',$bridge),(string)hash_file('sha256',$p['entry']))&&hash_equals(hash('sha256',$routing),(string)hash_file('sha256',U_PUBLIC.'/.htaccess'))&&hash_equals(B_BRIDGE,(string)hash_file('sha256',U_PUBLIC.'/index.php')),'PUBLIC_SWITCH_READBACK_FAILED');
         uAssert(hash_equals(U_OLD_ENV_SHA,(string)hash_file('sha256',L_ENV))&&hash_equals($envSha,(string)hash_file('sha256',$p['app'].'/.env'))&&hash_equals(B_MERCHANT_SHA,(string)hash_file('sha256',B_MERCHANT))&&hash_equals($pre['staging_fingerprint'],bStagingFingerprint()),'POST_SWITCH_PRESERVATION_FAILED');
-        $out=array_merge(['state'=>'BUSINESS_WORKSPACE_UPDATED_ACCEPTANCE_PENDING','business_traffic'=>'ON_PRESERVED','source_commit'=>$r['source_commit'],'release_id'=>$r['release_id'],'previous_source_commit'=>L_SOURCE,'archive_sha256'=>$r['archive_sha256'],'source_integrity_files'=>$r['release_file_count'],'native_business_runtime_gate'=>'NATIVE_PRODUCTION_PASS','merchant_preserved'=>true,'sessions_preserved'=>true,'session_storage_probe'=>'FILE_WRITE_READ_DELETE_PASS','runtime_sha256'=>$envSha,'bridge_sha256'=>hash('sha256',$bridge),'routing_sha256'=>hash('sha256',$routing),'public_asset_union_sha256'=>$stageSha,'default_language'=>'id','supported_languages'=>['id','en'],'old_hashed_assets_retained'=>true,'rollback_snapshot_verified'=>true,'rollback_target'=>'BUSINESS_ON_PREVIOUS_CERTIFIED_RELEASE','https_evidence'=>$evidence,'migrations'=>'THREE_ADDITIVE_MODULE_MIGRATIONS_APPLIED','historical_migrations'=>'PRESERVED','smtp_configuration'=>'OWNER_SETUP_REQUIRED','mail_worker'=>'CRON_SETUP_REQUIRED','staging'=>'NOT_TOUCHED','updater'=>'INACTIVE','external_payments'=>'NOT_PERFORMED','host_business_acceptance'=>'NOT_VERIFIED'], $grant,$pre['database']);uReport($out);
+        $out=array_merge(['state'=>'BUSINESS_WORKSPACE_UPDATED_ACCEPTANCE_PENDING','business_traffic'=>'ON_PRESERVED','source_commit'=>$r['source_commit'],'release_id'=>$r['release_id'],'previous_source_commit'=>L_SOURCE,'archive_sha256'=>$r['archive_sha256'],'source_integrity_files'=>$r['release_file_count'],'native_business_runtime_gate'=>'NATIVE_PRODUCTION_PASS','merchant_preserved'=>true,'sessions_preserved'=>true,'session_storage_probe'=>'FILE_WRITE_READ_DELETE_PASS','runtime_sha256'=>$envSha,'bridge_sha256'=>hash('sha256',$bridge),'routing_sha256'=>hash('sha256',$routing),'public_asset_union_sha256'=>$stageSha,'default_language'=>'id','supported_languages'=>['id','en'],'old_hashed_assets_retained'=>true,'rollback_snapshot_verified'=>true,'rollback_target'=>'BUSINESS_ON_PREVIOUS_CERTIFIED_RELEASE','https_evidence'=>$evidence,'migrations'=>'ADDITIVE_MODULE_MIGRATIONS_APPLIED','installed_migration_count'=>$module['installed_migration_count'],'preserved_replenishment'=>$module['preserved_replenishment'],'historical_migrations'=>'PRESERVED','smtp_configuration'=>'OWNER_SETUP_REQUIRED','mail_worker'=>'CRON_SETUP_REQUIRED','staging'=>'NOT_TOUCHED','updater'=>'INACTIVE','external_payments'=>'NOT_PERFORMED','host_business_acceptance'=>'NOT_VERIFIED'], $grant,$pre['database']);uReport($out);
         try{oqRemoveTree($previousBuild);}catch(Throwable){}return $out;
     }catch(Throwable $e){$rollback='PUBLIC_SWITCH_NOT_PERFORMED';
         if($buildChanged){try{if(!is_dir(U_PUBLIC.'/build')&&is_string($previousBuild))uAssert(@rename($previousBuild,U_PUBLIC.'/build'),'BUILD_RESTORE_FAILED');uRestore($r);$rollback='BUSINESS_ON_PREVIOUS_RELEASE_RESTORED';}catch(Throwable){$rollback='ROLLBACK_FAILED_OWNER_ATTENTION_REQUIRED';}}
@@ -237,9 +263,9 @@ function uReplay(string $locator,array $r,array $prior): array {
     uSourceFiles($r,U_ROOT.'/releases',true);uRuntime($r);uPublicVerify($r);uVerifyModuleReceipt($r);$prior['idempotent_replay']=true;uReport($prior);return $prior;
 }
 if(PHP_SAPI==='cli'&&realpath($_SERVER['SCRIPT_FILENAME']??'')===__FILE__){
-    if(!in_array($argv[1]??'',['update','rollback'],true)||(($argv[1]==='update')?$argc!==3:$argc!==2)){fwrite(STDERR,"USAGE: php update.php update OWNER_COMMENT_ID | rollback\n");exit(64);}
+    if(!in_array($argv[1]??'',['update','recover','rollback'],true)||(($argv[1]==='rollback')?$argc!==2:$argc!==3)){fwrite(STDERR,"USAGE: php update.php update|recover OWNER_COMMENT_ID | rollback\n");exit(64);}
     try{$r=uRequest();uLoad($r);$lock=@fopen(__DIR__.'/update.lock','c');uAssert($lock!==false&&@chmod(__DIR__.'/update.lock',0600)&&flock($lock,LOCK_EX|LOCK_NB),'UPDATE_LOCK_UNAVAILABLE');
-        if($argv[1]==='rollback'){$out=array_merge(['state'=>'BUSINESS_ON_ROLLBACK_VERIFIED'],uRestore($r));uReport($out);}elseif(is_file(U_REPORT))$out=uReplay($argv[2],$r,uJson(U_REPORT));else $out=uApply($argv[2],$r);
+        if($argv[1]==='rollback'){$out=array_merge(['state'=>'BUSINESS_ON_ROLLBACK_VERIFIED'],uRestore($r));uReport($out);}elseif($argv[1]==='recover')$out=uApply($argv[2],$r,true);elseif(is_file(U_REPORT))$out=uReplay($argv[2],$r,uJson(U_REPORT));else $out=uApply($argv[2],$r);
         fwrite(STDOUT,"ONEQAYDEV|".$out['state']."\n");exit(0);
     }catch(Throwable $e){$code=$e instanceof WorkspaceUpdateStop||$e instanceof BusinessActivationStop||$e instanceof OQStop?$e->getMessage():'INTERNAL_ERROR';if(!is_file(U_REPORT))try{uReport(['state'=>'STOPPED_FAIL_CLOSED','error_code'=>$code,'public_switch'=>'NOT_PERFORMED','host_business_acceptance'=>'NOT_VERIFIED']);}catch(Throwable){}fwrite(STDERR,"ONEQAYDEV|STOPPED|".$code."\n");exit(1);}
 }
