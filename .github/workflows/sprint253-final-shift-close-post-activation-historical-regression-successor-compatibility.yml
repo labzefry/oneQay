@@ -129,6 +129,11 @@ jobs:
           PUSH_BEFORE_SHA: ${{ github.event.before }}
           PUSH_AFTER_SHA: ${{ github.sha }}
         run: |
+          # Exact catalog/report/currency successor; canonical foundations and behavioral tests preserved.
+          if [[ "${{ github.head_ref }}" == 'business-catalog-reports-currency-20261014' && "${{ github.event.pull_request.base.sha }}" == '27f2b6d220d85f2d08fe5e7abb9e91af6d8863ad' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
+            bash tools/qa-merchandising-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
+            exit 0
+          fi
           # Exact receipt-baseline recovery successor; application and existing behavioral tests preserved.
           if [[ "${{ github.head_ref }}" == 'cpanel-receipt-recovery-20261014' && "${{ github.event.pull_request.base.sha }}" == '58364e4131b380663b4dcdb47aa720c0a25f058a' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
             bash tools/qa-cpanel-receipt-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"

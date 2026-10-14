@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { formatMoney as displayMoney } from "../../business-money";
 import { t } from "../../i18n";
 import { Head } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
@@ -54,14 +55,7 @@ const filteredSales = computed(() => filter.value === 'ALL'
     : props.recent_sales.filter((sale) => sale.state === filter.value));
 
 const groupDigits = (value: string): string => value.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-const money = (atomic: string, currency: string, scale: number): string => {
-    const normalized = atomic.replace(/^0+(?=\d)/, '') || '0';
-    if (scale === 0) return `${currency} ${groupDigits(normalized)}`;
-    const padded = normalized.padStart(scale + 1, '0');
-    const major = padded.slice(0, -scale);
-    const minor = padded.slice(-scale);
-    return `${currency} ${groupDigits(major)},${minor}`;
-};
+const money = (atomic: string, currency: string, scale: number) => displayMoney(atomic, currency, scale);
 const timestamp = (unix: number | null): string => unix === null
     ? '—'
     : new Intl.DateTimeFormat('id-ID', { dateStyle: 'medium', timeStyle: 'medium' }).format(new Date(unix * 1000));

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { formatMoney as displayMoney } from "../../business-money";
 import { t } from "../../i18n";
 import { computed } from 'vue';
 
@@ -58,16 +59,7 @@ const formatDuration = (seconds: number): string => {
     return `${hours}h ${minutes}m ${remainder}s`;
 };
 
-const money = (atomic: string, currency: string, scale: number): string => {
-    const negative = atomic.startsWith('-');
-    const raw = negative ? atomic.slice(1) : atomic;
-    const value = BigInt(raw || '0').toString();
-    const padded = value.padStart(scale + 1, '0');
-    const formatted = scale === 0
-        ? padded
-        : `${padded.slice(0, -scale) || '0'}.${padded.slice(-scale)}`;
-    return `${negative ? '-' : ''}${currency} ${formatted}`;
-};
+const money = (atomic: string, currency: string, scale: number) => displayMoney(atomic, currency, scale);
 
 const totalCompleted = computed(() => props.buckets.reduce((sum, row) => sum + BigInt(row.completed_sales), 0n).toString());
 const totalVoided = computed(() => props.buckets.reduce((sum, row) => sum + BigInt(row.voided_sales), 0n).toString());

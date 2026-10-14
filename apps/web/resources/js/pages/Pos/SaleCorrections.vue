@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { formatMoney as displayMoney } from "../../business-money";
 import { t } from "../../i18n";
 import { Head } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
@@ -67,15 +68,7 @@ const counts = computed(() => ({
     refunded: sales.value.filter((sale) => sale.state === 'REFUNDED').length,
 }));
 
-const formatAtomic = (atomic: string, currency: string, scale: number): string => {
-    const value = BigInt(atomic);
-    const base = 10n ** BigInt(scale);
-    const whole = value / base;
-    const fraction = value % base;
-    const wholeText = new Intl.NumberFormat('id-ID').format(whole);
-    if (scale === 0) return `${currency} ${wholeText}`;
-    return `${currency} ${wholeText},${fraction.toString().padStart(scale, '0')}`;
-};
+const formatAtomic = (atomic: string, currency: string, scale: number) => displayMoney(atomic, currency, scale);
 
 const formatTime = (unix: number | null): string => {
     if (!unix) return '—';

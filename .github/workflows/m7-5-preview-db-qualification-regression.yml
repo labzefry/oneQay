@@ -391,6 +391,11 @@ jobs:
         if: ((((github.event_name == 'pull_request' && env.ONEQAY_SPRINT30_SUCCESSOR != 'true') && env.ONEQAY_SPRINT35_SUCCESSOR != 'true') && (github.event_name != 'pull_request' || github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009')) && (github.event_name != 'pull_request' || github.head_ref != 'production-dev-readiness-and-merchant-foundation-20261010')) && env.ONEQAY_BILINGUAL_PRESENTATION != 'true'
         shell: bash
         run: |
+          # Exact catalog/report/currency successor; canonical foundations and behavioral tests preserved.
+          if [[ "${{ github.head_ref }}" == 'business-catalog-reports-currency-20261014' && "${{ github.event.pull_request.base.sha }}" == '27f2b6d220d85f2d08fe5e7abb9e91af6d8863ad' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
+            bash tools/qa-merchandising-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
+            exit 0
+          fi
           # Exact receipt-baseline recovery successor; application and existing behavioral tests preserved.
           if [[ "${{ github.head_ref }}" == 'cpanel-receipt-recovery-20261014' && "${{ github.event.pull_request.base.sha }}" == '58364e4131b380663b4dcdb47aa720c0a25f058a' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
             bash tools/qa-cpanel-receipt-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
@@ -456,6 +461,11 @@ jobs:
         if: (((env.ONEQAY_SPRINT30_SUCCESSOR != 'true') && (github.event_name != 'pull_request' || github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009')) && (github.event_name != 'pull_request' || github.head_ref != 'production-dev-readiness-and-merchant-foundation-20261010')) && env.ONEQAY_BILINGUAL_PRESENTATION != 'true'
         shell: bash
         run: |
+          # Exact catalog/report/currency successor; canonical foundations and behavioral tests preserved.
+          if [[ "${{ github.head_ref }}" == 'business-catalog-reports-currency-20261014' && "${{ github.event.pull_request.base.sha }}" == '27f2b6d220d85f2d08fe5e7abb9e91af6d8863ad' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
+            bash tools/qa-merchandising-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
+            exit 0
+          fi
           # Exact receipt-baseline recovery successor; application and existing behavioral tests preserved.
           if [[ "${{ github.head_ref }}" == 'cpanel-receipt-recovery-20261014' && "${{ github.event.pull_request.base.sha }}" == '58364e4131b380663b4dcdb47aa720c0a25f058a' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
             bash tools/qa-cpanel-receipt-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"

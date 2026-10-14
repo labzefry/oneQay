@@ -5,10 +5,12 @@ import { usePage } from '@inertiajs/vue3';
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import LanguageSwitcher from '../components/LanguageSwitcher.vue';
 import WorkspaceIcon from '../components/WorkspaceIcon.vue';
+import { currencyPreferences, setCurrencyPreferences } from '../business-money';
 type Destination = { key: string; title: string; description: string; url: string; category: string };
 type Scope = { tenant_id: string; organization_id: string; outlet_id: string; device_id: string };
 type WorkspaceProps = { [key: string]: unknown; scope?: Scope; destinations?: Destination[] };
 const page = usePage<WorkspaceProps>();
+watch(() => page.props.workspace_preferences, setCurrencyPreferences, { immediate: true });
 const navigation = ref<Destination[]>([]);
 const mobileOpen = ref(false);
 const loading = ref(false);
@@ -19,6 +21,9 @@ const menu = ref<HTMLButtonElement | null>(null);
 let generation = 0;
 let request: AbortController | null = null;
 const labels: Record<string, { title: string; icon: string }> = {
+    business_products: { title: 'Products', icon: 'package' },
+    business_reports: { title: 'Reports', icon: 'chart-column' },
+    business_settings: { title: 'Business settings', icon: 'settings' },
     catalog_inventory: { title: 'Catalog & opening stock', icon: 'package' },
     inventory_replenishment: { title: 'Receive stock', icon: 'truck' },
     inventory_accountability: { title: 'Inventory overview', icon: 'boxes' },
@@ -42,13 +47,13 @@ const labels: Record<string, { title: string; icon: string }> = {
     business_access: { title: 'Business access', icon: 'shield-check' },
 };
 const categories = [
-    { key: 'SETUP', title: 'Products' }, { key: 'SELL', title: 'Selling' },
-    { key: 'SHIFT', title: 'Shifts' }, { key: 'STOCK', title: 'Inventory' },
-    { key: 'REVIEW', title: 'Insights' }, { key: 'CONTROL', title: 'Controls' },
+    { key: 'SETUP', title: 'Products & inventory' }, { key: 'SELL', title: 'Selling' },
+    { key: 'SHIFT', title: 'Shifts' }, { key: 'STOCK', title: 'Stock & purchasing' },
+    { key: 'REVIEW', title: 'Reports & insights' }, { key: 'CONTROL', title: 'Business configuration' },
     { key: 'MANAGE', title: 'Business management' },
 ];
 const titles: Record<string, string> = {
-    OperationsHub: 'Business Command Center', Cashier: 'Cashier', CatalogInventorySetup: 'Catalog & stock',
+    Products: 'Products', Settings: 'Business settings', Reports: 'Reports', Workspace: 'Business management', OperationsHub: 'Business overview', Cashier: 'Cashier', CatalogInventorySetup: 'Catalog & stock',
     ShiftStart: 'Start shift', ShiftClose: 'Close shift', InventoryReplenishment: 'Receive stock',
     InventoryAccountability: 'Inventory overview', SalesSummary: 'Sales overview',
     ActiveShiftPerformance: 'Current shift', ShiftHistoryPerformance: 'Shift history',
@@ -134,14 +139,14 @@ onBeforeUnmount(() => { request?.abort(); document.removeEventListener('keydown'
         <aside id="workspace-navigation" ref="drawer" class="oq-sidebar no-print" :class="{ 'is-open': mobileOpen }" :inert="mobileViewport && !mobileOpen" :aria-label="t('Workspace navigation')">
             <a class="oq-brand" href="/pos" :aria-label="t('oneQay overview')"><span class="oq-brand-mark">{{ t("Q") }}<span /></span><span>{{ t("oneQay") }}<small>{{ t("INTELLIGENT BUSINESS OS") }}</small></span></a>
             <button class="oq-mobile-close" type="button" :aria-label="t('Close navigation')" @click="mobileOpen = false"><WorkspaceIcon name="x" /></button>
-            <div class="oq-workspace"><span class="oq-workspace-icon"><WorkspaceIcon name="store" /></span><div><strong>{{ t("Merchant workspace") }}</strong><small>{{ t("Your active outlet") }}</small></div></div>
+            <div class="oq-workspace"><span class="oq-workspace-icon"><WorkspaceIcon name="store" /></span><div><strong>{{ currencyPreferences.business_name }}</strong><small>{{ t("Your active outlet") }}</small></div></div>
             <label class="oq-nav-search"><WorkspaceIcon name="search" :size="17" /><input v-model="search" type="search" :placeholder="t('Find a workspace')" :aria-label="t('Find a workspace')" /></label>
             <nav class="oq-nav">
                 <a class="oq-nav-link" href="/pos" :aria-current="activePath === '/pos' ? 'page' : undefined"><WorkspaceIcon name="layout-dashboard" /><span>{{ t("Command Center") }}</span></a>
                 <p v-if="loading" class="oq-nav-empty" role="status">{{ t("Loading navigation…") }}</p>
-                <section v-for="group in groups" :key="group.key" class="oq-nav-group"><h2>{{ t(group.title) }}</h2>
+                <details v-for="group in groups" :key="group.key" class="oq-nav-group" open><summary>{{ t(group.title) }}</summary>
                     <a v-for="item in group.items" :key="item.key" class="oq-nav-link" :href="item.url" :aria-current="isActive(item.url) ? 'page' : undefined"><WorkspaceIcon :name="labels[item.key]?.icon ?? 'clipboard-list'" /><span>{{ t(labels[item.key]?.title ?? item.title) }}</span></a>
-                </section>
+                </details>
                 <p v-if="search && groups.length === 0 && !loading" class="oq-nav-empty">{{ t("No matching workspace.") }}</p>
             </nav>
             <div class="oq-sidebar-bottom"><a class="oq-nav-link" href="/pos?panel=security#account-security"><WorkspaceIcon name="shield-check" /><span>{{ t("Account & security") }}</span></a><p>{{ t("Author by") }} <strong>{{ t("Lab | zefry") }}</strong></p></div>

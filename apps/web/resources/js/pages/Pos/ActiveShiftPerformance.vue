@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { formatMoney as displayMoney } from "../../business-money";
 import { t } from "../../i18n";
 import { computed } from 'vue';
 
@@ -41,13 +42,7 @@ const totalVoided = computed(() => props.buckets.reduce((sum, row) => sum + BigI
 const totalActive = computed(() => props.buckets.reduce((sum, row) => sum + BigInt(row.active_sales), 0n).toString());
 const totalRefunded = computed(() => props.buckets.reduce((sum, row) => sum + BigInt(row.refunded_sales), 0n).toString());
 
-const money = (atomic: string, currency: string, scale: number): string => {
-    const padded = atomic.padStart(scale + 1, '0');
-    if (scale === 0) return `${currency} ${padded}`;
-    const whole = padded.slice(0, -scale) || '0';
-    const fraction = padded.slice(-scale);
-    return `${currency} ${whole}.${fraction}`;
-};
+const money = (atomic: string, currency: string, scale: number) => displayMoney(atomic, currency, scale);
 
 const openedAt = computed(() => {
     if (props.active_shift === null) return '—';

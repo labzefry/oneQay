@@ -13,6 +13,9 @@ use App\Application\Organization\VerifiedOrganizationalContext;
 final readonly class BusinessAccess
 {
     public const MODULES = [
+        'products' => ['Products', 'pos.catalog.prepare'],
+        'reports' => ['Reports', 'pos.reporting.sales-summary.view'],
+        'settings' => ['Business settings', 'authorization.policy.manage'],
         'suppliers' => ['Suppliers', 'business.suppliers.view'],
         'purchases' => ['Purchasing', 'business.purchases.view'],
         'customers' => ['Customers', 'business.customers.view'],
@@ -58,7 +61,7 @@ final readonly class BusinessAccess
     {
         $result = [];
         foreach (self::MODULES as $key => [$title, $permission]) {
-            if ($this->allows($permission)) $result[] = ['key' => 'business_'.$key, 'title' => $title, 'description' => $title, 'url' => '/pos/business/'.$key, 'category' => 'MANAGE'];
+            if ($this->allows($permission)) $result[] = ['key' => 'business_'.$key, 'title' => $title, 'description' => $title, 'url' => '/pos/business/'.$key, 'category' => match($key){'products'=>'SETUP','reports'=>'REVIEW','settings','access'=>'CONTROL',default=>'MANAGE'}];
         }
         return $result;
     }

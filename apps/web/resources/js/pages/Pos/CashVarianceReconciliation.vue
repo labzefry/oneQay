@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { formatMoney as displayMoney } from "../../business-money";
 import { t } from "../../i18n";
 import { Head, Link } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
@@ -75,15 +76,7 @@ const reviewConfirm = ref<ReviewOutcome | null>(null);
 const utf8Length = computed(() => new TextEncoder().encode(explanationText.value).length);
 const explanationValid = computed(() => explanationText.value.trim().length > 0 && utf8Length.value <= 4096);
 
-const formatMoney = (atomic: string, currency: string, scale: number): string => {
-    const negative = atomic.startsWith('-');
-    const digits = (negative ? atomic.slice(1) : atomic).replace(/^0+(?=\d)/, '') || '0';
-    const padded = digits.padStart(scale + 1, '0');
-    const whole = scale === 0 ? padded : padded.slice(0, -scale);
-    const fraction = scale === 0 ? '' : padded.slice(-scale);
-    const grouped = whole.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-    return `${negative ? '-' : ''}${currency} ${grouped}${fraction ? `,${fraction}` : ''}`;
-};
+const formatMoney = (atomic: string, currency: string, scale: number) => displayMoney(atomic, currency, scale);
 
 const timestamp = (unix: number): string => new Intl.DateTimeFormat('id-ID', {
     dateStyle: 'medium',

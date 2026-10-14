@@ -35,7 +35,7 @@ final readonly class BusinessManagement
 
     public function workspace(string $module, int $page = 1, string $search = '', ?string $from = null, ?string $to = null): array
     {
-        if ($module === 'access') throw new BusinessViolation('UNKNOWN_MODULE', 404);
+        if (in_array($module, ['access','products','settings','reports'], true)) throw new BusinessViolation('UNKNOWN_MODULE', 404);
         $definition = BusinessAccess::MODULES[$module] ?? throw new BusinessViolation('UNKNOWN_MODULE', 404);
         $scope = $this->access->require($definition[1]);
         $resource = match ($module) { 'suppliers', 'customers' => 'partners', 'finance' => 'invoices', 'people' => 'employees', 'audit' => 'events', default => 'purchases' };
