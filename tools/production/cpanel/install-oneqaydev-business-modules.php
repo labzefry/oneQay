@@ -12,7 +12,7 @@ function uModuleTables(): array {
 }
 /** Frozen historical DDL and migration receipts; no business row snapshots or private data. */
 function uSchemaSnapshot($db): array {
-    $schema=$db->getSchemaBuilder();$tables=$schema->getTableListing(null,false);sort($tables);$ddl=[];
+    $schema=$db->getSchemaBuilder();$tables=$schema->getTableListing($db->getDriverName()==='mysql'?$db->getDatabaseName():null,false);sort($tables);$ddl=[];
     foreach($tables as $table){uAssert(preg_match('/\A[A-Za-z0-9_]+\z/D',$table)===1,'DATABASE_TABLE_NAME_INVALID');
         if($db->getDriverName()==='mysql'){$row=(array)$db->selectOne('SHOW CREATE TABLE `'.$table.'`');$raw=array_values($row)[1];$raw=preg_replace('/ AUTO_INCREMENT=\d+/','',$raw);}
         else {$raw=(string)($db->selectOne('SELECT sql FROM sqlite_master WHERE type = ? AND name = ?',['table',$table])->sql??'');}
@@ -57,7 +57,7 @@ function uExistingReplenishmentContract($db): void {
     $integers=['before_available_quantity','replenished_quantity','after_available_quantity','occurred_at_unix'];
     $columns=$schema->getColumns($table);uAssert(count($columns)===14,'REPLENISHMENT_COLUMNS_INVALID');
     foreach($columns as $column){$name=$column['name'];$type=strtolower($column['type']);
-        uAssert(($column['nullable']??true)===false&&($column['default']??null)===null&&!($column['auto_increment']??false),'REPLENISHMENT_COLUMN_POLICY_INVALID');
+        uAssert(($column['nullable']??true)===false&&($column['default']??null)===null&&!($column['auto_increment']??false)&&($column['generation']??null)===null,'REPLENISHMENT_COLUMN_POLICY_INVALID');
         if(isset($strings[$name])){[$kind,$length]=$strings[$name];uAssert($type===($db->getDriverName()==='mysql'?$kind.'('.$length.')':'varchar'),'REPLENISHMENT_TEXT_TYPE_INVALID');}
         else {uAssert(in_array($name,$integers,true)&&($db->getDriverName()==='mysql'?preg_match('/\Abigint(?:\(20\))? unsigned\z/D',$type)===1:$type==='integer'),'REPLENISHMENT_QUANTITY_TYPE_INVALID');}
     }
@@ -73,6 +73,7 @@ function uExistingReplenishmentContract($db): void {
         ['tenant_id','device_id','oneqay_devices','tenant_id','id'],
         ['tenant_id','outlet_id','product_id','oneqay_pos_sale_catalog_items','tenant_id','outlet_id','product_id']];
     $actual=[];foreach($schema->getForeignKeys($table) as $key){
+        if($db->getDriverName()==='mysql')uAssert(($key['foreign_schema']??null)===$db->getDatabaseName(),'REPLENISHMENT_CROSS_SCHEMA_REFERENCE_DENIED');
         uAssert(in_array(strtolower($key['on_update']),['restrict','no action'],true)&&in_array(strtolower($key['on_delete']),['restrict','no action'],true),'REPLENISHMENT_REFERENCE_POLICY_INVALID');
         $actual[]=[...$key['columns'],$key['foreign_table'],...$key['foreign_columns']];}
     sort($want);sort($actual);uAssert($actual===$want,'REPLENISHMENT_REFERENCES_INVALID');
