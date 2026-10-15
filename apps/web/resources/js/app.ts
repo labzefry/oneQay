@@ -1,4 +1,5 @@
 import '../css/app.css'
+import '../css/website.css'
 import './platform-invitation'
 
 import { createInertiaApp } from '@inertiajs/vue3'
@@ -10,7 +11,7 @@ import { initializeLocale } from './i18n'
 initializeLocale()
 
 createInertiaApp({
-  layout: (name) => (name.startsWith('Pos/') || name.startsWith('Business/')) ? MerchantShell : LocalizedShell,
+  layout: (name) => name.startsWith('Website/') ? undefined : (name.startsWith('Pos/') || name.startsWith('Business/')) ? MerchantShell : LocalizedShell,
   resolve: (name) => {
     const pages = import.meta.glob<{ default: DefineComponent }>('./pages/**/*.vue', { eager: true })
     const page = pages[`./pages/${name}.vue`]
