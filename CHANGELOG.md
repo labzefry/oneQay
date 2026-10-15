@@ -596,3 +596,8 @@ Author by Lab | zefry
 ## Public website and business onboarding
 
 Bilingual public pages, owner-only visual CMS, reviewed publication, self-registration through canonical business activation, and Iconify visuals.
+
+
+## Public website cPanel deployment — 2026-10-15
+
+Author by Lab | zefry. Exact source 14e1cdb9f11f9b1a6384aa1659dab86cac5e1078 successor over evidenced ec48e3 host: preserve 31 receipts, add one website migration/four tables, preserve all credentials, roles and SMTP, verify public and owner routes separately, retain BUSINESS_ON rollback. See docs/operations/ONEQAY_PUBLIC_WEBSITE_DEPLOYMENT_2026-10-15.md. Host execution remains pending.
