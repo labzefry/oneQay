@@ -1,0 +1,1914 @@
+{
+  "pos": {
+    "id": {
+      "title": "Kasir & transaksi | oneQay",
+      "description": "Buka shift, catat penjualan, terima pembayaran tunai, dan terbitkan struk dalam alur kasir yang terhubung.",
+      "blocks": [
+        {
+          "id": "hero",
+          "type": "hero",
+          "title": "Kasir & transaksi",
+          "body": "<p>Buka shift, catat penjualan, terima pembayaran tunai, dan terbitkan struk dalam alur kasir yang terhubung.</p>",
+          "eyebrow": "ONEQAY / BISNIS ANDA",
+          "tone": "light",
+          "image": "",
+          "alt": "",
+          "button": "Daftarkan bisnis",
+          "href": "/register",
+          "items": []
+        },
+        {
+          "id": "start",
+          "type": "cta",
+          "title": "Siap untuk langkah berikutnya?",
+          "body": "<p>Daftarkan bisnis Anda. Pemilik platform meninjau permohonan dan mengirim undangan aktivasi melalui email.</p>",
+          "eyebrow": "",
+          "tone": "dark",
+          "image": "",
+          "alt": "",
+          "button": "Mulai bersama oneQay",
+          "href": "/register",
+          "items": []
+        }
+      ]
+    },
+    "en": {
+      "title": "Point of sale | oneQay",
+      "description": "Open shifts, record sales, accept cash and issue receipts in a connected checkout flow.",
+      "blocks": [
+        {
+          "id": "hero",
+          "type": "hero",
+          "title": "Point of sale",
+          "body": "<p>Open shifts, record sales, accept cash and issue receipts in a connected checkout flow.</p>",
+          "eyebrow": "ONEQAY / YOUR BUSINESS",
+          "tone": "light",
+          "image": "",
+          "alt": "",
+          "button": "Register your business",
+          "href": "/register",
+          "items": []
+        },
+        {
+          "id": "start",
+          "type": "cta",
+          "title": "Ready for your next step?",
+          "body": "<p>Register your business. The platform owner reviews your request and emails an activation invitation.</p>",
+          "eyebrow": "",
+          "tone": "dark",
+          "image": "",
+          "alt": "",
+          "button": "Get started with oneQay",
+          "href": "/register",
+          "items": []
+        }
+      ]
+    }
+  },
+  "inventory": {
+    "id": {
+      "title": "Produk & inventori | oneQay",
+      "description": "Kelola SKU, barcode, varian, dan stok. Impor katalog dari Excel atau CSV dengan pratinjau sebelum menyimpan.",
+      "blocks": [
+        {
+          "id": "hero",
+          "type": "hero",
+          "title": "Produk & inventori",
+          "body": "<p>Kelola SKU, barcode, varian, dan stok. Impor katalog dari Excel atau CSV dengan pratinjau sebelum menyimpan.</p>",
+          "eyebrow": "ONEQAY / BISNIS ANDA",
+          "tone": "light",
+          "image": "",
+          "alt": "",
+          "button": "Daftarkan bisnis",
+          "href": "/register",
+          "items": []
+        },
+        {
+          "id": "start",
+          "type": "cta",
+          "title": "Siap untuk langkah berikutnya?",
+          "body": "<p>Daftarkan bisnis Anda. Pemilik platform meninjau permohonan dan mengirim undangan aktivasi melalui email.</p>",
+          "eyebrow": "",
+          "tone": "dark",
+          "image": "",
+          "alt": "",
+          "button": "Mulai bersama oneQay",
+          "href": "/register",
+          "items": []
+        }
+      ]
+    },
+    "en": {
+      "title": "Products & inventory | oneQay",
+      "description": "Manage SKUs, barcodes, variants and stock. Import Excel or CSV catalogs with a preview before saving.",
+      "blocks": [
+        {
+          "id": "hero",
+          "type": "hero",
+          "title": "Products & inventory",
+          "body": "<p>Manage SKUs, barcodes, variants and stock. Import Excel or CSV catalogs with a preview before saving.</p>",
+          "eyebrow": "ONEQAY / YOUR BUSINESS",
+          "tone": "light",
+          "image": "",
+          "alt": "",
+          "button": "Register your business",
+          "href": "/register",
+          "items": []
+        },
+        {
+          "id": "start",
+          "type": "cta",
+          "title": "Ready for your next step?",
+          "body": "<p>Register your business. The platform owner reviews your request and emails an activation invitation.</p>",
+          "eyebrow": "",
+          "tone": "dark",
+          "image": "",
+          "alt": "",
+          "button": "Get started with oneQay",
+          "href": "/register",
+          "items": []
+        }
+      ]
+    }
+  },
+  "purchasing": {
+    "id": {
+      "title": "Pembelian & pemasok | oneQay",
+      "description": "Catat pemasok, pesanan pembelian, persetujuan, dan penerimaan barang dengan jejak yang jelas.",
+      "blocks": [
+        {
+          "id": "hero",
+          "type": "hero",
+          "title": "Pembelian & pemasok",
+          "body": "<p>Catat pemasok, pesanan pembelian, persetujuan, dan penerimaan barang dengan jejak yang jelas.</p>",
+          "eyebrow": "ONEQAY / BISNIS ANDA",
+          "tone": "light",
+          "image": "",
+          "alt": "",
+          "button": "Daftarkan bisnis",
+          "href": "/register",
+          "items": []
+        },
+        {
+          "id": "start",
+          "type": "cta",
+          "title": "Siap untuk langkah berikutnya?",
+          "body": "<p>Daftarkan bisnis Anda. Pemilik platform meninjau permohonan dan mengirim undangan aktivasi melalui email.</p>",
+          "eyebrow": "",
+          "tone": "dark",
+          "image": "",
+          "alt": "",
+          "button": "Mulai bersama oneQay",
+          "href": "/register",
+          "items": []
+        }
+      ]
+    },
+    "en": {
+      "title": "Purchasing & suppliers | oneQay",
+      "description": "Track suppliers, purchase orders, approvals and goods receipts with a clear history.",
+      "blocks": [
+        {
+          "id": "hero",
+          "type": "hero",
+          "title": "Purchasing & suppliers",
+          "body": "<p>Track suppliers, purchase orders, approvals and goods receipts with a clear history.</p>",
+          "eyebrow": "ONEQAY / YOUR BUSINESS",
+          "tone": "light",
+          "image": "",
+          "alt": "",
+          "button": "Register your business",
+          "href": "/register",
+          "items": []
+        },
+        {
+          "id": "start",
+          "type": "cta",
+          "title": "Ready for your next step?",
+          "body": "<p>Register your business. The platform owner reviews your request and emails an activation invitation.</p>",
+          "eyebrow": "",
+          "tone": "dark",
+          "image": "",
+          "alt": "",
+          "button": "Get started with oneQay",
+          "href": "/register",
+          "items": []
+        }
+      ]
+    }
+  },
+  "customers": {
+    "id": {
+      "title": "Manajemen pelanggan | oneQay",
+      "description": "Simpan informasi pelanggan, kontak, dan interaksi agar tim memiliki catatan yang konsisten.",
+      "blocks": [
+        {
+          "id": "hero",
+          "type": "hero",
+          "title": "Manajemen pelanggan",
+          "body": "<p>Simpan informasi pelanggan, kontak, dan interaksi agar tim memiliki catatan yang konsisten.</p>",
+          "eyebrow": "ONEQAY / BISNIS ANDA",
+          "tone": "light",
+          "image": "",
+          "alt": "",
+          "button": "Daftarkan bisnis",
+          "href": "/register",
+          "items": []
+        },
+        {
+          "id": "start",
+          "type": "cta",
+          "title": "Siap untuk langkah berikutnya?",
+          "body": "<p>Daftarkan bisnis Anda. Pemilik platform meninjau permohonan dan mengirim undangan aktivasi melalui email.</p>",
+          "eyebrow": "",
+          "tone": "dark",
+          "image": "",
+          "alt": "",
+          "button": "Mulai bersama oneQay",
+          "href": "/register",
+          "items": []
+        }
+      ]
+    },
+    "en": {
+      "title": "Customer management | oneQay",
+      "description": "Keep customer, contact and interaction records consistent across your team.",
+      "blocks": [
+        {
+          "id": "hero",
+          "type": "hero",
+          "title": "Customer management",
+          "body": "<p>Keep customer, contact and interaction records consistent across your team.</p>",
+          "eyebrow": "ONEQAY / YOUR BUSINESS",
+          "tone": "light",
+          "image": "",
+          "alt": "",
+          "button": "Register your business",
+          "href": "/register",
+          "items": []
+        },
+        {
+          "id": "start",
+          "type": "cta",
+          "title": "Ready for your next step?",
+          "body": "<p>Register your business. The platform owner reviews your request and emails an activation invitation.</p>",
+          "eyebrow": "",
+          "tone": "dark",
+          "image": "",
+          "alt": "",
+          "button": "Get started with oneQay",
+          "href": "/register",
+          "items": []
+        }
+      ]
+    }
+  },
+  "people": {
+    "id": {
+      "title": "SDM & tim | oneQay",
+      "description": "Kelola staf, kehadiran, cuti, peran, dan hak akses sesuai tanggung jawab dalam bisnis.",
+      "blocks": [
+        {
+          "id": "hero",
+          "type": "hero",
+          "title": "SDM & tim",
+          "body": "<p>Kelola staf, kehadiran, cuti, peran, dan hak akses sesuai tanggung jawab dalam bisnis.</p>",
+          "eyebrow": "ONEQAY / BISNIS ANDA",
+          "tone": "light",
+          "image": "",
+          "alt": "",
+          "button": "Daftarkan bisnis",
+          "href": "/register",
+          "items": []
+        },
+        {
+          "id": "start",
+          "type": "cta",
+          "title": "Siap untuk langkah berikutnya?",
+          "body": "<p>Daftarkan bisnis Anda. Pemilik platform meninjau permohonan dan mengirim undangan aktivasi melalui email.</p>",
+          "eyebrow": "",
+          "tone": "dark",
+          "image": "",
+          "alt": "",
+          "button": "Mulai bersama oneQay",
+          "href": "/register",
+          "items": []
+        }
+      ]
+    },
+    "en": {
+      "title": "People & teams | oneQay",
+      "description": "Manage staff, attendance, leave, roles and access according to business responsibilities.",
+      "blocks": [
+        {
+          "id": "hero",
+          "type": "hero",
+          "title": "People & teams",
+          "body": "<p>Manage staff, attendance, leave, roles and access according to business responsibilities.</p>",
+          "eyebrow": "ONEQAY / YOUR BUSINESS",
+          "tone": "light",
+          "image": "",
+          "alt": "",
+          "button": "Register your business",
+          "href": "/register",
+          "items": []
+        },
+        {
+          "id": "start",
+          "type": "cta",
+          "title": "Ready for your next step?",
+          "body": "<p>Register your business. The platform owner reviews your request and emails an activation invitation.</p>",
+          "eyebrow": "",
+          "tone": "dark",
+          "image": "",
+          "alt": "",
+          "button": "Get started with oneQay",
+          "href": "/register",
+          "items": []
+        }
+      ]
+    }
+  },
+  "reports": {
+    "id": {
+      "title": "Laporan & pemantauan | oneQay",
+      "description": "Pantau tren penjualan dan laporan operasional. Unduh PDF serta Excel sesuai cakupan hak akses.",
+      "blocks": [
+        {
+          "id": "hero",
+          "type": "hero",
+          "title": "Laporan & pemantauan",
+          "body": "<p>Pantau tren penjualan dan laporan operasional. Unduh PDF serta Excel sesuai cakupan hak akses.</p>",
+          "eyebrow": "ONEQAY / BISNIS ANDA",
+          "tone": "light",
+          "image": "",
+          "alt": "",
+          "button": "Daftarkan bisnis",
+          "href": "/register",
+          "items": []
+        },
+        {
+          "id": "start",
+          "type": "cta",
+          "title": "Siap untuk langkah berikutnya?",
+          "body": "<p>Daftarkan bisnis Anda. Pemilik platform meninjau permohonan dan mengirim undangan aktivasi melalui email.</p>",
+          "eyebrow": "",
+          "tone": "dark",
+          "image": "",
+          "alt": "",
+          "button": "Mulai bersama oneQay",
+          "href": "/register",
+          "items": []
+        }
+      ]
+    },
+    "en": {
+      "title": "Reports & monitoring | oneQay",
+      "description": "Follow sales trends and operating reports. Download PDF and Excel within your access scope.",
+      "blocks": [
+        {
+          "id": "hero",
+          "type": "hero",
+          "title": "Reports & monitoring",
+          "body": "<p>Follow sales trends and operating reports. Download PDF and Excel within your access scope.</p>",
+          "eyebrow": "ONEQAY / YOUR BUSINESS",
+          "tone": "light",
+          "image": "",
+          "alt": "",
+          "button": "Register your business",
+          "href": "/register",
+          "items": []
+        },
+        {
+          "id": "start",
+          "type": "cta",
+          "title": "Ready for your next step?",
+          "body": "<p>Register your business. The platform owner reviews your request and emails an activation invitation.</p>",
+          "eyebrow": "",
+          "tone": "dark",
+          "image": "",
+          "alt": "",
+          "button": "Get started with oneQay",
+          "href": "/register",
+          "items": []
+        }
+      ]
+    }
+  },
+  "finance": {
+    "id": {
+      "title": "Keuangan & pembukuan | oneQay",
+      "description": "Kelola pencatatan keuangan, jurnal, neraca saldo, dan penutupan kas shift dengan jejak perubahan.",
+      "blocks": [
+        {
+          "id": "hero",
+          "type": "hero",
+          "title": "Keuangan & pembukuan",
+          "body": "<p>Kelola pencatatan keuangan, jurnal, neraca saldo, dan penutupan kas shift dengan jejak perubahan.</p>",
+          "eyebrow": "ONEQAY / BISNIS ANDA",
+          "tone": "light",
+          "image": "",
+          "alt": "",
+          "button": "Daftarkan bisnis",
+          "href": "/register",
+          "items": []
+        },
+        {
+          "id": "start",
+          "type": "cta",
+          "title": "Siap untuk langkah berikutnya?",
+          "body": "<p>Daftarkan bisnis Anda. Pemilik platform meninjau permohonan dan mengirim undangan aktivasi melalui email.</p>",
+          "eyebrow": "",
+          "tone": "dark",
+          "image": "",
+          "alt": "",
+          "button": "Mulai bersama oneQay",
+          "href": "/register",
+          "items": []
+        }
+      ]
+    },
+    "en": {
+      "title": "Finance & bookkeeping | oneQay",
+      "description": "Manage finance records, journals, trial balances and shift cash closing with a traceable history.",
+      "blocks": [
+        {
+          "id": "hero",
+          "type": "hero",
+          "title": "Finance & bookkeeping",
+          "body": "<p>Manage finance records, journals, trial balances and shift cash closing with a traceable history.</p>",
+          "eyebrow": "ONEQAY / YOUR BUSINESS",
+          "tone": "light",
+          "image": "",
+          "alt": "",
+          "button": "Register your business",
+          "href": "/register",
+          "items": []
+        },
+        {
+          "id": "start",
+          "type": "cta",
+          "title": "Ready for your next step?",
+          "body": "<p>Register your business. The platform owner reviews your request and emails an activation invitation.</p>",
+          "eyebrow": "",
+          "tone": "dark",
+          "image": "",
+          "alt": "",
+          "button": "Get started with oneQay",
+          "href": "/register",
+          "items": []
+        }
+      ]
+    }
+  },
+  "security": {
+    "id": {
+      "title": "Hak akses & keamanan | oneQay",
+      "description": "Pisahkan akses pemilik, manajer, dan kasir. Lindungi akun istimewa dengan authenticator dan verifikasi ulang.",
+      "blocks": [
+        {
+          "id": "hero",
+          "type": "hero",
+          "title": "Hak akses & keamanan",
+          "body": "<p>Pisahkan akses pemilik, manajer, dan kasir. Lindungi akun istimewa dengan authenticator dan verifikasi ulang.</p>",
+          "eyebrow": "ONEQAY / BISNIS ANDA",
+          "tone": "light",
+          "image": "",
+          "alt": "",
+          "button": "Daftarkan bisnis",
+          "href": "/register",
+          "items": []
+        },
+        {
+          "id": "start",
+          "type": "cta",
+          "title": "Siap untuk langkah berikutnya?",
+          "body": "<p>Daftarkan bisnis Anda. Pemilik platform meninjau permohonan dan mengirim undangan aktivasi melalui email.</p>",
+          "eyebrow": "",
+          "tone": "dark",
+          "image": "",
+          "alt": "",
+          "button": "Mulai bersama oneQay",
+          "href": "/register",
+          "items": []
+        }
+      ]
+    },
+    "en": {
+      "title": "Access & security | oneQay",
+      "description": "Separate owner, manager and cashier access. Protect privileged accounts with an authenticator and renewed verification.",
+      "blocks": [
+        {
+          "id": "hero",
+          "type": "hero",
+          "title": "Access & security",
+          "body": "<p>Separate owner, manager and cashier access. Protect privileged accounts with an authenticator and renewed verification.</p>",
+          "eyebrow": "ONEQAY / YOUR BUSINESS",
+          "tone": "light",
+          "image": "",
+          "alt": "",
+          "button": "Register your business",
+          "href": "/register",
+          "items": []
+        },
+        {
+          "id": "start",
+          "type": "cta",
+          "title": "Ready for your next step?",
+          "body": "<p>Register your business. The platform owner reviews your request and emails an activation invitation.</p>",
+          "eyebrow": "",
+          "tone": "dark",
+          "image": "",
+          "alt": "",
+          "button": "Get started with oneQay",
+          "href": "/register",
+          "items": []
+        }
+      ]
+    }
+  },
+  "retail": {
+    "id": {
+      "title": "Toko ritel, lebih teratur. | oneQay",
+      "description": "Satukan produk, stok, kasir, pembelian, dan laporan untuk operasional toko sehari-hari.",
+      "blocks": [
+        {
+          "id": "hero",
+          "type": "hero",
+          "title": "Toko ritel, lebih teratur.",
+          "body": "<p>Satukan produk, stok, kasir, pembelian, dan laporan untuk operasional toko sehari-hari.</p>",
+          "eyebrow": "ONEQAY / BISNIS ANDA",
+          "tone": "light",
+          "image": "",
+          "alt": "",
+          "button": "Daftarkan bisnis",
+          "href": "/register",
+          "items": []
+        },
+        {
+          "id": "start",
+          "type": "cta",
+          "title": "Siap untuk langkah berikutnya?",
+          "body": "<p>Daftarkan bisnis Anda. Pemilik platform meninjau permohonan dan mengirim undangan aktivasi melalui email.</p>",
+          "eyebrow": "",
+          "tone": "dark",
+          "image": "",
+          "alt": "",
+          "button": "Mulai bersama oneQay",
+          "href": "/register",
+          "items": []
+        }
+      ]
+    },
+    "en": {
+      "title": "A more organized retail store. | oneQay",
+      "description": "Connect products, stock, checkout, purchasing and reports for daily store operations.",
+      "blocks": [
+        {
+          "id": "hero",
+          "type": "hero",
+          "title": "A more organized retail store.",
+          "body": "<p>Connect products, stock, checkout, purchasing and reports for daily store operations.</p>",
+          "eyebrow": "ONEQAY / YOUR BUSINESS",
+          "tone": "light",
+          "image": "",
+          "alt": "",
+          "button": "Register your business",
+          "href": "/register",
+          "items": []
+        },
+        {
+          "id": "start",
+          "type": "cta",
+          "title": "Ready for your next step?",
+          "body": "<p>Register your business. The platform owner reviews your request and emails an activation invitation.</p>",
+          "eyebrow": "",
+          "tone": "dark",
+          "image": "",
+          "alt": "",
+          "button": "Get started with oneQay",
+          "href": "/register",
+          "items": []
+        }
+      ]
+    }
+  },
+  "food": {
+    "id": {
+      "title": "Fokus pada rasa. Operasional tetap tertata. | oneQay",
+      "description": "Kelola menu sebagai produk, catat transaksi kasir, dan pantau kebutuhan stok usaha makanan dan minuman.",
+      "blocks": [
+        {
+          "id": "hero",
+          "type": "hero",
+          "title": "Fokus pada rasa. Operasional tetap tertata.",
+          "body": "<p>Kelola menu sebagai produk, catat transaksi kasir, dan pantau kebutuhan stok usaha makanan dan minuman.</p>",
+          "eyebrow": "ONEQAY / BISNIS ANDA",
+          "tone": "light",
+          "image": "",
+          "alt": "",
+          "button": "Daftarkan bisnis",
+          "href": "/register",
+          "items": []
+        },
+        {
+          "id": "start",
+          "type": "cta",
+          "title": "Siap untuk langkah berikutnya?",
+          "body": "<p>Daftarkan bisnis Anda. Pemilik platform meninjau permohonan dan mengirim undangan aktivasi melalui email.</p>",
+          "eyebrow": "",
+          "tone": "dark",
+          "image": "",
+          "alt": "",
+          "button": "Mulai bersama oneQay",
+          "href": "/register",
+          "items": []
+        }
+      ]
+    },
+    "en": {
+      "title": "Focus on the food. Keep operations organized. | oneQay",
+      "description": "Manage menu items as products, record sales and track stock for your food and beverage business.",
+      "blocks": [
+        {
+          "id": "hero",
+          "type": "hero",
+          "title": "Focus on the food. Keep operations organized.",
+          "body": "<p>Manage menu items as products, record sales and track stock for your food and beverage business.</p>",
+          "eyebrow": "ONEQAY / YOUR BUSINESS",
+          "tone": "light",
+          "image": "",
+          "alt": "",
+          "button": "Register your business",
+          "href": "/register",
+          "items": []
+        },
+        {
+          "id": "start",
+          "type": "cta",
+          "title": "Ready for your next step?",
+          "body": "<p>Register your business. The platform owner reviews your request and emails an activation invitation.</p>",
+          "eyebrow": "",
+          "tone": "dark",
+          "image": "",
+          "alt": "",
+          "button": "Get started with oneQay",
+          "href": "/register",
+          "items": []
+        }
+      ]
+    }
+  },
+  "services": {
+    "id": {
+      "title": "Layanan bagus dimulai dari tim yang siap. | oneQay",
+      "description": "Kelola daftar layanan, pelanggan, tim, dan pencatatan transaksi bisnis jasa Anda.",
+      "blocks": [
+        {
+          "id": "hero",
+          "type": "hero",
+          "title": "Layanan bagus dimulai dari tim yang siap.",
+          "body": "<p>Kelola daftar layanan, pelanggan, tim, dan pencatatan transaksi bisnis jasa Anda.</p>",
+          "eyebrow": "ONEQAY / BISNIS ANDA",
+          "tone": "light",
+          "image": "",
+          "alt": "",
+          "button": "Daftarkan bisnis",
+          "href": "/register",
+          "items": []
+        },
+        {
+          "id": "start",
+          "type": "cta",
+          "title": "Siap untuk langkah berikutnya?",
+          "body": "<p>Daftarkan bisnis Anda. Pemilik platform meninjau permohonan dan mengirim undangan aktivasi melalui email.</p>",
+          "eyebrow": "",
+          "tone": "dark",
+          "image": "",
+          "alt": "",
+          "button": "Mulai bersama oneQay",
+          "href": "/register",
+          "items": []
+        }
+      ]
+    },
+    "en": {
+      "title": "Great service starts with an organized team. | oneQay",
+      "description": "Manage service items, customers, teams and sales records for your service business.",
+      "blocks": [
+        {
+          "id": "hero",
+          "type": "hero",
+          "title": "Great service starts with an organized team.",
+          "body": "<p>Manage service items, customers, teams and sales records for your service business.</p>",
+          "eyebrow": "ONEQAY / YOUR BUSINESS",
+          "tone": "light",
+          "image": "",
+          "alt": "",
+          "button": "Register your business",
+          "href": "/register",
+          "items": []
+        },
+        {
+          "id": "start",
+          "type": "cta",
+          "title": "Ready for your next step?",
+          "body": "<p>Register your business. The platform owner reviews your request and emails an activation invitation.</p>",
+          "eyebrow": "",
+          "tone": "dark",
+          "image": "",
+          "alt": "",
+          "button": "Get started with oneQay",
+          "href": "/register",
+          "items": []
+        }
+      ]
+    }
+  },
+  "pricing": {
+    "id": {
+      "title": "Mulai dari kebutuhan bisnis Anda. | oneQay",
+      "description": "Daftarkan kebutuhan bisnis untuk peninjauan aktivasi. Harga dan syarat layanan disepakati sebelum aktivasi; formulir ini tidak melakukan penagihan otomatis.",
+      "blocks": [
+        {
+          "id": "hero",
+          "type": "hero",
+          "title": "Mulai dari kebutuhan bisnis Anda.",
+          "body": "<p>Daftarkan kebutuhan bisnis untuk peninjauan aktivasi. Harga dan syarat layanan disepakati sebelum aktivasi; formulir ini tidak melakukan penagihan otomatis.</p>",
+          "eyebrow": "ONEQAY / BISNIS ANDA",
+          "tone": "light",
+          "image": "",
+          "alt": "",
+          "button": "Daftarkan bisnis",
+          "href": "/register",
+          "items": []
+        },
+        {
+          "id": "start",
+          "type": "cta",
+          "title": "Siap untuk langkah berikutnya?",
+          "body": "<p>Daftarkan bisnis Anda. Pemilik platform meninjau permohonan dan mengirim undangan aktivasi melalui email.</p>",
+          "eyebrow": "",
+          "tone": "dark",
+          "image": "",
+          "alt": "",
+          "button": "Mulai bersama oneQay",
+          "href": "/register",
+          "items": []
+        }
+      ]
+    },
+    "en": {
+      "title": "Start with your business needs. | oneQay",
+      "description": "Register your needs for activation review. Pricing and service terms are agreed before activation; this form does not trigger automatic billing.",
+      "blocks": [
+        {
+          "id": "hero",
+          "type": "hero",
+          "title": "Start with your business needs.",
+          "body": "<p>Register your needs for activation review. Pricing and service terms are agreed before activation; this form does not trigger automatic billing.</p>",
+          "eyebrow": "ONEQAY / YOUR BUSINESS",
+          "tone": "light",
+          "image": "",
+          "alt": "",
+          "button": "Register your business",
+          "href": "/register",
+          "items": []
+        },
+        {
+          "id": "start",
+          "type": "cta",
+          "title": "Ready for your next step?",
+          "body": "<p>Register your business. The platform owner reviews your request and emails an activation invitation.</p>",
+          "eyebrow": "",
+          "tone": "dark",
+          "image": "",
+          "alt": "",
+          "button": "Get started with oneQay",
+          "href": "/register",
+          "items": []
+        }
+      ]
+    }
+  },
+  "about": {
+    "id": {
+      "title": "Ruang tumbuh untuk bisnis Anda. | oneQay",
+      "description": "oneQay — The Future of Intelligent Business Management. Kasir, inventori, pelanggan, tim, dan laporan dalam ruang kerja bisnis yang terkelola.",
+      "blocks": [
+        {
+          "id": "hero",
+          "type": "hero",
+          "title": "Ruang tumbuh untuk bisnis Anda.",
+          "body": "<p>oneQay — The Future of Intelligent Business Management. Kasir, inventori, pelanggan, tim, dan laporan dalam ruang kerja bisnis yang terkelola.</p>",
+          "eyebrow": "ONEQAY / BISNIS ANDA",
+          "tone": "light",
+          "image": "",
+          "alt": "",
+          "button": "Daftarkan bisnis",
+          "href": "/register",
+          "items": []
+        },
+        {
+          "id": "start",
+          "type": "cta",
+          "title": "Siap untuk langkah berikutnya?",
+          "body": "<p>Daftarkan bisnis Anda. Pemilik platform meninjau permohonan dan mengirim undangan aktivasi melalui email.</p>",
+          "eyebrow": "",
+          "tone": "dark",
+          "image": "",
+          "alt": "",
+          "button": "Mulai bersama oneQay",
+          "href": "/register",
+          "items": []
+        }
+      ]
+    },
+    "en": {
+      "title": "Room for your business to grow. | oneQay",
+      "description": "oneQay — The Future of Intelligent Business Management. Checkout, inventory, customers, teams and reports in a managed business workspace.",
+      "blocks": [
+        {
+          "id": "hero",
+          "type": "hero",
+          "title": "Room for your business to grow.",
+          "body": "<p>oneQay — The Future of Intelligent Business Management. Checkout, inventory, customers, teams and reports in a managed business workspace.</p>",
+          "eyebrow": "ONEQAY / YOUR BUSINESS",
+          "tone": "light",
+          "image": "",
+          "alt": "",
+          "button": "Register your business",
+          "href": "/register",
+          "items": []
+        },
+        {
+          "id": "start",
+          "type": "cta",
+          "title": "Ready for your next step?",
+          "body": "<p>Register your business. The platform owner reviews your request and emails an activation invitation.</p>",
+          "eyebrow": "",
+          "tone": "dark",
+          "image": "",
+          "alt": "",
+          "button": "Get started with oneQay",
+          "href": "/register",
+          "items": []
+        }
+      ]
+    }
+  },
+  "contact": {
+    "id": {
+      "title": "Mari mulai dari bisnis Anda. | oneQay",
+      "description": "Sampaikan kebutuhan lewat pendaftaran bisnis. Pengelola platform meninjau informasi dan menindaklanjuti melalui email yang Anda cantumkan.",
+      "blocks": [
+        {
+          "id": "hero",
+          "type": "hero",
+          "title": "Mari mulai dari bisnis Anda.",
+          "body": "<p>Sampaikan kebutuhan lewat pendaftaran bisnis. Pengelola platform meninjau informasi dan menindaklanjuti melalui email yang Anda cantumkan.</p>",
+          "eyebrow": "ONEQAY / BISNIS ANDA",
+          "tone": "light",
+          "image": "",
+          "alt": "",
+          "button": "Daftarkan bisnis",
+          "href": "/register",
+          "items": []
+        },
+        {
+          "id": "start",
+          "type": "cta",
+          "title": "Siap untuk langkah berikutnya?",
+          "body": "<p>Daftarkan bisnis Anda. Pemilik platform meninjau permohonan dan mengirim undangan aktivasi melalui email.</p>",
+          "eyebrow": "",
+          "tone": "dark",
+          "image": "",
+          "alt": "",
+          "button": "Mulai bersama oneQay",
+          "href": "/register",
+          "items": []
+        }
+      ]
+    },
+    "en": {
+      "title": "Let’s start with your business. | oneQay",
+      "description": "Share your needs through registration. The platform operator reviews your information and follows up through the email you provide.",
+      "blocks": [
+        {
+          "id": "hero",
+          "type": "hero",
+          "title": "Let’s start with your business.",
+          "body": "<p>Share your needs through registration. The platform operator reviews your information and follows up through the email you provide.</p>",
+          "eyebrow": "ONEQAY / YOUR BUSINESS",
+          "tone": "light",
+          "image": "",
+          "alt": "",
+          "button": "Register your business",
+          "href": "/register",
+          "items": []
+        },
+        {
+          "id": "start",
+          "type": "cta",
+          "title": "Ready for your next step?",
+          "body": "<p>Register your business. The platform owner reviews your request and emails an activation invitation.</p>",
+          "eyebrow": "",
+          "tone": "dark",
+          "image": "",
+          "alt": "",
+          "button": "Get started with oneQay",
+          "href": "/register",
+          "items": []
+        }
+      ]
+    }
+  },
+  "guides": {
+    "id": {
+      "title": "Panduan memulai oneQay | oneQay",
+      "description": "Daftar bisnis, tunggu persetujuan, buka undangan email, atur kata sandi, aktifkan authenticator, lalu lengkapi produk dan staf Anda.",
+      "blocks": [
+        {
+          "id": "hero",
+          "type": "text",
+          "title": "Panduan memulai oneQay",
+          "body": "<p>Daftar bisnis, tunggu persetujuan, buka undangan email, atur kata sandi, aktifkan authenticator, lalu lengkapi produk dan staf Anda.</p>",
+          "eyebrow": "ONEQAY / BISNIS ANDA",
+          "tone": "light",
+          "image": "",
+          "alt": "",
+          "button": "Daftarkan bisnis",
+          "href": "/register",
+          "items": []
+        },
+        {
+          "id": "start",
+          "type": "cta",
+          "title": "Siap untuk langkah berikutnya?",
+          "body": "<p>Daftarkan bisnis Anda. Pemilik platform meninjau permohonan dan mengirim undangan aktivasi melalui email.</p>",
+          "eyebrow": "",
+          "tone": "dark",
+          "image": "",
+          "alt": "",
+          "button": "Mulai bersama oneQay",
+          "href": "/register",
+          "items": []
+        }
+      ]
+    },
+    "en": {
+      "title": "Getting started with oneQay | oneQay",
+      "description": "Register, await approval, open your email invitation, set a password, enroll an authenticator, then add your products and staff.",
+      "blocks": [
+        {
+          "id": "hero",
+          "type": "text",
+          "title": "Getting started with oneQay",
+          "body": "<p>Register, await approval, open your email invitation, set a password, enroll an authenticator, then add your products and staff.</p>",
+          "eyebrow": "ONEQAY / YOUR BUSINESS",
+          "tone": "light",
+          "image": "",
+          "alt": "",
+          "button": "Register your business",
+          "href": "/register",
+          "items": []
+        },
+        {
+          "id": "start",
+          "type": "cta",
+          "title": "Ready for your next step?",
+          "body": "<p>Register your business. The platform owner reviews your request and emails an activation invitation.</p>",
+          "eyebrow": "",
+          "tone": "dark",
+          "image": "",
+          "alt": "",
+          "button": "Get started with oneQay",
+          "href": "/register",
+          "items": []
+        }
+      ]
+    }
+  },
+  "integrations": {
+    "id": {
+      "title": "Data terhubung, langkah yang jelas. | oneQay",
+      "description": "Impor Excel/CSV dan ekspor PDF/Excel tersedia. Koneksi QRIS, marketplace, kurir, atau layanan eksternal memerlukan integrasi serta akun penyedia dan belum aktif otomatis pada oneQay.",
+      "blocks": [
+        {
+          "id": "hero",
+          "type": "text",
+          "title": "Data terhubung, langkah yang jelas.",
+          "body": "<p>Impor Excel/CSV dan ekspor PDF/Excel tersedia. Koneksi QRIS, marketplace, kurir, atau layanan eksternal memerlukan integrasi serta akun penyedia dan belum aktif otomatis pada oneQay.</p>",
+          "eyebrow": "ONEQAY / BISNIS ANDA",
+          "tone": "light",
+          "image": "",
+          "alt": "",
+          "button": "Daftarkan bisnis",
+          "href": "/register",
+          "items": []
+        },
+        {
+          "id": "start",
+          "type": "cta",
+          "title": "Siap untuk langkah berikutnya?",
+          "body": "<p>Daftarkan bisnis Anda. Pemilik platform meninjau permohonan dan mengirim undangan aktivasi melalui email.</p>",
+          "eyebrow": "",
+          "tone": "dark",
+          "image": "",
+          "alt": "",
+          "button": "Mulai bersama oneQay",
+          "href": "/register",
+          "items": []
+        }
+      ]
+    },
+    "en": {
+      "title": "Connected data. Clear next steps. | oneQay",
+      "description": "Excel/CSV import and PDF/Excel export are available. QRIS, marketplaces, couriers and external services require integrations and provider accounts and are not automatically active in oneQay.",
+      "blocks": [
+        {
+          "id": "hero",
+          "type": "text",
+          "title": "Connected data. Clear next steps.",
+          "body": "<p>Excel/CSV import and PDF/Excel export are available. QRIS, marketplaces, couriers and external services require integrations and provider accounts and are not automatically active in oneQay.</p>",
+          "eyebrow": "ONEQAY / YOUR BUSINESS",
+          "tone": "light",
+          "image": "",
+          "alt": "",
+          "button": "Register your business",
+          "href": "/register",
+          "items": []
+        },
+        {
+          "id": "start",
+          "type": "cta",
+          "title": "Ready for your next step?",
+          "body": "<p>Register your business. The platform owner reviews your request and emails an activation invitation.</p>",
+          "eyebrow": "",
+          "tone": "dark",
+          "image": "",
+          "alt": "",
+          "button": "Get started with oneQay",
+          "href": "/register",
+          "items": []
+        }
+      ]
+    }
+  },
+  "privacy": {
+    "id": {
+      "title": "Informasi privasi | oneQay",
+      "description": "Pendaftaran menyimpan nama bisnis, email, nomor kontak, jenis usaha, serta persetujuan untuk peninjauan dan aktivasi. Pengelola platform mengelola permohonan. Data operasional hanya diakses pengguna sesuai peran dan cakupan bisnisnya. Hubun",
+      "blocks": [
+        {
+          "id": "hero",
+          "type": "text",
+          "title": "Informasi privasi",
+          "body": "<p>Pendaftaran menyimpan nama bisnis, email, nomor kontak, jenis usaha, serta persetujuan untuk peninjauan dan aktivasi. Pengelola platform mengelola permohonan. Data operasional hanya diakses pengguna sesuai peran dan cakupan bisnisnya. Hubungi pengelola melalui saluran aktivasi untuk permintaan terkait data.</p>",
+          "eyebrow": "ONEQAY / BISNIS ANDA",
+          "tone": "light",
+          "image": "",
+          "alt": "",
+          "button": "Daftarkan bisnis",
+          "href": "/register",
+          "items": []
+        },
+        {
+          "id": "start",
+          "type": "cta",
+          "title": "Siap untuk langkah berikutnya?",
+          "body": "<p>Daftarkan bisnis Anda. Pemilik platform meninjau permohonan dan mengirim undangan aktivasi melalui email.</p>",
+          "eyebrow": "",
+          "tone": "dark",
+          "image": "",
+          "alt": "",
+          "button": "Mulai bersama oneQay",
+          "href": "/register",
+          "items": []
+        }
+      ]
+    },
+    "en": {
+      "title": "Privacy information | oneQay",
+      "description": "Registration stores your business name, email, contact number, business type and consent for review and activation. The platform operator manages applications. Users access operating data only within their role and business scope. Contact t",
+      "blocks": [
+        {
+          "id": "hero",
+          "type": "text",
+          "title": "Privacy information",
+          "body": "<p>Registration stores your business name, email, contact number, business type and consent for review and activation. The platform operator manages applications. Users access operating data only within their role and business scope. Contact the operator through the activation channel for data requests.</p>",
+          "eyebrow": "ONEQAY / YOUR BUSINESS",
+          "tone": "light",
+          "image": "",
+          "alt": "",
+          "button": "Register your business",
+          "href": "/register",
+          "items": []
+        },
+        {
+          "id": "start",
+          "type": "cta",
+          "title": "Ready for your next step?",
+          "body": "<p>Register your business. The platform owner reviews your request and emails an activation invitation.</p>",
+          "eyebrow": "",
+          "tone": "dark",
+          "image": "",
+          "alt": "",
+          "button": "Get started with oneQay",
+          "href": "/register",
+          "items": []
+        }
+      ]
+    }
+  },
+  "terms": {
+    "id": {
+      "title": "Ketentuan pendaftaran | oneQay",
+      "description": "Pendaftaran merupakan permohonan penggunaan, bukan aktivasi otomatis atau transaksi berbayar. Gunakan email yang Anda kuasai dan informasi bisnis yang benar. Akun diaktifkan setelah persetujuan pemilik platform dan penetapan kata sandi mela",
+      "blocks": [
+        {
+          "id": "hero",
+          "type": "text",
+          "title": "Ketentuan pendaftaran",
+          "body": "<p>Pendaftaran merupakan permohonan penggunaan, bukan aktivasi otomatis atau transaksi berbayar. Gunakan email yang Anda kuasai dan informasi bisnis yang benar. Akun diaktifkan setelah persetujuan pemilik platform dan penetapan kata sandi melalui undangan. Ketentuan komersial disepakati sebelum aktivasi.</p>",
+          "eyebrow": "ONEQAY / BISNIS ANDA",
+          "tone": "light",
+          "image": "",
+          "alt": "",
+          "button": "Daftarkan bisnis",
+          "href": "/register",
+          "items": []
+        },
+        {
+          "id": "start",
+          "type": "cta",
+          "title": "Siap untuk langkah berikutnya?",
+          "body": "<p>Daftarkan bisnis Anda. Pemilik platform meninjau permohonan dan mengirim undangan aktivasi melalui email.</p>",
+          "eyebrow": "",
+          "tone": "dark",
+          "image": "",
+          "alt": "",
+          "button": "Mulai bersama oneQay",
+          "href": "/register",
+          "items": []
+        }
+      ]
+    },
+    "en": {
+      "title": "Registration terms | oneQay",
+      "description": "Registration is an application for use, not automatic activation or a paid transaction. Use an email you control and accurate business information. Activation requires platform-owner approval and password setup through an invitation. Commer",
+      "blocks": [
+        {
+          "id": "hero",
+          "type": "text",
+          "title": "Registration terms",
+          "body": "<p>Registration is an application for use, not automatic activation or a paid transaction. Use an email you control and accurate business information. Activation requires platform-owner approval and password setup through an invitation. Commercial terms are agreed before activation.</p>",
+          "eyebrow": "ONEQAY / YOUR BUSINESS",
+          "tone": "light",
+          "image": "",
+          "alt": "",
+          "button": "Register your business",
+          "href": "/register",
+          "items": []
+        },
+        {
+          "id": "start",
+          "type": "cta",
+          "title": "Ready for your next step?",
+          "body": "<p>Register your business. The platform owner reviews your request and emails an activation invitation.</p>",
+          "eyebrow": "",
+          "tone": "dark",
+          "image": "",
+          "alt": "",
+          "button": "Get started with oneQay",
+          "href": "/register",
+          "items": []
+        }
+      ]
+    }
+  },
+  "home": {
+    "id": {
+      "title": "oneQay — Bisnis rapi. Tumbuh lebih pasti.",
+      "description": "Kasir, inventori, pelanggan, tim, dan laporan bisnis dalam satu ruang kerja oneQay.",
+      "blocks": [
+        {
+          "id": "hero",
+          "type": "hero",
+          "title": "Satu ruang kerja.\nBanyak peluang tumbuh.",
+          "body": "<p>Dari transaksi pertama sampai laporan penutupan hari. Kelola kasir, stok, pelanggan, dan tim dengan oneQay.</p>",
+          "eyebrow": "BISNIS LEBIH TERATUR, SETIAP HARI",
+          "tone": "light",
+          "image": "",
+          "alt": "",
+          "button": "Daftarkan bisnis Anda",
+          "href": "/register",
+          "items": []
+        },
+        {
+          "id": "features",
+          "type": "features",
+          "title": "Kerja lebih ringan.\nKendali tetap di tangan.",
+          "body": "",
+          "eyebrow": "TERHUBUNG DALAM ONEQAY",
+          "tone": "soft",
+          "image": "",
+          "alt": "",
+          "button": "",
+          "href": "/register",
+          "items": [
+            {
+              "title": "Kasir & transaksi",
+              "body": "Buka shift, catat penjualan, terima pembayaran tunai, dan terbitkan struk dalam alur kasir yang terhubung.",
+              "href": "/pages/pos",
+              "icon": "shopping-cart"
+            },
+            {
+              "title": "Produk & inventori",
+              "body": "Kelola SKU, barcode, varian, dan stok. Impor katalog dari Excel atau CSV dengan pratinjau sebelum menyimpan.",
+              "href": "/pages/inventory",
+              "icon": "package-search"
+            },
+            {
+              "title": "Pembelian & pemasok",
+              "body": "Catat pemasok, pesanan pembelian, persetujuan, dan penerimaan barang dengan jejak yang jelas.",
+              "href": "/pages/purchasing",
+              "icon": "shopping-basket"
+            },
+            {
+              "title": "Manajemen pelanggan",
+              "body": "Simpan informasi pelanggan, kontak, dan interaksi agar tim memiliki catatan yang konsisten.",
+              "href": "/pages/customers",
+              "icon": "contact-round"
+            },
+            {
+              "title": "SDM & tim",
+              "body": "Kelola staf, kehadiran, cuti, peran, dan hak akses sesuai tanggung jawab dalam bisnis.",
+              "href": "/pages/people",
+              "icon": "users"
+            },
+            {
+              "title": "Laporan & pemantauan",
+              "body": "Pantau tren penjualan dan laporan operasional. Unduh PDF serta Excel sesuai cakupan hak akses.",
+              "href": "/pages/reports",
+              "icon": "chart-no-axes-combined"
+            },
+            {
+              "title": "Keuangan & pembukuan",
+              "body": "Kelola pencatatan keuangan, jurnal, neraca saldo, dan penutupan kas shift dengan jejak perubahan.",
+              "href": "/pages/finance",
+              "icon": "receipt-text"
+            },
+            {
+              "title": "Hak akses & keamanan",
+              "body": "Pisahkan akses pemilik, manajer, dan kasir. Lindungi akun istimewa dengan authenticator dan verifikasi ulang.",
+              "href": "/pages/security",
+              "icon": "shield-check"
+            }
+          ]
+        },
+        {
+          "id": "inventory-story",
+          "type": "split",
+          "title": "Stok jelas.\nKeputusan lebih tenang.",
+          "body": "<p>Mulai dengan produk yang Anda jual. Impor katalog sekaligus, periksa setiap baris sebelum disimpan, lalu pantau stok dan pergerakannya.</p>",
+          "eyebrow": "",
+          "tone": "light",
+          "image": "",
+          "alt": "",
+          "button": "Jelajahi inventori",
+          "href": "/pages/inventory",
+          "items": []
+        },
+        {
+          "id": "businesses",
+          "type": "features",
+          "title": "Cara kerja berbeda.\nRuang tumbuh yang sama.",
+          "body": "",
+          "eyebrow": "UNTUK BISNIS ANDA",
+          "tone": "light",
+          "image": "",
+          "alt": "",
+          "button": "",
+          "href": "/register",
+          "items": [
+            {
+              "title": "Toko ritel",
+              "body": "Produk, persediaan, dan transaksi dalam satu alur.",
+              "href": "/pages/retail",
+              "icon": "store"
+            },
+            {
+              "title": "Makanan & minuman",
+              "body": "Catat penjualan dan kebutuhan stok harian.",
+              "href": "/pages/food",
+              "icon": "coffee"
+            },
+            {
+              "title": "Bisnis jasa",
+              "body": "Satukan layanan, pelanggan, dan tim Anda.",
+              "href": "/pages/services",
+              "icon": "briefcase-business"
+            }
+          ]
+        },
+        {
+          "id": "reports-story",
+          "type": "split",
+          "title": "Angka yang membantu\nAnda melangkah.",
+          "body": "<p>Lihat tren penjualan dan laporan operasional. Unduh PDF untuk dibagikan atau Excel untuk analisis lanjutan.</p>",
+          "eyebrow": "",
+          "tone": "soft",
+          "image": "",
+          "alt": "",
+          "button": "Lihat fitur laporan",
+          "href": "/pages/reports",
+          "items": []
+        },
+        {
+          "id": "onboarding",
+          "type": "features",
+          "title": "Mulai dengan tiga langkah.",
+          "body": "",
+          "eyebrow": "",
+          "tone": "light",
+          "image": "",
+          "alt": "",
+          "button": "",
+          "href": "/register",
+          "items": [
+            {
+              "title": "01 · Daftarkan bisnis",
+              "body": "Isi informasi bisnis dan email pemilik yang aktif.",
+              "href": "/pages/guides",
+              "icon": "store"
+            },
+            {
+              "title": "02 · Aktivasi akun",
+              "body": "Setelah disetujui, buat kata sandi melalui undangan email.",
+              "href": "/pages/guides",
+              "icon": "mail"
+            },
+            {
+              "title": "03 · Siapkan operasional",
+              "body": "Tambahkan produk, staf, dan hak akses, lalu mulai bertransaksi.",
+              "href": "/pages/guides",
+              "icon": "layout-dashboard"
+            }
+          ]
+        },
+        {
+          "id": "faq",
+          "type": "faq",
+          "title": "Sebelum Anda mulai.",
+          "body": "",
+          "eyebrow": "",
+          "tone": "light",
+          "image": "",
+          "alt": "",
+          "button": "",
+          "href": "/register",
+          "items": [
+            {
+              "title": "Siapa yang menjadi admin bisnis?",
+              "body": "Pemilik yang mengaktifkan undangan menjadi admin untuk bisnisnya sendiri.",
+              "href": "/pages/guides",
+              "icon": "store"
+            },
+            {
+              "title": "Bisakah produk diimpor sekaligus?",
+              "body": "Ya. Gunakan template CSV atau Excel, lalu periksa pratinjau sebelum menyimpan.",
+              "href": "/pages/inventory",
+              "icon": "store"
+            },
+            {
+              "title": "Apakah laporan bisa diunduh?",
+              "body": "Laporan mendukung PDF dan Excel sesuai hak akses pengguna.",
+              "href": "/pages/reports",
+              "icon": "store"
+            },
+            {
+              "title": "Apakah pendaftaran langsung menagih biaya?",
+              "body": "Tidak. Permohonan ditinjau terlebih dahulu. Harga dan ketentuan disepakati sebelum aktivasi.",
+              "href": "/pages/pricing",
+              "icon": "store"
+            }
+          ]
+        },
+        {
+          "id": "cta",
+          "type": "cta",
+          "title": "Siap menata langkah\nbisnis berikutnya?",
+          "body": "<p>Mulai dari satu pendaftaran. Bangun ruang kerja yang lebih teratur bersama oneQay.</p>",
+          "eyebrow": "",
+          "tone": "dark",
+          "image": "",
+          "alt": "",
+          "button": "Mulai bersama oneQay",
+          "href": "/register",
+          "items": []
+        }
+      ]
+    },
+    "en": {
+      "title": "oneQay — Organized business. Confident growth.",
+      "description": "Checkout, inventory, customers, teams and business reports in one oneQay workspace.",
+      "blocks": [
+        {
+          "id": "hero",
+          "type": "hero",
+          "title": "One workspace.\nMore room to grow.",
+          "body": "<p>From your first sale to the end-of-day report. Bring checkout, stock, customers and your team together with oneQay.</p>",
+          "eyebrow": "A MORE ORGANIZED BUSINESS, EVERY DAY",
+          "tone": "light",
+          "image": "",
+          "alt": "",
+          "button": "Register your business",
+          "href": "/register",
+          "items": []
+        },
+        {
+          "id": "features",
+          "type": "features",
+          "title": "Less busywork.\nMore control.",
+          "body": "",
+          "eyebrow": "CONNECTED IN ONEQAY",
+          "tone": "soft",
+          "image": "",
+          "alt": "",
+          "button": "",
+          "href": "/register",
+          "items": [
+            {
+              "title": "Point of sale",
+              "body": "Open shifts, record sales, accept cash and issue receipts in a connected checkout flow.",
+              "href": "/pages/pos",
+              "icon": "shopping-cart"
+            },
+            {
+              "title": "Products & inventory",
+              "body": "Manage SKUs, barcodes, variants and stock. Import Excel or CSV catalogs with a preview before saving.",
+              "href": "/pages/inventory",
+              "icon": "package-search"
+            },
+            {
+              "title": "Purchasing & suppliers",
+              "body": "Track suppliers, purchase orders, approvals and goods receipts with a clear history.",
+              "href": "/pages/purchasing",
+              "icon": "shopping-basket"
+            },
+            {
+              "title": "Customer management",
+              "body": "Keep customer, contact and interaction records consistent across your team.",
+              "href": "/pages/customers",
+              "icon": "contact-round"
+            },
+            {
+              "title": "People & teams",
+              "body": "Manage staff, attendance, leave, roles and access according to business responsibilities.",
+              "href": "/pages/people",
+              "icon": "users"
+            },
+            {
+              "title": "Reports & monitoring",
+              "body": "Follow sales trends and operating reports. Download PDF and Excel within your access scope.",
+              "href": "/pages/reports",
+              "icon": "chart-no-axes-combined"
+            },
+            {
+              "title": "Finance & bookkeeping",
+              "body": "Manage finance records, journals, trial balances and shift cash closing with a traceable history.",
+              "href": "/pages/finance",
+              "icon": "receipt-text"
+            },
+            {
+              "title": "Access & security",
+              "body": "Separate owner, manager and cashier access. Protect privileged accounts with an authenticator and renewed verification.",
+              "href": "/pages/security",
+              "icon": "shield-check"
+            }
+          ]
+        },
+        {
+          "id": "inventory-story",
+          "type": "split",
+          "title": "Clear stock.\nConfident decisions.",
+          "body": "<p>Start with the products you sell. Import your catalog in bulk, review each row before saving, then follow your stock and its movements.</p>",
+          "eyebrow": "",
+          "tone": "light",
+          "image": "",
+          "alt": "",
+          "button": "Explore inventory",
+          "href": "/pages/inventory",
+          "items": []
+        },
+        {
+          "id": "businesses",
+          "type": "features",
+          "title": "Different businesses.\nThe same room to grow.",
+          "body": "",
+          "eyebrow": "FOR YOUR BUSINESS",
+          "tone": "light",
+          "image": "",
+          "alt": "",
+          "button": "",
+          "href": "/register",
+          "items": [
+            {
+              "title": "Retail stores",
+              "body": "Products, stock and checkout in one flow.",
+              "href": "/pages/retail",
+              "icon": "store"
+            },
+            {
+              "title": "Food & beverage",
+              "body": "Keep daily sales and stock needs in view.",
+              "href": "/pages/food",
+              "icon": "coffee"
+            },
+            {
+              "title": "Service businesses",
+              "body": "Bring services, customers and your team together.",
+              "href": "/pages/services",
+              "icon": "briefcase-business"
+            }
+          ]
+        },
+        {
+          "id": "reports-story",
+          "type": "split",
+          "title": "Numbers that help\nyou move forward.",
+          "body": "<p>Review sales trends and operating reports. Download a PDF to share or an Excel file for further analysis.</p>",
+          "eyebrow": "",
+          "tone": "soft",
+          "image": "",
+          "alt": "",
+          "button": "Explore reports",
+          "href": "/pages/reports",
+          "items": []
+        },
+        {
+          "id": "onboarding",
+          "type": "features",
+          "title": "Get started in three steps.",
+          "body": "",
+          "eyebrow": "",
+          "tone": "light",
+          "image": "",
+          "alt": "",
+          "button": "",
+          "href": "/register",
+          "items": [
+            {
+              "title": "01 · Register",
+              "body": "Enter your business details and an active owner email.",
+              "href": "/pages/guides",
+              "icon": "store"
+            },
+            {
+              "title": "02 · Activate",
+              "body": "After approval, set a password through your email invitation.",
+              "href": "/pages/guides",
+              "icon": "mail"
+            },
+            {
+              "title": "03 · Set up",
+              "body": "Add products, staff and access rights, then start selling.",
+              "href": "/pages/guides",
+              "icon": "layout-dashboard"
+            }
+          ]
+        },
+        {
+          "id": "faq",
+          "type": "faq",
+          "title": "Before you get started.",
+          "body": "",
+          "eyebrow": "",
+          "tone": "light",
+          "image": "",
+          "alt": "",
+          "button": "",
+          "href": "/register",
+          "items": [
+            {
+              "title": "Who becomes the business admin?",
+              "body": "The owner who activates the invitation becomes the admin of their own business.",
+              "href": "/pages/guides",
+              "icon": "store"
+            },
+            {
+              "title": "Can I import products in bulk?",
+              "body": "Yes. Use the CSV or Excel template and review the preview before saving.",
+              "href": "/pages/inventory",
+              "icon": "store"
+            },
+            {
+              "title": "Can I download reports?",
+              "body": "Reports support PDF and Excel downloads within each user’s access.",
+              "href": "/pages/reports",
+              "icon": "store"
+            },
+            {
+              "title": "Does registration charge me?",
+              "body": "No. Your request is reviewed first. Pricing and terms are agreed before activation.",
+              "href": "/pages/pricing",
+              "icon": "store"
+            }
+          ]
+        },
+        {
+          "id": "cta",
+          "type": "cta",
+          "title": "Ready for your\nnext business chapter?",
+          "body": "<p>Start with one registration. Build a more organized workspace with oneQay.</p>",
+          "eyebrow": "",
+          "tone": "dark",
+          "image": "",
+          "alt": "",
+          "button": "Start with oneQay",
+          "href": "/register",
+          "items": []
+        }
+      ]
+    }
+  },
+  "navigation": {
+    "id": {
+      "title": "Menu navigasi",
+      "description": "",
+      "blocks": [
+        {
+          "id": "group-0",
+          "type": "features",
+          "title": "Fitur",
+          "body": "",
+          "eyebrow": "",
+          "tone": "light",
+          "image": "",
+          "alt": "",
+          "button": "",
+          "href": "/register",
+          "items": [
+            {
+              "title": "Kasir & transaksi",
+              "body": "",
+              "href": "/pages/pos",
+              "icon": "shopping-cart"
+            },
+            {
+              "title": "Produk & inventori",
+              "body": "",
+              "href": "/pages/inventory",
+              "icon": "package-search"
+            },
+            {
+              "title": "Pembelian & pemasok",
+              "body": "",
+              "href": "/pages/purchasing",
+              "icon": "shopping-basket"
+            },
+            {
+              "title": "Manajemen pelanggan",
+              "body": "",
+              "href": "/pages/customers",
+              "icon": "contact-round"
+            },
+            {
+              "title": "SDM & tim",
+              "body": "",
+              "href": "/pages/people",
+              "icon": "users"
+            },
+            {
+              "title": "Laporan & pemantauan",
+              "body": "",
+              "href": "/pages/reports",
+              "icon": "chart-no-axes-combined"
+            },
+            {
+              "title": "Keuangan & pembukuan",
+              "body": "",
+              "href": "/pages/finance",
+              "icon": "receipt-text"
+            },
+            {
+              "title": "Hak akses & keamanan",
+              "body": "",
+              "href": "/pages/security",
+              "icon": "shield-check"
+            }
+          ]
+        },
+        {
+          "id": "group-1",
+          "type": "features",
+          "title": "Solusi bisnis",
+          "body": "",
+          "eyebrow": "",
+          "tone": "light",
+          "image": "",
+          "alt": "",
+          "button": "",
+          "href": "/register",
+          "items": [
+            {
+              "title": "Toko ritel",
+              "body": "",
+              "href": "/pages/retail",
+              "icon": "store"
+            },
+            {
+              "title": "Makanan & minuman",
+              "body": "",
+              "href": "/pages/food",
+              "icon": "coffee"
+            },
+            {
+              "title": "Jasa",
+              "body": "",
+              "href": "/pages/services",
+              "icon": "briefcase-business"
+            }
+          ]
+        },
+        {
+          "id": "group-2",
+          "type": "features",
+          "title": "Informasi",
+          "body": "",
+          "eyebrow": "",
+          "tone": "light",
+          "image": "",
+          "alt": "",
+          "button": "",
+          "href": "/register",
+          "items": [
+            {
+              "title": "Ruang tumbuh untuk bisnis Anda.",
+              "body": "",
+              "href": "/pages/about",
+              "icon": "store"
+            },
+            {
+              "title": "Panduan memulai oneQay",
+              "body": "",
+              "href": "/pages/guides",
+              "icon": "store"
+            },
+            {
+              "title": "Data terhubung, langkah yang jelas.",
+              "body": "",
+              "href": "/pages/integrations",
+              "icon": "store"
+            },
+            {
+              "title": "Mari mulai dari bisnis Anda.",
+              "body": "",
+              "href": "/pages/contact",
+              "icon": "store"
+            }
+          ]
+        }
+      ]
+    },
+    "en": {
+      "title": "Navigation menu",
+      "description": "",
+      "blocks": [
+        {
+          "id": "group-0",
+          "type": "features",
+          "title": "Features",
+          "body": "",
+          "eyebrow": "",
+          "tone": "light",
+          "image": "",
+          "alt": "",
+          "button": "",
+          "href": "/register",
+          "items": [
+            {
+              "title": "Point of sale",
+              "body": "",
+              "href": "/pages/pos",
+              "icon": "shopping-cart"
+            },
+            {
+              "title": "Products & inventory",
+              "body": "",
+              "href": "/pages/inventory",
+              "icon": "package-search"
+            },
+            {
+              "title": "Purchasing & suppliers",
+              "body": "",
+              "href": "/pages/purchasing",
+              "icon": "shopping-basket"
+            },
+            {
+              "title": "Customer management",
+              "body": "",
+              "href": "/pages/customers",
+              "icon": "contact-round"
+            },
+            {
+              "title": "People & teams",
+              "body": "",
+              "href": "/pages/people",
+              "icon": "users"
+            },
+            {
+              "title": "Reports & monitoring",
+              "body": "",
+              "href": "/pages/reports",
+              "icon": "chart-no-axes-combined"
+            },
+            {
+              "title": "Finance & bookkeeping",
+              "body": "",
+              "href": "/pages/finance",
+              "icon": "receipt-text"
+            },
+            {
+              "title": "Access & security",
+              "body": "",
+              "href": "/pages/security",
+              "icon": "shield-check"
+            }
+          ]
+        },
+        {
+          "id": "group-1",
+          "type": "features",
+          "title": "Business solutions",
+          "body": "",
+          "eyebrow": "",
+          "tone": "light",
+          "image": "",
+          "alt": "",
+          "button": "",
+          "href": "/register",
+          "items": [
+            {
+              "title": "Retail stores",
+              "body": "",
+              "href": "/pages/retail",
+              "icon": "store"
+            },
+            {
+              "title": "Food & beverage",
+              "body": "",
+              "href": "/pages/food",
+              "icon": "coffee"
+            },
+            {
+              "title": "Services",
+              "body": "",
+              "href": "/pages/services",
+              "icon": "briefcase-business"
+            }
+          ]
+        },
+        {
+          "id": "group-2",
+          "type": "features",
+          "title": "Resources",
+          "body": "",
+          "eyebrow": "",
+          "tone": "light",
+          "image": "",
+          "alt": "",
+          "button": "",
+          "href": "/register",
+          "items": [
+            {
+              "title": "Room for your business to grow.",
+              "body": "",
+              "href": "/pages/about",
+              "icon": "store"
+            },
+            {
+              "title": "Getting started with oneQay",
+              "body": "",
+              "href": "/pages/guides",
+              "icon": "store"
+            },
+            {
+              "title": "Connected data. Clear next steps.",
+              "body": "",
+              "href": "/pages/integrations",
+              "icon": "store"
+            },
+            {
+              "title": "Let’s start with your business.",
+              "body": "",
+              "href": "/pages/contact",
+              "icon": "store"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

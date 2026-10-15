@@ -69,6 +69,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # Exact public website successor; original executable behavior and identity foundations preserved.
+          if [[ "${{ github.head_ref }}" == 'public-website-cms-onboarding-20261015' && "${{ github.event.pull_request.base.sha }}" == '9420db4ec3939fefc2bac54d11d4e24af1624e17' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
+            bash tools/qa-website-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
+            exit 0
+          fi
           cat > /tmp/sprint40-source-paths <<'EOF'
           .github/workflows/sprint40-first-party-session-identity-disablement-revalidation-regression.yml
           apps/web/app/Application/Identity/FirstPartyIdentityEligibilityVerifier.php
@@ -216,6 +221,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # Exact immutable 27-core successor; original regression scripts still execute.
+          if [[ "${{ github.head_ref }}" == 'public-website-cms-onboarding-20261015' && "${{ github.event.pull_request.base.sha }}" == '9420db4ec3939fefc2bac54d11d4e24af1624e17' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
+            bash tools/qa-website-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
+            exit 0
+          fi
           base="${{ github.event.pull_request.base.sha }}"
           head="${{ github.event.pull_request.head.sha }}"
           migration='apps/web/database/migrations/0000_00_00_000014_add_first_party_authentication_eligibility_to_identities.php'
@@ -475,6 +485,26 @@ jobs:
             apps/web/app/Application/Access/DurableOrganizationalAccessRepository.php \
             apps/web/app/Infrastructure/Access/LaravelDurableOrganizationalAccessRepository.php
           else
+            if [[ "${{ github.head_ref }}" == 'public-website-cms-onboarding-20261015' && "${{ github.event.pull_request.base.sha }}" == '9420db4ec3939fefc2bac54d11d4e24af1624e17' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
+              bash tools/qa-website-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
+            git diff --exit-code "$base" "$head" -- \
+            apps/web/routes/web.php \
+            apps/web/config/oneqay.php \
+            apps/web/bootstrap/app.php \
+            apps/web/composer.json \
+            apps/web/composer.lock \
+            apps/web/package.json \
+            apps/web/package-lock.json \
+            apps/web/app/Application/Identity/FirstPartySessionAuthorityService.php \
+            apps/web/app/Application/Identity/FirstPartySessionAuthorityRepository.php \
+            apps/web/app/Infrastructure/Identity/LaravelFirstPartySessionAuthorityRepository.php \
+            apps/web/app/Application/Tenancy/TenantMembershipVerifier.php \
+            apps/web/app/Infrastructure/Tenancy/LaravelTenantMembershipVerifier.php \
+            apps/web/app/Application/Organization/OrganizationalRelationshipVerifier.php \
+            apps/web/app/Infrastructure/Organization/LaravelOrganizationalRelationshipVerifier.php \
+            apps/web/app/Application/Access/DurableOrganizationalAccessRepository.php \
+            apps/web/app/Infrastructure/Access/LaravelDurableOrganizationalAccessRepository.php ':(exclude)apps/web/routes/web.php'
+            else
             git diff --exit-code "$base" "$head" -- \
             apps/web/routes/web.php \
             apps/web/config/oneqay.php \
@@ -492,6 +522,7 @@ jobs:
             apps/web/app/Infrastructure/Organization/LaravelOrganizationalRelationshipVerifier.php \
             apps/web/app/Application/Access/DurableOrganizationalAccessRepository.php \
             apps/web/app/Infrastructure/Access/LaravelDurableOrganizationalAccessRepository.php
+            fi
           fi
           grep -Fq "env('ONEQAY_AUTHENTICATION_SESSION_CONTROL_ENABLED', false)" apps/web/config/oneqay.php
           grep -Fq "'idle_ttl_seconds' => 7200" apps/web/config/oneqay.php

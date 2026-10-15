@@ -34,9 +34,13 @@ use Inertia\Inertia;
 Route::get('/health/live', [HealthController::class, 'live'])->name('health.live');
 Route::get('/health/ready', [HealthController::class, 'ready'])->name('health.ready');
 
-Route::get('/', static fn () => Inertia::render('Foundation', [
-    'headline' => 'oneQay application foundation',
-]))->name('foundation');
+if (config('platform.enabled', false) && config('database.oneqay_persistence_enabled') && config('oneqay.session_control.enabled') && \App\Infrastructure\Runtime\ProductionBusinessRuntimeGate::allows((string) config('oneqay.runtime_class'))) {
+    Route::get('/', [\App\Delivery\Http\Website\WebsiteController::class, 'home'])->name('website.home');
+} else {
+    Route::get('/', static fn () => Inertia::render('Foundation', [
+        'headline' => 'oneQay application foundation',
+    ]))->name('foundation');
+}
 
 // Author by Lab | zefry
 $firstPartyAuthRuntime = strtolower(trim((string) config('oneqay.runtime_class', '')));

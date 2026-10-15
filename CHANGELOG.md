@@ -592,3 +592,7 @@ Author by Lab | zefry
 - Next position: Sprint197 business-first bounded discovery.
 
 Author by Lab | zefry
+
+## Public website and business onboarding
+
+Bilingual public pages, owner-only visual CMS, reviewed publication, self-registration through canonical business activation, and Iconify visuals.

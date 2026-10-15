@@ -96,3 +96,7 @@ Do not repeat merchant bootstrap, migration #27, permission provisioning, featur
 - no target reselection.
 
 Author by Lab | zefry
+
+## Public website / CMS / onboarding — 2026-10-15
+
+Implement and qualify website pages, visual editing, preview/publication, registration and owner isolation. Deployment requires a newly certified cPanel successor from ec48e3fffdbb; do not reuse the catalog package.

@@ -90,3 +90,7 @@ The observed durable-staging cPanel target required `FIXED_PUBLIC_BRIDGE` and co
 No Production deployment, Production traffic activation, migration replay, permission reprovisioning, feature reactivation, target reselection, updater activation, or producer dispatch is authorized by this manifest reconciliation.
 
 Author by Lab | zefry
+
+## Public website successor — 2026-10-15
+
+New public website and owner CMS preserve canonical business identity, roles, SMTP ownership and runtime gates. See docs/operations/ONEQAY_PUBLIC_WEBSITE_CMS_2026-10-15.md. Source completion is not host acceptance.

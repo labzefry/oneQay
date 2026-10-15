@@ -73,7 +73,7 @@ function validDestinations(value: unknown): Destination[] {
     return value.filter((item): item is Destination => {
         if (!item || typeof item !== 'object') return false;
         if (!['key', 'title', 'description', 'url', 'category'].every((key) => typeof item[key] === 'string')) return false;
-        try { const url = new URL(item.url, window.location.origin); return url.origin === window.location.origin && url.pathname.startsWith('/pos/'); }
+        try { const url = new URL(item.url, window.location.origin); return url.origin === window.location.origin && (url.pathname.startsWith('/pos/') || (item.key === 'platform_owner' && url.pathname === '/platform' && url.search === '' && url.hash === '')); }
         catch { return false; }
     }).map((item) => ({ key: item.key, title: item.title, description: item.description, url: item.url, category: item.category }));
 }

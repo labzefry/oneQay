@@ -9,12 +9,13 @@ use Inertia\Inertia;
 // Author by Lab | zefry
 final readonly class PlatformController
 {
-    public function __construct(private PlatformOwnerAccess $access,private PlatformStore $store,private BusinessActivation $activation,private MailStore $mail,private MailTransport $transport) {}
+    public function __construct(private PlatformOwnerAccess $access,private PlatformStore $store,private BusinessActivation $activation,private MailStore $mail,private MailTransport $transport, private ?\App\Application\Website\WebsiteStore $website = null) {}
     public function show(Request $r):mixed
     {
         return $this->respond($r,function ()use($r):mixed {
             $this->access->require();
-            return Inertia::render('Platform/Control',['businesses'=>$this->store->listing(max(1,$r->integer('page',1)),(string)$r->query('search','')),
+            $businesses=$this->store->listing(max(1,$r->integer('page',1)),(string)$r->query('search',''));
+            return Inertia::render('Platform/Control',['businesses'=>$businesses,'registrations'=>$this->website?->registrationDetails(array_column($businesses['rows'],'id'))??[],
                 'mail'=>$this->mail->report(max(1,$r->integer('mail_page',1))),'settings'=>$this->mail->configuration(),
                 'page'=>max(1,$r->integer('page',1)),'mail_page'=>max(1,$r->integer('mail_page',1)),
                 'feedback_configured'=>strlen((string)config('platform.feedback_secret',''))>=32])->toResponse($r);

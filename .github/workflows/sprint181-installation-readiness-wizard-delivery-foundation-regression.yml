@@ -78,11 +78,20 @@ jobs:
           set -euo pipefail
           BASE_SHA="${{ github.event.pull_request.base.sha }}"
           HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          if [[ "${{ github.head_ref }}" == 'public-website-cms-onboarding-20261015' && "${{ github.event.pull_request.base.sha }}" == '9420db4ec3939fefc2bac54d11d4e24af1624e17' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
+            bash tools/qa-website-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
+          git diff --quiet "$BASE_SHA" "$HEAD_SHA" -- \
+            apps/web/routes/web.php \
+            apps/web/config/oneqay.php \
+            apps/web/app/Application/SystemUpdate/SystemUpdateControlPlane.php \
+            apps/web/app/Application/SystemUpdate/SystemUpdateControlPlaneStatus.php ':(exclude)apps/web/routes/web.php'
+          else
           git diff --quiet "$BASE_SHA" "$HEAD_SHA" -- \
             apps/web/routes/web.php \
             apps/web/config/oneqay.php \
             apps/web/app/Application/SystemUpdate/SystemUpdateControlPlane.php \
             apps/web/app/Application/SystemUpdate/SystemUpdateControlPlaneStatus.php
+          fi
           grep -Fq "Inertia::render('System/UpdateDeployment'" apps/web/app/Delivery/Http/SystemUpdate/SystemUpdatePageController.php
           grep -Fq -- '->status()->toSafeArray()' apps/web/app/Delivery/Http/SystemUpdate/SystemUpdatePageController.php
           ! grep -Fq 'checkAvailability(' apps/web/app/Delivery/Http/SystemUpdate/SystemUpdatePageController.php

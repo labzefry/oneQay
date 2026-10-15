@@ -36,7 +36,9 @@
         $merchantEntryEnabled = $merchantRuntimeAllowed
             && (bool) config('database.oneqay_persistence_enabled', false)
             && (bool) config('oneqay.session_control.enabled', false)
-            && count($merchantLoginContext) === 5;
+            && count($merchantLoginContext) === 5
+            && (request()->is('/') || request()->is('owner-login'))
+            && !(request()->is('/') && \Illuminate\Support\Facades\Route::has('website.home'));
 
         $passwordRecoveryEnabled = $merchantRuntimeAllowed
             && (bool) config('oneqay.authentication_recovery.enabled', false)

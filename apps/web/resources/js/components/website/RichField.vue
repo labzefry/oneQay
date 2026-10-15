@@ -1,0 +1,7 @@
+<script setup lang="ts">
+import { ref, watch, onMounted } from 'vue';import Icon from './Icon.vue';
+const props=defineProps<{modelValue:string;label:string;disabled?:boolean}>();const emit=defineEmits<{ 'update:modelValue':[value:string] }>();const field=ref<HTMLDivElement|null>(null);
+function sync(){if(field.value&&document.activeElement!==field.value)field.value.innerHTML=props.modelValue;}onMounted(sync);watch(()=>props.modelValue,sync);
+function update(){emit('update:modelValue',field.value?.innerHTML??'');}function command(name:string){if(props.disabled)return;field.value?.focus();document.execCommand(name,false);update();}function paste(e:ClipboardEvent){e.preventDefault();document.execCommand('insertText',false,e.clipboardData?.getData('text/plain')??'');update();}
+</script>
+<template><div class="rich-field"><span class="field-label">{{ label }}</span><div class="rich-toolbar" role="toolbar" :aria-label="label"><button v-for="[name,cmd,title] in [['bold','bold','Bold'],['italic','italic','Italic'],['list','insertUnorderedList','Bullet list'],['remove-formatting','removeFormat','Clear formatting']]" :key="name" type="button" :disabled="disabled" @mousedown.prevent @click="command(cmd)" :aria-label="title"><Icon :name="name" :size="15"/></button></div><div ref="field" class="rich-content" :contenteditable="!disabled" role="textbox" aria-multiline="true" :aria-label="label" @input="update" @paste="paste" @drop.prevent></div></div></template>
