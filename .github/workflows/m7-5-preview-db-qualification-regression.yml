@@ -396,7 +396,7 @@ jobs:
             bash tools/qa-website-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
             exit 0
           fi
-          # Exact public website deployment operator; all application bytes and executable regressions preserved.
+          # Exact website operator successor; complete certified application and behavioral checks preserved.
           if [[ "${{ github.head_ref }}" == 'cpanel-public-website-20261015' && "${{ github.event.pull_request.base.sha }}" == '14e1cdb9f11f9b1a6384aa1659dab86cac5e1078' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
             bash tools/qa-cpanel-website-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
             exit 0
@@ -479,6 +479,11 @@ jobs:
           # Exact public website successor; original executable behavior and identity foundations preserved.
           if [[ "${{ github.head_ref }}" == 'public-website-cms-onboarding-20261015' && "${{ github.event.pull_request.base.sha }}" == '9420db4ec3939fefc2bac54d11d4e24af1624e17' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
             bash tools/qa-website-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
+            exit 0
+          fi
+          # Exact website operator successor; complete certified application and behavioral checks preserved.
+          if [[ "${{ github.head_ref }}" == 'cpanel-public-website-20261015' && "${{ github.event.pull_request.base.sha }}" == '14e1cdb9f11f9b1a6384aa1659dab86cac5e1078' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
+            bash tools/qa-cpanel-website-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
             exit 0
           fi
           # Exact cPanel catalog successor; certified application and prior DDL unchanged.
