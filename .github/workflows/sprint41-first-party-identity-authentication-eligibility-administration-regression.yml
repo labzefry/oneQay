@@ -76,6 +76,7 @@ jobs:
           # Exact public website successor; original executable behavior and identity foundations preserved.
           if [[ "${{ github.head_ref }}" == 'public-website-cms-onboarding-20261015' && "${{ github.event.pull_request.base.sha }}" == '9420db4ec3939fefc2bac54d11d4e24af1624e17' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
             bash tools/qa-website-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
+            echo "ONEQAY_SPRINT43_SOURCE_SUCCESSOR=true" >> "$GITHUB_ENV"
             exit 0
           fi
           cat > /tmp/sprint41-source-paths <<'EOF'
