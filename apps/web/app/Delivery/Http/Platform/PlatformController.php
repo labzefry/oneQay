@@ -15,7 +15,7 @@ final readonly class PlatformController
         return $this->respond($r,function ()use($r):mixed {
             $this->access->require();
             $businesses=$this->store->listing(max(1,$r->integer('page',1)),(string)$r->query('search',''));
-            return Inertia::render('Platform/Control',['businesses'=>$businesses,'registrations'=>$this->website?->registrationDetails(array_column($businesses['rows'],'id'))??[],
+            return Inertia::render('Platform/Control',['control'=>app(\App\Application\Platform\ControlPlaneManagement::class)->dashboard(),'businesses'=>$businesses,'registrations'=>$this->website?->registrationDetails(array_column($businesses['rows'],'id'))??[],
                 'mail'=>$this->mail->report(max(1,$r->integer('mail_page',1))),'settings'=>$this->mail->configuration(),
                 'page'=>max(1,$r->integer('page',1)),'mail_page'=>max(1,$r->integer('mail_page',1)),
                 'feedback_configured'=>strlen((string)config('platform.feedback_secret',''))>=32])->toResponse($r);

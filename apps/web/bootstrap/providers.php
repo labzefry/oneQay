@@ -9,4 +9,5 @@ return [
     App\Providers\PosOperationsHubServiceProvider::class,
     App\Providers\BusinessManagementServiceProvider::class,
     App\Providers\PlatformManagementServiceProvider::class,
+    App\Providers\ControlPlaneServiceProvider::class,
 ];

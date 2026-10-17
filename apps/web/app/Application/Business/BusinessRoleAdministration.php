@@ -22,6 +22,7 @@ final readonly class BusinessRoleAdministration
             return false;
         }));
         return [
+            'oneqay-cashier' => ['title' => 'Cashier', 'permissions' => ['pos.sale.complete','pos.shift.open','pos.shift.opening-cash.record','pos.shift.closing-cash.record','pos.shift.cash-variance-explanation.record','pos.shift.close']],
             'oneqay-business-manager' => ['title' => 'Business manager', 'permissions' => $permissions],
             'oneqay-purchasing-team' => ['title' => 'Purchasing team', 'permissions' => $select(['business.suppliers.', 'business.purchases.', 'pos.inventory.replenish'])],
             'oneqay-finance-team' => ['title' => 'Finance team', 'permissions' => $select(['business.finance.'])],
