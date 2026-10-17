@@ -1,0 +1,235 @@
+{
+  "control": {
+    "business_counts": {
+      "active": 124,
+      "pending": 7,
+      "invited": 4,
+      "suspended": 2
+    },
+    "noc": {
+      "totals": {
+        "requests": 24618,
+        "server_errors": 6
+      },
+      "p95_upper_bound_ms": 500,
+      "p95_over_3000": false,
+      "hours": [
+        {
+          "at": 1792219721,
+          "requests": 420,
+          "errors": 0
+        },
+        {
+          "at": 1792223321,
+          "requests": 610,
+          "errors": 0
+        },
+        {
+          "at": 1792226921,
+          "requests": 530,
+          "errors": 0
+        },
+        {
+          "at": 1792230521,
+          "requests": 890,
+          "errors": 1
+        },
+        {
+          "at": 1792234121,
+          "requests": 1260,
+          "errors": 0
+        },
+        {
+          "at": 1792237721,
+          "requests": 1560,
+          "errors": 0
+        },
+        {
+          "at": 1792241321,
+          "requests": 2010,
+          "errors": 0
+        },
+        {
+          "at": 1792244921,
+          "requests": 2680,
+          "errors": 0
+        },
+        {
+          "at": 1792248521,
+          "requests": 2140,
+          "errors": 1
+        },
+        {
+          "at": 1792252121,
+          "requests": 2940,
+          "errors": 0
+        },
+        {
+          "at": 1792255721,
+          "requests": 2490,
+          "errors": 0
+        },
+        {
+          "at": 1792259321,
+          "requests": 3080,
+          "errors": 0
+        }
+      ],
+      "latest": {
+        "sampled_at": 1792259321,
+        "database": {
+          "state": "healthy",
+          "latency_ms": 12.4,
+          "engine": "mysql",
+          "table_count": 77
+        },
+        "disk_free_bytes": 14800000000,
+        "disk_total_bytes": 20000000000,
+        "worker_at": 1792259321,
+        "session_directory_writable": true,
+        "php_version": "8.3"
+      },
+      "samples": [
+        {
+          "sampled_at": 1792259021,
+          "database": {
+            "state": "healthy",
+            "latency_ms": 12.4,
+            "engine": "mysql",
+            "table_count": 77
+          },
+          "disk_free_bytes": 14800000000,
+          "disk_total_bytes": 20000000000,
+          "worker_at": 1792259321,
+          "session_directory_writable": true,
+          "php_version": "8.3"
+        },
+        {
+          "sampled_at": 1792259321,
+          "database": {
+            "state": "healthy",
+            "latency_ms": 12.4,
+            "engine": "mysql",
+            "table_count": 77
+          },
+          "disk_free_bytes": 14800000000,
+          "disk_total_bytes": 20000000000,
+          "worker_at": 1792259321,
+          "session_directory_writable": true,
+          "php_version": "8.3"
+        }
+      ],
+      "errors": [
+        {
+          "id": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+          "code": "DB_CONNECTION_DELAY",
+          "route": "pos.operations.hub",
+          "http_status": 503,
+          "correlation_id": "fixture-correlation-001",
+          "state": "open",
+          "version": 2,
+          "occurrences": 3,
+          "last_seen": 1792259321
+        }
+      ]
+    },
+    "configuration": {
+      "version": 1,
+      "configuration": {
+        "registration_enabled": true,
+        "features": {
+          "pos": true,
+          "catalog": true,
+          "inventory": true,
+          "refunds": true,
+          "reports": true,
+          "suppliers": true,
+          "purchases": true,
+          "customers": true,
+          "finance": true,
+          "people": true
+        },
+        "worker_stale_seconds": 180,
+        "database_warn_ms": 250,
+        "error_rate_warn_percent": 2
+      }
+    },
+    "campaigns": [
+      {
+        "id": "cccccccccccccccccccccccccccccccc",
+        "name": "Pembaruan Oktober",
+        "channel": "email",
+        "locale": "all",
+        "status": "draft",
+        "version": 1,
+        "due_at": null,
+        "delivery": {}
+      }
+    ],
+    "active_sessions": 287
+  },
+  "detail": {
+    "business": {
+      "id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "name": "Bisnis Nusantara",
+      "email": "owner@example.test",
+      "status": "active",
+      "locale": "id",
+      "version": 1
+    },
+    "controls": {
+      "features": {
+        "pos": true,
+        "catalog": true,
+        "inventory": true,
+        "refunds": true,
+        "reports": true,
+        "suppliers": true,
+        "purchases": true,
+        "customers": true,
+        "finance": true,
+        "people": true
+      },
+      "plan": "enterprise",
+      "notes": ""
+    },
+    "identities": [
+      {
+        "id": "fixture-owner",
+        "mfa": "enrolled",
+        "sessions": 2,
+        "roles": [
+          {
+            "role": "oneqay-business-owner",
+            "scope": "tenant"
+          }
+        ]
+      }
+    ],
+    "pilot": {
+      "status": "NOT_YET_VERIFIED",
+      "steps": {
+        "JRN_004": false,
+        "JRN_005": false,
+        "JRN_006": false,
+        "JRN_010": false
+      }
+    },
+    "audit": []
+  },
+  "preview": {
+    "id": "cccccccccccccccccccccccccccccccc",
+    "version": 1,
+    "count": 1,
+    "digest": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+    "channel": "email",
+    "subject": "Pembaruan produk",
+    "body": "Plain text <script>alert(1)</script> is not executed",
+    "recipients": [
+      {
+        "id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "email_hint": "o***@example.test"
+      }
+    ]
+  }
+}

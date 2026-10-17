@@ -30,7 +30,7 @@ async function loadPreview(id: string) {
     catch { previewError.value = tr('Pratinjau belum tersedia. Muat ulang dan coba kembali.', 'Preview unavailable. Reload and try again.'); }
     finally { previewBusy.value = false; }
 }
-function queue() { if (!preview.value || !review.value) return; const due = schedule.value ? Math.floor(new Date(schedule.value).getTime() / 1000) : now; command('campaign.queue', { id: preview.value.id, review_digest: preview.value.digest, reviewed: true, due_at: due }, Number(preview.value.version)); }
+function queue() { if (!preview.value || !review.value) return; const due = schedule.value ? Math.floor(new Date(schedule.value).getTime() / 1000) : Math.floor(Date.now() / 1000); command('campaign.queue', { id: preview.value.id, review_digest: preview.value.digest, reviewed: true, due_at: due }, Number(preview.value.version)); }
 const dialog = ref<HTMLDialogElement | null>(null); const business = ref<Record<string, any>>({}); const verified = ref(false); const resetIdentity = ref(''); const receipt = ref(''); const realCash = ref(false);
 watch(() => props.detail, async d => {
     verified.value = false; resetIdentity.value = ''; receipt.value = ''; realCash.value = false;

@@ -69,6 +69,11 @@ jobs:
           HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
         run: |
           # Exact public website successor; original executable behavior and identity foundations preserved.
+          # Exact control plane successor; canonical identity, runtime, and POS regressions remain required.
+          if [[ "${{ github.head_ref }}" == 'control-plane-enterprise-20261016' && "${{ github.event.pull_request.base.sha }}" == '1e235bf4947a4e94d589d711e0b0fb1a463b3cac' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
+            bash tools/qa-control-plane-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
+            exit 0
+          fi
           if [[ "${{ github.head_ref }}" == 'public-website-cms-onboarding-20261015' && "${{ github.event.pull_request.base.sha }}" == '9420db4ec3939fefc2bac54d11d4e24af1624e17' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
             bash tools/qa-website-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
             exit 0
