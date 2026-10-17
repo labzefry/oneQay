@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="{{ \App\Infrastructure\Platform\LocalePreference::initial(request()) }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -46,6 +46,7 @@
         $totpRecoveryEnabled = $passwordRecoveryEnabled
             && (bool) config('oneqay.privileged_totp_mfa.enabled', false);
     @endphp
+    <meta name="oneqay-country" content="{{ \App\Infrastructure\Platform\LocalePreference::country(request()) ?? '' }}">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="oneqay-merchant-entry" content="{{ $merchantEntryEnabled ? 'enabled' : 'disabled' }}">
     <meta name="oneqay-password-recovery" content="{{ $passwordRecoveryEnabled ? 'enabled' : 'disabled' }}">

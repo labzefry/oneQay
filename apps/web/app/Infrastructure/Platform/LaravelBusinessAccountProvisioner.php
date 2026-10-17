@@ -37,6 +37,11 @@ final readonly class LaravelBusinessAccountProvisioner implements BusinessAccoun
                 $this->app->make(DurableOrganizationalAccessService::class),$policies,$tx);
             $service->bootstrap($graph,InitialTenantAdministratorProvisioningId::fromString($grant['provisioning_id']),$password);
             $actor=new VerifiedOrganizationalContext($graph->identityId,$graph->tenantId,$graph->organizationId,$graph->outletId,$graph->deviceId);
+            foreach(BusinessRoleAdministration::templates()as$key=>$template){
+                $preset=RoleIdentifier::fromString($key);$pid=static fn(string $part):PolicyMutationId=>PolicyMutationId::fromString(hash('sha256',$business['id'].'|preset|'.$key.'|'.$part));
+                $policies->apply($actor,DurablePolicyMutation::roleCreate($pid('role'),$actor,$preset));
+                foreach($template['permissions']as$permission)$policies->apply($actor,DurablePolicyMutation::permissionGrant($pid($permission),$actor,$preset,PermissionIdentifier::fromString($permission)));
+            }
             $role=RoleIdentifier::fromString('business-owner-operational');
             $id=static fn(string $part):PolicyMutationId=>PolicyMutationId::fromString(hash('sha256',$business['id'].'|'.$part));
             $policies->apply($actor,DurablePolicyMutation::roleCreate($id('role'),$actor,$role));

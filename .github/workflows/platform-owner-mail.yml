@@ -35,8 +35,8 @@ jobs:
         run: |
           set -euo pipefail
           php apps/web/tests/platform-dsn.php
-          php apps/web/tests/platform-control-mail.php
-          PLATFORM_TEST_ENGINE=mysql php apps/web/tests/platform-control-mail.php
+          php apps/web/tests/control-plane-enterprise.php
+          PLATFORM_TEST_ENGINE=mysql php apps/web/tests/control-plane-enterprise.php
           php apps/web/tests/merchant-context-atomic-bootstrap.php
           php apps/web/tests/business-role-administration.php
           php apps/web/tests/privileged-reauthentication-step-up.php
