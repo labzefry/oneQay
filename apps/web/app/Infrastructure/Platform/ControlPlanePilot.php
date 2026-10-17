@@ -23,7 +23,7 @@ final readonly class ControlPlanePilot {
  }
  public function verify(array $b,array $in,string $actor):array{
   if(($in['real_cash_confirmed']??false)!==true)throw new PlatformViolation('REAL_CASH_ATTESTATION_REQUIRED');
-  $source=(string)env('ONEQAY_RUNNING_SOURCE_COMMIT','');if(!preg_match('/\A[a-f0-9]{40}\z/D',$source)||!\App\Infrastructure\Runtime\ProductionBusinessRuntimeGate::allows((string)config('oneqay.runtime_class')))throw new PlatformViolation('PRODUCTION_SOURCE_REQUIRED');
+  $source=(string)env('ONEQAY_RUNNING_SOURCE_COMMIT','');if(config('oneqay.runtime_class')!=='production'||!preg_match('/\A[a-f0-9]{40}\z/D',$source)||!\App\Infrastructure\Runtime\ProductionBusinessRuntimeGate::allows((string)config('oneqay.runtime_class')))throw new PlatformViolation('PRODUCTION_SOURCE_REQUIRED');
   $r=$this->inspect($b,BusinessActivation::text($in['shift_id']??null,32));
   if($r['status']!=='READY_FOR_OWNER_ATTESTATION'||!is_string($in['evidence_digest']??null)||!hash_equals($r['evidence_digest'],$in['evidence_digest']))throw new PlatformViolation('PILOT_EVIDENCE_INCOMPLETE_OR_CHANGED',409);
   $this->db->table('oneqay_platform_pilot_reviews')->insert(['id'=>bin2hex(random_bytes(16)),'business_id'=>$b['id'],'tenant_id'=>$b['tenant_id'],'shift_id'=>$r['shift_id'],'source_commit'=>$source,'evidence_digest'=>$r['evidence_digest'],'receipt_reference'=>BusinessActivation::text($in['receipt_reference']??null,160),'actor'=>$actor,'verified_at'=>time()]);return ['status'=>'OWNER_ATTESTED_REAL_CASH','shift_id'=>$r['shift_id']];

@@ -126,7 +126,7 @@ const closeShift = async (): Promise<void> => {
 
       <footer>
         <span>{{ t("Production ready:") }} {{ t(delivery.production_ready ? 'yes' : 'no') }}</span>
-        <span>{{ t("Author by Lab | zefry") }}</span>
+        <span>{{ t("Copyright oneQay") }}</span>
       </footer>
     </div>
   </main>

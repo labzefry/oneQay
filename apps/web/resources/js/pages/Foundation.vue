@@ -386,13 +386,13 @@ async function confirmTotpRecovery() {
       </template>
 
       <p v-if="error" class="error" role="alert">{{ t(error) }}</p>
-      <footer>{{ t("No public registration · No implicit permission grant · Lab | zefry") }}</footer>
+      <footer>{{ t("Copyright oneQay") }}</footer>
     </section>
   </main>
 
   <main v-else class="foundation-shell">
     <section class="foundation-card" aria-labelledby="foundation-title">
-      <p class="eyebrow">{{ t("Lab | zefry · M7.1") }}</p>
+      <p class="eyebrow">{{ t("oneQay · Platform access") }}</p>
       <h1 id="foundation-title">{{ t(headline) }}</h1>
       <p>{{ t("Merchant sign-in remains unavailable until the exact installation context and required Local/Test/CI security gates are valid.") }}</p>
     </section>
