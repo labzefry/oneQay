@@ -1,0 +1,55 @@
+# Author by Lab | zefry
+name: cPanel Enterprise Control Plane Upgrade
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  cpanel-control-upgrade:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: synthetic-test-only
+          MYSQL_DATABASE: oneqay_control_upgrade_test
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -psynthetic-test-only"
+          --health-interval=10s --health-timeout=5s --health-retries=10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        with:
+          php-version: '8.3'
+          extensions: pdo_sqlite, pdo_mysql, dom, zlib
+          tools: composer:v2
+          coverage: none
+      - name: Qualify exact certified-source operator scope
+        if: github.event_name == 'pull_request' && github.head_ref == 'cpanel-control-plane-20261018'
+        run: bash tools/qa-cpanel-control-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
+      - name: Install locked dependencies
+        working-directory: apps/web
+        run: composer install --no-interaction --no-progress --prefer-dist
+      - name: Preserve 32 receipts and credentials; add one module migration
+        run: |
+          set -euo pipefail
+          php -l tools/production/cpanel/update-oneqaydev-control-plane.php
+          php -l tools/production/cpanel/install-oneqaydev-control-plane.php
+          php tools/production/tests/oneqaydev-control-operator.php | tee /tmp/control-operator.log
+          grep -Fxq 'CONTROL_OPERATOR_TOTAL=40' /tmp/control-operator.log
+          php tools/production/tests/oneqaydev-control-upgrade.php | tee /tmp/control-upgrade-sqlite.log
+          grep -Fxq 'CONTROL_UPGRADE_sqlite_PASS assertions=19' /tmp/control-upgrade-sqlite.log
+          CONTROL_TEST_ENGINE=mysql php tools/production/tests/oneqaydev-control-upgrade.php | tee /tmp/control-upgrade-mysql.log
+          grep -Fxq 'CONTROL_UPGRADE_mysql_PASS assertions=19' /tmp/control-upgrade-mysql.log
+      - name: Bind private runtime and validate worker with link and symlink unavailable
+        run: |
+          set -euo pipefail
+          php -d disable_functions=link,symlink tools/production/tests/oneqaydev-fixed-bridge.php no-links | tee /tmp/fixed-bridge.log
+          grep -Fxq 'FIXED_PUBLIC_BRIDGE_NO_LINKS_PASS assertions=20' /tmp/fixed-bridge.log
