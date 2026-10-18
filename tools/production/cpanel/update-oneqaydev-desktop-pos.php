@@ -144,14 +144,14 @@ function uHttps(string $url,string $accept): array {
 }
 function uRetryStoppedPreflight(string $locator,array $r): void {
     $prior=uJson(U_REPORT);
-    $expected=['state'=>'STOPPED_FAIL_CLOSED','error_code'=>'HTTPS_RESPONSE_INVALID','public_switch'=>'NOT_PERFORMED','host_business_acceptance'=>'NOT_VERIFIED','attribution'=>'Lab | zefry'];
-    uAssert(count($prior)===count($expected),'RETRY_REPORT_NOT_PREFLIGHT_ONLY');
+    $expected=['state'=>'STOPPED_FAIL_CLOSED','public_switch'=>'NOT_PERFORMED','host_business_acceptance'=>'NOT_VERIFIED','attribution'=>'Lab | zefry'];
+    uAssert(count($prior)===count($expected)+1&&in_array($prior['error_code']??null,['HTTPS_RESPONSE_INVALID','UNEXPECTED_SOURCE_FILE'],true),'RETRY_REPORT_NOT_PREFLIGHT_ONLY');
     foreach($expected as $key=>$value)uAssert(($prior[$key]??null)===$value,'RETRY_REPORT_NOT_PREFLIGHT_ONLY');
     $p=uPaths($r);
     foreach([$p['release'],$p['env'],$p['entry'],U_BACKUP,__DIR__.'/desktop-pos-installation.json',__DIR__.'/control-worker.php']as$path)
         uAssert(!file_exists($path)&&!is_link($path),'RETRY_MUTATION_PRESENT_NO_AUTOMATIC_RECOVERY');
     uAuthority($locator,$r); // New exact operator/request grant must be valid before preserving/resetting the stopped report.
-    $saved=__DIR__.'/update-result-https-stopped-'.gmdate('Ymd-His').'-'.bin2hex(random_bytes(4)).'.json';
+    $saved=__DIR__.'/update-result-preflight-stopped-'.gmdate('Ymd-His').'-'.bin2hex(random_bytes(4)).'.json';
     uAssert(!file_exists($saved)&&!is_link($saved)&&rename(U_REPORT,$saved),'RETRY_REPORT_PRESERVATION_FAILED');
 }
 function uSourceFiles(array $r,string $root,bool $runtime=false): int {
@@ -160,7 +160,7 @@ function uSourceFiles(array $r,string $root,bool $runtime=false): int {
         $p=$root.'/'.$m[2];uAssert(is_file($p)&&!is_link($p)&&hash_equals($m[1],(string)hash_file('sha256',$p)),'CERTIFIED_SOURCE_CHANGED');$seen[$m[2]]=true;}
     uAssert(count($seen)===$r['release_file_count'],'SOURCE_FILE_COUNT_INVALID');
     foreach(new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root.'/'.$id,FilesystemIterator::SKIP_DOTS),RecursiveIteratorIterator::SELF_FIRST) as $e){$rel=substr($e->getPathname(),strlen($root)+1);if($runtime&&$rel===$id.'/apps/web/.env')continue;uAssert(!$e->isLink(),'SOURCE_SYMLINK_DENIED');if($e->isDir())continue;
-        if(isset($seen[$rel]))continue;$allowed=$runtime&&(str_starts_with($rel,$id.'/apps/web/storage/framework/views/')||str_starts_with($rel,$id.'/apps/web/storage/framework/cache/data/')||str_starts_with($rel,$id.'/apps/web/storage/logs/')||in_array($rel,[$id.'/apps/web/bootstrap/cache/packages.php',$id.'/apps/web/bootstrap/cache/services.php'],true));uAssert($e->isFile()&&$allowed,'UNEXPECTED_SOURCE_FILE');}
+        if(isset($seen[$rel]))continue;$allowed=$runtime&&(str_starts_with($rel,$id.'/apps/web/storage/framework/views/')||str_starts_with($rel,$id.'/apps/web/storage/framework/cache/data/')||str_starts_with($rel,$id.'/apps/web/storage/logs/')||in_array($rel,[$id.'/apps/web/bootstrap/cache/packages.php',$id.'/apps/web/bootstrap/cache/services.php'],true)||($rel===$id.'/apps/web/storage/framework/oneqay-control-worker.lock'&&$e->getSize()===0));uAssert($e->isFile()&&$allowed,'UNEXPECTED_SOURCE_FILE');}
     return count($seen);
 }
 function lPreviousIntegrity(): int {
@@ -170,7 +170,7 @@ function lPreviousIntegrity(): int {
         $p=$root.'/'.$m[2];uAssert(is_file($p)&&!is_link($p)&&hash_equals($m[1],(string)hash_file('sha256',$p)),'CERTIFIED_SOURCE_CHANGED');$seen[$m[2]]=true;}
     uAssert(count($seen)===$r['release_file_count'],'SOURCE_FILE_COUNT_INVALID');
     foreach(new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root.'/'.$id,FilesystemIterator::SKIP_DOTS),RecursiveIteratorIterator::SELF_FIRST) as $e){$rel=substr($e->getPathname(),strlen($root)+1);if($runtime&&$rel===$id.'/apps/web/.env')continue;uAssert(!$e->isLink(),'SOURCE_SYMLINK_DENIED');if($e->isDir())continue;
-        if(isset($seen[$rel]))continue;$allowed=$runtime&&(str_starts_with($rel,$id.'/apps/web/storage/framework/views/')||str_starts_with($rel,$id.'/apps/web/storage/framework/cache/data/')||str_starts_with($rel,$id.'/apps/web/storage/logs/')||in_array($rel,[$id.'/apps/web/bootstrap/cache/packages.php',$id.'/apps/web/bootstrap/cache/services.php'],true));uAssert($e->isFile()&&$allowed,'UNEXPECTED_SOURCE_FILE');}
+        if(isset($seen[$rel]))continue;$allowed=$runtime&&(str_starts_with($rel,$id.'/apps/web/storage/framework/views/')||str_starts_with($rel,$id.'/apps/web/storage/framework/cache/data/')||str_starts_with($rel,$id.'/apps/web/storage/logs/')||in_array($rel,[$id.'/apps/web/bootstrap/cache/packages.php',$id.'/apps/web/bootstrap/cache/services.php'],true)||($rel===$id.'/apps/web/storage/framework/oneqay-control-worker.lock'&&$e->getSize()===0));uAssert($e->isFile()&&$allowed,'UNEXPECTED_SOURCE_FILE');}
     return count($seen);
 }
 function lPreviousPublicVerify(): void {
