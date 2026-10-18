@@ -424,6 +424,11 @@ jobs:
           # Exact website operator successor; complete certified application and behavioral checks preserved.
           # Exact no-link control plane operator; certified application and executable regressions remain unchanged.
           # Exact owner-login probe correction; certified app and executable regressions are preserved.
+          # Bounded HTTPS retry successor; certified app and executable regressions are preserved.
+          if [[ "${{ github.head_ref }}" == 'cpanel-https-retry-20261018' && "${{ github.event.pull_request.base.sha }}" == '63f045b557e87c683196424646d323a027b3e8fe' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
+            bash tools/qa-cpanel-https-retry-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
+            exit 0
+          fi
           if [[ "${{ github.head_ref }}" == 'cpanel-control-bridge-fix-20261018' && "${{ github.event.pull_request.base.sha }}" == '003416a2a462c1d0891e75663c4deff36714ebb6' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
             bash tools/qa-cpanel-control-bridge-fix-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
             exit 0

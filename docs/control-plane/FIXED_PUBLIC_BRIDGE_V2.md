@@ -74,3 +74,36 @@ retry state. The current package payload is also archived after installation, so
 copies do not keep consuming thousands of duplicate inodes. This policy is exercised by
 real ZIP compression/restore tests, including active protection, grace, corrupt archives,
 symlinks, interrupted removal, concurrent locks, and unchanged-source checks.
+
+## Bounded HTTPS retry after untouched preflight failure
+
+Two r2 hosting attempts stopped with the generic legacy `HTTPS_RESPONSE_INVALID`
+before a public switch. The intervening host diagnostic successfully transferred
+all seven authority/health/login/POS/asset probes with strict TLS; all five candidate
+mutation indicators were absent. The original transport failure cause remains
+unconfirmed; source bytes and migrations must not be changed on that assumption.
+
+The successor operator uses `uHttps` for native-authority and business/public/asset
+GET requests. The first transport retains the original 8-second connect and
+25-second total timeout. Only selected transient cURL errors or HTTP429/502/503/504
+receive one additional attempt, using IPv4/HTTP1.1 with a 45-second timeout.
+Both attempts require certificate and hostname validation, HTTPS-only protocols,
+fixed target/Accept allowlists, no redirects, and the original body/header limits.
+Certificate rejection, application denials and oversized responses never trigger
+a bypass. Native owner/request/time binding and all migration/switch checks remain.
+
+Private `https-transport.json` records a bounded 64-event history of failed and
+recovered transfers: host/path with query removed, attempt/transport, cURL number
+and reason, HTTP status, byte counts and elapsed time. It never records response
+bodies, response headers/cookies, raw cURL errors, credentials or query values.
+Diagnostic file-write failures do not invalidate a successful connection/rollback.
+
+The explicit CLI `retry OWNER_COMMENT_ID` mode accepts only the exact legacy
+STOPPED_FAIL_CLOSED / HTTPS_RESPONSE_INVALID / NOT_PERFORMED report vocabulary,
+with no candidate release, candidate environment, candidate entry, rollback folder,
+module-installation checkpoint or generated worker present. Under the update lock,
+it validates a fresh native grant bound to the corrected operator/request, then
+atomically renames and preserves the old failed report before the normal `uApply`.
+It never resumes a migration or partially prepared release. Successful repeated cron
+invocations use normal verified replay; further failures remain fail closed.
+The installed application artifact and automatic private ZIP retention are unchanged.
