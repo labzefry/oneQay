@@ -150,7 +150,7 @@ onBeforeUnmount(() => { request?.abort(); document.removeEventListener('keydown'
                 </details>
                 <p v-if="search && groups.length === 0 && !loading" class="oq-nav-empty">{{ t("No matching workspace.") }}</p>
             </nav>
-            <div class="oq-sidebar-bottom"><a class="oq-nav-link" href="/pos?panel=security#account-security"><WorkspaceIcon name="shield-check" /><span>{{ t("Account & security") }}</span></a><p>© oneQay</p></div>
+            <div class="oq-sidebar-bottom"><a class="oq-nav-link" href="/pos/desktop"><WorkspaceIcon name="monitor"/><span>POS Windows</span></a><a class="oq-nav-link" href="/pos?panel=security#account-security"><WorkspaceIcon name="shield-check" /><span>{{ t("Account & security") }}</span></a><p>© oneQay</p></div>
         </aside>
         <div class="oq-content" :inert="mobileViewport && mobileOpen">
             <header class="oq-topbar no-print">

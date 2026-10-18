@@ -10,4 +10,5 @@ return [
     App\Providers\BusinessManagementServiceProvider::class,
     App\Providers\PlatformManagementServiceProvider::class,
     App\Providers\ControlPlaneServiceProvider::class,
+    App\Providers\DesktopPosServiceProvider::class,
 ];

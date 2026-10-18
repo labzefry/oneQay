@@ -1,0 +1,28 @@
+<?php
+// Author by Lab | zefry. Real HTTP presentation; no production state changes.
+declare(strict_types=1);
+require __DIR__.'/control-plane-enterprise.php';
+use App\Delivery\Http\Errors\BrowserErrorPresentation;
+use Illuminate\Http\Request as ErrorRequest;
+$presenter=new BrowserErrorPresentation();
+$make=static function(string $path,string $accept='text/html',array $extra=[]):ErrorRequest{$r=ErrorRequest::create($path,'GET',[],[],[],['HTTP_ACCEPT'=>$accept]+$extra);$r->attributes->set('oneqay.correlation_id','test-error-correlation-123');return $r;};
+$r=$make('/pos/cashier');$response=$presenter->present($r,response()->json(['error'=>['code'=>'SESSION_AUTHORITY_DENIED']],401));
+$assert($response->getStatusCode()===303&&str_ends_with($response->headers->get('Location'),'/business-login?reason=session-expired'),'expired browser navigates to business login');
+$response=$presenter->present($make('/platform/control/overview'),response()->json(['error'=>['code'=>'SESSION_AUTHORITY_DENIED']],401));
+$assert(str_ends_with($response->headers->get('Location'),'/owner-login?reason=session-expired'),'expired owner navigates to owner login');
+$response=$presenter->present($make('/pos/cashier','text/html',['HTTP_X_INERTIA'=>'true']),response()->json(['error'=>['code'=>'SESSION_AUTHORITY_DENIED']],401));
+$assert($response->getStatusCode()===409&&$response->headers->get('X-Inertia-Location')==='/business-login?reason=session-expired','Inertia uses full location redirect');
+$response=$presenter->present($make('/api/pos/desktop/sync','application/json'),response()->json(['error'=>['code'=>'SESSION_AUTHORITY_DENIED']],401));
+$assert($response->getStatusCode()===401&&!$response->headers->has('Location'),'API remains machine readable without redirect');
+$response=$presenter->present($make('/not-here','text/html',['HTTP_ACCEPT_LANGUAGE'=>'id-ID']),response('framework internal SQL secret',404));
+$assert($response->getStatusCode()===404&&str_contains($response->getContent(),'salah alamat'),'404 has friendly Indonesian illustration page');
+$assert(!str_contains($response->getContent(),'SQL secret')&&str_contains($response->getContent(),'PAGE_HTTP_404')&&str_contains($response->getContent(),'test-error-correlation-123'),'page has safe NOC code and correlation without exception details');
+$assert($response->headers->get('X-OneQay-Original-Status')==='404'&&str_contains($response->headers->get('Cache-Control'),'no-store'),'original status observable and private');
+$telemetry->record(404,3,'test.page.error','test-error-correlation-123','PAGE_HTTP_404');
+$assert($db->table('oneqay_platform_errors')->where('code','PAGE_HTTP_404')->where('correlation_id','test-error-correlation-123')->exists(),'displayed page code can be found in NOC');
+$response=$presenter->present($make('/api/test','application/json'),response('secret exception',500));
+$assert($response->getStatusCode()===500&&!str_contains($response->getContent(),'secret exception')&&$response->headers->get('X-Correlation-ID')==='test-error-correlation-123','API exceptions are sanitized with correlation');
+$response=$presenter->present($make('/pos','text/html',['HTTP_ACCEPT_LANGUAGE'=>'en-US']),response('internal',503));
+$assert(str_contains($response->getContent(),'tidying up')&&str_contains($response->getContent(),'<svg'),'English error page embeds illustration without asset dependency');
+$assert($presenter->present($make('/pos'),$response)===$response,'decorator is idempotent');
+echo 'BROWSER_ERROR_EXPERIENCE_PASS assertions='.$n.PHP_EOL;

@@ -34,11 +34,15 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->append(SafeRequestObservationMiddleware::class);
         $middleware->append(\App\Delivery\Http\Middleware\ControlPlaneObservationMiddleware::class);
         $middleware->append(SecurityHeadersMiddleware::class);
+        $middleware->append(\App\Delivery\Http\Middleware\PresentBrowserErrorsMiddleware::class);
         $middleware->web(append: [
             HandleInertiaRequests::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        // Exception detail remains framework-internal; safe request logging records class only.
+        // Use the same safe presentation for framework exceptions and controller rejections.
+        $exceptions->respond(function (\Symfony\Component\HttpFoundation\Response $response) {
+            return app(\App\Delivery\Http\Errors\BrowserErrorPresentation::class)->present(request(), $response);
+        });
     })
     ->create();

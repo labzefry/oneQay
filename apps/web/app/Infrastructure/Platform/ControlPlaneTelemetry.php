@@ -13,7 +13,7 @@ final readonly class ControlPlaneTelemetry {
   $this->db->transaction(function()use($status,$ms,$route,$correlation,$code,$bin,$now,$bucket):void{
    $this->db->table('oneqay_platform_http_metrics')->insertOrIgnore(['bucket'=>$bucket]);$q=$this->db->table('oneqay_platform_http_metrics')->where('bucket',$bucket);$r=(clone $q)->lockForUpdate()->first();
    $q->update(['requests'=>(int)$r->requests+1,'client_errors'=>(int)$r->client_errors+($status>=400&&$status<500?1:0),'server_errors'=>(int)$r->server_errors+($status>=500?1:0),'total_ms'=>(int)$r->total_ms+$ms,'max_ms'=>max((int)$r->max_ms,$ms),$bin=>(int)$r->$bin+1]);
-   if($status<400||in_array($status,[401,403,404,419,429],true))return;
+   if($status<400||(in_array($status,[401,403,404,419,429],true)&&!str_starts_with($code,'PAGE_')))return;
    $id=hash('sha256',$route.'|'.$status.'|'.$code);$q=$this->db->table('oneqay_platform_errors')->where('id',$id);$e=(clone$q)->lockForUpdate()->first();
    if(!$e){if($this->db->table('oneqay_platform_errors')->count()>=5000)return;$this->db->table('oneqay_platform_errors')->insert(['id'=>$id,'code'=>$code,'route'=>$route,'http_status'=>$status,'correlation_id'=>$correlation,'state'=>'open','version'=>1,'occurrences'=>1,'first_seen'=>$now,'last_seen'=>$now]);}
    else $q->update(['occurrences'=>(int)$e->occurrences+1,'last_seen'=>$now,'correlation_id'=>$correlation,'state'=>$e->state==='resolved'?'open':$e->state,'version'=>(int)$e->version+1]);

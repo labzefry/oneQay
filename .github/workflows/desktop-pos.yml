@@ -1,0 +1,61 @@
+name: Windows POS and browser error experience
+on:
+  push:
+    branches: [experience-pos-desktop-20261018]
+  pull_request:
+    paths: ['apps/pos-desktop/**', 'apps/web/**', '.github/workflows/desktop-pos.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: desktop-pos-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  offline-core:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - run: rustup toolchain install 1.99.1 --profile minimal
+      - run: cargo +1.99.1 test --manifest-path apps/pos-desktop/core/Cargo.toml --locked
+  windows-installer:
+    runs-on: windows-2022
+    defaults:
+      run:
+        working-directory: apps/pos-desktop
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: '24'
+      - run: rustup toolchain install 1.99.1 --profile minimal
+      - run: rustup default 1.99.1
+      - run: npm ci --no-audit --no-fund
+      - run: python scripts/generate-icon.py
+      - run: npm run tauri -- build --ci --target x86_64-pc-windows-msvc
+      - name: Installer checksums
+        shell: pwsh
+        run: |
+          Get-ChildItem src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/*.exe | ForEach-Object { (Get-FileHash $_ -Algorithm SHA256).Hash.ToLower() + '  ' + $_.Name } | Set-Content src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/SHA256SUMS.txt
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: oneqay-pos-windows-x64-${{ github.sha }}
+          path: apps/pos-desktop/src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/*
+          retention-days: 30
+  web-experience:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        with:
+          php-version: '8.3'
+          extensions: pdo_sqlite, mbstring
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: '24'
+      - run: composer install --no-interaction --prefer-dist
+      - run: php tests/browser-error-experience.php
+      - run: npm ci --no-audit --no-fund
+      - run: npm run type-check && npm run build
