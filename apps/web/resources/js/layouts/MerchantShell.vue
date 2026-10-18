@@ -3,12 +3,13 @@ import { t } from "../i18n";
 // Author by Lab | zefry. Read-only navigation always follows the current server scope.
 import { usePage } from '@inertiajs/vue3';
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import ControlInbox from '../components/ControlInbox.vue';
 import LanguageSwitcher from '../components/LanguageSwitcher.vue';
 import WorkspaceIcon from '../components/WorkspaceIcon.vue';
 import { currencyPreferences, setCurrencyPreferences } from '../business-money';
 type Destination = { key: string; title: string; description: string; url: string; category: string };
 type Scope = { tenant_id: string; organization_id: string; outlet_id: string; device_id: string };
-type WorkspaceProps = { [key: string]: unknown; scope?: Scope; destinations?: Destination[] };
+type WorkspaceProps = { [key: string]: unknown; scope?: Scope; destinations?: Destination[]; communications?: { announcements: { id: string; subject: string; body: string }[]; can_manage: boolean; subscribed: boolean } | null };
 const page = usePage<WorkspaceProps>();
 watch(() => page.props.workspace_preferences, setCurrencyPreferences, { immediate: true });
 const navigation = ref<Destination[]>([]);
@@ -149,15 +150,16 @@ onBeforeUnmount(() => { request?.abort(); document.removeEventListener('keydown'
                 </details>
                 <p v-if="search && groups.length === 0 && !loading" class="oq-nav-empty">{{ t("No matching workspace.") }}</p>
             </nav>
-            <div class="oq-sidebar-bottom"><a class="oq-nav-link" href="/pos?panel=security#account-security"><WorkspaceIcon name="shield-check" /><span>{{ t("Account & security") }}</span></a><p>{{ t("Author by") }} <strong>{{ t("Lab | zefry") }}</strong></p></div>
+            <div class="oq-sidebar-bottom"><a class="oq-nav-link" href="/pos?panel=security#account-security"><WorkspaceIcon name="shield-check" /><span>{{ t("Account & security") }}</span></a><p>© oneQay</p></div>
         </aside>
         <div class="oq-content" :inert="mobileViewport && mobileOpen">
             <header class="oq-topbar no-print">
                 <div class="oq-topbar-leading"><button ref="menu" type="button" class="oq-menu-button" :aria-label="t('Open navigation')" :aria-expanded="mobileOpen" aria-controls="workspace-navigation" @click="mobileOpen = !mobileOpen"><WorkspaceIcon name="menu" /></button><a href="/pos">{{ t("Workspace") }}</a><WorkspaceIcon name="chevron-right" :size="15" /><strong>{{ t(title) }}</strong></div>
                 <div class="oq-topbar-trailing"><LanguageSwitcher /><span class="oq-session"><WorkspaceIcon name="shield-check" :size="16" />{{ t("Merchant session") }}</span><a href="/pos?panel=security#account-security" class="oq-account" :aria-label="t('Open account and security')"><WorkspaceIcon name="settings" :size="18" /><span class="oq-avatar">{{ t("Q") }}</span></a></div>
             </header>
+            <ControlInbox :communications="page.props.communications"/>
             <div id="workspace-content" class="oq-page" tabindex="-1"><slot /></div>
-            <footer class="oq-app-footer no-print"><span>{{ t("oneQay · Intelligent business management") }}</span><span>{{ t("Lab | zefry") }}</span></footer>
+            <footer class="oq-app-footer no-print"><span>{{ t("oneQay · Intelligent business management") }}</span><span>© oneQay</span></footer>
         </div>
     </div>
 </template>

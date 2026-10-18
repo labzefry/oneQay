@@ -47,8 +47,8 @@ final readonly class BusinessActivation
                     $url = rtrim($this->publicUrl, '/').'/activate-business#token='.$token;
                     $subject = $business['locale'] === 'id' ? 'Aktivasi akun bisnis oneQay' : 'Activate your oneQay business account';
                     $body = $business['locale'] === 'id'
-                        ? "Anda diundang mengaktifkan bisnis {$business['name']}.\nBuka tautan ini dalam 24 jam untuk menetapkan kata sandi:\n$url\nJika Anda tidak mengenali undangan ini, abaikan email ini.\nAuthor by Lab | zefry"
-                        : "You are invited to activate {$business['name']}.\nOpen this link within 24 hours to set your password:\n$url\nIf you do not recognize this invitation, ignore this email.\nAuthor by Lab | zefry";
+                        ? "Anda diundang mengaktifkan bisnis {$business['name']}.\nBuka tautan ini dalam 24 jam untuk menetapkan kata sandi:\n$url\nJika Anda tidak mengenali undangan ini, abaikan email ini.\nCopyright oneQay"
+                        : "You are invited to activate {$business['name']}.\nOpen this link within 24 hours to set your password:\n$url\nIf you do not recognize this invitation, ignore this email.\nCopyright oneQay";
                     $this->mail->enqueue($business['tenant_id'], 'activation-'.$business['id'].'-'.$business['version'], $business['email'], $subject, $body, $now);
                 } elseif ($action === 'suspend' && $business['status'] === 'active') {
                     $changes['status'] = 'suspended';

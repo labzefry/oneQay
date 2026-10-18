@@ -27,7 +27,7 @@ foreach ([
     "meta name=\"oneqay-merchant-entry\"",
     "['local', 'test', 'ci']",
     "request()->attributes->get('oneqay.runtime_compatibility_bridge') === 'merchant-core-ci'",
-    "$runtimeClass === 'durable-staging'",
+    "\$runtimeClass === 'durable-staging'",
     "env('ONEQAY_DURABLE_STAGING_RUNTIME_ENABLED', false)",
     "Route::has('auth.first-party.login')",
     "Route::has('pos.operations.hub')",
@@ -40,7 +40,8 @@ foreach (['/auth/login','/auth/mfa/totp/challenge','/auth/mfa/totp/enrollment/st
     $assert(str_contains($page,$needle),'entry contract missing '.$needle);
 }
 $assert(str_contains($page,"v-if=\"enabled\""),'merchant entry must be UI guarded');
-$assert(str_contains($page,'No public registration'),'public registration boundary missing');
+$assert(str_contains($page,'Copyright oneQay'),'oneQay copyright missing');
+// Public onboarding is owned by WebsiteManagement; it must not introduce an unguarded first-party registration route.
 $assert(!str_contains($routes,"Route::post('/register"),'public registration must not be introduced');
 $assert(str_contains($routes,"Route::post('/auth/login'"),'existing first-party login route missing');
 $assert(str_contains($routes,"Route::get('/', static fn () => Inertia::render('Foundation'"),'canonical root delivery must remain unchanged');

@@ -22,8 +22,11 @@ export function setLocale(value: unknown): void {
 
 export function initializeLocale(): void {
   let saved: unknown;
-  try { saved = window.localStorage.getItem(preferenceKey); } catch { /* Indonesian remains the default. */ }
-  current.value = valid(saved) ? saved : 'id';
+  try { saved = window.localStorage.getItem(preferenceKey); } catch { /* Use automatic detection. */ }
+  const country = document.querySelector<HTMLMetaElement>('meta[name="oneqay-country"]')?.content;
+  let zone = ''; try { zone = Intl.DateTimeFormat().resolvedOptions().timeZone; } catch { /* Language fallback. */ }
+  const indonesian = /^(id)(-|$)/i.test(navigator.languages?.[0] ?? navigator.language ?? '') || ['Asia/Jakarta','Asia/Pontianak','Asia/Makassar','Asia/Jayapura'].includes(zone);
+  current.value = valid(saved) ? saved : country ? (country === 'ID' ? 'id' : 'en') : indonesian ? 'id' : 'en';
   document.documentElement.lang = current.value;
 }
 

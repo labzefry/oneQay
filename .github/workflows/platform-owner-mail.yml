@@ -35,8 +35,10 @@ jobs:
         run: |
           set -euo pipefail
           php apps/web/tests/platform-dsn.php
-          php apps/web/tests/platform-control-mail.php
-          PLATFORM_TEST_ENGINE=mysql php apps/web/tests/platform-control-mail.php
+          php apps/web/tests/control-plane-enterprise.php | tee /tmp/control-sqlite.log
+          grep -Fxq 'CONTROL_PLANE_ENTERPRISE_sqlite_PASS assertions=118' /tmp/control-sqlite.log
+          PLATFORM_TEST_ENGINE=mysql php apps/web/tests/control-plane-enterprise.php | tee /tmp/control-mysql.log
+          grep -Fxq 'CONTROL_PLANE_ENTERPRISE_mysql_PASS assertions=118' /tmp/control-mysql.log
           php apps/web/tests/merchant-context-atomic-bootstrap.php
           php apps/web/tests/business-role-administration.php
           php apps/web/tests/privileged-reauthentication-step-up.php

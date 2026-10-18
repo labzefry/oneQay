@@ -32,6 +32,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
         $middleware->append(CorrelationIdMiddleware::class);
         $middleware->append(SafeRequestObservationMiddleware::class);
+        $middleware->append(\App\Delivery\Http\Middleware\ControlPlaneObservationMiddleware::class);
         $middleware->append(SecurityHeadersMiddleware::class);
         $middleware->web(append: [
             HandleInertiaRequests::class,
