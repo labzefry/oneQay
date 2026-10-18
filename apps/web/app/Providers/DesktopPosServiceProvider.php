@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Route;
-use App\Infrastructure\Pos\DesktopPosService;
+use App\Infrastructure\Pos\LaravelDesktopPosService;
 use App\Delivery\Http\Pos\DesktopPosController as Controller;
 use App\Delivery\Http\Middleware\RequirePosSessionContextMiddleware;
-final class DesktopPosServiceProvider extends ServiceProvider {
- public function register():void {$this->app->scoped(DesktopPosService::class,fn($a)=>new DesktopPosService($a->make('db')->connection(),$a->make('encrypter'),$a->make(\App\Application\Organization\OrganizationalContextStore::class),$a->make(\App\Application\Tenancy\TenantContextStore::class),$a->make(\App\Application\Organization\EnterOrganizationalContext::class),$a->make(\App\Application\Identity\FirstPartySessionAuthorityService::class),$a->make(\App\Application\Identity\FirstPartyIdentityEligibilityVerifier::class),$a->make(\App\Application\Authorization\DurableScopedAuthorizationPolicy::class),$a->make(\App\Application\Pos\CompleteSale::class)));}
+final class LaravelDesktopPosServiceProvider extends ServiceProvider {
+ public function register():void {$this->app->scoped(LaravelDesktopPosService::class,fn($a)=>new LaravelDesktopPosService($a->make('db')->connection(),$a->make('encrypter'),$a->make(\App\Application\Organization\OrganizationalContextStore::class),$a->make(\App\Application\Tenancy\TenantContextStore::class),$a->make(\App\Application\Organization\EnterOrganizationalContext::class),$a->make(\App\Application\Identity\FirstPartySessionAuthorityService::class),$a->make(\App\Application\Identity\FirstPartyIdentityEligibilityVerifier::class),$a->make(\App\Application\Authorization\DurableScopedAuthorizationPolicy::class),$a->make(\App\Application\Pos\CompleteSale::class)));}
  public function boot():void {
   $runtime=(string)config('oneqay.runtime_class');
   if(!config('database.oneqay_persistence_enabled')||!config('oneqay.pos_sale_completion.enabled')||(!in_array($runtime,['local','test','ci'],true)&&!\App\Infrastructure\Runtime\ProductionBusinessRuntimeGate::allows($runtime)))return;

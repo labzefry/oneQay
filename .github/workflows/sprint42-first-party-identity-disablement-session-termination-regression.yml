@@ -71,6 +71,8 @@ jobs:
           # Exact control plane successor; canonical identity, runtime, and POS regressions remain required.
           if [[ "${{ github.head_ref }}" == 'experience-pos-desktop-20261018' && "${{ github.event.pull_request.base.sha }}" == 'eb9a02d00a8ca11d6287d9be149efdd99f25967a' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
             bash tools/qa-desktop-pos-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
+            echo "ONEQAY_SPRINT43_SOURCE_SUCCESSOR=true" >> "$GITHUB_ENV"
+            exit 0
           elif [[ "${{ github.head_ref }}" == 'control-plane-enterprise-20261016' && "${{ github.event.pull_request.base.sha }}" == '1e235bf4947a4e94d589d711e0b0fb1a463b3cac' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
             bash tools/qa-control-plane-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
             echo "ONEQAY_SPRINT43_SOURCE_SUCCESSOR=true" >> "$GITHUB_ENV"

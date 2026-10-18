@@ -3,11 +3,11 @@
 
 declare(strict_types=1);
 namespace App\Delivery\Http\Pos;
-use App\Infrastructure\Pos\DesktopPosService;
+use App\Infrastructure\Pos\LaravelDesktopPosService;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 final readonly class DesktopPosController {
- public function __construct(private DesktopPosService $desktop){}
+ public function __construct(private LaravelDesktopPosService $desktop){}
  public function page():Response{return response()->view('pos.desktop');}
  public function pair(Request $r):Response{$pairing=$this->desktop->pair($r);return $r->expectsJson()?response()->json($pairing,200,['Cache-Control'=>'no-store']):response()->view('pos.desktop',compact('pairing'),200,['Cache-Control'=>'no-store']);}
  public function review(Request $r):Response{$operations=$this->desktop->review();return $r->expectsJson()?response()->json(['operations'=>$operations],200,['Cache-Control'=>'no-store']):response()->view('pos.desktop-review',compact('operations'),200,['Cache-Control'=>'no-store']);}

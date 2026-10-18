@@ -18,7 +18,7 @@ $session=$app->make(App\Application\Identity\FirstPartySessionAuthorityService::
 $request=Illuminate\Http\Request::create('/pos/desktop/pair','POST');$request->setLaravelSession($app->make('session')->driver());
 foreach(['tenant_id'=>App\Delivery\Http\Identity\FirstPartySessionKeys::TENANT,'identity_id'=>App\Delivery\Http\Identity\FirstPartySessionKeys::IDENTITY,'organization_id'=>App\Delivery\Http\Identity\FirstPartySessionKeys::ORGANIZATION,'outlet_id'=>App\Delivery\Http\Identity\FirstPartySessionKeys::OUTLET,'device_id'=>App\Delivery\Http\Identity\FirstPartySessionKeys::DEVICE]as$key=>$sessionKey)$request->session()->put($sessionKey,$context[$key]);
 $request->session()->put(App\Delivery\Http\Identity\FirstPartySessionKeys::SESSION_AUTHORITY_ID,$session->authorityId());$request->session()->put(App\Delivery\Http\Identity\FirstPartySessionKeys::CREDENTIAL_EPOCH,$epoch);$request->session()->put(App\Delivery\Http\Identity\FirstPartySessionKeys::MFA_FACTOR_EPOCH,1);
-$desktop=$app->make(App\Infrastructure\Pos\DesktopPosService::class);$pair=$desktop->pair($request);$connected=$desktop->exchange($pair['code']);
+$desktop=$app->make(App\Infrastructure\Pos\LaravelDesktopPosService::class);$pair=$desktop->pair($request);$connected=$desktop->exchange($pair['code']);
 $assert(strlen($connected['token'])===64&&count($connected['snapshot']['catalog'])===1,'single use pairing returns scoped catalog and token');
 $assert(!str_contains(json_encode($db->table('oneqay_desktop_credentials')->get()),$connected['token']),'server stores only token digest');
 try{$desktop->exchange($pair['code']);$assert(false,'pair code reused');}catch(Symfony\Component\HttpKernel\Exception\HttpException $e){$assert($e->getStatusCode()===401,'consumed pairing rejected');}
