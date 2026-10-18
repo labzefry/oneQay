@@ -45,6 +45,11 @@ jobs:
           grep -Fxq 'DESKTOP_UPGRADE_sqlite_PASS assertions=19' /tmp/control-upgrade-sqlite.log
           CONTROL_TEST_ENGINE=mysql php tools/production/tests/oneqaydev-desktop-upgrade.php | tee /tmp/control-upgrade-mysql.log
           grep -Fxq 'DESKTOP_UPGRADE_mysql_PASS assertions=19' /tmp/control-upgrade-mysql.log
+      - name: Recognize only the exact empty worker lock and preserve stopped-preflight evidence
+        run: |
+          set -euo pipefail
+          php tools/production/tests/oneqaydev-desktop-runtime-lock.php | tee /tmp/desktop-runtime-lock.log
+          grep -Fxq 'DESKTOP_RUNTIME_LOCK_PASS assertions=30' /tmp/desktop-runtime-lock.log
       - name: Verify website predecessor and candidate through the owner login route
         run: |
           set -euo pipefail

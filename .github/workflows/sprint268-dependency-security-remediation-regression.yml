@@ -74,6 +74,10 @@ jobs:
             bash tools/qa-cpanel-desktop-pos-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
             exit 0
           fi
+          if [[ "${{ github.head_ref }}" == 'cpanel-pos-worker-lock-fix-20261018' && "${{ github.event.pull_request.base.sha }}" == 'c75ac817e29b8896d806bfcb43a1f182387e44ef' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
+            bash tools/qa-cpanel-pos-worker-lock-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
+            exit 0
+          fi
           if [[ "${{ github.head_ref }}" == 'experience-pos-desktop-20261018' && "${{ github.event.pull_request.base.sha }}" == 'eb9a02d00a8ca11d6287d9be149efdd99f25967a' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
             bash tools/qa-desktop-pos-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
             exit 0
