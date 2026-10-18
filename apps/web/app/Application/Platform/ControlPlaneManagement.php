@@ -22,6 +22,7 @@ final readonly class ControlPlaneManagement {
    'campaign.queue'=>['id','review_digest','reviewed','due_at'],
    'campaign.cancel'=>['id'],
    'pilot.verify'=>['id','shift_id','evidence_digest','receipt_reference','real_cash_confirmed'],
+   'pilot.verify_initial'=>['shift_id','evidence_digest','receipt_reference','real_cash_confirmed'],
    default=>throw new PlatformViolation('UNKNOWN_ACTION'),
   };
   if(array_diff(array_keys($in),['action','operation_id','reason','version',...$fields]))throw new PlatformViolation('UNKNOWN_FIELDS');

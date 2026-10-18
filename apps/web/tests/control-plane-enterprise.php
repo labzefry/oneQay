@@ -9,12 +9,14 @@ use App\Infrastructure\Platform\{LaravelControlPlaneStore,ControlPlaneTelemetry,
 use App\Infrastructure\Identity\LaravelPlatformIdentitySecurity;
 use Illuminate\Http\Request;
 foreach(['business/2026_10_12_000001_create_integrated_business_management.php','business/2026_10_14_000001_create_merchandising_and_currency_preferences.php','platform/2026_10_15_000001_create_public_website.php','platform/2026_10_16_000001_create_control_plane_operations.php'] as $file)(require __DIR__.'/../database/module-migrations/'.$file)->up();
+set_exception_handler(static function(Throwable $e):void{fwrite(STDERR,$e::class.': '.$e->getMessage().PHP_EOL);exit(1);});
 $contexts->setVerified($owner);
 $telemetry=new ControlPlaneTelemetry($db);$campaigns=new ControlPlaneCampaigns($db,$mail,'https://oneqay.example.test',str_repeat('k',40));$pilot=new ControlPlanePilot($db);$security=new LaravelPlatformIdentitySecurity($db,$app->make('encrypter'),$access);
 $controlStore=new LaravelControlPlaneStore($db,$store,$telemetry,$campaigns,$security,$pilot,$mail);$control=new ControlPlaneManagement($access,$store,$controlStore);
 $op=static fn(string $action,array $fields=[],int $version=0):array=>['action'=>$action,'operation_id'=>'enterprise-'.bin2hex(random_bytes(10)),'reason'=>'Synthetic fixture operation','version'=>$version]+$fields;
 $business=$store->business($business['id']);
-$contexts->clear();$reject(fn()=>$control->dashboard(),'anonymous control denied');$contexts->setVerified($owner);
+$contexts->clear();$reject(fn()=>$control->dashboard(),'anonymous control denied');set_exception_handler(static function(Throwable $e):void{fwrite(STDERR,$e::class.': '.$e->getMessage().PHP_EOL);exit(1);});
+$contexts->setVerified($owner);
 $detail=$control->detail($business['id']);$assert(!isset($detail['business']['token_hash'])&&!str_contains(json_encode($detail),'secret_ciphertext'),'business detail contains no invitation or TOTP secrets');
 $assert($detail['pilot']['status']==='NOT_YET_VERIFIED','missing cash evidence never passes');
 $cashier=$db->table('oneqay_role_permissions')->where('tenant_id',$business['tenant_id'])->where('role_id','oneqay-cashier')->pluck('permission_id')->all();
@@ -87,6 +89,11 @@ $control->command($op('campaign.cancel',['id'=>$notice['id']],2));$assert($campa
 $middleware=$app->make('router')->getRoutes()->match(Request::create('/platform/control/commands','POST'))->gatherMiddleware();
 foreach(['web','session.active',App\Delivery\Http\Middleware\RequirePlatformSecurityMiddleware::class,App\Delivery\Http\Middleware\RequirePolicyAdministrationSessionContextMiddleware::class] as $guard)$assert(in_array($guard,$middleware,true),'command retains '.$guard);
 putenv('ONEQAY_RUNNING_SOURCE_COMMIT='.str_repeat('a',40));$reject(fn()=>$pilot->verify($business,['real_cash_confirmed'=>true], 'fixture'),'CI cannot attest production cash');
+$app['config']->set('merchant_context_bootstrap.grant',['tenant_id'=>'platform-owner','identity_id'=>'owner-identity','organization_id'=>'platform-org','outlet_id'=>'platform-outlet','device_id'=>'platform-device']);
+$assert($control->dashboard()['initial_merchant_pilot']['status']==='NOT_YET_VERIFIED','initial hosting pilot does not fabricate cash evidence or registry account');
+$app['config']->set('merchant_context_bootstrap.grant.tenant_id','unrelated-tenant');
+$assert($control->dashboard()['initial_merchant_pilot']===null,'initial pilot requires exact private owner binding');
+$reject(fn()=>$control->command($op('pilot.verify_initial',['real_cash_confirmed'=>true])),'unbound initial merchant attestation denied');
 $request=Request::create('/','GET',[],[],[],['REMOTE_ADDR'=>'192.0.2.10','HTTP_CF_IPCOUNTRY'=>'ID','HTTP_ACCEPT_LANGUAGE'=>'en-US']);$assert(LocalePreference::country($request)===null&&LocalePreference::initial($request)==='en','untrusted country header ignored');
 $request=Request::create('/','GET',[],[],[],['REMOTE_ADDR'=>'173.245.48.5','HTTP_CF_IPCOUNTRY'=>'ID']);$assert(LocalePreference::initial($request)==='id','trusted Indonesian country defaults to ID');
 $request=Request::create('/','GET',[],[],[],['REMOTE_ADDR'=>'173.245.48.5','HTTP_CF_IPCOUNTRY'=>'US','HTTP_ACCEPT_LANGUAGE'=>'id-ID']);$assert(LocalePreference::initial($request)==='en','trusted foreign country defaults to ENG');

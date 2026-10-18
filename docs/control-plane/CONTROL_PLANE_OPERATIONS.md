@@ -26,4 +26,4 @@ Visible UI and PDF/email footer attribution is copyright oneQay. Developer attri
 
 ## Pilot acceptance
 
-The pilot reads linked JRN_004 catalog, JRN_005 opening, JRN_006 positive counted-cash sale and JRN_010 shift-close evidence for the same tenant/shift. It remains NOT_YET_VERIFIED until evidence is complete. A production-only owner attestation additionally binds its digest, exact source and receipt reference. Synthetic test fixtures cannot attest real money or establish host acceptance.
+The initial hosted business has a separate owner-only pilot action bound to its private bootstrap tenant, outlet and device. It does not create a registration record. The pilot reads linked JRN_004 catalog, JRN_005 opening, JRN_006 positive counted-cash sale and JRN_010 shift-close evidence for the same tenant/shift. It remains NOT_YET_VERIFIED until evidence is complete. A production-only owner attestation additionally binds its digest, exact source and receipt reference. Synthetic test fixtures cannot attest real money or establish host acceptance.

@@ -7,7 +7,7 @@ use Illuminate\Database\Connection;
 final readonly class ControlPlanePilot {
  public function __construct(private Connection $db){}
  public function inspect(array $b,?string $shift=null):array{
-  $t=$b['tenant_id'];$q=$this->db->table('oneqay_pos_shifts')->where('tenant_id',$t);if($shift!==null)$q->where('shift_id',$shift);
+  $t=$b['tenant_id'];$q=$this->db->table('oneqay_pos_shifts')->where('tenant_id',$t);foreach(['outlet_id','device_id']as$key)if(isset($b[$key]))$q->where($key,$b[$key]);if($shift!==null)$q->where('shift_id',$shift);
   $s=$q->orderByDesc('opened_at_unix')->first();$steps=['JRN_004'=>false,'JRN_005'=>false,'JRN_006'=>false,'JRN_010'=>false];
   if(!$s)return ['status'=>'NOT_YET_VERIFIED','steps'=>$steps,'shift_id'=>null,'review'=>null];
   $opening=$this->db->table('oneqay_pos_shift_opening_cash_evidence')->where('tenant_id',$t)->where('shift_id',$s->shift_id)->first();

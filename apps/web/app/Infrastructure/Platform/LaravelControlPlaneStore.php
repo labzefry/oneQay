@@ -8,7 +8,13 @@ use Illuminate\Database\Connection;
 // Author by Lab | zefry
 final readonly class LaravelControlPlaneStore implements ControlPlaneStore {
  public function __construct(private Connection $db,private PlatformStore $platform,private ControlPlaneTelemetry $telemetry,private ControlPlaneCampaigns $marketing,private LaravelPlatformIdentitySecurity $security,private ControlPlanePilot $pilot,private MailStore $mail){}
- public function overview():array{return ['business_counts'=>$this->db->table('oneqay_platform_businesses')->selectRaw('status, COUNT(*) as total')->groupBy('status')->pluck('total','status')->all(),'noc'=>$this->telemetry->dashboard(),'configuration'=>$this->settings(),'campaigns'=>$this->marketing->listing(),'active_sessions'=>$this->db->table('oneqay_identity_first_party_sessions')->whereNull('revoked_at_unix')->where('expires_at_unix','>',time())->count(),'sampled_at'=>time()];}
+ public function overview():array{return ['business_counts'=>$this->db->table('oneqay_platform_businesses')->selectRaw('status, COUNT(*) as total')->groupBy('status')->pluck('total','status')->all(),'noc'=>$this->telemetry->dashboard(),'configuration'=>$this->settings(),'campaigns'=>$this->marketing->listing(),'active_sessions'=>$this->db->table('oneqay_identity_first_party_sessions')->whereNull('revoked_at_unix')->where('expires_at_unix','>',time())->count(),'sampled_at'=>time(),'initial_merchant_pilot'=>($initial=$this->initialMerchant())?$this->pilot->inspect($initial):null];}
+ private function initialMerchant():?array{
+  $grant=config('merchant_context_bootstrap.grant');if(!is_array($grant))return null;
+  foreach(['tenant_id','identity_id','organization_id','outlet_id','device_id']as$key)if(!is_string($grant[$key]??null)||trim($grant[$key])===''||trim($grant[$key])!==$grant[$key])return null;
+  if($grant['tenant_id']!==config('platform.owner_tenant')||$grant['identity_id']!==config('platform.owner_identity'))return null;
+  return ['id'=>null]+$grant;
+ }
  public function settings():array{$r=$this->db->table('oneqay_platform_control_settings')->where('id',1)->firstOrFail();return ['version'=>(int)$r->version,'configuration'=>array_replace(['registration_enabled'=>true,'features'=>ControlPlaneManagement::features([]),'worker_stale_seconds'=>180,'database_warn_ms'=>250,'error_rate_warn_percent'=>2],json_decode($r->configuration,true,32,JSON_THROW_ON_ERROR))];}
  public function detail(array $b):array{
   unset($b['token_hash'],$b['token_expires_at']);$t=$b['tenant_id'];$c=$this->db->table('oneqay_platform_business_controls')->where('business_id',$b['id'])->first();
@@ -22,6 +28,7 @@ final readonly class LaravelControlPlaneStore implements ControlPlaneStore {
  public function preview(string $id):array{return $this->marketing->preview($id);}
  public function execute(string $action,array $in,?array $b,string $actor):array{
   if(str_starts_with($action,'campaign.'))return $this->marketing->command($in);
+  if($action==='pilot.verify_initial')return $this->pilot->verify($this->initialMerchant()??throw new PlatformViolation('INITIAL_MERCHANT_BINDING_REQUIRED',403),$in,$actor);
   if($action==='pilot.verify')return $this->pilot->verify($b,$in,$actor);
   if($action==='security.sessions_revoke')return ['sessions_revoked'=>$this->db->table('oneqay_identity_first_party_sessions')->where('tenant_id',$b['tenant_id'])->whereNull('revoked_at_unix')->update(['revoked_at_unix'=>time()])];
   if($action==='security.totp_reset'){

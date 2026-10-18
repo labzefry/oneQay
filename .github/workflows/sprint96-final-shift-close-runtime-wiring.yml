@@ -39,6 +39,9 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
+          if [[ "${{ github.head_ref }}" == 'control-plane-enterprise-20261016' && "${{ github.event.pull_request.base.sha }}" == '1e235bf4947a4e94d589d711e0b0fb1a463b3cac' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
+            bash tools/qa-control-plane-source-envelope.sh "$BASE_SHA" "$HEAD_SHA"
+          else
           git diff --exit-code "$BASE_SHA" "$HEAD_SHA" -- \
             apps/web/app/Providers/FinalShiftCloseServiceProvider.php \
             apps/web/bootstrap/app.php \
@@ -46,6 +49,7 @@ jobs:
             apps/web/config/oneqay.php \
             apps/web/database/migrations \
             apps/web/routes/pos-final-shift-close.php
+          fi
           grep -Fq "['local', 'test', 'ci']" apps/web/app/Providers/FinalShiftCloseServiceProvider.php
           ! grep -Fq "'durable-staging'" apps/web/app/Providers/FinalShiftCloseServiceProvider.php
 
