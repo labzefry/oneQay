@@ -16,7 +16,7 @@ const patterns = messages.map(([source, id, en]) => ({
 
 export function setLocale(value: unknown): void {
   current.value = valid(value) ? value : 'id';
-  if (typeof document !== 'undefined') document.documentElement.lang = current.value;
+  if (typeof document !== 'undefined') { document.documentElement.lang = current.value; document.cookie = `oneqay_locale=${current.value}; Path=/; SameSite=Lax; Max-Age=31536000${location.protocol === 'https:' ? '; Secure' : ''}`; }
   try { window.localStorage.setItem(preferenceKey, current.value); } catch { /* In-memory choice still works. */ }
 }
 

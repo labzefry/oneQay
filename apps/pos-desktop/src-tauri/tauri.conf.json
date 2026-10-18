@@ -1,0 +1,12 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "oneQay POS",
+  "version": "0.1.0",
+  "identifier": "id.oneqay.pos",
+  "build": { "beforeDevCommand": "npm run dev", "devUrl": "http://localhost:1420", "beforeBuildCommand": "npm run build", "frontendDist": "../dist" },
+  "app": {
+    "windows": [{ "title": "oneQay POS", "width": 1366, "height": 850, "minWidth": 1024, "minHeight": 700, "resizable": true }],
+    "security": { "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src ipc: http://ipc.localhost; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'" }
+  },
+  "bundle": { "active": true, "targets": ["nsis"], "icon": ["icons/icon.ico"], "shortDescription": "Kasir oneQay dengan penyimpanan lokal dan sinkronisasi aman", "windows": { "webviewInstallMode": { "type": "downloadBootstrapper", "silent": true }, "nsis": { "installMode": "currentUser", "languages": ["Indonesian", "English"], "displayLanguageSelector": true } } }
+}

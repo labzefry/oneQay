@@ -1,6 +1,7 @@
 import '../css/app.css'
 import '../css/website.css'
 import './platform-invitation'
+import { installSessionExpiryNavigation } from './session-expiry'
 
 import { createInertiaApp } from '@inertiajs/vue3'
 import { createApp, h, type DefineComponent } from 'vue'
@@ -9,6 +10,7 @@ import LocalizedShell from './layouts/LocalizedShell.vue'
 import { initializeLocale } from './i18n'
 
 initializeLocale()
+installSessionExpiryNavigation()
 
 createInertiaApp({
   layout: (name) => (name.startsWith('Website/') || name === 'Platform/Control') ? undefined : (name.startsWith('Pos/') || name.startsWith('Business/')) ? MerchantShell : LocalizedShell,

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { t } from "../i18n";
+import { t, locale } from "../i18n";
 import { computed, ref } from 'vue'
 
 defineProps<{ headline: string }>()
@@ -25,6 +25,7 @@ type Phase =
 const metaEnabled = (name: string) =>
   document.querySelector(`meta[name="${name}"]`)?.getAttribute('content') === 'enabled'
 
+const expired = new URLSearchParams(location.search).get('reason') === 'session-expired'
 const entryFlag = metaEnabled('oneqay-merchant-entry')
 const passwordRecoveryEnabled = metaEnabled('oneqay-password-recovery')
 const totpRecoveryEnabled = metaEnabled('oneqay-totp-recovery')
@@ -290,7 +291,7 @@ async function confirmTotpRecovery() {
       <div class="trust"><span>{{ t("Context bound") }}</span><span>{{ t("Tenant isolated") }}</span><span>{{ t("Session controlled") }}</span><span>{{ t("Permission filtered") }}</span></div>
     </section>
 
-    <section class="card">
+    <section class="card"><p v-if="expired" role="status">{{ locale === "id" ? "Sesi Anda sudah berakhir. Silakan masuk kembali untuk melanjutkan." : "Your session has ended. Sign in again to continue." }}</p>
       <template v-if="phase === 'login'">
         <p class="eyebrow">{{ t("First-party access") }}</p>
         <h2>{{ t("Sign in") }}</h2>
