@@ -88,7 +88,7 @@ function rrArchive(string $privateRoot, string $dir): array {
     $archives = $privateRoot.'/release-archives'; rrDirectory($archives);
     rrAssert(str_starts_with($dir, $privateRoot.'/') && !is_link($dir), 'RETENTION_SOURCE_SCOPE');
     $source = substr($dir, strlen($privateRoot)+1);
-    rrAssert(preg_match('~\A(?:releases/production-[a-f0-9]{12}|oneqaydev-(?:website-update|control-update|business-final)-[a-f0-9]{12}(?:-r[0-9]+)?/payload/production-[a-f0-9]{12})\z~D', $source) === 1, 'RETENTION_SOURCE_SCOPE');
+    rrAssert(preg_match('~\A(?:releases/production-[a-f0-9]{12}|oneqaydev-(?:website-update|control-update|pos-update|business-final)-[a-f0-9]{12}(?:-r[0-9]+)?/payload/production-[a-f0-9]{12})\z~D', $source) === 1, 'RETENTION_SOURCE_SCOPE');
     $receipt = $archives.'/'.hash('sha256', $source).'.json';
     $r=null;
     if (is_file($receipt)) {
@@ -176,7 +176,7 @@ function rrMaintain(string $privateRoot, string $activeRelease, int $publishedAt
         $candidates=[];
         foreach (new DirectoryIterator($privateRoot.'/releases') as $e) if (!$e->isDot() && preg_match('/\Aproduction-[a-f0-9]{12}\z/D',$e->getFilename()) === 1 && $e->getFilename() !== $activeRelease) $candidates[]=$e->getPathname();
         foreach (new DirectoryIterator($privateRoot) as $e) {
-            if ($e->isDot() || $e->isLink() || !$e->isDir() || preg_match('/\Aoneqaydev-(?:website-update|control-update|business-final)-[a-f0-9]{12}(?:-r[0-9]+)?\z/D',$e->getFilename()) !== 1) continue;
+            if ($e->isDot() || $e->isLink() || !$e->isDir() || preg_match('/\Aoneqaydev-(?:website-update|control-update|pos-update|business-final)-[a-f0-9]{12}(?:-r[0-9]+)?\z/D',$e->getFilename()) !== 1) continue;
             $payload=$e->getPathname().'/payload'; if (!is_dir($payload) || is_link($payload)) continue;
             foreach (new DirectoryIterator($payload) as $p) if (!$p->isDot() && preg_match('/\Aproduction-[a-f0-9]{12}\z/D',$p->getFilename()) === 1) $candidates[]=$p->getPathname();
         }

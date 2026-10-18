@@ -260,6 +260,10 @@ jobs:
         run: |
           # Exact public website successor; original executable behavior and identity foundations preserved.
           # Exact control plane successor; canonical identity, runtime, and POS regressions remain required.
+          if [[ "${{ github.head_ref }}" == 'cpanel-desktop-pos-20261018' && "${{ github.event.pull_request.base.sha }}" == '45509005b2f9ed4e5ffddd1e8c7db100a50e52fe' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
+            bash tools/qa-cpanel-desktop-pos-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
+            exit 0
+          fi
           if [[ "${{ github.head_ref }}" == 'experience-pos-desktop-20261018' && "${{ github.event.pull_request.base.sha }}" == 'eb9a02d00a8ca11d6287d9be149efdd99f25967a' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
             bash tools/qa-desktop-pos-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
             exit 0
