@@ -200,3 +200,15 @@ fn count_capability_is_required_locally() {
     assert!(s.commit(&id(), "count", lines(0), 0, 1001).is_err());
     assert!(s.pending().unwrap().is_empty());
 }
+
+#[test]
+fn decimal_receipt_prices_use_catalog_currency_scale() {
+    let bytes = receipt_bytes(
+        &json!({"currency":"USD","scale":2,"lines":[{"name":"Coffee","price":1250,"quantity":2}],"total":2500,"tendered":3000,"change":500}),
+        80,
+    );
+    let text = String::from_utf8_lossy(&bytes);
+    assert!(text.contains("2 x 12.50"));
+    assert!(text.contains("TOTAL USD 25.00"));
+    assert!(text.contains("KEMBALI 5.00"));
+}

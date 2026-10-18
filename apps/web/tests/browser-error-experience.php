@@ -30,4 +30,7 @@ $http=$app->make(Illuminate\Contracts\Http\Kernel::class);
 $httpResponse=$http->handle($make('/_oneqay_test_failure','text/html',['HTTP_ACCEPT_LANGUAGE'=>'id-ID']));
 $assert($httpResponse->getStatusCode()===500&&str_contains($httpResponse->getContent(),'PAGE_HTTP_500'),'full HTTP exception pipeline returns friendly page');
 $assert($db->table('oneqay_platform_errors')->where('code','PAGE_HTTP_500')->where('correlation_id',$httpResponse->headers->get('X-Correlation-ID'))->exists(),'actual HTTP page error matches NOC code and correlation');
+$response=$presenter->present($make('/missing-page','text/html',['HTTP_X_INERTIA'=>'true']),response('internal detail',404));
+$inertia=json_decode($response->getContent(),true);
+$assert($response->getStatusCode()===404&&$response->headers->get('X-Inertia')==='true'&&($inertia['component']??null)==='ErrorPage'&&($inertia['props']['code']??null)==='PAGE_HTTP_404','SPA navigation receives a friendly Inertia page instead of an invalid response modal');
 echo 'BROWSER_ERROR_EXPERIENCE_PASS assertions='.$n.PHP_EOL;

@@ -597,7 +597,10 @@ pub fn receipt_bytes(r: &Value, paper_mm: u16) -> Vec<u8> {
                 "{}\n{} x {}\n",
                 clean(l["name"].as_str().unwrap_or("Produk")),
                 l["quantity"],
-                l["price"]
+                display_money(
+                    l["price"].as_i64().unwrap_or(0),
+                    r["scale"].as_u64().unwrap_or(0) as u32
+                )
             ))
         }
     }

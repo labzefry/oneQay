@@ -55,11 +55,10 @@ final class BrowserErrorPresentation
         } else {
             $locale = $request->cookie('oneqay_locale');
             if (!in_array($locale, ['id', 'en'], true)) $locale = LocalePreference::initial($request);
-            $response = response()->view('errors.friendly', compact('status', 'code', 'correlation', 'locale', 'login'), $status);
-            // Inertia must leave its page renderer for standalone error HTML.
-            if ($request->headers->has('X-Inertia')) {
-                $response->headers->set('X-Inertia-Error', 'true');
-            }
+            $props = compact('status', 'code', 'correlation', 'locale', 'login');
+            $response = $request->headers->has('X-Inertia')
+                ? \Inertia\Inertia::render('ErrorPage', $props)->toResponse($request)->setStatusCode($status)
+                : response()->view('errors.friendly', $props, $status);
         }
         if ($retryAfter !== null) $response->headers->set('Retry-After', $retryAfter);
         $response->headers->set('X-OneQay-Error-Code', $code);
