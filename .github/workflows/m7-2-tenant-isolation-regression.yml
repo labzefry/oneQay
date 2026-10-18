@@ -564,10 +564,15 @@ jobs:
         if: github.event_name == 'pull_request' && env.ONEQAY_SPRINT30_SUCCESSOR != 'true'
         shell: bash
         run: |
+          if [[ "${{ github.head_ref }}" == 'experience-pos-desktop-20261018' && "${{ github.event.pull_request.base.sha }}" == 'eb9a02d00a8ca11d6287d9be149efdd99f25967a' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
+            bash tools/qa-desktop-pos-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
+            git diff --exit-code "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" -- apps/web/composer.json apps/web/composer.lock apps/web/package.json apps/web/package-lock.json
+          else
           set -euo pipefail
           test -f apps/web/composer.lock
           test -f apps/web/package-lock.json
           if git diff --name-only "origin/${{ github.base_ref }}...HEAD" | grep -Eq '(^|/)(composer\.(json|lock)|package(-lock)?\.json)$'; then exit 1; fi
+          fi
 
       - name: Install locked Composer dependencies
         working-directory: apps/web

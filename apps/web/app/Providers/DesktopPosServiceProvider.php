@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Route;
 use App\Infrastructure\Pos\LaravelDesktopPosService;
 use App\Delivery\Http\Pos\DesktopPosController as Controller;
 use App\Delivery\Http\Middleware\RequirePosSessionContextMiddleware;
-final class LaravelDesktopPosServiceProvider extends ServiceProvider {
+final class DesktopPosServiceProvider extends ServiceProvider {
  public function register():void {$this->app->scoped(LaravelDesktopPosService::class,fn($a)=>new LaravelDesktopPosService($a->make('db')->connection(),$a->make('encrypter'),$a->make(\App\Application\Organization\OrganizationalContextStore::class),$a->make(\App\Application\Tenancy\TenantContextStore::class),$a->make(\App\Application\Organization\EnterOrganizationalContext::class),$a->make(\App\Application\Identity\FirstPartySessionAuthorityService::class),$a->make(\App\Application\Identity\FirstPartyIdentityEligibilityVerifier::class),$a->make(\App\Application\Authorization\DurableScopedAuthorizationPolicy::class),$a->make(\App\Application\Pos\CompleteSale::class)));}
  public function boot():void {
   $runtime=(string)config('oneqay.runtime_class');
