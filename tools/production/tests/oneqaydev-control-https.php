@@ -5,11 +5,12 @@ $source=file_get_contents(__DIR__.'/../cpanel/update-oneqaydev-control-plane.php
 $tmp=sys_get_temp_dir().'/oneqay-owner-route-'.bin2hex(random_bytes(8));mkdir($tmp,0700);
 $source=preg_replace("~const U_ROOT = '[^']+';~",'const U_ROOT = '.var_export($tmp.'/private',true).';',$source,1);
 $source=preg_replace('~const L_APP = [^;]+;~','const L_APP = '.var_export($tmp.'/previous-app',true).';',$source,1);
+$source=str_replace('function uHttps(', 'function fixtureUnusedHttps(', $source);
 file_put_contents($tmp.'/operator.php',$source);require $tmp.'/operator.php';
 $active=[];$requests=[];$badOwner=false;$n=0;
 function oqVerifyHttps(string $path,string $want):void {if(!in_array([$path,$want],[['/health/live','ok'],['/health/ready','ready']],true))throw new RuntimeException('Unexpected health probe');}
 function bEntryEvidence(array $response):array {return $response['fixture_entry'];}
-function bHttps(string $url,string $accept):array {
+function uHttps(string $url,string $accept):array {
  global $active,$requests,$badOwner;$path=parse_url($url,PHP_URL_PATH);$requests[]=$path;$p=uPaths($active);
  $status=str_starts_with($path,'/platform')||str_starts_with($path,'/pos')?401:200;
  $entry=['status'=>$status,'entry_phase'=>'native-gate-passed','missing_php_capabilities'=>[],'merchant_entry_enabled'=>false,'login_context_present'=>false,'secure_session_cookie'=>true];

@@ -87,9 +87,73 @@ function uQualifyApproval(array $c,int $id,string $sha,array $r,int $now): array
 }
 function uAuthority(string $locator,array $r,?int $at=null): array {
     uAssert(preg_match('/\A[1-9][0-9]{0,17}\z/D',$locator)===1,'AUTHORITY_LOCATOR_INVALID');$id=(int)$locator;
-    $response=bHttps('https://api.github.com/repos/labzefry/oneQay/issues/comments/'.$id,'application/vnd.github+json');uAssert($response['status']===200,'NATIVE_AUTHORITY_LOOKUP_FAILED');
+    $response=uHttps('https://api.github.com/repos/labzefry/oneQay/issues/comments/'.$id,'application/vnd.github+json');uAssert($response['status']===200,'NATIVE_AUTHORITY_LOOKUP_FAILED');
     $c=json_decode($response['body'],true,32,JSON_THROW_ON_ERROR);uAssert(is_array($c),'NATIVE_AUTHORITY_RESPONSE_INVALID');
     return uQualifyApproval($c,$id,hash('sha256',uRead(__DIR__.'/authority-request.json')),$r,$at??time());
+}
+function uHttpsCurlOptions(string $accept,int $attempt): array {
+    $opts=[CURLOPT_FOLLOWLOCATION=>false,CURLOPT_CONNECTTIMEOUT=>8,CURLOPT_TIMEOUT=>$attempt===1?25:45,
+        CURLOPT_SSL_VERIFYPEER=>true,CURLOPT_SSL_VERIFYHOST=>2,CURLOPT_PROTOCOLS=>CURLPROTO_HTTPS,
+        CURLOPT_HTTPHEADER=>['Accept: '.$accept,'Cache-Control: no-cache','User-Agent: oneQayDev-governed-activation']];
+    if($attempt===2){$opts[CURLOPT_IPRESOLVE]=CURL_IPRESOLVE_V4;$opts[CURLOPT_HTTP_VERSION]=CURL_HTTP_VERSION_1_1;}
+    return $opts;
+}
+function uHttpsAttempt(string $url,string $accept,int $attempt): array {
+    $h=curl_init($url);uAssert($h!==false,'HTTPS_INITIALIZE_FAILED');$body='';$headers='';$limit=null;
+    $opts=uHttpsCurlOptions($accept,$attempt);
+    $opts[CURLOPT_WRITEFUNCTION]=static function($ch,string $chunk)use(&$body,&$limit):int{
+        if(strlen($body)+strlen($chunk)>2000000){$limit='BODY_LIMIT';return 0;}$body.=$chunk;return strlen($chunk);
+    };
+    $opts[CURLOPT_HEADERFUNCTION]=static function($ch,string $line)use(&$headers,&$limit):int{
+        if(strlen($headers)+strlen($line)>=65536){$limit='HEADER_LIMIT';return 0;}$headers.=$line;return strlen($line);
+    };
+    curl_setopt_array($h,$opts);$ok=curl_exec($h);$errno=curl_errno($h);$error=curl_error($h);$info=curl_getinfo($h);curl_close($h);
+    return ['status'=>(int)($info['http_code']??0),'body'=>$body,'headers'=>$headers,'transfer_ok'=>$ok!==false,
+        'curl_errno'=>$errno,'curl_error'=>$error,'limit_error'=>$limit,'elapsed_ms'=>(int)round((float)($info['total_time']??0)*1000)];
+}
+function uHttpsRecord(array $event): void {
+    // Never persist response bodies/headers, cookies, credentials, or query values.
+    $file=__DIR__.'/https-transport.json';$events=[];
+    if(is_file($file)&&!is_link($file))try{$old=uJson($file);if(is_array($old['events']??null))$events=array_slice($old['events'],-63);}catch(Throwable){}
+    $events[]=$event;uWrite($file,json_encode(['schema_version'=>1,'events'=>$events],JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_THROW_ON_ERROR)."\n");
+}
+function uHttpsWithRetries(string $url,string $accept,callable $transfer,callable $record): array {
+    uAssert(preg_match('~\Ahttps://(?:oneqaydev\.n07\.my\.id/[A-Za-z0-9._\~?=&%/-]*|api\.github\.com/repos/labzefry/oneQay/issues/comments/[1-9][0-9]*)\z~D',$url)===1,'HTTPS_TARGET_NOT_ALLOWED');
+    uAssert(in_array($accept,['application/vnd.github+json','application/json','text/html','*/*'],true),'HTTPS_ACCEPT_NOT_ALLOWED');
+    for($attempt=1;$attempt<=2;$attempt++){
+        $v=$transfer($url,$accept,$attempt);$errno=(int)($v['curl_errno']??0);
+        $bounds=($v['limit_error']??null)!==null||!is_string($v['body']??null)||strlen($v['body'])>2000000||!is_string($v['headers']??null)||strlen($v['headers'])>=65536;
+        $transport=($v['transfer_ok']??false)===true&&$errno===0;
+        $transient=$transport?in_array($v['status'],[429,502,503,504],true):in_array($errno,[5,6,7,16,18,28,35,52,55,56,81,92],true);
+        if(!$transport||$bounds||$transient||$attempt>1){
+            $event=['at'=>gmdate('c'),'target'=>parse_url($url,PHP_URL_HOST).parse_url($url,PHP_URL_PATH),'attempt'=>$attempt,
+                'transport'=>$attempt===1?'DEFAULT_TLS_VERIFIED':'IPV4_HTTP11_TLS_VERIFIED','curl_errno'=>$errno,'curl_reason'=>match($errno){0=>'NONE',5=>'PROXY_DNS',6=>'DNS',7=>'CONNECT',16,92=>'HTTP2',18=>'PARTIAL_TRANSFER',28=>'TIMEOUT',35=>'TLS_HANDSHAKE',52=>'EMPTY_REPLY',55,56=>'IO',60=>'TLS_CERTIFICATE_REJECTED',77=>'CA_CONFIGURATION',default=>'TRANSPORT_ERROR'},'http_status'=>$v['status'],
+                'body_bytes'=>is_string($v['body']??null)?strlen($v['body']):null,'header_bytes'=>is_string($v['headers']??null)?strlen($v['headers']):null,
+                'limit_error'=>$v['limit_error']??null,'elapsed_ms'=>(int)($v['elapsed_ms']??0),'outcome'=>$transport&&!$bounds&&!$transient?'RECOVERED':'FAILED'];
+            // Persistence failure must not invalidate a completed successful transfer or a rollback attempt.
+            try{$record($event);}catch(Throwable){}
+        }
+        uAssert(!$bounds,'HTTPS_RESPONSE_BOUNDS_INVALID');
+        if($attempt===1&&$transient)continue;
+        uAssert($transport,'HTTPS_TRANSPORT_FAILED_CURL_'.$errno);
+        return ['status'=>$v['status'],'body'=>$v['body'],'headers'=>$v['headers']];
+    }
+    throw new WorkspaceUpdateStop('HTTPS_RETRY_EXHAUSTED');
+}
+function uHttps(string $url,string $accept): array {
+    return uHttpsWithRetries($url,$accept,'uHttpsAttempt','uHttpsRecord');
+}
+function uRetryStoppedPreflight(string $locator,array $r): void {
+    $prior=uJson(U_REPORT);
+    $expected=['state'=>'STOPPED_FAIL_CLOSED','error_code'=>'HTTPS_RESPONSE_INVALID','public_switch'=>'NOT_PERFORMED','host_business_acceptance'=>'NOT_VERIFIED','attribution'=>'Lab | zefry'];
+    uAssert(count($prior)===count($expected),'RETRY_REPORT_NOT_PREFLIGHT_ONLY');
+    foreach($expected as $key=>$value)uAssert(($prior[$key]??null)===$value,'RETRY_REPORT_NOT_PREFLIGHT_ONLY');
+    $p=uPaths($r);
+    foreach([$p['release'],$p['env'],$p['entry'],U_BACKUP,__DIR__.'/control-plane-installation.json',__DIR__.'/control-worker.php']as$path)
+        uAssert(!file_exists($path)&&!is_link($path),'RETRY_MUTATION_PRESENT_NO_AUTOMATIC_RECOVERY');
+    uAuthority($locator,$r); // New exact operator/request grant must be valid before preserving/resetting the stopped report.
+    $saved=__DIR__.'/update-result-https-stopped-'.gmdate('Ymd-His').'-'.bin2hex(random_bytes(4)).'.json';
+    uAssert(!file_exists($saved)&&!is_link($saved)&&rename(U_REPORT,$saved),'RETRY_REPORT_PRESERVATION_FAILED');
 }
 function uSourceFiles(array $r,string $root,bool $runtime=false): int {
     $raw=uRead(__DIR__.'/release-files.sha256');uAssert(hash_equals($r['release_files_sha256'],hash('sha256',$raw)),'SOURCE_MANIFEST_CHANGED');$seen=[];$id=$r['release_id'];
@@ -200,21 +264,21 @@ function uRuntime(array $r): void {
 }
 function uPublicVerify(array $r): array {
     oqVerifyHttps('/health/live','ok');oqVerifyHttps('/health/ready','ready');$p=uPaths($r);$probe=bin2hex(random_bytes(12));$evidence=[];
-    foreach(['merchant_entry'=>['/owner-login','text/html'],'unauthenticated_pos'=>['/pos','application/json']] as $key=>[$url,$accept]){$v=bHttps('https://oneqaydev.n07.my.id'.$url.'?oneqay_ui_probe='.$probe,$accept);$e=bEntryEvidence($v);uAssert(preg_match('/^X-OneQay-Business-Bridge:\s*'.preg_quote($p['bridge_id'],'/').'\s*\r?$/im',$v['headers'])===1&&$e['entry_phase']==='native-gate-passed'&&$e['missing_php_capabilities']===[],'NEW_HTTPS_NATIVE_ENTRY_INVALID');$e['bridge_identity']='EXPECTED';
+    foreach(['merchant_entry'=>['/owner-login','text/html'],'unauthenticated_pos'=>['/pos','application/json']] as $key=>[$url,$accept]){$v=uHttps('https://oneqaydev.n07.my.id'.$url.'?oneqay_ui_probe='.$probe,$accept);$e=bEntryEvidence($v);uAssert(preg_match('/^X-OneQay-Business-Bridge:\s*'.preg_quote($p['bridge_id'],'/').'\s*\r?$/im',$v['headers'])===1&&$e['entry_phase']==='native-gate-passed'&&$e['missing_php_capabilities']===[],'NEW_HTTPS_NATIVE_ENTRY_INVALID');$e['bridge_identity']='EXPECTED';
         if($key==='merchant_entry'&&$r['source_commit']!==L_SOURCE)uAssert(preg_match('/<html lang="(?:id|en)">/',$v['body'])===1,'AUTOMATIC_DOCUMENT_LOCALE_MISSING');
         if($key==='merchant_entry')uAssert($e['status']===200&&$e['merchant_entry_enabled']&&$e['login_context_present']&&$e['secure_session_cookie'],'NEW_MERCHANT_HTTPS_INVALID');else uAssert(in_array($e['status'],[401,403],true),'UNAUTHENTICATED_POS_NOT_DENIED');$evidence[$key]=$e;}
     $manifest=uJson($p['app'].'/public/build/manifest.json');$entry=$manifest['resources/js/app.ts']??null;uAssert(is_array($entry)&&is_string($entry['file']??null),'NEW_BUILD_ENTRY_INVALID');
-    foreach(array_merge([$entry['file']],$entry['css']??[]) as $rel){uAssert(is_string($rel)&&preg_match('~\Aassets/[A-Za-z0-9._-]+\.(js|css)\z~D',$rel)===1,'ASSET_PATH_INVALID');$v=bHttps('https://oneqaydev.n07.my.id/build/'.$rel.'?oneqay_ui_probe='.$probe,'*/*');uAssert($v['status']===200&&hash_equals((string)hash_file('sha256',$p['app'].'/public/build/'.$rel),hash('sha256',$v['body'])),'NEW_ASSET_HTTPS_INVALID');}
+    foreach(array_merge([$entry['file']],$entry['css']??[]) as $rel){uAssert(is_string($rel)&&preg_match('~\Aassets/[A-Za-z0-9._-]+\.(js|css)\z~D',$rel)===1,'ASSET_PATH_INVALID');$v=uHttps('https://oneqaydev.n07.my.id/build/'.$rel.'?oneqay_ui_probe='.$probe,'*/*');uAssert($v['status']===200&&hash_equals((string)hash_file('sha256',$p['app'].'/public/build/'.$rel),hash('sha256',$v['body'])),'NEW_ASSET_HTTPS_INVALID');}
     if($r['source_commit']!==L_SOURCE){
         foreach(['/'=>'Website/Page','/register'=>'Website/Register','/pages/pos'=>'Website/Page','/pages/privacy'=>'Website/Page'] as $url=>$component){
-            $v=bHttps('https://oneqaydev.n07.my.id'.$url.'?oneqay_site_probe='.$probe,'text/html');
+            $v=uHttps('https://oneqaydev.n07.my.id'.$url.'?oneqay_site_probe='.$probe,'text/html');
             $e=bEntryEvidence($v);
             uAssert($v['status']===200&&preg_match('/<html lang="(?:id|en)">/',$v['body'])===1&&!$e['login_context_present']&&str_contains(str_replace('\/','/',$v['body']),$component),'PUBLIC_WEBSITE_HTTPS_INVALID');
             uAssert(preg_match('/^X-OneQay-Business-Bridge:\s*'.preg_quote($p['bridge_id'],'/').'\s*\r?$/im',$v['headers'])===1,'WEBSITE_HTTPS_BRIDGE_INVALID');
             $evidence[$url]=['status'=>200,'component'=>$component,'login_context_exposed'=>false];
         }
         foreach(['/business-login'=>200,'/activate-business'=>200,'/platform'=>401,'/platform/site'=>401,'/platform/site/home/preview'=>401,'/platform/control/overview'=>401,'/platform/control/businesses/'.str_repeat('a',32)=>401,'/platform/control/campaigns/'.str_repeat('a',32).'/preview'=>401,'/pos/business/finance'=>401,'/pos/business/products'=>401,'/pos/business/settings'=>401,'/pos/business/reports'=>401] as $url=>$expected){
-            $v=bHttps('https://oneqaydev.n07.my.id'.$url.'?oneqay_module_probe='.$probe,$expected===200?'text/html':'application/json');
+            $v=uHttps('https://oneqaydev.n07.my.id'.$url.'?oneqay_module_probe='.$probe,$expected===200?'text/html':'application/json');
             uAssert($expected===200?$v['status']===200:in_array($v['status'],[401,403],true),'MODULE_HTTPS_ROUTE_INVALID');
             uAssert(preg_match('/^X-OneQay-Business-Bridge:\s*'.preg_quote($p['bridge_id'],'/').'\s*\r?$/im',$v['headers'])===1,'MODULE_HTTPS_BRIDGE_INVALID');
             $evidence[$url]=['status'=>$v['status'],'authenticated_acceptance'=>false];
@@ -277,9 +341,9 @@ function uReplay(string $locator,array $r,array $prior): array {
     uSourceFiles($r,U_ROOT.'/releases',true);uRuntime($r);uPublicVerify($r);uVerifyModuleReceipt($r);$prior['idempotent_replay']=true;$prior['release_retention']=uRetentionRun($r,$prior);uReport($prior);return $prior;
 }
 if(PHP_SAPI==='cli'&&realpath($_SERVER['SCRIPT_FILENAME']??'')===__FILE__){
-    if(!in_array($argv[1]??'',['update','rollback'],true)||(($argv[1]==='rollback')?$argc!==2:$argc!==3)){fwrite(STDERR,"USAGE: php update.php update OWNER_COMMENT_ID | rollback\n");exit(64);}
+    if(!in_array($argv[1]??'',['update','retry','rollback'],true)||(($argv[1]==='rollback')?$argc!==2:$argc!==3)){fwrite(STDERR,"USAGE: php update.php update OWNER_COMMENT_ID | retry OWNER_COMMENT_ID | rollback\n");exit(64);}
     try{$r=uRequest();uLoad($r);$lock=@fopen(__DIR__.'/update.lock','c');uAssert($lock!==false&&@chmod(__DIR__.'/update.lock',0600)&&flock($lock,LOCK_EX|LOCK_NB),'UPDATE_LOCK_UNAVAILABLE');
-        if($argv[1]==='rollback'){$out=array_merge(['state'=>'BUSINESS_ON_ROLLBACK_VERIFIED'],uRestore($r));uReport($out);}elseif(is_file(U_REPORT))$out=uReplay($argv[2],$r,uJson(U_REPORT));else $out=uApply($argv[2],$r);
+        if($argv[1]==='rollback'){$out=array_merge(['state'=>'BUSINESS_ON_ROLLBACK_VERIFIED'],uRestore($r));uReport($out);}elseif($argv[1]==='retry'&&is_file(U_REPORT)&&(uJson(U_REPORT)['state']??null)==='STOPPED_FAIL_CLOSED'){uRetryStoppedPreflight($argv[2],$r);$out=uApply($argv[2],$r);}elseif(is_file(U_REPORT))$out=uReplay($argv[2],$r,uJson(U_REPORT));else $out=uApply($argv[2],$r);
         fwrite(STDOUT,"ONEQAYDEV|".$out['state']."\n");exit(0);
     }catch(Throwable $e){$code=$e instanceof WorkspaceUpdateStop||$e instanceof BusinessActivationStop||$e instanceof OQStop?$e->getMessage():'INTERNAL_ERROR';if(!is_file(U_REPORT))try{uReport(['state'=>'STOPPED_FAIL_CLOSED','error_code'=>$code,'public_switch'=>'NOT_PERFORMED','host_business_acceptance'=>'NOT_VERIFIED']);}catch(Throwable){}fwrite(STDERR,"ONEQAYDEV|STOPPED|".$code."\n");exit(1);}
 }
