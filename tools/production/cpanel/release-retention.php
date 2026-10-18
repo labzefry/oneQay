@@ -90,8 +90,14 @@ function rrArchive(string $privateRoot, string $dir): array {
     $source = substr($dir, strlen($privateRoot)+1);
     rrAssert(preg_match('~\A(?:releases/production-[a-f0-9]{12}|oneqaydev-(?:website-update|control-update|business-final)-[a-f0-9]{12}(?:-r[0-9]+)?/payload/production-[a-f0-9]{12})\z~D', $source) === 1, 'RETENTION_SOURCE_SCOPE');
     $receipt = $archives.'/'.hash('sha256', $source).'.json';
-    if (is_file($receipt)) { $r = rrCheckReceipt($archives, $receipt, $source); }
-    else {
+    $r=null;
+    if (is_file($receipt)) {
+        $saved=rrCheckReceipt($archives,$receipt,$source);
+        // A previously restored release may legitimately acquire new runtime cache/log files.
+        // Create and verify a new complete archive before replacing its receipt or removing anything.
+        if (!is_dir($dir) || rrInventory($dir,$privateRoot) === $saved['entries']) $r=$saved;
+    }
+    if ($r === null) {
         rrAssert(class_exists(PharData::class) && extension_loaded('zlib'), 'RETENTION_ZIP_EXTENSION_UNAVAILABLE');
         $entries = rrInventory($dir, $privateRoot); rrAssert(count($entries) > 0, 'RETENTION_EMPTY_SOURCE');
         $meta = rrRead($dir.'/RELEASE.json');
@@ -115,7 +121,7 @@ function rrArchive(string $privateRoot, string $dir): array {
             $r = ['schema_version'=>1,'source'=>$source,'source_commit'=>$meta['source_commit'],'zip'=>$name,
                 'zip_sha256'=>hash_file('sha256',$zip),'created_at'=>gmdate('c'),'entries'=>$entries];
             rrWrite($receipt,$r);
-        } catch (Throwable $e) { if (!is_file($receipt) && is_file($zip)) @unlink($zip); throw $e; }
+        } catch (Throwable $e) { if (is_file($zip) && (!is_file($receipt) || (rrRead($receipt)['zip'] ?? null) !== $name)) @unlink($zip); throw $e; }
         finally { umask($mask); }
         $r = rrCheckReceipt($archives,$receipt,$source);
     }

@@ -66,4 +66,4 @@ jobs:
           set -euo pipefail
           php -l tools/production/cpanel/release-retention.php
           php tools/production/tests/oneqaydev-release-retention.php | tee /tmp/release-retention.log
-          grep -Fxq 'RELEASE_RETENTION_PASS assertions=28' /tmp/release-retention.log
+          grep -Fxq 'RELEASE_RETENTION_PASS assertions=29' /tmp/release-retention.log

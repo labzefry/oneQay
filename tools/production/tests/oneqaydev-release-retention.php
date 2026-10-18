@@ -49,7 +49,9 @@ try {
     $again=rrMaintain($tmp,$new,1000,1120);rt(!is_dir($quarantine)&&!is_dir($tmp.'/releases/'.$old),'PARTIAL_REMOVAL_RESUMED');
     // A concurrent source modification leaves the directory available and preserves the previously verified archive.
     rrRestore($tmp,$old);file_put_contents($tmp.'/releases/'.$old.'/apps/web/app.php','changed');
-    rtDeny(fn()=>rrArchive($tmp,$tmp.'/releases/'.$old),'RETENTION_SOURCE_CHANGED_KEEP_FILES');rt(file_get_contents($tmp.'/releases/'.$old.'/apps/web/app.php')==='changed','CHANGED_SOURCE_NOT_DELETED');
+    rtDeny(fn()=>rrDeleteArchived($tmp.'/releases/'.$old,$initial,$tmp),'RETENTION_SOURCE_CHANGED_KEEP_FILES');rt(file_get_contents($tmp.'/releases/'.$old.'/apps/web/app.php')==='changed','CHANGED_SOURCE_NOT_DELETED');
+    $refreshed=rrArchive($tmp,$tmp.'/releases/'.$old);rrRestore($tmp,$old);
+    rt(file_get_contents($tmp.'/releases/'.$old.'/apps/web/app.php')==='changed'&&$refreshed['zip']!==$saved['zip'],'RESTORED_RELEASE_REARCHIVED_FROM_COMPLETE_CURRENT_BYTES');
     // Locks make overlapping maintenance a deferred retry, and every new deployment invokes the same policy.
     $lock=fopen($archiveDir.'/retention.lock','c');flock($lock,LOCK_EX);$busy=rrMaintain($tmp,$new,1000,1120);flock($lock,LOCK_UN);fclose($lock);rt($busy['state']==='BUSY_RETRY_NEXT_CRON','OVERLAPPING_CRON_DEFERRED');
     $op=$tmp.'/operator';mkdir($op);mkdir($tmp.'/public');
