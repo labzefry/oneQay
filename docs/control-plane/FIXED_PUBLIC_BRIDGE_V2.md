@@ -23,3 +23,54 @@ Health charts remain unsampled until cron runs. SMTP acceptance is not inbox ver
 ## Verification
 
 The successor fixtures exercise native-grant expiry and exactness, source tampering, path traversal, immutable schema, asset collisions and business-on rollback. Disposable SQLite and MySQL upgrade tests preserve credentials, roles, permissions, currency and SMTP data. A separate PHP test runs with both `link` and `symlink` disabled, verifies a distinct regular-file inode and private permissions, and parses the generated worker while asserting its active-release guards. No fixture sends email or uses production cash.
+
+## Owner-login probe correction — revision r2
+
+Host evidence `update-result (6).json` reported STOPPED_FAIL_CLOSED / NEW_MERCHANT_HTTPS_INVALID / public_switch NOT_PERFORMED. The predecessor is already the public-website release 14e1cdb9f11f, whose homepage intentionally omits the private owner login context. The verifier incorrectly used the old pre-website root-path assumption. Both predecessor and candidate must verify merchant login through `/owner-login`; the public homepage remains separately checked for absence of login context.
+
+The focused HTTP fixture reproduces the exact error before the correction, then verifies both releases and rejects missing owner context after the correction. The r2 package uses private operator directory `oneqaydev-control-update-78202bb5fe59-r2`, retaining the stopped first-attempt report and requiring a fresh request-bound owner grant. The certified application, migration helper and predecessor hashes are identical. No candidate preparation, migration, routing promotion or rollback was reported by this failed precondition check.
+
+
+## Automatic inode retention on every successor deployment
+
+The operator request binds `release-retention.php` by SHA-256 and explicitly declares
+`VERIFIED_PRIVATE_ZIP_KEEP_ACTIVE`. After the successful HTTPS switch, the receipt records
+`published_at_unix`. The normal update cron replay or the private control worker starts
+maintenance after a 120-second grace period. Failed deployments never call retention.
+The worker shares the operator update lock, so rollback and archival cannot overlap.
+Future successor operators must preserve this invocation and policy; no manual directory
+cleanup is part of a successful deployment.
+
+Maintenance scans only recognized `releases/production-<12-hex>` directories and certified
+release copies beneath the private `payload` folders of oneqaydev website/control/business
+operators. `RELEASE.json` must bind the exact directory name and a certified source commit.
+The active installed release is excluded. It preserves shared sessions, uploads, database,
+SMTP configuration, first-owner credentials, operator scripts, source manifests, rollback
+routing/assets, and all staging paths. Historical helper directories remain usable.
+
+Each old expanded release becomes one compressed ZIP plus one receipt beneath private
+`release-archives` (0700; ZIP and receipt 0600). PharData and zlib provide ZIP compression;
+no shell, SSH, symlink creation, or ext-zip is required. If PharData is unavailable or disk
+space, permissions, content changes, or archive verification fail, the files remain and the
+maintenance report explicitly requests retry. A successful application deployment remains
+online. Archives contain private runtime bytes and must never be placed in public_html or
+shared as downloadable public assets. ZIPs are retained for rollback; they still consume
+bytes, while replacing thousands of expanded inodes with two files per archived copy.
+
+Before removal, every file size and SHA-256, empty directory, and permission is inventoried;
+all archive entries are read back and matched. The archive SHA-256 and inventory receipt
+are durable before an atomic move to a private deletion quarantine. An interrupted deletion
+resumes against the original full archive, never against a partially deleted source tree.
+Arbitrary links and special files are rejected. Only the exact historical `apps/web/.env`
+alias into private shared may be materialized into the ZIP and restored as a 0600 regular
+file. The original shared environment is preserved.
+
+Rollback restores a missing previous release from the verified ZIP into a private temporary
+directory, checks every file again, and atomically promotes it before restoring public
+routing and performing predecessor HTTPS acceptance. Tampered ZIPs/receipts and unsafe paths
+fail closed. `update-result.json.release_retention` and private
+`release-archives/last-maintenance.json` show actual archives, inodes removed, warnings, and
+retry state. The current package payload is also archived after installation, so source
+copies do not keep consuming thousands of duplicate inodes. This policy is exercised by
+real ZIP compression/restore tests, including active protection, grace, corrupt archives,
+symlinks, interrupted removal, concurrent locks, and unchanged-source checks.

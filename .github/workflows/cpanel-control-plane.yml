@@ -28,12 +28,15 @@ jobs:
       - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
         with:
           php-version: '8.3'
-          extensions: pdo_sqlite, pdo_mysql, dom, zlib
+          extensions: pdo_sqlite, pdo_mysql, dom, zlib, phar
           tools: composer:v2
           coverage: none
       - name: Qualify exact certified-source operator scope
         if: github.event_name == 'pull_request' && github.head_ref == 'cpanel-control-plane-20261018'
         run: bash tools/qa-cpanel-control-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
+      - name: Qualify bounded owner-login probe correction
+        if: github.event_name == 'pull_request' && github.head_ref == 'cpanel-control-bridge-fix-20261018'
+        run: bash tools/qa-cpanel-control-bridge-fix-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
       - name: Install locked dependencies
         working-directory: apps/web
         run: composer install --no-interaction --no-progress --prefer-dist
@@ -48,8 +51,19 @@ jobs:
           grep -Fxq 'CONTROL_UPGRADE_sqlite_PASS assertions=19' /tmp/control-upgrade-sqlite.log
           CONTROL_TEST_ENGINE=mysql php tools/production/tests/oneqaydev-control-upgrade.php | tee /tmp/control-upgrade-mysql.log
           grep -Fxq 'CONTROL_UPGRADE_mysql_PASS assertions=19' /tmp/control-upgrade-mysql.log
+      - name: Verify website predecessor and candidate through the owner login route
+        run: |
+          set -euo pipefail
+          php tools/production/tests/oneqaydev-control-https.php | tee /tmp/control-https.log
+          grep -Fxq 'CONTROL_HTTPS_OWNER_ROUTE_PASS assertions=7' /tmp/control-https.log
       - name: Bind private runtime and validate worker with link and symlink unavailable
         run: |
           set -euo pipefail
           php -d disable_functions=link,symlink tools/production/tests/oneqaydev-fixed-bridge.php no-links | tee /tmp/fixed-bridge.log
           grep -Fxq 'FIXED_PUBLIC_BRIDGE_NO_LINKS_PASS assertions=20' /tmp/fixed-bridge.log
+      - name: Archive old releases only after success; restore verified private ZIP on rollback
+        run: |
+          set -euo pipefail
+          php -l tools/production/cpanel/release-retention.php
+          php tools/production/tests/oneqaydev-release-retention.php | tee /tmp/release-retention.log
+          grep -Fxq 'RELEASE_RETENTION_PASS assertions=29' /tmp/release-retention.log
