@@ -168,11 +168,11 @@ function uRetentionHelper(array $r): void {
     require_once __DIR__.'/release-retention.php';
 }
 function uRetentionRun(array $r,array $receipt): array {
+    $p=uPaths($r);
+    uAssert(($receipt['state']??null)==='BUSINESS_WORKSPACE_UPDATED_ACCEPTANCE_PENDING'&&($receipt['source_commit']??null)===$r['source_commit']&&is_int($receipt['published_at_unix']??null),'RETENTION_RELEASE_NOT_ACTIVE');
+    foreach(['bridge_sha256'=>$p['entry'],'routing_sha256'=>U_PUBLIC.'/.htaccess','runtime_sha256'=>$p['env']]as$key=>$file)uAssert(is_file($file)&&!is_link($file)&&hash_equals((string)($receipt[$key]??''),(string)hash_file('sha256',$file)),'RETENTION_ACTIVE_BINDING_CHANGED');
     try {
-        uRetentionHelper($r);$p=uPaths($r);
-        uAssert(($receipt['state']??null)==='BUSINESS_WORKSPACE_UPDATED_ACCEPTANCE_PENDING'&&($receipt['source_commit']??null)===$r['source_commit']&&is_int($receipt['published_at_unix']??null),'RETENTION_RELEASE_NOT_ACTIVE');
-        foreach(['bridge_sha256'=>$p['entry'],'routing_sha256'=>U_PUBLIC.'/.htaccess','runtime_sha256'=>$p['env']]as$key=>$file)uAssert(is_file($file)&&!is_link($file)&&hash_equals((string)($receipt[$key]??''),(string)hash_file('sha256',$file)),'RETENTION_ACTIVE_BINDING_CHANGED');
-        return rrMaintain(U_ROOT,$r['release_id'],$receipt['published_at_unix'],time());
+        uRetentionHelper($r);return rrMaintain(U_ROOT,$r['release_id'],$receipt['published_at_unix'],time());
     }catch(Throwable $e){return ['policy'=>'VERIFIED_PRIVATE_ZIP_KEEP_ACTIVE','state'=>'RETRY_REQUIRED_FILES_PRESERVED','warnings'=>[['code'=>$e instanceof WorkspaceUpdateStop||$e instanceof ReleaseRetentionStop?$e->getMessage():'RETENTION_UNAVAILABLE_FILES_PRESERVED']]];}
 }
 function uWorker(array $r): string {
@@ -183,7 +183,7 @@ function uWorker(array $r): string {
         'try{$r=uRequest();$receipt=uJson(U_REPORT);$p=uPaths($r);uAssert(($receipt["state"]??null)==="BUSINESS_WORKSPACE_UPDATED_ACCEPTANCE_PENDING"&&($receipt["source_commit"]??null)===U_SOURCE,"WORKER_RELEASE_NOT_ACTIVE");' . "\n".
         'foreach(["runtime_sha256"=>$p["env"],"bridge_sha256"=>$p["entry"],"routing_sha256"=>U_PUBLIC."/.htaccess","worker_sha256"=>__FILE__]as$key=>$path)uAssert(is_file($path)&&!is_link($path)&&hash_equals((string)($receipt[$key]??""),(string)hash_file("sha256",$path)),"WORKER_ACTIVE_BINDING_CHANGED");' . "\n".
         'uAssert(is_file($p["app"]."/.env")&&!is_link($p["app"]."/.env")&&hash_equals($receipt["runtime_sha256"],(string)hash_file("sha256",$p["app"]."/.env")),"WORKER_PRIVATE_RUNTIME_CHANGED");' . "\n".
-        'uAssert(!is_link(__DIR__."/update.lock"),"WORKER_UPDATE_LOCK_LINK");$maintenanceLock=fopen(__DIR__."/update.lock","c");uAssert(is_resource($maintenanceLock)&&chmod(__DIR__."/update.lock",0600),"WORKER_UPDATE_LOCK_FAILED");if(flock($maintenanceLock,LOCK_EX|LOCK_NB)){try{$receipt["release_retention"]=uRetentionRun($r,$receipt);uReport($receipt);}finally{flock($maintenanceLock,LOCK_UN);}}fclose($maintenanceLock);' . "\n".
+        'uAssert(!is_link(__DIR__."/update.lock"),"WORKER_UPDATE_LOCK_LINK");$maintenanceLock=fopen(__DIR__."/update.lock","c");uAssert(is_resource($maintenanceLock)&&chmod(__DIR__."/update.lock",0600),"WORKER_UPDATE_LOCK_FAILED");if(flock($maintenanceLock,LOCK_EX|LOCK_NB)){try{$receipt=uJson(U_REPORT);$receipt["release_retention"]=uRetentionRun($r,$receipt);uReport($receipt);}finally{flock($maintenanceLock,LOCK_UN);}}fclose($maintenanceLock);' . "\n".
         'require $p["app"]."/vendor/autoload.php";$app=require $p["app"]."/bootstrap/app.php";$app->make(\\Illuminate\\Contracts\\Console\\Kernel::class)->bootstrap();uAssert(\\App\\Infrastructure\\Runtime\\ProductionBusinessRuntimeGate::allows("production")&&config("oneqay.runtime_class")==="production"&&env("ONEQAY_RUNNING_SOURCE_COMMIT")===U_SOURCE,"WORKER_PRODUCTION_GATE_DENIED");exit($app->handleCommand(new \\Symfony\\Component\\Console\\Input\\ArgvInput(["control-worker.php","oneqay:control:work","--limit=20"])));' . "\n".
         '}catch(Throwable){fwrite(STDERR,"CONTROL_WORKER_BINDING_UNAVAILABLE\\n");exit(1);}' . "\n";
 }

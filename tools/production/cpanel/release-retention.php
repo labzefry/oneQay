@@ -102,10 +102,13 @@ function rrArchive(string $privateRoot, string $dir): array {
         $mask = umask(0077);
         try {
             $p = new PharData($zip); $p->startBuffering();
+            $files=[];
             foreach ($entries as $file=>$e) {
                 if ($e['kind'] === 'directory') $p->addEmptyDir($file);
-                else $p->addFile($dir.'/'.$file, $file);
+                else $files[$file]=$dir.'/'.$file;
             }
+            // Batch ingestion avoids a full ZIP-index update for every individual vendor file.
+            $p->buildFromIterator(new ArrayIterator($files));
             $p->compressFiles(Phar::GZ); $p->stopBuffering(); unset($p);
             rrAssert(chmod($zip,0600), 'RETENTION_ZIP_PRIVATE'); rrVerifyZip($zip, $entries);
             rrAssert(rrInventory($dir, $privateRoot) === $entries, 'RETENTION_SOURCE_CHANGED_KEEP_FILES');

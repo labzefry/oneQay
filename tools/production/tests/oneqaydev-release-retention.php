@@ -52,5 +52,21 @@ try {
     rtDeny(fn()=>rrArchive($tmp,$tmp.'/releases/'.$old),'RETENTION_SOURCE_CHANGED_KEEP_FILES');rt(file_get_contents($tmp.'/releases/'.$old.'/apps/web/app.php')==='changed','CHANGED_SOURCE_NOT_DELETED');
     // Locks make overlapping maintenance a deferred retry, and every new deployment invokes the same policy.
     $lock=fopen($archiveDir.'/retention.lock','c');flock($lock,LOCK_EX);$busy=rrMaintain($tmp,$new,1000,1120);flock($lock,LOCK_UN);fclose($lock);rt($busy['state']==='BUSY_RETRY_NEXT_CRON','OVERLAPPING_CRON_DEFERRED');
+    $op=$tmp.'/operator';mkdir($op);mkdir($tmp.'/public');
+    $operator=file_get_contents(__DIR__.'/../cpanel/update-oneqaydev-control-plane.php');
+    $operator=preg_replace("~const U_ROOT = '[^']+';~",'const U_ROOT = '.var_export($tmp,true).';',$operator,1);
+    $operator=preg_replace("~const U_PUBLIC = '[^']+';~",'const U_PUBLIC = '.var_export($tmp.'/public',true).';',$operator,1);
+    file_put_contents($op.'/update.php',$operator);file_put_contents($op.'/release-retention.php','<?php // real helper already loaded by the fixture');require $op.'/update.php';
+    $request=['source_commit'=>str_repeat('b',40),'release_id'=>$new,'retention_helper_sha256'=>hash_file('sha256',$op.'/release-retention.php')];
+    $paths=uPaths($request);file_put_contents($paths['entry'],'active bridge');file_put_contents(U_PUBLIC.'/.htaccess','active routing');file_put_contents($paths['env'],'private runtime');
+    $receipt=['state'=>'BUSINESS_WORKSPACE_UPDATED_ACCEPTANCE_PENDING','source_commit'=>$request['source_commit'],'published_at_unix'=>time(),
+        'bridge_sha256'=>hash_file('sha256',$paths['entry']),'routing_sha256'=>hash_file('sha256',U_PUBLIC.'/.htaccess'),'runtime_sha256'=>hash_file('sha256',$paths['env'])];
+    rt(uRetentionRun($request,$receipt)['state']==='WAITING_GRACE','OPERATOR_SUCCESS_GRACE_BOUNDARY');
+    foreach(['STOPPED_FAIL_CLOSED','BUSINESS_ON_ROLLBACK_VERIFIED'] as $state){$bad=$receipt;$bad['state']=$state;
+        try{uRetentionRun($request,$bad);throw new RuntimeException('inactive retention ran');}catch(WorkspaceUpdateStop $e){rt($e->getMessage()==='RETENTION_RELEASE_NOT_ACTIVE','OPERATOR_STOPPED_ROLLBACK_DENIED');}}
+    file_put_contents(U_PUBLIC.'/.htaccess','previous routing');
+    try{uRetentionRun($request,$receipt);throw new RuntimeException('stale worker allowed');}catch(WorkspaceUpdateStop $e){rt($e->getMessage()==='RETENTION_ACTIVE_BINDING_CHANGED','OPERATOR_STALE_BINDING_DENIED');}
+    file_put_contents(U_PUBLIC.'/.htaccess','active routing');$request['retention_helper_sha256']=str_repeat('0',64);
+    $unavailable=uRetentionRun($request,$receipt);rt($unavailable['state']==='RETRY_REQUIRED_FILES_PRESERVED'&&is_file($tmp.'/releases/'.$old.'/apps/web/app.php'),'OPERATOR_HELPER_FAILURE_PRESERVES_FILES');
     echo 'RELEASE_RETENTION_PASS assertions='.$count."\n";
 } finally {rtClean($tmp);}
