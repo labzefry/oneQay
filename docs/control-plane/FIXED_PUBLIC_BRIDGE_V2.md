@@ -23,3 +23,9 @@ Health charts remain unsampled until cron runs. SMTP acceptance is not inbox ver
 ## Verification
 
 The successor fixtures exercise native-grant expiry and exactness, source tampering, path traversal, immutable schema, asset collisions and business-on rollback. Disposable SQLite and MySQL upgrade tests preserve credentials, roles, permissions, currency and SMTP data. A separate PHP test runs with both `link` and `symlink` disabled, verifies a distinct regular-file inode and private permissions, and parses the generated worker while asserting its active-release guards. No fixture sends email or uses production cash.
+
+## Owner-login probe correction — revision r2
+
+Host evidence `update-result (6).json` reported STOPPED_FAIL_CLOSED / NEW_MERCHANT_HTTPS_INVALID / public_switch NOT_PERFORMED. The predecessor is already the public-website release 14e1cdb9f11f, whose homepage intentionally omits the private owner login context. The verifier incorrectly used the old pre-website root-path assumption. Both predecessor and candidate must verify merchant login through `/owner-login`; the public homepage remains separately checked for absence of login context.
+
+The focused HTTP fixture reproduces the exact error before the correction, then verifies both releases and rejects missing owner context after the correction. The r2 package uses private operator directory `oneqaydev-control-update-78202bb5fe59-r2`, retaining the stopped first-attempt report and requiring a fresh request-bound owner grant. The certified application, migration helper and predecessor hashes are identical. No candidate preparation, migration, routing promotion or rollback was reported by this failed precondition check.

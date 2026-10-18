@@ -68,7 +68,7 @@ function uLoad(array $r): void {
     uAssert(PHP_SAPI==='cli'&&PHP_VERSION_ID>=80200,'PHP_CLI_REQUIRED');
     foreach(['curl','pdo_mysql','mbstring','openssl','ctype','tokenizer','fileinfo','dom','zlib'] as $e)uAssert(extension_loaded($e),'PHP_EXTENSION_REQUIRED');
     uAssert(realpath(U_ROOT)===U_ROOT&&realpath(U_PUBLIC)===U_PUBLIC&&realpath(U_ROOT.'/releases')===U_ROOT.'/releases','HOST_PATH_INVALID');
-    uAssert(realpath(__DIR__)===U_ROOT.'/oneqaydev-control-update-'.substr($r['source_commit'],0,12)&&!is_link(__DIR__),'OPERATOR_DIRECTORY_INVALID');
+    uAssert(realpath(__DIR__)===U_ROOT.'/oneqaydev-control-update-'.substr($r['source_commit'],0,12).'-r2'&&!is_link(__DIR__),'OPERATOR_DIRECTORY_INVALID');
     uAssert(hash_equals(U_OLD_ACTIVATOR_SHA,hash('sha256',uRead(U_OLD_ACTIVATOR))),'PREVIOUS_ACTIVATOR_CHANGED');require_once U_OLD_ACTIVATOR;
     uAssert(hash_equals(B_HELPER_SHA,hash('sha256',uRead(B_HELPER))),'PREVIOUS_INTEGRITY_HELPER_CHANGED');require_once B_HELPER;
     uAssert(is_file(__DIR__.'/install-modules.php')&&!is_link(__DIR__.'/install-modules.php')&&hash_equals($r['module_helper_sha256'],(string)hash_file('sha256',__DIR__.'/install-modules.php')),'MODULE_HELPER_CHANGED');require_once __DIR__.'/install-modules.php';
@@ -187,7 +187,7 @@ function uRuntime(array $r): void {
 }
 function uPublicVerify(array $r): array {
     oqVerifyHttps('/health/live','ok');oqVerifyHttps('/health/ready','ready');$p=uPaths($r);$probe=bin2hex(random_bytes(12));$evidence=[];
-    foreach(['merchant_entry'=>[$r['source_commit']===L_SOURCE?'/':'/owner-login','text/html'],'unauthenticated_pos'=>['/pos','application/json']] as $key=>[$url,$accept]){$v=bHttps('https://oneqaydev.n07.my.id'.$url.'?oneqay_ui_probe='.$probe,$accept);$e=bEntryEvidence($v);uAssert(preg_match('/^X-OneQay-Business-Bridge:\s*'.preg_quote($p['bridge_id'],'/').'\s*\r?$/im',$v['headers'])===1&&$e['entry_phase']==='native-gate-passed'&&$e['missing_php_capabilities']===[],'NEW_HTTPS_NATIVE_ENTRY_INVALID');$e['bridge_identity']='EXPECTED';
+    foreach(['merchant_entry'=>['/owner-login','text/html'],'unauthenticated_pos'=>['/pos','application/json']] as $key=>[$url,$accept]){$v=bHttps('https://oneqaydev.n07.my.id'.$url.'?oneqay_ui_probe='.$probe,$accept);$e=bEntryEvidence($v);uAssert(preg_match('/^X-OneQay-Business-Bridge:\s*'.preg_quote($p['bridge_id'],'/').'\s*\r?$/im',$v['headers'])===1&&$e['entry_phase']==='native-gate-passed'&&$e['missing_php_capabilities']===[],'NEW_HTTPS_NATIVE_ENTRY_INVALID');$e['bridge_identity']='EXPECTED';
         if($key==='merchant_entry'&&$r['source_commit']!==L_SOURCE)uAssert(preg_match('/<html lang="(?:id|en)">/',$v['body'])===1,'AUTOMATIC_DOCUMENT_LOCALE_MISSING');
         if($key==='merchant_entry')uAssert($e['status']===200&&$e['merchant_entry_enabled']&&$e['login_context_present']&&$e['secure_session_cookie'],'NEW_MERCHANT_HTTPS_INVALID');else uAssert(in_array($e['status'],[401,403],true),'UNAUTHENTICATED_POS_NOT_DENIED');$evidence[$key]=$e;}
     $manifest=uJson($p['app'].'/public/build/manifest.json');$entry=$manifest['resources/js/app.ts']??null;uAssert(is_array($entry)&&is_string($entry['file']??null),'NEW_BUILD_ENTRY_INVALID');

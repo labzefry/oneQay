@@ -1,0 +1,40 @@
+<?php
+// Author by Lab | zefry. Exercise the actual verifier against a public homepage and a separate owner login.
+declare(strict_types=1);
+$source=file_get_contents(__DIR__.'/../cpanel/update-oneqaydev-control-plane.php');
+$tmp=sys_get_temp_dir().'/oneqay-owner-route-'.bin2hex(random_bytes(8));mkdir($tmp,0700);
+$source=preg_replace("~const U_ROOT = '[^']+';~",'const U_ROOT = '.var_export($tmp.'/private',true).';',$source,1);
+$source=preg_replace('~const L_APP = [^;]+;~','const L_APP = '.var_export($tmp.'/previous-app',true).';',$source,1);
+file_put_contents($tmp.'/operator.php',$source);require $tmp.'/operator.php';
+$active=[];$requests=[];$badOwner=false;$n=0;
+function oqVerifyHttps(string $path,string $want):void {if(!in_array([$path,$want],[['/health/live','ok'],['/health/ready','ready']],true))throw new RuntimeException('Unexpected health probe');}
+function bEntryEvidence(array $response):array {return $response['fixture_entry'];}
+function bHttps(string $url,string $accept):array {
+ global $active,$requests,$badOwner;$path=parse_url($url,PHP_URL_PATH);$requests[]=$path;$p=uPaths($active);
+ $status=str_starts_with($path,'/platform')||str_starts_with($path,'/pos')?401:200;
+ $entry=['status'=>$status,'entry_phase'=>'native-gate-passed','missing_php_capabilities'=>[],'merchant_entry_enabled'=>false,'login_context_present'=>false,'secure_session_cookie'=>true];
+ $body='<html lang="id"><div>Website/Page</div></html>';
+ if($path==='/owner-login'){$entry['merchant_entry_enabled']=true;$entry['login_context_present']=!$badOwner;$body='<html lang="id"><div>Foundation</div></html>';}
+ if($path==='/register')$body='<html lang="id"><div>Website/Register</div></html>';
+ if(str_starts_with($path,'/build/'))$body='synthetic-asset';
+ return ['status'=>$status,'headers'=>'X-OneQay-Business-Bridge: '.$p['bridge_id']."\r\n",'body'=>$body,'fixture_entry'=>$entry];
+}
+$ok=static function(bool $value,string $why)use(&$n):void{if(!$value)throw new RuntimeException($why);++$n;};
+try{
+ foreach([L_SOURCE,U_SOURCE]as$commit){
+  $active=['source_commit'=>$commit,'release_id'=>'production-'.substr($commit,0,12)];$p=uPaths($active);mkdir($p['app'].'/public/build/assets',0700,true);
+  file_put_contents($p['app'].'/public/build/manifest.json',json_encode(['resources/js/app.ts'=>['file'=>'assets/app.js','css'=>['assets/app.css']]]));
+  foreach(['app.js','app.css']as$file)file_put_contents($p['app'].'/public/build/assets/'.$file,'synthetic-asset');
+  $requests=[];$badOwner=false;$evidence=uPublicVerify($active);
+  $ok($requests[0]==='/owner-login','Both website predecessor and candidate must probe owner-login');
+  $ok($evidence['merchant_entry']['login_context_present']===true,'Owner evidence must contain the private login context');
+  if($commit===U_SOURCE)$ok($evidence['/']['login_context_exposed']===false,'Public homepage keeps its independent no-context check');
+  $badOwner=true;
+  try{uPublicVerify($active);throw new RuntimeException('Missing owner context accepted');}
+  catch(WorkspaceUpdateStop $e){$ok($e->getMessage()==='NEW_MERCHANT_HTTPS_INVALID','Missing owner context still fails closed');}
+ }
+ echo 'CONTROL_HTTPS_OWNER_ROUTE_PASS assertions='.$n.PHP_EOL;
+}finally{
+ $iterator=new RecursiveIteratorIterator(new RecursiveDirectoryIterator($tmp,FilesystemIterator::SKIP_DOTS),RecursiveIteratorIterator::CHILD_FIRST);
+ foreach($iterator as$item){if($item->isDir())rmdir($item->getPathname());else unlink($item->getPathname());}rmdir($tmp);
+}
