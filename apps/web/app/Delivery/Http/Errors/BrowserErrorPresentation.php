@@ -22,6 +22,7 @@ final class BrowserErrorPresentation
     public function present(Request $request, Response $response): Response
     {
         $status = $response->getStatusCode();
+        $retryAfter = $response->headers->get('Retry-After');
         if ($status < 400 || $response->headers->has('X-OneQay-Error-Code')) return $response;
         $correlation = (string) $request->attributes->get('oneqay.correlation_id', '');
         if ($correlation === '') {
@@ -44,7 +45,7 @@ final class BrowserErrorPresentation
             return $response;
         }
         $code = 'PAGE_'.$code;
-        $login = $request->is('platform/*', 'owner-login') ? '/owner-login' : '/business-login';
+        $login = $request->is('platform', 'platform/*', 'owner-login') ? '/owner-login' : '/business-login';
         $expired = $status === 419 || ($status === 401 && ($request->isMethod('GET') || $code === 'PAGE_SESSION_AUTHORITY_DENIED'));
         if ($expired) {
             $url = $login.'?reason=session-expired';
@@ -60,6 +61,7 @@ final class BrowserErrorPresentation
                 $response->headers->set('X-Inertia-Error', 'true');
             }
         }
+        if ($retryAfter !== null) $response->headers->set('Retry-After', $retryAfter);
         $response->headers->set('X-OneQay-Error-Code', $code);
         $response->headers->set('X-OneQay-Original-Status', (string) $status);
         $response->headers->set('X-Correlation-ID', $correlation);

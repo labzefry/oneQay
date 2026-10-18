@@ -31,7 +31,8 @@ jobs:
       - run: rustup default 1.99.1
       - run: npm ci --no-audit --no-fund
       - run: python scripts/generate-icon.py
-      - run: npm run tauri -- build --ci --target x86_64-pc-windows-msvc
+      - run: npm run tauri -- build --ci --target x86_64-pc-windows-msvc -- --locked
+      - run: cargo test --release --locked --target x86_64-pc-windows-msvc --manifest-path src-tauri/Cargo.toml
       - name: Installer checksums
         shell: pwsh
         run: |
@@ -57,5 +58,27 @@ jobs:
           node-version: '24'
       - run: composer install --no-interaction --prefer-dist
       - run: php tests/browser-error-experience.php
+      - run: php tests/desktop-pos-sync.php
       - run: npm ci --no-audit --no-fund
       - run: npm run type-check && npm run build
+
+  desktop-ui:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: apps/pos-desktop
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: '24'
+      - run: npm ci --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
+      - run: node tests/ui.cjs
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: oneqay-pos-ui-${{ github.sha }}
+          path: apps/pos-desktop/test-results/*.png
+          retention-days: 14

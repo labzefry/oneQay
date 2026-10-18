@@ -4,3 +4,4 @@ core/target/
 src-tauri/target/
 src-tauri/gen/
 src-tauri/icons/icon.ico
+test-results/

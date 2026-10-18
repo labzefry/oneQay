@@ -25,4 +25,9 @@ $assert($response->getStatusCode()===500&&!str_contains($response->getContent(),
 $response=$presenter->present($make('/pos','text/html',['HTTP_ACCEPT_LANGUAGE'=>'en-US']),response('internal',503));
 $assert(str_contains($response->getContent(),'tidying up')&&str_contains($response->getContent(),'<svg'),'English error page embeds illustration without asset dependency');
 $assert($presenter->present($make('/pos'),$response)===$response,'decorator is idempotent');
+Illuminate\Support\Facades\Route::get('/_oneqay_test_failure',static fn()=>abort(500));
+$http=$app->make(Illuminate\Contracts\Http\Kernel::class);
+$httpResponse=$http->handle($make('/_oneqay_test_failure','text/html',['HTTP_ACCEPT_LANGUAGE'=>'id-ID']));
+$assert($httpResponse->getStatusCode()===500&&str_contains($httpResponse->getContent(),'PAGE_HTTP_500'),'full HTTP exception pipeline returns friendly page');
+$assert($db->table('oneqay_platform_errors')->where('code','PAGE_HTTP_500')->where('correlation_id',$httpResponse->headers->get('X-Correlation-ID'))->exists(),'actual HTTP page error matches NOC code and correlation');
 echo 'BROWSER_ERROR_EXPERIENCE_PASS assertions='.$n.PHP_EOL;

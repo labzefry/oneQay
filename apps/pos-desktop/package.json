@@ -10,14 +10,15 @@
     "test:core": "cargo test --manifest-path core/Cargo.toml --locked"
   },
   "dependencies": {
-    "vue": "3.5.43",
-    "@tauri-apps/api": "^2.10.1"
+    "@tauri-apps/api": "^2.10.1",
+    "vue": "3.5.43"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.10.1",
     "@vitejs/plugin-vue": "^6.0.2",
-    "vite": "8.1.5",
+    "playwright": "1.56.1",
     "typescript": "5.9.3",
+    "vite": "8.1.5",
     "vue-tsc": "3.3.8"
   }
 }
