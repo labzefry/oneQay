@@ -8,8 +8,8 @@ use App\Domain\Pos\Money;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Database\Connection;
 /** FIFO journal composes canonical use cases, never overwrites historical evidence. */
-final readonly class DesktopOperations {
- public function __construct(private Connection $db,private Container $app,private LaravelDesktopPosService $desktop,private DesktopBusinessSettings $settings){}
+final readonly class LaravelDesktopOperations {
+ public function __construct(private Connection $db,private Container $app,private LaravelDesktopPosService $desktop,private LaravelDesktopBusinessSettings $settings){}
  public function sync(array $events,string $correlation):array {
   abort_unless(array_is_list($events)&&count($events)<=50,422);$results=[];
   foreach($events as$event){try{$r=$this->accept($event,$correlation);}catch(\InvalidArgumentException|\ValueError){$r=['operation_id'=>is_array($event)?($event['operation_id']??''):'','state'=>'rejected','code'=>'POS_INVALID_OPERATION','correlation_id'=>$correlation];}catch(PosTransactionViolation){$r=['operation_id'=>$event['operation_id'],'state'=>'pending','code'=>'POS_SHIFT_REQUIRES_REVIEW','correlation_id'=>$correlation];}$results[]=$r;if(!in_array($r['state'],['accepted','review'],true))break;}return ['results'=>$results,'server_time'=>time()];

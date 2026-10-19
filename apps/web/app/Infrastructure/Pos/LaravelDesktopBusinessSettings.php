@@ -12,7 +12,7 @@ use Illuminate\Contracts\Container\Container;
 use Illuminate\Database\Connection;
 use Illuminate\Contracts\Encryption\Encrypter;
 
-final readonly class DesktopBusinessSettings {
+final readonly class LaravelDesktopBusinessSettings {
  public function __construct(private Connection $db,private BusinessAccess $access,private Container $app,private Encrypter $cipher){}
  public static function defaults():array {return ['show_logo'=>true,'logo'=>null,'footer'=>'Terima kasih atas kunjungan Anda.','auto_lock_seconds'=>300,'report_recipients'=>[],'kitchens'=>[]];}
  private function query(VerifiedOrganizationalContext $s){return $this->db->table('oneqay_desktop_preferences')->where('tenant_id',$s->tenantId()->value())->where('organization_id',$s->organizationId()->value())->where('outlet_id',$s->outletId()?->value());}

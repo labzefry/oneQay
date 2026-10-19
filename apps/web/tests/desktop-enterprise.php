@@ -8,7 +8,7 @@ foreach(['pos_sale_completion','pos_shift_opening','pos_shift_opening_cash_evide
 putenv('ONEQAY_POS_SHIFT_CLOSE_ENABLED=true');$_ENV['ONEQAY_POS_SHIFT_CLOSE_ENABLED']='true';$_SERVER['ONEQAY_POS_SHIFT_CLOSE_ENABLED']='true';
 $app->forgetScopedInstances();$contexts=$app->make(App\Application\Organization\OrganizationalContextStore::class);
 $businessOwner=new App\Application\Organization\VerifiedOrganizationalContext(App\Domain\Identity\PlatformIdentityId::fromString($context['identity_id']),App\Domain\Tenancy\TenantId::fromString($context['tenant_id']),App\Domain\Organization\OrganizationId::fromString($context['organization_id']),App\Domain\Outlet\OutletId::fromString($context['outlet_id']),App\Domain\Device\DeviceId::fromString($context['device_id']));
-$contexts->setVerified($businessOwner);$t=$context['tenant_id'];$settings=$app->make(App\Infrastructure\Pos\DesktopBusinessSettings::class);
+$contexts->setVerified($businessOwner);$t=$context['tenant_id'];$settings=$app->make(App\Infrastructure\Pos\LaravelDesktopBusinessSettings::class);
 $prefs=$settings::defaults();$prefs['report_recipients']=['accounting@example.test'];$prefs['kitchens']=[['id'=>'bar','name'=>'Bar','categories'=>['Minuman']]];
 $assert($settings->save(['version'=>0,'settings'=>$prefs])['version']===1,'owner saves receipt, security and kitchen preferences');
 $assert($settings->save(['version'=>0,'settings'=>$prefs])['version']===1,'settings retry idempotent');
@@ -16,13 +16,13 @@ $cashier=['login'=>'cashier@example.test','name'=>'Kasir Sintetis','password'=>'
 $assert($db->table('oneqay_desktop_cashiers')->count()===1,'cashier provisioning replay creates one canonical identity');
 $assert(!str_contains($db->table('oneqay_desktop_cashiers')->value('pin_verifier'),'482913'),'PIN hashed and encrypted');
 $db->table('oneqay_pos_sale_catalog_items')->insert(['tenant_id'=>$t,'outlet_id'=>$context['outlet_id'],'product_id'=>'desktop-coffee','display_name'=>'Kopi','unit_price_atomic'=>15000,'currency'=>'IDR','currency_scale'=>0,'available_quantity'=>20,'active'=>true]);
-$desktop=$app->make(App\Infrastructure\Pos\LaravelDesktopPosService::class);$login=$app->make(App\Infrastructure\Pos\DesktopCashierLogin::class);
+$desktop=$app->make(App\Infrastructure\Pos\LaravelDesktopPosService::class);$login=$app->make(App\Infrastructure\Pos\LaravelDesktopCashierLogin::class);
 $connected=$login->login(['login'=>$cashier['login'],'password'=>$cashier['password'],'totp'=>''],'desktop-login-correlation');
 $assert($connected['snapshot']['protocol']===2&&$connected['snapshot']['shift_id']==='','direct cashier login before shift');
 $assert($connected['snapshot']['cashier_name']===$cashier['name']&&isset($connected['snapshot']['pin']['hash']),'native gets cashier and protected PIN verifier');
 $desktop->authenticate($connected['token']);$cashierScope=$contexts->current();
 try{$settings->save(['version'=>1,'settings'=>$prefs]);$assert(false,'cashier allowed owner settings');}catch(App\Application\Authorization\DurableAuthorizationViolation){$assert(true,'cashier denied owner configuration');}
-$journal=$app->make(App\Infrastructure\Pos\DesktopOperations::class);$uuid=fn()=>'desk-'.Illuminate\Support\Str::uuid();$open=$uuid();$lease=$connected['snapshot']['lease_id'];
+$journal=$app->make(App\Infrastructure\Pos\LaravelDesktopOperations::class);$uuid=fn()=>'desk-'.Illuminate\Support\Str::uuid();$open=$uuid();$lease=$connected['snapshot']['lease_id'];
 $event=fn(string $id,string $kind,int $cash,array $lines=[]):array=>['operation_id'=>$id,'kind'=>$kind,'lease_id'=>$lease,'shift_id'=>$open,'created_at'=>time(),'lines'=>$lines,'tendered'=>$cash,'table'=>'04','order'=>'A-001','note'=>''];
 $opening=$event($open,'shift_open',100000);$r=$journal->sync([$opening],'desktop-opening-correlation')['results'][0];$assert($r['state']==='accepted'&&isset($r['shift_id']),'canonical shift and opening cash');
 $assert($journal->sync([$opening],'desktop-opening-retry')['results'][0]===$r,'opening replay exact');

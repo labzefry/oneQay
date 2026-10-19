@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Route;
-use App\Infrastructure\Pos\{LaravelDesktopPosService,DesktopBusinessSettings,DesktopCashierLogin,DesktopOperations};
+use App\Infrastructure\Pos\{LaravelDesktopPosService,LaravelDesktopBusinessSettings,LaravelDesktopCashierLogin,LaravelDesktopOperations};
 use App\Delivery\Http\Pos\DesktopEnterpriseController as Enterprise;
 use App\Delivery\Http\Pos\DesktopPosController as Controller;
 use App\Delivery\Http\Middleware\RequirePosSessionContextMiddleware;
 final class DesktopPosServiceProvider extends ServiceProvider {
  public function register():void {
-  $this->app->scoped(DesktopBusinessSettings::class,fn($a)=>new DesktopBusinessSettings($a->make('db')->connection(),$a->make(\App\Application\Business\BusinessAccess::class),$a,$a->make('encrypter')));
-  $this->app->scoped(DesktopCashierLogin::class,fn($a)=>new DesktopCashierLogin($a->make('db')->connection(),$a,$a->make('encrypter'),$a->make(LaravelDesktopPosService::class)));
-  $this->app->scoped(DesktopOperations::class,fn($a)=>new DesktopOperations($a->make('db')->connection(),$a,$a->make(LaravelDesktopPosService::class),$a->make(DesktopBusinessSettings::class)));
+  $this->app->scoped(LaravelDesktopBusinessSettings::class,fn($a)=>new LaravelDesktopBusinessSettings($a->make('db')->connection(),$a->make(\App\Application\Business\BusinessAccess::class),$a,$a->make('encrypter')));
+  $this->app->scoped(LaravelDesktopCashierLogin::class,fn($a)=>new LaravelDesktopCashierLogin($a->make('db')->connection(),$a,$a->make('encrypter'),$a->make(LaravelDesktopPosService::class)));
+  $this->app->scoped(LaravelDesktopOperations::class,fn($a)=>new LaravelDesktopOperations($a->make('db')->connection(),$a,$a->make(LaravelDesktopPosService::class),$a->make(LaravelDesktopBusinessSettings::class)));
 $this->app->scoped(LaravelDesktopPosService::class,fn($a)=>new LaravelDesktopPosService($a->make('db')->connection(),$a->make('encrypter'),$a->make(\App\Application\Organization\OrganizationalContextStore::class),$a->make(\App\Application\Tenancy\TenantContextStore::class),$a->make(\App\Application\Organization\EnterOrganizationalContext::class),$a->make(\App\Application\Identity\FirstPartySessionAuthorityService::class),$a->make(\App\Application\Identity\FirstPartyIdentityEligibilityVerifier::class),$a->make(\App\Application\Authorization\DurableScopedAuthorizationPolicy::class),$a->make(\App\Application\Pos\CompleteSale::class)));}
  public function boot():void {
   $runtime=(string)config('oneqay.runtime_class');

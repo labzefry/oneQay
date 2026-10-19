@@ -13,7 +13,7 @@ use App\Infrastructure\Tenancy\ServerVerifiedTenantContext;
 use Illuminate\Database\Connection;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Encryption\Encrypter;
-final readonly class DesktopCashierLogin {
+final readonly class LaravelDesktopCashierLogin {
  public function __construct(private Connection $db,private Container $app,private Encrypter $cipher,private LaravelDesktopPosService $desktop){}
  public function login(array $input,string $correlation):array {
   abort_unless(!array_diff(array_keys($input),['login','password','totp'])&&isset($input['login'],$input['password'])&&is_string($input['login'])&&is_string($input['password'])&&strlen($input['login'])<=190&&strlen($input['password'])<=72,401);
