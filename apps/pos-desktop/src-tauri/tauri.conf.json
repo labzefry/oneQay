@@ -52,7 +52,7 @@
     "updater": {
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDU1OEIzRDMwNzlCRjJGNDkKUldSSkw3OTVNRDJMVmJzaG41MTgxVjhWdXpCd1c5eHRLTHZ5NWh3NkVmZEliVmU2ckExem92ZEUK",
       "endpoints": [
-        "https://raw.githubusercontent.com/labzefry/oneQay/main/updates/windows/stable.json"
+        "https://github.com/labzefry/oneQay/releases/download/pos-windows-stable/latest.json"
       ],
       "windows": {
         "installMode": "passive"
