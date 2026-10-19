@@ -7,8 +7,9 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 final readonly class DesktopEnterpriseController {
  public function __construct(private LaravelDesktopPosService $desktop,private DesktopBusinessSettings $settings,private DesktopCashierLogin $login,private DesktopOperations $operations){}
- public function settings(Request $r):mixed {return Inertia::render('Business/DesktopSettings',$this->settings->page())->toResponse($r)->withHeaders(['Cache-Control'=>'no-store']);}
+ public function settings(Request $r):mixed {return Inertia::render('Business/DesktopSettings',$this->settings->page()+['closures'=>$this->operations->pendingClosures()])->toResponse($r)->withHeaders(['Cache-Control'=>'no-store']);}
  public function saveSettings(Request $r):mixed {abort_unless(strlen($r->getContent())<=65536,422);return response()->json($this->settings->save($r->except('_token')),200,['Cache-Control'=>'no-store']);}
+ public function finalize(Request $r):mixed {abort_unless(is_string($r->input('operation_id'))&&strlen($r->input('operation_id'))<=100,422);return response()->json($this->operations->finalize($r->input('operation_id'),(string)$r->attributes->get('oneqay.correlation_id')),200,['Cache-Control'=>'no-store']);}
  public function cashier(Request $r):mixed {abort_unless(strlen($r->getContent())<=4096,422);return response()->json($this->settings->cashier($r->except('_token')),200,['Cache-Control'=>'no-store']);}
  public function login(Request $r):mixed {abort_unless(strlen($r->getContent())<=4096,422);try{return response()->json($this->login->login($r->all(),(string)$r->attributes->get('oneqay.correlation_id')),200,['Cache-Control'=>'no-store']);}finally{$this->desktop->clear();}}
  public function snapshot(Request $r):mixed {return $this->authorized($r,fn()=>$this->desktop->snapshot(true));}

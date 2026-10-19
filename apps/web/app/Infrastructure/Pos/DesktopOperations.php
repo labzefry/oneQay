@@ -23,7 +23,7 @@ final readonly class DesktopOperations {
   return $this->db->transaction(function()use($e,$fingerprint,$scope,$hash,$correlation){
    $this->db->table('oneqay_devices')->where('tenant_id',$scope['tenant_id'])->where('id',$scope['device_id'])->lockForUpdate()->firstOrFail();
    $lease=$this->db->table('oneqay_desktop_leases')->where('id',$e['lease_id'])->where('scope_hash',$hash)->where('shift_id','enterprise-v2')->first();if(!$lease)throw new \InvalidArgumentException();
-   $q=$this->db->table('oneqay_desktop_events')->where('tenant_id',$scope['tenant_id'])->where('operation_id',$e['operation_id']);$old=(clone$q)->first();if($old){if(!hash_equals($old->fingerprint,$fingerprint)||!hash_equals($old->scope_hash,$hash))throw new \InvalidArgumentException();if($old->state!=='pending')return json_decode($old->result,true,32,JSON_THROW_ON_ERROR);}
+   $q=$this->db->table('oneqay_desktop_events')->where('tenant_id',$scope['tenant_id'])->where('operation_id',$e['operation_id']);$old=(clone$q)->first();if($old){if(!hash_equals($old->fingerprint,$fingerprint)||!hash_equals($old->scope_hash,$hash))throw new \InvalidArgumentException();if($old->state!=='pending'||isset(json_decode($old->result,true)['report']))return json_decode($old->result,true,32,JSON_THROW_ON_ERROR);}
    if($e['created_at']<(int)$lease->issued_at||$e['created_at']>(int)$lease->expires_at||$e['created_at']>time()+60)throw new \InvalidArgumentException();
    $cached=json_decode($lease->snapshot,true,64,JSON_THROW_ON_ERROR);$currency=$cached['catalog'][0]['currency'];$scale=$cached['catalog'][0]['scale'];$r=['operation_id'=>$e['operation_id'],'state'=>'accepted','code'=>'POS_SYNC_ACCEPTED','correlation_id'=>$correlation];
    if($e['kind']==='shift_open'){
@@ -35,15 +35,32 @@ final readonly class DesktopOperations {
     if($e['kind']==='sale'||$e['kind']==='count'){
      $bound=substr(hash('sha256',$lease->id.'|'.$realShift),0,32);$this->db->table('oneqay_desktop_leases')->insertOrIgnore(['id'=>$bound,'scope_hash'=>$hash,'tenant_id'=>$scope['tenant_id'],'shift_id'=>$realShift,'catalog_revision'=>$lease->catalog_revision,'snapshot'=>$lease->snapshot,'issued_at'=>$lease->issued_at,'expires_at'=>$lease->expires_at]);$op=array_intersect_key($e,array_flip(['created_at','kind','lease_id','lines','operation_id','tendered']));$op['lease_id']=$bound;$r=$this->desktop->sync([$op],$correlation)['results'][0];
     }else{
+     $lastSale=(int)$this->db->table('oneqay_pos_sales')->where('tenant_id',$scope['tenant_id'])->where('shift_id',$realShift)->max('completed_at_unix');if($lastSale>=time())return array_replace($r,['state'=>'pending','code'=>'POS_SYNC_RETRY']);
      $closing=$this->app->make(RecordShiftClosingCash::class)->record(new ShiftClosingCashCommand($e['operation_id'].'-cash',Money::fromAtomicUnits($e['tendered'],$currency,$scale)),$correlation);$expected=$this->app->make(LaravelExpectedCashSnapshotReader::class)->deriveFrom($closing);$variance=$this->app->make(DeriveCashVariance::class)->derive($expected,$closing);
      if($variance->varianceAtomic()!==0&&$e['note']!=='')$this->app->make(RecordCashVarianceExplanation::class)->record($variance,new CashVarianceExplanationCommand($e['operation_id'].'-note',$e['note']),$correlation);
-     try{$close=$this->app->make(CloseShift::class)->close(new CloseShiftCommand($e['operation_id']),$correlation);$r['shift_id']=$close->shiftId();}catch(PosTransactionViolation){$r['state']='pending';$r['code']='POS_SHIFT_REQUIRES_REVIEW';}
+     $r['state']='pending';$r['code']='POS_SHIFT_REQUIRES_REVIEW';$r['shift_id']=$realShift;
      $r['report']=['shift_id'=>$realShift,'cashier'=>$this->settings->native($this->desktop->context())['cashier_name'],'closed_at'=>$e['created_at'],'expected'=>$expected->expectedCash()->atomicUnits(),'counted'=>$e['tendered'],'variance'=>$variance->varianceAtomic(),'currency'=>$currency,'scale'=>$scale,'final'=>$r['state']==='accepted'];
-     if($r['state']==='accepted'){$prefs=$this->settings->read($this->desktop->context())['settings'];$ids=[];foreach($prefs['report_recipients']as$email)$ids[]=$this->app->make(MailStore::class)->enqueue($scope['tenant_id'],'shift-report|'.$realShift.'|'.hash('sha256',$email),$email,'Laporan tutup kasir oneQay · '.$realShift,$this->reportText($r['report']),time());$r['mail_queued']=count($ids);}
+     $r['mail_queued']=$this->queueReport($r['report'],$this->desktop->context());
     }
    }
    $q->updateOrInsert(['tenant_id'=>$scope['tenant_id'],'operation_id'=>$e['operation_id']],['scope_hash'=>$hash,'fingerprint'=>$fingerprint,'local_shift_id'=>$e['shift_id'],'kind'=>$e['kind'],'state'=>$r['state'],'payload'=>json_encode($e,JSON_THROW_ON_ERROR),'result'=>json_encode($r,JSON_THROW_ON_ERROR),'created_at'=>time()]);return $r;
   });
  }
- private function reportText(array $r):string {$m=fn($v)=>$r['currency'].' '.number_format($v/(10**$r['scale']),$r['scale'],',','.');return "LAPORAN TUTUP KASIR / SHIFT CLOSURE\nKasir: {$r['cashier']}\nShift: {$r['shift_id']}\nWaktu: ".gmdate('Y-m-d H:i:s',$r['closed_at']+25200)." WIB\nKas seharusnya: ".$m($r['expected'])."\nKas dihitung: ".$m($r['counted'])."\nSelisih: ".$m($r['variance'])."\nStatus: Tercatat di server\n\n© oneQay";}
+ public function pendingClosures():array {
+  $s=$this->app->make(\App\Application\Business\BusinessAccess::class)->require('authorization.policy.manage');
+  $rows=$this->db->table('oneqay_desktop_events as e')->join('oneqay_desktop_leases as l',function($j){$j->on('l.scope_hash','=','e.scope_hash')->on('l.tenant_id','=','e.tenant_id');})->where('e.tenant_id',$s->tenantId()->value())->where('e.kind','shift_close')->where('e.state','pending')->select('e.operation_id','e.result','l.snapshot')->distinct()->get();$out=[];
+  foreach($rows as$row){$lease=json_decode($row->snapshot,true);$scope=$lease['scope'];if($scope['organization_id']!==$s->organizationId()->value()||$scope['outlet_id']!==$s->outletId()->value()||$scope['device_id']!==$s->deviceId()->value())continue;$r=json_decode($row->result,true);if(isset($r['report']))$out[$row->operation_id]=$r;}return array_values($out);
+ }
+ public function finalize(string $id,string $correlation):array {
+  $s=$this->app->make(\App\Application\Business\BusinessAccess::class)->require('authorization.policy.manage');
+  return $this->db->transaction(function()use($s,$id,$correlation){
+   $this->db->table('oneqay_devices')->where('tenant_id',$s->tenantId()->value())->where('id',$s->deviceId()->value())->lockForUpdate()->firstOrFail();
+   $q=$this->db->table('oneqay_desktop_events')->where('tenant_id',$s->tenantId()->value())->where('operation_id',$id)->where('kind','shift_close');$row=$q->lockForUpdate()->first();abort_unless($row,404);$r=json_decode($row->result,true,32,JSON_THROW_ON_ERROR);abort_unless(isset($r['report']),409);$report=$r['report'];
+   $shift=$this->db->table('oneqay_pos_shifts')->where('tenant_id',$s->tenantId()->value())->where('shift_id',$report['shift_id'])->where('organization_id',$s->organizationId()->value())->where('outlet_id',$s->outletId()->value())->where('device_id',$s->deviceId()->value())->first();abort_unless($shift,404);if($row->state==='accepted')return $r;
+   try{$closed=$this->app->make(CloseShift::class)->close(new CloseShiftCommand($id.'-final'),$correlation);}catch(PosTransactionViolation){abort(409,'POS_SHIFT_REQUIRES_INDEPENDENT_REVIEW');}
+   abort_unless($closed->shiftId()===$report['shift_id'],409);$r['state']='accepted';$r['code']='POS_SYNC_ACCEPTED';$r['report']['final']=true;$r['report']['finalized_at']=time();$r['mail_queued']=$this->queueReport($r['report'],$s);$q->update(['state'=>'accepted','result'=>json_encode($r,JSON_THROW_ON_ERROR)]);return $r;
+  });
+ }
+ private function queueReport(array $r,\App\Application\Organization\VerifiedOrganizationalContext $scope):int {$emails=$this->settings->read($scope)['settings']['report_recipients'];foreach($emails as$email)$this->app->make(MailStore::class)->enqueue($scope->tenantId()->value(),'shift-report|'.$r['shift_id'].'|'.($r['final']?'final':'review').'|'.hash('sha256',$email),$email,'Laporan tutup kasir oneQay · '.$r['shift_id'],$this->reportText($r),time());return count($emails);}
+ private function reportText(array $r):string {$m=fn($v)=>$r['currency'].' '.number_format($v/(10**$r['scale']),$r['scale'],',','.');return "LAPORAN TUTUP KASIR / SHIFT CLOSURE\nKasir: {$r['cashier']}\nShift: {$r['shift_id']}\nWaktu: ".gmdate('Y-m-d H:i:s',$r['closed_at']+25200)." WIB\nKas seharusnya: ".$m($r['expected'])."\nKas dihitung: ".$m($r['counted'])."\nSelisih: ".$m($r['variance'])."\nStatus: ".($r['final']?'Disahkan':'Menunggu persetujuan penutupan di web')."\n\n© oneQay";}
 }

@@ -2,6 +2,7 @@ use oneqay_pos_core::*;
 use serde_json::json;
 fn fixture() -> Snapshot {
     Snapshot {
+        protocol: 1, cashier_name: "Kasir".into(), settings: json!({}),
         lease_id: "a".repeat(32),
         scope: Scope {
             tenant_id: "t".into(),

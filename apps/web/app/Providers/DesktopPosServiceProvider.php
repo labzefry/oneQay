@@ -22,6 +22,7 @@ $this->app->scoped(LaravelDesktopPosService::class,fn($a)=>new LaravelDesktopPos
    Route::get('/pos/business/desktop',[Enterprise::class,'settings'])->name('pos.desktop.settings');
    Route::post('/pos/business/desktop',[Enterprise::class,'saveSettings']);
    Route::post('/pos/business/desktop/cashiers',[Enterprise::class,'cashier']);
+   Route::post('/pos/business/desktop/finalize',[Enterprise::class,'finalize']);
    Route::get('/pos/desktop',[Controller::class,'page'])->name('pos.desktop');
    Route::post('/pos/desktop/pair',[Controller::class,'pair'])->name('pos.desktop.pair');
    Route::get('/pos/desktop/review',[Controller::class,'review'])->name('pos.desktop.review');

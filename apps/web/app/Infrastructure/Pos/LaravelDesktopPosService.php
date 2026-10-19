@@ -86,7 +86,7 @@ final readonly class LaravelDesktopPosService
   $id=$lease?->id??bin2hex(random_bytes(16));$issued=$lease?(int)$lease->issued_at:$now;$expires=$lease?(int)$lease->expires_at:$now+28800;
   $business=null;if($this->db->getSchemaBuilder()->hasTable('oneqay_business_settings'))$business=$this->db->table('oneqay_business_settings')->where('tenant_id',$s['tenant_id'])->where('organization_id',$s['organization_id'])->first();
   $snapshot=['lease_id'=>$id,'scope'=>$s,'shift_id'=>$shift?->shift_id??'','issued_at'=>$issued,'expires_at'=>$expires,'catalog'=>$catalog,'catalog_revision'=>$revision,'server_time'=>$now,'business_name'=>$business?->business_name??'oneQay POS','currency_symbol'=>$business?->symbol??'','can_count'=>$this->authorization->allows($this->context(),PosPermission::inventoryBaseline())];
-  if(!$lease)$this->db->table('oneqay_desktop_leases')->insert(['id'=>$id,'scope_hash'=>$this->scopeHash(),'tenant_id'=>$s['tenant_id'],'shift_id'=>$leaseShift,'catalog_revision'=>$revision,'snapshot'=>json_encode(['catalog'=>$authorityCatalog],JSON_THROW_ON_ERROR),'issued_at'=>$issued,'expires_at'=>$expires]);
+  if(!$lease)$this->db->table('oneqay_desktop_leases')->insert(['id'=>$id,'scope_hash'=>$this->scopeHash(),'tenant_id'=>$s['tenant_id'],'shift_id'=>$leaseShift,'catalog_revision'=>$revision,'snapshot'=>json_encode($enterprise?['catalog'=>$authorityCatalog,'scope'=>$s]:['catalog'=>$authorityCatalog],JSON_THROW_ON_ERROR),'issued_at'=>$issued,'expires_at'=>$expires]);
   if($enterprise){$snapshot+=app(DesktopBusinessSettings::class)->native($this->context());$snapshot['protocol']=2;$snapshot['active_shift']=$shift?['id'=>$shift->shift_id,'identity_id'=>$shift->actor_identity_id,'opened_at'=>(int)$shift->opened_at_unix]:null;}
   return $snapshot;
  }
