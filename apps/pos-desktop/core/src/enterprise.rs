@@ -46,7 +46,7 @@ impl Store {
     pub fn metrics(&self)->Result<Value>{
         let (gross,count,accepted,waiting):(i64,i64,i64,i64)=self.db.query_row("SELECT COALESCE(SUM(total),0),COUNT(*),COALESCE(SUM(CASE WHEN state='accepted' THEN total ELSE 0 END),0),COALESCE(SUM(CASE WHEN state!='accepted' THEN total ELSE 0 END),0) FROM operations WHERE json_extract(payload,'$.kind')='sale' AND date(json_extract(payload,'$.created_at'),'unixepoch','+7 hours')=date('now','+7 hours')",[],|r|Ok((r.get(0)?,r.get(1)?,r.get(2)?,r.get(3)?)))?;
         let mut buckets=vec![0i64;12];let mut q=self.db.prepare("SELECT CAST(strftime('%H',json_extract(payload,'$.created_at'),'unixepoch','+7 hours') AS INTEGER)/2, SUM(total) FROM operations WHERE json_extract(payload,'$.kind')='sale' AND date(json_extract(payload,'$.created_at'),'unixepoch','+7 hours')=date('now','+7 hours') GROUP BY 1")?;
-        for row in q.query_map([],|r|Ok((r.get::<_,usize>(0)?,r.get::<_,i64>(1)?)))?{let(i,v)=row?;if i<12{buckets[i]=v;}}
+        for row in q.query_map([],|r|Ok((r.get::<_,u32>(0)?,r.get::<_,i64>(1)?)))?{let(i,v)=row?;if i<12{buckets[i as usize]=v;}}
         Ok(json!({"gross":gross,"count":count,"accepted":accepted,"waiting":waiting,"buckets":buckets,"timezone":"Asia/Jakarta"}))
     }
     pub fn save_kitchen_printers(&self,value:&Value)->Result<()> {
