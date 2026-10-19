@@ -101,7 +101,7 @@ final readonly class LaravelShiftClosingCashRepository implements ShiftClosingCa
             $evidenceId = 'cashclose-'.substr(
                 hash('sha256', $context->tenantId().'|'.$command->operationId()),
                 0,
-                23,
+                22, // cashclose- is ten characters; the durable identifier column is 32.
             );
 
             $closingCash = $command->closingCash();
