@@ -1,7 +1,7 @@
 name: Windows POS and browser error experience
 on:
   push:
-    branches: [experience-pos-desktop-20261018]
+    branches: [experience-pos-desktop-20261018, pos-enterprise-20261019]
   pull_request:
     paths: ['apps/pos-desktop/**', 'apps/web/**', '.github/workflows/desktop-pos.yml']
   workflow_dispatch:
