@@ -659,15 +659,6 @@ pub fn receipt_bytes(r: &Value, paper_mm: u16) -> Vec<u8> {
     out
 }
 fn display_money(value: i64, scale: u32) -> String {
-    let divisor = 10_i64.pow(scale.min(6));
-    if scale == 0 {
-        value.to_string()
-    } else {
-        format!(
-            "{}.{:0width$}",
-            value / divisor,
-            value % divisor,
-            width = scale as usize
-        )
-    }
+    let scale=scale.min(6);let divisor=10_u64.pow(scale);let amount=value.unsigned_abs();let sign=if value<0{"-"}else{""};
+    if scale==0{format!("{sign}{amount}")}else{format!("{sign}{}.{:0width$}",amount/divisor,amount%divisor,width=scale as usize)}
 }

@@ -19,7 +19,7 @@ pub fn refresh_pin(store:&Store,snapshot:&Value)->Result<()>{if snapshot["pin"].
 fn allowed_attempt(store:&Store,key:&str)->Result<()>{let until=store.get(&format!("{key}_until")).map_err(safe)?.and_then(|s|s.parse::<i64>().ok()).unwrap_or(0);if until>now(){return Err("POS_TOO_MANY_ATTEMPTS_WAIT_5_MINUTES".into())}Ok(())}
 fn attempt(store:&Store,key:&str,success:bool)->Result<()>{let mut n=store.get(&format!("{key}_attempts")).map_err(safe)?.and_then(|s|s.parse::<i64>().ok()).unwrap_or(0);if success{n=0;store.set(&format!("{key}_until"),"0").map_err(safe)?}else{n+=1;if n>=5{store.set(&format!("{key}_until"),&(now()+300).to_string()).map_err(safe)?;n=0;}}store.set(&format!("{key}_attempts"),&n.to_string()).map_err(safe)}
 #[tauri::command]
-pub async fn security_status(state:State<'_,Shared>,security:State<'_,Security>)->Result<Value>{let db=state.inner().clone();let sec=security.inner().clone();background(move||status(&sec,&locked(&db)?)).await}
+pub async fn security_status(state:State<'_,Shared>,security:State<'_,Security>)->Result<Value>{let db=state.inner().clone();let sec=security.inner().clone();background(move||status(&sec,&*locked(&db)?)).await}
 #[tauri::command]
 pub async fn login(state:State<'_,Shared>,security:State<'_,Security>,login:String,password:String,totp:String)->Result<Workspace>{let db=state.inner().clone();let sec=security.inner().clone();background(move||{
  let login=login.trim().to_lowercase();if login.len()>190||!login.contains('@')||password.len()>72||password.is_empty()||!(totp.is_empty()||(totp.len()==6&&totp.bytes().all(|b|b.is_ascii_digit()))){return Err("POS_LOGIN_INVALID".into())}
@@ -45,5 +45,5 @@ pub async fn lock_pos(state:State<'_,Shared>,security:State<'_,Security>,logout:
 #[tauri::command]
 pub async fn unlock_pos(state:State<'_,Shared>,security:State<'_,Security>,pin:String)->Result<Workspace>{let db=state.inner().clone();let sec=security.inner().clone();background(move||{let store=locked(&db)?;allowed_attempt(&store,"pin")?;let mut s=sec.lock().map_err(|_|"POS_SECURITY_BUSY")?;if !s.signed_in{return Err("POS_SIGN_IN_AGAIN".into())}let valid=pin.len()==6&&pin.bytes().all(|b|b.is_ascii_digit())&&verify(&pin,&secret(&store)?["pin"]);attempt(&store,"pin",valid)?;if !valid{return Err("POS_PIN_INVALID".into())}s.is_locked=false;s.last_activity=now();drop(s);visible(&sec,&store)}).await}
 #[tauri::command]
-pub async fn activity(state:State<'_,Shared>,security:State<'_,Security>)->Result<()>{let db=state.inner().clone();let sec=security.inner().clone();background(move||require(&sec,&locked(&db)?,true)).await}
+pub async fn activity(state:State<'_,Shared>,security:State<'_,Security>)->Result<()>{let db=state.inner().clone();let sec=security.inner().clone();background(move||require(&sec,&*locked(&db)?,true)).await}
 #[cfg(test)] mod tests{use super::*;#[test]fn verifier_roundtrip_and_pin_bounds(){let v=verifier("123456");assert!(verify("123456",&v));assert!(!verify("123457",&v));assert!(!verify("123456",&json!({"iterations":0})));}}
