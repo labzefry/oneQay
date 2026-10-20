@@ -47,6 +47,10 @@ jobs:
             bash tools/qa-cpanel-pos-worker-lock-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
             exit 0
           fi
+          if [[ "${{ github.head_ref }}" == 'fix-shift-closure-workspace-20261020' && "${{ github.event.pull_request.base.sha }}" == 'a57ed9819babf5a4ec5c586e5bddfb136f35af29' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
+            bash tools/qa-shift-closure-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
+            exit 0
+          fi
           if [[ "${{ github.head_ref }}" == 'pos-enterprise-20261019' && "${{ github.event.pull_request.base.sha }}" == '85a602a6eb27acab533ac4c30d97e12ea0a07c9e' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
             bash tools/qa-pos-enterprise-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
             exit 0
@@ -109,33 +113,7 @@ jobs:
           test "$(sha256sum /tmp/actual | awk '{print $1}')" = '7497d05fb6066cd24ce3c8c53bd64e9590a783b028bb944ec07b56f59661c51b'
 
       - name: Lock authorization and operation-only UI contract
-        shell: bash
-        run: |
-          set -euo pipefail
-          controller=apps/web/app/Delivery/Http/Pos/PosShiftClosePageController.php
-          page=apps/web/resources/js/pages/Pos/ShiftClose.vue
-          route=apps/web/routes/pos-final-shift-close.php
-          grep -Fq 'FinalShiftClosePermission::identifier()' "$controller"
-          grep -Fq '$this->authorization->require(' "$controller"
-          grep -Fq "abort(403, 'Final Shift Close access denied.')" "$controller"
-          grep -Fq "Inertia::render('Pos/ShiftClose'" "$controller"
-          grep -Fq "Route::get('/pos/shifts/close', PosShiftClosePageController::class)" "$route"
-          grep -Fq -- "->name('pos.shifts.close.page')" "$route"
-          grep -Fq "Route::post('/pos/shifts/close', PosShiftCloseController::class)" "$route"
-          grep -Fq -- "->name('pos.shifts.close')" "$route"
-          grep -Fq "import axios, { AxiosError } from 'axios'" "$page"
-          grep -Fq 'crypto.randomUUID()' "$page"
-          python3 - <<'PY'
-          from pathlib import Path
-          page = Path('apps/web/resources/js/pages/Pos/ShiftClose.vue').read_text()
-          needle = """axios.post<CloseResult>(props.delivery.post_url, {
-                operation_id: operation.value,
-              }, {"""
-          if needle not in page:
-              raise SystemExit('Final Shift Close UI mutation body must contain exactly operation_id.')
-          PY
-          ! grep -Fq 'reviewer_actor_identity_id' "$page"
-          ! grep -Fq 'closer_actor_identity_id' "$page"
+        run: php apps/web/tests/pos-final-shift-close-ui-delivery.php
 
       - name: Preserve lifecycle persistence and activation boundaries
         shell: bash
@@ -149,6 +127,10 @@ jobs:
           fi
           if [[ "${{ github.head_ref }}" == 'cpanel-pos-worker-lock-fix-20261018' && "${{ github.event.pull_request.base.sha }}" == 'c75ac817e29b8896d806bfcb43a1f182387e44ef' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
             bash tools/qa-cpanel-pos-worker-lock-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
+            exit 0
+          fi
+          if [[ "${{ github.head_ref }}" == 'fix-shift-closure-workspace-20261020' && "${{ github.event.pull_request.base.sha }}" == 'a57ed9819babf5a4ec5c586e5bddfb136f35af29' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
+            bash tools/qa-shift-closure-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
             exit 0
           fi
           if [[ "${{ github.head_ref }}" == 'pos-enterprise-20261019' && "${{ github.event.pull_request.base.sha }}" == '85a602a6eb27acab533ac4c30d97e12ea0a07c9e' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
