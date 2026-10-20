@@ -15,6 +15,7 @@ final readonly class BusinessAccess
     public const MODULES = [
         'products' => ['Products', 'pos.catalog.prepare'],
         'reports' => ['Reports', 'pos.reporting.sales-summary.view'],
+        'desktop' => ['POS Windows', 'authorization.policy.manage'],
         'settings' => ['Business settings', 'authorization.policy.manage'],
         'suppliers' => ['Suppliers', 'business.suppliers.view'],
         'purchases' => ['Purchasing', 'business.purchases.view'],

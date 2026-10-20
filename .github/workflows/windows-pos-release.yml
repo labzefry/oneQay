@@ -1,0 +1,83 @@
+# Author by Lab | zefry
+name: Signed Windows POS release
+on:
+  push:
+    tags: ['pos-windows-v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing pos-windows-vX.Y.Z tag on main'
+        required: true
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: windows-pos-stable-publication
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: windows-2022
+    permissions:
+      contents: write
+    defaults:
+      run:
+        working-directory: apps/pos-desktop
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ inputs.tag || github.ref_name }}
+      - name: Validate immutable release source
+        env:
+          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+        run: |
+          if ($env:RELEASE_TAG -notmatch '^pos-windows-v[0-9]+\.[0-9]+\.[0-9]+$') { throw 'Invalid stable tag' }
+          git fetch origin main
+          git merge-base --is-ancestor HEAD origin/main
+          if ($LASTEXITCODE -ne 0) { throw 'Release source must already be merged into main' }
+          $version = (Get-Content package.json | ConvertFrom-Json).version
+          if ($env:RELEASE_TAG -ne "pos-windows-v$version") { throw 'Tag/version mismatch' }
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: '24'
+      - run: rustup toolchain install 1.99.1 --profile minimal
+      - run: rustup default 1.99.1
+      - run: npm ci --no-audit --no-fund
+      - run: cargo test --manifest-path core/Cargo.toml --locked
+      - run: python scripts/generate-icon.py
+      - name: Build signed installer
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:TAURI_SIGNING_PRIVATE_KEY)) { throw 'Configure TAURI_SIGNING_PRIVATE_KEY before publishing an update. The installed app continues working.' }
+          npm run tauri -- build --ci --config '{"bundle":{"createUpdaterArtifacts":true}}' --target x86_64-pc-windows-msvc -- --locked
+          if ($LASTEXITCODE -ne 0) { throw 'Signed build failed' }
+      - run: cargo test --release --locked --target x86_64-pc-windows-msvc --manifest-path src-tauri/Cargo.toml
+      - name: Publish signed assets, then stable manifest
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+        run: |
+          $version = (Get-Content package.json | ConvertFrom-Json).version
+          $installer = @(Get-ChildItem src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/*-setup.exe)
+          if ($installer.Count -ne 1) { throw 'Expected one installer' }
+          $exe = $installer[0]
+          $signature = (Get-Content ($exe.FullName + '.sig') -Raw).Trim()
+          if ([string]::IsNullOrWhiteSpace($signature)) { throw 'Missing update signature' }
+          $sha = (Get-FileHash $exe.FullName -Algorithm SHA256).Hash.ToLower()
+          "$sha  $($exe.Name)" | Set-Content SHA256SUMS.txt
+          gh release view $env:RELEASE_TAG --repo labzefry/oneQay *> $null
+          if ($LASTEXITCODE -eq 0) { throw 'Immutable version already published. Use a new version.' }
+          gh release create $env:RELEASE_TAG $exe.FullName ($exe.FullName + '.sig') SHA256SUMS.txt --repo labzefry/oneQay --verify-tag --title "oneQay POS $version" --notes 'Signed stable Windows POS update. Close shifts and synchronize before installation.' --latest=false
+          if ($LASTEXITCODE -ne 0) { throw 'Version publication failed; stable channel untouched' }
+          $url = 'https://github.com/labzefry/oneQay/releases/download/' + $env:RELEASE_TAG + '/' + [Uri]::EscapeDataString($exe.Name)
+          @{version=$version;notes="oneQay POS $version";pub_date=(Get-Date).ToUniversalTime().ToString('o');platforms=@{'windows-x86_64'=@{signature=$signature;url=$url}}} | ConvertTo-Json -Depth 6 | Set-Content latest.json
+          gh release view pos-windows-stable --repo labzefry/oneQay *> $null
+          if ($LASTEXITCODE -ne 0) {
+            gh release create pos-windows-stable --repo labzefry/oneQay --target (git rev-parse HEAD) --title 'oneQay POS stable update channel' --notes 'Only the signed update manifest is mutable. Versioned installers remain immutable.' --latest=false
+            if ($LASTEXITCODE -ne 0) { throw 'Stable channel creation failed' }
+          }
+          gh release upload pos-windows-stable latest.json --clobber --repo labzefry/oneQay
+          if ($LASTEXITCODE -ne 0) { throw 'Stable manifest publication failed' }

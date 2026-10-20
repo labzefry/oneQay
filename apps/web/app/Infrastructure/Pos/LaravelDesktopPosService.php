@@ -62,30 +62,32 @@ final readonly class LaravelDesktopPosService
   }catch(\Throwable $e){$this->clear();abort(401,'Desktop authorization must be renewed.');}
  }
  public function clear():void {$this->contexts->clear();$this->tenants->clear();}
- private function context():VerifiedOrganizationalContext {return $this->contexts->current()??throw new InvalidArgumentException('Missing context.');}
- private function scope():array {$c=$this->context();return ['tenant_id'=>$c->tenantId()->value(),'identity_id'=>$c->identityId()->value(),'organization_id'=>$c->organizationId()->value(),'outlet_id'=>$c->outletId()?->value(),'device_id'=>$c->deviceId()?->value()];}
- private function scopeHash():string{return hash('sha256',json_encode($this->scope(),JSON_THROW_ON_ERROR));}
+ public function context():VerifiedOrganizationalContext {return $this->contexts->current()??throw new InvalidArgumentException('Missing context.');}
+ public function scope():array {$c=$this->context();return ['tenant_id'=>$c->tenantId()->value(),'identity_id'=>$c->identityId()->value(),'organization_id'=>$c->organizationId()->value(),'outlet_id'=>$c->outletId()?->value(),'device_id'=>$c->deviceId()?->value()];}
+ public function scopeHash():string{return hash('sha256',json_encode($this->scope(),JSON_THROW_ON_ERROR));}
  private function catalog():array {
   $s=$this->scope();$rows=$this->db->table('oneqay_pos_sale_catalog_items')->where('tenant_id',$s['tenant_id'])->where('outlet_id',$s['outlet_id'])->where('active',true)->orderBy('product_id')->limit(20001)->get();
   abort_if(count($rows)>20000,422,'Catalog requires a narrower outlet scope.');$profiles=[];
   if($this->db->getSchemaBuilder()->hasTable('oneqay_business_product_profiles'))$profiles=$this->db->table('oneqay_business_product_profiles')->where('tenant_id',$s['tenant_id'])->where('outlet_id',$s['outlet_id'])->get()->keyBy('product_id')->all();
   return $rows->map(function($r)use($profiles):array{$profile=$profiles[$r->product_id]??null;return ['id'=>$r->product_id,'name'=>$r->display_name,'price'=>(int)$r->unit_price_atomic,'currency'=>$r->currency,'scale'=>(int)$r->currency_scale,'stock'=>(int)$r->available_quantity,'barcode'=>$profile?->barcode??'','category'=>$profile?->category??''];})->all();
  }
- public function snapshot():array {
+ public function snapshot(bool $enterprise=false):array {
   $this->authorization->require($this->context(),PosPermission::completeSale());$s=$this->scope();
   $shift=$this->db->table('oneqay_pos_shifts')->where('tenant_id',$s['tenant_id'])->where('organization_id',$s['organization_id'])->where('outlet_id',$s['outlet_id'])->where('device_id',$s['device_id'])->where('active_slot',1)->first();
-  abort_unless($shift,409,'Open the cashier shift online before connecting.');
+  abort_unless($enterprise||$shift,409,'Open the cashier shift online before connecting.');
+  $leaseShift=$enterprise?'enterprise-v2':$shift->shift_id;
   $catalog=$this->catalog();abort_unless(count($catalog)>0,409,'Prepare the outlet catalog first.');
   $currencies=array_unique(array_map(fn($p)=>$p['currency'].':'.$p['scale'],$catalog));abort_unless(count($currencies)===1,409,'Outlet catalog currency must be consistent.');
   $now=time();
   $authorityCatalog=array_map(fn($p)=>array_intersect_key($p,array_flip(['id','price','currency','scale'])),$catalog);
   $revision=hash('sha256',json_encode($authorityCatalog,JSON_THROW_ON_ERROR));
   // Reuse an immutable price lease across stock refreshes. Do not duplicate the entire catalog per sale.
-  $lease=$this->db->table('oneqay_desktop_leases')->where('scope_hash',$this->scopeHash())->where('shift_id',$shift->shift_id)->where('catalog_revision',$revision)->where('expires_at','>',$now+900)->orderByDesc('issued_at')->first();
+  $lease=$this->db->table('oneqay_desktop_leases')->where('scope_hash',$this->scopeHash())->where('shift_id',$leaseShift)->where('catalog_revision',$revision)->where('expires_at','>',$now+900)->orderByDesc('issued_at')->first();
   $id=$lease?->id??bin2hex(random_bytes(16));$issued=$lease?(int)$lease->issued_at:$now;$expires=$lease?(int)$lease->expires_at:$now+28800;
   $business=null;if($this->db->getSchemaBuilder()->hasTable('oneqay_business_settings'))$business=$this->db->table('oneqay_business_settings')->where('tenant_id',$s['tenant_id'])->where('organization_id',$s['organization_id'])->first();
-  $snapshot=['lease_id'=>$id,'scope'=>$s,'shift_id'=>$shift->shift_id,'issued_at'=>$issued,'expires_at'=>$expires,'catalog'=>$catalog,'catalog_revision'=>$revision,'server_time'=>$now,'business_name'=>$business?->business_name??'oneQay POS','currency_symbol'=>$business?->symbol??'','can_count'=>$this->authorization->allows($this->context(),PosPermission::inventoryBaseline())];
-  if(!$lease)$this->db->table('oneqay_desktop_leases')->insert(['id'=>$id,'scope_hash'=>$this->scopeHash(),'tenant_id'=>$s['tenant_id'],'shift_id'=>$shift->shift_id,'catalog_revision'=>$revision,'snapshot'=>json_encode(['catalog'=>$authorityCatalog],JSON_THROW_ON_ERROR),'issued_at'=>$issued,'expires_at'=>$expires]);
+  $snapshot=['lease_id'=>$id,'scope'=>$s,'shift_id'=>$shift?->shift_id??'','issued_at'=>$issued,'expires_at'=>$expires,'catalog'=>$catalog,'catalog_revision'=>$revision,'server_time'=>$now,'business_name'=>$business?->business_name??'oneQay POS','currency_symbol'=>$business?->symbol??'','can_count'=>$this->authorization->allows($this->context(),PosPermission::inventoryBaseline())];
+  if(!$lease)$this->db->table('oneqay_desktop_leases')->insert(['id'=>$id,'scope_hash'=>$this->scopeHash(),'tenant_id'=>$s['tenant_id'],'shift_id'=>$leaseShift,'catalog_revision'=>$revision,'snapshot'=>json_encode($enterprise?['catalog'=>$authorityCatalog,'scope'=>$s]:['catalog'=>$authorityCatalog],JSON_THROW_ON_ERROR),'issued_at'=>$issued,'expires_at'=>$expires]);
+  if($enterprise){$snapshot+=app(LaravelDesktopBusinessSettings::class)->native($this->context());$snapshot['protocol']=2;$snapshot['active_shift']=$shift?['id'=>$shift->shift_id,'identity_id'=>$shift->actor_identity_id,'opened_at'=>(int)$shift->opened_at_unix,'local_id'=>$this->db->table('oneqay_desktop_events')->where('tenant_id',$s['tenant_id'])->where('kind','shift_open')->where('scope_hash',$this->scopeHash())->where('result','like','%'.$shift->shift_id.'%')->value('operation_id')]:null;}
   return $snapshot;
  }
  public function sync(array $operations,string $correlation):array {

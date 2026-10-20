@@ -1,6 +1,8 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 // Author by Lab | zefry
+mod auth;
 mod hardware;
+mod updates;
 use oneqay_pos_core::{receipt_bytes, Line, PrinterSettings, Snapshot, Store, Workspace};
 use serde_json::{json, Value};
 use std::{
@@ -32,20 +34,6 @@ async fn background<T: Send + 'static>(
     tauri::async_runtime::spawn_blocking(work)
         .await
         .map_err(|_| "POS_WORKER_INTERRUPTED".to_string())?
-}
-fn server_url(raw: &str) -> Result<String> {
-    let url = url::Url::parse(raw).map_err(|_| "POS_SERVER_URL_INVALID")?;
-    if url.scheme() != "https"
-        || url.host_str().is_none()
-        || !url.username().is_empty()
-        || url.password().is_some()
-        || url.query().is_some()
-        || url.fragment().is_some()
-        || url.path() != "/"
-    {
-        return Err("POS_SERVER_HTTPS_ORIGIN_REQUIRED".into());
-    }
-    Ok(url.as_str().trim_end_matches('/').into())
 }
 fn request(server: &str, path: &str, token: Option<&str>, body: Option<Value>) -> Result<Value> {
     let client = reqwest::blocking::Client::builder()
@@ -118,62 +106,36 @@ fn credential(db: &Store) -> Result<(String, String)> {
     Ok((server, token))
 }
 #[tauri::command]
-async fn workspace(state: State<'_, Shared>) -> Result<Workspace> {
+async fn workspace(
+    state: State<'_, Shared>,
+    security: State<'_, auth::Security>,
+) -> Result<Workspace> {
     let db = state.inner().clone();
-    background(move || locked(&db)?.workspace().map_err(safe)).await
-}
-#[tauri::command]
-async fn connect(state: State<'_, Shared>, server: String, code: String) -> Result<Workspace> {
-    let db = state.inner().clone();
+    let sec = security.inner().clone();
     background(move || {
-        let server = server_url(&server)?;
-        {
-            let store = locked(&db)?;
-            if let Some(old) = store.get("server").map_err(safe)? {
-                if old != server {
-                    return Err("POS_SERVER_CHANGE_REQUIRES_NEW_WINDOWS_PROFILE".into());
-                }
-            }
-        }
-        let result = request(
-            &server,
-            "exchange",
-            None,
-            Some(json!({"code":code.trim().replace(' ',"").to_uppercase()})),
-        )?;
-        let token = result["token"]
-            .as_str()
-            .filter(|t| t.len() == 64)
-            .ok_or("POS_CREDENTIAL_INVALID")?;
-        let protected = hardware::protect(token.as_bytes())?;
-        let snapshot: Snapshot = serde_json::from_value(result["snapshot"].clone())
-            .map_err(|_| "POS_SNAPSHOT_INVALID")?;
-        let mut store = locked(&db)?;
-        store.apply_snapshot(&snapshot, now()).map_err(safe)?;
-        store.set("server", &server).map_err(safe)?;
-        store
-            .set(
-                "credential",
-                &serde_json::to_string(&protected).map_err(|_| "POS_CREDENTIAL_INVALID")?,
-            )
-            .map_err(safe)?;
-        store.workspace().map_err(safe)
+        let store = locked(&db)?;
+        auth::visible(&sec, &store)
     })
     .await
 }
 #[tauri::command]
 async fn commit(
     state: State<'_, Shared>,
+    security: State<'_, auth::Security>,
     id: String,
     kind: String,
     lines: Vec<Line>,
     tendered: i64,
     expected_total: i64,
     expected_revision: String,
+    table: String,
+    order: String,
 ) -> Result<Workspace> {
     let db = state.inner().clone();
+    let sec = security.inner().clone();
     background(move || {
         let mut store = locked(&db)?;
+        auth::require(&sec, &store, true)?;
         if kind == "sale" {
             let snapshot = store.snapshot().map_err(safe)?.ok_or("POS_CONNECT_FIRST")?;
             if snapshot.catalog_revision != expected_revision {
@@ -181,14 +143,14 @@ async fn commit(
             }
             let products = store.products().map_err(safe)?;
             let mut calculated = 0i64;
-            for line in &lines {
-                let product = products
+            for l in &lines {
+                let p = products
                     .iter()
-                    .find(|p| p.id == line.product_id)
+                    .find(|p| p.id == l.product_id)
                     .ok_or("POS_PRODUCT_UNAVAILABLE")?;
-                calculated = product
+                calculated = p
                     .price
-                    .checked_mul(line.quantity)
+                    .checked_mul(l.quantity)
                     .and_then(|v| calculated.checked_add(v))
                     .ok_or("POS_AMOUNT_TOO_LARGE")?;
             }
@@ -196,35 +158,52 @@ async fn commit(
                 return Err("POS_CART_CHANGED_REVIEW".into());
             }
         }
-
+        store.set_order_context(&table, &order).map_err(safe)?;
         store
             .commit(&id, &kind, lines, tendered, now())
             .map_err(safe)?;
-        store.workspace().map_err(safe)
+        auth::visible(&sec, &store)
     })
     .await
 }
 #[tauri::command]
-async fn synchronize(state: State<'_, Shared>, refresh: bool) -> Result<Workspace> {
+async fn synchronize(
+    state: State<'_, Shared>,
+    security: State<'_, auth::Security>,
+    refresh: bool,
+) -> Result<Workspace> {
     let db = state.inner().clone();
+    let sec = security.inner().clone();
     background(move || {
-        let (server, token, batch) = {
-            let store = locked(&db)?;
-            let (server, token) = credential(&store)?;
-            (server, token, store.pending().map_err(safe)?)
-        };
-        let result = match request(
-            &server,
-            "sync",
+        // Keep one profile selected for the entire request/acknowledgment boundary.
+        let mut store = locked(&db)?;
+        {
+            let s = sec.lock().map_err(|_| "POS_SECURITY_BUSY")?;
+            if !s.signed_in {
+                return Err("POS_SIGN_IN_AGAIN".into());
+            }
+            if s.updating {
+                return Err("UPDATE_IN_PROGRESS".into());
+            }
+        }
+        let (_, token) = credential(&store)?;
+        let batch = store.pending().map_err(safe)?;
+        let response = request(
+            auth::SERVER,
+            "v2/sync",
             Some(&token),
             Some(json!({"operations":batch})),
-        ) {
+        );
+        let result = match response {
             Ok(v) => v,
             Err(e) => {
                 if e.starts_with("POS_SIGN_IN_AGAIN") || e.starts_with("POS_PERMISSION_DENIED") {
-                    locked(&db)?
-                        .set("authority_state", "blocked")
-                        .map_err(safe)?;
+                    store.set("authority_state", "blocked").map_err(safe)?;
+                    let mut s = sec.lock().map_err(|_| "POS_SECURITY_BUSY")?;
+                    s.signed_in = false;
+                    s.is_locked = true;
+                } else {
+                    sec.lock().map_err(|_| "POS_SECURITY_BUSY")?.offline = true;
                 }
                 return Err(e);
             }
@@ -232,49 +211,84 @@ async fn synchronize(state: State<'_, Shared>, refresh: bool) -> Result<Workspac
         let results = result["results"]
             .as_array()
             .ok_or("POS_SYNC_RESPONSE_INVALID")?;
-        let expected: std::collections::HashSet<_> =
-            batch.iter().map(|o| o.operation_id.as_str()).collect();
-        if results.iter().any(|r| {
-            !r["operation_id"]
-                .as_str()
-                .map(|id| expected.contains(id))
-                .unwrap_or(false)
-        }) {
+        if results.len() > batch.len()
+            || results
+                .iter()
+                .enumerate()
+                .any(|(i, r)| r["operation_id"].as_str() != Some(batch[i].operation_id.as_str()))
+        {
             return Err("POS_SYNC_RESPONSE_INVALID".into());
         }
+        store.acknowledge(results).map_err(safe)?;
+        sec.lock().map_err(|_| "POS_SECURITY_BUSY")?.offline = false;
+        if refresh
+            || !batch.is_empty()
+            || store
+                .snapshot()
+                .map_err(safe)?
+                .map(|s| now() - s.server_time > 900)
+                .unwrap_or(true)
         {
-            let mut store = locked(&db)?;
-            store.acknowledge(results).map_err(safe)?;
+            let raw = request(auth::SERVER, "v2/snapshot", Some(&token), None)?;
+            let snap: Snapshot =
+                serde_json::from_value(raw.clone()).map_err(|_| "POS_SNAPSHOT_INVALID")?;
+            auth::refresh_pin(&store, &raw)?;
+            store.apply_snapshot(&snap, now()).map_err(safe)?;
         }
-        let needs_refresh = {
-            let store = locked(&db)?;
-            refresh
-                || !batch.is_empty()
-                || store
-                    .snapshot()
-                    .map_err(safe)?
-                    .map(|s| now() - s.server_time > 900)
-                    .unwrap_or(true)
-        };
-        if needs_refresh {
-            let snapshot = request(&server, "snapshot", Some(&token), None)?;
-            let snapshot: Snapshot =
-                serde_json::from_value(snapshot).map_err(|_| "POS_SNAPSHOT_INVALID")?;
-            locked(&db)?
-                .apply_snapshot(&snapshot, now())
-                .map_err(safe)?;
-        }
-        locked(&db)?.workspace().map_err(safe)
+        auth::visible(&sec, &store)
     })
     .await
 }
 #[tauri::command]
-async fn save_printer(state: State<'_, Shared>, settings: PrinterSettings) -> Result<Workspace> {
+async fn shift_event(
+    state: State<'_, Shared>,
+    security: State<'_, auth::Security>,
+    id: String,
+    opening: bool,
+    cash: i64,
+    note: String,
+) -> Result<Workspace> {
     let db = state.inner().clone();
+    let sec = security.inner().clone();
+    background(move || {
+        let mut store = locked(&db)?;
+        auth::require(&sec, &store, true)?;
+        store
+            .shift_event(&id, opening, cash, &note, now())
+            .map_err(safe)?;
+        auth::visible(&sec, &store)
+    })
+    .await
+}
+#[tauri::command]
+async fn save_printer(
+    state: State<'_, Shared>,
+    security: State<'_, auth::Security>,
+    settings: PrinterSettings,
+) -> Result<Workspace> {
+    let db = state.inner().clone();
+    let sec = security.inner().clone();
     background(move || {
         let store = locked(&db)?;
+        auth::require(&sec, &store, true)?;
         store.save_printer(&settings).map_err(safe)?;
-        store.workspace().map_err(safe)
+        auth::visible(&sec, &store)
+    })
+    .await
+}
+#[tauri::command]
+async fn save_kitchen_printers(
+    state: State<'_, Shared>,
+    security: State<'_, auth::Security>,
+    settings: Value,
+) -> Result<Workspace> {
+    let db = state.inner().clone();
+    let sec = security.inner().clone();
+    background(move || {
+        let store = locked(&db)?;
+        auth::require(&sec, &store, true)?;
+        store.save_kitchen_printers(&settings).map_err(safe)?;
+        auth::visible(&sec, &store)
     })
     .await
 }
@@ -283,50 +297,96 @@ async fn printers() -> Result<Vec<String>> {
     background(hardware::printers).await
 }
 #[tauri::command]
-async fn print_receipt(state: State<'_, Shared>, id: String, duplicate: bool) -> Result<()> {
+async fn print_receipt(
+    state: State<'_, Shared>,
+    security: State<'_, auth::Security>,
+    id: String,
+    duplicate: bool,
+) -> Result<()> {
     let db = state.inner().clone();
+    let sec = security.inner().clone();
     background(move || {
-        let (settings, job, receipt) = {
-            let mut store = locked(&db)?;
-            let settings = store.printer().map_err(safe)?;
-            let (job, receipt) = store.claim_print(&id, duplicate).map_err(safe)?;
-            (settings, job, receipt)
-        };
-        let mut bytes = receipt_bytes(&receipt, settings.paper_mm);
-        if settings.drawer_enabled && !duplicate {
-            bytes.extend_from_slice(&[0x1b, 0x70, 0, 25, 250]);
+        let mut store = locked(&db)?;
+        auth::require(&sec, &store, true)?;
+        let settings = store.printer().map_err(safe)?;
+        let (job, r) = store.claim_print(&id, duplicate).map_err(safe)?;
+        let mut bytes = receipt_bytes(&r, settings.paper_mm);
+        if settings.drawer_enabled && !duplicate && r["kind"] == "sale" {
+            bytes.extend([0x1b, 0x70, 0, 25, 250]);
         }
         let result = hardware::send(&settings, &bytes);
-        locked(&db)?
-            .finish_print(&job, result.is_ok())
-            .map_err(safe)?;
+        store.finish_print(&job, result.is_ok()).map_err(safe)?;
         result
     })
     .await
 }
 #[tauri::command]
-async fn test_printer(state: State<'_, Shared>, drawer: bool) -> Result<()> {
+async fn print_kitchen(
+    state: State<'_, Shared>,
+    security: State<'_, auth::Security>,
+    id: String,
+    duplicate: bool,
+) -> Result<Workspace> {
     let db = state.inner().clone();
-    background(move||{let settings=locked(&db)?.printer().map_err(safe)?;if drawer{if !settings.drawer_enabled{return Err("DRAWER_NOT_ENABLED".into())}hardware::send(&settings,&[0x1b,0x70,0,25,250])}else{hardware::send(&settings,b"\x1b\x40oneQay POS\nUJI PRINTER / PRINTER TEST\n58 / 80 mm ESC/POS\n\n\n\x1d\x56\x42\0")}}).await
+    let sec = security.inner().clone();
+    background(move || {
+        let mut store = locked(&db)?;
+        auth::require(&sec, &store, true)?;
+        let (settings, r) = store.claim_kitchen(&id, duplicate).map_err(safe)?;
+        let result = hardware::send(
+            &settings,
+            &oneqay_pos_core::kitchen_bytes(&r, settings.paper_mm),
+        );
+        store.finish_kitchen(&id, result.is_ok()).map_err(safe)?;
+        result?;
+        auth::visible(&sec, &store)
+    })
+    .await
+}
+#[tauri::command]
+async fn test_printer(
+    state: State<'_, Shared>,
+    security: State<'_, auth::Security>,
+    drawer: bool,
+) -> Result<()> {
+    let db = state.inner().clone();
+    let sec = security.inner().clone();
+    background(move||{let store=locked(&db)?;auth::require(&sec,&store,true)?;let settings=store.printer().map_err(safe)?;if drawer{if !settings.drawer_enabled{return Err("DRAWER_NOT_ENABLED".into())}hardware::send(&settings,&[0x1b,0x70,0,25,250])}else{hardware::send(&settings,b"\x1b\x40oneQay POS\nUJI PRINTER / PRINTER TEST\n58 / 80 mm ESC/POS\n\n\n\x1d\x56\x42\0")}}).await
 }
 fn main() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_single_instance::init(|app, _, _| {
+            if let Some(w) = app.get_webview_window("main") {
+                let _ = w.set_focus();
+            }
+        }))
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .setup(|app| {
             let directory = app.path().app_local_data_dir()?;
             std::fs::create_dir_all(&directory)?;
             let store = Store::open(directory.join("pos.sqlite3"))?;
             app.manage(Arc::new(Mutex::new(store)));
+            app.manage(Arc::new(Mutex::new(auth::Session::new(directory))));
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
             workspace,
-            connect,
             commit,
             synchronize,
+            shift_event,
             save_printer,
+            save_kitchen_printers,
             printers,
             print_receipt,
-            test_printer
+            print_kitchen,
+            test_printer,
+            auth::security_status,
+            auth::login,
+            auth::lock_pos,
+            auth::unlock_pos,
+            auth::activity,
+            updates::check_update,
+            updates::install_update
         ])
         .run(tauri::generate_context!())
         .expect("oneQay POS startup failed");

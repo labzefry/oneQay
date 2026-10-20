@@ -5,6 +5,9 @@ use serde_json::{json, Value};
 use std::path::Path;
 use uuid::Uuid;
 
+mod enterprise;
+pub use enterprise::*;
+
 pub const MAX_MONEY: i64 = 9_007_199_254_740_991;
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
@@ -39,6 +42,12 @@ pub struct Product {
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Snapshot {
+    #[serde(default)]
+    pub protocol: u8,
+    #[serde(default)]
+    pub cashier_name: String,
+    #[serde(default)]
+    pub settings: Value,
     pub lease_id: String,
     pub scope: Scope,
     pub shift_id: String,
@@ -61,6 +70,14 @@ pub struct Line {
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Operation {
+    #[serde(default)]
+    pub shift_id: String,
+    #[serde(default)]
+    pub table: String,
+    #[serde(default)]
+    pub order: String,
+    #[serde(default)]
+    pub note: String,
     pub created_at: i64,
     pub kind: String,
     pub lease_id: String,
@@ -78,6 +95,10 @@ pub struct OperationView {
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Workspace {
+    pub shift: Option<Value>,
+    pub kitchen_printers: Value,
+    pub kitchen_jobs: Vec<Value>,
+    pub metrics: Value,
     pub snapshot: Option<Snapshot>,
     pub products: Vec<Product>,
     pub operations: Vec<OperationView>,
@@ -121,7 +142,9 @@ impl Store {
         db.execute_batch("PRAGMA journal_mode=WAL;PRAGMA synchronous=FULL;PRAGMA foreign_keys=ON;CREATE TABLE IF NOT EXISTS metadata(key TEXT PRIMARY KEY,value TEXT NOT NULL);CREATE TABLE IF NOT EXISTS catalog(id TEXT PRIMARY KEY,payload TEXT NOT NULL,available INTEGER NOT NULL CHECK(available>=0));CREATE TABLE IF NOT EXISTS operations(seq INTEGER PRIMARY KEY AUTOINCREMENT,id TEXT NOT NULL UNIQUE,payload TEXT NOT NULL,state TEXT NOT NULL CHECK(state IN ('pending','accepted','conflict','rejected','review')),total INTEGER NOT NULL CHECK(total>=0),receipt TEXT NOT NULL,result TEXT);CREATE TABLE IF NOT EXISTS print_jobs(id TEXT PRIMARY KEY,operation_id TEXT NOT NULL,receipt TEXT NOT NULL,state TEXT NOT NULL CHECK(state IN ('queued','printing','done','uncertain')),attempts INTEGER NOT NULL DEFAULT 0,last_code TEXT NOT NULL DEFAULT '',FOREIGN KEY(operation_id) REFERENCES operations(id));PRAGMA user_version=1;")?;
         // A crash after the spooler accepted bytes may already have printed. Never duplicate automatically.
         db.execute("UPDATE print_jobs SET state='uncertain',last_code='PRINT_INTERRUPTED' WHERE state='printing'",[])?;
-        Ok(Self { db })
+        let store = Self { db };
+        store.upgrade_enterprise()?;
+        Ok(store)
     }
     pub fn get(&self, key: &str) -> Result<Option<String>> {
         Ok(self
@@ -148,7 +171,7 @@ impl Store {
             || snapshot.server_time < snapshot.issued_at
             || snapshot.server_time > snapshot.expires_at
             || snapshot.lease_id.len() != 32
-            || snapshot.shift_id.is_empty()
+            || (snapshot.protocol != 2 && snapshot.shift_id.is_empty())
         {
             return Err(Error::Rule("POS_SNAPSHOT_INVALID"));
         }
@@ -290,6 +313,8 @@ impl Store {
             if op.kind != kind
                 || serde_json::to_string(&op.lines)? != serde_json::to_string(&lines)?
                 || op.tendered != tendered
+                || (self.snapshot()?.map(|s| s.protocol == 2).unwrap_or(false)
+                    && (op.table != self.order_context()?.0 || op.order != self.order_context()?.1))
             {
                 return Err(Error::Rule("POS_OPERATION_CHANGED"));
             }
@@ -323,6 +348,14 @@ impl Store {
         if elapsed < 0 || created_at > s.expires_at {
             return Err(Error::Rule("POS_OFFLINE_LEASE_EXPIRED"));
         }
+        let shift_id = if s.protocol == 2 {
+            self.active_shift()?
+                .and_then(|v| v["id"].as_str().map(String::from))
+                .ok_or(Error::Rule("POS_OPEN_SHIFT_REQUIRED"))?
+        } else {
+            s.shift_id.clone()
+        };
+        let (table, order) = self.order_context()?;
         let products = self.products()?;
         let mut total = 0i64;
         let mut receipt_lines = Vec::new();
@@ -341,7 +374,9 @@ impl Store {
                 .filter(|v| *v <= MAX_MONEY)
                 .ok_or(Error::Rule("POS_AMOUNT_TOO_LARGE"))?;
             total = amount;
-            receipt_lines.push(json!({"name":p.name,"price":p.price,"quantity":l.quantity}));
+            receipt_lines.push(
+                json!({"name":p.name,"price":p.price,"quantity":l.quantity,"category":p.category}),
+            );
         }
         if kind == "sale" && tendered < total {
             return Err(Error::Rule("POS_CASH_INSUFFICIENT"));
@@ -350,6 +385,10 @@ impl Store {
             total = 0;
         }
         let op = Operation {
+            shift_id,
+            table: table.clone(),
+            order: order.clone(),
+            note: String::new(),
             created_at,
             kind: kind.into(),
             lease_id: s.lease_id.clone(),
@@ -357,7 +396,7 @@ impl Store {
             operation_id: id.into(),
             tendered,
         };
-        let receipt = json!({"reference":id,"provisional":true,"kind":kind,"created_at":created_at,"outlet":s.scope.outlet_id,"device":s.scope.device_id,"currency":s.catalog[0].currency,"scale":s.catalog[0].scale,"lines":receipt_lines,"total":total,"tendered":tendered,"change":if kind=="sale"{tendered-total}else{0}});
+        let receipt = json!({"business":s.business_name,"cashier":s.cashier_name,"logo":if s.settings["show_logo"]==true{s.settings["logo"].clone()}else{Value::Null},"footer":s.settings["footer"],"table":table,"order":order,"reference":id,"provisional":true,"kind":kind,"created_at":created_at,"outlet":s.scope.outlet_id,"device":s.scope.device_id,"currency":s.catalog[0].currency,"scale":s.catalog[0].scale,"lines":receipt_lines,"total":total,"tendered":tendered,"change":if kind=="sale"{tendered-total}else{0}});
         let tx = self.db.transaction()?;
         tx.execute(
             "INSERT INTO operations(id,payload,state,total,receipt) VALUES(?,?,'pending',?,?)",
@@ -386,6 +425,9 @@ impl Store {
                     serde_json::to_string(&receipt)?
                 ],
             )?;
+        }
+        if kind == "sale" {
+            enqueue_kitchens(&tx, id, &receipt, &s.settings)?;
         }
         tx.execute("INSERT INTO metadata(key,value) VALUES('clock_high_water',?) ON CONFLICT(key) DO UPDATE SET value=excluded.value",[local_now.to_string()])?;
         tx.commit()?;
@@ -437,9 +479,21 @@ impl Store {
             let state = r["state"]
                 .as_str()
                 .ok_or(Error::Rule("POS_SYNC_RESPONSE_INVALID"))?;
-            if !matches!(state, "accepted" | "conflict" | "rejected" | "review")
-                || r["code"].as_str().is_none()
-                || (state == "accepted" && r["sale_id"].as_str().is_none())
+            let raw: String =
+                tx.query_row("SELECT payload FROM operations WHERE id=?", [id], |row| {
+                    row.get(0)
+                })?;
+            let operation: Operation = serde_json::from_str(&raw)?;
+            if !matches!(
+                state,
+                "pending" | "accepted" | "conflict" | "rejected" | "review"
+            ) || r["code"].as_str().is_none()
+                || (state == "accepted"
+                    && if operation.kind == "sale" {
+                        r["sale_id"].as_str().filter(|s| !s.is_empty()).is_none()
+                    } else {
+                        r["shift_id"].as_str().filter(|s| !s.is_empty()).is_none()
+                    })
             {
                 return Err(Error::Rule("POS_SYNC_RESPONSE_INVALID"));
             }
@@ -464,6 +518,14 @@ impl Store {
             |r| r.get::<_, i64>(0),
         )?;
         Ok(Workspace {
+            shift: self.active_shift()?,
+            kitchen_printers: self
+                .get("kitchen_printers")?
+                .map(|s| serde_json::from_str(&s))
+                .transpose()?
+                .unwrap_or(json!({})),
+            kitchen_jobs: self.kitchen_jobs()?,
+            metrics: self.metrics()?,
             snapshot: self.snapshot()?,
             products: self.products()?,
             operations,
@@ -520,7 +582,7 @@ impl Store {
     }
     pub fn claim_print(&mut self, id: &str, duplicate: bool) -> Result<(String, Value)> {
         let operation = self.operation(id)?;
-        if operation.operation.kind != "sale" {
+        if !matches!(operation.operation.kind.as_str(), "sale" | "shift_close") {
             return Err(Error::Rule("PRINT_SALE_REQUIRED"));
         }
         let tx = self.db.transaction()?;
@@ -570,13 +632,27 @@ impl Store {
 }
 /// No arbitrary ESC/POS data comes from the webview. Control characters in names are stripped.
 pub fn receipt_bytes(r: &Value, paper_mm: u16) -> Vec<u8> {
+    if r["kind"] == "shift_close" {
+        return shift_report_bytes(r, paper_mm);
+    }
     let width = if paper_mm == 58 { 32 } else { 48 };
     let clean = |s: &str| {
         s.chars()
             .filter(|c| c.is_ascii() && !c.is_ascii_control())
             .collect::<String>()
     };
-    let mut body = String::from("oneQay POS\n");
+    let mut body = format!(
+        "{}\nKasir: {}\n{} WIB\n",
+        clean(r["business"].as_str().unwrap_or("oneQay POS")),
+        clean(r["cashier"].as_str().unwrap_or("")),
+        receipt_time(r)
+    );
+    if let Some(table) = r["table"].as_str().filter(|s| !s.is_empty()) {
+        body.push_str(&format!("Meja: {}\n", clean(table)));
+    }
+    if let Some(order) = r["order"].as_str().filter(|s| !s.is_empty()) {
+        body.push_str(&format!("Order: {}\n", clean(order)));
+    }
     if r["duplicate"] == true {
         body.push_str("SALINAN / DUPLICATE\n")
     };
@@ -605,7 +681,7 @@ pub fn receipt_bytes(r: &Value, paper_mm: u16) -> Vec<u8> {
         }
     }
     body.push_str(&format!(
-        "{}\nTOTAL {} {}\nTUNAI {}\nKEMBALI {}\n\nTerima kasih / Thank you\n\n\n",
+        "{}\nTOTAL {} {}\nTUNAI {}\nKEMBALI {}\n\n",
         "-".repeat(width),
         r["currency"].as_str().unwrap_or(""),
         display_money(
@@ -621,20 +697,33 @@ pub fn receipt_bytes(r: &Value, paper_mm: u16) -> Vec<u8> {
             r["scale"].as_u64().unwrap_or(0) as u32
         )
     ));
+    for line in r["footer"]
+        .as_str()
+        .unwrap_or("Terima kasih / Thank you")
+        .lines()
+    {
+        body.push_str(&clean(line));
+        body.push('\n');
+    }
+    body.push_str("\n\n");
     let mut out = vec![0x1b, 0x40];
+    out.extend(logo_bytes(&r["logo"]));
     out.extend_from_slice(body.as_bytes());
     out.extend_from_slice(&[0x1d, 0x56, 0x42, 0]);
     out
 }
 fn display_money(value: i64, scale: u32) -> String {
-    let divisor = 10_i64.pow(scale.min(6));
+    let scale = scale.min(6);
+    let divisor = 10_u64.pow(scale);
+    let amount = value.unsigned_abs();
+    let sign = if value < 0 { "-" } else { "" };
     if scale == 0 {
-        value.to_string()
+        format!("{sign}{amount}")
     } else {
         format!(
-            "{}.{:0width$}",
-            value / divisor,
-            value % divisor,
+            "{sign}{}.{:0width$}",
+            amount / divisor,
+            amount % divisor,
             width = scale as usize
         )
     }

@@ -1,7 +1,7 @@
 name: Windows POS and browser error experience
 on:
   push:
-    branches: [experience-pos-desktop-20261018]
+    branches: [experience-pos-desktop-20261018, pos-enterprise-20261019]
   pull_request:
     paths: ['apps/pos-desktop/**', 'apps/web/**', '.github/workflows/desktop-pos.yml']
   workflow_dispatch:
@@ -69,7 +69,11 @@ jobs:
       - run: composer install --no-interaction --prefer-dist
       - run: php tests/browser-error-experience.php
       - run: php tests/desktop-pos-sync.php
+      - run: php tests/desktop-enterprise.php
       - run: PLATFORM_TEST_ENGINE=mysql php tests/desktop-pos-sync.php
+      - name: Reset disposable database for enterprise scenario
+        run: mysql --host=127.0.0.1 --user=root --password=synthetic-test-only -e 'DROP DATABASE oneqay_platform_test; CREATE DATABASE oneqay_platform_test;'
+      - run: PLATFORM_TEST_ENGINE=mysql php tests/desktop-enterprise.php
       - run: npm ci --no-audit --no-fund
       - run: npm run type-check && npm run build
 
