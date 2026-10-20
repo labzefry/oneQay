@@ -30,7 +30,7 @@ Existing owner-authored CMS revisions and drafts must not be silently destroyed.
 
 ## Validation and next actions
 
-Local: `tests/business-onboarding-recovery.php` 143 assertions including inherited suites; `tests/website-cms-registration.php` 71 CMS assertions plus inherited mail suite; `npm run type-check`; `npm run build`. Production build has the existing large-bundle advisory.
+Local: `tests/business-onboarding-recovery.php` 145 assertions including inherited suites; `tests/website-cms-registration.php` 71 CMS assertions plus inherited mail suite; `npm run type-check`; `npm run build`. Production build has the existing large-bundle advisory.
 
 CI workflow `business-onboarding-recovery.yml` runs SQLite and MySQL 8.4. Source certification runs the new integration suite and CMS suite before packaging. Exact successor compatibility is bounded by base commit, branch, path set and file digests; historical executable regressions remain enabled.
 
