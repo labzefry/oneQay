@@ -145,7 +145,7 @@ function uHttps(string $url,string $accept): array {
 function uRetryStoppedPreflight(string $locator,array $r): void {
     $prior=uJson(U_REPORT);
     $expected=['state'=>'STOPPED_FAIL_CLOSED','public_switch'=>'NOT_PERFORMED','host_business_acceptance'=>'NOT_VERIFIED','attribution'=>'Lab | zefry'];
-    uAssert(count($prior)===count($expected)+1&&in_array($prior['error_code']??null,['HTTPS_RESPONSE_INVALID','UNEXPECTED_SOURCE_FILE'],true),'RETRY_REPORT_NOT_PREFLIGHT_ONLY');
+    uAssert(count($prior)===count($expected)+1&&in_array($prior['error_code']??null,['HTTPS_RESPONSE_INVALID','UNEXPECTED_SOURCE_FILE','CERTIFIED_SOURCE_CHANGED'],true),'RETRY_REPORT_NOT_PREFLIGHT_ONLY');
     foreach($expected as $key=>$value)uAssert(($prior[$key]??null)===$value,'RETRY_REPORT_NOT_PREFLIGHT_ONLY');
     $p=uPaths($r);
     foreach([$p['release'],$p['env'],$p['entry'],U_BACKUP,__DIR__.'/desktop-pos-installation.json',__DIR__.'/control-worker.php']as$path)
@@ -324,6 +324,17 @@ function uRestore(array $r): array {
     return ['rollback_target'=>'BUSINESS_ON_PREVIOUS_CERTIFIED_RELEASE','previous_source_commit'=>L_SOURCE,'merchant_preserved'=>true,'sessions_preserved'=>true,'module_schema_and_journals'=>'RETAINED','owner_business_role'=>'PRESERVED_UNCHANGED','rollback_https_verified'=>true];
 }
 function uApply(string $locator,array $r,bool $recover=false): array {
+    uAssert(!$recover,'RECOVERY_MODE_NOT_SUPPORTED');uAuthority($locator,$r);uRetentionHelper($r);
+    $archives=U_ROOT.'/release-archives';rrDirectory($archives);uAssert(!is_link($archives.'/retention.lock'),'RETENTION_LOCK_LINK');
+    $mask=umask(0077);$lock=fopen($archives.'/retention.lock','c');umask($mask);
+    uAssert(is_resource($lock)&&chmod($archives.'/retention.lock',0600)&&flock($lock,LOCK_EX|LOCK_NB),'DEPLOY_RETENTION_LOCK_BUSY');
+    try{
+        $payload=__DIR__.'/payload/'.$r['release_id'];$restored=false;
+        if(!is_dir($payload)&&!is_link($payload)){rrRestoreSource(U_ROOT,basename(__DIR__).'/payload/'.$r['release_id']);$restored=true;}
+        $out=uApplyLocked($locator,$r,false);$out['candidate_payload_recovered_from_verified_archive']=$restored;uReport($out);return $out;
+    }finally{flock($lock,LOCK_UN);fclose($lock);}
+}
+function uApplyLocked(string $locator,array $r,bool $recover=false): array {
     uAssert(!$recover,'RECOVERY_MODE_NOT_SUPPORTED');$grant=uAuthority($locator,$r);$pre=uPreconditions($r,false);uAssert(time()<=$grant['expires_at_unix'],'AUTHORITY_WINDOW_EXPIRED');$p=uPaths($r);$changed=false;$buildChanged=false;$previousBuild=null;
     try {
         uAssert(@mkdir(U_BACKUP,0700)&&@chmod(U_BACKUP,0700),'ROLLBACK_DIRECTORY_FAILED');$files=[];

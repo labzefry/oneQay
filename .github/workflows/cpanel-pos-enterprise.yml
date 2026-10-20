@@ -2,7 +2,7 @@
 name: cPanel Enterprise POS Upgrade
 on:
   push:
-    branches: [pos-enterprise-cpanel-20261019]
+    branches: [pos-enterprise-cpanel-20261019, fix-pos-retention-race-20261020]
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -74,6 +74,8 @@ jobs:
           set -euo pipefail
           php tools/production/tests/oneqaydev-https-transport.php | tee /tmp/https-retry.log
           grep -Fxq 'HTTPS_TRANSPORT_RETRY_PASS assertions=60' /tmp/https-retry.log
+      - name: Preserve incoming candidates and recover archived payload under the old worker lock
+        run: php tools/production/tests/oneqaydev-pos-retention-race.php
       - name: Package and verify the exact certified enterprise source
         env:
           GH_TOKEN: ${{ github.token }}

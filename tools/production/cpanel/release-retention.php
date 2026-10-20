@@ -136,12 +136,18 @@ function rrArchive(string $privateRoot, string $dir): array {
 }
 function rrRestore(string $privateRoot, string $release): void {
     rrAssert(preg_match('/\Aproduction-[a-f0-9]{12}\z/D',$release) === 1, 'RETENTION_RESTORE_SCOPE');
-    $dir = $privateRoot.'/releases/'.$release;
+    rrRestoreSource($privateRoot,'releases/'.$release);
+}
+/** Restore only the same private source path recorded in the verified archive receipt. Caller holds retention.lock. */
+function rrRestoreSource(string $privateRoot, string $source): void {
+    rrAssert(preg_match('~\A(?:releases/production-[a-f0-9]{12}|oneqaydev-(?:website-update|control-update|pos-update|business-final)-[a-f0-9]{12}(?:-r[0-9]+)?/payload/production-[a-f0-9]{12})\z~D',$source)===1,'RETENTION_RESTORE_SCOPE');
+    $dir = $privateRoot.'/'.$source;
+    rrAssert(realpath(dirname($dir))===dirname($dir),'RETENTION_RESTORE_PARENT');
     if (is_dir($dir) && !is_link($dir)) return;
     rrAssert(!file_exists($dir) && !is_link($dir), 'RETENTION_RESTORE_TARGET_EXISTS');
-    $archives = $privateRoot.'/release-archives'; $source='releases/'.$release;
+    $archives = $privateRoot.'/release-archives';
     $r = rrCheckReceipt($archives,$archives.'/'.hash('sha256',$source).'.json',$source);
-    $stage = $privateRoot.'/releases/.restore-'.bin2hex(random_bytes(8)); rrDirectory($stage);
+    $stage = dirname($dir).'/.restore-'.bin2hex(random_bytes(8)); rrDirectory($stage);
     try {
         foreach ($r['entries'] as $name=>$e) {
             $dest = $stage.'/'.$name; $parent=dirname($dest);
@@ -160,6 +166,18 @@ function rrRestore(string $privateRoot, string $release): void {
         @rmdir($stage); throw $e;
     }
 }
+/** A prepared or failed future release is never eligible for automatic cleanup. */
+function rrPublishedReleases(string $privateRoot, int $publishedAt): array {
+    $out=[];
+    foreach(new DirectoryIterator($privateRoot) as $operator){
+        if($operator->isDot()||$operator->isLink()||!$operator->isDir()||preg_match('/\Aoneqaydev-(?:website-update|control-update|pos-update|business-final)-[a-f0-9]{12}(?:-r[0-9]+)?\z/D',$operator->getFilename())!==1)continue;
+        $file=$operator->getPathname().'/update-result.json';if(!is_file($file)||is_link($file))continue;
+        try{$r=rrRead($file);$sha=$r['source_commit']??'';$at=$r['published_at_unix']??null;
+            if(($r['state']??null)==='BUSINESS_WORKSPACE_UPDATED_ACCEPTANCE_PENDING'&&($r['business_traffic']??null)==='ON_PRESERVED'&&is_string($sha)&&preg_match('/\A[a-f0-9]{40}\z/D',$sha)===1&&($r['release_id']??null)==='production-'.substr($sha,0,12)&&is_int($at)&&$at>0&&$at<=$publishedAt)$out[$r['release_id']]=true;
+        }catch(Throwable){} // Unqualified evidence preserves the candidate instead of deleting it.
+    }
+    return $out;
+}
 /** Invoked only by the exact active operator after authenticated success receipt and bridge hashes have been checked. */
 function rrMaintain(string $privateRoot, string $activeRelease, int $publishedAt, int $now): array {
     rrAssert(preg_match('/\Aproduction-[a-f0-9]{12}\z/D',$activeRelease) === 1 && realpath($privateRoot) === $privateRoot, 'RETENTION_ACTIVE_SCOPE');
@@ -173,12 +191,12 @@ function rrMaintain(string $privateRoot, string $activeRelease, int $publishedAt
     rrAssert(is_resource($lock) && chmod($archives.'/retention.lock',0600),'RETENTION_LOCK_CREATE');
     try {
         if (!flock($lock,LOCK_EX|LOCK_NB)) { $out['state']='BUSY_RETRY_NEXT_CRON'; return $out; }
-        $candidates=[];
-        foreach (new DirectoryIterator($privateRoot.'/releases') as $e) if (!$e->isDot() && preg_match('/\Aproduction-[a-f0-9]{12}\z/D',$e->getFilename()) === 1 && $e->getFilename() !== $activeRelease) $candidates[]=$e->getPathname();
+        $candidates=[];$published=rrPublishedReleases($privateRoot,$publishedAt);
+        foreach (new DirectoryIterator($privateRoot.'/releases') as $e) if (!$e->isDot() && preg_match('/\Aproduction-[a-f0-9]{12}\z/D',$e->getFilename()) === 1 && $e->getFilename() !== $activeRelease && isset($published[$e->getFilename()])) $candidates[]=$e->getPathname();
         foreach (new DirectoryIterator($privateRoot) as $e) {
             if ($e->isDot() || $e->isLink() || !$e->isDir() || preg_match('/\Aoneqaydev-(?:website-update|control-update|pos-update|business-final)-[a-f0-9]{12}(?:-r[0-9]+)?\z/D',$e->getFilename()) !== 1) continue;
             $payload=$e->getPathname().'/payload'; if (!is_dir($payload) || is_link($payload)) continue;
-            foreach (new DirectoryIterator($payload) as $p) if (!$p->isDot() && preg_match('/\Aproduction-[a-f0-9]{12}\z/D',$p->getFilename()) === 1) $candidates[]=$p->getPathname();
+            foreach (new DirectoryIterator($payload) as $p) if (!$p->isDot() && preg_match('/\Aproduction-[a-f0-9]{12}\z/D',$p->getFilename()) === 1 && isset($published[$p->getFilename()])) $candidates[]=$p->getPathname();
         }
         // Resume a partially completed removal from a previous cron without rebuilding a partial archive.
         foreach (glob($archives.'/*.json') ?: [] as $receipt) {
