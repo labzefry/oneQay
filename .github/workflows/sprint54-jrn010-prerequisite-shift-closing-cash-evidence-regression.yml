@@ -76,6 +76,10 @@ jobs:
             bash tools/qa-cpanel-pos-worker-lock-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
             exit 0
           fi
+          if [[ "${{ github.head_ref }}" == 'business-onboarding-recovery-20261020' && "${{ github.event.pull_request.base.sha }}" == '13f6ea3fb47231568ddc587fb4d40ab51a2163f8' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
+            bash tools/qa-business-onboarding-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
+            exit 0
+          fi
           if [[ "${{ github.head_ref }}" == 'pos-enterprise-20261019' && "${{ github.event.pull_request.base.sha }}" == '85a602a6eb27acab533ac4c30d97e12ea0a07c9e' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
             bash tools/qa-pos-enterprise-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
             exit 0
@@ -176,6 +180,10 @@ jobs:
           fi
           if [[ "${{ github.head_ref }}" == 'cpanel-pos-worker-lock-fix-20261018' && "${{ github.event.pull_request.base.sha }}" == 'c75ac817e29b8896d806bfcb43a1f182387e44ef' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
             bash tools/qa-cpanel-pos-worker-lock-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
+            exit 0
+          fi
+          if [[ "${{ github.head_ref }}" == 'business-onboarding-recovery-20261020' && "${{ github.event.pull_request.base.sha }}" == '13f6ea3fb47231568ddc587fb4d40ab51a2163f8' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
+            bash tools/qa-business-onboarding-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
             exit 0
           fi
           if [[ "${{ github.head_ref }}" == 'pos-enterprise-20261019' && "${{ github.event.pull_request.base.sha }}" == '85a602a6eb27acab533ac4c30d97e12ea0a07c9e' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
