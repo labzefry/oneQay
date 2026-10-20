@@ -51,7 +51,9 @@ final readonly class BusinessActivation
                         : "You are invited to activate {$business['name']}.\nOpen this link within 24 hours to set your password:\n$url\nIf you do not recognize this invitation, ignore this email.\nCopyright oneQay";
                     $this->mail->enqueue($business['tenant_id'], 'activation-'.$business['id'].'-'.$business['version'], $business['email'], $subject, $body, $now);
                 } elseif ($action === 'suspend' && $business['status'] === 'active') {
-                    $changes['status'] = 'suspended';
+                    $changes += ['status' => 'suspended', 'token_hash'=>null, 'token_expires_at'=>null];
+                    $text=$business['locale']==='id'?"Akses bisnis {$business['name']} ditangguhkan sementara.\nAlasan: $reason\nHubungi dukungan oneQay melalui saluran resmi untuk klarifikasi atau keberatan. Data transaksi tidak dihapus oleh tindakan penangguhan ini.\nCopyright oneQay":"Access for {$business['name']} has been suspended.\nReason: $reason\nContact official oneQay support for clarification or to appeal. This suspension does not delete transaction data.\nCopyright oneQay";
+                    $this->mail->enqueue($business['tenant_id'],'suspension-'.$business['id'].'-'.$business['version'],$business['email'],'oneQay · Account access notice',$text,$now);
                     $this->accounts->revokeTenantSessions($business['tenant_id'], $now);
                 } elseif ($action === 'resume' && $business['status'] === 'suspended') {
                     // Burn any sessions raced with suspension before allowing fresh login.
@@ -76,7 +78,7 @@ final readonly class BusinessActivation
             if ($business['status'] !== 'invited' || (int)$business['token_expires_at'] <= time()) throw new PlatformViolation('INVALID_ACTIVATION');
             $this->accounts->provision($business, $password);
             $this->store->update($business['id'], (int)$business['version'], ['status' => 'active', 'token_expires_at' => time() + 300, 'updated_at' => time()]);
-            $this->store->audit('invitation-recipient', 'activated', $business['id'], 'Recipient set initial password', time());
+            $this->store->audit('invitation-recipient', 'activated', $business['id'], 'Email verified and initial password enrolled; business activated without approval', time());
             return ['business_id'=>$business['id']]+array_intersect_key($business, array_flip(['tenant_id','identity_id','organization_id','outlet_id','device_id']));
         });
     }

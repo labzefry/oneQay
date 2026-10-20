@@ -32,7 +32,8 @@ final readonly class BusinessAccess
         'purchase.approve' => 'business.purchases.approve', 'purchase.reject' => 'business.purchases.approve',
         'purchase.receive' => 'business.purchases.receive', 'invoice.create' => 'business.finance.post',
         'invoice.settle' => 'business.finance.settle', 'journal.post' => 'business.finance.post',
-        'journal.reverse' => 'business.finance.post', 'employee.save' => 'business.people.manage',
+        'journal.reverse' => 'business.finance.post', 'job.save' => 'authorization.policy.manage',
+        'employee.save' => 'business.people.manage',
         'attendance.record' => 'business.people.manage', 'leave.request' => 'business.people.manage',
         'leave.approve' => 'business.people.approve', 'leave.reject' => 'business.people.approve',
     ];

@@ -20,7 +20,7 @@ final class PlatformManagementServiceProvider extends ServiceProvider
 {
     public function register():void
     {
-        $this->app->scoped(\App\Application\Website\WebsiteStore::class,fn($app)=>new \App\Infrastructure\Website\LaravelWebsiteStore($app->make('db')->connection(),json_decode(file_get_contents(resource_path('website/defaults.json')),true,64,JSON_THROW_ON_ERROR)));
+        $this->app->scoped(\App\Application\Website\WebsiteStore::class,fn($app)=>new \App\Infrastructure\Website\LaravelWebsiteStore($app->make('db')->connection(),json_decode(file_get_contents(resource_path('website/defaults.json')),true,64,JSON_THROW_ON_ERROR),$app->make(MailStore::class),(string)config('platform.public_url','')));
         $this->app->scoped(\App\Application\Website\WebsiteManagement::class,fn($app)=>new \App\Application\Website\WebsiteManagement($app->make(PlatformOwnerAccess::class),$app->make(PlatformStore::class),$app->make(\App\Application\Website\WebsiteStore::class)));
 
         $this->app->scoped(PlatformOwnerAccess::class,fn($app)=>new PlatformOwnerAccess($app->make(OrganizationalContextStore::class),(string)config('platform.owner_tenant',''),(string)config('platform.owner_identity','')));
@@ -49,6 +49,7 @@ final class PlatformManagementServiceProvider extends ServiceProvider
 
             Route::post('/platform/businesses',[PlatformController::class,'command'])->middleware(RequirePolicyAdministrationSessionContextMiddleware::class);
             Route::post('/platform/mail/settings',[PlatformController::class,'configure'])->middleware(RequirePolicyAdministrationSessionContextMiddleware::class);
+            Route::post('/platform/mail/test',[PlatformController::class,'test'])->middleware([RequirePolicyAdministrationSessionContextMiddleware::class,'throttle:3,1']);
             Route::post('/platform/mail/retry',[PlatformController::class,'retry'])->middleware(RequirePolicyAdministrationSessionContextMiddleware::class);
             Route::get('/platform/mail/inspect',[PlatformController::class,'inspect'])->middleware('throttle:3,1');
         });
@@ -63,6 +64,7 @@ final class PlatformManagementServiceProvider extends ServiceProvider
             Route::get('/owner-login',fn()=>Inertia::render('Foundation',['headline'=>'oneQay platform owner']))->name('platform.owner-login');
             Route::get('/pages/{slug}',[$site,'page'])->where('slug','[a-z][a-z0-9-]{0,63}');
             Route::get('/register',[$site,'registration']);
+            Route::post('/register/resend',[$site,'resend'])->middleware(['throttle:2,1','throttle:10,1440']);
             Route::post('/register',[$site,'register'])->middleware(['throttle:3,1','throttle:20,1440']);
             Route::get('/site/media/{id}',[$site,'media'])->where('id','[a-f0-9]{32}');
         });

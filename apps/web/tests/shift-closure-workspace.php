@@ -28,7 +28,13 @@ $assert($resolved['identity_id']===$cashierScope->identityId()->value()&&$resolv
 $assert(!isset($resolved['password'])&&!isset($resolved['pin_verifier']),'login resolution discloses no credential or PIN');
 $assert($directory->loginBusiness($cashier['login'],str_repeat('f',32))===null,'wrong business selector denied');
 $ownerBusiness=$db->table('oneqay_platform_businesses')->where('tenant_id',$t)->first();$assert($ownerBusiness!==null,'fixture managed business exists');$db->table('oneqay_platform_businesses')->where('id',$ownerBusiness->id)->update(['status'=>'suspended']);$assert($directory->loginBusiness($cashier['login'],null)===null,'suspended business staff login denied');$db->table('oneqay_platform_businesses')->where('id',$ownerBusiness->id)->update(['status'=>'active']);
-$app->make(RecordShiftClosingCash::class)->record(new ShiftClosingCashCommand('legacy-record-closing',Money::fromAtomicUnits(200000,'IDR',0)),'legacy-record-correlation');++$clock->at;
+$request=Illuminate\Http\Request::create('/pos/shifts/closing-cash','POST',[],[],[],['CONTENT_TYPE'=>'application/json'],json_encode(['currency'=>'IDR','operation_id'=>'legacy-record-closing','currency_scale'=>0,'closing_cash_atomic'=>200000]));
+$request->attributes->set('oneqay.correlation_id','legacy-record-correlation');
+$controller=$app->make(App\Delivery\Http\Pos\PosShiftClosingCashController::class);$response=$controller($request);
+$assert($response->getStatusCode()===200,'real HTTP closing cash controller accepts valid keys regardless of JSON ordering');
+$assert($controller($request)->getStatusCode()===200,'HTTP cash record replay is idempotent');
+$bad=Illuminate\Http\Request::create('/pos/shifts/closing-cash','POST',[],[],[],['CONTENT_TYPE'=>'application/json'],json_encode(['currency'=>'IDR','operation_id'=>'bad-extra-close','currency_scale'=>0,'closing_cash_atomic'=>200000,'tenant_id'=>'injected']));
+$bad->attributes->set('oneqay.correlation_id','legacy-bad-correlation');$assert($controller($bad)->getStatusCode()===422,'HTTP cash record rejects extra fields');++$clock->at;
 $assert($app->make(ViewShiftClosureWorkspace::class)->view()['shift']['closing_cash']==='200000','counted cash appears without automatically closing');
 try{$app->make(CloseShift::class)->close(new CloseShiftCommand('legacy-self-close-denied'),'legacy-self-close-correlation');$assert(false,'opener self-approved');}catch(App\Application\Pos\PosTransactionViolation|App\Application\Persistence\DurablePersistenceViolation){$assert(true,'opener cannot approve own shift');}
 $assert($db->table('oneqay_pos_shifts')->where('tenant_id',$t)->where('shift_id',$legacy->shiftId())->value('active_slot')===1,'rejected approval keeps shift active');

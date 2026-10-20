@@ -12,6 +12,7 @@ final readonly class WebsiteController {
     public function home(Request $r):mixed{return $this->page($r,'home');}
     public function page(Request $r,string $slug):mixed{return $this->respond($r,function()use($r,$slug){if($slug==='navigation')abort(404);$doc=$this->store->published(WebsiteContent::slug($slug));abort_if($doc===null,404);return Inertia::render('Website/Page',['document'=>$doc,'navigation'=>$this->store->published('navigation'),'preview'=>false])->toResponse($r);});}
     public function registration(Request $r):mixed{return $this->respond($r,fn()=>Inertia::render('Website/Register',['navigation'=>$this->store->published('navigation')])->toResponse($r));}
+    public function resend(Request $r):mixed{return $this->respond($r,fn()=>response()->json($this->site->resend($this->payload($r,1024)),202));}
     public function register(Request $r):mixed{return $this->respond($r,fn()=>response()->json($this->site->register($this->payload($r,4096)),202));}
     public function editor(Request $r,string $slug='home'):mixed{return $this->respond($r,fn()=>Inertia::render('Website/Editor',$this->site->editor($slug))->toResponse($r));}
     public function command(Request $r,string $slug):mixed{return $this->respond($r,fn()=>response()->json(['status'=>'saved','record'=>$this->site->command($slug,$this->payload($r,120000))]));}

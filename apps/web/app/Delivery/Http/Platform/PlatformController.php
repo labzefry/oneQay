@@ -31,6 +31,20 @@ final readonly class PlatformController
             return response()->json(['status'=>'saved']);
         });
     }
+    public function test(Request $r):mixed
+    {
+        return $this->respond($r,function()use($r):mixed {
+            $owner=$this->access->require();$in=$this->payload($r);
+            if(array_diff(array_keys($in),['recipient','operation_id']))throw new PlatformViolation('UNKNOWN_FIELDS');
+            $recipient=BusinessActivation::email($in['recipient']??null);$operation=BusinessActivation::text($in['operation_id']??null,128);
+            if(!preg_match('/\A[a-zA-Z0-9_-]{8,128}\z/D',$operation))throw new PlatformViolation('INVALID_OPERATION');
+            $result=$this->store->once($owner->tenantId()->value().'/'.$owner->identityId()->value(),$operation,['action'=>'smtp.test','recipient'=>$recipient],function()use($recipient,$operation,$owner):array {
+                if(($this->mail->configuration()['enabled']??false)!==true)throw new PlatformViolation('SMTP_NOT_ENABLED',409);
+                $id=$this->mail->enqueue($owner->tenantId()->value(),'smtp-test-'.$operation,$recipient,'oneQay · Tes pengiriman SMTP / SMTP delivery test',"Ini adalah email pengujian konfigurasi SMTP oneQay. Jika diterima, jalur pengiriman ke alamat ini berfungsi pada waktu pengujian. Periksa juga folder spam.\nThis is a oneQay SMTP test message. Receipt confirms delivery to this address for this test, not a guarantee for other messages.\nCopyright oneQay",time());
+                $this->store->audit($owner->identityId()->value(),'smtp.test','', 'Test queued; message '.$id,time());return ['message_id'=>$id,'delivery_state'=>'queued'];
+            });return response()->json(['status'=>'queued','record'=>$result],202);
+        });
+    }
     public function inspect(Request $r):mixed { return $this->respond($r,function():mixed{$this->access->require();return response()->json($this->transport->inspect());}); }
     public function retry(Request $r):mixed
     {

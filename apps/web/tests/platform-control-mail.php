@@ -61,6 +61,11 @@ $service->command($command('suspend',3,'test-suspend-business'));
 $assert(!$eligibility->isEligible(TenantId::fromString($context['tenant_id']),PlatformIdentityId::fromString($context['identity_id'])),'suspended account cannot authenticate');
 $service->command($command('resume',4,'test-resume-business'));
 $assert($eligibility->isEligible(TenantId::fromString($context['tenant_id']),PlatformIdentityId::fromString($context['identity_id'])),'resumed account eligible for fresh authentication');
+$notification=$db->table('oneqay_mail_messages')->where('id','!=',$queued->id)->first();
+$notice=json_decode($app->make('encrypter')->decryptString($notification->payload),true);
+$assert(str_contains($notice['text'],'Synthetic state change'),'suspension notification includes audited reason');
+// Keep the independently tested security notification out of the transport fixture's scheduling window.
+$db->table('oneqay_mail_messages')->where('id',$notification->id)->update(['next_attempt_at'=>time()+86400]);
 $assert($mail->claim(time())===null,'unconfigured mail never sends');
 $settings=['enabled'=>true,'host'=>'smtp.example.test','port'=>465,'username'=>'sender@example.test','password'=>'synthetic-smtp-secret','from'=>'sender@example.test','from_name'=>'oneQay','dkim_selector'=>'default','per_minute'=>20];
 $mail->configure($settings,1,'owner-fixture',time());

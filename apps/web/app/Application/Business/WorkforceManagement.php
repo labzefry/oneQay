@@ -9,19 +9,28 @@ use App\Application\Organization\VerifiedOrganizationalContext;
 // Author by Lab | zefry
 final readonly class WorkforceManagement
 {
-    public function __construct(private BusinessRepository $records) {}
+    public function __construct(private BusinessRepository $records, private ?WorkforceAccounts $accounts = null) {}
 
     public function save(VerifiedOrganizationalContext $scope, array $input): array
     {
-        BusinessInput::fields($input, ['code', 'name', 'department', 'job_title', 'start_date', 'active'], ['id', 'version']);
+        BusinessInput::fields($input, ['code', 'name', 'department', 'job_title', 'start_date', 'active'], ['id', 'version', 'pos_account']);
+        if (isset($input['pos_account']) && !is_array($input['pos_account'])) throw new BusinessViolation('INVALID_FIELDS');
         $data = ['code' => BusinessInput::text($input['code'], 48), 'name' => BusinessInput::text($input['name']), 'department' => BusinessInput::text($input['department'], 120), 'job_title' => BusinessInput::text($input['job_title'], 120), 'start_date' => BusinessInput::date($input['start_date']), 'active' => BusinessInput::boolean($input['active'])];
         if (isset($input['id'])) {
             $existing = $this->records->find($scope, 'employees', BusinessInput::id($input['id']), true);
-            return $this->records->update($scope, 'employees', $existing['id'], BusinessInput::integer($input['version'] ?? null, 1), $data);
+            $employee = $this->records->update($scope, 'employees', $existing['id'], BusinessInput::integer($input['version'] ?? null, 1), $data);
+            $this->accounts?->sync($scope, $employee, $input['pos_account'] ?? null);
+            return $employee;
         }
         if (isset($input['version'])) throw new BusinessViolation('INVALID_FIELDS');
-        return $this->records->create($scope, 'employees', $data);
+        $employee = $this->records->create($scope, 'employees', $data);
+        $this->accounts?->sync($scope, $employee, $input['pos_account'] ?? null);
+        return $employee;
     }
+
+    public function jobs(VerifiedOrganizationalContext $scope):array {return $this->accounts?->jobs($scope) ?? [];}
+    public function accounts(VerifiedOrganizationalContext $scope):array {return $this->accounts?->accounts($scope) ?? [];}
+    public function saveJob(VerifiedOrganizationalContext $scope,array $input):array {return $this->accounts?->saveJob($scope,$input) ?? throw new BusinessViolation('WORKFORCE_NOT_AVAILABLE');}
 
     public function attendance(VerifiedOrganizationalContext $scope, array $input): array
     {

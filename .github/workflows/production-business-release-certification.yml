@@ -102,6 +102,10 @@ jobs:
           npm ci --ignore-scripts --no-fund
           npm run type-check
           npm run build
+      - name: Verify employee cashier links, email verification and incident recovery
+        run: php apps/web/tests/business-onboarding-recovery.php
+      - name: Verify public CMS and registration flow
+        run: php apps/web/tests/website-cms-registration.php
       - name: Verify legacy shift closure, permissions and independent cashier approval
         run: php apps/web/tests/shift-closure-workspace.php
       - name: Verify dedicated cashier settings routes in either provider order

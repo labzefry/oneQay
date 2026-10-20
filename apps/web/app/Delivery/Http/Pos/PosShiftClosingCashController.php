@@ -18,9 +18,9 @@ use InvalidArgumentException;
 final class PosShiftClosingCashController
 {
     private const ALLOWED_FIELDS = [
+        'closing_cash_atomic',
         'currency',
         'currency_scale',
-        'closing_cash_atomic',
         'operation_id',
     ];
 

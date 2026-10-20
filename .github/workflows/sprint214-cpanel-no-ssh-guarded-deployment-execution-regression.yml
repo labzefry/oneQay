@@ -608,6 +608,10 @@ jobs:
             bash tools/qa-cpanel-pos-worker-lock-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
             exit 0
           fi
+          if [[ "${{ github.head_ref }}" == 'business-onboarding-recovery-20261020' && "${{ github.event.pull_request.base.sha }}" == '13f6ea3fb47231568ddc587fb4d40ab51a2163f8' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
+            bash tools/qa-business-onboarding-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
+            exit 0
+          fi
           if [[ "${{ github.head_ref }}" == 'fix-shift-closure-workspace-20261020' && "${{ github.event.pull_request.base.sha }}" == 'a57ed9819babf5a4ec5c586e5bddfb136f35af29' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
             bash tools/qa-shift-closure-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
             exit 0

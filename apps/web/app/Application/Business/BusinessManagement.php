@@ -25,6 +25,7 @@ final readonly class BusinessManagement
             'invoice.settle' => $this->finance->settle($scope, $input),
             'journal.post' => $this->finance->manual($scope, $input, $operation),
             'journal.reverse' => $this->finance->reverse($scope, $input),
+            'job.save' => $this->people->saveJob($scope, $input),
             'employee.save' => $this->people->save($scope, $input),
             'attendance.record' => $this->people->attendance($scope, $input),
             'leave.request' => $this->people->leave($scope, $input),
@@ -58,6 +59,8 @@ final readonly class BusinessManagement
             $result['partners'] = $this->options('partners')['data'];
             $result['accounts'] = FinancialManagement::ACCOUNTS;
         } elseif ($module === 'people') {
+            $result['jobs'] = $this->people->jobs($scope);
+            $result['staff_accounts'] = $this->people->accounts($scope);
             $result['attendance'] = $this->records->listing($scope, 'attendance', [], $page);
             $result['leave'] = $this->records->listing($scope, 'leave', [], $page);
         }

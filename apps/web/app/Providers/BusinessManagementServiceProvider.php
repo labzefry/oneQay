@@ -20,6 +20,8 @@ final class BusinessManagementServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->app->scoped(\App\Application\Business\WorkforceAccounts::class,fn($a)=>new \App\Infrastructure\Business\LaravelWorkforceAccounts($a->make('db')->connection(),$a));
+        $this->app->scoped(\App\Application\Business\WorkforceManagement::class,fn($a)=>new \App\Application\Business\WorkforceManagement($a->make(BusinessRepository::class),$a->make(\App\Application\Business\WorkforceAccounts::class)));
         $this->app->scoped(\App\Application\Pos\ShiftClosureWorkspaceRepository::class, fn ($app) => new \App\Infrastructure\Pos\LaravelShiftClosureWorkspaceRepository($app->make('db')->connection()));
         $this->app->bind(\App\Application\Business\BusinessDocuments::class, \App\Infrastructure\Business\BusinessDocumentCodec::class);
         $this->app->scoped(\App\Application\Business\MerchandisingRepository::class, fn ($app) => new \App\Infrastructure\Business\LaravelMerchandisingRepository($app->make('db')->connection()));
