@@ -21,6 +21,8 @@ final readonly class ControlPlaneManagement {
    'campaign.save'=>['id','name','subject','body','locale','channel'],
    'campaign.queue'=>['id','review_digest','reviewed','due_at'],
    'campaign.cancel'=>['id'],
+   'shift.recover'=>['id','shift_id','review_digest','reviewed','offline_reconciled'],
+   'shift.recover_initial'=>['shift_id','review_digest','reviewed','offline_reconciled'],
    'pilot.verify'=>['id','shift_id','evidence_digest','receipt_reference','real_cash_confirmed'],
    'pilot.verify_initial'=>['shift_id','evidence_digest','receipt_reference','real_cash_confirmed'],
    default=>throw new PlatformViolation('UNKNOWN_ACTION'),
@@ -30,7 +32,7 @@ final readonly class ControlPlaneManagement {
   ksort($in);
   return $this->platform->once($actor,$op,$in,function()use($in,$action,$reason,$actor,$owner):array{
    $b=null;$target='';
-   if(str_starts_with($action,'business.')||str_starts_with($action,'security.')||$action==='pilot.verify'){
+   if(str_starts_with($action,'business.')||str_starts_with($action,'security.')||in_array($action,['pilot.verify','shift.recover'],true)){
     $target=BusinessActivation::text($in['id']??null,32);$b=$this->platform->business($target,true);
     if($b['tenant_id']===$owner->tenantId()->value())throw new PlatformViolation('OWNER_TENANT_PROTECTED',403);
     if((int)$b['version']!==$in['version'])throw new PlatformViolation('STALE_VERSION',409);

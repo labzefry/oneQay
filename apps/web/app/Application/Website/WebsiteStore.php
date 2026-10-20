@@ -14,5 +14,6 @@ interface WebsiteStore {
     public function media(string $id,bool $preview):?array;
     public function hasMedia(string $id):bool;
     public function registration(array $input):void;
+    public function resendVerification(string $email):void;
     public function registrationDetails(array $ids):array;
 }
