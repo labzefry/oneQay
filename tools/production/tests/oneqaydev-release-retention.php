@@ -10,6 +10,9 @@ function rtRelease(string $path,string $commit): void {
     mkdir($path.'/apps/web/empty',0750,true);file_put_contents($path.'/apps/web/app.php',str_repeat('oneQay code ',1000));chmod($path.'/apps/web/app.php',0640);
     file_put_contents($path.'/apps/web/.env','PRIVATE_DONT_PRINT');chmod($path.'/apps/web/.env',0600);
     file_put_contents($path.'/RELEASE.json',json_encode(['release_id'=>basename($path),'source_commit'=>$commit,'source_ci_certified'=>true]));
+    global $tmp;
+    $operator=$tmp.'/oneqaydev-pos-update-'.substr($commit,0,12);if(!is_dir($operator))mkdir($operator,0700,true);
+    file_put_contents($operator.'/update-result.json',json_encode(['state'=>'BUSINESS_WORKSPACE_UPDATED_ACCEPTANCE_PENDING','business_traffic'=>'ON_PRESERVED','release_id'=>basename($path),'source_commit'=>$commit,'published_at_unix'=>1000]));
 }
 function rtClean(string $dir):void {foreach(new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir,FilesystemIterator::SKIP_DOTS),RecursiveIteratorIterator::CHILD_FIRST)as$e){if($e->isDir()&&!$e->isLink())rmdir($e->getPathname());else unlink($e->getPathname());}rmdir($dir);}
 try {
