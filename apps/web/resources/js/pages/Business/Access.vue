@@ -2,8 +2,9 @@
 // Author by Lab | zefry
 import { computed, onBeforeUnmount, ref } from 'vue';
 import { t } from '../../i18n';
-const props = defineProps<{ identity_id: string; outlet_id: string; templates: Record<string, { title: string; permissions: string[] }>; step_up_url: string | null }>();
-const identity = ref(props.identity_id); const role = ref('oneqay-business-manager'); const action = ref('assign');
+const props = defineProps<{ identity_id: string; outlet_id: string; templates: Record<string, { title: string; permissions: string[] }>; step_up_url: string | null; initial_role?: string; return_url?: string }>();
+const identity = ref(props.identity_id); const role = ref(props.initial_role && props.templates[props.initial_role] ? props.initial_role : 'oneqay-business-manager'); const action = ref('assign');
+const returnUrl = computed(() => props.return_url === '/pos/shifts/close' ? '/pos/shifts/close' : '/pos');
 const busy = ref(false); const uncertain = ref(false); const message = ref(''); const saved = ref(false);
 const password = ref(''); const code = ref(''); const verifying = ref(false);
 const pending = ref<{ operation_id: string; identity_id: string; role: string; action: string } | null>(null);
@@ -79,7 +80,7 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', beforeUnload));
                 </form>
             </aside>
         </div>
-        <div v-if="message" class="message" :class="{ success: saved }" role="status">{{ t(message) }} <a v-if="saved" href="/pos">{{ t('Open workspace') }} →</a></div>
+        <div v-if="message" class="message" :class="{ success: saved }" role="status">{{ t(message) }} <a v-if="saved" :href="returnUrl">{{ t('Open workspace') }} →</a></div>
     </main>
 </template>
 

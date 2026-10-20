@@ -64,6 +64,7 @@ final readonly class ViewPosOperationsHub
             $canInventoryAccountability,
             $canCashVarianceReconciliation,
             $canShiftClose,
+            $this->authorization->allows($verified, PosPermission::recordShiftClosingCash()) || $this->authorization->allows($verified, PermissionIdentifier::fromString('authorization.policy.manage')),
         );
 
         if (! $snapshot->hasAnyAccess()) {

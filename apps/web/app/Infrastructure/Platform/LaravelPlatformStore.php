@@ -38,7 +38,15 @@ final readonly class LaravelPlatformStore implements PlatformStore
         $q=$this->db->table('oneqay_platform_businesses')->where('email',strtolower($email))->where('status','active');
         if($id!==null && $id!=='')$q->where('id',$id);
         $rows=$q->limit(2)->get();
-        return $rows->count()===1?(array)$rows->first():null;
+        if($rows->count()===1)return (array)$rows->first();
+        if($rows->count()>1 || $this->db->table('oneqay_platform_businesses')->where('email',strtolower($email))->exists())return null;
+        // Existing cashier credentials may enter the web POS for independent shift approval.
+        // Canonical login still enforces eligibility, credential epochs, MFA and outlet RBAC.
+        if(!$this->db->getSchemaBuilder()->hasTable('oneqay_desktop_cashiers'))return null;
+        $cashier=$this->db->table('oneqay_desktop_cashiers')->where('login',strtolower($email))->where('enabled',true)->first();
+        if(!$cashier || !$this->tenantAllowed($cashier->tenant_id))return null;
+        if($id!==null && $id!=='' && !$this->db->table('oneqay_platform_businesses')->where('id',$id)->where('tenant_id',$cashier->tenant_id)->where('status','active')->exists())return null;
+        return array_intersect_key((array)$cashier,array_flip(['tenant_id','identity_id','organization_id','outlet_id','device_id']));
     }
     public function byToken(string $tokenHash): array
     {

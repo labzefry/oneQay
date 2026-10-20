@@ -22,6 +22,8 @@ final readonly class BusinessAccessController
             $scope = $this->access->require(AdministrationPermission::MANAGE);
             return Inertia::render('Business/Access', [
                 'identity_id' => $scope->identityId()->value(),
+                'initial_role' => $request->query('purpose') === 'shift-close' ? 'oneqay-cashier' : 'oneqay-business-manager',
+                'return_url' => $request->query('purpose') === 'shift-close' ? '/pos/shifts/close' : '/pos',
                 'outlet_id' => $scope->outletId()?->value(),
                 'templates' => BusinessRoleAdministration::templates(),
                 'step_up_url' => Route::has('auth.privileged-step-up.reauthenticate') ? route('auth.privileged-step-up.reauthenticate', [], false) : null,
