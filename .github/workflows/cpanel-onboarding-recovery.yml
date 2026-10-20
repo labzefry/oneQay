@@ -1,0 +1,59 @@
+# Author by Lab | zefry
+name: cPanel Verified Onboarding and Recovery Update
+on:
+  push:
+    branches: [cpanel-onboarding-recovery-20261020]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  cpanel-onboarding-recovery-upgrade:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: synthetic-test-only
+          MYSQL_DATABASE: oneqay_control_upgrade_test
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -psynthetic-test-only"
+          --health-interval=10s --health-timeout=5s --health-retries=10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        with:
+          php-version: '8.3'
+          extensions: pdo_sqlite, pdo_mysql, dom, zlib, phar, curl
+          tools: composer:v2
+          coverage: none
+      - name: Install locked dependencies
+        working-directory: apps/web
+        run: composer install --no-interaction --no-progress --prefer-dist
+      - name: Verify route matching, deployment boundaries and existing schema preservation
+        run: |
+          set -euo pipefail
+          php -l tools/production/cpanel/update-oneqaydev-onboarding-recovery.php
+          php -l tools/production/cpanel/install-oneqaydev-onboarding-recovery.php
+          php apps/web/tests/desktop-settings-routing.php
+          php -d zend.assertions=1 -d assert.exception=1 tools/production/tests/oneqaydev-onboarding-recovery-operator.php
+          php tools/production/tests/oneqaydev-onboarding-recovery-https.php
+          php tools/production/tests/oneqaydev-onboarding-recovery-runtime-lock.php
+          php tools/production/tests/oneqaydev-onboarding-recovery-schema.php
+          CONTROL_TEST_ENGINE=mysql php tools/production/tests/oneqaydev-onboarding-recovery-schema.php
+      - name: Verify certified shift closure package
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh run download 39429509409 --repo labzefry/oneQay --name oneqay-certified-business-production-c2e3e3b5a05e --dir "$RUNNER_TEMP/routing-certified"
+          zip -j "$RUNNER_TEMP/routing-certified.zip" "$RUNNER_TEMP/routing-certified/"*
+          python3 tools/production/package-oneqaydev-onboarding-recovery.py --certified-zip "$RUNNER_TEMP/routing-certified.zip" --source-sha c2e3e3b5a05e9729a478f432c9751d4b4297bcfe --run-id 39429509409 --output-directory "$RUNNER_TEMP/routing-package"
+          php tools/production/tests/oneqaydev-onboarding-recovery-package.php "$RUNNER_TEMP/routing-package/oneqaydev-pos-update-c2e3e3b5a05e"
