@@ -1,0 +1,59 @@
+# Author by Lab | zefry
+name: cPanel Cashier Settings Routing Repair
+on:
+  push:
+    branches: [fix-cashier-settings-deploy-20261020]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  cpanel-routing-upgrade:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: synthetic-test-only
+          MYSQL_DATABASE: oneqay_control_upgrade_test
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -psynthetic-test-only"
+          --health-interval=10s --health-timeout=5s --health-retries=10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        with:
+          php-version: '8.3'
+          extensions: pdo_sqlite, pdo_mysql, dom, zlib, phar, curl
+          tools: composer:v2
+          coverage: none
+      - name: Install locked dependencies
+        working-directory: apps/web
+        run: composer install --no-interaction --no-progress --prefer-dist
+      - name: Verify route matching, deployment boundaries and existing schema preservation
+        run: |
+          set -euo pipefail
+          php -l tools/production/cpanel/update-oneqaydev-pos-routing.php
+          php -l tools/production/cpanel/verify-oneqaydev-pos-routing-schema.php
+          php apps/web/tests/desktop-settings-routing.php
+          php tools/production/tests/oneqaydev-pos-routing-operator.php
+          php tools/production/tests/oneqaydev-pos-routing-https.php
+          php tools/production/tests/oneqaydev-pos-routing-runtime-lock.php
+          php tools/production/tests/oneqaydev-pos-routing-schema.php
+          CONTROL_TEST_ENGINE=mysql php tools/production/tests/oneqaydev-pos-routing-schema.php
+      - name: Verify certified routing package
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh run download 39362719306 --repo labzefry/oneQay --name oneqay-certified-business-production-c52bb6095ed0 --dir "$RUNNER_TEMP/routing-certified"
+          zip -j "$RUNNER_TEMP/routing-certified.zip" "$RUNNER_TEMP/routing-certified/"*
+          python3 tools/production/package-oneqaydev-pos-routing.py --certified-zip "$RUNNER_TEMP/routing-certified.zip" --source-sha c52bb6095ed0f95de4fd19632dbab4966f9b2abb --run-id 39362719306 --output-directory "$RUNNER_TEMP/routing-package"
+          php tools/production/tests/oneqaydev-pos-routing-package.php "$RUNNER_TEMP/routing-package/oneqaydev-pos-update-c52bb6095ed0"
