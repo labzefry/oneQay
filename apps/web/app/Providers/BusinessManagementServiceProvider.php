@@ -52,7 +52,8 @@ final class BusinessManagementServiceProvider extends ServiceProvider
             Route::post('/pos/business/access/roles', [BusinessAccessController::class, 'apply'])->middleware(RequirePolicyAdministrationSessionContextMiddleware::class)->name('business.access.roles');
             Route::get('/pos/business/options/{resource}', [BusinessWorkspaceController::class, 'options'])->name('business.options');
             Route::get('/pos/business/{module}/export', [BusinessWorkspaceController::class, 'export'])->name('business.export');
-            Route::get('/pos/business/{module}', [BusinessWorkspaceController::class, 'show'])->name('business.workspace');
+            // Dedicated pages (especially desktop settings registered by another provider) must never match the generic table route.
+            Route::get('/pos/business/{module}', [BusinessWorkspaceController::class, 'show'])->whereIn('module', ['suppliers', 'purchases', 'customers', 'finance', 'people', 'audit'])->name('business.workspace');
             Route::post('/pos/business/commands/{action}', [BusinessWorkspaceController::class, 'command'])->middleware('throttle:20,1')->name('business.command');
         });
     }

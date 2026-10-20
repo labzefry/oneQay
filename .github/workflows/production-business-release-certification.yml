@@ -102,6 +102,8 @@ jobs:
           npm ci --ignore-scripts --no-fund
           npm run type-check
           npm run build
+      - name: Verify dedicated cashier settings routes in either provider order
+        run: php apps/web/tests/desktop-settings-routing.php
       - name: Verify cPanel disabled-link capabilities and bounded workspace recovery
         run: |
           set -euo pipefail
