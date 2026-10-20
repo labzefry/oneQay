@@ -24,6 +24,7 @@ final class FinalShiftCloseServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->app->scoped(\App\Application\Pos\ShiftClosureWorkspaceRepository::class, fn($app) => new \App\Infrastructure\Pos\LaravelShiftClosureWorkspaceRepository($this->connection($app)));
         // Keep bounded POS capability wiring out of the global provider registry.
         // Child providers remain independently fail-closed and own their delivery gates.
         $this->app->register(PosOperationalReportingServiceProvider::class);

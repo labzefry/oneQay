@@ -1,159 +1,44 @@
 <script setup lang="ts">
-import { formatMoney as displayMoney } from "../../business-money";
-import { t } from "../../i18n";
-import axios, { AxiosError } from 'axios'
-import { computed, ref } from 'vue'
-
-type DeliveryBoundary = {
-  post_url: string
-  operation_id_prefix: string
-  production_ready: false
-  activation_state: 'DORMANT_FAIL_CLOSED'
-}
-
-type CloseResult = {
-  status: 'closed'
-  evidence_id: string
-  operation_id: string
-  shift_id: string
-  reconciliation: {
-    expected_cash_atomic: number
-    observed_closing_cash_atomic: number
-    variance_atomic: number
-    variance_direction: 'MATCH' | 'OVER' | 'SHORT'
-    currency: string
-    currency_scale: number
-    review_outcome: string | null
-  }
-  cutoff_at_unix: number
-  closed_at_unix: number
-  correlation_id: string
-}
-
-// Author by Lab | zefry
-const props = defineProps<{ delivery: DeliveryBoundary }>()
-const operationId = ref<string | null>(null)
-const processing = ref(false)
-const result = ref<CloseResult | null>(null)
-const errorCode = ref<string | null>(null)
-
-const operation = computed(() => {
-  if (operationId.value === null) {
-    operationId.value = `${props.delivery.operation_id_prefix}${crypto.randomUUID()}`
-  }
-  return operationId.value
-})
-
-const money = (atomic: number, currency: string) => displayMoney(atomic, currency, 0)
-
-const closeShift = async (): Promise<void> => {
-  if (processing.value || result.value !== null) return
-
-  processing.value = true
-  errorCode.value = null
-
-  try {
-    const response = await axios.post<CloseResult>(props.delivery.post_url, {
-      operation_id: operation.value,
-    }, {
-      headers: { Accept: 'application/json' },
-    })
-    result.value = response.data
-  } catch (error) {
-    if (error instanceof AxiosError) {
-      const code = error.response?.data?.error?.code
-      errorCode.value = typeof code === 'string' ? code : 'POS_SHIFT_CLOSE_REJECTED'
-    } else {
-      errorCode.value = 'POS_SHIFT_CLOSE_REJECTED'
-    }
-  } finally {
-    processing.value = false
-  }
-}
+// Author by Lab | zefry. Cash entry and final approval use separate canonical, authorized commands.
+import { computed, onBeforeUnmount, ref } from 'vue';
+import { Head, router } from '@inertiajs/vue3';
+import axios, { AxiosError } from 'axios';
+import NumericInput from '../../components/NumericInput.vue';
+import Icon from '../../components/WorkspaceIcon.vue';
+import { locale } from '../../i18n';
+import { formatMoney } from '../../business-money';
+type Shift={id:string;opened_at:number;opened_by_you:boolean;opening_cash:string|null;currency:string|null;scale:number;closing_cash:string|null;closing_recorded_at:number|null};
+type Workspace={reconciliation_available:boolean;permissions:{record_cash:boolean;close:boolean;manage_access:boolean};shift:Shift|null};
+const props=defineProps<{delivery:{post_url:string;operation_id_prefix:string;production_ready:boolean;activation_state:string};workspace:Workspace}>();
+const tr=(id:string,en:string)=>locale.value==='id'?id:en;
+const amount=ref('');const busy=ref(false);const uncertain=ref(false);const error=ref('');const saved=ref('');const closed=ref(false);
+const closeId=ref(props.delivery.operation_id_prefix+crypto.randomUUID());
+const pendingCash=ref<{operation_id:string;closing_cash_atomic:number;currency:string;currency_scale:number}|null>(null);
+const shift=computed(()=>props.workspace.shift);
+const money=(value:string|null)=>value===null?'—':formatMoney(value,shift.value?.currency??'IDR',shift.value?.scale??0);
+const opened=computed(()=>shift.value?new Intl.DateTimeFormat(locale.value==='id'?'id-ID':'en-GB',{dateStyle:'medium',timeStyle:'short',timeZone:'Asia/Jakarta'}).format(new Date(shift.value.opened_at*1000)):'');
+function fail(e:unknown){const response=e instanceof AxiosError?e.response:undefined;uncertain.value=!response||response.status>=500;const body=response?.data;const code=body?.error?.code??body?.code??'POS_SHIFT_REQUEST_UNCONFIRMED';const trace=body?.correlation_id??body?.error?.correlation_id;error.value=tr('Permintaan belum selesai. Periksa izin, kas akhir, dan pengesahan oleh petugas yang berbeda.','The request did not complete. Check permissions, counted cash, and approval by a different authorized person.')+' '+code+(trace?' · '+trace:'');if(response?.status===401||response?.status===419)location.assign('/business-login?reason=session-expired');}
+async function recordCash(){if(busy.value||!shift.value||!props.workspace.permissions.record_cash)return;busy.value=true;error.value='';saved.value='';try{
+ if(!pendingCash.value){const scale=shift.value.scale;const pattern=new RegExp('^(0|[1-9][0-9]*)(?:\\.([0-9]{1,'+Math.max(1,scale)+'}))?$');if(!pattern.test(amount.value)||(scale===0&&amount.value.includes('.')))throw Error(tr('Isi nominal kas akhir dengan angka yang valid.','Enter a valid counted cash amount.'));const [whole,fraction='']=amount.value.split('.');const units=BigInt(whole+fraction.padEnd(scale,'0'));if(units>9000000000000000n)throw Error(tr('Nominal terlalu besar.','Amount is too large.'));pendingCash.value={operation_id:'cash-end-'+crypto.randomUUID(),closing_cash_atomic:Number(units),currency:shift.value.currency!,currency_scale:scale};}
+ await axios.post('/pos/shifts/closing-cash',pendingCash.value,{headers:{Accept:'application/json'}});pendingCash.value=null;uncertain.value=false;saved.value=tr('Kas akhir tersimpan. Lanjutkan pengesahan oleh petugas berwenang yang berbeda dari pembuka shift.','Counted cash saved. A different authorized person must approve the closure.');router.reload({only:['workspace']});
+ }catch(e){if(e instanceof AxiosError){fail(e);if(!uncertain.value)pendingCash.value=null;}else{uncertain.value=false;error.value=e instanceof Error?e.message:String(e);}}finally{busy.value=false;}}
+async function closeShift(){if(busy.value||closed.value||!shift.value||shift.value.closing_cash===null||shift.value.opened_by_you||!props.workspace.permissions.close)return;busy.value=true;error.value='';saved.value='';try{await axios.post(props.delivery.post_url,{operation_id:closeId.value},{headers:{Accept:'application/json'}});closed.value=true;uncertain.value=false;saved.value=tr('Shift berhasil ditutup. Silakan masuk ke POS Windows dan buka shift baru.','Shift closed. Sign in to Windows POS and open a new shift.');}catch(e){fail(e)}finally{busy.value=false;}}
+function leaving(e:BeforeUnloadEvent){if(busy.value||uncertain.value){e.preventDefault();e.returnValue='';}}
+window.addEventListener('beforeunload',leaving);onBeforeUnmount(()=>window.removeEventListener('beforeunload',leaving));
 </script>
-
 <template>
-  <main class="shift-close-page">
-    <div class="shell">
-      <header class="topbar">
-        <div>
-          <p class="brand">{{ t("oneQay") }}</p>
-          <p class="muted">{{ t("Final Shift Close") }}</p>
-        </div>
-        <span class="state">{{ t(delivery.activation_state) }}</span>
-      </header>
-
-      <section class="hero">
-        <p class="eyebrow">{{ t("Privileged cash-control action") }}</p>
-        <h1>{{ t("Tutup shift final") }}</h1>
-        <p> {{ t("Final Shift Close memakai state kas, reconciliation, review evidence, actor separation, dan timestamp yang diturunkan server. UI ini tidak dapat mengirim nominal, variance, reviewer, actor identity, shift ID, atau close timestamp.") }} </p>
-      </section>
-
-      <section class="panel warning">
-        <strong>{{ t("Aksi irreversible secara lifecycle") }}</strong>
-        <p> {{ t("Setelah close berhasil, active slot shift dilepas secara atomik. Gunakan tombol ini hanya setelah closing-cash evidence dan review variance—jika diperlukan—sudah selesai.") }} </p>
-      </section>
-
-      <section v-if="result === null" class="panel action-panel">
-        <div>
-          <p class="eyebrow">{{ t("Stable operation") }}</p>
-          <code>{{ operation }}</code>
-          <p class="muted"> {{ t("Operation ID dipertahankan untuk retry yang identik. Retry tidak membuat close mutation kedua.") }} </p>
-        </div>
-        <button type="button" :disabled="processing" @click="closeShift">
-          {{ t(processing ? 'Memproses close…' : 'Konfirmasi Final Shift Close') }}
-        </button>
-      </section>
-
-      <section v-if="errorCode" class="panel error" role="alert">
-        <strong>{{ t("Final Shift Close ditolak aman") }}</strong>
-        <p>{{ errorCode }}</p>
-        <p class="muted">{{ t("Periksa prerequisite, authorization, reconciliation, dan separation-of-duties sebelum retry.") }}</p>
-      </section>
-
-      <section v-if="result" class="panel success" aria-live="polite">
-        <p class="eyebrow">{{ t("Durable close evidence") }}</p>
-        <h2>{{ t("Shift berhasil ditutup") }}</h2>
-        <dl>
-          <div><dt>{{ t("Evidence") }}</dt><dd><code>{{ result.evidence_id }}</code></dd></div>
-          <div><dt>{{ t("Shift") }}</dt><dd><code>{{ result.shift_id }}</code></dd></div>
-          <div><dt>{{ t("Variance") }}</dt><dd>{{ t(result.reconciliation.variance_direction) }} · {{ money(result.reconciliation.variance_atomic, result.reconciliation.currency) }}</dd></div>
-          <div><dt>{{ t("Expected cash") }}</dt><dd>{{ money(result.reconciliation.expected_cash_atomic, result.reconciliation.currency) }}</dd></div>
-          <div><dt>{{ t("Observed cash") }}</dt><dd>{{ money(result.reconciliation.observed_closing_cash_atomic, result.reconciliation.currency) }}</dd></div>
-          <div><dt>{{ t("Review outcome") }}</dt><dd>{{ t(result.reconciliation.review_outcome ?? 'Not required') }}</dd></div>
-        </dl>
-      </section>
-
-      <footer>
-        <span>{{ t("Production ready:") }} {{ t(delivery.production_ready ? 'yes' : 'no') }}</span>
-        <span>{{ t("Copyright oneQay") }}</span>
-      </footer>
-    </div>
-  </main>
+<Head :title="tr('Tutup kasir','Close checkout')"/>
+<main class="merch-page sc-page"><header class="merch-heading"><div><p class="eyebrow">ONEQAY · {{tr('KONTROL SHIFT','SHIFT CONTROL')}}</p><h1>{{tr('Tutup kasir dengan catatan yang jelas.','Close checkout with confidence.')}}</h1><p>{{tr('Catat uang yang benar-benar dihitung, lalu selesaikan pengesahan shift.','Record the cash you counted, then complete shift approval.')}}</p></div><a href="/pos" class="sc-button secondary"><Icon name="layout-dashboard"/>{{tr('Pusat Kendali','Overview')}}</a></header>
+<p v-if="error" role="alert" class="sc-notice error">{{error}}</p><p v-if="saved" role="status" class="sc-notice">{{saved}}</p>
+<p v-if="uncertain" class="sc-notice warning">{{tr('Hasil belum dapat dipastikan. Coba lagi dengan permintaan yang sama; nilai kas tetap dikunci untuk mencegah pencatatan ganda.','The result is uncertain. Retry the same request; the cash amount stays locked to prevent duplicate entries.')}}</p>
+<section v-if="closed||!shift" class="sc-card sc-empty"><Icon name="circle-check" :size="44"/><h2>{{closed?tr('Shift selesai. Kasir berikutnya siap memulai.','Shift complete. The next cashier can start.'):tr('Tidak ada shift aktif pada perangkat ini.','No active shift on this device.')}}</h2><p>{{tr('Kembali ke POS Windows untuk masuk dengan akun petugas dan mengisi kas awal.','Return to Windows POS to sign in and record opening cash.')}}</p></section>
+<template v-else>
+<div class="sc-summary"><section><span>{{tr('Dibuka','Opened')}}</span><strong>{{opened}} WIB</strong></section><section><span>{{tr('Kas awal','Opening cash')}}</span><strong>{{money(shift.opening_cash)}}</strong></section><section><span>{{tr('Kas akhir dihitung','Counted closing cash')}}</span><strong>{{money(shift.closing_cash)}}</strong></section></div>
+<section v-if="!workspace.permissions.record_cash||!workspace.permissions.close" class="sc-card sc-access"><Icon name="shield-check" :size="28"/><div><h2>{{tr('Periksa izin petugas penutupan.','Check closure permissions.')}}</h2><p>{{tr('Akun ini belum memiliki seluruh izin kasir. Pemilik bisnis dapat menetapkan peran melalui Akses bisnis. Perubahan izin tetap memerlukan verifikasi keamanan.','This account lacks some cashier permissions. The business owner can assign a role in Business access. Security verification is still required.')}}</p><a v-if="workspace.permissions.manage_access" class="sc-button secondary" href="/pos/business/access?purpose=shift-close">{{tr('Atur izin akun ini','Configure this account’s permissions')}} <Icon name="arrow-right"/></a></div></section>
+<div class="sc-grid"><section class="sc-card"><div class="sc-step"><span>01</span><Icon name="wallet"/><h2>{{tr('Hitung dan catat kas akhir','Count and record closing cash')}}</h2></div><p>{{tr('Masukkan jumlah uang tunai yang benar-benar tersedia. Kas awal tidak otomatis menjadi kas akhir.','Enter the actual cash available. Opening cash is not automatically used as closing cash.')}}</p><form v-if="shift.closing_cash===null&&shift.opening_cash!==null&&workspace.permissions.record_cash" @submit.prevent="recordCash"><label>{{tr('Kas akhir dihitung','Counted closing cash')}} · {{shift.currency}}<NumericInput v-model="amount" :decimals="shift.scale" :disabled="busy||uncertain" placeholder="0"/></label><button class="sc-button" :disabled="busy">{{busy?tr('Menyimpan…','Saving…'):uncertain?tr('Coba permintaan yang sama','Retry same request'):tr('Simpan kas akhir','Save counted cash')}} <Icon name="check"/></button></form><p v-else-if="shift.closing_cash!==null" class="sc-notice">{{tr('Kas akhir sudah tercatat. Nilai tetap dipertahankan untuk pemeriksaan dan pengesahan.','Closing cash is recorded and preserved for review and approval.')}}</p><p v-else class="sc-notice warning">{{shift.opening_cash===null?tr('Kas awal belum tercatat. Selesaikan melalui Mulai shift terlebih dahulu.','Opening cash has not been recorded. Complete Start shift first.'):tr('Izin pencatatan kas akhir diperlukan.','Closing cash recording permission is required.')}}</p></section>
+<section class="sc-card"><div class="sc-step"><span>02</span><Icon name="shield-check"/><h2>{{tr('Pengesahan penutupan','Approve shift closure')}}</h2></div><p>{{tr('Pengesah harus berbeda dari pembuka shift. Jika terdapat selisih kas, penjelasan dan tinjauan independen harus selesai terlebih dahulu.','The approver must differ from the shift opener. Cash variances require explanation and independent review first.')}}</p><p v-if="shift.opened_by_you" class="sc-notice warning">{{tr('Anda membuka shift ini. Minta petugas lain yang memiliki izin tutup shift untuk masuk melalui web dan mengesahkannya. Akun kasir menggunakan email dan password yang sama dengan POS Windows.','You opened this shift. Ask another authorized person to sign in on the web and approve it. Cashier accounts use their Windows POS email and password.')}}</p><button v-else class="sc-button" :disabled="busy||shift.closing_cash===null||!workspace.permissions.close" @click="closeShift">{{busy?tr('Memproses…','Processing…'):tr('Sahkan dan tutup shift','Approve and close shift')}} <Icon name="circle-check"/></button><a v-if="workspace.reconciliation_available" class="sc-link" href="/pos/shifts/reconciliation">{{tr('Buka rekonsiliasi kas','Open cash reconciliation')}} →</a></section></div>
+</template></main>
 </template>
-
 <style scoped>
-.shift-close-page { min-height: 100vh; background: #07111f; color: #e8eef7; padding: 1.5rem; }
-.shell { width: min(64rem, 100%); margin: 0 auto; }
-.topbar, .action-panel, footer { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
-.topbar { padding: 1rem 0 2rem; }
-.brand { font-size: 1.25rem; font-weight: 800; margin: 0; }
-.muted { color: #94a3b8; }
-.state { border: 1px solid #334155; border-radius: 999px; padding: .4rem .7rem; font-size: .75rem; }
-.hero { padding: 2rem 0; max-width: 48rem; }
-.hero h1 { font-size: clamp(2rem, 5vw, 3.5rem); margin: .25rem 0 1rem; }
-.eyebrow { color: #7dd3fc; text-transform: uppercase; letter-spacing: .12em; font-size: .75rem; font-weight: 800; }
-.panel { background: #0f1c2d; border: 1px solid #22344c; border-radius: 1rem; padding: 1.25rem; margin: 1rem 0; }
-.warning { border-color: #7c5d22; }
-.error { border-color: #7f1d1d; }
-.success { border-color: #166534; }
-button { border: 0; border-radius: .75rem; padding: .85rem 1.1rem; font-weight: 800; cursor: pointer; }
-button:disabled { cursor: not-allowed; opacity: .6; }
-code { word-break: break-all; }
-dl { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: .75rem; }
-dl div { background: #0a1524; border-radius: .75rem; padding: .8rem; }
-dt { color: #94a3b8; font-size: .75rem; text-transform: uppercase; }
-dd { margin: .25rem 0 0; font-weight: 700; }
-footer { color: #64748b; padding: 2rem 0; font-size: .8rem; }
-@media (max-width: 640px) { .action-panel, footer { align-items: stretch; flex-direction: column; } button { width: 100%; } }
+.sc-page{max-width:1280px}.sc-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin:28px 0}.sc-summary section,.sc-card{background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:26px}.sc-summary span{font-size:12px;color:#738198}.sc-summary strong{display:block;margin-top:10px;color:#21344c;font-size:20px}.sc-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:22px}.sc-card h2{font-size:18px;margin:0}.sc-card p{font-size:13px;line-height:1.8;color:#65758c}.sc-step{display:flex;align-items:center;gap:12px;margin-bottom:20px}.sc-step>span{background:#f0effd;color:#6557c8;border-radius:9px;padding:9px;font-size:12px;font-weight:700}.sc-step>svg{color:#6654c7}.sc-button{display:inline-flex;gap:10px;align-items:center;justify-content:center;padding:13px 18px;background:#6455c7;color:#fff;border:0;border-radius:9px;font-size:12px;font-weight:600;text-decoration:none;cursor:pointer}.sc-button.secondary{background:#f2f0fd;color:#6252bf}.sc-button:disabled{opacity:.45;cursor:not-allowed}.sc-card label{display:block;font-size:12px;font-weight:600;margin:22px 0}.sc-card label :deep(input){display:block;width:100%;border:1px solid #dbe3ee;border-radius:9px;padding:14px;margin-top:9px;font:inherit;font-size:22px;color:#25384d;box-sizing:border-box}.sc-notice{padding:15px 18px;border-radius:10px;background:#edf8f2;color:#256a4e;font-size:13px;line-height:1.8;overflow-wrap:anywhere}.sc-notice.warning{background:#fff7e7;color:#8b6426}.sc-notice.error{background:#fff0ed;color:#a24b35}.sc-access{display:flex;align-items:flex-start;gap:18px}.sc-access>svg{color:#6c5bbd;flex-shrink:0}.sc-link{display:block;font-size:12px;color:#6554c2;text-decoration:none;margin-top:24px}.sc-empty{text-align:center;margin-top:30px;padding:50px}.sc-empty>svg{color:#37896b;margin-bottom:22px}@media(max-width:800px){.sc-grid,.sc-summary{grid-template-columns:1fr}.sc-card{padding:22px}.sc-summary{gap:10px}.sc-summary section{padding:18px}}
 </style>

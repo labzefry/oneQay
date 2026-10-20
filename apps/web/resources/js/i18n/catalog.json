@@ -5050,5 +5050,9 @@
   "Stock & purchasing": {
     "id": "Stok & pembelian",
     "en": "Stock & purchasing"
+  },
+  "Shift supervisor": {
+    "id": "Supervisor shift",
+    "en": "Shift supervisor"
   }
 }
