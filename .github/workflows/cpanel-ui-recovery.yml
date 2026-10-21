@@ -1,0 +1,42 @@
+# Author by Lab | zefry
+name: cPanel UI Static Assets and In-Process Worker Recovery
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - tools/production/cpanel/recover-oneqaydev-ui-20261022.php
+      - tools/production/tests/oneqaydev-ui-recovery.php
+      - .github/workflows/cpanel-ui-recovery.yml
+permissions:
+  contents: read
+  actions: read
+jobs:
+  cpanel-ui-recovery:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        with:
+          php-version: '8.3'
+          extensions: ctype, mbstring, tokenizer, phar
+          coverage: none
+      - name: Retrieve exact certified application and vendor
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh run download 39619254282 --repo labzefry/oneQay --name oneqay-certified-business-production-7e4197b44322 --dir "$RUNNER_TEMP/ui-certified"
+          python3 - <<'PY'
+          import os, pathlib, hashlib, tarfile
+          root=pathlib.Path(os.environ['RUNNER_TEMP'])/'ui-certified'
+          archive=root/'production-7e4197b44322.tar.gz'
+          assert hashlib.sha256(archive.read_bytes()).hexdigest()=='03670693b16f3f1ba0c3b6d64b89445d251780e1bdacc81de523927caec3c49e'
+          with tarfile.open(archive,'r:gz') as tar:
+              tar.extractall(root,filter='data')
+          PY
+      - name: Prove static permission recovery and real Laravel buffered output
+        run: |
+          set -euo pipefail
+          php -l tools/production/cpanel/recover-oneqaydev-ui-20261022.php
+          php tools/production/tests/oneqaydev-ui-recovery.php "$RUNNER_TEMP/ui-certified/production-7e4197b44322/apps/web/vendor/autoload.php" "$RUNNER_TEMP/ui-certified/production-7e4197b44322/apps/web"
