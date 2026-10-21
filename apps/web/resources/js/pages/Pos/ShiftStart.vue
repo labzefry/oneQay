@@ -4,6 +4,8 @@ import { currencyPreferences, formatMoney as displayMoney } from "../../business
 import { t } from "../../i18n";
 import { Head } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
+import OperationFeedback from '../../components/OperationFeedback.vue';
+import type { MutationStatus } from '../../use-business-mutation';
 
 type OpeningCashEvidence = {
     evidence_id: string;
@@ -59,6 +61,9 @@ const currencyScale = ref(currencyPreferences.value.scale);
 const openingCashInput = ref('0');
 const openingShift = ref(false);
 const recordingCash = ref(false);
+const shiftUnknown = ref(false); const cashUnknown = ref(false);
+const operationProgress = ref<MutationStatus>('idle');
+const operationId = ref<string | null>(null);
 const message = ref('');
 const messageKind = ref<'neutral' | 'success' | 'warning' | 'error'>('neutral');
 
@@ -92,31 +97,49 @@ const parseOpeningCashAtomic = (): number | null => {
     return Number(atomic);
 };
 
-const requestJson = async (endpoint: string, body: Record<string, unknown>): Promise<Response> => fetch(endpoint, {
-    method: 'POST',
-    credentials: 'same-origin',
-    headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest',
-    },
-    body: JSON.stringify({ _token: props.csrf_token, ...body }),
-});
+const requestJson = async (endpoint: string, body: Record<string, unknown>): Promise<{ response: Response; payload: unknown }> => {
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => controller.abort(), 30000);
+    try {
+        if (!navigator.onLine) throw new Error('OFFLINE_UNCONFIRMED');
+        const response = await fetch(endpoint, {
+            method: 'POST', credentials: 'same-origin', signal: controller.signal, redirect: 'error',
+            headers: { Accept: 'application/json', 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            body: JSON.stringify({ _token: props.csrf_token, ...body }),
+        });
+        if (controller.signal.aborted) throw new Error('TIMEOUT_UNCONFIRMED');
+        if (response.status === 401 || response.status === 419) {
+            operationProgress.value = 'session-expired';
+            window.location.assign('/business-login?reason=session-expired');
+            throw new Error('SESSION_EXPIRED');
+        }
+        if (response.status === 202 || response.status >= 500) {
+            operationProgress.value = response.status === 202 ? 'queued' : 'unknown';
+            throw new Error('WRITE_UNCONFIRMED');
+        }
+        const payload: unknown = await response.json();
+        if (controller.signal.aborted) throw new Error('TIMEOUT_UNCONFIRMED');
+        return { response, payload };
+    } finally { window.clearTimeout(timer); }
+};
 
 const openShift = async (): Promise<void> => {
-    if (activeShift.value) return;
+    if (activeShift.value || openingShift.value || shiftUnknown.value) return;
 
     openingShift.value = true;
+    operationId.value = shiftOperationId.value;
+    operationProgress.value = 'running';
     message.value = '';
     messageKind.value = 'neutral';
 
     try {
-        const response = await requestJson(props.open_shift_endpoint, { operation_id: shiftOperationId.value });
-        const payload = await response.json() as ShiftOpenResult | { error?: { code?: string } };
+        const { response, payload: raw } = await requestJson(props.open_shift_endpoint, { operation_id: shiftOperationId.value });
+        const payload = raw as ShiftOpenResult | { error?: { code?: string } };
         if (!response.ok || !('status' in payload) || payload.status !== 'opened') {
             const code = 'error' in payload ? payload.error?.code : undefined;
             message.value = code ? `Pembukaan shift ditolak (${code}).` : 'Pembukaan shift ditolak oleh server.';
             messageKind.value = 'error';
+            operationProgress.value = 'failed';
             return;
         }
 
@@ -127,7 +150,10 @@ const openShift = async (): Promise<void> => {
         };
         message.value = 'Shift aktif berhasil dibuka. Lanjutkan pencatatan kas awal; jangan membuka shift kedua.';
         messageKind.value = 'success';
+        operationProgress.value = 'succeeded';
     } catch {
+        shiftUnknown.value = true;
+        if (operationProgress.value !== 'queued' && operationProgress.value !== 'session-expired') operationProgress.value = 'unknown';
         message.value = 'Status pembukaan shift belum dapat dipastikan. Tidak ada retry otomatis. Refresh halaman untuk membaca status authoritative sebelum mencoba lagi.';
         messageKind.value = 'warning';
     } finally {
@@ -136,7 +162,7 @@ const openShift = async (): Promise<void> => {
 };
 
 const recordOpeningCash = async (): Promise<void> => {
-    if (!activeShift.value || activeShift.value.opening_cash_evidence) return;
+    if (!activeShift.value || activeShift.value.opening_cash_evidence || recordingCash.value || cashUnknown.value) return;
 
     const canonicalCurrency = currency.value.trim().toUpperCase();
     if (!/^[A-Z]{3}$/.test(canonicalCurrency)) {
@@ -153,23 +179,26 @@ const recordOpeningCash = async (): Promise<void> => {
     }
 
     recordingCash.value = true;
+    operationId.value = cashOperationId.value;
+    operationProgress.value = 'running';
     message.value = '';
     messageKind.value = 'neutral';
 
     try {
-        const response = await requestJson(props.opening_cash_endpoint, {
+        const { response, payload: raw } = await requestJson(props.opening_cash_endpoint, {
             operation_id: cashOperationId.value,
             opening_cash_atomic: atomic,
             currency: canonicalCurrency,
             currency_scale: currencyScale.value,
         });
-        const payload = await response.json() as OpeningCashResult | { error?: { code?: string } };
+        const payload = raw as OpeningCashResult | { error?: { code?: string } };
         if (!response.ok || !('status' in payload) || payload.status !== 'recorded') {
             const code = 'error' in payload ? payload.error?.code : undefined;
             message.value = code
                 ? `Kas awal belum tercatat (${code}). Shift tetap aktif; jangan membuka shift baru.`
                 : 'Kas awal belum tercatat. Shift tetap aktif; jangan membuka shift baru.';
             messageKind.value = 'error';
+            operationProgress.value = 'failed';
             return;
         }
 
@@ -188,7 +217,10 @@ const recordOpeningCash = async (): Promise<void> => {
         };
         message.value = 'Kas awal tercatat. Shift siap digunakan untuk transaksi kasir.';
         messageKind.value = 'success';
+        operationProgress.value = 'succeeded';
     } catch {
+        cashUnknown.value = true;
+        if (operationProgress.value !== 'queued' && operationProgress.value !== 'session-expired') operationProgress.value = 'unknown';
         message.value = 'Status pencatatan kas awal belum dapat dipastikan. Tidak ada retry otomatis. Refresh halaman untuk membaca evidence authoritative sebelum mencoba lagi.';
         messageKind.value = 'warning';
     } finally {
@@ -199,7 +231,7 @@ const recordOpeningCash = async (): Promise<void> => {
 
 <template>
     <Head :title="t('Shift Start Workspace')" />
-    <main class="shell">
+    <main class="shell"><OperationFeedback :status="operationProgress" :message="message" :operation-id="operationId" :success-label="t('Shift operation confirmed')" :running-label="t('Processing shift operation')"/>
         <header class="hero">
             <div>
                 <p class="eyebrow">{{ t("oneQay · Point of Sale") }}</p>
