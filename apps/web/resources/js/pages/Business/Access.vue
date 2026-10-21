@@ -60,7 +60,7 @@ async function submit(): Promise<void> {
         }
         if (result.status !== 'saved') throw new Error('UNCONFIRMED');
         pending.value = null; uncertain.value = false; saved.value = true; operationProgress.value = 'succeeded';
-        message.value = 'Business access saved. Open the workspace to refresh available modules.';
+        message.value = t('Business access saved. Open the workspace to refresh the available modules.');
     } catch {
         uncertain.value = true; operationProgress.value = 'unknown';
         message.value = 'Access mutation may have committed. Verify authoritative permissions before any new request; no automatic retry.';
