@@ -3,7 +3,7 @@
 declare(strict_types=1);
 namespace App\Infrastructure\Pos;
 use Illuminate\Database\Connection;
-final readonly class DesktopSyncDiagnostics {
+final readonly class LaravelDesktopSyncDiagnostics {
  public function __construct(private Connection $db){}
  public function record(array $scope,mixed $event,array $result):void {
   if(!$this->db->getSchemaBuilder()->hasTable('oneqay_desktop_sync_diagnostics')||!is_array($event)||!is_string($event['operation_id']??null)||!preg_match('/\Adesk-[a-f0-9-]{36}\z/D',$event['operation_id']))return;

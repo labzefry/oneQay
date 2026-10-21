@@ -3,7 +3,7 @@
 declare(strict_types=1);
 require __DIR__.'/desktop-enterprise.php';
 use App\Infrastructure\Platform\{ControlPlaneBusinessReset,LaravelControlPlaneStore,ControlPlaneTelemetry,ControlPlaneCampaigns,ControlPlanePilot};
-use App\Infrastructure\Pos\DesktopSyncDiagnostics;
+use App\Infrastructure\Pos\LaravelDesktopSyncDiagnostics;
 use App\Infrastructure\Identity\LaravelPlatformIdentitySecurity;
 use App\Application\Platform\ControlPlaneManagement;
 foreach(['pos/2026_10_21_000001_add_explicit_stock_tracking.php','pos/0000_00_00_000028_create_pos_inventory_replenishment_foundation.php','business/2026_10_12_000001_create_integrated_business_management.php','business/2026_10_14_000001_create_merchandising_and_currency_preferences.php','business/2026_10_20_000001_create_workforce_accounts_and_shift_recovery.php','business/2026_10_21_000001_create_product_categories.php']as$file)(require __DIR__.'/../database/module-migrations/'.$file)->up();
@@ -11,7 +11,7 @@ $testStorage=sys_get_temp_dir().'/oneqay-reset-test-'.bin2hex(random_bytes(8));$
 $contexts->setVerified($cashierScope);
 $bad=$sale;$bad['unexpected']=true;$r=$journal->sync([$bad],'sync-protocol-correlation')['results'][0];$assert($r['code']==='POS_PROTOCOL_FIELDS_INVALID','explicit protocol diagnosis');
 $bad=$sale;$bad['operation_id']=$uuid();$bad['lease_id']=str_repeat('0',32);$r=$journal->sync([$bad],'sync-lease-correlation')['results'][0];$assert($r['code']==='POS_LEASE_NOT_FOUND','missing or reset lease diagnosed without bypass');
-$monitor=new DesktopSyncDiagnostics($db);$report=$monitor->listing($t);$assert(count($report['rows'])>=2&&($report['counts']['rejected']??0)>=1,'item rejection appears in control plane despite HTTP 200');
+$monitor=new LaravelDesktopSyncDiagnostics($db);$report=$monitor->listing($t);$assert(count($report['rows'])>=2&&($report['counts']['rejected']??0)>=1,'item rejection appears in control plane despite HTTP 200');
 $assert(!str_contains(json_encode($report),'synthetic-cashier-password')&&!str_contains(json_encode($report),'pin_verifier'),'diagnostics do not expose credentials');
 $db->table('oneqay_desktop_sync_diagnostics')->where('operation_id',$bad['operation_id'])->update(['last_seen'=>time()-259201]);$monitor->prune();$assert(!$db->table('oneqay_desktop_sync_diagnostics')->where('operation_id',$bad['operation_id'])->exists(),'three day diagnostic retention');
 $contexts->setVerified($owner);$access=new App\Application\Platform\PlatformOwnerAccess($contexts,'platform-owner','owner-identity');$security=new LaravelPlatformIdentitySecurity($db,$app->make('encrypter'),$access);
