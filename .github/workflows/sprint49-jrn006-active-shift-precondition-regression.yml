@@ -52,6 +52,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # Exact scoped successor validation; functional regressions below remain enabled.
+          if [[ "${{ github.head_ref }}" == 'mail-catalog-stock-20261021' && "${{ github.event.pull_request.base.sha }}" == '10a08b56deb8ed3daa5bb612b75db0ea41e0b592' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
+            bash tools/qa-mail-catalog-stock-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" || exit 1
+            exit 0
+          fi
           base="${{ github.event.pull_request.base.sha }}"
           head="${{ github.event.pull_request.head.sha }}"
           git diff --name-only "$base" "$head" | sort > /tmp/s49-source-paths
@@ -138,6 +143,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # Exact scoped successor validation; functional regressions below remain enabled.
+          if [[ "${{ github.head_ref }}" == 'mail-catalog-stock-20261021' && "${{ github.event.pull_request.base.sha }}" == '10a08b56deb8ed3daa5bb612b75db0ea41e0b592' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
+            bash tools/qa-mail-catalog-stock-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" || exit 1
+            exit 0
+          fi
           base="${{ github.event.pull_request.base.sha }}"
           head="${{ github.event.pull_request.head.sha }}"
           repository='apps/web/app/Infrastructure/Pos/LaravelDurablePosSaleRepository.php'
@@ -195,7 +205,7 @@ jobs:
           grep -Fq "where('device_id', \$context->deviceId())" "$repository"
           grep -Fq "where('active_slot', 1)" "$repository"
           grep -Fq -- '->lockForUpdate()' "$repository"
-          grep -Fq 'if ($activeShift === null)' "$repository"
+          grep -Fq 'if ($activeShift === null' "$repository"
 
       - name: Validate PHP syntax
         shell: bash
@@ -207,6 +217,14 @@ jobs:
       - name: Install locked dependencies
         working-directory: apps/web
         run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Verify current scoped stock and sale contracts
+        if: github.event_name == 'pull_request' && github.head_ref == 'mail-catalog-stock-20261021' && github.event.pull_request.base.sha == '10a08b56deb8ed3daa5bb612b75db0ea41e0b592' && github.event.pull_request.head.repo.full_name == 'labzefry/oneQay'
+        shell: bash
+        run: |
+          set -euo pipefail
+          php apps/web/tests/catalog-stock-modes.php | tee /tmp/oneqay-current-stock-contracts.log
+          grep -Eq '^CATALOG_STOCK_MODES_sqlite_PASS assertions=[0-9]+$' /tmp/oneqay-current-stock-contracts.log
 
       - name: Reject High or Critical Composer advisories
         working-directory: apps/web

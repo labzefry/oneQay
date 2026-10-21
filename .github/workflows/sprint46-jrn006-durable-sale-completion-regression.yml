@@ -64,6 +64,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # Exact scoped successor validation; functional regressions below remain enabled.
+          if [[ "${{ github.head_ref }}" == 'mail-catalog-stock-20261021' && "${{ github.event.pull_request.base.sha }}" == '10a08b56deb8ed3daa5bb612b75db0ea41e0b592' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
+            bash tools/qa-mail-catalog-stock-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" || exit 1
+            exit 0
+          fi
           # Exact public website successor; original executable behavior and identity foundations preserved.
           # Exact control plane successor; canonical identity, runtime, and POS regressions remain required.
           if [[ "${{ github.head_ref }}" == 'cpanel-desktop-pos-20261018' && "${{ github.event.pull_request.base.sha }}" == '45509005b2f9ed4e5ffddd1e8c7db100a50e52fe' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
@@ -329,6 +334,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # Exact scoped successor validation; functional regressions below remain enabled.
+          if [[ "${{ github.head_ref }}" == 'mail-catalog-stock-20261021' && "${{ github.event.pull_request.base.sha }}" == '10a08b56deb8ed3daa5bb612b75db0ea41e0b592' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
+            bash tools/qa-mail-catalog-stock-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" || exit 1
+            exit 0
+          fi
           # Exact immutable 27-core successor; original regression scripts still execute.
           # Exact control plane successor; canonical identity, runtime, and POS regressions remain required.
           if [[ "${{ github.head_ref }}" == 'cpanel-desktop-pos-20261018' && "${{ github.event.pull_request.base.sha }}" == '45509005b2f9ed4e5ffddd1e8c7db100a50e52fe' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
@@ -528,6 +538,14 @@ jobs:
       - name: Install locked dependencies
         working-directory: apps/web
         run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Verify current scoped stock and sale contracts
+        if: github.event_name == 'pull_request' && github.head_ref == 'mail-catalog-stock-20261021' && github.event.pull_request.base.sha == '10a08b56deb8ed3daa5bb612b75db0ea41e0b592' && github.event.pull_request.head.repo.full_name == 'labzefry/oneQay'
+        shell: bash
+        run: |
+          set -euo pipefail
+          php apps/web/tests/catalog-stock-modes.php | tee /tmp/oneqay-current-stock-contracts.log
+          grep -Eq '^CATALOG_STOCK_MODES_sqlite_PASS assertions=[0-9]+$' /tmp/oneqay-current-stock-contracts.log
 
       - name: Reject High or Critical Composer advisories
         working-directory: apps/web

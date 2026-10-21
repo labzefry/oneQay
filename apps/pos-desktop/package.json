@@ -18,7 +18,7 @@
     "@vitejs/plugin-vue": "^6.0.2",
     "playwright": "1.56.1",
     "typescript": "5.9.3",
-    "vite": "8.1.5",
+    "vite": "8.1.6",
     "vue-tsc": "3.3.8"
   }
 }

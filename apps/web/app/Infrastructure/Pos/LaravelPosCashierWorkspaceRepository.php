@@ -47,7 +47,12 @@ final readonly class LaravelPosCashierWorkspaceRepository implements PosCashierW
                 ->where('tenant_id', $context->tenantId())
                 ->where('outlet_id', $context->outletId())
                 ->where('active', true)
-                ->where(function($q):void{$q->where('available_quantity','>',0);if($this->connection->getSchemaBuilder()->hasColumn('oneqay_pos_sale_catalog_items','tracks_stock'))$q->orWhere('tracks_stock',false);})
+                ->where(function ($query): void {
+                    $query->where('available_quantity', '>', 0);
+                    if ($this->connection->getSchemaBuilder()->hasColumn('oneqay_pos_sale_catalog_items', 'tracks_stock')) {
+                        $query->orWhere('tracks_stock', false);
+                    }
+                })
                 ->orderBy('display_name')
                 ->orderBy('product_id')
                 ->limit(250)

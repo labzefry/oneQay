@@ -49,3 +49,10 @@ Current hosting remains source `c2e3e3b5a05e9729a478f432c9751d4b4297bcfe`, deplo
 ## Validation and continuation
 
 Dedicated SQL tests exercise worker isolation with an actual outbox; adapter pre-DATA, auth, transient and ambiguous results; three-day cutoff, active-queue protection, content removal and dedupe; category isolation/replay; canonical unlimited sale/replay/void across policy changes; existing tracked-stock rejection; and import/report compatibility. Native core tests cover offline unlimited reservations/replay and legacy snapshot defaults. Compiled UI tests cover category actions, stock mode selection, delivery-report refresh and readable controls. See actual CI evidence in the pull request before merge; source readiness is not production email or financial acceptance.
+
+
+## Compatibility and dependency validation
+
+Vite is pinned to the patched 8.1.6 release in web and desktop; the web lock also resolves follow-redirects 1.16.1. These are minimal patch fixes for the advisories surfaced by CI, not a major dependency upgrade. Primary advisory references: <https://github.com/advisories/GHSA-698v-4r3x-3vcv>, <https://github.com/advisories/GHSA-r825-w8mm-5pxw>, <https://github.com/advisories/GHSA-587h-7wmj-h5pm>, <https://github.com/advisories/GHSA-q3jh-wrc6-jgq8>. Both npm audits report zero known vulnerabilities at validation time.
+
+Historical sprint workflows contain one-time closed-world source/migration envelopes. Their bounded successor checks apply only to this repository, branch and predecessor; the helper checks the complete changed-file set and exact content hashes, preserves all historical DDL, Composer, identity/authorization and operational-authority files, and does not disable functional regression steps. Current SQLite/MySQL contracts exercise the actual new canonical sale/void paths and full module schema. SMTP acceptance, actual inbox delivery and production financial acceptance remain separate from these synthetic checks.
