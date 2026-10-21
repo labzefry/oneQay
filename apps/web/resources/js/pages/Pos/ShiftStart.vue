@@ -3,7 +3,7 @@ import NumericInput from "../../components/NumericInput.vue";
 import { currencyPreferences, formatMoney as displayMoney } from "../../business-money";
 import { t, locale } from "../../i18n";
 import { Head } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import { computed, onBeforeUnmount, ref } from 'vue';
 import OperationFeedback from '../../components/OperationFeedback.vue';
 import type { MutationStatus } from '../../use-business-mutation';
 
@@ -64,6 +64,8 @@ const recordingCash = ref(false);
 const shiftUnknown = ref(false); const cashUnknown = ref(false);
 const operationProgress = ref<MutationStatus>('idle');
 const operationId = ref<string | null>(null);
+const activeRequests = new Set<AbortController>();
+onBeforeUnmount(() => { for (const request of activeRequests) request.abort(); activeRequests.clear(); });
 const message = ref('');
 const messageKind = ref<'neutral' | 'success' | 'warning' | 'error'>('neutral');
 
@@ -98,7 +100,7 @@ const parseOpeningCashAtomic = (): number | null => {
 };
 
 const requestJson = async (endpoint: string, body: Record<string, unknown>): Promise<{ response: Response; payload: unknown }> => {
-    const controller = new AbortController();
+    const controller = new AbortController(); activeRequests.add(controller);
     const timer = window.setTimeout(() => controller.abort(), 30000);
     try {
         if (!navigator.onLine) throw new Error('OFFLINE_UNCONFIRMED');
@@ -120,7 +122,7 @@ const requestJson = async (endpoint: string, body: Record<string, unknown>): Pro
         const payload: unknown = await response.json();
         if (controller.signal.aborted) throw new Error('TIMEOUT_UNCONFIRMED');
         return { response, payload };
-    } finally { window.clearTimeout(timer); }
+    } finally { window.clearTimeout(timer); activeRequests.delete(controller); }
 };
 
 const openShift = async (): Promise<void> => {

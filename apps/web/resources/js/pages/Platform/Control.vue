@@ -14,7 +14,24 @@ type Settings = { version: number; enabled: boolean; host: string; port: number;
 const props = defineProps<{ control: Record<string, any>; registrations?: Record<string,{phone:string;business_type:string}>; businesses: { total: number; rows: Row[]; audit: { id: number; action: string; reason: string; occurred_at: number }[] }; mail: { total: number; counts: Record<string, number>; heartbeat_at: number; paused_until: number; suppressed_recipients: number; oldest_queued_at: number | null; messages: Message[]; events: { id: string; message_id: string; event: string; safe_code: string; occurred_at: number }[] }; settings: Settings; feedback_configured: boolean; page: number; mail_page: number }>();
 const mail=ref(props.mail);const reportBusy=ref(false);const reportError=ref('');const testMessageId=ref('');
 let reportTimer:ReturnType<typeof setInterval>|undefined;let reportAbort:AbortController|undefined;
-async function refreshMail(){if(reportBusy.value||document.hidden||!['mail','smtp'].includes(tab.value))return;reportBusy.value=true;reportAbort=new AbortController();try{const r=await fetch('/platform/mail/report?page='+(testMessageId.value?1:props.mail_page),{credentials:'same-origin',redirect:'error',headers:{Accept:'application/json'},signal:reportAbort.signal});if(!r.ok)throw new Error();mail.value=await r.json();reportError.value='';}catch{reportError.value=tr('Laporan belum berhasil diperbarui. Coba muat ulang.','Mail report unavailable. Try refreshing.');}finally{reportBusy.value=false;}}
+async function refreshMail(){
+    if (reportBusy.value || document.hidden || !['mail','smtp'].includes(tab.value)) return;
+    reportBusy.value = true; reportAbort = new AbortController();
+    const active = reportAbort;
+    const timer = window.setTimeout(() => active.abort(), 20000);
+    try {
+        if (!navigator.onLine) throw new Error('OFFLINE');
+        const response = await fetch('/platform/mail/report?page='+(testMessageId.value?1:props.mail_page),{
+            credentials:'same-origin',redirect:'error',headers:{Accept:'application/json'},signal:active.signal
+        });
+        if (active.signal.aborted) throw new Error('TIMEOUT');
+        if (!response.ok) throw new Error('READ_REJECTED');
+        const payload = await response.json();
+        if (active.signal.aborted) throw new Error('LATE_READ');
+        mail.value = payload; reportError.value = '';
+    } catch { reportError.value=tr('Pembaruan laporan tidak selesai dalam batas waktu. Periksa jaringan atau muat ulang.','Mail report refresh timed out or failed. Check connectivity or reload.'); }
+    finally { window.clearTimeout(timer); if(reportAbort===active)reportAbort=undefined; reportBusy.value=false; }
+}
 onMounted(()=>{reportTimer=setInterval(()=>void refreshMail(),10000);});onBeforeUnmount(()=>{if(reportTimer)clearInterval(reportTimer);reportAbort?.abort();});
 const lastTest=computed(()=>mail.value.messages.find(r=>r.id===testMessageId.value));
 const tab = ref(['overview','business','configuration','errors','marketing','mail','smtp','security','audit'].includes(window.location.hash.slice(1)) ? window.location.hash.slice(1) : 'overview'); const busy = ref(false); const uncertain = ref(false); const message = ref('');
@@ -28,10 +45,18 @@ const detail = ref<Record<string, any> | null>(null);
 const navigation: [string,string,string,string][] = [['overview','activity','Ringkasan NOC','NOC overview'],['business','building-2','Akun bisnis','Business accounts'],['configuration','settings-2','Konfigurasi fitur','Feature configuration'],['errors','server','Insiden & error','Incidents & errors'],['marketing','megaphone','Marketing','Marketing'],['mail','mail','Laporan email','Mail reports'],['smtp','settings','Pengaturan SMTP','SMTP settings'],['security','shield-check','Keamanan','Security'],['audit','history','Riwayat aktivitas','Activity history']];
 async function openBusiness(id: string) {
     if (busy.value || uncertain.value) return;
-    busy.value = true;
-    try { const r = await fetch('/platform/control/businesses/' + id, { headers: { Accept: 'application/json' }, credentials: 'same-origin' }); if (!r.ok) throw new Error(); detail.value = await r.json(); }
-    catch { message.value = tr('Detail akun belum tersedia. Muat ulang halaman.', 'Account details unavailable. Reload the page.'); }
-    finally { busy.value = false; }
+    busy.value=true;const controller=new AbortController();
+    const timer=window.setTimeout(()=>controller.abort(),20000);
+    try {
+        const response=await fetch('/platform/control/businesses/'+encodeURIComponent(id),{
+            credentials:'same-origin',redirect:'error',headers:{Accept:'application/json'},signal:controller.signal
+        });
+        if(controller.signal.aborted||!response.ok)throw new Error('DETAIL_UNCONFIRMED');
+        const result=await response.json();
+        if(controller.signal.aborted)throw new Error('LATE_DETAIL');
+        detail.value=result;
+    } catch { message.value=tr('Detail akun belum tersedia atau permintaan kedaluwarsa. Muat ulang halaman.','Account detail unavailable or timed out. Reload the page.'); }
+    finally { window.clearTimeout(timer);busy.value=false; }
 }
 const name = ref(''); const email = ref(''); const language = ref('id'); const reason = ref('');
 const settings = ref({ ...props.settings, password: '' }); const password = ref(''); const code = ref('');
@@ -115,18 +140,34 @@ function create() { void save('/platform/businesses', { operation_id: crypto.ran
 function change(row: Row, action: string) { void save('/platform/businesses', { operation_id: crypto.randomUUID(), action, id: row.id, version: Number(row.version), reason: reason.value }); }
 function configure() { const { password_configured: _, ...body } = settings.value; void save('/platform/mail/settings', body); }
 async function verify() {
-    busy.value = true; message.value = '';
+    if(busy.value)return;
+    busy.value=true;message.value='';
+    const controller=new AbortController();const timer=window.setTimeout(()=>controller.abort(),30000);
     try {
-        const r = await fetch('/auth/reauthenticate/privileged', { method: 'POST', credentials: 'same-origin', headers: headers(), body: JSON.stringify({ password: password.value, code: code.value }) });
-        if (r.ok) { busy.value = false; window.location.assign('/platform?updated=' + Date.now() + '#' + tab.value); } else message.value = tr('Verifikasi gagal. MFA dan verifikasi ulang harus aktif untuk pemilik platform.', 'Verification failed. MFA and step-up must be enabled for the platform owner.');
-    } catch { message.value = tr('Verifikasi belum berhasil.', 'Verification did not complete.'); }
-    finally { password.value = ''; code.value = ''; busy.value = false; }
+        if(!navigator.onLine)throw new Error('OFFLINE');
+        const response=await fetch('/auth/reauthenticate/privileged',{
+            method:'POST',credentials:'same-origin',redirect:'error',signal:controller.signal,
+            headers:headers(),body:JSON.stringify({password:password.value,code:code.value})
+        });
+        if(controller.signal.aborted)throw new Error('TIMEOUT');
+        if(response.status===401||response.status===419){location.assign('/owner-login?reason=session-expired');return;}
+        if(response.ok){busy.value=false;window.location.assign('/platform?updated='+Date.now()+'#'+tab.value);return;}
+        message.value=response.status>=500?tr('Hasil verifikasi belum pasti. Periksa sesi sebelum mengulang.','Verification not confirmed. Check session before retrying.'):tr('Verifikasi gagal. Periksa kata sandi dan kode MFA.','Verification failed. Check password and MFA code.');
+    }catch{message.value=tr('Verifikasi tidak terkonfirmasi dalam batas waktu. Periksa sesi sebelum mencoba lagi.','Verification timed out or is unconfirmed. Check the session before retrying.');}
+    finally{window.clearTimeout(timer);password.value='';code.value='';busy.value=false;}
 }
 async function inspect() {
-    busy.value = true;
-    try { const r = await fetch('/platform/mail/inspect', { headers: { Accept: 'application/json' } }); if (!r.ok) throw new Error(); inspection.value = await r.json(); }
-    catch { message.value = tr('Pemeriksaan DNS belum berhasil. Coba kembali nanti.', 'DNS inspection did not complete. Try again later.'); }
-    finally { busy.value = false; }
+    if(busy.value)return;
+    busy.value=true;const controller=new AbortController();const timer=window.setTimeout(()=>controller.abort(),20000);
+    try {
+        if(!navigator.onLine)throw new Error('OFFLINE');
+        const response=await fetch('/platform/mail/inspect',{redirect:'error',credentials:'same-origin',headers:{Accept:'application/json'},signal:controller.signal});
+        if(controller.signal.aborted||!response.ok)throw new Error('DNS_UNCONFIRMED');
+        const result=await response.json();
+        if(controller.signal.aborted)throw new Error('LATE_DNS');
+        inspection.value=result;
+    }catch{message.value=tr('Pemeriksaan DNS tidak selesai. Periksa koneksi dan coba kembali.','DNS inspection failed or timed out. Check connectivity and try again.');}
+    finally{window.clearTimeout(timer);busy.value=false;}
 }
 </script>
 <template>

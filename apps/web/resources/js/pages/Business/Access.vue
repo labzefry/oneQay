@@ -13,6 +13,7 @@ const pending = ref<{ operation_id: string; identity_id: string; role: string; a
 const operationProgress = ref<MutationStatus>('idle');
 const operationId = computed(() => pending.value?.operation_id ?? null);
 let writeController: AbortController | null = null;
+let verifyController: AbortController | null = null;
 const groupNames: Record<string, string> = { suppliers: 'Suppliers', purchases: 'Purchasing', customers: 'Customers', finance: 'Finance', people: 'People', audit: 'Activity log', inventory: 'Inventory' };
 const groups = computed(() => [...new Set((props.templates[role.value]?.permissions ?? []).map(p => groupNames[p.split('.')[1]] ?? p))]);
 function headers(): Record<string, string> {
@@ -61,17 +62,37 @@ async function submit(): Promise<void> {
 async function verify(): Promise<void> {
     if (!props.step_up_url || verifying.value) return;
     verifying.value = true; message.value = '';
+    const controller = new AbortController(); verifyController = controller;
+    const timer = window.setTimeout(() => controller.abort(), 30000);
     try {
-        const response = await fetch(props.step_up_url, { method: 'POST', credentials: 'same-origin', headers: headers(), body: JSON.stringify({ password: password.value, code: code.value }) });
-        if (!response.ok) { message.value = 'Security verification failed. Check your password and authenticator code.'; return; }
-        // The existing authentication endpoint rotates the session and CSRF token.
+        if (!navigator.onLine) throw new Error('OFFLINE');
+        const response = await fetch(props.step_up_url, {
+            method:'POST', credentials:'same-origin', redirect:'error', signal:controller.signal,
+            headers:headers(), body:JSON.stringify({password:password.value,code:code.value}),
+        });
+        if (controller.signal.aborted) throw new Error('VERIFY_TIMEOUT');
+        if (response.status===401 || response.status===419) {
+            operationProgress.value = 'session-expired';
+            window.location.assign('/business-login?reason=session-expired');
+            return;
+        }
+        if (!response.ok) {
+            message.value = response.status>=500
+                ? 'Verification result not confirmed. Check the session before trying again.'
+                : 'Security verification rejected. Check password and authenticator code.';
+            return;
+        }
+        // The existing authority endpoint rotates session and CSRF credentials.
         window.location.replace('/pos/business/access');
-    } catch { message.value = 'Security verification failed. Check your password and authenticator code.'; }
-    finally { password.value = ''; code.value = ''; verifying.value = false; }
+    } catch { message.value = 'Security verification not confirmed. Check the session before retrying.'; }
+    finally {
+        window.clearTimeout(timer); if (verifyController===controller) verifyController=null;
+        password.value=''; code.value=''; verifying.value=false;
+    }
 }
 function beforeUnload(e: BeforeUnloadEvent): void { if (busy.value || uncertain.value) { e.preventDefault(); e.returnValue = ''; } }
 window.addEventListener('beforeunload', beforeUnload);
-onBeforeUnmount(() => { window.removeEventListener('beforeunload', beforeUnload); writeController?.abort(); });
+onBeforeUnmount(() => { window.removeEventListener('beforeunload', beforeUnload); writeController?.abort(); verifyController?.abort(); });
 </script>
 
 <template>
