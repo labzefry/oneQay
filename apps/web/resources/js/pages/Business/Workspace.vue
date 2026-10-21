@@ -140,7 +140,12 @@ async function submit(): Promise<void> {
             window.location.assign('/business-login?reason=session-expired');
             return;
         }
-        if (response.status === 202 || response.status >= 500) throw new Error('WRITE_UNCONFIRMED');
+        if (response.status === 202) {
+            uncertain.value = true; operationProgress.value = 'queued';
+            error.value = t('Business command accepted into a queue; completion is not confirmed. Verify server state before retrying.');
+            return;
+        }
+        if (response.status >= 500) throw new Error('WRITE_UNCONFIRMED');
         const result = await response.json();
         if (controller.signal.aborted) throw new Error('LATE_ACKNOWLEDGEMENT');
         if (!response.ok) {
@@ -149,7 +154,11 @@ async function submit(): Promise<void> {
             error.value = t(errorMessages[code] ?? 'Check the entered values and your access, then try again.');
             return;
         }
-        if (result?.status === 'queued') throw new Error('WRITE_UNCONFIRMED');
+        if (result?.status === 'queued') {
+            uncertain.value = true; operationProgress.value = 'queued';
+            error.value = t('Business command is queued; completion is not confirmed. Verify server status.');
+            return;
+        }
         uncertain.value = false; pending.value = null; saved.value = true; operationProgress.value = 'succeeded';
         dialog.value?.close(); mode.value = ''; router.reload();
     } catch {

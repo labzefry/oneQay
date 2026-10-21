@@ -39,7 +39,12 @@ async function submit(): Promise<void> {
             window.location.assign('/business-login?reason=session-expired');
             return;
         }
-        if (response.status === 202 || response.status >= 500) throw new Error('AMBIGUOUS');
+        if (response.status === 202) {
+            uncertain.value = true; operationProgress.value = 'queued';
+            message.value = 'Perubahan akses masuk antrean, belum terkonfirmasi. Periksa izin secara authoritative sebelum menulis ulang.';
+            return;
+        }
+        if (response.status >= 500) throw new Error('AMBIGUOUS');
         if (!response.ok) {
             uncertain.value = false; pending.value = null;
             operationProgress.value = 'failed';
@@ -47,7 +52,13 @@ async function submit(): Promise<void> {
             return;
         }
         const result = await response.json();
-        if (controller.signal.aborted || result.status !== 'saved') throw new Error('UNCONFIRMED');
+        if (controller.signal.aborted) throw new Error('LATE_ACKNOWLEDGEMENT');
+        if (result.status === 'queued') {
+            uncertain.value = true; operationProgress.value = 'queued';
+            message.value = 'Perubahan akses masih dalam antrean, belum tersimpan secara authoritative.';
+            return;
+        }
+        if (result.status !== 'saved') throw new Error('UNCONFIRMED');
         pending.value = null; uncertain.value = false; saved.value = true; operationProgress.value = 'succeeded';
         message.value = 'Business access saved. Open the workspace to refresh available modules.';
     } catch {
