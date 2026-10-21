@@ -1,3 +1,9 @@
+## 2026-10-21 — Actual production deployment and next UI/UX handoff
+
+Author by Lab | zefry. Application PR #975 (`7efdda7648c2`) is actually deployed on oneqaydev.n07.my.id at 18:17:29 WIB: `ON_PRESERVED`, native production pass, 6,395 files, 38 migration receipts / 88 tables. Private backup verified; new worker healthy with zero queued mail in the observed sample; old expanded release/payload archived as verified private ZIPs. SMTP inbox delivery, real cash/offline pilot and signed Windows patch promotion remain unverified/separate. [Actual checkpoint and evidence](docs/operations/ONEQAYDEV_DEPLOYED_CHECKPOINT_2026-10-21.md) supersede historical pre-deployment wording below for this target only.
+
+Next owner-requested scope is [modern enterprise UI/UX with exact seven-color palette, restrained morph effects, proportional type and resilient operation progress](docs/design/ONEQAY_UI_MODERNIZATION_2026-10-21.md). [Palette contract](docs/design/ONEQAY_UI_PALETTE_2026-10-21.json) is recorded; implementation is PENDING. [Ordinary-chat continuation prompt](docs/operations/MASTER_CONTINUATION_PROMPT_ONEQAY_2026-10-21.md) uses owner-operated cPanel File Manager/PHP cron without Cloud Browser. Documentation handoff changes no application, schema, runtime, permissions or deployment gates.
+
 ## 2026-10-14 — Catalog, reporting downloads and persistent currency successor
 
 Author by Lab | zefry. Target: oneqaydev.n07.my.id; predecessor application f5a037ce60aa05c61e0b9c197f2e171c4d01fa8c, host update-result SHA256 73f0176fb4e07713ffe6aa619e03964ef5d351db44961ede2286bab9cc9a7cf3.
