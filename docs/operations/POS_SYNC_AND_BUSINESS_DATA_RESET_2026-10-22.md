@@ -1,0 +1,43 @@
+# POS synchronization recovery and business data reset — 22 October 2026
+
+Author by Lab | zefry (source documentation only). UI copyright oneQay.
+
+## Actual starting state
+
+Main a3650644ef0634e3a51431a707fc7bd791b9cfdf (#980); hosting remains certified application 7e4197b443225e2022a26af9fd53a966d06c304f, release production-7e4197b44322. Read ONEQAYDEV_UI_RECOVERY_2026-10-22.md first for incident repair and worker cron bindings. Never reuse historical source grants or mutate certified files in place.
+
+Owner screenshot image(20261021-184526).png shows Online, 0 pending, 4 rejected items: three counts and one IDR 30,000 sale, all POS_INVALID_OPERATION. It does not reveal private operation payloads, server lease records, or the precise rejected guard. The initial chat hypothesis about 11 versus 10 fields was explicitly corrected: both current Rust serialization and the enterprise validator use ten fields. Do not repeat that hypothesis as a root cause.
+
+## Implemented scope
+
+- Enterprise sync returns specific safe codes for protocol fields, local shift references, missing lease, immutable payload conflict, operation outside lease, clock ahead, missing synchronized opening and closed shift. Canonical authorization, prices, stock, cash, independent closure and fingerprints stay enforced.
+- Native 0.2.2 provides an explicit recovery action for previously terminal POS_INVALID_OPERATION and missing-opening rejections. It changes only local state back to pending, retains IDs, exact original payloads, receipts and reserved stock, then uses the original FIFO and server idempotency. Other conflicts are not silently requeued. An expired, revoked, reset or foreign lease is never replaced on old cash payloads.
+- Control plane overview and each managed business detail show a POS sync monitor. Item-level rejection is recorded even when the HTTP response is 200. Metadata includes tenant, device, operation, safe code and correlation; no credentials, IPs, complete request payloads or SMTP secrets. Latest 100 outcomes, 3-day retention pruned by existing health worker. Requires the new additive POS diagnostic migration. Queues not submitted by a device cannot be visible on the server.
+- Owner-only reset preview and command in each managed business detail: POS transactions/shifts; products/categories/stock records; inventory quantities; finance/purchases; customers/suppliers; HR records; business/POS preferences; all operational business data.
+- Preview binds tenant, business version, exact scope, per-table counts and a full ordered row digest, not counts alone. Changed data invalidates approval. No arbitrary table names, SQL, tenant IDs or global truncate endpoint.
+- Reset requires suspended business, 60-second request drain, no active shifts (use existing shift recovery first if necessary), exact typed `RESET <business-id>`, 12-character action reason, reviewed scope and offline reconciliation confirmations. Existing owner MFA/step-up middleware and idempotency command boundary remain in place. Owner tenant is protected.
+- Before deletion, stream an encrypted JSONL backup (one private file, 0600), hash it and retain its reference in platform audit. Refuse if private backup cannot be written/flushed. Foreign keys stay on; each delete includes tenant predicate; journal self-reference is cleared only within the selected tenant and same transaction. Reset is not run on deployment.
+- All resets invalidate old tenant leases and revoke first-party sessions; local Windows databases and queues are never erased. Keep account suspended after reset. Operator must reconcile local data, reconnect and open a new shift before resuming. Users, credentials, roles, MFA, business account, platform audit/idempotency receipts, SMTP and website config survive even the all-operational-data option. HR reset preserves login identities/cashier credentials, with this distinction shown in the UI.
+- New panels use only the owner's seven-color palette, readable 14–16px table/body text and 22–24px headings, keyboard focus and bounded loading cleanup. Existing legacy scoped styles are not certified as fully modernized.
+
+## Deployment requirements and storage
+
+This is an application/schema successor, not a code-only UI update. The only new schema file is `pos/2026_10_22_000001_create_desktop_sync_diagnostics.php`. Never rerun historical schema or use the old UI package that requires identical migration sets. Build/certify the exact merged source, qualify a source-bound additive operator and obtain fresh source/receipt authority through the established owner flow. Preserve public build 0755/0644 and in-process worker output repair from #980.
+
+`platform.reset_backup_path` defaults to a sibling of private SESSION_FILES called `business-reset-backups`; production must resolve this to shared private storage outside the certified release and public document root. Optional host override: ONEQAY_BUSINESS_RESET_BACKUP_PATH. Preserve APP_KEY: backups are encrypted with the existing Laravel key. Never expose the path through a public download route or archive/delete it as a prior release. Backups are intentional data recovery records, not 3-day diagnostic logs. Restore only on explicit owner-directed maintenance after reviewing the encrypted header, tenant, schema and rows; there is no automatic cross-release restore button. If an operation rolled back after a complete private backup was written, preserve that file and inspect its receipt before any retry; do not blindly remove backups.
+
+Data reset requires operators to stop all registers and reconcile/export offline entries; the server cannot prove a disconnected device's queue is empty. Test reset only in disposable tenants/databases unless the owner selects an exact production business and approved scope in the UI. Do not reset the owner's current business or real financial data as an acceptance test.
+
+## Validation / continuation checkpoint
+
+Local actual modified source (not symlinked vendor): existing desktop enterprise and control enterprise regression pass. New disposable SQLite integrated regression passes 116 assertions total, covering real provisioning, canonical cash cycle, precise rejection telemetry, retention, suspended/drain guard, anonymous and typed-target denial, same-count stale data, encrypted backup/hash/mode, exact replay, zero tracked inventory, full FK-safe operational reset, preserved logins/audit and second-tenant isolation. Both Vue builds/type checks and palette guard pass. Rust core, Windows installer, MySQL and CI results must be recorded from actual runs; do not assume them from source or SQLite.
+
+Production acceptance is pending until the new source/schema and the actual Windows 0.2.2 artifact are deployed and the four original operation IDs receive observed results. Do not call them synchronized from Online status or make new operation IDs for the same cash. If new precise code indicates missing opening/lease, preserve the original local database, export receipts and reconcile with the business owner; no automatic fabricated shift/lease/price authority.
+
+Signed automatic updater publication is separate from an unsigned CI installer artifact. Do not advertise automatic patch availability without a verified signed release and trusted manifest. Installation must preserve the existing Windows profile/database and must not uninstall/delete AppData.
+
+## Actual hosting metadata inspection, 22 October 2026 02:11 WIB
+
+Private source-bound read-only CLI report at Unix1792609864: current source7e, enterprise events0, legacy desktop operations1, leases4, POS shifts1, active shifts0. Latest enterprise lease issued1792586316/expires1792615116; two earlier enterprise leases have expires_at0, and one earlier legacy lease also expires_at0. This establishes revoked historical offline authorities and absence of a server v2 opening; it does not reveal which lease each of the screenshot's local-only four items holds. Do not claim exact root cause or acceptance without their unchanged payload/lease references. `POS_OFFLINE_AUTHORITY_REVOKED` now distinguishes a retained revoked lease from a missing lease. No business rows or credentials were changed during inspection. Temporary diagnostic cron is removed after reading; permanent source7e worker is retained.
+
+CI initially exposed an architecture naming violation: the durable diagnostic adapter is now `LaravelDesktopSyncDiagnostics` to follow the existing Laravel adapter boundary; no historical architecture assertion is weakened. Historical PR source-envelope checks are narrowly extended for PR981/basea365 and exact changed paths; all functional test steps remain byte-identical.

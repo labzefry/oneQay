@@ -20,7 +20,7 @@ final readonly class ControlPlaneTelemetry {
   });
  }
  public function sample():array{
-  $at=time();$t=hrtime(true);$this->db->select('SELECT 1');$latency=round((hrtime(true)-$t)/1000000,2);
+  (new \App\Infrastructure\Pos\LaravelDesktopSyncDiagnostics($this->db))->prune();$at=time();$t=hrtime(true);$this->db->select('SELECT 1');$latency=round((hrtime(true)-$t)/1000000,2);
   $free=@disk_free_space(storage_path());$total=@disk_total_space(storage_path());
   $s=['sampled_at'=>$at,'database'=>['state'=>'healthy','latency_ms'=>$latency,'engine'=>$this->db->getDriverName(),'table_count'=>count($this->db->getSchemaBuilder()->getTableListing(null,false))],'disk_free_bytes'=>$free===false?null:(int)$free,'disk_total_bytes'=>$total===false?null:(int)$total,'php_memory_bytes'=>memory_get_usage(true),'php_version'=>PHP_MAJOR_VERSION.'.'.PHP_MINOR_VERSION,'source_commit'=>(string)env('ONEQAY_RUNNING_SOURCE_COMMIT',''),'worker_at'=>(int)$this->db->table('oneqay_mail_settings')->where('id',1)->value('heartbeat_at'),'session_directory_writable'=>is_writable((string)config('session.files')),'scope'=>'application_process_and_filesystem'];
   $this->db->table('oneqay_platform_health_samples')->insert(['sampled_at'=>$at,'measurements'=>json_encode($s,JSON_THROW_ON_ERROR)]);

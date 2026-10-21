@@ -136,3 +136,7 @@ Stage 1 source changes: independent SMTP/NOC worker phases; live owner delivery 
 ## 2026-10-21 — SMTP/category/stock hosting successor
 
 Stage 2 authorized after cPanel login. Exact application source 7efdda7648c2; guarded 36/87 to 38/88 migration with private database backup, rollback protection and ZIP retention. Continue from `docs/implementation/MAIL_STOCK_DEPLOY_20261021.md` and actual deployment evidence on PR #975.
+
+## POS sync recovery and per-business data reset — 2026-10-22
+
+Owner-requested Windows queue recovery, item-level control-plane diagnostics and explicit per-business operational reset are implemented. Source/hosting/installed-Windows acceptance remain distinct. See [checkpoint](docs/operations/POS_SYNC_AND_BUSINESS_DATA_RESET_2026-10-22.md) for actual evidence, reset scope, private backup storage, and required additive deployment. Production data has not been reset.

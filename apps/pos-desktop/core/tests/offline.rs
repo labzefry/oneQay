@@ -383,3 +383,19 @@ fn unlimited_stock_is_explicit_and_survives_offline_reopen_and_replay() {
     let product: Product = serde_json::from_value(legacy).unwrap();
     assert!(product.tracks_stock, "legacy snapshots must never become unlimited implicitly");
 }
+
+#[test]
+fn explicit_invalid_retry_preserves_payload_receipt_and_stock() {
+    let mut s=Store::open(":memory:").unwrap();s.apply_snapshot(&enterprise(),1000).unwrap();
+    let opening=id();s.shift_event(&opening,true,1000,"",1001).unwrap();
+    s.acknowledge(&[json!({"operation_id":opening,"state":"rejected","code":"POS_INVALID_OPERATION"})]).unwrap();
+    let sale=id();s.commit(&sale,"sale",lines(1),50000,1002).unwrap();
+    s.acknowledge(&[json!({"operation_id":sale,"state":"rejected","code":"POS_INVALID_OPERATION"})]).unwrap();
+    let before=s.operation(&sale).unwrap();let stock=s.products().unwrap()[0].stock;
+    assert_eq!(s.retry_invalid_operations().unwrap(),2);assert_eq!(s.retry_invalid_operations().unwrap(),0);
+    let after=s.operation(&sale).unwrap();assert_eq!(serde_json::to_value(before.operation).unwrap(),serde_json::to_value(after.operation).unwrap());
+    assert_eq!(before.receipt,after.receipt);assert_eq!(stock,s.products().unwrap()[0].stock);
+    assert_eq!(s.pending().unwrap()[0].operation_id,opening);
+    s.acknowledge(&[json!({"operation_id":opening,"state":"rejected","code":"POS_LEASE_NOT_FOUND"})]).unwrap();
+    assert_eq!(s.retry_invalid_operations().unwrap(),0);
+}

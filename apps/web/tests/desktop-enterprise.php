@@ -3,7 +3,7 @@
 declare(strict_types=1);
 require __DIR__.'/platform-control-mail.php';
 set_exception_handler(static function(Throwable $e):void{fwrite(STDERR,$e::class.': '.$e->getMessage().PHP_EOL.$e->getTraceAsString().PHP_EOL);exit(1);});
-foreach(['platform/2026_10_16_000001_create_control_plane_operations.php','pos/2026_10_18_000001_create_desktop_pos_sync.php','pos/2026_10_19_000001_create_desktop_pos_operations.php']as$file)(require __DIR__.'/../database/module-migrations/'.$file)->up();
+foreach(['platform/2026_10_16_000001_create_control_plane_operations.php','pos/2026_10_18_000001_create_desktop_pos_sync.php','pos/2026_10_19_000001_create_desktop_pos_operations.php','pos/2026_10_22_000001_create_desktop_sync_diagnostics.php']as$file)(require __DIR__.'/../database/module-migrations/'.$file)->up();
 foreach(['pos_sale_completion','pos_shift_opening','pos_shift_opening_cash_evidence','pos_shift_closing_cash_evidence','pos_cash_variance_reconciliation']as$feature)$app['config']->set('oneqay.'.$feature.'.enabled',true);
 putenv('ONEQAY_POS_SHIFT_CLOSE_ENABLED=true');$_ENV['ONEQAY_POS_SHIFT_CLOSE_ENABLED']='true';$_SERVER['ONEQAY_POS_SHIFT_CLOSE_ENABLED']='true';
 $app->forgetScopedInstances();$contexts=$app->make(App\Application\Organization\OrganizationalContextStore::class);
