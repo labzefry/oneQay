@@ -13,4 +13,5 @@ interface MailStore
     public function configuration(): array;
     public function configure(array $settings, int $version, string $actor, int $now): void;
     public function heartbeat(int $now): void;
+    public function prune(int $now): array;
 }

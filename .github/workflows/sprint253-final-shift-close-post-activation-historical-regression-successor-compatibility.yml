@@ -129,6 +129,16 @@ jobs:
           PUSH_BEFORE_SHA: ${{ github.event.before }}
           PUSH_AFTER_SHA: ${{ github.sha }}
         run: |
+          # Exact SMTP/catalog successor; compare every owned path/content and preserve operational authority.
+          if [[ "${{ github.head_ref }}" == 'mail-catalog-stock-20261021' && "${{ github.event.pull_request.base.sha }}" == '10a08b56deb8ed3daa5bb612b75db0ea41e0b592' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
+            bash tools/qa-mail-catalog-stock-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" || exit 1
+            exit 0
+          fi
+          # Qualify the identical squash tree on main; a different base or any changed content fails the proof.
+          if [[ "${{ github.event_name }}" == 'push' && "${{ github.repository }}" == 'labzefry/oneQay' && "${{ github.ref }}" == 'refs/heads/main' && "${{ github.event.before }}" == '10a08b56deb8ed3daa5bb612b75db0ea41e0b592' ]]; then
+            bash tools/qa-mail-catalog-stock-source-envelope.sh "${{ github.event.before }}" "${{ github.sha }}" || exit 1
+            exit 0
+          fi
           # Exact public website successor; original executable behavior and identity foundations preserved.
           # Exact control plane successor; canonical identity, runtime, and POS regressions remain required.
           if [[ "${{ github.head_ref }}" == 'cpanel-desktop-pos-20261018' && "${{ github.event.pull_request.base.sha }}" == '45509005b2f9ed4e5ffddd1e8c7db100a50e52fe' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then

@@ -10,5 +10,6 @@ interface MerchandisingRepository
     public function saveSettings(VerifiedOrganizationalContext $scope, array $data, int $version): array;
     public function products(VerifiedOrganizationalContext $scope, array $filters, int $page): array;
     public function product(VerifiedOrganizationalContext $scope, string $id, bool $lock = false): ?array;
+    public function createCategory(VerifiedOrganizationalContext $scope, string $name): array;
     public function saveProfile(VerifiedOrganizationalContext $scope, array $data, ?int $version): void;
 }

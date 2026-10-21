@@ -27,6 +27,7 @@ pub struct Scope {
     pub outlet_id: String,
     pub device_id: String,
 }
+fn tracked_by_default() -> bool { true }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Product {
     pub id: String,
@@ -35,6 +36,8 @@ pub struct Product {
     pub currency: String,
     pub scale: u8,
     pub stock: i64,
+    #[serde(default = "tracked_by_default")]
+    pub tracks_stock: bool,
     #[serde(default)]
     pub barcode: String,
     #[serde(default)]
@@ -212,7 +215,7 @@ impl Store {
                 .sum();
             tx.execute(
                 "INSERT INTO catalog(id,payload,available) VALUES(?,?,?)",
-                params![p.id, serde_json::to_string(p)?, (p.stock - reserved).max(0)],
+                params![p.id, serde_json::to_string(p)?, if p.tracks_stock { (p.stock - reserved).max(0) } else { p.stock }],
             )?;
         }
         for (k, v) in [
@@ -364,7 +367,7 @@ impl Store {
                 .iter()
                 .find(|p| p.id == l.product_id)
                 .ok_or(Error::Rule("POS_PRODUCT_UNAVAILABLE"))?;
-            if kind == "sale" && p.stock < l.quantity {
+            if kind == "sale" && p.tracks_stock && p.stock < l.quantity {
                 return Err(Error::Rule("POS_LOCAL_STOCK_INSUFFICIENT"));
             }
             let amount = p
@@ -409,6 +412,7 @@ impl Store {
         )?;
         if kind == "sale" {
             for l in &op.lines {
+                if products.iter().any(|p| p.id == l.product_id && !p.tracks_stock) { continue; }
                 if tx.execute(
                     "UPDATE catalog SET available=available-? WHERE id=? AND available>=?",
                     params![l.quantity, l.product_id, l.quantity],

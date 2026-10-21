@@ -10,6 +10,7 @@ final readonly class MailWorker
         $processed = 0;
         $deadline = time() + 45;
         $this->store->heartbeat(time());
+        $this->store->prune(time());
         while ($processed < max(1, min(20, $limit)) && time() < $deadline) {
             $message = $this->store->claim(time());
             if ($message === null) break;

@@ -45,6 +45,7 @@ final readonly class PlatformController
             });return response()->json(['status'=>'queued','record'=>$result],202);
         });
     }
+    public function report(Request $r):mixed {return $this->respond($r,function()use($r):mixed{$this->access->require();return response()->json($this->mail->report(max(1,min(10000,$r->integer('page',1)))));});}
     public function inspect(Request $r):mixed { return $this->respond($r,function():mixed{$this->access->require();return response()->json($this->transport->inspect());}); }
     public function retry(Request $r):mixed
     {

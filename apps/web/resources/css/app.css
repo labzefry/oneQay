@@ -19,3 +19,19 @@
 @media print{.merch-page{padding:0}.merch-toolbar,.merch-tabs,.merch-pagination,.merch-actions{display:none}.merch-table-wrap{overflow:visible}.merch-table{min-width:0}}
 
 .oq-topbar .oq-topbar-trailing .oq-language{color:#fff}
+
+/* Explicit high-specificity contrast: catalog tabs must not inherit white primary-button text. */
+.merch-page .merch-tabs button,.merch-page .merch-tabs a{color:#334b63;background:#fff!important;border-color:transparent;min-height:44px}
+.merch-page .merch-tabs button.active{color:#084b83;background:#e7f1ff!important;border-bottom-color:#1461b8}
+.merch-page button.secondary{color:#334b63;background:#fff!important;border-color:#a9bacb}
+.merch-page button:focus-visible,.merch-page select:focus-visible,.merch-page input:focus-visible{outline:3px solid #3b73cf;outline-offset:3px}
+.merch-page .stock-mode-pill{display:inline-flex;align-items:center;gap:5px;color:#174c70;background:#e9f4fb;border:1px solid #b5d4e9;border-radius:20px;padding:4px 9px;font-weight:650}
+.merch-page .stock-mode-help{color:#455d74;background:#eef4fa;border-radius:8px;padding:12px;font-size:12px;line-height:1.6;align-self:end}
+.merch-page .category-create-card{border:1px dashed #93b4d3;background:#f1f7fe}
+.merch-page .category-create-card p{color:#455d74;font-size:12px;line-height:1.5}
+.merch-page .category-dialog{max-width:520px}
+.merch-page .merch-tabs{flex-wrap:wrap}
+
+.merch-page .merch-actions button:not(.secondary),.merch-page .merch-dialog footer button:not(.secondary),.merch-page .merch-directory article button:not(.secondary){background:#1459a6;border-color:#1459a6;color:#fff}
+.merch-page .merch-table th,.merch-page .merch-table td small,.merch-page .merch-subtoolbar,.merch-page .merch-pagination,.merch-page .merch-heading p,.merch-page .merch-hint{color:#52667c}
+.merch-page .merch-badge{color:#176a46;background:#eaf9f1}.merch-page .merch-badge.inactive{color:#4e6173;background:#edf1f5}

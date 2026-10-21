@@ -106,3 +106,7 @@ Flow dan role tervalidasi, component states lengkap, responsive/accessibility/lo
 - Overview displays actual catalog, sellable, shift, and opening-cash readiness. Unknown values remain unverified. No fabricated revenue, charts, stock, outlet names, product photos, or SKU.
 - The cashier preserves its existing transaction computation and transport. A pending cart or submission triggers confirmation before leaving. Print hides application navigation while retaining the receipt.
 - Icons are bundled Lucide SVG data; ISC attribution/license is retained. No external font or icon service is required. This release covers the light theme only.
+
+## 2026-10-21 — Mail delivery, category creation and stock policy
+
+Stage 1 source changes: independent SMTP/NOC worker phases; live owner delivery reports and safe SMTP error guidance; automatic 72-hour email log retention protecting active queues/dedupe; tenant/outlet category creation; explicit tracked/unlimited stock through canonical sale/void, web and offline desktop 0.2.1. Two additive module migrations require a separately qualified deployment. Hosting remains c2e (PR #974); deployment is deferred per Product Owner. [Implementation, schema, compatibility and validation](docs/implementation/MAIL_CATALOG_STOCK_20261021.md). Author by Lab | zefry.

@@ -98,7 +98,7 @@ final readonly class LaravelDurablePosSaleRepository implements DurablePosSaleRe
                     ->lockForUpdate()
                     ->first();
 
-                if ($catalog === null || (int) $catalog->available_quantity < $cartLine->quantity()) {
+                if ($catalog === null || ((bool)($catalog->tracks_stock??true) && (int) $catalog->available_quantity < $cartLine->quantity())) {
                     throw new PosTransactionViolation();
                 }
 
@@ -112,6 +112,7 @@ final readonly class LaravelDurablePosSaleRepository implements DurablePosSaleRe
                 $resolved[] = [
                     'product_id' => $cartLine->productId()->value(),
                     'quantity' => $cartLine->quantity(),
+                    'stock_deducted' => (bool)($catalog->tracks_stock??true),
                     'unit_price' => $unitPrice,
                     'line_total' => $lineTotal,
                 ];
@@ -131,6 +132,7 @@ final readonly class LaravelDurablePosSaleRepository implements DurablePosSaleRe
                 : Money::fromAtomicUnits(0, $total->currency(), $total->scale());
 
             foreach ($resolved as $line) {
+                if (!$line['stock_deducted']) continue;
                 $updated = $this->connection->table('oneqay_pos_sale_catalog_items')
                     ->where('tenant_id', $context->tenantId())
                     ->where('outlet_id', $context->outletId())
@@ -169,6 +171,7 @@ final readonly class LaravelDurablePosSaleRepository implements DurablePosSaleRe
                 $this->connection->table('oneqay_pos_sale_lines')->insert([
                     'tenant_id' => $context->tenantId(),
                     'sale_id' => $saleId,
+                    ...($this->connection->getSchemaBuilder()->hasColumn('oneqay_pos_sale_lines','stock_deducted')?['stock_deducted'=>$line['stock_deducted']]:[]),
                     'line_no' => $index + 1,
                     'product_id' => $line['product_id'],
                     'quantity' => $line['quantity'],
@@ -298,6 +301,7 @@ final readonly class LaravelDurablePosSaleRepository implements DurablePosSaleRe
 
             $restoreByProduct = [];
             foreach ($lines as $line) {
+                if (!(bool)($line->stock_deducted??true)) continue;
                 $productId = is_string($line->product_id) ? $line->product_id : '';
                 $quantity = (int) $line->quantity;
 

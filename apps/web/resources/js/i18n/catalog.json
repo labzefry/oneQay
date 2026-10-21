@@ -5054,5 +5054,73 @@
   "Shift supervisor": {
     "id": "Supervisor shift",
     "en": "Shift supervisor"
+  },
+  "Add category": {
+    "id": "Tambah kategori",
+    "en": "Add category"
+  },
+  "Category name": {
+    "id": "Nama kategori",
+    "en": "Category name"
+  },
+  "Category saved.": {
+    "id": "Kategori tersimpan.",
+    "en": "Category saved."
+  },
+  "Create a product category": {
+    "id": "Buat kategori produk",
+    "en": "Create a product category"
+  },
+  "Organize your catalog before adding products.": {
+    "id": "Kelompokkan katalog sebelum menambahkan produk.",
+    "en": "Organize your catalog before adding products."
+  },
+  "Example: Drinks, Food, Services": {
+    "id": "Contoh: Minuman, Makanan, Jasa",
+    "en": "Example: Drinks, Food, Services"
+  },
+  "Save category": {
+    "id": "Simpan kategori",
+    "en": "Save category"
+  },
+  "Stock management": {
+    "id": "Pengelolaan stok",
+    "en": "Stock management"
+  },
+  "Track stock": {
+    "id": "Gunakan stok",
+    "en": "Track stock"
+  },
+  "Unlimited stock": {
+    "id": "Stok unlimited",
+    "en": "Unlimited stock"
+  },
+  "Unlimited": {
+    "id": "Unlimited",
+    "en": "Unlimited"
+  },
+  "Unlimited products remain sellable without reducing stock.": {
+    "id": "Produk unlimited tetap dapat dijual tanpa mengurangi stok.",
+    "en": "Unlimited products remain sellable without reducing stock."
+  },
+  "Sales reduce available stock and stop when stock is insufficient.": {
+    "id": "Penjualan mengurangi stok tersedia dan berhenti jika stok tidak cukup.",
+    "en": "Sales reduce available stock and stop when stock is insufficient."
+  },
+  "INVALID_STOCK_MODE": {
+    "id": "Pilih gunakan stok atau unlimited.",
+    "en": "INVALID_STOCK_MODE"
+  },
+  "UNLIMITED_OPENING_QUANTITY_MUST_BE_ZERO": {
+    "id": "Produk unlimited tidak memerlukan jumlah stok awal.",
+    "en": "UNLIMITED_OPENING_QUANTITY_MUST_BE_ZERO"
+  },
+  "CATEGORY_SCHEMA_REQUIRED": {
+    "id": "Pembaruan kategori belum dipasang. Hubungi pengelola aplikasi.",
+    "en": "CATEGORY_SCHEMA_REQUIRED"
+  },
+  "STOCK_SCHEMA_REQUIRED": {
+    "id": "Pembaruan pengelolaan stok belum dipasang. Hubungi pengelola aplikasi.",
+    "en": "STOCK_SCHEMA_REQUIRED"
   }
 }

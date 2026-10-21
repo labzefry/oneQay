@@ -42,6 +42,7 @@ final class BusinessManagementServiceProvider extends ServiceProvider
         Route::middleware(['web', 'session.active', 'throttle:60,1', RequirePosSessionContextMiddleware::class])->group(static function (): void {
             $catalog=\App\Delivery\Http\Business\MerchandisingController::class;
             Route::get('/pos/business/products',[$catalog,'catalog'])->name('business.products');
+            Route::post('/pos/business/products/categories',[$catalog,'createCategory'])->middleware('throttle:20,1');
             Route::post('/pos/business/products/save',[$catalog,'saveProduct'])->middleware('throttle:20,1');
             Route::post('/pos/business/products/import/preview',[$catalog,'preview'])->middleware('throttle:10,1');
             Route::post('/pos/business/products/import/commit',[$catalog,'commit'])->middleware('throttle:5,1');

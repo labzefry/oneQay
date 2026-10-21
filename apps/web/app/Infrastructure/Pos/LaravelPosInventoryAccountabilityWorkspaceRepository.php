@@ -124,6 +124,7 @@ final readonly class LaravelPosInventoryAccountabilityWorkspaceRepository implem
                     $join->on('sales.tenant_id', '=', 'lines.tenant_id')
                         ->on('sales.sale_id', '=', 'lines.sale_id');
                 })
+                ->when($this->connection->getSchemaBuilder()->hasColumn('oneqay_pos_sale_lines','stock_deducted'),fn($q)=>$q->where('lines.stock_deducted',true))
                 ->where('lines.tenant_id', $context->tenantId())
                 ->where('sales.organization_id', $context->organizationId())
                 ->where('sales.outlet_id', $context->outletId())
@@ -185,6 +186,7 @@ final readonly class LaravelPosInventoryAccountabilityWorkspaceRepository implem
                     $join->on('sales.tenant_id', '=', 'voids.tenant_id')
                         ->on('sales.sale_id', '=', 'voids.sale_id');
                 })
+                ->when($this->connection->getSchemaBuilder()->hasColumn('oneqay_pos_sale_lines','stock_deducted'),fn($q)=>$q->where('lines.stock_deducted',true))
                 ->where('voids.tenant_id', $context->tenantId())
                 ->where('voids.organization_id', $context->organizationId())
                 ->where('voids.outlet_id', $context->outletId())

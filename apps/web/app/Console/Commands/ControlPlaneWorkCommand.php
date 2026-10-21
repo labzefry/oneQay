@@ -12,8 +12,10 @@ final class ControlPlaneWorkCommand extends Command {
  public function handle(ControlPlaneCampaigns $campaigns,ControlPlaneTelemetry $health,MailWorker $mail):int{
   if(!config('platform.enabled')||!config('database.oneqay_persistence_enabled')||!ProductionBusinessRuntimeGate::allows((string)config('oneqay.runtime_class')))return self::FAILURE;
   $lock=@fopen(storage_path('framework/oneqay-control-worker.lock'),'c');if(!$lock)return self::FAILURE;if(!flock($lock,LOCK_EX|LOCK_NB)){fclose($lock);$this->line('{"state":"already_running"}');return self::SUCCESS;}
-  try{$health->sample();$audience=$campaigns->work(50);$sent=$mail->run((int)$this->option('limit'));$this->line(json_encode(['at'=>time(),'campaign_recipients_processed'=>$audience,'mail_processed'=>$sent]));return self::SUCCESS;}
-  catch(\Throwable){$this->error('CONTROL_WORKER_UNAVAILABLE');return self::FAILURE;}
+  try{
+   $result=(new \App\Application\Platform\ControlWorkCycle())->run(fn()=>$mail->run((int)$this->option('limit')),fn()=>$health->sample(),fn()=>$campaigns->work(50));
+   $this->line(json_encode($result,JSON_THROW_ON_ERROR));return $result['failed']?self::FAILURE:self::SUCCESS;
+  }
   finally{flock($lock,LOCK_UN);fclose($lock);}
  }
 }
