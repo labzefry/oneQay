@@ -79,3 +79,7 @@ The existing Production dark-deployment adapter accepts cPanel/no-SSH execution 
 Production target qualification and any later deployment authority remain separate from this reconciliation.
 
 Author by Lab | zefry
+
+## POS sync recovery and per-business data reset — 2026-10-22
+
+Owner-requested Windows queue recovery, item-level control-plane diagnostics and explicit per-business operational reset are implemented. Source/hosting/installed-Windows acceptance remain distinct. See [checkpoint](docs/operations/POS_SYNC_AND_BUSINESS_DATA_RESET_2026-10-22.md) for actual evidence, reset scope, private backup storage, and required additive deployment. Production data has not been reset.

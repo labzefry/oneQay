@@ -463,6 +463,16 @@ impl Store {
             receipt: serde_json::from_str(&row.4)?,
         })
     }
+    /// Explicit retry preserves IDs, payload, local receipts and stock reservations.
+    /// Specific business conflicts are never silently requeued.
+    pub fn retry_invalid_operations(&mut self) -> Result<usize> {
+        let s = self.snapshot()?.ok_or(Error::Rule("POS_CONNECT_FIRST"))?;
+        if s.protocol != 2 { return Err(Error::Rule("POS_UPGRADE_LOGIN_REQUIRED")); }
+        let tx = self.db.transaction()?;
+        let changed = tx.execute("UPDATE operations SET state='pending' WHERE state='rejected' AND json_extract(result,'$.code') IN ('POS_INVALID_OPERATION','POS_SHIFT_OPEN_NOT_SYNCED')", [])?;
+        tx.commit()?;
+        Ok(changed)
+    }
     pub fn pending(&self) -> Result<Vec<Operation>> {
         let mut q = self.db.prepare(
             "SELECT payload FROM operations WHERE state='pending' ORDER BY seq LIMIT 50",

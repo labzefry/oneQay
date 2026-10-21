@@ -167,6 +167,13 @@ async fn commit(
     .await
 }
 #[tauri::command]
+async fn retry_invalid_sync(state: State<'_, Shared>, security: State<'_, auth::Security>) -> Result<Workspace> {
+    let db=state.inner().clone(); let sec=security.inner().clone();
+    background(move || {let mut store=locked(&db)?; auth::require(&sec,&store,false)?;
+        store.retry_invalid_operations().map_err(safe)?; auth::visible(&sec,&store)
+    }).await
+}
+#[tauri::command]
 async fn synchronize(
     state: State<'_, Shared>,
     security: State<'_, auth::Security>,
@@ -373,6 +380,7 @@ fn main() {
             workspace,
             commit,
             synchronize,
+            retry_invalid_sync,
             shift_event,
             save_printer,
             save_kitchen_printers,

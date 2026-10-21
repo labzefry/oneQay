@@ -7,6 +7,7 @@ final readonly class ControlPlaneManagement {
  public function __construct(private PlatformOwnerAccess $access,private PlatformStore $platform,private ControlPlaneStore $store){}
  public function dashboard():array{$this->access->require();return $this->store->overview();}
  public function detail(string $id):array{$this->access->require();return $this->store->detail($this->platform->business($id));}
+ public function resetPreview(string $id,string $scope):array{$owner=$this->access->require();$b=$this->platform->business($id);if($b['tenant_id']===$owner->tenantId()->value())throw new PlatformViolation('OWNER_TENANT_PROTECTED',403);return $this->store->execute('business.reset_preview',['scope'=>$scope],$b,$owner->identityId()->value());}
  public function preview(string $id):array{$this->access->require();return $this->store->preview($id);}
  public function command(array $in):array{
   $owner=$this->access->require();$actor=$owner->tenantId()->value().'/'.$owner->identityId()->value();
@@ -14,6 +15,7 @@ final readonly class ControlPlaneManagement {
   if(!preg_match('/\A[a-zA-Z0-9_:-]{8,128}\z/D',$op))throw new PlatformViolation('INVALID_OPERATION');
   $fields=match($action){
    'settings.save'=>['configuration'],
+   'business.reset_data'=>['id','scope','review_digest','reviewed','offline_reconciled','backup_acknowledged','confirmation'],
    'business.configure'=>['id','name','locale','plan','notes','features'],
    'security.totp_reset'=>['id','identity_id','identity_verified'],
    'security.sessions_revoke'=>['id'],
@@ -41,6 +43,7 @@ final readonly class ControlPlaneManagement {
    $result=$this->store->execute($action,$in,$b,$actor);
    if(str_starts_with($action,'security.'))$this->platform->update($target,$in['version'],['updated_at'=>time()]);
    $auditReason=$reason;
+   if($action==='business.reset_data')$auditReason=substr('Backup '.$result['backup_reference'].' · '.$reason,0,300);
    if($action==='security.totp_reset')$auditReason=substr($in['identity_id'].' · '.$reason,0,300);
    $this->platform->audit($actor,$action,$target,$auditReason,time());return $result;
   });

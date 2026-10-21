@@ -26,6 +26,7 @@ final class ControlPlaneServiceProvider extends ServiceProvider {
   Route::middleware(['web','session.active',RequirePosSessionContextMiddleware::class,RequirePlatformSecurityMiddleware::class,'throttle:60,1'])->group(function():void{
    Route::get('/platform/control/overview',[ControlPlaneController::class,'overview'])->name('platform.control.overview');
    Route::get('/platform/control/businesses/{id}',[ControlPlaneController::class,'business'])->where('id','[a-f0-9]{32}')->name('platform.control.business');
+   Route::get('/platform/control/businesses/{id}/reset-preview',[ControlPlaneController::class,'resetPreview'])->where('id','[a-f0-9]{32}')->name('platform.control.reset-preview');
    Route::get('/platform/control/campaigns/{id}/preview',[ControlPlaneController::class,'preview'])->where('id','[a-f0-9]{32}')->name('platform.control.campaign-preview');
    Route::post('/platform/control/commands',[ControlPlaneController::class,'command'])->middleware(RequirePolicyAdministrationSessionContextMiddleware::class)->name('platform.control.command');
   });

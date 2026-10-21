@@ -10,6 +10,7 @@ final readonly class ControlPlaneController {
  public function overview(Request $r):mixed{return $this->respond($r,fn()=> $this->control->dashboard());}
  public function business(Request $r,string $id):mixed{return $this->respond($r,fn()=> $this->control->detail($id));}
  public function preview(Request $r,string $id):mixed{return $this->respond($r,fn()=> $this->control->preview($id));}
+ public function resetPreview(Request $r,string $id):mixed{return $this->respond($r,fn()=> $this->control->resetPreview($id,(string)$r->query('scope','transactions')));}
  public function command(Request $r):mixed{return $this->respond($r,function()use($r):array{if(strlen($r->getContent())>20000)throw new PlatformViolation('REQUEST_TOO_LARGE',413);return ['status'=>'saved','record'=>$this->control->command($r->except('_token'))];});}
  private function respond(Request $r,callable $work):mixed{
   try{return response()->json($work(),200,['Cache-Control'=>'no-store, private']);}
