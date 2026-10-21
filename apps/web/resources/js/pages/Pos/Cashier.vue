@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import NumericInput from "../../components/NumericInput.vue";
 import { formatMoney as displayMoney } from "../../business-money";
-import { t } from "../../i18n";
+import { t, locale } from "../../i18n";
 import { Head } from '@inertiajs/vue3';
 import { computed, onBeforeUnmount, ref } from 'vue';
 import WorkspaceIcon from '../../components/WorkspaceIcon.vue';
@@ -281,7 +281,7 @@ const checkout = async (): Promise<void> => {
 <template>
     <Head :title="t('Cashier')" />
     <main class="cashier-shell" :data-leave-confirmation="submitting || (cartLines.length >
-        <OperationFeedback :status="saleProgress" :message="message" :operation-id="saleOperationId" :success-label="t('Sale completed')" :running-label="t('Processing checkout')"/> 0 && !receipt)">
+        <OperationFeedback :status="saleProgress" :message="message" :operation-id="saleOperationId" :success-label="locale==='id'?'Transaksi selesai':'Sale completed'" :running-label="locale==='id'?'Memproses pembayaran':'Processing checkout'"/> 0 && !receipt)">
         <header class="hero">
             <div>
                 <p class="eyebrow">{{ t("oneQay · Point of Sale") }}</p>

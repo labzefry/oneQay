@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onBeforeUnmount, reactive, ref } from 'vue';
 import { Head } from '@inertiajs/vue3';
-import { t } from '../../i18n';
+import { t, locale } from '../../i18n';
 import type { CurrencyPreferences } from '../../business-money';
 import WorkspaceIcon from '../../components/WorkspaceIcon.vue';
 import OperationFeedback from '../../components/OperationFeedback.vue';
@@ -25,7 +25,7 @@ async function download(key: string, format: 'pdf' | 'xlsx'): Promise<void> {
     if (response.status===401||response.status===419) {
       exportState.value = 'session-expired'; window.location.assign('/business-login?reason=session-expired'); return;
     }
-    if (response.status===202) { exportState.value = 'queued'; exportNotice.value = t('Report generation is queued, not completed. Check export status before downloading.'); return; }
+    if (response.status===202) { exportState.value = 'queued'; exportNotice.value = locale.value==='id'?'Pembuatan laporan masuk antrean, belum selesai. Periksa status ekspor sebelum mengunduh.':'Report generation queued, not completed. Check export status before downloading.'; return; }
     if (!response.ok) throw new Error('DOWNLOAD_REJECTED');
     const blob = await response.blob();
     if (active.signal.aborted) throw new Error('DOWNLOAD_TIMEOUT');
@@ -38,17 +38,17 @@ async function download(key: string, format: 'pdf' | 'xlsx'): Promise<void> {
       link.download = `oneqay-${key}-${filter.from}-to-${filter.to}.${format}`;
       document.body.appendChild(link); link.click();
       exportState.value = 'succeeded';
-      exportNotice.value = t('Browser download initiated. Check the browser for the actual saved file.');
+      exportNotice.value = locale.value==='id'?'Pengunduhan melalui browser dimulai. Pastikan berkas benar-benar tersimpan.':'Browser download initiated. Check the browser for the actual saved file.';
     } finally {
       link.remove();
       window.setTimeout(() => URL.revokeObjectURL(objectUrl), 60000);
     }
   } catch {
     exportState.value = 'failed';
-    exportNotice.value = t('Report download was not confirmed. Check connectivity and request again if required.');
+    exportNotice.value = locale.value==='id'?'Unduhan belum terkonfirmasi. Periksa koneksi dan ulangi bila diperlukan.':'Report download not confirmed. Check connectivity and request again if required.';
   } finally {
     window.clearTimeout(timer); if (controller===active) controller=null; exporting.value=false;
   }
 }
 </script>
-<template><Head :title="t('Reports')"/><main class="merch-page"><OperationFeedback :status="exportState" :message="exportNotice" :success-label="t('Download initiated')" :running-label="t('Preparing report')"/><header class="merch-heading"><div><p class="eyebrow">{{ t('Reports & insights') }}</p><h1>{{ t('Reports') }}</h1><p>{{ t('Download real PDF and Excel files for your authorized business records.') }}</p></div></header><section class="merch-panel report-filters"><label>{{ t('From') }}<input v-model="filter.from" type="date" required :max="filter.to"/></label><label>{{ t('To') }}<input v-model="filter.to" type="date" required :min="filter.from"/></label><label class="merch-search"><input v-model="filter.q" type="search" :placeholder="t('Search records')" maxlength="120"/></label></section><p class="merch-hint">{{ t('Sales and trial balance use the selected date range. Other reports export current records matching the search. Exports include all matching pages, up to 10,000 rows; narrow filters for larger reports.') }}</p><div class="reports-grid"><article v-for="r in reports" :key="r.key" class="merch-panel report-card"><span class="report-icon"><WorkspaceIcon name="chart-column" :size="26"/></span><h2>{{ t(r.title) }}</h2><p>{{ preferences.business_name }}</p><div><a class="secondary" :href="url(r.key,'pdf')" :aria-disabled="exporting" @click.prevent="download(r.key,'pdf')">{{ t('Download PDF') }}</a><a :href="url(r.key,'xlsx')" :aria-disabled="exporting" @click.prevent="download(r.key,'xlsx')">{{ t('Download Excel') }}</a></div></article></div></main></template>
+<template><Head :title="t('Reports')"/><main class="merch-page"><OperationFeedback :status="exportState" :message="exportNotice" :success-label="locale==='id'?'Unduhan dimulai':'Download initiated'" :running-label="locale==='id'?'Menyiapkan laporan':'Preparing report'"/><header class="merch-heading"><div><p class="eyebrow">{{ t('Reports & insights') }}</p><h1>{{ t('Reports') }}</h1><p>{{ t('Download real PDF and Excel files for your authorized business records.') }}</p></div></header><section class="merch-panel report-filters"><label>{{ t('From') }}<input v-model="filter.from" type="date" required :max="filter.to"/></label><label>{{ t('To') }}<input v-model="filter.to" type="date" required :min="filter.from"/></label><label class="merch-search"><input v-model="filter.q" type="search" :placeholder="t('Search records')" maxlength="120"/></label></section><p class="merch-hint">{{ t('Sales and trial balance use the selected date range. Other reports export current records matching the search. Exports include all matching pages, up to 10,000 rows; narrow filters for larger reports.') }}</p><div class="reports-grid"><article v-for="r in reports" :key="r.key" class="merch-panel report-card"><span class="report-icon"><WorkspaceIcon name="chart-column" :size="26"/></span><h2>{{ t(r.title) }}</h2><p>{{ preferences.business_name }}</p><div><a class="secondary" :href="url(r.key,'pdf')" :aria-disabled="exporting" @click.prevent="download(r.key,'pdf')">{{ t('Download PDF') }}</a><a :href="url(r.key,'xlsx')" :aria-disabled="exporting" @click.prevent="download(r.key,'xlsx')">{{ t('Download Excel') }}</a></div></article></div></main></template>

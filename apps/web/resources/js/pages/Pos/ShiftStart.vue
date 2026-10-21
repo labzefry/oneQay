@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import NumericInput from "../../components/NumericInput.vue";
 import { currencyPreferences, formatMoney as displayMoney } from "../../business-money";
-import { t } from "../../i18n";
+import { t, locale } from "../../i18n";
 import { Head } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import OperationFeedback from '../../components/OperationFeedback.vue';
@@ -231,7 +231,7 @@ const recordOpeningCash = async (): Promise<void> => {
 
 <template>
     <Head :title="t('Shift Start Workspace')" />
-    <main class="shell"><OperationFeedback :status="operationProgress" :message="message" :operation-id="operationId" :success-label="t('Shift operation confirmed')" :running-label="t('Processing shift operation')"/>
+    <main class="shell"><OperationFeedback :status="operationProgress" :message="message" :operation-id="operationId" :success-label="locale==='id'?'Operasi shift terkonfirmasi':'Shift operation confirmed'" :running-label="locale==='id'?'Memproses operasi shift':'Processing shift operation'"/>
         <header class="hero">
             <div>
                 <p class="eyebrow">{{ t("oneQay · Point of Sale") }}</p>

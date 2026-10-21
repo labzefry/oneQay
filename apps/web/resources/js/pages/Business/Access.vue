@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // Author by Lab | zefry
 import { computed, onBeforeUnmount, ref } from 'vue';
-import { t } from '../../i18n';
+import { t, locale } from '../../i18n';
 import OperationFeedback from '../../components/OperationFeedback.vue';
 import type { MutationStatus } from '../../use-business-mutation';
 const props = defineProps<{ identity_id: string; outlet_id: string; templates: Record<string, { title: string; permissions: string[] }>; step_up_url: string | null; initial_role?: string; return_url?: string }>();
@@ -75,7 +75,7 @@ onBeforeUnmount(() => { window.removeEventListener('beforeunload', beforeUnload)
 </script>
 
 <template>
-    <main class="access-page"><OperationFeedback :status="operationProgress" :message="message" :operation-id="operationId" :success-label="t('Access change confirmed')"/>
+    <main class="access-page"><OperationFeedback :status="operationProgress" :message="message" :operation-id="operationId" :success-label="locale==='id'?'Perubahan akses berhasil':'Access change confirmed'"/>
         <a href="/pos" class="back">← {{ t('Back to workspace') }}</a>
         <header><span class="eyebrow">{{ t('Administration') }}</span><h1>{{ t('Business access') }}</h1><p>{{ t('Give existing team members access to business modules for this outlet.') }}</p></header>
         <p class="scope">{{ t('Outlet') }} <strong>{{ outlet_id }}</strong></p>

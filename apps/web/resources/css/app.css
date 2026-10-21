@@ -102,3 +102,8 @@ body{font-size:1rem;line-height:1.55}
 @media(max-width:800px){.settings-layout{grid-template-columns:1fr}.settings-menu{flex-direction:row;flex-wrap:wrap}.oq-sidebar{box-shadow:6px 0 30px #1B1B3926}}
 @media(max-width:480px){.merch-page .merch-form-grid{grid-template-columns:1fr}.settings-form{padding:18px}}
 @media(prefers-reduced-motion:reduce){.oq-operation-spinner{animation:none;border-top-style:dashed}.report-card:hover{transform:none}}
+
+/* Status notifications are dismissible and leave business controls operable. */
+.oq-operation-feedback{padding-right:54px}
+.oq-operation-feedback .oq-operation-dismiss,.oq-page>main .oq-operation-feedback .oq-operation-dismiss{position:absolute;right:8px;top:8px;width:36px;height:36px;min-height:36px;padding:6px;border:1px solid var(--oq-light);border-radius:10px;background:var(--oq-white)!important;color:var(--oq-navy)!important;display:grid;place-items:center;cursor:pointer}
+.oq-operation-feedback .oq-operation-dismiss:focus-visible{outline:3px solid var(--oq-primary);outline-offset:2px}

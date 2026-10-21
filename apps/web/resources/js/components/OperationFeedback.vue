@@ -7,19 +7,25 @@ import type { MutationStatus } from '../use-business-mutation';
 const props = defineProps<{ status: MutationStatus; message?: string; operationId?: string | null; successLabel?: string; runningLabel?: string }>();
 const visible = ref(false);
 let timer: ReturnType<typeof setTimeout> | null = null;
+let dismissal: ReturnType<typeof setTimeout> | null = null;
 watch(() => props.status, next => {
     if (timer !== null) clearTimeout(timer);
+    if (dismissal !== null) clearTimeout(dismissal);
     if (next === 'idle') { visible.value = false; return; }
     if (next === 'running') {
         visible.value = false;
         timer = setTimeout(() => { visible.value = true; timer = null; }, 250);
-    } else visible.value = true;
+    } else {
+        visible.value = true;
+        if (next === 'succeeded' || next === 'failed') dismissal = setTimeout(() => { visible.value = false; dismissal = null; }, 6500);
+    }
 }, { immediate: true });
-onBeforeUnmount(() => { if (timer !== null) clearTimeout(timer); });
+onBeforeUnmount(() => { if (timer !== null) clearTimeout(timer); if (dismissal !== null) clearTimeout(dismissal); });
 const caption = (id: string, en: string) => locale.value === 'id' ? id : en;
 </script>
 <template>
     <aside v-if="visible" class="oq-operation-feedback" :data-state="status" :role="status === 'failed' || status === 'session-expired' ? 'alert' : 'status'" aria-live="polite" :aria-busy="status === 'running'">
+        <button type="button" class="oq-operation-dismiss" :aria-label="caption('Tutup pemberitahuan', 'Dismiss notification')" @click="visible = false"><WorkspaceIcon name="x" :size="16"/></button>
         <strong>
             <span v-if="status === 'running'" class="oq-operation-spinner" aria-hidden="true"/>
             <WorkspaceIcon v-else :name="status === 'succeeded' ? 'check' : status === 'queued' ? 'clock-3' : 'shield-check'" :size="19"/>
