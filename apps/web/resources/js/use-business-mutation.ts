@@ -10,6 +10,7 @@ export function useBusinessMutation() {
     const error = ref('');
     const operationId = ref<string | null>(null);
     let pending: Pending | null = null;
+    let lastSucceeded: { url: string; fingerprint: string } | null = null;
     let controller: AbortController | null = null;
     let timeout: ReturnType<typeof setTimeout> | null = null;
     let generation = 0;
@@ -18,6 +19,7 @@ export function useBusinessMutation() {
     function clear(): void {
         if (busy.value || uncertain.value) return;
         pending = null;
+        lastSucceeded = null;
         operationId.value = null;
         error.value = '';
         status.value = 'idle';
@@ -36,6 +38,10 @@ export function useBusinessMutation() {
         try { fingerprint = JSON.stringify(data); } catch {
             setOutcome('failed', 'The form could not be prepared safely.');
             return null;
+        }
+        if (!pending && lastSucceeded?.url === url && lastSucceeded.fingerprint === fingerprint) {
+            setOutcome('succeeded');
+            return null; // Duplicate click after authoritative success; wait for a new input.
         }
         if (pending && (pending.url !== url || pending.fingerprint !== fingerprint)) {
             setOutcome('unknown', 'An earlier request is not yet confirmed. Verify its result before editing or sending another request.');
@@ -64,6 +70,7 @@ export function useBusinessMutation() {
                 body: JSON.stringify(pending.body),
             });
             if (disposed || current !== generation) return null;
+            if (active.signal.aborted) { setOutcome('unknown', 'Response arrived after the request deadline. Verify the result.'); return null; }
             if (response.status === 401 || response.status === 419) {
                 pending = null;
                 setOutcome('session-expired', 'Your session has expired. Sign in again.');
@@ -80,6 +87,7 @@ export function useBusinessMutation() {
                 return null;
             }
             if (disposed || current !== generation) return null;
+            if (active.signal.aborted) { setOutcome('unknown', 'Late response discarded after timeout; verify server state.'); return null; }
             if (response.status === 202 || value?.status === 'queued') {
                 setOutcome('queued', 'Accepted into a server queue; completion is not yet confirmed. Check the operation status in the authorized workspace.');
                 return null;
@@ -95,6 +103,7 @@ export function useBusinessMutation() {
                 setOutcome('unknown', 'No confirmed saved record was returned. Verify the server state before proceeding.');
                 return null;
             }
+            lastSucceeded = { url, fingerprint };
             pending = null;
             setOutcome('succeeded');
             return value.record;
