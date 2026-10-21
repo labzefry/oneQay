@@ -5,6 +5,8 @@ import { router } from '@inertiajs/vue3';
 import { locale, t } from '../../i18n';
 import WorkspaceIcon from '../../components/WorkspaceIcon.vue';
 import NumericInput from '../../components/NumericInput.vue';
+import OperationFeedback from '../../components/OperationFeedback.vue';
+import type { MutationStatus } from '../../use-business-mutation';
 import { formatMoney, currencyPreferences } from '../../business-money';
 type Row = { id: string; version: number; [key: string]: any };
 type Product = { product_id: string; display_name: string; currency: string; currency_scale: number };
@@ -18,6 +20,10 @@ const selected = ref<Row | null>(null); const dialog = ref<HTMLDialogElement | n
 const mode = ref(''); const fields = ref<Field[]>([]); const lines = ref<Record<string, any>[]>([]);
 const busy = ref(false); const uncertain = ref(false); const error = ref(''); const saved = ref(false);
 const pending = ref<{ operation_id: string; data: Record<string, any> } | null>(null);
+const operationProgress = ref<MutationStatus>('idle');
+const operationId = computed(() => pending.value?.operation_id ?? null);
+let writeController: AbortController | null = null;
+onBeforeUnmount(() => writeController?.abort());
 const optionQuery = ref(''); const optionPage = ref(1); const optionMore = ref(false); const optionLoading = ref(false);
 const products = ref<Product[]>(props.products?.data ?? []); const productQuery = ref(''); const productPage = ref(1); const productMore = ref(props.products?.has_more ?? false); const productLoading = ref(false);
 const choices = ref<Row[]>(props.suppliers ?? props.partners ?? []);
@@ -50,7 +56,7 @@ const input = (key: string, label: string, type = 'text', required = true): Fiel
 const select = (key: string, label: string, options: {value:string;label:string}[]): Field => ({key,label,type:'select',options,required:true});
 const selectValues = (values: string[]) => values.map(value => ({value,label:value}));
 function open(action: string, row?: Row): void {
-    if (!can(action)) return; mode.value = action; selected.value = row ?? null; error.value = ''; saved.value = false; uncertain.value = false; pending.value = null;
+    if (busy.value || uncertain.value || !can(action)) return; mode.value = action; selected.value = row ?? null; error.value = ''; saved.value = false; uncertain.value = false; pending.value = null;
     Object.keys(form).forEach(k => delete form[k]); fields.value = []; lines.value = []; optionQuery.value = ''; optionPage.value = 1;
     if (action === 'supplier.save' || action === 'customer.save') {
         fields.value = [input('code','Code'),input('name','Name'),input('email','Email','email',false),input('phone','Phone','tel',false),input('address','Address','textarea',false),input('active','Active','checkbox')];
@@ -111,22 +117,48 @@ function payload(): Record<string,any> {
 }
 const errorMessages: Record<string,string>={BUSINESS_PERMISSION_DENIED:'Your role does not allow this action.',RECORD_CHANGED:'This record changed. Refresh and review the latest version.',OPERATION_CONFLICT:'This request identifier was already used with different data.',PRODUCT_NOT_READY:'The product must be active and have opening stock configured.',CURRENCY_MISMATCH:'The purchase currency must match the selected products.',QUANTITY_EXCEEDS_ORDER:'The received quantity exceeds the outstanding order.',PURCHASE_NOT_APPROVED:'Approve this purchase order before receiving goods.',INVALID_PURCHASE_STATE:'This action is not available for the current order status.',DUPLICATE_OR_INVALID_REFERENCE:'The code or invoice reference already exists, or its related record is invalid.',INVOICE_RECEIPT_MISMATCH:'The supplier, amount and currency must match the goods receipt.',PAYMENT_EXCEEDS_BALANCE:'The payment exceeds the unpaid invoice balance.',UNBALANCED_JOURNAL:'Journal debits and credits must be equal.',LEAVE_OVERLAP:'This employee already has leave in the selected period.',INVALID_ATTENDANCE_TIME:'Check the work date and attendance times.',INVALID_DUE_DATE:'The due date must be on or after the invoice date.',STOCK_RECEIPT_REJECTED:'Stock could not be received. Check the product and opening stock.',BUSINESS_STORAGE_UNAVAILABLE:'Business storage is not available. No success has been confirmed.'};
 async function submit(): Promise<void> {
-    if(busy.value)return; error.value='';
-    try { if(!pending.value)pending.value={operation_id:`business:${crypto.randomUUID()}`,data:payload()}; } catch(e) { error.value=e instanceof Error?e.message:t('Check the entered values.');return; }
-    busy.value=true;
+    if (busy.value) return;
+    error.value = '';
+    try { if (!pending.value) pending.value = { operation_id: `business:${crypto.randomUUID()}`, data: payload() }; }
+    catch (e) { operationProgress.value = 'failed'; error.value = e instanceof Error ? e.message : t('Check the entered values.'); return; }
+    busy.value = true; operationProgress.value = 'running';
+    const controller = new AbortController(); writeController = controller;
+    const timer = window.setTimeout(() => controller.abort(), 30000);
     try {
-        const csrf=document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content;
-        if(!csrf)throw new Error('csrf');
-        const response=await fetch(`/pos/business/commands/${mode.value}`,{method:'POST',credentials:'same-origin',redirect:'error',headers:{'Content-Type':'application/json','Accept':'application/json','X-CSRF-TOKEN':csrf},body:JSON.stringify(pending.value)});
-        const result=await response.json();
-        if(!response.ok){
-            if(response.status>=500){uncertain.value=true;}else{uncertain.value=false;pending.value=null;}
-            const code=result?.error?.code??'';error.value=t(errorMessages[code]??'Check the entered values and your access, then try again.');return;
+        const csrf = document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content;
+        if (!csrf) throw new Error('SESSION_UNVERIFIED');
+        if (!navigator.onLine) throw new Error('OFFLINE_UNCONFIRMED');
+        const response = await fetch(`/pos/business/commands/${mode.value}`, {
+            method: 'POST', credentials: 'same-origin', redirect: 'error', signal: controller.signal,
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-CSRF-TOKEN': csrf },
+            body: JSON.stringify(pending.value),
+        });
+        if (controller.signal.aborted) throw new Error('TIMEOUT_UNCONFIRMED');
+        if (response.status === 401 || response.status === 419) {
+            operationProgress.value = 'session-expired';
+            uncertain.value = true;
+            window.location.assign('/business-login?reason=session-expired');
+            return;
         }
-        uncertain.value=false;pending.value=null;saved.value=true;dialog.value?.close();mode.value='';
-        router.reload();
-    } catch {uncertain.value=true;error.value=t('The result is not confirmed. Retry the same request to avoid duplicate records.');}
-    finally{busy.value=false;}
+        if (response.status === 202 || response.status >= 500) throw new Error('WRITE_UNCONFIRMED');
+        const result = await response.json();
+        if (controller.signal.aborted) throw new Error('LATE_ACKNOWLEDGEMENT');
+        if (!response.ok) {
+            uncertain.value = false; pending.value = null; operationProgress.value = 'failed';
+            const code = result?.error?.code ?? '';
+            error.value = t(errorMessages[code] ?? 'Check the entered values and your access, then try again.');
+            return;
+        }
+        if (result?.status === 'queued') throw new Error('WRITE_UNCONFIRMED');
+        uncertain.value = false; pending.value = null; saved.value = true; operationProgress.value = 'succeeded';
+        dialog.value?.close(); mode.value = ''; router.reload();
+    } catch {
+        uncertain.value = true; operationProgress.value = 'unknown';
+        error.value = t('The result is not confirmed. Verify server records before manually retrying the same request.');
+    } finally {
+        window.clearTimeout(timer); if (writeController === controller) writeController = null;
+        busy.value = false;
+    }
 }
 async function findChoices(next=false): Promise<void> {
     const kind=props.module==='purchases'?'suppliers':'partners';optionLoading.value=true;
@@ -149,7 +181,7 @@ window.addEventListener('beforeunload',beforeUnload);onBeforeUnmount(()=>window.
 </script>
 
 <template>
-  <main class="biz" :aria-label="t(title)">
+  <main class="biz" :aria-label="t(title)"><OperationFeedback :status="operationProgress" :message="error" :operation-id="operationId"/>
     <header class="biz-heading"><div><p class="eyebrow">oneQay · {{ t('Business management') }}</p><h1>{{ t(title) }}</h1><p>{{ t('Connected records for the business you run every day.') }}</p></div><a class="secondary" href="/pos"><WorkspaceIcon name="layout-dashboard" :size="18" />{{ t('Business Command Center') }}</a></header>
     <nav class="biz-tabs" :aria-label="t('Business modules')"><a v-for="item in modules" :key="item.key" :href="item.url" :aria-current="item.key === `business_${module}` ? 'page' : undefined">{{ t(item.title) }}</a></nav>
     <p v-if="saved" role="status" class="success">{{ t('Saved successfully.') }}</p>

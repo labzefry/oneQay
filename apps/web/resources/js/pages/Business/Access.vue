@@ -2,12 +2,17 @@
 // Author by Lab | zefry
 import { computed, onBeforeUnmount, ref } from 'vue';
 import { t } from '../../i18n';
+import OperationFeedback from '../../components/OperationFeedback.vue';
+import type { MutationStatus } from '../../use-business-mutation';
 const props = defineProps<{ identity_id: string; outlet_id: string; templates: Record<string, { title: string; permissions: string[] }>; step_up_url: string | null; initial_role?: string; return_url?: string }>();
 const identity = ref(props.identity_id); const role = ref(props.initial_role && props.templates[props.initial_role] ? props.initial_role : 'oneqay-business-manager'); const action = ref('assign');
 const returnUrl = computed(() => props.return_url === '/pos/shifts/close' ? '/pos/shifts/close' : '/pos');
 const busy = ref(false); const uncertain = ref(false); const message = ref(''); const saved = ref(false);
 const password = ref(''); const code = ref(''); const verifying = ref(false);
 const pending = ref<{ operation_id: string; identity_id: string; role: string; action: string } | null>(null);
+const operationProgress = ref<MutationStatus>('idle');
+const operationId = computed(() => pending.value?.operation_id ?? null);
+let writeController: AbortController | null = null;
 const groupNames: Record<string, string> = { suppliers: 'Suppliers', purchases: 'Purchasing', customers: 'Customers', finance: 'Finance', people: 'People', audit: 'Activity log', inventory: 'Inventory' };
 const groups = computed(() => [...new Set((props.templates[role.value]?.permissions ?? []).map(p => groupNames[p.split('.')[1]] ?? p))]);
 function headers(): Record<string, string> {
@@ -15,22 +20,43 @@ function headers(): Record<string, string> {
 }
 async function submit(): Promise<void> {
     if (busy.value) return;
-    busy.value = true; saved.value = false; message.value = '';
+    if (uncertain.value) { message.value = 'Hasil perubahan izin sebelumnya belum pasti. Periksa izin di server sebelum operasi berikutnya.'; return; }
+    busy.value = true; saved.value = false; message.value = ''; operationProgress.value = 'running';
     pending.value ??= { operation_id: crypto.randomUUID(), identity_id: identity.value.trim(), role: role.value, action: action.value };
+    const controller = new AbortController(); writeController = controller;
+    const timer = window.setTimeout(() => controller.abort(), 30000);
     try {
-        const response = await fetch('/pos/business/access/roles', { method: 'POST', credentials: 'same-origin', headers: headers(), body: JSON.stringify(pending.value) });
-        if (response.status >= 500) throw new Error('ambiguous');
+        if (!navigator.onLine) throw new Error('OFFLINE_UNCONFIRMED');
+        const response = await fetch('/pos/business/access/roles', {
+            method: 'POST', credentials: 'same-origin', redirect: 'error', signal: controller.signal,
+            headers: headers(), body: JSON.stringify(pending.value),
+        });
+        if (controller.signal.aborted) throw new Error('TIMEOUT_UNCONFIRMED');
+        if (response.status === 401 || response.status === 419) {
+            operationProgress.value = 'session-expired';
+            uncertain.value = true;
+            window.location.assign('/business-login?reason=session-expired');
+            return;
+        }
+        if (response.status === 202 || response.status >= 500) throw new Error('AMBIGUOUS');
         if (!response.ok) {
             uncertain.value = false; pending.value = null;
-            message.value = response.status === 419 ? 'Session expired. Reload this page and sign in again.' : 'Access change denied. Check the identity, administrator authority and security verification.';
+            operationProgress.value = 'failed';
+            message.value = 'Access change denied. Check identity, administrator authority and security verification.';
             return;
         }
         const result = await response.json();
-        if (result.status !== 'saved') throw new Error('ambiguous');
-        pending.value = null; uncertain.value = false; saved.value = true;
-        message.value = 'Business access saved. Open the workspace to refresh the available modules.';
-    } catch { uncertain.value = true; message.value = 'The result is uncertain. Retry the same request to prevent duplicate changes.'; }
-    finally { busy.value = false; }
+        if (controller.signal.aborted || result.status !== 'saved') throw new Error('UNCONFIRMED');
+        pending.value = null; uncertain.value = false; saved.value = true; operationProgress.value = 'succeeded';
+        message.value = 'Business access saved. Open the workspace to refresh available modules.';
+    } catch {
+        uncertain.value = true; operationProgress.value = 'unknown';
+        message.value = 'Access mutation may have committed. Verify authoritative permissions before any new request; no automatic retry.';
+    } finally {
+        window.clearTimeout(timer);
+        if (writeController === controller) writeController = null;
+        busy.value = false;
+    }
 }
 async function verify(): Promise<void> {
     if (!props.step_up_url || verifying.value) return;
@@ -45,11 +71,11 @@ async function verify(): Promise<void> {
 }
 function beforeUnload(e: BeforeUnloadEvent): void { if (busy.value || uncertain.value) { e.preventDefault(); e.returnValue = ''; } }
 window.addEventListener('beforeunload', beforeUnload);
-onBeforeUnmount(() => window.removeEventListener('beforeunload', beforeUnload));
+onBeforeUnmount(() => { window.removeEventListener('beforeunload', beforeUnload); writeController?.abort(); });
 </script>
 
 <template>
-    <main class="access-page">
+    <main class="access-page"><OperationFeedback :status="operationProgress" :message="message" :operation-id="operationId" :success-label="t('Access change confirmed')"/>
         <a href="/pos" class="back">← {{ t('Back to workspace') }}</a>
         <header><span class="eyebrow">{{ t('Administration') }}</span><h1>{{ t('Business access') }}</h1><p>{{ t('Give existing team members access to business modules for this outlet.') }}</p></header>
         <p class="scope">{{ t('Outlet') }} <strong>{{ outlet_id }}</strong></p>
