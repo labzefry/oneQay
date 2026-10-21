@@ -1,5 +1,11 @@
 # oneQay UI/UX Guideline
 
+## Owner-required successor design — 21 October 2026
+
+For the next UI implementation, [ONEQAY_UI_PALETTE_2026-10-21.json](docs/design/ONEQAY_UI_PALETTE_2026-10-21.json) and [modernization/progress contract](docs/design/ONEQAY_UI_MODERNIZATION_2026-10-21.md) govern all owned surfaces. Exactly: Navy `#1B1B39`, Primary Blue `#3965FA`, Soft Blue `#99B7FC`, Pale Blue `#E9EBFF`, White `#FFFFFF`, Light Gray `#EDEDED`, Dark Gray `#202020`. These replace the historical teal workspace direction for future redesigned UI. The requirement is recorded; this docs-only handoff does not change current deployed styling.
+
+Use shared tokens, readable 16px body/form and 14–16px operational tables, accessible restrained morph/depth, consistent Iconify, reduced motion and complete component states. Every user-triggered process has truthful operation-scoped progress and a terminal outcome; queued/timeout/unknown/offline are distinct, cleanup is bounded and mutations are never blindly retried. Refer to the full contract for acceptance cases, palette guard, contrast and ordinary-chat cPanel release handoff. Preserve existing tenant/security/business behavior.
+
 ## Experience principles
 
 - Cepat dipahami pada lingkungan operasional sibuk.

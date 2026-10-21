@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "status": "OWNER_REQUIRED_FOR_NEXT_UI_IMPLEMENTATION",
+  "owner_instruction_date": "2026-10-21",
+  "source": {
+    "file_name": "image(20261021-123331).png",
+    "sha256": "bc981f5729a5b9e92c0125559deb4a99c9b3dee33d1bd53c33d2b5148f595a51",
+    "interpretation": "Use the seven printed HEX labels, not approximate rendered swatch pixels. The reference's third-party brand is not oneQay branding."
+  },
+  "colors": {
+    "navy_blue": "#1B1B39",
+    "primary_blue": "#3965FA",
+    "soft_blue": "#99B7FC",
+    "pale_blue": "#E9EBFF",
+    "base_white": "#FFFFFF",
+    "light_gray": "#EDEDED",
+    "dark_gray": "#202020"
+  },
+  "role_intent": {
+    "navigation_and_headings": "navy_blue",
+    "primary_actions_and_focus": "primary_blue",
+    "secondary_accents_with_dark_text": "soft_blue",
+    "selected_and_supporting_surfaces": "pale_blue",
+    "canvas_and_cards": "base_white",
+    "neutral_surfaces_and_separators": "light_gray",
+    "body_text": "dark_gray"
+  },
+  "rules": [
+    "Exactly these seven base colors; no unapproved color, additional theme or external brand.",
+    "Use shared semantic tokens; next UI code must not copy legacy teal/green/red/amber palettes.",
+    "Shadows/overlays may use alpha from these colors only; content contrast is measured after compositing. Do not invent additional solid tints or hues.",
+    "Use labels, icons, borders and patterns for semantic states; do not rely on color alone.",
+    "Normal text needs at least 4.5:1 contrast. Primary blue on pale blue is about 4.03:1 and is unsuitable for normal text. Use navy/dark text there.",
+    "Application UI adoption is pending; this documentation file does not claim deployed styling changes."
+  ]
+}
