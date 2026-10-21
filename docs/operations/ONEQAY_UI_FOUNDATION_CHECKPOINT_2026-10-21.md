@@ -15,12 +15,13 @@ Author by Lab | zefry.
 2. `apps/web/resources/js/pages/Business/DesktopSettings.vue` and `apps/web/resources/js/layouts/LocalizedShell.vue`: standard colors, readable settings controls, responsive kitchen/tab layout and shadow simplification. Desktop settings POST has bounded timeout, session-expired redirect, explicit unknown/queued state, and blocks subsequent writes pending status verification.
 3. `apps/web/resources/js/use-business-mutation.ts` and `apps/web/resources/js/components/OperationFeedback.vue`: operation-scoped nonmodal feedback, indeterminate-only loading, cleanup on unmount, defensive duplicate-click prevention, same-ID manual retry when server state is unknown, queued (202) versus saved state, safe errors, session expiry handling. CSS defines presentation centrally.
 4. `apps/web/resources/js/pages/Business/Settings.vue` and `apps/web/resources/js/pages/Business/Products.vue`: integrated shared feedback on settings/product/category/import-commit actions. Existing backend and amount/stock rules not modified.
-5. `apps/web/scripts/check-ui-palette.mjs`, `apps/web/scripts/operation-feedback.test.mjs`, and existing integrated-business CI wiring: source guard and synthetic state-transition tests with build/browser checks in the workflow.
+5. `apps/web/resources/js/pages/Platform/Control.vue`: platform owner control/SMTP styling migrated to approved tokens, readable form controls, responsive owner sidebar. Its owner write request now has bounded 30-second timeout, explicit queued and unknown outcomes, same-operation-only manual retry and session-expiry owner redirect. Platform backend authorization and SMTP health semantics unchanged.
+6. `apps/web/scripts/check-ui-palette.mjs`, `apps/web/scripts/operation-feedback.test.mjs`, and existing integrated-business CI wiring: source guard and synthetic state-transition tests with build/browser checks in the workflow.
 
 ## Coverage NOT claimed / quality gates
 
-- Browser end-to-end, dynamic color/contrast, focus, screen reader, 200% zoom, responsive matrix, owner visual approval and MySQL integrated business tests: **pending CI results and/or actual browser evidence** until run and checked.
-- Other custom styles including `website.css`, `Platform/Control.vue`, cash drawer/shift/other POS pages, desktop native source and installer: **not fully migrated in this increment**. Do not call the entire UI complete.
+- Full-site browser/visual contrast, focus, screen reader, 200% zoom, responsive matrix and owner visual approval remain **pending**. The earlier UI source head `4ed3311164766616704d0c14d725628bcd406525` passed Integrated Business Management run `39605669764` (including palette/operation tests, vue-tsc, compiled Vite/Playwright and relational SQLite/MySQL flows), Merchandising Reports Currency run `39605669412`, cPanel Windows POS Upgrade run `39605669179` and governance run `39605669806`. **These passing results are for the prior head only**; requalify the updated Platform source head in CI before any lifecycle promotion.
+- Other custom styles including `website.css`, remaining Platform subpages, cash drawer/shift/other POS pages, desktop native source and installer: **not fully migrated in this increment**. Do not call the entire UI complete.
 - Real HTTP mutation tests on hosting, SMTP inbox confirmation, cash/offline pilot and signed Windows updater: **not executed**.
 - The status surface is intentionally nonmodal to avoid interrupting cashier operations; queued jobs without an authorized status endpoint stay queued/unknown rather than being marked complete.
 - No database migrations, tenant/RBAC/SMTP/accounting logic changes, re-provisioning or host cron execution in this PR.
@@ -29,6 +30,6 @@ Author by Lab | zefry.
 ## Next implementation actions
 
 1. Resolve any CI/build/UI browser failures for this exact head; verify 7-color palette/contrast and negative/timeout cases.
-2. Migrate remaining Platform Control, public/auth/error, cashier/shift and desktop-native UI in separately reviewable source increments. Distinguish truly queued jobs from completed operations.
+2. Migrate remaining platform subpages, public/auth/error, cashier/shift and desktop-native UI in separately reviewable source increments. Distinguish truly queued jobs from completed operations.
 3. Complete exact-source artifact build/manifest/checksum and successor operator qualified against predecessor `7efdda7648c2` with no historical migrations, then produce specific File Manager and `/usr/local/bin/php` Cron commands **only once real release/artifact/path/grant exist**.
 4. After actual successful deployment receipt, verify active host/worker and archive only eligible old expanded releases privately with integrity verification; never touch active/shared/backup/database.

@@ -9,11 +9,12 @@ const files = [
   ['resources/css/app.css', false],
   ['resources/js/pages/Business/DesktopSettings.vue', true],
   ['resources/js/layouts/LocalizedShell.vue', true],
+  ['resources/js/pages/Platform/Control.vue', true],
 ];
 let inspected = 0;
 for (const [path, scoped] of files) {
   const source = readFileSync(resolve(root, path), 'utf8');
-  const css = scoped ? (source.match(/<style[^>]*>([\s\S]*?)<\/style>/)?.[1] ?? '') : source;
+  const css = scoped ? [...source.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map(m => m[1]).join('\n') : source;
   if (!css) throw Error('Missing migrated stylesheet: ' + path);
   const literals = css.match(/#[0-9a-fA-F]{3,8}\b/g) ?? [];
   for (const literal of literals) {

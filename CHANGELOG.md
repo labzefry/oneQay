@@ -1,5 +1,7 @@
 ## 2026-10-21 — UI enterprise foundation source milestone (NOT deployed)
 
+**UI foundation follow-on:** Platform Control/SMTP styling and owner operation feedback extended on PR #978 branch; palette guard includes both scoped style sections. Updated head needs its own checks and review. Hosting and schema remain unchanged. [Checkpoint](docs/operations/ONEQAY_UI_FOUNDATION_CHECKPOINT_2026-10-21.md).
+
 Author by Lab | zefry. Branch `agent/ui-enterprise-palette-feedback-20261021` implements the initial scoped palette/morph/typography and operation-feedback primitives from [owner brief](docs/design/ONEQAY_UI_MODERNIZATION_2026-10-21.md). It updates shared merchant CSS, LocalizedShell, Business Settings/Products, and POS desktop configuration, with a palette guard and composable-state synthetic checks wired to the existing integrated-business CI. It does **not** claim full Website/Platform/POS/Windows coverage, successful browser QA, merge, or cPanel deployment. Existing host remains `production-7efdda7648c2` with 38 receipts/88 tables. No migrations/schema/tenant grants/finance/stock functions are changed. See [incremental source checkpoint](docs/operations/ONEQAY_UI_FOUNDATION_CHECKPOINT_2026-10-21.md).
 
 ## 2026-10-21 — Actual production deployment and next UI/UX handoff

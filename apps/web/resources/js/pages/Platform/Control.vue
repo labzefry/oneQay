@@ -5,6 +5,8 @@ import { locale } from '../../i18n';
 import ControlOperations from '../../components/ControlOperations.vue';
 import LanguageSwitcher from '../../components/LanguageSwitcher.vue';
 import WorkspaceIcon from '../../components/WorkspaceIcon.vue';
+import OperationFeedback from '../../components/OperationFeedback.vue';
+import type { MutationStatus } from '../../use-business-mutation';
 const tr = (id: string, en: string) => locale.value === 'id' ? id : en;
 type Row = { id: string; name: string; email: string; status: string; version: number; tenant_id: string; created_at: number };
 type Message = { id: string; tenant_id: string; status: string; attempts: number; safe_code: string | null; created_at: number };
@@ -17,6 +19,11 @@ onMounted(()=>{reportTimer=setInterval(()=>void refreshMail(),10000);});onBefore
 const lastTest=computed(()=>mail.value.messages.find(r=>r.id===testMessageId.value));
 const tab = ref(['overview','business','configuration','errors','marketing','mail','smtp','security','audit'].includes(window.location.hash.slice(1)) ? window.location.hash.slice(1) : 'overview'); const busy = ref(false); const uncertain = ref(false); const message = ref('');
 const pending = ref<{ path: string; body: Record<string, unknown> } | null>(null);
+const operationProgress = ref<MutationStatus>('idle');
+const operationNote = ref('');
+const operationRef = computed(() => typeof pending.value?.body.operation_id === 'string' ? pending.value.body.operation_id : null);
+let activeWrite: AbortController | null = null;
+onBeforeUnmount(() => activeWrite?.abort());
 const detail = ref<Record<string, any> | null>(null);
 const navigation: [string,string,string,string][] = [['overview','activity','Ringkasan NOC','NOC overview'],['business','building-2','Akun bisnis','Business accounts'],['configuration','settings-2','Konfigurasi fitur','Feature configuration'],['errors','server','Insiden & error','Incidents & errors'],['marketing','megaphone','Marketing','Marketing'],['mail','mail','Laporan email','Mail reports'],['smtp','settings','Pengaturan SMTP','SMTP settings'],['security','shield-check','Keamanan','Security'],['audit','history','Riwayat aktivitas','Activity history']];
 async function openBusiness(id: string) {
@@ -42,15 +49,67 @@ const status = (key: string) => statuses[key]?.[locale.value === 'id' ? 0 : 1] ?
 function headers() { return { 'Content-Type': 'application/json', Accept: 'application/json', 'X-CSRF-TOKEN': document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content ?? '' }; }
 async function save(path: string, body: Record<string, unknown>) {
     if (busy.value) return;
-    pending.value ??= { path, body: JSON.parse(JSON.stringify({ operation_id: crypto.randomUUID(), ...body })) }; busy.value = true; message.value = '';
+    // On uncertain outcome, never silently change the operation ID or its immutable payload.
+    if (pending.value && (pending.value.path !== path || JSON.stringify(pending.value.body) !== JSON.stringify(body))) {
+        message.value = tr('Selesaikan verifikasi operasi sebelumnya sebelum memulai perubahan lain.', 'Verify the previous operation before starting a different change.');
+        return;
+    }
+    pending.value ??= { path, body: JSON.parse(JSON.stringify({ operation_id: crypto.randomUUID(), ...body })) };
+    const request = pending.value;
+    busy.value = true;
+    message.value = '';
+    operationNote.value = '';
+    operationProgress.value = 'running';
+    const controller = new AbortController(); activeWrite = controller;
+    const timer = window.setTimeout(() => controller.abort(), 30000);
     try {
-        const r = await fetch(pending.value.path, { method: 'POST', credentials: 'same-origin', headers: headers(), body: JSON.stringify(pending.value.body) });
-        if (r.status >= 500) throw new Error('uncertain');
-        if (!r.ok) { detail.value = null; pending.value = null; uncertain.value = false; message.value = tr('Perubahan ditolak. Periksa isian, versi data, dan verifikasi keamanan. Jika sesi kedaluwarsa, muat ulang halaman.', 'Change denied. Check fields, data version, and security verification. Reload if your session expired.'); return; }
-        const result = await r.json(); if (result.status === 'queued') {testMessageId.value=result.record?.message_id??'';void refreshMail();pending.value=null;uncertain.value=false;message.value=tr('Email uji masuk antrean. Lihat Laporan email untuk hasil pengiriman. ID: ','Test email queued. Check Mail reports for delivery. ID: ')+(result.record?.message_id??'');return;} if (result.status !== 'saved') throw new Error('uncertain');
-        pending.value = null; uncertain.value = false; busy.value = false; window.location.assign('/platform?updated=' + Date.now() + '#' + tab.value);
-    } catch { detail.value = null; uncertain.value = true; message.value = tr('Hasil belum pasti. Ulangi permintaan yang sama menggunakan tombol di bawah.', 'The result is uncertain. Retry the same request below.'); }
-    finally { busy.value = false; }
+        if (!navigator.onLine) throw new Error('NETWORK_UNCONFIRMED');
+        const r = await fetch(request.path, {
+            method: 'POST', credentials: 'same-origin', redirect: 'error',
+            headers: headers(), body: JSON.stringify(request.body), signal: controller.signal,
+        });
+        if (controller.signal.aborted) throw new Error('TIMEOUT_UNCONFIRMED');
+        if (r.status === 401 || r.status === 419) {
+            operationProgress.value = 'session-expired';
+            uncertain.value = true;
+            window.location.assign('/owner-login?reason=session-expired');
+            return;
+        }
+        if (r.status >= 500) throw new Error('SERVER_UNCONFIRMED');
+        const result = await r.json();
+        if (controller.signal.aborted) throw new Error('TIMEOUT_UNCONFIRMED');
+        if (r.status === 202 || result.status === 'queued') {
+            testMessageId.value = typeof result.record?.message_id === 'string' ? result.record.message_id : '';
+            void refreshMail();
+            pending.value = null;
+            uncertain.value = false;
+            operationProgress.value = 'queued';
+            operationNote.value = tr('Email diterima antrean server, belum terbukti terkirim ke inbox. Pantau laporan pengiriman.', 'Email accepted into the server queue, not confirmed in the inbox. Monitor mail reports.');
+            message.value = operationNote.value;
+            return;
+        }
+        if (!r.ok) {
+            detail.value = null; pending.value = null; uncertain.value = false;
+            operationProgress.value = 'failed';
+            message.value = tr('Perubahan ditolak. Periksa isian, versi data dan verifikasi keamanan.', 'Change denied. Check fields, version and security verification.');
+            operationNote.value = message.value;
+            return;
+        }
+        if (result.status !== 'saved') throw new Error('SAVE_UNCONFIRMED');
+        pending.value = null; uncertain.value = false;
+        operationProgress.value = 'succeeded';
+        busy.value = false;
+        window.location.assign('/platform?updated=' + Date.now() + '#' + tab.value);
+    } catch {
+        detail.value = null; uncertain.value = true;
+        operationProgress.value = 'unknown';
+        operationNote.value = tr('Hasil belum pasti. Periksa perubahan pada server, lalu bila perlu kirim ulang operasi dan data yang sama; jangan buat transaksi baru.', 'Outcome not confirmed. Verify server state first; only then manually retry the same operation ID and payload.');
+        message.value = operationNote.value;
+    } finally {
+        window.clearTimeout(timer);
+        if (activeWrite === controller) activeWrite = null;
+        busy.value = false;
+    }
 }
 function create() { void save('/platform/businesses', { operation_id: crypto.randomUUID(), action: 'create', name: name.value, email: email.value, locale: language.value, reason: reason.value }); }
 function change(row: Row, action: string) { void save('/platform/businesses', { operation_id: crypto.randomUUID(), action, id: row.id, version: Number(row.version), reason: reason.value }); }
@@ -71,7 +130,7 @@ async function inspect() {
 }
 </script>
 <template>
-    <main class="platform">
+    <main class="platform"><OperationFeedback :status="operationProgress" :message="operationNote" :operation-id="operationRef"/>
         <aside class="control-sidebar"><a class="control-logo" href="/platform"><span>q</span>oneQay</a><p class="sidebar-label">CONTROL PLANE</p><nav aria-label="Platform"><button v-for="[key, icon, id, en] in navigation" :key="key" :class="{ selected: tab === key }" @click="tab = key"><WorkspaceIcon :name="icon" :size="18"/><span>{{ tr(id,en) }}</span></button><a href="/platform/site"><WorkspaceIcon name="panels-top-left" :size="18"/>{{ tr('Editor website','Website editor') }} ↗</a></nav><div class="sidebar-foot"><span class="live-dot"/>{{ tr('Akses pemilik platform','Platform owner access') }}<small>© {{ new Date().getFullYear() }} oneQay</small></div></aside>
         <div class="control-content"><div class="control-topbar"><span>{{ tr('Platform / Operasional','Platform / Operations') }}</span><div><a href="/pos">{{ tr('Ruang kerja bisnis','Business workspace') }} ↗</a><LanguageSwitcher/></div></div>
         <header class="hero"><div><a href="/pos">← {{ tr('Ruang kerja bisnis', 'Business workspace') }}</a><p class="eyebrow">ONEQAY / {{ tr('PEMILIK PLATFORM', 'PLATFORM OWNER') }}</p><h1>{{ tr('Kendali penuh. Bisnis bertumbuh.', 'In control. Ready to grow.') }}</h1><p>{{ tr('Kelola bisnis, keamanan, dan kesehatan layanan oneQay dari satu pusat kendali.', 'Manage businesses, security, and oneQay service health from one control center.') }}</p></div><span class="owner">{{ tr('Akses khusus pemilik', 'Owner access') }}</span></header>
