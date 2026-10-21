@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import NumericInput from "../../components/NumericInput.vue";
 import { currencyPreferences, formatMoney as displayMoney } from "../../business-money";
-import { t } from "../../i18n";
+import { t, locale } from "../../i18n";
 import { Head } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import { computed, onBeforeUnmount, ref } from 'vue';
+import OperationFeedback from '../../components/OperationFeedback.vue';
+import type { MutationStatus } from '../../use-business-mutation';
 
 type OpeningCashEvidence = {
     evidence_id: string;
@@ -59,6 +61,11 @@ const currencyScale = ref(currencyPreferences.value.scale);
 const openingCashInput = ref('0');
 const openingShift = ref(false);
 const recordingCash = ref(false);
+const shiftUnknown = ref(false); const cashUnknown = ref(false);
+const operationProgress = ref<MutationStatus>('idle');
+const operationId = ref<string | null>(null);
+const activeRequests = new Set<AbortController>();
+onBeforeUnmount(() => { for (const request of activeRequests) request.abort(); activeRequests.clear(); });
 const message = ref('');
 const messageKind = ref<'neutral' | 'success' | 'warning' | 'error'>('neutral');
 
@@ -92,31 +99,49 @@ const parseOpeningCashAtomic = (): number | null => {
     return Number(atomic);
 };
 
-const requestJson = async (endpoint: string, body: Record<string, unknown>): Promise<Response> => fetch(endpoint, {
-    method: 'POST',
-    credentials: 'same-origin',
-    headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest',
-    },
-    body: JSON.stringify({ _token: props.csrf_token, ...body }),
-});
+const requestJson = async (endpoint: string, body: Record<string, unknown>): Promise<{ response: Response; payload: unknown }> => {
+    const controller = new AbortController(); activeRequests.add(controller);
+    const timer = window.setTimeout(() => controller.abort(), 30000);
+    try {
+        if (!navigator.onLine) throw new Error('OFFLINE_UNCONFIRMED');
+        const response = await fetch(endpoint, {
+            method: 'POST', credentials: 'same-origin', signal: controller.signal, redirect: 'error',
+            headers: { Accept: 'application/json', 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            body: JSON.stringify({ _token: props.csrf_token, ...body }),
+        });
+        if (controller.signal.aborted) throw new Error('TIMEOUT_UNCONFIRMED');
+        if (response.status === 401 || response.status === 419) {
+            operationProgress.value = 'session-expired';
+            window.location.assign('/business-login?reason=session-expired');
+            throw new Error('SESSION_EXPIRED');
+        }
+        if (response.status === 202 || response.status >= 500) {
+            operationProgress.value = response.status === 202 ? 'queued' : 'unknown';
+            throw new Error('WRITE_UNCONFIRMED');
+        }
+        const payload: unknown = await response.json();
+        if (controller.signal.aborted) throw new Error('TIMEOUT_UNCONFIRMED');
+        return { response, payload };
+    } finally { window.clearTimeout(timer); activeRequests.delete(controller); }
+};
 
 const openShift = async (): Promise<void> => {
-    if (activeShift.value) return;
+    if (activeShift.value || openingShift.value || shiftUnknown.value) return;
 
     openingShift.value = true;
+    operationId.value = shiftOperationId.value;
+    operationProgress.value = 'running';
     message.value = '';
     messageKind.value = 'neutral';
 
     try {
-        const response = await requestJson(props.open_shift_endpoint, { operation_id: shiftOperationId.value });
-        const payload = await response.json() as ShiftOpenResult | { error?: { code?: string } };
+        const { response, payload: raw } = await requestJson(props.open_shift_endpoint, { operation_id: shiftOperationId.value });
+        const payload = raw as ShiftOpenResult | { error?: { code?: string } };
         if (!response.ok || !('status' in payload) || payload.status !== 'opened') {
             const code = 'error' in payload ? payload.error?.code : undefined;
             message.value = code ? `Pembukaan shift ditolak (${code}).` : 'Pembukaan shift ditolak oleh server.';
             messageKind.value = 'error';
+            operationProgress.value = 'failed';
             return;
         }
 
@@ -127,7 +152,10 @@ const openShift = async (): Promise<void> => {
         };
         message.value = 'Shift aktif berhasil dibuka. Lanjutkan pencatatan kas awal; jangan membuka shift kedua.';
         messageKind.value = 'success';
+        operationProgress.value = 'succeeded';
     } catch {
+        shiftUnknown.value = true;
+        if (!['queued', 'session-expired'].includes(operationProgress.value)) operationProgress.value = 'unknown';
         message.value = 'Status pembukaan shift belum dapat dipastikan. Tidak ada retry otomatis. Refresh halaman untuk membaca status authoritative sebelum mencoba lagi.';
         messageKind.value = 'warning';
     } finally {
@@ -136,7 +164,7 @@ const openShift = async (): Promise<void> => {
 };
 
 const recordOpeningCash = async (): Promise<void> => {
-    if (!activeShift.value || activeShift.value.opening_cash_evidence) return;
+    if (!activeShift.value || activeShift.value.opening_cash_evidence || recordingCash.value || cashUnknown.value) return;
 
     const canonicalCurrency = currency.value.trim().toUpperCase();
     if (!/^[A-Z]{3}$/.test(canonicalCurrency)) {
@@ -153,23 +181,26 @@ const recordOpeningCash = async (): Promise<void> => {
     }
 
     recordingCash.value = true;
+    operationId.value = cashOperationId.value;
+    operationProgress.value = 'running';
     message.value = '';
     messageKind.value = 'neutral';
 
     try {
-        const response = await requestJson(props.opening_cash_endpoint, {
+        const { response, payload: raw } = await requestJson(props.opening_cash_endpoint, {
             operation_id: cashOperationId.value,
             opening_cash_atomic: atomic,
             currency: canonicalCurrency,
             currency_scale: currencyScale.value,
         });
-        const payload = await response.json() as OpeningCashResult | { error?: { code?: string } };
+        const payload = raw as OpeningCashResult | { error?: { code?: string } };
         if (!response.ok || !('status' in payload) || payload.status !== 'recorded') {
             const code = 'error' in payload ? payload.error?.code : undefined;
             message.value = code
                 ? `Kas awal belum tercatat (${code}). Shift tetap aktif; jangan membuka shift baru.`
                 : 'Kas awal belum tercatat. Shift tetap aktif; jangan membuka shift baru.';
             messageKind.value = 'error';
+            operationProgress.value = 'failed';
             return;
         }
 
@@ -188,7 +219,10 @@ const recordOpeningCash = async (): Promise<void> => {
         };
         message.value = 'Kas awal tercatat. Shift siap digunakan untuk transaksi kasir.';
         messageKind.value = 'success';
+        operationProgress.value = 'succeeded';
     } catch {
+        cashUnknown.value = true;
+        if (!['queued', 'session-expired'].includes(operationProgress.value)) operationProgress.value = 'unknown';
         message.value = 'Status pencatatan kas awal belum dapat dipastikan. Tidak ada retry otomatis. Refresh halaman untuk membaca evidence authoritative sebelum mencoba lagi.';
         messageKind.value = 'warning';
     } finally {
@@ -199,7 +233,7 @@ const recordOpeningCash = async (): Promise<void> => {
 
 <template>
     <Head :title="t('Shift Start Workspace')" />
-    <main class="shell">
+    <main class="shell"><OperationFeedback :status="operationProgress" :message="message" :operation-id="operationId" :success-label="locale==='id'?'Operasi shift terkonfirmasi':'Shift operation confirmed'" :running-label="locale==='id'?'Memproses operasi shift':'Processing shift operation'"/>
         <header class="hero">
             <div>
                 <p class="eyebrow">{{ t("oneQay · Point of Sale") }}</p>
@@ -275,5 +309,15 @@ const recordOpeningCash = async (): Promise<void> => {
 </template>
 
 <style scoped>
-.shell{min-height:100vh;background:#f5f7fa;color:#172033;padding:28px;font-family:Inter,ui-sans-serif,system-ui,sans-serif}.hero{max-width:1240px;margin:0 auto 20px;display:flex;justify-content:space-between;align-items:flex-end;gap:24px}.eyebrow{margin:0;color:#667085;font-size:.72rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase}h1{margin:4px 0 7px;font-size:clamp(2rem,4vw,3rem);letter-spacing:-.04em}h2{margin:3px 0 0;font-size:1.18rem}.subtitle,.muted,.guard{color:#667085}.status-card,.scope-grid,.panel,.message,.policy-note{background:#fff;border:1px solid #e4e8ef;border-radius:16px;box-shadow:0 8px 24px rgba(16,24,40,.04)}.status-card{min-width:240px;padding:14px 18px;border-left:4px solid #f79009}.status-card[data-ready="true"]{border-left-color:#039855}.status-card span,.status-card small{display:block;color:#667085;font-size:.75rem}.status-card strong{display:block;margin:4px 0}.scope-grid{max-width:1240px;margin:0 auto 18px;padding:14px 18px;display:grid;grid-template-columns:repeat(4,1fr);gap:16px}.scope-grid span{display:block;color:#667085;font-size:.72rem}.scope-grid strong{font-size:.88rem;word-break:break-all}.workflow{max-width:1240px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.panel{padding:20px;border-top:3px solid transparent}.panel[data-active="true"]{border-top-color:#1570ef}.panel[data-complete="true"]{border-top-color:#039855}.panel-head{display:flex;align-items:center;gap:12px;margin-bottom:14px}.step{display:grid;place-items:center;width:38px;height:38px;border-radius:12px;background:#eef4ff;color:#175cd3;font-weight:800}.operation{font-size:.74rem;color:#667085}.operation span,.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;word-break:break-all}.money-grid{display:grid;grid-template-columns:1fr 90px;gap:10px}.money-grid .amount{grid-column:1/-1}label{font-size:.78rem;font-weight:700;color:#475467}input{display:block;width:100%;box-sizing:border-box;margin-top:6px;border:1px solid #d0d5dd;border-radius:10px;padding:10px 12px;font:inherit;color:#172033}button,.primary-link{display:inline-flex;justify-content:center;align-items:center;border:0;border-radius:10px;padding:11px 15px;background:#175cd3;color:#fff;font:inherit;font-weight:800;text-decoration:none;cursor:pointer}button:disabled{opacity:.55;cursor:not-allowed}.guard{display:block;margin-top:10px;font-size:.72rem;line-height:1.45}.success-box{padding:14px;border-radius:12px;background:#ecfdf3;border:1px solid #abefc6}.success-box strong,.success-box span,.success-box small{display:block}.success-box span{margin:5px 0;font-weight:800}.success-box small{color:#475467}.message,.policy-note{max-width:1204px;margin:16px auto 0;padding:16px 18px}.message[data-kind="success"]{border-left:4px solid #039855}.message[data-kind="warning"]{border-left:4px solid #f79009}.message[data-kind="error"]{border-left:4px solid #d92d20}.policy-note p{margin:5px 0 0;color:#667085}footer{max-width:1240px;margin:18px auto 0;color:#98a2b3;font-size:.72rem}@media(max-width:900px){.hero{align-items:stretch;flex-direction:column}.status-card{min-width:0}.scope-grid{grid-template-columns:repeat(2,1fr)}.workflow{grid-template-columns:1fr}}@media(max-width:520px){.shell{padding:18px}.scope-grid{grid-template-columns:1fr}}
+.shell{min-height:100vh;background:#FFFFFF;color:#1B1B39;padding:28px;font-family:Inter,ui-sans-serif,system-ui,sans-serif}.hero{max-width:1240px;margin:0 auto 20px;display:flex;justify-content:space-between;align-items:flex-end;gap:24px}.eyebrow{margin:0;color:#3965FA;font-size:.72rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase}h1{margin:4px 0 7px;font-size:clamp(2rem,4vw,3rem);letter-spacing:-.04em}h2{margin:3px 0 0;font-size:1.18rem}.subtitle,.muted,.guard{color:#3965FA}.status-card,.scope-grid,.panel,.message,.policy-note{background:#FFFFFF;border:1px solid #E9EBFF;border-radius:16px;box-shadow:0 8px 24px #1B1B390A}.status-card{min-width:240px;padding:14px 18px;border-left:4px solid #3965FA}.status-card[data-ready="true"]{border-left-color:#3965FA}.status-card span,.status-card small{display:block;color:#3965FA;font-size:.75rem}.status-card strong{display:block;margin:4px 0}.scope-grid{max-width:1240px;margin:0 auto 18px;padding:14px 18px;display:grid;grid-template-columns:repeat(4,1fr);gap:16px}.scope-grid span{display:block;color:#3965FA;font-size:.72rem}.scope-grid strong{font-size:.88rem;word-break:break-all}.workflow{max-width:1240px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.panel{padding:20px;border-top:3px solid transparent}.panel[data-active="true"]{border-top-color:#3965FA}.panel[data-complete="true"]{border-top-color:#3965FA}.panel-head{display:flex;align-items:center;gap:12px;margin-bottom:14px}.step{display:grid;place-items:center;width:38px;height:38px;border-radius:12px;background:#E9EBFF;color:#3965FA;font-weight:800}.operation{font-size:.74rem;color:#3965FA}.operation span,.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;word-break:break-all}.money-grid{display:grid;grid-template-columns:1fr 90px;gap:10px}.money-grid .amount{grid-column:1/-1}label{font-size:.78rem;font-weight:700;color:#3965FA}input{display:block;width:100%;box-sizing:border-box;margin-top:6px;border:1px solid #EDEDED;border-radius:10px;padding:10px 12px;font:inherit;color:#1B1B39}button,.primary-link{display:inline-flex;justify-content:center;align-items:center;border:0;border-radius:10px;padding:11px 15px;background:#3965FA;color:#FFFFFF;font:inherit;font-weight:800;text-decoration:none;cursor:pointer}button:disabled{opacity:.55;cursor:not-allowed}.guard{display:block;margin-top:10px;font-size:.72rem;line-height:1.45}.success-box{padding:14px;border-radius:12px;background:#E9EBFF;border:1px solid #99B7FC}.success-box strong,.success-box span,.success-box small{display:block}.success-box span{margin:5px 0;font-weight:800}.success-box small{color:#3965FA}.message,.policy-note{max-width:1204px;margin:16px auto 0;padding:16px 18px}.message[data-kind="success"]{border-left:4px solid #3965FA}.message[data-kind="warning"]{border-left:4px solid #3965FA}.message[data-kind="error"]{border-left:4px solid #3965FA}.policy-note p{margin:5px 0 0;color:#3965FA}footer{max-width:1240px;margin:18px auto 0;color:#3965FA;font-size:.72rem}@media(max-width:900px){.hero{align-items:stretch;flex-direction:column}.status-card{min-width:0}.scope-grid{grid-template-columns:repeat(2,1fr)}.workflow{grid-template-columns:1fr}}@media(max-width:520px){.shell{padding:18px}.scope-grid{grid-template-columns:1fr}}
+
+/* Minimal-depth, legible opening shift surfaces. */
+.shell{background:var(--oq-white);color:var(--oq-dark);font-size:1rem}
+h1,h2,.scope-grid strong{color:var(--oq-navy)}
+.status-card,.scope-grid,.panel,.message,.policy-note{background:var(--oq-white);border-color:var(--oq-light);box-shadow:0 8px 24px #1B1B3914}
+.status-card,.status-card[data-ready="true"],.panel[data-active="true"],.panel[data-complete="true"]{border-left-color:var(--oq-primary);border-top-color:var(--oq-primary)}
+.eyebrow,.status-card span,.status-card small,.scope-grid span,.operation,.muted,.subtitle{font-size:.875rem;color:var(--oq-navy)}
+input,select{font-size:1rem;min-height:44px;color:var(--oq-dark);border-color:var(--oq-soft)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--oq-primary);outline-offset:3px}
+
 </style>

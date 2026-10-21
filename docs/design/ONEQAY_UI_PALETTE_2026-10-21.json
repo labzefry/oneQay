@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "status": "OWNER_REQUIRED_FOR_NEXT_UI_IMPLEMENTATION",
+  "status": "PARTIAL_FOUNDATION_IMPLEMENTATION_PENDING_FULL_COVERAGE_AND_VALIDATION",
   "owner_instruction_date": "2026-10-21",
   "source": {
     "file_name": "image(20261021-123331).png",
@@ -31,6 +31,6 @@
     "Shadows/overlays may use alpha from these colors only; content contrast is measured after compositing. Do not invent additional solid tints or hues.",
     "Use labels, icons, borders and patterns for semantic states; do not rely on color alone.",
     "Normal text needs at least 4.5:1 contrast. Primary blue on pale blue is about 4.03:1 and is unsuitable for normal text. Use navy/dark text there.",
-    "Application UI adoption is pending; this documentation file does not claim deployed styling changes."
+    "Shared web workspace and POS desktop configuration source adoption is underway on a feature branch; full UI coverage/hosting deployment remains unverified."
   ]
 }

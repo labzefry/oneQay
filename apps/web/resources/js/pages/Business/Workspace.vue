@@ -5,6 +5,8 @@ import { router } from '@inertiajs/vue3';
 import { locale, t } from '../../i18n';
 import WorkspaceIcon from '../../components/WorkspaceIcon.vue';
 import NumericInput from '../../components/NumericInput.vue';
+import OperationFeedback from '../../components/OperationFeedback.vue';
+import type { MutationStatus } from '../../use-business-mutation';
 import { formatMoney, currencyPreferences } from '../../business-money';
 type Row = { id: string; version: number; [key: string]: any };
 type Product = { product_id: string; display_name: string; currency: string; currency_scale: number };
@@ -18,6 +20,10 @@ const selected = ref<Row | null>(null); const dialog = ref<HTMLDialogElement | n
 const mode = ref(''); const fields = ref<Field[]>([]); const lines = ref<Record<string, any>[]>([]);
 const busy = ref(false); const uncertain = ref(false); const error = ref(''); const saved = ref(false);
 const pending = ref<{ operation_id: string; data: Record<string, any> } | null>(null);
+const operationProgress = ref<MutationStatus>('idle');
+const operationId = computed(() => pending.value?.operation_id ?? null);
+let writeController: AbortController | null = null;
+onBeforeUnmount(() => writeController?.abort());
 const optionQuery = ref(''); const optionPage = ref(1); const optionMore = ref(false); const optionLoading = ref(false);
 const products = ref<Product[]>(props.products?.data ?? []); const productQuery = ref(''); const productPage = ref(1); const productMore = ref(props.products?.has_more ?? false); const productLoading = ref(false);
 const choices = ref<Row[]>(props.suppliers ?? props.partners ?? []);
@@ -50,7 +56,7 @@ const input = (key: string, label: string, type = 'text', required = true): Fiel
 const select = (key: string, label: string, options: {value:string;label:string}[]): Field => ({key,label,type:'select',options,required:true});
 const selectValues = (values: string[]) => values.map(value => ({value,label:value}));
 function open(action: string, row?: Row): void {
-    if (!can(action)) return; mode.value = action; selected.value = row ?? null; error.value = ''; saved.value = false; uncertain.value = false; pending.value = null;
+    if (busy.value || uncertain.value || !can(action)) return; mode.value = action; selected.value = row ?? null; error.value = ''; saved.value = false; uncertain.value = false; pending.value = null;
     Object.keys(form).forEach(k => delete form[k]); fields.value = []; lines.value = []; optionQuery.value = ''; optionPage.value = 1;
     if (action === 'supplier.save' || action === 'customer.save') {
         fields.value = [input('code','Code'),input('name','Name'),input('email','Email','email',false),input('phone','Phone','tel',false),input('address','Address','textarea',false),input('active','Active','checkbox')];
@@ -111,22 +117,57 @@ function payload(): Record<string,any> {
 }
 const errorMessages: Record<string,string>={BUSINESS_PERMISSION_DENIED:'Your role does not allow this action.',RECORD_CHANGED:'This record changed. Refresh and review the latest version.',OPERATION_CONFLICT:'This request identifier was already used with different data.',PRODUCT_NOT_READY:'The product must be active and have opening stock configured.',CURRENCY_MISMATCH:'The purchase currency must match the selected products.',QUANTITY_EXCEEDS_ORDER:'The received quantity exceeds the outstanding order.',PURCHASE_NOT_APPROVED:'Approve this purchase order before receiving goods.',INVALID_PURCHASE_STATE:'This action is not available for the current order status.',DUPLICATE_OR_INVALID_REFERENCE:'The code or invoice reference already exists, or its related record is invalid.',INVOICE_RECEIPT_MISMATCH:'The supplier, amount and currency must match the goods receipt.',PAYMENT_EXCEEDS_BALANCE:'The payment exceeds the unpaid invoice balance.',UNBALANCED_JOURNAL:'Journal debits and credits must be equal.',LEAVE_OVERLAP:'This employee already has leave in the selected period.',INVALID_ATTENDANCE_TIME:'Check the work date and attendance times.',INVALID_DUE_DATE:'The due date must be on or after the invoice date.',STOCK_RECEIPT_REJECTED:'Stock could not be received. Check the product and opening stock.',BUSINESS_STORAGE_UNAVAILABLE:'Business storage is not available. No success has been confirmed.'};
 async function submit(): Promise<void> {
-    if(busy.value)return; error.value='';
-    try { if(!pending.value)pending.value={operation_id:`business:${crypto.randomUUID()}`,data:payload()}; } catch(e) { error.value=e instanceof Error?e.message:t('Check the entered values.');return; }
-    busy.value=true;
+    if (busy.value) return;
+    error.value = '';
+    try { if (!pending.value) pending.value = { operation_id: `business:${crypto.randomUUID()}`, data: payload() }; }
+    catch (e) { operationProgress.value = 'failed'; error.value = e instanceof Error ? e.message : t('Check the entered values.'); return; }
+    busy.value = true; operationProgress.value = 'running';
+    const controller = new AbortController(); writeController = controller;
+    const timer = window.setTimeout(() => controller.abort(), 30000);
     try {
-        const csrf=document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content;
-        if(!csrf)throw new Error('csrf');
-        const response=await fetch(`/pos/business/commands/${mode.value}`,{method:'POST',credentials:'same-origin',redirect:'error',headers:{'Content-Type':'application/json','Accept':'application/json','X-CSRF-TOKEN':csrf},body:JSON.stringify(pending.value)});
-        const result=await response.json();
-        if(!response.ok){
-            if(response.status>=500){uncertain.value=true;}else{uncertain.value=false;pending.value=null;}
-            const code=result?.error?.code??'';error.value=t(errorMessages[code]??'Check the entered values and your access, then try again.');return;
+        const csrf = document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content;
+        if (!csrf) throw new Error('SESSION_UNVERIFIED');
+        if (!navigator.onLine) throw new Error('OFFLINE_UNCONFIRMED');
+        const response = await fetch(`/pos/business/commands/${mode.value}`, {
+            method: 'POST', credentials: 'same-origin', redirect: 'error', signal: controller.signal,
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-CSRF-TOKEN': csrf },
+            body: JSON.stringify(pending.value),
+        });
+        if (controller.signal.aborted) throw new Error('TIMEOUT_UNCONFIRMED');
+        if (response.status === 401 || response.status === 419) {
+            operationProgress.value = 'session-expired';
+            uncertain.value = true;
+            window.location.assign('/business-login?reason=session-expired');
+            return;
         }
-        uncertain.value=false;pending.value=null;saved.value=true;dialog.value?.close();mode.value='';
-        router.reload();
-    } catch {uncertain.value=true;error.value=t('The result is not confirmed. Retry the same request to avoid duplicate records.');}
-    finally{busy.value=false;}
+        if (response.status === 202) {
+            uncertain.value = true; operationProgress.value = 'queued';
+            error.value = t('Business command accepted into a queue; completion is not confirmed. Verify server state before retrying.');
+            return;
+        }
+        if (response.status >= 500) throw new Error('WRITE_UNCONFIRMED');
+        const result = await response.json();
+        if (controller.signal.aborted) throw new Error('LATE_ACKNOWLEDGEMENT');
+        if (!response.ok) {
+            uncertain.value = false; pending.value = null; operationProgress.value = 'failed';
+            const code = result?.error?.code ?? '';
+            error.value = t(errorMessages[code] ?? 'Check the entered values and your access, then try again.');
+            return;
+        }
+        if (result?.status === 'queued') {
+            uncertain.value = true; operationProgress.value = 'queued';
+            error.value = t('Business command is queued; completion is not confirmed. Verify server status.');
+            return;
+        }
+        uncertain.value = false; pending.value = null; saved.value = true; operationProgress.value = 'succeeded';
+        dialog.value?.close(); mode.value = ''; router.reload();
+    } catch {
+        uncertain.value = true; operationProgress.value = 'unknown';
+        error.value = t('The result is not confirmed. Verify server records before manually retrying the same request.');
+    } finally {
+        window.clearTimeout(timer); if (writeController === controller) writeController = null;
+        busy.value = false;
+    }
 }
 async function findChoices(next=false): Promise<void> {
     const kind=props.module==='purchases'?'suppliers':'partners';optionLoading.value=true;
@@ -149,7 +190,7 @@ window.addEventListener('beforeunload',beforeUnload);onBeforeUnmount(()=>window.
 </script>
 
 <template>
-  <main class="biz" :aria-label="t(title)">
+  <main class="biz" :aria-label="t(title)"><OperationFeedback :status="operationProgress" :message="error" :operation-id="operationId"/>
     <header class="biz-heading"><div><p class="eyebrow">oneQay · {{ t('Business management') }}</p><h1>{{ t(title) }}</h1><p>{{ t('Connected records for the business you run every day.') }}</p></div><a class="secondary" href="/pos"><WorkspaceIcon name="layout-dashboard" :size="18" />{{ t('Business Command Center') }}</a></header>
     <nav class="biz-tabs" :aria-label="t('Business modules')"><a v-for="item in modules" :key="item.key" :href="item.url" :aria-current="item.key === `business_${module}` ? 'page' : undefined">{{ t(item.title) }}</a></nav>
     <p v-if="saved" role="status" class="success">{{ t('Saved successfully.') }}</p>
@@ -201,6 +242,18 @@ window.addEventListener('beforeunload',beforeUnload);onBeforeUnmount(()=>window.
 </template>
 
 <style scoped>
-.biz{max-width:1500px;margin:auto;padding:30px;color:#172c36}.biz-heading,.section-title,.toolbar,.toolbar-actions,.pagination,.pagination>div,.history-row,.row-actions{display:flex;align-items:center;gap:12px}.biz-heading,.section-title,.toolbar,.pagination,.history-row{justify-content:space-between}.biz-heading{margin-bottom:24px}.biz h1{font-size:32px;line-height:1.2;letter-spacing:-.035em;margin:6px 0 10px}.biz h2{font-size:20px;margin:0 0 8px}.biz p{line-height:1.6}.biz-heading p,.detail>p,.section-title p{color:#637580;margin:4px 0}.eyebrow{text-transform:uppercase;letter-spacing:.12em;font-size:11px;font-weight:750;color:#137d72!important}.biz-tabs{display:flex;gap:6px;overflow:auto;border-bottom:1px solid #dce5e9;margin-bottom:24px}.biz-tabs a{white-space:nowrap;padding:12px 18px;color:#596d76;text-decoration:none;border-bottom:3px solid transparent}.biz-tabs a[aria-current=page]{border-color:#0f8072;color:#086457;font-weight:700}.biz-panel{background:#fff;border:1px solid #dfe7eb;border-radius:16px;margin-bottom:22px;box-shadow:0 2px 6px #1c445405;overflow:hidden}.toolbar,.detail{padding:22px}.toolbar,.toolbar-actions,.row-actions{flex-wrap:wrap}.search,.period,.option-search{display:flex;align-items:end;gap:8px}.biz button,.biz a.secondary{border:1px solid transparent;border-radius:9px;padding:10px 15px;background:#08776a;color:white;font-size:13px;font-weight:650;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:40px}.biz button.secondary,.biz a.secondary{background:white;color:#244552;border-color:#d1dfe5}.biz button:disabled{opacity:.45;cursor:not-allowed}.biz button.text-button{background:transparent;color:#08776a;padding:6px 8px;min-height:36px;white-space:nowrap}.biz button.danger{color:#a22e32}.biz input,.biz select,.biz textarea{background:white;border:1px solid #ccdbe1;border-radius:8px;color:#1c3945;font:inherit;font-size:14px;padding:10px 11px;min-height:42px;min-width:0;max-width:100%;width:100%}.biz input:focus,.biz select:focus,.biz textarea:focus,.biz button:focus-visible,.biz a:focus-visible{outline:3px solid #6cd6c9;outline-offset:2px}.table-wrap{overflow:auto;max-width:100%}.biz table{border-collapse:collapse;width:100%;text-align:left;font-size:13px}.biz th{background:#f5f8fa;font-weight:650;color:#657b85;font-size:11px;text-transform:uppercase;letter-spacing:.035em;white-space:nowrap}.biz td,.biz th{padding:15px 20px;border-bottom:1px solid #edf1f3}.biz td{max-width:280px;overflow-wrap:anywhere}.biz tbody tr:last-child td{border-bottom:0}.biz tbody tr:hover{background:#f9fcfc}.amount{font-variant-numeric:tabular-nums;white-space:nowrap}.badge{font-size:10px;padding:5px 8px;background:#eaf4f1;color:#206752;border-radius:6px;font-weight:750}.pagination{border-top:1px solid #edf1f3;padding:16px 22px;font-size:12px;color:#617581}.empty{padding:56px 20px;text-align:center;color:#7c9099}.empty h2{color:#294c59;margin-top:14px}.empty p{max-width:380px;margin:auto}.history-row{padding:16px 0;border-bottom:1px solid #edf1f3;align-items:flex-start}.history-row:last-child{border-bottom:0}.history-row p{white-space:pre-wrap;margin:6px 0;font-size:14px}.biz small{display:block;color:#6e828c;font-size:11px;margin-top:5px}.biz details{font-size:12px;margin-top:8px}.biz summary{cursor:pointer;color:#08776a}.period label,.option-search label{font-size:12px;color:#627a85}.period input{display:block;margin-top:4px}.biz-dialog{width:min(780px,calc(100vw - 32px));max-height:90dvh;border:1px solid #d5e0e5;border-radius:18px;padding:0;box-shadow:0 24px 90px #152c4340;color:#19313b}.biz-dialog::backdrop{background:#10233288;backdrop-filter:blur(3px)}.biz-dialog form{padding:26px}.biz-dialog header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px}.biz-dialog header p{margin:4px 0;color:#607882}.biz-dialog fieldset{border:0;margin:0;padding:0;min-width:0}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:17px}.form-grid label,.line-entry label{display:flex;flex-direction:column;gap:7px;font-size:12px;font-weight:600;color:#486672}.form-grid label.full-width{grid-column:1/-1}.form-grid label.check{flex-direction:row;align-items:center;justify-content:space-between}.check input{width:19px;height:19px;min-height:0;accent-color:#08776a}.line-editor{margin-top:24px;border-top:1px solid #e3eaee;padding-top:10px}.line-editor h3{font-size:15px}.line-entry{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:9px;align-items:start;margin:12px 0}.line-entry .text-button{margin-top:23px}.notice{background:#f2f8fa;color:#466b78;font-size:12px;padding:12px 14px;border-radius:9px;margin:14px 0}.error{color:#a12036;background:#fff0f1;padding:13px;border-radius:8px}.success{background:#e6f6ef;color:#185c40;padding:14px;border-radius:9px}.biz-dialog footer{display:flex;gap:10px;justify-content:flex-end;margin-top:24px;border-top:1px solid #e0e9ed;padding-top:20px}.option-search{margin:14px 0}.option-search label{flex:1}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
-@media(max-width:900px){.biz{padding:20px}.biz-heading,.section-title{align-items:flex-start;flex-direction:column}.toolbar-actions{width:100%}.biz h1{font-size:27px}.period{flex-wrap:wrap}.line-entry{grid-template-columns:1.4fr 1fr 1fr}.line-entry .text-button{grid-column:1/-1;margin:0;justify-self:end}}@media(max-width:580px){.biz{padding:15px}.biz-heading>a{display:none}.toolbar,.detail{padding:16px}.biz-tabs a{padding:10px 12px}.search{width:100%}.search input{flex:1}.form-grid{grid-template-columns:1fr}.biz-dialog form{padding:18px}.pagination{align-items:flex-start;gap:14px;flex-direction:column}.history-row{gap:12px;flex-direction:column}.line-entry{grid-template-columns:1fr 1fr}.line-entry label:first-child{grid-column:1/-1}.biz td,.biz th{padding:12px 14px}.biz table{min-width:520px}}@media print{.biz-heading>a,.biz-tabs,.toolbar,.pagination,.row-actions,dialog{display:none!important}.biz-panel{border:1px solid #ccc;box-shadow:none;break-inside:avoid}.biz{padding:0}.table-wrap{overflow:visible}}
-.staff-account{border:1px solid #d7e7ee;background:#f6fafc;border-radius:14px;padding:20px;margin-top:20px}.staff-account h3{display:flex;align-items:center;gap:10px}.staff-account .check{display:flex;align-items:center;gap:10px;margin-bottom:20px}</style>
+.biz{max-width:1500px;margin:auto;padding:30px;color:#1B1B39}.biz-heading,.section-title,.toolbar,.toolbar-actions,.pagination,.pagination>div,.history-row,.row-actions{display:flex;align-items:center;gap:12px}.biz-heading,.section-title,.toolbar,.pagination,.history-row{justify-content:space-between}.biz-heading{margin-bottom:24px}.biz h1{font-size:32px;line-height:1.2;letter-spacing:-.035em;margin:6px 0 10px}.biz h2{font-size:20px;margin:0 0 8px}.biz p{line-height:1.6}.biz-heading p,.detail>p,.section-title p{color:#3965FA;margin:4px 0}.eyebrow{text-transform:uppercase;letter-spacing:.12em;font-size:14px;font-weight:750;color:#3965FA!important}.biz-tabs{display:flex;gap:6px;overflow:auto;border-bottom:1px solid #EDEDED;margin-bottom:24px}.biz-tabs a{white-space:nowrap;padding:12px 18px;color:#3965FA;text-decoration:none;border-bottom:3px solid transparent}.biz-tabs a[aria-current=page]{border-color:#3965FA;color:#1B1B39;font-weight:700}.biz-panel{background:#FFFFFF;border:1px solid #E9EBFF;border-radius:16px;margin-bottom:22px;box-shadow:0 2px 6px #1B1B3905;overflow:hidden}.toolbar,.detail{padding:22px}.toolbar,.toolbar-actions,.row-actions{flex-wrap:wrap}.search,.period,.option-search{display:flex;align-items:end;gap:8px}.biz button,.biz a.secondary{border:1px solid transparent;border-radius:9px;padding:10px 15px;background:#1B1B39;color:var(--oq-white);font-size:14px;font-weight:650;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:40px}.biz button.secondary,.biz a.secondary{background:var(--oq-white);color:#1B1B39;border-color:#99B7FC}.biz button:disabled{opacity:.45;cursor:not-allowed}.biz button.text-button{background:transparent;color:#1B1B39;padding:6px 8px;min-height:36px;white-space:nowrap}.biz button.danger{color:#3965FA}.biz input,.biz select,.biz textarea{background:var(--oq-white);border:1px solid #99B7FC;border-radius:8px;color:#1B1B39;font:inherit;font-size:14px;padding:10px 11px;min-height:42px;min-width:0;max-width:100%;width:100%}.biz input:focus,.biz select:focus,.biz textarea:focus,.biz button:focus-visible,.biz a:focus-visible{outline:3px solid #3965FA;outline-offset:2px}.table-wrap{overflow:auto;max-width:100%}.biz table{border-collapse:collapse;width:100%;text-align:left;font-size:14px}.biz th{background:#FFFFFF;font-weight:650;color:#3965FA;font-size:14px;text-transform:uppercase;letter-spacing:.035em;white-space:nowrap}.biz td,.biz th{padding:15px 20px;border-bottom:1px solid #E9EBFF}.biz td{max-width:280px;overflow-wrap:anywhere}.biz tbody tr:last-child td{border-bottom:0}.biz tbody tr:hover{background:#FFFFFF}.amount{font-variant-numeric:tabular-nums;white-space:nowrap}.badge{font-size:14px;padding:5px 8px;background:#E9EBFF;color:#1B1B39;border-radius:6px;font-weight:750}.pagination{border-top:1px solid #E9EBFF;padding:16px 22px;font-size:14px;color:#3965FA}.empty{padding:56px 20px;text-align:center;color:#3965FA}.empty h2{color:#1B1B39;margin-top:14px}.empty p{max-width:380px;margin:auto}.history-row{padding:16px 0;border-bottom:1px solid #E9EBFF;align-items:flex-start}.history-row:last-child{border-bottom:0}.history-row p{white-space:pre-wrap;margin:6px 0;font-size:14px}.biz small{display:block;color:#3965FA;font-size:14px;margin-top:5px}.biz details{font-size:14px;margin-top:8px}.biz summary{cursor:pointer;color:#1B1B39}.period label,.option-search label{font-size:14px;color:#3965FA}.period input{display:block;margin-top:4px}.biz-dialog{width:min(780px,calc(100vw - 32px));max-height:90dvh;border:1px solid #EDEDED;border-radius:18px;padding:0;box-shadow:0 24px 90px #1B1B3940;color:#1B1B39}.biz-dialog::backdrop{background:#1B1B3988;backdrop-filter:blur(3px)}.biz-dialog form{padding:26px}.biz-dialog header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px}.biz-dialog header p{margin:4px 0;color:#3965FA}.biz-dialog fieldset{border:0;margin:0;padding:0;min-width:0}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:17px}.form-grid label,.line-entry label{display:flex;flex-direction:column;gap:7px;font-size:14px;font-weight:600;color:#3965FA}.form-grid label.full-width{grid-column:1/-1}.form-grid label.check{flex-direction:row;align-items:center;justify-content:space-between}.check input{width:19px;height:19px;min-height:0;accent-color:#1B1B39}.line-editor{margin-top:24px;border-top:1px solid #E9EBFF;padding-top:10px}.line-editor h3{font-size:15px}.line-entry{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:9px;align-items:start;margin:12px 0}.line-entry .text-button{margin-top:23px}.notice{background:#FFFFFF;color:#3965FA;font-size:14px;padding:12px 14px;border-radius:9px;margin:14px 0}.error{color:#3965FA;background:#EDEDED;padding:13px;border-radius:8px}.success{background:#E9EBFF;color:#1B1B39;padding:14px;border-radius:9px}.biz-dialog footer{display:flex;gap:10px;justify-content:flex-end;margin-top:24px;border-top:1px solid #E9EBFF;padding-top:20px}.option-search{margin:14px 0}.option-search label{flex:1}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+@media(max-width:900px){.biz{padding:20px}.biz-heading,.section-title{align-items:flex-start;flex-direction:column}.toolbar-actions{width:100%}.biz h1{font-size:27px}.period{flex-wrap:wrap}.line-entry{grid-template-columns:1.4fr 1fr 1fr}.line-entry .text-button{grid-column:1/-1;margin:0;justify-self:end}}@media(max-width:580px){.biz{padding:15px}.biz-heading>a{display:none}.toolbar,.detail{padding:16px}.biz-tabs a{padding:10px 12px}.search{width:100%}.search input{flex:1}.form-grid{grid-template-columns:1fr}.biz-dialog form{padding:18px}.pagination{align-items:flex-start;gap:14px;flex-direction:column}.history-row{gap:12px;flex-direction:column}.line-entry{grid-template-columns:1fr 1fr}.line-entry label:first-child{grid-column:1/-1}.biz td,.biz th{padding:12px 14px}.biz table{min-width:520px}}@media print{.biz-heading>a,.biz-tabs,.toolbar,.pagination,.row-actions,dialog{display:none!important}.biz-panel{border:1px solid #EDEDED;box-shadow:none;break-inside:avoid}.biz{padding:0}.table-wrap{overflow:visible}}
+.staff-account{border:1px solid #99B7FC;background:#FFFFFF;border-radius:14px;padding:20px;margin-top:20px}.staff-account h3{display:flex;align-items:center;gap:10px}.staff-account .check{display:flex;align-items:center;gap:10px;margin-bottom:20px}
+.biz{color:var(--oq-dark);font-size:1rem;line-height:1.55}
+.biz h1,.biz h2{color:var(--oq-navy)}
+.biz-panel{background:var(--oq-white);border-color:var(--oq-light);box-shadow:0 8px 24px #1B1B3914}
+.biz-heading p,.section-title p,.detail>p,.eyebrow{color:var(--oq-navy)!important;font-size:.875rem}
+.biz button,.biz a.secondary{background:var(--oq-primary);color:var(--oq-white);font-size:.875rem;min-height:44px}
+.biz button.secondary,.biz a.secondary{background:var(--oq-white);color:var(--oq-navy);border:1px solid var(--oq-soft)}
+.biz button.text-button,.biz button.danger{background:var(--oq-pale);color:var(--oq-navy)}
+.biz-tabs a[aria-current=page]{border-color:var(--oq-primary);color:var(--oq-navy);background:var(--oq-pale)}
+.biz input,.biz select,.biz textarea{background:var(--oq-white);color:var(--oq-dark);font-size:1rem;min-height:44px;border:1px solid var(--oq-soft)}
+.biz button:focus-visible,.biz a:focus-visible,.biz input:focus-visible,.biz select:focus-visible{outline:3px solid var(--oq-primary);outline-offset:3px}
+
+</style>

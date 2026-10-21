@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
-    "type-check": "vue-tsc --noEmit"
+    "type-check": "vue-tsc --noEmit",
+    "check:ui-palette": "node scripts/check-ui-palette.mjs",
+    "test:ui-feedback": "node --test scripts/operation-feedback.test.mjs"
   },
   "dependencies": {
     "@inertiajs/vue3": "3.6.1",

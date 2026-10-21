@@ -5,6 +5,8 @@ import { locale } from '../../i18n';
 import ControlOperations from '../../components/ControlOperations.vue';
 import LanguageSwitcher from '../../components/LanguageSwitcher.vue';
 import WorkspaceIcon from '../../components/WorkspaceIcon.vue';
+import OperationFeedback from '../../components/OperationFeedback.vue';
+import type { MutationStatus } from '../../use-business-mutation';
 const tr = (id: string, en: string) => locale.value === 'id' ? id : en;
 type Row = { id: string; name: string; email: string; status: string; version: number; tenant_id: string; created_at: number };
 type Message = { id: string; tenant_id: string; status: string; attempts: number; safe_code: string | null; created_at: number };
@@ -12,19 +14,49 @@ type Settings = { version: number; enabled: boolean; host: string; port: number;
 const props = defineProps<{ control: Record<string, any>; registrations?: Record<string,{phone:string;business_type:string}>; businesses: { total: number; rows: Row[]; audit: { id: number; action: string; reason: string; occurred_at: number }[] }; mail: { total: number; counts: Record<string, number>; heartbeat_at: number; paused_until: number; suppressed_recipients: number; oldest_queued_at: number | null; messages: Message[]; events: { id: string; message_id: string; event: string; safe_code: string; occurred_at: number }[] }; settings: Settings; feedback_configured: boolean; page: number; mail_page: number }>();
 const mail=ref(props.mail);const reportBusy=ref(false);const reportError=ref('');const testMessageId=ref('');
 let reportTimer:ReturnType<typeof setInterval>|undefined;let reportAbort:AbortController|undefined;
-async function refreshMail(){if(reportBusy.value||document.hidden||!['mail','smtp'].includes(tab.value))return;reportBusy.value=true;reportAbort=new AbortController();try{const r=await fetch('/platform/mail/report?page='+(testMessageId.value?1:props.mail_page),{credentials:'same-origin',redirect:'error',headers:{Accept:'application/json'},signal:reportAbort.signal});if(!r.ok)throw new Error();mail.value=await r.json();reportError.value='';}catch{reportError.value=tr('Laporan belum berhasil diperbarui. Coba muat ulang.','Mail report unavailable. Try refreshing.');}finally{reportBusy.value=false;}}
+async function refreshMail(){
+    if (reportBusy.value || document.hidden || !['mail','smtp'].includes(tab.value)) return;
+    reportBusy.value = true; reportAbort = new AbortController();
+    const active = reportAbort;
+    const timer = window.setTimeout(() => active.abort(), 20000);
+    try {
+        if (!navigator.onLine) throw new Error('OFFLINE');
+        const response = await fetch('/platform/mail/report?page='+(testMessageId.value?1:props.mail_page),{
+            credentials:'same-origin',redirect:'error',headers:{Accept:'application/json'},signal:active.signal
+        });
+        if (active.signal.aborted) throw new Error('TIMEOUT');
+        if (!response.ok) throw new Error('READ_REJECTED');
+        const payload = await response.json();
+        if (active.signal.aborted) throw new Error('LATE_READ');
+        mail.value = payload; reportError.value = '';
+    } catch { reportError.value=tr('Pembaruan laporan tidak selesai dalam batas waktu. Periksa jaringan atau muat ulang.','Mail report refresh timed out or failed. Check connectivity or reload.'); }
+    finally { window.clearTimeout(timer); if(reportAbort===active)reportAbort=undefined; reportBusy.value=false; }
+}
 onMounted(()=>{reportTimer=setInterval(()=>void refreshMail(),10000);});onBeforeUnmount(()=>{if(reportTimer)clearInterval(reportTimer);reportAbort?.abort();});
 const lastTest=computed(()=>mail.value.messages.find(r=>r.id===testMessageId.value));
 const tab = ref(['overview','business','configuration','errors','marketing','mail','smtp','security','audit'].includes(window.location.hash.slice(1)) ? window.location.hash.slice(1) : 'overview'); const busy = ref(false); const uncertain = ref(false); const message = ref('');
 const pending = ref<{ path: string; body: Record<string, unknown> } | null>(null);
+const operationProgress = ref<MutationStatus>('idle');
+const operationNote = ref('');
+const operationRef = computed(() => typeof pending.value?.body.operation_id === 'string' ? pending.value.body.operation_id : null);
+let activeWrite: AbortController | null = null;
+onBeforeUnmount(() => activeWrite?.abort());
 const detail = ref<Record<string, any> | null>(null);
 const navigation: [string,string,string,string][] = [['overview','activity','Ringkasan NOC','NOC overview'],['business','building-2','Akun bisnis','Business accounts'],['configuration','settings-2','Konfigurasi fitur','Feature configuration'],['errors','server','Insiden & error','Incidents & errors'],['marketing','megaphone','Marketing','Marketing'],['mail','mail','Laporan email','Mail reports'],['smtp','settings','Pengaturan SMTP','SMTP settings'],['security','shield-check','Keamanan','Security'],['audit','history','Riwayat aktivitas','Activity history']];
 async function openBusiness(id: string) {
     if (busy.value || uncertain.value) return;
-    busy.value = true;
-    try { const r = await fetch('/platform/control/businesses/' + id, { headers: { Accept: 'application/json' }, credentials: 'same-origin' }); if (!r.ok) throw new Error(); detail.value = await r.json(); }
-    catch { message.value = tr('Detail akun belum tersedia. Muat ulang halaman.', 'Account details unavailable. Reload the page.'); }
-    finally { busy.value = false; }
+    busy.value=true;const controller=new AbortController();
+    const timer=window.setTimeout(()=>controller.abort(),20000);
+    try {
+        const response=await fetch('/platform/control/businesses/'+encodeURIComponent(id),{
+            credentials:'same-origin',redirect:'error',headers:{Accept:'application/json'},signal:controller.signal
+        });
+        if(controller.signal.aborted||!response.ok)throw new Error('DETAIL_UNCONFIRMED');
+        const result=await response.json();
+        if(controller.signal.aborted)throw new Error('LATE_DETAIL');
+        detail.value=result;
+    } catch { message.value=tr('Detail akun belum tersedia atau permintaan kedaluwarsa. Muat ulang halaman.','Account detail unavailable or timed out. Reload the page.'); }
+    finally { window.clearTimeout(timer);busy.value=false; }
 }
 const name = ref(''); const email = ref(''); const language = ref('id'); const reason = ref('');
 const settings = ref({ ...props.settings, password: '' }); const password = ref(''); const code = ref('');
@@ -42,36 +74,104 @@ const status = (key: string) => statuses[key]?.[locale.value === 'id' ? 0 : 1] ?
 function headers() { return { 'Content-Type': 'application/json', Accept: 'application/json', 'X-CSRF-TOKEN': document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content ?? '' }; }
 async function save(path: string, body: Record<string, unknown>) {
     if (busy.value) return;
-    pending.value ??= { path, body: JSON.parse(JSON.stringify({ operation_id: crypto.randomUUID(), ...body })) }; busy.value = true; message.value = '';
+    // On uncertain outcome, never silently change the operation ID or its immutable payload.
+    if (pending.value && (pending.value.path !== path || JSON.stringify(pending.value.body) !== JSON.stringify(body))) {
+        message.value = tr('Selesaikan verifikasi operasi sebelumnya sebelum memulai perubahan lain.', 'Verify the previous operation before starting a different change.');
+        return;
+    }
+    pending.value ??= { path, body: JSON.parse(JSON.stringify({ operation_id: crypto.randomUUID(), ...body })) };
+    const request = pending.value;
+    busy.value = true;
+    message.value = '';
+    operationNote.value = '';
+    operationProgress.value = 'running';
+    const controller = new AbortController(); activeWrite = controller;
+    const timer = window.setTimeout(() => controller.abort(), 30000);
     try {
-        const r = await fetch(pending.value.path, { method: 'POST', credentials: 'same-origin', headers: headers(), body: JSON.stringify(pending.value.body) });
-        if (r.status >= 500) throw new Error('uncertain');
-        if (!r.ok) { detail.value = null; pending.value = null; uncertain.value = false; message.value = tr('Perubahan ditolak. Periksa isian, versi data, dan verifikasi keamanan. Jika sesi kedaluwarsa, muat ulang halaman.', 'Change denied. Check fields, data version, and security verification. Reload if your session expired.'); return; }
-        const result = await r.json(); if (result.status === 'queued') {testMessageId.value=result.record?.message_id??'';void refreshMail();pending.value=null;uncertain.value=false;message.value=tr('Email uji masuk antrean. Lihat Laporan email untuk hasil pengiriman. ID: ','Test email queued. Check Mail reports for delivery. ID: ')+(result.record?.message_id??'');return;} if (result.status !== 'saved') throw new Error('uncertain');
-        pending.value = null; uncertain.value = false; busy.value = false; window.location.assign('/platform?updated=' + Date.now() + '#' + tab.value);
-    } catch { detail.value = null; uncertain.value = true; message.value = tr('Hasil belum pasti. Ulangi permintaan yang sama menggunakan tombol di bawah.', 'The result is uncertain. Retry the same request below.'); }
-    finally { busy.value = false; }
+        if (!navigator.onLine) throw new Error('NETWORK_UNCONFIRMED');
+        const r = await fetch(request.path, {
+            method: 'POST', credentials: 'same-origin', redirect: 'error',
+            headers: headers(), body: JSON.stringify(request.body), signal: controller.signal,
+        });
+        if (controller.signal.aborted) throw new Error('TIMEOUT_UNCONFIRMED');
+        if (r.status === 401 || r.status === 419) {
+            operationProgress.value = 'session-expired';
+            uncertain.value = true;
+            window.location.assign('/owner-login?reason=session-expired');
+            return;
+        }
+        if (r.status >= 500) throw new Error('SERVER_UNCONFIRMED');
+        const result = await r.json();
+        if (controller.signal.aborted) throw new Error('TIMEOUT_UNCONFIRMED');
+        if (r.status === 202 || result.status === 'queued') {
+            testMessageId.value = typeof result.record?.message_id === 'string' ? result.record.message_id : '';
+            void refreshMail();
+            pending.value = null;
+            uncertain.value = false;
+            operationProgress.value = 'queued';
+            operationNote.value = tr('Email diterima antrean server, belum terbukti terkirim ke inbox. Pantau laporan pengiriman.', 'Email accepted into the server queue, not confirmed in the inbox. Monitor mail reports.');
+            message.value = operationNote.value;
+            return;
+        }
+        if (!r.ok) {
+            detail.value = null; pending.value = null; uncertain.value = false;
+            operationProgress.value = 'failed';
+            message.value = tr('Perubahan ditolak. Periksa isian, versi data dan verifikasi keamanan.', 'Change denied. Check fields, version and security verification.');
+            operationNote.value = message.value;
+            return;
+        }
+        if (result.status !== 'saved') throw new Error('SAVE_UNCONFIRMED');
+        pending.value = null; uncertain.value = false;
+        operationProgress.value = 'succeeded';
+        busy.value = false;
+        window.location.assign('/platform?updated=' + Date.now() + '#' + tab.value);
+    } catch {
+        detail.value = null; uncertain.value = true;
+        operationProgress.value = 'unknown';
+        operationNote.value = tr('Hasil belum pasti. Periksa perubahan pada server, lalu bila perlu kirim ulang operasi dan data yang sama; jangan buat transaksi baru.', 'Outcome not confirmed. Verify server state first; only then manually retry the same operation ID and payload.');
+        message.value = operationNote.value;
+    } finally {
+        window.clearTimeout(timer);
+        if (activeWrite === controller) activeWrite = null;
+        busy.value = false;
+    }
 }
 function create() { void save('/platform/businesses', { operation_id: crypto.randomUUID(), action: 'create', name: name.value, email: email.value, locale: language.value, reason: reason.value }); }
 function change(row: Row, action: string) { void save('/platform/businesses', { operation_id: crypto.randomUUID(), action, id: row.id, version: Number(row.version), reason: reason.value }); }
 function configure() { const { password_configured: _, ...body } = settings.value; void save('/platform/mail/settings', body); }
 async function verify() {
-    busy.value = true; message.value = '';
+    if(busy.value)return;
+    busy.value=true;message.value='';
+    const controller=new AbortController();const timer=window.setTimeout(()=>controller.abort(),30000);
     try {
-        const r = await fetch('/auth/reauthenticate/privileged', { method: 'POST', credentials: 'same-origin', headers: headers(), body: JSON.stringify({ password: password.value, code: code.value }) });
-        if (r.ok) { busy.value = false; window.location.assign('/platform?updated=' + Date.now() + '#' + tab.value); } else message.value = tr('Verifikasi gagal. MFA dan verifikasi ulang harus aktif untuk pemilik platform.', 'Verification failed. MFA and step-up must be enabled for the platform owner.');
-    } catch { message.value = tr('Verifikasi belum berhasil.', 'Verification did not complete.'); }
-    finally { password.value = ''; code.value = ''; busy.value = false; }
+        if(!navigator.onLine)throw new Error('OFFLINE');
+        const response=await fetch('/auth/reauthenticate/privileged',{
+            method:'POST',credentials:'same-origin',redirect:'error',signal:controller.signal,
+            headers:headers(),body:JSON.stringify({password:password.value,code:code.value})
+        });
+        if(controller.signal.aborted)throw new Error('TIMEOUT');
+        if(response.status===401||response.status===419){location.assign('/owner-login?reason=session-expired');return;}
+        if(response.ok){busy.value=false;window.location.assign('/platform?updated='+Date.now()+'#'+tab.value);return;}
+        message.value=response.status>=500?tr('Hasil verifikasi belum pasti. Periksa sesi sebelum mengulang.','Verification not confirmed. Check session before retrying.'):tr('Verifikasi gagal. Periksa kata sandi dan kode MFA.','Verification failed. Check password and MFA code.');
+    }catch{message.value=tr('Verifikasi tidak terkonfirmasi dalam batas waktu. Periksa sesi sebelum mencoba lagi.','Verification timed out or is unconfirmed. Check the session before retrying.');}
+    finally{window.clearTimeout(timer);password.value='';code.value='';busy.value=false;}
 }
 async function inspect() {
-    busy.value = true;
-    try { const r = await fetch('/platform/mail/inspect', { headers: { Accept: 'application/json' } }); if (!r.ok) throw new Error(); inspection.value = await r.json(); }
-    catch { message.value = tr('Pemeriksaan DNS belum berhasil. Coba kembali nanti.', 'DNS inspection did not complete. Try again later.'); }
-    finally { busy.value = false; }
+    if(busy.value)return;
+    busy.value=true;const controller=new AbortController();const timer=window.setTimeout(()=>controller.abort(),20000);
+    try {
+        if(!navigator.onLine)throw new Error('OFFLINE');
+        const response=await fetch('/platform/mail/inspect',{redirect:'error',credentials:'same-origin',headers:{Accept:'application/json'},signal:controller.signal});
+        if(controller.signal.aborted||!response.ok)throw new Error('DNS_UNCONFIRMED');
+        const result=await response.json();
+        if(controller.signal.aborted)throw new Error('LATE_DNS');
+        inspection.value=result;
+    }catch{message.value=tr('Pemeriksaan DNS tidak selesai. Periksa koneksi dan coba kembali.','DNS inspection failed or timed out. Check connectivity and try again.');}
+    finally{window.clearTimeout(timer);busy.value=false;}
 }
 </script>
 <template>
-    <main class="platform">
+    <main class="platform"><OperationFeedback :status="operationProgress" :message="operationNote" :operation-id="operationRef"/>
         <aside class="control-sidebar"><a class="control-logo" href="/platform"><span>q</span>oneQay</a><p class="sidebar-label">CONTROL PLANE</p><nav aria-label="Platform"><button v-for="[key, icon, id, en] in navigation" :key="key" :class="{ selected: tab === key }" @click="tab = key"><WorkspaceIcon :name="icon" :size="18"/><span>{{ tr(id,en) }}</span></button><a href="/platform/site"><WorkspaceIcon name="panels-top-left" :size="18"/>{{ tr('Editor website','Website editor') }} ↗</a></nav><div class="sidebar-foot"><span class="live-dot"/>{{ tr('Akses pemilik platform','Platform owner access') }}<small>© {{ new Date().getFullYear() }} oneQay</small></div></aside>
         <div class="control-content"><div class="control-topbar"><span>{{ tr('Platform / Operasional','Platform / Operations') }}</span><div><a href="/pos">{{ tr('Ruang kerja bisnis','Business workspace') }} ↗</a><LanguageSwitcher/></div></div>
         <header class="hero"><div><a href="/pos">← {{ tr('Ruang kerja bisnis', 'Business workspace') }}</a><p class="eyebrow">ONEQAY / {{ tr('PEMILIK PLATFORM', 'PLATFORM OWNER') }}</p><h1>{{ tr('Kendali penuh. Bisnis bertumbuh.', 'In control. Ready to grow.') }}</h1><p>{{ tr('Kelola bisnis, keamanan, dan kesehatan layanan oneQay dari satu pusat kendali.', 'Manage businesses, security, and oneQay service health from one control center.') }}</p></div><span class="owner">{{ tr('Akses khusus pemilik', 'Owner access') }}</span></header>
@@ -89,12 +189,45 @@ async function inspect() {
     </div></main>
 </template>
 <style scoped>
-.platform{max-width:1440px;margin:auto;padding:32px;color:#183d43;font-family:Inter,system-ui,sans-serif;background:#f4f7f7;min-height:100vh}.hero{display:flex;justify-content:space-between;gap:20px;padding:14px 0 26px}.hero h1{font-size:36px;letter-spacing:-1.2px;margin:10px 0}.hero p{max-width:660px;line-height:1.7;color:#557179}.hero a,a{color:#176853}.eyebrow{font-size:11px;font-weight:800;letter-spacing:1.6px;margin-top:26px}.owner{align-self:center;border:1px solid #bed8ce;border-radius:30px;background:#e1f2ea;padding:10px 15px;font-size:12px;font-weight:700}.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin:0 0 26px}.metrics article{background:white;border:1px solid #e1e9e8;border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:13px}.metrics span{font-size:12px;color:#637f82}.metrics strong{font-size:32px}.metrics .health{font-size:20px}.metrics .warn{border-color:#ebd3a2;background:#fffaf1}.website-editor-link{display:inline-flex;align-items:center;padding:10px 14px;border:1px solid #c9dcd5;border-radius:9px;white-space:nowrap;font-size:12px;font-weight:700}.tabs{display:flex;gap:8px;overflow:auto;padding-bottom:20px}.tabs button{white-space:nowrap}.tabs .selected{background:#164e45;color:white;border-color:#164e45}.columns{display:grid;grid-template-columns:minmax(290px,1fr) minmax(0,2fr);gap:22px}.card{background:#fff;border:1px solid #dce7e5;border-radius:18px;padding:26px;min-width:0}.card h2{font-size:20px;margin:0 0 18px}.card p{line-height:1.7}.card label{display:flex;flex-direction:column;gap:8px;margin:0 0 17px;font-size:13px;font-weight:650}.card input,.card select{width:100%;box-sizing:border-box;border:1px solid #becfca;background:#fff;border-radius:9px;padding:12px;color:#173a40;font:inherit}.card .check{flex-direction:row;align-items:center;line-height:1.5}.check input{width:18px;flex-shrink:0}fieldset{padding:0;margin:0;border:0;min-width:0}button{border:1px solid #c9dcd5;border-radius:9px;padding:10px 14px;background:#f2f8f5;color:#185845;font:600 12px system-ui;cursor:pointer}button.primary{background:#176850;color:white;border-color:#176850;padding:13px 20px}button:disabled{opacity:.45;cursor:not-allowed}.hint{font-size:12px;color:#6c7d82}.table{overflow:auto}td:first-child{min-width:155px}.table table{min-width:560px}table{width:100%;border-collapse:collapse;text-align:left;font-size:13px}th{font-size:11px;color:#6e8589;text-transform:uppercase;letter-spacing:.5px;padding:12px 8px;background:#f7f9f9}td{padding:17px 8px;border-bottom:1px solid #ecf0ef;vertical-align:top}small{display:block;margin-top:6px;font-size:11px;color:#6b8183;overflow-wrap:anywhere}.actions{display:flex;gap:7px;flex-wrap:wrap}.badge{display:inline-block;padding:6px 9px;border-radius:20px;background:#eef1f4;font-size:11px;white-space:nowrap}.badge.active{background:#dff2e7;color:#166448}.badge.suspended{background:#fff0d8;color:#8a611a}.pagination{display:flex;justify-content:space-between;margin-top:20px;font-size:12px}.notice{padding:18px;background:#fff5df;color:#79551f;border:1px solid #f0deb6;border-radius:12px;margin-bottom:20px;line-height:1.7}.notice button{margin-left:10px}.counts{display:flex;flex-wrap:wrap;gap:10px;margin:22px 0}.counts span{padding:10px 14px;background:#f0f5f3;border-radius:9px;font-size:12px}.counts b{margin-left:8px}.history{list-style:none;padding:0;margin:0}.history li{display:flex;gap:18px;padding:13px 0;border-bottom:1px solid #edf1f0;font-size:12px;line-height:1.6;overflow-wrap:anywhere}.history time{color:#71858a;flex:0 0 145px}.audit{margin-top:24px}.security{max-width:560px}dt{font-size:12px;margin-top:20px;color:#6a8181}dd{margin:6px 0;font-weight:650;font-size:14px}footer{padding:25px 0;font-size:11px;color:#728587}@media(max-width:950px){.columns{grid-template-columns:1fr}.metrics{grid-template-columns:repeat(2,1fr)}}@media(max-width:600px){.platform{padding:18px 12px}.hero{display:block}.hero h1{font-size:29px}.owner{display:inline-block}.metrics{gap:9px}.metrics article{padding:15px}.metrics strong{font-size:26px}.card{padding:19px}.history li{flex-wrap:wrap;gap:6px 12px}.history time{flex-basis:100%}.tabs button{padding:10px}.hero p{font-size:13px}}
+.platform{max-width:1440px;margin:auto;padding:32px;color:#1B1B39;font-family:Inter,system-ui,sans-serif;background:#FFFFFF;min-height:100vh}.hero{display:flex;justify-content:space-between;gap:20px;padding:14px 0 26px}.hero h1{font-size:36px;letter-spacing:-1.2px;margin:10px 0}.hero p{max-width:660px;line-height:1.7;color:#3965FA}.hero a,a{color:#1B1B39}.eyebrow{font-size:14px;font-weight:800;letter-spacing:1.6px;margin-top:26px}.owner{align-self:center;border:1px solid #99B7FC;border-radius:30px;background:#E9EBFF;padding:10px 15px;font-size:14px;font-weight:700}.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin:0 0 26px}.metrics article{background:var(--oq-white);border:1px solid #E9EBFF;border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:13px}.metrics span{font-size:14px;color:#3965FA}.metrics strong{font-size:32px}.metrics .health{font-size:20px}.metrics .warn{border-color:#EDEDED;background:#FFFFFF}.website-editor-link{display:inline-flex;align-items:center;padding:10px 14px;border:1px solid #EDEDED;border-radius:9px;white-space:nowrap;font-size:14px;font-weight:700}.tabs{display:flex;gap:8px;overflow:auto;padding-bottom:20px}.tabs button{white-space:nowrap}.tabs .selected{background:#1B1B39;color:var(--oq-white);border-color:#1B1B39}.columns{display:grid;grid-template-columns:minmax(290px,1fr) minmax(0,2fr);gap:22px}.card{background:#FFFFFF;border:1px solid #EDEDED;border-radius:18px;padding:26px;min-width:0}.card h2{font-size:20px;margin:0 0 18px}.card p{line-height:1.7}.card label{display:flex;flex-direction:column;gap:8px;margin:0 0 17px;font-size:14px;font-weight:650}.card input,.card select{width:100%;box-sizing:border-box;border:1px solid #EDEDED;background:#FFFFFF;border-radius:9px;padding:12px;color:#1B1B39;font:inherit}.card .check{flex-direction:row;align-items:center;line-height:1.5}.check input{width:18px;flex-shrink:0}fieldset{padding:0;margin:0;border:0;min-width:0}button{border:1px solid #EDEDED;border-radius:9px;padding:10px 14px;background:#EDEDED;color:#1B1B39;font:600 12px system-ui;cursor:pointer}button.primary{background:#1B1B39;color:var(--oq-white);border-color:#1B1B39;padding:13px 20px}button:disabled{opacity:.45;cursor:not-allowed}.hint{font-size:14px;color:#3965FA}.table{overflow:auto}td:first-child{min-width:155px}.table table{min-width:560px}table{width:100%;border-collapse:collapse;text-align:left;font-size:14px}th{font-size:14px;color:#3965FA;text-transform:uppercase;letter-spacing:.5px;padding:12px 8px;background:#FFFFFF}td{padding:17px 8px;border-bottom:1px solid #EDEDED;vertical-align:top}small{display:block;margin-top:6px;font-size:14px;color:#3965FA;overflow-wrap:anywhere}.actions{display:flex;gap:7px;flex-wrap:wrap}.badge{display:inline-block;padding:6px 9px;border-radius:20px;background:#E9EBFF;font-size:14px;white-space:nowrap}.badge.active{background:#E9EBFF;color:#1B1B39}.badge.suspended{background:#EDEDED;color:#3965FA}.pagination{display:flex;justify-content:space-between;margin-top:20px;font-size:14px}.notice{padding:18px;background:#EDEDED;color:#3965FA;border:1px solid #EDEDED;border-radius:12px;margin-bottom:20px;line-height:1.7}.notice button{margin-left:10px}.counts{display:flex;flex-wrap:wrap;gap:10px;margin:22px 0}.counts span{padding:10px 14px;background:#EDEDED;border-radius:9px;font-size:14px}.counts b{margin-left:8px}.history{list-style:none;padding:0;margin:0}.history li{display:flex;gap:18px;padding:13px 0;border-bottom:1px solid #EDEDED;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.history time{color:#3965FA;flex:0 0 145px}.audit{margin-top:24px}.security{max-width:560px}dt{font-size:14px;margin-top:20px;color:#3965FA}dd{margin:6px 0;font-weight:650;font-size:14px}footer{padding:25px 0;font-size:14px;color:#1B1B39}@media(max-width:950px){.columns{grid-template-columns:1fr}.metrics{grid-template-columns:repeat(2,1fr)}}@media(max-width:600px){.platform{padding:18px 12px}.hero{display:block}.hero h1{font-size:29px}.owner{display:inline-block}.metrics{gap:9px}.metrics article{padding:15px}.metrics strong{font-size:26px}.card{padding:19px}.history li{flex-wrap:wrap;gap:6px 12px}.history time{flex-basis:100%}.tabs button{padding:10px}.hero p{font-size:14px}}
 
-.platform{max-width:none;padding:0 0 0 232px;background:#f5f8f6;color:#1b4137}.control-sidebar{position:fixed;inset:0 auto 0 0;width:232px;box-sizing:border-box;padding:30px 16px 24px;background:#fff;border-right:1px solid #e2eae5;display:flex;flex-direction:column;z-index:30}.control-logo{display:flex;align-items:center;gap:10px;font-size:24px;font-weight:750;letter-spacing:-1px;text-decoration:none;color:#173d31;padding:0 13px 26px}.control-logo>span{display:grid;place-items:center;background:#176f53;color:#fff;width:34px;height:34px;border-radius:10px;font-size:28px}.sidebar-label{font-size:9px;letter-spacing:1.7px;color:#8ba195;margin:7px 14px 15px;font-weight:700}.control-sidebar nav{display:grid;gap:5px}.control-sidebar nav button,.control-sidebar nav a{display:flex;align-items:center;gap:11px;padding:12px 14px;text-decoration:none;text-align:left;border:0;background:transparent;color:#74877c;font:550 11px system-ui;border-radius:9px}.control-sidebar nav .selected{background:#e8f4ed;color:#18654c;font-weight:700}.control-sidebar nav button:hover,.control-sidebar nav a:hover{background:#f1f7f3}.sidebar-foot{margin-top:auto;font-size:10px;color:#799283;padding:25px 12px 0;line-height:1.8}.sidebar-foot small{font-size:9px;margin-top:12px}.live-dot{display:inline-block;width:6px;height:6px;background:#2e966f;border-radius:50%;margin-right:5px}.control-content{max-width:1550px;margin:auto;padding:0 30px}.control-topbar{height:72px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e3ece5;font-size:10px;color:#82988a;gap:10px}.control-topbar>div{display:flex;align-items:center;gap:20px}.control-topbar a{text-decoration:none;font-size:10px}.hero{padding:24px 0 15px;align-items:center}.hero>div>a{display:none}.hero .eyebrow{margin:0;color:#859b8d;font-size:9px}.hero h1{font-size:32px;margin:10px 0;font-weight:700;letter-spacing:-1.2px}.hero p{font-size:12px;color:#7b9084;margin:0}.owner{font-size:9px;background:#eff8f1;color:#5c8c6d;border:1px solid #dfebe1;padding:8px 12px}.action-context{display:flex;align-items:flex-end;gap:14px;padding:12px 0 22px}.action-context label{font-size:10px;color:#7a8f82;display:flex;flex-direction:column;gap:7px;flex:1;max-width:650px}.action-context input{box-sizing:border-box;width:100%;border:1px solid #d9e5dc;padding:10px 12px;border-radius:8px;background:#fff;font:11px system-ui;color:#355545}.action-context button{display:flex;align-items:center;gap:6px;font-size:10px}.card{border-radius:16px;border-color:#e0e9e5}.columns{grid-template-columns:minmax(260px,1fr) minmax(0,2fr)}.card h2{font-size:19px}.card input,.card select{font-size:12px}.audit{margin-top:0}.security{max-width:650px}.hero .owner{white-space:nowrap}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #6dc1a1;outline-offset:2px}
-@media(max-width:1200px){.platform{padding-left:205px}.control-sidebar{width:205px;padding-left:11px;padding-right:11px}.control-content{padding:0 22px}.columns{grid-template-columns:1fr}.hero .owner{display:none}.hero h1{font-size:29px}}@media(max-width:760px){.platform{padding:0}.control-sidebar{position:relative;width:auto;padding:15px 16px 5px;border-right:0;border-bottom:1px solid #dfe9e2;display:block}.control-logo{font-size:21px;padding:0 0 12px}.control-logo>span{width:28px;height:28px;font-size:23px}.sidebar-label,.sidebar-foot{display:none}.control-sidebar nav{display:flex;overflow:auto;padding-bottom:8px;gap:5px}.control-sidebar nav button,.control-sidebar nav a{white-space:nowrap;padding:10px 12px}.control-content{padding:0 16px}.control-topbar{height:57px}.control-topbar>span{display:none}.control-topbar>div{width:100%;justify-content:space-between}.hero h1{font-size:27px;max-width:320px}.hero p{font-size:11px}.action-context{align-items:stretch;flex-direction:column;gap:8px}.action-context button{align-self:flex-start}.card{padding:19px}.hero{padding-top:20px}.card .hint{font-size:11px}}
+.platform{max-width:none;padding:0 0 0 232px;background:#FFFFFF;color:#1B1B39}.control-sidebar{position:fixed;inset:0 auto 0 0;width:232px;box-sizing:border-box;padding:30px 16px 24px;background:#FFFFFF;border-right:1px solid #EDEDED;display:flex;flex-direction:column;z-index:30}.control-logo{display:flex;align-items:center;gap:10px;font-size:24px;font-weight:750;letter-spacing:-1px;text-decoration:none;color:#1B1B39;padding:0 13px 26px}.control-logo>span{display:grid;place-items:center;background:#1B1B39;color:#FFFFFF;width:34px;height:34px;border-radius:10px;font-size:28px}.sidebar-label{font-size:14px;letter-spacing:1.7px;color:#3965FA;margin:7px 14px 15px;font-weight:700}.control-sidebar nav{display:grid;gap:5px}.control-sidebar nav button,.control-sidebar nav a{display:flex;align-items:center;gap:11px;padding:12px 14px;text-decoration:none;text-align:left;border:0;background:transparent;color:#1B1B39;font:550 11px system-ui;border-radius:9px}.control-sidebar nav .selected{background:#EDEDED;color:#1B1B39;font-weight:700}.control-sidebar nav button:hover,.control-sidebar nav a:hover{background:#EDEDED}.sidebar-foot{margin-top:auto;font-size:14px;color:#3965FA;padding:25px 12px 0;line-height:1.8}.sidebar-foot small{font-size:14px;margin-top:12px}.live-dot{display:inline-block;width:6px;height:6px;background:#3965FA;border-radius:50%;margin-right:5px}.control-content{max-width:1550px;margin:auto;padding:0 30px}.control-topbar{height:72px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #EDEDED;font-size:14px;color:#3965FA;gap:10px}.control-topbar>div{display:flex;align-items:center;gap:20px}.control-topbar a{text-decoration:none;font-size:14px}.hero{padding:24px 0 15px;align-items:center}.hero>div>a{display:none}.hero .eyebrow{margin:0;color:#3965FA;font-size:14px}.hero h1{font-size:32px;margin:10px 0;font-weight:700;letter-spacing:-1.2px}.hero p{font-size:14px;color:#1B1B39;margin:0}.owner{font-size:14px;background:#EDEDED;color:#3965FA;border:1px solid #EDEDED;padding:8px 12px}.action-context{display:flex;align-items:flex-end;gap:14px;padding:12px 0 22px}.action-context label{font-size:14px;color:#1B1B39;display:flex;flex-direction:column;gap:7px;flex:1;max-width:650px}.action-context input{box-sizing:border-box;width:100%;border:1px solid #EDEDED;padding:10px 12px;border-radius:8px;background:#FFFFFF;font:14px system-ui;color:#1B1B39}.action-context button{display:flex;align-items:center;gap:6px;font-size:14px}.card{border-radius:16px;border-color:#EDEDED}.columns{grid-template-columns:minmax(260px,1fr) minmax(0,2fr)}.card h2{font-size:19px}.card input,.card select{font-size:14px}.audit{margin-top:0}.security{max-width:650px}.hero .owner{white-space:nowrap}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #3965FA;outline-offset:2px}
+@media(max-width:1200px){.platform{padding-left:205px}.control-sidebar{width:205px;padding-left:11px;padding-right:11px}.control-content{padding:0 22px}.columns{grid-template-columns:1fr}.hero .owner{display:none}.hero h1{font-size:29px}}@media(max-width:760px){.platform{padding:0}.control-sidebar{position:relative;width:auto;padding:15px 16px 5px;border-right:0;border-bottom:1px solid #EDEDED;display:block}.control-logo{font-size:21px;padding:0 0 12px}.control-logo>span{width:28px;height:28px;font-size:23px}.sidebar-label,.sidebar-foot{display:none}.control-sidebar nav{display:flex;overflow:auto;padding-bottom:8px;gap:5px}.control-sidebar nav button,.control-sidebar nav a{white-space:nowrap;padding:10px 12px}.control-content{padding:0 16px}.control-topbar{height:57px}.control-topbar>span{display:none}.control-topbar>div{width:100%;justify-content:space-between}.hero h1{font-size:27px;max-width:320px}.hero p{font-size:14px}.action-context{align-items:stretch;flex-direction:column;gap:8px}.action-context button{align-self:flex-start}.card{padding:19px}.hero{padding-top:20px}.card .hint{font-size:14px}}
 </style>
 
 <style scoped>
-.smtp-delivery-summary header{display:flex;justify-content:space-between;gap:16px;align-items:start;flex-wrap:wrap}.smtp-delivery-summary p{color:#40546e;line-height:1.6}.smtp-delivery-summary code{overflow-wrap:anywhere;color:#183c68;background:#edf4fb;padding:5px 8px;border-radius:6px}.smtp-test-result{display:grid;gap:8px;padding:16px;border:1px solid #b7cde5;border-radius:10px;background:#f4f8fd;margin:14px 0;color:#24476d}.smtp-delivery-summary button{background:#1759a6;color:#fff;min-height:42px}.smtp-delivery-summary button.secondary{background:#fff;color:#174875;border:1px solid #a3bcd6}
+.smtp-delivery-summary header{display:flex;justify-content:space-between;gap:16px;align-items:start;flex-wrap:wrap}.smtp-delivery-summary p{color:#3965FA;line-height:1.6}.smtp-delivery-summary code{overflow-wrap:anywhere;color:#1B1B39;background:#E9EBFF;padding:5px 8px;border-radius:6px}.smtp-test-result{display:grid;gap:8px;padding:16px;border:1px solid #99B7FC;border-radius:10px;background:#FFFFFF;margin:14px 0;color:#1B1B39}.smtp-delivery-summary button{background:#3965FA;color:#FFFFFF;min-height:42px}.smtp-delivery-summary button.secondary{background:#FFFFFF;color:#1B1B39;border:1px solid #3965FA}
+
+/* 21 October enterprise control plane: readable, no legacy theme or colored status shortcuts. */
+.platform{background:var(--oq-white);color:var(--oq-dark);font-size:1rem;line-height:1.55}
+.control-sidebar{background:var(--oq-white);border-right:1px solid var(--oq-light);box-shadow:4px 0 22px #1B1B3910}
+.control-logo{color:var(--oq-navy);font-size:1.5rem}
+.control-logo>span{background:var(--oq-primary);color:var(--oq-white)}
+.control-sidebar nav button,.control-sidebar nav a{min-height:44px;font-size:.875rem;color:var(--oq-navy);border-radius:10px}
+.control-sidebar nav button:hover,.control-sidebar nav a:hover{background:var(--oq-pale);color:var(--oq-navy)}
+.control-sidebar nav .selected{background:var(--oq-pale);color:var(--oq-navy);border-left:3px solid var(--oq-primary)}
+.sidebar-label,.sidebar-foot,.control-topbar,.control-topbar a,.action-context label,.owner{font-size:.875rem;color:var(--oq-navy)}
+.control-topbar{min-height:64px;border-color:var(--oq-light)}
+.control-content{max-width:1580px}
+.hero h1{font-size:clamp(1.5rem,2.4vw,2rem);color:var(--oq-navy)}
+.hero p,.hero .eyebrow,.hint,.card p{font-size:.875rem;line-height:1.65;color:var(--oq-navy)}
+.owner,.metrics article,.card{background:var(--oq-white);color:var(--oq-navy);border:1px solid var(--oq-light);box-shadow:0 8px 26px #1B1B3914;border-radius:16px}
+.metrics .warn,.notice{background:var(--oq-pale);color:var(--oq-navy);border:1px dashed var(--oq-primary)}
+.metrics span,.metrics strong,.metrics small{color:var(--oq-navy)}
+.card h2{font-size:1.375rem;color:var(--oq-navy)}
+.card h3{font-size:1.125rem;color:var(--oq-navy)}
+.card label,.action-context label{font-size:.875rem;color:var(--oq-navy)}
+.card input,.card select,.action-context input{min-height:44px;font-size:1rem;color:var(--oq-dark);border:1px solid var(--oq-soft);border-radius:10px;background:var(--oq-white)}
+button,.action-context button{font-size:.875rem;min-height:44px;background:var(--oq-white);border:1px solid var(--oq-soft);color:var(--oq-navy)}
+button.primary,.smtp-delivery-summary button{background:var(--oq-primary);border:1px solid var(--oq-primary);color:var(--oq-white)}
+button.secondary,.smtp-delivery-summary button.secondary{background:var(--oq-white);border:1px solid var(--oq-soft);color:var(--oq-navy)}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--oq-primary);outline-offset:3px}
+.badge,.badge.active,.badge.suspended{background:var(--oq-pale);color:var(--oq-navy);border:1px solid var(--oq-soft);font-size:.875rem}
+.counts span{background:var(--oq-pale);color:var(--oq-navy);font-size:.875rem}
+.table table,.table th,.table td,.history li{font-size:.875rem;color:var(--oq-dark)}
+.table th{background:var(--oq-pale);color:var(--oq-navy)}
+.smtp-delivery-summary p,.smtp-test-result,.smtp-delivery-summary code{color:var(--oq-navy)}
+.smtp-test-result,.smtp-delivery-summary code{background:var(--oq-pale);border:1px solid var(--oq-soft)}
+@media(max-width:760px){.control-sidebar{border-bottom:1px solid var(--oq-light)}.control-sidebar nav button,.control-sidebar nav a{min-height:44px}.control-content{padding:0 16px}}
+@media(prefers-reduced-motion:reduce){.card,.owner,button{transition:none!important;animation:none!important}}
 </style>
