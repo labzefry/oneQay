@@ -1,3 +1,5 @@
+**UI source coverage follow-on:** Seven-color and proportional typography styling now also touches cashier, open/close shift, business management/access, public registration, platform login, and shared website CSS; the source-level palette guard enumerates these migrated stylesheets. No claim of full app accessibility, client-operation completeness or native Windows coverage; new exact-head CI and interactive review still required. Hosting release remains unchanged.
+
 ## 2026-10-21 — Applied foundation on feature branch, not on hosting
 
 **UI foundation follow-on — Platform Control:** Seven-color, readable owner/SMTP configuration and bounded owner operation feedback added to PR #978 source. Keep full-site modernization pending until remaining page/Windows coverage and exact-head CI/reviews are verified. Source not deployed.

@@ -10,6 +10,14 @@ const files = [
   ['resources/js/pages/Business/DesktopSettings.vue', true],
   ['resources/js/layouts/LocalizedShell.vue', true],
   ['resources/js/pages/Platform/Control.vue', true],
+  ['resources/css/website.css', false],
+  ['resources/js/pages/Pos/Cashier.vue', true],
+  ['resources/js/pages/Pos/ShiftStart.vue', true],
+  ['resources/js/pages/Pos/ShiftClose.vue', true],
+  ['resources/js/pages/Business/Access.vue', true],
+  ['resources/js/pages/Business/Workspace.vue', true],
+  ['resources/js/pages/Platform/Login.vue', true],
+  ['resources/js/pages/Website/Register.vue', true],
 ];
 let inspected = 0;
 for (const [path, scoped] of files) {

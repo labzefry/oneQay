@@ -1,3 +1,5 @@
+**UI source coverage follow-on:** Seven-color and proportional typography styling now also touches cashier, open/close shift, business management/access, public registration, platform login, and shared website CSS; the source-level palette guard enumerates these migrated stylesheets. No claim of full app accessibility, client-operation completeness or native Windows coverage; new exact-head CI and interactive review still required. Hosting release remains unchanged.
+
 ## 2026-10-21 — UI enterprise foundation source milestone (NOT deployed)
 
 **UI foundation follow-on:** Platform Control/SMTP styling and owner operation feedback extended on PR #978 branch; palette guard includes both scoped style sections. Updated head needs its own checks and review. Hosting and schema remain unchanged. [Checkpoint](docs/operations/ONEQAY_UI_FOUNDATION_CHECKPOINT_2026-10-21.md).
