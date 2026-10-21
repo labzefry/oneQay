@@ -1,0 +1,31 @@
+// Author by Lab | zefry. Guard only explicitly migrated owned UI styles; legacy files are not certified.
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+const root = resolve(import.meta.dirname, '..');
+const palette = JSON.parse(readFileSync(resolve(root, '../../docs/design/ONEQAY_UI_PALETTE_2026-10-21.json'), 'utf8'));
+const allowed = Object.values(palette.colors).map(c => c.toUpperCase());
+if (allowed.length !== 7 || new Set(allowed).size !== 7) throw Error('Expected exactly seven owner-approved colors');
+const files = [
+  ['resources/css/app.css', false],
+  ['resources/js/pages/Business/DesktopSettings.vue', true],
+  ['resources/js/layouts/LocalizedShell.vue', true],
+];
+let inspected = 0;
+for (const [path, scoped] of files) {
+  const source = readFileSync(resolve(root, path), 'utf8');
+  const css = scoped ? (source.match(/<style[^>]*>([\s\S]*?)<\/style>/)?.[1] ?? '') : source;
+  if (!css) throw Error('Missing migrated stylesheet: ' + path);
+  const literals = css.match(/#[0-9a-fA-F]{3,8}\b/g) ?? [];
+  for (const literal of literals) {
+    const value = literal.toUpperCase();
+    if (!allowed.includes(value) && !(value.length === 9 && allowed.some(base => value.startsWith(base)))) {
+      throw Error(path + ': unapproved color ' + value);
+    }
+  }
+  if (/(?:rgba?|hsla?)\s*\(/i.test(css)) throw Error(path + ': direct RGB/HSL not allowed');
+  inspected += literals.length;
+}
+const app = readFileSync(resolve(root, 'resources/css/app.css'), 'utf8');
+for (const color of allowed) if (!app.includes(color)) throw Error('Missing canonical palette value ' + color);
+if ((app.match(/:root\s*\{/g) ?? []).length !== 1) throw Error('Use exactly one root token declaration');
+console.log('Palette guard passed: 7 colors, ' + files.length + ' migrated stylesheets, ' + inspected + ' approved tokens/alphas.');

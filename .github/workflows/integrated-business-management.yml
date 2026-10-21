@@ -49,6 +49,8 @@ jobs:
         working-directory: apps/web
         run: |
           npm ci --ignore-scripts --no-fund
+          npm run check:ui-palette
+          npm run test:ui-feedback
           npm run type-check
           npm run build
       - name: Exercise compiled localized business forms and mobile layouts

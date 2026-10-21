@@ -1,3 +1,7 @@
+## 2026-10-21 — Applied foundation on feature branch, not on hosting
+
+The new shared web workspace foundation includes palette-locked CSS tokens, 16px body/inputs, 14px operational labels/tables, balanced morph depth, accessible focus and reduced-motion fallback. Business Settings/Products use a nonmodal status surface with no made-up numeric progress, timeout/unknown/queued/session-expired outcomes and same-operation manual verification. POS desktop settings now use bounded fetch and block re-submission of unknown/queued writes pending owner verification. This **does not yet** certify all scoped views: platform control, other POS flows, Windows native installer, public website styles and other custom scoped page CSS still require migration and browser validation. Automated palette guard includes only the named migrated stylesheets; do not treat unchanged legacy files as approved. Branch source is not deployed. See [checkpoint](docs/operations/ONEQAY_UI_FOUNDATION_CHECKPOINT_2026-10-21.md).
+
 # oneQay UI/UX Guideline
 
 ## Owner-required successor design — 21 October 2026

@@ -74,3 +74,7 @@ Required behaviors:
 ## Design references and interpretation
 
 Primary references checked21October2026: [W3C WCAG2.2](https://www.w3.org/TR/WCAG22/) for contrast/status/accessibility and [Microsoft Fluent2 motion](https://fluent2.microsoft.design/motion) for purposeful, quick transitions/container relationships. These inform interaction quality, not a requirement to import their colors, brand, framework or components. The palette, font targets, timing defaults and operation model above are oneQay product requirements/engineering proposals, not copied standards text. Favor mature, accessible patterns over an unsupported claim that a particular trend guarantees quality.
+
+## Implementation checkpoint — 21 October 2026
+
+Scoped branch implementation and its validation boundary are recorded in [ONEQAY_UI_FOUNDATION_CHECKPOINT_2026-10-21.md](../operations/ONEQAY_UI_FOUNDATION_CHECKPOINT_2026-10-21.md). Progress is partial; do not promote the entire modernization contract to complete without further route and Windows/source verification.
