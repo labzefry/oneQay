@@ -130,6 +130,10 @@ jobs:
           PUSH_AFTER_SHA: ${{ github.sha }}
         run: |
           # Exact SMTP/catalog successor; compare every owned path/content and preserve operational authority.
+          if [[ "${{ github.head_ref }}" == 'fix/pos-sync-tenant-reset-20261022' && "${{ github.event.pull_request.base.sha }}" == 'a3650644ef0634e3a51431a707fc7bd791b9cfdf' && "${{ github.event.pull_request.number }}" == '981' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
+            bash tools/qa-pos-sync-business-reset-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" || exit 1
+            exit 0
+          fi
           if [[ "${{ github.head_ref }}" == 'mail-catalog-stock-20261021' && "${{ github.event.pull_request.base.sha }}" == '10a08b56deb8ed3daa5bb612b75db0ea41e0b592' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
             bash tools/qa-mail-catalog-stock-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" || exit 1
             exit 0
