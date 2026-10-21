@@ -107,7 +107,7 @@ onBeforeUnmount(() => { window.removeEventListener('beforeunload', beforeUnload)
 </script>
 
 <template>
-    <main class="access-page"><OperationFeedback :status="operationProgress" :message="message" :operation-id="operationId" :success-label="locale==='id'?'Perubahan akses berhasil':'Access change confirmed'"/>
+    <main class="access-page"><OperationFeedback :status="operationProgress" :message="operationProgress==='succeeded'?'':message" :operation-id="operationId" :success-label="locale==='id'?'Perubahan akses berhasil':'Access change confirmed'"/>
         <a href="/pos" class="back">← {{ t('Back to workspace') }}</a>
         <header><span class="eyebrow">{{ t('Administration') }}</span><h1>{{ t('Business access') }}</h1><p>{{ t('Give existing team members access to business modules for this outlet.') }}</p></header>
         <p class="scope">{{ t('Outlet') }} <strong>{{ outlet_id }}</strong></p>
