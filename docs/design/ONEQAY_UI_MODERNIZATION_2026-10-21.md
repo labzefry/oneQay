@@ -78,3 +78,7 @@ Primary references checked21October2026: [W3C WCAG2.2](https://www.w3.org/TR/WCA
 ## Implementation checkpoint — 21 October 2026
 
 Scoped branch implementation and its validation boundary are recorded in [ONEQAY_UI_FOUNDATION_CHECKPOINT_2026-10-21.md](../operations/ONEQAY_UI_FOUNDATION_CHECKPOINT_2026-10-21.md). Progress is partial; do not promote the entire modernization contract to complete without further route and Windows/source verification.
+
+### Implementation note: bounded transaction feedback (source only)
+
+PR #978 branch adds explicit timeout, late/queued/unknown outcomes across owner configuration, business commands, cashier, shift, authorization and report-download surfaces. PENDING: cross-route E2E negative tests, manual contrast/zoom/accessibility validation, untouched workflows and full Windows-native UI modernization. See [source checkpoint](../operations/ONEQAY_UI_FOUNDATION_CHECKPOINT_2026-10-21.md).

@@ -35,3 +35,17 @@ Author by Lab | zefry.
 2. Migrate remaining platform subpages, public/auth/error, unmodified POS reports/stock/corrections and desktop-native UI in separately reviewable source increments. Distinguish truly queued jobs from completed operations.
 3. Complete exact-source artifact build/manifest/checksum and successor operator qualified against predecessor `7efdda7648c2` with no historical migrations, then produce specific File Manager and `/usr/local/bin/php` Cron commands **only once real release/artifact/path/grant exist**.
 4. After actual successful deployment receipt, verify active host/worker and archive only eligible old expanded releases privately with integrity verification; never touch active/shared/backup/database.
+
+## Continued implementation — transactional feedback and bounded read operations
+
+- POS Cashier now creates one sale operation ID per attempted checkout, blocks repeated writes while unresolved, closes spinner on a 30-second deadline, and treats 5xx, 202, offline, connection loss and late data as unconfirmed (not a successful receipt). Tracked/unlimited stock deduction and the authoritative backend sale calculations remain unchanged. Sale history must be checked by authorized staff before proceeding if the outcome is uncertain.
+- Shift Start and opening-cash evidence use a bounded request with fixed operation IDs, no automatic retries, cleanup on navigation, distinct server rejection and unknown/queued responses. Final Shift Close and counted-cash commands gain Axios deadline, explicit queued-not-complete detection and uncertainty-based write protection. Original two-person approval and shift identity remain unchanged.
+- Business Access and business command workspace now use a bounded authenticated request, preserve an unknown operation identity for diagnosis and avoid silently replacing it with a fresh operation; dedicated nonmodal status overlay is shown.
+- Platform owner report/DNS and MFA checks, as well as mail refresh, now have bounded reads or verification requests; the owner POST write flow does not claim SMTP inbox delivery from queue acceptance.
+- Report exports prepare actual PDF/XLSX blobs with download-feedback terminology that distinguishes browser download initiation from verified local file save. On 202, show a queued outcome; on 401/419, reenter authorized business sign-in; on timeout stop loading. These are read-only report requests.
+- Operation feedback provides a manual dismiss action; confirmed success/explicit rejection notifications automatically recede after 6.5 seconds; unknown and queued states remain reviewable. Realtime **progress percentages are deliberately absent** because server progress is not measurable from these endpoints.
+
+### Source/CI and host boundaries
+
+All statements here are **branch source implementation**, not a live production acceptance. CI for a new commit must be fetched for that exact Git SHA; passing workflow runs from the earlier `4ed3311` head do not certify newer changes. Additional visual/accessibility/manual data acceptance and remaining untouched POS/Platform/native Windows surfaces are still outstanding. GitHub source is not the hosting release. No new migration was executed. No new successor operator/deploy ZIP/hash or real Cron value exists at this milestone; inventing one would risk overwriting the active `production-7efdda7648c2` host.
+

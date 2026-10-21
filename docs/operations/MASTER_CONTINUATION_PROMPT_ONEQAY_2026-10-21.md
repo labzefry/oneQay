@@ -1,5 +1,7 @@
 # Prompt lanjutan oneQay — UI/UX modern, palet terkunci, deploy tanpa Cloud Browser
 
+> **Update from ongoing implementation on 2026-10-21:** This handoff is the original requirement contract, not evidence that UI modernization was completed. Feature branch `agent/ui-enterprise-palette-feedback-20261021` and PR #978 now contain incremental UI source changes, with CI/review and deployment separately gated. Read `docs/operations/ONEQAY_UI_FOUNDATION_CHECKPOINT_2026-10-21.md` and the live PR head first. Never use the old `production-7efdda7648c2` grant for a new release or assume the hosting source follows the branch.
+
 Author by Lab | zefry. Salin isi bagian **Prompt siap pakai** ke chat baru. Dokumen ini mencatat tugas berikutnya; perubahan UI belum diimplementasikan oleh handoff ini.
 
 ## Prompt siap pakai

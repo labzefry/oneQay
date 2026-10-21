@@ -1,3 +1,7 @@
+## 2026-10-21 — Cashier/shift and owner operation feedback expansion (branch only)
+
+Author by Lab | zefry. PR #978 draft adds bounded POS checkout with single immutable sale operation ID and no blind retry, shift cash/open/close timeout handling, queued-versus-confirmed responses, bounded RBAC and business commands, owner SMTP/DNS/report/MFA request ceilings, report download progress, and dismissible localized feedback. Seven-color styling was also extended across cashier, shifts, owner login, business workspace and public website. Business PHP, DB schema/migrations, payment semantics, stock tracked/unlimited, SMTP backend and offline queues are unchanged. The change is **not deployed**; complete CI, approval, missing UI surfaces and certified successor operator remain required. [Branch checkpoint](docs/operations/ONEQAY_UI_FOUNDATION_CHECKPOINT_2026-10-21.md).
+
 **UI source coverage follow-on:** Seven-color and proportional typography styling now also touches cashier, open/close shift, business management/access, public registration, platform login, and shared website CSS; the source-level palette guard enumerates these migrated stylesheets. No claim of full app accessibility, client-operation completeness or native Windows coverage; new exact-head CI and interactive review still required. Hosting release remains unchanged.
 
 ## 2026-10-21 — Applied foundation on feature branch, not on hosting
