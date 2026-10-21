@@ -56,7 +56,8 @@ function uPrivateDatabaseBackup($db,string $file):array {
  }catch(Throwable $e){try{if($db->getDriverName()==='mysql')$db->statement('ROLLBACK');elseif($db->transactionLevel()>0)$db->rollBack();}catch(Throwable){}throw $e;}finally{if(is_resource($out))gzclose($out);}
 }
 function uAssertRollbackSafe($db):void {
- uAssert(!$db->getSchemaBuilder()->hasColumn('oneqay_pos_sale_lines','stock_deducted')||!$db->table('oneqay_pos_sale_lines')->where('stock_deducted',false)->exists(),'UNLIMITED_SALES_EXIST_FORWARD_FIX_REQUIRED');
+ // Never race a concurrent unlimited sale by promoting an obsolete application after a point-in-time check.
+ uAssert(!$db->getSchemaBuilder()->hasColumn('oneqay_pos_sale_lines','stock_deducted'),'STOCK_SCHEMA_EXISTS_FORWARD_FIX_REQUIRED');
 }
 function uApplyModuleSchema($app,string $appPath,callable $checkpoint):array {
  $db=$app->make('db')->connection();$before=uSchemaSnapshot($db);$plan=uModulePlan($db,$appPath,$before);$names=array_map(static fn($p)=>pathinfo($p,PATHINFO_FILENAME),$plan['paths']);

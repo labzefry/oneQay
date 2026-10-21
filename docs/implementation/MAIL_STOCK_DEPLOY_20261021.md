@@ -12,7 +12,7 @@ Exact native owner authorization is recorded on PR #975 only after upload, bindi
 
 The unchanged retention helper archives inactive expanded releases and duplicate payload into verified private ZIPs after the 120-second grace, preserving active files and recoverable backup evidence. Only this application's worker cron is replaced and the one-time updater cron removed after actual success. Other domains and staging are outside scope.
 
-Rollback to the predecessor is refused if any unlimited sale effect exists. Such a condition requires a compatible forward fix; no older business-on code may restock unlimited sales incorrectly. Partial schema checkpoints are retained without automatic DDL retry or destructive down migrations.
+Rollback to the predecessor is refused once the stock schema exists. Recovery then requires a compatible forward fix, avoiding a race with concurrent unlimited sales; no older business-on code may restock unlimited sales incorrectly. Partial schema checkpoints are retained without automatic DDL retry or destructive down migrations.
 
 Local checks cover exact authority, runtime preservation, source integrity, rollback, HTTPS/TLS retry and worker locks; the SQL test exercises the real 36/87 → 38/88 upgrade, full backup round-trip on SQLite, unchanged account/SMTP/offline records and guard rejection. CI additionally executes disposable MySQL 8.4 and validates the actual certified package bytes. Source and synthetic qualification do not prove production inbox delivery. No external test recipient is implicitly selected.
 
