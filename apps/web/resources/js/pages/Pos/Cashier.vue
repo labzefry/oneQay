@@ -239,10 +239,16 @@ const checkout = async (): Promise<void> => {
         if (response.status === 401 || response.status === 419) {
             saleProgress.value = 'session-expired';
             unresolvedSale.value = true;
-            window.location.assign('/business-login?reason=session-expired');
+            message.value = 'Sesi berakhir. Periksa hasil transaksi dan ID operasi melalui akun yang sah sebelum melakukan checkout lain.';
             return;
         }
-        if (response.status >= 500 || response.status === 202) throw new Error('SERVER_UNCONFIRMED');
+        if (response.status === 202) {
+            unresolvedSale.value = true;
+            saleProgress.value = 'queued';
+            message.value = 'Transaksi berada dalam antrean server dan belum terkonfirmasi selesai. Periksa riwayat penjualan dan ID operasi sebelum mengambil tindakan lain.';
+            return;
+        }
+        if (response.status >= 500) throw new Error('SERVER_UNCONFIRMED');
         const payload = await response.json() as SaleReceipt | { error?: { code?: string }; correlation_id?: string };
         if (controller.signal.aborted) throw new Error('TIMEOUT_UNCONFIRMED');
         if (!response.ok || !('status' in payload) || payload.status !== 'completed') {
@@ -280,8 +286,8 @@ const checkout = async (): Promise<void> => {
 
 <template>
     <Head :title="t('Cashier')" />
-    <main class="cashier-shell" :data-leave-confirmation="submitting || (cartLines.length >
-        <OperationFeedback :status="saleProgress" :message="message" :operation-id="saleOperationId" :success-label="locale==='id'?'Transaksi selesai':'Sale completed'" :running-label="locale==='id'?'Memproses pembayaran':'Processing checkout'"/> 0 && !receipt)">
+    <main class="cashier-shell" :data-leave-confirmation="submitting || unresolvedSale || (cartLines.length > 0 && !receipt)">
+        <OperationFeedback :status="saleProgress" :message="message" :operation-id="saleOperationId" :success-label="locale==='id'?'Transaksi selesai':'Sale completed'" :running-label="locale==='id'?'Memproses pembayaran':'Processing checkout'"/>
         <header class="hero">
             <div>
                 <p class="eyebrow">{{ t("oneQay · Point of Sale") }}</p>
