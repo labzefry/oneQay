@@ -1,0 +1,56 @@
+# Author by Lab | zefry
+name: cPanel SMTP Categories Stock Deployment
+on:
+  pull_request:
+    branches: [main]
+    paths: ['tools/production/**mail-stock*', '.github/workflows/cpanel-mail-stock.yml']
+  push:
+    branches: [deploy-mail-stock-20261021]
+permissions:
+  contents: read
+  actions: read
+jobs:
+  cpanel-mail-stock:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: synthetic-test-only
+          MYSQL_DATABASE: oneqay_control_upgrade_test
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -psynthetic-test-only"
+          --health-interval=10s --health-timeout=5s --health-retries=10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        with:
+          php-version: '8.3'
+          extensions: pdo_sqlite, pdo_mysql, dom, zlib, phar, curl
+          tools: composer:v2
+          coverage: none
+      - run: composer install --working-dir=apps/web --no-interaction --no-progress --prefer-dist
+      - name: Exact authority, preserved runtime, schema, private backup and rollback guard
+        run: |
+          set -euo pipefail
+          php -l tools/production/cpanel/update-oneqaydev-mail-stock.php
+          php -l tools/production/cpanel/install-oneqaydev-mail-stock.php
+          php tools/production/tests/oneqaydev-mail-stock-operator.php
+          php tools/production/tests/oneqaydev-mail-stock-runtime-lock.php
+          php tools/production/tests/oneqaydev-mail-stock-https.php
+          php tools/production/tests/oneqaydev-mail-stock-schema.php
+          CONTROL_TEST_ENGINE=mysql php tools/production/tests/oneqaydev-mail-stock-schema.php
+      - name: Verify immutable certified source package
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh run download 39532367140 --repo labzefry/oneQay --name oneqay-certified-business-production-7efdda7648c2 --dir "$RUNNER_TEMP/mail-stock-certified"
+          zip -j "$RUNNER_TEMP/mail-stock-certified.zip" "$RUNNER_TEMP/mail-stock-certified/"*
+          python3 tools/production/package-oneqaydev-mail-stock.py --certified-zip "$RUNNER_TEMP/mail-stock-certified.zip" --source-sha 7efdda7648c2e89bf0100b1ac8d76763ec73dd94 --run-id 39532367140 --output-directory "$RUNNER_TEMP/mail-stock-package"
+          php tools/production/tests/oneqaydev-mail-stock-package.php "$RUNNER_TEMP/mail-stock-package/oneqaydev-pos-update-7efdda7648c2"

@@ -605,3 +605,8 @@ Author by Lab | zefry. Exact source 14e1cdb9f11f9b1a6384aa1659dab86cac5e1078 suc
 ## 2026-10-21 — Mail delivery, category creation and stock policy
 
 Stage 1 source changes: independent SMTP/NOC worker phases; live owner delivery reports and safe SMTP error guidance; automatic 72-hour email log retention protecting active queues/dedupe; tenant/outlet category creation; explicit tracked/unlimited stock through canonical sale/void, web and offline desktop 0.2.1. Two additive module migrations require a separately qualified deployment. Hosting remains c2e (PR #974); deployment is deferred per Product Owner. [Implementation, schema, compatibility and validation](docs/implementation/MAIL_CATALOG_STOCK_20261021.md). Author by Lab | zefry.
+
+
+## 2026-10-21 — SMTP/category/stock hosting successor
+
+Stage 2 authorized after cPanel login. Exact application source 7efdda7648c2; guarded 36/87 to 38/88 migration with private database backup, rollback protection and ZIP retention. Continue from `docs/implementation/MAIL_STOCK_DEPLOY_20261021.md` and actual deployment evidence on PR #975.
