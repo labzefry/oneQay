@@ -61,7 +61,10 @@ final readonly class LaravelMailStore implements MailStore
             $lease=bin2hex(random_bytes(16));
             $this->db->table('oneqay_mail_messages')->where('id',$row->id)->update(['status'=>'sending','attempts'=>(int)$row->attempts+1,'lease'=>$lease,'lease_until'=>$now+120,'updated_at'=>$now]);
             $this->db->table('oneqay_mail_settings')->where('id',1)->update(['minute_slot'=>$slot,'minute_count'=>$count+1]);
-            return ['id'=>$row->id,'tenant_id'=>$row->tenant_id,'lease'=>$lease,'attempt'=>(int)$row->attempts+1] + json_decode($this->cipher->decryptString($row->payload),true,32,JSON_THROW_ON_ERROR);
+            try{$payload=json_decode($this->cipher->decryptString($row->payload),true,32,JSON_THROW_ON_ERROR);if(!is_array($payload)||!isset($payload['recipient'],$payload['subject'],$payload['text']))throw new \RuntimeException();}
+            catch(\Throwable){$this->db->table('oneqay_mail_messages')->where('id',$row->id)->update(['status'=>'failed','safe_code'=>'MAIL_PAYLOAD_UNREADABLE','lease'=>null,'lease_until'=>null,'updated_at'=>$now]);$this->event($row->id,'failed','MAIL_PAYLOAD_UNREADABLE',$now);return null;}
+            $this->event($row->id,'sending','SMTP_ATTEMPT_STARTED',$now);
+            return ['id'=>$row->id,'tenant_id'=>$row->tenant_id,'lease'=>$lease,'attempt'=>(int)$row->attempts+1] + $payload;
         });
     }
     public function finish(array $message, string $outcome, string $code, int $now): void
@@ -114,6 +117,7 @@ final readonly class LaravelMailStore implements MailStore
             $this->settings(true);
             $row=$this->db->table('oneqay_mail_messages')->where('id',$id)->lockForUpdate()->first();
             if($row===null || !in_array($row->status,['failed','unknown'],true))throw new PlatformViolation('MAIL_RETRY_DENIED',409);
+            if($row->payload==='')throw new PlatformViolation('MAIL_CONTENT_EXPIRED',409);
             if($row->status==='unknown' && !$acceptDuplicateRisk)throw new PlatformViolation('DUPLICATE_RISK_CONFIRMATION_REQUIRED',409);
             if($this->db->table('oneqay_mail_suppressions')->where('recipient_hash',$row->recipient_hash)->exists())throw new PlatformViolation('RECIPIENT_SUPPRESSED',409);
             $this->db->table('oneqay_mail_messages')->where('id',$id)->update(['status'=>'queued','attempts'=>0,'next_attempt_at'=>$now,'safe_code'=>'OWNER_RETRY','updated_at'=>$now]);
@@ -123,12 +127,28 @@ final readonly class LaravelMailStore implements MailStore
     }
     public function report(int $page): array
     {
-        $settings=$this->settings(); $counts=$this->db->table('oneqay_mail_messages')->selectRaw('status, COUNT(*) AS total')->groupBy('status')->pluck('total','status')->all();
-        return ['counts'=>$counts,'total'=>array_sum($counts),'heartbeat_at'=>(int)$settings->heartbeat_at,'paused_until'=>(int)$settings->paused_until,
+        $settings=$this->settings();$since=time()-259200;
+        $messages=$this->db->table('oneqay_mail_messages')->where(fn($q)=>$q->where('updated_at','>=',$since)->orWhereIn('status',['queued','retry','sending']));
+        $counts=(clone $messages)->selectRaw('status, COUNT(*) AS total')->groupBy('status')->pluck('total','status')->all();
+        $configuration=json_decode($settings->configuration,true,32,JSON_THROW_ON_ERROR);
+        $state=($configuration['enabled']??false)!==true?'SMTP_DISABLED':((int)$settings->heartbeat_at<time()-180?'WORKER_STALE':((int)$settings->paused_until>time()?'CIRCUIT_OPEN':'READY'));
+        return ['sending_state'=>$state,'retention_days'=>3,'report_since'=>$since,'counts'=>$counts,'total'=>array_sum($counts),'heartbeat_at'=>(int)$settings->heartbeat_at,'paused_until'=>(int)$settings->paused_until,
             'oldest_queued_at'=>$this->db->table('oneqay_mail_messages')->whereIn('status',['queued','retry'])->min('created_at'),
             'suppressed_recipients'=>$this->db->table('oneqay_mail_suppressions')->count(),
-            'messages'=>$this->db->table('oneqay_mail_messages')->orderByDesc('created_at')->orderBy('id')->offset((max(1,$page)-1)*25)->limit(25)->get(['id','tenant_id','status','attempts','safe_code','next_attempt_at','created_at','updated_at'])->map(fn($r)=>(array)$r)->all(),
-            'events'=>$this->db->table('oneqay_mail_events')->orderByDesc('occurred_at')->orderBy('id')->limit(40)->get()->map(fn($r)=>(array)$r)->all()];
+            'messages'=>$messages->orderByDesc('created_at')->orderBy('id')->offset((max(1,$page)-1)*25)->limit(25)->get(['id','tenant_id','status','attempts','safe_code','next_attempt_at','created_at','updated_at'])->map(fn($r)=>(array)$r)->all(),
+            'events'=>$this->db->table('oneqay_mail_events')->where('occurred_at','>=',$since)->orderByDesc('occurred_at')->orderBy('id')->limit(40)->get()->map(fn($r)=>(array)$r)->all()];
+    }
+    /** Keep minimal dedupe tombstones and suppression safety; expire delivery log content after 72 hours. */
+    public function prune(int $now): array
+    {
+        return $this->db->transaction(function()use($now):array {
+            $this->settings(true);$cutoff=$now-259200;
+            $ids=$this->db->table('oneqay_mail_events')->where('occurred_at','<',$cutoff)->orderBy('occurred_at')->limit(1000)->pluck('id')->all();
+            $events=$ids?$this->db->table('oneqay_mail_events')->whereIn('id',$ids)->delete():0;
+            $ids=$this->db->table('oneqay_mail_messages')->whereNotIn('status',['queued','retry','sending'])->where('updated_at','<',$cutoff)->where('payload','<>','')->orderBy('updated_at')->limit(500)->pluck('id')->all();
+            $contents=$ids?$this->db->table('oneqay_mail_messages')->whereIn('id',$ids)->update(['payload'=>'']):0;
+            return ['retention_days'=>3,'events_removed'=>$events,'message_contents_removed'=>$contents];
+        });
     }
     public function configuration(): array
     {
@@ -165,7 +185,7 @@ final readonly class LaravelMailStore implements MailStore
                 if($changed || !isset($prior['password']))throw new PlatformViolation('SMTP_PASSWORD_REQUIRED');
                 $settings['password']=$prior['password'];
             }else $settings['password']=$this->cipher->encryptString($password);
-            $this->db->table('oneqay_mail_settings')->where('id',1)->update(['configuration'=>json_encode($settings,JSON_THROW_ON_ERROR),'version'=>$version+1]);
+            $this->db->table('oneqay_mail_settings')->where('id',1)->update(['configuration'=>json_encode($settings,JSON_THROW_ON_ERROR),'version'=>$version+1,'failures'=>0,'paused_until'=>0]);
             $this->db->table('oneqay_platform_audit')->insert(['actor'=>$actor,'action'=>'mail.configure','business_id'=>'','reason'=>'SMTP configuration updated; secrets omitted','occurred_at'=>$now]);
         });
     }

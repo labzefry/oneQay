@@ -40,6 +40,7 @@ final class PosCashierWorkspaceController
                         'product_id' => $item->productId(),
                         'display_name' => $item->displayName(),
                         'available_quantity' => $item->availableQuantity(),
+                        ...(!$item->tracksStock()?['tracks_stock'=>false]:[]),
                         'unit_price' => [
                             'atomic_units' => (string) $item->unitPrice()->atomicUnits(),
                             'currency' => $item->unitPrice()->currency(),

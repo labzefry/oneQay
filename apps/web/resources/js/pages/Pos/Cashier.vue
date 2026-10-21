@@ -10,6 +10,7 @@ type CatalogItem = {
     product_id: string;
     display_name: string;
     available_quantity: number;
+    tracks_stock?: boolean;
     unit_price: { atomic_units: string; currency: string; scale: number };
 };
 
@@ -117,7 +118,7 @@ const add = (item: CatalogItem): void => {
         return;
     }
     const current = cart.value[item.product_id] ?? 0;
-    if (current >= item.available_quantity) {
+    if (item.tracks_stock !== false && current >= item.available_quantity) {
         message.value = 'Jumlah item telah mencapai stok tersedia.';
         return;
     }
@@ -224,9 +225,9 @@ const checkout = async (): Promise<void> => {
         catalog.value = catalog.value
             .map((item) => ({
                 ...item,
-                available_quantity: Math.max(0, item.available_quantity - (sold.get(item.product_id) ?? 0)),
+                available_quantity: item.tracks_stock === false ? item.available_quantity : Math.max(0, item.available_quantity - (sold.get(item.product_id) ?? 0)),
             }))
-            .filter((item) => item.available_quantity > 0);
+            .filter((item) => item.tracks_stock === false || item.available_quantity > 0);
         cart.value = {};
         tendered.value = '';
         message.value = 'Transaksi berhasil diselesaikan.';
@@ -271,9 +272,9 @@ const checkout = async (): Promise<void> => {
                         </div>
                         <div class="product-meta">
                             <strong>{{ formatAtomic(item.unit_price.atomic_units, item.unit_price.currency, item.unit_price.scale) }}</strong>
-                            <span>{{ t("Stok") }} {{ item.available_quantity }}</span>
+                            <span>{{item.tracks_stock===false?t("Unlimited stock"):t("Stok")+" "+item.available_quantity}}</span>
                         </div>
-                        <button type="button" :disabled="!sameMoney(item) || (cart[item.product_id] ?? 0) >= item.available_quantity" @click="add(item)">{{ t("Tambah") }}</button>
+                        <button type="button" :disabled="!sameMoney(item) || (item.tracks_stock!==false && (cart[item.product_id] ?? 0) >= item.available_quantity)" @click="add(item)">{{ t("Tambah") }}</button>
                     </article>
                     <p v-if="!visibleCatalog.length" class="empty">{{ t("Belum ada produk yang cocok. Periksa pencarian, katalog, dan stok produk Anda.") }}</p>
                 </div>
@@ -288,7 +289,7 @@ const checkout = async (): Promise<void> => {
                 <div v-if="cartLines.length" class="cart-lines">
                     <div v-for="line in cartLines" :key="line.item.product_id" class="cart-line">
                         <div><strong>{{ line.item.display_name }}</strong><small>{{ formatAtomic(line.item.unit_price.atomic_units, line.item.unit_price.currency, line.item.unit_price.scale) }}</small></div>
-                        <div class="qty"><button type="button" @click="decrement(line.item)">−</button><span>{{ line.quantity }}</span><button type="button" :disabled="line.quantity >= line.item.available_quantity" @click="add(line.item)">+</button></div>
+                        <div class="qty"><button type="button" @click="decrement(line.item)">−</button><span>{{ line.quantity }}</span><button type="button" :disabled="line.item.tracks_stock!==false && line.quantity >= line.item.available_quantity" @click="add(line.item)">+</button></div>
                     </div>
                 </div>
                 <p v-else class="empty">{{ t("Keranjang masih kosong.") }}</p>

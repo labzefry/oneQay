@@ -75,7 +75,7 @@ final readonly class LaravelInventoryReplenishmentRepository implements Inventor
                 ->lockForUpdate()
                 ->first();
 
-            if ($catalog === null) {
+            if ($catalog === null || !(bool)($catalog->tracks_stock??true)) {
                 throw new PosTransactionViolation();
             }
 

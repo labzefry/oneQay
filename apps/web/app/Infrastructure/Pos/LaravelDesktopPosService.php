@@ -69,7 +69,7 @@ final readonly class LaravelDesktopPosService
   $s=$this->scope();$rows=$this->db->table('oneqay_pos_sale_catalog_items')->where('tenant_id',$s['tenant_id'])->where('outlet_id',$s['outlet_id'])->where('active',true)->orderBy('product_id')->limit(20001)->get();
   abort_if(count($rows)>20000,422,'Catalog requires a narrower outlet scope.');$profiles=[];
   if($this->db->getSchemaBuilder()->hasTable('oneqay_business_product_profiles'))$profiles=$this->db->table('oneqay_business_product_profiles')->where('tenant_id',$s['tenant_id'])->where('outlet_id',$s['outlet_id'])->get()->keyBy('product_id')->all();
-  return $rows->map(function($r)use($profiles):array{$profile=$profiles[$r->product_id]??null;return ['id'=>$r->product_id,'name'=>$r->display_name,'price'=>(int)$r->unit_price_atomic,'currency'=>$r->currency,'scale'=>(int)$r->currency_scale,'stock'=>(int)$r->available_quantity,'barcode'=>$profile?->barcode??'','category'=>$profile?->category??''];})->all();
+  return $rows->map(function($r)use($profiles):array{$profile=$profiles[$r->product_id]??null;return ['id'=>$r->product_id,'name'=>$r->display_name,'price'=>(int)$r->unit_price_atomic,'currency'=>$r->currency,'scale'=>(int)$r->currency_scale,'stock'=>(int)$r->available_quantity,...(!(bool)($r->tracks_stock??true)?['tracks_stock'=>false]:[]),'barcode'=>$profile?->barcode??'','category'=>$profile?->category??''];})->all();
  }
  public function snapshot(bool $enterprise=false):array {
   $this->authorization->require($this->context(),PosPermission::completeSale());$s=$this->scope();
@@ -79,7 +79,7 @@ final readonly class LaravelDesktopPosService
   $catalog=$this->catalog();abort_unless(count($catalog)>0,409,'Prepare the outlet catalog first.');
   $currencies=array_unique(array_map(fn($p)=>$p['currency'].':'.$p['scale'],$catalog));abort_unless(count($currencies)===1,409,'Outlet catalog currency must be consistent.');
   $now=time();
-  $authorityCatalog=array_map(fn($p)=>array_intersect_key($p,array_flip(['id','price','currency','scale'])),$catalog);
+  $authorityCatalog=array_map(fn($p)=>array_intersect_key($p,array_flip(['id','price','currency','scale','tracks_stock'])),$catalog);
   $revision=hash('sha256',json_encode($authorityCatalog,JSON_THROW_ON_ERROR));
   // Reuse an immutable price lease across stock refreshes. Do not duplicate the entire catalog per sale.
   $lease=$this->db->table('oneqay_desktop_leases')->where('scope_hash',$this->scopeHash())->where('shift_id',$leaseShift)->where('catalog_revision',$revision)->where('expires_at','>',$now+900)->orderByDesc('issued_at')->first();
@@ -125,7 +125,7 @@ final readonly class LaravelDesktopPosService
      $result['code']='POS_SHIFT_CHANGED';
      if($shift&&$shift->shift_id===$lease->shift_id){
       $valid=true;$result['code']='POS_CATALOG_CHANGED';$total=0;
-      foreach($op['lines']as$l){$old=$catalog[$l['product_id']];$current=$this->db->table('oneqay_pos_sale_catalog_items')->where('tenant_id',$s['tenant_id'])->where('outlet_id',$s['outlet_id'])->where('product_id',$l['product_id'])->lockForUpdate()->first();if(!$current||!$current->active||(int)$current->unit_price_atomic!==$old['price']||$current->currency!==$old['currency']||(int)$current->currency_scale!==$old['scale']){$valid=false;break;}if($old['price']>intdiv(9007199254740991,$l['quantity'])||$total>9007199254740991-$old['price']*$l['quantity'])throw new InvalidArgumentException();$total+=$old['price']*$l['quantity'];if((int)$current->available_quantity<$l['quantity']){$valid=false;$result['code']='POS_STOCK_CHANGED';break;}}
+      foreach($op['lines']as$l){$old=$catalog[$l['product_id']];$current=$this->db->table('oneqay_pos_sale_catalog_items')->where('tenant_id',$s['tenant_id'])->where('outlet_id',$s['outlet_id'])->where('product_id',$l['product_id'])->lockForUpdate()->first();if(!$current||!$current->active||(int)$current->unit_price_atomic!==$old['price']||$current->currency!==$old['currency']||(int)$current->currency_scale!==$old['scale']||(bool)($current->tracks_stock??true)!==($old['tracks_stock']??true)){$valid=false;break;}if($old['price']>intdiv(9007199254740991,$l['quantity'])||$total>9007199254740991-$old['price']*$l['quantity'])throw new InvalidArgumentException();$total+=$old['price']*$l['quantity'];if((bool)($current->tracks_stock??true)&&(int)$current->available_quantity<$l['quantity']){$valid=false;$result['code']='POS_STOCK_CHANGED';break;}}
       if($valid){
        if($op['tendered']<$total||$op['tendered']>9007199254740991)throw new InvalidArgumentException();
        $first=$catalog[$op['lines'][0]['product_id']];$receipt=$this->sales->complete(new SaleCommand($op['operation_id'],Cart::fromLines(array_map(fn($l)=>new CartLine(ProductId::fromString($l['product_id']),$l['quantity']),$op['lines'])),TenderCategory::CASH,Money::fromAtomicUnits($op['tendered'],$first['currency'],$first['scale']),$correlation));

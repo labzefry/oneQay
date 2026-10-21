@@ -47,11 +47,12 @@ final readonly class LaravelPosCashierWorkspaceRepository implements PosCashierW
                 ->where('tenant_id', $context->tenantId())
                 ->where('outlet_id', $context->outletId())
                 ->where('active', true)
-                ->where('available_quantity', '>', 0)
+                ->where(function($q):void{$q->where('available_quantity','>',0);if($this->connection->getSchemaBuilder()->hasColumn('oneqay_pos_sale_catalog_items','tracks_stock'))$q->orWhere('tracks_stock',false);})
                 ->orderBy('display_name')
                 ->orderBy('product_id')
                 ->limit(250)
                 ->get([
+                    ...($this->connection->getSchemaBuilder()->hasColumn('oneqay_pos_sale_catalog_items','tracks_stock')?['tracks_stock']:[]),
                     'product_id',
                     'display_name',
                     'available_quantity',
@@ -71,12 +72,13 @@ final readonly class LaravelPosCashierWorkspaceRepository implements PosCashierW
                 $items[] = new PosCashierCatalogItem(
                     ProductId::fromString($row->product_id),
                     $row->display_name,
-                    $this->positiveInteger($row->available_quantity),
+                    (bool)($row->tracks_stock??true)?$this->positiveInteger($row->available_quantity):$this->nonNegativeInteger($row->available_quantity),
                     Money::fromAtomicUnits(
                         $this->nonNegativeInteger($row->unit_price_atomic),
                         $row->currency,
                         $this->nonNegativeInteger($row->currency_scale),
                     ),
+                    (bool)($row->tracks_stock??true),
                 );
             }
 

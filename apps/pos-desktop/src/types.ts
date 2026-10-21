@@ -1,4 +1,4 @@
-export type Product={id:string;name:string;price:number;currency:string;scale:number;stock:number;barcode:string;category:string}
+export type Product={id:string;name:string;price:number;currency:string;scale:number;stock:number;tracks_stock?:boolean;barcode:string;category:string}
 export type Line={product_id:string;quantity:number}
 export type Operation={created_at:number;kind:'sale'|'count'|'shift_open'|'shift_close';lease_id:string;lines:Line[];operation_id:string;tendered:number;shift_id:string;table:string;order:string;note:string}
 export type Logo={width:number;height:number;bits:string}

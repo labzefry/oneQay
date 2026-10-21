@@ -4,7 +4,7 @@ namespace App\Infrastructure\Business;
 use App\Application\Business\BusinessViolation;
 // Author by Lab | zefry. Real OOXML; text is never interpreted as an Excel formula.
 final class SpreadsheetDocument {
-    public const IMPORT_HEADERS=['sku','name','category','brand','variant','barcode','price','cost','wholesale','opening_quantity','active'];
+    public const IMPORT_HEADERS=['sku','name','category','brand','variant','barcode','price','cost','wholesale','opening_quantity','active','stock_mode'];
     private static function xml(string $v):string {return htmlspecialchars($v,ENT_XML1|ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');}
     public static function xlsx(array $headers,array $rows,string $title='oneQay'):string {
         $data=[$headers,...$rows];$sheet='<?xml version="1.0" encoding="UTF-8"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><cols><col min="1" max="'.count($headers).'" width="23" customWidth="1"/></cols><sheetData>';
@@ -63,10 +63,10 @@ final class SpreadsheetDocument {
             $sheet=self::document($files[$path]);if($sheet->getElementsByTagName('f')->length>0)throw new BusinessViolation('IMPORT_FORMULAS_NOT_ALLOWED');
             foreach($sheet->getElementsByTagName('row')as$r){$row=array_fill(0,count(self::IMPORT_HEADERS),'');foreach($r->getElementsByTagName('c')as$c){if(!preg_match('/\A([A-Z]{1,2})[1-9][0-9]*\z/D',$c->getAttribute('r'),$m))throw new BusinessViolation('INVALID_SPREADSHEET');$col=0;foreach(str_split($m[1])as$letter)$col=$col*26+ord($letter)-64;$col--;if($col>=count(self::IMPORT_HEADERS))throw new BusinessViolation('IMPORT_COLUMNS_INVALID');$value='';if($c->getAttribute('t')==='inlineStr'){foreach($c->getElementsByTagName('t')as$t)$value.=$t->textContent;}else{$value=$c->getElementsByTagName('v')->item(0)?->textContent??'';if($c->getAttribute('t')==='s'){$index=filter_var($value,FILTER_VALIDATE_INT);if($index===false||!isset($shared[$index]))throw new BusinessViolation('INVALID_SPREADSHEET');$value=$shared[$index];}}$row[$col]=$value;}$table[]=$row;if(count($table)>501)throw new BusinessViolation('IMPORT_ROW_LIMIT',413);}
         }else throw new BusinessViolation('IMPORT_FORMAT_NOT_SUPPORTED');
-        $headers=array_shift($table)??[];$headers=array_map(static fn($v)=>strtolower(trim((string)$v)),$headers);
-        if(count($headers)!==count(self::IMPORT_HEADERS)||array_diff(self::IMPORT_HEADERS,$headers)!==[]||count(array_unique($headers))!==count($headers))throw new BusinessViolation('IMPORT_COLUMNS_INVALID');
-        $rows=[];foreach($table as$r){if(count($r)!==count($headers))throw new BusinessViolation('IMPORT_COLUMNS_INVALID');$v=array_combine($headers,array_map(static fn($v)=>trim((string)$v),$r));
-            $a=strtolower($v['active']);$v['active']=in_array($a,['1','true','yes','aktif'],true)?true:(in_array($a,['0','false','no','nonaktif'],true)?false:$v['active']);$rows[]=$v;
+        $headers=array_shift($table)??[];while($headers!==[]&&end($headers)==='')array_pop($headers);$headers=array_map(static fn($v)=>strtolower(trim((string)$v)),$headers);
+        if(!in_array(count($headers),[count(self::IMPORT_HEADERS)-1,count(self::IMPORT_HEADERS)],true)||array_diff(array_slice(self::IMPORT_HEADERS,0,-1),$headers)!==[]||array_diff($headers,self::IMPORT_HEADERS)!==[]||count(array_unique($headers))!==count($headers))throw new BusinessViolation('IMPORT_COLUMNS_INVALID');
+        $rows=[];foreach($table as$r){while(count($r)>count($headers)&&end($r)==='')array_pop($r);if(count($r)!==count($headers))throw new BusinessViolation('IMPORT_COLUMNS_INVALID');$v=array_combine($headers,array_map(static fn($v)=>trim((string)$v),$r));
+            $v['stock_mode']=strtolower($v['stock_mode']??'')?:'tracked';$a=strtolower($v['active']);$v['active']=in_array($a,['1','true','yes','aktif'],true)?true:(in_array($a,['0','false','no','nonaktif'],true)?false:$v['active']);$rows[]=$v;
         }return $rows;
     }
 }

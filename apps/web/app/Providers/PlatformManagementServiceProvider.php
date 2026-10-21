@@ -51,6 +51,7 @@ final class PlatformManagementServiceProvider extends ServiceProvider
             Route::post('/platform/mail/settings',[PlatformController::class,'configure'])->middleware(RequirePolicyAdministrationSessionContextMiddleware::class);
             Route::post('/platform/mail/test',[PlatformController::class,'test'])->middleware([RequirePolicyAdministrationSessionContextMiddleware::class,'throttle:3,1']);
             Route::post('/platform/mail/retry',[PlatformController::class,'retry'])->middleware(RequirePolicyAdministrationSessionContextMiddleware::class);
+            Route::get('/platform/mail/report',[PlatformController::class,'report'])->middleware('throttle:12,1');
             Route::get('/platform/mail/inspect',[PlatformController::class,'inspect'])->middleware('throttle:3,1');
         });
         Route::middleware(['web','throttle:10,1'])->group(function():void {

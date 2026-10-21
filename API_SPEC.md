@@ -138,3 +138,7 @@ Catat method, route template, status, latency, tenant-safe dimension, client typ
 ## Definition of Done
 
 Endpoint selesai jika contract, example, auth policy, tenant behavior, error, idempotency, rate limit, audit, tests, observability, migration/deprecation impact, dan changelog tersedia serta direview.
+
+## 2026-10-21 — Mail delivery, category creation and stock policy
+
+Stage 1 source changes: independent SMTP/NOC worker phases; live owner delivery reports and safe SMTP error guidance; automatic 72-hour email log retention protecting active queues/dedupe; tenant/outlet category creation; explicit tracked/unlimited stock through canonical sale/void, web and offline desktop 0.2.1. Two additive module migrations require a separately qualified deployment. Hosting remains c2e (PR #974); deployment is deferred per Product Owner. [Implementation, schema, compatibility and validation](docs/implementation/MAIL_CATALOG_STOCK_20261021.md). Author by Lab | zefry.

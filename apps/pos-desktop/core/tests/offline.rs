@@ -28,6 +28,7 @@ fn fixture() -> Snapshot {
             currency: "IDR".into(),
             scale: 0,
             stock: 10,
+            tracks_stock: true,
             barcode: "123".into(),
             category: "Minuman".into(),
         }],
@@ -359,4 +360,26 @@ fn shift_ack_without_server_reference_is_rejected() {
         .acknowledge(&[json!({"operation_id":id,"state":"accepted","code":"OK"})])
         .is_err());
     assert_eq!(s.pending().unwrap().len(), 1);
+}
+#[test]
+fn unlimited_stock_is_explicit_and_survives_offline_reopen_and_replay() {
+    let mut s = Store::open(":memory:").unwrap();
+    let mut snapshot = fixture();
+    snapshot.catalog[0].stock = 0;
+    snapshot.catalog[0].tracks_stock = false;
+    s.apply_snapshot(&snapshot, 1000).unwrap();
+    let operation = id();
+    s.commit(&operation, "sale", lines(3), 50000, 1001).unwrap();
+    s.commit(&operation, "sale", lines(3), 50000, 1002).unwrap();
+    assert_eq!(s.products().unwrap()[0].stock, 0);
+    assert!(!s.products().unwrap()[0].tracks_stock);
+    assert_eq!(s.pending().unwrap().len(), 1);
+    s.apply_snapshot(&snapshot, 1003).unwrap();
+    s.commit(&id(), "sale", lines(3), 50000, 1004).unwrap();
+    assert_eq!(s.products().unwrap()[0].stock, 0);
+    assert_eq!(s.pending().unwrap().len(), 2);
+    let mut legacy = serde_json::to_value(&snapshot.catalog[0]).unwrap();
+    legacy.as_object_mut().unwrap().remove("tracks_stock");
+    let product: Product = serde_json::from_value(legacy).unwrap();
+    assert!(product.tracks_stock, "legacy snapshots must never become unlimited implicitly");
 }

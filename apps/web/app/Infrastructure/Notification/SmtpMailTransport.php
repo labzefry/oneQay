@@ -8,15 +8,16 @@ use Symfony\Component\Mime\{Address, Email};
 // Author by Lab | zefry. Mandatory TLS; credentials and SMTP transcripts never enter reports.
 final readonly class SmtpMailTransport implements MailTransport
 {
-    public function __construct(private LaravelMailStore $store) {}
+    public function __construct(private LaravelMailStore $store,private ?\Closure $transportFactory=null,private ?\Closure $resolveAddresses=null) {}
     public function send(array $message): array
     {
-        $c=$this->store->transportConfiguration();
+        try{$c=$this->store->transportConfiguration();}catch(\Throwable){return ['permanent','SMTP_CREDENTIALS_UNREADABLE'];}
         if(($c['enabled']??false)!==true)return ['temporary','SMTP_PAUSED'];
-        $addresses=$this->addresses($c['host']);
+        if(!isset($c['host'],$c['port'],$c['username'],$c['password'],$c['from'],$c['from_name']))return ['permanent','SMTP_CONFIGURATION_INCOMPLETE'];
+        $addresses=$this->resolveAddresses?($this->resolveAddresses)($c['host']):$this->addresses($c['host']);
         if($addresses===[])return ['temporary','SMTP_PUBLIC_DNS_REQUIRED'];
         // Pin the validated address to avoid DNS rebinding, while verifying the configured peer name.
-        $transport=new EsmtpTransport((str_contains($addresses[0],':')?'['.$addresses[0].']':$addresses[0]),(int)$c['port'],(int)$c['port']===465);
+        $transport=$this->transportFactory?($this->transportFactory)($c):new EsmtpTransport((str_contains($addresses[0],':')?'['.$addresses[0].']':$addresses[0]),(int)$c['port'],(int)$c['port']===465);
         $transport->setUsername($c['username'])->setPassword($c['password'])->setRequireTls(true);
         $transport->getStream()->setTimeout(10);
         $transport->getStream()->setStreamOptions(['ssl'=>['peer_name'=>$c['host'],'verify_peer'=>true,'verify_peer_name'=>true,'allow_self_signed'=>false,'SNI_enabled'=>true,'crypto_method'=>STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT | STREAM_CRYPTO_METHOD_TLSv1_3_CLIENT]]);
@@ -32,6 +33,8 @@ final readonly class SmtpMailTransport implements MailTransport
                 $address=(new \App\Application\Notification\DsnFeedback($bounce,(string)config('platform.feedback_secret','')))->returnAddress($message['id']);
                 $envelope=new \Symfony\Component\Mailer\Envelope(new Address($address),[new Address($message['recipient'])]);
             }
+            // Establish TLS and authenticate before DATA. Failures here are safe to retry; no message was submitted.
+            try{$transport->start();}catch(TransportExceptionInterface $e){$code=(int)$e->getCode();return [$code>=500&&$code<600?'permanent':'temporary',$code>=400&&$code<600?'SMTP_'.$code:'SMTP_CONNECTION_FAILED'];}
             $transport->send($email,$envelope);
             return ['accepted','SMTP_ACCEPTED'];
         } catch (\App\Application\Platform\PlatformViolation) {
