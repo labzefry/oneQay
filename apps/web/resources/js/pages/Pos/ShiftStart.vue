@@ -155,7 +155,7 @@ const openShift = async (): Promise<void> => {
         operationProgress.value = 'succeeded';
     } catch {
         shiftUnknown.value = true;
-        if (operationProgress.value !== 'queued' && operationProgress.value !== 'session-expired') operationProgress.value = 'unknown';
+        if (!['queued', 'session-expired'].includes(operationProgress.value)) operationProgress.value = 'unknown';
         message.value = 'Status pembukaan shift belum dapat dipastikan. Tidak ada retry otomatis. Refresh halaman untuk membaca status authoritative sebelum mencoba lagi.';
         messageKind.value = 'warning';
     } finally {
@@ -222,7 +222,7 @@ const recordOpeningCash = async (): Promise<void> => {
         operationProgress.value = 'succeeded';
     } catch {
         cashUnknown.value = true;
-        if (operationProgress.value !== 'queued' && operationProgress.value !== 'session-expired') operationProgress.value = 'unknown';
+        if (!['queued', 'session-expired'].includes(operationProgress.value)) operationProgress.value = 'unknown';
         message.value = 'Status pencatatan kas awal belum dapat dipastikan. Tidak ada retry otomatis. Refresh halaman untuk membaca evidence authoritative sebelum mencoba lagi.';
         messageKind.value = 'warning';
     } finally {
