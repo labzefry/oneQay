@@ -4,6 +4,7 @@ import { Head,router } from '@inertiajs/vue3';
 import { t } from '../../i18n';
 import { formatMoney,majorAmount,type CurrencyPreferences } from '../../business-money';
 import { useBusinessMutation } from '../../use-business-mutation';
+import OperationFeedback from '../../components/OperationFeedback.vue';
 import NumericInput from '../../components/NumericInput.vue';
 import WorkspaceIcon from '../../components/WorkspaceIcon.vue';
 type Product={product_id:string;sku:string;display_name:string;category:string;brand:string;variant:string;barcode:string;unit_price_atomic:string;cost_atomic:string;wholesale_atomic:string;available_quantity:string;currency:string;currency_scale:number;version:number;active:boolean;stock_ready:boolean;stock_mode?:'tracked'|'unlimited'};
@@ -12,7 +13,7 @@ const filters=reactive({q:props.filters.q??'',category:props.filters.category??'
 const tab=ref('products');const dialog=ref<HTMLDialogElement|null>(null);const importDialog=ref<HTMLDialogElement|null>(null);const editing=ref<Product|null>(null);
 const categoryDialog=ref<HTMLDialogElement|null>(null);const categoryName=ref('');
 const form=reactive({stock_mode:'tracked',sku:'',name:'',category:'',brand:'',variant:'',barcode:'',price:'0',cost:'0',wholesale:'0',opening_quantity:'0',active:true});
-const {busy,uncertain,error,submit,clear}=useBusinessMutation();const scale=computed(()=>editing.value?.currency_scale??Number(props.preferences.scale));
+const {busy,uncertain,error,status,operationId,submit,clear}=useBusinessMutation();const scale=computed(()=>editing.value?.currency_scale??Number(props.preferences.scale));
 const importFile=ref<File|null>(null);const preview=ref<any|null>(null);const previewBusy=ref(false);const previewError=ref('');const success=ref('');
 function navigate(page=1):void {router.get('/pos/business/products',{...filters,page},{preserveScroll:true});}
 const query=computed(()=>new URLSearchParams(Object.entries(props.filters)).toString());
@@ -28,7 +29,7 @@ async function commit():Promise<void>{if(!preview.value?.can_commit)return;const
 </script>
 <template>
 <Head :title="t('Product catalog')"/>
-<main class="merch-page">
+<main class="merch-page"><OperationFeedback :status="status" :message="error" :operation-id="operationId"/>
  <header class="merch-heading"><div><p class="eyebrow">{{ t('Products & inventory') }}</p><h1>{{ t('Product catalog') }}</h1><p>{{ t('Manage sale products, prices, categories, and opening stock.') }}</p></div><div class="merch-actions"><button class="secondary" @click="addCategory"><WorkspaceIcon name="plus" :size="16"/>{{ t('Add category') }}</button><button class="secondary" @click="startImport"><WorkspaceIcon name="upload" :size="16"/>{{ t('Import products') }}</button><button @click="open()">+ {{ t('Add product') }}</button></div></header>
  <p v-if="success" class="merch-success" role="status">{{ success }}</p>
  <nav class="merch-tabs" :aria-label="t('Catalog sections')"><button v-for="item in ['products','categories','brands']" :key="item" :class="{active:tab===item}" :aria-current="tab===item?'page':undefined" @click="tab=item">{{ t({products:'Products',categories:'Categories',brands:'Brands'}[item]) }}</button><a href="/pos/catalog-inventory/setup">{{ t('Opening stock') }}</a><a href="/pos/inventory/replenishment">{{ t('Receive stock') }}</a></nav>
