@@ -3,8 +3,10 @@ import NumericInput from "../../components/NumericInput.vue";
 import { formatMoney as displayMoney } from "../../business-money";
 import { t } from "../../i18n";
 import { Head } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import { computed, onBeforeUnmount, ref } from 'vue';
 import WorkspaceIcon from '../../components/WorkspaceIcon.vue';
+import OperationFeedback from '../../components/OperationFeedback.vue';
+import type { MutationStatus } from '../../use-business-mutation';
 
 type CatalogItem = {
     product_id: string;
@@ -54,6 +56,11 @@ const cart = ref<Record<string, number>>({});
 const tenderCategory = ref<'CASH' | 'MANUAL_EXTERNAL'>('CASH');
 const tendered = ref('');
 const submitting = ref(false);
+const unresolvedSale = ref(false);
+const saleProgress = ref<MutationStatus>('idle');
+const saleOperationId = ref<string | null>(null);
+let checkoutController: AbortController | null = null;
+onBeforeUnmount(() => checkoutController?.abort());
 const message = ref('');
 const receipt = ref<SaleReceipt | null>(null);
 
@@ -98,6 +105,7 @@ const printReceipt = (): void => {
 };
 
 const startNextSale = (): void => {
+    if (submitting.value || unresolvedSale.value) return;
     receipt.value = null;
     message.value = '';
     search.value = '';
@@ -111,6 +119,7 @@ const sameMoney = (item: CatalogItem): boolean => {
 };
 
 const add = (item: CatalogItem): void => {
+    if (submitting.value || unresolvedSale.value) return;
     message.value = '';
     receipt.value = null;
     if (!sameMoney(item)) {
@@ -126,6 +135,7 @@ const add = (item: CatalogItem): void => {
 };
 
 const decrement = (item: CatalogItem): void => {
+    if (submitting.value || unresolvedSale.value) return;
     const current = cart.value[item.product_id] ?? 0;
     if (current <= 1) {
         const next = { ...cart.value };
@@ -157,6 +167,11 @@ const useExactTotal = (): void => {
 };
 
 const checkout = async (): Promise<void> => {
+    if (submitting.value || unresolvedSale.value) {
+        message.value = 'Status transaksi sebelumnya belum pasti. Periksa riwayat dan ID operasi sebelum melanjutkan.';
+        return;
+    }
+    saleProgress.value = 'idle';
     message.value = '';
     receipt.value = null;
 
@@ -188,14 +203,21 @@ const checkout = async (): Promise<void> => {
     }
 
     submitting.value = true;
+    saleOperationId.value = `sale:${crypto.randomUUID()}`;
+    saleProgress.value = 'running';
+    const controller = new AbortController(); checkoutController = controller;
+    const timer = window.setTimeout(() => controller.abort(), 30000);
     const submittedLines = cartLines.value.map((line) => ({
         product_id: line.item.product_id,
         quantity: line.quantity,
     }));
 
     try {
+        if (!navigator.onLine) throw new Error('OFFLINE_UNCONFIRMED');
         const response = await fetch(props.sale_endpoint, {
             method: 'POST',
+            signal: controller.signal,
+            redirect: 'error',
             credentials: 'same-origin',
             headers: {
                 Accept: 'application/json',
@@ -204,7 +226,7 @@ const checkout = async (): Promise<void> => {
             },
             body: JSON.stringify({
                 _token: props.csrf_token,
-                operation_id: `sale:${crypto.randomUUID()}`,
+                operation_id: saleOperationId.value,
                 lines: submittedLines,
                 tender_category: tenderCategory.value,
                 tendered_atomic_units: Number(tenderAtomic),
@@ -213,13 +235,26 @@ const checkout = async (): Promise<void> => {
             }),
         });
 
+        if (controller.signal.aborted) throw new Error('TIMEOUT_UNCONFIRMED');
+        if (response.status === 401 || response.status === 419) {
+            saleProgress.value = 'session-expired';
+            unresolvedSale.value = true;
+            window.location.assign('/business-login?reason=session-expired');
+            return;
+        }
+        if (response.status >= 500 || response.status === 202) throw new Error('SERVER_UNCONFIRMED');
         const payload = await response.json() as SaleReceipt | { error?: { code?: string }; correlation_id?: string };
+        if (controller.signal.aborted) throw new Error('TIMEOUT_UNCONFIRMED');
         if (!response.ok || !('status' in payload) || payload.status !== 'completed') {
             const code = 'error' in payload ? payload.error?.code : undefined;
+            saleProgress.value = 'failed';
+            saleOperationId.value = null;
             message.value = code ? `Transaksi ditolak (${code}).` : 'Transaksi ditolak oleh server.';
             return;
         }
 
+        saleProgress.value = 'succeeded';
+        saleOperationId.value = null;
         receipt.value = payload;
         const sold = new Map(submittedLines.map((line) => [line.product_id, line.quantity]));
         catalog.value = catalog.value
@@ -232,8 +267,12 @@ const checkout = async (): Promise<void> => {
         tendered.value = '';
         message.value = 'Transaksi berhasil diselesaikan.';
     } catch {
-        message.value = 'Transaksi tidak dapat dikirim. Tidak ada retry otomatis untuk mencegah duplikasi yang tidak terlihat.';
+        unresolvedSale.value = true;
+        saleProgress.value = 'unknown';
+        message.value = 'Hasil transaksi belum pasti (koneksi/timeout/server). Transaksi mungkin telah dicatat. Periksa riwayat dan ID operasi sebelum memulai penjualan lain; tidak ada retry otomatis.';
     } finally {
+        window.clearTimeout(timer);
+        if (checkoutController === controller) checkoutController = null;
         submitting.value = false;
     }
 };
@@ -241,7 +280,8 @@ const checkout = async (): Promise<void> => {
 
 <template>
     <Head :title="t('Cashier')" />
-    <main class="cashier-shell" :data-leave-confirmation="submitting || (cartLines.length > 0 && !receipt)">
+    <main class="cashier-shell" :data-leave-confirmation="submitting || (cartLines.length >
+        <OperationFeedback :status="saleProgress" :message="message" :operation-id="saleOperationId" :success-label="t('Sale completed')" :running-label="t('Processing checkout')"/> 0 && !receipt)">
         <header class="hero">
             <div>
                 <p class="eyebrow">{{ t("oneQay · Point of Sale") }}</p>

@@ -4,7 +4,7 @@ import { onBeforeUnmount, ref, watch } from 'vue';
 import { locale } from '../i18n';
 import WorkspaceIcon from './WorkspaceIcon.vue';
 import type { MutationStatus } from '../use-business-mutation';
-const props = defineProps<{ status: MutationStatus; message?: string; operationId?: string | null }>();
+const props = defineProps<{ status: MutationStatus; message?: string; operationId?: string | null; successLabel?: string; runningLabel?: string }>();
 const visible = ref(false);
 let timer: ReturnType<typeof setTimeout> | null = null;
 watch(() => props.status, next => {
@@ -23,8 +23,8 @@ const caption = (id: string, en: string) => locale.value === 'id' ? id : en;
         <strong>
             <span v-if="status === 'running'" class="oq-operation-spinner" aria-hidden="true"/>
             <WorkspaceIcon v-else :name="status === 'succeeded' ? 'check' : status === 'queued' ? 'clock-3' : 'shield-check'" :size="19"/>
-            {{ status === 'running' ? caption('Memproses permintaan', 'Processing request')
-                : status === 'succeeded' ? caption('Perubahan tersimpan', 'Change saved')
+            {{ status === 'running' ? (runningLabel ?? caption('Memproses permintaan', 'Processing request'))
+                : status === 'succeeded' ? (successLabel ?? caption('Perubahan tersimpan', 'Change saved'))
                 : status === 'queued' ? caption('Dalam antrean — belum selesai', 'Queued — not completed')
                 : status === 'unknown' ? caption('Hasil belum dapat dipastikan', 'Outcome not confirmed')
                 : status === 'session-expired' ? caption('Sesi telah berakhir', 'Session expired')
