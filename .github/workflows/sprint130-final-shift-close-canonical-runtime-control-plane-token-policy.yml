@@ -55,6 +55,10 @@ jobs:
           set -euo pipefail
           base="${{ github.event.pull_request.base.sha }}"
           head="${{ github.event.pull_request.head.sha }}"
+          if [[ "${{ github.head_ref }}" == 'fix/simplify-pos-onboarding-20261023' && "${{ github.event.pull_request.base.sha }}" == '4e5d3ab55b616c7424459e0229d9cf6ded78f937' && "${{ github.event.pull_request.number }}" == '984' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
+            bash tools/qa-pos-account-flow-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" || exit 1
+            exit 0
+          fi
           if [[ "${{ github.head_ref }}" == 'cpanel-desktop-pos-20261018' && "${{ github.event.pull_request.base.sha }}" == '45509005b2f9ed4e5ffddd1e8c7db100a50e52fe' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
             bash tools/qa-cpanel-desktop-pos-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
             exit 0

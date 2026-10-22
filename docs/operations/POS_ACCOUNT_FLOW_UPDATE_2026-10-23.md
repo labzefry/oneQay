@@ -20,7 +20,7 @@ Base main: `4e5d3ab55b616c7424459e0229d9cf6ded78f937`. Hosting remains the previ
 
 ## Remaining before release
 
-Local checks passed: SQLite account integration 105 assertions; Rust offline core 23 tests; native POS UI interaction and minimum-window layout; web/POS builds and type checks; seven-color guard across 17 migrated stylesheets. MySQL and native Windows checks, exact-head PR CI, review/merge, signed publication and hosting deployment are still pending. Do not claim these complete from this source checkpoint.
+Local checks passed: SQLite account integration 106 assertions; Rust offline core 23 tests; native POS UI interaction and minimum-window layout; web/POS builds and type checks; seven-color guard across 17 migrated stylesheets. MySQL and native Windows checks, exact-head PR CI, review/merge, signed publication and hosting deployment are still pending. Do not claim these complete from this source checkpoint.
 
 GitHub releases were empty at the prior read. The signing private key corresponding to the embedded updater public key must be available to the signed-release workflow. Do not replace the trusted key or publish unsigned updates as a workaround. A preexisting binary may still restrict access to its update screen; no successful installed-device update is claimed.
 

@@ -5,6 +5,8 @@ on:
     tags: ['pos-windows-v*']
     branches: [main]
     paths: ['apps/pos-desktop/**', '.github/workflows/windows-pos-release.yml']
+  pull_request:
+    paths: ['apps/pos-desktop/**', '.github/workflows/windows-pos-release.yml']
   workflow_dispatch:
     inputs:
       tag:
@@ -17,7 +19,23 @@ concurrency:
   group: windows-pos-stable-publication
   cancel-in-progress: false
 jobs:
+  signing-key-readiness:
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Report signing availability without reading or publishing key material
+        shell: bash
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+        run: |
+          if [[ -n "$TAURI_SIGNING_PRIVATE_KEY" ]]; then
+            echo 'SIGNING_KEY_CONFIGURED=true'
+          else
+            echo 'SIGNING_KEY_CONFIGURED=false'
+            echo '::notice::Compatible in-app publication requires the original signing key in GitHub Actions secrets. No unsigned fallback is permitted.'
+          fi
   release:
+    if: github.event_name != 'pull_request'
     runs-on: windows-2022
     permissions:
       contents: write

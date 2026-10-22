@@ -146,7 +146,7 @@ Owner-requested Windows queue recovery, item-level control-plane diagnostics and
 - [x] Implement cashier switching with isolated durable profiles and nonblocking shift guidance.
 - [x] Implement reconnect sync, explicit reused-email errors, existing-owner POS enablement and safe activation navigation.
 - [x] Add branded multipart email and login-screen signed-patch controls with consistent pending-data backup.
-- [x] Local SQLite account integration (105 assertions), Rust offline core (23 tests), web/POS builds, palette guard and desktop UI interaction checks passed.
+- [x] Local SQLite account integration (106 assertions), Rust offline core (23 tests), web/POS builds, palette guard and desktop UI interaction checks passed.
 - [ ] Complete exact-head CI, MySQL and native Windows checks; review/merge evidence.
 - [ ] Publish compatible signed Windows update, install certified web successor, verify actual user-device sync.
 
