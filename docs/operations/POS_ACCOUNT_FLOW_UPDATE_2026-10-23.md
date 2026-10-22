@@ -20,7 +20,7 @@ Base main: `4e5d3ab55b616c7424459e0229d9cf6ded78f937`. Hosting remains the previ
 
 ## Remaining before release
 
-Local checks passed: SQLite account integration 106 assertions; Rust offline core 23 tests; native POS UI interaction and minimum-window layout; web/POS builds and type checks; seven-color guard across 17 migrated stylesheets. MySQL and native Windows checks, exact-head PR CI, review/merge, signed publication and hosting deployment are still pending. Do not claim these complete from this source checkpoint.
+Local checks passed: SQLite account integration 108 assertions; Rust offline core 23 tests; native POS UI interaction and minimum-window layout; web/POS builds and type checks; seven-color guard across 17 migrated stylesheets. MySQL and native Windows checks, exact-head PR CI, review/merge, signed publication and hosting deployment are still pending. Do not claim these complete from this source checkpoint.
 
 GitHub releases were empty at the prior read. The signing private key corresponding to the embedded updater public key must be available to the signed-release workflow. Do not replace the trusted key or publish unsigned updates as a workaround. A preexisting binary may still restrict access to its update screen; no successful installed-device update is claimed.
 
@@ -35,3 +35,9 @@ No production reset, customer-data inspection, real cash transaction, SMTP recip
 3. Cashier: sign in → open shift with starting cash → transact. Network loss retains the queue; reconnect resumes sync automatically. Another account can be selected at the PIN screen or opening-shift screen without deleting the old profile.
 4. Existing register/closing review is an in-workspace notice. Sign-in and signed-update access remain available. A separate authorized approver still finalizes cash closures; this patch does not forge or erase missing financial evidence.
 5. Windows patches: check at login or Pembaruan → install verified patch → consistent backup → sign in again. No uninstall or local database deletion. Original installed predecessors may still need a separately verified recovery path if their own UI blocks update access.
+
+## Actual signed-channel readiness
+
+GitHub job [119999717680](https://github.com/labzefry/oneQay/actions/runs/39828969958/job/119999717680) reports `SIGNING_KEY_CONFIGURED=false`. The private key matching the existing embedded public key must be configured as `TAURI_SIGNING_PRIVATE_KEY` in repository Actions secrets (and its password as `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` when applicable). No secret value was read or printed. Compatible in-app publication is blocked; code/build success is not a published update.
+
+Follow-up regression also exercises the employee-creation route: an owner email returns an actionable business error and rolls the attempted employee insert back, instead of escaping as an internal error.

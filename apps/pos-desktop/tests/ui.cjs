@@ -16,7 +16,7 @@ const host=http.createServer((req,res)=>{let filename=path.resolve(base,'.'+new 
    if(cmd==='lock_pos'){locked=true;if(args.logout)signedIn=false;return structuredClone(state)}
    if(cmd==='unlock_pos'){if(args.pin!=='123456')throw 'POS_PIN_INVALID';locked=false;return structuredClone(state)}
    if(cmd==='activity')return;
-   if(cmd==='check_update')return {available:true,current:'0.2.0',version:'0.2.1',notes:'Synthetic update fixture'};
+   if(cmd==='check_update')return {available:true,current:'0.2.3',version:'0.2.4',notes:'Synthetic update fixture'};
    if(cmd==='shift_event'){const receipt={opening:state.shift?.opening??args.cash,expected:(state.shift?.opening??0)+(state.metrics.gross??0),counted:args.cash,sales:state.metrics.gross??0,cashier:'Maya Putri',business:'Kedai Nusantara',lines:[],currency:'IDR',scale:0,note:args.note};receipt.variance=args.cash-receipt.expected;state.operations.unshift({operation:{operation_id:args.id,kind:args.opening?'shift_open':'shift_close',created_at:now,lines:[],tendered:args.cash,shift_id:state.shift?.id??args.id},state:'pending',total:0,receipt});state.shift=args.opening?{id:args.id,opening:args.cash,opened_at:now,cashier:'Maya Putri'}:null;state.pending++;return structuredClone(state)}
    if(cmd==='save_kitchen_printers'){state.kitchen_printers=args.settings;return structuredClone(state)}
    if(cmd==='printers')return ['POS-80 USB','Bluetooth Receipt'];
