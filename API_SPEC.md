@@ -142,3 +142,11 @@ Endpoint selesai jika contract, example, auth policy, tenant behavior, error, id
 ## 2026-10-21 — Mail delivery, category creation and stock policy
 
 Stage 1 source changes: independent SMTP/NOC worker phases; live owner delivery reports and safe SMTP error guidance; automatic 72-hour email log retention protecting active queues/dedupe; tenant/outlet category creation; explicit tracked/unlimited stock through canonical sale/void, web and offline desktop 0.2.1. Two additive module migrations require a separately qualified deployment. Hosting remains c2e (PR #974); deployment is deferred per Product Owner. [Implementation, schema, compatibility and validation](docs/implementation/MAIL_CATALOG_STOCK_20261021.md). Author by Lab | zefry.
+
+## 2026-10-23 — First-party onboarding and POS account flow
+
+Browser POST `/activate-business` retains only token/password input; JSON response supplies `status`, a closed first-party `redirect` (`/pos` or `/business-login`) and `security_required`. Browser HTML requests receive 303 navigation. Internal login-context identifiers are no longer a downloadable user-facing contract. Canonical login/MFA owns session issuance.
+
+POST `/register` rejects an existing normalized owner or cashier email with HTTP409 / `EMAIL_ALREADY_REGISTERED`; use sign-in or verification resend. Duplicate attempts do not create tenants or queue further verification email.
+
+Authenticated `/pos/business/desktop/cashiers` adds optional `account_type: owner|staff` (default staff). Owner mode is self-only, uses the existing owner identity/password, needs a PIN for first enablement and preserves TOTP. A staff request for a registered owner email returns `OWNER_EMAIL_USE_EXISTING_ACCOUNT`; another tenant's owner cannot be bound. Owner enablement uses durable operation fingerprints and current row versions.

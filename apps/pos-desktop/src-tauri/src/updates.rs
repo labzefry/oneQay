@@ -132,3 +132,22 @@ pub async fn install_update(
     }
     result
 }
+
+#[cfg(test)]
+mod release_tests {
+    use base64::{engine::general_purpose::STANDARD, Engine};
+    #[test]
+    #[ignore = "Run explicitly on the signed release asset before publication"]
+    fn verifies_release_signature_against_installed_public_key() {
+        let path=std::env::var("ONEQAY_RELEASE_INSTALLER").expect("Release installer required");
+        let bytes=std::fs::read(&path).expect("Readable installer");
+        assert!(!bytes.is_empty()&&bytes.len()<64*1024*1024,"Unexpected installer size");
+        let encoded=std::fs::read_to_string(format!("{path}.sig")).expect("Signature required");
+        let signature=String::from_utf8(STANDARD.decode(encoded.trim()).expect("Base64 signature")).expect("UTF-8 signature");
+        let config:serde_json::Value=serde_json::from_str(include_str!("../tauri.conf.json")).unwrap();
+        let key=String::from_utf8(STANDARD.decode(config["plugins"]["updater"]["pubkey"].as_str().unwrap()).unwrap()).unwrap();
+        let key=minisign_verify::PublicKey::from_base64(key.lines().nth(1).expect("Minisign public key")).unwrap();
+        let signature=minisign_verify::Signature::decode(&signature).expect("Minisign signature");
+        key.verify(&bytes,&signature,true).expect("Signing key must match the public key already embedded in installed POS applications");
+    }
+}

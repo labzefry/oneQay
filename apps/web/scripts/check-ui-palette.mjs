@@ -6,6 +6,8 @@ const palette = JSON.parse(readFileSync(resolve(root, '../../docs/design/ONEQAY_
 const allowed = Object.values(palette.colors).map(c => c.toUpperCase());
 if (allowed.length !== 7 || new Set(allowed).size !== 7) throw Error('Expected exactly seven owner-approved colors');
 const files = [
+  ['../pos-desktop/src/style.css', false],
+  ['../pos-desktop/src/App.vue', true],
   ['resources/js/components/DesktopSyncPanel.vue', true],
   ['resources/js/components/BusinessDataResetPanel.vue', true],
   ['resources/css/app.css', false],

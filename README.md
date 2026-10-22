@@ -83,3 +83,7 @@ Author by Lab | zefry
 ## POS sync recovery and per-business data reset — 2026-10-22
 
 Owner-requested Windows queue recovery, item-level control-plane diagnostics and explicit per-business operational reset are implemented. Source/hosting/installed-Windows acceptance remain distinct. See [checkpoint](docs/operations/POS_SYNC_AND_BUSINESS_DATA_RESET_2026-10-22.md) for actual evidence, reset scope, private backup storage, and required additive deployment. Production data has not been reset.
+
+## POS account flow successor — 23 October 2026
+
+Windows 0.2.3 source simplifies cashier switching, reconnect sync, owner POS access, activation navigation and branded email. [Implementation and actual release status](docs/operations/POS_ACCOUNT_FLOW_UPDATE_2026-10-23.md). Source validation does not establish hosting or installed-device completion.

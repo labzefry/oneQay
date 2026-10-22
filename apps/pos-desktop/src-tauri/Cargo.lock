@@ -2543,6 +2543,8 @@ dependencies = [
 name = "oneqay-pos-desktop"
 version = "0.2.3"
 dependencies = [
+ "base64 0.22.1",
+ "minisign-verify",
  "hex",
  "oneqay-pos-core",
  "pbkdf2",

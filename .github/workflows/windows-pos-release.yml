@@ -3,11 +3,13 @@ name: Signed Windows POS release
 on:
   push:
     tags: ['pos-windows-v*']
+    branches: [main]
+    paths: ['apps/pos-desktop/**', '.github/workflows/windows-pos-release.yml']
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Existing pos-windows-vX.Y.Z tag on main'
-        required: true
+        description: 'Optional existing pos-windows-vX.Y.Z tag on main; blank builds the merged main version'
+        required: false
         type: string
 permissions:
   contents: read
@@ -27,17 +29,21 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           fetch-depth: 0
-          ref: ${{ inputs.tag || github.ref_name }}
-      - name: Validate immutable release source
+          ref: ${{ inputs.tag || github.sha }}
+      - name: Validate immutable release source and signing availability
         env:
-          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+          INPUT_TAG: ${{ inputs.tag }}
+          PUSH_TAG: ${{ github.ref_type == 'tag' && github.ref_name || '' }}
+          SIGNING_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
         run: |
-          if ($env:RELEASE_TAG -notmatch '^pos-windows-v[0-9]+\.[0-9]+\.[0-9]+$') { throw 'Invalid stable tag' }
+          $version = (Get-Content package.json | ConvertFrom-Json).version
+          $tag = if ($env:INPUT_TAG) { $env:INPUT_TAG } elseif ($env:PUSH_TAG) { $env:PUSH_TAG } else { "pos-windows-v$version" }
+          if ($tag -notmatch '^pos-windows-v[0-9]+\.[0-9]+\.[0-9]+$' -or $tag -ne "pos-windows-v$version") { throw 'Invalid stable tag/version' }
           git fetch origin main
           git merge-base --is-ancestor HEAD origin/main
           if ($LASTEXITCODE -ne 0) { throw 'Release source must already be merged into main' }
-          $version = (Get-Content package.json | ConvertFrom-Json).version
-          if ($env:RELEASE_TAG -ne "pos-windows-v$version") { throw 'Tag/version mismatch' }
+          if ([string]::IsNullOrWhiteSpace($env:SIGNING_KEY)) { throw 'Configure the original TAURI_SIGNING_PRIVATE_KEY in GitHub Actions secrets. No unsigned update will be published.' }
+          "RELEASE_TAG=$tag" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
         with:
           node-version: '24'
@@ -58,7 +64,6 @@ jobs:
       - name: Publish signed assets, then stable manifest
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
         run: |
           $version = (Get-Content package.json | ConvertFrom-Json).version
           $installer = @(Get-ChildItem src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/*-setup.exe)
@@ -68,9 +73,21 @@ jobs:
           if ([string]::IsNullOrWhiteSpace($signature)) { throw 'Missing update signature' }
           $sha = (Get-FileHash $exe.FullName -Algorithm SHA256).Hash.ToLower()
           "$sha  $($exe.Name)" | Set-Content SHA256SUMS.txt
+          $env:ONEQAY_RELEASE_INSTALLER = $exe.FullName
+          cargo test --release --locked --target x86_64-pc-windows-msvc --manifest-path src-tauri/Cargo.toml updates::release_tests::verifies_release_signature_against_installed_public_key -- --ignored --exact
+          if ($LASTEXITCODE -ne 0) { throw 'Installed updater trust key rejected this asset; stable channel untouched' }
+          git show-ref --verify --quiet "refs/tags/$env:RELEASE_TAG"
+          if ($LASTEXITCODE -eq 0) {
+            $tagSource = git rev-list -n 1 $env:RELEASE_TAG
+            if ($tagSource -ne (git rev-parse HEAD)) { throw 'Version tag points to a different source' }
+          } else {
+            git tag $env:RELEASE_TAG HEAD
+            git push origin "refs/tags/$env:RELEASE_TAG"
+            if ($LASTEXITCODE -ne 0) { throw 'Immutable version tag publication failed' }
+          }
           gh release view $env:RELEASE_TAG --repo labzefry/oneQay *> $null
           if ($LASTEXITCODE -eq 0) { throw 'Immutable version already published. Use a new version.' }
-          gh release create $env:RELEASE_TAG $exe.FullName ($exe.FullName + '.sig') SHA256SUMS.txt --repo labzefry/oneQay --verify-tag --title "oneQay POS $version" --notes 'Signed stable Windows POS update. Close shifts and synchronize before installation.' --latest=false
+          gh release create $env:RELEASE_TAG $exe.FullName ($exe.FullName + '.sig') SHA256SUMS.txt --repo labzefry/oneQay --verify-tag --title "oneQay POS $version" --notes 'Signed stable Windows POS update. Local accounts, active shifts and pending receipts are backed up before installation. Sign in again to resume.' --latest=false
           if ($LASTEXITCODE -ne 0) { throw 'Version publication failed; stable channel untouched' }
           $url = 'https://github.com/labzefry/oneQay/releases/download/' + $env:RELEASE_TAG + '/' + [Uri]::EscapeDataString($exe.Name)
           @{version=$version;notes="oneQay POS $version";pub_date=(Get-Date).ToUniversalTime().ToString('o');platforms=@{'windows-x86_64'=@{signature=$signature;url=$url}}} | ConvertTo-Json -Depth 6 | Set-Content latest.json

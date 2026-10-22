@@ -636,3 +636,7 @@ Stage 2 authorized after cPanel login. Exact application source 7efdda7648c2; gu
 ## POS sync recovery and per-business data reset — 2026-10-22
 
 Owner-requested Windows queue recovery, item-level control-plane diagnostics and explicit per-business operational reset are implemented. Source/hosting/installed-Windows acceptance remain distinct. See [checkpoint](docs/operations/POS_SYNC_AND_BUSINESS_DATA_RESET_2026-10-22.md) for actual evidence, reset scope, private backup storage, and required additive deployment. Production data has not been reset.
+
+## 2026-10-23 — Simpler POS accounts and activation (source only)
+
+PR #984 adds cashier account switching without losing local receipts, automatic reconnect sync, owner POS enablement using existing credentials/TOTP, normalized duplicate-email rejection, activation redirects and professional escaped multipart email. Windows 0.2.3 adds actual version display, updates before login, truthful progress and verified backups retaining pending receipts/active shifts. No hosting promotion, signed patch availability or customer acceptance is implied. [Checkpoint](docs/operations/POS_ACCOUNT_FLOW_UPDATE_2026-10-23.md).

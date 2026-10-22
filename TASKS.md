@@ -140,3 +140,14 @@ Stage 2 authorized after cPanel login. Exact application source 7efdda7648c2; gu
 ## POS sync recovery and per-business data reset — 2026-10-22
 
 Owner-requested Windows queue recovery, item-level control-plane diagnostics and explicit per-business operational reset are implemented. Source/hosting/installed-Windows acceptance remain distinct. See [checkpoint](docs/operations/POS_SYNC_AND_BUSINESS_DATA_RESET_2026-10-22.md) for actual evidence, reset scope, private backup storage, and required additive deployment. Production data has not been reset.
+
+## 2026-10-23 — POS account flow successor (PR #984)
+
+- [x] Implement cashier switching with isolated durable profiles and nonblocking shift guidance.
+- [x] Implement reconnect sync, explicit reused-email errors, existing-owner POS enablement and safe activation navigation.
+- [x] Add branded multipart email and login-screen signed-patch controls with consistent pending-data backup.
+- [x] Local SQLite account integration (105 assertions), Rust offline core (23 tests), web/POS builds, palette guard and desktop UI interaction checks passed.
+- [ ] Complete exact-head CI, MySQL and native Windows checks; review/merge evidence.
+- [ ] Publish compatible signed Windows update, install certified web successor, verify actual user-device sync.
+
+Details and limitations: [checkpoint](docs/operations/POS_ACCOUNT_FLOW_UPDATE_2026-10-23.md). Author by Lab | zefry.

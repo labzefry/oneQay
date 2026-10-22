@@ -128,3 +128,7 @@ Flow dan role tervalidasi, component states lengkap, responsive/accessibility/lo
 ## 2026-10-21 — Mail delivery, category creation and stock policy
 
 Stage 1 source changes: independent SMTP/NOC worker phases; live owner delivery reports and safe SMTP error guidance; automatic 72-hour email log retention protecting active queues/dedupe; tenant/outlet category creation; explicit tracked/unlimited stock through canonical sale/void, web and offline desktop 0.2.1. Two additive module migrations require a separately qualified deployment. Hosting remains c2e (PR #974); deployment is deferred per Product Owner. [Implementation, schema, compatibility and validation](docs/implementation/MAIL_CATALOG_STOCK_20261021.md). Author by Lab | zefry.
+
+## 2026-10-23 — Activation, email and native POS palette scope
+
+Activation now uses readable 16px forms, a restrained morph card, accessible focus, reduced motion and the exact owner seven-color palette. Native POS stylesheet is migrated to that same palette, with readable body/input size, solid button contrast and a login-screen update area. Email uses inline table layout, 16px text, no external images and an escaped first-party activation button with a plain-text fallback. The palette guard now includes these named activation and POS stylesheets; it does not certify every unrelated legacy UI.

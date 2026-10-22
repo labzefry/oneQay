@@ -8,7 +8,7 @@ $contexts->setVerified($businessOwner);$ownerEmail=$db->table('oneqay_platform_b
 $before=$db->table('oneqay_identity_password_credentials')->get()->toJson();
 try{$settings->cashier(array_replace($cashier,['login'=>strtoupper($ownerEmail),'operation_id'=>'owner-duplicate-cashier']));$assert(false,'owner duplicate accepted');}catch(PlatformViolation $e){$assert($e->reason==='OWNER_EMAIL_USE_EXISTING_ACCOUNT','owner email gives actionable duplicate error');}
 $grant=['account_type'=>'owner','login'=>$ownerEmail,'name'=>'Owner cashier','password'=>'','pin'=>'192837','enabled'=>true,'version'=>0,'operation_id'=>'owner-cashier-existing-identity'];
-$result=$settings->cashier($grant);$assert($settings->cashier($grant)===$result,'owner enablement replay idempotent');
+$result=$settings->cashier($grant);$assert($settings->cashier($grant)===$result,'owner enablement replay idempotent');try{$settings->cashier(array_replace($grant,['pin'=>'998877']));$assert(false,'owner replay changed PIN');}catch(PlatformViolation $e){$assert($e->reason==='OPERATION_CONFLICT','owner replay rejects changed PIN');}
 $assert($db->table('oneqay_desktop_cashiers')->where('login',$ownerEmail)->value('identity_id')===$businessOwner->identityId()->value(),'owner keeps canonical identity');
 $assert($before===$db->table('oneqay_identity_password_credentials')->get()->toJson(),'enabling owner never changes credentials');
 $assert($settings->page()['owner_account']['login']===$ownerEmail,'settings offers owner enablement');

@@ -4,7 +4,7 @@ Author by Lab | zefry.
 
 Owner request: simplify Windows cashier sign-in/account switching, automatic reconnect sync, professional email presentation, activation navigation, unique account email, owner POS access and in-app Windows patches.
 
-This is a work-in-progress source checkpoint. It is not a deployment receipt, successful Windows patch publication or proof that a customer device has synchronized.
+This is a source checkpoint on PR #984. It is not a deployment receipt, successful Windows patch publication or proof that a customer device has synchronized.
 
 Base main: `4e5d3ab55b616c7424459e0229d9cf6ded78f937`. Hosting remains the previously verified `production-938d9c32d878` until a new certified release is installed. The old live checkpoint PR #983 remains separate.
 
@@ -20,10 +20,18 @@ Base main: `4e5d3ab55b616c7424459e0229d9cf6ded78f937`. Hosting remains the previ
 
 ## Remaining before release
 
-Complete functional/security tests on SQLite/MySQL, Rust and Windows native compilation; interaction checks; exact-head PR CI; review and merge; signed updater publication; certified cPanel successor and actual deployment verification. Do not claim these complete from this source checkpoint.
+Local checks passed: SQLite account integration 105 assertions; Rust offline core 23 tests; native POS UI interaction and minimum-window layout; web/POS builds and type checks; seven-color guard across 17 migrated stylesheets. MySQL and native Windows checks, exact-head PR CI, review/merge, signed publication and hosting deployment are still pending. Do not claim these complete from this source checkpoint.
 
 GitHub releases were empty at the prior read. The signing private key corresponding to the embedded updater public key must be available to the signed-release workflow. Do not replace the trusted key or publish unsigned updates as a workaround. A preexisting binary may still restrict access to its update screen; no successful installed-device update is claimed.
 
 If cPanel authentication is needed, open the canonical address in a new tab without reusing an expired cpsess URL. The user completes the private login form before deployment continues. Never place credentials in chat, source, logs or this document.
 
 No production reset, customer-data inspection, real cash transaction, SMTP recipient selection or database migration is authorized by these source tests. This update requires no new database schema.
+
+## User flow
+
+1. New business: register a fresh email → open verification email → set password → complete required owner authenticator setup → business workspace. Existing emails use sign-in or verification resend.
+2. Owner POS: web → POS Windows → Akun kasir → Gunakan akun owner saya → set screen PIN. Sign in to Windows using the same owner email/password and authenticator. Staff use their own separately created cashier accounts.
+3. Cashier: sign in → open shift with starting cash → transact. Network loss retains the queue; reconnect resumes sync automatically. Another account can be selected at the PIN screen or opening-shift screen without deleting the old profile.
+4. Existing register/closing review is an in-workspace notice. Sign-in and signed-update access remain available. A separate authorized approver still finalizes cash closures; this patch does not forge or erase missing financial evidence.
+5. Windows patches: check at login or Pembaruan → install verified patch → consistent backup → sign in again. No uninstall or local database deletion. Original installed predecessors may still need a separately verified recovery path if their own UI blocks update access.
