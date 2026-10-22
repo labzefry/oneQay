@@ -65,7 +65,13 @@ final readonly class PlatformController
             if(array_diff(array_keys($input),['token','password']))throw new PlatformViolation('INVALID_ACTIVATION');
             $token=$input['token']??null;$password=$input['password']??null;
             if(!is_string($token)||!is_string($password))throw new PlatformViolation('INVALID_ACTIVATION');
-            return response()->json(['status'=>'active','login_context'=>$this->activation->activate($token,$password)]);
+            $context=$this->activation->activate($token,$password);
+            $r->replace(array_intersect_key($context,array_flip(['tenant_id','identity_id','organization_id','outlet_id','device_id']))+['password'=>$password]);
+            $session=app(\App\Delivery\Http\Identity\FirstPartySessionController::class)->login($r);$result=$session->getData(true);
+            $destination=($result['status']??null)==='ok'?'/pos':'/business-login';
+            // Canonical authentication retains eligibility, session and TOTP boundaries.
+            if(!$r->expectsJson())return redirect($destination,303);
+            return response()->json(['status'=>'active','redirect'=>$destination,'security_required'=>($result['status']??null)==='mfa_required']);
         });
     }
     public function feedback(Request $r):mixed

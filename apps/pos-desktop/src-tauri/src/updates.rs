@@ -1,6 +1,7 @@
 // Author by Lab | zefry
 use crate::*;
 use tauri_plugin_updater::UpdaterExt;
+use tauri::Emitter;
 fn allowed(u: &tauri_plugin_updater::Update, current: &str) -> Result<()> {
     let next = semver::Version::parse(&u.version).map_err(|_| "UPDATE_VERSION_INVALID")?;
     let installed = semver::Version::parse(current).map_err(|_| "UPDATE_VERSION_INVALID")?;
@@ -56,11 +57,11 @@ pub async fn install_update(
     let sec = security.inner().clone();
     {
         let store = locked(&db)?;
-        auth::require(&sec, &store, false)?;
-        if store.active_shift().map_err(safe)?.is_some() {
-            return Err("UPDATE_CLOSE_SHIFT_FIRST".into());
-        }
-        sec.lock().map_err(|_| "POS_SECURITY_BUSY")?.updating = true;
+        // Trusted maintenance works before login; freeze mutations before backup.
+        let mut session=sec.lock().map_err(|_|"POS_SECURITY_BUSY")?;
+        if session.updating {return Err("UPDATE_IN_PROGRESS".into())}
+        session.updating=true;
+        drop(store);
     }
     let result = async {
         let updater = app
@@ -78,10 +79,12 @@ pub async fn install_update(
             return Err("UPDATE_VERSION_CHANGED_CHECK_AGAIN".into());
         }
         // The plugin verifies the mandatory signature before returning these bytes.
+        let mut downloaded=0u64;
         let bytes = update
-            .download(|_, _| {}, || {})
+            .download(|chunk,total|{downloaded=downloaded.saturating_add(chunk as u64);let _=app.emit("pos-update-progress",json!({"stage":"download","downloaded":downloaded,"total":total}));},||{let _=app.emit("pos-update-progress",json!({"stage":"verify"}));})
             .await
             .map_err(|_| "UPDATE_DOWNLOAD_OR_SIGNATURE_FAILED")?;
+        let _=app.emit("pos-update-progress",json!({"stage":"backup"}));
         let db2 = db.clone();
         let sec2 = sec.clone();
         let backup_version = version.clone();
@@ -117,6 +120,7 @@ pub async fn install_update(
             Ok(())
         })
         .await?;
+        let _=app.emit("pos-update-progress",json!({"stage":"install"}));
         update
             .install(bytes)
             .map_err(|_| "UPDATE_INSTALL_FAILED".to_string())?;

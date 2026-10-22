@@ -20,6 +20,7 @@ const files = [
   ['resources/js/pages/Business/Workspace.vue', true],
   ['resources/js/pages/Platform/Login.vue', true],
   ['resources/js/pages/Website/Register.vue', true],
+  ['resources/js/pages/Platform/Activate.vue', true],
 ];
 let inspected = 0;
 for (const [path, scoped] of files) {

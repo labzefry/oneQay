@@ -77,7 +77,6 @@ fn request(server: &str, path: &str, token: Option<&str>, body: Option<Value>) -
     if bytes.len() > 20 * 1024 * 1024 {
         return Err("POS_NETWORK_RESPONSE_TOO_LARGE".into());
     }
-    let value: Value = serde_json::from_slice(&bytes).map_err(|_| "POS_SERVER_RESPONSE_INVALID")?;
     if !status.is_success() {
         let code = if status.as_u16() == 401 {
             "POS_SIGN_IN_AGAIN"
@@ -92,8 +91,11 @@ fn request(server: &str, path: &str, token: Option<&str>, body: Option<Value>) -
         };
         return Err(format!("{code} · {correlation}"));
     }
-    Ok(value)
+    serde_json::from_slice(&bytes).map_err(|_| "POS_SERVER_RESPONSE_INVALID".into())
 }
+fn is_network_unavailable(error:&str)->bool{matches!(error,"POS_NETWORK_UNAVAILABLE"|"POS_NETWORK_RESPONSE_INTERRUPTED")}
+#[tauri::command]
+fn app_version(app:tauri::AppHandle)->String {app.package_info().version.to_string()}
 fn credential(db: &Store) -> Result<(String, String)> {
     let server = db.get("server").map_err(safe)?.ok_or("POS_CONNECT_FIRST")?;
     let raw = db
@@ -210,7 +212,7 @@ async fn synchronize(
                     s.signed_in = false;
                     s.is_locked = true;
                 } else {
-                    sec.lock().map_err(|_| "POS_SECURITY_BUSY")?.offline = true;
+                    sec.lock().map_err(|_| "POS_SECURITY_BUSY")?.offline = is_network_unavailable(&e);
                 }
                 return Err(e);
             }
@@ -241,6 +243,7 @@ async fn synchronize(
                 serde_json::from_value(raw.clone()).map_err(|_| "POS_SNAPSHOT_INVALID")?;
             auth::refresh_pin(&store, &raw)?;
             store.apply_snapshot(&snap, now()).map_err(safe)?;
+            store.reconcile_server_shift(&raw["active_shift"]).map_err(safe)?;
         }
         auth::visible(&sec, &store)
     })
@@ -376,7 +379,7 @@ fn main() {
             app.manage(Arc::new(Mutex::new(auth::Session::new(directory))));
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![
+        .invoke_handler(tauri::generate_handler![app_version,
             workspace,
             commit,
             synchronize,

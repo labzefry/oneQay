@@ -16,6 +16,34 @@ impl Store {
             .map(|s| serde_json::from_str(&s).map_err(Error::from))
             .transpose()
     }
+    /// Authentication succeeds independently of existing register ownership.
+    pub fn reconcile_server_shift(&self, remote: &Value) -> Result<()> {
+        let local=self.active_shift()?;
+        let status=if remote.is_null(){
+            match local.as_ref().and_then(|v|v["id"].as_str()) {
+                Some(id) if self.operation(id)?.state=="accepted" => "closed_on_server",
+                _ => "ready",
+            }
+        }else{
+            let snapshot=self.snapshot()?.ok_or(Error::Rule("POS_CONNECT_FIRST"))?;
+            if remote["identity_id"].as_str()!=Some(snapshot.scope.identity_id.as_str()){ "other_cashier" }
+            else if local.as_ref().is_some_and(|v|v["id"]==remote["local_id"]){ "ready" }
+            else if let Some(id)=remote["local_id"].as_str(){
+                let closes:i64=self.db.query_row("SELECT COUNT(*) FROM operations WHERE json_extract(payload,'$.kind')='shift_close' AND json_extract(payload,'$.shift_id')=?",[id],|r|r.get(0))?;
+                if closes>0 { "closing" } else { "recovery_required" }
+            }else{ "recovery_required" }
+        };
+        self.set("server_shift_status",status)
+    }
+    pub fn server_shift_status(&self)->Result<String>{Ok(self.get("server_shift_status")?.unwrap_or_else(||"ready".into()))}
+    pub fn require_shift_ready(&self)->Result<()> {
+        match self.server_shift_status()?.as_str(){
+            "ready"=>Ok(()),
+            "closing"=>Err(Error::Rule("POS_CLOSURE_AWAITING_FINALIZATION")),
+            "other_cashier"=>Err(Error::Rule("POS_REGISTER_USED_BY_ANOTHER_CASHIER")),
+            _=>Err(Error::Rule("POS_SHIFT_RECOVERY_REQUIRED")),
+        }
+    }
     pub fn set_order_context(&self, table: &str, order: &str) -> Result<()> {
         if table.chars().count() > 24
             || order.chars().count() > 32
@@ -93,6 +121,7 @@ impl Store {
             return Ok(old);
         }
         let s = self.snapshot()?.ok_or(Error::Rule("POS_CONNECT_FIRST"))?;
+        self.require_shift_ready()?;
         if s.protocol != 2 {
             return Err(Error::Rule("POS_UPGRADE_LOGIN_REQUIRED"));
         }
@@ -226,20 +255,16 @@ impl Store {
         Ok(())
     }
     pub fn prepare_update(&self, path: &Path) -> Result<()> {
-        if self.active_shift()?.is_some() {
-            return Err(Error::Rule("UPDATE_CLOSE_SHIFT_FIRST"));
-        }
-        let unresolved:i64=self.db.query_row("SELECT COUNT(*) FROM operations WHERE state!='accepted' AND json_extract(payload,'$.kind')!='count'",[],|r|r.get(0))?;
         let printing:i64=self.db.query_row("SELECT (SELECT COUNT(*) FROM print_jobs WHERE state='printing')+(SELECT COUNT(*) FROM kitchen_jobs WHERE state='printing')",[],|r|r.get(0))?;
-        if unresolved > 0 {
-            return Err(Error::Rule("UPDATE_SYNC_AND_REVIEW_FIRST"));
-        }
         if printing > 0 {
             return Err(Error::Rule("UPDATE_CHECK_PRINT_JOBS_FIRST"));
         }
         self.db.execute_batch("PRAGMA wal_checkpoint(FULL)")?;
         self.db
             .execute("VACUUM INTO ?", [path.to_string_lossy().as_ref()])?;
+        let backup=Connection::open(path)?;
+        let integrity:String=backup.query_row("PRAGMA integrity_check",[],|r|r.get(0))?;
+        if integrity!="ok" { return Err(Error::Rule("UPDATE_BACKUP_INVALID")); }
         Ok(())
     }
 }
