@@ -11,7 +11,7 @@ final class BusinessWorkflowMiddleware {
    $p=app(\App\Infrastructure\BusinessExperience\LaravelBusinessDomains::class)->profile($tenant);
    if($p&&in_array($p['business_type'],\App\Application\BusinessExperience\ServiceWorkflow::MODULES,true)){
     if($r->is('pos')&&$r->isMethod('GET')){ $response=$next($r); return $response; }
-    abort_unless($r->is('pos/service','pos/service/*','pos/business/security','pos/business/security/*','pos/business/settings','pos/business/access','pos/business/access/*','pos/business/people','pos/business/people/*','pos/business/desktop','pos/business/desktop/*','pos/desktop'),403,'BUSINESS_WORKFLOW_MISMATCH');
+    abort_unless($r->is('pos/business-handoff','pos/service','pos/service/*','pos/business/security','pos/business/security/*','pos/business/settings','pos/business/access','pos/business/access/*','pos/business/people','pos/business/people/*','pos/business/desktop','pos/business/desktop/*','pos/desktop'),403,'BUSINESS_WORKFLOW_MISMATCH');
    }
   }return $next($r);
  }

@@ -12,7 +12,8 @@ final readonly class LaravelBusinessDomains {
  public function available(string $slug):bool{BusinessDomain::slug($slug);return !$this->db->table('oneqay_business_domains')->where('slug',$slug)->exists();}
  public function availability(string $slug):array {
   $slug=BusinessDomain::slug($slug);$suggestions=[];
-  for($n=2;$n<100000&&count($suggestions)<3;$n++){$candidate=substr($slug,0,36).$n;if($this->available($candidate))$suggestions[]=$candidate;}
+  for($n=2;$n<100&&count($suggestions)<3;$n++){$candidate=substr($slug,0,36).$n;if($this->available($candidate))$suggestions[]=$candidate;}
+  for($n=0;$n<20&&count($suggestions)<3;$n++){$candidate=substr($slug,0,30).'-'.bin2hex(random_bytes(4));if($this->available($candidate))$suggestions[]=$candidate;}
   return ['slug'=>$slug,'available'=>$this->available($slug),'suggestions'=>$suggestions,'root'=>BusinessDomain::root((string)config('platform.public_url'))];
  }
  public function claim(array $business,string $slug,string $type):void {

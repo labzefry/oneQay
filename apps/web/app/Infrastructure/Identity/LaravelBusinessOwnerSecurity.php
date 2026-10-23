@@ -27,10 +27,10 @@ final class LaravelBusinessOwnerSecurity {
    if($p===null){$type=$db->table('oneqay_site_registrations')->where('business_id',$b['id'])->value('business_type')??'retail';$db->table('oneqay_business_profiles')->insert(['business_id'=>$b['id'],'tenant_id'=>$b['tenant_id'],'business_type'=>$type,'owner_totp_required'=>true,'version'=>1]);}
    if($in['action']==='enable'){
     if($state->is(PrivilegedTotpMfaState::CONFIRMED))throw new PlatformViolation('AUTHENTICATOR_ALREADY_ENABLED',409);
-    $db->table('oneqay_business_profiles')->where('business_id',$b['id'])->update(['owner_totp_required'=>true]);$issued=$mfa->startEnrollment($c->tenantId(),$c->identityId());$db->table('oneqay_business_profiles')->where('business_id',$b['id'])->increment('version');return ['status'=>'enrollment_pending','secret'=>$issued->secret(),'uri'=>$issued->provisioningUri(),'version'=>($p?(int)$p->version:1)+1];
+    $db->table('oneqay_business_profiles')->where('business_id',$b['id'])->update(['owner_totp_required'=>true]);$issued=$mfa->startEnrollment($c->tenantId(),$c->identityId());$db->table('oneqay_business_profiles')->where('business_id',$b['id'])->update(['owner_totp_required'=>false]);$db->table('oneqay_business_profiles')->where('business_id',$b['id'])->increment('version');return ['status'=>'enrollment_pending','secret'=>$issued->secret(),'uri'=>$issued->provisioningUri(),'version'=>($p?(int)$p->version:1)+1];
    }
    $code=$in['code']??'';if(!is_string($code))throw new PlatformViolation('INVALID_FIELDS');
-   if($in['action']==='confirm')$mfa->confirmEnrollment($c->tenantId(),$c->identityId(),$code);
+   if($in['action']==='confirm'){$db->table('oneqay_business_profiles')->where('business_id',$b['id'])->update(['owner_totp_required'=>true]);$mfa->confirmEnrollment($c->tenantId(),$c->identityId(),$code);}
    else {
     if($state->is(PrivilegedTotpMfaState::CONFIRMED))$mfa->challenge($c->tenantId(),$c->identityId(),$code);
     $q=$db->table('oneqay_identity_totp_factors')->where('tenant_id',$b['tenant_id'])->where('identity_id',$b['identity_id']);$factor=(clone $q)->lockForUpdate()->first();

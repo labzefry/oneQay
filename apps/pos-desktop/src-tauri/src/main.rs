@@ -211,7 +211,7 @@ async fn synchronize(
                 return Err("UPDATE_IN_PROGRESS".into());
             }
         }
-        if store.snapshot().map_err(safe)?.is_some_and(|v|matches!(v.settings["business_type"].as_str(),Some("laundry"|"boarding"|"homestay"))){let(_,token)=credential(&store)?;let raw=request(auth::SERVER,"v2/snapshot",Some(&token),None)?;let snapshot:Snapshot=serde_json::from_value(raw).map_err(|_|"POS_SNAPSHOT_INVALID")?;store.apply_snapshot(&snapshot,now()).map_err(safe)?;return auth::visible(&sec,&store)}
+        if store.snapshot().map_err(safe)?.is_some_and(|v|matches!(v.settings["business_type"].as_str(),Some("laundry"|"boarding"|"homestay"))){let(_,token)=credential(&store)?;let raw=match request(auth::SERVER,"v2/snapshot",Some(&token),None){Ok(v)=>v,Err(e)=>{if e.starts_with("POS_SIGN_IN_AGAIN")||e.starts_with("POS_PERMISSION_DENIED"){store.set("authority_state","blocked").map_err(safe)?;let mut security=sec.lock().map_err(|_|"POS_SECURITY_BUSY")?;security.signed_in=false;security.is_locked=true;}return Err(e)}};let snapshot:Snapshot=serde_json::from_value(raw).map_err(|_|"POS_SNAPSHOT_INVALID")?;store.apply_snapshot(&snapshot,now()).map_err(safe)?;return auth::visible(&sec,&store)}
         let (_, token) = credential(&store)?;
         let batch = store.pending().map_err(safe)?;
         let response = request(
@@ -416,6 +416,7 @@ fn main() {
             auth::activity,
             service_pos::service_workspace,
             service_pos::service_command,
+            service_pos::service_reconcile,
             updates::check_update,
             updates::install_update
         ])

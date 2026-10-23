@@ -157,7 +157,7 @@ onBeforeUnmount(() => { request?.abort(); document.removeEventListener('keydown'
         <div class="oq-content" :inert="mobileViewport && mobileOpen">
             <header class="oq-topbar no-print">
                 <div class="oq-topbar-leading"><button ref="menu" type="button" class="oq-menu-button" :aria-label="t('Open navigation')" :aria-expanded="mobileOpen" aria-controls="workspace-navigation" @click="mobileOpen = !mobileOpen"><WorkspaceIcon name="menu" /></button><a href="/pos">{{ t("Workspace") }}</a><WorkspaceIcon name="chevron-right" :size="15" /><strong>{{ t(title) }}</strong></div>
-                <div class="oq-topbar-trailing"><LanguageSwitcher /><BusinessAccountMenu/><span class="oq-session"><WorkspaceIcon name="shield-check" :size="16" />{{ t("Merchant session") }}</span><a href="/pos/business/security" class="oq-account" :aria-label="t('Open account and security')"><WorkspaceIcon name="settings" :size="18" /><span class="oq-avatar">{{ t("Q") }}</span></a></div>
+                <div class="oq-topbar-trailing"><LanguageSwitcher /><BusinessAccountMenu/><span class="oq-session"><WorkspaceIcon name="shield-check" :size="16" />{{ t("Merchant session") }}</span><a v-if="(page.props.business_profile as any)?.can_manage_security" href="/pos/business/security" class="oq-account" :aria-label="t('Open account and security')"><WorkspaceIcon name="settings" :size="18" /><span class="oq-avatar">{{ t("Q") }}</span></a></div>
             </header>
             <ControlInbox :communications="page.props.communications"/>
             <div id="workspace-content" class="oq-page" tabindex="-1"><slot /></div>

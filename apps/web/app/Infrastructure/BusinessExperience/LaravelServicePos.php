@@ -15,9 +15,22 @@ final readonly class LaravelServicePos {
  public function read():array {
   $c=$this->access->require('pos.sale.complete');$type=$this->type();$money=app(\App\Infrastructure\Business\LaravelMerchandisingRepository::class)->settings($c);$orders=$this->query('orders')->orderByDesc('created_at')->limit(100)->get()->map(fn($r)=>(array)$r)->all();$ids=array_column($orders,'id');
   $invoices=$this->db->table($this->table('invoices'))->where('tenant_id',$c->tenantId()->value())->whereIn('order_id',$ids)->get()->map(fn($r)=>(array)$r)->all();$shift=$this->query('shifts')->where('device_id',$c->deviceId()->value())->where('active_slot',1)->first();
-  return ['currency'=>$money['currency'],'scale'=>(int)$money['scale'],'symbol'=>$money['symbol'],'type'=>$type,'profile'=>$this->domains->profile($c->tenantId()->value()),'resources'=>$this->query('resources')->orderBy('name')->limit(500)->get()->map(fn($r)=>(array)$r)->all(),'orders'=>$orders,'invoices'=>$invoices,'shift'=>$shift?(array)$shift:null,'can_configure'=>$this->access->allows('authorization.policy.manage'),'server_time'=>time(),'scope'=>['tenant_id'=>$c->tenantId()->value(),'organization_id'=>$c->organizationId()->value(),'outlet_id'=>$c->outletId()->value()]];
+  return ['currency'=>$money['currency'],'scale'=>(int)$money['scale'],'symbol'=>$money['symbol'],'type'=>$type,'profile'=>$this->domains->profile($c->tenantId()->value()),'resources'=>$this->query('resources')->orderBy('name')->limit(500)->get()->map(fn($r)=>(array)$r)->all(),'orders'=>$orders,'invoices'=>$invoices,'shift'=>$shift?(array)$shift:null,'can_configure'=>$this->access->allows('authorization.policy.manage'),'server_time'=>time(),'scope'=>['tenant_id'=>$c->tenantId()->value(),'organization_id'=>$c->organizationId()->value(),'outlet_id'=>$c->outletId()->value(),'identity_id'=>$c->identityId()->value()]];
+ }
+ // A locked tombstone resolves uncertain operations without allowing a late request to execute.
+ public function reconcile(array $in):array {
+  ksort($in);
+  $c=$this->access->require('pos.sale.complete');$type=$this->type();$op=$in['operation_id']??'';
+  if(!is_string($op)||preg_match('/\A[a-zA-Z0-9_-]{8,128}\z/D',$op)!==1||strlen(json_encode($in,JSON_THROW_ON_ERROR))>8192)throw new PlatformViolation('INVALID_OPERATION');
+  if(!in_array($in['action']??'', ['resource.save','order.create','order.transition','invoice.create','payment.record','shift.open','shift.close'],true))throw new PlatformViolation('INVALID_ACTION');
+  if($in['action']==='resource.save')$this->access->require('authorization.policy.manage');
+  return $this->operations->once($c->tenantId()->value().'/'.$c->identityId()->value(),$op,['type'=>$type,'organization'=>$c->organizationId()->value(),'outlet'=>$c->outletId()->value(),'device'=>$c->deviceId()->value(),'input'=>$in],function()use($c,$op){
+   $this->operations->audit($c->identityId()->value(),'service.operation.cancelled',$c->tenantId()->value(),'Uncommitted operation cancelled by its actor: '.$op,time());
+   return ['rejected'=>true,'operation_id'=>$op];
+  });
  }
  public function command(array $in):array {
+  ksort($in);
   $c=$this->access->require('pos.sale.complete');$type=$this->type();$action=$in['action']??'';$op=$in['operation_id']??'';
   if(!is_string($op)||!preg_match('/\A[a-zA-Z0-9_-]{8,128}\z/D',$op)||!is_string($action)||strlen(json_encode($in,JSON_THROW_ON_ERROR))>8192)throw new PlatformViolation('INVALID_OPERATION');
   $fields=match($action){'resource.save'=>['id','version','name','unit','rate_atomic','currency','scale','enabled'],'order.create'=>['resource_id','customer_name','contact','start_date','end_date','quantity_milli'],'order.transition'=>['id','version','status'],'invoice.create'=>['id','version','period'],'payment.record'=>['invoice_id','amount_atomic'],'shift.open'=>['opening_atomic'],'shift.close'=>['closing_atomic'],default=>throw new PlatformViolation('INVALID_ACTION')};

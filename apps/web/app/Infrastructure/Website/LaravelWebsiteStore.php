@@ -23,7 +23,7 @@ final readonly class LaravelWebsiteStore implements WebsiteStore {
       if($this->mail===null||!str_starts_with($this->publicUrl,'https://'))throw new PlatformViolation('REGISTRATION_MAIL_UNAVAILABLE',503);
       $this->db->table('oneqay_platform_businesses')->insert($b);
       if($this->db->getSchemaBuilder()->hasTable('oneqay_business_profiles')){
-       $slug=$input['subdomain']??null;if($slug===null){$base=substr(\Illuminate\Support\Str::slug($input['name']),0,32);if(strlen($base)<3||!preg_match('/^[a-z]/',$base))$base='business-'.substr($id,0,8);$slug=$base;for($n=2;$this->db->table('oneqay_business_domains')->where('slug',$slug)->exists();$n++)$slug=$base.$n;}
+       $slug=$input['subdomain']??null;if($slug===null){$base=substr(\Illuminate\Support\Str::slug($input['name']),0,32);try{\App\Application\BusinessExperience\BusinessDomain::slug($base);}catch(PlatformViolation){$base='business-'.substr($id,0,8);}$slug=$base;for($n=2;$this->db->table('oneqay_business_domains')->where('slug',$slug)->exists();$n++)$slug=$base.$n;}
        app(\App\Infrastructure\BusinessExperience\LaravelBusinessDomains::class)->claim($b,$slug,$input['business_type']);
       }
       $url=rtrim($this->publicUrl,'/').'/activate-business#token='.$token;
@@ -35,11 +35,7 @@ final readonly class LaravelWebsiteStore implements WebsiteStore {
       $row=$this->db->table('oneqay_platform_businesses as b')->join('oneqay_site_registrations as r','r.business_id','=','b.id')->where('b.email',$email)->lockForUpdate()->first(['b.*']);
       if(!$row||!in_array($row->status,['pending','invited'],true))return;
       if($this->mail===null||!str_starts_with($this->publicUrl,'https://'))throw new PlatformViolation('REGISTRATION_MAIL_UNAVAILABLE',503);
-      $token=bin2hex(random_bytes(32));$now=time();if($this->db->getSchemaBuilder()->hasTable('oneqay_business_profiles')){
-       $slug=$input['subdomain']??null;if($slug===null){$base=substr(\Illuminate\Support\Str::slug($input['name']),0,32);if(strlen($base)<3||!preg_match('/^[a-z]/',$base))$base='business-'.substr($id,0,8);$slug=$base;for($n=2;$this->db->table('oneqay_business_domains')->where('slug',$slug)->exists();$n++)$slug=$base.$n;}
-       app(\App\Infrastructure\BusinessExperience\LaravelBusinessDomains::class)->claim($b,$slug,$input['business_type']);
-      }
-      $url=rtrim($this->publicUrl,'/').'/activate-business#token='.$token;
+      $token=bin2hex(random_bytes(32));$now=time();      $url=rtrim($this->publicUrl,'/').'/activate-business#token='.$token;
       $this->db->table('oneqay_platform_businesses')->where('id',$row->id)->where('version',$row->version)->update(['status'=>'invited','version'=>$row->version+1,'token_hash'=>hash('sha256',$token),'token_expires_at'=>$now+86400,'updated_at'=>$now]);
       $this->db->table('oneqay_site_registrations')->where('business_id',$row->id)->update(['consent_version'=>'terms-2026-10-20']);
       $body=$row->locale==='id'?"Tautan verifikasi oneQay yang baru (24 jam):\n$url\nBuat kata sandi untuk langsung mengaktifkan akun. Tautan sebelumnya tidak berlaku. Abaikan jika Anda tidak meminta.\nCopyright oneQay":"Your new oneQay verification link (24 hours):\n$url\nSet your password to activate automatically. Previous links are invalid. Ignore if you did not request this.\nCopyright oneQay";

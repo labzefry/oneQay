@@ -181,6 +181,11 @@ impl Store {
             return Err(Error::Rule("POS_SNAPSHOT_INVALID"));
         }
         if let Some(old) = self.snapshot()? {
+            let old_type = old.settings["business_type"].as_str().unwrap_or("retail");
+            let new_type = snapshot.settings["business_type"].as_str().unwrap_or("retail");
+            if (service || matches!(old_type, "laundry" | "boarding" | "homestay")) && old_type != new_type {
+                return Err(Error::Rule("POS_BUSINESS_TYPE_CHANGED"));
+            }
             if old.scope != snapshot.scope {
                 return Err(Error::Rule(
                     "POS_ACCOUNT_CHANGE_REQUIRES_NEW_WINDOWS_PROFILE",
