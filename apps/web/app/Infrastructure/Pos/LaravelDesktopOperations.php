@@ -11,6 +11,7 @@ use Illuminate\Database\Connection;
 final readonly class LaravelDesktopOperations {
  public function __construct(private Connection $db,private Container $app,private LaravelDesktopPosService $desktop,private LaravelDesktopBusinessSettings $settings){}
  public function sync(array $events,string $correlation):array {
+  $tenant=$this->desktop->scope()['tenant_id'];if($this->db->getSchemaBuilder()->hasTable('oneqay_business_profiles'))abort_if(in_array($this->db->table('oneqay_business_profiles')->where('tenant_id',$tenant)->value('business_type'),['laundry','boarding','homestay'],true),403,'BUSINESS_WORKFLOW_MISMATCH');
   abort_unless(array_is_list($events)&&count($events)<=50,422);$results=[];
   foreach($events as$event){try{$r=$this->accept($event,$correlation);}catch(\InvalidArgumentException|\ValueError $error){$r=['operation_id'=>is_array($event)?($event['operation_id']??''):'','state'=>'rejected','code'=>$error instanceof DesktopSyncViolation?$error->safeCode:'POS_INVALID_OPERATION','correlation_id'=>$correlation];}catch(PosTransactionViolation){$r=['operation_id'=>$event['operation_id'],'state'=>'pending','code'=>'POS_SHIFT_REQUIRES_REVIEW','correlation_id'=>$correlation];}(new LaravelDesktopSyncDiagnostics($this->db))->record($this->desktop->scope(),$event,$r);$results[]=$r;if(!in_array($r['state'],['accepted','review'],true))break;}return ['results'=>$results,'server_time'=>time()];
  }

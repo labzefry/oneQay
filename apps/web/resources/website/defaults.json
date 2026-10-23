@@ -1570,7 +1570,7 @@
           "id": "businesses",
           "type": "features",
           "title": "Cara kerja berbeda.\nRuang tumbuh yang sama.",
-          "body": "",
+          "body": "<p>Pilih jenis usaha saat mendaftar. Proses laundry, kosan, dan homestay memiliki ruang kerja serta catatan operasional masing-masing. Satu aplikasi Windows menyesuaikan jenis usaha dari akun yang masuk.</p>",
           "eyebrow": "UNTUK BISNIS ANDA",
           "tone": "light",
           "image": "",
@@ -1595,6 +1595,24 @@
               "body": "Satukan layanan, pelanggan, dan tim Anda.",
               "href": "/pages/services",
               "icon": "briefcase-business"
+            },
+            {
+              "title": "Laundry",
+              "body": "Penerimaan cucian, tarif per kg atau potong, status pengerjaan, tagihan, dan pengambilan.",
+              "href": "/pages/laundry",
+              "icon": "washing-machine"
+            },
+            {
+              "title": "Kosan",
+              "body": "Kamar dan penghuni, kontrak sewa, tagihan per periode, pembayaran, serta buka dan tutup kas.",
+              "href": "/pages/boarding",
+              "icon": "building-2"
+            },
+            {
+              "title": "Homestay",
+              "body": "Reservasi per malam, pemeriksaan ketersediaan kamar, check-in, tagihan, dan check-out.",
+              "href": "/pages/homestay",
+              "icon": "bed-double"
             }
           ]
         },
@@ -1805,7 +1823,7 @@
           "id": "businesses",
           "type": "features",
           "title": "Different businesses.\nThe same room to grow.",
-          "body": "",
+          "body": "<p>Choose your business type at registration. Laundry, boarding and homestay each have their own workspace and operational records. One Windows application adapts to the signed-in business.</p>",
           "eyebrow": "FOR YOUR BUSINESS",
           "tone": "light",
           "image": "",
@@ -1830,6 +1848,24 @@
               "body": "Bring services, customers and your team together.",
               "href": "/pages/services",
               "icon": "briefcase-business"
+            },
+            {
+              "title": "Laundry",
+              "body": "Intake, per-kg or per-item rates, processing stages, invoices and collection.",
+              "href": "/pages/laundry",
+              "icon": "washing-machine"
+            },
+            {
+              "title": "Boarding houses",
+              "body": "Rooms and residents, rental contracts, period invoices, payments and register shifts.",
+              "href": "/pages/boarding",
+              "icon": "building-2"
+            },
+            {
+              "title": "Homestays",
+              "body": "Nightly reservations, room availability checks, check-in, invoices and check-out.",
+              "href": "/pages/homestay",
+              "icon": "bed-double"
             }
           ]
         },
@@ -2219,6 +2255,204 @@
               "icon": "store"
             }
           ]
+        }
+      ]
+    }
+  },
+  "laundry": {
+    "id": {
+      "title": "Laundry | oneQay",
+      "description": "Penerimaan cucian, tarif per kg atau potong, status pengerjaan, tagihan, dan pengambilan.",
+      "blocks": [
+        {
+          "id": "hero",
+          "type": "hero",
+          "title": "Laundry",
+          "body": "<p>Penerimaan cucian, tarif per kg atau potong, status pengerjaan, tagihan, dan pengambilan.</p>",
+          "eyebrow": "ONEQAY",
+          "tone": "light",
+          "image": "",
+          "alt": "",
+          "button": "Daftarkan bisnis",
+          "href": "/register",
+          "items": []
+        },
+        {
+          "id": "workflow",
+          "type": "split",
+          "title": "Alur yang mengikuti usaha Anda",
+          "body": "<p>Layanan atau kamar dan tarif disiapkan pemilik bisnis di web. Kasir mengelola operasional serta pembayaran dengan akun masing-masing. Data tiap jenis usaha tidak digabung dengan penjualan barang. Pembayaran dan laporan kas dicatat pada modul usaha tersebut.</p><p>Saat perangkat offline, permintaan disimpan sebagai antrean lokal. Reservasi belum dijamin sampai server mengonfirmasi; benturan harus ditinjau sebelum dilanjutkan.</p>",
+          "eyebrow": "",
+          "tone": "soft",
+          "image": "",
+          "alt": "",
+          "button": "Panduan",
+          "href": "/pages/guides",
+          "items": []
+        }
+      ]
+    },
+    "en": {
+      "title": "Laundry | oneQay",
+      "description": "Intake, per-kg or per-item rates, processing stages, invoices and collection.",
+      "blocks": [
+        {
+          "id": "hero",
+          "type": "hero",
+          "title": "Laundry",
+          "body": "<p>Intake, per-kg or per-item rates, processing stages, invoices and collection.</p>",
+          "eyebrow": "ONEQAY",
+          "tone": "light",
+          "image": "",
+          "alt": "",
+          "button": "Register your business",
+          "href": "/register",
+          "items": []
+        },
+        {
+          "id": "workflow",
+          "type": "split",
+          "title": "A workflow for your business",
+          "body": "<p>The owner configures services, rooms and rates on the web. Each cashier operates using their own account. Industry records are separate from retail sales, with payments and register reports recorded in the relevant module.</p><p>Offline requests are stored in a local queue. Reservations are provisional until confirmed by the server; conflicts require review before continuing.</p>",
+          "eyebrow": "",
+          "tone": "soft",
+          "image": "",
+          "alt": "",
+          "button": "Guides",
+          "href": "/pages/guides",
+          "items": []
+        }
+      ]
+    }
+  },
+  "boarding": {
+    "id": {
+      "title": "Kosan | oneQay",
+      "description": "Kamar dan penghuni, kontrak sewa, tagihan per periode, pembayaran, serta buka dan tutup kas.",
+      "blocks": [
+        {
+          "id": "hero",
+          "type": "hero",
+          "title": "Kosan",
+          "body": "<p>Kamar dan penghuni, kontrak sewa, tagihan per periode, pembayaran, serta buka dan tutup kas.</p>",
+          "eyebrow": "ONEQAY",
+          "tone": "light",
+          "image": "",
+          "alt": "",
+          "button": "Daftarkan bisnis",
+          "href": "/register",
+          "items": []
+        },
+        {
+          "id": "workflow",
+          "type": "split",
+          "title": "Alur yang mengikuti usaha Anda",
+          "body": "<p>Layanan atau kamar dan tarif disiapkan pemilik bisnis di web. Kasir mengelola operasional serta pembayaran dengan akun masing-masing. Data tiap jenis usaha tidak digabung dengan penjualan barang. Pembayaran dan laporan kas dicatat pada modul usaha tersebut.</p><p>Saat perangkat offline, permintaan disimpan sebagai antrean lokal. Reservasi belum dijamin sampai server mengonfirmasi; benturan harus ditinjau sebelum dilanjutkan.</p>",
+          "eyebrow": "",
+          "tone": "soft",
+          "image": "",
+          "alt": "",
+          "button": "Panduan",
+          "href": "/pages/guides",
+          "items": []
+        }
+      ]
+    },
+    "en": {
+      "title": "Boarding houses | oneQay",
+      "description": "Rooms and residents, rental contracts, period invoices, payments and register shifts.",
+      "blocks": [
+        {
+          "id": "hero",
+          "type": "hero",
+          "title": "Boarding houses",
+          "body": "<p>Rooms and residents, rental contracts, period invoices, payments and register shifts.</p>",
+          "eyebrow": "ONEQAY",
+          "tone": "light",
+          "image": "",
+          "alt": "",
+          "button": "Register your business",
+          "href": "/register",
+          "items": []
+        },
+        {
+          "id": "workflow",
+          "type": "split",
+          "title": "A workflow for your business",
+          "body": "<p>The owner configures services, rooms and rates on the web. Each cashier operates using their own account. Industry records are separate from retail sales, with payments and register reports recorded in the relevant module.</p><p>Offline requests are stored in a local queue. Reservations are provisional until confirmed by the server; conflicts require review before continuing.</p>",
+          "eyebrow": "",
+          "tone": "soft",
+          "image": "",
+          "alt": "",
+          "button": "Guides",
+          "href": "/pages/guides",
+          "items": []
+        }
+      ]
+    }
+  },
+  "homestay": {
+    "id": {
+      "title": "Homestay | oneQay",
+      "description": "Reservasi per malam, pemeriksaan ketersediaan kamar, check-in, tagihan, dan check-out.",
+      "blocks": [
+        {
+          "id": "hero",
+          "type": "hero",
+          "title": "Homestay",
+          "body": "<p>Reservasi per malam, pemeriksaan ketersediaan kamar, check-in, tagihan, dan check-out.</p>",
+          "eyebrow": "ONEQAY",
+          "tone": "light",
+          "image": "",
+          "alt": "",
+          "button": "Daftarkan bisnis",
+          "href": "/register",
+          "items": []
+        },
+        {
+          "id": "workflow",
+          "type": "split",
+          "title": "Alur yang mengikuti usaha Anda",
+          "body": "<p>Layanan atau kamar dan tarif disiapkan pemilik bisnis di web. Kasir mengelola operasional serta pembayaran dengan akun masing-masing. Data tiap jenis usaha tidak digabung dengan penjualan barang. Pembayaran dan laporan kas dicatat pada modul usaha tersebut.</p><p>Saat perangkat offline, permintaan disimpan sebagai antrean lokal. Reservasi belum dijamin sampai server mengonfirmasi; benturan harus ditinjau sebelum dilanjutkan.</p>",
+          "eyebrow": "",
+          "tone": "soft",
+          "image": "",
+          "alt": "",
+          "button": "Panduan",
+          "href": "/pages/guides",
+          "items": []
+        }
+      ]
+    },
+    "en": {
+      "title": "Homestays | oneQay",
+      "description": "Nightly reservations, room availability checks, check-in, invoices and check-out.",
+      "blocks": [
+        {
+          "id": "hero",
+          "type": "hero",
+          "title": "Homestays",
+          "body": "<p>Nightly reservations, room availability checks, check-in, invoices and check-out.</p>",
+          "eyebrow": "ONEQAY",
+          "tone": "light",
+          "image": "",
+          "alt": "",
+          "button": "Register your business",
+          "href": "/register",
+          "items": []
+        },
+        {
+          "id": "workflow",
+          "type": "split",
+          "title": "A workflow for your business",
+          "body": "<p>The owner configures services, rooms and rates on the web. Each cashier operates using their own account. Industry records are separate from retail sales, with payments and register reports recorded in the relevant module.</p><p>Offline requests are stored in a local queue. Reservations are provisional until confirmed by the server; conflicts require review before continuing.</p>",
+          "eyebrow": "",
+          "tone": "soft",
+          "image": "",
+          "alt": "",
+          "button": "Guides",
+          "href": "/pages/guides",
+          "items": []
         }
       ]
     }

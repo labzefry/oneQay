@@ -2,6 +2,7 @@
 
 // Author by Lab | zefry
 return [
+    App\Providers\BusinessExperienceServiceProvider::class,
     App\Providers\AppServiceProvider::class,
     App\Providers\TechnicalPreviewServiceProvider::class,
     App\Providers\SystemUpdateServiceProvider::class,

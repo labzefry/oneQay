@@ -19,3 +19,6 @@ button{font-size:14px;min-height:44px}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 
 .app-shell.sign-in-mode{height:100vh;overflow:hidden}.login-main{overflow-y:auto}.login-main>footer{flex-shrink:0}
+
+/* Keep informational text readable on the dark enterprise rail. */
+.rail .local-safe{background:#E9EBFF;color:#1B1B39}.rail .local-safe strong,.rail .local-safe small{color:#1B1B39}

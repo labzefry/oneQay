@@ -3,6 +3,7 @@ import { t } from "../i18n";
 // Author by Lab | zefry. Read-only navigation always follows the current server scope.
 import { usePage } from '@inertiajs/vue3';
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import BusinessAccountMenu from '../components/BusinessAccountMenu.vue';
 import ControlInbox from '../components/ControlInbox.vue';
 import LanguageSwitcher from '../components/LanguageSwitcher.vue';
 import WorkspaceIcon from '../components/WorkspaceIcon.vue';
@@ -63,9 +64,10 @@ const titles: Record<string, string> = {
 };
 const title = computed(() => titles[page.component.split('/').pop() ?? ''] ?? 'Workspace');
 const activePath = computed(() => new URL(page.url, window.location.origin).pathname.replace(/\/$/, ''));
+const isolated=computed(()=>['laundry','boarding','homestay'].includes(String((page.props.business_profile as any)?.business_type??'')));
 const groups = computed(() => categories.map((category) => ({
     ...category,
-    items: navigation.value.filter((item) => item.category === category.key)
+    items: navigation.value.filter((item) => item.category === category.key).filter(item=>!isolated.value||['business_settings','business_access','business_people','business_desktop'].includes(item.key))
         .filter((item) => t(labels[item.key]?.title ?? item.title).toLowerCase().includes(search.value.toLowerCase().trim())),
 })).filter((group) => group.items.length > 0));
 function isActive(url: string): boolean { return activePath.value === new URL(url, window.location.origin).pathname.replace(/\/$/, ''); }
@@ -138,24 +140,24 @@ onBeforeUnmount(() => { request?.abort(); document.removeEventListener('keydown'
         <a class="oq-skip" href="#workspace-content">{{ t("Skip to workspace") }}</a>
         <button v-if="mobileOpen" class="oq-backdrop no-print" type="button" :aria-label="t('Close navigation')" @click="mobileOpen = false" />
         <aside id="workspace-navigation" ref="drawer" class="oq-sidebar no-print" :class="{ 'is-open': mobileOpen }" :inert="mobileViewport && !mobileOpen" :aria-label="t('Workspace navigation')">
-            <a class="oq-brand" href="/pos" :aria-label="t('oneQay overview')"><span class="oq-brand-mark">{{ t("Q") }}<span /></span><span>{{ t("oneQay") }}<small>{{ t("INTELLIGENT BUSINESS OS") }}</small></span></a>
+            <a class="oq-brand" href="/pos" :aria-label="t('oneQay overview')"><img v-if="($page.props.branding as any)?.logo" :src="($page.props.branding as any).logo" alt="oneQay" style="width:48px;height:40px;object-fit:contain"/><span v-else class="oq-brand-mark">{{ t("Q") }}<span /></span><span>{{ t("oneQay") }}<small>{{ t("INTELLIGENT BUSINESS OS") }}</small></span></a>
             <button class="oq-mobile-close" type="button" :aria-label="t('Close navigation')" @click="mobileOpen = false"><WorkspaceIcon name="x" /></button>
             <div class="oq-workspace"><span class="oq-workspace-icon"><WorkspaceIcon name="store" /></span><div><strong>{{ currencyPreferences.business_name }}</strong><small>{{ t("Your active outlet") }}</small></div></div>
             <label class="oq-nav-search"><WorkspaceIcon name="search" :size="17" /><input v-model="search" type="search" :placeholder="t('Find a workspace')" :aria-label="t('Find a workspace')" /></label>
             <nav class="oq-nav">
-                <a class="oq-nav-link" href="/pos" :aria-current="activePath === '/pos' ? 'page' : undefined"><WorkspaceIcon name="layout-dashboard" /><span>{{ t("Command Center") }}</span></a>
+                <a v-if="isolated" class="oq-nav-link" href="/pos/service"><WorkspaceIcon name="store"/><span>{{t("Business workspace")}}</span></a><a class="oq-nav-link" href="/pos" :aria-current="activePath === '/pos' ? 'page' : undefined"><WorkspaceIcon name="layout-dashboard" /><span>{{ t("Command Center") }}</span></a>
                 <p v-if="loading" class="oq-nav-empty" role="status">{{ t("Loading navigation…") }}</p>
                 <details v-for="group in groups" :key="group.key" class="oq-nav-group" open><summary>{{ t(group.title) }}</summary>
                     <a v-for="item in group.items" :key="item.key" class="oq-nav-link" :href="item.url" :aria-current="isActive(item.url) ? 'page' : undefined"><WorkspaceIcon :name="labels[item.key]?.icon ?? 'clipboard-list'" /><span>{{ t(labels[item.key]?.title ?? item.title) }}</span></a>
                 </details>
                 <p v-if="search && groups.length === 0 && !loading" class="oq-nav-empty">{{ t("No matching workspace.") }}</p>
             </nav>
-            <div class="oq-sidebar-bottom"><a class="oq-nav-link" href="/pos/desktop"><WorkspaceIcon name="monitor"/><span>POS Windows</span></a><a class="oq-nav-link" href="/pos?panel=security#account-security"><WorkspaceIcon name="shield-check" /><span>{{ t("Account & security") }}</span></a><p>© oneQay</p></div>
+            <div class="oq-sidebar-bottom"><a class="oq-nav-link" href="/pos/desktop"><WorkspaceIcon name="monitor"/><span>POS Windows</span></a><a class="oq-nav-link" href="/pos/business/security"><WorkspaceIcon name="shield-check" /><span>{{ t("Account & security") }}</span></a><p>© oneQay</p></div>
         </aside>
         <div class="oq-content" :inert="mobileViewport && mobileOpen">
             <header class="oq-topbar no-print">
                 <div class="oq-topbar-leading"><button ref="menu" type="button" class="oq-menu-button" :aria-label="t('Open navigation')" :aria-expanded="mobileOpen" aria-controls="workspace-navigation" @click="mobileOpen = !mobileOpen"><WorkspaceIcon name="menu" /></button><a href="/pos">{{ t("Workspace") }}</a><WorkspaceIcon name="chevron-right" :size="15" /><strong>{{ t(title) }}</strong></div>
-                <div class="oq-topbar-trailing"><LanguageSwitcher /><span class="oq-session"><WorkspaceIcon name="shield-check" :size="16" />{{ t("Merchant session") }}</span><a href="/pos?panel=security#account-security" class="oq-account" :aria-label="t('Open account and security')"><WorkspaceIcon name="settings" :size="18" /><span class="oq-avatar">{{ t("Q") }}</span></a></div>
+                <div class="oq-topbar-trailing"><LanguageSwitcher /><BusinessAccountMenu/><span class="oq-session"><WorkspaceIcon name="shield-check" :size="16" />{{ t("Merchant session") }}</span><a v-if="page.props.can_manage_business_security" href="/pos/business/security" class="oq-account" :aria-label="t('Open account and security')"><WorkspaceIcon name="settings" :size="18" /><span class="oq-avatar">{{ t("Q") }}</span></a></div>
             </header>
             <ControlInbox :communications="page.props.communications"/>
             <div id="workspace-content" class="oq-page" tabindex="-1"><slot /></div>

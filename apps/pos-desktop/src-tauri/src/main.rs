@@ -3,6 +3,7 @@
 mod auth;
 mod hardware;
 mod updates;
+mod service_pos;
 use oneqay_pos_core::{receipt_bytes, Line, PrinterSettings, Snapshot, Store, Workspace};
 use serde_json::{json, Value};
 use std::{
@@ -82,6 +83,8 @@ fn request(server: &str, path: &str, token: Option<&str>, body: Option<Value>) -
             "POS_SIGN_IN_AGAIN"
         } else if status.as_u16() == 403 {
             "POS_PERMISSION_DENIED"
+        } else if path.starts_with("v3/") && matches!(status.as_u16(),400|404|409|422) {
+            "POS_SERVICE_REQUEST_REJECTED"
         } else if status.as_u16() == 409 {
             "POS_OPEN_SHIFT_AND_PREPARE_CATALOG"
         } else if status.as_u16() == 429 {
@@ -208,6 +211,7 @@ async fn synchronize(
                 return Err("UPDATE_IN_PROGRESS".into());
             }
         }
+        if store.snapshot().map_err(safe)?.is_some_and(|v|matches!(v.settings["business_type"].as_str(),Some("laundry"|"boarding"|"homestay"))){let(_,token)=credential(&store)?;let raw=match request(auth::SERVER,"v2/snapshot",Some(&token),None){Ok(v)=>v,Err(e)=>{if e.starts_with("POS_SIGN_IN_AGAIN")||e.starts_with("POS_PERMISSION_DENIED"){store.set("authority_state","blocked").map_err(safe)?;let mut security=sec.lock().map_err(|_|"POS_SECURITY_BUSY")?;security.signed_in=false;security.is_locked=true;}return Err(e)}};let snapshot:Snapshot=serde_json::from_value(raw).map_err(|_|"POS_SNAPSHOT_INVALID")?;store.apply_snapshot(&snapshot,now()).map_err(safe)?;return auth::visible(&sec,&store)}
         let (_, token) = credential(&store)?;
         let batch = store.pending().map_err(safe)?;
         let response = request(
@@ -276,6 +280,7 @@ async fn shift_event(
     background(move || {
         let mut store = locked(&db)?;
         auth::require(&sec, &store, true)?;
+        if store.snapshot().map_err(safe)?.is_some_and(|v| matches!(v.settings["business_type"].as_str(), Some("laundry" | "boarding" | "homestay"))) { return Err("BUSINESS_WORKFLOW_MISMATCH".into()); }
         store
             .shift_event(&id, opening, cash, &note, now())
             .map_err(safe)?;
@@ -409,6 +414,9 @@ fn main() {
             auth::lock_pos,
             auth::unlock_pos,
             auth::activity,
+            service_pos::service_workspace,
+            service_pos::service_command,
+            service_pos::service_reconcile,
             updates::check_update,
             updates::install_update
         ])

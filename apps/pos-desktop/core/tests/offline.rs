@@ -417,3 +417,26 @@ fn separate_profiles_preserve_pending_payloads_receipts_and_shift() {
  {let mut a=Store::open(&first).unwrap();a.apply_snapshot(&enterprise(),1000).unwrap();a.shift_event(&id(),true,50000,"",1001).unwrap();a.commit(&id(),"sale",lines(1),15000,1002).unwrap();payload=serde_json::to_value(a.operations().unwrap()).unwrap();}
  let mut b=Store::open(&second).unwrap();let mut snap=enterprise();snap.scope.identity_id="second".into();b.apply_snapshot(&snap,1003).unwrap();assert!(b.pending().unwrap().is_empty());assert!(b.active_shift().unwrap().is_none());let a=Store::open(&first).unwrap();assert_eq!(payload,serde_json::to_value(a.operations().unwrap()).unwrap());assert_eq!(a.pending().unwrap().len(),2);assert!(a.active_shift().unwrap().is_some());
 }
+
+#[test]
+fn isolated_service_snapshot_accepts_empty_catalog_and_rejects_retail_sales() {
+    for kind in ["laundry", "boarding", "homestay"] {
+        let mut s = Store::open(":memory:").unwrap();
+        let mut snapshot = fixture();
+        snapshot.protocol = 2;
+        snapshot.catalog.clear();
+        snapshot.settings = json!({"business_type":kind});
+        s.apply_snapshot(&snapshot, 1000).unwrap();
+        assert!(s.commit(&id(), "sale", lines(1), 50000, 1001).is_err());
+        assert!(s.pending().unwrap().is_empty());
+        assert_eq!(s.snapshot().unwrap().unwrap().settings["business_type"], kind);
+    }
+}
+#[test]
+fn retail_empty_catalog_stays_invalid() {
+    let mut s = Store::open(":memory:").unwrap();
+    let mut snapshot = fixture();
+    snapshot.catalog.clear();
+    assert!(s.apply_snapshot(&snapshot, 1000).is_err());
+    assert!(s.snapshot().unwrap().is_none());
+}
