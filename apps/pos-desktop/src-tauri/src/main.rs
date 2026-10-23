@@ -56,7 +56,7 @@ fn request(server: &str, path: &str, token: Option<&str>, body: Option<Value>) -
     if let Some(token) = token {
         req = req.bearer_auth(token)
     }
-    let response = req.send().map_err(|_| "POS_NETWORK_UNAVAILABLE")?;
+    let response = req.send().map_err(classify_request_error)?;
     let status = response.status();
     let correlation = response
         .headers()
@@ -77,7 +77,6 @@ fn request(server: &str, path: &str, token: Option<&str>, body: Option<Value>) -
     if bytes.len() > 20 * 1024 * 1024 {
         return Err("POS_NETWORK_RESPONSE_TOO_LARGE".into());
     }
-    let value: Value = serde_json::from_slice(&bytes).map_err(|_| "POS_SERVER_RESPONSE_INVALID")?;
     if !status.is_success() {
         let code = if status.as_u16() == 401 {
             "POS_SIGN_IN_AGAIN"
@@ -92,8 +91,24 @@ fn request(server: &str, path: &str, token: Option<&str>, body: Option<Value>) -
         };
         return Err(format!("{code} · {correlation}"));
     }
-    Ok(value)
+    serde_json::from_slice(&bytes).map_err(|_| "POS_SERVER_RESPONSE_INVALID".into())
 }
+fn classify_request_error(error:reqwest::Error)->&'static str {
+    // A rejected TLS peer must not unlock cached offline authentication.
+    let mut source:Option<&(dyn std::error::Error+'static)>=Some(&error);
+    for _ in 0..8 {
+        let Some(current)=source else {break};
+        let message=current.to_string().to_ascii_lowercase();
+        if ["certificate","unknownissuer","tls","ssl","invalid peer"].iter().any(|part|message.contains(part)) {
+            return "POS_TLS_CONNECTION_FAILED";
+        }
+        source=current.source();
+    }
+    if error.is_timeout()||error.is_connect(){"POS_NETWORK_UNAVAILABLE"}else{"POS_NETWORK_REQUEST_FAILED"}
+}
+fn is_network_unavailable(error:&str)->bool{matches!(error,"POS_NETWORK_UNAVAILABLE"|"POS_NETWORK_RESPONSE_INTERRUPTED")}
+#[tauri::command]
+fn app_version(app:tauri::AppHandle)->String {app.package_info().version.to_string()}
 fn credential(db: &Store) -> Result<(String, String)> {
     let server = db.get("server").map_err(safe)?.ok_or("POS_CONNECT_FIRST")?;
     let raw = db
@@ -210,7 +225,7 @@ async fn synchronize(
                     s.signed_in = false;
                     s.is_locked = true;
                 } else {
-                    sec.lock().map_err(|_| "POS_SECURITY_BUSY")?.offline = true;
+                    sec.lock().map_err(|_| "POS_SECURITY_BUSY")?.offline = is_network_unavailable(&e);
                 }
                 return Err(e);
             }
@@ -241,6 +256,7 @@ async fn synchronize(
                 serde_json::from_value(raw.clone()).map_err(|_| "POS_SNAPSHOT_INVALID")?;
             auth::refresh_pin(&store, &raw)?;
             store.apply_snapshot(&snap, now()).map_err(safe)?;
+            store.reconcile_server_shift(&raw["active_shift"]).map_err(safe)?;
         }
         auth::visible(&sec, &store)
     })
@@ -376,7 +392,7 @@ fn main() {
             app.manage(Arc::new(Mutex::new(auth::Session::new(directory))));
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![
+        .invoke_handler(tauri::generate_handler![app_version,
             workspace,
             commit,
             synchronize,
@@ -398,4 +414,23 @@ fn main() {
         ])
         .run(tauri::generate_context!())
         .expect("oneQay POS startup failed");
+}
+
+#[cfg(test)]
+mod transport_tests {
+    use super::*;
+    #[test]
+    fn blocked_protocol_is_not_offline_authentication_authority() {
+        let error=reqwest::blocking::Client::builder().https_only(true).build().unwrap().get("http://127.0.0.1/").send().unwrap_err();
+        assert_eq!(classify_request_error(error),"POS_NETWORK_REQUEST_FAILED");
+        assert!(!is_network_unavailable("POS_NETWORK_REQUEST_FAILED"));
+        assert!(!is_network_unavailable("POS_TLS_CONNECTION_FAILED"));
+        assert!(!is_network_unavailable("POS_SIGN_IN_AGAIN · synthetic"));
+    }
+    #[test]
+    fn unreachable_transport_can_use_existing_offline_authority() {
+        let listener=std::net::TcpListener::bind("127.0.0.1:0").unwrap();let address=listener.local_addr().unwrap();drop(listener);
+        let error=reqwest::blocking::Client::builder().timeout(Duration::from_millis(500)).build().unwrap().get(format!("http://{address}/")).send().unwrap_err();
+        assert!(is_network_unavailable(classify_request_error(error)));
+    }
 }

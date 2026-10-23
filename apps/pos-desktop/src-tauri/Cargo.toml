@@ -1,6 +1,6 @@
 [package]
 name = "oneqay-pos-desktop"
-version = "0.2.2"
+version = "0.2.3"
 edition = "2021"
 license = "MIT"
 
@@ -23,3 +23,8 @@ hex = "0.4"
 tauri-plugin-single-instance = "2"
 tauri-plugin-updater = "2"
 semver = "1"
+
+[dev-dependencies]
+# Already present in the updater dependency graph; used to verify the published asset against the installed trust key.
+base64 = "=0.22.1"
+minisign-verify = "=0.3.0"

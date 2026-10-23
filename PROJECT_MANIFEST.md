@@ -134,3 +134,7 @@ Stage 2 authorized after cPanel login. Exact application source 7efdda7648c2; gu
 ## POS sync recovery and per-business data reset — 2026-10-22
 
 Owner-requested Windows queue recovery, item-level control-plane diagnostics and explicit per-business operational reset are implemented. Source/hosting/installed-Windows acceptance remain distinct. See [checkpoint](docs/operations/POS_SYNC_AND_BUSINESS_DATA_RESET_2026-10-22.md) for actual evidence, reset scope, private backup storage, and required additive deployment. Production data has not been reset.
+
+## 2026-10-23 — Cashier and onboarding source successor
+
+Owner-requested scoped implementation is on PR #984: account switching keeps isolated SQLite profiles; owner POS binds existing identity and MFA; normalized duplicate account email is rejected; activation navigates through canonical authentication; HTML/plain-text email; signed patch preparation preserves active shifts and pending receipts. No new schema, production reset or financial-history rewrite. Publication/deployment and installed-device acceptance remain separately evidenced. [Checkpoint](docs/operations/POS_ACCOUNT_FLOW_UPDATE_2026-10-23.md).

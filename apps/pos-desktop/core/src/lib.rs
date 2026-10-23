@@ -98,6 +98,7 @@ pub struct OperationView {
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Workspace {
+    pub shift_status: String,
     pub shift: Option<Value>,
     pub kitchen_printers: Value,
     pub kitchen_jobs: Vec<Value>,
@@ -327,6 +328,7 @@ impl Store {
             return Err(Error::Rule("POS_SIGN_IN_AGAIN"));
         }
         let s = self.snapshot()?.ok_or(Error::Rule("POS_CONNECT_FIRST"))?;
+        self.require_shift_ready()?;
         if kind == "count" && !s.can_count {
             return Err(Error::Rule("POS_INVENTORY_PERMISSION_REQUIRED"));
         }
@@ -532,6 +534,7 @@ impl Store {
             |r| r.get::<_, i64>(0),
         )?;
         Ok(Workspace {
+            shift_status: self.server_shift_status()?,
             shift: self.active_shift()?,
             kitchen_printers: self
                 .get("kitchen_printers")?

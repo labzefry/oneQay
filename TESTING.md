@@ -153,3 +153,9 @@ Acceptance criteria teruji, suites sesuai risk lulus, negative/abuse/boundary ca
 ## 2026-10-21 — Mail delivery, category creation and stock policy
 
 Stage 1 source changes: independent SMTP/NOC worker phases; live owner delivery reports and safe SMTP error guidance; automatic 72-hour email log retention protecting active queues/dedupe; tenant/outlet category creation; explicit tracked/unlimited stock through canonical sale/void, web and offline desktop 0.2.1. Two additive module migrations require a separately qualified deployment. Hosting remains c2e (PR #974); deployment is deferred per Product Owner. [Implementation, schema, compatibility and validation](docs/implementation/MAIL_CATALOG_STOCK_20261021.md). Author by Lab | zefry.
+
+## 2026-10-23 — Account flow and signed patch regression
+
+Run `php apps/web/tests/simplified-pos-onboarding.php` on a disposable SQLite database, and `PLATFORM_TEST_ENGINE=mysql` for the CI disposable MySQL fixture. Covers normalized duplicate owner/cashier emails, same-identity owner POS enablement, unchanged credentials, required TOTP, activation JSON/HTML navigation and hostile email-content escaping. No external SMTP sends or production mutation.
+
+Run `cargo test --manifest-path apps/pos-desktop/core/Cargo.toml --locked` for per-profile queue isolation, remote-shift guards and readable update backups of unfinished cash. `node apps/pos-desktop/tests/ui.cjs` checks login, shift, PIN, printers, update access, language and minimum viewport. CI Windows native compilation is separately required. Signed publication explicitly runs `updates::release_tests::verifies_release_signature_against_installed_public_key` against the built asset; ordinary CI cannot claim that ignored, asset-dependent test as passed.

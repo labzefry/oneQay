@@ -131,3 +131,9 @@ Supported upgrade paths, skipped versions, incompatible runtime/database, corrup
 ## Definition of Done
 
 Release manifest valid, signature trusted, all supported paths diuji, backup/restore dan recovery direhearsal, shared runtime environment binding terbukti sebelum activation, monitoring/kill switch tersedia, documentation/changelog lengkap, dan update report auditable.
+
+## 2026-10-23 — Windows 0.2.3 patch recovery successor
+
+The signed Windows channel remains fixed to the configured GitHub release endpoint and embedded trust key. Login-screen checks avoid an authentication/update circular dependency in the successor. Official installation pauses mutations and creates consistent integrity-checked backups of every local cashier SQLite profile, including active shifts and pending/review receipts. Pending sync is no longer a blocker to installing its repair. In-flight printing still blocks backup, and drafts must be completed before installation.
+
+Publication runs only from a stable semantic version already merged to main, creates an immutable version tag and verifies the installer signature against the exact public key embedded in installed clients before publishing the mutable stable manifest. The original signing secret is mandatory; absence or mismatch leaves the channel untouched. No replacement key or unsigned fallback. UI progress reflects actual download bytes and native verification/backup/install stages and terminates on failure. An installed predecessor may still restrict its own update UI: successful installed-device upgrade is not inferred from this source.

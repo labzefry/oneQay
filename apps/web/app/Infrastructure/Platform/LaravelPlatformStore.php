@@ -25,7 +25,7 @@ final readonly class LaravelPlatformStore implements PlatformStore
             return $result;
         });
     }
-    public function create(array $business): array { $this->db->table('oneqay_platform_businesses')->insert($business); return $business; }
+    public function create(array $business): array { (new \App\Infrastructure\Identity\LaravelAccountEmailRegistry($this->db))->requireUnused($business['email']); $business['email']=strtolower(trim($business['email'])); $this->db->table('oneqay_platform_businesses')->insert($business); return $business; }
     public function business(string $id, bool $lock = false): array
     {
         $query = $this->db->table('oneqay_platform_businesses')->where('id',$id);
