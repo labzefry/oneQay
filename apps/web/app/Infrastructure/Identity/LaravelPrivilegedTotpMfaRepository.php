@@ -38,6 +38,7 @@ final readonly class LaravelPrivilegedTotpMfaRepository implements PrivilegedTot
         try {
             $tenant = $tenantId->value();
             $identity = $identityId->value();
+            if (BusinessOwnerSecurityPolicy::disabled($this->connection,$tenant,$identity)) return false;
 
             if (! $this->canonicalProtectedRoleState($tenant)) {
                 return false;

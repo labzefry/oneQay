@@ -13,6 +13,8 @@ final class HandleInertiaRequests extends Middleware
     {
         return [
             ...parent::share($request),
+            'branding'=>static function(){ $db=app('db')->connection();if(!config('database.oneqay_persistence_enabled')||!$db->getSchemaBuilder()->hasTable('oneqay_platform_branding'))return null;$id=$db->table('oneqay_platform_branding')->where('id',1)->value('media_id');return $id?['logo'=>'/site/media/'.$id]:null; },
+            'business_profile'=>static function()use($request){$tenant=$request->session()->get(\App\Delivery\Http\Identity\FirstPartySessionKeys::TENANT);return is_string($tenant)?app(\App\Infrastructure\BusinessExperience\LaravelBusinessDomains::class)->profile($tenant):null;},
             'application' => [
                 'name' => 'oneQay',
                 'milestone' => 'M7.1',

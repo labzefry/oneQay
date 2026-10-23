@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-export default defineConfig({ plugins: [vue()], clearScreen: false, server: { port: 1420, strictPort: true }, build: { target: 'es2021' } })
+export default defineConfig({ resolve: {alias: {vue: fileURLToPath(new URL('./node_modules/vue/dist/vue.runtime.esm-bundler.js',import.meta.url))}}, plugins: [vue()], clearScreen: false, server: { port: 1420, strictPort: true }, build: { target: 'es2021' } })

@@ -66,6 +66,7 @@ final readonly class LaravelDesktopPosService
  public function scope():array {$c=$this->context();return ['tenant_id'=>$c->tenantId()->value(),'identity_id'=>$c->identityId()->value(),'organization_id'=>$c->organizationId()->value(),'outlet_id'=>$c->outletId()?->value(),'device_id'=>$c->deviceId()?->value()];}
  public function scopeHash():string{return hash('sha256',json_encode($this->scope(),JSON_THROW_ON_ERROR));}
  private function catalog():array {
+  if($this->db->getSchemaBuilder()->hasTable('oneqay_business_profiles'))abort_if(in_array($this->db->table('oneqay_business_profiles')->where('tenant_id',$this->scope()['tenant_id'])->value('business_type'),['laundry','boarding','homestay'],true),403,'BUSINESS_WORKFLOW_MISMATCH');
   $s=$this->scope();$rows=$this->db->table('oneqay_pos_sale_catalog_items')->where('tenant_id',$s['tenant_id'])->where('outlet_id',$s['outlet_id'])->where('active',true)->orderBy('product_id')->limit(20001)->get();
   abort_if(count($rows)>20000,422,'Catalog requires a narrower outlet scope.');$profiles=[];
   if($this->db->getSchemaBuilder()->hasTable('oneqay_business_product_profiles'))$profiles=$this->db->table('oneqay_business_product_profiles')->where('tenant_id',$s['tenant_id'])->where('outlet_id',$s['outlet_id'])->get()->keyBy('product_id')->all();
@@ -73,6 +74,11 @@ final readonly class LaravelDesktopPosService
  }
  public function snapshot(bool $enterprise=false):array {
   $this->authorization->require($this->context(),PosPermission::completeSale());$s=$this->scope();
+  if($enterprise&&$this->db->getSchemaBuilder()->hasTable('oneqay_business_profiles')){$p=app(\App\Infrastructure\BusinessExperience\LaravelBusinessDomains::class)->profile($s['tenant_id']);if($p&&in_array($p['business_type'],\App\Application\BusinessExperience\ServiceWorkflow::MODULES,true)){
+   $workspace=app(\App\Infrastructure\BusinessExperience\LaravelServicePos::class)->read();$now=time();$id=bin2hex(random_bytes(16));$native=app(LaravelDesktopBusinessSettings::class)->native($this->context());$native['settings']['business_type']=$p['business_type'];$native['settings']['workflow_snapshot']=$workspace;
+   $this->db->table('oneqay_desktop_leases')->insert(['id'=>$id,'scope_hash'=>$this->scopeHash(),'tenant_id'=>$s['tenant_id'],'shift_id'=>'service-v1','catalog_revision'=>hash('sha256',$p['business_type']),'snapshot'=>json_encode(['business_type'=>$p['business_type'],'scope'=>$s],JSON_THROW_ON_ERROR),'issued_at'=>$now,'expires_at'=>$now+28800]);
+   return $native+['protocol'=>2,'lease_id'=>$id,'scope'=>$s,'shift_id'=>'','issued_at'=>$now,'expires_at'=>$now+28800,'catalog'=>[],'catalog_revision'=>hash('sha256',$p['business_type']),'server_time'=>$now,'business_name'=>$p['name'],'currency_symbol'=>$workspace['symbol'],'can_count'=>false,'active_shift'=>null];
+  }}
   $shift=$this->db->table('oneqay_pos_shifts')->where('tenant_id',$s['tenant_id'])->where('organization_id',$s['organization_id'])->where('outlet_id',$s['outlet_id'])->where('device_id',$s['device_id'])->where('active_slot',1)->first();
   abort_unless($enterprise||$shift,409,'Open the cashier shift online before connecting.');
   $leaseShift=$enterprise?'enterprise-v2':$shift->shift_id;
@@ -91,6 +97,7 @@ final readonly class LaravelDesktopPosService
   return $snapshot;
  }
  public function sync(array $operations,string $correlation):array {
+  if($this->db->getSchemaBuilder()->hasTable('oneqay_business_profiles'))abort_if(in_array($this->db->table('oneqay_business_profiles')->where('tenant_id',$this->scope()['tenant_id'])->value('business_type'),['laundry','boarding','homestay'],true),403,'BUSINESS_WORKFLOW_MISMATCH');
   if(!array_is_list($operations)||count($operations)>50)abort(422);
   $results=[];foreach($operations as$operation){
    try{$results[]=$this->accept($operation,$correlation);}

@@ -6,6 +6,7 @@ return [
     'owner_identity' => env('ONEQAY_PLATFORM_OWNER_IDENTITY', ''),
     // Shared private storage survives release archiving; never place reset backups in public/build.
     'reset_backup_path' => env('ONEQAY_BUSINESS_RESET_BACKUP_PATH', dirname((string) env('SESSION_FILES', storage_path('framework/sessions'))).'/business-reset-backups'),
+    'business_domains_enabled' => (bool) env('ONEQAY_BUSINESS_DOMAINS_ENABLED', false),
     'public_url' => env('APP_URL', ''),
     'bounce_address' => env('ONEQAY_MAIL_BOUNCE_ADDRESS', ''),
     'feedback_secret' => env('ONEQAY_MAIL_FEEDBACK_SECRET', ''),

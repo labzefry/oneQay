@@ -37,6 +37,9 @@ final class PosOperationsHubController
         $correlationId = (string) $request->attributes->get('oneqay.correlation_id', 'correlation-missing');
 
         try {
+            $context=app(\App\Application\Organization\OrganizationalContextStore::class)->current();
+            $profile=$context?app(\App\Infrastructure\BusinessExperience\LaravelBusinessDomains::class)->profile($context->tenantId()->value()):null;
+            if($profile&&in_array($profile['business_type'],\App\Application\BusinessExperience\ServiceWorkflow::MODULES,true))return Inertia::render('Business/ServicePos',['initial'=>app(\App\Infrastructure\BusinessExperience\LaravelServicePos::class)->read(),'destinations'=>array_values(array_filter(app(\App\Application\Business\BusinessAccess::class)->modules(),fn($m)=>in_array($m['key'],['business_settings','business_people','business_access','business_desktop'],true)))]);
             $snapshot = $this->hub->view();
             $destinations = $this->destinations($snapshot);
 
