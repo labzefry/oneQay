@@ -1,0 +1,34 @@
+# Author by Lab | zefry
+name: cPanel account flow source-only successor
+on:
+  pull_request:
+    paths: ['tools/production/cpanel/update-oneqaydev-account-flow.php', 'tools/production/package-oneqaydev-account-flow.py', 'tools/production/tests/oneqaydev-account-flow-operator.php', '.github/workflows/cpanel-account-flow-update.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  qualify-account-flow-operator:
+    runs-on: ubuntu-24.04
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: synthetic-test-only
+          MYSQL_DATABASE: oneqay_platform_test
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -psynthetic-test-only"
+          --health-interval=10s --health-timeout=5s --health-retries=10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        with:
+          php-version: '8.3'
+          extensions: pdo_sqlite, pdo_mysql, mbstring, zip
+          coverage: none
+      - run: composer install --working-dir=apps/web --no-interaction --prefer-dist
+      - run: php -l tools/production/cpanel/update-oneqaydev-account-flow.php
+      - run: python -m py_compile tools/production/package-oneqaydev-account-flow.py
+      - run: php tools/production/tests/oneqaydev-account-flow-operator.php
+      - run: mysql --host=127.0.0.1 --user=root --password=synthetic-test-only -e 'CREATE DATABASE oneqay_operator_test;'
+      - run: PLATFORM_TEST_ENGINE=mysql php tools/production/tests/oneqaydev-account-flow-operator.php
