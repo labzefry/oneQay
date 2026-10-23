@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import{ref,computed}from'vue';import{usePage}from'@inertiajs/vue3';const page=usePage();const ownerSecurity=computed(()=>!!(page.props.business_profile as any)?.can_manage_security);import{locale}from'../i18n';import WorkspaceIcon from'./WorkspaceIcon.vue';
+import{ref,computed}from'vue';import{usePage}from'@inertiajs/vue3';const page=usePage();const ownerSecurity=computed(()=>!!page.props.can_manage_business_security);import{locale}from'../i18n';import WorkspaceIcon from'./WorkspaceIcon.vue';
 const busy=ref(false),error=ref('');const tr=(a:string,b:string)=>locale.value==='id'?a:b;
 async function leave(){if(busy.value)return;if(document.querySelector('[data-leave-confirmation="true"]')&&!confirm(tr('Ada transaksi yang belum selesai. Tetap keluar?','There is an unfinished sale. Sign out?')))return;busy.value=true;error.value='';try{const r=await fetch('/auth/logout',{method:'POST',credentials:'same-origin',headers:{Accept:'application/json','X-CSRF-TOKEN':document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content??''},signal:AbortSignal.timeout(15000)});if(!r.ok&&r.status!==401)throw Error();location.replace('/business-login');}catch{error.value=tr('Belum berhasil keluar. Coba lagi.','Sign out failed. Try again.');}finally{busy.value=false;}}
 </script>
