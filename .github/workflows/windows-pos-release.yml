@@ -32,7 +32,7 @@ jobs:
             echo 'SIGNING_KEY_CONFIGURED=true'
           else
             echo 'SIGNING_KEY_CONFIGURED=false'
-            echo '::notice::Compatible in-app publication requires the original signing key in GitHub Actions secrets. No unsigned fallback is permitted.'
+            echo '::notice::Compatible in-app publication requires the matching signing key in GitHub Actions secrets. No unsigned fallback is permitted.'
           fi
   release:
     if: github.event_name != 'pull_request'
@@ -60,7 +60,7 @@ jobs:
           git fetch origin main
           git merge-base --is-ancestor HEAD origin/main
           if ($LASTEXITCODE -ne 0) { throw 'Release source must already be merged into main' }
-          if ([string]::IsNullOrWhiteSpace($env:SIGNING_KEY)) { throw 'Configure the original TAURI_SIGNING_PRIVATE_KEY in GitHub Actions secrets. No unsigned update will be published.' }
+          if ([string]::IsNullOrWhiteSpace($env:SIGNING_KEY)) { throw 'Configure the configured TAURI_SIGNING_PRIVATE_KEY in GitHub Actions secrets. No unsigned update will be published.' }
           "RELEASE_TAG=$tag" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
         with:
@@ -105,14 +105,14 @@ jobs:
           }
           gh release view $env:RELEASE_TAG --repo labzefry/oneQay *> $null
           if ($LASTEXITCODE -eq 0) { throw 'Immutable version already published. Use a new version.' }
-          gh release create $env:RELEASE_TAG $exe.FullName ($exe.FullName + '.sig') SHA256SUMS.txt --repo labzefry/oneQay --verify-tag --title "oneQay POS $version" --notes 'Signed stable Windows POS update. Local accounts, active shifts and pending receipts are backed up before installation. Sign in again to resume.' --latest=false
+          gh release create $env:RELEASE_TAG $exe.FullName ($exe.FullName + '.sig') SHA256SUMS.txt --repo labzefry/oneQay --verify-tag --title "oneQay POS $version" --notes 'Windows POS 0.2.4 recovery trust generation. Older installations require one manual upgrade after backing up local data; install for the whole computer in Program Files. Future updates use stable-v2. Keep the same Windows user and do not delete application data.' --latest=false
           if ($LASTEXITCODE -ne 0) { throw 'Version publication failed; stable channel untouched' }
           $url = 'https://github.com/labzefry/oneQay/releases/download/' + $env:RELEASE_TAG + '/' + [Uri]::EscapeDataString($exe.Name)
           @{version=$version;notes="oneQay POS $version";pub_date=(Get-Date).ToUniversalTime().ToString('o');platforms=@{'windows-x86_64'=@{signature=$signature;url=$url}}} | ConvertTo-Json -Depth 6 | Set-Content latest.json
-          gh release view pos-windows-stable --repo labzefry/oneQay *> $null
+          gh release view pos-windows-stable-v2 --repo labzefry/oneQay *> $null
           if ($LASTEXITCODE -ne 0) {
-            gh release create pos-windows-stable --repo labzefry/oneQay --target (git rev-parse HEAD) --title 'oneQay POS stable update channel' --notes 'Only the signed update manifest is mutable. Versioned installers remain immutable.' --latest=false
+            gh release create pos-windows-stable-v2 --repo labzefry/oneQay --target (git rev-parse HEAD) --title 'oneQay POS stable update channel' --notes 'Only the signed update manifest is mutable. Versioned installers remain immutable.' --latest=false
             if ($LASTEXITCODE -ne 0) { throw 'Stable channel creation failed' }
           }
-          gh release upload pos-windows-stable latest.json --clobber --repo labzefry/oneQay
+          gh release upload pos-windows-stable-v2 latest.json --clobber --repo labzefry/oneQay
           if ($LASTEXITCODE -ne 0) { throw 'Stable manifest publication failed' }

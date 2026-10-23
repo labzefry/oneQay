@@ -148,6 +148,6 @@ mod release_tests {
         let key=String::from_utf8(STANDARD.decode(config["plugins"]["updater"]["pubkey"].as_str().unwrap()).unwrap()).unwrap();
         let key=minisign_verify::PublicKey::from_base64(key.lines().nth(1).expect("Minisign public key")).unwrap();
         let signature=minisign_verify::Signature::decode(&signature).expect("Minisign signature");
-        key.verify(&bytes,&signature,true).expect("Signing key must match the public key already embedded in installed POS applications");
+        key.verify(&bytes,&signature,true).expect("Signing key must match the public key embedded in this release generation");
     }
 }

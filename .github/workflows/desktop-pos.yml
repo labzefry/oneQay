@@ -33,6 +33,9 @@ jobs:
       - run: python scripts/generate-icon.py
       - run: npm run tauri -- build --ci --target x86_64-pc-windows-msvc -- --locked
       - run: cargo test --release --locked --target x86_64-pc-windows-msvc --manifest-path src-tauri/Cargo.toml
+      - name: Verify recovery backup and signing setup scripts
+        shell: pwsh
+        run: ./scripts/test-recovery-backup.ps1
       - name: Installer checksums
         shell: pwsh
         run: |
