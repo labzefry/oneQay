@@ -42,7 +42,8 @@
     ".github/workflows/sprint31-privileged-reauthentication-step-up-regression.yml",
     ".github/workflows/sprint32-authentication-recovery-proof-regression.yml",
     ".github/workflows/sprint33-recovery-bound-password-reset-regression.yml",
-    ".github/workflows/sprint34-authenticated-password-change-regression.yml"
+    ".github/workflows/sprint34-authenticated-password-change-regression.yml",
+    ".github/workflows/sprint96-final-shift-close-runtime-wiring.yml"
   ],
   "paths": [
     ".github/workflows/desktop-pos.yml",
@@ -87,6 +88,7 @@
     ".github/workflows/sprint32-authentication-recovery-proof-regression.yml",
     ".github/workflows/sprint33-recovery-bound-password-reset-regression.yml",
     ".github/workflows/sprint34-authenticated-password-change-regression.yml",
+    ".github/workflows/sprint96-final-shift-close-runtime-wiring.yml",
     "apps/pos-desktop/core/Cargo.lock",
     "apps/pos-desktop/core/Cargo.toml",
     "apps/pos-desktop/core/src/lib.rs",
@@ -99,6 +101,7 @@
     "apps/pos-desktop/src-tauri/src/service_pos.rs",
     "apps/pos-desktop/src-tauri/tauri.conf.json",
     "apps/pos-desktop/src/App.vue",
+    "apps/pos-desktop/src/icons/collection.json",
     "apps/pos-desktop/src/style.css",
     "apps/pos-desktop/src/types.ts",
     "apps/pos-desktop/tests/service-ui.cjs",
@@ -123,6 +126,7 @@
     "apps/web/app/Infrastructure/Identity/BusinessOwnerSecurityPolicy.php",
     "apps/web/app/Infrastructure/Identity/LaravelBusinessOwnerSecurity.php",
     "apps/web/app/Infrastructure/Identity/LaravelPrivilegedTotpMfaRepository.php",
+    "apps/web/app/Infrastructure/Platform/ControlPlaneBusinessReset.php",
     "apps/web/app/Infrastructure/Pos/LaravelDesktopOperations.php",
     "apps/web/app/Infrastructure/Pos/LaravelDesktopPosService.php",
     "apps/web/app/Infrastructure/Website/LaravelWebsiteStore.php",
@@ -132,13 +136,14 @@
     "apps/web/config/platform.php",
     "apps/web/database/module-migrations/business/2026_10_23_000002_create_isolated_service_pos.php",
     "apps/web/database/module-migrations/platform/2026_10_23_000001_create_business_experience.php",
+    "apps/web/resources/css/app.css",
     "apps/web/resources/js/components/BrandingPanel.vue",
     "apps/web/resources/js/components/BusinessAccountMenu.vue",
     "apps/web/resources/js/components/BusinessDomainPanel.vue",
     "apps/web/resources/js/components/ControlOperations.vue",
-    "apps/web/resources/js/components/ServicePosWorkspace.vue",
     "apps/web/resources/js/components/website/SiteFooter.vue",
     "apps/web/resources/js/components/website/SiteHeader.vue",
+    "apps/web/resources/js/icons/workspace-icons.json",
     "apps/web/resources/js/layouts/LocalizedShell.vue",
     "apps/web/resources/js/layouts/MerchantShell.vue",
     "apps/web/resources/js/pages/Business/OwnerSecurity.vue",
@@ -156,6 +161,7 @@
     "packages/service-pos-ui/ServiceIcon.vue",
     "packages/service-pos-ui/ServicePosWorkspace.vue",
     "packages/service-pos-ui/icons.json",
-    "tools/qa-business-experience-source-envelope.sh"
+    "tools/qa-business-experience-source-envelope.sh",
+    "tools/qa-website-ui.mjs"
   ]
 }

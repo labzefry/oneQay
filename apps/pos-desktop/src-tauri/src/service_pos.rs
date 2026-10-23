@@ -28,6 +28,11 @@ fn write(store: &Store, events: &[Value]) -> Result<()> {
         )
         .map_err(safe)
 }
+fn checked_request(store:&Store,sec:&auth::Security,path:&str,token:&str,body:Option<Value>)->Result<Value>{
+ let result=request(auth::SERVER,path,Some(token),body);
+ if let Err(ref e)=result{if e.starts_with("POS_SIGN_IN_AGAIN")||e.starts_with("POS_PERMISSION_DENIED"){store.set("authority_state","blocked").map_err(safe)?;let mut security=sec.lock().map_err(|_|"POS_SECURITY_BUSY")?;security.signed_in=false;security.is_locked=true;}}
+ result
+}
 fn flush(store: &Store, sec: &auth::Security) -> Result<()> {
     let (_, token) = credential(store)?;
     let mut events = queue(store)?;
@@ -38,10 +43,10 @@ fn flush(store: &Store, sec: &auth::Security) -> Result<()> {
         if events[n]["state"] != "pending" {
             continue;
         }
-        let response = request(
-            auth::SERVER,
+        let response = checked_request(
+            store,sec,
             "v3/service",
-            Some(&token),
+            &token,
             Some(events[n]["request"].clone()),
         );
         match response {
@@ -74,6 +79,7 @@ fn flush(store: &Store, sec: &auth::Security) -> Result<()> {
             }
         }
     }
+    if events.len()>400 {let from=events.len().saturating_sub(200);events=events.into_iter().enumerate().filter(|(i,e)|*i>=from||matches!(e["state"].as_str(),Some("pending"|"review"))).map(|(_,e)|e).collect();write(store,&events)?;}
     Ok(())
 }
 fn workspace(store: &Store) -> Result<Value> {
@@ -122,9 +128,11 @@ fn workspace(store: &Store) -> Result<Value> {
 }
 #[tauri::command]
 pub async fn service_workspace(
+    page:Option<u32>,
     state: State<'_, Shared>,
     security: State<'_, auth::Security>,
 ) -> Result<Value> {
+    let page=page.unwrap_or(1);if page==0||page>100000{return Err("POS_PAGE_INVALID".into())}
     let db = state.inner().clone();
     let sec = security.inner().clone();
     background(move || {
@@ -141,7 +149,7 @@ pub async fn service_workspace(
             Err(e) => return Err(e),
         }
         let (_, token) = credential(&store)?;
-        match request(auth::SERVER, "v3/service", Some(&token), None) {
+        match checked_request(&store,&sec, &format!("v3/service?page={page}"), &token, None) {
             Ok(v) => {
                 store
                     .set("service_workspace", &v.to_string())
@@ -200,10 +208,10 @@ pub async fn service_reconcile(
             })
             .ok_or("POS_SERVICE_OPERATION_NOT_FOUND")?;
         let (_, token) = credential(&store)?;
-        let result = request(
-            auth::SERVER,
+        let result = checked_request(
+            &store,&sec,
             "v3/service/reconcile",
-            Some(&token),
+            &token,
             Some(events[index]["request"]["command"].clone()),
         )?;
         events[index]["state"] = json!(if result["record"]["rejected"] == true {

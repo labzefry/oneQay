@@ -11,11 +11,21 @@ manifest=json.loads(git('show',head+':docs/business-experience-source-manifest.j
 changed=set(git('diff','--name-only',base,head).decode().splitlines())
 assert changed==set(manifest['paths']),'Unexpected or missing paths: '+repr(changed^set(manifest['paths']))
 assert not git('diff','--diff-filter=D','--name-only',base,head),'Deletions denied'
-assert not git('diff','--name-only',base,head,'--','src','ops','apps/web/database/migrations','apps/web/composer.json','apps/web/composer.lock','apps/web/package.json','apps/web/package-lock.json','apps/web/app/Domain','apps/web/app/Application/Identity','apps/web/app/Delivery/Http/Identity','apps/web/app/Infrastructure/Runtime','apps/web/config/oneqay.php','apps/web/app/Providers/AppServiceProvider.php'),'Canonical foundations, dependencies or runtime changed'
+assert not git('diff','--name-only',base,head,'--','src','ops','apps/web/database/migrations','apps/web/composer.json','apps/web/composer.lock','apps/web/package.json','apps/web/package-lock.json','apps/web/app/Domain','apps/web/app/Application/Identity','apps/web/app/Delivery/Http/Identity','apps/web/app/Infrastructure/Runtime','apps/web/config/oneqay.php','apps/web/app/Providers/AppServiceProvider.php','apps/web/app/Providers/FinalShiftCloseServiceProvider.php','apps/web/routes/pos-final-shift-close.php'),'Canonical foundations, dependencies or runtime changed'
 hook='          if [[ "${{ github.head_ref }}" == \'feat/business-workspaces-20261023\' && "${{ github.event.pull_request.base.sha }}" == \'90a9b298c3b44a4cfa7700a23fc78d1eec0655b2\' && "${{ github.event.pull_request.number }}" == \'987\' && "${{ github.event.pull_request.head.repo.full_name }}" == \'labzefry/oneQay\' ]]; then\n            bash tools/qa-business-experience-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" || exit 1\n            exit 0\n          fi\n'
 for path in manifest['historical_workflows']:
  before=git('show',base+':'+path).decode();after=git('show',head+':'+path).decode()
  assert hook in after and after.replace(hook,'')==before,'Historical executable steps changed: '+path
+
+for path, additions in {
+ 'apps/web/bootstrap/providers.php':['    App\\Providers\\BusinessExperienceServiceProvider::class,\n'],
+ 'apps/web/bootstrap/app.php':['            \\App\\Delivery\\Http\\Middleware\\BusinessHostMiddleware::class,\n','            \\App\\Delivery\\Http\\Middleware\\BusinessWorkflowMiddleware::class,\n'],
+}.items():
+ before=git('show',base+':'+path).decode();after=git('show',head+':'+path).decode()
+ for addition in additions:
+  assert after.count(addition)==1,'Additive runtime hook missing or duplicated'
+  after=after.replace(addition,'')
+ assert after==before,'Existing runtime provider/middleware registration changed'
 p='apps/pos-desktop/src-tauri/tauri.conf.json'
 before=json.loads(git('show',base+':'+p));after=json.loads(git('show',head+':'+p))
 assert before['plugins']['updater']==after['plugins']['updater'],'Updater trust or endpoint changed'

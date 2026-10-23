@@ -32,7 +32,7 @@ const total = computed(()=>cartLines.value.reduce((sum,l)=>sum+l.product.price*l
 const quantity = computed(()=>cart.value.reduce((sum,l)=>sum+l.quantity,0))
 async function reconcileService(id:string){const result=await invoke<any>('service_reconcile',{operationId:id});if(result.workspace)result.workspace.can_configure=false;return result;}
 const isService=computed(()=>['laundry','boarding','homestay'].includes(view.value.snapshot?.settings.business_type??''));
-async function loadService(){const data=await invoke<any>('service_workspace');data.can_configure=false;return data;}
+async function loadService(page=1){const data=await invoke<any>('service_workspace',{page});data.can_configure=false;return data;}
 async function sendService(input:Record<string,unknown>){const data=await invoke<any>('service_command',{input});if(data.workspace)data.workspace.can_configure=false;return data;}
 const shiftReady=computed(()=>!view.value.shift_status||view.value.shift_status==='ready')
 const leaseExpired = computed(()=>!view.value.authorized||!view.value.snapshot||now.value>leaseDeadline.value)

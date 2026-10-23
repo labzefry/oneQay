@@ -17,6 +17,10 @@ try{$domains->hostBusiness('absent.oneqay.example.test');$assert(false,'unknown 
 $contexts->setVerified($businessOwner);$pos=$app->make(LaravelServicePos::class);
 foreach(['laundry','boarding','homestay']as$type){
  $db->table('oneqay_business_profiles')->where('business_id',$b['id'])->update(['business_type'=>$type]);
+ $desktop=$app->make(App\Infrastructure\Pos\LaravelDesktopPosService::class);$desktop->authenticate($connectedOwner['token']);$nativeSnapshot=$desktop->snapshot(true);
+ $assert($nativeSnapshot['catalog']===[]&&$nativeSnapshot['settings']['business_type']===$type&&$nativeSnapshot['settings']['workflow_snapshot']['type']===$type,'one Windows snapshot selects authenticated industry without retail catalog');
+ try{$desktop->sync([],'synthetic-service-legacy-denied');$assert(false,'service can use generic retail sync');}catch(Symfony\Component\HttpKernel\Exception\HttpException $e){$assert($e->getStatusCode()===403,'retail synchronization rejects service business');}
+ $desktop->clear();$contexts->setVerified($businessOwner);
  $run=fn($action,$fields=[])=>$pos->command(['action'=>$action,'operation_id'=>'service-test-'.bin2hex(random_bytes(12))]+$fields);
  $resource=$run('resource.save',['id'=>'','version'=>0,'name'=>'Unit '.$type,'unit'=>$type==='laundry'?'kg':($type==='boarding'?'month':'night'),'rate_atomic'=>10000,'currency'=>'IDR','scale'=>0,'enabled'=>true]);
  $start=gmdate('Y-m-d');$end=gmdate('Y-m-d',time()+86400*3);
@@ -24,12 +28,16 @@ foreach(['laundry','boarding','homestay']as$type){
  $order=$pos->command($input);$assert($pos->command($input)===$order,'order replay does not duplicate');$expected=$type==='laundry'?12500:($type==='homestay'?30000:10000);$assert($order['total_atomic']===$expected,'vertical pricing uses its own rule');
  $workspace=$pos->read();$assert(count($workspace['resources'])===1&&count($workspace['orders'])===1&&$workspace['type']===$type,'vertical data isolated');
  if($type!=='laundry'){try{$run('order.create',array_diff_key($input,array_flip(['action','operation_id'])));$assert(false,'overlap allowed');}catch(PlatformViolation $e){$assert($e->reason==='ROOM_ALREADY_RESERVED','room overlap denied');}}
+ $db->table('oneqay_'.$type.'_orders')->where('id',$order['id'])->update(['outlet_id'=>'different-outlet']);$scoped=$pos->read();$assert($scoped['orders']===[]&&$scoped['invoices']===[],'cross-outlet orders and invoices are excluded');$db->table('oneqay_'.$type.'_orders')->where('id',$order['id'])->update(['outlet_id'=>$businessOwner->outletId()->value()]);
  $invoice=$workspace['invoices'][0];try{$run('payment.record',['invoice_id'=>$invoice['id'],'amount_atomic'=>$expected]);$assert(false,'payment before open');}catch(PlatformViolation $e){$assert($e->reason==='OWN_SHIFT_REQUIRED','own open register required');}
  $run('shift.open',['opening_atomic'=>5000]);
+ $reset=$app->make(App\Infrastructure\Platform\ControlPlaneBusinessReset::class);$plan=$reset->preview($b,'transactions');$assert(in_array('RESET_CLOSE_OR_RECOVER_ACTIVE_SHIFTS',$plan['blocked'],true),'reset blocks active industry register');$assert(in_array('oneqay_'.$type.'_orders',array_column($plan['entries'],'table'),true),'reset preview includes industry-owned transaction records');
+ $productPlan=$reset->preview($b,'products');$assert(in_array('RESET_TRANSACTIONS_DEPEND_ON_SERVICE_RESOURCES',$productPlan['blocked'],true),'resource-only reset cannot orphan industry orders');
  try{$run('payment.record',['invoice_id'=>$invoice['id'],'amount_atomic'=>$expected+1]);$assert(false,'overpayment accepted');}catch(PlatformViolation $e){$assert($e->reason==='PAYMENT_EXCEEDS_BALANCE','overpayment blocked');}
  $payment=['action'=>'payment.record','operation_id'=>'stable-payment-'.$type,'invoice_id'=>$invoice['id'],'amount_atomic'=>$expected];$paid=$pos->command($payment);$assert($pos->command($payment)===$paid,'payment replay has one ledger effect');
  $version=1;foreach($type==='laundry'?['washing','drying','ironing','ready','collected']:['checked_in','checked_out']as$status){$run('order.transition',['id'=>$order['id'],'version'=>$version++,'status'=>$status]);}
  $close=$run('shift.close',['closing_atomic'=>5000+$expected]);$assert($close['variance_atomic']===0&&$close['received_atomic']===$expected,'isolated close report reconciles');
+ $edited=$run('resource.save',['id'=>$resource['id'],'version'=>1,'name'=>'Updated '.$type,'unit'=>$type==='laundry'?'kg':($type==='boarding'?'month':'night'),'rate_atomic'=>12000,'currency'=>'IDR','scale'=>0,'enabled'=>false]);$assert($edited['version']===2&&$pos->read()['orders'][0]['total_atomic']===$expected,'resource edits preserve historical prices');
  try{$run('order.transition',['id'=>$order['id'],'version'=>$version,'status'=>$type==='laundry'?'washing':'checked_in']);$assert(false,'closed state reopened');}catch(PlatformViolation){$assert(true,'terminal state cannot reopen');}
 }
 $assert($db->table('oneqay_laundry_payments')->count()===1&&$db->table('oneqay_boarding_payments')->count()===1&&$db->table('oneqay_homestay_payments')->count()===1,'payment ledgers are physically separate');

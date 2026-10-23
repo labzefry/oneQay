@@ -11,7 +11,7 @@ Status: implementation branch, NOT production certified or deployed. Base main: 
 - Platform reviewed raster logo upload/versioning, shared branding; account logout/switch; bilingual industry homepage defaults.
 
 ## Validation so far
-- PHP business-experience.php: 170 assertions, includes the 108 existing simplified onboarding assertions.
+- PHP business-experience.php: 191 assertions, includes the 108 existing simplified onboarding assertions.
 - Web and Windows Vue type checks and production frontend builds passed.
 - Rust POS core 25 tests passed. Native Windows compilation and installed-device acceptance still required.
 
@@ -29,3 +29,10 @@ Only #1B1B39, #3965FA, #99B7FC, #E9EBFF, #FFFFFF, #EDEDED, #202020 and alpha var
 
 ## Continuation
 Work in this branch; inspect this checkpoint and git status before repeating work. Add meaningful validation results here. Do not merge or publish candidate 0.2.5 until CI and blocking queue/security issues are resolved. Never reset existing business data during upgrade.
+
+## Environment interruption and recovery
+The execution workspace and Cloud Browser became unavailable on 2026-10-23. Production was NOT changed. Last remote head before recovery: 67c64e9529c92f37d5aba16e792ea5625ef5dd43. Local 191 SQL assertions, web/desktop type checks, palette guard and three-industry UI passed before interruption. Final corrections were reconstructed from the tool-call record and persisted through GitHub; the recovered commit MUST pass CI again before merge or deployment.
+
+Corrections: short explicit MySQL index names; mobile logo form wrapping (Control Plane browser suite passed locally); subdomain registration fixture checks three suggestions and selected business type; Iconify-format industry icons sourced from official Lucide SVGs; editable web resources with permanent units; paginated industry history; reset previews include industry tables and block dependent deletion/open shifts; bounded accepted native acknowledgements retain all pending/review events; known authority rejection immediately locks the device.
+
+Unverified: final recovered-source MySQL run, final native installer, wildcard DNS/TLS/routing, production schema upgrade/operator, and installed-device/physical printer acceptance. No database reset or real email test was performed. Do not label this production deployed or publish a stable update until backend compatibility is confirmed.
