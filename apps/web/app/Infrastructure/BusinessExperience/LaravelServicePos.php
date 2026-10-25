@@ -26,7 +26,7 @@ final readonly class LaravelServicePos {
   if(!in_array($in['action']??'', ['resource.save','order.create','order.transition','invoice.create','payment.record','shift.open','shift.close'],true))throw new PlatformViolation('INVALID_ACTION');
   if($in['action']==='resource.save')$this->access->require('authorization.policy.manage');
   return $this->operations->once($c->tenantId()->value().'/'.$c->identityId()->value(),$op,['type'=>$type,'organization'=>$c->organizationId()->value(),'outlet'=>$c->outletId()->value(),'device'=>$c->deviceId()->value(),'input'=>$in],function()use($c,$op){
-   $this->operations->audit($c->identityId()->value(),'service.operation.cancelled',$c->tenantId()->value(),'Uncommitted operation cancelled by its actor: '.$op,time());
+   $this->operations->audit($c->identityId()->value(),'service.operation.cancelled',$this->domains->profile($c->tenantId()->value())['business_id'],'Uncommitted operation cancelled by its actor: '.$op,time());
    return ['rejected'=>true,'operation_id'=>$op];
   });
  }

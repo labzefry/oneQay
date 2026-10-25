@@ -38,3 +38,6 @@ Corrections: short explicit MySQL index names; mobile logo form wrapping (Contro
 Unverified: final recovered-source MySQL run, final native installer, wildcard DNS/TLS/routing, production schema upgrade/operator, and installed-device/physical printer acceptance. No database reset or real email test was performed. Do not label this production deployed or publish a stable update until backend compatibility is confirmed.
 
 Owner security menu eligibility is resolved independently of optional domain-profile existence, so existing active business owners can find TOTP controls immediately after schema upgrade; staff and platform owners do not see that self-service menu.
+
+## 2026-10-26 continuation
+Recovered head b001264 had 162 completed GitHub checks, with only web-experience failing: MySQL rejected a tenant identifier written to the business_id audit field. Fix uses the canonical business profile ID and verifies one audit event across replay. Final Windows build and UI suites passed for b001264. This continuation has not been deployed.

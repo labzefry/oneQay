@@ -1,3 +1,7 @@
+## 2026-10-26 — PR #987 continuation (not deployed)
+
+Business experience work resumes from `docs/BUSINESS_EXPERIENCE_20261023.md`. The remaining MySQL failure used a tenant identifier in the 32-character business audit reference. Cancellation now resolves the canonical business ID; replay coverage checks a single correctly bound audit record. Final CI and additive deployment qualification remain required. No production data was reset.
+
 ## 2026-10-22 — Actual UI hosting and blank-page/worker recovery
 
 Author by Lab | zefry. Host receipt proves `production-7e4197b44322` (PR #978) deployed00:23:07WIB, 6,398 files, 38 receipts/88 tables, no migration. Blank homepage was public build0750 causing certified JS/CSS404; bounded build mode recovery restored rendering with all bytes unchanged. Worker proc_open failure was replaced with source-bound Laravel Kernel::call + BufferedOutput, atomic private JSON and no external process. First recovered sample01:17:04WIB: failed=false, mail/health/campaign completed, queue0. [Actual evidence, cron and continuation](docs/operations/ONEQAYDEV_UI_RECOVERY_2026-10-22.md). Original receipt/runtime/accounts/schema retained; SMTP inbox, cash/offline and full UI acceptance remain unverified. This supersedes older not-deployed/7ef-only wording for oneQayDev, not staging.

@@ -46,6 +46,7 @@ $reordered=array_reverse($input,true);$assert($pos->reconcile($reordered)===$ord
 $cancelledInput=['action'=>'shift.open','operation_id'=>'cancel-uncommitted-service-op','opening_atomic'=>2000];
 $cancelled=$pos->reconcile($cancelledInput);$assert($cancelled['rejected']===true,'uncommitted request receives durable tombstone');
 $assert($pos->command($cancelledInput)===$cancelled&&$pos->read()['shift']===null,'late request cannot execute after reconciliation');
+$cancelAudit=$db->table('oneqay_platform_audit')->where('action','service.operation.cancelled')->get();$assert($cancelAudit->count()===1&&$cancelAudit->first()->business_id===$b['id'],'cancellation audit references canonical business once on replay');
 try{$pos->command(array_replace($cancelledInput,['opening_atomic'=>3000]));$assert(false,'changed cancelled payload accepted');}catch(PlatformViolation $e){$assert($e->reason==='OPERATION_CONFLICT','tombstone still binds exact payload');}
 $contexts->setVerified($cashierScope);try{(new App\Infrastructure\Identity\LaravelBusinessOwnerSecurity())->status();$assert(false,'cashier accesses owner security');}catch(App\Application\Business\BusinessViolation|App\Application\Authorization\DurableAuthorizationViolation|PlatformViolation){$assert(true,'cashier cannot access owner security');}
 $contexts->setVerified($businessOwner);
