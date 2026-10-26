@@ -1,3 +1,13 @@
+## 2026-10-26 — Additive deployment operator qualification
+
+PR #987 head ce441a68b5fadbee4be7736c110f395ae170562b completed 163 GitHub checks: 161 successful and 2 skipped. A dedicated successor operator now binds installed d63cf4dd44af, verifies the exact two additional module migrations, preserves all 89 historical table definitions and 39 migration receipts, and expects 108 tables / 41 receipts. Private SQL backup precedes migration; partial DDL stops for forward repair; failed public probes restore prior routing/assets without dropping new tables. Healthy-worker retention uses a verified private ZIP before expanded predecessor removal.
+
+Local SQLite operator rehearsal passed 91 assertions, including source tampering, partial migration refusal, completed replay, backup, atomic routing recovery and archive verification. PHP lint and Python compilation passed. MySQL CI on the new head remains required. No production mutation, reset, wildcard activation, merge, or stable Windows publication has occurred. Independent review and exact-head lifecycle evidence remain required by AI_CONSTITUTION.md. New owner authorization to complete work was received in chat; this is not represented as an independent review.
+
+## 2026-10-26 — PR #987 continuation (not deployed)
+
+Business experience work resumes from `docs/BUSINESS_EXPERIENCE_20261023.md`. The remaining MySQL failure used a tenant identifier in the 32-character business audit reference. Cancellation now resolves the canonical business ID; replay coverage checks a single correctly bound audit record. Final CI and additive deployment qualification remain required. No production data was reset.
+
 ## 2026-10-22 — Actual UI hosting and blank-page/worker recovery
 
 Author by Lab | zefry. Host receipt proves `production-7e4197b44322` (PR #978) deployed00:23:07WIB, 6,398 files, 38 receipts/88 tables, no migration. Blank homepage was public build0750 causing certified JS/CSS404; bounded build mode recovery restored rendering with all bytes unchanged. Worker proc_open failure was replaced with source-bound Laravel Kernel::call + BufferedOutput, atomic private JSON and no external process. First recovered sample01:17:04WIB: failed=false, mail/health/campaign completed, queue0. [Actual evidence, cron and continuation](docs/operations/ONEQAYDEV_UI_RECOVERY_2026-10-22.md). Original receipt/runtime/accounts/schema retained; SMTP inbox, cash/offline and full UI acceptance remain unverified. This supersedes older not-deployed/7ef-only wording for oneQayDev, not staging.
@@ -134,3 +144,7 @@ Stage 2 authorized after cPanel login. Exact application source 7efdda7648c2; gu
 ## POS sync recovery and per-business data reset — 2026-10-22
 
 Owner-requested Windows queue recovery, item-level control-plane diagnostics and explicit per-business operational reset are implemented. Source/hosting/installed-Windows acceptance remain distinct. See [checkpoint](docs/operations/POS_SYNC_AND_BUSINESS_DATA_RESET_2026-10-22.md) for actual evidence, reset scope, private backup storage, and required additive deployment. Production data has not been reset.
+
+## 2026-10-23 — Cashier and onboarding source successor
+
+Owner-requested scoped implementation is on PR #984: account switching keeps isolated SQLite profiles; owner POS binds existing identity and MFA; normalized duplicate account email is rejected; activation navigates through canonical authentication; HTML/plain-text email; signed patch preparation preserves active shifts and pending receipts. No new schema, production reset or financial-history rewrite. Publication/deployment and installed-device acceptance remain separately evidenced. [Checkpoint](docs/operations/POS_ACCOUNT_FLOW_UPDATE_2026-10-23.md).

@@ -22,6 +22,7 @@ final readonly class BusinessLoginController
             $email=BusinessActivation::email($input['email']??null);$password=$input['password']??null;$id=$input['business_id']??null;
             if(!is_string($password)||strlen($password)<1||strlen($password)>72||($id!==null && !is_string($id)))throw new \InvalidArgumentException();
             $business=$this->store->loginBusiness($email,$id);
+            $hostBusiness=$request->attributes->get('oneqay.host_business');if($hostBusiness!==null&&($business['tenant_id']??null)!==$hostBusiness['tenant_id'])throw new \InvalidArgumentException();
             if($business===null)throw new \InvalidArgumentException();
             $payload=array_intersect_key($business,array_flip(['tenant_id','identity_id','organization_id','outlet_id','device_id']));$payload['password']=$password;
             $request->replace($payload);

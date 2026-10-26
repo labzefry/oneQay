@@ -445,3 +445,11 @@ Incident plan mencakup detect, declare, contain, preserve evidence, eradicate, r
 - Security tests dan scan lulus.
 - Finding ditutup atau exception formal aktif.
 - Monitoring, incident signal, rollback, dan docs tersedia.
+
+## 2026-10-23 — Account flow threat boundary
+
+Owner-to-cashier enablement binds only the authenticated active business owner's existing identity and organizational tuple. It never enrolls another password, transfers another tenant's identity or bypasses TOTP. Duplicate-email feedback is intentionally explicit per owner requirement and remains behind registration throttling. A shared database singleton serializes email claims; queries use normalized email and current locked reads.
+
+Cashier switching redacts the prior workspace and retains its separate encrypted credential profile/outbox. It does not transfer a register shift to the new identity. Existing independent shift finalization and tenant permission checks remain enforced. Only network transport loss allows existing offline credential fallback; HTTP authentication/permission/server failures do not silently become offline authentication. A queue item becomes accepted only on a validated matching server receipt.
+
+HTML email escapes customer-supplied text and only promotes exact configured HTTPS first-party activation links to buttons. No external image/tracking request is introduced. Signed updater maintenance is available before app login but cannot run unsigned code, change the embedded trust key or omit a consistent local backup.

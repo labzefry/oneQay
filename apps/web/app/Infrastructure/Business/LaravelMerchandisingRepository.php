@@ -17,6 +17,7 @@ final readonly class LaravelMerchandisingRepository implements MerchandisingRepo
     }
     public function saveSettings(VerifiedOrganizationalContext $s,array $data,int $version):array {
         $q=$this->settingsQuery($s);$row=(clone $q)->lockForUpdate()->first();
+        if($this->db->getSchemaBuilder()->hasTable('oneqay_business_profiles')){$type=$this->db->table('oneqay_business_profiles')->where('tenant_id',$s->tenantId()->value())->value('business_type');if(in_array($type,['laundry','boarding','homestay'],true)&&$this->db->table('oneqay_'.$type.'_resources')->where('tenant_id',$s->tenantId()->value())->where('organization_id',$s->organizationId()->value())->where(function($q)use($data){$q->where('currency','!=',$data['currency'])->orWhere('scale','!=',$data['scale']);})->exists())throw new BusinessViolation('CURRENCY_HAS_EXISTING_SERVICE_RECORDS',409);}
         if (($row?(int)$row->version:0)!==$version)throw new BusinessViolation('RECORD_CHANGED',409);
         $data+=['version'=>$version+1,'updated_by'=>$s->identityId()->value(),'updated_at_unix'=>time()];
         if($row){if($q->where('version',$version)->update($data)!==1)throw new BusinessViolation('RECORD_CHANGED',409);}

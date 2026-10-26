@@ -56,7 +56,8 @@ final class RequirePolicyAdministrationSessionContextMiddleware
             $outletValue = $this->optionalSessionString($request, self::OUTLET_SESSION);
             $deviceValue = $this->optionalSessionString($request, self::DEVICE_SESSION);
 
-            $mfaEnabled = (bool) config('oneqay.privileged_totp_mfa.enabled', false);
+            $optionalOwner=\App\Infrastructure\Identity\BusinessOwnerSecurityPolicy::disabled(app('db')->connection(),$tenantValue,$identityValue);
+            $mfaEnabled = !$optionalOwner && (bool) config('oneqay.privileged_totp_mfa.enabled', false);
             if ($mfaEnabled) {
                 $mfaVerifiedAt = $request->session()->get(FirstPartySessionKeys::MFA_VERIFIED_AT);
                 if (! is_int($mfaVerifiedAt) || $mfaVerifiedAt <= 0) {
@@ -79,7 +80,7 @@ final class RequirePolicyAdministrationSessionContextMiddleware
             );
 
             if ((bool) config('oneqay.privileged_step_up.enabled', false)) {
-                if (! $mfaEnabled || (int) config('oneqay.privileged_step_up.freshness_seconds', 0) !== self::STEP_UP_FRESHNESS_SECONDS) {
+                if ((! $mfaEnabled && !$optionalOwner) || (int) config('oneqay.privileged_step_up.freshness_seconds', 0) !== self::STEP_UP_FRESHNESS_SECONDS) {
                     throw new InvalidArgumentException('Policy administration security evidence is invalid.');
                 }
 
@@ -111,7 +112,8 @@ final class RequirePolicyAdministrationSessionContextMiddleware
         array $expectedContext,
     ): void {
         $state = $this->mfa->requiredState($tenantId, $identityId);
-        if ($state === null || ! $state->is(PrivilegedTotpMfaState::CONFIRMED)) {
+        $optionalOwner=\App\Infrastructure\Identity\BusinessOwnerSecurityPolicy::disabled(app('db')->connection(),$tenantId->value(),$identityId->value());
+        if (!$optionalOwner && ($state === null || ! $state->is(PrivilegedTotpMfaState::CONFIRMED))) {
             throw new InvalidArgumentException('Policy administration security evidence is invalid.');
         }
 

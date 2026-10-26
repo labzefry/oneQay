@@ -22,7 +22,7 @@ final readonly class SmtpMailTransport implements MailTransport
         $transport->getStream()->setTimeout(10);
         $transport->getStream()->setStreamOptions(['ssl'=>['peer_name'=>$c['host'],'verify_peer'=>true,'verify_peer_name'=>true,'allow_self_signed'=>false,'SNI_enabled'=>true,'crypto_method'=>STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT | STREAM_CRYPTO_METHOD_TLSv1_3_CLIENT]]);
         $domain=substr($c['from'],strrpos($c['from'],'@')+1);
-        $email=(new Email())->from(new Address($c['from'],$c['from_name']))->to($message['recipient'])->subject($message['subject'])->text($message['text']);
+        $email=(new Email())->from(new Address($c['from'],$c['from_name']))->to($message['recipient'])->subject($message['subject'])->text($message['text'])->html(LaravelMailPresentation::html($message['subject'],$message['text'],(string)config('app.url','')));
         $email->getHeaders()->addIdHeader('Message-ID','oneqay-'.$message['id'].'@'.$domain);
         $email->getHeaders()->addTextHeader('X-OneQay-Message-ID',$message['id']);
         try {

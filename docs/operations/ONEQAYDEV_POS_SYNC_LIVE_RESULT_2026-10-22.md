@@ -1,3 +1,5 @@
+> Historical deployment evidence: superseded for current hosting by the d63cf4dd44af checkpoint and PR #987. Commands and Windows versions below describe 22 October only; do not reuse them for a new deployment.
+
 # POS sync deployment result — 22 October 2026
 
 Author by Lab | zefry.

@@ -66,6 +66,7 @@ pub fn visible(sec: &Security, store: &Store) -> Result<Workspace> {
     let mut w = store.workspace().map_err(safe)?;
     if state["signed_in"] != true || state["locked"] == true {
         w.snapshot = None;
+        w.shift_status = "ready".into();
         w.products.clear();
         w.operations.clear();
         w.shift = None;
@@ -176,13 +177,12 @@ pub async fn login(
     background(move||{
  let login=login.trim().to_lowercase();if login.len()>190||!login.contains('@')||password.len()>72||password.is_empty()||!(totp.is_empty()||(totp.len()==6&&totp.bytes().all(|b|b.is_ascii_digit()))){return Err("POS_LOGIN_INVALID".into())}
  let mut store=locked(&db)?;let mut session=sec.lock().map_err(|_|"POS_SECURITY_BUSY")?;
- if session.updating{return Err("UPDATE_IN_PROGRESS".into())}if session.signed_in&&session.login!=login&&store.active_shift().map_err(safe)?.is_some(){return Err("POS_CLOSE_SHIFT_FIRST".into())}
+ if session.updating{return Err("UPDATE_IN_PROGRESS".into())}
  let profile=format!("cashier-{}.sqlite3",hex::encode(Sha256::digest(login.as_bytes())));let mut target=Store::open(session.directory.join(&profile)).map_err(safe)?;allowed_attempt(&target,"login")?;
  let response=request(SERVER,"v2/login",None,Some(json!({"login":login,"password":password,"totp":totp})));
  match response {
   Ok(r)=>{let token=r["token"].as_str().filter(|t|t.len()==64).ok_or("POS_CREDENTIAL_INVALID")?;let snapshot:Snapshot=serde_json::from_value(r["snapshot"].clone()).map_err(|_|"POS_SNAPSHOT_INVALID")?;
-   if let Some(active)=r["snapshot"]["active_shift"].as_object(){let local=active.get("local_id").and_then(|v|v.as_str()).unwrap_or("");if local.is_empty()||target.operation(local).is_err(){return Err("POS_EXISTING_SHIFT_CLOSE_ON_WEB".into())}}
-   target.apply_snapshot(&snapshot,now()).map_err(safe)?;target.set("server",SERVER).map_err(safe)?;target.set("credential",&serde_json::to_string(&hardware::protect(token.as_bytes())?).map_err(|_|"POS_CREDENTIAL_INVALID")?).map_err(safe)?;
+   target.apply_snapshot(&snapshot,now()).map_err(safe)?;target.reconcile_server_shift(&r["snapshot"]["active_shift"]).map_err(safe)?;target.set("server",SERVER).map_err(safe)?;target.set("credential",&serde_json::to_string(&hardware::protect(token.as_bytes())?).map_err(|_|"POS_CREDENTIAL_INVALID")?).map_err(safe)?;
    save_secret(&target,&json!({"login":login,"password":verifier(&password),"pin":r["snapshot"]["pin"]}))?;session.offline=false;
   },
   Err(e) if e=="POS_NETWORK_UNAVAILABLE"||e=="POS_NETWORK_RESPONSE_INTERRUPTED"=>{
@@ -207,9 +207,6 @@ pub async fn lock_pos(
             let mut s = sec.lock().map_err(|_| "POS_SECURITY_BUSY")?;
             if s.updating {
                 return Err("UPDATE_IN_PROGRESS".into());
-            }
-            if logout && store.active_shift().map_err(safe)?.is_some() {
-                return Err("POS_CLOSE_SHIFT_FIRST".into());
             }
             s.is_locked = true;
             if logout {

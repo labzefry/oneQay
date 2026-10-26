@@ -327,17 +327,19 @@ fn bounded_logo_is_only_in_customer_bill() {
     assert!(s.operation(&sale).unwrap().receipt["logo"].is_null());
 }
 #[test]
-fn update_requires_finalized_cash_and_preserves_a_readable_database() {
+fn update_backs_up_pending_cash_and_active_shifts_without_rewriting_them() {
     let d = tempfile::tempdir().unwrap();
     let path = d.path().join("pos.sqlite3");
     let mut s = Store::open(&path).unwrap();
     s.apply_snapshot(&enterprise(), 1000).unwrap();
     let open = id();
     s.shift_event(&open, true, 50000, "", 1001).unwrap();
-    assert!(s.prepare_update(&d.path().join("unsafe.sqlite3")).is_err());
+    let backup=d.path().join(format!("pending-{}.sqlite3",s.operations().unwrap().len()));s.prepare_update(&backup).unwrap();
+    let restored=Store::open(&backup).unwrap();assert_eq!(serde_json::to_value(restored.operations().unwrap()).unwrap(),serde_json::to_value(s.operations().unwrap()).unwrap());assert_eq!(restored.active_shift().unwrap(),s.active_shift().unwrap());
     let close = id();
     s.shift_event(&close, false, 50000, "", 1002).unwrap();
-    assert!(s.prepare_update(&d.path().join("unsafe.sqlite3")).is_err());
+    let backup=d.path().join(format!("pending-{}.sqlite3",s.operations().unwrap().len()));s.prepare_update(&backup).unwrap();
+    let restored=Store::open(&backup).unwrap();assert_eq!(serde_json::to_value(restored.operations().unwrap()).unwrap(),serde_json::to_value(s.operations().unwrap()).unwrap());assert_eq!(restored.active_shift().unwrap(),s.active_shift().unwrap());
     s.acknowledge(&[
         json!({"operation_id":open,"state":"accepted","code":"OK","shift_id":"server"}),
         json!({"operation_id":close,"state":"accepted","code":"OK","shift_id":"server"}),
@@ -398,4 +400,43 @@ fn explicit_invalid_retry_preserves_payload_receipt_and_stock() {
     assert_eq!(s.pending().unwrap()[0].operation_id,opening);
     s.acknowledge(&[json!({"operation_id":opening,"state":"rejected","code":"POS_LEASE_NOT_FOUND"})]).unwrap();
     assert_eq!(s.retry_invalid_operations().unwrap(),0);
+}
+
+#[test]
+fn remote_shift_keeps_login_separate_from_register_ownership() {
+ let mut s=Store::open(":memory:").unwrap();s.apply_snapshot(&enterprise(),1000).unwrap();
+ s.reconcile_server_shift(&json!({"id":"server-shift","identity_id":"other","local_id":null})).unwrap();assert_eq!(s.workspace().unwrap().shift_status,"other_cashier");assert!(s.workspace().unwrap().authorized);assert!(s.shift_event(&id(),true,1000,"",1001).is_err());assert!(s.operations().unwrap().is_empty());
+ s.reconcile_server_shift(&json!({"id":"server-shift","identity_id":"i","local_id":null})).unwrap();assert_eq!(s.workspace().unwrap().shift_status,"recovery_required");
+ s.reconcile_server_shift(&serde_json::Value::Null).unwrap();let open=id();s.shift_event(&open,true,1000,"",1001).unwrap();
+ s.acknowledge(&[json!({"operation_id":open,"state":"accepted","code":"OK","shift_id":"server-shift"})]).unwrap();s.reconcile_server_shift(&json!({"id":"server-shift","identity_id":"i","local_id":open})).unwrap();assert_eq!(s.workspace().unwrap().shift_status,"ready");
+ s.shift_event(&id(),false,1000,"",1002).unwrap();s.reconcile_server_shift(&json!({"id":"server-shift","identity_id":"i","local_id":open})).unwrap();assert_eq!(s.workspace().unwrap().shift_status,"closing");assert!(s.shift_event(&id(),true,1000,"",1003).is_err());s.reconcile_server_shift(&serde_json::Value::Null).unwrap();assert_eq!(s.workspace().unwrap().shift_status,"ready");
+}
+#[test]
+fn separate_profiles_preserve_pending_payloads_receipts_and_shift() {
+ let d=tempfile::tempdir().unwrap();let first=d.path().join("cashier-one.sqlite3");let second=d.path().join("cashier-two.sqlite3");let payload;
+ {let mut a=Store::open(&first).unwrap();a.apply_snapshot(&enterprise(),1000).unwrap();a.shift_event(&id(),true,50000,"",1001).unwrap();a.commit(&id(),"sale",lines(1),15000,1002).unwrap();payload=serde_json::to_value(a.operations().unwrap()).unwrap();}
+ let mut b=Store::open(&second).unwrap();let mut snap=enterprise();snap.scope.identity_id="second".into();b.apply_snapshot(&snap,1003).unwrap();assert!(b.pending().unwrap().is_empty());assert!(b.active_shift().unwrap().is_none());let a=Store::open(&first).unwrap();assert_eq!(payload,serde_json::to_value(a.operations().unwrap()).unwrap());assert_eq!(a.pending().unwrap().len(),2);assert!(a.active_shift().unwrap().is_some());
+}
+
+#[test]
+fn isolated_service_snapshot_accepts_empty_catalog_and_rejects_retail_sales() {
+    for kind in ["laundry", "boarding", "homestay"] {
+        let mut s = Store::open(":memory:").unwrap();
+        let mut snapshot = fixture();
+        snapshot.protocol = 2;
+        snapshot.catalog.clear();
+        snapshot.settings = json!({"business_type":kind});
+        s.apply_snapshot(&snapshot, 1000).unwrap();
+        assert!(s.commit(&id(), "sale", lines(1), 50000, 1001).is_err());
+        assert!(s.pending().unwrap().is_empty());
+        assert_eq!(s.snapshot().unwrap().unwrap().settings["business_type"], kind);
+    }
+}
+#[test]
+fn retail_empty_catalog_stays_invalid() {
+    let mut s = Store::open(":memory:").unwrap();
+    let mut snapshot = fixture();
+    snapshot.catalog.clear();
+    assert!(s.apply_snapshot(&snapshot, 1000).is_err());
+    assert!(s.snapshot().unwrap().is_none());
 }

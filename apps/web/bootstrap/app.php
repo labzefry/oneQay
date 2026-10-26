@@ -36,6 +36,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->append(SecurityHeadersMiddleware::class);
         $middleware->append(\App\Delivery\Http\Middleware\PresentBrowserErrorsMiddleware::class);
         $middleware->web(append: [
+            \App\Delivery\Http\Middleware\BusinessHostMiddleware::class,
+            \App\Delivery\Http\Middleware\BusinessWorkflowMiddleware::class,
             HandleInertiaRequests::class,
         ]);
     })
