@@ -1,5 +1,9 @@
 # oneQay Deployment Handbook
 
+## Business experience additive upgrade — 2026-10-26
+
+See [current qualification and remaining gates](docs/BUSINESS_EXPERIENCE_20261023.md). The dedicated operator and packager are `tools/production/cpanel/update-oneqaydev-business-experience.php` and `tools/production/package-oneqaydev-business-experience.py`. Only the two 2026-10-23 migrations may be added; existing tables and receipts must remain unchanged. Recovery retains additive tables and restores prior routing, never overwrites live data with an old backup automatically. MySQL and SQLite rehearsals run in `.github/workflows/cpanel-business-experience-update.yml`.
+
 ## cPanel fixed public document-root bridge — Sprint219
 
 Sprint219 adds a second fail-closed cPanel presentation mode for shared-hosting layouts where the domain document root is fixed outside the private release tree.

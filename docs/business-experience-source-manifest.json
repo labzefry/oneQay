@@ -46,6 +46,7 @@
     ".github/workflows/sprint96-final-shift-close-runtime-wiring.yml"
   ],
   "paths": [
+    ".github/workflows/cpanel-business-experience-update.yml",
     ".github/workflows/desktop-pos.yml",
     ".github/workflows/m7-2-tenant-isolation-regression.yml",
     ".github/workflows/m7-3-identity-org-context-regression.yml",
@@ -90,8 +91,11 @@
     ".github/workflows/sprint34-authenticated-password-change-regression.yml",
     ".github/workflows/sprint96-final-shift-close-runtime-wiring.yml",
     "CHANGELOG.md",
+    "DATABASE.md",
+    "DEPLOYMENT.md",
     "PROJECT_MANIFEST.md",
     "TASKS.md",
+    "TESTING.md",
     "apps/pos-desktop/core/Cargo.lock",
     "apps/pos-desktop/core/Cargo.toml",
     "apps/pos-desktop/core/src/lib.rs",
@@ -164,6 +168,10 @@
     "packages/service-pos-ui/ServiceIcon.vue",
     "packages/service-pos-ui/ServicePosWorkspace.vue",
     "packages/service-pos-ui/icons.json",
+    "tools/production/cpanel/business-experience-migrations.php",
+    "tools/production/cpanel/update-oneqaydev-business-experience.php",
+    "tools/production/package-oneqaydev-business-experience.py",
+    "tools/production/tests/oneqaydev-business-experience-operator.php",
     "tools/qa-business-experience-source-envelope.sh",
     "tools/qa-website-ui.mjs"
   ]

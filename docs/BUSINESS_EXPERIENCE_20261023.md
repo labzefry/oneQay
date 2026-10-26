@@ -41,3 +41,9 @@ Owner security menu eligibility is resolved independently of optional domain-pro
 
 ## 2026-10-26 continuation
 Recovered head b001264 had 162 completed GitHub checks, with only web-experience failing: MySQL rejected a tenant identifier written to the business_id audit field. Fix uses the canonical business profile ID and verifies one audit event across replay. Final Windows build and UI suites passed for b001264. This continuation has not been deployed.
+
+## 2026-10-26 — Additive deployment operator qualification
+
+PR #987 head ce441a68b5fadbee4be7736c110f395ae170562b completed 163 GitHub checks: 161 successful and 2 skipped. A dedicated successor operator now binds installed d63cf4dd44af, verifies the exact two additional module migrations, preserves all 89 historical table definitions and 39 migration receipts, and expects 108 tables / 41 receipts. Private SQL backup precedes migration; partial DDL stops for forward repair; failed public probes restore prior routing/assets without dropping new tables. Healthy-worker retention uses a verified private ZIP before expanded predecessor removal.
+
+Local SQLite operator rehearsal passed 91 assertions, including source tampering, partial migration refusal, completed replay, backup, atomic routing recovery and archive verification. PHP lint and Python compilation passed. MySQL CI on the new head remains required. No production mutation, reset, wildcard activation, merge, or stable Windows publication has occurred. Independent review and exact-head lifecycle evidence remain required by AI_CONSTITUTION.md. New owner authorization to complete work was received in chat; this is not represented as an independent review.
