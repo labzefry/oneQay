@@ -1,5 +1,9 @@
 # oneQay Testing Strategy
 
+## Business experience operator rehearsal — 2026-10-26
+
+See [current qualification and remaining gates](docs/BUSINESS_EXPERIENCE_20261023.md). The dedicated operator and packager are `tools/production/cpanel/update-oneqaydev-business-experience.php` and `tools/production/package-oneqaydev-business-experience.py`. Only the two 2026-10-23 migrations may be added; existing tables and receipts must remain unchanged. Recovery retains additive tables and restores prior routing, never overwrites live data with an old backup automatically. MySQL and SQLite rehearsals run in `.github/workflows/cpanel-business-experience-update.yml`.
+
 ## Objectives
 
 Testing memberi evidence bahwa oneQay benar, aman, terisolasi antar tenant, kompatibel, cepat, accessible, dapat diinstal/diupdate, dan dapat dipulihkan. Coverage percentage bukan satu-satunya ukuran kualitas.

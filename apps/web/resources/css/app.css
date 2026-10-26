@@ -107,3 +107,6 @@ body{font-size:1rem;line-height:1.55}
 .oq-operation-feedback{padding-right:54px}
 .oq-operation-feedback .oq-operation-dismiss,.oq-page>main .oq-operation-feedback .oq-operation-dismiss{position:absolute;right:8px;top:8px;width:36px;height:36px;min-height:36px;padding:6px;border:1px solid var(--oq-light);border-radius:10px;background:var(--oq-white)!important;color:var(--oq-navy)!important;display:grid;place-items:center;cursor:pointer}
 .oq-operation-feedback .oq-operation-dismiss:focus-visible{outline:3px solid var(--oq-primary);outline-offset:2px}
+
+/* Account controls wrap within narrow merchant headers. */
+@media(max-width:600px){.oq-topbar-leading{flex:1;min-width:0}.oq-topbar-leading strong{max-width:85px}.oq-topbar-trailing{gap:6px}.oq-session{display:none}.oq-topbar .account-menu summary{font-size:14px}.oq-topbar .oq-language{padding:6px}}

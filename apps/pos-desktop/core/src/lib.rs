@@ -168,7 +168,8 @@ impl Store {
             .transpose()
     }
     pub fn apply_snapshot(&mut self, snapshot: &Snapshot, local_now: i64) -> Result<()> {
-        if snapshot.catalog.is_empty()
+        let service = matches!(snapshot.settings["business_type"].as_str(), Some("laundry" | "boarding" | "homestay"));
+        if (snapshot.catalog.is_empty() && !service)
             || snapshot.catalog.len() > 20000
             || snapshot.expires_at <= snapshot.issued_at
             || snapshot.expires_at - snapshot.issued_at > 28800
@@ -180,6 +181,11 @@ impl Store {
             return Err(Error::Rule("POS_SNAPSHOT_INVALID"));
         }
         if let Some(old) = self.snapshot()? {
+            let old_type = old.settings["business_type"].as_str().unwrap_or("retail");
+            let new_type = snapshot.settings["business_type"].as_str().unwrap_or("retail");
+            if (service || matches!(old_type, "laundry" | "boarding" | "homestay")) && old_type != new_type {
+                return Err(Error::Rule("POS_BUSINESS_TYPE_CHANGED"));
+            }
             if old.scope != snapshot.scope {
                 return Err(Error::Rule(
                     "POS_ACCOUNT_CHANGE_REQUIRES_NEW_WINDOWS_PROFILE",
@@ -187,7 +193,7 @@ impl Store {
             }
         }
         let mut ids = std::collections::HashSet::new();
-        let first = &snapshot.catalog[0];
+        let first = snapshot.catalog.first();
         for p in &snapshot.catalog {
             if p.price < 0
                 || p.price > MAX_MONEY
@@ -196,8 +202,8 @@ impl Store {
                 || p.scale > 6
                 || p.currency.len() != 3
                 || !p.currency.bytes().all(|c| c.is_ascii_uppercase())
-                || p.currency != first.currency
-                || p.scale != first.scale
+                || first.is_some_and(|first| p.currency != first.currency)
+                || first.is_some_and(|first| p.scale != first.scale)
                 || p.id.is_empty()
                 || !ids.insert(&p.id)
             {
@@ -287,6 +293,7 @@ impl Store {
         tendered: i64,
         local_now: i64,
     ) -> Result<OperationView> {
+        if self.snapshot()?.is_some_and(|v|matches!(v.settings["business_type"].as_str(),Some("laundry"|"boarding"|"homestay"))){return Err(Error::Rule("BUSINESS_WORKFLOW_MISMATCH"))}
         if !id.starts_with("desk-")
             || Uuid::parse_str(&id[5..]).is_err()
             || !matches!(kind, "sale" | "count")

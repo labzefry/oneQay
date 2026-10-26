@@ -1,5 +1,9 @@
 # oneQay Database Handbook
 
+## Additive business experience schema — 2026-10-26
+
+See [current qualification and remaining gates](docs/BUSINESS_EXPERIENCE_20261023.md). The dedicated operator and packager are `tools/production/cpanel/update-oneqaydev-business-experience.php` and `tools/production/package-oneqaydev-business-experience.py`. Only the two 2026-10-23 migrations may be added; existing tables and receipts must remain unchanged. Recovery retains additive tables and restores prior routing, never overwrites live data with an old backup automatically. MySQL and SQLite rehearsals run in `.github/workflows/cpanel-business-experience-update.yml`.
+
 ## Canonical post-Sprint48 JRN-005 source publication reconciliation — 2026-09-01
 
 This current-facing section supersedes older post-Sprint47/current-state wording retained below as historical provenance. It records canonical source and CI evidence only and creates no new implementation or lifecycle authority.

@@ -20,6 +20,7 @@ final readonly class ControlPlaneBusinessReset {
   if($scope!=='all'&&!isset(self::GROUPS[$scope]))throw new PlatformViolation('RESET_SCOPE_INVALID');
   $names=$scope==='all'?array_merge(...array_values(self::GROUPS)):self::GROUPS[$scope];
   if($scope==='all')$names[]='oneqay_business_events';
+  foreach(['laundry','boarding','homestay']as$module){if(in_array($scope,['transactions','all'],true))foreach(['payments','invoices','orders','shifts']as$table)$names[]='oneqay_'.$module.'_'.$table;if(in_array($scope,['products','all'],true))$names[]='oneqay_'.$module.'_resources';}
   // Every reset invalidates old offline leases. Payloads on Windows are retained for reconciliation.
   $names[]='oneqay_desktop_leases';
   return array_values(array_filter(array_unique($names),fn($name)=>$this->db->getSchemaBuilder()->hasTable($name)));
@@ -40,6 +41,7 @@ final readonly class ControlPlaneBusinessReset {
   if($business['status']!=='suspended')$blocked[]='RESET_SUSPEND_BUSINESS_FIRST';
   if($business['status']==='suspended'&&(int)$business['updated_at']>time()-60)$blocked[]='RESET_WAIT_FOR_REQUESTS_TO_DRAIN';
   if($this->db->table('oneqay_pos_shifts')->where('tenant_id',$tenant)->where('active_slot',1)->exists())$blocked[]='RESET_CLOSE_OR_RECOVER_ACTIVE_SHIFTS';
+  foreach(['laundry','boarding','homestay']as$module){if($this->db->getSchemaBuilder()->hasTable('oneqay_'.$module.'_shifts')&&$this->db->table('oneqay_'.$module.'_shifts')->where('tenant_id',$tenant)->where('active_slot',1)->exists())$blocked[]='RESET_CLOSE_OR_RECOVER_ACTIVE_SHIFTS';if($scope==='products'&&$this->db->getSchemaBuilder()->hasTable('oneqay_'.$module.'_orders')&&$this->db->table('oneqay_'.$module.'_orders')->where('tenant_id',$tenant)->exists())$blocked[]='RESET_TRANSACTIONS_DEPEND_ON_SERVICE_RESOURCES';}
   if($scope==='partners'&&$this->db->getSchemaBuilder()->hasTable('oneqay_business_purchases')&&($this->db->table('oneqay_business_purchases')->where('tenant_id',$tenant)->exists()||$this->db->table('oneqay_business_invoices')->where('tenant_id',$tenant)->exists()))$blocked[]='RESET_FINANCE_DEPENDS_ON_PARTNERS';
   $state=['business_id'=>$business['id'],'tenant_id'=>$tenant,'version'=>(int)$business['version'],'scope'=>$scope,'entries'=>$entries,'data_digest'=>hash_final($hash),'blocked'=>$blocked];
   return $state+['review_digest'=>hash('sha256',json_encode($state,JSON_THROW_ON_ERROR)),'preserved'=>['business account','identities and credentials','RBAC and TOTP','platform audit and reset receipts','SMTP and website configuration'],'offline_action'=>'Stop all registers and reconcile or export local queues before reset. Old leases are invalidated; local queues are never deleted.'];
