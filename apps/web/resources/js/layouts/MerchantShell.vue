@@ -47,6 +47,7 @@ const labels: Record<string, { title: string; icon: string }> = {
     business_audit: { title: 'Activity log', icon: 'clipboard-list' },
     platform_owner: { title: 'Platform control', icon: 'shield-check' },
     business_access: { title: 'Business access', icon: 'shield-check' },
+    business_desktop: { title: 'POS Windows', icon: 'monitor' },
 };
 const categories = [
     { key: 'SETUP', title: 'Products & inventory' }, { key: 'SELL', title: 'Selling' },
@@ -55,7 +56,7 @@ const categories = [
     { key: 'MANAGE', title: 'Business management' },
 ];
 const titles: Record<string, string> = {
-    Products: 'Products', Settings: 'Business settings', Reports: 'Reports', Workspace: 'Business management', OperationsHub: 'Business overview', Cashier: 'Cashier', CatalogInventorySetup: 'Catalog & stock',
+    ServicePos: 'Business workspace', OwnerSecurity: 'Account & security', DesktopSettings: 'POS Windows', Products: 'Products', Settings: 'Business settings', Reports: 'Reports', Workspace: 'Business management', OperationsHub: 'Business overview', Cashier: 'Cashier', CatalogInventorySetup: 'Catalog & stock',
     ShiftStart: 'Start shift', ShiftClose: 'Close shift', InventoryReplenishment: 'Receive stock',
     InventoryAccountability: 'Inventory overview', SalesSummary: 'Sales overview',
     ActiveShiftPerformance: 'Current shift', ShiftHistoryPerformance: 'Shift history',
@@ -101,7 +102,10 @@ watch(() => [page.url, page.props.scope, page.props.destinations] as const, asyn
         });
         if (!response.ok || response.headers.get('X-Inertia')?.toLowerCase() !== 'true') return;
         const data = await response.json();
-        if (current !== generation || data.component !== 'Pos/OperationsHub' || (scope && !sameScope(scope, data.props?.scope))) return;
+        if (current !== generation || !['Pos/OperationsHub', 'Business/ServicePos'].includes(data.component)) return;
+        const responseScope = data.props?.scope ?? data.props?.initial?.scope;
+        if (scope && (!responseScope || !['tenant_id', 'organization_id', 'outlet_id'].every(key => responseScope[key] === scope[key as keyof Scope]))) return;
+        if (scope && data.component === 'Pos/OperationsHub' && !sameScope(scope, responseScope)) return;
         navigation.value = validDestinations(data.props?.destinations);
     } catch { /* Keep overview available. Never infer missing permissions or retry mutations. */ }
     finally { window.clearTimeout(timeout); if (current === generation) loading.value = false; }
@@ -136,7 +140,7 @@ onMounted(() => { resize(); document.addEventListener('keydown', keydown); windo
 onBeforeUnmount(() => { request?.abort(); document.removeEventListener('keydown', keydown); window.removeEventListener('resize', resize); document.removeEventListener('click', confirmLeave, true); window.removeEventListener('beforeunload', beforeUnload); document.body.classList.remove('oq-drawer-open'); });
 </script>
 <template>
-    <div class="oq-app">
+    <div class="oq-app" :data-business-type="(page.props.business_profile as any)?.business_type ?? 'retail'">
         <a class="oq-skip" href="#workspace-content">{{ t("Skip to workspace") }}</a>
         <button v-if="mobileOpen" class="oq-backdrop no-print" type="button" :aria-label="t('Close navigation')" @click="mobileOpen = false" />
         <aside id="workspace-navigation" ref="drawer" class="oq-sidebar no-print" :class="{ 'is-open': mobileOpen }" :inert="mobileViewport && !mobileOpen" :aria-label="t('Workspace navigation')">
@@ -152,7 +156,7 @@ onBeforeUnmount(() => { request?.abort(); document.removeEventListener('keydown'
                 </details>
                 <p v-if="search && groups.length === 0 && !loading" class="oq-nav-empty">{{ t("No matching workspace.") }}</p>
             </nav>
-            <div class="oq-sidebar-bottom"><a class="oq-nav-link" href="/pos/desktop"><WorkspaceIcon name="monitor"/><span>POS Windows</span></a><a class="oq-nav-link" href="/pos/business/security"><WorkspaceIcon name="shield-check" /><span>{{ t("Account & security") }}</span></a><p>© oneQay</p></div>
+            <div class="oq-sidebar-bottom"><a class="oq-nav-link" href="/pos/desktop"><WorkspaceIcon name="monitor"/><span>POS Windows</span></a><a v-if="page.props.can_manage_business_security" class="oq-nav-link" href="/pos/business/security"><WorkspaceIcon name="shield-check" /><span>{{ t("Account & security") }}</span></a><p>© oneQay</p></div>
         </aside>
         <div class="oq-content" :inert="mobileViewport && mobileOpen">
             <header class="oq-topbar no-print">
@@ -165,3 +169,7 @@ onBeforeUnmount(() => { request?.abort(); document.removeEventListener('keydown'
         </div>
     </div>
 </template>
+
+<style scoped>
+.oq-app[data-business-type="laundry"] .oq-sidebar{border-inline-start:6px solid #3965FA}.oq-app[data-business-type="boarding"] .oq-sidebar{border-inline-start:6px solid #E9EBFF}.oq-app[data-business-type="homestay"] .oq-sidebar{border-inline-start:6px solid #99B7FC}
+</style>

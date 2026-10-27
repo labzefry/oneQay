@@ -13,3 +13,6 @@ Owner supplied 20 single-page image PDFs: dashboard, catalog, stock receipts, cu
 - Produce signed Windows patch via the existing updater identity/key after validation; avoid uninstall and preserve offline queues.
 - Run MySQL/SQLite, web/Windows builds, role/tenant isolation, offline and migration tests; prepare safe cPanel release/rollback. Do not claim full parity, real transactions, SMTP or hardware acceptance before verification.
 - cPanel access is requested only when repository changes are ready for deployment. The existing deployed oneqaydev source is 275e1b293eea; stable Windows is 0.2.4, candidate 0.2.5 remains unpublished.
+
+## Continuation: service navigation and access
+The merchant shell now accepts the server-authorized service-workspace navigation response when returning from a settings page, while checking tenant, organization and outlet against any existing scope. Commerce overview retains its device scope check. Owner security links follow the server eligibility flag. Service types receive distinct palette-only sidebar accents. Frontend checks/build must pass before merge; this is not a claim that the remaining feature inventory is complete.
