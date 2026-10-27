@@ -152,3 +152,6 @@ Owner-requested Windows queue recovery, item-level control-plane diagnostics and
 ## 2026-10-23 — Cashier and onboarding source successor
 
 Owner-requested scoped implementation is on PR #984: account switching keeps isolated SQLite profiles; owner POS binds existing identity and MFA; normalized duplicate account email is rejected; activation navigates through canonical authentication; HTML/plain-text email; signed patch preparation preserves active shifts and pending receipts. No new schema, production reset or financial-history rewrite. Publication/deployment and installed-device acceptance remain separately evidenced. [Checkpoint](docs/operations/POS_ACCOUNT_FLOW_UPDATE_2026-10-23.md).
+
+### Industry workspace continuation — operational search and print
+Shared service search/status/resource filters, isolated order/closing print documents, preserved closing reports and bounded asynchronous calls implemented. See `docs/INDUSTRY_WORKSPACE_REFERENCE_2026-10-27.md` for passed checks and outstanding release work; not yet deployment-qualified.

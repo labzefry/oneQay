@@ -654,3 +654,6 @@ Owner-requested Windows queue recovery, item-level control-plane diagnostics and
 ## 2026-10-23 — Simpler POS accounts and activation (source only)
 
 PR #984 adds cashier account switching without losing local receipts, automatic reconnect sync, owner POS enablement using existing credentials/TOTP, normalized duplicate-email rejection, activation redirects and professional escaped multipart email. Windows 0.2.3 adds actual version display, updates before login, truthful progress and verified backups retaining pending receipts/active shifts. No hosting promotion, signed patch availability or customer acceptance is implied. [Checkpoint](docs/operations/POS_ACCOUNT_FLOW_UPDATE_2026-10-23.md).
+
+### Industry workspace continuation — operational search and print
+Shared service search/status/resource filters, isolated order/closing print documents, preserved closing reports and bounded asynchronous calls implemented. See `docs/INDUSTRY_WORKSPACE_REFERENCE_2026-10-27.md` for passed checks and outstanding release work; not yet deployment-qualified.

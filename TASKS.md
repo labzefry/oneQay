@@ -165,3 +165,6 @@ Owner-requested Windows queue recovery, item-level control-plane diagnostics and
 - [ ] Publish compatible signed Windows update, install certified web successor, verify actual user-device sync.
 
 Details and limitations: [checkpoint](docs/operations/POS_ACCOUNT_FLOW_UPDATE_2026-10-23.md). Author by Lab | zefry.
+
+### Industry workspace continuation — operational search and print
+Shared service search/status/resource filters, isolated order/closing print documents, preserved closing reports and bounded asynchronous calls implemented. See `docs/INDUSTRY_WORKSPACE_REFERENCE_2026-10-27.md` for passed checks and outstanding release work; not yet deployment-qualified.
