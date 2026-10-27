@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { t } from "../i18n";
+import { locale, t } from "../i18n";
 // Author by Lab | zefry. Read-only navigation always follows the current server scope.
 import { usePage } from '@inertiajs/vue3';
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
@@ -50,11 +50,30 @@ const labels: Record<string, { title: string; icon: string }> = {
     business_desktop: { title: 'POS Windows', icon: 'monitor' },
 };
 const categories = [
-    { key: 'SETUP', title: 'Products & inventory' }, { key: 'SELL', title: 'Selling' },
-    { key: 'SHIFT', title: 'Shifts' }, { key: 'STOCK', title: 'Stock & purchasing' },
-    { key: 'REVIEW', title: 'Reports & insights' }, { key: 'CONTROL', title: 'Business configuration' },
-    { key: 'MANAGE', title: 'Business management' },
+    { key: 'CATALOG', id: 'Produk & inventori', en: 'Products & inventory' },
+    { key: 'SELL', id: 'Penjualan & kasir', en: 'Sales & cashier' },
+    { key: 'PURCHASE', id: 'Pembelian & pemasok', en: 'Purchasing & suppliers' },
+    { key: 'PEOPLE', id: 'Pelanggan & tim', en: 'Customers & people' },
+    { key: 'FINANCE', id: 'Keuangan', en: 'Finance' },
+    { key: 'REVIEW', id: 'Laporan & riwayat', en: 'Reports & history' },
+    { key: 'CONTROL', id: 'Pengaturan & akses', en: 'Settings & access' },
+    { key: 'OTHER', id: 'Ruang kerja lainnya', en: 'Other workspaces' },
 ];
+const categoryFor = (item: Destination): string => {
+    const key = item.key;
+    if (['business_products','catalog_inventory','inventory_accountability','inventory_replenishment'].includes(key)) return 'CATALOG';
+    if (['business_purchases','business_suppliers'].includes(key)) return 'PURCHASE';
+    if (['business_customers','business_people'].includes(key)) return 'PEOPLE';
+    if (key === 'business_finance') return 'FINANCE';
+    if (['business_settings','business_access','business_desktop','platform_owner','business_audit'].includes(key)) return 'CONTROL';
+    if (item.category === 'REVIEW') return 'REVIEW';
+    if (['SELL','SHIFT'].includes(item.category) || ['corrections','cash_variance_reconciliation','shift_close'].includes(key)) return 'SELL';
+    if (item.category === 'STOCK' || item.category === 'SETUP') return 'CATALOG';
+    if (item.category === 'CONTROL') return 'CONTROL';
+    return 'OTHER';
+};
+const businessType = computed(() => String((page.props.business_profile as any)?.business_type ?? 'retail'));
+const businessTypeLabel = computed(() => ({laundry: 'Laundry', boarding: locale.value === 'id' ? 'Kosan' : 'Boarding', homestay: 'Homestay', food: locale.value === 'id' ? 'Makanan & minuman' : 'Food & beverage', retail: locale.value === 'id' ? 'Ritel' : 'Retail'} as Record<string,string>)[businessType.value] ?? (locale.value === 'id' ? 'Usaha' : 'Business'));
 const titles: Record<string, string> = {
     ServicePos: 'Business workspace', OwnerSecurity: 'Account & security', DesktopSettings: 'POS Windows', Products: 'Products', Settings: 'Business settings', Reports: 'Reports', Workspace: 'Business management', OperationsHub: 'Business overview', Cashier: 'Cashier', CatalogInventorySetup: 'Catalog & stock',
     ShiftStart: 'Start shift', ShiftClose: 'Close shift', InventoryReplenishment: 'Receive stock',
@@ -68,7 +87,7 @@ const activePath = computed(() => new URL(page.url, window.location.origin).path
 const isolated=computed(()=>['laundry','boarding','homestay'].includes(String((page.props.business_profile as any)?.business_type??'')));
 const groups = computed(() => categories.map((category) => ({
     ...category,
-    items: navigation.value.filter((item) => item.category === category.key).filter(item=>!isolated.value||['business_settings','business_access','business_people','business_desktop'].includes(item.key))
+    items: navigation.value.filter((item) => categoryFor(item) === category.key).filter(item=>!isolated.value||['business_settings','business_access','business_people','business_desktop'].includes(item.key))
         .filter((item) => t(labels[item.key]?.title ?? item.title).toLowerCase().includes(search.value.toLowerCase().trim())),
 })).filter((group) => group.items.length > 0));
 function isActive(url: string): boolean { return activePath.value === new URL(url, window.location.origin).pathname.replace(/\/$/, ''); }
@@ -140,18 +159,18 @@ onMounted(() => { resize(); document.addEventListener('keydown', keydown); windo
 onBeforeUnmount(() => { request?.abort(); document.removeEventListener('keydown', keydown); window.removeEventListener('resize', resize); document.removeEventListener('click', confirmLeave, true); window.removeEventListener('beforeunload', beforeUnload); document.body.classList.remove('oq-drawer-open'); });
 </script>
 <template>
-    <div class="oq-app" :data-business-type="(page.props.business_profile as any)?.business_type ?? 'retail'">
+    <div class="oq-app" :data-business-type="businessType">
         <a class="oq-skip" href="#workspace-content">{{ t("Skip to workspace") }}</a>
         <button v-if="mobileOpen" class="oq-backdrop no-print" type="button" :aria-label="t('Close navigation')" @click="mobileOpen = false" />
         <aside id="workspace-navigation" ref="drawer" class="oq-sidebar no-print" :class="{ 'is-open': mobileOpen }" :inert="mobileViewport && !mobileOpen" :aria-label="t('Workspace navigation')">
             <a class="oq-brand" href="/pos" :aria-label="t('oneQay overview')"><img v-if="($page.props.branding as any)?.logo" :src="($page.props.branding as any).logo" alt="oneQay" style="width:48px;height:40px;object-fit:contain"/><span v-else class="oq-brand-mark">{{ t("Q") }}<span /></span><span>{{ t("oneQay") }}<small>{{ t("INTELLIGENT BUSINESS OS") }}</small></span></a>
             <button class="oq-mobile-close" type="button" :aria-label="t('Close navigation')" @click="mobileOpen = false"><WorkspaceIcon name="x" /></button>
-            <div class="oq-workspace"><span class="oq-workspace-icon"><WorkspaceIcon name="store" /></span><div><strong>{{ currencyPreferences.business_name }}</strong><small>{{ t("Your active outlet") }}</small></div></div>
+            <div class="oq-workspace"><span class="oq-workspace-icon"><WorkspaceIcon name="store" /></span><div><strong>{{ currencyPreferences.business_name }}</strong><small>{{ businessTypeLabel }} · {{ t("Your active outlet") }}</small></div></div>
             <label class="oq-nav-search"><WorkspaceIcon name="search" :size="17" /><input v-model="search" type="search" :placeholder="t('Find a workspace')" :aria-label="t('Find a workspace')" /></label>
             <nav class="oq-nav">
-                <a v-if="isolated" class="oq-nav-link" href="/pos/service"><WorkspaceIcon name="store"/><span>{{t("Business workspace")}}</span></a><a class="oq-nav-link" href="/pos" :aria-current="activePath === '/pos' ? 'page' : undefined"><WorkspaceIcon name="layout-dashboard" /><span>{{ t("Command Center") }}</span></a>
+                <a v-if="isolated" class="oq-nav-link" href="/pos/service" :aria-current="activePath === '/pos/service' ? 'page' : undefined"><WorkspaceIcon name="store"/><span>{{t("Business workspace")}}</span></a><a class="oq-nav-link" href="/pos" :aria-current="activePath === '/pos' ? 'page' : undefined"><WorkspaceIcon name="layout-dashboard" /><span>{{ t("Command Center") }}</span></a>
                 <p v-if="loading" class="oq-nav-empty" role="status">{{ t("Loading navigation…") }}</p>
-                <details v-for="group in groups" :key="group.key" class="oq-nav-group" open><summary>{{ t(group.title) }}</summary>
+                <details v-for="group in groups" :key="group.key" class="oq-nav-group" open><summary>{{ locale === 'id' ? group.id : group.en }}</summary>
                     <a v-for="item in group.items" :key="item.key" class="oq-nav-link" :href="item.url" :aria-current="isActive(item.url) ? 'page' : undefined"><WorkspaceIcon :name="labels[item.key]?.icon ?? 'clipboard-list'" /><span>{{ t(labels[item.key]?.title ?? item.title) }}</span></a>
                 </details>
                 <p v-if="search && groups.length === 0 && !loading" class="oq-nav-empty">{{ t("No matching workspace.") }}</p>

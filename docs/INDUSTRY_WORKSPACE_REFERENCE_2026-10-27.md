@@ -16,3 +16,6 @@ Owner supplied 20 single-page image PDFs: dashboard, catalog, stock receipts, cu
 
 ## Continuation: service navigation and access
 The merchant shell now accepts the server-authorized service-workspace navigation response when returning from a settings page, while checking tenant, organization and outlet against any existing scope. Commerce overview retains its device scope check. Owner security links follow the server eligibility flag. Service types receive distinct palette-only sidebar accents. Frontend checks/build must pass before merge; this is not a claim that the remaining feature inventory is complete.
+
+## Continuation: role-scoped reference navigation
+Merchant navigation groups existing server-authorized destinations into product/inventory, sales/cashier, purchasing, customers/people, finance, reports and settings. Unknown destinations remain visible in an other group instead of being silently lost. Business type is labeled in the header context and the service link marks the current page. Grouping changes presentation only: route and action permissions remain enforced on the server. Web type-check, palette guard and production build passed locally. Full reference features and end-to-end acceptance remain open.
