@@ -27,8 +27,10 @@ foreach(['laundry','boarding','homestay']as$type){
  $input=['action'=>'order.create','operation_id'=>'stable-order-'.$type,'resource_id'=>$resource['id'],'customer_name'=>'Synthetic customer','contact'=>'+628000000','start_date'=>$start,'end_date'=>$end,'quantity_milli'=>$type==='laundry'?1250:1000];
  $order=$pos->command($input);$assert($pos->command($input)===$order,'order replay does not duplicate');$expected=$type==='laundry'?12500:($type==='homestay'?30000:10000);$assert($order['total_atomic']===$expected,'vertical pricing uses its own rule');
  $workspace=$pos->read();$assert(count($workspace['resources'])===1&&count($workspace['orders'])===1&&$workspace['type']===$type,'vertical data isolated');
+ $assert($workspace['summary']===['active_orders'=>1,'outstanding_atomic'=>$expected],'outlet summary includes full unpaid balance');
+ $emptyPage=$pos->read(2);$assert($emptyPage['orders']===[]&&$emptyPage['summary']===$workspace['summary'],'outlet summary is independent of order pagination');
  if($type!=='laundry'){try{$run('order.create',array_diff_key($input,array_flip(['action','operation_id'])));$assert(false,'overlap allowed');}catch(PlatformViolation $e){$assert($e->reason==='ROOM_ALREADY_RESERVED','room overlap denied');}}
- $db->table('oneqay_'.$type.'_orders')->where('id',$order['id'])->update(['outlet_id'=>'different-outlet']);$scoped=$pos->read();$assert($scoped['orders']===[]&&$scoped['invoices']===[],'cross-outlet orders and invoices are excluded');$db->table('oneqay_'.$type.'_orders')->where('id',$order['id'])->update(['outlet_id'=>$businessOwner->outletId()->value()]);
+ $db->table('oneqay_'.$type.'_orders')->where('id',$order['id'])->update(['outlet_id'=>'different-outlet']);$scoped=$pos->read();$assert($scoped['orders']===[]&&$scoped['invoices']===[]&&$scoped['summary']===['active_orders'=>0,'outstanding_atomic'=>0],'cross-outlet orders and invoices are excluded');$db->table('oneqay_'.$type.'_orders')->where('id',$order['id'])->update(['outlet_id'=>$businessOwner->outletId()->value()]);
  $invoice=$workspace['invoices'][0];try{$run('payment.record',['invoice_id'=>$invoice['id'],'amount_atomic'=>$expected]);$assert(false,'payment before open');}catch(PlatformViolation $e){$assert($e->reason==='OWN_SHIFT_REQUIRED','own open register required');}
  $run('shift.open',['opening_atomic'=>5000]);
  $reset=$app->make(App\Infrastructure\Platform\ControlPlaneBusinessReset::class);$plan=$reset->preview($b,'transactions');$assert(in_array('RESET_CLOSE_OR_RECOVER_ACTIVE_SHIFTS',$plan['blocked'],true),'reset blocks active industry register');$assert(in_array('oneqay_'.$type.'_orders',array_column($plan['entries'],'table'),true),'reset preview includes industry-owned transaction records');
@@ -37,6 +39,18 @@ foreach(['laundry','boarding','homestay']as$type){
  $payment=['action'=>'payment.record','operation_id'=>'stable-payment-'.$type,'invoice_id'=>$invoice['id'],'amount_atomic'=>$expected];$paid=$pos->command($payment);$assert($pos->command($payment)===$paid,'payment replay has one ledger effect');
  $version=1;foreach($type==='laundry'?['washing','drying','ironing','ready','collected']:['checked_in','checked_out']as$status){$run('order.transition',['id'=>$order['id'],'version'=>$version++,'status'=>$status]);}
  $close=$run('shift.close',['closing_atomic'=>5000+$expected]);$assert($close['variance_atomic']===0&&$close['received_atomic']===$expected,'isolated close report reconciles');
+ $reloaded=$pos->read();$assert($reloaded['summary']===['active_orders'=>0,'outstanding_atomic'=>0],'completed and paid orders clear the outlet summary');$assert(array_diff_assoc($close,$reloaded['last_closing'])===[]&&count($reloaded['closing_history'])===1,'closing report survives workspace reload from durable ledger');
+ $shiftTable='oneqay_'.$type.'_shifts';
+ foreach(['tenant_id','organization_id','outlet_id','identity_id','device_id']as$scopeKey){
+  $savedScope=$db->table($shiftTable)->where('id',$close['id'])->value($scopeKey);
+  $db->table($shiftTable)->where('id',$close['id'])->update([$scopeKey=>'different-scope']);
+  $hidden=$pos->read();$assert($hidden['last_closing']===null&&$hidden['closing_history']===[],'closing history excludes mismatched '.$scopeKey);
+  $db->table($shiftTable)->where('id',$close['id'])->update([$scopeKey=>$savedScope]);
+ }
+ $closedRow=(array)$db->table($shiftTable)->where('id',$close['id'])->first();$historicalIds=[];
+ for($i=0;$i<24;$i++){$historicalId=bin2hex(random_bytes(16));$historicalIds[]=$historicalId;$db->table($shiftTable)->insert(array_replace($closedRow,['id'=>$historicalId,'closed_at'=>$close['closed_at']-1000+$i]));}
+ $bounded=$pos->read();$assert(count($bounded['closing_history'])===20&&$bounded['last_closing']['id']===$close['id'],'closing history is bounded and newest first');
+ $db->table($shiftTable)->whereIn('id',$historicalIds)->delete();
  $edited=$run('resource.save',['id'=>$resource['id'],'version'=>1,'name'=>'Updated '.$type,'unit'=>$type==='laundry'?'kg':($type==='boarding'?'month':'night'),'rate_atomic'=>12000,'currency'=>'IDR','scale'=>0,'enabled'=>false]);$assert($edited['version']===2&&$pos->read()['orders'][0]['total_atomic']===$expected,'resource edits preserve historical prices');
  try{$run('order.transition',['id'=>$order['id'],'version'=>$version,'status'=>$type==='laundry'?'washing':'checked_in']);$assert(false,'closed state reopened');}catch(PlatformViolation){$assert(true,'terminal state cannot reopen');}
 }

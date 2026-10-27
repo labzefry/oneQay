@@ -657,3 +657,6 @@ PR #984 adds cashier account switching without losing local receipts, automatic 
 
 ### Industry workspace continuation — operational search and print
 Shared service search/status/resource filters, isolated order/closing print documents, preserved closing reports and bounded asynchronous calls implemented. See `docs/INDUSTRY_WORKSPACE_REFERENCE_2026-10-27.md` for passed checks and outstanding release work; not yet deployment-qualified.
+
+### Durable service closing history and outlet summaries
+Implemented scoped 20-record closing history/reprint and full-outlet operational totals. SQLite suite: 222 assertions passed; web/desktop frontend builds and synthetic UI pass. Details and remaining release requirements: `docs/INDUSTRY_WORKSPACE_REFERENCE_2026-10-27.md`.
