@@ -171,3 +171,6 @@ Shared service search/status/resource filters, isolated order/closing print docu
 
 ### Durable service closing history and outlet summaries
 Implemented scoped 20-record closing history/reprint and full-outlet operational totals. SQLite suite: 222 assertions passed; web/desktop frontend builds and synthetic UI pass. Details and remaining release requirements: `docs/INDUSTRY_WORKSPACE_REFERENCE_2026-10-27.md`.
+
+### Service operational dashboard and server search
+Implemented server-wide filtered/paginated service search and industry operational dashboard with drill-through in shared web/Windows UI. Removed duplicate enterprise CI invocations and enabled cancellation of superseded mail/catalog runs. See industry reference continuation for passed validation and remaining release work.

@@ -12,17 +12,38 @@ final readonly class LaravelServicePos {
  public function type():string{$c=$this->access->context();$p=$this->domains->profile($c->tenantId()->value());$type=$p['business_type']??'retail';if(!in_array($type,W::MODULES,true))throw new PlatformViolation('BUSINESS_WORKFLOW_MISMATCH',403);return $type;}
  private function table(string $name):string{return 'oneqay_'.$this->type().'_'.$name;}
  private function query(string $name):\Illuminate\Database\Query\Builder{$c=$this->access->context();return $this->db->table($this->table($name))->where('tenant_id',$c->tenantId()->value())->where('organization_id',$c->organizationId()->value())->where('outlet_id',$c->outletId()->value());}
- public function read(int $page=1):array {
+ public function read(int $page=1,array $filters=[]):array {
   if($page<1||$page>100000)throw new PlatformViolation('INVALID_PAGE');
-  $c=$this->access->require('pos.sale.complete');$type=$this->type();$money=app(\App\Infrastructure\Business\LaravelMerchandisingRepository::class)->settings($c);$total=$this->query('orders')->count();$orders=$this->query('orders')->orderByDesc('created_at')->orderByDesc('id')->offset(($page-1)*100)->limit(100)->get()->map(fn($r)=>(array)$r)->all();$ids=array_column($orders,'id');
+  $c=$this->access->require('pos.sale.complete');$type=$this->type();$money=app(\App\Infrastructure\Business\LaravelMerchandisingRepository::class)->settings($c);
+  if(array_diff(array_keys($filters),['q','status','resource_id','from','to']))throw new PlatformViolation('INVALID_FILTERS');
+  $filters=array_replace(['q'=>'','status'=>'','resource_id'=>'','from'=>'','to'=>''],$filters);
+  foreach($filters as $key=>$value){if(!is_string($value)||mb_strlen($value)>($key==='q'?100:32)||preg_match('/[\x00-\x1f\x7f]/',$value))throw new PlatformViolation('INVALID_FILTERS');$filters[$key]=trim($value);}
+  foreach(['from','to']as$key)if($filters[$key]!=='')W::date($filters[$key]);
+  if($filters['from']!==''&&$filters['to']!==''&&$filters['to']<$filters['from'])throw new PlatformViolation('INVALID_DATE_RANGE');
+  $statuses=$type==='laundry'?['received','washing','drying','ironing','ready','collected','cancelled']:['reserved','checked_in','checked_out','cancelled'];
+  if($filters['status']!==''&&!in_array($filters['status'],$statuses,true))throw new PlatformViolation('INVALID_FILTERS');
+  $query=$this->query('orders');
+  if($filters['status']!=='')$query->where('status',$filters['status']);
+  if($filters['resource_id']!=='')$query->where('resource_id',$filters['resource_id']);
+  if($filters['from']!=='')$query->where('start_date','>=',$filters['from']);
+  if($filters['to']!=='')$query->where('start_date','<=',$filters['to']);
+  if($filters['q']!==''){
+   // Escape SQL LIKE wildcards using an explicit portable escape character.
+   $term='%'.str_replace(['!','%','_'],['!!','!%','!_'],mb_strtolower($filters['q'])).'%';
+   $query->where(function($q)use($term){$q->whereRaw("LOWER(customer_name) LIKE ? ESCAPE '!'",[$term])->orWhereRaw("LOWER(contact) LIKE ? ESCAPE '!'",[$term])->orWhereRaw("LOWER(id) LIKE ? ESCAPE '!'",[$term])->orWhereIn('resource_id',$this->query('resources')->select('id')->whereRaw("LOWER(name) LIKE ? ESCAPE '!'",[$term]));});
+  }
+  $total=(clone $query)->count();$page=min($page,max(1,(int)ceil($total/100)));$orders=$query->orderByDesc('created_at')->orderByDesc('id')->offset(($page-1)*100)->limit(100)->get()->map(fn($r)=>(array)$r)->all();$ids=array_column($orders,'id');
   $invoices=$this->db->table($this->table('invoices'))->where('tenant_id',$c->tenantId()->value())->whereIn('order_id',$ids)->get()->map(fn($r)=>(array)$r)->all();$shift=$this->query('shifts')->where('device_id',$c->deviceId()->value())->where('active_slot',1)->first();
   // Rebuild only this cashier/device's confirmed closing records from the durable ledger.
   $closed=$this->query('shifts')->where('device_id',$c->deviceId()->value())->where('identity_id',$c->identityId()->value())->whereNotNull('closed_at')->orderByDesc('closed_at')->orderByDesc('id')->limit(20)->get();
   $received=$this->db->table($this->table('payments'))->where('tenant_id',$c->tenantId()->value())->whereIn('shift_id',$closed->pluck('id')->all())->selectRaw('shift_id, SUM(amount_atomic) as received_atomic')->groupBy('shift_id')->pluck('received_atomic','shift_id');
   $history=$closed->map(function($row)use($received){$sum=(int)($received[$row->id]??0);$expected=(int)$row->opening_atomic+$sum;return ['id'=>$row->id,'opening_atomic'=>(int)$row->opening_atomic,'received_atomic'=>$sum,'expected_atomic'=>$expected,'counted_atomic'=>(int)$row->closing_atomic,'variance_atomic'=>(int)$row->closing_atomic-$expected,'cashier'=>$row->identity_id,'opened_at'=>(int)$row->opened_at,'closed_at'=>(int)$row->closed_at];})->all();
+  $statusCounts=$this->query('orders')->selectRaw('status, COUNT(*) as total')->groupBy('status')->pluck('total','status')->map(fn($count)=>(int)$count)->all();
+  $workload=$this->query('orders')->whereNotIn('status',['collected','checked_out','cancelled'])->selectRaw('resource_id, COUNT(*) as total')->groupBy('resource_id')->pluck('total','resource_id')->map(fn($count)=>(int)$count)->all();
+  $overdue=$this->query('orders')->whereNotIn('status',['collected','checked_out','cancelled'])->where('end_date','<',$this->localDate($c->tenantId()->value()))->count();
   $active=$this->query('orders')->whereNotIn('status',['collected','checked_out','cancelled'])->count();
   $outstanding=(int)$this->db->table($this->table('invoices'))->where('tenant_id',$c->tenantId()->value())->whereIn('order_id',$this->query('orders')->where('status','!=','cancelled')->select('id'))->selectRaw('COALESCE(SUM(total_atomic - paid_atomic), 0) as balance')->value('balance');
-  return ['summary'=>['active_orders'=>$active,'outstanding_atomic'=>$outstanding],'closing_history'=>$history,'last_closing'=>$history[0]??null,'pagination'=>['page'=>$page,'total'=>$total,'per_page'=>100],'currency'=>$money['currency'],'scale'=>(int)$money['scale'],'symbol'=>$money['symbol'],'type'=>$type,'profile'=>$this->domains->profile($c->tenantId()->value()),'resources'=>$this->query('resources')->orderBy('name')->limit(500)->get()->map(fn($r)=>(array)$r)->all(),'orders'=>$orders,'invoices'=>$invoices,'shift'=>$shift?(array)$shift:null,'can_configure'=>$this->access->allows('authorization.policy.manage'),'server_time'=>time(),'scope'=>['tenant_id'=>$c->tenantId()->value(),'organization_id'=>$c->organizationId()->value(),'outlet_id'=>$c->outletId()->value(),'identity_id'=>$c->identityId()->value()]];
+  return ['filters'=>$filters,'search_supported'=>true,'summary'=>['active_orders'=>$active,'outstanding_atomic'=>$outstanding],'insights'=>['status_counts'=>$statusCounts,'resource_workload'=>$workload,'overdue_orders'=>$overdue,'as_of'=>$this->localDate($c->tenantId()->value())],'closing_history'=>$history,'last_closing'=>$history[0]??null,'pagination'=>['page'=>$page,'total'=>$total,'per_page'=>100],'currency'=>$money['currency'],'scale'=>(int)$money['scale'],'symbol'=>$money['symbol'],'type'=>$type,'profile'=>$this->domains->profile($c->tenantId()->value()),'resources'=>$this->query('resources')->orderBy('name')->limit(500)->get()->map(fn($r)=>(array)$r)->all(),'orders'=>$orders,'invoices'=>$invoices,'shift'=>$shift?(array)$shift:null,'can_configure'=>$this->access->allows('authorization.policy.manage'),'server_time'=>time(),'scope'=>['tenant_id'=>$c->tenantId()->value(),'organization_id'=>$c->organizationId()->value(),'outlet_id'=>$c->outletId()->value(),'identity_id'=>$c->identityId()->value()]];
  }
  // A locked tombstone resolves uncertain operations without allowing a late request to execute.
  public function reconcile(array $in):array {

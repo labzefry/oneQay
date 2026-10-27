@@ -8,6 +8,9 @@ on:
     paths: ['apps/web/**', 'apps/pos-desktop/**', '.github/workflows/mail-catalog-stock.yml']
 permissions:
   contents: read
+concurrency:
+  group: mail-catalog-stock-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 jobs:
   relational-contracts:
     runs-on: ubuntu-latest

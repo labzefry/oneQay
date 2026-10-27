@@ -129,10 +129,23 @@ fn workspace(store: &Store) -> Result<Value> {
 #[tauri::command]
 pub async fn service_workspace(
     page:Option<u32>,
+    filters:Option<Value>,
     state: State<'_, Shared>,
     security: State<'_, auth::Security>,
 ) -> Result<Value> {
     let page=page.unwrap_or(1);if page==0||page>100000{return Err("POS_PAGE_INVALID".into())}
+    let mut url=reqwest::Url::parse("https://localhost/v3/service").map_err(|_|"POS_FILTER_INVALID")?;
+    url.query_pairs_mut().append_pair("page",&page.to_string());
+    if let Some(filters)=filters {
+        let fields=filters.as_object().ok_or("POS_FILTER_INVALID")?;
+        for (key,value) in fields {
+            if !matches!(key.as_str(),"q"|"status"|"resource_id"|"from"|"to") { return Err("POS_FILTER_INVALID".into()); }
+            let value=value.as_str().ok_or("POS_FILTER_INVALID")?;
+            if value.chars().count()>100 { return Err("POS_FILTER_INVALID".into()); }
+            url.query_pairs_mut().append_pair(key,value);
+        }
+    }
+    let path=format!("v3/service?{}",url.query().unwrap_or(""));
     let db = state.inner().clone();
     let sec = security.inner().clone();
     background(move || {
@@ -149,7 +162,7 @@ pub async fn service_workspace(
             Err(e) => return Err(e),
         }
         let (_, token) = credential(&store)?;
-        match checked_request(&store,&sec, &format!("v3/service?page={page}"), &token, None) {
+        match checked_request(&store,&sec, &path, &token, None) {
             Ok(v) => {
                 store
                     .set("service_workspace", &v.to_string())
