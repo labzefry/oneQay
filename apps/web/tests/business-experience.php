@@ -105,4 +105,19 @@ $r=$entryRequest($host,$ticket);$response=$entry->consume($r);$assert($response-
 try{$entry->consume($entryRequest($host,$ticket));$assert(false,'handoff replay accepted');}catch(Symfony\Component\HttpKernel\Exception\HttpException $e){$assert($e->getStatusCode()===401,'handoff replay rejected');}
 $expired=$makeTicket($host,time()-1);try{$entry->consume($entryRequest($host,$expired));$assert(false,'expired handoff accepted');}catch(Symfony\Component\HttpKernel\Exception\HttpException $e){$assert($e->getStatusCode()===401,'expired handoff rejected');}
 $assert(ServiceWorkflow::nextPeriod('2026-01-31','2026-01-31')==='2026-02-28'&&ServiceWorkflow::nextPeriod('2026-02-28','2026-01-31')==='2026-03-31','monthly billing preserves original anniversary across short months');
+// Separate sibling-domain configuration preserves existing business IDs and slugs.
+config(['platform.public_url'=>'https://oneqaydev.example.test','platform.business_domain_url'=>'https://example.test','platform.business_domain_reserved'=>['jakon','magetan']]);
+config(['platform.business_domain_reserved'=>['jakon','magetan','kopikaylangsa']]);$collision=$domains->profile($t);$assert($collision['domain_conflict']&&$collision['url']===null&&$collision['subdomain']==='kopikaylangsa','collision remains visible for platform rename without unsafe URL');config(['platform.business_domain_reserved'=>['jakon','magetan']]);
+$beforeDomain=$db->table('oneqay_business_domains')->get()->toJson();
+$assert($domains->profile($t)['url']==='https://kopikaylangsa.example.test','existing slug uses configured sibling root');
+$assert($domains->hostBusiness('oneqaydev.example.test')===null,'canonical website stays central, not a tenant');
+$assert($domains->hostBusiness('kopikaylangsa.example.test')['tenant_id']===$t,'sibling host resolves existing tenant');
+foreach(['jakon','magetan','oneqaydev']as$occupied){$state=$domains->availability($occupied);$assert(!$state['available']&&count($state['suggestions'])===3,'infrastructure names reserved with suggestions');}
+foreach(['example.test','unknown.example.test','nested.kopikaylangsa.example.test','elsewhere.test']as$unknown){try{$domains->hostBusiness($unknown);$assert(false,'unknown sibling accepted');}catch(PlatformViolation){$assert(true,'unknown hosts fail closed');}}
+$begin=Illuminate\Http\Request::create('https://kopikaylangsa.example.test/business-entry?begin=1');$begin->attributes->set('oneqay.host_business',$b);$begin->setLaravelSession($app['session']->driver());$begin->session()->start();
+$assert(str_starts_with($entry->entry($begin)->getTargetUrl(),'https://oneqaydev.example.test/pos/business-handoff?'),'handoff still returns to canonical login host');
+$host='kopikaylangsa.example.test';$ticket=$makeTicket($host,time()+45);$assert($entry->consume($entryRequest($host,$ticket))->getData(true)['redirect']==='/pos','sibling handoff remains host and state bound');
+$assert($db->table('oneqay_business_domains')->get()->toJson()===$beforeDomain,'root configuration does not rewrite existing account domains');
+foreach(['https://bad..test','https://-bad.test','https://bad-.test','https://example.test:443','https://example.test/path','https://user@example.test','http://example.test']as$badRoot){try{BusinessDomain::root($badRoot);$assert(false,'unsafe root accepted');}catch(PlatformViolation){$assert(true,'unsafe root rejected');}}
+config(['platform.public_url'=>'https://oneqay.example.test','platform.business_domain_url'=>'','platform.business_domain_reserved'=>[]]);$assert($domains->profile($t)['url']==='https://kopikaylangsa.oneqay.example.test','empty new config preserves legacy root');
 echo 'BUSINESS_EXPERIENCE_'.$engine.'_PASS assertions='.$n.PHP_EOL;

@@ -453,3 +453,7 @@ Owner-to-cashier enablement binds only the authenticated active business owner's
 Cashier switching redacts the prior workspace and retains its separate encrypted credential profile/outbox. It does not transfer a register shift to the new identity. Existing independent shift finalization and tenant permission checks remain enforced. Only network transport loss allows existing offline credential fallback; HTTP authentication/permission/server failures do not silently become offline authentication. A queue item becomes accepted only on a validated matching server receipt.
 
 HTML email escapes customer-supplied text and only promotes exact configured HTTPS first-party activation links to buttons. No external image/tracking request is introduced. Signed updater maintenance is available before app login but cannot run unsigned code, change the embedded trust key or omit a consistent local backup.
+
+## 2026-10-28 — Business domain / updater successor
+
+See [split-root configuration, reserved hostnames, trust boundary and actual-asset publication](docs/operations/BUSINESS_DOMAIN_UPDATER_2026-10-28.md). Existing tenant data, host-only cookies, central login and installed signing trust must remain unchanged. Domain activation requires separate DNS, routing and TLS verification; source tests alone do not prove hosting or installed-device acceptance.

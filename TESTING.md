@@ -163,3 +163,7 @@ Stage 1 source changes: independent SMTP/NOC worker phases; live owner delivery 
 Run `php apps/web/tests/simplified-pos-onboarding.php` on a disposable SQLite database, and `PLATFORM_TEST_ENGINE=mysql` for the CI disposable MySQL fixture. Covers normalized duplicate owner/cashier emails, same-identity owner POS enablement, unchanged credentials, required TOTP, activation JSON/HTML navigation and hostile email-content escaping. No external SMTP sends or production mutation.
 
 Run `cargo test --manifest-path apps/pos-desktop/core/Cargo.toml --locked` for per-profile queue isolation, remote-shift guards and readable update backups of unfinished cash. `node apps/pos-desktop/tests/ui.cjs` checks login, shift, PIN, printers, update access, language and minimum viewport. CI Windows native compilation is separately required. Signed publication explicitly runs `updates::release_tests::verifies_release_signature_against_installed_public_key` against the built asset; ordinary CI cannot claim that ignored, asset-dependent test as passed.
+
+## 2026-10-28 — Business domain / updater successor
+
+See [split-root configuration, reserved hostnames, trust boundary and actual-asset publication](docs/operations/BUSINESS_DOMAIN_UPDATER_2026-10-28.md). Existing tenant data, host-only cookies, central login and installed signing trust must remain unchanged. Domain activation requires separate DNS, routing and TLS verification; source tests alone do not prove hosting or installed-device acceptance.

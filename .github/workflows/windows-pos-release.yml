@@ -23,6 +23,8 @@ jobs:
     if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-24.04
     steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - run: python apps/pos-desktop/scripts/test-release-manifest.py
       - name: Report signing availability without reading or publishing key material
         shell: bash
         env:
@@ -105,10 +107,27 @@ jobs:
           }
           gh release view $env:RELEASE_TAG --repo labzefry/oneQay *> $null
           if ($LASTEXITCODE -eq 0) { throw 'Immutable version already published. Use a new version.' }
-          gh release create $env:RELEASE_TAG $exe.FullName ($exe.FullName + '.sig') SHA256SUMS.txt --repo labzefry/oneQay --verify-tag --title "oneQay POS $version" --notes 'Windows POS 0.2.4 recovery trust generation. Older installations require one manual upgrade after backing up local data; install for the whole computer in Program Files. Future updates use stable-v2. Keep the same Windows user and do not delete application data.' --latest=false
+          gh release create $env:RELEASE_TAG $exe.FullName ($exe.FullName + '.sig') SHA256SUMS.txt --repo labzefry/oneQay --verify-tag --title "oneQay POS $version" --notes "Signed oneQay POS $version patch. Existing 0.2.4 and newer installations use the in-app updater without uninstalling. Local cashier data is backed up before installation." --latest=false
           if ($LASTEXITCODE -ne 0) { throw 'Version publication failed; stable channel untouched' }
-          $url = 'https://github.com/labzefry/oneQay/releases/download/' + $env:RELEASE_TAG + '/' + [Uri]::EscapeDataString($exe.Name)
-          @{version=$version;notes="oneQay POS $version";pub_date=(Get-Date).ToUniversalTime().ToString('o');platforms=@{'windows-x86_64'=@{signature=$signature;url=$url}}} | ConvertTo-Json -Depth 6 | Set-Content latest.json
+          # GitHub normalizes asset names (including spaces to dots). Read back the
+          # actual public release and bytes before changing the installed update channel.
+          gh api "repos/labzefry/oneQay/releases/tags/$env:RELEASE_TAG" | Set-Content published-release.json -Encoding utf8
+          if ($LASTEXITCODE -ne 0) { throw 'Published release readback failed' }
+          $published = Get-Content published-release.json -Raw | ConvertFrom-Json
+          $remoteAssets = @($published.assets | Where-Object { $_.name.EndsWith('-setup.exe') })
+          if ($remoteAssets.Count -ne 1) { throw 'Expected one published installer' }
+          New-Item -ItemType Directory -Path published-readback -ErrorAction Stop | Out-Null
+          $remoteExe = Join-Path (Resolve-Path published-readback) $remoteAssets[0].name
+          Invoke-WebRequest -Uri $remoteAssets[0].browser_download_url -OutFile $remoteExe -TimeoutSec 180
+          $remoteSig = @($published.assets | Where-Object { $_.name -eq ($remoteAssets[0].name + '.sig') })
+          if ($remoteSig.Count -ne 1) { throw 'Published signature missing' }
+          Invoke-WebRequest -Uri $remoteSig[0].browser_download_url -OutFile ($remoteExe + '.sig') -TimeoutSec 30
+          if ((Get-FileHash $remoteExe -Algorithm SHA256).Hash.ToLower() -ne $sha) { throw 'Published download differs from signed installer' }
+          $env:ONEQAY_RELEASE_INSTALLER = $remoteExe
+          cargo test --release --locked --target x86_64-pc-windows-msvc --manifest-path src-tauri/Cargo.toml updates::release_tests::verifies_release_signature_against_installed_public_key -- --ignored --exact
+          if ($LASTEXITCODE -ne 0) { throw 'Published download signature rejected; stable channel untouched' }
+          python scripts/release-manifest.py --release published-release.json --version $version --installer $remoteExe --output latest.json
+          if ($LASTEXITCODE -ne 0) { throw 'Published asset metadata invalid; stable channel untouched' }
           gh release view pos-windows-stable-v2 --repo labzefry/oneQay *> $null
           if ($LASTEXITCODE -ne 0) {
             gh release create pos-windows-stable-v2 --repo labzefry/oneQay --target (git rev-parse HEAD) --title 'oneQay POS stable update channel' --notes 'Only the signed update manifest is mutable. Versioned installers remain immutable.' --latest=false
