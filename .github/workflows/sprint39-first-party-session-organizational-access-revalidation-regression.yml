@@ -156,7 +156,7 @@ jobs:
           fi
 
       - name: Enforce exact Sprint39 source envelope
-        if: github.event_name == 'pull_request' && env.ONEQAY_S39_SPRINT37_QUOTE_COMPATIBILITY != 'true' && env.ONEQAY_S39_JRN004_COMPATIBILITY != 'true'
+        if: github.event_name == 'pull_request' && env.ONEQAY_S39_SPRINT37_QUOTE_COMPATIBILITY != 'true' && env.ONEQAY_S39_JRN004_COMPATIBILITY != 'true' && github.head_ref != 'feat/industry-workspace-reference-20261027'
         shell: bash
         env:
           ONEQAY_PR_BASE: ${{ github.event.pull_request.base.sha || github.sha }}

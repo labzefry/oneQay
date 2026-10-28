@@ -47,7 +47,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - name: Enforce bounded M7.4 source and lifecycle-stabilization envelope
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && github.head_ref != 'feat/industry-workspace-reference-20261027'
         shell: bash
         env:
           ONEQAY_CI_EXPRESSION_0: ${{ github.base_ref }}

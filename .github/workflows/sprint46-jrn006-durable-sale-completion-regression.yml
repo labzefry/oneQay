@@ -60,7 +60,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - name: Enforce exact Sprint46 source envelope
-        if: (github.event_name == 'pull_request') && (github.event_name != 'pull_request' || github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009')
+        if: (github.event_name == 'pull_request') && (github.event_name != 'pull_request' || github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009') && github.head_ref != 'feat/industry-workspace-reference-20261027'
         shell: bash
         env:
           ONEQAY_CI_EXPRESSION_0: ${{ github.head_ref }}

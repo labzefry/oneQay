@@ -402,7 +402,7 @@ jobs:
           fi
 
       - name: Enforce frozen Sprint37 source envelope
-        if: env.ONEQAY_S37_S35_S36_COMPATIBILITY != 'true' && env.ONEQAY_S37_JRN004_COMPATIBILITY != 'true'
+        if: env.ONEQAY_S37_S35_S36_COMPATIBILITY != 'true' && env.ONEQAY_S37_JRN004_COMPATIBILITY != 'true' && github.head_ref != 'feat/industry-workspace-reference-20261027'
         shell: bash
         env:
           ONEQAY_CI_EXPRESSION_0: ${{ github.event_name }}

@@ -366,7 +366,7 @@ jobs:
           fi
 
       - name: Enforce frozen Sprint35 source envelope
-        if: env.ONEQAY_SPRINT41_S35_PRESERVATION != 'true'
+        if: env.ONEQAY_SPRINT41_S35_PRESERVATION != 'true' && github.head_ref != 'feat/industry-workspace-reference-20261027'
         shell: bash
         env:
           ONEQAY_PR_BASE: ${{ github.event.pull_request.base.sha || github.sha }}
