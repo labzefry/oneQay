@@ -1,3 +1,9 @@
+## 2026-10-28 — Separate tenant domain and Windows update repair
+
+- Add optional tenant-domain HTTPS base and reserved sibling names; preserve existing business slugs, canonical login, host-only sessions and tenant-bound handoffs.
+- Fix Windows update publication to use GitHub's actual asset URL after normalized upload, verify public downloaded bytes/signature, and prepare signed patch0.2.7 with unchanged trust identity.
+- Source implementation/validation and hosting activation are separate. See [implementation and operator contract](docs/operations/BUSINESS_DOMAIN_UPDATER_2026-10-28.md).
+
 ## 2026-10-27 — Industry workspace reference (in progress)
 
 See [industry workspace reference](docs/INDUSTRY_WORKSPACE_REFERENCE_2026-10-27.md). Palette-only industry identity has started; reference parity, Windows update publication, testing and deployment remain pending.

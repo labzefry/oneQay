@@ -806,3 +806,7 @@ A successful workflow run is governance evidence only. It is not deployment appr
 Application deployment remains unavailable until the relevant architecture, technology, security, testing, hosting, deployment, release, and lifecycle decisions receive separate Product Owner approval and execution authority. DEC-005R publication alone does not start M7.5 or deployment.
 
 Attribution: Lab | zefry
+
+## 2026-10-28 — Business domain / updater successor
+
+See [split-root configuration, reserved hostnames, trust boundary and actual-asset publication](docs/operations/BUSINESS_DOMAIN_UPDATER_2026-10-28.md). Existing tenant data, host-only cookies, central login and installed signing trust must remain unchanged. Domain activation requires separate DNS, routing and TLS verification; source tests alone do not prove hosting or installed-device acceptance.

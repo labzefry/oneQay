@@ -12,6 +12,8 @@ final class BusinessDomain {
  public static function root(string $url):string {
   $parts=parse_url($url);$host=strtolower($parts['host']??'');
   if(($parts['scheme']??'')!=='https'||(isset($parts['port'])||isset($parts['user']))||isset($parts['pass'])||!preg_match('/\A[a-z0-9.-]+\.[a-z]{2,}\z/D',$host)||filter_var($host,FILTER_VALIDATE_IP)||strlen($host)>200||!in_array($parts['path']??'',['','/'],true)||isset($parts['query'])||isset($parts['fragment']))throw new PlatformViolation('BUSINESS_DOMAIN_NOT_CONFIGURED',503);
+  if(strlen($host)>253)throw new PlatformViolation('BUSINESS_DOMAIN_NOT_CONFIGURED',503);
+  foreach(explode('.',$host)as$label)if(!preg_match('/\A[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\z/D',$label))throw new PlatformViolation('BUSINESS_DOMAIN_NOT_CONFIGURED',503);
   return $host;
  }
  public static function type(mixed $type):string {if(!is_string($type)||!in_array($type,self::TYPES,true))throw new PlatformViolation('BUSINESS_TYPE_INVALID',422);return $type;}

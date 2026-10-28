@@ -23,7 +23,7 @@ final readonly class LaravelWebsiteStore implements WebsiteStore {
       if($this->mail===null||!str_starts_with($this->publicUrl,'https://'))throw new PlatformViolation('REGISTRATION_MAIL_UNAVAILABLE',503);
       $this->db->table('oneqay_platform_businesses')->insert($b);
       if($this->db->getSchemaBuilder()->hasTable('oneqay_business_profiles')){
-       $slug=$input['subdomain']??null;if($slug===null){$base=substr(\Illuminate\Support\Str::slug($input['name']),0,32);try{\App\Application\BusinessExperience\BusinessDomain::slug($base);}catch(PlatformViolation){$base='business-'.substr($id,0,8);}$slug=$base;for($n=2;$this->db->table('oneqay_business_domains')->where('slug',$slug)->exists();$n++)$slug=$base.$n;}
+       $slug=$input['subdomain']??null;if($slug===null){$base=substr(\Illuminate\Support\Str::slug($input['name']),0,32);try{\App\Application\BusinessExperience\BusinessDomain::slug($base);}catch(PlatformViolation){$base='business-'.substr($id,0,8);}$slug=$base;for($n=2;!app(\App\Infrastructure\BusinessExperience\LaravelBusinessDomains::class)->available($slug);$n++)$slug=$base.$n;}
        app(\App\Infrastructure\BusinessExperience\LaravelBusinessDomains::class)->claim($b,$slug,$input['business_type']);
       }
       $url=rtrim($this->publicUrl,'/').'/activate-business#token='.$token;
