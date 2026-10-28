@@ -1,3 +1,7 @@
+## 2026-10-28 — Qualified split-domain deployment successor
+
+Bound source-only operator to installed d32, preserving schema/data/credentials, with TLS/asset preflight, reserved-claim collision refusal and protected runtime domain settings. Atomic post-switch probes verify unknown-host denial, existing business login and hidden owner route. Fixed middleware conversion of domain violations to proper HTTP status instead of server500. [Deployment evidence](docs/operations/BUSINESS_DOMAIN_UPDATER_2026-10-28.md).
+
 ## 2026-10-28 — Separate tenant domain and Windows update repair
 
 - Add optional tenant-domain HTTPS base and reserved sibling names; preserve existing business slugs, canonical login, host-only sessions and tenant-bound handoffs.

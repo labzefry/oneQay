@@ -62,3 +62,7 @@ signature and downloaded tamper.
 Validation and publication/deployment evidence must be added below when observed.
 This source record alone does not assert hosting activation or a successful
 installed-device update. Never reset merchant data or disable signature checks.
+
+## Hosting preparation and bounded activation successor
+
+Observed cPanel wildcard `*.n07.my.id` now maps to the existing oneQayDev public document root. A random sibling login rendered with valid browser HTTPS. This is routing evidence, not yet tenant activation. The new source-only operator binds installedd32 and requires random-sibling HTTPS asset hash proof before mutation; all existing reserved-claim collisions block preflight. Only domain root/reserved list/enabled flag change beside source/artifact hashes; duplicate LF/CRLF/exported entries fail closed. Credential bytes remain unchanged. Atomic rollback includes known-account200, unknown-account404 and tenant owner-route404 probes. No schema migration or business reset. Operator tests13 assertions and PHP lint passed locally; current-source SQL/CI/review and on-host execution remain required. Middleware now maps PlatformViolation status to an HTTP exception so unknown hosts do not become500.
