@@ -8,6 +8,8 @@ on:
     branches: [main]
     paths:
       - 'apps/web/**'
+      - 'packages/service-pos-ui/**'
+      - 'packages/ui-theme/**'
       - 'tools/build-production-business-release.sh'
       - 'tools/validate-production-business-release-manifest.php'
       - 'tools/production/tests/production-business-release-source-certification.php'

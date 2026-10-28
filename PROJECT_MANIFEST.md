@@ -1,3 +1,7 @@
+## 2026-10-27 — Industry workspace reference (in progress)
+
+See [industry workspace reference](docs/INDUSTRY_WORKSPACE_REFERENCE_2026-10-27.md). Palette-only industry identity has started; reference parity, Windows update publication, testing and deployment remain pending.
+
 ## 2026-10-26 — Additive deployment operator qualification
 
 PR #987 head ce441a68b5fadbee4be7736c110f395ae170562b completed 163 GitHub checks: 161 successful and 2 skipped. A dedicated successor operator now binds installed d63cf4dd44af, verifies the exact two additional module migrations, preserves all 89 historical table definitions and 39 migration receipts, and expects 108 tables / 41 receipts. Private SQL backup precedes migration; partial DDL stops for forward repair; failed public probes restore prior routing/assets without dropping new tables. Healthy-worker retention uses a verified private ZIP before expanded predecessor removal.
@@ -148,3 +152,15 @@ Owner-requested Windows queue recovery, item-level control-plane diagnostics and
 ## 2026-10-23 — Cashier and onboarding source successor
 
 Owner-requested scoped implementation is on PR #984: account switching keeps isolated SQLite profiles; owner POS binds existing identity and MFA; normalized duplicate account email is rejected; activation navigates through canonical authentication; HTML/plain-text email; signed patch preparation preserves active shifts and pending receipts. No new schema, production reset or financial-history rewrite. Publication/deployment and installed-device acceptance remain separately evidenced. [Checkpoint](docs/operations/POS_ACCOUNT_FLOW_UPDATE_2026-10-23.md).
+
+### Industry workspace continuation — operational search and print
+Shared service search/status/resource filters, isolated order/closing print documents, preserved closing reports and bounded asynchronous calls implemented. See `docs/INDUSTRY_WORKSPACE_REFERENCE_2026-10-27.md` for passed checks and outstanding release work; not yet deployment-qualified.
+
+### Durable service closing history and outlet summaries
+Implemented scoped 20-record closing history/reprint and full-outlet operational totals. SQLite suite: 222 assertions passed; web/desktop frontend builds and synthetic UI pass. Details and remaining release requirements: `docs/INDUSTRY_WORKSPACE_REFERENCE_2026-10-27.md`.
+
+### Service operational dashboard and server search
+Implemented server-wide filtered/paginated service search and industry operational dashboard with drill-through in shared web/Windows UI. Removed duplicate enterprise CI invocations and enabled cancellation of superseded mail/catalog runs. See industry reference continuation for passed validation and remaining release work.
+
+### 28 October 2026 — workspace release and owner text colors
+Shared web/Windows theme enforces Black Onyx on white and white on colored surfaces. Windows candidate bumped to 0.2.6 with updater identity unchanged. Prepared no-schema cPanel successor with verified archive retention; source-only historical envelope skips are limited to this product branch and oversized workflow scripts were extracted with runtime assertions retained. See `docs/INDUSTRY_WORKSPACE_REFERENCE_2026-10-27.md` for delivered scope and remaining advanced features.

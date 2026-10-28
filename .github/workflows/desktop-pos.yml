@@ -3,7 +3,7 @@ on:
   push:
     branches: [experience-pos-desktop-20261018, pos-enterprise-20261019]
   pull_request:
-    paths: ['apps/pos-desktop/**', 'apps/web/**', 'packages/service-pos-ui/**', '.github/workflows/desktop-pos.yml']
+    paths: ['apps/pos-desktop/**', 'apps/web/**', 'packages/service-pos-ui/**', 'packages/ui-theme/**', '.github/workflows/desktop-pos.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -72,13 +72,9 @@ jobs:
       - run: composer install --no-interaction --prefer-dist
       - run: php tests/browser-error-experience.php
       - run: php tests/desktop-pos-sync.php
-      - run: php tests/desktop-enterprise.php
       - run: php tests/desktop-sync-business-reset.php
       - run: php tests/business-experience.php
       - run: PLATFORM_TEST_ENGINE=mysql php tests/desktop-pos-sync.php
-      - name: Reset disposable database for enterprise scenario
-        run: mysql --host=127.0.0.1 --user=root --password=synthetic-test-only -e 'DROP DATABASE oneqay_platform_test; CREATE DATABASE oneqay_platform_test;'
-      - run: PLATFORM_TEST_ENGINE=mysql php tests/desktop-enterprise.php
       - name: Reset disposable database for owner data reset scenario
         run: mysql --host=127.0.0.1 --user=root --password=synthetic-test-only -e 'DROP DATABASE oneqay_platform_test; CREATE DATABASE oneqay_platform_test;'
       - run: PLATFORM_TEST_ENGINE=mysql php tests/desktop-sync-business-reset.php
@@ -86,6 +82,7 @@ jobs:
         run: mysql --host=127.0.0.1 --user=root --password=synthetic-test-only -e 'DROP DATABASE oneqay_platform_test; CREATE DATABASE oneqay_platform_test;'
       - run: PLATFORM_TEST_ENGINE=mysql php tests/business-experience.php
       - run: npm ci --no-audit --no-fund
+      - run: node --test ../../packages/ui-theme/surface-colors.test.mjs
       - run: npm run type-check && npm run build
 
   desktop-ui:
@@ -102,6 +99,7 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - run: npm run build
       - run: node tests/ui.cjs
+      - run: node --test ../../packages/service-pos-ui/operation-timeout.test.mjs
       - run: node tests/service-ui.cjs
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()

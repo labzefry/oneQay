@@ -132,3 +132,6 @@ Stage 1 source changes: independent SMTP/NOC worker phases; live owner delivery 
 ## 2026-10-23 — Activation, email and native POS palette scope
 
 Activation now uses readable 16px forms, a restrained morph card, accessible focus, reduced motion and the exact owner seven-color palette. Native POS stylesheet is migrated to that same palette, with readable body/input size, solid button contrast and a login-screen update area. Email uses inline table layout, 16px text, no external images and an escaped first-party activation button with a plain-text fallback. The palette guard now includes these named activation and POS stylesheets; it does not certify every unrelated legacy UI.
+
+## Owner surface/text rule — 28 October 2026
+White backgrounds require Black Onyx (`#202020`) for all text. Colored backgrounds require white (`#FFFFFF`) text. Use dark/primary approved fills when white text is required; pale text-bearing fills normalize to white to retain contrast. The shared web/Windows build theme in `packages/ui-theme/surface-colors.mjs` enforces the rule. Keep decorative borders/charts within the existing seven-color palette.

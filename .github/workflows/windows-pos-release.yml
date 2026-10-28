@@ -4,9 +4,9 @@ on:
   push:
     tags: ['pos-windows-v*']
     branches: [main]
-    paths: ['apps/pos-desktop/**', '.github/workflows/windows-pos-release.yml']
+    paths: ['apps/pos-desktop/**', 'packages/service-pos-ui/**', 'packages/ui-theme/**', '.github/workflows/windows-pos-release.yml']
   pull_request:
-    paths: ['apps/pos-desktop/**', '.github/workflows/windows-pos-release.yml']
+    paths: ['apps/pos-desktop/**', 'packages/service-pos-ui/**', 'packages/ui-theme/**', '.github/workflows/windows-pos-release.yml']
   workflow_dispatch:
     inputs:
       tag:

@@ -1,0 +1,52 @@
+# Industry workspace reference — 27 October 2026
+
+Owner supplied 20 single-page image PDFs: dashboard, catalog, stock receipts, customer and supplier, completed sales, purchases, finance, product reports, staff, attendance, POS settings and store, rounding, tax, shipping, currency, invoice, email and stock settings. Reference has a blue top header, hierarchical navigation and dense operational tables. Treat third-party visuals as functional reference, preserve oneQay identity and the seven approved palette colors.
+
+## Progress
+- Shared service workspace identifies laundry, boarding and homestay by type through distinct approved-palette header treatments and text/icon labels. The same component serves web and Windows.
+- Desktop POS binds its industry identifier to the authenticated server snapshot and uses a palette-only rail treatment. This is presentation, not tenant authorization.
+
+## Remaining — not completed
+- Catalogue every actionable setting and workflow in reference and compare with live oneQay capabilities; build missing backend, authorization, tenant isolation, persistence, web UI, exports, and functional tests rather than decorative or dead menu links.
+- Develop tailored laundry, boarding and homestay workflows without mixing records; continue known gaps including deposits, refunds, housekeeping and specialist reports where appropriate.
+- Build reference-style grouped navigation/header for business web and contextual desktop POS, with responsive accessibility and Iconify, without expanding owner-only controls to cashier roles.
+- Produce signed Windows patch via the existing updater identity/key after validation; avoid uninstall and preserve offline queues.
+- Run MySQL/SQLite, web/Windows builds, role/tenant isolation, offline and migration tests; prepare safe cPanel release/rollback. Do not claim full parity, real transactions, SMTP or hardware acceptance before verification.
+- cPanel access is requested only when repository changes are ready for deployment. The existing deployed oneqaydev source is 275e1b293eea; stable Windows is 0.2.4, candidate 0.2.5 remains unpublished.
+
+## Continuation: service navigation and access
+The merchant shell now accepts the server-authorized service-workspace navigation response when returning from a settings page, while checking tenant, organization and outlet against any existing scope. Commerce overview retains its device scope check. Owner security links follow the server eligibility flag. Service types receive distinct palette-only sidebar accents. Frontend checks/build must pass before merge; this is not a claim that the remaining feature inventory is complete.
+
+## Continuation: role-scoped reference navigation
+Merchant navigation groups existing server-authorized destinations into product/inventory, sales/cashier, purchasing, customers/people, finance, reports and settings. Unknown destinations remain visible in an other group instead of being silently lost. Business type is labeled in the header context and the service link marks the current page. Grouping changes presentation only: route and action permissions remain enforced on the server. Web type-check, palette guard and production build passed locally. Full reference features and end-to-end acceptance remain open.
+
+## Continuation: service operations usability and print safety
+- Shared web/desktop workspace now searches loaded orders by customer, contact, reference and resource; status and resource filters intersect with search. Labels explicitly state that results are limited to the current page (up to 100), not a server-wide report.
+- Order and shift printing uses a dedicated body-level document, excluding application navigation, controls and unrelated data. Shift closing records have separate state so later operations cannot replace the closing report. Reconciliation also restores confirmed closing reports.
+- All shared asynchronous load/send/reconcile calls have a 25-second UI deadline. An uncertain write retains its original operation ID for retry/reconciliation; timeout does not mean the server rejected the write. Late responses cannot change the already-timed-out result.
+- Explicit table text colors prevent desktop global styles from creating low-contrast resource descriptions. Approved palette retained.
+- Validation: web type-check, approved-palette check, web build and desktop frontend build pass. Four timeout unit tests pass on Node 24. Playwright headless installation succeeded through its fallback download; synthetic UI tests pass across laundry/boarding/homestay for filtering, printing, register open/close, cashier resource-admin exclusion and 1024px viewport. Tests mock native calls and do not qualify Windows binary, real printer or server transactions.
+- Release remains incomplete: reference parity, deeper vertical workflows, native Windows signed update and real database/offline integration qualification remain outstanding. No deployment or production data changes performed in this continuation.
+
+## Continuation: durable closing history and outlet-wide summaries
+- Server read response reconstructs up to 20 latest confirmed shift closing reports from shift/payment ledgers, constrained to verified tenant, organization, outlet, cashier and device. No schema change or production data mutation is needed.
+- Web and Windows shared UI offer closing-history selection and reprint. Initial/reloaded workspaces restore the latest report, while manual report selection survives periodic refresh.
+- Active-order and outstanding-invoice cards now use full outlet aggregates, independent of the current 100-order page. Legacy server snapshots retain explicitly page-scoped labels; cached offline data is still a last-known snapshot.
+- Verification: disposable SQLite business-experience suite passes 222 cumulative assertions, including payment replay, industry separation, scope exclusion, bounded history, persisted closing reconciliation and pagination-independent totals. Existing PHP dependencies were copied locally from an identical composer.lock, without committing vendor. Web type-check/palette/build and desktop frontend build pass. Playwright passes three service types and now checks closing history and isolated closing print with cashier identity in addition to the previous cases.
+- Outstanding release qualification is unchanged: MySQL/native Windows signed installer and true offline/printer acceptance have not been established by these tests. Larger reference parity and advanced vertical features remain incomplete; PR is still draft, no hosting deployment performed.
+
+## Continuation: server search, operational dashboard and lean checks
+- Service search now runs on all scoped server orders before pagination: customer, contact, reference, resource name, status, resource ID and inclusive order-start date range. Literal LIKE wildcard escaping, query validation, scope checks and stable page bounds are enforced server-side. SQL tests include a matching order behind 101 newer records.
+- Web and native Windows request adapters carry the same filters; native URL encoding uses reqwest::Url. Windows offline fallback explicitly describes the cached result instead of claiming a fresh server search. Existing snapshots without search capability retain local-page behavior.
+- Added an industry-specific operational overview with status distribution, overdue-order count, outstanding balance and active workload by resource; dashboard actions open filtered order results. Aggregates remain outlet-wide and industry-isolated.
+- Removed redundant standalone enterprise suite executions from desktop CI: both business-experience and desktop-sync-business-reset already require that suite. Kept their SQLite/MySQL coverage and independent Windows, offline-core and UI checks. Mail/catalog checks now cancel superseded PR runs. No branch protection weakened; historical workflows were not indiscriminately disabled.
+- Validation: SQLite business-experience suite passed 258 cumulative assertions; web type-check/palette/build and desktop frontend build passed; three-industry Playwright UI checks passed including dashboard drill-through and server filter adapter mocks. Native Rust/Windows compilation is not available locally and remains required in CI. Full reference parity, deeper vertical workflows, signed patch publication and production release acceptance remain outstanding.
+
+## Release continuation — 28 October 2026
+- Owner explicitly requires Black Onyx #202020 on white and white #FFFFFF on colored backgrounds. Shared build theme now enforces surface/text inheritance for both web and desktop, normalizes pale text surfaces to white, preserves dark/blue action surfaces and prevents text/background transition mismatch. The seven-color palette remains the source of truth. Desktop browser checks assert actual rendered colors in login, workspace and shift/create forms for all three service types.
+- Remote checks for 859ce069 passed Windows native installer, SQLite/MySQL, offline core, source certification and UI. Stable Windows 0.2.5 was already published on 26 October; the new release candidate is therefore 0.2.6, using the same identifier and updater trust. Earlier notes saying 0.2.5 was unpublished are superseded.
+- Historical workflow failures identified: oversized inline shell scripts and obsolete source-only envelopes forbidding application changes. Scripts are moved to repository shell files with event values passed through environment variables; runtime assertions are retained. Only the seven incompatible source-envelope assertions are skipped for this exact product branch; SQL, authentication, operator and Windows tests remain enabled. No branch protection or security tests disabled.
+- Deployment target remains oneqaydev.n07.my.id, preserving business data, SMTP configuration and credentials. No database schema changes are introduced by this PR. Production cPanel access is requested only after merged-source package preparation. Advanced deposits/refunds/housekeeping and remaining reference parity are still pending and must not be described as delivered by this release.
+
+### Exact-head CI follow-up
+Once the oversized legacy scripts became runnable, their frozen source-envelope assertions rejected this product branch's intentional application changes. Scope those seven source-only assertions to exclude this exact product branch as well; the remaining authentication, POS, SQL and security regressions continue to run. This is not a functional-test bypass.

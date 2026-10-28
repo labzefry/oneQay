@@ -22,3 +22,6 @@ button{font-size:14px;min-height:44px}
 
 /* Keep informational text readable on the dark enterprise rail. */
 .rail .local-safe{background:#E9EBFF;color:#1B1B39}.rail .local-safe strong,.rail .local-safe small{color:#1B1B39}
+
+/* Industry identity uses the approved oneQay palette and server-provided type. */
+.app-shell[data-business-type="laundry"] .rail{border-inline-start:6px solid #3965FA}.app-shell[data-business-type="boarding"] .rail{border-inline-start:6px solid #E9EBFF}.app-shell[data-business-type="homestay"] .rail{border-inline-start:6px solid #99B7FC}
