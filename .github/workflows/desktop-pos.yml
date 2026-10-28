@@ -3,7 +3,7 @@ on:
   push:
     branches: [experience-pos-desktop-20261018, pos-enterprise-20261019]
   pull_request:
-    paths: ['apps/pos-desktop/**', 'apps/web/**', 'packages/service-pos-ui/**', '.github/workflows/desktop-pos.yml']
+    paths: ['apps/pos-desktop/**', 'apps/web/**', 'packages/service-pos-ui/**', 'packages/ui-theme/**', '.github/workflows/desktop-pos.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -82,6 +82,7 @@ jobs:
         run: mysql --host=127.0.0.1 --user=root --password=synthetic-test-only -e 'DROP DATABASE oneqay_platform_test; CREATE DATABASE oneqay_platform_test;'
       - run: PLATFORM_TEST_ENGINE=mysql php tests/business-experience.php
       - run: npm ci --no-audit --no-fund
+      - run: node --test ../../packages/ui-theme/surface-colors.test.mjs
       - run: npm run type-check && npm run build
 
   desktop-ui:

@@ -1,3 +1,4 @@
+const assertSurfaceColors=require('./assert-surface-colors.cjs');
 const {chromium}=require('playwright');
 const http=require('http'),fs=require('fs'),path=require('path');
 const base=path.resolve(__dirname,'../dist');const artifacts=path.resolve(__dirname,'../test-results');fs.mkdirSync(artifacts,{recursive:true});
@@ -12,7 +13,7 @@ if(cmd==='login'){signed=true;locked=false;return structuredClone(state);}if(['w
 if(cmd==='service_command'){const inpt=args.input;if(inpt.action==='shift.open'){data.shift={id:'shift',opening_atomic:inpt.opening_atomic};return {record:{id:'shift'},workspace:structuredClone(data)};}if(inpt.action==='shift.close'){data.shift=null;const record={id:'closed-shift-001',cashier:'Maya',closed_at:now,opening_atomic:100000,received_atomic:0,expected_atomic:100000,counted_atomic:inpt.closing_atomic,variance_atomic:inpt.closing_atomic-100000};data.last_closing=record;data.closing_history=[record];return {record,workspace:structuredClone(data)};}throw 'SYNTHETIC_VALIDATION_REJECTION';}throw 'UNEXPECTED_COMMAND_'+cmd;
 }};
 },kind);
-await page.goto('http://127.0.0.1:4173');await page.getByLabel('Email kasir').fill('cashier@example.test');await page.getByLabel('Password',{exact:true}).fill('synthetic');await page.getByRole('button',{name:'Masuk ke kasir'}).click();await page.locator('.service-head h1').waitFor();
+await page.goto('http://127.0.0.1:4173');await assertSurfaceColors(page);await page.getByLabel('Email kasir').fill('cashier@example.test');await page.getByLabel('Password',{exact:true}).fill('synthetic');await page.getByRole('button',{name:'Masuk ke kasir'}).click();await page.locator('.service-head h1').waitFor();await assertSurfaceColors(page);
 if(await page.getByRole('button',{name:'Dapur',exact:true}).count())throw Error('Commerce kitchen leaked into service navigation');if(await page.locator('.shift-modal').count())throw Error('Commerce opening dialog leaked');
 await page.getByRole('button',{name:'Ikhtisar usaha',exact:true}).click();
 await page.getByRole('heading',{name:'Ikhtisar operasional outlet',exact:true}).waitFor();
@@ -39,7 +40,7 @@ await page.emulateMedia({media:'screen'});
 await page.evaluate(()=>window.dispatchEvent(new Event('afterprint')));
 await page.getByRole('button',{name:'Tutup',exact:true}).click();
 await page.screenshot({path:path.join(artifacts,kind+'-workspace.png'),fullPage:true});
-await page.getByRole('button',{name:'Buka / tutup kas',exact:true}).click();await page.getByLabel('Kas awal',{exact:true}).fill('100000');await page.locator('.service-form').getByRole('button',{name:'Simpan',exact:true}).click();await page.getByRole('heading',{name:'Tutup kasir',exact:true}).waitFor();await page.getByLabel('Kas fisik akhir',{exact:true}).fill('100000');await page.locator('.service-form').getByRole('button',{name:'Simpan',exact:true}).click();await page.getByRole('heading',{name:'Laporan tutup kas',exact:true}).waitFor();await page.screenshot({path:path.join(artifacts,kind+'-closing-report.png'),fullPage:true});
+await page.getByRole('button',{name:'Buka / tutup kas',exact:true}).click();await page.getByLabel('Kas awal',{exact:true}).fill('100000');await page.locator('.service-form').getByRole('button',{name:'Simpan',exact:true}).click();await page.getByRole('heading',{name:'Tutup kasir',exact:true}).waitFor();await assertSurfaceColors(page);await page.getByLabel('Kas fisik akhir',{exact:true}).fill('100000');await page.locator('.service-form').getByRole('button',{name:'Simpan',exact:true}).click();await page.getByRole('heading',{name:'Laporan tutup kas',exact:true}).waitFor();await page.screenshot({path:path.join(artifacts,kind+'-closing-report.png'),fullPage:true});
 await page.getByRole('heading',{name:'Riwayat tutup kas saya',exact:true}).waitFor();
 await page.getByRole('button',{name:'Cetak / simpan PDF',exact:true}).click();
 await page.emulateMedia({media:'print'});
@@ -47,5 +48,5 @@ if(!await page.locator('.service-print-document').getByText('Maya',{exact:false}
 if(await page.locator('#app').isVisible())throw Error('Application chrome leaked into closing report');
 await page.emulateMedia({media:'screen'});await page.evaluate(()=>window.dispatchEvent(new Event('afterprint')));
 await page.getByRole('button',{name:kind==='laundry'?'Layanan & tarif':'Kamar & tarif',exact:true}).click();if(await page.getByRole('heading',{name:'Tambah',exact:true}).count())throw Error('Cashier sees owner resource administration');
-await page.getByRole('button',{name:kind==='laundry'?'Terima cucian':'Reservasi baru',exact:true}).click();await page.setViewportSize({width:1024,height:768});if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth))throw Error('POS minimum viewport overflows');await page.screenshot({path:path.join(artifacts,kind+'-create.png'),fullPage:true});if(errors.length)throw Error(errors.join(';'));await page.close();}
+await page.getByRole('button',{name:kind==='laundry'?'Terima cucian':'Reservasi baru',exact:true}).click();await page.setViewportSize({width:1024,height:768});await assertSurfaceColors(page);if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth))throw Error('POS minimum viewport overflows');await page.screenshot({path:path.join(artifacts,kind+'-create.png'),fullPage:true});if(errors.length)throw Error(errors.join(';'));await page.close();}
 console.log('SERVICE_POS_UI_PASS types=3 shift=open-close cash-report=visible search-status-reset=pass isolated-print=pass cashier-admin=hidden min-width=1024');}finally{await browser.close();host.close();}})().catch(e=>{console.error(e);host.close();process.exit(1)});

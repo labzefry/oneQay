@@ -174,3 +174,6 @@ Implemented scoped 20-record closing history/reprint and full-outlet operational
 
 ### Service operational dashboard and server search
 Implemented server-wide filtered/paginated service search and industry operational dashboard with drill-through in shared web/Windows UI. Removed duplicate enterprise CI invocations and enabled cancellation of superseded mail/catalog runs. See industry reference continuation for passed validation and remaining release work.
+
+### 28 October 2026 — workspace release and owner text colors
+Shared web/Windows theme enforces Black Onyx on white and white on colored surfaces. Windows candidate bumped to 0.2.6 with updater identity unchanged. Prepared no-schema cPanel successor with verified archive retention; source-only historical envelope skips are limited to this product branch and oversized workflow scripts were extracted with runtime assertions retained. See `docs/INDUSTRY_WORKSPACE_REFERENCE_2026-10-27.md` for delivered scope and remaining advanced features.

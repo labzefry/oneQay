@@ -1,0 +1,4 @@
+
+# Generated Python bytecode is never part of a release source.
+**/__pycache__/
+*.py[cod]
