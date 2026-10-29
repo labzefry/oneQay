@@ -42,4 +42,9 @@ $contexts->setVerified($businessOwner);
 $contexts->clear();try{$menu->categories();$assert(false,'anonymous menu management allowed');}catch(App\Application\Business\BusinessViolation $e){$assert($e->reason==='CONTEXT_REQUIRED','anonymous management denied');}
 $anonymousResponse=$controller->category($request);$assert($anonymousResponse->getStatusCode()===403,'anonymous management endpoint denied');
 $contexts->setVerified($businessOwner);
+$scope=['tenant_id'=>$businessOwner->tenantId()->value(),'organization_id'=>$businessOwner->organizationId()->value(),'outlet_id'=>$businessOwner->outletId()->value()];
+for($i=0;$i<198;$i++){$name='Synthetic category '.$i;$db->table('oneqay_menu_book_categories')->insert($scope+['id'=>bin2hex(random_bytes(16)),'name'=>$name,'name_key'=>hash('sha256',mb_strtolower($name,'UTF-8')),'created_at'=>time()]);}
+$assert(count($menu->categories())===200,'all bounded categories remain selectable');
+try{$menu->createCategory('menu-category-limit-0001',['name'=>'Over limit'],'menu-test');$assert(false,'unreachable category accepted');}catch(App\Application\Business\BusinessViolation $e){$assert($e->reason==='MENU_CATEGORY_LIMIT','category limit rejected safely');}
+$assert($menu->createCategory('menu-category-existing-0003',['name'=>'Minuman Kopi'],'menu-test')===$first,'existing category remains selectable at limit');
 $menuCompleted=true;echo 'MENU_BOOK_CATALOG_'.$engine.'_PASS assertions='.$n.PHP_EOL;
