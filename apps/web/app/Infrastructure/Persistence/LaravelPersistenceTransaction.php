@@ -2,6 +2,7 @@
 
 namespace App\Infrastructure\Persistence;
 
+use App\Application\Identity\InitialPasswordEnrollmentViolation;
 use App\Application\Persistence\DurablePersistenceViolation;
 use App\Application\Persistence\PersistenceTransaction;
 use Illuminate\Database\Connection;
@@ -23,7 +24,7 @@ final readonly class LaravelPersistenceTransaction implements PersistenceTransac
 
         try {
             return $this->connection->transaction($operation, 1);
-        } catch (DurablePersistenceViolation $exception) {
+        } catch (DurablePersistenceViolation|InitialPasswordEnrollmentViolation $exception) {
             throw $exception;
         } catch (Throwable) {
             throw new DurablePersistenceViolation(

@@ -3,6 +3,8 @@ name: Menu book catalog integration
 on:
   pull_request:
     paths:
+      - 'apps/web/app/Infrastructure/Persistence/LaravelPersistenceTransaction.php'
+      - 'apps/web/tests/enrollment-transaction-rollback.php'
       - 'apps/web/app/Infrastructure/Business/LaravelMenuBookCatalog.php'
       - 'apps/web/app/Application/Business/MenuBookAssignments.php'
       - 'apps/web/app/Application/Business/Merchandising.php'
@@ -72,6 +74,7 @@ jobs:
       - run: composer install --working-dir=apps/web --no-interaction --prefer-dist
       - run: REQUIRE_MENU_GD=1 php apps/web/tests/menu-book-catalog.php
       - run: REQUIRE_MENU_GD=1 PLATFORM_TEST_ENGINE=mysql php apps/web/tests/menu-book-catalog.php
+      - run: php apps/web/tests/enrollment-transaction-rollback.php
       - run: php apps/web/tests/loyalty-math.php
       - run: php apps/web/tests/mime-header-security.php
       - run: php tools/production/tests/menu-book-migrations.php
