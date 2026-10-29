@@ -21,7 +21,7 @@ try{$menu->assign('menu-assign-missing-0001',array_replace($data,['product_id'=>
 $assert($db->table('oneqay_pos_sale_catalog_items')->where('product_id','desktop-coffee')->value('unit_price_atomic')==15000,'menu never writes canonical product price');
 $resetPlan=(new App\Infrastructure\Platform\ControlPlaneBusinessReset($db,$app->make('encrypter')))->preview(array_replace($b,['status'=>'suspended','updated_at'=>time()-120]),'products');
 $resetTables=array_column($resetPlan['entries'],'table');$assert(array_search('oneqay_menu_book_items',$resetTables,true)<array_search('oneqay_menu_book_categories',$resetTables,true)&&array_search('oneqay_menu_book_categories',$resetTables,true)<array_search('oneqay_pos_sale_catalog_items',$resetTables,true),'product reset includes menu dependencies before catalog');
-$controller=new App\Delivery\Http\Business\MenuBookController($menu,$app->make(App\Application\Business\Merchandising::class));
+$controller=$app->make(App\Delivery\Http\Business\MenuBookController::class);
 $request=Illuminate\Http\Request::create('/pos/business/menu-book/categories','POST',['operation_id'=>'http-menu-category-0001','data'=>['name'=>'Makanan']]);$request->headers->set('Accept','application/json');$response=$controller->category($request);$assert($response->getStatusCode()===200&&$response->getData(true)['record']['name']==='Makanan','authenticated category endpoint returns created category');
 // A second synthetic, fully provisioned business cannot see or bind the first business's menu rows.
 $contexts->setVerified($owner);
@@ -38,6 +38,9 @@ $secondCategory=$menu->createCategory('second-create-menu-category',['name'=>'Mi
 try{$menu->assign('second-cross-tenant-product',array_replace($data,['category_id'=>$secondCategory['id']]),'menu-test');$assert(false,'cross-tenant product accepted');}catch(App\Application\Business\BusinessViolation $e){$assert($e->reason==='PRODUCT_NOT_FOUND','cross-tenant product denied');}
 $assert(count($menu->categories())===1&&$secondCategory['id']!==$first['id'],'identical category names stay independent between tenants');
 $contexts->setVerified($businessOwner);
+// Preview uses verified owner scope and the same projection as the published page.
+$previewRequest=Illuminate\Http\Request::create('/pos/business/menu-book/preview','GET');$previewRequest->headers->set('X-Inertia','true');$previewRequest->setLaravelSession($app['session']->driver());
+$previewResponse=$controller->preview($previewRequest);$previewData=json_decode($previewResponse->getContent(),true);$assert($previewResponse->getStatusCode()===200&&$previewData['props']['preview']===true&&count($previewData['props']['items'])===1,'unpublished menu can be privately previewed by its manager');
 // Public rendering requires a middleware-derived active business and an explicit publication.
 config(['platform.business_domains_enabled'=>true]);$public=$app->make(App\Delivery\Http\Business\PublicMenuBookController::class);$requestPublic=Illuminate\Http\Request::create('https://kopikaylangsa.oneqay.example.test/menu','GET');$requestPublic->headers->set('X-Inertia','true');$requestPublic->attributes->set('oneqay.host_business',$b);
 try{$public->show($requestPublic);$assert(false,'unpublished menu rendered');}catch(Symfony\Component\HttpKernel\Exception\HttpException $e){$assert($e->getStatusCode()===404,'unpublished menu hidden');}
@@ -51,7 +54,7 @@ $menu->savePublication('unpublish-menu-test-0002',array_replace($publication,['p
 config(['platform.business_domains_enabled'=>false]);
 // Anonymous context must never expose an owner's menu configuration.
 $contexts->clear();try{$menu->categories();$assert(false,'anonymous menu management allowed');}catch(App\Application\Business\BusinessViolation $e){$assert($e->reason==='CONTEXT_REQUIRED','anonymous management denied');}
-$anonymousResponse=$controller->category($request);$assert($anonymousResponse->getStatusCode()===403,'anonymous management endpoint denied');
+$anonymousResponse=$controller->category($request);$assert($anonymousResponse->getStatusCode()===403,'anonymous management endpoint denied');$assert($controller->preview($previewRequest)->getStatusCode()===403,'anonymous private preview denied');
 $contexts->setVerified($businessOwner);
 $scope=['tenant_id'=>$businessOwner->tenantId()->value(),'organization_id'=>$businessOwner->organizationId()->value(),'outlet_id'=>$businessOwner->outletId()->value()];
 for($i=0;$i<198;$i++){$name='Synthetic category '.$i;$db->table('oneqay_menu_book_categories')->insert($scope+['id'=>bin2hex(random_bytes(16)),'name'=>$name,'name_key'=>hash('sha256',mb_strtolower($name,'UTF-8')),'created_at'=>time()]);}

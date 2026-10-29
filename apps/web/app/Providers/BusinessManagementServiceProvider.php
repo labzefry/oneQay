@@ -45,6 +45,7 @@ final class BusinessManagementServiceProvider extends ServiceProvider
         Route::middleware(['web', 'session.active', 'throttle:60,1', RequirePosSessionContextMiddleware::class])->group(static function (): void {
             $menu=\App\Delivery\Http\Business\MenuBookController::class;
             Route::get('/pos/business/menu-book',[$menu,'show'])->name('business.menu-book');
+            Route::get('/pos/business/menu-book/preview',[$menu,'preview'])->name('business.menu-book.preview');
             Route::post('/pos/business/menu-book/categories',[$menu,'category'])->middleware('throttle:20,1');
             Route::post('/pos/business/menu-book/items',[$menu,'assign'])->middleware('throttle:20,1');
             Route::post('/pos/business/menu-book/publication',[$menu,'publication'])->middleware('throttle:10,1');
