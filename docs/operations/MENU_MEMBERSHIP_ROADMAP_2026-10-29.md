@@ -87,3 +87,9 @@ A new source-only helper binds the last observed 108-table/41-receipt predecesso
 ## Vite release asset verification draft
 
 The new source-only `menu-vite-assets.php` walks the entrypoint's static and dynamic Vite manifest imports, validates bounded relative asset paths, disallows symlinks and hashes all discovered JS/CSS/assets. Synthetic tests cover the lazy QR chunk, missing files, traversal, unresolved imports and import cycles. This helper still needs integration into a certified cPanel operator, including actual post-switch HTTPS hash probes. It does not deploy or change hosting.
+
+## Draft cPanel operator integration
+
+A draft successor operator and packager now bind the 95d9286f4698b168f7c419b67ac3c6583f844910 oneqaydev predecessor, enforce scoped predecessor hashes, private backup and the two additive menu migrations, verify published domain and every Vite manifest asset through HTTPS, and preserve the prior bridge/assets on failed promotion while retaining any additive schema for forward repair. CLI GD is checked before migration. The packager requires exact predecessor binding and a source-certified artifact and hashes both new helper files. Existing native owner-comment authority and verified private ZIP retention remain in place.
+
+Local syntax validation and disposable filesystem rollback tests passed (9 assertions). This is a draft, not a certified deployment kit: actual 95d host bindings, web-SAPI GD and upload limits, MySQL migration operator rehearsal including partial failure, packaging of an exact certified artifact, exact-head CI, independent security/deployment review and real host preflight remain unverified. The predecessor inventory path is based on the previous operator contract and must be verified against host evidence. Do not execute this operator or claim deployment readiness solely from these tests.
