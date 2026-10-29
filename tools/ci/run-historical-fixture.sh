@@ -2,6 +2,7 @@
 # Author by Lab | zefry. CI-only isolated historical regression; never touches application source.
 set -euo pipefail
 case "${1:-}" in
+  s28) horizon=14; test_file='initial-password-enrollment-current.php'; marker='Sprint 28 initial password enrollment regression passed.' ;;
   s30) horizon=14; test_file='privileged-totp-mfa-current.php'; marker='Sprint 30 privileged TOTP MFA regression passed.' ;;
   s35) horizon=12; test_file='privileged-totp-recovery.php'; marker='PASS: Sprint35 privileged TOTP recovery and factor replacement regression' ;;
   s36) horizon=13; test_file='first-party-session-inventory-revocation.php'; marker='Sprint36 first-party session inventory/revocation regression passed.' ;;
