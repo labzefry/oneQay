@@ -75,3 +75,7 @@ These scans cover locked Composer/npm dependencies at this time, not all possibl
 ## Menu QR — source continuation
 
 A published menu with a valid HTTPS business-origin URL can now produce a downloadable 768px PNG QR directly in the browser. Generation is local via pinned MIT node-qrcode 1.5.4; no QR service receives the URL. Invalid URL schemes/credentials/ports/query/fragments and unpublished or unavailable addresses are rejected. QR generation has a 15-second timeout and cleans up on unmount. It opens the public read-only menu, not a table-order/payment flow. Scanning with an actual device, authenticated browser UI and hosting remain unverified. The Vite build creates an additional lazy-loaded JS chunk; the deployment operator must carry and verify every manifest dependency and test QR generation after switching. Remaining table-order/cashier settlement and loyalty/discount/marketing scope is unchanged.
+
+## Flipbook presentation continuation
+
+The public menu now presents each spread as two book pages with direction-aware page-turn motion, previous/next buttons, keyboard arrow keys and horizontal swipe. Narrow screens stack pages; reduced-motion removes the transition. The implementation is a CSS/Vue page-turn presentation, not a physical 3D book engine. It keeps the same published catalog and pricing projection. Local Vue type-check, build and 26-style palette guard passed; interactive browser, physical scan and exact-head CI remain pending. QR table ordering, product photos, rewards and deployment remain incomplete.
