@@ -9,6 +9,8 @@ on:
       - 'apps/web/app/Delivery/Http/Business/MerchandisingController.php'
       - 'apps/web/resources/js/pages/Business/Products.vue'
       - 'apps/web/app/Infrastructure/Business/LaravelMenuBookReader.php'
+      - 'apps/web/app/Infrastructure/Business/LaravelMenuBookMedia.php'
+      - 'apps/web/database/module-migrations/business/2026_10_29_000002_add_menu_book_cover_media.php'
       - 'apps/web/app/Delivery/Http/Business/MenuBookController.php'
       - 'apps/web/app/Delivery/Http/Business/PublicMenuBookController.php'
       - 'apps/web/resources/js/pages/Website/PublicMenuBook.vue'
@@ -19,6 +21,8 @@ on:
       - 'apps/web/app/Infrastructure/Platform/ControlPlaneBusinessReset.php'
       - 'apps/web/database/module-migrations/business/2026_10_29_000001_create_menu_book_catalog.php'
       - 'apps/web/tests/menu-book-catalog.php'
+      - 'apps/web/tests/menu-book-media.php'
+      - 'apps/web/app/Delivery/Http/Business/MenuImageResponse.php'
       - '.github/workflows/menu-book-catalog.yml'
 permissions:
   contents: read
@@ -43,11 +47,11 @@ jobs:
       - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
         with:
           php-version: '8.3'
-          extensions: pdo_sqlite, pdo_mysql, mbstring, zip
+          extensions: pdo_sqlite, pdo_mysql, mbstring, zip, gd
           coverage: none
       - run: composer install --working-dir=apps/web --no-interaction --prefer-dist
-      - run: php apps/web/tests/menu-book-catalog.php
-      - run: PLATFORM_TEST_ENGINE=mysql php apps/web/tests/menu-book-catalog.php
+      - run: REQUIRE_MENU_GD=1 php apps/web/tests/menu-book-catalog.php
+      - run: REQUIRE_MENU_GD=1 PLATFORM_TEST_ENGINE=mysql php apps/web/tests/menu-book-catalog.php
       - run: php apps/web/tests/loyalty-math.php
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:

@@ -1,6 +1,6 @@
 # Menu book, table ordering and loyalty: implementation contract
 
-Author by Lab | zefry. Status: planned; not implemented or deployed.
+Author by Lab | zefry. Status: PR #992 is an implementation draft; not merged or deployed. Later checkpoints supersede earlier slice descriptions.
 
 Food and beverage tenants need a separately classified menu book sourced from their existing products. Menu categories are independent of inventory categories. Owners control product visibility, cover, template and selected spotlight photographs. Existing inventory and prices remain canonical; a menu does not create duplicate products. Other business types retain their separate workflows.
 
@@ -47,3 +47,17 @@ This checkpoint supersedes the earlier live-edit limitation. Menu metadata and v
 ## Menu category during product creation
 
 The draft adds an optional menu category to the new-product form. Canonical catalog creation, opening stock and the menu assignment run in one scoped transaction with durable operation identity; invalid/foreign category fails and rolls back the product and stock. Existing products continue to be configured from the menu-book page, and old/import clients can omit the optional field. SQLite menu integration passed 323 assertions, including replay and failed-category rollback; existing merchandising/reporting regression passed 53. Current-head MySQL, type-check/build and independent review remain required; no host migration or deployment.
+
+## Cover lifecycle continuation — 29 October 2026
+
+Wires owner multipart image upload, private preview and explicit cover publication. Public scope comes exclusively from the active business hostname and the requested ID must equal the published cover. Knowing an image ID does not grant access to unpublished/foreign media. Original filenames, EXIF and appended content are discarded by GD decode/re-encode. JPEG remains JPEG; PNG/WebP normalize to PNG. SVG/GIF and invalid/decompression-heavy images are rejected. EXIF orientation is not applied: rotate photos before uploading. Uploaded unselected images remain private and count toward the quota; unused-media cleanup UI is not implemented yet.
+
+Limits: input and normalized image <=3 MiB, <=4,000 pixels per side, <=8 MP, stored media <=20 MiB per outlet before base64 overhead. Organization-row locking serializes quota checks and content deduplication. Each new image has a canonical audit event; retries do not reuse another manager's operation fingerprint. Settings reset removes publication before media. No actual reset was performed.
+
+Owners select a cover, save draft for preview, then explicitly publish. Public reads remain on the previous snapshot until publication. Image responses use no-store, nosniff, sandbox CSP and same-origin resource policy. Unpublish/suspension deny new reads; previously downloaded copies cannot be recalled. Upload feedback uses a 30-second deadline, unmount cleanup, manual deduplicated retry, localized error codes and reduced-motion progress. White surfaces use black onyx text; colored fills use white.
+
+Risk: high (migration and public tenant boundary). Synthetic tests cover unauthorized access, malicious content, byte/pixel limits, metadata stripping, dedupe, quota, corrupt storage, tenant isolation, draft secrecy, legacy-field omission, revocation and suspension. CI requires GD for SQLite/MySQL tests and performs Vue type-check/build. Local missing-GD denial must not be confused with a successful image lifecycle.
+
+Deployment remains pending. Qualify an additive cPanel operator and backup, rehearse both menu migrations against predecessor, verify GD JPEG/PNG/WebP in CLI/web PHP, upload_max_filesize >=3M, post_max_size >3M, private DB capacity/packet limits for base64 media, and post-switch owner/private/public denial and worker health. The current source-only operator is insufficient for this schema change. If activation fails, preserve additive data and evidence for forward repair; restore compatible prior source/bridge without dropping merchant tables. No hosting files, cron or credentials were changed.
+
+Local validation: GD-enabled SQLite integration passed 351 combined assertions; Vue type-check and Vite production build passed. Vite reports the existing large shared bundle warning. Current-head MySQL/CI and browser review remain pending. No merge/deployment.

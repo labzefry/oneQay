@@ -135,3 +135,7 @@ Activation now uses readable 16px forms, a restrained morph card, accessible foc
 
 ## Owner surface/text rule — 28 October 2026
 White backgrounds require Black Onyx (`#202020`) for all text. Colored backgrounds require white (`#FFFFFF`) text. Use dark/primary approved fills when white text is required; pale text-bearing fills normalize to white to retain contrast. The shared web/Windows build theme in `packages/ui-theme/surface-colors.mjs` enforces the rule. Keep decorative borders/charts within the existing seven-color palette.
+
+## 2026-10-29 — Menu cover editor (source draft)
+
+Distinguish upload selection, saved draft and explicit publication. Use contained image preview, proportional labels, localized errors, bounded 30-second progress and reduced-motion support. White surfaces use black onyx; navy/primary fills use white. Mobile cover preserves aspect ratio. No unfinished table-order or photo controls are advertised as complete. See [menu contract](docs/operations/MENU_MEMBERSHIP_ROADMAP_2026-10-29.md).

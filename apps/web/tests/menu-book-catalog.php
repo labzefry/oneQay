@@ -4,6 +4,7 @@ declare(strict_types=1);
 $menuCompleted=false;register_shutdown_function(static function()use(&$menuCompleted):void{if(!$menuCompleted){fwrite(STDERR,"MENU_BOOK_TEST_DID_NOT_COMPLETE\n");exit(1);}});
 require __DIR__.'/business-experience.php';
 (require __DIR__.'/../database/module-migrations/business/2026_10_29_000001_create_menu_book_catalog.php')->up();
+(require __DIR__.'/../database/module-migrations/business/2026_10_29_000002_add_menu_book_cover_media.php')->up();
 $contexts->setVerified($businessOwner);
 $menu=$app->make(App\Infrastructure\Business\LaravelMenuBookCatalog::class);
 $assert(Illuminate\Support\Facades\Route::has('business.menu-book'),'private menu route registered with application');
@@ -73,4 +74,5 @@ for($i=0;$i<198;$i++){$name='Synthetic category '.$i;$db->table('oneqay_menu_boo
 $assert(count($menu->categories())===200,'all bounded categories remain selectable');
 try{$menu->createCategory('menu-category-limit-0001',['name'=>'Over limit'],'menu-test');$assert(false,'unreachable category accepted');}catch(App\Application\Business\BusinessViolation $e){$assert($e->reason==='MENU_CATEGORY_LIMIT','category limit rejected safely');}
 $assert($menu->createCategory('menu-category-existing-0003',['name'=>'Minuman Kopi'],'menu-test')===$first,'existing category remains selectable at limit');
+require __DIR__.'/menu-book-media.php';
 $menuCompleted=true;echo 'MENU_BOOK_CATALOG_'.$engine.'_PASS assertions='.$n.PHP_EOL;

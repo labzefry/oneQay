@@ -1,3 +1,9 @@
+## 2026-10-29 — Menu-book cover draft (PR #992, not deployed)
+
+Adds a private raster cover upload, owner draft preview and explicit publication on the verified business subdomain. Uploads are scoped to tenant/organization/outlet, decoded and re-encoded with GD, limited to 3 MiB/4,000 pixels per side/8 MP and 20 MiB stored bytes per outlet. Only the cover selected in the published snapshot is publicly readable. Client feedback is bounded to 30 seconds; duplicate images are deduplicated, with safe error codes.
+
+A second additive business-module migration creates private media and a nullable cover reference. No live migration has run. Source validation and hosting/device acceptance remain distinct. QR/table ordering, product photos/templates, discount checkout, membership ledger/rewards, marketing, Windows integration and security remediation remain unfinished. See [implementation contract and evidence](docs/operations/MENU_MEMBERSHIP_ROADMAP_2026-10-29.md).
+
 ## 2026-10-29 — Actual95d deployment and create-only legacy domain repair
 
 Hosting95d and worker are verified; predecessor privately archived. One legacy active profile lacks any domain history. A versioned, source-bound, owner-granted create-only maintenance repair preserves accounts, type, MFA, credentials and permissions, with scoped preimage, transactional mail/audit and durable replay. Repair application and real-device acceptance remain separate. See [live evidence and repair contract](docs/operations/LEGACY_DOMAIN_REPAIR_2026-10-29.md).

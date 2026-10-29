@@ -5,12 +5,12 @@ namespace App\Delivery\Http\Business;
 use App\Application\Authorization\DurableAuthorizationViolation;
 use App\Application\Business\{BusinessAccess,BusinessInput,BusinessViolation,Merchandising};
 use App\Delivery\Http\SafeErrorEnvelope;
-use App\Infrastructure\Business\{LaravelMenuBookCatalog,LaravelMenuBookReader};
+use App\Infrastructure\Business\{LaravelMenuBookCatalog,LaravelMenuBookReader,LaravelMenuBookMedia};
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 final readonly class MenuBookController {
- public function __construct(private LaravelMenuBookCatalog $menu,private Merchandising $products,private BusinessAccess $access,private LaravelMenuBookReader $reader){}
+ public function __construct(private LaravelMenuBookCatalog $menu,private Merchandising $products,private BusinessAccess $access,private LaravelMenuBookReader $reader,private LaravelMenuBookMedia $images){}
  private function correlation(Request $r):string{return (string)$r->attributes->get('oneqay.correlation_id','correlation-missing');}
  private function respond(Request $r,callable $action):mixed{
   try{$v=$action();if(method_exists($v,'toResponse'))$v=$v->toResponse($r);$v->headers->set('Cache-Control','no-store, private');return $v;}
@@ -25,4 +25,16 @@ final readonly class MenuBookController {
  public function publication(Request $r):mixed{return $this->respond($r,function()use($r){$v=$this->input($r);return response()->json(['record'=>$this->menu->savePublication(BusinessInput::text($v['operation_id'],80),$v['data'],$this->correlation($r))]);});}
  public function category(Request $r):mixed{return $this->respond($r,function()use($r){$v=$this->input($r);return response()->json(['record'=>$this->menu->createCategory(BusinessInput::text($v['operation_id'],80),$v['data'],$this->correlation($r))]);});}
  public function assign(Request $r):mixed{return $this->respond($r,function()use($r){$v=$this->input($r);return response()->json(['record'=>$this->menu->assign(BusinessInput::text($v['operation_id'],80),$v['data'],$this->correlation($r))]);});}
+ public function uploadMedia(Request $r):mixed{return $this->respond($r,function()use($r){
+  $this->access->require('pos.catalog.prepare');
+  $file=$r->file('image');
+  if(!$file instanceof \Illuminate\Http\UploadedFile||!$file->isValid())throw new BusinessViolation('MENU_IMAGE_INVALID',422);
+  if($file->getSize()>LaravelMenuBookMedia::MAX_BYTES)throw new BusinessViolation('MENU_IMAGE_SIZE_INVALID',422);
+  $bytes=file_get_contents($file->getRealPath());if($bytes===false)throw new BusinessViolation('MENU_IMAGE_INVALID',422);
+  return response()->json(['record'=>$this->images->store($bytes,$this->correlation($r))]);
+ });}
+ public function media(Request $r,string $id):mixed{return $this->respond($r,function()use($id){
+  $image=$this->images->privateImage($id);abort_unless($image!==null,404);return MenuImageResponse::make($image);
+ });}
+
 }

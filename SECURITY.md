@@ -457,3 +457,7 @@ HTML email escapes customer-supplied text and only promotes exact configured HTT
 ## 2026-10-28 — Business domain / updater successor
 
 See [split-root configuration, reserved hostnames, trust boundary and actual-asset publication](docs/operations/BUSINESS_DOMAIN_UPDATER_2026-10-28.md). Existing tenant data, host-only cookies, central login and installed signing trust must remain unchanged. Domain activation requires separate DNS, routing and TLS verification; source tests alone do not prove hosting or installed-device acceptance.
+
+## 2026-10-29 — Menu cover boundary (source draft)
+
+Catalog-authorized CSRF-protected raster upload has byte, pixel, throttle and scoped quota limits. GD re-encoding strips metadata/active content. Public images require active verified hostname and selected published ID. No-store, nosniff, sandbox CSP and same-origin policy apply. No remote fetch or arbitrary public file storage. Independent review and host runtime qualification remain pending. See [menu contract](docs/operations/MENU_MEMBERSHIP_ROADMAP_2026-10-29.md).

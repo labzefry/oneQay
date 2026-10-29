@@ -171,3 +171,7 @@ Run `cargo test --manifest-path apps/pos-desktop/core/Cargo.toml --locked` for p
 ## 2026-10-28 — Business domain / updater successor
 
 See [split-root configuration, reserved hostnames, trust boundary and actual-asset publication](docs/operations/BUSINESS_DOMAIN_UPDATER_2026-10-28.md). Existing tenant data, host-only cookies, central login and installed signing trust must remain unchanged. Domain activation requires separate DNS, routing and TLS verification; source tests alone do not prove hosting or installed-device acceptance.
+
+## 2026-10-29 — Menu media testing (source draft)
+
+menu-book-catalog.php includes synthetic menu-book-media.php lifecycle coverage. REQUIRE_MENU_GD=1 makes missing GD fail in both SQLite/MySQL CI runs. Scoped CI includes Vue type-check and build. Passing source checks does not establish hosting/device acceptance. See [menu contract](docs/operations/MENU_MEMBERSHIP_ROADMAP_2026-10-29.md).
