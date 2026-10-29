@@ -1,3 +1,7 @@
+## 2026-10-29 — Actual95d deployment and create-only legacy domain repair
+
+Hosting95d and worker are verified; predecessor privately archived. One legacy active profile lacks any domain history. A versioned, source-bound, owner-granted create-only maintenance repair preserves accounts, type, MFA, credentials and permissions, with scoped preimage, transactional mail/audit and durable replay. Repair application and real-device acceptance remain separate. See [live evidence and repair contract](docs/operations/LEGACY_DOMAIN_REPAIR_2026-10-29.md).
+
 ## 2026-10-28 — Qualified split-domain deployment successor
 
 Bound source-only operator to installed d32, preserving schema/data/credentials, with TLS/asset preflight, reserved-claim collision refusal and protected runtime domain settings. Atomic post-switch probes verify unknown-host denial, existing business login and hidden owner route. Fixed middleware conversion of domain violations to proper HTTP status instead of server500. [Deployment evidence](docs/operations/BUSINESS_DOMAIN_UPDATER_2026-10-28.md).
