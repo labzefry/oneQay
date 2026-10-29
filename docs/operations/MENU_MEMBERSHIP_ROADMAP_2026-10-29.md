@@ -19,3 +19,7 @@ Security work is a parallel release track: determine exact installed PHP/Node/Py
 ## Visual reference received 29 October 2026
 
 The owner supplied https://billionscoffee.co.id/menu as the menu-book reference. Its public page identifies the menu experience as “Flip Menu”; use a browsable page-turning menu as inspiration, with accessible previous/next controls and a readable mobile alternative. The reference page alone does not establish all its interactions or permission to copy its images, text, branding, or design assets. Use oneQay branding and owner-authorized product photos. This is a requirement, not an implemented feature.
+
+## Initial source implementation checkpoint
+
+The draft introduces an additive menu category and per-product classification schema plus an authenticated catalog service. Categories and assignments are scoped by verified tenant, organization and outlet; inventory categories, canonical product prices and stock are not changed. Assignment has optimistic version checking and command idempotency. Visibility and spotlight flags are separate. SQLite synthetic integration passed 292 combined assertions; MySQL CI must pass independently. The service is not yet exposed through a page or HTTP API and nothing has been migrated or deployed. Public menu/QR, owner UI, promotions, loyalty ledger, POS integration and Windows update remain outstanding. Local integer loyalty arithmetic is likewise not connected to checkout.
