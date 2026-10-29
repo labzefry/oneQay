@@ -24,6 +24,7 @@ final class BusinessManagementServiceProvider extends ServiceProvider
         $this->app->scoped(\App\Application\Business\WorkforceManagement::class,fn($a)=>new \App\Application\Business\WorkforceManagement($a->make(BusinessRepository::class),$a->make(\App\Application\Business\WorkforceAccounts::class)));
         $this->app->scoped(\App\Application\Pos\ShiftClosureWorkspaceRepository::class, fn ($app) => new \App\Infrastructure\Pos\LaravelShiftClosureWorkspaceRepository($app->make('db')->connection()));
         $this->app->bind(\App\Application\Business\BusinessDocuments::class, \App\Infrastructure\Business\BusinessDocumentCodec::class);
+        $this->app->scoped(\App\Infrastructure\Business\LaravelMenuBookCatalog::class, fn ($app) => new \App\Infrastructure\Business\LaravelMenuBookCatalog($app->make('db')->connection(), $app->make(\App\Application\Business\BusinessAccess::class), $app->make(BusinessRepository::class), $app->make(\App\Application\Business\MerchandisingRepository::class)));
         $this->app->scoped(\App\Application\Business\MerchandisingRepository::class, fn ($app) => new \App\Infrastructure\Business\LaravelMerchandisingRepository($app->make('db')->connection()));
         $this->app->scoped(\App\Application\Business\CommerceReportingRepository::class, fn ($app) => new \App\Infrastructure\Business\LaravelCommerceReportingRepository($app->make('db')->connection()));
         $this->app->scoped(BusinessRepository::class, fn ($app): BusinessRepository => new LaravelBusinessRepository($app->make('db')->connection(), $app->make(InventoryReplenishmentRepository::class)));
@@ -40,6 +41,10 @@ final class BusinessManagementServiceProvider extends ServiceProvider
             || (int) config('oneqay.session_control.absolute_ttl_seconds', 0) !== 43200) return;
 
         Route::middleware(['web', 'session.active', 'throttle:60,1', RequirePosSessionContextMiddleware::class])->group(static function (): void {
+            $menu=\App\Delivery\Http\Business\MenuBookController::class;
+            Route::get('/pos/business/menu-book',[$menu,'show'])->name('business.menu-book');
+            Route::post('/pos/business/menu-book/categories',[$menu,'category'])->middleware('throttle:20,1');
+            Route::post('/pos/business/menu-book/items',[$menu,'assign'])->middleware('throttle:20,1');
             $catalog=\App\Delivery\Http\Business\MerchandisingController::class;
             Route::get('/pos/business/products',[$catalog,'catalog'])->name('business.products');
             Route::post('/pos/business/products/categories',[$catalog,'createCategory'])->middleware('throttle:20,1');

@@ -21,6 +21,12 @@ final readonly class LaravelMenuBookCatalog {
   return $this->operations->once($s,BusinessInput::text($operation,80),'menu.product.assign',$data,$correlation,function()use($s,$data,$product,$category,$visible,$spotlight,$version){$scope=$this->scope($s);if(!$this->products->product($s,$product,true))throw new BusinessViolation('PRODUCT_NOT_FOUND',404);if(!$this->db->table('oneqay_menu_book_categories')->where($scope)->where('id',$category)->lockForUpdate()->exists())throw new BusinessViolation('MENU_CATEGORY_NOT_FOUND',404);
    $q=$this->db->table('oneqay_menu_book_items')->where($scope)->where('product_id',$product);$old=(clone $q)->lockForUpdate()->first();if(($old?(int)$old->version:0)!==$version)throw new BusinessViolation('RECORD_CHANGED',409);$changes=['category_id'=>$category,'visible'=>$visible,'spotlight'=>$spotlight,'version'=>$version+1,'updated_at'=>time()];if($old){if($q->where('version',$version)->update($changes)!==1)throw new BusinessViolation('RECORD_CHANGED',409);}else $q->insert($scope+['product_id'=>$product]+$changes);return $data+['new_version'=>$version+1];});
  }
+ public function items(array $productIds):array {
+  $s=$this->access->require('pos.catalog.prepare');$this->ready();if(count($productIds)>50)throw new BusinessViolation('MENU_PRODUCT_LIMIT');
+  foreach($productIds as$id)BusinessInput::text($id,64);
+  $rows=$this->db->table('oneqay_menu_book_items')->where($this->scope($s))->whereIn('product_id',$productIds)->get(['product_id','category_id','visible','spotlight','version']);$out=[];
+  foreach($rows as$r)$out[$r->product_id]=['category_id'=>$r->category_id,'visible'=>(bool)$r->visible,'spotlight'=>(bool)$r->spotlight,'version'=>(int)$r->version];return $out;
+ }
  public function item(string $product):?array{
   $s=$this->access->require('pos.catalog.prepare');$this->ready();$id=BusinessInput::text($product,64);$r=$this->db->table('oneqay_menu_book_items')->where($this->scope($s))->where('product_id',$id)->first(['product_id','category_id','visible','spotlight','version']);if(!$r)return null;$v=(array)$r;$v['visible']=(bool)$v['visible'];$v['spotlight']=(bool)$v['spotlight'];$v['version']=(int)$v['version'];return $v;
  }

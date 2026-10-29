@@ -14,6 +14,7 @@ final readonly class BusinessAccess
 {
     public const MODULES = [
         'products' => ['Products', 'pos.catalog.prepare'],
+        'menu-book' => ['Menu book', 'pos.catalog.prepare'],
         'reports' => ['Reports', 'pos.reporting.sales-summary.view'],
         'desktop' => ['POS Windows', 'authorization.policy.manage'],
         'settings' => ['Business settings', 'authorization.policy.manage'],
@@ -63,7 +64,7 @@ final readonly class BusinessAccess
     {
         $result = [];
         foreach (self::MODULES as $key => [$title, $permission]) {
-            if ($this->allows($permission)) $result[] = ['key' => 'business_'.$key, 'title' => $title, 'description' => $title, 'url' => '/pos/business/'.$key, 'category' => match($key){'products'=>'SETUP','reports'=>'REVIEW','settings','access'=>'CONTROL',default=>'MANAGE'}];
+            if ($this->allows($permission)) $result[] = ['key' => 'business_'.$key, 'title' => $title, 'description' => $title, 'url' => '/pos/business/'.$key, 'category' => match($key){'products','menu-book'=>'SETUP','reports'=>'REVIEW','settings','access'=>'CONTROL',default=>'MANAGE'}];
         }
         return $result;
     }

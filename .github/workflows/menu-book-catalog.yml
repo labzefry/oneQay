@@ -4,6 +4,11 @@ on:
   pull_request:
     paths:
       - 'apps/web/app/Infrastructure/Business/LaravelMenuBookCatalog.php'
+      - 'apps/web/app/Delivery/Http/Business/MenuBookController.php'
+      - 'apps/web/app/Application/Business/BusinessAccess.php'
+      - 'apps/web/app/Providers/BusinessManagementServiceProvider.php'
+      - 'apps/web/resources/js/pages/Business/MenuBook.vue'
+      - 'apps/web/resources/js/layouts/MerchantShell.vue'
       - 'apps/web/app/Infrastructure/Platform/ControlPlaneBusinessReset.php'
       - 'apps/web/database/module-migrations/business/2026_10_29_000001_create_menu_book_catalog.php'
       - 'apps/web/tests/menu-book-catalog.php'
@@ -37,3 +42,12 @@ jobs:
       - run: php apps/web/tests/menu-book-catalog.php
       - run: PLATFORM_TEST_ENGINE=mysql php apps/web/tests/menu-book-catalog.php
       - run: php apps/web/tests/loyalty-math.php
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+      - run: npm ci --ignore-scripts --no-fund
+        working-directory: apps/web
+      - run: npm run type-check
+        working-directory: apps/web
+      - run: npm run build
+        working-directory: apps/web
