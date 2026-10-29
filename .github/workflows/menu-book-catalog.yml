@@ -35,6 +35,7 @@ on:
       - 'tools/production/cpanel/update-oneqaydev-menu-book.php'
       - 'tools/production/package-oneqaydev-menu-book.py'
       - 'tools/production/tests/menu-book-operator.php'
+      - 'tools/production/tests/menu-book-package.py'
       - 'apps/web/app/Delivery/Http/Business/MenuImageResponse.php'
       - '.github/workflows/menu-book-catalog.yml'
 permissions:
@@ -71,6 +72,7 @@ jobs:
       - run: php tools/production/tests/menu-vite-assets.php
       - run: php tools/production/tests/menu-book-operator.php
       - run: python -m py_compile tools/production/package-oneqaydev-menu-book.py
+      - run: python tools/production/tests/menu-book-package.py
       - run: composer audit --working-dir=apps/web --locked --format=plain
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
