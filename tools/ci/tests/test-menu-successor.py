@@ -18,4 +18,12 @@ for args in cases:
     try:m.validate(*args)
     except ValueError:n+=1
     else:raise AssertionError('UNSAFE_SUCCESSOR_ACCEPTED')
+fixture='      - name: classify\n        run: echo original\n      - name: next\n        run: true\n'
+assert m.step(fixture,'classify').startswith('      - name: classify');n+=1
+m.CLASSIFIERS={'workflow.yml':['classify']}
+m.subprocess.check_output=lambda args,text:fixture if args[-1].startswith(m.BASE+':') else fixture.replace('original','tampered')
+try:m.verify_classifiers('a'*40)
+except ValueError as error:
+    assert str(error)=='MENU_SUCCESSOR_CLASSIFIER_CHANGED';n+=1
+else:raise AssertionError('MODIFIED_CLASSIFIER_ACCEPTED')
 print('MENU_SUCCESSOR_ENVELOPE_PASS assertions='+str(n))
