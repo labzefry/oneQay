@@ -175,3 +175,7 @@ See [split-root configuration, reserved hostnames, trust boundary and actual-ass
 ## 2026-10-29 — Menu media testing (source draft)
 
 menu-book-catalog.php includes synthetic menu-book-media.php lifecycle coverage. REQUIRE_MENU_GD=1 makes missing GD fail in both SQLite/MySQL CI runs. Scoped CI includes Vue type-check and build. Passing source checks does not establish hosting/device acceptance. See [menu contract](docs/operations/MENU_MEMBERSHIP_ROADMAP_2026-10-29.md).
+
+### 29 October continuation
+
+Gallery cleanup and media count tests raise local GD SQLite coverage to361 combined assertions. MIME security regression26 and locked Composer audit are included in scoped menu CI. Existing application regression passed. Both menu Vue stylesheets now participate in the palette guard. Browser interaction/visual validation remains unverified because the required executable was unavailable and its download invalid.

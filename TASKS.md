@@ -1,3 +1,7 @@
+## 2026-10-29 — Menu media lifecycle and MIME patch (PR #992 draft)
+
+Adds a bounded gallery, selection and audited deletion of unused cover images, protecting both saved draft and publication references. Menu page transitions respect reduced motion. Patches symfony/mime v7.4.19 to v7.4.22 for CVE-2026-45070 without changing other locked packages. Local GD SQLite361, MIME26, application regression, Vue type-check/build and palette checks pass; Composer/web/desktop npm audits report no advisories. Exact new-head CI, visual QA, remaining feature scope and additive cPanel qualification are pending. Not merged/deployed. [Evidence and remaining work](docs/operations/MENU_MEMBERSHIP_ROADMAP_2026-10-29.md).
+
 ## 2026-10-29 — Menu-book cover draft (PR #992, not deployed)
 
 Adds a private raster cover upload, owner draft preview and explicit publication on the verified business subdomain. Uploads are scoped to tenant/organization/outlet, decoded and re-encoded with GD, limited to 3 MiB/4,000 pixels per side/8 MP and 20 MiB stored bytes per outlet. Only the cover selected in the published snapshot is publicly readable. Client feedback is bounded to 30 seconds; duplicate images are deduplicated, with safe error codes.

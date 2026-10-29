@@ -71,6 +71,22 @@ if(!function_exists('imagecreatefromstring')){
  $db->table('oneqay_menu_book_media')->where($scope)->where('id',$stored['id'])->update(['payload'=>base64_encode($image['bytes'])]);
  $settingsReset=(new App\Infrastructure\Platform\ControlPlaneBusinessReset($db,$app->make('encrypter')))->preview(array_replace($b,['status'=>'suspended','updated_at'=>time()-120]),'settings');
  $tables=array_column($settingsReset['entries'],'table');$assert(in_array('oneqay_menu_book_media',$tables,true)&&array_search('oneqay_menu_book_publication',$tables,true)<array_search('oneqay_menu_book_media',$tables,true),'settings reset removes publication before private media');
+
+ $listing=$images->listing();$assert($listing['used_bytes']===$stored['bytes']+$replacement['bytes']&&count($listing['items'])===2,'gallery reports scoped usage without image payloads');
+ $assert(!str_contains(json_encode($listing),'payload')&&!str_contains(json_encode($listing),'sha256'),'gallery does not return private stored bytes');
+ try{$images->remove('remove-selected-cover-001',$stored['id'],'menu-media-test');$assert(false,'selected cover deleted');}catch(App\Application\Business\BusinessViolation $e){$assert($e->reason==='MENU_IMAGE_IN_USE','draft and retained snapshot cover protected from deletion');}
+ $contexts->setVerified($otherOwner);$assert($images->listing()['items']===[],'second tenant gallery is independent');
+ try{$images->remove('remove-foreign-image-001',$replacement['id'],'menu-media-test');$assert(false,'foreign image deleted');}catch(App\Application\Business\BusinessViolation $e){$assert($e->reason==='MENU_IMAGE_NOT_FOUND','cross-tenant image deletion denied');}
+ $contexts->setVerified($businessOwner);$removed=$images->remove('remove-unused-image-001',$replacement['id'],'menu-media-test');
+ $assert($removed['deleted']&&$images->remove('remove-unused-image-001',$replacement['id'],'menu-media-test')===$removed&&$images->privateImage($replacement['id'])===null,'unused media deletion is durable and idempotent');
+ $assert($images->store($makeImage(160),'menu-media-test')===$replacement,'deleted image may be uploaded again without stale operation replay');
+ $count=$db->table('oneqay_menu_book_media')->where($scope)->count();$dummy=[];
+ for($i=$count;$i<100;$i++){$fake=bin2hex(random_bytes(16));$dummy[]=$fake;$db->table('oneqay_menu_book_media')->insert($scope+['id'=>$fake,'sha256'=>str_repeat('0',64),'mime'=>'image/png','bytes'=>1,'payload'=>'AA==','created_at'=>time()]);}
+ try{$images->store($makeImage(200),'menu-media-test');$assert(false,'image count limit bypassed');}catch(App\Application\Business\BusinessViolation $e){$assert($e->reason==='MENU_IMAGE_COUNT_EXCEEDED','small image flood limited per outlet');}
+ $db->table('oneqay_menu_book_media')->where($scope)->whereIn('id',$dummy)->delete();
+ $large=imagecreatetruecolor(4001,1);ob_start();imagepng($large);$largePng=ob_get_clean();imagedestroy($large);
+ try{$images->store($largePng,'menu-media-test');$assert(false,'pixel dimension exceeded');}catch(App\Application\Business\BusinessViolation $e){$assert($e->reason==='MENU_IMAGE_INVALID','image dimension bound enforced before decode');}
+ $contexts->clear();try{$images->remove('anonymous-remove-image',$stored['id'],'menu-media-test');$assert(false,'anonymous deletion permitted');}catch(App\Application\Business\BusinessViolation $e){$assert($e->reason==='CONTEXT_REQUIRED','anonymous deletion denied');}
  $contexts->clear();$assert($controller->media($previewRequest,$stored['id'])->getStatusCode()===403,'anonymous private image read denied');$contexts->setVerified($businessOwner);
  config(['platform.business_domains_enabled'=>false]);
 }

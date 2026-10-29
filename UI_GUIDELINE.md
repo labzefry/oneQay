@@ -139,3 +139,7 @@ White backgrounds require Black Onyx (`#202020`) for all text. Colored backgroun
 ## 2026-10-29 — Menu cover editor (source draft)
 
 Distinguish upload selection, saved draft and explicit publication. Use contained image preview, proportional labels, localized errors, bounded 30-second progress and reduced-motion support. White surfaces use black onyx; navy/primary fills use white. Mobile cover preserves aspect ratio. No unfinished table-order or photo controls are advertised as complete. See [menu contract](docs/operations/MENU_MEMBERSHIP_ROADMAP_2026-10-29.md).
+
+### 29 October continuation
+
+Cover gallery displays usage, 12-image pages, saved choices and unused-image deletion with confirmation. Cleanup is disabled while publication fields are unsaved. Public menu page changes use a brief transform with reduced-motion fallback; no fake numeric progress. Browser visual verification remains pending.

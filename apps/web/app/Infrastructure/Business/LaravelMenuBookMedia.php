@@ -3,13 +3,14 @@
 declare(strict_types=1);
 namespace App\Infrastructure\Business;
 
-use App\Application\Business\{BusinessAccess,BusinessRepository,BusinessViolation};
+use App\Application\Business\{BusinessAccess,BusinessInput,BusinessRepository,BusinessViolation};
 use Illuminate\Database\Connection;
 
 final readonly class LaravelMenuBookMedia
 {
     public const MAX_BYTES = 3 * 1024 * 1024;
     public const QUOTA_BYTES = 20 * 1024 * 1024;
+    public const MAX_IMAGES = 100;
 
     public function __construct(private Connection $db, private BusinessAccess $access, private BusinessRepository $operations) {}
 
@@ -53,6 +54,7 @@ final readonly class LaravelMenuBookMedia
             $record=['id'=>$id,'mime'=>$mime,'bytes'=>strlen($bytes)];
             if ($old) return $record;
             return $this->operations->once($s,'menu-media:'.bin2hex(random_bytes(16)),'menu.media.upload',['sha256'=>$hash],$correlation,function()use($scope,$q,$id,$hash,$mime,$bytes,$record):array {
+                if ((clone $q)->count() >= self::MAX_IMAGES) throw new BusinessViolation('MENU_IMAGE_COUNT_EXCEEDED',409);
                 if ((int)(clone $q)->sum('bytes') + strlen($bytes) > self::QUOTA_BYTES) throw new BusinessViolation('MENU_IMAGE_QUOTA_EXCEEDED',409);
                 $this->db->table('oneqay_menu_book_media')->insert($scope+['id'=>$id,'sha256'=>$hash,'mime'=>$mime,'bytes'=>strlen($bytes),'payload'=>base64_encode($bytes),'created_at'=>time()]);
                 return $record;
@@ -61,6 +63,37 @@ final readonly class LaravelMenuBookMedia
     }
 
     public function privateImage(string $id): ?array { return $this->readScoped($this->managerScope(),$id); }
+
+    private function references(array $scope): array
+    {
+        $row=$this->db->table('oneqay_menu_book_publication')->where($scope)->first(['cover_id','published_snapshot']);
+        if (!$row) return [];
+        try { $snapshot=$row->published_snapshot===null?[]:json_decode($row->published_snapshot,true,32,JSON_THROW_ON_ERROR); }
+        catch (\JsonException) { throw new BusinessViolation('MENU_SNAPSHOT_INVALID',503); }
+        if (!is_array($snapshot)) throw new BusinessViolation('MENU_SNAPSHOT_INVALID',503);
+        return array_values(array_filter([$row->cover_id,$snapshot['cover_id']??null],fn($v)=>is_string($v)));
+    }
+
+    public function listing(): array
+    {
+        $scope=$this->managerScope();$refs=$this->references($scope);
+        $rows=$this->db->table('oneqay_menu_book_media')->where($scope)->orderByDesc('created_at')->orderBy('id')->limit(self::MAX_IMAGES)->get(['id','bytes','created_at']);
+        return ['items'=>$rows->map(fn($r)=>['id'=>$r->id,'bytes'=>(int)$r->bytes,'in_use'=>in_array($r->id,$refs,true)])->all(),
+            'used_bytes'=>(int)$this->db->table('oneqay_menu_book_media')->where($scope)->sum('bytes'),'quota_bytes'=>self::QUOTA_BYTES];
+    }
+
+    public function remove(string $operation,string $id,string $correlation): array
+    {
+        $s=$this->access->require('pos.catalog.prepare');$scope=$this->managerScope();
+        if (!preg_match('/\A[a-f0-9]{32}\z/D',$id)) throw new BusinessViolation('MENU_IMAGE_INVALID',422);
+        return $this->operations->once($s,BusinessInput::text($operation,80),'menu.media.remove',['id'=>$id],$correlation,function()use($scope,$id):array {
+            $this->db->table('oneqay_organizations')->where('tenant_id',$scope['tenant_id'])->where('id',$scope['organization_id'])->lockForUpdate()->firstOrFail();
+            if (in_array($id,$this->references($scope),true)) throw new BusinessViolation('MENU_IMAGE_IN_USE',409);
+            $q=$this->db->table('oneqay_menu_book_media')->where($scope)->where('id',$id);
+            if (!$q->exists()) throw new BusinessViolation('MENU_IMAGE_NOT_FOUND',404);
+            $q->delete();return ['id'=>$id,'deleted'=>true];
+        });
+    }
 
     /** Internal only: callers must obtain scope from a verified session/host and enforce publication. */
     public function readScoped(array $scope, string $id): ?array

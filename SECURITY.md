@@ -461,3 +461,7 @@ See [split-root configuration, reserved hostnames, trust boundary and actual-ass
 ## 2026-10-29 — Menu cover boundary (source draft)
 
 Catalog-authorized CSRF-protected raster upload has byte, pixel, throttle and scoped quota limits. GD re-encoding strips metadata/active content. Public images require active verified hostname and selected published ID. No-store, nosniff, sandbox CSP and same-origin policy apply. No remote fetch or arbitrary public file storage. Independent review and host runtime qualification remain pending. See [menu contract](docs/operations/MENU_MEMBERSHIP_ROADMAP_2026-10-29.md).
+
+### 29 October continuation
+
+symfony/mime is locked to v7.4.22 for CVE-2026-45070. Synthetic MIME tests cover constructor/setter/header-collection injection and valid attachments. Composer/npm scans are clear at the recorded local sample; host PHP and desktop native-runtime coverage remain separate. Media upload now limits count to100 as well as20 MiB, and unused-media deletion verifies live scoped references transactionally.

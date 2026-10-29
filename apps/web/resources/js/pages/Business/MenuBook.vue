@@ -8,13 +8,16 @@ import { useBusinessMutation } from '../../use-business-mutation';
 import WorkspaceIcon from '../../components/WorkspaceIcon.vue';
 type Product = { product_id:string; display_name:string; unit_price_atomic:string; currency:string; currency_scale:number; active:boolean };
 type Item = { category_id:string; visible:boolean; spotlight:boolean; version:number };
-const props=defineProps<{products:{data:Product[];page:number;has_more:boolean;total:number};categories:{id:string;name:string}[];items:Record<string,Item>;filters:{q:string};preferences:CurrencyPreferences;publication:{title:string;description:string;cover_id:string|null;published:boolean;version:number}}>();
+const props=defineProps<{products:{data:Product[];page:number;has_more:boolean;total:number};categories:{id:string;name:string}[];items:Record<string,Item>;filters:{q:string};preferences:CurrencyPreferences;media:{items:{id:string;bytes:number;in_use:boolean}[];used_bytes:number;quota_bytes:number};publication:{title:string;description:string;cover_id:string|null;published:boolean;version:number}}>();
 const page=usePage<{business_profile?:{url?:string|null}|null}>();
 const menuUrl=computed(()=>page.props.business_profile?.url ? page.props.business_profile.url.replace(/\/$/,'')+'/menu' : null);
 const id=computed(()=>locale.value==='id');
 const label=(a:string,b:string)=>id.value?a:b;
 const q=ref(props.filters.q);const categoryName=ref('');const selected=ref<Product|null>(null);const dialog=ref<HTMLDialogElement|null>(null);
 const publication=reactive({...props.publication});
+const mediaPage=ref(0);const mediaPages=computed(()=>Math.max(1,Math.ceil(props.media.items.length/12)));const visibleMedia=computed(()=>props.media.items.slice(mediaPage.value*12,mediaPage.value*12+12));
+const publicationDirty=computed(()=>publication.title!==props.publication.title||publication.description!==props.publication.description||publication.cover_id!==props.publication.cover_id);
+watch(()=>props.media,()=>{mediaPage.value=Math.min(mediaPage.value,mediaPages.value-1);});
 const uploadBusy=ref(false);const uploadError=ref('');const uploadNotice=ref('');
 let uploadController:AbortController|null=null;let uploadTimer:ReturnType<typeof setTimeout>|null=null;let disposed=false;
 onBeforeUnmount(()=>{disposed=true;uploadController?.abort();if(uploadTimer)clearTimeout(uploadTimer);});
@@ -48,7 +51,8 @@ async function uploadCover(event:Event){
   if(!response.ok){
    const raw=data?.error?.code??data?.code;const code=typeof raw==='string'&&/^[A-Z][A-Z0-9_]{1,63}$/.test(raw)?raw:'MENU_IMAGE_UPLOAD_FAILED';
    const messages:Record<string,[string,string]>={
-    MENU_IMAGE_QUOTA_EXCEEDED:['Penyimpanan gambar buku menu penuh. Hubungi pengelola aplikasi.','Menu image storage is full. Contact the application operator.'],
+    MENU_IMAGE_QUOTA_EXCEEDED:['Penyimpanan penuh. Hapus gambar yang tidak digunakan di galeri.','Storage is full. Remove unused images from the gallery.'],
+    MENU_IMAGE_COUNT_EXCEEDED:['Batas 100 gambar tercapai. Hapus gambar yang tidak digunakan.','The 100-image limit is reached. Remove unused images.'],
     MENU_IMAGE_PROCESSING_UNAVAILABLE:['Pengolah gambar server belum tersedia. Hubungi pengelola aplikasi.','Server image processing is unavailable. Contact the application operator.'],
     MENU_IMAGE_INVALID:['Gambar tidak dapat dibaca. Gunakan JPG, PNG, atau WebP dengan dimensi maksimal 4.000 piksel dan 8 megapiksel.','Image could not be read. Use JPG, PNG or WebP up to 4,000 pixels per side and 8 megapixels.'],
     MENU_IMAGE_SIZE_INVALID:['Ukuran gambar terlalu besar. Perkecil gambar hingga maksimal 3 MB.','The image is too large. Resize it to 3 MB or less.']
@@ -60,6 +64,13 @@ async function uploadCover(event:Event){
  }catch{
   if(!disposed)uploadError.value=label('Hasil unggah belum terkonfirmasi. Pilih ulang gambar yang sama untuk mencoba lagi; gambar tidak akan digandakan.','Upload result is unconfirmed. Select the same image to retry; it will not be duplicated.');
  }finally{if(uploadTimer)clearTimeout(uploadTimer);uploadTimer=null;uploadController=null;if(!disposed)uploadBusy.value=false;}
+}
+
+async function removeImage(imageId:string){
+ if(busy.value||uncertain.value||uploadBusy.value||publicationDirty.value)return;
+ if(!window.confirm(label('Hapus gambar yang tidak digunakan ini dari penyimpanan?','Delete this unused image from storage?')))return;
+ const result=await submit('/pos/business/menu-book/media/remove',{id:imageId});
+ if(result){notice.value=label('Gambar yang tidak digunakan telah dihapus.','Unused image removed.');clear();router.reload();}
 }
 </script>
 <template>
@@ -77,6 +88,13 @@ async function uploadCover(event:Event){
     <p v-if="uploadNotice" role="status">{{uploadNotice}}</p><p v-if="uploadError" class="merch-error" role="alert">{{uploadError}}</p>
    </div><div class="cover-frame"><img v-if="coverUrl" :src="coverUrl" :alt="label('Pilihan cover buku menu','Selected menu cover')"/><div v-else class="cover-empty"><WorkspaceIcon name="book-open" :size="40"/><span>{{label('Cover bisnis Anda','Your business cover')}}</span></div></div>
   </section>
+
+  <section v-if="media.items.length" class="menu-card">
+   <h2>{{label('Galeri cover','Cover gallery')}}</h2><p>{{label('Penyimpanan','Storage')}}: {{(media.used_bytes/1024/1024).toFixed(2)}} / {{media.quota_bytes/1024/1024}} MB · {{media.items.length}} / 100 {{label('gambar','images')}}</p>
+   <p v-if="publicationDirty">{{label('Simpan draft sebelum menghapus gambar yang tidak digunakan.','Save your draft before deleting unused images.')}}</p>
+   <div class="cover-gallery"><article v-for="picture in visibleMedia" :key="picture.id"><img :src="'/pos/business/menu-book/media/'+picture.id" :alt="label('Gambar cover tersimpan','Saved cover image')" loading="lazy"/><p>{{Math.ceil(picture.bytes/1024)}} KB · {{picture.in_use?label('Digunakan','In use'):label('Tidak digunakan','Unused')}}</p><button type="button" :disabled="uploadBusy||busy||uncertain||publication.cover_id===picture.id" @click="publication.cover_id=picture.id">{{publication.cover_id===picture.id?label('Dipilih','Selected'):label('Pilih','Select')}}</button><button v-if="!picture.in_use" type="button" :disabled="uploadBusy||busy||uncertain||publicationDirty" @click="removeImage(picture.id)">{{label('Hapus','Delete')}}</button></article></div>
+   <nav v-if="mediaPages>1" class="menu-controls" :aria-label="label('Halaman galeri','Gallery pages')"><button :disabled="mediaPage===0" @click="mediaPage--">{{label('Sebelumnya','Previous')}}</button><span>{{mediaPage+1}} / {{mediaPages}}</span><button :disabled="mediaPage>=mediaPages-1" @click="mediaPage++">{{label('Berikutnya','Next')}}</button></nav>
+  </section>
   <div v-if="uploadBusy||busy" class="menu-progress" role="status" aria-live="polite"><span class="menu-spinner" aria-hidden="true"></span>{{uploadBusy?label('Mengunggah dan memproses gambar…','Uploading and processing image…'):label('Menyimpan perubahan…','Saving changes…')}}</div>
   <section class="menu-card"><h2>{{label('Tampilan dan publikasi','Display and publishing')}}</h2><form class="menu-controls" @submit.prevent="savePublication('draft')"><label class="menu-grow">{{label('Judul buku menu','Menu title')}}<input v-model="publication.title" required maxlength="160" :disabled="uploadBusy||busy||uncertain"/></label><label class="menu-grow">{{label('Pengantar','Introduction')}}<input v-model="publication.description" maxlength="500" :disabled="uploadBusy||busy||uncertain"/></label><p>{{publication.published?label('Status: Terbit','Status: Published'):label('Status: Belum terbit','Status: Unpublished')}}</p><button :disabled="uploadBusy||busy||(uncertain&&publicationAction!=='draft')">{{label('Simpan draft','Save draft')}}</button><button type="button" :disabled="uploadBusy||busy||(uncertain&&publicationAction!=='publish')" @click="savePublication('publish')">{{label('Terbitkan menu','Publish menu')}}</button><button v-if="publication.published" type="button" :disabled="uploadBusy||busy||(uncertain&&publicationAction!=='unpublish')" @click="savePublication('unpublish')">{{label('Hentikan publikasi','Unpublish')}}</button></form><p>{{label('Alamat menu pelanggan:','Customer menu address:')}} <a v-if="menuUrl" :href="menuUrl" target="_blank" rel="noopener">{{menuUrl}}</a><span v-else>{{label('Subdomain bisnis belum tersedia.','Business subdomain is not available.')}}</span></p></section>
   <section class="menu-card"><h2>{{label('Kategori buku menu','Menu categories')}}</h2><p>{{label('Kategori ini terpisah dari kategori inventori.','These categories are separate from inventory categories.')}}</p><form class="menu-controls" @submit.prevent="addCategory"><label class="menu-grow">{{label('Nama kategori','Category name')}}<input v-model="categoryName" maxlength="120" required :disabled="uploadBusy||busy||uncertain" :placeholder="label('Contoh: Kopi','Example: Coffee')"/></label><button :disabled="uploadBusy||busy">{{uncertain?label('Coba permintaan yang sama','Retry same request'):label('Tambah kategori','Add category')}}</button></form><div class="menu-chips"><span v-for="c in categories" :key="c.id">{{c.name}}</span><span v-if="!categories.length">{{label('Belum ada kategori.','No categories yet.')}}</span></div></section>
@@ -92,4 +110,5 @@ async function uploadCover(event:Event){
 .menu-header,.menu-row{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap}.menu-header h1{font-size:2rem;margin:.25rem 0}.menu-header p,.menu-card p{line-height:1.5}.menu-eyebrow{font-weight:700;letter-spacing:.08em;font-size:.875rem}.menu-card,.menu-note{padding:1.25rem;border:1px solid var(--oq-soft);border-radius:16px;background:var(--oq-white);color:var(--oq-dark);margin:1rem 0}.menu-note{background:var(--oq-white)}.menu-card h2{font-size:1.2rem;margin:0}.menu-controls{display:flex;gap:.75rem;align-items:end;flex-wrap:wrap}.menu-controls label{display:grid;gap:.35rem}.menu-grow{flex:1;min-width:180px}.menu-controls input{width:100%;min-height:44px}.menu-chips{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1rem}.menu-chips span{border:1px solid var(--oq-soft);border-radius:999px;padding:.4rem .8rem;background:var(--oq-white);color:var(--oq-dark)}.merch-table-wrap{margin:1rem 0}.merch-table td button{min-height:40px}@media(max-width:600px){.menu-header h1{font-size:1.6rem}.menu-controls{align-items:stretch}.menu-controls label{width:100%}}
 
 .cover-editor{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(180px,1fr);gap:1.5rem;align-items:center}.cover-upload{display:grid;gap:.5rem;font-weight:600}.cover-upload input{font-size:1rem;max-width:100%;min-height:44px}.cover-hint{font-size:.875rem}.cover-frame{border:1px solid var(--oq-soft);border-radius:16px;overflow:hidden;aspect-ratio:4/3;background:var(--oq-white);color:var(--oq-dark)}.cover-frame img{width:100%;height:100%;object-fit:contain}.cover-empty{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem}.menu-progress{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);z-index:1000;display:flex;align-items:center;gap:.75rem;max-width:calc(100vw - 2rem);padding:1rem 1.5rem;background:var(--oq-navy);color:var(--oq-white);border-radius:16px;box-shadow:0 6px 20px var(--oq-soft)}.menu-spinner{width:20px;height:20px;flex-shrink:0;border:2px solid var(--oq-soft);border-top-color:var(--oq-white);border-radius:50%;animation:menu-spin .8s linear infinite}@keyframes menu-spin{to{transform:rotate(360deg)}}@media(prefers-reduced-motion:reduce){.menu-spinner{animation:none}}@media(max-width:600px){.cover-editor{grid-template-columns:1fr}}
+.cover-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:1rem;margin:1rem 0}.cover-gallery article{padding:.75rem;border:1px solid var(--oq-soft);border-radius:14px;background:var(--oq-white);color:var(--oq-dark)}.cover-gallery img{width:100%;height:120px;object-fit:contain}.cover-gallery button{min-height:44px;margin:.25rem}.cover-gallery p{font-size:.875rem}
 </style>

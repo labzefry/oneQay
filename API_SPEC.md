@@ -154,3 +154,7 @@ Authenticated `/pos/business/desktop/cashiers` adds optional `account_type: owne
 ## 2026-10-29 — Menu cover endpoints (source draft)
 
 POST /pos/business/menu-book/media accepts multipart image under verified session, CSRF, catalog permission and throttling. GET /pos/business/menu-book/media/{id} requires the verified manager scope. GET /menu/media/{id} serves only the active host-derived business current published cover. Optional nullable cover_id on publication preserves the saved cover if omitted. No input filenames/filesystem paths are exposed. See [menu contract](docs/operations/MENU_MEMBERSHIP_ROADMAP_2026-10-29.md).
+
+### 29 October continuation
+
+Owner page now includes a bounded media gallery (metadata only). POST /pos/business/menu-book/media/remove uses operation_id and data.id with catalog authorization, CSRF and rate limiting. Deletion refuses draft/published-snapshot references and foreign IDs; repeated same-operation requests preserve one result.

@@ -22,6 +22,9 @@ on:
       - 'apps/web/database/module-migrations/business/2026_10_29_000001_create_menu_book_catalog.php'
       - 'apps/web/tests/menu-book-catalog.php'
       - 'apps/web/tests/menu-book-media.php'
+      - 'apps/web/tests/mime-header-security.php'
+      - 'apps/web/composer.lock'
+      - 'apps/web/scripts/check-ui-palette.mjs'
       - 'apps/web/app/Delivery/Http/Business/MenuImageResponse.php'
       - '.github/workflows/menu-book-catalog.yml'
 permissions:
@@ -53,10 +56,14 @@ jobs:
       - run: REQUIRE_MENU_GD=1 php apps/web/tests/menu-book-catalog.php
       - run: REQUIRE_MENU_GD=1 PLATFORM_TEST_ENGINE=mysql php apps/web/tests/menu-book-catalog.php
       - run: php apps/web/tests/loyalty-math.php
+      - run: php apps/web/tests/mime-header-security.php
+      - run: composer audit --working-dir=apps/web --locked --format=plain
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '24'
       - run: npm ci --ignore-scripts --no-fund
+        working-directory: apps/web
+      - run: npm run check:ui-palette
         working-directory: apps/web
       - run: npm run type-check
         working-directory: apps/web

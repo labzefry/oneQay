@@ -49,6 +49,7 @@ final class BusinessManagementServiceProvider extends ServiceProvider
             $menu=\App\Delivery\Http\Business\MenuBookController::class;
             Route::get('/pos/business/menu-book',[$menu,'show'])->name('business.menu-book');
             Route::get('/pos/business/menu-book/preview',[$menu,'preview'])->name('business.menu-book.preview');
+            Route::post('/pos/business/menu-book/media/remove',[$menu,'removeMedia'])->middleware('throttle:10,1');
             Route::post('/pos/business/menu-book/media',[$menu,'uploadMedia'])->middleware('throttle:10,1');
             Route::get('/pos/business/menu-book/media/{id}',[$menu,'media'])->where('id','[a-f0-9]{32}');
             Route::post('/pos/business/menu-book/categories',[$menu,'category'])->middleware('throttle:20,1');
