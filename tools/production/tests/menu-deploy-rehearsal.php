@@ -2,7 +2,13 @@
 // Author by Lab | zefry. Synthetic SQLite/MySQL rehearsal, never hosting.
 declare(strict_types=1);
 $completed=false;register_shutdown_function(static function()use(&$completed):void{if(!$completed){fwrite(STDERR,"MENU_DEPLOY_REHEARSAL_INCOMPLETE\n");exit(1);}});
-$repo=dirname(__DIR__,3);require $repo.'/apps/web/tests/platform-control-mail.php';
+$repo=dirname(__DIR__,3);
+if(getenv('PLATFORM_TEST_ENGINE')==='mysql'){
+ $pdo=new PDO('mysql:host=127.0.0.1;port=3306','root','synthetic-test-only',[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION]);
+ $pdo->exec('CREATE DATABASE IF NOT EXISTS `oneqay_menu_rehearsal` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci');
+ putenv('PLATFORM_TEST_DATABASE=oneqay_menu_rehearsal');
+}
+require $repo.'/apps/web/tests/platform-control-mail.php';
 $temp=sys_get_temp_dir().'/oneqay-menu-rehearsal-'.bin2hex(random_bytes(8));mkdir($temp,0700);
 register_shutdown_function(static function()use($temp):void{if(!is_dir($temp))return;foreach(new RecursiveIteratorIterator(new RecursiveDirectoryIterator($temp,FilesystemIterator::SKIP_DOTS),RecursiveIteratorIterator::CHILD_FIRST)as$f){if($f->isDir()&&!$f->isLink())rmdir($f->getPathname());else unlink($f->getPathname());}rmdir($temp);});
 $source=file_get_contents($repo.'/tools/production/cpanel/update-oneqaydev-menu-book.php');

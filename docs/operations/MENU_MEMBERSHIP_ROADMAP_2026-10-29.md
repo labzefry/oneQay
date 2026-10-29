@@ -101,3 +101,7 @@ A disposable package fixture exercised the packager with a synthetic 6,300-file 
 ## Database operator rehearsal added
 
 The menu CI now runs a disposable SQLite and MySQL operator rehearsal: reconstruct the predecessor's 108-table / 41-receipt schema from versioned migrations, create and verify a private backup, validate old/new migration source sets, apply only the two menu migrations, verify 112 tables / 43 receipts and complete replay, then simulate partial DDL and require a stop rather than replay. The MySQL fixture creates only the synthetic oneqay_operator_test database on the CI service; it must never point to a real hosting database. PHP syntax was checked locally; actual execution and CI results for this new rehearsal are pending. This is not host deployment or proof that the host has the same predecessor/schema.
+
+### Rehearsal CI isolation correction
+
+Run 40906676776 passed the SQLite operator rehearsal (78 combined assertions) and menu MySQL361, but the separate MySQL operator rehearsal stopped because its shared synthetic platform fixture attempted to recreate existing tables from the earlier MySQL menu test. The fixture now permits only a fixed, explicitly named synthetic database for this rehearsal; the test creates that isolated database before bootstrapping, without dropping any database. This is a test-fixture change, not a production schema change. A new exact-head CI run is required; MySQL operator rehearsal remains unverified until it passes.

@@ -37,6 +37,7 @@ on:
       - 'tools/production/tests/menu-book-operator.php'
       - 'tools/production/tests/menu-book-package.py'
       - 'tools/production/tests/menu-deploy-rehearsal.php'
+      - 'apps/web/tests/platform-control-mail.php'
       - 'apps/web/app/Delivery/Http/Business/MenuImageResponse.php'
       - '.github/workflows/menu-book-catalog.yml'
 permissions:
