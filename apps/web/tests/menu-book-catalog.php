@@ -11,6 +11,14 @@ $first=$menu->createCategory('menu-category-create-0001',['name'=>'Minuman Kopi'
 $assert($first===$menu->createCategory('menu-category-create-0001',['name'=>'Minuman Kopi'],'menu-test'),'category replay is idempotent');
 $assert($first===$menu->createCategory('menu-category-create-0002',['name'=>'minuman kopi'],'menu-test'),'category matching is case insensitive');
 $assert(count($menu->categories())===1,'one independent menu category');
+// Creating a product and assigning its first menu category is one atomic operation.
+config(['oneqay.pos_catalog_preparation.enabled'=>true,'oneqay.pos_inventory_baseline.enabled'=>true]);foreach([App\Application\Pos\CatalogPreparationRepository::class,App\Application\Pos\InventoryBaselineRepository::class,App\Application\Pos\PrepareCatalogItem::class,App\Application\Pos\EstablishInventoryBaseline::class,App\Application\Business\Merchandising::class]as$class)$app->forgetInstance($class);
+$merch=$app->make(App\Application\Business\Merchandising::class);$newProduct=['sku'=>'MENU-NEW-01','name'=>'Synthetic menu item','price'=>'7500','opening_quantity'=>'2','active'=>true,'menu_category_id'=>$first['id']];
+$created=$merch->saveProduct('menu-product-create-001',$newProduct,'menu-test');$assert($created['product_id']==='menu-new-01'&&$menu->item('menu-new-01')['category_id']===$first['id'],'new product is linked to the selected menu category');
+$assert($merch->saveProduct('menu-product-create-001',$newProduct,'menu-test')===$created,'product plus menu assignment replay idempotent');
+$bad=array_replace($newProduct,['sku'=>'MENU-BAD-02','menu_category_id'=>str_repeat('f',32)]);try{$merch->saveProduct('menu-product-create-bad',$bad,'menu-test');$assert(false,'invalid menu category accepted');}catch(App\Application\Business\BusinessViolation $e){$assert($e->reason==='MENU_CATEGORY_NOT_FOUND'&&!$db->table('oneqay_pos_sale_catalog_items')->where('tenant_id',$t)->where('product_id','menu-bad-02')->exists(),'invalid category rolls back product and stock creation');}
+// Hide the extra fixture to keep the public menu expectations focused.
+$menu->assign('menu-hide-new-product-01',['product_id'=>'menu-new-01','category_id'=>$first['id'],'visible'=>false,'spotlight'=>false,'version'=>1],'menu-test');
 $data=['product_id'=>'desktop-coffee','category_id'=>$first['id'],'visible'=>true,'spotlight'=>false,'version'=>0];
 $one=$menu->assign('menu-assign-product-0001',$data,'menu-test');$assert($one===$menu->assign('menu-assign-product-0001',$data,'menu-test'),'product assignment replay idempotent');
 $assert($menu->items(['desktop-coffee','missing-product'])['desktop-coffee']['category_id']===$first['id'],'bounded item lookup returns existing scoped product assignment');

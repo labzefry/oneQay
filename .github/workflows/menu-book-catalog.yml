@@ -4,6 +4,10 @@ on:
   pull_request:
     paths:
       - 'apps/web/app/Infrastructure/Business/LaravelMenuBookCatalog.php'
+      - 'apps/web/app/Application/Business/MenuBookAssignments.php'
+      - 'apps/web/app/Application/Business/Merchandising.php'
+      - 'apps/web/app/Delivery/Http/Business/MerchandisingController.php'
+      - 'apps/web/resources/js/pages/Business/Products.vue'
       - 'apps/web/app/Infrastructure/Business/LaravelMenuBookReader.php'
       - 'apps/web/app/Delivery/Http/Business/MenuBookController.php'
       - 'apps/web/app/Delivery/Http/Business/PublicMenuBookController.php'

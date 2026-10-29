@@ -2,12 +2,13 @@
 // Author by Lab | zefry. Authenticated owner-facing classification only; no public order or checkout.
 declare(strict_types=1);
 namespace App\Infrastructure\Business;
-use App\Application\Business\{BusinessAccess,BusinessInput,BusinessRepository,BusinessViolation,MerchandisingRepository};
+use App\Application\Business\{BusinessAccess,BusinessInput,BusinessRepository,BusinessViolation,MenuBookAssignments,MerchandisingRepository};
 use App\Application\Organization\VerifiedOrganizationalContext;
 use Illuminate\Database\Connection;
-final readonly class LaravelMenuBookCatalog {
+final readonly class LaravelMenuBookCatalog implements MenuBookAssignments {
  public function __construct(private Connection $db,private BusinessAccess $access,private BusinessRepository $operations,private MerchandisingRepository $products){}
  private function scope(VerifiedOrganizationalContext $s):array{return ['tenant_id'=>$s->tenantId()->value(),'organization_id'=>$s->organizationId()->value(),'outlet_id'=>$s->outletId()->value()];}
+ public function installed():bool{return $this->db->getSchemaBuilder()->hasTable('oneqay_menu_book_publication')&&$this->db->getSchemaBuilder()->hasTable('oneqay_menu_book_categories')&&$this->db->getSchemaBuilder()->hasTable('oneqay_menu_book_items');}
  private function ready():void{if(!$this->db->getSchemaBuilder()->hasTable('oneqay_menu_book_publication')||!$this->db->getSchemaBuilder()->hasTable('oneqay_menu_book_categories')||!$this->db->getSchemaBuilder()->hasTable('oneqay_menu_book_items'))throw new BusinessViolation('MENU_BOOK_SCHEMA_REQUIRED',503);}
  public function categories():array{
   $s=$this->access->require('pos.catalog.prepare');$this->ready();return $this->db->table('oneqay_menu_book_categories')->where($this->scope($s))->orderBy('name')->orderBy('id')->limit(200)->get(['id','name'])->map(fn($r)=>(array)$r)->all();

@@ -24,6 +24,7 @@ final class BusinessManagementServiceProvider extends ServiceProvider
         $this->app->scoped(\App\Application\Business\WorkforceManagement::class,fn($a)=>new \App\Application\Business\WorkforceManagement($a->make(BusinessRepository::class),$a->make(\App\Application\Business\WorkforceAccounts::class)));
         $this->app->scoped(\App\Application\Pos\ShiftClosureWorkspaceRepository::class, fn ($app) => new \App\Infrastructure\Pos\LaravelShiftClosureWorkspaceRepository($app->make('db')->connection()));
         $this->app->bind(\App\Application\Business\BusinessDocuments::class, \App\Infrastructure\Business\BusinessDocumentCodec::class);
+        $this->app->scoped(\App\Application\Business\MenuBookAssignments::class, fn ($app) => $app->make(\App\Infrastructure\Business\LaravelMenuBookCatalog::class));
         $this->app->scoped(\App\Infrastructure\Business\LaravelMenuBookCatalog::class, fn ($app) => new \App\Infrastructure\Business\LaravelMenuBookCatalog($app->make('db')->connection(), $app->make(\App\Application\Business\BusinessAccess::class), $app->make(BusinessRepository::class), $app->make(\App\Application\Business\MerchandisingRepository::class)));
         $this->app->scoped(\App\Application\Business\MerchandisingRepository::class, fn ($app) => new \App\Infrastructure\Business\LaravelMerchandisingRepository($app->make('db')->connection()));
         $this->app->scoped(\App\Application\Business\CommerceReportingRepository::class, fn ($app) => new \App\Infrastructure\Business\LaravelCommerceReportingRepository($app->make('db')->connection()));

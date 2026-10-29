@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 namespace App\Delivery\Http\Business;
-use App\Application\Business\{BusinessAccess,BusinessDocuments,BusinessInput,BusinessReports,BusinessViolation,CurrencyPreference,Merchandising};
+use App\Application\Business\{BusinessAccess,BusinessDocuments,BusinessInput,BusinessReports,BusinessViolation,CurrencyPreference,MenuBookAssignments,Merchandising};
 use App\Application\Authorization\DurableAuthorizationViolation;
 use App\Application\Pos\PosTransactionViolation;
 use App\Delivery\Http\SafeErrorEnvelope;
@@ -10,9 +10,9 @@ use Illuminate\Database\QueryException;
 use Inertia\Inertia;
 // Author by Lab | zefry. Every read/download and write requires current server authority.
 final readonly class MerchandisingController {
-    public function __construct(private Merchandising $products,private BusinessReports $reports,private BusinessAccess $access,private BusinessDocuments $documents){}
+    public function __construct(private Merchandising $products,private BusinessReports $reports,private BusinessAccess $access,private BusinessDocuments $documents,private ?MenuBookAssignments $menuBook=null){}
     private function filters(Request $r):array {$v=[];foreach(['q','category','brand','status','from','to','locale']as$k)if($r->query($k)!==null)$v[$k]=BusinessInput::text($r->query($k),120,true);return $v;}
-    public function catalog(Request $r):mixed {return $this->respond($r,fn()=>Inertia::render('Business/Products',['products'=>$this->products->products($this->filters($r),BusinessInput::integer($r->query('page','1'),1,10000)),'filters'=>$this->filters($r),'preferences'=>$this->products->preferences()]));}
+    public function catalog(Request $r):mixed {return $this->respond($r,fn()=>Inertia::render('Business/Products',['products'=>$this->products->products($this->filters($r),BusinessInput::integer($r->query('page','1'),1,10000)),'filters'=>$this->filters($r),'preferences'=>$this->products->preferences(),'menuCategories'=>$this->menuBook&&$this->menuBook->installed()?$this->menuBook->categories():null]));}
     public function settings(Request $r):mixed {return $this->respond($r,fn()=>Inertia::render('Business/Settings',['preferences'=>$this->products->settings(),'currencies'=>CurrencyPreference::OPTIONS]));}
     public function reports(Request $r):mixed {return $this->respond($r,function()use($r){$v=$this->reports->available();if(!$v)throw new BusinessViolation('REPORT_PERMISSION_DENIED',403);return Inertia::render('Business/Reports',['reports'=>$v,'preferences'=>$this->products->preferences()]);});}
     public function trend(Request $r):mixed {return $this->respond($r,fn()=>response()->json($this->reports->trend($this->filters($r))));}
