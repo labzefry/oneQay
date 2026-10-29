@@ -1,0 +1,17 @@
+# Menu book, table ordering and loyalty: implementation contract
+
+Author by Lab | zefry. Status: planned; not implemented or deployed.
+
+Food and beverage tenants need a separately classified menu book sourced from their existing products. Menu categories are independent of inventory categories. Owners control product visibility, cover, template and selected spotlight photographs. Existing inventory and prices remain canonical; a menu does not create duplicate products. Other business types retain their separate workflows.
+
+A public menu QR resolves only the published tenant menu. Table QR leads to a table-specific order flow with server-bound tenant/outlet/table, current published availability and server-owned prices. Customer submission creates an unpaid order; only an authorized cashier can collect and finalize payment. Repeated requests must be idempotent and table/order input must be validated. Public visitors must not obtain business administration or unrelated tenant access.
+
+Discount policies require owner authorization, explicit applicability, effective dates, limits, stacking rules and integer monetary arithmetic. The cashier checkout must recalculate eligibility on the server. Offline operation must not grant a promotion or points twice when replaying events; unresolved or expired policies must fail safely. Refund and cancellation must reverse or compensate loyalty effects without changing historical receipts.
+
+Membership is tenant-scoped and based on canonical customer records. Points use an immutable ledger with explicit accrual, redemption, expiry, correction and reversal, and atomic concurrency control. Reward inventory, allowed discount bounds, arithmetic precision, rounding and financial audit must be defined and tested. Do not equate membership with marketing consent. Marketing broadcasts only to eligible customers who explicitly consented, with unsubscribe and per-recipient delivery states, existing SMTP suppression and no cross-tenant access.
+
+Use the existing seven-color palette and Iconify; colored icons may use palette colors. Maintain readable contrast, proportional typography, responsive design and accessible progress/error states. Required testing includes tenant isolation, duplicate/replay/concurrency, price tampering, cancellation/refund, QR misuse, consent/unsubscribe, email failures, offline conflicts, MySQL and SQLite migration/rollback, and public/cashier integration.
+
+Implementation sequence: (1) catalog/menu schema, owner configuration, published menu and QR; (2) table-order handoff and cashier settlement; (3) discounts integrated with checkout; (4) customer membership ledger and rewards; (5) consent-based marketing integration; (6) supported Windows-client update and end-to-end deployment. Each phase must be independently reviewed and truthfully reported; UI elements cannot be advertised as working before the underlying workflow is complete.
+
+Security work is a parallel release track: determine exact installed PHP/Node/Python versions and lockfile advisories, patch vulnerable dependencies where compatible, and test certified web and desktop releases. CI has reported a medium symfony/mime advisory affecting the locked package; consult the current advisory and resolve version discrepancies before changing the lockfile. Repository scans do not establish hosting runtime patch level. Avoid disabling security checks or changing server runtimes without compatibility validation and rollback.
