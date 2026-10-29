@@ -30,6 +30,8 @@ on:
       - 'apps/web/package-lock.json'
       - 'tools/production/cpanel/menu-book-migrations.php'
       - 'tools/production/tests/menu-book-migrations.php'
+      - 'tools/production/cpanel/menu-vite-assets.php'
+      - 'tools/production/tests/menu-vite-assets.php'
       - 'apps/web/app/Delivery/Http/Business/MenuImageResponse.php'
       - '.github/workflows/menu-book-catalog.yml'
 permissions:
@@ -63,6 +65,7 @@ jobs:
       - run: php apps/web/tests/loyalty-math.php
       - run: php apps/web/tests/mime-header-security.php
       - run: php tools/production/tests/menu-book-migrations.php
+      - run: php tools/production/tests/menu-vite-assets.php
       - run: composer audit --working-dir=apps/web --locked --format=plain
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:

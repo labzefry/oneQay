@@ -83,3 +83,7 @@ The public menu now presents each spread as two book pages with direction-aware 
 ## Additive hosting migration contract draft
 
 A new source-only helper binds the last observed 108-table/41-receipt predecessor to exactly four menu tables and two named migrations (112 tables/43 receipts). It checks every historical table definition and receipt, rejects unexpected or partial DDL, verifies unchanged existing migration sources and permits a verified complete replay. Synthetic contract tests cover unchanged predecessor, altered DDL/receipts, missing/extra tables and partial versus complete replay. This helper is not a complete deployment operator or an actual host preflight. Binding exact predecessor artifacts, backup, PHP GD capability, public bridge, asset chunks, rollback and cPanel execution still need implementation and qualification before deployment. No production database mutation is claimed.
+
+## Vite release asset verification draft
+
+The new source-only `menu-vite-assets.php` walks the entrypoint's static and dynamic Vite manifest imports, validates bounded relative asset paths, disallows symlinks and hashes all discovered JS/CSS/assets. Synthetic tests cover the lazy QR chunk, missing files, traversal, unresolved imports and import cycles. This helper still needs integration into a certified cPanel operator, including actual post-switch HTTPS hash probes. It does not deploy or change hosting.
