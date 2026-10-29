@@ -36,6 +36,7 @@ on:
       - 'tools/production/package-oneqaydev-menu-book.py'
       - 'tools/production/tests/menu-book-operator.php'
       - 'tools/production/tests/menu-book-package.py'
+      - 'tools/production/tests/menu-deploy-rehearsal.php'
       - 'apps/web/app/Delivery/Http/Business/MenuImageResponse.php'
       - '.github/workflows/menu-book-catalog.yml'
 permissions:
@@ -71,6 +72,8 @@ jobs:
       - run: php tools/production/tests/menu-book-migrations.php
       - run: php tools/production/tests/menu-vite-assets.php
       - run: php tools/production/tests/menu-book-operator.php
+      - run: php tools/production/tests/menu-deploy-rehearsal.php
+      - run: PLATFORM_TEST_ENGINE=mysql php tools/production/tests/menu-deploy-rehearsal.php
       - run: python -m py_compile tools/production/package-oneqaydev-menu-book.py
       - run: python tools/production/tests/menu-book-package.py
       - run: composer audit --working-dir=apps/web --locked --format=plain

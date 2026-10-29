@@ -97,3 +97,7 @@ Local syntax validation and disposable filesystem rollback tests passed (9 asser
 ## Synthetic package rehearsal
 
 A disposable package fixture exercised the packager with a synthetic 6,300-file artifact, a test-only predecessor binding, and no production credentials. It verifies generated package existence, exact source placeholders, additive authority scope, file inventory count and all seven request-bound SHA-256 values; local result MENU_PACKAGE_SYNTHETIC_PASS (11 assertions). This confirms packaging mechanics only. Certification, actual predecessor binding, PHP web runtime, MySQL end-to-end migration/rollback, independent review and host preflight remain pending. No production artifact or live data was involved.
+
+## Database operator rehearsal added
+
+The menu CI now runs a disposable SQLite and MySQL operator rehearsal: reconstruct the predecessor's 108-table / 41-receipt schema from versioned migrations, create and verify a private backup, validate old/new migration source sets, apply only the two menu migrations, verify 112 tables / 43 receipts and complete replay, then simulate partial DDL and require a stop rather than replay. The MySQL fixture creates only the synthetic oneqay_operator_test database on the CI service; it must never point to a real hosting database. PHP syntax was checked locally; actual execution and CI results for this new rehearsal are pending. This is not host deployment or proof that the host has the same predecessor/schema.
