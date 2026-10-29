@@ -85,7 +85,7 @@ function ldRun(array $argv):array {
  }
  $plan=ldRead(__DIR__.'/plan.json');ldNeed($plan['binding']===$binding,'PLAN_BINDING_CHANGED');
  if($mode==='apply'){$grant=ldGrant($argv[3]??'',$plan,$config['authorization_pr']);ldNeed(time()<$grant['expires_at'],'AUTHORITY_EXPIRED');
-  $result=ldApply($db,$domains,$app->make(PlatformStore::class),$app->make(MailStore::class),$plan,function(array $before){$file=__DIR__.'/preimage.json';if(is_file($file))ldNeed(ldRead($file)===$before,'BACKUP_PREIMAGE_CHANGED');else ldWrite($file,$before);ldNeed(ldRead($file)===$before,'BACKUP_VERIFY_FAILED');});
+  $result=ldApply($db,$domains,$app->make(PlatformStore::class),$app->make(MailStore::class),$plan,function(array $before)use($grant){$file=__DIR__.'/preimage.json';if(is_file($file))ldNeed(ldRead($file)===$before,'BACKUP_PREIMAGE_CHANGED');else ldWrite($file,$before);ldNeed(ldRead($file)===$before,'BACKUP_VERIFY_FAILED');ldNeed(time()<$grant['expires_at'],'AUTHORITY_EXPIRED');});
   ldWrite(__DIR__.'/result.json',$result+['grant'=>$grant]);
  }else $result=ldRead(__DIR__.'/result.json');
  // Anonymous HTTPS acceptance is separate from a real owner login or SMTP inbox test.
