@@ -31,6 +31,20 @@ final class LoyaltyMath
         if ($pointsPerUnit !== 0 && $units > intdiv(self::MAX_POINTS, $pointsPerUnit)) throw new InvalidArgumentException('LOYALTY_POINTS_OUT_OF_RANGE');
         return $units * $pointsPerUnit;
     }
+    /**
+     * Percentage earning: one point per atomicPerPoint atomic currency units of
+     * the percentage-eligible amount. Rounds down once, after multiplication.
+     */
+    public static function earnedPercentagePoints(int $eligibleAmount, int $basisPoints, int $atomicPerPoint): int
+    {
+        self::bounded($eligibleAmount, self::MAX_AMOUNT);
+        self::bounded($basisPoints, 10000);
+        self::bounded($atomicPerPoint, self::MAX_AMOUNT);
+        if ($atomicPerPoint === 0) throw new InvalidArgumentException('LOYALTY_POINT_VALUE_REQUIRED');
+        $points = intdiv($eligibleAmount * $basisPoints, 10000 * $atomicPerPoint);
+        if ($points > self::MAX_POINTS) throw new InvalidArgumentException('LOYALTY_POINTS_OUT_OF_RANGE');
+        return $points;
+    }
     /** A redemption must be fully affordable and cannot exceed the outstanding price. */
     public static function redeemDiscount(int $points, int $balance, int $pointsPerUnit, int $atomicPerUnit, int $outstanding): int
     {
