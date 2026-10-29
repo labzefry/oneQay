@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'apps/web/app/Infrastructure/Business/LaravelMenuBookCatalog.php'
+      - 'apps/web/app/Infrastructure/Platform/ControlPlaneBusinessReset.php'
       - 'apps/web/database/module-migrations/business/2026_10_29_000001_create_menu_book_catalog.php'
       - 'apps/web/tests/menu-book-catalog.php'
       - '.github/workflows/menu-book-catalog.yml'

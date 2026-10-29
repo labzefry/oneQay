@@ -8,7 +8,7 @@ use Illuminate\Contracts\Encryption\Encrypter;
 final readonly class ControlPlaneBusinessReset {
  private const GROUPS=[
   'transactions'=>['oneqay_pos_shift_close_evidence','oneqay_pos_cash_variance_review_decision_evidence','oneqay_pos_cash_variance_explanation_evidence','oneqay_pos_shift_closing_cash_evidence','oneqay_pos_shift_opening_cash_evidence','oneqay_pos_sale_cash_refunds','oneqay_pos_sale_voids','oneqay_pos_sale_events','oneqay_pos_sale_lines','oneqay_pos_sales','oneqay_pos_shifts','oneqay_desktop_operations','oneqay_desktop_events','oneqay_pos_shift_recoveries'],
-  'products'=>['oneqay_business_product_profiles','oneqay_business_product_categories','oneqay_pos_inventory_replenishments','oneqay_pos_inventory_baselines','oneqay_pos_sale_catalog_items','oneqay_pos_catalog_preparation_journal'],
+  'products'=>['oneqay_menu_book_items','oneqay_menu_book_categories','oneqay_business_product_profiles','oneqay_business_product_categories','oneqay_pos_inventory_replenishments','oneqay_pos_inventory_baselines','oneqay_pos_sale_catalog_items','oneqay_pos_catalog_preparation_journal'],
   'inventory'=>['oneqay_pos_inventory_replenishments','oneqay_pos_inventory_baselines'],
   'finance'=>['oneqay_business_settlements','oneqay_business_invoices','oneqay_business_receipts','oneqay_business_purchases','oneqay_business_journals'],
   'partners'=>['oneqay_business_interactions','oneqay_business_partners'],
