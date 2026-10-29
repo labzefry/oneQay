@@ -19,4 +19,7 @@ try{$menu->assign('menu-assign-missing-0001',array_replace($data,['product_id'=>
 $assert($db->table('oneqay_pos_sale_catalog_items')->where('product_id','desktop-coffee')->value('unit_price_atomic')==15000,'menu never writes canonical product price');
 $resetPlan=(new App\Infrastructure\Platform\ControlPlaneBusinessReset($db,$app->make('encrypter')))->preview(array_replace($b,['status'=>'suspended','updated_at'=>time()-120]),'products');
 $resetTables=array_column($resetPlan['entries'],'table');$assert(array_search('oneqay_menu_book_items',$resetTables,true)<array_search('oneqay_menu_book_categories',$resetTables,true)&&array_search('oneqay_menu_book_categories',$resetTables,true)<array_search('oneqay_pos_sale_catalog_items',$resetTables,true),'product reset includes menu dependencies before catalog');
+// Anonymous context must never expose an owner's menu configuration.
+$contexts->clear();try{$menu->categories();$assert(false,'anonymous menu management allowed');}catch(App\Application\Business\BusinessViolation $e){$assert($e->reason==='CONTEXT_REQUIRED','anonymous management denied');}
+$contexts->setVerified($businessOwner);
 $menuCompleted=true;echo 'MENU_BOOK_CATALOG_'.$engine.'_PASS assertions='.$n.PHP_EOL;

@@ -10,6 +10,9 @@ on:
       - '.github/workflows/menu-book-catalog.yml'
 permissions:
   contents: read
+concurrency:
+  group: menu-book-catalog-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 jobs:
   menu-book-catalog:
     runs-on: ubuntu-24.04
