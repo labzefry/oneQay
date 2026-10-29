@@ -6,6 +6,7 @@ const palette = JSON.parse(readFileSync(resolve(root, '../../docs/design/ONEQAY_
 const allowed = Object.values(palette.colors).map(c => c.toUpperCase());
 if (allowed.length !== 7 || new Set(allowed).size !== 7) throw Error('Expected exactly seven owner-approved colors');
 const files = [
+  ['resources/js/components/MenuQrCard.vue',true],
   ['resources/js/pages/Business/MenuBook.vue',true],
   ['resources/js/pages/Website/PublicMenuBook.vue',true],
   ['../../packages/service-pos-ui/ServicePosWorkspace.vue',true],
