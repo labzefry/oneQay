@@ -23,6 +23,21 @@ $resetPlan=(new App\Infrastructure\Platform\ControlPlaneBusinessReset($db,$app->
 $resetTables=array_column($resetPlan['entries'],'table');$assert(array_search('oneqay_menu_book_items',$resetTables,true)<array_search('oneqay_menu_book_categories',$resetTables,true)&&array_search('oneqay_menu_book_categories',$resetTables,true)<array_search('oneqay_pos_sale_catalog_items',$resetTables,true),'product reset includes menu dependencies before catalog');
 $controller=new App\Delivery\Http\Business\MenuBookController($menu,$app->make(App\Application\Business\Merchandising::class));
 $request=Illuminate\Http\Request::create('/pos/business/menu-book/categories','POST',['operation_id'=>'http-menu-category-0001','data'=>['name'=>'Makanan']]);$request->headers->set('Accept','application/json');$response=$controller->category($request);$assert($response->getStatusCode()===200&&$response->getData(true)['record']['name']==='Makanan','authenticated category endpoint returns created category');
+// A second synthetic, fully provisioned business cannot see or bind the first business's menu rows.
+$contexts->setVerified($owner);
+$other=$service->command(array_replace($create,['operation_id'=>'menu-second-business-create','name'=>'Synthetic second business','email'=>'menu-second@example.test']));
+$service->command(['action'=>'invite','id'=>$other['id'],'version'=>1,'operation_id'=>'menu-second-business-invite','reason'=>'Synthetic isolation test']);
+$otherBusiness=$store->business($other['id']);$otherMail=$db->table('oneqay_mail_messages')->where('tenant_id',$otherBusiness['tenant_id'])->first();$otherPayload=json_decode($app->make('encrypter')->decryptString($otherMail->payload),true);preg_match('/#token=([a-f0-9]{64})/',$otherPayload['text'],$otherToken);
+$otherContext=$service->activate($otherToken[1],'synthetic-second-password');
+$otherOwner=new App\Application\Organization\VerifiedOrganizationalContext(App\Domain\Identity\PlatformIdentityId::fromString($otherContext['identity_id']),App\Domain\Tenancy\TenantId::fromString($otherContext['tenant_id']),App\Domain\Organization\OrganizationId::fromString($otherContext['organization_id']),App\Domain\Outlet\OutletId::fromString($otherContext['outlet_id']),App\Domain\Device\DeviceId::fromString($otherContext['device_id']));
+$contexts->setVerified($otherOwner);
+$assert($menu->categories()===[]&&$menu->item('desktop-coffee')===null,'second tenant cannot read first tenant categories or item');
+$db->table('oneqay_pos_sale_catalog_items')->insert(['tenant_id'=>$otherContext['tenant_id'],'outlet_id'=>$otherContext['outlet_id'],'product_id'=>'second-coffee','display_name'=>'Second coffee','unit_price_atomic'=>7000,'currency'=>'IDR','currency_scale'=>0,'available_quantity'=>3,'active'=>true]);
+try{$menu->assign('second-cross-tenant-category',array_replace($data,['product_id'=>'second-coffee']),'menu-test');$assert(false,'cross-tenant category accepted');}catch(App\Application\Business\BusinessViolation $e){$assert($e->reason==='MENU_CATEGORY_NOT_FOUND','cross-tenant category denied');}
+$secondCategory=$menu->createCategory('second-create-menu-category',['name'=>'Minuman Kopi'],'menu-test');
+try{$menu->assign('second-cross-tenant-product',array_replace($data,['category_id'=>$secondCategory['id']]),'menu-test');$assert(false,'cross-tenant product accepted');}catch(App\Application\Business\BusinessViolation $e){$assert($e->reason==='PRODUCT_NOT_FOUND','cross-tenant product denied');}
+$assert(count($menu->categories())===1&&$secondCategory['id']!==$first['id'],'identical category names stay independent between tenants');
+$contexts->setVerified($businessOwner);
 // Anonymous context must never expose an owner's menu configuration.
 $contexts->clear();try{$menu->categories();$assert(false,'anonymous menu management allowed');}catch(App\Application\Business\BusinessViolation $e){$assert($e->reason==='CONTEXT_REQUIRED','anonymous management denied');}
 $anonymousResponse=$controller->category($request);$assert($anonymousResponse->getStatusCode()===403,'anonymous management endpoint denied');
