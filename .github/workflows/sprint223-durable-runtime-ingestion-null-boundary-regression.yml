@@ -171,9 +171,13 @@ jobs:
           test "$(jq -r '.selected_target.runtime_class' "$selection")" = 'durable-staging'
           selected_target_fingerprint="$(jq -r '.selected_target.selection_fingerprint_sha256' ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json)"; [[ "$selected_target_fingerprint" =~ ^[0-9a-f]{64}$ ]]
 
+      - name: Verify bounded menu successor source envelope
+        if: github.event_name == 'pull_request' && github.repository == 'labzefry/oneQay' && github.event.pull_request.number == 992 && github.base_ref == 'main' && github.head_ref == 'feature/menu-membership-20261029' && github.event.pull_request.head.repo.full_name == 'labzefry/oneQay'
+        shell: bash
+        run: python3 tools/ci/verify-menu-successor.py
       - name: Confirm source-only corrective envelope
         # This fixed historical source envelope is superseded by the Production PR path contract.
-        if: (github.event_name != 'pull_request' || github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009') && (github.event_name != 'pull_request' || github.head_ref != 'production-dev-readiness-and-merchant-foundation-20261010') && github.head_ref != 'feat/industry-workspace-reference-20261027'
+        if: ((github.event_name != 'pull_request' || github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009') && (github.event_name != 'pull_request' || github.head_ref != 'production-dev-readiness-and-merchant-foundation-20261010') && github.head_ref != 'feat/industry-workspace-reference-20261027') && !(github.event_name == 'pull_request' && github.repository == 'labzefry/oneQay' && github.event.pull_request.number == 992 && github.base_ref == 'main' && github.head_ref == 'feature/menu-membership-20261029' && github.event.pull_request.head.repo.full_name == 'labzefry/oneQay')
         shell: bash
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.sha }}

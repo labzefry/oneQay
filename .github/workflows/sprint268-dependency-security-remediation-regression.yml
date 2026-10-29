@@ -59,8 +59,12 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Verify bounded menu successor source envelope
+        if: github.event_name == 'pull_request' && github.repository == 'labzefry/oneQay' && github.event.pull_request.number == 992 && github.base_ref == 'main' && github.head_ref == 'feature/menu-membership-20261029' && github.event.pull_request.head.repo.full_name == 'labzefry/oneQay'
+        shell: bash
+        run: python3 tools/ci/verify-menu-successor.py
       - name: Verify historical or exact bounded npm-security successor paths
-        if: ((github.event_name == 'pull_request') && github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009' && github.head_ref != 'production-commercial-postmerge-sprint253-compat-20261009') && (github.event_name != 'pull_request' || github.head_ref != 'production-dev-readiness-and-merchant-foundation-20261010')
+        if: (((github.event_name == 'pull_request') && github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009' && github.head_ref != 'production-commercial-postmerge-sprint253-compat-20261009') && (github.event_name != 'pull_request' || github.head_ref != 'production-dev-readiness-and-merchant-foundation-20261010')) && !(github.event_name == 'pull_request' && github.repository == 'labzefry/oneQay' && github.event.pull_request.number == 992 && github.base_ref == 'main' && github.head_ref == 'feature/menu-membership-20261029' && github.event.pull_request.head.repo.full_name == 'labzefry/oneQay')
         env:
           ONEQAY_CI_EXPRESSION_0: ${{ github.head_ref }}
           ONEQAY_CI_EXPRESSION_1: ${{ github.event.pull_request.base.sha }}

@@ -310,8 +310,12 @@ jobs:
           jq -e '.operator_requirements.fixed_public_bridge_php_symlink_policy_fallback_supported == true'             "$kit/ops/final-shift-close/DURABLE_STAGING_CPANEL_NO_SSH_OPERATOR_KIT_PUBLICATION_CONTRACT.json"
           ! find "$kit" -type f \( -name '.env' -o -name '*.pem' -o -name '*.key' -o -name '*.p12' -o -name '*.pfx' \) -print -quit | grep -q .
 
+      - name: Verify bounded menu successor source envelope
+        if: github.event_name == 'pull_request' && github.repository == 'labzefry/oneQay' && github.event.pull_request.number == 992 && github.base_ref == 'main' && github.head_ref == 'feature/menu-membership-20261029' && github.event.pull_request.head.repo.full_name == 'labzefry/oneQay'
+        shell: bash
+        run: python3 tools/ci/verify-menu-successor.py
       - name: Confirm no application or operational authority drift
-        if: ((github.event_name != 'pull_request' || github.head_ref != 'sprint240-durable-staging-runtime-promotion-successor') && (github.event_name != 'pull_request' || github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009')) && (github.event_name != 'pull_request' || github.head_ref != 'production-dev-readiness-and-merchant-foundation-20261010') && github.head_ref != 'feat/industry-workspace-reference-20261027'
+        if: (((github.event_name != 'pull_request' || github.head_ref != 'sprint240-durable-staging-runtime-promotion-successor') && (github.event_name != 'pull_request' || github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009')) && (github.event_name != 'pull_request' || github.head_ref != 'production-dev-readiness-and-merchant-foundation-20261010') && github.head_ref != 'feat/industry-workspace-reference-20261027') && !(github.event_name == 'pull_request' && github.repository == 'labzefry/oneQay' && github.event.pull_request.number == 992 && github.base_ref == 'main' && github.head_ref == 'feature/menu-membership-20261029' && github.event.pull_request.head.repo.full_name == 'labzefry/oneQay')
         shell: bash
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.sha }}

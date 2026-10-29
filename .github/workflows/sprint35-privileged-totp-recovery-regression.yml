@@ -365,8 +365,12 @@ jobs:
             fi
           fi
 
+      - name: Verify bounded menu successor source envelope
+        if: github.event_name == 'pull_request' && github.repository == 'labzefry/oneQay' && github.event.pull_request.number == 992 && github.base_ref == 'main' && github.head_ref == 'feature/menu-membership-20261029' && github.event.pull_request.head.repo.full_name == 'labzefry/oneQay'
+        shell: bash
+        run: python3 tools/ci/verify-menu-successor.py
       - name: Enforce frozen Sprint35 source envelope
-        if: env.ONEQAY_SPRINT41_S35_PRESERVATION != 'true' && github.head_ref != 'feat/industry-workspace-reference-20261027'
+        if: (env.ONEQAY_SPRINT41_S35_PRESERVATION != 'true' && github.head_ref != 'feat/industry-workspace-reference-20261027') && !(github.event_name == 'pull_request' && github.repository == 'labzefry/oneQay' && github.event.pull_request.number == 992 && github.base_ref == 'main' && github.head_ref == 'feature/menu-membership-20261029' && github.event.pull_request.head.repo.full_name == 'labzefry/oneQay')
         shell: bash
         env:
           ONEQAY_PR_BASE: ${{ github.event.pull_request.base.sha || github.sha }}

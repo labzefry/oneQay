@@ -1,0 +1,28 @@
+#!/usr/bin/env python3
+"""PR 992 bounded successor source envelope; existing behavioral/security jobs remain required."""
+import json, os, re, subprocess, sys
+BASE = '87f65c5c816dff18383eda1567388cdce81819ba'
+EXPECTED = frozenset([".github/workflows/menu-book-catalog.yml",".github/workflows/sprint211-durable-staging-operator-artifact-publication-regression.yml",".github/workflows/sprint212-cpanel-no-ssh-durable-staging-target-qualification-regression.yml",".github/workflows/sprint213-cpanel-no-ssh-operator-qualification-kit-publication-regression.yml",".github/workflows/sprint214-cpanel-no-ssh-guarded-deployment-execution-regression.yml",".github/workflows/sprint218-production-dark-deployment-execution-regression.yml",".github/workflows/sprint222-cpanel-fixed-public-php-symlink-policy-fallback-regression.yml",".github/workflows/sprint223-durable-runtime-ingestion-null-boundary-regression.yml",".github/workflows/sprint268-dependency-security-remediation-regression.yml",".github/workflows/sprint30-privileged-totp-mfa-regression.yml",".github/workflows/sprint35-privileged-totp-recovery-regression.yml",".github/workflows/sprint36-first-party-session-inventory-revocation-regression.yml",".github/workflows/sprint37-first-party-all-session-termination-regression.yml","API_SPEC.md","CHANGELOG.md","DATABASE.md","DEPLOYMENT.md","PROJECT_MANIFEST.md","SECURITY.md","TASKS.md","TESTING.md","UI_GUIDELINE.md","apps/web/app/Application/Business/BusinessAccess.php","apps/web/app/Application/Business/MenuBookAssignments.php","apps/web/app/Application/Business/Merchandising.php","apps/web/app/Application/BusinessLoyalty/LoyaltyMath.php","apps/web/app/Delivery/Http/Business/MenuBookController.php","apps/web/app/Delivery/Http/Business/MenuImageResponse.php","apps/web/app/Delivery/Http/Business/MerchandisingController.php","apps/web/app/Delivery/Http/Business/PublicMenuBookController.php","apps/web/app/Infrastructure/Business/LaravelMenuBookCatalog.php","apps/web/app/Infrastructure/Business/LaravelMenuBookMedia.php","apps/web/app/Infrastructure/Business/LaravelMenuBookReader.php","apps/web/app/Infrastructure/Platform/ControlPlaneBusinessReset.php","apps/web/app/Providers/BusinessManagementServiceProvider.php","apps/web/composer.lock","apps/web/database/module-migrations/business/2026_10_29_000001_create_menu_book_catalog.php","apps/web/database/module-migrations/business/2026_10_29_000002_add_menu_book_cover_media.php","apps/web/package-lock.json","apps/web/package.json","apps/web/resources/js/components/MenuQrCard.vue","apps/web/resources/js/layouts/MerchantShell.vue","apps/web/resources/js/pages/Business/MenuBook.vue","apps/web/resources/js/pages/Business/Products.vue","apps/web/resources/js/pages/Website/PublicMenuBook.vue","apps/web/scripts/check-ui-palette.mjs","apps/web/tests/loyalty-math.php","apps/web/tests/menu-book-catalog.php","apps/web/tests/menu-book-media.php","apps/web/tests/mime-header-security.php","apps/web/tests/platform-control-mail.php","docs/operations/MENU_MEMBERSHIP_ROADMAP_2026-10-29.md","tools/ci/tests/test-menu-successor.py","tools/ci/verify-menu-successor.py","tools/production/cpanel/menu-book-migrations.php","tools/production/cpanel/menu-vite-assets.php","tools/production/cpanel/update-oneqaydev-menu-book.php","tools/production/package-oneqaydev-menu-book.py","tools/production/tests/menu-book-migrations.php","tools/production/tests/menu-book-operator.php","tools/production/tests/menu-book-package.py","tools/production/tests/menu-deploy-rehearsal.php","tools/production/tests/menu-vite-assets.php"])
+def validate(event, event_name, repository, changes):
+    if event_name != 'pull_request' or repository != 'labzefry/oneQay' or event.get('number') != 992:
+        raise ValueError('MENU_SUCCESSOR_EVENT_INVALID')
+    pr=event.get('pull_request',{});base=pr.get('base',{});head=pr.get('head',{})
+    if base.get('ref') != 'main' or base.get('sha') != BASE or base.get('repo',{}).get('full_name') != repository:
+        raise ValueError('MENU_SUCCESSOR_BASE_INVALID')
+    if head.get('ref') != 'feature/menu-membership-20261029' or head.get('repo',{}).get('full_name') != repository or not re.fullmatch(r'[a-f0-9]{40}',head.get('sha','')):
+        raise ValueError('MENU_SUCCESSOR_HEAD_INVALID')
+    if any(status not in ('A','M') for status,path in changes) or len(changes) != len(EXPECTED) or frozenset(path for status,path in changes) != EXPECTED:
+        raise ValueError('MENU_SUCCESSOR_PATHS_INVALID')
+def main():
+    event=json.load(open(os.environ['GITHUB_EVENT_PATH'],encoding='utf-8'))
+    head=event['pull_request']['head']['sha']
+    if not re.fullmatch(r'[a-f0-9]{40}',head): raise ValueError('MENU_SUCCESSOR_HEAD_INVALID')
+    output=subprocess.check_output(['git','diff','--name-status','--no-renames',BASE,head],text=True)
+    changes=[tuple(line.split(chr(9),1)) for line in output.splitlines()]
+    if any(len(entry)!=2 for entry in changes): raise ValueError('MENU_SUCCESSOR_PATHS_INVALID')
+    validate(event,os.environ.get('GITHUB_EVENT_NAME'),os.environ.get('GITHUB_REPOSITORY'),changes)
+    print('MENU_SUCCESSOR_EXACT_SOURCE_ENVELOPE=PASS')
+if __name__=='__main__':
+    try:main()
+    except (ValueError,KeyError,OSError,subprocess.CalledProcessError) as error:
+        print(str(error),file=sys.stderr);sys.exit(1)

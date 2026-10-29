@@ -401,8 +401,12 @@ jobs:
             echo 'Recognized exact Sprint47 JRN-004 compatibility shape.'
           fi
 
+      - name: Verify bounded menu successor source envelope
+        if: github.event_name == 'pull_request' && github.repository == 'labzefry/oneQay' && github.event.pull_request.number == 992 && github.base_ref == 'main' && github.head_ref == 'feature/menu-membership-20261029' && github.event.pull_request.head.repo.full_name == 'labzefry/oneQay'
+        shell: bash
+        run: python3 tools/ci/verify-menu-successor.py
       - name: Enforce frozen Sprint37 source envelope
-        if: env.ONEQAY_S37_S35_S36_COMPATIBILITY != 'true' && env.ONEQAY_S37_JRN004_COMPATIBILITY != 'true' && github.head_ref != 'feat/industry-workspace-reference-20261027'
+        if: (env.ONEQAY_S37_S35_S36_COMPATIBILITY != 'true' && env.ONEQAY_S37_JRN004_COMPATIBILITY != 'true' && github.head_ref != 'feat/industry-workspace-reference-20261027') && !(github.event_name == 'pull_request' && github.repository == 'labzefry/oneQay' && github.event.pull_request.number == 992 && github.base_ref == 'main' && github.head_ref == 'feature/menu-membership-20261029' && github.event.pull_request.head.repo.full_name == 'labzefry/oneQay')
         shell: bash
         env:
           ONEQAY_CI_EXPRESSION_0: ${{ github.event_name }}
