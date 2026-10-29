@@ -13,6 +13,12 @@ return new class extends Migration {
    $t->foreign(['tenant_id','organization_id'],'fk_menu_book_org')->references(['tenant_id','id'])->on('oneqay_organizations')->restrictOnDelete()->restrictOnUpdate();
    $t->foreign(['tenant_id','outlet_id'],'fk_menu_book_outlet')->references(['tenant_id','id'])->on('oneqay_outlets')->restrictOnDelete()->restrictOnUpdate();
   });
+  Schema::create('oneqay_menu_book_publication',static function(Blueprint $t):void {
+   $t->string('tenant_id',64);$t->string('organization_id',64);$t->string('outlet_id',64);$t->string('title',160);$t->string('description',500);$t->boolean('published');$t->unsignedInteger('version');$t->unsignedBigInteger('updated_at');
+   $t->primary(['tenant_id','organization_id','outlet_id'],'pk_menu_book_publication');
+   $t->foreign(['tenant_id','organization_id'],'fk_menu_publication_org')->references(['tenant_id','id'])->on('oneqay_organizations')->restrictOnDelete()->restrictOnUpdate();
+   $t->foreign(['tenant_id','outlet_id'],'fk_menu_publication_outlet')->references(['tenant_id','id'])->on('oneqay_outlets')->restrictOnDelete()->restrictOnUpdate();
+  });
   Schema::create('oneqay_menu_book_items',static function(Blueprint $t):void {
    $t->string('tenant_id',64);$t->string('organization_id',64);$t->string('outlet_id',64);$t->string('product_id',64);$t->char('category_id',32);$t->boolean('visible');$t->boolean('spotlight');$t->unsignedInteger('version');$t->unsignedBigInteger('updated_at');
    $t->primary(['tenant_id','organization_id','outlet_id','product_id'],'pk_menu_book_items');

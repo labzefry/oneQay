@@ -40,11 +40,14 @@ final class BusinessManagementServiceProvider extends ServiceProvider
             || (int) config('oneqay.session_control.idle_ttl_seconds', 0) !== 7200
             || (int) config('oneqay.session_control.absolute_ttl_seconds', 0) !== 43200) return;
 
+        Route::get('/menu', [\App\Delivery\Http\Business\PublicMenuBookController::class, 'show'])->middleware(['web','throttle:60,1'])->name('menu.public');
+
         Route::middleware(['web', 'session.active', 'throttle:60,1', RequirePosSessionContextMiddleware::class])->group(static function (): void {
             $menu=\App\Delivery\Http\Business\MenuBookController::class;
             Route::get('/pos/business/menu-book',[$menu,'show'])->name('business.menu-book');
             Route::post('/pos/business/menu-book/categories',[$menu,'category'])->middleware('throttle:20,1');
             Route::post('/pos/business/menu-book/items',[$menu,'assign'])->middleware('throttle:20,1');
+            Route::post('/pos/business/menu-book/publication',[$menu,'publication'])->middleware('throttle:10,1');
             $catalog=\App\Delivery\Http\Business\MerchandisingController::class;
             Route::get('/pos/business/products',[$catalog,'catalog'])->name('business.products');
             Route::post('/pos/business/products/categories',[$catalog,'createCategory'])->middleware('throttle:20,1');

@@ -13,7 +13,7 @@ final readonly class ControlPlaneBusinessReset {
   'finance'=>['oneqay_business_settlements','oneqay_business_invoices','oneqay_business_receipts','oneqay_business_purchases','oneqay_business_journals'],
   'partners'=>['oneqay_business_interactions','oneqay_business_partners'],
   'people'=>['oneqay_business_attendance','oneqay_business_leave','oneqay_business_staff_accounts','oneqay_business_employees','oneqay_business_job_titles'],
-  'settings'=>['oneqay_desktop_preferences','oneqay_business_settings'],
+  'settings'=>['oneqay_menu_book_publication','oneqay_desktop_preferences','oneqay_business_settings'],
  ];
  public function __construct(private Connection $db,private Encrypter $cipher){}
  private function tables(string $scope):array {

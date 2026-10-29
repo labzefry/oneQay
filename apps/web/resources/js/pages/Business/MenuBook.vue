@@ -1,29 +1,34 @@
 <script setup lang="ts">
 // Author by Lab | zefry. Private configuration; public publishing and ordering are not yet available.
 import { computed, reactive, ref } from 'vue';
-import { Head, router } from '@inertiajs/vue3';
+import { Head, router, usePage } from '@inertiajs/vue3';
 import { locale } from '../../i18n';
 import { formatMoney, type CurrencyPreferences } from '../../business-money';
 import { useBusinessMutation } from '../../use-business-mutation';
 import WorkspaceIcon from '../../components/WorkspaceIcon.vue';
 type Product = { product_id:string; display_name:string; unit_price_atomic:string; currency:string; currency_scale:number; active:boolean };
 type Item = { category_id:string; visible:boolean; spotlight:boolean; version:number };
-const props=defineProps<{products:{data:Product[];page:number;has_more:boolean;total:number};categories:{id:string;name:string}[];items:Record<string,Item>;filters:{q:string};preferences:CurrencyPreferences}>();
+const props=defineProps<{products:{data:Product[];page:number;has_more:boolean;total:number};categories:{id:string;name:string}[];items:Record<string,Item>;filters:{q:string};preferences:CurrencyPreferences;publication:{title:string;description:string;published:boolean;version:number}}>();
+const page=usePage<{business_profile?:{url?:string|null}|null}>();
+const menuUrl=computed(()=>page.props.business_profile?.url ? page.props.business_profile.url.replace(/\/$/,'')+'/menu' : null);
 const id=computed(()=>locale.value==='id');
 const label=(a:string,b:string)=>id.value?a:b;
 const q=ref(props.filters.q);const categoryName=ref('');const selected=ref<Product|null>(null);const dialog=ref<HTMLDialogElement|null>(null);
+const publication=reactive({...props.publication});
 const form=reactive({category_id:'',visible:true,spotlight:false,version:0});const notice=ref('');
 const {busy,uncertain,error,submit,clear}=useBusinessMutation();
 function search(page=1){router.get('/pos/business/menu-book',{q:q.value,page},{preserveScroll:true});}
 async function addCategory(){if(!categoryName.value.trim())return;const v=await submit('/pos/business/menu-book/categories',{name:categoryName.value});if(v){categoryName.value='';notice.value=label('Kategori buku menu tersimpan.','Menu category saved.');clear();router.reload();}}
 function edit(p:Product){if(busy.value||uncertain.value)return;clear();selected.value=p;const old=props.items[p.product_id];Object.assign(form,{category_id:old?.category_id??props.categories[0]?.id??'',visible:old?.visible??true,spotlight:old?.spotlight??false,version:old?.version??0});dialog.value?.showModal();}
+async function savePublication(){const v=await submit('/pos/business/menu-book/publication',{...publication});if(v){notice.value=label('Pengaturan publikasi tersimpan.','Publication settings saved.');clear();router.reload();}}
 async function save(){if(!selected.value)return;const v=await submit('/pos/business/menu-book/items',{product_id:selected.value.product_id,...form});if(v){dialog.value?.close();notice.value=label('Pengaturan produk tersimpan.','Product settings saved.');clear();router.reload();}}
 </script>
 <template>
  <Head :title="label('Buku menu','Menu book')"/>
  <main class="merch-page">
   <header class="menu-header"><div><p class="menu-eyebrow">{{label('KATALOG USAHA','BUSINESS CATALOG')}}</p><h1>{{label('Buku menu','Menu book')}}</h1><p>{{label('Kelola kategori, produk yang ditampilkan, dan pilihan sorotan dari katalog produk Anda.','Manage menu categories, visible products and featured selections from your product catalog.')}}</p></div><WorkspaceIcon name="book-open" :size="32"/></header>
-  <p class="menu-note">{{label('Pengaturan ini masih dalam tahap pengembangan. Penerbitan buku menu dan pemesanan meja belum tersedia.','These settings are in development. Menu publishing and table ordering are not yet available.')}}</p>
+  <p class="menu-note">{{label('Buku menu dapat diterbitkan pada subdomain bisnis. Foto, cover, dan pemesanan meja masih dalam pengembangan.','The menu can be published on your business subdomain. Photos, cover and table ordering are still in development.')}}</p>
+  <section class="menu-card"><h2>{{label('Tampilan dan publikasi','Display and publishing')}}</h2><form class="menu-controls" @submit.prevent="savePublication"><label class="menu-grow">{{label('Judul buku menu','Menu title')}}<input v-model="publication.title" required maxlength="160" :disabled="busy||uncertain"/></label><label class="menu-grow">{{label('Pengantar','Introduction')}}<input v-model="publication.description" maxlength="500" :disabled="busy||uncertain"/></label><label><input v-model="publication.published" type="checkbox" :disabled="busy||uncertain"/> {{label('Terbitkan untuk pelanggan','Publish for customers')}}</label><button :disabled="busy">{{uncertain?label('Coba permintaan yang sama','Retry same request'):label('Simpan publikasi','Save publication')}}</button></form><p>{{label('Alamat menu pelanggan:','Customer menu address:')}} <a v-if="menuUrl" :href="menuUrl" target="_blank" rel="noopener">{{menuUrl}}</a><span v-else>{{label('Subdomain bisnis belum tersedia.','Business subdomain is not available.')}}</span></p></section>
   <section class="menu-card"><h2>{{label('Kategori buku menu','Menu categories')}}</h2><p>{{label('Kategori ini terpisah dari kategori inventori.','These categories are separate from inventory categories.')}}</p><form class="menu-controls" @submit.prevent="addCategory"><label class="menu-grow">{{label('Nama kategori','Category name')}}<input v-model="categoryName" maxlength="120" required :disabled="busy||uncertain" :placeholder="label('Contoh: Kopi','Example: Coffee')"/></label><button :disabled="busy">{{uncertain?label('Coba permintaan yang sama','Retry same request'):label('Tambah kategori','Add category')}}</button></form><div class="menu-chips"><span v-for="c in categories" :key="c.id">{{c.name}}</span><span v-if="!categories.length">{{label('Belum ada kategori.','No categories yet.')}}</span></div></section>
   <section class="menu-card"><div class="menu-row"><div><h2>{{label('Produk dalam buku menu','Menu products')}}</h2><p>{{label('Harga mengikuti katalog produk.','Prices come from the product catalog.')}}</p></div><form class="menu-controls" @submit.prevent="search()"><label>{{label('Cari produk','Search products')}}<input v-model="q" maxlength="120"/></label><button>{{label('Cari','Search')}}</button></form></div>
    <p v-if="notice" class="merch-success" role="status">{{notice}}</p><p v-if="error" class="merch-error" role="alert">{{error}}</p>
