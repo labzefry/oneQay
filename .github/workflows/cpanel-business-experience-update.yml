@@ -39,4 +39,6 @@ jobs:
       - run: PLATFORM_TEST_ENGINE=mysql php tools/production/tests/oneqaydev-business-experience-operator.php
       - run: php -l tools/production/cpanel/repair-legacy-business-domain.php
       - run: php tools/production/tests/legacy-business-domain.php
+      # Previous operator rehearsal also uses this disposable fixture database.
+      - run: mysql --host=127.0.0.1 --user=root --password=synthetic-test-only -e 'DROP DATABASE oneqay_platform_test; CREATE DATABASE oneqay_platform_test;'
       - run: PLATFORM_TEST_ENGINE=mysql php tools/production/tests/legacy-business-domain.php

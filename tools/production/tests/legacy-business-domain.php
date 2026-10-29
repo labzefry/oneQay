@@ -1,6 +1,7 @@
 <?php
 // Author by Lab | zefry. Synthetic database only; no network, real tenant or SMTP.
 declare(strict_types=1);
+$legacyRepairCompleted=false;register_shutdown_function(static function()use(&$legacyRepairCompleted):void{if(!$legacyRepairCompleted){fwrite(STDERR,"LEGACY_DOMAIN_REPAIR_DID_NOT_COMPLETE\n");exit(1);}});
 require __DIR__.'/../../../apps/web/tests/business-experience.php';
 require __DIR__.'/../cpanel/repair-legacy-business-domain.php';
 $platform=$app->make(App\Application\Platform\PlatformStore::class);$mail=$app->make(App\Application\Notification\MailStore::class);
@@ -33,4 +34,5 @@ $assert($db->table('oneqay_mail_messages')->count()===$messages+1&&$db->table('o
 $assert($db->table('oneqay_platform_businesses')->get()->toJson()===$beforeBusiness&&$db->table('oneqay_identity_password_credentials')->get()->toJson()===$beforeCredentials,'canonical accounts and credentials unchanged');
 $db->table('oneqay_business_domains')->where('slug',$plan['slug'])->update(['active'=>false,'retired_at'=>time()]);$deny(fn()=>ldApply($db,$domains,$platform,$mail,$plan,fn()=>null),'APPLIED_DOMAIN_CHANGED');
 $assert(!$db->table('oneqay_business_domains')->where('slug',$plan['slug'])->value('active'),'replay never resurrects retired domain');
+$legacyRepairCompleted=true;
 echo 'LEGACY_DOMAIN_REPAIR_'.$engine.'_PASS assertions='.$n.PHP_EOL;
