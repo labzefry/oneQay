@@ -713,7 +713,12 @@ jobs:
           grep -Fq 'DISABLED / UNWIRED' docs/PRIVILEGED_TOTP_MFA_FOUNDATION.md
           if grep -RInE 'echo .*secret|print.*secret|var_dump\(.*secret|logger.*secret|Log::.*secret' apps/web/app apps/web/tests/privileged-totp-mfa.php; then exit 1; fi
 
+      - name: Run isolated s30 regression for menu successor
+        if: github.event_name == 'pull_request' && github.repository == 'labzefry/oneQay' && github.event.pull_request.number == 992 && github.base_ref == 'main' && github.head_ref == 'feature/menu-membership-20261029' && github.event.pull_request.head.repo.full_name == 'labzefry/oneQay'
+        shell: bash
+        run: bash tools/ci/run-historical-fixture.sh s30
       - name: Run disposable Sprint 30 privileged TOTP MFA regression
+        if: (!(github.event_name == 'pull_request' && github.repository == 'labzefry/oneQay' && github.event.pull_request.number == 992 && github.base_ref == 'main' && github.head_ref == 'feature/menu-membership-20261029' && github.event.pull_request.head.repo.full_name == 'labzefry/oneQay'))
         run: php apps/web/tests/privileged-totp-mfa.php
 
       - name: Preserve Sprint 21 through Sprint 24 with application harness

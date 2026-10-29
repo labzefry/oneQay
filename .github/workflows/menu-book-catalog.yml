@@ -40,6 +40,8 @@ on:
       - 'apps/web/tests/platform-control-mail.php'
       - 'tools/ci/verify-menu-successor.py'
       - 'tools/ci/tests/test-menu-successor.py'
+      - 'tools/ci/run-historical-fixture.sh'
+      - 'tools/ci/tests/test-historical-fixture.py'
       - 'apps/web/app/Delivery/Http/Business/MenuImageResponse.php'
       - '.github/workflows/menu-book-catalog.yml'
 permissions:
@@ -76,6 +78,7 @@ jobs:
       - run: php tools/production/tests/menu-vite-assets.php
       - run: php tools/production/tests/menu-book-operator.php
       - run: python tools/ci/tests/test-menu-successor.py
+      - run: python tools/ci/tests/test-historical-fixture.py
       - run: php tools/production/tests/menu-deploy-rehearsal.php
       - run: PLATFORM_TEST_ENGINE=mysql php tools/production/tests/menu-deploy-rehearsal.php
       - run: python -m py_compile tools/production/package-oneqaydev-menu-book.py

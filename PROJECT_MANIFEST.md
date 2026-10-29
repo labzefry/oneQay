@@ -188,3 +188,7 @@ Implemented server-wide filtered/paginated service search and industry operation
 
 ### 28 October 2026 — workspace release and owner text colors
 Shared web/Windows theme enforces Black Onyx on white and white on colored surfaces. Windows candidate bumped to 0.2.6 with updater identity unchanged. Prepared no-schema cPanel successor with verified archive retention; source-only historical envelope skips are limited to this product branch and oversized workflow scripts were extracted with runtime assertions retained. See `docs/INDUSTRY_WORKSPACE_REFERENCE_2026-10-27.md` for delivered scope and remaining advanced features.
+
+## 2026-10-30 — MFA input and CI test reliability (draft)
+
+First-party MFA requests now preserve submitted code/token whitespace for strict validation. The PR adds isolated current-compatible authentication/session regressions with mandatory success markers after discovering legacy CI false-green output. Six tests passed locally on a disposable earlier development snapshot; exact-head CI, independent security review and deployment remain pending. See [menu and deployment checkpoint](docs/operations/MENU_MEMBERSHIP_ROADMAP_2026-10-29.md). No hosting changes have been performed.

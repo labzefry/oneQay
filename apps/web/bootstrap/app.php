@@ -25,6 +25,8 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // MFA codes and recovery tokens must be validated exactly as supplied.
+        $middleware->trimStrings(except: [static fn (\Illuminate\Http\Request $request): bool => $request->is('auth/mfa/*')]);
         $middleware->alias([
             'tenant.verified' => RequireVerifiedTenantContextMiddleware::class,
             'session.active' => EnforceActiveFirstPartySessionAuthorityMiddleware::class,

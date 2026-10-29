@@ -11,6 +11,9 @@ $assert(str_contains($source,"'database-backup-helper.php'")&&str_contains($sour
 $assert(str_contains($source,'mbApplyMigrations($app,$db,nApp(),$before)')&&str_contains($source,'mbVerifySchema($before,nSchema($db))'));
 $assert(str_contains($source,'menuViteInventory(realpath(nApp().')&&str_contains($source,'VITE_ASSET_HTTP_HASH_FAILED'));
 $assert(str_contains($source,'PHP_GD_REQUIRED')&&str_contains($source,'issues/992'));
+nMenuRuntime(['JPEG Support'=>true,'PNG Support'=>true,'WebP Support'=>true],8*1024*1024);$assert(true);
+try{nMenuRuntime(['JPEG Support'=>true,'PNG Support'=>true],8*1024*1024);throw new Exception('GD_FORMAT_ACCEPTED');}catch(RuntimeException $e){$assert($e->getMessage()==='PHP_GD_FORMAT_REQUIRED');}
+try{nMenuRuntime(['JPEG Support'=>true,'PNG Support'=>true,'WebP Support'=>true],1048576);throw new Exception('PACKET_ACCEPTED');}catch(RuntimeException $e){$assert($e->getMessage()==='MYSQL_PACKET_TOO_SMALL');}
 $assert(str_contains($source,'ADDITIVE_TABLES_RETAINED_FORWARD_REVIEW_REQUIRED'));
 foreach(['current','stage'] as $d)mkdir($root.'/'.$d);file_put_contents($root.'/current/asset','old');file_put_contents($root.'/stage/asset','new');file_put_contents($root.'/routing','old-route');
 try{nPromote($root.'/stage',$root.'/current',$root.'/backup',$root.'/routing','new-route',fn()=>throw new RuntimeException('PROBE_REJECTED'));throw new Exception('UNEXPECTED_SUCCESS');}catch(RuntimeException $e){$assert($e->getMessage()==='PROBE_REJECTED');}

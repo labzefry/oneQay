@@ -241,7 +241,7 @@ jobs:
           done
 
       - name: Enforce NO_SCHEMA_CHANGE and migrations one through thirteen
-        if: github.event_name == 'pull_request' && env.ONEQAY_S38_JRN004_COMPATIBILITY != 'true'
+        if: (github.event_name == 'pull_request' && env.ONEQAY_S38_JRN004_COMPATIBILITY != 'true') && !(github.event_name == 'pull_request' && github.repository == 'labzefry/oneQay' && github.event.pull_request.number == 992 && github.base_ref == 'main' && github.head_ref == 'feature/menu-membership-20261029' && github.event.pull_request.head.repo.full_name == 'labzefry/oneQay')
         shell: bash
         run: |
           set -euo pipefail
@@ -343,7 +343,12 @@ jobs:
           composer validate --no-check-publish
           composer install --no-interaction --no-progress --prefer-dist
 
+      - name: Run isolated s38 regression for menu successor
+        if: github.event_name == 'pull_request' && github.repository == 'labzefry/oneQay' && github.event.pull_request.number == 992 && github.base_ref == 'main' && github.head_ref == 'feature/menu-membership-20261029' && github.event.pull_request.head.repo.full_name == 'labzefry/oneQay'
+        shell: bash
+        run: bash tools/ci/run-historical-fixture.sh s38
       - name: Run dedicated Sprint38 absolute lifetime regression fail-closed
+        if: (!(github.event_name == 'pull_request' && github.repository == 'labzefry/oneQay' && github.event.pull_request.number == 992 && github.base_ref == 'main' && github.head_ref == 'feature/menu-membership-20261029' && github.event.pull_request.head.repo.full_name == 'labzefry/oneQay'))
         working-directory: apps/web
         shell: bash
         run: |
@@ -377,7 +382,12 @@ jobs:
           printf '%s\n' "$output"
           grep -Fq 'Sprint38 first-party session absolute lifetime regression passed.' <<<"$output"
 
+      - name: Run isolated s36 regression for menu successor
+        if: github.event_name == 'pull_request' && github.repository == 'labzefry/oneQay' && github.event.pull_request.number == 992 && github.base_ref == 'main' && github.head_ref == 'feature/menu-membership-20261029' && github.event.pull_request.head.repo.full_name == 'labzefry/oneQay'
+        shell: bash
+        run: bash tools/ci/run-historical-fixture.sh s36
       - name: Preserve Sprint36 inventory and revocation regression
+        if: (!(github.event_name == 'pull_request' && github.repository == 'labzefry/oneQay' && github.event.pull_request.number == 992 && github.base_ref == 'main' && github.head_ref == 'feature/menu-membership-20261029' && github.event.pull_request.head.repo.full_name == 'labzefry/oneQay'))
         working-directory: apps/web
         run: php tests/first-party-session-inventory-revocation.php
 

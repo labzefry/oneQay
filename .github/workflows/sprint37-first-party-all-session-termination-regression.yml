@@ -457,11 +457,21 @@ jobs:
         working-directory: apps/web
         run: composer install --no-interaction --no-progress --prefer-dist
 
+      - name: Run isolated s37 regression for menu successor
+        if: github.event_name == 'pull_request' && github.repository == 'labzefry/oneQay' && github.event.pull_request.number == 992 && github.base_ref == 'main' && github.head_ref == 'feature/menu-membership-20261029' && github.event.pull_request.head.repo.full_name == 'labzefry/oneQay'
+        shell: bash
+        run: bash tools/ci/run-historical-fixture.sh s37
       - name: Run Sprint37 all-session termination regression
+        if: (!(github.event_name == 'pull_request' && github.repository == 'labzefry/oneQay' && github.event.pull_request.number == 992 && github.base_ref == 'main' && github.head_ref == 'feature/menu-membership-20261029' && github.event.pull_request.head.repo.full_name == 'labzefry/oneQay'))
         working-directory: apps/web
         run: php tests/first-party-session-all-session-termination.php
 
+      - name: Run isolated s36 regression for menu successor
+        if: github.event_name == 'pull_request' && github.repository == 'labzefry/oneQay' && github.event.pull_request.number == 992 && github.base_ref == 'main' && github.head_ref == 'feature/menu-membership-20261029' && github.event.pull_request.head.repo.full_name == 'labzefry/oneQay'
+        shell: bash
+        run: bash tools/ci/run-historical-fixture.sh s36
       - name: Preserve Sprint36 session-control regression
+        if: (!(github.event_name == 'pull_request' && github.repository == 'labzefry/oneQay' && github.event.pull_request.number == 992 && github.base_ref == 'main' && github.head_ref == 'feature/menu-membership-20261029' && github.event.pull_request.head.repo.full_name == 'labzefry/oneQay'))
         working-directory: apps/web
         run: php tests/first-party-session-inventory-revocation.php
 

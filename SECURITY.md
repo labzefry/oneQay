@@ -465,3 +465,7 @@ Catalog-authorized CSRF-protected raster upload has byte, pixel, throttle and sc
 ### 29 October continuation
 
 symfony/mime is locked to v7.4.22 for CVE-2026-45070. Synthetic MIME tests cover constructor/setter/header-collection injection and valid attachments. Composer/npm scans are clear at the recorded local sample; host PHP and desktop native-runtime coverage remain separate. Media upload now limits count to100 as well as20 MiB, and unused-media deletion verifies live scoped references transactionally.
+
+## 2026-10-30 — MFA input and CI test reliability (draft)
+
+First-party MFA requests now preserve submitted code/token whitespace for strict validation. The PR adds isolated current-compatible authentication/session regressions with mandatory success markers after discovering legacy CI false-green output. Six tests passed locally on a disposable earlier development snapshot; exact-head CI, independent security review and deployment remain pending. See [menu and deployment checkpoint](docs/operations/MENU_MEMBERSHIP_ROADMAP_2026-10-29.md). No hosting changes have been performed.

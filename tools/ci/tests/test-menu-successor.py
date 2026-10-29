@@ -26,4 +26,19 @@ try:m.verify_classifiers('a'*40)
 except ValueError as error:
     assert str(error)=='MENU_SUCCESSOR_CLASSIFIER_CHANGED';n+=1
 else:raise AssertionError('MODIFIED_CLASSIFIER_ACCEPTED')
+required=[
+ '0000_00_00_000009_create_identity_totp_factors.php',
+ '0000_00_00_000010_create_identity_recovery_codes.php',
+ '0000_00_00_000011_add_credential_epoch_to_identity_password_credentials.php',
+ '0000_00_00_000012_add_totp_factor_epoch_and_recovery_authority.php',
+ '0000_00_00_000013_create_first_party_session_authority.php']
+paths=['apps/web/database/migrations/'+name for name in required]+['apps/web/database/migrations/synthetic-%02d.php'%i for i in range(22)]
+m.subprocess.check_output=lambda args,text:chr(10).join(paths)
+m.subprocess.run=lambda *args,**kwargs:None
+m.verify_migrations('a'*40);n+=1
+m.subprocess.check_output=lambda args,text:chr(10).join(paths[:-1])
+try:m.verify_migrations('a'*40)
+except ValueError as error:
+    assert str(error)=='MENU_BASE_MIGRATION_COUNT_INVALID';n+=1
+else:raise AssertionError('WRONG_MIGRATION_COUNT_ACCEPTED')
 print('MENU_SUCCESSOR_ENVELOPE_PASS assertions='+str(n))

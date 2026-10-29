@@ -73,11 +73,16 @@ function sVerifyMigrationSources(string $old,string $candidate):void{
   sort($expected);sort($after);nNeed($expected===$after,'SCHEMA_SOURCE_SET_CHANGED');
  }
 }
+/** CLI checks only: web-SAPI settings need separate qualification. */
+function nMenuRuntime(array $gd,int $maxPacket):void{
+ foreach(['JPEG Support','PNG Support','WebP Support'] as $key)nNeed(($gd[$key]??false)===true,'PHP_GD_FORMAT_REQUIRED');
+ nNeed($maxPacket>=8*1024*1024,'MYSQL_PACKET_TOO_SMALL');
+}
 function nPreflight(array $r):array{
  require_once __DIR__.'/menu-book-migrations.php';require_once __DIR__.'/menu-vite-assets.php';
  nNeed(function_exists('imagecreatefromstring')&&function_exists('imagejpeg')&&function_exists('imagepng')&&function_exists('imagewebp'),'PHP_GD_REQUIRED');
 
- [$app,$db,$env]=nOld();nNeed(!$db->table('oneqay_business_domains')->where('active',true)->whereIn('slug',explode(',','aceh,action,appointment,canvas,event,jakon,magetan,mail,oneqay,oneqaydev,padan,pahala'))->exists(),'RESERVED_BUSINESS_SLUG_REQUIRES_OWNER_RENAME');nDomainReady(nOldApp());$before=nSchema($db);nNeed(count($before['ddl'])===108&&count($before['receipts'])===41,'EXACT_PREDECESSOR_SCHEMA_REQUIRED');nInventory(__DIR__.'/release-files.sha256',__DIR__.'/payload',nRelease(),$r['file_count'],true);
+ [$app,$db,$env]=nOld();$packet=$db->selectOne('SELECT @@max_allowed_packet AS packet_bytes');nMenuRuntime(gd_info(),(int)($packet->packet_bytes??0));nNeed(!$db->table('oneqay_business_domains')->where('active',true)->whereIn('slug',explode(',','aceh,action,appointment,canvas,event,jakon,magetan,mail,oneqay,oneqaydev,padan,pahala'))->exists(),'RESERVED_BUSINESS_SLUG_REQUIRES_OWNER_RENAME');nDomainReady(nOldApp());$before=nSchema($db);nNeed(count($before['ddl'])===108&&count($before['receipts'])===41,'EXACT_PREDECESSOR_SCHEMA_REQUIRED');nInventory(__DIR__.'/release-files.sha256',__DIR__.'/payload',nRelease(),$r['file_count'],true);
  $payload=__DIR__.'/payload/'.nRelease().'/apps/web';mbVerifyMigrationSources(nOldApp(),$payload);menuViteInventory(realpath($payload.'/public/build'));
  foreach([nApp(),nEnv(),N_PUBLIC.'/'.nEntry(),__DIR__.'/rollback']as$p)nNeed(!file_exists($p)&&!is_link($p),'CANDIDATE_ALREADY_PREPARED');return [$app,$db,$env,$before];
 }
