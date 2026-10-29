@@ -79,3 +79,7 @@ A published menu with a valid HTTPS business-origin URL can now produce a downlo
 ## Flipbook presentation continuation
 
 The public menu now presents each spread as two book pages with direction-aware page-turn motion, previous/next buttons, keyboard arrow keys and horizontal swipe. Narrow screens stack pages; reduced-motion removes the transition. The implementation is a CSS/Vue page-turn presentation, not a physical 3D book engine. It keeps the same published catalog and pricing projection. Local Vue type-check, build and 26-style palette guard passed; interactive browser, physical scan and exact-head CI remain pending. QR table ordering, product photos, rewards and deployment remain incomplete.
+
+## Additive hosting migration contract draft
+
+A new source-only helper binds the last observed 108-table/41-receipt predecessor to exactly four menu tables and two named migrations (112 tables/43 receipts). It checks every historical table definition and receipt, rejects unexpected or partial DDL, verifies unchanged existing migration sources and permits a verified complete replay. Synthetic contract tests cover unchanged predecessor, altered DDL/receipts, missing/extra tables and partial versus complete replay. This helper is not a complete deployment operator or an actual host preflight. Binding exact predecessor artifacts, backup, PHP GD capability, public bridge, asset chunks, rollback and cPanel execution still need implementation and qualification before deployment. No production database mutation is claimed.
