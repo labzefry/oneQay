@@ -2,7 +2,7 @@
 name: cPanel business experience additive successor
 on:
   pull_request:
-    paths: ['tools/production/cpanel/update-oneqaydev-domain-root.php', 'tools/production/package-oneqaydev-domain-root.py', 'tools/production/tests/oneqaydev-domain-root.php', 'tools/production/cpanel/update-oneqaydev-workspace-successor.php', 'tools/production/package-oneqaydev-workspace-successor.py', 'tools/production/tests/oneqaydev-workspace-successor.php', 'tools/production/cpanel/business-experience-migrations.php', 'tools/production/cpanel/update-oneqaydev-business-experience.php', 'tools/production/package-oneqaydev-business-experience.py', 'tools/production/tests/oneqaydev-business-experience-operator.php', '.github/workflows/cpanel-business-experience-update.yml']
+    paths: ['tools/production/cpanel/repair-legacy-business-domain.php', 'tools/production/tests/legacy-business-domain.php', 'tools/production/cpanel/update-oneqaydev-domain-root.php', 'tools/production/package-oneqaydev-domain-root.py', 'tools/production/tests/oneqaydev-domain-root.php', 'tools/production/cpanel/update-oneqaydev-workspace-successor.php', 'tools/production/package-oneqaydev-workspace-successor.py', 'tools/production/tests/oneqaydev-workspace-successor.php', 'tools/production/cpanel/business-experience-migrations.php', 'tools/production/cpanel/update-oneqaydev-business-experience.php', 'tools/production/package-oneqaydev-business-experience.py', 'tools/production/tests/oneqaydev-business-experience-operator.php', '.github/workflows/cpanel-business-experience-update.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -37,3 +37,8 @@ jobs:
       - run: php tools/production/tests/oneqaydev-business-experience-operator.php
       - run: mysql --host=127.0.0.1 --user=root --password=synthetic-test-only -e 'CREATE DATABASE oneqay_operator_test;'
       - run: PLATFORM_TEST_ENGINE=mysql php tools/production/tests/oneqaydev-business-experience-operator.php
+      - run: php -l tools/production/cpanel/repair-legacy-business-domain.php
+      - run: php tools/production/tests/legacy-business-domain.php
+      # Previous operator rehearsal also uses this disposable fixture database.
+      - run: mysql --host=127.0.0.1 --user=root --password=synthetic-test-only -e 'DROP DATABASE oneqay_platform_test; CREATE DATABASE oneqay_platform_test;'
+      - run: PLATFORM_TEST_ENGINE=mysql php tools/production/tests/legacy-business-domain.php
