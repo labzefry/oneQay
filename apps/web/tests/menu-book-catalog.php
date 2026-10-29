@@ -5,7 +5,8 @@ $menuCompleted=false;register_shutdown_function(static function()use(&$menuCompl
 require __DIR__.'/business-experience.php';
 (require __DIR__.'/../database/module-migrations/business/2026_10_29_000001_create_menu_book_catalog.php')->up();
 $contexts->setVerified($businessOwner);
-$menu=new App\Infrastructure\Business\LaravelMenuBookCatalog($db,$app->make(App\Application\Business\BusinessAccess::class),$app->make(App\Application\Business\BusinessRepository::class),$app->make(App\Application\Business\MerchandisingRepository::class));
+$menu=$app->make(App\Infrastructure\Business\LaravelMenuBookCatalog::class);
+$assert(Illuminate\Support\Facades\Route::has('business.menu-book'),'private menu route registered with application');
 $first=$menu->createCategory('menu-category-create-0001',['name'=>'Minuman Kopi'],'menu-test');
 $assert($first===$menu->createCategory('menu-category-create-0001',['name'=>'Minuman Kopi'],'menu-test'),'category replay is idempotent');
 $assert($first===$menu->createCategory('menu-category-create-0002',['name'=>'minuman kopi'],'menu-test'),'category matching is case insensitive');
